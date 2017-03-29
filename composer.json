@@ -1,0 +1,18 @@
+{
+	"name" : "exface/OpenUI5Template",
+	"description" : "UI-Template for the ExFace business web-app plattform based on the SAP OpenUI5 library",
+	"type" : "library",
+	"license" : "GPL-3.0+",
+	"authors" : [{
+			"name" : "Andrej Kabachnik",
+			"email" : "kabachnik@gmail.com",
+			"role" : "Creator"
+		}
+	],
+	"support" : {
+		"issues" : "https://github.com/exface/OpenUI5Template/issues"
+	},
+	"require" : {
+		"exface/core" : "~0.1"
+	}
+}

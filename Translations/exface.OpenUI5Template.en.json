@@ -1,0 +1,16 @@
+{
+	"REFRESH": "Refresh",
+	
+	"MESSAGE.SELECT_EXACTLY_X_ROWS": "Please select exactly %number% row!|Please select exactly %number% rows!",
+	"MESSAGE.SELECT_AT_MOST_X_ROWS": "Please select at most %number% row!|Please select at most %number% rows!",
+	"MESSAGE.SELECT_AT_LEAST_X_ROWS": "Please select at least %number% row!|Please select at least %number% rows!",
+	"MESSAGE.SELECT_X_TO_Y_ROWS": "Please select %min% to %max% rows first!",
+	"MESSAGE.ERROR_TITLE": "Error",
+	"MESSAGE.SUCCESS_TITLE": "",
+	"MESSAGE.FILL_REQUIRED_ATTRIBUTES": "Please fill in the required fields: ",
+	
+	"WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE": "Table Settings",
+	"WIDGET.DATATABLE.SETTINGS_DIALOG.FILTERS": "Filters",
+	"WIDGET.DATATABLE.SETTINGS_DIALOG.COLUMNS": "Columns",
+	"WIDGET.DATATABLE.SETTINGS_DIALOG.SORTING": "Sorting"
+}

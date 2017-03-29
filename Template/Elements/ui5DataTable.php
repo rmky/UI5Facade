@@ -1,17 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-	 <!– 1.) Load SAPUI5, select theme and control library –>
-	  <script src="Template/js/openui5/resources/sap-ui-core.js"
-		  id="sap-ui-bootstrap"
-		  data-sap-ui-libs="sap.m,sap.ui.commons,sap.ui.table "
-		  data-sap-ui-theme="sap_belize">
-	 </script>
-	 
-	 <script language="javascript">
-	 
-	 // define some sample data using JSON
-var vData=[
+<?php
+namespace exface\OpenUI5Template\Template\Elements;
+
+use exface\Core\Widgets\DataTable;
+
+/**
+ * 
+ * @method DataTable get_widget()
+ * 
+ * @author Andrej Kabachnik
+ *
+ */
+class ui5BasicElement extends ui5AbstractElement {
+	function generate_html(){
+		return '';
+	}
+	
+	function generate_js(){
+		$js = <<<JS
+		
+	var vData=[
            {assID:"EM123456", name:"Bharath S", linkText:"Cognizant Technology Solutions", href:"http://www.cognizant.com", gender:"Male", mobile:"9934307162", rating:5},
            {assID:"EM263521", name:"Arun M", linkText:"Cognizant Technology Solutions", href:"http://www.cognizant.com", gender:"Male", mobile:"9786721460", rating:3},
            {assID:"EM323455", name:"Anitha", linkText:"Cognizant Technology Solutions", href:"http://www.cognizant.com", gender:"Female", mobile:"9524396759", rating:4},
@@ -19,11 +26,9 @@ var vData=[
            {assID:"EM398454", name:"Ajai", linkText:"Cognizant Technology Solutions", href:"http://www.cognizant.com", gender:"Male", mobile:"9576113218", rating:4},
            {assID:"EM348092", name:"Pranav", linkText:"Cognizant Technology Solutions", href:"http://www.cognizant.com", gender:"Male", mobile:"9576113218", rating:5}
           ];
-		  
-		// Define a table [Note: you must include the table library to make the Table class work]
-var oTable = new sap.ui.table.Table({
-    title: "Employee Details",                                   // Displayed as the heading of the table
-    visibleRowCount: 3,                                           // How much rows you want to display in the table
+		
+	var oTable = new sap.ui.table.Table({
+    visibleRowCount: 20,                                           // How much rows you want to display in the table
     selectionMode: sap.ui.table.SelectionMode.Single, //Use Singe or Multi
     navigationMode: sap.ui.table.NavigationMode.Paginator, //Paginator or Scrollbar
     fixedColumnCount: 3,                     // Freezes the number of columns
@@ -86,7 +91,7 @@ var oTable = new sap.ui.table.Table({
      //Create a model and bind the table rows to this model
      var oModel = new sap.ui.model.json.JSONModel();        // created a JSON model      
 
-     oModel.setData({modelData: vData});                              // Set the data to the model using the JSON object defined already
+     {$this->build_js_data_source()}
 
      oTable.setModel(oModel);                                                                                  
 
@@ -94,14 +99,18 @@ var oTable = new sap.ui.table.Table({
 
      //Initially sort the table
 
-     oTable.sort(oTable.getColumns()[0]);                
-
-//After binding the table into the model, bring the table into the UI(i.e., to display in the web)
-//Bring the table onto the UI
-     oTable.placeAt("106");
-	 </script>
-</head>
-<body id="106">
-
-</body>
-</html>
+     oTable.sort(oTable.getColumns()[0]);   
+		
+JS;
+		return $js;
+	}
+	
+	protected function build_js_data_source($js_filters = ''){
+		$url = $this->get_ajax_url() . '&action=' . $this->get_widget()->get_lazy_loading_action() . '&resource=' . $this->get_page_id() . '&element=' . $this->get_widget()->get_id() . '&object=' . $this->get_widget()->get_meta_object()->get_id();
+		
+		return <<<JS
+		oModel.setData({modelData: vData});
+JS;
+	}
+}
+?>

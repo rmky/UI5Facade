@@ -1,6 +1,8 @@
 <?php namespace exface\OpenUI5Template\Template;
 
 use exface\AbstractAjaxTemplate\Template\AbstractAjaxTemplate;
+use exface\Core\Interfaces\UiPageInterface;
+use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 
 class OpenUI5Template extends AbstractAjaxTemplate {
 	protected $request_columns = array();
@@ -40,31 +42,15 @@ class OpenUI5Template extends AbstractAjaxTemplate {
 		return $this->request_paging_rows;
 	}
 	
-	public function get_request_sorting_direction(){
-		if (!$this->request_sorting_direction){
-			$this->get_request_sorting_sort_by();
+	protected function set_response_from_error(ErrorExceptionInterface $exception, UiPageInterface $page){
+		$http_status_code = is_numeric($exception->get_status_code()) ? $exception->get_status_code() : 500;
+		if (is_numeric($http_status_code)){
+			http_response_code($http_status_code);
+		} else {
+			http_response_code(500);
 		}
-		return $this->request_sorting_direction;
-	}
-	
-	public function get_request_sorting_sort_by(){
-		if (!$this->request_sorting_sort_by){
-			$sorters = !is_null($this->get_workbench()->get_request_params()['order']) ? $this->get_workbench()->get_request_params()['order'] : array();
-			$this->get_workbench()->remove_request_param('order');
-
-			foreach ($sorters as $sorter){
-				if (!is_null($sorter['column'])){ //sonst wird nicht nach der 0. Spalte sortiert (0 == false)
-					if ($sort_attr = $this->request_columns[$sorter['column']]['data']){
-						$this->request_sorting_sort_by .= ($this->request_sorting_sort_by ? ',' : '') . $sort_attr;
-						$this->request_sorting_direction .= ($this->request_sorting_direction ? ',' : '') . $sorter['dir'];
-					}
-				} elseif ($sorter['attribute_alias']){
-					$this->request_sorting_sort_by .= ($this->request_sorting_sort_by ? ',' : '') . $sorter['attribute_alias'];
-					$this->request_sorting_direction .= ($this->request_sorting_direction ? ',' : '') . $sorter['dir'];
-				}
-			}
-		}
-		return $this->request_sorting_sort_by;
+		$this->set_response($page->get_workbench()->get_debugger()->print_exception($exception));
+		return $this;
 	}
 }
 ?>

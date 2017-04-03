@@ -21,11 +21,11 @@ abstract class ui5AbstractElement extends AbstractJqueryElement {
 	}
 	
 	public function build_js_busy_icon_show(){
-		return '$("#' . $this->get_id() . '").parents(".box").append($(\'<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>\'));';
+		return 'sap.ui.core.BusyIndicator.show(0);';
 	}
 	
 	public function build_js_busy_icon_hide(){
-		return '$("#' . $this->get_id() . '").parents(".box").find(".overlay").remove();';
+		return 'sap.ui.core.BusyIndicator.hide();';
 	}
 	
 	/**

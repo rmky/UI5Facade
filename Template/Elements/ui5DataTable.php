@@ -11,7 +11,7 @@ use exface\Core\Widgets\DataColumn;
  * @author Andrej Kabachnik
  *
  */
-class ui5BasicElement extends ui5AbstractElement {
+class ui5DataTable extends ui5AbstractElement {
 	function generate_html(){
 		return '';
 	}
@@ -20,61 +20,103 @@ class ui5BasicElement extends ui5AbstractElement {
 		$widget = $this->get_widget();
 		
 		// Columns
+		$column_defs = '';
 		foreach ($widget->get_columns() as $column){
-			$columns_js .= $this->build_js_column_def($column);
+			$column_defs .= ($column_defs ? ", " : '') . $this->build_js_column_def($column);
 		}
 		
 		$js = <<<JS
 		
 	var oTable = new sap.ui.table.Table({
-    visibleRowCount: {$widget->get_paginate_default_page_size()},
-    selectionMode: sap.ui.table.SelectionMode.Single, //Use Singe or Multi
-    navigationMode: sap.ui.table.NavigationMode.Paginator, //Paginator or Scrollbar
-    enableColumnReordering:true,       // Allows you to drag and drop the column and reorder the position of the column
-  });
+		visibleRowCountMode: "Auto"
+	    , selectionMode: sap.ui.table.SelectionMode.Single
+	    , enableColumnReordering:true
+		, filter: function(oControlEvent){{$this->build_js_function_prefix()}LoadData(this, oControlEvent)}
+		, sort: function(oControlEvent){{$this->build_js_function_prefix()}LoadData(this, oControlEvent)}
+		, extension: [
+			{$this->build_js_toolbar()}
+		]
+		, columns: [
+			{$column_defs}
+		]
+	});   
 
-	{$columns_js}
-
-	// Now, create a model to bind the table rows.
-     //Create a model and bind the table rows to this model
-     var oModel = new sap.ui.model.json.JSONModel();        // created a JSON model      
-
-     {$this->build_js_data_source()}
-
-     oTable.setModel(oModel);                                                                                  
-
-     oTable.bindRows("/data");                              // binding all the rows into the model
-
-     //Initially sort the table
-
-     oTable.sort(oTable.getColumns()[0]);   
+	{$this->build_js_data_source()}  
 		
 JS;
 		return $js;
 	}
 	
 	protected function build_js_data_source($js_filters = ''){
-		$url = $this->get_ajax_url() . '&action=' . $this->get_widget()->get_lazy_loading_action() . '&resource=' . $this->get_page_id() . '&element=' . $this->get_widget()->get_id() . '&object=' . $this->get_widget()->get_meta_object()->get_id();
+		$url = $this->get_ajax_url();
+		$params = '
+					action: "' . $this->get_widget()->get_lazy_loading_action() . '"
+					, resource: "' . $this->get_page_id() . '"
+					, element: "' . $this->get_widget()->get_id() . '"
+					, object: "' . $this->get_widget()->get_meta_object()->get_id() . '"
+				';
 		
-		/*return <<<JS
-		oModel.setData({modelData: vData});
-JS;*/
+		// Pagination
+		$params .= '
+					, length: "' . $this->get_widget()->get_paginate_default_page_size() . '"
+					, start: 0
+				';
+		
 		return <<<JS
-		oModel.loadData("{$url}");
+	
+	function {$this->build_js_function_prefix()}LoadData(oTable, oControlEvent) {
+		var params = { {$params} };
+		var cols = oTable.getColumns();
+		var oModel = new sap.ui.model.json.JSONModel();
+		
+		oModel.attachRequestSent(function(){
+			{$this->build_js_busy_icon_show()}
+		});
+		oModel.attachRequestCompleted(function(){
+			{$this->build_js_busy_icon_hide()}
+		});
+
+		oTable.setModel(oModel); 
+		
+		if (oControlEvent && oControlEvent.getId() == 'sort'){
+			params.sort = 	oControlEvent.getParameters().column.getSortProperty();
+			params.order = 	(oControlEvent.getParameters().sortOrder == 'Ascending' ? 'asc' : 'desc');
+		}
+		
+		if (oControlEvent && oControlEvent.getId() == 'filter'){
+			params['fltr99_' + oControlEvent.getParameters().column.getFilterProperty()] = oControlEvent.getParameters().value;
+		}
+		
+		oTable.getModel().loadData("{$url}", params);
+		oTable.bindRows("/data");
+	}
+	
+	
+	{$this->build_js_function_prefix()}LoadData(oTable);
+		
 JS;
+	}
+	
+	protected function build_js_toolbar(){
+		$header = $this->get_widget()->get_caption() ? $this->get_widget()->get_caption() : $this->get_widget()->get_meta_object()->get_name();
+		$toolbar = <<<JS
+			new sap.m.OverflowToolbar({
+				content: [
+					new sap.m.Label({text: "{$header}"})
+				]
+			})
+JS;
+		return $toolbar;
 	}
 		
 	protected function build_js_column_def(DataColumn $column){
 		return <<<JS
-
- oTable.addColumn(new sap.ui.table.Column({
-
-    label: new sap.ui.commons.Label({text: "{$column->get_caption()}"}),
-    template: new sap.ui.commons.TextField().bindProperty("value", "{$column->get_data_column_name()}"),
-    sortProperty: "{$column->get_data_column_name()}",
-    filterProperty: "{$column->get_data_column_name()}"
-}));
-
+	 new sap.ui.table.Column({
+	    label: new sap.ui.commons.Label({text: "{$column->get_caption()}"}),
+	    template: new sap.ui.commons.TextField().bindProperty("value", "{$column->get_data_column_name()}"),
+	    sortProperty: "{$column->get_attribute_alias()}",
+	    filterProperty: "{$column->get_attribute_alias()}"
+	})
 JS;
 	}
 }

@@ -127,10 +127,10 @@ abstract class ui5AbstractElement extends AbstractJqueryElement {
 		}
 		
 		$data = array();
-		$data['data'] = $data_sheet->get_rows();
+		$data['data'] = array_merge($data_sheet->get_rows(), $data_sheet->get_totals_rows());
 		$data['recordsFiltered'] = $data_sheet->count_rows_all();
 		$data['recordsTotal'] = $data_sheet->count_rows_all();
-		$data['footer'] = $data_sheet->get_totals_rows();
+		$data['footerRows'] = count($data_sheet->get_totals_rows());
 		return $data;
 	} 
 }

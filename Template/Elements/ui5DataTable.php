@@ -19,6 +19,9 @@ class ui5DataTable extends ui5AbstractElement {
 	function generate_js(){
 		$widget = $this->get_widget();
 		
+		$selection_mode = $widget->get_multi_select() ? 'sap.ui.table.SelectionMode.MultiToggle' : 'sap.ui.table.SelectionMode.Single';
+		$selection_behavior = $widget->get_multi_select() ? 'sap.ui.table.SelectionBehavior.Row' : 'sap.ui.table.SelectionBehavior.RowOnly';
+		
 		// Columns
 		$column_defs = '';
 		foreach ($widget->get_columns() as $column){
@@ -29,7 +32,8 @@ class ui5DataTable extends ui5AbstractElement {
 		
 	var oTable = new sap.ui.table.Table({
 		visibleRowCountMode: "Auto"
-	    , selectionMode: sap.ui.table.SelectionMode.Single
+	    , selectionMode: {$selection_mode}
+		, selectionBehavior: {$selection_behavior}
 	    , enableColumnReordering:true
 		, filter: function(oControlEvent){{$this->build_js_function_prefix()}LoadData(this, oControlEvent)}
 		, sort: function(oControlEvent){{$this->build_js_function_prefix()}LoadData(this, oControlEvent)}
@@ -74,6 +78,10 @@ JS;
 		});
 		oModel.attachRequestCompleted(function(){
 			{$this->build_js_busy_icon_hide()}
+			var footerRows = this.getProperty("/footerRows");
+			if (footerRows){
+				oTable.setFixedBottomRowCount(parseInt(footerRows));
+			}
 		});
 
 		oTable.setModel(oModel); 
@@ -87,7 +95,7 @@ JS;
 			params['fltr99_' + oControlEvent.getParameters().column.getFilterProperty()] = oControlEvent.getParameters().value;
 		}
 		
-		oTable.getModel().loadData("{$url}", params);
+		oModel.loadData("{$url}", params);
 		oTable.bindRows("/data");
 	}
 	
@@ -110,12 +118,16 @@ JS;
 	}
 		
 	protected function build_js_column_def(DataColumn $column){
+		$visible = $column->is_hidden() ? 'false' : 'true';
+		$textAlign = 'sap.ui.core.TextAlign.' . ucfirst($column->get_align());
+		
 		return <<<JS
 	 new sap.ui.table.Column({
-	    label: new sap.ui.commons.Label({text: "{$column->get_caption()}"}),
-	    template: new sap.ui.commons.TextField().bindProperty("value", "{$column->get_data_column_name()}"),
-	    sortProperty: "{$column->get_attribute_alias()}",
-	    filterProperty: "{$column->get_attribute_alias()}"
+	    label: new sap.ui.commons.Label({text: "{$column->get_caption()}"})
+	    , template: new sap.ui.commons.TextField({textAlign: {$textAlign}}).bindProperty("value", "{$column->get_data_column_name()}")
+	    , sortProperty: "{$column->get_attribute_alias()}"
+	    , filterProperty: "{$column->get_attribute_alias()}"
+		, visible: {$visible}
 	})
 JS;
 	}

@@ -31,7 +31,7 @@ class ui5DataTable extends ui5AbstractElement {
 		$js = <<<JS
 		
 	var oTable = new sap.ui.table.Table({
-		visibleRowCountMode: "Auto"
+		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto
 	    , selectionMode: {$selection_mode}
 		, selectionBehavior: {$selection_behavior}
 	    , enableColumnReordering:true
@@ -62,7 +62,7 @@ JS;
 		
 		// Pagination
 		$params .= '
-					, length: "' . $this->get_widget()->get_paginate_default_page_size() . '"
+					, length: "' . $this->get_pagination_page_size() . '"
 					, start: 0
 				';
 		
@@ -78,6 +78,7 @@ JS;
 		});
 		oModel.attachRequestCompleted(function(){
 			{$this->build_js_busy_icon_hide()}
+			
 			var footerRows = this.getProperty("/footerRows");
 			if (footerRows){
 				oTable.setFixedBottomRowCount(parseInt(footerRows));
@@ -115,6 +116,10 @@ JS;
 			})
 JS;
 		return $toolbar;
+	}
+	
+	protected function get_pagination_page_size(){
+		return $this->get_widget()->get_paginate_page_size() ? $this->get_widget()->get_paginate_page_size() : $this->get_template()->get_config()->get_option('WIDGET.DATATABLE.PAGE_SIZE');
 	}
 		
 	protected function build_js_column_def(DataColumn $column){

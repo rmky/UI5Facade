@@ -86,13 +86,28 @@ JS;
 		});
 
 		oTable.setModel(oModel); 
-		
-		if (oControlEvent && oControlEvent.getId() == 'sort'){
-			params.sort = 	oControlEvent.getParameters().column.getSortProperty();
-			params.order = 	(oControlEvent.getParameters().sortOrder == 'Ascending' ? 'asc' : 'desc');
+
+		// Add filters and sorters from all filtered columns
+		for (var i=0; i<oTable.getColumns().length; i++){
+			var oColumn = oTable.getColumns()[i];
+			if (oColumn.getFiltered()){
+				params['fltr99_' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
+			}
+			if (oColumn.getSorted()){
+				params.sort = oColumn.getSortProperty();
+				params.order = (oColumn.getSortOrder() == 'Ascending' ? 'asc' : 'desc');
+			}
 		}
 		
+		// If sorting just now, make sure the sorter from the event is set too (eventually overwriting the previous sorting)
+		if (oControlEvent && oControlEvent.getId() == 'sort'){
+			params.sort = oControlEvent.getParameters().column.getSortProperty();
+			params.order = (oControlEvent.getParameters().sortOrder == 'Ascending' ? 'asc' : 'desc');
+		}
+		
+		// If filtering just now, make sure the filter from the event is set too (eventually overwriting the previous one)
 		if (oControlEvent && oControlEvent.getId() == 'filter'){
+			console.log(oControlEvent.getParameters().column.getFilterProperty());
 			params['fltr99_' + oControlEvent.getParameters().column.getFilterProperty()] = oControlEvent.getParameters().value;
 		}
 		

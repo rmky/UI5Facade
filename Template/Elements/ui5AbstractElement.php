@@ -1,62 +1,74 @@
-<?php namespace exface\OpenUI5Template\Template\Elements;
+<?php
+namespace exface\OpenUI5Template\Template\Elements;
 
 use exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement;
 use exface\OpenUI5Template\Template\OpenUI5Template;
 
 /**
- * 
- * @method OpenUI5Template get_template()
- * 
- * @author Andrej Kabachnik
  *
+ * @method OpenUI5Template get_template()
+ *        
+ * @author Andrej Kabachnik
+ *        
  */
-abstract class ui5AbstractElement extends AbstractJqueryElement {
-	
-	public function build_js_init_options(){
-		return '';
-	}
-	
-	public function build_js_inline_editor_init(){
-		return '';
-	}
-	
-	public function build_js_busy_icon_show(){
-		return 'sap.ui.core.BusyIndicator.show(0);';
-	}
-	
-	public function build_js_busy_icon_hide(){
-		return 'sap.ui.core.BusyIndicator.hide();';
-	}
-	
-	/**
-	 *
-	 * {@inheritDoc}
-	 * @see \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement::build_js_show_message_error()
-	 */
-	public function build_js_show_message_error($message_body_js, $title = null){
-		return '
+abstract class ui5AbstractElement extends AbstractJqueryElement
+{
+
+    public function buildJsInitOptions()
+    {
+        return '';
+    }
+
+    public function buildJsInlineEditorInit()
+    {
+        return '';
+    }
+
+    public function buildJsBusyIconShow()
+    {
+        return 'sap.ui.core.BusyIndicator.show(0);';
+    }
+
+    public function buildJsBusyIconHide()
+    {
+        return 'sap.ui.core.BusyIndicator.hide();';
+    }
+
+    /**
+     *
+     * {@inheritdoc}
+     *
+     * @see \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement::buildJsShowMessageError()
+     */
+    public function buildJsShowMessageError($message_body_js, $title = null)
+    {
+        return '
 			swal(' . ($title ? $title : '"' . $this->translate('MESSAGE.ERROR_TITLE') . '"') . ', ' . $message_body_js . ', "error");';
-	}
-	
-	/**
-	 *
-	 * {@inheritDoc}
-	 * @see \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement::build_js_show_error()
-	 */
-	public function build_js_show_error($message_body_js, $title = null){
-		return '
+    }
+
+    /**
+     *
+     * {@inheritdoc}
+     *
+     * @see \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement::buildJsShowError()
+     */
+    public function buildJsShowError($message_body_js, $title = null)
+    {
+        return '
 			adminLteCreateDialog($("#ajax-dialogs").append(\'<div class="ajax-wrapper"></div>\').children(".ajax-wrapper").last(), "error", ' . ($title ? $title : '"' . $this->translate('MESSAGE.ERROR_TITLE') . '"') . ', ' . $message_body_js . ');
 			';
-	}
-	
-	/**
-	 *
-	 * {@inheritDoc}
-	 * @see \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement::build_js_show_message_success()
-	 */
-	public function build_js_show_message_success($message_body_js, $title = null){
-		$title = !is_null($title) ? $title : '"' . $this->translate('MESSAGE.SUCCESS_TITLE') . '"';
-		return '$.notify({
+    }
+
+    /**
+     *
+     * {@inheritdoc}
+     *
+     * @see \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement::buildJsShowMessageSuccess()
+     */
+    public function buildJsShowMessageSuccess($message_body_js, $title = null)
+    {
+        $title = ! is_null($title) ? $title : '"' . $this->translate('MESSAGE.SUCCESS_TITLE') . '"';
+        return '$.notify({
 					title: ' . $title . ',
 					message: ' . $message_body_js . ',
 				}, {
@@ -81,57 +93,68 @@ abstract class ui5AbstractElement extends AbstractJqueryElement {
 						"<a href=\"{3}\" target=\"{4}\" data-notify=\"url\"></a>" +
 					"</div>"
 				});';
-	}
-	
-	public function escape_string($string){
-		return htmlentities($string, ENT_QUOTES);
-	}
-	
-	/**
-	 * Returns the css classes, that define the grid width for the element (e.g. col-xs-12, etc.)
-	 * @return string
-	 */
-	public function get_width_classes(){
-		if ($this->get_widget()->get_width()->is_relative()){
-			switch ($this->get_widget()->get_width()->get_value()){
-				case 1: $width = 'col-xs-12 col-md-4'; break;
-				case 2: $width = 'col-xs-12 col-md-8'; break;
-				case 3: case 'max': $width = 'col-xs-12';
-			}
-		} 
-		return $width;
-	}
-	
-	public function prepare_data(\exface\Core\Interfaces\DataSheets\DataSheetInterface $data_sheet){
-		// apply the formatters
-		foreach ($data_sheet->get_columns() as $name => $col){
-			if ($formatter = $col->get_formatter()) {
-				$expr = $formatter->to_string();
-				$function = substr($expr, 1, strpos($expr, '(')-1);
-				// FIXME the next three lines seem obsolete... Not sure though, since everything works fine right now
-				$formatter_class_name = 'formatters\'' . $function;
-				if (class_exists($class_name)){
-					$formatter = new $class_name($y);
-				}
-				// See if the formatter returned more results, than there were rows. If so, it was also performed on
-				// the total rows. In this case, we need to slice them off and pass to set_column_values() separately.
-				// This only works, because evaluating an expression cannot change the number of data rows! This justifies
-				// the assumption, that any values after count_rows() must be total values.
-				$vals = $formatter->evaluate($data_sheet, $name);
-				if ($data_sheet->count_rows() < count($vals)) {
-					$totals = array_slice($vals, $data_sheet->count_rows());
-					$vals = array_slice($vals, 0, $data_sheet->count_rows());
-				}
-				$data_sheet->set_column_values($name, $vals, $totals);
-			}
-		}
-		
-		$data = array();
-		$data['data'] = array_merge($data_sheet->get_rows(), $data_sheet->get_totals_rows());
-		$data['recordsFiltered'] = $data_sheet->count_rows_all();
-		$data['recordsTotal'] = $data_sheet->count_rows_all();
-		$data['footerRows'] = count($data_sheet->get_totals_rows());
-		return $data;
-	} 
+    }
+
+    public function escapeString($string)
+    {
+        return htmlentities($string, ENT_QUOTES);
+    }
+
+    /**
+     * Returns the css classes, that define the grid width for the element (e.g.
+     * col-xs-12, etc.)
+     *
+     * @return string
+     */
+    public function getWidthClasses()
+    {
+        if ($this->getWidget()->getWidth()->isRelative()) {
+            switch ($this->getWidget()->getWidth()->getValue()) {
+                case 1:
+                    $width = 'col-xs-12 col-md-4';
+                    break;
+                case 2:
+                    $width = 'col-xs-12 col-md-8';
+                    break;
+                case 3:
+                case 'max':
+                    $width = 'col-xs-12';
+            }
+        }
+        return $width;
+    }
+
+    public function prepareData(\exface\Core\Interfaces\DataSheets\DataSheetInterface $data_sheet)
+    {
+        // apply the formatters
+        foreach ($data_sheet->getColumns() as $name => $col) {
+            if ($formatter = $col->getFormatter()) {
+                $expr = $formatter->toString();
+                $function = substr($expr, 1, strpos($expr, '(') - 1);
+                // FIXME the next three lines seem obsolete... Not sure though, since everything works fine right now
+                $formatter_class_name = 'formatters\'' . $function;
+                if (class_exists($class_name)) {
+                    $formatter = new $class_name($y);
+                }
+                // See if the formatter returned more results, than there were rows. If so, it was also performed on
+                // the total rows. In this case, we need to slice them off and pass to set_column_values() separately.
+                // This only works, because evaluating an expression cannot change the number of data rows! This justifies
+                // the assumption, that any values after count_rows() must be total values.
+                $vals = $formatter->evaluate($data_sheet, $name);
+                if ($data_sheet->countRows() < count($vals)) {
+                    $totals = array_slice($vals, $data_sheet->countRows());
+                    $vals = array_slice($vals, 0, $data_sheet->countRows());
+                }
+                $data_sheet->setColumnValues($name, $vals, $totals);
+            }
+        }
+        
+        $data = array();
+        $data['data'] = array_merge($data_sheet->getRows(), $data_sheet->getTotalsRows());
+        $data['recordsFiltered'] = $data_sheet->countRowsAll();
+        $data['recordsTotal'] = $data_sheet->countRowsAll();
+        $data['footerRows'] = count($data_sheet->getTotalsRows());
+        return $data;
+    }
 }
 ?>

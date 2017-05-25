@@ -6,7 +6,7 @@ use exface\Core\Widgets\DataColumn;
 
 /**
  *
- * @method DataTable get_widget()
+ * @method DataTable getWidget()
  *        
  * @author Andrej Kabachnik
  *        

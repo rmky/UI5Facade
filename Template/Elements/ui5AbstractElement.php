@@ -6,7 +6,7 @@ use exface\OpenUI5Template\Template\OpenUI5Template;
 
 /**
  *
- * @method OpenUI5Template get_template()
+ * @method OpenUI5Template getTemplate()
  *        
  * @author Andrej Kabachnik
  *        

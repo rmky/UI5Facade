@@ -1,7 +1,7 @@
 <?php
 namespace exface\OpenUI5Template\Template\Elements;
 
-use exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement;
+use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
 use exface\OpenUI5Template\Template\OpenUI5Template;
 
 /**
@@ -38,7 +38,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
      *
      * {@inheritdoc}
      *
-     * @see \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement::buildJsShowMessageError()
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsShowMessageError()
      */
     public function buildJsShowMessageError($message_body_js, $title = null)
     {
@@ -50,7 +50,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
      *
      * {@inheritdoc}
      *
-     * @see \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement::buildJsShowError()
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsShowError()
      */
     public function buildJsShowError($message_body_js, $title = null)
     {
@@ -63,7 +63,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
      *
      * {@inheritdoc}
      *
-     * @see \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement::buildJsShowMessageSuccess()
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsShowMessageSuccess()
      */
     public function buildJsShowMessageSuccess($message_body_js, $title = null)
     {

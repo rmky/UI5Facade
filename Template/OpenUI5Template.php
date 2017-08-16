@@ -1,7 +1,7 @@
 <?php
 namespace exface\OpenUI5Template\Template;
 
-use exface\AbstractAjaxTemplate\Template\AbstractAjaxTemplate;
+use exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate;
 use exface\Core\Interfaces\UiPageInterface;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 
@@ -20,7 +20,7 @@ class OpenUI5Template extends AbstractAjaxTemplate
      *
      * {@inheritdoc}
      *
-     * @see \exface\AbstractAjaxTemplate\Template\AbstractAjaxTemplate::processRequest($page_id=NULL, $widget_id=NULL, $action_alias=NULL, $disable_error_handling=false)
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::processRequest($page_id=NULL, $widget_id=NULL, $action_alias=NULL, $disable_error_handling=false)
      */
     public function processRequest($page_id = NULL, $widget_id = NULL, $action_alias = NULL, $disable_error_handling = false)
     {

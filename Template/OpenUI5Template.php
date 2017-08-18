@@ -2,7 +2,7 @@
 namespace exface\OpenUI5Template\Template;
 
 use exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate;
-use exface\Core\Interfaces\UiPageInterface;
+use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 
 class OpenUI5Template extends AbstractAjaxTemplate

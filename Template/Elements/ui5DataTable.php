@@ -13,14 +13,27 @@ use exface\Core\Widgets\DataColumn;
  */
 class ui5DataTable extends ui5AbstractElement
 {
-
-    function generateHtml()
-    {
-        return '';
-    }
-
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::generateJs()
+     */
     function generateJs()
     {
+        return <<<JS
+
+	{$this->buildJsDataSource()}  
+		
+JS;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::generateJsConstructor()
+     */
+    public function generateJsConstructor()
+    { 
         $widget = $this->getWidget();
         
         $selection_mode = $widget->getMultiSelect() ? 'sap.ui.table.SelectionMode.MultiToggle' : 'sap.ui.table.SelectionMode.Single';
@@ -32,8 +45,14 @@ class ui5DataTable extends ui5AbstractElement
             $column_defs .= ($column_defs ? ", " : '') . $this->buildJsColumnDef($column);
         }
         
-        $js = <<<JS
-		
+        if ($widget->hasButtons()) {
+            $footer = ', footer: [' . $this->buildJsFooter() . ']';
+        } else {
+            $footer = '';
+        }
+        
+        return <<<JS
+function() {
 	var {$this->getJsVar()} = new sap.ui.table.Table({
 		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto
 	    , selectionMode: {$selection_mode}
@@ -47,12 +66,13 @@ class ui5DataTable extends ui5AbstractElement
 		, columns: [
 			{$column_defs}
 		]
-	});   
-
-	{$this->buildJsDataSource()}  
-		
+        {$footer}
+	});
+    
+    {$this->buildJsFunctionPrefix()}LoadData({$this->getJsVar()});
+    return {$this->getJsVar()};
+}()
 JS;
-        return $js;
     }
 
     protected function buildJsDataSource($js_filters = '')
@@ -76,12 +96,12 @@ JS;
 	function {$this->buildJsFunctionPrefix()}LoadData({$this->getJsVar()}, oControlEvent) {
 		var params = { {$params} };
 		var cols = {$this->getJsVar()}.getColumns();
-		var {$this->getJsVarModel()} = new sap.ui.model.json.JSONModel();
+		var oModel = new sap.ui.model.json.JSONModel();
 		
-		{$this->getJsVarModel()}.attachRequestSent(function(){
+		oModel.attachRequestSent(function(){
 			{$this->buildJsBusyIconShow()}
 		});
-		{$this->getJsVarModel()}.attachRequestCompleted(function(){
+		oModel.attachRequestCompleted(function(){
 			{$this->buildJsBusyIconHide()}
 			
 			var footerRows = this.getProperty("/footerRows");
@@ -90,7 +110,7 @@ JS;
 			}
 		});
 
-		{$this->getJsVar()}.setModel({$this->getJsVarModel()}); 
+		{$this->getJsVar()}.setModel(oModel); 
 
 		// Add filters and sorters from all filtered columns
 		for (var i=0; i<{$this->getJsVar()}.getColumns().length; i++){
@@ -116,24 +136,17 @@ JS;
 			params['fltr99_' + oControlEvent.getParameters().column.getFilterProperty()] = oControlEvent.getParameters().value;
 		}
 		
-		{$this->getJsVarModel()}.loadData("{$url}", params);
+		oModel.loadData("{$url}", params);
 		{$this->getJsVar()}.bindRows("/data");
 	}
-	
-	
-	{$this->buildJsFunctionPrefix()}LoadData({$this->getJsVar()});
-		
+
 JS;
-    }
-	
-    protected function getJsVarModel()
-    {
-        return $this->getJsVar().'Model';
     }
 
     protected function buildJsToolbar()
     {
-        $header = $this->getWidget()->getCaption() ? $this->getWidget()->getCaption() : $this->getWidget()->getMetaObject()->getName();
+        $widget = $this->getWidget();
+        $header = $widget->getCaption() ? $widget->getCaption() : $widget->getMetaObject()->getName();
         $toolbar = <<<JS
 			new sap.m.OverflowToolbar({
 				content: [
@@ -143,12 +156,55 @@ JS;
 JS;
         return $toolbar;
     }
+    
+    /**
+     * Returns the constructor of a Toolbar component to display in the footer of the table: e.g. new  new sap.m.OverflowToolbar(...).
+     * 
+     * @return string
+     */
+    protected function buildJsFooter()
+    {
+        $widget = $this->getWidget();
+        $buttons = '';
+        foreach ($widget->getToolbars() as $toolbar) {
+            if ($toolbar->getIncludeSearchActions()){
+                $search_button_group = $toolbar->getButtonGroupForSearchActions();
+            } else {
+                $search_button_group = null;
+            }
+            foreach ($widget->getToolbarMain()->getButtonGroups() as $btn_group) {
+                if ($btn_group === $search_button_group){
+                    continue;
+                }
+                $buttons .= ($buttons ? ",\n new sap.m.ToolbarSpacer()" : '');
+                foreach ($btn_group->getButtons() as $btn) {
+                    $buttons .= ($buttons ? ", \n" : '') . $this->getTemplate()->getElement($btn)->generateJsConstructor();
+                }
+            }
+        }
+        
+        return <<<JS
+
+            new sap.m.OverflowToolbar({
+                content: [
+                    {$buttons}
+                ]
+            })
+
+JS;
+    }
 
     protected function getPaginationPageSize()
     {
         return $this->getWidget()->getPaginatePageSize() ? $this->getWidget()->getPaginatePageSize() : $this->getTemplate()->getConfig()->getOption('WIDGET.DATATABLE.PAGE_SIZE');
     }
 
+    /**
+     * Returns the constructor for a sap.ui.table.Column created from the given DataColumn widget
+     * 
+     * @param DataColumn $column
+     * @return string
+     */
     protected function buildJsColumnDef(DataColumn $column)
     {
         $visible = $column->isHidden() ? 'false' : 'true';

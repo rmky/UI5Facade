@@ -16,6 +16,25 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
 {
     private $jsVarName = null;
     
+    /**
+     * Returns the JS constructor for this element (without the semicolon!): e.g. "new sap.m.Button()" etc.
+     * 
+     * For complex widgets (e.g. requireing a model) either use an immediately invoked function expression
+     * like "function(){...}()" or place your code in generateJs() and the constructor-iife will be built
+     * automatically. The name of your resulting JS object MUST be $this->getJsVar() in this case! 
+     *
+     * @return string
+     */
+    public function generateJsConstructor()
+    {
+        return <<<JS
+    function(){
+        {$this->generateJs()}
+        return {$this->getJsVar()};
+    }()
+JS;
+    }
+    
     public function getJsVar()
     {
         if (is_null($this->jsVarName)) {
@@ -172,6 +191,11 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
         $data['recordsTotal'] = $data_sheet->countRowsAll();
         $data['footerRows'] = count($data_sheet->getTotalsRows());
         return $data;
+    }
+    
+    public function generateHtml()
+    {
+        return '';
     }
 }
 ?>

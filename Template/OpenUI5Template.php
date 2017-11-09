@@ -84,7 +84,7 @@ class OpenUI5Template extends AbstractAjaxTemplate
    
     oApp.showView({
         id: "{$instance->getPageId()}",
-        content: [{$instance->getJsVar()}]
+        content: [ ( {$instance->generateJsConstructor()} ) ]
     });
          
 JS;

@@ -1,50 +1,71 @@
-/* ============================================= */
-/* CSS for control sap.ui.unified/Legend.control */
-/* ============================================= */
+/* ============================================== */
+/* CSS for control sap.ui.unified/CalendarLegend  */
+/* Belize High Contrast White theme               */
+/* ============================================== */
+
 .sapUiUnifiedLegend {
-	color: @sapUiContentLabelColor;
-	font-familiy: @sapUiFontFamily;
-	font-size: @sapUiFontSmallSize;
-	font-weight: normal;
-	padding: 12px;
-	column-gap: 8px;
-	-moz-column-gap: 8px; /* Firefox */
-	-webkit-column-gap: 8px; /* Safari and Chrome */
+	border: 1px solid @sapUiContentForegroundBorderColor;
+	padding: 11px 16px;
+	max-width: 288px;
 }
 
-.sapUiUnifiedLegendItem {
-	display: inline-block;
-	width: 100%;
-	margin: 4px;
+.sapUiUnifiedLegend[data-sap-ui-popup] {
+	box-shadow: @sapUiShadowLevel3;
 }
 
-.sapUiUnifiedLegendDescription {
-	vertical-align: middle;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
-	cursor: default;
+/*** compact mode (desktop size) ***/
+
+.sapUiSizeCompact .sapUiUnifiedLegend,
+.sapUiSizeCompact.sapUiUnifiedLegend {
+	max-width: 256px;
 }
 
-.sapUiUnifiedLegendSquare {
-	height: 16px;
-	width: 16px;
-	margin-right: 8px;
+/*** items and colors ***/
+
+.sapUiUnifiedLegendNormalDay > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
 	background: @sapUiListBackground;
-	float: left;
 }
 
-.sapUiUnifiedLegendSquareColor {
-	height: 14px;
-	width: 14px;
-	margin: 1px;
-	background: lighten(@sapUiContentForegroundColor, 5);
+.sapUiUnifiedLegendNonWorkingDay > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+	background: @sapUiHcReducedBackground;
 }
 
-.sapUiUnifiedLegendSquareSelected {
-	height: 10px;
-	width: 10px;
-	background: white;
-	border: 2px solid @sapUiPurple;
+.sapUiCalLegDayType01 > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+	background: @sapUiAccent1;
+}
 
+.sapUiCalLegDayType02 > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+	background: @sapUiAccent2;
+}
+
+.sapUiCalLegDayType03 > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+	background: @sapUiAccent3;
+}
+
+.sapUiCalLegDayType04 > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+	background: darken(saturate(@sapUiAccent2, 70), 5);
+}
+
+.sapUiCalLegDayType05 > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+	background: @sapUiAccent4;
+}
+
+.sapUiCalLegDayType06 > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+	background: @sapUiAccent6;
+}
+
+.sapUiCalLegDayType07 > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+	background: @sapUiAccent7;
+}
+
+.sapUiCalLegDayType08 > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+	background: @sapUiAccent8;
+}
+
+.sapUiCalLegDayType09 > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+	background: darken(@sapUiAccent6, 15);
+}
+
+.sapUiCalLegDayType10 > .sapUiUnifiedLegendSquare > .sapUiUnifiedLegendSquareColor {
+	background: darken(desaturate(@sapUiAccent4, 40), 2);
 }

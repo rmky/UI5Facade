@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,12 +11,12 @@ sap.ui.define([
 
 	/**
 	 * StandardVariant handles the execute on select flag for the standard variant.
-	 *        It knows how to create a execute on select for standard variant change, how to retrieve it from a given list of changes, etc.
+	 *        It knows how to create an execute on select for standard variant change, how to retrieve it from a given list of changes, etc.
 	 * @constructor
 	 * @alias sap.ui.fl.StandardVariant
 	 * @author SAP SE
 	 *
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @experimental Since 1.38.0
 	 */

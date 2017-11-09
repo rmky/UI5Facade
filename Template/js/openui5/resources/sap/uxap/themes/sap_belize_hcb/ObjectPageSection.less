@@ -1,62 +1,35 @@
-.sapUxAPObjectPageSection {
-	margin-left: 0;
-	margin-bottom: 0;
-}
-
-.sapUxAPObjectPageSectionTitleUppercase {
-	text-transform: uppercase;
-}
+/* =========================================== */
+/* CSS for control sap.uxap/ObjectPageSection  */
+/* Belize High Contrast Black theme            */
+/* =========================================== */
 
 .sapUxAPObjectPageSectionHeader {
-	box-sizing: border-box;
-	height: 3rem;
-	line-height: 3rem;
-	padding: 0 3rem 0 3rem;
+	background-color: @sapUiListGroupHeaderBackground;
+	font-size: @sapMFontHeader2Size;
+	color: @sapUiGroupTitleTextColor;
+	border-top: 0.0625rem solid @sapUiListBorderColor;
+	border-bottom: 0.0625rem solid @sapUiListBorderColor;
 }
 
-.sapUiMedia-Std-Desktop .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageSectionHeader,
-.sapUiMedia-Std-Tablet .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageSectionHeader {
-	padding-left: 2rem;
-}
-
-.sapUiMedia-Std-Tablet .sapUxAPObjectPageSectionHeader {
-	padding: 0 2rem 0 2rem;
-}
-
-.sapUiMedia-Std-Phone .sapUxAPObjectPageSectionHeader {
-	padding: 0 1rem 0 1rem;
+.sapUxAPObjectPageSection:focus {
+	outline: 0.125rem dotted @sapUiContentFocusColor;
+	outline-offset: -0.125rem;
+	border-color: transparent;
+	border-radius: 0;
 }
 
 .sapUxAPObjectPageSectionTitle {
-	box-sizing: border-box;
-	display: inline-block;
-	height: 3rem;
-	max-width: 100%;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-}
-
-.sapUxAPSectionShowHideButton {
-	float: right;
-}
-
-.sapUxAPSectionShowHideButton:not(:last-child) {
-	float: right;
-	margin-left: 0.5rem;
-}
-
-.sapUiSizeCompact .sapUxAPSectionShowHideButton {
-	margin-top: 0.5rem;
+	line-height: 2.9rem;
 }
 
 .sapUiSizeCompact .sapUxAPObjectPageSectionTitle {
-	height: 2.5rem;
-	line-height: 2rem;
-	padding-bottom:0.5rem;
+	line-height: 2.4rem;
 }
 
-.sapUiSizeCompact .sapUxAPObjectPageSectionHeader {
-	height: 2.5rem;
-	line-height: 2rem;
+/* IE and Edge ignores outline-offset. Use an overlay: */
+html[data-sap-ui-browser^="ie"].sap-desktop,
+html[data-sap-ui-browser^="ed"].sap-desktop {
+	.sapUxAPObjectPageSection:focus:before {
+		border-width: 0.125rem;
+	}
 }

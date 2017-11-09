@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,28 +10,29 @@ sap.ui.define([
 
 	"use strict";
 	/**
-	 * Helper object to access a change from the backend. Access helper object for each change (and variant) which was fetched from the backend
+	 * Helper object to access a change from the back end. Access helper object for each change (and variant) which was fetched from the back end
 	 *
 	 * @constructor
 	 * @param {sap.ui.core.Control} oControl - the control for which the changes should be fetched
 	 * @param {string} [sStableIdPropertyName='id'] the stable id
 	 * @alias sap.ui.fl.Persistence
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @experimental Since 1.25.0
 	 */
 	var Persistence = function(oControl, sStableIdPropertyName) {
 		this._oControl = oControl;
-		this._bHasLoadedChangesFromBackend = false;
+		this._bHasLoadedChangesFromBackEnd = false;
 
 		this._sStableIdPropertyName = sStableIdPropertyName || 'id';
 		this._sStableId = this._getStableId();
 
 		this._sComponentName = Utils.getComponentClassName(oControl);
 		if (!this._sComponentName) {
-			Utils.log.error("The Control does not belong to a SAPUI5 component. Variants and Changes for this control might not work as expected.");
+			Utils.log.error("The Control does not belong to an SAPUI5 component. Variants and Changes for this control might not work as expected.");
 		}
 		this._oAppDescriptor = Utils.getAppDescriptor(oControl);
+		this._sAppVersion = Utils.getAppVersionFromManifest(this._oAppDescriptor);
 		this._sSiteId = Utils.getSiteId(oControl);
 
 		this._oChanges = {};
@@ -163,7 +164,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Calls the backend asynchronously and fetches all changes and variants which point to this control in the same component.
+	 * Calls the back end asynchronously and fetches all changes and variants in the same component pointing to this control.
 	 *
 	 * @see sap.ui.fl.Change
 	 * @returns {Promise} with parameter <code>aResults</code> which is a map with key changeId and value instance of sap.ui.fl.Change
@@ -171,19 +172,18 @@ sap.ui.define([
 	 */
 	Persistence.prototype.getChanges = function() {
 		var that = this;
-		var sComponentName = this._sComponentName;
 		var mPropertyBag = {
 			appDescriptor: this._oAppDescriptor,
 			siteId: this._sSiteId
 		};
 
-		if (this._bHasLoadedChangesFromBackend === true) {
+		if (this._bHasLoadedChangesFromBackEnd === true) {
 			if (this._oMessagebundle) {
 				this._checkForMessagebundleBinding();
 			}
 			return Promise.resolve(this._oChanges);
 		}
-		return Cache.getChangesFillingCache(this._oConnector, sComponentName, mPropertyBag).then(that._resolveFillingCacheWithChanges.bind(that));
+		return Cache.getChangesFillingCache(this._oConnector, {name : this._sComponentName, appVersion: this._sAppVersion}, mPropertyBag).then(that._resolveFillingCacheWithChanges.bind(that));
 	};
 
 	/**
@@ -198,12 +198,12 @@ sap.ui.define([
 			this._oMessagebundle = oFile.changes.messagebundle;
 			this._checkForMessagebundleBinding();
 		}
-		this._bHasLoadedChangesFromBackend = true;
+		this._bHasLoadedChangesFromBackEnd = true;
 		return this._oChanges;
 	};
 
 	/**
-	 * Calls the backend asynchronously and fetches all changes and variants of the current component.
+	 * Calls the back end asynchronously and fetches all changes and variants of the current component.
 	 *
 	 * @see sap.ui.fl.Change
 	 * @returns {Promise} with parameter <code>aResults</code> which is a map with key changeId and value instance of sap.ui.fl.Change
@@ -215,7 +215,7 @@ sap.ui.define([
 			appDescriptor: this._oAppDescriptor,
 			siteId: this._sSiteId
 		};
-		return Cache.getChangesFillingCache(this._oConnector, this._sComponentName, mPropertyBag).then(function(oFile) {
+		return Cache.getChangesFillingCache(this._oConnector, {name : this._sComponentName, appVersion: this._sAppVersion}, mPropertyBag).then(function(oFile) {
 			var bNoFilter = true;
 			that._fillRelevantChanges(oFile, bNoFilter);
 			return that._oChanges;
@@ -262,11 +262,14 @@ sap.ui.define([
 			aChangeList = oFile.changes.changes;
 			len = aChangeList.length;
 			for (j = 0; j < len; j++) {
-				oChangeContent = aChangeList[j];
-				oSelector = oChangeContent.selector;
-				if (oSelector) {
-					// filter out only controls of the current
-					jQuery.each(oSelector, fAppendValidChanges);
+				//filter out user changes and variants when no personalization was triggered
+				if (!Utils.isOverMaxLayer(aChangeList[j].layer)){
+					oChangeContent = aChangeList[j];
+					oSelector = oChangeContent.selector;
+					if (oSelector) {
+						// filter out only controls of the current
+						jQuery.each(oSelector, fAppendValidChanges);
+					}
 				}
 			}
 		}
@@ -333,21 +336,24 @@ sap.ui.define([
 			});
 		}
 
-		var oAppDescr = Utils.getAppDescriptor(this._oControl);
-		var sComponentName = this._sComponentName; //only used in case ui core provides no app descriptor e.g. during unit tests
-		if ( oAppDescr && oAppDescr["sap.app"] ){
-			sComponentName = oAppDescr["sap.app"].componentName || oAppDescr["sap.app"].id;
+		var oValidAppVersions = {
+			creation: this._sAppVersion,
+			from: this._sAppVersion
+		};
+		if (this._sAppVersion && mParameters.developerMode) {
+			oValidAppVersions.to = this._sAppVersion;
 		}
+
 		oInfo = {
 			changeType: mParameters.type,
 			service: mParameters.ODataService,
 			texts: mInternalTexts,
 			content: mParameters.content,
 			reference: this._sComponentName, //in this case the component name can also be the value of sap-app-id
-			componentName: sComponentName,
 			isVariant: mParameters.isVariant,
 			packageName: mParameters.packageName,
-			isUserDependent: mParameters.isUserDependent
+			isUserDependent: mParameters.isUserDependent,
+			validAppVersions: oValidAppVersions
 		};
 
 		oInfo.selector = this._getSelector();
@@ -603,7 +609,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Saves/flushes all current changes to the backend.
+	 * Saves/flushes all current changes to the back end.
 	 *
 	 * @returns {Promise} resolving with an array of responses or rejecting with the first error
 	 * @public
@@ -617,7 +623,7 @@ sap.ui.define([
 					aPromises.push(that._oConnector.create(oChange.getDefinition(), oChange.getRequest(), oChange.isVariant()).then(function(result) {
 						oChange.setResponse(result.response);
 						if (Cache.isActive()) {
-							Cache.addChange(oChange.getComponent(), result.response);
+							Cache.addChange({ name: that._sComponentName, appVersion: that._sAppVersion}, result.response);
 						}
 						return result;
 					}));
@@ -626,7 +632,7 @@ sap.ui.define([
 					aPromises.push(that._oConnector.update(oChange.getDefinition(), oChange.getId(), oChange.getRequest(), oChange.isVariant()).then(function(result) {
 						oChange.setResponse(result.response);
 						if (Cache.isActive()) {
-							Cache.updateChange(oChange.getComponent(), result.response);
+							Cache.updateChange({ name: that._sComponentName, appVersion: that._sAppVersion}, result.response);
 						}
 						return result;
 					}));
@@ -645,7 +651,7 @@ sap.ui.define([
 						};
 						oChange.fireEvent(Change.events.markForDeletion, mParameter);
 						if (Cache.isActive()) {
-							Cache.deleteChange(oChange.getComponent(), oChange.getDefinition());
+							Cache.deleteChange({ name: that._sComponentName, appVersion: that._sAppVersion}, oChange.getDefinition());
 						}
 						return result;
 					}));

@@ -1,6 +1,6 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,7 @@ sap.ui.define([
 	 *
 	 * @class Utility functionality to work with overlays
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @private
 	 * @static
 	 * @since 1.30
@@ -46,19 +46,13 @@ sap.ui.define([
 			var oElement = oElementOverlay.getElementInstance();
 			var iIndex = aChildren.indexOf(oElement);
 
-			var oPublicParentOverlay = oElementOverlay.getPublicParentElementOverlay();
-
 			return {
-				publicParent : oPublicParentOverlay.getElementInstance(),
-				publicAggregation: oElementOverlay.getPublicParentAggregationOverlay().getAggregationName(),
 				parent: oParent,
 				aggregation : sParentAggregationName,
 				index: iIndex
 			};
 		} else {
 			return {
-				publicParent : null,
-				publicAggregation : "",
 				parent: null,
 				aggregation: "",
 				index: -1
@@ -153,43 +147,82 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns first descendant of given ElementOverlay which fulfills
+	 * the given condition. Recursive function
 	 *
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay - Source overlay object
+	 * @param {function} fnCondition - condition to search
+	 * @returns {sap.ui.dt.ElementOverlay} overlay which fulfills the condition otherwise it returns 'undefined'
+	 * @private
 	 */
-	OverlayUtil.getFirstChildOverlay = function(oOverlay) {
-		if (!oOverlay) {
-			return;
+	OverlayUtil.getFirstDescendantByCondition = function(oOverlay, fnCondition) {
+		if (!fnCondition) {
+			throw new Error("expected condition is 'undefined' or not a function");
 		}
-
-		var aAggregationOverlays = oOverlay.getAggregationOverlays();
-		if (aAggregationOverlays.length > 0) {
-			for (var i = 0; i < aAggregationOverlays.length; i++) {
-				var oAggregationOverlay = aAggregationOverlays[i];
-				var aChildren = oAggregationOverlay.getChildren();
-				if (aChildren.length) {
-					return aChildren[0];
-				}
+		var aChildrenOverlays = OverlayUtil.getAllChildOverlays(oOverlay);
+		for (var i = 0, n = aChildrenOverlays.length; i < n; i++) {
+			var oChildOverlay = aChildrenOverlays[i];
+			if (fnCondition(oChildOverlay)) {
+				return oChildOverlay;
+			}
+			var oDescendantOverlay = this.getFirstDescendantByCondition(oChildOverlay, fnCondition);
+			if (oDescendantOverlay) {
+				return oDescendantOverlay;
 			}
 		}
+		return undefined;
 	};
 
 	/**
+	 * Returns all overlay children as ElementOverlay
 	 *
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay - Source overlay object
+	 * @returns {array} array of child overlays {sap.ui.dt.ElementOverlay}
+	 * @private
 	 */
-	OverlayUtil.getLastChildOverlay = function(oOverlay) {
+	OverlayUtil.getAllChildOverlays = function(oOverlay) {
+		var aChildOverlays = [], aChildren = [];
 		if (!oOverlay) {
-			return;
+			return aChildOverlays;
 		}
-
 		var aAggregationOverlays = oOverlay.getAggregationOverlays();
-		if (aAggregationOverlays.length > 0) {
-			for (var i = aAggregationOverlays.length - 1; i >= 0; i--) {
-				var oAggregationOverlay = aAggregationOverlays[i];
-				var aChildren = oAggregationOverlay.getChildren();
-				if (aChildren.length) {
-					return aChildren[aChildren.length - 1];
-				}
+		for (var i = 0; i < aAggregationOverlays.length; i++) {
+			aChildren = aAggregationOverlays[i].getChildren();
+			if (aChildren && aChildren.length > 0) {
+				aChildOverlays = aChildOverlays.concat(aChildren);
 			}
 		}
+		return aChildOverlays;
+	};
+
+	/**
+	 * Returns first child overlay
+	 *
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay - Source overlay object
+	 * @returns {sap.ui.dt.ElementOverlay} first child overlays
+	 * @private
+	 */
+	OverlayUtil.getFirstChildOverlay = function(oOverlay) {
+		var aChildren = this.getAllChildOverlays(oOverlay);
+		if (aChildren.length) {
+			return aChildren[0];
+		}
+		return undefined;
+	};
+
+	/**
+	 * Returns last child overlay
+	 *
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay - Source overlay object
+	 * @returns {sap.ui.dt.ElementOverlay} last child overlays
+	 * @private
+	 */
+	OverlayUtil.getLastChildOverlay = function(oOverlay) {
+		var aChildren = this.getAllChildOverlays(oOverlay);
+		if (aChildren.length) {
+			return aChildren[aChildren.length - 1];
+		}
+		return undefined;
 	};
 
 	/**
@@ -207,16 +240,14 @@ sap.ui.define([
 			// get next sibling in the same aggregation
 			if (iIndex !== aAggregationOverlays.length - 1) {
 				return aAggregationOverlays[iIndex + 1];
-			} else {
+			} else if (iIndex === aAggregationOverlays.length - 1) {
 				// get next sibling from next aggregation in the same parent
-				if (iIndex === aAggregationOverlays.length - 1) {
-					var oParent = oOverlay.getParentElementOverlay();
-					aAggregationOverlays = oParent.getAggregationOverlays();
-					for (iIndex = aAggregationOverlays.indexOf(oParentAggregationOverlay) + 1; iIndex < aAggregationOverlays.length; iIndex++) {
-						var aOverlays = aAggregationOverlays[iIndex].getChildren();
-						if (aOverlays.length) {
-							return aOverlays[0];
-						}
+				var oParent = oOverlay.getParentElementOverlay();
+				aAggregationOverlays = oParent.getAggregationOverlays();
+				for (iIndex = aAggregationOverlays.indexOf(oParentAggregationOverlay) + 1; iIndex < aAggregationOverlays.length; iIndex++) {
+					var aOverlays = aAggregationOverlays[iIndex].getChildren();
+					if (aOverlays.length) {
+						return aOverlays[0];
 					}
 				}
 			}
@@ -238,16 +269,14 @@ sap.ui.define([
 			// get previous sibling from the same aggregation
 			if (iIndex > 0) {
 				return aAggregationOverlays[iIndex - 1];
-			} else {
+			} else if (iIndex === 0) {
 				// get previous sibling from previous aggregation in the same parent
-				if (iIndex === 0) {
-					var oParent = oOverlay.getParentElementOverlay();
-					aAggregationOverlays = oParent.getAggregationOverlays();
-					for (iIndex = aAggregationOverlays.indexOf(oParentAggregationOverlay) - 1; iIndex >= 0; iIndex--) {
-						var aOverlays = aAggregationOverlays[iIndex].getChildren();
-						if (aOverlays.length) {
-							return aOverlays[aOverlays.length - 1];
-						}
+				var oParent = oOverlay.getParentElementOverlay();
+				aAggregationOverlays = oParent.getAggregationOverlays();
+				for (iIndex = aAggregationOverlays.indexOf(oParentAggregationOverlay) - 1; iIndex >= 0; iIndex--) {
+					var aOverlays = aAggregationOverlays[iIndex].getChildren();
+					if (aOverlays.length) {
+						return aOverlays[aOverlays.length - 1];
 					}
 				}
 			}
@@ -324,28 +353,35 @@ sap.ui.define([
 	 *
 	 */
 	OverlayUtil.iterateOverlayElementTree = function(oElementOverlay, fnCallback) {
-		var that = this;
-
 		fnCallback(oElementOverlay);
 
 		oElementOverlay.getAggregationOverlays().forEach(function(oAggregationOverlay) {
 			oAggregationOverlay.getChildren().forEach(function(oChildOverlay) {
-				that.iterateOverlayElementTree(oChildOverlay, fnCallback);
-			});
-		});
+				this.iterateOverlayElementTree(oChildOverlay, fnCallback);
+			}, this);
+		}, this);
+	};
+
+	OverlayUtil.iterateOverAggregationLikeChildren = function(oElementOverlay, sAggregationName, fnCallback) {
+		var oElement = oElementOverlay.getElementInstance();
+		var vChildren;
+		if (oElementOverlay.getAggregationOverlay(sAggregationName).isAssociation()){
+			vChildren = ElementUtil.getAssociationInstances(oElement, sAggregationName);
+		} else {
+			vChildren = ElementUtil.getAggregation(oElement, sAggregationName);
+		}
+		ElementUtil.iterateOverElements(vChildren, fnCallback);
 	};
 
 	/**
 	 *
 	 */
 	OverlayUtil.iterateOverlayTree = function(oOverlay, fnCallback) {
-		var that = this;
-
 		fnCallback(oOverlay);
 
 		oOverlay.getChildren().forEach(function(oChildOverlay) {
-			that.iterateOverlayTree(oChildOverlay, fnCallback);
-		});
+			this.iterateOverlayTree(oChildOverlay, fnCallback);
+		}, this);
 	};
 
 

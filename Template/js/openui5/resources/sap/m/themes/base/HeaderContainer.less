@@ -1,6 +1,8 @@
-/* ============================================= */
-/* CSS for control sap.m/HeaderContainer.control */
-/* ============================================= */
+/* ====================================== */
+/* CSS for control sap.m/HeaderContainer  */
+/* Base theme                             */
+/* ====================================== */
+
 .sapMHdrCntr {
 	position: relative;
 	display: inline-block;
@@ -30,6 +32,15 @@
 	}
 	&.sapMHdrCntrRight {
 		right: 0.25rem;
+	}
+}
+
+.sapUiSizeCompact .sapMHdrCntrBtnCntr.Horizontal {
+	&.sapMHdrCntrLeft {
+		left: 0rem;
+	}
+	&.sapMHdrCntrRight {
+		right: 0rem;
 	}
 }
 
@@ -76,6 +87,7 @@ html.sap-tablet:not(.sap-desktop) .sapMHdrCntrBtnCntr.Vertical {
 }
 
 .sapUiSizeCompact .sapMHdrCntrBtnCntr.Horizontal > .sapMHdrCntrBtn {
+	right: 0.25rem;
 	margin-top: -1rem;
 }
 
@@ -137,7 +149,6 @@ html.sap-tablet:not(.sap-desktop) .sapMHrdrRightPadding .sapMHdrCntrCntr.Horizon
 .sapMHdrCntrCntr.Vertical {
 	height: 100%;
 	box-sizing: border-box;
-	-moz-box-sizing: border-box;
 }
 
 .sapMHrdrTopPadding .sapMHdrCntrCntr.Vertical {
@@ -237,4 +248,21 @@ html.sap-tablet:not(.sap-desktop) .sapMHrdrBottomPadding .sapMHdrCntrCntr.Vertic
 }
 .sapMHdrCntrItemCntr {
 	display: inline-block;
+}
+
+.sapMHdrCntrBGTransparent {
+	background-color: @sapUiObjectHeaderBackground;
+}
+
+.sapMHdrCntrBGSolid {
+	background-color: @sapUiObjectHeaderBackground;
+}
+
+.sapMHdrCntrBGTranslucent {
+	background-color: @sapUiObjectHeaderBackground;
+}
+
+html.sap-desktop .sapMHrdrCntrInner:focus {
+	outline: none;
+	border: 1px dotted @sapUiContentFocusColor;
 }

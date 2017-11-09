@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ function(jQuery, ElementUtil, OverlayRegistry) {
 	 * Utility functionality for Element tests
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @private
 	 * @static
@@ -64,12 +64,15 @@ function(jQuery, ElementUtil, OverlayRegistry) {
 			overlayGeometryCalculatedByChildren : false,
 			overlayVisible : false
 		};
+		var oDesignTimeMetadata;
 
 		var mElementInfo = this.getInfo(oElement);
 		var oAggregationOverlay = mElementInfo.overlay.getAggregationOverlay(sAggregationName);
-		var oDesignTimeMetadata = oAggregationOverlay.getDesignTimeMetadata();
+		if (oAggregationOverlay) {
+			oDesignTimeMetadata = oAggregationOverlay.getDesignTimeMetadata();
+		}
 
-		if (!oDesignTimeMetadata.isIgnored()) {
+		if (oDesignTimeMetadata && !oDesignTimeMetadata.isIgnored(oElement)) {
 			mAggregationTest.ignored = false;
 			mAggregationTest.domRefDeclared = !!oDesignTimeMetadata.getDomRef();
 			var oAggregationDomRef = oAggregationOverlay.getAssociatedDomRef();
@@ -97,13 +100,11 @@ function(jQuery, ElementUtil, OverlayRegistry) {
 	 * @return {map} result object
 	 */
 	ElementTest.getAggregationsInfo = function(oElement) {
-		var that = this;
-
 		var mAggregationTests = {};
 
 		ElementUtil.iterateOverAllPublicAggregations(oElement, function(oAggregation) {
-			mAggregationTests[oAggregation.name] = that.getAggregationInfo(oElement, oAggregation.name);
-		});
+			mAggregationTests[oAggregation.name] = this.getAggregationInfo(oElement, oAggregation.name);
+		}.bind(this));
 
 		return mAggregationTests;
 	};

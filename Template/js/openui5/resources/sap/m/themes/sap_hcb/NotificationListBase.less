@@ -1,9 +1,14 @@
-@containerPaddingLeft: 1.5rem;
-@containerPadding: 1rem;
-@closeButtonSize: 2.5rem;
-@closeButtonCompactSize: 1.625rem;
-@closeButtonCozyPosition: 0.25rem;
-@closeButtonCompactPosition: 0.5rem;
+/* =========================================== */
+/* CSS for control sap.m/NotificationListBase  */
+/* Base theme                                  */
+/* =========================================== */
+
+@_sap_m_NotificationListBase_ContainerPaddingLeft: 1.5rem;
+@_sap_m_NotificationListBase_ContainerPadding: 1rem;
+@_sap_m_NotificationListBase_CloseButtonSize: 2.5rem;
+@_sap_m_NotificationListBase_CloseButtonCompactSize: 1.625rem;
+@_sap_m_NotificationListBase_CloseButtonCozyPosition: 0.25rem;
+@_sap_m_NotificationListBase_CloseButtonCompactPosition: 0.5rem;
 
 /* ==========================================================================
    Notification List Base
@@ -12,9 +17,10 @@
 .sapMLIB.sapMNLB {
 	border-radius: 0.25rem;
 	display: block;
-	padding: 0 0 @containerPadding;
+	padding: 0 0 @_sap_m_NotificationListBase_ContainerPadding;
 	margin: 0 0.25rem 0.5rem;
 	overflow: hidden;
+	border: none;
 }
 
 .sapMLIB.sapMNLB:first-of-type {
@@ -35,14 +41,28 @@
 	z-index: 1;
 }
 
+.sapMNLB-None {
+	background: @sapUiNeutralBorder;
+}
+
+.sapMNLB-Low {
+	background: @sapUiSuccessBorder;
+}
+
+.sapMNLB-Medium {
+	background: @sapUiWarningBorder;
+}
+
+.sapMNLB-High {
+	background: @sapUiErrorBorder;
+}
+
 /* ==========================================================================
    Header styles
   ========================================================================== */
 
-.sapMNLB-Header {
-	padding-left: @containerPaddingLeft;
-	padding-right: @containerPadding;
-	padding-top: @containerPadding;
+.sapMNLB-Header, .sapMNLB-SubHeader {
+	padding: @_sap_m_NotificationListBase_ContainerPadding @_sap_m_NotificationListBase_ContainerPadding 0 @_sap_m_NotificationListBase_ContainerPaddingLeft;
 	position: relative;
 }
 
@@ -53,20 +73,21 @@
 	background: none;
 	box-sizing: border-box;
 	cursor: pointer;
-	height: @closeButtonSize;
-	margin-top: -@containerPadding;
-	padding: @containerPadding 0 0;
+	height: auto;
+	margin-top: -@_sap_m_NotificationListBase_ContainerPadding;
+	padding: @_sap_m_NotificationListBase_ContainerPadding 0 0;
 	position: absolute;
-	right: @closeButtonCompactPosition;
-	top: @closeButtonCompactPosition;
+	right: @_sap_m_NotificationListBase_CloseButtonCozyPosition;
+	top: @_sap_m_NotificationListBase_CloseButtonCozyPosition;
 	transition: opacity;
-	width: @closeButtonSize;
+	width: @_sap_m_NotificationListBase_CloseButtonSize;
+	z-index: 2;
 
 	.sapMBtnInner {
-		min-width: @closeButtonSize;
+		min-width: @_sap_m_NotificationListBase_CloseButtonSize;
 
 		.sapMBtnIcon {
-			max-height: @closeButtonSize;
+			max-height: @_sap_m_NotificationListBase_CloseButtonSize;
 		}
 	}
 }
@@ -98,28 +119,35 @@
 }
 
 .sapMNLB-AuthorPicture .sapUiIcon {
-	color: @sapUiLightText;
+	color: @sapUiContentIconColor;
 	font-size: 1.5rem;
+}
+
+/* ==========================================================================
+   Datetime text styles
+  ========================================================================== */
+
+.sapMLIB.sapMNLB .sapMText.sapMNLI-Datetime {
+	display: inline;
 }
 
 /* ==========================================================================
    Footer styles
   ========================================================================== */
 
-.sapMNLB-Footer {
+.sapMNLB-Footer, .sapMNLB-SubHeader {
 	line-height: 3rem;
-	padding: 0.25rem;
+	padding: 0.25rem 0 0 1rem;
 
 	.sapMTB {
 		border: none;
 		display: -webkit-box;
 		display: -webkit-flex;
-		display: -ms-flexbox;
 		display: flex;
 		-webkit-box-pack: end;
 		-webkit-justify-content: flex-end;
-		-ms-flex-pack: end;
 		justify-content: flex-end;
+		background: none;
 	}
 }
 
@@ -127,7 +155,7 @@
   ========================================================================== */
 
 .sapMNLB-Bullet {
-	color: @sapUiLightText;
+	color: @sapUiContentLabelColor;
 	margin-left: 0.5rem;
 	margin-right: 0.5rem;
 }
@@ -137,15 +165,14 @@
   ========================================================================== */
 
 .sapUiSizeCompact .sapMNLB-CloseButton {
-	height: @closeButtonCompactSize;
+	height: @_sap_m_NotificationListBase_CloseButtonCompactSize;
 	padding: 0;
-	right: @closeButtonCompactPosition;
-	top: @closeButtonCompactPosition + @containerPadding;
-	width: @closeButtonCompactSize;
+	right: @_sap_m_NotificationListBase_CloseButtonCompactPosition;
+	top: @_sap_m_NotificationListBase_CloseButtonCompactPosition + @_sap_m_NotificationListBase_ContainerPadding;
+	width: @_sap_m_NotificationListBase_CloseButtonCompactSize;
 
 	.sapMBtnInner {
 		min-width: 1.625rem;
-
 		.sapMBtnIcon {
 			max-height: 1.625rem;
 		}
@@ -155,4 +182,10 @@
 .sapUiSizeCompact .sapMNLB-CloseButton .sapMBtnIcon {
 	font-size: 0.75rem;
 	margin: 0;
+}
+
+.sapUiSizeCompact {
+	.sapMNLB-Footer, .sapMNLB-SubHeader {
+		padding: 0.25rem;
+	}
 }

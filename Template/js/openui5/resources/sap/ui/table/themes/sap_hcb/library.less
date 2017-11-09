@@ -2,12 +2,15 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 @import "../base/library.less";
 @import "../../../../../sap/ui/core/themes/sap_hcb/global.less";
+
+/* shared local library less parameters */
+@_sap_ui_table_FocusOutlineWidth: 2px;
 
 /* START "Table.less" */
 /* =================================== */
@@ -15,8 +18,7 @@
 /* High Contrast Black theme           */
 /* =================================== */
 
-@_sapUiTableFocusOutlineWidth: 2px;
-@_sapUiTableFocusOutlineOffset: -3px;
+@_sap_ui_table_Table_FocusOutlineOffset: -3px;
 
 .sapUiTableHdr {
 	border-bottom: 3px solid @sapUiListHeaderBorderColor;
@@ -58,40 +60,44 @@
 /* END "Table.less" */
 
 /* START "Scrolling.less" */
-html.sap-desktop {
-	
-	.sapUiTableHSb::-webkit-scrollbar,
-	.sapUiTableVSb::-webkit-scrollbar {
-		width: @_sapUiTableDefaultScrollBarSize;
-		height: @_sapUiTableDefaultScrollBarSize;
+/* ======================================= */
+/* CSS for control sap.ui.table/Scrolling  */
+/* High Contrast Black theme               */
+/* ======================================= */
+
+.sapUiTableVSb,
+.sapUiTableHSb,
+html.sap-desktop .sapUiTableVSb,
+html.sap-desktop .sapUiTableHSb  {
+	&::-webkit-scrollbar {
 		border: none;
 	}
 	
-	.sapUiTableHSb::-webkit-scrollbar-thumb,
-	.sapUiTableVSb::-webkit-scrollbar-thumb {
-		border: none;
+	&::-webkit-scrollbar-thumb {
 		box-shadow: none;
 	}
-	
 }
 /* END "Scrolling.less" */
 
 /* START "DragDrop.less" */
-@_sapUiTableColumnDnDHighlightColor: @sapUiContentHelpColor;
+/* ====================================== */
+/* CSS for control sap.ui.table/DragDrop  */
+/* High Contrast Black theme              */
+/* ====================================== */
+
+@_sap_ui_table_DragDrop_ColumnDnDHighlightColor: @sapUiContentHelpColor;
 
 .sapUiTableColReorderFade:after {
-	background-color: lighten(@sapUiBaseColor, 50);
+	background-color: @sapUiBaseColor;
 	opacity: 0.5;
 }
 /* END "DragDrop.less" */
 
 /* START "Grouping.less" */
-@_sapUiTableGroupHeaderBackground: @sapHCStandardBG;
-@_sapUiTableGroupIconBorderWidth: 3px;
-/* END "Grouping.less" */
+/* ====================================== */
+/* CSS for control sap.ui.table/Grouping  */
+/* High Contrast Black theme              */
+/* ====================================== */
 
-/* START "AnalyticalTable.less" */
-/* ======================================================== */
-/* CSS for control sap.ui.analytics/AnalyticalTable.control */
-/* ======================================================== */
-/* END "AnalyticalTable.less" */
+@_sap_ui_table_Grouping_GroupIconBorderWidth: 3px;
+/* END "Grouping.less" */

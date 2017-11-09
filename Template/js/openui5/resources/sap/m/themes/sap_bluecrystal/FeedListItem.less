@@ -1,50 +1,275 @@
-/* ======================================================== */
-/* CSS for control sap.m/FeedListItem.control (bluecrystal) */
-/* ======================================================== */
+/* =================================== */
+/* CSS for control sap.m/FeedListItem  */
+/* Base theme                          */
+/* =================================== */
+
+.sapMFeedListItem {
+	display: block;
+}
+
+.sapMFeedListItem .sapUiSelectable > * {
+	-webkit-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
+
+	&::selection {
+		background: @sapUiSelected;
+		color: @sapUiContentContrastTextColor;
+	}
+
+	&::-moz-selection {
+		background: @sapUiSelected;
+		color: @sapUiContentContrastTextColor;
+	}
+}
+
+.sapMFeedListItemImageInactive {
+	cursor: default;
+}
+
+.sapMFeedListShowSeparatorsAll .sapMFeedListItem {
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+}
+
+/* Makes sure that floating image is not displayed in the next list item. */
+.sapMFeedListItem:after {
+	content: " ";
+	display: block;
+	height: 0rem;
+	clear: both;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+.sapMFeedListItem .sapMFeedListItemTextText a,
+.sapMFeedListItem .sapMFeedListItemTextName a {
+	font-family: @sapUiFontFamily;
+	font-weight: bold;
+	line-height: 1.4;
+}
+
+/*
+ The following is necessary to make sure that image links
+ do not show a border when run in IE.
+ */
+.sapMFeedListItemFigure img {
+	border: 0rem;
+}
+
+.sapMFeedListItemText {
+	vertical-align: top;
+	margin: 0rem;
+}
+
+.sapMFeedListItemTextString {
+	cursor: text;
+}
+
+.sapMFeedListItemText .sapMLnk {
+	vertical-align: top;
+}
+
+html.sap-tablet .sapMFeedListItemHasFigure,
+html.sap-desktop .sapMFeedListItemHasFigure {
+	margin-left: 3.75rem;
+}
+
+.sapMFeedListItemTextText {
+	margin: 0rem;
+	line-height: 1.4;
+	font-family: @sapUiFontFamily;
+	text-overflow: ellipsis;
+}
+
+.sapMFeedListItemFigure {
+	float: left;
+	height: 3rem;
+	width: 3rem;
+	overflow: visible;
+	margin: 0rem;
+}
+
+.sapMFeedListItemImageInactive,
+.sapMFeedListItemImage {
+	width: 3rem;
+	height: 3rem;
+	line-height: 3rem;
+	font-size: 2.5rem;
+	margin-left: 0rem;
+	margin-right: 0rem;
+	overflow: hidden;
+}
+
+.sapMFeedListItemTimestamp {
+	line-height: auto;
+}
+
+.sapMFeedListItemTimestampText,
+.sapMFeedListItemInfoText {
+	cursor: text;
+}
+
+.sapMFeedListItemInfo {
+	line-height: auto;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sapMFeedListItemTextName {
+	line-height: 1.4;
+	font-family: @sapUiFontFamily;
+	font-weight: bold;
+}
+
+html[dir=rtl] .sapMFeedListItemTextName {
+	/* 	In rtl mode, this will be converted to 'float: right;' which
+		is the correct value
+	*/
+	float: left;
+	margin-right: 0.3rem;
+}
+
+html[dir=rtl].sap-phone .sapMFeedListItemTextName {
+	/* 	Overwrite rtl values for phones
+	*/
+	float: none;
+	margin-right: 0;
+}
+
+.sapMFeedListItemFooter {
+	margin-top: 0.375rem;
+	margin-bottom: 0rem;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-family: @sapUiFontFamily;
+}
+
+.sapMFeedListItemTitleDiv.sapMLIB {
+	display: -webkit-box;
+	-webkit-box-orient: horizontal;
+	-webkit-box-align: center;
+	flex-direction: row;
+	align-items: center;
+}
+
+.sapMFeedListShowSeparatorsNone.sapMLIB {
+	border-bottom: 0;
+}
+
+.sapMFeedListItemTitleDiv > .sapMLIBContent {
+	flex-basis: auto;
+	overflow: hidden;
+}
+
+
+/* phone adoption */
+html.sap-phone .sapMFeedListItemHeader {
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+html.sap-phone .sapMFeedListItemHeader.sapMFeedListItemFullHeight,
+html.sap-phone .sapMFeedListItemHeader.sapMFeedListItemHasFigure {
+	height: 3.1rem;
+}
+
+html.sap-phone .sapMFeedListItemImageInactive,
+html.sap-phone .sapMFeedListItemImage {
+	width: 3rem;
+	height: 3rem;
+	line-height: 3rem;
+	font-size: 2.5rem;
+}
+
+html.sap-phone .sapMFeedListItemTextName {
+	margin-top: 0.25rem;
+	margin-bottom: 0.25rem;
+}
+
+html.sap-phone .sapMFeedListItemTextName a {
+	font-family: @sapUiFontFamily;
+	font-weight: normal;
+	width: 100%;
+}
+
+html.sap-phone .sapMFeedListItemFigure {
+	height: 3rem;
+	width: 3rem;
+	margin-right: 0.75rem
+}
+
+html.sap-phone .sapMFeedListItemFooter {
+	margin-top: 0.375rem;
+	margin-bottom: 0rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+html.sap-phone .sapMFeedListItemTimestamp {
+	margin-top: 0;
+	margin-bottom: 0.25rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+html.sap-phone .sapMFeedListItemText {
+	clear: left;
+	line-height: 1.4;
+	margin-top: 0.75rem;
+	margin-bottom: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
 
 .sapMFeedListItemTextText {
 	font-size: @sapMFontMediumSize;
-	color: @sapUiStandardText;
+	color: @sapUiListTextColor;
 	word-wrap: break-word;
 }
 
 .sapMFeedListItemImageInactive:focus,
 .sapMFeedListItemImage:focus {
 	outline-style: dotted;
-	outline-color: @sapUiFocus;
+	outline-color: @sapUiContentFocusColor;
 	outline-width: 0.0625rem;
 }
 
 html.sap-tablet .sapMFeedListItem .sapMLnk:focus {
 	outline-style: dotted;
-	outline-color: @sapUiFocus;
+	outline-color: @sapUiContentFocusColor;
 	outline-width: 0.0625rem;
 }
 
-/*
-	Allow image outline(-left) to be rendered completely
-*/
+/* Allow image outline(-left) to be rendered completely */
 .sapMFeedListShowSeparatorsAll .sapMFeedListItem {
 	padding-left: 0.0625rem;
 }
-.sapMFeedListItemTitleDiv.sapMLIB{
+
+.sapMFeedListItemTitleDiv.sapMLIB {
 	padding-left: 0.9375rem;
 }
 
-
 html.sap-desktop .sapMFeedListItem .sapMLnk:focus {
-	outline-color: @sapUiFocus;
+	outline-color: @sapUiContentFocusColor;
 }
 
-.sapMFeedListItemImage, .sapMFeedListItemImageInactive,
-.sapMLIBActive .sapMFeedListItem span.sapMFeedListItemImageInactive,
+.sapMFeedListItemImage,
 .sapMLIBActive .sapMFeedListItem span.sapMFeedListItemImage {
-	color: lighten(@sapUiElement, 35);
+	color: @sapUiContentIconColor;
+}
+
+.sapMFeedListItemImageInactive,
+.sapMLIBActive .sapMFeedListItem span.sapMFeedListItemImageInactive {
+	color: @sapUiContentNonInteractiveIconColor;
 }
 
 .sapMFeedListItemTextName {
 	font-size: @sapMFontMediumSize;
-	color: @sapUiStandardText;
+	color: @sapUiListTextColor;
 }
 
 .sapMFeedListItemFooter {
@@ -53,23 +278,15 @@ html.sap-desktop .sapMFeedListItem .sapMLnk:focus {
 }
 
 .sapMFeedListItem .sapMFeedListItemTextText a,
-.sapMFeedListItem .sapMFeedListItemTextText span,
 .sapMFeedListItem .sapMFeedListItemTextName a {
 	font-size: @sapMFontMediumSize;
 	color: @sapUiLink;
 }
 
 .sapMFeedListItemText {
-	color: @sapUiStandardText;
+	color: @sapUiListTextColor;
 }
 
-.sapMLIBActive .sapMFeedListItemFigure.sapMFeedListItemIsDefaultIcon {
-	background: darken(@sapUiGroupContentBackground, 5);
-}
-
-.sapMFeedListItemFigure.sapMFeedListItemIsDefaultIcon {
-	background: darken(@sapUiGroupContentBackground, 5);
-}
 
 .sapMLIBActive .sapMFeedListItem a,
 .sapMLIBActive .sapMFeedListItem span,
@@ -84,7 +301,7 @@ html.sap-desktop .sapMFeedListItem .sapMLnk:focus {
 .sapMLIBActive .sapMFeedListItemTextText>.sapMLnk.sapMLnkDsbl
 .sapMLIBActive .sapMFeedListItemTextName>.sapMLnk,
 .sapMLIBActive .sapMFeedListItemTextName>.sapMLnk.sapMLnkDsbl {
-	color: @sapUiContentContrastTextColor;
+	color: @sapUiListActiveTextColor;
 	opacity: 1;
 	text-decoration: none;
 }
@@ -93,7 +310,7 @@ html.sap-desktop .sapMFeedListItem .sapMLnk:focus {
 .sapMFeedListItemTextName>.sapMLnk.sapMLnkDsbl,
 html.sap-desktop .sapMFeedListItemTextName>.sapMLnk.sapMLnkDsbl:hover {
 	opacity: 1;
-	color: @sapUiStandardText;
+	color: @sapUiListTextColor;
 }
 
 .sapMFeedListItemTextText>.sapMLnk {
@@ -101,11 +318,11 @@ html.sap-desktop .sapMFeedListItemTextName>.sapMLnk.sapMLnkDsbl:hover {
 }
 
 .sapMFeedListItemTextText>.sapMLnk.sapMLnkDsbl {
-	color: @sapUiStandardText;
+	color: @sapUiListTextColor;
 }
 
 html.sap-desktop .sapMFeedListItemTextText>.sapMLnk.sapMLnkDsbl:hover {
-	color: @sapUiStandardText;
+	color: @sapUiListTextColor;
 }
 
 .sapMFeedListShowSeparatorsAll.sapMLIB {
@@ -148,6 +365,6 @@ html.sap-phone .sapMFeedListItemTimestamp {
 	font-size: @sapMFontMediumSize;
 	font-style: normal;
 	font-weight: normal;
-	color: @sapUiStandardText;
+	color: @sapUiListTextColor;
 	line-height: 1.4;
 }

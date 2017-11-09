@@ -1,6 +1,7 @@
-/* =========================================== */
-/* CSS for control sap.m/Tokenizer control === */
-/* =========================================== */
+/* ================================ */
+/* CSS for control sap.m/Tokenizer  */
+/* Base theme                       */
+/* ================================ */
 
 .sapMTokenizer {
 	position: relative;
@@ -15,16 +16,6 @@
 	margin-right: 0.375rem;
 	line-height: normal;
 	max-width: calc(~"100% - 0.375rem");
-}
-
-.sapMTokenizer.sapMTokenizerReadonly {
-	.sapMToken {
-		padding: 0 0.375rem;
-	}
-
-	.sapMTokenIcon {
-		display: none;
-	}
 }
 
 .sapMTokenizer.sapMTokenizerReadonly {
@@ -94,6 +85,10 @@
 	-moz-user-select: none;
 	-webkit-user-select: none;
 	-ms-user-select: none;
+}
+
+html[data-sap-ui-browser^="sf"] .sapMTokenizerScrollContainer {
+	width: calc(~"100% + 1px");
 }
 
 html[data-sap-ui-browser^="ie"].sap-desktop,

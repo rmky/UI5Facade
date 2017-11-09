@@ -27,7 +27,7 @@
 	hidePackage: undefined, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	content: [], // sap.ui.core.Control
 	subHeader: undefined, // sap.m.IBar, since 1.12.2
 	customHeader: undefined, // sap.m.IBar, since 1.15.1
@@ -99,7 +99,7 @@
 	ok=""
 	cancel="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<content></content> <!-- sap.ui.core.Control -->
 		<subHeader></subHeader> <!-- sap.m.IBar, since 1.12.2 -->
 		<customHeader></customHeader> <!-- sap.m.IBar, since 1.15.1 -->

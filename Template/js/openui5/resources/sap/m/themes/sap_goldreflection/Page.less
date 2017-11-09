@@ -1,6 +1,11 @@
-/* ============================================= */
-/* CSS for control sap.m/Page.control            */
-/* ============================================= */
+/* =========================== */
+/* CSS for control sap.m/Page  */
+/* Base theme                  */
+/* =========================== */
+
+@_sap_m_Page_AppHeight: 3333px; // Ux decision: never show the header, so make this value large enough even for zoom-out cases
+@_sap_m_Page_HeaderHeight: 68px; // should be 4.25rem
+@_sap_m_Page_MinHeightForHeader: (@_sap_m_Page_AppHeight + @_sap_m_Page_HeaderHeight);
 
 .sapMPage,
 .sapMPage > section {
@@ -16,10 +21,22 @@
 
 .sapMPage > section {
   position: absolute;
+  overflow-y: hidden;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+}
+
+.sapMPage > section.sapMPageEnableScrolling {
+	overflow-y: auto;
+}
+
+html[data-sap-ui-os^="bb"],
+html[data-sap-ui-os^="iOS"] {
+  .sapMPage > section.sapMPageEnableScrolling {
+    overflow-y: scroll;
+  }
 }
 
 /* Fix for a ToolBar set as headerContent */
@@ -67,11 +84,20 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
   left: 0;
   /* footer has to overlap the header if the page is very small (phone with open keyboard)*/
   z-index: 2;
+  width: 100%;
 }
 
-.sapMPageFooter.sapMTB {
+.sapMPageFooter.sapUiHidden {
+  bottom: auto;
+}
+
+.sapMPageFooter .sapMTB.sapMIBar {
   right: 0;
   border-bottom-width: 0;
+}
+
+.sapMPageFloatingFooter .sapMPageFooter .sapMIBar-CTX.sapMFooter-CTX.sapMTB {
+  border-top-width: 0;
 }
 
 .sapMPageSubHeader,
@@ -110,7 +136,7 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
   top: 2rem;
 }
 
-.sapUiSizeCompact .sapF2CollapsedHeader > .sapMIBar.sapMPageHeader {
+.sapUiSizeCompact .sapF2CollapsedHeader > .sapMPageHeader .sapMIBar {
   height: 0rem;
 }
 
@@ -125,11 +151,15 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 }
 
 .sapMPageFloatingFooter {
-  > footer {
+  > .sapMPageFooter {
     border-radius: 0.25rem;
     margin: 0.5rem;
     width: ~"calc(100% - 1rem)";
     opacity: 0.9;
+
+    .sapMIBar {
+      border-radius: 0.25rem;
+    }
   }
 }
 
@@ -153,22 +183,16 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 html[data-sap-ui-animation='on'] .sapMPageFloatingFooter {
   .sapMPageFooterControlShow {
     -webkit-animation: bounceShow 0.35s forwards ease-in-out;
-    -moz-animation: bounceShow 0.35s forwards ease-in-out;
-    -o-animation: bounceShow 0.35s forwards ease-in-out;
     animation: bounceShow 0.35s forwards ease-in-out;
   }
   .sapMPageFooterControlHide {
     -webkit-animation: bounceHide 0.35s forwards ease-in-out;
-    -moz-animation: bounceHide 0.35s forwards ease-in-out;
-    -o-animation: bounceHide 0.35s forwards ease-in-out;
     animation: bounceHide 0.35s forwards ease-in-out;
   }
 
   @-webkit-keyframes bounceShow {
     0% {
       -webkit-transform: translateY(100%);
-      -moz-transform: translateY(100%);
-      -o-transform: translateY(100%);
       transform: translateY(100%);
       opacity: 0;
     }
@@ -176,23 +200,9 @@ html[data-sap-ui-animation='on'] .sapMPageFloatingFooter {
       opacity: 0.9;
     }
   }
-  @-moz-keyframes bounceShow {
-    0% {
-      -webkit-transform: translateY(100%);
-      -moz-transform: translateY(100%);
-      -o-transform: translateY(100%);
-      transform: translateY(100%);
-      opacity: 0.9;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
   @keyframes bounceShow {
     0% {
       -webkit-transform: translateY(100%);
-      -moz-transform: translateY(100%);
-      -o-transform: translateY(100%);
       transform: translateY(100%);
       opacity: 0;
     }
@@ -203,50 +213,111 @@ html[data-sap-ui-animation='on'] .sapMPageFloatingFooter {
   @-webkit-keyframes bounceHide {
     0% {
       -webkit-transform: translateY(-5%);
-      -moz-transform: translateY(-5%);
-      -o-transform: translateY(-5%);
       transform: translateY(-5%);
       opacity: 1;
     }
     100% {
       -webkit-transform: translateY(100%);
-      -moz-transform: translateY(100%);
-      -o-transform: translateY(100%);
       transform: translateY(100%);
       opacity: 0;
-    }
-  }
-  @-moz-keyframes bounceHide {
-    0% {
-      -webkit-transform: translateY(-5%);
-      -moz-transform: translateY(-5%);
-      -o-transform: translateY(-5%);
-      transform: translateY(-5%);
-      opacity: 0.9;
-    }
-    100% {
-      -webkit-transform: translateY(100%);
-      -moz-transform: translateY(100%);
-      -o-transform: translateY(100%);
-      transform: translateY(100%);
-      opacity: 0.9;
     }
   }
   @keyframes bounceHide {
     0% {
       -webkit-transform: translateY(-5%);
-      -moz-transform: translateY(-5%);
-      -o-transform: translateY(-5%);
       transform: translateY(-5%);
       opacity: 0.9;
     }
     100% {
       -webkit-transform: translateY(100%);
-      -moz-transform: translateY(100%);
-      -o-transform: translateY(100%);
       transform: translateY(100%);
       opacity: 0;
     }
   }
 }
 
+.sapMPageBgSolid {
+	background-color: @sapUiBaseBG;
+}
+
+/* page with header and subHeader */
+.sapMPage > .sapMPageHeader + .sapMPageSubHeader + section {
+	top: 6rem;
+}
+
+/* page with header */
+.sapMPage > .sapMPageHeader + section,
+/* page with subheader */
+.sapMPage > .sapMPageSubHeader + section,
+/* page with header and invisible subheader */
+.sapMPage > .sapMPageHeader + .sapUiHiddenPlaceholder + section {
+	top: 3rem;
+}
+
+/* page app icon */
+
+.sapMBar-CTX .sapMBarLeft > .sapMImg.sapMPageAppIcon {
+	max-height: 1.375rem;
+	max-width: 1.375rem;
+	margin: 0.8125rem;
+}
+
+/* vertical scroll bar */
+
+.sapMPage .sapMScrollbarV > div {
+	background-color: @sapUiScrollBarFaceColor;
+	border-color: @sapUiScrollBarBorderColor;
+}
+
+/* sap.m.Shell + Tiles Page specific style */
+
+@media (min-height: @_sap_m_Page_MinHeightForHeader) {
+	.sap-desktop .sapMShell .sapMPage.sapMPageHideHeaderWhenShellHeader .sapMIBar {
+		display: none;
+	}
+}
+
+html.sap-tablet .sapUiFioriObjectPage > section,
+html.sap-desktop .sapUiFioriObjectPage > section {
+	padding-bottom: 1rem;
+}
+
+/* Compact size */
+.sapUiSizeCompact {
+	/* Header and footer have 2.5 rem */
+	.sapMPageWithHeader > section {
+		top: 2.5rem;
+	}
+
+	.sapMPageHeader .sapMIBar,
+	.sapMPageFooter .sapMIBar {
+		height : 2.5rem;
+
+		.sapMBarLeft,
+		.sapMBarRight,
+		.sapMBarPH {
+			height: 2.5rem;
+			padding-top: 0.25rem;
+			padding-bottom: 0.25rem;
+		}
+	}
+
+	.sapMPageWithFooter > section {
+		bottom: 2.5rem;
+	}
+
+	/* Subheader only 2 rem */
+	.sapMPageWithSubHeader > section {
+		top: 2rem;
+	}
+
+	.sapMPageWithHeader.sapMPageWithSubHeader > section {
+		top: 4.5rem;
+	}
+
+	.sapMBar-CTX .sapMBarLeft > .sapMImg.sapMPageAppIcon {
+		max-height: 1rem;
+		max-width: 1rem;
+		margin: 0.5rem;
+	}
+}

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -48,10 +48,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 	 *
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
+	 * @deprecated Please use {@link sap.ui.model.odata.v2.ODataModel} instead.
 	 * @alias sap.ui.model.odata.ODataModel
 	 * @extends sap.ui.model.Model
 	 */
@@ -100,6 +101,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 			this.oServiceData = {};
 			this.sDefaultBindingMode = BindingMode.OneWay;
 			this.mSupportedBindingModes = {"OneWay": true, "OneTime": true, "TwoWay":true};
+			this.mUnsupportedFilterOperators = {"Any": true, "All": true};
 			this.bCountSupported = true;
 			this.bJSON = bJSON;
 			this.bCache = true;
@@ -119,7 +121,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 			this.oMetadataLoadEvent = null;
 			this.oMetadataFailedEvent = null;
 			this.bSkipMetadataAnnotationParsing = bSkipMetadataAnnotationParsing;
-
 
 			// prepare variables for request headers, data and metadata
 			this.oHeaders = {};
@@ -714,7 +715,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 				// all data is read so merge all data
 				jQuery.sap.extend(oResultData.results, aResults);
 				// broken implementations need this
-				if (oResultData.results && !jQuery.isArray(oResultData.results)) {
+				if (oResultData.results && !Array.isArray(oResultData.results)) {
 					oResultData = oResultData.results;
 				}
 				// adding the result data to the data object
@@ -837,7 +838,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 			jQuery.each(oData, function(sName, oProperty) {
 				if (oProperty && (oProperty.__metadata && oProperty.__metadata.uri || oProperty.results) && !oProperty.__deferred) {
 					oResult = that._importData(oProperty, mKeys);
-					if (jQuery.isArray(oResult)) {
+					if (Array.isArray(oResult)) {
 						oEntry[sName] = { __list: oResult };
 					} else {
 						oEntry[sName] = { __ref: oResult };
@@ -1157,7 +1158,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 			var navProp = aNavProps[i];
 
 			//check if the navProp was split into multiple parts (meaning it's an array), e.g. ["Orders", "Products/Suppliers"]
-			if (jQuery.isArray(navProp)) {
+			if (Array.isArray(navProp)) {
 
 				var oFirstNavProp = oData[navProp[0]];
 				var sNavPropRest = navProp[1];
@@ -1300,11 +1301,24 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 	};
 
 	/**
-	 * Sets the default way to retrieve the count of collections in this model.
-	 * Count can be determined either by sending a separate $count request, including
-	 * $inlinecount=allpages in data requests, both of them or not at all.
+	 * Sets the default mode how to retrieve the item count for a collection in this model.
 	 *
-	 * @param {sap.ui.model.odata.CountMode} sCountMode
+	 * The count can be determined in the following ways
+	 * <ul>
+	 * <li>by sending a separate <code>$count</code> request</li>
+	 * <li>by adding parameter <code>$inlinecount=allpages</code> to one or all data requests</li>
+	 * <li>a combination of the previous two</li>
+	 * <li>not at all (questions about the size of the collection can't be answered then)</li>
+	 * </ul>
+	 * See {@link sap.ui.model.odata.CountMode} for all enumeration values and more details.
+	 *
+	 * Note that a call to this method does not modify the count mode for existing list bindings,
+	 * only bindings that are created afterwards will use the new mode when no mode is defined at their creation.
+	 *
+	 * If no default count mode is set for an <code>ODataModel</code> (v1), the mode <code>Both</code>
+	 * will be used for compatibility reasons.
+	 *
+	 * @param {sap.ui.model.odata.CountMode} sCountMode The new default count mode for this model
 	 * @since 1.20
 	 * @public
 	 */
@@ -1997,7 +2011,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 		}
 		// if this is a batch request, loop through the batch operations, find change requests
 		// and check every change request individually
-		if (oRequest.data && jQuery.isArray(oRequest.data.__batchRequests)) {
+		if (oRequest.data && Array.isArray(oRequest.data.__batchRequests)) {
 			if (oResponse) {
 				aErrorResponses = that._getBatchErrors(oResponse.data);
 				jQuery.each(aErrorResponses, function(iIndex, oErrorResponse){
@@ -2011,7 +2025,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 				}
 			}
 			jQuery.each(oRequest.data.__batchRequests, function(iIndex, oBatchRequest) {
-				if (jQuery.isArray(oBatchRequest.__changeRequests)) {
+				if (Array.isArray(oBatchRequest.__changeRequests)) {
 					jQuery.each(oBatchRequest.__changeRequests, function(iIndex, oChangeRequest) {
 						bRefreshNeeded = bRefreshNeeded || that._isRefreshNeeded(oChangeRequest);
 						return !bRefreshNeeded; //break
@@ -2205,7 +2219,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 			that = this;
 
 		// maintain compatibility, check if the old or new function parameters are used and set values accordingly:
-		if ((mParameters && mParameters instanceof Context) || arguments[2]) {
+		if ((mParameters instanceof Context) || arguments[2]) {
 			oContext  = mParameters;
 			fnSuccess = arguments[2];
 			fnError   = arguments[3];
@@ -2313,10 +2327,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 			var sUrlURI = URI(sUrl);
 			if (oFunctionMetadata.parameter != null) {
 				jQuery.each(oParameters, function (sParameterName, oParameterValue) {
-					var matchingParameters = jQuery.grep(oFunctionMetadata.parameter, function (oParameter) {
+					var matchingParameters = oFunctionMetadata.parameter.filter(function (oParameter) {
 						return oParameter.name == sParameterName && oParameter.mode == "In";
 					});
-					if (matchingParameters != null && matchingParameters.length > 0) {
+					if (matchingParameters.length > 0) {
 						var matchingParameter = matchingParameters[0];
 						oUrlParams[sParameterName] = ODataUtils.formatValue(oParameterValue, matchingParameter.type);
 					} else {
@@ -2512,7 +2526,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 	 * @public
 	 */
 	ODataModel.prototype.addBatchReadOperations = function(aReadOperations) {
-		if (!jQuery.isArray(aReadOperations) || aReadOperations.length <= 0) {
+		if (!Array.isArray(aReadOperations) || aReadOperations.length <= 0) {
 			jQuery.sap.log.warning("No array with batch operations provided!");
 			return false;
 		}
@@ -2536,7 +2550,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 	 * @public
 	 */
 	ODataModel.prototype.addBatchChangeOperations = function(aChangeOperations) {
-		if (!jQuery.isArray(aChangeOperations) || aChangeOperations.length <= 0) {
+		if (!Array.isArray(aChangeOperations) || aChangeOperations.length <= 0) {
 			return false;
 		}
 		jQuery.each(aChangeOperations, function(iIndex, oChangeOperation) {
@@ -3106,7 +3120,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 			jQuery.sap.assert(oEntityMetadata, "No Metadata for collection " + sPath + " found");
 			return undefined;
 		}
-		if (typeof vProperties === "object" && !jQuery.isArray(vProperties)) {
+		if (typeof vProperties === "object" && !Array.isArray(vProperties)) {
 			oEntity = vProperties;
 		} else {
 			for (var i = 0; i < oEntityMetadata.property.length; i++) {

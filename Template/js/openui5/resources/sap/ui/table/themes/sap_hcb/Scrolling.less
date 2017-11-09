@@ -1,16 +1,17 @@
-html.sap-desktop {
-	
-	.sapUiTableHSb::-webkit-scrollbar,
-	.sapUiTableVSb::-webkit-scrollbar {
-		width: @_sapUiTableDefaultScrollBarSize;
-		height: @_sapUiTableDefaultScrollBarSize;
+/* ======================================= */
+/* CSS for control sap.ui.table/Scrolling  */
+/* High Contrast Black theme               */
+/* ======================================= */
+
+.sapUiTableVSb,
+.sapUiTableHSb,
+html.sap-desktop .sapUiTableVSb,
+html.sap-desktop .sapUiTableHSb  {
+	&::-webkit-scrollbar {
 		border: none;
 	}
 	
-	.sapUiTableHSb::-webkit-scrollbar-thumb,
-	.sapUiTableVSb::-webkit-scrollbar-thumb {
-		border: none;
+	&::-webkit-scrollbar-thumb {
 		box-shadow: none;
 	}
-	
 }

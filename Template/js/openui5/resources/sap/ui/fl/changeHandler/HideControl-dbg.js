@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,7 +13,7 @@ sap.ui.define([
 	 * Change handler for hiding of a control.
 	 * @alias sap.ui.fl.changeHandler.HideControl
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @experimental Since 1.27.0
 	 */
 	var HideControl = { };
@@ -23,8 +23,9 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.fl.Change} oChange change object with instructions to be applied on the control map
 	 * @param {sap.ui.core.Control} oControl control that matches the change selector for applying the change
-	 * @param {object} mPropertyBag
 	 * @param {object} mPropertyBag.modifier - modifier for the controls
+	 * @param {object} mPropertyBag	- map of properties
+	 * @return {boolean} true - if change could be applied
 	 * @public
 	 */
 	HideControl.applyChange = function(oChange, oControl, mPropertyBag) {
@@ -41,20 +42,6 @@ sap.ui.define([
 	 */
 	HideControl.completeChangeContent = function(oChange, oSpecificChangeInfo) {
 
-	};
-
-
-	/**
-	 * Transform the remove action format to the hideControl change format
-	 *
-	 * @param {object} mRemoveActionParameter a json object with the remove parameter
-	 * @returns {object} json object that the completeChangeContent method will take as oSpecificChangeInfo
-
-	 * @function
-	 * @name sap.ui.fl.changeHandler.HideControl#buildStableChangeInfo
-	 */
-	HideControl.buildStableChangeInfo = function(mRemoveActionParameter){
-		return mRemoveActionParameter;
 	};
 
 	return HideControl;

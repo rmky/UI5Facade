@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 	 * @class
 	 * The column menu provides all common actions that can be performed on a column.
 	 * @extends sap.ui.unified.Menu
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -47,7 +47,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 			Menu.prototype.init.apply(this, arguments);
 		}
 		this.addStyleClass("sapUiTableColumnMenu");
-		this.oResBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.table");
+		this._oResBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.table");
 		this._bInvalidated = true;
 		this._iPopupClosedTimeoutId = null;
 		this._oColumn = null;
@@ -146,6 +146,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 		this._bInvalidated = true;
 	};
 
+	/**
+	 * Invalidates the column menu control items and refreshes the loaded language bundle.
+	 * @private
+	 */
+	ColumnMenu.prototype._updateResourceBundle = function() {
+		this._oResBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.table");
+		this._invalidate();
+	};
 
 	/**
 	 * Special handling for IE < 9 when the popup is closed.
@@ -303,8 +311,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 		var bColumnFreezeEnabled = oTable && oTable.getEnableColumnFreeze();
 
 		if (bColumnFreezeEnabled) {
-			var iColumnIndex = jQuery.inArray(oColumn, oTable.getColumns());
-			var bIsFixedColumn = iColumnIndex + 1 == oTable.getFixedColumnCount();
+			var iColumnIndex = oColumn.getIndex();
+			var bIsFixedColumn = iColumnIndex + TableUtils.Column.getHeaderSpan(oColumn) == oTable.getFixedColumnCount();
 
 			this.addItem(this._createMenuItem(
 				"freeze",
@@ -421,7 +429,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 	 */
 	ColumnMenu.prototype._createMenuItem = function(sId, sTextI18nKey, sIcon, fHandler) {
 		return new MenuItem(this.getId() + "-" + sId, {
-			text: this.oResBundle.getText(sTextI18nKey),
+			text: this._oResBundle.getText(sTextI18nKey),
 			icon: sIcon ? "sap-icon://" + sIcon : null,
 			select: fHandler || function() {}
 		});
@@ -441,7 +449,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 	ColumnMenu.prototype._createMenuTextFieldItem = function(sId, sTextI18nKey, sIcon, sValue, fHandler) {
 		fHandler = fHandler || function() {};
 		return new MenuTextFieldItem(this.getId() + "-" + sId, {
-			label: this.oResBundle.getText(sTextI18nKey),
+			label: this._oResBundle.getText(sTextI18nKey),
 			icon: sIcon ? "sap-icon://" + sIcon : null,
 			value: sValue,
 			select: fHandler || function() {}

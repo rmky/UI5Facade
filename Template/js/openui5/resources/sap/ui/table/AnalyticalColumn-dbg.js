@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 	 * @extends sap.ui.table.Column
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -70,7 +70,6 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 
 	AnalyticalColumn.prototype.init = function() {
 		Column.prototype.init.apply(this, arguments);
-		this._bSkipUpdateAI = false;
 	};
 
 	/**
@@ -96,19 +95,18 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 
 	AnalyticalColumn.prototype.setGrouped = function(bGrouped, bSuppressInvalidate) {
 		var oParent = this.getParent();
-		var that = this;
+
 		if (isInstanceOfAnalyticalTable(oParent)) {
 			if (bGrouped) {
 				oParent._addGroupedColumn(this.getId());
 			} else {
-				oParent._aGroupedColumns = jQuery.grep(oParent._aGroupedColumns, function(value) {
-					return value != that.getId();
-				});
+				oParent._removeGroupedColumn(this.getId());
 			}
 		}
 
 		var bReturn = this.setProperty("grouped", bGrouped, bSuppressInvalidate);
 		this._updateColumns(true);
+
 		return bReturn;
 	};
 
@@ -239,10 +237,6 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 	};
 
 	AnalyticalColumn.prototype._updateColumns = function(bSupressRefresh, bForceChange) {
-		if (this._bSkipUpdateAI) {
-			return;
-		}
-
 		var oParent = this.getParent();
 		if (isInstanceOfAnalyticalTable(oParent)) {
 			oParent._updateColumns(bSupressRefresh, bForceChange);
@@ -250,10 +244,6 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 	};
 
 	AnalyticalColumn.prototype._updateTableAnalyticalInfo = function(bSupressRefresh) {
-		if (this._bSkipUpdateAI) {
-			return;
-		}
-
 		var oParent = this.getParent();
 		if (oParent && isInstanceOfAnalyticalTable(oParent) && !oParent._bSuspendUpdateAnalyticalInfo) {
 			oParent.updateAnalyticalInfo(bSupressRefresh);
@@ -261,10 +251,6 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 	};
 
 	AnalyticalColumn.prototype._updateTableColumnDetails = function() {
-		if (this._bSkipUpdateAI) {
-			return;
-		}
-
 		var oParent = this.getParent();
 		if (oParent && isInstanceOfAnalyticalTable(oParent) && !oParent._bSuspendUpdateAnalyticalInfo) {
 			oParent._updateTableColumnDetails();

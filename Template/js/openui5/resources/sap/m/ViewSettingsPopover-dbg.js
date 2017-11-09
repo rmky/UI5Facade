@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 // Provides control sap.m.ViewSettingsPopover.
@@ -36,7 +36,7 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 *
 		 * @constructor
 		 * @private
@@ -1019,17 +1019,15 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 
 			switch (sType) {
 				case 'sort':
-					this._getSegmentedButton().insertAggregation('items', oNewButton, 0);
+					this._getSegmentedButton().insertItem(oNewButton, 0);
 					break;
 				case 'filter':
-					this._getSegmentedButton().insertAggregation('items', oNewButton, 1);
+					this._getSegmentedButton().insertItem(oNewButton, 1);
 					break;
 				case 'group':
 					this._getSegmentedButton().addItem(oNewButton);
 					break;
 			}
-
-			this._getSegmentedButton().updateItems();
 
 		};
 
@@ -1252,6 +1250,9 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 					break;
 				case 'filterItems':
 					oList = this._getFilterList();
+					break;
+				case 'filterDetailItems':
+					oList = this._getFilterDetailList();
 					break;
 			}
 

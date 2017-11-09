@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,9 +24,10 @@ sap.ui.define(['jquery.sap.global',
 	 * @class
 	 * The CheckBox control allows the user to select one or multiple items from a list. To select each item the user has to select the square box in front of it.
 	 * @extends sap.ui.core.Control
+	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -35,6 +36,7 @@ sap.ui.define(['jquery.sap.global',
 	 */
 	var CheckBox = Control.extend("sap.m.CheckBox", /** @lends sap.m.CheckBox.prototype */ { metadata : {
 
+		interfaces : ["sap.ui.core.IFormContent"],
 		library : "sap.m",
 		properties : {
 
@@ -122,7 +124,8 @@ sap.ui.define(['jquery.sap.global',
 					selected : {type : "boolean"}
 				}
 			}
-		}
+		},
+		designTime : true
 	}});
 
 	EnabledPropagator.call(CheckBox.prototype);
@@ -325,6 +328,13 @@ sap.ui.define(['jquery.sap.global',
 			enabled: this.getEnabled(),
 			editable: this.getEditable()
 		};
+	};
+
+	/*
+	 * Checkbox without label must not be stretched in Form.
+	 */
+	CheckBox.prototype.getFormDoNotAdjustWidth = function() {
+		return this.getText() ? false : true;
 	};
 
 	return CheckBox;

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @class
 	 * The ObjectIdentifier is a display control that enables the user to easily identify a specific object. The ObjectIdentifier title is the key identifier of the object and additional text and icons can be used to further distinguish it from other objects.
 	 * @extends sap.ui.core.Control
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -121,6 +121,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			ariaLabelledBy: {type: "sap.ui.core.Control", multiple: true, singularName: "ariaLabelledBy"}
 		}
 	}});
+
 
 	/**
 	 * Initializes the control
@@ -234,47 +235,67 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @private
 	 */
 	ObjectIdentifier.prototype._getTitleControl = function() {
-
-		var oTitleControl = this.getAggregation("_titleControl"),
-			bIsTitleActive;
+		var oTitleControl = this.getAggregation("_titleControl");
 
 		if (!oTitleControl) {
-			this._createAriaInfoTextControl();
 			// Lazy initialization
 			if (this.getProperty("titleActive")) {
 				oTitleControl = new sap.m.Link({
+					id : this.getId() + "-link",
 					text: this.getProperty("title"),
 					//Add a custom hidden role "ObjectIdentifier" with hidden text
 					ariaLabelledBy: this._oAriaCustomRole
 				});
 			} else {
 				oTitleControl = new sap.m.Text({
+					id : this.getId() + "-txt",
 					text: this.getProperty("title")
 				});
 			}
-			this.setAggregation("_titleControl", oTitleControl);
-		} else {
-			// Update the title control if necessary
-			bIsTitleActive = this.getProperty("titleActive");
-
-			if (bIsTitleActive && oTitleControl instanceof sap.m.Text) {
-				this.destroyAggregation("_titleControl", true);
-				oTitleControl = new sap.m.Link({
-					text: this.getProperty("title"),
-					//Add a custom hidden role "ObjectIdentifier" with hidden text
-					ariaLabelledBy: this._oAriaCustomRole
-				});
-				this.setAggregation("_titleControl", oTitleControl);
-			} else if (!bIsTitleActive && oTitleControl instanceof sap.m.Link) {
-				this.destroyAggregation("_titleControl", true);
-				oTitleControl = new sap.m.Text({
-					text: this.getProperty("title")
-				});
-				this.setAggregation("_titleControl", oTitleControl);
-			}
+			this.setAggregation("_titleControl", oTitleControl, true);
 		}
 
 		oTitleControl.setVisible(!!this.getTitle());
+
+		return oTitleControl;
+	};
+
+	/**
+	 * Updates the text of the title control and re-renders it if present in the DOM.
+	 * @param {boolean} bIsTitleActive Update title control with the respect to the current 'titleActive' property value
+	 *
+	 * @private
+	 */
+	ObjectIdentifier.prototype._updateTitleControl = function(bIsTitleActive) {
+		var oRm,
+			oTitleControl = this.getAggregation("_titleControl");
+
+		if (bIsTitleActive && oTitleControl instanceof sap.m.Text) {
+			this.destroyAggregation("_titleControl", true);
+			oTitleControl = new sap.m.Link({
+				id : this.getId() + "-link",
+				text: this.getProperty("title"),
+				//Add a custom hidden role "ObjectIdentifier" with hidden text
+				ariaLabelledBy: this._oAriaCustomRole
+			});
+			this.setAggregation("_titleControl", oTitleControl, true);
+		} else if (!bIsTitleActive && oTitleControl instanceof sap.m.Link) {
+			this.destroyAggregation("_titleControl", true);
+			oTitleControl = new sap.m.Text({
+				id : this.getId() + "-txt",
+				text: this.getProperty("title")
+			});
+			this.setAggregation("_titleControl", oTitleControl, true);
+		}
+
+		if (this.$("title").children().length > 0) {
+			oTitleControl.setProperty("text", this.getProperty("title"), true);
+
+			oRm = sap.ui.getCore().createRenderManager();
+			oRm.renderControl(oTitleControl);
+			oRm.flush(this.$("title")[0]);
+			oRm.destroy();
+		}
 
 		return oTitleControl;
 	};
@@ -301,21 +322,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		return oTextControl;
 	};
 
-	/**
-	 * Updates the text of the title control and re-renders it.
-	 * If titleActive = true, a Link control is rendered,
-	 * otherwise a Text control will be rendered.
-	 *
-	 * @private
-	 */
-	ObjectIdentifier.prototype._rerenderTitle = function() {
-		var oTitleControl = this._getTitleControl();
-		oTitleControl.setProperty("text", this.getProperty("title"), true);
-		var oRm = sap.ui.getCore().createRenderManager();
-		oRm.renderControl(oTitleControl);
-		oRm.flush(this.$("title")[0]);
-		oRm.destroy();
-	};
 
 	/**
 	 * Sets the title.
@@ -371,9 +377,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		if (bPrevValue != bValue) {
 			this.setProperty("titleActive", bValue, true);
 			// If the title is already rendered, then the title control has to be updated and rerendered
-			if (this.$("title").children().length > 0) {
-				this._rerenderTitle();
-			}
+			this._updateTitleControl(bValue);
 		}
 		return this;
 	};
@@ -426,6 +430,33 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		ObjectIdentifier.prototype._handlePress.apply(this, arguments);
 	};
 
+
+	ObjectIdentifier.prototype.addAssociation = function(sAssociationName, sId, bSuppressInvalidate) {
+		var oTitle = this.getAggregation("_titleControl");
+
+		if (sAssociationName === "ariaLabelledBy") {
+			if (this.getTitleActive() && oTitle instanceof sap.m.Link) {
+				oTitle.addAssociation("ariaLabelledBy", sId, true);
+			}
+		}
+
+		return Control.prototype.addAssociation.apply(this, arguments);
+	};
+
+
+	ObjectIdentifier.prototype.removeAssociation = function(sAssociationName, vObject, bSuppressInvalidate) {
+		var oTitle = this.getAggregation("_titleControl");
+
+		if (sAssociationName === "ariaLabelledBy") {
+			if (this.getTitleActive() && oTitle instanceof sap.m.Link) {
+				oTitle.removeAssociation("ariaLabelledBy", vObject, true);
+			}
+		}
+
+		return Control.prototype.removeAssociation.apply(this, arguments);
+	};
+
+
 	/**
 	 * Creates additional aria hidden text with the role of the control.
 	 * @returns {sap.ui.core.InvisibleText}
@@ -439,6 +470,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 		return this._oAriaCustomRole;
 	};
+
 
 	return ObjectIdentifier;
 

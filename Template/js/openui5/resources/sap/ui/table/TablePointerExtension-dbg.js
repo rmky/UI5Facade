@@ -1,13 +1,16 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides helper sap.ui.table.TablePointerExtension.
-sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/Device', 'sap/ui/core/Popup', 'jquery.sap.dom'],
-	function(jQuery, TableExtension, TableUtils, Device, Popup, jQueryDom) {
+sap.ui.define(['./library', 'jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/Device', 'sap/ui/core/Popup', 'jquery.sap.dom'],
+	function(library, jQuery, TableExtension, TableUtils, Device, Popup, jQueryDom) {
 	"use strict";
+
+	// shortcuts
+	var SelectionMode = library.SelectionMode;
 
 	var KNOWNCLICKABLECONTROLS = ["sapMBtnBase", "sapMInputBase", "sapMLnk", "sapMSlt", "sapMCb", "sapMRI", "sapMSegBBtn", "sapUiIconPointer"];
 
@@ -20,13 +23,32 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 		 * Returns the pageX and pageY position of the given mouse/touch event.
 		 */
 		_getEventPosition : function(oEvent, oTable) {
-			var oPos;
-			if (oTable._isTouchMode(oEvent)) {
-				oPos = oEvent.targetTouches ? oEvent.targetTouches[0] : oEvent.originalEvent.targetTouches[0];
-			} else {
-				oPos = oEvent;
+			var oPosition;
+
+			function getTouchObject(oTouchEvent) {
+				if (!oTable._isTouchEvent(oTouchEvent)) {
+					return null;
+				}
+
+				var aTouchEventObjectNames = ["touches", "targetTouches", "changedTouches"];
+
+				for (var i = 0; i < aTouchEventObjectNames.length; i++) {
+					var sTouchEventObjectName = aTouchEventObjectNames[i];
+
+					if (oEvent[sTouchEventObjectName] && oEvent[sTouchEventObjectName][0]) {
+						return oEvent[sTouchEventObjectName][0];
+					}
+					if (oEvent.originalEvent[sTouchEventObjectName] && oEvent.originalEvent[sTouchEventObjectName][0]) {
+						return oEvent.originalEvent[sTouchEventObjectName][0];
+					}
+				}
+
+				return null;
 			}
-			return {x: oPos.pageX, y: oPos.pageY};
+
+			oPosition = getTouchObject(oEvent) || oEvent;
+
+			return {x: oPosition.pageX, y: oPosition.pageY};
 		},
 
 		/*
@@ -34,7 +56,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 		 * interactive control inside a table cell.
 		 */
 		_skipClick : function(oEvent, $Target, oCellInfo) {
-			if (oCellInfo.type != TableUtils.CELLTYPES.DATACELL) {
+			if (oCellInfo.type != TableUtils.CELLTYPES.DATACELL && oCellInfo.type != TableUtils.CELLTYPES.ROWACTION) {
 				return false;
 			}
 
@@ -56,7 +78,83 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 				}
 			}
 
+			var bHasSelection = false;
+			if (window.getSelection) {
+				var oSelection = window.getSelection();
+				bHasSelection = oSelection.rangeCount ? !oSelection.getRangeAt(0).collapsed : false;
+			}
+
+			if (bHasSelection) {
+				jQuery.sap.log.debug("DOM Selection detected -> Click event on table skipped, Target: " + oEvent.target);
+				return true;
+			}
+
 			return false;
+		},
+
+		/*
+		 * Changes the selection based on the given click event on the given row selector, data cell or row action cell.
+		 */
+		_handleClickSelection : function(oEvent, $Cell, oTable) {
+
+			TableUtils.toggleRowSelection(oTable, $Cell, null, function(iRowIndex) {
+
+				// in case of IE and SHIFT we clear the text selection
+				if (!!Device.browser.internet_explorer && oEvent.shiftKey) {
+					oTable._clearTextSelection();
+				}
+
+				var oSelMode = oTable.getSelectionMode();
+
+				if (oSelMode === SelectionMode.Single) {
+					if (!oTable.isIndexSelected(iRowIndex)) {
+						oTable.setSelectedIndex(iRowIndex);
+					} else {
+						oTable.clearSelection();
+					}
+				} else {
+					var bCtrl = !!(oEvent.metaKey || oEvent.ctrlKey);
+
+					// in case of multi toggle behavior a click on the row selection
+					// header adds or removes the selected row and the previous selection
+					// will not be removed
+					if (oSelMode === SelectionMode.MultiToggle) {
+						bCtrl = true;
+					}
+
+					if (oEvent.shiftKey) {
+						// If no row is selected getSelectedIndex returns -1 - then we simply
+						// select the clicked row:
+						var iSelectedIndex = oTable.getSelectedIndex();
+						if (iSelectedIndex >= 0) {
+							oTable.addSelectionInterval(iSelectedIndex, iRowIndex);
+						} else {
+							oTable.setSelectedIndex(iRowIndex);
+						}
+					} else {
+						if (!oTable.isIndexSelected(iRowIndex)) {
+							if (bCtrl) {
+								oTable.addSelectionInterval(iRowIndex, iRowIndex);
+							} else {
+								oTable.setSelectedIndex(iRowIndex);
+							}
+						} else {
+							if (bCtrl) {
+								oTable.removeSelectionInterval(iRowIndex, iRowIndex);
+							} else {
+								if (oTable._getSelectedIndicesCount() === 1) {
+									oTable.clearSelection();
+								} else {
+									oTable.setSelectedIndex(iRowIndex);
+								}
+							}
+						}
+					}
+				}
+
+				return true;
+			});
+
 		}
 
 	};
@@ -78,7 +176,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 			oTable.$().toggleClass("sapUiTableResizing", true);
 
 			var $Document = jQuery(document),
-				bTouch = oTable._isTouchMode(oEvent);
+				bTouch = oTable._isTouchEvent(oEvent);
 
 			oTable._$colResize = oTable.$("rsz");
 			oTable._iColumnResizeStart = ExtensionHelper._getEventPosition(oEvent, oTable).x;
@@ -106,7 +204,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 				return;
 			}
 
-			if (this._isTouchMode(oEvent)) {
+			if (this._isTouchEvent(oEvent)) {
 				oEvent.stopPropagation();
 				oEvent.preventDefault();
 			}
@@ -198,116 +296,34 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 		},
 
 		/*
-		 * Calculates the widest content width of the column
-		 * also takes the column header and potential icons into account
-		 * @param {int} iColIndex index of the column which should be resized
-		 * @return {int} minWidth minimum width the column needs to have
-		 *
-		 * Note: Experimental, only works with a limited control set
-		 *
-		 * TBD: Cleanup this function and find a proper mechanismn
+		 * Calculates the widest content width of the currently visible column cells including headers.
+		 * Headers with column span are not taken into account.
+		 * @param {sap.ui.table.Column} oCol the column
+		 * @param {int} iColIndex index of the column
+		 * @return {int} iWidth calculated column width
+		 * @private
 		 */
 		_calculateAutomaticColumnWidth : function(oCol, iColIndex) {
-			function checkIsTextControl(oControl) {
-				var aTextBasedControls = [
-					"sap/m/Text",
-					"sap/m/Label",
-					"sap/m/Link",
-					"sap/m/Input",
-					"sap/ui/commons/TextView",
-					"sap/ui/commons/Label",
-					"sap/ui/commons/Link",
-					"sap/ui/commons/TextField"
-				];
-				var bIsTextBased = false;
-				for (var i = 0; i < aTextBasedControls.length; i++) {
-					bIsTextBased = bIsTextBased || TableUtils.isInstanceOf(oControl, aTextBasedControls[i]);
-				}
-				if (!bIsTextBased && typeof TablePointerExtension._fnCheckTextBasedControl === "function" && TablePointerExtension._fnCheckTextBasedControl(oControl)) {
-					bIsTextBased = true;
-				}
-				return bIsTextBased;
-			}
-
+			oCol = oCol || this.getColumns()[iColIndex];
 			var $this = this.$();
-			var iHeaderWidth = 0;
-			var $cols = $this.find('td[headers=\"' + this.getId() + '_col' + iColIndex + '\"]').children("div");
-			var aHeaderSpan = oCol.getHeaderSpan();
-			var oColLabel = oCol.getLabel();
-			var oColTemplate = oCol.getTemplate();
-			var bIsTextBased = checkIsTextControl(oColTemplate);
+			var $hiddenArea = jQuery("<div>").addClass("sapUiTableHiddenSizeDetector");
+			$this.append($hiddenArea);
 
-			var hiddenSizeDetector = document.createElement("div");
-			document.body.appendChild(hiddenSizeDetector);
-			jQuery(hiddenSizeDetector).addClass("sapUiTableHiddenSizeDetector");
+			// Create a copy of  all visible cells in the column, including the header cells without colspan
+			var $cells = $this.find('td[data-sap-ui-colid = "' + oCol.getId() + '"]:not([colspan])')
+				.filter(function(index, element) {
+					return element.style.display != "none";
+				}).children().clone();
+			$cells.find("[id]").removeAttr("id"); // remove all id attributes
 
-			var oColLabels = oCol.getMultiLabels();
-			if (oColLabels.length == 0 && !!oColLabel){
-				oColLabels = [oColLabel];
-			}
+			// Determine the column width
+			var iWidth = $hiddenArea.append($cells).width() + 4; // widest cell + 4px for borders, padding and rounding
+			iWidth = Math.min(iWidth, $this.find(".sapUiTableCnt").width()); // no wider as the table
+			iWidth = Math.max(iWidth + 4, TableUtils.Column.getMinColumnWidth()); // not to small
 
-			if (oColLabels.length > 0) {
-				jQuery.each(oColLabels, function(iIdx, oLabel){
-					var iHeaderSpan;
-					if (!!oLabel.getText()){
-						jQuery(hiddenSizeDetector).text(oLabel.getText());
-						iHeaderWidth = hiddenSizeDetector.scrollWidth;
-					} else {
-						iHeaderWidth = oLabel.$().scrollWidth;
-					}
-					iHeaderWidth = iHeaderWidth + $this.find("#" + oCol.getId() + "-icons").first().width();
+			$hiddenArea.remove();
 
-					$this.find(".sapUiTableColIcons#" + oCol.getId() + "_" + iIdx + "-icons").first().width();
-					if (aHeaderSpan instanceof Array && aHeaderSpan[iIdx] > 1){
-						iHeaderSpan = aHeaderSpan[iIdx];
-					} else if (aHeaderSpan > 1){
-						iHeaderSpan = aHeaderSpan;
-					}
-					if (!!iHeaderSpan){
-						// we have a header span, so we need to distribute the width of this header label over more than one column
-						//get the width of the other columns and subtract from the minwidth required from label side
-						var i = iHeaderSpan - 1;
-						while (i > iColIndex) {
-							iHeaderWidth = iHeaderWidth - (this._getVisibleColumns()[iColIndex + i].$().width() || 0);
-							i -= 1;
-						}
-					}
-				});
-			}
-
-			var minAddWidth = Math.max.apply(null, $cols.map(
-				function(){
-					var _$this = jQuery(this);
-					return parseInt(_$this.css('padding-left'), 10) + parseInt(_$this.css('padding-right'), 10)
-							+ parseInt(_$this.css('margin-left'), 10) + parseInt(_$this.css('margin-right'), 10);
-				}).get());
-
-			//get the max width of the currently displayed cells in this column
-			var minWidth = Math.max.apply(null, $cols.children().map(
-				function() {
-					var width = 0,
-					sWidth = 0;
-					var _$this = jQuery(this);
-					var sColText = _$this.text() || _$this.val();
-
-					if (bIsTextBased){
-						jQuery(hiddenSizeDetector).text(sColText);
-						sWidth = hiddenSizeDetector.scrollWidth;
-					} else {
-						sWidth = this.scrollWidth;
-					}
-					if (iHeaderWidth > sWidth){
-						sWidth = iHeaderWidth;
-					}
-					width = sWidth + parseInt(_$this.css('margin-left'), 10)
-											+ parseInt(_$this.css('margin-right'), 10)
-											+ minAddWidth
-											+ 1; // ellipsis is still displayed if there is an equality of the div's width and the table column
-					return width;
-				}).get());
-
-			jQuery(hiddenSizeDetector).remove();
-			return Math.max(minWidth, TableUtils.Column.getMinColumnWidth());
+			return iWidth;
 		},
 
 		/*
@@ -371,7 +387,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 				offset = $Splitter.offset(),
 				height = $Splitter.height(),
 				width = $Splitter.width(),
-				bTouch = oTable._isTouchMode(oEvent);
+				bTouch = oTable._isTouchEvent(oEvent);
 
 			// Fix for IE text selection while dragging
 			$Body.bind("selectstart", InteractiveResizeHelper.onSelectStartWhileInteractiveResizing);
@@ -403,7 +419,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 
 			// TBD: Move this to the table code
 			this._setRowContentHeight(iNewHeight);
-			this._adjustRows(this._calculateRowsToDisplay(iNewHeight));
+			this._updateRows(this._calculateRowsToDisplay(iNewHeight), TableUtils.RowsUpdateReason.Resize);
 
 			$Ghost.remove();
 			this.$("rzoverlay").remove();
@@ -487,7 +503,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 
 			// Bind the event handlers
 			var $Document = jQuery(document),
-				bTouch = oTable._isTouchMode(oEvent);
+				bTouch = oTable._isTouchEvent(oEvent);
 			$Document.bind((bTouch ? "touchend" : "mouseup") + ".sapUiColumnMove", ReorderHelper.exitReordering.bind(oTable));
 			$Document.bind((bTouch ? "touchmove" : "mousemove") + ".sapUiColumnMove", ReorderHelper.onMouseMoveWhileReordering.bind(oTable));
 		},
@@ -508,7 +524,9 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 
 			var oPos = ReorderHelper.findColumnForPosition(this, iLocationX);
 
-			if ( !oPos.id ) { //Special handling for dummy column (in case the other columns does not occupy the whole space)
+			if ( !oPos || !oPos.id ) {
+				//Special handling for dummy column (in case the other columns does not occupy the whole space),
+				//row selectors and row actions
 				this._iNewColPos = iOldColPos;
 				return;
 			}
@@ -686,7 +704,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 	 */
 	var RowHoverHandler = {
 
-		ROWAREAS : [".sapUiTableRowHdr", ".sapUiTableCtrlFixed > tbody > .sapUiTableTr", ".sapUiTableCtrlScroll > tbody > .sapUiTableTr"],
+		ROWAREAS : [".sapUiTableRowHdr", ".sapUiTableRowAction", ".sapUiTableCtrlFixed > tbody > .sapUiTableTr", ".sapUiTableCtrlScroll > tbody > .sapUiTableTr"],
 
 		initRowHovering : function(oTable) {
 			var $Table = oTable.$();
@@ -761,7 +779,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 					}
 
 					if (this.getEnableColumnReordering()
-						&& !(this._isTouchMode(oEvent) && $Target.hasClass("sapUiTableColDropDown")) /*Target is not the mobile column menu button*/) {
+						&& !(this._isTouchEvent(oEvent) && $Target.hasClass("sapUiTableColDropDown")) /*Target is not the mobile column menu button*/) {
 						// Start column reordering
 						this._getPointerExtension().doReorderColumn(iIndex, oEvent);
 					}
@@ -795,7 +813,6 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 					} else {
 						oPointerExtension._bHideMenu = true;
 					}
-
 				} else if (oCellInfo.type === TableUtils.CELLTYPES.DATACELL) {
 					var bMenuOpen = this._oCellContextMenu && this._oCellContextMenu.bOpen;
 					var bMenuOpenedAtAnotherDataCell = bMenuOpen && this._oCellContextMenu.oOpenerRef !== $Cell[0];
@@ -805,6 +822,8 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 					} else {
 						oPointerExtension._bHideMenu = true;
 					}
+				} else {
+					oPointerExtension._bShowDefaultMenu = true;
 				}
 			}
 		},
@@ -864,7 +883,11 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 
 				// forward the event
 				if (!this._findAndfireCellEvent(this.fireCellClick, oEvent)) {
-					this._onSelect(oEvent);
+					if (oCellInfo.type === TableUtils.CELLTYPES.COLUMNROWHEADER) {
+						this._toggleSelectAll();
+					} else {
+						ExtensionHelper._handleClickSelection(oEvent, $Cell, this);
+					}
 				} else {
 					oEvent.preventDefault();
 				}
@@ -899,7 +922,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension

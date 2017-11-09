@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,12 +10,14 @@ sap.ui.define([
 	"use strict";
 
 	/**
-	 * Object containing standard changes like labelChange. Structure is like this: <code> { "labelChange":{"changeType":"labelChange", "changeHandler":sap.ui.fl.changeHandler.LabelChange}} </code>
+	 * Containes standard changes like <code>hideControl</code>
+	 * (structure: <code> { "hideControl":{"changeType":"hideControl", "changeHandler":sap.ui.fl.changeHandler.HideControl}} </code>);
+	 * change types have a default change handler implementation, so that control developers don't have to implement one.
 	 * @constructor
 	 * @alias sap.ui.fl.registry.SimpleChanges
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @experimental Since 1.27.0
 	 *
 	 */

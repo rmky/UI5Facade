@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './l
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Column...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 * @namespace
 		 * @name sap.ui.table.TableColumnUtils
 		 * @private
@@ -229,50 +229,49 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './l
 			},
 
 			/**
-			 * Returns the header span of a given column. If <code>iLevel</code> is passed, the header span of that
-			 * header row is returned if there is any defined, otherwise <code>iLevel</code> is defaulted by 0. If there is no header span for the passed level, the first
-			 * span is returned.
+			 * Returns the header span of a given column. If <code>iLevel</code> is provided, the header span of that
+			 * header row is returned if there is any defined, otherwise the maximum header span is returned.
+			 * If there is no header span for the level, 1 is returned as a default value.
 			 *
 			 * @param {sap.ui.table.Column} oColumn Column of which the header span shall be returned
 			 * @param {int} [iLevel=0] Zero-based index of the header span for multi-labels
-			 * @returns {int} Single header span or array of header spans if no level provided
+			 * @returns {int} Header span
 			 * @private
 			 */
 			getHeaderSpan : function(oColumn, iLevel) {
 				var vHeaderSpans = oColumn.getHeaderSpan();
 				var iHeaderSpan;
-				iLevel = iLevel || 0;
 
-				if (jQuery.isArray(vHeaderSpans)) {
-					if (!vHeaderSpans[iLevel]) {
-						iLevel = 0;
-					}
-					iHeaderSpan = parseInt(vHeaderSpans[iLevel], 10);
+				if (!vHeaderSpans) {
+					return 1;
+				}
+
+				if (!Array.isArray(vHeaderSpans)) {
+					vHeaderSpans = (vHeaderSpans + "").split(",");
+				}
+
+				function getSpan(sSpan) {
+					var result = parseInt(sSpan, 10);
+					return isNaN(result) ? 1 : result;
+				}
+
+				if (isNaN(iLevel)) { // find max value of all spans in the header
+					iHeaderSpan = Math.max.apply(null, vHeaderSpans.map(getSpan));
 				} else {
-					iHeaderSpan = parseInt(vHeaderSpans, 10);
+					iHeaderSpan = getSpan(vHeaderSpans[iLevel]);
 				}
 
 				return Math.max(iHeaderSpan, 1);
 			},
 
 			/**
-			 * Returns the highest header span of a column across all header levels
+			 * Returns the total header span of a column across all header levels
 			 * @param {sap.ui.table.Column} oColumn column of which the max header span shall be determined
-			 * @returns {int} Highest header span
+			 * @returns {int} Total header span of the column
 			 * @private
 			 */
 			getMaxHeaderSpan : function(oColumn) {
-				var iMaxHeaderSpan = 1;
-				var vHeaderSpans = oColumn.getHeaderSpan();
-				if (!jQuery.isArray(vHeaderSpans)) {
-					vHeaderSpans = [vHeaderSpans];
-				}
-
-				for (var i = 0; i < vHeaderSpans.length; i++) {
-					iMaxHeaderSpan = Math.max(iMaxHeaderSpan, parseInt(vHeaderSpans[i], 10));
-				}
-
-				return iMaxHeaderSpan;
+				return TableColumnUtils.getHeaderSpan(oColumn);
 			},
 
 			/**
@@ -282,7 +281,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './l
 			 * @private
 			 */
 			hasHeaderSpan : function(oColumn) {
-				return TableColumnUtils.getMaxHeaderSpan(oColumn) > 1;
+				return TableColumnUtils.getHeaderSpan(oColumn) > 1;
 			},
 
 			/**
@@ -315,7 +314,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './l
 					// get the direct relations for all collected columns
 					// columns have a logical relation with each other, if they are spanned by other column headers or
 					// of they by itself are spanning other columns. Since those columns are logically tightly coupled,
-					// they can be seen as a immutable block of columns.
+					// they can be seen as an immutable block of columns.
 					for (i = 0; i < aNewRelations.length; i++) {
 						oColumn = mColumns[aNewRelations[i]];
 						aDirectRelations = aDirectRelations.concat(TableColumnUtils.getParentSpannedColumns(oTable, oColumn.getId()));

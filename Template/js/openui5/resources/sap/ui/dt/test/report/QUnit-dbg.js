@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,7 +16,7 @@ function(jQuery, ManagedObject) {
 
 
 	/**
-	 * Constructor for an QUnit.
+	 * Constructor for a QUnit.
 	 *
 	 * @param {string} [sId] id for the new object, generated automatically if no id is given
 	 * @param {object} [mSettings] initial settings for the new object
@@ -26,7 +26,7 @@ function(jQuery, ManagedObject) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @private
@@ -68,11 +68,10 @@ function(jQuery, ManagedObject) {
 		 */
 		setData : function(oData) {
 			if (oData) {
-				var that = this;
 				var aChildren = oData.children;
 				aChildren.forEach(function(oGroup) {
-					that._createModule(oGroup);
-				});
+					this._createModule(oGroup);
+				}, this);
 			}
 			this.setProperty("data", oData);
 		},
@@ -82,11 +81,10 @@ function(jQuery, ManagedObject) {
 		 * @private
 		 */
 		_createModule : function(oGroup) {
-			var that = this;
 			QUnit.module(oGroup.message);
 			oGroup.children.forEach(function(oGroup) {
-				that._createTest(oGroup);
-			});
+				this._createTest(oGroup);
+			}, this);
 		},
 
 
@@ -94,13 +92,11 @@ function(jQuery, ManagedObject) {
 		 * @private
 		 */
 		_createTest : function(oGroup) {
-			var that = this;
-
 			QUnit.test(oGroup.name + ": " + oGroup.message, function(assert) {
 				oGroup.children.forEach(function(oGroup) {
-					that._createAssertion(oGroup);
-				});
-			});
+					this._createAssertion(oGroup);
+				}, this);
+			}.bind(this));
 		},
 
 

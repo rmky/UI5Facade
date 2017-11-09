@@ -1,18 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides object sap.ui.fl.RegistrationDelegator
 sap.ui.define([
-	"sap/ui/fl/FlexController",
+	"sap/ui/fl/FlexControllerFactory",
 	"sap/ui/core/Component",
 	"sap/ui/fl/registry/ChangeHandlerRegistration",
 	"sap/ui/fl/ChangePersistenceFactory",
-	"sap/ui/fl/PreprocessorImpl",
-	"sap/ui/core/mvc/Controller"
-], function(FlexController, Component, ChangeHandlerRegistration, ChangePersistenceFactory, PreprocessorImpl, MvcController) {
+	"sap/ui/core/mvc/Controller",
+	"sap/ui/core/mvc/XMLView",
+	"sap/ui/fl/EventHistory"
+], function(FlexControllerFactory, Component, ChangeHandlerRegistration, ChangePersistenceFactory, MvcController, XMLView, EventHistory) {
 	"use strict";
 
 	/**
@@ -22,23 +23,23 @@ sap.ui.define([
 	 * @class
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @experimental Since 1.43.0
 	 */
 	var RegistrationDelegator = {
 	};
 
 	/**
-	 * Register the changes in the component
+	 * Registers the changes in the component
 	 *
 	 * @public
 	 */
 	RegistrationDelegator.registerChangesInComponent = function() {
-		Component._fnOnInstanceCreated = FlexController.getChangesAndPropagate.bind(FlexController);
+		Component._fnOnInstanceCreated = FlexControllerFactory.getChangesAndPropagate;
 	};
 
 	/**
-	 * Register change handlers
+	 * Registers change handlers
 	 *
 	 * @public
 	 */
@@ -56,7 +57,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Register the extension provider
+	 * Registers the extension provider
 	 *
 	 * @public
 	 */
@@ -65,15 +66,37 @@ sap.ui.define([
 	};
 
 	/**
-	 * Register everything in one call
+	 * Registers the xml preprocessor
+	 *
+	 * @public
+	 */
+	RegistrationDelegator.registerXMLPreprocessor = function() {
+		if (XMLView.registerPreprocessor){
+			XMLView.registerPreprocessor("viewxml", "sap.ui.fl.XmlPreprocessorImpl", true);
+		}
+	};
+
+	/**
+	 * Registers the event listener
+	 *
+	 * @public
+	 */
+	RegistrationDelegator.registerEventListener = function() {
+		EventHistory.start();
+	};
+
+	/**
+	 * Registers everything in one call
 	 *
 	 * @public
 	 */
 	RegistrationDelegator.registerAll = function() {
+		RegistrationDelegator.registerEventListener();
 		RegistrationDelegator.registerChangeHandlers();
 		RegistrationDelegator.registerLoadComponentEventHandler();
 		RegistrationDelegator.registerExtensionProvider();
 		RegistrationDelegator.registerChangesInComponent();
+		RegistrationDelegator.registerXMLPreprocessor();
 	};
 
 	return RegistrationDelegator;

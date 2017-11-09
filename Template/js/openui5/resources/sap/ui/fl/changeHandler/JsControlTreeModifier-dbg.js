@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,6 +14,7 @@ sap.ui.define(["sap/ui/fl/changeHandler/BaseTreeModifier", "sap/ui/fl/Utils"], f
 
 			setVisible: function (oControl, bVisible) {
 				if (oControl.setVisible) {
+					this.unbindProperty(oControl, "visible");
 					oControl.setVisible(bVisible);
 				} else {
 					throw new Error("Provided control instance has no setVisible method");
@@ -39,16 +40,26 @@ sap.ui.define(["sap/ui/fl/changeHandler/BaseTreeModifier", "sap/ui/fl/Utils"], f
 				}
 			},
 
-			bindProperty: function (oControl, sPropertyName, sBindingPath) {
-				oControl.bindProperty(sPropertyName, sBindingPath);
+			bindProperty: function (oControl, sPropertyName, mBindingInfos) {
+				oControl.bindProperty(sPropertyName, mBindingInfos);
+			},
+
+			/**
+			 * Unbind a property
+			 * The value should not be reset to default when unbinding (bSuppressReset = true)
+			 * @param  {sap.ui.core.Control} oControl  The control containing the property
+			 * @param  {String} sPropertyName  The property to be unbound
+			 */
+			unbindProperty: function (oControl, sPropertyName) {
+				if (oControl) {
+					oControl.unbindProperty(sPropertyName, /*bSuppressReset = */true);
+				}
 			},
 
 			setProperty: function (oControl, sPropertyName, oPropertyValue) {
 				var oMetadata = oControl.getMetadata().getPropertyLikeSetting(sPropertyName);
-				var oBinding = oControl.getBinding(sPropertyName);
-				if (oBinding) {
-					oBinding.suspend();
-				}
+				this.unbindProperty(oControl, sPropertyName);
+
 				if (oMetadata) {
 					var sPropertySetter = oMetadata._sMutator;
 					oControl[sPropertySetter](oPropertyValue);
@@ -110,6 +121,10 @@ sap.ui.define(["sap/ui/fl/changeHandler/BaseTreeModifier", "sap/ui/fl/Utils"], f
 
 			getControlType: function (oControl) {
 				return Utils.getControlType(oControl);
+			},
+
+			getAllAggregations: function (oParent) {
+				return oParent.getMetadata().getAllAggregations();
 			},
 
 			/**
@@ -208,8 +223,11 @@ sap.ui.define(["sap/ui/fl/changeHandler/BaseTreeModifier", "sap/ui/fl/Utils"], f
 			}
 		};
 
-		jQuery.extend(true, JsControlTreeModifier, BaseTreeModifier);
-
-		return JsControlTreeModifier;
+		return jQuery.sap.extend(
+			true /* deep extend */,
+			{} /* target object, to avoid changing of original modifier */,
+			BaseTreeModifier,
+			JsControlTreeModifier
+		);
 	},
 	/* bExport= */true);

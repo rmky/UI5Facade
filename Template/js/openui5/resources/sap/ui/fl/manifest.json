@@ -4,9 +4,11 @@
     "_version": "1.2.0",
     "id": "sap.ui.fl",
     "type": "library",
-    "embeds": [],
+    "embeds": [
+      "support/apps/contentbrowser"
+    ],
     "applicationVersion": {
-      "version": "1.44.8"
+      "version": "1.48.12"
     },
     "title": "SAPUI5 library with sap.ui.fl controls.",
     "description": "SAPUI5 library with sap.ui.fl controls.",
@@ -22,10 +24,13 @@
   "sap.ui5": {
     "_version": "1.1.0",
     "dependencies": {
-      "minUI5Version": "1.44",
+      "minUI5Version": "1.48",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.44.8"
+          "minVersion": "1.48.12"
+        },
+        "sap.m": {
+          "minVersion": "1.48.12"
         }
       }
     }

@@ -1,6 +1,7 @@
-/* =============================================== */
-/* CSS for control sap.m/ViewSettingsDialog.control */
-/* =============================================== */
+/* ========================================= */
+/* CSS for control sap.m/ViewSettingsDialog  */
+/* Base theme                                */
+/* ========================================= */
 
 .sapMVSDUpperList {
 	border-bottom: 2px solid @sapUiToolbarSeparatorColor;
@@ -47,7 +48,6 @@
 
 	.sapMLabel.sapMCbLabel {
 		overflow: hidden;
-		padding-left: 0.5rem;
 		text-overflow: ellipsis;
 	}
 }
@@ -60,5 +60,21 @@ html.sap-desktop .sapMTB.sapMListHdrTBar.sapMVSDFilterHeaderToolbar {
 	.sapMCb {
 		outline: none;
 		padding-right: 0.5rem;
+	}
+}
+
+.sapMSF.sapMVSDFilterSearchField {
+	border-bottom: 1px solid @sapUiGroupTitleBorderColor;
+}
+
+.sapUiSizeCompact .sapMTB.sapMListHdrTBar.sapMVSDFilterHeaderToolbar {
+	.sapMLabel.sapMCbLabel {
+		font-size: @sapMFontMediumSize;
+	}
+}
+
+.sapUiSizeCozy .sapMTB.sapMListHdrTBar.sapMVSDFilterHeaderToolbar {
+	.sapMLabel.sapMCbLabel {
+		font-size: @sapMFontLargeSize;
 	}
 }

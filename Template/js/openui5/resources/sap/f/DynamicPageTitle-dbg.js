@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,40 +16,36 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/m/O
 	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
-	 * <strong><i>Overview</i></strong>
-	 * <br><br>
-	 * The {@link sap.f.DynamicPageTitle DynamicPageTitle} control is part of
-	 * the {@link sap.f.DynamicPage} family and is used to serve as title of
-	 * the {@link sap.f.DynamicPage DynamicPage}.
-	 * <br><br>
-	 * <strong><i>Usage</i></strong>
-	 * <br><br>
-	 * The {@link sap.f.DynamicPageTitle DynamicPageTitle} can hold any
-	 * control and displays the most important information regarding the
-	 * object that will always remain visible while scrolling.
-	 * <br><br>
-	 * <b>Note:</b> The <code>actions</code> aggregation accepts any UI5 control, but it`s recommended to use controls,
-	 * suitable for {@link sap.m.Toolbar} and {@link sap.m.OverflowToolbar}.
-	 * <br><br>
-	 * If the <code>toggleHeaderOnTitleClick</code> property of the
-	 * {@link sap.f.DynamicPage DynamicPage} is set to <code>true</code>, the user can
-	 * switch between the expanded/collapsed states of the
-	 * {@link sap.f.DynamicPageHeader DynamicPageHeader} by clicking on the
-	 * <code>DynamicPageTitle</code>. If set to <code>false</code>, the
-	 * <code>DynamicPageTitle</code> is not clickable and the application must provide
-	 * other means for expanding/collapsing the <code>DynamicPageHeader</code>,
-	 * if necessary.
-	 * <br><br>
-	 * <strong><i>Responsive Behavior</i></strong>
-	 * <br><br>
-	 * The responsive behavior of the
-	 * {@link sap.f.DynamicPageTitle DynamicPageTitle} depends on the
-	 * behavior of the content that is displayed.
+	 * Title of the {@link sap.f.DynamicPage}.
+	 *
+	 * <h3>Overview</h3>
+	 *
+	 * The <code>DynamicPageTitle</code> control is part of the {@link sap.f.DynamicPage}
+	 * family and is used to serve as title of the {@link sap.f.DynamicPage DynamicPage}.
+	 *
+	 * <h3>Usage</h3>
+	 *
+	 * The <code>DynamicPageTitle</code> can hold any control and displays the most important
+	 * information regarding the object that will always remain visible while scrolling.
+	 *
+	 * <b>Note:</b> The <code>actions</code> aggregation accepts any UI5 control, but it`s
+	 * recommended to use controls, suitable for {@link sap.m.Toolbar} and {@link sap.m.OverflowToolbar}.
+	 *
+	 * If the <code>toggleHeaderOnTitleClick</code> property of the {@link sap.f.DynamicPage DynamicPage}
+	 * is set to <code>true</code>, the user can switch between the expanded/collapsed states of the
+	 * {@link sap.f.DynamicPageHeader DynamicPageHeader} by clicking on the <code>DynamicPageTitle</code>.
+	 * If set to <code>false</code>, the <code>DynamicPageTitle</code> is not clickable and the app must
+	 * provide other means for expanding/collapsing the <code>DynamicPageHeader</code>, if necessary.
+	 *
+	 * <h3>Responsive Behavior</h3>
+	 *
+	 * The responsive behavior of the <code>DynamicPageTitle</code> depends on the behavior of the
+	 * content that is displayed.
 	 *
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -103,6 +99,8 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/m/O
 		this._fnActionSubstituteParentFunction = function () {
 			return this;
 		}.bind(this);
+
+		this._oRB = sap.ui.getCore().getLibraryResourceBundle("sap.f");
 	};
 
 	DynamicPageTitle.prototype.onBeforeRendering = function () {
@@ -126,6 +124,24 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/m/O
 	};
 
 	/**
+	 * Fires the <code>DynamicPageTitle</code> press event.
+	 * @param {jQuery.Event} oEvent
+	 */
+	DynamicPageTitle.prototype.onsapspace = function (oEvent) {
+		this.onsapenter(oEvent);
+	};
+
+	/**
+	 * Fires the <code>DynamicPageTitle</code> press event.
+	 * @param {jQuery.Event} oEvent
+	 */
+	DynamicPageTitle.prototype.onsapenter = function (oEvent) {
+		if (oEvent.srcControl === this) {
+			this.fireEvent("_titlePress");
+		}
+	};
+
+	/**
 	 * Caches the DOM elements in a jQuery wrapper for later reuse.
 	 * @private
 	 */
@@ -143,7 +159,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/m/O
 		if (!this.getAggregation("_overflowToolbar")) {
 			this.setAggregation("_overflowToolbar", new OverflowToolbar({
 				id: this.getId() + "-overflowToolbar"
-			}).addStyleClass("sapFDynamicPageTitleOverflowToolbar"));
+			}).addStyleClass("sapFDynamicPageTitleOverflowToolbar"), true); // suppress invalidate, as this is always called onBeforeRendering
 		}
 
 		return this.getAggregation("_overflowToolbar");
@@ -188,13 +204,12 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/m/O
 		.forEach(function (sMethod) {
 			DynamicPageTitle.prototype[sMethod] = function (oControl) {
 				var oToolbar = this._getOverflowToolbar(),
-					sToolbarMethod = sMethod.replace(/Actions?/, "Content"),
-					vResult;
+					sToolbarMethod = sMethod.replace(/Actions?/, "Content");
 
 				if (sMethod === "addAction" || sMethod === "insertAction") {
-					vResult = oToolbar[sToolbarMethod].apply(oToolbar, arguments);
+					oToolbar[sToolbarMethod].apply(oToolbar, arguments);
 					this._preProcessAction(oControl);
-					return vResult;
+					return this;
 				} else if (sMethod === "removeAction") {
 					this._postProcessAction(oControl);
 				} else if (sMethod === "removeAllActions" || sMethod === "destroyActions") {

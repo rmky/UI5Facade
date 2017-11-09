@@ -1,86 +1,45 @@
-/* ============================================ */
-/* CSS for control sap.m/FlexibleColumnLayout   */
-/* ============================================ */
+/* =========================================== */
+/* CSS for control sap.f/FlexibleColumnLayout  */
+/* Belize High Contrast Black theme            */
+/* =========================================== */
+
+// Cozy mode
+.sapFFCL > {
+	& > .sapFFCLColumnMid.sapFFCLColumnActive {
+		border-left: 1px solid @sapUiGroupContentBorderColor;
+		border-right: 1px solid @sapUiGroupContentBorderColor;
+	}
+
+	& > .sapFFCLColumnActive.sapFFCLColumnLastActive {
+		border-right: none;
+		border-left: 1px solid @sapUiGroupContentBorderColor;
+	}
+
+	& > .sapFFCLColumnActive.sapFFCLColumnFirstActive {
+		border-right: 1px solid @sapUiGroupContentBorderColor;
+		border-left: none;
+	}
+
+	& > .sapFFCLColumnActive.sapFFCLColumnOnlyActive {
+		border-right: none;
+		border-left: none;
+	}
+}
 
 .sapFFCL {
-	&, &.sapMNavItem:not(.sapMNavItemHidden) {
-		display: -webkit-flex;
-		display: flex;
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-	}
-
-	.sapFFCLColumn {
-		height: 100%;
-		position: relative;
-
-		// When there are more than one panels, the latter get margin
-		&.sapFFCLColumnMargin {
-			margin: 0 0 0 0.5rem;
-		}
-
-		// When there is content in a panel, it needs min-width
-		&.sapFFCLColumnActive {
-			//min-width: 20rem;
-		}
-
-		.sapFFCLNavigationButton {
-			width: 2rem;
-			height: 3rem;
-			position: absolute;
-			top: 45%;
-			z-index: 20;
-
-			&.sapFFCLNavigationButtonLeft {
-				left: 0;
-			}
-
-			&.sapFFCLNavigationButtonRight {
-				right: 0;
-			}
-
+	.sapFFCLNavigationButton {
+		&.sapFFCLNavigationButtonLeft {
 			.sapMBtnInner {
-				min-width: 1.67rem;
+				border: 1px solid @sapUiButtonBorderColor;
+				border-radius: 0 0.375rem 0.375rem 0;
 			}
 		}
 
-		.sapFFCLContainer {
-			height: 100%;
-		}
-	}
-}
-
-html[data-sap-ui-animation='on'] {
-	.sapFFCL {
-		.sapFFCLColumn {
-			transition: width 150ms ease-in;
-			-webkit-transition: width 150ms ease-in;
-			-ms-transition: width 150ms ease-in;
-			-moz-transition: width 150ms ease-in;
-		}
-	}
-}
-
-// Compact mode
-.sapUiSizeCompact {
-	.sapFFCL {
-		.sapFFCLNavigationButton {
-			width: 1.5rem;
-			height: 2.5rem;
-
+		&.sapFFCLNavigationButtonRight {
 			.sapMBtnInner {
-				min-width: 1.25rem;
-				height: 2.5rem;
-				.sapMBtnIcon {
-					line-height: 2.5rem;
-					width: 1.5rem;
-					font-size: 1rem;
-					margin-left: 0;
-					margin-right: 0;
-				}
+				border: 1px solid @sapUiButtonBorderColor;
+				border-radius: 0.375rem 0 0 0.375rem;
 			}
 		}
 	}
 }
-

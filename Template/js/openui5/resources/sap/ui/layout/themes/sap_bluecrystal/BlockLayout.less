@@ -1,48 +1,111 @@
-/* Predefined colors for the Light background type */
-@sapUiBlockColorA: rgb(255,255,255);
-@sapUiBlockColorB: rgb(250,250,250);
-@sapUiBlockColorC: rgb(239,244,249);
-@sapUiBlockColorD: rgb(232,239,246);
+/* ========================================== */
+/* CSS for control sap.ui.layout/BlockLayout  */
+/* BlueCrystal theme                          */
+/* ========================================== */
 
+/* ============ Background type: Light ============== */
 .sapUiBlockLayoutBackgroundLight {
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet1,
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet3 {
+		.setCellsColorDoubles(@sapUiGroupContentBackground, @sapUiBaseColor);
+	}
 
-	.sapUiBlockLayoutRow:nth-child(4n + 1) {
-		.sapUiBlockLayoutCell:nth-child(odd) {
-			background-color: @sapUiBlockColorA;
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet1Inverted,
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet3Inverted {
+		.setCellsColorDoubles(@sapUiBaseColor, @sapUiGroupContentBackground);
+	}
+
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet2,
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet4 {
+		.setCellsColorDoubles(darken(@sapUiBaseColor, 7), darken(@sapUiBaseColor, 14));
+	}
+
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet2Inverted,
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet4Inverted {
+		.setCellsColorDoubles(darken(@sapUiBaseColor, 14), darken(@sapUiBaseColor, 7));
+	}
+}
+
+/* ============ Background type: Mixed ============== */
+.sapUiBlockLayoutBackgroundMixed {
+	.sapUiBlockLayoutBackgroundLight; // Use the same rules as in sapUiBlockLayoutBackgroundLight
+
+	&.sapUiBlockLayoutSizeL, &.sapUiBlockLayoutSizeXL {
+		.sapUiBlockLayoutRow {
+			.sapContrast, .sapContrastPlus {
+				&.sapUiBlockLayoutCell {
+					background-color: darken(@sapUiBaseColor, 12);
+				}
+
+				&.sapUiBlockLayoutCell.sapUiBlockLayoutBackgroundContrast2 {
+					background-color: darken(@sapUiBaseColor, 4);
+				}
+			}
+		}
+	}
+}
+
+/* ============ Background type: Accent ============== */
+.sapUiBlockLayoutBackgroundAccent {
+	.sapUiBlockCellContent,
+	.sapUiBlockCellTitle,
+	.sapUiBlockCellContent .sapMText {
+		color: @sapUiContentContrastTextColor;
+	}
+
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet1 {
+		.setCellsColorDoubles(darken(@sapUiAccent7, 5), darken(@sapUiAccent7, 12)); // Colors A & B
+	}
+
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet1Inverted {
+		.setCellsColorDoubles(darken(@sapUiAccent7, 12), darken(@sapUiAccent7, 5)); // Colors B & A
+	}
+
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet2 {
+		.setCellsColorDoubles(darken(@sapUiAccent6, 6), darken(@sapUiAccent6, 12)); // Colors C & D
+	}
+
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet2Inverted {
+		.setCellsColorDoubles(darken(@sapUiAccent6, 12), darken(@sapUiAccent6, 6)); // Colors D & C
+	}
+
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet3 {
+		.setCellsColorDoubles(darken(@sapUiAccent5, 8), darken(@sapUiAccent5, 16)); // Colors E & F
+	}
+
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet3Inverted {
+		.setCellsColorDoubles(darken(@sapUiAccent5, 16), darken(@sapUiAccent5, 8)); // Colors F & E
+	}
+
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet4 {
+		.setCellsColorDoubles(darken(@sapUiGroupContentBackground, 2), darken(@sapUiGroupContentBackground, 8)); // Colors G & H
+	}
+
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet4Inverted {
+		.setCellsColorDoubles(darken(@sapUiGroupContentBackground, 8), darken(@sapUiGroupContentBackground, 2)); // Colors H & G
+	}
+
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet1,
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet2,
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet3,
+	.sapUiBlockLayoutRow.sapUiBlockLayoutBackgroundColorSet4 {
+		.sapUiBlockLayoutCell.sapUiBlockLayoutBackgroundColorSetGray1 {
+			background-color: darken(@sapUiGroupContentBackground, 8); //color: H
 		}
 
-		.sapUiBlockLayoutCell:nth-child(even) {
-			background-color: @sapUiBlockColorC;
+		.sapUiBlockLayoutCell.sapUiBlockLayoutBackgroundColorSetGray2 {
+			background-color: darken(@sapUiGroupContentBackground, 2); //color: G
 		}
 	}
 
-	.sapUiBlockLayoutRow:nth-child(4n + 2) {
-		.sapUiBlockLayoutCell:nth-child(odd) {
-			background-color: @sapUiBlockColorB;
-		}
-
-		.sapUiBlockLayoutCell:nth-child(even) {
-			background-color: @sapUiBlockColorD;
-		}
-	}
-
-	.sapUiBlockLayoutRow:nth-child(4n + 3) {
-		.sapUiBlockLayoutCell:nth-child(odd) {
-			background-color: @sapUiBlockColorC;
-		}
-
-		.sapUiBlockLayoutCell:nth-child(even) {
-			background-color: @sapUiBlockColorA;
-		}
-	}
-
-	.sapUiBlockLayoutRow:nth-child(4n + 4) {
-		.sapUiBlockLayoutCell:nth-child(odd) {
-			background-color: @sapUiBlockColorD;
-		}
-
-		.sapUiBlockLayoutCell:nth-child(even) {
-			background-color: @sapUiBlockColorB;
+	.sapUiBlockLayoutBackgroundColorSet4,
+	.sapUiBlockLayoutBackgroundColorSet4Inverted,
+	.sapUiBlockLayoutBackgroundColorSetGray1,
+	.sapUiBlockLayoutBackgroundColorSetGray2 {
+		.sapUiBlockCellContent,
+		.sapUiBlockCellTitle,
+		.sapUiBlockCellContent .sapMText {
+			color: @sapUiGroupTitleTextColor;
 		}
 	}
 }

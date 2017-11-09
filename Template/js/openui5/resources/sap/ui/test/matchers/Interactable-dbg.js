@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -91,7 +91,7 @@ sap.ui.define([
 				// Check for rendering updates
 				var sName = oParent.getMetadata().getName();
 				if (sName === "sap.ui.core.UIArea" && oParent.bNeedsRerendering) {
-					this._oLogger.debug("The control " + oControl + " is currently in an ui area that needs a new rendering");
+					this._oLogger.debug("The control " + oControl + " is currently in a UIArea that needs a new rendering");
 					return false;
 				}
 

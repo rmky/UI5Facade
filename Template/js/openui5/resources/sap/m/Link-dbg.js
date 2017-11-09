@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,10 +20,10 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @class
 	 * A hyperlink control which can be used to trigger actions or to navigate to other applications or web pages.
 	 * @extends sap.ui.core.Control
-	 * @implements sap.ui.core.IShrinkable
+	 * @implements sap.ui.core.IShrinkable, sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -34,7 +34,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	var Link = Control.extend("sap.m.Link", /** @lends sap.m.Link.prototype */ { metadata : {
 
 		interfaces : [
-			"sap.ui.core.IShrinkable"
+			"sap.ui.core.IShrinkable",
+			"sap.ui.core.IFormContent"
 		],
 		library : "sap.m",
 		properties : {
@@ -111,8 +112,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			 * Event is fired when the user triggers the link control.
 			 */
 			press : {allowPreventDefault : true}
-		}
+		},
+		designTime: true
 	}});
+
+
 
 	EnabledPropagator.call(Link.prototype); // inherit "disabled" state from parent controls
 
@@ -154,6 +158,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @private
 	 */
 	Link.prototype._handlePress = function(oEvent) {
+
 		if (this.getEnabled()) {
 			// mark the event for components that needs to know if the event was handled by the link
 			oEvent.setMarked();
@@ -191,7 +196,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		var $this = this.$();
 		this.setProperty("text", sText, true);
 		sText = this.getProperty("text");
-		$this.text(sText);
+		if (this.writeText) {
+			this.writeText(sText);
+		} else {
+			$this.text(sText);
+		}
 		if (sText) {
 			$this.attr("tabindex", "0");
 		} else {
@@ -204,7 +213,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		this.setProperty("href", sUri, true);
 		if (this.getEnabled()) {
 			sUri = this.getProperty("href");
-			this.$().attr("href", sUri);
+			if (!sUri) {
+				this.$().removeAttr("href");
+			} else {
+				this.$().attr("href", sUri);
+			}
 		}
 		return this;
 	};
@@ -277,7 +290,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 				$this.attr("disabled", true);
 				$this.attr("tabindex", "-1");
 				$this.attr("aria-disabled", true);
-				$this.attr("href", "#");
+				$this.removeAttr("href");
 			}
 		}
 		return this;
@@ -373,6 +386,13 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			focusable: this.getEnabled(),
 			enabled: this.getEnabled()
 		};
+	};
+
+	/*
+	 * Link must not be stretched in Form because this would stretch the size of the focus outline
+	 */
+	Link.prototype.getFormDoNotAdjustWidth = function() {
+		return true;
 	};
 
 	return Link;

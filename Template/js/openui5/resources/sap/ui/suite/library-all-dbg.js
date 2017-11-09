@@ -3,7 +3,7 @@ jQuery.sap.declare('sap.ui.suite.library-all');
 if ( !jQuery.sap.isDeclared('sap.ui.suite.QuickViewUtils') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -187,7 +187,7 @@ sap.ui.define("sap/ui/suite/QuickViewUtils",['jquery.sap.global', 'sap/ui/core/C
 if ( !jQuery.sap.isDeclared('sap.ui.suite.VerticalProgressIndicatorRenderer') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -270,7 +270,7 @@ sap.ui.define("sap/ui/suite/VerticalProgressIndicatorRenderer",function() {
 if ( !jQuery.sap.isDeclared('sap.ui.suite.library') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -291,7 +291,7 @@ sap.ui.define("sap/ui/suite/library",['jquery.sap.global', 'sap/ui/core/Core',
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.suite",
-		version: "1.44.8",
+		version: "1.48.12",
 		dependencies : ["sap.ui.core"],
 		types: [
 			"sap.ui.suite.TaskCircleColor"
@@ -311,7 +311,7 @@ sap.ui.define("sap/ui/suite/library",['jquery.sap.global', 'sap/ui/core/Core',
 	 * @namespace
 	 * @alias sap.ui.suite
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @public
 	 */
 	var thisLibrary = sap.ui.suite;
@@ -320,7 +320,7 @@ sap.ui.define("sap/ui/suite/library",['jquery.sap.global', 'sap/ui/core/Core',
 	/**
 	 * Defined color values for the Task Circle Control
 	 *
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -361,7 +361,7 @@ sap.ui.define("sap/ui/suite/library",['jquery.sap.global', 'sap/ui/core/Core',
 if ( !jQuery.sap.isDeclared('sap.ui.suite.TaskCircle') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -388,7 +388,7 @@ sap.ui.define("sap/ui/suite/TaskCircle",['jquery.sap.global', 'sap/ui/core/Contr
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author Svetozar Buzdumovic
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -494,7 +494,7 @@ sap.ui.define("sap/ui/suite/TaskCircle",['jquery.sap.global', 'sap/ui/core/Contr
 if ( !jQuery.sap.isDeclared('sap.ui.suite.TaskCircleRenderer') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -626,7 +626,7 @@ sap.ui.define("sap/ui/suite/TaskCircleRenderer",['jquery.sap.global', 'sap/ui/co
 if ( !jQuery.sap.isDeclared('sap.ui.suite.VerticalProgressIndicator') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -652,7 +652,7 @@ sap.ui.define("sap/ui/suite/VerticalProgressIndicator",['jquery.sap.global', 'sa
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author Svetozar Buzdumovic
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public

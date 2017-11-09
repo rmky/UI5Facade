@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*global Error */
@@ -25,59 +25,26 @@ sap.ui.define([
 		if (!oSettings) {
 			throw new Error("no flex settings provided");
 		}
-		if (!oSettings.features) {
-			// hardcoded list of flex features (change types) and their valid "writable layer"
-			oSettings.features = {
-				"addField": [
-					"CUSTOMER", "VENDOR"
-				],
-				"addGroup": [
-					"CUSTOMER", "VENDOR"
-				],
-				"removeField": [
-					"CUSTOMER", "VENDOR"
-				],
-				"removeGroup": [
-					"CUSTOMER", "VENDOR"
-				],
-				"hideControl": [
-					"CUSTOMER", "VENDOR"
-				],
-				"unhideControl": [
-					"CUSTOMER", "VENDOR"
-				],
-				"stashControl": [
-				  "CUSTOMER", "VENDOR"
-				],
-				"unstashControl": [
-				  "CUSTOMER", "VENDOR"
-				],
-				"renameField": [
-					"CUSTOMER", "VENDOR"
-				],
-				"renameGroup": [
-					"CUSTOMER", "VENDOR"
-				],
-				"moveFields": [
-					"CUSTOMER", "VENDOR"
-				],
-				"moveGroups": [
-					"CUSTOMER", "VENDOR"
-				],
-				"moveElements": [
-					"CUSTOMER", "VENDOR"
-				],
-				"moveControls": [
-					"CUSTOMER", "VENDOR"
-				],
-				"propertyChange": [
-					"VENDOR"
-				],
-				"propertyBindingChange": [
-					"VENDOR"
-				]
+		// Defaults layers used for standard changes, such as 'move' or 'add'
+		if (!oSettings.defaultLayerPermissions) {
+			oSettings.defaultLayerPermissions = {
+				"VENDOR": true,
+				"CUSTOMER_BASE": true,
+				"CUSTOMER": true,
+				"USER": false
 			};
 		}
+
+		// These are the permissions for the Developer Mode Changes, e.g. 'propertyChange', 'propertyBindingChange'
+		if (!oSettings.developerModeLayerPermissions) {
+			oSettings.developerModeLayerPermissions = {
+				"VENDOR": true,
+				"CUSTOMER_BASE": true,
+				"CUSTOMER": false,
+				"USER": false
+			};
+		}
+
 		this._oSettings = oSettings;
 		this._hasMergeErrorOccured = false;
 	};
@@ -89,7 +56,7 @@ sap.ui.define([
 		changeModeUpdated: "changeModeUpdated"
 	};
 
-	Settings._instances = {};
+	Settings._instance = undefined;
 	Settings._bFlexChangeMode = true;
 	Settings._bFlexibilityAdaptationButtonAllowed = false;
 	Settings._oEventProvider = new EventProvider();
@@ -107,7 +74,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * attaches an callback to an event on the event provider of Settings
+	 * attaches a callback to an event on the event provider of Settings
 	 *
 	 * @param {string} sEventId name of the event
 	 * @param {function} oCallback
@@ -119,7 +86,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * detaches an callback to an event on the event provider of Settings
+	 * detaches a callback to an event on the event provider of Settings
 	 *
 	 * @param {string} sEventId name of the event
 	 * @param {function} oCallback
@@ -131,45 +98,73 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns a settings instance after reading the settings from the backend if not already done. There is only one instance of settings during a
+	 * Returns a settings instance after reading the settings from the back end if not already done. There is only one instance of settings during a
 	 * session.
 	 *
-	 * @param {string} sComponentName current UI5 component name
-	 * @param {map} mPropertyBag - (optional) contains additional data that are needed for reading of changes
-	 * - appDescriptor that belongs to actual component
-	 * - siteId that belongs to actual component
+	 * @param {string} [sComponentName] - Current SAPUI5 component name
+	 * @param {string} [sAppVersion] - Current application version
+	 * @param {map} [mPropertyBag] - Contains additional data needed for reading changes
+	 * @param {object} [mPropertyBag.appDescriptor] - App descriptor belonging to actual component
+	 * @param {string} [mPropertyBag.siteId] - Side ID that belongs to actual component
 	 * @returns {Promise} with parameter <code>oInstance</code> of type {sap.ui.fl.registry.Settings}
 	 * @public
 	 */
-	Settings.getInstance = function(sComponentName, mPropertyBag) {
-		return Cache.getChangesFillingCache(LrepConnector.createConnector(), sComponentName, mPropertyBag).then(function(oFileContent) {
-			var oSettings;
-			if (Settings._instances[sComponentName]) {
-				// if instance exists the backend settings are coming from the cache as well and can be ignored
-				oSettings = Settings._instances[sComponentName];
-			} else if (oFileContent.changes && oFileContent.changes.settings) {
-				oSettings = new Settings(oFileContent.changes.settings);
-				Settings._instances[sComponentName] = oSettings;
-			} else {
-				oSettings = new Settings({});
-				Settings._instances[sComponentName] = oSettings;
-			}
-			return oSettings;
+	Settings.getInstance = function(sComponentName, sAppVersion, mPropertyBag) {
+		if (Settings._instance) {
+			return Promise.resolve(Settings._instance);
+		}
+		if (sComponentName) {
+			sAppVersion = sAppVersion || Utils.DEFAULT_APP_VERSION;
+			return Cache.getChangesFillingCache(LrepConnector.createConnector(), { name: sComponentName, appVersion: sAppVersion }, mPropertyBag)
+				.then(function (oFileContent) {
+					var oSettings = {};
+					if (oFileContent.changes && oFileContent.changes.settings) {
+						oSettings = oFileContent.changes.settings;
+					}
+					return Settings._storeInstance(oSettings);
+				});
+		}
+		return Settings._loadSettings();
+	};
+
+	/**
+	 * Sends request to the back end for settings content. Stores content into internal setting instance and returns the instance.
+	 *
+	 * @returns {Promise} With parameter <code>oInstance</code> of type {sap.ui.fl.registry.Settings}
+	 * @private
+	 */
+	Settings._loadSettings = function() {
+		return LrepConnector.createConnector().loadSettings().then(function (oSettings){
+			return Settings._storeInstance(oSettings);
 		});
+	};
+
+	/**
+	 * Writes the data received from the back end or cache into an internal instance and then returns the settings object within a Promise.
+	 *
+	 * @param oSettings - Data received from the back end or cache
+	 * @returns {Promise} with parameter <code>oInstance</code> of type {sap.ui.fl.registry.Settings}
+	 * @protected
+	 *
+	 */
+	Settings._storeInstance = function(oSettings) {
+		if (!Settings._instance) {
+			Settings._instance = new Settings(oSettings);
+		}
+		return Settings._instance;
 	};
 
 	/**
 	 * Returns a settings instance from the local instance cache. There is only one instance of settings during a session. If no instance has been
 	 * created before, undefined will be returned.
 	 *
-	 * @param {string} sComponentName current UI5 component name
 	 * @returns {sap.ui.fl.registry.Settings} instance or undefined if no instance has been created so far.
 	 * @public
 	 */
-	Settings.getInstanceOrUndef = function(sComponentName) {
+	Settings.getInstanceOrUndef = function() {
 		var oSettings;
-		if (Settings._instances[sComponentName]) {
-			oSettings = Settings._instances[sComponentName];
+		if (Settings._instance) {
+			oSettings = Settings._instance;
 		}
 		return oSettings;
 	};
@@ -314,9 +309,9 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns true if backend is ModelS backend.
+	 * Returns true if back end is ModelS back end.
 	 *
-	 * @returns {boolean} true if ATO coding exists in backend.
+	 * @returns {boolean} true if ATO coding exists in back end.
 	 * @public
 	 */
 	Settings.prototype.isModelS = function() {
@@ -328,7 +323,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns true if ATO is enabled in the backend.
+	 * Returns true if ATO is enabled in the back end.
 	 *
 	 * @returns {boolean} true if ATO is enabled.
 	 * @public
@@ -342,35 +337,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Checks if a change type is enabled for the current writable layer
-	 *
-	 * @param {string} sChangeType change type to be checked
-	 * @param {string} sActiveLayer active layer name; if not provided "USER" is the default.
-	 * @returns {boolean} true if the change type is enabled, false if not supported.
-	 * @public
-	 */
-	Settings.prototype.isChangeTypeEnabled = function(sChangeType, sActiveLayer) {
-		if (!sActiveLayer) {
-			sActiveLayer = 'USER';
-		}
-		var bIsEnabled = false;
-		if (!this._oSettings.features[sChangeType]) {
-			// if the change type is not in the feature list, the change type is not check relevant and therefore always enabled.
-			// if a change type should be disabled for all layers, an entry in the feature map has to exist with an empty array.
-			bIsEnabled = true;
-		} else {
-			var iArrayPos = jQuery.inArray(sActiveLayer, this._oSettings.features[sChangeType]);
-			if (iArrayPos < 0) {
-				bIsEnabled = false;
-			} else {
-				bIsEnabled = true;
-			}
-		}
-		return bIsEnabled;
-	};
-
-	/**
-	 * Is current back end system defined as productive system which can also transport changes
+	 * Checks whether the current system is defined as a productive system.
 	 *
 	 * @public
 	 * @returns {boolean} true if system is productive system
@@ -387,10 +354,24 @@ sap.ui.define([
 		this._hasMergeErrorOccoured = bErrorOccured;
 	};
 	/**
-	 * Checks if an merge error occured during merging changes into the view on startup
+	 * Checks if a merge error occured during merging changes into the view on startup
 	 */
 	Settings.prototype.hasMergeErrorOccured = function() {
 		return this._hasMergeErrorOccured;
+	};
+
+	/**
+	 * Getter for the default Layer-Permissions
+	 */
+	Settings.prototype.getDefaultLayerPermissions = function() {
+		return this._oSettings.defaultLayerPermissions;
+	};
+
+	/**
+	 * Getter for the Developer Mode Layer-Permissions
+	 */
+	Settings.prototype.getDeveloperModeLayerPermissions = function() {
+		return this._oSettings.developerModeLayerPermissions;
 	};
 
 	return Settings;

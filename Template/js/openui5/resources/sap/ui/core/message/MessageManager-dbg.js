@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -29,7 +29,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.EventProvider
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -133,7 +133,7 @@ sap.ui.define([
 		var	oMessage = vMessages;
 		if (!vMessages) {
 			return;
-		}else if (jQuery.isArray(vMessages)) {
+		}else if (Array.isArray(vMessages)) {
 			for (var i = 0; i < vMessages.length; i++) {
 				oMessage = vMessages[i];
 				this._importMessage(oMessage);
@@ -149,8 +149,9 @@ sap.ui.define([
 	 * @private
 	 */
 	MessageManager.prototype._importMessage = function(oMessage) {
-		var sMessageKey = oMessage.getTarget();
-		var sProcessorId = oMessage.getMessageProcessor().getId();
+		var sMessageKey = oMessage.getTarget(),
+				oProcessor = oMessage.getMessageProcessor(),
+				sProcessorId = oProcessor && oProcessor.getId();
 
 		if (!this.mMessages[sProcessorId]) {
 			this.mMessages[sProcessorId] = {};
@@ -247,9 +248,9 @@ sap.ui.define([
 	 */
 	MessageManager.prototype._removeMessages = function(vMessages, bOnlyValidationMessages) {
 		var that = this;
-		if (!vMessages || (jQuery.isArray(vMessages) && vMessages.length == 0)) {
+		if (!vMessages || (Array.isArray(vMessages) && vMessages.length == 0)) {
 			return;
-		} else if (jQuery.isArray(vMessages)) {
+		} else if (Array.isArray(vMessages)) {
 			// We need to work on a copy since the messages reference is changed by _removeMessage()
 			var vOriginalMessages = vMessages.slice(0);
 			for (var i = 0; i < vOriginalMessages.length; i++) {
@@ -275,8 +276,10 @@ sap.ui.define([
 	 * @private
 	 */
 	MessageManager.prototype._removeMessage = function(oMessage) {
+		var oProcessor = oMessage.getMessageProcessor(),
+				sProcessorId = oProcessor && oProcessor.getId(),
+				mMessages = this.mMessages[sProcessorId];
 
-		var mMessages = this.mMessages[oMessage.getMessageProcessor().getId()];
 		if (!mMessages) {
 			return;
 		}

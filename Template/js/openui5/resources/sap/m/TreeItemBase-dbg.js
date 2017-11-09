@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -211,14 +211,56 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 	};
 
 	/**
+	 * Gets expander information.
+	 *
+	 * @private
+	 * @since 1.46.0
+	 */
+	TreeItemBase.prototype._updateExpander = function() {
+		if (this._oExpanderControl) {
+			var sSrc = "";
+			if (!this.isLeaf()) {
+				sSrc = this.getExpanded() ? this.ExpandedIconURI : this.CollapsedIconURI;
+			}
+			this._oExpanderControl.setSrc(sSrc);
+		}
+	};
+
+	TreeItemBase.prototype.setBindingContext = function() {
+		ListItemBase.prototype.setBindingContext.apply(this, arguments);
+		this._updateExpander();
+
+		return this;
+	};
+
+	/**
 	 * Gets the indentation of the node for rendering purposes.
 	 *
 	 * @returns {Boolean}
 	 * @private
 	 * @since 1.42.0
 	 */
-	TreeItemBase.prototype._getLevelIndentCSS = function() {
-		return this.getLevel();
+	TreeItemBase.prototype._getPadding = function() {
+		var oTree = this.getTree(),
+		iNodeLevel = this.getLevel(),
+		iIndentation = 0,
+		iDeepestLevel;
+
+		if (oTree) {
+			iDeepestLevel = oTree.getDeepestLevel();
+		}
+
+		if (iDeepestLevel < 2) {
+			iIndentation = iNodeLevel * 1.5;
+		} else if (iDeepestLevel === 2) {
+			iIndentation = iNodeLevel * 1;
+		} else if (iDeepestLevel < 6) {
+			iIndentation = iNodeLevel * 0.5;
+		} else {
+			iIndentation = iNodeLevel * 0.25;
+		}
+
+		return iIndentation;
 	};
 
 	/**

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata'],
 	 *
 	 * @class
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @since 0.8.6
 	 * @alias sap.ui.core.ElementMetadata
 	 */
@@ -31,7 +31,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata'],
 	};
 
 	//chain the prototypes
-	ElementMetadata.prototype = jQuery.sap.newObject(ManagedObjectMetadata.prototype);
+	ElementMetadata.prototype = Object.create(ManagedObjectMetadata.prototype);
 
 	/**
 	 * Calculates a new id based on a prefix.
@@ -93,13 +93,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata'],
 
 		ManagedObjectMetadata.prototype.applySettings.call(this, oClassInfo);
 
-		if (typeof oStaticInfo["designTime"] === "boolean") {
-			this._bHasDesignTime = oStaticInfo["designTime"];
-		} else if (oStaticInfo["designTime"]) {
-			this._bHasDesignTime = true;
-			this._oDesignTime = oStaticInfo["designTime"];
-		}
-
 		this._sRendererName = this.getName() + "Renderer";
 
 		if ( typeof vRenderer !== "undefined" ) {
@@ -114,13 +107,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata'],
 
 			var oParent = this.getParent();
 			var oBaseRenderer;
-			if ( oParent && oParent instanceof ElementMetadata ) {
+			if ( oParent instanceof ElementMetadata ) {
 				oBaseRenderer = oParent.getRenderer();
 			}
 			if ( !oBaseRenderer ) {
 				oBaseRenderer = sap.ui.requireSync('sap/ui/core/Renderer');
 			}
-			var oRenderer = jQuery.sap.newObject(oBaseRenderer);
+			var oRenderer = Object.create(oBaseRenderer);
 			jQuery.extend(oRenderer, vRenderer);
 			jQuery.sap.setObject(this.getRendererName(), oRenderer);
 		}
@@ -133,55 +126,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata'],
 
 	ElementMetadata.prototype.isHidden = function() {
 		return this._sVisibility === "hidden";
-	};
-
-	/**
-	 * Returns a promise that resolves with the own, unmerged designtime data.
-	 * If the class is marked as having no designtime data, the promise will resolve with null.
-	 */
-	function loadOwnDesignTime(oElementMetadata) {
-		if (oElementMetadata._oDesignTime || !oElementMetadata._bHasDesignTime) {
-			return Promise.resolve(oElementMetadata._oDesignTime || null);
-		}
-		return new Promise(function(fnResolve) {
-			var sModule = jQuery.sap.getResourceName(oElementMetadata.getElementName(), ".designtime");
-			sap.ui.require([sModule], function(oDesignTime) {
-				oElementMetadata._oDesignTime = oDesignTime;
-				fnResolve(oDesignTime);
-			});
-		});
-	}
-
-	/**
-	 * Load and returns the design time metadata asynchronously. The design time metadata contains all relevant information to support the control
-	 * in the UI5 design time.
-	 *
-	 * @return {Promise} A promise which will return the loaded design time metadata
-	 * @since 1.28.0
-	 */
-	ElementMetadata.prototype.loadDesignTime = function() {
-		if (!this._oDesignTimePromise) {
-
-			// Note: parent takes care of merging its ancestors
-			var oWhenParentLoaded;
-			var oParent = this.getParent();
-			if (oParent instanceof ElementMetadata) {
-				oWhenParentLoaded = oParent.loadDesignTime();
-			} else {
-				oWhenParentLoaded = Promise.resolve(null);
-			}
-
-			// Note that the ancestor designtimes and the own designtime will be loaded 'in parallel',
-			// only the merge is done in sequence by chaining promises
-			this._oDesignTimePromise = loadOwnDesignTime(this).then(function(oOwnDesignTime) {
-				return oWhenParentLoaded.then(function(oParentDesignTime) {
-					// we use jQuery.sap.extend to be able to also overwrite properties with null or undefined
-					return jQuery.sap.extend({}, oParentDesignTime, oOwnDesignTime);
-				});
-			});
-		}
-
-		return this._oDesignTimePromise;
 	};
 
 	return ElementMetadata;

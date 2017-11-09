@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,24 +23,29 @@ sap.ui.define([],
 		 *          control an object representation of the control that should be rendered
 		 */
 		ToolPageRenderer.render = function (rm, control) {
+
+			var header = control.getAggregation('header');
+
 			rm.write('<div');
 			rm.writeControlData(control);
 			rm.addClass('sapTntToolPage');
+
+			if (header) {
+				rm.addClass('sapTntToolPageWithHeader');
+			}
+
 			rm.writeClasses();
 			rm.write('>');
 
-			this.renderHeader(rm, control);
+			if (header) {
+				rm.write('<div id="' + control.getId() + '-header" class="sapTntToolPageHeader">');
+				rm.renderControl(header);
+				rm.write('</div>');
+			}
+
 			this.renderContentWrapper(rm, control);
 
 			rm.write('</div>');
-		};
-
-		ToolPageRenderer.renderHeader = function (rm, control) {
-			if (control.getAggregation('header')) {
-				rm.write('<div id="' + control.getId() + '-header" class="sapTntToolPageHeader">');
-				rm.renderControl(control.getAggregation('header'));
-				rm.write('</div>');
-			}
 		};
 
 		ToolPageRenderer.renderContentWrapper = function (rm, control) {

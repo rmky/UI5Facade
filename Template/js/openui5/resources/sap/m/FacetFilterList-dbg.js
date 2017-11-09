@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,15 +12,29 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 
 
 	/**
-	 * Constructor for a new FacetFilterList.
+	 * Constructor for a new <code>FacetFilterList</code>.
 	 *
-	 * @param {string} [sId] ID for the new control, generated automatically if no id is given
+	 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
 	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
-	 * FacetFilterList represents a list of values for the FacetFilter control.
+	 * Represents a list of values for the {@link sap.m.FacetFilter} control.
+	 *
+	 * <b>Note: </b><code>FacetFilterList</code> is a subclass of {@link sap.m.List} and supports
+	 * growing enablement feature via the property <code>growing</code>. When you use this feature,
+	 * be aware that it only works with one-way data binding.
+	 * Having growing feature enabled when the <code>items</code> aggregation is bound to
+	 * a model with two-way data binding, may lead to unexpected and/or inconsistent
+	 * behavior across browsers, such as unexpected closing of the list.
+	 *
+	 * While the <code>FacetFilterList</code> popup is opened (when the user selects a button
+	 * corresponding to the list's name), any other activities leading to focus change will
+	 * close it. For example, when the popup is opened and the app developer loads a
+	 * {@link sap.m.BusyDialog} or any other dialog that obtains the focus, the popup will
+	 * be closed.
+	 *
 	 * @extends sap.m.List
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -122,7 +136,7 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 		}
 	}});
 
-	/**
+	/*
 	 * Sets the title property.
 	 * @param {string} sTitle New value for property title
 	 */
@@ -135,7 +149,7 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 		return this;
 	};
 
-	/**
+	/*
 	 * Sets the multiSelect property (default value is <code>true</code>).
 	 * @param {boolean}	bMultiSelect New value for property multiSelect
 	 * @returns {sap.m.FacetFilterList}	this to allow method chaining
@@ -691,6 +705,17 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 		bActive = this._getOriginalActiveState() || bSelected;
 		this.setActive(bActive);
 		jQuery.sap.delayedCall(0, this, this._updateSelectAllCheckBox);
+	};
+
+	/**
+	 * @private
+	 */
+	FacetFilterList.prototype.onItemTextChange = function(oItem, sNewValue) {
+		var sKeyName = oItem.getKey();
+
+		if (this._oSelectedKeys[sKeyName] && sNewValue) {
+			this._oSelectedKeys[sKeyName] = sNewValue;
+		}
 	};
 
 	/**

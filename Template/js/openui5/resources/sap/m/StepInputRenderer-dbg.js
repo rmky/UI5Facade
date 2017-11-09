@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([], function () {
@@ -19,10 +19,17 @@ sap.ui.define([], function () {
 				oInput = oControl._getInput(),
 				sWidth = oControl.getWidth(),
 				bEnabled = oControl.getEnabled(),
-				bEditable = oControl.getEditable();
+				bEditable = oControl.getEditable(),
+				fMin = oControl.getMin(),
+				fMax = oControl.getMax(),
+				fValue = oControl.getValue(),
+				bDisableButton = false;
 
-			oRm.write("<div");
-			bEnabled && bEditable && oRm.write(" tabindex='-1'");
+			oRm.write("<div ");
+			if (bEnabled && bEditable) {
+				oRm.write("tabindex='-1'");
+			}
+
 			oRm.addStyle("width", sWidth);
 			oRm.writeStyles();
 			oRm.writeControlData(oControl);
@@ -30,35 +37,35 @@ sap.ui.define([], function () {
 			oRm.addClass("sapMStepInput");
 			oRm.addClass("sapMStepInput-CTX");
 			!bEnabled && oRm.addClass("sapMStepInputReadOnly");
-			!bEditable && oRm.addClass("sapMStepInputDisabled");
+			!bEditable && oRm.addClass("sapMStepInputNotEditable");
 			oRm.writeClasses();
 			oRm.write(">");
 
-			if (bEditable) {
-				this.wrapButtons(oRm, oDecrementButton, ["sapMStepInputBtnDecrease"]);
+			if (bEditable && oDecrementButton) {
+				bDisableButton = !bEnabled || (fValue <= fMin);
+				this.renderButton(oRm, oDecrementButton, ["sapMStepInputBtnDecrease"], bDisableButton);
 			}
 
 			oRm.renderControl(oInput);
 
-			if (bEditable) {
-				this.wrapButtons(oRm, oIncrementButton, ["sapMStepInputBtnIncrease"]);
+			if (bEditable && oIncrementButton) {
+				bDisableButton = !bEnabled || (fValue >= fMax);
+				this.renderButton(oRm, oIncrementButton, ["sapMStepInputBtnIncrease"], bDisableButton);
 			}
 
 			oRm.write("</div>");
 		};
 
-	StepInputRenderer.wrapButtons = function (oRm, oControl, aClasses) {
-		oRm.write("<div tabindex='-1'");
-		oRm.addClass("sapMStepInputBtnWrapper");
-		aClasses.forEach(function (sClass) {
-			oRm.addClass(sClass);
-		});
-		oRm.writeClasses();
-		oRm.write(">");
+		StepInputRenderer.renderButton = function (oRm, oButton, aWrapperClasses, bDisableButton) {
+			oButton.addStyleClass("sapMStepInputBtn");
 
-		oRm.renderControl(oControl);
-		oRm.write("</div>");
-	};
+			aWrapperClasses.forEach(function (sClass) {
+				oButton.addStyleClass(sClass);
+			});
+
+			bDisableButton ? oButton.addStyleClass("sapMStepInputIconDisabled") : oButton.removeStyleClass("sapMStepInputIconDisabled");
+			oRm.renderControl(oButton);
+		};
 
 	return StepInputRenderer;
 

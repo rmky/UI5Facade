@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -61,7 +61,7 @@ function ($, ManagedObject, QUnitUtils, Opa5, Device) {
 		 * Used for retrieving the correct $ to execute your action on.
 		 * This will check the following conditions in order:
 		 * <ol>
-		 *     <li>The user provided a idSuffix - return</li>
+		 *     <li>The user provided an idSuffix - return</li>
 		 *     <li>There is a control adapter for the action (most of them are provided out of the box) - use the adapter see {@link sap.ui.test.Press.controlAdapters} for an example</li>
 		 *     <li>The focusDomRef of the control is taken as fallback</li>
 		 * </ol>
@@ -80,7 +80,10 @@ function ($, ManagedObject, QUnitUtils, Opa5, Device) {
 			}
 
 			if (!$FocusDomRef.length) {
-				$.sap.log.error("Control " + oControl + " has no dom representation idSuffix was " + sAdapterDomRefId, this._sLogPrefix);
+				var sErrorMessage = "Control " + oControl + " has no dom representation idSuffix was " + sAdapterDomRefId;
+
+				$.sap.log.error(sErrorMessage, this._sLogPrefix);
+				throw new Error(sErrorMessage);
 			} else {
 				$.sap.log.info("Found a domref for the Control " + oControl + " the action is going to be executed on the dom id" + $FocusDomRef[0].id, this._sLogPrefix);
 			}

@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides helper sap.ui.table.TableMenuUtils.
-sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap/ui/unified/MenuItem', 'sap/ui/core/Popup', './library'],
-	function(jQuery, Device, Menu, MenuItem, Popup, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap/ui/unified/MenuItem', 'sap/ui/core/Popup'],
+	function(jQuery, Device, Menu, MenuItem, Popup) {
 		"use strict";
 
 		// Table uses z-indices, ensure that popups starts their z-indices at least with 20.
@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Menu...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 * @namespace
 		 * @name sap.ui.table.TableMenuUtils
 		 * @private
@@ -35,7 +35,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 			 * The context menu will not be opened, if the configuration of the table does not allow it, or one of the event handlers attached to the
 			 * events <code>ColumnSelect</code> or <code>CellContextmenu</code> calls preventDefault().
 			 *
-			 * On mobile devices, when trying to open a column context menu, an column header cell menu is created instead with buttons to actually open
+			 * On mobile devices, when trying to open a column context menu, a column header cell menu is created instead with buttons to actually open
 			 * the column context menu or to resize the column. If this function is called when this cell menu already exists, then it is closed
 			 * and the column context menu is opened.
 			 *
@@ -70,18 +70,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 				}
 
 				var oCellInfo = MenuUtils.TableUtils.getCellInfo($TableCell);
+				var iColumnIndex;
+				var bExecuteDefault;
 
 				if (oCellInfo.type === MenuUtils.TableUtils.CELLTYPES.COLUMNHEADER) {
-					var iColumnIndex = MenuUtils.TableUtils.getColumnHeaderCellInfo($TableCell).index;
 					var bCellHasMenuButton = $TableCell.find(".sapUiTableColDropDown").length > 0;
+
+					iColumnIndex = MenuUtils.TableUtils.getColumnHeaderCellInfo($TableCell).index;
 
 					if (Device.system.desktop || bCellHasMenuButton) {
 						MenuUtils.removeColumnHeaderCellMenu(oTable, iColumnIndex);
-						var bExecuteDefault = true;
+						bExecuteDefault = true;
 
 						if (bFireEvent) {
 							bExecuteDefault = oTable.fireColumnSelect({
-								column: oTable._getVisibleColumns()[iColumnIndex]
+								column: oTable.getColumns()[iColumnIndex]
 							});
 						}
 
@@ -95,8 +98,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 				} else if (oCellInfo.type === MenuUtils.TableUtils.CELLTYPES.DATACELL) {
 					var oCellIndices = MenuUtils.TableUtils.getDataCellInfo(oTable, $TableCell);
 					var iRowIndex = oCellIndices.rowIndex;
-					var iColumnIndex = oCellIndices.columnIndex;
-					var bExecuteDefault = true;
+
+					bExecuteDefault = true;
+					iColumnIndex = oCellIndices.columnIndex;
 
 					if (bFireEvent) {
 						var oRowColCell = MenuUtils.TableUtils.getRowColCell(oTable, iRowIndex, iColumnIndex, true);
@@ -158,12 +162,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 					return;
 				}
 
-				// If column menus of other columns are open, close them.
+				// Close all menus.
 				for (var i = 0; i < oColumns.length; i++) {
+					// If column menus of other columns are open, close them.
 					if (oColumns[i] !== oColumn) {
 						MenuUtils.closeColumnContextMenu(oTable, i);
 					}
 				}
+				MenuUtils.closeDataCellContextMenu(oTable);
 
 				oColumn._openMenu(oCell && oCell[0] || oColumn.getDomRef(), bHoverFirstMenuItem);
 			},
@@ -272,11 +278,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 					var $Cell =  MenuUtils.TableUtils.getParentDataCell(oTable, oCell.getDomRef());
 
 					if ($Cell !== null && !MenuUtils.TableUtils.Grouping.isInGroupingRow($Cell)) {
-						var oCell = $Cell[0];
+						oCell = $Cell[0];
 
 						var bMenuOpenAtAnotherDataCell = oTable._oCellContextMenu.bOpen && oTable._oCellContextMenu.oOpenerRef !== oCell;
 						if (bMenuOpenAtAnotherDataCell) {
 							MenuUtils.closeDataCellContextMenu(oTable);
+						}
+
+						for (var i = 0; i < oColumns.length; i++) {
+							MenuUtils.closeColumnContextMenu(oTable, i);
 						}
 
 						oTable._oCellContextMenu.open(bHoverFirstMenuItem, oCell, Popup.Dock.BeginTop, Popup.Dock.BeginBottom, oCell, "none none");
@@ -305,6 +315,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 				if (bMenuOpen) {
 					oMenu.close();
 				}
+			},
+
+			/**
+			 * Destroys the cell context menu.
+			 *
+			 * @param {sap.ui.table.Table} oTable Instance of the table.
+			 * @private
+			 */
+			cleanupDataCellContextMenu: function(oTable) {
+				if (!oTable || !oTable._oCellContextMenu) {
+					return;
+				}
+
+				oTable._oCellContextMenu.destroy();
+				oTable._oCellContextMenu = null;
 			},
 
 			/**

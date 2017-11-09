@@ -1,23 +1,12 @@
-/* ========================================= */
-/* CSS for control sap.m/TileContent.control */
-/* ========================================= */
-/* Footer CSS */
-.sapMTileCntFtrTxt {
-	font-family: @sapUiFontFamily;
-	color: @sapUiTileTextColor;
-}
-
-.sapMTileCntFtrTxt {
-	font-size: @sapMFontMediumSize;
-}
+/* ================================== */
+/* CSS for control sap.m/TileContent  */
+/* BlueCrystal theme                  */
+/* ================================== */
 
 .sapMTileCnt.News {
-	background-color: fade(@sapUiLightestBG, 60);
+	background-color: fade(@sapUiTileBackground, 80);
 }
 
-/* BREAKPOINT FOR SMALL PHONES */
-@media screen and (max-width: 374px) {
-	.sapMTileCntFtrTxt {
-		font-size: @sapMFontSmallSize;
-	}
+.sapMTileCnt.News .sapMTileCntFtrTxt {
+	color: @sapUiTileTextColor;
 }

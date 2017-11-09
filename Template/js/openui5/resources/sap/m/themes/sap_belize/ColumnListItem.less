@@ -1,7 +1,22 @@
 /* ===================================== */
 /* CSS for control sap.m/ColumnListItem  */
-/* Belize theme                          */
+/* Base theme                            */
 /* ===================================== */
+
+.sapMListTblRow.sapMListTblRowTop > td {
+	vertical-align: top;
+}
+
+/* Adapt padding for vAlign="Middle" according to UX vAlign specs */
+.sapMListTblRow.sapMListTblRowMiddle > td {
+	vertical-align: middle;
+	padding-top: 0.25rem;
+	padding-bottom: 0.25rem;
+}
+
+.sapMListTblRow.sapMListTblRowBottom > td {
+	vertical-align: bottom;
+}
 
 .sapMListBGTransparent .sapMListTblSubRow {
 	background: fade(@sapUiListBackground, 0%);
@@ -43,7 +58,7 @@
 }
 
 .sapMListTblSubCntSpr {
-	font-size: @sapUiListTableTextSize;
+	font-size: @sapMFontMediumSize;
 }
 
 .sapMListTblSubCntRow + .sapMListTblSubCntRow {
@@ -96,11 +111,6 @@
 	border-bottom: 1px solid @sapUiListTableFooterBorder;
 }
 
-.sapMListShowSeparatorsAll .sapMLIBShowSeparator:first-child > td,
-.sapMListShowSeparatorsInner .sapMLIBShowSeparator:first-child > td {
-	border-top-color: transparent;
-}
-
 .sapMListShowSeparatorsInner .sapMLIBShowSeparator:last-child > td,
 .sapMListShowSeparatorsInner .sapMListTblSubRow:last-child > td {
 	border-bottom-color: transparent;
@@ -122,10 +132,4 @@
 .sapUiSizeCompact .sapMListModeMultiSelect .sapMListTblSubCnt,
 .sapUiSizeCompact .sapMListModeSingleSelectLeft .sapMListTblSubCnt {
 	padding-left: 2.5rem;
-}
-
-/* add extra margin for top aligned rows */
-.sapUiSizeCompact .sapMListTblRowTop > .sapMListTblCell > *{
-	margin-top: .5rem;
-	margin-bottom: .5rem;
 }

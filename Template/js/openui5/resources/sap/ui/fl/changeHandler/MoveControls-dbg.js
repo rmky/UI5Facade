@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,16 +10,21 @@ sap.ui.define([
 		"use strict";
 
 		/**
-		 * Change handler for moving of a element.
+		 * Change handler for moving of an element.
 		 *
 		 * @alias sap.ui.fl.changeHandler.MoveControls
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 * @experimental Since 1.46
 		 */
 		var MoveControls = { };
 
 		MoveControls.CHANGE_TYPE = "moveControls";
+
+		// Defines object which contains constants used in the handler
+		MoveControls.SOURCE_ALIAS = "source";
+		MoveControls.TARGET_ALIAS = "target";
+		MoveControls.MOVED_ELEMENTS_ALIAS = "movedElements";
 
 		MoveControls._checkConditions = function (oChange, oModifier, oView, oAppComponent) {
 			if (!oChange) {
@@ -131,7 +136,7 @@ sap.ui.define([
 		 * @param {sap.ui.fl.Change} oChange change object with instructions to be applied on the control map
 		 * @param {sap.ui.core.Control} oRelevantContainer control that matches the change selector for applying the change, which is the source of the move
 		 * @param {object} mPropertyBag - map of properties
-		 * @param {object} mPropertyBag.view - xml node representing an ui5 view
+		 * @param {object} mPropertyBag.view - xml node representing a ui5 view
 		 * @param {sap.ui.fl.changeHandler.BaseTreeModifier} mPropertyBag.modifier - modifier for the controls
 		 * @param {sap.ui.core.UIComponent} mPropertyBag.appComponent - appComopnent
 		 * @return {boolean} true - if change could be applied
@@ -159,16 +164,24 @@ sap.ui.define([
 					FlexUtils.log.warning("Element to move not found");
 					return;
 				}
-
+				// adjust the current sourceAggregation
+				var iIndex;
+				var mAllAggregations = oModifier.getAllAggregations(oSourceParent);
+				Object.keys(mAllAggregations).some(function(sKey) {
+					var aAggregation = oModifier.getAggregation(oSourceParent, sKey);
+					if (Array.isArray(aAggregation)) {
+						iIndex = aAggregation.indexOf(oMovedElement);
+						if (iIndex > -1) {
+							sSourceAggregation = sKey;
+							return true;
+						}
+					}
+				});
 				oModifier.removeAggregation(oSourceParent, sSourceAggregation, oMovedElement, oView);
-				oModifier.insertAggregation(oTargetParent, sTargetAggregation, oMovedElement, mMovedElement.targetIndex);
+				oModifier.insertAggregation(oTargetParent, sTargetAggregation, oMovedElement, mMovedElement.targetIndex, oView);
 			}, this);
 
 			return true;
-		};
-
-		MoveControls.buildStableChangeInfo = function(mMoveActionParameter){
-			return mMoveActionParameter;
 		};
 
 		/**
@@ -211,6 +224,12 @@ sap.ui.define([
 					targetIndex : mElement.targetIndex
 				});
 			});
+
+			oChange.addDependentControl(mSpecificChangeInfo.source.id, MoveControls.SOURCE_ALIAS, mPropertyBag);
+			oChange.addDependentControl(mSpecificChangeInfo.target.id, MoveControls.TARGET_ALIAS, mPropertyBag);
+			oChange.addDependentControl(mSpecificChangeInfo.movedElements.map(function (element) {
+				return element.id;
+			}), MoveControls.MOVED_ELEMENTS_ALIAS, mPropertyBag);
 		};
 
 		return MoveControls;

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -32,7 +32,7 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @private
@@ -64,18 +64,19 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 					defaultValue : true
 				},
 				/**
-				 * Whether the overlay is created for an element or aggregation, which is not accessible via the public tree
-				 */
-				inHiddenTree : {
-					type : "boolean",
-					defaultValue : false
-				},
-				/**
 				 * Whether the Overlay can get the browser focus (has tabindex)
 				 */
 				focusable : {
 					type : "boolean",
 					defaultValue : false
+				},
+
+				/**
+				 * Whether the Overlay is enabled
+				 */
+				enabled: {
+					type: "boolean",
+					defaultValue: true
 				}
 			},
 			associations : {
@@ -138,12 +139,7 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 		if (!oOverlayContainer) {
 			oOverlayContainer = jQuery.sap.byId(sOverlayContainerId);
 			if (!oOverlayContainer.length) {
-				oOverlayContainer = jQuery("<div id='" + sOverlayContainerId + "'></div>").css({
-					"top" : "0px",
-					"left" : "0px",
-					"right" : "0px",
-					"bottom" : "0px"
-				}).appendTo("body");
+				oOverlayContainer = jQuery("<div id='" + sOverlayContainerId + "'></div>").appendTo("body");
 			}
 		}
 		return oOverlayContainer.get(0);
@@ -246,7 +242,6 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 
 	/**
 	 * Returns a DOM reference for the associated Element or null, if it can't be found
-	 * @return {Element} DOM element or null
 	 * @public
 	 */
 	Overlay.prototype.getAssociatedDomRef = function() {
@@ -259,7 +254,7 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	 * @public
 	 */
 	Overlay.prototype.getElementInstance = function() {
-		return sap.ui.getCore().byId(this.getElement());
+		return ElementUtil.getElementInstance(this.getElement());
 	};
 
 	/**
@@ -277,6 +272,7 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	 * @public
 	 */
 	Overlay.prototype.setFocusable = function(bFocusable) {
+		bFocusable = !!bFocusable;
 		if (this.isFocusable() !== bFocusable) {
 			this.setProperty("focusable", bFocusable);
 			this.toggleStyleClass("sapUiDtOverlayFocusable", bFocusable);
@@ -302,6 +298,24 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	 * @public
 	 */
 	Overlay.prototype.applyStyles = function() {
+
+		if (!this.getEnabled()) {
+			return;
+		}
+
+		var fnDeleteDummyContainer = function() {
+			if (this._oDummyScrollContainer) {
+				this._oDummyScrollContainer.remove();
+				delete this._oDummyScrollContainer;
+				if (this.getParent() && this.getParent().$) {
+					var $parent = this.getParent().$();
+					$parent.removeClass("sapUiDtOverlayWithScrollBar");
+					$parent.removeClass("sapUiDtOverlayWithScrollBarVertical");
+					$parent.removeClass("sapUiDtOverlayWithScrollBarHorizontal");
+				}
+			}
+		}.bind(this);
+
 		// invalidate cached geometry
 		delete this._mGeometry;
 
@@ -318,6 +332,8 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 
 		if (oGeometry && oGeometry.visible) {
 			var $overlay = this.$();
+			var iScrollingWidth = DOMUtil.getScrollbarWidth();
+			var mSize = oGeometry.size;
 
 			// ensure visibility
 			$overlay.css("display", "block");
@@ -327,10 +343,12 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 			var iParentScrollTop = (oOverlayParent && oOverlayParent instanceof Overlay) ? oOverlayParent.$().scrollTop() : null;
 			var iParentScrollLeft = (oOverlayParent && oOverlayParent instanceof Overlay) ? oOverlayParent.$().scrollLeft() : null;
 			var mParentOffset = (oOverlayParent && oOverlayParent instanceof Overlay) ? oOverlayParent.$().offset() : null;
+
+			if (mParentOffset && jQuery('html').attr('dir') === 'rtl' && DOMUtil.hasVerticalScrollBar(oOverlayParent.getDomRef())) {
+				mParentOffset.left += iScrollingWidth;
+			}
+
 			var mPosition = DOMUtil.getOffsetFromParent(oGeometry.position, mParentOffset, iParentScrollTop, iParentScrollLeft);
-
-
-			var mSize = oGeometry.size;
 
 			// OVERLAY SIZE
 			$overlay.css("width", mSize.width + "px");
@@ -355,9 +373,20 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 					}
 					var iScrollHeight = oGeometry.domRef.scrollHeight;
 					var iScrollWidth = oGeometry.domRef.scrollWidth;
-					if (iScrollHeight > mSize.height || iScrollWidth > mSize.width) {
+					// Math.ceil is needed because iScrollHeight is an integer value, mSize not. To compare we should have an integer value for mSize too.
+					// example: iScrollHeight = 24px, mSize.height = 23.98375. Both should be the same.
+					if (iScrollHeight > Math.ceil(mSize.height) || iScrollWidth > Math.ceil(mSize.width)) {
 						if (!this._oDummyScrollContainer) {
 							this._oDummyScrollContainer = jQuery("<div class='sapUiDtDummyScrollContainer' style='height: " + iScrollHeight + "px; width: " + iScrollWidth + "px;'></div>");
+
+							if (oOverlayParent.$ && DOMUtil.hasVerticalScrollBar(oGeometry.domRef)) {
+								oOverlayParent.$().addClass("sapUiDtOverlayWithScrollBar");
+								oOverlayParent.$().addClass("sapUiDtOverlayWithScrollBarVertical");
+							}
+							if (oOverlayParent.$ && DOMUtil.hasHorizontalScrollBar(oGeometry.domRef)) {
+								oOverlayParent.$().addClass("sapUiDtOverlayWithScrollBar");
+								oOverlayParent.$().addClass("sapUiDtOverlayWithScrollBarHorizontal");
+							}
 							this.$().append(this._oDummyScrollContainer);
 						} else {
 							this._oDummyScrollContainer.css({
@@ -365,9 +394,8 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 								"width" : iScrollWidth
 							});
 						}
-					} else if (this._oDummyScrollContainer) {
-						this._oDummyScrollContainer.remove();
-						delete this._oDummyScrollContainer;
+					} else {
+						fnDeleteDummyContainer();
 					}
 					this._attachDomRefScrollHandler();
 
@@ -382,6 +410,7 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 			});
 
 		} else {
+			fnDeleteDummyContainer();
 			this.$().css("display", "none");
 		}
 	};
@@ -402,6 +431,7 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	};
 
 	/**
+	 * @param {object} oDomRef element's DOM reference
 	 * @private
 	 */
 	Overlay.prototype._detachDomRefScrollHandler = function(oDomRef) {
@@ -414,20 +444,19 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	/**
 	 * @private
 	 */
-	Overlay.prototype._onSyncScrollWithDomRef = function(oEvt) {
+	Overlay.prototype._onSyncScrollWithDomRef = function() {
 		window.clearTimeout(this._iSyncScrollWithDomRef);
-		var that = this;
 		// timeout needed so that scroll wheel in chrome windows works fast
 		this._iSyncScrollWithDomRef = window.setTimeout(function() {
-			that._syncScrollWithDomRef();
-			delete that._iSyncScrollWithDomRef;
-		}, 0);
+			this._syncScrollWithDomRef();
+			delete this._iSyncScrollWithDomRef;
+		}.bind(this), 0);
 	};
 
 	/**
 	 * @private
 	 */
-	Overlay.prototype._syncScrollWithDomRef = function(oEvent) {
+	Overlay.prototype._syncScrollWithDomRef = function() {
 		DOMUtil.syncScroll(this._oDomRefWithScrollHandler, this.$());
 	};
 
@@ -441,25 +470,34 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	 */
 	Overlay.prototype.getGeometry = function(bForceCalculation) {
 		if (bForceCalculation || !this._mGeometry) {
-			var oDomRef = this.getAssociatedDomRef();
-			var mGeometry = DOMUtil.getGeometry(oDomRef, this.isRoot());
+			var $DomRef = this.getAssociatedDomRef();
+			var aChildrenGeometry;
 
-			if (!mGeometry) {
-				var aChildrenGeometry = [];
-				this.getChildren().forEach(function(oChildOverlay) {
-					aChildrenGeometry.push(oChildOverlay.getGeometry(true));
+			// dom Ref is either jQuery object with one/multiple elements
+			if ($DomRef) {
+				var bIsRoot = this.isRoot();
+				aChildrenGeometry = jQuery.makeArray($DomRef).map(function($element) {
+					return DOMUtil.getGeometry($element, bIsRoot);
 				});
-				mGeometry = OverlayUtil.getGeometry(aChildrenGeometry);
+			} else {
+				aChildrenGeometry = this.getChildren().map(function(oChildOverlay) {
+					return oChildOverlay.getGeometry(true);
+				});
 			}
 
-			// cache geometry
-			this._mGeometry = mGeometry;
+			if (aChildrenGeometry.length) {
+				// cache geometry
+				this._mGeometry = aChildrenGeometry.length > 1 ? OverlayUtil.getGeometry(aChildrenGeometry) : aChildrenGeometry[0];
+			} else {
+				delete this._mGeometry;
+			}
 		}
 
 		return this._mGeometry;
 	};
 
 	/**
+	 * @param {object} oDomRef element's DOM reference to be cloned
 	 * @private
 	 */
 	Overlay.prototype._cloneDomRef = function(oDomRef) {
@@ -479,6 +517,8 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 					} else {
 						$clonedDom.empty();
 					}
+
+					//TODO: disable update
 					DOMUtil.cloneDOMAndStyles(oDomRef, $clonedDom);
 				};
 
@@ -548,6 +588,7 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 			} else {
 				$parentContainer.prepend($this);
 			}
+			oParent.applyStyles();
 		}
 	};
 
@@ -575,33 +616,6 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 			DOMUtil.syncScroll(this.$(), oDomRef);
 		}
 	};
-
-
-	/**
-	 * Sets whether the Overlay is for an element/aggregation in a hidden tree (not accessible via public aggregations)
-	 * @param {boolean} bInHiddenTree if the Overlay is inHiddenTree
-	 * @returns {sap.ui.dt.Overlay} returns this
-	 * @public
-	 */
-	Overlay.prototype.setInHiddenTree = function(bInHiddenTree) {
-		if (bInHiddenTree !== this.isInHiddenTree()) {
-
-			this.toggleStyleClass("sapUiDtOverlayInHiddenTree", bInHiddenTree);
-			this.setProperty("inHiddenTree", bInHiddenTree);
-		}
-
-		return this;
-	};
-
-	/**
-	 * Returns if the Overlay is for an element/aggregation in a hidden tree (not accessible via public aggregations)
-	 * @public
-	 * @return {boolean} if the Overlay is in hidden tree
-	 */
-	Overlay.prototype.isInHiddenTree = function() {
-		return this.getInHiddenTree();
-	};
-
 
 	/**
 	 * Sets whether the Overlay is visible
@@ -631,7 +645,7 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 				return true;
 			}
 			var oDesignTimeMetadata = this.getDesignTimeMetadata();
-			return oDesignTimeMetadata ? !oDesignTimeMetadata.isIgnored() : false;
+			return oDesignTimeMetadata ? !oDesignTimeMetadata.isIgnored(this.getElementInstance()) : false;
 		} else {
 			return this.getProperty("visible");
 		}
@@ -650,6 +664,7 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	/**
 	 * Returns if overlay is root
 	 * @public
+	 * @return {boolean} if the Overlay is root
 	 */
 	Overlay.prototype.isRoot = function() {
 		var oParent = this.getParent();
@@ -657,26 +672,6 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 			if (!oParent.getDomRef) {
 				return true;
 			}
-		}
-	};
-
-	/**
-	 * Returns child of first ancestor overlay not flagged as inHiddenTree
-	 *
-	 * @return {sap.ui.dt.ElementOverlay} ElementOverlay public parents child
-	 * @public
-	 */
-	Overlay.prototype.getFirstHiddenAggregationOverlay = function() {
-
-		var oPreviousOverlay = this;
-		var oParentOverlay = this.getParentElementOverlay();
-		while (oParentOverlay && oParentOverlay.isInHiddenTree()
-				&& ElementUtil.isInstanceOf(oParentOverlay, "sap.ui.dt.ElementOverlay")) {
-			oPreviousOverlay = oParentOverlay;
-			oParentOverlay = oParentOverlay.getParentElementOverlay();
-		}
-		if (ElementUtil.isInstanceOf(oParentOverlay, "sap.ui.dt.ElementOverlay")) {
-			return oPreviousOverlay.getParent();
 		}
 	};
 

@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,10 +11,6 @@
 @import "../../../../../sap/ui/core/themes/base/global.less";
 /* START "shared.less" */
 /* This CSS shares it rules with all other CSS of this library */
-
-/* default image for thumbnails in feeder and feedChunk*/
-@sapUiFeedPersonPlaceholder: url("img/feed/person_placeholder_48.png");
-
 /* END "shared.less" */
 
 
@@ -767,12 +763,6 @@ html[data-sap-ui-browser^="ie"] .sapUiUx3ExactLstLst {
 	position: relative;
 }
 
-html[data-sap-ui-browser="ie9"] .sapUiUx3ExactLstLb > ul > .sapUiLbxI,
-html[data-sap-ui-browser="ie10"] .sapUiUx3ExactLstLb > ul > .sapUiLbxI {
-	border: 1px solid transparent;
-	box-sizing: border-box;
-}
-
 .sapUiUx3ExactLstCollapsed > .sapUiUx3ExactLstLst {
 	display: none;
 }
@@ -796,11 +786,6 @@ html[data-sap-ui-browser="ie10"] .sapUiUx3ExactLstLb > ul > .sapUiLbxI {
 
 .sapUiUx3ExactLstLb > ul > .sapUiLbxI.sapUiUx3ExactLstNoIco > .sapUiLbxIIco {
 	display: none;
-}
-
-html[data-sap-ui-browser="ie9"] .sapUiUx3ExactLstLb > ul > .sapUiLbxI > .sapUiLbxIIco,
-html[data-sap-ui-browser="ie10"] .sapUiUx3ExactLstLb > ul > .sapUiLbxI > .sapUiLbxIIco {
-	top: 3px;
 }
 
 .sapUiUx3ExactLstLst.sapUiUx3ExactLstScroll > .sapUiUx3ExactLstLb:hover > ul > .sapUiLbxI > .sapUiLbxIIco {
@@ -980,12 +965,12 @@ html[data-sap-ui-browser="ie10"] .sapUiUx3ExactLstLb > ul > .sapUiLbxI > .sapUiL
 }
 
 .sapUiUx3ExactLstCollapsed > .sapUiUx3ExactLstHead > .sapUiUx3ExactLstHeadTxt {
-	-moz-transform:rotate(270deg);
+	transform:rotate(270deg);
+	-moz-transform: rotate(270deg);
 	-webkit-transform:rotate(270deg);
-	-ms-transform:rotate(270deg);
-	-moz-transform-origin: 0 0;
 	-webkit-transform-origin: 0 0;
 	-ms-transform-origin: 0 0;
+	-moz-transform-origin: 0 0;
 	background-color: transparent;
 	bottom: -20px;
 	left: -1px;
@@ -995,9 +980,9 @@ html[data-sap-ui-browser="ie10"] .sapUiUx3ExactLstLb > ul > .sapUiLbxI > .sapUiL
 html[dir=rtl] .sapUiUx3ExactLstCollapsed > .sapUiUx3ExactLstHead > .sapUiUx3ExactLstHeadTxt {
 	bottom: 5px;
 	left: 22px; /*should be right -> swapped with right by RTL transformation*/
-	-moz-transform-origin: 0% 100%; /*should be '100% 100%' -> swapped with right by RTL transformation*/
 	-webkit-transform-origin: 0% 100%; /*should be '100% 100%' -> swapped with right by RTL transformation*/
 	-ms-transform-origin: 0% 100%; /*should be '100% 100%' -> swapped with right by RTL transformation*/
+	-moz-transform-origin: 0% 100%;
 }
 
 /* Content */
@@ -1198,6 +1183,9 @@ html[dir=rtl] .sapUiUx3ExactLstCollapsed > .sapUiUx3ExactLstHead > .sapUiUx3Exac
 /* CSS for control sap.ui.ux3/FeedChunk.control */
 /* ============================================ */
 
+/* default image for thumbnails in feedChunk*/
+@_sap_ui_ux3_FeedChunk_PersonPlaceholder: url("img/feed/person_placeholder_48.png");
+
 .sapUiFeedChunk {
 	border: 1px solid @sapUiMediumBorder;
 /*  width: 100%;*/
@@ -1240,7 +1228,6 @@ html[dir=rtl] .sapUiUx3ExactLstCollapsed > .sapUiUx3ExactLstHead > .sapUiUx3Exac
 	background-position: top left;
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
-	-moz-background-size: 100% 100%;
 	-webkit-background-size: 100% 100%;
 	color: transparent;
 	font-size: 0;
@@ -1315,6 +1302,9 @@ html[dir=rtl] .sapUiUx3ExactLstCollapsed > .sapUiUx3ExactLstHead > .sapUiUx3Exac
 /* ============================================= */
 /* CSS for control sap.ui.commons/Feeder.control */
 /* ============================================= */
+
+/* default image for thumbnails in feeder*/
+@_sap_ui_ux3_Feeder_PersonPlaceholder: url("img/feed/person_placeholder_48.png");
 
 .sapUiFeeder {
 	box-sizing: border-box;
@@ -1454,10 +1444,6 @@ html[data-sap-ui-browser^="ie"] .sapUiFeederInput > p {
 	padding: 3px 9px 7px;
 	color: @sapUiBaseText;
 	text-decoration: none;
-	-moz-transition-property: color, font-size, padding;
-	-moz-transition-duration: 0.3s;
-	-ms-transition-property: color, font-size, padding;
-	-ms-transition-duration: 0.3s;
 	-webkit-transition-property: color, font-size, padding;
 	-webkit-transition-duration: 0.3s;
 	transition-property: color, font-size, padding;
@@ -1471,10 +1457,6 @@ html[data-sap-ui-browser^="ie"] .sapUiFeederInput > p {
 .sapUiUx3NavBarItemSel > a {
 	font-size: 16px;
 	padding: 0 9px 0;
-	-moz-transition-property: color, font-size, padding;
-	-moz-transition-duration: 0.3s;
-	-ms-transition-property: color, font-size, padding;
-	-ms-transition-duration: 0.3s;
 	-webkit-transition-property: color, font-size, padding;
 	-webkit-transition-duration: 0.3s;
 	transition-property: color, font-size, padding;
@@ -1642,10 +1624,8 @@ html[data-sap-ui-browser*="ie"] .sapUiUx3NavBarItemSel > a {
 	/* while there is no drag&drop the cursor should be default */
 	/*cursor: move;*/
 	-webkit-user-select: none;
-	-khtml-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
-	-o-user-select: none;
 	user-select: none;
 	outline: none;
 	z-index: 2; /* needed when the NotiBar has to cover the Table's row headers */
@@ -1691,7 +1671,6 @@ html[data-sap-ui-browser*="ie"] .sapUiUx3NavBarItemSel > a {
 	background-color: @sapUiNotificationBarBG;
 	cursor: pointer;
 	-webkit-transition: all 0.2s linear;
-	-moz-transition: all 0.2s linear;
 	transition: all 0.2s linear;
 }
 
@@ -1823,9 +1802,7 @@ html[dir=rtl] .sapUiNotifierCallout {
 
 .sapUiNotifierCallout .sapUiCltArr.sapUiCltBaseArr {
 	position: absolute;
-	-moz-transform: rotate(0deg);
 	-webkit-transform: rotate(0deg);
-	-ms-transform: rotate(0deg);
 	transform: rotate(0deg);
 	background-color: transparent;
 	/* currently the values must be defined separately to ensure the generating of the CSS-file */
@@ -1952,10 +1929,8 @@ li.sapUiInPlaceMessage > div.sapUiNotifierMessageText:focus {
 	max-height: 30px;
 	overflow: hidden;
 	-webkit-user-select: text;
-	-khtml-user-select: text;
 	-moz-user-select: text;
 	-ms-user-select: text;
-	-o-user-select: text;
 	user-select: text;
 }
 
@@ -2515,18 +2490,13 @@ html[data-sap-ui-browser^="ff"] .sapUiUx3ShellToolFontIcon {
 }
 
 .sapUiUx3ShellPaneBarRight > .sapUiUx3ShellPaneOverflowButton > .sapUiUx3ShellPaneOverflowWrapper {
-    -moz-transform: rotate(90deg);
-    -ms-transform: rotate(90deg);
     -webkit-transform: rotate(90deg);
     transform: rotate(90deg);
 
-    -moz-transform-origin: 0% 0;
-    -ms-transform-origin: 0% 0;
     -webkit-transform-origin: 0% 0;
     transform-origin: 0% 0;
 
     white-space: nowrap;
-    -ms-text-overflow: ellipsis;
     text-overflow: ellipsis;
 
 	position: absolute;
@@ -2547,8 +2517,6 @@ html[data-sap-ui-browser^="ff"] .sapUiUx3ShellToolFontIcon {
 
 
 .sapUiUx3ShellPaneEntries {
-    -moz-transform: rotate(90deg);
-    -ms-transform: rotate(90deg);
     -webkit-transform: rotate(90deg);
     transform: rotate(90deg);
     white-space: nowrap;
@@ -2566,8 +2534,6 @@ html[data-sap-ui-browser^="ff"] .sapUiUx3ShellToolFontIcon {
 	margin-right: 16px;
 	height: 36px;
 	vertical-align:top;
-	-moz-transition-property: font-size, color;
-	-moz-transition-duration: 0.3s;
 	-webkit-transition-property: font-size, color;
 	-webkit-transition-duration: 0.3s;
 	transition-property: font-size, color;
@@ -2576,8 +2542,6 @@ html[data-sap-ui-browser^="ff"] .sapUiUx3ShellToolFontIcon {
 
 .sapUiUx3ShellPaneEntry:hover {
 	color: @sapUiUx3ShellHoverColor;
-	-moz-transition-property: font-size, color;
-	-moz-transition-duration: 0.3s;
 	-webkit-transition-property: font-size, color;
 	-webkit-transition-duration: 0.3s;
 	transition-property: font-size, color;
@@ -2590,8 +2554,6 @@ html[data-sap-ui-browser^="ff"] .sapUiUx3ShellToolFontIcon {
 	color: @sapUiHighlight;
 	background-position: center top;
 	background-repeat: no-repeat;
-	-moz-transition-property: font-size, color;
-	-moz-transition-duration: 0.3s;
 	-webkit-transition-property: font-size, color;
 	-webkit-transition-duration: 0.3s;
 	transition-property: font-size, color;
@@ -2600,8 +2562,6 @@ html[data-sap-ui-browser^="ff"] .sapUiUx3ShellToolFontIcon {
 
 .sapUiUx3ShellPaneEntry:active {
 	color: @sapUiHighlight;
-	-moz-transition-property: font-size, color;
-	-moz-transition-duration: 0.3s;
 	-webkit-transition-property: font-size, color;
 	-webkit-transition-duration: 0.3s;
 	transition-property: font-size, color;

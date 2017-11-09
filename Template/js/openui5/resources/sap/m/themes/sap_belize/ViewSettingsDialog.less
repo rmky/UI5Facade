@@ -1,31 +1,23 @@
-/* ======================================== */
-/* CSS for control sap.m/TableFilterDialog  */
-/* Belize theme                             */
-/* ======================================== */
+/* ========================================= */
+/* CSS for control sap.m/ViewSettingsDialog  */
+/* Belize theme                              */
+/* ========================================= */
+
+@_sap_m_ViewSettingsDialog_HeaderBorderColor: darken(@sapUiGroupContentBackground, 8);
 
 .sapMVSDUpperList {
 	border-bottom: 1px solid @sapUiToolbarSeparatorColor;
 }
 
-/* workaround to remove the blurry effect on the icons */
-.sapMVSDSeg .sapMSegBBtn {
-	text-shadow: 0 0px;
-}
-
 .sapMTB.sapMVSDFilterHeaderToolbar {
 	background-color:  @sapUiGroupContentBackground;
-	border-bottom: 1px solid darken(@sapUiGroupContentBackground, 8);
+	border-bottom: 1px solid @_sap_m_ViewSettingsDialog_HeaderBorderColor;
 	.sapMBarChild.sapMCb {
 		.sapMCbLabel {
 			font-family: @sapUiFontFamily;
 			color: @sapUiGroupTitleTextColor;
-			font-size: @sapMFontLargeSize;
 		}
 	}
-}
-
-.sapMSF.sapMVSDFilterSearchField {
-	border-bottom: 1px solid @sapUiGroupTitleBorderColor;
 }
 
 .sapMVSD.sapMDialog.sapMPopup-CTX .sapMIBar.sapMHeader-CTX,
@@ -34,7 +26,7 @@
 }
 
 .sapMVSD .sapMVSDBar {
-	box-shadow: inset 0 -1px darken(@sapUiGroupContentBackground, 8);
+	box-shadow: inset 0 -1px @_sap_m_ViewSettingsDialog_HeaderBorderColor;
 }
 
 .sapMVSDBarWithSearch.sapMBar ,
@@ -43,12 +35,7 @@
 	box-shadow: none;
 }
 
-.sapMPageWithSubHeader .sapMIBar.sapMHeader-CTX{
+.sapMPageWithSubHeader .sapMIBar.sapMHeader-CTX {
+	border-bottom: none;
 	box-shadow: none;
-}
-
-.sapUiSizeCompact .sapMTB.sapMListHdrTBar.sapMVSDFilterHeaderToolbar {
-	.sapMLabel.sapMCbLabel {
-		font-size: @sapMFontMediumSize;
-	}
 }

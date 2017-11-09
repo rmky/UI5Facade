@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*global Promise */
@@ -15,14 +15,14 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.transport.Transports
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @since 1.38.0
 	 */
 	var Transports = function() {
 	};
 
 	/**
-	 * Reads the transports of the current user from the backend.
+	 * Reads the transports of the current user from the back end.
 	 * The "locked" attribute indicates that the provided file (package/name/type) is already locked on this transport.
 	 *
 	 * @param {object} mParameters map of parameters, see below
@@ -77,7 +77,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Reads the transports of the current user from the backend.
+	 * Reads the transports of the current user from the back end.
 	 * The "locked" attribute indicates that the provided file (package/name/type) is already locked on this transport.
 	 *
 	 * @param {object} mParameters map of parameters, see below

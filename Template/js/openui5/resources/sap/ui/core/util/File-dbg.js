@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,7 @@ sap.ui.define(['jquery.sap.global'],
 	 *
 	 * @class Utility class to handle files
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @static
 	 *
 	 * @public
@@ -28,10 +28,11 @@ sap.ui.define(['jquery.sap.global'],
 		 *
 		 * <p>There are limitations for this feature in some browsers:<p>
 		 *
-		 * <p><b>Safari (OS X / iOS)</b><br>
-		 * A new window/tab will be opened. In OS X the user has to manually save the file (CMD + S), choose "page source" and specify a filename.
-		 * In iOS the content can be opened in another app (Mail, Notes, ...) or copied to the clipboard.
-		 * In case the popup blocker prevents this action, an error will be thrown which can be used to notify the user to disable it.</p>
+		 * <p><b>macOS Safari < 10.1 / iOS Safari</b><br>
+		 * A new window or tab is opened.
+		 * In macOS, the user has to save the file manually (by using key combination "CMD + S", choosing the page source format, and specifying a file name).
+		 * In iOS, the content can be opened in another app (Mail, Notes, ...) or can be copied to the clipboard.
+		 * If a pop-up blocker prevents this action, an error will be thrown which can be used to notify the user that the pop-up blocker needs to be disabled.</p>
 		 *
 		 * <p><b>Android Browser</b><br>
 		 * Not supported</p>
@@ -44,14 +45,22 @@ sap.ui.define(['jquery.sap.global'],
 		 * @param {string} sFileExtension file extension
 		 * @param {string} sMimeType file mime-type
 		 * @param {string} sCharset file charset
+		 * @param {boolean} [bByteOrderMark] Whether to prepend an unicode byte order mark (only applies for utf-8 charset).
+		 *                                   Default is <code>false</code> except when <code>sFileExtension</code> = <code>csv/code> it is <code>true</code> (compatibility reasons).
 		 *
 		 * @public
 		 */
-		save: function(sData, sFileName, sFileExtension, sMimeType, sCharset) {
+		save: function(sData, sFileName, sFileExtension, sMimeType, sCharset, bByteOrderMark) {
 			var sFullFileName = sFileName + '.' + sFileExtension;
 
-			// prepend utf-8 byte-order-mark (BOM) to prevent encoding issues in .csv files
-			if (sCharset === 'utf-8' && sFileExtension === 'csv') {
+			// Compatibility handling:
+			// Add Byte Order Mark by default for utf-8 / csv to not break existing scenarios
+			if (typeof bByteOrderMark === 'undefined' && sCharset === 'utf-8' && sFileExtension === 'csv') {
+				bByteOrderMark = true;
+			}
+
+			// Prepend UTF-8 Byte Order Mark (BOM)
+			if (bByteOrderMark === true && sCharset === 'utf-8') {
 				sData = '\ufeff' + sData;
 			}
 
@@ -86,10 +95,11 @@ sap.ui.define(['jquery.sap.global'],
 						// Make sure to encode the data to be used in data-uri
 						sData = encodeURI(sData);
 
-						// Safari (user has to save the file manually)
+						// macOS Safari < 10.1 / iOS Safari
+						// (user has to save the file manually)
 						var oWindow = window.open(sType + "," + sData);
 						if (!oWindow) {
-							throw new Error("Could not download file. A popup blocker might be active.");
+							throw new Error("Could not download the file, please deactivate your pop-up blocker.");
 						}
 					}
 				}

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 		 * space is exceeded, a horizontal scrollbar appears.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 *
 		 * @constructor
 		 * @private
@@ -339,6 +339,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 			this._oItemNavigation.setItemDomRefs(aTabDomRefs);
 			this._oItemNavigation.setCycling(false);
 			this._oItemNavigation.setPageSize(5);
+			//alt+right/left is used for browser navigation
+			this._oItemNavigation.setDisabledModifiers({
+				sapnext: ["alt"],
+				sapprevious: ["alt"]
+			});
 
 			//Attach ItemNavigation to the control delegate queue
 			this.addDelegate(this._oItemNavigation);
@@ -631,12 +636,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 		 * @private
 		 */
 		TabStrip.prototype._moveToNextItem = function (bSetAsSelected) {
+			if (!this._oItemNavigation) {
+				return;
+			}
+
 			var iItemsCount = this.getItems().length,
 				iCurrentFocusedIndex = this._oItemNavigation.getFocusedIndex(),
 				iNextIndex = iItemsCount === iCurrentFocusedIndex ? --iCurrentFocusedIndex : iCurrentFocusedIndex,
 				oNextItem = this.getItems()[iNextIndex],
 				fnFocusCallback = function () {
-					this._oItemNavigation.focusItem(iNextIndex);
+					if (this._oItemNavigation) {
+						this._oItemNavigation.focusItem(iNextIndex);
+					}
 				};
 
 
@@ -753,7 +764,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 			return Control.prototype.destroyAggregation.call(this, sAggregationName, bSuppressInvalidate);
 		};
 
-		/**
+		/*
 		 * Sets a <code>TabStripItem</code> as current.
 		 *
 		 * @param {sap.m.TabStripItem} oSelectedItem the item that should be set as current
@@ -1017,24 +1028,23 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 				return;
 			}
 
-			oSelectItem = new sap.m.TabStripItem({
+			oSelectItem = new TabStripItem({
 				id: oTabStripItem.getId() + TabStrip.SELECT_ITEMS_ID_SUFFIX,
 				text: oTabStripItem.getText(),
 				modified: oTabStripItem.getModified(),
 				itemClosePressed: function (oEvent) {
 					this._handleItemClosePressed(oEvent);
 				}.bind(this)
-			}).addEventDelegate({
+			});
+
+			oSelectItem.addEventDelegate({
 				ontap: function (oEvent) {
 					var oTarget = oEvent.srcControl;
-					if (oTarget instanceof AccButton) {
-						oTarget.fireItemClosePressed({item: oTarget});
-					} else if (oTarget instanceof sap.ui.core.Icon) {
-						oTarget = oTarget.getParent && oTarget.getParent().getParent && oTarget.getParent().getParent();
-						oTarget.fireItemClosePressed({item: oTarget});
+					if ((oTarget instanceof AccButton || oTarget instanceof sap.ui.core.Icon)) {
+						this.fireItemClosePressed({item: this});
 					}
 				}
-			});
+			}, oSelectItem);
 
 			return oSelectItem;
 		};
@@ -1193,7 +1203,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 			}
 		};
 
-		/**
+		/*
 		 * Destroys all <code>TabStripItem</code> entities from the <code>items</code> aggregation of the <code>TabStrip</code>.
 		 *
 		 * @returns {sap.m.TabStrip} This instance for chaining

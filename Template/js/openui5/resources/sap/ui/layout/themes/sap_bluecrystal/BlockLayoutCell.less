@@ -1,18 +1,21 @@
+/* ============================================== */
+/* CSS for control sap.ui.layout/BlockLayoutCell  */
+/* Base theme                                     */
+/* ============================================== */
+
+@_sap_ui_BlockLayoutCell_background: transparent;
+
 .sapUiBlockLayoutCell {
 	display: -webkit-box;
 	display: -webkit-flex;
-	display: -ms-flexbox;
 	display: flex;
+	overflow: hidden;
 }
 
-.sapUiBlockCellCenteredContent {
+.sapUiBlockCellCenteredContent > .sapUiBlockCellTitle {
 	align-self: center;
 	text-align: center;
 	width: 100%;
-
-	.sapUiBlockCellTitle {
-		font-size: @sapUiFontHeader1Size;
-	}
 }
 
 .sapUiBlockCellLeft,
@@ -38,13 +41,18 @@
 	padding: 1rem;
 	overflow: hidden;
 	box-sizing: border-box;
+	background-color: @_sap_ui_BlockLayoutCell_background;
 }
 
 .sapUiBlockCellTitle {
     font-weight: normal;
 	font-size: @sapUiFontHeader2Size;
+	margin-top: 0;
 	margin-bottom: 1rem;
-	margin-top: 0rem;
+}
+
+.sapUiBlockCellTitleNoContent {
+	margin-bottom: 0;
 }
 
 /* mixin call for creating container content padding classes (arguments: rootContainer, contentSelector) */

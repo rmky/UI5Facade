@@ -1,8 +1,16 @@
+/* ============================= */
+/* CSS for control sap.m/Wizard  */
+/* Base theme                    */
+/* ============================= */
+
+@_sap_m_Wizard_NavHeight: 4rem;
+
 .sapMWizard {
 	height: 100%;
 	position: relative;
 	counter-reset: steps-counter;
 	overflow: hidden;
+	background-color: @sapUiGroupContentBackground;
 
 	.sapMWizardStepContainer {
 		position: relative;
@@ -39,6 +47,10 @@
 		bottom: 0rem;
 		opacity: 1;
 	}
+
+	.sapMDialogSection {
+		height: auto;
+	}
 }
 
 html[data-sap-ui-animation='on'] .sapMWizardNextButton {
@@ -55,9 +67,6 @@ html.sap-phone .sapMWizard {
 		position: absolute;
 		left: 50%;
 		-webkit-transform: translate(-50%, 0);
-		-moz-transform: translate(-50%, 0);
-		-ms-transform: translate(-50%, 0);
-		-o-transform: translate(-50%, 0);
 		transform: translate(-50%, 0);
 	}
 

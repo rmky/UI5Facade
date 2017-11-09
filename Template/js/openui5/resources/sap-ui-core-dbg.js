@@ -1,1000 +1,6 @@
 /*!
- * @overview es6-promise - a tiny implementation of Promises/A+.
- * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
- * @license   Licensed under MIT license
- *            See https://raw.githubusercontent.com/jakearchibald/es6-promise/master/LICENSE
- * @version   2.3.0
- */
-
-(function() {
-    "use strict";
-    function lib$es6$promise$utils$$objectOrFunction(x) {
-      return typeof x === 'function' || (typeof x === 'object' && x !== null);
-    }
-
-    function lib$es6$promise$utils$$isFunction(x) {
-      return typeof x === 'function';
-    }
-
-    function lib$es6$promise$utils$$isMaybeThenable(x) {
-      return typeof x === 'object' && x !== null;
-    }
-
-    var lib$es6$promise$utils$$_isArray;
-    if (!Array.isArray) {
-      lib$es6$promise$utils$$_isArray = function (x) {
-        return Object.prototype.toString.call(x) === '[object Array]';
-      };
-    } else {
-      lib$es6$promise$utils$$_isArray = Array.isArray;
-    }
-
-    var lib$es6$promise$utils$$isArray = lib$es6$promise$utils$$_isArray;
-    var lib$es6$promise$asap$$len = 0;
-    var lib$es6$promise$asap$$toString = {}.toString;
-    var lib$es6$promise$asap$$vertxNext;
-    var lib$es6$promise$asap$$customSchedulerFn;
-
-    var lib$es6$promise$asap$$asap = function asap(callback, arg) {
-      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len] = callback;
-      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len + 1] = arg;
-      lib$es6$promise$asap$$len += 2;
-      if (lib$es6$promise$asap$$len === 2) {
-        // If len is 2, that means that we need to schedule an async flush.
-        // If additional callbacks are queued before the queue is flushed, they
-        // will be processed by this flush that we are scheduling.
-        if (lib$es6$promise$asap$$customSchedulerFn) {
-          lib$es6$promise$asap$$customSchedulerFn(lib$es6$promise$asap$$flush);
-        } else {
-          lib$es6$promise$asap$$scheduleFlush();
-        }
-      }
-    }
-
-    function lib$es6$promise$asap$$setScheduler(scheduleFn) {
-      lib$es6$promise$asap$$customSchedulerFn = scheduleFn;
-    }
-
-    function lib$es6$promise$asap$$setAsap(asapFn) {
-      lib$es6$promise$asap$$asap = asapFn;
-    }
-
-    var lib$es6$promise$asap$$browserWindow = (typeof window !== 'undefined') ? window : undefined;
-    var lib$es6$promise$asap$$browserGlobal = lib$es6$promise$asap$$browserWindow || {};
-    var lib$es6$promise$asap$$BrowserMutationObserver = lib$es6$promise$asap$$browserGlobal.MutationObserver || lib$es6$promise$asap$$browserGlobal.WebKitMutationObserver;
-    var lib$es6$promise$asap$$isNode = typeof process !== 'undefined' && {}.toString.call(process) === '[object process]';
-
-    // test for web worker but not in IE10
-    var lib$es6$promise$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
-      typeof importScripts !== 'undefined' &&
-      typeof MessageChannel !== 'undefined';
-
-    // node
-    function lib$es6$promise$asap$$useNextTick() {
-      var nextTick = process.nextTick;
-      // node version 0.10.x displays a deprecation warning when nextTick is used recursively
-      // setImmediate should be used instead instead
-      var version = process.versions.node.match(/^(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)$/);
-      if (Array.isArray(version) && version[1] === '0' && version[2] === '10') {
-        nextTick = setImmediate;
-      }
-      return function() {
-        nextTick(lib$es6$promise$asap$$flush);
-      };
-    }
-
-    // vertx
-    function lib$es6$promise$asap$$useVertxTimer() {
-      return function() {
-        lib$es6$promise$asap$$vertxNext(lib$es6$promise$asap$$flush);
-      };
-    }
-
-    function lib$es6$promise$asap$$useMutationObserver() {
-      var iterations = 0;
-      var observer = new lib$es6$promise$asap$$BrowserMutationObserver(lib$es6$promise$asap$$flush);
-      var node = document.createTextNode('');
-      observer.observe(node, { characterData: true });
-
-      return function() {
-        node.data = (iterations = ++iterations % 2);
-      };
-    }
-
-    // web worker
-    function lib$es6$promise$asap$$useMessageChannel() {
-      var channel = new MessageChannel();
-      channel.port1.onmessage = lib$es6$promise$asap$$flush;
-      return function () {
-        channel.port2.postMessage(0);
-      };
-    }
-
-    function lib$es6$promise$asap$$useSetTimeout() {
-      return function() {
-        setTimeout(lib$es6$promise$asap$$flush, 1);
-      };
-    }
-
-    var lib$es6$promise$asap$$queue = new Array(1000);
-    function lib$es6$promise$asap$$flush() {
-      for (var i = 0; i < lib$es6$promise$asap$$len; i+=2) {
-        var callback = lib$es6$promise$asap$$queue[i];
-        var arg = lib$es6$promise$asap$$queue[i+1];
-
-        callback(arg);
-
-        lib$es6$promise$asap$$queue[i] = undefined;
-        lib$es6$promise$asap$$queue[i+1] = undefined;
-      }
-
-      lib$es6$promise$asap$$len = 0;
-    }
-
-    function lib$es6$promise$asap$$attemptVertex() {
-      try {
-        var r = require;
-        var vertx = r('vertx');
-        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
-        return lib$es6$promise$asap$$useVertxTimer();
-      } catch(e) {
-        return lib$es6$promise$asap$$useSetTimeout();
-      }
-    }
-
-    var lib$es6$promise$asap$$scheduleFlush;
-    // Decide what async method to use to triggering processing of queued callbacks:
-    if (lib$es6$promise$asap$$isNode) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useNextTick();
-    } else if (lib$es6$promise$asap$$BrowserMutationObserver) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMutationObserver();
-    } else if (lib$es6$promise$asap$$isWorker) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMessageChannel();
-    } else if (lib$es6$promise$asap$$browserWindow === undefined && typeof require === 'function') {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$attemptVertex();
-    } else {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useSetTimeout();
-    }
-
-    function lib$es6$promise$$internal$$noop() {}
-
-    var lib$es6$promise$$internal$$PENDING   = void 0;
-    var lib$es6$promise$$internal$$FULFILLED = 1;
-    var lib$es6$promise$$internal$$REJECTED  = 2;
-
-    var lib$es6$promise$$internal$$GET_THEN_ERROR = new lib$es6$promise$$internal$$ErrorObject();
-
-    function lib$es6$promise$$internal$$selfFullfillment() {
-      return new TypeError("You cannot resolve a promise with itself");
-    }
-
-    function lib$es6$promise$$internal$$cannotReturnOwn() {
-      return new TypeError('A promises callback cannot return that same promise.');
-    }
-
-    function lib$es6$promise$$internal$$getThen(promise) {
-      try {
-        return promise.then;
-      } catch(error) {
-        lib$es6$promise$$internal$$GET_THEN_ERROR.error = error;
-        return lib$es6$promise$$internal$$GET_THEN_ERROR;
-      }
-    }
-
-    function lib$es6$promise$$internal$$tryThen(then, value, fulfillmentHandler, rejectionHandler) {
-      try {
-        then.call(value, fulfillmentHandler, rejectionHandler);
-      } catch(e) {
-        return e;
-      }
-    }
-
-    function lib$es6$promise$$internal$$handleForeignThenable(promise, thenable, then) {
-       lib$es6$promise$asap$$asap(function(promise) {
-        var sealed = false;
-        var error = lib$es6$promise$$internal$$tryThen(then, thenable, function(value) {
-          if (sealed) { return; }
-          sealed = true;
-          if (thenable !== value) {
-            lib$es6$promise$$internal$$resolve(promise, value);
-          } else {
-            lib$es6$promise$$internal$$fulfill(promise, value);
-          }
-        }, function(reason) {
-          if (sealed) { return; }
-          sealed = true;
-
-          lib$es6$promise$$internal$$reject(promise, reason);
-        }, 'Settle: ' + (promise._label || ' unknown promise'));
-
-        if (!sealed && error) {
-          sealed = true;
-          lib$es6$promise$$internal$$reject(promise, error);
-        }
-      }, promise);
-    }
-
-    function lib$es6$promise$$internal$$handleOwnThenable(promise, thenable) {
-      if (thenable._state === lib$es6$promise$$internal$$FULFILLED) {
-        lib$es6$promise$$internal$$fulfill(promise, thenable._result);
-      } else if (thenable._state === lib$es6$promise$$internal$$REJECTED) {
-        lib$es6$promise$$internal$$reject(promise, thenable._result);
-      } else {
-        lib$es6$promise$$internal$$subscribe(thenable, undefined, function(value) {
-          lib$es6$promise$$internal$$resolve(promise, value);
-        }, function(reason) {
-          lib$es6$promise$$internal$$reject(promise, reason);
-        });
-      }
-    }
-
-    function lib$es6$promise$$internal$$handleMaybeThenable(promise, maybeThenable) {
-      if (maybeThenable.constructor === promise.constructor) {
-        lib$es6$promise$$internal$$handleOwnThenable(promise, maybeThenable);
-      } else {
-        var then = lib$es6$promise$$internal$$getThen(maybeThenable);
-
-        if (then === lib$es6$promise$$internal$$GET_THEN_ERROR) {
-          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$GET_THEN_ERROR.error);
-        } else if (then === undefined) {
-          lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
-        } else if (lib$es6$promise$utils$$isFunction(then)) {
-          lib$es6$promise$$internal$$handleForeignThenable(promise, maybeThenable, then);
-        } else {
-          lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
-        }
-      }
-    }
-
-    function lib$es6$promise$$internal$$resolve(promise, value) {
-      if (promise === value) {
-        lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$selfFullfillment());
-      } else if (lib$es6$promise$utils$$objectOrFunction(value)) {
-        lib$es6$promise$$internal$$handleMaybeThenable(promise, value);
-      } else {
-        lib$es6$promise$$internal$$fulfill(promise, value);
-      }
-    }
-
-    function lib$es6$promise$$internal$$publishRejection(promise) {
-      if (promise._onerror) {
-        promise._onerror(promise._result);
-      }
-
-      lib$es6$promise$$internal$$publish(promise);
-    }
-
-    function lib$es6$promise$$internal$$fulfill(promise, value) {
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
-
-      promise._result = value;
-      promise._state = lib$es6$promise$$internal$$FULFILLED;
-
-      if (promise._subscribers.length !== 0) {
-        lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, promise);
-      }
-    }
-
-    function lib$es6$promise$$internal$$reject(promise, reason) {
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
-      promise._state = lib$es6$promise$$internal$$REJECTED;
-      promise._result = reason;
-
-      lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publishRejection, promise);
-    }
-
-    function lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection) {
-      var subscribers = parent._subscribers;
-      var length = subscribers.length;
-
-      parent._onerror = null;
-
-      subscribers[length] = child;
-      subscribers[length + lib$es6$promise$$internal$$FULFILLED] = onFulfillment;
-      subscribers[length + lib$es6$promise$$internal$$REJECTED]  = onRejection;
-
-      if (length === 0 && parent._state) {
-        lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, parent);
-      }
-    }
-
-    function lib$es6$promise$$internal$$publish(promise) {
-      var subscribers = promise._subscribers;
-      var settled = promise._state;
-
-      if (subscribers.length === 0) { return; }
-
-      var child, callback, detail = promise._result;
-
-      for (var i = 0; i < subscribers.length; i += 3) {
-        child = subscribers[i];
-        callback = subscribers[i + settled];
-
-        if (child) {
-          lib$es6$promise$$internal$$invokeCallback(settled, child, callback, detail);
-        } else {
-          callback(detail);
-        }
-      }
-
-      promise._subscribers.length = 0;
-    }
-
-    function lib$es6$promise$$internal$$ErrorObject() {
-      this.error = null;
-    }
-
-    var lib$es6$promise$$internal$$TRY_CATCH_ERROR = new lib$es6$promise$$internal$$ErrorObject();
-
-    function lib$es6$promise$$internal$$tryCatch(callback, detail) {
-      try {
-        return callback(detail);
-      } catch(e) {
-        lib$es6$promise$$internal$$TRY_CATCH_ERROR.error = e;
-        return lib$es6$promise$$internal$$TRY_CATCH_ERROR;
-      }
-    }
-
-    function lib$es6$promise$$internal$$invokeCallback(settled, promise, callback, detail) {
-      var hasCallback = lib$es6$promise$utils$$isFunction(callback),
-          value, error, succeeded, failed;
-
-      if (hasCallback) {
-        value = lib$es6$promise$$internal$$tryCatch(callback, detail);
-
-        if (value === lib$es6$promise$$internal$$TRY_CATCH_ERROR) {
-          failed = true;
-          error = value.error;
-          value = null;
-        } else {
-          succeeded = true;
-        }
-
-        if (promise === value) {
-          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$cannotReturnOwn());
-          return;
-        }
-
-      } else {
-        value = detail;
-        succeeded = true;
-      }
-
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) {
-        // noop
-      } else if (hasCallback && succeeded) {
-        lib$es6$promise$$internal$$resolve(promise, value);
-      } else if (failed) {
-        lib$es6$promise$$internal$$reject(promise, error);
-      } else if (settled === lib$es6$promise$$internal$$FULFILLED) {
-        lib$es6$promise$$internal$$fulfill(promise, value);
-      } else if (settled === lib$es6$promise$$internal$$REJECTED) {
-        lib$es6$promise$$internal$$reject(promise, value);
-      }
-    }
-
-    function lib$es6$promise$$internal$$initializePromise(promise, resolver) {
-      try {
-        resolver(function resolvePromise(value){
-          lib$es6$promise$$internal$$resolve(promise, value);
-        }, function rejectPromise(reason) {
-          lib$es6$promise$$internal$$reject(promise, reason);
-        });
-      } catch(e) {
-        lib$es6$promise$$internal$$reject(promise, e);
-      }
-    }
-
-    function lib$es6$promise$enumerator$$Enumerator(Constructor, input) {
-      var enumerator = this;
-
-      enumerator._instanceConstructor = Constructor;
-      enumerator.promise = new Constructor(lib$es6$promise$$internal$$noop);
-
-      if (enumerator._validateInput(input)) {
-        enumerator._input     = input;
-        enumerator.length     = input.length;
-        enumerator._remaining = input.length;
-
-        enumerator._init();
-
-        if (enumerator.length === 0) {
-          lib$es6$promise$$internal$$fulfill(enumerator.promise, enumerator._result);
-        } else {
-          enumerator.length = enumerator.length || 0;
-          enumerator._enumerate();
-          if (enumerator._remaining === 0) {
-            lib$es6$promise$$internal$$fulfill(enumerator.promise, enumerator._result);
-          }
-        }
-      } else {
-        lib$es6$promise$$internal$$reject(enumerator.promise, enumerator._validationError());
-      }
-    }
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._validateInput = function(input) {
-      return lib$es6$promise$utils$$isArray(input);
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._validationError = function() {
-      return new Error('Array Methods must be provided an Array');
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._init = function() {
-      this._result = new Array(this.length);
-    };
-
-    var lib$es6$promise$enumerator$$default = lib$es6$promise$enumerator$$Enumerator;
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._enumerate = function() {
-      var enumerator = this;
-
-      var length  = enumerator.length;
-      var promise = enumerator.promise;
-      var input   = enumerator._input;
-
-      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
-        enumerator._eachEntry(input[i], i);
-      }
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._eachEntry = function(entry, i) {
-      var enumerator = this;
-      var c = enumerator._instanceConstructor;
-
-      if (lib$es6$promise$utils$$isMaybeThenable(entry)) {
-        if (entry.constructor === c && entry._state !== lib$es6$promise$$internal$$PENDING) {
-          entry._onerror = null;
-          enumerator._settledAt(entry._state, i, entry._result);
-        } else {
-          enumerator._willSettleAt(c.resolve(entry), i);
-        }
-      } else {
-        enumerator._remaining--;
-        enumerator._result[i] = entry;
-      }
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._settledAt = function(state, i, value) {
-      var enumerator = this;
-      var promise = enumerator.promise;
-
-      if (promise._state === lib$es6$promise$$internal$$PENDING) {
-        enumerator._remaining--;
-
-        if (state === lib$es6$promise$$internal$$REJECTED) {
-          lib$es6$promise$$internal$$reject(promise, value);
-        } else {
-          enumerator._result[i] = value;
-        }
-      }
-
-      if (enumerator._remaining === 0) {
-        lib$es6$promise$$internal$$fulfill(promise, enumerator._result);
-      }
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._willSettleAt = function(promise, i) {
-      var enumerator = this;
-
-      lib$es6$promise$$internal$$subscribe(promise, undefined, function(value) {
-        enumerator._settledAt(lib$es6$promise$$internal$$FULFILLED, i, value);
-      }, function(reason) {
-        enumerator._settledAt(lib$es6$promise$$internal$$REJECTED, i, reason);
-      });
-    };
-    function lib$es6$promise$promise$all$$all(entries) {
-      return new lib$es6$promise$enumerator$$default(this, entries).promise;
-    }
-    var lib$es6$promise$promise$all$$default = lib$es6$promise$promise$all$$all;
-    function lib$es6$promise$promise$race$$race(entries) {
-      /*jshint validthis:true */
-      var Constructor = this;
-
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-
-      if (!lib$es6$promise$utils$$isArray(entries)) {
-        lib$es6$promise$$internal$$reject(promise, new TypeError('You must pass an array to race.'));
-        return promise;
-      }
-
-      var length = entries.length;
-
-      function onFulfillment(value) {
-        lib$es6$promise$$internal$$resolve(promise, value);
-      }
-
-      function onRejection(reason) {
-        lib$es6$promise$$internal$$reject(promise, reason);
-      }
-
-      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
-        lib$es6$promise$$internal$$subscribe(Constructor.resolve(entries[i]), undefined, onFulfillment, onRejection);
-      }
-
-      return promise;
-    }
-    var lib$es6$promise$promise$race$$default = lib$es6$promise$promise$race$$race;
-    function lib$es6$promise$promise$resolve$$resolve(object) {
-      /*jshint validthis:true */
-      var Constructor = this;
-
-      if (object && typeof object === 'object' && object.constructor === Constructor) {
-        return object;
-      }
-
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-      lib$es6$promise$$internal$$resolve(promise, object);
-      return promise;
-    }
-    var lib$es6$promise$promise$resolve$$default = lib$es6$promise$promise$resolve$$resolve;
-    function lib$es6$promise$promise$reject$$reject(reason) {
-      /*jshint validthis:true */
-      var Constructor = this;
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-      lib$es6$promise$$internal$$reject(promise, reason);
-      return promise;
-    }
-    var lib$es6$promise$promise$reject$$default = lib$es6$promise$promise$reject$$reject;
-
-    var lib$es6$promise$promise$$counter = 0;
-
-    function lib$es6$promise$promise$$needsResolver() {
-      throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
-    }
-
-    function lib$es6$promise$promise$$needsNew() {
-      throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
-    }
-
-    var lib$es6$promise$promise$$default = lib$es6$promise$promise$$Promise;
-    /**
-      Promise objects represent the eventual result of an asynchronous operation. The
-      primary way of interacting with a promise is through its `then` method, which
-      registers callbacks to receive either a promise's eventual value or the reason
-      why the promise cannot be fulfilled.
-
-      Terminology
-      -----------
-
-      - `promise` is an object or function with a `then` method whose behavior conforms to this specification.
-      - `thenable` is an object or function that defines a `then` method.
-      - `value` is any legal JavaScript value (including undefined, a thenable, or a promise).
-      - `exception` is a value that is thrown using the throw statement.
-      - `reason` is a value that indicates why a promise was rejected.
-      - `settled` the final resting state of a promise, fulfilled or rejected.
-
-      A promise can be in one of three states: pending, fulfilled, or rejected.
-
-      Promises that are fulfilled have a fulfillment value and are in the fulfilled
-      state.  Promises that are rejected have a rejection reason and are in the
-      rejected state.  A fulfillment value is never a thenable.
-
-      Promises can also be said to *resolve* a value.  If this value is also a
-      promise, then the original promise's settled state will match the value's
-      settled state.  So a promise that *resolves* a promise that rejects will
-      itself reject, and a promise that *resolves* a promise that fulfills will
-      itself fulfill.
-
-
-      Basic Usage:
-      ------------
-
-      ```js
-      var promise = new Promise(function(resolve, reject) {
-        // on success
-        resolve(value);
-
-        // on failure
-        reject(reason);
-      });
-
-      promise.then(function(value) {
-        // on fulfillment
-      }, function(reason) {
-        // on rejection
-      });
-      ```
-
-      Advanced Usage:
-      ---------------
-
-      Promises shine when abstracting away asynchronous interactions such as
-      `XMLHttpRequest`s.
-
-      ```js
-      function getJSON(url) {
-        return new Promise(function(resolve, reject){
-          var xhr = new XMLHttpRequest();
-
-          xhr.open('GET', url);
-          xhr.onreadystatechange = handler;
-          xhr.responseType = 'json';
-          xhr.setRequestHeader('Accept', 'application/json');
-          xhr.send();
-
-          function handler() {
-            if (this.readyState === this.DONE) {
-              if (this.status === 200) {
-                resolve(this.response);
-              } else {
-                reject(new Error('getJSON: `' + url + '` failed with status: [' + this.status + ']'));
-              }
-            }
-          };
-        });
-      }
-
-      getJSON('/posts.json').then(function(json) {
-        // on fulfillment
-      }, function(reason) {
-        // on rejection
-      });
-      ```
-
-      Unlike callbacks, promises are great composable primitives.
-
-      ```js
-      Promise.all([
-        getJSON('/posts'),
-        getJSON('/comments')
-      ]).then(function(values){
-        values[0] // => postsJSON
-        values[1] // => commentsJSON
-
-        return values;
-      });
-      ```
-
-      @class Promise
-      @param {function} resolver
-      Useful for tooling.
-      @constructor
-    */
-    function lib$es6$promise$promise$$Promise(resolver) {
-      this._id = lib$es6$promise$promise$$counter++;
-      this._state = undefined;
-      this._result = undefined;
-      this._subscribers = [];
-
-      if (lib$es6$promise$$internal$$noop !== resolver) {
-        if (!lib$es6$promise$utils$$isFunction(resolver)) {
-          lib$es6$promise$promise$$needsResolver();
-        }
-
-        if (!(this instanceof lib$es6$promise$promise$$Promise)) {
-          lib$es6$promise$promise$$needsNew();
-        }
-
-        lib$es6$promise$$internal$$initializePromise(this, resolver);
-      }
-    }
-
-    lib$es6$promise$promise$$Promise.all = lib$es6$promise$promise$all$$default;
-    lib$es6$promise$promise$$Promise.race = lib$es6$promise$promise$race$$default;
-    lib$es6$promise$promise$$Promise.resolve = lib$es6$promise$promise$resolve$$default;
-    lib$es6$promise$promise$$Promise.reject = lib$es6$promise$promise$reject$$default;
-    lib$es6$promise$promise$$Promise._setScheduler = lib$es6$promise$asap$$setScheduler;
-    lib$es6$promise$promise$$Promise._setAsap = lib$es6$promise$asap$$setAsap;
-    lib$es6$promise$promise$$Promise._asap = lib$es6$promise$asap$$asap;
-
-    lib$es6$promise$promise$$Promise.prototype = {
-      constructor: lib$es6$promise$promise$$Promise,
-
-    /**
-      The primary way of interacting with a promise is through its `then` method,
-      which registers callbacks to receive either a promise's eventual value or the
-      reason why the promise cannot be fulfilled.
-
-      ```js
-      findUser().then(function(user){
-        // user is available
-      }, function(reason){
-        // user is unavailable, and you are given the reason why
-      });
-      ```
-
-      Chaining
-      --------
-
-      The return value of `then` is itself a promise.  This second, 'downstream'
-      promise is resolved with the return value of the first promise's fulfillment
-      or rejection handler, or rejected if the handler throws an exception.
-
-      ```js
-      findUser().then(function (user) {
-        return user.name;
-      }, function (reason) {
-        return 'default name';
-      }).then(function (userName) {
-        // If `findUser` fulfilled, `userName` will be the user's name, otherwise it
-        // will be `'default name'`
-      });
-
-      findUser().then(function (user) {
-        throw new Error('Found user, but still unhappy');
-      }, function (reason) {
-        throw new Error('`findUser` rejected and we're unhappy');
-      }).then(function (value) {
-        // never reached
-      }, function (reason) {
-        // if `findUser` fulfilled, `reason` will be 'Found user, but still unhappy'.
-        // If `findUser` rejected, `reason` will be '`findUser` rejected and we're unhappy'.
-      });
-      ```
-      If the downstream promise does not specify a rejection handler, rejection reasons will be propagated further downstream.
-
-      ```js
-      findUser().then(function (user) {
-        throw new PedagogicalException('Upstream error');
-      }).then(function (value) {
-        // never reached
-      }).then(function (value) {
-        // never reached
-      }, function (reason) {
-        // The `PedgagocialException` is propagated all the way down to here
-      });
-      ```
-
-      Assimilation
-      ------------
-
-      Sometimes the value you want to propagate to a downstream promise can only be
-      retrieved asynchronously. This can be achieved by returning a promise in the
-      fulfillment or rejection handler. The downstream promise will then be pending
-      until the returned promise is settled. This is called *assimilation*.
-
-      ```js
-      findUser().then(function (user) {
-        return findCommentsByAuthor(user);
-      }).then(function (comments) {
-        // The user's comments are now available
-      });
-      ```
-
-      If the assimliated promise rejects, then the downstream promise will also reject.
-
-      ```js
-      findUser().then(function (user) {
-        return findCommentsByAuthor(user);
-      }).then(function (comments) {
-        // If `findCommentsByAuthor` fulfills, we'll have the value here
-      }, function (reason) {
-        // If `findCommentsByAuthor` rejects, we'll have the reason here
-      });
-      ```
-
-      Simple Example
-      --------------
-
-      Synchronous Example
-
-      ```javascript
-      var result;
-
-      try {
-        result = findResult();
-        // success
-      } catch(reason) {
-        // failure
-      }
-      ```
-
-      Errback Example
-
-      ```js
-      findResult(function(result, err){
-        if (err) {
-          // failure
-        } else {
-          // success
-        }
-      });
-      ```
-
-      Promise Example;
-
-      ```javascript
-      findResult().then(function(result){
-        // success
-      }, function(reason){
-        // failure
-      });
-      ```
-
-      Advanced Example
-      --------------
-
-      Synchronous Example
-
-      ```javascript
-      var author, books;
-
-      try {
-        author = findAuthor();
-        books  = findBooksByAuthor(author);
-        // success
-      } catch(reason) {
-        // failure
-      }
-      ```
-
-      Errback Example
-
-      ```js
-
-      function foundBooks(books) {
-
-      }
-
-      function failure(reason) {
-
-      }
-
-      findAuthor(function(author, err){
-        if (err) {
-          failure(err);
-          // failure
-        } else {
-          try {
-            findBoooksByAuthor(author, function(books, err) {
-              if (err) {
-                failure(err);
-              } else {
-                try {
-                  foundBooks(books);
-                } catch(reason) {
-                  failure(reason);
-                }
-              }
-            });
-          } catch(error) {
-            failure(err);
-          }
-          // success
-        }
-      });
-      ```
-
-      Promise Example;
-
-      ```javascript
-      findAuthor().
-        then(findBooksByAuthor).
-        then(function(books){
-          // found books
-      }).catch(function(reason){
-        // something went wrong
-      });
-      ```
-
-      @method then
-      @param {Function} onFulfilled
-      @param {Function} onRejected
-      Useful for tooling.
-      @return {Promise}
-    */
-      then: function(onFulfillment, onRejection) {
-        var parent = this;
-        var state = parent._state;
-
-        if (state === lib$es6$promise$$internal$$FULFILLED && !onFulfillment || state === lib$es6$promise$$internal$$REJECTED && !onRejection) {
-          return this;
-        }
-
-        var child = new this.constructor(lib$es6$promise$$internal$$noop);
-        var result = parent._result;
-
-        if (state) {
-          var callback = arguments[state - 1];
-          lib$es6$promise$asap$$asap(function(){
-            lib$es6$promise$$internal$$invokeCallback(state, child, callback, result);
-          });
-        } else {
-          lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection);
-        }
-
-        return child;
-      },
-
-    /**
-      `catch` is simply sugar for `then(undefined, onRejection)` which makes it the same
-      as the catch block of a try/catch statement.
-
-      ```js
-      function findAuthor(){
-        throw new Error('couldn't find that author');
-      }
-
-      // synchronous
-      try {
-        findAuthor();
-      } catch(reason) {
-        // something went wrong
-      }
-
-      // async with promises
-      findAuthor().catch(function(reason){
-        // something went wrong
-      });
-      ```
-
-      @method catch
-      @param {Function} onRejection
-      Useful for tooling.
-      @return {Promise}
-    */
-      'catch': function(onRejection) {
-        return this.then(null, onRejection);
-      }
-    };
-    function lib$es6$promise$polyfill$$polyfill() {
-      var local;
-
-      if (typeof global !== 'undefined') {
-          local = global;
-      } else if (typeof self !== 'undefined') {
-          local = self;
-      } else {
-          try {
-              local = Function('return this')();
-          } catch (e) {
-              throw new Error('polyfill failed because global object is unavailable in this environment');
-          }
-      }
-
-      var P = local.Promise;
-
-      // ##### BEGIN: MODIFIED BY SAP
-      // Original line:
-      //    if (P && Object.prototype.toString.call(P.resolve()) === '[object Promise]' && !P.cast) {
-      // This lead to the polyfill replacing the native promise object in
-      // - Chrome, where "[object Object]" is returned instead of '[object Promise]'
-      // - Safari, where native promise contains a definition for Promise.cast
-      if (P && Object.prototype.toString.call(P.resolve()).indexOf('[object ') === 0) {
-      // ##### END: MODIFIED BY SAP
-        return;
-      }
-
-      local.Promise = lib$es6$promise$promise$$default;
-    }
-    var lib$es6$promise$polyfill$$default = lib$es6$promise$polyfill$$polyfill;
-
-    var lib$es6$promise$umd$$ES6Promise = {
-      'Promise': lib$es6$promise$promise$$default,
-      'polyfill': lib$es6$promise$polyfill$$default
-    };
-
-    /* global define:true module:true window: true */
-    if (typeof define === 'function' && define['amd']) {
-      // ##### BEGIN: MODIFIED BY SAP
-      // Original line:
-      // define(function() { return lib$es6$promise$umd$$ES6Promise; });
-      define('sap/ui/thirdparty/es6-promise', function() { return lib$es6$promise$umd$$ES6Promise; });
-      // ##### END: MODIFIED BY SAP
-    } else if (typeof module !== 'undefined' && module['exports']) {
-      module['exports'] = lib$es6$promise$umd$$ES6Promise;
-      // ##### BEGIN: MODIFIED BY SAP
-      // When require.js was loaded before the core, this will not set the global window.ES6Promise property and thus
-      // keep the rest of the framework from working in browsers that do not have native Promise support.
-      // Original line:
-      // } else if (typeof this !== 'undefined') {
-    }
-    if (typeof this !== 'undefined') {
-      // ##### END: MODIFIED BY SAP
-      this['ES6Promise'] = lib$es6$promise$umd$$ES6Promise;
-    }
-
-
-    // ##### BEGIN: MODIFIED BY SAP
-    // Original line:
-    //     lib$es6$promise$polyfill$$default();
-    // Do not automatically call the polyfill method as this will be called by UI5 only when needed.
-    // ##### END: MODIFIED BY SAP
-}).call(this);
-/*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -1005,7 +11,7 @@
  * This API is independent from any other part of the UI5 framework. This allows it to be loaded beforehand, if it is needed, to create the UI5 bootstrap
  * dynamically depending on the capabilities of the browser or device.
  *
- * @version 1.44.8
+ * @version 1.48.12
  * @namespace
  * @name sap.ui.Device
  * @public
@@ -1031,7 +37,7 @@ if (typeof window.sap.ui !== "object") {
 
 	//Skip initialization if API is already available
 	if (typeof window.sap.ui.Device === "object" || typeof window.sap.ui.Device === "function" ) {
-		var apiVersion = "1.44.8";
+		var apiVersion = "1.48.12";
 		window.sap.ui.Device._checkAPIVersion(apiVersion);
 		return;
 	}
@@ -1089,7 +95,7 @@ if (typeof window.sap.ui !== "object") {
 
 	//Only used internal to make clear when Device API is loaded in wrong version
 	device._checkAPIVersion = function(sVersion){
-		var v = "1.44.8";
+		var v = "1.48.12";
 		if (v != sVersion) {
 			logger.log(WARNING, "Device API version differs: " + v + " <-> " + sVersion);
 		}
@@ -1434,7 +440,8 @@ if (typeof window.sap.ui !== "object") {
 	 * @public
 	 */
 	/**
-	 * If this flag is set to <code>true</code>, the mobile variant of the browser is used.
+	 * If this flag is set to <code>true</code>, the mobile variant of the browser is used or
+	 * a tablet or phone device is detected.
 	 *
 	 * <b>Note:</b> This information might not be available for all browsers.
 	 *
@@ -1886,11 +893,6 @@ if (typeof window.sap.ui !== "object") {
 
 	device.support.pointer = !!window.PointerEvent;
 
-	// HOTFIX for Chrome 55+ since it newly introduced PointerEvents and touchevents aren't fired correctly.
-	if (device.browser.name == BROWSER.CHROME && device.browser.version >= 55) {
-		device.support.pointer = false;
-	}
-
 	device.support.matchmedia = !!window.matchMedia;
 	var m = device.support.matchmedia ? window.matchMedia("all and (max-width:0px)") : null; //IE10 doesn't like empty string as argument for matchMedia, FF returns null when running within an iframe with display:none
 	device.support.matchmedialistener = !!(m && m.addListener);
@@ -2124,13 +1126,14 @@ if (typeof window.sap.ui !== "object") {
 		return info;
 	}
 
-	function checkQueries(name, infoOnly){
+	function checkQueries(name, infoOnly, fnMatches){
+		fnMatches = fnMatches || device.media.matches;
 		if (_querysets[name]) {
 			var aQueries = _querysets[name].queries;
 			var info = null;
 			for (var i = 0, len = aQueries.length; i < len; i++) {
 				var q = aQueries[i];
-				if ((q != _querysets[name].currentquery || infoOnly) && device.media.matches(q.from, q.to, _querysets[name].unit)) {
+				if ((q != _querysets[name].currentquery || infoOnly) && fnMatches(q.from, q.to, _querysets[name].unit)) {
 					if (!infoOnly) {
 						_querysets[name].currentquery = q;
 					}
@@ -2190,14 +1193,18 @@ if (typeof window.sap.ui !== "object") {
 		return val;
 	}
 
-	function match_legacy(from, to, unit){
+	function match_legacy_by_size (from, to, unit, size) {
 		from = convertToPx(from, unit);
 		to = convertToPx(to, unit);
 
-		var width = windowSize()[0];
+		var width = size[0];
 		var a = from < 0 || from <= width;
 		var b = to < 0 || width <= to;
 		return a && b;
+	}
+
+	function match_legacy(from, to, unit){
+		return match_legacy_by_size(from, to, unit, windowSize());
 	}
 
 	function match(from, to, unit){
@@ -2230,7 +1237,7 @@ if (typeof window.sap.ui !== "object") {
 	 * @param {object}
 	 *            [oListener] The object that wants to be notified when the event occurs (<code>this</code> context within the
 	 *                        handler function). If it is not specified, the handler function is called in the context of the <code>window</code>.
-	 * @param {String}
+	 * @param {string}
 	 *            sName The name of the range set to listen to. The range set must be initialized beforehand
 	 *                  ({@link sap.ui.Device.media.initRangeSet}). If no name is provided, the
 	 *                  {@link sap.ui.Device.media.RANGESETS.SAP_STANDARD default range set} is used.
@@ -2253,7 +1260,7 @@ if (typeof window.sap.ui !== "object") {
 	 *            fnFunction The handler function to detach from the event
 	 * @param {object}
 	 *            [oListener] The object that wanted to be notified when the event occurred
-	 * @param {String}
+	 * @param {string}
 	 *             sName The name of the range set to listen to. If no name is provided, the
 	 *                   {@link sap.ui.Device.media.RANGESETS.SAP_STANDARD default range set} is used.
 	 *
@@ -2291,15 +1298,15 @@ if (typeof window.sap.ui !== "object") {
 	 * The range names are optional. If they are specified a CSS class (e.g. <code>sapUiMedia-MyRangeSet-Small</code>) is also
 	 * added to the document root depending on the current active range. This can be suppressed via parameter <code>bSuppressClasses</code>.
 	 *
-	 * @param {String}
+	 * @param {string}
 	 *             sName The name of the range set to be initialized - either a {@link sap.ui.Device.media.RANGESETS predefined} or custom one.
 	 *                   The name must be a valid id and consist only of letters and numeric digits.
 	 * @param {int[]}
 	 *             [aRangeBorders] The range borders
-	 * @param {String}
+	 * @param {string}
 	 *             [sUnit] The unit which should be used for the values given in <code>aRangeBorders</code>.
 	 *                     The allowed values are <code>"px"</code> (default), <code>"em"</code> or <code>"rem"</code>
-	 * @param {String[]}
+	 * @param {string[]}
 	 *             [aRangeNames] The names of the ranges. The names must be a valid id and consist only of letters and digits. If names
 	 *             are specified, CSS classes are also added to the document root as described above. This behavior can be
 	 *             switched off explicitly by using <code>bSuppressClasses</code>. <b>Note:</b> <code>aRangeBorders</code> with <code>n</code> entries
@@ -2324,7 +1331,7 @@ if (typeof window.sap.ui !== "object") {
 		}
 
 		if (device.media.hasRangeSet(oConfig.name)) {
-			logger.log(INFO, "Range set " + oConfig.name + " hase already been initialized", 'DEVICE.MEDIA');
+			logger.log(INFO, "Range set " + oConfig.name + " has already been initialized", 'DEVICE.MEDIA');
 			return;
 		}
 
@@ -2363,12 +1370,8 @@ if (typeof window.sap.ui !== "object") {
 				q.media.addListener(oConfig.listener);
 			}
 		} else { //IE, Safari (<6?)
-			if (window.addEventListener) {
-				window.addEventListener("resize", oConfig.listener, false);
-				window.addEventListener("orientationchange", oConfig.listener, false);
-			} else { //IE8
-				window.attachEvent("onresize", oConfig.listener);
-			}
+			window.addEventListener("resize", oConfig.listener, false);
+			window.addEventListener("orientationchange", oConfig.listener, false);
 		}
 
 		oConfig.listener();
@@ -2377,24 +1380,31 @@ if (typeof window.sap.ui !== "object") {
 	/**
 	 * Returns information about the current active range of the range set with the given name.
 	 *
-	 * @param {String} sName The name of the range set. The range set must be initialized beforehand ({@link sap.ui.Device.media.initRangeSet})
+	 * If the optional parameter <code>iWidth</iWidth> is given, the active range will be determined for that width,
+	 * otherwise it is determined for the current window size.
+	 *
+	 * @param {string} sName The name of the range set. The range set must be initialized beforehand ({@link sap.ui.Device.media.initRangeSet})
+	 * @param {int} [iWidth] An optional width, based on which the range should be determined;
+	 *             If <code>iWidth</code> is not a number, the window size will be used.
+	 * @returns {map} Information about the current active interval of the range set. The returned map has the same structure as the argument of the event handlers ({@link sap.ui.Device.media.attachHandler})
 	 *
 	 * @name sap.ui.Device.media.getCurrentRange
-	 * @return {map} Information about the current active interval of the range set. The returned map has the same structure as the argument of the event handlers ({link sap.ui.Device.media.attachHandler})
 	 * @function
 	 * @public
 	 */
-	device.media.getCurrentRange = function(sName){
+	device.media.getCurrentRange = function(sName, iWidth){
 		if (!device.media.hasRangeSet(sName)) {
 			return null;
 		}
-		return checkQueries(sName, true);
+		return checkQueries(sName, true, isNaN(iWidth) ? null : function(from, to, unit) {
+			return match_legacy_by_size(from, to, unit, [iWidth, 0]);
+		});
 	};
 
 	/**
 	 * Returns <code>true</code> if a range set with the given name is already initialized.
 	 *
-	 * @param {String} sName The name of the range set.
+	 * @param {string} sName The name of the range set.
 	 *
 	 * @name sap.ui.Device.media.hasRangeSet
 	 * @return {boolean} Returns <code>true</code> if a range set with the given name is already initialized
@@ -2411,7 +1421,7 @@ if (typeof window.sap.ui !== "object") {
 	 * Only custom range sets can be removed via this function. Initialized predefined range sets
 	 * ({@link sap.ui.Device.media.RANGESETS}) cannot be removed.
 	 *
-	 * @param {String} sName The name of the range set which should be removed.
+	 * @param {string} sName The name of the range set which should be removed.
 	 *
 	 * @name sap.ui.Device.media.removeRangeSet
 	 * @function
@@ -2437,12 +1447,8 @@ if (typeof window.sap.ui !== "object") {
 				queries[i].media.removeListener(oConfig.listener);
 			}
 		} else { //IE, Safari (<6?)
-			if (window.removeEventListener) {
-				window.removeEventListener("resize", oConfig.listener, false);
-				window.removeEventListener("orientationchange", oConfig.listener, false);
-			} else { //IE8
-				window.detachEvent("onresize", oConfig.listener);
-			}
+			window.removeEventListener("resize", oConfig.listener, false);
+			window.removeEventListener("orientationchange", oConfig.listener, false);
 		}
 
 		refreshCSSClasses(sName, "", true);
@@ -2468,6 +1474,16 @@ if (typeof window.sap.ui !== "object") {
 	 * If this flag is set to <code>true</code>, the device is recognized as a tablet.
 	 *
 	 * Furthermore, a CSS class <code>sap-tablet</code> is added to the document root element.
+	 *
+	 * <b>Note:</b> This flag is also true for some browsers on desktop devices running on Windows 8 or higher. Also see the
+	 * documentation for {@link sap.ui.Device.system.combi} devices.
+	 * You can use the following logic to ensure that the current device is a tablet device:
+	 *
+	 * <pre>
+	 * if(sap.ui.Device.system.tablet && !sap.ui.Device.system.desktop){
+	 *	...tablet related commands...
+	 * }
+	 * </pre>
 	 *
 	 * @name sap.ui.Device.system.tablet
 	 * @type boolean
@@ -2801,7 +1817,7 @@ if (typeof window.sap.ui !== "object") {
 	var bKeyboardOpen = false;
 	var iLastResizeTime;
 	var rInputTagRegex = /INPUT|TEXTAREA|SELECT/;
-	// On iPhone with iOS version 7.0.x and on iPad with iOS version 7.x (tested with all versions below 7.1.1), there's a invalide resize event fired
+	// On iPhone with iOS version 7.0.x and on iPad with iOS version 7.x (tested with all versions below 7.1.1), there's an invalid resize event fired
 	// when changing the orientation while keyboard is shown.
 	var bSkipFirstResize = device.os.ios && device.browser.name === "sf" &&
 		((device.system.phone && device.os.version >= 7 && device.os.version < 7.1) || (device.system.tablet && device.os.version >= 7));
@@ -2813,7 +1829,7 @@ if (typeof window.sap.ui !== "object") {
 			if (bKeyboardOpen && bFromOrientationChange) {
 				return !device.orientation.landscape;
 			}
-			if (bKeyboardOpen) { //when keyboard opens, the last orientation change value will be retured.
+			if (bKeyboardOpen) { //when keyboard opens, the last orientation change value will be returned.
 				return device.orientation.landscape;
 			}
 		} else if (device.support.matchmedia && device.support.orientation) { //most desktop browsers and windows phone/tablet which not support orientationchange
@@ -2915,19 +1931,14 @@ if (typeof window.sap.ui !== "object") {
 	//Add API to global namespace
 	window.sap.ui.Device = device;
 
-	// Add handler for orientationchange and resize after initialization of Device API (IE8 fires onresize synchronously)
+	// Add handler for orientationchange and resize after initialization of Device API
 	if (device.support.touch && device.support.orientation) {
-		//logic for mobile devices which support orientationchange (like ios, android, blackberry)
+		// logic for mobile devices which support orientationchange (like ios, android)
 		window.addEventListener("resize", handleMobileOrientationResizeChange, false);
 		window.addEventListener("orientationchange", handleMobileOrientationResizeChange, false);
 	} else {
-		if (window.addEventListener) {
-			//most desktop browsers and windows phone/tablet which not support orientationchange
-			window.addEventListener("resize", handleOrientationResizeChange, false);
-		} else {
-			//IE8
-			window.attachEvent("onresize", handleOrientationResizeChange);
-		}
+		// desktop browsers and windows phone/tablet which not support orientationchange
+		window.addEventListener("resize", handleOrientationResizeChange, false);
 	}
 
 	//Always initialize the default media range set
@@ -4889,6 +3900,1000 @@ p.escapeQuerySpace = function(v) {
 
 return URI;
 }));
+/*!
+ * @overview es6-promise - a tiny implementation of Promises/A+.
+ * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
+ * @license   Licensed under MIT license
+ *            See https://raw.githubusercontent.com/jakearchibald/es6-promise/master/LICENSE
+ * @version   2.3.0
+ */
+
+(function() {
+    "use strict";
+    function lib$es6$promise$utils$$objectOrFunction(x) {
+      return typeof x === 'function' || (typeof x === 'object' && x !== null);
+    }
+
+    function lib$es6$promise$utils$$isFunction(x) {
+      return typeof x === 'function';
+    }
+
+    function lib$es6$promise$utils$$isMaybeThenable(x) {
+      return typeof x === 'object' && x !== null;
+    }
+
+    var lib$es6$promise$utils$$_isArray;
+    if (!Array.isArray) {
+      lib$es6$promise$utils$$_isArray = function (x) {
+        return Object.prototype.toString.call(x) === '[object Array]';
+      };
+    } else {
+      lib$es6$promise$utils$$_isArray = Array.isArray;
+    }
+
+    var lib$es6$promise$utils$$isArray = lib$es6$promise$utils$$_isArray;
+    var lib$es6$promise$asap$$len = 0;
+    var lib$es6$promise$asap$$toString = {}.toString;
+    var lib$es6$promise$asap$$vertxNext;
+    var lib$es6$promise$asap$$customSchedulerFn;
+
+    var lib$es6$promise$asap$$asap = function asap(callback, arg) {
+      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len] = callback;
+      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len + 1] = arg;
+      lib$es6$promise$asap$$len += 2;
+      if (lib$es6$promise$asap$$len === 2) {
+        // If len is 2, that means that we need to schedule an async flush.
+        // If additional callbacks are queued before the queue is flushed, they
+        // will be processed by this flush that we are scheduling.
+        if (lib$es6$promise$asap$$customSchedulerFn) {
+          lib$es6$promise$asap$$customSchedulerFn(lib$es6$promise$asap$$flush);
+        } else {
+          lib$es6$promise$asap$$scheduleFlush();
+        }
+      }
+    }
+
+    function lib$es6$promise$asap$$setScheduler(scheduleFn) {
+      lib$es6$promise$asap$$customSchedulerFn = scheduleFn;
+    }
+
+    function lib$es6$promise$asap$$setAsap(asapFn) {
+      lib$es6$promise$asap$$asap = asapFn;
+    }
+
+    var lib$es6$promise$asap$$browserWindow = (typeof window !== 'undefined') ? window : undefined;
+    var lib$es6$promise$asap$$browserGlobal = lib$es6$promise$asap$$browserWindow || {};
+    var lib$es6$promise$asap$$BrowserMutationObserver = lib$es6$promise$asap$$browserGlobal.MutationObserver || lib$es6$promise$asap$$browserGlobal.WebKitMutationObserver;
+    var lib$es6$promise$asap$$isNode = typeof process !== 'undefined' && {}.toString.call(process) === '[object process]';
+
+    // test for web worker but not in IE10
+    var lib$es6$promise$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
+      typeof importScripts !== 'undefined' &&
+      typeof MessageChannel !== 'undefined';
+
+    // node
+    function lib$es6$promise$asap$$useNextTick() {
+      var nextTick = process.nextTick;
+      // node version 0.10.x displays a deprecation warning when nextTick is used recursively
+      // setImmediate should be used instead instead
+      var version = process.versions.node.match(/^(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)$/);
+      if (Array.isArray(version) && version[1] === '0' && version[2] === '10') {
+        nextTick = setImmediate;
+      }
+      return function() {
+        nextTick(lib$es6$promise$asap$$flush);
+      };
+    }
+
+    // vertx
+    function lib$es6$promise$asap$$useVertxTimer() {
+      return function() {
+        lib$es6$promise$asap$$vertxNext(lib$es6$promise$asap$$flush);
+      };
+    }
+
+    function lib$es6$promise$asap$$useMutationObserver() {
+      var iterations = 0;
+      var observer = new lib$es6$promise$asap$$BrowserMutationObserver(lib$es6$promise$asap$$flush);
+      var node = document.createTextNode('');
+      observer.observe(node, { characterData: true });
+
+      return function() {
+        node.data = (iterations = ++iterations % 2);
+      };
+    }
+
+    // web worker
+    function lib$es6$promise$asap$$useMessageChannel() {
+      var channel = new MessageChannel();
+      channel.port1.onmessage = lib$es6$promise$asap$$flush;
+      return function () {
+        channel.port2.postMessage(0);
+      };
+    }
+
+    function lib$es6$promise$asap$$useSetTimeout() {
+      return function() {
+        setTimeout(lib$es6$promise$asap$$flush, 1);
+      };
+    }
+
+    var lib$es6$promise$asap$$queue = new Array(1000);
+    function lib$es6$promise$asap$$flush() {
+      for (var i = 0; i < lib$es6$promise$asap$$len; i+=2) {
+        var callback = lib$es6$promise$asap$$queue[i];
+        var arg = lib$es6$promise$asap$$queue[i+1];
+
+        callback(arg);
+
+        lib$es6$promise$asap$$queue[i] = undefined;
+        lib$es6$promise$asap$$queue[i+1] = undefined;
+      }
+
+      lib$es6$promise$asap$$len = 0;
+    }
+
+    function lib$es6$promise$asap$$attemptVertex() {
+      try {
+        var r = require;
+        var vertx = r('vertx');
+        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
+        return lib$es6$promise$asap$$useVertxTimer();
+      } catch(e) {
+        return lib$es6$promise$asap$$useSetTimeout();
+      }
+    }
+
+    var lib$es6$promise$asap$$scheduleFlush;
+    // Decide what async method to use to triggering processing of queued callbacks:
+    if (lib$es6$promise$asap$$isNode) {
+      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useNextTick();
+    } else if (lib$es6$promise$asap$$BrowserMutationObserver) {
+      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMutationObserver();
+    } else if (lib$es6$promise$asap$$isWorker) {
+      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMessageChannel();
+    } else if (lib$es6$promise$asap$$browserWindow === undefined && typeof require === 'function') {
+      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$attemptVertex();
+    } else {
+      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useSetTimeout();
+    }
+
+    function lib$es6$promise$$internal$$noop() {}
+
+    var lib$es6$promise$$internal$$PENDING   = void 0;
+    var lib$es6$promise$$internal$$FULFILLED = 1;
+    var lib$es6$promise$$internal$$REJECTED  = 2;
+
+    var lib$es6$promise$$internal$$GET_THEN_ERROR = new lib$es6$promise$$internal$$ErrorObject();
+
+    function lib$es6$promise$$internal$$selfFullfillment() {
+      return new TypeError("You cannot resolve a promise with itself");
+    }
+
+    function lib$es6$promise$$internal$$cannotReturnOwn() {
+      return new TypeError('A promises callback cannot return that same promise.');
+    }
+
+    function lib$es6$promise$$internal$$getThen(promise) {
+      try {
+        return promise.then;
+      } catch(error) {
+        lib$es6$promise$$internal$$GET_THEN_ERROR.error = error;
+        return lib$es6$promise$$internal$$GET_THEN_ERROR;
+      }
+    }
+
+    function lib$es6$promise$$internal$$tryThen(then, value, fulfillmentHandler, rejectionHandler) {
+      try {
+        then.call(value, fulfillmentHandler, rejectionHandler);
+      } catch(e) {
+        return e;
+      }
+    }
+
+    function lib$es6$promise$$internal$$handleForeignThenable(promise, thenable, then) {
+       lib$es6$promise$asap$$asap(function(promise) {
+        var sealed = false;
+        var error = lib$es6$promise$$internal$$tryThen(then, thenable, function(value) {
+          if (sealed) { return; }
+          sealed = true;
+          if (thenable !== value) {
+            lib$es6$promise$$internal$$resolve(promise, value);
+          } else {
+            lib$es6$promise$$internal$$fulfill(promise, value);
+          }
+        }, function(reason) {
+          if (sealed) { return; }
+          sealed = true;
+
+          lib$es6$promise$$internal$$reject(promise, reason);
+        }, 'Settle: ' + (promise._label || ' unknown promise'));
+
+        if (!sealed && error) {
+          sealed = true;
+          lib$es6$promise$$internal$$reject(promise, error);
+        }
+      }, promise);
+    }
+
+    function lib$es6$promise$$internal$$handleOwnThenable(promise, thenable) {
+      if (thenable._state === lib$es6$promise$$internal$$FULFILLED) {
+        lib$es6$promise$$internal$$fulfill(promise, thenable._result);
+      } else if (thenable._state === lib$es6$promise$$internal$$REJECTED) {
+        lib$es6$promise$$internal$$reject(promise, thenable._result);
+      } else {
+        lib$es6$promise$$internal$$subscribe(thenable, undefined, function(value) {
+          lib$es6$promise$$internal$$resolve(promise, value);
+        }, function(reason) {
+          lib$es6$promise$$internal$$reject(promise, reason);
+        });
+      }
+    }
+
+    function lib$es6$promise$$internal$$handleMaybeThenable(promise, maybeThenable) {
+      if (maybeThenable.constructor === promise.constructor) {
+        lib$es6$promise$$internal$$handleOwnThenable(promise, maybeThenable);
+      } else {
+        var then = lib$es6$promise$$internal$$getThen(maybeThenable);
+
+        if (then === lib$es6$promise$$internal$$GET_THEN_ERROR) {
+          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$GET_THEN_ERROR.error);
+        } else if (then === undefined) {
+          lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
+        } else if (lib$es6$promise$utils$$isFunction(then)) {
+          lib$es6$promise$$internal$$handleForeignThenable(promise, maybeThenable, then);
+        } else {
+          lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
+        }
+      }
+    }
+
+    function lib$es6$promise$$internal$$resolve(promise, value) {
+      if (promise === value) {
+        lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$selfFullfillment());
+      } else if (lib$es6$promise$utils$$objectOrFunction(value)) {
+        lib$es6$promise$$internal$$handleMaybeThenable(promise, value);
+      } else {
+        lib$es6$promise$$internal$$fulfill(promise, value);
+      }
+    }
+
+    function lib$es6$promise$$internal$$publishRejection(promise) {
+      if (promise._onerror) {
+        promise._onerror(promise._result);
+      }
+
+      lib$es6$promise$$internal$$publish(promise);
+    }
+
+    function lib$es6$promise$$internal$$fulfill(promise, value) {
+      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
+
+      promise._result = value;
+      promise._state = lib$es6$promise$$internal$$FULFILLED;
+
+      if (promise._subscribers.length !== 0) {
+        lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, promise);
+      }
+    }
+
+    function lib$es6$promise$$internal$$reject(promise, reason) {
+      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
+      promise._state = lib$es6$promise$$internal$$REJECTED;
+      promise._result = reason;
+
+      lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publishRejection, promise);
+    }
+
+    function lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection) {
+      var subscribers = parent._subscribers;
+      var length = subscribers.length;
+
+      parent._onerror = null;
+
+      subscribers[length] = child;
+      subscribers[length + lib$es6$promise$$internal$$FULFILLED] = onFulfillment;
+      subscribers[length + lib$es6$promise$$internal$$REJECTED]  = onRejection;
+
+      if (length === 0 && parent._state) {
+        lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, parent);
+      }
+    }
+
+    function lib$es6$promise$$internal$$publish(promise) {
+      var subscribers = promise._subscribers;
+      var settled = promise._state;
+
+      if (subscribers.length === 0) { return; }
+
+      var child, callback, detail = promise._result;
+
+      for (var i = 0; i < subscribers.length; i += 3) {
+        child = subscribers[i];
+        callback = subscribers[i + settled];
+
+        if (child) {
+          lib$es6$promise$$internal$$invokeCallback(settled, child, callback, detail);
+        } else {
+          callback(detail);
+        }
+      }
+
+      promise._subscribers.length = 0;
+    }
+
+    function lib$es6$promise$$internal$$ErrorObject() {
+      this.error = null;
+    }
+
+    var lib$es6$promise$$internal$$TRY_CATCH_ERROR = new lib$es6$promise$$internal$$ErrorObject();
+
+    function lib$es6$promise$$internal$$tryCatch(callback, detail) {
+      try {
+        return callback(detail);
+      } catch(e) {
+        lib$es6$promise$$internal$$TRY_CATCH_ERROR.error = e;
+        return lib$es6$promise$$internal$$TRY_CATCH_ERROR;
+      }
+    }
+
+    function lib$es6$promise$$internal$$invokeCallback(settled, promise, callback, detail) {
+      var hasCallback = lib$es6$promise$utils$$isFunction(callback),
+          value, error, succeeded, failed;
+
+      if (hasCallback) {
+        value = lib$es6$promise$$internal$$tryCatch(callback, detail);
+
+        if (value === lib$es6$promise$$internal$$TRY_CATCH_ERROR) {
+          failed = true;
+          error = value.error;
+          value = null;
+        } else {
+          succeeded = true;
+        }
+
+        if (promise === value) {
+          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$cannotReturnOwn());
+          return;
+        }
+
+      } else {
+        value = detail;
+        succeeded = true;
+      }
+
+      if (promise._state !== lib$es6$promise$$internal$$PENDING) {
+        // noop
+      } else if (hasCallback && succeeded) {
+        lib$es6$promise$$internal$$resolve(promise, value);
+      } else if (failed) {
+        lib$es6$promise$$internal$$reject(promise, error);
+      } else if (settled === lib$es6$promise$$internal$$FULFILLED) {
+        lib$es6$promise$$internal$$fulfill(promise, value);
+      } else if (settled === lib$es6$promise$$internal$$REJECTED) {
+        lib$es6$promise$$internal$$reject(promise, value);
+      }
+    }
+
+    function lib$es6$promise$$internal$$initializePromise(promise, resolver) {
+      try {
+        resolver(function resolvePromise(value){
+          lib$es6$promise$$internal$$resolve(promise, value);
+        }, function rejectPromise(reason) {
+          lib$es6$promise$$internal$$reject(promise, reason);
+        });
+      } catch(e) {
+        lib$es6$promise$$internal$$reject(promise, e);
+      }
+    }
+
+    function lib$es6$promise$enumerator$$Enumerator(Constructor, input) {
+      var enumerator = this;
+
+      enumerator._instanceConstructor = Constructor;
+      enumerator.promise = new Constructor(lib$es6$promise$$internal$$noop);
+
+      if (enumerator._validateInput(input)) {
+        enumerator._input     = input;
+        enumerator.length     = input.length;
+        enumerator._remaining = input.length;
+
+        enumerator._init();
+
+        if (enumerator.length === 0) {
+          lib$es6$promise$$internal$$fulfill(enumerator.promise, enumerator._result);
+        } else {
+          enumerator.length = enumerator.length || 0;
+          enumerator._enumerate();
+          if (enumerator._remaining === 0) {
+            lib$es6$promise$$internal$$fulfill(enumerator.promise, enumerator._result);
+          }
+        }
+      } else {
+        lib$es6$promise$$internal$$reject(enumerator.promise, enumerator._validationError());
+      }
+    }
+
+    lib$es6$promise$enumerator$$Enumerator.prototype._validateInput = function(input) {
+      return lib$es6$promise$utils$$isArray(input);
+    };
+
+    lib$es6$promise$enumerator$$Enumerator.prototype._validationError = function() {
+      return new Error('Array Methods must be provided an Array');
+    };
+
+    lib$es6$promise$enumerator$$Enumerator.prototype._init = function() {
+      this._result = new Array(this.length);
+    };
+
+    var lib$es6$promise$enumerator$$default = lib$es6$promise$enumerator$$Enumerator;
+
+    lib$es6$promise$enumerator$$Enumerator.prototype._enumerate = function() {
+      var enumerator = this;
+
+      var length  = enumerator.length;
+      var promise = enumerator.promise;
+      var input   = enumerator._input;
+
+      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
+        enumerator._eachEntry(input[i], i);
+      }
+    };
+
+    lib$es6$promise$enumerator$$Enumerator.prototype._eachEntry = function(entry, i) {
+      var enumerator = this;
+      var c = enumerator._instanceConstructor;
+
+      if (lib$es6$promise$utils$$isMaybeThenable(entry)) {
+        if (entry.constructor === c && entry._state !== lib$es6$promise$$internal$$PENDING) {
+          entry._onerror = null;
+          enumerator._settledAt(entry._state, i, entry._result);
+        } else {
+          enumerator._willSettleAt(c.resolve(entry), i);
+        }
+      } else {
+        enumerator._remaining--;
+        enumerator._result[i] = entry;
+      }
+    };
+
+    lib$es6$promise$enumerator$$Enumerator.prototype._settledAt = function(state, i, value) {
+      var enumerator = this;
+      var promise = enumerator.promise;
+
+      if (promise._state === lib$es6$promise$$internal$$PENDING) {
+        enumerator._remaining--;
+
+        if (state === lib$es6$promise$$internal$$REJECTED) {
+          lib$es6$promise$$internal$$reject(promise, value);
+        } else {
+          enumerator._result[i] = value;
+        }
+      }
+
+      if (enumerator._remaining === 0) {
+        lib$es6$promise$$internal$$fulfill(promise, enumerator._result);
+      }
+    };
+
+    lib$es6$promise$enumerator$$Enumerator.prototype._willSettleAt = function(promise, i) {
+      var enumerator = this;
+
+      lib$es6$promise$$internal$$subscribe(promise, undefined, function(value) {
+        enumerator._settledAt(lib$es6$promise$$internal$$FULFILLED, i, value);
+      }, function(reason) {
+        enumerator._settledAt(lib$es6$promise$$internal$$REJECTED, i, reason);
+      });
+    };
+    function lib$es6$promise$promise$all$$all(entries) {
+      return new lib$es6$promise$enumerator$$default(this, entries).promise;
+    }
+    var lib$es6$promise$promise$all$$default = lib$es6$promise$promise$all$$all;
+    function lib$es6$promise$promise$race$$race(entries) {
+      /*jshint validthis:true */
+      var Constructor = this;
+
+      var promise = new Constructor(lib$es6$promise$$internal$$noop);
+
+      if (!lib$es6$promise$utils$$isArray(entries)) {
+        lib$es6$promise$$internal$$reject(promise, new TypeError('You must pass an array to race.'));
+        return promise;
+      }
+
+      var length = entries.length;
+
+      function onFulfillment(value) {
+        lib$es6$promise$$internal$$resolve(promise, value);
+      }
+
+      function onRejection(reason) {
+        lib$es6$promise$$internal$$reject(promise, reason);
+      }
+
+      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
+        lib$es6$promise$$internal$$subscribe(Constructor.resolve(entries[i]), undefined, onFulfillment, onRejection);
+      }
+
+      return promise;
+    }
+    var lib$es6$promise$promise$race$$default = lib$es6$promise$promise$race$$race;
+    function lib$es6$promise$promise$resolve$$resolve(object) {
+      /*jshint validthis:true */
+      var Constructor = this;
+
+      if (object && typeof object === 'object' && object.constructor === Constructor) {
+        return object;
+      }
+
+      var promise = new Constructor(lib$es6$promise$$internal$$noop);
+      lib$es6$promise$$internal$$resolve(promise, object);
+      return promise;
+    }
+    var lib$es6$promise$promise$resolve$$default = lib$es6$promise$promise$resolve$$resolve;
+    function lib$es6$promise$promise$reject$$reject(reason) {
+      /*jshint validthis:true */
+      var Constructor = this;
+      var promise = new Constructor(lib$es6$promise$$internal$$noop);
+      lib$es6$promise$$internal$$reject(promise, reason);
+      return promise;
+    }
+    var lib$es6$promise$promise$reject$$default = lib$es6$promise$promise$reject$$reject;
+
+    var lib$es6$promise$promise$$counter = 0;
+
+    function lib$es6$promise$promise$$needsResolver() {
+      throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
+    }
+
+    function lib$es6$promise$promise$$needsNew() {
+      throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
+    }
+
+    var lib$es6$promise$promise$$default = lib$es6$promise$promise$$Promise;
+    /**
+      Promise objects represent the eventual result of an asynchronous operation. The
+      primary way of interacting with a promise is through its `then` method, which
+      registers callbacks to receive either a promise's eventual value or the reason
+      why the promise cannot be fulfilled.
+
+      Terminology
+      -----------
+
+      - `promise` is an object or function with a `then` method whose behavior conforms to this specification.
+      - `thenable` is an object or function that defines a `then` method.
+      - `value` is any legal JavaScript value (including undefined, a thenable, or a promise).
+      - `exception` is a value that is thrown using the throw statement.
+      - `reason` is a value that indicates why a promise was rejected.
+      - `settled` the final resting state of a promise, fulfilled or rejected.
+
+      A promise can be in one of three states: pending, fulfilled, or rejected.
+
+      Promises that are fulfilled have a fulfillment value and are in the fulfilled
+      state.  Promises that are rejected have a rejection reason and are in the
+      rejected state.  A fulfillment value is never a thenable.
+
+      Promises can also be said to *resolve* a value.  If this value is also a
+      promise, then the original promise's settled state will match the value's
+      settled state.  So a promise that *resolves* a promise that rejects will
+      itself reject, and a promise that *resolves* a promise that fulfills will
+      itself fulfill.
+
+
+      Basic Usage:
+      ------------
+
+      ```js
+      var promise = new Promise(function(resolve, reject) {
+        // on success
+        resolve(value);
+
+        // on failure
+        reject(reason);
+      });
+
+      promise.then(function(value) {
+        // on fulfillment
+      }, function(reason) {
+        // on rejection
+      });
+      ```
+
+      Advanced Usage:
+      ---------------
+
+      Promises shine when abstracting away asynchronous interactions such as
+      `XMLHttpRequest`s.
+
+      ```js
+      function getJSON(url) {
+        return new Promise(function(resolve, reject){
+          var xhr = new XMLHttpRequest();
+
+          xhr.open('GET', url);
+          xhr.onreadystatechange = handler;
+          xhr.responseType = 'json';
+          xhr.setRequestHeader('Accept', 'application/json');
+          xhr.send();
+
+          function handler() {
+            if (this.readyState === this.DONE) {
+              if (this.status === 200) {
+                resolve(this.response);
+              } else {
+                reject(new Error('getJSON: `' + url + '` failed with status: [' + this.status + ']'));
+              }
+            }
+          };
+        });
+      }
+
+      getJSON('/posts.json').then(function(json) {
+        // on fulfillment
+      }, function(reason) {
+        // on rejection
+      });
+      ```
+
+      Unlike callbacks, promises are great composable primitives.
+
+      ```js
+      Promise.all([
+        getJSON('/posts'),
+        getJSON('/comments')
+      ]).then(function(values){
+        values[0] // => postsJSON
+        values[1] // => commentsJSON
+
+        return values;
+      });
+      ```
+
+      @class Promise
+      @param {function} resolver
+      Useful for tooling.
+      @constructor
+    */
+    function lib$es6$promise$promise$$Promise(resolver) {
+      this._id = lib$es6$promise$promise$$counter++;
+      this._state = undefined;
+      this._result = undefined;
+      this._subscribers = [];
+
+      if (lib$es6$promise$$internal$$noop !== resolver) {
+        if (!lib$es6$promise$utils$$isFunction(resolver)) {
+          lib$es6$promise$promise$$needsResolver();
+        }
+
+        if (!(this instanceof lib$es6$promise$promise$$Promise)) {
+          lib$es6$promise$promise$$needsNew();
+        }
+
+        lib$es6$promise$$internal$$initializePromise(this, resolver);
+      }
+    }
+
+    lib$es6$promise$promise$$Promise.all = lib$es6$promise$promise$all$$default;
+    lib$es6$promise$promise$$Promise.race = lib$es6$promise$promise$race$$default;
+    lib$es6$promise$promise$$Promise.resolve = lib$es6$promise$promise$resolve$$default;
+    lib$es6$promise$promise$$Promise.reject = lib$es6$promise$promise$reject$$default;
+    lib$es6$promise$promise$$Promise._setScheduler = lib$es6$promise$asap$$setScheduler;
+    lib$es6$promise$promise$$Promise._setAsap = lib$es6$promise$asap$$setAsap;
+    lib$es6$promise$promise$$Promise._asap = lib$es6$promise$asap$$asap;
+
+    lib$es6$promise$promise$$Promise.prototype = {
+      constructor: lib$es6$promise$promise$$Promise,
+
+    /**
+      The primary way of interacting with a promise is through its `then` method,
+      which registers callbacks to receive either a promise's eventual value or the
+      reason why the promise cannot be fulfilled.
+
+      ```js
+      findUser().then(function(user){
+        // user is available
+      }, function(reason){
+        // user is unavailable, and you are given the reason why
+      });
+      ```
+
+      Chaining
+      --------
+
+      The return value of `then` is itself a promise.  This second, 'downstream'
+      promise is resolved with the return value of the first promise's fulfillment
+      or rejection handler, or rejected if the handler throws an exception.
+
+      ```js
+      findUser().then(function (user) {
+        return user.name;
+      }, function (reason) {
+        return 'default name';
+      }).then(function (userName) {
+        // If `findUser` fulfilled, `userName` will be the user's name, otherwise it
+        // will be `'default name'`
+      });
+
+      findUser().then(function (user) {
+        throw new Error('Found user, but still unhappy');
+      }, function (reason) {
+        throw new Error('`findUser` rejected and we're unhappy');
+      }).then(function (value) {
+        // never reached
+      }, function (reason) {
+        // if `findUser` fulfilled, `reason` will be 'Found user, but still unhappy'.
+        // If `findUser` rejected, `reason` will be '`findUser` rejected and we're unhappy'.
+      });
+      ```
+      If the downstream promise does not specify a rejection handler, rejection reasons will be propagated further downstream.
+
+      ```js
+      findUser().then(function (user) {
+        throw new PedagogicalException('Upstream error');
+      }).then(function (value) {
+        // never reached
+      }).then(function (value) {
+        // never reached
+      }, function (reason) {
+        // The `PedgagocialException` is propagated all the way down to here
+      });
+      ```
+
+      Assimilation
+      ------------
+
+      Sometimes the value you want to propagate to a downstream promise can only be
+      retrieved asynchronously. This can be achieved by returning a promise in the
+      fulfillment or rejection handler. The downstream promise will then be pending
+      until the returned promise is settled. This is called *assimilation*.
+
+      ```js
+      findUser().then(function (user) {
+        return findCommentsByAuthor(user);
+      }).then(function (comments) {
+        // The user's comments are now available
+      });
+      ```
+
+      If the assimliated promise rejects, then the downstream promise will also reject.
+
+      ```js
+      findUser().then(function (user) {
+        return findCommentsByAuthor(user);
+      }).then(function (comments) {
+        // If `findCommentsByAuthor` fulfills, we'll have the value here
+      }, function (reason) {
+        // If `findCommentsByAuthor` rejects, we'll have the reason here
+      });
+      ```
+
+      Simple Example
+      --------------
+
+      Synchronous Example
+
+      ```javascript
+      var result;
+
+      try {
+        result = findResult();
+        // success
+      } catch(reason) {
+        // failure
+      }
+      ```
+
+      Errback Example
+
+      ```js
+      findResult(function(result, err){
+        if (err) {
+          // failure
+        } else {
+          // success
+        }
+      });
+      ```
+
+      Promise Example;
+
+      ```javascript
+      findResult().then(function(result){
+        // success
+      }, function(reason){
+        // failure
+      });
+      ```
+
+      Advanced Example
+      --------------
+
+      Synchronous Example
+
+      ```javascript
+      var author, books;
+
+      try {
+        author = findAuthor();
+        books  = findBooksByAuthor(author);
+        // success
+      } catch(reason) {
+        // failure
+      }
+      ```
+
+      Errback Example
+
+      ```js
+
+      function foundBooks(books) {
+
+      }
+
+      function failure(reason) {
+
+      }
+
+      findAuthor(function(author, err){
+        if (err) {
+          failure(err);
+          // failure
+        } else {
+          try {
+            findBoooksByAuthor(author, function(books, err) {
+              if (err) {
+                failure(err);
+              } else {
+                try {
+                  foundBooks(books);
+                } catch(reason) {
+                  failure(reason);
+                }
+              }
+            });
+          } catch(error) {
+            failure(err);
+          }
+          // success
+        }
+      });
+      ```
+
+      Promise Example;
+
+      ```javascript
+      findAuthor().
+        then(findBooksByAuthor).
+        then(function(books){
+          // found books
+      }).catch(function(reason){
+        // something went wrong
+      });
+      ```
+
+      @method then
+      @param {Function} onFulfilled
+      @param {Function} onRejected
+      Useful for tooling.
+      @return {Promise}
+    */
+      then: function(onFulfillment, onRejection) {
+        var parent = this;
+        var state = parent._state;
+
+        if (state === lib$es6$promise$$internal$$FULFILLED && !onFulfillment || state === lib$es6$promise$$internal$$REJECTED && !onRejection) {
+          return this;
+        }
+
+        var child = new this.constructor(lib$es6$promise$$internal$$noop);
+        var result = parent._result;
+
+        if (state) {
+          var callback = arguments[state - 1];
+          lib$es6$promise$asap$$asap(function(){
+            lib$es6$promise$$internal$$invokeCallback(state, child, callback, result);
+          });
+        } else {
+          lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection);
+        }
+
+        return child;
+      },
+
+    /**
+      `catch` is simply sugar for `then(undefined, onRejection)` which makes it the same
+      as the catch block of a try/catch statement.
+
+      ```js
+      function findAuthor(){
+        throw new Error('couldn't find that author');
+      }
+
+      // synchronous
+      try {
+        findAuthor();
+      } catch(reason) {
+        // something went wrong
+      }
+
+      // async with promises
+      findAuthor().catch(function(reason){
+        // something went wrong
+      });
+      ```
+
+      @method catch
+      @param {Function} onRejection
+      Useful for tooling.
+      @return {Promise}
+    */
+      'catch': function(onRejection) {
+        return this.then(null, onRejection);
+      }
+    };
+    function lib$es6$promise$polyfill$$polyfill() {
+      var local;
+
+      if (typeof global !== 'undefined') {
+          local = global;
+      } else if (typeof self !== 'undefined') {
+          local = self;
+      } else {
+          try {
+              local = Function('return this')();
+          } catch (e) {
+              throw new Error('polyfill failed because global object is unavailable in this environment');
+          }
+      }
+
+      var P = local.Promise;
+
+      // ##### BEGIN: MODIFIED BY SAP
+      // Original line:
+      //    if (P && Object.prototype.toString.call(P.resolve()) === '[object Promise]' && !P.cast) {
+      // This lead to the polyfill replacing the native promise object in
+      // - Chrome, where "[object Object]" is returned instead of '[object Promise]'
+      // - Safari, where native promise contains a definition for Promise.cast
+      if (P && Object.prototype.toString.call(P.resolve()).indexOf('[object ') === 0) {
+      // ##### END: MODIFIED BY SAP
+        return;
+      }
+
+      local.Promise = lib$es6$promise$promise$$default;
+    }
+    var lib$es6$promise$polyfill$$default = lib$es6$promise$polyfill$$polyfill;
+
+    var lib$es6$promise$umd$$ES6Promise = {
+      'Promise': lib$es6$promise$promise$$default,
+      'polyfill': lib$es6$promise$polyfill$$default
+    };
+
+    /* global define:true module:true window: true */
+    if (typeof define === 'function' && define['amd']) {
+      // ##### BEGIN: MODIFIED BY SAP
+      // Original line:
+      // define(function() { return lib$es6$promise$umd$$ES6Promise; });
+      define('sap/ui/thirdparty/es6-promise', function() { return lib$es6$promise$umd$$ES6Promise; });
+      // ##### END: MODIFIED BY SAP
+    } else if (typeof module !== 'undefined' && module['exports']) {
+      module['exports'] = lib$es6$promise$umd$$ES6Promise;
+      // ##### BEGIN: MODIFIED BY SAP
+      // When require.js was loaded before the core, this will not set the global window.ES6Promise property and thus
+      // keep the rest of the framework from working in browsers that do not have native Promise support.
+      // Original line:
+      // } else if (typeof this !== 'undefined') {
+    }
+    if (typeof this !== 'undefined') {
+      // ##### END: MODIFIED BY SAP
+      this['ES6Promise'] = lib$es6$promise$umd$$ES6Promise;
+    }
+
+
+    // ##### BEGIN: MODIFIED BY SAP
+    // Original line:
+    //     lib$es6$promise$polyfill$$default();
+    // Do not automatically call the polyfill method as this will be called by UI5 only when needed.
+    // ##### END: MODIFIED BY SAP
+}).call(this);
 /*!
  * jQuery JavaScript Library v2.2.3
  * http://jquery.com/
@@ -14111,7 +14116,14 @@ jQuery.ajaxTransport( function( options ) {
 } );
 
 
-
+// ##### BEGIN: MODIFIED BY SAP
+//Prevent auto-execution of scripts when no explicit dataType was provided (See gh-2432)
+jQuery.ajaxPrefilter( function( s ) {
+	if ( s.crossDomain ) {
+		s.contents.script = false;
+	}
+} );
+// ##### END: MODIFIED BY SAP
 
 // Install script dataType
 jQuery.ajaxSetup( {
@@ -15246,11 +15258,11 @@ $.ui.position = {
 }( jQuery ) );
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-/*global ActiveXObject, alert, confirm, console, ES6Promise, localStorage, jQuery, performance, URI, Promise, XMLHttpRequest, Proxy */
+/*global ActiveXObject, alert, confirm, console, document, ES6Promise, localStorage, jQuery, performance, URI, Promise, XMLHttpRequest, Proxy */
 
 /**
  * Provides base functionality of the SAP jQuery plugin as extension of the jQuery framework.<br/>
@@ -15567,20 +15579,22 @@ $.ui.position = {
 				_catch = Promise.prototype.catch,
 				_timeout = window.setTimeout,
 				_interval = window.setInterval,
-				oQueue;
+				aQueue = [];
 			function addPromiseHandler(fnHandler) {
 				// Collect all promise handlers and execute within the same timeout,
 				// to avoid them to be split among several tasks
 				if (!bPromisesQueued) {
 					bPromisesQueued = true;
-					oQueue = new Promise(function(resolve, reject) {
-						_timeout(function() {
-							resolve();
-							bPromisesQueued = false;
-						}, 0);
-					});
+					_timeout(function() {
+						var aCurrentQueue = aQueue;
+						aQueue = [];
+						bPromisesQueued = false;
+						aCurrentQueue.forEach(function(fnQueuedHandler) {
+							fnQueuedHandler();
+						});
+					}, 0);
 				}
-				_then.call(oQueue, fnHandler);
+				aQueue.push(fnHandler);
 			}
 			function wrapPromiseHandler(fnHandler, oScope, bCatch) {
 				if (typeof fnHandler !== "function") {
@@ -15637,14 +15651,16 @@ $.ui.position = {
 			}
 			// setTimeout and setInterval can have arbitrary number of additional
 			// parameters, which are passed to the handler function when invoked.
-			window.setTimeout = function(fnHandler) {
+			window.setTimeout = function(vHandler) {
 				var aArgs = Array.prototype.slice.call(arguments),
+					fnHandler = typeof vHandler === "string" ? new Function(vHandler) : vHandler, // eslint-disable-line no-new-func
 					fnWrappedHandler = wrapTimerHandler(fnHandler);
 				aArgs[0] = fnWrappedHandler;
 				return _timeout.apply(window, aArgs);
 			};
-			window.setInterval = function(fnHandler) {
+			window.setInterval = function(vHandler) {
 				var aArgs = Array.prototype.slice.call(arguments),
+					fnHandler = typeof vHandler === "string" ? new Function(vHandler) : vHandler, // eslint-disable-line no-new-func
 					fnWrappedHandler = wrapTimerHandler(fnHandler, true);
 				aArgs[0] = fnWrappedHandler;
 				return _interval.apply(window, aArgs);
@@ -15675,7 +15691,7 @@ $.ui.position = {
 									return fnHandler.call(oProxy, oEvent);
 								}
 							}
-							// If this is a asynchronous request and a sync request is ongoing,
+							// If this is an asynchronous request and a sync request is ongoing,
 							// the execution of all following handler calls needs to be delayed
 							if (!bSync && bSyncRequestOngoing) {
 								bDelay = true;
@@ -15698,7 +15714,7 @@ $.ui.position = {
 						return deactivate(fnHandler.wrappedHandler);
 					}
 
-					// When a event handler is removed synchronously, it needs to be deactivated
+					// When an event handler is removed synchronously, it needs to be deactivated
 					// to avoid the situation, where the handler has been triggered while
 					// the sync request was ongoing, but removed afterwards.
 					function deactivate(fnWrappedHandler) {
@@ -15776,6 +15792,8 @@ $.ui.position = {
 							return true;
 						}
 					});
+					// add dummy readyStateChange listener to make sure readyState is updated properly
+					oProxy.addEventListener("readystatechange", function() {});
 					return oProxy;
 				}
 			});
@@ -15836,6 +15854,7 @@ $.ui.position = {
 			// To reboot an alternative core just step down a few lines and set sRebootUrl
 			/*eslint-disable no-debugger */
 			debugger;
+			/*eslint-enable no-debugger */
 		}
 
 		// Check local storage for booting a different core
@@ -16033,7 +16052,7 @@ $.ui.position = {
 	/**
 	 * Root Namespace for the jQuery plug-in provided by SAP SE.
 	 *
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @namespace
 	 * @public
 	 * @static
@@ -16138,7 +16157,12 @@ $.ui.position = {
 		/**
 		 * Registered listener to be informed about new log entries.
 		 */
-			oListener = null;
+			oListener = null,
+
+		/**
+		 * Additional support information delivered by callback should be logged
+		 */
+			bLogSupportInfo = false;
 
 		function pad0(i,w) {
 			return ("000" + String(i)).slice(-w);
@@ -16194,11 +16218,25 @@ $.ui.position = {
 		 * @param {string} sMessage The message to be logged
 		 * @param {string} [sDetails] The optional details for the message
 		 * @param {string} [sComponent] The log component under which the message should be logged
+		 * @param {function} [fnSupportInfo] Callback that returns an additional support object to be logged in support mode.
+		 *   This function is only called if support info mode is turned on with <code>logSupportInfo(true)</code>.
+		 *   To avoid negative effects regarding execution times and memory consumption, the returned object should be a simple
+		 *   immutable JSON object with mostly static and stable content.
 		 * @returns {object} The log entry as an object or <code>undefined</code> if no entry was created
 		 * @private
 		 */
-		function log(iLevel, sMessage, sDetails, sComponent) {
+		function log(iLevel, sMessage, sDetails, sComponent, fnSupportInfo) {
 			if (iLevel <= level(sComponent) ) {
+				if (bLogSupportInfo) {
+					if (!fnSupportInfo && !sComponent && typeof sDetails === "function") {
+						fnSupportInfo = sDetails;
+						sDetails = "";
+					}
+					if (!fnSupportInfo && typeof sComponent === "function") {
+						fnSupportInfo = sComponent;
+						sComponent = "";
+					}
+				}
 				var fNow =  jQuery.sap.now(),
 					oNow = new Date(fNow),
 					iMicroSeconds = Math.floor((fNow - Math.floor(fNow)) * 1000),
@@ -16211,6 +16249,9 @@ $.ui.position = {
 						details  : String(sDetails || ""),
 						component: String(sComponent || "")
 					};
+				if (bLogSupportInfo && typeof fnSupportInfo === "function") {
+					oLogEntry.supportInfo = fnSupportInfo();
+				}
 				aLog.push( oLogEntry );
 				if (oListener) {
 					oListener.onLogEntry(oLogEntry);
@@ -16243,6 +16284,9 @@ $.ui.position = {
 					case TRACE: console.trace ? console.trace(logText) : console.log(logText); break; // trace not available in IE, fallback to log (no trace)
 					// no default
 					}
+					if (console.info && oLogEntry.supportInfo) {
+						console.info(oLogEntry.supportInfo);
+					}
 				}
 				/*eslint-enable no-console */
 				return oLogEntry;
@@ -16268,12 +16312,16 @@ $.ui.position = {
 			 * @param {string} sMessage Message text to display
 			 * @param {string} [sDetails=''] Details about the message, might be omitted
 			 * @param {string} [sComponent=''] Name of the component that produced the log entry
+			 * @param {function} [fnSupportInfo] Callback that returns an additional support object to be logged in support mode.
+			 *   This function is only called if support info mode is turned on with <code>logSupportInfo(true)</code>.
+			 *   To avoid negative effects regarding execution times and memory consumption, the returned object should be a simple
+			 *   immutable JSON object with mostly static and stable content.
 			 * @return {jQuery.sap.log.Logger} The log instance for method chaining
 			 * @public
 			 * @SecSink {0 1 2|SECRET} Could expose secret data in logs
 			 */
-			this.fatal = function (sMessage, sDetails, sComponent) {
-				log(FATAL, sMessage, sDetails, sComponent || sDefaultComponent);
+			this.fatal = function (sMessage, sDetails, sComponent, fnSupportInfo) {
+				log(FATAL, sMessage, sDetails, sComponent || sDefaultComponent, fnSupportInfo);
 				return this;
 			};
 
@@ -16283,12 +16331,16 @@ $.ui.position = {
 			 * @param {string} sMessage Message text to display
 			 * @param {string} [sDetails=''] Details about the message, might be omitted
 			 * @param {string} [sComponent=''] Name of the component that produced the log entry
+			 * @param {function} [fnSupportInfo] Callback that returns an additional support object to be logged in support mode.
+			 *   This function is only called if support info mode is turned on with <code>logSupportInfo(true)</code>.
+			 *   To avoid negative effects regarding execution times and memory consumption, the returned object should be a simple
+			 *   immutable JSON object with mostly static and stable content.
 			 * @return {jQuery.sap.log.Logger} The log instance
 			 * @public
 			 * @SecSink {0 1 2|SECRET} Could expose secret data in logs
 			 */
-			this.error = function error(sMessage, sDetails, sComponent) {
-				log(ERROR, sMessage, sDetails, sComponent || sDefaultComponent);
+			this.error = function error(sMessage, sDetails, sComponent, fnSupportInfo) {
+				log(ERROR, sMessage, sDetails, sComponent || sDefaultComponent, fnSupportInfo);
 				return this;
 			};
 
@@ -16298,12 +16350,16 @@ $.ui.position = {
 			 * @param {string} sMessage Message text to display
 			 * @param {string} [sDetails=''] Details about the message, might be omitted
 			 * @param {string} [sComponent=''] Name of the component that produced the log entry
+			 * @param {function} [fnSupportInfo] Callback that returns an additional support object to be logged in support mode.
+			 *   This function is only called if support info mode is turned on with <code>logSupportInfo(true)</code>.
+			 *   To avoid negative effects regarding execution times and memory consumption, the returned object should be a simple
+			 *   immutable JSON object with mostly static and stable content.
 			 * @return {jQuery.sap.log.Logger} The log instance
 			 * @public
 			 * @SecSink {0 1 2|SECRET} Could expose secret data in logs
 			 */
-			this.warning = function warning(sMessage, sDetails, sComponent) {
-				log(WARNING, sMessage, sDetails, sComponent || sDefaultComponent);
+			this.warning = function warning(sMessage, sDetails, sComponent, fnSupportInfo) {
+				log(WARNING, sMessage, sDetails, sComponent || sDefaultComponent, fnSupportInfo);
 				return this;
 			};
 
@@ -16313,12 +16369,16 @@ $.ui.position = {
 			 * @param {string} sMessage Message text to display
 			 * @param {string} [sDetails=''] Details about the message, might be omitted
 			 * @param {string} [sComponent=''] Name of the component that produced the log entry
+			 * @param {function} [fnSupportInfo] Callback that returns an additional support object to be logged in support mode.
+			 *   This function is only called if support info mode is turned on with <code>logSupportInfo(true)</code>.
+			 *   To avoid negative effects regarding execution times and memory consumption, the returned object should be a simple
+			 *   immutable JSON object with mostly static and stable content.
 			 * @return {jQuery.sap.log.Logger} The log instance
 			 * @public
 			 * @SecSink {0 1 2|SECRET} Could expose secret data in logs
 			 */
-			this.info = function info(sMessage, sDetails, sComponent) {
-				log(INFO, sMessage, sDetails, sComponent || sDefaultComponent);
+			this.info = function info(sMessage, sDetails, sComponent, fnSupportInfo) {
+				log(INFO, sMessage, sDetails, sComponent || sDefaultComponent, fnSupportInfo);
 				return this;
 			};
 			/**
@@ -16327,12 +16387,16 @@ $.ui.position = {
 			 * @param {string} sMessage Message text to display
 			 * @param {string} [sDetails=''] Details about the message, might be omitted
 			 * @param {string} [sComponent=''] Name of the component that produced the log entry
+			 * @param {function} [fnSupportInfo] Callback that returns an additional support object to be logged in support mode.
+			 *   This function is only called if support info mode is turned on with <code>logSupportInfo(true)</code>.
+			 *   To avoid negative effects regarding execution times and memory consumption, the returned object should be a simple
+			 *   immutable JSON object with mostly static and stable content.
 			 * @return {jQuery.sap.log.Logger} The log instance
 			 * @public
 			 * @SecSink {0 1 2|SECRET} Could expose secret data in logs
 			 */
-			this.debug = function debug(sMessage, sDetails, sComponent) {
-				log(DEBUG, sMessage, sDetails, sComponent || sDefaultComponent);
+			this.debug = function debug(sMessage, sDetails, sComponent, fnSupportInfo) {
+				log(DEBUG, sMessage, sDetails, sComponent || sDefaultComponent, fnSupportInfo);
 				return this;
 			};
 
@@ -16342,12 +16406,16 @@ $.ui.position = {
 			 * @param {string} sMessage Message text to display
 			 * @param {string} [sDetails=''] Details about the message, might be omitted
 			 * @param {string} [sComponent=''] Name of the component that produced the log entry
+			 * @param {function} [fnSupportInfo] Callback that returns an additional support object to be logged in support mode.
+			 *   This function is only called if support info mode is turned on with <code>logSupportInfo(true)</code>.
+			 *   To avoid negative effects regarding execution times and memory consumption, the returned object should be a simple
+			 *   immutable JSON object with mostly static and stable content.
 			 * @return {jQuery.sap.log.Logger} The log-instance
 			 * @public
 			 * @SecSink {0 1 2|SECRET} Could expose secret data in logs
 			 */
-			this.trace = function trace(sMessage, sDetails, sComponent) {
-				log(TRACE, sMessage, sDetails, sComponent || sDefaultComponent);
+			this.trace = function trace(sMessage, sDetails, sComponent, fnSupportInfo) {
+				log(TRACE, sMessage, sDetails, sComponent || sDefaultComponent, fnSupportInfo);
 				return this;
 			};
 
@@ -16406,18 +16474,19 @@ $.ui.position = {
 			this.isLoggable = function (iLevel, sComponent) {
 				return (iLevel == null ? DEBUG : iLevel) <= level(sComponent || sDefaultComponent);
 			};
+
 		}
 
 		/**
 		 * A Logging API for JavaScript.
 		 *
 		 * Provides methods to manage a client-side log and to create entries in it. Each of the logging methods
-		 * {@link jQuery.sap.log.#debug}, {@link jQuery.sap.log.#info}, {@link jQuery.sap.log.#warning},
-		 * {@link jQuery.sap.log.#error} and {@link jQuery.sap.log.#fatal} creates and records a log entry,
+		 * {@link jQuery.sap.log.debug}, {@link jQuery.sap.log.info}, {@link jQuery.sap.log.warning},
+		 * {@link jQuery.sap.log.error} and {@link jQuery.sap.log.fatal} creates and records a log entry,
 		 * containing a timestamp, a log level, a message with details and a component info.
 		 * The log level will be one of {@link jQuery.sap.log.Level} and equals the name of the concrete logging method.
 		 *
-		 * By using the {@link jQuery.sap.log#setLevel} method, consumers can determine the least important
+		 * By using the {@link jQuery.sap.log.setLevel} method, consumers can determine the least important
 		 * log level which should be recorded. Less important entries will be filtered out. (Note that higher numeric
 		 * values represent less important levels). The initially set level depends on the mode that UI5 is running in.
 		 * When the optimized sources are executed, the default level will be {@link jQuery.sap.log.Level.ERROR}.
@@ -16435,7 +16504,7 @@ $.ui.position = {
 		 * {@link jQuery.sap.log.Logger#getLevel} allows to retrieve the currently effective log level for a given
 		 * component.
 		 *
-		 * {@link jQuery.sap.log#getLog} returns an array of the currently collected log entries.
+		 * {@link jQuery.sap.log.getLogEntries} returns an array of the currently collected log entries.
 		 *
 		 * Furthermore, a listener can be registered to the log. It will be notified whenever a new entry
 		 * is added to the log. The listener can be used for displaying log entries in a separate page area,
@@ -16564,10 +16633,11 @@ $.ui.position = {
 
 			/**
 			 * Allows to add a new LogListener that will be notified for new log entries.
+			 *
 			 * The given object must provide method <code>onLogEntry</code> and can also be informed
 			 * about <code>onDetachFromLog</code> and <code>onAttachToLog</code>
 			 * @param {object} oListener The new listener object that should be informed
-			 * @return {jQuery.sap.log.Logger} The global logger
+			 * @return {jQuery.sap.log} The global logger
 			 * @public
 			 * @static
 			 */
@@ -16579,13 +16649,27 @@ $.ui.position = {
 			/**
 			 * Allows to remove a registered LogListener.
 			 * @param {object} oListener The new listener object that should be removed
-			 * @return {jQuery.sap.log.Logger} The global logger
+			 * @return {jQuery.sap.log} The global logger
 			 * @public
 			 * @static
 			 */
 			removeLogListener : function(oListener) {
 				listener().detach(this, oListener);
 				return this;
+			},
+
+			/**
+			 * Enables or disables whether additional support information is logged in a trace.
+			 * If enabled, logging methods like error, warning, info and debug are calling the additional
+			 * optional callback parameter fnSupportInfo and store the returned object in the log entry property supportInfo.
+			 *
+			 * @param {boolean} bEnabled true if the support information should be logged
+			 * @private
+			 * @static
+			 * @since 1.46.0
+			 */
+			logSupportInfo: function logSupportInfo(bEnabled) {
+				bLogSupportInfo = bEnabled;
 			}
 
 		});
@@ -16605,7 +16689,6 @@ $.ui.position = {
 		 * @deprecated Since 1.1.2. To avoid confusion with getLogger, this method has been renamed to {@link jQuery.sap.log.getLogEntries}.
 		 * @function
 		 * @public
-		 * @static
 		 */
 		jQuery.sap.log.getLog = jQuery.sap.log.getLogEntries;
 
@@ -16664,12 +16747,20 @@ $.ui.position = {
 	 * Returns a new constructor function that creates objects with
 	 * the given prototype.
 	 *
+	 * As of 1.45.0, this method has been deprecated. Use the following code pattern instead:
+	 * <pre>
+	 *   function MyFunction() {
+	 *   };
+	 *   MyFunction.prototype = oPrototype;
+	 * </pre>
 	 * @param {object} oPrototype Prototype to use for the new objects
 	 * @return {function} the newly created constructor function
 	 * @public
 	 * @static
+	 * @deprecated As of 1.45.0, define your own function and assign <code>oPrototype</code> to its <code>prototype</code> property instead.
 	 */
 	jQuery.sap.factory = function factory(oPrototype) {
+		jQuery.sap.assert(typeof oPrototype == "object", "oPrototype must be an object (incl. null)");
 		function Factory() {}
 		Factory.prototype = oPrototype;
 		return Factory;
@@ -16685,9 +16776,12 @@ $.ui.position = {
 	 * @return {object} new object
 	 * @public
 	 * @static
+	 * @deprecated As of 1.45.0, use <code>Object.create(oPrototype)</code> instead.
 	 */
 	jQuery.sap.newObject = function newObject(oPrototype) {
-		return new (jQuery.sap.factory(oPrototype))();
+		jQuery.sap.assert(typeof oPrototype == "object", "oPrototype must be an object (incl. null)");
+		// explicitly fall back to null for best compatibility with old implementation
+		return Object.create(oPrototype || null);
 	};
 
 	/**
@@ -17851,6 +17945,17 @@ $.ui.position = {
 
 			mPreloadModules = {},
 
+		/**
+		 * Whether sap.ui.define calls could be executed asynchronously in the current context.
+		 *
+		 * The initial value is determined by the preload flag. This is necessary to make
+		 * hard coded script tags work when their scripts include an sap.ui.define call and if
+		 * some later incline script expects the results of sap.ui.define.
+		 * Most prominent example: unit tests that include QUnitUtils as a script tag and use qutils
+		 * in one of their inline scripts.
+		 */
+			bGlobalAsyncMode = !( /(?:^|\?|&)sap-ui-(?:xx-)?preload=async(?:&|$)/.test(location.search) || oCfgData.preload === 'async' || oCfgData['xx-preload'] === 'async'),
+
 		/* for future use
 		/**
 		 * Mapping from default AMD names to UI5 AMD names.
@@ -18004,6 +18109,11 @@ $.ui.position = {
 				'sap/ui/demokit/js/esprima.js': {
 					amd: true,
 					exports: 'esprima'
+				},
+				'sap/ui/thirdparty/RequestRecorder.js': {
+					amd: true,
+					exports: 'RequestRecorder',
+					deps: ['sap/ui/thirdparty/URI', 'sap/ui/thirdparty/sinon']
 				}
 			},
 
@@ -18115,6 +18225,7 @@ $.ui.position = {
 			this.name = name;
 			this.state = INITIAL;
 			this.url =
+			this.loaded =
 			this.data =
 			this.group = null;
 			this.content = NOT_YET_DETERMINED;
@@ -18247,13 +18358,16 @@ $.ui.position = {
 				sUrlPrefix,
 				sResourceName;
 
+			// Make sure to have an absolute URL to check against absolute prefix URLs
+			sURL = new URI(sURL, sDocumentLocation).toString();
+
 			for (sNamePrefix in mUrlPrefixes) {
 				if ( mUrlPrefixes.hasOwnProperty(sNamePrefix) ) {
 
 					// Note: configured URL prefixes are guaranteed to end with a '/'
 					// But to support the legacy scenario promoted by the application tools ( "registerModulePath('Application','Application')" )
 					// the prefix check here has to be done without the slash
-					sUrlPrefix = mUrlPrefixes[sNamePrefix].url.slice(0, -1);
+					sUrlPrefix = mUrlPrefixes[sNamePrefix].absoluteUrl.slice(0, -1);
 
 					if ( sURL.indexOf(sUrlPrefix) === 0 ) {
 
@@ -18399,7 +18513,7 @@ $.ui.position = {
 			return oModule;
 		}
 
-		function requireModule(sModuleName, bSync) {
+		function requireModule(oRequestingModule, sModuleName, bAsync) {
 
 			// TODO enable when preload has been adapted:
 			// sModuleName = mAMDAliases[sModuleName] || sModuleName;
@@ -18411,27 +18525,24 @@ $.ui.position = {
 
 			// only for robustness, should not be possible by design (all callers append '.js')
 			if ( !m ) {
-				log.error("can only require Javascript module, not " + sModuleName);
-				return;
+				throw new Error("can only require Javascript module, not " + sModuleName);
 			}
 
-			if ( oShim && oShim.deps ) {
+			oModule = Module.get(sModuleName);
+
+			if ( oShim && oShim.deps && !oShim.deps.requested ) {
 				if ( bLoggable ) {
 					log.debug("require dependencies of raw module " + sModuleName);
 				}
-				for (i = 0; i < oShim.deps.length; i++) {
-					if ( bLoggable ) {
-						log.debug("  require " + oShim.deps[i]);
-					}
-					requireModule(oShim.deps[i] + '.js', bSync);
-				}
+				return requireAll(oModule, oShim.deps, function() {
+					oShim.deps.requested = true;
+					return requireModule(oRequestingModule, sModuleName, bAsync);
+				}, bAsync);
 			}
 
 			// in case of having a type specified ignore the type for the module path creation and add it as file extension
 			sBaseName = sModuleName.slice(0, m.index);
 			sType = m[0]; // must be a normalized resource name of type .js sType can be one of .js|.view.js|.controller.js|.fragment.js|.designtime.js
-
-			oModule = Module.get(sModuleName);
 
 			if ( bLoggable ) {
 				log.debug(sLogPrefix + "require '" + sModuleName + "' of type '" + sType + "'");
@@ -18442,7 +18553,7 @@ $.ui.position = {
 				if ( oModule.state === PRELOADED ) {
 					oModule.state = LOADED;
 					jQuery.sap.measure.start(sModuleName, "Require module " + sModuleName + " (preloaded)", ["require"]);
-					execModule(sModuleName);
+					execModule(sModuleName, bAsync);
 					jQuery.sap.measure.end(sModuleName);
 				}
 
@@ -18474,7 +18585,7 @@ $.ui.position = {
 					log.debug(sLogPrefix + "loading " + (aExtensions[i] ? aExtensions[i] + " version of " : "") + "'" + sModuleName + "' from '" + oModule.url + "'");
 				}
 
-				if ( bSync && syncCallBehavior && sModuleName !== 'sap/ui/core/Core.js' ) {
+				if ( !bAsync && syncCallBehavior && sModuleName !== 'sap/ui/core/Core.js' ) {
 					sMsg = "[nosync] loading module '" + oModule.url + "'";
 					if ( syncCallBehavior === 1 ) {
 						log.error(sMsg);
@@ -18501,10 +18612,9 @@ $.ui.position = {
 				});
 				/*eslint-enable no-loop-func */
 			}
-
 			// execute module __after__ loading it, this reduces the required stack space!
 			if ( oModule.state === LOADED ) {
-				execModule(sModuleName);
+				execModule(sModuleName, bAsync);
 			}
 
 			jQuery.sap.measure.end(sModuleName);
@@ -18556,17 +18666,18 @@ $.ui.position = {
 		evalModuleStr.count = 0;
 
 		// sModuleName must be a normalized resource name of type .js
-		function execModule(sModuleName) {
+		function execModule(sModuleName, bAsync) {
 
 			var oModule = mModules[sModuleName],
 				oShim = mAMDShim[sModuleName],
 				bLoggable = log.isLoggable(),
-				sOldPrefix, sScript, vAMD, oMatch;
+				sOldPrefix, sScript, vAMD, oMatch, bOldGlobalAsyncMode;
 
 			if ( oModule && oModule.state === LOADED && typeof oModule.data !== "undefined" ) {
 
 				// check whether the module is known to use an existing AMD loader, remember the AMD flag
 				vAMD = (oShim === true || (oShim && oShim.amd)) && typeof window.define === "function" && window.define.amd;
+				bOldGlobalAsyncMode = bGlobalAsyncMode;
 
 				try {
 
@@ -18574,6 +18685,7 @@ $.ui.position = {
 						// temp. remove the AMD Flag from the loader
 						delete window.define.amd;
 					}
+					bGlobalAsyncMode = bAsync;
 
 					if ( bLoggable ) {
 						log.debug(sLogPrefix + "executing '" + sModuleName + "'");
@@ -18658,32 +18770,40 @@ $.ui.position = {
 					if ( vAMD ) {
 						window.define.amd = vAMD;
 					}
+					bGlobalAsyncMode = bOldGlobalAsyncMode;
 				}
 			}
 		}
 
-		function requireAll(sBaseName, aDependencies, fnCallback) {
+		function requireAll(oRequestingModule, aDependencies, fnCallback, bAsync) {
 
 			var aModules = [],
 				bLoggable = log.isLoggable(),
-				i, sDepModName;
+				sBaseName, i, sDepModName;
+
+			// calculate the base name for relative module names
+			sBaseName = oRequestingModule && oRequestingModule.name.slice(0, oRequestingModule.name.lastIndexOf('/') + 1);
+			aDependencies = aDependencies.slice();
+			for (i = 0; i < aDependencies.length; i++) {
+				aDependencies[i] = resolveModuleName(sBaseName, aDependencies[i]) + ".js";
+			}
 
 			for (i = 0; i < aDependencies.length; i++) {
-				sDepModName = resolveModuleName(sBaseName, aDependencies[i]);
+				sDepModName = aDependencies[i];
 				if ( bLoggable ) {
 					log.debug(sLogPrefix + "require '" + sDepModName + "'");
 				}
-				aModules[i] = requireModule(sDepModName + ".js");
+				aModules[i] = requireModule(oRequestingModule, sDepModName, bAsync);
 				if ( bLoggable ) {
 					log.debug(sLogPrefix + "require '" + sDepModName + "': done.");
 				}
 			}
 
-			fnCallback(aModules);
+			return fnCallback(aModules);
 		}
 
 		/**
-		 * Constructs an URL to load the module with the given name and file type (suffix).
+		 * Constructs a URL to load the module with the given name and file type (suffix).
 		 *
 		 * Searches the longest prefix of the given module name for which a registration
 		 * exists (see {@link jQuery.sap.registerModulePath}) and replaces that prefix
@@ -18715,14 +18835,14 @@ $.ui.position = {
 		 *
 		 * The remainder of the resource name is appended to the URL.
 		 *
-		 * <b>Unified Resource Names</b>
+		 * <b>Unified Resource Names</b><br>
 		 * Several UI5 APIs use <i>Unified Resource Names (URNs)</i> as naming scheme for resources that
 		 * they deal with (e.h. Javascript, CSS, JSON, XML, ...). URNs are similar to the path
-		 * component of an URL:
+		 * component of a URL:
 		 * <ul>
 		 * <li>they consist of a non-empty sequence of name segments</li>
 		 * <li>segments are separated by a forward slash '/'</li>
-		 * <li>name segments consist of URL path segment characters only. It is recommened to use only ASCII
+		 * <li>name segments consist of URL path segment characters only. It is recommended to use only ASCII
 		 * letters (upper or lower case), digits and the special characters '$', '_', '-', '.')</li>
 		 * <li>the empty name segment is not supported</li>
 		 * <li>names consisting of dots only, are reserved and must not be used for resources</li>
@@ -18735,7 +18855,7 @@ $.ui.position = {
 		 * where the extension '.js' is always omitted (see {@link sap.ui.define}, {@link sap.ui.require}).
 		 *
 		 *
-		 * <b>Relationship to old Module Name Syntax</b>
+		 * <b>Relationship to old Module Name Syntax</b><br>
 		 *
 		 * Older UI5 APIs that deal with resources (like {@link jQuery.sap.registerModulePath},
 		 * {@link jQuery.sap.require} and {@link jQuery.sap.declare}) used a dot-separated naming scheme
@@ -18758,7 +18878,7 @@ $.ui.position = {
 		jQuery.sap.getResourcePath = getResourcePath;
 
 		/**
-		 * Registers an URL prefix for a module name prefix.
+		 * Registers a URL prefix for a module name prefix.
 		 *
 		 * Before a module is loaded, the longest registered prefix of its module name
 		 * is searched for and the associated URL prefix is used as a prefix for the request URL.
@@ -18793,7 +18913,7 @@ $.ui.position = {
 		 * @SecSink {1|PATH} Parameter is used for future HTTP requests
 		 */
 		jQuery.sap.registerModulePath = function registerModulePath(sModuleName, vUrlPrefix) {
-			jQuery.sap.assert(!/\//.test(sModuleName), "module path must not contain a slash.");
+			jQuery.sap.assert(!/\//.test(sModuleName), "module name must not contain a slash.");
 			sModuleName = sModuleName.replace(/\./g, "/");
 			// URL must not be empty
 			vUrlPrefix = vUrlPrefix || '.';
@@ -18801,7 +18921,7 @@ $.ui.position = {
 		};
 
 		/**
-		 * Registers an URL prefix for a resource name prefix.
+		 * Registers a URL prefix for a resource name prefix.
 		 *
 		 * Before a resource is loaded, the longest registered prefix of its unified resource name
 		 * is searched for and the associated URL prefix is used as a prefix for the request URL.
@@ -18876,6 +18996,10 @@ $.ui.position = {
 				if ( vUrlPrefix.url.slice(-1) != '/' ) {
 					vUrlPrefix.url += '/';
 				}
+
+				// calculate absolute url
+				// only to be used by 'guessResourceName'
+				vUrlPrefix.absoluteUrl = new URI(vUrlPrefix.url, sDocumentLocation).toString();
 
 				mUrlPrefixes[sResourceNamePrefix] = vUrlPrefix;
 
@@ -18954,7 +19078,7 @@ $.ui.position = {
 		 * @sap-restricted sap.ui.core
 		 */
 		jQuery.sap.isResourceLoaded = function isResourceLoaded(sResourceName) {
-			return mModules[sResourceName];
+			return !!mModules[sResourceName];
 		};
 
 		/**
@@ -19076,7 +19200,7 @@ $.ui.position = {
 				vModuleName = ui5ToRJS(vModuleName) + ".js";
 			}
 
-			requireModule(vModuleName, true);
+			requireModule(null, vModuleName, /* bAsync = */ false);
 
 		};
 
@@ -19095,11 +19219,11 @@ $.ui.position = {
 		 * If the module name was omitted from that call, it will be substituted by the name that was used to
 		 * request the module. As a preparation step, the dependencies as well as their transitive dependencies,
 		 * will be loaded. Then, the module value will be determined: if a static value (object, literal) was
-		 * given, that value will be the module value. If a function was given, that function will be called
-		 * (providing the module values of the declared dependencies as parameters to the function) and its
-		 * return value will be used as module value. The framework internally associates the resulting value
-		 * with the module name and provides it to the original requestor of the module. Whenever the module
-		 * is requested again, the same value will be returned (modules are executed only once).
+		 * given as <code>vFactory</code>, that value will be the module value. If a function was given, that
+		 * function will be called (providing the module values of the declared dependencies as parameters
+		 * to the function) and its return value will be used as module value. The framework internally associates
+		 * the resulting value with the module name and provides it to the original requester of the module.
+		 * Whenever the module is requested again, the same value will be returned (modules are executed only once).
 		 *
 		 * <i>Example:</i><br>
 		 * The following example defines a module "SomeClass", but doesn't hard code the module name.
@@ -19108,7 +19232,7 @@ $.ui.position = {
 		 *   sap.ui.define(['./Helper', 'sap/m/Bar'], function(Helper,Bar) {
 		 *
 		 *     // create a new class
-		 *     var SomeClass = function();
+		 *     var SomeClass = function() {};
 		 *
 		 *     // add methods to its prototype
 		 *     SomeClass.prototype.foo = function() {
@@ -19116,7 +19240,7 @@ $.ui.position = {
 		 *         // use a function from the dependency 'Helper' in the same package (e.g. 'sap/mylib/Helper' )
 		 *         var mSettings = Helper.foo();
 		 *
-		 *         // create and return a sap.m.Bar (using its local name 'Bar')
+		 *         // create and return an sap.m.Bar (using its local name 'Bar')
 		 *         return new Bar(mSettings);
 		 *
 		 *     }
@@ -19164,13 +19288,13 @@ $.ui.position = {
 		 * <b>Note:</b> the order in which the dependency modules are <i>executed</i> is <b>not</b>
 		 * defined by the order in the dependencies array! The execution order is affected by dependencies
 		 * <i>between</i> the dependency modules as well as by their current state (whether a module
-		 * already has been loaded or not). Neither module implementations nor dependants that require
+		 * already has been loaded or not). Neither module implementations nor dependents that require
 		 * a module set must make any assumption about the execution order (other than expressed by
 		 * their dependencies). There is, however, one exception with regard to third party libraries,
 		 * see the list of limitations further down below.
 		 *
 		 * <b>Note:</b>a static module value (a literal provided to <code>sap.ui.define</code>) cannot
-		 * depend on the module values of the depency modules. Instead, modules can use a factory function,
+		 * depend on the module values of the dependency modules. Instead, modules can use a factory function,
 		 * calculate the static value in that function, potentially based on the dependencies, and return
 		 * the result as module value. The same approach must be taken when the module value is supposed
 		 * to be a function.
@@ -19190,7 +19314,7 @@ $.ui.position = {
 		 *
 		 *   // define a class Something as AMD module
 		 *   sap.ui.define('Something', [], function() {
-		 *     var Something = function();
+		 *     var Something = function() {};
 		 *     return Something;
 		 *   });
 		 *
@@ -19235,8 +19359,8 @@ $.ui.position = {
 		 * it can access the value via its global name (if the module supports such a usage).
 		 *
 		 * Note that UI5 temporarily deactivates an existing AMD loader while it executes third party modules
-		 * known to support AMD. This sounds contradictarily at a first glance as UI5 wants to support AMD,
-		 * but for now it is necessary to fully support UI5 apps that rely on global names for such modules.
+		 * known to support AMD. This sounds contradictorily at a first glance as UI5 wants to support AMD,
+		 * but for now it is necessary to fully support UI5 applications that rely on global names for such modules.
 		 *
 		 * Example:
 		 * <pre>
@@ -19263,7 +19387,7 @@ $.ui.position = {
 		 * This has two reasons: first, it avoids the impression that <code>sap.ui.define</code> is
 		 * an exact implementation of an AMD loader. And second, it allows the coexistence of an AMD
 		 * loader (requireJS) and <code>sap.ui.define</code> in one application as long as UI5 or
-		 * apps using UI5 are not fully prepared to run with an AMD loader</li>
+		 * applications using UI5 are not fully prepared to run with an AMD loader</li>
 		 * <li><code>sap.ui.define</code> currently loads modules with synchronous XHR calls. This is
 		 * basically a tribute to the synchronous history of UI5.
 		 * <b>BUT:</b> synchronous dependency loading and factory execution explicitly it not part of
@@ -19286,11 +19410,11 @@ $.ui.position = {
 		 *     to ensure proper execution order for such modules currently is to rely on the order in the
 		 *     dependency array. Obviously, this only works as long as <code>sap.ui.define</code> uses
 		 *     synchronous loading. It will be enhanced when asynchronous loading is implemented.</li>
-		 * <li>it was discussed to enfore asynchronous execution of the module factory function (e.g. with a
+		 * <li>it was discussed to enforce asynchronous execution of the module factory function (e.g. with a
 		 *     timeout of 0). But this would have invalidated the current migration scenario where a
 		 *     sync <code>jQuery.sap.require</code> call can load a <code>sap.ui.define</code>'ed module.
 		 *     If the module definition would not execute synchronously, the synchronous contract of the
-		 *     require call would be broken (default behavior in existing UI5 apps)</li>
+		 *     require call would be broken (default behavior in existing UI5 applications)</li>
 		 * <li>a single file must not contain multiple calls to <code>sap.ui.define</code>. Multiple calls
 		 *     currently are only supported in the so called 'preload' files that the UI5 merge tooling produces.
 		 *     The exact details of how this works might be changed in future implementations and are not
@@ -19309,7 +19433,7 @@ $.ui.position = {
 		 */
 		sap.ui.define = function(sModuleName, aDependencies, vFactory, bExport) {
 			var bLoggable = log.isLoggable(),
-				sResourceName, sBaseName;
+				sResourceName;
 
 			// optional id
 			if ( typeof sModuleName === 'string' ) {
@@ -19324,9 +19448,6 @@ $.ui.position = {
 
 			// convert module name to UI5 module name syntax (might fail!)
 			sModuleName = urnToUI5(sResourceName);
-
-			// calculate the base name for relative module names
-			sBaseName = sResourceName.slice(0, sResourceName.lastIndexOf('/') + 1);
 
 			// optional array of dependencies
 			if ( !Array.isArray(aDependencies) ) {
@@ -19345,7 +19466,7 @@ $.ui.position = {
 			oModule.content = undefined;
 
 			// Note: dependencies will be resolved and converted from RJS to URN inside requireAll
-			requireAll(sBaseName, aDependencies, function(aModules) {
+			requireAll(oModule, aDependencies, function(aModules) {
 
 				// factory
 				if ( bLoggable ) {
@@ -19378,7 +19499,7 @@ $.ui.position = {
 					}
 				}
 
-			});
+			}, /* bAsync = */ bGlobalAsyncMode);
 
 		};
 
@@ -19472,7 +19593,7 @@ $.ui.position = {
 					},0);
 				}
 
-			});
+			}, /* bAsync = */ true);
 
 			// return undefined;
 		};
@@ -19516,7 +19637,7 @@ $.ui.position = {
 		 * @private
 		 */
 		sap.ui.requireSync = function(sModuleName) {
-			return requireModule(sModuleName + ".js", true);
+			return requireModule(null, sModuleName + ".js", /* bAsync = */ false);
 		};
 
 		/**
@@ -19620,7 +19741,7 @@ $.ui.position = {
 		 * @param {string} sName unified resource name of a resource or the name of a preload group to be removed
 		 * @param {boolean} [bPreloadGroup=true] whether the name specifies a preload group, defaults to true
 		 * @param {boolean} [bUnloadAll] Whether all matching resources should be unloaded, even if they have been executed already.
-		 * @param {boolean} [bDeleteExports] Whether exportss (global variables) should be destroyed as well. Will be done for UI5 module names only.
+		 * @param {boolean} [bDeleteExports] Whether exports (global variables) should be destroyed as well. Will be done for UI5 module names only.
 		 * @experimental Since 1.16.3 API might change completely, apps must not develop against it.
 		 * @private
 		 */
@@ -19866,50 +19987,81 @@ $.ui.position = {
 		 */
 		jQuery.sap._loadJSResourceAsync = function(sResource, bIgnoreErrors) {
 
-			return new Promise(function(resolve,reject) {
+			var oModule = Module.get(sResource);
 
-				var oModule = Module.get(sResource);
-				var sUrl = oModule.url = getResourcePath(sResource);
-				oModule.state = LOADING;
+			if ( !oModule.loaded ) {
 
-				var oScript = window.document.createElement('SCRIPT');
-				oScript.src = sUrl;
-				oScript.setAttribute("data-sap-ui-module", sResource); // IE9/10 don't support dataset :-(
-				// oScript.setAttribute("data-sap-ui-module-error", '');
-				oScript.addEventListener('load', function(e) {
-					jQuery.sap.log.info("Javascript resource loaded: " + sResource);
-// TODO either find a cross-browser solution to detect and assign execution errros or document behavior
-//					var error = e.target.dataset.sapUiModuleError;
-//					if ( error ) {
-//						oModule.state = FAILED;
-//						oModule.error = JSON.parse(error);
-//						jQuery.sap.log.error("failed to load Javascript resource: " + sResource + ":" + error);
-//						reject(oModule.error);
-//					}
-					oModule.state = READY;
-					// TODO oModule.data = ?
-					resolve();
-				});
-				oScript.addEventListener('error', function(e) {
-					jQuery.sap.log.error("failed to load Javascript resource: " + sResource);
-					oModule.state = FAILED;
-					// TODO oModule.error = xhr ? xhr.status + " - " + xhr.statusText : textStatus;
-					if ( bIgnoreErrors ) {
-						resolve();
-					} else {
-						reject();
+				var oScript;
+				var fnCreateLoadScriptPromise = function(bRetryOnFailure){
+					return new Promise(function(resolve, reject) {
+
+						function onload(e) {
+							jQuery.sap.log.info("Javascript resource loaded: " + sResource);
+							// TODO either find a cross-browser solution to detect and assign execution errors or document behavior
+							//var error = e.target.dataset.sapUiModuleError;
+							//if ( error ) {
+							//	oModule.state = FAILED;
+							//	oModule.error = JSON.parse(error);
+							//	jQuery.sap.log.error("failed to load Javascript resource: " + sResource + ":" + error);
+							//	reject(oModule.error);
+							//}
+							oScript.removeEventListener('load', onload);
+							oScript.removeEventListener('error', onerror);
+							oModule.state = READY;
+							// TODO oModule.data = ?
+							resolve();
+						}
+
+						function onerror(e) {
+							oScript.removeEventListener('load', onload);
+							oScript.removeEventListener('error', onerror);
+							if (bRetryOnFailure) {
+								jQuery.sap.log.warning("retry loading Javascript resource: " + sResource);
+							} else {
+								jQuery.sap.log.error("failed to load Javascript resource: " + sResource);
+								oModule.state = FAILED;
+							}
+
+							// TODO oModule.error = xhr ? xhr.status + " - " + xhr.statusText : textStatus;
+							reject();
+						}
+
+						var sUrl = oModule.url = getResourcePath(sResource);
+						oModule.state = LOADING;
+
+						oScript = window.document.createElement('SCRIPT');
+						oScript.src = sUrl;
+						oScript.setAttribute("data-sap-ui-module", sResource); // IE9/10 don't support dataset :-(
+						// oScript.setAttribute("data-sap-ui-module-error", '');
+						oScript.addEventListener('load', onload);
+						oScript.addEventListener('error', onerror);
+						appendHead(oScript);
+					});
+				};
+				oModule.loaded = fnCreateLoadScriptPromise(/* bRetryOnFailure= */ true).catch(function(e){
+					if (oScript && oScript.parentNode) {
+						oScript.parentNode.removeChild(oScript);
 					}
+					//try to load the resource again if it fails the first time
+					return fnCreateLoadScriptPromise(/* bRetryOnFailure= */ false);
 				});
-				appendHead(oScript);
-			});
 
+			}
+
+			if ( bIgnoreErrors ) {
+				return oModule.loaded.catch(function() {
+					return undefined;
+				});
+			}
+
+			return oModule.loaded;
 		};
 
 		return function() {
 
 			//remove final information in mUrlPrefixes
 			var mFlatUrlPrefixes = {};
-				jQuery.each(mUrlPrefixes, function(sKey,oUrlPrefix) {
+			jQuery.each(mUrlPrefixes, function(sKey,oUrlPrefix) {
 				mFlatUrlPrefixes[sKey] = oUrlPrefix.url;
 			});
 
@@ -19929,12 +20081,16 @@ $.ui.position = {
 		}
 	}
 
-	function _includeScript(sUrl, sId, fnLoadCallback, fnErrorCallback) {
+	function _includeScript(sUrl, mAttributes, fnLoadCallback, fnErrorCallback) {
 		var oScript = window.document.createElement("script");
 		oScript.src = sUrl;
 		oScript.type = "text/javascript";
-		if (sId) {
-			oScript.id = sId;
+		if (mAttributes && typeof mAttributes === "object") {
+			Object.keys(mAttributes).forEach(function(sKey) {
+				if (mAttributes[sKey] != null) {
+					oScript.setAttribute(sKey, mAttributes[sKey]);
+				}
+			});
 		}
 
 		if (fnLoadCallback) {
@@ -19953,7 +20109,7 @@ $.ui.position = {
 
 		// jQuery("head").append(oScript) doesn't work because they filter for the script
 		// and execute them directly instead adding the SCRIPT tag to the head
-		var oOld;
+		var oOld, sId = mAttributes && mAttributes.id;
 		if ((sId && (oOld = jQuery.sap.domById(sId)) && oOld.tagName === "SCRIPT")) {
 			jQuery(oOld).remove(); // replacing scripts will not trigger the load event
 		}
@@ -19970,8 +20126,10 @@ $.ui.position = {
 	 *            vUrl.url the URL of the script to load
 	 * @param {string}
 	 *            [vUrl.id] id that should be used for the script tag
-	 * @param {string}
-	 *            [sId] id that should be used for the script tag
+	 * @param {object}
+	 *            [vUrl.attributes] map of attributes that should be used for the script tag
+	 * @param {string|object}
+	 *            [vId] id that should be used for the script tag or map of attributes
 	 * @param {function}
 	 *            [fnLoadCallback] callback function to get notified once the script has been loaded
 	 * @param {function}
@@ -19986,32 +20144,37 @@ $.ui.position = {
 	 * @static
 	 * @SecSink {0|PATH} Parameter is used for future HTTP requests
 	 */
-	jQuery.sap.includeScript = function includeScript(vUrl, sId, fnLoadCallback, fnErrorCallback) {
-		var oConfig = typeof vUrl === "string" ? {
-			url: vUrl,
-			id: sId
-		} : vUrl;
-
+	jQuery.sap.includeScript = function includeScript(vUrl, vId, fnLoadCallback, fnErrorCallback) {
 		if (typeof vUrl === "string") {
-			_includeScript(oConfig.url, oConfig.id, fnLoadCallback, fnErrorCallback);
+			var mAttributes = typeof vId === "string" ? {id: vId} : vId;
+			_includeScript(vUrl, mAttributes, fnLoadCallback, fnErrorCallback);
 		} else {
+			jQuery.sap.assert(typeof vUrl === 'object' && vUrl.url, "vUrl must be an object and requires a URL");
+			if (vUrl.id) {
+				vUrl.attributes = vUrl.attributes || {};
+				vUrl.attributes.id = vUrl.id;
+			}
 			return new Promise(function(fnResolve, fnReject) {
-				_includeScript(oConfig.url, oConfig.id, fnResolve, fnReject);
+				_includeScript(vUrl.url, vUrl.attributes, fnResolve, fnReject);
 			});
 		}
 	};
 
-	function _includeStyleSheet(sUrl, sId, fnLoadCallback, fnErrorCallback) {
+	function _includeStyleSheet(sUrl, mAttributes, fnLoadCallback, fnErrorCallback) {
 
-		var _createLink = function(sUrl, sId, fnLoadCallback, fnErrorCallback){
+		var _createLink = function(sUrl, mAttributes, fnLoadCallback, fnErrorCallback){
 
 			// create the new link element
 			var oLink = document.createElement("link");
 			oLink.type = "text/css";
 			oLink.rel = "stylesheet";
 			oLink.href = sUrl;
-			if (sId) {
-				oLink.id = sId;
+			if (mAttributes && typeof mAttributes === "object") {
+				Object.keys(mAttributes).forEach(function(sKey) {
+					if (mAttributes[sKey] != null) {
+						oLink.setAttribute(sKey, mAttributes[sKey]);
+					}
+				});
 			}
 
 			var fnError = function() {
@@ -20062,8 +20225,8 @@ $.ui.position = {
 		};
 
 		// check for existence of the link
-		var oLink = _createLink(sUrl, sId, fnLoadCallback, fnErrorCallback);
-		var oOld = jQuery.sap.domById(sId);
+		var oLink = _createLink(sUrl, mAttributes, fnLoadCallback, fnErrorCallback);
+		var oOld = jQuery.sap.domById(mAttributes && mAttributes.id);
 		if (oOld && oOld.tagName === "LINK" && oOld.rel === "stylesheet") {
 			// link exists, so we replace it - but only if a callback has to be attached or if the href will change. Otherwise don't touch it
 			if (fnLoadCallback || fnErrorCallback || oOld.href !== URI(String(sUrl), URI().search("") /* returns current URL without search params */ ).toString()) {
@@ -20091,8 +20254,10 @@ $.ui.position = {
 	 *            vUrl.url the URL of the stylesheet to load
 	 * @param {string}
 	 *            [vUrl.id] id that should be used for the link tag
-	 * @param {string}
-	 *          [sId] id that should be used for the link tag
+	 * @param {object}
+	 *            [vUrl.attributes] map of attributes that should be used for the script tag
+	 * @param {string|object}
+	 *          [vId] id that should be used for the link tag or map of attributes
 	 * @param {function}
 	 *          [fnLoadCallback] callback function to get notified once the stylesheet has been loaded
 	 * @param {function}
@@ -20101,8 +20266,6 @@ $.ui.position = {
 	 *            is loaded. This is the only option how to determine in IE if the load was successful
 	 *            or not since the native onerror callback for link elements doesn't work in IE. The IE
 	 *            always calls the onload callback of the link element.
-	 *            Another issue of the IE9 is that in case of loading too many stylesheets the eventing
-	 *            is not working and therefore the error or load callback will not be triggered anymore.
 	 * @return {void|Promise}
 	 *            When using the configuration object a <code>Promise</code> will be returned. The
 	 *            documentation for the <code>fnLoadCallback</code> applies to the <code>resolve</code>
@@ -20113,17 +20276,18 @@ $.ui.position = {
 	 * @static
 	 * @SecSink {0|PATH} Parameter is used for future HTTP requests
 	 */
-	jQuery.sap.includeStyleSheet = function includeStyleSheet(vUrl, sId, fnLoadCallback, fnErrorCallback) {
-		var oConfig = typeof vUrl === "string" ? {
-			url: vUrl,
-			id: sId
-		} : vUrl;
-
+	jQuery.sap.includeStyleSheet = function includeStyleSheet(vUrl, vId, fnLoadCallback, fnErrorCallback) {
 		if (typeof vUrl === "string") {
-			_includeStyleSheet(oConfig.url, oConfig.id, fnLoadCallback, fnErrorCallback);
+			var mAttributes = typeof vId === "string" ? {id: vId} : vId;
+			_includeStyleSheet(vUrl, mAttributes, fnLoadCallback, fnErrorCallback);
 		} else {
+			jQuery.sap.assert(typeof vUrl === 'object' && vUrl.url, "vUrl must be an object and requires a URL");
+			if (vUrl.id) {
+				vUrl.attributes = vUrl.attributes || {};
+				vUrl.attributes.id = vUrl.id;
+			}
 			return new Promise(function(fnResolve, fnReject) {
-				_includeStyleSheet(oConfig.url, oConfig.id, fnResolve, fnReject);
+				_includeStyleSheet(vUrl.url, vUrl.attributes, fnResolve, fnReject);
 			});
 		}
 	};
@@ -20132,11 +20296,24 @@ $.ui.position = {
 
 	// TODO should be in core, but then the 'callback' could not be implemented
 	if ( !(oCfgData.productive === true || oCfgData.productive === "true"  || oCfgData.productive === "x") ) {
+		// Check whether the left 'alt' key is used
+		// The TechnicalInfo should be shown only when left 'alt' key is used
+		// because the right 'alt' key is mapped to 'alt' + 'ctrl' on windows
+		// in some languages for example German or Polish which makes right
+		// 'alt' + 'shift' + S open the TechnicalInfo
+		var bLeftAlt = false;
+
 		document.addEventListener('keydown', function(e) {
 			try {
-				if ( e.shiftKey && e.altKey && e.ctrlKey ) {
+				if (e.keyCode === 18) { // 'alt' Key
+					bLeftAlt = (typeof e.location !== "number" /* location isn't supported */ || e.location === 1 /* left */);
+					return;
+				}
+
+				if (e.shiftKey && e.altKey && e.ctrlKey && bLeftAlt) {
+					// invariant: when e.altKey is true, there must have been a preceding keydown with keyCode === 18, so bLeftAlt is always up-to-date
 					if ( e.keyCode === 80 ) { // 'P'
-						sap.ui.require(['sap/ui/debug/TechnicalInfo'], function(TechnicalInfo) {
+						sap.ui.require(['sap/ui/core/support/techinfo/TechnicalInfo'], function(TechnicalInfo) {
 							TechnicalInfo.open(function() {
 								var oInfo = getModuleSystemInfo();
 								return { modules : oInfo.modules, prefixes : oInfo.prefixes, config: oCfgData };
@@ -20152,7 +20329,7 @@ $.ui.position = {
 						});
 					}
 				}
-			} catch (err) {
+			} catch (oException) {
 				// ignore any errors
 			}
 		});
@@ -20341,6 +20518,11 @@ $.ui.position = {
 		var that = this;
 
 		this.iTimer = setTimeout(function() {
+			if (that.bRunnable && that.bParentResponded && !that.bParentUnlocked) {
+				jQuery.sap.log.error("Reached timeout of " + that.iTimeout + "ms waiting for the parent to be unlocked", "", "jQuery.sap.FrameOptions");
+			} else {
+				jQuery.sap.log.error("Reached timeout of " + that.iTimeout + "ms waiting for a response from parent window", "", "jQuery.sap.FrameOptions");
+			}
 			that._callback(false);
 		}, this.iTimeout);
 
@@ -20360,6 +20542,7 @@ $.ui.position = {
 
 			// "deny" mode blocks embedding page from all origins
 			if (this.sMode === FrameOptions.Mode.DENY) {
+				jQuery.sap.log.error("Embedding blocked because configuration mode is set to 'DENY'", "", "jQuery.sap.FrameOptions");
 				this._callback(false);
 				return;
 			}
@@ -20575,6 +20758,7 @@ $.ui.position = {
 			xmlhttp.setRequestHeader('Accept', 'application/json');
 			xmlhttp.send();
 		} else {
+			jQuery.sap.log.error("Embedding blocked because the whitelist or the whitelist service is not configured correctly", "", "jQuery.sap.FrameOptions");
 			this._callback(false);
 		}
 	};
@@ -20592,10 +20776,13 @@ $.ui.position = {
 				if (this.match(this.sParentOrigin, oRuleSet.origin)) {
 					bTrusted = oRuleSet.framing;
 				}
+				if (!bTrusted) {
+					jQuery.sap.log.error("Embedding blocked because the whitelist service does not allow framing", "", "jQuery.sap.FrameOptions");
+				}
 				this._applyTrusted(bTrusted);
 			}
 		} else {
-			jQuery.sap.log.warning("The configured whitelist service is not available: " + xmlhttp.status);
+			jQuery.sap.log.error("The configured whitelist service is not available: " + xmlhttp.status, "", "jQuery.sap.FrameOptions");
 			this._callback(false);
 		}
 	};
@@ -20672,9 +20859,9 @@ jQuery.sap.globalEval = function() {
 	/*eslint-enable no-eval */
 };
 jQuery.sap.declare('sap-ui-core-dbg');
-jQuery.sap.declare('sap.ui.thirdparty.es6-promise', false);
 jQuery.sap.declare('sap.ui.Device', false);
 jQuery.sap.declare('sap.ui.thirdparty.URI', false);
+jQuery.sap.declare('sap.ui.thirdparty.es6-promise', false);
 jQuery.sap.declare('sap.ui.thirdparty.jquery', false);
 jQuery.sap.declare('sap.ui.thirdparty.jqueryui.jquery-ui-position', false);
 jQuery.sap.declare('jquery.sap.global', false);

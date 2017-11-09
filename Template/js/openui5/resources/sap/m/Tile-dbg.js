@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -28,7 +28,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/InvisibleText', 's
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -116,7 +116,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/InvisibleText', 's
 			this.$().css("visibility","");
 			delete this._invisible;
 		}
-		//jQuery.sap.log.info("Set tile pos, id:" + this.getId() + ", x:" + iX + ", y:" + iY);
 
 	};
 
@@ -232,6 +231,9 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/InvisibleText', 's
 
 	Tile.prototype.setVisible = function(bVisible){
 		this.setProperty("visible", bVisible);
+		if (!bVisible) {
+			this._rendered = false;
+		}
 		if (this.getParent() && this.getParent() instanceof sap.m.TileContainer) {
 			this.getParent().invalidate(); // Force rerendering of TileContainer, so the tiles can be rearanged
 		}
@@ -245,45 +247,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/InvisibleText', 's
 	 */
 	Tile.prototype._setVisible = function(bVisible){
 		this._invisible = !bVisible;
-		return this;
-	};
-
-	/**
-	 * Gets the index of the Tile in TileContainer.
-	 * @private
-	 * @returns {int | null} The corresponding index of the Tile if it is in TileContainer or otherwise null
-	 */
-	Tile.prototype._getTileIndex = function() {
-		var oTileContainer = this.getParent(),
-			iTileIndex = null;
-		if (oTileContainer && oTileContainer instanceof sap.m.TileContainer) {
-			iTileIndex = oTileContainer.indexOfAggregation("tiles", this) + 1;
-		}
-		return iTileIndex;
-	};
-
-	/**
-	 * Gets the number of tiles in the TileContainer.
-	 * @private
-	 * @returns The number of tiles in TileContainer if it is in TileContainer or otherwise null
-	 */
-	Tile.prototype._getTilesCount = function() {
-		var oTileContainer = this.getParent(),
-			iTileCount = null;
-		if (oTileContainer && oTileContainer instanceof sap.m.TileContainer) {
-			iTileCount = oTileContainer.getTiles().length;
-		}
-		return iTileCount;
-	};
-
-
-	/**
-	 * Updates the value of the ARIA posinset attribute of the control's DOM element.
-	 * @private
-	 * @returns {sap.m.Tile} this pointer for chaining
-	 */
-	Tile.prototype._updateAriaPosition = function () {
-		this.$().attr('aria-posinset', this._getTileIndex());
 		return this;
 	};
 

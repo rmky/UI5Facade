@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,7 @@ function(jQuery, Test, ElementEnablementTest) {
 
 
 	/**
-	 * Constructor for an LibraryEnablementTest.
+	 * Constructor for a LibraryEnablementTest.
 	 *
 	 * @param {string} [sId] id for the new object, generated automatically if no id is given
 	 * @param {object} [mSettings] initial settings for the new object
@@ -26,7 +26,7 @@ function(jQuery, Test, ElementEnablementTest) {
 	 * @extends sap.ui.dt.test.Test
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @private
@@ -57,7 +57,6 @@ function(jQuery, Test, ElementEnablementTest) {
 	 * @override
 	 */
 	LibraryEnablementTest.prototype.run = function() {
-		var that = this;
 		this._aResult = [];
 		var oTestData = this.getTestData() || {};
 		var sLibraryName = this.getLibraryName();
@@ -108,7 +107,7 @@ function(jQuery, Test, ElementEnablementTest) {
 
 
 		return fnIterate().then(function(aResults) {
-			var mResult = that.createSuite("Library Enablement Test");
+			var mResult = this.createSuite("Library Enablement Test");
 
 			aResults.forEach(function(mElementTestResult) {
 				var mChild = mElementTestResult.children[0];
@@ -121,10 +120,10 @@ function(jQuery, Test, ElementEnablementTest) {
 				}
 			});
 
-			mResult = that.aggregate(mResult);
+			mResult = this.aggregate(mResult);
 
 			return mResult;
-		});
+		}.bind(this));
 
 
 	};

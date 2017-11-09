@@ -1,48 +1,59 @@
-/* ============================================= */
-/* CSS for control sap.m/ObjectAttribute.control */
-/* ============================================= */
+/* ====================================== */
+/* CSS for control sap.m/ObjectAttribute  */
+/* Belize High Contrast Black theme       */
+/* ====================================== */
 
-.sapMObjectAttributeDiv .sapMText,
-.sapMObjectAttributeDiv .sapMObjectAttributeTitle,
-.sapMObjectAttributeDiv .sapMObjectAttributeText {
-	font-size: .875rem;
+.sapMObjectAttributeActive:focus .sapMObjectAttributeText {
+	position: relative;
 }
 
-.sapMObjectAttributeActive {
+html.sap-desktop .sapMObjectAttributeActive:focus .sapMObjectAttributeText::after {
 	pointer-events: none;
+	display: block;
+	content: "";
+	position: absolute;
+	top: 0.125rem;
+	left: 0.125rem;
+	bottom: 0.125rem;
+	right: 0.125rem;
+	outline: 0.125rem dotted @sapUiContentFocusColor;
 }
 
-.sapMListTbl .sapMObjectAttributeActive .sapMText,
+html.sap-desktop .sapMObjectAttributeActive:focus .sapMObjectAttributeText {
+	text-decoration: none;
+}
+
 .sapMObjectAttributeActive .sapMText {
-	color: @sapUiLink;
+	color: @sapUiListActiveTextColor;
 	cursor: pointer;
-	pointer-events: auto;
-}
-
-.sapMObjectAttributeActive .sapMObjectAttributeText {
-	pointer-events: auto;
-}
-
-.sapMObjectAttributeActive .sapMText:active,
-.sapMObjectAttributeActive .sapMText:focus,
-.sapMObjectAttributeActive .sapMText:hover {
 	text-decoration: underline;
 }
 
-.sapMObjectAttributeText > .sapMLnk {
-	display: inline;
+.sapMObjectAttributeActive .sapMText:hover {
+	text-decoration: none;
 }
 
-.sapMOHR .sapMObjectAttributeText > .sapMText {
-	display: inline;
+.sapMObjectAttributeActive .sapMObjectAttributeText:hover,
+.sapMObjectAttributeActive .sapMText:hover {
+	text-decoration: none;
 }
 
-.sapMOH .sapMObjectAttributeText > .sapMText {
-	vertical-align: bottom;
+.sapMObjectAttributeActive .sapMObjectAttributeText {
+	text-decoration: underline;
 }
 
-html[data-sap-ui-browser ^= "ie"], html[data-sap-ui-browser^="ed"] {
-	.sapMObjectAttributeDiv {
-		padding: 0.125rem 0.125rem 0.125rem 0.125rem;
-	}
+/*=========================================== */
+/* Custom design for Responsive Object Header */
+/*=========================================== */
+
+.sapMOHR .sapMObjectAttributeActive .sapMObjectAttributeText {
+	text-decoration: underline;
+}
+
+/*=========================================== */
+/* Custom design for Static Object Header     */
+/*=========================================== */
+
+.sapMOH .sapMObjectAttributeActive .sapMObjectAttributeText {
+	text-decoration: underline;
 }

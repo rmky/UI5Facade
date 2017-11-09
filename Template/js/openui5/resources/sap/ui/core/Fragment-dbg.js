@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -38,7 +38,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Element', './Dec
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @public
 	 * @alias sap.ui.core.Fragment
 	 */
@@ -299,8 +299,9 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Element', './Dec
 	 *
 	 * To instantiate a Fragment, call this method as:
 	 *    sap.ui.xmlfragment([sId], sFragmentName, [oController]);
-	 * The Fragment instance ID is optional (generated if not given) and will be used as prefix for the ID of all
-	 * contained controls. The sFragmentName must correspond to an XML Fragment which can be loaded
+	 * The Fragment instance ID is optional and will be used as prefix for the ID of all
+	 * contained controls. If no ID is passed, controls will not be prefixed.
+	 * The sFragmentName must correspond to an XML Fragment which can be loaded
 	 * via the module system (fragmentName + ".fragment.xml") and which defines the Fragment.
 	 * If oController is given, the methods referenced in the Fragment will be called on this controller.
 	 * Note that Fragments may require a Controller to be given and certain methods to be available.
@@ -310,7 +311,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Element', './Dec
 	 * To instantiate a Fragment and optionally directly give the XML definition instead of loading it from a file,
 	 * call this method as:
 	 *     sap.ui.xmlfragment(oFragmentConfig, [oController]);
-	 * The oFragmentConfig object can have a either a "fragmentName" or a "fragmentContent" property.
+	 * The oFragmentConfig object can either have a "fragmentName" or a "fragmentContent" property.
 	 * fragmentContent is optional and can hold the Fragment definition as XML string; if not
 	 * given, fragmentName must be given and the Fragment content definition is loaded by the module system.
 	 * Again, if oController is given, the methods referenced in the Fragment will be called on this controller.
@@ -410,8 +411,9 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Element', './Dec
 	 *
 	 * To instantiate a Fragment, call this method as:
 	 *    sap.ui.htmlfragment([sId], sFragmentName, [oController]);
-	 * The Fragment instance ID is optional (generated if not given) and will be used as prefix for the ID of all
-	 * contained controls. The sFragmentName must correspond to an HTML Fragment which can be loaded
+	 * The Fragment instance ID is optional and will be used as prefix for the ID of all
+	 * contained controls. If no ID is passed, controls will not be prefixed.
+	 * The sFragmentName must correspond to an HTML Fragment which can be loaded
 	 * via the module system (fragmentName + ".fragment.html") and which defines the Fragment.
 	 * If oController is given, the methods referenced in the Fragment will be called on this controller.
 	 * Note that Fragments may require a Controller to be given and certain methods to be available.
@@ -421,7 +423,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Element', './Dec
 	 * To instantiate a Fragment and optionally directly give the HTML definition instead of loading it from a file,
 	 * call this method as:
 	 *     sap.ui.htmlfragment(oFragmentConfig, [oController]);
-	 * The oFragmentConfig object can have a either a "fragmentName" or a "fragmentContent" property.
+	 * The oFragmentConfig object can either have a "fragmentName" or a "fragmentContent" property.
 	 * fragmentContent is optional and can hold the Fragment definition as XML string; if not
 	 * given, fragmentName must be given and the Fragment content definition is loaded by the module system.
 	 * Again, if oController is given, the methods referenced in the Fragment will be called on this controller.
@@ -499,6 +501,8 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Element', './Dec
 						}
 					});
 				}
+			}, {
+				settings: that._oContainingView._fnSettingsPreprocessor
 			});
 		}
 	});
@@ -526,6 +530,8 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Element', './Dec
 				that._aContent = [];
 				that._aContent = that._aContent.concat(content);
 
+			}, {
+				settings: that._oContainingView._fnSettingsPreprocessor
 			});
 		}
 	});
@@ -635,6 +641,8 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Element', './Dec
 					}// else {
 						// TODO: error
 					//}
+				}, {
+					settings: that._oContainingView._fnSettingsPreprocessor
 				});
 			}
 		});

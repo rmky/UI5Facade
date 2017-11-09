@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,19 +13,17 @@ sap.ui.define(['jquery.sap.global', '../base/EventProvider', './Popup', './Core'
 	 * Provides methods to show or hide a waiting animation covering the whole
 	 * page and blocking user interaction.
 	 * @namespace
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @public
 	 * @alias sap.ui.core.BusyIndicator
 	 */
-	var BusyIndicator = jQuery.extend(jQuery.sap.newObject(EventProvider.prototype), {
+	var BusyIndicator = jQuery.extend( new EventProvider(), {
 		oPopup: null,
 		oDomRef: null,
 		bOpenRequested: false,
 		iDEFAULT_DELAY_MS: 1000,
 		sDOM_ID: "sapUiBusyIndicator"
 	});
-
-	EventProvider.apply(BusyIndicator);
 
 	BusyIndicator.M_EVENTS = {
 		Open: "Open",
@@ -227,10 +225,19 @@ sap.ui.define(['jquery.sap.global', '../base/EventProvider', './Popup', './Core'
 			return;
 		}
 
+		// The current scroll position of window needs to be passed as offset to Popup
+		// to keep the scroll position of the window.
+		// Otherwise, the BusyIndicator may be placed partically off-screen initially
+		// and the browser scrolls itself up to shift the whole BusyIndicator into the
+		// viewport which result as that the window loses its scroll position
+		var iOffsetX = (window.scrollX === undefined ? window.pageXOffset : window.scrollX);
+		var iOffsetY = (window.scrollY === undefined ? window.pageYOffset : window.scrollY);
+		var sOffset = iOffsetX + " " + iOffsetY;
+
 		this.bOpenRequested = false; // opening request is handled
 
 		// Actually open the popup
-		this.oPopup.open(0, Popup.Dock.LeftTop, Popup.Dock.LeftTop, document);
+		this.oPopup.open(0, Popup.Dock.LeftTop, Popup.Dock.LeftTop, document, sOffset);
 	};
 
 	/**

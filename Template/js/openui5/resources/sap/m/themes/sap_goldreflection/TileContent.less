@@ -1,32 +1,41 @@
-/* ========================================= */
-/* CSS for control sap.m/TileContent.control */
-/* ========================================= */
+/* ================================== */
+/* CSS for control sap.m/TileContent  */
+/* Base theme                         */
+/* ================================== */
+
 .sapMTileCnt {
 	display: inline-block;
 	box-sizing: border-box;
 	position: relative;
-}
-
-.sapMTileCnt.sapMFrameTypeAuto {
 	height: 6.375rem;
-	min-width: 10.875rem;
-	max-width: 22.5rem;
-}
 
-/* TwoByOne size */
-.sapMTileCnt.sapMFrameTypeTwoByOne {
-	height: 6.375rem;
-	width: 22.375rem;
+	/* FrameType: Auto */
+	&.sapMFrameTypeAuto {
+		min-width: 10.875rem;
+		max-width: 22.5rem;
+	}
 
-	&.News {
-		width: 22.5rem;
+	/* FrameType: TwoByOne */
+	&.sapMFrameTypeTwoByOne {
+		width: 22.375rem;
+
+		&.News {
+			width: 22.5rem; //2px more, because the tile's border is omitted
+		}
+	}
+
+	/* FrameType: OneByOne */
+	&.sapMFrameTypeOneByOne {
+		width: 10.875rem;
 	}
 }
 
-/* OneByOne size */
-.sapMTileCnt.sapMFrameTypeOneByOne {
-	height: 6.375rem;
-	width: 11rem;
+/* Improved behaviour for TileContent in GenericTile */
+.sapMGT .sapMTileCnt.sapMFrameTypeAuto:only-child {
+	width: 100%;
+}
+.sapMGT .sapMTileCnt.sapMFrameTypeAuto:not(:only-child) {
+	width: ~"calc(50% - 0.25rem)"; //0.5rem margin between the contents
 }
 
 /* Footer CSS */
@@ -39,12 +48,29 @@
 	right: 0;
 	left: 0;
 	box-sizing: border-box;
-
 	height: 1.1875rem;
 	bottom: 0.625rem;
 	margin-left: 0.9375rem;
 	margin-right: 0.9375rem;
 	line-height: 1.1875rem;
+	font-family: @sapUiFontFamily;
+	font-size: @sapMFontMediumSize;
+}
+
+.sapMTileCntFooterTextColorNeutral {
+	color: @sapUiTileTextColor;
+}
+
+.sapMTileCntFooterTextColorGood {
+	color: @sapUiPositiveText;
+}
+
+.sapMTileCntFooterTextColorError {
+	color: @sapUiNegativeText;
+}
+
+.sapMTileCntFooterTextColorCritical {
+	color: @sapUiCriticalText;
 }
 
 html[dir=rtl] .sapMTileCntFtrTxt {
@@ -84,6 +110,7 @@ html[dir=rtl] .sapMTileCntFtrTxt {
 .sapMTileCnt.News {
 	height: 6.125rem;
 	margin-top: 0.3125rem;
+	background-color: @sapUiTileBackground;
 
 	.sapMTileCntContent {
 		padding-left: 1rem;
@@ -102,24 +129,24 @@ html[dir=rtl] .sapMTileCntFtrTxt {
 
 /* BREAKPOINT FOR SMALL PHONES */
 @media screen and (max-width: 374px) {
-	.sapMTileCnt.sapMFrameTypeAuto {
+	.sapMTileCnt {
 		height: 5.5rem;
-		min-width: 9.125rem;
-		max-width: 19rem;
-	}
 
-	.sapMTileCnt.sapMFrameTypeTwoByOne {
-		height: 5.5rem;
-		width: 18.875rem;
-
-		&.News {
-			width: 19rem;
+		&.sapMFrameTypeAuto {
+			min-width: 9.125rem;
+			max-width: 19rem;
 		}
-	}
 
-	.sapMTileCnt.sapMFrameTypeOneByOne {
-		height: 5.5rem;
-		width: 9.25rem;
+		&.sapMFrameTypeTwoByOne {
+			width: 18.875rem;
+
+			&.News {
+				width: 19rem;
+			}
+		}
+		&.sapMFrameTypeOneByOne {
+			width: 9.125rem;
+		}
 	}
 
 	.sapMTileCntFtrTxt {
@@ -128,6 +155,7 @@ html[dir=rtl] .sapMTileCntFtrTxt {
 		bottom: 0.4375rem;
 		margin-left: 0.5625rem;
 		margin-right: 0.5625rem;
+		font-size: @sapMFontSmallSize;
 	}
 
 	.sapMTileCntContent {

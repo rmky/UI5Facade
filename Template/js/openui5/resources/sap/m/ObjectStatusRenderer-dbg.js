@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,13 +24,19 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport'],
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered
 	 */
 	ObjectStatusRenderer.render = function(oRm, oObjStatus){
-		if (!oObjStatus._isEmpty()) {
+		oRm.write("<div");
+
+		if (oObjStatus._isEmpty()) {
+			oRm.writeControlData(oObjStatus);
+			oRm.addStyle("display", "none");
+			oRm.writeStyles();
+			oRm.write(">");
+		} else {
 
 			var sState = oObjStatus.getState();
 			var sTextDir = oObjStatus.getTextDirection();
 			var sTitleDir = sTextDir;
 
-			oRm.write("<div");
 			oRm.writeControlData(oObjStatus);
 
 			var sTooltip = oObjStatus.getTooltip_AsString();
@@ -113,9 +119,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport'],
 				oRm.writeEscaped(ValueStateSupport.getAdditionalText(sState));
 				oRm.write("</span>");
 			}
-
-			oRm.write("</div>");
 		}
+
+		oRm.write("</div>");
 	};
 
 	return ObjectStatusRenderer;

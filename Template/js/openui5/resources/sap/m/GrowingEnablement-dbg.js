@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -70,17 +70,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 
 		// renders load more trigger
 		render : function(oRm) {
-			oRm.write("<ul");
+			oRm.write("<div");
 			oRm.addClass("sapMListUl");
 			oRm.addClass("sapMGrowingList");
-			oRm.writeAttribute("role", "presentation");
 			oRm.writeAttribute("id", this._oControl.getId() + "-triggerList");
 			oRm.addStyle("display", "none");
 			oRm.writeClasses();
 			oRm.writeStyles();
 			oRm.write(">");
 			oRm.renderControl(this._getTrigger());
-			oRm.write("</ul>");
+			oRm.write("</div>");
 		},
 
 		onAfterRendering : function() {
@@ -179,6 +178,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 				return this._oTrigger;
 			}
 
+			// The growing button is changed to span tag as h1 tag was semantically incorrect.
 			this._oTrigger = new sap.m.CustomListItem({
 				id: sTriggerID,
 				busyIndicatorDelay: 0,
@@ -186,7 +186,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 				content: new sap.ui.core.HTML({
 					content:	'<div class="sapMGrowingListTrigger">' +
 									'<div class="sapMSLITitleDiv sapMGrowingListTriggerText">' +
-										'<h1 class="sapMSLITitle" id="' + sTriggerID + 'Text">' + jQuery.sap.encodeHTML(sTriggerText) + '</h1>' +
+										'<span class="sapMSLITitle" id="' + sTriggerID + 'Text">' + jQuery.sap.encodeHTML(sTriggerText) + '</span>' +
 									'</div>' +
 									'<div class="sapMGrowingListDescription sapMSLIDescription" id="' + sTriggerID + 'Info"></div>' +
 								'</div>'
@@ -204,13 +204,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 					this._oTrigger.$().attr({
 						"tabindex": 0,
 						"role": "button",
-						"aria-live": "polite"
+						"aria-labelledby": sTriggerID + "Text" + " " + sTriggerID + "Info"
 					});
 				}
 			}, this);
 
 			// stop the eventing between item and the list
 			this._oTrigger.getList = function() {};
+			// defines the tag name
+			this._oTrigger.TagName = "div";
 
 			return this._oTrigger;
 		},
@@ -315,7 +317,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 		// creates list item from the factory
 		createListItem : function(oContext, oBindingInfo) {
 			this._iRenderedDataItems++;
-			var oItem = oBindingInfo.factory("", oContext);
+			var oItem = oBindingInfo.factory(sap.ui.base.ManagedObjectMetadata.uid("clone"), oContext);
 			return oItem.setBindingContext(oContext, oBindingInfo.model);
 		},
 
@@ -555,8 +557,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 
 		_updateTriggerDelayed: function(bLoading) {
 			if (this._oControl.getGrowingScrollToLoad()) {
-				this._iTriggerTimer && jQuery.sap.clearDelayedCall(this._iTriggerTimer);
-				this._iTriggerTimer = jQuery.sap.delayedCall(0, this, "_updateTrigger", [bLoading]);
+				this._iTriggerTimer && window.cancelAnimationFrame(this._iTriggerTimer);
+				this._iTriggerTimer = window.requestAnimationFrame(this._updateTrigger.bind(this, bLoading));
 			} else {
 				this._updateTrigger(bLoading);
 			}

@@ -1,7 +1,7 @@
 /*!
 
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -42,7 +42,9 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler'],
 		oRM.addClass("sapMBar");
 		oRM.addClass(this.getContext(oControl));
 
-		oControl._writeLandmarkInfo(oRM, oControl);
+		oRM.writeAccessibilityState(oControl, {
+			"role": oControl._getRootAccessibilityRole()
+		});
 
 		if (oControl.getTranslucent() && (sap.ui.Device.support.touch  || jQuery.sap.simulateMobileOnDesktop)) {
 			oRM.addClass("sapMBarTranslucent");

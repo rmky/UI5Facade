@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -113,7 +113,6 @@
 /* ============================================= */
 
 .sapUiAppHdr {
-	-moz-background-size: 100% 110px;
 	-moz-box-shadow: 0 0 8px @sapUiBlackBG;
 	background-image: -moz-linear-gradient(top center, @sapUiDarkAltBG, @sapUiDeepBG);
 	background-image: -webkit-gradient(linear, left top, left bottom, from(@sapUiDarkAltBG), to(@sapUiDeepBG));
@@ -127,12 +126,6 @@
 	border: 0px solid @sapUiBrand;
 	border-top-width: 8px;
 }
-
-html[data-sap-ui-browser="ie9"] .sapUiAppHdr {
-	background-image: url(img/applicationheader/Header_bg.png);
-	background-size: auto; /* IE9 does understand background-size, but it is meant for the gradient which it does not understand... */
-}
-
 
 .sapUiAppHdr .sapUiTv {
 	font-size: 13px;
@@ -215,21 +208,6 @@ html[data-sap-ui-browser^="cr"] .sapUiBtnS > .sapUiBtnTxt {
 	margin-top: 1px;
 }
 
-html[data-sap-ui-browser="ie9"] .sapUiBtnS,
-html[data-sap-ui-browser="ie10"] .sapUiBtnS{
-	padding-top: 2px;
-}
-
-html[data-sap-ui-browser="ie9"] .sapUiBtnS.sapUiBtnLite{
-	padding-top: 1px;
-}
-
-html[data-sap-ui-browser="ie9"] .sapUiBtnS.sapUiBtnIconOnly > .sapUiBtnIco,
-html[data-sap-ui-browser="ie9"] .sapUiBtnS > .sapUiBtnTxt,
-html[data-sap-ui-browser^="cr"] .sapUiBtnS.sapUiBtnIconOnly > .sapUiBtnIco{
-	margin-top: -1px;
-}
-
 /* End of pain */
 
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnStd{
@@ -291,11 +269,6 @@ html[data-sap-ui-browser^="ie"] .sapUiBtnS.sapUiBtnDsbl:active > .sapUiBtnTxt{
 	margin-top: -2px;
 }
 
-html[data-sap-ui-browser="ie9"] .sapUiBtnS.sapUiBtnLite.sapUiBtnAct > .sapUiBtnTxt,
-html[data-sap-ui-browser="ie9"] .sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl:active > .sapUiBtnTxt{
-	margin-top: 0;
-}
-
 /* emphasized button */
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnEmph{
 	background-image: -moz-linear-gradient(top center, @sapUiButtonEmphasizedHoverBackground, @sapUiButtonEmphasizedActiveBackground);
@@ -308,7 +281,6 @@ html[data-sap-ui-browser="ie9"] .sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl:active > .s
 	background-repeat: repeat-x;
 	background-position: left bottom; /*because IE8 don't know background-size*/
 	background-size: 1px 100%;
-	-moz-background-size: 1px 100%;
 	-webkit-background-size: 1px 100%;
 }
 
@@ -367,7 +339,6 @@ html[data-sap-ui-browser="ie9"] .sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl:active > .s
 	background-repeat: repeat-x;
 	background-position: left bottom; /*because IE8 don't know background-size*/
 	background-size: 1px 100%;
-	-moz-background-size: 1px 100%;
 	-webkit-background-size: 1px 100%;
 }
 
@@ -419,7 +390,6 @@ html[data-sap-ui-browser="ie9"] .sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl:active > .s
 	background-repeat: repeat-x;
 	background-position: left bottom; /*because IE8 don't know background-size*/
 	background-size: 1px 100%;
-	-moz-background-size: 1px 100%;
 	-webkit-background-size: 1px 100%;
 }
 
@@ -453,17 +423,6 @@ html[data-sap-ui-browser="ie9"] .sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl:active > .s
 html[data-sap-ui-browser^="cr"] .sapUiBtnS.sapUiBtnIconOnly > span.sapUiBtnIco {
 	margin-top: 1px;
 }
-
-html[data-sap-ui-browser="ie9"] .sapUiBtnS,
-html[data-sap-ui-browser="ie10"] .sapUiBtnS {
-	> img,
-	> span.sapUiBtnTxt,
-	&.sapUiBtnIconOnly > span.sapUiBtnIco,
-	> span.sapUiBtnIco {
-		margin-top: 0;
-	}
-}
-
 /* END "Button.less" */
 
 /* START "CalloutBase.less" */
@@ -492,9 +451,7 @@ html[data-sap-ui-browser="ie10"] .sapUiBtnS {
 	padding: 0px;
 	background-color: @sapUiWhiteBG;
 	position: absolute;
-	-moz-transform: rotate(45deg);
 	-webkit-transform: rotate(45deg);
-	-ms-transform: rotate(45deg);
 	transform: rotate(45deg);
 	z-index: -1;
 }
@@ -719,10 +676,6 @@ html[data-sap-ui-browser^="cr"] .sapUiGrid td > .sapUiCb {
 	border: none;
 	background-color: transparent;
 }
-
-html[data-sap-ui-browser="ie9"] .sapUiColorPicker-ColorPickerAlphaSlider.sapUiSliHori .sapUiSliBar {
-	filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='img/ColorPicker/Alphaslider_BG.png') progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#FF000000',GradientType=1 );
-}
 /* END "ColorPicker.less" */
 
 /* START "ComboBox.less" */
@@ -748,16 +701,6 @@ html[data-sap-ui-browser="ie9"] .sapUiColorPicker-ColorPickerAlphaSlider.sapUiSl
 
 .sapUiTfDsbl > .sapUiTfComboIcon {
 	background-image: url(img/combobox/ComboBoxArrow_dsbl.png);
-}
-
-/* ================= */
-/* Alignment in Form */
-/* ================= */
-
-/* GridLayout */
-html[data-sap-ui-browser="ie9"] .sapUiGrid td > .sapUiTfBrd > div,
-html[data-sap-ui-browser="ie10"] .sapUiGrid td > .sapUiTfBrd > div{
-	top: 0; /* because of padding-top the icon must be moved */
 }
 /* END "ComboBox.less" */
 
@@ -972,9 +915,7 @@ html[data-sap-ui-os^="iOS6"] .sapUiTfDsbl > .sapUiTfInner.sapUiTf[type="date"]{
 .sapUiIpe:not(.sapUiIpeEdit){
 	/* to fade success color out if removed after some seconds */
 	transition: background-color 1s linear;
-	-moz-transition: background-color 1s linear;
 	-webkit-transition: background-color 1s linear;
-	-ms-transition: background-color 1s linear;
 }
 
 .sapUiIpeUndo > .sapUiIpeCont > .sapUiTfBrd{
@@ -1184,9 +1125,6 @@ html.sapUiMedia-Std-Desktop .sapUiFormResGridCont > div > .sapUiLnk {
 
 .sapUiLbx.sapUiLbxFlexWidth > ul > li > span:last-child {
 	padding-right: 16px; /* when width is not set, a scrollbar may cover the last part of the text which is not nice because no width means "adapted to content" */
-}
-html[data-sap-ui-browser="ie9"] .sapUiLbx.sapUiLbxFlexWidth > ul > li > span:last-child {
-	padding-right: 0; /* above mentioned problem does not appear in IE9 */
 }
 
 .sapUiLbxIIcoFont{
@@ -2366,10 +2304,6 @@ html[data-sap-ui-browser^="ie"] .sapUiRb:focus:after {
 	right: 10px;
 }
 
-html[data-sap-ui-browser="ie9"] .sapUiSliHori .sapUiSliText {
-	top: -19px;
-}
-
 .sapUiSliHori .sapUiSliTextLeft {
 	left: -2px;
 }
@@ -2572,14 +2506,6 @@ html[data-sap-ui-browser^="ie"] .sapUiTabSel:focus{
 	border-width: 1px;
 }
 
-html[data-sap-ui-browser="ie9"] .sapUiTfMono.sapUiTf{
-	padding-top: 4px;
-}
-
-html[data-sap-ui-browser="ie10"] .sapUiTf:not(.sapUiTfInner){
-	padding-top: 3px;
-}
-
 .sapUiTfBrd.sapUiTfStd:hover {
 	border-color: @sapUiFieldHoverBorderColor;
 }
@@ -2612,13 +2538,6 @@ html[data-sap-ui-browser^="cr"] .sapUiTfBrd > .sapUiTfInner{
 /* ================= */
 /* Alignment in Form */
 /* ================= */
-
-/* GridLayout */
-html[data-sap-ui-browser="ie9"] .sapUiGrid td > .sapUiTfBrd,
-html[data-sap-ui-browser="ie10"] .sapUiGrid td > .sapUiTfBrd{
-	padding-top: 3px; /* in IE9 text of TextField it 1px moved */
-	padding-bottom: 2px;
-}
 
 /* ResponsiveGridLayout */
 html[data-sap-ui-browser^="ie"].sapUiMedia-Std-Phone .sapUiFormResGridCont > div > .sapUiTf,
@@ -2654,7 +2573,6 @@ html[data-sap-ui-browser^="ie"].sapUiMedia-Std-Desktop .sapUiFormResGridCont > d
 .sapUiTvErr {
 	transition: color .25s linear;
 	-webkit-transition: color .25s linear;
-	-moz-transition: color .25s linear;
 	background-color: transparent;
 }
 
@@ -2662,7 +2580,6 @@ html[data-sap-ui-browser^="ie"].sapUiMedia-Std-Desktop .sapUiFormResGridCont > d
 .sapUiTvWarn {
 	transition: color 1s linear;
 	-webkit-transition: color 1s linear;
-	-moz-transition: color 1s linear;
 	color: @sapUiCriticalText; /*looks more like yellow: darken(@sapUiFieldWarningColor, 17);*/
 	background-color: transparent;
 }
@@ -2735,11 +2652,6 @@ html.sapUiMedia-Std-Desktop .sapUiFormResGridCont > div > .sapUiTv {
 	box-shadow: inset 0 -1px 0 @sapUiMediumLine;
 }
 
-html[data-sap-ui-browser='ie9'] .sapUiBtnS.sapUiBtnNorm.sapUiToggleBtn > .sapUiBtnIcoL,
-html[data-sap-ui-browser='ie9'] .sapUiBtnS.sapUiBtnNorm.sapUiToggleBtn > .sapUiBtnIcoR {
-	margin-top: -1px;
-}
-
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnDsbl.sapUiToggleBtn {
 	color: @sapUiContentDisabledTextColor;
 	background-color: @sapUiButtonBackground;
@@ -2766,9 +2678,7 @@ html[data-sap-ui-browser='ie9'] .sapUiBtnS.sapUiBtnNorm.sapUiToggleBtn > .sapUiB
 	margin-top: 0px;
 }
 
-.sapUiBtnS.sapUiBtnLite.sapUiBtnIconOnly.sapUiToggleBtn > .sapUiBtnIco,
-html[data-sap-ui-browser='ie9'] .sapUiBtnS.sapUiBtnLite.sapUiToggleBtn > .sapUiBtnIcoR,
-html[data-sap-ui-browser='ie9'] .sapUiBtnS.sapUiBtnLite.sapUiToggleBtn > .sapUiBtnIcoL {
+.sapUiBtnS.sapUiBtnLite.sapUiBtnIconOnly.sapUiToggleBtn > .sapUiBtnIco {
 	margin-top: -1px;
 }
 
@@ -2780,18 +2690,11 @@ html[data-sap-ui-browser^="cr"] .sapUiBtnS.sapUiBtnLite.sapUiToggleBtn > .sapUiB
 }
 
 /* prevent IE to move text on pressing button */
-html[data-sap-ui-browser="ie9"] .sapUiBtnS.sapUiBtnLite.sapUiToggleBtn:active {
-	padding-bottom: 4px;
-	padding-top: 2px;
-	padding-left: 7px;
-	padding-right: 9px;
-}
 
 html[data-sap-ui-browser^="ie"]  .sapUiBtnS.sapUiBtnLite.sapUiToggleBtn:active > .sapUiBtnTxt,
 html[data-sap-ui-browser^="ie"]  .sapUiBtnS.sapUiBtnLite.sapUiToggleBtn:active > .sapUiBtnIcoL,
 html[data-sap-ui-browser^="ie"]  .sapUiBtnS.sapUiBtnLite.sapUiToggleBtn:active > .sapUiBtnIcoR,
-html[data-sap-ui-browser^="ie"]  .sapUiBtnS.sapUiBtnLite.sapUiBtnIconOnly.sapUiToggleBtn:active > .sapUiBtnIco,
-html[data-sap-ui-browser='ie9'] .sapUiBtnS.sapUiBtnIconOnly.sapUiToggleBtn > .sapUiBtnIco {
+html[data-sap-ui-browser^="ie"]  .sapUiBtnS.sapUiBtnLite.sapUiBtnIconOnly.sapUiToggleBtn:active > .sapUiBtnIco {
 	margin-top: -3px;
 }
 
@@ -3014,14 +2917,6 @@ html[data-sap-ui-browser='ie9'] .sapUiBtnS.sapUiBtnIconOnly.sapUiToggleBtn > .sa
 .sapUiTbInner > label,
 .sapUiTbInnerRight > label {
 	line-height: 22px;
-}
-
-// Related to sap.ui.commons.Button icon position
-html[data-sap-ui-browser="ie9"],
-html[data-sap-ui-browser="ie10"] {
-	.sapUiTbCont .sapUiBtn {
-		line-height: normal;
-	}
 }
 
 .sapUiTbStandalone .sapUiTbCont {
@@ -3273,16 +3168,5 @@ html[data-sap-ui-browser="ie10"] {
 	background-color: transparent;
 	color: @sapUiDarkText;
 }
-
-/* ================= */
-/* Alignment in Form */
-/* ================= */
-
-/* GridLayout */
-html[data-sap-ui-browser="ie9"] .sapUiGrid td > .sapUiTfBrd > .sapUiTfValueHelpIcon,
-html[data-sap-ui-browser="ie10"] .sapUiGrid td > .sapUiTfBrd > .sapUiTfValueHelpIcon{
-	top: 0; /* because of padding-top the icon must be moved */
-}
-
 /* END "ValueHelpField.less" */
 

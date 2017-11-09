@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -57,8 +57,12 @@ sap.ui.define([], function() {
 
 			// propagate messages
 			if (aMessages && aMessages.length > 0) {
-				this.setValueState(aMessages[0].type);
-				this.setValueStateText(aMessages[0].message);
+				var oMessage = aMessages[0];
+				// check if the message type is a valid sap.ui.core.ValueState
+				if (sap.ui.core.ValueState[oMessage.type]) {
+					this.setValueState(oMessage.type);
+					this.setValueStateText(oMessage.message);
+				}
 			} else {
 				this.setValueState(sap.ui.core.ValueState.None);
 				this.setValueStateText('');

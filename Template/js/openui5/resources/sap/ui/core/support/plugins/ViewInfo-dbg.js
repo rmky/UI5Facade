@@ -1,13 +1,13 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.core.support.plugins.ViewInfo (ViewInfo support plugin)
 sap.ui.define([
-	'jquery.sap.global', 'sap/ui/core/support/Plugin', 'sap/ui/core/support/controls/TreeViewer', 'sap/ui/core/support/controls/ObjectViewer'
-], function(jQuery, Plugin, TreeViewer, ObjectViewer) {
+	'jquery.sap.global', 'sap/ui/core/support/Plugin', 'sap/ui/core/support/controls/TreeViewer', 'sap/ui/core/support/controls/ObjectViewer', 'sap/ui/core/support/Support'
+], function(jQuery, Plugin, TreeViewer, ObjectViewer, Support) {
 	"use strict";
 
 	/*global Blob, Uint8Array, alert */
@@ -18,7 +18,7 @@ sap.ui.define([
 		 * @class This class represents the ViewInfo plugin for the support tool functionality of UI5. This class is internal and all its functions must not be used by an application.
 		 * @abstract
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 * @constructor
 		 * @private
 		 * @alias sap.ui.core.support.plugins.ViewInfo
@@ -29,7 +29,7 @@ sap.ui.define([
 
 				this._oStub = oSupportStub;
 
-				if (!this.isToolPlugin()) {
+				if (!this.runsAsToolPlugin()) {
 					// register as core plugin
 					var that = this;
 
@@ -48,6 +48,9 @@ sap.ui.define([
 
 		ViewInfo.prototype.init = function(oSupportStub){
 			Plugin.prototype.init.apply(this, arguments);
+			if (!this.runsAsToolPlugin()) {
+				return;
+			}
 			if (!sap.ui.Device.browser.chrome) {
 				this.$().get(0).innerHTML = "View Info Support Tool is currently only available on Chrome. We are currently working to support all browsers.";
 				return;
@@ -60,7 +63,11 @@ sap.ui.define([
 			}
 
 			if (typeof this.supportInfo !== "function") {
-				this.$().get(0).innerHTML = "View Info Support Tool is only available in Support Mode. Turn it on by adding 'sap-ui-xx-support=true' to the url or your application.";
+				this.$().get(0).innerHTML =
+					"<div class='sapUISupportLabel' style='padding: 5px;'>" +
+						"View Info Support Tool is only available in <b>Support Mode.</b>" +
+						"<br>Turn it on by adding '<b>sap-ui-support=true</b>' to the url or your application." +
+					"</div>";
 				return;
 			}
 			try {
@@ -77,7 +84,7 @@ sap.ui.define([
 						"There are no XML Views defined in the current app.<br>" +
 						"Views where not loaded before the Diagnistics tool was started.";
 			}
-			if (this.isToolPlugin()) {
+			if (this.runsAsToolPlugin()) {
 				initInTools.call(this, oSupportStub);
 			}
 		};
@@ -91,7 +98,7 @@ sap.ui.define([
 
 		ViewInfo.prototype.exit = function(oSupportStub) {
 			Plugin.prototype.exit.apply(this, arguments);
-			if (this.isToolPlugin()) {
+			if (this.runsAsToolPlugin()) {
 				$(document)
 				.off("click", ".viewxmlheader", $.proxy(this._onToggleViewInfo, this))
 				.off("click", ".viewxmlmain", $.proxy(this._onMainViewInfo, this));

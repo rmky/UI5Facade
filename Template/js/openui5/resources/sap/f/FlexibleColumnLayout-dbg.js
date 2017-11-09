@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,99 +8,554 @@
 sap.ui.define([
 	"jquery.sap.global",
 	"./library",
+	"./LayoutType",
+	"sap/ui/Device",
 	"sap/ui/core/ResizeHandler",
 	"sap/ui/core/Control",
-	"sap/m/Button"
-], function (jQuery, library, ResizeHandler, Control, Button) {
+	"sap/ui/core/InvisibleText",
+	"sap/m/Button",
+	"sap/m/NavContainer"
+], function (jQuery, library, LT, Device, ResizeHandler, Control, InvisibleText, Button, NavContainer) {
 	"use strict";
 
 
 	/**
-	 * Constructor for a new Flexible Column Layout
+	 * Constructor for a new <code>sap.f.FlexibleColumnLayout</code>.
 	 *
 	 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
 	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
-	 * The FlexibleColumnLayout control implements the master-detail-detail paradigm by allowing the user to display up to three pages at a time
-	 * Disclaimer: this control is in beta state - incompatible API changes may be done before its official public release. Use at your own discretion.
+	 * Implements the master-detail-detail paradigm by displaying up to three pages in separate columns.
 	 *
+	 * <h3>Overview</h3>
+	 *
+	 * The control is logically similar to {@link sap.m.SplitContainer} with the difference that it capable of handling
+	 * three columns (referred to as <code>Begin</code>, <code>Mid</code> and <code>End</code>) rather than two
+	 * (<code>Master</code>, <code>Detail</code>). The width of the three columns is variable.
+	 *
+	 * There are several possible layouts that can be changed either with the control's API, or by the user with the help of layout arrows.
+	 *
+	 * Internally the control makes use of three instances of {@link sap.m.NavContainer}, thus forming the three columns.
+	 *
+	 * <h3>Usage</h3>
+	 *
+	 * Use this control for applications that need to display several logical levels of related information side by side (e.g. list of items, item, sub-item, etc.).
+	 * The control is flexible in a sense that the application can focus the user's attention on one particular column by making it larger or even fullscreen.
+	 *
+	 * The columns are accessible with the <code>beginColumnPages</code>, <code>midColumnPages</code> and <code>endColumnPages</code> aggregations.
+	 *
+	 * The relative sizes and the visibility of the three columns are determined based on the value of the {@link sap.f.LayoutType layout} property.
+	 *
+	 * Changes to the layout due to user interaction are communicated to the app with the <code>stateChange</code> event.
+	 *
+	 * <ul><b>Notes:</b>
+	 * <li>To easily implement the recommended UX design of a <code>sap.f.FlexibleColumnLayout</code>-based app,
+	 * you can use the <code>sap.f.FlexibleColumnLayoutSemanticHelper</code> class.</li>
+	 * <li>To facilitate the navigation and view loading, you can use the {@link sap.f.routing.Router} </li></ul>
+	 *
+	 * <h3>Responsive Behavior</h3>
+	 *
+	 * The control automatically displays the maximum possible number of columns based on the device size and current <code>layout</code>.
+	 * The app does not need to take into consideration the current device/screen size, but only to add content to the
+	 * columns and change the value of the <code>layout</code> property.
+	 *
+	 * For detailed information, see {@link sap.f.LayoutType LayoutType} enumeration.
+	 *
+	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
-	 * @private
-	 * @since 1.42
+	 * @public
+	 * @since 1.46
 	 * @alias sap.f.FlexibleColumnLayout
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var FlexibleColumnLayout = Control.extend("sap.f.FlexibleColumnLayout", {
 		metadata: {
 			properties: {
-				/**
-				 * Forces the control to only show two columns at a time on Desktop (as it would normally on Tablet)
-				 */
-				twoColumnLayoutOnDesktop: {type: "boolean", group: "Behavior", defaultValue: false},
 
 				/**
-				 * Determines the default three-column layout: MidColumnEmphasized (25/50/25) or EndColumnEmphasized (25/25/50)
+				 * Determines the layout of the control - number of visible columns and their relative sizes
 				 */
-				threeColumnLayoutType: {type: "sap.f.ThreeColumnLayoutType", group: "Behavior", defaultValue: sap.f.ThreeColumnLayoutType.MidColumnEmphasized},
+				layout: {type: "sap.f.LayoutType", defaultValue: sap.f.LayoutType.OneColumn},
 
 				/**
-				 * Set to false to allow switching between the MidColumnEmphasized (25/50/25) and EndColumnEmphasized (25/25/50) three-column layouts via an additional navigation button
+				 * Determines the type of the transition/animation to apply for the <code>Begin</code> column when <code>to()</code> is called without defining the
+				 * transition to use. The default is <code>slide</code>, other options are <code>fade</code>, <code>show</code>, and the names of any registered custom transitions.
 				 */
-				threeColumnLayoutTypeFixed: {type: "boolean", group: "Behavior", defaultValue: true}
+				defaultTransitionNameBeginColumn : {type : "string", group : "Appearance", defaultValue : "slide"},
+
+				/**
+				 * Determines the type of the transition/animation to apply for the <code>Mid</code> column when <code>to()</code> is called without defining the
+				 * transition to use. The default is <code>slide</code>, other options are <code>fade</code>, <code>show</code>, and the names of any registered custom transitions.
+				 */
+				defaultTransitionNameMidColumn : {type : "string", group : "Appearance", defaultValue : "slide"},
+
+				/**
+				 * Determines the type of the transition/animation to apply for the <code>End</code> column when <code>to()</code> is called without defining the
+				 * transition to use. The default is <code>slide</code>, other options are <code>fade</code>, <code>show</code>, and the names of any registered custom transitions.
+				 */
+				defaultTransitionNameEndColumn : {type : "string", group : "Appearance", defaultValue : "slide"}
+
 			},
 			aggregations: {
 				/**
-				 * The content of the begin column
+				 * The content entities between which the <code>FlexibleColumnLayout</code> navigates in the <code>Begin</code> column.
+				 *
+				 * These should be any control with page semantics.
+				 * These aggregated controls will receive navigation events like {@link sap.m.NavContainerChild#beforeShow beforeShow}, they are documented in the pseudo interface {@link sap.m.NavContainerChild sap.m.NavContainerChild}.
 				 */
-				beginColumn: {type: "sap.ui.core.Control", multiple: false},
+				beginColumnPages: {type: "sap.ui.core.Control", multiple: true},
 				/**
-				 * The content of the mid column
+				 * The content entities between which the <code>FlexibleColumnLayout</code> navigates in the <code>Mid</code> column.
+				 *
+				 * These should be any control with page semantics.
+				 * These aggregated controls will receive navigation events like {@link sap.m.NavContainerChild#beforeShow beforeShow}, they are documented in the pseudo interface {@link sap.m.NavContainerChild sap.m.NavContainerChild}.
 				 */
-				midColumn: {type: "sap.ui.core.Control", multiple: false},
+				midColumnPages: {type: "sap.ui.core.Control", multiple: true},
 				/**
-				 * The content of the end column
+				 * The content entities between which the <code>FlexibleColumnLayout</code> navigates in the <code>End</code> column.
+				 *
+				 * These should be any control with page semantics.
+				 * These aggregated controls will receive navigation events like {@link sap.m.NavContainerChild#beforeShow beforeShow}, they are documented in the pseudo interface {@link sap.m.NavContainerChild sap.m.NavContainerChild}.
 				 */
-				endColumn: {type: "sap.ui.core.Control", multiple: false},
+				endColumnPages: {type: "sap.ui.core.Control", multiple: true},
+
+				_beginColumnNav: {type : "sap.m.NavContainer", multiple : false, visibility : "hidden"},
+				_midColumnNav: {type : "sap.m.NavContainer", multiple : false, visibility : "hidden"},
+				_endColumnNav: {type : "sap.m.NavContainer", multiple : false, visibility : "hidden"},
 
 				_beginColumnBackArrow: {type: "sap.m.Button", multiple: false, visibility: "hidden"},
 				_midColumnForwardArrow: {type: "sap.m.Button", multiple: false, visibility: "hidden"},
 				_midColumnBackArrow: {type: "sap.m.Button", multiple: false, visibility: "hidden"},
 				_endColumnForwardArrow: {type: "sap.m.Button", multiple: false, visibility: "hidden"}
 			},
-			associations: {
+			associations : {
+
 				/**
-				 * When set, the respective column will be switched to full screen and the others will be hidden
+				 * Sets the initial <code>Begin</code> column page, which is displayed on application launch.
 				 */
-				fullScreenColumn: {type: "sap.ui.core.Control", multiple: false}
+				initialBeginColumnPage: {type : "sap.ui.core.Control", multiple : false},
+				/**
+				 * Sets the initial <code>Mid</code> column page, which is displayed on application launch.
+				 */
+				initialMidColumnPage: {type : "sap.ui.core.Control", multiple : false},
+				/**
+				 * Sets the initial <code>End</code> column page, which is displayed on application launch.
+				 */
+				initialEndColumnPage: {type : "sap.ui.core.Control", multiple : false}
 			},
 			events: {
 				/**
-				 * Event is fired when the layout changes (on resize, when a new column is added or when the user clicks the expand/collapse arrows)
+				 * Fired when there is a change in the <code>layout</code> property or in the maximum number of columns that can be displayed at once.
+				 * <br/></br>
+				 * <ul>The interactions that may lead to a state change are:
+				 *  <li>the property <code>layout</code> was changed indirectly by the user clicking a layout arrow</li>
+				 *  <li>the user resized the browser beyond a breakpoint, thus changing the maximum number of columns that can be displayed at once.</li></ul>
+				 * <br/><br/>
+				 * <b>Note: </b>The event is suppressed while the control has zero width and will be fired the first time it gets a non-zero width
+				 *
 				 */
-				layoutChange: {
+				stateChange: {
 					parameters: {
 						/**
-						 * The width (as percentage) of the begin column
+						 * The value of the <code>layout</code> property
 						 */
-						beginColumnWidth: {
+						layout: {
+							type: "sap.f.LayoutType"
+						},
+						/**
+						 * The maximum number of columns that can be displayed at once based on the available screen size and control settings.
+						 *
+						 * <ul>Possible values are:
+						 * <li>3 for browser size of 1280px or more</li>
+						 * <li>2 for browser size between 960px and 1280px</li>
+						 * <li>1 for browser size less than 960px</li></ul>
+						 */
+						maxColumnsCount: {
 							type: "int"
 						},
 						/**
-						 * The width (as percentage) of the mid column
+						 * Indicates whether the layout changed as a result of the user clicking a layout arrow
 						 */
-						midColumnWidth: {
-							type: "int"
+						isNavigationArrow: {
+							type: "boolean"
 						},
 						/**
-						 * The width (as percentage) of the end column
+						 * Indicates whether the maximum number of columns that can be displayed at once changed
 						 */
-						endColumnWidth: {
-							type: "int"
+						isResize: {
+							type: "boolean"
 						}
+
+					}
+				},
+
+				/**
+				 * Fires when navigation between two pages in the <code>Begin</code> column has been triggered. The transition (if any) to the new page has not started yet.
+				 * This event can be aborted by the application with preventDefault(), which means that there will be no navigation.
+				 */
+				beginColumnNavigate : {
+					allowPreventDefault : true,
+					parameters : {
+
+						/**
+						 * The page, which was displayed before the current navigation.
+						 */
+						from : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which was displayed before the current navigation.
+						 */
+						fromId : {type : "string"},
+
+						/**
+						 * The page, which will be displayed after the current navigation.
+						 */
+						to : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which will be displayed after the current navigation.
+						 */
+						toId : {type : "string"},
+
+						/**
+						 * Determines whether the "to" page (more precisely: a control with the ID of the page,
+						 * which is currently being navigated to) has not been displayed/navigated to before.
+						 */
+						firstTime : {type : "boolean"},
+
+						/**
+						 * Determines whether this is a forward navigation, triggered by to().
+						 */
+						isTo : {type : "boolean"},
+
+						/**
+						 * Determines whether this is a back navigation, triggered by back().
+						 */
+						isBack : {type : "boolean"},
+
+						/**
+						 * Determines whether this is a navigation to the root page, triggered by backToTop().
+						 */
+						isBackToTop : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a navigation to a specific page, triggered by backToPage().
+						 */
+						isBackToPage : {type : "boolean"},
+
+						/**
+						 * Determines how the navigation was triggered, possible values are "to", "back", "backToPage", and "backToTop".
+						 */
+						direction : {type : "string"}
+					}
+				},
+
+				/**
+				 * Fires when navigation between two pages in the <code>Begin</code> column has completed.
+				 *
+				 * NOTE: In case of animated transitions this event is fired with some delay after the navigate event.
+				 */
+				afterBeginColumnNavigate : {
+					parameters : {
+
+						/**
+						 * The page, which had been displayed before navigation.
+						 */
+						from : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which had been displayed before navigation.
+						 */
+						fromId : {type : "string"},
+
+						/**
+						 * The page, which is now displayed after navigation.
+						 */
+						to : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which is now displayed after navigation.
+						 */
+						toId : {type : "string"},
+
+						/**
+						 * Whether the "to" page (more precisely: a control with the ID of the page, which has been navigated to)
+						 * has not been displayed/navigated to before.
+						 */
+						firstTime : {type : "boolean"},
+
+						/**
+						 * Determines whether was a forward navigation, triggered by to().
+						 */
+						isTo : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a back navigation, triggered by back().
+						 */
+						isBack : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a navigation to the root page, triggered by backToTop().
+						 */
+						isBackToTop : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a navigation to a specific page, triggered by backToPage().
+						 */
+						isBackToPage : {type : "boolean"},
+
+						/**
+						 * Determines how the navigation was triggered, possible values are "to", "back", "backToPage", and "backToTop".
+						 */
+						direction : {type : "string"}
+					}
+				},
+
+				/**
+				 * Fires when navigation between two pages in the <code>Mid</code> column has been triggered. The transition (if any) to the new page has not started yet.
+				 * This event can be aborted by the application with preventDefault(), which means that there will be no navigation.
+				 */
+				midColumnNavigate : {
+					allowPreventDefault : true,
+					parameters : {
+
+						/**
+						 * The page, which was displayed before the current navigation.
+						 */
+						from : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which was displayed before the current navigation.
+						 */
+						fromId : {type : "string"},
+
+						/**
+						 * The page, which will be displayed after the current navigation.
+						 */
+						to : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which will be displayed after the current navigation.
+						 */
+						toId : {type : "string"},
+
+						/**
+						 * Determines whether the "to" page (more precisely: a control with the ID of the page,
+						 * which is currently being navigated to) has not been displayed/navigated to before.
+						 */
+						firstTime : {type : "boolean"},
+
+						/**
+						 * Determines whether this is a forward navigation, triggered by to().
+						 */
+						isTo : {type : "boolean"},
+
+						/**
+						 * Determines whether this is a back navigation, triggered by back().
+						 */
+						isBack : {type : "boolean"},
+
+						/**
+						 * Determines whether this is a navigation to the root page, triggered by backToTop().
+						 */
+						isBackToTop : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a navigation to a specific page, triggered by backToPage().
+						 */
+						isBackToPage : {type : "boolean"},
+
+						/**
+						 * Determines how the navigation was triggered, possible values are "to", "back", "backToPage", and "backToTop".
+						 */
+						direction : {type : "string"}
+					}
+				},
+
+				/**
+				 * Fires when navigation between two pages in the <code>Mid</code> column has completed.
+				 *
+				 * NOTE: In case of animated transitions this event is fired with some delay after the navigate event.
+				 */
+				afterMidColumnNavigate : {
+					parameters : {
+
+						/**
+						 * The page, which had been displayed before navigation.
+						 */
+						from : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which had been displayed before navigation.
+						 */
+						fromId : {type : "string"},
+
+						/**
+						 * The page, which is now displayed after navigation.
+						 */
+						to : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which is now displayed after navigation.
+						 */
+						toId : {type : "string"},
+
+						/**
+						 * Whether the "to" page (more precisely: a control with the ID of the page, which has been navigated to)
+						 * has not been displayed/navigated to before.
+						 */
+						firstTime : {type : "boolean"},
+
+						/**
+						 * Determines whether was a forward navigation, triggered by to().
+						 */
+						isTo : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a back navigation, triggered by back().
+						 */
+						isBack : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a navigation to the root page, triggered by backToTop().
+						 */
+						isBackToTop : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a navigation to a specific page, triggered by backToPage().
+						 */
+						isBackToPage : {type : "boolean"},
+
+						/**
+						 * Determines how the navigation was triggered, possible values are "to", "back", "backToPage", and "backToTop".
+						 */
+						direction : {type : "string"}
+					}
+				},
+
+				/**
+				 * Fires when navigation between two pages in the <code>End</code> column has been triggered. The transition (if any) to the new page has not started yet.
+				 * This event can be aborted by the application with preventDefault(), which means that there will be no navigation.
+				 */
+				endColumnNavigate : {
+					allowPreventDefault : true,
+					parameters : {
+
+						/**
+						 * The page, which was displayed before the current navigation.
+						 */
+						from : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which was displayed before the current navigation.
+						 */
+						fromId : {type : "string"},
+
+						/**
+						 * The page, which will be displayed after the current navigation.
+						 */
+						to : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which will be displayed after the current navigation.
+						 */
+						toId : {type : "string"},
+
+						/**
+						 * Determines whether the "to" page (more precisely: a control with the ID of the page,
+						 * which is currently being navigated to) has not been displayed/navigated to before.
+						 */
+						firstTime : {type : "boolean"},
+
+						/**
+						 * Determines whether this is a forward navigation, triggered by to().
+						 */
+						isTo : {type : "boolean"},
+
+						/**
+						 * Determines whether this is a back navigation, triggered by back().
+						 */
+						isBack : {type : "boolean"},
+
+						/**
+						 * Determines whether this is a navigation to the root page, triggered by backToTop().
+						 */
+						isBackToTop : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a navigation to a specific page, triggered by backToPage().
+						 */
+						isBackToPage : {type : "boolean"},
+
+						/**
+						 * Determines how the navigation was triggered, possible values are "to", "back", "backToPage", and "backToTop".
+						 */
+						direction : {type : "string"}
+					}
+				},
+
+				/**
+				 * Fires when navigation between two pages in the <code>End</code> column has completed.
+				 *
+				 * NOTE: In case of animated transitions this event is fired with some delay after the navigate event.
+				 */
+				afterEndColumnNavigate : {
+					parameters : {
+
+						/**
+						 * The page, which had been displayed before navigation.
+						 */
+						from : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which had been displayed before navigation.
+						 */
+						fromId : {type : "string"},
+
+						/**
+						 * The page, which is now displayed after navigation.
+						 */
+						to : {type : "sap.ui.core.Control"},
+
+						/**
+						 * The ID of the page, which is now displayed after navigation.
+						 */
+						toId : {type : "string"},
+
+						/**
+						 * Whether the "to" page (more precisely: a control with the ID of the page, which has been navigated to)
+						 * has not been displayed/navigated to before.
+						 */
+						firstTime : {type : "boolean"},
+
+						/**
+						 * Determines whether was a forward navigation, triggered by to().
+						 */
+						isTo : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a back navigation, triggered by back().
+						 */
+						isBack : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a navigation to the root page, triggered by backToTop().
+						 */
+						isBackToTop : {type : "boolean"},
+
+						/**
+						 * Determines whether this was a navigation to a specific page, triggered by backToPage().
+						 */
+						isBackToPage : {type : "boolean"},
+
+						/**
+						 * Determines how the navigation was triggered, possible values are "to", "back", "backToPage", and "backToTop".
+						 */
+						direction : {type : "string"}
 					}
 				}
 			}
@@ -109,53 +564,146 @@ sap.ui.define([
 
 	FlexibleColumnLayout.prototype.init = function () {
 
+		// Create the 3 nav containers
+		this._initNavContainers();
+
 		// Create the expand/collapse arrows
 		this._initButtons();
 
-		// Used for flushing the column containers without rerendering the whole control
-		this._oRm = sap.ui.getCore().createRenderManager();
+		// Holds an object, responsible for saving and searching the layout history
+		this._oLayoutHistory = new LayoutHistory();
+	};
 
-		// Holds the current width of the control - set on onAfterRendering, updated on resize
-		this._iControlWidth = null;
+	/**
+	 * Instantiates a nav container for the column and binds events
+	 * @param sColumn - the column for which a nav container must be created
+	 * @returns {*}
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._createNavContainer = function (sColumn) {
+		var sColumnCap = sColumn.charAt(0).toUpperCase() + sColumn.slice(1);
 
-		// Holds the current layout of the control
-		this._sLayout = null;
+		return new NavContainer(this.getId() + "-" + sColumn + "ColumnNav", {
+			navigate: function(oEvent){
+				this._handleNavigationEvent(oEvent, false, sColumn);
+			}.bind(this),
+			afterNavigate: function(oEvent){
+				this._handleNavigationEvent(oEvent, true, sColumn);
+			}.bind(this),
+			defaultTransitionName: this["getDefaultTransitionName" + sColumnCap + "Column"]()
+		});
+	};
+
+	/**
+	 * Proxies the navigation events from the internal nav containers to the app.
+	 * @param oEvent
+	 * @param bAfter
+	 * @param sColumn
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._handleNavigationEvent = function(oEvent, bAfter, sColumn){
+		var sEventName,
+			bContinue;
+
+		if (bAfter) {
+			sEventName = "after" + (sColumn.charAt(0).toUpperCase() + sColumn.slice(1)) + "ColumnNavigate";
+		} else {
+			sEventName = sColumn + "ColumnNavigate";
+		}
+
+		bContinue = this.fireEvent(sEventName, oEvent.mParameters, true);
+		if (!bContinue) {
+			oEvent.preventDefault();
+		}
+	};
+
+	/**
+	 * Getter for the Begin column nav container
+	 * @returns {*}
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._getBeginColumn = function () {
+		return this.getAggregation("_beginColumnNav");
+	};
+
+	/**
+	 * Getter for the Mid column nav container
+	 * @returns {*}
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._getMidColumn = function () {
+		return this.getAggregation("_midColumnNav");
+	};
+
+	/**
+	 * Getter for the End column nav container
+	 * @returns {*}
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._getEndColumn = function () {
+		return this.getAggregation("_endColumnNav");
+	};
+
+	/**
+	 * Updates the content of a column by flushing its container div only
+	 * @param {string} sColumn
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._flushColumnContent = function (sColumn) {
+		var oControl = this.getAggregation("_" + sColumn + "ColumnNav"),
+			oRm = sap.ui.getCore().createRenderManager();
+
+		oRm.renderControl(oControl);
+		oRm.flush(this._$columns[sColumn].find(".sapFFCLColumnContent")[0], undefined, true);
+		oRm.destroy();
+	};
+
+
+
+	FlexibleColumnLayout.prototype.setLayout = function (sNewLayout){
+		sNewLayout = this.validateProperty("layout", sNewLayout);
+
+		var sCurrentLayout = this.getLayout();
+
+		if (sCurrentLayout === sNewLayout) {
+			return this;
+		}
+
+		var vResult = this.setProperty("layout", sNewLayout, true);
+		this._oLayoutHistory.addEntry(sNewLayout);
+
+		this._resizeColumns();
+		this._hideShowArrows();
+
+		return vResult;
+	};
+
+	FlexibleColumnLayout.prototype.onBeforeRendering = function () {
+		this._deregisterResizeHandler();
 	};
 
 	FlexibleColumnLayout.prototype.onAfterRendering = function () {
-
-		this._deregisterResizeHandler();
 		this._registerResizeHandler();
 
 		this._cacheDOMElements();
-		this._iControlWidth = this.$().width();
-		this._adjustLayout(null, true);
+
+		this._hideShowArrows();
+		this._resizeColumns();
+
+		this._flushColumnContent("begin");
+		this._flushColumnContent("mid");
+		this._flushColumnContent("end");
+
+		this._fireStateChange(false, false);
+	};
+
+	FlexibleColumnLayout.prototype._getControlWidth = function () {
+		return this.$().width();
 	};
 
 	FlexibleColumnLayout.prototype.exit = function () {
 		this._deregisterResizeHandler();
-
-		this._oRm.destroy();
-	};
-
-	/**
-	 * Allows the setting of а predefined layout.
-	 * It may not be honored if it's not valid in that particular case.
-	 *
-	 * @param oConfig
-	 * @public
-	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
-	 */
-	FlexibleColumnLayout.prototype.setLayout = function (oConfig){
-		var aLayoutConfig;
-
-		if (!oConfig){
-			return;
-		}
-
-		aLayoutConfig = [oConfig.beginColumnWidth || 0, oConfig.midColumnWidth || 0, oConfig.endColumnWidth || 0];
-		this._sLayout = aLayoutConfig.join("/");
-		this._adjustLayout(null, true, true);
+		this._handleEvent(jQuery.Event("Destroy"));
 	};
 
 	FlexibleColumnLayout.prototype._registerResizeHandler = function () {
@@ -166,179 +714,81 @@ sap.ui.define([
 	FlexibleColumnLayout.prototype._deregisterResizeHandler = function () {
 		if (this._iResizeHandlerId) {
 			ResizeHandler.deregister(this._iResizeHandlerId);
+			this._iResizeHandlerId = null;
 		}
 	};
 
 	/**
-	 * Creates the buttons for the arrows, which are initially hidden and will only be shown on demand without rerendering
+	 * Creates the nav containers
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._initNavContainers = function () {
+		this.setAggregation("_beginColumnNav", this._createNavContainer("begin"), true);
+		this.setAggregation("_midColumnNav", this._createNavContainer("mid"), true);
+		this.setAggregation("_endColumnNav", this._createNavContainer("end"), true);
+	};
+
+	/**
+	 * Creates the buttons for the layout arrows, which are initially hidden and will only be shown on demand without re-rendering.
 	 * @private
 	 */
 	FlexibleColumnLayout.prototype._initButtons = function () {
 		var oBeginColumnBackArrow = new Button(this.getId() + "-beginBack", {
 			icon: "sap-icon://slim-arrow-left",
-			press: this._adjustLayout.bind(this, "left", false)
+			tooltip: FlexibleColumnLayout._getResourceBundle().getText("FCL_BEGIN_COLUMN_BACK_ARROW"),
+			press: this._onArrowClick.bind(this, "left")
 		}).addStyleClass("sapFFCLNavigationButton").addStyleClass("sapFFCLNavigationButtonRight");
 		this.setAggregation("_beginColumnBackArrow", oBeginColumnBackArrow, true);
 
 		var oMidColumnForwardArrow = new Button(this.getId() + "-midForward", {
 			icon: "sap-icon://slim-arrow-right",
-			press: this._adjustLayout.bind(this, "right", false)
+			tooltip: FlexibleColumnLayout._getResourceBundle().getText("FCL_MID_COLUMN_FORWARD_ARROW"),
+			press: this._onArrowClick.bind(this, "right")
 		}).addStyleClass("sapFFCLNavigationButton").addStyleClass("sapFFCLNavigationButtonLeft");
 		this.setAggregation("_midColumnForwardArrow", oMidColumnForwardArrow, true);
 
 		var oMidColumnBackArrow = new Button(this.getId() + "-midBack", {
 			icon: "sap-icon://slim-arrow-left",
-			press: this._adjustLayout.bind(this, "left", false)
+			tooltip: FlexibleColumnLayout._getResourceBundle().getText("FCL_MID_COLUMN_BACK_ARROW"),
+			press: this._onArrowClick.bind(this, "left")
 		}).addStyleClass("sapFFCLNavigationButton").addStyleClass("sapFFCLNavigationButtonRight");
 		this.setAggregation("_midColumnBackArrow", oMidColumnBackArrow, true);
 
 		var oEndColumnForwardArrow = new Button(this.getId() + "-endForward", {
 			icon: "sap-icon://slim-arrow-right",
-			press: this._adjustLayout.bind(this, "right", false)
+			tooltip: FlexibleColumnLayout._getResourceBundle().getText("FCL_END_COLUMN_FORWARD_ARROW"),
+			press: this._onArrowClick.bind(this, "right")
 		}).addStyleClass("sapFFCLNavigationButton").addStyleClass("sapFFCLNavigationButtonLeft");
 		this.setAggregation("_endColumnForwardArrow", oEndColumnForwardArrow, true);
-
 	};
 
 	/**
-	 * Saves the DOM references of the columns, containers and arrows
+	 * Saves the DOM references of the columns and layout arrows.
 	 * @private
 	 */
 	FlexibleColumnLayout.prototype._cacheDOMElements = function () {
+		this._cacheColumns();
+
+		if (!Device.system.phone) {
+			this._cacheArrows();
+		}
+	};
+
+	FlexibleColumnLayout.prototype._cacheColumns = function () {
 		this._$columns = {
 			begin: this.$("beginColumn"),
 			mid: this.$("midColumn"),
 			end: this.$("endColumn")
 		};
-		this._$columnContainers = {
-			begin: this.$("beginColumn-container"),
-			mid: this.$("midColumn-container"),
-			end: this.$("endColumn-container")
-		};
+	};
+
+	FlexibleColumnLayout.prototype._cacheArrows = function () {
 		this._$columnButtons = {
 			beginBack: this.$("beginBack"),
 			midForward: this.$("midForward"),
 			midBack: this.$("midBack"),
 			endForward: this.$("endForward")
 		};
-	};
-
-	/**
-	 * Updates the content of a column by flushing its container div only
-	 * @param sColumn
-	 * @param oControl
-	 * @private
-	 */
-	FlexibleColumnLayout.prototype._flushColumnContent = function (sColumn, oControl) {
-		if (this.getDomRef()) {
-			this._oRm.renderControl(oControl);
-			this._oRm.flush(this._$columnContainers[sColumn][0]);
-		}
-	};
-
-	/**
-	 * Setter for aggregation beginColumn
-	 * @param oControl
-	 * @returns {*}
-	 */
-	FlexibleColumnLayout.prototype.setBeginColumn = function (oControl) {
-
-		if (this.getBeginColumn() === oControl) {
-			return this;
-		}
-
-		var vResult = this.setAggregation("beginColumn", oControl, true);
-		if (typeof this._$columns === "undefined") {
-			return vResult;
-		}
-
-		this._flushColumnContent("begin", oControl);
-		this._adjustLayout(null, false);
-		return vResult;
-	};
-
-	/**
-	 * Setter for aggregation midColumn
-	 * @param oControl
-	 * @returns {*}
-	 */
-	FlexibleColumnLayout.prototype.setMidColumn = function (oControl) {
-
-		if (this.getMidColumn() === oControl) {
-			return this;
-		}
-
-		jQuery.sap.assert(this.getBeginColumn(), "The beginColumn must be set before setting midColumn");
-
-		var vResult = this.setAggregation("midColumn", oControl, true);
-		if (typeof this._$columns === "undefined") {
-			return vResult;
-		}
-
-		this._flushColumnContent("mid", oControl);
-		this._adjustLayout(null, false);
-		return vResult;
-	};
-
-	/**
-	 * Setter for aggregation endColumn
-	 * @param oControl
-	 * @returns {*}
-	 */
-	FlexibleColumnLayout.prototype.setEndColumn = function (oControl) {
-
-		if (this.getEndColumn() === oControl) {
-			return this;
-		}
-
-		jQuery.sap.assert(this.getBeginColumn(), "The beginColumn must be set before setting endColumn");
-		jQuery.sap.assert(this.getMidColumn(), "The midColumn must be set before setting endColumn");
-
-		var vResult = this.setAggregation("endColumn", oControl, true);
-		if (typeof this._$columns === "undefined") {
-			return vResult;
-		}
-
-		this._flushColumnContent("end", oControl);
-		this._adjustLayout(null, false);
-		return vResult;
-	};
-
-
-	/**
-	 * Setter for association fullScreenColumn
-	 * @param sId
-	 * @returns {*}
-	 */
-	FlexibleColumnLayout.prototype.setFullScreenColumn = function (sId) {
-
-		if (this.getFullScreenColumn() === sId) {
-			return this;
-		}
-
-		var vResult = this.setAssociation("fullScreenColumn", sId, true);
-		if (typeof this._$columns === "undefined") {
-			return vResult;
-		}
-
-		this._adjustLayout(null, false);
-		return vResult;
-	};
-
-	/**
-	 * Setter for property twoColumnLayoutOnDesktop
-	 * @param oControl
-	 * @returns {*}
-	 */
-	FlexibleColumnLayout.prototype.setTwoColumnLayoutOnDesktop = function (bValue) {
-
-		var vResult = this.setProperty("twoColumnLayoutOnDesktop", bValue, true);
-		if (typeof this._$columns === "undefined") {
-			return vResult;
-		}
-
-		this._adjustLayout(null, false);
-		return vResult;
 	};
 
 	/**
@@ -358,24 +808,31 @@ sap.ui.define([
 	 */
 	FlexibleColumnLayout.prototype._resizeColumns = function () {
 		var iPercentWidth,
+			iNewWidth,
 			sNewWidth,
 			iTotalMargin,
 			iAvailableWidth,
 			bNeedsMargin = false,
 			aColumns = ["begin", "mid", "end"],
 			bRtl = sap.ui.getCore().getConfiguration().getRTL(),
-			aActiveColumns;
+			aActiveColumns,
+			iVisibleColumnsCount;
 
 		// Stop here if the control isn't rendered yet
-		if (typeof this._$columns === "undefined") {
+		if (!this.isActive()) {
+			return;
+		}
+
+		iVisibleColumnsCount = this._getVisibleColumnsCount();
+		if (iVisibleColumnsCount === 0) {
 			return;
 		}
 
 		// Calculate the total margin between columns (f.e. for 3 columns - 2 * 8px)
-		iTotalMargin = (this._getVisibleColumnsCount() - 1) * FlexibleColumnLayout.COLUMN_MARGIN;
+		iTotalMargin = (iVisibleColumnsCount - 1) * FlexibleColumnLayout.COLUMN_MARGIN;
 
 		// Calculate the width available for the columns
-		iAvailableWidth = this._iControlWidth - iTotalMargin;
+		iAvailableWidth = this._getControlWidth() - iTotalMargin;
 
 		aColumns.forEach(function (sColumn) {
 			iPercentWidth = this._getColumnSize(sColumn);
@@ -392,12 +849,19 @@ sap.ui.define([
 			this._$columns[sColumn].removeClass("sapFFCLColumnFirstActive");
 
 			// Change the width of the column
+			iNewWidth = Math.round(iAvailableWidth * (iPercentWidth / 100));
 			if ([100, 0].indexOf(iPercentWidth) !== -1) {
 				sNewWidth = iPercentWidth + "%";
 			} else {
-				sNewWidth = Math.round(iAvailableWidth * (iPercentWidth / 100)) + "px";
+				sNewWidth = iNewWidth + "px";
 			}
 			this._$columns[sColumn].width(sNewWidth);
+
+			// For tablet and desktop - notify child controls to render with reduced container size, if they need to
+			if (!Device.system.phone) {
+				this._updateColumnContextualSettings(sColumn, iNewWidth);
+				this._updateColumnCSSClasses(sColumn, iNewWidth);
+			}
 
 			// After the first non-zero width column is shown, set the flag to enable margins for all other non-zero width columns that will follow
 			if (iPercentWidth > 0) {
@@ -425,13 +889,57 @@ sap.ui.define([
 	};
 
 	/**
+	 * Contextual settings should not be propagated to the nav containers. They only get contextual settings on resize.
+	 *
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._propagateContextualSettings = function () {};
+
+	FlexibleColumnLayout.prototype._updateColumnContextualSettings = function (sColumn, iWidth) {
+		var oColumn,
+			oContextualSettings;
+
+		oColumn = this.getAggregation("_" + sColumn + "ColumnNav");
+		if (!oColumn) {
+			return;
+		}
+
+		oContextualSettings = oColumn._getContextualSettings();
+		if (!oContextualSettings || oContextualSettings.contextualWidth !== iWidth) {
+			oColumn._applyContextualSettings({
+				contextualWidth: iWidth
+			});
+		}
+	};
+
+
+	FlexibleColumnLayout.prototype._updateColumnCSSClasses = function (sColumn, iWidth) {
+		var sNewClassName = "";
+
+		this._$columns[sColumn].removeClass("sapUiContainer-Narrow sapUiContainer-Medium sapUiContainer-Wide sapUiContainer-ExtraWide");
+		if (iWidth < Device.media._predefinedRangeSets[Device.media.RANGESETS.SAP_STANDARD_EXTENDED].points[0]) {
+			sNewClassName = "Narrow";
+		} else if (iWidth < Device.media._predefinedRangeSets[Device.media.RANGESETS.SAP_STANDARD_EXTENDED].points[1]) {
+			sNewClassName = "Medium";
+		} else if (iWidth < Device.media._predefinedRangeSets[Device.media.RANGESETS.SAP_STANDARD_EXTENDED].points[2]) {
+			sNewClassName = "Wide";
+		} else {
+			sNewClassName = "ExtraWide";
+		}
+
+		this._$columns[sColumn].addClass("sapUiContainer-" + sNewClassName);
+	};
+
+	/**
 	 * Gets the size (in %) of a column based on the current layout
 	 * @param sColumn - string: begin/mid/end
 	 * @returns {*}
 	 * @private
 	 */
 	FlexibleColumnLayout.prototype._getColumnSize = function (sColumn) {
-		var aSizes = this._sLayout.split("/"),
+		var sLayout = this.getLayout(),
+			sColumnWidthDistribution = this._getColumnWidthDistributionForLayout(sLayout),
+			aSizes = sColumnWidthDistribution.split("/"),
 			aMap = {
 				begin: 0,
 				mid: 1,
@@ -439,205 +947,133 @@ sap.ui.define([
 			},
 			sSize = aSizes[aMap[sColumn]];
 
-		return sSize;
+		return parseInt(sSize, 10);
+	};
+
+
+
+	/**
+	 * Returns the maximum number of columns that can be displayed at once based on the control width
+	 * @returns {number}
+	 * @public
+	 */
+	FlexibleColumnLayout.prototype.getMaxColumnsCount = function () {
+		return this._getMaxColumnsCountForWidth(this._getControlWidth());
+	};
+
+	/**
+	 * Returns the maximum number of columns that can be displayed at once for a certain control width
+	 * @param iWidth
+	 * @returns {number}
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._getMaxColumnsCountForWidth = function (iWidth) {
+		if (iWidth >= FlexibleColumnLayout.DESKTOP_BREAKPOINT) {
+			return 3;
+		}
+
+		if (iWidth >= FlexibleColumnLayout.TABLET_BREAKPOINT && iWidth < FlexibleColumnLayout.DESKTOP_BREAKPOINT) {
+			return 2;
+		}
+
+		if (iWidth > 0) {
+			return 1;
+		}
+
+		return 0;
 	};
 
 	FlexibleColumnLayout.prototype._onResize = function (oEvent) {
-		var iNewWidth = oEvent.size.width;
+		var iOldWidth = oEvent.oldSize.width,
+			iNewWidth = oEvent.size.width,
+			iOldMaxColumnsCount,
+			iMaxColumnsCount;
 
-		// If the size didn't change or the control is resized to 0, don't do anything
-		if (iNewWidth === 0 || iNewWidth === this._iControlWidth) {
+		// If the control is resized to 0, don't do anything
+		if (iNewWidth === 0) {
 			return;
 		}
 
-		this._iControlWidth = oEvent.size.width;
+		iOldMaxColumnsCount = this._getMaxColumnsCountForWidth(iOldWidth);
+		iMaxColumnsCount = this._getMaxColumnsCountForWidth(iNewWidth);
 
-		if (!this.getFullScreenColumn()) {
-			this._adjustLayout(null, true);
+		// Always resize the columns when the browser is resized
+		this._resizeColumns();
+
+		// Only update the arrows and fire the event if the maximum number of columns that can be shown has changed
+		if (iMaxColumnsCount !== iOldMaxColumnsCount) {
+			this._hideShowArrows();
+			this._fireStateChange(false, true);
 		}
 	};
 
 	/**
-	 * Recalculates the layout and if it changed, updates the columns, arrows and fires the change event
-	 * @param sShift
-	 * @param bResize
-	 * @param bSuppressEvent
+	 * Called when the layout arrows were clicked.
+	 * @param sShiftDirection - left/right (direction of the arrow)
 	 * @private
 	 */
-	FlexibleColumnLayout.prototype._adjustLayout = function (sShift, bResize, bSuppressEvent) {
-		var sNewLayout = this._sLayout,
-			bBegin = this.getBeginColumn() ? true : false,
-			bMid = this.getMidColumn() ? true : false,
-			bEnd = this.getEndColumn() ? true : false,
-			sFullScreenId = this.getFullScreenColumn(),
-			iMaxColumns = this._getMaxColumns(),
-			sThreeColumnLayoutType = this.getThreeColumnLayoutType() === library.ThreeColumnLayoutType.EndColumnEmphasized ? "25/25/50" : "25/50/25",
-			aPossibleLayouts,
-			sDefaultLayout,
-			iCurrentPos;
+	FlexibleColumnLayout.prototype._onArrowClick = function (sShiftDirection) {
 
-		// Fullscreen
-		if (sFullScreenId) {
-
-			if (this.getBeginColumn() && this.getBeginColumn().getId() === sFullScreenId) {
-				sNewLayout = "100/0/0";
-			} else if (this.getMidColumn() && this.getMidColumn().getId() === sFullScreenId) {
-				sNewLayout = "0/100/0";
-			} else if (this.getEndColumn() && this.getEndColumn().getId() === sFullScreenId) {
-				sNewLayout = "0/0/100";
-			} else {
-				jQuery.sap.assert(false, "Cannot set an unknown column to full screen: " + sFullScreenId);
-			}
-
-
-		} else {
-
-			// Desktop
-			if (iMaxColumns === 3) {
-
-				if (!bBegin || !bMid) {
-					aPossibleLayouts = ["100/0/0"];
-					sDefaultLayout = "100/0/0";
-				} else if (!bEnd) {
-					aPossibleLayouts = ["33/67/0", "67/33/0"];
-					sDefaultLayout = "67/33/0";
-				} else {
-					if (this.getThreeColumnLayoutTypeFixed()) {
-						aPossibleLayouts = [sThreeColumnLayoutType, "33/67/0", "67/33/0"];
-					} else {
-						aPossibleLayouts = ["25/25/50", "25/50/25", "33/67/0", "67/33/0"];
-					}
-					sDefaultLayout = sThreeColumnLayoutType;
+		var sLayout = this.getLayout(),
+			oMap = {
+				TwoColumnsBeginExpanded: {
+					"left": LT.TwoColumnsMidExpanded
+				},
+				TwoColumnsMidExpanded: {
+					"right": LT.TwoColumnsBeginExpanded
+				},
+				ThreeColumnsMidExpanded: {
+					"left": LT.ThreeColumnsEndExpanded,
+					"right": LT.ThreeColumnsMidExpandedEndHidden
+				},
+				ThreeColumnsEndExpanded: {
+					"right": LT.ThreeColumnsMidExpanded
+				},
+				ThreeColumnsMidExpandedEndHidden: {
+					"left": LT.ThreeColumnsMidExpanded,
+					"right": LT.ThreeColumnsBeginExpandedEndHidden
+				},
+				ThreeColumnsBeginExpandedEndHidden: {
+					"left": LT.ThreeColumnsMidExpandedEndHidden
 				}
+			};
 
-			// Tablet
-			} else if (iMaxColumns === 2) {
+		jQuery.sap.assert(typeof oMap[sLayout] !== "undefined" && typeof oMap[sLayout][sShiftDirection] !== "undefined", "An invalid layout was used for determining arrow behavior");
+		sLayout = typeof oMap[sLayout] !== "undefined" && typeof oMap[sLayout][sShiftDirection] !== "undefined" ? oMap[sLayout][sShiftDirection] : LT.OneColumn;
 
-				if (!bBegin || !bMid) {
-					aPossibleLayouts = ["100/0/0"];
-					sDefaultLayout = "100/0/0";
-				} else if (!bEnd) {
-					aPossibleLayouts = ["33/67/0", "67/33/0"];
-					sDefaultLayout = "67/33/0";
-				} else {
-					aPossibleLayouts = ["0/67/33", "33/67/0", "67/33/0"];
-					sDefaultLayout = "0/67/33";
-				}
+		this.setLayout(sLayout);
 
-				// Phone
-			} else {
-				if (!bBegin || !bMid) {
-					aPossibleLayouts = ["100/0/0"];
-					sDefaultLayout = "100/0/0";
-				} else if (!bEnd) {
-					aPossibleLayouts = ["0/100/0", "100/0/0"];
-					sDefaultLayout = "0/100/0";
-				} else {
-					aPossibleLayouts = ["0/0/100", "0/100/0", "100/0/0"];
-					sDefaultLayout = "0/0/100";
-				}
-			}
-
-			// When an arrow is clicked (sShift = left/right), select the previous/next layout in the list of possible ones
-			if (sShift) {
-				iCurrentPos = aPossibleLayouts.indexOf(sNewLayout);
-				if (sShift === "left" && iCurrentPos > 0) {
-					sNewLayout = aPossibleLayouts[iCurrentPos - 1];
-				} else if (sShift === "right" && iCurrentPos < aPossibleLayouts.length - 1) {
-					sNewLayout = aPossibleLayouts[iCurrentPos + 1];
-				}
-				// When no arrow is clicked
-			} else {
-				// Keep the existing layout when resizing, if it is allowed. If the resize caused a breakpoint switch, take the default for the new size
-				if (!bResize || aPossibleLayouts.indexOf(sNewLayout) === -1) {
-					sNewLayout = sDefaultLayout;
-				}
-			}
-		}
-
-
-		// The layout did not change as result of the performed operation
-		if (this._sLayout === sNewLayout) {
-			this._resizeColumns();
-			this._hideShowArrows();
-			return;
-		}
-
-		this._sLayout = sNewLayout;
-		this._resizeColumns();
-		this._hideShowArrows();
-
-		if (!sFullScreenId && !bSuppressEvent) {
-			this.fireLayoutChange({
-				beginColumnWidth: this._getColumnSize("begin"),
-				midColumnWidth: this._getColumnSize("mid"),
-				endColumnWidth: this._getColumnSize("end")
-			});
-		}
+		this._fireStateChange(true, false);
 	};
 
 	/**
-	 * Updates the visibility of the arrows according to the current layout
+	 * Updates the visibility of the layout arrows according to the current layout.
 	 * @private
 	 */
 	FlexibleColumnLayout.prototype._hideShowArrows = function () {
-		var bBegin = this.getBeginColumn() ? true : false,
-			bMid = this.getMidColumn() ? true : false,
-			bEnd = this.getEndColumn() ? true : false,
-			iMaxColumns = this._getMaxColumns(),
-			aNeededArrows = [];
+		var sLayout = this.getLayout(),
+			oMap = {},
+			aNeededArrows = [],
+			iMaxColumnsCount;
 
-		// Stop here if the control isn't rendered yet
-		if (typeof this._$columns === "undefined") {
+		// Stop here if the control isn't rendered yet or in phone mode, where arrows aren't necessary
+		if (!this.isActive() || Device.system.phone) {
 			return;
 		}
 
-		// Desktop
-		if (iMaxColumns === 3) {
+		iMaxColumnsCount = this.getMaxColumnsCount();
 
-			if (!bBegin || !bMid) {
-				aNeededArrows = [];
-			} else if (!bEnd) {
-				if (this._sLayout === "33/67/0") {
-					aNeededArrows = ["midForward"];
-				} else {
-					aNeededArrows = ["beginBack"];
-				}
-			} else {
-				if (this._sLayout === "25/50/25") {
-					if (this.getThreeColumnLayoutTypeFixed()) {
-						aNeededArrows = ["midForward"];
-					} else {
-						aNeededArrows = ["midForward", "midBack"];
-					}
-				} else if (this._sLayout === "25/25/50") {
-					aNeededArrows = ["endForward"];
-				} else if (this._sLayout === "33/67/0") {
-					aNeededArrows = ["midForward", "midBack"];
-				} else {
-					aNeededArrows = ["beginBack"];
-				}
-			}
+		// Only show arrows if 2 or 3 columns can be displayed at a time
+		if (iMaxColumnsCount > 1) {
+			oMap[LT.TwoColumnsBeginExpanded] = ["beginBack"];
+			oMap[LT.TwoColumnsMidExpanded] = ["midForward"];
+			oMap[LT.ThreeColumnsMidExpanded] = ["midForward", "midBack"];
+			oMap[LT.ThreeColumnsEndExpanded] = ["endForward"];
+			oMap[LT.ThreeColumnsMidExpandedEndHidden] = ["midForward", "midBack"];
+			oMap[LT.ThreeColumnsBeginExpandedEndHidden] = ["beginBack"];
 
-			// Tablet
-		} else if (iMaxColumns === 2) {
-
-			if (!bBegin || !bMid) {
-				aNeededArrows = [];
-			} else if (!bEnd) {
-				if (this._sLayout === "33/67/0") {
-					aNeededArrows = ["midForward"];
-				} else {
-					aNeededArrows = ["midBack"];
-				}
-			} else {
-				if (this._sLayout === "0/67/33") {
-					aNeededArrows = ["midForward"];
-				} else if (this._sLayout === "33/67/0") {
-					aNeededArrows = ["midForward", "midBack"];
-				} else {
-					aNeededArrows = ["beginBack"];
-				}
+			if (typeof oMap[sLayout] === "object") {
+				aNeededArrows = oMap[sLayout];
 			}
 		}
 
@@ -648,7 +1084,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Changes the visibility of a navigation button
+	 * Changes the visibility of a navigation button.
 	 * @param sButton
 	 * @param bShow
 	 * @private
@@ -657,25 +1093,542 @@ sap.ui.define([
 		this._$columnButtons[sButton].toggle(bShow);
 	};
 
+
+	FlexibleColumnLayout.prototype._fireStateChange = function (bIsNavigationArrow, bIsResize) {
+
+		// The event should not be fired if the control has zero width as all relevant layout calculations are size-based
+		if (this._getControlWidth() === 0) {
+			return;
+		}
+
+		this.fireStateChange({
+			isNavigationArrow: bIsNavigationArrow,
+			isResize: bIsResize,
+			layout: this.getLayout(),
+			maxColumnsCount: this.getMaxColumnsCount()
+		});
+	};
+
+	// Begin column proxies
+
+	FlexibleColumnLayout.prototype.getBeginColumnPages = function () {
+		return this._getBeginColumn().getPages();
+	};
+
+	FlexibleColumnLayout.prototype.addBeginColumnPage = function (oPage) {
+		this._getBeginColumn().addPage(oPage);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.insertBeginColumnPage = function (oPage, iIndex) {
+		this._getBeginColumn().insertPage(oPage, iIndex);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.removeBeginColumnPage = function(oPage) {
+		this._getBeginColumn().removePage(oPage);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.removeAllBeginColumnPages = function() {
+		return this._getBeginColumn().removeAllPages();
+	};
+
+	// Mid column proxies
+
+	FlexibleColumnLayout.prototype.getMidColumnPages = function () {
+		return this._getMidColumn().getPages();
+	};
+
+	FlexibleColumnLayout.prototype.addMidColumnPage = function (oPage) {
+		this._getMidColumn().addPage(oPage);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.insertMidColumnPage = function (oPage, iIndex) {
+		this._getMidColumn().insertPage(oPage, iIndex);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.removeMidColumnPage = function(oPage) {
+		this._getMidColumn().removePage(oPage);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.removeAllMidColumnPages = function() {
+		return this._getMidColumn().removeAllPages();
+	};
+
+	// End column proxies
+
+	FlexibleColumnLayout.prototype.getEndColumnPages = function () {
+		return this._getEndColumn().getPages();
+	};
+
+	FlexibleColumnLayout.prototype.addEndColumnPage = function (oPage) {
+		this._getEndColumn().addPage(oPage);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.insertEndColumnPage = function (oPage, iIndex) {
+		this._getEndColumn().insertPage(oPage, iIndex);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.removeEndColumnPage = function(oPage) {
+		this._getEndColumn().removePage(oPage);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.removeAllEndColumnPages = function() {
+		return this._getEndColumn().removeAllPages();
+	};
+
+	// Association proxies
+
+	FlexibleColumnLayout.prototype.setInitialBeginColumnPage = function(sPage) {
+		this._getBeginColumn().setInitialPage(sPage);
+		this.setAssociation('initialBeginColumnPage', sPage, true);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.setInitialMidColumnPage = function(sPage) {
+		this._getMidColumn().setInitialPage(sPage);
+		this.setAssociation('initialMidColumnPage', sPage, true);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.setInitialEndColumnPage = function(sPage) {
+		this._getEndColumn().setInitialPage(sPage);
+		this.setAssociation('initialEndColumnPage', sPage, true);
+		return this;
+	};
+
+
+	//**************************************************************
+	//* START - Public methods
+	//**************************************************************
+
+
 	/**
-	 * Returns the maximum number of columns that can be displayed at once based on the control size and settings
-	 * @returns {number}
+	 * Navigates to the given page inside the FlexibleColumnLayout.
+	 * Columns are scanned for the page in the following order: <code>Begin</code>, <code>Mid</code>, <code>End</code>.
+	 *
+	 * @param {string} sPageId
+	 *         The screen to which we are navigating to. The ID or the control itself can be given.
+	 * @param {string} sTransitionName
+	 *         The type of the transition/animation to apply. This parameter can be omitted; then the default value is "slide" (horizontal movement from the right).
+	 *         Other options are: "fade", "flip", and "show" and the names of any registered custom transitions.
+	 *
+	 *         None of the standard transitions is currently making use of any given transition parameters.
+	 * @param {object} oData
+	 *         This optional object can carry any payload data which should be made available to the target page. The beforeShow event on the target page will contain this data object as data property.
+	 *
+	 *         Use case: in scenarios where the entity triggering the navigation can or should not directly initialize the target page, it can fill this object and the target page itself (or a listener on it) can take over the initialization, using the given data.
+	 *
+	 *         When the transitionParameters object is used, this "data" object must also be given (either as object or as null) in order to have a proper parameter order.
+	 * @param {object} oTransitionParameters
+	 *         This optional object can contain additional information for the transition function, like the DOM element which triggered the transition or the desired transition duration.
+	 *
+	 *         For a proper parameter order, the "data" parameter must be given when the transitionParameters parameter is used (it can be given as "null").
+	 *
+	 *         NOTE: It depends on the transition function how the object should be structured and which parameters are actually used to influence the transition.
+	 *         The "show", "slide" and "fade" transitions do not use any parameter.
+	 * @type sap.f.FlexibleColumnLayout
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	FlexibleColumnLayout.prototype.to = function(pageId, transitionName, data, oTransitionParameters) {
+		if (this._getBeginColumn().getPage(pageId)) {
+			this._getBeginColumn().to(pageId, transitionName, data, oTransitionParameters);
+		} else if (this._getMidColumn().getPage(pageId)) {
+			this._getMidColumn().to(pageId, transitionName, data, oTransitionParameters);
+		} else {
+			this._getEndColumn().to(pageId, transitionName, data, oTransitionParameters);
+		}
+	};
+
+	/**
+	 * Navigates back to a page in the <code>FlexibleColumnLayout</code>.
+	 * Columns are scanned for the page in the following order: <code>Begin</code>, <code>Mid</code>, <code>End</code>.
+	 *
+	 * Calling this navigation method, first triggers the (cancelable) navigate event on the SplitContainer,
+	 * then the beforeHide pseudo event on the source page, beforeFirstShow (if applicable),
+	 * and beforeShow on the target page. Later, after the transition has completed,
+	 * the afterShow pseudo event is triggered on the target page and afterHide - on the page, which has been left.
+	 * The given backData object is available in the beforeFirstShow, beforeShow, and afterShow event objects as data
+	 * property. The original "data" object from the "to" navigation is also available in these event objects.
+	 *
+	 * @param {string} sPageId
+	 *         The screen to which is being navigated to. The ID or the control itself can be given.
+	 * @param {object} oBackData
+	 *         This optional object can carry any payload data which should be made available to the target page of the back navigation.
+	 *         The event on the target page will contain this data object as backData property. (the original data from the to() navigation will still be available as data property).
+	 *
+	 *         In scenarios, where the entity triggering the navigation can't or shouldn't directly initialize the target page, it can fill this object and the target page itself (or a listener on it) can take over the initialization, using the given data.
+	 *         For back navigation this can be used, for example, when returning from a detail page to transfer any settings done there.
+	 *
+	 *         When the transitionParameters object is used, this data object must also be given (either as object or as null) in order to have a proper parameter order.
+	 * @param {object} oTransitionParameters
+	 *         This optional object can give additional information to the transition function, like the DOM element, which triggered the transition or the desired transition duration.
+	 *         The animation type can NOT be selected here - it is always the inverse of the "to" navigation.
+	 *
+	 *         In order to use the transitionParameters property, the data property must be used (at least "null" must be given) for a proper parameter order.
+	 *
+	 *         NOTE: it depends on the transition function how the object should be structured and which parameters are actually used to influence the transition.
+	 * @type sap.f.FlexibleColumnLayout
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	FlexibleColumnLayout.prototype.backToPage = function(pageId, backData, oTransitionParameters) {
+		if (this._getBeginColumn().getPage(pageId)) {
+			this._getBeginColumn().backToPage(pageId, backData, oTransitionParameters);
+		} else if (this._getMidColumn().getPage(pageId)) {
+			this._getMidColumn().backToPage(pageId, backData, oTransitionParameters);
+		} else {
+			this._getEndColumn().backToPage(pageId, backData, oTransitionParameters);
+		}
+	};
+
+	/**
+	 * Proxy to the _safeBackToPage methods of the internal nav containers
+	 * @param pageId
+	 * @param transitionName
+	 * @param backData
+	 * @param oTransitionParameters
 	 * @private
 	 */
-	FlexibleColumnLayout.prototype._getMaxColumns = function () {
-		if (this._iControlWidth >= FlexibleColumnLayout.DESKTOP_BREAKPOINT) {
-			if (this.getTwoColumnLayoutOnDesktop()) {
-				return 2;
-			}
-			return 3;
+	FlexibleColumnLayout.prototype._safeBackToPage = function(pageId, transitionName, backData, oTransitionParameters) {
+		if (this._getBeginColumn().getPage(pageId)) {
+			this._getBeginColumn()._safeBackToPage(pageId, transitionName, backData, oTransitionParameters);
+		} else if (this._getMidColumn().getPage(pageId)) {
+			this._getMidColumn()._safeBackToPage(pageId, transitionName, backData, oTransitionParameters);
+		} else {
+			this._getEndColumn()._safeBackToPage(pageId, transitionName, backData, oTransitionParameters);
 		}
-
-		if (this._iControlWidth >= FlexibleColumnLayout.TABLET_BREAKPOINT && this._iControlWidth < FlexibleColumnLayout.DESKTOP_BREAKPOINT) {
-			return 2;
-		}
-
-		return 1;
 	};
+
+	/**
+	 * Navigates to a given Begin column page.
+	 *
+	 * @param {string} sPageId
+	 *         The screen to which drilldown should happen. The ID or the control itself can be given.
+	 * @param {string} sTransitionName
+	 *         The type of the transition/animation to apply. This parameter can be omitted; then the default value is "slide" (horizontal movement from the right).
+	 *         Other options are: "fade", "flip", and "show" and the names of any registered custom transitions.
+	 *
+	 *         None of the standard transitions is currently making use of any given transition parameters.
+	 * @param {object} oData
+	 *         This optional object can carry any payload data which should be made available to the target page. The beforeShow event on the target page will contain this data object as data property.
+	 *
+	 *         Use case: in scenarios where the entity triggering the navigation can't or shouldn't directly initialize the target page, it can fill this object and the target page itself (or a listener on it) can take over the initialization, using the given data.
+	 *
+	 *         When the transitionParameters object is used, this data object must also be given (either as object or as null) in order to have a proper parameter order.
+	 * @param {object} oTransitionParameters
+	 *         This optional object can contain additional information for the transition function, like the DOM element, which triggered the transition or the desired transition duration.
+	 *
+	 *         For a proper parameter order, the data parameter must be given when the transitionParameters parameter is used (it can be given as "null").
+	 *
+	 *         NOTE: it depends on the transition function how the object should be structured and which parameters are actually used to influence the transition.
+	 *         The "show", "slide" and "fade" transitions do not use any parameter.
+	 * @type sap.f.FlexibleColumnLayout
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	FlexibleColumnLayout.prototype.toBeginColumnPage = function(pageId, transitionName, data, oTransitionParameters) {
+		this._getBeginColumn().to(pageId, transitionName, data, oTransitionParameters);
+	};
+
+	/**
+	 * Navigates to a given Mid column page.
+	 *
+	 * @param {string} sPageId
+	 *         The screen to which drilldown should happen. The ID or the control itself can be given.
+	 * @param {string} sTransitionName
+	 *         The type of the transition/animation to apply. This parameter can be omitted; then the default value is "slide" (horizontal movement from the right).
+	 *         Other options are: "fade", "flip", and "show" and the names of any registered custom transitions.
+	 *
+	 *         None of the standard transitions is currently making use of any given transition parameters.
+	 * @param {object} oData
+	 *         This optional object can carry any payload data which should be made available to the target page. The beforeShow event on the target page will contain this data object as data property.
+	 *
+	 *         Use case: in scenarios where the entity triggering the navigation can't or shouldn't directly initialize the target page, it can fill this object and the target page itself (or a listener on it) can take over the initialization, using the given data.
+	 *
+	 *         When the transitionParameters object is used, this data object must also be given (either as object or as null) in order to have a proper parameter order.
+	 * @param {object} oTransitionParameters
+	 *         This optional object can contain additional information for the transition function, like the DOM element, which triggered the transition or the desired transition duration.
+	 *
+	 *         For a proper parameter order, the data parameter must be given when the transitionParameters parameter is used (it can be given as "null").
+	 *
+	 *         NOTE: it depends on the transition function how the object should be structured and which parameters are actually used to influence the transition.
+	 *         The "show", "slide" and "fade" transitions do not use any parameter.
+	 * @type sap.f.FlexibleColumnLayout
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	FlexibleColumnLayout.prototype.toMidColumnPage = function(pageId, transitionName, data, oTransitionParameters) {
+		this._getMidColumn().to(pageId, transitionName, data, oTransitionParameters);
+	};
+
+	/**
+	 * Navigates to a given End column page.
+	 *
+	 * @param {string} sPageId
+	 *         The screen to which drilldown should happen. The ID or the control itself can be given.
+	 * @param {string} sTransitionName
+	 *         The type of the transition/animation to apply. This parameter can be omitted; then the default value is "slide" (horizontal movement from the right).
+	 *         Other options are: "fade", "flip", and "show" and the names of any registered custom transitions.
+	 *
+	 *         None of the standard transitions is currently making use of any given transition parameters.
+	 * @param {object} oData
+	 *         This optional object can carry any payload data which should be made available to the target page. The beforeShow event on the target page will contain this data object as data property.
+	 *
+	 *         Use case: in scenarios where the entity triggering the navigation can't or shouldn't directly initialize the target page, it can fill this object and the target page itself (or a listener on it) can take over the initialization, using the given data.
+	 *
+	 *         When the transitionParameters object is used, this data object must also be given (either as object or as null) in order to have a proper parameter order.
+	 * @param {object} oTransitionParameters
+	 *         This optional object can contain additional information for the transition function, like the DOM element, which triggered the transition or the desired transition duration.
+	 *
+	 *         For a proper parameter order, the data parameter must be given when the transitionParameters parameter is used (it can be given as "null").
+	 *
+	 *         NOTE: it depends on the transition function how the object should be structured and which parameters are actually used to influence the transition.
+	 *         The "show", "slide" and "fade" transitions do not use any parameter.
+	 * @type sap.f.FlexibleColumnLayout
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	FlexibleColumnLayout.prototype.toEndColumnPage = function(pageId, transitionName, data, oTransitionParameters) {
+		this._getEndColumn().to(pageId, transitionName, data, oTransitionParameters);
+	};
+
+	FlexibleColumnLayout.prototype.backBeginColumn = function(backData, oTransitionParameters) {
+		return this._getBeginColumn().back(backData, oTransitionParameters);
+	};
+
+	FlexibleColumnLayout.prototype.backMidColumn = function(backData, oTransitionParameters) {
+		return this._getMidColumn().back(backData, oTransitionParameters);
+	};
+
+	FlexibleColumnLayout.prototype.backEndColumn = function(backData, oTransitionParameters) {
+		return this._getEndColumn().back(backData, oTransitionParameters);
+	};
+
+	FlexibleColumnLayout.prototype.backBeginColumnToPage = function(pageId, backData, oTransitionParameters) {
+		return this._getBeginColumn().backToPage(pageId, backData, oTransitionParameters);
+	};
+
+	FlexibleColumnLayout.prototype.backMidColumnToPage = function(pageId, backData, oTransitionParameters) {
+		return this._getMidColumn().backToPage(pageId, backData, oTransitionParameters);
+	};
+
+	FlexibleColumnLayout.prototype.backEndColumnToPage = function(pageId, backData, oTransitionParameters) {
+		return this._getEndColumn().backToPage(pageId, backData, oTransitionParameters);
+	};
+
+	/**
+	 * Navigates back to the initial/top level of Begin column (this is the element aggregated as "initialPage", or the first added element).
+	 * NOTE: If already on the initial page, nothing happens.
+	 * The transition effect which had been used to get to the current page is inverted and used for this navigation.
+	 *
+	 * @param {object} oBackData
+	 *         This optional object can carry any payload data which should be made available to the target page of the back navigation. The event on the target page will contain this data object as "backData" property. (The original data from the "to()" navigation will still be available as "data" property.)
+	 *
+	 *         In scenarios where the entity triggering the navigation can or should not directly initialize the target page, it can fill this object and the target page itself (or a listener on it) can take over the initialization, using the given data.
+	 *         For back navigation this can be used e.g. when returning from a detail page to transfer any settings done there.
+	 *
+	 *         When the "transitionParameters" object is used, this "data" object must also be given (either as object or as null) in order to have a proper parameter order.
+	 * @param {object} oTransitionParameter
+	 *         This optional object can give additional information to the transition function, like the DOM element which triggered the transition or the desired transition duration.
+	 *         The animation type can NOT be selected here - it is always the inverse of the "to" navigation.
+	 *
+	 *         In order to use the transitionParameters property, the data property must be used (at least "null" must be given) for a proper parameter order.
+	 *
+	 *         NOTE: it depends on the transition function how the object should be structured and which parameters are actually used to influence the transition.
+	 * @type sap.ui.core.Control
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	FlexibleColumnLayout.prototype.backToTopBeginColumn = function(backData, oTransitionParameters) {
+		this._getBeginColumn().backToTop(backData, oTransitionParameters);
+	};
+
+	/**
+	 * Navigates back to the initial/top level of Mid column (this is the element aggregated as "initialPage", or the first added element).
+	 * NOTE: If already on the initial page, nothing happens.
+	 * The transition effect which had been used to get to the current page is inverted and used for this navigation.
+	 *
+	 * @param {object} oBackData
+	 *         This optional object can carry any payload data which should be made available to the target page of the back navigation. The event on the target page will contain this data object as "backData" property. (The original data from the "to()" navigation will still be available as "data" property.)
+	 *
+	 *         In scenarios where the entity triggering the navigation can or should not directly initialize the target page, it can fill this object and the target page itself (or a listener on it) can take over the initialization, using the given data.
+	 *         For back navigation this can be used e.g. when returning from a detail page to transfer any settings done there.
+	 *
+	 *         When the "transitionParameters" object is used, this "data" object must also be given (either as object or as null) in order to have a proper parameter order.
+	 * @param {object} oTransitionParameter
+	 *         This optional object can give additional information to the transition function, like the DOM element which triggered the transition or the desired transition duration.
+	 *         The animation type can NOT be selected here - it is always the inverse of the "to" navigation.
+	 *
+	 *         In order to use the transitionParameters property, the data property must be used (at least "null" must be given) for a proper parameter order.
+	 *
+	 *         NOTE: it depends on the transition function how the object should be structured and which parameters are actually used to influence the transition.
+	 * @type sap.ui.core.Control
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	FlexibleColumnLayout.prototype.backToTopMidColumn = function(backData, oTransitionParameters) {
+		this._getMidColumn().backToTop(backData, oTransitionParameters);
+	};
+
+
+	/**
+	 * Navigates back to the initial/top level of End column (this is the element aggregated as "initialPage", or the first added element).
+	 * NOTE: If already on the initial page, nothing happens.
+	 * The transition effect which had been used to get to the current page is inverted and used for this navigation.
+	 *
+	 * @param {object} oBackData
+	 *         This optional object can carry any payload data which should be made available to the target page of the back navigation. The event on the target page will contain this data object as "backData" property. (The original data from the "to()" navigation will still be available as "data" property.)
+	 *
+	 *         In scenarios where the entity triggering the navigation can or should not directly initialize the target page, it can fill this object and the target page itself (or a listener on it) can take over the initialization, using the given data.
+	 *         For back navigation this can be used e.g. when returning from a detail page to transfer any settings done there.
+	 *
+	 *         When the "transitionParameters" object is used, this "data" object must also be given (either as object or as null) in order to have a proper parameter order.
+	 * @param {object} oTransitionParameter
+	 *         This optional object can give additional information to the transition function, like the DOM element which triggered the transition or the desired transition duration.
+	 *         The animation type can NOT be selected here - it is always the inverse of the "to" navigation.
+	 *
+	 *         In order to use the transitionParameters property, the data property must be used (at least "null" must be given) for a proper parameter order.
+	 *
+	 *         NOTE: it depends on the transition function how the object should be structured and which parameters are actually used to influence the transition.
+	 * @type sap.ui.core.Control
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	FlexibleColumnLayout.prototype.backToTopEndColumn = function(backData, oTransitionParameters) {
+		this._getEndColumn().backToTop(backData, oTransitionParameters);
+	};
+
+	/**
+	 * Returns the currently displayed Begin column page.
+	 *
+	 * @type sap.ui.core.Control
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	FlexibleColumnLayout.prototype.getCurrentBeginColumnPage = function() {
+		return this._getBeginColumn().getCurrentPage();
+	};
+
+	/**
+	 * Returns the currently displayed Mid column page.
+	 *
+	 * @type sap.ui.core.Control
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	FlexibleColumnLayout.prototype.getCurrentMidColumnPage = function() {
+		return this._getMidColumn().getCurrentPage();
+	};
+
+	/**
+	 * Returns the currently displayed End column page.
+	 *
+	 * @type sap.ui.core.Control
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	FlexibleColumnLayout.prototype.getCurrentEndColumnPage = function() {
+		return this._getEndColumn().getCurrentPage();
+	};
+
+	FlexibleColumnLayout.prototype.setDefaultTransitionNameBeginColumn = function(sTransition) {
+		this.setProperty("defaultTransitionNameBeginColumn", sTransition, true);
+		this._getBeginColumn().setDefaultTransitionName(sTransition);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.setDefaultTransitionNameMidColumn = function(sTransition) {
+		this.setProperty("defaultTransitionNameMidColumn", sTransition, true);
+		this._getMidColumn().setDefaultTransitionName(sTransition);
+		return this;
+	};
+
+	FlexibleColumnLayout.prototype.setDefaultTransitionNameEndColumn = function(sTransition) {
+		this.setProperty("defaultTransitionNameEndColumn", sTransition, true);
+		this._getEndColumn().setDefaultTransitionName(sTransition);
+		return this;
+	};
+
+	//******************************************************** PROTECTED MEMBERS **************************************/
+
+	/**
+	 * Returns the layout history object
+	 * @returns {LayoutHistory}
+	 * @sap-restricted sap.f.FlexibleColumnLayoutSemanticHelper
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._getLayoutHistory = function () {
+		return this._oLayoutHistory;
+	};
+
+	/**
+	 * Returns a string, representing the relative percentage sizes of the columns for the given layout in the format "begin/mid/end" (f.e. "33/67/0")
+	 * @param sLayout - the layout
+	 * @param bAsArray - return an array in the format [33, 67, 0] instead of a string "33/67/0"
+	 * @returns {string|array}
+	 * @sap-restricted sap.f.FlexibleColumnLayoutSemanticHelper
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._getColumnWidthDistributionForLayout = function (sLayout, bAsArray) {
+		var iMaxColumnsCount = this.getMaxColumnsCount(),
+			oMap = {},
+			vResult;
+
+		if (iMaxColumnsCount === 0) {
+
+			vResult = "0/0/0";
+
+		} else {
+
+			// Layouts with the same distribution for all cases
+			oMap[LT.OneColumn] = "100/0/0";
+			oMap[LT.MidColumnFullScreen] = "0/100/0";
+			oMap[LT.EndColumnFullScreen] = "0/0/100";
+
+			if (iMaxColumnsCount === 1) {
+
+				// On 1 column, all have fullscreen mapping
+				oMap[LT.TwoColumnsBeginExpanded] = "0/100/0";
+				oMap[LT.TwoColumnsMidExpanded] = "0/100/0";
+				oMap[LT.ThreeColumnsMidExpanded] = "0/0/100";
+				oMap[LT.ThreeColumnsEndExpanded] = "0/0/100";
+				oMap[LT.ThreeColumnsMidExpandedEndHidden] = "0/0/100";
+				oMap[LT.ThreeColumnsBeginExpandedEndHidden] = "0/0/100";
+
+			} else {
+
+				// On 2 and 3 columns, the only difference is in the modes where all 3 columns are visible
+				oMap[LT.TwoColumnsBeginExpanded] = "67/33/0";
+				oMap[LT.TwoColumnsMidExpanded] = "33/67/0";
+				oMap[LT.ThreeColumnsMidExpanded] = iMaxColumnsCount === 2 ? "0/67/33" : "25/50/25";
+				oMap[LT.ThreeColumnsEndExpanded] = iMaxColumnsCount === 2 ? "0/33/67" : "25/25/50";
+				oMap[LT.ThreeColumnsMidExpandedEndHidden] = "33/67/0";
+				oMap[LT.ThreeColumnsBeginExpandedEndHidden] = "67/33/0";
+			}
+
+			vResult = oMap[sLayout];
+		}
+
+		if (bAsArray) {
+			vResult = vResult.split("/").map(function (sColumnWidth) {
+				return parseInt(sColumnWidth, 10);
+			});
+		}
+
+		return vResult;
+	};
+
+
+	//******************************************************** STATIC MEMBERS *****************************************/
 
 	// The margin between columns in pixels
 	FlexibleColumnLayout.COLUMN_MARGIN = 8;
@@ -686,6 +1639,80 @@ sap.ui.define([
 	// The width above which (inclusive) we are in tablet mode
 	FlexibleColumnLayout.TABLET_BREAKPOINT = 960;
 
+
+	/**
+	 * Retrieves the resource bundle for the <code>sap.f</code> library.
+	 * @static
+	 * @private
+	 * @returns {Object} the resource bundle object
+	 */
+	FlexibleColumnLayout._getResourceBundle = function () {
+		return sap.ui.getCore().getLibraryResourceBundle("sap.f");
+	};
+
+	/**
+	 * Lazily gets the aria labels for the three columns, and reuses them for all instances of the Flexible Column Layout
+	 * @static
+	 * @private
+	 * @returns {Object} the labels for the columns
+	 */
+	FlexibleColumnLayout._getAriaLabels = function () {
+		if (!FlexibleColumnLayout._sAriaFlexibleColumnLayoutLabels) {
+			FlexibleColumnLayout._sAriaFlexibleColumnLayoutLabels = {
+				beginColumnLabel: FlexibleColumnLayout._getARIAInvisibleTextId("FCL_BEGIN_COLUMN_REGION_TEXT"),
+				midColumnLabel: FlexibleColumnLayout._getARIAInvisibleTextId("FCL_MID_COLUMN_REGION_TEXT"),
+				endColumnLabel: FlexibleColumnLayout._getARIAInvisibleTextId("FCL_END_COLUMN_REGION_TEXT")
+			};
+		}
+
+		return FlexibleColumnLayout._sAriaFlexibleColumnLayoutLabels;
+	};
+
+	/**
+	 * Creates an invisible text in the static area and returns its id
+	 * @param sResourceBundleKey
+	 * @private
+	 * @returns {string}
+	 */
+	FlexibleColumnLayout._getARIAInvisibleTextId = function (sResourceBundleKey) {
+		return new InvisibleText({
+			text: FlexibleColumnLayout._getResourceBundle().getText(sResourceBundleKey)
+		}).toStatic().getId();
+	};
+
+	/**
+	 * Layout history helper class
+	 * @constructor
+	 */
+	function LayoutHistory () {
+		this._aLayoutHistory = [];
+	}
+
+	/**
+	 * Adds a new entry to the history
+	 * @param sLayout
+	 */
+	LayoutHistory.prototype.addEntry = function (sLayout) {
+		if (typeof sLayout !== "undefined") {
+			this._aLayoutHistory.push(sLayout);
+		}
+	};
+
+	/**
+	 * Searches the history for the most recent layout that matches any of the aLayouts entries
+	 * @param aLayouts - a list of layouts
+	 * @returns {*}
+	 */
+	LayoutHistory.prototype.getClosestEntryThatMatches = function (aLayouts) {
+		var i;
+
+		for (i = this._aLayoutHistory.length - 1; i >= 0; i--) {
+			if (aLayouts.indexOf(this._aLayoutHistory[i]) !== -1) {
+				return this._aLayoutHistory[i];
+			}
+		}
+	};
+
 	return FlexibleColumnLayout;
 
-}, /* bExport= */ false);
+}, /* bExport= */ true);

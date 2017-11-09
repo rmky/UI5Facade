@@ -1,6 +1,6 @@
 /* ======================================= */
 /* CSS for control sap.m/P13nColumnsPanel  */
-/* Belize theme                            */
+/* Base theme                              */
 /* ======================================= */
 
 .sapMP13nColumnsPanel{
@@ -13,7 +13,9 @@
 }
 
 .sapMP13nColumnsPanel .sapMListBGTranslucent .sapMLIB.sapMListTblRow.sapMP13nColumnsPanelItemSelected,
-.sapMP13nColumnsPanel .sapMListBGTranslucent .sapMLIB.sapMListTblRow.sapMP13nColumnsPanelItemSelected:focus
+.sapMP13nColumnsPanel .sapMListBGTranslucent .sapMLIB.sapMListTblRow.sapMP13nColumnsPanelItemSelected:focus,
+.sapMP13nColumnsPanel .sapMListBGTranslucent .sapMLIB:not(.sapMLIBActive):not(.sapMLIBSelected):not(:hover).sapMListTblRow.sapMP13nColumnsPanelItemSelected,
+.sapMP13nColumnsPanel .sapMListBGTranslucent .sapMLIB:not(.sapMLIBActive):not(.sapMLIBSelected):not(:hover).sapMListTblRow.sapMP13nColumnsPanelItemSelected:focus
 {
 	background-color: @sapUiListSelectionBackgroundColor;
 }

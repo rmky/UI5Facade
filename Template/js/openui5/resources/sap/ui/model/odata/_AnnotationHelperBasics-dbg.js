@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -323,7 +323,7 @@ sap.ui.define([
 		 *  if <code>true</code> and <code>oResult.result</code> is "binding", type and constraint
 		 *  information is written to the resulting binding string
 		 * @returns {string}
-		 *   the resulting string to embed into an composite binding or a binding expression
+		 *   the resulting string to embed into a composite binding or a binding expression
 		 */
 		resultToString : function (oResult, bExpression, bWithType) {
 			var vValue = oResult.value;

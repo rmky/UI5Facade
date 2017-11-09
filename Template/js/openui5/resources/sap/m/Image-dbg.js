@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -27,9 +27,10 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 	 * From version 1.30, new image mode sap.m.ImageMode.Background is added. When this mode is set, the src property is set using the css style 'background-image'. The properties 'backgroundSize', 'backgroundPosition', 'backgroundRepeat' have effect only when image is in sap.m.ImageMode.Background mode. In order to make the high density image correctly displayed, the 'backgroundSize' should be set to the dimension of the normal density version.
 	 *
 	 * @extends sap.ui.core.Control
+	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -38,6 +39,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 	 */
 	var Image = Control.extend("sap.m.Image", /** @lends sap.m.Image.prototype */ { metadata : {
 
+		interfaces : ["sap.ui.core.IFormContent"],
 		library : "sap.m",
 		properties : {
 
@@ -115,8 +117,9 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 		},
 		aggregations : {
 			/**
-			 * Aggregation which holds data about the LightBox's image and its description. Although multiple LightBoxItems
-			 * may be added to this aggregation only the first one in the list will be taken into account.
+			 * A <code>sap.m.LightBox</code> instance, that will be opened automatically when the user interacts with the image.
+			 *
+			 * The <code>tap</code> event will still be fired.
 			 * @public
 			 */
 			detailBox: {type: 'sap.m.LightBox', multiple: false, bindable: "bindable"}
@@ -144,7 +147,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 			 * @since 1.36.2
 			 */
 			error : {}
-		}
+		},
+		designTime: true
 	}});
 
 	Image._currentDevicePixelRatio = (function() {
@@ -297,23 +301,29 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 	 */
 	Image.prototype.onAfterRendering = function() {
 		var $DomNode = this.$(),
-			oDomRef = $DomNode[0],
-			sMode = this.getMode();
+			sMode = this.getMode(),
+			oDomImageRef;
 
 		if (sMode === sap.m.ImageMode.Image) {
 			// bind the load and error event handler
 			$DomNode.on("load", jQuery.proxy(this.onload, this));
 			$DomNode.on("error", jQuery.proxy(this.onerror, this));
 
-			// if image has already been loaded and the load or error event handler hasn't been called, trigger it manually.
-			if (oDomRef && oDomRef.complete && !this._defaultEventTriggered) {
-				// need to use the naturalWidth property instead of jDomNode.width(),
-				// the later one returns positive value even in case of broken image
-				if (oDomRef.naturalWidth > 0) {
-					this.onload({/* empty event object*/});
-				} else {
-					this.onerror({/* empty event object*/});
-				}
+			oDomImageRef = $DomNode[0];
+		}
+
+		if (sMode === sap.m.ImageMode.Background) {
+			oDomImageRef = this._oImage;
+		}
+
+		// if image has already been loaded and the load or error event handler hasn't been called, trigger it manually.
+		if (oDomImageRef && oDomImageRef.complete && !this._defaultEventTriggered) {
+			// need to use the naturalWidth property instead of jDomNode.width(),
+			// the later one returns positive value even in case of broken image
+			if (oDomImageRef.naturalWidth > 0) {
+				this.onload({/* empty event object*/});
+			} else {
+				this.onerror({/* empty event object*/});
 			}
 		}
 	};
@@ -496,11 +506,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 		}
 
 		this._oImage.src = sSrc;
-
-		// if the source image is already loaded, manually trigger the load event
-		if (this._oImage.complete) {
-			$InternalImage.trigger(this._oImage.naturalWidth > 0 ? "load" : "error");	//  image loaded successfully or with error
-		}
 	};
 
 	/**
@@ -613,6 +618,14 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 			focusable: bHasPressListeners
 		};
 	};
+
+	/*
+	 * Image must not be stretched in Form because should have its original size.
+	 */
+	Image.prototype.getFormDoNotAdjustWidth = function() {
+		return true;
+	};
+
 
 	return Image;
 

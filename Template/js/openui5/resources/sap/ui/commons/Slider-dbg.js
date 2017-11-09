@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -21,9 +21,10 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * The interactive control is displayed either as a horizontal or a vertical line with a pointer and units of measurement.
 	 * Users can move the pointer along the line to change values with graphical support.
 	 * @extends sap.ui.core.Control
+	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -33,6 +34,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 */
 	var Slider = Control.extend("sap.ui.commons.Slider", /** @lends sap.ui.commons.Slider.prototype */ { metadata : {
 
+		interfaces : ["sap.ui.core.IFormContent"],
 		library : "sap.ui.commons",
 		properties : {
 
@@ -121,7 +123,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		events : {
 
 			/**
-			 * Value was changed. This event is fired if the value has changed by an user action.
+			 * Value was changed. This event is fired if the value has changed by a user action.
 			 */
 			change : {
 				parameters : {
@@ -1348,20 +1350,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		fBarWidth = this.getBarWidth();
 		bIsVertical = this.getVertical();
 
-		if (fNewValue >= fMax) {
+		if (fNewValue > fMax) {
 			fNewValue = fMax;
-			if (bIsVertical) {
-				iNewPos = 0;
-			} else {
-				iNewPos = fBarWidth;
-			}
-		} else if (fNewValue <= fMin) {
+			iNewPos = fBarWidth;
+		} else if (fNewValue < fMin) {
 			fNewValue = fMin;
-			if (bIsVertical) {
-				iNewPos = fBarWidth;
-			} else {
-				iNewPos = 0;
-			}
+			iNewPos = 0;
 		} else {
 			iNewPos = (( fNewValue - fMin ) / ( fMax - fMin )) * fBarWidth;
 		}
@@ -1374,7 +1368,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		this._lastValue = fNewValue;
 
 		return this;
-
 	};
 
 	/*

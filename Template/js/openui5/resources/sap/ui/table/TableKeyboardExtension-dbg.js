@@ -1,16 +1,42 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides helper sap.ui.table.TableKeyboardExtension.
-sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/ItemNavigation', './TableUtils', './TableKeyboardDelegate2', './TableKeyboardDelegate'],
-	function(jQuery, TableExtension, ItemNavigation, TableUtils, NewKeyboardDelegate, OldKeyboardDelegate) {
+sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/ItemNavigation', './TableUtils', './TableKeyboardDelegate2', 'sap/ui/Device'],
+	function(jQuery, TableExtension, ItemNavigation, TableUtils, TableKeyboardDelegate, Device) {
 	"use strict";
 
-	var sKeyboard = jQuery.sap.getUriParameters().get('sap-ui-xx-table-oldkeyboard');
-	var bLegacy = sKeyboard === "true" || sKeyboard === "TRUE" || sKeyboard === "x" || sKeyboard === "X";
+	var bIEFocusOutlineWorkaroundApplied = false;
+	function applyIEFocusOutlineWorkaround(oElement) {
+		/*
+		 * In Internet Explorer there are problems with the focus outline on tables.
+		 * The following seems to help because it forces a repaint.
+		 *
+		 * The following conditions must be fullfilled:
+		 * - The function must be called after the item navigation has handled the focusin event (see below)
+		 * - An attribute (here data-sap-ui-table-focus) must be changed on focus
+		 * - And a CSS declaration (separate from CSS of table library) must be available with attribute selector
+		 *   (the prefix (here .sapUiTableStatic) doesn't matter)
+		 */
+		if (Device.browser.msie) {
+			if (!bIEFocusOutlineWorkaroundApplied) {
+				jQuery('head').append(
+					'<style type="text/css">' +
+						'/* Avoid focus outline problems in tables */\n' +
+						'.sapUiTableStatic[data-sap-ui-table-focus]{}' +
+					'</style>'
+				);
+				bIEFocusOutlineWorkaroundApplied = true;
+			}
+			var oCellInfo = TableUtils.getCellInfo(oElement) || {};
+			if (oCellInfo.type) {
+				oCellInfo.cell.attr("data-sap-ui-table-focus", Date.now());
+			}
+		}
+	}
 
 	/*
 	 * Wrapper for event handling of the item navigation.
@@ -21,12 +47,20 @@ sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/It
 
 		_forward : function(oTable, oEvent) {
 			var oIN = oTable._getItemNavigation();
-			if (oIN && !oTable._getKeyboardExtension()._itemNavigationSuspended && !oEvent.isMarked("sapUiTableSkipItemNavigation")) {
+
+			if (oIN != null
+				&& !oTable._getKeyboardExtension()._isItemNavigationSuspended()
+				&& !oEvent.isMarked("sapUiTableSkipItemNavigation")
+				&& !TableUtils.isBusyIndicatorVisible(oTable)) {
+
 				oIN["on" + oEvent.type](oEvent);
 			}
 		},
 
-		onfocusin: 				function(oEvent) { ItemNavigationDelegate._forward(this, oEvent); },
+		onfocusin: function(oEvent) {
+			ItemNavigationDelegate._forward(this, oEvent);
+			applyIEFocusOutlineWorkaround(oEvent.target);
+		},
 		onsapfocusleave: 		function(oEvent) { ItemNavigationDelegate._forward(this, oEvent); },
 		onmousedown: 			function(oEvent) { ItemNavigationDelegate._forward(this, oEvent); },
 		onsapnext: 				function(oEvent) { ItemNavigationDelegate._forward(this, oEvent); },
@@ -66,6 +100,8 @@ sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/It
 				oEvent.preventDefault();
 				oEvent.setMarked("sapUiTableSkipItemNavigation");
 			}
+
+
 		}
 
 	};
@@ -82,48 +118,61 @@ sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/It
 		 */
 		_initItemNavigation : function(oExtension) {
 			var oTable = oExtension.getTable();
+
+			if (TableUtils.isBusyIndicatorVisible(oTable)) {
+				return;
+			}
+
 			var $Table = oTable.$();
 			var iColumnCount = TableUtils.getVisibleColumnCount(oTable);
 			var iTotalColumnCount = iColumnCount;
 			var bHasRowHeader = TableUtils.hasRowHeader(oTable);
+			var bHasRowActions = TableUtils.hasRowActions(oTable);
+			var bHasFixedColumns = TableUtils.hasFixedColumns(oTable);
 
 			// create the list of item dom refs
-			var aItemDomRefs = [];
-			if (oTable.getFixedColumnCount() == 0) {
-				aItemDomRefs = $Table.find(".sapUiTableCtrl:not(.sapUiTableCHT) td[tabindex]").get();
-			} else {
-				var $topLeft = $Table.find('.sapUiTableCtrlFixed.sapUiTableCtrlRowFixed:not(.sapUiTableCHT)');
-				var $topRight = $Table.find('.sapUiTableCtrlScroll.sapUiTableCtrlRowFixed:not(.sapUiTableCHT)');
-				var $middleLeft = $Table.find('.sapUiTableCtrlFixed.sapUiTableCtrlRowScroll:not(.sapUiTableCHT)');
-				var $middleRight = $Table.find('.sapUiTableCtrlScroll.sapUiTableCtrlRowScroll:not(.sapUiTableCHT)');
-				var $bottomLeft = $Table.find('.sapUiTableCtrlFixed.sapUiTableCtrlRowFixedBottom:not(.sapUiTableCHT)');
-				var $bottomRight = $Table.find('.sapUiTableCtrlScroll.sapUiTableCtrlRowFixedBottom:not(.sapUiTableCHT)');
-				for (var i = 0; i < oTable.getVisibleRowCount(); i++) {
-					aItemDomRefs = aItemDomRefs.concat($topLeft.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
-					aItemDomRefs = aItemDomRefs.concat($topRight.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
-					aItemDomRefs = aItemDomRefs.concat($middleLeft.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
-					aItemDomRefs = aItemDomRefs.concat($middleRight.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
-					aItemDomRefs = aItemDomRefs.concat($bottomLeft.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
-					aItemDomRefs = aItemDomRefs.concat($bottomRight.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
-				}
+			var aItemDomRefs = [],
+				aRowHdrDomRefs, aRowActionDomRefs, $topLeft, $middleLeft, $bottomLeft;
+
+			if (bHasFixedColumns) {
+				$topLeft = $Table.find('.sapUiTableCtrlFixed.sapUiTableCtrlRowFixed:not(.sapUiTableCHT)');
+				$middleLeft = $Table.find('.sapUiTableCtrlFixed.sapUiTableCtrlRowScroll:not(.sapUiTableCHT)');
+				$bottomLeft = $Table.find('.sapUiTableCtrlFixed.sapUiTableCtrlRowFixedBottom:not(.sapUiTableCHT)');
 			}
 
-			// to later determine the position of the first TD in the aItemDomRefs we keep the
-			// count of TDs => aCount - TDs = first TD (add the row headers to the TD count / except the first one!)
-			var iTDCount = aItemDomRefs.length;
+			var $topRight = $Table.find('.sapUiTableCtrlScroll.sapUiTableCtrlRowFixed:not(.sapUiTableCHT)');
+			var $middleRight = $Table.find('.sapUiTableCtrlScroll.sapUiTableCtrlRowScroll:not(.sapUiTableCHT)');
+			var $bottomRight = $Table.find('.sapUiTableCtrlScroll.sapUiTableCtrlRowFixedBottom:not(.sapUiTableCHT)');
 
-			// add the row header items (if visible)
 			if (bHasRowHeader) {
-				var aRowHdrDomRefs = $Table.find(".sapUiTableRowHdr").get();
-				for (var i = aRowHdrDomRefs.length - 1; i >= 0; i--) {
-					aItemDomRefs.splice(i * iColumnCount, 0, aRowHdrDomRefs[i]);
-					// we ignore the row headers
-					iTDCount++;
-				}
-				// except the first row header
-				iTDCount--;
-				// add the row header to the column count
+				aRowHdrDomRefs = $Table.find(".sapUiTableRowHdr").get();
 				iTotalColumnCount++;
+			}
+
+			if (bHasRowActions) {
+				aRowActionDomRefs = $Table.find(".sapUiTableRowAction").get();
+				iTotalColumnCount++;
+			}
+
+			for (var i = 0; i < oTable.getVisibleRowCount(); i++) {
+				if (bHasRowHeader) {
+					aItemDomRefs.push(aRowHdrDomRefs[i]);
+				}
+				if (bHasFixedColumns) {
+					aItemDomRefs = aItemDomRefs.concat($topLeft.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
+				}
+				aItemDomRefs = aItemDomRefs.concat($topRight.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
+				if (bHasFixedColumns) {
+					aItemDomRefs = aItemDomRefs.concat($middleLeft.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
+				}
+				aItemDomRefs = aItemDomRefs.concat($middleRight.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
+				if (bHasFixedColumns) {
+					aItemDomRefs = aItemDomRefs.concat($bottomLeft.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
+				}
+				aItemDomRefs = aItemDomRefs.concat($bottomRight.find('tr[data-sap-ui-rowindex="' + i + '"]').find('td[tabindex]').get());
+				if (bHasRowActions) {
+					aItemDomRefs.push(aRowActionDomRefs[i]);
+				}
 			}
 
 			// add the column headers and select all
@@ -143,6 +192,10 @@ sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/It
 					}
 					if ($ScrollHeaders.length) {
 						aHeaderDomRefs = aHeaderDomRefs.concat(jQuery($ScrollHeaders.get(i)).find(".sapUiTableCol").get());
+					}
+
+					if (bHasRowActions) {
+						aHeaderDomRefs.push($Table.find(".sapUiTableRowActionHeader").get(0));
 					}
 				}
 
@@ -190,7 +243,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/It
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardExtension
@@ -205,12 +258,6 @@ sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/It
 			this._itemNavigationInvalidated = false; // determines whether item navigation should be reapplied from scratch
 			this._itemNavigationSuspended = false; // switch off event forwarding to item navigation
 			this._type = sTableType;
-			this._legacy = bLegacy;
-			var TableKeyboardDelegate = NewKeyboardDelegate;
-			if (bLegacy) {
-				jQuery.sap.log.warning("The old keyboard handling of sap.ui.table.Table is deprecated and will be deactivated soon.");
-				TableKeyboardDelegate = OldKeyboardDelegate;
-			}
 			this._delegate = new TableKeyboardDelegate(sTableType);
 			this._actionMode = false;
 

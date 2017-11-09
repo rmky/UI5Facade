@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,7 +12,10 @@ sap.ui.define([
 ], function (jQuery, _Batch, _Helper) {
 	"use strict";
 
-	var mFinalHeaders = { // final (cannot be overridden) request headers for OData V4
+	var mBatchHeaders = { // headers for the $batch request
+			"Accept" : "multipart/mixed"
+		},
+		mFinalHeaders = { // final (cannot be overridden) request headers for OData V4
 			"Content-Type" : "application/json;charset=UTF-8;IEEE754Compatible=true"
 		},
 		mPredefinedPartHeaders = { // predefined request headers in $batch parts
@@ -346,6 +349,8 @@ sap.ui.define([
 	 *   again
 	 * @returns {Promise}
 	 *   A promise on the outcome of the HTTP request
+	 * @throws {Error}
+	 *   If group ID is '$cached'
 	 *
 	 * @private
 	 */
@@ -357,6 +362,10 @@ sap.ui.define([
 			sPayload,
 			oPromise,
 			oRequest;
+
+		if (sGroupId === "$cached") {
+			throw new Error("Unexpected request: " + sMethod + " " + sResourcePath);
+		}
 
 		sGroupId = sGroupId || "$direct";
 		if (bIsBatch) {
@@ -602,7 +611,7 @@ sap.ui.define([
 		bHasChanges = aChangeSet.length > 0;
 		this.batchRequestSent(sGroupId, bHasChanges);
 
-		return this.request("POST", "$batch", undefined, undefined, aRequests)
+		return this.request("POST", "$batch", undefined, mBatchHeaders, aRequests)
 			.then(function (aResponses) {
 				that.batchResponseReceived(sGroupId, bHasChanges);
 				visit(aRequests, aResponses);

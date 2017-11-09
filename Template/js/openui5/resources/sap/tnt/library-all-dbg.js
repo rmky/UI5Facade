@@ -3,7 +3,7 @@ jQuery.sap.declare('sap.tnt.library-all');
 if ( !jQuery.sap.isDeclared('sap.tnt.NavigationListRenderer') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -53,11 +53,7 @@ sap.ui.define("sap/tnt/NavigationListRenderer",['jquery.sap.global', 'sap/ui/cor
 			rm.writeClasses();
 
 			// ARIA
-			if (control.getHasListBoxRole()) {
-				role = 'listbox';
-			} else {
-				role = expanded ? 'tree' : 'toolbar';
-			}
+			role = expanded ? 'tree' : 'toolbar';
 
 			rm.writeAttribute("role", role);
 
@@ -79,7 +75,7 @@ sap.ui.define("sap/tnt/NavigationListRenderer",['jquery.sap.global', 'sap/ui/cor
 if ( !jQuery.sap.isDeclared('sap.tnt.SideNavigationRenderer') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -100,7 +96,7 @@ sap.ui.define("sap/tnt/SideNavigationRenderer",[],
          * @param {sap.ui.core.RenderManager}
          *          rm the RenderManager that can be used for writing to the render output buffer
          * @param {sap.ui.core.Control}
-         *          Control an object representation of the control that should be rendered
+         *          control an object representation of the control that should be rendered
          */
         SideNavigationRenderer.render = function (rm, control) {
             this.startSideNavigation(rm, control);
@@ -205,7 +201,7 @@ sap.ui.define("sap/tnt/SideNavigationRenderer",[],
 if ( !jQuery.sap.isDeclared('sap.tnt.ToolHeaderRenderer') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -255,7 +251,7 @@ sap.ui.define("sap/tnt/ToolHeaderRenderer",['sap/ui/core/Renderer', 'sap/m/Overf
 if ( !jQuery.sap.isDeclared('sap.tnt.ToolPageRenderer') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -279,24 +275,29 @@ sap.ui.define("sap/tnt/ToolPageRenderer",[],
 		 *          control an object representation of the control that should be rendered
 		 */
 		ToolPageRenderer.render = function (rm, control) {
+
+			var header = control.getAggregation('header');
+
 			rm.write('<div');
 			rm.writeControlData(control);
 			rm.addClass('sapTntToolPage');
+
+			if (header) {
+				rm.addClass('sapTntToolPageWithHeader');
+			}
+
 			rm.writeClasses();
 			rm.write('>');
 
-			this.renderHeader(rm, control);
+			if (header) {
+				rm.write('<div id="' + control.getId() + '-header" class="sapTntToolPageHeader">');
+				rm.renderControl(header);
+				rm.write('</div>');
+			}
+
 			this.renderContentWrapper(rm, control);
 
 			rm.write('</div>');
-		};
-
-		ToolPageRenderer.renderHeader = function (rm, control) {
-			if (control.getAggregation('header')) {
-				rm.write('<div id="' + control.getId() + '-header" class="sapTntToolPageHeader">');
-				rm.renderControl(control.getAggregation('header'));
-				rm.write('</div>');
-			}
 		};
 
 		ToolPageRenderer.renderContentWrapper = function (rm, control) {
@@ -365,7 +366,7 @@ sap.ui.define("sap/tnt/ToolPageRenderer",[],
 if ( !jQuery.sap.isDeclared('sap.tnt.library') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -388,14 +389,14 @@ sap.ui.define("sap/tnt/library",['jquery.sap.global',
 	 * @namespace
 	 * @name sap.tnt
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : 'sap.tnt',
-		version: '1.44.8',
+		version: '1.48.12',
 		dependencies : ['sap.ui.core','sap.m'],
 		types: [],
 		interfaces: [],
@@ -419,7 +420,7 @@ sap.ui.define("sap/tnt/library",['jquery.sap.global',
 if ( !jQuery.sap.isDeclared('sap.tnt.NavigationList') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -429,8 +430,9 @@ jQuery.sap.require('jquery.sap.global'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.core.Control'); // unlisted dependency retained
 jQuery.sap.require('sap.m.Popover'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.core.delegate.ItemNavigation'); // unlisted dependency retained
-sap.ui.define("sap/tnt/NavigationList",['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/Popover', 'sap/ui/core/delegate/ItemNavigation'],
-	function(jQuery, library, Control, Popover, ItemNavigation) {
+jQuery.sap.require('sap.ui.core.InvisibleText'); // unlisted dependency retained
+sap.ui.define("sap/tnt/NavigationList",['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/Popover', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/InvisibleText'],
+	function(jQuery, library, Control, Popover, ItemNavigation, InvisibleText) {
 		"use strict";
 
 		/**
@@ -445,7 +447,7 @@ sap.ui.define("sap/tnt/NavigationList",['jquery.sap.global', './library', 'sap/u
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 *
 		 * @constructor
 		 * @public
@@ -512,24 +514,18 @@ sap.ui.define("sap/tnt/NavigationList",['jquery.sap.global', './library', 'sap/u
 			this.addEventDelegate(this._itemNavigation);
 
 			this._itemNavigation.setPageSize(10);
+			this._itemNavigation.setDisabledModifiers({
+				sapnext : ["alt", "meta"],
+				sapprevious : ["alt", "meta"]
+			});
 
 			this._resourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.core");
-		};
 
-		/**
-		 * Sets a listbox accessibility role to the control.
-		 * @private
-		 */
-		NavigationList.prototype.setHasListBoxRole = function (hasListBoxRole) {
-			this._hasListBoxRole = hasListBoxRole;
-		};
-
-		/**
-		 * Gets if the control has listbox accessibility role.
-		 * @private
-		 */
-		NavigationList.prototype.getHasListBoxRole = function () {
-			return this._hasListBoxRole;
+			if (sap.ui.getCore().getConfiguration().getAccessibility() && !NavigationList._sAriaPopupLabelId) {
+				NavigationList._sAriaPopupLabelId = new InvisibleText({
+					text: '' // add empty string in order to prevent the redundant speech output
+				}).toStatic().getId();
+			}
 		};
 
 		/**
@@ -662,9 +658,13 @@ sap.ui.define("sap/tnt/NavigationList",['jquery.sap.global', './library', 'sap/u
 				verticalScrolling: true,
 				initialFocus: selectedItem,
 				afterClose: function () {
-					that._popover = null;
+					if (that._popover) {
+						that._popover.destroy();
+						that._popover = null;
+					}
 				},
-				content: list
+				content: list,
+				ariaLabelledBy: [NavigationList._sAriaPopupLabelId]
 			}).addStyleClass('sapContrast sapContrastPlus');
 
 			popover._adaptPositionParams = this._adaptPopoverPositionParams;
@@ -709,7 +709,7 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 		 * @extends sap.ui.core.Item
 		 *
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 *
 		 * @constructor
 		 * @public
@@ -880,8 +880,6 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 				]
 			}).addStyleClass('sapTntNavLIPopup');
 
-			navList.setHasListBoxRole(true);
-
 			if (selectedItem == this) {
 				popupSelectedItem = newGroup;
 				navList.isGroupSelected = true;
@@ -970,7 +968,7 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 			}
 
 			this.setProperty('expanded', true, true);
-			this.$().find('.sapTntNavLIGroup').attr('aria-expanded', true);
+			this.$().attr('aria-expanded', true);
 
 			var expandIconControl = this._getExpandIconControl();
 			expandIconControl.setSrc(NavigationListItem.collapseIcon);
@@ -996,7 +994,7 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 			}
 
 			this.setProperty('expanded', false, true);
-			this.$().find('.sapTntNavLIGroup').attr('aria-expanded', false);
+			this.$().attr('aria-expanded', false);
 
 			var expandIconControl = this._getExpandIconControl();
 			expandIconControl.setSrc(NavigationListItem.expandIcon);
@@ -1094,17 +1092,6 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 			}
 
 			if (control.getExpanded()) {
-				// ARIA
-				if (control.getHasListBoxRole()) {
-					rm.writeAttribute("role", 'option');
-				} else {
-					rm.writeAttribute("role", 'treeitem');
-					if (this.getItems().length > 0) {
-						rm.writeAttribute("aria-expanded", this.getExpanded());
-					}
-					rm.writeAttribute("aria-level", 1);
-				}
-
 				var text = this.getText();
 
 				var sTooltip = this.getTooltip_AsString() || text;
@@ -1147,6 +1134,8 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 
 			rm.write('<li');
 			rm.writeElementData(this);
+			rm.writeAttribute("aria-expanded", this.getExpanded());
+			rm.writeAttribute("aria-level", 1);
 
 			if (this.getEnabled() && !isListExpanded) {
 				rm.write(' tabindex="-1"');
@@ -1168,8 +1157,10 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 				rm.writeAttribute("role", 'button');
 				rm.writeAttribute("aria-haspopup", true);
 			} else {
-				rm.write(' role="presentation" ');
+				rm.writeAttribute("role", "treeitem");
 			}
+
+			rm.writeAttribute("tabindex", "0");
 
 			rm.write(">");
 
@@ -1179,6 +1170,7 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 
 				rm.write("<ul");
 
+				rm.writeAttribute("role", "group");
 				rm.addClass("sapTntNavLIGroupItems");
 
 				if (!expanded) {
@@ -1228,12 +1220,8 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 			}
 
 			// ARIA
-			if (control.getHasListBoxRole()) {
-				rm.writeAttribute("role", 'option');
-			} else {
-				rm.writeAttribute("role", 'treeitem');
-				rm.writeAttribute("aria-level", 2);
-			}
+			rm.writeAttribute("role", 'treeitem');
+			rm.writeAttribute("aria-level", 2);
 
 			rm.writeClasses();
 
@@ -1379,11 +1367,7 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 
 			var $this = this.$();
 
-			if (this.getParent().getExpanded()) {
-				domRefs.push($this.find('.sapTntNavLIGroup')[0]);
-			} else {
-				domRefs.push($this[0]);
-			}
+			domRefs.push($this.find('.sapTntNavLIGroup')[0]);
 
 			if (this.getExpanded()) {
 				var subItems = $this.find('.sapTntNavLIGroupItem');
@@ -1402,7 +1386,7 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -1410,7 +1394,7 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 if ( !jQuery.sap.isDeclared('sap.tnt.SideNavigation') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -1422,347 +1406,353 @@ jQuery.sap.require('sap.ui.core.ResizeHandler'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.core.Icon'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.core.delegate.ScrollEnablement'); // unlisted dependency retained
 sap.ui.define("sap/tnt/SideNavigation",['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/ResizeHandler',
-        'sap/ui/core/Icon', 'sap/ui/core/delegate/ScrollEnablement'],
-    function (jQuery, library, Control, ResizeHandler,
-              Icon, ScrollEnablement) {
-        'use strict';
+		'sap/ui/core/Icon', 'sap/ui/core/delegate/ScrollEnablement'],
+	function (jQuery, library, Control, ResizeHandler,
+			  Icon, ScrollEnablement) {
+		'use strict';
 
-        /**
-         * Constructor for a new SideNavigation.
-         *
-         * @param {string} [sId] ID for the new control, generated automatically if no ID is given
-         * @param {object} [mSettings] Initial settings for the new control
-         *
-         * @class
-         * The SideNavigation control is a container, which consists of flexible and fixed parts on top of each other. The flexible part adapts its size to the fixed one.
-         * The flexible part has a scrollbar when the content is larger than the available space.
-         * Whenever the height of the whole control is less than 256 pixels, the scrollbar becomes joint for the two parts.
-         *
-         * <b>Note:</b> In order for the SideNavigation to stretch properly, its parent layout control should only be the sap.tnt.ToolPage.
-         * @extends sap.ui.core.Control
-         *
-         * @author SAP SE
-         * @version 1.44.8
-         *
-         * @constructor
-         * @public
-         * @since 1.34
-         * @alias sap.tnt.SideNavigation
-         * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
-         */
-        var SideNavigation = Control.extend('sap.tnt.SideNavigation', /** @lends sap.t.SideNavigation.prototype */ {
-            metadata: {
-                library: 'sap.tnt',
-                properties: {
-                    /**
-                     * Specifies if the control is expanded.
-                     */
-                    expanded: {type: 'boolean', group: 'Misc', defaultValue: true}
-                },
-                defaultAggregation: "item",
-                aggregations: {
-                    /**
-                     * Defines the content inside the flexible part.
-                     */
-                    item: {type: 'sap.tnt.NavigationList', multiple: false, bindable: "bindable"},
-                    /**
-                     * Defines the content inside the fixed part.
-                     */
-                    fixedItem: {type: 'sap.tnt.NavigationList', multiple: false},
-                    /**
-                     * Defines the content inside the footer.
-                     */
-                    footer: {type: 'sap.tnt.NavigationList', multiple: false},
-                    /**
-                     * The top arrow, used for scrolling throw items when SideNavigation is collapsed.
-                     */
-                    _topArrowControl: {type: "sap.ui.core.Icon", multiple: false, visibility: "hidden"},
-                    /**
-                     * The bottom arrow, used for scrolling throw items when SideNavigation is collapsed.
-                     */
-                    _bottomArrowControl: {type: "sap.ui.core.Icon", multiple: false, visibility: "hidden"}
-                },
-                events: {
-                    /**
-                     * Fired when an item is selected.
-                     */
-                    itemSelect: {
-                        parameters: {
-                            /**
-                             * The selected item.
-                             */
-                            item: {type: 'sap.ui.core.Item'}
-                        }
-                    }
-                }
-            }
-        });
+		/**
+		 * Constructor for a new SideNavigation.
+		 *
+		 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
+		 * @param {object} [mSettings] Initial settings for the new control
+		 *
+		 * @class
+		 * The SideNavigation control is a container, which consists of flexible and fixed parts on top of each other. The flexible part adapts its size to the fixed one.
+		 * The flexible part has a scrollbar when the content is larger than the available space.
+		 * Whenever the height of the whole control is less than 256 pixels, the scrollbar becomes joint for the two parts.
+		 *
+		 * <b>Note:</b> In order for the SideNavigation to stretch properly, its parent layout control should only be the sap.tnt.ToolPage.
+		 * @extends sap.ui.core.Control
+		 *
+		 * @author SAP SE
+		 * @version 1.48.12
+		 *
+		 * @constructor
+		 * @public
+		 * @since 1.34
+		 * @alias sap.tnt.SideNavigation
+		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
+		 */
+		var SideNavigation = Control.extend('sap.tnt.SideNavigation', /** @lends sap.t.SideNavigation.prototype */ {
+			metadata: {
+				library: 'sap.tnt',
+				properties: {
+					/**
+					 * Specifies if the control is expanded.
+					 */
+					expanded: {type: 'boolean', group: 'Misc', defaultValue: true}
+				},
+				defaultAggregation: "item",
+				aggregations: {
+					/**
+					 * Defines the content inside the flexible part.
+					 */
+					item: {type: 'sap.tnt.NavigationList', multiple: false, bindable: "bindable"},
+					/**
+					 * Defines the content inside the fixed part.
+					 */
+					fixedItem: {type: 'sap.tnt.NavigationList', multiple: false},
+					/**
+					 * Defines the content inside the footer.
+					 */
+					footer: {type: 'sap.tnt.NavigationList', multiple: false},
+					/**
+					 * The top arrow, used for scrolling throw items when SideNavigation is collapsed.
+					 */
+					_topArrowControl: {type: "sap.ui.core.Icon", multiple: false, visibility: "hidden"},
+					/**
+					 * The bottom arrow, used for scrolling throw items when SideNavigation is collapsed.
+					 */
+					_bottomArrowControl: {type: "sap.ui.core.Icon", multiple: false, visibility: "hidden"}
+				},
+				events: {
+					/**
+					 * Fired when an item is selected.
+					 */
+					itemSelect: {
+						parameters: {
+							/**
+							 * The selected item.
+							 */
+							item: {type: 'sap.ui.core.Item'}
+						}
+					}
+				}
+			}
+		});
 
-        SideNavigation.prototype.init = function () {
+		SideNavigation.prototype.init = function () {
 
-            this._scroller = new ScrollEnablement(this, this.getId() + "-Flexible-Content", {
-                horizontal: false,
-                vertical: true
-            });
+			this._scroller = new ScrollEnablement(this, this.getId() + "-Flexible-Content", {
+				horizontal: false,
+				vertical: true
+			});
 
-            // Define group for F6 handling
-            this.data('sap-ui-fastnavgroup', 'true', true);
-        };
+			// Define group for F6 handling
+			this.data('sap-ui-fastnavgroup', 'true', true);
+		};
 
-        SideNavigation.prototype.setAggregation = function (aggregationName, object, suppressInvalidate) {
-            if (object && object.attachItemSelect) {
-                object.attachItemSelect(this._itemSelectionHandler.bind(this));
-            }
+		SideNavigation.prototype.setAggregation = function (aggregationName, object, suppressInvalidate) {
+			if (object && object.attachItemSelect) {
+				object.attachItemSelect(this._itemSelectionHandler.bind(this));
+			}
 
-            return sap.ui.base.ManagedObject.prototype.setAggregation.apply(this, arguments);
-        };
+			return sap.ui.base.ManagedObject.prototype.setAggregation.apply(this, arguments);
+		};
 
-        /**
-         * Sets if the control is in expanded or collapsed mode.
-         */
-        SideNavigation.prototype.setExpanded = function (isExpanded) {
+		/**
+		 * Sets if the control is in expanded or collapsed mode.
+		 *
+		 * @name sap.tnt.SideNavigation.setExpanded
+		 * @method
+		 * @public
+		 * @param {boolean} isExpanded Indication if the SideNavigation is expanded.
+		 * @returns {sap.tnt.SideNavigation} this SideNavigation reference for chaining.
+		 */
+		SideNavigation.prototype.setExpanded = function (isExpanded) {
 
-            if (this.getExpanded() === isExpanded) {
-                return this;
-            }
+			if (this.getExpanded() === isExpanded) {
+				return this;
+			}
 
-            this.setProperty('expanded', isExpanded, true);
+			this.setProperty('expanded', isExpanded, true);
 
-            if (!this.getDomRef()) {
-                return this;
-            }
+			if (!this.getDomRef()) {
+				return this;
+			}
 
-            var that = this,
-                $this = this.$(),
-                width;
+			var that = this,
+				$this = this.$(),
+				width;
 
-            if (that._hasActiveAnimation) {
-                that._finishAnimation(!isExpanded);
-                $this.stop();
-            }
+			if (that._hasActiveAnimation) {
+				that._finishAnimation(!isExpanded);
+				$this.stop();
+			}
 
-            if (isExpanded) {
-                that.$().toggleClass('sapTntSideNavigationNotExpanded', !isExpanded);
+			if (isExpanded) {
+				that.$().toggleClass('sapTntSideNavigationNotExpanded', !isExpanded);
 
-                if (that.getAggregation('item')) {
-                    that.getAggregation('item').setExpanded(isExpanded);
-                }
+				if (that.getAggregation('item')) {
+					that.getAggregation('item').setExpanded(isExpanded);
+				}
 
-                if (that.getAggregation('fixedItem')) {
-                    that.getAggregation('fixedItem').setExpanded(isExpanded);
-                }
-            }
+				if (that.getAggregation('fixedItem')) {
+					that.getAggregation('fixedItem').setExpanded(isExpanded);
+				}
+			}
 
-            that._hasActiveAnimation = true;
+			that._hasActiveAnimation = true;
 
-            var isCompact = $this.parents('.sapUiSizeCompact').length > 0;
+			var isCompact = $this.parents('.sapUiSizeCompact').length > 0;
 
-            if (isCompact) {
-                width = isExpanded ? '15rem' : '2rem';
-            } else {
-                width = isExpanded ? '15rem' : '3rem';
-            }
+			if (isCompact) {
+				width = isExpanded ? '15rem' : '2rem';
+			} else {
+				width = isExpanded ? '15rem' : '3rem';
+			}
 
-            $this.animate({
-                    width: width
-                },
-                {
-                    duration: 300,
-                    complete: function () {
-                        var isExpanded = that.getExpanded();
-                        that._finishAnimation(isExpanded);
-                    }
-                });
+			$this.animate({
+					width: width
+				},
+				{
+					duration: 300,
+					complete: function () {
+						var isExpanded = that.getExpanded();
+						that._finishAnimation(isExpanded);
+					}
+				});
 
-            return this;
-        };
+			return this;
+		};
 
-        /**
-         * @private
-         */
-        SideNavigation.prototype._finishAnimation = function (isExpanded) {
-            if (!this._hasActiveAnimation || !this.getDomRef()) {
-                return;
-            }
+		/**
+		 * @private
+		 */
+		SideNavigation.prototype._finishAnimation = function (isExpanded) {
+			if (!this._hasActiveAnimation || !this.getDomRef()) {
+				return;
+			}
 
-            this.$().toggleClass('sapTntSideNavigationNotExpandedWidth', !isExpanded);
+			this.$().toggleClass('sapTntSideNavigationNotExpandedWidth', !isExpanded);
 
-            if (!isExpanded) {
-                this.$().toggleClass('sapTntSideNavigationNotExpanded', !isExpanded);
+			if (!isExpanded) {
+				this.$().toggleClass('sapTntSideNavigationNotExpanded', !isExpanded);
 
-                if (this.getAggregation('item')) {
-                    this.getAggregation('item').setExpanded(isExpanded);
-                }
+				if (this.getAggregation('item')) {
+					this.getAggregation('item').setExpanded(isExpanded);
+				}
 
-                if (this.getAggregation('fixedItem')) {
-                    this.getAggregation('fixedItem').setExpanded(isExpanded);
-                }
-            }
+				if (this.getAggregation('fixedItem')) {
+					this.getAggregation('fixedItem').setExpanded(isExpanded);
+				}
+			}
 
-            this.$().css('width', '');
-            this._hasActiveAnimation = false;
+			this.$().css('width', '');
+			this._hasActiveAnimation = false;
 
-            this._toggleArrows();
-        };
+			this._toggleArrows();
+		};
 
-        /**
-         * @private
-         */
-        SideNavigation.prototype.onBeforeRendering = function () {
-            this._deregisterControl();
-        };
+		/**
+		 * @private
+		 */
+		SideNavigation.prototype.onBeforeRendering = function () {
+			this._deregisterControl();
+		};
 
-        /**
-         * @private
-         */
-        SideNavigation.prototype.onAfterRendering = function () {
-            this._ResizeHandler = ResizeHandler.register(this.getDomRef(), this._toggleArrows.bind(this));
-            this._toggleArrows();
-        };
+		/**
+		 * @private
+		 */
+		SideNavigation.prototype.onAfterRendering = function () {
+			this._ResizeHandler = ResizeHandler.register(this.getDomRef(), this._toggleArrows.bind(this));
+			this._toggleArrows();
+		};
 
-        /**
-         * @private
-         */
-        SideNavigation.prototype.exit = function () {
+		/**
+		 * @private
+		 */
+		SideNavigation.prototype.exit = function () {
 
-            if (this._scroller) {
-                this._scroller.destroy();
-                this._scroller = null;
-            }
+			if (this._scroller) {
+				this._scroller.destroy();
+				this._scroller = null;
+			}
 
-            this._deregisterControl();
-        };
+			this._deregisterControl();
+		};
 
-        /**
-         *
-         * @param event
-         * @private
-         */
-        SideNavigation.prototype._itemSelectionHandler = function (event) {
-            var listId = event.getSource().getId();
-            var itemAggregation = this.getAggregation('item');
-            var fixedItemAggregation = this.getAggregation('fixedItem');
+		/**
+		 *
+		 * @param event
+		 * @private
+		 */
+		SideNavigation.prototype._itemSelectionHandler = function (event) {
+			var listId = event.getSource().getId();
+			var itemAggregation = this.getAggregation('item');
+			var fixedItemAggregation = this.getAggregation('fixedItem');
 
-            if (itemAggregation && fixedItemAggregation && listId === itemAggregation.getId()) {
-                fixedItemAggregation.setSelectedItem(null);
-            }
+			if (itemAggregation && fixedItemAggregation && listId === itemAggregation.getId()) {
+				fixedItemAggregation.setSelectedItem(null);
+			}
 
-            if (itemAggregation && fixedItemAggregation && listId === fixedItemAggregation.getId()) {
-                itemAggregation.setSelectedItem(null);
-            }
+			if (itemAggregation && fixedItemAggregation && listId === fixedItemAggregation.getId()) {
+				itemAggregation.setSelectedItem(null);
+			}
 
-            this.fireItemSelect({
-                item: event.getParameter('item')
-            });
-        };
+			this.fireItemSelect({
+				item: event.getParameter('item')
+			});
+		};
 
-        /**
-         * @private
-         */
-        SideNavigation.prototype._deregisterControl = function () {
-            if (this._ResizeHandler) {
-                ResizeHandler.deregister(this._ResizeHandler);
-                this._ResizeHandler = null;
-            }
-        };
+		/**
+		 * @private
+		 */
+		SideNavigation.prototype._deregisterControl = function () {
+			if (this._ResizeHandler) {
+				ResizeHandler.deregister(this._ResizeHandler);
+				this._ResizeHandler = null;
+			}
+		};
 
-        /**
-         * Returns the sap.ui.core.Icon control used to display the group icon.
-         * @returns {sap.ui.core.Icon}
-         * @private
-         */
-        SideNavigation.prototype._getTopArrowControl = function () {
-            var iconControl = this.getAggregation('_topArrowControl');
-            var that = this;
+		/**
+		 * Returns the sap.ui.core.Icon control used to display the group icon.
+		 * @returns {sap.ui.core.Icon}
+		 * @private
+		 */
+		SideNavigation.prototype._getTopArrowControl = function () {
+			var iconControl = this.getAggregation('_topArrowControl');
+			var that = this;
 
-            if (!iconControl) {
-                iconControl = new Icon({
-                    src: 'sap-icon://navigation-up-arrow',
-                    noTabStop: true,
-                    useIconTooltip: false,
-                    tooltip: '',
-                    press: this._arrowPress.bind(that)
-                }).addStyleClass('sapTntSideNavigationScrollIcon sapTntSideNavigationScrollIconUp');
-                this.setAggregation("_topArrowControl", iconControl, true);
-            }
+			if (!iconControl) {
+				iconControl = new Icon({
+					src: 'sap-icon://navigation-up-arrow',
+					noTabStop: true,
+					useIconTooltip: false,
+					tooltip: '',
+					press: this._arrowPress.bind(that)
+				}).addStyleClass('sapTntSideNavigationScrollIcon sapTntSideNavigationScrollIconUp');
+				this.setAggregation("_topArrowControl", iconControl, true);
+			}
 
-            return iconControl;
-        };
+			return iconControl;
+		};
 
-        /**
-         * Returns the sap.ui.core.Icon control used to display the group icon.
-         * @returns {sap.ui.core.Icon}
-         * @private
-         */
-        SideNavigation.prototype._getBottomArrowControl = function () {
-            var iconControl = this.getAggregation('_bottomArrowControl');
-            var that = this;
+		/**
+		 * Returns the sap.ui.core.Icon control used to display the group icon.
+		 * @returns {sap.ui.core.Icon}
+		 * @private
+		 */
+		SideNavigation.prototype._getBottomArrowControl = function () {
+			var iconControl = this.getAggregation('_bottomArrowControl');
+			var that = this;
 
-            if (!iconControl) {
-                iconControl = new Icon({
-                    src: 'sap-icon://navigation-down-arrow',
-                    noTabStop: true,
-                    useIconTooltip: false,
-                    tooltip: '',
-                    press: this._arrowPress.bind(that)
-                }).addStyleClass('sapTntSideNavigationScrollIcon sapTntSideNavigationScrollIconDown');
+			if (!iconControl) {
+				iconControl = new Icon({
+					src: 'sap-icon://navigation-down-arrow',
+					noTabStop: true,
+					useIconTooltip: false,
+					tooltip: '',
+					press: this._arrowPress.bind(that)
+				}).addStyleClass('sapTntSideNavigationScrollIcon sapTntSideNavigationScrollIconDown');
 
-                this.setAggregation("_bottomArrowControl", iconControl, true);
-            }
+				this.setAggregation("_bottomArrowControl", iconControl, true);
+			}
 
-            return iconControl;
-        };
+			return iconControl;
+		};
 
-        SideNavigation.prototype._toggleArrows = function () {
-            var domRef = this.getDomRef();
+		SideNavigation.prototype._toggleArrows = function () {
+			var domRef = this.getDomRef();
 
-            if (!domRef) {
-                return;
-            }
+			if (!domRef) {
+				return;
+			}
 
-            var scrollContainerWrapper = this.$('Flexible')[0];
-            var scrollContainerContent = this.$('Flexible-Content')[0];
-            var isAsideExpanded = this.getExpanded();
+			var scrollContainerWrapper = this.$('Flexible')[0];
+			var scrollContainerContent = this.$('Flexible-Content')[0];
+			var isAsideExpanded = this.getExpanded();
 
-            if (this._hasActiveAnimation) {
-                domRef.querySelector('.sapTntSideNavigationScrollIconUp').style.display = 'none';
-                domRef.querySelector('.sapTntSideNavigationScrollIconDown').style.display = 'none';
-                return;
-            }
+			if (this._hasActiveAnimation) {
+				domRef.querySelector('.sapTntSideNavigationScrollIconUp').style.display = 'none';
+				domRef.querySelector('.sapTntSideNavigationScrollIconDown').style.display = 'none';
+				return;
+			}
 
-            if ((scrollContainerContent.offsetHeight > scrollContainerWrapper.offsetHeight) && !isAsideExpanded) {
-                domRef.querySelector('.sapTntSideNavigationScrollIconUp').style.display = 'block';
-                domRef.querySelector('.sapTntSideNavigationScrollIconDown').style.display = 'block';
+			if ((scrollContainerContent.offsetHeight > scrollContainerWrapper.offsetHeight) && !isAsideExpanded) {
+				domRef.querySelector('.sapTntSideNavigationScrollIconUp').style.display = 'block';
+				domRef.querySelector('.sapTntSideNavigationScrollIconDown').style.display = 'block';
 
-                domRef.querySelector('.sapTntSideNavigationScrollIconDown').classList.remove('sapTntSideNavigationScrollIconDisabled');
-            } else {
-                domRef.querySelector('.sapTntSideNavigationScrollIconUp').style.display = 'none';
-                domRef.querySelector('.sapTntSideNavigationScrollIconDown').style.display = 'none';
-            }
-        };
+				domRef.querySelector('.sapTntSideNavigationScrollIconDown').classList.remove('sapTntSideNavigationScrollIconDisabled');
+			} else {
+				domRef.querySelector('.sapTntSideNavigationScrollIconUp').style.display = 'none';
+				domRef.querySelector('.sapTntSideNavigationScrollIconDown').style.display = 'none';
+			}
+		};
 
-        SideNavigation.prototype._arrowPress = function (event, step) {
-            event.preventDefault();
+		SideNavigation.prototype._arrowPress = function (event) {
+			event.preventDefault();
 
-            var source = document.getElementById(event.oSource.sId);
-            var isDirectionForward = source.classList.contains('sapTntSideNavigationScrollIconDown') ? true : false;
+			var source = document.getElementById(event.oSource.sId);
+			var isDirectionForward = source.classList.contains('sapTntSideNavigationScrollIconDown') ? true : false;
 
-            var $container = this.$('Flexible');
+			var $container = this.$('Flexible');
 
-            var step = isDirectionForward ? 40 : -40;
-            $container[0].scrollTop += step;
-        };
+			var step = isDirectionForward ? 40 : -40;
+			$container[0].scrollTop += step;
+		};
 
-        return SideNavigation;
+		return SideNavigation;
 
-    }, /* bExport= */ true
+	}, /* bExport= */ true
 );
 
 }; // end of sap/tnt/SideNavigation.js
 if ( !jQuery.sap.isDeclared('sap.tnt.ToolHeader') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -1795,7 +1785,7 @@ sap.ui.define("sap/tnt/ToolHeader",['jquery.sap.global', './library', 'sap/ui/co
 		 * @extends sap.m.OverflowToolbar
 		 *
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 *
 		 * @constructor
 		 * @public
@@ -1903,7 +1893,7 @@ sap.ui.define("sap/tnt/ToolHeader",['jquery.sap.global', './library', 'sap/ui/co
 if ( !jQuery.sap.isDeclared('sap.tnt.ToolHeaderUtilitySeparator') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -1928,7 +1918,7 @@ sap.ui.define("sap/tnt/ToolHeaderUtilitySeparator",['jquery.sap.global', './libr
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 *
 		 * @constructor
 		 * @public
@@ -1957,7 +1947,7 @@ sap.ui.define("sap/tnt/ToolHeaderUtilitySeparator",['jquery.sap.global', './libr
 if ( !jQuery.sap.isDeclared('sap.tnt.ToolPage') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -1981,7 +1971,7 @@ sap.ui.define("sap/tnt/ToolPage",['./library', 'sap/ui/core/Control', 'sap/ui/De
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 *
 		 * @constructor
 		 * @public

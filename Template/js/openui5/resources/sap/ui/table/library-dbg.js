@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,10 +17,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/model/TreeAutoEx
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.table",
-		version: "1.44.8",
+		version: "1.48.12",
 		dependencies : ["sap.ui.core","sap.ui.unified"],
 		types: [
 			"sap.ui.table.NavigationMode",
+			"sap.ui.table.RowActionType",
 			"sap.ui.table.SelectionBehavior",
 			"sap.ui.table.SelectionMode",
 			"sap.ui.table.SortOrder",
@@ -34,12 +35,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/model/TreeAutoEx
 			"sap.ui.table.AnalyticalTable",
 			"sap.ui.table.ColumnMenu",
 			"sap.ui.table.Table",
-			"sap.ui.table.TreeTable"
+			"sap.ui.table.TreeTable",
+			"sap.ui.table.RowAction"
 		],
 		elements: [
 			"sap.ui.table.AnalyticalColumn",
 			"sap.ui.table.Column",
-			"sap.ui.table.Row"
+			"sap.ui.table.Row",
+			"sap.ui.table.RowActionItem",
+			"sap.ui.table.RowSettings"
 		],
 		extensions: {
 			flChangeHandlers: {
@@ -56,23 +60,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/model/TreeAutoEx
 		}
 	});
 
-	/* eslint-disable no-undef */
 	/**
 	 * Table-like controls, mainly for desktop scenarios.
 	 *
 	 * @namespace
 	 * @alias sap.ui.table
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @public
 	 */
 	var thisLib = sap.ui.table;
-	/* eslint-enable no-undef */
 
 	/**
 	 * Navigation mode of the table
 	 *
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -97,11 +99,41 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/model/TreeAutoEx
 
 	};
 
+	/**
+	 * Row Action types.
+	 *
+	 * @version 1.48.12
+	 * @enum {string}
+	 * @public
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.RowActionType = {
+
+		/**
+		 * Custom defined Row Action.
+		 * @public
+		 */
+		Custom : "Custom",
+
+		/**
+		 * Navigation Row Action.
+		 * @public
+		 */
+		Navigation : "Navigation",
+
+		/**
+		 * Delete Row Action.
+		 * @public
+		 */
+		Delete : "Delete"
+
+	};
+
 
 	/**
 	 * Selection behavior of the table
 	 *
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -132,7 +164,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/model/TreeAutoEx
 	/**
 	 * Selection mode of the table
 	 *
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -170,7 +202,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/model/TreeAutoEx
 	/**
 	 * Sort order of a column
 	 *
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -195,7 +227,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/model/TreeAutoEx
 	/**
 	 * VisibleRowCountMode of the table
 	 *
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -231,7 +263,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/model/TreeAutoEx
 	 *
 	 * Contains IDs of shared DOM references, which should be accessible to inheriting controls via getDomRef() function.
 	 *
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @enum {string}
 	 * @public
 	 */
@@ -301,7 +333,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/model/TreeAutoEx
 	/**
 	 * Different modes for setting the auto expand mode on tree or analytical bindings.
 	 *
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @enum {string}
 	 * @public
 	 * @borrows sap.ui.model.TreeAutoExpandMode.Sequential as Sequential
@@ -309,7 +341,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/model/TreeAutoEx
 	 */
 	thisLib.TreeAutoExpandMode = TreeAutoExpandMode;
 
-	//factory for table to create labels an textviews to be overwritten by commons and mobile library
+	//factory for table to create labels and textviews to be overwritten by commons and mobile library
 	if (!thisLib.TableHelper) {
 		thisLib.TableHelper = {
 			addTableClass: function(){ return ""; }, /* must return some additional CSS class */

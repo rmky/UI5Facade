@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,7 +22,7 @@ sap.ui.define(['sap/ui/base/ManagedObject', './Control', './Component', './Core'
 	 * @class
 	 * Component Container
 	 * @extends sap.ui.core.Control
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -35,23 +35,30 @@ sap.ui.define(['sap/ui/base/ManagedObject', './Control', './Component', './Core'
 		properties : {
 
 			/**
-			 * Component name, the package where the component is contained. The property can only be applied initially.
+			 * Component name, the package where the component is contained. This property can only be applied initially.
 			 */
 			name : {type : "string", defaultValue : null},
 
 			/**
-			 * The URL of the component. The property can only be applied initially.
+			 * The URL of the component. This property can only be applied initially.
 			 */
 			url : {type : "sap.ui.core.URI", defaultValue : null},
 
 			/**
+			 * Flag whether the component should be created sync (default) or async.
+			 * This property can only be applied initially.
+			 */
+			async : {type : "boolean", defaultValue : false},
+
+			/**
 			 * Enable/disable validation handling by MessageManager for this component.
 			 * The resulting Messages will be propagated to the controls.
+			 * This property can only be applied initially.
 			 */
 			handleValidation : {type : "boolean", defaultValue : false},
 
 			/**
-			 * The settings object passed to the component when created. The property can only be applied initially.
+			 * The settings object passed to the component when created. This property can only be applied initially.
 			 */
 			settings : {type : "object", defaultValue : null},
 
@@ -71,12 +78,33 @@ sap.ui.define(['sap/ui/base/ManagedObject', './Control', './Component', './Core'
 			height : {type : "sap.ui.core.CSSSize", group : "Dimension", defaultValue : null},
 
 			/**
-			 * Lifecycle behavior for the Component associated by the ComponentContainer.
-			 * By default the behavior is "Legacy" which means that the ComponentContainer
-			 * takes care to destroy the Component once the ComponentContainer is destroyed
-			 * but not when a new Component is associated.
+			 * Lifecycle behavior for the Component associated by the <code>ComponentContainer</code>.
+			 * The default behavior is <code>Legacy</code>. This  means that the <code>ComponentContainer</code>
+			 * takes care that the Component is destroyed when the <code>ComponentContainer</code> is destroyed,
+			 * but it is <b>not</b> destroyed when a new Component is associated.
+			 * If you use the <code>usage</code> property to create the Component,
+			 * the default behavior is <code>Container</code>. This means that
+			 * the Component is destroyed when the <code>ComponentContainer</code> is destroyed or a new
+			 * Component is associated.
+			 * This property must only be applied before a component instance is created.
 			 */
-			lifecycle : {type : "sap.ui.core.ComponentLifecycle", defaultValue : ComponentLifecycle.Legacy}
+			lifecycle : {type : "sap.ui.core.ComponentLifecycle", defaultValue : ComponentLifecycle.Legacy},
+
+			/**
+			 * Flag, whether to autoprefix the id of the nested Component or not. If
+			 * this property is set to true the ID of the Component will be prefixed
+			 * with the ID of the ComponentContainer followed by a single dash.
+			 * This property can only be applied initially.
+			 */
+			autoPrefixId : {type : "boolean", defaultValue: false},
+
+			/**
+			 * The component usage. If the ComponentContainer is used inside a
+			 * Component, this Component can define a usage which will be used for creating
+			 * the Component.
+			 * This property can only be applied initially.
+			 */
+			usage : {type : "string", defaultValue : null}
 
 		},
 		associations : {
@@ -85,7 +113,8 @@ sap.ui.define(['sap/ui/base/ManagedObject', './Control', './Component', './Core'
 			 * The component displayed in this ComponentContainer.
 			 */
 			component : {type : "sap.ui.core.UIComponent", multiple : false}
-		}
+		},
+		designTime : true
 	}});
 
 
@@ -114,7 +143,7 @@ sap.ui.define(['sap/ui/base/ManagedObject', './Control', './Component', './Core'
 			oComponent = oComponentContainer.getComponentInstance();
 			if (oComponent) {
 				oComponent.setContainer(oComponentContainer);
-				oComponentContainer.propagateProperties();
+				oComponentContainer.propagateProperties(true); //all models/listeners
 			}
 		}
 	}
@@ -136,16 +165,49 @@ sap.ui.define(['sap/ui/base/ManagedObject', './Control', './Component', './Core'
 	 *
 	 * Once the component is associated with the container the cross connection
 	 * to the component will be set and the models will be propagated if defined.
+	 * If the <code>usage</code> property is set the ComponentLifecycle is processed like a "Container" lifecycle.
 	 *
-	 * @param {string|sap.ui.core.UIComponent} vComponent Id of an element which becomes the new target of this component association. Alternatively, an element instance may be given.
+	 * @param {string|sap.ui.core.UIComponent} vComponent ID of an element which becomes the new target of this component association. Alternatively, an element instance may be given.
 	 * @return {sap.ui.core.ComponentContainer} the reference to <code>this</code> in order to allow method chaining
 	 * @public
 	 */
 	ComponentContainer.prototype.setComponent = function(vComponent, bSuppressInvalidate) {
 		setContainerComponent(this, vComponent, bSuppressInvalidate,
-			this.getLifecycle() === ComponentLifecycle.Container);
+			this.getLifecycle() === ComponentLifecycle.Container
+			|| (typeof this.getUsage() === "string" && this.getUsage() && this.getLifecycle() === ComponentLifecycle.Legacy)
+		);
 		return this;
 	};
+
+
+	/*
+	 * support the ID prefixing of the component
+	 */
+	ComponentContainer.prototype.applySettings = function(mSettings, oScope) {
+		if (mSettings && mSettings.autoPrefixId === true && mSettings.settings && mSettings.settings.id) {
+			mSettings.settings.id = this.getId() + "-" + mSettings.settings.id;
+		}
+		Control.prototype.applySettings.apply(this, arguments);
+	};
+
+
+	/*
+	 * Helper to create the settings object for the Component Factory or the
+	 * createComponent function.
+	 */
+	function createComponentConfig(oComponentContainer) {
+		var sName = oComponentContainer.getName();
+		var sUsage = oComponentContainer.getUsage();
+		var mConfig = {
+			name: sName ? sName : undefined,
+			usage: sUsage ? sUsage : undefined,
+			async: oComponentContainer.getAsync(),
+			url: oComponentContainer.getUrl(),
+			handleValidation: oComponentContainer.getHandleValidation(),
+			settings: oComponentContainer.getSettings()
+		};
+		return mConfig;
+	}
 
 
 	/*
@@ -158,28 +220,27 @@ sap.ui.define(['sap/ui/base/ManagedObject', './Control', './Component', './Core'
 		// ==> not in applySettings to make sure that components are lazy instantiated,
 		//     e.g. in case of invisible containers the component will not be created
 		//     immediately in the constructor.
-		var oComponent = this.getComponentInstance();
-		if (!oComponent) {
-			// create the component / link to the container (if a name is given)
-			var sName = this.getName();
-			if (sName) {
-				// helper to create and set a new component instance
-				var fnCreateAndSetComponent = function createAndSetComponent() {
-					oComponent = sap.ui.component({
-						name: sName,
-						url: this.getUrl(),
-						handleValidation: this.getHandleValidation(),
-						settings: this.getSettings()
-					});
-					this.setComponent(oComponent, true);
-				}.bind(this);
-				// delegate the owner component if available
-				var oOwnerComponent = Component.getOwnerComponentFor(this);
-				if (oOwnerComponent) {
-					oOwnerComponent.runAsOwner(fnCreateAndSetComponent);
-				} else {
-					fnCreateAndSetComponent();
-				}
+		var oComponent = this.getComponentInstance(),
+			sUsage = this.getUsage(),
+			sName = this.getName();
+		if (!oComponent && (sUsage || sName)) {
+			// determine the owner component
+			var oOwnerComponent = Component.getOwnerComponentFor(this),
+				mConfig = createComponentConfig(this);
+			// create the component instance
+			if (!oOwnerComponent) {
+				oComponent = sap.ui.component(mConfig);
+			} else {
+				oComponent = oOwnerComponent._createComponent(mConfig);
+			}
+			// check whether it is needed to delay to set the component or not
+			if (oComponent instanceof Promise) {
+				oComponent.then(function(oComponent) {
+					// set the component and invalidate to ensure a re-rendering!
+					this.setComponent(oComponent);
+				}.bind(this));
+			} else {
+				this.setComponent(oComponent, true);
 			}
 		}
 
@@ -220,6 +281,17 @@ sap.ui.define(['sap/ui/base/ManagedObject', './Control', './Component', './Core'
 		if (oComponent && this.getPropagateModel()) {
 			this._propagateProperties(vName, oComponent);
 			Control.prototype.propagateProperties.apply(this, arguments);
+		}
+	};
+
+	/*
+	 * overridden to support contextual settings propagation to the associated component
+	 * no need to call the parent prototype method as there are no aggregations to propagate to
+	 */
+	ComponentContainer.prototype._propagateContextualSettings = function () {
+		var oComponent = this.getComponentInstance();
+		if (oComponent) {
+			oComponent._applyContextualSettings(this._getContextualSettings());
 		}
 	};
 

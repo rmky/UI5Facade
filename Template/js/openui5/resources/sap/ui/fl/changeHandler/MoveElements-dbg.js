@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,11 +10,11 @@ sap.ui.define([
 		"use strict";
 
 		/**
-		 * Change handler for moving of a elements.
+		 * Change handler for moving of an elements.
 		 *
 		 * @alias sap.ui.fl.changeHandler.MoveElements
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 * @experimental Since 1.34.0
 		 */
 		var MoveElements = { };
@@ -26,10 +26,11 @@ sap.ui.define([
 		 *
 		 * @param {sap.ui.fl.Change} oChange change object with instructions to be applied on the control map
 		 * @param {sap.ui.core.Control} oSourceParent control that matches the change selector for applying the change, which is the source of the move
-		 * @param {object} mPropertyBag
-		 * @param {object} mPropertyBag.view - xml node representing an ui5 view
-		 * @param {sap.ui.fl.changeHandler.BaseTreeModifier} mPropertyBag.modifier
-		 * @param {sap.ui.core.UIComponent} mPropertyBag.appComponent
+		 * @param {object} mPropertyBag - map of properties
+		 * @param {object} mPropertyBag.view - xml node representing a ui5 view
+		 * @param {sap.ui.fl.changeHandler.BaseTreeModifier} mPropertyBag.modifier - modifier for the controls
+		 * @param {sap.ui.core.UIComponent} mPropertyBag.appComponent - appComopnent
+		 * @return {boolean} true - if change could be applied
 		 * @public
 		 * @function
 		 * @name sap.ui.fl.changeHandler.MoveElements#applyChange
@@ -90,86 +91,18 @@ sap.ui.define([
 					return;
 				}
 
-				oModifier.removeAggregation(oSourceParent, sSourceAggregation, oMovedElement, oView);
-				oModifier.insertAggregation(oTargetParent, sTargetAggregation, oMovedElement, mMovedElement.targetIndex);
+				oModifier.removeAggregation(oSourceParent, sSourceAggregation, oMovedElement);
+				oModifier.insertAggregation(oTargetParent, sTargetAggregation, oMovedElement, mMovedElement.targetIndex, oView);
 			});
 
 			return true;
 		};
 
-		MoveElements.buildStableChangeInfo = function(mMoveActionParameter){
-			delete mMoveActionParameter.source.publicAggregation;
-			delete mMoveActionParameter.target.publicAggregation;
-			return mMoveActionParameter;
-		};
-
 		/**
-		 * Completes the change by adding change handler specific content
-		 *
-		 * @param {sap.ui.fl.Change} oChange change object to be completed
-		 * @param {object} mSpecificChangeInfo as an empty object since no additional attributes are required for this operation
-		 * @param {object} mPropertyBag
-		 * @param {sap.ui.core.UiComponent} mPropertyBag.appComponent component in which the change should be applied
-		 * @public
-		 * @function
-		 * @name sap.ui.fl.changeHandler.MoveElements#completeChangeContent
+		 * @deprecated
 		 */
-		MoveElements.completeChangeContent = function(oChange, mSpecificChangeInfo, mPropertyBag) {
-			function checkCompleteChangeContentConditions() {
-				if (!mSpecificChangeInfo.movedElements) {
-					throw new Error("mSpecificChangeInfo.movedElements attribute required");
-				}
-				if (mSpecificChangeInfo.movedElements.length === 0) {
-					throw new Error("MovedElements array is empty");
-				}
-
-				mSpecificChangeInfo.movedElements.forEach(function (mElement) {
-					if (!mElement.id) {
-						throw new Error("MovedElements element has no id attribute");
-					}
-					if (typeof (mElement.sourceIndex) !== "number") {
-						throw new Error("SourceIndex attribute at MovedElements element is no number");
-					}
-					if (typeof (mElement.targetIndex) !== "number") {
-						throw new Error("TargetIndex attribute at MovedElements element is no number");
-					}
-				});
-			}
-
-			checkCompleteChangeContentConditions();
-
-			var oAppComponent = mPropertyBag.appComponent;
-
-			var mSpecificInfo = this.getSpecificChangeInfo(JsControlTreeModifier, mSpecificChangeInfo);
-			var mAdditionalSelectorInfo = {
-				aggregation: mSpecificInfo.source.aggregation,
-				type: mSpecificInfo.source.type
-			};
-			var mChangeData = oChange.getDefinition();
-			jQuery.extend(mChangeData.selector, mAdditionalSelectorInfo);
-
-			var mAdditionalTargetInfo = {
-				aggregation: mSpecificInfo.target.aggregation,
-				type: mSpecificInfo.target.type
-			};
-
-			mChangeData.changeType = MoveElements.CHANGE_TYPE;
-			mChangeData.content = {
-				movedElements : [],
-				target : {
-					selector :JsControlTreeModifier.getSelector(mSpecificInfo.target.id, oAppComponent, mAdditionalTargetInfo)
-				}
-			};
-
-			mSpecificInfo.movedElements.forEach(function(mElement) {
-				var oElement = mElement.element || JsControlTreeModifier.bySelector(mElement.id, oAppComponent);
-
-				mChangeData.content.movedElements.push({
-					selector: JsControlTreeModifier.getSelector(oElement, oAppComponent),
-					sourceIndex : mElement.sourceIndex,
-					targetIndex : mElement.targetIndex
-				});
-			});
+		MoveElements.completeChangeContent = function() {
+			throw new Error('Using deprecated change handler. Please consider of using \'MoveControls\' instead');
 		};
 
 		/**

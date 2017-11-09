@@ -1,11 +1,11 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([],
-	function () {
+sap.ui.define(["sap/f/FlexibleColumnLayout", "sap/ui/Device"],
+	function (FCL, Device) {
 		"use strict";
 
 		var FCLRenderer = {};
@@ -18,9 +18,9 @@ sap.ui.define([],
 			oRm.writeClasses();
 			oRm.write(">");
 
-			this.renderBeginColumn(oRm, oControl);
-			this.renderMidColumn(oRm, oControl);
-			this.renderEndColumn(oRm, oControl);
+			FCLRenderer.renderBeginColumn(oRm, oControl);
+			FCLRenderer.renderMidColumn(oRm, oControl);
+			FCLRenderer.renderEndColumn(oRm, oControl);
 
 			oRm.write("</div>");
 		};
@@ -31,24 +31,20 @@ sap.ui.define([],
 			// Begin column
 			oRm.write("<div");
 			oRm.writeAttribute("id", oControl.getId() + "-beginColumn");
+			oRm.writeAccessibilityState(oControl, {
+				role: "region",
+				labelledBy: FCL._getAriaLabels().beginColumnLabel
+			});
 			oRm.addClass("sapFFCLColumn").addClass("sapFFCLColumnBegin").addClass("sapFFCLColumnActive");
 			oRm.writeClasses();
 			oRm.writeStyles();
 			oRm.write(">");
 
-			// Begin column container
-			oRm.write("<div");
-			oRm.writeAttribute("id", oControl.getId() + "-beginColumn-container");
-			oRm.addClass("sapFFCLContainer");
-			oRm.writeClasses();
-			oRm.write(">");
-			if (oControl.getBeginColumn()) {
-				oRm.renderControl(oControl.getBeginColumn());
-			}
-			oRm.write("</div>");
+			// Begin column content
+			FCLRenderer.renderColumnContentWrapper(oRm);
 
 			// Arrow - collapse begin
-			oRm.renderControl(oBeginColumnBackArrow);
+			FCLRenderer.renderArrow(oRm, oBeginColumnBackArrow);
 
 			oRm.write("</div>");
 		};
@@ -60,27 +56,23 @@ sap.ui.define([],
 			// Mid column
 			oRm.write("<div");
 			oRm.writeAttribute("id", oControl.getId() + "-midColumn");
+			oRm.writeAccessibilityState(oControl, {
+				role: "region",
+				labelledBy: FCL._getAriaLabels().midColumnLabel
+			});
 			oRm.addClass("sapFFCLColumn").addClass("sapFFCLColumnMid");
 			oRm.writeClasses();
 			oRm.writeStyles();
 			oRm.write(">");
 
-			// Mid column container
-			oRm.write("<div");
-			oRm.writeAttribute("id", oControl.getId() + "-midColumn-container");
-			oRm.addClass("sapFFCLContainer");
-			oRm.writeClasses();
-			oRm.write(">");
-			if (oControl.getMidColumn()) {
-				oRm.renderControl(oControl.getMidColumn());
-			}
-			oRm.write("</div>");
-
 			// Arrow - expand begin
-			oRm.renderControl(oMidColumnForwardArrow);
+			FCLRenderer.renderArrow(oRm, oMidColumnForwardArrow);
+
+			// Mid column content
+			FCLRenderer.renderColumnContentWrapper(oRm);
 
 			// Arrow - expand end
-			oRm.renderControl(oMidColumnBackArrow);
+			FCLRenderer.renderArrow(oRm, oMidColumnBackArrow);
 
 			oRm.write("</div>");
 		};
@@ -91,26 +83,36 @@ sap.ui.define([],
 			// End column
 			oRm.write("<div");
 			oRm.writeAttribute("id", oControl.getId() + "-endColumn");
+			oRm.writeAccessibilityState(oControl, {
+				role: "region",
+				labelledBy: FCL._getAriaLabels().endColumnLabel
+			});
 			oRm.addClass("sapFFCLColumn").addClass("sapFFCLColumnEnd");
 			oRm.writeClasses();
 			oRm.writeStyles();
 			oRm.write(">");
 
-			// End column container
-			oRm.write("<div");
-			oRm.writeAttribute("id", oControl.getId() + "-endColumn-container");
-			oRm.addClass("sapFFCLContainer");
-			oRm.writeClasses();
-			oRm.write(">");
-			if (oControl.getEndColumn()) {
-				oRm.renderControl(oControl.getEndColumn());
-			}
-			oRm.write("</div>");
-
 			// Arrow - right
-			oRm.renderControl(oEndColumnForwardArrow);
+			FCLRenderer.renderArrow(oRm, oEndColumnForwardArrow);
+
+			// End column content
+			FCLRenderer.renderColumnContentWrapper(oRm);
 
 			oRm.write("</div>");
+		};
+
+		FCLRenderer.renderArrow = function (oRm, oArrow) {
+			if (!Device.system.phone) {
+				oArrow.addStyleClass("sapContrastPlus");
+				oRm.renderControl(oArrow);
+			}
+		};
+
+		FCLRenderer.renderColumnContentWrapper = function (oRm) {
+			oRm.write("<div");
+			oRm.addClass("sapFFCLColumnContent");
+			oRm.writeClasses();
+			oRm.write("></div>");
 		};
 
 		return FCLRenderer;

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	 * @extends sap.m.NotificationListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -174,6 +174,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	//================================================================================
 
 	NotificationListItem.prototype.onBeforeRendering = function () {
+		this._updateAriaAdditionalInfo();
 		this._deregisterResize();
 	};
 
@@ -242,8 +243,15 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 			resourceBundle.getText('NOTIFICATION_LIST_ITEM_UNREAD') : resourceBundle.getText('NOTIFICATION_LIST_ITEM_READ');
 		var dueAndPriorityString = resourceBundle.getText('NOTIFICATION_LIST_ITEM_DATETIME_PRIORITY',
 			[this.getDatetime(), this.getPriority()]);
+		var authorName = this.getAuthorName();
+		var ariaText = readUnreadText + ' ';
 
-		this._ariaDetailsText.setText(readUnreadText + ' ' + dueAndPriorityString);
+		if (authorName) {
+			ariaText += resourceBundle.getText('NOTIFICATION_LIST_ITEM_CREATED_BY') + ' ' + this.getAuthorName() + ' ';
+		}
+
+		ariaText += dueAndPriorityString;
+		this._ariaDetailsText.setText(ariaText);
 	};
 
 	/**
@@ -269,6 +277,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 		var notificationDomRef = this.getDomRef();
 
 		if (this._canTruncate() && (!this.getHideShowMoreButton())) { // if the Notification has long text
+
 			// show the truncate button
 			this.getDomRef('expandCollapseButton').classList.remove('sapMNLI-CollapseButtonHide');
 

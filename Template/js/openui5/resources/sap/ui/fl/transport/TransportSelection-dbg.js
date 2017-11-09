@@ -1,6 +1,6 @@
 /*
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,7 +11,7 @@ sap.ui.define([	"jquery.sap.global", "sap/ui/fl/Utils", "sap/ui/fl/transport/Tra
 	 * @alias sap.ui.fl.transport.TransportSelection
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @since 1.38.0
 	 * Helper object to select an ABAP transport for an LREP object. This is not a generic utility to select a transport request, but part
 	 *        of the SmartVariant control.
@@ -29,7 +29,8 @@ sap.ui.define([	"jquery.sap.global", "sap/ui/fl/Utils", "sap/ui/fl/transport/Tra
 	/**
 	 * Selects a transport request for a given LREP object.
 	 * First checks if the Adaptation Transport Organizer (ATO) is enabled
-	 * If ATO is enabled and LREP object is in CUSTOMER layer the request 'ATO_NOTIFICATION' has to be used which in the backend triggers that the change is added to an ATO collection
+	 * If ATO is enabled and the layered repository object is in the CUSTOMER layer, the request 'ATO_NOTIFICATION' has to be used.
+	 * This request triggers in the back end that the change is added to an ATO collection.
 	 * If ATO is not enabled or LREP object not in CUSTOMER layer:
 	 * If the LREP object is already assigned to an open transport request or the LREP object is
 	 * assigned to a local ABAP package, no dialog to select a transport is started. Instead the success callback is invoked directly. The transport
@@ -44,31 +45,22 @@ sap.ui.define([	"jquery.sap.global", "sap/ui/fl/Utils", "sap/ui/fl/transport/Tra
 	 * @public
 	 */
 	TransportSelection.prototype.selectTransport = function(oObjectInfo, fOkay, fError, bCompactMode, oControl) {
-		var sComponentName, mPropertyBag;
 		var that = this;
 
 		if (oObjectInfo) {
 			var sLayerType = Utils.getCurrentLayer(false);
 
-			if (oControl) {
-				sComponentName = Utils.getComponentClassName(oControl);
-				mPropertyBag = {
-					appDescriptor: Utils.getAppDescriptor(oControl),
-					siteId: Utils.getSiteId(oControl)
-				};
-			}
-
-			// if component name and object layer are known and layer is CUSTOMER
+			// if object layer are known and layer is CUSTOMER
 			// check in settings if the adaptation transport organizer (ATO) is enabled
-			if (sComponentName && sLayerType && sLayerType === 'CUSTOMER') {
+			if (sLayerType && sLayerType === 'CUSTOMER') {
 				// retrieve the settings and check if ATO is enabled
-				FlexSettings.getInstance(sComponentName, mPropertyBag).then(function(oSettings) {
+				FlexSettings.getInstance().then(function(oSettings) {
 					// ATO is enabled - signal that change is to be added to an ATO collection
 					// instead of a transport
 					if (oSettings.isAtoEnabled()) {
 						var oTransport = { transportId: "ATO_NOTIFICATION" };
 						fOkay(that._createEventObject(oObjectInfo, oTransport));
-					// ATO is not enabled - use CTS
+						//ATO is not enabled, use CTS instead
 					} else {
 						that._selectTransport(oObjectInfo, fOkay, fError, bCompactMode);
 					}
@@ -272,7 +264,7 @@ sap.ui.define([	"jquery.sap.global", "sap/ui/fl/Utils", "sap/ui/fl/transport/Tra
 				if (bFromDialog === true) {
 					// if the request has been set by the transport dialog already,
 					// do not bring up the transport dialog a second time, but use this transport instead
-					// if the change is locked on another transport, this will be resolved in the backend when the delete request is send
+					// if the change is locked on another transport, this will be resolved in the back end when the DELETE request is send
 					if (oCurrentChange.getDefinition().packageName !== "$TMP") {
 						oCurrentChange.setRequest(sTransport);
 					}

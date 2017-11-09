@@ -1,6 +1,6 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -21,7 +21,7 @@ sap.ui.define([
 	 * @class The MutationObserver observes changes of a ManagedObject and propagates them via events.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -34,7 +34,7 @@ sap.ui.define([
 			library: "sap.ui.dt",
 			events: {
 				/**
-				 * Event fired when the observed object is modified
+				 * Event fired when the observed object is modified or some changes which might affect dom position and styling of overlays happens
 				 */
 				domChanged: {
 					parameters : {
@@ -53,18 +53,24 @@ sap.ui.define([
 	 * @protected
 	 */
 	MutationObserver.prototype.init = function() {
-		var that = this;
-
-		this._fnFireResizeDomChanged = function() {
-			that.fireDomChanged({
-				type : "resize"
-			});
-		};
+		this._fnFireDomChanged = function() {
+			this.fireDomChanged();
+		}.bind(this);
 		this._onScroll = this._fireDomChangeOnScroll.bind(this);
 
 		this._startMutationObserver();
-		this._startResizeObserver();
-		this._startScrollObserver();
+
+		// after CSS transition / animation ends, domChanged event is triggered
+		window.addEventListener("transitionend", this._fnFireDomChanged, true);
+		window.addEventListener("webkitTransitionEnd", this._fnFireDomChanged, true);
+		window.addEventListener("otransitionend", this._fnFireDomChanged, true);
+		window.addEventListener("animationend", this._fnFireDomChanged, true);
+		window.addEventListener("webkitAnimationEnd", this._fnFireDomChanged, true);
+		window.addEventListener("oanimationend", this._fnFireDomChanged, true);
+
+		jQuery(window).on("resize", this._fnFireDomChanged);
+
+		window.addEventListener("scroll", this._onScroll, true);
 	};
 
 	/**
@@ -74,16 +80,19 @@ sap.ui.define([
 	 */
 	MutationObserver.prototype.exit = function() {
 		this._stopMutationObserver();
-		this._stopResizeObserver();
-		this._stopScrollObserver();
+
+		window.removeEventListener("transitionend", this._fnFireDomChanged, true);
+		window.removeEventListener("animationend", this._fnFireDomChanged, true);
+
+		jQuery(window).off("resize", this._fnFireDomChanged);
+
+		window.removeEventListener("scroll", this._onScroll, true);
 	};
 
 	/**
 	 * @private
 	 */
 	MutationObserver.prototype._startMutationObserver = function() {
-		var that = this;
-
 		if (this._oMutationObserver) {
 			return;
 		}
@@ -115,13 +124,13 @@ sap.ui.define([
 				});
 
 				if (aTargetNodes.length) {
-					that.fireDomChanged({
+					this.fireDomChanged({
 						type : "mutation",
 						elementIds : aElementIds,
 						targetNodes : aTargetNodes
 					});
 				}
-			});
+			}.bind(this));
 
 			// we should observe whole DOM, otherwise position change of elements can be triggered via outter changes
 			// (like change of body size, container insertions etc.)
@@ -137,6 +146,7 @@ sap.ui.define([
 		}
 	};
 
+
 	/**
 	 * @private
 	 */
@@ -150,41 +160,16 @@ sap.ui.define([
 	/**
 	 * @private
 	 */
-	MutationObserver.prototype._startResizeObserver = function() {
-		jQuery(window).on("resize", this._fnFireResizeDomChanged);
-	};
-
-	/**
-	 * @private
-	 */
-	MutationObserver.prototype._stopResizeObserver = function() {
-		jQuery(window).off("resize", this._fnFireResizeDomChanged);
-	};
-
-	/**
-	 * @private
-	 */
 	MutationObserver.prototype._fireDomChangeOnScroll = function(oEvent) {
 		var oTarget = oEvent.target;
-		if (!OverlayUtil.isInOverlayContainer(oTarget) && !OverlayUtil.getClosestOverlayForNode(oTarget)) {
+		if (!OverlayUtil.isInOverlayContainer(oTarget) &&
+			!OverlayUtil.getClosestOverlayForNode(oTarget) &&
+			oTarget !== document) {
+
 			this.fireDomChanged({
 				type : "scroll"
 			});
 		}
-	};
-
-	/**
-	 * @private
-	 */
-	MutationObserver.prototype._startScrollObserver = function() {
-		window.addEventListener("scroll", this._onScroll, true);
-	};
-
-	/**
-	 * @private
-	 */
-	MutationObserver.prototype._stopScrollObserver = function() {
-		window.removeEventListener("scroll", this._onScroll, true);
 	};
 
 	return MutationObserver;

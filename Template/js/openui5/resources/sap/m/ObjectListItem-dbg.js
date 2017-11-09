@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 		 * @class
 		 * ObjectListItem is a display control that provides summary information about an object as a list item. The ObjectListItem title is the key identifier of the object. Additional text and icons can be used to further distinguish it from other objects. Attributes and statuses can be used to provide additional meaning about the object to the user.
 		 * @extends sap.m.ListItemBase
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 *
 		 * @constructor
 		 * @public
@@ -64,7 +64,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 				activeIcon : {type : "sap.ui.core.URI", group : "Misc", defaultValue : null},
 
 				/**
-				 * By default, this is set to true but then one or more requests are sent trying to get the density perfect version of image (in case this version of image dоesn't exist on the server).
+				 * By default, this is set to true but then one or more requests are sent trying to get the density perfect version of image (in case this version of image doesn't exist on the server).
 				 *
 				 * If bandwidth is key for the application, set this value to false.
 				 */
@@ -190,6 +190,16 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 			ListItemBase.prototype.exit.apply(this);
 		};
 
+		ObjectListItem.prototype.onAfterRendering = function() {
+			var oObjectNumber = this.getAggregation("_objectNumber"),
+				bPageRTL = sap.ui.getCore().getConfiguration().getRTL(),
+				sTextAlign = bPageRTL ? sap.ui.core.TextAlign.Left : sap.ui.core.TextAlign.Right;
+
+			if (oObjectNumber && oObjectNumber.getNumber()) { // adjust alignment according the design specification
+				oObjectNumber.setTextAlign(sTextAlign);
+			}
+		};
+
 		/**
 		 * Initiates the <code>sap.m.ObjectNumber</code> aggregation based on the <code>number</code>, <code>numberUnit</code>, <code>numberState</code> and <code>numberTextDirection</code> properties.
 		 * @private
@@ -202,7 +212,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 
 			this.setAggregation("_objectNumber", new ObjectNumber(this.getId() + "-ObjectNumber", {
 				number: sNumber,
-				numberUnit: sNumberUnit,
+				unit: sNumberUnit,
 				state: oState,
 				textDirection: oTextDirection
 			}), true);
@@ -337,7 +347,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 			}
 		};
 
-		/**
+		/*
 		 * Sets the <code>number</code> property of the control.
 		 * @param sNumber {string} <code>Number</code> showed in <code>ObjectListItem</code>
 		 * @override
@@ -352,7 +362,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 			return this;
 		};
 
-		/**
+		/*
 		 * Sets the <code>numberUnit</code> property of the control.
 		 * @param sNumberUnit {string} <code>NumberUnit</code> showed in <code>ObjectListItem</code>
 		 * @override
@@ -362,12 +372,12 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 			//Do not rerender the whole control but only ObjectNumber control
 			this.setProperty('numberUnit', sNumberUnit, true);
 			//Rerender only the ObjectNumber internal private field
-			this.getAggregation('_objectNumber').setNumberUnit(sNumberUnit);
+			this.getAggregation('_objectNumber').setUnit(sNumberUnit);
 
 			return this;
 		};
 
-		/**
+		/*
 		 * Sets the <code>numberTextDirection</code> property of the control.
 		 * @param oTextDirection {sap.ui.core.TextDirection} The text direction of the internal <code>ObjectNumber</code>
 		 * @override
@@ -382,7 +392,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 			return this;
 		};
 
-		/**
+		/*
 		 * Sets the <code>numberState</code> property of the control.
 		 * @param oValueState {sap.ui.core.ValueState} The <code>valueState</code> of the internal <code>ObjectNumber</code>
 		 * @override

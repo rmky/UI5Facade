@@ -21,7 +21,7 @@
 	dividerWidth: undefined, // sap.ui.core.CSSSize
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	businessActions: [], // sap.ui.ux3.ThingAction
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -56,7 +56,7 @@
 	actionSelected=""
 	feedSubmit="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<businessActions></businessActions> <!-- sap.ui.ux3.ThingAction -->
 </ActionBar>
 ]]></xmlTemplate>
@@ -69,7 +69,7 @@
 	multiSelection: false, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	items: [], // sap.ui.core.Item
 	selectedItems: [], // sap.ui.core.Item
 	selectionChanged: [function (oEvent) {
@@ -89,7 +89,7 @@
 	selectionChanged=""
 	propertyChanged="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<items></items> <!-- sap.ui.core.Item -->
 </Collection>
 ]]></xmlTemplate>
@@ -105,7 +105,7 @@
 	fitParent: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	collections: [], // sap.ui.ux3.Collection
 	content: [], // sap.ui.core.Control
 	selectedCollection: undefined, // sap.ui.ux3.Collection
@@ -137,7 +137,7 @@
 	itemSelectionChanged=""
 	editCollection="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<collections></collections> <!-- sap.ui.ux3.Collection -->
 		<content></content> <!-- sap.ui.core.Control -->
 </CollectionInspector>
@@ -156,7 +156,7 @@
 	multiSelect: false, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	items: [], // sap.ui.ux3.DataSetItem
 	views: [], // sap.ui.ux3.DataSetView
 	filter: [], // sap.ui.core.Control
@@ -187,7 +187,7 @@
 	selectionChanged=""
 	search="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<items></items> <!-- sap.ui.ux3.DataSetItem -->
 		<views></views> <!-- sap.ui.ux3.DataSetView -->
 		<filter></filter> <!-- sap.ui.core.Control -->
@@ -203,7 +203,7 @@
 	subtitle: "Subtitle", // string
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	selected: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -217,7 +217,7 @@
 	subtitle="Subtitle"
 	selected="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 </DataSetItem>
 ]]></xmlTemplate>
 </Template>
@@ -241,7 +241,7 @@
 	height: undefined, // sap.ui.core.CSSSize, since 1.13.0
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	template: undefined, // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -267,7 +267,7 @@
 	height=""
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<template></template> <!-- sap.ui.core.Control -->
 </DataSetSimpleView>
 ]]></xmlTemplate>
@@ -282,7 +282,7 @@
 	resultText: undefined, // string
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	settingsMenu: undefined, // sap.ui.commons.Menu
 	attributes: [], // sap.ui.ux3.ExactAttribute
 	validateFieldGroup: [function (oEvent) {
@@ -307,7 +307,7 @@
 	search=""
 	refineSearch="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<settingsMenu></settingsMenu> <!-- sap.ui.commons.Menu -->
 		<attributes></attributes> <!-- sap.ui.ux3.ExactAttribute -->
 </Exact>
@@ -323,7 +323,7 @@
 	toolbarVisible: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	content: [], // sap.ui.core.Control
 	toolbarItems: [], // sap.ui.commons.ToolbarItem
 	validateFieldGroup: [function (oEvent) {
@@ -340,7 +340,7 @@
 	toolbarVisible="true"
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<content></content> <!-- sap.ui.core.Control -->
 		<toolbarItems></toolbarItems> <!-- sap.ui.commons.ToolbarItem -->
 </ExactArea>
@@ -359,7 +359,7 @@
 	autoActivateSupply: false, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	attributes: [], // sap.ui.ux3.ExactAttribute
 	supplyAttributes: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -378,7 +378,7 @@
 	autoActivateSupply="false"
 	supplyAttributes="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<attributes></attributes> <!-- sap.ui.ux3.ExactAttribute -->
 </ExactAttribute>
 ]]></xmlTemplate>
@@ -402,7 +402,7 @@
 	topListWidth: 168, // int, since 1.7.0
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	attributes: [], // sap.ui.ux3.ExactAttribute
 	optionsMenu: undefined, // sap.ui.commons.Menu
 	followUpControl: undefined, // sap.ui.core.Control
@@ -438,7 +438,7 @@
 	attributeSelected=""
 	save="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<attributes></attributes> <!-- sap.ui.ux3.ExactAttribute -->
 		<optionsMenu></optionsMenu> <!-- sap.ui.commons.Menu -->
 </ExactBrowser>
@@ -456,7 +456,7 @@
 	topHeight: 290, // int
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	subLists: [], // sap.ui.ux3.ExactList
 	data: undefined, // sap.ui.ux3.ExactAttribute
 	validateFieldGroup: [function (oEvent) {
@@ -480,7 +480,7 @@
 	validateFieldGroup=""
 	attributeSelected="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<subLists></subLists> <!-- sap.ui.ux3.ExactList -->
 </ExactList>
 ]]></xmlTemplate>
@@ -495,7 +495,7 @@
 	visibleItemCountMode: sap.ui.ux3.VisibleItemCountMode.Fixed, // sap.ui.ux3.VisibleItemCountMode
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	lists: [], // sap.ui.ux3.FacetFilterList
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -511,7 +511,7 @@
 	visibleItemCountMode="Fixed"
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<lists></lists> <!-- sap.ui.ux3.FacetFilterList -->
 </FacetFilter>
 ]]></xmlTemplate>
@@ -530,7 +530,7 @@
 	showCounter: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	items: [], // sap.ui.core.ListItem
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -554,7 +554,7 @@
 	validateFieldGroup=""
 	select="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<items></items> <!-- sap.ui.core.ListItem -->
 </FacetFilterList>
 ]]></xmlTemplate>
@@ -572,7 +572,7 @@
 	title: undefined, // string
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	filterItems: [], // sap.ui.core.ListItem
 	chunks: [], // sap.ui.ux3.FeedChunk
 	toolsMenuItems: [], // sap.ui.commons.MenuItem
@@ -613,7 +613,7 @@
 	toolsItemSelected=""
 	toggleLive="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<filterItems></filterItems> <!-- sap.ui.core.ListItem -->
 		<chunks></chunks> <!-- sap.ui.ux3.FeedChunk -->
 		<toolsMenuItems></toolsMenuItems> <!-- sap.ui.commons.MenuItem -->
@@ -645,7 +645,7 @@
 	enableFavorite: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	comments: [], // sap.ui.ux3.FeedChunk
 	actionMenuItems: [], // sap.ui.commons.MenuItem
 	validateFieldGroup: [function (oEvent) {
@@ -713,7 +713,7 @@
 	toggleShared=""
 	actionItemSelected="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<comments></comments> <!-- sap.ui.ux3.FeedChunk -->
 		<actionMenuItems></actionMenuItems> <!-- sap.ui.commons.MenuItem -->
 </FeedChunk>
@@ -732,7 +732,7 @@
 	placeholderText: undefined, // string
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this],
@@ -754,7 +754,7 @@
 	validateFieldGroup=""
 	submit="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 </Feeder>
 ]]></xmlTemplate>
 </Template>
@@ -769,7 +769,7 @@
 	overflowItemsToUpperCase: false, // boolean, since 1.36
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	items: [], // sap.ui.ux3.NavigationItem
 	selectedItem: undefined, // sap.ui.ux3.NavigationItem
 	associatedItems: [], // sap.ui.ux3.NavigationItem
@@ -794,7 +794,7 @@
 	validateFieldGroup=""
 	select="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<items></items> <!-- sap.ui.ux3.NavigationItem -->
 </NavigationBar>
 ]]></xmlTemplate>
@@ -810,7 +810,7 @@
 	href: undefined, // sap.ui.core.URI
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	subItems: [] // sap.ui.ux3.NavigationItem
 })
 ]]></jsTemplate>
@@ -823,7 +823,7 @@
 	visible="true"
 	href="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<subItems></subItems> <!-- sap.ui.ux3.NavigationItem -->
 </NavigationItem>
 ]]></xmlTemplate>
@@ -840,7 +840,7 @@
 	alwaysShowToggler: false, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	messageNotifier: undefined, // sap.ui.core.Element
 	notifiers: [], // sap.ui.core.Element
 	validateFieldGroup: [function (oEvent) {
@@ -867,7 +867,7 @@
 	display=""
 	resize="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<messageNotifier></messageNotifier> <!-- sap.ui.core.Element -->
 		<notifiers></notifiers> <!-- sap.ui.core.Element -->
 </NotificationBar>
@@ -880,7 +880,7 @@
 	title: undefined, // string
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	messages: [], // sap.ui.core.Message
 	messageSelected: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -893,7 +893,7 @@
 	title=""
 	messageSelected="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<messages></messages> <!-- sap.ui.core.Message -->
 </Notifier>
 ]]></xmlTemplate>
@@ -909,7 +909,7 @@
 	closeButtonVisible: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this],
@@ -941,7 +941,7 @@
 	openNew=""
 	open="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 </Overlay>
 ]]></xmlTemplate>
 </Template>
@@ -956,7 +956,7 @@
 	closeButtonVisible: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	content: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -989,7 +989,7 @@
 	openNew=""
 	open="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<content></content> <!-- sap.ui.core.Control -->
 </OverlayContainer>
 ]]></xmlTemplate>
@@ -1007,7 +1007,7 @@
 	height: "auto", // sap.ui.core.CSSSize
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	content: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -1042,7 +1042,7 @@
 	openNew=""
 	open="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<content></content> <!-- sap.ui.core.Control -->
 </OverlayDialog>
 ]]></xmlTemplate>
@@ -1080,7 +1080,7 @@
 	openActionEnabled: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	content: [], // sap.ui.core.Element
 	actions: [], // sap.ui.ux3.ThingAction
 	actionBar: undefined, // sap.ui.ux3.ActionBar
@@ -1153,7 +1153,7 @@
 	feedSubmit=""
 	navigate="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<content></content> <!-- sap.ui.core.Element -->
 		<actions></actions> <!-- sap.ui.ux3.ThingAction -->
 		<actionBar></actionBar> <!-- sap.ui.ux3.ActionBar -->
@@ -1185,7 +1185,7 @@
 	allowOverlayHeaderAccess: false, // boolean, since 1.14.0
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	worksetItems: [], // sap.ui.ux3.NavigationItem
 	paneBarItems: [], // sap.ui.core.Item
 	paneContent: [], // sap.ui.core.Control
@@ -1248,7 +1248,7 @@
 	feedSubmit=""
 	paneClosed="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<worksetItems></worksetItems> <!-- sap.ui.ux3.NavigationItem -->
 		<paneBarItems></paneBarItems> <!-- sap.ui.core.Item -->
 		<paneContent></paneContent> <!-- sap.ui.core.Control -->
@@ -1266,7 +1266,7 @@
 	enabled: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	select: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -1278,7 +1278,7 @@
 	enabled="true"
 	select="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 </ThingAction>
 ]]></xmlTemplate>
 </Template>
@@ -1289,7 +1289,7 @@
 	colspan: false, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	content: [], // sap.ui.core.Control
 	actions: [] // sap.ui.ux3.ThingGroup
 })
@@ -1299,7 +1299,7 @@
 	title=""
 	colspan="false">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<content></content> <!-- sap.ui.core.Control -->
 		<actions></actions> <!-- sap.ui.ux3.ThingGroup -->
 </ThingGroup>
@@ -1328,7 +1328,7 @@
 	headerType: sap.ui.ux3.ThingViewerHeaderType.Standard, // sap.ui.ux3.ThingViewerHeaderType, since 1.16.3
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	actions: [], // sap.ui.ux3.ThingAction
 	headerContent: [], // sap.ui.ux3.ThingGroup
 	facets: [], // sap.ui.ux3.NavigationItem
@@ -1391,7 +1391,7 @@
 	facetSelected=""
 	feedSubmit="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<actions></actions> <!-- sap.ui.ux3.ThingAction -->
 		<headerContent></headerContent> <!-- sap.ui.ux3.ThingGroup -->
 		<facets></facets> <!-- sap.ui.ux3.NavigationItem -->
@@ -1416,7 +1416,7 @@
 	headerType: sap.ui.ux3.ThingViewerHeaderType.Standard, // sap.ui.ux3.ThingViewerHeaderType, since 1.16.3
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	headerContent: [], // sap.ui.ux3.ThingGroup
 	facets: [], // sap.ui.ux3.NavigationItem
 	facetContent: [], // sap.ui.ux3.ThingGroup
@@ -1447,7 +1447,7 @@
 	validateFieldGroup=""
 	facetSelected="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<headerContent></headerContent> <!-- sap.ui.ux3.ThingGroup -->
 		<facets></facets> <!-- sap.ui.ux3.NavigationItem -->
 		<facetContent></facetContent> <!-- sap.ui.ux3.ThingGroup -->
@@ -1475,7 +1475,7 @@
 	closeDuration: 400, // int, since 1.19.0
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Control, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
 	buttons: [], // sap.ui.core.Control
 	content: [], // sap.ui.core.Control
 	initialFocus: undefined, // sap.ui.core.Control
@@ -1532,7 +1532,7 @@
 	closed=""
 	opened="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Control, since 1.19 -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<buttons></buttons> <!-- sap.ui.core.Control -->
 		<content></content> <!-- sap.ui.core.Control -->
 </ToolPopup>

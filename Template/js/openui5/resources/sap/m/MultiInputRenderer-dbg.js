@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(['jquery.sap.global', './InputRenderer', 'sap/ui/core/Renderer'],
@@ -30,17 +30,23 @@ sap.ui.define(['jquery.sap.global', './InputRenderer', 'sap/ui/core/Renderer'],
 
 	MultiInputRenderer.getAriaDescribedBy = function(oControl) {
 
-		var sAriaDescribedBy = InputRenderer.getAriaDescribedBy.apply(this, arguments);
+		var sAriaDescribedBy = InputRenderer.getAriaDescribedBy.apply(this, arguments),
+			oInvisibleTextId = oControl.getAggregation("_tokensInfo").getId();
 
 		if (sAriaDescribedBy) {
-			sAriaDescribedBy = sAriaDescribedBy + " " + oControl._sAriaMultiInputContainTokenId;
+			sAriaDescribedBy = sAriaDescribedBy + " " + oInvisibleTextId;
 		} else {
-			sAriaDescribedBy = oControl._sAriaMultiInputContainTokenId;
+			sAriaDescribedBy = oInvisibleTextId ;
 		}
 
 		return sAriaDescribedBy;
 	};
 
+	MultiInputRenderer.renderAriaDescribedBy  = function(oRm, oControl) {
+		InputRenderer.renderAriaDescribedBy.call(this, oRm, oControl);
+
+		oRm.renderControl(oControl.getAggregation("_tokensInfo"));
+	};
 
 	MultiInputRenderer.openInputTag = function(oRm, oControl) {
 
@@ -89,7 +95,13 @@ sap.ui.define(['jquery.sap.global', './InputRenderer', 'sap/ui/core/Renderer'],
 		InputRenderer.openInputTag.call(this, oRm, oControl);
 	};
 
-	MultiInputRenderer.writeInnerContent = function(oRm, oControl) {
+	/**
+	 * Write the decorations of the input.
+	 *
+	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
+	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
+	 */
+	MultiInputRenderer.writeDecorations = function(oRm, oControl) {
 
 	};
 
@@ -107,7 +119,7 @@ sap.ui.define(['jquery.sap.global', './InputRenderer', 'sap/ui/core/Renderer'],
 
 	MultiInputRenderer.addInnerStyles = function(oRm, oControl) {
 		if (oControl._isMultiLineMode && oControl._bShowIndicator === true && oControl.getTokens().length > 1) {
-			oRm.addStyle("opacity", 0);
+			 oRm.addStyle("opacity", 0);
 		}
 	};
 

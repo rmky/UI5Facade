@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -81,7 +81,7 @@ sap.ui.define(['jquery.sap.global',
 	 * @param {string} [mParameters.treeAnnotationProperties.hierarchyParentNodeFor] Mapping to the property holding the parent node id,
 	 * @param {string} [mParameters.treeAnnotationProperties.hierarchyDrillStateFor] Mapping to the property holding the drill state for the node,
 	 * @param {string} [mParameters.treeAnnotationProperties.hierarchyNodeDescendantCountFor] Mapping to the property holding the descendant count for the node.
-	 * @param {object} [mParameters.navigation] An map describing the navigation properties between entity sets, which should be used for constructing and paging the tree.
+	 * @param {object} [mParameters.navigation] A map describing the navigation properties between entity sets, which should be used for constructing and paging the tree.
 	 * @param {int} [mParameters.numberOfExpandedLevels=0] This property defines the number of levels, which will be expanded initially.
 	 *													Please be aware, that this property leads to multiple backend requests. Default value is 0.
 	 *													The auto-expand feature is deprecated for services without the "hierarchy-node-descendant-count-for" annotation.
@@ -136,6 +136,9 @@ sap.ui.define(['jquery.sap.global',
 				aApplicationFilters = [aApplicationFilters];
 			}
 			this.aApplicationFilters = aApplicationFilters;
+
+			// check filter integrity
+			this.oModel.checkFilterOperation(this.aApplicationFilters);
 
 			// a queue containing all parallel running requests
 			// a request is identified by (node id, startindex, length)
@@ -919,7 +922,7 @@ sap.ui.define(['jquery.sap.global',
 
 			// Collecting contexts
 			// beware: oData.results can be an empty array -> so the length has to be checked
-			if (jQuery.isArray(oData.results) && oData.results.length > 0) {
+			if (Array.isArray(oData.results) && oData.results.length > 0) {
 
 				// Case 1: Result is an entity set
 				// Case 1a: Tree Annotations
@@ -947,7 +950,7 @@ sap.ui.define(['jquery.sap.global',
 						that.oKeys[sNodeId][i + iStartIndex] = sKey;
 					}
 				}
-			} else if (oData && !jQuery.isArray(oData.results)){
+			} else if (oData && !Array.isArray(oData.results)){
 				// Case 2: oData.results is not an array, so oData is a single entity
 				// this only happens if you bind to a single entity as root element)
 				that.oKeys[null] = that.oModel._getKey(oData);
@@ -1265,6 +1268,7 @@ sap.ui.define(['jquery.sap.global',
 		}
 		if (bForceUpdate || bChangeDetected) {
 			this.resetData();
+			// TODO: Abort pending requests --> like ODataListBinding
 			this.bNeedsUpdate = false;
 			this.bRefresh = true;
 			this._fireRefresh({reason: ChangeReason.Refresh});
@@ -1294,6 +1298,9 @@ sap.ui.define(['jquery.sap.global',
 	ODataTreeBinding.prototype.filter = function (aFilters, sFilterType, bReturnSuccess) {
 		var bSuccess = false;
 		sFilterType = sFilterType || FilterType.Control;
+
+		// check filter integrity
+		this.oModel.checkFilterOperation(aFilters);
 
 		// check if filtering is supported for the current binding configuration
 		if (sFilterType == FilterType.Control && (!this.bClientOperation || this.sOperationMode == OperationMode.Server)) {
@@ -1620,7 +1627,7 @@ sap.ui.define(['jquery.sap.global',
 		}
 
 		var oRef = this.oModel._getObject(sPath);
-		if (jQuery.isArray(oRef)) {
+		if (Array.isArray(oRef)) {
 			this.oKeys[sPath] = oRef;
 			this.oLengths[sPath] = oRef.length;
 			this.oFinalLengths[sPath] = true;
@@ -1630,8 +1637,8 @@ sap.ui.define(['jquery.sap.global',
 		}
 
 		if (sNavPath && oObject[sNavPath]) {
-			if (jQuery.isArray(oRef)) {
-				jQuery.each(oRef, function(iIndex, sRef) {
+			if (Array.isArray(oRef)) {
+				oRef.forEach(function(sRef) {
 					var oObject = that.getModel().getData("/" + sRef);
 					that._processODataObject(oObject, "/" + sRef + "/" + sNavPath, aNavPath.join("/"));
 				});
@@ -1925,7 +1932,7 @@ sap.ui.define(['jquery.sap.global',
 
 				if (this.oNavigationPaths) {
 					jQuery.each(this.oNavigationPaths, function(sParamKey, sParamName){
-						if (jQuery.inArray(sParamName, aNewSelectParams) == -1) {
+						if (aNewSelectParams.indexOf(sParamName) == -1) {
 							aNewSelectParams.push(sParamName);
 						}
 					});
@@ -1933,7 +1940,7 @@ sap.ui.define(['jquery.sap.global',
 
 				// add new select params to custom select params
 				jQuery.each(aNewSelectParams, function(sParamKey, sParamName){
-					if (jQuery.inArray(sParamName, aSelectParams) == -1) {
+					if (aSelectParams.indexOf(sParamName) == -1) {
 						aSelectParams.push(sParamName);
 					}
 				});
@@ -1941,7 +1948,7 @@ sap.ui.define(['jquery.sap.global',
 				if (this.bHasTreeAnnotations) {
 					jQuery.each(this.oTreeProperties, function(sAnnotationName, sTreePropName){
 						if (sTreePropName) {
-							if (jQuery.inArray(sTreePropName, aSelectParams) == -1) {
+							if (aSelectParams.indexOf(sTreePropName) == -1) {
 								aSelectParams.push(sTreePropName);
 							}
 						}
@@ -2085,7 +2092,7 @@ sap.ui.define(['jquery.sap.global',
 	 */
 	ODataTreeBinding.prototype.getFilterParams = function() {
 		if (this.aApplicationFilters) {
-			this.aApplicationFilters = jQuery.isArray(this.aApplicationFilters) ? this.aApplicationFilters : [this.aApplicationFilters];
+			this.aApplicationFilters = Array.isArray(this.aApplicationFilters) ? this.aApplicationFilters : [this.aApplicationFilters];
 			if (this.aApplicationFilters.length > 0 && !this.sFilterParams) {
 				this.sFilterParams = ODataUtils._createFilterParams(this.aApplicationFilters, this.oModel.oMetadata, this.oEntityType);
 				this.sFilterParams = this.sFilterParams ? this.sFilterParams : "";
@@ -2099,24 +2106,59 @@ sap.ui.define(['jquery.sap.global',
 
 	/**
 	 * Adds the given contexts to the tree by adding them to the given parent context as children.
-	 * If the parent is set to "null", the child contexts will be come top-level nodes.
+	 * The contexts will be added before the current first child of the parent context.
 	 *
-	 * @param oParentContext {sap.ui.model.Context} the parent context under which the new contexts will be inserted
-	 * @param vContextHandle {array|object} an array of contexts or a subtree handle, which will be added to the tree.
+	 * Only newly created contexts and contexts previously removed from the binding instance and can be added.
+	 * The binding does not accept contexts from other bindings.
+	 *
+	 * Please see the API documentation for the function createEntry: {@link sap.ui.model.odata.v2.ODataTreeBinding#createEntry createEntry}.
+	 *
+	 * This feature is only available when the underlying OData service exposes the "hierarchy-descendant-count-for" annotation.
+	 * Please see the Constructor documentation for more details.
+	 *
+	 * @function
 	 * @name sap.ui.model.odata.v2.ODataTreeBinding.prototype.addContexts
+	 * @param oParentContext {sap.ui.model.Context} the parent context under which the new contexts will be inserted
+	 * @param vContextHandle {sap.ui.model.Context|sap.ui.model.Context[]} an array of contexts or a single context, which will be added to the tree.
 	 * @private
 	 */
 
 	/**
 	 * Removes the give context from the tree, including all its descendants.
-	 * This basically removes a complete subtree.
-	 * A leaf node is a trivial subtree, yet the return value of this function is still a subtree handle.
-	 * The subtre-handle only exposed one public functin "getContext".
-	 * When calling getContext() on the subtree handle, the parent-node of the removed subtree is returned.
+	 * Calling removeContext for a given context implicitly removes the complete subtree underneath it.
 	 *
-	 * @param {sap.ui.model.Context} the context which should be removed
-	 * @return an handle for the removed subtree.
+	 * This feature is only available when the underlying OData service exposes the "hierarchy-descendant-count-for" annotation.
+	 * Please see the Constructor documentation for more details.
+	 *
+	 * @function
 	 * @name sap.ui.model.odata.v2.ODataTreeBinding.prototype.removeContext
+	 * @param {sap.ui.model.Context} the context which should be removed
+	 * @return {sap.ui.model.Context} the removed context
+	 * @private
+	 */
+
+	/**
+	 * Creates a new binding context related to this binding instance.
+	 * The available API is the same as for the v2.ODataModel.
+	 * Please see the API documentation here: {@link sap.ui.model.odata.v2.ODataModel#createEntry createEntry}.
+	 *
+	 * This feature is only available when the underlying OData service exposes the "hierarchy-descendant-count-for" annotation.
+	 * Please see the Constructor documentation for more details.
+	 *
+	 * @name sap.ui.model.odata.v2.ODataTreeBinding.prototype.createEntry
+	 * @private
+	 */
+
+	/**
+	 * Submits all queued hierarchy changes for this binding instance.
+	 * This includes property changes, as well as newly created nodes and deleted nodes.
+	 * The available API is the same as for the v2.ODataModel.
+	 * Please see the API documentation here: {@link sap.ui.model.odata.v2.ODataModel#submitChanges submitChanges}.
+	 *
+	 * This feature is only available when the underlying OData service exposes the "hierarchy-descendant-count-for" annotation.
+	 * Please see the Constructor documentation for more details.
+	 *
+	 * @name sap.ui.model.odata.v2.ODataTreeBinding.prototype.submitChanges
 	 * @private
 	 */
 

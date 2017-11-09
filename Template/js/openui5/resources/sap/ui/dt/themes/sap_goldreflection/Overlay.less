@@ -1,15 +1,14 @@
-@sapUiDtFocusColor : rgba(77, 144, 254, 0.5);
-@sapUiDtTargetZoneColor : green;
+@sapUiDtFocusColor : @sapUiContentFocusColor;
+@sapUiDtTargetZoneColor : @sapUiSelected;
 @sapUiDtSelectionColor : #35F;
 @sapUiDtCuttedColor : white;
 
 #overlay-container {
-	// to prevent overlay's height from expanding the body
-	position: absolute;
-	overflow: hidden;
-	// position is set in code to prevent RTL style conversion
+	>.sapUiDtOverlay {
+		// prevents body from expanding if overlays are bigger, then dom
+		overflow: hidden !important;
+	}
 }
-
 
 .sapUiDtOverlay {
 	position: absolute;
@@ -26,8 +25,8 @@
 		pointer-events: none;
 		top: 0;
 		left: 0;
-		width: 100%;
-		height: 100%;
+		right: 0;
+		bottom: 0;
 		box-sizing: border-box;
 	}
 }
@@ -36,7 +35,7 @@
 	&:focus {
 		&:before {
 			content: " ";
-			border: 2px solid darken(@sapUiSelected, 5);
+			border: 1px dotted @sapUiDtFocusColor;
 		}
 	}
 }

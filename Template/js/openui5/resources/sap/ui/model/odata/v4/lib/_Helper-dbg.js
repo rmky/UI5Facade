@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,6 +13,7 @@ sap.ui.define([
 	var rAmpersand = /&/g,
 		rEquals = /\=/g,
 		rHash = /#/g,
+		rNumber = /^-?\d+$/,
 		rPlus = /\+/g,
 		rSingleQuote = /'/g,
 		Helper;
@@ -195,6 +196,48 @@ sap.ui.define([
 		},
 
 		/**
+		 * Fires a change event to all listeners for the given path in mChangeListeners.
+		 *
+		 * @param {object} mChangeListeners A map of change listeners by path
+		 * @param {string} sPropertyPath The path
+		 * @param {any} vValue The value to report to the listeners
+		 */
+		fireChange : function (mChangeListeners, sPropertyPath, vValue) {
+			var aListeners = mChangeListeners[sPropertyPath],
+				i;
+
+			if (aListeners) {
+				for (i = 0; i < aListeners.length; i++) {
+					aListeners[i].onChange(vValue);
+				}
+			}
+		},
+
+		/**
+		 * Iterates recursively over all properties of the given value and fires change events
+		 * to all listeners.
+		 *
+		 * @param {object} mChangeListeners A map of change listeners by path
+		 * @param {string} sPath The path of the current value
+		 * @param {object} oValue The value
+		 * @param {boolean} bRemoved If true the value is assumed to have been removed and the
+		 *   change event reports undefined as the new value
+		 */
+		fireChanges : function (mChangeListeners, sPath, oValue, bRemoved) {
+			Object.keys(oValue).forEach(function (sProperty) {
+				var sPropertyPath = Helper.buildPath(sPath, sProperty),
+					vValue = oValue[sProperty];
+
+				if (vValue && typeof vValue === "object") {
+					Helper.fireChanges(mChangeListeners, sPropertyPath, vValue, bRemoved);
+				} else {
+					Helper.fireChange(mChangeListeners, sPropertyPath,
+						bRemoved ? undefined : vValue);
+				}
+			});
+		},
+
+		/**
 		 * Formats a given internal value into a literal suitable for usage in URLs.
 		 *
 		 * @param {any} vValue
@@ -248,6 +291,66 @@ sap.ui.define([
 		},
 
 		/**
+		 * Returns the key predicate (see "4.3.1 Canonical URL") for the given entity type metadata
+		 * and entity instance runtime data.
+		 *
+		 * @param {object} oEntityType
+		 *   Entity type metadata
+		 * @param {object} oEntityInstance
+		 *   Entity instance runtime data
+		 * @returns {string}
+		 *   The key predicate, e.g. "(Sector='DevOps',ID='42')" or "('42')"
+		 * @throws {Error}
+		 *   If there is no entity instance or if one key property is undefined
+		 *
+		 * @private
+		 */
+		getKeyPredicate : function (oEntityType, oEntityInstance) {
+			var aKeyProperties = [],
+				bSingleKey = oEntityType.$Key.length === 1;
+
+			if (!oEntityInstance) {
+				throw new Error("No instance to calculate key predicate");
+			}
+			oEntityType.$Key.forEach(function (sName) {
+				var vValue = oEntityInstance[sName];
+
+				if (vValue === undefined) {
+					throw new Error("Missing value for key property '" + sName + "'");
+				}
+				vValue = encodeURIComponent(Helper.formatLiteral(vValue, oEntityType[sName].$Type));
+				aKeyProperties.push(bSingleKey ? vValue : encodeURIComponent(sName) + "=" + vValue);
+			});
+
+			return "(" + aKeyProperties.join(",") + ")";
+		},
+
+		/**
+		 * Returns the properties that have been selected for the given path.
+		 *
+		 * @param {objekt} mQueryOptions
+		 *   A map of query options as returned by
+		 *   {@link sap.ui.model.odata.v4.ODataModel#buildQueryOptions}
+		 * @param {string} sPath
+		 *   The path of the cache value in the cache
+		 * @returns {string[]} aSelect
+		 *   The properties that have been selected for the given path or undefined otherwise
+		 *
+		 * @private
+		 */
+		getSelectForPath : function (mQueryOptions, sPath) {
+			if (sPath) {
+				sPath.split("/").some(function (sSegment) {
+					if (!rNumber.test(sSegment)) {
+						mQueryOptions = mQueryOptions && mQueryOptions.$expand
+							&& mQueryOptions.$expand[sSegment];
+					}
+				});
+			}
+			return mQueryOptions && mQueryOptions.$select;
+		},
+
+		/**
 		 * Checks that the value is a safe integer.
 		 *
 		 * @param {number} iNumber The value
@@ -266,53 +369,61 @@ sap.ui.define([
 		},
 
 		/**
+		 * Determines the namespace of the given qualified name.
+		 *
+		 * @param {string} sName
+		 *   The qualified name
+		 * @returns {string}
+		 *   The namespace
+		 */
+		namespace : function (sName) {
+			var iIndex = sName.indexOf("/");
+
+			if (iIndex >= 0) {
+				// consider only the first path segment
+				sName = sName.slice(0, iIndex);
+			}
+			// now we have a qualified name, drop the last segment (the name)
+			iIndex = sName.lastIndexOf(".");
+
+			return iIndex < 0 ? "" : sName.slice(0, iIndex);
+		},
+
+		/**
+		 * Converts given value to an array.
+		 * <code>null</code> and <code>undefined</code> are converted to the empty array, a
+		 * non-array value is wrapped with an array and an array is returned as it is.
+		 *
+		 * @param {any} [vElement]
+		 *   The element to be converted into an array.
+		 * @returns {Array}
+		 *   The array for the given element.
+		 */
+		toArray : function (vElement) {
+			if (vElement === undefined || vElement === null) {
+				return [];
+			}
+			if (Array.isArray(vElement)) {
+				return vElement;
+			}
+			return [vElement];
+		},
+
+		/**
 		 * Updates the cache with the object sent to the PATCH request or the object returned by the
 		 * PATCH response. Fires change events for all changed properties. The function recursively
 		 * handles modified, added or removed structural properties and fires change events for all
 		 * modified/added/removed primitive properties therein.
 		 *
-		 * @param {object} mChangeListeners A map of change listeners by path.
+		 * @param {object} mChangeListeners A map of change listeners by path
 		 * @param {string} sPath The path of the cache value in the cache
 		 * @param {object} oCacheValue The object in the cache
-		 * @param {object} oPatchValue The value of the patch request/response
+		 * @param {object} [oPatchValue] The value of the PATCH request/response
 		 */
 		updateCache : function (mChangeListeners, sPath, oCacheValue, oPatchValue) {
-
-			/*
-			 * Fires a change event to all listeners for the given path in mChangeListeners.
-			 * @param {string} sPropertyPath The path
-			 * @param {any} vValue the value to report to the listeners
-			 */
-			function fireChange(sPropertyPath, vValue) {
-				var aListeners = mChangeListeners[sPropertyPath],
-					i;
-
-				if (aListeners) {
-					for (i = 0; i < aListeners.length; i++) {
-						aListeners[i].onChange(vValue);
-					}
-				}
-			}
-
-			/*
-			 * Iterates recursively over all properties of the given value and fires change events
-			 * to all listeners.
-			 * @param {string} sPath The path of the current value
-			 * @param {object} oValue The value
-			 * @param {boolean} bRemoved If true the value is assumed to have been removed and the
-			 *   change event reports undefined as the new value
-			 */
-			function fireChanges(sPath, oValue, bRemoved) {
-				Object.keys(oValue).forEach(function (sProperty) {
-					var sPropertyPath = Helper.buildPath(sPath, sProperty),
-						vValue = oValue[sProperty];
-
-					if (vValue && typeof vValue === "object") {
-						fireChanges(sPropertyPath, vValue, bRemoved);
-					} else {
-						fireChange(sPropertyPath, bRemoved ? undefined : vValue);
-					}
-				});
+			// empty PATCH value from 204 response: Nothing to do
+			if (!oPatchValue) {
+				return;
 			}
 
 			// iterate over all properties in the cache
@@ -332,20 +443,108 @@ sap.ui.define([
 						} else {
 							// a structural property was added
 							oCacheValue[sProperty] = vNewValue;
-							fireChanges(sPropertyPath, vNewValue, false);
+							Helper.fireChanges(mChangeListeners, sPropertyPath, vNewValue, false);
 						}
 					} else if (vOldValue && typeof vOldValue === "object") {
 						// a structural property was removed
-						fireChanges(sPropertyPath, vOldValue, true);
+						Helper.fireChanges(mChangeListeners, sPropertyPath, vOldValue, true);
 						oCacheValue[sProperty] = vNewValue;
 					} else {
 						// a primitive property
 						if (vOldValue !== vNewValue) {
-							fireChange(sPropertyPath, vNewValue);
+							Helper.fireChange(mChangeListeners, sPropertyPath, vNewValue);
 						}
 						oCacheValue[sProperty] = vNewValue;
 					}
 				}
+			});
+		},
+
+		/**
+		 * Updates the cache with the given values for the selected properties (see
+		 * {@link #updateCache}). If no selected properties are given or if "*" is contained in the
+		 * selected properties, then all properties are selected. <code>@odata.etag</code> is always
+		 * selected. Fires change events for all changed properties.
+		 *
+		 * @param {object} mChangeListeners
+		 *   A map of change listeners by path
+		 * @param {string} sPath
+		 *   The path of the cache value in the cache
+		 * @param {object} oCacheValue
+		 *   The object in the cache
+		 * @param {object} oPostValue
+		 *   The value of the POST response
+		 * @param {string[]} [aSelect]
+		 *   The properties to be updated in the cache; default is all properties from the response
+		 */
+		updateCacheAfterPost : function (mChangeListeners, sPath, oCacheValue, oPostValue,
+			aSelect) {
+
+			/*
+			 * Take over the property value from source to target and fires an event if the property
+			 * is changed
+			 * @param {string} sPath The path of the cache value in the cache
+			 * @param {string} sProperty The property
+			 * @param {object} oCacheValue The object in the cache
+			 * @param {object} oPostValue The value of the response
+			 */
+			function copyPathValue(sPath, sProperty, oCacheValue , oPostValue) {
+				var aSegments = sProperty.split("/");
+
+				aSegments.every(function(sSegment, iIndex) {
+					if (oPostValue[sSegment] === null) {
+						oCacheValue[sSegment] = null;
+						if (iIndex < aSegments.length - 1) {
+							return false;
+						}
+						Helper.fireChange(mChangeListeners, Helper.buildPath(sPath, sProperty),
+							oCacheValue[sSegment]);
+					} else if (typeof oPostValue[sSegment] === "object") {
+						oCacheValue[sSegment] = oCacheValue[sSegment] || {};
+					} else {
+						if (oCacheValue[sSegment] !== oPostValue[sSegment]) {
+							oCacheValue[sSegment] = oPostValue[sSegment];
+							Helper.fireChange(mChangeListeners, Helper.buildPath(sPath, sProperty),
+								oCacheValue[sSegment]);
+						}
+						return false;
+					}
+					oCacheValue = oCacheValue[sSegment];
+					oPostValue = oPostValue[sSegment];
+					return true;
+				});
+			}
+
+			/*
+			 * Creates an array of all property paths for a given object
+			 * @param {object} oObject
+			 * @param {object} [sObjectName] The name of the complex property
+			 */
+			function buildPropertyPaths(oObject, sObjectName) {
+				Object.keys(oObject).forEach(function (sProperty) {
+					var sPropertyPath = sObjectName ? sObjectName + "/" + sProperty : sProperty,
+						vPropertyValue = oObject[sProperty];
+
+					if (vPropertyValue !== null && typeof vPropertyValue === "object") {
+						buildPropertyPaths(vPropertyValue, sPropertyPath);
+					} else {
+						aSelect.push(sPropertyPath);
+					}
+				});
+			}
+
+			if (!aSelect || aSelect.indexOf("*") >= 0) {
+				// no individual properties selected, fetch all properties of the result
+				aSelect = [];
+				buildPropertyPaths(oPostValue);
+			} else {
+				// fetch the selected properties plus the ETag
+				aSelect = aSelect.concat("@odata.etag");
+			}
+
+			// take over properties from server response and fire change events
+			aSelect.forEach(function (sProperty) {
+				copyPathValue(sPath, sProperty, oCacheValue, oPostValue);
 			});
 		}
 	};

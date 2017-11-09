@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,12 +13,25 @@ sap.ui.define([
 		 * Change handler for adding a simple form group.
 		 * @alias sap.ui.layout.changeHandler.AddSimpleFormGroup
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 * @experimental Since 1.27.0
 		 */
 		var AddSimpleFormGroup = {};
 
 		AddSimpleFormGroup.CONTENT_AGGREGATION = "content";
+
+		var fnFirstGroupWithoutTitle = function(oModifier, aStopToken, aContent) {
+			for (var i = 0; i < aContent.length; i++) {
+				var sType = oModifier.getControlType(aContent[i]);
+				if (aStopToken.indexOf(sType) === -1) {
+					if (aContent[i].getVisible()) {
+						return true;
+					}
+				} else {
+					return false;
+				}
+			}
+		};
 
 		var fnMapGroupIndexToContentAggregationIndex = function(oModifier, aStopToken, aContent, iGroupIndex) {
 			var oResult;
@@ -27,6 +40,10 @@ sap.ui.define([
 			// Empty simpleform case, when the title is null
 			if (iGroupIndex === 0) {
 				return iGroupIndex;
+			}
+
+			if (fnFirstGroupWithoutTitle(oModifier, aStopToken, aContent)) {
+				iCurrentGroupIndex++;
 			}
 
 			for (var i = 0; i < aContent.length; i++) {
@@ -83,7 +100,9 @@ sap.ui.define([
 					iInsertIndex = oChange.content.group.index;
 				} else {
 					iRelativeIndex = oChange.content.group.relativeIndex;
-					iInsertIndex = fnMapGroupIndexToContentAggregationIndex(oModifier, ["sap.ui.core.Title"], aContent, iRelativeIndex);
+					iInsertIndex = fnMapGroupIndexToContentAggregationIndex(oModifier,
+						["sap.ui.core.Title", "sap.m.Title", "sap.m.Toolbar", "sap.m.OverflowToolbar"],
+						aContent, iRelativeIndex);
 				}
 
 				var oTitle = oModifier.createControl("sap.ui.core.Title", oAppComponent, oView, sGroupId);

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -383,7 +383,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/Locale', 
 	 * @private
 	 */
 	NumberFormat.createInstance = function(oFormatOptions, oLocale) {
-		var oFormat = jQuery.sap.newObject(this.prototype),
+		var oFormat = Object.create(this.prototype),
 			oPatternOptions;
 		if ( oFormatOptions instanceof Locale ) {
 			oLocale = oFormatOptions;
@@ -553,7 +553,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/Locale', 
 	 * @public
 	 */
 	NumberFormat.prototype.format = function(oValue, sMeasure) {
-		if (jQuery.isArray(oValue)) {
+		if (Array.isArray(oValue)) {
 			sMeasure = oValue[1];
 			oValue = oValue[0];
 		}
@@ -596,13 +596,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/Locale', 
 				if (oOptions.shortDecimals !== undefined) {
 					oOptions.minFractionDigits = oOptions.shortDecimals;
 					oOptions.maxFractionDigits = oOptions.shortDecimals;
-				} else if (oOrigOptions.minFractionDigits === undefined
-					&& oOrigOptions.maxFractionDigits === undefined
-					&& oOrigOptions.decimals === undefined
-					&& oOrigOptions.precision === undefined
-					&& oOrigOptions.pattern === undefined) {
-					// if none of the options which can affect the decimal digits is set, the default precision is set to 2
-					oOptions.precision = 2;
+				} else {
+					if (oOrigOptions.minFractionDigits === undefined
+						&& oOrigOptions.maxFractionDigits === undefined
+						&& oOrigOptions.decimals === undefined
+						&& oOrigOptions.precision === undefined
+						&& oOrigOptions.pattern === undefined) {
+						// if none of the options which can affect the decimal digits is set, the default precision is set to 2
+						oOptions.precision = 2;
+					}
+
+					if (oOrigOptions.maxFractionDigits === undefined && oOrigOptions.decimals === undefined) {
+						// overwrite the default setting of Integer instance because
+						// Integer with short format could have fraction part
+						oOptions.maxFractionDigits = 99;
+					}
 				}
 
 				// Always use HALF_AWAY_FROM_ZERO for short formats
@@ -612,8 +620,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/Locale', 
 
 		// Must be done after calculating the short value, as it depends on the value
 		if (oOptions.precision !== undefined) {
-			oOptions.minFractionDigits = 0;
-			oOptions.maxFractionDigits = getDecimals(oValue, oOptions.precision);
+			// the number of decimal digits is calculated using (precision - number of integer digits)
+			// the maxFractionDigits is adapted if the calculated value is smaller than the maxFractionDigits
+			oOptions.maxFractionDigits = Math.min(oOptions.maxFractionDigits, getDecimals(oValue, oOptions.precision));
+
+			// if the minFractionDigits is greater than the maxFractionDigits, adapt the minFractionDigits with
+			// the same value of the maxFractionDigits
+			oOptions.minFractionDigits = Math.min(oOptions.minFractionDigits, oOptions.maxFractionDigits);
 		}
 
 		if (oOptions.type == mNumberType.PERCENT) {

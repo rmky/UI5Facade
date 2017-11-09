@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -102,6 +102,7 @@ sap.ui.define([
 				return mTimeouts[iID] < MAX_TIMEOUT_DEPTH;
 			}).length;
 			var bHasPendingTimeouts = iNumberOfBlockingTimeouts > 0;
+			// promise synchronization uses setTimeout so first check the Promise then the timeout
 			if (iPendingPromises > 0) {
 				oLogger.debug("There are " + iPendingPromises + " pending microtasks");
 				return true;

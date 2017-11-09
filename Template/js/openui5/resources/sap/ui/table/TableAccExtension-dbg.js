@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -83,7 +83,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 					return;
 				}
 
-				ACCInfoHelper._flatten(oChild.getAccessibilityInfo(), oTargetInfo, oBundle, iLevel + 1);
+				var oChildInfo = oChild.getAccessibilityInfo();
+				if (oChildInfo) {
+					ACCInfoHelper._flatten(oChildInfo, oTargetInfo, oBundle, iLevel + 1);
+				}
 			});
 
 			if (iLevel == 0) {
@@ -114,6 +117,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 	 * Provides utility functions used this extension
 	 */
 	var ExtensionHelper = {
+
+		/*
+		 * Returns the index of the column (in the array of visible columns (see Table._getVisibleColumns())) of the current focused cell
+		 * In case the focused cell is a row action the given index equals the length of the visible columns.
+		 * This function must not be used if the focus is on a row header.
+		 * @return {int}
+		 */
+		getColumnIndexOfFocusedCell : function(oExtension) {
+			var oTable = oExtension.getTable();
+			var oInfo = TableUtils.getFocusedItemInfo(oTable);
+			return oInfo.cellInRow - (TableUtils.hasRowHeader(oTable) ? 1 : 0);
+		},
 
 		/*
 		 * If the current focus is on a cell of the table, this function returns
@@ -225,9 +240,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 				bIsInitial = false;
 
 			if (oIN) {
-				var iColumnNumber = TableUtils.getColumnIndexOfFocusedCell(oTable) + 1; //+1 -> we want to announce a count and not the index
+				var iColumnNumber = ExtensionHelper.getColumnIndexOfFocusedCell(oExtension) + 1; //+1 -> we want to announce a count and not the index, the action column is handled like a normal column
 				var iRowNumber = TableUtils.getRowIndexOfFocusedCell(oTable) + oTable.getFirstVisibleRow() + 1; //same here + take virtualization into account
-				var iColCount = TableUtils.getVisibleColumnCount(oTable);
+				var iColCount = TableUtils.getVisibleColumnCount(oTable) + (TableUtils.hasRowActions(oTable) ? 1 : 0);
 				var iRowCount = TableUtils.isNoDataVisible(oTable) ? 0 : TableUtils.getTotalRowCount(oTable, true);
 
 				bIsRowChanged = oExtension._iLastRowNumber != iRowNumber || (oExtension._iLastRowNumber == iRowNumber && oExtension._iLastColumnNumber == iColumnNumber);
@@ -284,7 +299,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 			var oCountChangeInfo = ExtensionHelper.updateRowColCount(oExtension);
 			oExtension.getTable().$("cellacc").text(sText || " "); //set the custom text to the prepared hidden element
 
-			if (fAdapt) { //Allow to adapt the labels / descriptions based on the changed row / coulmn count
+			if (fAdapt) { //Allow to adapt the labels / descriptions based on the changed row / column count
 				fAdapt(aLabels, aDescriptions, oCountChangeInfo.rowChange, oCountChangeInfo.colChange, oCountChangeInfo.initial);
 			}
 
@@ -292,6 +307,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 			if (oCountChangeInfo.initial) {
 				var oTable = oExtension.getTable();
 				sLabel = oTable.getAriaLabelledBy().join(" ") + " " + oTable.getId() + "-ariadesc " + oTable.getId() + "-ariacount";
+				if (oTable.getSelectionMode() !== SelectionMode.None) {
+					sLabel = sLabel + " " + oTable.getId() + "-ariaselection";
+				}
 			}
 
 			if (aLabels && aLabels.length) {
@@ -318,11 +336,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 			}
 
 			var iRow = TableUtils.getRowIndexOfFocusedCell(oTable),
-				iCol = TableUtils.getColumnIndexOfFocusedCell(oTable),
+				iCol = ExtensionHelper.getColumnIndexOfFocusedCell(this), // Because we are on a data cell this is the index in the visible columns array
 				oTableInstances = TableUtils.getRowColCell(oTable, iRow, iCol, false),
 				oInfo = null,
 				bHidden = ExtensionHelper.isHiddenCell($Cell, oTableInstances.cell),
 				bIsTreeColumnCell = ExtensionHelper.isTreeColumnCell(this, $Cell),
+				bIsInGroupingRow = TableUtils.Grouping.isInGroupingRow($Cell),
+				bIsInSumRow = TableUtils.Grouping.isInSumRow($Cell),
 				aDefaultLabels = ExtensionHelper.getAriaAttributesFor(this, TableAccExtension.ELEMENTTYPES.DATACELL, {
 					index: iCol,
 					column: oTableInstances.column,
@@ -331,12 +351,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 				aDescriptions = [],
 				aLabels = [sTableId + "-rownumberofrows", sTableId + "-colnumberofcols"];
 
-			if (TableUtils.Grouping.isInGroupingRow($Cell)) {
+			if (bIsInGroupingRow) {
 				aLabels.push(sTableId + "-ariarowgrouplabel");
 				aLabels.push(sTableId + "-rows-row" + iRow + "-groupHeader");
 			}
 
-			if (TableUtils.Grouping.isInSumRow($Cell)) {
+			if (bIsInSumRow) {
 				var iLevel = $Cell.parent().data("sap-ui-level");
 				if (iLevel == 0) {
 					aLabels.push(sTableId + "-ariagrandtotallabel");
@@ -344,6 +364,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 					aLabels.push(sTableId + "-ariagrouptotallabel");
 					aLabels.push(sTableId + "-rows-row" + iRow + "-groupHeader");
 				}
+			}
+
+			if (TableUtils.hasRowHighlights(oTable) && !bIsInGroupingRow && !bIsInSumRow) {
+				aLabels.push(oTableInstances.row.getId() + "-highlighttext");
 			}
 
 			aLabels = aLabels.concat(aDefaultLabels);
@@ -385,27 +409,28 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 		modifyAccOfROWHEADER : function($Cell, bOnCellFocus) {
 			var oTable = this.getTable(),
 				sTableId = oTable.getId(),
-				bGroupHeader = TableUtils.Grouping.isInGroupingRow($Cell),
-				bSum = TableUtils.Grouping.isInSumRow($Cell),
+				bIsInGroupingRow = TableUtils.Grouping.isInGroupingRow($Cell),
+				bIsInSumRow = TableUtils.Grouping.isInSumRow($Cell),
 				oRow = oTable.getRows()[$Cell.attr("data-sap-ui-rowindex")],
 				aDefaultLabels = ExtensionHelper.getAriaAttributesFor(this, TableAccExtension.ELEMENTTYPES.ROWHEADER)["aria-labelledby"] || [],
 				aLabels = aDefaultLabels.concat([sTableId + "-rownumberofrows"]);
 
-			if (!bSum && !bGroupHeader) {
-				if ($Cell.attr("aria-selected") == "true") {
-					aLabels.push(sTableId + "-ariarowselected");
-				}
+			if (!bIsInSumRow && !bIsInGroupingRow) {
 				if (!$Cell.hasClass("sapUiTableRowHidden")) {
 					aLabels.push(oRow.getId() + "-rowselecttext");
+
+					if (TableUtils.hasRowHighlights(oTable)) {
+						aLabels.push(oRow.getId() + "-highlighttext");
+					}
 				}
 			}
 
-			if (bGroupHeader) {
+			if (bIsInGroupingRow) {
 				aLabels.push(sTableId + "-ariarowgrouplabel");
 				//aLabels.push(oRow.getId() + "-groupHeader"); //Not needed: Screenreader seems to announce this automatically
 			}
 
-			if (bSum) {
+			if (bIsInSumRow) {
 				var iLevel = $Cell.data("sap-ui-level");
 				if (iLevel == 0) {
 					aLabels.push(sTableId + "-ariagrandtotallabel");
@@ -433,7 +458,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 				sText = ExtensionHelper.getColumnTooltip(oColumn),
 				aLabels = [oTable.getId() + "-colnumberofcols"].concat(mAttributes["aria-labelledby"]),
 				oHeaderInfo = TableUtils.getColumnHeaderCellInfo($Cell),
-				iSpan = oHeaderInfo ? oHeaderInfo.span : 1;
+				iSpan = oHeaderInfo ? oHeaderInfo.span : 1,
+				bIsMainHeader = oColumn && oColumn.getId() === $Cell.attr("id");
 
 			if (iSpan > 1) {
 				aLabels.push(oTable.getId() + "-ariacolspan");
@@ -443,6 +469,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 
 			if (sText) {
 				aLabels.push(oTable.getId() + "-cellacc");
+			}
+
+			if (bIsMainHeader && oColumn && oColumn.getSorted()) {
+				aLabels.push(oTable.getId() + (oColumn.getSortOrder() === "Ascending" ? "-ariacolsortedasc" : "-ariacolsorteddes"));
+			}
+			if (bIsMainHeader && oColumn && oColumn.getFiltered()) {
+				aLabels.push(oTable.getId() + "-ariacolfiltered");
+			}
+
+			if ($Cell.attr("aria-haspopup") === "true") {
+				aLabels.push(oTable.getId() + "-ariacolmenu");
 			}
 
 			ExtensionHelper.performCellModifications(this, $Cell, mAttributes["aria-labelledby"], mAttributes["aria-describedby"],
@@ -459,6 +496,63 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 			var mAttributes = ExtensionHelper.getAriaAttributesFor(this, TableAccExtension.ELEMENTTYPES.COLUMNROWHEADER, {enabled: bEnabled, checked: bEnabled && !oTable.$().hasClass("sapUiTableSelAll")});
 			ExtensionHelper.performCellModifications(this, $Cell, mAttributes["aria-labelledby"], mAttributes["aria-describedby"],
 				mAttributes["aria-labelledby"], mAttributes["aria-describedby"], null);
+		},
+
+		/*
+		 * Modifies the labels and descriptions of a row action cell.
+		 * @see ExtensionHelper.performCellModifications
+		 */
+		modifyAccOfROWACTION : function($Cell, bOnCellFocus) {
+			var oTable = this.getTable(),
+				sTableId = oTable.getId(),
+				bIsInGroupingRow = TableUtils.Grouping.isInGroupingRow($Cell),
+				bIsInSumRow = TableUtils.Grouping.isInSumRow($Cell),
+				iRow = $Cell.attr("data-sap-ui-rowindex"),
+				oRow = oTable.getRows()[iRow],
+				bHidden = ExtensionHelper.isHiddenCell($Cell),
+				aDefaultLabels = ExtensionHelper.getAriaAttributesFor(this, TableAccExtension.ELEMENTTYPES.ROWACTION)["aria-labelledby"] || [],
+				aLabels = [sTableId + "-rownumberofrows", sTableId + "-colnumberofcols"].concat(aDefaultLabels),
+				aDescriptions = [];
+
+			if (bIsInGroupingRow) {
+				aLabels.push(sTableId + "-ariarowgrouplabel");
+				aLabels.push(sTableId + "-rows-row" + iRow + "-groupHeader");
+			}
+
+			if (bIsInSumRow) {
+				var iLevel = $Cell.data("sap-ui-level");
+				if (iLevel == 0) {
+					aLabels.push(sTableId + "-ariagrandtotallabel");
+				} else if (iLevel > 0) {
+					aLabels.push(sTableId + "-ariagrouptotallabel");
+					aLabels.push(sTableId + "-rows-row" + iRow + "-groupHeader");
+				}
+			}
+
+			if (!bIsInSumRow && !bIsInGroupingRow && $Cell.attr("aria-selected") == "true") {
+				aLabels.push(sTableId + "-ariarowselected");
+			}
+
+			if (TableUtils.hasRowHighlights(oTable) && !bIsInGroupingRow && !bIsInSumRow) {
+				aLabels.push(oRow.getId() + "-highlighttext");
+			}
+
+			var sText = "";
+			if (!bHidden) {
+				var oRowAction = oRow.getAggregation("_rowAction");
+				if (oRowAction) {
+					var oInfo = oRowAction.getAccessibilityInfo();
+					if (oInfo) {
+						aLabels.push(sTableId + "-cellacc");
+						sText = oInfo.description;
+						if (oInfo.focusable) {
+							aDescriptions.push(sTableId + "-toggleedit");
+						}
+					}
+				}
+			}
+
+			ExtensionHelper.performCellModifications(this, $Cell, aDefaultLabels, [], aLabels, aDescriptions, sText);
 		},
 
 		/*
@@ -496,19 +590,24 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 			switch (sType) {
 				case TableAccExtension.ELEMENTTYPES.COLUMNROWHEADER:
 					mAttributes["aria-labelledby"] = [sTableId + "-ariacolrowheaderlabel"];
+
+					var bAddSelectAllLabel = false;
 					mAttributes["role"] = ["button"];
 					if (mParams && mParams.enabled) {
 						mAttributes["aria-pressed"] = mParams.checked ? "true" : "false";
 					} else {
-						mAttributes["aria-labelledby"].push(sTableId + "-ariaselectall");
+						bAddSelectAllLabel = true;
 						mAttributes["aria-disabled"] = "true";
 						mAttributes["aria-pressed"] = "false";
+					}
+					if (bAddSelectAllLabel || !oTable._getShowStandardTooltips()) {
+						mAttributes["aria-labelledby"].push(sTableId + "-ariaselectall");
 					}
 					break;
 
 				case TableAccExtension.ELEMENTTYPES.ROWHEADER:
 					mAttributes["aria-labelledby"] = [sTableId + "-ariarowheaderlabel"];
-					if (!TableUtils.Grouping.isTreeMode(oTable)) { // Otherwise there are strange announcements of the whole content in AnlyticalTable
+					if (!TableUtils.Grouping.isTreeMode(oTable)) { // Otherwise there are strange announcements of the whole content in AnalyticalTable
 						mAttributes["role"] = ["rowheader"];
 					}
 					if (oTable.getSelectionMode() !== SelectionMode.None && (!mParams || !mParams.rowHidden)) {
@@ -516,6 +615,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 						mAttributes["aria-selected"] = "" + bSelected;
 						var mTooltipTexts = oExtension.getAriaTextsForSelectionMode(true);
 						mAttributes["title"] = mTooltipTexts.mouse[bSelected ? "rowDeselect" : "rowSelect"];
+					}
+					break;
+
+				case TableAccExtension.ELEMENTTYPES.ROWACTION:
+					mAttributes["role"] = ["gridcell"];
+					mAttributes["aria-labelledby"] = [sTableId + "-rowacthdr"];
+					if (oTable.getSelectionMode() !== SelectionMode.None && (!mParams || !mParams.rowHidden)) {
+						var bSelected = mParams && mParams.rowSelected;
+						mAttributes["aria-selected"] = "" + bSelected;
 					}
 					break;
 
@@ -530,21 +638,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 						var iIdx = jQuery.inArray(mParams.headerId, aHeaders);
 						aLabels = iIdx > 0 ? aHeaders.slice(0, iIdx + 1) : [mParams.headerId];
 					}
+					for (var i = 0; i < aLabels.length; i++) {
+						aLabels[i] = aLabels[i] + "-inner";
+					}
 					mAttributes["aria-labelledby"] = aLabels;
 
 					if (mParams && (mParams.index < oTable.getFixedColumnCount())) {
 						mAttributes["aria-labelledby"].push(sTableId + "-ariafixedcolumn");
 					}
-					if (bIsMainHeader && oColumn.getSorted()) {
+
+					if (bIsMainHeader && oColumn && oColumn.getSorted()) {
 						mAttributes["aria-sort"] = oColumn.getSortOrder() === "Ascending" ? "ascending" : "descending";
-						mAttributes["aria-labelledby"].push(sTableId + (oColumn.getSortOrder() === "Ascending" ? "-ariacolsortedasc" : "-ariacolsorteddes"));
 					}
-					if (bIsMainHeader && oColumn.getFiltered()) {
-						mAttributes["aria-labelledby"].push(sTableId + "-ariacolfiltered");
-					}
+
 					if (oColumn && oColumn._menuHasItems()) {
 						mAttributes["aria-haspopup"] = "true";
-						mAttributes["aria-labelledby"].push(sTableId + "-ariacolmenu");
 					}
 					break;
 
@@ -559,6 +667,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 
 					if (oColumn) {
 						aLabels = ExtensionHelper.getRelevantColumnHeaders(oTable, oColumn);
+						for (var i = 0; i < aLabels.length; i++) {
+							aLabels[i] = aLabels[i] + "-inner";
+						}
 
 						if (mParams && mParams.fixed) {
 							aLabels.push(sTableId + "-ariafixedcolumn");
@@ -671,7 +782,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 							mAttributes["role"] = "button";
 							if (mParams && mParams.row) {
 								if (mParams.row._bHasChildren) {
-									mAttributes["title"] = oTable._oResBundle.getText(mParams.row._bIsExpanded ? "TBL_COLLAPSE" : "TBL_EXPAND");
+									var sText = oTable._oResBundle.getText(mParams.row._bIsExpanded ? "TBL_COLLAPSE" : "TBL_EXPAND");
+									if (oTable._getShowStandardTooltips()) {
+										mAttributes["title"] = sText;
+									} else {
+										mAttributes["aria-label"] = sText;
+									}
 									mAttributes["aria-expanded"] = "" + (!!mParams.row._bIsExpanded);
 								} else {
 									mAttributes["aria-label"] = oTable._oResBundle.getText("TBL_LEAF");
@@ -702,6 +818,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 					addAriaForOverlayOrNoData(oTable, mAttributes, true, false);
 					break;
 
+				case TableAccExtension.ELEMENTTYPES.ROWACTIONHEADER: // The header of the row action column
+					mAttributes["aria-hidden"] = "true";
+					break;
+
 				case "PRESENTATION":
 					mAttributes["role"] = "presentation";
 					break;
@@ -720,7 +840,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension
@@ -816,6 +936,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 		DATACELL : 			TableUtils.CELLTYPES.DATACELL, 			// @see TableUtils.CELLTYPES
 		COLUMNHEADER : 		TableUtils.CELLTYPES.COLUMNHEADER, 		// @see TableUtils.CELLTYPES
 		ROWHEADER : 		TableUtils.CELLTYPES.ROWHEADER, 		// @see TableUtils.CELLTYPES
+		ROWACTION : 		TableUtils.CELLTYPES.ROWACTION, 		// @see TableUtils.CELLTYPES
 		COLUMNROWHEADER : 	TableUtils.CELLTYPES.COLUMNROWHEADER, 	// @see TableUtils.CELLTYPES
 		ROOT : 				"ROOT", 								// The tables root dom element
 		CONTENT: 			"CONTENT",								// The content area of the table which contains all the table elements, rowheaders, columnheaders, etc
@@ -830,6 +951,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 		ROWHEADER_TD : 		"ROWHEADER_TD", 						// The "technical" row headers
 		TR : 				"TR", 									// The rows
 		TREEICON : 			"TREEICON", 							// The expand/collapse icon in the TreeTable
+		ROWACTIONHEADER : 	"ROWACTIONHEADER", 						// The header of the row action column
 		NODATA :			"NODATA",								// The no data container
 		OVERLAY :			"OVERLAY"								// The overlay container
 	};
@@ -929,6 +1051,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 
 		if ($Ref.row) {
 			$Ref.row.children("td").add($Ref.row).attr("aria-selected", bIsSelected ? "true" : null);
+			if (bIsSelected && $Ref.rowSelectorText) {
+				var sText = $Ref.rowSelectorText.text();
+				if (sText) {
+					sText = this.getTable()._oResBundle.getText("TBL_ROW_DESC_SELECTED") + " " + sText;
+				}
+				$Ref.rowSelectorText.text(sText);
+			}
 		}
 	};
 
@@ -936,14 +1065,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 	 * Updates the expand state and level for accessibility in case of grouping
 	 * @public (Part of the API for Table control only!)
 	 */
-	TableAccExtension.prototype.updateAriaExpandAndLevelState = function(oRow, $ScrollRow, $RowHdr, $FixedRow, bGroup, bExpanded, iLevel, $TreeIcon) {
+	TableAccExtension.prototype.updateAriaExpandAndLevelState = function(oRow, $ScrollRow, $RowHdr, $FixedRow, $RowAct, bGroup, bExpanded, iLevel, $TreeIcon) {
 		if (!this._accMode) {
 			return;
 		}
 
 		var sTitle = null,
 			oTable = this.getTable(),
-			aRefs = [$ScrollRow, $ScrollRow.children(), $RowHdr, $FixedRow, $FixedRow ? $FixedRow.children() : null],
+			aRefs = [$ScrollRow, $ScrollRow.children(), $RowHdr, $FixedRow, $FixedRow ? $FixedRow.children() : null, $RowAct],
 			bTreeMode = !!$TreeIcon,
 			oBinding = oTable.getBinding("rows");
 
@@ -976,6 +1105,22 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 
 		if (bTreeMode) {
 			$TreeIcon.attr(ExtensionHelper.getAriaAttributesFor(this, TableAccExtension.ELEMENTTYPES.TREEICON, {row: oRow}));
+		}
+	};
+
+	/*
+	 * Updates the row highlight state.
+	 * @public (Part of the API for Table control only!)
+	 */
+	TableAccExtension.prototype.updateAriaStateOfRowHighlight = function(oRowSettings) {
+		if (!this._accMode || oRowSettings == null) {
+			return;
+		}
+
+		var oRow = oRowSettings._getRow();
+		if (oRow != null) {
+			var oHighlightTextElement = oRow.getDomRef("highlighttext");
+			oHighlightTextElement.innerText = oRowSettings._getHighlightText();
 		}
 	};
 
@@ -1017,6 +1162,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 		}
 
 		var oResBundle = oTable._oResBundle;
+		var bShowTooltips = oTable._getShowStandardTooltips();
 		var mTooltipTexts = {
 			mouse: {
 				rowSelect: "",
@@ -1031,21 +1177,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 		var iSelectedIndicesCount = oTable._getSelectedIndicesCount();
 
 		if (sSelectionMode === SelectionMode.Single) {
-			mTooltipTexts.mouse.rowSelect = oResBundle.getText("TBL_ROW_SELECT");
-			mTooltipTexts.mouse.rowDeselect = oResBundle.getText("TBL_ROW_DESELECT");
+			mTooltipTexts.mouse.rowSelect = bShowTooltips ? oResBundle.getText("TBL_ROW_SELECT") : "";
+			mTooltipTexts.mouse.rowDeselect = bShowTooltips ? oResBundle.getText("TBL_ROW_DESELECT") : "";
 			mTooltipTexts.keyboard.rowSelect = oResBundle.getText("TBL_ROW_SELECT_KEY");
 			mTooltipTexts.keyboard.rowDeselect = oResBundle.getText("TBL_ROW_DESELECT_KEY");
 		} else if (sSelectionMode === SelectionMode.MultiToggle) {
-			mTooltipTexts.mouse.rowSelect = oResBundle.getText("TBL_ROW_SELECT_MULTI_TOGGLE");
+			mTooltipTexts.mouse.rowSelect = bShowTooltips ? oResBundle.getText("TBL_ROW_SELECT_MULTI_TOGGLE") : "";
 			// text for de-select is the same like for single selection
-			mTooltipTexts.mouse.rowDeselect = oResBundle.getText("TBL_ROW_DESELECT");
+			mTooltipTexts.mouse.rowDeselect = bShowTooltips ? oResBundle.getText("TBL_ROW_DESELECT") : "";
 			mTooltipTexts.keyboard.rowSelect = oResBundle.getText("TBL_ROW_SELECT_MULTI_TOGGLE_KEY");
 			// text for de-select is the same like for single selection
 			mTooltipTexts.keyboard.rowDeselect = oResBundle.getText("TBL_ROW_DESELECT_KEY");
 
 			if (bConsiderSelectionState === true && iSelectedIndicesCount === 0) {
 				// if there is no row selected yet, the selection is like in single selection case
-				mTooltipTexts.mouse.rowSelect = oResBundle.getText("TBL_ROW_SELECT");
+				mTooltipTexts.mouse.rowSelect = bShowTooltips ? oResBundle.getText("TBL_ROW_SELECT") : "";
 				mTooltipTexts.keyboard.rowSelect = oResBundle.getText("TBL_ROW_SELECT_KEY");
 			}
 		}

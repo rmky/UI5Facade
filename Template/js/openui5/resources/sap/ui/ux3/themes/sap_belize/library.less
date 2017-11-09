@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -481,10 +481,6 @@ button.sapUiBtnS.sapUiBtnNorm.sapUiUx3EditCollectionButton.sapUiBtnStd:hover {
 /* Belize theme                          */
 /* ===================================== */
 
-@sapUiUx3ExactLstExpandOffset: -1 -2;
-@sapUiUx3ExactLstRootExpandOffset: 0 3;
-@sapUiUx3ExactLstContentTop: 25px;
-
 .sapUiUx3ExactLst {
 	font-family: @sapUiDesktopFontFamily;
 	font-size: @sapUiDesktopFontSize;
@@ -518,12 +514,6 @@ button.sapUiBtnS.sapUiBtnNorm.sapUiUx3EditCollectionButton.sapUiBtnStd:hover {
 
 
 /* List - Focus, Hover, Select */
-
-html[data-sap-ui-browser="ie9"] .sapUiUx3ExactLstLb > ul > .sapUiLbxISel,
-html[data-sap-ui-browser="ie10"] .sapUiUx3ExactLstLb > ul > .sapUiLbxISel {
-	border: 1px solid @sapUiListSelectionBackgroundColor;
-}
-
 
 .sapUiUx3ExactLstLb > ul > .sapUiLbxI.sapUiLbxISel,
 .sapUiUx3ExactLstLb > ul > .sapUiLbxI.sapUiLbxISel > span {
@@ -733,8 +723,8 @@ html[data-sap-ui-browser="ie10"] .sapUiUx3ExactLstLb > ul > .sapUiLbxISel {
 /* Belize theme                     */
 /* ================================ */
 
-@sapUiFeedToolsIconUrl: url("img/feed/Action_Menu_regular.png");
-@sapUiFeedToolsIconHoverUrl: url("img/feed/Action_Menu_hover.png");
+@_sap_ui_ux3_Feed_ToolsIconUrl: url("img/feed/Action_Menu_regular.png");
+@_sap_ui_ux3_Feed_ToolsIconHoverUrl: url("img/feed/Action_Menu_hover.png");
 
 .sapUiFeed{
 	font-family: @sapUiDesktopFontFamily;
@@ -1051,10 +1041,8 @@ html[data-sap-ui-browser^="ie"] .sapUiFeedChunk button {
 	background-position: 10px top, left 7px, 15px top;
 	background-repeat: no-repeat, no-repeat, no-repeat;
 	background-size: auto auto, 10px 1px, 100% 1px;
-	-moz-background-size: auto auto, 10px 1px, 100% 1px;
 	-webkit-background-size: auto auto, 10px 1px, 100% 1px;
 	background-origin: padding, padding, content;
-	-moz-background-origin: padding, padding, content;
 	-webkit-background-origin: padding, padding, content;
 	background-origin: padding-box, padding-box, content-box;
 	padding-top: 7px;
@@ -1169,14 +1157,6 @@ html[data-sap-ui-browser^="ie"] .sapUiFeedChunk button {
 	color: @sapUiFieldPlaceholderTextColor; // @sapUiExtraLightText = #707070
 	font-style: italic;
 }
-
-html[data-sap-ui-browser="ie10"],
-html[data-sap-ui-browser="ie9"] {
-	.sapUiFeeder .sapUiBtnS.sapUiBtnIconOnly > span.sapUiBtnIco {
-		margin-top: 1px;
-	}
-}
-
 /* END "Feeder.less" */
  // Modified
 /* START "NavigationBar.less" */
@@ -2075,16 +2055,6 @@ html[dir="rtl"] .sapUiUx3Shell .sapUiUx3NavBarToplevel .sapUiUx3NavBarArrow {
     padding:            10px;
 }
 
-/* hack for IE 9+*/
-
-html[data-sap-ui-browser="ie9"] .sapUiUx3ShellCanvasBackground,
-html[data-sap-ui-browser="ie9"] .sapUiUx3ShellCanvas,
-html[data-sap-ui-browser="ie9"] .sapUiUx3ShellBgImg,
-html[data-sap-ui-browser="ie9"] .sapUiUx3ShellBg {
-	background-color: transparent;
-	background-image: none;
-}
-
 .sapUiUx3ShellCanvas {
     padding:            0;
 }
@@ -2653,8 +2623,6 @@ html[data-sap-ui-browser="ie9"] .sapUiUx3ShellBg {
 	background: @sapUiContentForegroundBorderColor; // @sapUiDarkBorder = #bfbfbf
 
 	-webkit-transform: rotate(45deg);
-	-moz-transform: rotate(45deg);
-	-ms-transform: rotate(45deg);
 	transform: rotate(45deg);
 
 	position: relative;

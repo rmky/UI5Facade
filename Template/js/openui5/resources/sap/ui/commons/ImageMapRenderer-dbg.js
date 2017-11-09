@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -64,7 +64,7 @@ sap.ui.define(['jquery.sap.global'],
 				var sAlt = aAreas[index].getAlt();
 				var sTitle = aAreas[index].getTooltip_AsString();
 
-				// Render Shape Attribute. It can an be only rect, circle, poly and default
+				// Render shape attribute. It can only be rect, circle, poly or default
 				if ( (sShape === "rect") || (sShape === "circle") || (sShape === "poly")) {
 					rm.writeAttribute("shape", sShape);
 				} else {

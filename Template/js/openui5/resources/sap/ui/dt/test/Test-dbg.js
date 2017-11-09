@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,7 +13,7 @@ function(jQuery, ManagedObject) {
 	"use strict";
 
 	/**
-	 * Constructor for an Test.
+	 * Constructor for a Test.
 	 *
 	 * @param {string} [sId] id for the new object, generated automatically if no id is given
 	 * @param {object} [mSettings] initial settings for the new object
@@ -23,7 +23,7 @@ function(jQuery, ManagedObject) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @private
@@ -206,14 +206,13 @@ function(jQuery, ManagedObject) {
 		if (mResult.type != Test.TYPE.TEST && mResult.children.length > 0) {
 			var aChildren = mResult.children;
 
-			var that = this;
 			var aMappedResult = aChildren.map(function(mEntry) {
-				var mChildResult = that.aggregate(mEntry);
+				var mChildResult = this.aggregate(mEntry);
 				return {
 					result : mChildResult.result,
 					status : mChildResult.status
 				};
-			});
+			}, this);
 
 			if (aMappedResult.length == 1) {
 				aMappedResult.push(aMappedResult[0]);
@@ -221,11 +220,11 @@ function(jQuery, ManagedObject) {
 
 			var mReducedResult = aMappedResult.reduce(function(mPreviousValue, mCurrentValue) {
 				return {
-					result : that._getResult(mPreviousValue, mCurrentValue),
-					status : that._getStatus(mPreviousValue, mCurrentValue),
-					statistic : that._getStatistic(mPreviousValue, mCurrentValue)
+					result : this._getResult(mPreviousValue, mCurrentValue),
+					status : this._getStatus(mPreviousValue, mCurrentValue),
+					statistic : this._getStatistic(mPreviousValue, mCurrentValue)
 				};
-			});
+			}.bind(this));
 
 
 			mResult.result = mReducedResult.result;

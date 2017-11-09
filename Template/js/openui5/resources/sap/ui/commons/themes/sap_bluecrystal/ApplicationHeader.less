@@ -5,7 +5,6 @@
 .sapUiAppHdr {
 	font-family: @sapUiDesktopFontFamily;
 	font-size: @sapUiDesktopFontSize;
-	-moz-background-size: 100% 110px;
 	-moz-box-shadow: 0 0 8px @sapUiDarkShadowTint;
 	background-image: -moz-linear-gradient(top center, @sapUiDarkAltBG, @sapUiExtraDarkBG);
 	background-image: -webkit-gradient(linear, left top, left bottom, from(@sapUiDarkAltBG), to(@sapUiExtraDarkBG));
@@ -18,11 +17,6 @@
 	color: @sapUiTextInverted;
 	border: 0px solid @sapUiBrand;
 	border-top-width: 8px;
-}
-
-html[data-sap-ui-browser="ie9"] .sapUiAppHdr {
-	background-image: url(img/applicationheader/Header_bg.png);
-	background-size: auto; /* IE9 does understand background-size, but it is meant for the gradient which it does not understand... */
 }
 
 .sapUiAppHdr .sapUiTv {

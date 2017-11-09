@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,18 +19,20 @@ sap.ui.define(['jquery.sap.global',
 	 * @namespace
 	 * @name sap.ui.unified
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.unified",
-		version: "1.44.8",
+		version: "1.48.12",
 		dependencies : ["sap.ui.core"],
 		types: [
 			"sap.ui.unified.CalendarDayType",
-			"sap.ui.unified.ContentSwitcherAnimation"
+			"sap.ui.unified.GroupAppointmentsMode",
+			"sap.ui.unified.ContentSwitcherAnimation",
+			"sap.ui.unified.ColorPickerMode"
 		],
 		interfaces: [],
 		controls: [
@@ -49,6 +51,7 @@ sap.ui.define(['jquery.sap.global',
 			"sap.ui.unified.CalendarLegend",
 			"sap.ui.unified.CalendarRow",
 			"sap.ui.unified.ContentSwitcher",
+			"sap.ui.unified.ColorPicker",
 			"sap.ui.unified.Currency",
 			"sap.ui.unified.FileUploader",
 			"sap.ui.unified.Menu",
@@ -73,7 +76,7 @@ sap.ui.define(['jquery.sap.global',
 
 
 	/**
-	 * Type of a calendar day used for visualization.
+	 * Types of a calendar day used for visualization.
 	 *
 	 * @enum {string}
 	 * @public
@@ -83,67 +86,73 @@ sap.ui.define(['jquery.sap.global',
 	sap.ui.unified.CalendarDayType = {
 
 		/**
-		 * None: No special type is used
+		 * No special type is used.
 		 * @public
 		 */
 		None : "None",
 
 		/**
-		 * Type 01: The semantic meaning must be defined by the application. It can be shown in a legend.
+		 * Non-working dates.
+		 * @public
+		 */
+		NonWorking : "NonWorking",
+
+		/**
+		 * The semantic meaning must be defined by the app. It can be displayed in a legend.
 		 * @public
 		 */
 		Type01 : "Type01",
 
 		/**
-		 * Type 02: The semantic meaning must be defined by the application. It can be shown in a legend.
+		 * The semantic meaning must be defined by the app. It can be displayed in a legend.
 		 * @public
 		 */
 		Type02 : "Type02",
 
 		/**
-		 * Type 03: The semantic meaning must be defined by the application. It can be shown in a legend.
+		 * The semantic meaning must be defined by the app. It can be displayed in a legend.
 		 * @public
 		 */
 		Type03 : "Type03",
 
 		/**
-		 * Type 04: The semantic meaning must be defined by the application. It can be shown in a legend.
+		 * The semantic meaning must be defined by the app. It can be displayed in a legend.
 		 * @public
 		 */
 		Type04 : "Type04",
 
 		/**
-		 * Type 05: The semantic meaning must be defined by the application. It can be shown in a legend.
+		 * The semantic meaning must be defined by the app. It can be displayed in a legend.
 		 * @public
 		 */
 		Type05 : "Type05",
 
 		/**
-		 * Type 06: The semantic meaning must be defined by the application. It can be shown in a legend.
+		 * The semantic meaning must be defined by the app. It can be displayed in a legend.
 		 * @public
 		 */
 		Type06 : "Type06",
 
 		/**
-		 * Type 07: The semantic meaning must be defined by the application. It can be shown in a legend.
+		 * The semantic meaning must be defined by the app. It can be displayed in a legend.
 		 * @public
 		 */
 		Type07 : "Type07",
 
 		/**
-		 * Type 08: The semantic meaning must be defined by the application. It can be shown in a legend.
+		 * The semantic meaning must be defined by the app. It can be displayed in a legend.
 		 * @public
 		 */
 		Type08 : "Type08",
 
 		/**
-		 * Type 09: The semantic meaning must be defined by the application. It can be shown in a legend.
+		 * The semantic meaning must be defined by the app. It can be displayed in a legend.
 		 * @public
 		 */
 		Type09 : "Type09",
 
 		/**
-		 * Type 10: The semantic meaning must be defined by the application. It can be shown in a legend.
+		 * The semantic meaning must be defined by the app. It can be displayed in a legend.
 		 * @public
 		 */
 		Type10 : "Type10"
@@ -151,7 +160,7 @@ sap.ui.define(['jquery.sap.global',
 	};
 
 	/**
-	 * Type of a interval in a <code>CalendarRow</code>.
+	 * Interval types in a <code>CalendarRow</code>.
 	 *
 	 * @enum {string}
 	 * @public
@@ -161,32 +170,69 @@ sap.ui.define(['jquery.sap.global',
 	sap.ui.unified.CalendarIntervalType = {
 
 		/**
-		 * one <code>CalendarRow</code> interval has the size of one hour
+		 * Intervals have the size of one hour.
 		 * @public
 		 */
 		Hour : "Hour",
 
 		/**
-		 * one <code>CalendarRow</code> interval has the size of one day
+		 * Intervals have the size of one day.
 		 * @public
 		 */
 		Day : "Day",
 
 		/**
-		 * one <code>CalendarRow</code> interval has the size of one Month
+		 * Intervals have the size of one month.
 		 * @public
 		 */
 		Month : "Month",
 
 		/**
-		 * one <code>CalendarRow</code> interval has the size of one Week
+		 * Intervals have the size of one day where 7 days are displayed, starting with the first day of the week.
+		 *
+		 * Note: This interval type is NOT supported when creating a custom sap.m.PlanningCalendarView.
+		 *
+		 * @since 1.44
 		 */
-		Week : "Week"
+		Week : "Week",
+
+		/**
+		 * Intervals have the size of one day where 31 days are displayed, starting with the first day of the month.
+		 *
+		 * Note: This interval type is NOT supported when creating a custom sap.m.PlanningCalendarView.
+		 *
+		 * @since 1.46
+		 */
+		OneMonth : "One Month"
 
 	};
 
 	/**
-	 * Visualisation of an <code>CalendarAppoinment</code> in a <code>CalendarRow</code>.
+	 * Types of display mode for overlapping appointments.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.48.0
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.ui.unified.GroupAppointmentsMode = {
+
+		/**
+		 * Overlapping appointments are displayed as a collapsed group appointment.
+		 * @public
+		 */
+		Collapsed : "Collapsed",
+
+		/**
+		 * Overlapping appointments are displayed individually (expanded from a group).
+		 * @public
+		 */
+		Expanded : "Expanded"
+
+	};
+
+	/**
+	 * Visualization types for {@link sap.ui.unified.CalendarAppointment}.
 	 *
 	 * @enum {string}
 	 * @public
@@ -196,13 +242,13 @@ sap.ui.define(['jquery.sap.global',
 	sap.ui.unified.CalendarAppointmentVisualization = {
 
 		/**
-		 * Standard visualization of an <code>CalendarAppoinment</code>
+		 * Standard visualization with no fill color.
 		 * @public
 		 */
 		Standard : "Standard",
 
 		/**
-		 * depending on the used theme the <code>CalendarAppoinment</code> are visualized with filled color
+		 * Visualization with fill color depending on the used theme.
 		 * @public
 		 */
 		Filled : "Filled"
@@ -265,6 +311,29 @@ sap.ui.define(['jquery.sap.global',
 
 	};
 
+	/**
+	 * different styles for a ColorPicker.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.ui.unified.ColorPickerMode = {
+
+		/**
+		 * Color picker works with HSV values.
+		 * @public
+		 */
+		HSV : "HSV",
+
+		/**
+		 * Color picker works with HSL values.
+		 * @public
+		 */
+		HSL : "HSL"
+
+	};
+
 	sap.ui.base.Object.extend("sap.ui.unified._ContentRenderer", {
 		constructor : function(oControl, sContentContainerId, oContent, fAfterRenderCallback) {
 			sap.ui.base.Object.apply(this);
@@ -321,6 +390,21 @@ sap.ui.define(['jquery.sap.global',
 
 
 	sap.ui.unified._iNumberOfOpenedShellOverlays = 0;
+
+	// Default implementation of ColorPickerHelper - to be overwritten by commons or mobile library
+	if (!sap.ui.unified.ColorPickerHelper) {
+		sap.ui.unified.ColorPickerHelper = {
+			isResponsive: function () { return false; },
+			factory: {
+				createLabel:  function () { throw new Error("no Label control available"); },
+				createInput:  function () { throw new Error("no Input control available"); },
+				createSlider: function () { throw new Error("no Slider control available"); },
+				createRadioButtonGroup: function () { throw new Error("no RadioButtonGroup control available"); },
+				createRadioButtonItem: function () { throw new Error("no RadioButtonItem control available"); }
+			},
+			bFinal: false
+		};
+	}
 
 	//factory for the FileUploader to create TextField and Button to be overwritten by commons and mobile library
 	if (!sap.ui.unified.FileUploaderHelper) {

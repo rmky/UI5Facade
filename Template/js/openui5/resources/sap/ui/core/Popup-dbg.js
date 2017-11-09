@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -293,16 +293,15 @@ sap.ui.define([
 	Popup.prototype.touchEnabled = Device.support.touch || jQuery.sap.simulateMobileOnDesktop;
 
 	/**
-	 * This property changes how focus handling works. When it's set to true,
-	 * focus will be restored after Popup is closed to the previous focused
-	 * element before Popup is open. Otherwise, this function is disabled.
-	 *
-	 * By default, the focus is restored only in non-touch environments.
+	 * On mobile device, the browser may set the focus to somewhere else after
+	 * the restoring of focus from Popup. This behavior should be prevented in
+	 * order to make sure that the focus is restored to the right DOM element in
+	 * mobile environment.
 	 *
 	 * @type {boolean}
 	 * @private
 	 */
-	Popup.prototype.restoreFocus = (!Device.support.touch && !jQuery.sap.simulateMobileOnDesktop) || Device.system.combi;
+	Popup.prototype.preventBrowserFocus = (Device.support.touch || jQuery.sap.simulateMobileOnDesktop) && !Device.system.combi;
 
 	//****************************************************
 	//Layer et al
@@ -598,7 +597,7 @@ sap.ui.define([
 			this._bContentAddedToStatic = true;
 		}
 
-		// Check if the content isn't connected properly to an UI-area. This could cause strange behavior of events and rendering.
+		// Check if the content isn't connected properly to a UIArea. This could cause strange behavior of events and rendering.
 		// To find a Popup issue in this case a warning should be logged to the console.
 		//
 		// E.g. if the content has a different UI-area than its parent -> warning is thrown if 'sap.ui.core.Popup._bEnableUIAreaCheck'
@@ -607,7 +606,7 @@ sap.ui.define([
 			var oArea = this.oContent.getUIArea();
 
 			if (oArea === null) {
-				jQuery.sap.log.warning("The Popup content is NOT connected with an UIArea and may not work properly!");
+				jQuery.sap.log.warning("The Popup content is NOT connected with a UIArea and may not work properly!");
 			} else if (Popup._bEnableUIAreaCheck && oArea.getRootNode().id !== oStatic.getRootNode().id) {
 
 				// the variable 'sap.ui.core.Popup._bEnableUIAreaCheck' isn't defined anywhere. To enable this check this variable
@@ -642,11 +641,8 @@ sap.ui.define([
 		jQuery.sap.assert(!offset || typeof offset === "string", "offset must be empty or a string");
 		jQuery.sap.assert(!collision || typeof collision === "string", "collision must be empty or a string");
 
-		// disable for mobile or desktop browser in touch mode
-		if (this.restoreFocus) {
-			// save current focused element to restore the focus after closing
-			this._oPreviousFocus = Popup.getCurrentFocusInfo();
-		}
+		// save current focused element to restore the focus after closing
+		this._oPreviousFocus = Popup.getCurrentFocusInfo();
 
 		// It is mandatroy to check if the new Popup runs within another Popup because
 		// if this new Popup is rendered via 'this._$(true)' and focused (happens e.g. if
@@ -1161,6 +1157,19 @@ sap.ui.define([
 			this.removeChildFromPopup(sParentId, this._popupUID);
 		}
 
+		if (this._bModal && this.preventBrowserFocus) {
+			$Ref.one("mousedown", function(oEvent) {
+				// browser sets the focus after mousedown event
+				// On mobile devices, the restoring of focus may happen before
+				// the delayed mousedown event.
+				// The browser will set the focus to the clicked element again
+				// after restoring of the focus.
+				// Calling 'preventDefault' prevents the browser from setting
+				// the focus after the delayed mousedown event.
+				oEvent.preventDefault();
+			});
+		}
+
 		this._duringClose();
 		if (iRealDuration == 0) { // iRealDuration == 0 means: no animation!
 			this._closed();
@@ -1203,6 +1212,7 @@ sap.ui.define([
 			// update the DomRef because it could have been rerendered during closing
 			$Ref = this._$(/* forceRerender */ false, /* only get DOM */ true);
 			oDomRef = $Ref.length ? $Ref[0] : null;
+
 			if (oDomRef) {
 				// also hide the new DOM ref
 				oDomRef.style.display = "none";
@@ -1213,16 +1223,12 @@ sap.ui.define([
 			}
 		}
 
-		//disabled for mobile or desktop browser in touch mode
-		if (this.restoreFocus) {
-			if (this._bModal) {
-
-				// try to set the focus back to whatever was focused before. Do this here because animation needs to be finished.
-				//- TODO: currently focus is restored only for modal popups. Non modal popups have to do it themselves because the outside focus can change!
-				Popup.applyFocusInfo(this._oPreviousFocus);
-				this._oPreviousFocus = null;
-				this.oLastBlurredElement = null;
-			}
+		if (this._bModal) {
+			// try to set the focus back to whatever was focused before. Do this here because animation needs to be finished.
+			//- TODO: currently focus is restored only for modal popups. Non modal popups have to do it themselves because the outside focus can change!
+			Popup.applyFocusInfo(this._oPreviousFocus);
+			this._oPreviousFocus = null;
+			this.oLastBlurredElement = null;
 		}
 
 		this.bOpen = false;
@@ -1266,7 +1272,7 @@ sap.ui.define([
 		var _oPreviousFocus = null;
 		var focusedControlId = sap.ui.getCore().getCurrentFocusedControlId();
 		if (focusedControlId) {
-			// a SAPUI5 control was focused before
+			// an SAPUI5 control was focused before
 			var oFocusedControl = sap.ui.getCore().byId(focusedControlId);
 			_oPreviousFocus = {
 				'sFocusId' : focusedControlId,
@@ -1274,7 +1280,7 @@ sap.ui.define([
 				'oFocusInfo' : oFocusedControl ? oFocusedControl.getFocusInfo() : {}
 			};
 		} else {
-			// not a SAPUI5 control... but if something has focus, save as much information about it as available
+			// not an SAPUI5 control... but if something has focus, save as much information about it as available
 			try {
 				var oElement = document.activeElement;
 
@@ -1326,7 +1332,7 @@ sap.ui.define([
 			var oFocusedControl = sap.ui.getCore().byId(oPreviousFocus.sFocusId);
 			if (oFocusedControl) {
 
-				// if a SAPUI5 control had been focused, just re-focus it
+				// if an SAPUI5 control had been focused, just re-focus it
 				oFocusedControl.applyFocusInfo(oPreviousFocus.oFocusInfo);
 			} else {
 
@@ -1556,7 +1562,7 @@ sap.ui.define([
 	 * Calculates the rect information of the given parameter.
 	 *
 	 * @param {String| DomNode | jQuery |sap.ui.core.Element | Event | jQuery.Event} oOf the DOM Element, UI Element instance on which the calculation is done
-	 * @returns {object} the rect infomartion which contains the top, left, width, height of the given object. If Event or jQuery.Event type parameter is given, null is returned because there's no way to calculate the rect info based on a event object.
+	 * @returns {object} the rect information which contains the top, left, width, height of the given object. If Event or jQuery.Event type parameter is given, null is returned because there's no way to calculate the rect info based on an event object.
 	 * @private
 	 */
 	Popup.prototype._calcOfRect = function(oOf){
@@ -1706,7 +1712,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * If the reference element is specified as a sap.ui.core.Element, then it is resolved to a DOM node.
+	 * If the reference element is specified as an sap.ui.core.Element, then it is resolved to a DOM node.
 	 *
 	 * @param {object} oPosition position info object describing the desired position of the popup.
 	 * @returns {object} resolved position info
@@ -1852,51 +1858,70 @@ sap.ui.define([
 	 */
 	Popup.prototype.setAutoCloseAreas = function(aAutoCloseAreas) {
 		//TODO: also handle the case when 'aAutoCloseAreas' is set with null
-		jQuery.sap.assert(jQuery.isArray(aAutoCloseAreas), "aAutoCloseAreas must be an array which contains either sap.ui.core.Element, DOM Element or an ID");
+		jQuery.sap.assert(Array.isArray(aAutoCloseAreas), "aAutoCloseAreas must be an array which contains either sap.ui.core.Element, DOM Element or an ID");
 
-		this._aAutoCloseAreas = [];
+		if (!this._aAutoCloseAreas) {
+			this._aAutoCloseAreas = [];
+		}
 
 		var createDelegate = function (oAutoCloseArea) {
 			return {
 				onBeforeRendering: function() {
 					var oDomRef = oAutocloseArea.getDomRef();
 					if (oDomRef && this.isOpen()) {
-						oDomRef.removeEventListener("blur", this.fEventHandler, true);
+						if (Device.browser.msie) {
+							jQuery(oDomRef).unbind("deactivate." + this._popupUID, this.fEventHandler);
+						} else {
+							oDomRef.removeEventListener("blur", this.fEventHandler, true);
+						}
 					}
 				},
 				onAfterRendering: function() {
 					var oDomRef = oAutocloseArea.getDomRef();
 					if (oDomRef && this.isOpen()) {
-						oDomRef.addEventListener("blur", this.fEventHandler, true);
+						if (Device.browser.msie) {
+							// 'deactivate' needs to be used for msie to achieve event handling in capturing phase
+							jQuery(oDomRef).bind("deactivate." + this._popupUID, this.fEventHandler);
+						} else {
+							oDomRef.addEventListener("blur", this.fEventHandler, true);
+						}
 					}
 				}
 			};
 		};
 
-		for (var i = 0, l = aAutoCloseAreas.length; i < l; i++) {
-			var sId = "",
-				oAutocloseArea = aAutoCloseAreas[i],
-				oDelegate,
-				oAreaRef = {};
+		var sId,
+			oAutocloseArea,
+			oDelegate,
+			oAreaRef;
 
+		for (var i = 0, l = aAutoCloseAreas.length; i < l; i++) {
+			oAutocloseArea = aAutoCloseAreas[i];
 
 			if (oAutocloseArea instanceof Element) {
-				oDelegate = createDelegate(oAutocloseArea);
-				oAutocloseArea.addEventDelegate(oDelegate, this);
 				sId = oAutocloseArea.getId();
-
-				oAreaRef.delegate = oDelegate;
 			} else if (typeof oAutocloseArea === "object") {
 				sId = oAutocloseArea.id;
 			} else if (typeof oAutocloseArea === "string") {
 				sId = oAutocloseArea;
 			}
 
-			oAreaRef.id = sId;
-			this._aAutoCloseAreas.push(oAreaRef);
-
-			if (jQuery.inArray(sId, this.getChildPopups()) === -1) {
+			if (this.getChildPopups().indexOf(sId) === -1) {
+				// when the autoclose area isn't registered, add it as a child popup and
+				// also to _aAutoCloseAreas
 				this.addChildPopup(sId);
+
+				oAreaRef = {
+					id: sId
+				};
+
+				if (oAutocloseArea instanceof Element) {
+					oDelegate = createDelegate(oAutocloseArea);
+					oAutocloseArea.addEventDelegate(oDelegate, this);
+					oAreaRef.delegate = oDelegate;
+				}
+
+				this._aAutoCloseAreas.push(oAreaRef);
 			}
 		}
 
@@ -2245,7 +2270,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Popup.prototype._addFocusableArea = function(sChannel, sEvent, oEventData) {
-		if (jQuery.inArray(oEventData.id, this.getChildPopups()) === -1) {
+		if ( this.getChildPopups().indexOf(oEventData.id) === -1) {
 			this.addChildPopup(oEventData.id);
 		}
 	};
@@ -2258,7 +2283,7 @@ sap.ui.define([
 	 *
 	 * @param {string} sChannel channel of the EventBus
 	 * @param {string} sEvent name of the event
-	 * @param {Object} oFocusable object with an id-property and if a autoClose machanism should occur
+	 * @param {Object} oFocusable object with an id-property and if an autoClose mechanism should occur
 	 * @since 1.17.0
 	 * @private
 	 */
@@ -2681,7 +2706,7 @@ sap.ui.define([
 		var oThis = oThat ? oThat : this;
 
 		// if oThis is an element use its DOM-ref to look for a Popup. Else
-		// 'oThis' is an DOM-ref therefore simply use it
+		// 'oThis' is a DOM-ref therefore simply use it
 		var $This = jQuery(oThis instanceof Element ? oThis.getDomRef() : oThis);
 
 		// look up if there is a Popup above used DOM-ref

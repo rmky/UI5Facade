@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,13 +15,46 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 		 * @param {object} [mSettings] Initial settings for the new control
 		 *
 		 * @class
-		 * The BlockLayout is used to display several objects in a section-based manner. It features horizontal and vertical subdivisions, and full-width banners seen frequently in contemporary web design. Background colors are attached directly to these “blocks” of the layout. Special full-width sections of the BlockLayout allow horizontal scrolling through a set of blocks.
-		 * Example use cases are SAP HANA Cloud Integration and the SAPUI5 Demo Kit. In SAP HANA Cloud Integration the BlockLayout serves as a banner-like presentation of illustrative icons with associated text. By placing pictorial and textual elements side by side in different blocks, a relation of content is established. In the SAPUI5 Demo Kit the BlockLayout serves as a flexible container for diverging content, such as headings, explanatory texts, code snippets, remarks, and examples.
-		 * The BlockLayout comes in three types: Layout only (default), Bright, and Mixed background colors.
+		 * The BlockLayout is used to display several objects in a section-based manner.
+		 * <h3>Overview</h3>
+		 * The BlockLayout uses horizontal and vertical subdivisions, and full-width banners to display a set of elements.
+		 * By placing pictorial and textual elements side-by-side in different blocks, you can establish a visual connection between blocks and between similar elements.
+		 * <h3>Structure</h3>
+		 * The BlockLayout comes in five predefined types for background colors:
+		 * <ul>
+		 * <li>Layout only (default) - a layout scheme and no background colors</li>
+		 * <li>Bright - a layout scheme with bright colors</li>
+		 * <li>Accent - a layout scheme with four pre-defined color sets</li>
+		 * <li>Dashboard - a layout scheme with additional borders and no background colors</li>
+		 * <li>Mixed - a layout scheme with a mix of light and dark colors</li>
+		 * </ul>
+		 * Background colors are attached directly to the blocks of the layout.
+		 *
+		 * Special full-width sections of the BlockLayout allow horizontal scrolling through a set of blocks.
+		 *
+		 * <b>Note:</b> With version 1.48 colors can be set for each individual {@link sap.ui.layout.BlockLayoutCell cell}. There are 11 pre-defined color sets, each with 4 different shades.
+		 * The main colors of the sets can be changed in Theme Designer. To change the background of a particular cell, set <code>backgroundColorSet</code> (main color)
+		 * and <code>backgroundColorShade</code> (shade).
+		 *
+		 * <h3>Usage</h3>
+		 * <h4>When to use</h4>
+		 * <ul>
+		 * <li>You want to create a catalogue-like page with sections of blocks.</li>
+		 * <li>The BlockLayout is intended for developing administrative tools and applications.</li>
+		 * </ul>
+		 * <h4>When not to use</h4>
+		 * <ul>
+		 * <li>You want to display properties or features of one content item. Use a {@link sap.uxap.ObjectPage object page} or {@link sap.f.DynamicPage dynamic page} instead.</li>
+		 * </ul>
+		 * <h3>Responsive Behavior</h3>
+		 * <ul>
+		 * <li>The breakpoints of the block layout react to the width of the control itself and not to the actual screen size.</li>
+		 * <li> On small screens all blocks will wrap to a single scrollable column</li>
+		 * </ul>
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 *
 		 * @constructor
 		 * @public
@@ -72,13 +105,13 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 		 * Resize handler is being attached to the control after the rendering
 		 */
 		BlockLayout.prototype.onAfterRendering = function () {
-			this._parentResizeHandler = sap.ui.core.ResizeHandler.register(this, this._onParentResize.bind(this));
 			this._onParentResize();
 		};
 
 		/**
 		 * Changes background type
 		 *
+		 * @public
 		 * @param {string} sNewBackground Background's style of type sap.ui.layout.BlockBackgroundType
 		 * @returns {sap.ui.layout.BlockLayout} BlockLayout instance. Allows method chaining
 		 */
@@ -108,6 +141,7 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 				iWidth = domRef.clientWidth,
 				mSizes = BlockLayout.CONSTANTS.SIZES;
 
+			this._detachResizeHandler();
 			this._removeBreakpointClasses();
 
 			// Put additional styles according to SAP_STANDARD_EXTENDED from sap.ui.Device.media.RANGESETS
@@ -118,6 +152,8 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 					break;
 				}
 			}
+
+			jQuery.sap.delayedCall(0, this, "_attachResizeHandler");
 		};
 
 		/**
@@ -131,6 +167,16 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 				if (mSizes.hasOwnProperty(prop)) {
 					this.removeStyleClass("sapUiBlockLayoutSize" + prop, true);
 				}
+			}
+		};
+
+		/**
+		 * Attaches resize handler to the parent
+		 * @private
+		 */
+		BlockLayout.prototype._attachResizeHandler = function () {
+			if (!this._parentResizeHandler) {
+				this._parentResizeHandler = sap.ui.core.ResizeHandler.register(this, this._onParentResize.bind(this));
 			}
 		};
 

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,6 +24,8 @@
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered
 	 */
 	ShellRenderer.render = function(rm, oControl) {
+		var sTitleLevel = (oControl.getTitleLevel() === sap.ui.core.TitleLevel.Auto) ? sap.ui.core.TitleLevel.H1 : oControl.getTitleLevel();
+
 		rm.write("<div");
 		rm.writeControlData(oControl);
 		rm.addClass("sapMShell");
@@ -65,9 +67,12 @@
 		rm.write(ShellRenderer.getLogoImageHtml(oControl));
 
 		// header title
-		rm.write("<h1 id='" + oControl.getId() + "-hdrTxt' class='sapMShellHeaderText'>");
-		rm.writeEscaped(oControl.getTitle());
-		rm.write("</h1>");
+		if (oControl.getTitle()) {
+			rm.write("<" + sTitleLevel);
+			rm.write(" id='" + oControl.getId() + "-hdrTxt' class='sapMShellHeaderText'>");
+			rm.writeEscaped(oControl.getTitle());
+			rm.write("</" + sTitleLevel + ">");
+		}
 
 		// header right area
 		rm.write("<span class='sapMShellHeaderRight'>");
@@ -91,11 +96,9 @@
 
 
 		// content
-		rm.write("<section class='sapMShellContent sapMShellGlobalInnerBackground' id='" + oControl.getId() + "-content' data-sap-ui-root-content='true'>");
-
+		rm.write("<div class='sapMShellContent sapMShellGlobalInnerBackground' id='" + oControl.getId() + "-content' data-sap-ui-root-content='true'>");
 		rm.renderControl(oControl.getApp());
-
-		rm.write("</section></div></div>");
+		rm.write("</div></div></div>");
 	};
 
 	ShellRenderer.getLogoImageHtml = function(oControl) {

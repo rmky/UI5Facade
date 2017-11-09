@@ -1,16 +1,20 @@
+/* ========================================== */
+/* CSS for control sap.uxap/ObjectPageLayout  */
+/* Base theme                                 */
+/* ========================================== */
+
 .sapUxAPObjectPageLayout {
 	width: 100%;
 	height: 100%;
 	position: relative;
     display: -webkit-box;
     display: -webkit-flex;
-    display: -moz-box;
-    display: -ms-flexbox;
     display: flex;
     -webkit-flex-direction: column;
-    -moz-flex-direction: column;
-    -ms-flex-direction: column;
     flex-direction: column;
+	isolation: isolate;
+	z-index: 0;
+	white-space: normal; // BCP: 1780382804
 }
 
 body > .sapUxAPObjectPageLayout,
@@ -23,10 +27,6 @@ body > .sapUxAPObjectPageLayout,
     -webkit-flex-shrink: 0;
 }
 
-.sapUxAPObjectPageHeaderTitle.sapUxAPObjectPageHeaderTitleBusy {
-	z-index: 0;
-}
-
 .sapUxAPObjectPageSubSectionPromoted:not(:first-of-type) {
 	padding-top: 0.25rem;
 }
@@ -35,8 +35,6 @@ body > .sapUxAPObjectPageLayout,
     position:relative;
     height:100%;
     -webkit-flex-grow: 1;
-    -moz-flex-grow: 1;
-    -ms-flex-grow: 1;
     flex-grow: 1;
 	overflow-y: auto;
 }
@@ -54,7 +52,7 @@ body > .sapUxAPObjectPageLayout,
 }
 
 .sapUxAPObjectPageContainerNoBar > .sapUxAPObjectPageSection:first-child {
-	margin-top: 0;
+	margin-top:  2rem;
 }
 
 /****
@@ -107,6 +105,7 @@ body > .sapUxAPObjectPageLayout,
 	left: 0;
 	right: auto;
 	z-index: 3000;
+	background: @sapUiObjectHeaderBorderColor;
 }
 
 .sapUxAPObjectPageLayout {
@@ -127,41 +126,26 @@ body > .sapUxAPObjectPageLayout,
 	}
 }
 
-.sapUiSizeCompact .sapUxAPObjectPageLayout .sapUxAPObjectPageFooter .sapUxAPObjectPageFloatingFooter {
+.sapUiSizeCompact .sapUxAPObjectPageLayout .sapUxAPObjectPageFooter {
+	.sapUxAPObjectPageFloatingFooter {
+		height: 2.5rem;
+	}
 	height: 2.5rem;
 }
 
 html[data-sap-ui-animation='on'] .sapUxAPObjectPageLayout {
 	.sapUxAPObjectPageFloatingFooterShow {
 		-webkit-animation: bounceShow 0.35s forwards ease-in-out;
-		-moz-animation: bounceShow 0.35s forwards ease-in-out;
-		-o-animation: bounceShow 0.35s forwards ease-in-out;
 		animation: bounceShow 0.35s forwards ease-in-out;
 	}
 	.sapUxAPObjectPageFloatingFooterHide {
 		-webkit-animation: bounceHide 0.35s forwards ease-in-out;
-		-moz-animation: bounceHide 0.35s forwards ease-in-out;
-		-o-animation: bounceHide 0.35s forwards ease-in-out;
 		animation: bounceHide 0.35s forwards ease-in-out;
 	}
 
 	@-webkit-keyframes bounceShow {
 		0% {
 			-webkit-transform: translateY(100%);
-			-moz-transform: translateY(100%);
-			-o-transform: translateY(100%);
-			transform: translateY(100%);
-			opacity: 0;
-		}
-		100% {
-			opacity: 1;
-		}
-	}
-	@-moz-keyframes bounceShow {
-		0% {
-			-webkit-transform: translateY(100%);
-			-moz-transform: translateY(100%);
-			-o-transform: translateY(100%);
 			transform: translateY(100%);
 			opacity: 0;
 		}
@@ -172,8 +156,6 @@ html[data-sap-ui-animation='on'] .sapUxAPObjectPageLayout {
 	@keyframes bounceShow {
 		0% {
 			-webkit-transform: translateY(100%);
-			-moz-transform: translateY(100%);
-			-o-transform: translateY(100%);
 			transform: translateY(100%);
 			opacity: 0;
 		}
@@ -184,31 +166,11 @@ html[data-sap-ui-animation='on'] .sapUxAPObjectPageLayout {
 	@-webkit-keyframes bounceHide {
 		0% {
 			-webkit-transform: translateY(-5%);
-			-moz-transform: translateY(-5%);
-			-o-transform: translateY(-5%);
 			transform: translateY(-5%);
 			opacity: 1;
 		}
 		100% {
 			-webkit-transform: translateY(100%);
-			-moz-transform: translateY(100%);
-			-o-transform: translateY(100%);
-			transform: translateY(100%);
-			opacity: 0;
-		}
-	}
-	@-moz-keyframes bounceHide {
-		0% {
-			-webkit-transform: translateY(-5%);
-			-moz-transform: translateY(-5%);
-			-o-transform: translateY(-5%);
-			transform: translateY(-5%);
-			opacity: 1;
-		}
-		100% {
-			-webkit-transform: translateY(100%);
-			-moz-transform: translateY(100%);
-			-o-transform: translateY(100%);
 			transform: translateY(100%);
 			opacity: 0;
 		}
@@ -216,15 +178,11 @@ html[data-sap-ui-animation='on'] .sapUxAPObjectPageLayout {
 	@keyframes bounceHide {
 		0% {
 			-webkit-transform: translateY(-5%);
-			-moz-transform: translateY(-5%);
-			-o-transform: translateY(-5%);
 			transform: translateY(-5%);
 			opacity: 1;
 		}
 		100% {
 			-webkit-transform: translateY(100%);
-			-moz-transform: translateY(100%);
-			-o-transform: translateY(100%);
 			transform: translateY(100%);
 			opacity: 0;
 		}

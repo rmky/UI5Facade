@@ -1,21 +1,22 @@
-
 /* ======================================= */
 /* CSS for control sap.m/RadioButtonGroup  */
 /* Base theme                              */
 /* ======================================= */
+
 .sapMRbG{
 	display: inline-block;
+	.sapMRbHasLabel.sapMRb:focus:before {
+		left: 0;
+	}
 }
 
 .sapMRbGTab{
 	display: -webkit-box;
-	display: -ms-flexbox;
 	display: -webkit-flex;
 	display: flex;
 }
 
 .sapMRbGCol{
-	-ms-flex-positive: 1;
 	-webkit-box-flex: 1;
 	flex-grow: 1;
 	vertical-align: top;
@@ -26,7 +27,6 @@
 }
 
 .sapMRbGDummy {
-	-ms-flex-positive: 100;
 	-webkit-box-flex: 100;
 	flex-grow: 100;
 }

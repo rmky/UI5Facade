@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,11 +11,45 @@
 
 @import "../../../../sap/ui/core/themes/sap_belize/global.less";
 
+/* START "Avatar.less" */
+/* ============================= */
+/* CSS for control sap.f/Avatar  */
+/* Belize theme                  */
+/* ============================= */
+
+@_sap_f_Avatar_Color: @sapUiContentContrastTextColor;
+
+.sapFAvatarImageContain {
+	background-color: @sapUiAccent7;
+	border-color: @sapUiAccent7;
+}
+.sapFAvatarIcon {
+	background-color: @sapUiAccent7;
+	border-color: @sapUiAccent7;
+	color: @_sap_f_Avatar_Color;
+}
+
+.sapFAvatarInitials {
+	background-color: @sapUiAccent7;
+	border-color: @sapUiAccent7;
+
+	.sapFAvatarInitialsHolder {
+		color: @_sap_f_Avatar_Color;
+	}
+}
+/* END "Avatar.less" */
+
 /* START "DynamicPage.less" */
+/* ================================== */
+/* CSS for control sap.f/DynamicPage  */
+/* Belize theme                       */
+/* ================================== */
+
 .sapFDynamicPageFooter .sapFDynamicPageActualFooterControl {
 	background: fade(@sapUiPageFooterBackground, 90);
 	color: @sapUiPageFooterTextColor;
 	box-shadow: @sapUiShadowLevel1;
+	border-bottom: 0 none;
 }
 
 .sapFDynamicPage .sapFDynamicPageContent {
@@ -23,77 +57,52 @@
 }
 /* END "DynamicPage.less" */
 
-/* START "DynamicPageTitle.less" */
-.sapFDynamicPageTitle {
-	background: @sapUiObjectHeaderBackground;
-	border-bottom: 0.125rem solid @sapUiObjectHeaderBackground;
-}
+/* START "FlexibleColumnLayout.less" */
+/* =========================================== */
+/* CSS for control sap.f/FlexibleColumnLayout  */
+/* Belize theme                                */
+/* =========================================== */
 
-.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnapped > .sapFDynamicPageTitle {
-	border-bottom: 0.125rem solid darken(@sapUiObjectHeaderBackground, 8);
-}
+@_sap_f_FlexibleColumnLayout_ButtonBackground: darken(@sapUiObjectHeaderBackground, 3);
+@_sap_f_FlexibleColumnLayout_ButtonHoverBackground: darken(@sapUiObjectHeaderBackground, 8);
 
-.sapFDynamicPageTitle > .sapFDynamicPageTitleLeft {
-	.sapFDynamicPageTitleLeftInner {
-		.sapFDynamicPageTitleLeftSnappedExpandContent {
-			color: @sapUiContentLabelColor;
+.sapFFCLNavigationButton {
+	// Hover
+	&:hover {
+		.sapMBtnHoverable {
+			background-color: @_sap_f_FlexibleColumnLayout_ButtonHoverBackground;
 		}
 	}
-}
-/* END "DynamicPageTitle.less" */
 
-/* START "DynamicPageHeader.less" */
-.sapFDynamicPageHeader {
-	background: @sapUiObjectHeaderBackground;
-	border-bottom: 0.125rem solid darken(@sapUiObjectHeaderBackground, 8);
-	box-shadow: @sapUiShadowHeader;
-}
-/* END "DynamicPageHeader.less" */
+	.sapMBtnInner {
+		border: 0;
 
-/* START "FlexibleColumnLayout.less" */
-/* =========================== */
-/* CSS for control sap.m/FlexibleColumnLayout */
-/* Belize theme                */
-/* =========================== */
-.sapFFCL {
-	.sapFFCLNavigationButton {
-		// Hover
-		&:hover {
-			.sapMBtnHoverable {
-				background-color: darken(@sapUiObjectHeaderBackground, 8);
-			}
+		// Normal
+		background: @_sap_f_FlexibleColumnLayout_ButtonBackground;
+		.sapMBtnIcon {
+			width: 1.584rem;
+			font-size: 1.375rem;
+			color: @sapUiButtonIconColor;
 		}
 
-		.sapMBtnInner {
-			border: 0;
-
-			// Normal
-			background: darken(@sapUiObjectHeaderBackground, 3);
+		// Active
+		&.sapMBtnActive {
+			background-color: @sapUiButtonActiveBackground;
 			.sapMBtnIcon {
-				width: 1.584rem;
-				font-size: 1.375rem;
-				color: @sapUiButtonIconColor;
-			}
-
-			// Active
-			&.sapMBtnActive {
-				background-color: @sapUiButtonActiveBackground;
-				.sapMBtnIcon {
-					color: @sapUiButtonActiveTextColor;
-				}
+				color: @sapUiButtonActiveTextColor;
 			}
 		}
+	}
 
-		&.sapFFCLNavigationButtonLeft {
-			.sapMBtnInner {
-				border-radius: 0 0.1875rem 0.1875rem 0;
-			}
+	&.sapFFCLNavigationButtonLeft {
+		.sapMBtnInner {
+			border-radius: 0 0.1875rem 0.1875rem 0;
 		}
+	}
 
-		&.sapFFCLNavigationButtonRight {
-			.sapMBtnInner {
-				border-radius: 0.1875rem 0 0 0.1875rem;
-			}
+	&.sapFFCLNavigationButtonRight {
+		.sapMBtnInner {
+			border-radius: 0.1875rem 0 0 0.1875rem;
 		}
 	}
 }

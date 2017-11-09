@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"jquery.sap.global", "sap/ui/core/Component", "sap/ui/fl/FlexControllerFactory", "sap/ui/fl/Utils", "sap/ui/fl/LrepConnector", "sap/ui/fl/ChangePersistenceFactory"
-], function(jQuery, Component, FlexControllerFactory, Utils, LrepConnector, ChangePersistenceFactory) {
+	"jquery.sap.global",
+	"sap/ui/core/Component",
+	"sap/ui/fl/FlexControllerFactory",
+	"sap/ui/fl/Utils",
+	"sap/ui/fl/LrepConnector",
+	"sap/ui/fl/ChangePersistenceFactory",
+	"sap/ui/fl/ChangePersistence"
+], function(jQuery, Component, FlexControllerFactory, Utils, LrepConnector, ChangePersistenceFactory, ChangePersistence) {
 	"use strict";
 
 	/**
@@ -16,7 +22,7 @@ sap.ui.define([
 	 * @class
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @experimental Since 1.27.0
 	 */
 	var XmlPreprocessorImpl = function(){
@@ -25,9 +31,10 @@ sap.ui.define([
 	/**
 	 * Asynchronous view processing method.
 	 *
-	 * @param {Node} oView xml node of the view to process
+	 * @param {Node} oView XML node of the view to process
 	 * @param {object} mProperties
 	 * @param {string} mProperties.componentId - id of the component creating the view
+	 * @param {string} mPropertyBag.id - id of the processed view
 	 *
 	 * @returns {jquery.sap.promise} result of the processing, promise if executed asynchronously
 	 *
@@ -36,8 +43,8 @@ sap.ui.define([
 	XmlPreprocessorImpl.process = function(oView, mProperties){
 		try {
 			if (!mProperties || mProperties.sync) {
-				Utils.log.warning("Flexibility feature for applying changes on an xml view is only available for " +
-					"asynchronous views. The merging will be done later on the JS controls itself.");
+				jQuery.sap.log.warning("Flexibility feature for applying changes on an XML view is only available for " +
+					"asynchronous views; merge is be done later on the JS controls.");
 				return (oView);
 			}
 
@@ -47,16 +54,30 @@ sap.ui.define([
 			var oComponent = sap.ui.getCore().getComponent(mProperties.componentId);
 
 			if (!oComponent) {
-				Utils.log.warning("View is generated without an component. Flexibility features are not possible.");
+				Utils.log.warning("View is generated without a component. Flexibility features are not possible.");
 				return Promise.resolve(oView);
 			}
 
-			var sFlexReference = Utils.getComponentClassName(oComponent);
+			var oAppComponent = Utils.getAppComponentForControl(oComponent);
+			var sFlexReference = Utils.getComponentClassName(oAppComponent);
+			var sAppVersion = Utils.getAppVersionFromManifest(oAppComponent.getManifest());
+			var oChangePersistence = ChangePersistenceFactory.getChangePersistenceForComponent(sFlexReference, sAppVersion);
+			return oChangePersistence.getCacheKey().then(function(sCacheKey){
+				if (!sCacheKey || sCacheKey === ChangePersistence.NOTAG) {
+					Utils.log.warning("No cache key could be determined for the view; flexibility XML view preprocessing is skipped. " +
+						"The processing will be done later on the JS controls.");
+					return Promise.resolve(oView);
+				}
 
-			var oFlexController = FlexControllerFactory.create(sFlexReference);
-			return oFlexController.processXmlView(oView, mProperties).then(function() {
-				jQuery.sap.log.debug("flex processing view " + mProperties.id + " finished");
-				return oView;
+				var oFlexController = FlexControllerFactory.create(sFlexReference, sAppVersion);
+				return oFlexController.processXmlView(oView, mProperties).then(function() {
+					Utils.log.debug("flex processing view " + mProperties.id + " finished");
+					return oView;
+				});
+			}, function () {
+				Utils.log.warning("Error happens when getting flex cache key! flexibility XML view preprocessing is skipped. " +
+					"The processing will be done later on the JS controls.");
+				return Promise.resolve(oView);
 			});
 		} catch (error) {
 			var sError = "view " + mProperties.id + ": " + error;
@@ -69,15 +90,23 @@ sap.ui.define([
 	/**
 	 * Asynchronous determination of a hash key for caching purposes
 	 *
-	 * @param {Node} oView xml node of the view for which the key should be determined
+	 * @param {Node} oView XML node of the view for which the key should be determined
 	 * @returns {jquery.sap.promise} promise returning the hash key
 	 *
 	 * @public
 	 */
 	XmlPreprocessorImpl.getCacheKey = function(mProperties) {
 		var oComponent = sap.ui.getCore().getComponent(mProperties.componentId);
-		var sFlexReference = Utils.getComponentClassName(oComponent);
-		var oChangePersistence = ChangePersistenceFactory.getChangePersistenceForComponent(sFlexReference);
+		var oAppComponent = Utils.getAppComponentForControl(oComponent);
+
+		// no caching possible with startup parameter based variants
+		if (Utils.isVariantByStartupParameter(oAppComponent)) {
+			return Promise.resolve();
+		}
+
+		var sFlexReference = Utils.getComponentClassName(oAppComponent);
+		var sAppVersion = Utils.getAppVersionFromManifest(oAppComponent.getManifest());
+		var oChangePersistence = ChangePersistenceFactory.getChangePersistenceForComponent(sFlexReference, sAppVersion);
 		return oChangePersistence.getCacheKey();
 	};
 

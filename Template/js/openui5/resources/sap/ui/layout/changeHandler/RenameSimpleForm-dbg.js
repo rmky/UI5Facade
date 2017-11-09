@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,7 +16,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.layout.changeHandler.RenameForm
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @since 1.40
 	 * @private
 	 * @experimental Since 1.40. This class is experimental and provides only limited functionality. Also the API might be changed in future.
@@ -76,11 +76,14 @@ sap.ui.define([
 
 		if (oSpecificChangeInfo.renamedElement && oSpecificChangeInfo.renamedElement.id) {
 			var oRenamedElement = sap.ui.getCore().byId(oSpecificChangeInfo.renamedElement.id);
+			var oStableRenamedElement;
 			if (oSpecificChangeInfo.changeType === "renameLabel") {
-				oChangeDefinition.content.elementSelector = JsControlTreeModifier.getSelector(oRenamedElement.getLabel(), mPropertyBag.appComponent);
+				oStableRenamedElement = oRenamedElement.getLabel();
 			} else if (oSpecificChangeInfo.changeType === "renameTitle") {
-				oChangeDefinition.content.elementSelector = JsControlTreeModifier.getSelector(oRenamedElement.getTitle(), mPropertyBag.appComponent);
+				oStableRenamedElement = oRenamedElement.getTitle();
 			}
+			oChangeDefinition.content.elementSelector = JsControlTreeModifier.getSelector(oStableRenamedElement, mPropertyBag.appComponent);
+			oChangeWrapper.addDependentControl(oStableRenamedElement, "elementSelector", mPropertyBag);
 		} else {
 			throw new Error("oSpecificChangeInfo.renamedElement attribute required");
 		}

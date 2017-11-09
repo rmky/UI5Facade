@@ -3,7 +3,7 @@
 /* Belize theme                                 */
 /* ============================================ */
 
-.sapUxAPHierarchicalSelect {
+html.sap-desktop .sapUxAPHierarchicalSelect {
 	border: none;
 	background-color: transparent;
 
@@ -12,6 +12,10 @@
 
 		&:hover {
 			background: transparent;
+		}
+
+		&.sapMSltIconOnly.sapMSlt:focus  {
+			outline: none;
 		}
 
 		&:not(.sapMSltPressed):hover > .sapMSltIcon {
@@ -58,7 +62,7 @@
 }
 
 .sapUxAPHierarchicalSelectFirstLevel.sapMSelectListItem:not(:first-child) {
-	border-top: 0.0625rem solid @sapUiListBorderColor;
+	border-top: 1px solid @sapUiListBorderColor;
 }
 
 .sapUxAPHierarchicalSelectFirstLevel.sapMSelectListItem {
@@ -66,7 +70,7 @@
 }
 
 .sapUxAPHierarchicalSelectSecondLevel.sapMSelectListItem {
-	color: lighten(@sapUiListTextColor, 20);
+	color: @sapUiContentLabelColor;
 }
 
 .sapUxAPHierarchicalSelectFirstLevel.sapMSelectListItem,
@@ -104,11 +108,12 @@ html.sapUiMedia-Std-Phone, html.sap-phone {
 	}
 
 	.sapUxAPHierarchicalSelect .sapMSltArrow {
-		box-shadow: inset 0 -0.125rem darken(@sapUiObjectHeaderBackground, 8), @sapUiShadowHeader;
+		box-shadow: inset 0 -0.125rem @sapUiObjectHeaderBorderColor, 0 0.125rem 0 0 @sapUiObjectHeaderBackground;
 	}
 
 	.sapMSlt.sapUxAPHierarchicalSelect {
-		box-shadow: inset 0 -0.125rem darken(@sapUiObjectHeaderBackground, 8), @sapUiShadowHeader;
+		box-shadow: inset 0 -0.125rem @sapUiObjectHeaderBorderColor, 0 0.125rem 0 0 @sapUiObjectHeaderBackground;
+		background-color: transparent;
 	}
 }
 

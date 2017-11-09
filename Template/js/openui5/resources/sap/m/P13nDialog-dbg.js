@@ -1,6 +1,6 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define([
 	 *        tables.
 	 * @extends sap.m.Dialog
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -36,8 +36,6 @@ sap.ui.define([
 				/**
 				 * This property determines which panel is initially shown when dialog is opened. Due to extensibility reason the type should be
 				 * <code>string</code>. So it is feasible to add a custom panel without expanding the type.
-				 *
-				 * @since 1.26.0
 				 */
 				initialVisiblePanelType: {
 					type: "string",
@@ -48,8 +46,6 @@ sap.ui.define([
 				/**
 				 * This property determines whether the 'Restore' button is shown inside the dialog. If this property is set to true, clicking the
 				 * 'Reset' button will trigger the <code>reset</code> event sending a notification that model data must be reset.
-				 *
-				 * @since 1.26.0
 				 */
 				showReset: {
 					type: "boolean",
@@ -83,8 +79,6 @@ sap.ui.define([
 
 				/**
 				 * The dialog panels displayed in the dialog.
-				 *
-				 * @since 1.26.0
 				 */
 				panels: {
 					type: "sap.m.P13nPanel",
@@ -96,21 +90,15 @@ sap.ui.define([
 			events: {
 
 				/**
-				 * Event fired if the 'ok' button in P13nDialog is clicked.
-				 *
-				 * @since 1.26.0
+				 * Event fired if the 'ok' button in <code>P13nDialog</code> is clicked.
 				 */
 				ok: {},
 				/**
-				 * Event fired if the 'cancel' button in P13nDialog is clicked.
-				 *
-				 * @since 1.26.0
+				 * Event fired if the 'cancel' button in <code>P13nDialog</code> is clicked.
 				 */
 				cancel: {},
 				/**
-				 * Event fired if the 'reset' button in P13nDialog is clicked.
-				 *
-				 * @since 1.26.0
+				 * Event fired if the 'reset' button in <code>P13nDialog</code> is clicked.
 				 */
 				reset: {}
 			}
@@ -417,7 +405,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Map an item of type sap.m.P13nPanel to an item of type sap.m.IconTabBarFilter
+	 * Map an item of type <code>sap.m.P13nPanel</code> to an item of type <code>sap.m.IconTabBarFilter</code>
 	 *
 	 * @param {sap.m.P13nPanel} oItem
 	 * @returns {sap.m.Button | sap.m.StandardListItem | null}
@@ -467,7 +455,7 @@ sap.ui.define([
 		oPanel.setValidationExecutor(jQuery.proxy(this._callValidationExecutor, this));
 		oPanel.setValidationListener(jQuery.proxy(this._registerValidationListener, this));
 		oPanel.setChangeNotifier(jQuery.proxy(this._callChangeNotifier, this));
-// oNavigationItem.setModel(oPanel.getModel("$sapmP13nPanel")); ---> is not yet needed as P13nDialog sets the model coming from controller
+		// oNavigationItem.setModel(oPanel.getModel("$sapmP13nPanel")); ---> is not yet needed as P13nDialog sets the model coming from controller
 		return oNavigationItem;
 	};
 
@@ -521,9 +509,8 @@ sap.ui.define([
 	/**
 	 * Returns visible panel.
 	 *
-	 * @returns {sap.m.P13nPanel | null}
+	 * @returns {sap.m.P13nPanel | null} panel
 	 * @public
-	 * @since 1.26.0
 	 */
 	P13nDialog.prototype.getVisiblePanel = function() {
 		var oPanel = null;
@@ -697,13 +684,15 @@ sap.ui.define([
 	P13nDialog.prototype._callValidationExecutor = function() {
 		var fValidate = this.getValidationExecutor();
 		if (fValidate && !jQuery.isEmptyObject(this._mValidationListener)) {
-			var oResultRaw = fValidate(this._getPayloadOfPanels());
-			var oResult = this._distributeValidationResult(oResultRaw);
-			// Publish the result to registered listeners
-			for ( var sType in this._mValidationListener) {
-				var fCallback = this._mValidationListener[sType];
-				fCallback(oResult[sType] || []);
-			}
+			var that = this;
+			fValidate(this._getPayloadOfPanels()).then(function(aValidationResult) {
+				var oResult = that._distributeValidationResult(aValidationResult);
+				// Publish the result to registered listeners
+				for ( var sType in that._mValidationListener) {
+					var fCallback = that._mValidationListener[sType];
+					fCallback(oResult[sType] || []);
+				}
+			});
 		}
 	};
 
@@ -752,12 +741,15 @@ sap.ui.define([
 				priority: sap.m.OverflowToolbarPriority.NeverOverflow
 			}),
 			press: function() {
+				that.setBusy(true);
 				var oPayload = that._getPayloadOfPanels();
 				var fFireOK = function() {
+					that.setBusy(false);
 					that.fireOk({
 						payload: oPayload
 					});
 				};
+				var aFailedPanelTypes = [];
 				var fCallbackIgnore = function() {
 					that.getPanels().forEach(function(oPanel) {
 						if (aFailedPanelTypes.indexOf(oPanel.getType()) > -1) {
@@ -766,24 +758,33 @@ sap.ui.define([
 					});
 					fFireOK();
 				};
-				var aFailedPanelTypes = [];
-				var aValidationResult = [];
-				// Execute validation of controller
-				var fValidate = that.getValidationExecutor();
-				if (fValidate) {
-					aValidationResult = fValidate(oPayload);
-				}
 				// Execute validation of panels
 				that.getPanels().forEach(function(oPanel) {
 					if (!oPanel.onBeforeNavigationFrom()) {
 						aFailedPanelTypes.push(oPanel.getType());
 					}
 				});
-				// In case of invalid panels show the dialog
-				if (aFailedPanelTypes.length || aValidationResult.length) {
-					that._showValidationDialog(fCallbackIgnore, aFailedPanelTypes, aValidationResult);
+				var aValidationResult = [];
+				// Execute validation of controller
+				var fValidate = that.getValidationExecutor();
+				if (fValidate) {
+					fValidate(oPayload).then(function(aValidationResult) {
+						// In case of invalid panels show the dialog
+						if (aFailedPanelTypes.length || aValidationResult.length) {
+							that.setBusy(false);
+							that._showValidationDialog(fCallbackIgnore, aFailedPanelTypes, aValidationResult);
+						} else {
+							fFireOK();
+						}
+					});
 				} else {
-					fFireOK();
+					// In case of invalid panels show the dialog
+					if (aFailedPanelTypes.length || aValidationResult.length) {
+						that.setBusy(false);
+						that._showValidationDialog(fCallbackIgnore, aFailedPanelTypes, aValidationResult);
+					} else {
+						fFireOK();
+					}
 				}
 			}
 		});

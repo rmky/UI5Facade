@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -302,6 +302,24 @@ link[id^="sap-ui-theme-"]::after,
 	clip: rect(1px, 1px, 1px, 1px);
 }
 
+/* CSS classes for bridging two buttons in the technical info dialog */
+.sapMBtn.sapUiDebugTechnicalInfoAssistantButton {
+	margin-right: 0 !important;
+}
+
+.sapMBtn.sapUiDebugTechnicalInfoAssistantButton>.sapMBtnInner {
+	border-top-right-radius: 0 !important;
+	border-bottom-right-radius: 0 !important;
+}
+
+.sapMBtn.sapUiDebugTechnicalInfoAssistantSettingsButton {
+	margin-left: 0 !important;
+}
+
+.sapMBtn.sapUiDebugTechnicalInfoAssistantSettingsButton>.sapMBtnInner  {
+	border-top-left-radius: 0 !important;
+	border-bottom-left-radius: 0 !important;
+}
 /* END "shared.less" */
 
 
@@ -349,6 +367,7 @@ link[id^="sap-ui-theme-"]::after,
 /* ============================================= */
 
 .sapUiIcon {
+	position: relative;
 	cursor: default;
 	text-align: center;
 	display: inline-block;
@@ -359,7 +378,37 @@ link[id^="sap-ui-theme-"]::after,
 	cursor: pointer;
 }
 
-.sapUiIcon:before {
+html:not([data-sap-ui-browser^="ie"]):not([data-sap-ui-browser^="ed"]) .sapUiIcon:focus {
+	outline-width: 1px;
+	outline-style: dashed;
+	/* keep the outline within the area of the icon */
+	outline-offset: -1px;
+}
+
+/*
+ * IE 11 and Edge (version < 15) don't support outline-offset.
+ * The outline is implemented using the ::after pseudo element.
+ *
+ * Edge 15 is already released but can't be upgraded automatically,
+ * therefore the approach is still used for all Edge versions.
+ */
+html[data-sap-ui-browser^="ie"], html[data-sap-ui-browser^="ed"] {
+	.sapUiIcon:focus {
+		outline: none;
+	}
+	.sapUiIcon:focus::after {
+		content: "";
+		position: absolute;
+		top: 0px;
+		bottom: 0px;
+		left: 0px;
+		right: 0px;
+		border-width: 1px;
+		border-style: dashed;
+	}
+}
+
+.sapUiIcon::before {
 	content: attr(data-sap-ui-icon-content);
 	speak: none;
 	font-weight: normal;
@@ -376,9 +425,8 @@ link[id^="sap-ui-theme-"]::after,
  *  3. Custom CSS style should be set on the root DOM and not the pesudo element.
  */
 html[dir=rtl] .sapUiIconMirrorInRTL:not(.sapUiIconSuppressMirrorInRTL) {
-	&:before, &:after /* some controls render the icon using 'after' pesudo element */ {
+	&::before, &::after /* some controls render the icon using 'after' pesudo element */ {
 		transform: scale(-1,1);
-		-ms-transform: scale(-1,1); /* IE 9 */
 		-webkit-transform: scale(-1,1); /* Safari and Chrome */
 		display: inline-block; /* pesudo element has display: inline by default and can't apply the transform css style for RTL mode*/
 	}
@@ -682,7 +730,7 @@ Usage:
 
 /* CSS parameters which are available in base theme */
 
-
+/* font */
 .sapThemeFont {
 	font-family: @sapUiFontFamily;
 	font-size: @sapUiFontSize;
@@ -694,7 +742,7 @@ Usage:
 	font-size: @sapUiFontSize;
 }
 
-
+/* text color */
 .sapThemeText,
 .sapThemeText-asColor {
 	color: @sapUiText;
@@ -709,14 +757,13 @@ Usage:
 	outline-color: @sapUiText;
 }
 
-
+/* text color inverted */
 .sapThemeTextInverted,
 .sapThemeTextInverted-asColor {
 	color: @sapUiTextInverted;
 }
 
-
-
+/* base bg */
 .sapThemeBaseBG,
 .sapThemeBaseBG-asBackgroundColor {
 	background-color: @sapUiBaseBG;
@@ -728,8 +775,8 @@ Usage:
 	color: @sapUiBaseBG;
 }
 
-
-
+/* brand color */
+.sapThemeBrand,
 .sapThemeBrand-asColor {
 	color: @sapUiBrand;
 }
@@ -743,7 +790,8 @@ Usage:
 	outline-color: @sapUiBrand;
 }
 
-
+/* highlight color */
+.sapThemeHighlight,
 .sapThemeHighlight-asColor {
 	color: @sapUiHighlight;
 }
@@ -757,6 +805,11 @@ Usage:
 	outline-color: @sapUiHighlight;
 }
 
+/* border color */
+.sapThemeForegroundBorderColor,
+.sapThemeForegroundBorderColor-asBorderColor {
+	border-color: @sapContent_ForegroundBorderColor;
+}
 /* END "parameterClasses.less" */
 
 /* START "ScrollBar.less" */

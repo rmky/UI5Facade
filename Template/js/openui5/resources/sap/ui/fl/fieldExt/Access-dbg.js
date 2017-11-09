@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,7 +12,7 @@ sap.ui.define(["jquery.sap.storage"], function(Storage) {
 	 * @alias sap.ui.fl.fieldExt.Access
 	 * @experimental Since 1.25.0
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 */
 	var Access = {};
 
@@ -131,7 +131,7 @@ sap.ui.define(["jquery.sap.storage"], function(Storage) {
 	 * Extracts ServiceName and ServiceVersion out of Service URI
 	 *
 	 * @private
-	 * @param {string} 		sServiceUri			URI to a OData service document
+	 * @param {string} 		sServiceUri			URI to an OData service document
 	 * @returns {object} 						An object with serviceName and serviceVersion
 	 */
 	Access._parseServiceUri = function(sServiceUri) {

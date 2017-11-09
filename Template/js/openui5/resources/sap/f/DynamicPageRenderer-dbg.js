@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,6 +24,9 @@ sap.ui.define(["sap/ui/Device"], function (Device) {
 			oDynamicPageHeader = oDynamicPage.getHeader(),
 			oDynamicPageFooter = oDynamicPage.getFooter(),
 			oDynamicPageContent = oDynamicPage.getContent(),
+			bHeaderExpanded = oDynamicPage.getHeaderExpanded(),
+			aHeaderContent = oDynamicPageHeader ? oDynamicPageHeader.getContent() : [],
+			bHeaderHasContent = aHeaderContent.length > 0,
 			bShowFooter = oDynamicPage.getShowFooter(),
 			bPreserveHeaderStateOnScroll = oDynamicPage._preserveHeaderStateOnScroll();
 
@@ -47,6 +50,12 @@ sap.ui.define(["sap/ui/Device"], function (Device) {
 		oRm.writeAttributeEscaped("id", oDynamicPage.getId() + "-header");
 		oRm.addClass("sapContrastPlus");
 		oRm.addClass("sapFDynamicPageTitleWrapper");
+		if (!bHeaderExpanded) {
+			oRm.addClass("sapFDynamicPageTitleSnapped");
+		}
+		if (!bHeaderHasContent) {
+			oRm.addClass("sapFDynamicPageTitleOnly");
+		}
 		oRm.writeClasses();
 		oRm.write(">");
 		oRm.renderControl(oDynamicPageTitle);
@@ -72,7 +81,10 @@ sap.ui.define(["sap/ui/Device"], function (Device) {
 		oRm.write(">");
 		oRm.write("<div");
 		oRm.writeAttributeEscaped("id", oDynamicPage.getId() + "-contentFitContainer");
-		oRm.addClass("sapFDynamicPageContentFitContainer");
+		if (oDynamicPage.getFitContent()) {
+			oRm.addClass("sapFDynamicPageContentFitContainer");
+		}
+
 		if (oDynamicPageFooter && bShowFooter) {
 			oRm.addClass("sapFDynamicPageContentFitContainerFooterVisible");
 		}

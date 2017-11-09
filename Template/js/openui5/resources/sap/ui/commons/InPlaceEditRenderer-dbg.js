@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -97,7 +97,7 @@ sap.ui.define(['jquery.sap.global'],
 		rm.writeStyles();
 		rm.write(">"); // DIV
 		if (oInPlaceEdit._sOldTextAvailable || oContent.getMetadata().getName() == "sap.ui.commons.Link") {
-			// there is an old text available - put content in a extra DIV to position
+			// there is an old text available - put content in an extra DIV to position
 			// for Link do it always to have the edit button next to the link, but have the defined width for the outer DIV
 			rm.write("<DIV");
 			rm.addClass("sapUiIpeCont");

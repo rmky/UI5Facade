@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -8,8 +8,9 @@ sap.ui.define([
 	"sap/ui/fl/ChangePersistence",
 	"sap/ui/fl/Change",
 	"sap/ui/fl/descriptorRelated/internal/Utils",
-	"sap/ui/fl/descriptorRelated/api/Settings"
-], function(ChangePersistenceFactory, ChangePersistence, Change, Utils, Settings) {
+	"sap/ui/fl/registry/Settings",
+	"sap/ui/fl/Utils"
+], function(ChangePersistenceFactory, ChangePersistence, Change, Utils, Settings, FlexUtils) {
 	"use strict";
 
 	/**
@@ -17,7 +18,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @private
 	 * @sap-restricted
 	 */
@@ -27,7 +28,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated.api
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @private
 	 * @sap-restricted
 	 */
@@ -37,12 +38,12 @@ sap.ui.define([
 	 *
 	 * @param {object} mChangeFile change file
 	 * @param {sap.ui.fl.descriptorRelated.api.DescriptorInlineChange} oInlineChange inline change object
-	 * @param {sap.ui.fl.descriptorRelated.api.Settings} oSettings settings
+	 * @param {sap.ui.fl.registry.Settings} oSettings settings
 	 *
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChange
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @private
 	 * @sap-restricted
 	 */
@@ -107,7 +108,8 @@ sap.ui.define([
 	 */
 	DescriptorChange.prototype.submit = function() {
 		// create persistence
-		var sComponentName = this._mChangeFile.reference; //reference contains id of the referenced descriptor
+		var sComponentName = this._mChangeFile.reference;
+		//TODO: Add application version
 		var oChangePersistence = ChangePersistenceFactory.getChangePersistenceForComponent(sComponentName);
 
 		//add change to persistence
@@ -119,19 +121,35 @@ sap.ui.define([
 	};
 
 	DescriptorChange.prototype._getChangeToSubmit = function() {
-		var mInlineChange = this._oInlineChange.getMap();
-
 		//create Change
-		this._mChangeFile.content = mInlineChange.content;
-		this._mChangeFile.texts = mInlineChange.texts;
-		var oChange = new Change(this._mChangeFile);
+		var oChange = new Change(this._getMap());
 
 		if ( this._sTransportRequest ) {
 			oChange.setRequest( this._sTransportRequest );
-		}  else if ( this._oSettings.isAtoEnabled() && this._mChangeFile.layer == 'CUSTOMER' ) {
+		}  else if ( this._oSettings.isAtoEnabled() && FlexUtils.isCustomerDependentLayer(this._mChangeFile.layer) ) {
 			oChange.setRequest( 'ATO_NOTIFICATION' );
 		}
 		return oChange;
+	};
+
+	DescriptorChange.prototype._getMap = function() {
+		var mInlineChange = this._oInlineChange.getMap();
+
+		this._mChangeFile.content = mInlineChange.content;
+		this._mChangeFile.texts = mInlineChange.texts;
+		return this._mChangeFile;
+	};
+
+	/**
+	 * Returns a copy of the JSON object of the descriptor change
+	 *
+	 * @return {object} copy of JSON object of the descriptor change
+	 *
+	 * @private
+	 * @sap-restricted
+	 */
+	DescriptorChange.prototype.getJson = function() {
+		return jQuery.extend(true, {}, this._getMap());
 	};
 
 //Descriptor LREP Change Factory
@@ -141,7 +159,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChangeFactory
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @private
 	 * @sap-restricted
 	 */
@@ -179,14 +197,13 @@ sap.ui.define([
 			//default to 'CUSTOMER'
 			mPropertyBag.layer = 'CUSTOMER';
 		} else {
-			if (sLayer != 'VENDOR' && sLayer != 'CUSTOMER') {
-				throw new Error("Parameter \"sLayer\" needs to be 'VENDOR', 'CUSTOMER'");
+			if (sLayer != 'VENDOR' && sLayer != 'PARTNER' && !FlexUtils.isCustomerDependentLayer(sLayer)) {
+				throw new Error("Parameter \"layer\" needs to be 'VENDOR', 'PARTNER' or customer dependent");
 			}
 			mPropertyBag.layer = sLayer;
 		}
 
 		var mChangeFile = Change.createInitialFileContent(mPropertyBag );
-
 		return Settings.getInstance().then(function(oSettings) {
 			return Promise.resolve( new DescriptorChange(mChangeFile, oInlineChange, oSettings) );
 		});

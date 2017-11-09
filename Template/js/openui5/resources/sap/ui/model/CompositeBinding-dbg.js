@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -215,7 +215,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 		}
 
 		oDataState.setValue(this.getValue());
-		oDataState.setInvalidValue(null);
+		oDataState.setInvalidValue(undefined);
 	};
 
 	/**
@@ -320,8 +320,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 			if (oBinding.getBindingMode() == BindingMode.OneTime) {
 				oBinding.detachChange(that.fChangeHandler);
 			}
-			/*bForceUpdate true gets lost (e.g. checkupdate(true) on model); But if a embedded binding fires a change we could
-			 * call checkupdate(true) so we handle both cases: a value change of the binding and a checkupdate(true)
+			/*bForceUpdate true gets lost (e.g. checkUpdate(true) on model); But if an embedded binding fires a change we could
+			 * call checkUpdate(true) so we handle both cases: a value change of the binding and a checkUpdate(true)
 			 */
 			that.checkUpdate(true);
 		};

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -36,7 +36,9 @@ sap.ui.define(['jquery.sap.global'],
 
 		// Opening the outer container:
 		// tabindex="0": Message must be focusable for accessibility?!?
-		rm.write('<div class="sapUiMsg" tabindex="0">');
+		rm.write('<div class="sapUiMsg" tabindex="0"');
+		rm.writeControlData(oControl);
+		rm.write('>');
 
 		// Message icon:
 		rm.write('<div class="sapUiMsgIcon sapUiMsgIcon' + oControl.getType() + '"></div>');

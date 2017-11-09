@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', './InputBase', './library', 'sap/ui/core/Inv
 		 * @extends sap.m.InputBase
 		 *
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 *
 		 * @constructor
 		 * @public
@@ -42,7 +42,7 @@ sap.ui.define(['jquery.sap.global', './InputBase', './library', 'sap/ui/core/Inv
 					},
 
 					/**
-					 * Indicates whether the dropdown arrow button is shown.
+					 * Indicates whether the dropdown downward-facing arrow button is shown.
 					 * @since 1.38
 					 */
 					showButton: {
@@ -167,29 +167,6 @@ sap.ui.define(['jquery.sap.global', './InputBase', './library', 'sap/ui/core/Inv
 		};
 
 		/**
-		 * Gets the labels referencing this control.
-		 *
-		 * @returns {sap.m.Label[]} Array of objects which are the current targets of the <code>ariaLabelledBy</code>
-		 * association and the labels referencing this control.
-		 * @since 1.38
-		 */
-		ComboBoxTextField.prototype.getLabels = function() {
-			var aLabelIDs = this.getAriaLabelledBy().map(function(sLabelID) {
-				return sap.ui.getCore().byId(sLabelID);
-			});
-
-			var oLabelEnablement = sap.ui.require("sap/ui/core/LabelEnablement");
-
-			if (oLabelEnablement) {
-				aLabelIDs = aLabelIDs.concat(oLabelEnablement.getReferencingLabels(this).map(function(sLabelID) {
-					return sap.ui.getCore().byId(sLabelID);
-				}));
-			}
-
-			return aLabelIDs;
-		};
-
-		/**
 		 * Gets the DOM element reference where the message popup is attached.
 		 *
 		 * @returns {object} The DOM element reference where the message popup is attached
@@ -198,10 +175,6 @@ sap.ui.define(['jquery.sap.global', './InputBase', './library', 'sap/ui/core/Inv
 			return this.getDomRef();
 		};
 
-		/**
-		 * @see sap.ui.core.Control#getAccessibilityInfo
-		 * @protected
-		 */
 		ComboBoxTextField.prototype.getAccessibilityInfo = function() {
 			var oInfo = InputBase.prototype.getAccessibilityInfo.apply(this, arguments);
 			oInfo.type = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("ACC_CTR_TYPE_COMBO");

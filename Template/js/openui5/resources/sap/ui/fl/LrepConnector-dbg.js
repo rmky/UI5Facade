@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,13 +13,14 @@ sap.ui.define([
 	 * Provides the connectivity to the ABAP based LRep REST-service
 	 *
 	 * @param {object} [mParameters] - map of parameters, see below
-	 * @param {String} [mParameters.XsrfToken] - XSRF Token which can be reused for the backend connectivity. If no XSRF token is passed, a new one
-	 *        will be fetched from backend.
+	 * @param {String} [mParameters.XsrfToken] - XSRF token which can be reused for back-end connectivity. If no XSRF token is passed, a new one
+	 *        will be fetched from back end.
 	 * @constructor
 	 * @alias sap.ui.fl.LrepConnector
-	 * @experimental Since 1.25.0
+	 * @private
+	 * @sap-restricted
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 */
 	var Connector = function(mParameters) {
 		this._initClientParam();
@@ -34,14 +35,15 @@ sap.ui.define([
 		return new Connector(mParameters);
 	};
 
-	Connector.prototype.DEFAULT_CONTENT_TYPE = "application/json";
+	Connector.prototype.DEFAULT_CONTENT_TYPE = "application/json; charset=utf-8";
 	Connector.prototype._sClient = undefined;
 	Connector.prototype._sLanguage = undefined;
 	Connector.prototype._aSentRequestListeners = [];
+	Connector.prototype._sRequestUrlPrefix = "";
 
 	/**
-	 * Registers a callback for a sent request to the backend. The callback is called for each change done one time! Each call is done with an object
-	 * similar to the resolve of the promises containing a <code>status</code> of the response from the backend i.e. <code>success</code>, a
+	 * Registers a callback for a sent request to the back end. The callback is only called once for each change. Each call is done with an object
+	 * similar to the resolve of the promises containing a <code>status</code> of the response from the back end i.e. <code>success</code>, a
 	 * <code>response</code> containing the change processed in this request
 	 *
 	 * @param {function} fCallback function called after all related promises are resolved
@@ -54,7 +56,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Deregisters a callback for a sent request to the backend if the callback was registered
+	 * Deregisters a callback for a sent request to the back end if the callback was registered
 	 *
 	 * @param {function} fCallback function called after all related promises are resolved
 	 * @public
@@ -79,7 +81,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Extract the sap-language url parameter from current url
+	 * Extract the sap-language URL parameter from current URL
 	 *
 	 * @private
 	 */
@@ -92,9 +94,20 @@ sap.ui.define([
 	};
 
 	/**
-	 * Resolve the complete url of a request by taking the backendUrl and the relative url from the request
+	 * Prefix for request URL can be set in exceptional cases when consumer needs to add a prefix to the URL
 	 *
-	 * @param {String} sRelativeUrl - relative url of the current request
+	 * @param {String} sRequestUrlPrefix - request URL prefix which must start with a (/) and must not end with a (/)
+	 * @private
+	 * @sap-restricted
+	 */
+	Connector.prototype.setRequestUrlPrefix = function(sRequestUrlPrefix) {
+		this._sRequestUrlPrefix = sRequestUrlPrefix;
+	};
+
+	/**
+	 * Resolves the complete URL of a request using the back-end URL and the relative URL from the request
+	 *
+	 * @param {String} sRelativeUrl - relative URL of the current request
 	 * @returns {sap.ui.core.URI} returns the complete uri for this request
 	 * @private
 	 */
@@ -102,6 +115,7 @@ sap.ui.define([
 		if (!jQuery.sap.startsWith(sRelativeUrl, "/")) {
 			sRelativeUrl = "/" + sRelativeUrl;
 		}
+		sRelativeUrl = this._sRequestUrlPrefix + sRelativeUrl;
 		var oUri = uri(sRelativeUrl).absoluteTo("");
 		return oUri.toString();
 	};
@@ -134,6 +148,8 @@ sap.ui.define([
 		var mOptions;
 		if (!sContentType) {
 			sContentType = this.DEFAULT_CONTENT_TYPE;
+		} else if (sContentType.indexOf("charset") === -1) {
+			sContentType += "; charset=utf-8";
 		}
 
 		mOptions = jQuery.extend(true, this._getDefaultHeader(), {
@@ -149,7 +165,7 @@ sap.ui.define([
 			}
 		});
 
-		if (oData && mOptions.contentType === "application/json") {
+		if (oData && mOptions.contentType.indexOf("application/json") === 0) {
 			mOptions.dataType = "json";
 			if (typeof oData === "object") {
 				mOptions.data = JSON.stringify(oData);
@@ -169,9 +185,9 @@ sap.ui.define([
 	};
 
 	/**
-	 * Send a request to the backend
+	 * Send a request to the back end
 	 *
-	 * @param {String} sUri Relative url for this request
+	 * @param {String} sUri Relative URL for this request
 	 * @param {String} sMethod HTTP-method to be used by this request (default GET)
 	 * @param {Object} oData Payload of the request
 	 * @param {Object} mOptions Additional options which should be used in the request
@@ -197,7 +213,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Extracts the messages from the backend reponse
+	 * Extracts the messages from the back-end response
 	 *
 	 * @param {Object} oXHR - ajax request object
 	 * @returns {Array} Array of messages, for example <code>[ { "severity": "Error", "text": "content id must be non-initial" } ] </code>
@@ -225,7 +241,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * @param {String} sUri - Complete request url
+	 * @param {String} sUri - Complete request URL
 	 * @param {Object} mOptions - Options to be used by the request
 	 * @returns {Promise} Returns a Promise with the status and response and messages
 	 * @private
@@ -336,18 +352,23 @@ sap.ui.define([
 	 * Loads the changes for the given component class name.
 	 *
 	 * @see sap.ui.core.Component
-	 * @param {String} sComponentClassName - Component class name
-	 * @param {map} mPropertyBag - (optional) contains additional data that are needed for reading of changes
-	 *                           - appDescriptor that belongs to actual component
-	 *                           - siteId that belongs to actual component
-	 *                           - layer up to which changes shall be read (excluding the specified layer)
-	 * @returns {Promise} Returns a Promise with the changes (changes, contexts, optional messagebundle) and componentClassName
+	 * @param {object} oComponent - Contains component data needed for reading changes
+	 * @param {string} oComponent.name - Name of component
+	 * @param {string} [oComponent.appVersion] - Current running version of application
+	 * @param {map} [mPropertyBag] - Contains additional data needed for reading changes
+	 * @param {object} [mPropertyBag.appDescriptor] - Manifest that belongs to actual component
+	 * @param {string} [mPropertyBag.siteId] - <code>sideId<code> that belongs to actual component
+	 * @param {string} [mPropertyBag.layer] - Layer up to which changes shall be read (excluding the specified layer)
+	 * @param {string} [mPropertyBag.appVersion] - Version of application whose changes shall be read
+	 *
+	 * @returns {Promise} Returns a Promise with the changes (changes, contexts, optional messagebundle), <code>componentClassName<code> and <code>etag<code> value
 	 * @public
 	 */
-	Connector.prototype.loadChanges = function(sComponentClassName, mPropertyBag) {
-		var sUri, oPromise;
+	Connector.prototype.loadChanges = function(oComponent, mPropertyBag) {
+		var sUri;
 		var mOptions = {};
 		var that = this;
+		var sComponentClassName = oComponent.name;
 
 		if (!sComponentClassName) {
 			return Promise.reject(new Error("Component name not specified"));
@@ -404,29 +425,47 @@ sap.ui.define([
 		if (sUpToLayer) {
 			sUri += "&upToLayerType=" + sUpToLayer;
 		}
+		if (oComponent.appVersion && (oComponent.appVersion !== FlexUtils.DEFAULT_APP_VERSION)) {
+			sUri += "&appVersion=" + oComponent.appVersion;
+		}
 
 		// Replace first & with ?
 		sUri = sUri.replace("&", "?");
 
-		oPromise = this.send(sUri, undefined, undefined, mOptions);
-		return oPromise.then(function(oResponse) {
-			if (oResponse.response) {
+		return this.send(sUri, undefined, undefined, mOptions)
+			.then(function(oResponse) {
 				return {
 					changes: oResponse.response,
-					messagebundle: oResponse.response.messagebundle,
-					componentClassName: sComponentClassName
+					componentClassName: sComponentClassName,
+					etag: oResponse.etag
 				};
-			} else {
-				return Promise.reject("response is empty");
-			}
-		}, function(oError) {
-			if (oError.code === 404 || oError.code === 405) {
-				// load changes based old route, because new route is not implemented
-				return that._loadChangesBasedOnOldRoute(sComponentClassName);
-			} else {
-				throw (oError);
-			}
-		});
+			}, function(oError) {
+				if (oError.code === 404 || oError.code === 405) {
+					// load changes based old route, because new route is not implemented
+					return that._loadChangesBasedOnOldRoute(sComponentClassName);
+				} else {
+					throw (oError);
+				}
+			});
+	};
+
+	/**
+	 * Loads flexibility settings.
+	 *
+	 * @returns {Promise} Returns a Promise with the flexibility settings content
+	 * @public
+	 */
+	Connector.prototype.loadSettings = function() {
+		var sUri = "/sap/bc/lrep/flex/settings";
+
+		if (this._sClient) {
+			sUri += "?sap-client=" + this._sClient;
+		}
+
+		return this.send(sUri, undefined, undefined, {})
+			.then(function(oResponse) {
+				return oResponse.response;
+			});
 	};
 
 	Connector.prototype._loadChangesBasedOnOldRoute = function(sComponentClassName) {
@@ -477,9 +516,9 @@ sap.ui.define([
 		}
 
 		if (this._sLanguage) {
-			// Add mandatory "sap-language" url parameter.
-			// sap-language shall be used only if there is a sap-language parameter in the original url.
-			// If sap-language is not added, the browser language might be used as backend login language instead of sap-language.
+			// Add mandatory "sap-language" URL parameter.
+			// Only use sap-language if there is an sap-language parameter in the original URL.
+			// If sap-language is not added, the browser language might be used as back-end login language instead of sap-language.
 			aParams.push({
 				name: "sap-language",
 				value: this._sLanguage
@@ -503,7 +542,7 @@ sap.ui.define([
 	 * The URL prefix of the REST API for example /sap/bc/lrep/changes/.
 	 *
 	 * @param {Boolean} bIsVariant Flag whether the change is of type variant
-	 * @returns {String} url prefix
+	 * @returns {String} URL prefix
 	 * @private
 	 */
 	Connector.prototype._getUrlPrefix = function(bIsVariant) {
@@ -570,7 +609,7 @@ sap.ui.define([
 	 *
 	 * @param {String} mParameters property bag
 	 * @param {String} mParameters.sChangeName - name of the change
-	 * @param {String} [mParameters.sLayer="USER"] - other possible layers: VENDOR,PARTNER,CUSTOMER
+	 * @param {String} [mParameters.sLayer="USER"] - other possible layers: VENDOR,PARTNER,CUSTOMER_BASE,CUSTOMER
 	 * @param {String} mParameters.sNamespace - the namespace of the change file
 	 * @param {String} mParameters.sChangelist - The transport ID.
 	 * @param {Boolean} bIsVariant - is it a variant?

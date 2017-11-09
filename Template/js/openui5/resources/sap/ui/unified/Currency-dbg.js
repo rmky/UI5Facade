@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.44.8
+		 * @version 1.48.12
 		 *
 		 * @constructor
 		 * @public
@@ -97,17 +97,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 			}
 		};
 
-		/**
-		 * Value property setter
+		/*
+		 * Value property setter.
 		 *
 		 * @override
-		 * @param sValue
+		 * @param {string} sValue The value to be set
 		 * @returns {sap.ui.unified.Currency} <code>this</code> pointer for chaining
 		 */
 		Currency.prototype.setValue = function(sValue) {
 			// Check if the value is bound and is undefined. In case of
 			// undefined value the Currency control will not display any value! This workaround
-			// is necessary because of the default value 0 suppresses to set a undefined or null value
+			// is necessary because of the default value 0 suppresses to set an undefined or null value
 			// instead and this cannot be changed due to compatibility.
 			if (this.isBound("value")) {
 				this._bRenderNoValClass = sValue == null;
@@ -133,10 +133,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 			}
 		};
 
-		/**
-		 * Currency property setter
-		 * @param sValue {String} The ISO 4217 currency code
-		 * @return {object} this to enable chaining
+		/*
+		 * Currency property setter.
+		 * @param {string} sValue The ISO 4217 currency code
+		 * @return {sap.ui.unified.Currency} <code>this</code> pointer for chaining
 		 */
 		Currency.prototype.setCurrency = function (sValue) {
 			var iCurrencyDigits,
@@ -172,10 +172,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 			return this;
 		};
 
-		/**
-		 * UseSymbol property setter
-		 * @param bValue {boolean}
-		 * @return {object} this to enable chaining
+		/*
+		 * UseSymbol property setter.
+		 * @param {boolean} bValue Whether the control must show the currency symbol instead of the ISO currency code
+		 * @return {sap.ui.unified.Currency} <code>this</code> pointer for chaining
 		 */
 		Currency.prototype.setUseSymbol = function (bValue) {
 			this.setProperty("useSymbol", bValue, true);
@@ -183,10 +183,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 			return this;
 		};
 
-		/**
-		 * MaxPrecision property setter
-		 * @param iValue {int}
-		 * @return {object} this to enable chaining
+		/*
+		 * MaxPrecision property setter.
+		 * @param {int} iValue The maximum precision value
+		 * @return {sap.ui.unified.Currency} <code>this</code> pointer for chaining
 		 */
 		Currency.prototype.setMaxPrecision = function (iValue) {
 			this.setProperty("maxPrecision", iValue, true);
@@ -224,9 +224,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		};
 
 		/**
-		 * The formatted value
+		 * The formatted value.
 		 *
-		 * @type string
+		 * @type {string}
+		 * @returns {string} The formatted value
 		 * @public
 		 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 		 */
@@ -264,9 +265,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		};
 
 		/**
-		 * Get symbol of the currency, if available
+		 * Get symbol of the currency, if available.
 		 *
-		 * @type string
+		 * @type {string}
 		 * @public
 		 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 		 */
@@ -276,6 +277,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 
 		/**
 		 * @see sap.ui.core.Control#getAccessibilityInfo
+		 * @returns {Object} Current accessibility state of the control.
 		 * @protected
 		 */
 		Currency.prototype.getAccessibilityInfo = function() {

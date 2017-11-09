@@ -1,14 +1,13 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.table.Row.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context', './library'],
-	function(jQuery, Element, Context, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils'],
+	function(jQuery, Element, Context, TableUtils) {
 	"use strict";
-
 
 
 	/**
@@ -20,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 	 * @class
 	 * The row.
 	 * @extends sap.ui.core.Element
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -36,7 +35,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 			/**
 			 * The controls for the cells.
 			 */
-			cells : {type : "sap.ui.core.Control", multiple : true, singularName : "cell"}
+			cells : {type : "sap.ui.core.Control", multiple : true, singularName : "cell"},
+
+			/*
+			 * Hidden aggregation for row actions
+			 */
+			_rowAction : {type : "sap.ui.table.RowAction", multiple: false, visibility: "hidden"},
+
+			/*
+			 * Hidden aggregation for the settings.
+			 */
+			_settings : {type : "sap.ui.table.RowSettings", multiple: false, visibility: "hidden"}
 		}
 	}});
 
@@ -138,6 +147,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 				var iRowIndex = oTable.indexOfRow(this);
 				// row selector domRef
 				this._mDomRefs[sKey].rowSelector = fnAccess(oTable.getId() + "-rowsel" + iRowIndex);
+				// row action domRef
+				this._mDomRefs[sKey].rowAction = fnAccess(oTable.getId() + "-rowact" + iRowIndex);
 			}
 
 			// row domRef
@@ -162,6 +173,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 				} else {
 					// since this won't be undefined in jQuery case
 					this._mDomRefs[sKey].rowSelector = undefined;
+				}
+
+				if (this._mDomRefs[sKey].rowAction && this._mDomRefs[sKey].rowAction.length > 0) {
+					this._mDomRefs[sKey].row = this._mDomRefs[sKey].row.add(this._mDomRefs[sKey].rowAction);
+				} else {
+					// since this won't be undefined in jQuery case
+					this._mDomRefs[sKey].rowAction = undefined;
 				}
 			}
 		}
@@ -199,7 +217,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 
 		if ($DomRefs.rowSelectorText) {
 			var sText = "";
-			if (!(this._oNodeState && this._oNodeState.sum) && !this._bHasChildren) {
+			if (!this._bHidden && !TableUtils.Grouping.isInSumRow($DomRefs.rowSelector) && !TableUtils.Grouping.isInGroupingRow($DomRefs.rowSelector)) {
 				sText = mTooltipTexts.keyboard[sSelectReference];
 			}
 			$DomRefs.rowSelectorText.text(sText);

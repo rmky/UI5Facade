@@ -1,8 +1,7 @@
-/* ===================================================================================== */
-/* CSS for control sap.m/UploadCollection.control                                        */
-/*                                                                                       */
-/* Base Theme                                                                            */
-/* ===================================================================================== */
+/* ======================================= */
+/* CSS for control sap.m/UploadCollection  */
+/* Base theme                              */
+/* ======================================= */
 
 /* until the central focus concept is implemented, a workaround is built in sap.m.UploadCollection so that all focus frames are visible */
 /* to remove the workaround the changes below are necessary: */
@@ -92,19 +91,7 @@
 	margin-top:			0.1rem; /* is needed so that keyboard frame is visible; after the central focus concept is implemented delete the margin */
 	margin-bottom:		0.1rem; /* is needed so that keyboard frame is visible; after the central focus concept is implemented delete the margin */
 	margin-left:		0.1rem; /* is needed so that keyboard frame is visible; after the central focus concept is implemented delete the margin */
-	-webkit-box-flex:	0;		 	/* OLD - iOS 6-, Safari 3.1-6 */
-	-moz-box-flex: 		0;         	/* OLD - Firefox 19- */
-	-webkit-flex:		none;			/* Chrome */
-	-moz-flex:			none;
-	-ms-flex:			none;			/* IE 10 */
-	flex:				none;			/* NEW, Firefox 20+ */
-}
-
-/* fallback for IE9 as it does not support flex */
-html[data-sap-ui-browser="ie9"] .sapMUCItemIconInactive,
-html[data-sap-ui-browser="ie9"] .sapMUCItemIcon,
-html[data-sap-ui-browser="ie9"] .sapMUCItemImage {
-	float: left;
+	flex:				none;
 }
 
 /*if no image is provided a standard placeholder is displayed */
@@ -118,7 +105,7 @@ html[data-sap-ui-browser="ie9"] .sapMUCItemImage {
 	font-family:		@sapUiFontFamily;
 	font-weight:		normal;
 	white-space:		nowrap;
-	padding-top:		0.25rem;
+	padding-top:		0.25rem; /* Padding top instead of padding bottom due to in-line placement with Objectmarker */
 	overflow:			hidden;
 	text-overflow:		ellipsis;
 	opacity:			100;
@@ -143,12 +130,6 @@ html[data-sap-ui-browser="ie9"] .sapMUCItemImage {
 	position: absolute;
 }
 
-/*focus for the file name */
-.sapMUCItem .sapMUCTextContainer > .sapMUCFileName.sapMLnk:focus {
-	outline:			1px dotted;
-	outline-offset:		0.0625rem;
-}
-
 /*positioning of the Progress label */
 .sapMLabel.sapMUCProgress {
 	display: block;
@@ -169,6 +150,103 @@ html[data-sap-ui-browser="ie9"] .sapMUCItemImage {
 	width:				2rem;
 }
 
+/* No data indicator */
+.sapMUCNoDataPage {
+	padding: 1rem;
+	text-align: center;
+	background: @sapUiGroupContentBackground;
+	display: block;
+
+	.sapUiIcon {
+		color: fade(@sapUiContentNonInteractiveIconColor, 50);
+	}
+
+	.sapMUCNoDataText {
+		padding: 1rem 0rem;
+		line-height: 2rem;
+		font-size: @sapMFontHeader2Size;
+		color: @sapUiGroupTitleTextColor;
+	}
+
+	.sapMUCNoDataDescription {
+		padding: 0rem 0rem 2rem 0rem;
+		font-size: @sapMFontHeader5Size;
+		color: @sapUiContentLabelColor;
+	}
+}
+
+/* Drag && Drop */
+.sapMUC {
+	position: relative;
+
+	.sapMUCDragDropOverlay:not(.sapMUCDragDropOverlayHide) ~ .sapMList {
+		.sapMUCNoDataPage {
+			visibility: hidden;
+		}
+	}
+
+	.sapMUCDragDropOverlay {
+		position: absolute;
+		top: 3rem;
+		right: 0rem;
+		left: 0rem;
+		bottom: 0rem;
+		background-color: fade(@sapUiDragAndDropBackground, 80);
+		z-index: 1;
+
+		&.sapMUCDragDropOverlayHide {
+			display: none;
+		}
+
+		&:after {
+			display: block;
+			content: "";
+			position: absolute;
+			top: 0rem;
+			left: 0rem;
+			bottom: 0rem;
+			right: 0rem;
+			margin: 0.5rem;
+			border: 0.125rem dashed @sapUiDragAndDropBorderColor;
+		}
+
+		.sapMUCDragDropIndicator {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+
+			.sapUiIcon {
+				position: relative;
+				display: block;
+				color: @sapUiDragAndDropColor;
+				padding-bottom: 1rem;
+			}
+
+			.sapMText {
+				position: relative;
+				font-size: @sapMFontHeader4Size;
+				color: @sapUiDragAndDropColor;
+			}
+		}
+
+		&.sapMUCDropIndicator:after {
+			background-color: @sapUiDragAndDropActiveBackground;
+			border: 0.125rem solid @sapUiDragAndDropActiveBorderColor;
+		}
+
+		&.sapMUCDropIndicator {
+			.sapMUCDragDropIndicator {
+				.sapMText {
+					color: @sapUiDragAndDropActiveColor;
+				}
+				.sapUiIcon {
+					color: @sapUiDragAndDropActiveColor;
+				}
+			}
+		}
+	}
+}
 
 /* ************************************************************************************* */
 /* local fixes: should be done by used simple controls                                   */
@@ -188,28 +266,16 @@ html[data-sap-ui-browser="ie9"] .sapMUCItemImage {
 .sapMUCListLastItem > .sapMLIBContent,
 .sapMUCListSingleItem > .sapMLIBContent,
 .sapMUCListItem > .sapMLIBContent {
-	display:		-webkit-box; 		/* OLD - iOS 6-, Safari 3.1-6 */
-	display:		-ms-flexbox; 		/* IE10 */
-	display:		-webkit-flex; 		/* NEW - Chrome */
-	display:		-moz-box;
-	display: 		-moz-flex;			/*NEW		*/
-	display: 		-ms-flex;			/*NEW 		*/
-	display:		flex; 				/*FF 20+ 	*/
+	display:		flex;
 	overflow:		hidden;				/*necessary for text truncation in FF */
+	padding:		0;
 }
 
 /*Container for a textContainer and a button container */
 @media(min-width: 30rem) {
 	.sapMUCTextButtonContainer {
-		display:		-webkit-box; 		/* OLD - iOS 6-, Safari 3.1-6 */
-		display:		-ms-flexbox; 		/* IE10 */
-		display:		-webkit-flex; 		/* NEW - Chrome */
-		display:		-moz-box;
-		display: 		-moz-flex;			/*NEW		*/
-		display: 		-ms-flex;			/*NEW 		*/
-		display:		flex; 				/*FF 20+ 	*/
+		display:		flex;
 		width: 			100%;
-		-ms-flex-negative: 1;  /*IE10 */
 		min-width: 		0; /* to avoid FF bug with flex*/
 	}
 }
@@ -227,23 +293,11 @@ html[data-sap-ui-browser="ie9"] .sapMUCItemImage {
 /*text container holding the file name, a container for attributes and a container for statuses */
 @media(min-width: 30rem) {
 	.sapMUCTextContainer {
-		-webkit-box-flex:	10;			/* OLD - iOS 6-, Safari 3.1-6 */
-		-webkit-flex:		10;			/* Chrome */
-		-moz-box-flex:		10;
-		-moz-flex:			10;
-		-ms-flex-positive:	10;			/* IE 10 */
-		-ms-flex-negative:	10;
-		-ms-flex-preferred-size: auto;
-		flex:	 			10 10 auto;			/* NEW, Firefox 20+	*/
+		flex:	 			10 10 auto;
 		padding-top: 		0.125rem;
 		padding-bottom: 	0.125rem;
 		display: 			block;
 	}
-}
-
-/*fallback for IE9 as it does not support flex */
-html[data-sap-ui-browser="ie9"] .sapMUCTextContainer {
-	width: 80%;
 }
 
 .sapMUCTextContainer.sapMUCEditMode {
@@ -297,22 +351,8 @@ html[data-sap-ui-browser="ie9"] .sapMUCTextContainer {
 		padding-left: 1rem;
 		padding-top: 0rem;
 		align-self: flex-end; /* for buttons alignment at the bottom */
-		-webkit-align-self: flex-end; /* for buttons alignment at the bottom in Safari */
-		-ms-flex-item-align:		end; /* for buttons alignment at the bottom in IE10 */
-		-webkit-box-flex:	0;			/* OLD - iOS 6-, Safari 3.1-6 */
-		-webkit-flex:		none;		 	/* Chrome */
-		-moz-box-flex:		0;
-		-moz-flex:			none;
-		-ms-flex:			none;			/* IE 10 */
-		flex:				none;		 	/* NEW, Firefox 20+	*/
+		flex: none;
 	}
-}
-
-/*fallback for IE9 as it does not support flex */
-html[data-sap-ui-browser="ie9"] .sapMUCButtonContainer {
-	position: absolute;
-	bottom: 0;
-	right: 0;
 }
 
 @media(max-width: 30rem) {
@@ -356,8 +396,7 @@ html[data-sap-ui-browser="ie9"] .sapMUCButtonContainer {
 
 /*compact form */
 .sapUiSizeCompact .sapMUCButtonContainer > .sapMBtn {
-	padding-top: 0rem; /* the padding of the sap.m.Button should be removed */
-	padding-bottom: 0rem; /* the padding of the sap.m.Button should be removed */
+	height: 1.625rem;
 }
 
 .sapMUCSeparator {
@@ -386,4 +425,75 @@ html[data-sap-ui-browser="ie9"] .sapMUCButtonContainer {
 
 .sapUiSizeCozy .sapMUCItem .sapMLIBSelectM {
 	padding-left: 0;
+}
+
+/* Item Icon */
+.sapMUCItemIcon {
+	color: @sapUiContentIconColor;
+}
+/* Item Icon Inactive */
+.sapMUCItemIconInactive {
+	color: @sapUiContentNonInteractiveIconColor;
+}
+
+/*if no image is provided a standard placeholder is displayed */
+.sapMUCItemPlaceholder {
+	color: @sapUiContentIconColor;
+}
+
+.sapMUCItemPlaceholderInactive {
+	color: @sapUiContentNonInteractiveIconColor;
+}
+
+/*if no link is provided the file name is displayed as an disabled link */
+.sapMLnkDsbl.sapMUCFileName {
+	color: @sapUiListTextColor;
+	text-decoration: none;
+}
+
+/* disabled state */
+.sapMBtnDisabled.sapMUCDeleteBtn > .sapMBtnInner > .sapMBtnIcon {
+	color: @sapUiContentIconColor;
+}
+
+.sapMUCAttrContainer {
+	color: @sapUiContentLabelColor;
+}
+
+/* Text: Filename */
+.sapMUCFileName.sapMLnk {
+	font-size: @sapMFontLargeSize; /* it cannot be moved to base as the LESS constant is not known there */
+}
+
+.sapMUCAttrContainer, .sapMUCStatusContainer {
+	font-size: @sapMFontMediumSize; /* it cannot be moved to base as the LESS constant is not known there */
+}
+
+/*for width > 30rem the buttons should be displayed as buttons of type transparent */
+@media(min-width: 30rem) {
+	.sapMUCButtonContainer >.sapMBtn >.sapMBtnInner {
+		background-image: none;
+		background-color: @sapUiButtonLiteBackground;
+		border-color: @sapUiButtonLiteBorderColor;
+		text-shadow: none;
+	}
+}
+
+/* an edit and delete button in a hover state; it should look like a transparent button in a hover state */
+@media(min-width: 30rem) {
+	.sapMUCEditBtn:hover >.sapMBtnHoverable, .sapMUCDeleteBtn:hover >.sapMBtnHoverable {
+		background-color: @sapUiButtonLiteHoverBackground;
+		border-color: @sapUiButtonLiteHoverBorderColor;
+	}
+}
+
+/*an edit and delete button in a pressed state; it should look like a transparent button in a pressed state */
+@media(min-width: 30rem) {
+	:not(.sapMBtnDisabled).sapMUCEditBtn > .sapMBtnActive,
+	:not(.sapMBtnDisabled).sapMUCEditBtn:hover > .sapMBtnActive,
+	:not(.sapMBtnDisabled).sapMUCDeleteBtn > .sapMBtnActive,
+	:not(.sapMBtnDisabled).sapMUCDeleteBtn:hover > .sapMBtnActive {
+		background-color: @sapUiButtonLiteActiveBackground;
+		border-color: @sapUiButtonLiteActiveBorderColor;
+	}
 }

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,7 +24,7 @@ sap.ui.define(['jquery.sap.global', './ListBase', './ListItemBase', './library']
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 *
 	 * @constructor
 	 * @public
@@ -65,14 +65,15 @@ sap.ui.define(['jquery.sap.global', './ListBase', './ListItemBase', './library']
 			 * Defines the columns of the table.
 			 */
 			columns : {type : "sap.m.Column", multiple : true, singularName : "column"}
-		}
+		},
+		designTime: true
 	}});
 
 	// class name for the navigation items
 	Table.prototype.sNavItemClass = "sapMListTblRow";
 
 	// announce all details at the initial focus
-	Table.prototype.bAnnounceDetails = 2;
+	Table.prototype.iAnnounceDetails = 2;
 
 	Table.prototype.init = function() {
 		this._iItemNeedsColumn = 0;
@@ -81,7 +82,16 @@ sap.ui.define(['jquery.sap.global', './ListBase', './ListItemBase', './library']
 
 	Table.prototype.onBeforeRendering = function() {
 		ListBase.prototype.onBeforeRendering.call(this);
+		this._ensureColumnsMedia();
 		this._notifyColumns("ItemsRemoved");
+	};
+
+	Table.prototype._ensureColumnsMedia = function() {
+		this.getColumns().forEach(function (oColumn) {
+			if (oColumn._bShouldAddMedia) {
+				oColumn._addMedia();
+			}
+		});
 	};
 
 	Table.prototype.onAfterRendering = function() {
@@ -277,9 +287,9 @@ sap.ui.define(['jquery.sap.global', './ListBase', './ListItemBase', './library']
 			}
 		}
 
-		this._dirty = window.innerWidth;
+		this._dirty = this._getMediaContainerWidth() || window.innerWidth;
 		if (!this._mutex) {
-			var clean = window.innerWidth;
+			var clean = this._getMediaContainerWidth() || window.innerWidth;
 			this._mutex = true;
 			this.rerender();
 
@@ -307,10 +317,9 @@ sap.ui.define(['jquery.sap.global', './ListBase', './ListItemBase', './library']
 		}
 
 		// find first visible column
-		var $table = jQuery(this.getTableDomRef()),
-			$headRow = $table.find("thead > tr"),
+		var $headRow = this.$("tblHeader"),
 			bHeaderVisible = !$headRow.hasClass("sapMListTblHeaderNone"),
-			aVisibleColumns = $headRow.find(".sapMListTblCell").filter(":visible"),
+			aVisibleColumns = $headRow.find(".sapMListTblCell:visible"),
 			$firstVisibleCol = aVisibleColumns.eq(0);
 
 		// check if only one column is visible
@@ -323,8 +332,18 @@ sap.ui.define(['jquery.sap.global', './ListBase', './ListItemBase', './library']
 			});
 		}
 
-		// update GroupHeader colspan according to visible column count and additional selection column
-		$table.find(".sapMGHLICell").attr("colspan", aVisibleColumns.length + !!sap.m.ListBaseRenderer.ModeOrder[this.getMode()]);
+		// update the visible column count and colspan
+		// highlight and navigation columns are getting rendered always
+		this._colCount = aVisibleColumns.length + 2 + !!sap.m.ListBaseRenderer.ModeOrder[this.getMode()];
+		this.$("tblBody").find(".sapMGHLICell").attr("colspan", this.getColSpan());
+		this.$("nodata-text").attr("colspan", this.getColCount());
+
+		// force IE to repaint in fixed layout mode
+		if (sap.ui.Device.browser.msie && this.getFixedLayout()) {
+			var oTableStyle = this.getTableDomRef().style;
+			oTableStyle.listStyleType = "circle";
+			window.setTimeout(function() { oTableStyle.listStyleType = "none"; }, 0);
+		}
 
 		// remove or show column header row(thead) according to column visibility value
 		if (!bColVisible && bHeaderVisible) {

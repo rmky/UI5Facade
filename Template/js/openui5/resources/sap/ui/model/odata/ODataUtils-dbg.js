@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -48,6 +48,8 @@ sap.ui.define(['jquery.sap.global', './Filter', 'sap/ui/model/Sorter', 'sap/ui/m
 				sSortParam += oSorter.sPath;
 				sSortParam += oSorter.bDescending ? "%20desc" : "%20asc";
 				sSortParam += ",";
+			} else {
+				jQuery.sap.log.error("Trying to use " + oSorter + " as a Sorter, but it is a " + typeof oSorter);
 			}
 		}
 		//remove trailing comma
@@ -315,7 +317,7 @@ sap.ui.define(['jquery.sap.global', './Filter', 'sap/ui/model/Sorter', 'sap/ui/m
 				jQuery.sap.log.warning("ODataUtils.setAnnotationOrigin: Annotation url is missing $value segment.");
 				sFinalAnnotationURL = sAnnotationURL;
 			} else {
-				// if the annotation URL is a SAP specific annotation url, we add the origin path segment...
+				// if the annotation URL is an SAP specific annotation url, we add the origin path segment...
 				var sAnnotationUrlBase =  sAnnotationURL.substring(0, iAnnotationIndex);
 				var sAnnotationUrlRest =  sAnnotationURL.substring(iAnnotationIndex, sAnnotationURL.length);
 				var sAnnotationWithOrigin = ODataUtils.setOrigin(sAnnotationUrlBase, vParameters);
@@ -472,10 +474,10 @@ sap.ui.define(['jquery.sap.global', './Filter', 'sap/ui/model/Sorter', 'sap/ui/m
 				sValue = "guid'" + vValue + "'";
 				break;
 			case "Edm.Decimal":
-				sValue = vValue + "M";
+				sValue = vValue + "m";
 				break;
 			case "Edm.Int64":
-				sValue = vValue + "L";
+				sValue = vValue + "l";
 				break;
 			case "Edm.Double":
 				sValue = vValue + "d";
@@ -578,14 +580,21 @@ sap.ui.define(['jquery.sap.global', './Filter', 'sap/ui/model/Sorter', 'sap/ui/m
 		return oDecimal1.sign * iResult;
 	}
 
+	var rTime = /^PT(\d\d)H(\d\d)M(\d\d)S$/;
+
 	/**
-	 * Extracts the milliseconds if the value is a date/time instance.
+	 * Extracts the milliseconds if the value is a date/time instance or formatted string.
 	 * @param {any} vValue
 	 *   the value (may be <code>undefined</code> or <code>null</code>)
 	 * @returns {any}
 	 *   the number of milliseconds or the value itself
 	 */
 	function extractMilliseconds(vValue) {
+		if (typeof vValue === "string" && rTime.test(vValue)) {
+			vValue = parseInt(RegExp.$1, 10) * 3600000 +
+				parseInt(RegExp.$2, 10) * 60000 +
+				parseInt(RegExp.$3, 10) * 1000;
+		}
 		if (vValue instanceof Date) {
 			return vValue.getTime();
 		}
@@ -646,6 +655,35 @@ sap.ui.define(['jquery.sap.global', './Filter', 'sap/ui/model/Sorter', 'sap/ui/m
 			default:
 				return simpleCompare;
 		}
+	};
+
+	/**
+	 * Normalizes the given canonical key.
+	 *
+	 * Although keys contained in OData response must be canonical, there are
+	 * minor differences (like capitalization of suffixes for Decimal, Double,
+	 * Float) which can differ and cause equality checks to fail.
+	 *
+	 * @param {string} sKey The canonical key of an entity
+	 * @returns {string} Normalized key of the entry
+	 * @protected
+	 */
+	// Define regular expression and function outside function to avoid instatiation on every call
+	var rNormalizeString = /([(=,])('.*?')([,)])/g,
+		rNormalizeCase = /[MLDF](?=[,)](?:[^']*'[^']*')*[^']*$)/g,
+		rNormalizeBinary = /([(=,])(X')/g,
+		fnNormalizeString = function(value, p1, p2, p3) {
+			return p1 + encodeURIComponent(decodeURIComponent(p2)) + p3;
+		},
+		fnNormalizeCase = function(value) {
+			return value.toLowerCase();
+		},
+		fnNormalizeBinary = function(value, p1) {
+			return p1 + "binary'";
+		};
+
+	ODataUtils._normalizeKey = function(sKey) {
+		return sKey.replace(rNormalizeString, fnNormalizeString).replace(rNormalizeCase, fnNormalizeCase).replace(rNormalizeBinary, fnNormalizeBinary);
 	};
 
 	return ODataUtils;

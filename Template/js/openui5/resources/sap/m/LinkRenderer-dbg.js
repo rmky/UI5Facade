@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,9 +26,10 @@
 	LinkRenderer.render = function(oRm, oControl) {
 		var sTextDir = oControl.getTextDirection(),
 			sTextAlign = Renderer.getTextAlign(oControl.getTextAlign(), sTextDir),
-			bShouldHaveOwnLabelledBy = oControl.getAriaLabelledBy().length > 0 ||
-						LabelEnablement.getReferencingLabels(oControl).length > 0 ||
-						(oControl.getParent() && oControl.getParent().enhanceAccessibilityState),
+			bShouldHaveOwnLabelledBy = oControl.getAriaLabelledBy().indexOf(oControl.getId()) === -1 &&
+							(oControl.getAriaLabelledBy().length > 0 ||
+							LabelEnablement.getReferencingLabels(oControl).length > 0 ||
+							(oControl.getParent() && oControl.getParent().enhanceAccessibilityState)),
 			oAccAttributes =  {
 				role: 'link',
 				labelledby: bShouldHaveOwnLabelledBy ? {value: oControl.getId(), append: true } : undefined
@@ -81,8 +82,6 @@
 		/* set href only if link is enabled - BCP incident 1570020625 */
 		if (oControl.getHref() && oControl.getEnabled()) {
 			oRm.writeAttributeEscaped("href", oControl.getHref());
-		} else {
-			oRm.writeAttribute("href", "#");
 		}
 
 		if (oControl.getTarget()) {
@@ -109,7 +108,11 @@
 		oRm.writeStyles();
 		oRm.write(">"); // opening <a> tag
 
-		this.renderText(oRm, oControl);
+		if (this.writeText) {
+			this.writeText(oRm, oControl);
+		} else {
+			this.renderText(oRm, oControl);
+		}
 
 		oRm.write("</a>");
 	};

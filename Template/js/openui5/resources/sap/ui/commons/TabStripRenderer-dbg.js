@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -154,7 +154,7 @@ sap.ui.define(['jquery.sap.global'],
 				}
 				rm.writeEscaped(oTitle.getText());
 			} else {
-				jQuery.sap.log.warning("No title configured for " + oTab + ". Either set a string as 'text' property or a sap.ui.core.Title as 'title' aggregation.");
+				jQuery.sap.log.warning("No title configured for " + oTab + ". Either set a string as 'text' property or an sap.ui.core.Title as 'title' aggregation.");
 			}
 			if (oTab.getClosable()) {
 				// close button

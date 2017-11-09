@@ -1,15 +1,14 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/model/Context",
-	"sap/ui/model/odata/v4/_ODataHelper",
 	"./lib/_Helper",
 	"./lib/_SyncPromise"
-], function (BaseContext, _ODataHelper, _Helper, _SyncPromise) {
+], function (BaseContext, _Helper, _SyncPromise) {
 	"use strict";
 
 	/*
@@ -87,7 +86,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.Context
 	 * @public
 	 * @since 1.39.0
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 */
 	var Context = BaseContext.extend("sap.ui.model.odata.v4.Context", {
 			constructor : function (oModel, oBinding, sPath, iIndex, oCreatePromise) {
@@ -164,7 +163,7 @@ sap.ui.define([
 		if (this.isTransient()) {
 			return that.oBinding._delete(sGroupId, "n/a", that);
 		}
-		return this.requestCanonicalPath().then(function (sCanonicalPath) {
+		return this.fetchCanonicalPath().then(function (sCanonicalPath) {
 			return that.oBinding._delete(sGroupId, sCanonicalPath.slice(1), that);
 		});
 	};
@@ -180,6 +179,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Context.prototype.deregisterChange = function (sPath, oListener) {
+		// Note: iIndex === -2 is OK here, no listener will be found...
 		this.oBinding.deregisterChange(sPath, oListener, this.iIndex);
 	};
 
@@ -222,9 +222,9 @@ sap.ui.define([
 	 * Returns a promise for the "canonical path" of the entity for this context.
 	 *
 	 * @returns {SyncPromise}
-	 *   A promise which is resolved with the canonical path (e.g. "/EMPLOYEES(ID='1')") in case of
-	 *   success, or rejected with an instance of <code>Error</code> in case of failure, e.g. if
-	 *   the given context does not point to an entity
+	 *   A promise which is resolved with the canonical path (e.g. "/SalesOrderList('0500000000')")
+	 *   in case of success, or rejected with an instance of <code>Error</code> in case of failure,
+	 *   e.g. if the given context does not point to an entity
 	 *
 	 * @private
 	 */
@@ -246,7 +246,9 @@ sap.ui.define([
 	 * @private
 	 */
 	Context.prototype.fetchValue = function (sPath, oListener) {
-		return this.oBinding.fetchValue(sPath || "", oListener, this.iIndex);
+		return this.iIndex === -2
+			? _SyncPromise.resolve()
+			: this.oBinding.fetchValue(sPath, oListener, this.iIndex);
 	};
 
 	/**
@@ -273,7 +275,7 @@ sap.ui.define([
 	 * key properties are available within the initial data.
 	 *
 	 * @returns {string}
-	 *   The canonical path (e.g. "/EMPLOYEES(ID='1')")
+	 *   The canonical path (e.g. "/SalesOrderList('0500000000')")
 	 * @throws {Error}
 	 *   If the canonical path cannot be determined yet or in case of failure, e.g. if the given
 	 *   context does not point to an entity
@@ -382,17 +384,17 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns the query options for the given path from the associated binding.
+	 * Returns the query options from the associated binding for the given path.
 	 *
 	 * @param {string} sPath
-	 *   The path for which the query options are requested
+	 *   The relative path for which the query options are requested
 	 * @returns {object}
-	 *   The query options from the associated binding for the given path
+	 *   The query options from the associated binding
 	 *
 	 * @private
 	 */
-	Context.prototype.getQueryOptions = function (sPath) {
-		return _ODataHelper.getQueryOptions(this.oBinding, sPath);
+	Context.prototype.getQueryOptionsForPath = function (sPath) {
+		return this.oBinding.getQueryOptionsForPath(sPath);
 	};
 
 	/**
@@ -417,10 +419,9 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	Context.prototype.hasPendingChanges = function (sPath) {
-		// since we send a path, bAskParent is not needed and set to undefined
-		return _ODataHelper.hasPendingChanges(this.oBinding, undefined,
-			_Helper.buildPath(this.iIndex, sPath));
+	Context.prototype.hasPendingChangesForPath = function (sPath) {
+		// Note: iIndex === -2 is OK here, no changes will be found...
+		return this.oBinding.hasPendingChangesForPath(_Helper.buildPath(this.iIndex, sPath));
 	};
 
 	/**
@@ -434,9 +435,7 @@ sap.ui.define([
 	 * @since 1.43.0
 	 */
 	Context.prototype.isTransient = function () {
-		var oSyncCreatePromise = this.oSyncCreatePromise;
-
-		return oSyncCreatePromise && (oSyncCreatePromise.getResult() === oSyncCreatePromise);
+		return this.oSyncCreatePromise && this.oSyncCreatePromise.isPending();
 	};
 
 	/**
@@ -450,9 +449,9 @@ sap.ui.define([
 	 * key properties are available within the initial data.
 	 *
 	 * @returns {Promise}
-	 *   A promise which is resolved with the canonical path (e.g. "/EMPLOYEES(ID='1')") in case of
-	 *   success, or rejected with an instance of <code>Error</code> in case of failure, e.g. if
-	 *   the given context does not point to an entity
+	 *   A promise which is resolved with the canonical path (e.g. "/SalesOrderList('0500000000')")
+	 *   in case of success, or rejected with an instance of <code>Error</code> in case of failure,
+	 *   e.g. if the given context does not point to an entity
 	 *
 	 * @function
 	 * @public
@@ -517,9 +516,9 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	Context.prototype.resetChanges = function (sPath) {
-		// since we send a path, bAskParent is not needed and set to undefined
-		_ODataHelper.resetChanges(this.oBinding, undefined, _Helper.buildPath(this.iIndex, sPath));
+	Context.prototype.resetChangesForPath = function (sPath) {
+		// Note: iIndex === -2 is OK here, no changes will be found...
+		this.oBinding.resetChangesForPath(_Helper.buildPath(this.iIndex, sPath));
 	};
 
 	/**
@@ -536,44 +535,6 @@ sap.ui.define([
 			sIndex = "[" + this.iIndex + (this.isTransient() ? "|transient" : "") + "]";
 		}
 		return this.sPath + sIndex;
-	};
-
-	/**
-	 * Delegates to the <code>updateValue</code> method of this context's binding which updates the
-	 * value for the given path, relative to this context, as maintained by that binding.
-	 *
-	 * @param {string} sGroupId
-	 *   The group ID to be used for this update call.
-	 * @param {string} sPropertyName
-	 *   Name of property to update
-	 * @param {any} vValue
-	 *   The new value
-	 * @param {string} [sEditUrl]
-	 *   The edit URL corresponding to the entity to be updated
-	 * @param {string} [sPath]
-	 *   Some relative path
-	 * @returns {Promise}
-	 *   A promise on the outcome of the binding's <code>updateValue</code> call
-	 *
-	 * @private
-	 */
-	Context.prototype.updateValue = function (sGroupId, sPropertyName, vValue, sEditUrl, sPath) {
-		var that = this;
-
-		sPath = _Helper.buildPath(this.iIndex, sPath);
-
-		if (this.isTransient()) {
-			// Note: must not be falsy, otherwise a parent context would insert its own edit URL
-			sEditUrl = "n/a";
-		}
-		if (sEditUrl) {
-			return this.oBinding.updateValue(sGroupId, sPropertyName, vValue, sEditUrl, sPath);
-		}
-
-		return this.requestCanonicalPath().then(function (sEditUrl) {
-			return that.oBinding.updateValue(sGroupId, sPropertyName, vValue, sEditUrl.slice(1),
-				sPath);
-		});
 	};
 
 	return {

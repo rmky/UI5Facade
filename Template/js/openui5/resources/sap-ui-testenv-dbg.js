@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.predefine('jquery.sap.strings',['jquery.sap.global'],function(q){"use strict";
@@ -17,7 +17,7 @@ var a=/([A-Z])/g;
 q.sap.hyphen=function hyphen(s){return s.replace(a,function(m,C){return"-"+C.toLowerCase();});};
 var b=/[[\]{}()*+?.\\^$|]/g;
 q.sap.escapeRegExp=function escapeRegExp(s){return s.replace(b,"\\$&");};
-q.sap.formatMessage=function formatMessage(p,v){if(arguments.length>2||(v!=null&&!q.isArray(v))){v=Array.prototype.slice.call(arguments,1);}v=v||[];return p.replace(c,function($,d,e,f,o){if(d){return"'";}else if(e){return e.replace(/''/g,"'");}else if(f){return String(v[parseInt(f,10)]);}throw new Error("formatMessage: pattern syntax error at pos. "+o);});};
+q.sap.formatMessage=function formatMessage(p,v){if(arguments.length>2||(v!=null&&!Array.isArray(v))){v=Array.prototype.slice.call(arguments,1);}v=v||[];return p.replace(c,function($,d,e,f,o){if(d){return"'";}else if(e){return e.replace(/''/g,"'");}else if(f){return String(v[parseInt(f,10)]);}throw new Error("formatMessage: pattern syntax error at pos. "+o);});};
 var c=/('')|'([^']+(?:''[^']*)*)(?:'|$)|\{([0-9]+(?:\s*,[^{}]*)?)\}|[{}]/g;return q;});
 sap.ui.predefine('sap/ui/debug/Highlighter',['jquery.sap.global','jquery.sap.dom','jquery.sap.script'],function(q){"use strict";var H=function(i,f,c,b){this.sId=i||q.sap.uid();this.bFilled=(f==true);this.sColor=c||'blue';if(isNaN(b)){this.iBorderWidth=2;}else if(b<=0){this.iBorderWidth=0;}else{this.iBorderWidth=b;}};
 H.prototype.highlight=function(d){if(!d||!d.parentNode){return;}var h=q.sap.domById(this.sId);if(!h){h=d.ownerDocument.createElement("DIV");h.setAttribute("id",this.sId);h.style.position="absolute";h.style.border=this.iBorderWidth+"px solid "+this.sColor;h.style.display="none";h.style.margin="0px";h.style.padding="0px";if(this.bFilled){h.innerHTML="<div style='background-color:"+this.sColor+";opacity:0.2;filter:progid:DXImageTransform.Microsoft.Alpha(opacity=20);height:100%;width:100%'>&nbsp;</div>";}d.ownerDocument.body.appendChild(h);}var r=q(d).rect();h.style.top=(r.top-this.iBorderWidth)+"px";h.style.left=(r.left-this.iBorderWidth)+"px";h.style.width=(r.width)+"px";h.style.height=(r.height)+"px";h.style.display="block";};

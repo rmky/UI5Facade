@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Grouping...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.44.8
+	 * @version 1.48.12
 	 * @namespace
 	 * @name sap.ui.table.TableGrouping
 	 * @private
@@ -118,14 +118,26 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 		 * @param {sap.ui.table.Table} oTable Instance of the table
 		 * @param {number} iRowIndex the row index which should be toggled.
 		 * @param {boolean} [bExpand] If defined instead of toggling the desired state is set.
-		 * @return {boolean} the new expand state in case an action was performed, <code>null</code> otherwise.
+		 * @return {boolean|null} the new expand state in case an action was performed, <code>null</code> otherwise.
 		 * @private
 		 */
 		toggleGroupHeader : function(oTable, iRowIndex, bExpand) {
 			var oBinding = oTable.getBinding("rows");
+
 			if (oBinding) {
 				var bIsExpanded = oBinding.isExpanded(iRowIndex);
-				if (oBinding.nodeHasChildren && !oBinding.nodeHasChildren(oBinding.getNodeByIndex(iRowIndex))) {
+				var bIsLeaf = true; // If the node state can not be determined, we assume it is a leaf.
+
+				if (oBinding.nodeHasChildren != null) {
+					if (oBinding.getNodeByIndex != null) {
+						bIsLeaf = !oBinding.nodeHasChildren(oBinding.getNodeByIndex(iRowIndex));
+					} else {
+						// The sap.ui.model.TreeBindingCompatibilityAdapter has no #getNodeByIndex function and #nodeHasChildren always returns true.
+						bIsLeaf = false;
+					}
+				}
+
+				if (bIsLeaf) {
 					return null; // a leaf can't be expanded or collapsed
 				} else if (bExpand === true && !bIsExpanded) { // Force expand
 					oBinding.expand(iRowIndex);
@@ -136,8 +148,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 				} else {
 					return null;
 				}
+
 				return !bIsExpanded;
 			}
+
 			return null;
 		},
 
@@ -190,7 +204,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 			var oInfo = TableGrouping.TableUtils.getCellInfo(oCellRef);
 			if (oInfo && oInfo.type === TableGrouping.TableUtils.CELLTYPES.DATACELL) {
 				return oInfo.cell.parent().hasClass("sapUiTableGroupHeader");
-			} else if (oInfo && oInfo.type === TableGrouping.TableUtils.CELLTYPES.ROWHEADER) {
+			} else if (oInfo && oInfo.type === TableGrouping.TableUtils.CELLTYPES.ROWHEADER
+							|| oInfo && oInfo.type === TableGrouping.TableUtils.CELLTYPES.ROWACTION) {
 				return oInfo.cell.hasClass("sapUiTableGroupHeader");
 			}
 			return false;
@@ -210,7 +225,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 		},
 
 		/**
-		 * Returns whether the given cell is located in a analytical summary row.
+		 * Returns whether the given cell is located in an analytical summary row.
 		 * @param {Object} oCellRef DOM reference of table cell
 		 * @return {boolean}
 		 * @private
@@ -219,7 +234,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 			var oInfo = TableGrouping.TableUtils.getCellInfo(oCellRef);
 			if (oInfo && oInfo.type === TableGrouping.TableUtils.CELLTYPES.DATACELL) {
 				return oInfo.cell.parent().hasClass("sapUiAnalyticalTableSum");
-			} else if (oInfo && oInfo.type === TableGrouping.TableUtils.CELLTYPES.ROWHEADER) {
+			} else if (oInfo && oInfo.type === TableGrouping.TableUtils.CELLTYPES.ROWHEADER
+							|| oInfo && oInfo.type === TableGrouping.TableUtils.CELLTYPES.ROWACTION) {
 				return oInfo.cell.hasClass("sapUiAnalyticalTableSum");
 			}
 			return false;
@@ -309,7 +325,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 				$Row = oDomRefs.row,
 				$ScrollRow = oDomRefs.rowScrollPart,
 				$FixedRow = oDomRefs.rowFixedPart,
-				$RowHdr = oDomRefs.rowSelector;
+				$RowHdr = oDomRefs.rowSelector,
+				$RowAct = oDomRefs.rowAction;
 
 			$Row.attr({
 				"data-sap-ui-level" : iLevel
@@ -326,7 +343,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 				jQuery.sap.byId(oRow.getId() + "-groupHeader")
 					.toggleClass("sapUiTableGroupIconOpen", bChildren && bExpanded)
 					.toggleClass("sapUiTableGroupIconClosed", bChildren && !bExpanded)
-					.attr("title", sGroupHeaderText || null)
+					.attr("title", oTable._getShowStandardTooltips() && sGroupHeaderText ? sGroupHeaderText : null)
 					.text(sGroupHeaderText || "");
 
 				TableGrouping._setIndent(oTable, $Row, $RowHdr, TableGrouping._calcGroupIndent(oTable, iLevel, bChildren));
@@ -357,7 +374,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 				}
 			}
 
-			oTable._getAccExtension().updateAriaExpandAndLevelState(oRow, $ScrollRow, $RowHdr, $FixedRow, bChildren, bExpanded, iLevel, $TreeIcon);
+			oTable._getAccExtension().updateAriaExpandAndLevelState(oRow, $ScrollRow, $RowHdr, $FixedRow, $RowAct, bChildren, bExpanded, iLevel, $TreeIcon);
 		},
 
 		/**
@@ -386,7 +403,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 					.css(this._bRtlMode ? "margin-right" : "margin-left", "");
 			}
 
-			oTable._getAccExtension().updateAriaExpandAndLevelState(oRow, oDomRefs.rowScrollPart, oDomRefs.rowSelector, oDomRefs.rowFixedPart, false, false, -1, $TreeIcon);
+			oTable._getAccExtension().updateAriaExpandAndLevelState(oRow, oDomRefs.rowScrollPart, oDomRefs.rowSelector, oDomRefs.rowFixedPart, oDomRefs.rowAction, false, false, -1, $TreeIcon);
 		},
 
 		/**
@@ -600,6 +617,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 					} else {
 						this.expand(iIndex);
 					}
+				},
+
+				// For compatibility with TreeBinding adapters.
+				nodeHasChildren: function(oContext) {
+					if (oContext == null || oContext.__groupInfo == null) {
+						return false;
+					} else {
+						return oContext.__groupInfo.groupHeader === true;
+					}
+				},
+				getNodeByIndex: function(iIndex) {
+					return aContexts[iIndex];
 				}
 			});
 

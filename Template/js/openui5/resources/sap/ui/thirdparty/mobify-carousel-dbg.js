@@ -197,7 +197,9 @@ Mobify.UI.Carousel = (function($, Utils) {
     Carousel.prototype.initAnimation = function() {
         this.animating = false;
         this.dragging = false;
+        this.hasActiveTransition = false;
         this._needsUpdate = false;
+        this._sTransitionEvents = 'transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd';
         this._enableAnimation();
     };
 
@@ -376,8 +378,6 @@ Mobify.UI.Carousel = (function($, Utils) {
 	    			canceled = true;
 	    			return;
 	    		}
-	    		// mark the event for components that needs to know if the event was handled by the carousel
-	    		e.setMarked();
 	        	//SAP MODIFICATION END
 
 	            dragging = true;
@@ -431,8 +431,6 @@ Mobify.UI.Carousel = (function($, Utils) {
 	            if (!dragging || e.isMarked("delayedMouseEvent")) {
 	                return;
 	            }
-	            // mark the event for components that needs to know if the event was handled by the carousel
-	            e.setMarked();
 	            // SAP MODIFICATION END
 
 	            dragging = false;
@@ -546,9 +544,16 @@ Mobify.UI.Carousel = (function($, Utils) {
 
     Carousel.prototype.unbind = function() {
         this.$inner.off();
-    }
+    };
 
-    Carousel.prototype.destroy = function() {
+    // SAP MODIFICATION BEGIN
+    Carousel.prototype.onTransitionComplete = function() {
+        this.$inner.unbind(this._sTransitionEvents, this.onTransitionComplete);
+        this.hasActiveTransition = false;
+    };
+    // SAP MODIFICATION ENDS
+
+	Carousel.prototype.destroy = function() {
         this.unbind();
         this.$element.trigger('destroy');
         this.$element.remove();
@@ -561,9 +566,9 @@ Mobify.UI.Carousel = (function($, Utils) {
     }
 
     Carousel.prototype.move = function(newIndex, opts) {
+    	//if list is empty or transition is in process , return
     	//SAP MODIFICATION
-    	//if list is empty, return
-    	if(this._length === 0) {
+    	if(this._length === 0 || this.hasActiveTransition == true) {
     		return;
     	}
 
@@ -611,12 +616,11 @@ Mobify.UI.Carousel = (function($, Utils) {
         	$element.trigger('beforeSlide', [index, newIndex]);
         }
 
-
         // Index must be decremented to convert between 1- and 0-based indexing.
         this.$current = $current = $items.eq(newIndex - 1);
 
         var currentOffset = $current.prop('offsetLeft') + $current.prop('clientWidth') * this._alignment
-            , startOffset = $start.prop('offsetLeft') + $start.prop('clientWidth') * this._alignment
+            , startOffset = $start.prop('offsetLeft') + $start.prop('clientWidth') * this._alignment;
 
         var transitionOffset = -(currentOffset - startOffset);
 
@@ -624,9 +628,17 @@ Mobify.UI.Carousel = (function($, Utils) {
         this._offsetDrag = 0;
         this._index = newIndex;
         this.update();
+
+        //SAP MODIFICATION
+        if(bTriggerEvents) {
+            // This indicate that transition has started
+            this.hasActiveTransition = true;
+            $inner.bind(this._sTransitionEvents, this.onTransitionComplete.bind(this));
+        }
+
         // Trigger afterSlide event
         if(bTriggerEvents) {
-        	$element.trigger('afterSlide', [index, newIndex]);
+            $element.trigger('afterSlide', [index, newIndex]);
         }
     };
 

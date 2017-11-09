@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+		<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'>
+		<meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+		<meta name="HandheldFriendly" content="True">
+		<meta name="MobileOptimized" content="240"/>
+		<meta name="PalmComputingPlatform" content="true"/>
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="mobile-web-app-capable" content="yes">
+
+		<title>[*pagetitle*]</title>
+
+		<!-- Custom CSS -->
+		<!--<link href="exface/vendor/exface/OpenUI5Template/Template/js/template.css" rel="stylesheet" type="text/css" />-->
+
+		<!–- 1.) Load SAPUI5, select theme and control library -–>
+		<script src="exface/vendor/exface/OpenUI5Template/Template/js/openui5/resources/sap-ui-core.js"
+				id="sap-ui-bootstrap"
+				data-sap-ui-libs="sap.m,sap.tnt,sap.ui.unified,sap.ui.commons,sap.ui.table"
+				data-sap-ui-theme="sap_bluecrystal">
+		</script>
+		
+		<script type="text/javascript" src="exface/vendor/exface/OpenUI5Template/Template/js/openui5.template.js"></script>
+		<script language="javascript">
+			// Main menu
+			var oNavMenu = new sap.tnt.NavigationList({
+				items:[
+					[!Wayfinder? &startId=`1` &level=`10` &hideSubMenus=`1`
+					 &outerTpl=`@CODE: [+wf.wrapper+]`
+					 &innerTpl=`@CODE: [+wf.wrapper+]`
+					 &rowTpl=`@CODE: new sap.tnt.NavigationListItem({icon: "folder-blank", text: "[+wf.linktext+]", select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} }),`
+					 &activeParentRowTpl=`@CODE: new sap.tnt.NavigationListItem({icon: "open-folder", text: "[+wf.linktext+]", items: [ [+wf.wrapper+] ], select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} }),`
+					 &lastRowTpl=`@CODE: new sap.tnt.NavigationListItem({icon: "folder-blank", text: "[+wf.linktext+]", select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} })`
+					 !]
+					]
+				});
+			oApp.shell.setUser(new sap.ui.unified.ShellHeadUserItem({
+				image: "[!UserManagerInfo? &field=`photo`!]",
+				username: "[!UserManagerInfo? &field=`fullname`!]",
+				press: function(){alert("User Item pressed");}
+			}));
+			oApp.shell.placeAt("[*id*]");
+			oApp.addView("HOME", null, [oNavMenu]);
+			oApp.showView("HOME");
+		</script>
+		
+		[[Exface? &action="exface.Core.ShowWidget" &template="exface.OpenUI5Template"]]
+
+		
+	</head>
+	<body id="[*id*]">
+
+	</body>
+</html>

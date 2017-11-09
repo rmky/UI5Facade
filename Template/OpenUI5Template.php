@@ -4,7 +4,15 @@ namespace exface\OpenUI5Template\Template;
 use exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate;
 use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
+use exface\OpenUI5Template\Template\Elements\ui5AbstractElement;
 
+/**
+ * 
+ * @method ui5AbstractElement getElement()
+ * 
+ * @author Andrej Kabachnik
+ *
+ */
 class OpenUI5Template extends AbstractAjaxTemplate
 {
 
@@ -60,6 +68,28 @@ class OpenUI5Template extends AbstractAjaxTemplate
         }
         $this->setResponse($page->getWorkbench()->getDebugger()->printException($exception));
         return $this;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::generateJs()
+     */
+    public function generateJs(\exface\Core\Widgets\AbstractWidget $widget)
+    {
+        $instance = $this->getElement($widget);
+        $js = $instance->generateJs();
+        if (! $widget->hasParent()) {
+            $js .= <<<JS
+   
+    oApp.showView({
+        id: "{$instance->getPageId()}",
+        content: [{$instance->getJsVar()}]
+    });
+         
+JS;
+        }
+        return $js;
     }
 }
 ?>

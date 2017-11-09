@@ -3,6 +3,7 @@ namespace exface\OpenUI5Template\Template\Elements;
 
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
 use exface\OpenUI5Template\Template\OpenUI5Template;
+use exface\Core\Exceptions\Templates\TemplateLogicError;
 
 /**
  *
@@ -13,7 +14,23 @@ use exface\OpenUI5Template\Template\OpenUI5Template;
  */
 abstract class ui5AbstractElement extends AbstractJqueryElement
 {
-
+    private $jsVarName = null;
+    
+    public function getJsVar()
+    {
+        if (is_null($this->jsVarName)) {
+            //throw new TemplateLogicError('No JavaScript instance name specified for OpenUI5 element "' . get_class($this) . '"!');
+            $this->jsVarName = 'o' . $this->getId();
+        }
+        return $this->jsVarName;
+    }
+    
+    protected function setJsVar($jsVarName)
+    {
+        $this->jsVarName = $jsVarName;
+        return $this;
+    }
+    
     public function buildJsInitOptions()
     {
         return '';

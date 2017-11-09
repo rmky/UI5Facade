@@ -2,8 +2,8 @@
  * oApp is represents the app on the current page. 
  * 
  * It contains a shell, a list of views and methods to add/remove or show views. Each view has
- * a unique id and may contain OpenUI5 components for contents, the right menu, the shell header
- * and the shell curtain. Thus, the state of the shell may change with every view.
+ * a unique id and may contain OpenUI5 components for contents, the right menu, and the shell 
+ * header. Thus, the state of the shell may change with every view.
  * 
  * How to use:
  * 
@@ -23,7 +23,7 @@ var oApp = {
 	shell: new sap.ui.unified.Shell({
 		icon: "exface/vendor/exface/OpenUI5Template/Template/images/sap_50x26.png"
 	}),
-	addView: function (id, content, menu, headerItemsLeft, headerItemsRight, curtain, curtainPane) {
+	addView: function (id, content, menu, headerItemsLeft, headerItemsRight) {
 		oApp._views[id] = {id: id};
 		if (content) {
 			oApp._views[id].content = content;
@@ -42,12 +42,6 @@ var oApp = {
 		if (content) {
 			oApp._views[id].content = content;
 		}
-		if (curtain) {
-			oApp._views[id].curtain = curtain;
-		}
-		if (curtainPane) {
-			oApp._views[id].curtainPane = curtainPane;
-		}
 	},
 	removeView: function(id) {
 		delete oApp._views['id'];
@@ -60,15 +54,22 @@ var oApp = {
 			if (idOrObject.id === undefined) {
 				throw "Cannot show view: view has no id defined!";
 			}
-			oApp.addView(idOrObject.id, idOrObject.contents, idOrObject.menu, idOrObject.headerItemsLeft, idOrObject.headerItemsRight, idOrObject.curtain, idOrObject.curtainPane);
+			oApp.addView(idOrObject.id, idOrObject.contents, idOrObject.menu, idOrObject.headerItemsLeft, idOrObject.headerItemsRight);
 			oApp._applyView(idOrObject)
 		} else {
 			oApp._applyView(oApp.getView(idOrObject));
 		}
 	},
+	getCurrentView: function() {
+		return oApp.getView(oApp._currentViewId);
+	},
 	getFirstView: function() {
 		return oApp._views[Object.keys(oApp._views)[0]];
 	},
+	getPreviousView: function() {
+		return oApp.getView(oApp._previousViewId);
+	},
+	_previousViewId: '',
 	_currentViewId: '',
 	_views: {
 		/* Structure:
@@ -76,31 +77,19 @@ var oApp = {
 			"id" : {
 				menu: [objects for oApp.shell.addPaneContent()],
 				headerItemsLeft: [menuItm, homeItm, ...],
-				headerItemsRight: [logoffItm, ...],
-				curtain: [objects for oApp.shell.addCurtainContent()],
-				curtainPane: [objects for oApp.shell.addCurtainPaneContent()]
+				headerItemsRight: [logoffItm, ...]
 				content: [objects for oApp.shell.addContent()]
 			}
 		}
 		*/
 	},
 	_applyView: function (view){
+		oApp._previousViewId = oApp._currentViewId;
+		oApp._currentViewId = view.id;
 		if(view.menu){
 			oApp.shell.removeAllPaneContent();
 			for(var i=0; i<view.menu.length; i++){
 				oApp.shell.addPaneContent(view.menu[i]);
-			}
-		}
-		if(view.curtainPane){
-			oApp.shell.removeAllCurtainPaneContent();
-			for(var i=0; i<view.curtainPane.length; i++){
-				oApp.shell.addCurtainPaneContent(view.curtainPane[i]);
-			}
-		}
-		if(view.curtain){
-			oApp.shell.removeAllCurtainContent();
-			for(var i=0; i<view.curtain.length; i++){
-				oApp.shell.addCurtainContent(view.curtain[i]);
 			}
 		}
 		if(view.content){
@@ -121,45 +110,34 @@ var oApp = {
 				oApp.shell.addHeadEndItem(view.headerItemsRight[i]);
 			}
 		}
+		console.log('Changed view to ', view);
 	}
 }
 
 // Shell items. They can be referenced in states to quickly setup what the shee shows
 var menuItm = new sap.ui.unified.ShellHeadItem({
 	tooltip: "Configuration",
-	icon: sap.ui.core.IconPool.getIconURI("menu2"),
+	icon: "sap-icon://menu2",
 	press: function(){
 		oApp.shell.setShowPane(!oApp.shell.getShowPane());
 	}
 });
-var curtainConfigItm = new sap.ui.unified.ShellHeadItem({
-	tooltip: "Configuration",
-	icon: sap.ui.core.IconPool.getIconURI("menu2"),
-	showMarker: true,
-	press: function(){
-		oApp.shell.setShowCurtainPane(!oApp.shell.getShowCurtainPane());
-		curtainConfigItm.setSelected(!curtainConfigItm.getSelected());
-		curtainConfigItm.setShowMarker(!curtainConfigItm.getShowMarker());
-		sap.ui.getCore().byId("CurtainContent").setHeaderHidden(oApp.shell.getShowCurtainPane());
-	}
-});
 var homeItm = new sap.ui.unified.ShellHeadItem({
 	tooltip: "Home",
-	icon: sap.ui.core.IconPool.getIconURI("home"),
+	icon: "sap-icon://home",
 	press: function(){alert('Home pressed')},
 	ariaLabelledBy: ["homeItm-txt"]
 });
 var closeItm = new sap.ui.unified.ShellHeadItem({
 	tooltip: "Close",
-	icon: sap.ui.core.IconPool.getIconURI("decline"),
+	icon: "sap-icon://decline",
 	press: function(){
-		oApp.shell.setShowCurtain(false);
-		setState(oldState);
+		oApp.showView(oApp.getPreviousView());
 	}
 });
 var logoffItm = new sap.ui.unified.ShellHeadItem({
 	tooltip: "Logoff",
-	icon: sap.ui.core.IconPool.getIconURI("log"),
+	icon: "sap-icon://log",
 	toggleEnabled: false,
 	press: function(){
 	}

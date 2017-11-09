@@ -34,7 +34,7 @@ class ui5DataTable extends ui5AbstractElement
         
         $js = <<<JS
 		
-	var oTable = new sap.ui.table.Table({
+	var {$this->getJsVar()} = new sap.ui.table.Table({
 		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto
 	    , selectionMode: {$selection_mode}
 		, selectionBehavior: {$selection_behavior}
@@ -73,28 +73,28 @@ JS;
         
         return <<<JS
 	
-	function {$this->buildJsFunctionPrefix()}LoadData(oTable, oControlEvent) {
+	function {$this->buildJsFunctionPrefix()}LoadData({$this->getJsVar()}, oControlEvent) {
 		var params = { {$params} };
-		var cols = oTable.getColumns();
-		var oModel = new sap.ui.model.json.JSONModel();
+		var cols = {$this->getJsVar()}.getColumns();
+		var {$this->getJsVarModel()} = new sap.ui.model.json.JSONModel();
 		
-		oModel.attachRequestSent(function(){
+		{$this->getJsVarModel()}.attachRequestSent(function(){
 			{$this->buildJsBusyIconShow()}
 		});
-		oModel.attachRequestCompleted(function(){
+		{$this->getJsVarModel()}.attachRequestCompleted(function(){
 			{$this->buildJsBusyIconHide()}
 			
 			var footerRows = this.getProperty("/footerRows");
 			if (footerRows){
-				oTable.setFixedBottomRowCount(parseInt(footerRows));
+				{$this->getJsVar()}.setFixedBottomRowCount(parseInt(footerRows));
 			}
 		});
 
-		oTable.setModel(oModel); 
+		{$this->getJsVar()}.setModel({$this->getJsVarModel()}); 
 
 		// Add filters and sorters from all filtered columns
-		for (var i=0; i<oTable.getColumns().length; i++){
-			var oColumn = oTable.getColumns()[i];
+		for (var i=0; i<{$this->getJsVar()}.getColumns().length; i++){
+			var oColumn = {$this->getJsVar()}.getColumns()[i];
 			if (oColumn.getFiltered()){
 				params['fltr99_' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
 			}
@@ -116,14 +116,19 @@ JS;
 			params['fltr99_' + oControlEvent.getParameters().column.getFilterProperty()] = oControlEvent.getParameters().value;
 		}
 		
-		oModel.loadData("{$url}", params);
-		oTable.bindRows("/data");
+		{$this->getJsVarModel()}.loadData("{$url}", params);
+		{$this->getJsVar()}.bindRows("/data");
 	}
 	
 	
-	{$this->buildJsFunctionPrefix()}LoadData(oTable);
+	{$this->buildJsFunctionPrefix()}LoadData({$this->getJsVar()});
 		
 JS;
+    }
+	
+    protected function getJsVarModel()
+    {
+        return $this->getJsVar().'Model';
     }
 
     protected function buildJsToolbar()

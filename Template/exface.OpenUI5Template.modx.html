@@ -23,7 +23,7 @@
 		</script>
 		
 		<script type="text/javascript" src="exface/vendor/exface/OpenUI5Template/Template/js/openui5.template.js"></script>
-		<script language="javascript">
+		<script type="text/javascript">
 			// Main menu
 			var oNavMenu = new sap.tnt.NavigationList({
 				items:[
@@ -47,6 +47,10 @@
 		</script>
 		
 		[[Exface? &action="exface.Core.ShowWidget" &template="exface.OpenUI5Template"]]
+		
+		<script type="text/javascript">
+			oApp.showView(oApp.getViewTop());
+		</script>
 
 		
 	</head>

@@ -82,10 +82,10 @@ class OpenUI5Template extends AbstractAjaxTemplate
         if (! $widget->hasParent()) {
             $js .= <<<JS
    
-    oApp.showView({
-        id: "{$instance->getPageId()}",
-        content: [ ( {$instance->generateJsConstructor()} ) ]
-    });
+    oApp.addView(
+        "{$instance->getPageId()}",
+        [ ( {$instance->generateJsConstructor()} ) ]
+    );
          
 JS;
         }

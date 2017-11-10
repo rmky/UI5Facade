@@ -60,13 +60,17 @@ var oApp = {
 			oApp._applyView(oApp.getView(idOrObject));
 		}
 	},
-	getCurrentView: function() {
+	getViewCurrent: function() {
 		return oApp.getView(oApp._currentViewId);
 	},
-	getFirstView: function() {
+	getViewCurrent: function() {
 		return oApp._views[Object.keys(oApp._views)[0]];
 	},
-	getPreviousView: function() {
+	getViewTop: function() {
+		var ids = Object.keys(oApp._views);
+		return oApp._views[ids[ids.length-1]];
+	},
+	getViewPrevious: function() {
 		return oApp.getView(oApp._previousViewId);
 	},
 	_previousViewId: '',
@@ -132,7 +136,7 @@ var closeItm = new sap.ui.unified.ShellHeadItem({
 	tooltip: "Close",
 	icon: "sap-icon://decline",
 	press: function(){
-		oApp.showView(oApp.getPreviousView());
+		oApp.showView(oApp.getViewPrevious());
 	}
 });
 var logoffItm = new sap.ui.unified.ShellHeadItem({

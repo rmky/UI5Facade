@@ -13,7 +13,8 @@
 		"issues" : "https://github.com/exface/OpenUI5Template/issues"
 	},
 	"require" : {
-		"exface/core" : "~0.1"
+		"exface/core" : "~0.1",
+		"bower-asset/font-awesome-openui5": "^v2.1"
 	},
     "autoload": {
         "psr-4": { "exface\\OpenUI5Template\\": "" },

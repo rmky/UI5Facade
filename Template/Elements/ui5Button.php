@@ -59,7 +59,7 @@ class ui5Button extends ui5AbstractElement
     public function generateJsConstructor()
     {
         return <<<JS
-new sap.m.Button(/*"{$this->getId()}", */{ 
+new sap.m.Button("{$this->getId()}", { 
     {$this->buildJsInitOptions()}
 })
 JS;
@@ -67,17 +67,20 @@ JS;
     
     public function buildJsInitOptions()
     {
-        switch ($this->getWidget()->getVisibility()) {
+        $widget = $this->getWidget();
+        switch ($widget->getVisibility()) {
             case EXF_WIDGET_VISIBILITY_PROMOTED: $buttonType = 'Emphasized'; break;
             case EXF_WIDGET_VISIBILITY_NORMAL: 
             default: $buttonType = 'Default';
             
         }
         
+        $icon = $widget->getIcon() ? ', icon: "' . $this->getIconSrc($widget->getIcon()) . '"' : '';
+        
         $options = '
                     text: "' . $this->getCaption() . '"
                     , type: "' . $buttonType . '"
-                    ';
+                    ' . $icon;
         return $options;
     }
 

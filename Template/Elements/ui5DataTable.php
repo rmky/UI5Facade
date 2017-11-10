@@ -186,6 +186,7 @@ JS;
         return <<<JS
 
             new sap.m.OverflowToolbar({
+                design: "Transparent",
                 content: [
                     {$buttons}
                 ]

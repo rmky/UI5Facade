@@ -4,6 +4,7 @@ namespace exface\OpenUI5Template\Template\Elements;
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
 use exface\OpenUI5Template\Template\OpenUI5Template;
 use exface\Core\Exceptions\Templates\TemplateLogicError;
+use exface\Core\CommonLogic\Constants\Icons;
 
 /**
  *
@@ -196,6 +197,23 @@ JS;
     public function generateHtml()
     {
         return '';
+    }
+    
+    /**
+     * Returns the SAP icon URI (e.g. "sap-icon://edit") for the given icon name
+     * 
+     * @param string $icon_name
+     * @return string
+     */
+    protected function getIconSrc($icon_name)
+    {
+        $path = Icons::isDefined($icon_name) ? 'font-awesome/' : '';
+        return 'sap-icon://' . $path . $icon_name;
+    }
+    
+    public function buildCssIconClass($icon)
+    {
+        return $this->getIconSrc($icon);
     }
 }
 ?>

@@ -3,6 +3,7 @@ namespace exface\OpenUI5Template\Template\Elements;
 
 use exface\Core\Widgets\DataTable;
 use exface\Core\Widgets\DataColumn;
+use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDataTableTrait;
 
 /**
  *
@@ -13,6 +14,8 @@ use exface\Core\Widgets\DataColumn;
  */
 class ui5DataTable extends ui5AbstractElement
 {
+    use JqueryDataTableTrait;
+    
     /**
      * 
      * {@inheritDoc}
@@ -21,7 +24,7 @@ class ui5DataTable extends ui5AbstractElement
     function generateJs()
     {
         return <<<JS
-
+    var {$this->getJsVar()};
 	{$this->buildJsDataSource()}  
 		
 JS;
@@ -45,44 +48,40 @@ JS;
             $column_defs .= ($column_defs ? ", " : '') . $this->buildJsColumnDef($column);
         }
         
-        if ($widget->hasButtons()) {
-            $footer = ', footer: [' . $this->buildJsFooter() . ']';
-        } else {
-            $footer = '';
-        }
-        
-        return <<<JS
+        $js = <<<JS
 function() {
-	var {$this->getJsVar()} = new sap.ui.table.Table({
+	{$this->getJsVar()} = new sap.ui.table.Table({
 		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto
 	    , selectionMode: {$selection_mode}
 		, selectionBehavior: {$selection_behavior}
 	    , enableColumnReordering:true
 		, filter: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(this, oControlEvent)}
 		, sort: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(this, oControlEvent)}
-		, extension: [
+		, toolbar: [
 			{$this->buildJsToolbar()}
 		]
 		, columns: [
 			{$column_defs}
 		]
-        {$footer}
 	});
     
-    {$this->buildJsFunctionPrefix()}LoadData({$this->getJsVar()});
+    {$this->buildJsRefresh()};
     return {$this->getJsVar()};
 }()
 JS;
+    
+        return $this->buildJsPage($js);
     }
 
     protected function buildJsDataSource($js_filters = '')
     {
+        $widget = $this->getWidget();
         $url = $this->getAjaxUrl();
         $params = '
-					action: "' . $this->getWidget()->getLazyLoadingAction() . '"
+					action: "' . $widget->getLazyLoadingAction() . '"
 					, resource: "' . $this->getPageId() . '"
-					, element: "' . $this->getWidget()->getId() . '"
-					, object: "' . $this->getWidget()->getMetaObject()->getId() . '"
+					, element: "' . $widget->getId() . '"
+					, object: "' . $widget->getMetaObject()->getId() . '"
 				';
         
         // Pagination
@@ -93,12 +92,12 @@ JS;
         
         return <<<JS
 	
-	function {$this->buildJsFunctionPrefix()}LoadData({$this->getJsVar()}, oControlEvent) {
+	function {$this->buildJsFunctionPrefix()}LoadData(oTable, oControlEvent) {
 		var params = { {$params} };
-		var cols = {$this->getJsVar()}.getColumns();
+		var cols = oTable.getColumns();
 		var oModel = new sap.ui.model.json.JSONModel();
 		
-		oModel.attachRequestSent(function(){
+        oModel.attachRequestSent(function(){
 			{$this->buildJsBusyIconShow()}
 		});
 		oModel.attachRequestCompleted(function(){
@@ -106,15 +105,21 @@ JS;
 			
 			var footerRows = this.getProperty("/footerRows");
 			if (footerRows){
-				{$this->getJsVar()}.setFixedBottomRowCount(parseInt(footerRows));
+				oTable.setFixedBottomRowCount(parseInt(footerRows));
 			}
 		});
 
-		{$this->getJsVar()}.setModel(oModel); 
+		oTable.setModel(oModel); 
 
-		// Add filters and sorters from all filtered columns
-		for (var i=0; i<{$this->getJsVar()}.getColumns().length; i++){
-			var oColumn = {$this->getJsVar()}.getColumns()[i];
+        // Add quick search
+        params.q = sap.ui.getCore().byId('{$this->getId()}_quickSearch').getValue();
+
+        // Add configurator data
+        params.data = {$this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter()};
+
+		// Add filters and sorters from column menus
+		for (var i=0; i<oTable.getColumns().length; i++){
+			var oColumn = oTable.getColumns()[i];
 			if (oColumn.getFiltered()){
 				params['fltr99_' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
 			}
@@ -137,7 +142,7 @@ JS;
 		}
 		
 		oModel.loadData("{$url}", params);
-		{$this->getJsVar()}.bindRows("/data");
+		oTable.bindRows("/data");
 	}
 
 JS;
@@ -147,22 +152,38 @@ JS;
     {
         $widget = $this->getWidget();
         $header = $widget->getCaption() ? $widget->getCaption() : $widget->getMetaObject()->getName();
+        $buttons = $this->buildJsButtons() . ($this->buildJsButtons() ? ',' : '');
         $toolbar = <<<JS
 			new sap.m.OverflowToolbar({
+                design: "Transparent",
 				content: [
-					new sap.m.Label({text: "{$header}"})
+					new sap.m.Label({text: "{$header}"}),
+                    new sap.m.ToolbarSpacer(),
+                    {$buttons}
+					new sap.m.ToolbarSeparator(),
+					new sap.m.SearchField("{$this->getId()}_quickSearch", {
+                        width: "200px",
+                        search: function(){ {$this->buildJsRefresh()} },
+                        placeholder: "{$this->getQuickSearchPlaceholder()}",
+                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
+                    }),
+                    new sap.m.Button({
+                        icon: "sap-icon://group-2",
+                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
+                    }),
+                    new sap.m.ToolbarSeparator()		
 				]
 			})
 JS;
         return $toolbar;
     }
     
-    /**
-     * Returns the constructor of a Toolbar component to display in the footer of the table: e.g. new  new sap.m.OverflowToolbar(...).
-     * 
-     * @return string
-     */
-    protected function buildJsFooter()
+    public function buildJsRefresh()
+    {
+        return "{$this->buildJsFunctionPrefix()}LoadData({$this->getJsVar()})";
+    }
+                    
+    protected function buildJsButtons()
     {
         $widget = $this->getWidget();
         $buttons = '';
@@ -176,23 +197,13 @@ JS;
                 if ($btn_group === $search_button_group){
                     continue;
                 }
-                $buttons .= ($buttons ? ",\n new sap.m.ToolbarSpacer()" : '');
+                $buttons .= ($buttons && $btn_group->getVisibility() > EXF_WIDGET_VISIBILITY_OPTIONAL ? ",\n new sap.m.ToolbarSeparator()" : '');
                 foreach ($btn_group->getButtons() as $btn) {
                     $buttons .= ($buttons ? ", \n" : '') . $this->getTemplate()->getElement($btn)->generateJsConstructor();
                 }
             }
         }
-        
-        return <<<JS
-
-            new sap.m.OverflowToolbar({
-                design: "Transparent",
-                content: [
-                    {$buttons}
-                ]
-            })
-
-JS;
+        return $buttons;
     }
 
     protected function getPaginationPageSize()
@@ -219,6 +230,53 @@ JS;
 	    , filterProperty: "{$column->getAttributeAlias()}"
 		, visible: {$visible}
 	})
+JS;
+    }
+        
+    protected function buildJsPage($content)
+    {
+        $filters = '';
+        foreach ($this->getWidget()->getConfiguratorWidget()->getFilters() as $filter) {
+            $filters .= ($filters ? ",\n" : '') . $this->getTemplate()->getElement($filter)->generateJsConstructor();
+        }
+        return <<<JS
+
+        new sap.f.DynamicPage("dynamicPageId",{
+            preserveHeaderStateOnScroll: true,
+            headerExpanded: "{/headerExpanded}",
+            title: new sap.f.DynamicPageTitle({
+				heading: [
+						new sap.m.Title({
+                            text: "Standard"
+                        })
+				],
+				actions: [
+				    new sap.m.ToolbarSpacer()/*,
+					new sap.m.ToggleButton({
+						pressed: "{/headerExpanded}",
+                        icon: "sap-icon://collapse-group",
+                        type: "Transparent",
+						text: "{path:'/headerExpanded', formatter:'.formatToggleButtonText'}"
+                    })*/
+				]
+            }),
+
+			header: new sap.f.DynamicPageHeader({
+                pinnable: true,
+				content: [
+					new sap.ui.layout.Grid({
+                        defaultSpan: "XL2 L3 M4 S12",
+                        content: [
+							{$filters}
+						]
+                    })
+				]
+			}),
+
+            content: [
+                {$content}
+            ]
+        })
 JS;
     }
 }

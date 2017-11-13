@@ -28,12 +28,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
      */
     public function generateJsConstructor()
     {
-        return <<<JS
-    function(){
-        {$this->generateJs()}
-        return {$this->getJsVar()};
-    }()
-JS;
+        return '';
     }
     
     public function getJsVar()
@@ -214,6 +209,26 @@ JS;
     public function buildCssIconClass($icon)
     {
         return $this->getIconSrc($icon);
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsValueGetter()
+     */
+    public function buildJsValueGetter()
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').{$this->buildJsValueGetterMethod()}";
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsValueGetterMethod()
+     */
+    public function buildJsValueGetterMethod()
+    {
+        return "getValue()";
     }
 }
 ?>

@@ -69,9 +69,12 @@ JS;
     {
         $widget = $this->getWidget();
         switch ($widget->getVisibility()) {
-            case EXF_WIDGET_VISIBILITY_PROMOTED: $buttonType = 'Emphasized'; break;
+            case EXF_WIDGET_VISIBILITY_PROMOTED: 
+                $visibility = ', type: "Emphasized", layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"})'; break;
+            case EXF_WIDGET_VISIBILITY_OPTIONAL: 
+                $visibility = ', type: "Default", layoutData: new sap.m.OverflowToolbarLayoutData({priority: "AlwaysOverflow"})'; break;
             case EXF_WIDGET_VISIBILITY_NORMAL: 
-            default: $buttonType = 'Default';
+            default: $visibility = ', type: "Default"';
             
         }
         
@@ -79,8 +82,8 @@ JS;
         
         $options = '
                     text: "' . $this->getCaption() . '"
-                    , type: "' . $buttonType . '"
-                    ' . $icon;
+                    ' . $icon . '
+                    ' . $visibility;
         return $options;
     }
 

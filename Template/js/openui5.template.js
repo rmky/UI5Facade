@@ -24,12 +24,12 @@ var oApp = {
 		icon: "exface/vendor/exface/OpenUI5Template/Template/images/sap_50x26.png"
 	}),
 	addView: function (id, content, menu, headerItemsLeft, headerItemsRight) {
-		oApp._views[id] = {id: id};
+		var view = {id: id};
 		if (content) {
-			oApp._views[id].content = content;
+			view.content = content;
 		}
 		if (menu) {
-			oApp._views[id].menu = menu;
+			view.menu = menu;
 			if (! headerItemsLeft) {
 				headerItemsLeft = [
 					menuItm
@@ -37,23 +37,34 @@ var oApp = {
 			}
 		}
 		if (headerItemsLeft) {
-			oApp._views[id].headerItemsLeft = headerItemsLeft;
+			view.headerItemsLeft = headerItemsLeft;
 		}
 		if (content) {
-			oApp._views[id].content = content;
+			view.content = content;
 		}
+		oApp._views.push(view);
+		console.log('View added:', oApp._views);
 	},
 	removeView: function(id) {
-		delete oApp._views['id'];
+		for (var i in oApp._views) {
+			if (oApp._views[i]['id'] == id) {
+				delete oApp._views[i];
+			}
+		}
 	},
 	getView: function(id) {
-		return oApp._views[id];
+		for (var i in oApp._views) {
+			if (oApp._views[i]['id'] == id) {
+				return oApp._views[i];
+			}
+		}
 	},
 	showView: function(idOrObject) {
 		if (typeof idOrObject === 'object') {
 			if (idOrObject.id === undefined) {
 				throw "Cannot show view: view has no id defined!";
 			}
+			oApp.removeView(idOrObject.id);
 			oApp.addView(idOrObject.id, idOrObject.contents, idOrObject.menu, idOrObject.headerItemsLeft, idOrObject.headerItemsRight);
 			oApp._applyView(idOrObject)
 		} else {
@@ -64,29 +75,29 @@ var oApp = {
 		return oApp.getView(oApp._currentViewId);
 	},
 	getViewCurrent: function() {
-		return oApp._views[Object.keys(oApp._views)[0]];
+		return oApp._views[0];
 	},
 	getViewTop: function() {
-		var ids = Object.keys(oApp._views);
-		return oApp._views[ids[ids.length-1]];
+		return oApp._views[oApp._views.length-1];
 	},
 	getViewPrevious: function() {
 		return oApp.getView(oApp._previousViewId);
 	},
 	_previousViewId: '',
 	_currentViewId: '',
-	_views: {
+	_views: [
 		/* Structure:
-		{
-			"id" : {
+		[
+			{
+				id: "id"
 				menu: [objects for oApp.shell.addPaneContent()],
 				headerItemsLeft: [menuItm, homeItm, ...],
 				headerItemsRight: [logoffItm, ...]
 				content: [objects for oApp.shell.addContent()]
 			}
-		}
+		]
 		*/
-	},
+	],
 	_applyView: function (view){
 		oApp._previousViewId = oApp._currentViewId;
 		oApp._currentViewId = view.id;

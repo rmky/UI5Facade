@@ -26,6 +26,7 @@ class ui5DataTable extends ui5AbstractElement
         return <<<JS
     var {$this->getJsVar()};
 	{$this->buildJsDataSource()}  
+    {$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->generateJs()}
 		
 JS;
     }
@@ -70,10 +71,14 @@ function() {
 }()
 JS;
     
-        return $this->buildJsPage($js);
+        if ($this->isWrappedInDynamicPage()){
+            return $this->buildJsPage($js);
+        } else {
+            return $js;
+        }
     }
 
-    protected function buildJsDataSource($js_filters = '')
+    protected function buildJsDataSource()
     {
         $widget = $this->getWidget();
         $url = $this->getAjaxUrl();
@@ -89,6 +94,14 @@ JS;
 					, length: "' . $this->getPaginationPageSize() . '"
 					, start: 0
 				';
+        
+        if ($this->isWrappedInDynamicPage()) {
+            $dataParam = <<<JS
+        params.data = {$this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter()};
+JS;
+        } else {
+            $dataParam = '';
+        }
         
         return <<<JS
 	
@@ -115,9 +128,9 @@ JS;
         params.q = sap.ui.getCore().byId('{$this->getId()}_quickSearch').getValue();
 
         // Add configurator data
-        params.data = {$this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter()};
-
-		// Add filters and sorters from column menus
+        {$dataParam}
+        
+        // Add filters and sorters from column menus
 		for (var i=0; i<oTable.getColumns().length; i++){
 			var oColumn = oTable.getColumns()[i];
 			if (oColumn.getFiltered()){
@@ -150,14 +163,13 @@ JS;
 
     protected function buildJsToolbar()
     {
-        $widget = $this->getWidget();
-        $header = $widget->getCaption() ? $widget->getCaption() : $widget->getMetaObject()->getName();
+        $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $this->buildTextTableHeading() . '"}),';
         $buttons = $this->buildJsButtons() . ($this->buildJsButtons() ? ',' : '');
         $toolbar = <<<JS
 			new sap.m.OverflowToolbar({
                 design: "Transparent",
 				content: [
-					new sap.m.Label({text: "{$header}"}),
+					{$heading}
                     new sap.m.ToolbarSpacer(),
                     {$buttons}
 					new sap.m.ToolbarSeparator(),
@@ -176,6 +188,12 @@ JS;
 			})
 JS;
         return $toolbar;
+    }
+    
+    protected function buildTextTableHeading()
+    {
+        $widget = $this->getWidget();
+        return $widget->getCaption() ? $widget->getCaption() : $widget->getMetaObject()->getName();
     }
     
     public function buildJsRefresh()
@@ -220,12 +238,27 @@ JS;
     protected function buildJsColumnDef(DataColumn $column)
     {
         $visible = $column->isHidden() ? 'false' : 'true';
-        $textAlign = 'sap.ui.core.TextAlign.' . ucfirst($column->getAlign());
+        switch ($column->getAlign()) {
+            case EXF_ALIGN_RIGHT:
+            case EXF_ALIGN_OPPOSITE:
+                $alignment = 'textAlign: sap.ui.core.TextAlign.End';
+                break;
+            case EXF_ALIGN_CENTER:
+                $alignment = 'textAlign: sap.ui.core.TextAlign.Center';
+                break;
+            case EXF_ALIGN_LEFT:
+            case EXF_ALIGN_DEFAULT:
+            default:
+                $alignment = 'textAlign: sap.ui.core.TextAlign.Begin';
+                                
+        }
         
         return <<<JS
 	 new sap.ui.table.Column({
 	    label: new sap.ui.commons.Label({text: "{$column->getCaption()}"})
-	    , template: new sap.ui.commons.TextField({textAlign: {$textAlign}}).bindProperty("value", "{$column->getDataColumnName()}")
+	    , template: new sap.ui.commons.TextField({
+            {$alignment}
+        }).bindProperty("value", "{$column->getDataColumnName()}")
 	    , sortProperty: "{$column->getAttributeAlias()}"
 	    , filterProperty: "{$column->getAttributeAlias()}"
 		, visible: {$visible}
@@ -239,15 +272,16 @@ JS;
         foreach ($this->getWidget()->getConfiguratorWidget()->getFilters() as $filter) {
             $filters .= ($filters ? ",\n" : '') . $this->getTemplate()->getElement($filter)->generateJsConstructor();
         }
+        
         return <<<JS
 
-        new sap.f.DynamicPage("dynamicPageId",{
+        new sap.f.DynamicPage("{$this->getId()}_page",{
             preserveHeaderStateOnScroll: true,
             headerExpanded: "{/headerExpanded}",
             title: new sap.f.DynamicPageTitle({
 				heading: [
 						new sap.m.Title({
-                            text: "Standard"
+                            text: "{$this->buildTextTableHeading()}"
                         })
 				],
 				actions: [
@@ -278,6 +312,11 @@ JS;
             ]
         })
 JS;
+    }
+                
+    protected function isWrappedInDynamicPage()
+    {
+        return $this->getWidget()->getHideHeader() ? false : true;
     }
 }
 ?>

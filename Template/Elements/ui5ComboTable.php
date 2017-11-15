@@ -35,10 +35,25 @@ JS;
         
         $columns = '';
         $cells = '';
-        foreach ($widget->getTable()->getColumns() as $col) {
+        foreach ($widget->getTable()->getColumns() as $idx => $col) {
             $columns .= ($columns ? ",\n" : '') . $this->buildJsInitOptionsColumn($col);
             $cells .= ($cells ? ",\n" : '') . $this->buildJsInitOptionsCell($col);
+            if ($col->getId() === $widget->getValueColumn()->getId()) {
+                $value_idx = $idx;
+            }
+            if ($col->getId() === $widget->getTextColumn()->getId()) {
+                $text_idx = $idx;
+            }
         }
+        
+        if (is_null($value_idx)) {
+            throw new WidgetLogicError($widget, 'Value column not found for ' . $this->getWidget()->getWidgetType() . ' with id "' . $this->getWidget()->getId() . '"!');
+        }
+        if (is_null($text_idx)) {
+            throw new WidgetLogicError($widget, 'Text column not found for ' . $this->getWidget()->getWidgetType() . ' with id "' . $this->getWidget()->getId() . '"!');
+        }
+        
+        // TODO do not instantiate the model every time, but rathe create it once and load data with every suggest.
         
         return <<<JS
 	   new sap.m.Input("{$this->getId()}", {
@@ -59,19 +74,12 @@ JS;
                     resource: "{$this->getPageId()}",
                     element: "{$widget->getTable()->getId()}",
                     object: "{$widget->getTable()->getMetaObject()->getId()}",
-                    length: "{$widget->getTable()->getPaginatePageSize()}",
+                    length: "{$widget->getMaxSuggestions()}",
 				    start: 0,
                     q: oEvent.getParameter("suggestValue")
                 };
         		var oModel = new sap.ui.model.json.JSONModel();
-        		
-                /*oModel.attachRequestSent(function(){
-        			{$this->buildJsBusyIconShow()}
-        		});
-        		oModel.attachRequestCompleted(function(){
-        			{$this->buildJsBusyIconHide()}
-        		});*/
-        		                    
+                 
         		oModel.loadData("{$this->getAjaxUrl()}", params);
 
                 var oSuggestionRowTemplate = new sap.m.ColumnListItem({
@@ -86,17 +94,10 @@ JS;
     			var aCells = oColumnListItem.getCells();
     
     			return new sap.ui.core.Item({
-    				key: aCells[ {$this->getCellIndexValue()} ].getText(),
-    				text: aCells[ {$this->getCellIndexText()} ].getText()
+    				key: aCells[ {$value_idx} ].getText(),
+    				text: aCells[ {$text_idx} ].getText()
     			});
     		},
-			/*suggestionItemSelected: function(evt) {
-                var oInput = sap.ui.getCore().byId('{$this->getId()}'),
-    				oText = sap.ui.getCore().byId('selectedKey'),
-    				sKey = oInput.getSelectedKey();
-    
-    			oText.setText(sKey);
-            },*/
 			suggestionColumns: [
 				{$columns}
             ],
@@ -145,31 +146,6 @@ JS;
     public function buildJsValueGetter()
     {
         return "sap.ui.getCore().byId('{$this->getId()}').getSelectedKey()";
-    }
-			
-    protected function getModelName()
-    {
-        return 'model_' . $this->getId();
-    }
-    
-    protected function getCellIndexValue()
-    {
-        $widget = $this->getWidget();
-        $idx = array_search($widget->getValueColumn(), $widget->getTable()->getColumns());
-        if ($idx === false){
-            throw new WidgetLogicError($widget, 'Value column not found for ' . $this->getWidget()->getWidgetType() . ' with id "' . $this->getWidget()->getId() . '"!');
-        }
-        return $idx;
-    }
-    
-    protected function getCellIndexText()
-    {
-        $widget = $this->getWidget();
-        $idx = array_search($widget->getTextColumn(), $widget->getTable()->getColumns());
-        if ($idx === false){
-            throw new WidgetLogicError($widget, 'Text column not found for ' . $this->getWidget()->getWidgetType() . ' with id "' . $this->getWidget()->getId() . '"!');
-        }
-        return $idx;
     }
     
     public function buildJsRefresh()

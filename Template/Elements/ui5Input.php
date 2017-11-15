@@ -31,9 +31,8 @@ JS;
      */
     public function buildJsInitOptions()
     {
-        $widget = $this->getWidget();
         $options = '
-            width: "100%",
+            width: "100%"
 ';
         return $options;
     }

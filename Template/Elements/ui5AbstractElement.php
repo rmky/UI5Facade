@@ -230,5 +230,42 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
     {
         return "getValue()";
     }
+    
+    /**
+     * Returns the name of the UI5 view.
+     * 
+     * @return string
+     */
+    public function getViewName()
+    {
+        $widget = $this->getWidget();
+        if ($widget->hasParent()) {
+            return $this->getTemplate()->getElement($widget->getParent())->getViewName();
+        } else {
+            return 'view.' . $widget->getPage()->getAliasWithNamespace();
+        }
+    }
+    
+    public function generateJsView()
+    {
+        $constructor = trim($this->generateJsConstructor());
+        
+        return <<<JS
+
+    sap.ui.jsview("{$this->getViewName()}", {
+		
+		// View has no controller
+		getControllerName: function() {
+			return null;
+		},
+		
+		// Instantiate all widgets for the view
+		createContent: function(oController) {
+			return {$constructor};
+		}
+	});
+    
+JS;
+    }
 }
 ?>

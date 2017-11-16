@@ -4,6 +4,8 @@ namespace exface\OpenUI5Template\Template\Elements;
 use exface\Core\Widgets\DataTable;
 use exface\Core\Widgets\DataColumn;
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDataTableTrait;
+use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\Core\Interfaces\Actions\iReadData;
 
 /**
  *
@@ -23,11 +25,15 @@ class ui5DataTable extends ui5AbstractElement
      */
     function generateJs()
     {
+        $buttons_functions = '';
+        foreach ($this->getWidget()->getButtons() as $btn) {
+            $buttons_functions .= $this->getTemplate()->getElement($btn)->generateJs();
+        }
         return <<<JS
     var {$this->getJsVar()};
 	{$this->buildJsDataSource()}  
     {$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->generateJs()}
-		
+    {$buttons_functions}
 JS;
     }
     
@@ -51,7 +57,7 @@ JS;
         
         $js = <<<JS
 function() {
-	{$this->getJsVar()} = new sap.ui.table.Table({
+	{$this->getJsVar()} = new sap.ui.table.Table("{$this->getId()}", {
 		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto
 	    , selectionMode: {$selection_mode}
 		, selectionBehavior: {$selection_behavior}
@@ -180,7 +186,7 @@ JS;
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
                     }),
                     new sap.m.Button({
-                        icon: "sap-icon://group-2",
+                        icon: "sap-icon://action-settings",
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
                     }),
                     new sap.m.ToolbarSeparator()		
@@ -270,7 +276,16 @@ JS;
     {
         $filters = '';
         foreach ($this->getWidget()->getConfiguratorWidget()->getFilters() as $filter) {
-            $filters .= ($filters ? ",\n" : '') . $this->getTemplate()->getElement($filter)->generateJsConstructor();
+            $filters .= <<<JS
+
+                        new sap.ui.layout.VerticalLayout({
+                            width: "100%",
+                            content: [
+                        	    {$this->getTemplate()->getElement($filter)->generateJsConstructor()}
+                            ]
+                        }),
+
+JS;
         }
         
         return <<<JS
@@ -298,6 +313,26 @@ JS;
 			header: new sap.f.DynamicPageHeader({
                 pinnable: true,
 				content: [
+                    /*new sap.ui.layout.form.SimpleForm({
+                        editable: true,
+                        layout: "ResponsiveGridLayout",
+                        labelSpanXL: 4,
+            			labelSpanL: 4,
+            			labelSpanM: 12,
+            			labelSpanS: 12,
+            			adjustLabelSpan: false,
+            			emptySpanXL: 0,
+            			emptySpanL: 0,
+            			emptySpanM: 0,
+            			emptySpanS: 0,
+            			columnsXL: 2,
+            			columnsL: 2,
+            			columnsM: 2,
+                        singleContainerFullSize: false,
+                        content: [
+							{$filters}
+						]
+                    })*/
 					new sap.ui.layout.Grid({
                         defaultSpan: "XL2 L3 M4 S12",
                         content: [
@@ -316,7 +351,23 @@ JS;
                 
     protected function isWrappedInDynamicPage()
     {
-        return $this->getWidget()->getHideHeader() ? false : true;
+        return $this->getWidget()->hasParent() || $this->getWidget()->getHideHeader() ? false : true;
+    }
+    
+    public function buildJsDataGetter(ActionInterface $action = null)
+    {
+        if (is_null($action)) {
+            $rows = "sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data";
+        } elseif ($action instanceof iReadData) {
+            // If we are reading, than we need the special data from the configurator
+            // widget: filters, sorters, etc.
+            return $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsDataGetter($action);
+        } elseif ($this->isEditable() && $action->implementsInterface('iModifyData')) {
+            // TODO
+        } else {
+            $rows = "[sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data[sap.ui.getCore().byId('{$this->getId()}').getSelectedIndex()]]";
+        }
+        return "{oId: '" . $this->getWidget()->getMetaObject()->getId() . "', rows: " . $rows . "}";
     }
 }
 ?>

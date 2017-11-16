@@ -78,12 +78,15 @@ JS;
             
         }
         
+        $press = $widget->getAction() ? ', press: function(){' . $this->buildJsClickFunctionName() . '()}' : '';
+        
         $icon = $widget->getIcon() ? ', icon: "' . $this->getIconSrc($widget->getIcon()) . '"' : '';
         
         $options = '
                     text: "' . $this->getCaption() . '"
                     ' . $icon . '
-                    ' . $visibility;
+                    ' . $visibility . '
+                    ' . $press;
         return $options;
     }
 
@@ -118,14 +121,19 @@ JS;
 								{$this->buildJsCloseDialog($widget, $input_element)}
 								{$this->buildJsInputRefresh($widget, $input_element)}
 		                       	{$this->buildJsBusyIconHide()}
-		                       	if ($('#ajax-dialogs').length < 1){
-		                       		$('body').append('<div id=\"ajax-dialogs\"></div>');
-                       			}
-		                       	$('#ajax-dialogs').append('<div class=\"ajax-wrapper\">'+data+'</div>');
-                                $('#ajax-dialogs').children().last().children('.modal').last().modal('show');
-                       			$(document).trigger('{$action->getAliasWithNamespace()}.action.performed', [requestData]);
-                       			$(document).trigger('exface.AdminLteTemplate.Dialog.Complete', ['{$this->getTemplate()->getElement($action->getDialogWidget())->getId()}']);
-		                  		
+		                       	
+                                $('body').append(data);
+                                oDialogStack.push({
+                                    content: oShell.getContent(),
+                                    head: oShell.getHeadItems(),
+                                    dialog: sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, height: "100%", viewName:"{$this->getTemplate()->getElement($widget->getAction()->getWidget())->getViewName()}"})
+                                });
+
+                                oShell.removeAllContent()
+                                oShell.addContent(
+                                    oDialogStack[oDialogStack.length-1].dialog
+                                );
+                                
 								// Make sure, the input widget of the button is always refreshed, once the dialog is closed again
 								{$js_on_close_dialog}
 							},

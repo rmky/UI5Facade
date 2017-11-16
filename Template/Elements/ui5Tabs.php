@@ -4,20 +4,17 @@ namespace exface\OpenUI5Template\Template\Elements;
 class ui5Tabs extends ui5Container
 {
 
-    protected function buildHtmlTabBodies()
+    public function generateJsConstructor()
     {
-        $output = '';
-        foreach ($this->getWidget()->getChildren() as $tab) {
-            $output .= $this->getTemplate()->getElement($tab)->buildHtmlBody();
-        }
-        return $output;
-    }
-
-    protected function buildHtmlTabHeaders()
-    {
-        $output = '';
-        
-        return $output;
+        return <<<JS
+    new sap.m.IconTabBar("{$this->getId()}", {
+        expanded: "{device>/isNoPhone}",
+        /*stretchContentHeight: true,*/ // makes header of ObjectPage inivsible if set
+        items: [
+            {$this->buildJsChildrenConstructors()}
+        ]
+    })
+JS;
     }
 }
 ?>

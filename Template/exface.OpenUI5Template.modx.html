@@ -37,25 +37,51 @@
 					 !]
 					]
 				});
-			oApp.shell.setUser(new sap.ui.unified.ShellHeadUserItem({
-				image: "[!UserManagerInfo? &field=`photo`!]",
-				username: "[!UserManagerInfo? &field=`fullname`!]",
-				press: function(){alert("User Item pressed");}
-			}));
-			oApp.shell.placeAt("[*id*]");
-			oApp.addView("HOME", null, [oNavMenu]);
-			oApp.showView("HOME");
+			
+			oShell.addPaneContent(oNavMenu);
+			oShell.addHeadItem(
+				new sap.ui.unified.ShellHeadItem({
+					tooltip: "Configuration",
+					icon: "sap-icon://menu2",
+					press: function(){
+						oShell.setShowPane(! oShell.getShowPane());
+					}
+				})
+			);
+			oShell.setSearch(
+				new sap.m.Title({
+					text: "[*pagetitle*]", 
+					level: "H1",
+					textAlign: "Center",
+					width: "100%"
+				})
+					
+			);
+			oShell.setUser(
+				new sap.ui.unified.ShellHeadUserItem({
+					image: "[!UserManagerInfo? &field=`photo`!]",
+					username: "[!UserManagerInfo? &field=`fullname`!]",
+					press: function(){alert("User Item pressed");}
+				})
+			);
+			
+			oShell.placeAt("[*id*]");
+			
 		</script>
 		
 		[[Exface? &action=`exface.Core.ShowWidget` &template=`exface.OpenUI5Template` &fallback_field=`content`]]
 		
 		<script type="text/javascript">
-			oApp.showView(oApp.getViewTop());
+			//oApp.showView(oApp.getViewTop());
+			oShell.removeAllContent()
+		    oShell.addContent(
+		        (sap.ui.getCore().byId("view.[*alias*]") !== undefined ? sap.ui.getCore().byId("view.[*alias*]") : sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, height: "100%", viewName:"view.[*alias*]"}))
+		    );
 		</script>
 
 		
 	</head>
-	<body id="[*id*]" class="sapUiSizeCompact">
+	<body id="[*id*]" class="sapUiBody sapUiSizeCompact">
 
 	</body>
 </html>

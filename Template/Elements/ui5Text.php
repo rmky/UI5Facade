@@ -45,6 +45,14 @@ JS;
      */
     protected function buildJsLabelWrapper($element_constructor)
     {
+        
+        return <<<JS
+        new sap.m.Label({
+            text: "{$this->getCaption()}"
+        }),
+        {$element_constructor}
+JS;
+        
         return <<<JS
 new sap.ui.layout.VerticalLayout({
     width: "100%",

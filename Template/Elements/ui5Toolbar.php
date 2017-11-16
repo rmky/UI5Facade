@@ -13,5 +13,10 @@ use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryToolbarTrait;
 class ui5Toolbar extends ui5AbstractElement
 {
     use JqueryToolbarTrait;
+    
+    public function generateHtml()
+    {
+        return '';
+    }
 }
 ?>

@@ -19,9 +19,7 @@ class ui5ComboTable extends ui5Input
     
     function generateJs()
     {
-        return <<<JS
-    var {$this->getJsVar()};	
-JS;
+        return '';
     }
     
     /**
@@ -141,6 +139,11 @@ JS;
 					})
 
 JS;
+    }
+                        
+    protected function buildPropertyValue()
+    {
+        return ($this->getValueWithDefaults() ? ', selectedKey: "' . $this->getValueWithDefaults() . '"' : '');
     }
                         
     public function buildJsValueGetter()

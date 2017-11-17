@@ -14,14 +14,6 @@
 	},
 	"require" : {
 		"exface/core" : "~0.1",
-		"bower-asset/openui5-sap.ui.core": "^1.5",
-		"bower-asset/openui5-sap.ui.unified": "^1.5",
-		"bower-asset/openui5-sap.ui.table": "^1.5",
-		"bower-asset/openui5-sap.ui.commons": "^1.5",
-		"bower-asset/openui5-sap.f": "^1.5",
-		"bower-asset/openui5-sap.m": "^1.5",
-		"bower-asset/openui5-sap.tnt": "^1.5",
-		"bower-asset/openui5-themelib_sap_belize": "^1.5",
 		"bower-asset/font-awesome-openui5": "^v2.1"
 	},
     "autoload": {

@@ -6,6 +6,8 @@ use exface\Core\Interfaces\Widgets\iLayoutWidgets;
 use exface\Core\Widgets\AbstractWidget;
 use exface\Core\Interfaces\Widgets\iContainOtherWidgets;
 use exface\Core\Factories\DataSheetFactory;
+use exface\Core\Widgets\Tabs;
+use exface\Core\Widgets\Tab;
 
 /**
  *
@@ -18,42 +20,27 @@ class ui5Dialog extends ui5Container
 {
     public function generateJsConstructor()
     {
-        return $this->buildJsPage('');
+        return $this->buildJsPage($this->buildJsObjectPageLayout());
     }
     
-    protected function buildJsPage($content)
+    protected function buildJsObjectPageLayout()
     {
         return <<<JS
-        
-        new sap.m.Page("{$this->getId()}", {
-            title: "{$this->getCaption()}",
-            showNavButton: true,
-            navButtonPress: function(){
-                var oDialogStackTop = oDialogStack.pop();
-        		oShell.removeAllContent();
-                for (var i in oDialogStackTop.content) {
-                    oShell.addContent(
-                        oDialogStackTop.content[i]
-                    );
-                }
-                oShell.removeAllHeadItems()
-                for (var i in oDialogStackTop.head) {
-                    oShell.addHeadItem(
-                        oDialogStackTop.head[i]
-                    );
-                }
-                oDialogStackTop.dialog.destroy(true);
-                delete oDialogStackTop;
-            },
-            content: [
-                {$this->buildJsObjectHeader()}
-                {$this->buildJsChildrenConstructors()}
-            ]
-        }).addStyleClass("sapUiFioriObjectPage")
+
+        new sap.uxap.ObjectPageLayout({
+            useIconTabBar: true,
+            upperCaseAnchorBar: false,
+            enableLazyLoading: false,
+			{$this->buildJsHeader()},
+			sections: [
+				{$this->buildJsObjectPageSections()}
+			]
+		})
+
 JS;
     }
-                
-    protected function buildJsObjectHeader()
+        
+    protected function buildJsHeader()
     {
         if (($uid_widget = $this->getWidget()->findChildrenByAttribute($this->getMetaObject()->getUidAttribute())[0]) && !is_null($uid_widget->getValue())) {
             $uid_data_sheet = DataSheetFactory::createFromObject($this->getMetaObject());
@@ -62,20 +49,78 @@ JS;
             $uid_data_sheet->dataRead();
             $label = $uid_data_sheet->getCellValue($this->getMetaObject()->getLabelAttribute()->getAlias(), 0);
         }
-        $heading = $this->getWidget()->getMetaObject()->getName() . ($label ? ': ' : '') . $label;
+        $heading = $label ? $label : 'New';
+        
         return <<<JS
 
-                new sap.m.ObjectHeader({
-    				title: "{$heading}",
-    				backgroundDesign: "Solid",
-                    /*condensed: true,*/
-                    responsive: true,
-    				attributes: [
-
-    				]
-                }),
+            headerTitle:
+				new sap.uxap.ObjectPageHeader({
+					objectTitle:"{$heading}",
+					actions: [
+						
+					]
+				}),
+			headerContent:[
+				
+			]
 
 JS;
+    }
+    
+    protected function buildJsPage($content)
+    {
+        $pageTitle = $this->getCaption() . ': ' . $this->getWidget()->getMetaObject()->getName();
+        return <<<JS
+        
+        new sap.m.Page("{$this->getId()}", {
+            title: "{$pageTitle}",
+            showNavButton: true,
+            navButtonPress: function(){
+                closeTopDialog();
+            },
+            content: [
+                {$content}
+            ],
+            footer: {$this->buildJsToolbar()}
+        })
+JS;
+    }
+                
+    protected function buildJsObjectPageSections()
+    {
+        $widget = $this->getWidget();
+        $js = '';
+        
+        if ($widget->getWidgetFirst() instanceof Tabs) {
+            foreach ($widget->getWidgetFirst()->getTabs() as $tab) {
+                $js .= $this->buildJsObjectPageSectionFromTab($tab);
+            }
+        }
+        
+        return $js;
+    }
+    
+    protected function buildJsObjectPageSectionFromTab(Tab $tab) 
+    {
+        $tabElement = $this->getTemplate()->getElement($tab);
+        return <<<JS
+                // BOF ObjectPageSection
+                new sap.uxap.ObjectPageSection({
+					title:"{$tab->getCaption()}",
+					subSections: new sap.uxap.ObjectPageSubSection({
+						blocks: [
+                            {$tabElement->buildJsLayoutConstructor($tabElement->buildJsChildrenConstructors())}
+                        ]
+					})
+				}),
+                // EOF ObjectPageSection
+                
+JS;
+    }
+                            
+    protected function buildJsToolbar()
+    {
+        return $this->getTemplate()->getElement($this->getWidget()->getToolbarMain())->generateJsConstructor();
     }
                 
     public function getViewName()

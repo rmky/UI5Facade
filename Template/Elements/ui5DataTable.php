@@ -59,11 +59,12 @@ JS;
 function() {
 	{$this->getJsVar()} = new sap.ui.table.Table("{$this->getId()}", {
 		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto
+        /*, init: function() {console.log('table init'); {$this->buildJsRefresh()};}*/
 	    , selectionMode: {$selection_mode}
 		, selectionBehavior: {$selection_behavior}
 	    , enableColumnReordering:true
-		, filter: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(this, oControlEvent)}
-		, sort: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(this, oControlEvent)}
+		, filter: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)}
+		, sort: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)}
 		, toolbar: [
 			{$this->buildJsToolbar()}
 		]
@@ -71,9 +72,8 @@ function() {
 			{$column_defs}
 		]
 	});
-    
     {$this->buildJsRefresh()};
-    return {$this->getJsVar()};
+    return {$this->getJsVar()}
 }()
 JS;
     
@@ -111,8 +111,9 @@ JS;
         
         return <<<JS
 	
-	function {$this->buildJsFunctionPrefix()}LoadData(oTable, oControlEvent) {
-		var params = { {$params} };
+	function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent) {
+		var oTable = sap.ui.getCore().byId("{$this->getId()}");
+        var params = { {$params} };
 		var cols = oTable.getColumns();
 		var oModel = new sap.ui.model.json.JSONModel();
 		
@@ -204,7 +205,7 @@ JS;
     
     public function buildJsRefresh()
     {
-        return "{$this->buildJsFunctionPrefix()}LoadData({$this->getJsVar()})";
+        return "{$this->buildJsFunctionPrefix()}LoadData()";
     }
                     
     protected function buildJsButtons()

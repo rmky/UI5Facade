@@ -6,6 +6,11 @@ class ui5Tabs extends ui5Container
 
     public function generateJsConstructor()
     {
+        return $this->buildJsIconTabBar();
+    }
+            
+    protected function buildJsIconTabBar()
+    {
         return <<<JS
     new sap.m.IconTabBar("{$this->getId()}", {
         expanded: "{device>/isNoPhone}",

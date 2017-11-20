@@ -20,7 +20,7 @@ class ui5Container extends ui5AbstractElement
         return $this->buildJsChildrenConstructors();
     }
     
-    protected function buildJsChildrenConstructors()
+    public function buildJsChildrenConstructors()
     {
         $js = '';
         foreach ($this->getWidget()->getWidgets() as $widget) {

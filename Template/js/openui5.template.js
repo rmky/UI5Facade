@@ -5,3 +5,15 @@ var oShell = new sap.ui.unified.Shell({
 		
 	]
 });
+
+function closeTopDialog() {
+	var oDialogStackTop = oDialogStack.pop();
+	oShell.removeAllContent();
+    for (var i in oDialogStackTop.content) {
+        oShell.addContent(
+            oDialogStackTop.content[i]
+        );
+    }
+    oDialogStackTop.dialog.destroy(true);
+    delete oDialogStackTop;
+}

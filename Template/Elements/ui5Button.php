@@ -38,7 +38,7 @@ class ui5Button extends ui5AbstractElement
             // Generate the function to be called, when the button is clicked
             $output .= "
 				function " . $this->buildJsClickFunctionName() . "(input){
-					" . $click . "
+                    " . $click . "
 				}
 				";
             
@@ -78,7 +78,7 @@ JS;
             
         }
         
-        $press = $widget->getAction() ? ', press: function(){' . $this->buildJsClickFunctionName() . '()}' : '';
+        $press = $this->buildJsClickFunction() ? ', press: function(){' . $this->buildJsClickFunctionName() . '()}' : '';
         
         $icon = $widget->getIcon() ? ', icon: "' . $this->getIconSrc($widget->getIcon()) . '"' : '';
         
@@ -147,11 +147,6 @@ JS;
         return $output;
     }
 
-    protected function buildJsCloseDialog($widget, $input_element)
-    {
-        return ($widget->getWidgetType() == 'DialogButton' && $widget->getCloseDialogAfterActionSucceeds() ? "$('#" . $input_element->getId() . "').modal('hide');" : "");
-    }
-
     /**
      * Returns javascript code with global variables and functions needed for certain button types
      */
@@ -169,16 +164,20 @@ JS;
     }
 
     /**
-     * In AdminLTE the button does not need any extra headers, as all headers needed for whatever the button loads will
+     * In OpenUI5 the button does not need any extra headers, as all headers needed for whatever the button loads will
      * come with the AJAX-request.
      *
      * {@inheritdoc}
-     *
      * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::generateHeaders()
      */
     public function generateHeaders()
     {
         return array();
+    }
+    
+    protected function buildJsCloseDialog($widget, $input_element)
+    {
+        return ($widget->getWidgetType() == 'DialogButton' && $widget->getCloseDialogAfterActionSucceeds() ? "closeTopDialog();" : "");
     }
 }
 ?>

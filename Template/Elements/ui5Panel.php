@@ -19,7 +19,7 @@ class ui5Panel extends ui5Container
 JS;
     }
                     
-    protected function buildJsLayoutConstructor($content)
+    public function buildJsLayoutConstructor($content)
     {
         $widget = $this->getWidget();
         if ($widget->countWidgetsVisible() === 1 && ($widget->getWidget(0) instanceof iFillEntireContainer)) {

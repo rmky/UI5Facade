@@ -48,7 +48,7 @@ JS;
     
     protected function buildPropertyValue()
     {
-        return ($this->getValueWithDefaults() ? ', value: "' . $this->getValueWithDefaults() . '"' : '');
+        return ($this->getValueWithDefaults() ? ', value: "' . str_replace('"', '\"', $this->getValueWithDefaults()) . '"' : '');
     }
     
     public function getValueWithDefaults()

@@ -8,6 +8,7 @@ use exface\Core\Interfaces\Widgets\iContainOtherWidgets;
 use exface\Core\Factories\DataSheetFactory;
 use exface\Core\Widgets\Tabs;
 use exface\Core\Widgets\Tab;
+use exface\Core\Widgets\Image;
 
 /**
  *
@@ -42,6 +43,8 @@ JS;
         
     protected function buildJsHeader()
     {
+        $widget = $this->getWidget();
+        
         if (($uid_widget = $this->getWidget()->findChildrenByAttribute($this->getMetaObject()->getUidAttribute())[0]) && !is_null($uid_widget->getValue())) {
             $uid_data_sheet = DataSheetFactory::createFromObject($this->getMetaObject());
             $uid_data_sheet->getColumns()->addFromAttribute($this->getMetaObject()->getLabelAttribute());
@@ -51,17 +54,39 @@ JS;
         }
         $heading = $label ? $label : 'New';
         
+        if ($widget->hasHeader()) {
+            foreach ($widget->getHeader()->getChildren() as $child) {
+                if ($child instanceof Image) {
+                    $image = <<<JS
+                    objectImageURI: "{$child->getUri()}",
+			        objectImageShape: "Circle",
+JS;
+                    $child->setHidden(true);
+                }
+            }
+            
+            
+            $header_content = $this->getTemplate()->getElement($widget->getHeader())->generateJsConstructor();
+        }
+        
         return <<<JS
-
+            showTitleInHeaderContent: true,
             headerTitle:
 				new sap.uxap.ObjectPageHeader({
 					objectTitle:"{$heading}",
+    				  showMarkers: true,
+    				  markFavorite: true,
+    				  markFlagged: true,
+    				  isObjectIconAlwaysVisible: false,
+    				  isObjectTitleAlwaysVisible: false,
+    				  isObjectSubtitleAlwaysVisible: false,
+                    {$image}
 					actions: [
 						
 					]
 				}),
 			headerContent:[
-				
+				{$header_content}
 			]
 
 JS;

@@ -48,7 +48,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
     
     public function buildJsInitOptions()
     {
-        return '';
+        return $this->getWidget()->isHidden() ? 'visible: false,' : '';
     }
 
     public function buildJsInlineEditorInit()

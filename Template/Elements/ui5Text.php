@@ -1,8 +1,12 @@
 <?php
 namespace exface\OpenUI5Template\Template\Elements;
 
+use exface\Core\Widgets\Text;
+
 /**
- * Generates OpenUI5 inputs
+ * Generates OpenUI5 text elements
+ * 
+ * @method Text getWidget()
  *
  * @author Andrej Kabachnik
  *        
@@ -30,8 +34,10 @@ class ui5Text extends ui5AbstractElement
      */
     protected function buildJsElementConstructor()
     {
+        $text = str_replace('"', '\n', $this->getWidget()->getText());
         return <<<JS
-        new sap.m.Input("{$this->getId()}", {
+        new sap.m.Text("{$this->getId()}", {
+            text: "{$text}",
             {$this->buildJsInitOptions()}
         })
 JS;
@@ -51,18 +57,6 @@ JS;
             text: "{$this->getCaption()}"
         }),
         {$element_constructor}
-JS;
-        
-        return <<<JS
-new sap.ui.layout.VerticalLayout({
-    width: "100%",
-    content: [
-	    new sap.m.Label({
-            text: "{$this->getCaption()}:"
-        }),
-        {$element_constructor}
-    ]
-})
 JS;
     }
 }

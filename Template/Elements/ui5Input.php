@@ -31,7 +31,7 @@ JS;
      */
     public function buildJsInitOptions()
     {
-        $options = '
+        $options = parent::buildJsInitOptions() . '
             width: "100%"
             ' . $this->buildPropertyValue() . '
             ' . $this->buildPropertyVisibile();
@@ -62,6 +62,11 @@ JS;
             $value = $this->getWidget()->getDefaultValue();
         }
         return $value;
+    }
+    
+    protected function buildJsPropertyEditable()
+    {
+        return 'editable: true, ';
     }
 }
 ?>

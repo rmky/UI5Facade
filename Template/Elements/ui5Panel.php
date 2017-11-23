@@ -35,7 +35,7 @@ JS;
         
             new sap.ui.layout.form.SimpleForm({
                 width: "100%",
-                editable: true,
+                {$this->buildJsPropertyEditable()}
                 layout: "ResponsiveGridLayout",
                 labelSpanXL: 4,
     			labelSpanL: 4,
@@ -56,6 +56,11 @@ JS;
             })
             
 JS;
+    }
+                    
+    protected function buildJsPropertyEditable()
+    {
+        return 'editable: true,';
     }
     
     protected function buildJsLayoutGrid($content)

@@ -179,18 +179,16 @@ JS;
 					{$heading}
                     new sap.m.ToolbarSpacer(),
                     {$buttons}
-					new sap.m.ToolbarSeparator(),
 					new sap.m.SearchField("{$this->getId()}_quickSearch", {
                         width: "200px",
                         search: function(){ {$this->buildJsRefresh()} },
-                        placeholder: "{$this->getQuickSearchPlaceholder()}",
+                        placeholder: "{$this->getQuickSearchPlaceholder(false)}",
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
                     }),
                     new sap.m.Button({
                         icon: "sap-icon://action-settings",
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
-                    }),
-                    new sap.m.ToolbarSeparator()		
+                    })		
 				]
 			})
 JS;

@@ -4,7 +4,7 @@ namespace exface\OpenUI5Template\Template\Elements;
 class ui5Tabs extends ui5Container
 {
 
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         return $this->buildJsIconTabBar();
     }

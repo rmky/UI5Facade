@@ -21,9 +21,9 @@ class ui5Text extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::generateJsConstructor()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         return $this->buildJsLabelWrapper($this->buildJsElementConstructor());
     }
@@ -38,7 +38,7 @@ class ui5Text extends ui5AbstractElement
         return <<<JS
         new sap.m.Text("{$this->getId()}", {
             text: "{$text}",
-            {$this->buildJsInitOptions()}
+            {$this->buildJsProperties()}
         })
 JS;
     }

@@ -15,9 +15,9 @@ class ui5Filter extends ui5AbstractElement
 {
     use JqueryFilterTrait;
     
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
-        return $this->getInputElement()->generateJsConstructor();
+        return $this->getInputElement()->buildJsConstructor();
     }
 }
 ?>

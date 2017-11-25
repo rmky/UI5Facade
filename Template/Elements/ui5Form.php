@@ -15,7 +15,7 @@ class ui5Form extends ui5Panel
         return 'editable: true,';
     }
     
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         return  $this->buildJsLayoutForm($this->buildJsChildrenConstructors());
     }

@@ -26,7 +26,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
      *
      * @return string
      */
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         return '';
     }
@@ -46,7 +46,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
         return $this;
     }
     
-    public function buildJsInitOptions()
+    public function buildJsProperties()
     {
         return $this->getWidget()->isHidden() ? 'visible: false,' : '';
     }
@@ -248,7 +248,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
     
     public function generateJsView()
     {
-        $constructor = trim($this->generateJsConstructor());
+        $constructor = trim($this->buildJsConstructor());
         
         return <<<JS
 

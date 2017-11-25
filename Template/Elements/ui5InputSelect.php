@@ -19,7 +19,7 @@ class ui5InputSelect extends ui5Input
     {
         return <<<JS
         new sap.m.Select("{$this->getId()}", {
-			{$this->buildJsInitOptions()}
+			{$this->buildJsProperties()}
         })
 JS;
     }
@@ -27,9 +27,9 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsInitOptions()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsProperties()
      */
-    public function buildJsInitOptions()
+    public function buildJsProperties()
     {
         $widget = $this->getWidget();
         $options = '

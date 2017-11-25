@@ -19,7 +19,7 @@ class ui5Input extends ui5Text
     {
         return <<<JS
         new sap.m.Input("{$this->getId()}", {
-            {$this->buildJsInitOptions()}
+            {$this->buildJsProperties()}
         })
 JS;
     }
@@ -27,18 +27,18 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsInitOptions()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsProperties()
      */
-    public function buildJsInitOptions()
+    public function buildJsProperties()
     {
-        $options = parent::buildJsInitOptions() . '
+        $options = parent::buildJsProperties() . '
             width: "100%"
-            ' . $this->buildPropertyValue() . '
-            ' . $this->buildPropertyVisibile();
+            ' . $this->buildJsPropertyValue() . '
+            ' . $this->buildJsPropertyVisibile();
         return $options;
     }
     
-    protected function buildPropertyVisibile()
+    protected function buildJsPropertyVisibile()
     {
         if ($this->getWidget()->isHidden()) {
             return ', visible: false';
@@ -46,7 +46,7 @@ JS;
         return '';
     }
     
-    protected function buildPropertyValue()
+    protected function buildJsPropertyValue()
     {
         return ($this->getValueWithDefaults() ? ', value: "' . str_replace('"', '\"', $this->getValueWithDefaults()) . '"' : '');
     }

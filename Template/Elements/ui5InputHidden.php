@@ -12,9 +12,9 @@ class ui5InputHidden extends ui5Input
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5Input::buildPropertyVisibile()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Input::buildJsPropertyVisibile()
      */
-    protected function buildPropertyVisibile()
+    protected function buildJsPropertyVisibile()
     {
         return ', visible: false';
     }

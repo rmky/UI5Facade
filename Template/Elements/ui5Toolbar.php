@@ -31,7 +31,7 @@ class ui5Toolbar extends ui5AbstractElement
         return $js;
     }
     
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         $widget = $this->getWidget();
         
@@ -39,10 +39,10 @@ class ui5Toolbar extends ui5AbstractElement
             switch ($btn->getAlign()) {
                 case EXF_ALIGN_OPPOSITE:
                 case EXF_ALIGN_RIGHT:
-                    $right_buttons = $this->getTemplate()->getElement($btn)->generateJsConstructor() . ",\n" . $right_buttons;
+                    $right_buttons = $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n" . $right_buttons;
                     break;
                 default:
-                    $left_buttons .= $this->getTemplate()->getElement($btn)->generateJsConstructor() . ",\n";
+                    $left_buttons .= $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n";
             }
         }
         
@@ -68,7 +68,7 @@ JS;
         foreach ($widget->getButtonGroups() as $btn_group) {
             $buttons .= ($buttons && $btn_group->getVisibility() > EXF_WIDGET_VISIBILITY_OPTIONAL ? ",\n new sap.m.ToolbarSeparator()" : '');
             foreach ($btn_group->getButtons() as $btn) {
-                $buttons .= ($buttons ? ", \n" : '') . $this->getTemplate()->getElement($btn)->generateJsConstructor();
+                $buttons .= ($buttons ? ", \n" : '') . $this->getTemplate()->getElement($btn)->buildJsConstructor();
             }
         }
         return $buttons;

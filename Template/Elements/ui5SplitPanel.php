@@ -13,12 +13,12 @@ use exface\Core\Widgets\SplitHorizontal;
  */
 class ui5SplitPanel extends ui5Panel
 {
-    public function buildJsInitOptions()
+    public function buildJsProperties()
     {
         $widget = $this->getWidget();
         $sizeDimension = $widget->getParent() instanceof SplitHorizontal ? $widget->getWidth() : $widget->getHeight();
         $size = $sizeDimension->isUndefined() ? 'auto' : $sizeDimension->getValue();
-        return parent::buildJsInitOptions() . '
+        return parent::buildJsProperties() . '
                     layoutData: new sap.ui.layout.SplitterLayoutData({
                         size: "' . $size . '"
                     })';

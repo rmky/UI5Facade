@@ -21,9 +21,9 @@ class ui5Html extends ui5Text
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::generateJsConstructor()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         return $this->buildJsLabelWrapper($this->buildJsElementConstructor());
     }

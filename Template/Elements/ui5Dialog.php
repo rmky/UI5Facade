@@ -19,7 +19,7 @@ use exface\Core\Widgets\Image;
  */
 class ui5Dialog extends ui5Container
 {
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         return $this->buildJsPage($this->buildJsObjectPageLayout());
     }
@@ -66,7 +66,7 @@ JS;
             }
             
             
-            $header_content = $this->getTemplate()->getElement($widget->getHeader())->generateJsConstructor();
+            $header_content = $this->getTemplate()->getElement($widget->getHeader())->buildJsConstructor();
         }
         
         return <<<JS
@@ -145,7 +145,7 @@ JS;
                             
     protected function buildJsToolbar()
     {
-        return $this->getTemplate()->getElement($this->getWidget()->getToolbarMain())->generateJsConstructor();
+        return $this->getTemplate()->getElement($this->getWidget()->getToolbarMain())->buildJsConstructor();
     }
                 
     public function getViewName()

@@ -4,7 +4,7 @@ namespace exface\OpenUI5Template\Template\Elements;
 class ui5WidgetGroup extends ui5Container
 {
     
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         $title = $this->getCaption() ? 'text: "' . $this->getCaption() . '",' : '';
         return  <<<JS

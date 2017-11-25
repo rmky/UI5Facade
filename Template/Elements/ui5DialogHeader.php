@@ -18,7 +18,7 @@ use exface\Core\Widgets\InputHidden;
  */
 class ui5DialogHeader extends ui5Container
 {
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         foreach ($this->getWidget()->getWidgets() as $widget) {
             if ($widget instanceof iHaveValue) {

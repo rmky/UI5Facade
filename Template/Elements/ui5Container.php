@@ -15,7 +15,7 @@ class ui5Container extends ui5AbstractElement
 {
     use JqueryContainerTrait;
     
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         return $this->buildJsChildrenConstructors();
     }
@@ -24,7 +24,7 @@ class ui5Container extends ui5AbstractElement
     {
         $js = '';
         foreach ($this->getWidget()->getWidgets() as $widget) {
-            $js .= ($js ? ",\n" : '') . $this->getTemplate()->getElement($widget)->generateJsConstructor();
+            $js .= ($js ? ",\n" : '') . $this->getTemplate()->getElement($widget)->buildJsConstructor();
         }
         
         return $js;

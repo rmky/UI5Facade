@@ -6,7 +6,7 @@ use exface\Core\Interfaces\Widgets\iFillEntireContainer;
 class ui5Panel extends ui5Container
 {
     
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         return  <<<JS
                 new sap.m.Panel({
@@ -14,7 +14,7 @@ class ui5Panel extends ui5Container
                     content: [
                         {$this->buildJsChildrenConstructors()}
                     ],
-                    {$this->buildJsInitOptions()}
+                    {$this->buildJsProperties()}
                 }).addStyleClass("sapUiNoContentPadding")
 JS;
     }

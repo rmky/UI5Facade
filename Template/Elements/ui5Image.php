@@ -22,15 +22,15 @@ class ui5Image extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::generateJsConstructor()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     {
         return <<<JS
 
     new sap.m.Image("{$this->getid()}", {
 		src: "{$this->getWidget()->getUri()}",
-        {$this->buildJsInitOptions()}
+        {$this->buildJsProperties()}
 	})
 
 JS;

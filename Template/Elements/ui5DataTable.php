@@ -40,9 +40,9 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::generateJsConstructor()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function generateJsConstructor()
+    public function buildJsConstructor()
     { 
         $widget = $this->getWidget();
         
@@ -222,7 +222,7 @@ JS;
                 }
                 $buttons .= ($buttons && $btn_group->getVisibility() > EXF_WIDGET_VISIBILITY_OPTIONAL ? ",\n new sap.m.ToolbarSeparator()" : '');
                 foreach ($btn_group->getButtons() as $btn) {
-                    $buttons .= ($buttons ? ", \n" : '') . $this->getTemplate()->getElement($btn)->generateJsConstructor();
+                    $buttons .= ($buttons ? ", \n" : '') . $this->getTemplate()->getElement($btn)->buildJsConstructor();
                 }
             }
         }
@@ -280,7 +280,7 @@ JS;
                         new sap.ui.layout.VerticalLayout({
                             width: "100%",
                             content: [
-                        	    {$this->getTemplate()->getElement($filter)->generateJsConstructor()}
+                        	    {$this->getTemplate()->getElement($filter)->buildJsConstructor()}
                             ]
                         }),
 

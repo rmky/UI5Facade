@@ -34,8 +34,8 @@ class ui5ComboTable extends ui5Input
         $columns = '';
         $cells = '';
         foreach ($widget->getTable()->getColumns() as $idx => $col) {
-            $columns .= ($columns ? ",\n" : '') . $this->buildJsInitOptionsColumn($col);
-            $cells .= ($cells ? ",\n" : '') . $this->buildJsInitOptionsCell($col);
+            $columns .= ($columns ? ",\n" : '') . $this->buildJsPropertiesColumn($col);
+            $cells .= ($cells ? ",\n" : '') . $this->buildJsPropertiesCell($col);
             if ($col->getId() === $widget->getValueColumn()->getId()) {
                 $value_idx = $idx;
             }
@@ -55,7 +55,7 @@ class ui5ComboTable extends ui5Input
         
         return <<<JS
 	   new sap.m.Input("{$this->getId()}", {
-			{$this->buildJsInitOptions()},
+			{$this->buildJsProperties()},
             type: "Text",
 			textFormatMode: "ValueKey",
 			showSuggestion: true,
@@ -99,12 +99,12 @@ class ui5ComboTable extends ui5Input
 			suggestionColumns: [
 				{$columns}
             ],
-			{$this->buildJsInitOptions()}
+			{$this->buildJsProperties()}
        })
 JS;
     }
        
-    protected function buildJsInitOptionsCell(DataColumn $col)
+    protected function buildJsPropertiesCell(DataColumn $col)
     {
         return <<<JS
 
@@ -116,7 +116,7 @@ JS;
 JS;
     }
        
-    protected function buildJsInitOptionsColumn(DataColumn $col)
+    protected function buildJsPropertiesColumn(DataColumn $col)
     {
         $options = '';
         
@@ -141,7 +141,7 @@ JS;
 JS;
     }
                         
-    protected function buildPropertyValue()
+    protected function buildJsPropertyValue()
     {
         return ($this->getValueWithDefaults() ? ', selectedKey: "' . $this->getValueWithDefaults() . '"' : '');
     }

@@ -64,7 +64,6 @@ class ui5ComboTable extends ui5Input
             showTableSuggestionValueHelp: false,
             filterSuggests: false,
             showValueHelp: true,
-			valueHelpRequest: function(){sap.ui.getCore().byId("{$this->getId()}").fireSuggest()},
 			suggest: function(oEvent) {
                 var oInput = sap.ui.getCore().byId("{$this->getId()}");
                 var params = { 
@@ -88,14 +87,14 @@ class ui5ComboTable extends ui5Input
                 oInput.setModel(oModel);
                 oInput.bindAggregation("suggestionRows", "/data", oSuggestionRowTemplate);
     		},
-            suggestionRowValidator: function (oColumnListItem) {
-    			var aCells = oColumnListItem.getCells();
-    
-    			return new sap.ui.core.Item({
-    				key: aCells[ {$value_idx} ].getText(),
-    				text: aCells[ {$text_idx} ].getText()
-    			});
-    		},
+            suggestionItemSelected: function(oEvent){
+                var oItem = oEvent.getParameter("selectedRow");
+                if (! oItem) return;
+				var aCells = oEvent.getParameter("selectedRow").getCells();
+                var oInput = sap.ui.getCore().byId("{$this->getId()}");
+                oInput.setValue(aCells[ {$text_idx} ].getText());
+                oInput.setSelectedKey(aCells[ {$value_idx} ].getText());
+			},
 			suggestionColumns: [
 				{$columns}
             ],
@@ -144,7 +143,7 @@ JS;
     protected function buildJsPropertyValue()
     {
         $value = $this->getWidget()->getValueWithDefaults();
-        return ($value ? ', selectedKey: "' . $this->buildJsTextValue($value) . '"' : '');
+        return ($value ? ', selectedKey: "' . $this->buildJsTextValue($value) . '", value: "' . $this->getWidget()->getValueText() . '"' : '');
     }
                         
     public function buildJsValueGetter()

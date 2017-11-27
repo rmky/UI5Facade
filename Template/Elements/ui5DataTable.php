@@ -187,7 +187,10 @@ JS;
                     }),
                     new sap.m.Button({
                         icon: "sap-icon://action-settings",
-                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
+                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
+                        press: function() {
+                			{$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->getJsVar()}.open();
+                		}
                     })		
 				]
 			})

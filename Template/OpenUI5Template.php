@@ -57,18 +57,6 @@ class OpenUI5Template extends AbstractAjaxTemplate
         }
         return $this->request_paging_rows;
     }
-
-    protected function setResponseFromError(ErrorExceptionInterface $exception, UiPageInterface $page)
-    {
-        $http_status_code = is_numeric($exception->getStatusCode()) ? $exception->getStatusCode() : 500;
-        if (is_numeric($http_status_code)) {
-            http_response_code($http_status_code);
-        } else {
-            http_response_code(500);
-        }
-        $this->setResponse($page->getWorkbench()->getDebugger()->printException($exception));
-        return $this;
-    }
     
     /**
      * 

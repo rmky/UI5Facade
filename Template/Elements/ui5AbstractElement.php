@@ -267,5 +267,10 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
     
 JS;
     }
+        
+    protected function buildJsTextValue($text)
+    {
+        return str_replace(['"', '\u'], ['\"', '&#92;u'], $text);
+    }
 }
 ?>

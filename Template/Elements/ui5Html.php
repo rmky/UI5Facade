@@ -35,12 +35,24 @@ class ui5Html extends ui5Text
     protected function buildJsElementConstructor()
     {
         $widget = $this->getWidget();
-        $css = $widget->getCss() ? '<style>' . $widget->getCss() . '</style>' : '';
+        $html = $widget->getHtml();
+        $content = $this->escapeLinebreaks($this->buildJsTextValue($html));
         return <<<JS
         new sap.ui.core.HTML("{$this->getId()}", {
-            content: "{$css}{$widget->getHtml()}"
+            content: "{$content}"
         })
 JS;
+    }
+        
+    protected function escapeLinebreaks($text)
+    {
+        return str_replace("\n","\\n", $text);
+    }
+    
+    public function generateHeaders()
+    {
+        $widget = $this->getWidget();
+        return $widget->getCss() ? '<style>' . $widget->getCss() . '</style>' : '';
     }
 }
 ?>

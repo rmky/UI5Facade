@@ -1,9 +1,13 @@
 <?php
 namespace exface\OpenUI5Template\Template\Elements;
 
+use exface\Core\Widgets\InputSelect;
+
 /**
- * Generates OpenUI5 selects
+ * Generates OpenUI5 CobmoBox or MultiComboBox to represent a select widget
  *
+ * @method InputSelect getWidget()
+ * 
  * @author Andrej Kabachnik
  *        
  */
@@ -17,8 +21,13 @@ class ui5InputSelect extends ui5Input
      */
     protected function buildJsElementConstructor()
     {
+        if ($this->getWidget()->getMultiSelect() === true) {
+            $control = 'sap.m.MultiComboBox';
+        } else {
+            $control = 'sap.m.ComboBox';
+        }
         return <<<JS
-        new sap.m.Select("{$this->getId()}", {
+        new {$control}("{$this->getId()}", {
 			{$this->buildJsProperties()}
         })
 JS;
@@ -32,9 +41,21 @@ JS;
     public function buildJsProperties()
     {
         $widget = $this->getWidget();
-        $options = '
-            width: "100%",
-            forceSelection: true
+        
+        $items = '';
+        foreach ($widget->getSelectableOptions() as $key => $value) {
+            $items .= <<<JS
+                new sap.ui.core.Item({
+                    key: "{$key}",
+                    text: "{$value}"
+                }),
+JS;
+        }
+        
+        $options = parent::buildJsProperties() . ',
+            items: [
+                ' . $items . '
+            ]
 ';
         return $options;
     }
@@ -46,7 +67,25 @@ JS;
      */
     public function buildJsValueGetterMethod()
     {
-        return "getSelectedKey()";
+        if ($this->getWidget()->getMultiSelect()) {
+            return "getSelectedKeys().join('" . $this->getWidget()->getMultiSelectValueDelimiter() . "')";
+        } else {
+            return "getSelectedKey()";
+        }
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsValueGetterMethod()
+     */
+    public function buildJsValueSetterMethod($value)
+    {
+        if ($this->getWidget()->getMultiSelect()) {
+            return "setSelectedKeys((" . $value . ").split('" . $this->getWidget()->getMultiSelectValueDelimiter() . "'))";
+        } else {
+            return "setSelectedKey(" . $value . ")";
+        }
     }
 }
 ?>

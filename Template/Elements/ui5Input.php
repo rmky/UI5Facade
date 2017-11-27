@@ -48,20 +48,8 @@ JS;
     
     protected function buildJsPropertyValue()
     {
-        return ($this->getValueWithDefaults() ? ', value: "' . $this->buildJsTextValue($this->getValueWithDefaults()) . '"' : '');
-    }
-    
-    public function getValueWithDefaults()
-    {
-        if ($this->getWidget()->getValueExpression() && $this->getWidget()->getValueExpression()->isReference()) {
-            $value = '';
-        } else {
-            $value = $this->getWidget()->getValue();
-        }
-        if (is_null($value) || $value === '') {
-            $value = $this->getWidget()->getDefaultValue();
-        }
-        return $value;
+        $value = $this->getWidget()->getValueWithDefaults();
+        return ($value ? ', value: "' . $this->buildJsTextValue($value) . '"' : '');
     }
     
     protected function buildJsPropertyEditable()

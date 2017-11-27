@@ -143,7 +143,8 @@ JS;
                         
     protected function buildJsPropertyValue()
     {
-        return ($this->getValueWithDefaults() ? ', selectedKey: "' . $this->getValueWithDefaults() . '"' : '');
+        $value = $this->getWidget()->getValueWithDefaults();
+        return ($value ? ', selectedKey: "' . $this->buildJsTextValue($value) . '"' : '');
     }
                         
     public function buildJsValueGetter()

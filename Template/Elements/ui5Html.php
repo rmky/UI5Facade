@@ -13,9 +13,9 @@ use exface\Core\Widgets\Html;
  */
 class ui5Html extends ui5Text
 {
-    function generateJs()
+    public function generateJs()
     {
-        return '';
+        return $this->getWidget()->getJavascript();
     }
     
     /**
@@ -52,7 +52,7 @@ JS;
     public function generateHeaders()
     {
         $widget = $this->getWidget();
-        return $widget->getCss() ? '<style>' . $widget->getCss() . '</style>' : '';
+        return $widget->getHeadTags() . ($widget->getCss() ? '<style>' . $widget->getCss() . '</style>' : '');
     }
 }
 ?>

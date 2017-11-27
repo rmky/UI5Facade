@@ -32,7 +32,8 @@ JS;
     public function buildJsProperties()
     {
         $options = parent::buildJsProperties() . '
-            width: "100%"
+            width: "100%",
+            required: ' . ($this->getWidget()->isRequired() ? 'true' : 'false') . '
             ' . $this->buildJsPropertyValue() . '
             ' . $this->buildJsPropertyVisibile();
         return $options;

@@ -315,27 +315,7 @@ JS;
 			header: new sap.f.DynamicPageHeader({
                 pinnable: true,
 				content: [
-                    /*new sap.ui.layout.form.SimpleForm({
-                        editable: true,
-                        layout: "ResponsiveGridLayout",
-                        labelSpanXL: 4,
-            			labelSpanL: 4,
-            			labelSpanM: 12,
-            			labelSpanS: 12,
-            			adjustLabelSpan: false,
-            			emptySpanXL: 0,
-            			emptySpanL: 0,
-            			emptySpanM: 0,
-            			emptySpanS: 0,
-            			columnsXL: 2,
-            			columnsL: 2,
-            			columnsM: 2,
-                        singleContainerFullSize: false,
-                        content: [
-							{$filters}
-						]
-                    })*/
-					new sap.ui.layout.Grid({
+                    new sap.ui.layout.Grid({
                         defaultSpan: "XL2 L3 M4 S12",
                         content: [
 							{$filters}

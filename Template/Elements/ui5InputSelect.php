@@ -44,6 +44,9 @@ JS;
         
         $items = '';
         foreach ($widget->getSelectableOptions() as $key => $value) {
+            if ($widget->getMultiSelect() && $key === '') {
+                continue;
+            }
             $items .= <<<JS
                 new sap.ui.core.Item({
                     key: "{$key}",
@@ -58,6 +61,12 @@ JS;
             ]
 ';
         return $options;
+    }
+    
+    protected function buildJsPropertyValue()
+    {
+        $value = $this->getWidget()->getValueWithDefaults();
+        return ($value ? ', selectedKey: "' . $this->buildJsTextValue($value) . '"' : '');
     }
     
     /**

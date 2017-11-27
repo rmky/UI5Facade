@@ -122,7 +122,7 @@ JS;
 		});
 		oModel.attachRequestCompleted(function(oEvent){
 			{$this->buildJsBusyIconHide()}
-			console.log('here');
+			
             var total = this.getProperty("/recordsFiltered");
             var start = this.getProperty("/recordsOffset");
             var end = Math.min(start + this.getProperty("/recordsLimit"), total);

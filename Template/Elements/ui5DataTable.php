@@ -120,11 +120,16 @@ JS;
         oModel.attachRequestSent(function(){
 			{$this->buildJsBusyIconShow()}
 		});
-		oModel.attachRequestCompleted(function(){
+		oModel.attachRequestCompleted(function(oEvent){
 			{$this->buildJsBusyIconHide()}
-			
+			console.log('here');
+            var total = this.getProperty("/recordsFiltered");
+            var start = this.getProperty("/recordsOffset");
+            var end = Math.min(start + this.getProperty("/recordsLimit"), total);
+            sap.ui.getCore().byId("{$this->getId()}_pager").setText(start + ' - ' + end + ' / ' + total);
+            
 			var footerRows = this.getProperty("/footerRows");
-			if (footerRows){
+            if (footerRows){
 				oTable.setFixedBottomRowCount(parseInt(footerRows));
 			}
 		});
@@ -170,13 +175,31 @@ JS;
 
     protected function buildJsToolbar()
     {
-        $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $this->buildTextTableHeading() . '"}),';
+        $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $this->buildTextTableHeading() . ': "}),';
+        $pager = <<<JS
+        new sap.m.OverflowToolbarButton("{$this->getId()}_prev", {
+            icon: "sap-icon://navigation-left-arrow",
+            layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
+            text: "Previous page",
+            enabled: false
+        }),
+        new sap.m.OverflowToolbarButton("{$this->getId()}_next", {
+            icon: "sap-icon://navigation-right-arrow",
+            layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
+            text: "Next page",
+        }),
+        new sap.m.Label("{$this->getId()}_pager", {
+            text: ""
+        }),
+        
+JS;
         $buttons = $this->buildJsButtons() . ($this->buildJsButtons() ? ',' : '');
         $toolbar = <<<JS
 			new sap.m.OverflowToolbar({
                 design: "Transparent",
 				content: [
 					{$heading}
+			        {$pager}
                     new sap.m.ToolbarSpacer(),
                     {$buttons}
 					new sap.m.SearchField("{$this->getId()}_quickSearch", {

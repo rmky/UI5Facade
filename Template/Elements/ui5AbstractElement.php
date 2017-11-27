@@ -185,6 +185,12 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
         $data['data'] = array_merge($data_sheet->getRows(), $data_sheet->getTotalsRows());
         $data['recordsFiltered'] = $data_sheet->countRowsAll();
         $data['recordsTotal'] = $data_sheet->countRowsAll();
+        if (! is_null($data_sheet->getRowsOnPage())) {
+            $data['recordsLimit'] = $data_sheet->getRowsOnPage();
+            $data['recordsOffset'] = $data_sheet->getRowOffset();
+        }
+        $data['recordsTotal'] = $data_sheet->countRowsAll();
+        
         $data['footerRows'] = count($data_sheet->getTotalsRows());
         return $data;
     }

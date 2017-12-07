@@ -17,7 +17,7 @@ use exface\Core\Widgets\Image;
  * @author aka
  *        
  */
-class ui5Dialog extends ui5Container
+class ui5Dialog extends ui5Form
 {
     public function buildJsConstructor()
     {
@@ -45,12 +45,18 @@ JS;
     {
         $widget = $this->getWidget();
         
-        if (($uid_widget = $this->getWidget()->findChildrenByAttribute($this->getMetaObject()->getUidAttribute())[0]) && !is_null($uid_widget->getValue())) {
+        if ($this->getMetaObject()->hasUidAttribute() && ($uid_widget = $this->getWidget()->findChildrenByAttribute($this->getMetaObject()->getUidAttribute())[0]) && !is_null($uid_widget->getValue())) {
             $uid_data_sheet = DataSheetFactory::createFromObject($this->getMetaObject());
-            $uid_data_sheet->getColumns()->addFromAttribute($this->getMetaObject()->getLabelAttribute());
+            if ($label_attr = $this->getMetaObject()->getLabelAttribute()) {
+                $uid_data_sheet->getColumns()->addFromAttribute($label_attr);
+            }
             $uid_data_sheet->addFilterFromString($this->getMetaObject()->getUidAttributeAlias(), $uid_widget->getValue());
             $uid_data_sheet->dataRead();
-            $label = $uid_data_sheet->getCellValue($this->getMetaObject()->getLabelAttribute()->getAlias(), 0);
+            if ($label_attr) {
+                $label = $uid_data_sheet->getCellValue($this->getMetaObject()->getLabelAttribute()->getAlias(), 0);
+            } elseif ($this->getMetaObject()->hasUidAttribute()) {
+                $label = $uid_data_sheet->getCellValue($this->getMetaObject()->getUidAttribute()->getAlias(), 0);
+            }
         }
         $heading = $label ? $label : 'New';
         
@@ -120,6 +126,20 @@ JS;
             foreach ($widget->getWidgetFirst()->getTabs() as $tab) {
                 $js .= $this->buildJsObjectPageSectionFromTab($tab);
             }
+        } else {
+            $js .= <<<JS
+
+                // BOF ObjectPageSection
+                new sap.uxap.ObjectPageSection({
+					subSections: new sap.uxap.ObjectPageSubSection({
+						blocks: [
+                            {$this->buildJsLayoutConstructor($this->buildJsChildrenConstructors())}
+                        ]
+					})
+				}),
+                // EOF ObjectPageSection
+
+JS;
         }
         
         return $js;

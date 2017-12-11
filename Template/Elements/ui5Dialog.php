@@ -21,7 +21,11 @@ class ui5Dialog extends ui5Form
 {
     public function buildJsConstructor()
     {
-        return $this->buildJsPage($this->buildJsObjectPageLayout());
+        if ($this->getWidget()->isMaximized() === false) {
+            return $this->buildJsDialog();
+        } else {
+            return $this->buildJsPage($this->buildJsObjectPageLayout());
+        }
     }
     
     protected function buildJsObjectPageLayout()
@@ -97,14 +101,32 @@ JS;
 
 JS;
     }
+				
+    protected function buildJsDialog()
+    {
+        return <<<JS
+
+        new sap.m.Dialog("{$this->getId()}", {
+			modal : true,
+            title: "{$this->getCaption()}",
+			buttons : [ {$this->buildJsDialogButtons()} ],
+			content : [ {$this->buildJsLayoutForm($this->buildJsChildrenConstructors())} ]
+		});
+
+JS;
+    }
+        
+    protected function getCaption()
+    {
+        return parent::getCaption() . ': ' . $this->getWidget()->getMetaObject()->getName();
+    }
     
     protected function buildJsPage($content)
     {
-        $pageTitle = $this->getCaption() . ': ' . $this->getWidget()->getMetaObject()->getName();
         return <<<JS
         
         new sap.m.Page("{$this->getId()}", {
-            title: "{$pageTitle}",
+            title: "{$this->getCaption()}",
             showNavButton: true,
             navButtonPress: function(){
                 closeTopDialog();
@@ -112,7 +134,7 @@ JS;
             content: [
                 {$content}
             ],
-            footer: {$this->buildJsToolbar()}
+            footer: {$this->buildJsFloatingToolbar()}
         })
 JS;
     }
@@ -162,10 +184,29 @@ JS;
                 
 JS;
     }
-                            
-    protected function buildJsToolbar()
+    
+    /**
+     * Returns the constructor for an OverflowToolbar representing the main toolbar of the dialog
+     * @return string
+     */
+    protected function buildJsFloatingToolbar()
     {
         return $this->getTemplate()->getElement($this->getWidget()->getToolbarMain())->buildJsConstructor();
+    }
+    
+    /**
+     * Returns the button constructors for the dialog buttons.
+     * 
+     * @return string
+     */
+    protected function buildJsDialogButtons()
+    {
+        $js = '';
+        $buttons = array_reverse($this->getWidget()->getButtons());
+        foreach ($buttons as $btn) {
+            $js .= $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n";
+        }
+        return $js;
     }
                 
     public function getViewName()

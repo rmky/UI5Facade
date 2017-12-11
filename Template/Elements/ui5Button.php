@@ -6,6 +6,7 @@ use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryButtonTrait;
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
 use exface\Core\Widgets\Button;
+use exface\Core\Interfaces\Actions\iShowDialog;
 
 /**
  * Generates jQuery Mobile buttons for ExFace
@@ -102,7 +103,6 @@ JS;
             }
         }
         
-        $js_on_close_dialog = ($this->buildJsInputRefresh($widget, $input_element) ? "$('#ajax-dialogs').children('.modal').last().one('hide.bs.modal', function(){" . $this->buildJsInputRefresh($widget, $input_element) . "});" : "");
         $output = $this->buildJsRequestDataCollector($action, $input_element);
         $output .= <<<JS
 						{$this->buildJsBusyIconShow()}
@@ -126,13 +126,10 @@ JS;
                                 oDialogStack.push({
                                     content: oShell.getContent(),
                                     head: oShell.getHeadItems(),
-                                    dialog: sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, height: "100%", viewName:"{$this->getTemplate()->getElement($widget->getAction()->getWidget())->getViewName()}"})
+                                    dialog: sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, height: "100%", viewName:"{$this->getTemplate()->getElement($this->getWidget()->getAction()->getWidget())->getViewName()}"})
                                 });
-
-                                oShell.removeAllContent()
-                                oShell.addContent(
-                                    oDialogStack[oDialogStack.length-1].dialog
-                                );
+                                {$this->buildJsDialogLoader()}
+                                
                                 
 								// Make sure, the input widget of the button is always refreshed, once the dialog is closed again
 								{$js_on_close_dialog}
@@ -178,6 +175,50 @@ JS;
     protected function buildJsCloseDialog($widget, $input_element)
     {
         return ($widget->getWidgetType() == 'DialogButton' && $widget->getCloseDialogAfterActionSucceeds() ? "closeTopDialog();" : "");
+    }
+    
+    protected function buildJsDialogLoader()
+    {
+        $action = $this->getAction();
+        
+        // TODO only maximize a dialog (making it a page) if it has more than N widgets or
+        // determine the best size some other way.
+        if (($action instanceof iShowDialog) && $action->getMaximize() === false) {
+            $maximize = false;
+        } else {
+            $maximize = true;
+        }
+        
+        if ($maximize) {
+            return $this->buildJsOpenPage();
+        } else {
+            return $this->buildJsOpenDialog();
+        }
+    }
+    
+    protected function buildJsOpenDialog()
+    {
+        $dialog = $this->getAction()->getWidget();
+        return <<<JS
+
+                                oShell.addContent(
+                                    oDialogStack[oDialogStack.length-1].dialog
+                                );
+                                sap.ui.getCore().byId("{$dialog->getId()}").open();
+
+JS;
+    }
+    
+    protected function buildJsOpenPage()
+    {
+        return <<<JS
+
+                                oShell.removeAllContent()
+                                oShell.addContent(
+                                    oDialogStack[oDialogStack.length-1].dialog
+                                );
+
+JS;
     }
 }
 ?>

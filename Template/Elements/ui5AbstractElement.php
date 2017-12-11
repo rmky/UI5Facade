@@ -74,8 +74,28 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
      */
     public function buildJsShowMessageError($message_body_js, $title = null)
     {
-        return '
-			swal(' . ($title ? $title : '"' . $this->translate('MESSAGE.ERROR_TITLE') . '"') . ', ' . $message_body_js . ', "error");';
+        $title = ($title ? $title : '"' . $this->translate('MESSAGE.ERROR_TITLE') . '"');
+        return <<<JS
+                var dialog = new sap.m.Dialog({
+    				title: {$title},
+    				type: 'Message',
+    				state: 'Error',
+    				content: new sap.m.Text({
+    					text: {$message_body_js}
+    				}),
+    				beginButton: new sap.m.Button({
+    					text: 'OK',
+    					press: function () {
+    						dialog.close();
+    					}
+    				}),
+    				afterClose: function() {
+    					dialog.destroy();
+    				}
+    			});
+    
+    			dialog.open();
+JS;
     }
 
     /**
@@ -99,32 +119,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
      */
     public function buildJsShowMessageSuccess($message_body_js, $title = null)
     {
-        $title = ! is_null($title) ? $title : '"' . $this->translate('MESSAGE.SUCCESS_TITLE') . '"';
-        return '$.notify({
-					title: ' . $title . ',
-					message: ' . $message_body_js . ',
-				}, {
-					type: "success",
-					placement: {
-						from: "bottom",
-						align: "right"
-					},
-					animate: {
-						enter: "animated fadeInUp",
-						exit: "animated fadeOutDown"
-					},
-					mouse_over: "pause",
-					template: "<div data-notify=\"container\" class=\"col-xs-11 col-sm-3 alert alert-{0}\" role=\"alert\">" +
-						"<button type=\"button\" aria-hidden=\"true\" class=\"close\" data-notify=\"dismiss\">×</button>" +
-						"<div data-notify=\"icon\"></div> " +
-						"<div data-notify=\"title\">{1}</div> " +
-						"<div data-notify=\"message\">{2}</div>" +
-						"<div class=\"progress\" data-notify=\"progressbar\">" +
-							"<div class=\"progress-bar progress-bar-{0}\" role=\"progressbar\" aria-valuenow=\"0\" aria-valuemin=\"0\" aria-valuemax=\"100\" style=\"width: 0%;\"></div>" +
-						"</div>" +
-						"<a href=\"{3}\" target=\"{4}\" data-notify=\"url\"></a>" +
-					"</div>"
-				});';
+        return 'sap.m.MessageToast.show(' . $message_body_js . ');';
     }
 
     public function escapeString($string)

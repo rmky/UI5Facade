@@ -370,9 +370,17 @@ JS;
         } elseif ($this->isEditable() && $action->implementsInterface('iModifyData')) {
             // TODO
         } else {
-            $rows = "[sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data[sap.ui.getCore().byId('{$this->getId()}').getSelectedIndex()]]";
+            $rows = "sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data[sap.ui.getCore().byId('{$this->getId()}').getSelectedIndex()]";
         }
-        return "{oId: '" . $this->getWidget()->getMetaObject()->getId() . "', rows: " . $rows . "}";
+        return <<<JS
+    function() {
+        var rows = {$rows};
+        return {
+            oId: '{$this->getWidget()->getMetaObject()->getId()}', 
+            rows: (rows === undefined ? [] : [rows])
+        };
+    }()
+JS;
     }
 }
 ?>

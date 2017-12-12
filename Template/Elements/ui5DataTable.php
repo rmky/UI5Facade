@@ -87,6 +87,16 @@ JS;
     protected function buildJsDataSource()
     {
         $widget = $this->getWidget();
+        
+        if (! $widget->getLazyLoading()) {
+            return <<<JS
+
+    function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent) {
+    }
+
+JS;
+        }
+        
         $url = $this->getAjaxUrl();
         $params = '
 					action: "' . $widget->getLazyLoadingAction() . '"
@@ -134,7 +144,6 @@ JS;
     			}
             } else {
                 var error = oEvent.getParameters().errorobject;
-                console.log(error.statusCode);
                 showHtmlInDialog((error.statusCode+' '+error.statusText), error.responseText, 'Error');
             }
 		});
@@ -167,7 +176,6 @@ JS;
 		
 		// If filtering just now, make sure the filter from the event is set too (eventually overwriting the previous one)
 		if (oControlEvent && oControlEvent.getId() == 'filter'){
-			console.log(oControlEvent.getParameters().column.getFilterProperty());
 			params['fltr99_' + oControlEvent.getParameters().column.getFilterProperty()] = oControlEvent.getParameters().value;
 		}
 		

@@ -287,6 +287,7 @@ JS;
         return <<<JS
 	 new sap.ui.table.Column({
 	    label: new sap.ui.commons.Label({text: "{$column->getCaption()}"})
+        , tooltip: "{$column->getCaption()}"
 	    , template: new sap.ui.commons.TextField({
             {$alignment}
         }).bindProperty("value", "{$column->getDataColumnName()}")

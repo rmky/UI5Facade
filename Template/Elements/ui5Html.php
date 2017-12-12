@@ -12,7 +12,7 @@ use exface\Core\Widgets\Html;
  *        
  */
 class ui5Html extends ui5Text
-{
+{ 
     public function generateJs()
     {
         return $this->getWidget()->getJavascript();
@@ -36,12 +36,39 @@ class ui5Html extends ui5Text
     {
         $widget = $this->getWidget();
         $html = $widget->getHtml();
+        foreach ($this->getScriptTagsFromHtml($html) as $tag => $script) {
+            $scripts .= $script;
+            $html = str_replace($tag, '', $html);
+        }
         $content = $this->escapeLinebreaks($this->buildJsTextValue($html));
         return <<<JS
         new sap.ui.core.HTML("{$this->getId()}", {
-            content: "{$content}"
+            content: "{$content}",
+            afterRendering: function() {
+                console.log('init'); 
+                {$scripts}
+            }
         })
 JS;
+    }
+        
+    protected function getScriptTagsFromHtml($html)
+    {
+        $script_tags = [];
+        // Fetch all <script> tags into a multidimensional array:
+        // [
+        //  0 => [
+        //      0 => <script> first script </script>
+        //      1 => <script> second script </script>
+        //      ...
+        //  ],
+        //  1 => [
+        //      0 => first script
+        //      1 => second script
+        //      ...
+        //  ]
+        preg_match_all("/<script.*?>(.*?)<\/script>/si", $html, $script_tags);
+        return array_combine($script_tags[0], $script_tags[1]);
     }
         
     protected function escapeLinebreaks($text)
@@ -56,7 +83,10 @@ JS;
         $headers[] = $widget->getHeadTags();
         if ($widget->getCss()) {
             $headers[] = '<style>' . $widget->getCss() . '</style>';
-        }
+        }/*
+        foreach ($this->getScriptTagsFromHtml($widget->getHtml()) as $script){
+            $headers[] = $script;
+        }*/
         return $headers;
     }
 }

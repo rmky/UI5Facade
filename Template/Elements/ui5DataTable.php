@@ -122,16 +122,21 @@ JS;
 		});
 		oModel.attachRequestCompleted(function(oEvent){
 			{$this->buildJsBusyIconHide()}
-			
-            var total = this.getProperty("/recordsFiltered");
-            var start = this.getProperty("/recordsOffset");
-            var end = Math.min(start + this.getProperty("/recordsLimit"), total);
-            sap.ui.getCore().byId("{$this->getId()}_pager").setText(start + ' - ' + end + ' / ' + total);
-            
-			var footerRows = this.getProperty("/footerRows");
-            if (footerRows){
-				oTable.setFixedBottomRowCount(parseInt(footerRows));
-			}
+		    if (oEvent.getParameters().success) {
+                var total = this.getProperty("/recordsFiltered");
+                var start = this.getProperty("/recordsOffset");
+                var end = Math.min(start + this.getProperty("/recordsLimit"), total);
+                sap.ui.getCore().byId("{$this->getId()}_pager").setText(start + ' - ' + end + ' / ' + total);
+                
+    			var footerRows = this.getProperty("/footerRows");
+                if (footerRows){
+    				oTable.setFixedBottomRowCount(parseInt(footerRows));
+    			}
+            } else {
+                var error = oEvent.getParameters().errorobject;
+                console.log(error.statusCode);
+                showHtmlInDialog((error.statusCode+' '+error.statusText), error.responseText, 'Error');
+            }
 		});
 
 		oTable.setModel(oModel); 
@@ -286,7 +291,9 @@ JS;
         
         return <<<JS
 	 new sap.ui.table.Column({
-	    label: new sap.ui.commons.Label({text: "{$column->getCaption()}"})
+	    label: new sap.ui.commons.Label({
+            text: "{$column->getCaption()}"
+        })
         , tooltip: "{$column->getCaption()}"
 	    , template: new sap.ui.commons.TextField({
             {$alignment}

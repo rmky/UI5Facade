@@ -52,7 +52,12 @@ JS;
     public function generateHeaders()
     {
         $widget = $this->getWidget();
-        return $widget->getHeadTags() . ($widget->getCss() ? '<style>' . $widget->getCss() . '</style>' : '');
+        $headers = [];
+        $headers[] = $widget->getHeadTags();
+        if ($widget->getCss()) {
+            $headers[] = '<style>' . $widget->getCss() . '</style>';
+        }
+        return $headers;
     }
 }
 ?>

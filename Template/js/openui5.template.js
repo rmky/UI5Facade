@@ -19,7 +19,6 @@ function closeTopDialog() {
 }
 
 function showHtmlInDialog(title, content, state) {
-	console.log('here');
 	var dialog = new sap.m.Dialog({
 		title: title,
 		state: state,

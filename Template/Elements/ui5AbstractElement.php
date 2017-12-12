@@ -243,7 +243,8 @@ JS;
         if ($widget->hasParent()) {
             return $this->getTemplate()->getElement($widget->getParent())->getViewName();
         } else {
-            return 'view.' . $widget->getPage()->getAliasWithNamespace();
+            $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : $this->getWorkbench()->ui()->getPageCurrent()->getAliasWithNamespace();
+            return 'view.' . $pageAlias;
         }
     }
     

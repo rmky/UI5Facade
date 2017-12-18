@@ -34,9 +34,11 @@ class ui5Text extends ui5AbstractElement
      */
     protected function buildJsElementConstructor()
     {
+        $text = $this->buildJsTextValue($this->getWidget()->getText());
+        $text = str_replace("\n", '', $text);
         return <<<JS
         new sap.m.Text("{$this->getId()}", {
-            text: "{$this->buildJsTextValue($this->getWidget()->getText())}",
+            text: "{$text}",
             {$this->buildJsProperties()}
         })
 JS;

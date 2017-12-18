@@ -18,13 +18,11 @@ function closeTopDialog() {
     delete oDialogStackTop;
 }
 
-function showHtmlInDialog(title, content, state) {
+function showDialog(title, content, state) {
 	var dialog = new sap.m.Dialog({
 		title: title,
 		state: state,
-		content: new sap.ui.core.HTML({
-			content: content
-		}),
+		content: content,
 		beginButton: new sap.m.Button({
 			text: 'OK',
 			press: function () {
@@ -37,4 +35,11 @@ function showHtmlInDialog(title, content, state) {
 	});
 
 	dialog.open();
+}
+
+function showHtmlInDialog(title, html, state) {
+	var content = new sap.ui.core.HTML({
+		content: html
+	});
+	showDialog(title, content, state);
 }

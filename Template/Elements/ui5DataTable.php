@@ -144,7 +144,7 @@ JS;
     			}
             } else {
                 var error = oEvent.getParameters().errorobject;
-                showHtmlInDialog((error.statusCode+' '+error.statusText), error.responseText, 'Error');
+                {$this->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}
             }
 		});
 

@@ -29,5 +29,10 @@ JS;
         $value = $this->getWidget()->getValueWithDefaults();
         return ($value ? ', selected: true' : '');
     }
+    
+    public function buildJsValueGetterMethod()
+    {
+        return 'getSelected()';
+    }
 }
 ?>

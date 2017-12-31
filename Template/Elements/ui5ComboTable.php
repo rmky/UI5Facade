@@ -67,7 +67,7 @@ class ui5ComboTable extends ui5Input
 			suggest: function(oEvent) {
                 var oInput = sap.ui.getCore().byId("{$this->getId()}");
                 var params = { 
-                    action: "{$widget->getLazyLoadingAction()}",
+                    action: "{$widget->getLazyLoadingActionAlias()}",
                     resource: "{$this->getPageId()}",
                     element: "{$widget->getTable()->getId()}",
                     object: "{$widget->getTable()->getMetaObject()->getId()}",

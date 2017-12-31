@@ -76,7 +76,7 @@ JS;
                             data.resource = "' . $widget->getPage()->getAliasWithNamespace() . '";
                             data.element = "' . $widget->getData()->getId() . '";
                             data.object = "' . $widget->getMetaObject()->getId() . '";
-                            data.action = "' . $widget->getLazyLoadingAction() . '";
+                            data.action = "' . $widget->getLazyLoadingActionAlias() . '";
             ';
             
             // send sort information

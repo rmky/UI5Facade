@@ -83,12 +83,25 @@ JS;
             return $js;
         }
     }
+    
+    /**
+     *
+     * @return boolean
+     */
+    protected function isLazyLoading()
+    {
+        $widget_option = $this->getWidget()->getLazyLoading();
+        if (is_null($widget_option)) {
+            return true;
+        }
+        return $widget_option;
+    }
 
     protected function buildJsDataSource()
     {
         $widget = $this->getWidget();
         
-        if (! $widget->getLazyLoading()) {
+        if (! $this->isLazyLoading()) {
             return <<<JS
 
     function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent) {
@@ -99,7 +112,7 @@ JS;
         
         $url = $this->getAjaxUrl();
         $params = '
-					action: "' . $widget->getLazyLoadingAction() . '"
+					action: "' . $widget->getLazyLoadingActionAlias() . '"
 					, resource: "' . $this->getPageId() . '"
 					, element: "' . $widget->getId() . '"
 					, object: "' . $widget->getMetaObject()->getId() . '"

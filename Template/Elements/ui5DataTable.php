@@ -203,6 +203,9 @@ JS;
     {
         $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $this->buildTextTableHeading() . ': "}),';
         $pager = <<<JS
+        new sap.m.Label("{$this->getId()}_pager", {
+            text: ""
+        }),
         new sap.m.OverflowToolbarButton("{$this->getId()}_prev", {
             icon: "sap-icon://navigation-left-arrow",
             layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
@@ -213,9 +216,6 @@ JS;
             icon: "sap-icon://navigation-right-arrow",
             layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
             text: "Next page",
-        }),
-        new sap.m.Label("{$this->getId()}_pager", {
-            text: ""
         }),
         
 JS;

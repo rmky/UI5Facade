@@ -43,3 +43,30 @@ function showHtmlInDialog(title, html, state) {
 	});
 	showDialog(title, content, state);
 }
+
+(function () {
+	"use strict";
+
+	/** @lends sap.m.sample.P13nDialogWithCustomPanel.CustomPanel */
+	sap.m.P13nPanel.extend("exface.core.P13nLayoutPanel", {
+		constructor: function (sId, mSettings) {
+			sap.m.P13nPanel.apply(this, arguments);
+		},
+		metadata: {
+			library: "sap.m",
+			aggregations: {
+				content: {
+					type: "sap.ui.core.Control",
+					multiple: false,
+					singularName: "content"
+				}
+			}
+		},
+		renderer: function (oRm, oControl) {
+			if (!oControl.getVisible()) {
+				return;
+			}
+			oRm.renderControl(oControl.getContent());
+		}
+	});
+})();

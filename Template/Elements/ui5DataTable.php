@@ -18,6 +18,13 @@ class ui5DataTable extends ui5AbstractElement
 {
     use JqueryDataTableTrait;
     
+    protected function init()
+    {
+        if ($this->isWrappedInDynamicPage()) {
+            $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->setIncludeFilterTab(false);
+        }
+    }
+    
     /**
      * 
      * {@inheritDoc}
@@ -122,15 +129,7 @@ JS;
         $params .= '
 					, length: "' . $this->getPaginationPageSize() . '"
 					, start: 0
-				';
-        
-        if ($this->isWrappedInDynamicPage()) {
-            $dataParam = <<<JS
-        params.data = {$this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter()};
-JS;
-        } else {
-            $dataParam = '';
-        }
+				';        
         
         return <<<JS
 	
@@ -167,7 +166,7 @@ JS;
         params.q = sap.ui.getCore().byId('{$this->getId()}_quickSearch').getValue();
 
         // Add configurator data
-        {$dataParam}
+        params.data = {$this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter()};
         
         // Add filters and sorters from column menus
 		for (var i=0; i<oTable.getColumns().length; i++){

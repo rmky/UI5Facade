@@ -84,9 +84,7 @@ JS;
             headerTitle:
 				new sap.uxap.ObjectPageHeader({
 					objectTitle:"{$heading}",
-    				  showMarkers: true,
-    				  markFavorite: true,
-    				  markFlagged: true,
+    				  showMarkers: false,
     				  isObjectIconAlwaysVisible: false,
     				  isObjectTitleAlwaysVisible: false,
     				  isObjectSubtitleAlwaysVisible: false,

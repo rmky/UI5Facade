@@ -14,13 +14,16 @@
 
 		<!-- Custom CSS -->
 		<link href="exface/vendor/exface/OpenUI5Template/Template/js/openui5.template.css" rel="stylesheet" type="text/css" />
-
-		<!–- 1.) Load SAPUI5, select theme and control library -–>
+		
+		<!-- Load SAPUI5, select theme and control library -->
 		<script src="exface/vendor/exface/OpenUI5Template/Template/js/openui5/resources/sap-ui-core.js"
 				id="sap-ui-bootstrap"
 				data-sap-ui-libs="sap.m,sap.tnt,sap.ui.unified,sap.ui.commons,sap.ui.table,sap.f,sap.uxap"
 				data-sap-ui-theme="sap_belize">
 		</script>
+		
+		<!-- Font awesome -->
+		<link href="exface/vendor/bower-asset/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
 		<script type="text/javascript" src="exface/vendor/bower-asset/font-awesome-openui5/dist/font-awesome-openui5.min"></script>
 		
 		[[Exface? &action=`exface.Core.ShowHeaders` &template=`exface.OpenUI5Template`]]
@@ -43,7 +46,7 @@
 			oShell.addPaneContent(oNavMenu);
 			oShell.addHeadItem(
 				new sap.ui.unified.ShellHeadItem({
-					tooltip: "Configuration",
+					tooltip: "Menu",
 					icon: "sap-icon://menu2",
 					press: function(){
 						oShell.setShowPane(! oShell.getShowPane());
@@ -59,6 +62,24 @@
 				})
 					
 			);
+			/*oShell.addHeadEndItem(
+				new sap.ui.unified.ShellHeadItem({
+					tooltip: "Object basket",
+					icon: "sap-icon://flag",
+					press: function(){
+						
+					}
+				})
+			);
+			oShell.addHeadEndItem(
+				new sap.ui.unified.ShellHeadItem({
+					tooltip: "Favorites",
+					icon: "sap-icon://favorite",
+					press: function(){
+						
+					}
+				})
+			);*/
 			oShell.setUser(
 				new sap.ui.unified.ShellHeadUserItem({
 					image: "[!UserManagerInfo? &field=`photo`!]",
@@ -67,7 +88,9 @@
 				})
 			);
 			
-			oShell.placeAt("[*id*]");
+			window.onload = function () {
+				oShell.placeAt("[*id*]");
+			}
 			
 		</script>
 		
@@ -84,6 +107,6 @@
 		
 	</head>
 	<body id="[*id*]" class="sapUiBody sapUiSizeCompact">
-
+		
 	</body>
 </html>

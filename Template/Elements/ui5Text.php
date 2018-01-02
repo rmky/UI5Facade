@@ -52,13 +52,15 @@ JS;
      */
     protected function buildJsLabelWrapper($element_constructor)
     {
-        
-        return <<<JS
+        if (! $this->getWidget()->getHideCaption()) {
+            $js = <<<JS
         new sap.m.Label({
             text: "{$this->getCaption()}"
         }),
-        {$element_constructor}
+
 JS;
+        }
+        return $js . $element_constructor;
     }
 }
 ?>

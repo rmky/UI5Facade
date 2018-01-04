@@ -30,10 +30,13 @@ class ui5Dialog extends ui5Form
     
     protected function buildJsObjectPageLayout()
     {
+        // useIconTabBar: true did not work for some reason as tables were not shown when
+        // entering a tab for the first time - just at the second time. There was also no
+        // difference between creating tables with new sap.ui.table.table or function(){ ... }()
         return <<<JS
 
         new sap.uxap.ObjectPageLayout({
-            useIconTabBar: true,
+            useIconTabBar: false,
             upperCaseAnchorBar: false,
             enableLazyLoading: false,
 			{$this->buildJsHeader()},
@@ -151,7 +154,7 @@ JS;
 
                 // BOF ObjectPageSection
                 new sap.uxap.ObjectPageSection({
-					subSections: new sap.uxap.ObjectPageSubSection({
+                    subSections: new sap.uxap.ObjectPageSubSection({
 						blocks: [
                             {$this->buildJsLayoutConstructor($this->buildJsChildrenConstructors())}
                         ]
@@ -172,6 +175,7 @@ JS;
                 // BOF ObjectPageSection
                 new sap.uxap.ObjectPageSection({
 					title:"{$tab->getCaption()}",
+                    titleUppercase: false,
 					subSections: new sap.uxap.ObjectPageSubSection({
 						blocks: [
                             {$tabElement->buildJsLayoutConstructor($tabElement->buildJsChildrenConstructors())}

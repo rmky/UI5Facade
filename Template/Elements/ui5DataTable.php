@@ -38,8 +38,8 @@ class ui5DataTable extends ui5AbstractElement
         }
         return <<<JS
     var {$this->getJsVar()};
-	{$this->buildJsDataSource()}  
     {$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->generateJs()}
+	{$this->buildJsDataSource()}  
     {$buttons_functions}
 JS;
     }
@@ -63,25 +63,28 @@ JS;
         }
         
         $js = <<<JS
-function() {
-	{$this->getJsVar()} = new sap.ui.table.Table("{$this->getId()}", {
-		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto
-        /*, init: function() {console.log('table init'); {$this->buildJsRefresh()};}*/
-	    , selectionMode: {$selection_mode}
-		, selectionBehavior: {$selection_behavior}
-	    , enableColumnReordering:true
-		, filter: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)}
-		, sort: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)}
-		, toolbar: [
-			{$this->buildJsToolbar()}
-		]
-		, columns: [
-			{$column_defs}
-		]
-	});
-    {$this->buildJsRefresh()};
-    return {$this->getJsVar()}
-}()
+        function() {
+        	{$this->getJsVar()} = new sap.ui.table.Table("{$this->getId()}", {
+        		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto
+                , selectionMode: {$selection_mode}
+        		, selectionBehavior: {$selection_behavior}
+        	    , enableColumnReordering:true
+        		, filter: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)}
+        		, sort: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)}
+        		, toolbar: [
+        			{$this->buildJsToolbar()}
+        		]
+        		, columns: [
+        			{$column_defs}
+        		]
+        	})/*.addEventDelegate({
+                onAfterRendering : function() {
+                  console.log('func');
+                }
+            })*/;
+            {$this->buildJsRefresh()};
+            return {$this->getJsVar()}
+        }()
 JS;
     
         if ($this->isWrappedInDynamicPage()){
@@ -239,6 +242,12 @@ JS;
                         press: function() {
                 			{$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->getJsVar()}.open();
                 		}
+                    }),
+                    new sap.m.HBox({
+                        visible: false,
+                        items: [
+                            {$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->getJsVar()}
+                        ]
                     })		
 				]
 			})
@@ -343,9 +352,10 @@ JS;
         
         return <<<JS
 
-        new sap.f.DynamicPage("{$this->getId()}_page",{
+        new sap.f.DynamicPage("{$this->getId()}_page", {
+            fitContent: true,
             preserveHeaderStateOnScroll: true,
-            headerExpanded: "{/headerExpanded}",
+            headerExpanded: true,
             title: new sap.f.DynamicPageTitle({
 				heading: [
 						new sap.m.Title({

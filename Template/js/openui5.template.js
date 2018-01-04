@@ -44,6 +44,10 @@ function showHtmlInDialog(title, html, state) {
 	showDialog(title, content, state);
 }
 
+/**
+ * Define a custom control to display filters in the P13nDialog as the default filters are always
+ * plain text inputs - no combos etc. possible.
+ */
 (function () {
 	"use strict";
 

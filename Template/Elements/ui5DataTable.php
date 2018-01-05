@@ -201,6 +201,19 @@ JS;
 JS;
     }
 
+    /**
+     * Returns the constructor for the table's main toolbar (OverflowToolbar).
+     * 
+     * The toolbar contains the paginator, all the action buttons, the quick search
+     * and the button for the personalization dialog as well as the P13nDialog itself.
+     * 
+     * The P13nDialog is appended to the toolbar wrapped in an invisible container in
+     * order not to affect the overflow behavior. The dialog must be included in the
+     * toolbar to ensure it is destroyed with the toolbar and does not become an
+     * orphan (e.g. when the view containing the table is destroyed).
+     * 
+     * @return string
+     */
     protected function buildJsToolbar()
     {
         $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $this->buildTextTableHeading() . ': "}),';
@@ -336,19 +349,7 @@ JS;
         
     protected function buildJsPage($content)
     {
-        $filters = '';
-        foreach ($this->getWidget()->getConfiguratorWidget()->getFilters() as $filter) {
-            $filters .= <<<JS
-
-                        new sap.ui.layout.VerticalLayout({
-                            width: "100%",
-                            content: [
-                        	    {$this->getTemplate()->getElement($filter)->buildJsConstructor()}
-                            ]
-                        }),
-
-JS;
-        }
+        $filters = $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsFilters();
         
         return <<<JS
 

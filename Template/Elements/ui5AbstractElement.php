@@ -288,5 +288,26 @@ JS;
     {
         return str_replace(['"', '\u'], ['\"', '&#92;u'], $text);
     }
+    
+    /**
+     * Returns ", visible: false" if the element is not visible (e.g. widget has visibility=hidden)
+     * @return string
+     */
+    protected function buildJsPropertyVisibile()
+    {
+        if (! $this->isVisible()) {
+            return ', visible: false';
+        }
+        return '';
+    }
+    
+    /**
+     * Returns TRUE if the element is visible and FALSE otherwise
+     * @return boolean
+     */
+    protected function isVisible()
+    {
+        return ! $this->getWidget()->isHidden();
+    }
 }
 ?>

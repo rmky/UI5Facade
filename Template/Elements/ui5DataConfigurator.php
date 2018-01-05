@@ -39,8 +39,6 @@ JS;
     
     public function buildJsConstructor()
     {
-        $filter_tab_element = $this->getTemplate()->getElement($this->getWidget()->getFilterTab());
-        
         if ($this->getIncludeFilterTab()) {
             $filter_tab_js = <<<JS
                 new exface.core.P13nLayoutPanel({
@@ -48,7 +46,12 @@ JS;
                     visible: true,
                     layoutMode: "Desktop",
                     content: [
-                        {$filter_tab_element->buildJsLayoutConstructor($filter_tab_element->buildJsChildrenConstructors())}
+                        new sap.ui.layout.Grid({
+                            defaultSpan: "L6 S12",
+                            content: [
+                                {$this->buildJsFilters()}
+        					]
+                        })
                     ]
                 }),
 JS;
@@ -116,6 +119,49 @@ JS;
             ]
         })
 
+JS;
+    }
+    
+    /**
+     * Returns an comma separated list of control constructors for filters
+     * 
+     * @return string
+     */
+    public function buildJsFilters()
+    {
+        $filters = '';
+        $filters_hidden = '';
+        foreach ($this->getWidget()->getFilters() as $filter) {
+            $filter_element = $this->getTemplate()->getElement($filter);
+            if (! $filter_element->isVisible()) {
+                $filters_hidden .= $this->buildJsFilter($filter_element);
+            } else {
+                $filters .= $this->buildJsFilter($filter_element);
+            }
+        }
+        return $filters . $filters_hidden;
+    }
+    
+    /**
+     * Returns a constructor for the give filter element followed by a comma.
+     * 
+     * The constructor for a filter element within a data configurator is different from a
+     * filter's general constructor!
+     * 
+     * @param ui5Filter $element
+     * @return string
+     */
+    protected function buildJsFilter(ui5Filter $element) {
+        return <<<JS
+        
+                        new sap.ui.layout.VerticalLayout({
+                            width: "100%"
+                            {$element->buildJsPropertyVisibile()}
+                            , content: [
+                        	    {$element->buildJsConstructor()}
+                            ]
+                        }),
+                        
 JS;
     }
 }

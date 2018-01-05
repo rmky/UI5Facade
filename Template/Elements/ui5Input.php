@@ -60,18 +60,6 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsPropertyVisibile()
-    {
-        if ($this->getWidget()->isHidden()) {
-            return ', visible: false';
-        }
-        return '';
-    }
-    
-    /**
-     * 
-     * @return string
-     */
     protected function buildJsPropertyValue()
     {
         $value = $this->getWidget()->getValueWithDefaults();

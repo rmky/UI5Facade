@@ -15,7 +15,8 @@
 	"require" : {
 		"exface/core" : "~0.1",
 		"bower-asset/font-awesome-openui5": "^v2.1",
-		"npm-asset/flot-charts" : "~0.8"
+		"bower-asset/jsoneditor": "^4.2",
+        "npm-asset/flot-charts" : "~0.8"
 	},
     "autoload": {
         "psr-4": { "exface\\OpenUI5Template\\": "" },

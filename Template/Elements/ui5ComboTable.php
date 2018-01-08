@@ -31,6 +31,12 @@ class ui5ComboTable extends ui5Input
     {
         $widget = $this->getWidget();
         
+        if ($value = $widget->getValueWithDefaults()) {
+            $value_init_js = '.setValue("' . $this->getWidget()->getValueText() . '").setSelectedKey("' . $this->buildJsTextValue($value) . '")';
+        } else {
+            $value_init_js = '';
+        }
+        
         $columns = '';
         $cells = '';
         foreach ($widget->getTable()->getColumns() as $idx => $col) {
@@ -56,7 +62,7 @@ class ui5ComboTable extends ui5Input
         return <<<JS
 	   new sap.m.Input("{$this->getId()}", {
 			{$this->buildJsProperties()},
-            type: "Text",
+            type: "{$this->buildJsPropertyType()}",
 			textFormatMode: "ValueKey",
 			showSuggestion: true,
             maxSuggestionWidth: "400px",
@@ -64,7 +70,7 @@ class ui5ComboTable extends ui5Input
             showTableSuggestionValueHelp: false,
             filterSuggests: false,
             showValueHelp: true,
-			suggest: function(oEvent) {
+			suggest: function(oEvent) {console.log('suggesting');
                 var oInput = sap.ui.getCore().byId("{$this->getId()}");
                 var params = { 
                     action: "{$widget->getLazyLoadingActionAlias()}",
@@ -75,18 +81,18 @@ class ui5ComboTable extends ui5Input
 				    start: 0,
                     q: oEvent.getParameter("suggestValue")
                 };
-        		var oModel = new sap.ui.model.json.JSONModel();
-                 
+        		
+                var oModel = oInput.getModel();
         		oModel.loadData("{$this->getAjaxUrl()}", params);
-
-                var oSuggestionRowTemplate = new sap.m.ColumnListItem({
+    		},
+            suggestionRows: {
+                path: "/data",
+                template: new sap.m.ColumnListItem({
 				   cells: [
 				       {$cells}
 				   ]
-				});
-                oInput.setModel(oModel);
-                oInput.bindAggregation("suggestionRows", "/data", oSuggestionRowTemplate);
-    		},
+				})
+            },
             suggestionItemSelected: function(oEvent){
                 var oItem = oEvent.getParameter("selectedRow");
                 if (! oItem) return;
@@ -99,7 +105,10 @@ class ui5ComboTable extends ui5Input
 				{$columns}
             ],
 			{$this->buildJsProperties()}
-       })
+        }).setModel(function(){
+            var oModel = new sap.ui.model.json.JSONModel();
+            return oModel;
+        }()){$value_init_js}
 JS;
     }
        
@@ -139,11 +148,17 @@ JS;
 
 JS;
     }
-                        
+    
+    /**
+     * The value and selectedKey properties of input controls do not seem to work before
+     * a model is bound, so we set initial value programmatically at the end of the constructor.
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Input::buildJsPropertyValue()
+     */
     protected function buildJsPropertyValue()
     {
-        $value = $this->getWidget()->getValueWithDefaults();
-        return ($value ? ', selectedKey: "' . $this->buildJsTextValue($value) . '", value: "' . $this->getWidget()->getValueText() . '"' : '');
+        return '';
     }
                         
     public function buildJsValueGetter()

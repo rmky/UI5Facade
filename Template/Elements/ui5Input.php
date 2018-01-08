@@ -74,5 +74,11 @@ JS;
     {
         return 'editable: true, ';
     }
+    
+    protected function buildJsPropertyType()
+    {
+        // TODO derive other types from data type
+        return 'Text';
+    }
 }
 ?>

@@ -119,20 +119,21 @@ JS;
 							},
 							success: function(data, textStatus, jqXHR) {
 								{$this->buildJsCloseDialog($widget, $input_element)}
-								{$this->buildJsInputRefresh($widget, $input_element)}
-		                       	{$this->buildJsBusyIconHide()}
+								{$this->buildJsBusyIconHide()}
 		                       	
                                 $('body').append(data);
                                 oDialogStack.push({
                                     content: oShell.getContent(),
-                                    head: oShell.getHeadItems(),
-                                    dialog: sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, height: "100%", viewName:"{$this->getTemplate()->getElement($this->getWidget()->getAction()->getWidget())->getViewName()}"})
+                                    dialog: sap.ui.view({
+                                        type:sap.ui.core.mvc.ViewType.JS, 
+                                        height: "100%", 
+                                        viewName:"{$this->getTemplate()->getElement($this->getWidget()->getAction()->getWidget())->getViewName()}"
+                                    }),
+                                    onClose: function(){
+								        {$this->buildJsInputRefresh($widget, $input_element)}
+                                    }
                                 });
                                 {$this->buildJsDialogLoader()}
-                                
-                                
-								// Make sure, the input widget of the button is always refreshed, once the dialog is closed again
-								{$js_on_close_dialog}
 							},
 							error: function(jqXHR, textStatus, errorThrown){
 								{$this->buildJsShowError('jqXHR.responseText', 'jqXHR.status + " " + jqXHR.statusText')}

@@ -19,8 +19,20 @@ class ui5InputJson extends ui5Input
         generateHeaders as generateHeadersByTrait;
     }
     
+    public function generateJs()
+    {
+        return parent::generateJs() . <<<JS
+
+    var {$this->getId()}_JSONeditor;
+
+JS;
+    }
+    
     public function buildJsConstructor()
     {
+        // TODO create own control instead of using the HTML control in order to be able to destroy the JSONeditor
+        // properly. The way the whole thing works now, the JS variable {$this->getId()}_JSONeditor lives even
+        // after the control or it's view had been destroyed.
         return <<<JS
 
         new sap.ui.core.HTML("{$this->getId()}_wrapper", {
@@ -37,7 +49,7 @@ JS;
         $script = <<<JS
 
             if ($('#{$this->getId()} > .jsoneditor').length == 0) {
-                var {$this->getId()}_JSONeditor = new JSONEditor(document.getElementById("{$this->getId()}"), {
+                {$this->getId()}_JSONeditor = new JSONEditor(document.getElementById("{$this->getId()}"), {
                                 					mode: 'tree',
                                						modes: ['code', 'form', 'text', 'tree', 'view']
                             					});

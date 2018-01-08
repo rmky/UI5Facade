@@ -15,10 +15,11 @@ function closeTopDialog() {
         );
     }
     oDialogStackTop.dialog.destroy(true);
+    oDialogStackTop.onClose();
     delete oDialogStackTop;
 }
 
-function showDialog(title, content, state) {
+function showDialog(title, content, state, onCloseCallback) {
 	var dialog = new sap.m.Dialog({
 		title: title,
 		state: state,
@@ -30,6 +31,9 @@ function showDialog(title, content, state) {
 			}
 		}),
 		afterClose: function() {
+			if (onCloseCallback) {
+				onCloseCallback();
+			}
 			dialog.destroy();
 		}
 	});

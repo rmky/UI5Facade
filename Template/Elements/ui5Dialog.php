@@ -2,19 +2,18 @@
 namespace exface\OpenUI5Template\Template\Elements;
 
 use exface\Core\Widgets\Dialog;
-use exface\Core\Interfaces\Widgets\iLayoutWidgets;
-use exface\Core\Widgets\AbstractWidget;
-use exface\Core\Interfaces\Widgets\iContainOtherWidgets;
 use exface\Core\Factories\DataSheetFactory;
 use exface\Core\Widgets\Tabs;
 use exface\Core\Widgets\Tab;
 use exface\Core\Widgets\Image;
 
 /**
+ * In OpenUI5 dialog widgets are either rendered as an object page layout (if the dialog is maximized) or
+ * as a popover dialog.
  *
  * @method Dialog getWidget()
  *        
- * @author aka
+ * @author Andrej Kabachnik
  *        
  */
 class ui5Dialog extends ui5Form
@@ -116,13 +115,28 @@ JS;
 
 JS;
     }
-        
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::getCaption()
+     */
     protected function getCaption()
     {
         return parent::getCaption() . ': ' . $this->getWidget()->getMetaObject()->getName();
     }
     
-    protected function buildJsPage($content)
+    /**
+     * Returns the JS constructor for the sap.m.Page used as the top-level control when rendering
+     * the dialog as an object page layout. 
+     * 
+     * The page will have a floating toolbar with all dialog buttons and a header with a title and
+     * the close/back button.
+     * 
+     * @param string $content_js
+     * @return string
+     */
+    protected function buildJsPage($content_js)
     {
         return <<<JS
         
@@ -133,45 +147,80 @@ JS;
                 closeTopDialog();
             },
             content: [
-                {$content}
+                {$content_js}
             ],
             footer: {$this->buildJsFloatingToolbar()}
         })
 JS;
     }
-                
+    
+    /**
+     * Returns JS constructors for page sections of the object page layout.
+     * 
+     * If the dialog contains tabs, page sections will be generated automatically for
+     * every tab. Otherwise all widgets will be placed in a single page section.
+     * 
+     * @return string
+     */
     protected function buildJsObjectPageSections()
     {
         $widget = $this->getWidget();
         $js = '';
+        $non_tab_children_constructors = '';
         
-        if ($widget->getWidgetFirst() instanceof Tabs) {
-            foreach ($widget->getWidgetFirst()->getTabs() as $tab) {
-                $js .= $this->buildJsObjectPageSectionFromTab($tab);
+        foreach ($widget->getWidgets() as $content) {
+            if ($content instanceof Tabs) {
+                foreach ($content->getTabs() as $tab) {
+                    $js .= $this->buildJsObjectPageSectionFromTab($tab);
+                }
+            } else {
+                $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->getTemplate()->getElement($content)->buildJsConstructor();
             }
-        } else {
-            $js .= <<<JS
+        }
+        
+        if ($non_tab_children_constructors) {
+            $js .= $this->buildJsObjectPageSection($this->buildJsLayoutConstructor($non_tab_children_constructors));
+        }
+        
+        return $js;
+    }
+    
+    /**
+     * Returns the JS constructor for a general page section with no title and a single subsection.
+     * 
+     * The passed content is placed in the blocks aggregation of the subsection.
+     * 
+     * @param string $content_js
+     * @return string
+     */
+    protected function buildJsObjectPageSection($content_js)
+    {
+        return <<<JS
 
                 // BOF ObjectPageSection
                 new sap.uxap.ObjectPageSection({
                     subSections: new sap.uxap.ObjectPageSubSection({
 						blocks: [
-                            {$this->buildJsLayoutConstructor($this->buildJsChildrenConstructors())}
+                            {$content_js}
                         ]
 					})
 				}),
                 // EOF ObjectPageSection
 
 JS;
-        }
-        
-        return $js;
     }
     
+    /**
+     * Returns the JS constructor for a page section representing the given tab widget.
+     * 
+     * @param Tab $tab
+     * @return string
+     */
     protected function buildJsObjectPageSectionFromTab(Tab $tab) 
     {
         $tabElement = $this->getTemplate()->getElement($tab);
         return <<<JS
+
                 // BOF ObjectPageSection
                 new sap.uxap.ObjectPageSection({
 					title:"{$tab->getCaption()}",
@@ -188,7 +237,8 @@ JS;
     }
     
     /**
-     * Returns the constructor for an OverflowToolbar representing the main toolbar of the dialog
+     * Returns the constructor for an OverflowToolbar representing the main toolbar of the dialog.
+     * 
      * @return string
      */
     protected function buildJsFloatingToolbar()

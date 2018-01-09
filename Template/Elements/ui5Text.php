@@ -25,14 +25,15 @@ class ui5Text extends ui5AbstractElement
      */
     public function buildJsConstructor()
     {
-        return $this->buildJsLabelWrapper($this->buildJsElementConstructor());
+        return $this->buildJsLabelWrapper($this->buildJsControlConstructor());
     }
     
     /**
-     * Returns the constructor of the text/input element without the label
+     * Returns the constructor of the text/input control without the label
+     * 
      * @return string
      */
-    protected function buildJsElementConstructor()
+    protected function buildJsControlConstructor()
     {
         $text = $this->buildJsTextValue($this->getWidget()->getText());
         $text = str_replace("\n", '', $text);

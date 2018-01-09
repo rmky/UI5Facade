@@ -13,9 +13,9 @@ class ui5CheckBox extends ui5Input
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5Text::buildJsElementConstructor()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Text::buildJsControlConstructor()
      */
-    protected function buildJsElementConstructor()
+    protected function buildJsControlConstructor()
     {
         return <<<JS
         new sap.m.CheckBox("{$this->getId()}", {

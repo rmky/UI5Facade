@@ -25,9 +25,9 @@ class ui5ComboTable extends ui5Input
     /**
      *
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5Input::buildJsElementConstructor()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Input::buildJsControlConstructor()
      */
-    protected function buildJsElementConstructor()
+    protected function buildJsControlConstructor()
     {
         $widget = $this->getWidget();
         

@@ -13,9 +13,9 @@ class ui5Input extends ui5Text
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5Text::buildJsElementConstructor()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Text::buildJsControlConstructor()
      */
-    protected function buildJsElementConstructor()
+    protected function buildJsControlConstructor()
     {
         return <<<JS
         new sap.m.Input("{$this->getId()}", {

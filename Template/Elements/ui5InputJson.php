@@ -1,24 +1,17 @@
 <?php
 namespace exface\OpenUI5Template\Template\Elements;
 
-use exface\Core\Widgets\DataConfigurator;
-use exface\Core\Widgets\ChartSeries;
-use exface\Core\Widgets\ChartAxis;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryFlotTrait;
+use exface\Core\Widgets\InputJson;
 
 /**
  * 
- * @method DataConfigurator getWidget()
+ * @method InputJson getWidget()
  * 
  * @author Andrej Kabachnik
  *
  */
 class ui5InputJson extends ui5Input
-{
-    use JqueryFlotTrait {
-        generateHeaders as generateHeadersByTrait;
-    }
-    
+{    
     public function generateJs()
     {
         return parent::generateJs() . <<<JS

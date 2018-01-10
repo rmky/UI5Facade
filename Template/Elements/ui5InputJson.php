@@ -21,7 +21,12 @@ class ui5InputJson extends ui5Input
 JS;
     }
     
-    public function buildJsConstructor()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Input::buildJsControlConstructor()
+     */
+    protected function buildJsControlConstructor()
     {
         // TODO create own control instead of using the HTML control in order to be able to destroy the JSONeditor
         // properly. The way the whole thing works now, the JS variable {$this->getId()}_JSONeditor lives even
@@ -44,7 +49,8 @@ JS;
             if ($('#{$this->getId()} > .jsoneditor').length == 0) {
                 {$this->getId()}_JSONeditor = new JSONEditor(document.getElementById("{$this->getId()}"), {
                                 					mode: 'tree',
-                               						modes: ['code', 'form', 'text', 'tree', 'view']
+                               						modes: ['code', 'form', 'text', 'tree', 'view'],
+                                                    sortObjectKeys: false
                             					});
                 {$init_value}
                 {$this->getId()}_JSONeditor.expandAll();

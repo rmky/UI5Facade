@@ -10,6 +10,8 @@
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="mobile-web-app-capable" content="yes">
 
+		<meta name="page_id" content="[*id*]">
+		
 		<title>[*pagetitle*]</title>
 
 		<!-- Custom CSS -->
@@ -44,49 +46,17 @@
 				});
 			
 			oShell.addPaneContent(oNavMenu);
-			oShell.addHeadItem(
-				new sap.ui.unified.ShellHeadItem({
-					tooltip: "Menu",
-					icon: "sap-icon://menu2",
-					press: function(){
-						oShell.setShowPane(! oShell.getShowPane());
-					}
-				})
-			);
-			oShell.setSearch(
-				new sap.m.Title({
-					text: "[*pagetitle*]", 
-					level: "H1",
-					textAlign: "Center",
-					width: "100%"
-				})
-					
-			);
-			/*oShell.addHeadEndItem(
-				new sap.ui.unified.ShellHeadItem({
-					tooltip: "Object basket",
-					icon: "sap-icon://flag",
-					press: function(){
-						
-					}
-				})
-			);
-			oShell.addHeadEndItem(
-				new sap.ui.unified.ShellHeadItem({
-					tooltip: "Favorites",
-					icon: "sap-icon://favorite",
-					press: function(){
-						
-					}
-				})
-			);*/
-			oShell.setUser(
+			
+			/*oShell.setUser(
 				new sap.ui.unified.ShellHeadUserItem({
 					image: "[!UserManagerInfo? &field=`photo`!]",
 					username: "[!UserManagerInfo? &field=`fullname`!]",
 					press: function(){alert("User Item pressed");}
 				})
-			);
+			);*/
+			
+			sap.ui.getCore().byId('exf_pagetitle').setText('[*pagetitle*]');
+			sap.ui.getCore().byId('exf_avatar').setSrc('[!UserManagerInfo? &field=`photo`!]');
 			
 			window.onload = function () {
 				oShell.placeAt("[*id*]");

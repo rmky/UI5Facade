@@ -1,10 +1,77 @@
 var oDialogStack = [];
 var oShell = new sap.ui.unified.Shell({
-	icon: "exface/vendor/exface/OpenUI5Template/Template/images/sap_50x26.png",
+	header: [
+		new sap.m.OverflowToolbar({
+            design: "Transparent",
+			content: [
+				new sap.m.Button({
+                    icon: "sap-icon://menu2",
+                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
+                    press: function() {
+                    	oShell.setShowPane(! oShell.getShowPane());
+            		}
+                }),
+                new sap.m.Image({
+					src: "exface/vendor/exface/OpenUI5Template/Template/images/sap_50x26.png",
+					height: "26px",
+					width: "50px"
+                }),
+                new sap.m.ToolbarSpacer(),
+                new sap.m.Label("exf_pagetitle", {
+                    text: "",
+                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
+                }),
+                new sap.m.ToolbarSpacer(),
+                new sap.m.Button("exf_connection", {
+                    icon: "sap-icon://disconnected",
+                    text: "0/1",
+                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),
+                    press: function(oEvent){
+						var oButton = oEvent.getSource();
+						var oPopover = new sap.m.Popover({
+							title: "Akt. Status: Offline",
+							placement: "Bottom",
+							content: [
+								new sap.m.List({
+									items: [
+										new sap.m.StandardListItem({
+											title: "Sync-Puffer (3)",
+											type: "Active",
+											press: function(){alert('click 1!')},
+										}),
+										new sap.m.StandardListItem({
+											title: "Ausgecheckte Objekte (0)",
+											type: "Active",
+											press: function(){alert('click 2!')},
+										}),
+										new sap.m.StandardListItem({
+											title: "Sync-Fehler (1)",
+											type: "Active",
+											press: function(){alert('click 3!')},
+										})
+									]
+								})
+							]
+						});
+						jQuery.sap.delayedCall(0, this, function () {
+							oPopover.openBy(oButton);
+						});
+					}
+                }),
+                new sap.f.Avatar("exf_avatar", {
+					displaySize: "XS",
+					press: function(){
+						alert('clicked!');
+					}
+                })
+			]
+		})
+	],
 	content: [
 		
 	]
 });
+contextBarInit();
 
 function closeTopDialog() {
 	var oDialogStackTop = oDialogStack.pop();
@@ -46,6 +113,161 @@ function showHtmlInDialog(title, html, state) {
 		content: html
 	});
 	showDialog(title, content, state);
+}
+
+function contextBarInit(){
+	$(document).ajaxSuccess(function(event, jqXHR, ajaxOptions, data){
+		var extras = {};
+		if (jqXHR.responseJson){
+			extras = jqXHR.responseJson.extras;
+		} else {
+			try {
+				extras = $.parseJSON(jqXHR.responseText).extras;
+			} catch (err) {
+				extras = {};
+			}
+		}
+		if (extras && extras.ContextBar){
+			contextBarRefresh(extras.ContextBar);
+		}
+	});
+	
+	contextBarLoad();
+}
+
+function contextBarLoad(delay){
+	if (delay == undefined) delay = 100;
+	setTimeout(function(){
+		// IDEA had to disable adding context bar extras to every request due to
+		// performance issues. This will be needed for asynchronous contexts like
+		// user messaging, external task management, etc. So put the line back in
+		// place to fetch context data with every request instead of a dedicated one.
+		// if ($.active == 0 && $('#contextBar .context-bar-spinner').length > 0){
+		//if ($('#contextBar .context-bar-spinner').length > 0){
+			$.ajax({
+				type: 'POST',
+				url: 'exface/exface.php?exftpl=exface.OpenUI5Template',
+				dataType: 'json',
+				data: {
+					action: 'exface.Core.ShowWidget',
+					resource: getPageId(),
+					element: 'ContextBar'
+				},
+				success: function(data, textStatus, jqXHR) {
+					contextBarRefresh(data);
+				},
+				error: function(jqXHR, textStatus, errorThrown){
+					contextBarRefresh({});
+				}
+			});
+		/*} else {
+			contextBarLoad(delay*3);
+		}*/
+	}, delay);
+}
+
+function contextBarRefresh(data){
+	var oToolbar = oShell.getHeader();
+	var aItemsOld = oShell.getHeader().getContent();
+	var iItemsIndex = 5;
+	var oControl = {};
+	oToolbar.removeAllContent();
+	
+	for (var i=0; i<aItemsOld.length; i++) {
+		oControl = aItemsOld[i];
+		if (i < iItemsIndex || oControl.getId() == 'exf_connection' || oControl.getId() == 'exf_pagetitle' || oControl.getId() == 'exf_avatar') {
+			oToolbar.addContent(oControl);
+		} else {
+			oControl.destroy();
+		}
+	}
+	
+	for (var id in data){
+		var sColor = data[id].color ? 'background-color:'+data[id].color+' !important;' : '';
+		oToolbar.insertContent(
+				new sap.m.Button(id, { 
+					icon: data[id].icon,
+					tooltip: data[id].hint,
+					text: data[id].indicator,
+					press: function(oEvent) {
+						var oButton = oEvent.getSource();
+						contextShowMenu(oButton);
+					}
+				}).data('widget', data[id].bar_widget_id, true), 
+				iItemsIndex);
+	}
+}
+
+function contextShowMenu(oButton){
+	var sPopoverId = oButton.data('widget')+"_popover";
+	var iPopoverWidth = "350px";
+	var iPopoverHeight = "300px";
+	var oPopover = sap.ui.getCore().byId(sPopoverId);
+	if (oPopover) {
+		return;
+	} else {
+		oPopover = new sap.m.Popover(sPopoverId, {
+			title: oButton.getTooltip(),
+			placement: "Bottom",
+			busy: true,
+			contentWidth: iPopoverWidth,
+			contentHeight: iPopoverHeight,
+			horizontalScrolling: false,
+			afterClose: function(oEvent) {
+				oEvent.getSource().destroy();
+			},
+			content: [
+				new sap.m.NavContainer({
+					pages: [
+						new sap.m.Page({
+							showHeader: false,
+							content: [
+								
+							]
+						})
+					]
+				})
+			]
+		});
+		
+		jQuery.sap.delayedCall(0, this, function () {
+			oPopover.openBy(oButton);
+		});
+	}
+	$.ajax({
+		type: 'POST',
+		url: 'exface/exface.php?exftpl=exface.OpenUI5Template',
+		dataType: 'html',
+		data: {
+			action: 'exface.Core.ShowContextPopup',
+			resource: getPageId(),
+			element: oButton.data('widget')
+		},
+		success: function(data, textStatus, jqXHR) {			
+			var viewMatch = data.match(/sap.ui.jsview\("(.*)"/i);
+            if (viewMatch !== null) {
+                var view = viewMatch[1];
+                data = data.replace(view, view+'.'+oButton.data('widget'));
+                view = view+'.'+oButton.data('widget');
+                $('body').append(data);
+            }
+            
+            var page = oPopover.getContent()[0].getPages()[0];
+            page.removeAllContent();
+            page.addContent(sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}));
+        	oPopover.setBusy(false);
+			
+		},
+		error: function(jqXHR, textStatus, errorThrown){
+			oButton.setBusy(false);
+			console.log(textStatus);
+			//adminLteCreateDialog($("body"), "error", jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText, "error_tab_layouter()");
+		}
+	});
+}
+
+function getPageId(){
+	return $("meta[name='page_id']").attr("content");
 }
 
 /**

@@ -67,7 +67,7 @@ class OpenUI5Template extends AbstractAjaxTemplate
     {
         $instance = $this->getElement($widget);
         $js = $instance->generateJs();
-        return $js . "\n" . $instance->generateJsView();
+        return $js . ($js ? "\n" : '') . $instance->generateJsView();
     }
 }
 ?>

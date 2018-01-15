@@ -249,9 +249,10 @@ JS;
                         placeholder: "{$this->getQuickSearchPlaceholder(false)}",
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
                     }),
-                    new sap.m.Button({
+                    new sap.m.OverflowToolbarButton({
                         icon: "sap-icon://action-settings",
-                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
+                        text: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
+                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),
                         press: function() {
                 			{$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->getJsVar()}.open();
                 		}
@@ -346,7 +347,13 @@ JS;
 	})
 JS;
     }
-        
+    
+    /**
+     * Wraps the given content in a constructor for the sap.f.DynamicPage used to create the Fiori list report floorplan.
+     * 
+     * @param string $content
+     * @return string
+     */
     protected function buildJsPage($content)
     {
         $filters = $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsFilters();
@@ -364,13 +371,30 @@ JS;
                         })
 				],
 				actions: [
-				    new sap.m.ToolbarSpacer()/*,
-					new sap.m.ToggleButton({
-						pressed: "{/headerExpanded}",
+				    new sap.m.ToolbarSpacer(),
+					new sap.m.OverflowToolbarButton({
+						press: function(oEvent){
+                            var oPage = sap.ui.getCore().byId('{$this->getId()}_page');
+                            var oButton = oEvent.getSource();
+                            if (oPage.getHeaderExpanded()) {
+                                oPage.setHeaderExpanded(false);
+                                oButton
+                                    .setIcon('sap-icon://expand-group')
+                                    .setText('{$this->translate('WIDGET.DATATABLE.EXPAND_HEADER')}')
+                                    .setTooltip('{$this->translate('WIDGET.DATATABLE.EXPAND_HEADER')}');
+                            } else {
+                                oPage.setHeaderExpanded(true);
+                                oButton
+                                    .setIcon('sap-icon://collapse-group')
+                                    .setText('{$this->translate('WIDGET.DATATABLE.COLLAPSE_HEADER')}')
+                                    .setTooltip('{$this->translate('WIDGET.DATATABLE.COLLAPSE_HEADER')}');
+                            }
+                        },
                         icon: "sap-icon://collapse-group",
                         type: "Transparent",
-						text: "{path:'/headerExpanded', formatter:'.formatToggleButtonText'}"
-                    })*/
+						text: "{$this->translate('WIDGET.DATATABLE.COLLAPSE_HEADER')}",
+                        tooltip: "{$this->translate('WIDGET.DATATABLE.COLLAPSE_HEADER')}"
+                    })
 				]
             }),
 

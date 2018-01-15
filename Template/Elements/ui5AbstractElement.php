@@ -5,6 +5,7 @@ use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
 use exface\OpenUI5Template\Template\OpenUI5Template;
 use exface\Core\Exceptions\Templates\TemplateLogicError;
 use exface\Core\CommonLogic\Constants\Icons;
+use exface\Core\Interfaces\Widgets\iHaveValue;
 
 /**
  *
@@ -48,7 +49,11 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
     
     public function buildJsProperties()
     {
-        return $this->getWidget()->isHidden() ? 'visible: false,' : '';
+        return <<<JS
+
+        {$this->buildJsPropertyVisibile()}
+
+JS;
     }
 
     public function buildJsInlineEditorInit()
@@ -233,7 +238,12 @@ JS;
      */
     public function buildJsValueGetter()
     {
-        return "sap.ui.getCore().byId('{$this->getId()}').{$this->buildJsValueGetterMethod()}";
+        $widget = $this->getWidget();
+        if ($widget instanceof iHaveValue) {
+            return "sap.ui.getCore().byId('{$this->getId()}').{$this->buildJsValueGetterMethod()}";
+        } else {
+            return '""';
+        }
     }
     
     /**

@@ -29,7 +29,7 @@ class ui5InputSelect extends ui5Input
         return <<<JS
         new {$control}("{$this->getId()}", {
 			{$this->buildJsProperties()}
-        })
+        }){$this->buildJsPseudoEventHandlers()}
 JS;
     }
 			
@@ -71,7 +71,7 @@ JS;
     protected function buildJsPropertyValue()
     {
         $value = $this->getWidget()->getValueWithDefaults();
-        return ($value ? 'selectedKey: "' . $this->buildJsTextValue($value) . '",' : '');
+        return ($value ? 'selectedKey: "' . $this->escapeJsTextValue($value) . '",' : '');
     }
     
     /**

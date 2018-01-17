@@ -32,7 +32,7 @@ class ui5ComboTable extends ui5Input
         $widget = $this->getWidget();
         
         if ($value = $widget->getValueWithDefaults()) {
-            $value_init_js = '.setValue("' . $this->getWidget()->getValueText() . '").setSelectedKey("' . $this->buildJsTextValue($value) . '")';
+            $value_init_js = '.setValue("' . $this->getWidget()->getValueText() . '").setSelectedKey("' . $this->escapeJsTextValue($value) . '")';
         } else {
             $value_init_js = '';
         }
@@ -70,7 +70,7 @@ class ui5ComboTable extends ui5Input
             showTableSuggestionValueHelp: false,
             filterSuggests: false,
             showValueHelp: true,
-			suggest: function(oEvent) {console.log('suggesting');
+			suggest: function(oEvent) {
                 var oInput = sap.ui.getCore().byId("{$this->getId()}");
                 var params = { 
                     action: "{$widget->getLazyLoadingActionAlias()}",
@@ -108,7 +108,7 @@ class ui5ComboTable extends ui5Input
         }).setModel(function(){
             var oModel = new sap.ui.model.json.JSONModel();
             return oModel;
-        }()){$value_init_js}
+        }()){$value_init_js}{$this->buildJsPseudoEventHandlers()}
 JS;
     }
        

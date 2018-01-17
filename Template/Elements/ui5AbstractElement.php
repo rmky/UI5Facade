@@ -19,6 +19,12 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
     private $jsVarName = null;
     
     /**
+     * 
+     * @var array [ event_name => [code, code, ...] ]
+     */
+    private $pseudo_events = [];
+    
+    /**
      * Returns the JS constructor for this element (without the semicolon!): e.g. "new sap.m.Button()" etc.
      * 
      * For complex widgets (e.g. requireing a model) either use an immediately invoked function expression
@@ -294,7 +300,7 @@ JS;
 JS;
     }
         
-    protected function buildJsTextValue($text)
+    protected function escapeJsTextValue($text)
     {
         return str_replace(['"', '\u'], ['\"', '&#92;u'], $text);
     }
@@ -321,6 +327,60 @@ JS;
     protected function isVisible()
     {
         return ! $this->getWidget()->isHidden();
+    }
+    
+    /**
+     * Returns the JS code adding pseudo event handlers to a control: e.g. .addEventDelegate(...).
+     * 
+     * NOTE: the string is either empty or starts with a leading dot and ends with a closing
+     * brace (no semicolon!)
+     * 
+     * @see addPseudoEventHandler()
+     * 
+     * @return string
+     */
+    protected function buildJsPseudoEventHandlers()
+    {
+        $js = '';
+        foreach ($this->pseudo_events as $event => $code_array) {
+            $code = implode("\n", $code_array);
+            $js .= <<<JS
+            
+            {$event}: function() {
+                {$code}
+            },
+            
+JS;
+        }
+        
+        if ($js) {
+            $js = <<<JS
+            
+        .addEventDelegate({
+            {$js}
+        })
+        
+JS;
+        }
+        
+        return $js;
+    }
+    
+    /**
+     * Registers the given JS code to be executed on a specified pseudo event for this control.
+     * 
+     * Example: ui5Input::addPseudoEventHandler('onsapenter', 'alert("Enter pressed!")')
+     * 
+     * @link https://openui5.hana.ondemand.com/#/api/jQuery.sap.PseudoEvents
+     * 
+     * @param string $event_name
+     * @param string $js
+     * @return \exface\OpenUI5Template\Template\Elements\ui5AbstractElement
+     */
+    public function addPseudoEventHandler($event_name, $js)
+    {
+        $this->pseudo_events[$event_name][] = $js;
+        return $this;
     }
 }
 ?>

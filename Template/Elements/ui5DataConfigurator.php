@@ -206,6 +206,7 @@ JS;
      * @return string
      */
     protected function buildJsFilter(ui5Filter $element) {
+        $element->addPseudoEventHandler('onsapenter', $this->getTemplate()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh());
         return <<<JS
         
                         new sap.ui.layout.VerticalLayout({

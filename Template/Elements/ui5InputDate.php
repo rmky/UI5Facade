@@ -21,7 +21,7 @@ class ui5InputDate extends ui5Input
             {$this->buildJsProperties()}
 			valueFormat: "yyyy-MM-dd",
             displayFormat: "short"
-		})
+		}){$this->buildJsPseudoEventHandlers()}
 
 JS;
     }

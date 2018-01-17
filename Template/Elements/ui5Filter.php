@@ -35,5 +35,11 @@ class ui5Filter extends ui5AbstractElement
         }
         return parent::isVisible();
     }
+    
+    public function addPseudoEventHandler($event, $code)
+    {
+        $this->getTemplate()->getElement($this->getWidget()->getInputWidget())->addPseudoEventHandler($event, $code);
+        return $this;
+    }
 }
 ?>

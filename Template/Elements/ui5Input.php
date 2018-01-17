@@ -9,7 +9,6 @@ namespace exface\OpenUI5Template\Template\Elements;
  */
 class ui5Input extends ui5Text
 {
-    
     /**
      * 
      * {@inheritDoc}
@@ -20,7 +19,7 @@ class ui5Input extends ui5Text
         return <<<JS
         new sap.m.Input("{$this->getId()}", {
             {$this->buildJsProperties()}
-        })
+        }){$this->buildJsPseudoEventHandlers()}
 JS;
     }
     
@@ -63,7 +62,7 @@ JS;
     protected function buildJsPropertyValue()
     {
         $value = $this->getWidget()->getValueWithDefaults();
-        return ($value ? 'value: "' . $this->buildJsTextValue($value) . '",' : '');
+        return ($value ? 'value: "' . $this->escapeJsTextValue($value) . '",' : '');
     }
     
     /**

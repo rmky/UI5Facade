@@ -40,7 +40,7 @@ class ui5Html extends ui5Text
             $scripts .= $script;
             $html = str_replace($tag, '', $html);
         }
-        $content = $this->escapeLinebreaks($this->buildJsTextValue($html));
+        $content = $this->escapeLinebreaks($this->escapeJsTextValue($html));
         return <<<JS
         new sap.ui.core.HTML("{$this->getId()}", {
             content: "{$content}",

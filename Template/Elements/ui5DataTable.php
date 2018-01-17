@@ -115,6 +115,7 @@ JS;
             return <<<JS
 
     function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent) {
+        
     }
 
 JS;

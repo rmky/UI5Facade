@@ -18,7 +18,7 @@ class ui5InputDate extends ui5Input
         return <<<JS
 
         new sap.m.DatePicker("{$this->getId()}", {
-            {$this->buildJsProperties()},
+            {$this->buildJsProperties()}
 			valueFormat: "yyyy-MM-dd",
             displayFormat: "short"
 		})

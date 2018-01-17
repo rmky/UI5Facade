@@ -61,7 +61,7 @@ class ui5ComboTable extends ui5Input
         
         return <<<JS
 	   new sap.m.Input("{$this->getId()}", {
-			{$this->buildJsProperties()},
+			{$this->buildJsProperties()}
             type: "{$this->buildJsPropertyType()}",
 			textFormatMode: "ValueKey",
 			showSuggestion: true,
@@ -129,7 +129,7 @@ JS;
         $options = '';
         
         if ($col->isHidden()){
-            $options .= ', visible: false'; 
+            $options .= 'visible: false,'; 
         }
         
         return <<<JS
@@ -142,7 +142,7 @@ JS;
                             new sap.m.Label({
                                 text: "{$col->getCaption()}"
                             })
-                        ]
+                        ],
                         {$options}
 					})
 

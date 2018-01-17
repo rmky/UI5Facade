@@ -155,9 +155,9 @@ JS;
         return <<<JS
         
                         new sap.ui.layout.VerticalLayout({
-                            width: "100%"
+                            width: "100%",
                             {$element->buildJsPropertyVisibile()}
-                            , content: [
+                            content: [
                         	    {$element->buildJsConstructor()}
                             ]
                         }),

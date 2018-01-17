@@ -300,13 +300,16 @@ JS;
     }
     
     /**
-     * Returns ", visible: false" if the element is not visible (e.g. widget has visibility=hidden)
+     * Returns "visible: false," if the element is not visible (e.g. widget has visibility=hidden).
+     * 
+     * NOTE: The returned string is either empty or ends with a comma
+     * 
      * @return string
      */
     protected function buildJsPropertyVisibile()
     {
         if (! $this->isVisible()) {
-            return ', visible: false';
+            return 'visible: false, ';
         }
         return '';
     }

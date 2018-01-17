@@ -55,7 +55,7 @@ JS;
 JS;
         }
         
-        $options = parent::buildJsProperties() . ',
+        $options = parent::buildJsProperties() . '
             items: [
                 ' . $items . '
             ]
@@ -63,10 +63,15 @@ JS;
         return $options;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Input::buildJsPropertyValue()
+     */
     protected function buildJsPropertyValue()
     {
         $value = $this->getWidget()->getValueWithDefaults();
-        return ($value ? ', selectedKey: "' . $this->buildJsTextValue($value) . '"' : '');
+        return ($value ? 'selectedKey: "' . $this->buildJsTextValue($value) . '",' : '');
     }
     
     /**

@@ -27,7 +27,7 @@ JS;
     protected function buildJsPropertyValue()
     {
         $value = $this->getWidget()->getValueWithDefaults();
-        return ($value ? ', selected: true' : '');
+        return ($value ? 'selected: true, ' : '');
     }
     
     public function buildJsValueGetterMethod()

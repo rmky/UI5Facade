@@ -32,11 +32,11 @@ JS;
     public function buildJsProperties()
     {
         if ($height = $this->getHeight()) {
-            $height_option = ', height: "' . $height . '"';
+            $height_option = 'height: "' . $height . '",';
         }
         $options = parent::buildJsProperties() . '
             width: "100%",
-            required: ' . ($this->getWidget()->isRequired() ? 'true' : 'false') . '
+            required: ' . ($this->getWidget()->isRequired() ? 'true' : 'false') . ',
             ' . $this->buildJsPropertyValue() . '
             ' . $height_option . '
             ' . $this->buildJsPropertyVisibile();
@@ -63,7 +63,7 @@ JS;
     protected function buildJsPropertyValue()
     {
         $value = $this->getWidget()->getValueWithDefaults();
-        return ($value ? ', value: "' . $this->buildJsTextValue($value) . '"' : '');
+        return ($value ? 'value: "' . $this->buildJsTextValue($value) . '",' : '');
     }
     
     /**

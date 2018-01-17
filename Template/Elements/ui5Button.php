@@ -71,20 +71,20 @@ JS;
         $widget = $this->getWidget();
         switch ($widget->getVisibility()) {
             case EXF_WIDGET_VISIBILITY_PROMOTED: 
-                $visibility = ', type: "Emphasized", layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"})'; break;
+                $visibility = 'type: "Emphasized", layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),'; break;
             case EXF_WIDGET_VISIBILITY_OPTIONAL: 
-                $visibility = ', type: "Default", layoutData: new sap.m.OverflowToolbarLayoutData({priority: "AlwaysOverflow"})'; break;
+                $visibility = 'type: "Default", layoutData: new sap.m.OverflowToolbarLayoutData({priority: "AlwaysOverflow"}),'; break;
             case EXF_WIDGET_VISIBILITY_NORMAL: 
-            default: $visibility = ', type: "Default"';
+            default: $visibility = 'type: "Default",';
             
         }
         
-        $press = $this->buildJsClickFunction() ? ', press: function(){' . $this->buildJsClickFunctionName() . '()}' : '';
+        $press = $this->buildJsClickFunction() ? 'press: function(){' . $this->buildJsClickFunctionName() . '()},' : '';
         
-        $icon = $widget->getIcon() ? ', icon: "' . $this->getIconSrc($widget->getIcon()) . '"' : '';
+        $icon = $widget->getIcon() ? 'icon: "' . $this->getIconSrc($widget->getIcon()) . '",' : '';
         
         $options = '
-                    text: "' . $this->getCaption() . '"
+                    text: "' . $this->getCaption() . '",
                     ' . $icon . '
                     ' . $visibility . '
                     ' . $press;
@@ -179,22 +179,23 @@ JS;
     }
     
     protected function buildJsDialogLoader()
-    {
-        $action = $this->getAction();
-        
-        // TODO only maximize a dialog (making it a page) if it has more than N widgets or
-        // determine the best size some other way.
-        if (($action instanceof iShowDialog) && $action->getMaximize() === false) {
-            $maximize = false;
-        } else {
-            $maximize = true;
-        }
-        
-        if ($maximize) {
+    {        
+        if ($this->opensDialogPage()) {
             return $this->buildJsOpenPage();
         } else {
             return $this->buildJsOpenDialog();
         }
+    }
+    
+    protected function opensDialogPage()
+    {
+        $action = $this->getAction();
+        
+        if ($action instanceof iShowDialog) {
+            return $this->getTemplate()->getElement($action->getDialogWidget())->isMaximized();
+        } 
+        
+        return false;
     }
     
     protected function buildJsOpenDialog()

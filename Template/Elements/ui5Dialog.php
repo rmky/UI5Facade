@@ -6,6 +6,8 @@ use exface\Core\Factories\DataSheetFactory;
 use exface\Core\Widgets\Tabs;
 use exface\Core\Widgets\Tab;
 use exface\Core\Widgets\Image;
+use exface\Core\Widgets\MenuButton;
+use exface\Core\Interfaces\Widgets\iTriggerAction;
 
 /**
  * In OpenUI5 dialog widgets are either rendered as an object page layout (if the dialog is maximized) or
@@ -20,11 +22,29 @@ class ui5Dialog extends ui5Form
 {
     public function buildJsConstructor()
     {
-        if ($this->getWidget()->isMaximized() === false) {
+        if ($this->isMaximized() === false) {
             return $this->buildJsDialog();
         } else {
             return $this->buildJsPage($this->buildJsObjectPageLayout());
         }
+    }
+    
+    /**
+     * Returns TRUE if the dialog is maximized (i.e. should be rendered as a page) and FALSE otherwise (i.e. rendering as dialog).
+     * @return boolean
+     */
+    public function isMaximized()
+    {
+        $widget = $this->getWidget();
+        $widget_setting = $widget->isMaximized();
+        if (is_null($widget_setting)) {
+            if ($widget->hasParent() && $widget->getParent() instanceof iTriggerAction) {
+                $action = $widget->getParent()->getAction();
+                return $this->getTemplate()->getConfigMaximizeDialogByDefault($action);
+            }
+            return false;
+        }
+        return $widget_setting;
     }
     
     protected function buildJsObjectPageLayout()
@@ -256,7 +276,13 @@ JS;
         $js = '';
         $buttons = array_reverse($this->getWidget()->getButtons());
         foreach ($buttons as $btn) {
-            $js .= $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n";
+            if ($btn instanceof MenuButton) {
+                foreach ($btn->getButtons() as $subbtn) {
+                    $js = $this->getTemplate()->getElement($subbtn)->buildJsConstructor() . ",\n" . $js;
+                }
+                continue;
+            }
+            $js = $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n" . $js;
         }
         return $js;
     }

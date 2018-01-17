@@ -251,7 +251,7 @@ JS;
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
                     }),
                     new sap.m.OverflowToolbarButton({
-                        icon: "sap-icon://action-settings",
+                        icon: "sap-icon://drop-down-list",
                         text: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),
                         press: function() {

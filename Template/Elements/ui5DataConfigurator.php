@@ -71,13 +71,13 @@ JS;
                     visible: true,
                     containerQuer: true, 
                     layoutMode: "Desktop",
-                    /*items: "{
-                        path: '/ColumnCollection',
+                    items: {
+                        path: '/columns',
                         template: new sap.m.P13nItem({
-                            columnKey: "{path}", 
-                            text: "{text}"
+                            columnKey: "{attribute_alias}", 
+                            text: "{caption}"
                         })
-                    }",*/
+                    },
                     filterItems: [
 
                     ]
@@ -87,14 +87,14 @@ JS;
                     visible: true,
                     addColumnsItem: "onAddColumnsItem",
                     type: "columns",
-                    /*items: "{
-                        path: '/ColumnCollection',
+                    items: {
+                        path: '/columns',
                         template: new sap.m.P13nItem({
-                            columnKey: "{path}",
-                            text: "{text}",
+                            columnKey: "{column_name}",
+                            text: "{caption}",
                             visible: "{visible}"
                         })
-                    }"*/
+                    }
                 }),
                 new sap.m.P13nSortPanel({
                     title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.SORTING')}",
@@ -102,24 +102,78 @@ JS;
                     type: "sort",
                     containerQuer: true,
                     layoutMode: "Desktop",
-                    /*items: "{
-                        path: '/ColumnCollection',
-                        template: new sap.m.P13nSortItem({
-                            columnKey: "{path}",
-                            text: "{text}"
+                    items: {
+                        path: '/sorters',
+                        template: new sap.m.P13nItem({
+                            columnKey: "{alias}",
+                            text: "{caption}"
                         })
-                    }",*/
-                    sortItems: [
+                    },
+                    /*sortItems: [
                         new sap.m.P13nSortItem({
                             columnKey: "name",
                             operation: "Ascending"
                         })
-                    ]
+                    ]*/
                 })
             ]
-        })
+        }).setModel(function(){
+            var oModel = new sap.ui.model.json.JSONModel();
+            var columns = {$this->buildJsonColumnData()};
+            var sorters = {$this->buildJsonSorterData()};
+            var data = {
+                "columns": columns,
+                "sorters": sorters
+            }
+            oModel.setData(data);
+            return oModel;        
+        }())
 
 JS;
+    }
+                
+    protected function buildJsonColumnData()
+    {
+        $data = [];
+        foreach ($this->getWidget()->getWidgetConfigured()->getColumns() as $col) {
+            if (! $col->getAttribute()) {
+                continue;
+            }
+            $data[] = [
+                "attribute_alias" => $col->getAttributeAlias(),
+                "column_name" => $col->getDataColumnName(),
+                "caption" => $col->getCaption(),
+                "visible" => $col->isHidden() ? false : true
+            ];
+        }
+        return json_encode($data);
+    }
+    
+    protected function buildJsonSorterData()
+    {
+        $data = [];
+        $sorters = [];
+        $table = $this->getWidget()->getWidgetConfigured();
+        foreach ($table->getSorters() as $sorter) {
+            $sorters[] = $sorter->getProperty('attribute_alias');
+            $data[] = [
+                "attribute_alias" => $sorter->getProperty('attribute_alias'),
+                "caption" => $this->getMetaObject()->getAttribute($sorter->getProperty('attribute_alias'))->getName()
+            ];
+        }
+        foreach ($table->getColumns() as $col) {
+            if (! $col->getAttribute()) {
+                continue;
+            }
+            if (in_array($col->getAttributeAlias(), $sorters)) {
+                continue;
+            }
+            $data[] = [
+                "attribute_alias" => $col->getAttributeAlias(),
+                "caption" => $col->getCaption()
+            ];
+        }
+        return json_encode($data);
     }
     
     /**

@@ -9,10 +9,13 @@ pre.sf-dump span.sf-dump-key {color: black !important;}
 pre.sf-dump span.sf-dump-str {color: black !important;}
 pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-protected {color: black !important;}
 
+/* Shell: custom header */
+#exf_pagetitle {color: #346187}
 .sapUiUfdShellHead {top: 0}
 .sapUiUfdShellCntnt > .sapMIBar.sapMTB {height: 44px; padding: 0 0.5rem 0 0;}
 .sapUiUfdShellCntnt > .sapMIBar.sapMTB .sapMBtnIcon:before {font-size: 16px}
 
+/* sap.m.List for Menu widget */
 .sapUiSizeCompact .exf-menu .sapMSLIIcon {height: 2rem}
 .sapUiSizeCompact .exf-menu .sapMSLIIcon .sapMSLIImgThumbIcon {height: 3rem; width: initial}
 .sapUiSizeCompact .exf-menu .sapMSLIIcon .sapMSLIImgThumbIcon:before {font-size: 16px}

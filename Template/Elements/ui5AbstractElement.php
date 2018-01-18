@@ -67,14 +67,22 @@ JS;
         return '';
     }
 
-    public function buildJsBusyIconShow()
+    public function buildJsBusyIconShow($global = false)
     {
-        return 'sap.ui.core.BusyIndicator.show(0);';
+        if ($global) {
+            return 'sap.ui.core.BusyIndicator.show(0);';
+        } else {
+            return 'sap.ui.getCore().byId("' . $this->getId() . '").setBusyIndicatorDelay(0).setBusy(true);';
+        }
     }
 
-    public function buildJsBusyIconHide()
+    public function buildJsBusyIconHide($global = false)
     {
-        return 'sap.ui.core.BusyIndicator.hide();';
+        if ($global) {
+            return 'sap.ui.core.BusyIndicator.hide();';
+        } else {
+            return 'sap.ui.getCore().byId("' . $this->getId() . '").setBusy(false);';
+        }
     }
 
     /**

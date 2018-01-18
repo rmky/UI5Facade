@@ -229,7 +229,7 @@ function contextShowMenu(oButton){
 					]
 				})
 			]
-		});
+		}).setBusyIndicatorDelay(0);
 		
 		jQuery.sap.delayedCall(0, this, function () {
 			oPopover.openBy(oButton);

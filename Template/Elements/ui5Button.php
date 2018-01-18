@@ -223,5 +223,25 @@ JS;
 
 JS;
     }
+   
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsBusyIconShow()
+     */
+    public function buildJsBusyIconShow($global = false)
+    {
+        return parent::buildJsBusyIconShow(true);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsBusyIconHide()
+     */
+    public function buildJsBusyIconHide($global = false)
+    {
+        return parent::buildJsBusyIconHide(true);
+    }
 }
 ?>

@@ -147,8 +147,7 @@ JS;
 			{$this->buildJsBusyIconShow()}
 		});
 		oModel.attachRequestCompleted(function(oEvent){
-			{$this->buildJsBusyIconHide()}
-		    if (oEvent.getParameters().success) {
+			if (oEvent.getParameters().success) {
                 var total = this.getProperty("/recordsFiltered");
                 var start = this.getProperty("/recordsOffset");
                 var end = Math.min(start + this.getProperty("/recordsLimit"), total);
@@ -162,6 +161,7 @@ JS;
                 var error = oEvent.getParameters().errorobject;
                 {$this->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}
             }
+            {$this->buildJsBusyIconHide()}
 		});
 
 		oTable.setModel(oModel); 

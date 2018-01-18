@@ -253,6 +253,7 @@ JS;
                     new sap.m.OverflowToolbarButton({
                         icon: "sap-icon://drop-down-list",
                         text: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
+                        tooltip: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),
                         press: function() {
                 			{$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->getJsVar()}.open();
@@ -356,9 +357,15 @@ JS;
      * @return string
      */
     protected function buildJsPage($content)
-    {
-        $filters = $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsFilters();
-        
+    {  
+        foreach ($this->getWidget()->getToolbarMain()->getButtonGroupForSearchActions()->getButtons() as $btn) {
+            if ($btn->getAction()->isExactly('exface.Core.RefreshWidget')){
+                $btn->setHideButtonIcon(true);
+                $btn->setHint($btn->getCaption());
+                $btn->setCaption($this->translate('WIDGET.DATATABLE.GO_BUTTON_TEXT'));
+            }
+            $top_buttons .= $this->getTemplate()->getElement($btn)->buildJsConstructor() . ',';
+        }
         return <<<JS
 
         new sap.f.DynamicPage("{$this->getId()}_page", {
@@ -373,6 +380,7 @@ JS;
 				],
 				actions: [
 				    new sap.m.ToolbarSpacer(),
+                    {$top_buttons}
 					new sap.m.OverflowToolbarButton({
 						press: function(oEvent){
                             var oPage = sap.ui.getCore().byId('{$this->getId()}_page');
@@ -405,7 +413,7 @@ JS;
                     new sap.ui.layout.Grid({
                         defaultSpan: "XL2 L3 M4 S12",
                         content: [
-							{$filters}
+							{$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsFilters()}
 						]
                     })
 				]

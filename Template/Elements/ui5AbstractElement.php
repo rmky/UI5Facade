@@ -382,5 +382,11 @@ JS;
         $this->pseudo_events[$event_name][] = $js;
         return $this;
     }
+    
+    protected function buildJsPropertyTooltip()
+    {
+        $widget = $this->getWidget();
+        return 'tooltip: "' . ($widget->getHint() ? $widget->getHint() : $widget->getCaption()) . '",';
+    }
 }
 ?>

@@ -81,13 +81,14 @@ JS;
         
         $press = $this->buildJsClickFunction() ? 'press: function(){' . $this->buildJsClickFunctionName() . '()},' : '';
         
-        $icon = $widget->getIcon() ? 'icon: "' . $this->getIconSrc($widget->getIcon()) . '",' : '';
+        $icon = $widget->getIcon() && ! $widget->getHideButtonIcon() ? 'icon: "' . $this->getIconSrc($widget->getIcon()) . '",' : '';
         
         $options = '
                     text: "' . $this->getCaption() . '",
                     ' . $icon . '
                     ' . $visibility . '
-                    ' . $press;
+                    ' . $press . '
+                    ' . $this->buildJsPropertyTooltip();
         return $options;
     }
 

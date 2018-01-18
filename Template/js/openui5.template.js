@@ -19,6 +19,7 @@ var oShell = new sap.ui.unified.Shell({
                 new sap.m.ToolbarSpacer(),
                 new sap.m.Label("exf_pagetitle", {
                     text: "",
+                    design: "Bold",
                     layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
                 }),
                 new sap.m.ToolbarSpacer(),

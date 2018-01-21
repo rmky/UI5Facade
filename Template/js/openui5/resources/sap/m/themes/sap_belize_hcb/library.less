@@ -1327,6 +1327,11 @@ html.sap-desktop .sapMGrowingList  .sapMCLI.sapMLIB.sapMLIB-CTX:focus{
 	outline:none;
 }
 
+/* avoid double focus borders in IE */
+html.sap-desktop .sapMGrowingList .sapMLIBLegacyOutline:focus::before {
+	border: none;
+}
+
 html.sap-desktop .sapMLIB-CTX:focus .sapMGrowingListTrigger {
 	border: 0.125rem dotted @sapUiContentFocusColor;
 	border-radius: 0;
@@ -1816,6 +1821,7 @@ html[data-sap-ui-browser^="ie"] {
 
 		a.sapMOHTitleActive:focus {
 			border: 1px solid transparent;
+			outline: none;
 		}
 		a.sapMOHTitleActive:focus ~ .sapMOHTitle > h6 > span,
 		a.sapMOHTitleActive:focus ~ .sapMOHTitle > h5 > span,

@@ -15,7 +15,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -97,7 +97,13 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 			};
 			this.setSelector(oSelector);
 		}
-		this._oPreparedChange = this._createChange(mFlexSettings, sVariantManagementKey);
+		try {
+			this._oPreparedChange = this._createChange(mFlexSettings, sVariantManagementKey);
+		} catch (oError) {
+			jQuery.sap.log.error(oError.message || oError.name);
+			return false;
+		}
+		return true;
 	};
 
 	/**

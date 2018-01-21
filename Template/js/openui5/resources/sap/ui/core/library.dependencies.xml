@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.core">
-  <module name="jquery-sap.js" size="165039" compressedSize="164426" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
+  <module name="jquery-sap.js" size="165148" compressedSize="164535" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
     <includes>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/thirdparty/URI.js"/>
@@ -66,7 +66,7 @@
       <module name="sap/ui/thirdparty/jquery-mobile-custom.js"/>
     </requires>
   </module>
-  <module name="jquery.sap.global.js" size="210400" compressedSize="49986" dynamicDependencies="true" raw="true">
+  <module name="jquery.sap.global.js" size="210433" compressedSize="50002" dynamicDependencies="true" raw="true">
     <requires>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/thirdparty/URI.js"/>
@@ -94,7 +94,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="jquery.sap.mobile.js" size="24051" compressedSize="6436">
+  <module name="jquery.sap.mobile.js" size="24106" compressedSize="6529">
     <description>Provides common helper functions for the mobile version of UI5</description>
     <requires>
       <module name="jquery.sap.dom.js"/>
@@ -183,7 +183,7 @@
       <module name="sap/ui/Device.js"/>
     </requires>
   </module>
-  <module name="sap-ui-core-dbg.js" size="644094" compressedSize="200761" excludeFromAllInOne="true" dynamicDependencies="true">
+  <module name="sap-ui-core-dbg.js" size="644127" compressedSize="200777" excludeFromAllInOne="true" dynamicDependencies="true">
     <requires>
       <module name="sap/ui/core/Core.js"/>
     </requires>
@@ -196,7 +196,7 @@
       <module name="jquery.sap.global.js"/>
     </includes>
   </module>
-  <module name="sap-ui-core-lean.js" size="201126" compressedSize="200613" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
+  <module name="sap-ui-core-lean.js" size="201142" compressedSize="200629" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
     <requires>
       <module name="sap/ui/core/Core.js"/>
     </requires>
@@ -209,7 +209,7 @@
       <module name="jquery.sap.global.js"/>
     </includes>
   </module>
-  <module name="sap-ui-core-nojQuery-dbg.js" size="368829" compressedSize="101131" excludeFromAllInOne="true" dynamicDependencies="true">
+  <module name="sap-ui-core-nojQuery-dbg.js" size="368862" compressedSize="101147" excludeFromAllInOne="true" dynamicDependencies="true">
     <requires>
       <module name="sap/ui/core/Core.js"/>
     </requires>
@@ -220,7 +220,7 @@
       <module name="jquery.sap.global.js"/>
     </includes>
   </module>
-  <module name="sap-ui-core-nojQuery.js" size="498821" compressedSize="496767" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
+  <module name="sap-ui-core-nojQuery.js" size="500356" compressedSize="498299" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
     <includes>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/thirdparty/URI.js"/>
@@ -309,7 +309,7 @@
       <module name="sap/ui/thirdparty/jquery-mobile-custom.js"/>
     </includes>
   </module>
-  <module name="sap-ui-core.js" size="598452" compressedSize="596394" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
+  <module name="sap-ui-core.js" size="599987" compressedSize="597926" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
     <includes>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/thirdparty/URI.js"/>
@@ -584,7 +584,7 @@
       <module name="sap/ui/core/Element.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/AppCacheBuster.js" size="19562" compressedSize="5022">
+  <module name="sap/ui/core/AppCacheBuster.js" size="20226" compressedSize="5438">
     <description>Provides the AppCacheBuster mechanism to load application files using a timestamp</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -665,7 +665,7 @@
       <module name="sap/ui/model/control/ControlModel.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/Configuration.js" size="69979" compressedSize="20586">
+  <module name="sap/ui/core/Configuration.js" size="70098" compressedSize="20586">
     <description>Provides class sap.ui.core.Configuration</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -696,7 +696,7 @@
       <module name="sap/ui/core/UIArea.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/Core.js" size="136216" compressedSize="35880" dynamicDependencies="true">
+  <module name="sap/ui/core/Core.js" size="136417" compressedSize="35936" dynamicDependencies="true">
     <description>Provides the real core class sap.ui.core.Core of SAPUI5</description>
     <requires>
       <module name="jquery.sap.act.js"/>
@@ -810,7 +810,7 @@
       <module name="sap/ui/base/Object.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/ExtensionPoint.js" size="6635" compressedSize="1956" dynamicDependencies="true">
+  <module name="sap/ui/core/ExtensionPoint.js" size="6636" compressedSize="1956" dynamicDependencies="true">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -901,7 +901,7 @@
       <module name="sap/ui/core/library.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/IconPool.js" size="31798" compressedSize="19421">
+  <module name="sap/ui/core/IconPool.js" size="31802" compressedSize="19425">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -943,7 +943,7 @@
       <module name="sap/ui/core/library.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/LabelEnablement.js" size="12483" compressedSize="3866">
+  <module name="sap/ui/core/LabelEnablement.js" size="12603" compressedSize="3915">
     <description>Provides helper sap.ui.core.LabelEnablement</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -988,14 +988,14 @@
       <module name="sap/ui/core/Control.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/Locale.js" size="11860" compressedSize="3284">
+  <module name="sap/ui/core/Locale.js" size="11867" compressedSize="3290">
     <description>Provides the locale object sap.ui.core.Locale</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/base/Object.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/LocaleData.js" size="74669" compressedSize="24034">
+  <module name="sap/ui/core/LocaleData.js" size="82909" compressedSize="30130">
     <description>Provides the locale object sap.ui.core.LocaleData</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1004,7 +1004,7 @@
       <module name="sap/ui/core/Locale.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/Manifest.js" size="22030" compressedSize="6971">
+  <module name="sap/ui/core/Manifest.js" size="22199" compressedSize="6925">
     <description>Provides base class sap.ui.core.Component for all components</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1021,7 +1021,7 @@
       <module name="sap/ui/core/library.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/Popup.js" size="104393" compressedSize="34131">
+  <module name="sap/ui/core/Popup.js" size="103654" compressedSize="33887">
     <description>Provides helper class sap.ui.core.Popup</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1102,7 +1102,7 @@
       <module name="sap/ui/core/Element.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/ThemeCheck.js" size="9797" compressedSize="3920">
+  <module name="sap/ui/core/ThemeCheck.js" size="12926" compressedSize="5176">
     <description>Provides class sap.ui.core.ThemeCheck</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1211,7 +1211,7 @@
       <module name="sap/ui/core/XMLTemplateProcessor.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/XMLTemplateProcessor.js" size="27692" compressedSize="9402" dynamicDependencies="true">
+  <module name="sap/ui/core/XMLTemplateProcessor.js" size="27824" compressedSize="9419" dynamicDependencies="true">
     <description>global HTMLTemplateElement, DocumentFragment</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1245,147 +1245,151 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/cldr/ar.json" size="96681">
+  <module name="sap/ui/core/cldr/ar.json" size="99833">
   </module>
-  <module name="sap/ui/core/cldr/ar_EG.json" size="96679">
+  <module name="sap/ui/core/cldr/ar_EG.json" size="99831">
   </module>
-  <module name="sap/ui/core/cldr/ar_SA.json" size="96680">
+  <module name="sap/ui/core/cldr/ar_SA.json" size="99832">
   </module>
-  <module name="sap/ui/core/cldr/bg.json" size="79404">
+  <module name="sap/ui/core/cldr/bg.json" size="80469">
   </module>
-  <module name="sap/ui/core/cldr/ca.json" size="68076">
+  <module name="sap/ui/core/cldr/ca.json" size="68907">
   </module>
-  <module name="sap/ui/core/cldr/cs.json" size="76843">
+  <module name="sap/ui/core/cldr/cs.json" size="78724">
   </module>
-  <module name="sap/ui/core/cldr/da.json" size="64488">
+  <module name="sap/ui/core/cldr/da.json" size="65379">
   </module>
-  <module name="sap/ui/core/cldr/de.json" size="67697">
+  <module name="sap/ui/core/cldr/de.json" size="68666">
   </module>
-  <module name="sap/ui/core/cldr/de_AT.json" size="67765">
+  <module name="sap/ui/core/cldr/de_AT.json" size="68734">
   </module>
-  <module name="sap/ui/core/cldr/de_CH.json" size="67790">
+  <module name="sap/ui/core/cldr/de_CH.json" size="68759">
   </module>
-  <module name="sap/ui/core/cldr/el.json" size="78177">
+  <module name="sap/ui/core/cldr/el.json" size="79218">
   </module>
-  <module name="sap/ui/core/cldr/el_CY.json" size="78177">
+  <module name="sap/ui/core/cldr/el_CY.json" size="79218">
   </module>
-  <module name="sap/ui/core/cldr/en.json" size="65723">
+  <module name="sap/ui/core/cldr/en.json" size="66476">
   </module>
-  <module name="sap/ui/core/cldr/en_AU.json" size="65956">
+  <module name="sap/ui/core/cldr/en_AU.json" size="66709">
   </module>
-  <module name="sap/ui/core/cldr/en_GB.json" size="65753">
+  <module name="sap/ui/core/cldr/en_GB.json" size="66506">
   </module>
-  <module name="sap/ui/core/cldr/en_HK.json" size="65771">
+  <module name="sap/ui/core/cldr/en_HK.json" size="66524">
   </module>
-  <module name="sap/ui/core/cldr/en_IE.json" size="65566">
+  <module name="sap/ui/core/cldr/en_IE.json" size="66319">
   </module>
-  <module name="sap/ui/core/cldr/en_IN.json" size="65650">
+  <module name="sap/ui/core/cldr/en_IN.json" size="66403">
   </module>
-  <module name="sap/ui/core/cldr/en_NZ.json" size="65599">
+  <module name="sap/ui/core/cldr/en_NZ.json" size="66352">
   </module>
-  <module name="sap/ui/core/cldr/en_PG.json" size="65781">
+  <module name="sap/ui/core/cldr/en_PG.json" size="66534">
   </module>
-  <module name="sap/ui/core/cldr/en_SG.json" size="65675">
+  <module name="sap/ui/core/cldr/en_SG.json" size="66428">
   </module>
-  <module name="sap/ui/core/cldr/en_ZA.json" size="65773">
+  <module name="sap/ui/core/cldr/en_ZA.json" size="66526">
   </module>
-  <module name="sap/ui/core/cldr/es.json" size="66411">
+  <module name="sap/ui/core/cldr/es.json" size="67274">
   </module>
-  <module name="sap/ui/core/cldr/es_AR.json" size="66881">
+  <module name="sap/ui/core/cldr/es_AR.json" size="67744">
   </module>
-  <module name="sap/ui/core/cldr/es_BO.json" size="66774">
+  <module name="sap/ui/core/cldr/es_BO.json" size="67637">
   </module>
-  <module name="sap/ui/core/cldr/es_CL.json" size="66837">
+  <module name="sap/ui/core/cldr/es_CL.json" size="67700">
   </module>
-  <module name="sap/ui/core/cldr/es_CO.json" size="67131">
+  <module name="sap/ui/core/cldr/es_CO.json" size="67994">
   </module>
-  <module name="sap/ui/core/cldr/es_MX.json" size="66614">
+  <module name="sap/ui/core/cldr/es_MX.json" size="67477">
   </module>
-  <module name="sap/ui/core/cldr/es_PE.json" size="66764">
+  <module name="sap/ui/core/cldr/es_PE.json" size="67627">
   </module>
-  <module name="sap/ui/core/cldr/es_UY.json" size="66802">
+  <module name="sap/ui/core/cldr/es_UY.json" size="67665">
   </module>
-  <module name="sap/ui/core/cldr/es_VE.json" size="66759">
+  <module name="sap/ui/core/cldr/es_VE.json" size="67622">
   </module>
-  <module name="sap/ui/core/cldr/et.json" size="65846">
+  <module name="sap/ui/core/cldr/et.json" size="66743">
   </module>
-  <module name="sap/ui/core/cldr/fa.json" size="75712">
+  <module name="sap/ui/core/cldr/fa.json" size="76944">
   </module>
-  <module name="sap/ui/core/cldr/fi.json" size="68316">
+  <module name="sap/ui/core/cldr/fi.json" size="69285">
   </module>
-  <module name="sap/ui/core/cldr/fr.json" size="67120">
+  <module name="sap/ui/core/cldr/fr.json" size="67981">
   </module>
-  <module name="sap/ui/core/cldr/fr_BE.json" size="67158">
+  <module name="sap/ui/core/cldr/fr_BE.json" size="68019">
   </module>
-  <module name="sap/ui/core/cldr/fr_CA.json" size="67085">
+  <module name="sap/ui/core/cldr/fr_CA.json" size="67961">
   </module>
-  <module name="sap/ui/core/cldr/fr_CH.json" size="67748">
+  <module name="sap/ui/core/cldr/fr_CH.json" size="68609">
   </module>
-  <module name="sap/ui/core/cldr/fr_LU.json" size="67121">
+  <module name="sap/ui/core/cldr/fr_LU.json" size="67982">
   </module>
-  <module name="sap/ui/core/cldr/he.json" size="80520">
+  <module name="sap/ui/core/cldr/he.json" size="82120">
   </module>
-  <module name="sap/ui/core/cldr/hi.json" size="87179">
+  <module name="sap/ui/core/cldr/hi.json" size="88148">
   </module>
-  <module name="sap/ui/core/cldr/hr.json" size="70076">
+  <module name="sap/ui/core/cldr/hr.json" size="71474">
   </module>
-  <module name="sap/ui/core/cldr/hu.json" size="64820">
+  <module name="sap/ui/core/cldr/hu.json" size="65681">
   </module>
-  <module name="sap/ui/core/cldr/id.json" size="60861">
+  <module name="sap/ui/core/cldr/id.json" size="61302">
   </module>
-  <module name="sap/ui/core/cldr/it.json" size="66041">
+  <module name="sap/ui/core/cldr/it.json" size="66878">
   </module>
-  <module name="sap/ui/core/cldr/it_CH.json" size="66055">
+  <module name="sap/ui/core/cldr/it_CH.json" size="66892">
   </module>
-  <module name="sap/ui/core/cldr/ja.json" size="74829">
+  <module name="sap/ui/core/cldr/ja.json" size="75262">
   </module>
-  <module name="sap/ui/core/cldr/ko.json" size="70201">
+  <module name="sap/ui/core/cldr/kk.json" size="75320">
   </module>
-  <module name="sap/ui/core/cldr/lt.json" size="76409">
+  <module name="sap/ui/core/cldr/ko.json" size="70639">
   </module>
-  <module name="sap/ui/core/cldr/lv.json" size="70663">
+  <module name="sap/ui/core/cldr/lt.json" size="78350">
   </module>
-  <module name="sap/ui/core/cldr/nb.json" size="67019">
+  <module name="sap/ui/core/cldr/lv.json" size="72136">
   </module>
-  <module name="sap/ui/core/cldr/nl.json" size="67703">
+  <module name="sap/ui/core/cldr/ms.json" size="57233">
   </module>
-  <module name="sap/ui/core/cldr/nl_BE.json" size="67607">
+  <module name="sap/ui/core/cldr/nb.json" size="67904">
   </module>
-  <module name="sap/ui/core/cldr/pl.json" size="74637">
+  <module name="sap/ui/core/cldr/nl.json" size="68630">
   </module>
-  <module name="sap/ui/core/cldr/pt.json" size="65947">
+  <module name="sap/ui/core/cldr/nl_BE.json" size="68534">
   </module>
-  <module name="sap/ui/core/cldr/pt_PT.json" size="67695">
+  <module name="sap/ui/core/cldr/pl.json" size="76410">
   </module>
-  <module name="sap/ui/core/cldr/ro.json" size="68281">
+  <module name="sap/ui/core/cldr/pt.json" size="66784">
   </module>
-  <module name="sap/ui/core/cldr/ru.json" size="87760">
+  <module name="sap/ui/core/cldr/pt_PT.json" size="68514">
   </module>
-  <module name="sap/ui/core/cldr/ru_UA.json" size="87785">
+  <module name="sap/ui/core/cldr/ro.json" size="69682">
   </module>
-  <module name="sap/ui/core/cldr/sk.json" size="72339">
+  <module name="sap/ui/core/cldr/ru.json" size="89725">
   </module>
-  <module name="sap/ui/core/cldr/sl.json" size="74030">
+  <module name="sap/ui/core/cldr/ru_UA.json" size="89750">
   </module>
-  <module name="sap/ui/core/cldr/sr.json" size="82194">
+  <module name="sap/ui/core/cldr/sk.json" size="74220">
   </module>
-  <module name="sap/ui/core/cldr/sv.json" size="67439">
+  <module name="sap/ui/core/cldr/sl.json" size="75899">
   </module>
-  <module name="sap/ui/core/cldr/th.json" size="92621">
+  <module name="sap/ui/core/cldr/sr.json" size="83739">
   </module>
-  <module name="sap/ui/core/cldr/tr.json" size="67386">
+  <module name="sap/ui/core/cldr/sv.json" size="68312">
   </module>
-  <module name="sap/ui/core/cldr/uk.json" size="86270">
+  <module name="sap/ui/core/cldr/th.json" size="93032">
   </module>
-  <module name="sap/ui/core/cldr/vi.json" size="69889">
+  <module name="sap/ui/core/cldr/tr.json" size="68253">
   </module>
-  <module name="sap/ui/core/cldr/zh_CN.json" size="64912">
+  <module name="sap/ui/core/cldr/uk.json" size="88235">
   </module>
-  <module name="sap/ui/core/cldr/zh_HK.json" size="65075">
+  <module name="sap/ui/core/cldr/vi.json" size="70354">
   </module>
-  <module name="sap/ui/core/cldr/zh_SG.json" size="65087">
+  <module name="sap/ui/core/cldr/zh_CN.json" size="65345">
   </module>
-  <module name="sap/ui/core/cldr/zh_TW.json" size="67486">
+  <module name="sap/ui/core/cldr/zh_HK.json" size="65508">
+  </module>
+  <module name="sap/ui/core/cldr/zh_SG.json" size="65520">
+  </module>
+  <module name="sap/ui/core/cldr/zh_TW.json" size="67919">
   </module>
   <module name="sap/ui/core/date/Gregorian.js" size="986" compressedSize="593">
     <description>Provides class sap.ui.core.date.Gregorian</description>
@@ -1432,7 +1436,7 @@
       <module name="sap/ui/base/EventProvider.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/delegate/ScrollEnablement.js" size="25140" compressedSize="10877">
+  <module name="sap/ui/core/delegate/ScrollEnablement.js" size="23985" compressedSize="10128">
     <description>Provides class sap.ui.core.delegate.ScrollEnablement</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1463,7 +1467,7 @@
       <module name="sap/ui/core/format/NumberFormat.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/format/NumberFormat.js" size="46846" compressedSize="13550">
+  <module name="sap/ui/core/format/NumberFormat.js" size="47397" compressedSize="13732">
     <description>Provides class sap.ui.core.format.NumberFormat</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1472,7 +1476,7 @@
       <module name="sap/ui/core/LocaleData.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/library-preload.js" size="1835290" dynamicDependencies="true">
+  <module name="sap/ui/core/library-preload.js" size="1842049" dynamicDependencies="true">
     <requires>
       <module name="jquery.sap.encoder.js"/>
       <module name="jquery.sap.global.js"/>
@@ -2371,7 +2375,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/mvc/XMLView.js" size="23899" compressedSize="7330">
+  <module name="sap/ui/core/mvc/XMLView.js" size="24274" compressedSize="7396">
     <description>Provides control sap.ui.core.mvc.XMLView.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -2766,12 +2770,12 @@
       <module name="sap/ui/core/support/controls/TreeViewer.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/support/techinfo/TechnicalInfo.fragment.xml" size="4114" excludeFromAllInOne="true">
+  <module name="sap/ui/core/support/techinfo/TechnicalInfo.fragment.xml" size="3576" excludeFromAllInOne="true">
     <requires>
       <module name="sap/ui/core/Fragment.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/support/techinfo/TechnicalInfo.js" size="30712" compressedSize="15789" excludeFromAllInOne="true">
+  <module name="sap/ui/core/support/techinfo/TechnicalInfo.js" size="31534" compressedSize="16132" excludeFromAllInOne="true">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -2792,13 +2796,13 @@
       <module name="sap/ui/thirdparty/URI.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/support/techinfo/TechnicalInfoAssistantPopover.fragment.xml" size="2048" excludeFromAllInOne="true">
+  <module name="sap/ui/core/support/techinfo/TechnicalInfoAssistantPopover.fragment.xml" size="1951" excludeFromAllInOne="true">
     <requires>
       <module name="sap/ui/core/Fragment.js"/>
       <module name="sap/ui/core/Item.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/support/techinfo/TechnicalInfoDebugDialog.fragment.xml" size="1946" excludeFromAllInOne="true">
+  <module name="sap/ui/core/support/techinfo/TechnicalInfoDebugDialog.fragment.xml" size="1651" excludeFromAllInOne="true">
     <requires>
       <module name="sap/ui/core/Fragment.js"/>
     </requires>
@@ -2823,7 +2827,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/theming/Parameters.js" size="17024" compressedSize="5340">
+  <module name="sap/ui/core/theming/Parameters.js" size="17017" compressedSize="5399">
     <description>@namespace @name sap.ui.core.theming @public</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -3259,7 +3263,7 @@
       <module name="sap/ui/base/Object.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/Filter.js" size="10594" compressedSize="2460">
+  <module name="sap/ui/model/Filter.js" size="10535" compressedSize="2451">
     <description>Provides a filter for list bindings</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -3273,7 +3277,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/FilterProcessor.js" size="6963" compressedSize="2999">
+  <module name="sap/ui/model/FilterProcessor.js" size="7187" compressedSize="3110">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -3657,7 +3661,7 @@
       <module name="sap/ui/model/odata/ODataUtils.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/ODataMessageParser.js" size="30588" compressedSize="8408">
+  <module name="sap/ui/model/odata/ODataMessageParser.js" size="30876" compressedSize="8503">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -4025,7 +4029,7 @@
       <module name="sap/ui/model/ContextBinding.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v2/ODataListBinding.js" size="42045" compressedSize="16221">
+  <module name="sap/ui/model/odata/v2/ODataListBinding.js" size="43751" compressedSize="16559">
     <description>Provides class sap.ui.model.odata.v2.ODataListBinding</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -4042,7 +4046,7 @@
       <module name="sap/ui/model/odata/OperationMode.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v2/ODataModel.js" size="219693" compressedSize="57839">
+  <module name="sap/ui/model/odata/v2/ODataModel.js" size="221002" compressedSize="58315">
     <description>Provides class sap.ui.model.odata.v2.ODataModel</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -4633,7 +4637,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/ui/test/actions/Action.js" size="6977" compressedSize="2590" excludeFromAllInOne="true">
+  <module name="sap/ui/test/actions/Action.js" size="7867" compressedSize="2675" excludeFromAllInOne="true">
     <description>global FocusEvent, MouseEvent, document</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -5149,7 +5153,7 @@
   </module>
   <module name="sap/ui/thirdparty/less.js" size="268150" compressedSize="104770" excludeFromAllInOne="true" raw="true">
   </module>
-  <module name="sap/ui/thirdparty/mobify-carousel.js" size="21165" compressedSize="8706" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="Mobify" raw="true">
+  <module name="sap/ui/thirdparty/mobify-carousel.js" size="21221" compressedSize="8736" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="Mobify" raw="true">
   </module>
   <module name="sap/ui/thirdparty/mobiscroll/js/mobiscroll-core.js" size="3551" compressedSize="1768" excludeFromAllInOne="true" raw="true">
     <requires>

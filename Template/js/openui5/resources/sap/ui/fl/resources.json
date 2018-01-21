@@ -426,7 +426,6 @@
 			"module": "sap/ui/fl/changeHandler/BaseRename.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/Base.js"
 			]
@@ -435,7 +434,6 @@
 			"name": "changeHandler/BaseRename.js",
 			"module": "sap/ui/fl/changeHandler/BaseRename.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/Base.js"
 			]

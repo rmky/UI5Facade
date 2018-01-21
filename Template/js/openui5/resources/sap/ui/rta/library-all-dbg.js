@@ -20,7 +20,7 @@ sap.ui.define("sap/ui/rta/ControlTreeModifier",["sap/ui/fl/changeHandler/JsContr
 	 * @extends sap.ui.fl.changehandler.jsControlTreeModifier
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @private
 	 * @since 1.44
@@ -368,7 +368,7 @@ function(
 	 * @class Utility functionality to work with controls, e.g. iterate through aggregations, find parents, etc.
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @private
 	 * @static
@@ -1153,7 +1153,7 @@ sap.ui.define("sap/ui/rta/command/BaseCommand",['sap/ui/base/ManagedObject'], fu
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -1190,8 +1190,10 @@ sap.ui.define("sap/ui/rta/command/BaseCommand",['sap/ui/base/ManagedObject'], fu
 
 	/**
 	 * @public Template Method will be called by the command factory when all data is provided to the change
+	 * @return {boolean} Returns true if the preparation was successful
 	 */
 	BaseCommand.prototype.prepare = function() {
+		return true;
 	};
 
 	/**
@@ -1419,11 +1421,12 @@ sap.ui.define("sap/ui/rta/command/CommandFactory",['sap/ui/base/ManagedObject', 
 			bSuccessfullConfigured = fnConfigureActionCommand(vElement, oCommand, oAction);
 		}
 
-		if (bSuccessfullConfigured){
-			oCommand.prepare(mFlexSettings, sVariantManagementKey);
+		var bPrepareStatus = bSuccessfullConfigured && oCommand.prepare(mFlexSettings, sVariantManagementKey);
+		if (bPrepareStatus) {
 			return oCommand;
 		} else {
 			oCommand.destroy();
+			return undefined;
 		}
 	};
 
@@ -1434,7 +1437,7 @@ sap.ui.define("sap/ui/rta/command/CommandFactory",['sap/ui/base/ManagedObject', 
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -1509,7 +1512,7 @@ sap.ui.define("sap/ui/rta/command/CompositeCommand",[ 'sap/ui/rta/command/BaseCo
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -1590,7 +1593,7 @@ sap.ui.define("sap/ui/rta/command/FlexCommand",['sap/ui/rta/command/BaseCommand'
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -1672,7 +1675,13 @@ sap.ui.define("sap/ui/rta/command/FlexCommand",['sap/ui/rta/command/BaseCommand'
 			};
 			this.setSelector(oSelector);
 		}
-		this._oPreparedChange = this._createChange(mFlexSettings, sVariantManagementKey);
+		try {
+			this._oPreparedChange = this._createChange(mFlexSettings, sVariantManagementKey);
+		} catch (oError) {
+			jQuery.sap.log.error(oError.message || oError.name);
+			return false;
+		}
+		return true;
 	};
 
 	/**
@@ -1827,7 +1836,7 @@ sap.ui.define("sap/ui/rta/command/Move",['jquery.sap.global', 'sap/ui/rta/comman
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -1889,9 +1898,12 @@ sap.ui.define("sap/ui/rta/command/Move",['jquery.sap.global', 'sap/ui/rta/comman
 	};
 
 	Move.prototype.prepare = function(sLayer, bDeveloperMode) {
-		FlexCommand.prototype.prepare.apply(this, arguments);
+		var bSuccessful = FlexCommand.prototype.prepare.apply(this, arguments);
 
-		this._oPreparedUndoChange = this._createChangeFromData(this._getChangeSpecificData(true), sLayer, bDeveloperMode);
+		if (bSuccessful) {
+			this._oPreparedUndoChange = this._createChangeFromData(this._getChangeSpecificData(true), sLayer, bDeveloperMode);
+		}
+		return bSuccessful;
 	};
 
 	Move.prototype.undo = function() {
@@ -1925,7 +1937,7 @@ sap.ui.define("sap/ui/rta/command/Property",[
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -1994,7 +2006,7 @@ sap.ui.define("sap/ui/rta/command/Remove",['sap/ui/rta/command/FlexCommand'], fu
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.42
@@ -2049,7 +2061,7 @@ sap.ui.define("sap/ui/rta/command/Rename",['jquery.sap.global', 'sap/ui/rta/comm
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -2111,7 +2123,7 @@ sap.ui.define("sap/ui/rta/command/Reveal",['sap/ui/rta/command/FlexCommand'], fu
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -2162,7 +2174,7 @@ sap.ui.define("sap/ui/rta/command/Settings",['sap/ui/rta/command/FlexCommand'], 
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -2240,7 +2252,7 @@ sap.ui.define("sap/ui/rta/command/Split",[
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -2306,7 +2318,7 @@ sap.ui.define("sap/ui/rta/command/Stack",[
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -2534,7 +2546,7 @@ sap.ui.define("sap/ui/rta/command/appDescriptor/AppDescriptorCommand",['sap/ui/r
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -2612,7 +2624,7 @@ sap.ui.define("sap/ui/rta/library",['jquery.sap.global', 'sap/ui/core/Core', 'sa
 	 * @namespace
 	 * @name sap.ui.rta
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @private
 	 * @experimental This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
@@ -2621,7 +2633,7 @@ sap.ui.define("sap/ui/rta/library",['jquery.sap.global', 'sap/ui/core/Core', 'sa
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.rta",
-		version: "1.50.5",
+		version: "1.50.8",
 		dependencies : ["sap.ui.core","sap.m", "sap.ui.fl", "sap.ui.dt"],
 		types: [
 		],
@@ -2665,7 +2677,7 @@ function(Plugin, FlexUtils, ChangeRegistry) {
 	 * @extends sap.ui.dt.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -2844,7 +2856,7 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 	 * @class The Remove allows trigger remove operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -3155,7 +3167,7 @@ sap.ui.define("sap/ui/rta/plugin/Rename",[
 	 * @extends sap.ui.rta.plugin.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -3603,7 +3615,7 @@ function(
 	 * @class The Selection plugin allows you to select or focus overlays with mouse or keyboard and navigate to others.
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -3897,7 +3909,7 @@ sap.ui.define("sap/ui/rta/plugin/Settings",[
 	 * @class The Settings allows trigger change of settings operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -4047,7 +4059,7 @@ sap.ui.define("sap/ui/rta/plugin/Split",[
 	 * @class
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -4258,7 +4270,7 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AddElementsDialog",[
 	 * @class Context - Dialog for available Fields in Runtime Authoring
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -4395,8 +4407,8 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AddElementsDialog",[
 				{
 					mode : "MultiSelect",
 					includeItemInSelection : true,
-					growing : false,
-					growingScrollToLoad : false
+					growing : true,
+					growingScrollToLoad : true
 				}).setNoDataText(this._oTextResources.getText("MSG_NO_FIELDS", this._oTextResources.getText("MULTIPLE_CONTROL_NAME").toLowerCase()));
 
 		var oListItem = new ListItem({
@@ -4700,7 +4712,7 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 	 * @class The plugin allows to add additional elements that exist either hidden in the UI or in the OData service
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -5298,7 +5310,7 @@ sap.ui.define("sap/ui/rta/ui/SettingsDialog",['jquery.sap.global',
 		 * Constructor for a new sap.ui.rta.SettingsDialog control.
 		 * @extends sap.ui.core.Control
 		 * @author SAP SE
-		 * @version 1.50.5
+		 * @version 1.50.8
 		 * @constructor
 		 * @private
 		 * @since 1.34
@@ -5770,7 +5782,7 @@ function (
 	 * Constructor for a new sap.ui.rta.util.PopupManager
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -6578,7 +6590,7 @@ sap.ui.define("sap/ui/rta/command/AddODataProperty",[
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -6659,7 +6671,7 @@ sap.ui.define("sap/ui/rta/command/BindProperty",[
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.38
@@ -6739,7 +6751,7 @@ sap.ui.define("sap/ui/rta/command/Combine",[
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -6801,7 +6813,7 @@ sap.ui.define("sap/ui/rta/command/CreateContainer",['jquery.sap.global', 'sap/ui
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -6875,7 +6887,7 @@ sap.ui.define("sap/ui/rta/command/LREPSerializer",[
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.42
@@ -6998,7 +7010,7 @@ sap.ui.define("sap/ui/rta/command/appDescriptor/AddLibrary",[
 	 * @extends sap.ui.rta.command.appDescriptor.AppDescriptorCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -7030,6 +7042,7 @@ sap.ui.define("sap/ui/rta/command/appDescriptor/AddLibrary",[
 	 */
 	AddLibrary.prototype.prepare = function(mFlexSettings){
 		this.setLayer(mFlexSettings.layer);
+		return true;
 	};
 
 	/**
@@ -7083,7 +7096,7 @@ sap.ui.define("sap/ui/rta/plugin/Combine",[
 	 * @class
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -7268,7 +7281,7 @@ sap.ui.define("sap/ui/rta/plugin/ControlVariant",[
 	 * @class The ControlVariant allows propagation of variantManagement key
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.50
@@ -7386,7 +7399,7 @@ sap.ui.define("sap/ui/rta/plugin/CreateContainer",[
 	 * @class The CreateContainer allows trigger CreateContainer operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -7584,7 +7597,7 @@ sap.ui.define("sap/ui/rta/plugin/EasyAdd",[
 	 * @class The EasyAdd Plugin adds an Icon to an Overlay, which allows to trigger add operations directly
 	 * @extends sap.ui.rta.plugin.additionalElements.AdditionalElementsPlugin
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -7759,7 +7772,7 @@ sap.ui.define("sap/ui/rta/plugin/EasyRemove",[
 	 * @class The EasyRemove Plugin adds an Icon to an Overlay, which allows to trigger remove operations directly
 	 * @extends sap.ui.rta.plugin.Remove
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -7902,7 +7915,7 @@ function(
 	 * The RTAElementMover is responsible for the RTA specific adaptation of element movements.
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -8639,7 +8652,7 @@ function(
 	 * @extends sap.m.Toolbar
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -8869,7 +8882,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Base
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -8964,7 +8977,7 @@ function(jQuery,
 	 * @extends sap.ui.dt.plugin.CutPaste
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -9079,7 +9092,7 @@ function(jQuery,
 	 * @extends sap.ui.dt.ControlDragDrop
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -9288,7 +9301,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Base
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -9488,7 +9501,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Adaptation
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -9587,7 +9600,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Adaptation
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -9730,7 +9743,7 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	 * @class The runtime authoring allows to adapt the fields of a running application.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.30

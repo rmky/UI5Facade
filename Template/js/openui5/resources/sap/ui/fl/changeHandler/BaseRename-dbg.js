@@ -5,9 +5,8 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global", "./Base", "sap/ui/fl/Utils"
+	"./Base", "sap/ui/fl/Utils"
 ], function(
-	jQuery,
 	Base,
 	Utils
 ) {
@@ -19,7 +18,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.changeHandler.BaseRename
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @experimental Since 1.46
 	 */
 	var BaseRename = {

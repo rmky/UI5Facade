@@ -45,7 +45,7 @@ sap.ui.define("sap/uxap/BlockBaseMetadata",["jquery.sap.global", "sap/ui/core/El
 	 *
 	 * @class
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @since 1.26
 	 * @alias sap.uxap.BlockBaseMetadata
 	 */
@@ -932,6 +932,82 @@ sap.ui.define("sap/uxap/ThrottledTaskHelper",[
 }, /* bExport= */ false);
 
 }; // end of sap/uxap/ThrottledTaskHelper.js
+if ( !jQuery.sap.isDeclared('sap.uxap.changeHandler.RenameObjectPageSection') ) {
+	/*!
+	 * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+	 */
+
+	jQuery.sap.declare('sap.uxap.changeHandler.RenameObjectPageSection'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.changeHandler.BaseRename'); // unlisted dependency retained
+sap.ui.define("sap/uxap/changeHandler/RenameObjectPageSection",[
+		"sap/ui/fl/Utils",
+		"sap/ui/fl/changeHandler/BaseRename"],
+		function(
+			Utils,
+			BaseRename) {
+			"use strict";
+
+			/**
+			 * ObjectPageSection Change Handler for Rename
+			 *
+			 * @constructor
+			 * @alias sap.uxap.changeHandler.RenameObjectPageSection
+			 * @author SAP SE
+			 * @version 1.50.8
+			 * @experimental Since 1.50
+			 */
+
+			var mRenameSettings = {
+				propertyName : "title",
+				changePropertyName : "newText",
+				translationTextType : "XGRP"
+			};
+
+			var RenameObjectPageSection = BaseRename.createRenameChangeHandler(mRenameSettings);
+
+			RenameObjectPageSection.applyChange = function (oChange, oControl, mPropertyBag) {
+				var oModifier = mPropertyBag.modifier;
+				var sPropertyName = mRenameSettings.propertyName;
+				var oChangeDefinition = oChange.getDefinition();
+				var sText = oChangeDefinition.texts[mRenameSettings.changePropertyName];
+				var sValue = sText.value;
+				var oControlToBeRenamed = oControl;
+				var aSubSections = oModifier.getAggregation(oControl, "subSections");
+
+				// due to specific logic in the Object Page Layout, the title of the Section is
+				// taken from its SubSection in case it is only one no matter if the Section has title itself.
+				if (aSubSections
+					&& aSubSections.length === 1
+					&& oModifier.getProperty(aSubSections[0], "title")
+					&& oModifier.getProperty(oModifier.getParent(oControl), "subSectionLayout") === "TitleOnTop"
+				) {
+					oControlToBeRenamed = aSubSections[0];
+				}
+
+				if (oChangeDefinition.texts && sText && typeof (sValue) === "string") {
+					oChange.setRevertData(oModifier.getProperty(oControlToBeRenamed, sPropertyName));
+
+					// The value can be a binding - e.g. for translatable values in WebIde
+					if (Utils.isBinding(sValue)) {
+						oModifier.setPropertyBinding(oControlToBeRenamed, sPropertyName, sValue);
+					} else {
+						oModifier.setProperty(oControlToBeRenamed, sPropertyName, sValue);
+					}
+					return true;
+
+				} else {
+					Utils.log.error("Change does not contain sufficient information to be applied: [" + oChangeDefinition.layer + "]" + oChangeDefinition.namespace + "/" + oChangeDefinition.fileName + "." + oChangeDefinition.fileType);
+					//however subsequent changes should be applied
+				}
+			};
+
+			return RenameObjectPageSection;
+		},
+		/* bExport= */true);
+}; // end of sap/uxap/changeHandler/RenameObjectPageSection.js
 if ( !jQuery.sap.isDeclared('sap.uxap.component.ObjectPageComponentContainer') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
@@ -1059,17 +1135,13 @@ if ( !jQuery.sap.isDeclared('sap.uxap.flexibility.ObjectPageSection.flexibility'
  */
 
 jQuery.sap.declare('sap.uxap.flexibility.ObjectPageSection.flexibility'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
-jQuery.sap.require('sap.ui.fl.changeHandler.BaseRename'); // unlisted dependency retained
 sap.ui.define("sap/uxap/flexibility/ObjectPageSection.flexibility",[
-	'sap/ui/fl/changeHandler/BaseRename'
-], function (BaseRename) {
+	'sap/uxap/changeHandler/RenameObjectPageSection'
+], function (RenameObjectPageSection) {
 	"use strict";
 
 	return {
-		"rename": BaseRename.createRenameChangeHandler({
-			propertyName: "title",
-			translationTextType: "XGRP"
-		}),
+		"rename": RenameObjectPageSection,
 		"moveControls": "default",
 		"hideControl": {
 			"changeHandler": "default",
@@ -1198,7 +1270,7 @@ sap.ui.define("sap/uxap/library",["jquery.sap.global", "sap/ui/core/Core", "sap/
 			"sap.uxap.ModelMapping",
 			"sap.uxap.ObjectPageHeaderLayoutData"
 		],
-		version: "1.50.5",
+		version: "1.50.8",
 		extensions: {
 			flChangeHandlers: {
 				"sap.uxap.ObjectPageHeader" : "sap/uxap/flexibility/ObjectPageHeader",
@@ -2636,7 +2708,7 @@ sap.ui.define("sap/uxap/ObjectPageLazyLoader",[
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @public
@@ -9257,7 +9329,7 @@ sap.ui.define("sap/uxap/ObjectPageLayout",[
 	};
 
 	ObjectPageLayout.prototype._isClosestScrolledSection = function (sSectionId) {
-		var iScrollTop = this._$opWrapper.scrollTop(),
+		var iScrollTop = this._$opWrapper.length > 0 ? this._$opWrapper.scrollTop() : 0,
 			iPageHeight = this.iScreenHeight,
 			sClosestSectionId = this._getClosestScrolledSectionId(iScrollTop, iPageHeight);
 
@@ -11166,7 +11238,8 @@ sap.ui.define("sap/uxap/ObjectPageLayoutRenderer",["sap/ui/core/Renderer", "./Ob
 				oAnchorBar = null,
 				bIsHeaderContentVisible = oControl.getHeaderContent() && oControl.getHeaderContent().length > 0 && oControl.getShowHeaderContent(),
 				bIsTitleInHeaderContent = oControl.getShowTitleInHeaderContent() && oControl.getShowHeaderContent(),
-				bRenderHeaderContent = bIsHeaderContentVisible || bIsTitleInHeaderContent;
+				bRenderHeaderContent = bIsHeaderContentVisible || bIsTitleInHeaderContent,
+				bUseIconTabBar = oControl.getUseIconTabBar();
 
 			if (oControl.getShowAnchorBar() && oControl._getInternalAnchorBarVisible()) {
 				oAnchorBar = oControl.getAggregation("_anchorBar");
@@ -11264,6 +11337,9 @@ sap.ui.define("sap/uxap/ObjectPageLayoutRenderer",["sap/ui/core/Renderer", "./Ob
 			if (jQuery.isArray(aSections)) {
 				jQuery.each(aSections, function (iIndex, oSection) {
 					oRm.renderControl(oSection);
+					if (bUseIconTabBar) {
+						oControl._oCurrentTabSection = oSection;
+					}
 				});
 			}
 			oRm.write("</section>");

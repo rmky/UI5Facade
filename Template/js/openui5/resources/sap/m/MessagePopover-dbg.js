@@ -50,7 +50,7 @@ sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolb
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.5
+		 * @version 1.50.8
 		 *
 		 * @constructor
 		 * @public
@@ -330,6 +330,12 @@ sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolb
 					this['set' + capitalize(sFuncName)](DEFAULT_ASYNC_HANDLERS[sFuncName]);
 				}
 			}, this);
+		};
+
+		MessagePopover.prototype.onBeforeRendering = function () {
+			if (this.getDependents().indexOf(this._oPopover) === -1) {
+				this.addDependent(this._oPopover);
+			}
 		};
 
 		/**

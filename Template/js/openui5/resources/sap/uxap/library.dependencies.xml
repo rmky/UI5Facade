@@ -214,7 +214,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageLayout.js" size="96411" compressedSize="40281">
+  <module name="sap/uxap/ObjectPageLayout.js" size="96445" compressedSize="40309">
     <description>Provides control sap.uxap.ObjectPageLayout.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -244,7 +244,7 @@
       <module name="sap/uxap/AnchorBar.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageLayoutRenderer.js" size="9288" compressedSize="4361">
+  <module name="sap/uxap/ObjectPageLayoutRenderer.js" size="9419" compressedSize="4415">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -331,6 +331,14 @@
       <module name="sap/ui/base/Object.js"/>
     </requires>
   </module>
+  <module name="sap/uxap/changeHandler/RenameObjectPageSection.js" size="2509" compressedSize="1040">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="jquery.sap.global.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
+    </requires>
+  </module>
   <module name="sap/uxap/component/Component.js" size="3830" compressedSize="1832">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
@@ -379,11 +387,11 @@
       <module name="sap/m/changeHandler/SplitMenuButton.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/flexibility/ObjectPageSection.flexibility.js" size="839" compressedSize="660">
+  <module name="sap/uxap/flexibility/ObjectPageSection.flexibility.js" size="787" compressedSize="595">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
-      <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
+      <module name="sap/uxap/changeHandler/RenameObjectPageSection.js"/>
     </requires>
   </module>
   <module name="sap/uxap/flexibility/ObjectPageSubSection.flexibility.js" size="875" compressedSize="654">
@@ -481,7 +489,7 @@
   </module>
   <module name="sap/uxap/i18n/i18n_zh_TW.properties" size="2443">
   </module>
-  <module name="sap/uxap/library-preload.js" size="169570">
+  <module name="sap/uxap/library-preload.js" size="170493">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/m/ActionSheet.js"/>
@@ -527,6 +535,7 @@
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/core/mvc/Controller.js"/>
       <module name="sap/ui/core/mvc/XMLView.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
       <module name="sap/ui/layout/Grid.js"/>
       <module name="sap/ui/layout/GridData.js"/>
@@ -572,6 +581,7 @@
       <module name="sap/uxap/ObjectPageSubSection.js"/>
       <module name="sap/uxap/ObjectPageSubSectionRenderer.js"/>
       <module name="sap/uxap/ThrottledTaskHelper.js"/>
+      <module name="sap/uxap/changeHandler/RenameObjectPageSection.js"/>
       <module name="sap/uxap/component/Component.js"/>
       <module name="sap/uxap/component/ObjectPageComponentContainer.js"/>
       <module name="sap/uxap/component/ObjectPageLayoutUXDrivenFactory.controller.js"/>
@@ -631,6 +641,7 @@
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/core/mvc/Controller.js"/>
       <module name="sap/ui/core/mvc/XMLView.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
       <module name="sap/ui/layout/Grid.js"/>
       <module name="sap/ui/layout/GridData.js"/>
@@ -677,6 +688,7 @@
       <module name="sap/uxap/ObjectPageSubSection.js"/>
       <module name="sap/uxap/ObjectPageSubSectionRenderer.js"/>
       <module name="sap/uxap/ThrottledTaskHelper.js"/>
+      <module name="sap/uxap/changeHandler/RenameObjectPageSection.js"/>
       <module name="sap/uxap/component/Component.js"/>
       <module name="sap/uxap/component/ObjectPageComponentContainer.js"/>
       <module name="sap/uxap/component/ObjectPageLayoutUXDrivenFactory.controller.js"/>

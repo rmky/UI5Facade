@@ -58,7 +58,7 @@ sap.ui.define([
 	 * @class Context - Dialog for available Fields in Runtime Authoring
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -195,8 +195,8 @@ sap.ui.define([
 				{
 					mode : "MultiSelect",
 					includeItemInSelection : true,
-					growing : false,
-					growingScrollToLoad : false
+					growing : true,
+					growingScrollToLoad : true
 				}).setNoDataText(this._oTextResources.getText("MSG_NO_FIELDS", this._oTextResources.getText("MULTIPLE_CONTROL_NAME").toLowerCase()));
 
 		var oListItem = new ListItem({

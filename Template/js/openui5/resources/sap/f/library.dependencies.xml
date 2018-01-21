@@ -21,7 +21,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPage.js" size="45760" compressedSize="19122">
+  <module name="sap/f/DynamicPage.js" size="45758" compressedSize="19122">
     <description>Provides control sap.f.DynamicPage.</description>
     <requires>
       <module name="jquery.sap.global.js"/>

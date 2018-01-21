@@ -27,7 +27,7 @@
     {
       "name" : "sap/f/DynamicPage.js",
       "description" : "Provides control sap.f.DynamicPage.",
-      "size" : 45760,
+      "size" : 45758,
       "compressedSize" : 19122,
       "required" : ["jquery.sap.global.js", "sap/f/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/ScrollBar.js", "sap/ui/core/delegate/ScrollEnablement.js"],
       "includes" : []

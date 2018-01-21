@@ -19,7 +19,7 @@ sap.ui.define([
 	 * @extends sap.ui.rta.command.appDescriptor.AppDescriptorCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @private
@@ -51,6 +51,7 @@ sap.ui.define([
 	 */
 	AddLibrary.prototype.prepare = function(mFlexSettings){
 		this.setLayer(mFlexSettings.layer);
+		return true;
 	};
 
 	/**

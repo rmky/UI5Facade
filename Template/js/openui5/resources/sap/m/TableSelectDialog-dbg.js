@@ -50,7 +50,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 	 * </ul>
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.50.5
+	 * @version 1.50.8
 	 *
 	 * @constructor
 	 * @public
@@ -418,6 +418,8 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 
 		// reset internal variables
 		this._bFirstRequest = true;
+
+		this._sSearchFieldValue = "";
 
 		// set search field value
 		this._oSearchField.setValue(sSearchValue);

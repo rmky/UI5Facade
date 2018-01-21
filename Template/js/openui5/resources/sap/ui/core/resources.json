@@ -8443,6 +8443,10 @@
 			"module": "sap/ui/core/cldr/ja.json"
 		},
 		{
+			"name": "cldr/kk.json",
+			"module": "sap/ui/core/cldr/kk.json"
+		},
+		{
 			"name": "cldr/ko.json",
 			"module": "sap/ui/core/cldr/ko.json"
 		},
@@ -8453,6 +8457,10 @@
 		{
 			"name": "cldr/lv.json",
 			"module": "sap/ui/core/cldr/lv.json"
+		},
+		{
+			"name": "cldr/ms.json",
+			"module": "sap/ui/core/cldr/ms.json"
 		},
 		{
 			"name": "cldr/nb.json",

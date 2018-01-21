@@ -781,6 +781,23 @@
 			]
 		},
 		{
+			"name": "changeHandler/RenameObjectPageSection-dbg.js",
+			"module": "sap/uxap/changeHandler/RenameObjectPageSection.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/BaseRename.js"
+			]
+		},
+		{
+			"name": "changeHandler/RenameObjectPageSection.js",
+			"module": "sap/uxap/changeHandler/RenameObjectPageSection.js",
+			"required": [
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/BaseRename.js"
+			]
+		},
+		{
 			"name": "component/Component-dbg.js",
 			"module": "sap/uxap/component/Component.js",
 			"isDebug": true,
@@ -878,14 +895,14 @@
 			"module": "sap/uxap/flexibility/ObjectPageSection.flexibility.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/fl/changeHandler/BaseRename.js"
+				"sap/uxap/changeHandler/RenameObjectPageSection.js"
 			]
 		},
 		{
 			"name": "flexibility/ObjectPageSection.flexibility.js",
 			"module": "sap/uxap/flexibility/ObjectPageSection.flexibility.js",
 			"required": [
-				"sap/ui/fl/changeHandler/BaseRename.js"
+				"sap/uxap/changeHandler/RenameObjectPageSection.js"
 			]
 		},
 		{
@@ -1235,6 +1252,7 @@
 				"sap/ui/core/library.js",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/core/mvc/XMLView.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/BaseRename.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
@@ -1280,6 +1298,7 @@
 				"sap/uxap/ObjectPageSubSection.js",
 				"sap/uxap/ObjectPageSubSectionRenderer.js",
 				"sap/uxap/ThrottledTaskHelper.js",
+				"sap/uxap/changeHandler/RenameObjectPageSection.js",
 				"sap/uxap/component/Component.js",
 				"sap/uxap/component/ObjectPageComponentContainer.js",
 				"sap/uxap/component/ObjectPageLayoutUXDrivenFactory.controller.js",
@@ -1346,6 +1365,7 @@
 				"sap/ui/core/library.js",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/core/mvc/XMLView.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/BaseRename.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
@@ -1392,6 +1412,7 @@
 				"sap/uxap/ObjectPageSubSection.js",
 				"sap/uxap/ObjectPageSubSectionRenderer.js",
 				"sap/uxap/ThrottledTaskHelper.js",
+				"sap/uxap/changeHandler/RenameObjectPageSection.js",
 				"sap/uxap/component/Component.js",
 				"sap/uxap/component/ObjectPageComponentContainer.js",
 				"sap/uxap/component/ObjectPageLayoutUXDrivenFactory.controller.js",

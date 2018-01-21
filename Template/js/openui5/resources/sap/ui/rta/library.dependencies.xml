@@ -139,7 +139,7 @@
       <module name="sap/ui/rta/command/FlexCommand.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/BaseCommand.js" size="1892" compressedSize="750">
+  <module name="sap/ui/rta/command/BaseCommand.js" size="1976" compressedSize="762">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -161,7 +161,7 @@
       <module name="sap/ui/rta/command/FlexCommand.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/CommandFactory.js" size="8335" compressedSize="3595" dynamicDependencies="true">
+  <module name="sap/ui/rta/command/CommandFactory.js" size="8395" compressedSize="3621" dynamicDependencies="true">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -186,7 +186,7 @@
       <module name="sap/ui/rta/command/FlexCommand.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/FlexCommand.js" size="7296" compressedSize="2966">
+  <module name="sap/ui/rta/command/FlexCommand.js" size="7418" compressedSize="3046">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -207,7 +207,7 @@
       <module name="sap/ui/rta/command/Stack.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/Move.js" size="2453" compressedSize="1257">
+  <module name="sap/ui/rta/command/Move.js" size="2519" compressedSize="1279">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -264,7 +264,7 @@
       <module name="sap/ui/base/ManagedObject.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/appDescriptor/AddLibrary.js" size="2172" compressedSize="931">
+  <module name="sap/ui/rta/command/appDescriptor/AddLibrary.js" size="2187" compressedSize="943">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -281,7 +281,7 @@
       <module name="sap/ui/rta/command/BaseCommand.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/library-preload.js" size="154441" dynamicDependencies="true">
+  <module name="sap/ui/rta/library-preload.js" size="154591" dynamicDependencies="true">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/m/App.js"/>
@@ -809,7 +809,7 @@
       <module name="sap/ui/rta/plugin/Plugin.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/additionalElements/AddElementsDialog.js" size="10050" compressedSize="5210">
+  <module name="sap/ui/rta/plugin/additionalElements/AddElementsDialog.js" size="10048" compressedSize="5208">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>

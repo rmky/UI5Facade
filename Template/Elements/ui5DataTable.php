@@ -59,7 +59,7 @@ JS;
         // Columns
         $column_defs = '';
         foreach ($widget->getColumns() as $column) {
-            $column_defs .= ($column_defs ? ", " : '') . $this->buildJsColumnDef($column);
+            $column_defs .= ($column_defs ? ", " : '') . $this->getTemplate()->getElement($column)->buildJsConstructor();
         }
         
         $js = <<<JS
@@ -69,6 +69,7 @@ JS;
                 , selectionMode: {$selection_mode}
         		, selectionBehavior: {$selection_behavior}
         	    , enableColumnReordering:true
+                , enableColumnFreeze: true
         		, filter: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)}
         		, sort: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)}
         		, toolbar: [
@@ -308,46 +309,6 @@ JS;
     protected function getPaginationPageSize()
     {
         return $this->getWidget()->getPaginatePageSize() ? $this->getWidget()->getPaginatePageSize() : $this->getTemplate()->getConfig()->getOption('WIDGET.DATATABLE.PAGE_SIZE');
-    }
-
-    /**
-     * Returns the constructor for a sap.ui.table.Column created from the given DataColumn widget
-     * 
-     * @param DataColumn $column
-     * @return string
-     */
-    protected function buildJsColumnDef(DataColumn $column)
-    {
-        $visible = $column->isHidden() ? 'false' : 'true';
-        switch ($column->getAlign()) {
-            case EXF_ALIGN_RIGHT:
-            case EXF_ALIGN_OPPOSITE:
-                $alignment = 'textAlign: sap.ui.core.TextAlign.End';
-                break;
-            case EXF_ALIGN_CENTER:
-                $alignment = 'textAlign: sap.ui.core.TextAlign.Center';
-                break;
-            case EXF_ALIGN_LEFT:
-            case EXF_ALIGN_DEFAULT:
-            default:
-                $alignment = 'textAlign: sap.ui.core.TextAlign.Begin';
-                                
-        }
-        
-        return <<<JS
-	 new sap.ui.table.Column({
-	    label: new sap.ui.commons.Label({
-            text: "{$column->getCaption()}"
-        })
-        , tooltip: "{$column->getCaption()}"
-	    , template: new sap.ui.commons.TextField({
-            {$alignment}
-        }).bindProperty("value", "{$column->getDataColumnName()}")
-	    , sortProperty: "{$column->getAttributeAlias()}"
-	    , filterProperty: "{$column->getAttributeAlias()}"
-		, visible: {$visible}
-	})
-JS;
     }
     
     /**

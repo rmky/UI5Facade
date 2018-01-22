@@ -40,8 +40,10 @@ class ui5ComboTable extends ui5Input
         $columns = '';
         $cells = '';
         foreach ($widget->getTable()->getColumns() as $idx => $col) {
-            $columns .= ($columns ? ",\n" : '') . $this->buildJsPropertiesColumn($col);
-            $cells .= ($cells ? ",\n" : '') . $this->buildJsPropertiesCell($col);
+            /* @var $element \exface\OpenUI5Template\Template\Elements\ui5DataColumn */
+            $element = $this->getTemplate()->getElement($col);
+            $columns .= ($columns ? ",\n" : '') . $element->buildJsConstructorForMTable();
+            $cells .= ($cells ? ",\n" : '') . $element->buildJsCellWithLabel();
             if ($col->getId() === $widget->getValueColumn()->getId()) {
                 $value_idx = $idx;
             }
@@ -109,43 +111,6 @@ class ui5ComboTable extends ui5Input
             var oModel = new sap.ui.model.json.JSONModel();
             return oModel;
         }()){$value_init_js}{$this->buildJsPseudoEventHandlers()}
-JS;
-    }
-       
-    protected function buildJsPropertiesCell(DataColumn $col)
-    {
-        return <<<JS
-
-                        new sap.m.Label({
-                            text: "{{$col->getDataColumnName()}}", 
-                            tooltip: "{{$col->getDataColumnName()}}"
-                        })
-
-JS;
-    }
-       
-    protected function buildJsPropertiesColumn(DataColumn $col)
-    {
-        $options = '';
-        
-        if ($col->isHidden()){
-            $options .= 'visible: false,'; 
-        }
-        
-        return <<<JS
-
-                    new sap.m.Column({
-						hAlign: "Begin",
-						popinDisplay: "Inline",
-						demandPopin: true,
-						header: [
-                            new sap.m.Label({
-                                text: "{$col->getCaption()}"
-                            })
-                        ],
-                        {$options}
-					})
-
 JS;
     }
     

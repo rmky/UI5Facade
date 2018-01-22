@@ -51,16 +51,56 @@ JS;
      */
     public function buildJsConstructor()
     { 
+        if ($this->getWidget()->isResponsive()) {
+            
+        } else {
+            $js = $this->buildJsConstructorForUiTable();
+        }
+        
+        if ($this->isWrappedInDynamicPage()){
+            return $this->buildJsPage($js);
+        } else {
+            return $js;
+        }
+    }
+    
+    protected function buildJsConstructorForMTable()
+    {
+        return <<<JS
+
+    new sap.m.Table("{$this->getId()}", {
+		headerToolbar: [
+            {$this->buildJsToolbar()}
+		],
+		columns: [
+            
+		]
+		items="{
+			path: '/ProductCollection',
+			sorter: {
+				path: 'Name'
+			}
+		}">
+		<items>
+			<ColumnListItem vAlign="Middle" type="Navigation">
+				<cells>
+					<Text text="{Name}" wrapping="false" />
+					<Text text="{SupplierName}" wrapping="false"/>
+					<Text text="{Description}" />
+				</cells>
+			</ColumnListItem>
+		</items>
+	</Table>
+
+JS;
+    }
+    
+    protected function buildJsConstructorForUiTable()
+    {
         $widget = $this->getWidget();
         
         $selection_mode = $widget->getMultiSelect() ? 'sap.ui.table.SelectionMode.MultiToggle' : 'sap.ui.table.SelectionMode.Single';
         $selection_behavior = $widget->getMultiSelect() ? 'sap.ui.table.SelectionBehavior.Row' : 'sap.ui.table.SelectionBehavior.RowOnly';
-        
-        // Columns
-        $column_defs = '';
-        foreach ($widget->getColumns() as $column) {
-            $column_defs .= ($column_defs ? ", " : '') . $this->getTemplate()->getElement($column)->buildJsConstructor();
-        }
         
         $js = <<<JS
         function() {
@@ -76,7 +116,7 @@ JS;
         			{$this->buildJsToolbar()}
         		]
         		, columns: [
-        			{$column_defs}
+        			{$this->buildJsColumnsForUiTable()}
         		]
         	})/*.addEventDelegate({
                 onAfterRendering : function() {
@@ -87,12 +127,30 @@ JS;
             return {$this->getJsVar()}
         }()
 JS;
+            
+        return $js;
+    }
     
-        if ($this->isWrappedInDynamicPage()){
-            return $this->buildJsPage($js);
-        } else {
-            return $js;
+    protected function buildJsColumnsForUiTable()
+    {
+        // Columns
+        $column_defs = '';
+        foreach ($this->getWidget()->getColumns() as $column) {
+            $column_defs .= ($column_defs ? ", " : '') . $this->getTemplate()->getElement($column)->buildJsConstructorForUiColumn();
         }
+        
+        return $column_defs;
+    }
+    
+    protected function buildJsColumnsForMTable()
+    {
+        // Columns
+        $column_defs = '';
+        foreach ($this->getWidget()->getColumns() as $column) {
+            $column_defs .= ($column_defs ? ", " : '') . $this->getTemplate()->getElement($column)->buildJsConstructorForMColumn();
+        }
+        
+        return $column_defs;
     }
     
     /**

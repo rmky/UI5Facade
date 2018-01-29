@@ -18,6 +18,11 @@ class ui5DataTable extends ui5AbstractElement
 {
     use JqueryDataTableTrait;
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::init()
+     */
     protected function init()
     {
         if ($this->isWrappedInDynamicPage()) {
@@ -64,6 +69,11 @@ JS;
         }
     }
     
+    /**
+     * Returns the javascript constructor for a sap.m.Table
+     * 
+     * @return string
+     */
     protected function buildJsConstructorForMTable()
     {
         return <<<JS
@@ -95,6 +105,11 @@ JS;
 JS;
     }
     
+    /**
+     * Returns the javascript constructor for a sap.ui.table.Table
+     * 
+     * @return string
+     */
     protected function buildJsConstructorForUiTable()
     {
         $widget = $this->getWidget();
@@ -131,6 +146,11 @@ JS;
         return $js;
     }
     
+    /**
+     * Returns a comma separated list of column constructors for sap.ui.table.Table
+     * 
+     * @return string
+     */
     protected function buildJsColumnsForUiTable()
     {
         // Columns
@@ -142,6 +162,11 @@ JS;
         return $column_defs;
     }
     
+    /**
+     * Returns a comma-separated list of column constructors for sap.m.Table
+     * 
+     * @return string
+     */
     protected function buildJsColumnsForMTable()
     {
         // Columns
@@ -154,7 +179,8 @@ JS;
     }
     
     /**
-     *
+     * Returns TRUE if this table uses a remote data source and FALSE otherwise.
+     * 
      * @return boolean
      */
     protected function isLazyLoading()
@@ -166,6 +192,14 @@ JS;
         return $widget_option;
     }
 
+    /**
+     * Returns the definition of a javascript function to fill the table with data: TableIdLoadData(oControlEvent).
+     * 
+     * The function accepts the following optional JS parameters:
+     * - oControlEvent - event that caused the reload (needed for sorting/filtering via column headers to work)
+     * 
+     * @return string
+     */
     protected function buildJsDataSource()
     {
         $widget = $this->getWidget();
@@ -294,7 +328,6 @@ JS;
         }),
         
 JS;
-        $buttons = $this->buildJsButtons() . ($this->buildJsButtons() ? ',' : '');
         $toolbar = <<<JS
 			new sap.m.OverflowToolbar({
                 design: "Transparent",
@@ -302,7 +335,7 @@ JS;
 					{$heading}
 			        {$pager}
                     new sap.m.ToolbarSpacer(),
-                    {$buttons}
+                    {$this->buildJsButtonsConstructors()}
 					new sap.m.SearchField("{$this->getId()}_quickSearch", {
                         width: "200px",
                         search: function(){ {$this->buildJsRefresh()} },
@@ -330,18 +363,33 @@ JS;
         return $toolbar;
     }
     
+    /**
+     * Returns the text to be shown a table title
+     * 
+     * @return string
+     */
     protected function buildTextTableHeading()
     {
         $widget = $this->getWidget();
         return $widget->getCaption() ? $widget->getCaption() : $widget->getMetaObject()->getName();
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsRefresh()
+     */
     public function buildJsRefresh()
     {
         return "{$this->buildJsFunctionPrefix()}LoadData()";
     }
-                    
-    protected function buildJsButtons()
+    
+    /**
+     * Returns a ready-to-use comma separated list of javascript constructors for all buttons of the table.
+     * 
+     * @return string
+     */
+    protected function buildJsButtonsConstructors()
     {
         $widget = $this->getWidget();
         $buttons = '';
@@ -357,13 +405,18 @@ JS;
                 }
                 $buttons .= ($buttons && $btn_group->getVisibility() > EXF_WIDGET_VISIBILITY_OPTIONAL ? ",\n new sap.m.ToolbarSeparator()" : '');
                 foreach ($btn_group->getButtons() as $btn) {
-                    $buttons .= ($buttons ? ", \n" : '') . $this->getTemplate()->getElement($btn)->buildJsConstructor();
+                    $buttons .= $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n";
                 }
             }
         }
         return $buttons;
     }
 
+    /**
+     * Returns the number of records to show on one page.
+     * 
+     * @return number
+     */
     protected function getPaginationPageSize()
     {
         return $this->getWidget()->getPaginatePageSize() ? $this->getWidget()->getPaginatePageSize() : $this->getTemplate()->getConfig()->getOption('WIDGET.DATATABLE.PAGE_SIZE');
@@ -444,7 +497,12 @@ JS;
         })
 JS;
     }
-                
+    
+    /**
+     * Returns TRUE if the table will be wrapped in a sap.f.DynamicPage to create a Fiori ListReport
+     * 
+     * @return boolean
+     */
     protected function isWrappedInDynamicPage()
     {
         return $this->getWidget()->hasParent() || $this->getWidget()->getHideHeader() ? false : true;

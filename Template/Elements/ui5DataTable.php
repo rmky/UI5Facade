@@ -296,6 +296,11 @@ JS;
 JS;
     }
 
+    /**
+     * Returns JavaScript-Functions which are necessary for the pagination.
+     *
+     * @return string
+     */
     protected function buildJsPagination()
     {
         $defaultPageSize = $this->getPaginationPageSize();

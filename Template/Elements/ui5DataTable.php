@@ -44,7 +44,8 @@ class ui5DataTable extends ui5AbstractElement
         return <<<JS
     var {$this->getJsVar()};
     {$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->generateJs()}
-	{$this->buildJsDataSource()}  
+	{$this->buildJsDataSource()}
+    {$this->buildJsPagination()}
     {$buttons_functions}
 JS;
     }
@@ -222,15 +223,9 @@ JS;
 					, object: "' . $widget->getMetaObject()->getId() . '"
 				';
         
-        // Pagination
-        $params .= '
-					, length: "' . $this->getPaginationPageSize() . '"
-					, start: 0
-				';        
-        
         return <<<JS
 	
-	function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent) {
+	function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent, keep_page_pos) {
 		var oTable = sap.ui.getCore().byId("{$this->getId()}");
         var params = { {$params} };
 		var cols = oTable.getColumns();
@@ -241,10 +236,8 @@ JS;
 		});
 		oModel.attachRequestCompleted(function(oEvent){
 			if (oEvent.getParameters().success) {
-                var total = this.getProperty("/recordsFiltered");
-                var start = this.getProperty("/recordsOffset");
-                var end = Math.min(start + this.getProperty("/recordsLimit"), total);
-                sap.ui.getCore().byId("{$this->getId()}_pager").setText(start + ' - ' + end + ' / ' + total);
+                {$this->getId()}_pages.total = this.getProperty("/recordsFiltered");
+                {$this->getId()}_drawPagination();
                 
     			var footerRows = this.getProperty("/footerRows");
                 if (footerRows){
@@ -264,6 +257,14 @@ JS;
 
         // Add configurator data
         params.data = {$this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter()};
+        
+        // Add pagination
+        var pages = {$this->getId()}_pages;
+        if (! keep_page_pos) {
+            pages.resetAll();
+        }
+        params.start = pages.start;
+        params.length = pages.pageSize;
         
         // Add filters and sorters from column menus
 		for (var i=0; i<oTable.getColumns().length; i++){
@@ -295,6 +296,63 @@ JS;
 JS;
     }
 
+    protected function buildJsPagination()
+    {
+        $defaultPageSize = $this->getPaginationPageSize();
+        
+        return <<<JS
+
+    var {$this->getId()}_pages = {
+    	start: 0,
+        pageSize: {$defaultPageSize},
+        total: 0,
+        end: function() {
+            return Math.min(this.start + this.pageSize - 1, this.total - 1);
+        },
+        previous: function() {
+            this.resetPageSize();
+            if (this.start >= this.pageSize) {
+                this.start -= this.pageSize;
+            } else {
+                this.start = 0;
+            }
+        },
+        next: function() {
+            if (this.start < this.total - this.pageSize) {
+                this.start += this.pageSize;
+            }
+            this.resetPageSize();
+        },
+        increasePageSize: function() {
+            this.pageSize += {$defaultPageSize};
+        },
+        resetPageSize: function() {
+            this.pageSize = {$defaultPageSize};
+        },
+        resetAll: function() {
+            this.start = 0;
+            this.pageSize = {$defaultPageSize};
+            this.total = 0;
+        }
+    };
+
+    function {$this->getId()}_drawPagination() {
+        var pages = {$this->getId()}_pages;
+    	if (pages.start === 0) {
+            sap.ui.getCore().byId("{$this->getId()}_prev").setEnabled(false);
+    	} else {
+            sap.ui.getCore().byId("{$this->getId()}_prev").setEnabled(true);
+    	}
+    	if (pages.end() === (pages.total - 1)) {
+            sap.ui.getCore().byId("{$this->getId()}_next").setEnabled(false);
+    	} else {
+    		sap.ui.getCore().byId("{$this->getId()}_next").setEnabled(true);
+    	}
+        sap.ui.getCore().byId("{$this->getId()}_pager").setText((pages.start + 1) + ' - ' + (pages.end() + 1) + ' / ' + pages.total);
+	}
+JS;
+    }
+
     /**
      * Returns the constructor for the table's main toolbar (OverflowToolbar).
      * 
@@ -312,19 +370,26 @@ JS;
     {
         $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $this->buildTextTableHeading() . ': "}),';
         $pager = <<<JS
-        new sap.m.Label("{$this->getId()}_pager", {
-            text: ""
-        }),
         new sap.m.OverflowToolbarButton("{$this->getId()}_prev", {
             icon: "sap-icon://navigation-left-arrow",
             layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
             text: "Previous page",
-            enabled: false
+            press: function() {
+                {$this->getId()}_pages.previous();
+                {$this->buildJsRefresh(true)}
+            }
         }),
         new sap.m.OverflowToolbarButton("{$this->getId()}_next", {
             icon: "sap-icon://navigation-right-arrow",
             layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
             text: "Next page",
+            press: function() {
+                {$this->getId()}_pages.next();
+                {$this->buildJsRefresh(true)}
+            }
+        }),
+        new sap.m.Label("{$this->getId()}_pager", {
+            text: ""
         }),
         
 JS;
@@ -379,9 +444,9 @@ JS;
      * {@inheritDoc}
      * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsRefresh()
      */
-    public function buildJsRefresh()
+    public function buildJsRefresh($keep_page_pos = false)
     {
-        return "{$this->buildJsFunctionPrefix()}LoadData()";
+        return "{$this->buildJsFunctionPrefix()}LoadData(undefined, " . ($keep_page_pos ? 'true' : 'false') . ')';
     }
     
     /**

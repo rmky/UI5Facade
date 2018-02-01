@@ -3,6 +3,9 @@ namespace exface\OpenUI5Template\Template\Elements;
 
 use exface\Core\Widgets\DataColumn;
 use exface\Core\Widgets\DataTable;
+use exface\OpenUI5Template\Template\Interfaces\ui5BindingFormatterInterface;
+use exface\OpenUI5Template\Template\Interfaces\ui5ValueBindingInterface;
+use exface\OpenUI5Template\Template\Interfaces\ui5CompoundControlInterface;
 
 /**
  *
@@ -22,7 +25,7 @@ class ui5DataColumn extends ui5AbstractElement
     {
         $data_widget = $this->getWidget()->getParent();
         if (($data_widget instanceof DataTable) && $data_widget->isResponsive()) {
-            return $this->buildJsConstructorForMTable();
+            return $this->buildJsConstructorForMColumn();
         }
         return $this->buildJsConstructorForUiColumn();
     }
@@ -43,25 +46,36 @@ class ui5DataColumn extends ui5AbstractElement
         }),
         autoResizable: true,
         tooltip: "{$this->escapeJsTextValue($this->buildJsPropertyTooltip())}",
-	    template: new sap.ui.commons.TextField({
-            {$this->buildJsPropertyAlignment('textAlign')}
-        }).bindProperty("value", "{$widget->getDataColumnName()}"),
+	    template: {$this->buildJsConstructorForCell()},
 	    sortProperty: "{$widget->getAttributeAlias()}",
 	    filterProperty: "{$widget->getAttributeAlias()}",
 		{$this->buildJsPropertyVisibile()}
 	})
 JS;
     }
-    
+		
+    public function buildJsConstructorForCell()
+    {
+        $tpl = $this->getTemplate()->getElement($this->getWidget()->getCellWidget());
+        if ($tpl instanceof ui5Display) {
+            $tpl->setAlignment($this->buildJsAlignment());
+        }
+        if ($tpl instanceof ui5CompoundControlInterface) {
+            return $tpl->buildJsConstructorForMainControl();
+        } else {
+            return $tpl->buildJsConstructor();
+        }
+    }
+		
     /**
      * Returns the constructor for a sap.m.Column for this DataColumn widget.
      * 
      * @return string
      */
-    public function buildJsConstructorForMTable()
+    public function buildJsConstructorForMColumn()
     {
         $col = $this->getWidget();
-        
+        $alignment = 'hAlign: ' . $this->buildJsAlignment() . ',';
         return <<<JS
         
                     new sap.m.Column({
@@ -72,28 +86,10 @@ JS;
                                 text: "{$col->getCaption()}"
                             })
                         ],
-                        {$this->buildJsPropertyAlignment('hAlign')}
+                        {$alignment}
                         {$this->buildJsPropertyVisibile()}
 					})
 					
-JS;
-    }
-    
-    /**
-     * Returns the constructor for a regular read-only cell template for sap.m.Table
-     * 
-     * @return string
-     */
-    public function buildJsCellWithLabel()
-    {
-        $col = $this->getWidget();
-        return <<<JS
-        
-                        new sap.m.Label({
-                            text: "{{$col->getDataColumnName()}}",
-                            tooltip: "{{$col->getDataColumnName()}}"
-                        })
-                        
 JS;
     }
     
@@ -113,24 +109,24 @@ JS;
      * @param string $propertyName
      * @return string
      */
-    protected function buildJsPropertyAlignment($propertyName = 'hAlign')
+    protected function buildJsAlignment()
     {
         switch ($this->getWidget()->getAlign()) {
             case EXF_ALIGN_RIGHT:
             case EXF_ALIGN_OPPOSITE:
-                $alignment = 'End';
+                $alignment = '"End"';
                 break;
             case EXF_ALIGN_CENTER:
-                $alignment = 'Center';
+                $alignment = '"Center"';
                 break;
             case EXF_ALIGN_LEFT:
             case EXF_ALIGN_DEFAULT:
             default:
-                $alignment = 'Begin';
+                $alignment = '"Begin"';
                 
         }
         
-        return $propertyName . ': "' . $alignment . '",';
+        return $alignment;
     }
 }
 ?>

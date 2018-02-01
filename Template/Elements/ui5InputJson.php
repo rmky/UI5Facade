@@ -24,9 +24,9 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5Input::buildJsControlConstructor()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Input::buildJsConstructorForMainControl()
      */
-    protected function buildJsControlConstructor()
+    public function buildJsConstructorForMainControl()
     {
         // TODO create own control instead of using the HTML control in order to be able to destroy the JSONeditor
         // properly. The way the whole thing works now, the JS variable {$this->getId()}_JSONeditor lives even

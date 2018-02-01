@@ -25,14 +25,14 @@ class ui5Html extends ui5Text
      */
     public function buildJsConstructor()
     {
-        return $this->buildJsLabelWrapper($this->buildJsControlConstructor());
+        return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl());
     }
     
     /**
      * Returns the constructor of the text/input element without the label
      * @return string
      */
-    protected function buildJsControlConstructor()
+    public function buildJsConstructorForMainControl()
     {
         $widget = $this->getWidget();
         $html = $widget->getHtml();

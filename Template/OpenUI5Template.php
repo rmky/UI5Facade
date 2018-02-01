@@ -7,6 +7,12 @@ use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use exface\OpenUI5Template\Template\Elements\ui5AbstractElement;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\CommonLogic\UxonObject;
+use exface\Core\Interfaces\DataTypes\DataTypeInterface;
+use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsDateFormatter;
+use exface\OpenUI5Template\Template\Formatters\ui5DateFormatter;
+use exface\OpenUI5Template\Template\Formatters\ui5TransparentFormatter;
+use exface\Core\DataTypes\TimestampDataType;
+use exface\OpenUI5Template\Template\Formatters\ui5DateTimeFormatter;
 
 /**
  * 
@@ -109,6 +115,28 @@ class OpenUI5Template extends AbstractAjaxTemplate
         // Cache FALSE results too.
         $this->config_maximize_dialog_on_actions[$action->getAliasWithNamespace()] = false;
         return false;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::getDataTypeFormatter()
+     */
+    public function getDataTypeFormatter(DataTypeInterface $dataType)
+    {
+        $formatter = parent::getDataTypeFormatter($dataType);
+        
+        switch (true) {
+            case $formatter instanceof JsDateFormatter:
+                if ($formatter->getDataType() instanceof TimestampDataType) {
+                    return new ui5DateTimeFormatter($formatter);
+                } else {
+                    return new ui5DateFormatter($formatter);
+                }
+                break;
+        }
+        
+        return new ui5TransparentFormatter($formatter);
     }
 }
 ?>

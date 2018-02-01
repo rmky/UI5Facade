@@ -25,9 +25,9 @@ class ui5ComboTable extends ui5Input
     /**
      *
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5Input::buildJsControlConstructor()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Input::buildJsConstructorForMainControl()
      */
-    protected function buildJsControlConstructor()
+    public function buildJsConstructorForMainControl()
     {
         $widget = $this->getWidget();
         
@@ -42,8 +42,8 @@ class ui5ComboTable extends ui5Input
         foreach ($widget->getTable()->getColumns() as $idx => $col) {
             /* @var $element \exface\OpenUI5Template\Template\Elements\ui5DataColumn */
             $element = $this->getTemplate()->getElement($col);
-            $columns .= ($columns ? ",\n" : '') . $element->buildJsConstructorForMTable();
-            $cells .= ($cells ? ",\n" : '') . $element->buildJsCellWithLabel();
+            $columns .= ($columns ? ",\n" : '') . $element->buildJsConstructorForMColumn();
+            $cells .= ($cells ? ",\n" : '') . $element->buildJsConstructorForCell();
             if ($col->getId() === $widget->getValueColumn()->getId()) {
                 $value_idx = $idx;
             }

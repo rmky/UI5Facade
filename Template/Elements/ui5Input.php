@@ -7,14 +7,25 @@ namespace exface\OpenUI5Template\Template\Elements;
  * @author Andrej Kabachnik
  *        
  */
-class ui5Input extends ui5Text
+class ui5Input extends ui5Value
 {
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsConstructor()
+     */
+    public function buildJsConstructor()
+    {
+        return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl());
+    }
+    
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5Text::buildJsControlConstructor()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Value::buildJsConstructorForMainControl()
      */
-    protected function buildJsControlConstructor()
+    public function buildJsConstructorForMainControl()
     {
         return <<<JS
         new sap.m.Input("{$this->getId()}", {

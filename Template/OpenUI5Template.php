@@ -2,8 +2,6 @@
 namespace exface\OpenUI5Template\Template;
 
 use exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate;
-use exface\Core\Interfaces\Model\UiPageInterface;
-use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use exface\OpenUI5Template\Template\Elements\ui5AbstractElement;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\CommonLogic\UxonObject;
@@ -13,6 +11,10 @@ use exface\OpenUI5Template\Template\Formatters\ui5DateFormatter;
 use exface\OpenUI5Template\Template\Formatters\ui5TransparentFormatter;
 use exface\Core\DataTypes\TimestampDataType;
 use exface\OpenUI5Template\Template\Formatters\ui5DateTimeFormatter;
+use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsBooleanFormatter;
+use exface\OpenUI5Template\Template\Formatters\ui5BooleanFormatter;
+use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsNumberFormatter;
+use exface\OpenUI5Template\Template\Formatters\ui5NumberFormatter;
 
 /**
  * 
@@ -127,6 +129,12 @@ class OpenUI5Template extends AbstractAjaxTemplate
         $formatter = parent::getDataTypeFormatter($dataType);
         
         switch (true) {
+            case $formatter instanceof JsBooleanFormatter:
+                return new ui5BooleanFormatter($formatter);
+                break;
+            case ($formatter instanceof JsNumberFormatter) && $formatter->getDataType()->getBase() === 10:
+                return new ui5NumberFormatter($formatter);
+                break;
             case $formatter instanceof JsDateFormatter:
                 if ($formatter->getDataType() instanceof TimestampDataType) {
                     return new ui5DateTimeFormatter($formatter);

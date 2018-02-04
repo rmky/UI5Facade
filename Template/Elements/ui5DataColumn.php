@@ -53,10 +53,17 @@ class ui5DataColumn extends ui5AbstractElement
 	})
 JS;
     }
-		
+	
+    /**
+     * Returns the javascript constructor for a cell control to be used in cell template aggregations.
+     * 
+     * @return string
+     */
     public function buildJsConstructorForCell()
     {
         $tpl = $this->getTemplate()->getElement($this->getWidget()->getCellWidget());
+        // Disable using widget id as control id because this is a template for multiple controls
+        $tpl->setUseWidgetId(false);
         if ($tpl instanceof ui5Display) {
             $tpl->setAlignment($this->buildJsAlignment());
         }

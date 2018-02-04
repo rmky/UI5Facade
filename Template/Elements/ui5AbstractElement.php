@@ -18,6 +18,8 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
 {
     private $jsVarName = null;
     
+    private $useWidgetId = true;
+    
     /**
      * 
      * @var array [ event_name => [code, code, ...] ]
@@ -395,6 +397,31 @@ JS;
     {
         $widget = $this->getWidget();
         return 'tooltip: "' . ($widget->getHint() ? $widget->getHint() : $widget->getCaption()) . '",';
+    }
+    
+    public function setUseWidgetId($true_or_false)
+    {
+        $this->useWidgetId = $true_or_false;
+        return $this;
+    }
+    
+    public function getUseWidgetId()
+    {
+        return $this->useWidgetId;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::getId()
+     */
+    public function getId()
+    {
+        if ($this->getUseWidgetId() === false) {
+            return '';
+        }
+        
+        return parent::getId();
     }
 }
 ?>

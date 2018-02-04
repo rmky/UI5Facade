@@ -18,9 +18,11 @@ class ui5CheckBox extends ui5Input
     public function buildJsConstructorForMainControl()
     {
         return <<<JS
+
         new sap.m.CheckBox("{$this->getId()}", {
             {$this->buildJsProperties()}
         })
+
 JS;
     }
     

@@ -13,6 +13,14 @@ use exface\Core\Widgets\Text;
  */
 class ui5Text extends ui5Display
 {
-    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Display::buildJsPropertyWrapping()
+     */
+    protected function buildJsPropertyWrapping()
+    {
+        return 'wrapping: true,';
+    }
 }
 ?>

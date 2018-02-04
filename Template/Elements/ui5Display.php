@@ -3,6 +3,7 @@ namespace exface\OpenUI5Template\Template\Elements;
 
 use exface\Core\Widgets\Display;
 use exface\OpenUI5Template\Template\Interfaces\ui5BindingFormatterInterface;
+use exface\Core\DataTypes\BooleanDataType;
 
 /**
  * Generates sap.m.Text controls for Display widgets
@@ -29,6 +30,30 @@ class ui5Display extends ui5Value
     /**
      * 
      * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Value::buildJsConstructorForMainControl()
+     */
+    public function buildJsConstructorForMainControl()
+    {
+        if ($this->getWidget()->getValueDataType() instanceof BooleanDataType) {
+            return <<<JS
+
+        new sap.ui.core.Icon({
+            width: "100%",
+            src: {$this->buildJsValueBinding('formatter: function(value) {
+                    if (value === "1" || value === "true" || value === 1 || value === true) return "sap-icon://accept";
+                    else return "";
+                }')}
+        })
+
+JS;
+        }
+        
+        return parent::buildJsConstructorForMainControl();
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
      * @see \exface\OpenUI5Template\Template\Interfaces\ui5ValueBindingInterface::buildJsValueBindingOptions()
      */
     public function buildJsValueBindingOptions()
@@ -46,6 +71,8 @@ class ui5Display extends ui5Value
     }
     
     /**
+     * Sets the alignment for the content within the display: Begin, End, Center, Left or Right.
+     * 
      * @param $propertyValue
      * @return ui5Display
      */
@@ -77,7 +104,12 @@ class ui5Display extends ui5Value
             {$this->buildJsPropertyWrapping()}
 JS;
     }
-            
+    
+    /**
+     * Returns "wrapping: false/true," with tailing comma.
+     * 
+     * @return string
+     */
     protected function buildJsPropertyWrapping()
     {
         return 'wrapping: false,';

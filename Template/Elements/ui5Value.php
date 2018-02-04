@@ -77,7 +77,7 @@ JS;
      */
     protected function buildJsValue()
     {
-        if ($this->isValueBoundToModel()) {
+        if (! $this->isValueBoundToModel()) {
             $value = $this->escapeJsTextValue($this->getWidget()->getValue());
             $value = '"' . str_replace("\n", '', $value) . '"';
         } else {
@@ -93,8 +93,14 @@ JS;
      */
     protected function buildJsPropertyTooltip()
     {
+        if ($this->isValueBoundToModel()) {
+            $value = $this->buildJsValueBinding('formatter: function(value){return (value === null || value === undefined) ? value : value.toString();},');
+        } else {
+            $value = $this->buildJsValue();
+        }
+        
         return <<<JS
-            tooltip: {$this->buildJsValue()},
+            tooltip: {$value},
 JS;
     }
     
@@ -123,7 +129,7 @@ JS;
      */
     protected function isValueBoundToModel()
     {
-        return $this->getWidget()->getValue() ? true : false;
+        return $this->getWidget()->getValue() ? false : true;
     }
     
     /**
@@ -154,12 +160,13 @@ JS;
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Template\Interfaces\ui5ValueBindingInterface::buildJsValueBinding()
      */
-    public function buildJsValueBinding()
+    public function buildJsValueBinding($customOptions = '')
     {
         return <<<JS
             {
                 path: "{$this->getValueBindingPath()}",
                 {$this->buildJsBindingOptions()}
+                {$customOptions}
             }
 JS;
     }

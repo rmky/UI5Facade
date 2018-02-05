@@ -124,13 +124,18 @@ JS;
 				
     protected function buildJsDialog()
     {
+        if ($this->getWidget()->countWidgetsVisible() === 1) {
+            $content = $this->buildJsChildrenConstructors();
+        } else {
+            $content = $this->buildJsLayoutForm($this->buildJsChildrenConstructors()); 
+        }
         return <<<JS
 
         new sap.m.Dialog("{$this->getId()}", {
 			modal : true,
             title: "{$this->getCaption()}",
 			buttons : [ {$this->buildJsDialogButtons()} ],
-			content : [ {$this->buildJsLayoutForm($this->buildJsChildrenConstructors())} ]
+			content : [ {$content} ]
 		});
 
 JS;

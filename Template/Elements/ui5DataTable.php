@@ -206,10 +206,27 @@ JS;
         $widget = $this->getWidget();
         
         if (! $this->isLazyLoading()) {
+            $data = $widget->prepareDataSheetToRead($widget->getValuesDataSheet());
+            if (! $data->isFresh()) {
+                $data->dataRead();
+            }
+            
+            // FIXME make filtering, sorting, pagination, etc. work in lazy mode too!
+            
             return <<<JS
 
-    function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent) {
-        
+    function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent, keep_page_pos) {
+        try {
+			var data = {$this->getTemplate()->encodeData($this->prepareData($data, false))};
+		} catch (err){
+            console.error('Cannot load data into widget {$this->getId()}!');
+            return;
+		}
+        var oTable = sap.ui.getCore().byId("{$this->getId()}");
+		var oModel = new sap.ui.model.json.JSONModel();
+        oModel.setData(data);
+        oTable.setModel(oModel);
+        oTable.bindRows("/data");
     }
 
 JS;
@@ -382,7 +399,8 @@ JS;
         new sap.m.OverflowToolbarButton("{$this->getId()}_prev", {
             icon: "sap-icon://navigation-left-arrow",
             layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
-            text: "Previous page",
+            text: "{$this->translate('WIDGET.PAGINATOR.PREVIOUS_PAGE')}",
+            enabled: false,
             press: function() {
                 {$this->getId()}_pages.previous();
                 {$this->buildJsRefresh(true)}
@@ -391,8 +409,9 @@ JS;
         new sap.m.OverflowToolbarButton("{$this->getId()}_next", {
             icon: "sap-icon://navigation-right-arrow",
             layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
-            text: "Next page",
-			press: function() {
+            text: "{$this->translate('WIDGET.PAGINATOR.NEXT_PAGE')}",
+			enabled: false,
+            press: function() {
                 {$this->getId()}_pages.next();
                 {$this->buildJsRefresh(true)}
             }

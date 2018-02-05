@@ -139,6 +139,7 @@ JS;
                   console.log('func');
                 }
             })*/;
+            {$this->getId()}_attachFirstVisibleRowChanged();
             {$this->buildJsRefresh()};
             return {$this->getJsVar()}
         }()
@@ -355,7 +356,19 @@ JS;
     		sap.ui.getCore().byId("{$this->getId()}_next").setEnabled(true);
     	}
         sap.ui.getCore().byId("{$this->getId()}_pager").setText((pages.start + 1) + ' - ' + (pages.end() + 1) + ' / ' + pages.total);
-	}
+	};
+    
+    function {$this->getId()}_attachFirstVisibleRowChanged() {
+        var oTable = {$this->getJsVar()};
+        oTable.attachFirstVisibleRowChanged(function() {
+            var pages = {$this->getId()}_pages;
+            if ((oTable.getFirstVisibleRow() + oTable.getVisibleRowCount() === pages.pageSize) &&
+                    (pages.end() + 1 !== pages.total)) {
+                pages.increasePageSize();
+                {$this->buildJsRefresh(true)}
+            }
+        });
+    };
 JS;
     }
 

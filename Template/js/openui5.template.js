@@ -24,13 +24,13 @@ var oShell = new sap.ui.unified.Shell({
                 }),
                 new sap.m.ToolbarSpacer(),
                 new sap.m.Button("exf_connection", {
-                    icon: "sap-icon://disconnected",
-                    text: "0/1",
-                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),
+                    icon: "sap-icon://connected",
+                    text: "3/1",
+                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
                     press: function(oEvent){
 						var oButton = oEvent.getSource();
 						var oPopover = new sap.m.Popover({
-							title: "Akt. Status: Offline",
+							title: "Akt. Status: Online",
 							placement: "Bottom",
 							content: [
 								new sap.m.List({
@@ -38,7 +38,100 @@ var oShell = new sap.ui.unified.Shell({
 										new sap.m.StandardListItem({
 											title: "Sync-Puffer (3)",
 											type: "Active",
-											press: function(){alert('click 1!')},
+											press: function(){
+												var oData = {
+														data: [
+															{
+																"action_alias": "exface.Core.CreateData",
+																"caption": "Speichern",
+																"object_alias": "alexa.RMS.ORDERING_REQUEST",
+																"object_name": "Warenanforderung",
+																"triggered": "2017-02-05 13:55:37"
+															},
+															{
+																"action_alias": "exface.Core.UpdateData",
+																"caption": "Speichern",
+																"object_alias": "alexa.RMS.ORDERING_REQUEST",
+																"object_name": "Warenanforderung",
+																"triggered": "2017-02-05 14:23:30"
+															},
+															{
+																"action_alias": "exface.Core.DeleteData",
+																"caption": "Löschen",
+																"object_alias": "alexa.RMS.ORDERING_REQUEST",
+																"object_name": "Warenanforderung",
+																"triggered": "2017-02-05 14:48:06"
+															}
+														]
+												};
+												
+												var oTable = new sap.m.Table({
+													fixedLayout: false,
+													mode: sap.m.ListMode.MultiSelect,
+													headerToolbar: [
+														new sap.m.OverflowToolbar({
+															design: "Transparent",
+															content: [
+																new sap.m.Label({
+																	text: "Wartende Online-Aktionen"
+																}),
+																new sap.m.ToolbarSpacer(),
+																new sap.m.Button({
+																	text: "Abbrechen",
+																	icon: "sap-icon://cancel"
+																}),
+																new sap.m.Button({
+																	text: "Exportieren",
+																	icon: "sap-icon://download"
+																})
+															]
+														})
+													],
+													columns: [
+														new sap.m.Column({
+															header: [
+																new sap.m.Label({
+																	text: "Objekt"
+																})
+															]
+														}),
+														new sap.m.Column({
+															header: [
+																new sap.m.Label({
+																	text: "Aktion"
+																})
+															]
+														}),
+														new sap.m.Column({
+															header: [
+																new sap.m.Label({
+																	text: "Alias"
+																})
+															],
+															minScreenWidth: "Tablet",
+															demandPopin: true
+														}),
+													],
+													items: {
+														path: "/data",
+														template: new sap.m.ColumnListItem({
+															cells: [
+																new sap.m.Text({
+																	text: "{object_name}"
+																}),
+																new sap.m.Text({
+																	text: "{caption}"
+																}),
+																new sap.m.Text({
+																	text: "{action_alias}"
+																})
+															]
+														})
+													}
+												}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+												
+												showDialog('Sync-Puffer', oTable, undefined, undefined, true);
+											},
 										}),
 										new sap.m.StandardListItem({
 											title: "Ausgecheckte Objekte (0)",
@@ -87,10 +180,12 @@ function closeTopDialog() {
     delete oDialogStackTop;
 }
 
-function showDialog(title, content, state, onCloseCallback) {
+function showDialog(title, content, state, onCloseCallback, responsive) {
+	var stretchOnPhone = responsive ? true : false;
 	var dialog = new sap.m.Dialog({
 		title: title,
 		state: state,
+		stretchOnPhone: stretchOnPhone,
 		content: content,
 		beginButton: new sap.m.Button({
 			text: 'OK',

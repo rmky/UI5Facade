@@ -1,14 +1,14 @@
 <?php
 namespace exface\OpenUI5Template\Template\Elements;
 
-use exface\Core\Widgets\DataConfigurator;
 use exface\Core\Widgets\ChartSeries;
 use exface\Core\Widgets\ChartAxis;
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryFlotTrait;
+use exface\Core\Widgets\Chart;
 
 /**
  * 
- * @method DataConfigurator getWidget()
+ * @method Chart getWidget()
  * 
  * @author Andrej Kabachnik
  *
@@ -19,6 +19,11 @@ class ui5Chart extends ui5AbstractElement
         generateHeaders as generateHeadersByTrait;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsConstructor()
+     */
     public function buildJsConstructor()
     {
         return <<<JS
@@ -30,10 +35,14 @@ class ui5Chart extends ui5AbstractElement
 
 JS;
     }
-        
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::generateJs()
+     */
     public function generateJs()
     {
-        /* @var $widget \exface\Core\Widgets\Chart */
         $widget = $this->getWidget();
         
         $output = $this->buildJsPlotFunction();
@@ -46,6 +55,10 @@ JS;
         return $output;
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsButtons()
     {
         $js = '';
@@ -55,6 +68,10 @@ JS;
         return $js;
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsDataRowsSelector()
     {
         return '.data';

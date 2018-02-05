@@ -35,7 +35,6 @@ JS;
             $options .= <<<JS
 
                     maxFractionDigits: {$type->getPrecisionMax()},
-                    precision: {$type->getPrecisionMax()},
 JS;
         }
          

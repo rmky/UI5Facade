@@ -10,11 +10,11 @@ namespace exface\OpenUI5Template\Template\Elements;
 class ui5Form extends ui5Panel
 {
     
-    protected function buildJsPropertyEditable()
-    {
-        return 'editable: true,';
-    }
-    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Panel::buildJsConstructor()
+     */
     public function buildJsConstructor()
     {
         return  $this->buildJsLayoutForm($this->buildJsChildrenConstructors());

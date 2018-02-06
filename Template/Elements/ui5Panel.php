@@ -48,7 +48,7 @@ JS;
     			emptySpanL: 0,
     			emptySpanM: 0,
     			emptySpanS: 0,
-    			columnsXL: 2,
+    			columnsXL: 3,
     			columnsL: 2,
     			columnsM: 2,
                 singleContainerFullSize: false,
@@ -59,10 +59,26 @@ JS;
             
 JS;
     }
-                    
+            
+    /**
+     * Returns the editable property for the ui5-form with property name and tailing comma.
+     * 
+     * A ui5-form is marked editable if it contains at least one visible input widget.
+     * Non-editable forms are more compact, so it is a good idea only to use editable
+     * ones if really editing.
+     * 
+     * @return string
+     */
     protected function buildJsPropertyEditable()
     {
-        return 'editable: true,';
+        $editable = 'false';
+        foreach ($this->getWidget()->getInputWidgets() as $input){
+            if (! $input->isHidden()) {
+                $editable = 'true';
+                break;
+            }
+        }
+        return 'editable: ' . $editable . ',';
     }
     
     protected function buildJsLayoutGrid($content)

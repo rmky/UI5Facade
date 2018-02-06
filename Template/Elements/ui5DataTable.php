@@ -271,7 +271,7 @@ JS;
             }
 
             this.setProperty('/filterDescription', {$this->buildJsFilterSummaryFunctionName()}());
-            console.log(this.getData());
+            
             {$this->buildJsBusyIconHide()}
 		});
 

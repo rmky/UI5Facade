@@ -64,7 +64,7 @@ JS;
         }
         
         if ($this->isWrappedInDynamicPage()){
-            return $this->buildJsPage($js);
+            return $this->buildJsPage($js) . ".setModel(sap.ui.getCore().byId('{$this->getId()}').getModel())";
         } else {
             return $js;
         }
@@ -134,7 +134,10 @@ JS;
         		, columns: [
         			{$this->buildJsColumnsForUiTable()}
         		]
-        	})/*.addEventDelegate({
+                , rows: "{/data}"
+        	})
+            .setModel(new sap.ui.model.json.JSONModel()) 
+            /*.addEventDelegate({
                 onAfterRendering : function() {
                   console.log('func');
                 }
@@ -223,11 +226,7 @@ JS;
             console.error('Cannot load data into widget {$this->getId()}!');
             return;
 		}
-        var oTable = sap.ui.getCore().byId("{$this->getId()}");
-		var oModel = new sap.ui.model.json.JSONModel();
-        oModel.setData(data);
-        oTable.setModel(oModel);
-        oTable.bindRows("/data");
+        sap.ui.getCore().byId("{$this->getId()}").getModel().setData(data);
     }
 
 JS;
@@ -247,16 +246,20 @@ JS;
 		var oTable = sap.ui.getCore().byId("{$this->getId()}");
         var params = { {$params} };
 		var cols = oTable.getColumns();
-		var oModel = new sap.ui.model.json.JSONModel();
+		var oModel = oTable.getModel();
 		
         oModel.attachRequestSent(function(){
 			{$this->buildJsBusyIconShow()}
 		});
+
 		oModel.attachRequestCompleted(function(oEvent){
 			if (oEvent.getParameters().success) {
                 {$this->getId()}_pages.total = this.getProperty("/recordsFiltered");
                 {$this->getId()}_drawPagination();
                 
+                if (sap.ui.Device.system.phone) {
+                    sap.ui.getCore().byId('{$this->getId()}_page').setHeaderExpanded(false);
+                }
                 
     			var footerRows = this.getProperty("/footerRows");
                 if (footerRows){
@@ -266,12 +269,13 @@ JS;
                 var error = oEvent.getParameters().errorobject;
                 {$this->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}
             }
+
+            this.setProperty('/filterDescription', {$this->buildJsFilterSummaryFunctionName()}());
+            console.log(this.getData());
             {$this->buildJsBusyIconHide()}
 		});
 
-		oTable.setModel(oModel); 
-
-        // Add quick search
+		// Add quick search
         params.q = sap.ui.getCore().byId('{$this->getId()}_quickSearch').getValue();
 
         // Add configurator data
@@ -309,10 +313,47 @@ JS;
 		}
 		
 		oModel.loadData("{$url}", params);
-		oTable.bindRows("/data");
 	}
 
+    {$this->buildJsFilterSummaryFunction()}
+
 JS;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsFilterSummaryFunction()
+    {
+        $filter_checks = '';
+        foreach ($this->getWidget()->getFilters() as $fltr) {
+            if ($fltr->isHidden()) {
+                continue;
+            }
+            $elem = $this->getTemplate()->getElement($fltr);
+            $filter_checks .= 'if(' . $elem->buildJsValueGetter() . ") {filtersCount++; filtersList += '{$elem->getCaption()}';} \n";
+        }
+        return <<<JS
+    function {$this->buildJsFilterSummaryFunctionName()}() {
+        var filtersCount = 0;
+        var filtersList = '';
+        {$filter_checks}
+        if (filtersCount > 0) {
+            return '{$this->translate('WIDGET.DATATABLE.FILTERED_BY')} (' + filtersCount + '): ' + filtersList;
+        } else {
+            return '{$this->translate('WIDGET.DATATABLE.FILTERED_BY')}: {$this->translate('WIDGET.DATATABLE.FILTERED_BY_NONE')}';
+        }
+    }
+JS;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsFilterSummaryFunctionName() {
+        return "{$this->buildJsFunctionPrefix()}CountFilters";
     }
 
 	/**
@@ -548,37 +589,27 @@ JS;
             preserveHeaderStateOnScroll: true,
             headerExpanded: true,
             title: new sap.f.DynamicPageTitle({
-				heading: [
-						new sap.m.Title({
-                            text: "{$this->buildTextTableHeading()}"
-                        })
+				expandedHeading: [
+					new sap.m.Title({
+                        text: "{$this->buildTextTableHeading()}"
+                    })
+				],
+                snappedHeading: [
+                    new sap.m.VBox({
+                        items: [
+        					new sap.m.Title({
+                                text: "{$this->buildTextTableHeading()}"
+                            }),
+                            new sap.m.Text({
+                                text: {
+                                    path: "/filterDescription",
+                                }
+                            })
+                        ]
+                    })
 				],
 				actions: [
-				    new sap.m.ToolbarSpacer(),
-                    {$top_buttons}
-					new sap.m.OverflowToolbarButton({
-						press: function(oEvent){
-                            var oPage = sap.ui.getCore().byId('{$this->getId()}_page');
-                            var oButton = oEvent.getSource();
-                            if (oPage.getHeaderExpanded()) {
-                                oPage.setHeaderExpanded(false);
-                                oButton
-                                    .setIcon('sap-icon://expand-group')
-                                    .setText('{$this->translate('WIDGET.DATATABLE.EXPAND_HEADER')}')
-                                    .setTooltip('{$this->translate('WIDGET.DATATABLE.EXPAND_HEADER')}');
-                            } else {
-                                oPage.setHeaderExpanded(true);
-                                oButton
-                                    .setIcon('sap-icon://collapse-group')
-                                    .setText('{$this->translate('WIDGET.DATATABLE.COLLAPSE_HEADER')}')
-                                    .setTooltip('{$this->translate('WIDGET.DATATABLE.COLLAPSE_HEADER')}');
-                            }
-                        },
-                        icon: "sap-icon://collapse-group",
-                        type: "Transparent",
-						text: "{$this->translate('WIDGET.DATATABLE.COLLAPSE_HEADER')}",
-                        tooltip: "{$this->translate('WIDGET.DATATABLE.COLLAPSE_HEADER')}"
-                    })
+				    {$top_buttons}
 				]
             }),
 

@@ -6,8 +6,8 @@
 
 // Provides helper sap.ui.table.TableExtension.
 sap.ui.define([
-	"jquery.sap.global", "sap/ui/base/Object", "./TableUtils"
-], function(jQuery, BaseObject, TableUtils) {
+"sap/ui/base/Object", "./TableUtils"
+], function(BaseObject, TableUtils) {
 	"use strict";
 
 	/**
@@ -19,7 +19,7 @@ sap.ui.define([
 	 * @abstract
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableExtension
@@ -78,6 +78,7 @@ sap.ui.define([
 		destroy: function() {
 			this._table = null;
 			this._type = null;
+			this.bIsDestroyed = true;
 			BaseObject.prototype.destroy.apply(this, arguments);
 		},
 
@@ -105,9 +106,8 @@ sap.ui.define([
 	 * Returns the related table control.
 	 *
 	 * @returns {sap.ui.table.Table|null} The table control or <code>null</code>, if this extension is not yet initialized.
-	 * @public
-	 *
 	 * @see sap.ui.table.TableExtension#_init
+	 * @public
 	 */
 	TableExtension.prototype.getTable = function() {
 		return this._table;
@@ -129,8 +129,8 @@ sap.ui.define([
 	 * Hook which allows the extension to attach for additional native event listeners after the rendering of the table control.
 	 *
 	 * @abstract
-	 * @protected
 	 * @see sap.ui.table.Table#_attachEvents
+	 * @protected
 	 */
 	TableExtension.prototype._attachEvents = function() {};
 
@@ -138,8 +138,8 @@ sap.ui.define([
 	 * Hook which allows the extension to detach previously attached native event listeners.
 	 *
 	 * @abstract
-	 * @protected
 	 * @see sap.ui.table.Table#_detachEvents
+	 * @protected
 	 */
 	TableExtension.prototype._detachEvents = function() {};
 
@@ -147,9 +147,9 @@ sap.ui.define([
 	 * Informs all registered extensions of the table to attach their native event listeners.
 	 *
 	 * @param {sap.ui.table.Table} oTable Instance of the table.
+	 * @see sap.ui.table.TableExtension#_attachEvents
 	 * @public
 	 * @static
-	 * @see sap.ui.table.TableExtension#_attachEvents
 	 */
 	TableExtension.attachEvents = function(oTable) {
 		if (!oTable._aExtensions) {
@@ -165,9 +165,9 @@ sap.ui.define([
 	 * Informs all registered extensions of the given table to detach their previously attached native event listeners.
 	 *
 	 * @param {sap.ui.table.Table} oTable Instance of the table.
+	 * @see sap.ui.table.TableExtension#_detachEvents
 	 * @public
 	 * @static
-	 * @see sap.ui.table.TableExtension#_detachEvents
 	 */
 	TableExtension.detachEvents = function(oTable) {
 		if (!oTable._aExtensions) {
@@ -184,7 +184,7 @@ sap.ui.define([
 	 * @param {sap.ui.table.Table} oTable Instance of the table.
 	 * @param {sap.ui.table.TableExtension} ExtensionClass The class of the extension to instantiate.
 	 * @param {Object} mSettings Additional settings used during initialization of the extension.
-	 * @return {sap.ui.table.TableExtension} Returns the created extension instance.
+	 * @returns {sap.ui.table.TableExtension} Returns the created extension instance.
 	 * @public
 	 * @static
 	 */

@@ -18,10 +18,9 @@ sap.ui.define(['jquery.sap.global', './ClientContextBinding', './ClientListBindi
 	 * @extends sap.ui.model.Model
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @param {object} oData URL where to load the data from
-	 * @constructor
 	 * @public
 	 * @alias sap.ui.model.ClientModel
 	 */

@@ -20,7 +20,7 @@ function(
 	 * Utility functionality for DOM
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @private
 	 * @static
@@ -242,6 +242,15 @@ function(
 		oElement = jQuery(oElement);
 
 		oElement.attr("draggable", bValue);
+	};
+
+	/**
+	 *
+	 */
+	DOMUtil.getDraggable = function(oElement) {
+		oElement = jQuery(oElement);
+
+		return oElement.attr("draggable");
 	};
 
 	/**

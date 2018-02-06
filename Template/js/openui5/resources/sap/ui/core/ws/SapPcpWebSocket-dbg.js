@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', './WebSocket'],
 	 * @class WebSocket class implementing the pcp-protocol
 	 * @extends sap.ui.core.ws.WebSocket
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @alias sap.ui.core.ws.SapPcpWebSocket
 	 */
 	var SapPcpWebSocket = WebSocket.extend("sap.ui.core.ws.SapPcpWebSocket", /** @lends sap.ui.core.ws.SapPcpWebSocket.prototype */ {
@@ -58,10 +58,12 @@ sap.ui.define(['jquery.sap.global', './WebSocket'],
 	 */
 
 	/**
-	 * @class Protocol versions.<br>
+	 * Protocol versions.
+	 *
 	 * One (or more) of these have to be selected to create an SapPcpWebSocket connection
 	 * (or no protocol at all).
 	 *
+	 * @enum {string}
 	 * @public
 	 * @static
 	 */

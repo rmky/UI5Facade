@@ -24,7 +24,7 @@ sap.ui.define(['sap/m/semantic/SemanticSelect'], function(SemanticSelect) {
 	 * @implements sap.m.semantic.IFilter
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -44,4 +44,4 @@ sap.ui.define(['sap/m/semantic/SemanticSelect'], function(SemanticSelect) {
 
 	return FilterSelect;
 
-}, /* bExport= */ true);
+});

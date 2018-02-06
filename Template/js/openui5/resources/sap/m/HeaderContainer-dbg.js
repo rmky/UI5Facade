@@ -3,8 +3,8 @@
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/Device', 'sap/ui/core/delegate/ScrollEnablement', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/library', 'sap/ui/base/ManagedObject', 'sap/ui/core/Icon'],
-	function(jQuery, library, Control, Device, ScrollEnablement, ItemNavigation, coreLibrary, ManagedObject, Icon) {
+sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/Device', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/library', 'sap/ui/base/ManagedObject', 'sap/ui/core/Icon', 'jquery.sap.events'],
+	function(jQuery, library, Control, Device, ItemNavigation, coreLibrary, ManagedObject, Icon) {
 	"use strict";
 
 	// shortcut for sap.ui.core.Orientation
@@ -48,7 +48,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @since 1.44.0
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @public
 	 * @alias sap.m.HeaderContainer
@@ -259,7 +259,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			oToCell = this._getParentCell(oNext);
 		}
 
-		if (oFromCell && oToCell && oFromCell.id !== oToCell.id || oNext && oNext.id === this.getId() + "-after") { // attempt to jump out of HeaderContainer
+        if ( ( oFromCell && oToCell && oFromCell.id !== oToCell.id ) || ( oNext && oNext.id === this.getId() + "-after" ) || ( oNext && oNext.id === this.getId() + "-scrl-prev-button" ) ) { // attempt to jump out of HeaderContainer
 			var oLastInnerTab = oFocusables.last().get(0);
 			if (oLastInnerTab) {
 				this._bIgnoreFocusIn = true;

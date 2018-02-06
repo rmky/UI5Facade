@@ -1,17 +1,18 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.tnt">
-  <module name="sap/tnt/NavigationList.js" size="6775" compressedSize="3516">
+  <module name="sap/tnt/NavigationList.js" size="8662" compressedSize="4403">
     <description>Provides control sap.tnt.NavigationList</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/m/Popover.js"/>
+      <module name="sap/tnt/NavigationListItem.js" conditional="true"/>
       <module name="sap/tnt/library.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/InvisibleText.js"/>
       <module name="sap/ui/core/delegate/ItemNavigation.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/NavigationListItem.js" size="16904" compressedSize="9078">
+  <module name="sap/tnt/NavigationListItem.js" size="17820" compressedSize="9379">
     <description>Provides control sap.tnt.NavigationListItem.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -23,14 +24,14 @@
       <module name="sap/ui/core/Renderer.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/NavigationListRenderer.js" size="1620" compressedSize="691">
+  <module name="sap/tnt/NavigationListRenderer.js" size="1824" compressedSize="738">
     <description>Provides the default renderer for control sap.tnt.NavigationList</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Renderer.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/SideNavigation.js" size="9683" compressedSize="5087">
+  <module name="sap/tnt/SideNavigation.js" size="11927" compressedSize="5851">
     <description>Provides control sap.t.SideNavigation.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -90,7 +91,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/library-preload.js" size="27795">
+  <module name="sap/tnt/library-preload.js" size="30139">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/m/BarInPageEnabler.js"/>
@@ -172,6 +173,6 @@
       <module name="sap/ui/core/library.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/manifest.json" size="782">
+  <module name="sap/tnt/manifest.json" size="1111">
   </module>
 </library>

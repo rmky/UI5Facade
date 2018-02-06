@@ -9,6 +9,9 @@ sap.ui.define(["sap/ui/core/Control", "./library", "sap/m/Button", "./ObjectImag
 	function (Control, library, Button, ObjectImageHelper) {
 		"use strict";
 
+		// shortcut for sap.uxap.ObjectPageHeaderDesign
+		var ObjectPageHeaderDesign = library.ObjectPageHeaderDesign;
+
 		/**
 		 * Constructor for a new ObjectPageHeaderContent.
 		 *
@@ -20,6 +23,7 @@ sap.ui.define(["sap/ui/core/Control", "./library", "sap/m/Button", "./ObjectImag
 		 * Unlike the Object page header title, the Object page header content is part of the scrolling area of the Object page.
 		 * This enables it to hold any amount of information and still be usable on a mobile device.
 		 * @extends sap.ui.core.Control
+		 * @implements sap.uxap.IHeaderContent
 		 *
 		 * @author SAP SE
 		 *
@@ -33,6 +37,7 @@ sap.ui.define(["sap/ui/core/Control", "./library", "sap/m/Button", "./ObjectImag
 			metadata: {
 
 				library: "sap.uxap",
+				interfaces: ["sap.uxap.IHeaderContent"],
 				properties: {
 
 					/**
@@ -44,7 +49,7 @@ sap.ui.define(["sap/ui/core/Control", "./library", "sap/m/Button", "./ObjectImag
 					contentDesign: {
 						type: "sap.uxap.ObjectPageHeaderDesign",
 						group: "Misc",
-						defaultValue: sap.uxap.ObjectPageHeaderDesign.Light
+						defaultValue: ObjectPageHeaderDesign.Light
 					}
 				},
 				aggregations: {
@@ -166,6 +171,78 @@ sap.ui.define(["sap/ui/core/Control", "./library", "sap/m/Button", "./ObjectImag
 					}
 				}
 			}
+		};
+
+		/**
+		 * Required by the {@link sap.uxap.IHeaderContent} interface.
+		 * @param aContent
+		 * @param bVisible
+		 * @param sContentDesign
+		 */
+		ObjectPageHeaderContent.createInstance = function (aContent, bVisible, sContentDesign) {
+			return new ObjectPageHeaderContent({
+				content: aContent,
+				visible: bVisible,
+				contentDesign: sContentDesign
+			});
+		};
+
+		/**
+		 * Required by the {@link sap.uxap.IHeaderContent} interface.
+		 * @returns {boolean}
+		 */
+		ObjectPageHeaderContent.prototype.supportsPinUnpin = function () {
+			return false;
+		};
+
+		/**
+		 * Required by the {@link sap.uxap.IHeaderContent} interface.
+		 * @returns {boolean}
+		 */
+		ObjectPageHeaderContent.prototype.supportsChildPageDesign = function () {
+			return true;
+		};
+
+		/**
+		 * Required by the {@link sap.uxap.IHeaderContent} interface.
+		 * @returns {boolean}
+		 */
+		ObjectPageHeaderContent.prototype.supportsAlwaysExpanded = function () {
+			return true;
+		};
+
+		/**
+		 * Required by the {@link sap.uxap.IHeaderContent} interface.
+		 * @param {boolean} bToggle
+		 * @private
+		 */
+		ObjectPageHeaderContent.prototype._toggleCollapseButton = function (bToggle) {
+
+		};
+
+		/**
+		 * Required by the {@link sap.uxap.IHeaderContent} interface.
+		 * @param {boolean} bValue
+		 * @private
+		 */
+		ObjectPageHeaderContent.prototype._setShowCollapseButton = function (bValue) {
+
+		};
+
+		/**
+		 * Required by the {@link sap.uxap.IHeaderContent} interface.
+		 * @private
+		 */
+		ObjectPageHeaderContent.prototype._focusCollapseButton = function () {
+
+		};
+
+		/**
+		 * Required by the {@link sap.uxap.IHeaderContent} interface.
+		 * @private
+		 */
+		ObjectPageHeaderContent.prototype._focusPinButton = function () {
+
 		};
 
 		return ObjectPageHeaderContent;

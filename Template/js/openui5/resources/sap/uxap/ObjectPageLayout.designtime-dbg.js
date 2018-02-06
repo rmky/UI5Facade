@@ -5,17 +5,17 @@
  */
 
 // Provides the Design Time Metadata for the sap.uxap.ObjectPageLayout control
-sap.ui.define([],
-	function() {
+sap.ui.define(["sap/uxap/library"],
+	function(library) {
 	"use strict";
 
 	return {
 		name : {
 			singular : function(){
-				return sap.uxap.i18nModel.getResourceBundle().getText("LAYOUT_CONTROL_NAME");
+				return library.i18nModel.getResourceBundle().getText("LAYOUT_CONTROL_NAME");
 			},
 			plural : function(){
-				return sap.uxap.i18nModel.getResourceBundle().getText("LAYOUT_CONTROL__PLURAL");
+				return library.i18nModel.getResourceBundle().getText("LAYOUT_CONTROL__PLURAL");
 			}
 		},
 		aggregations : {
@@ -25,14 +25,26 @@ sap.ui.define([],
 				},
 				childNames : {
 					singular : function(){
-						return sap.uxap.i18nModel.getResourceBundle().getText("SECTION_CONTROL_NAME");
+						return library.i18nModel.getResourceBundle().getText("SECTION_CONTROL_NAME");
 					},
 					plural : function(){
-						return sap.uxap.i18nModel.getResourceBundle().getText("SECTION_CONTROL_NAME_PLURAL");
+						return library.i18nModel.getResourceBundle().getText("SECTION_CONTROL_NAME_PLURAL");
 					}
 				},
 				actions : {
 					move : "moveControls"
+				}
+			},
+			headerContent : {
+				domRef : function(oElement) {
+					return oElement.$("headerContent").get(0);
+				},
+				actions : {
+					move : function(oElement){
+						if (!oElement || oElement.getMetadata().getName() !== 'sap.uxap.ObjectPageSection'){
+							return "moveControls";
+						}
+					}
 				}
 			}
 		},

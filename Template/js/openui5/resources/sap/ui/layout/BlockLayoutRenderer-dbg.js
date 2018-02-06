@@ -8,6 +8,9 @@ sap.ui.define(['./library'],
 	function (library) {
 		"use strict";
 
+		// shortcut for sap.ui.layout.BlockRowColorSets
+		var BlockRowColorSets = library.BlockRowColorSets;
+
 		var BlockLayoutRenderer = {};
 
 		BlockLayoutRenderer.render = function (oRm, oBlockLayout) {
@@ -31,7 +34,7 @@ sap.ui.define(['./library'],
 
 		BlockLayoutRenderer.addContent = function (oRm, blockLayout) {
 			var aContent = blockLayout.getContent(),
-				oBlockRowType = sap.ui.layout.BlockRowColorSets,
+				oBlockRowType = BlockRowColorSets,
 				aTypes = Object.keys(oBlockRowType).map(function (sKey) {
 					return oBlockRowType[sKey];
 				}),
@@ -61,5 +64,4 @@ sap.ui.define(['./library'],
 		};
 
 		return BlockLayoutRenderer;
-
 	}, /* bExport= */ true);

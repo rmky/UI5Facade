@@ -5,8 +5,8 @@
  */
 
 //Provides control sap.ui.unified.Calendar.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/Device', 'sap/ui/core/LocaleData', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/unified/library'],
-		function(jQuery, Control, Device, LocaleData, ItemNavigation, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/Device', 'sap/ui/core/LocaleData', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/unified/library', 'sap/ui/core/Locale'],
+		function(jQuery, Control, Device, LocaleData, ItemNavigation, library, Locale) {
 	"use strict";
 
 	/**
@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/Device', 'sap
 	 * renders a MonthPicker with ItemNavigation
 	 * This is used inside the calendar. Not for stand alone usage
 	 * @extends sap.ui.core.Control
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -156,7 +156,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/Device', 'sap
 			return oParent._getLocaleData();
 		} else if (!this._oLocaleData) {
 			var sLocale = this._getLocale();
-			var oLocale = new sap.ui.core.Locale(sLocale);
+			var oLocale = new Locale(sLocale);
 			this._oLocaleData = LocaleData.getInstance(oLocale);
 		}
 
@@ -636,4 +636,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/Device', 'sap
 
 	return MonthPicker;
 
-}, /* bExport= */ true);
+});

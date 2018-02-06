@@ -13,7 +13,8 @@ sap.ui.define([
 	"sap/ui/core/Control",
 	"sap/ui/core/InvisibleText",
 	"sap/m/Button",
-	"sap/m/NavContainer"
+	"sap/m/NavContainer",
+	"jquery.sap.events"
 ], function (jQuery, library, Device, ResizeHandler, Control, InvisibleText, Button, NavContainer) {
 	"use strict";
 
@@ -67,12 +68,13 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.46
 	 * @alias sap.f.FlexibleColumnLayout
+	 * @see topic:59a0e11712e84a648bb990a1dba76bc7
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var FlexibleColumnLayout = Control.extend("sap.f.FlexibleColumnLayout", {
@@ -80,25 +82,27 @@ sap.ui.define([
 			properties: {
 
 				/**
-				 * Determines the layout of the control - number of visible columns and their relative sizes
+				 * Determines the layout of the control - number of visible columns and their relative sizes.
+				 *
+				 * For more details, see {@link topic:3b9f760da5b64adf8db7f95247879086 Types of Layout} in the documentation.
 				 */
-				layout: {type: "sap.f.LayoutType", defaultValue: sap.f.LayoutType.OneColumn},
+				layout: {type: "sap.f.LayoutType", defaultValue: LT.OneColumn},
 
 				/**
 				 * Determines the type of the transition/animation to apply for the <code>Begin</code> column when <code>to()</code> is called without defining the
-				 * transition to use. The default is <code>slide</code>, other options are <code>fade</code>, <code>show</code>, and the names of any registered custom transitions.
+				 * transition to use. The default is <code>slide</code>, other options are <code>fade</code>, <code>flip</code>, <code>show</code>, and the names of any registered custom transitions.
 				 */
 				defaultTransitionNameBeginColumn : {type : "string", group : "Appearance", defaultValue : "slide"},
 
 				/**
 				 * Determines the type of the transition/animation to apply for the <code>Mid</code> column when <code>to()</code> is called without defining the
-				 * transition to use. The default is <code>slide</code>, other options are <code>fade</code>, <code>show</code>, and the names of any registered custom transitions.
+				 * transition to use. The default is <code>slide</code>, other options are <code>fade</code>, <code>flip</code>, <code>show</code>, and the names of any registered custom transitions.
 				 */
 				defaultTransitionNameMidColumn : {type : "string", group : "Appearance", defaultValue : "slide"},
 
 				/**
 				 * Determines the type of the transition/animation to apply for the <code>End</code> column when <code>to()</code> is called without defining the
-				 * transition to use. The default is <code>slide</code>, other options are <code>fade</code>, <code>show</code>, and the names of any registered custom transitions.
+				 * transition to use. The default is <code>slide</code>, other options are <code>fade</code>, <code>flip</code>, <code>show</code>, and the names of any registered custom transitions.
 				 */
 				defaultTransitionNameEndColumn : {type : "string", group : "Appearance", defaultValue : "slide"}
 
@@ -1016,36 +1020,21 @@ sap.ui.define([
 	 * @private
 	 */
 	FlexibleColumnLayout.prototype._onArrowClick = function (sShiftDirection) {
+		var sCurrentLayout = this.getLayout(),
+			bIsLayoutValid = typeof FlexibleColumnLayout.SHIFT_TARGETS[sCurrentLayout] !== "undefined" && typeof FlexibleColumnLayout.SHIFT_TARGETS[sCurrentLayout][sShiftDirection] !== "undefined",
+			sNewLayout;
 
-		var sLayout = this.getLayout(),
-			oMap = {
-				TwoColumnsBeginExpanded: {
-					"left": LT.TwoColumnsMidExpanded
-				},
-				TwoColumnsMidExpanded: {
-					"right": LT.TwoColumnsBeginExpanded
-				},
-				ThreeColumnsMidExpanded: {
-					"left": LT.ThreeColumnsEndExpanded,
-					"right": LT.ThreeColumnsMidExpandedEndHidden
-				},
-				ThreeColumnsEndExpanded: {
-					"right": LT.ThreeColumnsMidExpanded
-				},
-				ThreeColumnsMidExpandedEndHidden: {
-					"left": LT.ThreeColumnsMidExpanded,
-					"right": LT.ThreeColumnsBeginExpandedEndHidden
-				},
-				ThreeColumnsBeginExpandedEndHidden: {
-					"left": LT.ThreeColumnsMidExpandedEndHidden
-				}
-			};
+		jQuery.sap.assert(bIsLayoutValid, "An invalid layout was used for determining arrow behavior");
+		sNewLayout = bIsLayoutValid ? FlexibleColumnLayout.SHIFT_TARGETS[sCurrentLayout][sShiftDirection] : LT.OneColumn;
 
-		jQuery.sap.assert(typeof oMap[sLayout] !== "undefined" && typeof oMap[sLayout][sShiftDirection] !== "undefined", "An invalid layout was used for determining arrow behavior");
-		sLayout = typeof oMap[sLayout] !== "undefined" && typeof oMap[sLayout][sShiftDirection] !== "undefined" ? oMap[sLayout][sShiftDirection] : LT.OneColumn;
+		this.setLayout(sNewLayout);
 
-		this.setLayout(sLayout);
+		// If the same arrow is hidden in the new layout, focus on the opposite one in it
+		if (FlexibleColumnLayout.ARROWS_NAMES[sNewLayout][sShiftDirection] !== FlexibleColumnLayout.ARROWS_NAMES[sCurrentLayout][sShiftDirection] && bIsLayoutValid) {
+			var sOppositeShiftDirection = sShiftDirection === 'right' ? 'left' : 'right';
 
+			this._$columnButtons[FlexibleColumnLayout.ARROWS_NAMES[sNewLayout][sOppositeShiftDirection]].focus();
+		}
 		this._fireStateChange(true, false);
 	};
 
@@ -1642,6 +1631,53 @@ sap.ui.define([
 	// The width above which (inclusive) we are in tablet mode
 	FlexibleColumnLayout.TABLET_BREAKPOINT = 960;
 
+	// Arrows names for each shift position in a given layout
+	FlexibleColumnLayout.ARROWS_NAMES = {
+		TwoColumnsBeginExpanded: {
+			"left": "beginBack"
+		},
+		TwoColumnsMidExpanded: {
+			"right": "midForward"
+		},
+		ThreeColumnsMidExpanded: {
+			"left": "midBack",
+			"right": "midForward"
+		},
+		ThreeColumnsEndExpanded: {
+			"right": "endForward"
+		},
+		ThreeColumnsMidExpandedEndHidden: {
+			"left": "midBack",
+			"right": "midForward"
+		},
+		ThreeColumnsBeginExpandedEndHidden: {
+			"left": "beginBack"
+		}
+	};
+
+	// Resulting layouts, after shifting in a given direction from a specific layout
+	FlexibleColumnLayout.SHIFT_TARGETS = {
+		TwoColumnsBeginExpanded: {
+			"left": LT.TwoColumnsMidExpanded
+		},
+		TwoColumnsMidExpanded: {
+			"right": LT.TwoColumnsBeginExpanded
+		},
+		ThreeColumnsMidExpanded: {
+			"left": LT.ThreeColumnsEndExpanded,
+			"right": LT.ThreeColumnsMidExpandedEndHidden
+		},
+		ThreeColumnsEndExpanded: {
+			"right": LT.ThreeColumnsMidExpanded
+		},
+		ThreeColumnsMidExpandedEndHidden: {
+			"left": LT.ThreeColumnsMidExpanded,
+			"right": LT.ThreeColumnsBeginExpandedEndHidden
+		},
+		ThreeColumnsBeginExpandedEndHidden: {
+			"left": LT.ThreeColumnsMidExpandedEndHidden
+		}
+	};
 
 	/**
 	 * Retrieves the resource bundle for the <code>sap.f</code> library.
@@ -1718,4 +1754,4 @@ sap.ui.define([
 
 	return FlexibleColumnLayout;
 
-}, /* bExport= */ true);
+});

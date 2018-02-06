@@ -3,9 +3,12 @@
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global'],
-	function (jQuery) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/m/library'],
+	function (jQuery, Device, library) {
 		"use strict";
+
+		// shortcut for sap.m.PlacementType
+		var PlacementType = library.PlacementType;
 
 		/**
 		 * Popover renderer.
@@ -89,7 +92,7 @@ sap.ui.define(['jquery.sap.global'],
 				oHeader = oControl._getAnyHeader();
 			}
 
-			if (sap.ui.Device.system.desktop) {
+			if (Device.system.desktop) {
 
 				// invisible element for cycling keyboard navigation
 				rm.write("<span class='sapMPopoverHiddenFocusable' id='" + oControl.getId() + "-firstfe' tabindex='0'></span>");
@@ -187,7 +190,7 @@ sap.ui.define(['jquery.sap.global'],
 				rm.write("></span>");	// arrow tip
 			}
 
-			if (sap.ui.Device.system.desktop) {
+			if (Device.system.desktop) {
 
 				// invisible element for desktop keyboard navigation
 				rm.write("<span class='sapMPopoverHiddenFocusable' id='" + oControl.getId() + "-lastfe' tabindex='0'></span>");
@@ -232,7 +235,7 @@ sap.ui.define(['jquery.sap.global'],
 				aClassNames.push("sapMPopoverWithoutFooter");
 			}
 
-			if (oControl.getPlacement() === sap.m.PlacementType.Top) {
+			if (oControl.getPlacement() === PlacementType.Top) {
 				aClassNames.push("sapMPopoverPlacedTop");
 			}
 
@@ -279,5 +282,4 @@ sap.ui.define(['jquery.sap.global'],
 		};
 
 		return PopoverRenderer;
-
 	}, /* bExport= */ true);

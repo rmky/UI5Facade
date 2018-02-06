@@ -5,9 +5,15 @@
  */
 
 // Provides control sap.ui.unified.CalendarLegend.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
-	function(jQuery, Control, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/Device', 'sap/ui/core/InvisibleText'],
+	function(jQuery, Control, library, Device, InvisibleText) {
 	"use strict";
+
+	// shortcut for sap.ui.unified.CalendarDayType
+	var CalendarDayType = library.CalendarDayType;
+
+	// shortcut for sap.ui.unified.StandardCalendarLegendItem
+	var StandardCalendarLegendItem = library.StandardCalendarLegendItem;
 
 	/**
 	 * Constructor for a new CalendarLegend.
@@ -20,7 +26,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -55,8 +61,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
 
 	// IE9 workaround for responsive layout of legend items
 	CalendarLegend.prototype.onAfterRendering = function() {
-		if (sap.ui.Device.browser.msie) {
-			if (sap.ui.Device.browser.version < 10) {
+		if (Device.browser.msie) {
+			if (Device.browser.version < 10) {
 				jQuery(".sapUiUnifiedLegendItem").css("width", this.getColumnWidth() + 4 + "px").css("display", "inline-block");
 			}
 		}
@@ -87,10 +93,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
 	};
 
 	CalendarLegend._All_Standard_Items = [
-		sap.ui.unified.StandardCalendarLegendItem.Today,
-		sap.ui.unified.StandardCalendarLegendItem.Selected,
-		sap.ui.unified.StandardCalendarLegendItem.WorkingDay,
-		sap.ui.unified.StandardCalendarLegendItem.NonWorkingDay
+		StandardCalendarLegendItem.Today,
+		StandardCalendarLegendItem.Selected,
+		StandardCalendarLegendItem.WorkingDay,
+		StandardCalendarLegendItem.NonWorkingDay
 	];
 
 	CalendarLegend._Standard_Items_TextKeys = {
@@ -112,13 +118,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
 			iNoTypeItemIndex,
 			aFreeTypes;
 
-		if (sType && sType !== sap.ui.unified.CalendarDayType.None) {
+		if (sType && sType !== CalendarDayType.None) {
 			return sType;
 		}
 
 		aFreeTypes = this._getUnusedItemTypes(aItems);
 		iNoTypeItemIndex = aItems.filter(function(item) {
-			return !item.getType() || item.getType() === sap.ui.unified.CalendarDayType.None;
+			return !item.getType() || item.getType() === CalendarDayType.None;
 		}).indexOf(oItem);
 
 		if (iNoTypeItemIndex < 0) {
@@ -132,7 +138,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
 			// Till 1.48 there were Type01-Type10 and type "None". Type "None" is the first element in the array, so
 			// it does not count in the calculations needed below but with the new enum type "NonWorking" we have to
 			// subtract 1 in order to find the correct "Type" number.
-			sType = "Type" + (Object.keys(sap.ui.unified.CalendarDayType).length + iNoTypeItemIndex - aFreeTypes.length - 1); // event type is not defined, maybe application styled it
+			sType = "Type" + (Object.keys(CalendarDayType).length + iNoTypeItemIndex - aFreeTypes.length - 1); // event type is not defined, maybe application styled it
 		}
 
 		return sType;
@@ -165,12 +171,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
 	 * @private
 	 */
 	CalendarLegend.prototype._getUnusedItemTypes = function(aItems) {
-		var oFreeTypes = jQuery.extend({}, sap.ui.unified.CalendarDayType),
+		var oFreeTypes = jQuery.extend({}, CalendarDayType),
 			sType,
 			i;
 
-		delete oFreeTypes[sap.ui.unified.CalendarDayType.None];
-		delete oFreeTypes[sap.ui.unified.CalendarDayType.NonWorking];
+		delete oFreeTypes[CalendarDayType.None];
+		delete oFreeTypes[CalendarDayType.NonWorking];
 
 		//remove types that are used
 		for (i = 0; i < aItems.length; i++) {
@@ -202,7 +208,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
 		if (!CalendarLegend.typeARIATexts[sType]) {
 			rb = sap.ui.getCore().getLibraryResourceBundle("sap.ui.unified");
 			sText = rb.getText("LEGEND_UNNAMED_TYPE", parseInt(sType.slice(4), 10).toString());
-			CalendarLegend.typeARIATexts[sType] = new sap.ui.core.InvisibleText({ text: sText });
+			CalendarLegend.typeARIATexts[sType] = new InvisibleText({ text: sText });
 			CalendarLegend.typeARIATexts[sType].toStatic();
 		}
 
@@ -211,4 +217,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
 
 	return CalendarLegend;
 
-}, /* bExport= */ true);
+});

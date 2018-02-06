@@ -13,7 +13,7 @@ sap.ui.define(['sap/ui/core/Element', './library'],
 	/**
 	 * Constructor for a new <code>sap.m.PageAccessibleLandmarkInfo</code> element.
 	 *
-	 * @param {string} [sId] Id for the new element, generated automatically if no id is given
+	 * @param {string} [sId] ID for the new element, generated automatically if no ID is given
 	 * @param {object} [mSettings] Initial settings for the new element
 	 *
 	 * @class
@@ -22,7 +22,7 @@ sap.ui.define(['sap/ui/core/Element', './library'],
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -83,7 +83,7 @@ sap.ui.define(['sap/ui/core/Element', './library'],
 			 *
 			 * If set to <code>sap.ui.core.AccessibleLandmarkRole.None</code>, no landmark will be added to the container.
 			 */
-			subHeaderRole : {type : "sap.ui.core.AccessibleLandmarkRole", defaultValue : null},
+			subHeaderRole : {type : "sap.ui.core.AccessibleLandmarkRole", defaultValue : "None"},
 
 			/**
 			 * Texts which describes the landmark of the subheader container of the corresponding <code>sap.m.Page</code> control.

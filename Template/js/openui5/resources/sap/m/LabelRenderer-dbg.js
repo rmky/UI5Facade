@@ -5,9 +5,15 @@
  */
 
 // Provides the default renderer for control sap.m.Label
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer'],
-	function(jQuery, Renderer) {
+sap.ui.define(['sap/ui/core/Renderer', 'sap/m/library', 'sap/ui/core/library'],
+	function(Renderer, library, coreLibrary) {
 	"use strict";
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
+
+	// shortcut for sap.m.LabelDesign
+	var LabelDesign = library.LabelDesign;
 
 	/**
 	 * Label renderer.
@@ -33,7 +39,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer'],
 			sTooltip = oLabel.getTooltip_AsString(),
 			labelForRendering = oLabel.getLabelForRendering(),
 			htmlTagToRender = labelForRendering ? "label" : "span",
-			bDisplayOnly = oLabel.getDisplayOnly();
+			bDisplayOnly = oLabel.isDisplayOnly();
 
 		// write the HTML into the render manager
 		// for accessibility reasons when a label doesn't have a "for" attribute, pointing at a HTML element it is rendered as span
@@ -49,7 +55,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer'],
 			rm.addClass("sapMLabelWrapped");
 		}
 		// set design to bold
-		if (oLabel.getDesign() == sap.m.LabelDesign.Bold) {
+		if (oLabel.getDesign() == LabelDesign.Bold) {
 			rm.addStyle("font-weight", "bold");
 		}
 
@@ -64,7 +70,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer'],
 		}
 
 		// text direction
-		if (sTextDir !== sap.ui.core.TextDirection.Inherit){
+		if (sTextDir !== TextDirection.Inherit){
 			rm.writeAttribute("dir", sTextDir.toLowerCase());
 		}
 

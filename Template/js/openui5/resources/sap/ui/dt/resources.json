@@ -63,6 +63,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/dt/library.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js"
 			]
@@ -73,6 +74,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/dt/library.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js"
 			]
@@ -427,6 +429,7 @@
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/library.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/layout/form/SimpleForm.js",
 				"sap/ui/model/Filter.js",
@@ -503,6 +506,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/library-preload.json",
 				"sap/ui/core/library.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/layout/form/SimpleForm.js",
 				"sap/ui/model/Filter.js",

@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './ComboBoxRenderer', './Popover', './SelectList', './Dialog', './Toolbar', './Button', './library'],
-	function(jQuery, ComboBoxTextField, ComboBoxBase, ComboBoxRenderer, Popover, SelectList, Dialog, Toolbar, Button, library) {
+sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './Popover', './SelectList', './library', 'sap/ui/Device', 'sap/ui/core/Item', 'jquery.sap.keycodes'],
+	function(jQuery, ComboBoxTextField, ComboBoxBase, Popover, SelectList, library, Device, Item) {
 		"use strict";
 
 		/**
@@ -45,7 +45,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		 * </ul>
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @extends sap.m.ComboBoxBase
@@ -232,7 +232,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		/**
 		 * Handles the virtual focus of items.
 		 *
-		 * @param {sap.ui.core.Item | null} vItem
+		 * @param {sap.ui.core.Item | null} vItem The item that should be focused
 		 * @private
 		 * @since 1.32
 		 */
@@ -294,7 +294,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		/**
 		 * Handles highlighting of items after filtering.
 		 *
-		 * @param {string} sValue
+		 * @param {string} sValue The value of the item
 		 * @private
 		 * @since 1.48
 		 */
@@ -360,7 +360,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		/**
 		 * Sets the selected item by its index.
 		 *
-		 * @param {int} iIndex
+		 * @param {int} iIndex The item index
 		 * @private
 		 */
 		ComboBox.prototype.setSelectedIndex = function(iIndex, _aItems /* only for internal usage */) {
@@ -380,7 +380,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		/**
 		 * Creates an instance of <code>sap.m.Popover</code>.
 		 *
-		 * @returns {sap.m.Popover}
+		 * @returns {sap.m.Popover} The popover instance
 		 * @private
 		 */
 		ComboBox.prototype.createDropdown = function() {
@@ -398,7 +398,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		/**
 		 * Creates an instance of <code>sap.m.ComboBoxTextField</code>.
 		 *
-		 * @returns {sap.m.ComboBoxTextField}
+		 * @returns {sap.m.ComboBoxTextField} The TextField instance
 		 * @private
 		 */
 		ComboBox.prototype.createPickerTextField = function() {
@@ -519,7 +519,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 
 		ComboBox.prototype.onBeforeRenderingDropdown = function() {
 			var oPopover = this.getPicker(),
-				sWidth = (this.$().outerWidth() / parseFloat(sap.m.BaseFontSize)) + "rem";
+				sWidth = (this.$().outerWidth() / parseFloat(library.BaseFontSize)) + "rem";
 
 			if (oPopover) {
 				oPopover.setContentMinWidth(sWidth);
@@ -611,7 +611,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 				var oFirstVisibleItem = aVisibleItems[0]; // first item that matches the value
 				var bTextMatched = (oFirstVisibleItem && jQuery.sap.startsWithIgnoreCase(oFirstVisibleItem.getText(), sValue));
 				var bSearchBoth = this.getFilterSecondaryValues();
-				var bDesktopPlatform = sap.ui.Device.system.desktop;
+				var bDesktopPlatform = Device.system.desktop;
 
 				if (!bEmptyValue && oFirstVisibleItem && oFirstVisibleItem.getEnabled()) {
 
@@ -697,31 +697,43 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		/**
 		 * Handles the <code>selectionChange</code> event on the list.
 		 *
-		 * @param {sap.ui.base.Event} oControlEvent
+		 * @param {sap.ui.base.Event} oControlEvent The control event
 		 */
 		ComboBox.prototype.onSelectionChange = function(oControlEvent) {
 			var oItem = oControlEvent.getParameter("selectedItem"),
-				mParam = this.getChangeEventParams();
+				mParam = this.getChangeEventParams(),
+				bSelectedItemChanged = (oItem !== this.getSelectedItem());
 
 			this.setSelection(oItem);
 			this.fireSelectionChange({
 				selectedItem: this.getSelectedItem()
 			});
-			mParam.itemPressed = true;
-			this.onChange(null, mParam);
+
+			if (bSelectedItemChanged) {
+				mParam.itemPressed = true;
+				this.onChange(null, mParam);
+			}
 		};
 
 		/**
 		 * Handles the <code>ItemPress</code> event on the list.
 		 *
-		 * @param {sap.ui.base.Event} oControlEvent
+		 * @param {sap.ui.base.Event} oControlEvent The control event
 		 * @since 1.32.4
 		 */
 		ComboBox.prototype.onItemPress = function(oControlEvent) {
-			var oItem = oControlEvent.getParameter("item");
-			var sText = oItem.getText();
+			var oItem = oControlEvent.getParameter("item"),
+				sText = oItem.getText(),
+				mParam = this.getChangeEventParams(),
+				bSelectedItemChanged = (oItem !== this.getSelectedItem());
 
 			this.updateDomValue(sText);
+
+			// if a highlighted item is pressed fire change event
+			if (this.getPickerType() === "Dropdown" && !bSelectedItemChanged) {
+				mParam.itemPressed = true;
+				this.onChange(null, mParam);
+			}
 
 			this.close();
 
@@ -853,7 +865,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		/**
 		 * Handles properties' changes of items in the aggregation named <code>items</code>.
 		 *
-		 * @param {sap.ui.base.Event} oControlEvent
+		 * @param {sap.ui.base.Event} oControlEvent The control event
 		 * @since 1.28
 		 */
 		ComboBox.prototype.onItemChange = function(oControlEvent) {
@@ -1243,7 +1255,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		 * Updates and synchronizes the <code>selectedItem</code> association, <code>selectedItemId</code>
 		 * and <code>selectedKey</code> properties.
 		 *
-		 * @param {sap.ui.core.Item | null} vItem
+		 * @param {sap.ui.core.Item | null} vItem The selected item
 		 */
 		ComboBox.prototype.setSelection = function(vItem) {
 			var oList = this.getList(),
@@ -1254,7 +1266,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 			}
 
 			this.setAssociation("selectedItem", vItem, true);
-			this.setProperty("selectedItemId", (vItem instanceof sap.ui.core.Item) ? vItem.getId() : vItem, true);
+			this.setProperty("selectedItemId", (vItem instanceof Item) ? vItem.getId() : vItem, true);
 
 			if (typeof vItem === "string") {
 				vItem = sap.ui.getCore().byId(vItem);
@@ -1270,7 +1282,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		 * Determines whether the <code>selectedItem</code> association and <code>selectedKey</code>
 		 * property are synchronized.
 		 *
-		 * @returns {boolean}
+		 * @returns {boolean} Whether the selection is synchronized
 		 * @since 1.24.0
 		 */
 		ComboBox.prototype.isSelectionSynchronized = function() {
@@ -1310,7 +1322,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		/**
 		 * Indicates whether the list is filtered.
 		 *
-		 * @returns {boolean}
+		 * @returns {boolean} True if the list is filtered
 		 * @since 1.26.0
 		 */
 		ComboBox.prototype.isFiltered = function() {
@@ -1323,7 +1335,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		 *
 		 * To be overwritten by subclasses.
 		 *
-		 * @param {sap.ui.core.Item} oItem
+		 * @param {sap.ui.core.Item} oItem The item to be checked
 		 * @returns {boolean} Whether the item is visible.
 		 * @since 1.32.0
 		 */
@@ -1336,7 +1348,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		 *
 		 * To be overwritten by subclasses.
 		 *
-		 * @param {string} sPickerType
+		 * @param {string} sPickerType The type of the picker
 		 * @returns {sap.m.Popover | sap.m.Dialog} The picker popup to be used.
 		 * @protected
 		 */
@@ -1374,7 +1386,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		/**
 		 * Creates an instance of <code>sap.m.SelectList</code>.
 		 *
-		 * @returns {sap.m.SelectList}
+		 * @returns {sap.m.SelectList} The SelectList instance
 		 */
 		ComboBox.prototype.createList = function() {
 			var oRenderer = this.getRenderer();
@@ -1400,8 +1412,8 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		/**
 		 * Indicates whether the provided item is selected.
 		 *
-		 * @param {sap.ui.core.Item} vItem
-		 * @returns {boolean}
+		 * @param {sap.ui.core.Item} vItem The item to be checked
+		 * @returns {boolean} True if the item is selected
 		 * @since 1.24.0
 		 */
 		ComboBox.prototype.isItemSelected = function(vItem) {
@@ -1438,6 +1450,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		 *
 		 * @param {int} iSelectionStart The index of the first selected character.
 		 * @param {int} iSelectionEnd The index of the character after the last selected character.
+		 * @returns <code>this</code> to allow method chaining
 		 * @protected
 		 * @since 1.22.1
 		 */
@@ -1565,7 +1578,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		 * Gets aggregation <code>items</code>.
 		 *
 		 * <b>Note</b>: This is the default aggregation.
-		 * @return {sap.ui.core.Item[]}
+		 * @return {sap.ui.core.Item[]} The Item array
 		 * @public
 		 */
 		ComboBox.prototype.getItems = function() {
@@ -1594,7 +1607,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 				vItem = sap.ui.getCore().byId(vItem);
 			}
 
-			if (!(vItem instanceof sap.ui.core.Item) && vItem !== null) {
+			if (!(vItem instanceof Item) && vItem !== null) {
 				return this;
 			}
 
@@ -1711,8 +1724,7 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 		/**
 		 * Synchronizes combobox's model update with selected key.
 		 *
-		 * @param sSelectedKey
-		 * @param oSelectedItem
+		 * @param oSelectedItem The item
 		 * @private
 		 */
 		ComboBox.prototype._syncItemsSelection = function (oSelectedItem) {
@@ -1767,4 +1779,4 @@ sap.ui.define(['jquery.sap.global', './ComboBoxTextField', './ComboBoxBase', './
 
 		return ComboBox;
 
-	}, /* bExport= */ true);
+	});

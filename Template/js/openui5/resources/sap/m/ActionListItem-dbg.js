@@ -5,9 +5,17 @@
  */
 
 // Provides control sap.m.ActionListItem.
-sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/EnabledPropagator'],
-	function(jQuery, ListItemBase, library, EnabledPropagator) {
+sap.ui.define(['./ListItemBase', './library'],
+	function(ListItemBase, library) {
 	"use strict";
+
+
+
+	// shortcut for sap.m.ListMode
+	var ListMode = library.ListMode;
+
+	// shortcut for sap.m.ListType
+	var ListType = library.ListType;
 
 
 
@@ -23,7 +31,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -49,7 +57,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 	 * @private
 	 */
 	ActionListItem.prototype.init = function() {
-		this.setType(sap.m.ListType.Active);
+		this.setType(ListType.Active);
 		ListItemBase.prototype.init.apply(this, arguments);
 	};
 
@@ -64,7 +72,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 	 * @overwrite
 	 */
 	ActionListItem.prototype.getMode = function() {
-		return sap.m.ListMode.None;
+		return ListMode.None;
 	};
 
 	/**
@@ -84,4 +92,4 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 
 	return ActionListItem;
 
-}, /* bExport= */ true);
+});

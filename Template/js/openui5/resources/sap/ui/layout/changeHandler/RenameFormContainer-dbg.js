@@ -7,8 +7,8 @@
 /*global sap */
 
 sap.ui.define([
-	"jquery.sap.global", "sap/ui/fl/changeHandler/Base", "sap/ui/fl/changeHandler/JsControlTreeModifier", "sap/ui/fl/Utils"
-], function(jQuery, BaseChangeHandler, JsControlTreeModifier, Utils) {
+	"sap/ui/fl/changeHandler/Base", "sap/ui/fl/Utils"
+], function(BaseChangeHandler, Utils) {
 	"use strict";
 
 	/**
@@ -16,7 +16,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.layout.changeHandler.RenameFormContainer
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @since 1.48
 	 * @private
 	 * @experimental Since 1.48. This class is experimental and provides only limited functionality. Also the API might be changed in future.

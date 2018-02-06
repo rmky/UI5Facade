@@ -20,7 +20,7 @@ function (jQuery, storage, constants) {
 	 *
 	 * @readonly
 	 * @name sap.ui.support.RuleSet.mRuleSets
-	 * @memberof sap.ui.support.RuleSet
+	 * @memberof sap.ui.support
 	 */
 	var mRuleSets = {};
 
@@ -37,7 +37,7 @@ function (jQuery, storage, constants) {
 	 * @name sap.ui.support.RuleSet
 	 * @memberof sap.ui.support
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @param {object} oSettings Name of the initiated
 	 * @returns {void}
 	 */

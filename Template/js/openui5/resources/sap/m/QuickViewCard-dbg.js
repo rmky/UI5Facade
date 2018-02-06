@@ -6,9 +6,9 @@
 
 // Provides control sap.m.QuickViewCard.
 sap.ui.define([
-	'jquery.sap.global', './library', 'sap/ui/core/Control',
-		'./QuickViewBase', './NavContainer', './Page', './ScrollContainer'],
-	function(jQuery, library, Control,
+		'./library',
+		 './QuickViewBase', './NavContainer', './Page', './ScrollContainer'],
+	function(library,
 			QuickViewBase, NavContainer, Page, ScrollContainer) {
 	"use strict";
 
@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @extends sap.m.QuickViewBase
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -125,4 +125,4 @@ sap.ui.define([
 
 	return QuickViewCard;
 
-}, /* bExport= */true);
+});

@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.layout.ResponsiveFlowLayout.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IntervalTrigger', 'sap/ui/core/theming/Parameters', './ResponsiveFlowLayoutData', './library'],
-	function(jQuery, Control, IntervalTrigger, Parameters, ResponsiveFlowLayoutData, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './ResponsiveFlowLayoutData', './library', 'sap/ui/core/ResizeHandler', 'sap/ui/Device'],
+	function(jQuery, Control, ResponsiveFlowLayoutData, library, ResizeHandler, Device) {
 	"use strict";
 
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -77,7 +77,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			}
 
 			if (this._resizeHandlerComputeWidthsID) {
-				sap.ui.core.ResizeHandler.deregister(this._resizeHandlerComputeWidthsID);
+				ResizeHandler.deregister(this._resizeHandlerComputeWidthsID);
 			}
 			delete this._resizeHandlerComputeWidthsID;
 			delete this._proxyComputeWidths;
@@ -522,7 +522,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 						if (this._bLayoutDataChanged || bRender) {
 
 							//in IE when setting the innerHTML property to "" the changes do not take effect correctly and all the children are gone
-							if (sap.ui.Device.browser.internet_explorer){
+							if (Device.browser.internet_explorer){
 								jQuery(this._oDomRef).empty();
 							} else {
 								this._oDomRef.innerHTML = "";
@@ -545,7 +545,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 
 					if (this._rows.length === 0) {
 						if (this._resizeHandlerComputeWidthsID) {
-							sap.ui.core.ResizeHandler.deregister(this._resizeHandlerComputeWidthsID);
+							ResizeHandler.deregister(this._resizeHandlerComputeWidthsID);
 							delete this._resizeHandlerComputeWidthsID;
 						}
 					}
@@ -563,7 +563,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			updateRows(this);
 
 			if (this._resizeHandlerFullLengthID) {
-				sap.ui.core.ResizeHandler.deregister(this._resizeHandlerFullLengthID);
+				ResizeHandler.deregister(this._resizeHandlerFullLengthID);
 				delete this._resizeHandlerFullLengthID;
 			}
 		};
@@ -582,11 +582,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 
 			if (this.getResponsive()) {
 				if (!this._resizeHandlerComputeWidthsID) {
-					this._resizeHandlerComputeWidthsID = sap.ui.core.ResizeHandler.register(this, this._proxyComputeWidths);
+					this._resizeHandlerComputeWidthsID = ResizeHandler.register(this, this._proxyComputeWidths);
 				}
 			} else {
 				if (this._resizeHandlerComputeWidthsID) {
-					sap.ui.core.ResizeHandler.deregister(this._resizeHandlerComputeWidthsID);
+					ResizeHandler.deregister(this._resizeHandlerComputeWidthsID);
 					delete this._resizeHandlerComputeWidthsID;
 				}
 			}
@@ -597,7 +597,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 				this._bLayoutDataChanged = true;
 			}
 			if (!this._resizeHandlerComputeWidthsID) {
-				this._resizeHandlerComputeWidthsID = sap.ui.core.ResizeHandler.register(this, this._proxyComputeWidths);
+				this._resizeHandlerComputeWidthsID = ResizeHandler.register(this, this._proxyComputeWidths);
 			}
 
 			updateRows(this);
@@ -763,4 +763,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 
 	return ResponsiveFlowLayout;
 
-}, /* bExport= */ true);
+});

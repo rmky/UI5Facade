@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["jquery.sap.global", "sap/ui/fl/changeHandler/JsControlTreeModifier", "sap/ui/fl/Utils"],
-		function(jQuery, JsControlTreeModifier, Utils) {
+sap.ui.define(["jquery.sap.global", "sap/ui/fl/changeHandler/JsControlTreeModifier"],
+		function(jQuery, JsControlTreeModifier) {
 			"use strict";
 
 			/**
@@ -13,7 +13,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/fl/changeHandler/JsControlTreeModifi
 			 *
 			 * @alias sap.ui.fl.changeHandler.MoveElements
 			 * @author SAP SE
-			 * @version 1.50.8
+			 * @version 1.52.5
 			 * @experimental Since 1.34.0
 			 */
 			var MoveSimpleForm = {};

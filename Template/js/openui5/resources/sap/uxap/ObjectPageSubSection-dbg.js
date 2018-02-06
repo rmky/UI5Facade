@@ -7,7 +7,6 @@
 // Provides control sap.uxap.ObjectPageSubSection.
 sap.ui.define([
 	"jquery.sap.global",
-	"sap/ui/core/CustomData",
 	"sap/ui/layout/Grid",
 	"sap/ui/layout/GridData",
 	"./ObjectPageSectionBase",
@@ -17,20 +16,25 @@ sap.ui.define([
 	"sap/ui/Device",
 	"sap/ui/core/StashedControlSupport",
 	"sap/ui/base/ManagedObjectObserver",
-	"./library"
+	"./library",
+	"sap/m/library",
+	"jquery.sap.keycodes"
 ], function (jQuery,
-			 CustomData,
-			 Grid,
-			 GridData,
-			 ObjectPageSectionBase,
-			 ObjectPageLazyLoader,
-			 BlockBase,
-			 Button,
-			 Device,
-			 StashedControlSupport,
-			 ManagedObjectObserver,
-			 library) {
+			Grid,
+			GridData,
+			ObjectPageSectionBase,
+			ObjectPageLazyLoader,
+			BlockBase,
+			Button,
+			Device,
+			StashedControlSupport,
+			ManagedObjectObserver,
+			library,
+			mobileLibrary) {
 	"use strict";
+
+	// shortcut for sap.m.ButtonType
+	var ButtonType = mobileLibrary.ButtonType;
 
 	// shortcut for sap.uxap.ObjectPageSubSectionMode
 	var ObjectPageSubSectionMode = library.ObjectPageSubSectionMode;
@@ -277,7 +281,7 @@ sap.ui.define([
 			}
 
 		}, this);
-		return sap.ui.core.Control.prototype.clone.apply(this, arguments);
+		return ObjectPageSectionBase.prototype.clone.apply(this, arguments);
 	};
 
 	ObjectPageSubSection.prototype._cleanProxiedAggregations = function () {
@@ -686,9 +690,15 @@ sap.ui.define([
 	};
 
 	/**
-	* The <code>insertBlock</code> method is not supported by design.
+	* Adds a <code>BlockBase</code> instance to the <code>blocks</code> aggregation.
+	*
+	* <b>Note:</b> The <code>insertBlock</code> method is not supported by design.
 	* If used, it works as an <code>addBlock</code>,
-	* adding a single block to the end of blocks aggregations.
+	* adding a single block to the end of the <code>blocks</code> aggregation.
+	* @param {sap.uxap.BlockBase} oObject
+	* @param {int} iIndex
+	* @returns {sap.uxap.ObjectPageSubSection} this
+	* @public
 	*/
 	ObjectPageSubSection.prototype.insertBlock = function (oObject, iIndex) {
 		jQuery.sap.log.warning("ObjectPageSubSection :: usage of insertBlock is not supported - addBlock is performed instead.");
@@ -696,10 +706,16 @@ sap.ui.define([
 	};
 
 	/**
-	* The <code>insertMoreBlock</code> method is not supported by design.
-	* If used, it works as an <code>addMoreBlock</code>,
-	* adding a single block to the end of moreBlocks aggregations.
-	*/
+	 * Adds a <code>BlockBase</code> instance to the <code>moreBlocks</code> aggregation.
+	 *
+	 * <b>Note:</b> The <code>insertMoreBlock</code> method is not supported by design.
+	 * If used, it works as an <code>addMoreBlock</code>,
+	 * adding a single block to the end of the <code>moreBlocks</code> aggregation.
+	 * @param {sap.uxap.BlockBase} oObject
+	 * @param {int} iIndex
+	 * @returns {sap.uxap.ObjectPageSubSection} this
+	 * @public
+	 */
 	ObjectPageSubSection.prototype.insertMoreBlock = function (oObject, iIndex) {
 		jQuery.sap.log.warning("ObjectPageSubSection :: usage of insertMoreBlock is not supported - addMoreBlock is performed instead.");
 		return this.addAggregation("moreBlocks", oObject);
@@ -787,7 +803,7 @@ sap.ui.define([
 	ObjectPageSubSection.prototype._getSeeMoreButton = function () {
 		if (!this._oSeeMoreButton) {
 			this._oSeeMoreButton = new Button(this.getId() + "--seeMore", {
-				type: sap.m.ButtonType.Transparent,
+				type: ButtonType.Transparent,
 				iconFirst: false
 			}).addStyleClass("sapUxAPSubSectionSeeMoreButton").attachPress(this._seeMoreLessControlPressHandler, this);
 		}

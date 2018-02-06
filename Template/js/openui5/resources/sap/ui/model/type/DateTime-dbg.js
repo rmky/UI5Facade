@@ -19,9 +19,8 @@ sap.ui.define(['./Date', 'sap/ui/core/format/DateFormat'],
 	 * @extends sap.ui.model.type.Date
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
-	 * @constructor
 	 * @public
 	 * @param {object} [oFormatOptions] Formatting options. For a list of all available options, see {@link sap.ui.core.format.DateFormat.getDateTimeInstance DateFormat}.
 	 * @param {object} [oFormatOptions.source] Additional set of options used to create a second <code>DateFormat</code> object for conversions between

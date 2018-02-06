@@ -134,7 +134,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject'],
 	 * @see sap.ui.core.LabelEnablement#enrich
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @protected
 	 * @alias sap.ui.core.LabelEnablement
 	 * @namespace
@@ -322,6 +322,27 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject'],
 			// have a getRequired method, this is treated like a return value of "false".
 			var oFor = toControl(this.getLabelForRendering(), false);
 			return checkRequired(this) || checkRequired(oFor);
+
+		};
+
+		/**
+		 * Checks whether the <code>Label</code> should be rendered in display only mode.
+		 *
+		 * In the standard case it just uses the DisplayOnly property of the <code>Label</code>.
+		 *
+		 * In the Form another type of logic is used.
+		 * Maybe later on also the labeled controls might be used to determine the rendering.
+		 *
+		 * @protected
+		 * @returns {boolean} Returns if the Label should be rendered in display only mode
+		 */
+		oControl.isDisplayOnly = function(){
+
+			if (this.getDisplayOnly) {
+				return this.getDisplayOnly();
+			} else {
+				return false;
+			}
 
 		};
 

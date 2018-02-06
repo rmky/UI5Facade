@@ -442,7 +442,7 @@
     },
     {
       "name" : "sap/ui/ux3/library-preload.js",
-      "size" : 313633,
+      "size" : 315311,
       "required" : ["jquery.sap.dom.js", "jquery.sap.global.js", "jquery.sap.script.js", "sap/ui/base/EventProvider.js", "sap/ui/commons/Button.js", "sap/ui/commons/Callout.js", "sap/ui/commons/CalloutBase.js", "sap/ui/commons/CalloutBaseRenderer.js", "sap/ui/commons/Dialog.js", "sap/ui/commons/DropdownBox.js", "sap/ui/commons/ListBox.js", "sap/ui/commons/Menu.js", "sap/ui/commons/MenuButton.js", "sap/ui/commons/SearchField.js", "sap/ui/commons/TextView.js", "sap/ui/commons/ToggleButton.js", "sap/ui/commons/Toolbar.js", "sap/ui/commons/library.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/Icon.js", "sap/ui/core/IconPool.js", "sap/ui/core/IntervalTrigger.js", "sap/ui/core/Item.js", "sap/ui/core/Popup.js", "sap/ui/core/RenderManager.js", "sap/ui/core/Renderer.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/delegate/ItemNavigation.js", "sap/ui/core/library.js", "sap/ui/core/theming/Parameters.js", "sap/ui/model/SelectionModel.js"],
       "includes" : ["sap/ui/ux3/ActionBar.js", "sap/ui/ux3/ActionBarRenderer.js", "sap/ui/ux3/Collection.js", "sap/ui/ux3/CollectionInspector.js", "sap/ui/ux3/CollectionInspectorRenderer.js", "sap/ui/ux3/DataSet.js", "sap/ui/ux3/DataSetItem.js", "sap/ui/ux3/DataSetRenderer.js", "sap/ui/ux3/DataSetSimpleView.js", "sap/ui/ux3/DataSetSimpleViewRenderer.js", "sap/ui/ux3/Exact.js", "sap/ui/ux3/ExactArea.js", "sap/ui/ux3/ExactAreaRenderer.js", "sap/ui/ux3/ExactAttribute.js", "sap/ui/ux3/ExactBrowser.js", "sap/ui/ux3/ExactBrowserRenderer.js", "sap/ui/ux3/ExactList.js", "sap/ui/ux3/ExactListRenderer.js", "sap/ui/ux3/ExactRenderer.js", "sap/ui/ux3/FacetFilter.js", "sap/ui/ux3/FacetFilterList.js", "sap/ui/ux3/FacetFilterListRenderer.js", "sap/ui/ux3/FacetFilterRenderer.js", "sap/ui/ux3/Feed.js", "sap/ui/ux3/FeedChunk.js", "sap/ui/ux3/FeedChunkRenderer.js", "sap/ui/ux3/FeedRenderer.js", "sap/ui/ux3/Feeder.js", "sap/ui/ux3/FeederRenderer.js", "sap/ui/ux3/NavigationBar.js", "sap/ui/ux3/NavigationBarRenderer.js", "sap/ui/ux3/NavigationItem.js", "sap/ui/ux3/NotificationBar.js", "sap/ui/ux3/NotificationBarRenderer.js", "sap/ui/ux3/Notifier.js", "sap/ui/ux3/Overlay.js", "sap/ui/ux3/OverlayContainer.js", "sap/ui/ux3/OverlayContainerRenderer.js", "sap/ui/ux3/OverlayDialog.js", "sap/ui/ux3/OverlayDialogRenderer.js", "sap/ui/ux3/OverlayRenderer.js", "sap/ui/ux3/QuickView.js", "sap/ui/ux3/QuickViewRenderer.js", "sap/ui/ux3/Shell.js", "sap/ui/ux3/ShellColorPicker.js", "sap/ui/ux3/ShellPersonalization.js", "sap/ui/ux3/ShellRenderer.js", "sap/ui/ux3/ThingAction.js", "sap/ui/ux3/ThingGroup.js", "sap/ui/ux3/ThingInspector.js", "sap/ui/ux3/ThingInspectorRenderer.js", "sap/ui/ux3/ThingViewer.js", "sap/ui/ux3/ThingViewerRenderer.js", "sap/ui/ux3/ToolPopup.js", "sap/ui/ux3/ToolPopupRenderer.js", "sap/ui/ux3/library.js", "sap/ui/ux3/manifest.json"]
     },
@@ -462,7 +462,7 @@
     },
     {
       "name" : "sap/ui/ux3/manifest.json",
-      "size" : 848,
+      "size" : 2476,
       "required" : [],
       "includes" : []
     },
@@ -474,247 +474,247 @@
     },
     {
       "name" : "sap/ui/ux3/messagebundle_ar.properties",
-      "size" : 16255,
+      "size" : 16073,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_bg.properties",
-      "size" : 19245,
+      "size" : 19063,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_ca.properties",
-      "size" : 11041,
+      "size" : 10859,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_cs.properties",
-      "size" : 12087,
+      "size" : 11905,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_da.properties",
-      "size" : 11035,
+      "size" : 10853,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_de.properties",
-      "size" : 11042,
+      "size" : 10860,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_el.properties",
-      "size" : 18532,
+      "size" : 18350,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_en.properties",
-      "size" : 10459,
+      "size" : 10277,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_en_US_sappsd.properties",
-      "size" : 19499,
+      "size" : 19317,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_en_US_saptrc.properties",
-      "size" : 12368,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_es.properties",
-      "size" : 11038,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_et.properties",
-      "size" : 10981,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_fi.properties",
-      "size" : 11381,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_fr.properties",
-      "size" : 11333,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_hi.properties",
-      "size" : 16734,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_hr.properties",
-      "size" : 11036,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_hu.properties",
-      "size" : 12197,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_it.properties",
-      "size" : 11018,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_iw.properties",
-      "size" : 14908,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_ja.properties",
-      "size" : 13234,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_kk.properties",
-      "size" : 18462,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_ko.properties",
-      "size" : 12670,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_lt.properties",
-      "size" : 11565,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_lv.properties",
-      "size" : 11613,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_ms.properties",
-      "size" : 10642,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_nl.properties",
-      "size" : 10793,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_no.properties",
-      "size" : 10970,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_pl.properties",
-      "size" : 11489,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_pt.properties",
-      "size" : 11129,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_ro.properties",
-      "size" : 11050,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_ru.properties",
-      "size" : 19358,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_sh.properties",
-      "size" : 10857,
-      "required" : [],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/ux3/messagebundle_sk.properties",
       "size" : 12186,
       "required" : [],
       "includes" : []
     },
     {
+      "name" : "sap/ui/ux3/messagebundle_es.properties",
+      "size" : 10856,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_et.properties",
+      "size" : 10799,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_fi.properties",
+      "size" : 11199,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_fr.properties",
+      "size" : 11151,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_hi.properties",
+      "size" : 16552,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_hr.properties",
+      "size" : 10854,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_hu.properties",
+      "size" : 12015,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_it.properties",
+      "size" : 10836,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_iw.properties",
+      "size" : 14726,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_ja.properties",
+      "size" : 13052,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_kk.properties",
+      "size" : 18280,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_ko.properties",
+      "size" : 12488,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_lt.properties",
+      "size" : 11383,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_lv.properties",
+      "size" : 11431,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_ms.properties",
+      "size" : 10460,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_nl.properties",
+      "size" : 10611,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_no.properties",
+      "size" : 10788,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_pl.properties",
+      "size" : 11307,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_pt.properties",
+      "size" : 10947,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_ro.properties",
+      "size" : 10868,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_ru.properties",
+      "size" : 19176,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_sh.properties",
+      "size" : 10675,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/ux3/messagebundle_sk.properties",
+      "size" : 12004,
+      "required" : [],
+      "includes" : []
+    },
+    {
       "name" : "sap/ui/ux3/messagebundle_sl.properties",
-      "size" : 11234,
+      "size" : 11052,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_sv.properties",
-      "size" : 11256,
+      "size" : 11074,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_th.properties",
-      "size" : 16950,
+      "size" : 16768,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_tr.properties",
-      "size" : 11499,
+      "size" : 11317,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_uk.properties",
-      "size" : 18546,
+      "size" : 18364,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_vi.properties",
-      "size" : 13400,
+      "size" : 13218,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_zh_CN.properties",
-      "size" : 11921,
+      "size" : 11739,
       "required" : [],
       "includes" : []
     },
     {
       "name" : "sap/ui/ux3/messagebundle_zh_TW.properties",
-      "size" : 11849,
+      "size" : 11667,
       "required" : [],
       "includes" : []
     }

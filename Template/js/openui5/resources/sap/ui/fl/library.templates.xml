@@ -126,6 +126,8 @@
 	showSave: true, // boolean
 	showSaveAs: true, // boolean
 	showManage: true, // boolean
+	showVariantListFooter: true, // boolean
+	inErrorState: false, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -157,6 +159,8 @@
 	showSave="true"
 	showSaveAs="true"
 	showManage="true"
+	showVariantListFooter="true"
+	inErrorState="false"
 	"for"=""
 	validateFieldGroup=""
 	save=""

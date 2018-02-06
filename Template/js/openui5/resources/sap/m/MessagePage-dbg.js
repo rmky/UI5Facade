@@ -5,28 +5,49 @@
  */
 
 // Provides control sap.m.MessagePage.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/IconPool'],
-	function(jQuery, library, Control, IconPool) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/library',
+	'sap/m/library',
+	'sap/ui/core/Control',
+	'sap/ui/core/IconPool',
+	'sap/m/Text',
+	'sap/m/VBox',
+	'sap/m/Page',
+	'sap/m/Image'
+], function(jQuery, library, coreLibrary, mobileLibrary, Control, IconPool, Text, VBox, Page, Image) {
 		"use strict";
+
+		var TextAlign = coreLibrary.TextAlign;
+		var TextDirection = coreLibrary.TextDirection;
+
+		var FlexJustifyContent = mobileLibrary.FlexJustifyContent;
+		var FlexAlignItems = mobileLibrary.FlexAlignItems;
 
 		/**
 		 * Constructor for a new MessagePage.
 		 *
-		 * @param {string} [sId] id for the new control, generated automatically if no id is given
-		 * @param {object} [mSettings] initial settings for the new control
+		 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
+		 * @param {object} [mSettings] Initial settings for the new control
 		 *
 		 * @class
+		 * Displays an empty page with an icon and a header when certain conditions are met.
+		 * <h3>Overview</h3>
 		 * MessagePage is displayed when there is no data or matching content. There are different use cases where a MessagePage might be visualized, for example:
-		 *		- The search query returned no results
-		 *		- The app contains no items
-		 *		- There are too many items
-		 *		- The application is loading
-		 * The layout is unchanged but the text varies depending on the use case.
-		 * <br><b>Note:</b> The <code>MessagePage</code> is not intended to be used as a top-level control,
+		 *<ul>
+		 *<li>The search query returned no results</li>
+		 *<li>The app contains no items</li>
+		 *<li>There are too many items</li>
+		 *<li>The application is loading</li>
+		 *</ul>
+		 * The layout is unchanged but the text and icon vary depending on the use case.
+		 * <h3>Usage</h3>
+		 * <b>Note:</b> The <code>MessagePage</code> is not intended to be used as a top-level control,
 		 * but rather used within controls such as <code>NavContainer</code>, <code>App</code>, <code>Shell</code> or other container controls.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -64,9 +85,15 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 				 */
 				icon : {type : "sap.ui.core.URI", group : "Misc", defaultValue : "sap-icon://documents" },
 				/**
+				 * Defines the alt attribute of the icon displayed on the <code>MessagePage</code>.
+				 *
+				 * @since 1.52
+				 */
+				iconAlt : {type : "string", group : "Misc", defaultValue : null },
+				/**
 				 * Determines the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 */
-				textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : sap.ui.core.TextDirection.Inherit}
+				textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit}
 			},
 			aggregations : {
 				/**
@@ -110,7 +137,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		MessagePage.prototype.init = function() {
 			var oBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
-			this.setAggregation("_page", new sap.m.Page({
+			this.setAggregation("_page", new Page({
 				id: this.getId() + "-page",
 				showHeader : this.getShowHeader(),
 				navButtonPress : jQuery.proxy(function() {
@@ -134,6 +161,10 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			if (oPage) {
 				oPage.destroy();
 				oPage = null;
+			}
+
+			if (this._oVBox) {
+				this._oVBox = null;
 			}
 
 			if (this._oText) {
@@ -191,67 +222,106 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			this.setProperty("icon", sIconUri, true); // no re-rendering
 
 			if (this._oIconControl) {
-				// check if the value is changed and if URIs are from different type(icon or image) in order to avoid destroying and creating of icon control
-				if (sOldIconUri !== sIconUri && IconPool.isIconURI(sOldIconUri) != IconPool.isIconURI(sIconUri)) {
+				// check if the value is changed and if URIs are from different type(icon or image)
+				// in order to avoid destroying and creating of icon control
+				if (sOldIconUri !== sIconUri && IconPool.isIconURI(sOldIconUri) !== IconPool.isIconURI(sIconUri)) {
 					var oPage = this.getAggregation("_page");
 
-					oPage.removeContent(this._oIconControl);
-					this._oIconControl.destroy();
-					oPage.insertContent(this._getIconControl(), 0);
+					oPage.removeContent(this._oIconControl); // remove current the current Icon or Image control
+					oPage.insertContent(this._getIconControl(), 0); // insert new Icon or Image control
 				} else {
-					this._oIconControl.setSrc(sIconUri);
+					this._oIconControl.setSrc(sIconUri); // just update the current Icon control
 				}
 			}
 			return this;
 		};
 
+		MessagePage.prototype.setIconAlt = function(sIconAlt) {
+			this.setProperty("iconAlt", sIconAlt, true); // no re-rendering
+			if (this._oIconControl) {
+				this._oIconControl.setAlt(sIconAlt);
+			}
+			return this;
+		};
+
 		MessagePage.prototype._addPageContent = function() {
-			var oPage = this.getAggregation("_page");
+			this.getAggregation("_page").addContent(this._getMessagePageContent());
+		};
 
-			if (this.getAggregation("customText")) {
-				this._oText = this.getAggregation("customText");
-			} else {
-				this._oText = new sap.m.Text({
-					id: this.getId() + "-customText",
-					text: this.getText(),
-					textAlign: sap.ui.core.TextAlign.Center,
-					textDirection: this.getTextDirection()
+		MessagePage.prototype._getMessagePageContent = function() {
+			if (!this._oVBox) {
+				this._oVBox = new VBox(this.getId() + '-vbox', {
+					fitContainer: true,
+					justifyContent: FlexJustifyContent.Center,
+					alignItems: FlexAlignItems.Center,
+					items: [
+						this._getIconControl(),
+						this._getText(),
+						this._getDescription()
+					]
 				});
 			}
 
-			if (this.getAggregation("customDescription")) {
-				this._oDescription = this.getAggregation("customDescription");
-			} else {
-				this._oDescription = new sap.m.Text({
-					id: this.getId() + "-customDescription",
-					text: this.getDescription(),
-					textAlign: sap.ui.core.TextAlign.Center,
-					textDirection: this.getTextDirection()
-				});
-			}
-
-			oPage.addContent(this._getIconControl());
-			oPage.addContent(this._oText.addStyleClass("sapMMessagePageMainText"));
-			oPage.addContent(this._oDescription.addStyleClass("sapMMessagePageDescription"));
+			return this._oVBox;
 		};
 
 		MessagePage.prototype._getIconControl = function() {
+			if (this._oIconControl) {
+				this._oIconControl.destroy();
+			}
+
 			this._oIconControl = IconPool.createControlByURI({
 				id: this.getId() + "-pageIcon",
 				src: this.getIcon(),
 				height: "8rem",
 				useIconTooltip: true,
-				decorative: false
-			}, sap.m.Image).addStyleClass("sapMMessagePageIcon");
+				decorative: false,
+				alt: this.getIconAlt()
+			}, Image).addStyleClass("sapMMessagePageIcon");
 
 			return this._oIconControl;
 		};
+
+		MessagePage.prototype._getText = function() {
+			if (this.getAggregation("customText")) {
+				this._oText = this.getAggregation("customText");
+			} else {
+				this._oText = new Text({
+					id: this.getId() + "-customText",
+					text: this.getText(),
+					textAlign: TextAlign.Center,
+					textDirection: this.getTextDirection()
+				});
+			}
+
+			this._oText.addStyleClass("sapMMessagePageMainText");
+
+			return this._oText;
+		};
+
+		MessagePage.prototype._getDescription = function() {
+			if (this.getAggregation("customDescription")) {
+				this._oDescription = this.getAggregation("customDescription");
+			} else {
+				this._oDescription = new Text({
+					id: this.getId() + "-customDescription",
+					text: this.getDescription(),
+					textAlign: TextAlign.Center,
+					textDirection: this.getTextDirection()
+				});
+			}
+
+			this._oDescription.addStyleClass("sapMMessagePageDescription");
+
+			return this._oDescription;
+		};
+
 
 		/**
 		 * Returns the internal header
 		 * Adding this functions because they are needed by the SplitContainer logic to show the "hamburger" button.
 		 * @private
-		 * @returns {sap.m.IBar}
+		 * @returns {sap.m.IBar} The internal header
 		 */
 		MessagePage.prototype._getAnyHeader = function() {
 			return this._getInternalHeader();
@@ -259,7 +329,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 		/**
 		 * Adding this functions because they are needed by the SplitContainer logic to show the "hamburger" button.
-		 * @returns {sap.m.IBar}
+		 * @returns {sap.m.IBar} The header
 		 * @private
 		 */
 
@@ -269,4 +339,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 
 		return MessagePage;
-	}, /* bExport= */ true);
+	});

@@ -6,9 +6,12 @@
 
 // Provides control sap.m.P13nGroupPanel.
 sap.ui.define([
-	'jquery.sap.global', './P13nConditionPanel', './P13nPanel', './library', 'sap/ui/core/Control'
-], function(jQuery, P13nConditionPanel, P13nPanel, library, Control) {
+	'jquery.sap.global', './P13nConditionPanel', './P13nPanel', './library'
+], function(jQuery, P13nConditionPanel, P13nPanel, library) {
 	"use strict";
+
+	// shortcut for sap.m.P13nPanelType
+	var P13nPanelType = library.P13nPanelType;
 
 	/**
 	 * Constructor for a new P13nGroupPanel.
@@ -17,7 +20,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The P13nGroupPanel control is used to define group-specific settings for table personalization.
 	 * @extends sap.m.P13nPanel
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -212,7 +215,7 @@ sap.ui.define([
 	};
 
 	P13nGroupPanel.prototype.init = function() {
-		this.setType(sap.m.P13nPanelType.group);
+		this.setType(P13nPanelType.group);
 		this.setTitle(sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("GROUPPANEL_TITLE"));
 
 		sap.ui.getCore().loadLibrary("sap.ui.layout");
@@ -508,4 +511,4 @@ sap.ui.define([
 
 	return P13nGroupPanel;
 
-}, /* bExport= */true);
+});

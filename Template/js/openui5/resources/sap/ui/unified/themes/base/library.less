@@ -530,6 +530,26 @@ html.sapUiMedia-Std-Phone .sapUiCalHeadB0{
 	color: @sapUiContentContrastTextColor;
 }
 
+.sapUiCalRowWeekNumbers {
+	font-size: 0.875rem;
+	text-align: left;
+	line-height: 3rem;
+	height: 3rem;
+	margin-top: -0.25rem;
+}
+
+.sapUiCalRowWeekNumber {
+	box-sizing: border-box;
+	height: 3rem;
+	border-width: 0.0625rem;
+	border-style: solid;
+	display: inline-block;
+	text-align: center;
+	overflow: hidden;
+	user-select: none;
+	cursor: default;
+}
+
 /*** compact mode (desktop size) ***/
 
 .sapUiSizeCompact .sapUiCal,
@@ -727,6 +747,15 @@ html[dir=rtl][data-sap-ui-browser ^= "ie"], html[dir=rtl][data-sap-ui-browser^="
 	line-height: 0.75rem;
 	padding-right: 0.25rem;
 	padding-bottom: 1rem;
+}
+
+.sapUiSizeCompact .sapUiCalRowWeekNumbers {
+	line-height: 2rem;
+	height: 2rem;
+}
+
+.sapUiSizeCompact .sapUiCalRowWeekNumber {
+	height: 2rem;
 }
 
 /*** Phone ***/
@@ -1475,6 +1504,8 @@ html.sap-desktop .sapUiCalendarApp.sapUiCalendarAppSel:focus:not(:active) > .sap
 		.sapUiColorPicker-ColorPickerOldColor {
 			width: 2rem;
 			height: 2rem;
+			border-color: @sapUiFieldBorderColor;
+			background-color: @sapUiFieldBackground;
 		}
 		.sapUiColorPicker-swatches {
 			margin: 0;
@@ -1506,7 +1537,7 @@ html.sap-desktop .sapUiCalendarApp.sapUiCalendarAppSel:focus:not(:active) > .sap
 			box-sizing: border-box;
 			width: @_sap_ui_unified_ColorPicker_CircleSize;
 			height: @_sap_ui_unified_ColorPicker_CircleSize;
-			border: 1px solid @sapUiWhiteBorder;
+			border: 1px solid @sapUiContentContrastFocusColor ;
 			border-radius: 6px;
 			pointer-events: none;
 			&:after {
@@ -1514,7 +1545,7 @@ html.sap-desktop .sapUiCalendarApp.sapUiCalendarAppSel:focus:not(:active) > .sap
 				position: absolute;
 				width: 4px;
 				height: 4px;
-				border: 1px solid @sapUiBlackBorder;
+				border: 1px solid @sapUiContentFocusColor;
 				border-radius: 4px;
 				pointer-events: none;
 			}
@@ -1527,14 +1558,14 @@ html.sap-desktop .sapUiCalendarApp.sapUiCalendarAppSel:focus:not(:active) > .sap
 			top: -0.83rem;
 			height: 1.75rem;
 			width: 1.75rem;
-			border: 0.125rem solid @sapUiWhiteBorder;
+			border: 0.125rem solid @sapUiContentContrastFocusColor;
 			border-radius: 1rem;
 		}
 		// Sliders - border
 		.sapUiColorPicker-ColorPickerSlider,
 		.sapUiColorPicker-ColorPickerAlphaSlider {
 			.sapMSliderInner {
-				border: solid @sapUiBlackBorder 1px;
+				border: solid @sapUiFieldBorderColor 1px;
 			}
 		}
 		// HSL Alpha transparency helper for swatches
@@ -1557,12 +1588,19 @@ html.sap-desktop .sapUiCalendarApp.sapUiCalendarAppSel:focus:not(:active) > .sap
 	}
 }
 
+.sapUiSizeCompact .sapUiColorPicker-ColorPickerMatrix.sapUnifiedColorPicker {
+	.sapUiColorPicker-ColorPickerSlider,
+	.sapUiColorPicker-ColorPickerAlphaSlider {
+		padding-top: 0.5rem;
+	}
+}
+
 .sapUiColorPicker-ColorPickerBox {
 	float: left;
 	margin: 5px;
 	border-width: 1px;
 	border-style: solid;
-	border-color: @sapUiMediumBorder;
+	border-color: @sapUiFieldBorderColor;
 	position: relative;
 	cursor: crosshair;
 	display: inline-block;
@@ -1595,7 +1633,7 @@ html.sap-desktop .sapUiCalendarApp.sapUiCalendarAppSel:focus:not(:active) > .sap
 	height: @_sap_ui_unified_ColorPicker_CircleSize;
 	border-width: 1px;
 	border-style: solid;
-	border-color: @sapUiWhiteBorder;
+	border-color: @sapUiContentContrastFocusColor;
 	border-radius: 5px;
 	pointer-events: none;
 }
@@ -2084,6 +2122,28 @@ html[data-sap-ui-browser^="cr"] .sapUiFupInputMask > input {
 	position: relative;
 }
 
+.sapUiMnuItm:focus {
+	outline: 1px dotted @sapUiContentFocusColor;
+	outline-offset: -3px;
+}
+
+html[data-sap-ui-browser*='ie'] {
+	.sapUiMnuItm:focus {
+		outline: none;
+	}
+	.sapUiMnuItm:focus::before {
+		content: "";
+		border: 0;
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		right: 2px;
+		bottom: 2px;
+		pointer-events: none;
+		border: 1px dashed @sapUiContentFocusColor;
+	}
+}
+
 .sapUiMnuItm.sapUiMnuItmDsbl,
 .sapUiMnuItm.sapUiMnuTfItm.sapUiMnuItmDsbl .sapUiMnuTfItemLbl,
 .sapUiMnuItm.sapUiMnuTfItm.sapUiMnuItmDsbl.sapUiMnuItmHov .sapUiMnuTfItemLbl {
@@ -2324,7 +2384,7 @@ html[data-sap-ui-browser^="cr"] .sapUiFupInputMask > input {
 }
 
 .sapUiMnuItm.sapUiMnuItmHov:active .sapUiMnuItmIco {
-	color: @sapUiContentContrastIconColor;
+	color: @sapUiListActiveTextColor;
 }
 
 .sapUiMnuItm.sapUiMnuItmDsbl.sapUiMnuItmHov:active .sapUiMnuItmIco {
@@ -2385,7 +2445,7 @@ html[data-sap-ui-browser^="cr"] .sapUiFupInputMask > input {
 }
 
 .sapUiMnuItm.sapUiMnuItmHov:active .sapUiMnuItmSbMnu > div:after {
- 	color: @sapUiContentContrastIconColor;
+ 	color: @sapUiListActiveTextColor;
 }
 
 .sapUiMnu.sapUiMnuScroll .sapUiMnuItmSbMnu {

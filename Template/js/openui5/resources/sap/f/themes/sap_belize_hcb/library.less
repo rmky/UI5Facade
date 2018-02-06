@@ -31,13 +31,32 @@
 /* Belize High Contrast Black theme   */
 /* ================================== */
 
-.sapFDynamicPageActualFooterControl.sapMTB {
-	box-shadow: @sapUiShadowLevel2;
-	border-bottom: 0 none;
-}
+.sapFDynamicPage {
+	/* DynamicPageTitle and Toggle Header Visual Indicator hover state */
+	&.sapFDynamicPageTitleClickEnabled:not(.sapFDynamicPageHeaderPinned) {
+		.sapFDynamicPageTitle:hover,
+		&.sapFDynamicPageTitleForceHovered .sapFDynamicPageTitle {
+			background: @sapUiHighlight;
+			box-shadow: @sapUiShadowHeader;
+		}
+		&.sapFDynamicPageTitleForceHovered {
+			.sapFDynamicPageToggleHeaderIndicator {
+				.sapMBtnInner {
+					background-color: @sapUiHighlight;
+				}
+			}
+		}
+	}
 
-.sapFDynamicPageFooter {
-	opacity: 1;
+	// Footer
+	.sapFDynamicPageFooter {
+		opacity: 1;
+
+		.sapFDynamicPageActualFooterControl.sapMTB {
+			box-shadow: @sapUiShadowLevel2;
+			border-bottom: 0 none;
+		}
+	}
 }
 /* END "DynamicPage.less" */
 
@@ -55,6 +74,14 @@
 .sapFDynamicPageTitle:focus {
 	outline-width: 0.125rem;
 	outline-offset: -0.125rem;
+}
+
+.sapFDynamicPageTitle > .sapFDynamicPageTitleMain > .sapFDynamicPageTitleMainRight {
+	.sapFDynamicPageTitleMainRightActions {
+		.sapFDynamicPageTitleMainRightActionsBar {
+			background: none; // The Actions toolbar should not have a background in belize_hcb
+		}
+	}
 }
 
 /* IE and Edge ignores outline-offset. Use an overlay: */

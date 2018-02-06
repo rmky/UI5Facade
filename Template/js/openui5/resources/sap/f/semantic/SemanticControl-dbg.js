@@ -5,7 +5,7 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
+	"jquery.sap.global",
 	"sap/ui/base/ManagedObject",
 	"sap/ui/core/Element",
 	"./SemanticConfiguration"
@@ -25,7 +25,7 @@ sap.ui.define([
 	* @abstract
 	*
 	* @author SAP SE
-	* @version 1.50.8
+	* @version 1.52.5
 	*
 	* @constructor
 	* @public
@@ -183,4 +183,4 @@ sap.ui.define([
 
 	return SemanticControl;
 
-}, /* bExport= */ false);
+});

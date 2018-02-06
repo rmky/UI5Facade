@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 //Provides control sap.ui.unified.Calendar.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleData', 'sap/ui/model/type/Date', 'sap/ui/unified/calendar/CalendarUtils',
-		'./calendar/Header', './calendar/Month', './calendar/MonthPicker', './calendar/YearPicker', './calendar/CalendarDate', './library'],
-	function (jQuery, Control, LocaleData, Date1, CalendarUtils, Header, Month, MonthPicker, YearPicker, CalendarDate, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleData', 'sap/ui/unified/calendar/CalendarUtils',
+		'./calendar/Header', './calendar/Month', './calendar/MonthPicker', './calendar/YearPicker', './calendar/CalendarDate', './library', 'sap/ui/Device', 'sap/ui/core/format/DateFormat', 'sap/ui/core/ResizeHandler', 'sap/ui/core/Locale'],
+	function (jQuery, Control, LocaleData, CalendarUtils, Header, Month, MonthPicker, YearPicker, CalendarDate, library, Device, DateFormat, ResizeHandler, Locale) {
 	"use strict";
 
 	/*
@@ -24,7 +24,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	 * Basic Calendar.
 	 * This calendar is used for DatePickers
 	 * @extends sap.ui.core.Control
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -228,9 +228,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 
 	Calendar.prototype.init = function(){
 
-		this._iBreakPointTablet = sap.ui.Device.media._predefinedRangeSets[sap.ui.Device.media.RANGESETS.SAP_STANDARD_EXTENDED].points[0];
-		this._iBreakPointDesktop = sap.ui.Device.media._predefinedRangeSets[sap.ui.Device.media.RANGESETS.SAP_STANDARD_EXTENDED].points[1];
-		this._iBreakPointLargeDesktop = sap.ui.Device.media._predefinedRangeSets[sap.ui.Device.media.RANGESETS.SAP_STANDARD_EXTENDED].points[2];
+		this._iBreakPointTablet = Device.media._predefinedRangeSets[Device.media.RANGESETS.SAP_STANDARD_EXTENDED].points[0];
+		this._iBreakPointDesktop = Device.media._predefinedRangeSets[Device.media.RANGESETS.SAP_STANDARD_EXTENDED].points[1];
+		this._iBreakPointLargeDesktop = Device.media._predefinedRangeSets[Device.media.RANGESETS.SAP_STANDARD_EXTENDED].points[2];
 
 		// set default calendar type from configuration
 		var sCalendarType = sap.ui.getCore().getConfiguration().getCalendarType();
@@ -240,7 +240,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		this._iMode = 0; // days are shown
 
 		// to format year with era in Japanese
-		this._oYearFormat = sap.ui.core.format.DateFormat.getDateInstance({format: "y", calendarType: sCalendarType});
+		this._oYearFormat = DateFormat.getDateInstance({format: "y", calendarType: sCalendarType});
 
 		this.data("sap-ui-fastnavgroup", "true", true); // Define group for F6 handling
 
@@ -272,7 +272,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		}
 
 		if (this._sResizeListener) {
-			sap.ui.core.ResizeHandler.deregister(this._sResizeListener);
+			ResizeHandler.deregister(this._sResizeListener);
 			this._sResizeListener = undefined;
 		}
 
@@ -369,7 +369,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 			oEvent.size = {width: this.getDomRef().offsetWidth};
 			_handleResize.call(this, oEvent, true);
 			if (!this._sResizeListener) {
-				this._sResizeListener = sap.ui.core.ResizeHandler.register(this, this._resizeProxy);
+				this._sResizeListener = ResizeHandler.register(this, this._resizeProxy);
 			}
 			this._bInitMonth = undefined;
 		}
@@ -646,7 +646,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 
 		this.setProperty("primaryCalendarType", sCalendarType, !bRerender);
 
-		this._oYearFormat = sap.ui.core.format.DateFormat.getDateInstance({format: "y", calendarType: sCalendarType});
+		this._oYearFormat = DateFormat.getDateInstance({format: "y", calendarType: sCalendarType});
 
 		if (this._oFocusedDate) {
 			this._oFocusedDate = new CalendarDate(this._oFocusedDate, sCalendarType);
@@ -692,7 +692,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		this._bSecondaryCalendarTypeSet = true; // as property can not be empty but we use it only if set
 		this.setProperty("secondaryCalendarType", sCalendarType, true);
 
-		this._oYearFormatSecondary = sap.ui.core.format.DateFormat.getDateInstance({format: "y", calendarType: sCalendarType});
+		this._oYearFormatSecondary = DateFormat.getDateInstance({format: "y", calendarType: sCalendarType});
 
 		// set Months property directly to force rerender
 		var aMonths = this.getAggregation("month");
@@ -730,6 +730,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	 * Sets a minimum date for the calendar.
 	 * @param {Date} oDate a JavaScript date
 	 * @return {sap.ui.unified.Calendar} <code>this</code> for method chaining
+	 * @public
 	 */
 	Calendar.prototype.setMinDate = function(oDate){
 
@@ -774,6 +775,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	 * Sets a maximum date for the calendar.
 	 * @param {Date} oDate a JavaScript date
 	 * @return {sap.ui.unified.Calendar} <code>this</code> for method chaining
+	 * @public
 	 */
 	Calendar.prototype.setMaxDate = function(oDate){
 
@@ -838,7 +840,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 
 		if (!this._oLocaleData) {
 			var sLocale = this.getLocale();
-			var oLocale = new sap.ui.core.Locale(sLocale);
+			var oLocale = new Locale(sLocale);
 			this._oLocaleData = LocaleData.getInstance(oLocale);
 		}
 
@@ -1926,6 +1928,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 
 		var oCalDate = CalendarDate.fromLocalJSDate(oDate, this.getPrimaryCalendarType());
 
+		if (this._oFocusedDate && this._oFocusedDate.isSame(oCalDate)) {
+			return;
+		}
+
 		var iYear = oCalDate.getYear();
 		CalendarUtils._checkYearInValidRange(iYear);
 
@@ -1944,7 +1950,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	function _getMonths (){
 
 		// in phone mode always only one month is displayed
-		if (sap.ui.Device.system.phone) {
+		if (Device.system.phone) {
 			return 1;
 		} else {
 			return this.getMonths();
@@ -2195,4 +2201,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 
 	return Calendar;
 
-}, /* bExport= */ true);
+});

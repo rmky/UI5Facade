@@ -34,7 +34,7 @@ sap.ui.define([
 
 		// escape RegExp-related characters
 		sBatchBoundary = jQuery.sap.escapeRegExp(sBatchBoundary);
-		return new RegExp('--' + sBatchBoundary + '-{0,2} *\r\n');
+		return new RegExp('--' + sBatchBoundary + '(?:[ \t]*\r\n|--)');
 	}
 
 	/**
@@ -306,7 +306,7 @@ sap.ui.define([
 		 *   returned responses has the following structure:
 		 *   <ul>
 		 *     <li><code>status</code>: {number} HTTP status code
-		 *     <li><code>statusText</code>: {string} HTTP status text
+		 *     <li><code>statusText</code>: {string} (optional) HTTP status text
 		 *     <li><code>headers</code>: {object} Map of the response headers
 		 *     <li><code>responseText</code>: {string} Response body
 		 *   </ul>

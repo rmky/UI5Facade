@@ -6,6 +6,7 @@
 
 // Provides control sap.uxap.AnchorBar.
 sap.ui.define([
+	"jquery.sap.global",
 	"sap/m/Button",
 	"sap/m/library",
 	"sap/m/Popover",
@@ -18,10 +19,14 @@ sap.ui.define([
 	"sap/ui/Device",
 	"sap/ui/core/CustomData",
 	"./HierarchicalSelect",
-	"./library"
-], function (Button, mobileLibrary, Popover, Toolbar, IconPool, Item, ResizeHandler,
+	"./library",
+	"jquery.sap.keycodes"
+], function (jQuery, Button, mobileLibrary, Popover, Toolbar, IconPool, Item, ResizeHandler,
 			 ScrollEnablement, HorizontalLayout, Device, CustomData, HierarchicalSelect, library) {
 	"use strict";
+
+	// shortcut for sap.m.SelectType
+	var SelectType = mobileLibrary.SelectType;
 
 	// shortcut for sap.m.PlacementType
 	var PlacementType = mobileLibrary.PlacementType;
@@ -121,6 +126,8 @@ sap.ui.define([
 			this._sResizeListenerId = undefined; //defined in onAfterRendering
 		}
 
+		this.oLibraryResourceBundleOP = library.i18nModel.getResourceBundle(); // get resource translation bundle
+
 		//composite controls
 		this.setDesign("Transparent"); //styling is coming from css
 	};
@@ -168,10 +175,6 @@ sap.ui.define([
 
 		return this.setAssociation("selectedButton", oButton, true /* don't rerender */);
 	};
-
-	/*******************************************************************************
-	 * Responsive behavior
-	 ******************************************************************************/
 
 	AnchorBar.prototype.setShowPopover = function (bValue, bSuppressInvalidate) {
 
@@ -491,17 +494,22 @@ sap.ui.define([
 		var sArrowId,
 			sIconName,
 			sArrowClass,
+			sArrowTooltip,
 			oScrollButton,
-			that = this;
+			that = this,
+			sTooltipLeft = this.oLibraryResourceBundleOP.getText("TOOLTIP_OP_SCROLL_LEFT_ARROW"),
+			sTooltipRight = this.oLibraryResourceBundleOP.getText("TOOLTIP_OP_SCROLL_RIGHT_ARROW");
 
 		if (bLeft) {
 			sArrowId = this.getId() + "-arrowScrollLeft";
 			sIconName = "slim-arrow-left";
 			sArrowClass = "anchorBarArrowLeft";
+			sArrowTooltip = this._bRtl ? sTooltipRight : sTooltipLeft;
 		} else {
 			sArrowId = this.getId() + "-arrowScrollRight";
 			sIconName = "slim-arrow-right";
 			sArrowClass = "anchorBarArrowRight";
+			sArrowTooltip = this._bRtl ? sTooltipLeft : sTooltipRight;
 		}
 
 		oScrollButton = new Button(sArrowId, {
@@ -510,7 +518,8 @@ sap.ui.define([
 			press: function (oEvent) {
 				oEvent.preventDefault();
 				that._handleScrollButtonTap(bLeft);
-			}
+			},
+			tooltip: sArrowTooltip
 		});
 
 		oScrollButton.addEventDelegate({
@@ -588,7 +597,7 @@ sap.ui.define([
 
 			this._oSelect.setWidth("auto");
 			this._oSelect.setAutoAdjustWidth(true);
-			this._oSelect.setType(sap.m.SelectType.IconOnly);
+			this._oSelect.setType(SelectType.IconOnly);
 			this._computeBarSectionsInfo();
 
 		} else {
@@ -596,7 +605,7 @@ sap.ui.define([
 
 			this._oSelect.setWidth("100%");
 			this._oSelect.setAutoAdjustWidth(false);
-			this._oSelect.setType(sap.m.SelectType.Default);
+			this._oSelect.setType(SelectType.Default);
 		}
 
 		this.$().toggleClass("sapUxAPAnchorBarOverflow", this._sHierarchicalSelectMode === AnchorBar._hierarchicalSelectModes.Icon);
@@ -1091,6 +1100,10 @@ sap.ui.define([
 		if (this._oScroller) {
 			this._oScroller.destroy();
 			this._oScroller = null;
+		}
+
+		if (this.oLibraryResourceBundleOP) {
+			this.oLibraryResourceBundleOP = null;
 		}
 	};
 

@@ -4,9 +4,13 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './InputBaseRenderer'],
-	function(jQuery, Renderer, InputBaseRenderer) {
+sap.ui.define(['sap/ui/core/Renderer', './InputBaseRenderer', 'sap/m/library'],
+	function(Renderer, InputBaseRenderer, library) {
 	"use strict";
+
+
+	// shortcut for sap.m.InputType
+	var InputType = library.InputType;
 
 
 	/**
@@ -53,7 +57,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './InputBaseRenderer
 	 */
 	InputRenderer.writeInnerAttributes = function(oRm, oControl) {
 		oRm.writeAttribute("type", oControl.getType().toLowerCase());
-		if (oControl.getType() == sap.m.InputType.Number && sap.ui.getCore().getConfiguration().getRTL()) {
+		if (oControl.getType() == InputType.Number && sap.ui.getCore().getConfiguration().getRTL()) {
 			oRm.writeAttribute("dir", "ltr");
 			oRm.addStyle("text-align", "right");
 		}
@@ -106,9 +110,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './InputBaseRenderer
 		if (!description) {
 			this.writeValueHelpIcon(oRm, oControl);
 		} else {
-			oRm.write("<span id=\"" + oControl.getId() + "-Descr\">");
+			oRm.write("<span>");
 			this.writeValueHelpIcon(oRm, oControl);
-			oRm.write('<span class="sapMInputDescriptionText">');
+			oRm.write('<span id="' + oControl.getId() + '-Descr" class="sapMInputDescriptionText">');
 			oRm.writeEscaped(description);
 			oRm.write("</span></span>");
 		}

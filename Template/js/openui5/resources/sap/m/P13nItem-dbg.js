@@ -6,8 +6,8 @@
 
 // Provides control sap.m.P13nItem.
 sap.ui.define([
-	'jquery.sap.global', './library', 'sap/ui/core/Element'
-], function(jQuery, library, Element) {
+	'./library', 'sap/ui/core/Element'
+], function(library, Element) {
 	"use strict";
 
 	/**
@@ -17,7 +17,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class Base type for <code>items</code> aggregation in <code>P13nPanel</code> control.
 	 * @extends sap.ui.core.Item
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -72,6 +72,26 @@ sap.ui.define([
 					type: "string",
 					group: "Misc",
 					defaultValue: null
+				},
+
+				/**
+				 * A JSON object containing the formatSettings which will be used to pass additional type/format settings for the entered value.
+				 * if type==time or date or datetime the object will be used for the DateFormatter, TimeFormatter or DateTimeFormatter
+				 *
+				 *<i>Below you can find a brief example</i>
+				 *
+				 * <pre><code>
+				 * {
+				 *		UTC: false,
+				 * 		style: "medium" //"short" or "long"
+				 * }
+				 * </code></pre>
+				 */
+				formatSettings: {
+					type: "object",
+					group: "Misc",
+					defaultValue: null,
+					since: "1.52"
 				},
 
 				/**
@@ -175,4 +195,4 @@ sap.ui.define([
 
 	return P13nItem;
 
-}, /* bExport= */true);
+});

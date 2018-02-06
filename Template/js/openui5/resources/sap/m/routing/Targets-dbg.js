@@ -3,8 +3,8 @@
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['sap/ui/core/routing/Targets', './TargetHandler', './Target', './async/Targets', './sync/Targets'],
-	function(Targets, TargetHandler, Target, asyncTargets, syncTargets) {
+sap.ui.define(['sap/ui/core/routing/Targets', './TargetHandler', './Target', './async/Targets', './sync/Targets', 'jquery.sap.global'],
+	function(Targets, TargetHandler, Target, asyncTargets, syncTargets, jQuery) {
 		"use strict";
 
 		/**
@@ -386,4 +386,4 @@ sap.ui.define(['sap/ui/core/routing/Targets', './TargetHandler', './Target', './
 		});
 
 		return MobileTargets;
-	}, /* bExport= */ true);
+	});

@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/fl/Utils"],
-	function(FlexUtils) {
+sap.ui.define(["sap/ui/fl/Utils", "jquery.sap.global"],
+	function(FlexUtils, jQuery) {
 		"use strict";
 
 		/**
@@ -13,7 +13,7 @@ sap.ui.define(["sap/ui/fl/Utils"],
 		 *
 		 * @alias sap.m.changeHandler.CombineButtons
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 * @experimental Since 1.48
 		 */
 		var CombineButtons = { };

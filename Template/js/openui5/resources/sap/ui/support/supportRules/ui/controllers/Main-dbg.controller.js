@@ -11,8 +11,9 @@ sap.ui.define([
 	"sap/ui/support/supportRules/ui/models/SharedModel",
 	"sap/ui/support/supportRules/WCBChannels",
 	"sap/ui/support/supportRules/Constants",
-	"sap/ui/support/supportRules/Storage"
-], function (Controller, JSONModel, CommunicationBus, SharedModel, channelNames, constants, storage) {
+	"sap/ui/support/supportRules/Storage",
+	"sap/ui/thirdparty/URI"
+], function (Controller, JSONModel, CommunicationBus, SharedModel, channelNames, constants, storage, URI) {
 	"use strict";
 
 	return Controller.extend("sap.ui.support.supportRules.ui.controllers.Main", {
@@ -22,7 +23,6 @@ sap.ui.define([
 			this.resizeDown();
 			this.setCommunicationSubscriptions();
 			this.initSettingsPopover();
-
 			this.hidden = false;
 			this.model.setProperty("/hasNoOpener", window.opener ? false : true);
 			this.model.setProperty("/constants", constants);
@@ -31,10 +31,42 @@ sap.ui.define([
 
 		},
 
+		onAfterRendering: function () {
+			CommunicationBus.publish(channelNames.POST_UI_INFORMATION, {
+				version: sap.ui.getVersionInfo(),
+				location: new URI(jQuery.sap.getModulePath("sap.ui.support"), window.location.origin + window.location.pathname).toString()
+			});
+		},
+
 		initSettingsPopover: function () {
+			var supportAssistantOrigin = new URI(sap.ui.resource('sap.ui.support', ''), window.location.origin + window.location.pathname)._string,
+				supportAssistantVersion = sap.ui.version;
+
+			this.model.setProperty("/supportAssistantOrigin", supportAssistantOrigin);
+			this.model.setProperty("/supportAssistantVersion", supportAssistantVersion);
 			this._settingsPopover = sap.ui.xmlfragment("sap.ui.support.supportRules.ui.views.StorageSettings", this);
 			this._settingsPopover.setModel(SharedModel);
 			this.getView().addDependent(this._oPopover);
+		},
+
+		copySupportAssistantOriginToClipboard: function(oEvent) {
+			var supportAssistantOrigin = this.model.getProperty("/supportAssistantOrigin"),
+				copyToClipboardEventHandler = function(oEvent) {
+					if (oEvent.clipboardData) {
+						oEvent.clipboardData.setData('text/plain', supportAssistantOrigin);
+					} else {
+						oEvent.originalEvent.clipboardData.setData('text/plain', supportAssistantOrigin);
+					}
+					oEvent.preventDefault();
+				};
+
+			if (window.clipboardData) {
+				window.clipboardData.setData("text", supportAssistantOrigin);
+			} else {
+				document.addEventListener('copy', copyToClipboardEventHandler);
+				document.execCommand('copy');
+				document.removeEventListener('copy', copyToClipboardEventHandler);
+			}
 		},
 
 		setCommunicationSubscriptions: function () {

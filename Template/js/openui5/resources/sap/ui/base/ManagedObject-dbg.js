@@ -55,6 +55,38 @@ sap.ui.define([
 	 *
 	 * Each subclass should document the name and type of its supported settings in its constructor documentation.
 	 *
+	 * Example usage:
+	 * <pre>
+	 * new Dialog({
+	 *    title: "Some title text",            // property of type "string"
+	 *    showHeader: true,                    // property of type "boolean"
+	 *    endButton: new Button(...),          // 0..1 aggregation
+	 *    content: [                           // 0..n aggregation
+	 *       new Input(...),
+	 *       new Input(...)
+	 *    ],
+	 *    afterClose: function(oEvent) { ... } // event handler function
+	 * });
+	 * </pre>
+	 *
+	 * Instead of static values and object instances, data binding expressions can be used, either embedded in
+	 * a string or as a binding info object as described in {@link #bindProperty} or {@link #bindAggregation}.
+	 *
+	 * Example usage:
+	 * <pre>
+	 * new Dialog({
+	 *    title: "{/title}",       // embedded binding expression, points to a string property in the data model
+	 *    ...
+	 *    content: {               // binding info object
+	 *       path : "/inputItems", // points to a collection in the data model
+	 *       template : new Input(...)
+	 *    }
+	 * });
+	 * </pre>
+	 *
+	 * Note that when setting string values, any curly braces in those values need to be escaped, so they are not
+	 * interpreted as binding expressions. Use {@link #escapeSettingsValue} to do so.
+	 *
 	 * Besides the settings documented below, ManagedObject itself supports the following special settings:
 	 * <ul>
 	 * <li><code>id : <i>sap.ui.core.ID</i></code> an ID for the new instance. Some subclasses (Element, Component) require the id
@@ -66,11 +98,32 @@ sap.ui.define([
 	 *   Each entry with key <i>k</i> in this object has the same effect as a call <code>this.setBindingContext(bindingContexts[k], k);</code></li>
 	 * <li><code>objectBindings : <i>object</i></code>  a map of binding paths keyed by the corresponding model name.
 	 *   Each entry with key <i>k</i> in this object has the same effect as a call <code>this.bindObject(objectBindings[k], k);</code></li>
-	 * <li><code>metadataContexts : <i>object</i></code>  a map of binding paths keyed by the corresponding model name.</li>
+	 * <li><code>metadataContexts : <i>object</i></code>  an array of single binding contexts keyed by the corresponding model or context name.
+	 *   The purpose of the <code>metadataContexts</code> special setting is to deduce as much information as possible from the binding context of the control in order
+	 *   to be able to predefine certain standard properties like e.g. <i>visible, enabled, tooltip,...</i>
+	 *
+	 *   The structure is an array of single contexts, where a single context is a map containing the following keys:
+	 *   <ul>
+	 *   <li><code>path: <i>string (mandatory)</i></code> The path to the corresponding model property or object, e.g. '/Customers/Name'. A path can also be relative, e.g. 'Name'</li>
+	 *   <li><code>model: <i>string (optional)</i></code> The name of the model, in case there is no name then the undefined model is taken</li>
+	 *   <li><code>name: <i>string (optional)</i></code> A name for the context to used in templating phase</li>
+	 *   <li><code>kind: <i>string (optional)</i></code> The kind of the adapter, either <code>field</code> for single properties or <code>object</code> for structured contexts.
+	 *   <li><code>adapter: <i>string (optional)</i></code> The path to an interpretion class that dilivers control relevant data depending on the context, e.g. enabled, visible.
+	 *   If not supplied the OData meta data is interpreted.</li>
+	 *   </ul>
+	 *   The syntax for providing the <code>metadataContexts</code> is as follows:
+	 *   <code>{SINGLE_CONTEXT1},...,{SINGLE_CONTEXTn}</code> or for simplicity in case there is only one context <code>{SINGLE_CONTEXT}</code>.
+	 *
+	 *   Examples for such metadataContexts are:
+	 *   <ul>
+	 *   <li><code>{/Customers/Name}</code> a single part with an absolute path to the property <i>Name</i> of the <i>Customers</i> entity set in the default model</li>
+	 *   <li><code>{path: 'Customers/Name', model:'json'}</code> a single part with an absolute path to the property <i>Name</i> of the <i>Customers</i> entity set in a named model</li>
+	 *   <li><code>{parts: [{path: 'Customers/Name'},{path: 'editable', model: 'viewModel'}]}</code> a combination of to single binding contexts, one context from the default model and one from the viewModel</li>
+	 *   </ul></li>
 	 * </ul>
 	 *
 	 * @param {string} [sId] id for the new managed object; generated automatically if no non-empty id is given
-	 *      Note: this can be omitted, no matter whether <code>mSettings</code> will be given or not!
+	 *      <b>Note:</b> this can be omitted, no matter whether <code>mSettings</code> will be given or not!
 	 * @param {object} [mSettings] Optional map/JSON-object with initial property values, aggregated objects etc. for the new object
 	 * @param {object} [oScope] Scope object for resolving string based type and formatter references in bindings.
 	 *      When a scope object is given, <code>mSettings</code> cannot be omitted, at least <code>null</code> or an empty object literal must be given.
@@ -177,7 +230,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.EventProvider
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @public
 	 * @alias sap.ui.base.ManagedObject
 	 */
@@ -527,7 +580,7 @@ sap.ui.define([
 	 *     events: {
 	 *       beforeOpen : {
 	 *         parameters : {
-	 *           opener : 'sap.ui.core.Control'
+	 *           opener : { type: 'sap.ui.core.Control' }
 	 *         }
 	 *       }
 	 *     },
@@ -802,7 +855,28 @@ sap.ui.define([
 	 */
 	ManagedObject._fnSettingsPreprocessor = null;
 
-	ManagedObject.runWithPreprocessors = function(fn, oPreprocessors) {
+	/**
+	 * Activates the given ID and settings preprocessors, executes the given function
+	 * and restores the previously active preprocessors.
+	 *
+	 * When a preprocessor is not defined in <code>oPreprocessors</code>, then the currently
+	 * active preprocessor is temporarily deactivated while <code>fn</code> is executed.
+	 *
+	 * See the <code>_fnIdPreprocessor</code> and <code>_fnSettingsPreprocessor</code>
+	 * members in this class for a detailed description of the preprocessors.
+	 *
+	 * This method is intended for internal use in the sap/ui/base and sap/ui/core packages only.
+	 *
+	 * @param {function} fn Function to execute
+	 * @param {object} [oPreprocessors] Preprocessors to use while executing <code>fn</code>
+	 * @param {function} [oPreprocessors.id] ID preprocessor that can transform the ID of a new ManagedObject
+	 * @param {function} [oPreprocessors.settings] Settings preprocessor that can modify settings before they are applied
+	 * @param {Object} [oThisArg=undefined] Value to use as <code>this</code> when executing <code>fn</code>
+	 * @returns {any} Returns the value that <code>fn</code> returned after execution
+	 * @private
+	 * @sap-restricted sap.ui.base,sap.ui.core
+	 */
+	ManagedObject.runWithPreprocessors = function(fn, oPreprocessors, oThisArg) {
 		jQuery.sap.assert(typeof fn === "function", "fn must be a function");
 		jQuery.sap.assert(!oPreprocessors || typeof oPreprocessors === "object", "oPreprocessors must be an object");
 
@@ -813,14 +887,11 @@ sap.ui.define([
 		this._fnSettingsPreprocessor = oPreprocessors.settings;
 
 		try {
-			var result = fn.call();
+			return fn.call(oThisArg);
+		} finally {
+			// always restore old preprocessor settings
 			this._fnIdPreprocessor = oOldPreprocessors.id;
 			this._fnSettingsPreprocessor = oOldPreprocessors.settings;
-			return result;
-		} catch (e) {
-			this._fnIdPreprocessor = oOldPreprocessors.id;
-			this._fnSettingsPreprocessor = oOldPreprocessors.settings;
-			throw e;
 		}
 
 	};
@@ -999,6 +1070,20 @@ sap.ui.define([
 		}
 
 		return this;
+	};
+
+	/**
+	 * Escapes the given value so it can be used in the constructor's settings object.
+	 * Should be used when property values are initialized with static string values which could contain binding characters (curly braces).
+	 *
+	 * @since 1.52
+	 * @param {any} vValue Value to escape; only needs to be done for string values, but the call will work for all types
+	 * @return {any} The given value, escaped for usage as static property value in the constructor's settings object (or unchanged, if not of type string)
+	 * @static
+	 * @public
+	 */
+	ManagedObject.escapeSettingsValue = function(vValue) {
+		return (typeof vValue === "string") ? ManagedObject.bindingParser.escape(vValue) : vValue;
 	};
 
 	/**
@@ -1674,6 +1759,11 @@ sap.ui.define([
 
 		if (oOldChild instanceof ManagedObject) { // remove old child
 			oOldChild.setParent(null);
+		} else {
+			if (this._observer != null && oOldChild != null) {
+				//alternative type
+				this._observer.aggregationChange(this, sAggregationName, "remove", oOldChild);
+			}
 		}
 		this.mAggregations[sAggregationName] = oObject;
 		if (oObject instanceof ManagedObject) { // adopt new child
@@ -1681,6 +1771,12 @@ sap.ui.define([
 		} else {
 			if (!this.isInvalidateSuppressed()) {
 				this.invalidate();
+			}
+
+
+			if (this._observer != null && oObject != null) {
+				//alternative type
+				this._observer.aggregationChange(this, sAggregationName, "insert", oObject);
 			}
 		}
 
@@ -2487,7 +2583,7 @@ sap.ui.define([
 
 		if ( this._observer ) {
 			// TODO notify observer to cleanup bookkeeping?
-			this._observer = undefined;
+			this._observer.objectDestroyed(this);
 		}
 
 		EventProvider.prototype.destroy.apply(this, arguments);
@@ -2667,11 +2763,6 @@ sap.ui.define([
 			that = this;
 
 		var fChangeHandler = function(oEvent) {
-			/* as we reuse the context objects we need to ensure an update of relative bindings. Therefore we set
-			   the context to null so relative bindings will detect a context change */
-			if (oBinding.getBoundContext() === that.getBindingContext(sModelName)) {
-				that.setElementBindingContext(null, sModelName);
-			}
 			that.setElementBindingContext(oBinding.getBoundContext(), sModelName);
 		};
 
@@ -2916,6 +3007,10 @@ sap.ui.define([
 		// store binding info to create the binding, as soon as the model is available, or when the model is changed
 		this.mBindingInfos[sName] = oBindingInfo;
 
+		if (this._observer) {
+			this._observer.bindingChange(this, sName, "prepare", oBindingInfo, "property");
+		}
+
 		// if the models are already available, create the binding
 		if (bAvailable) {
 			this._bindProperty(sName, oBindingInfo);
@@ -3038,6 +3133,10 @@ sap.ui.define([
 		oBinding.attachEvents(oBindingInfo.events);
 
 		oBinding.initialize();
+
+		if (this._observer) {
+			this._observer.bindingChange(this, sName, "ready", oBindingInfo, "property");
+		}
 	};
 
 	/**
@@ -3059,6 +3158,11 @@ sap.ui.define([
 				oBindingInfo.binding.detachEvents(oBindingInfo.events);
 				oBindingInfo.binding.destroy();
 			}
+
+			if (this._observer) {
+				this._observer.bindingChange(this,sName,"remove", this.mBindingInfos[sName], "property");
+			}
+
 			delete this.mBindingInfos[sName];
 			if (!bSuppressReset) {
 				this.resetProperty(sName);
@@ -3292,6 +3396,10 @@ sap.ui.define([
 		// store binding info to create the binding, as soon as the model is available, or when the model is changed
 		this.mBindingInfos[sName] = oBindingInfo;
 
+		if (this._observer) {
+			this._observer.bindingChange(this, sName, "prepare", oBindingInfo, "aggregation");
+		}
+
 		// if the model is already available create the binding
 		if (this.getModel(oBindingInfo.model)) {
 			this._bindAggregation(sName, oBindingInfo);
@@ -3348,6 +3456,10 @@ sap.ui.define([
 		oBinding.attachEvents(oBindingInfo.events);
 
 		oBinding.initialize();
+
+		if (this._observer) {
+			this._observer.bindingChange(this, sName, "ready", oBindingInfo, "aggregation");
+		}
 	};
 
 	/**
@@ -3376,6 +3488,10 @@ sap.ui.define([
 				if ( oBindingInfo.templateShareable === MAYBE_SHAREABLE_OR_NOT ) {
 					oBindingInfo.template._sapui_candidateForDestroy = true;
 				}
+			}
+
+			if (this._observer) {
+				this._observer.bindingChange(this,sName,"remove", this.mBindingInfos[sName], "aggregation");
 			}
 
 			delete this.mBindingInfos[sName];
@@ -3466,11 +3582,6 @@ sap.ui.define([
 			// If no diff exists or aggregation is empty, fall back to default update
 			if (!aDiff || aChildren.length === 0) {
 				update(oControl, aContexts);
-				return;
-			}
-
-			// If diff is empty, nothing needs to be changed
-			if (aDiff.length == 0) {
 				return;
 			}
 
@@ -3693,6 +3804,11 @@ sap.ui.define([
 
 			// if there is a binding and if it became invalid through the current model change, then remove it
 			if ( oBindingInfo.binding && becameInvalid(oBindingInfo) ) {
+				if (this._observer) {
+					var sMember = oBindingInfo.factory ? "aggregation" : "property";
+					this._observer.bindingChange(this, sName, "remove", oBindingInfo, sMember);
+				}
+
 				removeBinding(oBindingInfo);
 			}
 
@@ -3738,10 +3854,19 @@ sap.ui.define([
 	};
 
 	/**
-	 * Get the object binding object for a specific model
+	 * Get the object binding object for a specific model.
 	 *
-	 * @param {string} sModelName the name of the model
-	 * @return {sap.ui.model.Binding} the element binding for the given model name
+	 * <b>Note:</b> to be compatible with future versions of this API, you must not use the following model names:
+	 * <ul>
+	 * <li><code>null</code></li>
+	 * <li>empty string <code>""</code></li>
+	 * <li>string literals <code>"null"</code> or <code>"undefined"</code></li>
+	 * </ul>
+	 * Omitting the model name (or using the value <code>undefined</code>) is explicitly allowed and
+	 * refers to the default model.
+	 *
+	 * @param {string} [sModelName=undefined] Non-empty name of the model or <code>undefined</code>
+	 * @return {sap.ui.model.ContextBinding} Context binding for the given model name or <code>undefined</code>
 	 * @public
 	 */
 	ManagedObject.prototype.getObjectBinding = function(sModelName){
@@ -3785,10 +3910,16 @@ sap.ui.define([
 	/**
 	 * Set the binding context for this ManagedObject for the model with the given name.
 	 *
-	 * Note: to be compatible with future versions of this API, applications must not use the value <code>null</code>,
-	 * the empty string <code>""</code> or the string literals <code>"null"</code> or <code>"undefined"</code> as model name.
+	 * <b>Note:</b> to be compatible with future versions of this API, you must not use the following model names:
+	 * <ul>
+	 * <li><code>null</code></li>
+	 * <li>empty string <code>""</code></li>
+	 * <li>string literals <code>"null"</code> or <code>"undefined"</code></li>
+	 * </ul>
+	 * Omitting the model name (or using the value <code>undefined</code>) is explicitly allowed and
+	 * refers to the default model.
 	 *
-	 * Note: A ManagedObject inherits binding contexts from the Core only when it is a descendant of a UIArea.
+	 * <b>Note:</b> A ManagedObject inherits binding contexts from the Core only when it is a descendant of a UIArea.
 	 *
 	 * @param {sap.ui.model.Context} oContext the new binding context for this object
 	 * @param {string} [sModelName] the name of the model to set the context for or <code>undefined</code>
@@ -3799,7 +3930,7 @@ sap.ui.define([
 	ManagedObject.prototype.setBindingContext = function(oContext, sModelName){
 		jQuery.sap.assert(sModelName === undefined || (typeof sModelName === "string" && !/^(undefined|null)?$/.test(sModelName)), "sModelName must be a string or omitted");
 		var oOldContext = this.oBindingContexts[sModelName];
-		if (oOldContext !== oContext) {
+		if (Context.hasChanged(oOldContext, oContext)) {
 			this.oBindingContexts[sModelName] = oContext;
 			this.updateBindingContext(false, sModelName);
 			this.propagateProperties(sModelName);
@@ -3815,7 +3946,7 @@ sap.ui.define([
 		jQuery.sap.assert(sModelName === undefined || (typeof sModelName === "string" && !/^(undefined|null)?$/.test(sModelName)), "sModelName must be a string or omitted");
 		var oOldContext = this.mElementBindingContexts[sModelName];
 
-		if (oOldContext !== oContext) {
+		if (Context.hasChanged(oOldContext, oContext)) {
 			this.mElementBindingContexts[sModelName] = oContext;
 			this.updateBindingContext(true, sModelName);
 			this.propagateProperties(sModelName);
@@ -3865,7 +3996,7 @@ sap.ui.define([
 						this._bindObject(oBindingInfo);
 					} else {
 						oContext = this._getBindingContext(sModelName);
-						if (oContext !== oBindingInfo.binding.getContext()) {
+						if (Context.hasChanged(oBindingInfo.binding.getContext(), oContext)) {
 							oBindingInfo.binding.setContext(oContext);
 						}
 					}
@@ -3915,10 +4046,16 @@ sap.ui.define([
 	 * If the object does not have a binding context set on itself and has no own model set,
 	 * it will use the first binding context defined in its parent hierarchy.
 	 *
-	 * Note: to be compatible with future versions of this API, applications must not use the value <code>null</code>,
-	 * the empty string <code>""</code> or the string literals <code>"null"</code> or <code>"undefined"</code> as model name.
+	 * <b>Note:</b> to be compatible with future versions of this API, you must not use the following model names:
+	 * <ul>
+	 * <li><code>null</code></li>
+	 * <li>empty string <code>""</code></li>
+	 * <li>string literals <code>"null"</code> or <code>"undefined"</code></li>
+	 * </ul>
+	 * Omitting the model name (or using the value <code>undefined</code>) is explicitly allowed and
+	 * refers to the default model.
 	 *
-	 * Note: A ManagedObject inherits binding contexts from the Core only when it is a descendant of a UIArea.
+	 * <b>Note:</b> A ManagedObject inherits binding contexts from the Core only when it is a descendant of a UIArea.
 	 *
 	 * @param {string} [sModelName] the name of the model or <code>undefined</code>
 	 * @return {sap.ui.model.Context} The binding context of this object
@@ -3961,7 +4098,13 @@ sap.ui.define([
 	 * Sets or unsets a model for the given model name for this ManagedObject.
 	 *
 	 * The <code>sName</code> must either be <code>undefined</code> (or omitted) or a non-empty string.
-	 * When the name is omitted, the default model is set/unset.
+	 * When the name is omitted, the default model is set/unset. To be compatible with future versions
+	 * of this API, you must not use the following model names:
+	 * <ul>
+	 * <li><code>null</code></li>
+	 * <li>empty string <code>""</code></li>
+	 * <li>string literals <code>"null"</code> or <code>"undefined"</code></li>
+	 * </ul>
 	 *
 	 * When <code>oModel</code> is <code>null</code> or <code>undefined</code>, a previously set model
 	 * with that name is removed from this ManagedObject. If an ancestor (parent, UIArea or Core) has a model
@@ -3974,16 +4117,13 @@ sap.ui.define([
 	 * Any change (new model, removed model, inherited model) is also applied to all aggregated descendants
 	 * as long as a descendant doesn't have its own model set for the given name.
 	 *
-	 * Note: to be compatible with future versions of this API, applications must not use the value <code>null</code>,
-	 * the empty string <code>""</code> or the string literals <code>"null"</code> or <code>"undefined"</code> as model name.
-	 *
-	 * Note: By design, it is not possible to hide an inherited model by setting a <code>null</code> or
+	 * <b>Note:</b> By design, it is not possible to hide an inherited model by setting a <code>null</code> or
 	 * <code>undefined</code> model. Applications can set an empty model to achieve the same.
 	 *
-	 * Note: A ManagedObject inherits models from the Core only when it is a descendant of a UIArea.
+	 * <b>Note:</b> A ManagedObject inherits models from the Core only when it is a descendant of a UIArea.
 	 *
 	 * @param {sap.ui.model.Model} oModel the model to be set or <code>null</code> or <code>undefined</code>
-	 * @param {string} [sName] the name of the model or <code>undefined</code>
+	 * @param {string} [sName=undefined] the name of the model or <code>undefined</code>
 	 * @return {sap.ui.base.ManagedObject} <code>this</code> to allow method chaining
 	 * @public
 	 */
@@ -4175,8 +4315,14 @@ sap.ui.define([
 	 *
 	 * The name can be omitted to reference the default model or it must be a non-empty string.
 	 *
-	 * Note: to be compatible with future versions of this API, applications must not use the value <code>null</code>,
-	 * the empty string <code>""</code> or the string literals <code>"null"</code> or <code>"undefined"</code> as model name.
+	 * <b>Note:</b> to be compatible with future versions of this API, you must not use the following model names:
+	 * <ul>
+	 * <li><code>null</code></li>
+	 * <li>empty string <code>""</code></li>
+	 * <li>string literals <code>"null"</code> or <code>"undefined"</code></li>
+	 * </ul>
+	 * Omitting the model name (or using the value <code>undefined</code>) is explicitly allowed and
+	 * refers to the default model.
 	 *
 	 * @param {string|undefined} [sName] name of the model to be retrieved
 	 * @return {sap.ui.model.Model} oModel
@@ -4190,7 +4336,7 @@ sap.ui.define([
 	/**
 	 * Check if any model is set to the ManagedObject or to one of its parents (including UIArea and Core).
 	 *
-	 * Note: A ManagedObject inherits models from the Core only when it is a descendant of a UIArea.
+	 * <b>Note:</b> A ManagedObject inherits models from the Core only when it is a descendant of a UIArea.
 	 *
 	 * @return {boolean} whether a model reference exists or not
 	 * @public

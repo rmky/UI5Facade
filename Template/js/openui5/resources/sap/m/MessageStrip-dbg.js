@@ -6,8 +6,11 @@
 
 // Provides control sap.m.MessageStrip.
 sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "./MessageStripUtilities",
-	"./Text", "./Link", "./FormattedText"], function (jQuery, library, Control, MSUtils, Text, Link, FormattedText) {
+	"./Text", "./Link", "./FormattedText", "sap/ui/core/library", "sap/ui/Device"], function(jQuery, library, Control, MSUtils, Text, Link, FormattedText, coreLibrary, Device) {
 	"use strict";
+
+	// shortcut for sap.ui.core.MessageType
+	var MessageType = coreLibrary.MessageType;
 
 	/**
 	 * Constructor for a new MessageStrip.
@@ -41,7 +44,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "./Messa
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -64,7 +67,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "./Messa
 				 * Possible values are: Information (default), Success, Warning, Error.
 				 * If None is passed, the value is set to Information and a warning is displayed in the console.
 				 */
-				type: { type: "sap.ui.core.MessageType", group: "Appearance", defaultValue: sap.ui.core.MessageType.Information },
+				type: { type: "sap.ui.core.MessageType", group: "Appearance", defaultValue: MessageType.Information },
 
 				/**
 				 * Determines a custom icon which is displayed.
@@ -160,9 +163,9 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "./Messa
 	 * @returns {sap.m.MessageStrip} this to allow method chaining
 	 */
 	MessageStrip.prototype.setType = function (sType) {
-		if (sType === sap.ui.core.MessageType.None) {
+		if (sType === MessageType.None) {
 			jQuery.sap.log.warning(MSUtils.MESSAGES.TYPE_NOT_SUPPORTED);
-			sType = sap.ui.core.MessageType.Information;
+			sType = MessageType.Information;
 		}
 
 		return this.setProperty("type", sType);
@@ -195,28 +198,28 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "./Messa
 
 	/**
 	 * Handles tap/click
-	 * @type void
+	 * @returns void
 	 * @private
 	 */
 	MessageStrip.prototype.ontap = MSUtils.handleMSCloseButtonInteraction;
 
 	/**
 	 * Handles enter key
-	 * @type void
+	 * @returns void
 	 * @private
 	 */
 	MessageStrip.prototype.onsapenter = MSUtils.handleMSCloseButtonInteraction;
 
 	/**
 	 * Handles space key
-	 * @type void
+	 * @returns void
 	 * @private
 	 */
 	MessageStrip.prototype.onsapspace = MSUtils.handleMSCloseButtonInteraction;
 
 	/**
 	 * Handles mobile touch events
-	 * @type void
+	 * @returns void
 	 * @private
 	 */
 	MessageStrip.prototype.ontouchmove = function (oEvent) {
@@ -228,7 +231,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "./Messa
 	 * Closes the MessageStrip.
 	 * This method sets the visible property of the MessageStrip to false.
 	 * The MessageStrip can be shown again by setting the visible property to true.
-	 * @type void
+	 * @returns void
 	 * @public
 	 */
 	MessageStrip.prototype.close = function () {
@@ -242,7 +245,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "./Messa
 			return;
 		}
 
-		if (sap.ui.Device.browser.internet_explorer && sap.ui.Device.browser.version < 10) {
+		if (Device.browser.internet_explorer && Device.browser.version < 10) {
 			MSUtils.closeTransitionWithJavascript.call(this, fnClosed);
 		} else {
 			MSUtils.closeTransitionWithCSS.call(this, fnClosed);
@@ -251,4 +254,4 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "./Messa
 
 	return MessageStrip;
 
-}, /* bExport= */ true);
+});

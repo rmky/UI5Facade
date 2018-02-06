@@ -3,9 +3,13 @@
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global'],
-	function(jQuery) {
+sap.ui.define(["sap/ui/core/library", "sap/m/ObjectAttribute"],
+	function(coreLibrary, ObjectAttribute) {
 	"use strict";
+
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
 
 
 	/**
@@ -84,7 +88,7 @@ sap.ui.define(['jquery.sap.global'],
 		oRm.write("<span id=\"" + oOA.getId() + "-text\"");
 		oRm.addClass("sapMObjectAttributeText");
 
-		if (sTextDir && sTextDir !== sap.ui.core.TextDirection.Inherit) {
+		if (sTextDir && sTextDir !== TextDirection.Inherit) {
 			oRm.writeAttribute("dir", sTextDir.toLowerCase());
 		}
 
@@ -93,9 +97,9 @@ sap.ui.define(['jquery.sap.global'],
 
 		if (oAttrAggregation && oParent) {
 			if ((oParent instanceof sap.m.ObjectHeader) && !oOA.getParent().getResponsive()) {
-				oOA._setControlWrapping(oAttrAggregation, true, sap.m.ObjectAttribute.MAX_LINES.MULTI_LINE);
+				oOA._setControlWrapping(oAttrAggregation, true, ObjectAttribute.MAX_LINES.MULTI_LINE);
 			} else {
-				oOA._setControlWrapping(oAttrAggregation, false, sap.m.ObjectAttribute.MAX_LINES.SINGLE_LINE);
+				oOA._setControlWrapping(oAttrAggregation, false, ObjectAttribute.MAX_LINES.SINGLE_LINE);
 			}
 			oRm.renderControl(oAttrAggregation);
 		} else {

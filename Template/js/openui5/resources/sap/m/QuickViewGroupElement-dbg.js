@@ -6,9 +6,9 @@
 
 // Provides control sap.m.QuickViewGroupElement
 sap.ui.define([
-		'jquery.sap.global', './library', 'sap/ui/core/Element',
+		'./library', 'sap/ui/core/Element',
 		'./Link', './Text', 'sap/ui/core/CustomData'],
-	function(jQuery, library, Element,
+	function(library, Element,
 				Link, Text, CustomData) {
 		"use strict";
 
@@ -26,7 +26,7 @@ sap.ui.define([
 		* @extends sap.ui.core.Element
 		*
 		* @author SAP SE
-		* @version 1.50.8
+		* @version 1.52.5
 		*
 		* @constructor
 		* @public
@@ -192,4 +192,4 @@ sap.ui.define([
 
 		return GroupElement;
 
-	}, /* bExport= */true);
+	});

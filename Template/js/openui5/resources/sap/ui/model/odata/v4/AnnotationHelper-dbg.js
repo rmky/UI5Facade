@@ -4,9 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	"../_AnnotationHelperBasics",
 	"./_AnnotationHelperExpression"
-], function (Basics, Expression) {
+], function (Expression) {
 	"use strict";
 
 	var rBadChars = /[\\\{\}:]/, // @see sap.ui.base.BindingParser: rObject, rBindingChars

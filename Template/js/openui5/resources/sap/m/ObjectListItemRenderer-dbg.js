@@ -4,9 +4,13 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Renderer'],
-	function(jQuery, ListItemBaseRenderer, Renderer) {
+sap.ui.define(['./ListItemBaseRenderer', 'sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
+	function(ListItemBaseRenderer, Renderer, coreLibrary, Device) {
 		"use strict";
+
+
+		// shortcut for sap.ui.core.TextDirection
+		var TextDirection = coreLibrary.TextDirection;
 
 
 		/**
@@ -117,7 +121,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 				rm.write("<span");
 				//sets the dir attribute to "rtl" or "ltr" if a direction
 				//for the intro text is provided explicitly
-				if (sIntroDir !== sap.ui.core.TextDirection.Inherit) {
+				if (sIntroDir !== TextDirection.Inherit) {
 					rm.writeAttribute("dir", sIntroDir.toLowerCase());
 				}
 				rm.write(">");
@@ -176,7 +180,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 
 			rm.write("</div>"); // End Top row container
 
-			if (!(sap.ui.Device.browser.internet_explorer && sap.ui.Device.browser.version < 10)) {
+			if (!(Device.browser.internet_explorer && Device.browser.version < 10)) {
 				rm.write("<div style=\"clear: both;\"></div>");
 			}
 
@@ -264,5 +268,4 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 		};
 
 		return ObjectListItemRenderer;
-
 	}, /* bExport= */ true);

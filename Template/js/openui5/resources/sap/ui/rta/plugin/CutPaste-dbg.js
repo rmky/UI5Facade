@@ -10,13 +10,17 @@ sap.ui.define([
 	'sap/ui/dt/plugin/CutPaste',
 	'sap/ui/dt/OverlayUtil',
 	'sap/ui/rta/plugin/Plugin',
-	'sap/ui/rta/plugin/RTAElementMover'
+	'sap/ui/rta/plugin/RTAElementMover',
+	'sap/ui/rta/Utils'
 ],
-function(jQuery,
-		ControlCutPaste,
-		OverlayUtil,
-		Plugin,
-		RTAElementMover) {
+function(
+	jQuery,
+	ControlCutPaste,
+	OverlayUtil,
+	Plugin,
+	RTAElementMover,
+	Utils
+) {
 	"use strict";
 
 	/**
@@ -30,7 +34,7 @@ function(jQuery,
 	 * @extends sap.ui.dt.plugin.CutPaste
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -62,6 +66,11 @@ function(jQuery,
 		}
 	});
 
+	// Extends the CutPaste Plugin with all the functions from our rta base plugin
+	Utils.extendWith(CutPaste.prototype, Plugin.prototype, function(vDestinationValue, vSourceValue, sProperty, mDestination, mSource) {
+		return sProperty !== "getMetadata";
+	});
+
 	/**
 	 * @override
 	 */
@@ -71,16 +80,37 @@ function(jQuery,
 	};
 
 	/**
+	 * @override
+	 */
+	CutPaste.prototype._isEditable = function(oOverlay, mPropertyBag) {
+		return this.getElementMover().isEditable(oOverlay, mPropertyBag.onRegistration) || this._isPasteEditable(oOverlay);
+	};
+
+	CutPaste.prototype._isPasteEditable = function (oOverlay) {
+		var	oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
+
+		return this.hasStableId(oOverlay) &&
+			this.getElementMover()._isMoveAvailableOnRelevantContainer(oOverlay) &&
+			oDesignTimeMetadata.isActionAvailableOnAggregations("move");
+	};
+
+	/**
+	 * @override
+	 * @param  {sap.ui.dt.Overlay}  oOverlay Selected overlay
+	 * @return {boolean}        Returns true if the plugin is available
+	 */
+	CutPaste.prototype.isAvailable = function(oOverlay) {
+		return oOverlay.getMovable();
+	};
+
+	/**
 	 * Register an overlay
 	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
 	 * @override
 	 */
 	CutPaste.prototype.registerElementOverlay = function(oOverlay) {
 		ControlCutPaste.prototype.registerElementOverlay.apply(this, arguments);
-
-		if (oOverlay.isMovable()) {
-			Plugin.prototype.addToPluginsList.apply(this, arguments);
-		}
+		Plugin.prototype.registerElementOverlay.apply(this, arguments);
 	};
 
 	/**
@@ -105,6 +135,46 @@ function(jQuery,
 		});
 
 		this.stopCutAndPaste();
+	};
+
+	/**
+	 * Retrieve the context menu item for the actions.
+	 * Two items are returned here: one for "cut" and one for "paste".
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
+	 * @return {object[]}          Returns array containing the items with required data
+	 */
+	CutPaste.prototype.getMenuItems = function(oOverlay){
+		var aMenuItems = [],
+			oCutMenuItem = {
+				id: 'CTX_CUT',
+				text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_CUT'),
+				handler: function(aOverlays){
+					return this.cut(aOverlays[0]);
+				}.bind(this),
+				enabled: function (){
+					return this.getDesignTime().getSelection().length === 1;
+				}.bind(this),
+				rank: 70
+			},
+			oPasteMenuItem = {
+				id: 'CTX_PASTE',
+				text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_PASTE'),
+				handler: function(aOverlays){
+					return this.paste(aOverlays[0]);
+				}.bind(this),
+				enabled: function(oOverlay) {
+					return this.isElementPasteable(oOverlay);
+				}.bind(this),
+				rank: 80
+			};
+
+		if (this.isAvailable(oOverlay)){
+			aMenuItems.push(oCutMenuItem, oPasteMenuItem);
+		} else if (this._isPasteEditable(oOverlay)) {
+			aMenuItems.push(oPasteMenuItem);
+		}
+
+		return aMenuItems;
 	};
 
 	return CutPaste;

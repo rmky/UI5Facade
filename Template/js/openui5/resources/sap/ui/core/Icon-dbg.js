@@ -26,9 +26,8 @@ sap.ui.define(['jquery.sap.global', '../Device', './Control', './IconPool', './I
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
-	 * @constructor
 	 * @public
 	 * @since 1.11.1
 	 * @alias sap.ui.core.Icon

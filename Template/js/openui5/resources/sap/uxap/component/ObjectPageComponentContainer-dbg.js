@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/ComponentContainer', "sap/ui/core/Component"],
-	function(ComponentContainer /*, Component */) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/ComponentContainer', 'sap/ui/core/Component'],
+	function(jQuery, ComponentContainer /*, Component */) {
 		"use strict";
 
 		/**

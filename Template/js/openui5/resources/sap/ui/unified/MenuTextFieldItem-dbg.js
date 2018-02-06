@@ -5,9 +5,14 @@
  */
 
 // Provides control sap.ui.unified.MenuTextFieldItem.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport', './MenuItemBase', './library'],
-	function(jQuery, ValueStateSupport, MenuItemBase, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport', './MenuItemBase', './library', 'sap/ui/core/library', 'sap/ui/Device', 'jquery.sap.events'],
+	function(jQuery, ValueStateSupport, MenuItemBase, library, coreLibrary, Device) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.core.ValueState
+	var ValueState = coreLibrary.ValueState;
 
 
 
@@ -23,7 +28,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport', './MenuItem
 	 * @extends sap.ui.unified.MenuItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -54,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport', './MenuItem
 			/**
 			 * Defines the value state of the text field of the item. This allows you to visualize e.g. warnings or errors.
 			 */
-			valueState : {type : "sap.ui.core.ValueState", group : "Appearance", defaultValue : sap.ui.core.ValueState.None}
+			valueState : {type : "sap.ui.core.ValueState", group : "Appearance", defaultValue : ValueState.None}
 		}
 	}});
 
@@ -203,7 +208,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport', './MenuItem
 
 	MenuTextFieldItem.prototype.onclick = function(oEvent){
 		this.getParent().closeSubmenu(false, true);
-		if (!sap.ui.Device.system.desktop && this.getParent().checkEnabled(this)) {
+		if (!Device.system.desktop && this.getParent().checkEnabled(this)) {
 			this.focus();
 		}
 		oEvent.stopPropagation();
@@ -278,8 +283,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport', './MenuItem
 	MenuTextFieldItem.prototype.setValueState = function(sValueState){
 		this.setProperty("valueState", sValueState, true);
 		var $tf = this.$("tf");
-		$tf.toggleClass("sapUiMnuTfItemTfErr", sValueState == sap.ui.core.ValueState.Error);
-		$tf.toggleClass("sapUiMnuTfItemTfWarn", sValueState == sap.ui.core.ValueState.Warning);
+		$tf.toggleClass("sapUiMnuTfItemTfErr", sValueState == ValueState.Error);
+		$tf.toggleClass("sapUiMnuTfItemTfWarn", sValueState == ValueState.Warning);
 		var sTooltip = ValueStateSupport.enrichTooltip(this, this.getTooltip_AsString());
 		this.$().attr("title", sTooltip ? sTooltip : "");
 		return this;
@@ -329,4 +334,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport', './MenuItem
 
 	return MenuTextFieldItem;
 
-}, /* bExport= */ true);
+});

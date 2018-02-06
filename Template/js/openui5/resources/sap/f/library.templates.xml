@@ -135,10 +135,14 @@
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
 	heading: undefined, // sap.ui.core.Control
+	snappedHeading: undefined, // sap.ui.core.Control, since 1.52
+	expandedHeading: undefined, // sap.ui.core.Control, since 1.52
 	actions: [], // sap.ui.core.Control
+	navigationActions: [], // sap.m.Button, since 1.52
 	content: [], // sap.ui.core.Control, since 1.50
 	snappedContent: [], // sap.ui.core.Control
 	expandedContent: [], // sap.ui.core.Control
+	breadcrumbs: undefined, // sap.m.IBreadcrumbs, since 1.52
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -155,10 +159,14 @@
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<heading></heading> <!-- sap.ui.core.Control -->
+		<snappedHeading></snappedHeading> <!-- sap.ui.core.Control, since 1.52 -->
+		<expandedHeading></expandedHeading> <!-- sap.ui.core.Control, since 1.52 -->
 		<actions></actions> <!-- sap.ui.core.Control -->
+		<navigationActions></navigationActions> <!-- sap.m.Button, since 1.52 -->
 		<content></content> <!-- sap.ui.core.Control, since 1.50 -->
 		<snappedContent></snappedContent> <!-- sap.ui.core.Control -->
 		<expandedContent></expandedContent> <!-- sap.ui.core.Control -->
+		<breadcrumbs></breadcrumbs> <!-- sap.m.IBreadcrumbs, since 1.52 -->
 </DynamicPageTitle>
 ]]></xmlTemplate>
 </Template>
@@ -669,12 +677,15 @@
 	preserveHeaderStateOnScroll: false, // boolean
 	toggleHeaderOnTitleClick: true, // boolean
 	showFooter: false, // boolean
+	titlePrimaryArea: sap.f.DynamicPageTitleArea.Begin, // sap.f.DynamicPageTitleArea, since 1.52
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
 	titleHeading: undefined, // sap.ui.core.Control
+	titleBreadcrumbs: undefined, // sap.m.IBreadcrumbs, since 1.52
 	titleSnappedContent: [], // sap.ui.core.Control
 	titleExpandedContent: [], // sap.ui.core.Control
+	titleContent: [], // sap.ui.core.Control, since 1.52
 	titleMainAction: undefined, // sap.f.semantic.TitleMainAction
 	editAction: undefined, // sap.f.semantic.EditAction, since 1.50
 	deleteAction: undefined, // sap.f.semantic.DeleteAction
@@ -718,12 +729,15 @@
 	preserveHeaderStateOnScroll="false"
 	toggleHeaderOnTitleClick="true"
 	showFooter="false"
+	titlePrimaryArea="Begin"
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<titleHeading></titleHeading> <!-- sap.ui.core.Control -->
+		<titleBreadcrumbs></titleBreadcrumbs> <!-- sap.m.IBreadcrumbs, since 1.52 -->
 		<titleSnappedContent></titleSnappedContent> <!-- sap.ui.core.Control -->
 		<titleExpandedContent></titleExpandedContent> <!-- sap.ui.core.Control -->
+		<titleContent></titleContent> <!-- sap.ui.core.Control, since 1.52 -->
 		<titleMainAction></titleMainAction> <!-- sap.f.semantic.TitleMainAction -->
 		<editAction></editAction> <!-- sap.f.semantic.EditAction, since 1.50 -->
 		<deleteAction></deleteAction> <!-- sap.f.semantic.DeleteAction -->

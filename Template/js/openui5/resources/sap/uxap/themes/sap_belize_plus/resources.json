@@ -11,12 +11,22 @@
 			"theme": "sap_belize_plus"
 		},
 		{
+			"name": "ObjectPageDynamicHeaderContent.less",
+			"designtime": true,
+			"theme": "sap_belize_plus"
+		},
+		{
 			"name": "ObjectPageHeader.less",
 			"designtime": true,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "ObjectPageHeaderContent.less",
+			"designtime": true,
+			"theme": "sap_belize_plus"
+		},
+		{
+			"name": "ObjectPageLayout.less",
 			"designtime": true,
 			"theme": "sap_belize_plus"
 		},

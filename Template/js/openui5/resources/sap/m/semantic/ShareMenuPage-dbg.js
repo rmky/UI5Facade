@@ -4,9 +4,12 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', "sap/m/semantic/SemanticPage", "sap/m/semantic/SemanticConfiguration", "sap/m/semantic/SemanticPageRenderer", "sap/m/semantic/SegmentedContainer", "sap/m/semantic/ShareMenu", "sap/m/ActionSheet", "sap/m/Button"],
-		function(jQuery, SemanticPage, SemanticConfiguration, SemanticPageRenderer, SegmentedContainer, ShareMenu, ActionSheet, Button) {
+sap.ui.define(["sap/m/semantic/SemanticPage", "sap/m/semantic/SemanticConfiguration", "sap/m/semantic/SemanticPageRenderer", "sap/m/semantic/SegmentedContainer", "sap/m/semantic/ShareMenu", "sap/m/ActionSheet", "sap/m/library"],
+		function(SemanticPage, SemanticConfiguration, SemanticPageRenderer, SegmentedContainer, ShareMenu, ActionSheet, library) {
 	"use strict";
+
+	// shortcut for sap.m.PlacementType
+	var PlacementType = library.PlacementType;
 
 	/**
 	 * Constructor for a new ShareMenuPage
@@ -19,7 +22,7 @@ sap.ui.define(['jquery.sap.global', "sap/m/semantic/SemanticPage", "sap/m/semant
 	 * @extends sap.m.semantic.SemanticPage
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -221,9 +224,9 @@ sap.ui.define(['jquery.sap.global', "sap/m/semantic/SemanticPage", "sap/m/semant
 	};
 
 	ShareMenuPage.prototype._getShareBaseButtonContainer = function(vBaseButtonPlacement) {
-		return (vBaseButtonPlacement === sap.m.PlacementType.Bottom) ?
+		return (vBaseButtonPlacement === PlacementType.Bottom) ?
 			this._getSegmentedFooter() : this._getSegmentedHeader();
 	};
 
 	return ShareMenuPage;
-}, /* bExport= */ false);
+});

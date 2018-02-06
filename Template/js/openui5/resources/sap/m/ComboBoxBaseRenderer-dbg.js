@@ -3,8 +3,8 @@
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global', './ComboBoxTextFieldRenderer', 'sap/ui/core/Renderer'],
-	function(jQuery, ComboBoxTextFieldRenderer, Renderer) {
+sap.ui.define(['./ComboBoxTextFieldRenderer', 'sap/ui/core/Renderer'],
+	function(ComboBoxTextFieldRenderer, Renderer) {
 		"use strict";
 
 		/**

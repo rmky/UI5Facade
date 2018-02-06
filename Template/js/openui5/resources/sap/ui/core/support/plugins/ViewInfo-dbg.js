@@ -6,8 +6,8 @@
 
 // Provides class sap.ui.core.support.plugins.ViewInfo (ViewInfo support plugin)
 sap.ui.define([
-	'jquery.sap.global', 'sap/ui/core/support/Plugin', 'sap/ui/core/support/controls/TreeViewer', 'sap/ui/core/support/controls/ObjectViewer', 'sap/ui/core/support/Support'
-], function(jQuery, Plugin, TreeViewer, ObjectViewer, Support) {
+	'jquery.sap.global', 'sap/ui/core/support/Plugin', 'sap/ui/core/support/controls/TreeViewer', 'sap/ui/core/support/controls/ObjectViewer', 'sap/ui/Device'
+], function(jQuery, Plugin, TreeViewer, ObjectViewer, Device) {
 	"use strict";
 
 	/*global Blob, Uint8Array, alert */
@@ -16,10 +16,8 @@ sap.ui.define([
 		/**
 		 * Creates an instance of sap.ui.core.support.plugins.ViewInfo.
 		 * @class This class represents the ViewInfo plugin for the support tool functionality of UI5. This class is internal and all its functions must not be used by an application.
-		 * @abstract
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.50.8
-		 * @constructor
+		 * @version 1.52.5
 		 * @private
 		 * @alias sap.ui.core.support.plugins.ViewInfo
 		 */
@@ -51,7 +49,7 @@ sap.ui.define([
 			if (!this.runsAsToolPlugin()) {
 				return;
 			}
-			if (!sap.ui.Device.browser.chrome) {
+			if (!Device.browser.chrome) {
 				this.$().get(0).innerHTML = "View Info Support Tool is currently only available on Chrome. We are currently working to support all browsers.";
 				return;
 			}

@@ -15,10 +15,8 @@ sap.ui.define(['jquery.sap.global', '../Plugin', '../Support'],
 		 *
 		 * This class is only for testing purposes for support tool communication.
 		 *
-		 * @abstract
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.50.8
-		 * @constructor
+		 * @version 1.52.5
 		 * @private
 		 * @alias sap.ui.core.support.plugins.MessageTest
 		 */

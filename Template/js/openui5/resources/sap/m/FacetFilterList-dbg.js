@@ -5,9 +5,17 @@
  */
 
 // Provides control sap.m.FacetFilterList.
-sap.ui.define(['jquery.sap.global', './List', './library'],
-	function(jQuery, List, library) {
+sap.ui.define(['jquery.sap.global', './List', './library', 'sap/ui/model/ChangeReason', 'sap/ui/model/Filter'],
+	function(jQuery, List, library, ChangeReason, Filter) {
 	"use strict";
+
+
+
+	// shortcut for sap.m.ListMode
+	var ListMode = library.ListMode;
+
+	// shortcut for sap.m.FacetFilterListDataType
+	var FacetFilterListDataType = library.FacetFilterListDataType;
 
 
 
@@ -34,7 +42,7 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 	 * be closed.
 	 *
 	 * @extends sap.m.List
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -102,7 +110,7 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 			/**
 			 * FacetFilterList data type. Only String data type will provide search function.
 			 */
-			dataType : {type : "sap.m.FacetFilterListDataType", group : "Misc", defaultValue : sap.m.FacetFilterListDataType.String}
+			dataType : {type : "sap.m.FacetFilterListDataType", group : "Misc", defaultValue : FacetFilterListDataType.String}
 		},
 		events : {
 
@@ -157,7 +165,7 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 	FacetFilterList.prototype.setMultiSelect = function(bVal) {
 
 		this.setProperty("multiSelect", bVal, true);
-		var mode = bVal ? sap.m.ListMode.MultiSelect : sap.m.ListMode.SingleSelectMaster;
+		var mode = bVal ? ListMode.MultiSelect : ListMode.SingleSelectMaster;
 		this.setMode(mode);
 		return this;
 	};
@@ -171,10 +179,10 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 	 */
 	FacetFilterList.prototype.setMode = function(mode) {
 
-		if (mode === sap.m.ListMode.MultiSelect || mode === sap.m.ListMode.SingleSelectMaster) {
+		if (mode === ListMode.MultiSelect || mode === ListMode.SingleSelectMaster) {
 
 			List.prototype.setMode.call(this, mode);
-			this.setProperty("multiSelect", mode === sap.m.ListMode.MultiSelect ? true : false, true);
+			this.setProperty("multiSelect", mode === ListMode.MultiSelect ? true : false, true);
 		}
 		return this;
 	};
@@ -324,7 +332,7 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 	FacetFilterList.prototype._getNonGroupItems = function() {
 			var aItems = [];
 			this.getItems().forEach(function(oItem) {
-				if (oItem.getMode() !== sap.m.ListMode.None){
+				if (oItem.getMode() !== ListMode.None){
 					aItems.push(oItem);
 				}
 			});
@@ -394,7 +402,7 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 		this._oSelectedKeys = {};
 
 		List.prototype.init.call(this);
-		this.setMode(sap.m.ListMode.MultiSelect);
+		this.setMode(ListMode.MultiSelect);
 		this.setIncludeItemInSelection(true);
 		this.setGrowing(true);
 		this.setRememberSelections(false);
@@ -423,7 +431,7 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 				}
 			}
 
-			if (sUpdateReason !== "growing" && sUpdateReason !== sap.ui.model.ChangeReason.Filter.toLowerCase()) {
+			if (sUpdateReason !== "growing" && sUpdateReason !== ChangeReason.Filter.toLowerCase()) {
 				this._oSelectedKeys = {};
 				this._getNonGroupItems().forEach(function(item) {
 					if (item.getSelected()) {
@@ -432,7 +440,7 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 				}, this);
 			}
 
-			if (sUpdateReason !== sap.ui.model.ChangeReason.Filter.toLowerCase()) {
+			if (sUpdateReason !== ChangeReason.Filter.toLowerCase()) {
 				this._selectItemsByKeys();
 			}
 
@@ -569,23 +577,23 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 				if (sSearchVal || numberOfsPath > 0) {
 					var path = this.getBindingInfo("items").template.getBindingInfo("text").parts[0].path;
 					if (path) {
-						var oUserFilter = new sap.ui.model.Filter(path, sap.ui.model.FilterOperator.Contains, sSearchVal);
+						var oUserFilter = new Filter(path, sap.ui.model.FilterOperator.Contains, sSearchVal);
 						if (this.getEnableCaseInsensitiveSearch() && isODataModel(oBinding.getModel())){
 							//notice the single quotes wrapping the value from the UI control!
 							var sEncodedString = "'" + String(sSearchVal).replace(/'/g, "''") + "'";
 							sEncodedString = sEncodedString.toLowerCase();
-							oUserFilter = new sap.ui.model.Filter("tolower(" + path + ")", sap.ui.model.FilterOperator.Contains, sEncodedString);
+							oUserFilter = new Filter("tolower(" + path + ")", sap.ui.model.FilterOperator.Contains, sEncodedString);
 						}
 						if (numberOfsPath > 1) {
-							var oFinalFilter = new sap.ui.model.Filter([oUserFilter, this._saveBindInfo], true);
+							var oFinalFilter = new Filter([oUserFilter, this._saveBindInfo], true);
 						} else {
 							if (this._saveBindInfo > "" && oUserFilter.sPath != this._saveBindInfo.sPath) {
-								var oFinalFilter = new sap.ui.model.Filter([oUserFilter, this._saveBindInfo], true);
+								var oFinalFilter = new Filter([oUserFilter, this._saveBindInfo], true);
 							} else {
 								if (sSearchVal == "") {
 									var oFinalFilter = [];
 								} else {
-									var oFinalFilter = new sap.ui.model.Filter([oUserFilter], true);
+									var oFinalFilter = new Filter([oUserFilter], true);
 								}
 							}
 						}
@@ -645,7 +653,7 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 			jQuery.sap.log.error("Both sKey and sText are not defined. At least one must be defined.");
 			return;
 		}
-		if (this.getMode() === sap.m.ListMode.SingleSelectMaster) {
+		if (this.getMode() === ListMode.SingleSelectMaster) {
 			this.removeSelectedKeys();
 		}
 		if (!sKey) {
@@ -791,13 +799,13 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 	 * @param {String} sReason reason for update
 	 */
 	FacetFilterList.prototype.updateItems = function(sReason) {
-	  this._filtering = sReason === sap.ui.model.ChangeReason.Filter;
+	  this._filtering = sReason === ChangeReason.Filter;
 	  sap.m.ListBase.prototype.updateItems.apply(this,arguments);
 	  this._filtering = false;
 	  // If this list is not set to growing or it has been filtered then we must make sure that selections are
 	  // applied to items matching keys contained in the selected keys cache.  Selections
 	  // in a growing list are handled by the updateFinished handler.
-	  if (!this.getGrowing() || sReason === sap.ui.model.ChangeReason.Filter) {
+	  if (!this.getGrowing() || sReason === ChangeReason.Filter) {
 	  this._selectItemsByKeys();
 	  }
 	};
@@ -812,4 +820,4 @@ sap.ui.define(['jquery.sap.global', './List', './library'],
 
 	return FacetFilterList;
 
-}, /* bExport= */ true);
+});

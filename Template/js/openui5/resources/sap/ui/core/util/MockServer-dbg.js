@@ -34,7 +34,7 @@ sap.ui
 			 * @extends sap.ui.base.ManagedObject
 			 * @abstract
 			 * @author SAP SE
-			 * @version 1.50.8
+			 * @version 1.52.5
 			 * @public
 			 * @alias sap.ui.core.util.MockServer
 			 */
@@ -3405,7 +3405,12 @@ sap.ui
 					day.setHours(day.getHours() + offset);
 					return day.getTime();
 				};
-				return "/Date(" + fnNoOffset(sString.substring("datetime'".length, sString.length - 1)) + ")/";
+
+				if (sString.indexOf("datetimeoffset") > -1) {
+					return "/Date(" + fnNoOffset(sString.substring("datetimeoffset'".length, sString.length - 1)) + ")/";
+				} else {
+					return "/Date(" + fnNoOffset(sString.substring("datetime'".length, sString.length - 1)) + ")/";
+				}
 			};
 
 			/**

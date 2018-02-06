@@ -127,15 +127,27 @@ sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/
 			clazz : 'sap.ui.rta.command.Split',
 			configure : fnConfigureSplitCommand
 		},
+		"switch" : {
+			clazz : 'sap.ui.rta.command.ControlVariantSwitch'
+		},
+		"duplicate" : {
+			clazz : 'sap.ui.rta.command.ControlVariantDuplicate'
+		},
+		"setTitle" : {
+			clazz : 'sap.ui.rta.command.ControlVariantSetTitle'
+		},
 		"settings" : {
 			clazz : 'sap.ui.rta.command.Settings'
 		},
 		"addLibrary" : {
 			clazz : 'sap.ui.rta.command.appDescriptor.AddLibrary'
+		},
+		"appDescriptor" : {
+			clazz : 'sap.ui.rta.command.AppDescriptorCommand'
 		}
 	};
 
-	var _getCommandFor = function(vElement, sCommand, mSettings, oDesignTimeMetadata, mFlexSettings, sVariantManagementKey) {
+	var _getCommandFor = function(vElement, sCommand, mSettings, oDesignTimeMetadata, mFlexSettings, sVariantManagementReference) {
 		sCommand = sCommand[0].toLowerCase() + sCommand.slice(1); // first char of command name is lower case
 		var mCommand = mCommands[sCommand];
 
@@ -188,7 +200,7 @@ sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/
 			bSuccessfullConfigured = fnConfigureActionCommand(vElement, oCommand, oAction);
 		}
 
-		var bPrepareStatus = bSuccessfullConfigured && oCommand.prepare(mFlexSettings, sVariantManagementKey);
+		var bPrepareStatus = bSuccessfullConfigured && oCommand.prepare(mFlexSettings, sVariantManagementReference);
 		if (bPrepareStatus) {
 			return oCommand;
 		} else {
@@ -204,7 +216,7 @@ sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -245,8 +257,8 @@ sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/
 		this.setProperty("flexSettings", jQuery.extend(this.getFlexSettings(), mFlexSettings));
 	};
 
-	CommandFactory.prototype.getCommandFor = function(vElement, sCommand, mSettings, oDesignTimeMetadata, sVariantManagementKey) {
-		return _getCommandFor(vElement, sCommand, mSettings, oDesignTimeMetadata, this.getFlexSettings(), sVariantManagementKey);
+	CommandFactory.prototype.getCommandFor = function(vElement, sCommand, mSettings, oDesignTimeMetadata, sVariantManagementReference) {
+		return _getCommandFor(vElement, sCommand, mSettings, oDesignTimeMetadata, this.getFlexSettings(), sVariantManagementReference);
 	};
 
 	CommandFactory.getCommandFor = function(vElement, sCommand, mSettings, oDesignTimeMetadata, mFlexSettings) {

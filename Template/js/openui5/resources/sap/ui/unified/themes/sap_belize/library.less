@@ -111,6 +111,12 @@ html.sap-desktop .sapUiCalHead > .sapUiCalHeadB:active {
 	background-color: @_sap_ui_unified_Calendar_ItemColor;
 }
 
+.sapUiCalRowWeekNumber {
+	color: @sapUiBaseText;
+	background-color: lighten(@sapUiContentForegroundColor,5);
+	border-color: @_sap_ui_unified_Calendar_ItemBorderColor;
+}
+
 .sapUiCalItemNow {
 	color: @sapUiBaseText;
 }
@@ -148,7 +154,7 @@ html.sap-desktop .sapUiCalYearPicker .sapUiCalItemSel:focus {
 html[data-sap-ui-browser^="ie"].sap-desktop,
 html[data-sap-ui-browser^="ed"].sap-desktop {
 	// do this only for the Planing Calendar
-	.sapMPlanCal .sapUiCalItem:focus {
+	.sapMPlanCal :not(.sapUiCalFirstWDay).sapUiCalItem:focus {
 		overflow: hidden;
 	}
 

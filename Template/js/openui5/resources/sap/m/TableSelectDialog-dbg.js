@@ -5,9 +5,14 @@
  */
 
 // Provides control sap.m.TableSelectDialog.
-sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './Table', './library', 'sap/ui/core/Control'],
-	function(jQuery, Button, Dialog, SearchField, Table, library, Control) {
+sap.ui.define(['./Button', './Dialog', './SearchField', './Table', './library', 'sap/ui/core/Control', 'sap/ui/Device', 'sap/ui/base/ManagedObject', 'sap/m/Toolbar', 'sap/m/Label', 'sap/m/BusyIndicator', 'sap/m/Bar', 'sap/ui/core/theming/Parameters'],
+	function(Button, Dialog, SearchField, Table, library, Control, Device, ManagedObject, Toolbar, Label, BusyIndicator, Bar, Parameters) {
 	"use strict";
+
+
+
+	// shortcut for sap.m.ListMode
+	var ListMode = library.ListMode;
 
 
 
@@ -50,7 +55,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 	 * </ul>
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -220,13 +225,13 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 		this._oTable = new Table(this.getId() + "-table", {
 			growing: true,
 			growingScrollToLoad: true,
-			mode: sap.m.ListMode.SingleSelectMaster,
+			mode: ListMode.SingleSelectMaster,
 			modeAnimationOn: false,
-			infoToolbar: new sap.m.Toolbar({
+			infoToolbar: new Toolbar({
 				visible: false,
 				active: false,
 				content: [
-					new sap.m.Label({
+					new Label({
 						text: this._oRb.getText("TABLESELECTDIALOG_SELECTEDITEMS", [0])
 					})
 				]
@@ -255,7 +260,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 		this._table = this._oTable; // for downward compatibility
 
 		// store a reference to the busyIndicator to display when data is currently loaded by a service
-		this._oBusyIndicator = new sap.m.BusyIndicator(this.getId() + "-busyIndicator").addStyleClass("sapMTableSelectDialogBusyIndicator", true);
+		this._oBusyIndicator = new BusyIndicator(this.getId() + "-busyIndicator").addStyleClass("sapMTableSelectDialogBusyIndicator", true);
 
 		// store a reference to the searchField for filtering
 		this._oSearchField = new SearchField(this.getId() + "-searchField", {
@@ -281,7 +286,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 		this._searchField = this._oSearchField; // for downward compatibility
 
 		// store a reference to the subheader for hiding it when data loads
-		this._oSubHeader = new sap.m.Bar(this.getId() + "-subHeader", {
+		this._oSubHeader = new Bar(this.getId() + "-subHeader", {
 			contentMiddle: [
 				this._searchField
 			]
@@ -289,12 +294,12 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 
 		// store a reference to the internal dialog
 		this._oDialog = new Dialog(this.getId() + "-dialog", {
-			stretch: sap.ui.Device.system.phone,
+			stretch: Device.system.phone,
 			contentHeight: "2000px",
 			subHeader: this._oSubHeader,
 			content: [this._oBusyIndicator, this._oTable],
 			leftButton: this._getCancelButton(),
-			initialFocus: ((sap.ui.Device.system.desktop && this._oSearchField) ? this._oSearchField : null)
+			initialFocus: ((Device.system.desktop && this._oSearchField) ? this._oSearchField : null)
 		});
 		this._dialog = this._oDialog; // for downward compatibility
 		this.setAggregation("_dialog", this._oDialog);
@@ -312,7 +317,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 
 		// internally set top and bottom margin of the dialog to 8rem respectively
 		// CSN# 333642/2014: in base theme the parameter sapUiFontSize is "medium", implement a fallback
-		this._oDialog._iVMargin = 8 * (parseInt(sap.ui.core.theming.Parameters.get("sapUiFontSize"), 10) || 16); //128
+		this._oDialog._iVMargin = 8 * (parseInt(Parameters.get("sapUiFontSize"), 10) || 16); //128
 
 		// helper variables for search update behaviour
 		this._sSearchFieldValue = "";
@@ -508,12 +513,12 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 	TableSelectDialog.prototype.setMultiSelect = function (bMulti) {
 		this.setProperty("multiSelect", bMulti, true);
 		if (bMulti) {
-			this._oTable.setMode(sap.m.ListMode.MultiSelect);
+			this._oTable.setMode(ListMode.MultiSelect);
 			this._oTable.setIncludeItemInSelection(true);
 			this._oDialog.setRightButton(this._getCancelButton());
 			this._oDialog.setLeftButton(this._getOkButton());
 		} else {
-			this._oTable.setMode(sap.m.ListMode.SingleSelectMaster);
+			this._oTable.setMode(ListMode.SingleSelectMaster);
 			this._oDialog.setLeftButton(this._getCancelButton());
 		}
 
@@ -715,7 +720,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 			return this._oTable[sFunctionName].apply(this._oTable, aArgs.slice(1));
 		} else {
 			// apply to this control
-			return sap.ui.base.ManagedObject.prototype[sFunctionName].apply(this, aArgs.slice(1));
+			return ManagedObject.prototype[sFunctionName].apply(this, aArgs.slice(1));
 		}
 	};
 
@@ -916,7 +921,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 			this._bInitBusy = false;
 		}
 
-		if (sap.ui.Device.system.desktop) {
+		if (Device.system.desktop) {
 
 			if (this._oTable.getItems()[0]) {
 				this._oDialog.setInitialFocus(this._oTable.getItems()[0]);
@@ -1094,4 +1099,4 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './SearchField', './
 
 	return TableSelectDialog;
 
-}, /* bExport= */ true);
+});

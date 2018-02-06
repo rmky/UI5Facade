@@ -6,14 +6,16 @@
 
 // Provides helper sap.ui.table.TablePointerExtension.
 sap.ui.define([
-	"./library", "jquery.sap.global", "./TableExtension", "./TableUtils", "sap/ui/Device", "sap/ui/core/Popup", "jquery.sap.dom"
-], function(library, jQuery, TableExtension, TableUtils, Device, Popup, jQueryDom) {
+"./library", "jquery.sap.global", "./TableExtension", "./TableUtils", "sap/ui/Device", "sap/ui/core/Popup"
+], function(library, jQuery, TableExtension, TableUtils, Device, Popup) {
 	"use strict";
 
 	// shortcuts
 	var SelectionMode = library.SelectionMode;
 
-	var KNOWNCLICKABLECONTROLS = ["sapMBtnBase", "sapMInputBase", "sapMLnk", "sapMSlt", "sapMCb", "sapMRI", "sapMSegBBtn", "sapUiIconPointer"];
+	var KNOWNCLICKABLECONTROLS = [
+		"sapMBtnBase", "sapMInputBase", "sapMLnk", "sapMSlt",
+		"sapMCb", "sapMRI", "sapMSegBBtn", "sapUiIconPointer", "sapMBtnIcon"];
 
 	/*
 	 * Provides utility functions used this extension
@@ -303,7 +305,7 @@ sap.ui.define([
 		 * Headers with column span are not taken into account.
 		 * @param {sap.ui.table.Column} oCol the column
 		 * @param {int} iColIndex index of the column
-		 * @return {int} iWidth calculated column width
+		 * @returns {int} iWidth calculated column width
 		 * @private
 		 */
 		_calculateAutomaticColumnWidth: function(oCol, iColIndex) {
@@ -682,7 +684,8 @@ sap.ui.define([
 		},
 
 		/*
-		 * Positions the reorder marker on the column (given by the position information (@see findColumnForPosition)).
+		 * Positions the reorder marker on the column (given by the position information).
+		 * @see findColumnForPosition
 		 */
 		adaptReorderMarkerPosition: function(oTable, oPos, bShow) {
 			if (!oPos || !oTable._$ReorderIndicator) {
@@ -794,7 +797,7 @@ sap.ui.define([
 
 				// In case of FireFox and CTRL+CLICK it selects the target TD
 				//   => prevent the default behavior only in this case (to still allow text selection)
-				// Also prevent default when clicking on ScrollBars to prevent ItemNavigation to re-apply
+				// Also prevent default when clicking on scrollbars to prevent ItemNavigation to re-apply
 				// focus to old position (table cell).
 				if ((Device.browser.firefox && !!(oEvent.metaKey || oEvent.ctrlKey))
 					|| $Target.closest(".sapUiTableHSb", this.getDomRef()).length === 1
@@ -929,7 +932,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles mouse and touch related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension
@@ -1046,7 +1049,7 @@ sap.ui.define([
 	});
 
 	return TablePointerExtension;
-}, /* bExport= */ true);
+	});
 
 /**
  * Gets the pointer extension.

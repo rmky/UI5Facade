@@ -6,9 +6,9 @@
 
 // Provides control sap.ui.table.RowSettings
 sap.ui.define([
-	'jquery.sap.global', 'sap/ui/core/Element', './TableUtils', './library', "sap/ui/core/library"
-], function(jQuery, Element, TableUtils, library, coreLibrary) {
-    "use strict";
+	'sap/ui/core/Element', './TableUtils', './library', 'sap/ui/core/library'
+], function(Element, TableUtils, library, coreLibrary) {
+	"use strict";
 
 	// shortcut for sap.ui.core.MessageType
 	var MessageType = coreLibrary.MessageType;
@@ -23,7 +23,7 @@ sap.ui.define([
 	 * The <code>RowSettings</code> control allows you to configure a row.
 	 * You can only use this control in the context of the <code>sap.ui.table.Table</code> control to define row settings.
 	 * @extends sap.ui.core.Element
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public

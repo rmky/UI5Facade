@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'], function(jQuery, Ele
 	 *
 	 * @author SAP SE
 	 * @extends sap.ui.core.Element
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @public
 	 * @constructor
 	 * @since 1.34.0
@@ -117,4 +117,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'], function(jQuery, Ele
 
 	return MaskInputRule;
 
-}, /* bExport= */ true);
+});

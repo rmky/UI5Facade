@@ -586,6 +586,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/Cl
 		 * @param {int} iMaxGroupSize the maximum group size
 		 * @param {object} oSection the information of the current section
 		 * @protected
+		 * @deprecated since version 1.52. This method is marked as 'protected' which was meant to be overwritten
+		 *  by its subclasses. It may be renamed or deleted and should only be called from this class or its subclasses.
 		 */
 		TreeBindingAdapter.prototype._calculateRequestLength = function(iMaxGroupSize, oSection) {
 			var iRequestedLength;
@@ -797,8 +799,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/Cl
 		/**
 		 * Expand the tree node sitting at the given index.
 		 * @param {int} iIndex the absolute row index
+		 * @param {boolean} bSuppressChange if set to true, no change event will be fired
 		 */
-		TreeBindingAdapter.prototype.expand = function(iIndex) {
+		TreeBindingAdapter.prototype.expand = function(iIndex, bSuppressChange) {
 			var oNode = this.findNode(iIndex);
 
 			if (!oNode) {
@@ -807,7 +810,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/Cl
 			}
 
 			this._updateTreeState({groupID: oNode.nodeState.groupID, fallbackNodeState: oNode.nodeState, expanded: true});
-			this._fireChange({reason: ChangeReason.Expand});
+
+			if (!bSuppressChange) {
+				this._fireChange({reason: ChangeReason.Expand});
+			}
 		};
 
 		/**
@@ -833,6 +839,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/Cl
 		/**
 		 * Collapses the given node, identified via an absolute row index.
 		 * @param {int} vParam the row index of the tree node
+		 * @param {boolean} bSuppressChange if set to true, no change event will be fired
 		 */
 		TreeBindingAdapter.prototype.collapse = function(vParam, bSuppressChange) {
 			var oNodeStateForCollapsingNode;
@@ -1263,7 +1270,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/Cl
 
 		/**
 		 * Returns the number of currently selectable nodes (with respect to the current expand/collapse state).
-		 * @returns
+		 * @returns {int} Number of currently selectable nodes
 		 */
 		TreeBindingAdapter.prototype._getSelectableNodesCount = function (oNode) {
 			if (oNode) {

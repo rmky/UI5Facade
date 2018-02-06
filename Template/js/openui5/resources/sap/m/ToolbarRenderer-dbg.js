@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './BarInPageEnabler'],
-	function(jQuery, BarInPageEnabler) {
+sap.ui.define(['./BarInPageEnabler', 'sap/m/Toolbar'],
+	function(BarInPageEnabler, Toolbar) {
 	"use strict";
 
 
@@ -37,7 +37,8 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler'],
 			role: oToolbar._getAccessibilityRole()
 		});
 
-		if (!sap.m.Toolbar.hasNewFlexBoxSupport) {
+
+		if (!Toolbar.hasNewFlexBoxSupport) {
 			rm.addClass("sapMTBOldFlex");
 		} else {
 			rm.addClass("sapMTBNewFlex");
@@ -60,7 +61,7 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler'],
 
 	ToolbarRenderer.renderBarContent = function(rm, oToolbar) {
 		oToolbar.getContent().forEach(function(oControl) {
-			sap.m.BarInPageEnabler.addChildClassTo(oControl, oToolbar);
+			BarInPageEnabler.addChildClassTo(oControl, oToolbar);
 			rm.renderControl(oControl);
 		});
 	};

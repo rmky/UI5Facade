@@ -4,9 +4,12 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Item"],
-	function(jQuery, library, Item) {
+sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Item", "sap/ui/core/library"],
+	function(jQuery, library, Item, coreLibrary) {
 		"use strict";
+
+		// shortcut for sap.ui.core.MessageType
+		var MessageType = coreLibrary.MessageType;
 
 		/**
 		 * Constructor for a new MessageItem.
@@ -28,7 +31,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Item"],
 		 *
 		 * @extends sap.ui.core.Item
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -44,7 +47,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Item"],
 					/**
 					 * Specifies the type of the message
 					 */
-					type: { type: "sap.ui.core.MessageType", group: "Appearance", defaultValue: sap.ui.core.MessageType.Error },
+					type: { type: "sap.ui.core.MessageType", group: "Appearance", defaultValue: MessageType.Error },
 
 					/**
 					 * Specifies the title of the message
@@ -155,8 +158,8 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Item"],
 		 * @public
 		 */
 		MessageItem.prototype.setType = function (sType) {
-			if (sType === sap.ui.core.MessageType.None) {
-				sType = sap.ui.core.MessageType.Information;
+			if (sType === MessageType.None) {
+				sType = MessageType.Information;
 				jQuery.sap.log.warning("The provided None type is handled and rendered as Information type");
 			}
 
@@ -164,5 +167,4 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Item"],
 		};
 
 		return MessageItem;
-
-	}, /* bExport= */true);
+	});

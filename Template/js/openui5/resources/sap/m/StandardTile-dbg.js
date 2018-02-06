@@ -5,9 +5,20 @@
  */
 
 // Provides control sap.m.StandardTile.
-sap.ui.define(['jquery.sap.global', './Tile', './library', 'sap/ui/core/IconPool'],
-	function(jQuery, Tile, library, IconPool) {
+sap.ui.define(['./Tile', './library', 'sap/ui/core/IconPool', 'sap/ui/core/library', 'sap/ui/Device'],
+	function(Tile, library, IconPool, coreLibrary, Device) {
 	"use strict";
+
+
+
+	// shortcut for sap.m.ImageHelper
+	var ImageHelper = library.ImageHelper;
+
+	// shortcut for sap.m.StandardTileType
+	var StandardTileType = library.StandardTileType;
+
+	// shortcut for sap.ui.core.ValueState
+	var ValueState = coreLibrary.ValueState;
 
 
 
@@ -22,7 +33,7 @@ sap.ui.define(['jquery.sap.global', './Tile', './library', 'sap/ui/core/IconPool
 	 * @extends sap.m.Tile
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -69,12 +80,12 @@ sap.ui.define(['jquery.sap.global', './Tile', './library', 'sap/ui/core/IconPool
 			/**
 			 * Defines the color of the info text. Possible values are Error, Warning, Success and so on.
 			 */
-			infoState : {type : "sap.ui.core.ValueState", group : "Misc", defaultValue : sap.ui.core.ValueState.None},
+			infoState : {type : "sap.ui.core.ValueState", group : "Misc", defaultValue : ValueState.None},
 
 			/**
 			 * Defines the type of the StandardTile.
 			 */
-			type : {type : "sap.m.StandardTileType", group : "Misc", defaultValue : sap.m.StandardTileType.None},
+			type : {type : "sap.m.StandardTileType", group : "Misc", defaultValue : StandardTileType.None},
 
 			/**
 			 * By default, this is set to true but then one or more requests are sent trying to get the density perfect version of image if this version of image doesn't exist on the server.
@@ -126,7 +137,7 @@ sap.ui.define(['jquery.sap.global', './Tile', './library', 'sap/ui/core/IconPool
 	StandardTile.prototype._getImage = function() {
 
 		var sImgId = this.getId() + "-img";
-		var sSize = sap.ui.Device.system.phone ? "1.3rem" : "2rem";
+		var sSize = Device.system.phone ? "1.3rem" : "2rem";
 
 		var mProperties = {
 			src : this.getIcon(),
@@ -137,7 +148,7 @@ sap.ui.define(['jquery.sap.global', './Tile', './library', 'sap/ui/core/IconPool
 			useIconTooltip : false
 		};
 
-		this._oImageControl = sap.m.ImageHelper.getImageControl(sImgId, this._oImageControl, this, mProperties);
+		this._oImageControl = ImageHelper.getImageControl(sImgId, this._oImageControl, this, mProperties);
 
 		return this._oImageControl;
 	};
@@ -145,4 +156,4 @@ sap.ui.define(['jquery.sap.global', './Tile', './library', 'sap/ui/core/IconPool
 
 	return StandardTile;
 
-}, /* bExport= */ true);
+});

@@ -3,8 +3,8 @@
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global'],
-	function(jQuery) {
+sap.ui.define(["sap/ui/core/Element", "sap/ui/Device"],
+	function(Element, Device) {
 		"use strict";
 
 		/**
@@ -93,7 +93,7 @@ sap.ui.define(['jquery.sap.global'],
 		 */
 		SelectListRenderer.renderItem = function(oRm, oList, oItem, mStates) {
 
-			if (!(oItem instanceof sap.ui.core.Element)) {
+			if (!(oItem instanceof Element)) {
 				return;
 			}
 
@@ -133,7 +133,7 @@ sap.ui.define(['jquery.sap.global'],
 					oRm.addClass(CSS_CLASS + "ItemBaseDisabled");
 				}
 
-				if (bEnabled && sap.ui.Device.system.desktop) {
+				if (bEnabled && Device.system.desktop) {
 					oRm.addClass(CSS_CLASS + "ItemBaseHoverable");
 				}
 

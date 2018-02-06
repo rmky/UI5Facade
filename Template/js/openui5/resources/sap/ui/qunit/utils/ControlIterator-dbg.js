@@ -52,7 +52,7 @@ sap.ui.define([ 'jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/base/Object', '
 	 * This module is independent from QUnit, so it could be used for other purposes than unit tests.
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @public
 	 * @since 1.48.0
@@ -71,6 +71,7 @@ sap.ui.define([ 'jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/base/Object', '
 		"sap.ui.core.mvc.TemplateView",
 		"sap.ui.core.mvc.View",
 		"sap.ui.core.tmpl.Template",
+		"sap.ui.commons.Menu",
 		"sap.m.FacetFilterItem",
 		"sap.m.LightBox",
 		"sap.m.Menu",
@@ -90,6 +91,7 @@ sap.ui.define([ 'jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/base/Object', '
 		"sap.ui.richtexteditor.RichTextEditor",
 		"sap.ui.richtexteditor.ToolbarWrapper",
 		"sap.ui.suite.TaskCircle",
+		"sap.ui.table.AnalyticalColumnMenu",
 		"sap.ui.table.ColumnMenu",
 		"sap.ui.unified.Menu",
 		"sap.ui.ux3.ActionBar",
@@ -114,6 +116,7 @@ sap.ui.define([ 'jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/base/Object', '
 		"sap.uiext.inbox.InboxToggleTextView",
 		"sap.uiext.inbox.InboxTaskDetails",
 		"sap.viz.ui5.controls.common.BaseControl",
+		"sap.viz.ui5.controls.VizRangeSlider",
 		"sap.viz.ui5.core.BaseChart",
 		"sap.viz.ui5.controls.VizTooltip"
 	];
@@ -144,7 +147,6 @@ sap.ui.define([ 'jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/base/Object', '
 			"sap.ui.commons.Tab",
 			"sap.ui.comp.transport.TransportDialog",
 			"sap.ui.core.ComponentContainer",
-			"sap.ui.core.FragmentControl",
 			"sap.ui.core.mvc.View",
 			"sap.ui.core.mvc.XMLView",
 			"sap.ui.core.XMLComposite",
@@ -152,6 +154,9 @@ sap.ui.define([ 'jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/base/Object', '
 			"sap.ui.core.mvc.JSONView",
 			"sap.ui.core.mvc.HTMLView",
 			"sap.ui.core.mvc.TemplateView",
+			"sap.ui.mdc.FilterBar", //The control only runs in views with XML pre-processor. The test can't provide this environment
+			"sap.ui.mdc.Table", //The control only runs in views with XML pre-processor. The test can't provide this environment
+			"sap.ui.mdc.Field", //The control only runs in views with XML pre-processor. The test can't provide this environment
 			"sap.makit.Chart",
 			"sap.ui.rta.AddElementsDialog",
 			"sap.ui.rta.ContextMenu"

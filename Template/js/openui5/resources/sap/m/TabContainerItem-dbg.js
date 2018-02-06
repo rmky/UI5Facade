@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.core.Item.
-sap.ui.define(['sap/ui/core/Element', 'sap/ui/core/Control'],
-	function(Element, Control) {
+sap.ui.define(['sap/ui/core/Element'],
+	function(Element) {
 		"use strict";
 
 		/**
@@ -20,7 +20,7 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/core/Control'],
 		 * @extends sap.ui.core.Element
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public

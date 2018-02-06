@@ -25,7 +25,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -436,7 +436,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap
 		var bRendered = !!this.getDomRef();
 		var res = fMod.apply(this, [bRendered]);
 		if (bRendered && oDoIfRendered) {
-			if (oDoIfRendered instanceof sap.ui.unified._ContentRenderer) {
+			if (oDoIfRendered instanceof library._ContentRenderer) {
 				oDoIfRendered.render();
 			} else {
 				oDoIfRendered.apply(this);
@@ -511,7 +511,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap
 
 	ShellLayout.prototype._isHeaderHidingActive = function(){
 		// Not active if no touch, the curtain is open or the hiding is deactivated via API
-		if (ShellLayout._HEADER_ALWAYS_VISIBLE || this.getShowCurtain() || !this.getHeaderHiding() || sap.ui.unified._iNumberOfOpenedShellOverlays > 0 || !this.getHeaderVisible()) {
+		if (ShellLayout._HEADER_ALWAYS_VISIBLE || this.getShowCurtain() || !this.getHeaderHiding() || library._iNumberOfOpenedShellOverlays > 0 || !this.getHeaderVisible()) {
 			return false;
 		}
 		return true;
@@ -591,4 +591,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap
 
 	return ShellLayout;
 
-}, /* bExport= */ true);
+});

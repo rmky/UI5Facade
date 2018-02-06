@@ -5,15 +5,15 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global', "sap/ui/fl/changeHandler/JsControlTreeModifier"
-], function(jQuery, JsControlTreeModifier) {
+	"sap/ui/fl/changeHandler/JsControlTreeModifier"
+], function(JsControlTreeModifier) {
 	"use strict";
 
 	/**
 	 * Change handler for hiding of a control.
 	 * @alias sap.ui.fl.changeHandler.HideControl
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @experimental Since 1.27.0
 	 */
 	var UnhideForm = { };

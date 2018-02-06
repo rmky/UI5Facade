@@ -4,9 +4,16 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport'],
-	function(jQuery, ValueStateSupport) {
+sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
+	function(ValueStateSupport, coreLibrary) {
 	"use strict";
+
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
+
+	// shortcut for sap.ui.core.ValueState
+	var ValueState = coreLibrary.ValueState;
 
 
 	/**
@@ -50,7 +57,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport'],
 
 			/* ARIA region adding the aria-describedby to ObjectStatus */
 
-			if (sState != sap.ui.core.ValueState.None) {
+			if (sState != ValueState.None) {
 				oRm.writeAccessibilityState(oObjStatus, {
 					describedby: {
 						value: oObjStatus.getId() + "sapSRH",
@@ -64,8 +71,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport'],
 			if (oObjStatus.getTitle()) {
 				var bPageRTL = sap.ui.getCore().getConfiguration().getRTL();
 				// if the textDirection is inherit, set the one that the page has for the title
-				if (sTitleDir === sap.ui.core.TextDirection.Inherit) {
-					sTitleDir = bPageRTL ? sap.ui.core.TextDirection.RTL : sap.ui.core.TextDirection.LTR;
+				if (sTitleDir === TextDirection.Inherit) {
+					sTitleDir = bPageRTL ? TextDirection.RTL : TextDirection.LTR;
 				}
 
 				oRm.write("<span");
@@ -96,7 +103,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport'],
 				oRm.writeAttributeEscaped("id", oObjStatus.getId() + "-text");
 				oRm.addClass("sapMObjStatusText");
 
-				if (sTextDir && sTextDir !== sap.ui.core.TextDirection.Inherit) {
+				if (sTextDir && sTextDir !== TextDirection.Inherit) {
 					oRm.writeAttribute("dir", sTextDir.toLowerCase());
 				}
 
@@ -107,7 +114,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport'],
 			}
 
 			/* ARIA adding hidden node in span element */
-			if (sState != sap.ui.core.ValueState.None) {
+			if (sState != ValueState.None) {
 				oRm.write("<span");
 				oRm.writeAttributeEscaped("id", oObjStatus.getId() + "sapSRH");
 				oRm.addClass("sapUiInvisibleText");

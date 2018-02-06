@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.m.FacetFilterItem.
-sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
-	function(jQuery, ListItemBase, library) {
+sap.ui.define(['./ListItemBase', './library'],
+	function(ListItemBase, library) {
 	"use strict";
 
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
 	 * @class
 	 * Represents a value for the {@link sap.m.FacetFilterList} control.
 	 * @extends sap.m.ListItemBase
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -107,4 +107,4 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
 
 	return FacetFilterItem;
 
-}, /* bExport= */ true);
+});

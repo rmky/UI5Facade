@@ -19,7 +19,14 @@
 
 .sapUshellShell {
 	.sapUxAPAnchorBar.sapMTB {
-		background: fade(@sapUiObjectHeaderBackground, 40%);
+		background: fade(@sapUiObjectHeaderBackground, 60%);
+	}
+
+	.sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft,
+	html[dir=rtl] .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight,
+	.sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight,
+	html[dir=rtl] .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
+		background: none;
 	}
 }
 
@@ -42,7 +49,7 @@
 
 .sapUshellShell {
 	.sapUxAPObjectPageHeaderIdentifier {
-		background: fade(@sapUiObjectHeaderBackground, 40%);
+		background: fade(@sapUiObjectHeaderBackground, 60%);
 	}
 }
 /* END "ObjectPageHeader.less" */
@@ -56,10 +63,78 @@
 .sapUshellShell {
 	.sapUxAPObjectPageHeaderContentDesign-Light,
 	.sapUxAPObjectPageHeaderContentDesign-Dark {
-		background: fade(@sapUiObjectHeaderBackground, 40%);
+		background: fade(@sapUiObjectHeaderBackground, 60%);
 	}
 }
 /* END "ObjectPageHeaderContent.less" */
+
+/* START "ObjectPageLayout.less" */
+/* ========================================== */
+/* CSS for control sap.uxap/ObjectPageLayout  */
+/* Belize Plus theme                          */
+/* ========================================== */
+
+
+/* ======================================== */
+/* Title                                    */
+/* ======================================== */
+.sapUxAPObjectPageLayout.sapUxAPObjectPageLayoutTitleClickEnabled:not(.sapUxAPObjectPageLayoutHeaderPinned) .sapFDynamicPageTitle:hover {
+	background-color: darken(@sapUiObjectHeaderBackground, 3);
+}
+
+
+/* ======================================== */
+/* Title and Toggle Header Visual Indicator */
+/* ======================================== */
+.sapUxAPObjectPageLayout {
+  &.sapUxAPObjectPageLayoutTitleClickEnabled:not(.sapUxAPObjectPageLayoutHeaderPinned) {
+    .sapFDynamicPageTitle:hover,
+    &.sapUxAPObjectPageLayoutTitleForceHovered .sapFDynamicPageTitle {
+      background-color: darken(@sapUiObjectHeaderBackground, 3);
+    }
+
+    &.sapUxAPObjectPageLayoutTitleForceHovered {
+      .sapFDynamicPageToggleHeaderIndicator {
+        .sapMBtnInner.sapMBtnHoverable {
+          background-color: darken(@sapUiObjectHeaderBorderColor, 3);
+        }
+      }
+    }
+  }
+
+  // Toggle Header Visual Indicator
+  .sapFDynamicPageToggleHeaderIndicator.sapMBtn {
+
+    // normal state
+    & > .sapMBtnInner {
+      border: none;
+      background-color: @sapUiObjectHeaderBorderColor;
+    }
+
+    // hover state
+    &:hover > .sapMBtnInner.sapMBtnHoverable {
+      background-color: darken(@sapUiObjectHeaderBorderColor, 3);
+    }
+
+    // active state
+    &:focus > .sapMBtnInner.sapMFocusable.sapMBtnActive {
+      background: @sapUiSelected;
+      color: @sapUiButtonActiveBackground;
+    }
+  }
+}
+
+.sapUshellShell {
+  .sapUxAPObjectPageLayout {
+    &.sapUxAPObjectPageLayoutTitleClickEnabled:not(.sapUxAPObjectPageLayoutHeaderPinned) {
+      .sapFDynamicPageTitle:hover,
+      &.sapUxAPObjectPageLayoutTitleForceHovered .sapFDynamicPageTitle {
+        background-color: fade(@sapUiObjectHeaderBackground, 75%);
+      }
+    }
+  }
+}
+/* END "ObjectPageLayout.less" */
 
 /* START "ObjectPageSection.less" */
 /* =========================================== */
@@ -79,3 +154,17 @@
 
 @_sap_uxap_ObjectPageSubSection_BorderColor: darken(@sapUiListBorderColor, 5);
 /* END "ObjectPageSubSection.less" */
+
+/* START "ObjectPageDynamicHeaderContent.less" */
+/* ================================================= */
+/* CSS for control sap.uxap/ObjectPageDynamicHeaderContent  */
+/* Base theme                                        */
+/* ================================================= */
+
+.sapUxAPObjectPageHeaderDetails .sapContrastPlus.sapUxAPObjectPageHeaderDetails > .sapFDynamicPageHeader.sapFDynamicPageHeaderWithContent,
+.sapUxAPObjectPageHeaderDetails .sapContrastPlus.sapFDynamicPageHeader.sapFDynamicPageHeaderWithContent,
+.sapContrastPlus .sapUxAPObjectPageHeaderDetails .sapFDynamicPageHeader.sapFDynamicPageHeaderWithContent{
+    box-shadow: none;
+}
+
+/* END "ObjectPageDynamicHeaderContent.less" */

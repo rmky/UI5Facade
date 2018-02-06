@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/m/semantic/SemanticToggleButton', 'sap/m/semantic/SemanticConfiguration'], function(SemanticToggleButton, SemanticConfiguration) {
+sap.ui.define(['sap/m/semantic/SemanticToggleButton'], function(SemanticToggleButton) {
 	"use strict";
 
 	/**
@@ -19,7 +19,7 @@ sap.ui.define(['sap/m/semantic/SemanticToggleButton', 'sap/m/semantic/SemanticCo
 	 * @extends sap.m.semantic.SemanticToggleButton
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -68,4 +68,4 @@ sap.ui.define(['sap/m/semantic/SemanticToggleButton', 'sap/m/semantic/SemanticCo
 	};
 
 	return MultiSelectAction;
-}, /* bExport= */ true);
+});

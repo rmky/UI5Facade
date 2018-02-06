@@ -82,7 +82,7 @@ sap.ui.define([
 	 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#hasPendingChanges as #hasPendingChanges
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#isInitial as #isInitial
@@ -223,10 +223,13 @@ sap.ui.define([
 	 *
 	 * @param {object} [mParameters]
 	 *   Map of binding parameters, {@link sap.ui.model.odata.v4.ODataModel#constructor}
+	 * @param {sap.ui.model.ChangeReason} [sChangeReason]
+	 *   A change reason, used to distinguish calls by {@link #constructor} from calls by
+	 *   {@link sap.ui.model.odata.v4.ODataParentBinding#changeParameters}
 	 *
 	 * @private
 	 */
-	ODataContextBinding.prototype.applyParameters = function (mParameters) {
+	ODataContextBinding.prototype.applyParameters = function (mParameters, sChangeReason) {
 		var oBindingParameters;
 
 		this.mQueryOptions = this.oModel.buildQueryOptions(mParameters, true);
@@ -238,7 +241,14 @@ sap.ui.define([
 		this.mParameters = mParameters;
 		if (!this.oOperation) {
 			this.fetchCache(this.oContext);
-			this.checkUpdate();
+			if (sChangeReason) {
+				this.refreshInternal(undefined, true);
+			} else {
+				this.checkUpdate();
+			}
+		} else if (this.oOperation.bAction === false) {
+			// Note: sChangeReason ignored here, "filter"/"sort" not suitable for ContextBinding
+			this.execute();
 		}
 	};
 
@@ -352,12 +362,13 @@ sap.ui.define([
 		}
 		this.oModel.bindingDestroyed(this);
 		this.oCachePromise = undefined;
+		this.oContext = undefined;
 		ContextBinding.prototype.destroy.apply(this);
 	};
 
 	/**
-	 * Hook method for {@link ODataBinding#fetchCache} to create a cache for this binding with the
-	 * given resource path and query options.
+	 * Hook method for {@link sap.ui.model.odata.v4.ODataBinding#fetchCache} to create a cache for
+	 * this binding with the given resource path and query options.
 	 *
 	 * @param {string} sResourcePath
 	 *   The resource path, for example "EMPLOYEES('1')"
@@ -369,13 +380,13 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataContextBinding.prototype.doCreateCache = function (sResourcePath, mQueryOptions) {
-		return _Cache.createSingle(this.oModel.oRequestor, sResourcePath,
-			this.fetchType.bind(this), mQueryOptions, this.oModel.bAutoExpandSelect);
+		return _Cache.createSingle(this.oModel.oRequestor, sResourcePath, mQueryOptions,
+			this.oModel.bAutoExpandSelect);
 	};
 
 	/**
-	 * Hook method for {@link ODataBinding#fetchUseOwnCache} to determine the query options for
-	 * this binding.
+	 * Hook method for {@link sap.ui.model.odata.v4.ODataBinding#fetchQueryOptionsForOwnCache} to
+	 * determine the query options for this binding.
 	 *
 	 * @returns {SyncPromise}
 	 *   A promise resolving with the binding's query options
@@ -436,8 +447,8 @@ sap.ui.define([
 			if (that.oOperation.bAction) {
 				// Recreate the cache, because the query options might have changed
 				oCache = _Cache.createSingle(that.oModel.oRequestor,
-					(sPathPrefix + that.sPath).slice(1, -5), that.fetchType.bind(that),
-					mQueryOptions, that.oModel.bAutoExpandSelect, true);
+					(sPathPrefix + that.sPath).slice(1, -5), mQueryOptions,
+					that.oModel.bAutoExpandSelect, true);
 				if (that.bRelative && that.oContext.getBinding) {
 					// do not access @odata.etag directly to avoid "failed to drill-down" in cache
 					// if it is not available
@@ -472,8 +483,8 @@ sap.ui.define([
 				}
 				sOperationPath = (sPathPrefix + that.sPath.replace("...", aParameters.join(',')))
 					.slice(1);
-				oCache = _Cache.createSingle(that.oModel.oRequestor, sOperationPath,
-					that.fetchType.bind(that), mQueryOptions, that.oModel.bAutoExpandSelect);
+				oCache = _Cache.createSingle(that.oModel.oRequestor, sOperationPath, mQueryOptions,
+					that.oModel.bAutoExpandSelect);
 				oPromise = oCache.fetchValue(sGroupId);
 			}
 			that.oCachePromise = _SyncPromise.resolve(oCache);
@@ -510,6 +521,9 @@ sap.ui.define([
 			return createCacheAndRequest(oOperationMetaData, "");
 		}).then(function (oResult) {
 			that._fireChange({reason : ChangeReason.Change});
+			that.oModel.getDependentBindings(that).forEach(function (oDependentBinding) {
+				oDependentBinding.refreshInternal(sGroupId, true);
+			});
 			// do not return anything
 		})["catch"](function (oError) {
 			that.oModel.reportError("Failed to execute " + that.sPath, sClassName, oError);
@@ -583,7 +597,7 @@ sap.ui.define([
 	 * @override
 	 * @see sap.ui.model.odata.v4.ODataBinding#refreshInternal
 	 */
-	ODataContextBinding.prototype.refreshInternal = function (sGroupId) {
+	ODataContextBinding.prototype.refreshInternal = function (sGroupId, bCheckUpdate) {
 		var that = this;
 
 		this.oCachePromise.then(function (oCache) {
@@ -594,21 +608,21 @@ sap.ui.define([
 					that._fireChange({reason : ChangeReason.Refresh});
 				}
 			}
-			if (oCache) {
-				if (!that.oOperation) {
-					that.sRefreshGroupId = sGroupId;
+			if (!that.oOperation) {
+				if (oCache) {
 					that.fetchCache(that.oContext);
+					that.sRefreshGroupId = sGroupId;
 					that.mCacheByContext = undefined;
 					// Do not fire a change event, or else ManagedObject destroys and recreates the
 					// binding hierarchy causing a flood of events
-				} else if (!that.oOperation.bAction) {
-					// ignore returned promise, error handling takes place in execute
-					that.execute(sGroupId);
 				}
+				that.oModel.getDependentBindings(that).forEach(function (oDependentBinding) {
+					oDependentBinding.refreshInternal(sGroupId, bCheckUpdate);
+				});
+			} else if (that.oOperation.bAction === false) {
+				// ignore returned promise, error handling takes place in execute
+				that.execute(sGroupId);
 			}
-			that.oModel.getDependentBindings(that).forEach(function (oDependentBinding) {
-				oDependentBinding.refreshInternal(sGroupId, true);
-			});
 		});
 	};
 
@@ -667,6 +681,7 @@ sap.ui.define([
 			throw new Error("Missing value for parameter: " + sParameterName);
 		}
 		this.oOperation.mParameters[sParameterName] = vValue;
+		this.oOperation.bAction = undefined; // "not yet executed"
 		return this;
 	};
 
@@ -683,4 +698,4 @@ sap.ui.define([
 	};
 
 	return ODataContextBinding;
-}, /* bExport= */ true);
+});

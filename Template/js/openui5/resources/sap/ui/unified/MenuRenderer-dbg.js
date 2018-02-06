@@ -5,8 +5,8 @@
  */
 
 // Provides default renderer for control sap.ui.unified.Menu
-sap.ui.define(['jquery.sap.global'],
-	function(jQuery) {
+sap.ui.define([],
+	function() {
 	"use strict";
 
 
@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global'],
 	 * Menu renderer.
 	 * @author SAP - TD Core UI&AM UI Infra
 	 *
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @namespace
 	 */
 	var MenuRenderer = {

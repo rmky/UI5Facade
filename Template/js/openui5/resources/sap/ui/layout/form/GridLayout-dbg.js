@@ -29,7 +29,7 @@ sap.ui.define(['jquery.sap.global', './FormLayout', './GridContainerData', './Gr
 	 * @extends sap.ui.layout.form.FormLayout
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -119,7 +119,7 @@ sap.ui.define(['jquery.sap.global', './FormLayout', './GridContainerData', './Gr
 			return FormLayout.prototype.findPrevFieldOfElement.apply(this, arguments);
 		}
 
-		if (!oElement.getVisible()) {
+		if (!oElement.isVisible()) {
 			return null;
 		}
 
@@ -154,7 +154,7 @@ sap.ui.define(['jquery.sap.global', './FormLayout', './GridContainerData', './Gr
 		var iCurrentIndex = oContainer.indexOfFormElement(oElement);
 		var oNewDomRef;
 
-		if (oContainer.getVisible()) {
+		if (oContainer.isVisible()) {
 			var aElements = oContainer.getFormElements();
 			var iMax = aElements.length;
 			var i = iCurrentIndex + 1;
@@ -184,7 +184,7 @@ sap.ui.define(['jquery.sap.global', './FormLayout', './GridContainerData', './Gr
 		var iCurrentIndex = oContainer.indexOfFormElement(oElement);
 		var oNewDomRef;
 
-		if (oContainer.getVisible()) {
+		if (oContainer.isVisible()) {
 			var aElements = oContainer.getFormElements();
 			var i = iCurrentIndex - 1;
 			var iLeft = oControl.$().offset().left;
@@ -235,9 +235,8 @@ sap.ui.define(['jquery.sap.global', './FormLayout', './GridContainerData', './Gr
 			var bSingleColumn = this.getSingleColumn();
 			var oContainer = oElement.getParent();
 			var oContainerData = this.getLayoutDataForElement(oContainer, "sap.ui.layout.form.GridContainerData");
-			var that = this;
 
-			if ((bSingleColumn || !oContainerData || !oContainerData.getHalfGrid()) && !this.getRenderer().checkFullSizeElement(that, oElement) ) {
+			if ((bSingleColumn || !oContainerData || !oContainerData.getHalfGrid()) && !this.getRenderer().checkFullSizeElement(this, oElement) ) {
 				return jQuery.sap.domById(oElement.getId());
 			}
 		}
@@ -248,4 +247,4 @@ sap.ui.define(['jquery.sap.global', './FormLayout', './GridContainerData', './Gr
 
 	return GridLayout;
 
-}, /* bExport= */ true);
+});

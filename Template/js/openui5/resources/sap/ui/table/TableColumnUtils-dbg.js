@@ -5,8 +5,8 @@
  */
 
 // Provides helper sap.ui.table.TableUtils.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './library'],
-	function(jQuery, Element, Device, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
+	function(jQuery, Device, library) {
 		"use strict";
 
 		/**
@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './l
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Column...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 * @namespace
 		 * @name sap.ui.table.TableColumnUtils
 		 * @private
@@ -548,7 +548,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './l
 			 * @param {int} iWidth The width in pixel to set the column or column span to. Must be greater than 0.
 			 * @param {boolean} [bFireEvent=true] Whether the ColumnResize event should be fired. The event will be fired for every resized column.
 			 * @param {int} [iColumnSpan=1] The span of columns to resize beginning from <code>iColumnIndex</code>.
-			 * @return {boolean} Returns <code>true</code>, if at least one column has been resized.
+			 * @returns {boolean} Returns <code>true</code>, if at least one column has been resized.
 			 * @private
 			 */
 			resizeColumn: function(oTable, iColumnIndex, iWidth, bFireEvent, iColumnSpan) {

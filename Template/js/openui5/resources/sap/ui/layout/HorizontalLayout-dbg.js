@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.layout.HorizontalLayout.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
-	function(jQuery, Control, library) {
+sap.ui.define(['sap/ui/core/Control', './library'],
+	function(Control, library) {
 	"use strict";
 
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -63,4 +63,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library'],
 
 	return HorizontalLayout;
 
-}, /* bExport= */ true);
+});

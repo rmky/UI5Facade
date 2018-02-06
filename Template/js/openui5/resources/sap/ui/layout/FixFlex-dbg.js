@@ -6,7 +6,7 @@
 
 // Provides control sap.ui.layout.FixFlex.
 sap.ui.define(["jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/EnabledPropagator", "sap/ui/core/ResizeHandler",
-				"./library", 'sap/ui/core/delegate/ScrollEnablement'],
+				"./library", "sap/ui/core/delegate/ScrollEnablement"],
 	function (jQuery, Control, EnabledPropagator,
 				ResizeHandler, library, ScrollEnablement) {
 		"use strict";
@@ -43,7 +43,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/EnabledP
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -90,7 +90,8 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/EnabledP
 					 * Control in the stretching part of the layout.
 					 */
 					flexContent: {type: "sap.ui.core.Control", multiple: false}
-				}
+				},
+				designTime: true
 			}
 		});
 
@@ -340,4 +341,4 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/EnabledP
 
 		return FixFlex;
 
-	}, /* bExport= */ true);
+	});

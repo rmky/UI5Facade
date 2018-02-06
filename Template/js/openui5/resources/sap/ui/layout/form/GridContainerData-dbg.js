@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.layout.form.GridContainerData.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/LayoutData', 'sap/ui/layout/library'],
-	function(jQuery, LayoutData, library) {
+sap.ui.define(['sap/ui/core/LayoutData', 'sap/ui/layout/library'],
+ function(LayoutData, library) {
 	"use strict";
 
 	/**
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/LayoutData', 'sap/ui/layout/lib
 	 * @extends sap.ui.core.LayoutData
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -50,4 +50,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/LayoutData', 'sap/ui/layout/lib
 
 	return GridContainerData;
 
-}, /* bExport= */ true);
+});

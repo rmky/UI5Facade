@@ -10,10 +10,18 @@ sap.ui.define([
 		'sap/ui/core/Control',
 		'sap/ui/core/EnabledPropagator',
 		'./Input',
-		'sap/ui/core/InvisibleText'
+		'sap/ui/core/InvisibleText',
+		'sap/ui/core/library',
+		'sap/ui/core/ResizeHandler'
 	],
-	function(jQuery, library, Control, EnabledPropagator, Input, InvisibleText) {
+	function(jQuery, library, Control, EnabledPropagator, Input, InvisibleText, coreLibrary, ResizeHandler) {
 		"use strict";
+
+		// shortcut for sap.m.touch
+		var touch = library.touch;
+
+		// shortcut for sap.ui.core.TextAlign
+		var TextAlign = coreLibrary.TextAlign;
 
 		/**
 		 * Constructor for a new <code>Slider</code>.
@@ -67,7 +75,7 @@ sap.ui.define([
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -488,10 +496,11 @@ sap.ui.define([
 		};
 
 		Slider.prototype._updateAdvancedTooltipDom = function (sNewValue) {
+
 			var bInputTooltips = this.getInputsAsTooltips(),
 				oTooltipsContainer = this.getDomRef("TooltipsContainer"),
 				oTooltip = bInputTooltips && this._oInputTooltip ?
-					this._oInputTooltip.tooltip : this.getDomRef("Tooltip"),
+					this._oInputTooltip.tooltip : this.getDomRef("LeftTooltip"),
 				sAdjustProperty = sap.ui.getCore().getConfiguration().getRTL() ? "right" : "left";
 
 			if (!bInputTooltips) {
@@ -602,7 +611,7 @@ sap.ui.define([
 				value: this.getMin(),
 				width: this._iLongestRangeTextWidth + (2 * this._CONSTANTS.CHARACTER_WIDTH_PX) /*16 px in paddings for the input*/ + "px",
 				type: "Number",
-				textAlign: sap.ui.core.TextAlign.Center,
+				textAlign: TextAlign.Center,
 				ariaLabelledBy: oAriaLabel
 			});
 
@@ -653,8 +662,6 @@ sap.ui.define([
 
 			this.setValue(newValue);
 
-			oInput.focus();
-
 			this._fireChangeAndLiveChange({value: this.getValue()});
 		};
 
@@ -697,7 +704,7 @@ sap.ui.define([
 			}
 
 			if (this._parentResizeHandler) {
-				sap.ui.core.ResizeHandler.deregister(this._parentResizeHandler);
+				ResizeHandler.deregister(this._parentResizeHandler);
 				this._parentResizeHandler = null;
 			}
 		};
@@ -728,7 +735,7 @@ sap.ui.define([
 			if (this.getInputsAsTooltips() && !this._oInputTooltip) {
 				var oSliderLabel = new InvisibleText({text: this._oResourceBundle.getText("SLIDER_HANDLE")});
 				this._oInputTooltip = {
-					tooltip: this._createInputField("Tooltip", oSliderLabel),
+					tooltip: this._createInputField("LeftTooltip", oSliderLabel),
 					label: oSliderLabel
 				};
 			}
@@ -747,7 +754,7 @@ sap.ui.define([
 
 			if (this.getEnableTickmarks()) {
 				jQuery.sap.delayedCall(0, this, function () {
-					this._parentResizeHandler = sap.ui.core.ResizeHandler.register(this, this._handleTickmarksResponsiveness.bind(this));
+					this._parentResizeHandler = ResizeHandler.register(this, this._handleTickmarksResponsiveness.bind(this));
 				});
 			}
 		};
@@ -777,7 +784,7 @@ sap.ui.define([
 			}
 
 			// only process single touches
-			if (sap.m.touch.countContained(oEvent.touches, this.getId()) > 1 ||
+			if (touch.countContained(oEvent.touches, this.getId()) > 1 ||
 				!this.getEnabled() ||
 
 				// detect which mouse button caused the event and only process the standard click
@@ -870,7 +877,7 @@ sap.ui.define([
 
 			var fMin = this.getMin(),
 				fValue = this.getValue(),
-				oTouch = sap.m.touch.find(oEvent.changedTouches, this._iActiveTouchId),	// find the active touch point
+				oTouch = touch.find(oEvent.changedTouches, this._iActiveTouchId),	// find the active touch point
 				iPageX = oTouch ? oTouch.pageX : oEvent.pageX,
 				fNewValue = (((iPageX - this._fDiffX - this._fSliderOffsetLeft) / this._fSliderWidth) * (this.getMax() - fMin)) +  fMin;
 
@@ -1316,5 +1323,4 @@ sap.ui.define([
 		};
 
 		return Slider;
-
-	}, /* bExport= */ true);
+	});

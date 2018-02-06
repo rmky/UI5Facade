@@ -5,9 +5,14 @@
  */
 
 // Provides control sap.m.Shell.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
-	function(jQuery, library, Control) {
+sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/library', 'sap/m/ShellRenderer'],
+	function(jQuery, library, Control, coreLibrary, ShellRenderer) {
 		"use strict";
+
+
+
+		// shortcut for sap.ui.core.TitleLevel
+		var TitleLevel = coreLibrary.TitleLevel;
 
 
 
@@ -21,7 +26,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 		 * The Shell control can be used as root element of applications. It can contain an App or a <code>SplitApp</code> control.
 		 * The Shell provides some overarching functionality for the overall application and takes care of visual adaptation, such as a frame around the App, on desktop browser platforms.
 		 * @extends sap.ui.core.Control
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -115,7 +120,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 				 * This information is used by assistive technologies, such as screen readers to create a hierarchical site map for faster navigation.
 				 * Depending on this setting an HTML h1-h6 element is used.
 				 */
-				titleLevel : {type : "sap.ui.core.TitleLevel", group : "Appearance", defaultValue : sap.ui.core.TitleLevel.H1}
+				titleLevel : {type : "sap.ui.core.TitleLevel", group : "Appearance", defaultValue : TitleLevel.H1}
 			},
 			defaultAggregation : "app",
 			aggregations : {
@@ -141,7 +146,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 				var $hdr = this.$("hdr");
 				if ($hdr.length) {
 					$hdr.find(".sapMShellLogo").remove(); // remove old logo, if present
-					var html = sap.m.ShellRenderer.getLogoImageHtml(this);
+					var html = ShellRenderer.getLogoImageHtml(this);
 					$hdr.prepend(jQuery(html)); // insert new logo
 				}
 			}, this));
@@ -221,5 +226,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 		};
 
 		return Shell;
-
-	}, /* bExport= */ true);
+	});

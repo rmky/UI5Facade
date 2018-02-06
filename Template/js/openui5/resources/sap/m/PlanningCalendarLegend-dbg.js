@@ -5,9 +5,12 @@
  */
 
 // Provides control sap.m.PlanningCalendarLegend.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/unified/CalendarLegend', './library'],
-	function(jQuery, Control, CalendarLegend, library) {
+sap.ui.define(['sap/ui/unified/CalendarLegend', './library', 'sap/ui/unified/library'],
+	function(CalendarLegend, library, unifiedLibrary) {
 		"use strict";
+
+		// shortcut for sap.ui.unified.StandardCalendarLegendItem
+		var StandardCalendarLegendItem = unifiedLibrary.StandardCalendarLegendItem;
 
 		/**
 		 * Constructor for a new <code>PlanningCalendarLegend</code>.
@@ -22,7 +25,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/unified/Calen
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -82,7 +85,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/unified/Calen
 			if (aValues) {
 				aValues = this.validateProperty("standardItems", aValues);
 				for (i = 0; i < aValues.length; i++) {
-					if (!sap.ui.unified.StandardCalendarLegendItem[aValues[i]]) {
+					if (!StandardCalendarLegendItem[aValues[i]]) {
 						throw new Error("Invalid value '" + aValues[i] + "'. Property standardItems must contain values from sap.ui.unified.StandardCalendarLegendItem.");
 					}
 				}
@@ -94,5 +97,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/unified/Calen
 		};
 
 		return PlanningCalendarLegend;
-
-	}, /* bExport= */ true);
+	});

@@ -5,7 +5,7 @@
  */
 
 // Provides control sap.m.MultiInput.
-sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './library', 'sap/ui/core/EnabledPropagator', 'sap/ui/Device', 'sap/ui/core/InvisibleText'],
+sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './library', 'sap/ui/core/EnabledPropagator', 'sap/ui/Device', 'sap/ui/core/InvisibleText', 'jquery.sap.keycodes'],
 	function (jQuery, Input, Tokenizer, Token, library, EnabledPropagator, Device, InvisibleText) {
 		"use strict";
 
@@ -61,7 +61,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	* @extends sap.m.Input
 	*
 	* @author SAP SE
-	* @version 1.50.8
+	* @version 1.52.5
 	*
 	* @constructor
 	* @public
@@ -413,7 +413,8 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 
 	/**
 	 * Setter for property <code>enableMultiLineMode</code>.
-	 *
+	 * @param {boolean} bMultiLineMode Property value
+	 * @returns Pointer to the control instance for chaining
 	 * @since 1.28
 	 * @public
 	 */
@@ -598,7 +599,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 
 	/**
 	 * Returns the sap.ui.core.ScrollEnablement delegate which is used with this control.
-	 *
+	 * @returns The scroll delegate
 	 * @private
 	 */
 	MultiInput.prototype.getScrollDelegate = function () {
@@ -653,7 +654,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * Function adds a validation callback called before any new token gets added to the tokens aggregation
 	 *
-	 * @param {function} fValidator
+	 * @param {function} fValidator The validation callback
 	 * @public
 	 */
 	MultiInput.prototype.addValidator = function (fValidator) {
@@ -663,7 +664,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * Function removes a validation callback
 	 *
-	 * @param {function} fValidator
+	 * @param {function} fValidator The validation callback to be removed
 	 * @public
 	 */
 	MultiInput.prototype.removeValidator = function (fValidator) {
@@ -711,8 +712,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	 * Function is called on keyboard backspace, if cursor is in front of a token, token gets selected and deleted
 	 *
 	 * @private
-	 * @param {jQuery.Event}
-	 *          oEvent
+	 * @param {jQuery.Event} oEvent The event object
 	 */
 	MultiInput.prototype.onsapbackspace = function (oEvent) {
 		if (this.getCursorPosition() > 0 || !this.getEditable() || this.getValue().length > 0) {
@@ -730,8 +730,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	 * Function is called on delete keyboard input, deletes selected tokens
 	 *
 	 * @private
-	 * @param {jQuery.Event}
-	 *          oEvent
+	 * @param {jQuery.Event} oEvent The event object
 	 */
 	MultiInput.prototype.onsapdelete = function (oEvent) {
 		if (!this.getEditable()) {
@@ -748,8 +747,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * Handle the key down event for Ctrl + A
 	 *
-	 * @param {jQuery.Event}
-	 *            oEvent - the occuring event
+	 * @param {jQuery.Event} oEvent The event object
 	 * @private
 	 */
 	MultiInput.prototype.onkeydown = function (oEvent) {
@@ -785,8 +783,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * Handle the paste event
 	 *
-	 * @param {jQuery.Event}
-	 *            oEvent - the occurring event
+	 * @param {jQuery.Event} oEvent The event object
 	 * @private
 	 */
 	MultiInput.prototype.onpaste = function (oEvent) {
@@ -914,8 +911,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * Handle the backspace button, gives backspace to tokenizer if text cursor was on first character
 	 *
-	 * @param {jQuery.Event}
-	 *            oEvent - the occurring event
+	 * @param {jQuery.Event} oEvent The event object
 	 * @private
 	 */
 	MultiInput.prototype.onsapprevious = function (oEvent) {
@@ -949,8 +945,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * Handle the home button, gives control to tokenizer to move to first token
 	 *
-	 * @param {jQuery.Event}
-	 *            oEvent - the occuring event
+	 * @param {jQuery.Event} oEvent The event object
 	 * @private
 	 */
 	MultiInput.prototype.onsaphome = function (oEvent) {
@@ -962,8 +957,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * Handle the end button, gives control to tokenizer to move to last token
 	 *
-	 * @param {jQuery.Event}
-	 *            oEvent - the occuring event
+	 * @param {jQuery.Event} oEvent The event object
 	 * @private
 	 */
 	MultiInput.prototype.onsapend = function (oEvent) {
@@ -977,8 +971,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	 * Function is called on keyboard enter, if possible, adds entered text as new token
 	 *
 	 * @private
-	 * @param {jQuery.Event}
-	 *          oEvent
+	 * @param {jQuery.Event} oEvent The event object
 	 */
 	MultiInput.prototype.onsapenter = function (oEvent) {
 		if (Input.prototype.onsapenter) {
@@ -1005,7 +998,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 
 	/**
 	 * Checks whether the MultiInput or one of its internal DOM elements has the focus.
-	 *
+	 * @returns {boolean} True if the input or its children elements have focus
 	 * @private
 	 */
 	MultiInput.prototype._checkFocus = function () {
@@ -1015,8 +1008,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * Event handler called when control is losing the focus, checks if token validation is necessary
 	 *
-	 * @param {jQuery.Event}
-	 *            oEvent
+	 * @param {jQuery.Event} oEvent The event object
 	 * @private
 	 */
 	MultiInput.prototype.onsapfocusleave = function (oEvent) {
@@ -1092,7 +1084,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * When tap on text field, deselect all tokens
 	 * @public
-	 * @param {jQuery.Event} oEvent
+	 * @param {jQuery.Event} oEvent The event object
 	 */
 	MultiInput.prototype.ontap = function (oEvent) {
 
@@ -1119,7 +1111,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * Focus is on MultiInput
 	 * @public
-	 * @param {jQuery.Event} oEvent
+	 * @param {jQuery.Event} oEvent The event object
 	 */
 	MultiInput.prototype.onfocusin = function (oEvent) {
 		this._bValueHelpOpen = false; //This means the ValueHelp is closed and the focus is back. So, reset that var
@@ -1138,7 +1130,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * When press ESC, deselect all tokens and all texts
 	 * @public
-	 * @param {jQuery.Event} oEvent
+	 * @param {jQuery.Event} oEvent The event object
 	 */
 	MultiInput.prototype.onsapescape = function (oEvent) {
 
@@ -1152,7 +1144,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 
 	/**
 	 * Function tries to turn current text into a token
-	 *
+	 * @param {boolean} bExactMatch Whether an exact match should happen
 	 * @private
 	 */
 	MultiInput.prototype._validateCurrentText = function (bExactMatch) {
@@ -1223,7 +1215,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	 * Functions returns the current input field's cursor position
 	 *
 	 * @private
-	 * @return {int} the cursor position
+	 * @return {int} The cursor position
 	 */
 	MultiInput.prototype.getCursorPosition = function () {
 		return this._$input.cursorPos();
@@ -1250,7 +1242,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 
 	/**
 	 * Functions returns true if the suggestion popup is currently open
-	 *
+	 * @returns {boolean} Whether the suggestion popup is open
 	 * @private
 	 */
 	MultiInput.prototype._getIsSuggestionPopupOpen = function () {
@@ -1283,15 +1275,11 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	 * Function returns an item which's text starts with the given text within the given items array
 	 *
 	 * @private
-	 * @param {string}
-	 *          sText
-	 * @param {array}
-	 *          aItems
-	 * @param {boolean}
-	 *          bExactMatch
-	 * @param {function}
-	 *          fGetText - function to extract text from a single item
-	 * @return {object} a found item or null
+	 * @param {string} sText The given starting text
+	 * @param {array} aItems The item array
+	 * @param {boolean} bExactMatch Whether the match should be exact
+	 * @param {function} fGetText Function to extract text from a single item
+	 * @return {object} A found item or null
 	 */
 	MultiInput.prototype._findItem = function (sText, aItems, bExactMatch, fGetText) {
 		if (!sText) {
@@ -1327,11 +1315,9 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	 * Function searches for an item with the given text within the suggestion items
 	 *
 	 * @private
-	 * @param {string}
-	 *          sText
-	 * @param {boolean}
-	 *          bExactMatch - if true, only items will be returned which exactly matches the text
-	 * @return {sap.ui.core.Item} a found item or null
+	 * @param {string} sText The search text
+	 * @param {boolean} bExactMatch If true, only items will be returned which exactly matches the text
+	 * @return {sap.ui.core.Item} A found item or null
 	 */
 	MultiInput.prototype._getSuggestionItem = function (sText, bExactMatch) {
 		var items = null;
@@ -1448,8 +1434,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	 * Function returns domref which acts as reference point for the opening suggestion menu
 	 *
 	 * @public
-	 * @returns {domRef}
-	 *          the domref at which to open the suggestion menu
+	 * @returns {domRef} The domref at which to open the suggestion menu
 	 */
 	MultiInput.prototype.getPopupAnchorDomRef = function () {
 		return this.getDomRef("border");
@@ -1458,8 +1443,7 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	/**
 	 * Function sets an array of tokens, existing tokens will get overridden
 	 *
-	 * @param {sap.m.Token[]}
-	 *          aTokens - the new token set
+	 * @param {sap.m.Token[]} aTokens The new token set
 	 * @public
 	 * @returns {sap.m.MultiInput} Pointer to the control instance for chaining
 	 */
@@ -1500,6 +1484,14 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 	 */
 	MultiInput.prototype.getDomRefForValueStateMessage = MultiInput.prototype.getPopupAnchorDomRef;
 
+	/**
+	 * Updates the inner input field.
+	 *
+	 * @protected
+	 */
+	MultiInput.prototype.updateInputField = function() {
+		Input.prototype.updateInputField.call(this, '');
+	};
 
 	/**
 	 * @see sap.ui.core.Control#getAccessibilityInfo
@@ -1519,4 +1511,4 @@ sap.ui.define(['jquery.sap.global', './Input', './Tokenizer', './Token', './libr
 
 	return MultiInput;
 
-}, /* bExport= */ true);
+});

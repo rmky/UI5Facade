@@ -13,7 +13,9 @@ sap.ui.define([
 	'sap/ui/dt/OverlayRegistry',
 	'sap/ui/dt/Overlay',
 	'sap/ui/fl/Utils',
-	'sap/ui/core/Component'
+	'sap/ui/core/Component',
+	'sap/ui/core/ComponentContainer',
+	'sap/ui/core/Element'
 ],
 function (
 	jQuery,
@@ -25,20 +27,22 @@ function (
 	OverlayRegistry,
 	Overlay,
 	flUtils,
-	Component
+	Component,
+	ComponentContainer,
+	Element
 ) {
 	"use strict";
 
 	var FOCUS_EVENT_NAMES = {
-		"add": "_addFocusEventListeners",
-		"remove": "_removeFocusEventListeners"
+		"add": "_activateFocusHandle",
+		"remove": "_deactivateFocusHandle"
 	};
 
 	/**
 	 * Constructor for a new sap.ui.rta.util.PopupManager
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -50,6 +54,13 @@ function (
 		metadata : {
 			properties : {
 				rta:  "any"
+			},
+			associations : {
+				/**
+				 * To set the associated controls as an autoCloseArea for all sap.m.Popover/sap.m.Dialog open in RTA mode.
+				 * Needs to be filled before the popup is open.
+				 */
+				autoCloseAreas : {type : "sap.ui.core.Control", multiple : true, singularName : "autoCloseArea"}
 			},
 			events : {
 				open: {
@@ -89,7 +100,7 @@ function (
 	/**
 	 * Retrieve relevant open popups for dynamic overlay creation.
 	 *
-	 * @returns {Object} relevant open popups
+	 * @returns {any} Returns open popups
 	 * @public
 	 */
 	PopupManager.prototype.getRelevantPopups = function() {
@@ -109,24 +120,16 @@ function (
 	};
 
 	/**
-	 * Retrieve array of validated popups after component comparision - this.oRtaRootAppComponent.oContainer.getParent()
+	 * Retrieves array of validated popups after component comparison: <code>this.oRtaRootAppComponent.oContainer.getParent()</code>.
 	 *
-	 * @param {array} specifying open popups
-	 * @returns {array|boolean} relevant popups or false
+	 * @param {sap.ui.core.Popup[]} aOpenPopups Specifies open popups
+	 * @returns {sap.ui.core.Popup[]|boolean} Returns relevant popups or false
 	 * @private
 	 */
 	PopupManager.prototype._getValidatedPopups = function(aOpenPopups) {
-		aOpenPopups.forEach(function(oPopup, iIndex) {
-			if (
-				!this._isSupportedPopup(oPopup)
-				|| (
-					this.oRtaRootAppComponent !== this._getAppComponentForControl(oPopup)
-					&& !this._isComponentInsidePopup(oPopup)
-				)
-			) {
-				aOpenPopups.splice(iIndex, 1);
-			}
-		}.bind(this));
+		aOpenPopups = aOpenPopups.filter(function(oPopup) {
+				return this._isPopupAdaptable(oPopup);
+			}.bind(this));
 
 		return (aOpenPopups.length > 0) ? aOpenPopups : false;
 	};
@@ -140,12 +143,14 @@ function (
 	 */
 	PopupManager.prototype._isComponentInsidePopup = function(oPopup) {
 		//check if root RTA component is directly inside a popupElement
-		return oPopup.getContent().some(
-			function(oContent) {
-				if (oContent instanceof sap.ui.core.ComponentContainer) {
-					return this.oRtaRootAppComponent === this._getAppComponentForControl(sap.ui.getCore().getComponent(oContent.getComponent()));
-				}
-			}.bind(this));
+		return jQuery.isArray(oPopup.getContent())
+			? oPopup.getContent().some(
+				function(oContent) {
+					if (oContent instanceof ComponentContainer) {
+						return this.oRtaRootAppComponent === this._getAppComponentForControl(sap.ui.getCore().getComponent(oContent.getComponent()));
+					}
+				}.bind(this))
+			: false;
 	};
 
 	/**
@@ -180,8 +185,7 @@ function (
 
 	/**
 	 * Attached to RTA mode change
-	 *
-	 * @private
+	 * @param  {sap.ui.base.Event} oEvent The Event triggered by the mode change
 	 */
 	PopupManager.prototype._onModeChange = function(oEvent) {
 		var sFocusEvent, sNewMode = oEvent.getParameters().mode;
@@ -200,8 +204,8 @@ function (
 	};
 
 	/**
-	 * Apply focus events to all open popups and give focus to the first
-	 *
+	 * Apply focus events to all open popups and set focus on the first.
+	 * @param {function} fnFocusEvent Function to apply to open popups
 	 * @private
 	 */
 	PopupManager.prototype._applyFocusEventsToOpenPopups = function(fnFocusEvent) {
@@ -209,8 +213,8 @@ function (
 	};
 
 	/**
-	 * Remove focus events from all open popups
-	 *
+	 * Remove focus events from all open popups.
+	 * @param {function} fnFocusEvent Function to apply to open popups
 	 * @private
 	 */
 	PopupManager.prototype._removeFocusEventsFromOpenPopups = function(fnFocusEvent) {
@@ -218,9 +222,9 @@ function (
 	};
 
 	/**
-	 * Return the popup focus event name
+	 * Return the popup focus event name.
 	 *
-	 * @param {string} operation name
+	 * @param {string} sOperation Operation name
 	 * @returns {string} focus event name
 	 * @private
 	 */
@@ -229,11 +233,12 @@ function (
 	};
 
 	/**
-	 * Overrides the AddDialogInstance/AddPopoverInstance for Instance Manager for dynamic overlay creation
+	 * Overrides the AddDialogInstance/AddPopoverInstance for Instance Manager for dynamic overlay creation.
 	 *
 	 * @private
 	 */
 	PopupManager.prototype._overrideAddPopupInstance = function() {
+
 		//Dialog
 		this._fnOriginalAddDialogInstance = InstanceManager.addDialogInstance;
 		InstanceManager.addDialogInstance = this._overrideAddFunctions(this._fnOriginalAddDialogInstance);
@@ -244,7 +249,7 @@ function (
 	};
 
 	/**
-	 * Returns overridden function for AddDialogInstance/AddPopoverInstance of Instance Manager
+	 * Returns overridden function for AddDialogInstance/AddPopoverInstance of Instance Manager.
 	 *
 	 * @param {function} fnOriginalFunction original InstanceManager function
 	 * @returns {function} overridden function
@@ -253,11 +258,8 @@ function (
 	PopupManager.prototype._overrideAddFunctions = function(fnOriginalFunction) {
 		return function(oPopupElement) {
 			var vOriginalReturn = fnOriginalFunction.apply(InstanceManager, arguments);
-			if (
-				this.getRta()._oDesignTime
-				&&  this.oRtaRootAppComponent === this._getAppComponentForControl(oPopupElement)
-				&&  this._isSupportedPopup(oPopupElement)
-			) {
+			if ( this._isPopupAdaptable(oPopupElement)
+				&& this.getRta()._oDesignTime ) {
 				oPopupElement.attachAfterOpen(this._createPopupOverlays, this);
 				//PopupManager internal method
 				this.fireOpen(oPopupElement);
@@ -267,9 +269,10 @@ function (
 	};
 
 	/**
-	 * Applies the passed function to the relevant open popups
+	 * Applies the passed function to the relevant open popups.
 	 *
 	 * @param {function} fnPopupMethod specifies function to be applied
+	 * @param {boolean} bFocus Set to true if the popup is in focus
 	 * @private
 	 */
 	PopupManager.prototype._applyPopupMethods = function(fnPopupMethod, bFocus) {
@@ -302,7 +305,9 @@ function (
 		var aAutoCloseAreas = [
 			oPopup.oContent.getDomRef(),
 			oOverlayContainer
-		];
+		].concat(
+			this.getAutoCloseAreas()
+		);
 
 		if (this.getRta().getShowToolbars()) {
 			aAutoCloseAreas.push(this.getRta().getToolbar().getDomRef());
@@ -353,11 +358,8 @@ function (
 		return function(oPopupElement) {
 			var vOriginalReturn = fnOriginalFunction.apply(InstanceManager, arguments);
 
-			if (
-				this.getRta()._oDesignTime
-				&& this.oRtaRootAppComponent === this._getAppComponentForControl(oPopupElement)
-				&& this._isSupportedPopup(oPopupElement)
-			) {
+			if ( this._isPopupAdaptable(oPopupElement)
+				&& this.getRta()._oDesignTime ) {
 				this.getRta()._oDesignTime.removeRootElement(oPopupElement);
 				//PopupManager internal method
 				this.fireClose(oPopupElement);
@@ -376,7 +378,7 @@ function (
 	PopupManager.prototype._getAppComponentForControl = function(oControl) {
 		var oComponent, oAppComponent;
 
-		if (oControl instanceof sap.ui.core.Component) {
+		if (oControl instanceof Component) {
 			oComponent = oControl;
 		} else {
 			oComponent = this._getComponentForControl(oControl);
@@ -396,22 +398,25 @@ function (
 	 * @private
 	 */
 	PopupManager.prototype._getComponentForControl = function(oControl) {
-		var oComponent;
-
+		var oComponent, oRootComponent, oParentControl;
 		if (oControl) {
 			oComponent = Component.getOwnerComponentFor(oControl);
-
 			if (
 				!oComponent
 				&& typeof oControl.getParent === "function"
-				&& !(oControl.getParent() instanceof sap.ui.core.UIArea)
+				&& oControl.getParent() instanceof Element
 			) {
-				oControl = oControl.getParent();
-				oComponent = this._getComponentForControl(oControl);
+				oParentControl = oControl.getParent();
+			} else if (oComponent) {
+				oParentControl = oComponent;
+			}
+
+			if (oParentControl) {
+				oRootComponent = this._getComponentForControl(oParentControl);
 			}
 		}
 
-		return oComponent;
+		return oRootComponent ? oRootComponent : oComponent;
 	};
 
 	/**
@@ -424,7 +429,7 @@ function (
 		if (!oEvent) {
 			return;
 		}
-		var oPopupElement = (oEvent instanceof sap.ui.core.Control) ? oEvent : oEvent.getSource();
+		var oPopupElement = (oEvent instanceof Element) ? oEvent : oEvent.getSource();
 
 		//when application is opened in a popup, rootElement should not be added more than once
 		if (
@@ -462,12 +467,12 @@ function (
 			InstanceManager.removePopoverInstance = this._fnOriginalRemovePopoverInstance;
 		}
 
-		this._applyPopupMethods(this._removePopupPatch);
+		this._applyFocusEventsToOpenPopups(this._removePopupPatch);
 	};
 
 	/**
-	 * Restore default popup settings and give focus
-	 * @param {sap.ui.core.Control} oControl popup element to remove custom and add default browser events
+	 * Restore default popup settings and give focus.
+	 * @param {sap.ui.core.Control} oPopupElement Popup element to remove custom browser events and add default browser events
 	 *
 	 * @private
 	 */
@@ -477,6 +482,13 @@ function (
 		if (this.fnOriginalPopupOnAfterRendering) {
 			oPopup.onAfterRendering = this.fnOriginalPopupOnAfterRendering;
 		}
+	};
+
+	PopupManager.prototype._isPopupAdaptable = function(oPopupElement) {
+		var oPopupAppComponent = this._getAppComponentForControl(oPopupElement);
+
+		return (this.oRtaRootAppComponent === oPopupAppComponent || this._isComponentInsidePopup(oPopupElement))
+			&& this._isSupportedPopup(oPopupElement);
 	};
 
 	/**

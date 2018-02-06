@@ -5,9 +5,17 @@
  */
 
 // Provides class sap.ui.dt.plugin.ElementMover.
-sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/OverlayUtil',
-		'sap/ui/dt/OverlayRegistry'], function(ManagedObject, ElementUtil, OverlayUtil,
-		OverlayRegistry) {
+sap.ui.define([
+	'sap/ui/base/ManagedObject',
+	'sap/ui/dt/ElementUtil',
+	'sap/ui/dt/OverlayUtil',
+	'sap/ui/dt/OverlayRegistry'
+], function
+(	ManagedObject,
+	ElementUtil,
+	OverlayUtil,
+	OverlayRegistry
+) {
 	"use strict";
 
 	/**
@@ -20,7 +28,7 @@ sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/
 	 * @class The ElementMover enables movement of UI5 elements based on aggregation types, which can be used by drag and
 	 *        drop or cut and paste behavior.
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -123,12 +131,23 @@ sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/
 	/**
 	 * @protected
 	 */
-	ElementMover.prototype.checkTargetZone = function(oAggregationOverlay) {
-		if (!oAggregationOverlay.$().is(":visible")) {
+	ElementMover.prototype.checkTargetZone = function(oAggregationOverlay, oOverlay, bOverlayNotInDom) {
+		var oMovedOverlay = oOverlay ? oOverlay : this.getMovedOverlay();
+		var oGeometry = oAggregationOverlay.getGeometry();
+		var bGeometryVisible = oGeometry && oGeometry.size.height > 0 && oGeometry.size.width > 0;
+
+		// this function can get called on overlay registration, when there are no overlays in dom yet. In this case, $().is(":visible") is always false.
+		if ((bOverlayNotInDom && !bGeometryVisible)
+			|| !bOverlayNotInDom && !oAggregationOverlay.$().is(":visible")
+			|| !(oAggregationOverlay.getElementInstance().getVisible && oAggregationOverlay.getElementInstance().getVisible())) {
 			return false;
 		}
 		var oParentElement = oAggregationOverlay.getElementInstance();
-		var oMovedElement = this.getMovedOverlay().getElementInstance();
+		// an aggregation can still have visible = true even if it has been removed from its parent
+		if (!oParentElement.getParent()){
+			return false;
+		}
+		var oMovedElement = oMovedOverlay.getElementInstance();
 		var sAggregationName = oAggregationOverlay.getAggregationName();
 
 		if (ElementUtil.isValidForAggregation(oParentElement, sAggregationName, oMovedElement)) {

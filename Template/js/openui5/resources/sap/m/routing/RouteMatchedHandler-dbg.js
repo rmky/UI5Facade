@@ -3,8 +3,8 @@
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/routing/History', 'sap/ui/core/routing/Router', './TargetHandler', './Router'],
-	function(jQuery, BaseObject, History, Router, TargetHandler, MobileRouter) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './TargetHandler', './Router'],
+	function(jQuery, BaseObject, TargetHandler, MobileRouter) {
 	"use strict";
 
 
@@ -190,4 +190,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/routing/H
 
 	return RouteMatchedHandler;
 
-}, /* bExport= */ true);
+});

@@ -6,10 +6,9 @@
 
 // Provides control sap.m.MaskInput.
 sap.ui.define([
-	'jquery.sap.global',
 	'./InputBase',
 	'./MaskEnabler'
-], function (jQuery, InputBase, MaskEnabler) {
+], function(InputBase, MaskEnabler) {
 	"use strict";
 
 
@@ -25,7 +24,7 @@ sap.ui.define([
 	 *
 	 * @author SAP SE
 	 * @extends sap.m.InputBase
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -70,4 +69,4 @@ sap.ui.define([
 
 	return MaskInput;
 
-}, /* bExport= */ true);
+});

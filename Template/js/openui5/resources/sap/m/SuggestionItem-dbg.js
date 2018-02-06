@@ -5,8 +5,8 @@
  */
 
 // Provides element sap.m.SuggestionItem.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item', 'sap/ui/core/IconPool'],
-	function(jQuery, library, Item, IconPool) {
+sap.ui.define(['./library', 'sap/ui/core/Item', 'sap/ui/core/IconPool'],
+	function(library, Item, IconPool) {
 	"use strict";
 
 	/**
@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item', 'sap/ui/cor
 	 * @extends sap.ui.core.Item
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @since 1.34
 	 *
 	 * @constructor
@@ -140,4 +140,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item', 'sap/ui/cor
 
 	return SuggestionItem;
 
-}, /* bExport= */ true);
+});

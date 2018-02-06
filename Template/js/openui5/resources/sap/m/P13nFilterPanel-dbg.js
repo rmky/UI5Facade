@@ -6,9 +6,12 @@
 
 // Provides control sap.m.P13nFilterPanel.
 sap.ui.define([
-	'jquery.sap.global', './P13nConditionPanel', './P13nPanel', './library', 'sap/ui/core/Control'
-], function(jQuery, P13nConditionPanel, P13nPanel, library, Control) {
+	'jquery.sap.global', './P13nConditionPanel', './P13nPanel', './library'
+], function(jQuery, P13nConditionPanel, P13nPanel, library) {
 	"use strict";
+
+	// shortcut for sap.m.P13nPanelType
+	var P13nPanelType = library.P13nPanelType;
 
 	/**
 	 * Constructor for a new P13nFilterPanel.
@@ -17,7 +20,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The P13nFilterPanel control is used to define filter-specific settings for table personalization.
 	 * @extends sap.m.P13nPanel
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -366,7 +369,7 @@ sap.ui.define([
 	};
 
 	P13nFilterPanel.prototype.init = function() {
-		this.setType(sap.m.P13nPanelType.filter);
+		this.setType(P13nPanelType.filter);
 		this.setTitle(sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("FILTERPANEL_TITLE"));
 
 		sap.ui.getCore().loadLibrary("sap.ui.layout");
@@ -402,6 +405,11 @@ sap.ui.define([
 			this.setIncludeOperations([
 				sap.m.P13nConditionOperation.EQ, sap.m.P13nConditionOperation.BT, sap.m.P13nConditionOperation.LT, sap.m.P13nConditionOperation.LE, sap.m.P13nConditionOperation.GT, sap.m.P13nConditionOperation.GE
 			], "time");
+		}
+		if (!this._aIncludeOperations["datetime"]) {
+			this.setIncludeOperations([
+				sap.m.P13nConditionOperation.EQ, sap.m.P13nConditionOperation.BT, sap.m.P13nConditionOperation.LT, sap.m.P13nConditionOperation.LE, sap.m.P13nConditionOperation.GT, sap.m.P13nConditionOperation.GE
+			], "datetime");
 		}
 		if (!this._aIncludeOperations["numeric"]) {
 			this.setIncludeOperations([
@@ -515,6 +523,7 @@ sap.ui.define([
 					tooltip: fGetValueOfProperty("tooltip", oContext, oItem_),
 					maxLength: fGetValueOfProperty("maxLength", oContext, oItem_),
 					type: fGetValueOfProperty("type", oContext, oItem_),
+					formatSettings: fGetValueOfProperty("formatSettings", oContext, oItem_),
 					precision: fGetValueOfProperty("precision", oContext, oItem_),
 					scale: fGetValueOfProperty("scale", oContext, oItem_),
 					isDefault: fGetValueOfProperty("isDefault", oContext, oItem_),
@@ -663,14 +672,14 @@ sap.ui.define([
 				return iConditionIndex < 0;
 			}, this);
 
-// that.getFilterItems().forEach(function(oItem, i) {
-// window.console.log(i+ " Items: " + oItem.getValue1());
-// }, this);
-//
-// var oData = that.getModel().getData();
-// oData.persistentData.filter.filterItems.forEach(function(oItem, i) {
-// window.console.log(i+ " model: " + oItem.value1);
-// });
+	// that.getFilterItems().forEach(function(oItem, i) {
+	// window.console.log(i+ " Items: " + oItem.getValue1());
+	// }, this);
+	//
+	// var oData = that.getModel().getData();
+	// oData.persistentData.filter.filterItems.forEach(function(oItem, i) {
+	// window.console.log(i+ " model: " + oItem.value1);
+	// });
 
 			if (sOperation === "update") {
 				oFilterItem = that.getFilterItems()[iIndex];
@@ -697,10 +706,10 @@ sap.ui.define([
 					key: sKey,
 					columnKey: oNewData.keyField,
 					exclude: oNewData.exclude,
-					operation: oNewData.operation,
-					value1: oNewData.value1,
-					value2: oNewData.value2
+					operation: oNewData.operation
 				});
+				oFilterItem.setValue1(oNewData.value1);
+				oFilterItem.setValue2(oNewData.value2);
 				that._bIgnoreBindCalls = true;
 				that.fireAddFilterItem({
 					key: sKey,
@@ -720,14 +729,14 @@ sap.ui.define([
 				that._notifyChange();
 			}
 
-// that.getFilterItems().forEach(function(oItem, i) {
-// window.console.log(i+ " Items: " + oItem.getValue1());
-// }, this);
-//
-// var oData = that.getModel().getData();
-// oData.persistentData.filter.filterItems.forEach(function(oItem, i) {
-// window.console.log(i+ " model: " + oItem.value1);
-// });
+	// that.getFilterItems().forEach(function(oItem, i) {
+	// window.console.log(i+ " Items: " + oItem.getValue1());
+	// }, this);
+	//
+	// var oData = that.getModel().getData();
+	// oData.persistentData.filter.filterItems.forEach(function(oItem, i) {
+	// window.console.log(i+ " model: " + oItem.value1);
+	// });
 
 		};
 	};
@@ -741,4 +750,4 @@ sap.ui.define([
 
 	return P13nFilterPanel;
 
-}, /* bExport= */true);
+});

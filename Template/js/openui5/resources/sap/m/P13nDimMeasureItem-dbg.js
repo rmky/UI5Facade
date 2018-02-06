@@ -5,8 +5,8 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global', './library', 'sap/ui/core/Item'
-], function(jQuery, library, Item) {
+	'./library', 'sap/ui/core/Item'
+], function(library, Item) {
 	"use strict";
 
 	/**
@@ -16,7 +16,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class Type for <code>columnsItems</code> aggregation in <code>P13nDimMeasurePanel</code> control.
 	 * @extends sap.ui.core.Item
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @author SAP SE
 	 * @public
@@ -65,4 +65,4 @@ sap.ui.define([
 
 	return P13nDimMeasureItem;
 
-}, /* bExport= */true);
+});

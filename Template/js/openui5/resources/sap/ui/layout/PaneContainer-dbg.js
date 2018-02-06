@@ -5,9 +5,12 @@
  */
 
 // Provides control sap.ui.layout.PaneContainer.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element', './Splitter', './AssociativeSplitter'],
-	function(jQuery, library, Element, Splitter, AssociativeSplitter) {
+sap.ui.define(['./library', 'sap/ui/core/Element', './AssociativeSplitter', 'sap/ui/core/library'],
+	function(library, Element, AssociativeSplitter, coreLibrary) {
 	"use strict";
+
+	// shortcut for sap.ui.core.Orientation
+	var Orientation = coreLibrary.Orientation;
 
 	/**
 	 * Constructor for a new PaneContainer.
@@ -22,7 +25,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element', './Split
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -35,7 +38,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element', './Split
 			/**
 			 The orientation of the Splitter
 			 */
-			orientation : { type : "sap.ui.core.Orientation", group : "Behavior", defaultValue : sap.ui.core.Orientation.Horizontal }
+			orientation : { type : "sap.ui.core.Orientation", group : "Behavior", defaultValue : Orientation.Horizontal }
 		},
 		defaultAggregation : "panes",
 		aggregations : {
@@ -141,4 +144,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element', './Split
 
 	return PaneContainer;
 
-}, /* bExport= */ true);
+});

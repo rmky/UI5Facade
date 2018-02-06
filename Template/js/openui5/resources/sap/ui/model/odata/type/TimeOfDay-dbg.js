@@ -86,20 +86,25 @@ sap.ui.define([
 	 *   integer values between 0 and 12 are valid.
 	 */
 	function setConstraints(oType, oConstraints) {
-		var vNullable = oConstraints && oConstraints.nullable,
-			vPrecision = oConstraints && oConstraints.precision;
+		var vNullable,
+			vPrecision;
 
 		oType.oConstraints = undefined;
-		if (vNullable === false) {
-			oType.oConstraints = {nullable : false};
-		} else if (vNullable !== undefined && vNullable !== true) {
-			jQuery.sap.log.warning("Illegal nullable: " + vNullable, null, oType.getName());
-		}
-		if (vPrecision === Math.floor(vPrecision) && vPrecision > 0 && vPrecision <= 12) {
-			oType.oConstraints = oType.oConstraints || {};
-			oType.oConstraints.precision = vPrecision;
-		} else if (vPrecision !== undefined && vPrecision !== 0) {
-			jQuery.sap.log.warning("Illegal precision: " + vPrecision, null, oType.getName());
+		if (oConstraints) {
+			vNullable = oConstraints.nullable;
+			vPrecision = oConstraints.precision;
+			// "true" and "false" not allowed here, because in V4 they are never sent as string
+			if (vNullable === false) {
+				oType.oConstraints = {nullable : false};
+			} else if (vNullable !== undefined && vNullable !== true) {
+				jQuery.sap.log.warning("Illegal nullable: " + vNullable, null, oType.getName());
+			}
+			if (vPrecision === Math.floor(vPrecision) && vPrecision > 0 && vPrecision <= 12) {
+				oType.oConstraints = oType.oConstraints || {};
+				oType.oConstraints.precision = vPrecision;
+			} else if (vPrecision !== undefined && vPrecision !== 0) {
+				jQuery.sap.log.warning("Illegal precision: " + vPrecision, null, oType.getName());
+			}
 		}
 	}
 
@@ -127,7 +132,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 */
 	var TimeOfDay = ODataType.extend("sap.ui.model.odata.type.TimeOfDay", {
 			constructor : function (oFormatOptions, oConstraints) {

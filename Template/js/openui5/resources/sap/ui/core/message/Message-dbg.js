@@ -22,9 +22,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './MessageProcessor'],
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
-	 * @constructor
 	 *
 	 * @param {object} [mParameters] (optional) a map which contains the following parameter properties:
 	 * @param {string} [mParameters.id] The message id: will be defaulted if no id is set

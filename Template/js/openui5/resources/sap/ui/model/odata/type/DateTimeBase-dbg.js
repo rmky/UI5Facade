@@ -72,23 +72,16 @@ sap.ui.define([
 	 *   Constraints, see {@link #constructor}
 	 */
 	function setConstraints(oType, oConstraints) {
-		var iPrecision;
+		var vNullable,
+			iPrecision;
 
 		oType.oConstraints = undefined;
 		if (oConstraints) {
-			switch (oConstraints.nullable) {
-			case undefined:
-			case true:
-			case "true":
-				break;
-			case false:
-			case "false":
-				oType.oConstraints = oType.oConstraints || {};
-				oType.oConstraints.nullable = false;
-				break;
-			default:
-				jQuery.sap.log.warning("Illegal nullable: " + oConstraints.nullable, null,
-					oType.getName());
+			vNullable = oConstraints.nullable;
+			if (vNullable === false || vNullable === "false") {
+				oType.oConstraints = {nullable : false};
+			} else if (vNullable !== undefined && vNullable !== true && vNullable !== "true") {
+				jQuery.sap.log.warning("Illegal nullable: " + vNullable, null, oType.getName());
 			}
 
 			if (oConstraints.isDateOnly === true) {
@@ -136,7 +129,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 * @public
 	 * @since 1.27.0
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 */
 	var DateTimeBase = ODataType.extend("sap.ui.model.odata.type.DateTimeBase", {
 			constructor : function (oFormatOptions, oConstraints) {
@@ -164,7 +157,8 @@ sap.ui.define([
 	 *   The formatted output value in the target type; <code>undefined</code> or <code>null</code>
 	 *   are formatted to <code>null</code>
 	 * @throws {sap.ui.model.FormatException}
-	 *   If <code>sTargetType</code> is not supported
+	 *   If <code>sTargetType</code> is not supported or <code>oValue</code> is not a model value
+	 *   for this type.
 	 *
 	 * @public
 	 * @since 1.27.0
@@ -177,6 +171,9 @@ sap.ui.define([
 		case "any":
 			return oValue;
 		case "string":
+			if (!(oValue instanceof Date)) {
+				throw new FormatException("Illegal " + this.getName() + " value: " + oValue);
+			}
 			return getFormatter(this).format(oValue);
 		default:
 			throw new FormatException("Don't know how to format " + this.getName() + " to "

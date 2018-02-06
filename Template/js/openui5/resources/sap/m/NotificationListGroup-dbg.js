@@ -4,10 +4,15 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './NotificationListBase', 'sap/ui/core/InvisibleText', './ListItemBase'],
-	function (jQuery, library, Control, NotificationListBase, InvisibleText, ListItemBase) {
-
+sap.ui.define(['jquery.sap.global', './library', './NotificationListBase', 'sap/ui/core/InvisibleText', './ListItemBase', 'sap/ui/core/IconPool', 'sap/ui/core/library', 'sap/ui/Device', 'sap/m/Button', 'jquery.sap.keycodes'],
+	function(jQuery, library, NotificationListBase, InvisibleText, ListItemBase, IconPool, coreLibrary, Device, Button) {
 	'use strict';
+
+	// shortcut for sap.ui.core.Priority
+	var Priority = coreLibrary.Priority;
+
+	// shortcut for sap.m.ButtonType
+	var ButtonType = library.ButtonType;
 
 	/**
 	 * Constructor for a new NotificationListGroup.
@@ -27,7 +32,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	 * @extends sap.m.NotificationListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -90,8 +95,15 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 		}
 	});
 
+	/**
+	 * Sets up the initial values of the control.
+	 *
+	 * @name sap.m.NotificationListGroup.init
+	 * @method
+	 * @protected
+	 */
 	NotificationListGroup.prototype.init = function () {
-		sap.m.NotificationListBase.prototype.init.call(this);
+		NotificationListBase.prototype.init.call(this);
 
 		var resourceBundle = sap.ui.getCore().getLibraryResourceBundle('sap.m');
 		this._closeText = resourceBundle.getText('NOTIFICATION_LIST_BASE_CLOSE');
@@ -100,9 +112,9 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 		 * @type {sap.m.Button}
 		 * @private
 		 */
-		var _closeButton = new sap.m.Button(this.getId() + '-closeButton', {
-			type: sap.m.ButtonType.Transparent,
-			icon: sap.ui.core.IconPool.getIconURI('decline'),
+		var _closeButton = new Button(this.getId() + '-closeButton', {
+			type: ButtonType.Transparent,
+			icon: IconPool.getIconURI('decline'),
 			tooltip: this._closeText,
 			press: function () {
 				this.close();
@@ -115,8 +127,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 		 * @type {sap.m.Button}
 		 * @private
 		 */
-		var _collapseButton = new sap.m.Button({
-			type: sap.m.ButtonType.Transparent,
+		var _collapseButton = new Button({
+			type: ButtonType.Transparent,
 			press: function () {
 				this.setCollapsed(!this.getCollapsed());
 			}.bind(this)
@@ -139,6 +151,16 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	// Overwritten setters and getters
 	//================================================================================
 
+	/**
+	 * Overwrites the setter for collapsed property.
+	 *
+	 * @override
+	 * @name sap.m.NotificationListGroup.setCollapsed
+	 * @method
+	 * @public
+	 * @param {boolean} Collapsed Collapsed indicator.
+	 * @returns {sap.m.NotificationListGroup} this NotificationListGroup reference for chaining.
+	 */
 	NotificationListGroup.prototype.setCollapsed = function (collapsed) {
 		this._toggleCollapsed();
 		//Setter overwritten to suppress invalidation
@@ -149,6 +171,16 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 		return this;
 	};
 
+
+	/**
+	 * Overrides the getter for priority property.
+	 *
+	 * @override
+	 * @name sap.m.notificationGroup.getPriority
+	 * @method
+	 * @public
+	 * @returns {sap.ui.core.Priority} Items by priority.
+	 */
 	NotificationListGroup.prototype.getPriority = function () {
 		//If the autoPriority flag is off then return what has been set by the developer
 		if (!this.getAutoPriority()) {
@@ -159,7 +191,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 		var notifications = this.getAggregation('items');
 
 		/** @type {sap.ui.core.Priority|string} */
-		var priority = sap.ui.core.Priority.None;
+		var priority = Priority.None;
 
 		if (notifications) {
 			notifications.forEach(function (item) {
@@ -172,6 +204,15 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 		return priority;
 	};
 
+	/**
+	 * Overwrites the getter for unread property.
+	 *
+	 * @override
+	 * @name sap.m.NotificationListGroup.getUnread
+	 * @method
+	 * @public
+	 * @returns {boolean} Unread items.
+	 */
 	NotificationListGroup.prototype.getUnread = function () {
 		/** @type {sap.m.NotificationListItem[]} */
 		var notifications = this.getItems();
@@ -188,13 +229,21 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	// Control methods
 	//================================================================================
 
+	/**
+	 * Overwrites the onBeforeRendering.
+	 *
+	 * @overwrites
+	 * @name sap.m.NotificationListGroup.onBeforeRendering
+	 * @method
+	 * @public
+	 */
 	NotificationListGroup.prototype.onBeforeRendering = function() {
 		/** @type {sap.m.NotificationListItem[]} */
 		var notifications = this.getItems();
 		var notificationsCount = notifications.length;
 		var collapseButton = this.getAggregation('_collapseButton');
 
-		this._maxNumberOfNotifications = sap.ui.Device.system.desktop ? 400 : 100;
+		this._maxNumberOfNotifications = Device.system.desktop ? 400 : 100;
 		collapseButton.setEnabled(this._getCollapseButtonEnabled(), true);
 		this._maxNumberReached = notificationsCount > this._maxNumberOfNotifications;
 
@@ -220,12 +269,15 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 
 	/**
 	 * Returns the sap.m.Title control used in the NotificationListGroup's title.
-	 * @returns {sap.m.Text} The hidden title control aggregation used in the group title
+	 *
+	 * @name sap.m.NotificationListGroup._getHeaderTitle
+	 * @method
 	 * @private
+	 * @returns {sap.m.Text} The hidden title control aggregation used in the group title.
 	 */
 	NotificationListGroup.prototype._getHeaderTitle = function () {
 		/** @type {sap.m.Text} */
-		var title = sap.m.NotificationListBase.prototype._getHeaderTitle.call(this);
+		var title = NotificationListBase.prototype._getHeaderTitle.call(this);
 		title.addStyleClass('sapMNLG-Title');
 
 		if (this.getUnread()) {
@@ -237,12 +289,15 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 
 	/**
 	 * Returns the sap.m.Text control used in the NotificationListGroup's datetime.
-	 * @returns {sap.m.Text} The hidden text control aggregation used in the group's timestamp
+	 *
+	 * @name sap.m.NotificationListGroup._getDateTimeText
+	 * @method
 	 * @private
+	 * @returns {sap.m.Text} The hidden text control aggregation used in the group's timestamp.
 	 */
 	NotificationListGroup.prototype._getDateTimeText = function () {
 		/** @type {sap.m.Text} */
-		var dateTime = sap.m.NotificationListBase.prototype._getDateTimeText.call(this);
+		var dateTime = NotificationListBase.prototype._getDateTimeText.call(this);
 		dateTime.setTextAlign('End');
 
 		return dateTime;
@@ -254,6 +309,9 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 
 	/**
 	 * Toggles the NotificationListGroup state between collapsed/expanded.
+	 *
+	 * @name sap.m.NotificationListGroup._toggleCollapsed
+	 * @method
 	 * @private
 	 */
 	NotificationListGroup.prototype._toggleCollapsed = function () {
@@ -266,9 +324,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	};
 
 	/**
-	 * Gets the number of visible NotificationListItems inside the group
-	 * @returns {number} The number of visible notifications
+	 * Gets the number of visible NotificationListItems inside the group.
+	 *
+	 * @name sap.m.NotificationListGroup._getVisibleItemsCount
+	 * @method
 	 * @private
+	 * @returns {number} The number of visible notifications.
 	 */
 	NotificationListGroup.prototype._getVisibleItemsCount = function () {
 		/** @type {sap.m.NotificationListItem[]} */
@@ -285,9 +346,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	};
 
 	/**
-	 * Gets what the state (enabled/disabled) of the collapse button should be
-	 * @returns {boolean} Should the collapse button be enabled
+	 * Gets what the state (enabled/disabled) of the collapse button should be.
+	 *
+	 * @name sap.m.NotificationListGroup._getCollapseButtonEnabled
+	 * @method
 	 * @private
+	 * @returns {boolean} Should the collapse button be enabled.
 	 */
 	NotificationListGroup.prototype._getCollapseButtonEnabled = function () {
 		if (this._getVisibleItemsCount() > 0) {
@@ -298,9 +362,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	};
 
 	/**
-	 * Focus handles for the NotificationListGroup's items
-	 * @param {jQuery.Event} event The passed event object
+	 * Focus handler for the NotificationListGroup's items.
+	 *
+	 * @name sap.m.NotificationListGroup._notificationFocusHandler
+	 * @method
 	 * @private
+	 * @param {jQuery.Event} event The passed event object.
 	 */
 	NotificationListGroup.prototype._notificationFocusHandler = function (event) {
 		ListItemBase.prototype.onfocusin.call(this, event);
@@ -319,9 +386,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	};
 
 	/**
-	 * Event handler for keypressed
-	 * @param {jQuery.Event} event The passed event object
+	 * Event handler for keypressed.
+	 *
+	 * @name sap.m.NotificationListGroup._notificationNavigationHandler
+	 * @method
 	 * @private
+	 * @param {jQuery.Event} event The passed event object.
 	 */
 	NotificationListGroup.prototype._notificationNavigationHandler = function (event) {
 		ListItemBase.prototype.onkeydown.call(this, event);
@@ -357,7 +427,10 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	};
 
 	/**
-	 * Updates all the text needed for accessibility
+	 * Updates all the text needed for accessibility.
+	 *
+	 * @name sap.m.NotificationListGroup._updateAccessibilityInfo
+	 * @method
 	 * @private
 	 */
 	NotificationListGroup.prototype._updateAccessibilityInfo = function() {
@@ -378,9 +451,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	};
 
 	/**
-	 * Updates the Collapse/Expand text according to the new passed state
-	 * @param {boolean} collapsed The new collapsed state
+	 * Updates the collapse/expand text according to the new passed state.
+	 *
+	 * @name sap.m.NotificationListGroup._updateCollapseButtonText
+	 * @method
 	 * @private
+	 * @param {boolean} collapsed The new collapsed state.
 	 */
 	NotificationListGroup.prototype._updateCollapseButtonText = function(collapsed) {
 		var collapseButtonText = collapsed ? this._resourceBundle.getText('NOTIFICATION_LIST_GROUP_EXPAND') :
@@ -391,10 +467,13 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 
 	/**
 	 * Compares two priorities and returns the higher one.
-	 * @param {sap.ui.core.Priority} firstPriority First priority string to be compared
-	 * @param {sap.ui.core.Priority} secondPriority Second priority string to be compared
-	 * @returns {sap.ui.core.Priority} The highest priority
+	 *
+	 * @name comparePriority
+	 * @function
 	 * @private
+	 * @param {sap.ui.core.Priority} firstPriority First priority string to be compared.
+	 * @param {sap.ui.core.Priority} secondPriority Second priority string to be compared.
+	 * @returns {sap.ui.core.Priority} The highest priority.
 	 */
 	function comparePriority(firstPriority, secondPriority) {
 		if (firstPriority == secondPriority) {
@@ -417,4 +496,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Notif
 	}
 
 	return NotificationListGroup;
-}, /* bExport= */ true);
+});

@@ -5,11 +5,10 @@
  */
 
 sap.ui.define([
-		'jquery.sap.global',
 		'./library',
 		'sap/ui/core/Element'
 	],
-	function (jQuery, library, Element) {
+	function (library, Element) {
 		"use strict";
 
 		/**
@@ -34,7 +33,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Element
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -206,4 +205,4 @@ sap.ui.define([
 		};
 
 		return Scale;
-	}, true);
+	});

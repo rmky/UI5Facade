@@ -36,10 +36,9 @@ sap.ui.define(['./ExportType'],
 	 * @extends sap.ui.core.util.ExportType
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @since 1.22.0
 	 *
-	 * @constructor
 	 * @public
 	 * @alias sap.ui.core.util.ExportTypeCSV
 	 */

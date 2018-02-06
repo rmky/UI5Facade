@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.unified.MenuItemBase.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
-	function(jQuery, Element, library) {
+sap.ui.define(['sap/ui/core/Element', './library'],
+	function(Element, library) {
 	"use strict";
 
 
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -155,4 +155,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 
 	return MenuItemBase;
 
-}, /* bExport= */ true);
+});

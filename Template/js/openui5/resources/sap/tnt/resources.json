@@ -18,6 +18,9 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/delegate/ItemNavigation.js"
+			],
+			"condRequired": [
+				"sap/tnt/NavigationListItem.js"
 			]
 		},
 		{
@@ -34,6 +37,9 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/delegate/ItemNavigation.js"
+			],
+			"condRequired": [
+				"sap/tnt/NavigationListItem.js"
 			]
 		},
 		{

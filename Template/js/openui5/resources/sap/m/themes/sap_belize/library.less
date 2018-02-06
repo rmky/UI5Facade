@@ -1045,6 +1045,12 @@ html.sap-desktop .sapMITBItem:focus.sapMITBAll {
 	}
 }
 
+html.sap-desktop .sapMITBItem:focus.sapMITBAll {
+	&::after {
+		bottom: 1.75rem;
+	}
+}
+
 html[data-sap-ui-browser^="ie"].sap-desktop .sapMITBItem:focus .sapMITBFilterIcon,
 html[data-sap-ui-browser^="ed"].sap-desktop .sapMITBItem:focus .sapMITBFilterIcon,
 html[data-sap-ui-browser^="ie"].sap-desktop .sapMITBTextOnly .sapMITBItem:focus .sapMITBText,
@@ -1152,6 +1158,12 @@ div.sapMInputSuggestionPopup {
 		right: 3px;
 		bottom: 3px;
 	}
+}
+html[data-sap-ui-browser^="ie"].sap-desktop,
+html[data-sap-ui-browser^="ed"].sap-desktop {
+  .sapMFocus .sapMInputDivWrapper:not(.sapMInputBaseDisabledInner)::before {
+    border: 1px dashed @sapUiContentFocusColor;
+  }
 }
 /* END "InputBase.less" */
 
@@ -1369,18 +1381,6 @@ div.sapMComboBoxBasePicker .sapMComboBoxBasePickerValueState {
 	text-shadow: @_sap_m_ListItemBase_ListTextShadowColor;
 }
 
-.sapMListBGTransparent .sapMLIB:not(.sapMLIBActive):not(.sapMLIBSelected):not(:hover) {
-	background: fade(@sapUiListBackground, 0);
-}
-
-.sapMListBGTranslucent .sapMLIB:not(.sapMLIBActive):not(.sapMLIBSelected):not(:hover) {
-	background: @sapUiListBackground;
-}
-
-.sapMListBGSolid .sapMLIB:not(.sapMLIBActive):not(.sapMLIBSelected):not(:hover) {
-	background: @sapUiListBackground;
-}
-
 .sapMLIBActive.sapMLIBFocusable:focus {
 	outline-color: @sapUiContentContrastFocusColor;
 }
@@ -1490,10 +1490,18 @@ div.sapMComboBoxBasePicker .sapMComboBoxBasePickerValueState {
 	z-index: 2;
 }
 
-.sapMMultiInput.sapMInputBaseWarning .sapMMultiInputBorder,
-.sapMMultiInput.sapMInputBaseError .sapMMultiInputBorder,
-.sapMMultiInput.sapMInputBaseSuccess .sapMMultiInputBorder {
-	border-width: 2px;
+.sapMMultiInput.sapMInputBaseState {
+	.sapMMultiInputBorder {
+		border-width: 2px;
+	}
+
+	.sapMInputValHelpInner {
+		line-height: 2.275rem
+	}
+}
+
+.sapUiSizeCompact .sapMMultiInput.sapMInputBaseState .sapMInputValHelpInner {
+	line-height: 1.4rem
 }
 /* END "MultiInput.less" */
 
@@ -2095,20 +2103,8 @@ html.sap-desktop .sapMQuickViewPage .sapUiIcon:focus {
 @_sap_m_RatingIndicator_IconUnselectedColor: darken(@sapUiContentForegroundColor, 30);
 @_sap_m_RatingIndicator_IconHoverColor: darken(@sapUiAccent1, 5);
 
-.sapMRIIconSel {
-	color: @sapUiAccent1;
-}
-
-.sapMRIIconUnsel  {
-    color: @_sap_m_RatingIndicator_IconUnselectedColor;
-}
-
 .sapMRIDisabled {
     opacity: 0.5;
-}
-
-.sapMRIIconHov {
-	color: @_sap_m_RatingIndicator_IconHoverColor;
 }
 
 /* Custom focus outline */
@@ -2210,7 +2206,6 @@ html.sap-desktop .sapMScrollContVH::-webkit-scrollbar {
 /* ==============================================*/
 
 .sapMSegB {
-	height: 2.5rem;
 	vertical-align: top;
 	position: relative;
 	.sapMSegBBtn {
@@ -2242,11 +2237,6 @@ html.sap-desktop .sapMScrollContVH::-webkit-scrollbar {
 .sapMSegBBtn:last-child {
 	border-top-right-radius: 0.2rem;
 	border-bottom-right-radius: 0.2rem;
-}
-
-// Adding margin to be displayed correct in sap.m.Bar
-.sapMBar .sapMSegB {
-	margin: 0.250rem 0;
 }
 
 html.sap-desktop .sapMSegBBtnFocusable:hover {
@@ -2335,10 +2325,6 @@ html.sap-desktop .sapMSegBBtnFocusable.sapMBtnActive:hover {
 
 /* Compact size */
 .sapUiSizeCompact {
-	.sapMSegB {
-		height: 1.625rem;
-	}
-
 	.sapMSegBBtn {
 		height: 1.625rem;
 		line-height: 1.5rem;
@@ -2501,6 +2487,11 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 /* selected */
 .sapMSelectListItemBaseSelected {
 	background: @sapUiListSelectionBackgroundColor;
+}
+
+.sapMSltPicker {
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
 }
 
 .sapMSltPicker-CTX .sapMSelectListItemBaseSelected,
@@ -2689,10 +2680,6 @@ html.sap-desktop .sapMST .sapMGT:active .sapMGTFocusDiv:after {
 
 .sapMSLIInfo {
 	text-shadow: @_sap_m_StandardListItem_TextShadowColor;
-}
-
-.sapMLIBSelected.sapMLIBHoverable .sapMSLIDescription {
-	color: @_sap_m_StandardListItem_SelectedLabelColor;
 }
 /* END "StandardListItem.less" */
 

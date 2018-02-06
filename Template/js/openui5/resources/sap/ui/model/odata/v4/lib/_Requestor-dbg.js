@@ -64,22 +64,29 @@ sap.ui.define([
 	 *   Map of default headers; may be overridden with request-specific headers; certain
 	 *   predefined OData V4 headers are added by default, but may be overridden
 	 * @param {object} [mQueryParams={}]
-	 *   A map of query parameters as described in {@link _Helper.buildQuery}; used only to
-	 *   request the CSRF token
-	 * @param {function} fnFetchEntityContainer
+	 *   A map of query parameters as described in
+	 *   {@link sap.ui.model.odata.v4.lib._Helper.buildQuery}; used only to request the CSRF token
+	 * @param {object} oModelInterface
+	 *   A interface allowing to call back to the owning model
+	 * @param {function} oModelInterface.fnFetchEntityContainer
 	 *   A promise which is resolved with the $metadata "JSON" object as soon as the entity
 	 *   container is fully available, or rejected with an error.
-	 * @param {function (string)} [fnOnCreateGroup]
+	 * @param {function} oModelInterface.fnFetchMetadata
+	 *   A function that returns a _SyncPromise which resolves with the metadata instance for a
+	 *   given absolute model path (it is automatically converted to a metapath)
+	 * @param {function} oModelInterface.fnGetGroupProperty
+	 *   A function called with parameters <code>sGroupId</code> and <code>sPropertyName</code>
+	 *   returning the property value in question. Only 'submit' is supported for <code>
+	 *   sPropertyName</code>. Supported property values are: 'API', 'Auto' and 'Direct'.
+	 * @param {function (string)} [oModelInterface.fnOnCreateGroup]
 	 *   A callback function that is called with the group name as parameter when the first
 	 *   request is added to a group
 	 * @private
 	 */
-	function Requestor(sServiceUrl, mHeaders, mQueryParams, fnFetchEntityContainer,
-			fnOnCreateGroup) {
+	function Requestor(sServiceUrl, mHeaders, mQueryParams, oModelInterface) {
 		this.mBatchQueue = {};
-		this.fnFetchEntityContainer = fnFetchEntityContainer;
 		this.mHeaders = mHeaders || {};
-		this.fnOnCreateGroup = fnOnCreateGroup;
+		this.oModelInterface = oModelInterface;
 		this.sQueryParams = _Helper.buildQuery(mQueryParams); // Used for $batch and CSRF token only
 		this.mRunningChangeRequests = {};
 		this.oSecurityTokenPromise = null; // be nice to Chrome v8
@@ -152,6 +159,8 @@ sap.ui.define([
 	 * options, all other OData system query options are rejected; with
 	 * <code>bDropSystemQueryOptions</code> they are dropped altogether.
 	 *
+	 * @param {string} sResourcePath
+	 *   The resource path (allows metadata access, but does not become part of the result)
 	 * @param {object} mQueryOptions
 	 *   A map of key-value pairs representing the query string
 	 * @param {boolean} [bDropSystemQueryOptions=false]
@@ -180,10 +189,11 @@ sap.ui.define([
 	 *		"sap-client" : "003"
 	 *	}
 	 */
-	Requestor.prototype.buildQueryString = function (mQueryOptions, bDropSystemQueryOptions,
-			bSortExpandSelect) {
+	Requestor.prototype.buildQueryString = function (sResourcePath, mQueryOptions,
+			bDropSystemQueryOptions, bSortExpandSelect) {
 		return _Helper.buildQuery(
-			this.convertQueryOptions(mQueryOptions, bDropSystemQueryOptions, bSortExpandSelect));
+			this.convertQueryOptions(sResourcePath, mQueryOptions, bDropSystemQueryOptions,
+				bSortExpandSelect));
 	};
 
 	/**
@@ -317,9 +327,12 @@ sap.ui.define([
 			bSortExpandSelect) {
 		var aExpandOptions = [];
 
-		this.doConvertSystemQueryOptions(vExpandOptions, function (sOptionName, vOptionValue) {
-			aExpandOptions.push(sOptionName + '=' + vOptionValue);
-		}, undefined, bSortExpandSelect);
+		// We do not pass a resource path, but within V4 this doesn't matter
+		this.doConvertSystemQueryOptions(undefined, vExpandOptions,
+			function (sOptionName, vOptionValue) {
+				aExpandOptions.push(sOptionName + '=' + vOptionValue);
+			},
+			undefined, bSortExpandSelect);
 		return aExpandOptions.length ? sExpandPath + "(" + aExpandOptions.join(";") + ")"
 			: sExpandPath;
 	};
@@ -329,6 +342,8 @@ sap.ui.define([
 	 * strings, so that the result can be used for _Helper.buildQuery; with
 	 * <code>bDropSystemQueryOptions</code> they are dropped altogether.
 	 *
+	 * @param {string} sResourcePath
+	 *   The resource path (allows metadata access, but does not become part of the result)
 	 * @param {object} mQueryOptions The query options
 	 * @param {boolean} [bDropSystemQueryOptions=false]
 	 *   Whether all system query options are dropped (useful for non-GET requests)
@@ -336,14 +351,14 @@ sap.ui.define([
 	 *   Whether the paths in $expand and $select shall be sorted in the query string
 	 * @returns {object} The converted query options
 	 */
-	Requestor.prototype.convertQueryOptions = function (mQueryOptions, bDropSystemQueryOptions,
-			 bSortExpandSelect) {
+	Requestor.prototype.convertQueryOptions = function (sResourcePath, mQueryOptions,
+			bDropSystemQueryOptions, bSortExpandSelect) {
 		var mConvertedQueryOptions = {};
 
 		if (!mQueryOptions) {
 			return undefined;
 		}
-		this.doConvertSystemQueryOptions(mQueryOptions, function (sKey, vValue) {
+		this.doConvertSystemQueryOptions(sResourcePath, mQueryOptions, function (sKey, vValue) {
 			mConvertedQueryOptions[sKey] = vValue;
 		}, bDropSystemQueryOptions, bSortExpandSelect);
 		return mConvertedQueryOptions;
@@ -354,6 +369,8 @@ sap.ui.define([
 	 * other parameters are simply passed through.
 	 * May be overwritten for other OData service versions.
 	 *
+	 * @param {string} sResourcePath
+	 *   The resource path (allows metadata access, but does not become part of the result)
 	 * @param {object} mQueryOptions The query options
 	 * @param {function(string,any)} fnResultHandler
 	 *   The function to process the converted options getting the name and the value
@@ -362,8 +379,8 @@ sap.ui.define([
 	 * @param {boolean} [bSortExpandSelect=false]
 	 *   Whether the paths in $expand and $select shall be sorted in the query string
 	 */
-	Requestor.prototype.doConvertSystemQueryOptions = function (mQueryOptions, fnResultHandler,
-			bDropSystemQueryOptions, bSortExpandSelect) {
+	Requestor.prototype.doConvertSystemQueryOptions = function (sResourcePath, mQueryOptions,
+			fnResultHandler, bDropSystemQueryOptions, bSortExpandSelect) {
 		var that = this;
 
 		Object.keys(mQueryOptions).forEach(function (sKey) {
@@ -396,11 +413,31 @@ sap.ui.define([
 	 *
 	 * @param {object} oResponsePayload
 	 *   The OData response payload
-	 * @returns {_SyncPromise}
-	 *   A promise resolving with the OData V4 response payload
+	 * @returns {object}
+	 *   The OData V4 response payload
 	 */
-	Requestor.prototype.doFetchV4Response = function (oResponsePayload) {
-		return _SyncPromise.resolve(oResponsePayload);
+	Requestor.prototype.doConvertResponse = function (oResponsePayload) {
+		return oResponsePayload;
+	};
+
+	/**
+	 * Fetches the type of the given model path from the metadata.
+	 *
+	 * @param {string} sPath
+	 *   The resource path, e.g. SalesOrderList('4711')/SO_2_BP
+	 * @param {boolean} [bAsName]
+	 *   If <code>true</code>, the name of the type is delivered instead of the type itself. This
+	 *   must be used when asking for a property type to avoid that the function logs an error
+	 *   because there are no objects for primitive types like "Edm.Stream".
+	 * @returns {SyncPromise}
+	 *   A promise that is resolved with the type of the object at the given path or its name.
+	 */
+	Requestor.prototype.fetchTypeForPath = function (sPath, bAsName) {
+		sPath = "/" + sPath + "/";
+		if (bAsName) {
+			sPath += "$Type";
+		}
+		return this.oModelInterface.fnFetchMetadata(sPath);
 	};
 
 	/**
@@ -421,6 +458,19 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns the submit mode for the given group Id.
+	 *
+	 * @param {string} sGroupId
+	 *   The group Id
+	 * @returns {string} 'API'|'Auto'|'Direct'
+	 *
+	 * @private
+	 */
+	Requestor.prototype.getGroupSubmitMode = function (sGroupId) {
+		return this.oModelInterface.fnGetGroupProperty(sGroupId, "submit");
+	};
+
+	/**
 	 * Returns the key predicate (see "4.3.1 Canonical URL") for the given entity type metadata
 	 * and entity instance runtime data.
 	 *
@@ -428,8 +478,6 @@ sap.ui.define([
 	 *   Entity type metadata
 	 * @param {object} oEntityInstance
 	 *   Entity instance runtime data
-	 * @param {boolean} [bIgnoreMissingKey=false]
-	 *   Do not throw an exception if a key property does not have a value
 	 * @returns {string}
 	 *   The key predicate, e.g. "(Sector='DevOps',ID='42')" or "('42')" or undefined if one
 	 *   key property is undefined
@@ -482,6 +530,16 @@ sap.ui.define([
 			}
 		}
 		return Object.keys(this.mRunningChangeRequests).length > 0;
+	};
+
+	/**
+	 * Returns a sync promise that is resolved when the requestor is ready to be used. The V4
+	 * requestor is ready immediately. Subclasses may behave differently.
+	 *
+	 * @returns {_SyncPromise} A sync promise that is resolved immediately with no result
+	 */
+	Requestor.prototype.ready = function () {
+		return _SyncPromise.resolve();
 	};
 
 	/**
@@ -619,14 +677,14 @@ sap.ui.define([
 			oBatchRequest = _Batch.serializeBatchRequest(_Requestor.cleanBatch(oPayload));
 			sPayload = oBatchRequest.body;
 		} else {
-			if (sGroupId !== "$direct") {
+			if (this.getGroupSubmitMode(sGroupId) !== "Direct") {
 				oPromise = new Promise(function (fnResolve, fnReject) {
 					var aRequests = that.mBatchQueue[sGroupId];
 
 					if (!aRequests) {
 						aRequests = that.mBatchQueue[sGroupId] = [[/*empty change set*/]];
-						if (that.fnOnCreateGroup) {
-							that.fnOnCreateGroup(sGroupId);
+						if (that.oModelInterface.fnOnCreateGroup) {
+							that.oModelInterface.fnOnCreateGroup(sGroupId);
 						}
 					}
 					oRequest = {
@@ -677,7 +735,11 @@ sap.ui.define([
 					fnResolve(_Batch.deserializeBatchResponse(
 						jqXHR.getResponseHeader("Content-Type"), oPayload));
 				} else {
-					that.doFetchV4Response(oPayload).then(fnResolve, fnReject);
+					try {
+						fnResolve(that.doConvertResponse(oPayload));
+					} catch (oError) {
+						fnReject(oError);
+					}
 				}
 			}, function (jqXHR, sTextStatus, sErrorMessage) {
 				var sCsrfToken = jqXHR.getResponseHeader("X-CSRF-Token");
@@ -802,7 +864,11 @@ sap.ui.define([
 					reject(oCause, vRequest);
 				} else if (vResponse.responseText) {
 					oResponse = JSON.parse(vResponse.responseText);
-					that.doFetchV4Response(oResponse).then(vRequest.$resolve, vRequest.$reject);
+					try {
+						vRequest.$resolve(that.doConvertResponse(oResponse));
+					} catch (oErr) {
+						vRequest.$reject(oErr);
+					}
 				} else {
 					vRequest.$resolve();
 				}
@@ -972,12 +1038,22 @@ sap.ui.define([
 		 *   "application/json;charset=UTF-8;IEEE754Compatible=true" for OData V4 or
 		 *   "application/json;charset=UTF-8" for OData V2.
 		 * @param {object} mQueryParams
-		 *   A map of query parameters as described in {@link _Helper.buildQuery}; used only to
-		 *   request the CSRF token
-		 * @param {function} fnFetchEntityContainer
-		 *   A function that returns a _SyncPromise which resolves with the metadata entity
-		 *   container
-		 * @param {function (string)} [fnOnCreateGroup]
+		 *   A map of query parameters as described in
+		 *   {@link sap.ui.model.odata.v4.lib._Helper.buildQuery}; used only to request the CSRF
+		 *   token
+		 * @param {object} oModelInterface
+		 *   A interface allowing to call back to the owning model
+		 * @param {function} oModelInterface.fnFetchEntityContainer
+		 *   A promise which is resolved with the $metadata "JSON" object as soon as the entity
+		 *   container is fully available, or rejected with an error.
+		 * @param {function} oModelInterface.fnFetchMetadata
+		 *   A function that returns a _SyncPromise which resolves with the metadata instance for a
+		 *   given absolute model path (it is automatically converted to a metapath)
+		 * @param {function} oModelInterface.fnGetGroupProperty
+		 *   A function called with parameters <code>sGroupId</code> and <code>sPropertyName</code>
+		 *   returning the property value in question. Only 'submit' is supported for <code>
+		 *   sPropertyName</code>. Supported property values are: 'API', 'Auto' and 'Direct'.
+		 * @param {function (string)} [oModelInterface.fnOnCreateGroup]
 		 *   A callback function that is called with the group name as parameter when the first
 		 *   request is added to a group
 		 * @param {string} [sODataVersion="4.0"]
@@ -985,10 +1061,8 @@ sap.ui.define([
 		 * @returns {object}
 		 *   A new <code>_Requestor</code> instance
 		 */
-		create : function (sServiceUrl, mHeaders, mQueryParams, fnFetchEntityContainer,
-				fnOnCreateGroup, sODataVersion) {
-			var oRequestor = new Requestor(sServiceUrl, mHeaders, mQueryParams,
-					fnFetchEntityContainer, fnOnCreateGroup);
+		create : function (sServiceUrl, mHeaders, mQueryParams, oModelInterface, sODataVersion) {
+			var oRequestor = new Requestor(sServiceUrl, mHeaders, mQueryParams, oModelInterface);
 
 			if (sODataVersion === "2.0") {
 				asV2Requestor(oRequestor);

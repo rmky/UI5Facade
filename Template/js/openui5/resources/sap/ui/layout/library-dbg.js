@@ -7,9 +7,10 @@
 /**
  * Initialization Code and shared classes of library sap.ui.layout.
  */
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType',
+sap.ui.define([
+	'sap/ui/base/DataType',
 	'sap/ui/core/library'], // library dependency
-	function(jQuery, DataType) {
+	function(DataType) {
 
 	"use strict";
 
@@ -19,14 +20,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType',
 	 * @namespace
 	 * @name sap.ui.layout
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.layout",
-		version: "1.50.8",
+		version: "1.52.5",
 		dependencies : ["sap.ui.core"],
 		types: [
 			"sap.ui.layout.BackgroundDesign",
@@ -72,8 +73,22 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType',
 		],
 		extensions: {
 			flChangeHandlers: {
+				"sap.ui.layout.BlockLayout": {
+					"moveControls": "default"
+				},
+				"sap.ui.layout.BlockLayoutRow": {
+					"moveControls": "default",
+					"hideControl": "default",
+					"unhideControl": "default"
+				},
+				"sap.ui.layout.BlockLayoutCell": "sap/ui/layout/flexibility/BlockLayoutCell",
 				"sap.ui.layout.form.SimpleForm": "sap/ui/layout/flexibility/SimpleForm",
 				"sap.ui.layout.Grid": {
+					"moveControls": "default",
+					"hideControl": "default",
+					"unhideControl": "default"
+				},
+				"sap.ui.layout.FixFlex": {
 					"moveControls": "default",
 					"hideControl": "default",
 					"unhideControl": "default"
@@ -82,6 +97,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType',
 				"sap.ui.layout.form.FormContainer": "sap/ui/layout/flexibility/FormContainer",
 				"sap.ui.layout.form.FormElement": "sap/ui/layout/flexibility/FormElement",
 				"sap.ui.layout.HorizontalLayout": {
+					"moveControls": "default",
+					"hideControl": "default",
+					"unhideControl": "default"
+				},
+				"sap.ui.layout.Splitter": {
 					"moveControls": "default",
 					"hideControl": "default",
 					"unhideControl": "default"
@@ -209,6 +229,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType',
 		Light: "Light",
 		/**
 		 * Background with bright and dark background colors
+		 * @deprecated since 1.50
 		 * @public
 		 */
 		Mixed: "Mixed",

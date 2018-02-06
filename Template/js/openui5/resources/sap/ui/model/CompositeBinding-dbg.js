@@ -316,11 +316,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 
 	//Eventing and related
 	/**
-	* Attach event-handler <code>fnFunction</code> to the '_change' event of this <code>sap.ui.model.CompositeBinding</code>.<br/>
-	* @param {function} fnFunction The function to call, when the event occurs.
-	* @param {object} [oListener] object on which to call the given function.
-	* @protected
-	*/
+	 * Attach event-handler <code>fnFunction</code> to the '_change' event of this <code>sap.ui.model.CompositeBinding</code>.<br/>
+	 * @param {function} fnFunction The function to call, when the event occurs.
+	 * @param {object} [oListener] object on which to call the given function.
+	 * @protected
+	 */
 	CompositeBinding.prototype.attachChange = function(fnFunction, oListener) {
 		var that = this;
 		this.fChangeHandler = function(oEvent) {
@@ -345,11 +345,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 	};
 
 	/**
-	* Detach event-handler <code>fnFunction</code> from the '_change' event of this <code>sap.ui.model.CompositeBinding</code>.<br/>
-	* @param {function} fnFunction The function to call, when the event occurs.
-	* @param {object} [oListener] object on which to call the given function.
-	* @protected
-	*/
+	 * Detach event-handler <code>fnFunction</code> from the '_change' event of this <code>sap.ui.model.CompositeBinding</code>.<br/>
+	 * @param {function} fnFunction The function to call, when the event occurs.
+	 * @param {object} [oListener] object on which to call the given function.
+	 * @protected
+	 */
 	CompositeBinding.prototype.detachChange = function(fnFunction, oListener) {
 		var that = this;
 		this.detachEvent("change", fnFunction, oListener);
@@ -361,11 +361,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 	};
 
 	/**
-	* Attach event-handler <code>fnFunction</code> to the 'DataStateChange' event of this <code>sap.ui.model.CompositeBinding</code>.<br/>
-	* @param {function} fnFunction The function to call, when the event occurs.
-	* @param {object} [oListener] object on which to call the given function.
-	* @protected
-	*/
+	 * Attach event-handler <code>fnFunction</code> to the 'DataStateChange' event of this <code>sap.ui.model.CompositeBinding</code>.<br/>
+	 * @param {function} fnFunction The function to call, when the event occurs.
+	 * @param {object} [oListener] object on which to call the given function.
+	 * @protected
+	 */
 	CompositeBinding.prototype.attachDataStateChange = function(fnFunction, oListener) {
 		var that = this;
 		this.fDataStateChangeHandler = function(oEvent) {
@@ -385,11 +385,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 	};
 
 	/**
-	* Detach event-handler <code>fnFunction</code> from the 'DataStateChange' event of this <code>sap.ui.model.CompositeBinding</code>.<br/>
-	* @param {function} fnFunction The function to call, when the event occurs.
-	* @param {object} [oListener] object on which to call the given function.
-	* @protected
-	*/
+	 * Detach event-handler <code>fnFunction</code> from the 'DataStateChange' event of this <code>sap.ui.model.CompositeBinding</code>.<br/>
+	 * @param {function} fnFunction The function to call, when the event occurs.
+	 * @param {object} [oListener] object on which to call the given function.
+	 * @protected
+	 */
 	CompositeBinding.prototype.detachDataStateChange = function(fnFunction, oListener) {
 		var that = this;
 		this.detachEvent("DataStateChange", fnFunction, oListener);
@@ -402,7 +402,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 
 	/**
 	 * Attach event-handler <code>fnFunction</code> to the 'AggregatedDataStateChange' event of this
-	 * <code>sap.ui.model.CompositeBinding</code>. The CombinedDataStateChange event is fired asynchronously, meaning
+	 * <code>sap.ui.model.CompositeBinding</code>. The AggregatedDataStateChange event is fired asynchronously, meaning
 	 * that the datastate object given as parameter of the event contains all changes that were applied to the datastate
 	 * in the running thread.
 	 *
@@ -433,11 +433,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 	};
 
 	/**
-	* Detach event-handler <code>fnFunction</code> from the 'AggregatedDataStateChange' event of this <code>sap.ui.model.CompositeBinding</code>.<br/>
-	* @param {function} fnFunction The function to call, when the event occurs.
-	* @param {object} [oListener] object on which to call the given function.
-	* @protected
-	*/
+	 * Detach event-handler <code>fnFunction</code> from the 'AggregatedDataStateChange' event of this <code>sap.ui.model.CompositeBinding</code>.<br/>
+	 * @param {function} fnFunction The function to call, when the event occurs.
+	 * @param {object} [oListener] object on which to call the given function.
+	 * @protected
+	 */
 	CompositeBinding.prototype.detachAggregatedDataStateChange = function(fnFunction, oListener) {
 		var that = this;
 		this.detachEvent("AggregatedDataStateChange", fnFunction, oListener);

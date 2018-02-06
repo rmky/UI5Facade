@@ -22,7 +22,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.FakeLrepConnector
 	 * @experimental Since 1.27.0
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 */
 	function FakeLrepConnector(sInitialComponentJsonPath){
 		this.sInitialComponentJsonPath = sInitialComponentJsonPath;
@@ -101,8 +101,18 @@ sap.ui.define([
 		return new Promise(function(resolve, reject){
 			handleGetTransports(sUri, sMethod, oData, mOptions, resolve, reject);
 			handleMakeChangesTransportable(sUri, sMethod, oData, mOptions, resolve, reject);
+			handleManifirstSupport(sUri, sMethod, oData, mOptions, resolve, reject);
 		});
 	};
+
+	function handleManifirstSupport(sUri, sMethod, oData, mOptions, resolve) {
+		if (sUri.match(/^\/sap\/bc\/ui2\/app_index\/ui5_app_mani_first_supported\//) && sMethod === 'GET') {
+			resolve({
+				response: false,
+				status: "success"
+			});
+		}
+	}
 
 	function handleMakeChangesTransportable(sUri, sMethod, oData, mOptions, resolve){
 		if (sUri.match(/^\/sap\/bc\/lrep\/actions\/make_changes_transportable\//) && sMethod === 'POST'){

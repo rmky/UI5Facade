@@ -9,14 +9,12 @@ sap.ui.define([
 		'sap/ui/Device',
 		'sap/ui/test/_LogCollector',
 		'sap/ui/test/autowaiter/_autoWaiter'
-	], function (jQuery, URI, Device, _LogCollector, _autoWaiter) {
+	], function ($, URI, Device, _LogCollector, _autoWaiter) {
 	"use strict";
 
 	/*global CollectGarbage */
 
-	var sLogPrefix = "sap.ui.test.Opa5",
-		$ = jQuery,
-		oFrameWindow = null,
+	var oFrameWindow = null,
 		$Frame = null,
 		oFramePlugin = null,
 		oFrameUtils = null,
@@ -24,7 +22,8 @@ sap.ui.define([
 		bRegisteredToUI5Init = false,
 		bUi5Loaded = false,
 		oAutoWaiter = null,
-		FrameHashChanger = null;
+		FrameHashChanger = null,
+		sOpaLogLevel;
 
 	/*
 	 * INTERNALS
@@ -207,7 +206,7 @@ sap.ui.define([
 				sNewPreviousHash = oHistory.aHistory[oHistory.iHistoryPosition];
 
 			if (sNewCurrentHash === undefined) {
-				jQuery.sap.log.error("Could not navigate forwards, there is no history entry in the forwards direction", this);
+				$.sap.log.error("Could not navigate forwards, there is no history entry in the forwards direction", this);
 				return;
 			}
 
@@ -227,7 +226,7 @@ sap.ui.define([
 				return;
 			}
 
-			jQuery.sap.log.error("Using history.go with a number greater than 1 is not supported by OPA5", this);
+			$.sap.log.error("Using history.go with a number greater than 1 is not supported by OPA5", this);
 			return fnOriginalGo.apply(oFrameWindow.history, arguments);
 		};
 	}
@@ -236,6 +235,7 @@ sap.ui.define([
 		oFrameWindow.sap.ui.require([
 			"sap/ui/test/OpaPlugin",
 			"sap/ui/test/autowaiter/_autoWaiter",
+			"sap/ui/test/_OpaLogger",
 			"sap/ui/qunit/QUnitUtils",
 			"sap/ui/thirdparty/hasher",
 			"sap/ui/core/routing/History",
@@ -243,12 +243,14 @@ sap.ui.define([
 		], function (
 			OpaPlugin,
 			_autoWaiter,
+			_OpaLogger,
 			QUnitUtils,
 			hasher,
 			History,
 			HashChanger
 		) {
-			oFramePlugin = new OpaPlugin(sLogPrefix);
+			_OpaLogger.setLevel(sOpaLogLevel);
+			oFramePlugin = new OpaPlugin();
 			oAutoWaiter = _autoWaiter;
 			oFrameUtils = QUnitUtils;
 			modifyIFrameNavigation(hasher, History, HashChanger);
@@ -258,7 +260,7 @@ sap.ui.define([
 	}
 
 	function registerAbsoluteModulePathInIframe(sModule) {
-		var sOpaLocation = jQuery.sap.getModulePath(sModule);
+		var sOpaLocation = $.sap.getModulePath(sModule);
 		var sAbsoluteOpaPath = new URI(sOpaLocation).absoluteTo(document.baseURI).search("").toString();
 		oFrameJQuery.sap.registerModulePath(sModule,sAbsoluteOpaPath);
 	}
@@ -318,8 +320,15 @@ sap.ui.define([
 			} else {
 				$Frame.on("load", handleFrameLoad);
 			}
-
+			sOpaLogLevel = options.opaLogLevel;
 			return checkForUI5ScriptLoaded();
+		},
+		hasLaunched: function () {
+			checkForUI5ScriptLoaded();
+			return bUi5Loaded;
+		},
+		teardown: function () {
+			destroyFrame();
 		},
 		getHashChanger: function () {
 			if (!FrameHashChanger) {
@@ -337,20 +346,12 @@ sap.ui.define([
 		getUtils: function () {
 			return oFrameUtils;
 		},
-		hasLaunched: function () {
-			checkForUI5ScriptLoaded();
-			return bUi5Loaded;
-		},
 		getWindow: function () {
 			return oFrameWindow;
 		},
 		_getAutoWaiter:function () {
 			return  oAutoWaiter || _autoWaiter;
-		},
-		teardown: function () {
-			destroyFrame();
-		},
-		_sLogPrefix :sLogPrefix
+		}
 	};
 }, /* export= */ true);
 

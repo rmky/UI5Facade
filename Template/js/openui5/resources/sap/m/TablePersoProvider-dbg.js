@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
 	 * @extends sap.ui.base.ManagedObject
 	 * @abstract
 	 * @author SAP
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @alias sap.m.TablePersoProvider
 	 */
 	var TablePersoProvider = ManagedObject.extend("sap.m.TablePersoProvider", /** @lends sap.m.TablePersoProvider */
@@ -144,4 +144,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
 
 	return TablePersoProvider;
 
-}, /* bExport= */ true);
+});

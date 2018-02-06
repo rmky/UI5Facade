@@ -18,7 +18,7 @@ sap.ui.define([
 	 * @class The ManagedObjectObserver observes changes of a ManagedObject and propagates them via events.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -68,8 +68,18 @@ sap.ui.define([
 	 * @protected
 	 */
 	ManagedObjectObserver.prototype.init = function() {
-		this._fnFireModified = function() {
-			this.fireModified();
+		this._fnFireModified = function(oEvent) {
+			var oParams = oEvent.getParameters();
+			if (oEvent.sId === "_change") {
+				oEvent.sId = "propertyChanged";
+			}
+			this.fireModified({
+				type: oEvent.sId,
+				name: oParams.name,
+				value: oParams.newValue,
+				oldValue: oParams.oldValue,
+				target: oEvent.getSource()
+			});
 		}.bind(this);
 	};
 

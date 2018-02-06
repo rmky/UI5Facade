@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './ListRenderer', 'sap/ui/core/Renderer'],
-	function(jQuery, ListRenderer, Renderer) {
+sap.ui.define(['./ListRenderer', 'sap/ui/core/Renderer'],
+	function(ListRenderer, Renderer) {
 	"use strict";
 
 	/**

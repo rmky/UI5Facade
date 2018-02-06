@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.layout.SplitterLayoutData.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/LayoutData', './library'],
-	function(jQuery, LayoutData, library) {
+sap.ui.define(['sap/ui/core/LayoutData', './library'],
+	function(LayoutData, library) {
 	"use strict";
 
 
@@ -24,7 +24,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/LayoutData', './library'],
 	 * (The CSS value "auto" is used internally to recalculate the size of the content
 	 * dynamically and is not directly set as style property.)
 	 * @extends sap.ui.core.LayoutData
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -60,4 +60,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/LayoutData', './library'],
 
 	return SplitterLayoutData;
 
-}, /* bExport= */ true);
+});

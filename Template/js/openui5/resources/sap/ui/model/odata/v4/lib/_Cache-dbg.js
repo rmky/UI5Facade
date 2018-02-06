@@ -178,27 +178,22 @@ sap.ui.define([
 	 *   The requestor
 	 * @param {string} sResourcePath
 	 *   A resource path relative to the service URL
-	 * @param {function} fnFetchType
-	 *   A function taking a path as parameter and returning a sync promise resolving with the
-	 *   related type from the metadata. The path must start with <code>sResourcePath</code> and may
-	 *   be followed by structural or navigation properties.
 	 * @param {object} [mQueryOptions]
 	 *   A map of key-value pairs representing the query string
 	 * @param {boolean} [bSortExpandSelect=false]
 	 *   Whether the paths in $expand and $select shall be sorted in the cache's query string
 	 */
-	function Cache(oRequestor, sResourcePath, fnFetchType, mQueryOptions, bSortExpandSelect) {
+	function Cache(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect) {
 		this.bActive = true;
 		this.mChangeListeners = {}; // map from path to an array of change listeners
-		this.fnFetchType = fnFetchType;
 		this.mPatchRequests = {}; // map from path to an array of (PATCH) promises
 		this.mPostRequests = {}; // map from path to an array of entity data (POST bodies)
 		this.oRequestor = oRequestor;
 		this.bSortExpandSelect = bSortExpandSelect;
-		this.setQueryOptions(mQueryOptions);
 		this.sResourcePath = sResourcePath;
 		this.bSentReadRequest = false;
 		this.oTypePromise = undefined;
+		this.setQueryOptions(mQueryOptions);
 	}
 
 	/**
@@ -242,7 +237,8 @@ sap.ui.define([
 			}
 			oEntity["$ui5.deleting"] = true;
 			mHeaders = {"If-Match" : oEntity["@odata.etag"]};
-			sEditUrl += that.oRequestor.buildQueryString(that.mQueryOptions, true);
+			sEditUrl += that.oRequestor.buildQueryString(that.sResourcePath, that.mQueryOptions,
+				true);
 			return that.oRequestor.request("DELETE", sEditUrl, sGroupId, mHeaders)
 				["catch"](function (oError) {
 					if (oError.status !== 404) {
@@ -325,7 +321,7 @@ sap.ui.define([
 				visitInstance(oInstance, sPath);
 				sPredicate = oInstance["@$ui5.predicate"];
 				if (sPredicate) {
-					aInstances.$byPredicate[oInstance["@$ui5.predicate"]] = oInstance;
+					aInstances.$byPredicate[sPredicate] = oInstance;
 				}
 			}
 		}
@@ -339,20 +335,20 @@ sap.ui.define([
 		function visitInstance(oInstance, sPath) {
 			var oType = mTypeForPath[sPath];
 
-			if (oType && oInstance) { // oType is only defined when at an entity
+			if (oType) { // oType is only defined when at an entity
 				oInstance["@$ui5.predicate"] = oRequestor.getKeyPredicate(oType, oInstance);
-
-				Object.keys(oInstance).forEach(function (sProperty) {
-					var vPropertyValue = oInstance[sProperty],
-						sPropertyPath = sPath + "/" + sProperty;
-
-					if (Array.isArray(vPropertyValue)) {
-						visitArray(vPropertyValue, sPropertyPath);
-					} else {
-						visitInstance(vPropertyValue, sPropertyPath);
-					}
-				});
 			}
+
+			Object.keys(oInstance).forEach(function (sProperty) {
+				var vPropertyValue = oInstance[sProperty],
+					sPropertyPath = sPath + "/" + sProperty;
+
+				if (Array.isArray(vPropertyValue)) {
+					visitArray(vPropertyValue, sPropertyPath);
+				} else if (vPropertyValue && typeof vPropertyValue === "object") {
+					visitInstance(vPropertyValue, sPropertyPath);
+				}
+			});
 		}
 
 		visitInstance(oRootInstance, this.sResourcePath);
@@ -375,8 +371,8 @@ sap.ui.define([
 	 * Creates a transient entity with index -1 in the list and adds a POST request to the batch
 	 * group with the given ID. If the POST request failed, <code>fnErrorCallback</code> is called
 	 * with an Error object, the POST request is automatically added again to the same batch
-	 * group (for application group IDs) or parked (for '$auto' or '$direct'). Parked POST requests
-	 * are repeated with the next update of the entity data.
+	 * group (for SubmitMode.API) or parked (for SubmitMode.Auto or SubmitMode.Direct). Parked POST
+	 * requests are repeated with the next update of the entity data.
 	 *
 	 * @param {string} sGroupId
 	 *   The group ID
@@ -413,7 +409,8 @@ sap.ui.define([
 		function request(sPostGroupId) {
 			oEntityData["@$ui5.transient"] = sPostGroupId; // mark as transient (again)
 			return _SyncPromise.resolve(vPostPath).then(function (sPostPath) {
-				sPostPath += that.oRequestor.buildQueryString(that.mQueryOptions, true);
+				sPostPath += that.oRequestor.buildQueryString(that.sResourcePath,
+					that.mQueryOptions, true);
 				that.addByPath(that.mPostRequests, sPath, oEntityData);
 				return that.oRequestor.request("POST", sPostPath, sPostGroupId, null, oEntityData,
 						setCreatePending, cleanUp)
@@ -439,8 +436,8 @@ sap.ui.define([
 						if (fnErrorCallback) {
 							fnErrorCallback(oError);
 						}
-						return request(sPostGroupId === "$auto" || sPostGroupId === "$direct"
-							? "$parked." + sPostGroupId : sPostGroupId);
+						return request(that.oRequestor.getGroupSubmitMode(sPostGroupId) === "API" ?
+							sPostGroupId : "$parked." + sPostGroupId);
 				});
 			});
 		}
@@ -484,8 +481,7 @@ sap.ui.define([
 	 *   The result matching to <code>sPath</code>
 	 */
 	Cache.prototype.drillDown = function (oData, sPath) {
-		var aMatches,
-			that = this;
+		var that = this;
 
 		function invalidSegment(sSegment) {
 			jQuery.sap.log.error("Failed to drill-down into " + sPath + ", invalid segment: "
@@ -493,10 +489,36 @@ sap.ui.define([
 			return undefined;
 		}
 
+		// Determine the implicit value if the value is missing in the cache. Report an invalid
+		// segment if there is no implicit value.
+		function missingValue(oValue, sSegment, iPathLength) {
+			var sPropertyPath = that.sResourcePath,
+				sPropertyType,
+				sReadLink,
+				sServiceUrl;
+
+			if (sPath[0] !== '(') {
+				sPropertyPath += "/";
+			}
+			sPropertyPath += sPath.split("/").slice(0, iPathLength).join("/");
+			sPropertyType = that.oRequestor.fetchTypeForPath(sPropertyPath, true).getResult();
+			if (sPropertyType === "Edm.Stream") {
+				sReadLink = oValue[sSegment + "@odata.mediaReadLink"];
+				sServiceUrl = that.oRequestor.getServiceUrl();
+				if (sReadLink) {
+					return _Helper.makeAbsolute(sReadLink, sServiceUrl);
+				}
+				return sServiceUrl + sPropertyPath;
+			}
+			return invalidSegment(sSegment);
+		}
+
 		if (!sPath) {
 			return oData;
 		}
-		return sPath.split("/").reduce(function (vValue, sSegment) {
+		return sPath.split("/").reduce(function (vValue, sSegment, i) {
+			var aMatches, oParentValue;
+
 			if (sSegment === "$count") {
 				return Array.isArray(vValue) ? vValue.$count : invalidSegment(sSegment);
 			}
@@ -508,6 +530,7 @@ sap.ui.define([
 			if (typeof vValue !== "object") {
 				return invalidSegment(sSegment);
 			}
+			oParentValue = vValue;
 			aMatches = rSegmentWithPredicate.exec(sSegment);
 			if (aMatches) {
 				if (aMatches[1]) { // e.g. "TEAM_2_EMPLOYEES('42')
@@ -519,7 +542,7 @@ sap.ui.define([
 			} else {
 				vValue = vValue[sSegment];
 			}
-			return vValue === undefined ? invalidSegment(sSegment) : vValue;
+			return vValue === undefined ? missingValue(oParentValue, sSegment, i + 1) : vValue;
 		}, oData);
 	};
 
@@ -582,7 +605,7 @@ sap.ui.define([
 		 *   or complex type)
 		 */
 		function fetchType(sPath) {
-			aPromises.push(that.fnFetchType(sPath).then(function (oType) {
+			aPromises.push(that.oRequestor.fetchTypeForPath(sPath).then(function (oType) {
 				if (oType.$Key) {
 					mTypeForPath[sPath] = oType;
 				}
@@ -722,8 +745,9 @@ sap.ui.define([
 		}
 
 		this.mQueryOptions = mQueryOptions;
-		this.sQueryString = this.oRequestor.buildQueryString(mQueryOptions, false,
-			this.bSortExpandSelect);
+		// sResourcePath is only used for metadata access, it does not contribute to the result
+		this.sQueryString = this.oRequestor.buildQueryString(this.sResourcePath, mQueryOptions,
+			false, this.bSortExpandSelect);
 	};
 
 	/**
@@ -752,12 +776,15 @@ sap.ui.define([
 	 *   The edit URL for the entity which is updated via PATCH
 	 * @param {string} [sEntityPath]
 	 *   Path of the entity, relative to the cache
+	 * @param {string} [sUnitOrCurrencyPath]
+	 *   Path of the unit or currency for the property, relative to the entity
 	 * @returns {Promise}
 	 *   A promise for the PATCH request
 	 */
 	Cache.prototype.update = function (sGroupId, sPropertyPath, vValue, fnErrorCallback, sEditUrl,
-			sEntityPath) {
+			sEntityPath, sUnitOrCurrencyPath) {
 		var aPropertyPath = sPropertyPath.split("/"),
+			aUnitOrCurrencyPath,
 			that = this;
 
 		return this.fetchValue(sGroupId, sEntityPath).then(function (oEntity) {
@@ -766,13 +793,20 @@ sap.ui.define([
 				oPatchPromise,
 				sParkedGroup,
 				sTransientGroup,
+				vUnitOrCurrencyValue,
 				oUpdateData = Cache.makeUpdateData(aPropertyPath, vValue);
+
+			function cacheValue(aPath) {
+				return aPath.reduce(function (oValue, sSegment) {
+					return oValue && oValue[sSegment];
+				}, oEntity);
+			}
 
 			/*
 			 * Synchronous callback to cancel the PATCH request so that it is really gone when
 			 * resetChangesForPath has been called on the binding or model.
 			 */
-			function onCancel () {
+			function onCancel() {
 				that.removeByPath(that.mPatchRequests, sFullPath, oPatchPromise);
 				// write the previous value into the cache
 				_Helper.updateCache(that.mChangeListeners, sEntityPath, oEntity,
@@ -792,7 +826,7 @@ sap.ui.define([
 					that.removeByPath(that.mPatchRequests, sFullPath, oPatchPromise);
 					if (!oError.canceled) {
 						fnErrorCallback(oError);
-						if (sGroupId !== "$auto" && sGroupId !== "$direct") {
+						if (that.oRequestor.getGroupSubmitMode(sGroupId) === "API") {
 							return patch();
 						}
 					}
@@ -819,11 +853,23 @@ sap.ui.define([
 				}
 			}
 			// remember the old value
-			vOldValue = aPropertyPath.reduce(function (oValue, sSegment) {
-				return oValue && oValue[sSegment];
-			}, oEntity);
+			vOldValue = cacheValue(aPropertyPath);
 			// write the changed value into the cache
 			_Helper.updateCache(that.mChangeListeners, sEntityPath, oEntity, oUpdateData);
+			if (sUnitOrCurrencyPath) {
+				aUnitOrCurrencyPath = sUnitOrCurrencyPath.split("/");
+				vUnitOrCurrencyValue = cacheValue(aUnitOrCurrencyPath);
+				if (vUnitOrCurrencyValue === undefined) {
+					jQuery.sap.log.debug("Missing value for unit of measure "
+							+ _Helper.buildPath(sEntityPath, sUnitOrCurrencyPath)
+							+ " when updating "
+							+ sFullPath,
+						that.toString(), "sap.ui.model.odata.v4.lib._Cache");
+				} else {
+					jQuery.extend(true, oUpdateData,
+						Cache.makeUpdateData(aUnitOrCurrencyPath, vUnitOrCurrencyValue));
+				}
+			}
 			if (sTransientGroup) {
 				// When updating a transient entity, _Helper.updateCache has already updated the
 				// POST request, because the request body is a reference into the cache.
@@ -834,7 +880,8 @@ sap.ui.define([
 				return Promise.resolve({});
 			}
 			// send and register the PATCH request
-			sEditUrl += that.oRequestor.buildQueryString(that.mQueryOptions, true);
+			sEditUrl += that.oRequestor.buildQueryString(that.sResourcePath, that.mQueryOptions,
+				true);
 			return patch();
 		});
 	};
@@ -851,17 +898,12 @@ sap.ui.define([
 	 *   The requestor
 	 * @param {string} sResourcePath
 	 *   A resource path relative to the service URL
-	 * @param {function} fnFetchType
-	 *   A function taking a path as parameter and returning a sync promise resolving with the
-	 *   related type from the metadata. The path must start with <code>sResourcePath</code> and may
-	 *   be followed by structural or navigation properties.
 	 * @param {object} [mQueryOptions]
 	 *   A map of key-value pairs representing the query string
 	 * @param {boolean} [bSortExpandSelect=false]
 	 *   Whether the paths in $expand and $select shall be sorted in the cache's query string
 	 */
-	function CollectionCache(oRequestor, sResourcePath, fnFetchType, mQueryOptions,
-			bSortExpandSelect) {
+	function CollectionCache(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect) {
 		Cache.apply(this, arguments);
 
 		this.sContext = undefined;         // the "@odata.context" from the responses
@@ -897,21 +939,11 @@ sap.ui.define([
 	 *   arrives.
 	 */
 	CollectionCache.prototype.fetchValue = function (sGroupId, sPath, fnDataRequested, oListener) {
-		var iIndex,
-			oPromise,
-			aSegments,
-			that = this;
+		var that = this;
 
-		if (sPath === "$count") {
-			oPromise = _SyncPromise.all(this.aElements);
-		} else if (sPath) {
-			aSegments = sPath.split("/");
-			iIndex = parseInt(aSegments.shift(), 10);
-			oPromise = this.read(iIndex, 1, sGroupId, fnDataRequested);
-		} else {
-			oPromise = _SyncPromise.resolve();
-		}
-		return oPromise.then(function () {
+		// wait for all reads to be finished, this is essential for $count and for finding the index
+		// of a key predicate
+		return _SyncPromise.all(this.aElements).then(function () {
 			that.checkActive();
 			// register afterwards to avoid that updateCache fires updates before the first response
 			that.registerChange(sPath, oListener);
@@ -1008,7 +1040,7 @@ sap.ui.define([
 	 *   A map of key-value pairs representing the query string
 	 */
 	function PropertyCache(oRequestor, sResourcePath, mQueryOptions) {
-		Cache.call(this, oRequestor, sResourcePath, undefined, mQueryOptions);
+		Cache.call(this, oRequestor, sResourcePath, mQueryOptions);
 
 		this.oPromise = null;
 	}
@@ -1094,10 +1126,6 @@ sap.ui.define([
 	 *   The requestor
 	 * @param {string} sResourcePath
 	 *   A resource path relative to the service URL
-	 * @param {function} fnFetchType
-	 *   A function taking a path as parameter and returning a sync promise resolving with the
-	 *   related type from the metadata. The path must start with <code>sResourcePath</code> and may
-	 *   be followed by structural or navigation properties.
 	 * @param {object} [mQueryOptions]
 	 *   A map of key-value pairs representing the query string
 	 * @param {boolean} [bSortExpandSelect=false]
@@ -1107,8 +1135,7 @@ sap.ui.define([
 	 *   a request, {@link #read} may only read from the cache; otherwise {@link #post} throws an
 	 *   error.
 	 */
-	function SingleCache(oRequestor, sResourcePath, fnFetchType, mQueryOptions, bSortExpandSelect,
-			bPost) {
+	function SingleCache(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect, bPost) {
 		Cache.apply(this, arguments);
 
 		this.bPost = bPost;
@@ -1229,10 +1256,6 @@ sap.ui.define([
 	 * @param {string} sResourcePath
 	 *   A resource path relative to the service URL; it must not contain a query string<br>
 	 *   Example: Products
-	 * @param {function} fnFetchType
-	 *   A function taking a path as parameter and returning a sync promise resolving with the
-	 *   related type from the metadata. The path must start with <code>sResourcePath</code> and may
-	 *   be followed by structural or navigation properties.
 	 * @param {object} mQueryOptions
 	 *   A map of key-value pairs representing the query string, the value in this pair has to
 	 *   be a string or an array of strings; if it is an array, the resulting query string
@@ -1245,10 +1268,8 @@ sap.ui.define([
 	 * @returns {sap.ui.model.odata.v4.lib._Cache}
 	 *   The cache
 	 */
-	Cache.create = function (oRequestor, sResourcePath, fnFetchType, mQueryOptions,
-			bSortExpandSelect) {
-		return new CollectionCache(oRequestor, sResourcePath, fnFetchType, mQueryOptions,
-			bSortExpandSelect);
+	Cache.create = function (oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect) {
+		return new CollectionCache(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect);
 	};
 
 	/**
@@ -1281,10 +1302,6 @@ sap.ui.define([
 	 * @param {string} sResourcePath
 	 *   A resource path relative to the service URL; it must not contain a query string<br>
 	 *   Example: Products
-	 * @param {function} fnFetchType
-	 *   A function taking a path as parameter and returning a sync promise resolving with the
-	 *   related type from the metadata. The path must start with <code>sResourcePath</code> and may
-	 *   be followed by structural or navigation properties.
 	 * @param {object} [mQueryOptions]
 	 *   A map of key-value pairs representing the query string, the value in this pair has to
 	 *   be a string or an array of strings; if it is an array, the resulting query string
@@ -1301,10 +1318,9 @@ sap.ui.define([
 	 * @returns {sap.ui.model.odata.v4.lib._Cache}
 	 *   The cache
 	 */
-	Cache.createSingle = function (oRequestor, sResourcePath, fnFetchType, mQueryOptions,
-			bSortExpandSelect, bPost) {
-		return new SingleCache(oRequestor, sResourcePath, fnFetchType, mQueryOptions,
-			bSortExpandSelect, bPost);
+	Cache.createSingle = function (oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect,
+			bPost) {
+		return new SingleCache(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect, bPost);
 	};
 
 	/**

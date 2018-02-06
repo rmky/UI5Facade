@@ -9,12 +9,16 @@ sap.ui.define([
 	'jquery.sap.global',
 	'sap/ui/dt/plugin/ControlDragDrop',
 	'sap/ui/rta/plugin/RTAElementMover',
-	'sap/ui/rta/plugin/Plugin'
+	'sap/ui/rta/plugin/Plugin',
+	'sap/ui/rta/Utils'
 ],
-function(jQuery,
-		ControlDragDrop,
-		RTAElementMover,
-		Plugin) {
+function(
+	jQuery,
+	ControlDragDrop,
+	RTAElementMover,
+	Plugin,
+	Utils
+) {
 	"use strict";
 
 	/**
@@ -28,7 +32,7 @@ function(jQuery,
 	 * @extends sap.ui.dt.ControlDragDrop
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -60,6 +64,11 @@ function(jQuery,
 		}
 	});
 
+	// Extends the DragDrop Plugin with all the functions from our rta base plugin
+	Utils.extendWith(DragDrop.prototype, Plugin.prototype, function(vDestinationValue, vSourceValue, sProperty, mDestination, mSource) {
+		return sProperty !== "getMetadata";
+	});
+
 	/**
 	 * @override
 	 */
@@ -74,17 +83,24 @@ function(jQuery,
 	};
 
 	/**
+	 * @override
+	 */
+	DragDrop.prototype._isEditable = function(oOverlay, mPropertyBag) {
+		var bMovable = this.getElementMover().isEditable(oOverlay, mPropertyBag.onRegistration);
+		if (bMovable) {
+			this._attachMovableBrowserEvents(oOverlay);
+		}
+		return bMovable;
+	};
+
+	/**
 	 * Register an overlay
 	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
 	 * @override
 	 */
 	DragDrop.prototype.registerElementOverlay = function(oOverlay) {
 		ControlDragDrop.prototype.registerElementOverlay.apply(this, arguments);
-
-		if (oOverlay.isMovable()) {
-			this._attachMovableBrowserEvents(oOverlay);
-			Plugin.prototype.addToPluginsList.apply(this, arguments);
-		}
+		Plugin.prototype.registerElementOverlay.apply(this, arguments);
 	};
 
 	/**

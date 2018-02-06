@@ -4,9 +4,13 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Renderer'],
-	function(jQuery, ListItemBaseRenderer, Renderer) {
+sap.ui.define(['./ListItemBaseRenderer', 'sap/ui/core/Renderer', 'sap/ui/core/library'],
+	function(ListItemBaseRenderer, Renderer, coreLibrary) {
 	"use strict";
+
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
 
 
 	/**
@@ -39,15 +43,15 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 			var sLabelId = oLI.getId() + "-label",
 				sLabelDir = oLI.getLabelTextDirection();
 
-			rm.write('<label id="' + sLabelId + '" class="sapMILILabel"');
+			rm.write('<span id="' + sLabelId + '" class="sapMILILabel"');
 
-			if (sLabelDir !== sap.ui.core.TextDirection.Inherit) {
+			if (sLabelDir !== TextDirection.Inherit) {
 				rm.writeAttribute("dir", sLabelDir.toLowerCase());
 			}
 
 			rm.write('>');
 			rm.writeEscaped(sLabel);
-			rm.write('</label>');
+			rm.write('</span>');
 		}
 
 		// List item input content

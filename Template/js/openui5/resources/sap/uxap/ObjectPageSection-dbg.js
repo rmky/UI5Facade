@@ -6,16 +6,19 @@
 
 // Provides control sap.uxap.ObjectPageSection.
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/core/InvisibleText",
 	"./ObjectPageSectionBase",
 	"sap/ui/Device",
 	"sap/m/Button",
 	"sap/ui/core/StashedControlSupport",
 	"./ObjectPageSubSection",
-	"./library"
-], function (jQuery, InvisibleText, ObjectPageSectionBase, Device, Button, StashedControlSupport, ObjectPageSubSection, library) {
+	"./library",
+	"sap/m/library"
+], function (InvisibleText, ObjectPageSectionBase, Device, Button, StashedControlSupport, ObjectPageSubSection, library, mobileLibrary) {
 	"use strict";
+
+	// shortcut for sap.m.ButtonType
+	var ButtonType = mobileLibrary.ButtonType;
 
 	/**
 	 * Constructor for a new ObjectPageSection.
@@ -85,7 +88,8 @@ sap.ui.define([
 	 * @returns {sap.uxap.ObjectPageSection}
 	 * @private
 	 */
-	ObjectPageSection._getClosestSection = function (oSectionBase) {
+	ObjectPageSection._getClosestSection = function (vSectionBase) {
+		var oSectionBase = (typeof vSectionBase === "string" && sap.ui.getCore().byId(vSectionBase)) || vSectionBase;
 		return (oSectionBase instanceof ObjectPageSubSection) ? oSectionBase.getParent() : oSectionBase;
 	};
 
@@ -273,7 +277,7 @@ sap.ui.define([
 				visible: this._getShouldDisplayShowHideAllButton(),
 				text: this._getShowHideAllButtonText(!this._thereAreHiddenSubSections()),
 				press: this._showHideContentAllContent.bind(this),
-				type: sap.m.ButtonType.Transparent
+				type: ButtonType.Transparent
 			}).addStyleClass("sapUxAPSectionShowHideButton"), true); // this is called from the renderer, so suppress invalidate
 		}
 
@@ -300,7 +304,7 @@ sap.ui.define([
 				visible: this._shouldBeHidden(),
 				text: this._getShowHideButtonText(!this._getIsHidden()),
 				press: this._showHideContent.bind(this),
-				type: sap.m.ButtonType.Transparent
+				type: ButtonType.Transparent
 			}).addStyleClass("sapUxAPSectionShowHideButton"), true); // this is called from the renderer, so suppress invalidate
 		}
 

@@ -7,26 +7,16 @@
 /**
  * Initialization Code and shared classes of library sap.f.
  */
-sap.ui.define(["jquery.sap.global",
+sap.ui.define(["sap/ui/Global",
 	"sap/ui/core/library", "sap/m/library"], // library dependency
 	function() {
 
 	"use strict";
 
-	/**
-	 * SAPUI5 library with controls specialized for SAP Fiori apps.
-	 *
-	 * @namespace
-	 * @name sap.f
-	 * @author SAP SE
-	 * @version 1.50.8
-	 * @public
-	 */
-
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.f",
-		version: "1.50.8",
+		version: "1.52.5",
 		dependencies : ["sap.ui.core", "sap.m"],
 		types: [
 			"sap.f.LayoutType",
@@ -65,7 +55,7 @@ sap.ui.define(["jquery.sap.global",
 			"sap.f.semantic.TitleMainAction"
 		],
 		extensions: {
-            flChangeHandlers: {
+			flChangeHandlers: {
 				"sap.f.DynamicPageHeader" : {
 					"hideControl": "default",
 					"unhideControl": "default",
@@ -76,6 +66,16 @@ sap.ui.define(["jquery.sap.global",
 		}
 	});
 
+	/**
+	 * SAPUI5 library with controls specialized for SAP Fiori apps.
+	 *
+	 * @namespace
+	 * @alias sap.f
+	 * @author SAP SE
+	 * @version 1.52.5
+	 * @public
+	 */
+	var thisLib = sap.f;
 
 	/**
 	* Defines the areas within the <code>sap.f.DynamicPageTitle</code>.
@@ -85,7 +85,7 @@ sap.ui.define(["jquery.sap.global",
 	* @since 1.50
 	* @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	*/
-	sap.f.DynamicPageTitleArea = {
+	thisLib.DynamicPageTitleArea = {
 		/**
 		* The area includes the <code>heading<code>, <code>expandedContent<code> and <code>snappedContent<code> aggregations,
 		* positioned in the beginning area of the {@link sap.f.DynamicPageTitle}.
@@ -114,12 +114,14 @@ sap.ui.define(["jquery.sap.global",
 	 * For all two-column layouts, this column is the <code>Mid</code> column, and for all three-column layouts - the <code>End</code> column,
 	 * even though the respective column may be hidden on desktop and tablet for that particular layout.
 	 *
+	 * For more information, see {@link topic:3b9f760da5b64adf8db7f95247879086 Types of Layout} in the documentation.
+	 *
 	 * @enum {string}
 	 * @public
 	 * @since 1.46
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	sap.f.LayoutType = {
+	thisLib.LayoutType = {
 
 		/**
 		 * Desktop: 100/-/-  only the Begin column is displayed
@@ -254,7 +256,7 @@ sap.ui.define(["jquery.sap.global",
 	 * @since 1.46
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	sap.f.AvatarShape = {
+	thisLib.AvatarShape = {
 		/**
 		 * Circular shape.
 		 * @public
@@ -276,7 +278,7 @@ sap.ui.define(["jquery.sap.global",
 	 * @since 1.46
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	sap.f.AvatarSize = {
+	thisLib.AvatarSize = {
 		/**
 		 * Control size - 2rem
 		 * Font size - 0.75rem
@@ -327,7 +329,7 @@ sap.ui.define(["jquery.sap.global",
 	 * @since 1.46
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	sap.f.AvatarType = {
+	thisLib.AvatarType = {
 		/**
 		 * The displayed content is an icon.
 		 * @public
@@ -352,7 +354,7 @@ sap.ui.define(["jquery.sap.global",
 	 * @since 1.46
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	sap.f.AvatarImageFitType = {
+	thisLib.AvatarImageFitType = {
 		/**
 		 * The image is scaled to be large enough so that the control area is completely covered.
 		 * @public
@@ -365,6 +367,6 @@ sap.ui.define(["jquery.sap.global",
 		Contain: "Contain"
 	};
 
-	return sap.f;
+	return thisLib;
 
 });

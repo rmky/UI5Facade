@@ -30,6 +30,7 @@ sap.ui.define([
 		var oCachePromise,
 			oCallToken = {},
 			oCurrentCache,
+			aPromises,
 			that = this;
 
 		if (!this.bRelative) {
@@ -41,8 +42,10 @@ sap.ui.define([
 				oCurrentCache.setActive(false);
 			}
 		}
-		oCachePromise = this.fetchQueryOptionsForOwnCache(oContext).then(function (mQueryOptions) {
-			var vCanonicalPath;
+		aPromises = [this.fetchQueryOptionsForOwnCache(oContext), this.oModel.oRequestor.ready()];
+		oCachePromise = _SyncPromise.all(aPromises).then(function (aResult) {
+			var vCanonicalPath,
+				mQueryOptions = aResult[0];
 
 			// Note: do not create a cache for a virtual context
 			if (mQueryOptions && !(oContext && oContext.getIndex && oContext.getIndex() === -2)) {
@@ -151,7 +154,7 @@ sap.ui.define([
 		if (this.oModel.bAutoExpandSelect) {
 			bHasNonSystemQueryOptions = that.mParameters
 				&& Object.keys(that.mParameters).some(function (sKey) {
-					return sKey[0] !== "$" || sKey[1] == "$";
+					return sKey[0] !== "$" || sKey[1] === "$";
 				});
 			if (bHasNonSystemQueryOptions) {
 				return oQueryOptionsPromise;

@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @class Change class.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @alias sap.ui.fl.Change
 	 * @experimental Since 1.25.0
 	 */
@@ -154,6 +154,18 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns the file type
+	 *
+	 * @returns {String} fileType of the file
+	 * @public
+	 */
+	Change.prototype.getFileType = function () {
+		if (this._oDefinition) {
+			return this._oDefinition.fileType;
+		}
+	};
+
+	/**
 	 * Returns the original language in ISO 639-1 format
 	 *
 	 * @returns {String} Original language
@@ -207,6 +219,17 @@ sap.ui.define([
 	};
 
 	/**
+	 * Sets the namespace.
+	 *
+	 * @param {string} sNamespace Namespace of the change document
+	 *
+	 * @public
+	 */
+	Change.prototype.setNamespace = function (sNamespace) {
+		this._oDefinition.namespace = sNamespace;
+	};
+
+	/**
 	 * Returns the id of the change
 	 * @returns {string} Id of the change document
 	 *
@@ -235,6 +258,28 @@ sap.ui.define([
 	 */
 	Change.prototype.setContent = function (oContent) {
 		this._oDefinition.content = oContent;
+		this.setState(Change.states.DIRTY);
+	};
+
+	/**
+	 * Returns the variant reference of the change
+	 * @returns {string} variant reference of the change.
+	 *
+	 * @public
+	 */
+	Change.prototype.getVariantReference = function () {
+		return this._oDefinition.variantReference || "";
+	};
+
+	/**
+	 * Sets the variant reference of the change
+	 *
+	 * @param {object} sVariantReference The variant reference of the change.
+	 *
+	 * @public
+	 */
+	Change.prototype.setVariantReference = function (sVariantReference) {
+		this._oDefinition.variantReference = sVariantReference;
 		this.setState(Change.states.DIRTY);
 	};
 
@@ -436,6 +481,17 @@ sap.ui.define([
 	 */
 	Change.prototype.getComponent = function () {
 		return this._oDefinition.reference;
+	};
+
+	/**
+	 * Sets the component.
+	 *
+	 * @param {string} sComponent ID of the app or app variant
+	 *
+	 * @public
+	 */
+	Change.prototype.setComponent = function (sComponent) {
+		this._oDefinition.reference = sComponent;
 	};
 
 	/**
@@ -661,16 +717,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns the change key
-	 *
-	 * @returns {String} Change key of the file which is a unique concatenation of fileName, layer and namespace
-	 * @public
-	 */
-	Change.prototype.getKey = function () {
-		return this._oDefinition.fileName + this._oDefinition.layer + this._oDefinition.namespace;
-	};
-
-	/**
 	 * Returns the revert specific data
 	 *
 	 * @returns {*} revert specific data
@@ -729,9 +775,16 @@ sap.ui.define([
 			oPropertyBag = {};
 		}
 
+		var sFileType;
+		if (oPropertyBag.fileType) {
+			sFileType = oPropertyBag.fileType;
+		} else {
+			sFileType = oPropertyBag.isVariant ? "variant" : "change";
+		}
+
 		var oNewFile = {
 			fileName: oPropertyBag.id || Utils.createDefaultFileName(oPropertyBag.changeType),
-			fileType: (oPropertyBag.isVariant) ? "variant" : "change",
+			fileType: sFileType,
 			changeType: oPropertyBag.changeType || "",
 			reference: oPropertyBag.reference || "",
 			packageName: oPropertyBag.packageName || "",

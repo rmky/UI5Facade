@@ -6,8 +6,7 @@
 
 // Provides helper sap.ui.table.TableKeyboardDelegate2.
 sap.ui.define([
-	"jquery.sap.global", "sap/ui/base/Object", "sap/ui/Device", "./library", "./TableUtils"
-], function(jQuery, BaseObject, Device, library, TableUtils) {
+"jquery.sap.global", "sap/ui/base/Object", "sap/ui/Device", "./library", "./TableUtils", "jquery.sap.keycodes"], function(jQuery, BaseObject, Device, library, TableUtils) {
 	"use strict";
 
 	// Shortcuts
@@ -71,7 +70,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate2
@@ -420,10 +419,10 @@ sap.ui.define([
 
 			if (sDirection === NavigationDirection.UP) {
 				if (TableUtils.isFirstScrollableRow(oTable, oCellInfo.cell)) {
-					bScrolled = oTable._getScrollExtension().scroll(false, false, true); // Scroll one row up.
+					bScrolled = oTable._getScrollExtension().scrollVertically(false, false, true); // Scroll one row up.
 				}
 			} else if (TableUtils.isLastScrollableRow(oTable, oCellInfo.cell)) {
-				bScrolled = oTable._getScrollExtension().scroll(true, false, true); // Scroll one row down.
+				bScrolled = oTable._getScrollExtension().scrollVertically(true, false, true); // Scroll one row down.
 			}
 
 			if (bScrolled) {
@@ -763,7 +762,6 @@ sap.ui.define([
 	 * Hook which is called by the keyboard extension when the table should enter the action mode.
 	 *
 	 * @returns {boolean} Returns <code>true</code>, if the {@link sap.ui.table.TableKeyboardExtension} should enter the action mode.
-	 *
 	 * @see TableKeyboardExtension#setActionMode
 	 */
 	TableKeyboardDelegate.prototype.enterActionMode = function() {
@@ -933,7 +931,7 @@ sap.ui.define([
 
 		// Ctrl+A: Select/Deselect all.
 		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.A, ModKey.CTRL)) {
-			oEvent.preventDefault(); // To prevent full page text selection.
+			oEvent.preventDefault(); // Prevent full page text selection.
 
 			if (oCellInfo.isOfType(CellType.ANYCONTENTCELL | CellType.COLUMNROWHEADER) && sSelectionMode === SelectionMode.MultiToggle) {
 				this._toggleSelectAll();
@@ -953,7 +951,7 @@ sap.ui.define([
 
 		// Shift+F10: Open the context menu.
 		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.F10, ModKey.SHIFT)) {
-			oEvent.preventDefault(); // To prevent opening the default browser context menu.
+			oEvent.preventDefault(); // Prevent opening the default browser context menu.
 			TableUtils.Menu.openContextMenu(this, oEvent.target, true);
 		}
 	};
@@ -1000,7 +998,7 @@ sap.ui.define([
 			return;
 		}
 
-		oEvent.preventDefault(); // To prevent opening the default browser context menu.
+		oEvent.preventDefault(); // Prevent opening the default browser context menu.
 
 		var $Cell = TableUtils.getCell(this, oEvent.target);
 		var oCellInfo = TableUtils.getCellInfo($Cell);
@@ -1060,12 +1058,12 @@ sap.ui.define([
 			if (bIsLastInteractiveElementInRow) {
 				var iAbsoluteRowIndex = oRow.getIndex();
 				var bIsLastScrollableRow = TableUtils.isLastScrollableRow(this, $Cell);
-				var bIsAbsoluteLastRow = this._getRowCount() - 1 === iAbsoluteRowIndex;
+				var bIsAbsoluteLastRow = this._getTotalRowCount() - 1 === iAbsoluteRowIndex;
 				var bTableHasRowSelectors = TableUtils.isRowSelectorSelectionAllowed(this);
 				var bScrolled = false;
 
 				if (!bIsAbsoluteLastRow && bIsLastScrollableRow) {
-					bScrolled = this._getScrollExtension().scroll(true, null, true);
+					bScrolled = this._getScrollExtension().scrollVertically(true, null, true);
 				}
 
 				if (bIsAbsoluteLastRow) {
@@ -1123,7 +1121,7 @@ sap.ui.define([
 
 			oEvent.preventDefault();
 
-		} else if (oCellInfo.isOfType(CellType.DATACELL | CellType.ROWHEADER)) {
+		} else if (oCellInfo.isOfType(CellType.ANYCONTENTCELL)) {
 			TableKeyboardDelegate._forwardFocusToTabDummy(this, "sapUiTableCtrlAfter");
 
 		} else if (oEvent.target === this.getDomRef("overlay")) {
@@ -1172,7 +1170,7 @@ sap.ui.define([
 				var bScrolled = false;
 
 				if (!bIsAbsoluteFirstRow && bIsFirstScrollableRow) {
-					bScrolled = this._getScrollExtension().scroll(false, null, true);
+					bScrolled = this._getScrollExtension().scrollVertically(false, null, true);
 				}
 
 				if (bIsAbsoluteFirstRow) {
@@ -1216,8 +1214,8 @@ sap.ui.define([
 				TableKeyboardDelegate._focusElement(this, $InteractiveElement[0], true);
 			}
 
-		} else if (oCellInfo.isOfType(CellType.DATACELL | CellType.ROWHEADER) || oEvent.target === this.getDomRef("noDataCnt")) {
-			if (this.getColumnHeaderVisible()) {
+		} else if (oCellInfo.isOfType(CellType.ANYCONTENTCELL) || oEvent.target === this.getDomRef("noDataCnt")) {
+			if (this.getColumnHeaderVisible() && !oCellInfo.isOfType(CellType.ROWACTION)) {
 				TableKeyboardDelegate._setFocusOnColumnHeaderOfLastFocusedDataCell(this, oEvent);
 				oEvent.preventDefault();
 			} else {
@@ -1265,7 +1263,7 @@ sap.ui.define([
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target);
 
 		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.SHIFT)) {
-			oEvent.preventDefault(); // To avoid text selection flickering.
+			oEvent.preventDefault(); // Avoid text selection flickering.
 
 			/* Range Selection */
 
@@ -1280,12 +1278,12 @@ sap.ui.define([
 				var iDataRowIndex = this.getRows()[iFocusedRowIndex].getIndex();
 
 				// If we are in the last data row of the table we don't need to do anything.
-				if (iDataRowIndex === this._getRowCount() - 1) {
+				if (iDataRowIndex === this._getTotalRowCount() - 1) {
 					return;
 				}
 
 				if (TableUtils.isLastScrollableRow(this, oEvent.target)) {
-					var bScrolled = this._getScrollExtension().scroll(true, false, true);
+					var bScrolled = this._getScrollExtension().scrollVertically(true, false, true);
 					if (bScrolled) {
 						preventItemNavigation(oEvent);
 					}
@@ -1343,7 +1341,7 @@ sap.ui.define([
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target);
 
 		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.SHIFT)) {
-			oEvent.preventDefault(); // To avoid text selection flickering.
+			oEvent.preventDefault(); // Avoid text selection flickering.
 
 			/* Range Selection */
 
@@ -1364,7 +1362,7 @@ sap.ui.define([
 				}
 
 				if (TableUtils.isFirstScrollableRow(this, oEvent.target)) {
-					var bScrolled = this._getScrollExtension().scroll(false, false, true);
+					var bScrolled = this._getScrollExtension().scrollVertically(false, false, true);
 					if (bScrolled) {
 						preventItemNavigation(oEvent);
 					}
@@ -1408,7 +1406,7 @@ sap.ui.define([
 		var bIsRTL = sap.ui.getCore().getConfiguration().getRTL();
 
 		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.SHIFT)) {
-			oEvent.preventDefault(); // To avoid text selection flickering.
+			oEvent.preventDefault(); // Avoid text selection flickering.
 
 			/* Range Selection */
 
@@ -1486,7 +1484,7 @@ sap.ui.define([
 		var bIsRTL = sap.ui.getCore().getConfiguration().getRTL();
 
 		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.SHIFT)) {
-			oEvent.preventDefault(); // To avoid text selection flickering.
+			oEvent.preventDefault(); // Avoid text selection flickering.
 
 			/* Range Selection */
 
@@ -1551,15 +1549,18 @@ sap.ui.define([
 			return;
 		}
 
-		oEvent.preventDefault(); // Prevent scrolling the page.
-
 		// If focus is on a group header, do nothing.
 		if (TableUtils.Grouping.isInGroupingRow(oEvent.target)) {
 			preventItemNavigation(oEvent);
+			oEvent.preventDefault(); // Prevent scrolling the page.
 			return;
 		}
 
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target);
+
+		if (oCellInfo.isOfType(CellType.ANY)) {
+			oEvent.preventDefault(); // Prevent scrolling the page.
+		}
 
 		if (oCellInfo.isOfType(CellType.DATACELL | CellType.ROWACTION | CellType.COLUMNHEADER)) {
 			var oFocusedItemInfo = TableUtils.getFocusedItemInfo(this);
@@ -1589,10 +1590,9 @@ sap.ui.define([
 			return;
 		}
 
-		oEvent.preventDefault(); // Prevent scrolling the page.
-
 		// If focus is on a group header, do nothing.
 		if (TableUtils.Grouping.isInGroupingRow(oEvent.target)) {
+			oEvent.preventDefault(); // Prevent scrolling the page.
 			preventItemNavigation(oEvent);
 			return;
 		}
@@ -1600,6 +1600,8 @@ sap.ui.define([
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target);
 
 		if (oCellInfo.isOfType(CellType.ANY)) {
+			oEvent.preventDefault(); // Prevent scrolling the page.
+
 			var oFocusedItemInfo = TableUtils.getFocusedItemInfo(this);
 			var iFocusedIndex = oFocusedItemInfo.cell;
 			var iColumnCount = oFocusedItemInfo.columnCount;
@@ -1650,7 +1652,7 @@ sap.ui.define([
 		}
 
 		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.CTRL)) {
-			oEvent.preventDefault(); // To prevent the browser page from scrolling to the top.
+			oEvent.preventDefault(); // Prevent scrolling the page.
 			var oCellInfo = TableUtils.getCellInfo(oEvent.target);
 
 			if (oCellInfo.isOfType(CellType.ANYCONTENTCELL | CellType.COLUMNHEADER)) {
@@ -1682,7 +1684,7 @@ sap.ui.define([
 					/* Scrollable area */
 					} else if (iFocusedRow >= iHeaderRowCount + iFixedTopRowCount &&
 							   iFocusedRow < iHeaderRowCount + TableUtils.getNonEmptyVisibleRowCount(this) - iFixedBottomRowCount) {
-						this._getScrollExtension().scrollMax(false, true);
+						this._getScrollExtension().scrollVerticallyMax(false, true);
 						// If a fixed top area exists or we are in the row action column (has no header), then set the focus to the first row (of
 						// the top fixed area), otherwise set the focus to the first row of the column header area.
 						if (iFixedTopRowCount > 0 || oCellInfo.isOfType(CellType.ROWACTION)) {
@@ -1694,7 +1696,7 @@ sap.ui.define([
 					/* Bottom fixed area */
 					} else {
 						// Set the focus to the first row of the scrollable area and scroll to top.
-						this._getScrollExtension().scrollMax(false, true);
+						this._getScrollExtension().scrollVerticallyMax(false, true);
 						TableUtils.focusItem(this, iFocusedIndex - iColumnCount * (iFocusedRow - iHeaderRowCount - iFixedTopRowCount), oEvent);
 					}
 				}
@@ -1708,7 +1710,7 @@ sap.ui.define([
 		}
 
 		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.CTRL)) {
-			oEvent.preventDefault(); // To prevent the browser page from scrolling to the bottom.
+			oEvent.preventDefault(); // Prevent scrolling the page.
 			var oCellInfo = TableUtils.getCellInfo(oEvent.target);
 
 			if (oCellInfo.isOfType(CellType.ANY)) {
@@ -1741,7 +1743,7 @@ sap.ui.define([
 							TableUtils.focusItem(
 								this, iFocusedIndex + iColumnCount * (iHeaderRowCount + iFixedTopRowCount - iFocusedRow - 1), oEvent);
 						} else {
-							this._getScrollExtension().scrollMax(true, true);
+							this._getScrollExtension().scrollVerticallyMax(true, true);
 							TableUtils.focusItem(
 								this,
 								iFocusedIndex + iColumnCount * (iHeaderRowCount + iNonEmptyVisibleRowCount - iFixedBottomRowCount - iFocusedRow - 1),
@@ -1752,7 +1754,7 @@ sap.ui.define([
 					/* Top fixed area */
 					} else if (iFocusedRow >= iHeaderRowCount && iFocusedRow < iHeaderRowCount + iFixedTopRowCount) {
 						// Set the focus to the last row of the scrollable area and scroll to bottom.
-						this._getScrollExtension().scrollMax(true, true);
+						this._getScrollExtension().scrollVerticallyMax(true, true);
 						TableUtils.focusItem(
 							this,
 							iFocusedIndex + iColumnCount * (iHeaderRowCount + iNonEmptyVisibleRowCount - iFixedBottomRowCount - iFocusedRow - 1),
@@ -1763,7 +1765,7 @@ sap.ui.define([
 					} else if (iFocusedRow >= iHeaderRowCount + iFixedTopRowCount &&
 							   iFocusedRow < iHeaderRowCount + iNonEmptyVisibleRowCount - iFixedBottomRowCount) {
 						// Set the focus to the last row of the scrollable area and scroll to bottom.
-						this._getScrollExtension().scrollMax(true, true);
+						this._getScrollExtension().scrollVerticallyMax(true, true);
 						TableUtils.focusItem(
 							this, iFocusedIndex + iColumnCount * (iHeaderRowCount + iNonEmptyVisibleRowCount - iFocusedRow - 1), oEvent);
 
@@ -1811,7 +1813,7 @@ sap.ui.define([
 					var iPageSize = TableUtils.getNonEmptyVisibleRowCount(this) - iFixedTopRowCount - iFixedBottomRowCount;
 					var iRowsToBeScrolled = this.getFirstVisibleRow();
 
-					this._getScrollExtension().scroll(false, true, true); // Scroll up one page
+					this._getScrollExtension().scrollVertically(false, true, true); // Scroll up one page
 
 					// Only change the focus if scrolling was not performed over a full page, or not at all.
 					if (iRowsToBeScrolled < iPageSize) {
@@ -1902,9 +1904,9 @@ sap.ui.define([
 				/* Scrollable area - Last row */
 				} else if (iFocusedRow === iHeaderRowCount + iNonEmptyVisibleRowCount - iFixedBottomRowCount - 1) {
 					var iPageSize = TableUtils.getNonEmptyVisibleRowCount(this) - iFixedTopRowCount - iFixedBottomRowCount;
-					var iRowsToBeScrolled = this._getRowCount() - iFixedBottomRowCount - this.getFirstVisibleRow() - iPageSize * 2;
+					var iRowsToBeScrolled = this._getTotalRowCount() - iFixedBottomRowCount - this.getFirstVisibleRow() - iPageSize * 2;
 
-					this._getScrollExtension().scroll(true, true, true); // Scroll down one page
+					this._getScrollExtension().scrollVertically(true, true, true); // Scroll down one page
 
 					// If scrolling was not performed over a full page and there is a bottom fixed area,
 					// then set the focus to the last row of the bottom fixed area.

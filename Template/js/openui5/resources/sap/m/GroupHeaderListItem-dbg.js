@@ -5,10 +5,22 @@
  */
 
 // Provides control sap.m.GroupHeaderListItem.
-sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
-	function(jQuery, ListItemBase, library) {
+sap.ui.define(['./ListItemBase', './library', 'sap/ui/core/library'],
+	function(ListItemBase, library, coreLibrary) {
 	"use strict";
 
+
+
+	// shortcut for sap.m.ListMode
+	var ListMode = library.ListMode;
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
+
+	function isTable(o) {
+		var FNClass = sap.ui.require('sap/m/Table');
+		return typeof FNClass === 'function' && (o instanceof FNClass);
+	}
 
 
 	/**
@@ -24,7 +36,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -59,13 +71,13 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
 			 * Defines the title text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 			 * @since 1.28.0
 			 */
-			titleTextDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : sap.ui.core.TextDirection.Inherit}
+			titleTextDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit}
 		}
 	}});
 
 	// GroupHeaderListItem does not respect the list mode
 	GroupHeaderListItem.prototype.getMode = function() {
-		return sap.m.ListMode.None;
+		return ListMode.None;
 	};
 
 	GroupHeaderListItem.prototype.shouldClearLastValue = function() {
@@ -75,7 +87,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
 	// returns responsible table control for the item
 	GroupHeaderListItem.prototype.getTable = function() {
 		var oParent = this.getParent();
-		if (oParent instanceof sap.m.Table) {
+		if (isTable(oParent)) {
 			return oParent;
 		}
 
@@ -87,7 +99,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
 
 	GroupHeaderListItem.prototype.onBeforeRendering = function() {
 		var oParent = this.getParent();
-		if (oParent && sap.m.Table && oParent instanceof sap.m.Table) {
+		if (isTable(oParent)) {
 			// clear column last value to reset cell merging
 			oParent.getColumns().forEach(function(oColumn) {
 				oColumn.clearLastValue();
@@ -112,4 +124,4 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
 
 	return GroupHeaderListItem;
 
-}, /* bExport= */ true);
+});

@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.m.CustomListItem.
-sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
-	function(jQuery, ListItemBase, library) {
+sap.ui.define(['./ListItemBase', './library'],
+	function(ListItemBase, library) {
 	"use strict";
 
 
@@ -24,7 +24,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -53,4 +53,4 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library'],
 
 	return CustomListItem;
 
-}, /* bExport= */ true);
+});

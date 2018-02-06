@@ -6,9 +6,12 @@
 
 //Provides control sap.ui.unified.CalendarMonthInterval.
 sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleData', 'sap/ui/core/delegate/ItemNavigation',
-		'sap/ui/model/type/Date', 'sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/library'],
-	function(jQuery, Control, LocaleData, ItemNavigation, Date1, CalendarUtils, CalendarDate, library) {
+		'sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/library', 'sap/ui/core/format/DateFormat', 'sap/ui/core/library', 'sap/ui/core/Locale'],
+	function(jQuery, Control, LocaleData, ItemNavigation, CalendarUtils, CalendarDate, library, DateFormat, coreLibrary, Locale) {
 	"use strict";
+
+	// shortcut for sap.ui.core.CalendarType
+	var CalendarType = coreLibrary.CalendarType;
 
 	/*
 	 * <code>CalendarDate</code> objects are used inside the <code>MonthsRow</code>, whereas JavaScript dates are used in the API.
@@ -32,7 +35,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	 * The MontsRow works with JavaScript Date objects, but only the month and the year are used to display and interact.
 	 * As representation for a month, the 1st of the month will always be returned in the API.
 	 * @extends sap.ui.core.Control
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -141,8 +144,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	MonthsRow.prototype.init = function(){
 
 		//need day in pattern because in islamic calendar 2 Month can start in one gregorianic calendar
-		this._oFormatYyyymm = sap.ui.core.format.DateFormat.getInstance({pattern: "yyyyMMdd", calendarType: sap.ui.core.CalendarType.Gregorian});
-		this._oFormatLong = sap.ui.core.format.DateFormat.getInstance({pattern: "MMMM y"});
+		this._oFormatYyyymm = DateFormat.getInstance({pattern: "yyyyMMdd", calendarType: CalendarType.Gregorian});
+		this._oFormatLong = DateFormat.getInstance({pattern: "MMMM y"});
 
 		this._mouseMoveProxy = jQuery.proxy(this._handleMouseMove, this);
 
@@ -372,7 +375,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 			return oParent._getLocaleData();
 		} else if (!this._oLocaleData) {
 			var sLocale = this._getLocale();
-			var oLocale = new sap.ui.core.Locale(sLocale);
+			var oLocale = new Locale(sLocale);
 			this._oLocaleData = LocaleData.getInstance(oLocale);
 		}
 
@@ -388,8 +391,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		var sLocale = this._getLocale();
 
 		if (this._oFormatLong.oLocale.toString() != sLocale) {
-			var oLocale = new sap.ui.core.Locale(sLocale);
-			this._oFormatLong = sap.ui.core.format.DateFormat.getInstance({style: "long"} , oLocale);
+			var oLocale = new Locale(sLocale);
+			this._oFormatLong = DateFormat.getInstance({style: "long"} , oLocale);
 		}
 
 		return this._oFormatLong;
@@ -1046,11 +1049,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 
 	}
 
-   /**
-	* @param {sap.ui.unified.calendar.CalendarDate} oDate the calendar date to focus
-	* @param {boolean} bNoFocus if true, item navigator's focus won't be set, but just the index will so.
-	* @private
-	*/
+	/**
+	 * @param {sap.ui.unified.calendar.CalendarDate} oDate the calendar date to focus
+	 * @param {boolean} bNoFocus if true, item navigator's focus won't be set, but just the index will so.
+	 * @private
+	 */
 	function _focusDate(oDate, bNoFocus){
 
 		var sYyyymm = this._oFormatYyyymm.format(oDate.toUTCJSDate(), true);
@@ -1471,4 +1474,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 
 	return MonthsRow;
 
-}, /* bExport= */ true);
+});

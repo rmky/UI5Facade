@@ -5,9 +5,14 @@
  */
 
 // Provides control sap.m.List.
-sap.ui.define(['jquery.sap.global', './ListBase', './library'],
-	function(jQuery, ListBase, library) {
+sap.ui.define(['./ListBase', './library'],
+	function(ListBase, library) {
 	"use strict";
+
+
+
+	// shortcut for sap.m.BackgroundDesign
+	var BackgroundDesign = library.BackgroundDesign;
 
 
 
@@ -20,10 +25,14 @@ sap.ui.define(['jquery.sap.global', './ListBase', './library'],
 	 * @class
 	 * The List control provides a container for all types of list items.
 	 * For mobile devices, the recommended limit of list items is 100 to assure proper performance. To improve initial rendering of large lists, use the "growing" feature. Please refer to the SAPUI5 Developer Guide for more information..
+	 *
+	 * See section "{@link topic:1da158152f644ba1ad408a3e982fd3df Lists}"
+	 * in the documentation for an introduction to <code>sap.m.List</code> control.
+	 *
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -39,7 +48,7 @@ sap.ui.define(['jquery.sap.global', './ListBase', './library'],
 			 * Sets the background style of the list. Depending on the theme, you can change the state of the background from <code>Solid</code> to <code>Translucent</code> or to <code>Transparent</code>.
 			 * @since 1.14
 			 */
-			backgroundDesign : {type : "sap.m.BackgroundDesign", group : "Appearance", defaultValue : sap.m.BackgroundDesign.Solid}
+			backgroundDesign : {type : "sap.m.BackgroundDesign", group : "Appearance", defaultValue : BackgroundDesign.Solid}
 		},
 		aggregations : {
 
@@ -66,8 +75,7 @@ sap.ui.define(['jquery.sap.global', './ListBase', './library'],
 		 * We are trying to extend renderer to render list as table
 		 * This is so ugly and we need to get rid of it ASAP
 		 */
-		jQuery.sap.require("sap.m.Table");
-		var proto = sap.m.Table.prototype;
+		var proto = sap.ui.requireSync("sap/m/Table").prototype;
 		Object.keys(proto).forEach(function(key) {
 			this[key] = proto[key];
 		}, this);
@@ -88,4 +96,4 @@ sap.ui.define(['jquery.sap.global', './ListBase', './library'],
 
 	return List;
 
-}, /* bExport= */ true);
+});

@@ -7,11 +7,12 @@
 //Provides mixin sap.ui.model.odata.v4.ODataParentBinding for classes extending sap.ui.model.Binding
 //with dependent bindings
 sap.ui.define([
+	"jquery.sap.global",
 	"sap/ui/model/ChangeReason",
 	"./ODataBinding",
 	"./lib/_Helper",
 	"./lib/_SyncPromise"
-], function (ChangeReason, asODataBinding, _Helper, _SyncPromise) {
+], function (jQuery, ChangeReason, asODataBinding, _Helper, _SyncPromise) {
 	"use strict";
 
 	/**
@@ -306,8 +307,9 @@ sap.ui.define([
 	 *   A promise which is resolved without a result in case of success, or rejected with an
 	 *   instance of <code>Error</code> in case of failure
 	 * @throws {Error}
-	 *   If this binding is a deferred operation binding, if the group ID is neither '$auto'
-	 *   nor '$direct' or if the cache promise for this binding is not yet fulfilled
+	 *   If this binding is a deferred operation binding, if the group ID has
+	 *   {@link sap.ui.model.odata.v4.SubmitMode.Auto} or if the cache promise for this binding is
+	 *   not yet fulfilled
 	 *
 	 * @private
 	 */
@@ -325,7 +327,7 @@ sap.ui.define([
 
 		if (oCache) {
 			sGroupId = sGroupId || this.getUpdateGroupId();
-			if (sGroupId !== "$auto" && sGroupId !== "$direct") {
+			if (!this.oModel.isAutoGroup(sGroupId) && !this.oModel.isDirectGroup(sGroupId)) {
 				throw new Error("Illegal update group ID: " + sGroupId);
 			}
 			return oCache._delete(sGroupId, sEditUrl, sPath, fnCallback);
@@ -453,25 +455,9 @@ sap.ui.define([
 	};
 
 	/**
-	 * Fetches the type of the given model path from the metadata.
-	 *
-	 * @param {string} sPath
-	 *   The resource path, e.g. SalesOrderList('4711')/SO_2_BP
-	 * @returns {SyncPromise}
-	 *   A promise that is resolved with the type of the object at the given path.
-	 *
-	 * @private
-	 */
-	ODataParentBinding.prototype.fetchType = function (sPath) {
-		var oMetaModel = this.oModel.getMetaModel();
-
-		return oMetaModel.fetchObject(oMetaModel.getMetaPath("/" + sPath + "/"));
-	};
-
-	/**
 	 * Returns the query options for the given path relative to this binding. Uses the options
 	 * resulting from the binding parameters or the options inherited from the parent binding by
-	 * using {@link Context#getQueryOptionsForPath}.
+	 * using {@link sap.ui.model.odata.v4.Context#getQueryOptionsForPath}.
 	 *
 	 * @param {string} sPath
 	 *   The relative path for which the query options are requested
@@ -735,6 +721,8 @@ sap.ui.define([
 	 *   The edit URL corresponding to the entity to be updated
 	 * @param {string} sEntityPath
 	 *   The resolved, absolute entity path (as delivered from ODataMetaModel#fetchUpdateData)
+	 * @param {string} [sUnitOrCurrencyPath]
+	 *   The path of the unit or currency for the property, relative to the entity
 	 * @returns {SyncPromise}
 	 *   A promise on the outcome of the cache's <code>update</code> call
 	 * @throws {Error}
@@ -743,7 +731,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataParentBinding.prototype.updateValue = function (sGroupId, sPropertyPath, vValue,
-		fnErrorCallback, sEditUrl, sEntityPath) {
+		fnErrorCallback, sEditUrl, sEntityPath, sUnitOrCurrencyPath) {
 		var oCache;
 
 		if (!this.oCachePromise.isFulfilled()) {
@@ -754,11 +742,12 @@ sap.ui.define([
 		if (oCache) {
 			sGroupId = sGroupId || this.getUpdateGroupId();
 			return oCache.update(sGroupId, sPropertyPath, vValue, fnErrorCallback, sEditUrl,
-				this.getRelativePath(sEntityPath));
+				this.getRelativePath(sEntityPath), sUnitOrCurrencyPath);
 		}
 
 		return this.oContext.getBinding()
-			.updateValue(sGroupId, sPropertyPath, vValue, fnErrorCallback, sEditUrl, sEntityPath);
+			.updateValue(sGroupId, sPropertyPath, vValue, fnErrorCallback, sEditUrl, sEntityPath,
+				sUnitOrCurrencyPath);
 	};
 
 	return function (oPrototype) {

@@ -338,5 +338,5 @@ sap.ui.define(['sap/ui/base/Object', 'sap/ui/core/date/UniversalDate'],
 
 		return CalendarDate;
 
-}, /* bExport= */ true);
+});
 

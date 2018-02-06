@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/library', 'sap/ui/core/ValueStateSupport'],
-	function(jQuery, coreLibrary, ValueStateSupport) {
+sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/Device'],
+	function(coreLibrary, ValueStateSupport, Device) {
 	"use strict";
 
 
@@ -34,7 +34,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/library', 'sap/ui/core/ValueSta
 			bEditable = oCheckBox.getEditable(),
 			oCbLabel = oCheckBox.getAggregation("_label"),
 			bInErrorState = ValueState.Error === oCheckBox.getValueState(),
-			bInWarningState = ValueState.Warning === oCheckBox.getValueState();
+			bInWarningState = ValueState.Warning === oCheckBox.getValueState(),
+			bUseEntireWidth = oCheckBox.getUseEntireWidth();
 
 		// CheckBox wrapper
 		oRm.write("<div");
@@ -60,6 +61,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/library', 'sap/ui/core/ValueSta
 
 		oRm.writeControlData(oCheckBox);
 		oRm.writeClasses();
+
+		if (bUseEntireWidth) {
+			oRm.addStyle("width", oCheckBox.getWidth());
+			oRm.writeStyles();
+		}
 
 		var sTooltip = ValueStateSupport.enrichTooltip(oCheckBox, oCheckBox.getTooltip_AsString());
 		if (sTooltip) {
@@ -87,7 +93,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/library', 'sap/ui/core/ValueSta
 		// CheckBox style class
 		oRm.addClass("sapMCbBg");
 
-		if (bEnabled && bEditable && sap.ui.Device.system.desktop) {
+		if (bEnabled && bEditable && Device.system.desktop) {
 			oRm.addClass("sapMCbHoverable");
 		}
 

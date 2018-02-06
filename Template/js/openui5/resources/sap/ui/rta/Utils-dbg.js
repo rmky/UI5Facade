@@ -27,7 +27,7 @@ function(
 	 * @class Utility functionality to work with controls, e.g. iterate through aggregations, find parents, etc.
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @private
 	 * @static
@@ -43,7 +43,7 @@ function(
 
 	Utils._sFocusableOverlayClass = ".sapUiDtOverlaySelectable";
 
-	Utils._sRtaStyleClassName = "";
+	Utils._sRtaStyleClassName = null;
 
 	/**
 	 * Returns the rta specific Style Class
@@ -63,11 +63,7 @@ function(
 		if (sLayer === "USER") {
 			Utils._sRtaStyleClassName = "";
 		} else if (FlexUtils.getLayerIndex(sLayer) > -1) {
-			if (sap.ui.getCore().getConfiguration().getTheme() === "sap_belize") {
-				Utils._sRtaStyleClassName = "sapContrast";
-			} else if (sap.ui.getCore().getConfiguration().getTheme() === "sap_belize_plus") {
-				Utils._sRtaStyleClassName = "sapContrastPlus";
-			}
+			Utils._sRtaStyleClassName = "sapContrast sapContrastPlus";
 		}
 	};
 
@@ -503,10 +499,10 @@ function(
 	};
 
 	/**
-	 * Fetching entity metadata by specified path
+	 * Fetching entity metadata by specified path.
 	 * @param {sap.ui.model.Model} oModel - Model
-	 * @param {String} sPath - Path to resolve
-	 * @returns {Object|null} - Plain object with entity description
+	 * @param {string} sPath Path to resolve
+	 * @returns {Object|null} Plain object with entity description
 	 */
 	Utils.getEntityTypeByPath = function (oModel, sPath) {
 		return oModel.oMetadata._getEntityTypeByPath(sPath);
@@ -518,11 +514,15 @@ function(
 	 *
 	 * TODO: replace with lodash.mergeWith when it's available
 	 *
-	 * @param mDestination {Object} - Destionation object
-	 * @param mSource {Object} - Source object
-	 * @param fnCustomizer {Function} - The customizer is invoked with five arguments:
-	 *                                  (vDestinationValue, vSourceValue, sProperty, mDestination, mSource).
-	 * @return {Object} - returns mDestination object
+	 * @param {Object} mDestination Destination object
+	 * @param {Object} mSource Source object
+	 * @param {function} fnCustomizer The customizer is invoked with the following five arguments:
+	 *                                  vDestinationValue: Value of the property in the destination object
+	 *                                  vSourceValue: Value of the property in the source object
+	 *                                  sProperty: Property being processed
+	 *                                  mDestination: Destination object
+	 *                                  mSourve: Source object
+	 * @return {Object} - Returns <code>mDestination</code> object
 	 */
 	Utils.mergeWith = function (mDestination, mSource, fnCustomizer) {
 		if (!(typeof fnCustomizer === "function")) {
@@ -538,8 +538,7 @@ function(
 						sSourceProperty,
 						mDestination,
 						mSource
-						)
-					: mSource[sSourceProperty];
+					) : mSource[sSourceProperty];
 			}
 		}
 
@@ -547,10 +546,39 @@ function(
 	};
 
 	/**
-	 * Returns if the Dom Element is currently visible on the screen
+	 * Extending helper which allows custom function
+	 * for extending.
 	 *
-	 * @param oDomElement {HTMLElement|jQuery} Element to be evaluated
-	 * @return {boolean} - returns if oDomElement is currently visible on the screen.
+	 * @param {Object} mDestination - Destionation object
+	 * @param {Object} mSource - Source object
+	 * @param {Function} fnCustomizer - The customizer is invoked with five arguments:
+	 *                                  (vDestinationValue, vSourceValue, sProperty, mDestination, mSource).
+	 */
+	Utils.extendWith = function (mDestination, mSource, fnCustomizer) {
+		if (!(typeof fnCustomizer === "function")) {
+			throw new Error('In order to use extendWith() utility function fnCustomizer should be provided!');
+		}
+
+		for (var sSourceProperty in mSource) {
+			if (mSource.hasOwnProperty(sSourceProperty)) {
+				if (fnCustomizer(
+						mDestination[sSourceProperty],
+						mSource[sSourceProperty],
+						sSourceProperty,
+						mDestination,
+						mSource)
+				){
+					mDestination[sSourceProperty] = mSource[sSourceProperty];
+				}
+			}
+		}
+	};
+
+	/**
+	 * Returns if the <code>oDomElement</code> is currently visible on the screen.
+	 *
+	 * @param {HTMLElement|jQuery} oDomElement Element to be evaluated
+	 * @return {boolean} - Returns if <code>oDomElement</code> is currently visible on the screen.
 	 */
 	Utils.isElementInViewport = function(oDomElement) {
 		if (oDomElement instanceof jQuery) {

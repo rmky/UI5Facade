@@ -25,7 +25,7 @@ function(jQuery, DesignTimeMetadata, AggregationDesignTimeMetadata) {
 	 * @extends sap.ui.core.DesignTimeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -114,7 +114,7 @@ function(jQuery, DesignTimeMetadata, AggregationDesignTimeMetadata) {
 	 * @public
 	 */
 	ElementDesignTimeMetadata.prototype.getAggregations = function() {
-		var mAggregations = this.getData().aggregations;
+		var mAggregations = this.getData().aggregations || {};
 		var mAssociations = this.getData().associations || {};
 		Object.keys(mAssociations).forEach(function(sAssociation){
 			var mAssociation = mAssociations[sAssociation];
@@ -125,20 +125,11 @@ function(jQuery, DesignTimeMetadata, AggregationDesignTimeMetadata) {
 		return mAggregations;
 	};
 
-	/**
-	 * Returns the relevant container of an element
-	 * This is usually the getParent or the value from a function in DTMetadata
-	 * @param {object} oElement the element for which the relevant container has to be evaluated
-	 * @return {object} returns the relevant container
-	 * @public
-	 */
-	//TODO: Remove this method as soon as DTMetadata propagation is finalized
-	ElementDesignTimeMetadata.prototype.getRelevantContainer = function(oElement) {
-		var fnGetRelevantContainer = this.getData().getRelevantContainer;
-		if (!fnGetRelevantContainer || typeof fnGetRelevantContainer !== "function") {
-			return oElement.getParent();
-		}
-		return fnGetRelevantContainer(oElement);
+	ElementDesignTimeMetadata.prototype.isActionAvailableOnAggregations = function(sAction) {
+		var mAggregations = this.getAggregations();
+		return Object.keys(mAggregations).some( function (sAggregation) {
+			return mAggregations[sAggregation].actions && mAggregations[sAggregation].actions[sAction];
+		});
 	};
 
 	ElementDesignTimeMetadata.prototype.getAggregationAction = function(sAction, oElement, aArgs) {

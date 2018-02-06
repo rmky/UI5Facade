@@ -85,7 +85,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/Callout.js" size="1506" compressedSize="465">
+  <module name="sap/ui/commons/Callout.js" size="1571" compressedSize="465">
     <description>Provides control sap.ui.commons.Callout.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -93,7 +93,7 @@
       <module name="sap/ui/commons/library.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/CalloutBase.js" size="20172" compressedSize="7137">
+  <module name="sap/ui/commons/CalloutBase.js" size="20119" compressedSize="7137">
     <description>Provides control sap.ui.commons.CalloutBase.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -675,7 +675,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/RichTooltip.js" size="6384" compressedSize="2464">
+  <module name="sap/ui/commons/RichTooltip.js" size="6449" compressedSize="2464">
     <description>Provides control sap.ui.commons.RichTooltip.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1252,7 +1252,7 @@
       <module name="sap/ui/layout/VerticalLayoutRenderer.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/library-preload.js" size="543848">
+  <module name="sap/ui/commons/library-preload.js" size="549260">
     <requires>
       <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.encoder.js"/>
@@ -1725,90 +1725,90 @@
       <module name="sap/ui/layout/library.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/manifest.json" size="909">
+  <module name="sap/ui/commons/manifest.json" size="6191">
   </module>
   <module name="sap/ui/commons/messagebundle.properties" size="7855">
   </module>
-  <module name="sap/ui/commons/messagebundle_ar.properties" size="12727">
+  <module name="sap/ui/commons/messagebundle_ar.properties" size="12547">
   </module>
-  <module name="sap/ui/commons/messagebundle_bg.properties" size="14728">
+  <module name="sap/ui/commons/messagebundle_bg.properties" size="14548">
   </module>
-  <module name="sap/ui/commons/messagebundle_ca.properties" size="8241">
+  <module name="sap/ui/commons/messagebundle_ca.properties" size="8061">
   </module>
-  <module name="sap/ui/commons/messagebundle_cs.properties" size="8731">
+  <module name="sap/ui/commons/messagebundle_cs.properties" size="8551">
   </module>
-  <module name="sap/ui/commons/messagebundle_da.properties" size="8030">
+  <module name="sap/ui/commons/messagebundle_da.properties" size="7850">
   </module>
-  <module name="sap/ui/commons/messagebundle_de.properties" size="8181">
+  <module name="sap/ui/commons/messagebundle_de.properties" size="8001">
   </module>
-  <module name="sap/ui/commons/messagebundle_el.properties" size="13951">
+  <module name="sap/ui/commons/messagebundle_el.properties" size="13771">
   </module>
-  <module name="sap/ui/commons/messagebundle_en.properties" size="7732">
+  <module name="sap/ui/commons/messagebundle_en.properties" size="7552">
   </module>
-  <module name="sap/ui/commons/messagebundle_en_US_sappsd.properties" size="16038">
+  <module name="sap/ui/commons/messagebundle_en_US_sappsd.properties" size="15858">
   </module>
-  <module name="sap/ui/commons/messagebundle_en_US_saptrc.properties" size="9733">
+  <module name="sap/ui/commons/messagebundle_en_US_saptrc.properties" size="9553">
   </module>
-  <module name="sap/ui/commons/messagebundle_es.properties" size="8316">
+  <module name="sap/ui/commons/messagebundle_es.properties" size="8136">
   </module>
-  <module name="sap/ui/commons/messagebundle_et.properties" size="8193">
+  <module name="sap/ui/commons/messagebundle_et.properties" size="8013">
   </module>
-  <module name="sap/ui/commons/messagebundle_fi.properties" size="8407">
+  <module name="sap/ui/commons/messagebundle_fi.properties" size="8227">
   </module>
-  <module name="sap/ui/commons/messagebundle_fr.properties" size="8357">
+  <module name="sap/ui/commons/messagebundle_fr.properties" size="8177">
   </module>
-  <module name="sap/ui/commons/messagebundle_hi.properties" size="12991">
+  <module name="sap/ui/commons/messagebundle_hi.properties" size="12811">
   </module>
-  <module name="sap/ui/commons/messagebundle_hr.properties" size="8199">
+  <module name="sap/ui/commons/messagebundle_hr.properties" size="8019">
   </module>
-  <module name="sap/ui/commons/messagebundle_hu.properties" size="8994">
+  <module name="sap/ui/commons/messagebundle_hu.properties" size="8814">
   </module>
-  <module name="sap/ui/commons/messagebundle_it.properties" size="8165">
+  <module name="sap/ui/commons/messagebundle_it.properties" size="7985">
   </module>
-  <module name="sap/ui/commons/messagebundle_iw.properties" size="11413">
+  <module name="sap/ui/commons/messagebundle_iw.properties" size="11233">
   </module>
-  <module name="sap/ui/commons/messagebundle_ja.properties" size="10103">
+  <module name="sap/ui/commons/messagebundle_ja.properties" size="9929">
   </module>
-  <module name="sap/ui/commons/messagebundle_kk.properties" size="13887">
+  <module name="sap/ui/commons/messagebundle_kk.properties" size="13707">
   </module>
-  <module name="sap/ui/commons/messagebundle_ko.properties" size="9782">
+  <module name="sap/ui/commons/messagebundle_ko.properties" size="9602">
   </module>
-  <module name="sap/ui/commons/messagebundle_lt.properties" size="8761">
+  <module name="sap/ui/commons/messagebundle_lt.properties" size="8581">
   </module>
-  <module name="sap/ui/commons/messagebundle_lv.properties" size="8847">
+  <module name="sap/ui/commons/messagebundle_lv.properties" size="8667">
   </module>
-  <module name="sap/ui/commons/messagebundle_ms.properties" size="7976">
+  <module name="sap/ui/commons/messagebundle_ms.properties" size="7796">
   </module>
-  <module name="sap/ui/commons/messagebundle_nl.properties" size="7952">
+  <module name="sap/ui/commons/messagebundle_nl.properties" size="7772">
   </module>
-  <module name="sap/ui/commons/messagebundle_no.properties" size="8044">
+  <module name="sap/ui/commons/messagebundle_no.properties" size="7864">
   </module>
-  <module name="sap/ui/commons/messagebundle_pl.properties" size="8631">
+  <module name="sap/ui/commons/messagebundle_pl.properties" size="8451">
   </module>
-  <module name="sap/ui/commons/messagebundle_pt.properties" size="8276">
+  <module name="sap/ui/commons/messagebundle_pt.properties" size="8096">
   </module>
-  <module name="sap/ui/commons/messagebundle_ro.properties" size="8517">
+  <module name="sap/ui/commons/messagebundle_ro.properties" size="8337">
   </module>
-  <module name="sap/ui/commons/messagebundle_ru.properties" size="14367">
+  <module name="sap/ui/commons/messagebundle_ru.properties" size="14187">
   </module>
-  <module name="sap/ui/commons/messagebundle_sh.properties" size="8220">
+  <module name="sap/ui/commons/messagebundle_sh.properties" size="8040">
   </module>
-  <module name="sap/ui/commons/messagebundle_sk.properties" size="8671">
+  <module name="sap/ui/commons/messagebundle_sk.properties" size="8491">
   </module>
-  <module name="sap/ui/commons/messagebundle_sl.properties" size="8245">
+  <module name="sap/ui/commons/messagebundle_sl.properties" size="8065">
   </module>
-  <module name="sap/ui/commons/messagebundle_sv.properties" size="8160">
+  <module name="sap/ui/commons/messagebundle_sv.properties" size="7980">
   </module>
-  <module name="sap/ui/commons/messagebundle_th.properties" size="12945">
+  <module name="sap/ui/commons/messagebundle_th.properties" size="12765">
   </module>
-  <module name="sap/ui/commons/messagebundle_tr.properties" size="8741">
+  <module name="sap/ui/commons/messagebundle_tr.properties" size="8561">
   </module>
-  <module name="sap/ui/commons/messagebundle_uk.properties" size="14321">
+  <module name="sap/ui/commons/messagebundle_uk.properties" size="14141">
   </module>
-  <module name="sap/ui/commons/messagebundle_vi.properties" size="10050">
+  <module name="sap/ui/commons/messagebundle_vi.properties" size="9870">
   </module>
-  <module name="sap/ui/commons/messagebundle_zh_CN.properties" size="8900">
+  <module name="sap/ui/commons/messagebundle_zh_CN.properties" size="8720">
   </module>
-  <module name="sap/ui/commons/messagebundle_zh_TW.properties" size="8891">
+  <module name="sap/ui/commons/messagebundle_zh_TW.properties" size="8711">
   </module>
 </library>

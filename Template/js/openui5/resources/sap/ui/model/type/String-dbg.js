@@ -19,9 +19,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/SimpleType', 'sap/ui/model/For
 	 * @extends sap.ui.model.SimpleType
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
-	 * @constructor
 	 * @public
 	 * @param {object} [oFormatOptions] formatting options. String doesn't support any formatting options
 	 * @param {object} [oConstraints] value constraints. All given constraints must be fulfilled by a value to be valid

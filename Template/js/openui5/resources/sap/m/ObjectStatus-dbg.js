@@ -5,9 +5,20 @@
  */
 
 // Provides control sap.m.ObjectStatus.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/ui/core/ValueStateSupport'],
-	function(jQuery, library, Control, IconPool, ValueStateSupport) {
+sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
+	function(library, Control, ValueStateSupport, coreLibrary) {
 	"use strict";
+
+
+
+	// shortcut for sap.m.ImageHelper
+	var ImageHelper = library.ImageHelper;
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
+
+	// shortcut for sap.ui.core.ValueState
+	var ValueState = coreLibrary.ValueState;
 
 
 
@@ -21,7 +32,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * Status information that can be either text with a value state, or an icon.
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -47,7 +58,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			/**
 			 * Defines the text value state.
 			 */
-			state : {type : "sap.ui.core.ValueState", group : "Misc", defaultValue : sap.ui.core.ValueState.None},
+			state : {type : "sap.ui.core.ValueState", group : "Misc", defaultValue : ValueState.None},
 
 			/**
 			 * Icon URI. This may be either an icon font or image path.
@@ -65,7 +76,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			 * Determines the direction of the text, not including the title.
 			 * Available options for the text direction are LTR (left-to-right) and RTL (right-to-left). By default the control inherits the text direction from its parent control.
 			 */
-			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : sap.ui.core.TextDirection.Inherit}
+			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit}
 		},
 		associations : {
 
@@ -102,7 +113,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			useIconTooltip : false
 		};
 
-		this._oImageControl = sap.m.ImageHelper.getImageControl(sImgId, this._oImageControl, this, mProperties);
+		this._oImageControl = ImageHelper.getImageControl(sImgId, this._oImageControl, this, mProperties);
 
 		return this._oImageControl;
 	};
@@ -164,13 +175,13 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @protected
 	 */
 	ObjectStatus.prototype.getAccessibilityInfo = function() {
-		var sState = this.getState() != sap.ui.core.ValueState.None ? ValueStateSupport.getAdditionalText(this.getState()) : "";
+		var sState = this.getState() != ValueState.None ? ValueStateSupport.getAdditionalText(this.getState()) : "";
 
 		return {
-			description: ((this.getTitle() || "") + " " + (this.getText() || "") + " " + sState).trim()
+			description: ((this.getTitle() || "") + " " + (this.getText() || "") + " " + sState + " " + (this.getTooltip() || "")).trim()
 		};
 	};
 
 	return ObjectStatus;
 
-}, /* bExport= */ true);
+});

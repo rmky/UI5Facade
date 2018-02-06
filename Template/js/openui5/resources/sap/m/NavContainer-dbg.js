@@ -8,8 +8,11 @@
 sap.ui.define([
 	'jquery.sap.global',
 	'./library',
-	'sap/ui/core/Control'
-], function (jQuery, library, Control) {
+	'sap/ui/core/Control',
+	'sap/ui/core/RenderManager',
+	'sap/ui/Device',
+	'jquery.sap.events'
+], function (jQuery, library, Control, RenderManager, Device) {
 	"use strict";
 
 
@@ -26,7 +29,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -577,7 +580,14 @@ sap.ui.define([
 	 * @private
 	 */
 	NavContainer.prototype._safeBackToPage = function (pageId, transitionName, data, oTransitionParameters) {
+		var oCurrentPage;
+
 		if (!this.getPage(pageId)) {
+			return this;
+		}
+
+		oCurrentPage = this.getCurrentPage();
+		if (oCurrentPage && oCurrentPage.getId() === pageId) {
 			return this;
 		}
 
@@ -711,7 +721,7 @@ sap.ui.define([
 			var bContinue = this.fireNavigate(oNavInfo);
 			if (bContinue) { // ok, let's do the navigation
 
-				sap.m.closeKeyboard();
+				library.closeKeyboard();
 
 				// TODO: let one of the pages also cancel navigation?
 				var oEvent = jQuery.Event("BeforeHide", oNavInfo);
@@ -752,7 +762,7 @@ sap.ui.define([
 				// render the page that should get visible
 				var oToPageDomRef;
 
-				if (!(oToPageDomRef = oToPage.getDomRef()) || oToPageDomRef.parentNode != this.getDomRef() || sap.ui.core.RenderManager.isPreservedContent(oToPageDomRef)) {
+				if (!(oToPageDomRef = oToPage.getDomRef()) || oToPageDomRef.parentNode != this.getDomRef() || RenderManager.isPreservedContent(oToPageDomRef)) {
 					oToPage.addStyleClass("sapMNavItemRendering");
 					jQuery.sap.log.debug("Rendering 'to' page '" + oToPage.toString() + "' for 'to' navigation");
 					var rm = sap.ui.getCore().createRenderManager();
@@ -955,7 +965,7 @@ sap.ui.define([
 			var bContinue = this.fireNavigate(oNavInfo);
 			if (bContinue) { // ok, let's do the navigation
 
-				sap.m.closeKeyboard();
+				library.closeKeyboard();
 
 				var oEvent = jQuery.Event("BeforeHide", oNavInfo);
 				oEvent.srcControl = this; // store the element on the event (aligned with jQuery syntax)
@@ -1015,7 +1025,7 @@ sap.ui.define([
 
 				// make sure the to-page is rendered
 				var oToPageDomRef;
-				if (!(oToPageDomRef = oToPage.getDomRef()) || oToPageDomRef.parentNode != this.getDomRef() || sap.ui.core.RenderManager.isPreservedContent(oToPageDomRef)) {
+				if (!(oToPageDomRef = oToPage.getDomRef()) || oToPageDomRef.parentNode != this.getDomRef() || RenderManager.isPreservedContent(oToPageDomRef)) {
 					oToPage.addStyleClass("sapMNavItemRendering");
 					jQuery.sap.log.debug("Rendering 'to' page '" + oToPage.toString() + "' for back navigation");
 					var rm = sap.ui.getCore().createRenderManager();
@@ -1175,7 +1185,7 @@ sap.ui.define([
 
 					// workaround for bug in current webkit versions: in slided-in elements the z-order may be wrong and will be corrected once a re-layout is enforced
 					// see http://code.google.com/p/chromium/issues/detail?id=246965  - still an issue in iOS 6.1.3 as of 03/2015
-					if (sap.ui.Device.browser.webkit) {
+					if (Device.browser.webkit) {
 						window.setTimeout(function () {
 							oToPage.$().css("box-shadow", "0em 1px 0em rgba(128, 128, 1280, 0.1)"); // add box-shadow
 							window.setTimeout(function () {
@@ -1893,4 +1903,4 @@ sap.ui.define([
 
 	return NavContainer;
 
-}, /* bExport= */ true);
+});

@@ -30,11 +30,11 @@ sap.ui.define("sap/tnt/NavigationListRenderer",['jquery.sap.global', 'sap/ui/cor
 		 * @param {sap.ui.core.Control} control An object representation of the control that should be rendered
 		 */
 		NavigationListRenderer.render = function (rm, control) {
-			var group,
-				role,
+			var role,
+				visibleGroupsCount,
 				groups = control.getItems(),
-				length = groups.length,
-				expanded = control.getExpanded();
+				expanded = control.getExpanded(),
+				visibleGroups = [];
 
 			rm.write("<ul");
 			rm.writeControlData(control);
@@ -60,10 +60,17 @@ sap.ui.define("sap/tnt/NavigationListRenderer",['jquery.sap.global', 'sap/ui/cor
 
 			rm.write(">");
 
-			for (var i = 0; i < length; i++) {
-				group = groups[i];
-				group.render(rm, control, i, length);
-			}
+			//Checking which groups should render
+			groups.forEach(function(group) {
+				if (group.getVisible()) {
+					visibleGroups.push(group);
+				}
+			});
+
+			// Rendering the visible groups
+			visibleGroups.forEach(function(group, index) {
+				group.render(rm, control, index, visibleGroupsCount);
+			});
 
 			rm.write("</ul>");
 		};
@@ -390,14 +397,14 @@ sap.ui.define("sap/tnt/library",['jquery.sap.global',
 	 * @namespace
 	 * @name sap.tnt
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : 'sap.tnt',
-		version: '1.50.8',
+		version: '1.52.5',
 		dependencies : ['sap.ui.core','sap.m'],
 		types: [],
 		interfaces: [],
@@ -448,7 +455,7 @@ sap.ui.define("sap/tnt/NavigationList",['jquery.sap.global', './library', 'sap/u
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -486,7 +493,14 @@ sap.ui.define("sap/tnt/NavigationList",['jquery.sap.global', './library', 'sap/u
 					/**
 					 * Association to controls / IDs, which label this control (see WAI-ARIA attribute aria-labelledby).
 					 */
-					ariaLabelledBy : { type: "sap.ui.core.Control", multiple: true, singularName: "ariaLabelledBy" }
+					ariaLabelledBy : { type: "sap.ui.core.Control", multiple: true, singularName: "ariaLabelledBy" },
+
+					/**
+					 * The currently selected <code>NavigationListItem</code>.
+					 *
+					 * @since 1.52.0
+					 */
+					selectedItem : { type: "sap.tnt.NavigationListItem", multiple: false }
 				},
 				events: {
 					/**
@@ -616,29 +630,63 @@ sap.ui.define("sap/tnt/NavigationList",['jquery.sap.global', './library', 'sap/u
 			item._select();
 
 			this._selectedItem = item;
+			this.setAssociation('selectedItem', item, true);
 		};
 
 		/**
-		 * Gets the currently selected item.
+		 * Gets the currently selected <code>NavigationListItem</code>.
+		 * @public
+		 * @return {sap.tnt.NavigationListItem|null} The selected item or null if nothing is selected
 		 */
 		NavigationList.prototype.getSelectedItem = function() {
-			return this._selectedItem;
+			var selectedItem = this.getAssociation('selectedItem');
+
+			if (!selectedItem) {
+				return null;
+			}
+
+			return sap.ui.getCore().byId(selectedItem);
 		};
 
 		/**
-		 * Sets the currently selected item. Set <code>null</code> to deselect.
+		 * Sets the association for selectedItem. Set <code>null</code> to deselect.
+		 * @public
+		 * @param {string|sap.tnt.NavigationListItem} selectedItem The control to be set as selected
+		 * @param {boolean} suppressInvalidate If true, the managed object's invalidate method is not called
+		 * @return {sap.tnt.NavigationList|null} The <code>selectedItem</code> association
 		 */
-		NavigationList.prototype.setSelectedItem = function(item) {
+		NavigationList.prototype.setSelectedItem = function(selectedItem, suppressInvalidate) {
+			jQuery.sap.require('sap.tnt.NavigationListItem');
+			var navigationListItem;
 
 			if (this._selectedItem) {
 				this._selectedItem._unselect();
 			}
 
-			if (item) {
-				item._select();
+			if (!selectedItem) {
+				this._selectedItem = null;
+				return sap.ui.core.Control.prototype.setAssociation.call(this, 'selectedItem', selectedItem, suppressInvalidate);
 			}
 
-			this._selectedItem = item;
+			if (typeof selectedItem !== 'string' && !(selectedItem instanceof sap.tnt.NavigationListItem)) {
+				jQuery.sap.log.warning('Type of selectedItem association should be string or instance of sap.tnt.NavigationListItem. New value was not set.');
+				return this;
+			}
+
+			if (typeof selectedItem === 'string') {
+				navigationListItem = sap.ui.getCore().byId(selectedItem);
+			} else {
+				navigationListItem = selectedItem;
+			}
+
+			if (navigationListItem instanceof sap.tnt.NavigationListItem) {
+				navigationListItem._select();
+				this._selectedItem = navigationListItem;
+				return sap.ui.core.Control.prototype.setAssociation.call(this, 'selectedItem', selectedItem, suppressInvalidate);
+			} else {
+				jQuery.sap.log.warning('Type of selectedItem association should be a valid NavigationListItem object or ID. New value was not set.');
+				return this;
+			}
 		};
 
 		/**
@@ -710,7 +758,7 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 		 * @extends sap.ui.core.Item
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -734,7 +782,14 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 					/**
 					 * Specifies if the item has an expander.
 					 */
-					hasExpander : {type : "boolean", group : "Misc", defaultValue : true}
+					hasExpander : {type : "boolean", group : "Misc", defaultValue : true},
+
+					/**
+					 * Specifies if the item should be shown.
+					 *
+					 * @since 1.52
+					 */
+					visible : {type : "boolean", group : "Appearance", defaultValue : true}
 				},
 				defaultAggregation: "items",
 				aggregations: {
@@ -850,18 +905,21 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 
 				subItem = subItems[i];
 
-				popupSubItem = new NavigationListItem({
-					key: subItem.getId(),
-					text: subItem.getText(),
-					textDirection: subItem.getTextDirection(),
-					enabled: subItem.getEnabled()
-				});
+				if (subItem.getVisible()) {
+					popupSubItem = new NavigationListItem({
+						key: subItem.getId(),
+						text: subItem.getText(),
+						textDirection: subItem.getTextDirection(),
+						enabled: subItem.getEnabled()
+					});
 
-				newSubItems.push(popupSubItem);
+					newSubItems.push(popupSubItem);
 
-				if (selectedItem == subItem) {
-					popupSelectedItem = popupSubItem;
+					if (selectedItem == subItem) {
+						popupSelectedItem = popupSubItem;
+					}
 				}
+
 			}
 
 			var newGroup = new NavigationListItem({
@@ -1067,8 +1125,11 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 		 * @private
 		 */
 		NavigationListItem.prototype.render = function (rm, control, index, length) {
+			if (!this.getVisible()) {
+			    return;
+			}
 
-			if (this.getLevel() == 0) {
+			if (this.getLevel() === 0) {
 				this.renderFirstLevelNavItem(rm, control, index, length);
 			} else {
 				this.renderSecondLevelNavItem(rm, control, index, length);
@@ -1129,7 +1190,7 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 		 */
 		NavigationListItem.prototype.renderFirstLevelNavItem = function (rm, control, index, length) {
 			var item,
-				items = this.getItems(),
+				items = this._getVisibleItems(this),
 				childrenLength = items.length,
 				expanded = this.getExpanded(),
 				isListExpanded = control.getExpanded(),
@@ -1137,7 +1198,6 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 
 			rm.write('<li');
 			rm.writeElementData(this);
-
 
 			if (this.getEnabled() && !isListExpanded) {
 				rm.write(' tabindex="-1"');
@@ -1148,7 +1208,7 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 				level: '1',
 				expanded: this.getExpanded(),
 				posinset: index + 1,
-				setsize: length
+				setsize: this._getVisibleItems(control).length
 			};
 
 			if (!isListExpanded) {
@@ -1186,7 +1246,7 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 				rm.writeClasses();
 				rm.write(">");
 
-				for (var i = 0; i < items.length; i++) {
+				for (var i = 0; i < childrenLength; i++) {
 					item = items[i];
 					item.render(rm, control, i, childrenLength);
 				}
@@ -1390,6 +1450,27 @@ sap.ui.define("sap/tnt/NavigationListItem",["jquery.sap.global", "./library", "s
 			return domRefs;
 		};
 
+		/**
+		 * Returns all the items aggregation marked as visible
+		 * @param {sap.tnt.NavigationList|sap.tnt.NavigationListItem} control The control to check for visible items
+		 * @return {sap.tnt.NavigationListItem[]} All the visible NavigationListItems
+		 * @private
+		 */
+		NavigationListItem.prototype._getVisibleItems = function(control) {
+			var visibleItems = [];
+			var items = control.getItems();
+			var item;
+
+			for (var index = 0; index < items.length; index++) {
+				item = items[index];
+				if (item.getVisible()) {
+					visibleItems.push(item);
+				}
+			}
+
+			return visibleItems;
+		};
+
 		return NavigationListItem;
 
 	}, /* bExport= */true);
@@ -1438,7 +1519,7 @@ sap.ui.define("sap/tnt/SideNavigation",['jquery.sap.global', './library', 'sap/u
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -1478,6 +1559,14 @@ sap.ui.define("sap/tnt/SideNavigation",['jquery.sap.global', './library', 'sap/u
 					 */
 					_bottomArrowControl: {type: "sap.ui.core.Icon", multiple: false, visibility: "hidden"}
 				},
+				associations : {
+					/**
+					 * The selected <code>NavigationListItem</code>.
+					 *
+					 * @since 1.52.0
+					 */
+					selectedItem: {type: "sap.tnt.NavigationListItem", multiple: false}
+				},
 				events: {
 					/**
 					 * Fired when an item is selected.
@@ -1515,6 +1604,12 @@ sap.ui.define("sap/tnt/SideNavigation",['jquery.sap.global', './library', 'sap/u
 
 		/**
 		 * Sets if the control is in expanded or collapsed mode.
+		 *
+		 * @name sap.tnt.SideNavigation.setExpanded
+		 * @method
+		 * @public
+		 * @param {boolean} isExpanded Indication if the SideNavigation is expanded.
+		 * @returns {sap.tnt.SideNavigation} this SideNavigation reference for chaining.
 		 */
 		SideNavigation.prototype.setExpanded = function (isExpanded) {
 
@@ -1550,14 +1645,7 @@ sap.ui.define("sap/tnt/SideNavigation",['jquery.sap.global', './library', 'sap/u
 			}
 
 			that._hasActiveAnimation = true;
-
-			var isCompact = $this.parents('.sapUiSizeCompact').length > 0;
-
-			if (isCompact) {
-				width = isExpanded ? '15rem' : '2rem';
-			} else {
-				width = isExpanded ? '15rem' : '3rem';
-			}
+			width = isExpanded ? '15rem' : '3rem';
 
 			$this.animate({
 					width: width
@@ -1605,6 +1693,12 @@ sap.ui.define("sap/tnt/SideNavigation",['jquery.sap.global', './library', 'sap/u
 		 * @private
 		 */
 		SideNavigation.prototype.onBeforeRendering = function () {
+			var selectedItem = this.getSelectedItem();
+
+			if (selectedItem) {
+			    this.setSelectedItem(selectedItem, true);
+			}
+
 			this._deregisterControl();
 		};
 
@@ -1614,6 +1708,51 @@ sap.ui.define("sap/tnt/SideNavigation",['jquery.sap.global', './library', 'sap/u
 		SideNavigation.prototype.onAfterRendering = function () {
 			this._ResizeHandler = ResizeHandler.register(this.getDomRef(), this._toggleArrows.bind(this));
 			this._toggleArrows();
+		};
+
+		/**
+		 * Sets the association for selectedItem
+		 * @public
+		 * @param {string|sap.tnt.NavigationListItem} selectedItem The control to be set as selected
+		 * @param {boolean} suppressInvalidate If true, the managed object's invalidate method is not called
+		 * @return {sap.tnt.SideNavigation|null} The <code>selectedItem</code> association
+		 */
+		SideNavigation.prototype.setSelectedItem = function (selectedItem, suppressInvalidate) {
+			var navigationList = this.getAggregation('item');
+			var fixedNavigationList = this.getAggregation('fixedItem');
+			var listItemToSelect;
+
+			if (!selectedItem) {
+				if (navigationList.setSelectedItem) {
+					navigationList.setSelectedItem(null, true);
+				}
+				if (fixedNavigationList.setSelectedItem) {
+					fixedNavigationList.setSelectedItem(null, true);
+				}
+			}
+
+			if (typeof selectedItem === 'string') {
+				listItemToSelect = sap.ui.getCore().byId(selectedItem);
+			} else {
+				listItemToSelect = selectedItem;
+			}
+
+			var selectedInFlexibleList = listItemToSelect && listItemToSelect.getNavigationList && listItemToSelect.getNavigationList() === navigationList;
+			var selectedInFixedList = listItemToSelect && listItemToSelect.getNavigationList && listItemToSelect.getNavigationList() === fixedNavigationList;
+
+			if (selectedInFlexibleList) {
+				navigationList.setSelectedItem(listItemToSelect, suppressInvalidate);
+				fixedNavigationList.setSelectedItem(null, true);
+			}
+
+			if (selectedInFixedList) {
+				fixedNavigationList.setSelectedItem(listItemToSelect, suppressInvalidate);
+				navigationList.setSelectedItem(null, true);
+			}
+
+
+
+			return sap.ui.core.Control.prototype.setAssociation.call(this, 'selectedItem', listItemToSelect, true);
 		};
 
 		/**
@@ -1638,6 +1777,7 @@ sap.ui.define("sap/tnt/SideNavigation",['jquery.sap.global', './library', 'sap/u
 			var listId = event.getSource().getId();
 			var itemAggregation = this.getAggregation('item');
 			var fixedItemAggregation = this.getAggregation('fixedItem');
+			var item = event.getParameter('item');
 
 			if (itemAggregation && fixedItemAggregation && listId === itemAggregation.getId()) {
 				fixedItemAggregation.setSelectedItem(null);
@@ -1647,8 +1787,10 @@ sap.ui.define("sap/tnt/SideNavigation",['jquery.sap.global', './library', 'sap/u
 				itemAggregation.setSelectedItem(null);
 			}
 
+			sap.ui.core.Control.prototype.setAssociation.call(this, 'selectedItem', item, true);
+
 			this.fireItemSelect({
-				item: event.getParameter('item')
+				item: item
 			});
 		};
 
@@ -1794,7 +1936,7 @@ sap.ui.define("sap/tnt/ToolHeader",['jquery.sap.global', './library', 'sap/ui/co
 		 * @extends sap.m.OverflowToolbar
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -1927,7 +2069,7 @@ sap.ui.define("sap/tnt/ToolHeaderUtilitySeparator",['jquery.sap.global', './libr
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -1985,7 +2127,7 @@ sap.ui.define("sap/tnt/ToolPage",['./library', 'sap/ui/core/Control', 'sap/ui/De
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public

@@ -90,8 +90,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 	 * @extends sap.ui.base.Object
 	 * @final
 	 * @author SAP SE
-	 * @version 1.50.8
-	 * @constructor
+	 * @version 1.52.5
 	 * @alias sap.ui.core.Core
 	 * @public
 	 */
@@ -485,6 +484,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 							 "attachEvent","detachEvent","applyChanges", "getEventBus",
 							 "applyTheme","setThemeRoot","attachThemeChanged","detachThemeChanged","getStaticAreaRef",
 							 "attachThemeScopingChanged","detachThemeScopingChanged","fireThemeScopingChanged",
+							 "notifyContentDensityChanged",
 							 "registerPlugin","unregisterPlugin","getLibraryResourceBundle", "byId",
 							 "getLoadedLibraries", "loadLibrary", "loadLibraries", "initLibrary",
 							 "includeLibraryTheme", "setModel", "getModel", "hasModel", "isMobile",
@@ -878,6 +878,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 
 		sHref = this._getThemePath(sLibName, sThemeName) + sLibFileName;
 		if ( sHref != oLink.href ) {
+			// jQuery.sap.includeStyleSheet has a special FOUC handling
+			// which enables once the attribute data-sap-ui-foucmarker is
+			// present on the link to be replaced (usage of the Promise
+			// API is not sufficient as it will change the sync behavior)
+			oLink.setAttribute("data-sap-ui-foucmarker", oLink.id);
 			// Replace the current <link> tag with a new one.
 			// Changing "oLink.href" would also trigger loading the new stylesheet but
 			// the load/error handlers would not get called which causes issues with the ThemeCheck
@@ -1380,6 +1385,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 	 */
 	function preloadLibraryAsync(libConfig) {
 
+		var that = this;
+
 		libConfig = evalLibConfig(libConfig);
 
 		var lib = libConfig.name,
@@ -1425,12 +1432,20 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 
 		// load dependencies, if there are any
 		libInfo.promise = p.then(function(dependencies) {
+			var aPromises = [],
+				oManifest = getManifest(lib);
+
 			if ( dependencies && dependencies.length ) {
-				return Promise.all(dependencies.map(preloadLibraryAsync)).then(function() {
-					libInfo.pending = false;
-				});
+				aPromises = dependencies.map(preloadLibraryAsync.bind(that));
 			}
-			libInfo.pending = false;
+
+			if (oManifest && jQuery.sap.Version(oManifest._version).compareTo("1.9.0") >= 0) {
+				aPromises.push(that.getLibraryResourceBundle(lib, true));
+			}
+
+			return Promise.all(aPromises).then(function() {
+				libInfo.pending = false;
+			});
 		});
 
 		// return resulting promise
@@ -1438,29 +1453,33 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 
 	}
 
-	function dependenciesFromManifest(lib) {
-
+	function getManifest(lib) {
 		var manifestModule = lib.replace(/\./g, '/') + '/manifest.json';
 
 		if ( jQuery.sap.isResourceLoaded(manifestModule) ) {
 
-			var manifest = jQuery.sap.loadResource(manifestModule, {
-					dataType: 'json',
-					async: false, // always sync as we are sure to load from preload cache
-					failOnError: false
-				});
+			return jQuery.sap.loadResource(manifestModule, {
+				dataType: 'json',
+				async: false, // always sync as we are sure to load from preload cache
+				failOnError: false
+			});
+		}
+	}
 
-			var libs = manifest && manifest["sap.ui5"] && manifest["sap.ui5"].dependencies && manifest["sap.ui5"].dependencies.libs;
-			if ( libs ) {
-				// convert manifest map to array, inject name
-				return Object.keys(libs).reduce(function(result, dep) {
-					if ( !libs[dep].lazy ) {
-						result.push(dep);
-					}
-					return result;
-				}, []);
-			}
 
+	function dependenciesFromManifest(lib) {
+
+		var manifest = getManifest(lib);
+
+		var libs = manifest && manifest["sap.ui5"] && manifest["sap.ui5"].dependencies && manifest["sap.ui5"].dependencies.libs;
+		if ( libs ) {
+			// convert manifest map to array, inject name
+			return Object.keys(libs).reduce(function(result, dep) {
+				if ( !libs[dep].lazy ) {
+					result.push(dep);
+				}
+				return result;
+			}, []);
 		}
 
 		// return undefined
@@ -1760,7 +1779,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 
 		if ( bAsync ) {
 
-			var preloaded = bPreload ? Promise.all(aLibraries.map(preloadLibraryAsync)) : Promise.resolve(true);
+			var preloaded = bPreload ? Promise.all(aLibraries.map(preloadLibraryAsync.bind(this))) : Promise.resolve(true);
 			return bRequire ? preloaded.then(requireLibsAsync) : preloaded;
 
 		} else {
@@ -1918,7 +1937,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 			METHOD =  "sap.ui.core.Core.initLibrary()";
 
 		if ( bLegacyMode ) {
-			log.warning("[Deprecated] library " + sLibName + " uses old fashioned initLibrary() call (rebuild with newest generator)");
+			log.error("[Deprecated] library " + sLibName + " uses old fashioned initLibrary() call (rebuild with newest generator)");
 		}
 
 		if ( !sLibName || mLoadedLibraries[sLibName] ) {
@@ -1973,37 +1992,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 			elements : []
 		}, oLibInfo);
 
-		// this code could be moved to a separate "legacy support" module
-		function readLibInfoFromProperties() {
-
-			// read library properties
-			var oProperties = jQuery.sap.properties({url : sap.ui.resource(sLibName, "library.properties")});
-
-			// version info
-			oLibInfo.version = oProperties.getProperty(sLibName + "[version]");
-
-			// dependencies
-			var sDepInfo = oProperties.getProperty(sLibName + "[dependencies]");
-			log.debug("Required Libraries: " + sDepInfo, null, METHOD);
-			oLibInfo.dependencies = (sDepInfo && sDepInfo.split(/[,;| ]/)) || [];
-
-			// collect types, controls and elements
-			var aKeys = oProperties.getKeys(),
-			  rPattern = /(.+)\.(type|interface|control|element)$/,
-			  aMatch;
-			for (var j = 0; j < aKeys.length; j++) {
-				var sEntityPath = oProperties.getProperty(aKeys[j]);
-				if ( (aMatch = sEntityPath.match(rPattern)) !== null ) {
-					oLibInfo[aMatch[2] + "s"].push(aKeys[j]);
-				}
-			}
-		}
-
-		// (legacy) if only a string was given, read the library.properties instead
-		if ( bLegacyMode ) {
-			readLibInfoFromProperties();
-		}
-
 		// resolve dependencies
 		for (var i = 0; i < oLibInfo.dependencies.length; i++) {
 			var sDepLib = oLibInfo.dependencies[i];
@@ -2025,7 +2013,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 			}
 		}
 
-		// create lazy imports for all controls and elements
+		// create lazy loading stubs for all controls and elements
 		var aElements = oLibInfo.controls.concat(oLibInfo.elements);
 		for (var i = 0; i < aElements.length; i++) {
 			sap.ui.lazyRequire(aElements[i], "new extend getMetadata"); // TODO don't create an 'extend' stub for final classes
@@ -2053,13 +2041,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 		// expose some legacy names
 		oLibInfo.sName = oLibInfo.name;
 		oLibInfo.aControls = oLibInfo.controls;
-
-		// load and execute the library.js script
-		if ( !jQuery.sap.isDeclared(sLibName + ".library") ) {
-			// TODO redundant to generated require calls
-			log.warning("Library Module " + sLibName + ".library" + " not loaded automatically", null, METHOD);
-			jQuery.sap.require(sLibName + ".library");
-		}
 
 		this.fireLibraryChanged({name : sLibName, stereotype : "library", operation: "add", metadata : oLibInfo});
 
@@ -2167,24 +2148,98 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 	 * then falls back to the current {@link sap.ui.core.Configuration#getLanguage session locale}.
 	 * If no argument is given, the library also falls back to a default: "sap.ui.core".
 	 *
-	 * @param {string} [sLibraryName='sap.ui.core'] name of the library to retrieve the bundle for
-	 * @param {string} [sLocale] locale to retrieve the resource bundle for
-	 * @return {jQuery.sap.util.ResourceBundle} the best matching resource bundle for the given parameters or undefined
+	 * <h3>Configuration via App Descriptor<h3>
+	 * When the App Descriptor for the library is available without further request (manifest.json
+	 * has been preloaded) and when the App Descriptor is at least of version 1.9.0 or higher, then
+	 * this method will evaluate the App Descriptor entry <code>"sap.ui5" / "library" / "i18n"</code>.
+	 * <ul>
+	 * <li>When the entry is <code>true</code>, a bundle with the default name "messagebundle.properties"
+	 * will be loaded</li>
+	 * <li>If it is a string, then that string will be used as name of the bundle</li>
+	 * <li>If it is <code>false</code>, no bundle will be loaded and the result will be
+	 *     <code>undefined</code></li>
+	 * </ul>
+	 *
+	 * <h3>Caching</h3>
+	 * Once a resource bundle for a library has been loaded, it will be cached by this method.
+	 * Further calls for the same library and locale won't create new requests, but return the already
+	 * loaded bundle. There's therefore no need for control code to cache the returned bundle for a longer
+	 * period of time. Not further caching the result also prevents stale texts after a locale change.
+	 *
+	 * <h3>Asynchronous Loading</h3>
+	 * The asynchronous variant of {@link #loadLibrary} will evaluate the same descriptor entry as
+	 * described above. If it is not <code>false</code>, loading the main resource bundle of the
+	 * library will become a subtask of the asynchronous loading of the library.
+	 *
+	 * Due to this preload of the main bundle and the caching behavior of this method, controls in
+	 * such a library still can use the synchronous variant of <code>getLibraryResourceBundle</code>
+	 * in their API, behavior and rendering code. Only when the bundle is needed at module execution
+	 * time (by top level code in a control module), then the asynchronous variant of this method
+	 * should be preferred.
+	 *
+	 * @param {string} [sLibraryName='sap.ui.core'] Name of the library to retrieve the bundle for
+	 * @param {string} [sLocale] Locale to retrieve the resource bundle for
+	 * @param {boolean} [bAsync=false] Whether the resource bundle is loaded asynchronously
+	 * @return {jQuery.sap.util.ResourceBundle|Promise} The best matching resource bundle for the given
+	 *   parameters or <code>undefined</code>; in asynchronous case a Promise on that bundle is returned
 	 * @public
 	 */
-	Core.prototype.getLibraryResourceBundle = function(sLibraryName, sLocale) {
+	Core.prototype.getLibraryResourceBundle = function(sLibraryName, sLocale, bAsync) {
+		var oManifest,
+			sKey,
+			vResult,
+			vI18n;
+
+		if (typeof sLibraryName === "boolean") {
+			bAsync = sLibraryName;
+			sLibraryName = undefined;
+			sLocale = undefined;
+		}
+
+		if (typeof sLocale === "boolean") {
+			bAsync = sLocale;
+			sLocale = undefined;
+		}
+
+
 		jQuery.sap.assert((sLibraryName === undefined && sLocale === undefined) || typeof sLibraryName === "string", "sLibraryName must be a string or there is no argument given at all");
 		jQuery.sap.assert(sLocale === undefined || typeof sLocale === "string", "sLocale must be a string or omitted");
 
-		// TODO move implementation together with similar stuff to a new class "UILibrary"?
 		sLibraryName = sLibraryName || "sap.ui.core";
 		sLocale = sLocale || this.getConfiguration().getLanguage();
-		var sKey = sLibraryName + "/" + sLocale;
-		if (!this.mResourceBundles[sKey]) {
-			var sURL = sap.ui.resource(sLibraryName, 'messagebundle.properties');
-			this.mResourceBundles[sKey] = jQuery.sap.resources({url : sURL, locale : sLocale});
+		sKey = sLibraryName + "/" + sLocale;
+
+		vResult = this.mResourceBundles[sKey];
+		if (!vResult || (!bAsync && vResult instanceof Promise)) {
+			oManifest = getManifest(sLibraryName);
+			if ( oManifest && jQuery.sap.Version(oManifest._version).compareTo("1.9.0") >= 0 ) {
+				vI18n = oManifest["sap.ui5"] && oManifest["sap.ui5"].library && oManifest["sap.ui5"].library.i18n;
+			} // else vI18n = undefined
+
+			if (vI18n !== false) {
+
+				vResult = jQuery.sap.resources({
+					url : sap.ui.resource(sLibraryName, typeof vI18n === "string" ? vI18n : 'messagebundle.properties'),
+					locale : sLocale,
+					async: bAsync
+				});
+
+				if (vResult instanceof Promise) {
+					vResult = vResult.then(function(oBundle) {
+						this.mResourceBundles[sKey] = oBundle;
+						return oBundle;
+					}.bind(this));
+				}
+
+				// Save the result directly under the map
+				// the real bundle will replace the promise after it's loaded in async case
+				this.mResourceBundles[sKey] = vResult;
+
+			}
 		}
-		return this.mResourceBundles[sKey];
+
+		// if the bundle is loaded, return a promise which resolved with the bundle
+		return bAsync ? Promise.resolve(vResult) : vResult;
 	};
 
 	// ---- UIArea and Rendering -------------------------------------------------------------------------------------
@@ -2411,6 +2466,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 	};
 
 	/**
+	 * This method can be called to trigger realignment of controls after changing the cozy/compact CSS class of a DOM
+	 * element, for example, the <code>&lt;body&gt;</code> tag.
+	 *
+	 * @public
+	 */
+	Core.prototype.notifyContentDensityChanged = function() {
+		this.fireThemeChanged();
+	};
+
+	/**
 	 * Fired after a theme has been applied.
 	 *
 	 * More precisely, this event is fired when any of the following conditions is met:
@@ -2461,11 +2526,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 	};
 
 	/**
-	 * Fire event <code>ThemeChanged</code> to attached listeners.
+	 * Fires event <code>ThemeChanged</code> to attached listeners.
 	 *
 	 * @param {object} [mParameters] Parameters to pass along with the event
-	 * @param {object} [mParameters.theme] Theme name
-	 * @protected
+	 * @param {object} [mParameters.theme] Theme name (default is <code>sap.ui.getCore().getConfiguration().getTheme()</code>)
 	 */
 	Core.prototype.fireThemeChanged = function(mParameters) {
 		jQuery.sap.scrollbarSize(true);
@@ -2480,7 +2544,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/Global',
 		// notify all elements/controls via a pseudo browser event
 		var sEventId = Core.M_EVENTS.ThemeChanged;
 		var oEvent = jQuery.Event(sEventId);
-		oEvent.theme = mParameters ? mParameters.theme : null;
+		//set the current theme name as default if omitted
+		oEvent.theme = mParameters && mParameters.theme || this.getConfiguration().getTheme();
 		jQuery.each(this.mElements, function(sId, oElement) {
 			oElement._handleEvent(oEvent);
 		});

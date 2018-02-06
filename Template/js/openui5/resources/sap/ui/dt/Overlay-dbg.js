@@ -32,7 +32,7 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -764,8 +764,12 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 			if (!this.getLazyRendering()) {
 				return true;
 			}
+			var oElement = this.getElementInstance();
+			if (!oElement){
+				return false;
+			}
 			var oDesignTimeMetadata = this.getDesignTimeMetadata();
-			return oDesignTimeMetadata ? !oDesignTimeMetadata.isIgnored(this.getElementInstance()) : false;
+			return oDesignTimeMetadata ? !oDesignTimeMetadata.isIgnored(oElement) : false;
 		} else {
 			return this.getProperty("visible");
 		}
@@ -781,16 +785,24 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	};
 
 	/**
+	 * Returns if the Overlay is visible in the DOM (using jQuery).
+	 *
+	 * @return {boolean} Returns if the Overlay is visible in the DOM
+	 * @public
+	 */
+	Overlay.prototype.isVisibleInDom = function() {
+		return this.$().is(":visible");
+	};
+
+	/**
 	 * Returns if overlay is root
 	 * @public
 	 * @return {boolean} if the Overlay is root
 	 */
 	Overlay.prototype.isRoot = function() {
 		var oParent = this.getParent();
-		if (oParent) {
-			if (!oParent.getDomRef) {
-				return true;
-			}
+		if (!oParent || !oParent.getDomRef) {
+			return true;
 		}
 	};
 

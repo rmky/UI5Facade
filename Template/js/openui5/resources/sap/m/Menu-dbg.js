@@ -9,6 +9,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 	function(jQuery, library, Control, Button, Dialog, NavContainer, List, Page, MenuListItem, UfdMenu, Device, EnabledPropagator) {
 		"use strict";
 
+		// shortcut for sap.m.ListType
+		var ListType = library.ListType;
+
+		// shortcut for sap.m.ListMode
+		var ListMode = library.ListMode;
+
 		/**
 		 * Constructor for a new Menu.
 		 *
@@ -22,7 +28,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 		 * @implements sap.ui.core.IContextMenu
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -186,7 +192,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 		 * @public
 		 */
 		Menu.prototype.close = function() {
-			if (sap.ui.Device.system.phone) {
+			if (Device.system.phone) {
 				this._getDialog().close();
 			} else {
 				this._getVisualParent().close();
@@ -207,6 +213,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 				]
 			});
 			oDialog.addStyleClass("sapMRespMenuDialog");
+			// remove padding for the menu on phone
+			oDialog.removeStyleClass("sapUiPopupWithPadding");
 			this.setAggregation("_dialog", oDialog, true);
 		};
 
@@ -310,10 +318,10 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 
 		Menu.prototype._initPageForParent = function(oParent) {
 			var aItems = oParent.getItems(),
-				isRootPage = oParent instanceof sap.m.Menu,
+				isRootPage = oParent instanceof Menu,
 				sPageTitle = isRootPage ? oParent.getTitle() : oParent.getText(),
 				oList = new List({
-					mode: sap.m.ListMode.None
+					mode: ListMode.None
 				}),
 				oPage = new Page({
 					title: sPageTitle,
@@ -367,7 +375,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 				oRb = sap.ui.getCore().getLibraryResourceBundle("sap.m"),
 				sParentPageTitle;
 
-			sParentPageTitle = oParentParent instanceof sap.m.Menu ? oParentParent.getTitle() : oParentParent.getText();
+			sParentPageTitle = oParentParent instanceof Menu ? oParentParent.getTitle() : oParentParent.getText();
 			sParentPageTitle = oRb.getText("MENU_PAGE_BACK_BUTTON") + " " + sParentPageTitle;
 			oPage.setNavButtonTooltip(sParentPageTitle);
 		};
@@ -375,7 +383,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 		Menu.prototype._createMenuListItemFromItem = function(oItem) {
 			return new MenuListItem({
 				id  : this._generateListItemId(oItem.getId()),
-				type: sap.m.ListType.Active,
+				type: ListType.Active,
 				icon: oItem.getIcon(),
 				title: oItem.getText(),
 				startsSection: oItem.getStartsSection(),
@@ -615,8 +623,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 
 		Menu.prototype._removeVisualItem = function(oItem, oParentItem) {
 			var oVisualItem = sap.ui.getCore().byId(oItem._getVisualControl()),
-				vMenuOrList,
-				oPage;
+				vMenuOrList;
 
 			if (oVisualItem) {
 				vMenuOrList = oVisualItem.getParent();
@@ -627,10 +634,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 
 					//if this is the last item in the page, remove the page
 					if (vMenuOrList.getItems().length === 0) {
-						oPage = sap.ui.getCore().byId(oItem._getVisualParent());
-						this._getNavContainer().removePage(oPage);
-						oPage.destroy();
-
 						// now we need to update its parent list item - no to render its arrow and reset its visual child ref
 						if (oParentItem) {
 							oParentItem._setVisualChild(null);
@@ -850,4 +853,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 		});
 
 		return Menu;
-	}, /* bExport= */ true);
+	});

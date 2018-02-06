@@ -27,7 +27,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.fl.Utils
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @experimental Since 1.25.0
 	 */
 	var Utils = {
@@ -335,6 +335,26 @@ sap.ui.define([
 		 */
 		isOverMaxLayer: function(sLayer) {
 			return (this.getLayerIndex(sLayer) > this.getLayerIndex(this._sMaxLayer));
+		},
+
+		/**
+		 * Compares current layer with a provided layer
+		 *
+		 * @param {String} sLayer - Layer name to be evaluated
+		 * @returns {boolean} <code>true</code> if input layer is higher than current layer
+		 * @public
+		 * @function
+		 * @name sap.ui.fl.Utils.isLayerOverCurrentLayer
+		 */
+		isLayerAboveCurrentLayer: function(sLayer) {
+			var sCurrentLayer = Utils.getCurrentLayer(false);
+			if (this.getLayerIndex(sCurrentLayer) > this.getLayerIndex(sLayer)) {
+				return -1;
+			} else if (this.getLayerIndex(sCurrentLayer) === this.getLayerIndex(sLayer)) {
+				return 0;
+			} else {
+				return 1;
+			}
 		},
 
 		/**
@@ -845,6 +865,24 @@ sap.ui.define([
 			return window.location.search.substring(1);
 		},
 
+
+		/**
+		 * Checks the SAPUI5 debug settings to determine whether all or at least the <code>sap.ui.fl</code> library is debugged.
+		 *
+		 * @returns {boolean} Returns a flag if the flexibility library is debugged
+		 * @public
+		 */
+		isDebugEnabled: function () {
+			// true if SAPUI5 is in complete debug mode
+			if (sap.ui.getCore().getConfiguration().getDebug()) {
+				return true;
+			}
+
+			var sDebugParameters = window["sap-ui-debug"] || "";
+			var aDebugParameters = sDebugParameters.split(",");
+			return aDebugParameters.indexOf("sap.ui.fl") !== -1;
+		},
+
 		/**
 		 * Returns the value of the specified url parameter of the current url
 		 *
@@ -936,33 +974,105 @@ sap.ui.define([
 		},
 
 		/**
-		 * Execute the passed asynchronous functions serialized - one after the other
+		 * Execute the passed asynchronous / synchronous (Utils.FakePromise) functions serialized - one after the other.
+		 * Errors do not break the sequentially execution of the queue. Error message will be written.
 		 *
 		 * @param {array.<function>} aPromiseQueue - List of asynchronous functions that returns promises
-		 * @returns {Promise} Empty resolved promise when all passed promises inside functions have been executed
+		 * @param {boolean} bAsync - true: asynchronous processing with Promise, false: synchronous processing with FakePromise
+		 * @returns {Promise} Returns empty resolved Promise or FakePromise when all passed promises inside functions have been executed
 		 */
-		execPromiseQueueSequentially : function(aPromiseQueue) {
+		execPromiseQueueSequentially : function(aPromiseQueue, bAsync) {
 			if (aPromiseQueue.length === 0) {
-				return Promise.resolve();
+				if (bAsync) {
+					return Promise.resolve();
+				}
+				return new Utils.FakePromise();
 			}
 			var fnPromise = aPromiseQueue.shift();
 			if (typeof fnPromise === "function") {
-				return fnPromise()
+				var vResult = fnPromise();
+
+				return vResult.then(function() {
+					if (!bAsync && vResult instanceof Promise) {
+						bAsync = true;
+					}
+				})
 
 				.catch(function(e) {
-					this.log.error("Changes could not be applied. Merge error detected. " + e);
+					this.log.error("Error during execPromiseQueueSequentially processing occured: " + (e && e.message));
 				}.bind(this))
 
 				.then(function() {
-					return this.execPromiseQueueSequentially(aPromiseQueue);
+					return this.execPromiseQueueSequentially(aPromiseQueue, bAsync);
 				}.bind(this));
 
 			} else {
 				this.log.error("Changes could not be applied, promise not wrapped inside function.");
-				return this.execPromiseQueueSequentially(aPromiseQueue);
+				return this.execPromiseQueueSequentially(aPromiseQueue, bAsync);
 			}
-		}
+		},
 
+		/**
+		 * Function that behaves like Promise (es6) but is synchronous. Implements 'then' and 'catch' functions.
+		 * After instantiating can be used simillar to standard Promises but synchronously.
+		 * As soon as one of the callback functions returns a Promise the asynchronus Promise replaces the FakePromise in further processing.
+		 *
+		 * @param {any} vInitialValue - value on resolve FakePromise
+		 * @param {any} vError - value on reject FakePromise
+		 * @returns {sap.ui.fl.Utils.FakePromise|Promise} Returns instantiated FakePromise only if no Promise is passed by value parameter
+		 */
+		FakePromise : function(vInitialValue, vError) {
+			this.vValue = vInitialValue;
+			this.vError = vError;
+			Utils.FakePromise.prototype.then = function(fn) {
+				if (!this.vError) {
+					try {
+						this.vValue = fn(this.vValue, true);
+					} catch (oError) {
+						this.vError = oError;
+						this.vValue = null;
+						return this;
+					}
+					if (this.vValue instanceof Promise) {
+						return this.vValue;
+					}
+				}
+				return this;
+			};
+			Utils.FakePromise.prototype.catch = function(fn) {
+				if (this.vError) {
+					this.vValue = fn(this.vError, true);
+					this.vError = null;
+					if (this.vValue instanceof Promise) {
+						return this.vValue;
+					}
+				}
+				return this;
+			};
+			if (this.vValue instanceof Promise) {
+				return this.vValue;
+			}
+		},
+
+		/**
+		 * Function that gets a specific change from a map of changes.
+		 *
+		 * @param {map} mChanges Map of all changes
+		 * @param {string} sChangeId Id of the change that should be retrieved
+		 * @returns {sap.ui.fl.Change | undefined} Returns the change if it is in the map, otherwise undefined
+		 */
+		getChangeFromChangesMap: function(mChanges, sChangeId) {
+			var oResult;
+			Object.keys(mChanges).forEach(function(sControlId) {
+				mChanges[sControlId].some(function(oChange) {
+					if (oChange.getId() === sChangeId) {
+						oResult = oChange;
+						return true;
+					}
+				});
+			});
+			return oResult;
+		}
 	};
 	return Utils;
 }, true);

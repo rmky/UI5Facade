@@ -33,13 +33,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/FormatException',
 	 *   constraints, see {@link #constructor}
 	 */
 	function setConstraints(oType, oConstraints) {
-		var vNullable = oConstraints && oConstraints.nullable;
+		var vNullable;
 
 		oType.oConstraints = undefined;
-		if (vNullable === false || vNullable === "false") {
-			oType.oConstraints = {nullable : false};
-		} else if (vNullable !== undefined && vNullable !== true && vNullable !== "true") {
-			jQuery.sap.log.warning("Illegal nullable: " + vNullable, null, oType.getName());
+		if (oConstraints) {
+			vNullable = oConstraints.nullable;
+			if (vNullable === false || vNullable === "false") {
+				oType.oConstraints = {nullable : false};
+			} else if (vNullable !== undefined && vNullable !== true && vNullable !== "true") {
+				jQuery.sap.log.warning("Illegal nullable: " + vNullable, null, oType.getName());
+			}
 		}
 	}
 
@@ -56,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/FormatException',
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @alias sap.ui.model.odata.type.Guid
 	 * @param {object} [oFormatOptions]

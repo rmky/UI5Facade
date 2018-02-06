@@ -3,4 +3,4 @@
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["jquery.sap.global"],function(q){"use strict";var V={};V.render=function(r,c){};return V;},true);
+sap.ui.define([],function(){"use strict";var V={};V.render=function(r,c){};return V;},true);

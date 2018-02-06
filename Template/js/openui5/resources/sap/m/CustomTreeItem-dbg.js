@@ -6,8 +6,8 @@
 
 // Provides control sap.m.CustomTreeItem.
 sap.ui.define([
-	'jquery.sap.global', './TreeItemBase', './ListItemBase', './library'
-], function(jQuery, TreeItemBase, ListItemBase, library) {
+	'./TreeItemBase', './ListItemBase', './library'
+], function(TreeItemBase, ListItemBase, library) {
 	"use strict";
 
 	/**
@@ -20,7 +20,7 @@ sap.ui.define([
 	 *        <code>Table, Form</code> etc, should not be aggregated as content.
 	 * @extends sap.m.TreeItemBase
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @public
 	 * @since 1.48.0
@@ -55,4 +55,4 @@ sap.ui.define([
 	};
 
 	return CustomTreeItem;
-}, /* bExport= */true);
+});

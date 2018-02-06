@@ -4,9 +4,16 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Renderer'],
-	function(jQuery, ListItemBaseRenderer, Renderer) {
+sap.ui.define(['./ListItemBaseRenderer', 'sap/ui/core/Renderer', 'sap/m/library', 'sap/ui/core/library'],
+	function(ListItemBaseRenderer, Renderer, library, coreLibrary) {
 	"use strict";
+
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
+
+	// shortcut for sap.m.ListType
+	var ListType = library.ListType;
 
 
 	/**
@@ -43,7 +50,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 		if (!oLI.getDescription() && oLI.getIcon()) {
 			rm.addClass("sapMSLINoDescIcon");
 		}
-		if (oLI.getType() == sap.m.ListType.Detail || oLI.getType() == sap.m.ListType.DetailAndActive) {
+		if (oLI.getType() == ListType.Detail || oLI.getType() == ListType.DetailAndActive) {
 			rm.addClass("sapMSLIDetail");
 		}
 
@@ -77,7 +84,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 		rm.write("<div");
 		rm.addClass(sDescription ? "sapMSLITitle" : "sapMSLITitleOnly");
 		rm.writeClasses();
-		if (sTextDir !== sap.ui.core.TextDirection.Inherit) {
+		if (sTextDir !== TextDirection.Inherit) {
 			rm.writeAttribute("dir", sTextDir.toLowerCase());
 		}
 		rm.write(">");
@@ -91,7 +98,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 			rm.addClass("sapMSLIInfo");
 			rm.addClass("sapMSLIInfo" + oLI.getInfoState());
 			rm.writeClasses();
-			if (sInfoDir !== sap.ui.core.TextDirection.Inherit) {
+			if (sInfoDir !== TextDirection.Inherit) {
 				rm.writeAttribute("dir", sInfoDir.toLowerCase());
 			}
 			rm.write(">");
@@ -120,7 +127,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 			rm.addClass("sapMSLIInfo");
 			rm.addClass("sapMSLIInfo" + oLI.getInfoState());
 			rm.writeClasses();
-			if (sInfoDir !== sap.ui.core.TextDirection.Inherit) {
+			if (sInfoDir !== TextDirection.Inherit) {
 				rm.writeAttribute("dir", sInfoDir.toLowerCase());
 			}
 			rm.write(">");

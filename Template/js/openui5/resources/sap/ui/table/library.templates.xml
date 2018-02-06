@@ -157,6 +157,7 @@
 	enableCustomFilter: false, // boolean, since 1.23.0
 	enableBusyIndicator: false, // boolean, since 1.27.0
 	rowActionCount: 0, // int, since 1.45.0
+	alternateRowColors: false, // boolean, since 1.52
 	sumOnTop: false, // boolean
 	numberOfExpandedLevels: 0, // int
 	autoExpandMode: "Bundled", // string
@@ -175,6 +176,7 @@
 	noData: undefined, // sap.ui.core.Control
 	rowActionTemplate: undefined, // sap.ui.table.RowAction
 	rowSettingsTemplate: undefined, // sap.ui.table.RowSettings
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.52
 	groupBy: undefined, // sap.ui.table.Column
 	ariaLabelledBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
@@ -258,6 +260,7 @@
 	enableCustomFilter="false"
 	enableBusyIndicator="false"
 	rowActionCount="0"
+	alternateRowColors="false"
 	sumOnTop="false"
 	numberOfExpandedLevels="0"
 	autoExpandMode="Bundled"
@@ -292,6 +295,7 @@
 		<noData></noData> <!-- sap.ui.core.Control -->
 		<rowActionTemplate></rowActionTemplate> <!-- sap.ui.table.RowAction -->
 		<rowSettingsTemplate></rowSettingsTemplate> <!-- sap.ui.table.RowSettings -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.52 -->
 </AnalyticalTable>
 ]]></xmlTemplate>
 </Template>
@@ -534,6 +538,7 @@
 	enableCustomFilter: false, // boolean, since 1.23.0
 	enableBusyIndicator: false, // boolean, since 1.27.0
 	rowActionCount: 0, // int, since 1.45.0
+	alternateRowColors: false, // boolean, since 1.52
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -546,6 +551,7 @@
 	noData: undefined, // sap.ui.core.Control
 	rowActionTemplate: undefined, // sap.ui.table.RowAction
 	rowSettingsTemplate: undefined, // sap.ui.table.RowSettings
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.52
 	groupBy: undefined, // sap.ui.table.Column
 	ariaLabelledBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
@@ -629,6 +635,7 @@
 	enableCustomFilter="false"
 	enableBusyIndicator="false"
 	rowActionCount="0"
+	alternateRowColors="false"
 	groupBy=""
 	ariaLabelledBy=""
 	validateFieldGroup=""
@@ -657,6 +664,7 @@
 		<noData></noData> <!-- sap.ui.core.Control -->
 		<rowActionTemplate></rowActionTemplate> <!-- sap.ui.table.RowAction -->
 		<rowSettingsTemplate></rowSettingsTemplate> <!-- sap.ui.table.RowSettings -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.52 -->
 </Table>
 ]]></xmlTemplate>
 </Template>
@@ -695,6 +703,7 @@
 	enableCustomFilter: false, // boolean, since 1.23.0
 	enableBusyIndicator: false, // boolean, since 1.27.0
 	rowActionCount: 0, // int, since 1.45.0
+	alternateRowColors: false, // boolean, since 1.52
 	expandFirstLevel: false, // boolean
 	useGroupMode: false, // boolean
 	groupHeaderProperty: undefined, // string
@@ -712,6 +721,7 @@
 	noData: undefined, // sap.ui.core.Control
 	rowActionTemplate: undefined, // sap.ui.table.RowAction
 	rowSettingsTemplate: undefined, // sap.ui.table.RowSettings
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.52
 	groupBy: undefined, // sap.ui.table.Column
 	ariaLabelledBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
@@ -798,6 +808,7 @@
 	enableCustomFilter="false"
 	enableBusyIndicator="false"
 	rowActionCount="0"
+	alternateRowColors="false"
 	expandFirstLevel="false"
 	useGroupMode="false"
 	groupHeaderProperty=""
@@ -832,6 +843,7 @@
 		<noData></noData> <!-- sap.ui.core.Control -->
 		<rowActionTemplate></rowActionTemplate> <!-- sap.ui.table.RowAction -->
 		<rowSettingsTemplate></rowSettingsTemplate> <!-- sap.ui.table.RowSettings -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.52 -->
 </TreeTable>
 ]]></xmlTemplate>
 </Template>

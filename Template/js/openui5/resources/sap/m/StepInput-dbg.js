@@ -5,23 +5,71 @@
  */
 
 // Provides control sap.m.StepInput.
-sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRenderer", "sap/ui/core/Control", "sap/ui/core/IconPool"],
-	function (jQuery, Icon, Input, InputRenderer, Control, IconPool) {
+sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRenderer", "sap/ui/core/Control", "sap/ui/core/IconPool", "sap/ui/core/library", "sap/ui/core/Renderer", "sap/m/library", "jquery.sap.keycodes"],
+	function (jQuery, Icon, Input, InputRenderer, Control, IconPool, coreLibrary, Renderer, library) {
 		"use strict";
 
+		// shortcut for sap.m.InputType
+		var InputType = library.InputType;
+
+		// shortcut for sap.ui.core.TextAlign
+		var TextAlign = coreLibrary.TextAlign;
+
+		// shortcut for sap.ui.core.ValueState
+		var ValueState = coreLibrary.ValueState;
+
 		/**
-		 * Constructor for a new StepInput.
+		 * Constructor for a new <code>StepInput</code>.
 		 *
 		 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
 		 * @param {object} [mSettings] Initial settings for the new control
 		 *
 		 * @class
-		 * The <code>StepInput</code> control allows the user to change the input values with predefined increments (steps).
+		 * Allows the user to change the input values with predefined increments (steps).
+		 *
+		 * <h3>Overview</h3>
+		 *
+		 * The <code>StepInput</code> consists of an input field and buttons with icons to increase/decrease the value.
+		 *
+		 * The user can change the value of the control by pressing the increase/decrease buttons,
+		 * by typing a number directly, by using the keyboard up/down and page up/down,
+		 * or by using the mouse scroll wheel. Decimal values are supported.
+		 *
+		 * <h3>Usage</h3>
+		 *
+		 * The default step is 1 but the app developer can set a different one.
+		 *
+		 * On desktop, the control supports a larger step, when using the keyboard page up/down keys.
+		 * You can set a multiple of the step with the use of the <code>largerStep</code> property.
+		 * The default value is 2 (two times the set step). For example, when using the keyboard page up/down keys
+		 * the value increases/decreases with a double of the default step. If the set step is 2, the larger step is also 2
+		 * and the current value is 1, using the page up key will increase the value to 5 (1 + 2*2).
+		 *
+		 * App developers can set a maximum and minimum value for the <code>StepInput</code>.
+		 * The increase/decrease button and the up/down keyboard navigation become disabled when
+		 * the value reaches the max/min or a new value is entered from the input which is greater/less than the max/min.
+		 *
+		 * <i>When to use</i>
+		 * <ul>
+		 * <li>To adjust amounts, quantities, or other values quickly.</li>
+		 * <li>To adjust values for a specific step.</li>
+		 * </ul>
+		 *
+		 * <i>When not to use</i>
+		 * <ul>
+		 * <li>To enter a static number (for example, postal code, phone number, or ID). In this case,
+		 * use the regular {@link sap.m.Input} instead.</li>
+		 * <li>To display a value that rarely needs to be adjusted and does not pertain to a particular step.
+		 * In this case, use the regular {@link sap.m.Input} instead.</li>
+		 * <li>To enter dates and times. In this case, use the {@link sap.m.DatePicker}, {@link sap.m.DateRangeSelection},
+		 * {@link sap.m.TimePicker}, or {@link sap.m.DateTimePicker} instead.</li>
+		 * </ul>
+		 *
 		 * @extends sap.ui.core.Control
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -82,7 +130,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRende
 					/**
 					 * Accepts the core enumeration ValueState.type that supports <code>None</code>, <code>Error</code>, <code>Warning</code> and <code>Success</code>.
 					 */
-					valueState: {type: "sap.ui.core.ValueState", group: "Data", defaultValue: sap.ui.core.ValueState.None},
+					valueState: {type: "sap.ui.core.ValueState", group: "Data", defaultValue: ValueState.None},
 					/**
 					 * Defines the text that appears in the value state message pop-up.
 					 * @since 1.52
@@ -185,10 +233,10 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRende
 		 * Property names which when set are directly forwarded to inner input <code>setProperty</code> method
 		 * @type {Array.<string>}
 		 */
-		var aForwardableProps = ["enabled", "editable", "name", "placeholder", "required"];
+		var aForwardableProps = ["enabled", "editable", "name", "placeholder", "required", "valueStateText"];
 
 		//Accessibility behaviour of the Input needs to be extended
-		var NumericInputRenderer = sap.ui.core.Renderer.extend(InputRenderer);
+		var NumericInputRenderer = Renderer.extend(InputRenderer);
 
 		/**
 		 * Overwrites the accessibility state using the getAccessibilityState method of the InputBaseRenderer.
@@ -245,7 +293,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRende
 			return "inner";
 		};
 
-		var NumericInput = sap.m.Input.extend("NumericInput", {
+		var NumericInput = Input.extend("NumericInput", {
 			constructor: function(sId, mSettings) {
 				return Input.apply(this, arguments);
 			},
@@ -452,8 +500,8 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRende
 			if (!this.getAggregation("_input")) {
 				var oNumericInput = new NumericInput({
 					id: this.getId() + "-input",
-					textAlign: sap.ui.core.TextAlign.End,
-					type: sap.m.InputType.Number,
+					textAlign: TextAlign.End,
+					type: InputType.Number,
 					editable: this.getEditable(),
 					enabled: this.getEnabled(),
 					liveChange: this._inputLiveChangeHandler
@@ -511,7 +559,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRende
 				bMinIsNumber = this._isNumericLike(min);
 
 			if (this._getDecrementButton()) {
-				if (bMinIsNumber && min < value) {
+				if (bMinIsNumber && min < value && this.getEnabled()) {
 					this._getDecrementButton().$().removeClass("sapMStepInputIconDisabled");
 				}
 				if (bMinIsNumber && value <= min) {
@@ -519,7 +567,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRende
 				}
 			}
 			if (this._getIncrementButton()) {
-				if (bMaxIsNumber && value < max) {
+				if (bMaxIsNumber && value < max && this.getEnabled()) {
 					this._getIncrementButton().$().removeClass("sapMStepInputIconDisabled");
 				}
 				if (bMaxIsNumber && value >= max) {
@@ -554,9 +602,9 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRende
 			}
 
 			if ((this._isNumericLike(max) && value > max) || (this._isNumericLike(min) && value < min)) {
-				this.setValueState(sap.ui.core.ValueState.Error);
+				this.setValueState(ValueState.Error);
 			} else {
-				this.setValueState(sap.ui.core.ValueState.None);
+				this.setValueState(ValueState.None);
 			}
 		};
 
@@ -890,14 +938,14 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRende
 				bWarning = false;
 
 			switch (valueState) {
-				case sap.ui.core.ValueState.Error:
+				case ValueState.Error:
 					bError = true;
 					break;
-				case sap.ui.core.ValueState.Warning:
+				case ValueState.Warning:
 					bWarning = true;
 					break;
-				case sap.ui.core.ValueState.Success:
-				case sap.ui.core.ValueState.None:
+				case ValueState.Success:
+				case ValueState.None:
 					break;
 				default:
 					return this;
@@ -908,37 +956,9 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRende
 				this.$().toggleClass("sapMStepInputError", bError).toggleClass("sapMStepInputWarning", bWarning);
 			});
 
-			return this;
-		};
-
-		/**
-		 * Setter for property <code>valueStateText</code>.
-		 *
-		 * Default value is empty/<code>undefined</code>.
-		 *
-		 * @param {string} sText New value for property <code>valueStateText</code>.
-		 * @returns {sap.m.StepInput} <code>this</code> to allow method chaining
-		 * @public
-		 * @since 1.52
-		 */
-		StepInput.prototype.setValueStateText = function (sText) {
-			this._getInput().setValueStateText(sText);
+			this.setProperty("valueState", valueState, true);
 
 			return this;
-		};
-
-		/**
-		 * Getter for property <code>valueStateText</code>.
-		 * The text which is shown in the value state message popup.
-		 *
-		 * Default value is empty/<code>undefined</code>
-		 *
-		 * @returns {string} the value of property <code>valueStateText</code>
-		 * @public
-		 * @since 1.52
-		 */
-		StepInput.prototype.getValueStateText = function () {
-			return this._getInput().getValueStateText();
 		};
 
 		/*
@@ -1065,5 +1085,4 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Icon", "./Input", "./InputRende
 		}
 
 		return StepInput;
-
-	}, /* bExport= */ true);
+	});

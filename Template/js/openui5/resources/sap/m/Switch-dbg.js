@@ -9,6 +9,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	function(jQuery, library, Control, EnabledPropagator, IconPool, Parameters) {
 		"use strict";
 
+		// shortcut for sap.m.touch
+		var touch = library.touch;
+
+		// shortcut for sap.m.SwitchType
+		var SwitchType = library.SwitchType;
+
 		/**
 		 * Constructor for a new Switch.
 		 *
@@ -20,7 +26,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -66,7 +72,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 				/**
 				 * Type of a Switch. Possibles values "Default", "AcceptReject".
 				 */
-				type: { type : "sap.m.SwitchType", group: "Appearance", defaultValue: sap.m.SwitchType.Default }
+				type: { type : "sap.m.SwitchType", group: "Appearance", defaultValue: SwitchType.Default }
 			},
 			associations: {
 
@@ -152,6 +158,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 			oHandleDomRef.setAttribute("data-sap-ui-swt", sState);
 
+			this._getInvisibleElement().text(this.getInvisibleElementText(bState));
+
 			if (bState) {
 				$Switch.removeClass(CSS_CLASS + "Off").addClass(CSS_CLASS + "On");
 				oDomRef.setAttribute("aria-checked", "true");
@@ -159,8 +167,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 				$Switch.removeClass(CSS_CLASS + "On").addClass(CSS_CLASS + "Off");
 				oDomRef.setAttribute("aria-checked", "false");
 			}
-
-			this._getInvisibleElement().text(this.getInvisibleElementText(bState));
 
 			if (sap.ui.getCore().getConfiguration().getAnimation()) {
 				$Switch.addClass(CSS_CLASS + "Trans");
@@ -183,12 +189,21 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			var sText = "";
 
 			switch (this.getType()) {
-				case sap.m.SwitchType.Default:
-					sText = this.getCustomTextOn() || (bState ? oBundle.getText("SWITCH_ON") : oBundle.getText("SWITCH_OFF"));
+				case SwitchType.Default:
+					if (bState) {
+						sText = this.getCustomTextOn().trim() || oBundle.getText("SWITCH_ON");
+					} else {
+						sText = this.getCustomTextOff().trim() || oBundle.getText("SWITCH_OFF");
+					}
 					break;
 
-				case sap.m.SwitchType.AcceptReject:
-					sText = oBundle.getText("SWITCH_ARIA_ACCEPT");
+				case SwitchType.AcceptReject:
+					if (bState) {
+						sText = oBundle.getText("SWITCH_ARIA_ACCEPT");
+					} else {
+						sText = oBundle.getText("SWITCH_ARIA_REJECT");
+					}
+
 					break;
 
 				// no default
@@ -238,7 +253,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			oEvent.setMarked();
 
 			// only process single touches (only the first active touch point)
-			if (sap.m.touch.countContained(oEvent.touches, this.getId()) > 1 ||
+			if (touch.countContained(oEvent.touches, this.getId()) > 1 ||
 				!this.getEnabled() ||
 
 				// detect which mouse button caused the event and only process the standard click
@@ -283,7 +298,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 			var oTouch,
 				iPosition,
-				fnTouch = sap.m.touch;
+				fnTouch = touch;
 
 			if (!this.getEnabled() ||
 
@@ -338,7 +353,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			oEvent.setMarked();
 
 			var oTouch,
-				fnTouch = sap.m.touch,
+				fnTouch = touch,
 				assert = jQuery.sap.assert;
 
 			if (!this.getEnabled() ||
@@ -455,5 +470,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		};
 
 		return Switch;
-
-	}, /* bExport= */ true);
+	});

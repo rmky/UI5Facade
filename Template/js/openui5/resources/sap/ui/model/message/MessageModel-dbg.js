@@ -23,14 +23,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Cl
 	 *
 	 * @class
 	 * Model implementation for Messages
-	 * 	 *
+	 *
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @param {sap.ui.core.message.MessageManager} oMessageManager The MessageManager instance
-	 * @constructor
 	 * @public
 	 * @alias sap.ui.model.message.MessageModel
 	 */

@@ -463,7 +463,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/library-preload.js" size="313633">
+  <module name="sap/ui/ux3/library-preload.js" size="315311">
     <requires>
       <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.global.js"/>
@@ -663,90 +663,90 @@
       <module name="sap/ui/core/library.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/manifest.json" size="848">
+  <module name="sap/ui/ux3/manifest.json" size="2476">
   </module>
   <module name="sap/ui/ux3/messagebundle.properties" size="10578">
   </module>
-  <module name="sap/ui/ux3/messagebundle_ar.properties" size="16255">
+  <module name="sap/ui/ux3/messagebundle_ar.properties" size="16073">
   </module>
-  <module name="sap/ui/ux3/messagebundle_bg.properties" size="19245">
+  <module name="sap/ui/ux3/messagebundle_bg.properties" size="19063">
   </module>
-  <module name="sap/ui/ux3/messagebundle_ca.properties" size="11041">
+  <module name="sap/ui/ux3/messagebundle_ca.properties" size="10859">
   </module>
-  <module name="sap/ui/ux3/messagebundle_cs.properties" size="12087">
+  <module name="sap/ui/ux3/messagebundle_cs.properties" size="11905">
   </module>
-  <module name="sap/ui/ux3/messagebundle_da.properties" size="11035">
+  <module name="sap/ui/ux3/messagebundle_da.properties" size="10853">
   </module>
-  <module name="sap/ui/ux3/messagebundle_de.properties" size="11042">
+  <module name="sap/ui/ux3/messagebundle_de.properties" size="10860">
   </module>
-  <module name="sap/ui/ux3/messagebundle_el.properties" size="18532">
+  <module name="sap/ui/ux3/messagebundle_el.properties" size="18350">
   </module>
-  <module name="sap/ui/ux3/messagebundle_en.properties" size="10459">
+  <module name="sap/ui/ux3/messagebundle_en.properties" size="10277">
   </module>
-  <module name="sap/ui/ux3/messagebundle_en_US_sappsd.properties" size="19499">
+  <module name="sap/ui/ux3/messagebundle_en_US_sappsd.properties" size="19317">
   </module>
-  <module name="sap/ui/ux3/messagebundle_en_US_saptrc.properties" size="12368">
+  <module name="sap/ui/ux3/messagebundle_en_US_saptrc.properties" size="12186">
   </module>
-  <module name="sap/ui/ux3/messagebundle_es.properties" size="11038">
+  <module name="sap/ui/ux3/messagebundle_es.properties" size="10856">
   </module>
-  <module name="sap/ui/ux3/messagebundle_et.properties" size="10981">
+  <module name="sap/ui/ux3/messagebundle_et.properties" size="10799">
   </module>
-  <module name="sap/ui/ux3/messagebundle_fi.properties" size="11381">
+  <module name="sap/ui/ux3/messagebundle_fi.properties" size="11199">
   </module>
-  <module name="sap/ui/ux3/messagebundle_fr.properties" size="11333">
+  <module name="sap/ui/ux3/messagebundle_fr.properties" size="11151">
   </module>
-  <module name="sap/ui/ux3/messagebundle_hi.properties" size="16734">
+  <module name="sap/ui/ux3/messagebundle_hi.properties" size="16552">
   </module>
-  <module name="sap/ui/ux3/messagebundle_hr.properties" size="11036">
+  <module name="sap/ui/ux3/messagebundle_hr.properties" size="10854">
   </module>
-  <module name="sap/ui/ux3/messagebundle_hu.properties" size="12197">
+  <module name="sap/ui/ux3/messagebundle_hu.properties" size="12015">
   </module>
-  <module name="sap/ui/ux3/messagebundle_it.properties" size="11018">
+  <module name="sap/ui/ux3/messagebundle_it.properties" size="10836">
   </module>
-  <module name="sap/ui/ux3/messagebundle_iw.properties" size="14908">
+  <module name="sap/ui/ux3/messagebundle_iw.properties" size="14726">
   </module>
-  <module name="sap/ui/ux3/messagebundle_ja.properties" size="13234">
+  <module name="sap/ui/ux3/messagebundle_ja.properties" size="13052">
   </module>
-  <module name="sap/ui/ux3/messagebundle_kk.properties" size="18462">
+  <module name="sap/ui/ux3/messagebundle_kk.properties" size="18280">
   </module>
-  <module name="sap/ui/ux3/messagebundle_ko.properties" size="12670">
+  <module name="sap/ui/ux3/messagebundle_ko.properties" size="12488">
   </module>
-  <module name="sap/ui/ux3/messagebundle_lt.properties" size="11565">
+  <module name="sap/ui/ux3/messagebundle_lt.properties" size="11383">
   </module>
-  <module name="sap/ui/ux3/messagebundle_lv.properties" size="11613">
+  <module name="sap/ui/ux3/messagebundle_lv.properties" size="11431">
   </module>
-  <module name="sap/ui/ux3/messagebundle_ms.properties" size="10642">
+  <module name="sap/ui/ux3/messagebundle_ms.properties" size="10460">
   </module>
-  <module name="sap/ui/ux3/messagebundle_nl.properties" size="10793">
+  <module name="sap/ui/ux3/messagebundle_nl.properties" size="10611">
   </module>
-  <module name="sap/ui/ux3/messagebundle_no.properties" size="10970">
+  <module name="sap/ui/ux3/messagebundle_no.properties" size="10788">
   </module>
-  <module name="sap/ui/ux3/messagebundle_pl.properties" size="11489">
+  <module name="sap/ui/ux3/messagebundle_pl.properties" size="11307">
   </module>
-  <module name="sap/ui/ux3/messagebundle_pt.properties" size="11129">
+  <module name="sap/ui/ux3/messagebundle_pt.properties" size="10947">
   </module>
-  <module name="sap/ui/ux3/messagebundle_ro.properties" size="11050">
+  <module name="sap/ui/ux3/messagebundle_ro.properties" size="10868">
   </module>
-  <module name="sap/ui/ux3/messagebundle_ru.properties" size="19358">
+  <module name="sap/ui/ux3/messagebundle_ru.properties" size="19176">
   </module>
-  <module name="sap/ui/ux3/messagebundle_sh.properties" size="10857">
+  <module name="sap/ui/ux3/messagebundle_sh.properties" size="10675">
   </module>
-  <module name="sap/ui/ux3/messagebundle_sk.properties" size="12186">
+  <module name="sap/ui/ux3/messagebundle_sk.properties" size="12004">
   </module>
-  <module name="sap/ui/ux3/messagebundle_sl.properties" size="11234">
+  <module name="sap/ui/ux3/messagebundle_sl.properties" size="11052">
   </module>
-  <module name="sap/ui/ux3/messagebundle_sv.properties" size="11256">
+  <module name="sap/ui/ux3/messagebundle_sv.properties" size="11074">
   </module>
-  <module name="sap/ui/ux3/messagebundle_th.properties" size="16950">
+  <module name="sap/ui/ux3/messagebundle_th.properties" size="16768">
   </module>
-  <module name="sap/ui/ux3/messagebundle_tr.properties" size="11499">
+  <module name="sap/ui/ux3/messagebundle_tr.properties" size="11317">
   </module>
-  <module name="sap/ui/ux3/messagebundle_uk.properties" size="18546">
+  <module name="sap/ui/ux3/messagebundle_uk.properties" size="18364">
   </module>
-  <module name="sap/ui/ux3/messagebundle_vi.properties" size="13400">
+  <module name="sap/ui/ux3/messagebundle_vi.properties" size="13218">
   </module>
-  <module name="sap/ui/ux3/messagebundle_zh_CN.properties" size="11921">
+  <module name="sap/ui/ux3/messagebundle_zh_CN.properties" size="11739">
   </module>
-  <module name="sap/ui/ux3/messagebundle_zh_TW.properties" size="11849">
+  <module name="sap/ui/ux3/messagebundle_zh_TW.properties" size="11667">
   </module>
 </library>

@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.m.ViewSettingsCustomTab.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item', 'sap/ui/core/IconPool'],
-		function(jQuery, library, Item) {
+sap.ui.define(['./library', 'sap/ui/core/Item', 'sap/ui/core/IconPool'],
+		function(library, Item) {
 			"use strict";
 
 			/**
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item', 'sap/ui/cor
 			 * @extends sap.ui.core.Item
 			 *
 			 * @author SAP SE
-			 * @version 1.50.8
+			 * @version 1.52.5
 			 *
 			 * @constructor
 			 * @public
@@ -52,7 +52,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item', 'sap/ui/cor
 
 
 			ViewSettingsCustomTab.prototype.init = function() {
-				this._oTabButton        = null;
 				this._aTabContents      = [];
 			};
 
@@ -61,37 +60,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item', 'sap/ui/cor
 			 * @private
 			 */
 			ViewSettingsCustomTab.prototype.exit = function () {
-				if (this._oTabButton) {
-					this._oTabButton.destroy();
-					delete this._oTabButton;
-				}
 				this._aTabContents.forEach(function (oContent, i) {
 					oContent.destroy();
 					delete this._aTabContents[i];
 				}, this);
 			};
 
-
-			/**
-			 * Gets or creates the sap.m.Button instance for the custom tab.
-			 * @public
-			 * @param {Object} oOptions The options to be assigned to the button
-			 * @returns {sap.m.Button} The created button
-			 */
-			ViewSettingsCustomTab.prototype.getTabButton = function (oOptions) {
-				if (this._oTabButton === null) {
-					oOptions = oOptions || {};
-					var sIdPrefix = oOptions['idPrefix'] || 'custom-tab-';
-
-					this._oTabButton = new sap.m.Button({
-						id      : sIdPrefix + this.getId(),
-						icon    : this.getIcon(),
-						tooltip : this.getTooltip()
-					});
-				}
-				return this._oTabButton;
-			};
-
 			return ViewSettingsCustomTab;
 
-		}, /* bExport= */ true);
+		});

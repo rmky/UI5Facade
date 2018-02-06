@@ -30,7 +30,7 @@ function(
 	 * @extends sap.m.Toolbar
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -218,7 +218,7 @@ function(
 			iNextZIndex = Popup.getNextZIndex();
 		}
 
-		return this.setZIndex(iNextZIndex);
+		this.setZIndex(iNextZIndex);
 	};
 
 	/**

@@ -15,6 +15,7 @@
 	items: [], // sap.tnt.NavigationListItem
 	ariaDescribedBy: [], // sap.ui.core.Control
 	ariaLabelledBy: [], // sap.ui.core.Control
+	selectedItem: undefined, // sap.tnt.NavigationListItem, since 1.52.0
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this],
@@ -33,6 +34,7 @@
 	expanded="true"
 	ariaDescribedBy=""
 	ariaLabelledBy=""
+	selectedItem=""
 	validateFieldGroup=""
 	itemSelect="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
@@ -51,6 +53,7 @@
 	icon: "", // sap.ui.core.URI
 	expanded: true, // boolean
 	hasExpander: true, // boolean
+	visible: true, // boolean, since 1.52
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -69,6 +72,7 @@
 	icon=""
 	expanded="true"
 	hasExpander="true"
+	visible="true"
 	select="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
@@ -90,6 +94,7 @@
 	item: undefined, // sap.tnt.NavigationList
 	fixedItem: undefined, // sap.tnt.NavigationList
 	footer: undefined, // sap.tnt.NavigationList
+	selectedItem: undefined, // sap.tnt.NavigationListItem, since 1.52.0
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this],
@@ -105,6 +110,7 @@
 	visible="true"
 	fieldGroupIds=""
 	expanded="true"
+	selectedItem=""
 	validateFieldGroup=""
 	itemSelect="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->

@@ -16,7 +16,7 @@ sap.ui.define("sap/ui/fl/support/apps/contentbrowser/utils/ErrorUtils",[
 		 * @constructor
 		 * @alias sap.ui.fl.support.apps.contentbrowser.utils.ErrorUtils
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 * @experimental Since 1.45
 		 */
 		var ErrorUtils = {};

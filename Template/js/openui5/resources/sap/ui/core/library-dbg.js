@@ -14,7 +14,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './Core'],
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.core",
-		version: "1.50.8",
+		version: "1.52.5",
 		types: [
 
 			// builtin types
@@ -57,6 +57,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './Core'],
 			"sap.ui.core.ValueState",
 			"sap.ui.core.VerticalAlign",
 			"sap.ui.core.Wrapping",
+			"sap.ui.core.dnd.DropEffect",
+			"sap.ui.core.dnd.DropLayout",
+			"sap.ui.core.dnd.DropPosition",
 			"sap.ui.core.mvc.ViewType",
 			"sap.ui.core.routing.HistoryDirection"
 		],
@@ -66,12 +69,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './Core'],
 			"sap.ui.core.PopupInterface",
 			"sap.ui.core.Toolbar",
 			"sap.ui.core.IContextMenu",
-			"sap.ui.core.IFormContent"
+			"sap.ui.core.IFormContent",
+			"sap.ui.core.dnd.IDragInfo",
+			"sap.ui.core.dnd.IDropInfo"
 		],
 		controls: [
 			"sap.ui.core.ComponentContainer",
 			"sap.ui.core.Control",
-			"sap.ui.core.FragmentControl",
 			"sap.ui.core.HTML",
 			"sap.ui.core.Icon",
 			"sap.ui.core.InvisibleText",
@@ -100,6 +104,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './Core'],
 			"sap.ui.core.SeparatorItem",
 			"sap.ui.core.Title",
 			"sap.ui.core.VariantLayoutData",
+			"sap.ui.core.dnd.DragDropBase",
+			"sap.ui.core.dnd.DragDropInfo",
 			"sap.ui.core.search.OpenSearchProvider",
 			"sap.ui.core.search.SearchProvider",
 			"sap.ui.core.tmpl.DOMAttribute"
@@ -132,7 +138,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './Core'],
 	 * @namespace
 	 * @alias sap.ui.core
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @public
 	 */
 	var thisLib = sap.ui.core;
@@ -1467,6 +1473,26 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './Core'],
 	 */
 
 	/**
+	 * Marker interface for drag configuration providing information about the source of the drag operation.
+	 *
+	 * @since 1.52.0
+	 * @name sap.ui.core.dnd.IDragInfo
+	 * @interface
+	 * @public
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	/**
+	 * Marker interface for drop configuration providing information about the target of the drop operation.
+	 *
+	 * @since 1.52.0
+	 * @name sap.ui.core.dnd.IDropInfo
+	 * @interface
+	 * @public
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	/**
 	 * Opens the control by given opener ref.
 	 * @param {string} oEvent oncontextmenu event
 	 * @param {sap.ui.core.Element|DOMRef} oOpenerRef The element which will get the focus back again after the menu was closed.
@@ -1634,6 +1660,96 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './Core'],
 	};
 
 
+	thisLib.dnd = thisLib.dnd || {};
+
+	/**
+	 * Configuration options for drop positions.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.52.0
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.dnd.DropPosition = {
+
+		/**
+		 * Drop on the control.
+		 * @public
+		 */
+		On : "On",
+
+		/**
+		 * Drop between the controls.
+		 * @public
+		 */
+		Between : "Between",
+
+		/**
+		 * Drop on the control or between the controls.
+		 * @public
+		 */
+		OnOrBetween : "OnOrBetween"
+	};
+
+	/**
+	 * Configuration options for the layout of the droppable controls.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.52.0
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.dnd.DropLayout = {
+
+		/**
+		 * Droppable controls are arranged vertically.
+		 * @public
+		 */
+		Vertical : "Vertical",
+
+		/**
+		 * Droppable controls are arranged horizontally.
+		 * @public
+		 */
+		Horizontal : "Horizontal"
+	};
+
+	/**
+	 * Configuration options for visual drop effects that are given during a drag and drop operation.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.52.0
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.dnd.DropEffect = {
+
+		/**
+		 * A copy of the source item is made at the new location.
+		 * @public
+		 */
+		Copy : "Copy",
+
+		/**
+		 * An item is moved to a new location.
+		 * @public
+		 */
+		Move : "Move",
+
+		/**
+		 * A link is established to the source at the new location.
+		 * @public
+		 */
+		Link : "Link",
+
+		/**
+		 * The item cannot be dropped.
+		 * @public
+		 */
+		None : "None"
+	};
+
+
 	thisLib.mvc = thisLib.mvc || {};
 
 	/**
@@ -1786,7 +1902,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './Core'],
 
 	each("sap.ui.model.", ["Filter","Sorter","json.JSONModel","resource.ResourceModel","odata.ODataModel","odata.v2.ODataModel","odata.v4.ODataModel","xml.XMLModel"]);
 	each("sap.ui.model.type.", ["Boolean","Integer","Float","String","Date","Time","DateTime","FileSize","Currency","DateInterval", "DateTimeInterval", "TimeInterval"]);
-	each("sap.ui.model.odata.type.", ["Boolean","Byte","Date","DateTime","DateTimeOffset","Double","Decimal","Guid","Int16","Int32","Int64","Raw","SByte","Single","String","Time","TimeOfDay"]);
+	each("sap.ui.model.odata.type.", ["Boolean","Byte","Date","DateTime","DateTimeOffset","Double","Decimal","Guid","Int16","Int32","Int64","Raw","SByte","Single","Stream","String","Time","TimeOfDay"]);
 	each("sap.ui.core.", ["Locale","LocaleData","mvc.Controller"]);
 	each("sap.ui.core.mvc.", ["Controller", "View", "JSView", "JSONView", "XMLView", "HTMLView", "TemplateView"], "sap.ui");
 	each("sap.ui.core.", ["Component"], "sap.ui");

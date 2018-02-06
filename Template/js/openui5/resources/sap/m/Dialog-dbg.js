@@ -7,13 +7,20 @@
 // Provides control sap.m.Dialog.
 sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './AssociativeOverflowToolbar', './ToolbarSpacer',
 	'./library', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/ui/core/Popup', 'sap/ui/core/delegate/ScrollEnablement',
-	'sap/ui/core/theming/Parameters', 'sap/ui/core/RenderManager', 'sap/ui/core/InvisibleText', 'sap/ui/core/ResizeHandler','sap/ui/Device', 'sap/ui/base/ManagedObject'],
+	'sap/ui/core/RenderManager', 'sap/ui/core/InvisibleText', 'sap/ui/core/ResizeHandler', 'sap/ui/Device', 'sap/ui/base/ManagedObject', 'sap/ui/core/library', 'jquery.sap.mobile'],
 	function (jQuery, Bar, InstanceManager, AssociativeOverflowToolbar, ToolbarSpacer, library, Control, IconPool,
-			  Popup, ScrollEnablement, Parameters, RenderManager, InvisibleText, ResizeHandler, Device, ManagedObject) {
+			  Popup, ScrollEnablement, RenderManager, InvisibleText, ResizeHandler, Device, ManagedObject, coreLibrary) {
 		"use strict";
 
 
-		var ValueState = sap.ui.core.ValueState;
+		// shortcut for sap.ui.core.OpenState
+		var OpenState = coreLibrary.OpenState;
+
+		// shortcut for sap.m.DialogType
+		var DialogType = library.DialogType;
+
+		// shortcut for sap.ui.core.ValueState
+		var ValueState = coreLibrary.ValueState;
 
 		/**
 		* Constructor for a new Dialog.
@@ -67,7 +74,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 		*
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.50.8
+		* @version 1.52.5
 		*
 		* @constructor
 		* @public
@@ -101,7 +108,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 					/**
 					 * The type of the dialog. In some themes, the type "message" will limit the dialog's width within 480px on tablet and desktop.
 					 */
-					type: {type: "sap.m.DialogType", group: "Appearance", defaultValue: sap.m.DialogType.Standard},
+					type: {type: "sap.m.DialogType", group: "Appearance", defaultValue: DialogType.Standard},
 
 					/**
 					 * The state affects the icon and the title color. If other than "None" is set, a predefined icon will be added to the dialog. Setting icon property will overwrite the predefined icon. The default value is "None" which doesn't add any icon to the Dialog control. This property is by now only supported by blue crystal theme.
@@ -444,7 +451,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 				this._setInitialFocus();
 			}
 
-			if (this.getType() === sap.m.DialogType.Message ||
+			if (this.getType() === DialogType.Message ||
 				(Device.system.phone && !this.getStretch())) {
 				this.$("footer").removeClass("sapContrast sapContrastPlus");
 			}
@@ -510,10 +517,10 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 			var oPopupOpenState = oPopup.getOpenState();
 
 			switch (oPopupOpenState) {
-				case sap.ui.core.OpenState.OPEN:
-				case sap.ui.core.OpenState.OPENING:
+				case OpenState.OPEN:
+				case OpenState.OPENING:
 					return this;
-				case sap.ui.core.OpenState.CLOSING:
+				case OpenState.CLOSING:
 					this._bOpenAfterClose = true;
 					break;
 				default:
@@ -554,8 +561,8 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 			var oPopup = this.oPopup;
 
 			var eOpenState = this.oPopup.getOpenState();
-			if (!(eOpenState === sap.ui.core.OpenState.CLOSED || eOpenState === sap.ui.core.OpenState.CLOSING)) {
-				sap.m.closeKeyboard();
+			if (!(eOpenState === OpenState.CLOSED || eOpenState === OpenState.CLOSING)) {
+				library.closeKeyboard();
 				this.fireBeforeClose({origin: this._oCloseTrigger});
 				oPopup.attachClosed(this._handleClosed, this);
 				this._bDisableRepositioning = false;
@@ -845,7 +852,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 				iDialogHeight,
 				maxDialogWidth =  Math.floor(window.innerWidth * 0.9), //90% of the max screen size
 				BORDER_THICKNESS = 2, // solves Scrollbar issue in IE when Table is in Dialog
-				oBrowser = sap.ui.Device.browser;
+				oBrowser = Device.browser;
 
 			//if height is set by manually resizing return;
 			if (this._oManuallySetSize) {
@@ -951,7 +958,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 
 			if (aContent.length === 1) {
 				for (i = 0; i < this._scrollContentList.length; i++) {
-					if (aContent[0] instanceof sap.m[this._scrollContentList[i]]) {
+					if (aContent[0] instanceof library[this._scrollContentList[i]]) {
 						return true;
 					}
 				}
@@ -1368,11 +1375,11 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 			var rb = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
 			switch (sValueState) {
-				case (sap.ui.core.ValueState.Success):
+				case (ValueState.Success):
 					return rb.getText("LIST_ITEM_STATE_SUCCESS");
-				case (sap.ui.core.ValueState.Warning):
+				case (ValueState.Warning):
 					return rb.getText("LIST_ITEM_STATE_WARNING");
-				case (sap.ui.core.ValueState.Error):
+				case (ValueState.Error):
 					return rb.getText("LIST_ITEM_STATE_ERROR");
 				default:
 					return "";
@@ -1400,7 +1407,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 				}.bind(this);
 			}
 
-			return oControl;
+			return this;
 		};
 
 		//The public setters and getters should not be documented via JSDoc because they will appear in the explored app
@@ -1489,7 +1496,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 			if (oCustomHeader) {
 				oCustomHeader.addStyleClass("sapMDialogTitle");
 			}
-			this.setAggregation("customHeader", oCustomHeader);
+			return this.setAggregation("customHeader", oCustomHeader);
 		};
 
 		Dialog.prototype.setState = function (sState) {
@@ -1554,7 +1561,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 			if (sOldType === sType) {
 				return this;
 			}
-			this._bMessageType = (sType === sap.m.DialogType.Message);
+			this._bMessageType = (sType === DialogType.Message);
 			return this.setProperty("type", sType, false);
 		};
 
@@ -1848,5 +1855,4 @@ sap.ui.define(['jquery.sap.global', './Bar', './InstanceManager', './Associative
 		};
 
 		return Dialog;
-
-	}, /* bExport= */ true);
+	});

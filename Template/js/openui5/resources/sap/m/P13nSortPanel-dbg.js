@@ -6,9 +6,12 @@
 
 // Provides control sap.m.P13nSortPanel.
 sap.ui.define([
-	'jquery.sap.global', './P13nConditionPanel', './P13nPanel', './library', 'sap/ui/core/Control'
-], function(jQuery, P13nConditionPanel, P13nPanel, library, Control) {
+	'jquery.sap.global', './P13nConditionPanel', './P13nPanel', './library'
+], function(jQuery, P13nConditionPanel, P13nPanel, library) {
 	"use strict";
+
+	// shortcut for sap.m.P13nPanelType
+	var P13nPanelType = library.P13nPanelType;
 
 	/**
 	 * Constructor for a new P13nSortPanel.
@@ -17,7 +20,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The P13nSortPanel control is used to define settings for sorting in table personalization.
 	 * @extends sap.m.P13nPanel
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -207,7 +210,7 @@ sap.ui.define([
 	 * @private
 	 */
 	P13nSortPanel.prototype.init = function() {
-		this.setType(sap.m.P13nPanelType.sort);
+		this.setType(P13nPanelType.sort);
 		this.setTitle(sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("SORTPANEL_TITLE"));
 
 		sap.ui.getCore().loadLibrary("sap.ui.layout");
@@ -450,4 +453,4 @@ sap.ui.define([
 
 	return P13nSortPanel;
 
-}, /* bExport= */true);
+});

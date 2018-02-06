@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control'],
 	 * Static collection of utility functions related to the sap.ui.table.TableRenderer
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @namespace
 	 * @name sap.ui.table.TableRendererUtils
 	 * @private
@@ -29,7 +29,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control'],
 		 * @param {string} sClassName The CSS class which should be written
 		 * @param {boolean} [bShouldAdd] optional condition
 		 *
-		 * @return TableRendererUtils to allow method chaining
+		 * @returns TableRendererUtils to allow method chaining
 		 * @private
 		 */
 		addClass : function(rm, sClassName, bShouldAdd) {
@@ -50,7 +50,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control'],
 		 * @param {string} oValue The style value which should be written
 		 * @param {boolean} [bShouldAdd] optional condition
 		 *
-		 * @return TableRendererUtils to allow method chaining
+		 * @returns TableRendererUtils to allow method chaining
 		 * @private
 		 */
 		addStyle : function(rm, sName, oValue, bShouldAdd) {
@@ -88,7 +88,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control'],
 		 * @param {boolean} [oConfig.writeStyles]			Whether the <code>writeStyles</code> function of the render manager should be called. This flag is automatically set
 		 * 													when the <code>TableRendererUtils.addStyle</code> function is used within the <code>furtherSettings</code> callback.
 		 *
-		 * @return TableRendererUtils to allow method chaining
+		 * @returns TableRendererUtils to allow method chaining
 		 * @private
 		 */
 		startElement : function(rm, oTable, oConfig) {
@@ -153,7 +153,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control'],
 		 * @param {sap.ui.core.RenderManager} rm Instance of the rendermanager
 		 * @param {string} sTag The tag type which should be used. If nothing is given <code>div</code> is used.
 		 *
-		 * @return TableRendererUtils to allow method chaining
+		 * @returns TableRendererUtils to allow method chaining
 		 * @private
 		 */
 		endElement : function(rm, sTag) {
@@ -167,11 +167,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control'],
 		 * @param {sap.ui.core.RenderManager} rm Instance of the rendermanager
 		 * @param {sap.ui.table.Table} oTable Instance of the table
 		 * @param {object} oConfig the configuration of the start tag
-		 *
+		 * @returns TableRendererUtils to allow method chaining
 		 * @see TableRendererUtils#startElement
 		 * @see TableRendererUtils#endElement
-		 *
-		 * @return TableRendererUtils to allow method chaining
 		 * @private
 		 */
 		renderElement : function(rm, oTable, oConfig) {

@@ -5,9 +5,17 @@
  */
 
 // Provides control sap.m.Link.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/InvisibleText', 'sap/ui/core/EnabledPropagator'],
-	function(jQuery, library, Control, InvisibleText, EnabledPropagator) {
+sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/InvisibleText', 'sap/ui/core/EnabledPropagator', 'sap/ui/core/library', 'sap/ui/Device'],
+	function(library, Control, InvisibleText, EnabledPropagator, coreLibrary, Device) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
+
+	// shortcut for sap.ui.core.TextAlign
+	var TextAlign = coreLibrary.TextAlign;
 
 
 
@@ -45,7 +53,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @implements sap.ui.core.IShrinkable, sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -102,13 +110,13 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			 * Determines the horizontal alignment of the text.
 			 * @since 1.28.0
 			 */
-			textAlign : {type : "sap.ui.core.TextAlign", group : "Appearance", defaultValue : sap.ui.core.TextAlign.Initial},
+			textAlign : {type : "sap.ui.core.TextAlign", group : "Appearance", defaultValue : TextAlign.Initial},
 
 			/**
 			 * This property specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the parent DOM.
 			 * @since 1.28.0
 			 */
-			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : sap.ui.core.TextDirection.Inherit},
+			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit},
 
 			/**
 			 * Subtle links look more like standard text than like links. They should only be used to help with visual hierarchy between large data lists of important and less important links. Subtle links should not be used in any other use case.
@@ -199,7 +207,15 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		}
 	};
 
-	if (sap.ui.Device.support.touch) {
+	/**
+	 * Handle when enter is pressed.
+	 *
+	 * @param {jQuery.Event} oEvent The event object.
+	 * @private
+	 */
+	Link.prototype.onsapenter = Link.prototype._handlePress;
+
+	if (Device.support.touch) {
 		Link.prototype.ontap = Link.prototype._handlePress;
 	} else {
 		Link.prototype.onclick = Link.prototype._handlePress;
@@ -299,6 +315,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	};
 
 	Link.prototype.setEnabled = function(bEnabled){
+		bEnabled = this.validateProperty("enabled", bEnabled);
+
 		if (bEnabled !== this.getProperty("enabled")) { // do nothing when the same value is set again (virtual table scrolling!) - don't use this.getEnabled() because of EnabledPropagator
 			this.setProperty("enabled", bEnabled, true);
 			var $this = this.$();
@@ -425,4 +443,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	return Link;
 
-}, /* bExport= */ true);
+});

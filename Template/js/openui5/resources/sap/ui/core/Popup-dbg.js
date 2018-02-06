@@ -57,7 +57,6 @@ sap.ui.define([
 	 * @param {boolean} [bShadow=true] whether the popup should be have a visual shadow underneath (shadow appearance depends on active theme and browser support)
 	 * @param {boolean} [bAutoClose=false] whether the popup should automatically close when the focus moves out of the popup
 	 *
-	 * @constructor
 	 * @public
 	 * @alias sap.ui.core.Popup
 	 * @extends sap.ui.base.ManagedObject
@@ -842,16 +841,9 @@ sap.ui.define([
 
 		this.bOpen = true;
 
-		if (this._bModal || this._bAutoClose) { // initialize focus handling
-			this._addFocusEventListeners();
-		}
+		this._activateFocusHandle();
 
 		this._$(false, true).on("keydown", jQuery.proxy(this._F6NavigationHandler, this));
-
-		//autoclose implementation for mobile or desktop browser in touch mode
-		if (this.touchEnabled && !this._bModal && this._bAutoClose) {
-			jQuery(document).on("touchstart mousedown", jQuery.proxy(this._fAutoCloseHandler, this));
-		}
 
 		//  register resize handler for blindlayer resizing
 		if (this._oBlindLayer) {
@@ -936,18 +928,22 @@ sap.ui.define([
 						// if in desktop browser or the DOM node which has the focus is input outside the popup,
 						// focus on the last blurred element
 						if (Device.system.desktop || jQuery(oEvent.target).is(":input")) {
-							// The focus should be set after the current call stack is finished
-							// because the existing timer for autoclose popup is cancelled by
-							// setting the focus here.
-							//
-							// Suppose an autoclose popup is opened within a modal popup. Clicking
-							// on the blocklayer should wait the autoclose popup to first close then
-							// set the focus back to the lasted blurred element.
-							jQuery.sap.delayedCall(0, this, function() {
-								// set the focus back to the last focused element inside the popup or at least to the popup root
-								var oDomRefToFocus = this.oLastBlurredElement ? this.oLastBlurredElement : oDomRef;
-								jQuery.sap.focus(oDomRefToFocus);
-							});
+							if (this.oLastBlurredElement) {
+								// If a DOM element inside the popup was blurred, the focus should be set
+								// after the current call stack is finished because the existing timer for
+								// autoclose popup is cancelled by setting the focus here.
+								//
+								// Suppose an autoclose popup is opened within a modal popup. Clicking
+								// on the blocklayer should wait the autoclose popup to first close then
+								// set the focus back to the lasted blurred element.
+								jQuery.sap.delayedCall(0, this, function() {
+									jQuery.sap.focus(this.oLastBlurredElement);
+								});
+							} else {
+								// If the focus is set to somewhere else without a blurred element in popup,
+								// the focus is set to the root DOM element of the popup
+								jQuery.sap.focus(oDomRef);
+							}
 						}
 					}
 				} else if (this._bAutoClose && bContains && this._sTimeoutId) { // case: autoclose popup and focus has returned into the popup immediately
@@ -1077,18 +1073,9 @@ sap.ui.define([
 
 		this._sTimeoutId = null;
 
-		if (this.fEventHandler) { // remove focus handling
-			this._removeFocusEventListeners();
-		}
+		this._deactivateFocusHandle();
 
 		this._$(false, true).off("keydown", this._F6NavigationHandler);
-
-		//deregister the autoclose handler for mobile
-		if (this.touchEnabled) {
-			if (!this._bModal && this._bAutoClose) {
-				jQuery(document).off("touchstart mousedown", this._fAutoCloseHandler);
-			}
-		}
 
 		if (this.oContent instanceof Element) {
 			this.oContent.removeDelegate(this);
@@ -2210,6 +2197,34 @@ sap.ui.define([
 			}
 		}
 		this.fEventHandler = null;
+	};
+
+	/**
+	 * Registers the focus event listeners for autoclose and modal popup for both mobile and desktop devices.
+	 */
+	Popup.prototype._activateFocusHandle = function() {
+		if (this._bModal || this._bAutoClose) { // initialize focus handling
+			this._addFocusEventListeners();
+		}
+
+		//autoclose implementation for mobile or desktop browser in touch mode
+		if (this.touchEnabled && !this._bModal && this._bAutoClose) {
+			jQuery(document).on("touchstart mousedown", jQuery.proxy(this._fAutoCloseHandler, this));
+		}
+	};
+
+	/**
+	 * Deregisters the focus event listeners for autoclose and modal popup for both mobile and desktop devices.
+	 */
+	Popup.prototype._deactivateFocusHandle = function() {
+		if (this.fEventHandler) { // remove focus handling
+			this._removeFocusEventListeners();
+		}
+
+		//deregister the autoclose handler for mobile
+		if (this.touchEnabled && !this._bModal && this._bAutoClose) {
+			jQuery(document).off("touchstart mousedown", this._fAutoCloseHandler);
+		}
 	};
 
 	/**

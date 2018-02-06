@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.m.AccButton.
-sap.ui.define(['jquery.sap.global', './Button' ],
-	function(jQuery, Button) {
+sap.ui.define(['./Button'],
+	function(Button) {
 		"use strict";
 
 	/**
@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', './Button' ],
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -39,4 +39,4 @@ sap.ui.define(['jquery.sap.global', './Button' ],
 	});
 
 	return AccButton;
-}, /* bExport= */ false);
+});

@@ -58,7 +58,7 @@ sap.ui.define([
 	 * @class Context - Dialog for available Fields in Runtime Authoring
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -125,7 +125,7 @@ sap.ui.define([
 		this._oInput =  new SearchField({
 			width : "100%",
 			liveChange : [this._updateModelFilter, this]
-		}).addStyleClass("resourceListIF");
+		});
 
 		// Button for sorting the List
 		var oResortButton = new Button({

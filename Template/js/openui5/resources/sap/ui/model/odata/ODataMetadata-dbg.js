@@ -25,9 +25,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 	 * Implementation to access oData metadata
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
-	 * @constructor
 	 * @public
 	 * @alias sap.ui.model.odata.ODataMetadata
 	 * @extends sap.ui.base.EventProvider
@@ -847,7 +846,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 
 		// remove starting/trailing /
 		sProperty = sProperty.replace(/^\/|\/$/g, "");
-		var aParts = sProperty.split("/"); // path could point to a complex type
+		var aParts = sProperty.split("/"); // path could point to a complex type or nav property
 
 		jQuery.each(oEntityType.property, function(k, oProperty) {
 			if (oProperty.name === aParts[0]) {
@@ -856,17 +855,19 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 			}
 		});
 
-		// check if complex type
-		if (oPropertyMetadata && aParts.length > 1 && !jQuery.sap.startsWith(oPropertyMetadata.type.toLowerCase(), "edm.")) {
-			var aName = this._splitName(oPropertyMetadata.type);
-			oPropertyMetadata = this._getPropertyMetadata(this._getObjectMetadata("complexType", aName[0], aName[1]), aParts[1]);
-		}
-
-		// check if navigation property
-		if (!oPropertyMetadata && aParts.length > 1) {
-			var oParentEntityType = this._getEntityTypeByNavProperty(oEntityType, aParts[0]);
-			if (oParentEntityType) {
-				oPropertyMetadata = that._getPropertyMetadata(oParentEntityType, aParts[1]);
+		if (aParts.length > 1) {
+			// check for navigation property and complex type
+			if (!oPropertyMetadata) {
+				while (oEntityType && aParts.length > 1) {
+					oEntityType = this._getEntityTypeByNavProperty(oEntityType, aParts[0]);
+					aParts.shift();
+				}
+				if (oEntityType) {
+					oPropertyMetadata = that._getPropertyMetadata(oEntityType, aParts[0]);
+				}
+			} else if (!jQuery.sap.startsWith(oPropertyMetadata.type.toLowerCase(), "edm.")) {
+				var aName = this._splitName(oPropertyMetadata.type);
+				oPropertyMetadata = this._getPropertyMetadata(this._getObjectMetadata("complexType", aName[0], aName[1]), aParts[1]);
 			}
 		}
 

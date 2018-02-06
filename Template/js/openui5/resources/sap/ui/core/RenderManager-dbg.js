@@ -54,8 +54,7 @@ sap.ui.define([
 	 *
 	 * @extends Object
 	 * @author SAP SE
-	 * @version 1.50.8
-	 * @constructor
+	 * @version 1.52.5
 	 * @alias sap.ui.core.RenderManager
 	 * @public
 	 */
@@ -892,6 +891,29 @@ sap.ui.define([
 				this.writeAttributeEscaped(oCheckResult.key, oCheckResult.value);
 			}
 		}
+
+		var bDraggable = false;
+		if (oElement.getDragDropConfig) {
+			// is this element configured to be draggable
+			bDraggable = oElement.getDragDropConfig().some(function(vDragDropInfo){
+				return vDragDropInfo.isDraggable(oElement);
+			});
+		}
+
+		if (!bDraggable) {
+			// also check parent config
+			var oParent = oElement.getParent();
+			if (oParent && oParent.getDragDropConfig) {
+				bDraggable = oParent.getDragDropConfig().some(function(vDragDropInfo){
+					return vDragDropInfo.isDraggable(oElement);
+				});
+			}
+		}
+
+		if (bDraggable) {
+			this.writeAttribute("draggable", "true");
+		}
+
 		return this;
 	};
 

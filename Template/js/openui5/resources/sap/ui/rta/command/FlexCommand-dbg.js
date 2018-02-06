@@ -15,7 +15,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -85,7 +85,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 	 * (in some cases element of a command is unstable, so change needs to be created and stored upfront)
 	 * @override
 	 */
-	FlexCommand.prototype.prepare = function(mFlexSettings, sVariantManagementKey) {
+	FlexCommand.prototype.prepare = function(mFlexSettings, sVariantManagementReference) {
 		if (
 			!this.getSelector()
 			&& this.getElement()
@@ -98,7 +98,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 			this.setSelector(oSelector);
 		}
 		try {
-			this._oPreparedChange = this._createChange(mFlexSettings, sVariantManagementKey);
+			this._oPreparedChange = this._createChange(mFlexSettings, sVariantManagementReference);
 		} catch (oError) {
 			jQuery.sap.log.error(oError.message || oError.name);
 			return false;
@@ -128,9 +128,9 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 	};
 
 	/**
-	 * This method converts command constructor parameters into change specific data
+	 * This method converts command constructor parameters into change specific data.
 	 * Default implementation of this method below is for commands, which do not have specific constructor parameters
-	 * @return {object} SpecificChangeInfo for ChangeHandler
+	 * @return {object} Returns the <code>SpecificChangeInfo</code> for change handler
 	 * @protected
 	 */
 	FlexCommand.prototype._getChangeSpecificData = function() {
@@ -143,38 +143,41 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 	};
 
 	/**
-	 * @param {object} mFlexSettings - map contains flex settings
-	 * @returns {object} change object
+	 * Creates a change.
+	 * @param {object} mFlexSettings Map containing the flexibility settings
+	 * @param {string} sVariantManagementReference Reference to the variant management
+	 * @returns {object} Returns the change object
 	 * @private
 	 */
-	FlexCommand.prototype._createChange = function(mFlexSettings, sVariantManagementKey) {
-		return this._createChangeFromData(this._getChangeSpecificData(), mFlexSettings, sVariantManagementKey);
+	FlexCommand.prototype._createChange = function(mFlexSettings, sVariantManagementReference) {
+		return this._createChangeFromData(this._getChangeSpecificData(), mFlexSettings, sVariantManagementReference);
 	};
 
 	/**
-	 * Create a Flex change from a given Change Specific Data
+	 * Create a Flex change from a given Change Specific Data.
 	 * (This method can be reused to retrieve an Undo Change)
 	 *
-	 * @param {object} mChangeSpecificData - map contains change specific data
-	 * @param {object} mFlexSettings - map contains flex settings
-	 * @returns {object} change object
+	 * @param {object} mChangeSpecificData Map containing change specific data
+	 * @param {object} mFlexSettings Map containing flex settings
+	 * @param {string} sVariantManagementReference Reference to the variant management
+	 * @returns {object} Returns the change object
 	 * @private
 	 */
-	FlexCommand.prototype._createChangeFromData = function(mChangeSpecificData, mFlexSettings, sVariantManagementKey) {
+	FlexCommand.prototype._createChangeFromData = function(mChangeSpecificData, mFlexSettings, sVariantManagementReference) {
 		if (mFlexSettings) {
 			jQuery.extend(mChangeSpecificData, mFlexSettings);
 		}
 		var oModel = this.getAppComponent().getModel("$FlexVariants");
-		var sVariantKey;
-		if (oModel && sVariantManagementKey) {
-			sVariantKey = oModel.getCurrentVariantRef(sVariantManagementKey);
+		var sVariantReference;
+		if (oModel && sVariantManagementReference) {
+			sVariantReference = oModel.getCurrentVariantReference(sVariantManagementReference);
 		}
 		var oFlexController = FlexControllerFactory.createForControl(this.getAppComponent());
 		var mVariantObj = {
-			"variantManagementKey": sVariantManagementKey,
-			"variantKey": sVariantKey
+			"variantManagementReference": sVariantManagementReference,
+			"variantReference": sVariantReference
 		};
-		if (sVariantKey) {
+		if (sVariantReference) {
 			jQuery.extend(mChangeSpecificData, mVariantObj);
 		}
 		return oFlexController.createChange(mChangeSpecificData, this.getElement() || this.getSelector());
@@ -197,9 +200,9 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 
 	/**
 	 * @private
-	 * @param {void} vChange - change object
-	 * @param {boolean} bNotMarkAsAppliedChange - optional - apply the change without marking them as applied change in the custom Data
-	 * @returns {promise} empty promise
+	 * @param {sap.ui.fl.Change|Object} vChange Change object or map containing the change object
+	 * @param {boolean} [bNotMarkAsAppliedChange] Apply the change without marking them as applied changes in the custom Data
+	 * @returns {Promise} Returns an empty promise
 	 */
 	FlexCommand.prototype._applyChange = function(vChange, bNotMarkAsAppliedChange) {
 		//TODO: remove the following compatibility code when concept is implemented

@@ -66,6 +66,11 @@
 			"theme": "base"
 		},
 		{
+			"name": "ColumnHeader.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "ColumnListItem.less",
 			"designtime": true,
 			"theme": "base"

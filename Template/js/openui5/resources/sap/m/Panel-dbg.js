@@ -5,9 +5,15 @@
  */
 
 // Provides control sap.m.Panel.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/IconPool'],
-	function(jQuery, library, Control, IconPool) {
+sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/IconPool'],
+	function(library, Control, IconPool) {
 	"use strict";
+
+	// shortcut for sap.m.PanelAccessibleRole
+	var PanelAccessibleRole = library.PanelAccessibleRole;
+
+	// shortcut for sap.m.BackgroundDesign
+	var BackgroundDesign = library.BackgroundDesign;
 
 	/**
 	 * Constructor for a new Panel.
@@ -50,7 +56,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -107,14 +113,14 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			 * Depending on the theme you can change the state of the background from "Solid" over "Translucent" to "Transparent".
 			 * @since 1.30
 			 */
-			backgroundDesign: {type: "sap.m.BackgroundDesign", group: "Appearance", defaultValue: sap.m.BackgroundDesign.Translucent},
+			backgroundDesign: {type: "sap.m.BackgroundDesign", group: "Appearance", defaultValue: BackgroundDesign.Translucent},
 
 			/**
 			 * This property is used to set the accessible aria role of the Panel.
 			 * Depending on the usage you can change the role from the default <code>Form</code> to <code>Region</code> or <code>Complementary</code>.
 			 * @since 1.46
 			 */
-			accessibleRole: {type: "sap.m.PanelAccessibleRole", group: "Accessibility", defaultValue: sap.m.PanelAccessibleRole.Form}
+			accessibleRole: {type: "sap.m.PanelAccessibleRole", group: "Accessibility", defaultValue: PanelAccessibleRole.Form}
 
 		},
 		defaultAggregation: "content",
@@ -399,4 +405,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	return Panel;
 
-}, /* bExport= */ true);
+});

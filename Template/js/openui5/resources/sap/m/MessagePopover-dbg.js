@@ -5,14 +5,13 @@
  */
 
 // Provides control sap.m.MessagePopover.
-sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolbar", "./ToolbarSpacer", "./Bar", "./List",
-		"./StandardListItem", "sap/ui/core/Control", "sap/ui/core/IconPool",
-		"sap/ui/core/HTML", "./Text", "sap/ui/core/Icon", "./SegmentedButton", "./Page", "./NavContainer",
-		"./semantic/SemanticPage", "./Link" ,"./Popover", "./MessagePopoverItem", "./MessageView"],
-	function (jQuery, ResponsivePopover, Button, Toolbar, ToolbarSpacer, Bar, List,
-			  StandardListItem, Control, IconPool,
-			  HTML, Text, Icon, SegmentedButton, Page, NavContainer, SemanticPage, Link, Popover, MessagePopoverItem,
-			  MessageView) {
+sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolbar", "./Bar",
+		"sap/ui/core/Control", "sap/ui/core/IconPool",
+		"./semantic/SemanticPage", "./Popover", "./MessageView", "sap/ui/Device"],
+	function (jQuery, ResponsivePopover, Button, Toolbar, Bar,
+			  Control, IconPool,
+			  SemanticPage, Popover,
+			  MessageView, Device) {
 		"use strict";
 
 		/**
@@ -50,7 +49,7 @@ sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolb
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -92,7 +91,7 @@ sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolb
 					placement: {type: "sap.m.VerticalPlacementType", group: "Behavior", defaultValue: "Vertical"},
 
 					/**
-					 * Sets the initial state of the control - expanded or collapsed. By default the control opens as expanded
+					 * Sets the initial state of the control - expanded or collapsed. By default the control opens as expanded.
 					 */
 					initiallyExpanded: {type: "boolean", group: "Behavior", defaultValue: true}
 				},
@@ -246,8 +245,8 @@ sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolb
 		 * @static
 		 * @protected
 		 * @param {object} mDefaultHandlers An object setting default callbacks
-		 * @param {function} mDefaultHandlers.asyncDescriptionHandler
-		 * @param {function} mDefaultHandlers.asyncURLHandler
+		 * @param {function} mDefaultHandlers.asyncDescriptionHandler The description handler
+		 * @param {function} mDefaultHandlers.asyncURLHandler The URL handler
 		 */
 		MessagePopover.setDefaultHandlers = function (mDefaultHandlers) {
 			ASYNC_HANDLER_NAMES.forEach(function (sFuncName) {
@@ -276,6 +275,17 @@ sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolb
 			this._oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
 			this._oMessageView = this._initMessageView();
+
+			this._oMessageView.addEventDelegate({
+				onBeforeRendering: function () {
+					var bSegmentedButtonVisibleInMV = that._oMessageView._oSegmentedButton.getVisible(),
+						bShowHeader = !that.getInitiallyExpanded() || bSegmentedButtonVisibleInMV;
+
+					that._oMessageView._oSegmentedButton.setVisible(bShowHeader);
+					that._oMessageView._listPage.setShowHeader(true);
+				}
+			});
+
 			// insert the close buttons in both list and details pages as the MessageView
 			// doesn't know it is being created in Popover
 			this._insertCloseBtn(this._oMessageView._oListHeader);
@@ -317,7 +327,7 @@ sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolb
 				onAfterRendering: this.onAfterRenderingPopover
 			}, this);
 
-			if (sap.ui.Device.system.phone) {
+			if (Device.system.phone) {
 				this._oPopover.setBeginButton(new Button({
 					text: this._oResourceBundle.getText("MESSAGEPOPOVER_CLOSE"),
 					press: this.close.bind(this)
@@ -440,6 +450,7 @@ sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolb
 
 			if (this._oPopover) {
 				this._restoreExpansionDefaults();
+
 				this._oPopover.openBy(oControl);
 			}
 
@@ -495,6 +506,7 @@ sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolb
 		 *
 		 * @param {sap.m.PlacementType} sPlacement Placement type
 		 * @returns {sap.m.MessagePopover} Reference to the 'this' for chaining purposes
+		 * @public
 		 */
 		MessagePopover.prototype.setPlacement = function (sPlacement) {
 			this.setProperty("placement", sPlacement, true);
@@ -603,7 +615,7 @@ sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolb
 			var sCloseBtnDescr = this._oResourceBundle.getText("MESSAGEPOPOVER_CLOSE"),
 				oCloseBtn = new Button({
 				icon: ICONS["close"],
-				visible: !sap.ui.Device.system.phone,
+				visible: !Device.system.phone,
 				tooltip: sCloseBtnDescr,
 				press: this.close.bind(this)
 			}).addStyleClass(CSS_CLASS + "CloseBtn");
@@ -745,4 +757,4 @@ sap.ui.define([ "jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolb
 
 		return MessagePopover;
 
-	}, /* bExport= */ true);
+	});

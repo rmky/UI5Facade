@@ -26,7 +26,7 @@ function(Plugin, DOMUtil, OverlayUtil, ElementUtil) {
 	 * @extends sap.ui.dt.plugin.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -246,8 +246,8 @@ function(Plugin, DOMUtil, OverlayUtil, ElementUtil) {
 	 */
 	DragDrop.prototype._checkMovable = function(oEvent) {
 		var oOverlay = oEvent.srcControl;
-		if (oOverlay.isMovable()) {
-			DOMUtil.setDraggable(oOverlay.$(), true);
+		if (oOverlay.isMovable() || DOMUtil.getDraggable(oOverlay.$()) !== undefined) {
+			DOMUtil.setDraggable(oOverlay.$(), oOverlay.isMovable());
 		}
 	};
 

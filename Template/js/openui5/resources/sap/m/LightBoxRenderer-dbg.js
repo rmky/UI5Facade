@@ -4,8 +4,11 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global'], function (jQuery) {
+sap.ui.define(["sap/m/library"], function (library) {
 	'use strict';
+
+	// shortcut for sap.m.LightBoxLoadingStates
+	var LightBoxLoadingStates = library.LightBoxLoadingStates;
 
 	/**
 	 * LightBox renderer.
@@ -50,7 +53,7 @@ sap.ui.define(['jquery.sap.global'], function (jQuery) {
 			oRm.addClass(classNameTwoLines);
 		}
 
-		if (imageState !== sap.m.LightBoxLoadingStates.Error) {
+		if (imageState !== LightBoxLoadingStates.Error) {
 			oRm.addStyle('width', oControl._width + 'px');
 			oRm.addStyle('height', oControl._height + 'px');
 		} else {
@@ -69,10 +72,10 @@ sap.ui.define(['jquery.sap.global'], function (jQuery) {
 		oRm.renderControl(invisiblePopupText);
 
 		//if control is busy render busyIndicator instead
-		if (imageState === sap.m.LightBoxLoadingStates.Loading) {
+		if (imageState === LightBoxLoadingStates.Loading) {
 			this.renderBusyState(oRm, oControl);
-		} else if (imageState === sap.m.LightBoxLoadingStates.TimeOutError ||
-			imageState === sap.m.LightBoxLoadingStates.Error) {
+		} else if (imageState === LightBoxLoadingStates.TimeOutError ||
+			imageState === LightBoxLoadingStates.Error) {
 			this.renderError(oRm, oControl);
 		} else {
 			this.renderImage(oRm, oControl);

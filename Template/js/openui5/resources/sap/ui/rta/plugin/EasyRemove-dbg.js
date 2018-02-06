@@ -6,8 +6,9 @@
 
 // Provides class sap.ui.rta.plugin.EasyRemove.
 sap.ui.define([
-	'sap/ui/rta/plugin/Remove'
-], function(Remove) {
+	'sap/ui/rta/plugin/Remove',
+	'sap/m/Button'
+], function(Remove, Button) {
 	"use strict";
 
 	/**
@@ -18,7 +19,7 @@ sap.ui.define([
 	 * @class The EasyRemove Plugin adds an Icon to an Overlay, which allows to trigger remove operations directly
 	 * @extends sap.ui.rta.plugin.Remove
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -47,37 +48,23 @@ sap.ui.define([
 	EasyRemove.prototype.registerElementOverlay = function(oOverlay) {
 		this._oDelegate = {
 			"onAfterRendering" : function() {
-				var onDeletePressed = function(oOverlay) {
-					this._handleRemove([oOverlay]);
-				}.bind(this);
-
 				if (oOverlay.$().hasClass("sapUiRtaPersDelete") && oOverlay.$().children(".sapUiRtaPersDeleteClick").length <= 0) {
-					var sId = oOverlay.getId() + "-DeleteIcon";
-					var oHtmlIconWrapper = jQuery("<div class='sapUiRtaPersDeleteClick' draggable='true'> </div>");
-					var oHtmlIconOuter = jQuery("<div class='sapUiRtaPersDeleteIconOuter'> </div>");
-					oOverlay._oDeleteIcon = new sap.ui.core.Icon(sId, {
-						src : "sap-icon://decline",
-						tooltip: sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta").getText("CTX_REMOVE"),
-						press: function(oEvent) {
-							var oOverlay = sap.ui.getCore().byId(oEvent.getSource().getId().replace("-DeleteIcon", ""));
-							onDeletePressed(oOverlay);
-							oEvent.cancelBubble();
-						},
-						noTabStop: true
-					}).placeAt(oHtmlIconOuter.get(0));
-					oHtmlIconWrapper.append(oHtmlIconOuter);
-					oOverlay.$().append(oHtmlIconWrapper);
+					var onDeletePressed = function(oOverlay) {
+						this.handler([oOverlay]);
+					}.bind(this);
 
-					oOverlay._oDeleteIcon.attachBrowserEvent("contextmenu", function(oEvent) {
+					var oDeleteButton = this._addButton(oOverlay);
+					oDeleteButton.attachBrowserEvent("contextmenu", function(oEvent) {
 						oEvent.stopPropagation();
 						oEvent.preventDefault();
 					});
-
-					oHtmlIconWrapper[0].addEventListener("dragstart", function(oEvent) {
-						oEvent.stopPropagation();
-						oEvent.preventDefault();
+					oDeleteButton.attachPress(function(oEvent) {
+						var oOverlay = sap.ui.getCore().byId(oEvent.getSource().getId().replace("-DeleteIcon", ""));
+						onDeletePressed(oOverlay);
+						oEvent.cancelBubble();
 					});
-			}
+
+				}
 
 				oOverlay.removeEventDelegate(this._oDelegate, this);
 			}
@@ -93,6 +80,41 @@ sap.ui.define([
 	};
 
 	/**
+	 * On Editable Change the enablement of the Button has to be adapted
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @override
+	 */
+	EasyRemove.prototype._isEditable = function(oOverlay) {
+		if (oOverlay._oDeleteButton) {
+			oOverlay._oDeleteButton.setEnabled(this.isEnabled(oOverlay));
+		}
+		return Remove.prototype._isEditable.apply(this, arguments);
+	};
+
+	EasyRemove.prototype._addButton = function(oOverlay) {
+		var bEnabled = this.isEnabled(oOverlay);
+		var sId = oOverlay.getId() + "-DeleteIcon";
+		var oHtmlIconWrapper = jQuery("<div class='sapUiRtaPersDeleteClick' draggable='true'> </div>");
+		var oHtmlIconOuter = jQuery("<div class='sapUiRtaPersDeleteIconOuter'> </div>");
+
+		oOverlay._oDeleteButton = new Button(sId, {
+			icon : "sap-icon://decline",
+			tooltip: sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta").getText("CTX_REMOVE"),
+			enabled: bEnabled,
+			noTabStop: true
+		}).placeAt(oHtmlIconOuter.get(0));
+		oHtmlIconWrapper.append(oHtmlIconOuter);
+		oOverlay.$().append(oHtmlIconWrapper);
+
+		oHtmlIconWrapper[0].addEventListener("dragstart", function(oEvent) {
+			oEvent.stopPropagation();
+			oEvent.preventDefault();
+		});
+		return oOverlay._oDeleteButton;
+	};
+
+	/**
 	 * Deregister browser event for an overlay
 	 *
 	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
@@ -103,8 +125,8 @@ sap.ui.define([
 		if (oControl.getMetadata().getName() === "sap.uxap.ObjectPageSection") {
 			oOverlay.removeStyleClass("sapUiRtaPersDelete");
 			oOverlay.removeEventDelegate(this._oDelegate, this);
-			if (oOverlay._oDeleteIcon) {
-				oOverlay._oDeleteIcon.destroy();
+			if (oOverlay._oDeleteButton) {
+				oOverlay._oDeleteButton.destroy();
 			}
 		}
 	};

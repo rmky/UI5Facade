@@ -4,11 +4,27 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([], function () {
+sap.ui.define([
+	"sap/ui/fl/changeHandler/BaseRename"
+], function (BaseRename) {
 	"use strict";
 
 	return {
-		"hideControls": "default",
-		"unhideControls": "default"
+		"hideControl": {
+			"changeHandler": "default",
+			"layers": {
+				"CUSTOMER": false
+			}
+		},
+		"rename": BaseRename.createRenameChangeHandler({
+			propertyName: "text",
+			translationTextType: "XBUT"
+		}),
+		"unhideControl": {
+			"changeHandler": "default",
+			"layers": {
+				"CUSTOMER": false
+			}
+		}
 	};
-}, /* bExport= */ true);
+}, /* bExport= */false);

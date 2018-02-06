@@ -192,7 +192,9 @@ sap.ui.define([
 					}
 
 					if (bHasRowActions) {
-						aHeaderDomRefs.push($Table.find(".sapUiTableRowActionHeader").get(0));
+						// Only add a dummy (inivisible inner text) to fullfill matrix for item navigation.
+						// Header should not be focuable.
+						aHeaderDomRefs.push($Table.find(".sapUiTableRowActionHeader").children().get(0));
 					}
 				}
 
@@ -241,7 +243,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles keyboard related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardExtension
@@ -511,7 +513,7 @@ sap.ui.define([
 	};
 
 	return TableKeyboardExtension;
-}, /* bExport= */ true);
+	});
 
 /**
  * Gets the keyboard extension.

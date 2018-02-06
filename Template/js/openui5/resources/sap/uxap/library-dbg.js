@@ -7,7 +7,7 @@
 /**
  * Initialization Code and shared classes of library sap.uxap.
  */
-sap.ui.define(["jquery.sap.global", "sap/ui/core/Core", "sap/ui/core/library", "sap/m/library", "sap/ui/layout/library"], function (jQuery, Core, library) {
+sap.ui.define(["jquery.sap.global", "sap/ui/core/Core", "sap/ui/base/DataType", "sap/ui/Device", "sap/m/library", "sap/ui/layout/library"], function(jQuery, Core, DataType, Device) {
 	"use strict";
 
 	/**
@@ -30,13 +30,18 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Core", "sap/ui/core/library", "
 			"sap.uxap.ObjectPageSubSectionLayout",
 			"sap.uxap.ObjectPageSubSectionMode"
 		],
-		interfaces: [],
+		interfaces: [
+			"sap.uxap.IHeaderTitle",
+			"sap.uxap.IHeaderContent"
+		],
 		controls: [
 			"sap.uxap.AnchorBar",
 			"sap.uxap.BlockBase",
 			"sap.uxap.BreadCrumbs",
 			"sap.uxap.HierarchicalSelect",
 			"sap.uxap.ObjectPageHeader",
+			"sap.uxap.ObjectPageDynamicHeaderTitle",
+			"sap.uxap.ObjectPageDynamicHeaderContent",
 			"sap.uxap.ObjectPageHeaderActionButton",
 			"sap.uxap.ObjectPageHeaderContent",
 			"sap.uxap.ObjectPageLayout",
@@ -48,7 +53,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Core", "sap/ui/core/library", "
 			"sap.uxap.ModelMapping",
 			"sap.uxap.ObjectPageHeaderLayoutData"
 		],
-		version: "1.50.8",
+		version: "1.52.5",
 		extensions: {
 			flChangeHandlers: {
 				"sap.uxap.ObjectPageHeader" : "sap/uxap/flexibility/ObjectPageHeader",
@@ -83,13 +88,13 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Core", "sap/ui/core/library", "
 	 * @public
 	 * @ui5-metamodel This simple type also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	sap.uxap.BlockBaseColumnLayout = sap.ui.base.DataType.createType('sap.uxap.BlockBaseColumnLayout', {
+	sap.uxap.BlockBaseColumnLayout = DataType.createType('sap.uxap.BlockBaseColumnLayout', {
 			isValid: function (vValue) {
 				return /^(auto|[1-4]{1})$/.test(vValue);
 			}
 
 		},
-		sap.ui.base.DataType.getType('string')
+		DataType.getType('string')
 	);
 
 	/**
@@ -294,7 +299,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Core", "sap/ui/core/library", "
 			return oControl;
 		},
 		isPhoneScenario: function (oRange) {
-			if (sap.ui.Device.system.phone) {
+			if (Device.system.phone) {
 				return true;
 			}
 
@@ -307,6 +312,30 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Core", "sap/ui/core/library", "
 			return oRange && oRange.name === sMedia;
 		}
 	};
+
+	/**
+	 *
+	 *   Interface for controls that are eligible for the <code>headerTitle</code> aggregation of the {@link sap.uxap.ObjectPageLayout}.
+	 *
+	 *
+	 * @since 1.52
+	 * @name sap.uxap.IHeaderTitle
+	 * @interface
+	 * @public
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	/**
+	 *
+	 *   Interface for controls that are eligible for the <code>headerContent</code> aggregation of the {@link sap.uxap.ObjectPageLayout}.
+	 *
+	 *
+	 * @since 1.52
+	 * @name sap.uxap.IHeaderContent
+	 * @interface
+	 * @public
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
 
 	return sap.uxap;
 

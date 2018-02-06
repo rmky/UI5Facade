@@ -13,7 +13,6 @@ sap.ui.define([
 	"sap/ui/model/ClientPropertyBinding",
 	"sap/ui/model/ContextBinding",
 	"sap/ui/model/Context",
-	"sap/ui/model/FilterProcessor",
 	"sap/ui/model/MetaModel",
 	"sap/ui/model/odata/OperationMode",
 	"sap/ui/model/odata/type/Int64",
@@ -22,8 +21,8 @@ sap.ui.define([
 	"./lib/_SyncPromise",
 	"./ValueListType"
 ], function (jQuery, BindingMode, ChangeReason, ClientListBinding, ClientPropertyBinding,
-		ContextBinding, BaseContext, FilterProcessor, MetaModel, OperationMode, Int64, URI, _Helper,
-		_SyncPromise, ValueListType) {
+		ContextBinding, BaseContext, MetaModel, OperationMode, Int64, URI, _Helper, _SyncPromise,
+		ValueListType) {
 	"use strict";
 	/*eslint max-nested-callbacks: 0 */
 
@@ -69,6 +68,7 @@ sap.ui.define([
 			"Edm.Int64" : {type : "sap.ui.model.odata.type.Int64"},
 			"Edm.SByte" : {type : "sap.ui.model.odata.type.SByte"},
 			"Edm.Single" : {type : "sap.ui.model.odata.type.Single"},
+			"Edm.Stream" : {type : "sap.ui.model.odata.type.Stream"},
 			"Edm.String" : {
 				constraints : {
 					"@com.sap.vocabularies.Common.v1.IsDigitSequence" : "isDigitSequence",
@@ -481,7 +481,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.MetaModel
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 */
 	var ODataMetaModel = MetaModel.extend("sap.ui.model.odata.v4.ODataMetaModel", {
 		/*
@@ -492,6 +492,7 @@ sap.ui.define([
 			this.aAnnotationUris = vAnnotationUri && !Array.isArray(vAnnotationUri)
 				? [vAnnotationUri] : vAnnotationUri;
 			this.sDefaultBindingMode = BindingMode.OneTime;
+			this.mETags = {};
 			this.dLastModified = new Date(0);
 			this.oMetadataPromise = null;
 			this.oModel = oModel;
@@ -1201,7 +1202,7 @@ sap.ui.define([
 				oEntitySet,      // The entity set that starts the edit URL
 				sEntitySetName,  // The name of this entity set (decoded)
 				sInstancePath,   // The absolute path to the instance currently in evaluation
-			                     // (encoded; re-builds sResolvedPath)
+								 // (encoded; re-builds sResolvedPath)
 				sNavigationPath, // The relative meta path starting from oEntitySet (decoded)
 				//sPropertyPath, // The relative path following sEntityPath (parameter re-used -
 								 // encoded)
@@ -1423,6 +1424,26 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns a map of entity tags for each $metadata or annotation file loaded so far.
+	 *
+	 * @returns {object}
+	 *   A map which contains one entry for each $metadata or annotation file loaded so far: the key
+	 *   is the file's URL as a <code>string</code> and the value is the <code>string</code> value
+	 *   of the "ETag" response header for that file. Initially, the map is empty. If no "ETag"
+	 *   response header was sent for a file, the <code>Date</code> value of the "Last-Modified"
+	 *   response header is used instead. The value <code>null</code> is used in case no such header
+	 *   is sent at all. Note that this map may change due to load-on-demand of "cross-service
+	 *   references" (see parameter <code>supportReferences</code> of
+	 *   {@link sap.ui.model.odata.v4.ODataModel#constructor}).
+	 *
+	 * @public
+	 * @since 1.51.0
+	 */
+	ODataMetaModel.prototype.getETags = function () {
+		return this.mETags;
+	};
+
+	/**
 	 * Returns the maximum value of all "Last-Modified" response headers seen so far.
 	 *
 	 * @returns {Date}
@@ -1430,9 +1451,11 @@ sap.ui.define([
 	 *   so far when loading $metadata or annotation files. It is <code>new Date(0)</code> initially
 	 *   as long as no such files have been loaded. It becomes <code>new Date()</code> as soon as a
 	 *   file without such a header is loaded. Note that this value may change due to load-on-demand
-	 *   of "cross-service references" (see parameter "bSupportReferences" of
-	 *   {@link sap.ui.model.odata.v4.ODataMetaModel}).
+	 *   of "cross-service references" (see parameter <code>supportReferences</code> of
+	 *   {@link sap.ui.model.odata.v4.ODataModel#constructor}).
 	 *
+	 * @deprecated Use {@link #getETags} instead because modifications to old files may be
+	 *   shadowed by a new file in certain scenarios.
 	 * @public
 	 * @since 1.47.0
 	 */
@@ -1996,7 +2019,7 @@ sap.ui.define([
 	 * "{property>./@com.sap.vocabularies.Common.v1.Text}"
 	 * </pre>
 	 *
-	 * @param {string} sPath
+	 * @param {string} [sPath=""]
 	 *   A relative or absolute path within the metadata model
 	 * @param {sap.ui.model.Context} [oContext]
 	 *   The context to be used as a starting point in case of a relative path
@@ -2065,7 +2088,8 @@ sap.ui.define([
 	/**
 	 * Validates the given scope. Checks the OData version, searches for forbidden
 	 * $IncludeAnnotations and conflicting $Include. Uses and fills
-	 * <code>this.mSchema2MetadataUrl</code>. Computes <code>this.dLastModified</code>.
+	 * <code>this.mSchema2MetadataUrl</code>. Computes <code>this.dLastModified</code> and
+	 * <code>this.mETags</code>.
 	 *
 	 * @param {string} sUrl
 	 *   The same $metadata URL that _MetadataRequestor#read() takes
@@ -2080,6 +2104,7 @@ sap.ui.define([
 	 */
 	ODataMetaModel.prototype.validate = function (sUrl, mScope) {
 		var i,
+			dDate,
 			dLastModified,
 			sSchema,
 			oReference,
@@ -2114,14 +2139,20 @@ sap.ui.define([
 			}
 		}
 
-		dLastModified = mScope.$LastModified ? new Date(mScope.$LastModified) : new Date();
+		// handle & remove Date, ETag and Last-Modified headers
+		dLastModified = mScope.$LastModified ? new Date(mScope.$LastModified) : null;
+		this.mETags[sUrl] = mScope.$ETag ? mScope.$ETag : dLastModified;
+		dDate = mScope.$Date ? new Date(mScope.$Date) : new Date();
+		dLastModified = dLastModified || dDate; // @see #getLastModified
 		if (this.dLastModified < dLastModified) {
 			this.dLastModified = dLastModified;
 		}
+		delete mScope.$Date;
+		delete mScope.$ETag;
 		delete mScope.$LastModified;
 
 		return mScope;
 	};
 
 	return ODataMetaModel;
-}, /* bExport= */ true);
+});

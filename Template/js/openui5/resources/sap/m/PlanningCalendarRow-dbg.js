@@ -6,9 +6,9 @@
 
 //Provides control sap.ui.unified.PlanningCalendarRow.
 sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './StandardListItem', './StandardListItemRenderer',
-		'sap/ui/core/Renderer', './library', 'sap/ui/unified/library', 'sap/ui/unified/DateRange', 'sap/ui/unified/CalendarRow'],
-	function (jQuery, Element, StandardListItem, StandardListItemRenderer, Renderer, library, unifiedLibrary, DateRange,
-			  CalendarRow) {
+		'sap/ui/core/Renderer', './library', 'sap/ui/unified/DateRange', 'sap/ui/unified/CalendarRow', 'sap/ui/unified/CalendarRowRenderer'],
+	function (jQuery, Element, StandardListItem, StandardListItemRenderer, Renderer, library, DateRange,
+			  CalendarRow, CalendarRowRenderer) {
 	"use strict";
 
 	/**
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './StandardListItem',
 	 * This element holds the data of one row in the @link sap.m.PlanningCalendar}. Once the header information (e.g. person information)
 	 * is assigned, the appointments are assigned.
 	 * @extends sap.ui.core.Element
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -163,11 +163,39 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './StandardListItem',
 	CalenderRowHeaderRenderer.renderTabIndex = function(oRm, oLI) {
 	};
 
+	/* ToDo - Consider if the PlanningCalendarRow can extend the CalendarRow */
+	var CalendarRowInPCRenderer = Renderer.extend(CalendarRowRenderer);
+
+	/* Returns AppointmentItems or Items depends on the Legend type:
+		sap.m.PlanningCalendarLegend or sap.ui.unified.CalendarLegend
+	 */
+	CalendarRowInPCRenderer.getLegendItems = function (oCalRow) {
+		var aTypes = [],
+			oLegend,
+			sLegendId = oCalRow.getLegend();
+
+		if (sLegendId) {
+			oLegend = sap.ui.getCore().byId(sLegendId);
+			if (oLegend) {
+				aTypes = oLegend.getAppointmentItems ? oLegend.getAppointmentItems() : oLegend.getItems();
+			} else {
+				jQuery.sap.log.error("PlanningCalendarLegend with id '" + sLegendId + "' does not exist!", oCalRow);
+			}
+		}
+		return aTypes;
+	};
+	var CalendarRowInPlanningCalendar = CalendarRow.extend("CalendarRowInPlanningCalendar", {
+		constructor: function() {
+			CalendarRow.apply(this, arguments);
+		},
+		renderer: CalendarRowInPCRenderer
+	});
+
 	PlanningCalendarRow.prototype.init = function(){
 
 		var sId = this.getId();
 		var oCalendarRowHeader = new CalenderRowHeader(sId + "-Head", {parentRow: this});
-		var oCalendarRow = new CalendarRow(sId + "-CalRow", {
+		var oCalendarRow = new CalendarRowInPlanningCalendar(sId + "-CalRow", {
 			checkResize: false,
 			updateCurrentTime: false,
 			ariaLabelledBy: sId + "-Head"
@@ -453,4 +481,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './StandardListItem',
 
 	return PlanningCalendarRow;
 
-}, /* bExport= */ true);
+});

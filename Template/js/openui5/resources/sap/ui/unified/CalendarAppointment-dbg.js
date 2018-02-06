@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', './DateTypeRange', 'sap/ui/core/format/DateF
 	 *
 	 * Applications could inherit from this element to add own fields.
 	 * @extends sap.ui.unified.DateTypeRange
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -186,4 +186,4 @@ sap.ui.define(['jquery.sap.global', './DateTypeRange', 'sap/ui/core/format/DateF
 
 	return CalendarAppointment;
 
-}, /* bExport= */ true);
+});

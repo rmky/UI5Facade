@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.layout.SplitPane.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element'],
-	function(jQuery, library, Element) {
+sap.ui.define(['./library', 'sap/ui/core/Element'],
+	function(library, Element) {
 	"use strict";
 
 	/**
@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element'],
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -80,4 +80,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element'],
 
 	return SplitPane;
 
-}, /* bExport= */ true);
+});

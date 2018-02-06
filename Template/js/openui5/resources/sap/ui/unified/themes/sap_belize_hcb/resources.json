@@ -21,6 +21,11 @@
 			"theme": "sap_belize_hcb"
 		},
 		{
+			"name": "ColorPicker.less",
+			"designtime": true,
+			"theme": "sap_belize_hcb"
+		},
+		{
 			"name": "Currency.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"

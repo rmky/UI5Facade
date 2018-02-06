@@ -19,9 +19,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/format/FileSizeFormat', 'sap/ui
 	 * @extends sap.ui.model.SimpleType
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
-	 * @constructor
 	 * @public
 	 * @param {object} [oFormatOptions] formatting options. Supports the same options as {@link sap.ui.core.format.FileSizeFormat.getInstance FileSizeFormat.getInstance}
 	 * @param {object} [oFormatOptions.source] additional set of options used to create a second FileSizeFormat object for conversions between

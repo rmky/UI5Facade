@@ -22,9 +22,8 @@ sap.ui.define(['jquery.sap.global', './Element', './library'],
 	 * @class
 	 * Contains a single key/value pair of custom data attached to an Element. See method data().
 	 * @extends sap.ui.core.Element
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
-	 * @constructor
 	 * @public
 	 * @alias sap.ui.core.CustomData
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel

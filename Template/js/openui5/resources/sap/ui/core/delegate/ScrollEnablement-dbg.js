@@ -42,10 +42,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 		 * @param {boolean} [oConfig.nonTouchScrolling=false] If true, the delegate will also be active to allow touch like scrolling with the mouse on non-touch platforms.
 		 * @param {string} [oConfig.scrollContainerId=""] Native scrolling does not need content wrapper. In this case, ID of the container element should be provided.
 		 *
-		 * @constructor
 		 * @protected
 		 * @alias sap.ui.core.delegate.ScrollEnablement
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 * @author SAP SE
 		 */
 		var ScrollEnablement = BaseObject.extend("sap.ui.core.delegate.ScrollEnablement", /** @lends sap.ui.core.delegate.ScrollEnablement.prototype */ {
@@ -387,7 +386,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 				}
 
 				// Let container scroll into the configured directions
-				if (Device.os.ios || Device.os.blackberry) {
+				if (Device.os.ios) {
 					$Container
 						.css("overflow-x", this._bHorizontal && !this._bDragScroll ? "scroll" : "hidden")
 						.css("overflow-y", this._bVertical && !this._bDragScroll ? "scroll" : "hidden")
@@ -461,24 +460,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 					return;
 				}
 
-				this._iLastTouchMoveTime = 0;
-
 				// Drag instead of native scroll
-				// 1. when requested explicitly
-				// 2. bypass Windows Phone 8.1 scrolling issues when soft keyboard is opened
-				this._bDoDrag = this._bDragScroll || Device.os.windows_phone && /(INPUT|TEXTAREA)/i.test(document.activeElement.tagName);
-
-				// find if container is scrollable vertically or horizontally
-				if (!this._scrollable) {
-					this._scrollable = {};
-				}
-				this._scrollable.vertical = this._bVertical && container.scrollHeight > container.clientHeight;
-				this._scrollable.horizontal = this._bHorizontal && container.scrollWidth > container.clientWidth;
+				this._bDoDrag = this._bDragScroll;
 
 				// Store initial coordinates for drag scrolling
 				var point = oEvent.touches ? oEvent.touches[0] : oEvent;
 				this._iX = point.pageX;
 				this._iY = point.pageY;
+
 				this._bPullDown = false;
 				this._iDirection = ""; // h - horizontal, v - vertical
 			},
@@ -549,6 +538,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 				if (this._oPullDown && this._oPullDown._bTouchMode) {
 					this._oPullDown.doScrollEnd();
 					this._refresh();
+				}
+
+				if (this._bDragScroll && this._iDirection) {
+					oEvent.setMarked && oEvent.setMarked();
 				}
 			},
 
@@ -631,8 +624,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 					this._sResizeListenerId = ResizeHandler.register($Container[0], _fnRefresh);
 				}
 
+				//
 				// Set event listeners
-				$Container.scroll(jQuery.proxy(this._onScroll, this));
+				//
+				$Container.on("scroll", this._onScroll.bind(this));
 
 				var oContainerRef = $Container[0];
 				function addEventListeners (sEvents, fListener) {
@@ -652,17 +647,24 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 					return oEvent.pointerType == "touch" ? this._onEnd(oEvent) : this._onMouseUp(oEvent);
 				}
 
+				// Set pointer, touch or mouse event listeners, if needed:
 				if (Device.support.pointer && Device.system.desktop) {
-					// Chrome 55 cancels pointer events on Android too early, use them on desktop only
-					addEventListeners("pointerdown", onPointerDown.bind(this));
-					addEventListeners("pointermove", onPointerMove.bind(this));
-					addEventListeners("pointerup pointercancel pointerleave", onPointerUp.bind(this));
+					// Desktop + pointer events: drag scroll (IconTabBar, Tokenizer)
+					if (this._bDragScroll) {
+						addEventListeners("pointerdown", onPointerDown.bind(this));
+						addEventListeners("pointermove", onPointerMove.bind(this));
+						addEventListeners("pointerup pointercancel pointerleave", onPointerUp.bind(this));
+					}
 				} else if (Device.support.touch) {
-					$Container
-						.on("touchcancel touchend", this._onEnd.bind(this))
-						.on("touchstart", this._onStart.bind(this))
-						.on("touchmove", this._onTouchMove.bind(this));
+					// Drag scroll, PullToRefresh
+					if (this._bDragScroll || this._oPullDown && this._oPullDown._bTouchMode) {
+						$Container
+							.on("touchcancel touchend", this._onEnd.bind(this))
+							.on("touchstart", this._onStart.bind(this))
+							.on("touchmove", this._onTouchMove.bind(this));
+					}
 				} else if (this._bDragScroll) {
+					// Everything else: drag scroll
 					$Container
 						.on("mouseup mouseleave", this._onMouseUp.bind(this))
 						.mousedown(this._onMouseDown.bind(this))

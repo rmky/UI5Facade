@@ -5,9 +5,14 @@
  */
 
 // Provides control sap.m.TextArea.
-sap.ui.define(['jquery.sap.global', './InputBase', './Text', "sap/ui/core/ResizeHandler", './library'],
-	function(jQuery, InputBase, Text, ResizeHandler, library) {
+sap.ui.define(['jquery.sap.global', './InputBase', './Text', 'sap/ui/core/ResizeHandler', './library', 'sap/ui/core/library', 'sap/ui/Device'],
+	function(jQuery, InputBase, Text, ResizeHandler, library, coreLibrary, Device) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.core.Wrapping
+	var Wrapping = coreLibrary.Wrapping;
 
 
 
@@ -55,7 +60,7 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', "sap/ui/core/Resize
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -103,7 +108,7 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', "sap/ui/core/Resize
 			/**
 			 * Indicates how the control wraps the text, e.g. <code>Soft</code>, <code>Hard</code>, <code>Off</code>.
 			 */
-			wrapping : {type : "sap.ui.core.Wrapping", group : "Behavior", defaultValue : sap.ui.core.Wrapping.None},
+			wrapping : {type : "sap.ui.core.Wrapping", group : "Behavior", defaultValue : Wrapping.None},
 
 			/**
 			 * Indicates when the <code>value</code> property gets updated with the user changes. Setting it to <code>true</code> updates the <code>value</code> property whenever the user has modified the text shown on the text area.
@@ -218,7 +223,7 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', "sap/ui/core/Resize
 						parseFloat(oStyle.paddingTop) + parseFloat(oStyle.borderTopWidth) + parseFloat(oStyle.borderBottomWidth);
 
 				// bottom padding is out of scrolling content in firefox
-				if (sap.ui.Device.browser.firefox) {
+				if (Device.browser.firefox) {
 					fMaxHeight += parseFloat(oStyle.paddingBottom);
 				}
 
@@ -230,7 +235,7 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', "sap/ui/core/Resize
 
 		this._updateMaxLengthAttribute();
 
-		if (!sap.ui.Device.support.touch) {
+		if (!Device.support.touch) {
 			return;
 		}
 
@@ -379,6 +384,8 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', "sap/ui/core/Resize
 	 * The event is customized and the <code>textArea</code> value is calculated manually
 	 * because when the <code>showExceededText</code> is set to
 	 * <code>true</code> the exceeded text should be selected on paste.
+	 * @param {jQuery.Event} oEvent The event object
+	 * @returns {boolean} Whether the paste event is triggered
 	 */
 	TextArea.prototype.onpaste = function (oEvent) {
 		if (this.getShowExceededText()) {
@@ -477,7 +484,8 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', "sap/ui/core/Resize
 
 	/**
 	 * Checks if the TextArea has exceeded the value for MaxLength
-	 * @return {boolean}
+	 * @param {number} bValue The value
+	 * @returns {boolean} True if the text area exceeded the max length
 	 * @private
 	 */
 	TextArea.prototype._maxLengthIsExceeded = function (bValue) {
@@ -510,7 +518,7 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', "sap/ui/core/Resize
 			INSIDE_SCROLLABLE_WITHOUT_FOCUS : oDevice.os.ios || oDevice.os.blackberry || oDevice.browser.chrome,
 			PAGE_NON_SCROLLABLE_AFTER_FOCUS : oDevice.os.android && oDevice.os.version >= 4.1
 		};
-	}(sap.ui.Device));
+	}(Device));
 
 
 	/**
@@ -561,11 +569,12 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', "sap/ui/core/Resize
 	};
 
 	// Flag for the Fiori Client on Windows Phone
-	var _bMSWebView = sap.ui.Device.os.windows_phone && (/MSAppHost/i).test(navigator.appVersion);
+	var _bMSWebView = Device.os.windows_phone && (/MSAppHost/i).test(navigator.appVersion);
 
 	/**
 	 * Special handling for the focusing issue in SAP Fiori Client on Windows Phone.
-	 *
+	 * @param {jQuery.Event} oEvent The event object
+	 * @returns {sap.m.TextArea} <code>this</code> pointer for chaining
 	 * @private
 	 */
 	TextArea.prototype.onfocusin = function(oEvent) {
@@ -597,4 +606,4 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', "sap/ui/core/Resize
 
 	return TextArea;
 
-}, /* bExport= */ true);
+});

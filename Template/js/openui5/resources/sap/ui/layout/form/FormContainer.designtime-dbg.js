@@ -5,8 +5,8 @@
  */
 
 // Provides the Design Time Metadata for the sap.ui.layout.form.FormContainer control
-sap.ui.define([],
-	function() {
+sap.ui.define(['sap/ui/fl/changeHandler/ChangeHandlerMediator'],
+	function(ChangeHandlerMediator) {
 	"use strict";
 
 	function _allFormElementsInvisible(oFormContainer){
@@ -17,6 +17,9 @@ sap.ui.define([],
 	}
 
 	return {
+		isVisible: function(oFormContainer) {
+			return oFormContainer.isVisible();
+		},
 		actions: {
 			remove: {
 				changeType: "hideControl"
@@ -33,6 +36,10 @@ sap.ui.define([],
 		},
 		aggregations : {
 			formElements : {
+				childNames : {
+					singular : "FIELD_CONTROL_NAME",
+					plural : "FIELD_CONTROL_NAME_PLURAL"
+				},
 				domRef: function (oFormContainer) {
 					var oDomRef = oFormContainer.getDomRef();
 					var oHeader = oFormContainer.getTitle() || oFormContainer.getToolbar();
@@ -45,7 +52,19 @@ sap.ui.define([],
 					}
 				},
 				actions: {
-					move: "moveControls"
+					move: "moveControls",
+					addODataProperty : function (oFormContainer) {
+						var mChangeHandlerSettings = ChangeHandlerMediator.getAddODataFieldWithLabelSettings(oFormContainer);
+
+						if (mChangeHandlerSettings){
+							return {
+								changeType: "addFormField",
+								changeOnRelevantContainer : true,
+								changeHandlerSettings : mChangeHandlerSettings
+							};
+						}
+					}
+
 				}
 			},
 			toolbar : {

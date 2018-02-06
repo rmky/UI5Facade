@@ -40,7 +40,7 @@
       <module name="jquery.sap.global.js"/>
     </requires>
   </module>
-  <module name="sap/ui/suite/library-preload.js" size="10138">
+  <module name="sap/ui/suite/library-preload.js" size="10387">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Control.js"/>
@@ -87,6 +87,6 @@
       <module name="sap/ui/core/library.js"/>
     </requires>
   </module>
-  <module name="sap/ui/suite/manifest.json" size="734">
+  <module name="sap/ui/suite/manifest.json" size="972">
   </module>
 </library>

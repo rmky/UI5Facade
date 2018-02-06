@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["./ObjectPageLayout", "sap/ui/core/Icon", "./ObjectImageHelper"], function (ObjectPageLayout, Icon, ObjectImageHelper) {
+sap.ui.define(["./ObjectPageLayout", "./ObjectImageHelper", "sap/ui/Device"], function (ObjectPageLayout, ObjectImageHelper, Device) {
 	"use strict";
 
 	/**
@@ -21,7 +21,7 @@ sap.ui.define(["./ObjectPageLayout", "sap/ui/core/Icon", "./ObjectImageHelper"],
 			oExpandButton = oControl.getAggregation("_expandButton"),
 			oObjectImage = oControl._lazyLoadInternalAggregation("_objectImage", true),
 			oPlaceholder,
-			bIsDesktop = sap.ui.Device.system.desktop,
+			bIsDesktop = Device.system.desktop,
 			bIsHeaderContentVisible = oParent && oParent instanceof ObjectPageLayout && ((oParent.getHeaderContent()
 				&& oParent.getHeaderContent().length > 0 && oParent.getShowHeaderContent()) ||
 			(oParent.getShowHeaderContent() && oParent.getShowTitleInHeaderContent()));

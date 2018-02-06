@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global'],
-	function (jQuery) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'jquery.sap.mobile'],
+	function (jQuery, Device) {
 		"use strict";
 
 		/**
@@ -275,9 +275,9 @@ sap.ui.define(['jquery.sap.global'],
 				if (oEvent.touches) {
 					var currentTouches = oEvent.touches.length;
 
-					if (sap.ui.Device.browser.mobile &&
-						(sap.ui.Device.browser.name === sap.ui.Device.browser.BROWSER.INTERNET_EXPLORER ||
-						sap.ui.Device.browser.name === sap.ui.Device.browser.BROWSER.EDGE)) {
+					if (Device.browser.mobile &&
+						(Device.browser.name === Device.browser.BROWSER.INTERNET_EXPLORER ||
+						Device.browser.name === Device.browser.BROWSER.EDGE)) {
 						windowsPhoneTouches = currentTouches;
 					}
 
@@ -306,9 +306,9 @@ sap.ui.define(['jquery.sap.global'],
 
 			//function is triggered when a touch is removed e.g. the user’s finger is removed from the touchscreen.
 			function onTouchEnd(oEvent) {
-				var windowsPhoneTouchCondition = sap.ui.Device.browser.mobile &&
-					(sap.ui.Device.browser.name === sap.ui.Device.browser.BROWSER.INTERNET_EXPLORER ||
-					sap.ui.Device.browser.name === sap.ui.Device.browser.BROWSER.EDGE) &&
+				var windowsPhoneTouchCondition = Device.browser.mobile &&
+					(Device.browser.name === Device.browser.BROWSER.INTERNET_EXPLORER ||
+					Device.browser.name === Device.browser.BROWSER.EDGE) &&
 					windowsPhoneTouches == maxFingersAllowed;
 
 				document.removeEventListener('touchend', onTouchEnd);
@@ -390,5 +390,4 @@ sap.ui.define(['jquery.sap.global'],
 
 
 		return Support;
-
 	}, /* bExport= */ true);

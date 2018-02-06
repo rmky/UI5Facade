@@ -11,10 +11,10 @@ sap.ui.define(function() {
 	var Utils = function() {};
 
 	Utils.prototype.getNameAndNameSpace = function(sId,sReference) {
-		//namespace and file name according to namespace concept: apps/<Descriptor ID>/changes/<Descriptor Variant ID>/manifest.appdescr_variant
+		//namespace and file name according to namespace concept: apps/<Descriptor ID>/appVariants/<Descriptor Variant ID>/manifest.appdescr_variant
 		return {
 			"fileName": "manifest", //appdescr_variant" is the file type
-			"namespace": "apps/" + sReference + "/changes/" + sId + "/"
+			"namespace": "apps/" + sReference + "/appVariants/" + sId + "/"
 		};
 	};
 
@@ -51,7 +51,8 @@ sap.ui.define(function() {
 	Utils.prototype.checkTransportRequest = function(sTransportRequest) {
 		//corresponding data element in ABAP: TRKORR, CHAR20
 		//partial check: length le 20, alphanumeric, upper case, no space not underscore
-		if (!/^[A-Z0-9]{1,20}$/.test(sTransportRequest)) {
+		//ATO_NOTIFICATION is also allowed
+		if (!/^[A-Z0-9]{1,20}$/.test(sTransportRequest) && sTransportRequest !== 'ATO_NOTIFICATION') {
 			throw new Error("Wrong format for provided \"sTransportRequest\" parameter");
 		}
 	};

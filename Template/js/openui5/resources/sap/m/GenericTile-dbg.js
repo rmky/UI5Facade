@@ -4,9 +4,24 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/Text', 'sap/ui/core/HTML', 'sap/ui/core/Icon', 'sap/ui/core/IconPool', 'sap/m/Button', 'sap/m/GenericTileRenderer', 'sap/m/GenericTileLineModeRenderer', 'sap/ui/Device', 'sap/ui/core/ResizeHandler'],
+sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/Text', 'sap/ui/core/HTML', 'sap/ui/core/Icon', 'sap/ui/core/IconPool', 'sap/m/Button', 'sap/m/GenericTileRenderer', 'sap/m/GenericTileLineModeRenderer', 'sap/ui/Device', 'sap/ui/core/ResizeHandler', 'jquery.sap.events'],
 	function(jQuery, library, Control, Text, HTML, Icon, IconPool, Button, GenericTileRenderer, LineModeRenderer, Device, ResizeHandler) {
 	"use strict";
+
+	// shortcut for sap.m.GenericTileScope
+	var GenericTileScope = library.GenericTileScope;
+
+	// shortcut for sap.m.LoadState
+	var LoadState = library.LoadState;
+
+	// shortcut for sap.m.FrameType
+	var FrameType = library.FrameType;
+
+	// shortcut for sap.m.Size
+	var Size = library.Size;
+
+	// shortcut for sap.m.GenericTileMode
+	var GenericTileMode = library.GenericTileMode;
 
 	/**
 	 * Constructor for a new sap.m.GenericTile control.
@@ -19,8 +34,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
-	 * @since 1.34
+	 * @version 1.52.5
+	 * @since 1.34.0
 	 *
 	 * @public
 	 * @alias sap.m.GenericTile
@@ -34,7 +49,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 				/**
 				 * The mode of the GenericTile.
 				 */
-				"mode" : {type: "sap.m.GenericTileMode", group : "Appearance", defaultValue : sap.m.GenericTileMode.ContentMode},
+				"mode" : {type: "sap.m.GenericTileMode", group : "Appearance", defaultValue : GenericTileMode.ContentMode},
 				/**
 				 * The header of the tile.
 				 */
@@ -51,11 +66,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 				 * The size of the tile. If not set, then the default size is applied based on the device.
 				 * @deprecated Since version 1.38.0. The GenericTile control has now a fixed size, depending on the used media (desktop, tablet or phone).
 				 */
-				"size" : {type : "sap.m.Size", group : "Misc", defaultValue : sap.m.Size.Auto},
+				"size" : {type : "sap.m.Size", group : "Misc", defaultValue : Size.Auto},
 				/**
 				 * The frame type: OneByOne or TwoByOne. Set to OneByOne as default if no property is defined or set to Auto by the app.
 				 */
-				"frameType" : {type : "sap.m.FrameType", group : "Misc", defaultValue : sap.m.FrameType.OneByOne},
+				"frameType" : {type : "sap.m.FrameType", group : "Misc", defaultValue : FrameType.OneByOne},
 				/**
 				 * The URI of the background image.
 				 */
@@ -67,7 +82,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 				/**
 				 * The load status.
 				 */
-				"state" : {type : "sap.m.LoadState", group : "Misc", defaultValue : sap.m.LoadState.Loaded},
+				"state" : {type : "sap.m.LoadState", group : "Misc", defaultValue : LoadState.Loaded},
 				/**
 				 * Description of a header image that is used in the tooltip.
 				 */
@@ -76,7 +91,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 				 * Changes the visualization in order to enable additional actions with the Generic Tile.
 				 * @since 1.46.0
 				 */
-				"scope": { type: "sap.m.GenericTileScope", group: "Misc", defaultValue: sap.m.GenericTileScope.Display },
+				"scope": { type: "sap.m.GenericTileScope", group: "Misc", defaultValue: GenericTileScope.Display },
 				/**
 				 * Additional description for aria-label. The aria-label is rendered before the standard aria-label.
 				 * @since 1.50.0
@@ -91,8 +106,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 				"tileContent" : {type : "sap.m.TileContent", multiple : true, bindable : "bindable"},
 				/**
 				 * An icon or image to be displayed in the control.
-				 * This aggregation is deprecated since version 1.36.0, to display an icon or image use sap.m.TileContent control instead.
-				 * @deprecated Since version 1.36.0. This aggregation is deprecated, use sap.m.TileContent control to display an icon instead.
+				 * This aggregation is deprecated since version 1.36.0, to display an icon or image use sap.m.ImageContent control instead.
+				 * @deprecated since version 1.36.0. This aggregation is deprecated, use sap.m.ImageContent control to display an icon instead.
 				 */
 				"icon" : {type : "sap.ui.core.Control", multiple : false},
 				/**
@@ -106,7 +121,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 			},
 			events : {
 				/**
-				 * The event is fired when the user presses the tile.
+				 * The event is triggered when the user presses the tile.
 				 */
 				"press" : {
 					parameters: {
@@ -762,7 +777,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 	/* --- Getters and Setters --- */
 
 	GenericTile.prototype.setProperty = function(sPropertyName) {
-		sap.ui.core.Control.prototype.setProperty.apply(this, arguments);
+		Control.prototype.setProperty.apply(this, arguments);
 
 		//If properties in GenericTile.LINEMODE_SIBLING_PROPERTIES are being changed, update all sibling controls that are GenericTiles in LineMode
 		if (this.getMode() === library.GenericTileMode.LineMode && GenericTile.LINEMODE_SIBLING_PROPERTIES.indexOf(sPropertyName) !== -1) {
@@ -906,11 +921,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 	GenericTile.prototype._getAriaAndTooltipText = function() {
 		var sAriaText = (this.getTooltip_AsString() && !this._isTooltipSuppressed()) ? this.getTooltip_AsString() : (this._getHeaderAriaAndTooltipText() + "\n" + this._getContentAriaAndTooltipText());
 		switch (this.getState()) {
-			case library.LoadState.Disabled :
+			case library.LoadState.Disabled:
 				return "";
-			case library.LoadState.Loading :
+			case library.LoadState.Loading:
 				return sAriaText + "\n" + this._sLoading;
-			case library.LoadState.Failed :
+			case library.LoadState.Failed:
 				return sAriaText + "\n" + this._oFailedText.getText();
 			default :
 				if (jQuery.trim(sAriaText).length === 0) { // If the string is empty or just whitespace, IE renders an empty tooltip (e.g. "" + "\n" + "")
@@ -1160,7 +1175,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 	};
 
 	/**
-	 * Perform needed style adjustments through invalidation of control if GenericTile in LineMode.
+	 * Performs needed style adjustments through invalidation of control if GenericTile is in LineMode.
 	 * Triggered when changed from floating view (large screens) to list view (small screens) and vice versa.
 	 * @private
 	 */
@@ -1196,4 +1211,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 	};
 
 	return GenericTile;
-}, /* bExport= */ true);
+});

@@ -5,11 +5,28 @@
  */
 
 // Provides control sap.m.IconTabFilter.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
-		'sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/ui/core/InvisibleText'],
-	function(jQuery, library, Item,
-			Renderer, IconPool, InvisibleText) {
+sap.ui.define(['./library', 'sap/ui/core/Item',
+		'sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/ui/core/InvisibleText', 'sap/ui/core/library', 'sap/ui/core/Control'],
+	function(library, Item,
+			Renderer, IconPool, InvisibleText, coreLibrary, Control) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.core.TextAlign
+	var TextAlign = coreLibrary.TextAlign;
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
+
+	// shortcut for sap.m.ImageHelper
+	var ImageHelper = library.ImageHelper;
+
+	// shortcut for sap.m.IconTabFilterDesign
+	var IconTabFilterDesign = library.IconTabFilterDesign;
+
+	// shortcut for sap.ui.core.IconColor
+	var IconColor = coreLibrary.IconColor;
 
 
 
@@ -26,7 +43,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 	 * @implements sap.m.IconTab
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -67,7 +84,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 			 * Instead of the semantic icon color the brand color can be used, this is named Default.
 			 * Semantic colors and brand colors should not be mixed up inside one IconTabBar.
 			 */
-			iconColor : {type : "sap.ui.core.IconColor", group : "Appearance", defaultValue : sap.ui.core.IconColor.Default},
+			iconColor : {type : "sap.ui.core.IconColor", group : "Appearance", defaultValue : IconColor.Default},
 
 			/**
 			 * If set to true, it sends one or more requests,
@@ -86,7 +103,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 			/**
 			 * Specifies whether the icon and the texts are placed vertically or horizontally.
 			 */
-			design : {type : "sap.m.IconTabFilterDesign", group : "Appearance", defaultValue : sap.m.IconTabFilterDesign.Vertical}
+			design : {type : "sap.m.IconTabFilterDesign", group : "Appearance", defaultValue : IconTabFilterDesign.Vertical}
 		},
 		defaultAggregation : "content",
 		aggregations : {
@@ -98,7 +115,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 			 * @since 1.15.0
 			 */
 			content : {type : "sap.ui.core.Control", multiple : true, singularName : "content"}
-		}
+		},
+		designTime: false
 	}});
 
 	/**
@@ -125,7 +143,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 			useIconTooltip : false
 		};
 		if (mProperties.src) {
-			this._oImageControl = sap.m.ImageHelper.getImageControl(this.getId() + "-icon", this._oImageControl, oParent, mProperties, aCssClassesToAdd, aCssClassesToRemove);
+			this._oImageControl = ImageHelper.getImageControl(this.getId() + "-icon", this._oImageControl, oParent, mProperties, aCssClassesToAdd, aCssClassesToRemove);
 		} else if (this._oImageControl) {
 			this._oImageControl.destroy();
 			this._oImageControl = null;
@@ -151,20 +169,28 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 
 	IconTabFilter.prototype.invalidate = function() {
 		var oIconTabHeader = this.getParent(),
-			oIconTabBar;
+			oIconTabBar,
+			oObjectHeader;
 
-		// invalidate the whole IconTabBar or the ObjectHeader
-		if (oIconTabHeader instanceof sap.m.IconTabHeader &&
-			oIconTabHeader.getParent() instanceof sap.m.IconTabBar) {
-			oIconTabBar = oIconTabHeader.getParent();
+		// invalidate the correct parent - IconTabHeader, IconTabBar or ObjectHeader
+		if (!oIconTabHeader) {
+			return;
+		}
 
-			if (oIconTabBar.getParent() instanceof sap.m.ObjectHeader) {
-				// invalidate the object header to re-render IconTabBar content and header
-				var oObjectHeader = oIconTabBar.getParent();
-				oObjectHeader.invalidate();
-			} else {
-				oIconTabBar.invalidate();
-			}
+		oIconTabBar = oIconTabHeader.getParent();
+
+		if (!(oIconTabBar instanceof sap.m.IconTabBar)) {
+			oIconTabHeader.invalidate();
+			return;
+		}
+
+		oObjectHeader = oIconTabBar.getParent();
+
+		if (oObjectHeader instanceof sap.m.ObjectHeader) {
+			// invalidate the object header to re-render IconTabBar content and header
+			oObjectHeader.invalidate();
+		} else {
+			oIconTabBar.invalidate();
 		}
 	};
 
@@ -173,7 +199,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 		// invalidate only the IconTabHeader if a property change
 		// doesn't affect the IconTabBar content
 		switch (sPropertyName) {
-			case 'visible':
 			case 'enabled':
 			case 'textDirection':
 			case 'text':
@@ -186,7 +211,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 				if (this.getProperty(sPropertyName) === oValue) {
 					return this;
 				}
-				sap.ui.core.Control.prototype.setProperty.call(this, sPropertyName, oValue, true);
+				Control.prototype.setProperty.call(this, sPropertyName, oValue, true);
 				if (!bSuppressInvalidate) {
 					var oIconTabHeader = this.getParent();
 					if (oIconTabHeader instanceof sap.m.IconTabHeader) {
@@ -195,7 +220,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 				}
 				break;
 			default:
-				sap.ui.core.Control.prototype.setProperty.apply(this, arguments);
+				Control.prototype.setProperty.apply(this, arguments);
 				break;
 		}
 
@@ -246,7 +271,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 			design = that.getDesign(),
 			iconColor = that.getIconColor(),
 			isIconColorRead = iconColor === 'Positive' || iconColor === 'Critical' || iconColor === 'Negative',
-			isHorizontalDesign = design === sap.m.IconTabFilterDesign.Horizontal,
+			isHorizontalDesign = design === IconTabFilterDesign.Horizontal,
 			isUpperCase = hasIconTabBar && iconTabBar.getUpperCase(),
 			isTextOnly = iconTabHeader._bTextOnly,
 			isInLine = iconTabHeader._bInLine || iconTabHeader.isInlineMode();
@@ -534,11 +559,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 
 		rm.writeClasses();
 
-		if (textDir !== sap.ui.core.TextDirection.Inherit){
+		if (textDir !== TextDirection.Inherit){
 			rm.writeAttribute('dir', textDir.toLowerCase());
 		}
 
-		var textAlign = Renderer.getTextAlign(sap.ui.core.TextAlign.Begin, textDir);
+		var textAlign = Renderer.getTextAlign(TextAlign.Begin, textDir);
 		if (textAlign) {
 			rm.addStyle('text-align', textAlign);
 			rm.writeStyles();
@@ -559,4 +584,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item',
 
 	return IconTabFilter;
 
-}, /* bExport= */ true);
+});

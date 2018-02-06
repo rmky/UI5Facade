@@ -5,7 +5,7 @@
  */
 
 // Provides control sap.m.ToggleButton.
-sap.ui.define(['jquery.sap.global', './Button', './library', 'sap/ui/core/EnabledPropagator'],
+sap.ui.define(['jquery.sap.global', './Button', './library', 'sap/ui/core/EnabledPropagator', 'jquery.sap.keycodes'],
 	function(jQuery, Button, library, EnabledPropagator) {
 	"use strict";
 
@@ -26,7 +26,7 @@ sap.ui.define(['jquery.sap.global', './Button', './library', 'sap/ui/core/Enable
 	 * @extends sap.m.Button
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -111,4 +111,4 @@ sap.ui.define(['jquery.sap.global', './Button', './library', 'sap/ui/core/Enable
 
 	return ToggleButton;
 
-}, /* bExport= */ true);
+});

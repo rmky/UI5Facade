@@ -34,7 +34,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/TreeBin
 		// make sure we have a parameter object
 		this.mParameters = this.mParameters || {};
 
-		// keep track of the page-size for expand requests
+		// keep track of the page-size for expand request
 		this._iPageSize = 0;
 
 		// flat data structure to store the tree nodes depth-first ordered
@@ -443,166 +443,224 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/TreeBin
 	};
 
 	/**
-	 * Loads the data based on a level filter.
+	 * Loads the server-index nodes within the range [iSkip, iSkip + iTop + iThreshold) and merges the nodes into
+	 * the inner structure.
+	 *
+	 * @param {number} iSkip The start index of the loading
+	 * @param {number} iTop The number of nodes to be loaded
+	 * @param {number} iThreshold The size of the buffer
 	 */
 	ODataTreeBindingFlat.prototype._loadData = function (iSkip, iTop, iThreshold) {
-
-		var oRequest = {
-			iSkip: iSkip,
-			iTop: iTop + (iThreshold || 0), // Top also contains threshold if applicable
-			iThreshold: iThreshold
-			// oRequestHandle: <will be set later>
-		};
-
-		// Order pending requests by index
-		this._aPendingRequests.sort(function(a, b) {
-			return a.iSkip - b.iSkip;
-		});
-
-		// Check pending requests:
-		// - adjust new request if pending requests already cover parts of it (delta determination)
-		// - ignore(/abort) new request if pending requests already cover it in full
-		// - cancel pending requests if the new request covers them in full plus additional data.
-		// handles will be aborted on filter/sort calls
-		for (var i = 0; i < this._aPendingRequests.length; i++) {
-			if (TreeBindingUtils._determineRequestDelta(oRequest, this._aPendingRequests[i]) === false) {
-				return; // ignore this request
-			}
-		}
-
-		// Convenience
-		iSkip = oRequest.iSkip;
-		iTop = oRequest.iTop;
-
-		function _handleSuccess (oData) {
-			var oEntry, sKey, iIndex, i,
-				// the function is used to test whether one of its ascendant is expanded after the selectAll
-				fnTest = function(oNode, index) {
-					if (!oNode.isDeepOne && !oNode.initiallyCollapsed && oNode.serverIndex < iIndex && oNode.serverIndex + oNode.magnitude >= iIndex) {
-						return true;
-					}
-				};
-
-			// Remove request from array
-			var idx = this._aPendingRequests.indexOf(oRequest);
-			this._aPendingRequests.splice(idx, 1);
-
-			// $inlinecount is in oData.__count, the $count is just oData
-			if (!this._bLengthFinal) {
-				var iCount = oData.__count ? parseInt(oData.__count, 10) : 0;
-				this._aNodes[iCount - 1] = undefined;
-				this._bLengthFinal = true;
-			}
-
-			//merge data into flat array structure
-			if (oData.results && oData.results.length > 0) {
-				for (i = 0; i < oData.results.length; i++) {
-
-					oEntry = oData.results[i];
-					sKey = this.oModel.getKey(oEntry);
-					iIndex = iSkip + i;
-
-					var iMagnitude = oEntry[this.oTreeProperties["hierarchy-node-descendant-count-for"]];
-					// check the magnitude attribute whether it's greater or equal than 0
-					if (iMagnitude < 0) {
-						iMagnitude = 0;
-						jQuery.sap.log.error("The entry data with key '" + sKey + "' under binding path '" + this.getPath() + "' has a negative 'hierarchy-node-descendant-count-for' which isn't allowed.");
-					}
-
-					var oNode = this._aNodes[iIndex] = this._aNodes[iIndex] || {
-						key: sKey,
-						context: this.oModel.getContext("/" + sKey),
-						magnitude: iMagnitude,
-						level: oEntry[this.oTreeProperties["hierarchy-level-for"]],
-						originalLevel: oEntry[this.oTreeProperties["hierarchy-level-for"]],
-						initiallyCollapsed: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "collapsed",
-						nodeState: {
-							isLeaf: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "leaf",
-							expanded: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "expanded",
-							collapsed: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "collapsed",
-							selected: this._mSelected[sKey] ? this._mSelected[sKey].nodeState.selected : false
-						},
-						children: [],
-						// an array containing all added subtrees, may be new context nodes or nodes which were removed previously
-						addedSubtrees: [],
-						serverIndex: iIndex,
-						// a server indexed node is not attributed with a parent, in contrast to the manually expanded nodes
-						parent: null
-					};
-
-					// track the lowest server-index level --> used to find out if a node is on the top level
-					this._iLowestServerLevel = Math.min(this._iLowestServerLevel, oNode.level);
-
-					// slection update if we are in select-all mode
-					if (this._bSelectAll) {
-						if (!this._aExpandedAfterSelectAll.some(fnTest)) {
-							this.setNodeSelection(oNode, true);
-						}
-					}
-
-				}
-			}
-
-			//register datareceived call as  callAfterUpdate
-			this.oModel.callAfterUpdate(function() {
-				this.fireDataReceived({data: oData});
-			}.bind(this));
-
-			this._fireChange({reason: ChangeReason.Change});
-		}
-
-		function _handleError (oError) {
-			// Remove request from array
-			var idx = this._aPendingRequests.indexOf(oRequest);
-			this._aPendingRequests.splice(idx, 1);
-
-			var bAborted = oError.statusCode == 0;
-			if (!bAborted) {
-				// reset data and trigger update
-				this._aNodes = [];
-				this._bLengthFinal = true;
-				this._fireChange({reason: ChangeReason.Change});
-			}
-			this.fireDataReceived();
-		}
-
-		var aUrlParameters = ["$skip=" + iSkip, "$top=" + iTop];
-
-		// request inlinecount only once
-		if (!this._bLengthFinal) {
-			aUrlParameters.push("$inlinecount=allpages");
-		}
-
-		// add custom parameters (including $selects)
-		if (this.sCustomParams) {
-			aUrlParameters.push(this.sCustomParams);
-		}
+		var that = this;
 
 		this.fireDataRequested();
 
-		// construct multi-filter for level filter and application filters
-		var oLevelFilter = new Filter(this.oTreeProperties["hierarchy-level-for"], "LE", this.getNumberOfExpandedLevels());
-		var aFilters = [oLevelFilter];
-		if (this.aApplicationFilters) {
-			aFilters = aFilters.concat(this.aApplicationFilters);
+		this._requestServerIndexNodes(iSkip, iTop, iThreshold).then(function(oResponseData) {
+			that._addServerIndexNodes(oResponseData.oData, oResponseData.iSkip);
+
+			that._fireChange({reason: ChangeReason.Change});
+			that.fireDataReceived({data: oResponseData.oData});
+		}, function(oError) {
+			var bAborted = oError.statusCode === 0;
+			if (!bAborted) {
+				// reset data and trigger update
+				that._aNodes = [];
+				that._bLengthFinal = true;
+				that._fireChange({reason: ChangeReason.Change});
+			}
+			that.fireDataReceived();
+		});
+	};
+
+	/**
+	 * Reloads the server-index nodes within the range [iSkip, iSkip + iTop) and merges them into the inner structure.
+	 *
+	 * @param {number} iSkip The start index of the loading
+	 * @param {number} iTop The number of nodes to be loaded
+	 * @return {Promise} The promise resolves if the reload finishes successfully, otherwise it's rejected. The promise
+	 * 						resolves with an object which has the calculated iSkip, iTop and the loaded content under
+	 * 						property oData. It rejects with the error object which is returned from the server.
+	 */
+	ODataTreeBindingFlat.prototype._restoreServerIndexNodes = function (iSkip, iTop) {
+		var that = this;
+		return this._requestServerIndexNodes(iSkip, iTop, 0).then(function(oResponseData) {
+			that._addServerIndexNodes(oResponseData.oData, oResponseData.iSkip);
+			return oResponseData;
+		});
+	};
+
+	/**
+	 * Merges the nodes in parameter oData into the inner structure
+	 *
+	 * @param {object} oData The content which contains the nodes from the backend
+	 * @param {number} iSkip The start index for the merging into inner structure
+	 */
+	ODataTreeBindingFlat.prototype._addServerIndexNodes = function (oData, iSkip) {
+		var oEntry, sKey, iIndex, i,
+			// the function is used to test whether one of its ascendant is expanded after the selectAll
+			fnTest = function(oNode, index) {
+				if (!oNode.isDeepOne && !oNode.initiallyCollapsed && oNode.serverIndex < iIndex && oNode.serverIndex + oNode.magnitude >= iIndex) {
+					return true;
+				}
+			};
+
+
+		// $inlinecount is in oData.__count, the $count is just oData
+		if (!this._bLengthFinal) {
+			var iCount = oData.__count ? parseInt(oData.__count, 10) : 0;
+			this._aNodes[iCount - 1] = undefined;
+			this._bLengthFinal = true;
 		}
 
-		// TODO: Add additional filters to the read call, as soon as back-end implementations support it
-		// Something like this: aFilters = [new sap.ui.model.Filter([hierarchyFilters].concat(this.aFilters))];
-		oRequest.oRequestHandle = this.oModel.read(this.getPath(), {
-			context: this.oContext,
-			urlParameters: aUrlParameters,
-			filters: [new Filter({
-				filters: aFilters,
-				and: true
-			})],
-			sorters: this.aSorters || [],
-			success: _handleSuccess.bind(this),
-			error: _handleError.bind(this),
-			groupId: this.sRefreshGroupId ? this.sRefreshGroupId : this.sGroupId
-		});
+		//merge data into flat array structure
+		if (oData.results && oData.results.length > 0) {
+			for (i = 0; i < oData.results.length; i++) {
 
-		this._aPendingRequests.push(oRequest);
+				oEntry = oData.results[i];
+				sKey = this.oModel.getKey(oEntry);
+				iIndex = iSkip + i;
+
+				var iMagnitude = oEntry[this.oTreeProperties["hierarchy-node-descendant-count-for"]];
+				// check the magnitude attribute whether it's greater or equal than 0
+				if (iMagnitude < 0) {
+					iMagnitude = 0;
+					jQuery.sap.log.error("The entry data with key '" + sKey + "' under binding path '" + this.getPath() + "' has a negative 'hierarchy-node-descendant-count-for' which isn't allowed.");
+				}
+
+				var oNode = this._aNodes[iIndex] = this._aNodes[iIndex] || {
+					key: sKey,
+					context: this.oModel.getContext("/" + sKey),
+					magnitude: iMagnitude,
+					level: oEntry[this.oTreeProperties["hierarchy-level-for"]],
+					originalLevel: oEntry[this.oTreeProperties["hierarchy-level-for"]],
+					initiallyCollapsed: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "collapsed",
+					nodeState: {
+						isLeaf: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "leaf",
+						expanded: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "expanded",
+						collapsed: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "collapsed",
+						selected: this._mSelected[sKey] ? this._mSelected[sKey].nodeState.selected : false
+					},
+					children: [],
+					// an array containing all added subtrees, may be new context nodes or nodes which were removed previously
+					addedSubtrees: [],
+					serverIndex: iIndex,
+					// a server indexed node is not attributed with a parent, in contrast to the manually expanded nodes
+					parent: null
+				};
+
+				// track the lowest server-index level --> used to find out if a node is on the top level
+				if (this._iLowestServerLevel === null) {
+					this._iLowestServerLevel = oNode.level;
+				} else {
+					this._iLowestServerLevel = Math.min(this._iLowestServerLevel, oNode.level);
+				}
+
+				// slection update if we are in select-all mode
+				if (this._bSelectAll) {
+					if (!this._aExpandedAfterSelectAll.some(fnTest)) {
+						this.setNodeSelection(oNode, true);
+					}
+				}
+
+			}
+		}
+	};
+
+	/**
+	 * Loads the server-index nodes based on the given range and the initial expand level.
+	 *
+	 * @param {number} iSkip The start index of the loading
+	 * @param {number} iTop The number of nodes to be loaded
+	 * @param {number} iThreshold The size of the buffer
+	 * @return {Promise} The promise resolves if the reload finishes successfully, otherwise it's rejected. The promise
+	 * 						resolves with an object which has the calculated iSkip, iTop and the loaded content under
+	 * 						property oData. It rejects with the error object which is returned from the server.
+	 */
+	ODataTreeBindingFlat.prototype._requestServerIndexNodes = function (iSkip, iTop, iThreshold) {
+		return new Promise(function(resolve, reject) {
+			var oRequest = {
+				iSkip: iSkip,
+				iTop: iTop + (iThreshold || 0), // Top also contains threshold if applicable
+				iThreshold: iThreshold
+				// oRequestHandle: <will be set later>
+			};
+
+			// Order pending requests by index
+			this._aPendingRequests.sort(function(a, b) {
+				return a.iSkip - b.iSkip;
+			});
+
+			// Check pending requests:
+			// - adjust new request if pending requests already cover parts of it (delta determination)
+			// - ignore(/abort) new request if pending requests already cover it in full
+			// - cancel pending requests if the new request covers them in full plus additional data.
+			// handles will be aborted on filter/sort calls.
+			for (var i = 0; i < this._aPendingRequests.length; i++) {
+				if (TreeBindingUtils._determineRequestDelta(oRequest, this._aPendingRequests[i]) === false) {
+					return; // ignore this request
+				}
+			}
+
+			// Convenience
+			iSkip = oRequest.iSkip;
+			iTop = oRequest.iTop;
+
+			function _handleSuccess (oData) {
+				// Remove request from array
+				var idx = this._aPendingRequests.indexOf(oRequest);
+				this._aPendingRequests.splice(idx, 1);
+
+				resolve({
+					oData: oData,
+					iSkip: iSkip,
+					iTop: iTop
+				});
+			}
+
+			function _handleError (oError) {
+				// Remove request from array
+				var idx = this._aPendingRequests.indexOf(oRequest);
+				this._aPendingRequests.splice(idx, 1);
+
+				reject(oError);
+			}
+
+			var aUrlParameters = ["$skip=" + iSkip, "$top=" + iTop];
+
+			// request inlinecount only once
+			if (!this._bLengthFinal) {
+				aUrlParameters.push("$inlinecount=allpages");
+			}
+
+			// add custom parameters (including $selects)
+			if (this.sCustomParams) {
+				aUrlParameters.push(this.sCustomParams);
+			}
+
+			// construct multi-filter for level filter and application filters
+			var oLevelFilter = new Filter(this.oTreeProperties["hierarchy-level-for"], "LE", this.getNumberOfExpandedLevels());
+			var aFilters = [oLevelFilter];
+			if (this.aApplicationFilters) {
+				aFilters = aFilters.concat(this.aApplicationFilters);
+			}
+
+			// TODO: Add additional filters to the read call, as soon as back-end implementations support it
+			// Something like this: aFilters = [new sap.ui.model.Filter([hierarchyFilters].concat(this.aFilters))];
+			oRequest.oRequestHandle = this.oModel.read(this.getPath(), {
+				context: this.oContext,
+				urlParameters: aUrlParameters,
+				filters: [new Filter({
+					filters: aFilters,
+					and: true
+				})],
+				sorters: this.aSorters || [],
+				success: _handleSuccess.bind(this),
+				error: _handleError.bind(this),
+				groupId: this.sRefreshGroupId ? this.sRefreshGroupId : this.sGroupId
+			});
+
+			this._aPendingRequests.push(oRequest);
+		}.bind(this));
 	};
 
 	ODataTreeBindingFlat.prototype._propagateMagnitudeChange = function(oParent, iDelta) {
@@ -616,174 +674,266 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/TreeBin
 		}
 	};
 
-	/**
-	 * Loads the data based on a parent node filter.
-	 */
-	ODataTreeBindingFlat.prototype._loadChildren = function (oParentNode, iSkip, iTop) {
+	// Calculates the magnitude of a server index node after the initial loading
+	ODataTreeBindingFlat.prototype._getInitialMagnitude = function(oNode) {
+		var iDelta = 0,
+			oChild;
 
-		var oRequest = {
-			sParent: oParentNode.key,
-			iSkip: iSkip,
-			iTop: iTop
-			// oRequestHandle: <will be set later>
-		};
+		if (oNode.isDeepOne) {
+			return 0;
+		}
 
-		// Order pending requests by index
-		this._aPendingChildrenRequests.sort(function(a, b) {
-			return a.iSkip - b.iSkip;
-		});
-
-		// Check pending requests:
-		// - adjust new request and remove parts that are already covered by pending requests
-		// - ignore (abort) a new request if it is already covered by pending requests
-		// - cancel pending requests if it is covered by the new request and additional data is added
-		// handles will be aborted on filter/sort calls
-		for (var i = 0; i < this._aPendingChildrenRequests.length; i++) {
-			var oPendingRequest = this._aPendingChildrenRequests[i];
-			if (oPendingRequest.sParent === oRequest.sParent) { // Parent key must match
-				if (TreeBindingUtils._determineRequestDelta(oRequest, oPendingRequest) === false) {
-					return; // ignore this request
-				}
+		if (oNode.children) {
+			for (var i = 0; i < oNode.children.length; i++) {
+				oChild = oNode.children[i];
+				iDelta += oChild.magnitude + 1;
 			}
 		}
 
-		// Convenience
-		iSkip = oRequest.iSkip;
-		iTop = oRequest.iTop;
+		return oNode.magnitude - iDelta;
+	};
 
-		/**
-		 * Success: Importing the data to the binding's data structures
-		 */
-		function _handleSuccess (oData) {
+	/**
+	 * Loads the direct children of the <code>oParentNode</code> within the range [iSkip, iSkip + iTop) and merge the
+	 * new nodes into the <code>children</code> array under the parent node.
+	 *
+	 * @param {object} oParentNode The parent node under which the children are loaded
+	 * @param {number} iSkip The start index of the loading
+	 * @param {number} iTop The number of nodes which will be loaded
+	 */
+	ODataTreeBindingFlat.prototype._loadChildren = function(oParentNode, iSkip, iTop) {
+		var that = this;
 
-			// Remove request from array
-			var idx = this._aPendingChildrenRequests.indexOf(oRequest);
-			this._aPendingChildrenRequests.splice(idx, 1);
+		this.fireDataRequested();
 
-			// $inlinecount is in oData.__count
-			// $count is just the 'oData' argument
-			if (oParentNode.childCount == undefined && oData && oData.__count) {
-				var iCount = oData.__count ? parseInt(oData.__count, 10) : 0;
-				oParentNode.childCount = iCount;
-				oParentNode.children[iCount - 1] = undefined;
+		this._requestChildren(oParentNode, iSkip, iTop).then(function(oResponseData) {
+			that._addChildNodes(oResponseData.oData, oParentNode, oResponseData.iSkip);
 
-				// propagate the magnitude along the parent chain
-				this._propagateMagnitudeChange(oParentNode, iCount);
+			that._fireChange({reason: ChangeReason.Change});
+			that.fireDataReceived({data: oResponseData.oData});
+		}, function(oError) {
+			var bAborted = oError.statusCode === 0;
+			if (!bAborted) {
+				// reset data and trigger update
+				if (oParentNode.childCount === undefined) {
+					oParentNode.children = [];
+					oParentNode.childCount = 0;
+					that._fireChange({reason: ChangeReason.Change});
+				}
+			}
+			that.fireDataReceived();
+		});
+	};
 
-				// once when we reload data and know the direct-child count,
-				// we have to keep track of the expanded state for the newly loaded nodes, so the length delta can be calculated
-				this._cleanTreeStateMaps();
+	/**
+	 * Reloads the child nodes of the <code>oParentNode</code> within the range [iSkip, iSkip + iTop) and merges them into the inner structure.
+	 *
+	 * After the child nodes are loaded, the parent node is expanded again.
+	 *
+	 * @param {object} oParentNode The parent node under which the children are reloaded
+	 * @param {number} iSkip The start index of the loading
+	 * @param {number} iTop The number of nodes to be loaded
+	 * @return {Promise} The promise resolves if the reload finishes successfully, otherwise it's rejected. The promise
+	 * 						resolves with an object which has the calculated iSkip, iTop and the loaded content under
+	 * 						property oData. It rejects with the error object which is returned from the server.
+	 */
+	ODataTreeBindingFlat.prototype._restoreChildren = function(oParentNode, iSkip, iTop) {
+		var that = this;
+
+		return this._requestChildren(oParentNode, iSkip, iTop, true/*request inline count*/).then(function(oResponseData) {
+			var oNewParentNode,
+				sParentKey = oParentNode.key;
+
+			that._map(function(oNode, oRecursionBreaker) {
+				if (oNode && oNode.key === sParentKey) {
+					oNewParentNode = oNode;
+					oRecursionBreaker.broken = true;
+				}
+			});
+
+			if (oNewParentNode) {
+				that._addChildNodes(oResponseData.oData, oNewParentNode, oResponseData.iSkip);
+				that.expand(oNewParentNode, true);
 			}
 
-			//merge data into flat array structure
-			if (oData.results && oData.results.length > 0) {
-				for (var i = 0; i < oData.results.length; i++) {
+			return oResponseData;
+		});
+	};
 
-					var oEntry = oData.results[i];
-					var sKey = this.oModel.getKey(oEntry);
+	/**
+	 * Merges the nodes in <code>oData</code> into the <code>children</code> property under <code>oParentNode</code>.
+	 *
+	 * @param {object} oData The content which contains the nodes from the backed
+	 * @param {object} oParentNode The parent node where the child nodes are saved
+	 * @param {number} iSkip The start index for the merging into inner structure
+	 */
+	ODataTreeBindingFlat.prototype._addChildNodes = function(oData, oParentNode, iSkip) {
 
-					var oNode = oParentNode.children[iSkip + i] = oParentNode.children[iSkip + i] || {
-						key: sKey,
-						context: this.oModel.getContext("/" + sKey),
-						//sub-child nodes have a magnitude of 0 at their first loading time
-						magnitude: 0,
-						//level is either given by the back-end or simply 1 level deeper than the parent
-						level: oParentNode.level + 1,
-						originalLevel: oParentNode.level + 1,
-						initiallyCollapsed: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "collapsed",
-						//node state is also given by the back-end
-						nodeState: {
-							isLeaf: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "leaf",
-							expanded: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "expanded",
-							collapsed: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "collapsed",
-							selected: this._mSelected[sKey] ? this._mSelected[sKey].nodeState.selected : false
-						},
-						positionInParent: iSkip + i,
-						children: [],
-						// an array containing all added subtrees, may be new context nodes or nodes which were removed previously
-						addedSubtrees: [],
-						// a reference on the parent node, will only be set for manually expanded nodes, server-indexed node have a parent of null
-						parent: oParentNode,
-						// a reference on the original parent node, this property should not be changed by any algorithms, its used later to construct correct delete requests
-						originalParent: oParentNode,
-						// marks a node as a manually expanded one
-						isDeepOne: true,
-						// the deep child nodes have the same containing server index as the parent node
-						// the parent node is either a server-index node or another deep node which already has a containing-server-index
-						containingServerIndex: oParentNode.containingServerIndex || oParentNode.serverIndex
-					};
+		// $inlinecount is in oData.__count
+		// $count is just the 'oData' argument
+		if (oParentNode.childCount == undefined && oData && oData.__count) {
+			var iCount = oData.__count ? parseInt(oData.__count, 10) : 0;
+			oParentNode.childCount = iCount;
+			oParentNode.children[iCount - 1] = undefined;
 
-					if (this._bSelectAll && this._aExpandedAfterSelectAll.indexOf(oParentNode) === -1) {
-						this.setNodeSelection(oNode, true);
+			if (oParentNode.nodeState.expanded) {
+				// propagate the magnitude along the parent chain
+				this._propagateMagnitudeChange(oParentNode, iCount);
+			} else {
+				// If parent node is not expanded, do not propagate magnitude change up to its parents
+				oParentNode.magnitude = iCount;
+			}
+
+			// once when we reload data and know the direct-child count,
+			// we have to keep track of the expanded state for the newly loaded nodes, so the length delta can be calculated
+			this._cleanTreeStateMaps();
+		}
+
+		//merge data into flat array structure
+		if (oData.results && oData.results.length > 0) {
+			for (var i = 0; i < oData.results.length; i++) {
+
+				var oEntry = oData.results[i];
+				var sKey = this.oModel.getKey(oEntry);
+
+				var oNode = oParentNode.children[iSkip + i] = oParentNode.children[iSkip + i] || {
+					key: sKey,
+					context: this.oModel.getContext("/" + sKey),
+					//sub-child nodes have a magnitude of 0 at their first loading time
+					magnitude: 0,
+					//level is either given by the back-end or simply 1 level deeper than the parent
+					level: oParentNode.level + 1,
+					originalLevel: oParentNode.level + 1,
+					initiallyCollapsed: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "collapsed",
+					//node state is also given by the back-end
+					nodeState: {
+						isLeaf: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "leaf",
+						expanded: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "expanded",
+						collapsed: oEntry[this.oTreeProperties["hierarchy-drill-state-for"]] === "collapsed",
+						selected: this._mSelected[sKey] ? this._mSelected[sKey].nodeState.selected : false
+					},
+					positionInParent: iSkip + i,
+					children: [],
+					// an array containing all added subtrees, may be new context nodes or nodes which were removed previously
+					addedSubtrees: [],
+					// a reference on the parent node, will only be set for manually expanded nodes, server-indexed node have a parent of null
+					parent: oParentNode,
+					// a reference on the original parent node, this property should not be changed by any algorithms, its used later to construct correct delete requests
+					originalParent: oParentNode,
+					// marks a node as a manually expanded one
+					isDeepOne: true,
+					// the deep child nodes have the same containing server index as the parent node
+					// the parent node is either a server-index node or another deep node which already has a containing-server-index
+					containingServerIndex: oParentNode.containingServerIndex || oParentNode.serverIndex
+				};
+
+				if (this._bSelectAll && this._aExpandedAfterSelectAll.indexOf(oParentNode) === -1) {
+					this.setNodeSelection(oNode, true);
+				}
+			}
+		}
+	};
+
+	/**
+	 * Loads the child nodes based on the given range and <code>oParentNode</code>
+	 *
+	 * @param {object} oParentNode The node under which the children are loaded
+	 * @param {number} iSkip The start index of the loading
+	 * @param {number} iTop The number of nodes to be loaded
+	 * @param {boolean} bInlineCount Whether the inline count should be requested from the backend
+	 * @return {Promise} The promise resolves if the reload finishes successfully, otherwise it's rejected. The promise
+	 * 						resolves with an object which has the calculated iSkip, iTop and the loaded content under
+	 * 						property oData. It rejects with the error object which is returned from the server.
+	 */
+	ODataTreeBindingFlat.prototype._requestChildren = function (oParentNode, iSkip, iTop, bInlineCount) {
+		return new Promise(function(resolve, reject) {
+			var oRequest = {
+				sParent: oParentNode.key,
+				iSkip: iSkip,
+				iTop: iTop
+				// oRequestHandle: <will be set later>
+			};
+
+			// Order pending requests by index
+			this._aPendingChildrenRequests.sort(function(a, b) {
+				return a.iSkip - b.iSkip;
+			});
+
+			// Check pending requests:
+			// - adjust new request and remove parts that are already covered by pending requests
+			// - ignore (abort) a new request if it is already covered by pending requests
+			// - cancel pending requests if it is covered by the new request and additional data is added
+			// handles will be aborted on filter/sort calls
+			for (var i = 0; i < this._aPendingChildrenRequests.length; i++) {
+				var oPendingRequest = this._aPendingChildrenRequests[i];
+				if (oPendingRequest.sParent === oRequest.sParent) { // Parent key must match
+					if (TreeBindingUtils._determineRequestDelta(oRequest, oPendingRequest) === false) {
+						return; // ignore this request
 					}
 				}
 			}
 
-			//register datareceived call as  callAfterUpdate
-			this.oModel.callAfterUpdate(function() {
-				this.fireDataReceived({data: oData});
-			}.bind(this));
+			// Convenience
+			iSkip = oRequest.iSkip;
+			iTop = oRequest.iTop;
 
-			this._fireChange({reason: ChangeReason.Change});
-		}
+			function _handleSuccess (oData) {
 
-		/**
-		 * Error: clear the respective parent node and fire the necessary events.
-		 */
-		function _handleError (oError) {
-			// Remove request from array
-			var idx = this._aPendingChildrenRequests.indexOf(oRequest);
-			this._aPendingChildrenRequests.splice(idx, 1);
+				// Remove request from array
+				var idx = this._aPendingChildrenRequests.indexOf(oRequest);
+				this._aPendingChildrenRequests.splice(idx, 1);
 
-			var bAborted = oError.statusCode == 0;
-			if (!bAborted) {
-				// reset data and trigger update
-				if (oParentNode.childCount == undefined) {
-					oParentNode.children = [];
-					oParentNode.childCount = 0;
-					this._fireChange({reason: ChangeReason.Change});
-				}
+				resolve({
+					oData: oData,
+					iSkip: iSkip,
+					iTop: iTop
+				});
 			}
-			this.fireDataReceived();
-		}
 
-		var aUrlParameters = ["$skip=" + iSkip, "$top=" + iTop];
+			function _handleError (oError) {
+				// Remove request from array
+				var idx = this._aPendingChildrenRequests.indexOf(oRequest);
+				this._aPendingChildrenRequests.splice(idx, 1);
 
-		// request inlinecount only once
-		if (oParentNode.childCount == undefined) {
-			aUrlParameters.push("$inlinecount=allpages");
-		}
+				reject(oError);
+			}
 
-		// add custom parameters (including $selects)
-		if (this.sCustomParams) {
-			aUrlParameters.push(this.sCustomParams);
-		}
+			var aUrlParameters = ["$skip=" + iSkip, "$top=" + iTop];
 
-		this.fireDataRequested();
+			// request inlinecount only once or inline count is needed explicitly
+			if (oParentNode.childCount == undefined || bInlineCount) {
+				aUrlParameters.push("$inlinecount=allpages");
+			}
 
-		// construct multi-filter for level filter and application filters
-		var oLevelFilter = new Filter(this.oTreeProperties["hierarchy-parent-node-for"], "EQ", oParentNode.context.getProperty(this.oTreeProperties["hierarchy-node-for"]));
-		var aFilters = [oLevelFilter];
-		if (this.aApplicationFilters) {
-			aFilters = aFilters.concat(this.aApplicationFilters);
-		}
+			// add custom parameters (including $selects)
+			if (this.sCustomParams) {
+				aUrlParameters.push(this.sCustomParams);
+			}
 
-		// TODO: Add additional filters to the read call, as soon as back-end implementations support it
-		// Something like this: aFilters = [new sap.ui.model.Filter([hierarchyFilters].concat(this.aFilters))];
-		oRequest.oRequestHandle = this.oModel.read(this.getPath(), {
-			context: this.oContext,
-			urlParameters: aUrlParameters,
-			filters: [new Filter({
-				filters: aFilters,
-				and: true
-			})],
-			sorters: this.aSorters || [],
-			success: _handleSuccess.bind(this),
-			error: _handleError.bind(this),
-			groupId: this.sRefreshGroupId ? this.sRefreshGroupId : this.sGroupId
-		});
+			// construct multi-filter for level filter and application filters
+			var oLevelFilter = new Filter(this.oTreeProperties["hierarchy-parent-node-for"], "EQ", oParentNode.context.getProperty(this.oTreeProperties["hierarchy-node-for"]));
+			var aFilters = [oLevelFilter];
+			if (this.aApplicationFilters) {
+				aFilters = aFilters.concat(this.aApplicationFilters);
+			}
 
-		this._aPendingChildrenRequests.push(oRequest);
+			// TODO: Add additional filters to the read call, as soon as back-end implementations support it
+			// Something like this: aFilters = [new sap.ui.model.Filter([hierarchyFilters].concat(this.aFilters))];
+			oRequest.oRequestHandle = this.oModel.read(this.getPath(), {
+				context: this.oContext,
+				urlParameters: aUrlParameters,
+				filters: [new Filter({
+					filters: aFilters,
+					and: true
+				})],
+				sorters: this.aSorters || [],
+				success: _handleSuccess.bind(this),
+				error: _handleError.bind(this),
+				groupId: this.sRefreshGroupId ? this.sRefreshGroupId : this.sGroupId
+			});
+
+			this._aPendingChildrenRequests.push(oRequest);
+		}.bind(this));
 	};
 
 	/**
@@ -2123,6 +2273,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/TreeBin
 		ODataTreeBinding.prototype.resetData.apply(this, arguments);
 
 		this._aNodes = [];
+		this._aNodeCache = [];
 
 		this._aCollapsed = [];
 		this._aExpanded = [];
@@ -2217,7 +2368,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/TreeBin
 		mParameters = mParameters || {};
 
 		// group id
-		var sAbsolutePath = this.oModel.resolve(this.getPath(), this.getContext());
+		var sAbsolutePath = this.oModel.resolve(this.getPath(), this.getContext()),
+			oOptimizedChanges = this._optimizeChanges();
+
 		if (!sAbsolutePath) {
 			jQuery.sap.log.warning("ODataTreeBindingFlat: submitChanges failed, because the binding-path could nit be resolved.");
 			return;
@@ -2251,8 +2404,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/TreeBin
 				}
 
 				if (bSomethingFailed) {
-					// TODO: How to handle error on change set?
-					// E-Tag? Pre-condition failed?
+					// Just like ODataModel.submitChanges, if a request fails we don't do anything.
+					// Example from other bindings: ODataPropertyBinding still keeps a value that could not be successfully submitted.
+					// It is up to the application to handle such errors.
+					// A tree state restoration won't happen. The tree state will stay the same as no data is getting reset.
+				} else if (this.mParameters.restoreTreeStateAfterChange) {
+					// This is an temporary flag on the binding to turn off the restore feature by default.
+					// This flag defines whether the tree state before submitChanges should be restored afterwards.
+					// If this is true, a batch request is sent after the save action is finished to load the nodes
+					// which were available before in order to properly restore the tree state.
+					this._restoreTreeState(oOptimizedChanges);
 				} else {
 					// Trigger a refresh to reload the newly updated hierarchy
 					// This is the happy path, and only here a refresh has to be triggered.
@@ -2274,7 +2435,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/TreeBin
 		};
 
 		// built the actual requests for the change-set
-		this._generateSubmitData();
+		this._generateSubmitData(oOptimizedChanges);
 
 		// relay submit call to the model
 		this.oModel.submitChanges(mParameters);
@@ -2284,105 +2445,25 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/TreeBin
 	 * Generates the request data for a submit request.
 	 * Generates a minimal set of UPDATE & DELETE requests, in the correct order.
 	 */
-	ODataTreeBindingFlat.prototype._generateSubmitData = function () {
-		// removal check function for the parent-chain of a node
-		var bIsRemovedInParent = false;
-		var fnCheckRemoved = function(oNode, oBreaker) {
-			if (oNode.nodeState.removed && !oNode.nodeState.reinserted) {
-				bIsRemovedInParent = true;
-				oBreaker.broken = true;
-			}
-		};
+	ODataTreeBindingFlat.prototype._generateSubmitData = function (oOptimizedChanges) {
+		var aRemoved = oOptimizedChanges.removed,
+			aCreationCancelled = oOptimizedChanges.creationCancelled,
+			aMoved = oOptimizedChanges.moved;
 
-		// Step (1)
-		// --------------------------------------------------------------------
-		// Iterate all changed nodes and check their current/new parent chain.
-		// Keep track of all nodes which are candidates for a DELETE requests.
-		// New (and wrongly) created UI-only nodes are removed directly, if
-		// one of their current parent nodes is also removed.
-		var aPotentiallyRemovedNodes = [];
-
-		var fnTrackRemovedNodes = function (oNode) {
-			// server indexed nodes and deep nodes
-			if ((oNode.isDeepOne || oNode.serverIndex >= 0) && aPotentiallyRemovedNodes.indexOf(oNode) == -1) {
-				aPotentiallyRemovedNodes.push(oNode);
-			}
-			// cancel create requests for removed new nodes
-			if (oNode.nodeState.added) {
-				this._generateDeleteRequest(oNode);
-			}
-		}.bind(this);
-
-
-		this._aAllChangedNodes.forEach(function (oNode) {
-			bIsRemovedInParent = false;
-			this._up(oNode, fnCheckRemoved, false /* current/new parent */);
-
-			// at least one of the parents of the node is removed
-			if (bIsRemovedInParent) {
-				fnTrackRemovedNodes(oNode);
-			} else {
-				// if none of the parents are removed, but the node itself is removed,
-				// we probably have reached the top-level, in this case the node of course shall also be removed
-				if (oNode.nodeState.removed && !oNode.nodeState.reinserted) {
-					fnTrackRemovedNodes(oNode);
-				} else {
-					// node is not removed
-					// so we have to change the parent
-					jQuery.sap.assert(oNode.context, "Node does not have a context.");
-					var sParentNodeID = oNode.parent.context.getProperty(this.oTreeProperties["hierarchy-node-for"]);
-					this.oModel.setProperty(this.oTreeProperties["hierarchy-parent-node-for"], sParentNodeID, oNode.context);
-				}
-			}
+		aMoved.forEach(function(oNode) {
+			jQuery.sap.assert(oNode.context, "Node does not have a context.");
+			var sParentNodeID = oNode.parent.context.getProperty(this.oTreeProperties["hierarchy-node-for"]);
+			this.oModel.setProperty(this.oTreeProperties["hierarchy-parent-node-for"], sParentNodeID, oNode.context);
 		}.bind(this));
 
-		// Step (2): Sort nodes based on their related server-index.
-		aPotentiallyRemovedNodes.sort(function (a, b) {
-			var iA = this._getRelatedServerIndex(a);
-			var iB = this._getRelatedServerIndex(b);
-			jQuery.sap.assert(iA != undefined, "_generateSubmitData: (containing) Server-Index not found for node 'a'");
-			jQuery.sap.assert(iB != undefined, "_generateSubmitData: (containing) Server-Index not found node 'b'");
-
-			// deep nodes are inside the same containing server-index --> sort them by their level
-			// this way we can make sure, that deeper nodes are sorted after higher-leveled ones
-			if (iA == iB && a.isDeepOne && b.isDeepOne) {
-				return a.originalLevel - b.originalLevel;
-			}
-
-			return iA - iB; // ascending
+		aRemoved.forEach(function(oNode) {
+			this._generateDeleteRequest(oNode);
+			jQuery.sap.log.debug("ODataTreeBindingFlat: DELETE " + oNode.key);
 		}.bind(this));
 
-		// Step (3): Create actual DELETE requests from a list of candidates.
-		// ----------------------------------------------------------------------
-		// Check if a node is deleted inside its old (server-side) parent chain.
-		// A node is deleted in its old parent chain, if at least one of its
-		// parent nodes was removed but not reinserted.
-		// The _up() function ends under two conditions:
-		//    1. if a node is not deleted at all
-		//    2. once the first deleted parent node is found
-		// Only nodes which are not deleted implicitly via their parent, need a DELETE request.
-		var fnNodeIsDeletedInOldParent = function (oDeletedNode) {
-			var bIsDeleted = false;
-			this._up(oDeletedNode, function (oParentNode, oBreak) {
-				if (oParentNode.nodeState.removed && !oParentNode.nodeState.reinserted) {
-					bIsDeleted = true;
-					oBreak.broken = true;
-				}
-			}, true /* original/old parent */);
-
-			return bIsDeleted;
-		}.bind(this);
-
-		// process all potentially deleted nodes
-		for (var i = 0; i < aPotentiallyRemovedNodes.length; i++) {
-			var oDeletedNode = aPotentiallyRemovedNodes[i];
-
-			// deep nodes can be deleted depending on their original parent
-			if (!fnNodeIsDeletedInOldParent(oDeletedNode)) {
-				this._generateDeleteRequest(oDeletedNode);
-				jQuery.sap.log.debug("ODataTreeBindingFlat: DELETE " + oDeletedNode.key);
-			}
-		}
+		aCreationCancelled.forEach(function(oNode) {
+			this._generateDeleteRequest(oNode);
+		}.bind(this));
 	};
 
 	/**
@@ -2421,6 +2502,408 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/TreeBin
 			});
 			return oDeleteRequestHandle;
 		}
+	};
+
+	ODataTreeBindingFlat.prototype._filterChangeForServerSections = function(oOptimizedChanges) {
+		var oChanges = {
+			removed: []
+		};
+
+		if (oOptimizedChanges.removed) {
+			oOptimizedChanges.removed.forEach(function(oRemovedNode) {
+				if (!oRemovedNode.isDeepOne) {
+					oChanges.removed.push(oRemovedNode);
+				}
+			});
+		}
+
+		return oChanges;
+	};
+
+	ODataTreeBindingFlat.prototype._filterChangesForDeepSections = function(oOptimizedChanges) {
+		var mChanges = {
+
+		}, oParent;
+
+		if (oOptimizedChanges.removed) {
+			oOptimizedChanges.removed.forEach(function(oRemovedNode) {
+				if (oRemovedNode.isDeepOne) {
+					oParent = oRemovedNode.parent;
+					if (!mChanges[oParent.key]) {
+						mChanges[oParent.key] = {
+							removed: []
+						};
+					}
+
+					mChanges[oParent.key].removed.push(oRemovedNode);
+				}
+			});
+		}
+
+		return mChanges;
+	};
+
+
+	/**
+	 * First collects all of the loaded server-index node and deep node sections. It then reloads all of them and merges
+	 * them into the inner structure. It also takes care of expansion state and restore it after a node is reloaded.
+	 *
+	 * @return {Promise} The promise resolves if all reload requests succeed, otherwise it's rejected.
+	 * 						The resolved and rejected parameter share the same structure. Both of them are an array of elements.
+	 * 						Each of the element is an object which has either the responseData or the error property set. If the
+	 * 						corresponding request succeeds, the responseData property is set with an object which has the
+	 * 						calculated iSkip, iTop and the loaded content under property oData. Otherwise the error property is
+	 * 						set with the error object which is returned from the server.
+	 */
+	ODataTreeBindingFlat.prototype._restoreTreeState = function (oOptimizedChanges) {
+		var iCollapsedNodesCount,
+			oSection, aSections, oDeepNodeSection, oChildSection,
+			mCollapsedKeys,
+			aPromises,
+			i, j, k, l,
+			oChanges,
+			mDeepChanges,
+			that = this;
+
+		this.fireDataRequested();
+
+		aPromises = [];
+
+		// Collect server-index sections
+		aSections = this._collectServerSections(this._aNodes);
+
+		if (oOptimizedChanges) {
+			oChanges = this._filterChangeForServerSections(oOptimizedChanges);
+			this._adaptSections(aSections, oChanges);
+		}
+
+		// Request server-index nodes
+		//   (for all loaded server-index sections)
+		for (i = 0; i < aSections.length; i++) {
+			oSection = aSections[i];
+			aPromises.push(this._restoreServerIndexNodes(oSection.iSkip, oSection.iTop, 0));
+		}
+
+		// Request children
+		//   (for expanded nodes on intial-expand-level and expanded deep nodes)
+		var aDeepNodeSections = this._collectDeepNodes();
+
+		if (oOptimizedChanges) {
+			mDeepChanges = this._filterChangesForDeepSections(oOptimizedChanges);
+		}
+
+		for (j = 0; j < aDeepNodeSections.length; j++) {
+			oDeepNodeSection = aDeepNodeSections[j];
+
+			if (mDeepChanges) {
+				oChanges = mDeepChanges[oDeepNodeSection.oParentNode.key];
+				if (oChanges) {
+					this._adaptSections(oDeepNodeSection.aChildSections, oChanges, {
+						indexName: "positionInParent",
+						ignoreMagnitude: true
+					});
+				}
+			}
+
+			for (k = 0; k < oDeepNodeSection.aChildSections.length; k++) {
+				oChildSection = oDeepNodeSection.aChildSections[k];
+				aPromises.push(this._restoreChildren(oDeepNodeSection.oParentNode, oChildSection.iSkip, oChildSection.iTop));
+			}
+		}
+
+		mCollapsedKeys = {};
+		for (l = 0; l < this._aCollapsed.length; l++) {
+			mCollapsedKeys[this._aCollapsed[l].key] = true;
+		}
+		iCollapsedNodesCount = this._aCollapsed.length;
+
+
+		// Dump all data
+		this.resetData();
+
+		function restoreCollapseState() {
+			if (iCollapsedNodesCount > 0) {
+				that._map(function (oNode, oRecursionBreaker) {
+					if (oNode && mCollapsedKeys[oNode.key]) {
+						that.collapse(oNode, true);
+						iCollapsedNodesCount--;
+						if (iCollapsedNodesCount === 0) {
+							oRecursionBreaker.broken = true;
+						}
+					}
+				});
+			}
+		}
+
+		// process all sub requests no matter it succeeds or fails
+		aPromises = aPromises.map(function(pPromise) {
+			return pPromise.then(function(aResponseData) {
+				return {
+					responseData: aResponseData
+				};
+			}, function(oError) {
+				return {
+					error: oError
+				};
+			});
+		});
+
+		return Promise.all(aPromises).then(function(aData) {
+			var iAborted = 0;
+
+			aData.forEach(function(oData) {
+				if (oData.error) { // Error occured
+					// The request is aborted if statusCode is set with 0
+					if (oData.error.statusCode === 0) {
+						iAborted++;
+					} else {
+						jQuery.sap.log.error("ODataTreeBindingFlat - Tree state restoration request failed. Complete or partial tree state might get lost. Error: " +
+							(oData.error.message.value || oData.error.message));
+					}
+				}
+			});
+
+			// If all requests are aborted, the 'dataReceived' event shouldn't be fired
+			if (iAborted < aData.length) {
+				// Restore collapse state
+				restoreCollapseState();
+
+				that._fireChange({reason: ChangeReason.Change});
+				that.fireDataReceived({data: aData});
+			}
+
+			return aData;
+		});
+	};
+
+	/**
+	 * Collects the loaded server-index node sections. If an element in the <code>aNodes</code>
+	 * isn't undefined, it's counted as loaded and is collected in one loaded section.
+	 * Otherwise the element is treated as unloaded node.
+	 *
+	 * @param {array} The nodes array where loaded sections are collected
+	 * @return {array} The loaded sections. Each section is represented as an element in this array.
+	 * 					The element has the following two properties: iSkip and iTop.
+	 */
+	ODataTreeBindingFlat.prototype._collectServerSections = function (aNodes) {
+		var aSections = [];
+		var oSection;
+
+		for (var i = 0; i < aNodes.length; i++) {
+			if (aNodes[i] !== undefined) {
+				if (!oSection) {
+					oSection = {
+						iSkip: i,
+						iTop: 1
+					};
+					aSections.push(oSection);
+				} else {
+					oSection.iTop++;
+				}
+			} else {
+				oSection = null;
+			}
+		}
+
+		return aSections;
+	};
+
+	ODataTreeBindingFlat.prototype._adaptSections = function (aSections, oChanges, oConfig) {
+		var aRemoved = oChanges.removed,
+			sIndexName = (oConfig && oConfig.indexName) || "serverIndex",
+			oRemovedNode, oSection,
+			iRestLength, iDelta = 0, iSectionLoopBegin = 0, iMagnitude, iPosition;
+
+		if (aRemoved) {
+			for (var i = 0; i < aRemoved.length; i++) {
+				oRemovedNode = aRemoved[i];
+				iPosition = oRemovedNode[sIndexName] - iDelta;
+				iMagnitude = (oConfig && oConfig.ignoreMagnitude) ? 0 : this._getInitialMagnitude(oRemovedNode);
+
+				for (var j = iSectionLoopBegin; j < aSections.length; j++) {
+					oSection = aSections[j];
+
+					// the removed node is a server index node
+					if (iPosition >= oSection.iSkip && iPosition <= oSection.iSkip + oSection.iTop) {
+						// start point for the next outer for loop
+						iSectionLoopBegin = j;
+
+						aSections.splice(j, 1);
+
+						//         o---------> the node o is removed, the -------> means the children of node o
+						// ----------------------------- oSection
+						//                    |--------| the length of this range is the iRestLenth
+						// The amount of nodes within the oSection which appear after the oRemovedNode and are still left after the removal of the oRemoveNode
+						iRestLength = (oSection.iSkip + oSection.iTop) - iPosition - (1 + iMagnitude);
+
+						if (iRestLength > 0) {
+							// if there are still nodes left after the remove, the front part and the back part
+							// slide together with the same iSkip
+							// The iTop is calculated by adding the length of the two parts together
+							aSections.splice(j, 0, {
+								iSkip: oSection.iSkip,
+								iTop: iRestLength + (iPosition - oSection.iSkip)
+							});
+						} else if (iPosition !== oSection.iSkip) {
+							// if there's no nodes left after the remove, the front part is reserved when it's length is greater than 0
+							aSections.splice(j, 0, {
+								iSkip: oSection.iSkip,
+								iTop: iPosition - oSection.iSkip
+							});
+						} else {
+							// Section is deleted without inserting a new section.
+							// The next loop should start with the same index as the current one, otherwise
+							// the next section will be skipped
+							j--;
+						}
+
+						iDelta += iMagnitude + 1;
+					} else if (oSection.iSkip > iPosition) {
+						// if the section appears after the removed node, its iSkip is moved backward with the magnitude of removed node
+						oSection.iSkip -= (iMagnitude + 1);
+					}
+				}
+			}
+		}
+	};
+
+	ODataTreeBindingFlat.prototype._optimizeChanges = function () {
+		var aRemoved = [],
+			aCreationCancelled = [],
+			aMoved = [];
+
+		// removal check function for the parent-chain of a node
+		var bIsRemovedInParent = false;
+		var fnCheckRemoved = function(oNode, oBreaker) {
+			if (oNode.nodeState.removed && !oNode.nodeState.reinserted) {
+				bIsRemovedInParent = true;
+				oBreaker.broken = true;
+			}
+		};
+
+		// Step (1)
+		// --------------------------------------------------------------------
+		// Iterate all changed nodes and check their current/new parent chain.
+		// Keep track of all nodes which are candidates for a DELETE requests.
+		// New (and wrongly) created UI-only nodes are removed directly, if
+		// one of their current parent nodes is also removed.
+		var aPotentiallyRemovedNodes = [];
+
+		var fnTrackRemovedNodes = function (oNode) {
+			// server indexed nodes and deep nodes
+			if ((oNode.isDeepOne || oNode.serverIndex >= 0) && aPotentiallyRemovedNodes.indexOf(oNode) == -1) {
+				aPotentiallyRemovedNodes.push(oNode);
+			}
+			// cancel create requests for removed new nodes
+			if (oNode.nodeState.added) {
+				aCreationCancelled.push(oNode);
+			}
+		};
+
+
+		this._aAllChangedNodes.forEach(function (oNode) {
+			bIsRemovedInParent = false;
+			this._up(oNode, fnCheckRemoved, false /* current/new parent */);
+
+			// at least one of the parents of the node is removed
+			if (bIsRemovedInParent) {
+				fnTrackRemovedNodes(oNode);
+			} else {
+				// if none of the parents are removed, but the node itself is removed,
+				// we probably have reached the top-level, in this case the node of course shall also be removed
+				if (oNode.nodeState.removed && !oNode.nodeState.reinserted) {
+					fnTrackRemovedNodes(oNode);
+				} else {
+					// node is not removed
+					// so we have to change the parent
+					aMoved.push(oNode);
+				}
+			}
+		}.bind(this));
+
+		// Step (2): Sort nodes based on their related server-index.
+		aPotentiallyRemovedNodes.sort(function (a, b) {
+			var iA = this._getRelatedServerIndex(a);
+			var iB = this._getRelatedServerIndex(b);
+			jQuery.sap.assert(iA != undefined, "_generateSubmitData: (containing) Server-Index not found for node 'a'");
+			jQuery.sap.assert(iB != undefined, "_generateSubmitData: (containing) Server-Index not found node 'b'");
+
+			// deep nodes are inside the same containing server-index --> sort them first by their level. If they are under
+			// the same parent, sort them using their position in the parent
+			// this way we can make sure, that deeper nodes are sorted after higher-leveled ones
+			if (iA == iB && a.isDeepOne && b.isDeepOne) {
+				if (a.parent === b.parent) {
+					return a.positionInParent - b.positionInParent;
+				} else {
+					return a.originalLevel - b.originalLevel;
+
+				}
+			}
+
+			return iA - iB; // ascending
+		}.bind(this));
+
+		// Step (3): Create actual DELETE requests from a list of candidates.
+		// ----------------------------------------------------------------------
+		// Check if a node is deleted inside its old (server-side) parent chain.
+		// A node is deleted in its old parent chain, if at least one of its
+		// parent nodes was removed but not reinserted.
+		// The _up() function ends under two conditions:
+		//    1. if a node is not deleted at all
+		//    2. once the first deleted parent node is found
+		// Only nodes which are not deleted implicitly via their parent, need a DELETE request.
+		var fnNodeIsDeletedInOldParent = function (oDeletedNode) {
+			var bIsDeleted = false;
+			this._up(oDeletedNode, function (oParentNode, oBreak) {
+				if (oParentNode.nodeState.removed && !oParentNode.nodeState.reinserted) {
+					bIsDeleted = true;
+					oBreak.broken = true;
+				}
+			}, true /* original/old parent */);
+
+			return bIsDeleted;
+		}.bind(this);
+
+		// process all potentially deleted nodes
+		for (var i = 0; i < aPotentiallyRemovedNodes.length; i++) {
+			var oDeletedNode = aPotentiallyRemovedNodes[i];
+
+			// deep nodes can be deleted depending on their original parent
+			if (!fnNodeIsDeletedInOldParent(oDeletedNode)) {
+				aRemoved.push(oDeletedNode);
+			}
+		}
+
+		return {
+			removed: aRemoved,
+			creationCancelled: aCreationCancelled,
+			moved: aMoved
+		};
+	};
+
+	/**
+	 * Collects the loaded deep nodes in the whole tree.
+	 *
+	 * @return {array} Each element in the array represents all loaded children under a node.
+	 * 					The element has the following two properties: oParentNode and aChildSections.
+	 * 					oParentNode is the node where the deep nodes are collected and aChildSections
+	 * 					represents the loaded deep node sections under the oParentNode. Each element
+	 * 					in the aChildSections has these two properties: iSkip and iTop
+	 */
+	ODataTreeBindingFlat.prototype._collectDeepNodes = function () {
+		var aDeepNodes = [], that = this;
+		this._map(function(oNode) {
+			if (oNode && oNode.nodeState.expanded && (
+					oNode.initiallyCollapsed || // server index nodes on the initial expansion level
+					oNode.isDeepOne // deep nodes
+			)) {
+				aDeepNodes.push({
+					oParentNode: oNode,
+					aChildSections: that._collectServerSections(oNode.children)
+				});
+			}
+		});
+		return aDeepNodes;
 	};
 
 	/**
@@ -2700,7 +3183,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/TreeBin
 	/**
 	 * Gets the node info for the given row-index.
 	 * @param {int} iRowIndex
-	 * @returns
+	 * @returns {{index:int}} node info for the given row-index
 	 */
 	ODataTreeBindingFlat.prototype.getNodeInfoByRowIndex = function(iRowIndex) {
 		var iCPointer = 0, iEPointer = 0, oNode, bTypeCollapse, iValidCollapseIndex = -1;
@@ -2791,8 +3274,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/TreeBin
 
 	/**
 	 * Retrieves the Row-Index for the given node.
-	 * @param oNode
-	 * @returns
+	 * @param {Object} oNode
+	 * @returns {int} Row-Index for the given node
 	 */
 	ODataTreeBindingFlat.prototype.getRowIndexByNode = function (oNode) {
 		var iDelta = 0;

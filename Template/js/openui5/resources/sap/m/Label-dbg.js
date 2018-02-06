@@ -5,9 +5,18 @@
  */
 
 // Provides control sap.m.Label
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/LabelEnablement'],
-	function(jQuery, library, Control, LabelEnablement) {
+sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/LabelEnablement', 'sap/ui/core/library'],
+	function(jQuery, library, Control, LabelEnablement, coreLibrary) {
 	"use strict";
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
+
+	// shortcut for sap.ui.core.TextAlign
+	var TextAlign = coreLibrary.TextAlign;
+
+	// shortcut for sap.m.LabelDesign
+	var LabelDesign = library.LabelDesign;
 
 	/**
 	 * Constructor for a new Label.
@@ -16,7 +25,9 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
-	 * The Label control is used in a UI5 mobile application to provide label text for other controls. Design such as bold, and text alignment can be specified.
+	 * Provides a textual label for other controls.
+	 * Label appearance can be influenced by properties such as <code>textAlign</code>, <code>design</code>,
+	 * <code>displayOnly</code> and <code>wrapping</code>.
 	 * As of version 1.50 the default value of the <code>wrapping</code> property is set to <code>false</code>
 	 *
 	 * Labels for required fields are marked with an asterisk.
@@ -33,10 +44,10 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * <li> It is not recommended to use labels in Bold.</li>
 	 * </ul>
 	 * @extends sap.ui.core.Control
-	 * @implements sap.ui.core.Label,sap.ui.core.IShrinkable
+	 * @implements sap.ui.core.Label, sap.ui.core.IShrinkable
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -55,7 +66,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			/**
 			 * Sets the design of a Label to either Standard or Bold.
 			 */
-			design : {type : "sap.m.LabelDesign", group : "Appearance", defaultValue : sap.m.LabelDesign.Standard},
+			design : {type : "sap.m.LabelDesign", group : "Appearance", defaultValue : LabelDesign.Standard},
 
 			/**
 			 * Determines the Label text to be displayed.
@@ -65,12 +76,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			/**
 			 * Available alignment settings are "Begin", "Center", "End", "Left", and "Right".
 			 */
-			textAlign : {type : "sap.ui.core.TextAlign", group : "Appearance", defaultValue : sap.ui.core.TextAlign.Begin},
+			textAlign : {type : "sap.ui.core.TextAlign", group : "Appearance", defaultValue : TextAlign.Begin},
 
 			/**
 			 * Options for the text direction are RTL and LTR. Alternatively, the control can inherit the text direction from its parent container.
 			 */
-			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : sap.ui.core.TextDirection.Inherit},
+			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit},
 
 			/**
 			 * Determines the width of the label.
@@ -148,7 +159,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 		this.$().toggleClass("sapMLabelDisplayOnly", displayOnly);
 
-		return sap.ui.core.Control.prototype.setProperty.call(this, "displayOnly", displayOnly);
+		return Control.prototype.setProperty.call(this, "displayOnly", displayOnly);
 	};
 
 	/**
@@ -164,4 +175,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	return Label;
 
-}, /* bExport= */ true);
+});

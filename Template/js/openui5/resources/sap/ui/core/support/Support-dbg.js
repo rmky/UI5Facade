@@ -18,8 +18,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './Plugin', 'sa
 	 * @class This class provides the support tool functionality of UI5. This class is internal and all its functions must not be used by an application.
 	 *
 	 * @extends sap.ui.base.EventProvider
-	 * @version 1.50.8
-	 * @constructor
+	 * @version 1.52.5
 	 * @private
 	 * @alias sap.ui.core.support.Support
 	 */
@@ -354,6 +353,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './Plugin', 'sa
 					this._oRemoteWindow = openWindow(sToolUrl + sParams);
 					this._sRemoteOrigin = checkLocalUrl(sToolUrl) ? this._sLocalOrigin : sToolUrl;
 				}
+			} else {
+				// The diagnostics dialog is opened. Call the focus methode to show it up
+				this._oRemoteWindow.focus();
 			}
 		} else if (this._sType === mTypes.IFRAME) {
 			this._oOpenedWindow = openWindow(sToolUrl + sParams);

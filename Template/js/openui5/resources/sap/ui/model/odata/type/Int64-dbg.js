@@ -104,13 +104,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/type/ODataType',
 	 *   constraints, see {@link #constructor}
 	 */
 	function setConstraints(oType, oConstraints) {
-		var vNullable = oConstraints && oConstraints.nullable;
+		var vNullable;
 
-		if (vNullable === false || vNullable === "false") {
-			oType.oConstraints = oType.oConstraints || {};
-			oType.oConstraints.nullable = false;
-		} else if (vNullable !== undefined && vNullable !== true && vNullable !== "true") {
-			jQuery.sap.log.warning("Illegal nullable: " + vNullable, null, oType.getName());
+		oType.oConstraints = undefined;
+		if (oConstraints) {
+			vNullable = oConstraints.nullable;
+			if (vNullable === false || vNullable === "false") {
+				oType.oConstraints = {nullable : false};
+			} else if (vNullable !== undefined && vNullable !== true && vNullable !== "true") {
+				jQuery.sap.log.warning("Illegal nullable: " + vNullable, null, oType.getName());
+			}
 		}
 		oType._handleLocalizationChange();
 	}
@@ -128,9 +131,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/type/ODataType',
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
-	 * @constructor
 	 * @alias sap.ui.model.odata.type.Int64
 	 * @param {object} [oFormatOptions]
 	 *   format options as defined in {@link sap.ui.core.format.NumberFormat}. In contrast to

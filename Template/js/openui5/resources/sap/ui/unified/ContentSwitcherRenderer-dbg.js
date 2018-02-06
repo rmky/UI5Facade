@@ -3,9 +3,13 @@
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global'],
-	function(jQuery) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/unified/library'],
+	function(jQuery, library) {
 	"use strict";
+
+
+	// shortcut for sap.ui.unified.ContentSwitcherAnimation
+	var ContentSwitcherAnimation = library.ContentSwitcherAnimation;
 
 
 	/**
@@ -27,7 +31,7 @@ sap.ui.define(['jquery.sap.global'],
 		var sId            = oControl.getId();
 		var sAnimation     = oControl.getAnimation();
 		if (!sap.ui.getCore().getConfiguration().getAnimation()) {
-			sAnimation = sap.ui.unified.ContentSwitcherAnimation.None;
+			sAnimation = ContentSwitcherAnimation.None;
 		}
 
 		var iActiveContent = oControl.getActiveContent();

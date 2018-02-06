@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.layout.form.Form.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/library'],
-	function(jQuery, Control, library) {
+sap.ui.define(['sap/ui/core/Control', 'sap/ui/layout/library'],
+	function(Control, library) {
 	"use strict";
 
 	/**
@@ -35,7 +35,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -163,6 +163,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 				this.$().removeClass("sapUiFormEdit").removeClass("sapUiFormEdit-CTX");
 				this.$().attr("aria-readonly", "true");
 			}
+
+			// invalidate Labels
+			var aFormContainers = this.getFormContainers();
+			for (var i = 0; i < aFormContainers.length; i++) {
+				var oFormContainer = aFormContainers[i];
+				oFormContainer.invalidateLabels();
+			}
+
 		}
 
 		return this;
@@ -172,7 +180,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 	Form.prototype.setToolbar = function(oToolbar) {
 
 		// for sap.m.Toolbar Auto-design must be set to transparent
-		oToolbar = sap.ui.layout.form.FormHelper.setToolbar.call(this, oToolbar);
+		oToolbar = library.form.FormHelper.setToolbar.call(this, oToolbar);
 
 		this.setAggregation("toolbar", oToolbar);
 
@@ -233,4 +241,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 
 	return Form;
 
-}, /* bExport= */ true);
+});

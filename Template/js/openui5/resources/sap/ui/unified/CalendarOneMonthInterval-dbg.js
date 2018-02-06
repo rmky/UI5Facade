@@ -39,15 +39,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sa
 		 * Navigation via year picker switches to the corresponding year and the same month as before the navigation.
 		 *
 		 * @extends sap.ui.unified.CalendarDateInterval
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @private
 		 * @since 1.46.0
 		 * @alias sap.ui.unified.CalendarOneMonthInterval
-		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
-		var CalendarOneMonthInterval = CalendarDateInterval.extend("CalendarOneMonthInterval", /** @lends sap.ui.unified.CalendarOneMonthInterval.prototype */  {
+		var CalendarOneMonthInterval = CalendarDateInterval.extend("sap.ui.unified.CalendarOneMonthInterval", /** @lends sap.ui.unified.CalendarOneMonthInterval.prototype */  {
 			renderer: CalendarDateIntervalRenderer
 		});
 
@@ -314,4 +313,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sa
 
 		return CalendarOneMonthInterval;
 
-	}, /* bExport= */ true);
+	});

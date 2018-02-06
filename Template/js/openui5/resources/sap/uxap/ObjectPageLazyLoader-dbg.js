@@ -6,10 +6,11 @@
 
 // Provides control sap.uxap.ObjectPageLazyLoader.
 sap.ui.define([
+	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Element',
 	'sap/ui/core/StashedControlSupport'
-], function (library, Element, StashedControlSupport) {
+], function (jQuery, library, Element, StashedControlSupport) {
 	"use strict";
 
 	/**
@@ -33,7 +34,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -66,4 +67,4 @@ sap.ui.define([
 	};
 
 	return LazyLoader;
-}, true);
+});

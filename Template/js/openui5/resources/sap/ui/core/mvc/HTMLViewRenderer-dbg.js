@@ -11,8 +11,8 @@ sap.ui.define(['jquery.sap.global', './ViewRenderer'],
 
 
 	/**
-	 * @class JSView renderer.
-	 * @static
+	 * HTMLView renderer.
+	 * @namespace
 	 * @alias sap.ui.core.mvc.HTMLViewRenderer
 	 */
 	var HTMLViewRenderer = {

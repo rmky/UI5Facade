@@ -4,9 +4,15 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolbar', './Button', './Bar', './Text', './Title', './SelectList', './Popover', 'sap/ui/core/InvisibleText', 'sap/ui/core/IconPool', 'sap/ui/core/ValueStateSupport', './library', 'sap/ui/Device'],
-	function(jQuery, Dialog, ComboBoxTextField, Toolbar, Button, Bar, Text, Title, SelectList, Popover, InvisibleText, IconPool, ValueStateSupport, library, Device) {
+sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolbar', './Button', './Bar', './Text', './Title', 'sap/ui/core/InvisibleText', 'sap/ui/core/IconPool', 'sap/ui/core/ValueStateSupport', './library', 'sap/ui/Device', 'sap/ui/core/library', 'jquery.sap.keycodes'],
+	function(jQuery, Dialog, ComboBoxTextField, Toolbar, Button, Bar, Text, Title, InvisibleText, IconPool, ValueStateSupport, library, Device, coreLibrary) {
 		"use strict";
+
+		// shortcut for sap.m.PlacementType
+		var PlacementType = library.PlacementType;
+
+		// shortcut for sap.ui.core.ValueState
+		var ValueState = coreLibrary.ValueState;
 
 		/**
 		 * Constructor for a new <code>sap.m.ComboBoxBase</code>.
@@ -20,7 +26,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		 * @abstract
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -86,6 +92,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 
 		/**
 		 * Called whenever the binding of the aggregation items is changed.
+		 * @param {string} sReason The reason for the update
 		 *
 		 */
 		ComboBoxBase.prototype.updateItems = function(sReason) {
@@ -284,7 +291,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		};
 
 		ComboBoxBase.prototype.onBeforeRendering = function() {
-			var sNoneState = this.getValueState() === sap.ui.core.ValueState.None;
+			var sNoneState = this.getValueState() === ValueState.None;
 			ComboBoxTextField.prototype.onBeforeRendering.apply(this, arguments);
 
 			if (!this.isPickerDialog() && sNoneState) {
@@ -514,9 +521,9 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		/* =========================================================== */
 
 		/**
-		 * Gets the DOM reference the popup should be docked.
+		 * Gets the DOM reference the popup should be docked to.
 		 *
-		 * @return {object}
+		 * @return {object} The DOM reference
 		 */
 		ComboBoxBase.prototype.getPopupAnchorDomRef = function() {
 			return this.getDomRef();
@@ -525,7 +532,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		/**
 		 * Hook method, can be used to add additional content to the control's picker popup.
 		 *
-		 * @param {sap.m.Dialog | sap.m.Popover} [oPicker]
+		 * @param {sap.m.Dialog | sap.m.Popover} [oPicker] The picker popup
 		 */
 		ComboBoxBase.prototype.addContent = function(oPicker) {};
 
@@ -546,7 +553,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		/**
 		 * Sets the property <code>_sPickerType</code>.
 		 *
-		 * @param {string} sPickerType
+		 * @param {string} sPickerType The picker type
 		 * @protected
 		 */
 		ComboBoxBase.prototype.setPickerType = function(sPickerType) {
@@ -556,7 +563,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		/**
 		 * Gets the property <code>_sPickerType</code>
 		 *
-		 * @returns {string}
+		 * @returns {string} The picker type
 		 * @protected
 		 */
 		ComboBoxBase.prototype.getPickerType = function() {
@@ -566,7 +573,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		ComboBoxBase.prototype.setValueState = function(sValueState) {
 			var sAdditionalText,
 				sValueStateText = this.getValueStateText(),
-				bShow = ( sValueState === sap.ui.core.ValueState.None ? false : this.getShowValueStateMessage());
+				bShow = ( sValueState === ValueState.None ? false : this.getShowValueStateMessage());
 
 			this._sOldValueState = this.getValueState();
 			ComboBoxTextField.prototype.setValueState.apply(this, arguments);
@@ -723,7 +730,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		ComboBoxBase.prototype.getDropdownSettings = function() {
 			return {
 				showArrow: false,
-				placement: sap.m.PlacementType.VerticalPreferredBottom,
+				placement: PlacementType.VerticalPreferredBottom,
 				offsetX: 0,
 				offsetY: 0,
 				bounce: false,
@@ -753,7 +760,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		 * Creates a picker popup container where the selection should take place.
 		 * To be overwritten by subclasses.
 		 *
-		 * @param {string} sPickerType
+		 * @param {string} sPickerType The picker type
 		 * @returns {sap.m.Popover | sap.m.Dialog} The picker popup to be used.
 		 * @protected
 		 */
@@ -820,7 +827,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		/**
 		 * Creates an instance of <code>sap.m.Dialog</code>.
 		 *
-		 * @returns {sap.m.Dialog}
+		 * @returns {sap.m.Dialog} The created Dialog
 		 */
 		ComboBoxBase.prototype.createDialog = function() {
 			var that = this,
@@ -912,7 +919,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		/**
 		 * Creates an instance of <code>sap.m.Button</code>.
 		 *
-		 * @returns {sap.m.Button}
+		 * @returns {sap.m.Button} The created Button
 		 * @private
 		 * @since 1.42
 		 */
@@ -931,10 +938,10 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 			});
 		};
 
-		/*
+		/**
 		 * Determines whether the control has content or not.
 		 *
-		 * @returns {boolean}
+		 * @returns {boolean} True if the control has content
 		 * @protected
 		 */
 		ComboBoxBase.prototype.hasContent = function() {
@@ -944,8 +951,8 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		/**
 		 * Retrieves the first enabled item from the aggregation named <code>items</code>.
 		 *
-		 * @param {array} [aItems]
-		 * @returns {sap.ui.core.Item | null}
+		 * @param {array} [aItems] The items array
+		 * @returns {sap.ui.core.Item | null} The first enabled item
 		 */
 		ComboBoxBase.prototype.findFirstEnabledItem = function(aItems) {
 			var oList = this.getList();
@@ -955,8 +962,8 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		/**
 		 * Retrieves the last enabled item from the aggregation named <code>items</code>.
 		 *
-		 * @param {array} [aItems]
-		 * @returns {sap.ui.core.Item | null}
+		 * @param {array} [aItems] The items array
+		 * @returns {sap.ui.core.Item | null} The last enabled item
 		 */
 		ComboBoxBase.prototype.findLastEnabledItem = function(aItems) {
 			var oList = this.getList();
@@ -1058,6 +1065,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 
 		/**
 		 * Scrolls an item into the visual viewport.
+		 * @param {object} The item to be scrolled
 		 *
 		 */
 		ComboBoxBase.prototype.scrollToItem = function(oItem) {
@@ -1102,7 +1110,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		 * To be overwritten by subclasses.
 		 *
 		 * @experimental
-		 * @param {sap.ui.base.Event} oControlEvent
+		 * @param {sap.ui.base.Event} oControlEvent The change event
 		 * @since 1.30
 		 */
 		ComboBoxBase.prototype.onItemChange = function(oControlEvent) {};
@@ -1204,7 +1212,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		 * Gets the enabled items from the aggregation named <code>items</code>.
 		 *
 		 * @param {sap.ui.core.Item[]} [aItems=getItems()] Items to filter.
-		 * @return {sap.ui.core.Item[]} An array containing the enabled items.
+		 * @returns {sap.ui.core.Item[]} An array containing the enabled items.
 		 * @public
 		 */
 		ComboBoxBase.prototype.getEnabledItems = function(aItems) {
@@ -1218,7 +1226,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		 * <b>Note:</b> If duplicate keys exist, the first item matching the key is returned.
 		 *
 		 * @param {string} sKey An item key that specifies the item to retrieve.
-		 * @returns {sap.ui.core.Item}
+		 * @returns {sap.ui.core.Item} The matching item
 		 * @public
 		 */
 		ComboBoxBase.prototype.getItemByKey = function(sKey) {
@@ -1311,5 +1319,4 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		};
 
 		return ComboBoxBase;
-
-	}, /* bExport= */ true);
+	});

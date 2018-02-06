@@ -622,6 +622,7 @@
 	useMultipart: true, // boolean
 	maximumFilenameLength: undefined, // int, since 1.24.0
 	valueState: sap.ui.core.ValueState.None, // sap.ui.core.ValueState, since 1.24.0
+	valueStateText: undefined, // string, since 1.52
 	icon: "", // sap.ui.core.URI, since 1.26.0
 	iconHovered: "", // sap.ui.core.URI, since 1.26.0
 	iconSelected: "", // sap.ui.core.URI, since 1.26.0
@@ -632,6 +633,7 @@
 	dependents: [], // sap.ui.core.Element, since 1.19
 	parameters: [], // sap.ui.unified.FileUploaderParameter, since 1.12.2
 	headerParameters: [], // sap.ui.unified.FileUploaderParameter
+	xhrSettings: undefined, // sap.ui.unified.FileUploaderXHRSettings, since 1.52
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this],
@@ -690,6 +692,7 @@
 	useMultipart="true"
 	maximumFilenameLength=""
 	valueState="None"
+	valueStateText=""
 	icon=""
 	iconHovered=""
 	iconSelected=""
@@ -709,6 +712,7 @@
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<parameters></parameters> <!-- sap.ui.unified.FileUploaderParameter, since 1.12.2 -->
 		<headerParameters></headerParameters> <!-- sap.ui.unified.FileUploaderParameter -->
+		<xhrSettings></xhrSettings> <!-- sap.ui.unified.FileUploaderXHRSettings, since 1.52 -->
 </FileUploader>
 ]]></xmlTemplate>
 </Template>
@@ -729,6 +733,23 @@
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 </FileUploaderParameter>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.ui.unified.FileUploaderXHRSettings" alias="FileUploaderXHRSettings,XHRSettings">
+	<jsTemplate><![CDATA[new sap.ui.unified.FileUploaderXHRSettings({
+	id: "${id}", // sap.ui.core.ID
+	withCredentials: false, // boolean, since 1.52
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [] // sap.ui.core.Element, since 1.19
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<FileUploaderXHRSettings xmlns="sap.ui.unified"
+	id="${id}"
+	withCredentials="false">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+</FileUploaderXHRSettings>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.ui.unified.Menu" alias="Menu">

@@ -14,7 +14,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -36,6 +36,9 @@ sap.ui.define([
 				bindingString : {
 					type : "string"
 				},
+				entityType : {
+					type : "string"
+				},
 				parentId : {
 					type : "string"
 				},
@@ -49,12 +52,13 @@ sap.ui.define([
 	AddODataProperty.prototype._getChangeSpecificData = function() {
 		// general format
 		return {
-			changeType : this.getChangeType(),
-			index : this.getIndex(),
-			newControlId : this.getNewControlId(),
-			bindingPath : this.getBindingString(),
-			parentId : this.getParentId(),
-			oDataServiceVersion : this.getODataServiceVersion()
+			changeType: this.getChangeType(),
+			index: this.getIndex(),
+			newControlId: this.getNewControlId(),
+			bindingPath: this.getBindingString(),
+			entityType: this.getEntityType(),
+			parentId: this.getParentId(),
+			oDataServiceVersion: this.getODataServiceVersion()
 		};
 	};
 

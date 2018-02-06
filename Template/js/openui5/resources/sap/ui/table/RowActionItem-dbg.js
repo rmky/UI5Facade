@@ -25,7 +25,7 @@ sap.ui.define(['sap/ui/core/Element', './library', 'sap/ui/unified/MenuItem'],
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @since 1.45.0
 	 *
 	 * @constructor
@@ -209,8 +209,8 @@ sap.ui.define(['sap/ui/core/Element', './library', 'sap/ui/unified/MenuItem'],
 
 	/**
 	 * Informs the parent RowAction control about changes of this item.
-	 * @see sap.ui.table.RowAction#_updateIcons
 	 * @param {boolean} bForce Whether the list of visible items needs to be determined or cache can be used.
+	 * @see sap.ui.table.RowAction#_updateIcons
 	 * @private
 	 */
 	Item.prototype._updateRowAction = function(bForce) {

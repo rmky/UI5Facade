@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './Configuration', './
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @public
 	 * @alias sap.ui.core.LocaleData
 	 */
@@ -1236,7 +1236,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './Configuration', './
 		 * @param {string} sPlural one or other (if not exists other is used)
 		 * @returns {string} decimal format
 		 * @public
-		 * @since 1.50.5
+		 * @since 1.51.0
 		 */
 		getCurrencyFormat: function(sStyle, sNumber, sPlural) {
 

@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
-	function(jQuery, library, Control) {
+sap.ui.define(['./library', 'sap/ui/core/Control'],
+	function(library, Control) {
 	"use strict";
 
 	/**
@@ -18,8 +18,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
-	 * @since 1.34
+	 * @version 1.52.5
+	 * @since 1.34.0
 	 *
 	 * @public
 	 * @alias sap.m.TileContent
@@ -52,7 +52,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 				 */
 				"disabled" : {type : "boolean", group : "Behavior", defaultValue : false},
 				/**
-				 * The frame type: 1x1 or 2x1.
+				 * Frame types: 1x1, 2x1, and auto.
 				 */
 				"frameType" : {type : "sap.m.FrameType", group : "Appearance", defaultValue : "Auto"}
 			},

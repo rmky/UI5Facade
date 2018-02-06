@@ -20,9 +20,8 @@ sap.ui.define(['sap/ui/base/Object'],
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
-	 * @constructor
 	 * @public
 	 * @alias sap.ui.model.Type
 	 */

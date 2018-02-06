@@ -28,7 +28,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 	 * @class Table Personalization Controller
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @alias sap.m.TablePersoController
 	 */
 	var TablePersoController = ManagedObject.extend("sap.m.TablePersoController", /** @lends sap.m.TablePersoController */
@@ -109,7 +109,6 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 		/*eslint-disable */
 		this._triggersPersDoneEvent = true;
 		/*eslint-enable */
-
 	};
 
 	/**
@@ -200,7 +199,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 		var oReadPromise = this.getPersoService().getPersData();
 		var that = this;
 		oReadPromise.done(function(oPersData) {
-			if (!!oPersData) {
+			if (oPersData) {
 				that._adjustTable(oPersData, oTable);
 			}
 		});
@@ -263,7 +262,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 		// is called. Changes to the table after that are not reflected in the
 		// TablePersoDialog, in such a case 'refresh' must be called.
 		// Would be better if table perso dialog was up to date automatically
-		var oTablePersoDialog = new TablePersoDialog({
+		var oTablePersoDialog = new TablePersoDialog(oTable.getId() + "-PersoDialog", {
 				persoDialogFor: oTable,
 				persoMap : this._getPersoColumnMap(oTable),
 				// make sure _tableColumnInfo's 'this' refers to the controller,
@@ -303,7 +302,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 	TablePersoController.prototype._adjustTable = function(oData, oTable) {
 		if (oData && oData.hasOwnProperty(this._schemaProperty) && oData[this._schemaProperty] === this._schemaVersion) {
 			this._oPersonalizations = oData;
-			if (!!oTable) {
+			if (oTable) {
 				this._personalizeTable(oTable);
 			} else {
 				this._callFunctionForAllTables(this._personalizeTable);
@@ -341,7 +340,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 				if (!oTableColumn) {
 					//Fallback for deprecated personalization procedure
 					oTableColumn = sap.ui.getCore().byId(oNewSetting.id);
-					if (!!oTableColumn) {
+					if (oTableColumn) {
 						// migrate old persistence id which still contain generated column ids, example: __xmlview0--idColor
 						jQuery.sap.log.info("Migrating personalization persistence id of column " + oNewSetting.id );
 						oNewSetting.id = mPersoMap[oTableColumn];
@@ -415,7 +414,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 
 		this._callFunctionForAllTables(fnRefreshTable);
 		var oTablePersoDialog = this.getAggregation("_tablePersoDialog");
-		if (!!oTablePersoDialog) {
+		if (oTablePersoDialog) {
 			// Need to refresh the map which contains columns and personalizations
 			// columns may have been removed or added. (CSN 0120031469 0000415411 2014)
 			oTablePersoDialog.setPersoMap(this._getPersoColumnMap(sap.ui.getCore().byId(oTablePersoDialog.getPersoDialogFor())));
@@ -431,7 +430,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 	 */
 	TablePersoController.prototype.openDialog = function() {
 		var oTablePersoDialog = this.getAggregation("_tablePersoDialog");
-		if (!!oTablePersoDialog) {
+		if (oTablePersoDialog) {
 			// 'syncStyleClass' call because dialogs need to be informed of 'sapUISizeCompact'
 			// They do not get this information automatically
 			jQuery.sap.syncStyleClass("sapUiSizeCompact", oTablePersoDialog.getPersoDialogFor(), oTablePersoDialog._oDialog);
@@ -451,7 +450,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 	TablePersoController.prototype.setContentWidth = function(sWidth) {
 		this.setProperty("contentWidth", sWidth, true);
 		var oTablePersoDialog = this.getAggregation("_tablePersoDialog");
-		if (!!oTablePersoDialog) {
+		if (oTablePersoDialog) {
 			oTablePersoDialog.setContentWidth(sWidth);
 		}
 		return this;
@@ -466,7 +465,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 	TablePersoController.prototype.setContentHeight = function(sHeight) {
 		this.setProperty("contentHeight", sHeight, true);
 		var oTablePersoDialog = this.getAggregation("_tablePersoDialog");
-		if (!!oTablePersoDialog) {
+		if (oTablePersoDialog) {
 			oTablePersoDialog.setContentHeight(sHeight);
 		}
 		return this;
@@ -481,7 +480,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 	TablePersoController.prototype.setHasGrouping = function(bHasGrouping) {
 		this.setProperty("hasGrouping", bHasGrouping, true);
 		var oTablePersoDialog = this.getAggregation("_tablePersoDialog");
-		if (!!oTablePersoDialog) {
+		if (oTablePersoDialog) {
 			oTablePersoDialog.setHasGrouping(bHasGrouping);
 		}
 		return this;
@@ -496,7 +495,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 	TablePersoController.prototype.setShowSelectAll = function(bShowSelectAll) {
 		this.setProperty("showSelectAll", bShowSelectAll, true);
 		var oTablePersoDialog = this.getAggregation("_tablePersoDialog");
-		if (!!oTablePersoDialog) {
+		if (oTablePersoDialog) {
 			oTablePersoDialog.setShowSelectAll(bShowSelectAll);
 		}
 		return this;
@@ -511,7 +510,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 	TablePersoController.prototype.setShowResetAll = function(bShowResetAll) {
 		this.setProperty("showResetAll", bShowResetAll, true);
 		var oTablePersoDialog = this.getAggregation("_tablePersoDialog");
-		if (!!oTablePersoDialog) {
+		if (oTablePersoDialog) {
 			oTablePersoDialog.setShowResetAll(bShowResetAll);
 		}
 		return this;
@@ -574,7 +573,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 	 */
 	TablePersoController.prototype._callFunctionForAllTables = function(fnToCall) {
 		var oTable = sap.ui.getCore().byId(this.getAssociation("table"));
-		if (!!oTable) {
+		if (oTable) {
 			fnToCall.call(this, oTable);
 		}
 		var aTables = this.getAssociation("tables");
@@ -601,7 +600,6 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 		return !rGeneratedPrefix.test(sId);
 	};
 
-
 	/**
 	 * Lazy instantiation of private member _mPersMap
 	 * This is a map containg key value pairs of the following kind:
@@ -620,7 +618,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 	 * which is usually '__'), the map is not generated and this method returns 'null'.
 	 *
 	 * @param {sap.m.Table} oTable the table for whose columns shall be the resulting map's keys.
-	 * @return {object] the table's personalization map.
+	 * @return {object} the table's personalization map.
 	 * @private
 	 */
 	TablePersoController.prototype._getPersoColumnMap = function(oTable) {
@@ -657,7 +655,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 
 			oTable.getColumns().forEach(function(oNextColumn) {
 				// Check if result has been invalidated by a previous iteration
-				if (!!mResult) {
+				if (mResult) {
 					// 'this' refers to the current table column
 					var sNextColumnId = oNextColumn.getId();
 					var sNextColumnIdSuffix = fnExtractIdSuffix.call(that, sNextColumnId);
@@ -709,7 +707,7 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 
 		// Check if persoMap has been passed into the dialog.
 		// Otherwise, personalization is not possible.
-		if (!!oPersoMap) {
+		if (oPersoMap) {
 			var aColumns = oTable.getColumns(),
 				aColumnInfo = [],
 				oPersoService = this.getPersoService();
@@ -764,4 +762,4 @@ sap.ui.define(['jquery.sap.global', './TablePersoDialog', 'sap/ui/base/ManagedOb
 
 	return TablePersoController;
 
-}, /* bExport= */ true);
+});

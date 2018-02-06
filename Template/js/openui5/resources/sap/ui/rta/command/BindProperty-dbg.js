@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.38
@@ -44,8 +44,7 @@ sap.ui.define([
 					type : "string"
 				},
 				newBinding : {
-					type : "string",
-					bindable : false
+					type : "string"
 				},
 				changeType : {
 					type : "string",

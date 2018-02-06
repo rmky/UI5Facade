@@ -4,14 +4,17 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/IconPool'],
-	function(jQuery, IconPool) {
+sap.ui.define(['sap/m/library'],
+	function(library) {
 	"use strict";
 
-/**
-	 * HBox renderer.
-	 * @namespace
-	 */
+	// shortcut for sap.m.IconTabFilterDesign
+	var IconTabFilterDesign = library.IconTabFilterDesign;
+
+	/**
+		 * HBox renderer.
+		 * @namespace
+		 */
 	var IconTabHeaderRenderer = {
 	};
 
@@ -106,7 +109,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/IconPool'],
 			oItem.render(oRM, iVisibleTabFilterIndex, iVisibleTabFiltersCount);
 
 			if (oItem instanceof sap.m.IconTabFilter) {
-				bIsHorizontalDesign = oItem.getDesign() === sap.m.IconTabFilterDesign.Horizontal;
+				bIsHorizontalDesign = oItem.getDesign() === IconTabFilterDesign.Horizontal;
 				if (bIsHorizontalDesign) {
 					bHasHorizontalDesign = true;
 				}

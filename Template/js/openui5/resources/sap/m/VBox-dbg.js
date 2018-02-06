@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.m.VBox.
-sap.ui.define(['jquery.sap.global', './FlexBox', './library'],
-	function(jQuery, FlexBox, library) {
+sap.ui.define(['./FlexBox', './library'],
+	function(FlexBox, library) {
 	"use strict";
 
 
@@ -25,7 +25,7 @@ sap.ui.define(['jquery.sap.global', './FlexBox', './library'],
 	 * @extends sap.m.FlexBox
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -41,4 +41,4 @@ sap.ui.define(['jquery.sap.global', './FlexBox', './library'],
 
 	return VBox;
 
-}, /* bExport= */ true);
+});

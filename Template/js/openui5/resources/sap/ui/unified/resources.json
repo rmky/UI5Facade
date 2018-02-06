@@ -13,9 +13,12 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/core/format/DateFormat.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/Header.js",
@@ -34,9 +37,12 @@
 			"module": "sap/ui/unified/Calendar.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/core/format/DateFormat.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/Header.js",
@@ -81,15 +87,11 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/LocaleData.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/Device.js",
 				"sap/ui/unified/Calendar.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/DatesRow.js",
-				"sap/ui/unified/calendar/Header.js",
-				"sap/ui/unified/calendar/Month.js",
 				"sap/ui/unified/calendar/MonthPicker.js",
 				"sap/ui/unified/calendar/YearPicker.js",
 				"sap/ui/unified/library.js"
@@ -107,15 +109,11 @@
 			"module": "sap/ui/unified/CalendarDateInterval.js",
 			"required": [
 				"jquery.sap.global.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/LocaleData.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/Device.js",
 				"sap/ui/unified/Calendar.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/DatesRow.js",
-				"sap/ui/unified/calendar/Header.js",
-				"sap/ui/unified/calendar/Month.js",
 				"sap/ui/unified/calendar/MonthPicker.js",
 				"sap/ui/unified/calendar/YearPicker.js",
 				"sap/ui/unified/library.js"
@@ -129,7 +127,6 @@
 			"module": "sap/ui/unified/CalendarDateIntervalRenderer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/unified/CalendarRenderer.js"
 			]
@@ -138,7 +135,6 @@
 			"name": "CalendarDateIntervalRenderer.js",
 			"module": "sap/ui/unified/CalendarDateIntervalRenderer.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/unified/CalendarRenderer.js"
 			]
@@ -157,7 +153,9 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/InvisibleText.js",
 				"sap/ui/unified/library.js"
 			]
 		},
@@ -170,7 +168,9 @@
 			"module": "sap/ui/unified/CalendarLegend.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/InvisibleText.js",
 				"sap/ui/unified/library.js"
 			]
 		},
@@ -179,7 +179,6 @@
 			"module": "sap/ui/unified/CalendarLegendItem.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/unified/library.js"
 			]
@@ -192,7 +191,6 @@
 			"name": "CalendarLegendItem.js",
 			"module": "sap/ui/unified/CalendarLegendItem.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/unified/library.js"
 			]
@@ -202,14 +200,14 @@
 			"module": "sap/ui/unified/CalendarLegendRenderer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js"
+				"sap/ui/unified/CalendarLegend.js"
 			]
 		},
 		{
 			"name": "CalendarLegendRenderer.js",
 			"module": "sap/ui/unified/CalendarLegendRenderer.js",
 			"required": [
-				"jquery.sap.global.js"
+				"sap/ui/unified/CalendarLegend.js"
 			]
 		},
 		{
@@ -218,14 +216,15 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/Renderer.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/Header.js",
-				"sap/ui/unified/calendar/MonthPicker.js",
 				"sap/ui/unified/calendar/MonthsRow.js",
 				"sap/ui/unified/calendar/YearPicker.js"
 			],
@@ -242,14 +241,15 @@
 			"module": "sap/ui/unified/CalendarMonthInterval.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/Renderer.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/Header.js",
-				"sap/ui/unified/calendar/MonthPicker.js",
 				"sap/ui/unified/calendar/MonthsRow.js",
 				"sap/ui/unified/calendar/YearPicker.js"
 			],
@@ -260,17 +260,11 @@
 		{
 			"name": "CalendarMonthIntervalRenderer-dbg.js",
 			"module": "sap/ui/unified/CalendarMonthIntervalRenderer.js",
-			"isDebug": true,
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"isDebug": true
 		},
 		{
 			"name": "CalendarMonthIntervalRenderer.js",
-			"module": "sap/ui/unified/CalendarMonthIntervalRenderer.js",
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"module": "sap/ui/unified/CalendarMonthIntervalRenderer.js"
 		},
 		{
 			"name": "CalendarOneMonthInterval-dbg.js",
@@ -304,17 +298,11 @@
 		{
 			"name": "CalendarRenderer-dbg.js",
 			"module": "sap/ui/unified/CalendarRenderer.js",
-			"isDebug": true,
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"isDebug": true
 		},
 		{
 			"name": "CalendarRenderer.js",
-			"module": "sap/ui/unified/CalendarRenderer.js",
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"module": "sap/ui/unified/CalendarRenderer.js"
 		},
 		{
 			"name": "CalendarRow-dbg.js",
@@ -324,9 +312,12 @@
 				"jquery.sap.global.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
+				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
 			]
@@ -342,9 +333,12 @@
 				"jquery.sap.global.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
+				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
 			]
@@ -355,9 +349,12 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/unified/CalendarAppointment.js",
-				"sap/ui/unified/CalendarRow.js"
+				"sap/ui/unified/CalendarLegend.js",
+				"sap/ui/unified/CalendarRow.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
@@ -365,9 +362,12 @@
 			"module": "sap/ui/unified/CalendarRowRenderer.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/unified/CalendarAppointment.js",
-				"sap/ui/unified/CalendarRow.js"
+				"sap/ui/unified/CalendarLegend.js",
+				"sap/ui/unified/CalendarRow.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
@@ -376,10 +376,13 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/DatesRow.js",
 				"sap/ui/unified/calendar/Header.js",
@@ -401,10 +404,13 @@
 			"module": "sap/ui/unified/CalendarTimeInterval.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/DatesRow.js",
 				"sap/ui/unified/calendar/Header.js",
@@ -420,24 +426,17 @@
 		{
 			"name": "CalendarTimeIntervalRenderer-dbg.js",
 			"module": "sap/ui/unified/CalendarTimeIntervalRenderer.js",
-			"isDebug": true,
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"isDebug": true
 		},
 		{
 			"name": "CalendarTimeIntervalRenderer.js",
-			"module": "sap/ui/unified/CalendarTimeIntervalRenderer.js",
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"module": "sap/ui/unified/CalendarTimeIntervalRenderer.js"
 		},
 		{
 			"name": "CalendarWeekInterval-dbg.js",
 			"module": "sap/ui/unified/CalendarWeekInterval.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/unified/CalendarDateInterval.js",
 				"sap/ui/unified/CalendarDateIntervalRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
@@ -449,7 +448,6 @@
 			"name": "CalendarWeekInterval.js",
 			"module": "sap/ui/unified/CalendarWeekInterval.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/unified/CalendarDateInterval.js",
 				"sap/ui/unified/CalendarDateIntervalRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
@@ -463,11 +461,13 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/core/library.js",
 				"sap/ui/core/theming/Parameters.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
@@ -485,11 +485,13 @@
 			"module": "sap/ui/unified/ColorPicker.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/core/library.js",
 				"sap/ui/core/theming/Parameters.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
@@ -505,17 +507,11 @@
 		{
 			"name": "ColorPickerRenderer-dbg.js",
 			"module": "sap/ui/unified/ColorPickerRenderer.js",
-			"isDebug": true,
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"isDebug": true
 		},
 		{
 			"name": "ColorPickerRenderer.js",
-			"module": "sap/ui/unified/ColorPickerRenderer.js",
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"module": "sap/ui/unified/ColorPickerRenderer.js"
 		},
 		{
 			"name": "ContentSwitcher-dbg.js",
@@ -549,14 +545,16 @@
 			"module": "sap/ui/unified/ContentSwitcherRenderer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js"
+				"jquery.sap.global.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
 			"name": "ContentSwitcherRenderer.js",
 			"module": "sap/ui/unified/ContentSwitcherRenderer.js",
 			"required": [
-				"jquery.sap.global.js"
+				"jquery.sap.global.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
@@ -566,7 +564,6 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/format/NumberFormat.js"
 			]
 		},
@@ -580,31 +577,23 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/format/NumberFormat.js"
 			]
 		},
 		{
 			"name": "CurrencyRenderer-dbg.js",
 			"module": "sap/ui/unified/CurrencyRenderer.js",
-			"isDebug": true,
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"isDebug": true
 		},
 		{
 			"name": "CurrencyRenderer.js",
-			"module": "sap/ui/unified/CurrencyRenderer.js",
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"module": "sap/ui/unified/CurrencyRenderer.js"
 		},
 		{
 			"name": "DateRange-dbg.js",
 			"module": "sap/ui/unified/DateRange.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
@@ -618,7 +607,6 @@
 			"name": "DateRange.js",
 			"module": "sap/ui/unified/DateRange.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
@@ -629,7 +617,6 @@
 			"module": "sap/ui/unified/DateTypeRange.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/unified/DateRange.js",
 				"sap/ui/unified/library.js"
 			]
@@ -642,7 +629,6 @@
 			"name": "DateTypeRange.js",
 			"module": "sap/ui/unified/DateTypeRange.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/unified/DateRange.js",
 				"sap/ui/unified/library.js"
 			]
@@ -653,8 +639,11 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"jquery.sap.keycodes.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/LabelEnablement.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/library.js"
 			]
 		},
@@ -667,8 +656,11 @@
 			"module": "sap/ui/unified/FileUploader.js",
 			"required": [
 				"jquery.sap.global.js",
+				"jquery.sap.keycodes.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/LabelEnablement.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/library.js"
 			]
 		},
@@ -677,7 +669,6 @@
 			"module": "sap/ui/unified/FileUploaderParameter.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/unified/library.js"
 			]
@@ -690,7 +681,6 @@
 			"name": "FileUploaderParameter.js",
 			"module": "sap/ui/unified/FileUploaderParameter.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/unified/library.js"
 			]
@@ -700,14 +690,37 @@
 			"module": "sap/ui/unified/FileUploaderRenderer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js"
+				"jquery.sap.global.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
 			"name": "FileUploaderRenderer.js",
 			"module": "sap/ui/unified/FileUploaderRenderer.js",
 			"required": [
-				"jquery.sap.global.js"
+				"jquery.sap.global.js",
+				"sap/ui/unified/library.js"
+			]
+		},
+		{
+			"name": "FileUploaderXHRSettings-dbg.js",
+			"module": "sap/ui/unified/FileUploaderXHRSettings.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/Element.js",
+				"sap/ui/unified/library.js"
+			]
+		},
+		{
+			"name": "FileUploaderXHRSettings.control",
+			"designtime": true
+		},
+		{
+			"name": "FileUploaderXHRSettings.js",
+			"module": "sap/ui/unified/FileUploaderXHRSettings.js",
+			"required": [
+				"sap/ui/core/Element.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
@@ -715,16 +728,26 @@
 			"designtime": true
 		},
 		{
+			"name": "IProcessableBlobs.interface",
+			"designtime": true
+		},
+		{
 			"name": "Menu-dbg.js",
 			"module": "sap/ui/unified/Menu.js",
 			"isDebug": true,
 			"required": [
+				"jquery.sap.events.js",
 				"jquery.sap.global.js",
+				"jquery.sap.keycodes.js",
 				"jquery.sap.script.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Popup.js",
+				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/MenuItemBase.js",
+				"sap/ui/unified/MenuRenderer.js",
 				"sap/ui/unified/library.js"
 			]
 		},
@@ -736,12 +759,18 @@
 			"name": "Menu.js",
 			"module": "sap/ui/unified/Menu.js",
 			"required": [
+				"jquery.sap.events.js",
 				"jquery.sap.global.js",
+				"jquery.sap.keycodes.js",
 				"jquery.sap.script.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Popup.js",
+				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/MenuItemBase.js",
+				"sap/ui/unified/MenuRenderer.js",
 				"sap/ui/unified/library.js"
 			]
 		},
@@ -750,7 +779,6 @@
 			"module": "sap/ui/unified/MenuItem.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/unified/MenuItemBase.js",
 				"sap/ui/unified/library.js"
@@ -764,7 +792,6 @@
 			"name": "MenuItem.js",
 			"module": "sap/ui/unified/MenuItem.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/unified/MenuItemBase.js",
 				"sap/ui/unified/library.js"
@@ -775,7 +802,6 @@
 			"module": "sap/ui/unified/MenuItemBase.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/unified/library.js"
 			]
@@ -788,7 +814,6 @@
 			"name": "MenuItemBase.js",
 			"module": "sap/ui/unified/MenuItemBase.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/unified/library.js"
 			]
@@ -796,25 +821,22 @@
 		{
 			"name": "MenuRenderer-dbg.js",
 			"module": "sap/ui/unified/MenuRenderer.js",
-			"isDebug": true,
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"isDebug": true
 		},
 		{
 			"name": "MenuRenderer.js",
-			"module": "sap/ui/unified/MenuRenderer.js",
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"module": "sap/ui/unified/MenuRenderer.js"
 		},
 		{
 			"name": "MenuTextFieldItem-dbg.js",
 			"module": "sap/ui/unified/MenuTextFieldItem.js",
 			"isDebug": true,
 			"required": [
+				"jquery.sap.events.js",
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/ValueStateSupport.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/MenuItemBase.js",
 				"sap/ui/unified/library.js"
 			]
@@ -827,8 +849,11 @@
 			"name": "MenuTextFieldItem.js",
 			"module": "sap/ui/unified/MenuTextFieldItem.js",
 			"required": [
+				"jquery.sap.events.js",
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/ValueStateSupport.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/MenuItemBase.js",
 				"sap/ui/unified/library.js"
 			]
@@ -838,7 +863,6 @@
 			"module": "sap/ui/unified/Shell.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/unified/ShellHeader.js",
 				"sap/ui/unified/ShellLayout.js",
 				"sap/ui/unified/library.js"
@@ -852,7 +876,6 @@
 			"name": "Shell.js",
 			"module": "sap/ui/unified/Shell.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/unified/ShellHeader.js",
 				"sap/ui/unified/ShellLayout.js",
 				"sap/ui/unified/library.js"
@@ -914,6 +937,8 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
+				"sap/ui/core/Control.js",
 				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
@@ -925,6 +950,8 @@
 			"module": "sap/ui/unified/ShellHeader.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/Device.js",
+				"sap/ui/core/Control.js",
 				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
@@ -969,17 +996,11 @@
 		{
 			"name": "ShellLayoutRenderer-dbg.js",
 			"module": "sap/ui/unified/ShellLayoutRenderer.js",
-			"isDebug": true,
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"isDebug": true
 		},
 		{
 			"name": "ShellLayoutRenderer.js",
-			"module": "sap/ui/unified/ShellLayoutRenderer.js",
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"module": "sap/ui/unified/ShellLayoutRenderer.js"
 		},
 		{
 			"name": "ShellOverlay-dbg.js",
@@ -991,7 +1012,7 @@
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Popup.js",
-				"sap/ui/unified/Shell.js",
+				"sap/ui/unified/ShellOverlayRenderer.js",
 				"sap/ui/unified/library.js"
 			]
 		},
@@ -1008,31 +1029,24 @@
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Popup.js",
-				"sap/ui/unified/Shell.js",
+				"sap/ui/unified/ShellOverlayRenderer.js",
 				"sap/ui/unified/library.js"
 			]
 		},
 		{
 			"name": "ShellOverlayRenderer-dbg.js",
 			"module": "sap/ui/unified/ShellOverlayRenderer.js",
-			"isDebug": true,
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"isDebug": true
 		},
 		{
 			"name": "ShellOverlayRenderer.js",
-			"module": "sap/ui/unified/ShellOverlayRenderer.js",
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"module": "sap/ui/unified/ShellOverlayRenderer.js"
 		},
 		{
 			"name": "ShellRenderer-dbg.js",
 			"module": "sap/ui/unified/ShellRenderer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/unified/ShellLayoutRenderer.js"
 			]
@@ -1041,7 +1055,6 @@
 			"name": "ShellRenderer.js",
 			"module": "sap/ui/unified/ShellRenderer.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/unified/ShellLayoutRenderer.js"
 			]
@@ -1053,6 +1066,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/library.js",
 				"sap/ui/core/theming/Parameters.js",
 				"sap/ui/unified/library.js"
 			]
@@ -1067,6 +1081,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/library.js",
 				"sap/ui/core/theming/Parameters.js",
 				"sap/ui/unified/library.js"
 			]
@@ -1076,14 +1091,14 @@
 			"module": "sap/ui/unified/SplitContainerRenderer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js"
+				"sap/ui/core/library.js"
 			]
 		},
 		{
 			"name": "SplitContainerRenderer.js",
 			"module": "sap/ui/unified/SplitContainerRenderer.js",
 			"required": [
-				"jquery.sap.global.js"
+				"sap/ui/core/library.js"
 			]
 		},
 		{
@@ -1113,6 +1128,8 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/core/Locale.js",
+				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/unified/calendar/CalendarDate.js"
 			]
@@ -1122,6 +1139,8 @@
 			"module": "sap/ui/unified/calendar/CalendarUtils.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/core/Locale.js",
+				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/unified/calendar/CalendarDate.js"
 			]
@@ -1132,10 +1151,6 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/LocaleData.js",
-				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/model/type/Date.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/Month.js",
@@ -1151,10 +1166,6 @@
 			"module": "sap/ui/unified/calendar/DatesRow.js",
 			"required": [
 				"jquery.sap.global.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/LocaleData.js",
-				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/model/type/Date.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/Month.js",
@@ -1166,10 +1177,8 @@
 			"module": "sap/ui/unified/calendar/DatesRowRenderer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
-				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/MonthRenderer.js"
 			]
 		},
@@ -1177,10 +1186,8 @@
 			"name": "calendar/DatesRowRenderer.js",
 			"module": "sap/ui/unified/calendar/DatesRowRenderer.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
-				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/MonthRenderer.js"
 			]
 		},
@@ -1191,7 +1198,6 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/core/LocaleData.js",
 				"sap/ui/unified/library.js"
 			]
 		},
@@ -1205,7 +1211,6 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/core/LocaleData.js",
 				"sap/ui/unified/library.js"
 			]
 		},
@@ -1230,11 +1235,14 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"jquery.sap.keycodes.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
@@ -1249,11 +1257,14 @@
 			"module": "sap/ui/unified/calendar/Month.js",
 			"required": [
 				"jquery.sap.global.js",
+				"jquery.sap.keycodes.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
@@ -1267,6 +1278,7 @@
 				"jquery.sap.global.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/unified/library.js"
@@ -1283,6 +1295,7 @@
 				"jquery.sap.global.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/unified/library.js"
@@ -1291,17 +1304,11 @@
 		{
 			"name": "calendar/MonthPickerRenderer-dbg.js",
 			"module": "sap/ui/unified/calendar/MonthPickerRenderer.js",
-			"isDebug": true,
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"isDebug": true
 		},
 		{
 			"name": "calendar/MonthPickerRenderer.js",
-			"module": "sap/ui/unified/calendar/MonthPickerRenderer.js",
-			"required": [
-				"jquery.sap.global.js"
-			]
+			"module": "sap/ui/unified/calendar/MonthPickerRenderer.js"
 		},
 		{
 			"name": "calendar/MonthRenderer-dbg.js",
@@ -1309,9 +1316,12 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/CalendarLegend.js",
+				"sap/ui/unified/CalendarLegendRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
-				"sap/ui/unified/calendar/CalendarUtils.js"
+				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
@@ -1319,9 +1329,12 @@
 			"module": "sap/ui/unified/calendar/MonthRenderer.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/CalendarLegend.js",
+				"sap/ui/unified/CalendarLegendRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
-				"sap/ui/unified/calendar/CalendarUtils.js"
+				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
@@ -1331,9 +1344,11 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
@@ -1349,9 +1364,11 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
@@ -1363,8 +1380,11 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/unified/CalendarLegend.js",
+				"sap/ui/unified/CalendarLegendRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
-				"sap/ui/unified/calendar/CalendarUtils.js"
+				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
@@ -1372,8 +1392,11 @@
 			"module": "sap/ui/unified/calendar/MonthsRowRenderer.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/unified/CalendarLegend.js",
+				"sap/ui/unified/CalendarLegendRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
-				"sap/ui/unified/calendar/CalendarUtils.js"
+				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
@@ -1381,7 +1404,6 @@
 			"module": "sap/ui/unified/calendar/OneMonthDatesRow.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/DatesRow.js",
@@ -1392,7 +1414,6 @@
 			"name": "calendar/OneMonthDatesRow.js",
 			"module": "sap/ui/unified/calendar/OneMonthDatesRow.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/DatesRow.js",
@@ -1404,9 +1425,7 @@
 			"module": "sap/ui/unified/calendar/OneMonthDatesRowRenderer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Renderer.js",
-				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/DatesRowRenderer.js",
 				"sap/ui/unified/calendar/MonthRenderer.js"
 			]
@@ -1415,9 +1434,7 @@
 			"name": "calendar/OneMonthDatesRowRenderer.js",
 			"module": "sap/ui/unified/calendar/OneMonthDatesRowRenderer.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Renderer.js",
-				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/calendar/DatesRowRenderer.js",
 				"sap/ui/unified/calendar/MonthRenderer.js"
 			]
@@ -1429,10 +1446,12 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
 			]
@@ -1447,10 +1466,12 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
 			]
@@ -1462,7 +1483,10 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/unified/calendar/CalendarUtils.js"
+				"sap/ui/unified/CalendarLegend.js",
+				"sap/ui/unified/CalendarLegendRenderer.js",
+				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
@@ -1471,7 +1495,10 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/unified/calendar/CalendarUtils.js"
+				"sap/ui/unified/CalendarLegend.js",
+				"sap/ui/unified/CalendarLegendRenderer.js",
+				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/library.js"
 			]
 		},
 		{
@@ -1480,11 +1507,13 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"jquery.sap.keycodes.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
@@ -1499,11 +1528,13 @@
 			"module": "sap/ui/unified/calendar/YearPicker.js",
 			"required": [
 				"jquery.sap.global.js",
+				"jquery.sap.keycodes.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/model/type/Date.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/core/library.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
 				"sap/ui/unified/library.js"
@@ -1514,7 +1545,6 @@
 			"module": "sap/ui/unified/calendar/YearPickerRenderer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/unified/calendar/CalendarDate.js"
 			]
@@ -1523,7 +1553,6 @@
 			"name": "calendar/YearPickerRenderer.js",
 			"module": "sap/ui/unified/calendar/YearPickerRenderer.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/unified/calendar/CalendarDate.js"
 			]
@@ -1545,8 +1574,11 @@
 			"module": "sap/ui/unified/library.js",
 			"isDebug": true,
 			"required": [
+				"jquery.sap.dom.js",
 				"jquery.sap.global.js",
-				"sap/ui/core/library.js"
+				"jquery.sap.script.js",
+				"sap/ui/base/Object.js",
+				"sap/ui/core/Core.js"
 			]
 		},
 		{
@@ -1555,17 +1587,21 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.dom.js",
+				"jquery.sap.events.js",
 				"jquery.sap.global.js",
+				"jquery.sap.keycodes.js",
 				"jquery.sap.script.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/LabelEnablement.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/Popup.js",
 				"sap/ui/core/Renderer.js",
@@ -1573,6 +1609,7 @@
 				"sap/ui/core/ValueStateSupport.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
+				"sap/ui/core/delegate/ScrollEnablement.js",
 				"sap/ui/core/format/DateFormat.js",
 				"sap/ui/core/format/NumberFormat.js",
 				"sap/ui/core/library.js",
@@ -1580,8 +1617,7 @@
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
 				"sap/ui/layout/HorizontalLayout.js",
-				"sap/ui/layout/VerticalLayout.js",
-				"sap/ui/model/type/Date.js"
+				"sap/ui/layout/VerticalLayout.js"
 			],
 			"included": [
 				"sap/ui/unified/Calendar.js",
@@ -1611,6 +1647,7 @@
 				"sap/ui/unified/FileUploader.js",
 				"sap/ui/unified/FileUploaderParameter.js",
 				"sap/ui/unified/FileUploaderRenderer.js",
+				"sap/ui/unified/FileUploaderXHRSettings.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js",
 				"sap/ui/unified/MenuItemBase.js",
@@ -1659,17 +1696,21 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.dom.js",
+				"jquery.sap.events.js",
 				"jquery.sap.global.js",
+				"jquery.sap.keycodes.js",
 				"jquery.sap.script.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/LabelEnablement.js",
+				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/Popup.js",
 				"sap/ui/core/Renderer.js",
@@ -1677,6 +1718,7 @@
 				"sap/ui/core/ValueStateSupport.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
+				"sap/ui/core/delegate/ScrollEnablement.js",
 				"sap/ui/core/format/DateFormat.js",
 				"sap/ui/core/format/NumberFormat.js",
 				"sap/ui/core/library-preload.json",
@@ -1685,8 +1727,7 @@
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
 				"sap/ui/layout/HorizontalLayout.js",
-				"sap/ui/layout/VerticalLayout.js",
-				"sap/ui/model/type/Date.js"
+				"sap/ui/layout/VerticalLayout.js"
 			],
 			"included": [
 				"sap/ui/unified/Calendar.js",
@@ -1716,6 +1757,7 @@
 				"sap/ui/unified/FileUploader.js",
 				"sap/ui/unified/FileUploaderParameter.js",
 				"sap/ui/unified/FileUploaderRenderer.js",
+				"sap/ui/unified/FileUploaderXHRSettings.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js",
 				"sap/ui/unified/MenuItemBase.js",
@@ -1766,8 +1808,11 @@
 			"name": "library.js",
 			"module": "sap/ui/unified/library.js",
 			"required": [
+				"jquery.sap.dom.js",
 				"jquery.sap.global.js",
-				"sap/ui/core/library.js"
+				"jquery.sap.script.js",
+				"sap/ui/base/Object.js",
+				"sap/ui/core/Core.js"
 			]
 		},
 		{

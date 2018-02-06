@@ -5,8 +5,8 @@
  */
 
 //Provides control sap.ui.unified.Calendar.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleData', 'sap/ui/unified/library'],
-		function(jQuery, Control, LocaleData, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/unified/library'],
+		function(jQuery, Control, library) {
 	"use strict";
 
 	/**
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	 *
 	 * <b>Note:</b> This is used inside the calendar. Not for standalone usage
 	 * @extends sap.ui.core.Control
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -330,4 +330,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 
 	return Header;
 
-}, /* bExport= */ true);
+});

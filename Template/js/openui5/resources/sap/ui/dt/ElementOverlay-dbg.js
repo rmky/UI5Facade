@@ -32,7 +32,7 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -47,9 +47,9 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 
 			// ---- control specific ----
 			library : "sap.ui.dt",
-			associations: {
+			associations : {
 				/**
-				 * Array of plugins, that set editable to true
+				 * Array of plugins that set editable to true
 				 */
 				editableByPlugins : {
 					type : "any[]",
@@ -85,6 +85,13 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 				editable : {
 					type : "boolean",
 					defaultValue : false
+				},
+				/**
+				 * All overlays inside the relevant container within the same aggregations
+				 */
+				relevantOverlays: {
+					type: "any[]",
+					defaultValue: []
 				}
 			},
 			aggregations : {
@@ -171,6 +178,23 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 
 		this._oMutationObserver = Overlay.getMutationObserver();
 		this._oMutationObserver.attachDomChanged(this._onDomChanged, this);
+	};
+
+	/**
+	 * @override
+	 */
+	ElementOverlay.prototype.onAfterRendering = function() {
+		var bOldDomInvisible = !this._oDomRef;
+		Overlay.prototype.onAfterRendering.apply(this, arguments);
+
+		// fire ElementModified, when the overlay had no domRef before, but has one now
+		if (bOldDomInvisible && this._oDomRef) {
+			var oParams = {
+				id: this.getId(),
+				type: "overlayRendered"
+			};
+			this.fireElementModified(oParams);
+		}
 	};
 
 	/**
@@ -803,16 +827,21 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 	 */
 	ElementOverlay.prototype._onElementModified = function(oEvent) {
 		var oParams = oEvent.getParameters();
-		var sAggregationName = oEvent.getParameters().name;
-		if (sAggregationName) {
-			var oAggregationOverlay = this.getAggregationOverlay(sAggregationName);
-			// private aggregations are also skipped
+		var sName = oParams.name;
+
+		if (oParams.type === "propertyChanged" && sName === "visible") {
+			this.setRelevantOverlays([]);
+			this.fireElementModified(oParams);
+		} else if (sName) {
+			var oAggregationOverlay = this.getAggregationOverlay(sName);
 			if (oAggregationOverlay) {
+				this.setRelevantOverlays([]);
 				this.fireElementModified(oParams);
 			}
 		} else if (oEvent.getParameters().type === "setParent") {
 			this.fireElementModified(oParams);
 		}
+
 		this.invalidate();
 	};
 
@@ -958,6 +987,25 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 			return false;
 		}
 
+	};
+
+	/**
+	 * Checks if the associated Element is visible or not. For controls it returns the result of .getVisible,
+	 * otherwise it gets the domRef from DesigntimeMetadata and checks $().is(":visible").
+	 *
+	 * @returns {boolean|undefined} Returns the visibility of the associated Element or undefined, if it is not a control and has no domRef
+	 */
+	ElementOverlay.prototype.getElementVisibility = function() {
+		var oElement = this.getElementInstance();
+		if (oElement instanceof sap.ui.core.Control) {
+			return oElement.getVisible();
+		}
+		var oDesignTimeMetadata = this.getDesignTimeMetadata();
+		var fnisVisible = oDesignTimeMetadata && oDesignTimeMetadata.getData().isVisible;
+		if (!fnisVisible) {
+			return undefined;
+		}
+		return fnisVisible(this.getElementInstance());
 	};
 
 	/**

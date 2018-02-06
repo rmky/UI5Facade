@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.layout.form.FormContainer.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/EnabledPropagator', 'sap/ui/core/theming/Parameters', 'sap/ui/layout/library'],
-	function(jQuery, Element, EnabledPropagator, Parameters, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/theming/Parameters', 'sap/ui/layout/library'],
+	function(jQuery, Element, Parameters, library) {
 	"use strict";
 
 
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/EnabledP
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -120,14 +120,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/EnabledP
 		this.setProperty("expandable", bExpandable);
 
 		if (bExpandable) {
-			var that = this;
 			if (!this._oExpandButton) {
 				if (!this._bExpandButtonRequired) {
 					this._bExpandButtonRequired = true;
-					sap.ui.layout.form.FormHelper.createButton.call(this, this.getId() + "--Exp", _handleExpButtonPress, _expandButtonCreated);
+					library.form.FormHelper.createButton.call(this, this.getId() + "--Exp", _handleExpButtonPress, _expandButtonCreated);
 				}
 			} else {
-				_setExpanderIcon(that);
+				_setExpanderIcon.call(this);
 			}
 		}
 
@@ -137,9 +136,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/EnabledP
 
 	function _expandButtonCreated(oButton) {
 
-		this._oExpandButton = oButton;
-		this.setAggregation("_expandButton", this._oExpandButton); // invalidate because this could happen after Form is already rendered
-		_setExpanderIcon(this);
+		if (!this._bIsBeingDestroyed) {
+			this._oExpandButton = oButton;
+			this.setAggregation("_expandButton", this._oExpandButton); // invalidate because this could happen after Form is already rendered
+			_setExpanderIcon.call(this);
+		}
 
 	}
 
@@ -147,12 +148,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/EnabledP
 
 		this.setProperty("expanded", bExpanded, true); // no automatic rerendering
 
-		var that = this;
-		_setExpanderIcon(that);
+		_setExpanderIcon.call(this);
 
 		var oForm = this.getParent();
 		if (oForm && oForm.toggleContainerExpanded) {
-			oForm.toggleContainerExpanded(that);
+			oForm.toggleContainerExpanded(this);
 		}
 
 		return this;
@@ -162,7 +162,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/EnabledP
 	FormContainer.prototype.setToolbar = function(oToolbar) {
 
 		// for sap.m.Toolbar Auto-design must be set to transparent
-		oToolbar = sap.ui.layout.form.FormHelper.setToolbar.call(this, oToolbar);
+		oToolbar = library.form.FormHelper.setToolbar.call(this, oToolbar);
 
 		this.setAggregation("toolbar", oToolbar);
 
@@ -255,31 +255,63 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/EnabledP
 
 	};
 
-	function _setExpanderIcon(oContainer){
+	/**
+	 * Labels inside of a Form must be invalidated if "editable" changed on Form
+	 * @private
+	 */
+	FormContainer.prototype.invalidateLabels = function(){
 
-		if (!oContainer._oExpandButton) {
+		var aFormElements = this.getFormElements();
+
+		for (var i = 0; i < aFormElements.length; i++) {
+			var oFormElement = aFormElements[i];
+			oFormElement.invalidateLabel();
+		}
+
+	};
+
+	/**
+	 * Determines if the <code>FormContainer</code> is visible or not. Per default it
+	 * just returns the value of the <code>visible</code> property.
+	 * But this might be overwritten by inherited elements.
+	 *
+	 * For rendering by <code>FormLayouts</code> this function has to be used instead of
+	 * <code>getVisible</code>.
+	 *
+	 * @returns {boolean} If true, the <code>FormContainer</code> is visible, otherwise not
+	 * @public
+	 */
+	FormContainer.prototype.isVisible = function(){
+
+		return this.getVisible();
+
+	};
+
+	function _setExpanderIcon(){
+
+		if (!this._oExpandButton) {
 			return;
 		}
 
 		var sIcon, sIconHovered, sText, sTooltip;
 
-		if (oContainer.getExpanded()) {
+		if (this.getExpanded()) {
 			sIcon = Parameters._getThemeImage('_sap_ui_layout_Form_FormContainerColImageURL');
 			sIconHovered = Parameters._getThemeImage('_sap_ui_layout_Form_FormContainerColImageDownURL');
 			sText = "-";
-			sTooltip = oContainer._rb.getText("FORM_COLLAPSE");
+			sTooltip = this._rb.getText("FORM_COLLAPSE");
 		} else {
 			sIcon = Parameters._getThemeImage('_sap_ui_layout_Form_FormContainerExpImageURL');
 			sIconHovered = Parameters._getThemeImage('_sap_ui_layout_Form_FormContainerExpImageDownURL');
 			sText = "+";
-			sTooltip = oContainer._rb.getText("FORM_EXPAND");
+			sTooltip = this._rb.getText("FORM_EXPAND");
 		}
 
 		if (sIcon) {
 			sText = "";
 		}
 
-		sap.ui.layout.form.FormHelper.setButtonContent(oContainer._oExpandButton, sText, sTooltip, sIcon, sIconHovered);
+		library.form.FormHelper.setButtonContent(this._oExpandButton, sText, sTooltip, sIcon, sIconHovered);
 
 	}
 
@@ -291,4 +323,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/EnabledP
 
 	return FormContainer;
 
-}, /* bExport= */ true);
+});

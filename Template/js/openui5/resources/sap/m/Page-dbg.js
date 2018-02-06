@@ -5,14 +5,27 @@
  */
 
 // Provides control sap.m.Page.
-sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/core/delegate/ScrollEnablement", "sap/m/Title", "sap/m/Button", "sap/m/Bar", 'sap/ui/core/ContextMenuSupport', 'sap/ui/core/AccessibleLandmarkRole'],
-	function (jQuery, library, Control, ScrollEnablement, Title, Button, Bar, ContextMenuSupport, AccessibleLandmarkRole) {
+sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/core/delegate/ScrollEnablement", "sap/m/Title", "sap/m/Button", "sap/m/Bar", "sap/ui/core/ContextMenuSupport", "sap/ui/core/library", "sap/ui/Device", "sap/ui/core/Element"],
+	function(jQuery, library, Control, ScrollEnablement, Title, Button, Bar, ContextMenuSupport, coreLibrary, Device, Element) {
 		"use strict";
 
+
+		// shortcut for sap.ui.core.AccessibleLandmarkRole
+		var AccessibleLandmarkRole = coreLibrary.AccessibleLandmarkRole;
+
+		// shortcut for sap.m.ButtonType
+		var ButtonType = library.ButtonType;
+
+		// shortcut for sap.m.PageBackgroundDesign
+		var PageBackgroundDesign = library.PageBackgroundDesign;
+
+		// shortcut for sap.ui.core.TitleLevel
+		var TitleLevel = coreLibrary.TitleLevel;
 
 		var DIV = "div";
 		var HEADER = "header";
 		var FOOTER = "footer";
+
 
 		/**
 		 * Constructor for a new Page.
@@ -42,7 +55,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 		 * @extends sap.ui.core.Control
 		 * @mixes sap.ui.core.ContextMenuSupport
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @public
 		 * @alias sap.m.Page
@@ -66,7 +79,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 					titleLevel: {
 						type: "sap.ui.core.TitleLevel",
 						group: "Appearance",
-						defaultValue: sap.ui.core.TitleLevel.Auto
+						defaultValue: TitleLevel.Auto
 					},
 
 					/**
@@ -121,7 +134,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 					backgroundDesign: {
 						type: "sap.m.PageBackgroundDesign",
 						group: "Appearance",
-						defaultValue: sap.m.PageBackgroundDesign.Standard
+						defaultValue: PageBackgroundDesign.Standard
 					},
 
 					/**
@@ -133,7 +146,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 					navButtonType: {
 						type: "sap.m.ButtonType",
 						group: "Appearance",
-						defaultValue: sap.m.ButtonType.Back,
+						defaultValue: ButtonType.Back,
 						deprecated: true
 					},
 
@@ -150,8 +163,8 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 					contentOnlyBusy: {type: "boolean", group: "Appearance", defaultValue: false},
 
 					/**
-					 * Decides whether the floating footer behavior should be enabled.
-					 * When the floating footer behavior is used, the content is visible when it's underneath the footer.
+					 * Decides whether the footer can float.
+					 * When set to true, the footer is not fixed below the content area anymore, but rather floats over it with a slight offset from the bottom.
 					 */
 					floatingFooter: {type: "boolean", group:"Appearance", defaultValue: false }
 				},
@@ -242,9 +255,9 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 			}
 		};
 
-        Page.prototype.onAfterRendering = function () {
-            jQuery.sap.delayedCall(10, this, this._adjustFooterWidth);
-        };
+		Page.prototype.onAfterRendering = function () {
+			jQuery.sap.delayedCall(10, this, this._adjustFooterWidth);
+		};
 
 		/**
 		 * Called when the control is destroyed.
@@ -308,8 +321,8 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 					}, this)
 				});
 
-				if (sap.ui.Device.os.android && sNavButtonType == sap.m.ButtonType.Back) {
-					this._navBtn.setType(sap.m.ButtonType.Up);
+				if (Device.os.android && sNavButtonType == ButtonType.Back) {
+					this._navBtn.setType(ButtonType.Up);
 				} else {
 					this._navBtn.setType(sNavButtonType);
 				}
@@ -346,14 +359,14 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 			}
 
 			var $footer = jQuery(this.getDomRef()).find(".sapMPageFooter").last(),
-			    useAnimation = sap.ui.getCore().getConfiguration().getAnimation();
+				useAnimation = sap.ui.getCore().getConfiguration().getAnimation();
 
 			if (!this.getFloatingFooter()) {
 				this.setProperty("showFooter", bShowFooter);
 				return this;
 			}
 
-			this.setProperty("showFooter", bShowFooter,true);
+			this.setProperty("showFooter", bShowFooter, true);
 
 			$footer.removeClass("sapUiHidden");
 			$footer.toggleClass("sapMPageFooterControlShow", bShowFooter);
@@ -376,9 +389,9 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 
 		Page.prototype.setNavButtonType = function (sNavButtonType) {
 			this._ensureNavButton(); // creates this._navBtn, if required
-			if (!sap.ui.Device.os.ios && sNavButtonType == sap.m.ButtonType.Back) {
+			if (!Device.os.ios && sNavButtonType == ButtonType.Back) {
 				// internal conversion from Back to Up for non-iOS platform
-				this._navBtn.setType(sap.m.ButtonType.Up);
+				this._navBtn.setType(ButtonType.Up);
 			} else {
 				this._navBtn.setType(sNavButtonType);
 			}
@@ -485,7 +498,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 
 		/**
 		 * Create internal header
-		 * @returns {sap.m.IBar}
+		 * @returns {sap.m.IBar} The header instance
 		 * @private
 		 */
 
@@ -507,7 +520,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 
 		/**
 		 * Returns the custom or internal header
-		 * @returns {sap.m.IBar}
+		 * @returns {sap.m.IBar} The header instance
 		 * @private
 		 */
 		Page.prototype._getAnyHeader = function () {
@@ -523,7 +536,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 
 		/**
 		 * Returns the sap.ui.core.ScrollEnablement delegate which is used with this control.
-		 * @returns {sap.ui.core.ScrollEnablement}
+		 * @returns {sap.ui.core.ScrollEnablement} The scroll enablement delegate
 		 * @private
 		 */
 		Page.prototype.getScrollDelegate = function () {
@@ -609,7 +622,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 		 *
 		 * @param {int} y The vertical pixel position to scroll to. Scrolling down happens with positive values.
 		 * @param {int} time The duration of animated scrolling. To scroll immediately without animation, give 0 as value. 0 is also the default value, when this optional parameter is omitted.
-		 * @type sap.m.Page
+		 * @returns {sap.m.Page} <code>this</code> to facilitate method chaining.
 		 * @public
 		 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 		 */
@@ -629,7 +642,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 		 * @public
 		 */
 		Page.prototype.scrollToElement = function (oElement, iTime) {
-			if (oElement instanceof sap.ui.core.Element) {
+			if (oElement instanceof Element) {
 				oElement = oElement.getDomRef();
 			}
 
@@ -675,13 +688,13 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 			return this._getInternalHeader().destroyContentRight();
 		};
 
-		/**
-		 * Fiori 2.0 adaptation
-		 */
+
 		Page.prototype.setCustomHeader = function(oHeader) {
 
 			this.setAggregation("customHeader", oHeader);
-
+			/*
+			 * Runs Fiori 2.0 adaptation for the header
+			 */
 			if (oHeader && this.mEventRegistry["_adaptableContentChange"] ) {
 				this.fireEvent("_adaptableContentChange", {
 					"parent": this,
@@ -697,5 +710,4 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/
 		};
 
 		return Page;
-
-	}, /* bExport= */ true);
+	});

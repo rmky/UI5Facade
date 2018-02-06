@@ -5,9 +5,9 @@
  */
 
 //Provides control sap.ui.unified.Calendar.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleData', 'sap/ui/model/type/Date', 'sap/ui/unified/calendar/CalendarUtils',
-		'./Calendar', './calendar/Header', './calendar/Month', './calendar/DatesRow', './calendar/MonthPicker', './calendar/YearPicker', 'sap/ui/unified/calendar/CalendarDate', './library'],
-	function(jQuery, Control, LocaleData, Date1, CalendarUtils, Calendar, Header, Month, DatesRow, MonthPicker, YearPicker, CalendarDate, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils',
+		'./Calendar', './calendar/DatesRow', './calendar/MonthPicker', './calendar/YearPicker', 'sap/ui/unified/calendar/CalendarDate', './library', 'sap/ui/Device'],
+	function(jQuery, CalendarUtils, Calendar, DatesRow, MonthPicker, YearPicker, CalendarDate, library, Device) {
 	"use strict";
 
 	/*
@@ -24,7 +24,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	 * @class
 	 * Calendar with dates displayed in one line.
 	 * @extends sap.ui.unified.Calendar
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -161,7 +161,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		var oCalPicker = this.getAggregation("calendarPicker");
 
 		if (!oCalPicker) {
-			oCalPicker = new sap.ui.unified.Calendar(this.getId() + "--Cal");
+			oCalPicker = new Calendar(this.getId() + "--Cal");
 			oCalPicker.setPopupMode(true);
 			oCalPicker.attachEvent("select", this._handleCalendarPickerDateSelect, this);
 			oCalPicker.attachEvent("cancel", function (oEvent) {
@@ -384,7 +384,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		var iDays = this.getDays();
 
 		// in phone mode max 8 days are displayed
-		if (sap.ui.Device.system.phone && iDays > 8) {
+		if (Device.system.phone && iDays > 8) {
 			return 8;
 		} else {
 			return iDays;
@@ -839,7 +839,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 			this._oPopup.setAutoCloseAreas([this.getDomRef()]);
 			this._oPopup.setDurations(0, 0); // no animations
 			this._oPopup._oCalendar = this;
-			this._oPopup.attachClosed(function() { this._closeCalendarPicker; }, this);
+			this._oPopup.attachClosed(function() { this._closeCalendarPicker(true); }, this);
 			this._oPopup.onsapescape = function(oEvent) {
 				this._oCalendar.onsapescape(oEvent);
 			};
@@ -938,4 +938,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 
 	return CalendarDateInterval;
 
-}, /* bExport= */ true);
+});

@@ -9,9 +9,15 @@ sap.ui.define([
 	'jquery.sap.global',
 	'sap/ui/model/type/Date',
 	'sap/ui/model/odata/type/ODataType',
-	'./InputBase'
-], function (jQuery, SimpleDateType, ODataType, InputBase) {
+	'./InputBase',
+	'sap/ui/core/LocaleData',
+	'sap/ui/core/library',
+	'sap/ui/core/format/DateFormat'
+], function (jQuery, SimpleDateType, ODataType, InputBase, LocaleData, coreLibrary, DateFormat) {
 	"use strict";
+
+	// shortcut for sap.ui.core.CalendarType
+	var CalendarType = coreLibrary.CalendarType;
 
 	/**
 	 * Constructor for a new <code>sap.m.DateTimeField</code>.
@@ -27,7 +33,7 @@ sap.ui.define([
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -74,7 +80,7 @@ sap.ui.define([
 		}
 
 		// set the property in any case but check validity on output
-		this.setProperty("value", sValue, true); // no rerendering
+		this.setProperty("value", sValue);
 		this._bValid = true;
 
 		// convert to date object
@@ -84,13 +90,10 @@ sap.ui.define([
 			if (!oDate || oDate.getTime() < this._oMinDate.getTime() || oDate.getTime() > this._oMaxDate.getTime()) {
 				this._bValid = false;
 				jQuery.sap.log.warning("Value can not be converted to a valid date", this);
-				this._oWantedDate = oDate;
 			}
 		}
-		if (this._bValid) {
-			this.setProperty("dateValue", oDate, true); // no rerendering
-			this._oWantedDate = undefined;
-		}
+
+		this.setProperty("dateValue", oDate);
 
 		// do not call InputBase.setValue because the displayed value and the output value might have different pattern
 		if (this.getDomRef()) {
@@ -113,7 +116,13 @@ sap.ui.define([
 
 	DateTimeField.prototype.setDateValue = function (oDate) {
 
-		if (oDate && !(oDate instanceof Date)) {
+		// Cross frame check for a date should be performed here otherwise setDateValue would fail in OPA tests
+		// because Date object in the test is different than the Date object in the application (due to the iframe).
+		// We can use jQuery.type or this method:
+		// function isValidDate (date) {
+		//	return date && Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date);
+		//}
+		if (oDate && jQuery.type(oDate) !== "date") {
 			throw new Error("Date must be a JavaScript date object; " + this);
 		}
 
@@ -130,7 +139,7 @@ sap.ui.define([
 			this._lastValue = sValue;
 		}
 		// set the property in any case but check validity on output
-		this.setProperty("value", sValue, true); // no rerendering
+		this.setProperty("value", sValue);
 
 		if (this.getDomRef()) {
 			// convert to output
@@ -174,14 +183,14 @@ sap.ui.define([
 
 	DateTimeField.prototype._dateValidation = function (oDate) {
 		this._bValid = true;
-		this.setProperty("dateValue", oDate, true); // no rerendering
+		this.setProperty("dateValue", oDate);
 
 		return oDate;
 	};
 
 	DateTimeField.prototype._handleDateValidation = function (oDate) {
 		this._bValid = true;
-		this.setProperty("dateValue", oDate, true); // no rerendering
+		this.setProperty("dateValue", oDate);
 	};
 
 	DateTimeField.prototype._getPlaceholder = function() {
@@ -197,7 +206,7 @@ sap.ui.define([
 
 			if (this._checkStyle(sPlaceholder)) {
 				var oLocale = sap.ui.getCore().getConfiguration().getFormatSettings().getFormatLocale();
-				var oLocaleData = sap.ui.core.LocaleData.getInstance(oLocale);
+				var oLocaleData = LocaleData.getInstance(oLocale);
 				sPlaceholder = this._getPlaceholderPattern(oLocaleData, sPlaceholder);
 			}
 		}
@@ -251,7 +260,7 @@ sap.ui.define([
 				sCalendarType = this.getDisplayFormatType();
 			} else {
 				sPattern = ( this.getValueFormat() || this._getDefaultValueStyle() );
-				sCalendarType = sap.ui.core.CalendarType.Gregorian;
+				sCalendarType = CalendarType.Gregorian;
 			}
 		}
 
@@ -298,7 +307,7 @@ sap.ui.define([
 	};
 
 	DateTimeField.prototype._getFormatInstance = function (oArguments, bDisplayFormat) {
-		return sap.ui.core.format.DateFormat.getInstance(oArguments);
+		return DateFormat.getInstance(oArguments);
 	};
 
 	DateTimeField.prototype._checkStyle = function (sPattern) {
@@ -327,4 +336,4 @@ sap.ui.define([
 
 	return DateTimeField;
 
-}, /* bExport= */ true);
+});

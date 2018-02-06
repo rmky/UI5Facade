@@ -5,11 +5,9 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/fl/Utils",
-	"sap/ui/fl/changeHandler/Base",
 	"sap/ui/fl/changeHandler/ChangeHandlerMediator"
-], function(jQuery, Utils, Base, ChangeHandlerMediator) {
+], function(Utils, ChangeHandlerMediator) {
 	"use strict";
 
 	/**
@@ -21,7 +19,7 @@ sap.ui.define([
 	 *
 	 * @author SAP SE
 	 *
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @experimental Since 1.49.0 This class is experimental and provides only limited functionality. Also the API might be
 	 *               changed in future.

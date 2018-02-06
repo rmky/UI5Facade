@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.layout.ResponsiveSplitterPage
-sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control"],
-	function (jQuery, library, Control) {
+sap.ui.define(["./library", "sap/ui/core/Control"],
+	function (library, Control) {
 	"use strict";
 
 	/**
@@ -21,7 +21,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control"],
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -59,4 +59,4 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Control"],
 
 	return ResponsiveSplitterPage;
 
-}, /* bExport= */ false);
+});

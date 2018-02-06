@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/m/semantic/SemanticControl', 'sap/m/Select'], function (SemanticControl, Select) {
+sap.ui.define(['sap/m/semantic/SemanticControl', 'sap/m/Select', 'jquery.sap.global'], function(SemanticControl, Select, jQuery) {
 	"use strict";
 
 	/**
@@ -19,7 +19,7 @@ sap.ui.define(['sap/m/semantic/SemanticControl', 'sap/m/Select'], function (Sema
 	 * @abstract
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -151,4 +151,4 @@ sap.ui.define(['sap/m/semantic/SemanticControl', 'sap/m/Select'], function (Sema
 	};
 
 	return SemanticSelect;
-}, /* bExport= */ true);
+});

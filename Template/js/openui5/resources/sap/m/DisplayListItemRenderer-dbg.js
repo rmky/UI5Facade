@@ -4,9 +4,13 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Renderer'],
-	function(jQuery, ListItemBaseRenderer, Renderer) {
+sap.ui.define(['./ListItemBaseRenderer', 'sap/ui/core/Renderer', 'sap/ui/core/library'],
+	function(ListItemBaseRenderer, Renderer, coreLibrary) {
 	"use strict";
+
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
 
 
 	/**
@@ -48,7 +52,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 		if (isValue) {
 			rm.write("<div id='" + oLI.getId() + "-value' class='sapMDLIValue'");
 
-			if (sValueTextDir != sap.ui.core.TextDirection.Inherit) {
+			if (sValueTextDir != TextDirection.Inherit) {
 				rm.writeAttribute("dir", sValueTextDir.toLowerCase());
 			}
 

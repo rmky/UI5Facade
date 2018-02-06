@@ -301,6 +301,19 @@
 
 	}
 
+	//getComputedStyle polyfill for firefox
+	if ( Device.browser.firefox ) {
+		var fnGetComputedStyle = window.getComputedStyle;
+		window.getComputedStyle = function(element, pseudoElt){
+			var oCSS2Style = fnGetComputedStyle.call(this, element, pseudoElt);
+			if (oCSS2Style === null) {
+				//Copy StyleDeclaration of document.body
+				return document.body.cloneNode(false).style;
+			}
+			return oCSS2Style;
+		};
+	}
+
 	// XHR proxy for Firefox
 	if ( Device.browser.firefox && window.Proxy ) {
 
@@ -794,7 +807,7 @@
 	/**
 	 * Root Namespace for the jQuery plug-in provided by SAP SE.
 	 *
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @namespace
 	 * @public
 	 * @static
@@ -3362,6 +3375,12 @@
 			jQuery.sap.measure.end(sModuleName);
 
 			if ( oModule.state !== READY ) {
+
+				//better error reporting for js errors in modules
+				if (window["sap-ui-debug"]) {
+					jQuery.sap.includeScript(oModule.url);
+				}
+
 				var oError = new Error("failed to load '" + sModuleName +  "' from " + oModule.url + ": " + oModule.errorMessage);
 				enhanceStacktrace(oError, oModule.errorStack);
 				oError.loadError = oModule.loadError;
@@ -3500,12 +3519,6 @@
 					oModule.errorStack = err && err.stack;
 					oModule.errorMessage = ((err.toString && err.toString()) || err.message) + (err.line ? "(line " + err.line + ")" : "" );
 					oModule.data = undefined;
-					if ( window["sap-ui-debug"] && (/sap-ui-xx-show(L|-l)oad(E|-e)rrors=(true|x|X)/.test(location.search) || oCfgData["xx-showloaderrors"]) ) {
-						log.error("error while evaluating " + sModuleName + ", embedding again via script tag to enforce a stack trace (see below)");
-						jQuery.sap.includeScript(oModule.url);
-						return;
-					}
-
 				} finally {
 
 					// restore AMD flag
@@ -3874,6 +3887,9 @@
 		 *
 		 * @public
 		 * @static
+		 * @deprecated As of 1.52, UI5 modules and their dependencies should be defined using {@link sap.ui.define}.
+		 *    For more details see {@link topic:91f23a736f4d1014b6dd926db0e91070 Modules and Dependencies} in the
+		 *    documentation.
 		 */
 		jQuery.sap.declare = function(sModuleName, bCreateNamespace) {
 
@@ -3921,6 +3937,10 @@
 		 * @static
 		 * @function
 		 * @SecSink {0|PATH} Parameter is used for future HTTP requests
+		 * @deprecated As of 1.52, UI5 modules and their dependencies should be defined using {@link sap.ui.define}.
+		 *    When additional modules have to be loaded dynamically at a later point in time, the asynchronous API
+		 *    {@link sap.ui.require} should be used. For more details, see {@link topic:91f23a736f4d1014b6dd926db0e91070
+		 *    Modules and Dependencies} in the documentation.
 		 */
 		jQuery.sap.require = function(vModuleName) {
 
@@ -4982,12 +5002,30 @@
 		};
 
 		// check for existence of the link
-		var oLink = _createLink(sUrl, mAttributes, fnLoadCallback, fnErrorCallback);
 		var oOld = jQuery.sap.domById(mAttributes && mAttributes.id);
+		var oLink = _createLink(sUrl, mAttributes, fnLoadCallback, fnErrorCallback);
 		if (oOld && oOld.tagName === "LINK" && oOld.rel === "stylesheet") {
 			// link exists, so we replace it - but only if a callback has to be attached or if the href will change. Otherwise don't touch it
 			if (fnLoadCallback || fnErrorCallback || oOld.href !== URI(String(sUrl), URI().search("") /* returns current URL without search params */ ).toString()) {
-				jQuery(oOld).replaceWith(oLink);
+				// if the attribute "data-sap-ui-foucmarker" exists and the value
+				// matches the id of the new link the new link will be put
+				// before the old link into the document and the id attribute
+				// will be removed from the old link (to avoid FOUC)
+				// => sap/ui/core/ThemeCheck removes these old links again once
+				//    the new theme has been fully loaded
+				if (oOld.getAttribute("data-sap-ui-foucmarker") === oLink.id) {
+					jQuery(oOld).removeAttr("id").before(oLink);
+				} else {
+					jQuery(oOld).replaceWith(oLink);
+				}
+			} else {
+				// in case of using without callbacks and applying the same URL
+				// the foucmarker has to be removed as the link will not be
+				// replaced with another link - otherwise the ThemeCheck would
+				// remove this link
+				if (oOld.getAttribute("data-sap-ui-foucmarker") === oLink.id) {
+					oOld.removeAttribute("data-sap-ui-foucmarker");
+				}
 			}
 		} else {
 			oOld = jQuery('#sap-ui-core-customcss');
@@ -5008,11 +5046,11 @@
 	 * @param {string|object}
 	 *          vUrl the URL of the stylesheet to load or a configuration object
 	 * @param {string}
-	 *            vUrl.url the URL of the stylesheet to load
+	 *          vUrl.url the URL of the stylesheet to load
 	 * @param {string}
-	 *            [vUrl.id] id that should be used for the link tag
+	 *          [vUrl.id] id that should be used for the link tag
 	 * @param {object}
-	 *            [vUrl.attributes] map of attributes that should be used for the script tag
+	 *          [vUrl.attributes] map of attributes that should be used for the script tag
 	 * @param {string|object}
 	 *          [vId] id that should be used for the link tag or map of attributes
 	 * @param {function}

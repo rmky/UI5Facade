@@ -552,6 +552,7 @@
 	textDirection: sap.ui.core.TextDirection.Inherit, // sap.ui.core.TextDirection
 	textAlign: sap.ui.core.TextAlign.Begin, // sap.ui.core.TextAlign
 	width: "", // sap.ui.core.CSSSize
+	useEntireWidth: false, // boolean, since 1.52
 	activeHandling: true, // boolean
 	editable: true, // boolean, since 1.25
 	valueState: sap.ui.core.ValueState.None, // sap.ui.core.ValueState, since 1.38
@@ -581,6 +582,7 @@
 	textDirection="Inherit"
 	textAlign="Begin"
 	width=""
+	useEntireWidth="false"
 	activeHandling="true"
 	editable="true"
 	valueState="None"
@@ -2001,6 +2003,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	actions: [], // sap.m.FeedListItemAction, since 1.52.0
 	ariaLabelledBy: [], // sap.ui.core.Control, since 1.28.0
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -2060,7 +2063,33 @@
 	iconPress="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<actions></actions> <!-- sap.m.FeedListItemAction, since 1.52.0 -->
 </FeedListItem>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.m.FeedListItemAction" alias="FeedListItemAction,Action">
+	<jsTemplate><![CDATA[new sap.m.FeedListItemAction({
+	id: "${id}", // sap.ui.core.ID
+	icon: undefined, // sap.ui.core.URI
+	text: "", // string
+	key: "", // string
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	press: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<FeedListItemAction xmlns="sap.m"
+	id="${id}"
+	icon=""
+	text=""
+	key=""
+	press="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+</FeedListItemAction>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.m.FlexBox" alias="FlexBox,Box">
@@ -3762,6 +3791,7 @@
 	showHeader: true, // boolean
 	showNavButton: false, // boolean
 	icon: "sap-icon://documents", // sap.ui.core.URI
+	iconAlt: undefined, // string, since 1.52
 	textDirection: sap.ui.core.TextDirection.Inherit, // sap.ui.core.TextDirection
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
@@ -3790,6 +3820,7 @@
 	showHeader="true"
 	showNavButton="false"
 	icon="sap-icon://documents"
+	iconAlt=""
 	textDirection="Inherit"
 	ariaDescribedBy=""
 	ariaLabelledBy=""
@@ -3969,6 +4000,7 @@
 	asyncDescriptionHandler: undefined, // any
 	asyncURLHandler: undefined, // any
 	groupItems: false, // boolean
+	showDetailsPageHeader: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -4003,6 +4035,7 @@
 	asyncDescriptionHandler=""
 	asyncURLHandler=""
 	groupItems="false"
+	showDetailsPageHeader="true"
 	validateFieldGroup=""
 	afterOpen=""
 	itemSelect=""
@@ -5188,6 +5221,65 @@
 </OverflowToolbarLayoutData>
 ]]></xmlTemplate>
 </Template>
+<Template name="sap.m.OverflowToolbarToggleButton" alias="OverflowToolbarToggleButton,Button">
+	<jsTemplate><![CDATA[new sap.m.OverflowToolbarToggleButton({
+	id: "${id}", // sap.ui.core.ID
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	text: undefined, // string
+	type: sap.m.ButtonType.Default, // sap.m.ButtonType
+	width: undefined, // sap.ui.core.CSSSize
+	enabled: true, // boolean
+	icon: undefined, // sap.ui.core.URI
+	iconFirst: true, // boolean
+	activeIcon: undefined, // sap.ui.core.URI
+	iconDensityAware: true, // boolean
+	textDirection: sap.ui.core.TextDirection.Inherit, // sap.ui.core.TextDirection, since 1.28.0
+	pressed: false, // boolean
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	ariaDescribedBy: [], // sap.ui.core.Control
+	ariaLabelledBy: [], // sap.ui.core.Control
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	tap: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	press: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<OverflowToolbarToggleButton xmlns="sap.m"
+	id="${id}"
+	busy="false"
+	busyIndicatorDelay="1000"
+	visible="true"
+	fieldGroupIds=""
+	text=""
+	type="Default"
+	width=""
+	enabled="true"
+	icon=""
+	iconFirst="true"
+	activeIcon=""
+	iconDensityAware="true"
+	textDirection="Inherit"
+	pressed="false"
+	ariaDescribedBy=""
+	ariaLabelledBy=""
+	validateFieldGroup=""
+	tap=""
+	press="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+</OverflowToolbarToggleButton>
+]]></xmlTemplate>
+</Template>
 <Template name="sap.m.P13nColumnsItem" alias="P13nColumnsItem,Item">
 	<jsTemplate><![CDATA[new sap.m.P13nColumnsItem({
 	id: "${id}", // sap.ui.core.ID
@@ -5752,6 +5844,7 @@
 	visible: undefined, // boolean
 	type: "text", // string
 	precision: undefined, // string
+	formatSettings: undefined, // object
 	scale: undefined, // string
 	maxLength: undefined, // string
 	width: undefined, // string
@@ -5774,6 +5867,7 @@
 	visible=""
 	type="text"
 	precision=""
+	formatSettings=""
 	scale=""
 	maxLength=""
 	width=""
@@ -6071,7 +6165,7 @@
 	contentLabel: undefined, // string
 	headerRole: sap.ui.core.AccessibleLandmarkRole.Region, // sap.ui.core.AccessibleLandmarkRole
 	headerLabel: undefined, // string
-	subHeaderRole: undefined, // sap.ui.core.AccessibleLandmarkRole
+	subHeaderRole: sap.ui.core.AccessibleLandmarkRole.None, // sap.ui.core.AccessibleLandmarkRole
 	subHeaderLabel: undefined, // string
 	footerRole: sap.ui.core.AccessibleLandmarkRole.Region, // sap.ui.core.AccessibleLandmarkRole
 	footerLabel: undefined, // string
@@ -6088,7 +6182,7 @@
 	contentLabel=""
 	headerRole="Region"
 	headerLabel=""
-	subHeaderRole=""
+	subHeaderRole="None"
 	subHeaderLabel=""
 	footerRole="Region"
 	footerLabel="">
@@ -6211,6 +6305,7 @@
 	minDate: undefined, // object, since 1.38.0
 	maxDate: undefined, // object, since 1.38.0
 	showDayNamesLine: false, // boolean, since 1.50
+	showWeekNumbers: false, // boolean, since 1.52
 	builtInViews: [], // string[], since 1.50
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
@@ -6265,6 +6360,7 @@
 	minDate=""
 	maxDate=""
 	showDayNamesLine="false"
+	showWeekNumbers="false"
 	builtInViews=""
 	ariaLabelledBy=""
 	legend=""
@@ -6983,6 +7079,7 @@
 	iconHovered: undefined, // sap.ui.core.URI
 	visualMode: sap.m.RatingIndicatorVisualMode.Half, // sap.m.RatingIndicatorVisualMode
 	displayOnly: false, // boolean, since 1.50.0
+	editable: true, // boolean, since 1.52.0
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -7014,6 +7111,7 @@
 	iconHovered=""
 	visualMode="Half"
 	displayOnly="false"
+	editable="true"
 	ariaDescribedBy=""
 	ariaLabelledBy=""
 	validateFieldGroup=""
@@ -7252,6 +7350,7 @@
 	buttons: [], // sap.m.Button
 	items: [], // sap.m.SegmentedButtonItem, since 1.28
 	selectedButton: undefined, // sap.m.Button
+	selectedItem: undefined, // sap.m.SegmentedButtonItem, since 1.52
 	ariaDescribedBy: [], // sap.ui.core.Control
 	ariaLabelledBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
@@ -7259,7 +7358,10 @@
 	}, this],
 	select: [function (oEvent) {
 		var ${control} = oEvent.getSource();
-	}, this]
+	}, this],
+	selectionChange: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this] // since 1.52
 })
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<SegmentedButton xmlns="sap.m"
@@ -7272,10 +7374,12 @@
 	enabled="true"
 	selectedKey=""
 	selectedButton=""
+	selectedItem=""
 	ariaDescribedBy=""
 	ariaLabelledBy=""
 	validateFieldGroup=""
-	select="">
+	select=""
+	selectionChange="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<buttons></buttons> <!-- sap.m.Button -->
@@ -8269,6 +8373,8 @@
 	backgroundDesign: sap.m.BackgroundDesign.Translucent, // sap.m.BackgroundDesign
 	fixedLayout: true, // boolean, since 1.22
 	showOverlay: false, // boolean, since 1.22.1
+	alternateRowColors: false, // boolean, since 1.52
+	popinLayout: sap.m.PopinLayout.Block, // sap.m.PopinLayout, since 1.52
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -8340,6 +8446,8 @@
 	backgroundDesign="Translucent"
 	fixedLayout="true"
 	showOverlay="false"
+	alternateRowColors="false"
+	popinLayout="Block"
 	ariaLabelledBy=""
 	validateFieldGroup=""
 	select=""
@@ -8435,6 +8543,7 @@
 	textAlign: sap.ui.core.TextAlign.Begin, // sap.ui.core.TextAlign
 	width: undefined, // sap.ui.core.CSSSize
 	maxLines: undefined, // int, since 1.13.2
+	renderWhitespace: false, // boolean, since 1.51
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -8455,6 +8564,7 @@
 	textAlign="Begin"
 	width=""
 	maxLines=""
+	renderWhitespace="false"
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
@@ -8675,6 +8785,7 @@
 	titleStyle: sap.ui.core.TitleLevel.Auto, // sap.ui.core.TitleLevel
 	width: undefined, // sap.ui.core.CSSSize
 	textAlign: sap.ui.core.TextAlign.Initial, // sap.ui.core.TextAlign
+	wrapping: false, // boolean, since 1.52
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -8695,6 +8806,7 @@
 	titleStyle="Auto"
 	width=""
 	textAlign="Initial"
+	wrapping="false"
 	title=""
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
@@ -9179,9 +9291,9 @@
 	showSeparators: sap.m.ListSeparators.All, // sap.m.ListSeparators
 	uploadEnabled: true, // boolean
 	uploadUrl: "../../../upload", // string
-	instantUpload: true, // boolean, since 1.30
-	numberOfAttachmentsText: undefined, // string, since 1.30
-	mode: sap.m.ListMode.None, // sap.m.ListMode, since 1.34
+	instantUpload: true, // boolean, since 1.30.0
+	numberOfAttachmentsText: undefined, // string, since 1.30.0
+	mode: sap.m.ListMode.None, // sap.m.ListMode, since 1.34.0
 	uploadButtonInvisible: false, // boolean, since 1.42.0
 	terminationEnabled: true, // boolean, since 1.42.0
 	tooltip: undefined, // sap.ui.core.TooltipBase
@@ -9190,8 +9302,8 @@
 	items: [], // sap.m.UploadCollectionItem
 	headerParameters: [], // sap.m.UploadCollectionParameter
 	parameters: [], // sap.m.UploadCollectionParameter
-	toolbar: undefined, // sap.m.OverflowToolbar, since 1.34
-	infoToolbar: undefined, // sap.m.Toolbar, since 1.44
+	toolbar: undefined, // sap.m.OverflowToolbar, since 1.34.0
+	infoToolbar: undefined, // sap.m.Toolbar, since 1.44.0
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this],
@@ -9265,8 +9377,8 @@
 		<items></items> <!-- sap.m.UploadCollectionItem -->
 		<headerParameters></headerParameters> <!-- sap.m.UploadCollectionParameter -->
 		<parameters></parameters> <!-- sap.m.UploadCollectionParameter -->
-		<toolbar></toolbar> <!-- sap.m.OverflowToolbar, since 1.34 -->
-		<infoToolbar></infoToolbar> <!-- sap.m.Toolbar, since 1.44 -->
+		<toolbar></toolbar> <!-- sap.m.OverflowToolbar, since 1.34.0 -->
+		<infoToolbar></infoToolbar> <!-- sap.m.Toolbar, since 1.44.0 -->
 </UploadCollection>
 ]]></xmlTemplate>
 </Template>
@@ -9285,21 +9397,21 @@
 	enableDelete: true, // boolean
 	visibleEdit: true, // boolean
 	visibleDelete: true, // boolean
-	ariaLabelForPicture: undefined, // string, since 1.30
-	selected: false, // boolean, since 1.34
+	ariaLabelForPicture: undefined, // string, since 1.30.0
+	selected: false, // boolean, since 1.34.0
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
-	attributes: [], // sap.m.ObjectAttribute, since 1.30
-	statuses: [], // sap.m.ObjectStatus, since 1.30
-	markers: [], // sap.m.ObjectMarker, since 1.40
-	fileUploader: undefined, // sap.ui.unified.FileUploader, since 1.30
+	attributes: [], // sap.m.ObjectAttribute, since 1.30.0
+	statuses: [], // sap.m.ObjectStatus, since 1.30.0
+	markers: [], // sap.m.ObjectMarker, since 1.40.0
+	fileUploader: undefined, // sap.ui.unified.FileUploader, since 1.30.0
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
-	}, this], // since 1.50
+	}, this], // since 1.50.0
 	deletePress: [function (oEvent) {
 		var ${control} = oEvent.getSource();
-	}, this] // since 1.50
+	}, this] // since 1.50.0
 })
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<UploadCollectionItem xmlns="sap.m"
@@ -9323,9 +9435,9 @@
 	deletePress="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
-		<attributes></attributes> <!-- sap.m.ObjectAttribute, since 1.30 -->
-		<statuses></statuses> <!-- sap.m.ObjectStatus, since 1.30 -->
-		<markers></markers> <!-- sap.m.ObjectMarker, since 1.40 -->
+		<attributes></attributes> <!-- sap.m.ObjectAttribute, since 1.30.0 -->
+		<statuses></statuses> <!-- sap.m.ObjectStatus, since 1.30.0 -->
+		<markers></markers> <!-- sap.m.ObjectMarker, since 1.40.0 -->
 </UploadCollectionItem>
 ]]></xmlTemplate>
 </Template>

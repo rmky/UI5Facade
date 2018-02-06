@@ -5,16 +5,15 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/fl/changeHandler/JsControlTreeModifier'
-], function(jQuery, JsControlTreeModifier) {
+], function(JsControlTreeModifier) {
 	"use strict";
 
 	/**
 	 * Change handler for hiding of a control.
 	 * @alias sap.ui.fl.changeHandler.HideControl
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @experimental Since 1.27.0
 	 */
 	var HideForm = { };
@@ -140,7 +139,7 @@ sap.ui.define([
 	 * @param {sap.ui.fl.oChangeWrapper} oChangeWrapper change object to be completed
 	 * @param {object} oSpecificChangeInfo as an empty object since no additional attributes are required for this operation
 	 * @param {object} mPropertyBag - map of properties
-	 * @param {sap.ui.core.UiComponent} mPropertyBag.appComponent component in which the change should be applied
+	 * @param {sap.ui.core.UIComponent} mPropertyBag.appComponent component in which the change should be applied
 	 * @public
 	 */
 	HideForm.completeChangeContent = function(oChangeWrapper, oSpecificChangeInfo, mPropertyBag) {

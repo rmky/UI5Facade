@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.table.RowAction
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './TableUtils', './library', 'sap/ui/core/Icon', 'sap/ui/unified/Menu', 'sap/ui/core/Popup', './RowActionItem'],
-function(jQuery, Control, TableUtils, library, Icon, Menu, Popup, RowActionItem) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/core/Icon', 'sap/ui/unified/Menu', 'sap/ui/core/Popup', 'jquery.sap.keycodes'],
+function(jQuery, Control, library, Icon, Menu, Popup) {
 	"use strict";
 
 	/**
@@ -20,7 +20,7 @@ function(jQuery, Control, TableUtils, library, Icon, Menu, Popup, RowActionItem)
 	 * If more action items are available as the available space allows to display an overflow mechanism is provided.
 	 * This control must only be used in the context of the <code>sap.ui.table.Table</code> control to define row actions.
 	 * @extends sap.ui.core.Control
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -241,8 +241,8 @@ function(jQuery, Control, TableUtils, library, Icon, Menu, Popup, RowActionItem)
 	/**
 	 * Enables or disables the fixed column layout.
 	 * If enabled, the control tries to keep the position of the icons stable.
-	 * @see #_updateIcons
 	 * @param {boolean} bFixed Whether fixed column layout should be applied.
+	 * @see #_updateIcons
 	 * @private
 	 */
 	RowAction.prototype._setFixedLayout = function(bFixed) {

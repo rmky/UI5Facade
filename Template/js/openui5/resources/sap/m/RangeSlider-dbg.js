@@ -3,8 +3,8 @@
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/InvisibleText"],
-    function (jQuery, Slider, Input, InvisibleText) {
+sap.ui.define(["jquery.sap.global", "./Slider", "sap/ui/core/InvisibleText"],
+    function (jQuery, Slider, InvisibleText) {
         "use strict";
 
         /**
@@ -14,29 +14,26 @@ sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/Invisibl
          * @param {object} [mSettings] Initial settings for the new control
          *
          * @class
-         * <strong><i>Overview</i></strong>
-         *
-         * A {@link sap.m.RangeSlider} control represents a numerical interval and two handles to select a sub-range within it.
+         * Represents a numerical interval and two handles to select a sub-range within it.
+         * <h3>Overview</h3>
          * The purpose of the control is to enable visual selection of sub-ranges within a given interval.
-         *
-         * <strong>Notes:</strong>
+         * <h4>Notes:<h4>
          * <ul>
          * <li>The RangeSlider extends the functionality of the {@link sap.m.Slider Slider}</li>
          * <li>The right and left handle can be moved individually and their positions could therefore switch.</li>
          * <li>The entire range can be moved along the interval.</li>
          * <li>The right and left handle can select the same value</li>
          * </ul>
-         * <strong><i>Usage</i></strong>
          *
+         * <h3>Usage</h3>
          * The most common usecase is to select and move sub-ranges on a continuous numerical scale.
          *
-         * <strong><i>Responsive Behavior</i></strong>
-         *
+         * <h3>Responsive Behavior</h3>
          * You can move the currently selected range by clicking on it and dragging it along the interval.
          * @extends sap.m.Slider
          *
          * @author SAP SE
-         * @version 1.50.8
+         * @version 1.52.5
          *
          * @constructor
          * @public
@@ -118,7 +115,7 @@ sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/Invisibl
         RangeSlider.prototype.exit = function () {
             this._oResourceBundle = null;
             this._aInitialFocusRange = null;
-	        this._liveChangeLastValue = null;
+            this._liveChangeLastValue = null;
 
             if (this._oRangeLabel) {
                 this._oRangeLabel.destroy();
@@ -168,6 +165,12 @@ sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/Invisibl
             // this.setRange(aRange) OR this.setValue(fValue) && this.setValue2(fValue2).
             // Note: this.getRange() is intended to have the same value as [this.getValue(), this.getValue2()]
             this._bInitialRangeChecks = false;
+
+            // We need the decimal precision in order to be able to set the correct values.
+            // It is well known that JavaScript has issues with handling floating point values.
+            // E.g. 0.0001 + 0.0002 = 0.00029999999999999998
+            this._iDecimalPrecision = this.getDecimalPrecisionOfNumber(this.getStep());
+
             this.setRange(aRange);
 
             if (!this._oRangeLabel) {
@@ -191,8 +194,6 @@ sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/Invisibl
             }
 
             this._mHandleTooltip.bTooltipsSwapped = false; //Rest tooltips swapping
-
-            this._iDecimalPrecision = this.getDecimalPrecisionOfNumber(this.getStep());
 
             // For backwards compatibility when tickmarks are enabled, should be visible
             if (this.getEnableTickmarks() && !this.getAggregation("scale")) {
@@ -306,13 +307,15 @@ sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/Invisibl
                     this._mHandleTooltip.start.tooltip : this._mHandleTooltip.end.tooltip,
                 aRange = this.getRange(),
                 iIndex = this._getIndexOfHandle(oHandle),
-                fPercentVal = this._getPercentOfValue(fValue);
+                fPercentVal = this._getPercentOfValue(fValue),
+                iDecimalPrecision = this._iDecimalPrecision ? this._iDecimalPrecision : 0,
+                fNormalizedValue = Number(this.toFixed(fValue, iDecimalPrecision));
 
-            aRange[iIndex] = fValue;
+            aRange[iIndex] = fNormalizedValue;
             this._updateRangePropertyDependencies(aRange);
 
-            this._updateHandleDom(oHandle, aRange, iIndex, fValue, fPercentVal);
-            this._updateTooltipContent(oTooltip, fValue);
+            this._updateHandleDom(oHandle, aRange, iIndex, fNormalizedValue, fPercentVal);
+            this._updateTooltipContent(oTooltip, fNormalizedValue);
             this._adjustTooltipsContainer(fPercentVal);
             this._recalculateRange();
         };
@@ -534,6 +537,18 @@ sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/Invisibl
             return false;
         };
 
+		RangeSlider.prototype.setStep = function (fStep) {
+            this.setProperty("step", fStep, true);
+
+            //Log warning in case fStep is not valid
+            this._validateProperties();
+
+            //Get the new decimal precision
+            this._iDecimalPrecision = this.getDecimalPrecisionOfNumber(fStep);
+
+            return this;
+        };
+
         RangeSlider.prototype.setRange = function (aRange) {
             aRange = aRange.map(this._adjustRangeValue, this);
 
@@ -566,10 +581,11 @@ sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/Invisibl
         };
 
         RangeSlider.prototype.setValue2 = function (fValue) {
-            var aRange = this.getRange();
+            var aRange = this.getRange(),
+                iDecimalPrecision = this._iDecimalPrecision ? this._iDecimalPrecision : 0;
 
             fValue = this._adjustRangeValue(fValue);
-            aRange[1] = fValue;
+            aRange[1] = Number(this.toFixed(fValue, iDecimalPrecision));
 
             this._updateRangePropertyDependencies(aRange);
             if (this._updateDOMAfterSetters(aRange[1], aRange, 1)) {
@@ -627,7 +643,8 @@ sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/Invisibl
             var fMax = this.getMax(),
                 fMin = this.getMin(),
                 fStep = this.getStep(),
-                fModStepVal;
+                fModStepVal,
+                iDecimalPrecision = this._iDecimalPrecision ? this._iDecimalPrecision : 0;
 
             if (this._bInitialRangeChecks) {
                 return fValue;
@@ -645,11 +662,11 @@ sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/Invisibl
                 fValue = fMax;
             }
 
-            return fValue;
+            return Number(this.toFixed(fValue, iDecimalPrecision));
         };
 
         /**
-         * Handle the touchstart event happening on the range slider.
+         * Handle the `art event happening on the range slider.
          * @param {jQuery.Event} oEvent The event object.
          * @private
          * @override
@@ -793,7 +810,8 @@ sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/Invisibl
          * Get the range normalized in the boundaries.
          * @param {Array} aRange range value
          * @param {Array} aInitialRange last range values
-         * @param {Array} aHandles
+         * @param {HTMLElement} [aHandles] The handles of the slider
+         * @returns {number} The normalized range
          * @private
          * @override
          */
@@ -1096,4 +1114,4 @@ sap.ui.define(["jquery.sap.global", "./Slider", "./Input", "sap/ui/core/Invisibl
 
 
         return RangeSlider;
-    }, /* bExport= */ true);
+    });

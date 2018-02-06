@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/m/PageAccessibleLandmarkInfo', 'sap/ui/Device'],
-	function(PageAccessibleLandmarkInfo, Device) {
+sap.ui.define([],
+	function() {
 	"use strict";
 
 
@@ -24,6 +24,7 @@ sap.ui.define(['sap/m/PageAccessibleLandmarkInfo', 'sap/ui/Device'],
 	PageRenderer.render = function(oRm, oPage) {
 		var oHeader = null,
 			oFooter = null,
+			bShowFooter = oPage.getShowFooter(),
 			oSubHeader = null,
 			bLightHeader  = this._isLightHeader(oPage),
 			oLandmarkInfo = oPage.getLandmarkInfo();
@@ -52,7 +53,7 @@ sap.ui.define(['sap/m/PageAccessibleLandmarkInfo', 'sap/ui/Device'],
 			oRm.addClass("sapMPageWithSubHeader");
 		}
 
-		if (oFooter) {
+		if (oFooter && bShowFooter) {
 			// it is used in the PopOver to remove additional margin bottom for page with footer
 			oRm.addClass("sapMPageWithFooter");
 		}
@@ -133,6 +134,9 @@ sap.ui.define(['sap/m/PageAccessibleLandmarkInfo', 'sap/ui/Device'],
 		oRm.write("</section>");
 
 		// render footer Element
+		// if a footer is defined, it should always be rendered
+		// otherwise animation on show/hide won't work always
+
 		if (oFooter) {
 			var sFooterTag = oPage._getFooterTag(oLandmarkInfo);
 

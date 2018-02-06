@@ -5,11 +5,9 @@
  */
 
 // Provides control sap.m.SplitApp.
-sap.ui.define(['jquery.sap.global', './SplitContainer', './library'],
-	function(jQuery, SplitContainer, library) {
+sap.ui.define(['jquery.sap.global', './SplitContainer', './library', 'sap/ui/Device'],
+	function(jQuery, SplitContainer, library, Device) {
 	"use strict";
-
-
 
 	/**
 	 * Constructor for a new SplitApp.
@@ -45,7 +43,7 @@ sap.ui.define(['jquery.sap.global', './SplitContainer', './library'],
 	 * @extends sap.m.SplitContainer
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -103,6 +101,13 @@ sap.ui.define(['jquery.sap.global', './SplitContainer', './library'],
 	//**************************************************************
 	//* START - Life Cycle Methods
 	//**************************************************************/
+
+	/**
+	 * Initializes the control.
+	 *
+	 * @name sap.m.SplitApp.init
+	 * @private
+	 */
 	SplitApp.prototype.init = function() {
 		if (SplitContainer.prototype.init) {
 			SplitContainer.prototype.init.apply(this, arguments);
@@ -117,6 +122,12 @@ sap.ui.define(['jquery.sap.global', './SplitContainer', './library'],
 		});
 	};
 
+	/**
+	 * Overwrites the onBeforeRendering.
+	 *
+	 * @name sap.m.SplitApp.onBeforeRendering
+	 * @private
+	 */
 	SplitApp.prototype.onBeforeRendering = function() {
 		if (SplitContainer.prototype.onBeforeRendering) {
 			SplitContainer.prototype.onBeforeRendering.apply(this, arguments);
@@ -126,6 +137,12 @@ sap.ui.define(['jquery.sap.global', './SplitContainer', './library'],
 		});
 	};
 
+	/**
+	 * Overwrites the onAfterRendering.
+	 *
+	 * @name sap.m.SplitApp.onAfterRendering
+	 * @private
+	 */
 	SplitApp.prototype.onAfterRendering = function(){
 		if (SplitContainer.prototype.onAfterRendering) {
 			SplitContainer.prototype.onAfterRendering.apply(this, arguments);
@@ -155,14 +172,15 @@ sap.ui.define(['jquery.sap.global', './SplitContainer', './library'],
 	/**
 	 * Fires the orientationChange event after SplitApp has reacted to the browser orientationChange event.
 	 *
-	 * @protected
+	 * @name sap.m.SplitApp._onOrientationChange
+	 * @private
 	 */
 	SplitApp.prototype._onOrientationChange = function(){
 		this.fireOrientationChange({
-			landscape: sap.ui.Device.orientation.landscape
+			landscape: Device.orientation.landscape
 		});
 	};
 
 	return SplitApp;
 
-}, /* bExport= */ true);
+});

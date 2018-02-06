@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.unified.ShellOverlay.
-sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap/ui/core/Popup', './Shell', './library', 'jquery.sap.script'],
-	function(jQuery, Device, Control, Popup, Shell, library/* , jQuerySap */) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap/ui/core/Popup', './library', 'sap/ui/unified/ShellOverlayRenderer', 'jquery.sap.script'],
+	function(jQuery, Device, Control, Popup, library/* , jQuerySap */, ShellOverlayRenderer) {
 	"use strict";
 
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -191,11 +191,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap
 
 		var that = this;
 
-		this._headRenderer = new sap.ui.unified._ContentRenderer(this, this.getId() + "-hdr-center", function(rm){
-			sap.ui.unified.ShellOverlayRenderer.renderSearch(rm, that);
+		this._headRenderer = new library._ContentRenderer(this, this.getId() + "-hdr-center", function(rm){
+			ShellOverlayRenderer.renderSearch(rm, that);
 		});
-		this._contentRenderer = new sap.ui.unified._ContentRenderer(this, this.getId() + "-cntnt", function(rm){
-			sap.ui.unified.ShellOverlayRenderer.renderContent(rm, that);
+		this._contentRenderer = new library._ContentRenderer(this, this.getId() + "-cntnt", function(rm){
+			ShellOverlayRenderer.renderContent(rm, that);
 		});
 	};
 
@@ -302,10 +302,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap
 				this._oLastOfRect = jQuery(window).rect();
 			};
 			this._popup.attachOpened(function(){
-				sap.ui.unified._iNumberOfOpenedShellOverlays++;
+				library._iNumberOfOpenedShellOverlays++;
 			});
 			this._popup.attachClosed(function(){
-				sap.ui.unified._iNumberOfOpenedShellOverlays--;
+				library._iNumberOfOpenedShellOverlays--;
 			});
 		}
 		return this._popup;
@@ -361,4 +361,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap
 
 	return ShellOverlay;
 
-}, /* bExport= */ true);
+});

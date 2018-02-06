@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["jquery.sap.global", "./library", "./MessageItem"],
-	function(jQuery, library, MessageItem) {
+sap.ui.define(["./library", "./MessageItem"],
+	function(library, MessageItem) {
 		"use strict";
 
 		/**
@@ -19,7 +19,7 @@ sap.ui.define(["jquery.sap.global", "./library", "./MessageItem"],
 		 * @extends sap.ui.core.Item
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -32,4 +32,4 @@ sap.ui.define(["jquery.sap.global", "./library", "./MessageItem"],
 		var MessagePopoverItem = MessageItem.extend("sap.m.MessagePopoverItem", /** @lends sap.m.MessagePopoverItem.prototype */ {});
 
 		return MessagePopoverItem;
-	}, /* bExport= */true);
+	});

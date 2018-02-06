@@ -25,7 +25,7 @@ sap.ui.define(['sap/m/Button', 'sap/m/ButtonRenderer'],
 	 * @extends sap.m.Button
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -47,4 +47,4 @@ sap.ui.define(['sap/m/Button', 'sap/m/ButtonRenderer'],
 
 	return OverflowToolbarButton;
 
-}, /* bExport= */ true);
+});

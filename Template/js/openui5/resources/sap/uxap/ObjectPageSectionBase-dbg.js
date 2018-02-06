@@ -5,7 +5,7 @@
  */
 
 // Provides control sap.uxap.ObjectPageSectionBase.
-sap.ui.define(["jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/library", "./library"], function (jQuery, Control, coreLibrary, library) {
+sap.ui.define(["jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/library", "./library", "jquery.sap.keycodes"], function (jQuery, Control, coreLibrary, library) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TitleLevel
@@ -20,6 +20,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/library"
 	 * @class
 	 * An abstract container for object page sections and subSections
 	 * @extends sap.ui.core.Control
+	 * @abstract
 	 *
 	 * @constructor
 	 * @public
@@ -49,7 +50,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/library"
 				 * it will result as aria-level of 1 added to the <code>ObjectPageSectionBase</code> title.
 				 * @since 1.44.0
 				 */
-				titleLevel : {type : "sap.ui.core.TitleLevel", group : "Appearance", defaultValue : sap.ui.core.TitleLevel.Auto},
+				titleLevel : {type : "sap.ui.core.TitleLevel", group : "Appearance", defaultValue : TitleLevel.Auto},
 
 				/**
 				 * Invisible ObjectPageSectionBase are not rendered

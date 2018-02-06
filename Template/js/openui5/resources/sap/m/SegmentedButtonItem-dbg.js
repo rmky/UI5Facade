@@ -5,25 +5,25 @@
  */
 
 // Provides control sap.m.SegmentedButtonItem.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item', 'sap/m/Button', 'sap/ui/core/CustomStyleClassSupport'],
-	function(jQuery, library, Item, Button, CustomStyleClassSupport) {
+sap.ui.define(['./library', 'sap/ui/core/Item', 'sap/m/Button', 'sap/ui/core/CustomStyleClassSupport'],
+	function(library, Item, Button, CustomStyleClassSupport) {
 		"use strict";
 
 
 
 		/**
-		 * Constructor for a new SegmentedButtonItem.
+		 * Constructor for a new <code>SegmentedButtonItem</code>.
 		 *
 		 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
 		 * @param {object} [mSettings] Initial settings for the new control
 		 *
 		 * @class
-		 * The SegmentedButtonItem control is used for creating buttons for the sap.m.SegmentedButton.
-		 * It is derived from a core sap.ui.core.Item.
+		 * Used for creating buttons for the {@link sap.m.SegmentedButton}.
+		 * It is derived from the {@link sap.ui.core.Item}.
 		 * @extends sap.ui.core.Item
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -168,4 +168,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Item', 'sap/m/Butt
 
 		return SegmentedButtonItem;
 
-	}, /* bExport= */ true);
+	});

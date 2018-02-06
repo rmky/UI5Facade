@@ -6,9 +6,9 @@
 
 // Provides helper sap.ui.table.TableUtils.
 sap.ui.define([
-	"jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/ResizeHandler", "sap/ui/core/library", "sap/ui/Device", "sap/ui/model/ChangeReason",
+	"jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/ResizeHandler", "sap/ui/core/library", "sap/ui/model/ChangeReason",
 	"./TableGrouping", "./TableColumnUtils", "./TableMenuUtils", "./library"
-], function(jQuery, Control, ResizeHandler, coreLibrary, Device, ChangeReason, TableGrouping, TableColumnUtils, TableMenuUtils, library) {
+], function(jQuery, Control, ResizeHandler, coreLibrary, ChangeReason, TableGrouping, TableColumnUtils, TableMenuUtils, library) {
 	"use strict";
 
 	// Shortcuts
@@ -58,7 +58,7 @@ sap.ui.define([
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
@@ -139,7 +139,7 @@ sap.ui.define([
 		/**
 		 * Returns whether the table has a row header or not
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {boolean}
+		 * @returns {boolean}
 		 * @private
 		 */
 		hasRowHeader : function(oTable) {
@@ -152,7 +152,7 @@ sap.ui.define([
 		 * Returns whether the table has a SelectAll checkbox.
 		 *
 		 * @param {sap.ui.table.Table} oTable Instance of the table.
-		 * @return {boolean} Returns <code>true</code>, if the table has a SelectAll checkbox.
+		 * @returns {boolean} Returns <code>true</code>, if the table has a SelectAll checkbox.
 		 * @private
 		 */
 		hasSelectAll: function(oTable) {
@@ -165,7 +165,7 @@ sap.ui.define([
 		 * Returns whether the table has row highlights.
 		 *
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {boolean} Returns <code>true</code>, if the table has row highlights
+		 * @returns {boolean} Returns <code>true</code>, if the table has row highlights
 		 * @private
 		 */
 		hasRowHighlights: function(oTable) {
@@ -188,7 +188,7 @@ sap.ui.define([
 		/**
 		 * Returns the number of row actions in case the tahe has a row action column, <code>0</code> otherwise
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {int}
+		 * @returns {int}
 		 * @private
 		 */
 		getRowActionCount : function(oTable) {
@@ -199,7 +199,7 @@ sap.ui.define([
 		/**
 		 * Returns whether the table has a row action column or not
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {boolean}
+		 * @returns {boolean}
 		 * @private
 		 */
 		hasRowActions : function(oTable) {
@@ -213,7 +213,7 @@ sap.ui.define([
 		/**
 		 * Returns whether selection is allowed on the cells of a row (not row selector).
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {boolean}
+		 * @returns {boolean}
 		 * @private
 		 */
 		isRowSelectionAllowed : function(oTable) {
@@ -224,7 +224,7 @@ sap.ui.define([
 		/**
 		 * Returns whether selection is allowed via the row selector.
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {boolean}
+		 * @returns {boolean}
 		 * @private
 		 */
 		isRowSelectorSelectionAllowed : function(oTable) {
@@ -251,7 +251,7 @@ sap.ui.define([
 		 * Returns whether the no data text is currently shown or not
 		 * If true, also CSS class sapUiTableEmpty is set on the table root element.
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {boolean}
+		 * @returns {boolean}
 		 * @private
 		 */
 		isNoDataVisible : function(oTable) {
@@ -265,12 +265,12 @@ sap.ui.define([
 		/**
 		 * Returns whether the table currently has data.
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {boolean}
+		 * @returns {boolean}
 		 * @private
 		 */
 		hasData : function(oTable) {
 			var oBinding = oTable.getBinding("rows"),
-			iBindingLength = oTable._getRowCount(),
+			iBindingLength = oTable._getTotalRowCount(),
 			bHasData = oBinding ? !!iBindingLength : false;
 
 			if (oBinding && oBinding.providesGrandTotal) { // Analytical Binding
@@ -301,7 +301,7 @@ sap.ui.define([
 		 * Returns whether one or more requests are currently in process by the binding.
 		 *
 		 * @param {sap.ui.table.Table} oTable Instance of the table.
-		 * @return {boolean} Returns <code>true</code>, if the binding of the table is currently requesting data.
+		 * @returns {boolean} Returns <code>true</code>, if the binding of the table is currently requesting data.
 		 * @private
 		 */
 		hasPendingRequests: function(oTable) {
@@ -352,7 +352,7 @@ sap.ui.define([
 		 * without the need of loading the types module.
 		 * @param {sap.ui.base.ManagedObject} oObject The object to check
 		 * @param {string} sType The type given in AMD module syntax
-		 * @return {boolean}
+		 * @returns {boolean}
 		 * @private
 		 */
 		isInstanceOf : function(oObject, sType) {
@@ -415,7 +415,7 @@ sap.ui.define([
 
 			// Variable oRowIndicator is a row index value.
 			if (typeof oRowIndicator === "number") {
-				if (oRowIndicator < 0 || oRowIndicator >= oTable._getRowCount()) {
+				if (oRowIndicator < 0 || oRowIndicator >= oTable._getTotalRowCount()) {
 					return false;
 				}
 				return setSelectionState(oRowIndicator);
@@ -448,7 +448,7 @@ sap.ui.define([
 		 * Returns the text to be displayed as no data message.
 		 * If a custom noData control is set null is returned.
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {String|string|null}
+		 * @returns {String|string|null}
 		 * @private
 		 */
 		getNoDataText : function(oTable) {
@@ -465,7 +465,7 @@ sap.ui.define([
 		/**
 		 * Returns the number of currently visible columns
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {int}
+		 * @returns {int}
 		 * @private
 		 */
 		getVisibleColumnCount : function(oTable) {
@@ -475,7 +475,7 @@ sap.ui.define([
 		/**
 		 * Returns the number of header rows
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {int}
+		 * @returns {int}
 		 * @private
 		 */
 		getHeaderRowCount : function(oTable) {
@@ -504,7 +504,7 @@ sap.ui.define([
 		 * @param {Object} oTable current table object
 		 * @param {int} iRowIndex the index of the row which height is needed
 		 * @private
-		 * @return {int}
+		 * @returns {int}
 		 * /
 		getRowHeightByIndex : function(oTable, iRowIndex) {
 			var iRowHeight = 0;
@@ -542,11 +542,11 @@ sap.ui.define([
 		 * rows is smaller than the number of visible rows)
 		 * @param {sap.ui.table.Table} oTable Instance of the table
 		 * @param {boolean} bIncludeEmptyRows
-		 * @return {int}
+		 * @returns {int}
 		 * @private
 		 */
 		getTotalRowCount : function(oTable, bIncludeEmptyRows) {
-			var iRowCount = oTable._getRowCount();
+			var iRowCount = oTable._getTotalRowCount();
 			if (bIncludeEmptyRows) {
 				iRowCount = Math.max(iRowCount, oTable.getVisibleRowCount());
 			}
@@ -562,7 +562,7 @@ sap.ui.define([
 		 * @private
 		 */
 		getNonEmptyVisibleRowCount : function(oTable) {
-			return Math.min(oTable.getVisibleRowCount(), oTable._getRowCount());
+			return Math.min(oTable.getVisibleRowCount(), oTable._getTotalRowCount());
 		},
 
 		/**
@@ -597,7 +597,7 @@ sap.ui.define([
 		/**
 		 * Returns the index of the row (in the rows aggregation) of the current focused cell
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {int}
+		 * @returns {int}
 		 * @private
 		 *
 		 */
@@ -611,7 +611,7 @@ sap.ui.define([
 		 * is a fixed column.
 		 * @param {sap.ui.table.Table} oTable Instance of the table
 		 * @param {int} iColIdx Index of column in the tables column aggregation
-		 * @return {boolean}
+		 * @returns {boolean}
 		 * @private
 		 */
 		isFixedColumn : function(oTable, iColIdx) {
@@ -621,7 +621,7 @@ sap.ui.define([
 		/**
 		 * Returns whether the table has fixed columns.
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {boolean}
+		 * @returns {boolean}
 		 * @private
 		 */
 		hasFixedColumns : function(oTable) {
@@ -761,7 +761,7 @@ sap.ui.define([
 		 * @param {int} iColIdx Index of column in the list of visible columns
 		 * @param {boolean} bIdxInColumnAgg Whether the given column index is the index in the columns (<code>true</code>)
 		 * 									aggregation or in the list of visble columns (<code>false</code>).
-		 * @return {Object}
+		 * @returns {Object}
 		 * @type {Object}
 		 * @property {sap.ui.table.Row} row Row of the table
 		 * @property {sap.ui.table.Column} column Column of the table
@@ -870,7 +870,7 @@ sap.ui.define([
 		 * @param {Function} fnHandler Function to handle the resize event
 		 * @param {boolean}[bRegisterParent] Flag to register the ResizeHandler for the parent DOM element of the one identified by sIdSuffix
 		 *
-		 * @return {int|undefined} ResizeHandler ID or undefined if the DOM element could not be found
+		 * @returns {int|undefined} ResizeHandler ID or undefined if the DOM element could not be found
 		 * @private
 		 */
 		registerResizeHandler : function(oTable, sIdSuffix, fnHandler, bRegisterParent) {
@@ -1099,12 +1099,13 @@ sap.ui.define([
 			if (oBinding && iFixedBottomRowCount > 0) {
 				var iVisibleRowCount = oTable.getVisibleRowCount();
 				var iFirstVisibleRow = oTable.getFirstVisibleRow();
+				var iTotalRowCount = oTable._getTotalRowCount();
 
-				if (oTable._iBindingLength >= iVisibleRowCount) {
+				if (iTotalRowCount >= iVisibleRowCount) {
 					iFirstFixedButtomIndex = iVisibleRowCount - iFixedBottomRowCount;
 				} else {
-					var iIdx = oTable._iBindingLength - iFixedBottomRowCount - iFirstVisibleRow;
-					if (iIdx >= 0 && (iFirstVisibleRow + iIdx) < oTable._iBindingLength) {
+					var iIdx = iTotalRowCount - iFixedBottomRowCount - iFirstVisibleRow;
+					if (iIdx >= 0 && (iFirstVisibleRow + iIdx) < iTotalRowCount) {
 						iFirstFixedButtomIndex = iIdx;
 					}
 				}

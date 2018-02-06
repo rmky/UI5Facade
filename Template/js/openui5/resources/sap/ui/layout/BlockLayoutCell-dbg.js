@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/Control', './library', 'sap/ui/core/theming/Parameters'],
-	function (Control, library, Parameters) {
+sap.ui.define(['sap/ui/core/Control', './library'],
+	function(Control, library) {
 		"use strict";
 
 		/**
@@ -20,7 +20,7 @@ sap.ui.define(['sap/ui/core/Control', './library', 'sap/ui/core/theming/Paramete
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -85,8 +85,8 @@ sap.ui.define(['sap/ui/core/Control', './library', 'sap/ui/core/theming/Paramete
 					 * The content to be included inside the cell
 					 */
 					content: {type: "sap.ui.core.Control", multiple: true, singularName: "content"}
-
-				}
+				},
+				designTime: true
 			}
 		});
 
@@ -123,4 +123,4 @@ sap.ui.define(['sap/ui/core/Control', './library', 'sap/ui/core/theming/Paramete
 
 		return BlockLayoutCell;
 
-	}, /* bExport= */ true);
+	});

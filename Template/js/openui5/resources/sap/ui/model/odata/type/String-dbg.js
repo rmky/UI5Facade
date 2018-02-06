@@ -4,10 +4,9 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/FormatException',
-		'sap/ui/model/odata/type/ODataType', 'sap/ui/model/ParseException',
+sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/type/ODataType',
 		'sap/ui/model/ValidateException', 'sap/ui/model/type/String'],
-	function(jQuery, FormatException, ODataType, ParseException, ValidateException, StringType) {
+	function(jQuery, ODataType, ValidateException, StringType) {
 	"use strict";
 
 	var rDigitsOnly = /^\d+$/,
@@ -107,7 +106,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/FormatException',
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @alias sap.ui.model.odata.type.String
 	 * @param {object} [oFormatOptions]

@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.layout.AssociativeSplitter.
-sap.ui.define(['./Splitter', './SplitterRenderer'],
-	function (Splitter, SplitterRenderer) {
+sap.ui.define(['./Splitter', './SplitterRenderer', 'jquery.sap.global'],
+	function(Splitter, SplitterRenderer, jQuery) {
 	"use strict";
 
 	/**
@@ -20,7 +20,7 @@ sap.ui.define(['./Splitter', './SplitterRenderer'],
 	 * @extends sap.ui.layout.Splitter
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -544,4 +544,4 @@ sap.ui.define(['./Splitter', './SplitterRenderer'],
 
 	return AssociativeSplitter;
 
-}, /* bExport= */ false);
+});

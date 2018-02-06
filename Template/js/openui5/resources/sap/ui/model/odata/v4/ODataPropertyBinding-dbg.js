@@ -7,14 +7,12 @@
 //Provides class sap.ui.model.odata.v4.ODataPropertyBinding
 sap.ui.define([
 	"jquery.sap.global",
-	"sap/ui/model/BindingMode",
 	"sap/ui/model/ChangeReason",
 	"sap/ui/model/PropertyBinding",
 	"./lib/_Cache",
 	"./lib/_SyncPromise",
 	"./ODataBinding"
-], function (jQuery, BindingMode, ChangeReason, PropertyBinding, _Cache, _SyncPromise,
-		asODataBinding) {
+], function (jQuery, ChangeReason, PropertyBinding, _Cache, _SyncPromise, asODataBinding) {
 	"use strict";
 
 	var sClassName = "sap.ui.model.odata.v4.ODataPropertyBinding",
@@ -52,7 +50,7 @@ sap.ui.define([
 	 * @mixes sap.ui.model.odata.v4.ODataBinding
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#hasPendingChanges as #hasPendingChanges
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#isInitial as #isInitial
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#refresh as #refresh
@@ -71,6 +69,7 @@ sap.ui.define([
 					throw new Error("Invalid path: " + sPath);
 				}
 				oBindingParameters = this.oModel.buildBindingParameters(mParameters, ["$$groupId"]);
+				this.oCheckUpdateCallToken = undefined;
 				this.sGroupId = oBindingParameters.$$groupId;
 				// Note: no system query options supported at property binding
 				this.mQueryOptions = this.oModel.buildQueryOptions(mParameters,
@@ -79,7 +78,7 @@ sap.ui.define([
 				this.fetchCache(oContext);
 				this.oContext = oContext;
 				this.bInitial = true;
-				this.bRequestTypeFailed = false;
+				this.sPathWithFetchTypeError = undefined;
 				this.vValue = undefined;
 				oModel.bindingCreated(this);
 			},
@@ -192,16 +191,20 @@ sap.ui.define([
 	 */
 	// @override
 	ODataPropertyBinding.prototype.checkUpdate = function (bForceUpdate, sChangeReason, sGroupId) {
-		var oChangeReason = {reason : sChangeReason || ChangeReason.Change},
+		var oCallToken = {},
+			oChangeReason = {reason : sChangeReason || ChangeReason.Change},
 			bDataRequested = false,
 			bFire = false,
+			oMetaModel = this.oModel.getMetaModel(),
 			mParametersForDataReceived,
 			oPromise,
 			aPromises = [],
 			oReadPromise,
+			sResolvedMetaPath,
 			sResolvedPath = this.oModel.resolve(this.sPath, this.oContext),
 			that = this;
 
+		this.oCheckUpdateCallToken = oCallToken;
 		if (!sResolvedPath) {
 			oPromise = Promise.resolve();
 			if (that.vValue !== undefined) {
@@ -212,13 +215,15 @@ sap.ui.define([
 			that.vValue = undefined; // ensure value is reset
 			return oPromise;
 		}
-		if (!this.bRequestTypeFailed && !this.oType && this.sInternalType !== "any") {
+		sResolvedMetaPath = oMetaModel.getMetaPath(sResolvedPath);
+		if (sResolvedMetaPath !== this.sPathWithFetchTypeError
+				&& !this.oType && this.sInternalType !== "any") {
 			// request type only once
-			aPromises.push(this.oModel.getMetaModel().fetchUI5Type(sResolvedPath)
+			aPromises.push(oMetaModel.fetchUI5Type(sResolvedPath)
 				.then(function (oType) {
 					that.setType(oType, that.sInternalType);
 				})["catch"](function (oError) {
-					that.bRequestTypeFailed = true;
+					that.sPathWithFetchTypeError = sResolvedMetaPath;
 					jQuery.sap.log.warning(oError.message, sResolvedPath, sClassName);
 				})
 			);
@@ -250,12 +255,12 @@ sap.ui.define([
 			// do not rethrow, ManagedObject doesn't react on this either
 			// throwing an exception would cause "Uncaught (in promise)" in Chrome
 			that.oModel.reportError("Failed to read path " + sResolvedPath, sClassName, oError);
-			if (!oError.canceled) {
-				// fire change event only if error was not caused by refresh
-				// and value was not undefined
-				bFire = that.vValue !== undefined;
+			if (!oError.canceled) { // error was not caused by refresh
 				mParametersForDataReceived = {error : oError};
-				that.vValue = undefined;
+				if (that.oCheckUpdateCallToken === oCallToken) { // latest call to checkUpdate
+					bFire = that.vValue !== undefined;
+					that.vValue = undefined;
+				}
 			}
 			return oError.canceled;
 		}));
@@ -283,23 +288,27 @@ sap.ui.define([
 	 */
 	// @override
 	ODataPropertyBinding.prototype.destroy = function () {
-		var that = this;
+		var oContext = this.oContext,
+			that = this;
 
 		this.oCachePromise.then(function (oCache) {
 			if (oCache) {
 				oCache.deregisterChange(undefined, that);
-			} else if (that.oContext) {
-				that.oContext.deregisterChange(that.sPath, that);
+			} else if (oContext) {
+				oContext.deregisterChange(that.sPath, that);
 			}
 		});
 		this.oModel.bindingDestroyed(this);
 		this.oCachePromise = undefined;
+		// resolving functions e.g. for oReadPromise in #checkUpdate may run after destroy of this
+		// binding and must not access the context
+		this.oContext = undefined;
 		PropertyBinding.prototype.destroy.apply(this, arguments);
 	};
 
 	/**
-	 * Hook method for {@link ODataBinding#fetchCache} to create a cache for this binding with the
-	 * given resource path and query options.
+	 * Hook method for {@link sap.ui.model.odata.v4.ODataBinding#fetchCache} to create a cache for
+	 * this binding with the given resource path and query options.
 	 *
 	 * @param {string} sResourcePath
 	 *   The resource path, for example "EMPLOYEES('1')/Name"
@@ -315,8 +324,8 @@ sap.ui.define([
 	};
 
 	/**
-	 * Hook method for {@link ODataBinding#fetchUseOwnCache} to determine the query options for
-	 * this binding.
+	 * Hook method for {@link sap.ui.model.odata.v4.ODataBinding#fetchQueryOptionsForOwnCache} to
+	 * determine the query options for this binding.
 	 *
 	 * @returns {SyncPromise}
 	 *   A promise resolving with an empty map as a property binding has no query options
@@ -325,6 +334,26 @@ sap.ui.define([
 	 */
 	ODataPropertyBinding.prototype.doFetchQueryOptions = function () {
 		return oDoFetchQueryOptionsPromise;
+	};
+
+	/**
+	 * Returns the path for the unit or currency of the given property path.
+	 *
+	 * @param {string} sPropertyPath
+	 *   The path of this property relative to the entity
+	 * @returns {string}
+	 *   The path of the unit or currency relative to the entity
+	 *
+	 * @private
+	 */
+	ODataPropertyBinding.prototype.getUnitOrCurrencyPath = function (sPropertyPath) {
+		var oMetaModel = this.oModel.getMetaModel(),
+			sResolvedPath = this.oModel.resolve(this.sPath, this.oContext),
+			mAnnotations = oMetaModel.getObject("@", oMetaModel.getMetaContext(sResolvedPath)),
+			oMeasureAnnotation = mAnnotations["@Org.OData.Measures.V1.Unit"]
+				|| mAnnotations["@Org.OData.Measures.V1.ISOCurrency"];
+
+		return oMeasureAnnotation && oMeasureAnnotation.$Path;
 	};
 
 	/**
@@ -559,7 +588,8 @@ sap.ui.define([
 						.then(function (oResult) {
 							return that.oContext.getBinding().updateValue(sGroupId,
 								oResult.propertyPath, vValue, reportError, oResult.editUrl,
-								oResult.entityPath);
+								oResult.entityPath,
+								that.getUnitOrCurrencyPath(oResult.propertyPath));
 						})
 						["catch"](function (oError) {
 							if (!oError.canceled) {
@@ -588,4 +618,4 @@ sap.ui.define([
 	};
 
 	return ODataPropertyBinding;
-}, /* bExport= */ true);
+});

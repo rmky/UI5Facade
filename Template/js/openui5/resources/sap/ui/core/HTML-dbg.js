@@ -37,9 +37,8 @@ sap.ui.define(['jquery.sap.global', './Control', './RenderManager'],
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
-	 * @constructor
 	 * @public
 	 * @alias sap.ui.core.HTML
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel

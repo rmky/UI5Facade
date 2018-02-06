@@ -22,14 +22,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	 * @namespace
 	 * @name sap.m
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.m",
-		version: "1.50.8",
+		version: "1.52.5",
 		dependencies : ["sap.ui.core"],
 		types: [
 			"sap.m.BackgroundDesign",
@@ -45,6 +45,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.FlexAlignItems",
 			"sap.m.FlexAlignSelf",
 			"sap.m.FlexDirection",
+			"sap.m.FlexWrap",
 			"sap.m.FlexJustifyContent",
 			"sap.m.FlexRendertype",
 			"sap.m.FrameType",
@@ -74,6 +75,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.PanelAccessibleRole",
 			"sap.m.PlacementType",
 			"sap.m.PopinDisplay",
+			"sap.m.PopinLayout",
 			"sap.m.QuickViewGroupElementType",
 			"sap.m.RatingIndicatorVisualMode",
 			"sap.m.ScreenSize",
@@ -91,12 +93,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 		],
 		interfaces: [
 			"sap.m.IBar",
+			"sap.m.IBreadcrumbs",
 			"sap.m.IconTab",
 			"sap.m.IScale",
 			"sap.m.semantic.IGroup",
 			"sap.m.semantic.IFilter",
 			"sap.m.semantic.ISort",
-			"sap.m.ObjectHeaderContainer"
+			"sap.m.ObjectHeaderContainer",
+			"sap.m.IOverflowToolbarContent"
 		],
 		controls: [
 			"sap.m.ActionListItem",
@@ -117,6 +121,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.CustomListItem",
 			"sap.m.CustomTile",
 			"sap.m.CustomTreeItem",
+			"sap.m.ColumnHeader",
 			"sap.m.DatePicker",
 			"sap.m.DateRangeSelection",
 			"sap.m.DateTimeField",
@@ -160,6 +165,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.MessageView",
 			"sap.m.MessageStrip",
 			"sap.m.MultiComboBox",
+			"sap.m.MultiEditField",
 			"sap.m.MultiInput",
 			"sap.m.NavContainer",
 			"sap.m.NewsContent",
@@ -178,6 +184,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.ObjectStatus",
 			"sap.m.OverflowToolbar",
 			"sap.m.OverflowToolbarButton",
+			"sap.m.OverflowToolbarToggleButton",
 			"sap.m.P13nColumnsPanel",
 			"sap.m.P13nSelectionPanel",
 			"sap.m.P13nDimMeasurePanel",
@@ -251,6 +258,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 		elements: [
 			"sap.m.Column",
 			"sap.m.FlexItemData",
+			"sap.m.FeedListItemAction",
 			"sap.m.IconTabFilter",
 			"sap.m.IconTabSeparator",
 			"sap.m.LightBoxItem",
@@ -313,6 +321,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 		],
 		extensions: {
 			flChangeHandlers: {
+				"sap.m.ActionSheet": {
+					"moveControls": "default"
+				},
 				"sap.m.Bar": "sap/m/flexibility/Bar",
 				"sap.m.Button": "sap/m/flexibility/Button",
 				"sap.m.CheckBox": "sap/m/flexibility/CheckBox",
@@ -339,6 +350,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 					"unhideControl": "default",
 					"moveControls": "default"
 				},
+				"sap.m.IconTabBar": {
+					"moveControls": "default"
+				},
+				"sap.m.IconTabFilter": "sap/m/flexibility/IconTabFilter",
 				"sap.m.Image": {
 					"hideControl": "default",
 					"unhideControl": "default"
@@ -383,6 +398,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 				"sap.m.OverflowToolbar":"sap/m/flexibility/OverflowToolbar",
 				"sap.m.Page": "sap/m/flexibility/Page",
 				"sap.m.Panel": "sap/m/flexibility/Panel",
+				"sap.m.Popover": {
+					"moveControls": "default"
+				},
 				"sap.m.RadioButton": "sap/m/flexibility/RadioButton",
 				"sap.m.RatingIndicator": {
 					"hideControl": "default",
@@ -403,6 +421,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 				},
 				"sap.m.StandardListItem":"sap/m/flexibility/StandardListItem",
 				"sap.m.Table": "sap/m/flexibility/Table",
+				"sap.m.Column": {
+					"hideControl": "default",
+					"unhideControl": "default"
+				},
 				"sap.m.Text": "sap/m/flexibility/Text",
 				"sap.m.Title": "sap/m/flexibility/Title",
 				"sap.m.Toolbar": "sap/m/flexibility/Toolbar",
@@ -1324,6 +1346,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	 */
 
 	/**
+	 * Interface for controls which have the meaning of a breadcrumbs navigation.
+	 *
+	 * @since 1.52
+	 * @name sap.m.IBreadcrumbs
+	 * @interface
+	 * @public
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	/**
 	 *
 	 *   Interface for controls which are suitable as a Scale for the Slider/RangeSlider.
 	 *
@@ -1412,6 +1444,50 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	 * @interface
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	/**
+	 *
+	 *   Interface for controls which can have special behavior inside <code>sap.m.OverflowToolbar</code>.
+	 *   Controls that implement this interface must provide a <code>getOverflowToolbarConfig</code> method
+	 *   that accepts no arguments and returns an object with the following fields:
+	 *   <ul>
+	 *       <li><code>canOverflow</code> - A boolean that tells whether the control can move to the overflow menu or not.
+	 *
+	 *       <b>Note:</b> Even if <code>canOverflow</code> is set to <code>false</code>, the <code>propsUnrelatedToSize</code> field is taken into account,
+	 *       allowing to optimize the behavior of controls that do not need to overflow, but are used in an <code>sap.m.OverflowToolbar</code> regardless.</li>
+	 *
+	 *       <li><code>autoCloseEvents</code> - An array of strings, listing all of the control's events that should trigger the closing of the overflow menu, when fired.</li>
+	 *
+	 *       <li><code>propsUnrelatedToSize</code> - An array of strings, listing all of the control's properties that, when changed, should not cause the overflow toolbar to invalidate.
+	 *
+	 *       <b>Note:</b> By default <code>sap.m.OverflowToolbar</code> invalidates whenever any property of a child control changes. This is to ensure that whenever the size of a child control changes, the overflow toolbar's layout is recalculated.
+	 *       Some properties however do not affect control size, making it unnecessary to invalidate the overflow toolbar when they change. You can list them here for optimization purposes.</li>
+	 *
+	 *       <li><code>onBeforeEnterOverflow(oControl)</code> - A callback function that will be invoked before moving the control into the overflow menu. The control instance will be passed as an argument.
+	 *
+	 *       <b>Note:</b> The context of the function is not the control instance (use the <code>oControl</code> parameter for this purpose), but rather an internal helper object, associated with the current <code>sap.m.OverflowToolbar</code> instance.
+	 *       This object only needs to be manipulated in special cases (e.g. when you want to store state on it, rather than on the control instance).</li>
+	 *
+	 *       <li><code>onAfterExitOverflow(oControl)</code> - A callback function that will be invoked after taking the control out of the overflow menu (before moving it back to the toolbar itself). The control instance will be passed as an argument.
+	 *
+	 *       <b>Note:</b> See: <code>onBeforeEnterOverflow</code> for details about the function's context.</li>
+	 *   </ul>
+	 *
+	 *   <b>Important:</b> In addition, the control can implement a CSS class, scoped with the <code>.sapMOverflowToolbarMenu-CTX</code> context selector, that will be applied whenever the control is inside the overflow menu.
+	 *   For example, to make your control take up the whole width of the overflow menu, you can add a context class to your control's base CSS file like this:
+	 *
+	 *   <pre>
+	 *       .sapMOverflowToolbarMenu-CTX .sapMyControlClass {
+	 *       	width: 100%;
+	 *       }
+	 *   </pre>
+	 *
+	 * @since 1.52
+	 * @name sap.m.IOverflowToolbarContent
+	 * @interface
+	 * @public
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
 	 */
 
 	/**
@@ -2430,6 +2506,44 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 		WithoutHeader : "WithoutHeader"
 	};
 
+	/**
+	 * Defines the layout options of the table popins.
+	 * @enum {string}
+	 * @public
+	 * @since 1.52
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.m.PopinLayout = {
+
+		/**
+		 * Sets block layout for rendering the table popins. The elements inside the popin container are rendered one below the other.
+		 * <b>Note:</b> This option enables the former rendering behavior of the table popins.
+		 * @public
+		 * @since 1.52
+		 */
+		Block : "Block",
+
+		/**
+		 * Sets grid layout for rendering the table popins.
+		 * The grid width for each table popin is small, hence this allows more content to be rendered in a single popin row.
+		 * This value defines small grid width for the table popins.
+		 *
+		 * <b>Note:</b> This feature is currently not supported with IE and Edge browsers.
+		 * @public
+		 * @since 1.52
+		 */
+		GridSmall: "GridSmall",
+
+		/**
+		 * Sets grid layout for rendering the table popins.
+		 * The grid width for each table popin is comparatively larger than <code>GridSmall</code>, hence this allows less content to be rendered in a single popin row.
+		 *
+		 * <b>Note:</b> This feature is currently not supported with IE and Edge browsers.
+		 * @public
+		 * @since 1.52
+		 */
+		GridLarge: "GridLarge"
+	};
 
 	/**
 	 * Possible values for the visualization of float values in the RatingIndicator control.

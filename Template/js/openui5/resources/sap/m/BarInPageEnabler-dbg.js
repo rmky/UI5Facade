@@ -5,9 +5,12 @@
  */
 
 // Provides helper sap.m.BarInPageEnabler
-sap.ui.define(['sap/ui/base/Object', './PageAccessibleLandmarkInfo', 'sap/ui/core/InvisibleText'],
-	function(Object, PageAccessibleLandmarkInfo, InvisibleText) {
+sap.ui.define(['sap/ui/base/Object', 'sap/ui/core/InvisibleText', 'sap/m/library', 'jquery.sap.global'],
+	function(Object, InvisibleText, library, jQuery) {
 	"use strict";
+
+	// shortcut for sap.m.IBarHTMLTag
+	var IBarHTMLTag = library.IBarHTMLTag;
 
 	var mContexts = {
 		footer : {
@@ -71,7 +74,7 @@ sap.ui.define(['sap/ui/base/Object', './PageAccessibleLandmarkInfo', 'sap/ui/cor
 		getHTMLTag : function () {
 			if (!this.hasOwnProperty("sTag")) {
 				//Div is the default
-				this.sTag = sap.m.IBarHTMLTag.Div;
+				this.sTag = IBarHTMLTag.Div;
 			}
 
 			return this.sTag;
@@ -272,4 +275,4 @@ sap.ui.define(['sap/ui/base/Object', './PageAccessibleLandmarkInfo', 'sap/ui/cor
 
 	return BarInPageEnabler;
 
-}, /* bExport= */ true);
+});

@@ -5,9 +5,13 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 
 */
-sap.ui.define(['jquery.sap.global'],
-	function(jQuery) {
+sap.ui.define(["sap/ui/core/library"],
+	function(coreLibrary) {
 	"use strict";
+
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
 
 
 	/**
@@ -91,7 +95,7 @@ sap.ui.define(['jquery.sap.global'],
 		oRm.addClass("sapMTokenText");
 		oRm.writeClasses();
 		// set text direction
-		if (sTextDir !== sap.ui.core.TextDirection.Inherit) {
+		if (sTextDir !== TextDirection.Inherit) {
 			oRm.writeAttribute("dir", sTextDir.toLowerCase());
 		}
 		oRm.write(">");

@@ -1,19 +1,21 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.codeeditor">
-  <module name="sap/ui/codeeditor/CodeEditor.js" size="10614" compressedSize="4406">
+  <module name="sap/ui/codeeditor/CodeEditor.js" size="12945" compressedSize="4770">
     <description>global ace</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/codeeditor/js/ace/ace.js"/>
+      <module name="sap/ui/codeeditor/js/ace/ext-language_tools.js"/>
       <module name="sap/ui/codeeditor/js/ace/mode-javascript.js"/>
       <module name="sap/ui/codeeditor/js/ace/mode-json.js"/>
       <module name="sap/ui/core/Control.js"/>
     </requires>
   </module>
-  <module name="sap/ui/codeeditor/library-preload.js" size="5822">
+  <module name="sap/ui/codeeditor/library-preload.js" size="6336">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/codeeditor/js/ace/ace.js"/>
+      <module name="sap/ui/codeeditor/js/ace/ext-language_tools.js"/>
       <module name="sap/ui/codeeditor/js/ace/mode-javascript.js"/>
       <module name="sap/ui/codeeditor/js/ace/mode-json.js"/>
       <module name="sap/ui/core/Control.js"/>
@@ -29,6 +31,7 @@
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/codeeditor/js/ace/ace.js"/>
+      <module name="sap/ui/codeeditor/js/ace/ext-language_tools.js"/>
       <module name="sap/ui/codeeditor/js/ace/mode-javascript.js"/>
       <module name="sap/ui/codeeditor/js/ace/mode-json.js"/>
       <module name="sap/ui/core/Control.js"/>
@@ -48,6 +51,6 @@
       <module name="sap/ui/core/Core.js"/>
     </requires>
   </module>
-  <module name="sap/ui/codeeditor/manifest.json" size="806">
+  <module name="sap/ui/codeeditor/manifest.json" size="947">
   </module>
 </library>

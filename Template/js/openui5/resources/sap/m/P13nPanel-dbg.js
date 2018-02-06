@@ -6,8 +6,8 @@
 
 // Provides control sap.m.P13nPanel.
 sap.ui.define([
-	'jquery.sap.global', './library', 'sap/ui/core/Control'
-], function(jQuery, library, Control) {
+	'./library', 'sap/ui/core/Control'
+], function(library, Control) {
 	"use strict";
 
 	/**
@@ -17,7 +17,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class Base type for <code>panels</code> aggregation in <code>P13nDialog</code> control.
 	 * @extends sap.ui.core.Control
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -182,4 +182,4 @@ sap.ui.define([
 
 	return P13nPanel;
 
-}, /* bExport= */true);
+});

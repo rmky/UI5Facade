@@ -5,9 +5,15 @@
  */
 
 // Provides control sap.m.ColumnListItem.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './ListItemBase', './library'],
-	function(jQuery, Element, ListItemBase, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './ListItemBase', './library', 'sap/ui/core/library'],
+	function(jQuery, Element, ListItemBase, library, coreLibrary) {
 	"use strict";
+
+	// shortcut for sap.m.ListType
+	var ListType = library.ListType;
+
+	// shortcut for sap.ui.core.VerticalAlign
+	var VerticalAlign = coreLibrary.VerticalAlign;
 
 	/**
 	 * Constructor for a new ColumnListItem.
@@ -25,7 +31,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './ListItemBase', './
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -43,7 +49,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './ListItemBase', './
 			 * <b>Note:</b> <code>vAlign</code> property of <code>sap.m.Column</code> overrides the property for cell vertical alignment if both are set.
 			 * @since 1.20
 			 */
-			vAlign : {type : "sap.ui.core.VerticalAlign", group : "Appearance", defaultValue : sap.ui.core.VerticalAlign.Inherit}
+			vAlign : {type : "sap.ui.core.VerticalAlign", group : "Appearance", defaultValue : VerticalAlign.Inherit}
 		},
 		defaultAggregation : "cells",
 		aggregations : {
@@ -158,7 +164,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './ListItemBase', './
 	 * @protected
 	 */
 	ColumnListItem.prototype.hasPopin = function() {
-		return !!(this._oPopin && this.getTable().hasPopin());
+		return this._oPopin;
 	};
 
 	/**
@@ -237,7 +243,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './ListItemBase', './
 	// determines whether type column for this item is necessary or not
 	ColumnListItem.prototype._needsTypeColumn = function() {
 		var sType = this.getType(),
-			mType = sap.m.ListType;
+			mType = ListType;
 
 		return	this.getVisible() && (
 					sType == mType.Detail ||
@@ -280,4 +286,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './ListItemBase', './
 
 	return ColumnListItem;
 
-}, /* bExport= */ true);
+});

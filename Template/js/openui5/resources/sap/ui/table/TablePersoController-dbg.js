@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @since 1.21.1
 	 *
 	 * @constructor
@@ -221,7 +221,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
 	/**
 	 * Refresh the personalizations (reloads data from service).
 	 *
-	 * @return {jQuery.Promise} <code>jQuery Promise</code> which is resolved once the refresh is finished
+	 * @returns {jQuery.Promise} <code>jQuery Promise</code> which is resolved once the refresh is finished
 	 * @public
 	 */
 	TablePersoController.prototype.refresh = function() {
@@ -249,7 +249,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
 	/**
 	 * Saves the current personalization state.
 	 *
-	 * @return {jQuery.Promise} <code>jQuery Promise</code> which is resolved once the save is finished
+	 * @returns {jQuery.Promise} <code>jQuery Promise</code> which is resolved once the save is finished
 	 * @public
 	 */
 	TablePersoController.prototype.savePersonalizations = function() {

@@ -40,7 +40,8 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
+		 * @since 1.48
 		 *
 		 * @constructor
 		 * @public
@@ -265,8 +266,12 @@ sap.ui.define([
 					sParametrizedSource = sParametrizedSource.substr(0, iCrossPosition);
 				}
 				sParametrizedSource += "#view=FitH";
+				if (!jQuery.sap.validateUrl(sParametrizedSource)) {
+					sParametrizedSource = encodeURI(sParametrizedSource);
+				}
+
 				if (jQuery.sap.validateUrl(sParametrizedSource)) {
-					oIframeElement.attr("src", encodeURI(sParametrizedSource));
+					oIframeElement.attr("src", sParametrizedSource);
 				} else {
 					this._fireErrorEvent();
 				}
@@ -619,4 +624,4 @@ sap.ui.define([
 		PDFViewerRenderManager.extendPdfViewer(PDFViewer);
 
 		return PDFViewer;
-	}, /* bExport= */ true);
+	});

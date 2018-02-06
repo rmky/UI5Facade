@@ -15,7 +15,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.ChangePersistenceFactory
 	 * @experimental Since 1.27.0
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 */
 	var ChangePersistenceFactory = {};
 
@@ -96,7 +96,9 @@ sap.ui.define([
 	 * @private
 	 */
 	ChangePersistenceFactory._doLoadComponent = function (oConfig, oManifest) {
-		var oChangePersistenceWrapper = {oChangePersistence: {}, oRequestOptions: {}};
+		var oChangePersistenceWrapper = {oChangePersistence: {}, oRequestOptions: {
+			appName: oConfig.name
+		}};
 		var sComponentName = Utils.getFlexReference(oManifest);
 		var sAppVersion = Utils.getAppVersionFromManifest(oManifest);
 		var sMaxLayer, oStartupParameters, oTechnicalParameters;

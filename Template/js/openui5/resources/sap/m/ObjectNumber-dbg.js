@@ -5,9 +5,19 @@
  */
 
 // Provides control sap.m.ObjectNumber.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/Renderer'],
-	function(jQuery, library, Control, Renderer) {
+sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/Renderer', 'sap/ui/core/library'],
+	function(library, Control, Renderer, coreLibrary) {
 	"use strict";
+
+
+	// shortcut for sap.ui.core.TextAlign
+	var TextAlign = coreLibrary.TextAlign;
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
+
+	// shortcut for sap.ui.core.ValueState
+	var ValueState = coreLibrary.ValueState;
 
 
 	/**
@@ -21,7 +31,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * colors to provide additional meaning about the object to the user.
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -56,7 +66,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			/**
 			 * Determines the object number's value state. Setting this state will cause the number to be rendered in state-specific colors (only blue-crystal theme).
 			 */
-			state : {type : "sap.ui.core.ValueState", group : "Misc", defaultValue : sap.ui.core.ValueState.None},
+			state : {type : "sap.ui.core.ValueState", group : "Misc", defaultValue : ValueState.None},
 
 			/**
 			 * Defines the number units qualifier. If numberUnit and unit are both set, the unit value is used.
@@ -67,12 +77,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			/**
 			 * Available options for the number and unit text direction are LTR(left-to-right) and RTL(right-to-left). By default, the control inherits the text direction from its parent control.
 			 */
-			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : sap.ui.core.TextDirection.Inherit},
+			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit},
 
 			/**
 			 * Sets the horizontal alignment of the number and unit.
 			 */
-			textAlign : {type : "sap.ui.core.TextAlign", group : "Appearance", defaultValue : sap.ui.core.TextAlign.Begin}
+			textAlign : {type : "sap.ui.core.TextAlign", group : "Appearance", defaultValue : TextAlign.Begin}
 		},
 		associations : {
 
@@ -133,4 +143,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	return ObjectNumber;
 
-}, /* bExport= */ true);
+});

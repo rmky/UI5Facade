@@ -9,6 +9,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 	function(jQuery, Control, Form, library) {
 	"use strict";
 
+	// shortcut for sap.ui.layout.BackgroundDesign
+	var BackgroundDesign = library.BackgroundDesign;
+
 	/**
 	 * Constructor for a new sap.ui.layout.form.FormLayout.
 	 *
@@ -24,7 +27,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -43,7 +46,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 			 *
 			 * @since 1.36.0
 			 */
-			backgroundDesign : {type : "sap.ui.layout.BackgroundDesign", group : "Appearance", defaultValue : sap.ui.layout.BackgroundDesign.Translucent}
+			backgroundDesign : {type : "sap.ui.layout.BackgroundDesign", group : "Appearance", defaultValue : BackgroundDesign.Translucent}
 		}
 	}});
 
@@ -51,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 
 	FormLayout.prototype.contentOnAfterRendering = function(oFormElement, oControl){
 
-		if (sap.ui.layout.form.FormHelper.bArrowKeySupport) {
+		if (library.form.FormHelper.bArrowKeySupport) {
 			jQuery(oControl.getFocusDomRef()).data("sap.InNavArea", true);
 		}
 
@@ -111,14 +114,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 
 	FormLayout.prototype.onsapright = function(oEvent){
 
-		if (sap.ui.layout.form.FormHelper.bArrowKeySupport) {
+		if (library.form.FormHelper.bArrowKeySupport) {
 			var bRtl = sap.ui.getCore().getConfiguration().getRTL();
-			var that = this;
 
 			if (!bRtl) {
-				this.navigateForward(oEvent, that);
+				this.navigateForward(oEvent);
 			} else {
-				this.navigateBack(oEvent, that);
+				this.navigateBack(oEvent);
 			}
 		}
 
@@ -126,14 +128,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 
 	FormLayout.prototype.onsapleft = function(oEvent){
 
-		if (sap.ui.layout.form.FormHelper.bArrowKeySupport) {
+		if (library.form.FormHelper.bArrowKeySupport) {
 			var bRtl = sap.ui.getCore().getConfiguration().getRTL();
-			var that = this;
 
 			if (!bRtl) {
-				this.navigateBack(oEvent, that);
+				this.navigateBack(oEvent);
 			} else {
-				this.navigateForward(oEvent, that);
+				this.navigateForward(oEvent);
 			}
 		}
 
@@ -141,7 +142,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 
 	FormLayout.prototype.onsapdown = function(oEvent){
 
-		if (sap.ui.layout.form.FormHelper.bArrowKeySupport) {
+		if (library.form.FormHelper.bArrowKeySupport) {
 			var oControl = oEvent.srcControl;
 			var oNewDomRef;
 			var oRoot = this.findElement(oControl);
@@ -164,7 +165,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 
 	FormLayout.prototype.onsapup = function(oEvent){
 
-		if (sap.ui.layout.form.FormHelper.bArrowKeySupport) {
+		if (library.form.FormHelper.bArrowKeySupport) {
 			var oControl = oEvent.srcControl;
 			var iCurrentIndex = 0;
 			var oNewDomRef;
@@ -190,7 +191,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 
 	FormLayout.prototype.onsaphome = function(oEvent){
 
-		if (sap.ui.layout.form.FormHelper.bArrowKeySupport) {
+		if (library.form.FormHelper.bArrowKeySupport) {
 			var oControl = oEvent.srcControl;
 			var iCurrentIndex = 0;
 			var oNewDomRef;
@@ -213,7 +214,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 
 	FormLayout.prototype.onsaptop = function(oEvent){
 
-		if (sap.ui.layout.form.FormHelper.bArrowKeySupport) {
+		if (library.form.FormHelper.bArrowKeySupport) {
 			var oControl = oEvent.srcControl;
 			var oRoot = this.findElement(oControl);
 			var oElement = oRoot.element;
@@ -240,7 +241,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 
 	FormLayout.prototype.onsapend = function(oEvent){
 
-		if (sap.ui.layout.form.FormHelper.bArrowKeySupport) {
+		if (library.form.FormHelper.bArrowKeySupport) {
 			var oControl = oEvent.srcControl;
 			var iCurrentIndex = 0;
 			var oNewDomRef;
@@ -262,7 +263,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 
 	FormLayout.prototype.onsapbottom = function(oEvent){
 
-		if (sap.ui.layout.form.FormHelper.bArrowKeySupport) {
+		if (library.form.FormHelper.bArrowKeySupport) {
 			var oControl = oEvent.srcControl;
 			var oRoot = this.findElement(oControl);
 			var oElement = oRoot.element;
@@ -376,7 +377,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 		var iCurrentIndex = oForm.indexOfFormContainer(oContainer);
 
 		// goto previous container
-		while (!oNewDomRef && iCurrentIndex >= 0) {
+		while (!oNewDomRef && iCurrentIndex > 0) {
 			var oPrevContainer = aContainers[iCurrentIndex - 1];
 			if (!oPrevContainer.getExpandable() || oPrevContainer.getExpanded()) {
 				oNewDomRef = this.findFirstFieldOfFirstElementInPrevContainer(oForm, iCurrentIndex - 1);
@@ -903,4 +904,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './Form', 'sap/ui/lay
 
 	return FormLayout;
 
-}, /* bExport= */ true);
+});

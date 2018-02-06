@@ -3,9 +3,13 @@
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global'],
-	function(jQuery) {
+sap.ui.define(["sap/ui/core/library"],
+	function(coreLibrary) {
 	"use strict";
+
+
+	// shortcut for sap.ui.core.ValueState
+	var ValueState = coreLibrary.ValueState;
 
 
 	/**
@@ -76,13 +80,13 @@ sap.ui.define(['jquery.sap.global'],
 		oRm.addClass("sapMPIBar");
 
 		switch (sState) {
-		case sap.ui.core.ValueState.Warning:
+		case ValueState.Warning:
 			oRm.addClass("sapMPIBarCritical");
 			break;
-		case sap.ui.core.ValueState.Error:
+		case ValueState.Error:
 			oRm.addClass("sapMPIBarNegative");
 			break;
-		case sap.ui.core.ValueState.Success:
+		case ValueState.Success:
 			oRm.addClass("sapMPIBarPositive");
 			break;
 		default:

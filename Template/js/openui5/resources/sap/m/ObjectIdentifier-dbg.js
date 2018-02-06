@@ -5,9 +5,14 @@
  */
 
 // Provides control sap.m.ObjectIdentifier.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/ui/core/InvisibleText'],
-	function(jQuery, library, Control, IconPool, InvisibleText) {
+sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/ui/core/InvisibleText', 'sap/ui/core/library', 'sap/ui/Device', 'sap/ui/base/ManagedObject'],
+	function(library, Control, IconPool, InvisibleText, coreLibrary, Device, ManagedObject) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
 
 
 
@@ -20,7 +25,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @class
 	 * The ObjectIdentifier is a display control that enables the user to easily identify a specific object. The ObjectIdentifier title is the key identifier of the object and additional text and icons can be used to further distinguish it from other objects.
 	 * @extends sap.ui.core.Control
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -80,7 +85,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			 * Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 			 * @since 1.28.0
 			 */
-			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : sap.ui.core.TextDirection.Inherit}
+			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit}
 		},
 		aggregations : {
 
@@ -216,7 +221,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 */
 	ObjectIdentifier.prototype._getIcon = function(sURI, sImageId) {
 
-		var sSize = sap.ui.Device.system.phone ? "1em" : "1em";
+		var sSize = Device.system.phone ? "1em" : "1em";
 		var oImage;
 
 		oImage = this._icon || IconPool.createControlByURI({
@@ -244,14 +249,14 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			if (this.getProperty("titleActive")) {
 				oTitleControl = new sap.m.Link({
 					id : this.getId() + "-link",
-					text: this.getProperty("title"),
+					text: ManagedObject.escapeSettingsValue(this.getProperty("title")),
 					//Add a custom hidden role "ObjectIdentifier" with hidden text
 					ariaLabelledBy: this._oAriaCustomRole
 				});
 			} else {
 				oTitleControl = new sap.m.Text({
 					id : this.getId() + "-txt",
-					text: this.getProperty("title")
+					text: ManagedObject.escapeSettingsValue(this.getProperty("title"))
 				});
 			}
 			this.setAggregation("_titleControl", oTitleControl, true);
@@ -276,7 +281,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			this.destroyAggregation("_titleControl", true);
 			oTitleControl = new sap.m.Link({
 				id : this.getId() + "-link",
-				text: this.getProperty("title"),
+				text: ManagedObject.escapeSettingsValue(this.getProperty("title")),
 				//Add a custom hidden role "ObjectIdentifier" with hidden text
 				ariaLabelledBy: this._oAriaCustomRole
 			});
@@ -285,7 +290,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			this.destroyAggregation("_titleControl", true);
 			oTitleControl = new sap.m.Text({
 				id : this.getId() + "-txt",
-				text: this.getProperty("title")
+				text: ManagedObject.escapeSettingsValue(this.getProperty("title"))
 			});
 			this.setAggregation("_titleControl", oTitleControl, true);
 		}
@@ -313,7 +318,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 		if (!oTextControl) {
 			oTextControl = new sap.m.Text({
-				text: this.getProperty("text")
+				text: ManagedObject.escapeSettingsValue(this.getProperty("text"))
 			});
 			this.setAggregation("_textControl", oTextControl, true);
 		}
@@ -476,4 +481,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	return ObjectIdentifier;
 
-}, /* bExport= */ true);
+});

@@ -18,7 +18,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @private
 	 * @sap-restricted
 	 */
@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated.api
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @private
 	 * @sap-restricted
 	 */
@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChange
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @private
 	 * @sap-restricted
 	 */
@@ -178,7 +178,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChangeFactory
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @private
 	 * @sap-restricted
 	 */
@@ -191,6 +191,7 @@ sap.ui.define([
 	 * @param {string} sReference the descriptor id for which the change is created
 	 * @param {object} oInlineChange the inline change instance
 	 * @param {string} sLayer layer of the descriptor change
+	 * @param {object} oAppComponent application component to get the version from
 	 *
 	 * @return {Promise} resolving the new Change instance
 	 *

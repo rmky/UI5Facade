@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.unified.MenuItem.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/IconPool', './MenuItemBase', './library'],
-	function(jQuery, IconPool, MenuItemBase, library) {
+sap.ui.define(['sap/ui/core/IconPool', './MenuItemBase', './library'],
+	function(IconPool, MenuItemBase, library) {
 	"use strict";
 
 
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/IconPool', './MenuItemBase', '.
 	 * @extends sap.ui.unified.MenuItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -126,4 +126,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/IconPool', './MenuItemBase', '.
 
 	return MenuItem;
 
-}, /* bExport= */ true);
+});

@@ -123,7 +123,7 @@ sap.ui.define([
 		 * Returns the index of the column (in the array of visible columns (see Table._getVisibleColumns())) of the current focused cell
 		 * In case the focused cell is a row action the given index equals the length of the visible columns.
 		 * This function must not be used if the focus is on a row header.
-		 * @return {int}
+		 * @returns {int}
 		 */
 		getColumnIndexOfFocusedCell: function(oExtension) {
 			var oTable = oExtension.getTable();
@@ -391,6 +391,11 @@ sap.ui.define([
 				if (((!oInfo || oInfo.focusable) && !this._readonly) || (bIsTreeColumnCell && oTableInstances.row
 																		 && oTableInstances.row._bHasChildren)) {
 					aDescriptions.push(sTableId + "-toggleedit");
+				}
+
+				if (TableUtils.Grouping.isTreeMode(oTable) && !!$Cell.parent().attr("aria-selected")) {
+					// aria-selected on the row seems not be enough for treegrids
+					aLabels.push(sTableId + "-ariarowselected");
 				}
 			}
 
@@ -735,9 +740,7 @@ sap.ui.define([
 					break;
 
 				case TableAccExtension.ELEMENTTYPES.COLUMNHEADER_ROW: //The area which contains the column headers
-					if (!TableUtils.hasRowHeader(oTable)) {
-						mAttributes["role"] = "row";
-					}
+					mAttributes["role"] = "row";
 					addAriaForOverlayOrNoData(oTable, mAttributes, true, false);
 					break;
 
@@ -747,7 +750,9 @@ sap.ui.define([
 
 				case TableAccExtension.ELEMENTTYPES.TH: //The "technical" column headers
 					var bHasFixedColumns = oTable.getFixedColumnCount() > 0;
-					mAttributes["role"] = bHasFixedColumns ? "columnheader" : "presentation";
+					if (!bHasFixedColumns) {
+						mAttributes["role"] = "presentation";
+					}
 					mAttributes["scope"] = "col";
 					if (bHasFixedColumns) {
 						if (mParams && mParams.column) {
@@ -780,7 +785,7 @@ sap.ui.define([
 						mAttributes["aria-selected"] = "true";
 						bSelected = true;
 					}
-					if (TableUtils.isRowSelectionAllowed(oTable)) {
+					if (TableUtils.isRowSelectionAllowed(oTable) && oTable.getContextByIndex(mParams.index)) {
 						var mTooltipTexts = oExtension.getAriaTextsForSelectionMode(true);
 						mAttributes["title"] = mTooltipTexts.mouse[bSelected ? "rowDeselect" : "rowSelect"];
 					}
@@ -855,7 +860,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension
@@ -905,9 +910,9 @@ sap.ui.define([
 		 *
 		 * @param {sap.ui.table.TableAccExtension.ELEMENTTYPES} sType The type of the table area to get the aria attributes for.
 		 * @param {Object} mParams Accessibility parameters.
-		 * @return {Object} The aria attributes.
-		 * @protected
+		 * @returns {Object} The aria attributes.
 		 * @see ExtensionHelper.getAriaAttributesFor
+		 * @protected
 		 */
 		getAriaAttributesFor: function(sType, mParams) {
 			return ExtensionHelper.getAriaAttributesFor(this, sType, mParams);
@@ -962,8 +967,8 @@ sap.ui.define([
 	 *     TABLE: string, TABLEHEADER: string, TABLEFOOTER: string, TABLESUBHEADER: string, COLUMNHEADER_TBL: string, COLUMNHEADER_ROW: string,
 	 *     ROWHEADER_COL: string, TH: string, ROWHEADER_TD: string, TR: string, TREEICON: string, ROWACTIONHEADER: string, NODATA: string, OVERLAY:
 	 *     string}|*}
-	 * @public
 	 * @see TableAccRenderExtension.writeAriaAttributesFor
+	 * @public
 	 */
 	TableAccExtension.ELEMENTTYPES = {
 		DATACELL: "DATACELL",					// Standard data cell (standard, group or sum)

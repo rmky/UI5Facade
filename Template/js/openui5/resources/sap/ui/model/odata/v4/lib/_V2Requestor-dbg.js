@@ -7,8 +7,9 @@
 sap.ui.define([
 	"sap/ui/core/format/DateFormat",
 	"sap/ui/model/odata/ODataUtils",
-	"./_Helper"
-], function (DateFormat, ODataUtils, _Helper) {
+	"./_Helper",
+	"./_Parser"
+], function (DateFormat, ODataUtils, _Helper, _Parser) {
 	"use strict";
 
 	var // Example: "/Date(1395705600000)/", matching group: ticks in milliseconds
@@ -18,9 +19,9 @@ sap.ui.define([
 		// matches: 1 = ticks in milliseconds, 2 = offset sign, 3 = offset hours, 4 = offset minutes
 		rDateTimeOffset = /^\/Date\((\d+)(?:([-+])(\d\d)(\d\d))?\)\/$/,
 		oDateTimeOffsetFormatter =
-			DateFormat.getDateTimeInstance({pattern: "yyyy-MM-dd'T'HH:mm:ss", UTC : true}),
-		oDateTimeOffsetMSFormatter =
 			DateFormat.getDateTimeInstance({pattern: "yyyy-MM-dd'T'HH:mm:ss.SSS", UTC : true}),
+		oDateTimeOffsetParser =
+			DateFormat.getDateTimeInstance({pattern: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"}),
 		rPlus = /\+/g,
 		rSlash = /\//g,
 		// Example: "PT11H33M55S",
@@ -113,7 +114,6 @@ sap.ui.define([
 	 */
 	_V2Requestor.prototype.convertDateTimeOffset = function (sV2Value) {
 		var aMatches = rDateTimeOffset.exec(sV2Value),
-			oFormatter,
 			sOffset,
 			iOffsetHours,
 			iOffsetMinutes,
@@ -133,8 +133,7 @@ sap.ui.define([
 			iTicks += iOffsetSign * (iOffsetHours * 60 * 60 * 1000 + iOffsetMinutes * 60 * 1000);
 			sOffset = aMatches[2] + aMatches[3] + ":"  + aMatches[4];
 		}
-		oFormatter = iTicks % 1000 ? oDateTimeOffsetMSFormatter : oDateTimeOffsetFormatter;
-		return oFormatter.format(new Date(iTicks)) + sOffset;
+		return oDateTimeOffsetFormatter.format(new Date(iTicks)) + sOffset;
 	};
 
 	/**
@@ -155,6 +154,39 @@ sap.ui.define([
 			default:
 				return parseFloat(sV2Value);
 		}
+	};
+
+	/**
+	 * Converts the filter string literals to OData V2 syntax
+	 *
+	 * @param {string} sFilter The filter string
+	 * @param {string} sResourcePath
+	 *   The resource path (allows metadata access, but does not become part of the result)
+	 * @returns {string} The filter string ready for a V2 query
+	 * @throws {Error} If the filter path is invalid
+	 */
+	_V2Requestor.prototype.convertFilter = function (sFilter, sResourcePath) {
+		var oFilterTree = _Parser.parseFilter(sFilter),
+			vModelValue,
+			sPath = oFilterTree.left.value,
+			oProperty,
+			sType,
+			sValue = oFilterTree.right.value;
+
+		oProperty = this.oModelInterface.fnFetchMetadata("/" + sResourcePath + "/" + sPath)
+			.getResult();
+
+		if (!oProperty) {
+			throw new Error("Invalid filter path: " + sPath);
+		}
+		sType = oProperty.$Type;
+		if (sType === "Edm.String") {
+			return sFilter;
+		}
+
+		vModelValue = _Helper.parseLiteral(sValue, sType, sPath);
+		oFilterTree.right.value = this.formatPropertyAsLiteral(vModelValue, oProperty);
+		return _Parser.buildFilterString(oFilterTree);
 	};
 
 	/**
@@ -187,14 +219,12 @@ sap.ui.define([
 	 *
 	 * @param {object} oObject
 	 *   The object to be converted
-	 * @param {object} mTypeByName
-	 *   A map of type metadata by qualified name
 	 * @returns {object}
 	 *   The converted payload
 	 * @throws {Error}
 	 *   If oObject does not contain inline metadata with type information
 	 */
-	_V2Requestor.prototype.convertNonPrimitive = function (oObject, mTypeByName) {
+	_V2Requestor.prototype.convertNonPrimitive = function (oObject) {
 		var sPropertyName,
 			sPropertyType,
 			oType,
@@ -206,7 +236,7 @@ sap.ui.define([
 		if (oObject.results && !oObject.__metadata) {
 			// collection of complex values, coll. of primitive values only supported since OData V3
 			oObject.results.forEach(function (oItem) {
-				that.convertNonPrimitive(oItem, mTypeByName);
+				that.convertNonPrimitive(oItem);
 			});
 			return oObject.results;
 		}
@@ -218,7 +248,7 @@ sap.ui.define([
 		}
 
 		sTypeName = oObject.__metadata.type;
-		oType = mTypeByName[sTypeName]; // can be entity type or complex type
+		oType = that.getTypeForName(sTypeName); // can be entity type or complex type
 		delete oObject.__metadata;
 		for (sPropertyName in oObject) {
 			vValue = oObject[sPropertyName];
@@ -229,7 +259,7 @@ sap.ui.define([
 				if (vValue.__deferred) {
 					delete oObject[sPropertyName];
 				} else {
-					oObject[sPropertyName] = this.convertNonPrimitive(vValue, mTypeByName);
+					oObject[sPropertyName] = this.convertNonPrimitive(vValue);
 				}
 				continue;
 			}
@@ -297,31 +327,29 @@ sap.ui.define([
 	 *   A promise which resolves with the OData V4 response payload or rejects with an error if
 	 *   the V2 response cannot be converted
 	 */
-	_V2Requestor.prototype.doFetchV4Response = function (oResponsePayload) {
-		var that = this;
+	_V2Requestor.prototype.doConvertResponse = function (oResponsePayload) {
+		var oPayload = this.convertNonPrimitive(oResponsePayload.d);
 
-		return this.fnFetchEntityContainer().then(function (mScope) {
-			var oPayload = that.convertNonPrimitive(oResponsePayload.d, mScope);
-
-			// d.results may be an array of entities in case of a collection request or the property
-			// 'results' of a single request.
-			if (oResponsePayload.d.results && !oResponsePayload.d.__metadata) {
-				oPayload = {value : oPayload};
-				if (oResponsePayload.d.__count) {
-					oPayload["@odata.count"] = oResponsePayload.d.__count;
-				}
-				if (oResponsePayload.d.__next) {
-					oPayload["@odata.nextLink"] = oResponsePayload.d.__next;
-				}
+		// d.results may be an array of entities in case of a collection request or the property
+		// 'results' of a single request.
+		if (oResponsePayload.d.results && !oResponsePayload.d.__metadata) {
+			oPayload = {value : oPayload};
+			if (oResponsePayload.d.__count) {
+				oPayload["@odata.count"] = oResponsePayload.d.__count;
 			}
-			return oPayload;
-		});
+			if (oResponsePayload.d.__next) {
+				oPayload["@odata.nextLink"] = oResponsePayload.d.__next;
+			}
+		}
+		return oPayload;
 	};
 
 	/**
 	 * Converts the supported V4 OData system query options to the corresponding V2 OData system
 	 * query options.
 	 *
+	 * @param {string} sResourcePath
+	 *   The resource path (allows metadata access, but does not become part of the result)
 	 * @param {object} mQueryOptions The query options
 	 * @param {function(string,any)} fnResultHandler
 	 *   The function to process the converted options getting the name and the value
@@ -333,9 +361,10 @@ sap.ui.define([
 	 *   If a system query option other than $expand and $select is used or if any $expand value is
 	 *   not an object
 	 */
-	_V2Requestor.prototype.doConvertSystemQueryOptions = function (mQueryOptions, fnResultHandler,
-			bDropSystemQueryOptions, bSortExpandSelect) {
-		var aSelects = [];
+	_V2Requestor.prototype.doConvertSystemQueryOptions = function (sResourcePath, mQueryOptions,
+			fnResultHandler, bDropSystemQueryOptions, bSortExpandSelect) {
+		var aSelects = [],
+			that = this;
 
 		/**
 		 * Converts the V4 $expand options to flat V2 $expand and $select structure.
@@ -400,6 +429,10 @@ sap.ui.define([
 			}
 
 			switch (sName) {
+				case "$count":
+					sName = "$inlinecount";
+					vValue = vValue ? "allpages" : "none";
+					break;
 				case "$expand":
 					vValue = convertExpand([], vValue, "");
 					vValue = (bSortExpandSelect ? vValue.sort() : vValue).join(",");
@@ -410,6 +443,9 @@ sap.ui.define([
 					aSelects.push.apply(aSelects,
 						Array.isArray(vValue) ? vValue : vValue.split(","));
 					return; // don't call fnResultHandler; this is done later
+				case "$filter":
+					vValue = that.convertFilter(vValue, sResourcePath);
+					break;
 				default:
 					if (bIsSystemQueryOption) {
 						throw new Error("Unsupported system query option: " + sName);
@@ -431,7 +467,7 @@ sap.ui.define([
 	 * Formats a given internal value into a literal suitable for usage in OData V2 URLs. See
 	 * http://www.odata.org/documentation/odata-version-2-0/overview#AbstractTypeSystem.
 	 *
-	 * @param {any} vValue
+	 * @param {*} vValue
 	 *   The value
 	 * @param {object} oProperty
 	 *   The OData property
@@ -442,17 +478,81 @@ sap.ui.define([
 	 * @see sap.ui.model.odata.ODataUtils#formatValue
 	 */
 	_V2Requestor.prototype.formatPropertyAsLiteral = function (vValue, oProperty) {
-		var sType = oProperty.$v2Type || oProperty.$Type;
 
-		switch (sType) {
-			case "Edm.Binary":
-			case "Edm.DateTime":
-			case "Edm.DateTimeOffset":
-			case "Edm.Time":
-				throw new Error("Type '" + sType + "' in the key is not supported");
-			default:
-				return ODataUtils.formatValue(vValue, sType);
+		// Parse using the given formatter and check that the result is valid
+		function parseAndCheck(oDateFormat, sValue) {
+			var oDate = oDateFormat.parse(sValue);
+			if (!oDate) {
+				throw new Error("Not a valid " + oProperty.$Type + " value: " + sValue);
+			}
+			return oDate;
 		}
+
+		if (vValue === null) {
+			return "null";
+		}
+
+		// Convert the value to V2 model format
+		switch (oProperty.$Type) {
+			case "Edm.Boolean":
+			case "Edm.Byte":
+			case "Edm.Decimal":
+			case "Edm.Double":
+			case "Edm.Guid":
+			case "Edm.Int16":
+			case "Edm.Int32":
+			case "Edm.Int64":
+			case "Edm.SByte":
+			case "Edm.Single":
+			case "Edm.String":
+				break;
+			case "Edm.Date":
+				vValue = parseAndCheck(oDateFormatter, vValue);
+				break;
+			case "Edm.DateTimeOffset":
+				vValue = parseAndCheck(oDateTimeOffsetParser, vValue);
+				break;
+			case "Edm.TimeOfDay":
+				vValue = {
+					__edmType : "Edm.Time",
+					ms : parseAndCheck(oTimeFormatter, vValue).getTime()
+				};
+				break;
+			default:
+				throw new Error("Type '" + oProperty.$Type
+					+ "' in the key predicate is not supported");
+		}
+		// Use the V2 function to format the value for a literal
+		return ODataUtils.formatValue(vValue, oProperty.$v2Type || oProperty.$Type);
+	};
+
+	/**
+	 * Returns the type with the given qualified name.
+	 *
+	 * @param {string} sName The qualified type name
+	 * @returns {object} The type
+	 */
+	_V2Requestor.prototype.getTypeForName = function (sName) {
+		var oType;
+
+		this.mTypesByName = this.mTypesByName || {};
+		oType = this.mTypesByName[sName];
+		if (!oType) {
+			oType = this.mTypesByName[sName] =
+				this.oModelInterface.fnFetchMetadata("/" + sName).getResult();
+		}
+		return oType;
+	};
+
+	/**
+	 * Returns a sync promise that is resolved when the requestor is ready to be used. Waits for the
+	 * metadata to be available.
+	 *
+	 * @returns {_SyncPromise} A sync promise that is resolved with no result when the metadata is
+	 * available
+	 */
+	_V2Requestor.prototype.ready = function () {
+		return this.oModelInterface.fnFetchEntityContainer().then(function () {});
 	};
 
 	return function (oObject) {

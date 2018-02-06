@@ -16,11 +16,19 @@ sap.ui.define([
 	"sap/m/OverflowToolbarAssociativePopover",
 	"sap/m/OverflowToolbarAssociativePopoverControls",
 	"sap/ui/core/IconPool",
-	"sap/m/SearchField"
+	"sap/m/SearchField",
+	"sap/ui/Device"
 ], function (jQuery, library, ToggleButton, InvisibleText, Toolbar, ToolbarSpacer, OverflowToolbarLayoutData,
 			 OverflowToolbarAssociativePopover, OverflowToolbarAssociativePopoverControls,
-			 IconPool, SearchField) {
+			 IconPool, SearchField, Device) {
 	"use strict";
+
+
+	// shortcut for sap.m.PlacementType
+	var PlacementType = library.PlacementType;
+
+	// shortcut for sap.m.ButtonType
+	var ButtonType = library.ButtonType;
 
 
 	// shortcut for sap.m.OverflowToolbarPriority
@@ -87,7 +95,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -273,6 +281,7 @@ sap.ui.define([
 		this._aMovableControls = []; // Controls that can be in the toolbar or action sheet
 		this._aToolbarOnlyControls = []; // Controls that can't go to the action sheet (inputs, labels, buttons with special layout, etc...)
 		this._aActionSheetOnlyControls = []; // Controls that are forced to stay in the action sheet (buttons with layout)
+		this._iOldContentSize = this._iContentSize;
 		this._iContentSize = 0; // The total *optimal* size of all controls in the toolbar
 
 		this.getContent().forEach(function (oControl) {
@@ -301,11 +310,16 @@ sap.ui.define([
 
 		// If the system is a phone sometimes due to specificity in the flex the content can be rendered 1px larger that it should be.
 		// This causes an overflow of the last element/button
-		if (sap.ui.Device.system.phone) {
+		if (Device.system.phone) {
 			this._iContentSize -= 1;
 		}
 
 		this._bControlsInfoCached = true;
+
+		// If the total width of all overflow-enabled children changed, fire a private event to notify interested parties
+		if (this._iOldContentSize !== this._iContentSize) {
+			this.fireEvent("_contentSizeChange", {contentSize: this._iContentSize});
+		}
 	};
 
 	/**
@@ -599,7 +613,7 @@ sap.ui.define([
 				icon: IconPool.getIconURI("overflow"),
 				press: this._overflowButtonPressed.bind(this),
 				ariaLabelledBy: this._sAriaOverflowButtonLabelId,
-				type: sap.m.ButtonType.Transparent
+				type: ButtonType.Transparent
 			});
 
 			this.setAggregation("_overflowButton", oOverflowButton, true);
@@ -644,8 +658,8 @@ sap.ui.define([
 				showHeader: false,
 				showArrow: false,
 				modal: false,
-				horizontalScrolling: sap.ui.Device.system.phone ? false : true,
-				contentWidth: sap.ui.Device.system.phone ? "100%" : "auto",
+				horizontalScrolling: Device.system.phone ? false : true,
+				contentWidth: Device.system.phone ? "100%" : "auto",
 				offsetY: this._detireminePopoverVerticalOffset()
 			});
 
@@ -656,7 +670,7 @@ sap.ui.define([
 				this._atPositions = ["end bottom", "end center", "end top", "begin center"];
 			};
 
-			if (sap.ui.Device.system.phone) {
+			if (Device.system.phone) {
 				oPopover.attachBeforeOpen(this._shiftPopupShadow, this);
 			}
 
@@ -679,10 +693,10 @@ sap.ui.define([
 		var oPopover = this._getPopover(),
 			sPos = oPopover.getCurrentPosition();
 
-		if (sPos === sap.m.PlacementType.Bottom) {
+		if (sPos === PlacementType.Bottom) {
 			oPopover.addStyleClass("sapMOTAPopoverNoShadowTop");
 			oPopover.removeStyleClass("sapMOTAPopoverNoShadowBottom");
-		} else if (sPos === sap.m.PlacementType.Top) {
+		} else if (sPos === PlacementType.Top) {
 			oPopover.addStyleClass("sapMOTAPopoverNoShadowBottom");
 			oPopover.removeStyleClass("sapMOTAPopoverNoShadowTop");
 		}
@@ -693,7 +707,7 @@ sap.ui.define([
 	 * @private
 	 */
 	OverflowToolbar.prototype._popOverClosedHandler = function () {
-		var bWindowsPhone = sap.ui.Device.os.windows_phone || sap.ui.Device.browser.edge && sap.ui.Device.browser.mobile;
+		var bWindowsPhone = Device.os.windows_phone || Device.browser.edge && Device.browser.mobile;
 
 		this._getOverflowButton().setPressed(false); // Turn off the toggle button
 		this._getOverflowButton().$().focus(); // Focus the toggle button so that keyboard handling will work
@@ -880,7 +894,7 @@ sap.ui.define([
 	 * @private
 	 */
 	OverflowToolbar.prototype._getOverflowButtonSize = function () {
-		var iBaseFontSize = parseInt(sap.m.BaseFontSize, 10),
+		var iBaseFontSize = parseInt(library.BaseFontSize, 10),
 			fCoefficient = this.$().parents().hasClass('sapUiSizeCompact') ? 2.5 : 3;
 
 		return parseInt(iBaseFontSize * fCoefficient, 10);
@@ -898,13 +912,13 @@ sap.ui.define([
 
 		// Always open above
 		if (sHtmlTag === "Footer") {
-			return sap.m.PlacementType.Top;
+			return PlacementType.Top;
 			// Always open below
 		} else if (sHtmlTag === "Header") {
-			return sap.m.PlacementType.Bottom;
+			return PlacementType.Bottom;
 		}
 
-		return sap.m.PlacementType.Vertical;
+		return PlacementType.Vertical;
 	};
 
 	/**
@@ -1077,4 +1091,4 @@ sap.ui.define([
 
 	return OverflowToolbar;
 
-}, /* bExport= */ true);
+});

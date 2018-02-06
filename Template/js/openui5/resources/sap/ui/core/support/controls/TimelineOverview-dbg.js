@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
-	function (jQuery, ManagedObject) {
+sap.ui.define(['sap/ui/base/ManagedObject'],
+	function (ManagedObject) {
 		'use strict';
 		var TimelineOverview = ManagedObject.extend("sap.ui.core.support.controls.TimelineOverview", {});
 

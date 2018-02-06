@@ -25,7 +25,7 @@ function(
 	 * Utility functionality for DOM
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @private
 	 * @static
@@ -250,6 +250,15 @@ function(
 	};
 
 	/**
+	 *
+	 */
+	DOMUtil.getDraggable = function(oElement) {
+		oElement = jQuery(oElement);
+
+		return oElement.attr("draggable");
+	};
+
+	/**
 	 * Copy the given styles object to a destination DOM node.
 	 *
 	 * @param {Object} oStyles A styles object, which is retrieved from window.getComputedStyle
@@ -399,7 +408,7 @@ sap.ui.define("sap/ui/dt/ElementUtil",['jquery.sap.global'],
 			 * @class Utility functionality to work with élements, e.g. iterate through aggregations, find parents, ...
 			 *
 			 * @author SAP SE
-			 * @version 1.50.8
+			 * @version 1.52.5
 			 *
 			 * @private
 			 * @static
@@ -901,6 +910,32 @@ sap.ui.define("sap/ui/dt/ElementUtil",['jquery.sap.global'],
 
 			};
 
+			/**
+			 * Checks if the Element is in the dom (jQuery.is(":visible")) and if it is not hidden / opacity > 0.
+			 *
+			 * @param {jQuery} $Element jQuery object
+			 * @returns {boolean} Returns true if any of the jQuery objects is jQuery-visible, bot hidden and opacity > 0
+			 */
+			ElementUtil.isVisible = function($Element) {
+				var bVisible = false;
+				var $CurrentElement;
+				// check every jQuery object for itself
+				for (var i = 0, n = $Element.length; i < n; i++) {
+					$CurrentElement = $Element.eq(i);
+					// $().is("visible") returns true even if opacity = 0 or visibility = hidden,
+					// so we need to check it seperately
+					var bFilterOpacity = $CurrentElement.css("filter").match(/opacity\(([^)]*)\)/);
+					bVisible = $CurrentElement.is(":visible")
+						&& $CurrentElement.css("visibility") !== "hidden"
+						&& $CurrentElement.css("opacity") > 0
+						&& (bFilterOpacity ? parseFloat(bFilterOpacity[1]) > 0 : true);
+					if (bVisible) {
+						break;
+					}
+				}
+				return bVisible;
+			};
+
 			return ElementUtil;
 		}, /* bExport= */true);
 
@@ -928,7 +963,7 @@ sap.ui.define("sap/ui/dt/ManagedObjectObserver",[
 	 * @class The ManagedObjectObserver observes changes of a ManagedObject and propagates them via events.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -978,8 +1013,18 @@ sap.ui.define("sap/ui/dt/ManagedObjectObserver",[
 	 * @protected
 	 */
 	ManagedObjectObserver.prototype.init = function() {
-		this._fnFireModified = function() {
-			this.fireModified();
+		this._fnFireModified = function(oEvent) {
+			var oParams = oEvent.getParameters();
+			if (oEvent.sId === "_change") {
+				oEvent.sId = "propertyChanged";
+			}
+			this.fireModified({
+				type: oEvent.sId,
+				name: oParams.name,
+				value: oParams.newValue,
+				oldValue: oParams.oldValue,
+				target: oEvent.getSource()
+			});
 		}.bind(this);
 	};
 
@@ -1512,7 +1557,7 @@ function(ManagedObject, ElementUtil) {
 	 * Static registry for Overlays
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @private
 	 * @static
@@ -1604,7 +1649,7 @@ function(
 	 *
 	 * @class Utility functionality to work with overlays
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @private
 	 * @static
 	 * @since 1.30
@@ -2045,6 +2090,151 @@ function(
 		return OverlayUtil.getClosestOverlayFor(oElement);
 	};
 
+	/**
+	 * Returns all the sibling overlays in a container. It checks recursively for every overlay belonging
+	 * to the same relevant container in the tree which has DesignTime Metadata.
+	 * @param  {sap.ui.dt.Overlay} oOverlay                  Overlay for which we want to find the siblings
+	 * @param  {sap.ui.dt.Overlay} oRelevantContainerOverlay Relevant container of the overlay
+	 * @return {sap.ui.dt.Overlay[]}                         Returns a flat array with all sibling overlays
+	 */
+	OverlayUtil.findAllSiblingOverlaysInContainer = function(oOverlay, oRelevantContainerOverlay) {
+		var oParentOverlay = oOverlay.getParentElementOverlay();
+		var aRelevantOverlays = [];
+
+		if (oParentOverlay){
+			if (oParentOverlay !== oRelevantContainerOverlay){
+				var aParents = OverlayUtil.findAllSiblingOverlaysInContainer(oParentOverlay, oRelevantContainerOverlay);
+				aRelevantOverlays = aParents.map(function(oParentOverlay){
+					var oAggregationOverlay = oParentOverlay.getAggregationOverlay(oOverlay.getParentAggregationOverlay().getAggregationName());
+					return oAggregationOverlay ? oAggregationOverlay.getChildren() : [];
+				}).reduce(function(aFlattenedArray, oCurrentValue) {
+					return aFlattenedArray.concat(oCurrentValue);
+				}, []);
+			} else {
+				aRelevantOverlays = oOverlay.getParentElementOverlay()
+										.getAggregationOverlay(oOverlay.getParentAggregationOverlay().getAggregationName())
+										.getChildren();
+			}
+		}
+
+		aRelevantOverlays = aRelevantOverlays.filter(function(oOverlay) {
+			return oOverlay.getDesignTimeMetadata();
+		});
+
+		return aRelevantOverlays;
+	};
+
+	/**
+	 * Gets all the Overlays inside the relevant container which are in the same aggregations
+	 * and have DesignTime Metadata.
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay Overlay from which we get the aggregations
+	 * @returns {sap.ui.dt.ElementOverlay[]} Returns an array with all the overlays in it
+	 * @protected
+	 */
+	OverlayUtil.findAllOverlaysInContainer = function(oOverlay) {
+		// The root control has no relevant container, therefore we use the element itself
+		var oRelevantContainer = oOverlay.getRelevantContainer() || oOverlay.getElementInstance();
+		var oRelevantContainerOverlay = OverlayRegistry.getOverlay(oRelevantContainer);
+		var aRelevantOverlays = [];
+
+		// Get all the siblings and parents of the overlay
+		var mRelevantOverlays = OverlayUtil._findAllSiblingsAndParents(oOverlay, oRelevantContainerOverlay, 0);
+
+		if (mRelevantOverlays[0]) {
+			for (var iLevel in mRelevantOverlays) {
+				aRelevantOverlays = aRelevantOverlays.concat(mRelevantOverlays[iLevel]);
+			}
+
+			// the overlay and its siblings are on the first level of the relevantOverlays. From those overlays we also need to get the children
+			var aChildren = [];
+			mRelevantOverlays[0].forEach(function(oOverlay) {
+				aChildren = aChildren.concat(OverlayUtil._findAllChildrenInContainer(oOverlay, oRelevantContainer));
+			});
+
+			aRelevantOverlays = aRelevantOverlays.concat(aChildren);
+		} else {
+			aRelevantOverlays = OverlayUtil._findAllChildrenInContainer(oOverlay, oRelevantContainer);
+		}
+
+		aRelevantOverlays.push(oRelevantContainerOverlay);
+
+		aRelevantOverlays = aRelevantOverlays.filter(function(oOverlay) {
+			return oOverlay.getDesignTimeMetadata();
+		});
+
+		return aRelevantOverlays;
+	};
+
+	/**
+	 * This function returns all the siblings and parents inside the relevant container. Siblings in different aggregations are ignored.
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay Overlay from which we get the aggregations
+	 * @param {sap.ui.dt.ElementOverlay} oRelevantContainerOverlay Relevant container overlay
+	 * @param {integer} iLevel Current level in the hierarchy
+	 * @returns {object} Returns a map with all siblings sorted by the level
+	 * @private
+	 */
+	OverlayUtil._findAllSiblingsAndParents = function(oOverlay, oRelevantContainerOverlay, iLevel) {
+		var oParent = oOverlay.getParentElementOverlay();
+		if (!oParent) {
+			return [];
+		}
+
+		if (oParent !== oRelevantContainerOverlay){
+			var mParents = OverlayUtil._findAllSiblingsAndParents(oParent, oRelevantContainerOverlay, iLevel + 1);
+			var aOverlays = mParents[iLevel + 1].map(function(oParent){
+				var oAggregationOverlay = oParent.getAggregationOverlay(oOverlay.getParentAggregationOverlay().getAggregationName());
+				return oAggregationOverlay ? oAggregationOverlay.getChildren() : [];
+			}).reduce(function(a, b) {
+				return a.concat(b);
+			}, []);
+			mParents[iLevel] = aOverlays;
+			return mParents;
+		}
+
+		var aChildren = oOverlay.getParentElementOverlay().getAggregationOverlay(oOverlay.getParentAggregationOverlay().getAggregationName()).getChildren();
+		var mReturn = {};
+		mReturn[iLevel] = aChildren;
+		return mReturn;
+	};
+
+	/**
+	 * Finds all the children of an overlay which have the same relevant container.
+	 * @param {sap.ui.dt.ElementOverlay} oElementOverlay Overlay from which we get the children
+	 * @param {object} oRelevantContainer Relevant container
+	 * @param {sap.ui.dt.ElementOverlay[]} _aRelevantOverlays Array with all the relevant overlays. Used for recursion. You don't have to set this
+	 * @returns {sap.ui.dt.ElementOverlay[]} Returns a flat array with all the children
+	 * @private
+	 */
+	OverlayUtil._findAllChildrenInContainer = function(oElementOverlay, oRelevantContainer, _aRelevantOverlays) {
+		_aRelevantOverlays = _aRelevantOverlays ? _aRelevantOverlays : [];
+		if (oElementOverlay.getChildren().length > 0) {
+			oElementOverlay.getChildren().forEach(function(oAggregationOverlay) {
+				oAggregationOverlay.getChildren().forEach(function(oChildElementOverlay) {
+					if (oChildElementOverlay.getRelevantContainer() === oRelevantContainer) {
+						_aRelevantOverlays.push(oChildElementOverlay);
+						OverlayUtil._findAllChildrenInContainer(oChildElementOverlay, oRelevantContainer, _aRelevantOverlays);
+					}
+				});
+			});
+		}
+		return _aRelevantOverlays;
+	};
+
+	/**
+	 * Returns all the parent aggregation overlays of the sibling overlays in a container.
+	 * @param  {sap.ui.dt.Overlay} oOverlay                  Overlay for which we want to find the siblings
+	 * @param  {sap.ui.dt.Overlay} oRelevantContainerOverlay Relevant container of the overlay
+	 * @return {sap.ui.dt.Overlay[]}                         Returns a flat array with all aggregation overlays
+	 */
+	OverlayUtil.findAllUniqueAggregationOverlaysInContainer = function(oOverlay, oRelevantContainerOverlay) {
+		var aOverlays = OverlayUtil.findAllSiblingOverlaysInContainer(oOverlay, oRelevantContainerOverlay);
+		return aOverlays.map(function(oOverlay) {
+			return oOverlay.getParentAggregationOverlay();
+		}).filter(function(oOverlay, iPosition, aAggregationOverlays) {
+			return aAggregationOverlays.indexOf(oOverlay) === iPosition;
+		});
+	};
+
 	return OverlayUtil;
 }, /* bExport= */true);
 
@@ -2077,7 +2267,7 @@ function(ManagedObject) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -2250,6 +2440,115 @@ function(ManagedObject) {
 		this.callElementOverlayRegistrationMethods(oOverlay);
 	};
 
+	/**
+	 * Called to retrieve a context menu item for the plugin
+	 * @protected
+	 */
+	Plugin.prototype.getMenuItems = function(){};
+
+	/**
+	 * Retrieve the action name related to the plugin
+	 * Method to be overwritten by the different plugins
+	 *
+	 * @override
+	 * @public
+	 */
+	Plugin.prototype.getActionName = function(){
+	};
+
+	/**
+	 * Retrieve the action data from the Designtime Metadata
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay containing the Designtime Metadata
+	 * @return {object}          Returns an object with the action data from the Designtime Metadata
+	 */
+	Plugin.prototype.getAction = function(oOverlay){
+		return oOverlay.getDesignTimeMetadata() ?
+			oOverlay.getDesignTimeMetadata().getAction(this.getActionName(), oOverlay.getElementInstance())
+			: null;
+	};
+
+	/**
+	 * Asks the Design Time if multiple overlays are selected
+	 * Used by plugins which do not support multiple selection
+	 * @return {Boolean} Returns true if there is no multiple selection active
+	 */
+	Plugin.prototype.isMultiSelectionInactive = function() {
+		return this.getDesignTime().getSelection().length < 2;
+	};
+
+	/**
+	 * Retrieve the action text (for context menu item) from the Designtime Metadata
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay containing the Designtime Metadata
+	 * @param  {object} mAction The action data from the Designtime Metadata
+	 * @param  {string} sPluginId The ID of the plugin
+	 * @return {string}         Returns the text for the menu item
+	 */
+	Plugin.prototype.getActionText = function(oOverlay, mAction, sPluginId){
+		var vName = mAction.name;
+		if (vName){
+			if (typeof vName === "function") {
+				return vName.call(null, oOverlay.getElementInstance());
+			} else {
+				return oOverlay.getDesignTimeMetadata() ? oOverlay.getDesignTimeMetadata().getLibraryText(vName) : "";
+			}
+		} else {
+			return sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText(sPluginId);
+		}
+	};
+
+	/**
+	 * Checks if the plugin is available for an overlay
+	 * @param  {sap.ui.dt.ElementOverlay}  oOverlay Overlay to be checked
+	 * @return {Boolean}          Returns true if the plugin is available
+	 */
+	Plugin.prototype.isAvailable = function(oOverlay){
+		return this._isEditableByPlugin(oOverlay);
+	};
+
+	/**
+	 * Executes the plugin action
+	 * Method to be overwritten by the different plugins
+	 * @param  {sap.ui.dt.ElementOverlay[]} aOverlays Target overlays for the action
+	 *
+	 * @override
+	 * @public
+	 */
+	Plugin.prototype.handler = function(aOverlays){};
+
+	/**
+	 * Checks if the plugin is enabled for an overlay
+	 * Method to be overwritten by the different plugins
+	 * @param  {sap.ui.dt.ElementOverlay}  oOverlay Overlay to be checked
+	 */
+	Plugin.prototype.isEnabled = function(oOverlay){};
+
+	/**
+	 * Generic function to return the menu items for a context menu.
+	 * The text for the item can be defined in the control Designtime Metadata;
+	 * otherwise the default text is used.
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay  The selected overlay
+	 * @param  {object} mPropertyBag Additional properties for the menu item
+	 * @param  {string} mPropertyBag.pluginId The ID of the plugin
+	 * @param  {number} mPropertyBag.rank The rank deciding the position of the action in the context menu
+	 * @return {object[]} Returns an array with the object containing the required data for a context menu item
+	 */
+	Plugin.prototype._getMenuItems = function(oOverlay, mPropertyBag){
+		var mAction = this.getAction(oOverlay);
+		if (!mAction || !this.isAvailable(oOverlay)){
+			return [];
+		}
+
+		return [{
+			id: mPropertyBag.pluginId,
+			text: this.getActionText(oOverlay, mAction, mPropertyBag.pluginId),
+			handler: function(aOverlays, mPropertyBag){
+				return this.handler(aOverlays, mPropertyBag);
+			}.bind(this),
+			enabled: this.isEnabled.bind(this),
+			rank: mPropertyBag.rank
+		}];
+	};
+
 	return Plugin;
 }, /* bExport= */ true);
 
@@ -2277,7 +2576,7 @@ function(jQuery) {
 	 * Utility functionality to work with élements, e.g. iterate through aggregations, find parents, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @private
 	 * @static
@@ -2406,7 +2705,7 @@ function(jQuery) {
 	 * @namespace
 	 * @name sap.ui.dt
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @experimental This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 * @private
 	 */
@@ -2414,7 +2713,7 @@ function(jQuery) {
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.dt",
-		version: "1.50.8",
+		version: "1.52.5",
 		dependencies : ["sap.ui.core"],
 		types: [
 			"sap.ui.dt.SelectionMode"
@@ -2482,7 +2781,7 @@ function(Plugin, DOMUtil, OverlayUtil, ElementUtil) {
 	 * @extends sap.ui.dt.plugin.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -2702,8 +3001,8 @@ function(Plugin, DOMUtil, OverlayUtil, ElementUtil) {
 	 */
 	DragDrop.prototype._checkMovable = function(oEvent) {
 		var oOverlay = oEvent.srcControl;
-		if (oOverlay.isMovable()) {
-			DOMUtil.setDraggable(oOverlay.$(), true);
+		if (oOverlay.isMovable() || DOMUtil.getDraggable(oOverlay.$()) !== undefined) {
+			DOMUtil.setDraggable(oOverlay.$(), oOverlay.isMovable());
 		}
 	};
 
@@ -3287,9 +3586,17 @@ if ( !jQuery.sap.isDeclared('sap.ui.dt.plugin.ElementMover') ) {
 // Provides class sap.ui.dt.plugin.ElementMover.
 jQuery.sap.declare('sap.ui.dt.plugin.ElementMover'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
 jQuery.sap.require('sap.ui.base.ManagedObject'); // unlisted dependency retained
-sap.ui.define("sap/ui/dt/plugin/ElementMover",['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/OverlayUtil',
-		'sap/ui/dt/OverlayRegistry'], function(ManagedObject, ElementUtil, OverlayUtil,
-		OverlayRegistry) {
+sap.ui.define("sap/ui/dt/plugin/ElementMover",[
+	'sap/ui/base/ManagedObject',
+	'sap/ui/dt/ElementUtil',
+	'sap/ui/dt/OverlayUtil',
+	'sap/ui/dt/OverlayRegistry'
+], function
+(	ManagedObject,
+	ElementUtil,
+	OverlayUtil,
+	OverlayRegistry
+) {
 	"use strict";
 
 	/**
@@ -3302,7 +3609,7 @@ sap.ui.define("sap/ui/dt/plugin/ElementMover",['sap/ui/base/ManagedObject', 'sap
 	 * @class The ElementMover enables movement of UI5 elements based on aggregation types, which can be used by drag and
 	 *        drop or cut and paste behavior.
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -3405,12 +3712,23 @@ sap.ui.define("sap/ui/dt/plugin/ElementMover",['sap/ui/base/ManagedObject', 'sap
 	/**
 	 * @protected
 	 */
-	ElementMover.prototype.checkTargetZone = function(oAggregationOverlay) {
-		if (!oAggregationOverlay.$().is(":visible")) {
+	ElementMover.prototype.checkTargetZone = function(oAggregationOverlay, oOverlay, bOverlayNotInDom) {
+		var oMovedOverlay = oOverlay ? oOverlay : this.getMovedOverlay();
+		var oGeometry = oAggregationOverlay.getGeometry();
+		var bGeometryVisible = oGeometry && oGeometry.size.height > 0 && oGeometry.size.width > 0;
+
+		// this function can get called on overlay registration, when there are no overlays in dom yet. In this case, $().is(":visible") is always false.
+		if ((bOverlayNotInDom && !bGeometryVisible)
+			|| !bOverlayNotInDom && !oAggregationOverlay.$().is(":visible")
+			|| !(oAggregationOverlay.getElementInstance().getVisible && oAggregationOverlay.getElementInstance().getVisible())) {
 			return false;
 		}
 		var oParentElement = oAggregationOverlay.getElementInstance();
-		var oMovedElement = this.getMovedOverlay().getElementInstance();
+		// an aggregation can still have visible = true even if it has been removed from its parent
+		if (!oParentElement.getParent()){
+			return false;
+		}
+		var oMovedElement = oMovedOverlay.getElementInstance();
 		var sAggregationName = oAggregationOverlay.getAggregationName();
 
 		if (ElementUtil.isValidForAggregation(oParentElement, sAggregationName, oMovedElement)) {
@@ -3585,7 +3903,7 @@ function(Plugin) {
 	 * @extends sap.ui.dt.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -3671,7 +3989,7 @@ function(jQuery, ElementUtil, OverlayRegistry) {
 	 * Utility functionality for Element tests
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @private
 	 * @static
@@ -3798,7 +4116,7 @@ function(jQuery, ManagedObject, ElementTest, ChangeRegistry) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -3987,7 +4305,7 @@ function(jQuery, ManagedObject, ElementEnablementTest2) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -4118,7 +4436,7 @@ function(jQuery, ManagedObject) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -4411,7 +4729,7 @@ function(jQuery, ManagedObject) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -4534,7 +4852,7 @@ sap.ui.define("sap/ui/dt/test/report/Statistic",['jquery.sap.global', 'sap/ui/co
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -4634,7 +4952,7 @@ sap.ui.define("sap/ui/dt/test/report/StatisticRenderer",['jquery.sap.global'],
 
 	/**
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @namespace
 	 */
 	var StatisticRenderer = {
@@ -4708,7 +5026,7 @@ sap.ui.define("sap/ui/dt/test/report/Table",['jquery.sap.global', 'sap/ui/core/C
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -4947,7 +5265,7 @@ sap.ui.define("sap/ui/dt/test/report/TableRenderer",['jquery.sap.global'],
 
 	/**
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @namespace
 	 */
 	var TableRenderer = {
@@ -4997,7 +5315,7 @@ sap.ui.define("sap/ui/dt/AggregationOverlayRenderer",['sap/ui/dt/RenderingUtil']
 
 	/**
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @namespace
 	 */
 	var AggregationOverlayRenderer = {
@@ -5030,9 +5348,20 @@ jQuery.sap.declare('sap.ui.dt.ContextMenuControl'); // unresolved dependency add
 jQuery.sap.require('jquery.sap.global'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.unified.Menu'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.unified.MenuItem'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
 sap.ui.define("sap/ui/dt/ContextMenuControl",[
-	'jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/unified/MenuItem'
-], function(jQuery, library, Menu, MenuItem) {
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/unified/Menu',
+	'sap/ui/unified/MenuItem',
+	'sap/ui/fl/Utils'
+], function(
+	jQuery,
+	library,
+	Menu,
+	MenuItem,
+	flUtils
+) {
 	"use strict";
 
 	/**
@@ -5041,7 +5370,7 @@ sap.ui.define("sap/ui/dt/ContextMenuControl",[
 	 * @class Context - Menu for Design time
 	 * @extends sap.ui.unified.Menu
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -5058,6 +5387,8 @@ sap.ui.define("sap/ui/dt/ContextMenuControl",[
 		renderer: {}
 	// Standard renderer method is not overridden
 	});
+
+	ContextMenuControl.prototype.aStyleClasses = [];
 
 	/**
 	 * Initialize the context menu
@@ -5092,6 +5423,46 @@ sap.ui.define("sap/ui/dt/ContextMenuControl",[
 		this._oOverlayDomRef = oOverlay.getDomRef();
 	};
 
+	ContextMenuControl.prototype.addStyleClass = function(sStyleClass) {
+		if (this.aStyleClasses.indexOf(sStyleClass) === -1) {
+			this.aStyleClasses.push(sStyleClass);
+		}
+		Menu.prototype.addStyleClass.apply(this, arguments);
+	};
+
+	ContextMenuControl.prototype._createSubMenuWithBinding = function(oRootMenuItem, oTargetOverlay, bEnabled) {
+		var oAppComponent = flUtils.getAppComponentForControl(oTargetOverlay.getElementInstance()),
+			oSubmenuModel = oAppComponent.getModel(oRootMenuItem.submenu.model),
+			sCurrentItemKey = oRootMenuItem.submenu.current(oTargetOverlay, oSubmenuModel),
+			aSubmenuItems = oRootMenuItem.submenu.items(oTargetOverlay, oSubmenuModel);
+
+		var aMenuItems = aSubmenuItems.map(function(oSubmenuItem) {
+			var bCurrentItem = (sCurrentItemKey === oSubmenuItem.key),
+				sIcon = bCurrentItem ? "sap-icon://journey-depart" : "";
+			var oMenuItemTemplate = new MenuItem({
+				text: oSubmenuItem.title,
+				icon: sIcon,
+				enabled: !bCurrentItem
+			});
+			return oMenuItemTemplate.data({
+				id: oRootMenuItem.id,
+				key: oSubmenuItem.key,
+				current: sCurrentItemKey,
+				targetOverlay: oTargetOverlay
+			});
+		}, this);
+
+		var oSubMenu = new Menu({
+			enabled: bEnabled,
+			items: aMenuItems
+		});
+
+		this.aStyleClasses.forEach(function(sStyleClass) {
+			oSubMenu.addStyleClass(sStyleClass);
+		});
+		return oSubMenu;
+	};
+
 	/**
 	 * Creates the context menu items based on the currently associated element
 	 *
@@ -5105,10 +5476,12 @@ sap.ui.define("sap/ui/dt/ContextMenuControl",[
 	 * @param {function} aMenuItems.enabled? function to determine if the menu entry should be enabled, the element for which the menu should be
 	 *        opened is passed, default true
 	 * @param {object} oTargetOverlay overlay for which the menu should be opened
+	 * @return {object} this object will be returned
 	 * @private
 	 */
 	ContextMenuControl.prototype.setMenuItems = function(aMenuItems, oTargetOverlay) {
 		this.destroyItems();
+		var aSubMenus = [];
 
 		aMenuItems.forEach(function(oItem) {
 			if (!oItem.available || oItem.available(oTargetOverlay)) {
@@ -5119,17 +5492,30 @@ sap.ui.define("sap/ui/dt/ContextMenuControl",[
 					sText = oItem.text(oTargetOverlay);
 				}
 
+				// create new MenuItem
 				var oMenuItem = new MenuItem({
 					text: sText,
 					enabled: bEnabled
 				});
+
+				// create new subMenu with Binding
+				if (oItem.type === "subMenuWithBinding") {
+					var oSubMenu = this._createSubMenuWithBinding(oItem, oTargetOverlay, bEnabled);
+					oMenuItem.setSubmenu(oSubMenu);
+				}
+
 				oMenuItem.data({
 					id: oItem.id
 				});
 				if ((oItem.startSection && typeof (oItem.startSection) === "boolean" ) || (typeof (oItem.startSection) === "function" && oItem.startSection(oTargetOverlay.getElementInstance()))) {
 					oMenuItem.setStartsSection(true);
 				}
-				this.addItem(oMenuItem);
+
+				if (aSubMenus.length > 0) {
+					aSubMenus.slice(-1)[0].addItem(oMenuItem);
+				} else {
+					this.addItem(oMenuItem);
+				}
 			}
 		}, this);
 		return this;
@@ -5216,7 +5602,7 @@ function(jQuery, ManagedObjectObserver) {
 	 * @extends sap.ui.dt.ManagedObjectObserver
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -5330,7 +5716,7 @@ function(jQuery, ManagedObject, ElementUtil, DOMUtil) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -5542,7 +5928,7 @@ sap.ui.define("sap/ui/dt/ElementOverlayRenderer",['sap/ui/dt/RenderingUtil'],
 
 	/**
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @namespace
 	 */
 	var OverlayRenderer = {
@@ -5590,7 +5976,7 @@ sap.ui.define("sap/ui/dt/MutationObserver",[
 	 * @class The MutationObserver observes changes of a ManagedObject and propagates them via events.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -5816,7 +6202,7 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -6548,8 +6934,12 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 			if (!this.getLazyRendering()) {
 				return true;
 			}
+			var oElement = this.getElementInstance();
+			if (!oElement){
+				return false;
+			}
 			var oDesignTimeMetadata = this.getDesignTimeMetadata();
-			return oDesignTimeMetadata ? !oDesignTimeMetadata.isIgnored(this.getElementInstance()) : false;
+			return oDesignTimeMetadata ? !oDesignTimeMetadata.isIgnored(oElement) : false;
 		} else {
 			return this.getProperty("visible");
 		}
@@ -6565,16 +6955,24 @@ function(jQuery, Control, MutationObserver, ElementUtil, OverlayUtil, DOMUtil) {
 	};
 
 	/**
+	 * Returns if the Overlay is visible in the DOM (using jQuery).
+	 *
+	 * @return {boolean} Returns if the Overlay is visible in the DOM
+	 * @public
+	 */
+	Overlay.prototype.isVisibleInDom = function() {
+		return this.$().is(":visible");
+	};
+
+	/**
 	 * Returns if overlay is root
 	 * @public
 	 * @return {boolean} if the Overlay is root
 	 */
 	Overlay.prototype.isRoot = function() {
 		var oParent = this.getParent();
-		if (oParent) {
-			if (!oParent.getDomRef) {
-				return true;
-			}
+		if (!oParent || !oParent.getDomRef) {
+			return true;
 		}
 	};
 
@@ -6611,7 +7009,7 @@ function(ManagedObject) {
 	 * @extends sap.ui.dt.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -6735,8 +7133,14 @@ if ( !jQuery.sap.isDeclared('sap.ui.dt.plugin.ContextMenu') ) {
 jQuery.sap.declare('sap.ui.dt.plugin.ContextMenu'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
 jQuery.sap.require('jquery.sap.global'); // unlisted dependency retained
 sap.ui.define("sap/ui/dt/plugin/ContextMenu",[
-	'jquery.sap.global', 'sap/ui/dt/Plugin', 'sap/ui/dt/ContextMenuControl'
-], function(jQuery, Plugin, ContextMenuControl) {
+	'jquery.sap.global',
+	'sap/ui/dt/Plugin',
+	'sap/ui/dt/ContextMenuControl'
+], function(
+	jQuery,
+	Plugin,
+	ContextMenuControl
+) {
 	"use strict";
 
 	/**
@@ -6747,7 +7151,7 @@ sap.ui.define("sap/ui/dt/plugin/ContextMenu",[
 	 * @class The ContextMenu registers event handler to open the context menu. Menu entries can dynamically be added
 	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -6813,7 +7217,7 @@ sap.ui.define("sap/ui/dt/plugin/ContextMenu",[
 	};
 
 	/**
-	 * Add menu items in the following format
+	 * Add menu items in the following format.
 	 *
 	 * @param {object} mMenuItem json object with the menu item settings
 	 * @param {string} mMenuItem.id id, which corresponds to the text key
@@ -6825,21 +7229,73 @@ sap.ui.define("sap/ui/dt/plugin/ContextMenu",[
 	 *        is passed, default true
 	 * @param {function} mMenuItem.enabled? function to determine if the menu entry should be enabled, the element for which the menu should be opened
 	 *        is passed, default true
+	 * @param {boolean} bRetrievedFromPlugin flag to mark if a menu item was retrieved from a plugin (in runtime)
 	 */
-	ContextMenu.prototype.addMenuItem = function(mMenuItem) {
-		this._aMenuItems.push(mMenuItem);
+	ContextMenu.prototype.addMenuItem = function(mMenuItem, bRetrievedFromPlugin) {
+		var mMenuItemEntry = {
+			menuItem : mMenuItem,
+			fromPlugin : !!bRetrievedFromPlugin
+		};
+		this._aMenuItems.push(mMenuItemEntry);
 	};
 
+	/**
+	 * Open the context menu with the items that have been added before or
+	 * will be returned by the plugins.
+	 * @param  {sap.ui.base.Event} oOriginalEvent Event that triggered the menu to open
+	 * @param  {sap.ui.dt.ElementOverlay} oTargetOverlay Overlay where the menu was triggered
+	 */
 	ContextMenu.prototype.open = function(oOriginalEvent, oTargetOverlay) {
 		this.setContextElement(oTargetOverlay.getElementInstance());
 
+		//Remove all previous entries retrieved by plugins (the list should always be rebuilt)
+		this._aMenuItems = this._aMenuItems.filter(function(mMenuItemEntry){
+			return !mMenuItemEntry.fromPlugin;
+		});
+
+		var aPlugins = this.getDesignTime().getPlugins();
+		aPlugins.forEach(function(oPlugin){
+			var aPluginMenuItems = oPlugin.getMenuItems(oTargetOverlay) || [];
+			aPluginMenuItems.forEach(function(mMenuItem){
+				this.addMenuItem(mMenuItem, true);
+			}.bind(this));
+		}.bind(this));
+
+		var aMenuItems = this._aMenuItems.map(function(mMenuItemEntry){
+			return mMenuItemEntry.menuItem;
+		});
+
+		aMenuItems = this._sortMenuItems(aMenuItems);
+
 		this._oContextMenuControl = new ContextMenuControl();
 		this._oContextMenuControl.addStyleClass(this.getStyleClass());
-		this._oContextMenuControl.setMenuItems(this._aMenuItems, oTargetOverlay);
+		this._oContextMenuControl.setMenuItems(aMenuItems, oTargetOverlay);
 		this._oContextMenuControl.setOverlayDomRef(oTargetOverlay);
 		this._oContextMenuControl.attachItemSelect(this._onItemSelected, this);
 		this._oContextMenuControl.openMenu(oOriginalEvent, oTargetOverlay);
 		this.fireOpenedContextMenu();
+	};
+
+	/**
+	 * Collect menu items sorted by rank (entries without rank come first)
+	 * @param  {object[]} aMenuItems List of menu items
+	 * @return {object[]}            Returned a sorted list of menu items; higher rank come later
+	 */
+	ContextMenu.prototype._sortMenuItems = function(aMenuItems){
+		return aMenuItems.sort(function(mFirstEntry, mSecondEntry){
+			// Both entries do not have rank, do not change the order
+			if (!mFirstEntry.rank && !mSecondEntry.rank){
+				return 0;
+			}
+			// One entry does not have rank, push it to the front
+			if (!mFirstEntry.rank && mSecondEntry.rank){
+				return -1;
+			}
+			if (mFirstEntry.rank && !mSecondEntry.rank){
+				return 1;
+			}
+			return mFirstEntry.rank - mSecondEntry.rank;
+		});
 	};
 
 	/**
@@ -6850,16 +7306,28 @@ sap.ui.define("sap/ui/dt/plugin/ContextMenu",[
 	 * @private
 	 */
 	ContextMenu.prototype._onItemSelected = function(oEvent) {
-		var aSelection = [];
-		var sId = oEvent.getParameter("item").data("id");
-		this._aMenuItems.some(function(oItem) {
+		var aSelection = [],
+			oEventItem = oEvent.getParameter("item"),
+			oContextElement = this.getContextElement(),
+			sId = oEventItem.data("id");
+
+		var aMenuItems = this._aMenuItems.map(function(mMenuItemEntry){
+			return mMenuItemEntry.menuItem;
+		});
+
+		aMenuItems.some(function(oItem) {
 			if (sId === oItem.id) {
 				var oDesignTime = this.getDesignTime();
 				aSelection = oDesignTime.getSelection();
 
 				jQuery.sap.assert(aSelection.length > 0, "sap.ui.rta - Opening context menu, with empty selection - check event order");
 
-				oItem.handler(aSelection);
+				if (!oEventItem.getSubmenu()) {
+					var mPropertiesBag = {};
+					mPropertiesBag.eventITem = oEventItem;
+					mPropertiesBag.contextElement = oContextElement;
+					oItem.handler(aSelection, mPropertiesBag);
+				}
 				return true;
 			}
 		}, this);
@@ -6946,7 +7414,7 @@ sap.ui.define("sap/ui/dt/plugin/ControlDragDrop",['sap/ui/dt/plugin/DragDrop', '
 	 * @class The ControlDragDrop enables D&D functionality for the overlays based on aggregation types
 	 * @extends sap.ui.dt.plugin.DragDrop"
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -7110,7 +7578,7 @@ sap.ui.define("sap/ui/dt/plugin/CutPaste",[
 	 * @class The CutPaste enables Cut & Paste functionality for the overlays based on aggregation types
 	 * @extends sap.ui.dt.Plugin"
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -7330,7 +7798,7 @@ sap.ui.define("sap/ui/dt/plugin/TabHandling",[
 	 * @class The TabHandling plugin adjusts the tabindex for the elements.
 	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.38
@@ -7450,7 +7918,7 @@ function (jQuery, DesignTimeMetadata) {
 	 * @extends sap.ui.core.DesignTimeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -7541,7 +8009,7 @@ function(jQuery, Overlay) {
 	 * @extends sap.ui.core.Overlay
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -7718,7 +8186,7 @@ function(jQuery, DesignTimeMetadata, AggregationDesignTimeMetadata) {
 	 * @extends sap.ui.core.DesignTimeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -7807,7 +8275,7 @@ function(jQuery, DesignTimeMetadata, AggregationDesignTimeMetadata) {
 	 * @public
 	 */
 	ElementDesignTimeMetadata.prototype.getAggregations = function() {
-		var mAggregations = this.getData().aggregations;
+		var mAggregations = this.getData().aggregations || {};
 		var mAssociations = this.getData().associations || {};
 		Object.keys(mAssociations).forEach(function(sAssociation){
 			var mAssociation = mAssociations[sAssociation];
@@ -7818,20 +8286,11 @@ function(jQuery, DesignTimeMetadata, AggregationDesignTimeMetadata) {
 		return mAggregations;
 	};
 
-	/**
-	 * Returns the relevant container of an element
-	 * This is usually the getParent or the value from a function in DTMetadata
-	 * @param {object} oElement the element for which the relevant container has to be evaluated
-	 * @return {object} returns the relevant container
-	 * @public
-	 */
-	//TODO: Remove this method as soon as DTMetadata propagation is finalized
-	ElementDesignTimeMetadata.prototype.getRelevantContainer = function(oElement) {
-		var fnGetRelevantContainer = this.getData().getRelevantContainer;
-		if (!fnGetRelevantContainer || typeof fnGetRelevantContainer !== "function") {
-			return oElement.getParent();
-		}
-		return fnGetRelevantContainer(oElement);
+	ElementDesignTimeMetadata.prototype.isActionAvailableOnAggregations = function(sAction) {
+		var mAggregations = this.getAggregations();
+		return Object.keys(mAggregations).some( function (sAggregation) {
+			return mAggregations[sAggregation].actions && mAggregations[sAggregation].actions[sAction];
+		});
 	};
 
 	ElementDesignTimeMetadata.prototype.getAggregationAction = function(sAction, oElement, aArgs) {
@@ -7962,7 +8421,7 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -7977,9 +8436,9 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 
 			// ---- control specific ----
 			library : "sap.ui.dt",
-			associations: {
+			associations : {
 				/**
-				 * Array of plugins, that set editable to true
+				 * Array of plugins that set editable to true
 				 */
 				editableByPlugins : {
 					type : "any[]",
@@ -8015,6 +8474,13 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 				editable : {
 					type : "boolean",
 					defaultValue : false
+				},
+				/**
+				 * All overlays inside the relevant container within the same aggregations
+				 */
+				relevantOverlays: {
+					type: "any[]",
+					defaultValue: []
 				}
 			},
 			aggregations : {
@@ -8101,6 +8567,23 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 
 		this._oMutationObserver = Overlay.getMutationObserver();
 		this._oMutationObserver.attachDomChanged(this._onDomChanged, this);
+	};
+
+	/**
+	 * @override
+	 */
+	ElementOverlay.prototype.onAfterRendering = function() {
+		var bOldDomInvisible = !this._oDomRef;
+		Overlay.prototype.onAfterRendering.apply(this, arguments);
+
+		// fire ElementModified, when the overlay had no domRef before, but has one now
+		if (bOldDomInvisible && this._oDomRef) {
+			var oParams = {
+				id: this.getId(),
+				type: "overlayRendered"
+			};
+			this.fireElementModified(oParams);
+		}
 	};
 
 	/**
@@ -8733,16 +9216,21 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 	 */
 	ElementOverlay.prototype._onElementModified = function(oEvent) {
 		var oParams = oEvent.getParameters();
-		var sAggregationName = oEvent.getParameters().name;
-		if (sAggregationName) {
-			var oAggregationOverlay = this.getAggregationOverlay(sAggregationName);
-			// private aggregations are also skipped
+		var sName = oParams.name;
+
+		if (oParams.type === "propertyChanged" && sName === "visible") {
+			this.setRelevantOverlays([]);
+			this.fireElementModified(oParams);
+		} else if (sName) {
+			var oAggregationOverlay = this.getAggregationOverlay(sName);
 			if (oAggregationOverlay) {
+				this.setRelevantOverlays([]);
 				this.fireElementModified(oParams);
 			}
 		} else if (oEvent.getParameters().type === "setParent") {
 			this.fireElementModified(oParams);
 		}
+
 		this.invalidate();
 	};
 
@@ -8891,6 +9379,25 @@ function(Overlay, ControlObserver, ManagedObjectObserver, ElementDesignTimeMetad
 	};
 
 	/**
+	 * Checks if the associated Element is visible or not. For controls it returns the result of .getVisible,
+	 * otherwise it gets the domRef from DesigntimeMetadata and checks $().is(":visible").
+	 *
+	 * @returns {boolean|undefined} Returns the visibility of the associated Element or undefined, if it is not a control and has no domRef
+	 */
+	ElementOverlay.prototype.getElementVisibility = function() {
+		var oElement = this.getElementInstance();
+		if (oElement instanceof sap.ui.core.Control) {
+			return oElement.getVisible();
+		}
+		var oDesignTimeMetadata = this.getDesignTimeMetadata();
+		var fnisVisible = oDesignTimeMetadata && oDesignTimeMetadata.getData().isVisible;
+		if (!fnisVisible) {
+			return undefined;
+		}
+		return fnisVisible(this.getElementInstance());
+	};
+
+	/**
 	 * Returns the relevant container element for this overlay. As default the overlay parent element is returned
 	 * @param {boolean} bForParent if true, the relevant container overlay is the overlay itself, if no relevant container is propagated in the designtime
 	 * @return {sap.ui.core.Element} Relevant container element
@@ -8949,7 +9456,7 @@ function(ManagedObject, ElementOverlay, OverlayRegistry, Selection, ElementDesig
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -9633,7 +10140,7 @@ function(jQuery, Test, DesignTime, ElementTest) {
 	 * @extends sap.ui.dt.test.Test
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -9938,7 +10445,7 @@ function(jQuery, Test, ElementEnablementTest) {
 	 * @extends sap.ui.dt.test.Test
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private

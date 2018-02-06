@@ -5,9 +5,14 @@
  */
 
 // Provides control sap.m.ObjectAttribute.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
-	function(jQuery, library, Control) {
+sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/library'],
+	function(jQuery, library, Control, coreLibrary) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
 
 
 
@@ -25,7 +30,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 	 * <code>text</code> property is styled and acts as a link. In this case the <code>text</code>
 	 * property must also be set, as otherwise there will be no link displayed for the user.
 	 * @extends sap.ui.core.Control
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -59,7 +64,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 			 * Determines the direction of the text, not including the title.
 			 * Available options for the text direction are LTR (left-to-right) and RTL (right-to-left). By default the control inherits the text direction from its parent control.
 			 */
-			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : sap.ui.core.TextDirection.Inherit}
+			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit}
 		},
 		aggregations : {
 
@@ -121,10 +126,10 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 			bWrap = true,
 			oppositeDirectionMarker = '';
 
-		if (sTextDir === sap.ui.core.TextDirection.LTR && bPageRTL) {
+		if (sTextDir === TextDirection.LTR && bPageRTL) {
 			oppositeDirectionMarker = '\u200e';
 		}
-		if (sTextDir === sap.ui.core.TextDirection.RTL && !bPageRTL) {
+		if (sTextDir === TextDirection.RTL && !bPageRTL) {
 			oppositeDirectionMarker = '\u200f';
 		}
 		sText = oppositeDirectionMarker + sText + oppositeDirectionMarker;
@@ -238,4 +243,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 
 	return ObjectAttribute;
 
-}, /* bExport= */ true);
+});

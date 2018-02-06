@@ -5,9 +5,12 @@
  */
 
 // Provides control sap.m.MenuListItem.
-sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/EnabledPropagator', 'sap/ui/core/IconPool'],
-	function(jQuery, ListItemBase, library, EnabledPropagator, IconPool) {
+sap.ui.define(['./ListItemBase', './library', 'sap/ui/core/IconPool', 'sap/ui/core/library'],
+	function(ListItemBase, library, IconPool, coreLibrary) {
 		"use strict";
+
+		// shortcut for sap.ui.core.TextDirection
+		var TextDirection = coreLibrary.TextDirection;
 
 		/**
 		 * Constructor for a new <code>MenuListItem</code>.
@@ -20,7 +23,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 		 * @extends sap.m.ListItemBase
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @private
@@ -51,7 +54,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 				/**
 				 * Defines the <code>title</code> text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 */
-				titleTextDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : sap.ui.core.TextDirection.Inherit},
+				titleTextDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit},
 
 				/**
 				 * Defines whether a visual separator should be rendered before the item.
@@ -138,6 +141,5 @@ sap.ui.define(['jquery.sap.global', './ListItemBase', './library', 'sap/ui/core/
 		};
 
 		return MenuListItem;
-
-	}, /* bExport= */ false);
+	});
 

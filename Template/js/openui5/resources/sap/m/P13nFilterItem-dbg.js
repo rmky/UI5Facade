@@ -6,8 +6,8 @@
 
 // Provides control sap.m.P13nFilterItem.
 sap.ui.define([
-	'jquery.sap.global', './library', 'sap/ui/core/Item'
-], function(jQuery, library, Item) {
+	'./library', 'sap/ui/core/Item'
+], function(library, Item) {
 	"use strict";
 
 	/**
@@ -17,7 +17,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class Type for <code>filterItems</code> aggregation in P13nFilterPanel control.
 	 * @extends sap.ui.core.Item
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -102,4 +102,4 @@ sap.ui.define([
 
 	return P13nFilterItem;
 
-}, /* bExport= */true);
+});

@@ -4,10 +4,13 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global'],
+sap.ui.define(["sap/m/library"],
 
-	function(jQuery) {
+	function(library) {
 		"use strict";
+
+		// shortcut for sap.m.ButtonType
+		var ButtonType = library.ButtonType;
 
 		/**
 		 * <code>SplitButton</code> renderer.
@@ -41,10 +44,10 @@ sap.ui.define(['jquery.sap.global'],
 			if (oButton.getIcon()) {
 				oRm.addClass(SplitButtonRenderer.CSS_CLASS + "HasIcon");
 			}
-			if (sType === sap.m.ButtonType.Accept
-				|| sType === sap.m.ButtonType.Reject
-				|| sType === sap.m.ButtonType.Emphasized
-				|| sType === sap.m.ButtonType.Transparent) {
+			if (sType === ButtonType.Accept
+				|| sType === ButtonType.Reject
+				|| sType === ButtonType.Emphasized
+				|| sType === ButtonType.Transparent) {
 				oRm.addClass(SplitButtonRenderer.CSS_CLASS + sType);
 			}
 
@@ -119,5 +122,4 @@ sap.ui.define(['jquery.sap.global'],
 		};
 
 		return SplitButtonRenderer;
-
 	}, /* bExport= */ true);

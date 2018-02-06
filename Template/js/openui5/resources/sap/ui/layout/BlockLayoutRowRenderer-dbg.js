@@ -4,9 +4,12 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './library'],
-	function (jQuery, library) {
+sap.ui.define(['./library'],
+	function (library) {
 		"use strict";
+
+		// shortcut for sap.ui.layout.BlockBackgroundType
+		var BlockBackgroundType = library.BlockBackgroundType;
 
 		var BlockLayoutRowRenderer = {};
 
@@ -40,7 +43,7 @@ sap.ui.define(['jquery.sap.global', './library'],
 		BlockLayoutRowRenderer.renderContent = function (oRm, oBlockLayoutRow) {
 			var aContent = oBlockLayoutRow.getContent(),
 				bScrollable = oBlockLayoutRow.getScrollable(),
-				oBackgrounds = sap.ui.layout.BlockBackgroundType,
+				oBackgrounds = BlockBackgroundType,
 				sLayoutBackground = oBlockLayoutRow.getParent().getBackground(),
 				aAccentedCells = oBlockLayoutRow.getAccentCells(),
 				iContentCounter = 0,
@@ -94,5 +97,4 @@ sap.ui.define(['jquery.sap.global', './library'],
 		};
 
 		return BlockLayoutRowRenderer;
-
 	}, /* bExport= */ true);

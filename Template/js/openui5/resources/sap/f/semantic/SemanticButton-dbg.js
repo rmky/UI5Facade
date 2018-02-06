@@ -6,10 +6,9 @@
 
 sap.ui.define([
 	"./SemanticControl",
-	"./SemanticConfiguration",
 	"sap/m/Button",
 	"sap/m/OverflowToolbarButton"
-], function(SemanticControl, SemanticConfiguration, Button, OverflowToolbarButton) {
+], function(SemanticControl, Button, OverflowToolbarButton) {
 	"use strict";
 
 	/**
@@ -26,7 +25,7 @@ sap.ui.define([
 	* @abstract
 	*
 	* @author SAP SE
-	* @version 1.50.8
+	* @version 1.52.5
 	*
 	* @constructor
 	* @public
@@ -89,4 +88,4 @@ sap.ui.define([
 	};
 
 	return SemanticButton;
-}, /* bExport= */ false);
+});

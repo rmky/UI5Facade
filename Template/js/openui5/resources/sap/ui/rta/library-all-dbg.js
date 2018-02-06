@@ -20,7 +20,7 @@ sap.ui.define("sap/ui/rta/ControlTreeModifier",["sap/ui/fl/changeHandler/JsContr
 	 * @extends sap.ui.fl.changehandler.jsControlTreeModifier
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @private
 	 * @since 1.44
@@ -368,7 +368,7 @@ function(
 	 * @class Utility functionality to work with controls, e.g. iterate through aggregations, find parents, etc.
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @private
 	 * @static
@@ -384,7 +384,7 @@ function(
 
 	Utils._sFocusableOverlayClass = ".sapUiDtOverlaySelectable";
 
-	Utils._sRtaStyleClassName = "";
+	Utils._sRtaStyleClassName = null;
 
 	/**
 	 * Returns the rta specific Style Class
@@ -404,11 +404,7 @@ function(
 		if (sLayer === "USER") {
 			Utils._sRtaStyleClassName = "";
 		} else if (FlexUtils.getLayerIndex(sLayer) > -1) {
-			if (sap.ui.getCore().getConfiguration().getTheme() === "sap_belize") {
-				Utils._sRtaStyleClassName = "sapContrast";
-			} else if (sap.ui.getCore().getConfiguration().getTheme() === "sap_belize_plus") {
-				Utils._sRtaStyleClassName = "sapContrastPlus";
-			}
+			Utils._sRtaStyleClassName = "sapContrast sapContrastPlus";
 		}
 	};
 
@@ -844,10 +840,10 @@ function(
 	};
 
 	/**
-	 * Fetching entity metadata by specified path
+	 * Fetching entity metadata by specified path.
 	 * @param {sap.ui.model.Model} oModel - Model
-	 * @param {String} sPath - Path to resolve
-	 * @returns {Object|null} - Plain object with entity description
+	 * @param {string} sPath Path to resolve
+	 * @returns {Object|null} Plain object with entity description
 	 */
 	Utils.getEntityTypeByPath = function (oModel, sPath) {
 		return oModel.oMetadata._getEntityTypeByPath(sPath);
@@ -859,11 +855,15 @@ function(
 	 *
 	 * TODO: replace with lodash.mergeWith when it's available
 	 *
-	 * @param mDestination {Object} - Destionation object
-	 * @param mSource {Object} - Source object
-	 * @param fnCustomizer {Function} - The customizer is invoked with five arguments:
-	 *                                  (vDestinationValue, vSourceValue, sProperty, mDestination, mSource).
-	 * @return {Object} - returns mDestination object
+	 * @param {Object} mDestination Destination object
+	 * @param {Object} mSource Source object
+	 * @param {function} fnCustomizer The customizer is invoked with the following five arguments:
+	 *                                  vDestinationValue: Value of the property in the destination object
+	 *                                  vSourceValue: Value of the property in the source object
+	 *                                  sProperty: Property being processed
+	 *                                  mDestination: Destination object
+	 *                                  mSourve: Source object
+	 * @return {Object} - Returns <code>mDestination</code> object
 	 */
 	Utils.mergeWith = function (mDestination, mSource, fnCustomizer) {
 		if (!(typeof fnCustomizer === "function")) {
@@ -879,8 +879,7 @@ function(
 						sSourceProperty,
 						mDestination,
 						mSource
-						)
-					: mSource[sSourceProperty];
+					) : mSource[sSourceProperty];
 			}
 		}
 
@@ -888,10 +887,39 @@ function(
 	};
 
 	/**
-	 * Returns if the Dom Element is currently visible on the screen
+	 * Extending helper which allows custom function
+	 * for extending.
 	 *
-	 * @param oDomElement {HTMLElement|jQuery} Element to be evaluated
-	 * @return {boolean} - returns if oDomElement is currently visible on the screen.
+	 * @param {Object} mDestination - Destionation object
+	 * @param {Object} mSource - Source object
+	 * @param {Function} fnCustomizer - The customizer is invoked with five arguments:
+	 *                                  (vDestinationValue, vSourceValue, sProperty, mDestination, mSource).
+	 */
+	Utils.extendWith = function (mDestination, mSource, fnCustomizer) {
+		if (!(typeof fnCustomizer === "function")) {
+			throw new Error('In order to use extendWith() utility function fnCustomizer should be provided!');
+		}
+
+		for (var sSourceProperty in mSource) {
+			if (mSource.hasOwnProperty(sSourceProperty)) {
+				if (fnCustomizer(
+						mDestination[sSourceProperty],
+						mSource[sSourceProperty],
+						sSourceProperty,
+						mDestination,
+						mSource)
+				){
+					mDestination[sSourceProperty] = mSource[sSourceProperty];
+				}
+			}
+		}
+	};
+
+	/**
+	 * Returns if the <code>oDomElement</code> is currently visible on the screen.
+	 *
+	 * @param {HTMLElement|jQuery} oDomElement Element to be evaluated
+	 * @return {boolean} - Returns if <code>oDomElement</code> is currently visible on the screen.
 	 */
 	Utils.isElementInViewport = function(oDomElement) {
 		if (oDomElement instanceof jQuery) {
@@ -912,67 +940,1039 @@ function(
 }, /* bExport= */true);
 
 }; // end of sap/ui/rta/Utils.js
-if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.ManageAppsLoader') ) {
+if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.AppVariantDialog') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-jQuery.sap.declare('sap.ui.rta.appVariant.ManageAppsLoader'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
-jQuery.sap.require('jquery.sap.global'); // unlisted dependency retained
-sap.ui.define("sap/ui/rta/appVariant/ManageAppsLoader",[
-  "jquery.sap.global",
-  "sap/ui/rta/Utils"
-], function(jQuery, RtaUtils) {
-  "use strict";
+// Provides control sap.ui.rta.appVariant.AppVariantDialog.
+jQuery.sap.declare('sap.ui.rta.appVariant.AppVariantDialog'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('sap.m.Dialog'); // unlisted dependency retained
+jQuery.sap.require('sap.m.DialogRenderer'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.layout.form.SimpleForm'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.layout.form.ResponsiveGridLayout'); // unlisted dependency retained
+sap.ui.define("sap/ui/rta/appVariant/AppVariantDialog",[
+	'sap/m/Dialog',
+	'sap/m/DialogRenderer',
+	'sap/ui/rta/Utils',
+	'sap/ui/layout/form/SimpleForm',
+	'sap/ui/layout/form/ResponsiveGridLayout'
+],
+function(
+	Dialog,
+	DialogRenderer,
+	RtaUtils,
+	SimpleForm,
+	ResponsiveGridLayout
+){
 
-	var _oPromise;
+	"use strict";
 
-	var oManageAppsDialog;
-	return {
-		load: function(sRootControl) {
-			var oRootControl = sap.ui.getCore().byId(sRootControl);
+	var oResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
+	var oDataSet,
+		oTitleLabel,
+		oTitleInput,
+		oSubTitleLabel,
+		oSubTitleInput,
+		oDescriptionLabel,
+		oDescriptionText,
+		oIconLabel,
+		oIconInput,
+		oSimpleForm,
+		oSelectDialog,
+		oCustomTileModel,
+		oSelectDialogModel;
 
-			if (!_oPromise) {
-				_oPromise = new Promise(function(resolve) {
-					sap.ui.require(["sap/ui/rta/appVariant/ManageAppsDialog"], function(ManageAppsDialog) {
-						return resolve(ManageAppsDialog);
-					});
+	function _createTile() {
+		oDataSet  = new sap.m.GenericTile("tile", {
+			header: "{/title}",
+			subheader: "{/subtitle}",
+			tileContent: [
+				new sap.m.TileContent({
+					content: [
+						new sap.m.ImageContent({
+							src: "{/icon}"
+						})
+					]
+				})
+			]
+		}).addStyleClass("sapUiMediumMarginBegin").addStyleClass("sapUiTinyMarginTop").addStyleClass("sapUiTinyMarginBottom");
+	}
+
+	function _handleSearch(oEvent) {
+		var sValue = oEvent.getParameter("value");
+		var oFilter = new sap.ui.model.Filter("name", sap.ui.model.FilterOperator.Contains, sValue);
+		var oBinding = oEvent.getSource().getBinding("items");
+		oBinding.filter([oFilter]);
+	}
+
+	function _handleClose(oEvent) {
+		var aContexts = oEvent.getParameter("selectedContexts");
+
+		if (aContexts && aContexts.length) {
+			aContexts.some(function(oContext) {
+				var newValue = oContext.getObject().name;
+				oIconInput.setValue(newValue);
+				oCustomTileModel.setProperty("/icon", oContext.getObject().icon);
+			});
+		}
+
+		oEvent.getSource().getBinding("items").filter([]);
+	}
+
+	function _handleSelectDialog() {
+		if (!oSelectDialog) {
+			oSelectDialog = new sap.m.SelectDialog("selectDialog", {
+				noDataText: oResources.getText("APP_VARIANT_ICON_NO_DATA"),
+				title: oResources.getText("APP_VARIANT_ICON_SELECT_ICON"),
+				search: function(oEvent) {
+					_handleSearch(oEvent);
+				},
+				confirm: function(oEvent) {
+					_handleClose(oEvent);
+				},
+				cancel: function(oEvent) {
+					_handleClose(oEvent);
+				}
+			});
+		}
+
+		oSelectDialog.addStyleClass(RtaUtils.getRtaStyleClassName());
+
+		oSelectDialog.bindAggregation("items",{
+            path:"/icons",
+            template: new sap.m.StandardListItem({
+				title: "{name}",
+				description: "",
+				icon: "{icon}",
+				iconDensityAware: false,
+				iconInset: false,
+				type: "Active"
+            })
+        });
+
+		var aUI5Icons = sap.ui.core.IconPool.getIconNames();
+		var aIcons = [];
+
+		aUI5Icons.some(function(sName) {
+			aIcons.push({
+				icon: sap.ui.core.IconPool.getIconInfo(sName).uri,
+				name : sName.toLowerCase()
+			});
+		});
+
+		oSelectDialogModel.setProperty("/icons", aIcons);
+
+		oSelectDialog.setModel(oSelectDialogModel);
+		oSelectDialog.getBinding("items").filter([]);
+
+		oSelectDialog.open();
+	}
+
+	function _createTileAttributes() {
+		oTitleLabel = new sap.m.Label({
+			required: true,
+			text: oResources.getText("APP_DIALOG_TITLE_TEXT"),
+			textAlign: "Left"
+		});
+
+		oTitleInput = new sap.m.Input("titleInput", {
+			value: "{/title}",
+			valueLiveUpdate: true,
+			liveChange: function() {
+				var oSaveButton = sap.ui.getCore().byId("saveButton");
+				if (this.getValue() === "") {
+					this.setValueState(sap.ui.core.ValueState.Error);  // if the field is empty after change, it will go red
+					oSaveButton.setEnabled(false);
+	            } else {
+	                this.setValueState(sap.ui.core.ValueState.None); // if the field is not empty after change, the value state (if any) is removed
+	                oSaveButton.setEnabled(true);
+	            }
+			}
+		});
+
+		oSubTitleLabel = new sap.m.Label({
+			text: oResources.getText("APP_DIALOG_SUB_TITLE_TEXT"),
+			textAlign: "Left"
+		});
+
+		oSubTitleInput = new sap.m.Input({
+			value: "{/subtitle}",
+			valueLiveUpdate: true
+		});
+
+		oDescriptionLabel = new sap.m.Label({
+			text: oResources.getText("APP_DIALOG_DESCRIPTION_TEXT"),
+			textAlign: "Left"
+		});
+
+		oDescriptionText = new sap.m.TextArea({
+			rows: 4
+		});
+
+		oIconLabel = new sap.m.Label({
+			text: oResources.getText("APP_DIALOG_ICON_TEXT"),
+			textAlign: "Left"
+		});
+
+		oIconInput = new sap.m.Input("selectInput", {
+			showValueHelp: true,
+			liveChange: function(oEvent) {
+				_handleSelectDialog(oEvent);
+			},
+			valueHelpRequest: function(oEvent) {
+				_handleSelectDialog(oEvent);
+			},
+			value: "{/iconname}",
+			valueLiveUpdate: true
+		});
+	}
+
+	function _createSimpleForm() {
+		oSimpleForm = new sap.ui.layout.form.SimpleForm({
+			editable: true,
+			layout: "ResponsiveGridLayout",
+			labelSpanXL: 4,
+			labelSpanL: 4,
+			labelSpanM: 4,
+			labelSpanS: 4,
+			adjustLabelSpan: false,
+			emptySpanXL: 0,
+			emptySpanL: 0,
+			emptySpanM: 0,
+			emptySpanS: 0,
+			columnsXL: 2,
+			columnsL: 2,
+			columnsM: 2,
+			singleContainerFullSize: false,
+			content: [
+				new sap.ui.core.Title("title1", {
+					text: ""
+				}),
+				oTitleLabel,
+				oTitleInput,
+				oSubTitleLabel,
+				oSubTitleInput,
+				oIconLabel,
+				oIconInput,
+				oDescriptionLabel,
+				oDescriptionText,
+				new sap.ui.core.Title("title2", {
+					text: ""
+				}),
+				oDataSet
+			]
+		});
+
+		return oSimpleForm;
+	}
+
+	function _createContentList() {
+		var oVBox =  new sap.m.VBox({
+			items: [
+				_createSimpleForm()
+			]
+		}).addStyleClass("sapUISmallMargin");
+
+		return oVBox;
+	}
+
+	var AppVariantDialog = Dialog.extend("sap.ui.rta.appVariant.AppVariantDialog", {
+		metadata : {
+			library : "sap.ui.rta",
+			events : {
+
+				/**
+				 * This event will be fired when the user clicks the Create button on the dialog.
+				 */
+				create : {},
+
+				/**
+				 * This event will be fired when the user clicks the Cancel button on the dialog.
+				 */
+				cancel : {}
+			}
+		},
+		init: function() {
+			Dialog.prototype.init.apply(this);
+
+			// initialize dialog and create member variables.
+			this.setTitle(oResources.getText("CREATE_APP_VARIANT_DIALOG_TITLE"));
+			this.setContentWidth("620px");
+			this.setContentHeight("250px");
+
+			oCustomTileModel = new sap.ui.model.json.JSONModel({
+				title: oResources.getText("SAVE_AS_DIALOG_TITLE_TEXT"),
+				subtitle: "",
+				icon: "sap-icon://history",
+				iconname: "history"
+			});
+
+			oSelectDialogModel = new sap.ui.model.json.JSONModel({
+				icons: null
+			});
+
+			sap.ui.getCore().setModel(oCustomTileModel);
+
+			_createTile();
+			_createTileAttributes();
+
+			this.addContent(_createContentList());
+
+			// create, and cancel buttons.
+			this._createButtons();
+
+			this.addStyleClass(RtaUtils.getRtaStyleClassName());
+		},
+		onAfterRendering: function() {
+			document.getElementById('title1').style.height = "0px";
+			document.getElementById('title2').style.height = "0px";
+			document.getElementById('tile').style.float = "left";
+		},
+		_onCreate: function() {
+			var sTitle = oTitleInput.getValue();
+			var sSubTitle = oSubTitleInput.getValue();
+			var sDescription = oDescriptionText.getValue();
+			var sIconValue = sap.ui.core.IconPool.getIconInfo(oIconInput.getValue()).uri;
+
+			this.fireCreate({
+				title: sTitle,
+				subTitle: sSubTitle,
+				description: sDescription,
+				icon: sIconValue
+			});
+
+			this.close();
+			this.destroy();
+		},
+		_createButtons: function() {
+			this.addButton(new sap.m.Button("saveButton", {
+				text: oResources.getText("APP_VARIANT_DIALOG_SAVE"),
+				tooltip: oResources.getText("TOOLTIP_APP_VARIANT_DIALOG_SAVE"),
+				press: function() {
+					this._onCreate();
+				}.bind(this)
+			}));
+
+			this.addButton(new sap.m.Button({
+				text: oResources.getText("SAVE_AS_APP_VARIANT_DIALOG_CANCEL"),
+				tooltip: oResources.getText("TOOLTIP_SAVE_AS_APP_VARIANT_DIALOG_CANCEL"),
+				press: function() {
+					this.fireCancel();
+					this.close();
+					this.destroy();
+				}.bind(this)
+			}));
+		},
+		destroy: function() {
+			if (oCustomTileModel) {
+				oCustomTileModel.destroy();
+			}
+			Dialog.prototype.destroy.apply(this, arguments);
+		},
+		renderer: DialogRenderer.render
+	});
+
+	return AppVariantDialog;
+
+}, /* bExport= */ true);
+}; // end of sap/ui/rta/appVariant/AppVariantDialog.js
+if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.AppVariantUtils') ) {
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+jQuery.sap.declare('sap.ui.rta.appVariant.AppVariantUtils'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('sap.ui.fl.descriptorRelated.api.DescriptorVariantFactory'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.descriptorRelated.api.DescriptorInlineChangeFactory'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.LrepConnector'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
+jQuery.sap.require('sap.m.MessageBox'); // unlisted dependency retained
+sap.ui.define("sap/ui/rta/appVariant/AppVariantUtils",[
+	"sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory",
+	"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory",
+	"sap/ui/fl/LrepConnector",
+	"sap/ui/fl/Utils",
+	"sap/m/MessageBox",
+	"sap/ui/rta/Utils"],
+	function(
+		DescriptorVariantFactory,
+		DescriptorInlineChangeFactory,
+		LrepConnector,
+		FlexUtils,
+		MessageBox,
+		RtaUtils) {
+
+		"use strict";
+		var AppVariantUtils = {};
+
+		// S/4 Hana expects us to pass an ID of 56 characters
+		var HANA_CLOUD_ID_LENGTH = 56;
+
+		AppVariantUtils.newAppVariantId = "";
+
+		AppVariantUtils.getManifirstSupport = function(sRunningAppId) {
+	        var sRoute = '/sap/bc/ui2/app_index/ui5_app_mani_first_supported/?id=' + sRunningAppId;
+			var oLREPConnector = LrepConnector.createConnector();
+			return oLREPConnector.send(sRoute, 'GET');
+		};
+
+		AppVariantUtils.isStandAloneApp = function() {
+			if (sap.ushell_abap) {
+				return false;
+			} else {
+				return true;
+			}
+		};
+
+		AppVariantUtils.getNewAppVariantId = function() {
+			return AppVariantUtils.newAppVariantId;
+		};
+
+		AppVariantUtils.setNewAppVariantId = function(sNewAppVariantID) {
+			AppVariantUtils.newAppVariantId = sNewAppVariantID;
+		};
+
+		AppVariantUtils.trimIdIfRequired = function(sId) {
+			return sId.substr(0, HANA_CLOUD_ID_LENGTH);
+		};
+
+		AppVariantUtils.getId = function(sBaseAppID) {
+			var sChangedId;
+			var aIdStrings = sBaseAppID.split('.');
+
+			if (aIdStrings[0] !== "customer") {
+				aIdStrings[0] = "customer." + aIdStrings[0];
+			}
+
+			var bRegFound = false;
+			aIdStrings.forEach(function(sString, index, array) {
+				var regex = /^id.*/i;
+				if (sString.match(regex)) {
+					sString = sString.replace(regex, jQuery.sap.uid().replace(/-/g, "_"));
+					array[index] = sString;
+					bRegFound = true;
+				}
+			});
+
+			sChangedId = aIdStrings.join(".");
+			if (!bRegFound) {
+				sChangedId = sChangedId + "." + jQuery.sap.uid().replace(/-/g, "_");
+			}
+
+			sChangedId = this.trimIdIfRequired(sChangedId);
+			this.setNewAppVariantId(sChangedId);
+
+			return sChangedId;
+		};
+
+		AppVariantUtils.createDescriptorVariant = function(mParameters){
+			mParameters.layer = FlexUtils.getCurrentLayer(false);
+			return DescriptorVariantFactory.createNew(mParameters);
+		};
+
+		AppVariantUtils.getInlineChangeInput = function(sValue, sComment){
+			return {
+				"type": "XTIT",
+				"maxLength": 50,
+				"comment": sComment,
+				"value": {
+					"": sValue
+				}
+			};
+		};
+
+		AppVariantUtils.getInlinePropertyChange = function(sPropertyName, sPropertyValue){
+			var sComment = "New " + sPropertyName + " entered by a key user via RTA tool";
+			return this.getInlineChangeInput(sPropertyValue, sComment);
+		};
+
+		AppVariantUtils.getInlineChangeInputIcon = function(sIconValue) {
+			return {
+				icon: sIconValue
+			};
+		};
+
+		AppVariantUtils.getInlineChangeRemoveInbounds = function(sInboundValue) {
+			return {
+				"inboundId": sInboundValue
+			};
+		};
+
+		AppVariantUtils.getURLParsedHash = function() {
+			var oURLParser = sap.ushell.Container.getService("URLParsing");
+			if (oURLParser.parseShellHash && oURLParser.getHash){
+				return oURLParser.parseShellHash(oURLParser.getHash(window.location.href));
+			}
+		};
+
+		AppVariantUtils.getInboundInfo = function(oInbounds) {
+			var oInboundInfo = {};
+			var oParsedHash = this.getURLParsedHash();
+			var aInbounds = Object.keys(oInbounds);
+			var aInboundsFound = [];
+
+			if (aInbounds.length) {
+				aInbounds.forEach(function(sInboundId) {
+					if ((oInbounds[sInboundId].action === oParsedHash.action) && (oInbounds[sInboundId].semanticObject === oParsedHash.semanticObject)) {
+						aInboundsFound.push(sInboundId);
+					}
 				});
 			}
 
-			return _oPromise.then(function(ManageAppsDialog) {
-
-				if (!oManageAppsDialog) {
-					oManageAppsDialog = new ManageAppsDialog({
-						rootControl: oRootControl,
-						close: function() {
-							this.destroy();
-							oManageAppsDialog = null;
-						}
-					});
-				}
-				return oManageAppsDialog.open();
-
-			});
-		},
-		// App variant functionality is only supported in S/4 Hana Cloud Platform with 'sap-ui-xx-rta-save-as=true' (feature switch) as a part of url.
-		hasAppVariantsSupport: function(sLayer, bIsAtoAvailableAndEnabled) {
-			if (bIsAtoAvailableAndEnabled && RtaUtils.getUshellContainer() && sLayer === "CUSTOMER") {
-				var oUriParams = jQuery.sap.getUriParameters();
-				var aUriLayer = oUriParams.mParams["sap-ui-xx-rta-save-as"];
-				if (aUriLayer && aUriLayer.length > 0) {
-					return aUriLayer[0] === 'true' ? true : false;
-				}
+			switch (aInboundsFound.length) {
+				case 0:
+					oInboundInfo.currentRunningInbound = "customer.savedAsAppVariant";
+					oInboundInfo.addNewInboundRequired = true;
+					break;
+				case 1:
+					oInboundInfo.currentRunningInbound = aInboundsFound[0];
+					oInboundInfo.addNewInboundRequired = false;
+					break;
+				default:
+					oInboundInfo = undefined;
+					break;
 			}
 
-			return false;
+			return oInboundInfo;
+		};
+
+		AppVariantUtils.getInboundPropertiesKey = function(sAppVariantId, sCurrentRunningInboundId, sPropertyName) {
+			return sAppVariantId + "_sap.app.crossNavigation.inbounds." + sCurrentRunningInboundId + "." + sPropertyName;
+		};
+
+		AppVariantUtils.getInlineChangesForInboundProperties = function(sCurrentRunningInboundId, sAppVariantId, sPropertyName, sPropertyValue) {
+			var oChangeInput = {
+				"inboundId": sCurrentRunningInboundId,
+				"entityPropertyChange": {
+					"propertyPath": sPropertyName,
+					"operation": "UPSERT",
+					"propertyValue": {}
+				},
+				"texts": {}
+			};
+
+			if (sPropertyName === "title" || sPropertyName === "subTitle") {
+				var sKey = this.getInboundPropertiesKey(sAppVariantId, sCurrentRunningInboundId, sPropertyName);
+				oChangeInput.entityPropertyChange.propertyValue = "{{" + sKey + "}}";
+				oChangeInput.texts[sKey] = this.getInlinePropertyChange(sPropertyName, sPropertyValue);
+			} else if (sPropertyName === "icon") {
+				oChangeInput.entityPropertyChange.propertyValue = sPropertyValue;
+			}
+
+			return oChangeInput;
+		};
+
+		AppVariantUtils.getInlineChangeForInboundPropertySaveAs = function(sCurrentRunningInboundId) {
+			return {
+				"inboundId": sCurrentRunningInboundId,
+				"entityPropertyChange": {
+					"propertyPath": "signature/parameters/sap-appvar-id",
+					"operation": "UPSERT",
+					"propertyValue": {
+						"required": true,
+						"filter": {
+							"value": this.getNewAppVariantId(),
+							"format": "plain"
+						},
+						"launcherValue": {
+							"value": this.getNewAppVariantId()
+						}
+					}
+				}
+			};
+		};
+
+		AppVariantUtils.getInlineChangeCreateInbound = function(sCurrentRunningInboundId) {
+			var oParsedHash = this.getURLParsedHash();
+			var oProperty = {
+				"inbound": {}
+			};
+
+			oProperty.inbound[sCurrentRunningInboundId] = {
+				"semanticObject": oParsedHash.semanticObject,
+                "action": oParsedHash.action
+			};
+
+			return oProperty;
+		};
+
+		AppVariantUtils.createInlineChange = function(mParameters, sChange){
+			var mTexts;
+			if (sChange === "title"){
+				return DescriptorInlineChangeFactory.create_app_setTitle(mParameters);
+			} else if (sChange === "description" ){
+				return DescriptorInlineChangeFactory.create_app_setDescription(mParameters);
+			} else if (sChange === "subTitle" ){
+				return DescriptorInlineChangeFactory.create_app_setSubTitle(mParameters);
+			} else if (sChange === "icon" ){
+				return DescriptorInlineChangeFactory.create_ui_setIcon(mParameters);
+			} else if (sChange === "inbound" ){
+				return DescriptorInlineChangeFactory.create_app_changeInbound(mParameters);
+			} else if (sChange === "createInbound" ){
+				return DescriptorInlineChangeFactory.create_app_addNewInbound(mParameters);
+			} else if (sChange === "inboundTitle" ){
+				mTexts = mParameters.texts;
+				delete mParameters.texts;
+				return DescriptorInlineChangeFactory.create_app_changeInbound(mParameters, mTexts);
+			} else if (sChange === "inboundSubtitle" ){
+				mTexts = mParameters.texts;
+				delete mParameters.texts;
+				return DescriptorInlineChangeFactory.create_app_changeInbound(mParameters, mTexts);
+			} else if (sChange === "inboundIcon" ){
+				delete mParameters.texts;
+				return DescriptorInlineChangeFactory.create_app_changeInbound(mParameters);
+			} else if (sChange === "removeInbound"){
+				return DescriptorInlineChangeFactory.create_app_removeAllInboundsExceptOne(mParameters);
+			}
+		};
+
+		AppVariantUtils.getTransportInput = function(sPackageName, sNameSpace, sName, sType) {
+			return {
+				getPackage : function(){
+					return sPackageName;
+				},
+				getNamespace : function(){
+					return sNameSpace;
+				},
+				getId : function(){
+					return sName;
+				},
+				getDefinition : function(){
+					return {
+						fileType: sType
+					};
+				}
+			};
+		};
+
+		AppVariantUtils.triggerCatalogAssignment = function(sAppVariantId, sOriginalId) {
+			var sRoute = '/sap/bc/lrep/appdescr_variants/' + sAppVariantId + '?action=assignCatalogs&assignFromAppId=' + sOriginalId;
+			var oLREPConnector = LrepConnector.createConnector();
+			return oLREPConnector.send(sRoute, 'POST');
+		};
+
+		AppVariantUtils.showTechnicalError = function(oMessageType, sTitleKey, sMessageKey, vError) {
+			var oTextResources = this.getTextResources();
+			var sErrorMessage = "";
+			if (vError.messages && vError.messages.length) {
+				if (vError.messages.length > 1) {
+					vError.messages.forEach(function(oError) {
+						sErrorMessage += oError.text + "\n";
+					});
+				} else {
+					sErrorMessage += vError.messages[0].text;
+				}
+			} else {
+				sErrorMessage += vError.stack || vError.message || vError.status || vError;
+			}
+
+			var sTitle = oTextResources.getText(sTitleKey);
+			var sMessage = oTextResources.getText(sMessageKey, sErrorMessage);
+
+			return new Promise(function(resolve) {
+				MessageBox.error(sMessage, {
+					icon: oMessageType,
+					title: sTitle,
+					onClose: function() {
+						resolve(false);
+					},
+					styleClass: RtaUtils.getRtaStyleClassName()
+				});
+			});
+		};
+
+		AppVariantUtils.isS4HanaCloud = function(oSettings) {
+			return oSettings.isAtoEnabled() && oSettings.isAtoAvailable();
+		};
+
+		AppVariantUtils.copyId = function(sId) {
+			var textArea = document.createElement("textarea");
+			textArea.value = sId;
+			document.body.appendChild(textArea);
+			textArea.select();
+
+			document.execCommand('copy');
+			document.body.removeChild(textArea);
+		};
+
+		AppVariantUtils.getTextResources = function() {
+			return sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
+		};
+
+		return AppVariantUtils;
+}, /* bExport= */true);
+}; // end of sap/ui/rta/appVariant/AppVariantUtils.js
+if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.Feature') ) {
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+
+jQuery.sap.declare('sap.ui.rta.appVariant.Feature'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('jquery.sap.global'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
+jQuery.sap.require('sap.m.MessageBox'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.core.BusyIndicator'); // unlisted dependency retained
+sap.ui.define("sap/ui/rta/appVariant/Feature",[
+  "jquery.sap.global",
+  "sap/ui/rta/Utils",
+  "sap/ui/fl/Utils",
+  "sap/ui/rta/appVariant/AppVariantUtils",
+  "sap/m/MessageBox",
+  "sap/ui/core/BusyIndicator"
+], function(jQuery,
+	RtaUtils,
+	FlexUtils,
+	AppVariantUtils,
+	MessageBox,
+	BusyIndicator) {
+  "use strict";
+
+	var oAppVariantOverviewDialog,
+		oAppVariantManager;
+
+	sap.ui.getCore().getEventBus().subscribe("sap.ui.rta.appVariant.manageApps.controller.ManageApps", "navigate", function() {
+		if (oAppVariantOverviewDialog) {
+			oAppVariantOverviewDialog.destroy();
+			oAppVariantOverviewDialog = null;
+		}
+	});
+
+	return {
+		onGetOverview: function(oRootControl) {
+			return new Promise( function(resolve) {
+				var fnCancel = function() {
+					sap.ui.getCore().getEventBus().publish("sap.ui.rta.appVariant.manageApps.controller.ManageApps", "navigate");
+				};
+				sap.ui.require(["sap/ui/rta/appVariant/ManageAppsDialog"], function(AppVariantOverviewDialog) {
+					if (!oAppVariantOverviewDialog) {
+						oAppVariantOverviewDialog = new AppVariantOverviewDialog("appVariantOverviewDialog", {
+							rootControl: oRootControl
+						});
+					}
+					oAppVariantOverviewDialog.attachCancel(fnCancel);
+					resolve(oAppVariantOverviewDialog.open());
+				});
+			});
+		},
+		// App variant functionality is only supported in S/4 Hana Cloud Platform & S/4 Hana (On Premise)  with 'sap-ui-xx-rta-save-as=true' (feature switch) as a part of url.
+		isPlatFormEnabled: function(sLayer, oRootControl) {
+			var oDescriptor = FlexUtils.getAppDescriptor(oRootControl);
+
+			if (oDescriptor["sap.app"] && oDescriptor["sap.app"].id) {
+				return AppVariantUtils.getManifirstSupport(oDescriptor["sap.app"].id).then(function(oResult) {
+					if (RtaUtils.getUshellContainer() && !AppVariantUtils.isStandAloneApp() && sLayer === "CUSTOMER" && oResult.response) {
+						var oUriParams = jQuery.sap.getUriParameters();
+						var aUriLayer = oUriParams.mParams["sap-ui-xx-rta-save-as"];
+
+						if (aUriLayer && aUriLayer.length) {
+							var oInboundInfo;
+							if (oDescriptor["sap.app"].crossNavigation && oDescriptor["sap.app"].crossNavigation.inbounds) {
+								oInboundInfo = AppVariantUtils.getInboundInfo(oDescriptor["sap.app"].crossNavigation.inbounds);
+							}
+
+							if (oInboundInfo) {
+								return aUriLayer[0] === 'true' ? true : false;
+							}
+						}
+					}
+					return false;
+				}).catch(function(oError) {
+					return AppVariantUtils.showTechnicalError(MessageBox.Icon.ERROR, "HEADER_APP_VARIANT_FEATURE_FAILED", "MSG_APP_VARIANT_FEATURE_FAILED", oError);
+				});
+			}
+
+			return Promise.resolve(false);
+		},
+		onSaveAs: function(oRootControlRunningApp, oAppVariantDescriptor) {
+			var oDescriptor, oRunningAppDescriptor, oAppVariantDescriptorClosure;
+
+			var oEvaluateSaveAsFlow = {
+				closeRunningApp : false,
+				copyDirtyChanges: false
+			};
+
+			if (oAppVariantDescriptor) {
+				oDescriptor = oAppVariantDescriptor;
+				oRunningAppDescriptor = FlexUtils.getAppDescriptor(oRootControlRunningApp);
+
+				if (oRunningAppDescriptor["sap.app"].id === oDescriptor["sap.app"].id) {
+					oEvaluateSaveAsFlow.copyDirtyChanges = true;
+				}
+			} else {
+				oDescriptor = FlexUtils.getAppDescriptor(oRootControlRunningApp);
+				oEvaluateSaveAsFlow.closeRunningApp = true;
+				oEvaluateSaveAsFlow.copyDirtyChanges = true;
+			}
+
+			return new Promise( function(resolve, reject) {
+				sap.ui.require(["sap/ui/rta/appVariant/AppVariantManager"], function(AppVariantManager) {
+					if (!oAppVariantManager) {
+						oAppVariantManager = new AppVariantManager();
+					}
+					// Key user gives the input e.g title, subtitle, description, icon to create a tile on FLP
+					return oAppVariantManager.processSaveAsDialog(oDescriptor)
+						.then(function(oAppVariantData) {
+							// Based on the key user provided info, app variant descriptor is created
+							return oAppVariantManager.createDescriptor(oAppVariantData);
+						})
+						.then(function(oAppVariantDescriptor) {
+							if (oAppVariantDescriptor) {
+								BusyIndicator.show();
+								oAppVariantDescriptorClosure = oAppVariantDescriptor;
+								// App variant descriptor is getting saved to the layered repository
+								return oAppVariantManager.saveAppVariantToLREP(oAppVariantDescriptor);
+							} else {
+								return false;
+							}
+						})
+						.then(function(bSuccess) {
+							if (bSuccess) {
+								// If there are any unsaved changes, should be taken away for the new created app variant
+								return oAppVariantManager.copyUnsavedChangesToLREP(oAppVariantDescriptorClosure._id, oRootControlRunningApp, oEvaluateSaveAsFlow.copyDirtyChanges);
+							} else {
+								return false;
+							}
+						})
+						.then(function(bSuccess) {
+							if (bSuccess) {
+								// In case of S4 Hana Cloud, trigger automatic catalog assignment
+								return oAppVariantManager.triggerCatalogAssignment(oAppVariantDescriptorClosure);
+							} else {
+								return false;
+							}
+						})
+						.then(function(oResult) {
+							if (oResult) {
+								BusyIndicator.hide();
+								var oUshellContainer = RtaUtils.getUshellContainer();
+								if (oUshellContainer) {
+									// Tell FLP that no UI change is booked for the currently adapting app
+									oUshellContainer.setDirtyFlag(false);
+								}
+								// Shows the success message and closes the current app (if 'Save As' triggered from RTA toolbar) or opens the app variant overview list (if 'Save As' triggered from App variant overview List)
+								return oAppVariantManager.showSuccessMessageAndTriggerActionFlow(oAppVariantDescriptorClosure, oEvaluateSaveAsFlow.closeRunningApp, oRootControlRunningApp)
+									.then(function() {
+										if (oResult && oResult.response && oResult.response.IAMId) {
+											// In case of S4 Hana Cloud, notify the key user to refresh the FLP Homepage manually
+											return oAppVariantManager.notifyKeyUserWhenTileIsReady(oResult.response.IAMId, oAppVariantDescriptorClosure._id);
+										} else {
+											resolve();
+										}
+									});
+							} else {
+								return false;
+							}
+						})
+						["catch"](function() {
+							resolve(false);
+						});
+				});
+			});
 		}
 	};
 
 });
-}; // end of sap/ui/rta/appVariant/ManageAppsLoader.js
+}; // end of sap/ui/rta/appVariant/Feature.js
+if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.S4HanaCloudBackend') ) {
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+
+// Module provides access to functionality related to an S4HANA Cloud backend
+jQuery.sap.declare('sap.ui.rta.appVariant.S4HanaCloudBackend'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('sap.ui.base.ManagedObject'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.model.odata.v2.ODataModel'); // unlisted dependency retained
+sap.ui.define("sap/ui/rta/appVariant/S4HanaCloudBackend",[
+	"sap/ui/base/ManagedObject",
+	"sap/ui/model/odata/v2/ODataModel"
+], function(ManagedObject, ODataModel) {
+	"use strict";
+
+	// Define managed object "S4HanaCloudBackend"
+	var S4HanaCloudBackend = ManagedObject.extend("sap.ui.rta.appVariant.S4HanaCloudBackend", {
+
+		constructor: function() {
+			ManagedObject.apply(this, arguments);
+		}
+
+	});
+
+	/**
+	 * Notifies once FLP customzing for app is ready
+	 *
+	 * @param  {string}   sIamAppId             App id of identity access management
+	 * @param  {function} fnIsReady             To be called once FLP customizing is ready: As a first parameter the IamAppId is given.
+	 * @param  {integer}  [iCheckIntervallMsec] Check intervall
+	 * @param  {integer}  [iMaxNumberOfChecks]  Maximum number of checks
+	 * @return {promise}  Either resolves with { iamAppId : sIamAppId, flpCustomizingIsReady : true | false }
+	 *                    or rejects if the required ODATA service /sap/opu/odata/sap/APS_IAM_APP_SRV is not there
+	 * @async
+	 */
+	S4HanaCloudBackend.prototype.notifyFlpCustomizingIsReady = function( sIamAppId, fnIsReady, iCheckIntervallMsec, iMaxNumberOfChecks ) {
+
+		var that = this;
+		return new Promise( function(resolve, reject) {
+
+			// Check inputs and determine defaults
+			function isNumeric(n) { return !isNaN(parseFloat(n)) && isFinite(n); }
+			var iMsec = isNumeric(iCheckIntervallMsec) ? iCheckIntervallMsec : 2500;
+			var iRemainingChecks = isNumeric(iMaxNumberOfChecks) ? iMaxNumberOfChecks : -1;
+
+			// Notification check
+			function checkForNotification() {
+
+				// No further checks if max number of checks done
+				if (iRemainingChecks == 0) {
+					resolve( { iamAppId : sIamAppId, flpCustomizingIsReady : false } );
+					return;
+				} else if (iRemainingChecks > 0) {
+					iRemainingChecks = iRemainingChecks - 1;
+				}
+
+				// Check if FLP customizing is ready:
+				that.checkFlpCustomizingIsReady( sIamAppId ).then( function( bIsReady ) {
+				// ... Resolve promise if true
+					if (bIsReady) {
+						resolve( { iamAppId : sIamAppId, flpCustomizingIsReady : true } );
+						fnIsReady( sIamAppId );
+				// ... Continue checking if false
+					} else {
+						setTimeout( checkForNotification.bind(that), iMsec );
+					}
+				// ... Reject if OData service to check FLP customizing failed
+				}).catch( function() {
+						reject( { iamAppId : sIamAppId } );
+				});
+			}
+
+			// Schedule first notification check
+			setTimeout( checkForNotification.bind(that), iMsec );
+
+		});
+	};
+
+	S4HanaCloudBackend._evaluateAppIntegrityEstimation = function( oAppIntegrityEstimation ) {
+
+		// Acccess error messages of APS_IAM_APP_SRV ODATA service
+		var aMessages =
+			( oAppIntegrityEstimation && oAppIntegrityEstimation.AppStatusTable
+			&& JSON.parse( oAppIntegrityEstimation.AppStatusTable ) &&
+			JSON.parse( oAppIntegrityEstimation.AppStatusTable ).ITAB );
+
+		// Confirm an array has been retrieved
+		if (!Array.isArray(aMessages)) {
+			throw (
+				"Error: /sap/opu/odata/sap/APS_IAM_APP_SRV/checkAppIntegrity() returned unexpected result"
+				+ "for IAM app ID " + oAppIntegrityEstimation.AppID
+			);
+		}
+
+		// Check if publishing is in progress (Warning CM_APS_IAM_APP/057)
+		var bCatalogPublishingInProgress =
+			aMessages.filter( function(oMessage) {
+				return (oMessage.TYPE == 'W' && oMessage.ID == "CM_APS_IAM_APP" && oMessage.NUMBER == "057");
+			}).length >= 1;
+
+		// Check if publishing failed (Error CM_APS_IAM_APP/058)
+		var bCatalogPublishingFailed =
+			aMessages.filter( function(oMessage) {
+				return (oMessage.TYPE == 'E' && oMessage.ID == "CM_APS_IAM_APP" && oMessage.NUMBER == "058");
+			}).length >= 1;
+
+		// Check if errors have been reported
+		var bErrorsReported =
+			aMessages.filter( function(oMessage) {
+				return ( oMessage.TYPE == 'E' );
+			}).length >= 1;
+
+		// Raise exception if pulishing catalog failed
+		if ((bErrorsReported && !bCatalogPublishingInProgress) || bCatalogPublishingFailed) {
+			throw (
+				"Error: Tile generation for app variant with IAM app ID "
+				+ oAppIntegrityEstimation.AppID + " failed"
+			);
+		}
+
+		// Customizing is "ready" if publishing is finished, there are no error messages and AppStatus is empty
+		return ( !bCatalogPublishingInProgress && !bErrorsReported && !oAppIntegrityEstimation.AppStatus );
+
+	};
+
+	/**
+	 * Tells if the FLPD customizing has been generated for the Fiori app with the given IAM app ID
+	 *
+	 * @async
+	 * @param  {string} sIamAppId Identity Access Management ID of the Fiori app
+	 * @return {Promise<bool>}    Promise delivering a bool value
+	 * @async
+	 *
+	 * Remarks:
+	 * <ul>
+	 * 		<li>
+	 * 		In order to check if the FLP customizing for a IAM app ID is available,
+	 * 		the function import checkAppIntegrity of the OData Service APS_IAM_APP_SRV is used.
+	 *
+	 * 		As Sebastian Scheuermann said, this is an inoffcial SAP internal API and it's not
+	 *   	documented. Everything is okay if the AppStatus is initial. Then also the AppStatusTable
+	 *   	property has an empty ITAB property with an empty table.
+	 *    	</li>
+	 * </ul>
+	 */
+	S4HanaCloudBackend.prototype.checkFlpCustomizingIsReady = function( sIamAppId ) {
+
+		return new Promise( function( resolve, reject ) {
+
+
+			// Access IAM app OData service and confirm that metadat have been loaded
+			// ... Remark:
+			//     I do not keep the model as a reusable service as then the attached functions
+			//     may accumulate with multiple notifyFlpCustomizingIsReady calls.
+			var oModel = new ODataModel("/sap/opu/odata/sap/APS_IAM_APP_SRV");
+			oModel.attachMetadataFailed( function( error ) {
+				reject( error );
+			});
+
+			// Check integrity of IAM app
+			oModel.metadataLoaded().then( function() {
+				oModel.callFunction( "/checkAppIntegrity",
+					{ method:"POST", urlParameters:{ AppID:sIamAppId },
+					  error: reject,
+					  success: resolve
+					}
+				);
+			});
+/*
+			// Unfortunately, the following code is not supported:
+			// Reject is not called, if the metadata cold not be retrieved.
+			// From my perspective this is an error.
+
+			try {
+				new ODataModel("/sap/opu/odata/sap/APS_IAM_APP_SRV").callFunction( "/checkAppIntegrity",
+					{ method:"POST", urlParameters:{ AppID:sIamAppId },
+					  error: reject,
+					  success: resolve }
+				);
+			} catch ( error ) {
+				reject( error );
+			}
+*/
+		}).then( S4HanaCloudBackend._evaluateAppIntegrityEstimation );
+
+	};
+
+	return S4HanaCloudBackend;
+});
+
+
+}; // end of sap/ui/rta/appVariant/S4HanaCloudBackend.js
 if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.Utils') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
@@ -981,84 +1981,127 @@ if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.Utils') ) {
  */
 jQuery.sap.declare('sap.ui.rta.appVariant.Utils'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
 jQuery.sap.require('jquery.sap.global'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.LrepConnector'); // unlisted dependency retained
 sap.ui.define("sap/ui/rta/appVariant/Utils",[
-	"jquery.sap.global"],
-	function(jQuery) {
+	"jquery.sap.global",
+	"sap/ui/fl/LrepConnector",
+	"sap/ui/rta/appVariant/AppVariantUtils"],
+	function(jQuery, LrepConnector, AppVariantUtils) {
 		"use strict";
 
 		var Utils = {};
-		var _sAppIndexBasedOnIdUrl = "/sap/bc/ui2/app_index/?basedOnId=";
-		var _sAppIndexIdUrl = "/sap/bc/ui2/app_index/?sap.app/id=";
 
-		Utils.ajaxRequest = function(oRequestData) {
-			return new Promise(function(resolve, reject){
-		        jQuery.ajax(oRequestData).done(function(oResponseData) {
-	                return resolve(oResponseData);
-	            }).fail(function(oError) {
-	                return reject(oError);
-	            });
-		    });
+		var sModulePath = jQuery.sap.getModulePath( "sap.ui.rta.appVariant.manageApps.webapp" );
+		var oI18n = jQuery.sap.resources({
+			url : sModulePath + "/i18n/i18n.properties"
+		});
+
+		Utils.sendRequest = function(sRoute, sOperation) {
+			var oLREPConnector = LrepConnector.createConnector();
+			return oLREPConnector.send(sRoute, sOperation);
 		};
 
-		Utils.getAppVariants = function(sComponentName, sType) {
-			var oRequestData = {
-	            url: _sAppIndexBasedOnIdUrl + sComponentName + '&fields=descriptorUrl',
-	            type: "GET"
-	        };
-
-	        return this.ajaxRequest(oRequestData).then(function(oResponseData) {
-				var aAppVariants = oResponseData.results;
-				return this.getAppVariantDescriptorInfo(aAppVariants, sType);
-	        }.bind(this));
-		};
-
-		Utils.getAppVariantDescriptorInfo = function(aAppVariants, sType) {
-			var aAllAppVariants = [];
-
-			var that = this;
-
-			aAppVariants.some(function(oAppVariant) {
-				aAllAppVariants.push(that.getAppVariantsProperties(oAppVariant, sType));
-			});
-
-			return Promise.all(aAllAppVariants).then(function(aResponses) {
-				return aResponses;
-			});
-		};
-
-		Utils.getAppVariantsProperties = function(oAppVariant, sType) {
-			var oAppVariantProperties = {}, oRequestData;
-
-			oRequestData = {
-				url: oAppVariant["descriptorUrl"],
-				type: "GET"
+		Utils.getAppVariantOverviewAttributes = function(oAppVariantInfo) {
+			var oAppVariantAttributes;
+			var fnCheckAppType = function() {
+				if (oAppVariantInfo.isOriginal && oAppVariantInfo.isAppVariant) {
+					return oI18n.getText("MAA_ORIGINAL_TYPE");
+				} else if (oAppVariantInfo.isAppVariant) {
+					return oI18n.getText("MAA_APP_VARIANT_TYPE");
+				} else if (oAppVariantInfo.isOriginal) {
+					return oI18n.getText("MAA_ORIGINAL_TYPE");
+				}
 			};
 
-			return this.ajaxRequest(oRequestData).then(function(oResponseData) {
-				var oAppVariantDescriptor = oResponseData;
+			var fncheckNavigationSupported = function(oNavigationParams) {
+				var oNavigationService = sap.ushell.Container.getService( "CrossApplicationNavigation" );
+				return oNavigationService.getLinks(oNavigationParams);
+			};
 
-				oAppVariantProperties.id = oAppVariantDescriptor["sap.app"].id;
-				oAppVariantProperties.title = oAppVariantDescriptor["sap.app"].title;
-				oAppVariantProperties.subTitle = oAppVariantDescriptor["sap.app"].subTitle;
-				oAppVariantProperties.description = oAppVariantDescriptor["sap.app"].description;
-				oAppVariantProperties.icon = oAppVariantDescriptor["sap.ui"].icons.icon;
-				oAppVariantProperties.componentName = oAppVariantDescriptor["sap.ui5"].componentName;
-				oAppVariantProperties.type = sType;
+			var fnGetNavigationInfo = function(oAppVariantAttributes) {
+				if (oAppVariantInfo.hasStartableIntent) {
+					var sSemanticObject = oAppVariantInfo.startWith.semanticObject;
+					var sAction = oAppVariantInfo.startWith.action;
+					var oParams = oAppVariantInfo.startWith.parameters;
 
-				return Promise.resolve(oAppVariantProperties);
-	        });
+					var oNavigationParams = {
+						semanticObject : sSemanticObject,
+						action : sAction,
+						params: oParams
+					};
+
+					return fncheckNavigationSupported(oNavigationParams).then(function(aResult) {
+						if (aResult.length) {
+							oAppVariantAttributes.adaptUIButtonVisibility = true;
+						} else {
+							oAppVariantAttributes.adaptUIButtonVisibility = false;
+						}
+						oAppVariantAttributes.semanticObject = sSemanticObject;
+						oAppVariantAttributes.action = sAction;
+
+						if (oParams) {
+							Object.keys(oParams).forEach(function(sParamValue) {
+								if (oParams[sParamValue].value) {
+									oParams[sParamValue] = oParams[sParamValue].value;
+								}
+							});
+
+							oAppVariantAttributes.params = oParams;
+						}
+						return Promise.resolve(oAppVariantAttributes);
+					});
+				} else {
+					oAppVariantAttributes.adaptUIButtonVisibility = false;
+					return Promise.resolve(oAppVariantAttributes);
+				}
+			};
+
+			oAppVariantAttributes = {
+				appId : oAppVariantInfo.appId,
+				title : oAppVariantInfo.title,
+				subTitle : oAppVariantInfo.subTitle,
+				description : oAppVariantInfo.description,
+				icon : oAppVariantInfo.iconUrl,
+				originalId : oAppVariantInfo.originalId,
+				isOriginal : oAppVariantInfo.isOriginal,
+				typeOfApp : fnCheckAppType(),
+				descriptorUrl : oAppVariantInfo.descriptorUrl
+			};
+
+			var sNewAppVariantId = AppVariantUtils.getNewAppVariantId();
+
+			if (sNewAppVariantId === oAppVariantInfo.appId) {
+				oAppVariantAttributes.rowStatus = "Information";
+			}
+
+			return fnGetNavigationInfo(oAppVariantAttributes);
 		};
 
-		Utils.getOriginalAppProperties = function(sOriginalAppId, sType) {
-			var oRequestData = {
-	            url: _sAppIndexIdUrl + sOriginalAppId + '&fields=descriptorUrl',
-	            type: "GET"
-	        };
+		Utils.getAppVariantOverview = function(sReferenceAppId) {
+			var sRoute = '/sap/bc/lrep/app_variant_overview/?sap.app/id=' + sReferenceAppId;
 
-	        return this.ajaxRequest(oRequestData).then(function(oResponseData) {
-				var aAppVariants = oResponseData.results;
-				return this.getAppVariantDescriptorInfo(aAppVariants, sType);
-	        }.bind(this));
+			return this.sendRequest(sRoute, 'GET').then(function(oResult) {
+				var aAppVariantOverviewInfo = [];
+				var aAppVariantInfo = oResult.response.items;
+				if (aAppVariantInfo.length) {
+					var that = this;
+					aAppVariantInfo.forEach(function(oAppVariantInfo) {
+						if (!oAppVariantInfo.isDescriptorVariant) {
+							aAppVariantOverviewInfo.push(that.getAppVariantOverviewAttributes(oAppVariantInfo));
+						}
+					});
+
+					return Promise.all(aAppVariantOverviewInfo).then(function(aResponses) {
+						return aResponses;
+					});
+				}
+			}.bind(this));
+		};
+
+		Utils.getDescriptor = function(sDescriptorUrl) {
+			return this.sendRequest(sDescriptorUrl, 'GET').then(function(oResult) {
+				return oResult.response;
+			});
 		};
 
 	return Utils;
@@ -1077,7 +2120,7 @@ sap.ui.define("sap/ui/rta/appVariant/manageApps/webapp/Component",[
 ], function(UIComponent) {
 	"use strict";
 
-	var _oAdaptedAppProperties;
+	var _sIdRunningApp, _oRootControlRunningApp;
 
 	return UIComponent.extend("sap.ui.rta.appVariant.manageApps.webapp.Component", {
 
@@ -1086,15 +2129,18 @@ sap.ui.define("sap/ui/rta/appVariant/manageApps/webapp/Component",[
 			"library": "sap.ui.rta",
 			"version": "0.9",
 			"properties": {
-				adaptedAppProperties : {
+				idRunningApp : {
+					type: "string"
+				},
+				rootControlRunningApp : {
 					type: "object"
 				}
 			}
-
 		},
 
 		constructor: function() {
-			_oAdaptedAppProperties = arguments[1].adaptedAppProperties;
+			_sIdRunningApp = arguments[1].idRunningApp;
+			_oRootControlRunningApp = arguments[1].rootControlRunningApp;
 			UIComponent.prototype.constructor.apply(this, arguments);
 		},
 
@@ -1104,7 +2150,8 @@ sap.ui.define("sap/ui/rta/appVariant/manageApps/webapp/Component",[
 		 * @override
 		 */
 		init: function() {
-			this.setAdaptedAppProperties(_oAdaptedAppProperties);
+			this.setIdRunningApp(_sIdRunningApp);
+			this.setRootControlRunningApp(_oRootControlRunningApp);
 			// call the base component's init function
 			UIComponent.prototype.init.apply(this, arguments);
 		}
@@ -1153,7 +2200,7 @@ sap.ui.define("sap/ui/rta/command/BaseCommand",['sap/ui/base/ManagedObject'], fu
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -1168,6 +2215,9 @@ sap.ui.define("sap/ui/rta/command/BaseCommand",['sap/ui/base/ManagedObject'], fu
 			properties : {
 				name : {
 					type : "string"
+				},
+				runtimeOnly : {
+					type : "boolean"
 				}
 			},
 			associations : {
@@ -1181,7 +2231,7 @@ sap.ui.define("sap/ui/rta/command/BaseCommand",['sap/ui/base/ManagedObject'], fu
 
 
 	/**
-	 * @override returns element instance instead of id
+	 * @override Returns element instance instead of ID.
 	 */
 	BaseCommand.prototype.getElement = function() {
 		var sId = this.getAssociation("element");
@@ -1189,7 +2239,7 @@ sap.ui.define("sap/ui/rta/command/BaseCommand",['sap/ui/base/ManagedObject'], fu
 	};
 
 	/**
-	 * @public Template Method will be called by the command factory when all data is provided to the change
+	 * @public Template Method called by the command factory when all data is provided to the change.
 	 * @return {boolean} Returns true if the preparation was successful
 	 */
 	BaseCommand.prototype.prepare = function() {
@@ -1197,23 +2247,30 @@ sap.ui.define("sap/ui/rta/command/BaseCommand",['sap/ui/base/ManagedObject'], fu
 	};
 
 	/**
-	 * @public Template Method to implement execute logic, with ensure precondition Element is available
+	 * @public Template method to implement execute logic. You have to ensure that the
+	 * element property is available.
+	 * @return {Promise} Returns a resolving Promise
 	 */
 	BaseCommand.prototype.execute = function() {
 		return Promise.resolve();
 	};
 
+	BaseCommand.prototype.getVariantChange = function() {
+		return this._oVariantChange;
+	};
+
 	/**
-	 * @public Template Method to implement undo logic
+	 * @public Template method to implement undo logic.
+	 * @return {Promise} Returns a resolving Promise
 	 */
 	BaseCommand.prototype.undo = function() {
 		return Promise.resolve();
 	};
 
 	/**
-	 * Template Method to implement undo logic
+	 * Template method to check if the command is enabled.
 	 *
-	 * @returns {boolean} enabled boolean state
+	 * @return {boolean} Returns enabled boolean state
 	 * @public
 	 */
 	BaseCommand.prototype.isEnabled = function() {
@@ -1360,15 +2417,27 @@ sap.ui.define("sap/ui/rta/command/CommandFactory",['sap/ui/base/ManagedObject', 
 			clazz : 'sap.ui.rta.command.Split',
 			configure : fnConfigureSplitCommand
 		},
+		"switch" : {
+			clazz : 'sap.ui.rta.command.ControlVariantSwitch'
+		},
+		"duplicate" : {
+			clazz : 'sap.ui.rta.command.ControlVariantDuplicate'
+		},
+		"setTitle" : {
+			clazz : 'sap.ui.rta.command.ControlVariantSetTitle'
+		},
 		"settings" : {
 			clazz : 'sap.ui.rta.command.Settings'
 		},
 		"addLibrary" : {
 			clazz : 'sap.ui.rta.command.appDescriptor.AddLibrary'
+		},
+		"appDescriptor" : {
+			clazz : 'sap.ui.rta.command.AppDescriptorCommand'
 		}
 	};
 
-	var _getCommandFor = function(vElement, sCommand, mSettings, oDesignTimeMetadata, mFlexSettings, sVariantManagementKey) {
+	var _getCommandFor = function(vElement, sCommand, mSettings, oDesignTimeMetadata, mFlexSettings, sVariantManagementReference) {
 		sCommand = sCommand[0].toLowerCase() + sCommand.slice(1); // first char of command name is lower case
 		var mCommand = mCommands[sCommand];
 
@@ -1421,7 +2490,7 @@ sap.ui.define("sap/ui/rta/command/CommandFactory",['sap/ui/base/ManagedObject', 
 			bSuccessfullConfigured = fnConfigureActionCommand(vElement, oCommand, oAction);
 		}
 
-		var bPrepareStatus = bSuccessfullConfigured && oCommand.prepare(mFlexSettings, sVariantManagementKey);
+		var bPrepareStatus = bSuccessfullConfigured && oCommand.prepare(mFlexSettings, sVariantManagementReference);
 		if (bPrepareStatus) {
 			return oCommand;
 		} else {
@@ -1437,7 +2506,7 @@ sap.ui.define("sap/ui/rta/command/CommandFactory",['sap/ui/base/ManagedObject', 
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -1478,8 +2547,8 @@ sap.ui.define("sap/ui/rta/command/CommandFactory",['sap/ui/base/ManagedObject', 
 		this.setProperty("flexSettings", jQuery.extend(this.getFlexSettings(), mFlexSettings));
 	};
 
-	CommandFactory.prototype.getCommandFor = function(vElement, sCommand, mSettings, oDesignTimeMetadata, sVariantManagementKey) {
-		return _getCommandFor(vElement, sCommand, mSettings, oDesignTimeMetadata, this.getFlexSettings(), sVariantManagementKey);
+	CommandFactory.prototype.getCommandFor = function(vElement, sCommand, mSettings, oDesignTimeMetadata, sVariantManagementReference) {
+		return _getCommandFor(vElement, sCommand, mSettings, oDesignTimeMetadata, this.getFlexSettings(), sVariantManagementReference);
 	};
 
 	CommandFactory.getCommandFor = function(vElement, sCommand, mSettings, oDesignTimeMetadata, mFlexSettings) {
@@ -1512,7 +2581,7 @@ sap.ui.define("sap/ui/rta/command/CompositeCommand",[ 'sap/ui/rta/command/BaseCo
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -1572,6 +2641,313 @@ sap.ui.define("sap/ui/rta/command/CompositeCommand",[ 'sap/ui/rta/command/BaseCo
 }, /* bExport= */true);
 
 }; // end of sap/ui/rta/command/CompositeCommand.js
+if ( !jQuery.sap.isDeclared('sap.ui.rta.command.ControlVariantDuplicate') ) {
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+jQuery.sap.declare('sap.ui.rta.command.ControlVariantDuplicate'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('sap.ui.fl.changeHandler.BaseTreeModifier'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
+sap.ui.define("sap/ui/rta/command/ControlVariantDuplicate",[
+	'sap/ui/rta/command/BaseCommand',
+	'sap/ui/fl/changeHandler/BaseTreeModifier',
+	'sap/ui/fl/Utils'
+], function(BaseCommand, BaseTreeModifier, flUtils) {
+	"use strict";
+
+	/**
+	 * Switch control variants
+	 *
+	 * @class
+	 * @extends sap.ui.rta.command.BaseCommand
+	 * @author SAP SE
+	 * @version 1.52.5
+	 * @constructor
+	 * @private
+	 * @since 1.52
+	 * @alias sap.ui.rta.command.ControlVariantDuplicate
+	 */
+	var ControlVariantDuplicate = BaseCommand.extend("sap.ui.rta.command.ControlVariantDuplicate", {
+		metadata : {
+			library : "sap.ui.rta",
+			properties : {
+				sourceVariantReference : {
+					type : "string"
+				},
+				newVariantReference : {
+					type : "string"
+				}
+			},
+			associations : {},
+			events : {}
+		}
+	});
+
+	ControlVariantDuplicate.prototype.MODEL_NAME = "$FlexVariants";
+
+	/**
+	 * @override
+	 */
+	ControlVariantDuplicate.prototype.prepare = function(mFlexSettings, sVariantManagementReference) {
+		this.sLayer = mFlexSettings.layer;
+		return true;
+	};
+
+	/**
+	 * @public Triggers the duplication of a variant
+	 * @returns {promise} Returns resolve after execution
+	 */
+	ControlVariantDuplicate.prototype.execute = function() {
+		var oVariantManagementControl = this.getElement(),
+		sSourceVariantReference = this.getSourceVariantReference(),
+		sNewVariantReference = this.getNewVariantReference();
+		this.oAppComponent = flUtils.getAppComponentForControl(oVariantManagementControl);
+
+		if (!sNewVariantReference) {
+			sNewVariantReference = flUtils.createDefaultFileName(sSourceVariantReference + "_Copy");
+			this.setNewVariantReference(sNewVariantReference);
+		}
+
+		this.sVariantManagementReference = BaseTreeModifier.getSelector(oVariantManagementControl, this.oAppComponent).id;
+		this.oModel = this.oAppComponent.getModel(this.MODEL_NAME);
+
+		var mPropertyBag = {
+				variantManagementControl : oVariantManagementControl,
+				appComponent : this.oAppComponent,
+				layer : this.sLayer,
+				newVariantReference : sNewVariantReference,
+				sourceVariantReference : sSourceVariantReference
+		};
+
+		return this.oModel._copyVariant(mPropertyBag)
+			.then(function(oVariant){
+				this._oVariantChange = oVariant;
+			}.bind(this));
+	};
+
+	/**
+	 * @public Undo logic for the execution
+	 * @returns {promise} Returns resolve after undo
+	 */
+	ControlVariantDuplicate.prototype.undo = function() {
+		if (this._oVariantChange) {
+			return this.oModel._removeVariant(this._oVariantChange, this.getSourceVariantReference(), this.sVariantManagementReference)
+				.then(function() {
+					this._oVariantChange = null;
+				}.bind(this));
+		}
+	};
+
+	return ControlVariantDuplicate;
+
+}, /* bExport= */true);
+
+}; // end of sap/ui/rta/command/ControlVariantDuplicate.js
+if ( !jQuery.sap.isDeclared('sap.ui.rta.command.ControlVariantSetTitle') ) {
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+jQuery.sap.declare('sap.ui.rta.command.ControlVariantSetTitle'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('sap.ui.fl.changeHandler.BaseTreeModifier'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
+sap.ui.define("sap/ui/rta/command/ControlVariantSetTitle",[
+	'sap/ui/rta/command/BaseCommand',
+	'sap/ui/fl/changeHandler/BaseTreeModifier',
+	'sap/ui/fl/Utils'
+], function(BaseCommand, BaseTreeModifier, flUtils) {
+	"use strict";
+
+	/**
+	 * Rename control variants
+	 *
+	 * @class
+	 * @extends sap.ui.rta.command.BaseCommand
+	 * @author SAP SE
+	 * @version 1.52.5
+	 * @constructor
+	 * @private
+	 * @since 1.50
+	 * @alias sap.ui.rta.command.ControlVariantSetTitle
+	 */
+	var ControlVariantSetTitle = BaseCommand.extend("sap.ui.rta.command.ControlVariantSetTitle", {
+		metadata : {
+			library : "sap.ui.rta",
+			properties : {
+				renamedElement : {
+					type : "object"
+				},
+				oldText : {
+					type : "string"
+				},
+				newText : {
+					type : "string"
+				}
+			},
+			associations : {},
+			events : {}
+		}
+	});
+
+	ControlVariantSetTitle.prototype.MODEL_NAME = "$FlexVariants";
+
+	/**
+	 * @override
+	 */
+	ControlVariantSetTitle.prototype.prepare = function(mFlexSettings, sVariantManagementReference) {
+		this.sLayer = mFlexSettings.layer;
+		return true;
+	};
+
+	/**
+	 * @public Template Method to implement execute logic, with ensure precondition Element is available
+	 * @returns {promise} Returns resolve after execution
+	 */
+	ControlVariantSetTitle.prototype.execute = function() {
+		var oVariantManagementControl = this.getRenamedElement(),
+			oVariantManagementControlBinding = oVariantManagementControl.getTitle().getBinding("text");
+
+		this.oAppComponent = flUtils.getAppComponentForControl(oVariantManagementControl);
+		this.oModel = this.oAppComponent.getModel(this.MODEL_NAME);
+		this.sVariantManagementReference = BaseTreeModifier.getSelector(oVariantManagementControl, this.oAppComponent).id;
+		this.sCurrentVariant = this.oModel.getCurrentVariantReference(this.sVariantManagementReference);
+
+		var sCurrentTitle = this.oModel.getVariantProperty(this.sCurrentVariant, "title");
+		this.setOldText(sCurrentTitle);
+
+		var mPropertyBag = {
+			appComponent : this.oAppComponent,
+			variantReference : this.sCurrentVariant,
+			title : this.getNewText(),
+			layer : this.sLayer
+		};
+
+		return Promise.resolve(this.oModel._setVariantProperties(this.sVariantManagementReference, mPropertyBag, true))
+						.then(function(oChange) {
+								this._oVariantChange = oChange;
+								oVariantManagementControlBinding.checkUpdate(true); /*Force Update as binding key stays same*/
+						}.bind(this));
+	};
+
+	/**
+	 * @public Template Method to implement undo logic
+	 * @returns {promise} Returns resolve after undo
+	 */
+	ControlVariantSetTitle.prototype.undo = function() {
+		var oVariantManagementControlBinding = this.getRenamedElement().getTitle().getBinding("text"),
+			mPropertyBag = {
+			variantReference : this.sCurrentVariant,
+			title : this.getOldText(),
+			change: this._oVariantChange
+		};
+
+		return Promise.resolve(this.oModel._setVariantProperties(this.sVariantManagementReference, mPropertyBag, false))
+						.then( function(oChange){
+								this._oVariantChange = oChange;
+								oVariantManagementControlBinding.checkUpdate(true); /*Force Update as binding key stays same*/
+						}.bind(this));
+	};
+
+	return ControlVariantSetTitle;
+
+}, /* bExport= */true);
+
+}; // end of sap/ui/rta/command/ControlVariantSetTitle.js
+if ( !jQuery.sap.isDeclared('sap.ui.rta.command.ControlVariantSwitch') ) {
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+jQuery.sap.declare('sap.ui.rta.command.ControlVariantSwitch'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('sap.ui.fl.changeHandler.BaseTreeModifier'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
+sap.ui.define("sap/ui/rta/command/ControlVariantSwitch",[
+	'sap/ui/rta/command/BaseCommand',
+	'sap/ui/fl/changeHandler/BaseTreeModifier',
+	'sap/ui/fl/Utils'
+], function(BaseCommand, BaseTreeModifier, flUtils) {
+	"use strict";
+
+	/**
+	 * Switch control variants
+	 *
+	 * @class
+	 * @extends sap.ui.rta.command.BaseCommand
+	 * @author SAP SE
+	 * @version 1.52.5
+	 * @constructor
+	 * @private
+	 * @since 1.50
+	 * @alias sap.ui.rta.command.ControlVariantSwitch
+	 */
+	var ControlVariantSwitch = BaseCommand.extend("sap.ui.rta.command.ControlVariantSwitch", {
+		metadata : {
+			library : "sap.ui.rta",
+			properties : {
+				targetVariantReference : {
+					type : "string"
+				},
+				sourceVariantReference : {
+					type : "string"
+				}
+			},
+			associations : {},
+			events : {}
+		}
+	});
+
+	ControlVariantSwitch.prototype.MODEL_NAME = "$FlexVariants";
+
+	ControlVariantSwitch.prototype._getAppComponent = function(oElement) {
+		if (!this._oControlAppComponent) {
+			this._oControlAppComponent = oElement ? flUtils.getAppComponentForControl(oElement) : this.getSelector().appComponent;
+		}
+		return this._oControlAppComponent;
+	};
+
+	/**
+	 * @public Template Method to implement execute logic, with ensure precondition Element is available
+	 * @returns {promise} Returns resolve after execution
+	 */
+	ControlVariantSwitch.prototype.execute = function() {
+		var oElement = this.getElement(),
+			oAppComponent = this._getAppComponent(oElement),
+			sNewVariantReference = this.getTargetVariantReference();
+
+		this.oModel = oAppComponent.getModel(this.MODEL_NAME);
+		this.sVariantManagementReference = BaseTreeModifier.getSelector(oElement, oAppComponent).id;
+		return this._updateModelVariant(sNewVariantReference);
+	};
+
+	/**
+	 * @public Template Method to implement undo logic
+	 * @returns {promise} Returns resolve after undo
+	 */
+	ControlVariantSwitch.prototype.undo = function() {
+		var sOldVariantReference = this.getSourceVariantReference();
+		return this._updateModelVariant(sOldVariantReference);
+	};
+
+	/**
+	 * @private Update variant for the underlying model
+	 * @returns {promise} Returns promise resolve
+	 */
+	ControlVariantSwitch.prototype._updateModelVariant = function (sVariantReference) {
+		if (this.getTargetVariantReference() !== this.getSourceVariantReference()) {
+			return Promise.resolve(this.oModel.updateCurrentVariant(this.sVariantManagementReference, sVariantReference));
+		}
+		return Promise.resolve();
+	};
+
+	return ControlVariantSwitch;
+
+}, /* bExport= */true);
+
+}; // end of sap/ui/rta/command/ControlVariantSwitch.js
 if ( !jQuery.sap.isDeclared('sap.ui.rta.command.FlexCommand') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
@@ -1593,7 +2969,7 @@ sap.ui.define("sap/ui/rta/command/FlexCommand",['sap/ui/rta/command/BaseCommand'
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -1663,7 +3039,7 @@ sap.ui.define("sap/ui/rta/command/FlexCommand",['sap/ui/rta/command/BaseCommand'
 	 * (in some cases element of a command is unstable, so change needs to be created and stored upfront)
 	 * @override
 	 */
-	FlexCommand.prototype.prepare = function(mFlexSettings, sVariantManagementKey) {
+	FlexCommand.prototype.prepare = function(mFlexSettings, sVariantManagementReference) {
 		if (
 			!this.getSelector()
 			&& this.getElement()
@@ -1676,7 +3052,7 @@ sap.ui.define("sap/ui/rta/command/FlexCommand",['sap/ui/rta/command/BaseCommand'
 			this.setSelector(oSelector);
 		}
 		try {
-			this._oPreparedChange = this._createChange(mFlexSettings, sVariantManagementKey);
+			this._oPreparedChange = this._createChange(mFlexSettings, sVariantManagementReference);
 		} catch (oError) {
 			jQuery.sap.log.error(oError.message || oError.name);
 			return false;
@@ -1706,9 +3082,9 @@ sap.ui.define("sap/ui/rta/command/FlexCommand",['sap/ui/rta/command/BaseCommand'
 	};
 
 	/**
-	 * This method converts command constructor parameters into change specific data
+	 * This method converts command constructor parameters into change specific data.
 	 * Default implementation of this method below is for commands, which do not have specific constructor parameters
-	 * @return {object} SpecificChangeInfo for ChangeHandler
+	 * @return {object} Returns the <code>SpecificChangeInfo</code> for change handler
 	 * @protected
 	 */
 	FlexCommand.prototype._getChangeSpecificData = function() {
@@ -1721,38 +3097,41 @@ sap.ui.define("sap/ui/rta/command/FlexCommand",['sap/ui/rta/command/BaseCommand'
 	};
 
 	/**
-	 * @param {object} mFlexSettings - map contains flex settings
-	 * @returns {object} change object
+	 * Creates a change.
+	 * @param {object} mFlexSettings Map containing the flexibility settings
+	 * @param {string} sVariantManagementReference Reference to the variant management
+	 * @returns {object} Returns the change object
 	 * @private
 	 */
-	FlexCommand.prototype._createChange = function(mFlexSettings, sVariantManagementKey) {
-		return this._createChangeFromData(this._getChangeSpecificData(), mFlexSettings, sVariantManagementKey);
+	FlexCommand.prototype._createChange = function(mFlexSettings, sVariantManagementReference) {
+		return this._createChangeFromData(this._getChangeSpecificData(), mFlexSettings, sVariantManagementReference);
 	};
 
 	/**
-	 * Create a Flex change from a given Change Specific Data
+	 * Create a Flex change from a given Change Specific Data.
 	 * (This method can be reused to retrieve an Undo Change)
 	 *
-	 * @param {object} mChangeSpecificData - map contains change specific data
-	 * @param {object} mFlexSettings - map contains flex settings
-	 * @returns {object} change object
+	 * @param {object} mChangeSpecificData Map containing change specific data
+	 * @param {object} mFlexSettings Map containing flex settings
+	 * @param {string} sVariantManagementReference Reference to the variant management
+	 * @returns {object} Returns the change object
 	 * @private
 	 */
-	FlexCommand.prototype._createChangeFromData = function(mChangeSpecificData, mFlexSettings, sVariantManagementKey) {
+	FlexCommand.prototype._createChangeFromData = function(mChangeSpecificData, mFlexSettings, sVariantManagementReference) {
 		if (mFlexSettings) {
 			jQuery.extend(mChangeSpecificData, mFlexSettings);
 		}
 		var oModel = this.getAppComponent().getModel("$FlexVariants");
-		var sVariantKey;
-		if (oModel && sVariantManagementKey) {
-			sVariantKey = oModel.getCurrentVariantRef(sVariantManagementKey);
+		var sVariantReference;
+		if (oModel && sVariantManagementReference) {
+			sVariantReference = oModel.getCurrentVariantReference(sVariantManagementReference);
 		}
 		var oFlexController = FlexControllerFactory.createForControl(this.getAppComponent());
 		var mVariantObj = {
-			"variantManagementKey": sVariantManagementKey,
-			"variantKey": sVariantKey
+			"variantManagementReference": sVariantManagementReference,
+			"variantReference": sVariantReference
 		};
-		if (sVariantKey) {
+		if (sVariantReference) {
 			jQuery.extend(mChangeSpecificData, mVariantObj);
 		}
 		return oFlexController.createChange(mChangeSpecificData, this.getElement() || this.getSelector());
@@ -1775,9 +3154,9 @@ sap.ui.define("sap/ui/rta/command/FlexCommand",['sap/ui/rta/command/BaseCommand'
 
 	/**
 	 * @private
-	 * @param {void} vChange - change object
-	 * @param {boolean} bNotMarkAsAppliedChange - optional - apply the change without marking them as applied change in the custom Data
-	 * @returns {promise} empty promise
+	 * @param {sap.ui.fl.Change|Object} vChange Change object or map containing the change object
+	 * @param {boolean} [bNotMarkAsAppliedChange] Apply the change without marking them as applied changes in the custom Data
+	 * @returns {Promise} Returns an empty promise
 	 */
 	FlexCommand.prototype._applyChange = function(vChange, bNotMarkAsAppliedChange) {
 		//TODO: remove the following compatibility code when concept is implemented
@@ -1836,7 +3215,7 @@ sap.ui.define("sap/ui/rta/command/Move",['jquery.sap.global', 'sap/ui/rta/comman
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -1937,7 +3316,7 @@ sap.ui.define("sap/ui/rta/command/Property",[
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -2006,7 +3385,7 @@ sap.ui.define("sap/ui/rta/command/Remove",['sap/ui/rta/command/FlexCommand'], fu
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.42
@@ -2061,7 +3440,7 @@ sap.ui.define("sap/ui/rta/command/Rename",['jquery.sap.global', 'sap/ui/rta/comm
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -2123,7 +3502,7 @@ sap.ui.define("sap/ui/rta/command/Reveal",['sap/ui/rta/command/FlexCommand'], fu
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -2174,7 +3553,7 @@ sap.ui.define("sap/ui/rta/command/Settings",['sap/ui/rta/command/FlexCommand'], 
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -2252,7 +3631,7 @@ sap.ui.define("sap/ui/rta/command/Split",[
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -2318,7 +3697,7 @@ sap.ui.define("sap/ui/rta/command/Stack",[
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -2522,84 +3901,6 @@ sap.ui.define("sap/ui/rta/command/Stack",[
 }, /* bExport= */true);
 
 }; // end of sap/ui/rta/command/Stack.js
-if ( !jQuery.sap.isDeclared('sap.ui.rta.command.appDescriptor.AppDescriptorCommand') ) {
-/*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-jQuery.sap.declare('sap.ui.rta.command.appDescriptor.AppDescriptorCommand'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
-jQuery.sap.require('sap.ui.fl.descriptorRelated.api.DescriptorInlineChangeFactory'); // unlisted dependency retained
-jQuery.sap.require('sap.ui.fl.descriptorRelated.api.DescriptorChangeFactory'); // unlisted dependency retained
-sap.ui.define("sap/ui/rta/command/appDescriptor/AppDescriptorCommand",['sap/ui/rta/command/BaseCommand',
-				'sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory',
-				'sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory'],
-	function(BaseCommand,
-		DescriptorInlineChangeFactory,
-		DescriptorChangeFactory) {
-	"use strict";
-
-	/**
-	 * Implementation of a command template for App Descriptor changes
-	 *
-	 * @class
-	 * @extends sap.ui.rta.command.BaseCommand
-	 *
-	 * @author SAP SE
-	 * @version 1.50.8
-	 *
-	 * @constructor
-	 * @private
-	 * @since 1.49
-	 * @alias sap.ui.rta.command.appDescriptor.AppDescriptorCommand
-	 * @experimental Since 1.49. This class is experimental and provides only limited functionality. Also the API might be
-	 *               changed in future.
-	 */
-	var AppDescriptorCommand = BaseCommand.extend("sap.ui.rta.command.AppDescriptorCommand", {
-		metadata : {
-			library : "sap.ui.rta",
-			properties : {
-				reference : {
-					type : "string"
-				},
-				appComponent: {
-					type: "object"
-				}
-			},
-			events : {}
-		}
-	});
-
-	AppDescriptorCommand.prototype.getPreparedChange = function() {
-		return this._oPreparedChange;
-	};
-
-	/**
-	 * Template method to create the app descriptor change which is used in the createAndStore function
-	 * @return {Promise} with app descriptor inline change content e.g. from DescriptorInlineChangeFactory.create_xyz
-	 */
-	AppDescriptorCommand.prototype._create = function(){};
-
-	/**
-	 * Create the change for the app descriptor and add it to the ChangePersistence
-	 * @return {Promise} resolving after all changes have been created
-	 */
-	AppDescriptorCommand.prototype.createAndStore = function(){
-			return this._create()
-			.then(function(oAppDescriptorChangeContent){
-				return new DescriptorChangeFactory().createNew(this.getReference(),
-					oAppDescriptorChangeContent, this.getLayer(), this.getAppComponent());
-			}.bind(this))
-			.then(function(oAppDescriptorChange){
-				var oChange = oAppDescriptorChange.store();
-				this._oPreparedChange = oChange;
-			}.bind(this));
-	};
-	return AppDescriptorCommand;
-
-}, /* bExport= */true);
-
-}; // end of sap/ui/rta/command/appDescriptor/AppDescriptorCommand.js
 if ( !jQuery.sap.isDeclared('sap.ui.rta.library') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
@@ -2624,7 +3925,7 @@ sap.ui.define("sap/ui/rta/library",['jquery.sap.global', 'sap/ui/core/Core', 'sa
 	 * @namespace
 	 * @name sap.ui.rta
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @private
 	 * @experimental This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
@@ -2633,7 +3934,7 @@ sap.ui.define("sap/ui/rta/library",['jquery.sap.global', 'sap/ui/core/Core', 'sa
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.rta",
-		version: "1.50.8",
+		version: "1.52.5",
 		dependencies : ["sap.ui.core","sap.m", "sap.ui.fl", "sap.ui.dt"],
 		types: [
 		],
@@ -2654,15 +3955,30 @@ if ( !jQuery.sap.isDeclared('sap.ui.rta.plugin.Plugin') ) {
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-// Provides class sap.ui.dt.Plugin.
+// Provides class sap.ui.rta.plugin.Plugin.
 jQuery.sap.declare('sap.ui.rta.plugin.Plugin'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
 jQuery.sap.require('sap.ui.dt.Plugin'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.fl.registry.ChangeRegistry'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.dt.OverlayRegistry'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.dt.OverlayUtil'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.dt.ElementOverlay'); // unlisted dependency retained
 sap.ui.define("sap/ui/rta/plugin/Plugin",[
-	'sap/ui/dt/Plugin', 'sap/ui/fl/Utils', 'sap/ui/fl/registry/ChangeRegistry'
+	'sap/ui/dt/Plugin',
+	'sap/ui/fl/Utils',
+	'sap/ui/fl/registry/ChangeRegistry',
+	'sap/ui/dt/OverlayRegistry',
+	'sap/ui/dt/OverlayUtil',
+	'sap/ui/dt/ElementOverlay'
 ],
-function(Plugin, FlexUtils, ChangeRegistry) {
+function(
+	Plugin,
+	FlexUtils,
+	ChangeRegistry,
+	OverlayRegistry,
+	OverlayUtil,
+	ElementOverlay
+) {
 	"use strict";
 
 	/**
@@ -2677,7 +3993,7 @@ function(Plugin, FlexUtils, ChangeRegistry) {
 	 * @extends sap.ui.dt.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -2685,6 +4001,12 @@ function(Plugin, FlexUtils, ChangeRegistry) {
 	 * @alias sap.ui.rta.plugin.Plugin
 	 * @experimental Since 1.46. This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
+
+	/* Methods to save stable ID info on Overlay */
+	ElementOverlay.prototype._bElementHasStableId = undefined;
+	ElementOverlay.prototype.getElementHasStableId = function() { return this._bElementHasStableId;};
+	ElementOverlay.prototype.setElementHasStableId = function(bHasStableId) { this._bElementHasStableId = bHasStableId; };
+	ElementOverlay.prototype.hasElementStableId = function() { return this._bElementHasStableId ? true : false; };
 
 	var BasePlugin = Plugin.extend("sap.ui.rta.plugin.Plugin", /** @lends sap.ui.dt.Plugin.prototype */ {
 		metadata : {
@@ -2709,63 +4031,192 @@ function(Plugin, FlexUtils, ChangeRegistry) {
 		}
 	});
 
+	/**
+	 * This function needs to be overwritten in every plugin.
+	 */
 	BasePlugin.prototype._isEditable = function() {};
 
-	BasePlugin.prototype._isEditableByPlugin = function(oOverlay) {
-		var sPluginName = this.getMetadata().getName();
+	var _onElementModified = function(oEvent) {
+		var oParams = oEvent.getParameters();
+		var aRelevantOverlays;
+		var oOverlay = sap.ui.getCore().byId(oParams.id);
+		if ((oParams.type === "propertyChanged" && oParams.name === "visible")) {
+			aRelevantOverlays = this._getRelevantOverlays(oOverlay);
+			this.evaluateEditable(aRelevantOverlays, {onRegistration: false});
+		} else if (oParams.type === "overlayRendered") {
+			this.evaluateEditable([oOverlay], {onRegistration: true});
+		} else if (oParams.type === "insertAggregation" || oParams.type === "removeAggregation") {
+			aRelevantOverlays = this._getRelevantOverlays(oOverlay, oParams.name);
+			this.evaluateEditable(aRelevantOverlays, {onRegistration: false});
+		}
+	};
+
+	BasePlugin.prototype._detachReevaluationEditable = function(oOverlay) {
+		oOverlay.detachElementModified(_onElementModified, this);
+	};
+
+	BasePlugin.prototype._attachReevaluationEditable = function(oOverlay) {
+		oOverlay.attachElementModified(_onElementModified, this);
+	};
+
+	BasePlugin.prototype._getRelevantOverlays = function(oOverlay, sAggregationName) {
+		var aAlreadyDefinedRelevantOverlays = oOverlay.getRelevantOverlays();
+		if (aAlreadyDefinedRelevantOverlays.length === 0) {
+			var aRelevantOverlays = OverlayUtil.findAllOverlaysInContainer(oOverlay);
+
+			// if an aggregation name is given, those overlays are added without checking the relevant container
+			if (sAggregationName) {
+				var aAggregationChildren = oOverlay.getAggregationOverlay(sAggregationName).getChildren();
+				aAggregationChildren = aAggregationChildren.filter(function(oChildOverlay) {
+					return aRelevantOverlays.indexOf(oChildOverlay) === -1;
+				});
+				aRelevantOverlays = aRelevantOverlays.concat(aAggregationChildren);
+			}
+
+			oOverlay.setRelevantOverlays(aRelevantOverlays);
+			return aRelevantOverlays;
+		}
+		return aAlreadyDefinedRelevantOverlays;
+	};
+
+	/**
+	 * Checks if the overlay has an associated element and calls the _isEditable function.
+	 * If there is an associated element it also modifies the plugin list.
+	 * @param {sap.ui.dt.ElementOverlay[]} aOverlays Array of overlays to be checked
+	 * @param {object} mPropertyBag Map of additional information to be passed to isEditable
+	 */
+	BasePlugin.prototype.evaluateEditable = function(aOverlays, mPropertyBag) {
+		var fnCheckBinding = function(oOverlay, sAggregationName){
+			if (sAggregationName && oOverlay.getElementInstance().getBinding(sAggregationName)) {
+				return false;
+			}
+			return oOverlay.isRoot() || fnCheckBinding(
+				oOverlay.getParentElementOverlay(),
+				oOverlay.getElementInstance().sParentAggregationName
+			);
+		};
+
+		var vEditable;
+		aOverlays.forEach(function(oOverlay) {
+			//check aggregation Binding recursively
+			if (oOverlay.getElementInstance() && !fnCheckBinding(oOverlay, oOverlay.getElementInstance().sParentAggregationName)) {
+				vEditable = false;
+			} else {
+				// when a control gets destroyed it gets deregistered before it gets removed from the parent aggregation.
+				// this means that getElementInstance is undefined when we get here via removeAggregation mutation
+				// when an overlay is not registered yet, we should not evaluate editable. In this case getDesignTimeMetadata returns null.
+				vEditable = oOverlay.getElementInstance() && oOverlay.getDesignTimeMetadata() && this._isEditable(oOverlay, mPropertyBag);
+			}
+			// for the createContainer and additionalElements plugin the isEditable function returns an object with 2 properties, asChild and asSibling.
+			// for every other plugin isEditable should be a boolean.
+			if (vEditable !== undefined && vEditable !== null) {
+				if (typeof vEditable === "boolean") {
+					this._modifyPluginList(oOverlay, vEditable);
+				} else {
+					this._modifyPluginList(oOverlay, vEditable["asChild"], false);
+					this._modifyPluginList(oOverlay, vEditable["asSibling"], true);
+				}
+			}
+		}.bind(this));
+	};
+
+	BasePlugin.prototype._modifyPluginList = function(oOverlay, bIsEditable, bOverlayIsSibling) {
+		if (bIsEditable) {
+			this.addToPluginsList(oOverlay, bOverlayIsSibling);
+		} else {
+			this.removeFromPluginsList(oOverlay, bOverlayIsSibling);
+		}
+	};
+
+	BasePlugin.prototype._retrievePluginName = function(bSibling) {
+		var sName = this.getMetadata().getName();
+		if (bSibling !== undefined) {
+			sName += bSibling ? ".asSibling" : ".asChild";
+		}
+		return sName;
+	};
+
+	BasePlugin.prototype._isEditableByPlugin = function(oOverlay, bSibling) {
+		var sPluginName = this._retrievePluginName(bSibling);
 		var aPluginList = oOverlay.getEditableByPlugins();
 		return aPluginList.indexOf(sPluginName) > -1;
 	};
 
 	BasePlugin.prototype.registerElementOverlay = function(oOverlay) {
-		if (this._isEditable(oOverlay)) {
-			this.addToPluginsList(oOverlay);
-		}
+		this.evaluateEditable([oOverlay], {onRegistration: true});
+		this._attachReevaluationEditable(oOverlay);
 	};
 
 	BasePlugin.prototype.deregisterElementOverlay = function(oOverlay) {
 		this.removeFromPluginsList(oOverlay);
+		this.removeFromPluginsList(oOverlay, true);
+		this.removeFromPluginsList(oOverlay, false);
+		this._detachReevaluationEditable(oOverlay);
 	};
 
+	/**
+	 * Checks if the element of an overlay has a stable ID.
+	 * Keeps this information on the Overlay, as stable IDs cannot be modified in runtime.
+	 * @param  {sap.ui.dt.ElementOverlay}  oOverlay Overlay for the element to be checked
+	 * @return {boolean} Returns true if the element has a stable ID
+	 */
 	BasePlugin.prototype.hasStableId = function(oOverlay) {
 		if (!oOverlay) {
 			return false;
-		} else if (!oOverlay.getDesignTimeMetadata()) {
-			return FlexUtils.checkControlId(oOverlay.getElementInstance());
 		}
 
-		var bStable = false;
-		var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
-		var oElement = oOverlay.getElementInstance();
-
-		var fnGetStableElements = oDesignTimeMetadata.getData().getStableElements;
-
-		if (fnGetStableElements) {
-			var aStableElements = fnGetStableElements(oElement);
-			var bUnstable = aStableElements ? aStableElements.some(function(vStableElement) {
-				var oControl = vStableElement.id || vStableElement;
-				if (!FlexUtils.checkControlId(oControl, vStableElement.appComponent)) {
-					return true;
-				}
-			}) : true;
-			bStable = !bUnstable;
-		} else {
-			bStable = FlexUtils.checkControlId(oElement);
+		// without DesignTimeMetadata the Overlay was not registered yet.
+		if (!oOverlay.getDesignTimeMetadata()) {
+			return false;
 		}
-		return bStable;
+
+		if (oOverlay.getElementHasStableId() === undefined){
+			var bStable = false;
+			var oElement = oOverlay.getElementInstance();
+			var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
+			var fnGetStableElements = oDesignTimeMetadata && oDesignTimeMetadata.getData().getStableElements;
+			if (fnGetStableElements){
+				var aStableElements = fnGetStableElements(oElement);
+				var bUnstable = aStableElements ? aStableElements.some(function(vStableElement) {
+					var oControl = vStableElement.id || vStableElement;
+					if (!FlexUtils.checkControlId(oControl, vStableElement.appComponent)) {
+						return true;
+					}
+				}) : true;
+				bStable = !bUnstable;
+			} else {
+				bStable = FlexUtils.checkControlId(oElement);
+			}
+
+			oOverlay.setElementHasStableId(bStable);
+		}
+		return oOverlay.hasElementStableId();
 	};
 
-	BasePlugin.prototype.getVariantManagementKey = function (oOverlay, oElement, sChangeType) {
-		var sVariantManagementKey;
-		if (oOverlay.getVariantManagement && this._hasVariantChangeHandler(sChangeType, oElement)) {
-			sVariantManagementKey = oOverlay.getVariantManagement();
+	BasePlugin.prototype.getVariantManagementReference = function (oOverlay, oAction, bForceRelevantContainer, oStashedElement) {
+		var oElement;
+		if (!oStashedElement) {
+			oElement = oOverlay.getElementInstance();
+		} else {
+			oElement = oStashedElement;
 		}
-		return sVariantManagementKey;
+
+		var oRelevantElement;
+		if ((oAction.changeOnRelevantContainer || bForceRelevantContainer) && !oStashedElement) {
+			oRelevantElement = oOverlay.getRelevantContainer();
+		} else {
+			oRelevantElement = oElement;
+		}
+
+		var sVariantManagementReference;
+		if (oOverlay.getVariantManagement && this._hasVariantChangeHandler(oAction.changeType, oRelevantElement)) {
+			sVariantManagementReference = oOverlay.getVariantManagement();
+		}
+		return sVariantManagementReference;
 	};
 
 	BasePlugin.prototype._hasVariantChangeHandler = function (sChangeType, oElement){
 		var oChangeHandler = this._getChangeHandler(sChangeType, oElement);
-		oChangeHandler.revertChange = true;
 		return (oChangeHandler && oChangeHandler.revertChange);
 	};
 
@@ -2796,16 +4247,21 @@ function(Plugin, FlexUtils, ChangeRegistry) {
 		return bIsEditable;
 	};
 
-	BasePlugin.prototype.removeFromPluginsList = function(oOverlay) {
-		oOverlay.removeEditableByPlugin(this.getMetadata().getName());
+	BasePlugin.prototype.removeFromPluginsList = function(oOverlay, bSibling) {
+		var sName = this._retrievePluginName(bSibling);
+		oOverlay.removeEditableByPlugin(sName);
 		if (!oOverlay.getEditableByPlugins().length) {
 			oOverlay.setEditable(false);
 		}
 	};
 
-	BasePlugin.prototype.addToPluginsList = function(oOverlay) {
-		oOverlay.addEditableByPlugin(this.getMetadata().getName());
-		oOverlay.setEditable(true);
+	BasePlugin.prototype.addToPluginsList = function(oOverlay, bSibling) {
+		var sName = this._retrievePluginName(bSibling);
+		var aPluginList = oOverlay.getEditableByPlugins();
+		if (aPluginList.indexOf(sName) === -1) {
+			oOverlay.addEditableByPlugin(sName);
+			oOverlay.setEditable(true);
+		}
 	};
 
 	BasePlugin.prototype.hasChangeHandler = function(sChangeType, oElement) {
@@ -2814,6 +4270,10 @@ function(Plugin, FlexUtils, ChangeRegistry) {
 
 	BasePlugin.prototype._getChangeHandler = function(sChangeType, oElement) {
 		var sControlType = oElement.getMetadata().getName();
+		return this._getChangeHandlerForControlType(sControlType, sChangeType);
+	};
+
+	BasePlugin.prototype._getChangeHandlerForControlType = function(sControlType, sChangeType) {
 		var oResult = ChangeRegistry.getInstance().getRegistryItems({
 			controlType : sControlType,
 			changeTypeName : sChangeType,
@@ -2827,8 +4287,8 @@ function(Plugin, FlexUtils, ChangeRegistry) {
 	};
 
 	return BasePlugin;
-}, /* bExport= */ true);
 
+}, /* bExport= */ true);
 }; // end of sap/ui/rta/plugin/Plugin.js
 if ( !jQuery.sap.isDeclared('sap.ui.rta.plugin.Remove') ) {
 /*!
@@ -2845,7 +4305,12 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 	'sap/ui/rta/Utils',
 	'sap/ui/rta/command/CompositeCommand',
 	'sap/ui/dt/OverlayRegistry'
-], function(Plugin, Utils, CompositeCommand, OverlayRegistry) {
+], function(
+	Plugin,
+	Utils,
+	CompositeCommand,
+	OverlayRegistry
+){
 	"use strict";
 
 	/**
@@ -2856,7 +4321,7 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 	 * @class The Remove allows trigger remove operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -2883,7 +4348,7 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 	 * @override
 	 */
 	Remove.prototype.registerElementOverlay = function(oOverlay) {
-		if (this.isRemoveEnabled(oOverlay)) {
+		if (this.isEnabled(oOverlay)) {
 			oOverlay.attachBrowserEvent("keydown", this._onKeyDown, this);
 		}
 		Plugin.prototype.registerElementOverlay.apply(this, arguments);
@@ -2903,7 +4368,7 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 			return false;
 		}
 
-		var oRemoveAction = this._getRemoveAction(oOverlay);
+		var oRemoveAction = this.getAction(oOverlay);
 		if (oRemoveAction && oRemoveAction.changeType) {
 			if (oRemoveAction.changeOnRelevantContainer) {
 				oElement = oOverlay.getRelevantContainer();
@@ -2919,46 +4384,55 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 	};
 
 	/**
-	 * @param	{sap.ui.dt.Overlay} oOverlay overlay object
-	 * @return {sap.ui.dt.DesignTimeMetadata} oDesignTimeMetadata
-	 * @private
-	 */
-	Remove.prototype._getRemoveAction = function(oOverlay) {
-		return oOverlay.getDesignTimeMetadata() ? oOverlay.getDesignTimeMetadata().getAction("remove", oOverlay.getElementInstance()) : null;
-	};
-
-	/**
-	 * Checks if remove is available for oOverlay
-	 *
-	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
-	 * @return {boolean} true if available
-	 * @public
-	 */
-	Remove.prototype.isRemoveAvailable = function(oOverlay) {
-		return this._isEditableByPlugin(oOverlay);
-	};
-
-	/**
 	 * Checks if remove is enabled for oOverlay
 	 *
 	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
 	 * @return {boolean} true if enabled
 	 * @public
 	 */
-	Remove.prototype.isRemoveEnabled = function(oOverlay) {
-		var oAction = this._getRemoveAction(oOverlay);
+	Remove.prototype.isEnabled = function(oOverlay) {
+		var oAction = this.getAction(oOverlay);
+		var bIsEnabled = false;
 		if (!oAction) {
-			return false;
+			return bIsEnabled;
 		}
 
 		if (typeof oAction.isEnabled !== "undefined") {
 			if (typeof oAction.isEnabled === "function") {
-				return oAction.isEnabled(oOverlay.getElementInstance());
+				bIsEnabled = oAction.isEnabled(oOverlay.getElementInstance());
 			} else {
-				return oAction.isEnabled;
+				bIsEnabled = oAction.isEnabled;
 			}
+		} else {
+			bIsEnabled = true;
 		}
-		return true;
+		return bIsEnabled && this._canBeRemovedFromAggregation(oOverlay);
+	};
+
+	/**
+	 * Checks if Overlay control has a valid parent and if it is
+	 * not the last visible control in the aggregation
+	 * @param  {sap.ui.dt.Overlay} oOverlay Overlay for the control
+	 * @return {boolean} Returns true if the control can be removed
+	 */
+	Remove.prototype._canBeRemovedFromAggregation = function(oOverlay){
+		var oElement = oOverlay.getElementInstance();
+		var oParent = oElement.getParent();
+		if (!oParent){
+			return false;
+		}
+		var aElements = oParent.getAggregation(oElement.sParentAggregationName);
+		if (!Array.isArray(aElements)){
+			return true;
+		}
+		if (aElements.length === 1){
+			return false;
+		}
+		var aInvisibleElements = aElements.filter(function(oElement){
+			var oElementOverlay = OverlayRegistry.getOverlay(oElement);
+			return !(oElementOverlay && oElementOverlay.getElementVisibility());
+		});
+		return !(aInvisibleElements.length === (aElements.length - 1));
 	};
 
 	/**
@@ -2967,7 +4441,7 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 	 * @private
 	 */
 	Remove.prototype._getConfirmationText = function(oOverlay) {
-		var oAction = this._getRemoveAction(oOverlay);
+		var oAction = this.getAction(oOverlay);
 		if (oAction && oAction.getConfirmationText) {
 			return oAction.getConfirmationText(oOverlay.getElementInstance());
 		}
@@ -2980,7 +4454,7 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 	 * @override
 	 */
 	Remove.prototype.deregisterElementOverlay = function(oOverlay) {
-		if (this.isRemoveEnabled(oOverlay)) {
+		if (this.isEnabled(oOverlay)) {
 			oOverlay.detachBrowserEvent("keydown", this._onKeyDown, this);
 		}
 		Plugin.prototype.deregisterElementOverlay.apply(this, arguments);
@@ -3013,10 +4487,10 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 			aSelection = oDesignTime.getSelection();
 		}
 
-		aSelection = aSelection.filter(this.isRemoveEnabled, this);
+		aSelection = aSelection.filter(this.isEnabled, this);
 
 		if (aSelection.length > 0) {
-			this._handleRemove(aSelection);
+			this.handler(aSelection);
 		}
 	};
 
@@ -3034,7 +4508,7 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 		}
 	};
 
-	Remove.prototype._handleRemove = function(aSelectedOverlays) {
+	Remove.prototype.handler = function(aSelectedOverlays) {
 		var aPromises = [];
 		var oCompositeCommand = new CompositeCommand();
 		var fnSetFocus = function (oOverlay) {
@@ -3043,36 +4517,32 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 				oOverlay.focus();
 			}, 0);
 		};
+
 		var oNextOverlaySelection = Remove._getElementToFocus(aSelectedOverlays);
 
-		aSelectedOverlays.forEach(function(oOverlay) {
-			var oCommand;
-			var oRemovedElement = oOverlay.getElementInstance();
-			var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
-			var oRemoveAction = this._getRemoveAction(oOverlay);
-			var oRelevantElement;
-			if (oRemoveAction.changeOnRelevantContainer) {
-				oRelevantElement = oOverlay.getRelevantContainer();
-			} else {
-				oRelevantElement = oRemovedElement;
-			}
-			var sVariantManagementKey = this.getVariantManagementKey(oOverlay, oRelevantElement, oRemoveAction.changeType);
-			var sConfirmationText = this._getConfirmationText(oOverlay);
+		aSelectedOverlays
+			.forEach(function(oOverlay) {
+				var oCommand;
+				var oRemovedElement = oOverlay.getElementInstance();
+				var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
+				var oRemoveAction = this.getAction(oOverlay);
+				var sVariantManagementReference = this.getVariantManagementReference(oOverlay, oRemoveAction);
+				var sConfirmationText = this._getConfirmationText(oOverlay);
 
-			if (sConfirmationText) {
-				aPromises.push(
-					Utils.openRemoveConfirmationDialog(oRemovedElement, sConfirmationText)
-					.then(function(bConfirmed) {
-						if (bConfirmed) {
-							oCommand = this._getRemoveCommand(oRemovedElement, oDesignTimeMetadata, sVariantManagementKey);
-							oCompositeCommand.addCommand(oCommand);
-						}
-					}.bind(this))
-				);
-			} else {
-				oCommand = this._getRemoveCommand(oRemovedElement, oDesignTimeMetadata, sVariantManagementKey);
-				oCompositeCommand.addCommand(oCommand);
-			}
+				if (sConfirmationText) {
+					aPromises.push(
+						Utils.openRemoveConfirmationDialog(oRemovedElement, sConfirmationText)
+						.then(function(bConfirmed) {
+							if (bConfirmed) {
+								oCommand = this._getRemoveCommand(oRemovedElement, oDesignTimeMetadata, sVariantManagementReference);
+								oCompositeCommand.addCommand(oCommand);
+							}
+						}.bind(this))
+					);
+				} else {
+					oCommand = this._getRemoveCommand(oRemovedElement, oDesignTimeMetadata, sVariantManagementReference);
+					oCompositeCommand.addCommand(oCommand);
+				}
 		}, this);
 
 		// since Promise.all is always asynchronous, we want to call it only if at least one promise exists
@@ -3114,26 +4584,43 @@ sap.ui.define("sap/ui/rta/plugin/Remove",[
 		return oNextOverlaySelection;
 	};
 
+	/**
+	 * Retrieve the context menu item for the action.
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
+	 * @return {object[]}          Returns array containing the items with required data
+	 */
+	Remove.prototype.getMenuItems = function(oOverlay){
+		return this._getMenuItems(oOverlay, {pluginId : "CTX_REMOVE", rank : 60});
+	};
+
+	/**
+	 * Get the name of the action related to this plugin.
+	 * @return {string} Returns the action name
+	 */
+	Remove.prototype.getActionName = function(){
+		return "remove";
+	};
+
 	return Remove;
 }, /* bExport= */true);
 
 }; // end of sap/ui/rta/plugin/Remove.js
-if ( !jQuery.sap.isDeclared('sap.ui.rta.plugin.Rename') ) {
+if ( !jQuery.sap.isDeclared('sap.ui.rta.plugin.RenameHandler') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
  * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-// Provides class sap.ui.rta.plugin.Rename.
-jQuery.sap.declare('sap.ui.rta.plugin.Rename'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+// Provides class sap.ui.rta.plugin.RenameHandler.
+jQuery.sap.declare('sap.ui.rta.plugin.RenameHandler'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
 jQuery.sap.require('jquery.sap.global'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.dt.Overlay'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.dt.ElementUtil'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.dt.OverlayUtil'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.dt.OverlayRegistry'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.dt.DOMUtil'); // unlisted dependency retained
-sap.ui.define("sap/ui/rta/plugin/Rename",[
+sap.ui.define("sap/ui/rta/plugin/RenameHandler",[
 	'jquery.sap.global',
 	'sap/ui/rta/plugin/Plugin',
 	'sap/ui/dt/Overlay',
@@ -3155,436 +4642,272 @@ sap.ui.define("sap/ui/rta/plugin/Rename",[
 	"use strict";
 
 	/**
-	 * Constructor for a new Rename.
-	 *
-	 * @param {string}
-	 *          [sId] id for the new object, generated automatically if no id is given
-	 * @param {object}
-	 *          [mSettings] initial settings for the new object
-	 *
-	 * @class The Rename allows to create a set of Overlays above the root elements and their public children and manage
-	 *        their events.
-	 * @extends sap.ui.rta.plugin.Plugin
+	 * Provides Rename handling functionality
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
-	 * @since 1.30
-	 * @alias sap.ui.rta.plugin.Rename
-	 * @experimental Since 1.30. This class is experimental and provides only limited functionality. Also the API might be
-	 *               changed in future.
+	 * @since 1.52
+	 * @alias sap.ui.rta.plugin.RenameHandler
+	 * @experimental Since 1.52. This class is experimental and provides only limited functionality. Also the API might be
+	 * changed in future.
 	 */
-	var Rename = Plugin.extend("sap.ui.rta.plugin.Rename", /** @lends sap.ui.rta.plugin.Rename.prototype */
-	{
-		metadata : {
-			// ---- object ----
-
-			// ---- control specific ----
-			library : "sap.ui.rta",
-			properties : {
-				oldValue : "string"
-			},
-			associations : {},
-			events : {
-				/** Fired when renaming is possible */
-				"editable" : {},
-
-				/** Fired when renaming is switched off */
-				"nonEditable" : {}
-			}
-		}
-	});
-
-	/**
-	 * @override
-	 */
-	Rename.prototype.exit = function() {
-		Plugin.prototype.exit.apply(this, arguments);
-
-		if (this._$oEditableControlDomRef) {
-			this._stopEdit();
-		}
-
-		clearTimeout(this._iStopTimeout);
-	};
-
-	/**
-	 * @override
-	 */
-	Rename.prototype.setDesignTime = function(oDesignTime) {
-		this._aSelection = [];
-		var oOldDesignTime = this.getDesignTime();
-
-		if (oOldDesignTime) {
-			oOldDesignTime.detachSelectionChange(this._onDesignTimeSelectionChange, this);
-		}
-		Plugin.prototype.setDesignTime.apply(this, arguments);
-
-		if (oDesignTime) {
-			oDesignTime.attachSelectionChange(this._onDesignTimeSelectionChange, this);
-			this._aSelection = oDesignTime.getSelection();
-		}
-	};
-
-	/**
-	 * @param {sap.ui.dt.ElementOverlay} oOverlay overlay object
-	 * @returns {string} action value
-	 * @private
-	 */
-	Rename.prototype._getRenameAction = function(oOverlay) {
-		var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
-		if (oDesignTimeMetadata && oDesignTimeMetadata.getAction) {
-			return oDesignTimeMetadata.getAction("rename", oOverlay.getElementInstance());
-		}
-	};
-
-	/**
-	 * Checks if rename is available for oOverlay
-	 *
-	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
-	 * @returns {boolean} true if it's editable
-	 * @public
-	 */
-	Rename.prototype.isRenameAvailable = function(oOverlay) {
-		return this._isEditableByPlugin(oOverlay);
-	};
-
-	/**
-	 * Checks if rename is enabled for oOverlay
-	 *
-	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
-	 * @returns {boolean} true if it's enabled
-	 * @public
-	 */
-	Rename.prototype.isRenameEnabled = function(oOverlay) {
-		var bIsEnabled = true;
-		var oAction = this._getRenameAction(oOverlay);
-		if (!oAction) {
-			bIsEnabled = false;
-		}
-
-		if (bIsEnabled && typeof oAction.isEnabled !== "undefined") {
-			if (typeof oAction.isEnabled === "function") {
-				bIsEnabled = oAction.isEnabled(oOverlay.getElementInstance());
+	var RenameHandler = {
+		/**
+		 * @override
+		 */
+		_manageClickEvent : function (vEventOrElement) {
+			var oOverlay = vEventOrElement.getSource ? vEventOrElement.getSource() : vEventOrElement;
+			if (oOverlay.isSelected() && this.isRenameAvailable(oOverlay)) {
+				oOverlay.attachBrowserEvent("click", RenameHandler._onClick, this);
 			} else {
-				bIsEnabled = oAction.isEnabled;
+				oOverlay.detachBrowserEvent("click", RenameHandler._onClick, this);
 			}
-		}
+		},
 
-		if (bIsEnabled) {
-			var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
-			if (!oDesignTimeMetadata.getAssociatedDomRef(oOverlay.getElementInstance(), oAction.domRef)) {
-				bIsEnabled = false;
+		/**
+		 * @param {sap.ui.dt.Overlay} oOverlay - target overlay
+		 * @public
+		 */
+		startEdit : function (oOverlay, vDomRef, sPluginMethodName) {
+			this._oEditedOverlay = oOverlay;
+
+			var oElement = oOverlay.getElementInstance();
+
+			var oDesignTimeMetadata = this._oEditedOverlay.getDesignTimeMetadata();
+
+			var oEditableControlDomRef = oDesignTimeMetadata.getAssociatedDomRef(oElement, vDomRef);
+
+			// if the Control is currently not visible on the screen, we have to scroll it into view
+			if (!Utils.isElementInViewport(oEditableControlDomRef)) {
+				oEditableControlDomRef.get(0).scrollIntoView();
 			}
-		}
 
-		return bIsEnabled;
-	};
+			this._$oEditableControlDomRef = jQuery(oEditableControlDomRef);
 
-	/**
-	 * @override
-	 */
-	Rename.prototype.registerElementOverlay = function(oOverlay) {
-		oOverlay.attachEvent("editableChange", this._manageClickEvent, this);
+			var oEditableControlOverlay = sap.ui.dt.OverlayRegistry.getOverlay(oEditableControlDomRef.id) || oOverlay;
 
+			var oWrapper = jQuery("<div class='sapUiRtaEditableField'></div>").appendTo(oEditableControlOverlay.$());
+			this._$editableField = jQuery("<div contentEditable='true'></div>").appendTo(oWrapper);
 
-		Plugin.prototype.registerElementOverlay.apply(this, arguments);
-	};
-
-	/**
-	 * @param {sap.ui.dt.ElementOverlay} oOverlay overlay to be checked for editable
-	 * @returns {boolean} true if it's editable
-	 * @private
-	 */
-	Rename.prototype._isEditable = function(oOverlay) {
-		var bEditable = false;
-		var oElement = oOverlay.getElementInstance();
-
-		if (!Utils.getRelevantContainerDesigntimeMetadata(oOverlay)) {
-			return false;
-		}
-
-		var oRenameAction = this._getRenameAction(oOverlay);
-		if (oRenameAction && oRenameAction.changeType) {
-			if (oRenameAction.changeOnRelevantContainer) {
-				oElement = oOverlay.getRelevantContainer();
+			// if label is empty, set a preliminary dummy text at the control to get an overlay
+			if (this._$oEditableControlDomRef.text() === "") {
+				this._$oEditableControlDomRef.text("_?_");
+				this._$editableField.text("");
+			} else {
+				this._$editableField.text(this._$oEditableControlDomRef.text());
 			}
-			bEditable = this.hasChangeHandler(oRenameAction.changeType, oElement);
-		}
 
-		if (bEditable) {
-			return this.hasStableId(oOverlay);
-		}
+			DOMUtil.copyComputedStyle(this._$oEditableControlDomRef, this._$editableField);
+			this._$editableField.children().remove();
+			this._$editableField.css('visibility', 'hidden');
 
-		return bEditable;
-	};
-
-	/**
-	 * @override
-	 */
-	Rename.prototype.deregisterElementOverlay = function(oOverlay) {
-		oOverlay.detachEvent("editableChange", this._manageClickEvent, this);
-		oOverlay.detachBrowserEvent("click", this._onClick, this);
-
-		this.removeFromPluginsList(oOverlay);
-	};
-
-	/**
-	 * @param {sap.ui.base.Event} oEvent - event object
-	 * @private
-	 */
-	Rename.prototype._onClick = function(oEvent) {
-		var oOverlay = sap.ui.getCore().byId(oEvent.currentTarget.id);
-		if (this.isRenameEnabled(oOverlay) && !oEvent.metaKey && !oEvent.ctrlKey) {
-			this.startEdit(oOverlay);
-			oEvent.preventDefault();
-		}
-	};
-
-	/**
-	 * @override
-	 */
-	Rename.prototype._onDesignTimeSelectionChange = function(oEvent) {
-		var aSelection = oEvent.getParameter("selection");
-
-		// detach events from previous selection
-		this._aSelection.forEach(this._manageClickEvent, this);
-		// attach events to the new selection
-		aSelection.forEach(this._manageClickEvent, this);
-
-		this._aSelection = aSelection;
-	};
-
-
-	/**
-	 * @override
-	 */
-	Rename.prototype._manageClickEvent = function(vEventOrElement) {
-		var oOverlay = vEventOrElement.getSource ? vEventOrElement.getSource() : vEventOrElement;
-		if (oOverlay.isSelected() && this.isRenameAvailable(oOverlay)) {
-			oOverlay.attachBrowserEvent("click", this._onClick, this);
-		} else {
-			oOverlay.detachBrowserEvent("click", this._onClick, this);
-		}
-	};
-
-	/**
-	 * @param {sap.ui.dt.Overlay} oOverlay - target overlay
-	 * @public
-	 */
-	Rename.prototype.startEdit = function(oOverlay) {
-
-		this._oEditedOverlay = oOverlay;
-
-		var oElement = oOverlay.getElementInstance();
-		var oDesignTimeMetadata = this._oEditedOverlay.getDesignTimeMetadata();
-		var vDomRef = oDesignTimeMetadata.getAction("rename", oElement).domRef;
-
-		var oEditableControlDomRef = oDesignTimeMetadata.getAssociatedDomRef(oElement, vDomRef);
-
-		// if the Control is currently not visible on the screen, we have to scroll it into view
-		if (!Utils.isElementInViewport(oEditableControlDomRef)) {
-			oEditableControlDomRef.get(0).scrollIntoView();
-		}
-
-		this._$oEditableControlDomRef = jQuery(oEditableControlDomRef);
-
-		var oEditableControlOverlay = sap.ui.dt.OverlayRegistry.getOverlay(oEditableControlDomRef.id) || oOverlay;
-
-		var oWrapper = jQuery("<div class='sapUiRtaEditableField'></div>").appendTo(oEditableControlOverlay.$());
-		this._$editableField = jQuery("<div contentEditable='true'></div>").appendTo(oWrapper);
-
-		// if label is empty, set a preliminary dummy text at the control to get an overlay
-		if (this._$oEditableControlDomRef.text() === "") {
-			this._$oEditableControlDomRef.text("_?_");
-			this._$editableField.text("");
-		} else {
-			this._$editableField.text(this._$oEditableControlDomRef.text());
-		}
-
-		DOMUtil.copyComputedStyle(this._$oEditableControlDomRef, this._$editableField);
-		this._$editableField.children().remove();
-		this._$editableField.css('visibility', 'hidden');
-
-		// TODO : for all browsers
-		this._$editableField.css({
-			"-moz-user-modify" : "read-write",
-			"-webkit-user-modify" : "read-write",
-			"-ms-user-modify" : "read-write",
-			"user-modify" : "read-write",
-			"text-overflow" : "clip"
-		});
-
-		Overlay.getMutationObserver().ignoreOnce({
-			target: this._$oEditableControlDomRef.get(0)
-		});
-
-		this._$editableField.one("focus", this._onEditableFieldFocus.bind(this));
-
-		this._$editableField.on("blur", this._onEditableFieldBlur.bind(this));
-		this._$editableField.on("keydown", this._onEditableFieldKeydown.bind(this));
-		this._$editableField.on("dragstart", this._stopPropagation.bind(this));
-		this._$editableField.on("drag", this._stopPropagation.bind(this));
-		this._$editableField.on("dragend", this._stopPropagation.bind(this));
-
-		this._$editableField.on("click", this._stopPropagation.bind(this));
-		this._$editableField.on("mousedown", this._stopPropagation.bind(this));
-
-		this.setOldValue(this._getCurrentEditableFieldText());
-
-		// BCP: 1780352883
-		setTimeout(function () {
-			this._$oEditableControlDomRef.css("visibility", "hidden");
-			this._$editableField.offset({ left: this._$oEditableControlDomRef.offset().left });
-			this._$editableField.offset({ top: this._$oEditableControlDomRef.offset().top });
-			this._$editableField.css('visibility', '');
-			this._$editableField.focus();
-
-			// keep Overlay selected while renaming
-			oOverlay.setSelected(true);
-			sap.ui.getCore().getEventBus().publish('sap.ui.rta', 'plugin.Rename.startEdit', {
-				overlay: oOverlay,
-				editableField: this._$editableField
+			// TODO : for all browsers
+			this._$editableField.css({
+				"-moz-user-modify": "read-write",
+				"-webkit-user-modify": "read-write",
+				"-ms-user-modify": "read-write",
+				"user-modify": "read-write",
+				"text-overflow": "clip"
 			});
-		}.bind(this), 0);
-	};
 
-	/**
-	 * @param {sap.ui.base.Event} oEvent - event object
-	 * @private
-	 */
-	Rename.prototype._stopPropagation = function(oEvent) {
-		oEvent.stopPropagation();
-	};
+			Overlay.getMutationObserver().ignoreOnce({
+				target: this._$oEditableControlDomRef.get(0)
+			});
 
-	/**
-	 * @param {sap.ui.base.Event} oEvent - event object
-	 * @private
-	 */
-	Rename.prototype._onEditableFieldFocus = function(oEvent) {
-		this._oEditedOverlay.setSelected(false);
-		var el = oEvent.target;
-		var range = document.createRange();
-		range.selectNodeContents(el);
-		var sel = window.getSelection();
-		sel.removeAllRanges();
-		sel.addRange(range);
-	};
+			this._$editableField.one("focus", RenameHandler._onEditableFieldFocus.bind(this));
 
-	/**
-	 * @param {boolean} bRestoreFocus - true if the focus should be restored on overlay after rename
-	 * @private
-	 */
-	Rename.prototype._stopEdit = function(bRestoreFocus) {
-		// exchange the dummy text at the label with the genuine empty text (see start_edit function)
-		if (this._$oEditableControlDomRef.text() === "_?_") {
-			this._$oEditableControlDomRef.text("");
-		}
+			this._$editableField.on("blur", RenameHandler._onEditableFieldBlur.bind(this));
+			this._$editableField.on("keydown", RenameHandler._onEditableFieldKeydown.bind(this));
+			this._$editableField.on("dragstart", RenameHandler._stopPropagation.bind(this));
+			this._$editableField.on("drag", RenameHandler._stopPropagation.bind(this));
+			this._$editableField.on("dragend", RenameHandler._stopPropagation.bind(this));
 
-		this._oEditedOverlay.$().find(".sapUiRtaEditableField").remove();
-		Overlay.getMutationObserver().ignoreOnce({
-			target: this._$oEditableControlDomRef.get(0)
-		});
-		this._$oEditableControlDomRef.css("visibility", "visible");
+			this._$editableField.on("click", RenameHandler._stopPropagation.bind(this));
+			this._$editableField.on("mousedown", RenameHandler._stopPropagation.bind(this));
 
-		if (bRestoreFocus) {
-			var oOverlay = this._oEditedOverlay;
+			this.setOldValue(RenameHandler._getCurrentEditableFieldText.call(this));
 
-			// timeout is needed because of invalidation (test on bounded fields)
-			// TODO: get rid of timeout! prevent UI5 from taking focus out of overlays
-			this._iStopTimeout = setTimeout(function() {
+			// BCP: 1780352883
+			setTimeout(function () {
+				this._$oEditableControlDomRef.css("visibility", "hidden");
+				this._$editableField.offset({left: this._$oEditableControlDomRef.offset().left});
+				this._$editableField.offset({top: this._$oEditableControlDomRef.offset().top});
+				this._$editableField.css('visibility', '');
+				this._$editableField.focus();
+
+				// keep Overlay selected while renaming
 				oOverlay.setSelected(true);
-				oOverlay.focus();
-				sap.ui.getCore().getEventBus().publish('sap.ui.rta', 'plugin.Rename.stopEdit', {
-					overlay: oOverlay
+				sap.ui.getCore().getEventBus().publish('sap.ui.rta', sPluginMethodName, {
+					overlay: oOverlay,
+					editableField: this._$editableField
 				});
-			}, 500);
-		}
+			}.bind(this), 0);
+		},
 
-		this._oEditedOverlay.setSelected(false);
+		_setDesignTime : function (oDesignTime) {
+			this._aSelection = [];
+			var oOldDesignTime = this.getDesignTime();
 
-		delete this._$editableField;
-		delete this._$oEditableControlDomRef;
-		delete this._oEditedOverlay;
-	};
-
-	/**
-	 * @param {sap.ui.base.Event} oEvent - event object
-	 * @private
-	 */
-	Rename.prototype._onEditableFieldBlur = function(oEvent) {
-		this._emitLabelChangeEvent();
-		this._stopEdit();
-	};
-
-	/**
-	 * @param {sap.ui.base.Event} oEvent - event object
-	 * @private
-	 */
-	Rename.prototype._onEditableFieldKeydown = function(oEvent) {
-		switch (oEvent.keyCode) {
-			case jQuery.sap.KeyCodes.ENTER:
-				this._emitLabelChangeEvent();
-				this._stopEdit(true);
-				oEvent.preventDefault();
-				break;
-			case jQuery.sap.KeyCodes.ESCAPE:
-				this._stopEdit(true);
-				oEvent.preventDefault();
-				break;
-			case jQuery.sap.KeyCodes.DELETE:
-				//Incident ID: #1680315103
-				oEvent.stopPropagation();
-				break;
-			default:
-		}
-	};
-
-	/**
-	 * @private
-	 */
-	Rename.prototype._emitLabelChangeEvent = function() {
-		var sText = this._getCurrentEditableFieldText();
-		if (this.getOldValue() !== sText) { //check for real change before creating a command
-			this._$oEditableControlDomRef.text(sText);
-			try {
-				var oRenameCommand;
-				var oRenamedElement = this._oEditedOverlay.getElementInstance();
-				var oDesignTimeMetadata = this._oEditedOverlay.getDesignTimeMetadata();
-
-				oRenameCommand = this.getCommandFactory().getCommandFor(oRenamedElement, "rename", {
-					renamedElement : oRenamedElement,
-					newValue : sText
-				}, oDesignTimeMetadata/*, this._oEditedOverlay.getVariantMangement()*/);
-				this.fireElementModified({
-					"command" : oRenameCommand
-				});
-			} catch (oError) {
-				jQuery.sap.log.error("Error during rename : ", oError);
+			if (oOldDesignTime) {
+				oOldDesignTime.detachSelectionChange(RenameHandler._onDesignTimeSelectionChange, this);
 			}
+			Plugin.prototype.setDesignTime.apply(this, arguments);
+
+			if (oDesignTime) {
+				oDesignTime.attachSelectionChange(RenameHandler._onDesignTimeSelectionChange, this);
+				this._aSelection = oDesignTime.getSelection();
+			}
+		},
+
+		/**
+		 * @override
+		 */
+		_onDesignTimeSelectionChange : function(oEvent) {
+			var aSelection = oEvent.getParameter("selection");
+
+			// detach events from previous selection
+			this._aSelection.forEach(RenameHandler._manageClickEvent, this);
+			// attach events to the new selection
+			aSelection.forEach(RenameHandler._manageClickEvent, this);
+
+			this._aSelection = aSelection;
+		},
+		/**
+		 * @param {sap.ui.base.Event} oEvent - event object
+		 * @private
+		 */
+		_stopPropagation : function (oEvent) {
+			oEvent.stopPropagation();
+		},
+
+		/**
+		 * @param {sap.ui.base.Event} oEvent - event object
+		 * @private
+		 */
+		_onEditableFieldFocus : function (oEvent) {
+			this._oEditedOverlay.setSelected(false);
+			var el = oEvent.target;
+			var range = document.createRange();
+			range.selectNodeContents(el);
+			var sel = window.getSelection();
+			sel.removeAllRanges();
+			sel.addRange(range);
+		},
+
+		/**
+		 * @param {boolean} bRestoreFocus - true if the focus should be restored on overlay after rename
+		 * @private
+		 */
+		_stopEdit : function (bRestoreFocus, sPluginMethodName) {
+			// exchange the dummy text at the label with the genuine empty text (see start_edit function)
+			if (this._$oEditableControlDomRef.text() === "_?_") {
+				this._$oEditableControlDomRef.text("");
+			}
+			//var oElement = this._oEditedOverlay.getElementInstance();
+			//if (oElement.variantManagementModeChange) {
+			//	oElement.fireVariantManagementModeChange({mode: ""});
+			//}
+
+			this._oEditedOverlay.$().find(".sapUiRtaEditableField").remove();
+			Overlay.getMutationObserver().ignoreOnce({
+				target: this._$oEditableControlDomRef.get(0)
+			});
+			this._$oEditableControlDomRef.css("visibility", "visible");
+
+			if (bRestoreFocus) {
+				var oOverlay = this._oEditedOverlay;
+
+				// timeout is needed because of invalidation (test on bounded fields)
+				// TODO: get rid of timeout! prevent UI5 from taking focus out of overlays
+				this._iStopTimeout = setTimeout(function () {
+					oOverlay.setSelected(true);
+					oOverlay.focus();
+					sap.ui.getCore().getEventBus().publish('sap.ui.rta', sPluginMethodName, {
+						overlay: oOverlay
+					});
+				}, 500);
+			}
+
+			this._oEditedOverlay.setSelected(false);
+
+			delete this._$editableField;
+			delete this._$oEditableControlDomRef;
+			delete this._oEditedOverlay;
+		},
+
+		/**
+		 * @param {sap.ui.base.Event} oEvent - event object
+		 * @private
+		 */
+		_onEditableFieldBlur : function (oEvent) {
+			this._emitLabelChangeEvent();
+			this.stopEdit(false);
+		},
+
+		/**
+		 * @param {sap.ui.base.Event} oEvent - event object
+		 * @private
+		 */
+		_onEditableFieldKeydown : function (oEvent) {
+			switch (oEvent.keyCode) {
+				case jQuery.sap.KeyCodes.ENTER:
+					this._emitLabelChangeEvent();
+					this.stopEdit(true);
+					oEvent.preventDefault();
+					break;
+				case jQuery.sap.KeyCodes.ESCAPE:
+					this.stopEdit(true);
+					oEvent.preventDefault();
+					break;
+				case jQuery.sap.KeyCodes.DELETE:
+					//Incident ID: #1680315103
+					oEvent.stopPropagation();
+					break;
+				default:
+			}
+		},
+
+		/**
+		 * @returns {string} current editable field text
+		 * @private
+		 */
+		_getCurrentEditableFieldText : function () {
+			var sText = this._$editableField.text();
+			// Rename to empty string should not be possible
+			// to prevent issues with disappearing elements
+			if (sText === "") {
+				sText = '\xa0'; // = non-breaking space (&nbsp)
+			}
+			return sText;
+		},
+
+
+		/**
+		 * @param {sap.ui.base.Event} oEvent - event object
+		 * @private
+		 */
+		_onClick : function(oEvent) {
+			var oOverlay = sap.ui.getCore().byId(oEvent.currentTarget.id);
+			if (this.isRenameEnabled(oOverlay) && !oEvent.metaKey && !oEvent.ctrlKey) {
+				this.startEdit(oOverlay);
+				oEvent.preventDefault();
+			}
+		},
+
+		_exit : function() {
+			if (this._$oEditableControlDomRef) {
+				this.stopEdit(false);
+			}
+
+			clearTimeout(this._iStopTimeout);
 		}
 	};
-
-	/**
-	 * @returns {string} current editable field text
-	 * @private
-	 */
-	Rename.prototype._getCurrentEditableFieldText = function() {
-		var sText = this._$editableField.text();
-		// Rename to empty string should not be possible
-		// to prevent issues with disappearing elements
-		if (sText === ""){
-			sText = '\xa0'; // = non-breaking space (&nbsp)
-		}
-		return sText;
-	};
-
-	return Rename;
-}, /* bExport= */true);
-
-}; // end of sap/ui/rta/plugin/Rename.js
+	return RenameHandler;
+}, true);
+}; // end of sap/ui/rta/plugin/RenameHandler.js
 if ( !jQuery.sap.isDeclared('sap.ui.rta.plugin.Selection') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
@@ -3615,7 +4938,7 @@ function(
 	 * @class The Selection plugin allows you to select or focus overlays with mouse or keyboard and navigate to others.
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -3909,7 +5232,7 @@ sap.ui.define("sap/ui/rta/plugin/Settings",[
 	 * @class The Settings allows trigger change of settings operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -3943,47 +5266,22 @@ sap.ui.define("sap/ui/rta/plugin/Settings",[
 			return false;
 		}
 
-		var oSettingsAction = this._getSettingsAction(oOverlay);
-		if (oSettingsAction && oSettingsAction.handler) {
-			return this.hasStableId(oOverlay);
+		var vSettingsAction = this.getAction(oOverlay);
+		// If no additional actions are defined in settings, a handler must be present to make it available
+		if (vSettingsAction) {
+			if (vSettingsAction.handler) {
+				return this.hasStableId(oOverlay);
+			} else {
+				var bHandlerFound = Object.keys(vSettingsAction).some(function(sSettingsAction) {
+					return vSettingsAction[sSettingsAction].handler;
+				});
+				if (bHandlerFound) {
+					return this.hasStableId(oOverlay);
+				}
+			}
 		}
 
 		return false;
-	};
-
-	Settings.prototype._getUnsavedChanges = function(sId, aChangeTypes) {
-		var sElementId;
-
-		var aUnsavedChanges = this.getCommandStack().getAllExecutedCommands().filter(function(oCommand) {
-			sElementId = oCommand.getElementId();
-			if (sElementId === sId && aChangeTypes.indexOf(oCommand.getChangeType()) >= 0) {
-				return true;
-			}
-		}).map(function(oCommand) {
-			return oCommand.getPreparedChange();
-		});
-
-		return aUnsavedChanges;
-	};
-
-	/**
-	 * @param {sap.ui.dt.ElementOverlay} oOverlay overlay object
-	 * @returns {string} changeType value for settingsAction if available
-	 * @private
-	 */
-	Settings.prototype._getSettingsAction = function(oOverlay) {
-		return oOverlay.getDesignTimeMetadata() ? oOverlay.getDesignTimeMetadata().getAction("settings", oOverlay.getElementInstance()) : null;
-	};
-
-	/**
-	 * Checks if settings is available for oOverlay
-	 *
-	 * @param {sap.ui.dt.ElementOverlay} oOverlay overlay object
-	 * @returns {boolean} true if it's editable
-	 * @public
-	 */
-	Settings.prototype.isSettingsAvailable = function(oOverlay) {
-		return this._isEditableByPlugin(oOverlay);
 	};
 
 	/**
@@ -3993,8 +5291,8 @@ sap.ui.define("sap/ui/rta/plugin/Settings",[
 	 * @returns {boolean} true if it's enabled
 	 * @public
 	 */
-	Settings.prototype.isSettingsEnabled = function(oOverlay) {
-		var oAction = this._getSettingsAction(oOverlay);
+	Settings.prototype.isEnabled = function(oOverlay) {
+		var oAction = this.getAction(oOverlay);
 		if (!oAction) {
 			return false;
 		}
@@ -4009,27 +5307,152 @@ sap.ui.define("sap/ui/rta/plugin/Settings",[
 		return true;
 	};
 
+	Settings.prototype._getUnsavedChanges = function(sId, aChangeTypes) {
+		var sElementId;
 
-	Settings.prototype.handleSettings = function(aSelectedOverlays) {
-		var oSettingsCommand;
+		var aUnsavedChanges = this.getCommandStack().getAllExecutedCommands().filter(function(oCommand) {
+			sElementId = oCommand.getElementId && oCommand.getElementId() || oCommand.getElement && oCommand.getElement().getId();
+			if (sElementId === sId && aChangeTypes.indexOf(oCommand.getChangeType()) >= 0) {
+				return true;
+			}
+		}).map(function(oCommand) {
+			return oCommand.getPreparedChange();
+		});
+
+		return aUnsavedChanges;
+	};
+
+	/**
+	 * Retrieves the available actions from the DesignTime Metadata and creates
+	 * the corresponding commands for them.
+	 * @param  {sap.ui.dt.ElementOverlay[]} aSelectedOverlays Target Overlays of the action
+	 * @param  {function} [fnHandler] handler function for the case of multiple settings actions
+	 * @return {Promise} Returns promise resolving with the creation of the commands
+	 */
+	Settings.prototype.handler = function(aSelectedOverlays, mPropertyBag) {
+		mPropertyBag = mPropertyBag || {};
+		var oSettingsCommand, oAppDescriptorCommand, oCompositeCommand;
 		var oElement = aSelectedOverlays[0].getElementInstance();
-		var mPropertyBag = {
-			getUnsavedChanges: this._getUnsavedChanges.bind(this),
-			styleClass: Utils.getRtaStyleClassName()
-		};
+		var fnHandler = mPropertyBag.fnHandler;
 
-		return aSelectedOverlays[0].getDesignTimeMetadata().getAction("settings").handler(oElement, this._getUnsavedChanges.bind(this), mPropertyBag).then(function(aChanges) {
-			aChanges.forEach(function(mChange) {
-				oSettingsCommand = this.getCommandFactory().getCommandFor(mChange.selectorControl, "settings", mChange.changeSpecificData);
-				this.fireElementModified({
-					"command" : oSettingsCommand
-				});
-			}, this);
+		if (!fnHandler){
+			fnHandler = aSelectedOverlays[0].getDesignTimeMetadata().getAction("settings").handler;
+			if (!fnHandler) {
+				throw new Error("Handler not found for settings action");
+			}
+		}
+		mPropertyBag.getUnsavedChanges = this._getUnsavedChanges.bind(this);
+		mPropertyBag.styleClass = Utils.getRtaStyleClassName();
+
+		return fnHandler(oElement, mPropertyBag).then(function(aChanges) {
+			if (aChanges.length > 0){
+				oCompositeCommand = this.getCommandFactory().getCommandFor(oElement, "composite");
+				aChanges.forEach(function(mChange) {
+					var mChangeSpecificData = mChange.changeSpecificData;
+					// Flex Change
+					if (mChangeSpecificData.changeType){
+						var sVariantManagementReference;
+						var vSelectorControl = mChange.selectorControl;
+						var sControlType;
+						if (vSelectorControl.controlType){
+							sControlType = vSelectorControl.controlType;
+						} else {
+							sControlType = vSelectorControl.getMetadata().getName();
+						}
+						var oChangeHandler = this._getChangeHandlerForControlType(sControlType, mChangeSpecificData.changeType);
+						if (aSelectedOverlays[0].getVariantManagement && oChangeHandler && oChangeHandler.revertChange) {
+							sVariantManagementReference = aSelectedOverlays[0].getVariantManagement();
+						}
+						oSettingsCommand = this.getCommandFactory().getCommandFor(
+							vSelectorControl,
+							"settings",
+							mChangeSpecificData,
+							undefined,
+							sVariantManagementReference);
+						oCompositeCommand.addCommand(oSettingsCommand);
+					// App Descriptor Change
+					} else if (mChangeSpecificData.appDescriptorChangeType){
+						var oComponent = mChange.appComponent;
+						var mManifest = oComponent.getManifest();
+						var sReference = mManifest["sap.app"].id;
+						oAppDescriptorCommand = this.getCommandFactory().getCommandFor(
+							oElement,
+							"appDescriptor",
+							{
+								reference : sReference,
+								appComponent : oComponent,
+								changeType : mChangeSpecificData.appDescriptorChangeType,
+								parameters : mChangeSpecificData.content.parameters,
+								texts : mChangeSpecificData.content.texts
+							}
+						);
+						oCompositeCommand.addCommand(oAppDescriptorCommand);
+					}
+				}, this);
+				if (oCompositeCommand.getCommands().length > 0){
+					this.fireElementModified({
+						"command" : oCompositeCommand
+					});
+				}
+			}
 		}.bind(this))['catch'](function(oError) {
 			if (oError) {
 				throw oError;
 			}
 		});
+	};
+
+	/**
+	 * Retrieve the context menu item for the actions.
+	 * If multiple actions are defined for Settings, it returns multiple menu items.
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
+	 * @return {object[]}          Returns array containing the items with required data
+	 */
+	Settings.prototype.getMenuItems = function(oOverlay){
+		var vSettingsActions = this.getAction(oOverlay);
+		var iRank = 110;
+		var sPluginId = "CTX_SETTINGS";
+
+		if (vSettingsActions) {
+			// Only one action: simply return settings entry as usual
+			if (vSettingsActions.handler) {
+				return this._getMenuItems(oOverlay, {pluginId : sPluginId, rank : iRank});
+			// Multiple actions: return one menu item for each action
+			} else {
+				var aMenuItems = [];
+				var aSettingsActions = Object.keys(vSettingsActions);
+				var iActionCounter = 0;
+				aSettingsActions.forEach(function(sSettingsAction){
+					var oSettingsAction = vSettingsActions[sSettingsAction],
+						sActionText = this.getActionText(oOverlay, oSettingsAction, oSettingsAction.name);
+					if (oSettingsAction.handler){
+						aMenuItems.push({
+							id : sPluginId + iActionCounter,
+							text : sActionText,
+							enabled : oSettingsAction.isEnabled && oSettingsAction.isEnabled.bind(this, oOverlay.getElementInstance()),
+							handler : function(fnHandler, aOverlays, mPropertyBag){
+								mPropertyBag = mPropertyBag || {};
+								mPropertyBag.fnHandler = fnHandler;
+								return this.handler(aOverlays, mPropertyBag);
+							}.bind(this, oSettingsAction.handler),
+							rank : iRank + iActionCounter
+						});
+						iActionCounter++;
+					} else {
+						jQuery.sap.log.warning("Handler not found for settings action '" + sActionText + "'");
+					}
+				}.bind(this));
+				return aMenuItems;
+			}
+		}
+	};
+
+	/**
+	 * Get the name of the action related to this plugin.
+	 * @return {string} Returns the action name
+	 */
+	Settings.prototype.getActionName = function(){
+		return "settings";
 	};
 
 	return Settings;
@@ -4049,8 +5472,18 @@ jQuery.sap.require('sap.ui.dt.Selection'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.dt.OverlayRegistry'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
 sap.ui.define("sap/ui/rta/plugin/Split",[
-	'sap/ui/rta/plugin/Plugin', 'sap/ui/dt/Selection', 'sap/ui/dt/OverlayRegistry', 'sap/ui/rta/Utils', 'sap/ui/fl/Utils'
-], function(Plugin, Selection, OverlayRegistry, Utils, FlexUtils) {
+	'sap/ui/rta/plugin/Plugin',
+	'sap/ui/dt/Selection',
+	'sap/ui/dt/OverlayRegistry',
+	'sap/ui/rta/Utils',
+	'sap/ui/fl/Utils'
+], function(
+	Plugin,
+	Selection,
+	OverlayRegistry,
+	Utils,
+	FlexUtils
+) {
 	"use strict";
 
 	/**
@@ -4059,7 +5492,7 @@ sap.ui.define("sap/ui/rta/plugin/Split",[
 	 * @class
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -4088,21 +5521,12 @@ sap.ui.define("sap/ui/rta/plugin/Split",[
 		if (!Utils.getRelevantContainerDesigntimeMetadata(oOverlay)) {
 			return false;
 		}
-		var oSplitAction = this._getSplitAction(oOverlay);
+		var oSplitAction = this.getAction(oOverlay);
 		if (oSplitAction && oSplitAction.changeType && oSplitAction.changeOnRelevantContainer) {
 			return this.hasStableId(oOverlay) && this.hasChangeHandler(oSplitAction.changeType, oOverlay.getRelevantContainer());
 		} else {
 			return false;
 		}
-	};
-
-	/**
-	 * @param	{sap.ui.dt.Overlay} oOverlay overlay object
-	 * @return {sap.ui.dt.DesignTimeMetadata} oDesignTimeMetadata
-	 * @private
-	 */
-	Split.prototype._getSplitAction = function(oOverlay) {
-		return oOverlay.getDesignTimeMetadata() ? oOverlay.getDesignTimeMetadata().getAction("split", oOverlay.getElementInstance()) : null;
 	};
 
 	/**
@@ -4112,7 +5536,7 @@ sap.ui.define("sap/ui/rta/plugin/Split",[
 	 * @return {boolean} true if available
 	 * @public
 	 */
-	Split.prototype.isSplitAvailable = function(oOverlay) {
+	Split.prototype.isAvailable = function(oOverlay) {
 		if (!this._isEditableByPlugin(oOverlay)) {
 			return false;
 		}
@@ -4122,7 +5546,7 @@ sap.ui.define("sap/ui/rta/plugin/Split",[
 			return false;
 		}
 
-		var vSplitAction = this._getSplitAction(oOverlay);
+		var vSplitAction = this.getAction(oOverlay);
 		var oElement = aSelectedOverlays[0].getElementInstance();
 		if (vSplitAction && vSplitAction.getControlsCount(oElement) <= 1) {
 			return false;
@@ -4138,11 +5562,11 @@ sap.ui.define("sap/ui/rta/plugin/Split",[
 	 * @return {boolean} true if enabled
 	 * @public
 	 */
-	Split.prototype.isSplitEnabled = function(oOverlay) {
+	Split.prototype.isEnabled = function(oOverlay) {
 
 		// check that each selected element has an enabled action
-		var oAction = this._getSplitAction(oOverlay);
-		if (!oAction || !this.isSplitAvailable(oOverlay)) {
+		var oAction = this.getAction(oOverlay);
+		if (!oAction || !this.isAvailable(oOverlay)) {
 			return false;
 		}
 
@@ -4166,7 +5590,7 @@ sap.ui.define("sap/ui/rta/plugin/Split",[
 		var oElementOverlay = OverlayRegistry.getOverlay(oSplitElement);
 		var oDesignTimeMetadata = oElementOverlay.getDesignTimeMetadata();
 
-		var iFieldsLength = this._getSplitAction(oElementOverlay).getControlsCount(oSplitElement);
+		var iFieldsLength = this.getAction(oElementOverlay).getControlsCount(oSplitElement);
 		var oView = FlexUtils.getViewForControl(oSplitElement);
 		var aNewElementIds = [];
 		// Split needs iFieldsLength controls, only one is available so far
@@ -4174,15 +5598,46 @@ sap.ui.define("sap/ui/rta/plugin/Split",[
 			aNewElementIds.push(oView.createId(jQuery.sap.uid()));
 		}
 
+		var oSplitAction = this.getAction(oElementOverlay);
+		var sVariantManagementReference = this.getVariantManagementReference(oElementOverlay, oSplitAction);
+
 		var oSplitCommand = this.getCommandFactory().getCommandFor(oSplitElement, "split", {
 			newElementIds : aNewElementIds,
 			source : oSplitElement,
 			parentElement : oParent
-		}, oDesignTimeMetadata);
+		}, oDesignTimeMetadata, sVariantManagementReference);
 		this.fireElementModified({
 			"command" : oSplitCommand
 		});
 
+	};
+
+	/**
+	 * Retrieve the context menu item for the action.
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
+	 * @return {object[]}          Returns array containing the items with required data
+	 */
+	Split.prototype.getMenuItems = function(oOverlay){
+		return this._getMenuItems(oOverlay, {pluginId : "CTX_UNGROUP_FIELDS", rank : 100});
+	};
+
+	/**
+	 * Get the name of the action related to this plugin.
+	 * @return {string} Returns the action name
+	 */
+	Split.prototype.getActionName = function(){
+		return "split";
+	};
+
+	/**
+	 * Trigger the plugin execution.
+	 * @param  {sap.ui.dt.ElementOverlay[]} aOverlays Selected overlays; targets of the action
+	 * @param  {any} oEventItem ContextMenu item which triggers the event
+	 * @param  {any} oContextElement Element where the action is triggered
+	 */
+	Split.prototype.handler = function(aOverlays, mPropertyBag){
+		//TODO: Handle "Stop Cut & Paste" depending on alignment with Dietrich!
+		this.handleSplit(mPropertyBag.contextElement);
 	};
 
 	return Split;
@@ -4270,7 +5725,7 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AddElementsDialog",[
 	 * @class Context - Dialog for available Fields in Runtime Authoring
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -4337,7 +5792,7 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AddElementsDialog",[
 		this._oInput =  new SearchField({
 			width : "100%",
 			liveChange : [this._updateModelFilter, this]
-		}).addStyleClass("resourceListIF");
+		});
 
 		// Button for sorting the List
 		var oResortButton = new Button({
@@ -4591,7 +6046,15 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 	'sap/ui/fl/Utils',
 	'sap/ui/core/StashedControlSupport',
 	'sap/ui/dt/ElementDesignTimeMetadata'
-], function(jQuery, Plugin, ElementUtil, OverlayRegistry, Utils, FlUtils, StashedControlSupport, ElementDesignTimeMetadata){
+], function(jQuery,
+	Plugin,
+	ElementUtil,
+	OverlayRegistry,
+	Utils,
+	FlUtils,
+	StashedControlSupport,
+	ElementDesignTimeMetadata
+){
 	"use strict";
 
 	function _getParents(bSibling, oOverlay) {
@@ -4615,15 +6078,41 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 		return oChild.sParentAggregationName;
 	}
 
-	function _getInvisibleElements (oElement, sAggregationName){
-		var aInvisibleElements = ElementUtil.getAggregation(oElement, sAggregationName).filter(function(oControl){
+
+	function _getInvisibleElements (oParentOverlay, sAggregationName){
+		var oParentElement = oParentOverlay.getElementInstance();
+		var aInvisibleElements = ElementUtil.getAggregation(oParentElement, sAggregationName).filter(function(oControl){
 			var oOverlay = OverlayRegistry.getOverlay(oControl);
-			if (oElement.getVisible && !oElement.getVisible()) {
-				return oControl.getVisible && sap.ui.rta.plugin.Plugin.prototype.hasStableId(oOverlay);
+
+			if (!this.hasStableId(oOverlay)) {
+				return false;
 			}
-			return oControl.getVisible && !oControl.getVisible() && sap.ui.rta.plugin.Plugin.prototype.hasStableId(oOverlay);
-		});
-		var aStashedControls = StashedControlSupport.getStashedControls(oElement.getId());
+
+			var oRelevantContainer = oParentOverlay.getRelevantContainer(true);
+			var oRelevantContainerOverlay = OverlayRegistry.getOverlay(oRelevantContainer);
+			var oOverlayToCheck = oParentOverlay;
+			var bAnyParentInvisible = false;
+			// check all the parents until the relevantContainerOverlay for invisibility.
+			do {
+				bAnyParentInvisible = !oOverlayToCheck.getElementVisibility();
+				if (bAnyParentInvisible) {
+					break;
+				}
+				if (oOverlayToCheck === oRelevantContainerOverlay) {
+					break;
+				} else {
+					oOverlayToCheck = oOverlayToCheck.getParentElementOverlay();
+				}
+			} while (oOverlayToCheck);
+
+			if (bAnyParentInvisible) {
+				return true;
+			}
+
+			return oOverlay.getElementVisibility() === false;
+		}, this);
+
+		var aStashedControls = StashedControlSupport.getStashedControls(oParentElement.getId());
 		return aInvisibleElements.concat(aStashedControls);
 	}
 
@@ -4712,7 +6201,7 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 	 * @class The plugin allows to add additional elements that exist either hidden in the UI or in the OData service
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -4741,24 +6230,29 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 		},
 
 		isAvailable: function(bOverlayIsSibling, oOverlay){
-			return this._isEditable(oOverlay, bOverlayIsSibling);
+			return this._isEditableByPlugin(oOverlay, bOverlayIsSibling);
 		},
 
 		isEnabled: function(bOverlayIsSibling, oOverlay){
 			var oParentOverlay;
+			var bIsEnabled;
 			if (bOverlayIsSibling) {
 				oParentOverlay = oOverlay.getParentElementOverlay();
 				if (oParentOverlay && this.hasStableId(oParentOverlay)) {
-					return true;
+					bIsEnabled = true;
 				} else {
-					return false;
+					bIsEnabled = false;
+				}
+			} else {
+				var mActions = this._getActions(bOverlayIsSibling, oOverlay);
+				if (mActions.reveal && mActions.reveal.elements.length === 0 && !mActions.addODataProperty){
+					bIsEnabled = false;
+				} else {
+					bIsEnabled = true;
 				}
 			}
-			var mActions = this._getActions(bOverlayIsSibling, oOverlay);
-			if (mActions.reveal && mActions.reveal.elements.length === 0 && !mActions.addODataProperty){
-				return false;
-			}
-			return true;
+
+			return bIsEnabled && this.isMultiSelectionInactive.call(this, oOverlay);
 		},
 
 		_getRevealActions: function(bSibling, oOverlay) {
@@ -4791,8 +6285,8 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 
 		_getRevealActionFromAggregations: function(aParents, _mReveal, sAggregationName){
 			var aInvisibleElements = aParents.reduce(function(aInvisibleChilden, oParentOverlay){
-				return oParentOverlay ? aInvisibleChilden.concat(_getInvisibleElements(oParentOverlay.getElementInstance(), sAggregationName)) : aInvisibleChilden;
-			}, []);
+				return oParentOverlay ? aInvisibleChilden.concat(_getInvisibleElements.call(this, oParentOverlay, sAggregationName)) : aInvisibleChilden;
+			}.bind(this), []);
 
 			var fnCallback = function(mTypes, oElement){
 				var sType = oElement.getMetadata().getName();
@@ -4896,8 +6390,8 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 			return !!mRevealActions && Object.keys(mRevealActions).length > 0;
 		},
 
-		showAvailableElements: function(bOverlayIsSibling, aOverlay, iIndex, sControlName) {
-			var oOverlay = aOverlay[0];
+		showAvailableElements: function(bOverlayIsSibling, aOverlays, iIndex, sControlName) {
+			var oOverlay = aOverlays[0];
 			var mParents = _getParents(bOverlayIsSibling, oOverlay);
 			var oSiblingElement = bOverlayIsSibling && oOverlay.getElementInstance();
 			var aPromises = [];
@@ -4906,7 +6400,7 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 			if (mActions.reveal) {
 					aPromises.push(this.getAnalyzer().enhanceInvisibleElements(mParents.parent, mActions));
 			}
-			if (mActions.addODataProperty){
+			if (mActions.addODataProperty) {
 				mActions.addODataProperty.relevantContainer = oOverlay.getRelevantContainer(!bOverlayIsSibling);
 				aPromises.push(this.getAnalyzer().getUnboundODataProperties(mParents.parent, mActions.addODataProperty));
 			}
@@ -5007,6 +6501,7 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 							} else {
 								jQuery.sap.log.warning("No move action configured for " + mParents.parent.getMetadata().getName() + ", aggregation: " + mActions.aggregation , "sap.ui.rta");
 							}
+
 							break;
 						case "odata":
 							var oParentAggregationOverlay = mParents.parentOverlay.getAggregationOverlay(mActions.aggregation);
@@ -5048,13 +6543,19 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 				oRefControlForId = mParents.relevantContainer; //e.g. SimpleForm
 			}
 			var iAddTargetIndex = Utils.getIndex(mParents.parent, oSiblingElement, mActions.aggregation, oParentAggregationDTMetadata.getData().getIndex);
+			var oChangeHandler = this._getChangeHandlerForControlType(mParents.parent.getMetadata().getName(), mODataPropertyActionDTMetadata.changeType);
+			var sVariantManagementReference;
+			if (mParents.parentOverlay.getVariantManagement && oChangeHandler && oChangeHandler.revertChange) {
+				sVariantManagementReference = mParents.parentOverlay.getVariantManagement();
+			}
 			return this.getCommandFactory().getCommandFor(mParents.parent, "addODataProperty", {
 				newControlId: Utils.createFieldLabelId(oRefControlForId, oSelectedElement.entityType, oSelectedElement.bindingPath),
-				index : iIndex !== undefined ? iIndex : iAddTargetIndex,
-				bindingString : oSelectedElement.bindingPath,
-				parentId : mParents.parent.getId(),
-				oDataServiceVersion : sODataServiceVersion
-			}, oParentAggregationDTMetadata);
+				index: iIndex !== undefined ? iIndex : iAddTargetIndex,
+				bindingString: oSelectedElement.bindingPath,
+				entityType: oSelectedElement.entityType,
+				parentId: mParents.parent.getId(),
+				oDataServiceVersion: sODataServiceVersion
+			}, oParentAggregationDTMetadata, sVariantManagementReference);
 		},
 
 		_createCommandForAddLibrary: function(mParents, mActions, mRequiredLibraries, oParentAggregationDTMetadata){
@@ -5063,23 +6564,38 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 			var sReference = mManifest["sap.app"].id;
 			return this.getCommandFactory().getCommandFor(mParents.publicParent, "addLibrary", {
 				reference : sReference,
-				requiredLibraries : mRequiredLibraries,
+				parameters : { libraries : mRequiredLibraries },
 				appComponent: oComponent
 			}, oParentAggregationDTMetadata);
 		},
 
 		_createRevealCommandForInvisible: function(oSelectedElement, mActions, mParents, oSiblingElement) {
 			var oRevealedElement = oSelectedElement.element;
+			var oRevealedElementOverlay = OverlayRegistry.getOverlay(oRevealedElement);
 			var sType = oRevealedElement.getMetadata().getName();
 			var mType = mActions.reveal.types[sType];
 			var oDesignTimeMetadata = mType.designTimeMetadata;
-			if (oDesignTimeMetadata.getAction("reveal").changeOnRelevantContainer) {
+			var oRevealAction = oDesignTimeMetadata.getAction("reveal", oRevealedElement);
+			var oElementOverlay = OverlayRegistry.getOverlay(oRevealedElement);
+
+			//Parent Overlay passed as argument as no overlay is yet available for stashed control
+			if	(!oElementOverlay) {
+				var oSourceParent = _getSourceParent(oRevealedElement, mParents, oRevealedElementOverlay);
+				oElementOverlay = OverlayRegistry.getOverlay(oSourceParent);
+			}
+
+			var sVariantManagementReference;
+			if (oElementOverlay) {
+				sVariantManagementReference = this.getVariantManagementReference(oElementOverlay, oRevealAction, false, oRevealedElement);
+			}
+
+			if (oRevealAction.changeOnRelevantContainer) {
 				return this.getCommandFactory().getCommandFor(oRevealedElement, "reveal", {
 					revealedElementId : oRevealedElement.getId(),
 					directParent : mParents.parent
-				}, oDesignTimeMetadata);
+				}, oDesignTimeMetadata, sVariantManagementReference);
 			} else {
-				return this.getCommandFactory().getCommandFor(oRevealedElement, "reveal", { }, oDesignTimeMetadata);
+				return this.getCommandFactory().getCommandFor(oRevealedElement, "reveal", { }, oDesignTimeMetadata, sVariantManagementReference);
 			}
 		},
 
@@ -5106,6 +6622,11 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 			if (iRevealTargetIndex !== iRevealedSourceIndex || mParents.parent !== oRevealedElement.getParent()){
 				var oSourceParentOverlay = OverlayRegistry.getOverlay(oRevealedElement) ? OverlayRegistry.getOverlay(oRevealedElement).getParentAggregationOverlay() : mParents.relevantContainerOverlay;
 				var SourceParentDesignTimeMetadata = oSourceParentOverlay.getDesignTimeMetadata();
+				var oMoveAction = SourceParentDesignTimeMetadata.getAction("move", oRevealedElement);
+				var sVariantManagementReference;
+				if (oMoveAction) {
+					sVariantManagementReference = this.getVariantManagementReference(OverlayRegistry.getOverlay(oRevealedElement), oMoveAction, true);
+				}
 				oCmd = this.getCommandFactory().getCommandFor(mParents.relevantContainer, "move", {
 					movedElements : [{
 						element : oRevealedElement,
@@ -5122,59 +6643,90 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin",[
 						parent : oTargetParent,
 						aggregation : sParentAggregationName
 					}
-				}, SourceParentDesignTimeMetadata);
+				}, SourceParentDesignTimeMetadata, sVariantManagementReference);
 			}
 			return oCmd;
 		},
 
 		/**
-		 * This function gets called twice, on startup and when we create a context menu.
-		 * On Startup bOverlayIsSibling is not defined as we don't know if it is a sibling or not. In this case we check both cases.
+		 * This function gets called on startup. It checks if the Overlay is editable by this plugin.
 		 * @param {sap.ui.dt.Overlay} oOverlay - overlay to be checked
-		 * @param {boolean} bOverlayIsSibling - (optional) describes whether given overlay is to be checked as a sibling or as a child on editable. Expected values: [true, false, undefined]
-		 * @returns {boolean} editable boolean value
+		 * @returns {object} Returns object with editable boolean values for "asChild" and "asSibling"
 		 * @protected
 		 */
-		_isEditable: function(oOverlay, bOverlayIsSibling) {
-			if (bOverlayIsSibling === undefined || bOverlayIsSibling === null) {
-				return _isEditableCheck.call(this, oOverlay, true) || _isEditableCheck.call(this, oOverlay, false);
-			} else {
-				return _isEditableCheck.call(this, oOverlay, bOverlayIsSibling);
+		_isEditable: function(oOverlay) {
+			return {
+				asSibling: this._isEditableCheck.call(this, oOverlay, true),
+				asChild: this._isEditableCheck.call(this, oOverlay, false)
+			};
+		},
+
+		_isEditableCheck: function(oOverlay, bOverlayIsSibling) {
+			var bEditable = false;
+
+			var oRelevantContainerDesigntimeMetadata = Utils.getRelevantContainerDesigntimeMetadata(oOverlay);
+			if (!oRelevantContainerDesigntimeMetadata) {
+				return false;
 			}
+
+			var mActions = this._getActions(bOverlayIsSibling, oOverlay);
+			var mParents = _getParents(bOverlayIsSibling, oOverlay);
+
+			if (mActions.addODataProperty) {
+				var oAddODataPropertyAction = mActions.addODataProperty.action;
+				bEditable = oAddODataPropertyAction && oAddODataPropertyAction.aggregation === oOverlay.getParentAggregationOverlay().getAggregationName();
+			}
+
+			if (!bEditable && mActions.reveal) {
+				bEditable = true;
+			}
+
+			if (!bEditable && !bOverlayIsSibling) {
+				bEditable = this._hasRevealActionsOnChildren(oOverlay) ||
+					this.checkAggregationsOnSelf(mParents.parentOverlay, "addODataProperty");
+			}
+
+			if (bEditable) {
+				return this.hasStableId(oOverlay);
+			} else {
+				return false;
+			}
+		},
+
+		/**
+		 * Retrieve the context menu item for the actions.
+		 * Two items are returned here: one for when the overlay is sibling and one for when it is child.
+		 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
+		 * @return {object[]}          Returns array containing the items with required data
+		 */
+		getMenuItems: function(oOverlay){
+			var bOverlayIsSibling = true;
+			var sPluginId = "CTX_ADD_ELEMENTS_AS_SIBLING";
+			var iRank = 20;
+			var aMenuItems = [];
+			for (var i = 0; i < 2; i++){
+				if (this.isAvailable(bOverlayIsSibling, oOverlay)){
+					var sMenuItemText = this.getContextMenuTitle.bind(this, bOverlayIsSibling);
+
+					aMenuItems.push({
+						id: sPluginId,
+						text: sMenuItemText,
+						handler: function(bOverlayIsSibling, aOverlays){
+							// showAvailableElements has optional parameters, so currying is not possible here
+							return this.showAvailableElements(bOverlayIsSibling, aOverlays);
+						}.bind(this, bOverlayIsSibling),
+						enabled: this.isEnabled.bind(this, bOverlayIsSibling),
+						rank: iRank
+					});
+				}
+
+				bOverlayIsSibling = false;
+				sPluginId = "CTX_ADD_ELEMENTS_AS_CHILD";
+				iRank = 30;
+			}
+			return aMenuItems;
 		}
 	});
-
-	function _isEditableCheck (oOverlay, bOverlayIsSibling) {
-		var bEditable = false;
-
-		var oRelevantContainerDesigntimeMetadata = Utils.getRelevantContainerDesigntimeMetadata(oOverlay);
-		if (!oRelevantContainerDesigntimeMetadata) {
-			return false;
-		}
-
-		var mActions = this._getActions(bOverlayIsSibling, oOverlay);
-		var mParents = _getParents(bOverlayIsSibling, oOverlay);
-
-		if (mActions.addODataProperty) {
-			var oAddODataPropertyAction = mActions.addODataProperty.action;
-			bEditable = oAddODataPropertyAction && oAddODataPropertyAction.aggregation === oOverlay.getParentAggregationOverlay().getAggregationName();
-		}
-
-		if (!bEditable && mActions.reveal) {
-			bEditable = true;
-		}
-
-		if (!bEditable && !bOverlayIsSibling) {
-			bEditable = this._hasRevealActionsOnChildren(oOverlay) ||
-				this.checkAggregationsOnSelf(mParents.parentOverlay, "addODataProperty");
-		}
-
-		if (bEditable) {
-			return this.hasStableId(oOverlay);
-		} else {
-			return false;
-		}
-	}
 
 	function _getAllElements (aPromises) {
 		return Promise.all(aPromises).then(function(aAnalyzerValues) {
@@ -5256,304 +6808,6 @@ function(
 });
 
 }; // end of sap/ui/rta/toolbar/BaseRenderer.js
-if ( !jQuery.sap.isDeclared('sap.ui.rta.ui.SettingsDialog') ) {
-/*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-jQuery.sap.declare('sap.ui.rta.ui.SettingsDialog'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
-jQuery.sap.require('jquery.sap.global'); // unlisted dependency retained
-jQuery.sap.require('sap.ui.core.Control'); // unlisted dependency retained
-jQuery.sap.require('sap.m.Dialog'); // unlisted dependency retained
-jQuery.sap.require('sap.ui.layout.VerticalLayout'); // unlisted dependency retained
-jQuery.sap.require('sap.m.Label'); // unlisted dependency retained
-jQuery.sap.require('sap.m.Input'); // unlisted dependency retained
-jQuery.sap.require('sap.m.Select'); // unlisted dependency retained
-jQuery.sap.require('sap.ui.core.Item'); // unlisted dependency retained
-jQuery.sap.require('sap.m.Button'); // unlisted dependency retained
-jQuery.sap.require('sap.m.CheckBox'); // unlisted dependency retained
-jQuery.sap.require('sap.ui.dt.ElementUtil'); // unlisted dependency retained
-sap.ui.define("sap/ui/rta/ui/SettingsDialog",['jquery.sap.global',
-			'sap/ui/rta/library',
-			'sap/ui/core/Control',
-			'sap/m/Dialog',
-			'sap/ui/layout/VerticalLayout',
-			'sap/m/Label',
-			'sap/m/Input',
-			'sap/m/Select',
-			'sap/ui/core/Item',
-			'sap/m/Button',
-			'sap/m/CheckBox',
-			'sap/ui/rta/command/CommandFactory',
-			'sap/ui/rta/command/CompositeCommand',
-			'sap/ui/dt/ElementUtil'
-	],
-	function (jQuery,
-			library,
-			Control,
-			Dialog,
-			VerticalLayout,
-			Label,
-			Input,
-			Select,
-			Item,
-			Button,
-			CheckBox,
-			CommandFactory,
-			CompositeCommand,
-			ElementUtil
-	) {
-	"use strict";
-
-		/**
-		 * Constructor for a new sap.ui.rta.SettingsDialog control.
-		 * @extends sap.ui.core.Control
-		 * @author SAP SE
-		 * @version 1.50.8
-		 * @constructor
-		 * @private
-		 * @since 1.34
-		 * @alias SettingsDialog
-		 * @experimental Since 1.34. This class is experimental and provides only limited functionality. Also the API might
-		 *               be changed in future.
-		 */
-	var SettingsDialog = Control.extend("sap.ui.rta.ui.SettingsDialog", {
-		metadata : {
-			library : "sap.ui.rta",
-			properties : {
-				"commandStack" : {
-					type : "sap.ui.core.Control"
-				}
-			},
-			associations : {
-				"element" : {
-					type : "sap.ui.core.Element"
-				}
-			}
-		}
-	});
-
-	/**
-	 * Initialize the Dialog
-	 *
-	 * @private
-	 */
-	SettingsDialog.prototype.init = function() {
-		this._oTextResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
-		this._oDialog = this._createDialog();
-	};
-
-	/**
-	 * Create the Dialog
-	 *
-	 * @private
-	 */
-	SettingsDialog.prototype._createDialog = function() {
-		return new Dialog({
-			title : this._oTextResources.getText("HEADER_SETTINGS"),
-			contentHeight : "500px",
-			draggable: true,
-			buttons : [
-				new Button({
-					text : this._oTextResources.getText("BTN_FREP_OK"),
-					press : [this._applyChangesAndClose, this]
-				}),
-				new Button({
-					text : this._oTextResources.getText("BTN_FREP_CANCEL"),
-					press : [this._cancelDialog, this]
-				})
-			]
-		}).addStyleClass("sapUiPopupWithPadding").addStyleClass("sapUiSizeCompact");
-	};
-
-	/**
-	 * @private
-	 */
-	SettingsDialog.prototype._applyChangesAndClose = function() {
-		this._applyChanges();
-		this._oDialog.close();
-	};
-
-	/**
-	 * @private
-	 */
-	SettingsDialog.prototype._iterateExecutedCommands = function(fnCallback) {
-		Object.keys(this._mCommands).forEach(function(sPropertyName) {
-			fnCallback(this._mCommands[sPropertyName]);
-		}, this);
-	};
-
-	/**
-	 * @private
-	 */
-	SettingsDialog.prototype._applyChanges = function() {
-		var oCompositeCommand = new CompositeCommand();
-		this._iterateExecutedCommands(function(oCommand) {
-			oCompositeCommand.addCommand(oCommand);
-		});
-		if (oCompositeCommand.getCommands().length) {
-			this.getCommandStack().pushExecutedCommand(oCompositeCommand);
-		}
-	};
-
-	/**
-	 * @private
-	 */
-	SettingsDialog.prototype._cancelDialog = function() {
-		this._iterateExecutedCommands(function(oCommand) {
-			oCommand.undo();
-		});
-
-		this._oDialog.close();
-	};
-
-	/**
-	 * @private
-	 */
-	SettingsDialog.prototype._executePropertyChangeCommand = function(oElement, sPropertyName, vNewValue, vOldValue) {
-		if (!this._mCommands[sPropertyName]) {
-			var oPropertyChangeCommand = CommandFactory.getCommandFor(oElement, "property", {
-				propertyName : sPropertyName,
-				newValue : vNewValue,
-				oldValue : vOldValue
-			});
-			this._mCommands[sPropertyName] = oPropertyChangeCommand;
-			oPropertyChangeCommand.execute();
-		} else {
-			this._mCommands[sPropertyName].undo();
-			delete this._mCommands[sPropertyName];
-		}
-	};
-
-	/**
-	 * @private
-	 */
-	SettingsDialog.prototype._createBooleanEditor = function(oElement, sPropertyName, bPropertyValue) {
-		var oCheckBox = new CheckBox({
-			text : sPropertyName,
-			selected : bPropertyValue
-		});
-
-		oCheckBox.attachSelect(function(oEvent) {
-			var bNewValue = oEvent.getParameter("selected");
-			var bOldValue = !bNewValue;
-			this._executePropertyChangeCommand(oElement, sPropertyName, bNewValue, bOldValue);
-		}, this);
-
-		return oCheckBox;
-	};
-
-	/**
-	 * @private
-	 */
-	SettingsDialog.prototype._createStringEditor = function(oElement, sPropertyName, sPropertyValue) {
-		var oInput = new Input({value : sPropertyValue});
-
-		oInput.attachChange(function(oEvent) {
-			var sNewValue = oEvent.getParameter("value");
-			// TODO : get old value via elementUtil
-			var sOldValue = sPropertyValue;
-			this._executePropertyChangeCommand(oElement, sPropertyName, sNewValue, sOldValue);
-		}, this);
-
-		return oInput;
-	};
-
-	/**
-	 * @private
-	 */
-	SettingsDialog.prototype._createEnumEditor = function(oElement, oPropertyTypeDescription, sPropertyName, vPropertyValue) {
-		var oSelect = new Select();
-		Object.keys(oPropertyTypeDescription).forEach(function(sKey) {
-			oSelect.addItem(new Item({
-				text : sKey,
-				key : oPropertyTypeDescription[sKey]
-			}));
-		});
-
-		oSelect.setSelectedKey(vPropertyValue);
-
-		oSelect.attachChange(function(oEvent) {
-			var oItem = oEvent.getParameter("selectedItem");
-			if (oItem) {
-				var vNewValue = oItem.getKey();
-				var vOldValue = vPropertyValue;
-				this._executePropertyChangeCommand(oElement, sPropertyName, vNewValue, vOldValue);
-			}
-		}, this);
-
-		return oSelect;
-	};
-
-	/**
-	 * @private
-	 */
-	SettingsDialog.prototype._updateDialogContent = function(oElement) {
-		this._oDialog.removeAllContent();
-		var oVerticalLayout = new VerticalLayout();
-		var mProperties = oElement.getMetadata().getAllProperties();
-		Object.keys(mProperties).forEach(function(sPropertyName) {
-			var oPropertyChangeControl;
-			var oPropertyMetadata = mProperties[sPropertyName];
-			// TODO : elementUtil for properties getters
-			var vPropertyValue = oElement[oPropertyMetadata._sGetter]();
-
-			if (oPropertyMetadata.type === "boolean") {
-				oPropertyChangeControl = this._createBooleanEditor(oElement, sPropertyName, vPropertyValue);
-				oVerticalLayout.addContent(oPropertyChangeControl);
-			} else 	if (oPropertyMetadata.type === "string" || oPropertyMetadata.type === "sap.ui.core.CSSSize") {
-				oPropertyChangeControl = new VerticalLayout();
-				var oInput = this._createStringEditor(oElement, sPropertyName, vPropertyValue);
-
-				oPropertyChangeControl.addContent(new Label({
-					text : sPropertyName,
-					labelFor : oInput.getId()
-				}));
-				oPropertyChangeControl.addContent(oInput);
-				oPropertyChangeControl.addStyleClass("sapUiRtaDialogEntryWithMargin");
-			} else {
-				var oPropertyTypeDescription = jQuery.sap.getObject(oPropertyMetadata.type);
-				if (oPropertyTypeDescription) {
-					oPropertyChangeControl = new VerticalLayout();
-					var oDropdown = this._createEnumEditor(oElement, oPropertyTypeDescription, sPropertyName, vPropertyValue);
-
-					oPropertyChangeControl.addContent(new Label({
-						text : sPropertyName,
-						labelFor : oDropdown.getId()
-					}));
-					oPropertyChangeControl.addContent(oDropdown);
-					oPropertyChangeControl.addStyleClass("sapUiRtaDialogEntryWithMargin");
-				}
-			}
-
-			if (oPropertyChangeControl) {
-				oVerticalLayout.addContent(oPropertyChangeControl);
-			}
-		}, this);
-		this._oDialog.addContent(oVerticalLayout);
-	};
-
-	/**
-	 * Open the Settings Dialog
-	 *
-	 * @param {sap.ui.core.Element}
-	 *          oElement Currently selected control
-	 */
-	SettingsDialog.prototype.open = function(oElement) {
-		this._mCommands = {};
-
-		this._updateDialogContent(oElement);
-
-		// Makes sure the modal div element does not change the size of our application (which would result in recalculation of our overlays)
-		this._oDialog.open();
-	};
-
-	return SettingsDialog;
-
-}, /* bExport= */ true);
-
-}; // end of sap/ui/rta/ui/SettingsDialog.js
 if ( !jQuery.sap.isDeclared('sap.ui.rta.util.Animation') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
@@ -5575,7 +6829,7 @@ function(jQuery) {
 	 * CSS Transition helper
 	 * @param {jQuery} $element - jQuery element(s)
 	 * @param {Function} fnCallback - The function should start animation process (e.g. by adding class to the element)
-	 * @return {Promise}
+	 * @return {Promise} Returns a Promise performing the animation
 	 */
 	module.waitTransition = function ($element, fnCallback) {
 		if (!($element instanceof jQuery)) {
@@ -5633,23 +6887,34 @@ function(
 	 *
 	 * @param {sap.ui.core.Control} oElement - Starting point of the search
 	 * @param {sap.ui.model.Model} oParentDefaultModel - Model for filtering irrelevant binding paths
+	 * @param {boolean} bTemplate - Whether we should consider provided element as a template
 	 *
 	 * @returns {Array} - returns array with all relevant bindings for all properties of the element
 	 *
 	 * @private
 	 */
-	function getBindings(oElement, oParentDefaultModel) {
-		var aBindings = [];
+	function getBindings(oElement, oParentDefaultModel, bTemplate) {
+		var aBindings = (
+			bTemplate
+			? getBindingsFromTemplateProperties(oElement)
+			: getBindingsFromProperties(oElement, oParentDefaultModel)
+		);
 
 		// Iterate through all aggregations
 		for (var sAggregationName in oElement.getMetadata().getAllAggregations()) {
 			// Getting children of the current aggregation and iterating through all of them
-			ElementUtil.getAggregation(oElement, sAggregationName).forEach(function (oChildElement) { // eslint-disable-line no-loop-func
+			var oBinding = oElement.getBindingInfo(sAggregationName);
+			var oTemplate = oBinding && oBinding.template;
+			var aElements = oTemplate ? [oTemplate] : ElementUtil.getAggregation(oElement, sAggregationName);
+
+			aElements.forEach(function (oChildElement) { // eslint-disable-line no-loop-func
 				if (oChildElement.getMetadata) {
 					// Fetching bindings from Element and all children of Element
 					aBindings = aBindings.concat(
-					    getBindingsFromProperties(oChildElement, oParentDefaultModel),
-					    getBindings(oChildElement, oParentDefaultModel)
+						oTemplate || bTemplate
+						? getBindingsFromTemplateProperties(oChildElement)
+						: getBindingsFromProperties(oChildElement, oParentDefaultModel),
+						getBindings(oChildElement, oParentDefaultModel, oTemplate || bTemplate)
 					);
 				}
 			});
@@ -5697,26 +6962,70 @@ function(
 	}
 
 	/**
+	 * Fetches all bindings from template
+	 *
+	 * @param {object} mBinding - map of bindings from Control (mBindingsInfo)
+	 * @returns {Array} - Returns a flattened array of found bindings
+	 * @private
+	 */
+	function flattenBindingsFromTemplate(mBinding) {
+		var aBindings = [];
+		var aParts = mBinding.parts;
+
+		// TODO: check if we need to filter bindings by modelName, relative indicator ("/")
+		aParts.forEach(function (mPart) {
+			aBindings.push({
+				parts: [mPart]
+			});
+		});
+
+		return aBindings;
+	}
+
+	/**
 	 * Retrieving all bindings from all available properties for a specified element
 	 *
-	 * @param {sap.ui.core.Control} oChildElement - element to get bindings from
+	 * @param {sap.ui.core.Control} oElement - element to get bindings from
 	 * @param {sap.ui.model.Model} oParentDefaultModel - parent model to filter irrelevant bindings
 	 *
 	 * @return {Array} - returns found bindings
 	 *
 	 * @private
 	 */
-	function getBindingsFromProperties(oChildElement, oParentDefaultModel) {
-		var aPropertiesKeys = Object.keys(oChildElement.getMetadata().getAllProperties());
+	function getBindingsFromProperties(oElement, oParentDefaultModel) {
+		var aPropertiesKeys = Object.keys(oElement.getMetadata().getAllProperties());
 
 		return aPropertiesKeys
 			// filter properties which are not bound
-			.filter(oChildElement.getBinding.bind(oChildElement))
+			.filter(oElement.getBinding.bind(oElement))
 			.reduce(function (aBindings, sPropertyName) {
 				return aBindings.concat(
 					flattenBindings(
-						oChildElement.getBinding(sPropertyName),
+						oElement.getBinding(sPropertyName),
 						oParentDefaultModel
+					)
+				);
+			}, []);
+	}
+
+	/**
+	 * Retrieving all bindings from all available properties for a specified element of template
+	 *
+	 * @param {sap.ui.core.Control} oElement - element to get bindings from
+	 * @return {Array} - returns found bindings
+	 * @private
+	 */
+	function getBindingsFromTemplateProperties(oElement) {
+		var aPropertiesKeys = Object.keys(oElement.getMetadata().getAllProperties());
+
+		return aPropertiesKeys
+			.filter(function (sPropertyName) {
+				return sPropertyName in oElement.mBindingInfos;
+			})
+			.reduce(function (aBindings, sPropertyName) {
+				return aBindings.concat(
+					flattenBindingsFromTemplate(
+						oElement.mBindingInfos[sPropertyName]
 					)
 				);
 			}, []);
@@ -5724,7 +7033,7 @@ function(
 
 	return {
 		getBindings: getBindings,
-		flattenBindings : flattenBindings,
+		flattenBindings: flattenBindings,
 		getBindingsFromProperties: getBindingsFromProperties
 	};
 }, true);
@@ -5747,6 +7056,8 @@ jQuery.sap.require('sap.ui.dt.OverlayRegistry'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.dt.Overlay'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.core.Component'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.core.ComponentContainer'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.core.Element'); // unlisted dependency retained
 sap.ui.define("sap/ui/rta/util/PopupManager",[
 	'jquery.sap.global',
 	'sap/ui/base/ManagedObject',
@@ -5757,7 +7068,9 @@ sap.ui.define("sap/ui/rta/util/PopupManager",[
 	'sap/ui/dt/OverlayRegistry',
 	'sap/ui/dt/Overlay',
 	'sap/ui/fl/Utils',
-	'sap/ui/core/Component'
+	'sap/ui/core/Component',
+	'sap/ui/core/ComponentContainer',
+	'sap/ui/core/Element'
 ],
 function (
 	jQuery,
@@ -5769,20 +7082,22 @@ function (
 	OverlayRegistry,
 	Overlay,
 	flUtils,
-	Component
+	Component,
+	ComponentContainer,
+	Element
 ) {
 	"use strict";
 
 	var FOCUS_EVENT_NAMES = {
-		"add": "_addFocusEventListeners",
-		"remove": "_removeFocusEventListeners"
+		"add": "_activateFocusHandle",
+		"remove": "_deactivateFocusHandle"
 	};
 
 	/**
 	 * Constructor for a new sap.ui.rta.util.PopupManager
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -5794,6 +7109,13 @@ function (
 		metadata : {
 			properties : {
 				rta:  "any"
+			},
+			associations : {
+				/**
+				 * To set the associated controls as an autoCloseArea for all sap.m.Popover/sap.m.Dialog open in RTA mode.
+				 * Needs to be filled before the popup is open.
+				 */
+				autoCloseAreas : {type : "sap.ui.core.Control", multiple : true, singularName : "autoCloseArea"}
 			},
 			events : {
 				open: {
@@ -5833,7 +7155,7 @@ function (
 	/**
 	 * Retrieve relevant open popups for dynamic overlay creation.
 	 *
-	 * @returns {Object} relevant open popups
+	 * @returns {any} Returns open popups
 	 * @public
 	 */
 	PopupManager.prototype.getRelevantPopups = function() {
@@ -5853,24 +7175,16 @@ function (
 	};
 
 	/**
-	 * Retrieve array of validated popups after component comparision - this.oRtaRootAppComponent.oContainer.getParent()
+	 * Retrieves array of validated popups after component comparison: <code>this.oRtaRootAppComponent.oContainer.getParent()</code>.
 	 *
-	 * @param {array} specifying open popups
-	 * @returns {array|boolean} relevant popups or false
+	 * @param {sap.ui.core.Popup[]} aOpenPopups Specifies open popups
+	 * @returns {sap.ui.core.Popup[]|boolean} Returns relevant popups or false
 	 * @private
 	 */
 	PopupManager.prototype._getValidatedPopups = function(aOpenPopups) {
-		aOpenPopups.forEach(function(oPopup, iIndex) {
-			if (
-				!this._isSupportedPopup(oPopup)
-				|| (
-					this.oRtaRootAppComponent !== this._getAppComponentForControl(oPopup)
-					&& !this._isComponentInsidePopup(oPopup)
-				)
-			) {
-				aOpenPopups.splice(iIndex, 1);
-			}
-		}.bind(this));
+		aOpenPopups = aOpenPopups.filter(function(oPopup) {
+				return this._isPopupAdaptable(oPopup);
+			}.bind(this));
 
 		return (aOpenPopups.length > 0) ? aOpenPopups : false;
 	};
@@ -5884,12 +7198,14 @@ function (
 	 */
 	PopupManager.prototype._isComponentInsidePopup = function(oPopup) {
 		//check if root RTA component is directly inside a popupElement
-		return oPopup.getContent().some(
-			function(oContent) {
-				if (oContent instanceof sap.ui.core.ComponentContainer) {
-					return this.oRtaRootAppComponent === this._getAppComponentForControl(sap.ui.getCore().getComponent(oContent.getComponent()));
-				}
-			}.bind(this));
+		return jQuery.isArray(oPopup.getContent())
+			? oPopup.getContent().some(
+				function(oContent) {
+					if (oContent instanceof ComponentContainer) {
+						return this.oRtaRootAppComponent === this._getAppComponentForControl(sap.ui.getCore().getComponent(oContent.getComponent()));
+					}
+				}.bind(this))
+			: false;
 	};
 
 	/**
@@ -5924,8 +7240,7 @@ function (
 
 	/**
 	 * Attached to RTA mode change
-	 *
-	 * @private
+	 * @param  {sap.ui.base.Event} oEvent The Event triggered by the mode change
 	 */
 	PopupManager.prototype._onModeChange = function(oEvent) {
 		var sFocusEvent, sNewMode = oEvent.getParameters().mode;
@@ -5944,8 +7259,8 @@ function (
 	};
 
 	/**
-	 * Apply focus events to all open popups and give focus to the first
-	 *
+	 * Apply focus events to all open popups and set focus on the first.
+	 * @param {function} fnFocusEvent Function to apply to open popups
 	 * @private
 	 */
 	PopupManager.prototype._applyFocusEventsToOpenPopups = function(fnFocusEvent) {
@@ -5953,8 +7268,8 @@ function (
 	};
 
 	/**
-	 * Remove focus events from all open popups
-	 *
+	 * Remove focus events from all open popups.
+	 * @param {function} fnFocusEvent Function to apply to open popups
 	 * @private
 	 */
 	PopupManager.prototype._removeFocusEventsFromOpenPopups = function(fnFocusEvent) {
@@ -5962,9 +7277,9 @@ function (
 	};
 
 	/**
-	 * Return the popup focus event name
+	 * Return the popup focus event name.
 	 *
-	 * @param {string} operation name
+	 * @param {string} sOperation Operation name
 	 * @returns {string} focus event name
 	 * @private
 	 */
@@ -5973,11 +7288,12 @@ function (
 	};
 
 	/**
-	 * Overrides the AddDialogInstance/AddPopoverInstance for Instance Manager for dynamic overlay creation
+	 * Overrides the AddDialogInstance/AddPopoverInstance for Instance Manager for dynamic overlay creation.
 	 *
 	 * @private
 	 */
 	PopupManager.prototype._overrideAddPopupInstance = function() {
+
 		//Dialog
 		this._fnOriginalAddDialogInstance = InstanceManager.addDialogInstance;
 		InstanceManager.addDialogInstance = this._overrideAddFunctions(this._fnOriginalAddDialogInstance);
@@ -5988,7 +7304,7 @@ function (
 	};
 
 	/**
-	 * Returns overridden function for AddDialogInstance/AddPopoverInstance of Instance Manager
+	 * Returns overridden function for AddDialogInstance/AddPopoverInstance of Instance Manager.
 	 *
 	 * @param {function} fnOriginalFunction original InstanceManager function
 	 * @returns {function} overridden function
@@ -5997,11 +7313,8 @@ function (
 	PopupManager.prototype._overrideAddFunctions = function(fnOriginalFunction) {
 		return function(oPopupElement) {
 			var vOriginalReturn = fnOriginalFunction.apply(InstanceManager, arguments);
-			if (
-				this.getRta()._oDesignTime
-				&&  this.oRtaRootAppComponent === this._getAppComponentForControl(oPopupElement)
-				&&  this._isSupportedPopup(oPopupElement)
-			) {
+			if ( this._isPopupAdaptable(oPopupElement)
+				&& this.getRta()._oDesignTime ) {
 				oPopupElement.attachAfterOpen(this._createPopupOverlays, this);
 				//PopupManager internal method
 				this.fireOpen(oPopupElement);
@@ -6011,9 +7324,10 @@ function (
 	};
 
 	/**
-	 * Applies the passed function to the relevant open popups
+	 * Applies the passed function to the relevant open popups.
 	 *
 	 * @param {function} fnPopupMethod specifies function to be applied
+	 * @param {boolean} bFocus Set to true if the popup is in focus
 	 * @private
 	 */
 	PopupManager.prototype._applyPopupMethods = function(fnPopupMethod, bFocus) {
@@ -6046,7 +7360,9 @@ function (
 		var aAutoCloseAreas = [
 			oPopup.oContent.getDomRef(),
 			oOverlayContainer
-		];
+		].concat(
+			this.getAutoCloseAreas()
+		);
 
 		if (this.getRta().getShowToolbars()) {
 			aAutoCloseAreas.push(this.getRta().getToolbar().getDomRef());
@@ -6097,11 +7413,8 @@ function (
 		return function(oPopupElement) {
 			var vOriginalReturn = fnOriginalFunction.apply(InstanceManager, arguments);
 
-			if (
-				this.getRta()._oDesignTime
-				&& this.oRtaRootAppComponent === this._getAppComponentForControl(oPopupElement)
-				&& this._isSupportedPopup(oPopupElement)
-			) {
+			if ( this._isPopupAdaptable(oPopupElement)
+				&& this.getRta()._oDesignTime ) {
 				this.getRta()._oDesignTime.removeRootElement(oPopupElement);
 				//PopupManager internal method
 				this.fireClose(oPopupElement);
@@ -6120,7 +7433,7 @@ function (
 	PopupManager.prototype._getAppComponentForControl = function(oControl) {
 		var oComponent, oAppComponent;
 
-		if (oControl instanceof sap.ui.core.Component) {
+		if (oControl instanceof Component) {
 			oComponent = oControl;
 		} else {
 			oComponent = this._getComponentForControl(oControl);
@@ -6140,22 +7453,25 @@ function (
 	 * @private
 	 */
 	PopupManager.prototype._getComponentForControl = function(oControl) {
-		var oComponent;
-
+		var oComponent, oRootComponent, oParentControl;
 		if (oControl) {
 			oComponent = Component.getOwnerComponentFor(oControl);
-
 			if (
 				!oComponent
 				&& typeof oControl.getParent === "function"
-				&& !(oControl.getParent() instanceof sap.ui.core.UIArea)
+				&& oControl.getParent() instanceof Element
 			) {
-				oControl = oControl.getParent();
-				oComponent = this._getComponentForControl(oControl);
+				oParentControl = oControl.getParent();
+			} else if (oComponent) {
+				oParentControl = oComponent;
+			}
+
+			if (oParentControl) {
+				oRootComponent = this._getComponentForControl(oParentControl);
 			}
 		}
 
-		return oComponent;
+		return oRootComponent ? oRootComponent : oComponent;
 	};
 
 	/**
@@ -6168,7 +7484,7 @@ function (
 		if (!oEvent) {
 			return;
 		}
-		var oPopupElement = (oEvent instanceof sap.ui.core.Control) ? oEvent : oEvent.getSource();
+		var oPopupElement = (oEvent instanceof Element) ? oEvent : oEvent.getSource();
 
 		//when application is opened in a popup, rootElement should not be added more than once
 		if (
@@ -6206,12 +7522,12 @@ function (
 			InstanceManager.removePopoverInstance = this._fnOriginalRemovePopoverInstance;
 		}
 
-		this._applyPopupMethods(this._removePopupPatch);
+		this._applyFocusEventsToOpenPopups(this._removePopupPatch);
 	};
 
 	/**
-	 * Restore default popup settings and give focus
-	 * @param {sap.ui.core.Control} oControl popup element to remove custom and add default browser events
+	 * Restore default popup settings and give focus.
+	 * @param {sap.ui.core.Control} oPopupElement Popup element to remove custom browser events and add default browser events
 	 *
 	 * @private
 	 */
@@ -6221,6 +7537,13 @@ function (
 		if (this.fnOriginalPopupOnAfterRendering) {
 			oPopup.onAfterRendering = this.fnOriginalPopupOnAfterRendering;
 		}
+	};
+
+	PopupManager.prototype._isPopupAdaptable = function(oPopupElement) {
+		var oPopupAppComponent = this._getAppComponentForControl(oPopupElement);
+
+		return (this.oRtaRootAppComponent === oPopupAppComponent || this._isComponentInsidePopup(oPopupElement))
+			&& this._isSupportedPopup(oPopupElement);
 	};
 
 	/**
@@ -6256,7 +7579,7 @@ sap.ui.define("sap/ui/rta/util/StylesLoader",[
 
 		/**
 		 * Loads styles from the specified file
-		 * @param sFileName - Name of the file
+		 * @param {string} sFileName - Name of the file
 		 * @return {jqXHR} - returns jqXHR object which can be thenable
 		 */
 		module.loadStyles = function (sFileName) {
@@ -6324,6 +7647,397 @@ function(jQuery) {
 }, true);
 
 }; // end of sap/ui/rta/util/UrlParser.js
+if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.AppVariantManager') ) {
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+jQuery.sap.declare('sap.ui.rta.appVariant.AppVariantManager'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('sap.m.MessageToast'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.FlexControllerFactory'); // unlisted dependency retained
+jQuery.sap.require('sap.m.MessageBox'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.transport.TransportSelection'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.core.BusyIndicator'); // unlisted dependency retained
+sap.ui.define("sap/ui/rta/appVariant/AppVariantManager",[
+	"sap/ui/rta/appVariant/AppVariantDialog",
+	"sap/ui/rta/appVariant/AppVariantUtils",
+	"sap/m/MessageToast",
+	"sap/ui/fl/FlexControllerFactory",
+	"sap/m/MessageBox",
+	"sap/ui/rta/Utils",
+	"sap/ui/rta/appVariant/Feature",
+	"sap/ui/fl/transport/TransportSelection",
+	"sap/ui/rta/appVariant/S4HanaCloudBackend",
+	"sap/ui/core/BusyIndicator"
+], function(AppVariantDialog, AppVariantUtils, MessageToast, FlexControllerFactory, MessageBox, RtaUtils, RtaAppVariantFeature, TransportSelection, S4HanaCloudBackend, BusyIndicator) {
+	"use strict";
+
+	var AppVariantManager = function() {};
+
+	AppVariantManager.prototype._openDialog = function(fnCreate, fnCancel) {
+		var oDialog = new AppVariantDialog("appVariantDialog");
+		oDialog.attachCreate(fnCreate);
+		oDialog.attachCancel(fnCancel);
+
+		oDialog.open();
+
+		return oDialog;
+	};
+
+	AppVariantManager.prototype._prepareAppVariantData = function(oDescriptor, mParameters) {
+		return {
+			idBaseApp: oDescriptor["sap.ui5"].componentName,
+			idRunningApp: oDescriptor["sap.app"].id,
+			title: mParameters.title,
+			subTitle: mParameters.subTitle,
+			description: mParameters.description,
+			icon: mParameters.icon,
+			inbounds: oDescriptor["sap.app"].crossNavigation.inbounds
+		};
+	};
+
+	AppVariantManager.prototype.createDescriptor = function(oAppVariantData) {
+		var sAppVariantId, aBackendOperations = [], oPropertyChange;
+
+		sAppVariantId = AppVariantUtils.getId(oAppVariantData.idBaseApp);
+		var oAppVariantDescriptor = {
+			id: sAppVariantId,
+			reference: oAppVariantData.idRunningApp
+		};
+
+		// creates an app variant descriptor
+		aBackendOperations.push(AppVariantUtils.createDescriptorVariant(oAppVariantDescriptor));
+
+		// create a inline change using a change type 'appdescr_app_setTitle'
+		oPropertyChange = AppVariantUtils.getInlinePropertyChange("title", oAppVariantData.title);
+		aBackendOperations.push(AppVariantUtils.createInlineChange(oPropertyChange, "title"));
+
+		// create a inline change using a change type 'appdescr_app_setSubTitle'
+		if (oAppVariantData.subTitle) {
+			oPropertyChange = AppVariantUtils.getInlinePropertyChange("subtitle", oAppVariantData.subTitle);
+			aBackendOperations.push(AppVariantUtils.createInlineChange(oPropertyChange, "subTitle"));
+		}
+
+		// create a inline change using a change type 'create_app_setDescription'
+		if (oAppVariantData.description) {
+			oPropertyChange = AppVariantUtils.getInlinePropertyChange("description", oAppVariantData.description);
+			aBackendOperations.push(AppVariantUtils.createInlineChange(oPropertyChange, "description"));
+		}
+
+		// create a inline change using a change type 'appdescr_ui_setIcon'
+		oPropertyChange = AppVariantUtils.getInlineChangeInputIcon(oAppVariantData.icon);
+		aBackendOperations.push(AppVariantUtils.createInlineChange(oPropertyChange, "icon"));
+
+		/*********************************************************************************************************************************************
+		***********************************************************Inbounds handling******************************************************************
+		*********************************************************************************************************************************************/
+		var oInboundInfo = AppVariantUtils.getInboundInfo(oAppVariantData.inbounds);
+		var sCurrentRunningInboundId = oInboundInfo.currentRunningInbound;
+		var bAddNewInboundRequired = oInboundInfo.addNewInboundRequired;
+
+		if (sCurrentRunningInboundId === "customer.savedAsAppVariant" && bAddNewInboundRequired) {
+			oPropertyChange = AppVariantUtils.getInlineChangeCreateInbound(sCurrentRunningInboundId);
+			aBackendOperations.push(AppVariantUtils.createInlineChange(oPropertyChange, "createInbound"));
+		}
+
+		oPropertyChange = AppVariantUtils.getInlineChangeForInboundPropertySaveAs(sCurrentRunningInboundId);
+		aBackendOperations.push(AppVariantUtils.createInlineChange(oPropertyChange, "inbound"));
+
+		oPropertyChange = AppVariantUtils.getInlineChangeRemoveInbounds(sCurrentRunningInboundId);
+		aBackendOperations.push(AppVariantUtils.createInlineChange(oPropertyChange, "removeInbound"));
+
+		oPropertyChange = AppVariantUtils.getInlineChangesForInboundProperties(sCurrentRunningInboundId, sAppVariantId, "title", oAppVariantData.title);
+		aBackendOperations.push(AppVariantUtils.createInlineChange(oPropertyChange, "inboundTitle"));
+
+		if (oAppVariantData.subTitle) {
+			oPropertyChange = AppVariantUtils.getInlineChangesForInboundProperties(sCurrentRunningInboundId, sAppVariantId, "subTitle", oAppVariantData.subTitle);
+			aBackendOperations.push(AppVariantUtils.createInlineChange(oPropertyChange, "inboundSubtitle"));
+		}
+
+		oPropertyChange = AppVariantUtils.getInlineChangesForInboundProperties(sCurrentRunningInboundId, sAppVariantId, "icon", oAppVariantData.icon);
+		aBackendOperations.push(AppVariantUtils.createInlineChange(oPropertyChange, "inboundIcon"));
+
+		var fnOpenTransportDialog = function(oTransportInput) {
+			var oTransportSelection = new TransportSelection();
+			return oTransportSelection.openTransportSelection(oTransportInput, this, RtaUtils.getRtaStyleClassName());
+		};
+
+		return Promise.all(aBackendOperations).then(function(aResponses){
+			oAppVariantDescriptor = aResponses.shift();
+			aBackendOperations = [];
+
+			aResponses.forEach(function(oInlineChange) {
+				aBackendOperations.push(oAppVariantDescriptor.addDescriptorInlineChange(oInlineChange));
+			});
+
+			return Promise.all(aBackendOperations);
+		}).then(function() {
+			var sNamespace = oAppVariantDescriptor._getMap().namespace;
+			var oTransportInput = AppVariantUtils.getTransportInput("",sNamespace, "manifest", "appdescr_variant");
+			return fnOpenTransportDialog.call(this, oTransportInput);
+		}.bind(this)).then(function(oTransportInfo) {
+			return this._onTransportInDialogSelected(oAppVariantDescriptor, oTransportInfo);
+		}.bind(this))["catch"](function(oError) {
+			var oErrorInfo = this._buildErrorMessageText("MSG_CREATE_DESCRIPTOR_FAILED", oAppVariantDescriptor._id, oError);
+			return this._showErrorMessage(oErrorInfo);
+		}.bind(this));
+	};
+
+	AppVariantManager.prototype._onTransportInDialogSelected = function(oAppVariantDescriptor, oTransportInfo){
+		if (oTransportInfo){
+
+			if (oTransportInfo.transport && oTransportInfo.packageName !== "$TMP") {
+
+				var aPromises = [];
+
+				if (oTransportInfo.transport) {
+					aPromises.push(oAppVariantDescriptor.setTransportRequest(oTransportInfo.transport));
+				}
+
+				if (aPromises.length) {
+					return Promise.all(aPromises).then(function() {
+						return Promise.resolve(oAppVariantDescriptor);
+					});
+				}
+			}
+
+			return Promise.resolve(oAppVariantDescriptor);
+		}
+
+		return Promise.resolve(false);
+	};
+
+	AppVariantManager.prototype.processSaveAsDialog = function(oDescriptor) {
+		return new Promise(function(resolve, reject) {
+			var fnCreate = function(oResult) {
+				var mParameters = oResult.getParameters();
+				var oAppVariantData = this._prepareAppVariantData(oDescriptor, mParameters);
+
+				resolve(oAppVariantData);
+			}.bind(this);
+
+			var fnCancel = function(oResult) {
+				reject(oResult);
+			};
+			//open app variant creation dialog
+			this._openDialog(fnCreate, fnCancel);
+		}.bind(this));
+	};
+
+	AppVariantManager.prototype._showErrorMessage = function(oErrorInfo, sAppVariantId) {
+		var oTextResources = AppVariantUtils.getTextResources();
+		var sTitle = oTextResources.getText("HEADER_SAVE_APP_VARIANT_FAILED");
+
+		BusyIndicator.hide();
+
+		var sCopyIdButtonText;
+		var sCloseButtonText = oTextResources.getText("SAVE_APP_VARIANT_CLOSE_TEXT");
+
+		var aActions = [];
+
+		if (oErrorInfo.copyId) {
+			sCopyIdButtonText = oTextResources.getText("SAVE_APP_VARIANT_COPY_ID_TEXT");
+			aActions.push(sCopyIdButtonText);
+		}
+
+		aActions.push(sCloseButtonText);
+
+		return new Promise(function(resolve, reject) {
+			var fnCallback = function (sAction) {
+				if (sAction === sCloseButtonText) {
+					reject();
+				} else if (sAction === sCopyIdButtonText) {
+					AppVariantUtils.copyId(sAppVariantId);
+					reject();
+				}
+			};
+
+			MessageBox.error(oErrorInfo.text, {
+				icon: MessageBox.Icon.ERROR,
+				title: sTitle,
+				onClose: fnCallback,
+				actions: aActions,
+				styleClass: RtaUtils.getRtaStyleClassName()
+			});
+		});
+	};
+
+	AppVariantManager.prototype._buildErrorMessageText = function(sMessageKey, sAppVariantId, oError, bCopyId) {
+		var oTextResources = AppVariantUtils.getTextResources();
+
+		var sErrorMessage = "";
+		if (oError.messages && oError.messages.length) {
+			if (oError.messages.length > 1) {
+				oError.messages.forEach(function(oError) {
+					sErrorMessage += oError.text + "\n";
+				});
+			} else {
+				sErrorMessage += oError.messages[0].text;
+			}
+		} else if (oError.iamAppId) {
+			//TODO: Need to remove this check later (20.10.2017)
+			sErrorMessage += "IAM App Id: " + oError.iamAppId;
+		} else {
+			sErrorMessage += oError.stack || oError.message || oError.status || oError;
+		}
+
+		var sMessage = oTextResources.getText(sMessageKey) + "\n\n" +
+						oTextResources.getText("MSG_APP_VARIANT_ID", sAppVariantId) + "\n" +
+						oTextResources.getText("MSG_TECHNICAL_ERROR", sErrorMessage);
+		return {
+			text: sMessage,
+			copyId: bCopyId
+		};
+	};
+
+	AppVariantManager.prototype.saveAppVariantToLREP = function(oAppVariantDescriptor) {
+		return oAppVariantDescriptor.submit()["catch"](function(oError) {
+			var oErrorInfo = this._buildErrorMessageText("MSG_SAVE_APP_VARIANT_FAILED", oAppVariantDescriptor._id, oError);
+			return this._showErrorMessage(oErrorInfo);
+		}.bind(this));
+	};
+
+	// Unsaved changes get copied to app variant
+	AppVariantManager.prototype._copyDirtyChangesToAppVariant = function(sReferenceForChange, oRootControlRunningApp) {
+		var oFlexController = FlexControllerFactory.createForControl(oRootControlRunningApp);
+		return oFlexController.saveAs(sReferenceForChange);
+	};
+
+	AppVariantManager.prototype.copyUnsavedChangesToLREP = function(sAppVariantId, oRootControlRunningApp, bCopyUnsavedChanges) {
+		if (bCopyUnsavedChanges) {
+			return this._copyDirtyChangesToAppVariant(sAppVariantId, oRootControlRunningApp)["catch"](function(oError) {
+				var oErrorInfo = this._buildErrorMessageText("MSG_COPY_UNSAVED_CHANGES_FAILED", sAppVariantId, oError);
+				return this._showErrorMessage(oErrorInfo);
+			}.bind(this));
+		} else {
+			return Promise.resolve(true);
+		}
+	};
+
+	AppVariantManager.prototype.triggerCatalogAssignment = function(oAppVariantDescriptor) {
+		if (AppVariantUtils.isS4HanaCloud(oAppVariantDescriptor._oSettings)) {
+			return AppVariantUtils.triggerCatalogAssignment(oAppVariantDescriptor._id, oAppVariantDescriptor._reference)["catch"](function(oError) {
+				var oErrorInfo = this._buildErrorMessageText("MSG_CATALOG_ASSIGNMENT_FAILED", oAppVariantDescriptor._id, oError);
+				return this._showErrorMessage(oErrorInfo);
+			}.bind(this));
+		} else {
+			return Promise.resolve(true);
+		}
+	};
+
+	AppVariantManager.prototype.notifyKeyUserWhenTileIsReady = function(sIamId, sAppVariantId) {
+		var oS4HanaCloudBackend = new S4HanaCloudBackend();
+
+		return oS4HanaCloudBackend.notifyFlpCustomizingIsReady(sIamId, function(sId) {
+			var oTextResources = AppVariantUtils.getTextResources();
+			var sMessage = oTextResources.getText("MSG_SAVE_APP_VARIANT_NEW_TILE_AVAILABLE");
+			var sTitle = oTextResources.getText("SAVE_APP_VARIANT_NEW_TILE_AVAILABLE_TITLE");
+
+			return new Promise(function(resolve) {
+				MessageBox.show(sMessage, {
+					icon: MessageBox.Icon.INFORMATION,
+					title: sTitle,
+					onClose: resolve,
+					styleClass: RtaUtils.getRtaStyleClassName()
+				});
+			});
+		})["catch"](function(oError) {
+			var oErrorInfo = this._buildErrorMessageText("MSG_TILE_CREATION_FAILED", sAppVariantId, oError, true);
+			return this._showErrorMessage(oErrorInfo, sAppVariantId);
+		}.bind(this));
+	};
+
+	AppVariantManager.prototype._buildSuccessMessageText = function(oAppVariantDescriptor, bCloseRunningApp) {
+		var oTextResources = AppVariantUtils.getTextResources();
+		var bCopyId = false;
+		var sMessage = oTextResources.getText("SAVE_APP_VARIANT_SUCCESS_MESSAGE") + "\n\n";
+
+		if (AppVariantUtils.isS4HanaCloud(oAppVariantDescriptor._oSettings)) {
+			if (bCloseRunningApp) {
+				sMessage += oTextResources.getText("SAVE_APP_VARIANT_SUCCESS_S4HANA_CLOUD_MESSAGE");
+			} else {
+				sMessage += oTextResources.getText("SAVE_APP_VARIANT_SUCCESS_S4HANA_CLOUD_MESSAGE_OVERVIEW_LIST");
+			}
+		} else if (bCloseRunningApp) {
+			sMessage += oTextResources.getText("SAVE_APP_VARIANT_SUCCESS_S4HANA_ON_PREMISE_MESSAGE", oAppVariantDescriptor._id);
+			bCopyId = true;
+		} else {
+			sMessage += oTextResources.getText("SAVE_APP_VARIANT_SUCCESS_S4HANA_ON_PREMISE_MESSAGE_OVERVIEW_LIST", oAppVariantDescriptor._id);
+			bCopyId = true;
+		}
+
+		return {
+			text: sMessage,
+			copyId : bCopyId
+		};
+	};
+
+	AppVariantManager.prototype._showSaveSuccessMessage = function(oSuccessInfo, sAppVariantId) {
+		var oTextResources = AppVariantUtils.getTextResources();
+		var sTitle = oTextResources.getText("SAVE_APP_VARIANT_SUCCESS_MESSAGE_TITLE");
+
+		var sCopyIdButtonText;
+		var sOkButtonText = oTextResources.getText("SAVE_APP_VARIANT_OK_TEXT");
+
+		var aActions = [];
+
+		if (oSuccessInfo.copyId) {
+			sCopyIdButtonText = oTextResources.getText("SAVE_APP_VARIANT_COPY_ID_TEXT");
+			aActions.push(sCopyIdButtonText);
+		}
+
+		aActions.push(sOkButtonText);
+
+		return new Promise(function(resolve) {
+			var fnCallback = function (sAction) {
+				if (sAction === sOkButtonText) {
+					resolve();
+				} else if (sAction === sCopyIdButtonText) {
+					AppVariantUtils.copyId(sAppVariantId);
+					resolve();
+				}
+			};
+
+			MessageBox.show(oSuccessInfo.text, {
+				icon: MessageBox.Icon.INFORMATION,
+				onClose : fnCallback,
+				title: sTitle,
+				actions: aActions,
+				styleClass: RtaUtils.getRtaStyleClassName()
+			});
+		});
+	};
+
+	AppVariantManager.prototype._navigateToFLPHomepage = function() {
+		var oApplication = sap.ushell.services.AppConfiguration.getCurrentApplication();
+		var oComponentInstance = oApplication.componentHandle.getInstance();
+
+		if (oComponentInstance) {
+			var oCrossAppNav = sap.ushell.Container.getService("CrossApplicationNavigation");
+			if (oCrossAppNav.toExternal){
+				oCrossAppNav.toExternal({target: {shellHash: "#"}}, oComponentInstance);
+				return Promise.resolve(true);
+			}
+		}
+
+		return Promise.resolve(false);
+	};
+
+	AppVariantManager.prototype.showSuccessMessageAndTriggerActionFlow = function(oAppVariantDescriptor, bCloseRunningApp, oRootControlRunningApp) {
+		var oSuccessInfo = this._buildSuccessMessageText(oAppVariantDescriptor, bCloseRunningApp);
+		return this._showSaveSuccessMessage(oSuccessInfo, oAppVariantDescriptor._id).then(function() {
+			if (bCloseRunningApp) {
+				return this._navigateToFLPHomepage();
+			} else {
+				return RtaAppVariantFeature.onGetOverview(oRootControlRunningApp);
+			}
+		}.bind(this));
+	};
+
+	return AppVariantManager;
+}, true);
+}; // end of sap/ui/rta/appVariant/AppVariantManager.js
 if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.ManageAppsDialog') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
@@ -6333,28 +8047,28 @@ if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.ManageAppsDialog') ) {
 
 // Provides control sap.ui.rta.appVariant.ManageAppsDialog.
 jQuery.sap.declare('sap.ui.rta.appVariant.ManageAppsDialog'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
-jQuery.sap.require('sap.ui.base.ManagedObject'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.core.ComponentContainer'); // unlisted dependency retained
 jQuery.sap.require('sap.m.Dialog'); // unlisted dependency retained
+jQuery.sap.require('sap.m.DialogRenderer'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
 sap.ui.define("sap/ui/rta/appVariant/ManageAppsDialog",[
-		'sap/ui/base/ManagedObject',
 		'sap/ui/core/ComponentContainer',
 		'sap/m/Dialog',
+		'sap/m/DialogRenderer',
 		'sap/ui/rta/appVariant/manageApps/webapp/Component',
-		"sap/ui/fl/Utils"
+		"sap/ui/fl/Utils",
+		"sap/ui/rta/Utils"
 ], function(
-			ManagedObject,
 			ComponentContainer,
 			Dialog,
+			DialogRenderer,
 			ManageAppsComponent,
-			FlexUtils) {
+			FlexUtils,
+			RtaUtils) {
 
 	"use strict";
 
-	var _rootControl;
-
-	var ManageAppsDialog = ManagedObject.extend("sap.ui.rta.appVariant.ManageAppsDialog", {
+	var ManageAppsDialog = Dialog.extend("sap.ui.rta.appVariant.ManageAppsDialog", {
 		metadata : {
 			properties: {
 				rootControl: {
@@ -6363,80 +8077,50 @@ sap.ui.define("sap/ui/rta/appVariant/ManageAppsDialog",[
 				}
 			},
 			events : {
-				"opened" : {},
-				"close" : {}
+				cancel : {}
 			}
 		},
 		constructor: function() {
-			_rootControl = arguments[0].rootControl;
-			ManagedObject.prototype.constructor.apply(this, arguments);
-		}
+			Dialog.prototype.constructor.apply(this, arguments);
+			this._oTextResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
+
+			var oRootControl = this.getRootControl();
+			var oAdaptedAppDescriptor = FlexUtils.getAppDescriptor(oRootControl);
+
+			// Create manage apps component
+			this.oManageAppsComponent = new ManageAppsComponent("manageApps", { idRunningApp : oAdaptedAppDescriptor["sap.app"].id, rootControlRunningApp: oRootControl });
+
+			// Place component in container and display
+			this.oManageAppsComponentContainer = new ComponentContainer({
+				component : this.oManageAppsComponent
+			});
+
+			this.addContent(this.oManageAppsComponentContainer);
+			this._createButton();
+			this.setContentWidth("1000px");
+			this.setContentHeight("300px");
+			this.setShowHeader(false);
+
+			this.addStyleClass(RtaUtils.getRtaStyleClassName());
+		},
+		destroy: function() {
+			var sNewAppVarianId = sap.ui.rta.appVariant.AppVariantUtils.getNewAppVariantId();
+			if (sNewAppVarianId) {
+				sap.ui.rta.appVariant.AppVariantUtils.setNewAppVariantId(null);
+			}
+			Dialog.prototype.destroy.apply(this, arguments);
+		},
+		renderer: DialogRenderer.render
 	});
 
-	ManageAppsDialog.prototype.init = function() {
-		this._oTextResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
-		this._oDialog = new Dialog("manageAppsDialog");
-
-		var oRootControl = _rootControl;
-		var oAdaptedAppDescriptorData = FlexUtils.getAppDescriptor(oRootControl);
-		var sIdAppAdapted = oAdaptedAppDescriptorData["sap.app"].id;
-
-		var oAdaptedAppProperties = {
-			title : oAdaptedAppDescriptorData["sap.app"].title,
-			subTitle : oAdaptedAppDescriptorData["sap.app"].subTitle || '',
-			description : oAdaptedAppDescriptorData["sap.app"].description || '',
-			icon : oAdaptedAppDescriptorData["sap.ui"].icons.icon || '',
-			componentName : oAdaptedAppDescriptorData["sap.ui5"].componentName,
-			idAppAdapted : sIdAppAdapted
-		};
-
-		// Create manage apps component
-		this.oManageAppsComponent = new ManageAppsComponent("manageApps", { adaptedAppProperties : oAdaptedAppProperties });
-
-		// Place component in container and display
-		this.oManageAppsComponentContainer = new ComponentContainer({
-			component : this.oManageAppsComponent
-		});
-
-		this._oDialog.addContent(this.oManageAppsComponentContainer);
-		var oButton = this._createButton();
-		this._oDialog.addButton(oButton);
-		this._oDialog.setContentWidth("1000px");
-		this._oDialog.setContentHeight("300px");
-		this._oDialog.setShowHeader(false);
-	};
-
-	ManageAppsDialog.prototype.open = function() {
-		return new Promise(function(resolve) {
-			this._oDialog.oPopup.attachOpened(function (){
-				this.fireOpened();
-				resolve(this);
-			}.bind(this));
-			this._oDialog.open();
-		}.bind(this));
-	};
-
 	ManageAppsDialog.prototype._createButton = function() {
-		var oCancelButton = new sap.m.Button({
-			text : this._oTextResources.getText("MAA_CLOSE_BUTTON"),
-			press : [this._closeDialog, this]
-		});
-		return oCancelButton;
-	};
-
-	ManageAppsDialog.prototype._closeDialog = function() {
-		return new Promise(function(resolve) {
-			this._oDialog.oPopup.attachClosed(function (){
-				this._oDialog.destroy();
-				resolve(true);
-			}.bind(this));
-			this._oDialog.close();
-			this.fireClose();
-		}.bind(this));
-	};
-
-	ManageAppsDialog.prototype.exit = function() {
-		this._oDialog.destroy();
+		this.addButton(new sap.m.Button({
+			text: this._oTextResources.getText("APP_VARIANT_DIALOG_CLOSE"),
+			press: function() {
+				this.close();
+				this.fireCancel();
+			}.bind(this)
+		}));
 	};
 
 	return ManageAppsDialog;
@@ -6444,134 +8128,6 @@ sap.ui.define("sap/ui/rta/appVariant/ManageAppsDialog",[
 }, /* bExport= */ true);
 
 }; // end of sap/ui/rta/appVariant/ManageAppsDialog.js
-if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.manageApps.webapp.controller.ManageApps.controller') ) {
-/*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-jQuery.sap.declare('sap.ui.rta.appVariant.manageApps.webapp.controller.ManageApps.controller'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
-jQuery.sap.require('jquery.sap.global'); // unlisted dependency retained
-jQuery.sap.require('sap.ui.core.mvc.Controller'); // unlisted dependency retained
-jQuery.sap.require('sap.m.MessageBox'); // unlisted dependency retained
-sap.ui.define("sap/ui/rta/appVariant/manageApps/webapp/controller/ManageApps.controller",[
-	"jquery.sap.global",
-	"sap/ui/core/mvc/Controller",
-	"sap/ui/rta/appVariant/manageApps/webapp/model/models",
-	"sap/ui/rta/appVariant/Utils",
-	"sap/m/MessageBox"
-], function(jQuery, Controller, Model, ManageAppsUtils, MessageBox) {
-	"use strict";
-
-	var _oAdaptedAppProperties, sModulePath, oI18n;
-	return Controller.extend("sap.ui.rta.appVariant.manageApps.webapp.controller.ManageApps", {
-		onInit: function() {
-			_oAdaptedAppProperties = this.getOwnerComponent().getAdaptedAppProperties();
-			var sOriginalAppId = _oAdaptedAppProperties.componentName;
-
-			sModulePath = jQuery.sap.getModulePath( "sap.ui.rta.appVariant.manageApps.webapp" );
-			oI18n = jQuery.sap.resources({
-				url : sModulePath + "/i18n/i18n.properties"
-			});
-
-			var sAppVariantType = oI18n.getText("MAA_APP_VARIANT_TYPE");
-
-			return ManageAppsUtils.getAppVariants(sOriginalAppId, sAppVariantType).then(function(aAppVariantsProperties) {
-				return this._addAppVariantsProperties(aAppVariantsProperties).then(function() {
-					return this._paintCurrentlyAdaptedApp();
-				}.bind(this));
-			}.bind(this))["catch"](function(oError) {
-				return this._showMessage(MessageBox.Icon.ERROR, "HEADER_MANAGE_APPS_FAILED", "MSG_MANAGE_APPS_FAILED", oError).then(function() {
-					return this._closeManageAppsDialog();
-				}.bind(this));
-			}.bind(this));
-		},
-		_showMessage: function(oMessageType, sTitleKey, sMessageKey, oError) {
-			var _oTextResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
-			var sMessage = _oTextResources.getText(sMessageKey, oError ? [oError.message || oError] : undefined);
-			var sTitle = _oTextResources.getText(sTitleKey);
-
-			return new Promise(function(resolve) {
-				MessageBox.show(sMessage, {
-					icon: oMessageType,
-					title: sTitle,
-					onClose: resolve
-				});
-			});
-		},
-		_addAppVariantsProperties: function(aAppVariantsProperties) {
-			var oAdaptedAppProperties = {
-				title: _oAdaptedAppProperties.title,
-				subTitle: _oAdaptedAppProperties.subTitle,
-				description: _oAdaptedAppProperties.description,
-				icon: _oAdaptedAppProperties.icon,
-				id: _oAdaptedAppProperties.idAppAdapted,
-				componentName: _oAdaptedAppProperties.componentName,
-				currentStatus: oI18n.getText("MAA_CURRENTLY_ADAPTING")
-			};
-
-			if (_oAdaptedAppProperties.idAppAdapted === _oAdaptedAppProperties.componentName) {
-				oAdaptedAppProperties.type = oI18n.getText("MAA_ORIGINAL_TYPE");
-				aAppVariantsProperties.unshift(oAdaptedAppProperties);
-				return this._bindModelData(aAppVariantsProperties);
-			} else {
-				var aFilteredAppVariantsProperties = aAppVariantsProperties.filter(function(oAppVariantProperty) {
-					return oAppVariantProperty.id !== oAdaptedAppProperties.id;
-				});
-
-				oAdaptedAppProperties.type = oI18n.getText("MAA_APP_VARIANT_TYPE");
-				aFilteredAppVariantsProperties.unshift(oAdaptedAppProperties);
-				return ManageAppsUtils.getOriginalAppProperties(_oAdaptedAppProperties.componentName, oI18n.getText("MAA_ORIGINAL_TYPE")).then(function(aOriginalAppProperties) {
-					// Original app properties must be on the top of the overview list
-					aFilteredAppVariantsProperties.unshift(aOriginalAppProperties[0]);
-					return this._bindModelData(aFilteredAppVariantsProperties);
-				}.bind(this));
-			}
-		},
-		_bindModelData: function(aAppVariantsProperties) {
-			var oModelData = {
-				appVariants: aAppVariantsProperties
-			};
-			var oModel = Model.createModel(oModelData);
-			this.getView().setModel(oModel);
-			return Promise.resolve(true);
-
-		},
-		_closeManageAppsDialog: function() {
-			var oManageAppsDialog = sap.ui.getCore().byId("manageAppsDialog");
-
-			oManageAppsDialog.oPopup.attachClosed(function (){
-				oManageAppsDialog.destroy();
-				return Promise.resolve(true);
-			});
-			oManageAppsDialog.close();
-		},
-		_paintCurrentlyAdaptedApp: function() {
-			var oTable = this.getView().byId("Table1");
-			jQuery('.maaCurrentStatus,.maaSubTitle').css("font-size", '12px');
-
-			function colorRows() {
-				var rowCount = oTable.getVisibleRowCount();
-	            var rowStart = oTable.getFirstVisibleRow();
-	            var currentRowContext;
-
-	            for (var i = 0; i < rowCount; i++) {
-					currentRowContext = oTable.getContextByIndex(rowStart + i);
-					if (currentRowContext && currentRowContext.getProperty("currentStatus") === oI18n.getText("MAA_CURRENTLY_ADAPTING")) {
-						var sColor = sap.ui.core.theming.Parameters.get("sapUiHighlight");
-						oTable.getRows()[i].$().find("span").css({color: sColor});
-						break;
-					}
-	            }
-
-	            return Promise.resolve(true);
-			}
-
-			return colorRows();
-		}
-	});
-});
-}; // end of sap/ui/rta/appVariant/manageApps/webapp/controller/ManageApps.controller.js
 if ( !jQuery.sap.isDeclared('sap.ui.rta.command.AddODataProperty') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
@@ -6590,7 +8146,7 @@ sap.ui.define("sap/ui/rta/command/AddODataProperty",[
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -6612,6 +8168,9 @@ sap.ui.define("sap/ui/rta/command/AddODataProperty",[
 				bindingString : {
 					type : "string"
 				},
+				entityType : {
+					type : "string"
+				},
 				parentId : {
 					type : "string"
 				},
@@ -6625,12 +8184,13 @@ sap.ui.define("sap/ui/rta/command/AddODataProperty",[
 	AddODataProperty.prototype._getChangeSpecificData = function() {
 		// general format
 		return {
-			changeType : this.getChangeType(),
-			index : this.getIndex(),
-			newControlId : this.getNewControlId(),
-			bindingPath : this.getBindingString(),
-			parentId : this.getParentId(),
-			oDataServiceVersion : this.getODataServiceVersion()
+			changeType: this.getChangeType(),
+			index: this.getIndex(),
+			newControlId: this.getNewControlId(),
+			bindingPath: this.getBindingString(),
+			entityType: this.getEntityType(),
+			parentId: this.getParentId(),
+			oDataServiceVersion: this.getODataServiceVersion()
 		};
 	};
 
@@ -6639,6 +8199,105 @@ sap.ui.define("sap/ui/rta/command/AddODataProperty",[
 }, /* bExport= */true);
 
 }; // end of sap/ui/rta/command/AddODataProperty.js
+if ( !jQuery.sap.isDeclared('sap.ui.rta.command.AppDescriptorCommand') ) {
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+jQuery.sap.declare('sap.ui.rta.command.AppDescriptorCommand'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('sap.ui.fl.descriptorRelated.api.DescriptorInlineChangeFactory'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.descriptorRelated.api.DescriptorChangeFactory'); // unlisted dependency retained
+sap.ui.define("sap/ui/rta/command/AppDescriptorCommand",['sap/ui/rta/command/BaseCommand',
+				'sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory',
+				'sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory'],
+	function(BaseCommand,
+		DescriptorInlineChangeFactory,
+		DescriptorChangeFactory) {
+	"use strict";
+
+	/**
+	 * Implementation of a command template for App Descriptor changes
+	 *
+	 * @class
+	 * @extends sap.ui.rta.command.BaseCommand
+	 *
+	 * @author SAP SE
+	 * @version 1.52.5
+	 *
+	 * @constructor
+	 * @private
+	 * @since 1.49
+	 * @alias sap.ui.rta.command.AppDescriptorCommand
+	 * @experimental Since 1.49. This class is experimental and provides only limited functionality. Also the API might be
+	 *               changed in future.
+	 */
+	var AppDescriptorCommand = BaseCommand.extend("sap.ui.rta.command.AppDescriptor", {
+		metadata : {
+			library : "sap.ui.rta",
+			properties : {
+				reference : {
+					type : "string"
+				},
+				appComponent: {
+					type: "object"
+				},
+				layer : {
+					type : "string"
+				},
+				changeType : {
+					type : "string"
+				},
+				parameters : {
+					type : "object"
+				},
+				texts : {
+					type : "object"
+				}
+			},
+			events : {}
+		}
+	});
+
+	/**
+	 * Prepare the app descriptor change, setting the layer.
+	 * @param  {object} mFlexSettings Map of flex Settings
+	 * @param  {string} mFlexSettings.layer Layer where the change is applied
+	 */
+	AppDescriptorCommand.prototype.prepare = function(mFlexSettings){
+		this.setLayer(mFlexSettings.layer);
+		return true;
+	};
+
+	/**
+	 * Retrieves the prepared change for e.g. undo execution.
+	 * @return {sap.ui.fl.Change} Returns change after being created and stored
+	 */
+	AppDescriptorCommand.prototype.getPreparedChange = function() {
+		return this._oPreparedChange;
+	};
+
+	/**
+	 * Create the change for the app descriptor and add it to the ChangePersistence.
+	 * @return {Promise} Returns Promise resolving after change has been created and stored
+	 */
+	AppDescriptorCommand.prototype.createAndStoreChange = function(){
+		return DescriptorInlineChangeFactory.createDescriptorInlineChange(
+				this.getChangeType(), this.getParameters(), this.getTexts())
+			.then(function(oAppDescriptorChangeContent){
+				return new DescriptorChangeFactory().createNew(this.getReference(),
+					oAppDescriptorChangeContent, this.getLayer(), this.getAppComponent());
+			}.bind(this))
+			.then(function(oAppDescriptorChange){
+				var oChange = oAppDescriptorChange.store();
+				this._oPreparedChange = oChange;
+			}.bind(this));
+	};
+	return AppDescriptorCommand;
+
+}, /* bExport= */true);
+
+}; // end of sap/ui/rta/command/AppDescriptorCommand.js
 if ( !jQuery.sap.isDeclared('sap.ui.rta.command.BindProperty') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
@@ -6671,7 +8330,7 @@ sap.ui.define("sap/ui/rta/command/BindProperty",[
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.38
@@ -6687,8 +8346,7 @@ sap.ui.define("sap/ui/rta/command/BindProperty",[
 					type : "string"
 				},
 				newBinding : {
-					type : "string",
-					bindable : false
+					type : "string"
 				},
 				changeType : {
 					type : "string",
@@ -6751,7 +8409,7 @@ sap.ui.define("sap/ui/rta/command/Combine",[
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -6813,7 +8471,7 @@ sap.ui.define("sap/ui/rta/command/CreateContainer",['jquery.sap.global', 'sap/ui
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -6870,12 +8528,18 @@ jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
 sap.ui.define("sap/ui/rta/command/LREPSerializer",[
 	'sap/ui/base/ManagedObject',
 	'sap/ui/rta/command/Stack',
+	'sap/ui/rta/command/FlexCommand',
+	'sap/ui/rta/command/BaseCommand',
+	'sap/ui/rta/command/AppDescriptorCommand',
 	'sap/ui/fl/FlexControllerFactory',
 	'sap/ui/fl/Utils',
 	'sap/ui/rta/ControlTreeModifier'
 ], function(
 	ManagedObject,
 	CommandStack,
+	FlexCommand,
+	BaseCommand,
+	AppDescriptorCommand,
 	FlexControllerFactory,
 	FlexUtils,
 	RtaControlTreeModifier
@@ -6887,7 +8551,7 @@ sap.ui.define("sap/ui/rta/command/LREPSerializer",[
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.42
@@ -6913,6 +8577,11 @@ sap.ui.define("sap/ui/rta/command/LREPSerializer",[
 		}
 	});
 
+	/**
+	 * Promise to ensure that the event triggered methods are executed sequentionally.
+	 */
+	LREPSerializer.prototype._lastPromise = Promise.resolve();
+
 	LREPSerializer.prototype.setCommandStack = function(oCommandStack) {
 		this.setProperty("commandStack", oCommandStack);
 		oCommandStack.attachCommandExecuted(function(oEvent) {
@@ -6921,36 +8590,50 @@ sap.ui.define("sap/ui/rta/command/LREPSerializer",[
 	};
 
 	LREPSerializer.prototype.handleCommandExecuted = function(oEvent) {
-		var oParams = oEvent.getParameters();
-		var aCommands = this.getCommandStack().getSubCommands(oParams.command);
+		(function (oEvent) {
+			var oParams = oEvent.getParameters();
+			this._lastPromise = this._lastPromise.catch(function() {
+				// _lastPromise chain must not be interupted
+			}).then(function() {
+				var aCommands = this.getCommandStack().getSubCommands(oParams.command);
 
-		if (oParams.undo) {
-			var oFlexController;
-			aCommands.forEach(function(oCommand) {
-				var oChange = oCommand.getPreparedChange();
-				var oAppComponent = oCommand.getAppComponent();
-				oFlexController = FlexControllerFactory.createForControl(oAppComponent);
-				if (oCommand instanceof sap.ui.rta.command.FlexCommand){
-					var oControl = RtaControlTreeModifier.bySelector(oChange.getSelector(), oAppComponent);
-					oFlexController.removeFromAppliedChangesOnControl(oChange, oAppComponent, oControl);
+				if (oParams.undo) {
+					var oFlexController;
+					aCommands.forEach(function(oCommand) {
+						// for revertable changes which don't belong to LREP (variantSwitch) or runtime only changes
+						if (!(oCommand instanceof FlexCommand || oCommand instanceof AppDescriptorCommand)
+							|| oCommand.getRuntimeOnly()) {
+							return;
+						}
+						var oChange = oCommand.getPreparedChange();
+						var oAppComponent = oCommand.getAppComponent();
+						oFlexController = FlexControllerFactory.createForControl(oAppComponent);
+						if (oCommand instanceof FlexCommand){
+							var oControl = RtaControlTreeModifier.bySelector(oChange.getSelector(), oAppComponent);
+							oFlexController.removeFromAppliedChangesOnControl(oChange, oAppComponent, oControl);
+						}
+						oFlexController.deleteChange(oChange, oAppComponent);
+					});
+				} else {
+					var aDescriptorCreateAndAdd = [];
+					aCommands.forEach(function(oCommand) {
+						// Runtime only changes should not be added to the persistence
+						if (oCommand.getRuntimeOnly()){
+							return;
+						}
+						if (oCommand instanceof FlexCommand){
+							var oAppComponent = oCommand.getAppComponent();
+							var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
+							oFlexController.addPreparedChange(oCommand.getPreparedChange(), oAppComponent);
+						} else if (oCommand instanceof AppDescriptorCommand) {
+							aDescriptorCreateAndAdd.push(oCommand.createAndStoreChange());
+						}
+					});
+
+					return Promise.all(aDescriptorCreateAndAdd);
 				}
-				oFlexController.deleteChange(oChange);
-			});
-		} else {
-			var aDescriptorCreateAndAdd = [];
-			aCommands.forEach(function(oCommand) {
-				if (oCommand instanceof sap.ui.rta.command.FlexCommand){
-					var oAppComponent = oCommand.getAppComponent();
-					var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
-					oFlexController.addPreparedChange(oCommand.getPreparedChange(), oAppComponent);
-				} else if (oCommand instanceof sap.ui.rta.command.AppDescriptorCommand) {
-					aDescriptorCreateAndAdd.push(oCommand.createAndStore());
-				}
-			});
-
-			return Promise.all(aDescriptorCreateAndAdd);
-		}
-
+			}.bind(this));
+		}.bind(this))(oEvent);
 	};
 
 	/**
@@ -6960,12 +8643,16 @@ sap.ui.define("sap/ui/rta/command/LREPSerializer",[
 	 * @public
 	 */
 	LREPSerializer.prototype.saveCommands = function() {
-		var oRootControl = sap.ui.getCore().byId(this.getRootControl());
-		if (!oRootControl) {
-			throw new Error("Can't save commands without root control instance!");
-		}
-		var oFlexController = FlexControllerFactory.createForControl(oRootControl);
-		return oFlexController.saveAll()
+		this._lastPromise = this._lastPromise.catch(function() {
+			// _lastPromise chain must not be interupted
+		}).then(function() {
+			var oRootControl = sap.ui.getCore().byId(this.getRootControl());
+			if (!oRootControl) {
+				throw new Error("Can't save commands without root control instance!");
+			}
+			var oFlexController = FlexControllerFactory.createForControl(oRootControl);
+			return oFlexController.saveAll();
+		}.bind(this))
 
 		// needed because the AppDescriptorChanges are stored with a different ComponentName (without ".Component" at the end)
 		// -> two different ChangePersistences
@@ -6973,7 +8660,7 @@ sap.ui.define("sap/ui/rta/command/LREPSerializer",[
 			var sComponentName = FlexUtils.getComponentClassName(sap.ui.getCore().byId(this.getRootControl())).replace(".Component", "");
 			var oRootControl = sap.ui.getCore().byId(this.getRootControl());
 			var sAppVersion = FlexUtils.getAppVersionFromManifest(FlexUtils.getAppComponentForControl(oRootControl).getManifest());
-			oFlexController = FlexControllerFactory.create(sComponentName, sAppVersion);
+			var oFlexController = FlexControllerFactory.create(sComponentName, sAppVersion);
 			return oFlexController.saveAll();
 		}.bind(this))
 
@@ -6981,7 +8668,10 @@ sap.ui.define("sap/ui/rta/command/LREPSerializer",[
 			jQuery.sap.log.info("UI adaptation successfully transfered changes to layered repository");
 			this.getCommandStack().removeAllCommands();
 		}.bind(this));
+
+		return this._lastPromise;
 	};
+
 	return LREPSerializer;
 }, /* bExport= */true);
 
@@ -6993,13 +8683,10 @@ if ( !jQuery.sap.isDeclared('sap.ui.rta.command.appDescriptor.AddLibrary') ) {
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 jQuery.sap.declare('sap.ui.rta.command.appDescriptor.AddLibrary'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
-jQuery.sap.require('sap.ui.fl.descriptorRelated.api.DescriptorInlineChangeFactory'); // unlisted dependency retained
 sap.ui.define("sap/ui/rta/command/appDescriptor/AddLibrary",[
-	'sap/ui/rta/command/appDescriptor/AppDescriptorCommand',
-	'sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory'
+	'sap/ui/rta/command/AppDescriptorCommand'
 ], function(
-		AppDescriptorCommand,
-		DescriptorInlineChangeFactory
+	AppDescriptorCommand
 ) {
 	"use strict";
 
@@ -7010,7 +8697,7 @@ sap.ui.define("sap/ui/rta/command/appDescriptor/AddLibrary",[
 	 * @extends sap.ui.rta.command.appDescriptor.AppDescriptorCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -7022,27 +8709,12 @@ sap.ui.define("sap/ui/rta/command/appDescriptor/AddLibrary",[
 	var AddLibrary = AppDescriptorCommand.extend("sap.ui.rta.command.appDescriptor.AddLibrary", {
 		metadata : {
 			library : "sap.ui.rta",
-			properties : {
-				// The libraries to be added to the app descriptor
-				requiredLibraries : {
-					type : "object"
-				},
-				layer : {
-					type : "string"
-				}
-			},
 			events : {}
 		}
 	});
 
-	/**
-	 * Prepare the change for the app descriptor
-	 *
-	 * @param  {object} mFlexSettings - map of Flex Settings including the layer
-	 */
-	AddLibrary.prototype.prepare = function(mFlexSettings){
-		this.setLayer(mFlexSettings.layer);
-		return true;
+	AddLibrary.prototype.init = function() {
+		this.setChangeType("appdescr_ui5_addLibraries");
 	};
 
 	/**
@@ -7052,21 +8724,14 @@ sap.ui.define("sap/ui/rta/command/appDescriptor/AddLibrary",[
 	AddLibrary.prototype.execute = function(){
 		var aPromises = [];
 
-		if (this.getRequiredLibraries()){
-			var aLibraries = Object.keys(this.getRequiredLibraries());
+		if (this.getParameters().libraries){
+			var aLibraries = Object.keys(this.getParameters().libraries);
 			aLibraries.forEach(function(sLibrary){
 				aPromises.push(sap.ui.getCore().loadLibrary(sLibrary, true));
 			});
 		}
 
 		return Promise.all(aPromises);
-	};
-
-	AddLibrary.prototype._create = function(){
-		var mParameters = {};
-		mParameters.libraries = this.getRequiredLibraries();
-
-		return DescriptorInlineChangeFactory.create_ui5_addLibraries(mParameters);
 	};
 
 	return AddLibrary;
@@ -7086,8 +8751,16 @@ jQuery.sap.declare('sap.ui.rta.plugin.Combine'); // unresolved dependency added 
 jQuery.sap.require('sap.ui.dt.Selection'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.dt.OverlayRegistry'); // unlisted dependency retained
 sap.ui.define("sap/ui/rta/plugin/Combine",[
-	'sap/ui/rta/plugin/Plugin', 'sap/ui/dt/Selection', 'sap/ui/dt/OverlayRegistry', 'sap/ui/rta/Utils'
-], function(Plugin, Selection, OverlayRegistry, Utils) {
+	'sap/ui/rta/plugin/Plugin',
+	'sap/ui/dt/Selection',
+	'sap/ui/dt/OverlayRegistry',
+	'sap/ui/rta/Utils'
+], function(
+	Plugin,
+	Selection,
+	OverlayRegistry,
+	Utils
+) {
 	"use strict";
 
 	/**
@@ -7096,7 +8769,7 @@ sap.ui.define("sap/ui/rta/plugin/Combine",[
 	 * @class
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -7126,7 +8799,7 @@ sap.ui.define("sap/ui/rta/plugin/Combine",[
 		if (!Utils.getRelevantContainerDesigntimeMetadata(oOverlay)) {
 			return false;
 		}
-		var oCombineAction = this._getCombineAction(oOverlay);
+		var oCombineAction = this.getAction(oOverlay);
 		if (oCombineAction && oCombineAction.changeType && oCombineAction.changeOnRelevantContainer) {
 			return this.hasChangeHandler(oCombineAction.changeType, oOverlay.getRelevantContainer()) && this.hasStableId(oOverlay);
 		} else {
@@ -7134,25 +8807,17 @@ sap.ui.define("sap/ui/rta/plugin/Combine",[
 		}
 	};
 
-	/**
-	 * @param	{sap.ui.dt.Overlay} oOverlay overlay object
-	 * @return {sap.ui.dt.DesignTimeMetadata} oDesignTimeMetadata
-	 * @private
-	 */
-	Combine.prototype._getCombineAction = function(oOverlay) {
-		return oOverlay.getDesignTimeMetadata() ? oOverlay.getDesignTimeMetadata().getAction("combine", oOverlay.getElementInstance()) : null;
-	};
-
 	Combine.prototype._checkForSameRelevantContainer = function(aSelectedOverlays) {
-		var aElements = [];
 		var aRelevantContainer = [];
 		for (var i = 0, n = aSelectedOverlays.length; i < n; i++) {
-			aElements[i] = aSelectedOverlays[i].getElementInstance();
 			aRelevantContainer[i] = aSelectedOverlays[i].getRelevantContainer();
+			var oCombineAction = this.getAction(aSelectedOverlays[i]);
+			if (!oCombineAction || !oCombineAction.changeType){
+				return false;
+			}
 			if (i > 0) {
 				if ((aRelevantContainer[0] !== aRelevantContainer[i])
-					|| (aElements[0].getMetadata().getName() !== aElements[i].getMetadata().getName())) {
-
+					|| (this.getAction(aSelectedOverlays[0]).changeType !== oCombineAction.changeType)) {
 					return false;
 				}
 			}
@@ -7167,7 +8832,7 @@ sap.ui.define("sap/ui/rta/plugin/Combine",[
 	 * @return {boolean} true if available
 	 * @public
 	 */
-	Combine.prototype.isCombineAvailable = function(oOverlay) {
+	Combine.prototype.isAvailable = function(oOverlay) {
 		var aSelectedOverlays = this.getDesignTime().getSelection();
 
 		if (aSelectedOverlays.length <= 1) {
@@ -7183,11 +8848,11 @@ sap.ui.define("sap/ui/rta/plugin/Combine",[
 	 * @return {boolean} true if enabled
 	 * @public
 	 */
-	Combine.prototype.isCombineEnabled = function(oOverlay) {
+	Combine.prototype.isEnabled = function(oOverlay) {
 		var aSelectedOverlays = this.getDesignTime().getSelection();
 
-		// check that no more than 3 fields can be combined
-		if (!this.isCombineAvailable(oOverlay) || aSelectedOverlays.length <= 1) {
+		// check that at least 2 fields can be combined
+		if (!this.isAvailable(oOverlay) || aSelectedOverlays.length <= 1) {
 			return false;
 		}
 
@@ -7197,7 +8862,7 @@ sap.ui.define("sap/ui/rta/plugin/Combine",[
 
 		// check that each selected element has an enabled action
 		var bActionCheck = aSelectedOverlays.every(function(oSelectedOverlay) {
-			var oAction = this._getCombineAction(oSelectedOverlay);
+			var oAction = this.getAction(oSelectedOverlay);
 			if (!oAction) {
 				return false;
 			}
@@ -7232,14 +8897,44 @@ sap.ui.define("sap/ui/rta/plugin/Combine",[
 			aToCombineElements.push(oSelectedElement);
 		}
 
+		var oCombineAction = this.getAction(oElementOverlay);
+		var sVariantManagementReference = this.getVariantManagementReference(oElementOverlay, oCombineAction);
+
 		var oCombineCommand = this.getCommandFactory().getCommandFor(oCombineElement, "combine", {
 			source : oCombineElement,
 			combineFields : aToCombineElements
-		}, oDesignTimeMetadata);
+		}, oDesignTimeMetadata, sVariantManagementReference);
 		this.fireElementModified({
 			"command" : oCombineCommand
 		});
+	};
 
+	/**
+	 * Retrieve the context menu item for the action.
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
+	 * @return {object[]}          Returns array containing the items with required data
+	 */
+	Combine.prototype.getMenuItems = function(oOverlay){
+		return this._getMenuItems(oOverlay, {pluginId : "CTX_GROUP_FIELDS", rank : 90});
+	};
+
+	/**
+	 * Get the name of the action related to this plugin.
+	 * @return {string} Returns the action name
+	 */
+	Combine.prototype.getActionName = function(){
+		return "combine";
+	};
+
+	/**
+	 * Trigger the plugin execution.
+	 * @param  {sap.ui.dt.ElementOverlay[]} aOverlays Selected overlays; targets of the action
+	 * @param  {any} oEventItem ContextMenu item which triggers the event
+	 * @param  {any} oContextElement Element where the action is triggered
+	 */
+	Combine.prototype.handler = function(aOverlays, mPropertyBag){
+		//TODO: Handle "Stop Cut & Paste" depending on alignment with Dietrich!
+		this.handleCombine(mPropertyBag.contextElement);
 	};
 
 	return Combine;
@@ -7260,17 +8955,20 @@ jQuery.sap.require('sap.ui.dt.OverlayRegistry'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.dt.OverlayUtil'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.fl.changeHandler.BaseTreeModifier'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.fl.variants.VariantManagement'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.base.ManagedObject'); // unlisted dependency retained
 sap.ui.define("sap/ui/rta/plugin/ControlVariant",[
 	'sap/ui/rta/plugin/Plugin',
+	'sap/ui/rta/plugin/RenameHandler',
 	'sap/ui/rta/Utils',
 	'sap/ui/dt/ElementOverlay',
 	'sap/ui/dt/OverlayRegistry',
 	'sap/ui/dt/OverlayUtil',
 	'sap/ui/fl/changeHandler/BaseTreeModifier',
 	'sap/ui/fl/Utils',
+	'sap/ui/fl/variants/VariantManagement',
 	'sap/ui/base/ManagedObject'
-], function(Plugin, Utils, ElementOverlay, OverlayRegistry, OverlayUtil, BaseTreeModifier, flUtils, ManagedObject) {
+], function(Plugin, RenameHandler, Utils, ElementOverlay, OverlayRegistry, OverlayUtil, BaseTreeModifier, flUtils, VariantManagement, ManagedObject) {
 	"use strict";
 
 	/**
@@ -7281,19 +8979,19 @@ sap.ui.define("sap/ui/rta/plugin/ControlVariant",[
 	 * @class The ControlVariant allows propagation of variantManagement key
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.50
 	 * @alias sap.ui.rta.plugin.ControlVariant
-	 * @experimental Since 1.44. This class is experimental and provides only limited functionality. Also the API might be changed in future.
+	 * @experimental Since 1.50. This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
 
 	/* Mix-in Variant Methods */
 	ElementOverlay.prototype._variantManagement = undefined;
 	ElementOverlay.prototype.getVariantManagement = function() { return this._variantManagement;};
 	ElementOverlay.prototype.setVariantManagement = function(sKey) { this._variantManagement = sKey; };
-	ElementOverlay.prototype.hasVariantManagement = function() { this._variantManagement ? true : false; };
+	ElementOverlay.prototype.hasVariantManagement = function() { return this._variantManagement ? true : false; };
 
 	var ControlVariant = Plugin.extend("sap.ui.rta.plugin.ControlVariant", /** @lends sap.ui.rta.plugin.ControlVariant.prototype */
 	{
@@ -7302,11 +9000,15 @@ sap.ui.define("sap/ui/rta/plugin/ControlVariant",[
 
 			// ---- control specific ----
 			library: "sap.ui.rta",
-			properties: {},
+			properties : {
+				oldValue : "string"
+			},
 			associations: {},
 			events: {}
 		}
 	});
+
+	ControlVariant.MODEL_NAME = "$FlexVariants";
 
 	/**
 	 * Register an overlay
@@ -7315,8 +9017,9 @@ sap.ui.define("sap/ui/rta/plugin/ControlVariant",[
 	 * @override
 	 */
 	ControlVariant.prototype.registerElementOverlay = function(oOverlay) {
+		var oControl = oOverlay.getElementInstance();
 
-		if (oOverlay.getElementInstance().getMetadata().getName() === "sap.ui.fl.variants.VariantManagement") {
+		if (oControl.getMetadata().getName() === "sap.ui.fl.variants.VariantManagement") {
 			var oControl = oOverlay.getElementInstance();
 			var vAssociationElement = oControl.getAssociation("for");
 
@@ -7328,32 +9031,49 @@ sap.ui.define("sap/ui/rta/plugin/ControlVariant",[
 				var sVariantManagement = BaseTreeModifier.getSelector(oControl, flUtils.getComponentForControl(oControl)).id;
 				this._propagateVariantManagement(oVariantManagementTargetOverlay , sVariantManagement);
 			}.bind(this));
+		} else if (!oOverlay.getVariantManagement()) {
+			var sVariantManagementReference = this._getVariantManagementFromParent(oOverlay);
+			if (sVariantManagementReference) {
+				oOverlay.setVariantManagement(sVariantManagementReference);
+			}
 		}
-
-			//var sVarMgtKey;
-			////True for ObjectPageLayout
-			//if (oControl.getVariantManagement) {
-			//	sVarMgtKey = oControl.getVariantManagement();
-			//} else if (oOverlay.getParentElementOverlay()) {
-			//	sVarMgtKey = oOverlay.getParentElementOverlay().getVariantManagement();
-			//}
-			//
-			//if (!sVarMgtKey) {
-			//	return;
-			//}
-			//oOverlay.setVariantManagement(sVarMgtKey);
+		oOverlay.attachEvent("editableChange", RenameHandler._manageClickEvent, this);
+		Plugin.prototype.registerElementOverlay.apply(this, arguments);
 	};
 
-	ControlVariant.prototype._propagateVariantManagement = function(oParentElementOverlay, sVariantManagement) {
+	/**
+	 * Top-down approach for setting VariantManagement reference to all children overlays
+	 *
+	 * @param {sap.ui.dt.Overlay} oParentElementOverlay overlay object for which children overlays are computed
+	 * @param {string} sVariantManagementReference VariantManagement reference to be set
+	 * @returns {array} array of rendered ElementOverlays which have been set with passed VariantManagement reference
+	 * @private
+	 */
+	ControlVariant.prototype._propagateVariantManagement = function(oParentElementOverlay, sVariantManagementReference) {
 		var aElementOverlaysRendered = [];
-		oParentElementOverlay.setVariantManagement(sVariantManagement);
+		oParentElementOverlay.setVariantManagement(sVariantManagementReference);
 		aElementOverlaysRendered = OverlayUtil.getAllChildOverlays(oParentElementOverlay);
 
 		aElementOverlaysRendered.forEach( function(oElementOverlay) {
-			aElementOverlaysRendered = aElementOverlaysRendered.concat(this._propagateVariantManagement(oElementOverlay, sVariantManagement));
+			aElementOverlaysRendered = aElementOverlaysRendered.concat(this._propagateVariantManagement(oElementOverlay, sVariantManagementReference));
 		}.bind(this));
 
 		return aElementOverlaysRendered;
+	};
+
+	/**
+	 * Bottom-up approach for setting VariantManagement reference from parent ElementOverlays
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object for which VariantManagement reference is to be set
+	 * @returns {string} VariantManagement reference
+	 * @private
+	 */
+	ControlVariant.prototype._getVariantManagementFromParent = function(oOverlay) {
+		var sVariantManagementReference = oOverlay.getVariantManagement();
+		if (!sVariantManagementReference && oOverlay.getParentElementOverlay()) {
+			return this._getVariantManagementFromParent(oOverlay.getParentElementOverlay());
+		}
+		return sVariantManagementReference;
 	};
 
 	/**
@@ -7363,9 +9083,312 @@ sap.ui.define("sap/ui/rta/plugin/ControlVariant",[
 	 * @override
 	 */
 	ControlVariant.prototype.deregisterElementOverlay = function(oOverlay) {
+		oOverlay.detachEvent("editableChange", RenameHandler._manageClickEvent, this);
+		oOverlay.detachBrowserEvent("click", RenameHandler._onClick, this);
 
+		this.removeFromPluginsList(oOverlay);
+		Plugin.prototype.deregisterElementOverlay.apply(this, arguments);
 	};
 
+	ControlVariant.prototype._getVariantModel = function(oElement) {
+		var oAppComponent = flUtils.getAppComponentForControl(oElement);
+		return oAppComponent.getModel(ControlVariant.MODEL_NAME);
+	};
+
+	/**
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay overlay
+	 * @returns {boolean} editable or not
+	 * @private
+	 */
+	ControlVariant.prototype._isEditable = function(oOverlay) {
+		return this._isVariantManagementControl(oOverlay);
+	};
+
+	ControlVariant.prototype._isVariantManagementControl = function(oOverlay) {
+		var oElement = oOverlay.getElementInstance(),
+			vAssociationElement = oElement.getAssociation("for");
+		return !!(vAssociationElement && oElement instanceof VariantManagement);
+	};
+
+	/**
+	 * Checks if variant switch is available for oOverlay
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @return {boolean} true if available
+	 * @public
+	 */
+	ControlVariant.prototype.isVariantSwitchAvailable = function(oOverlay) {
+		return this._isVariantManagementControl(oOverlay);
+	};
+
+	/**
+	 * Checks if Variant Switch is enabled for oOverlay
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @return {boolean} true if enabled
+	 * @public
+	 */
+	ControlVariant.prototype.isVariantSwitchEnabled = function(oOverlay) {
+		var oElement = oOverlay.getElementInstance(),
+			sVariantManagementReference = oOverlay.getVariantManagement ? oOverlay.getVariantManagement() : undefined;
+		if (!sVariantManagementReference) {
+			return false;
+		}
+		var oModel = this._getVariantModel(oElement),
+			aVariants = oModel ? oModel.getData()[sVariantManagementReference].variants : [],
+			bEnabled = aVariants.length > 1;
+		return bEnabled;
+	};
+
+	/**
+	 * @override
+	 */
+	ControlVariant.prototype.setDesignTime = function(oDesignTime) {
+		RenameHandler._setDesignTime.call(this, oDesignTime);
+	};
+
+	/**
+	 * Checks if variant rename is available for oOverlay
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @return {boolean} true if available
+	 * @public
+	 */
+	ControlVariant.prototype.isRenameAvailable = function(oOverlay) {
+		return this._isVariantManagementControl(oOverlay);
+	};
+
+	/**
+	 * Checks if variant rename is enabled for oOverlay
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @return {boolean} true if available
+	 * @public
+	 */
+	ControlVariant.prototype.isRenameEnabled = function(oOverlay) {
+		return true;
+	};
+
+	/**
+	 * Checks if variant duplicate is available for oOverlay
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @return {boolean} true if available
+	 * @public
+	 */
+	ControlVariant.prototype.isVariantDuplicateAvailable = function(oOverlay) {
+		return this._isVariantManagementControl(oOverlay);
+	};
+
+	/**
+	 * Checks if variant duplicate is enabled for oOverlay
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @return {boolean} true if available
+	 * @public
+	 */
+	ControlVariant.prototype.isVariantDuplicateEnabled = function(oOverlay) {
+		var sVariantManagementReference = oOverlay.getVariantManagement ? oOverlay.getVariantManagement() : undefined;
+		if (!sVariantManagementReference || !this._isVariantManagementControl(oOverlay)) {
+			return false;
+		}
+		return true;
+	};
+
+	/**
+	 * Checks if variant configure is available for oOverlay
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @return {boolean} true if available
+	 * @public
+	 */
+	ControlVariant.prototype.isVariantConfigureAvailable = function(oOverlay) {
+		return this._isVariantManagementControl(oOverlay);
+	};
+
+	/**
+	 * Checks if variant configure is enabled for oOverlay
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @return {boolean} true if available
+	 * @public
+	 */
+	ControlVariant.prototype.isVariantConfigureEnabled = function(oOverlay) {
+		return false;
+	};
+
+	/**
+	 * Performs a variant switch
+	 *
+	 * @param {object} oTargetOverlay Target variant management overlay
+	 * @param {String} sNewVariantReference The new variant reference
+	 * @param {String} sCurrentVariantReference The current variant reference
+	 * @public
+	 */
+	ControlVariant.prototype.switchVariant = function(oTargetOverlay, sNewVariantReference, sCurrentVariantReference) {
+		var oDesignTimeMetadata = oTargetOverlay.getDesignTimeMetadata(),
+			oTargetElement = oTargetOverlay.getElementInstance();
+
+		var oSwitchCommand = this.getCommandFactory().getCommandFor(oTargetElement, "switch", {
+			targetVariantReference: sNewVariantReference,
+			sourceVariantReference: sCurrentVariantReference
+		}, oDesignTimeMetadata);
+		this.fireElementModified({
+			"command" : oSwitchCommand
+		});
+	};
+
+	/**
+	 * Performs a variant set title
+	 *
+	 * @public
+	 */
+	ControlVariant.prototype.renameVariant = function(aOverlays) {
+		this.startEdit(aOverlays[0]);
+	};
+
+	ControlVariant.prototype.startEdit = function(oOverlay) {
+		var oVariantManagementControl = oOverlay.getElementInstance(),
+			vDomRef = function () {
+				return oVariantManagementControl.getTitle().getDomRef("inner");
+			};
+		RenameHandler.startEdit.call(this, oOverlay, vDomRef, "plugin.ControlVariant.startEdit");
+	};
+
+	ControlVariant.prototype.stopEdit = function (bRestoreFocus) {
+		RenameHandler._stopEdit.call(this, bRestoreFocus, "plugin.ControlVariant.stopEdit");
+	};
+
+	/**
+	 * Performs a variant duplicate
+	 *
+	 * @param {object} oOverlay Variant management overlay
+	 * @public
+	 */
+	ControlVariant.prototype.duplicateVariant = function(oOverlay) {
+		var sVariantManagementReference = oOverlay.getVariantManagement();
+		var oElement = oOverlay.getElementInstance();
+		var oModel = this._getVariantModel(oElement);
+		var sCurrentVariantReference = oModel.getCurrentVariantReference(sVariantManagementReference);
+		var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
+
+		var oDuplicateCommand = this.getCommandFactory().getCommandFor(oElement, "duplicate", {
+			sourceVariantReference: sCurrentVariantReference
+		}, oDesignTimeMetadata, sVariantManagementReference);
+		this.fireElementModified({
+			"command" : oDuplicateCommand
+		});
+	};
+
+	/**
+	 * @private
+	 */
+	ControlVariant.prototype._emitLabelChangeEvent = function() {
+		var sText = RenameHandler._getCurrentEditableFieldText.call(this);
+		if (this.getOldValue() !== sText) { //check for real change before creating a command
+			this._$oEditableControlDomRef.text(sText);
+			try {
+				var oSetTitleCommand;
+				var oRenamedElement = this._oEditedOverlay.getElementInstance();
+				var oDesignTimeMetadata = this._oEditedOverlay.getDesignTimeMetadata();
+				var sVariantManagementReference = this._oEditedOverlay.getVariantManagement();
+
+				oSetTitleCommand = this.getCommandFactory().getCommandFor(oRenamedElement, "setTitle", {
+					renamedElement : oRenamedElement,
+					newText : sText
+				}, oDesignTimeMetadata, sVariantManagementReference);
+				this.fireElementModified({
+					"command" : oSetTitleCommand
+				});
+			} catch (oError) {
+				jQuery.sap.log.error("Error during rename : ", oError);
+			}
+		}
+	};
+
+	/**
+	 * Opens a dialog for Variant configuration
+	 *
+	 * @public
+	 */
+	ControlVariant.prototype.configureVariants = function() {
+		return;
+	};
+
+	/**
+	 * Retrieve the context menu item for the actions.
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
+	 * @return {object[]}          Returns array containing the items with required data
+	 */
+	ControlVariant.prototype.getMenuItems = function(oOverlay){
+		var VARIANT_MODEL_NAME = '$FlexVariants';
+		var aMenuItems = [];
+
+		if (this.isRenameAvailable(oOverlay)){
+			aMenuItems.push({
+				id: "CTX_VARIANT_SET_TITLE",
+				text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_VARIANT_SET_TITLE'),
+				handler: this.renameVariant.bind(this),
+				enabled: this.isRenameEnabled.bind(this),
+				rank: 210
+			});
+		}
+
+		if (this.isVariantDuplicateAvailable(oOverlay)){
+			aMenuItems.push({
+				id: "CTX_VARIANT_DUPLICATE",
+				text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_VARIANT_DUPLICATE'),
+				handler: function(aOverlays){
+					return this.duplicateVariant(aOverlays[0]);
+				}.bind(this),
+				enabled: this.isVariantDuplicateEnabled.bind(this),
+				rank: 220
+			});
+		}
+
+		if (this.isVariantConfigureAvailable(oOverlay)){
+			aMenuItems.push({
+				id: "CTX_VARIANT_CONFIGURE",
+				text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_VARIANT_CONFIGURE'),
+				handler: this.configureVariants.bind(this),
+				enabled: this.isVariantConfigureEnabled.bind(this),
+				startSection: true,
+				rank: 230
+			});
+		}
+
+		if (this.isVariantSwitchAvailable(oOverlay)){
+			aMenuItems.push({
+				id: "CTX_VARIANT_SWITCH_SUBMENU",
+				text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_VARIANT_SWITCH'),
+				handler: function(aOverlays, oItem){
+					var oData = oItem.data(),
+						oTargetOverlay = oData.targetOverlay,
+						sNewVariantKey = oData.key,
+						sCurrentVariantKey = oData.current;
+					return this.switchVariant(oTargetOverlay, sNewVariantKey, sCurrentVariantKey);
+				}.bind(this),
+				enabled: this.isVariantSwitchEnabled.bind(this),
+				submenu: {
+					id: "{" + VARIANT_MODEL_NAME + ">key}",
+					text: "{" + VARIANT_MODEL_NAME + ">title}",
+					model: VARIANT_MODEL_NAME,
+					current: function(oOverlay, oModel) {
+						var sManagementReferenceId = oOverlay.getVariantManagement();
+						return oModel.getData()[sManagementReferenceId].currentVariant;
+					},
+					items: function(oOverlay, oModel) {
+						var sManagementReferenceId = oOverlay.getVariantManagement();
+						return oModel.getData()[sManagementReferenceId].variants;
+					}
+				},
+				type: "subMenuWithBinding",
+				rank: 240
+			});
+		}
+
+		return aMenuItems;
+	};
 
 	return ControlVariant;
 }, /* bExport= */true);
@@ -7378,7 +9401,7 @@ if ( !jQuery.sap.isDeclared('sap.ui.rta.plugin.CreateContainer') ) {
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-// Provides class sap.ui.rta.plugin.Remove.
+// Provides class sap.ui.rta.plugin.CreateContainer.
 jQuery.sap.declare('sap.ui.rta.plugin.CreateContainer'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
 jQuery.sap.require('sap.ui.fl.Utils'); // unlisted dependency retained
 jQuery.sap.require('sap.ui.dt.OverlayRegistry'); // unlisted dependency retained
@@ -7388,7 +9411,12 @@ sap.ui.define("sap/ui/rta/plugin/CreateContainer",[
 	'sap/ui/rta/Utils',
 	'sap/ui/dt/OverlayRegistry'
 
-], function(Plugin, FlexUtils, RtaUtils,  OverlayRegistry) {
+], function(
+	Plugin,
+	FlexUtils,
+	RtaUtils,
+	OverlayRegistry
+) {
 	"use strict";
 
 	/**
@@ -7399,7 +9427,7 @@ sap.ui.define("sap/ui/rta/plugin/CreateContainer",[
 	 * @class The CreateContainer allows trigger CreateContainer operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -7420,19 +9448,16 @@ sap.ui.define("sap/ui/rta/plugin/CreateContainer",[
 	});
 
 	/**
-	 * This function gets called twice, on startup and when we create a context menu.
-	 * On Startup bOverlayIsSibling is not defined as we don't know if it is a sibling or not. In this case we check both cases.
+	 * This function gets called on startup. It checks if the Overlay is editable by this plugin.
 	 * @param {sap.ui.dt.Overlay} oOverlay - overlay to be checked
-	 * @param {boolean} bOverlayIsSibling - (optional) describes whether given overlay is to be checked as a sibling or as a child on editable. Expected values: [true, false, undefined]
-	 * @return {boolean} true, if create container action is possible
+	 * @returns {object} Returns object with editable boolean values for "asChild" and "asSibling"
 	 * @private
 	 */
-	CreateContainer.prototype._isEditable = function(oOverlay, bOverlayIsSibling) {
-		if (bOverlayIsSibling === undefined || bOverlayIsSibling === null) {
-			return this._isEditableCheck(oOverlay, false) || this._isEditableCheck(oOverlay, true);
-		} else {
-			return this._isEditableCheck(oOverlay, bOverlayIsSibling);
-		}
+	CreateContainer.prototype._isEditable = function(oOverlay) {
+		return {
+			asSibling: this._isEditableCheck(oOverlay, true),
+			asChild: this._isEditableCheck(oOverlay, false)
+		};
 	};
 
 	CreateContainer.prototype._isEditableCheck = function (oOverlay, bOverlayIsSibling) {
@@ -7476,11 +9501,11 @@ sap.ui.define("sap/ui/rta/plugin/CreateContainer",[
 		return aActions[0];
 	};
 
-	CreateContainer.prototype.isCreateAvailable = function(bSibling, oOverlay) {
-		return this._isEditable(oOverlay, bSibling);
+	CreateContainer.prototype.isAvailable = function(bSibling, oOverlay) {
+		return this._isEditableByPlugin(oOverlay, bSibling);
 	};
 
-	CreateContainer.prototype.isCreateEnabled = function(bSibling, oOverlay) {
+	CreateContainer.prototype.isEnabled = function(bSibling, oOverlay) {
 		var vAction = this.getCreateAction(bSibling, oOverlay);
 		if (!vAction) {
 			return false;
@@ -7556,17 +9581,67 @@ sap.ui.define("sap/ui/rta/plugin/CreateContainer",[
 		var fnGetIndex = oDesignTimeMetadata.getAggregation(vAction.aggregation).getIndex;
 		var iIndex = this._determineIndex(oTargetElement, oSiblingElement, vAction.aggregation, fnGetIndex);
 
+		var sVariantManagementReference = this.getVariantManagementReference(oParentOverlay, vAction);
+
 		var oCommand = this.getCommandFactory().getCommandFor(oTargetElement, "createContainer", {
 			newControlId : sNewControlID,
 			label : this._getContainerTitle(vAction, oTargetElement, oDesignTimeMetadata),
 			index : iIndex
-		}, oDesignTimeMetadata);
+		}, oDesignTimeMetadata, sVariantManagementReference);
 
 		this.fireElementModified({
 			"command" : oCommand,
 			"action" : vAction,
 			"newControlId" : sNewControlID
 		});
+	};
+
+	/**
+	 * Retrieve the context menu item for the actions.
+	 * Two items are returned here: one for when the overlay is sibling and one for when it is child.
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
+	 * @return {object[]}          Returns array containing the items with required data
+	 */
+	CreateContainer.prototype.getMenuItems = function(oOverlay){
+		var bOverlayIsSibling = true;
+		var sPluginId = "CTX_CREATE_SIBLING_CONTAINER";
+		var iRank = 40;
+		var aMenuItems = [];
+		for (var i = 0; i < 2; i++){
+			if (this.isAvailable(bOverlayIsSibling, oOverlay)){
+				var sMenuItemText = this.getCreateContainerText.bind(this, bOverlayIsSibling);
+
+				aMenuItems.push({
+					id: sPluginId,
+					text: sMenuItemText,
+					handler: this.handler.bind(this, bOverlayIsSibling),
+					enabled: this.isEnabled.bind(this, bOverlayIsSibling),
+					rank: iRank
+				});
+			}
+			bOverlayIsSibling = false;
+			sPluginId = "CTX_CREATE_CHILD_CONTAINER";
+			iRank = 50;
+		}
+		return aMenuItems;
+	};
+
+	/**
+	 * Get the name of the action related to this plugin.
+	 * @return {string} Returns the action name
+	 */
+	CreateContainer.prototype.getActionName = function(){
+		return "createContainer";
+	};
+
+	/**
+	 * Trigger the plugin execution.
+	 * @param  {boolean} bOverlayIsSibling True if the overlay is sibling
+	 * @param  {sap.ui.dt.ElementOverlay[]} aOverlays Selected overlays; targets of the action
+	 */
+	CreateContainer.prototype.handler = function(bOverlayIsSibling, aOverlays){
+		//TODO: Handle "Stop Cut & Paste" depending on alignment with Dietrich!
+		this.handleCreate(bOverlayIsSibling, aOverlays[0]);
 	};
 
 	return CreateContainer;
@@ -7597,7 +9672,7 @@ sap.ui.define("sap/ui/rta/plugin/EasyAdd",[
 	 * @class The EasyAdd Plugin adds an Icon to an Overlay, which allows to trigger add operations directly
 	 * @extends sap.ui.rta.plugin.additionalElements.AdditionalElementsPlugin
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -7643,7 +9718,7 @@ sap.ui.define("sap/ui/rta/plugin/EasyAdd",[
 						oEvent.cancelBubble();
 					};
 					var sControlName = typeof vControlName === "function" ? vControlName() : vControlName;
-					this._addButton(oOverlay, fnCallback, oOverlayDom, sControlName);
+					this._addButton(oOverlay, fnCallback, oOverlayDom, sControlName, bSibling);
 				}.bind(this);
 
 				if (oOverlay.$().hasClass("sapUiRtaPersAdd")) {
@@ -7704,19 +9779,38 @@ sap.ui.define("sap/ui/rta/plugin/EasyAdd",[
 	};
 
 	/**
+	 * On Editable Change the enablement of the Button has to be adapted
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @override
+	 */
+	EasyAdd.prototype._isEditable = function(oOverlay) {
+		var bIsEditable = AdditionalElementsPlugin.prototype._isEditable.apply(this, arguments);
+		if (oOverlay._oAddButton) {
+			var sOverlayIsSibling = oOverlay.hasStyleClass("sapUiRtaPersAddTop") ? "asChild" : "asSibling";
+			oOverlay._oAddButton.setEnabled(bIsEditable[sOverlayIsSibling]);
+		}
+		return bIsEditable;
+	};
+
+	/**
 	 * @param {sap.ui.dt.ElementOverlay} oOverlay - overlay object
 	 * @param {function} fnCallback - callback function will be passed to the new button as on press event function
 	 * @param {object} oOverlayDom - dom object of the overlay
 	 * @param {string} sControlName - name of the control. This name will be displayed on the Add-Button
 	 * @private
 	 */
-	EasyAdd.prototype._addButton = function(oOverlay, fnCallback, oOverlayDom, sControlName) {
+	EasyAdd.prototype._addButton = function(oOverlay, fnCallback, oOverlayDom, sControlName, bOverlayIsSibling) {
+		var bIsEditable = oOverlay.getEditableByPlugins().indexOf(this._retrievePluginName(bOverlayIsSibling)) > -1;
+		var oTextResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
+
 		var sId = oOverlay.getId() + "-AddButton";
 		var oHtmlButtonOuter = jQuery("<div class='sapUiRtaPersAddIconOuter' draggable='true'> </div>");
 		oOverlay._oAddButton = new sap.m.Button(sId, {
-			text: "Add " + sControlName,
+			text: oTextResources.getText("CTX_ADD_ELEMENTS", sControlName),
 			icon: "sap-icon://add",
-			press: fnCallback
+			press: fnCallback,
+			enabled: bIsEditable
 		}).placeAt(oHtmlButtonOuter.get(0));
 		oOverlayDom.append(oHtmlButtonOuter);
 
@@ -7759,9 +9853,11 @@ if ( !jQuery.sap.isDeclared('sap.ui.rta.plugin.EasyRemove') ) {
 
 // Provides class sap.ui.rta.plugin.EasyRemove.
 jQuery.sap.declare('sap.ui.rta.plugin.EasyRemove'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('sap.m.Button'); // unlisted dependency retained
 sap.ui.define("sap/ui/rta/plugin/EasyRemove",[
-	'sap/ui/rta/plugin/Remove'
-], function(Remove) {
+	'sap/ui/rta/plugin/Remove',
+	'sap/m/Button'
+], function(Remove, Button) {
 	"use strict";
 
 	/**
@@ -7772,7 +9868,7 @@ sap.ui.define("sap/ui/rta/plugin/EasyRemove",[
 	 * @class The EasyRemove Plugin adds an Icon to an Overlay, which allows to trigger remove operations directly
 	 * @extends sap.ui.rta.plugin.Remove
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -7801,37 +9897,23 @@ sap.ui.define("sap/ui/rta/plugin/EasyRemove",[
 	EasyRemove.prototype.registerElementOverlay = function(oOverlay) {
 		this._oDelegate = {
 			"onAfterRendering" : function() {
-				var onDeletePressed = function(oOverlay) {
-					this._handleRemove([oOverlay]);
-				}.bind(this);
-
 				if (oOverlay.$().hasClass("sapUiRtaPersDelete") && oOverlay.$().children(".sapUiRtaPersDeleteClick").length <= 0) {
-					var sId = oOverlay.getId() + "-DeleteIcon";
-					var oHtmlIconWrapper = jQuery("<div class='sapUiRtaPersDeleteClick' draggable='true'> </div>");
-					var oHtmlIconOuter = jQuery("<div class='sapUiRtaPersDeleteIconOuter'> </div>");
-					oOverlay._oDeleteIcon = new sap.ui.core.Icon(sId, {
-						src : "sap-icon://decline",
-						tooltip: sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta").getText("CTX_REMOVE"),
-						press: function(oEvent) {
-							var oOverlay = sap.ui.getCore().byId(oEvent.getSource().getId().replace("-DeleteIcon", ""));
-							onDeletePressed(oOverlay);
-							oEvent.cancelBubble();
-						},
-						noTabStop: true
-					}).placeAt(oHtmlIconOuter.get(0));
-					oHtmlIconWrapper.append(oHtmlIconOuter);
-					oOverlay.$().append(oHtmlIconWrapper);
+					var onDeletePressed = function(oOverlay) {
+						this.handler([oOverlay]);
+					}.bind(this);
 
-					oOverlay._oDeleteIcon.attachBrowserEvent("contextmenu", function(oEvent) {
+					var oDeleteButton = this._addButton(oOverlay);
+					oDeleteButton.attachBrowserEvent("contextmenu", function(oEvent) {
 						oEvent.stopPropagation();
 						oEvent.preventDefault();
 					});
-
-					oHtmlIconWrapper[0].addEventListener("dragstart", function(oEvent) {
-						oEvent.stopPropagation();
-						oEvent.preventDefault();
+					oDeleteButton.attachPress(function(oEvent) {
+						var oOverlay = sap.ui.getCore().byId(oEvent.getSource().getId().replace("-DeleteIcon", ""));
+						onDeletePressed(oOverlay);
+						oEvent.cancelBubble();
 					});
-			}
+
+				}
 
 				oOverlay.removeEventDelegate(this._oDelegate, this);
 			}
@@ -7847,6 +9929,41 @@ sap.ui.define("sap/ui/rta/plugin/EasyRemove",[
 	};
 
 	/**
+	 * On Editable Change the enablement of the Button has to be adapted
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @override
+	 */
+	EasyRemove.prototype._isEditable = function(oOverlay) {
+		if (oOverlay._oDeleteButton) {
+			oOverlay._oDeleteButton.setEnabled(this.isEnabled(oOverlay));
+		}
+		return Remove.prototype._isEditable.apply(this, arguments);
+	};
+
+	EasyRemove.prototype._addButton = function(oOverlay) {
+		var bEnabled = this.isEnabled(oOverlay);
+		var sId = oOverlay.getId() + "-DeleteIcon";
+		var oHtmlIconWrapper = jQuery("<div class='sapUiRtaPersDeleteClick' draggable='true'> </div>");
+		var oHtmlIconOuter = jQuery("<div class='sapUiRtaPersDeleteIconOuter'> </div>");
+
+		oOverlay._oDeleteButton = new Button(sId, {
+			icon : "sap-icon://decline",
+			tooltip: sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta").getText("CTX_REMOVE"),
+			enabled: bEnabled,
+			noTabStop: true
+		}).placeAt(oHtmlIconOuter.get(0));
+		oHtmlIconWrapper.append(oHtmlIconOuter);
+		oOverlay.$().append(oHtmlIconWrapper);
+
+		oHtmlIconWrapper[0].addEventListener("dragstart", function(oEvent) {
+			oEvent.stopPropagation();
+			oEvent.preventDefault();
+		});
+		return oOverlay._oDeleteButton;
+	};
+
+	/**
 	 * Deregister browser event for an overlay
 	 *
 	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
@@ -7857,8 +9974,8 @@ sap.ui.define("sap/ui/rta/plugin/EasyRemove",[
 		if (oControl.getMetadata().getName() === "sap.uxap.ObjectPageSection") {
 			oOverlay.removeStyleClass("sapUiRtaPersDelete");
 			oOverlay.removeEventDelegate(this._oDelegate, this);
-			if (oOverlay._oDeleteIcon) {
-				oOverlay._oDeleteIcon.destroy();
+			if (oOverlay._oDeleteButton) {
+				oOverlay._oDeleteButton.destroy();
 			}
 		}
 	};
@@ -7915,7 +10032,7 @@ function(
 	 * The RTAElementMover is responsible for the RTA specific adaptation of element movements.
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -7961,17 +10078,26 @@ function(
 		this.oBasePlugin.setCommandFactory(oCommandFactory);
 	};
 
+	RTAElementMover.prototype.isEditable = function(oOverlay, bOnRegistration) {
+		var oElement = oOverlay.getElementInstance();
+		var bMovable = false;
+		if (this.isMovableType(oElement) && this.checkMovable(oOverlay, bOnRegistration)) {
+			bMovable = true;
+		}
+		oOverlay.setMovable(bMovable);
+		return bMovable;
+	};
+
 	/**
 	 * Check if the element is editable for the move
 	 * @param  {sap.ui.dt.Overlay}  oOverlay The overlay being moved or the aggregation overlay
 	 * @param  {[type]}  oMovedElement The element being moved if the aggregation overlay is present
 	 * @return {Boolean} true if editable
 	 */
-	function fnIsValidForMove(oOverlay) {
+	function fnIsValidForMove(oOverlay, bOnRegistration) {
 		var bValid = false,
 			oDesignTimeMetadata = oOverlay.getDesignTimeMetadata(),
-			oParentElementOverlay = oOverlay.getParentElementOverlay(),
-			oChangeHandlerRelevantElement;
+			oParentElementOverlay = oOverlay.getParentElementOverlay();
 
 		if (!oDesignTimeMetadata || !oParentElementOverlay) {
 			return false;
@@ -7983,17 +10109,33 @@ function(
 			return false;
 		}
 
-		var oMoveAction = this._getMoveAction(oOverlay);
-		if (oMoveAction && oMoveAction.changeType) {
-			// moveChangeHandler information is always located on the relevant container
-			oChangeHandlerRelevantElement = oOverlay.getRelevantContainer();
-			bValid = this.oBasePlugin.hasChangeHandler(oMoveAction.changeType, oChangeHandlerRelevantElement);
-		}
+		bValid = this._isMoveAvailableOnRelevantContainer(oOverlay);
 
 		if (bValid) {
 			bValid = this.oBasePlugin.hasStableId(oOverlay) &&
 			this.oBasePlugin.hasStableId(oParentElementOverlay) &&
 			this.oBasePlugin.hasStableId(oRelevantContainerOverlay);
+		}
+
+		// element is only valid for move if it can be moved to somewhere else
+		if (bValid) {
+			var aOverlays = OverlayUtil.findAllUniqueAggregationOverlaysInContainer(oOverlay, oRelevantContainerOverlay);
+
+			var aValidAggregationOverlays = aOverlays.filter(function(oAggregationOverlay) {
+				return this.checkTargetZone(oAggregationOverlay, oOverlay, bOnRegistration);
+			}.bind(this));
+
+			if (aValidAggregationOverlays.length < 1) {
+				bValid = false;
+			} else if (aValidAggregationOverlays.length === 1) {
+				var aVisibleOverlays = aValidAggregationOverlays[0].getChildren().filter(function(oChildOverlay) {
+					var oChildElement = oChildOverlay.getElementInstance();
+					// At least one sibling has to be visible and still attached to the parent
+					// In some edge cases, the child element is not available anymore (element already got destroyed)
+					return (oChildElement && oChildElement.getVisible() && oChildElement.getParent());
+				});
+				bValid = aVisibleOverlays.length > 1;
+			}
 		}
 
 		return bValid;
@@ -8039,8 +10181,8 @@ function(
 	 * @return {boolean} true if embedded, false if not
 	 * @override
 	 */
-	RTAElementMover.prototype.checkMovable = function(oOverlay) {
-		return fnIsValidForMove.call(this, oOverlay);
+	RTAElementMover.prototype.checkMovable = function(oOverlay, bOnRegistration) {
+		return fnIsValidForMove.call(this, oOverlay, bOnRegistration);
 	};
 
 	/**
@@ -8049,13 +10191,14 @@ function(
 	 * @return {boolean} true if aggregation overlay is droppable, false if not
 	 * @override
 	 */
-	RTAElementMover.prototype.checkTargetZone = function(oAggregationOverlay) {
-		var bTargetZone = ElementMover.prototype.checkTargetZone.call(this, oAggregationOverlay);
+	RTAElementMover.prototype.checkTargetZone = function(oAggregationOverlay, oOverlay, bOverlayNotInDom) {
+		var oMovedOverlay = oOverlay ? oOverlay : this.getMovedOverlay();
+
+		var bTargetZone = ElementMover.prototype.checkTargetZone.call(this, oAggregationOverlay, oMovedOverlay, bOverlayNotInDom);
 		if (!bTargetZone) {
 			return false;
 		}
 
-		var oMovedOverlay = this.getMovedOverlay();
 		var oMovedElement = oMovedOverlay.getElementInstance();
 		var oTargetOverlay = oAggregationOverlay.getParent();
 		var oMovedRelevantContainer = oMovedOverlay.getRelevantContainer();
@@ -8079,7 +10222,7 @@ function(
 		if (oMovedOverlay.getParent().getElementInstance() !== oTargetElement) {
 			// check if binding context is the same
 			var aBindings = BindingsExtractor.getBindings(oMovedElement, oMovedElement.getModel());
-			if (Object.keys(aBindings).length > 0 && oTargetElement.getBindingContext()) {
+			if (Object.keys(aBindings).length > 0 && oMovedElement.getBindingContext() && oTargetElement.getBindingContext()) {
 				var sMovedElementBindingContext = Utils.getEntityTypeByPath(
 					oMovedElement.getModel(),
 					oMovedElement.getBindingContext().getPath()
@@ -8096,6 +10239,23 @@ function(
 
 		// check if movedOverlay is movable into the target aggregation
 		return fnHasMoveAction.call(this, oAggregationOverlay, oMovedElement, vTargetRelevantContainerAfterMove);
+	};
+
+	/**
+	 * Checks if move is available on relevantcontainer
+	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @return {boolean} true if move available on relevantContainer
+	 */
+	RTAElementMover.prototype._isMoveAvailableOnRelevantContainer = function(oOverlay) {
+		var oChangeHandlerRelevantElement,
+			oMoveAction = this._getMoveAction(oOverlay);
+
+		if (oMoveAction && oMoveAction.changeType) {
+			// moveChangeHandler information is always located on the relevant container
+			oChangeHandlerRelevantElement = oOverlay.getRelevantContainer();
+			return this.oBasePlugin.hasChangeHandler(oMoveAction.changeType, oChangeHandlerRelevantElement);
+		}
+		return false;
 	};
 
 	/**
@@ -8121,6 +10281,9 @@ function(
 		delete oSource.index;
 		delete oTarget.index;
 
+		var oMoveAction = this._getMoveAction(oMovedOverlay);
+		var sVariantManagementReference = this.oBasePlugin.getVariantManagementReference(oMovedOverlay, oMoveAction, true);
+
 		var oMove = this.getCommandFactory().getCommandFor(oRelevantContainer, "Move", {
 			movedElements : [{
 				element : oMovedElement,
@@ -8129,7 +10292,7 @@ function(
 			}],
 			source : oSource,
 			target : oTarget
-		}, oParentAggregationOverlay.getDesignTimeMetadata());
+		}, oParentAggregationOverlay.getDesignTimeMetadata(), sVariantManagementReference);
 
 		return oMove;
 
@@ -8139,6 +10302,257 @@ function(
 }, /* bExport= */ true);
 
 }; // end of sap/ui/rta/plugin/RTAElementMover.js
+if ( !jQuery.sap.isDeclared('sap.ui.rta.plugin.Rename') ) {
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+
+// Provides class sap.ui.rta.plugin.Rename.
+jQuery.sap.declare('sap.ui.rta.plugin.Rename'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('jquery.sap.global'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.dt.Overlay'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.dt.ElementUtil'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.dt.OverlayUtil'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.dt.OverlayRegistry'); // unlisted dependency retained
+sap.ui.define("sap/ui/rta/plugin/Rename",[
+	'jquery.sap.global',
+	'sap/ui/rta/plugin/Plugin',
+	'sap/ui/rta/plugin/RenameHandler',
+	'sap/ui/dt/Overlay',
+	'sap/ui/dt/ElementUtil',
+	'sap/ui/dt/OverlayUtil',
+	'sap/ui/dt/OverlayRegistry',
+	'sap/ui/rta/Utils'
+], function(
+	jQuery,
+	Plugin,
+	RenameHandler,
+	Overlay,
+	ElementUtil,
+	OverlayUtil,
+	OverlayRegistry,
+	Utils
+) {
+	"use strict";
+
+	/**
+	 * Constructor for a new Rename.
+	 *
+	 * @param {string}
+	 *          [sId] id for the new object, generated automatically if no id is given
+	 * @param {object}
+	 *          [mSettings] initial settings for the new object
+	 *
+	 * @class The Rename allows to create a set of Overlays above the root elements and their public children and manage
+	 *        their events.
+	 * @extends sap.ui.rta.plugin.Plugin
+	 *
+	 * @author SAP SE
+	 * @version 1.52.5
+	 *
+	 * @constructor
+	 * @private
+	 * @since 1.30
+	 * @alias sap.ui.rta.plugin.Rename
+	 * @experimental Since 1.30. This class is experimental and provides only limited functionality. Also the API might be
+	 *               changed in future.
+	 */
+	var Rename = Plugin.extend("sap.ui.rta.plugin.Rename", /** @lends sap.ui.rta.plugin.Rename.prototype */
+	{
+		metadata : {
+			// ---- object ----
+
+			// ---- control specific ----
+			library : "sap.ui.rta",
+			properties : {
+				oldValue : "string"
+			},
+			associations : {},
+			events : {
+				/** Fired when renaming is possible */
+				"editable" : {},
+
+				/** Fired when renaming is switched off */
+				"nonEditable" : {}
+			}
+		}
+	});
+
+	/**
+	 * @override
+	 */
+	Rename.prototype.exit = function() {
+		Plugin.prototype.exit.apply(this, arguments);
+
+		RenameHandler._exit.call(this);
+	};
+
+	/**
+	 * @override
+	 */
+	Rename.prototype.setDesignTime = function(oDesignTime) {
+		RenameHandler._setDesignTime.call(this, oDesignTime);
+	};
+
+	Rename.prototype.startEdit = function (oOverlay) {
+		var oElement = oOverlay.getElementInstance(),
+			oDesignTimeMetadata = oOverlay.getDesignTimeMetadata(),
+			vDomRef = oDesignTimeMetadata.getAction("rename", oElement).domRef;
+		RenameHandler.startEdit.call(this, oOverlay, vDomRef, "plugin.Rename.startEdit");
+	};
+
+	Rename.prototype.stopEdit = function (bRestoreFocus) {
+		RenameHandler._stopEdit.call(this, bRestoreFocus, "plugin.Rename.stopEdit");
+	};
+
+	Rename.prototype.handler = function (aOverlays) {
+		this.startEdit(aOverlays[0]);
+	};
+
+	/**
+	 * Checks if rename is available for oOverlay
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @returns {boolean} true if it's editable
+	 * @public
+	 */
+	Rename.prototype.isRenameAvailable = function(oOverlay) {
+		return this._isEditableByPlugin(oOverlay);
+	};
+
+	Rename.prototype.isRenameEnabled = function (oOverlay) {
+		return this.isEnabled(oOverlay);
+	};
+
+	/**
+	 * Checks if rename is enabled for oOverlay
+	 *
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @returns {boolean} true if it's enabled
+	 * @public
+	 */
+	Rename.prototype.isEnabled = function(oOverlay) {
+		var bIsEnabled = true;
+		var oAction = this.getAction(oOverlay);
+		if (!oAction) {
+			bIsEnabled = false;
+		}
+
+		if (bIsEnabled && typeof oAction.isEnabled !== "undefined") {
+			if (typeof oAction.isEnabled === "function") {
+				bIsEnabled = oAction.isEnabled(oOverlay.getElementInstance());
+			} else {
+				bIsEnabled = oAction.isEnabled;
+			}
+		}
+
+		if (bIsEnabled) {
+			var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
+			if (!oDesignTimeMetadata.getAssociatedDomRef(oOverlay.getElementInstance(), oAction.domRef)) {
+				bIsEnabled = false;
+			}
+		}
+
+		return bIsEnabled && this.isMultiSelectionInactive.call(this, oOverlay);
+	};
+
+	/**
+	 * @override
+	 */
+	Rename.prototype.registerElementOverlay = function(oOverlay) {
+		oOverlay.attachEvent("editableChange", RenameHandler._manageClickEvent, this);
+
+		Plugin.prototype.registerElementOverlay.apply(this, arguments);
+	};
+
+	/**
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay overlay to be checked for editable
+	 * @returns {boolean} true if it's editable
+	 * @private
+	 */
+	Rename.prototype._isEditable = function(oOverlay) {
+		var bEditable = false;
+		var oElement = oOverlay.getElementInstance();
+
+		if (!Utils.getRelevantContainerDesigntimeMetadata(oOverlay)) {
+			return false;
+		}
+
+		var oRenameAction = this.getAction(oOverlay);
+		if (oRenameAction && oRenameAction.changeType) {
+			if (oRenameAction.changeOnRelevantContainer) {
+				oElement = oOverlay.getRelevantContainer();
+			}
+			bEditable = this.hasChangeHandler(oRenameAction.changeType, oElement);
+		}
+
+		if (bEditable) {
+			return this.hasStableId(oOverlay);
+		}
+
+		return bEditable;
+	};
+
+	/**
+	 * @override
+	 */
+	Rename.prototype.deregisterElementOverlay = function(oOverlay) {
+		oOverlay.detachEvent("editableChange", RenameHandler._manageClickEvent, this);
+		oOverlay.detachBrowserEvent("click", RenameHandler._onClick, this);
+
+		this.removeFromPluginsList(oOverlay);
+	};
+
+	/**
+	 * @private
+	 */
+	Rename.prototype._emitLabelChangeEvent = function() {
+		var sText = RenameHandler._getCurrentEditableFieldText.call(this);
+		if (this.getOldValue() !== sText) { //check for real change before creating a command
+			this._$oEditableControlDomRef.text(sText);
+			try {
+				var oRenameCommand;
+				var oRenamedElement = this._oEditedOverlay.getElementInstance();
+				var oDesignTimeMetadata = this._oEditedOverlay.getDesignTimeMetadata();
+				var oRenameAction = this.getAction(this._oEditedOverlay);
+				var sVariantManagementReference = this.getVariantManagementReference(this._oEditedOverlay, oRenameAction);
+
+				oRenameCommand = this.getCommandFactory().getCommandFor(oRenamedElement, "rename", {
+					renamedElement : oRenamedElement,
+					newValue : sText
+				}, oDesignTimeMetadata, sVariantManagementReference);
+				this.fireElementModified({
+					"command" : oRenameCommand
+				});
+			} catch (oError) {
+				jQuery.sap.log.error("Error during rename : ", oError);
+			}
+		}
+	};
+
+	/**
+	 * Retrieve the context menu item for the action.
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
+	 * @return {object[]}          Returns array containing the items with required data
+	 */
+	Rename.prototype.getMenuItems = function(oOverlay){
+		return this._getMenuItems(oOverlay, {pluginId : "CTX_RENAME", rank : 10});
+	};
+
+	/**
+	 * Get the name of the action related to this plugin.
+	 * @return {string} Returns the action name
+	 */
+	Rename.prototype.getActionName = function(){
+		return "rename";
+	};
+
+	return Rename;
+}, /* bExport= */true);
+
+}; // end of sap/ui/rta/plugin/Rename.js
 if ( !jQuery.sap.isDeclared('sap.ui.rta.plugin.additionalElements.AdditionalElementsAnalyzer') ) {
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
@@ -8257,14 +10671,36 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer",
 						var sBindingContextPath = oBindingContext.getPath();
 						var oMetaModelContext = oMetaModel.getMetaContext(sBindingContextPath);
 						var mODataEntity = oMetaModelContext.getObject();
+						var oDefaultAggregation = oElement.getMetadata().getAggregation();
+
+						if (oDefaultAggregation) {
+							var oBinding = oElement.getBindingInfo(oDefaultAggregation.name);
+							var oTemplate = oBinding && oBinding.template;
+
+							if (oTemplate) {
+								var sPath = oElement.getBindingPath(oDefaultAggregation.name);
+								if (sPath) {
+									var sFullyQualifiedEntityName = (
+										oMetaModel.getODataAssociationEnd(mODataEntity, sPath)
+										&& oMetaModel.getODataAssociationEnd(mODataEntity, sPath).type
+									);
+									var oEntityType = oMetaModel.getODataEntityType(sFullyQualifiedEntityName);
+									mODataEntity = oEntityType;
+								}
+							}
+						}
+
 						mData.property = mODataEntity.property || [];
 						mData.property = _expandComplexProperties(mData.property, oMetaModel, mODataEntity);
 						mData.property = _filterInvisibleProperties(mData.property, oElement);
+
 						if (mODataEntity.navigationProperty){
 							mData.navigationProperty = mODataEntity.navigationProperty;
 							mODataEntity.navigationProperty.forEach(function(oNavProp){
-								var sFullyQualifiedEntityName = oMetaModel.getODataAssociationEnd(mODataEntity, oNavProp.name)
-									&& oMetaModel.getODataAssociationEnd(mODataEntity, oNavProp.name).type;
+								var sFullyQualifiedEntityName = (
+									oMetaModel.getODataAssociationEnd(mODataEntity, oNavProp.name)
+									&& oMetaModel.getODataAssociationEnd(mODataEntity, oNavProp.name).type
+								);
 								var oEntityType = oMetaModel.getODataEntityType(sFullyQualifiedEntityName);
 								if (oEntityType && oEntityType.name){
 									if (mData.navigationEntityNames.indexOf(oEntityType.name) === -1){
@@ -8326,7 +10762,7 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer",
 	 * @private
 	 */
 	function _getRelevantElements(oElement, oRelevantContainer){
-		if (oRelevantContainer) {
+		if (oRelevantContainer && oRelevantContainer !== oElement) {
 			var sEntityName = RtaUtils.getEntityTypeByPath(
 				oElement.getModel(),
 				oElement.getBindingContext().getPath()
@@ -8371,18 +10807,45 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer",
 	function _collectBindingPaths(oInvisibleElement, oModel){
 		oInvisibleElement.bindingPaths = [];
 		oInvisibleElement.bindingContextPaths = [];
+		var sAggregationName = oInvisibleElement.sParentAggregationName;
+		var oParent = oInvisibleElement.getParent();
+		var aBindings = BindingsExtractor.getBindings(oInvisibleElement, oModel);
 
-		var oBindings = BindingsExtractor.getBindings(oInvisibleElement, oModel);
+		if (oParent) {
+			var oDefaultAggregation = oParent.getMetadata().getAggregation();
 
-		for (var i = 0, l = oBindings.length; i < l; i++) {
-			if (oBindings[i].getPath && oBindings[i].getPath()){
-				if (oInvisibleElement.bindingPaths.indexOf(oBindings[i].getPath()) === -1){
-					oInvisibleElement.bindingPaths.push(oBindings[i].getPath());
+			if (oDefaultAggregation) {
+				var iPositionOfInvisibleElement = ElementUtil.getAggregation(oParent, sAggregationName).indexOf(oInvisibleElement);
+				var sParentDefaultAggregationName = oDefaultAggregation.name;
+				var oBinding = oParent.getBindingInfo(sParentDefaultAggregationName);
+				var oTemplate = oBinding && oBinding.template;
+
+				if (oTemplate) {
+					var oTemplateDefaultAggregation = oTemplate.getMetadata().getAggregation();
+
+					if (oTemplateDefaultAggregation) {
+						var sTemplateDefaultAggregationName = oTemplateDefaultAggregation.name;
+						var oTemplateElement = ElementUtil.getAggregation(oTemplate, sTemplateDefaultAggregationName)[iPositionOfInvisibleElement];
+						aBindings = aBindings.concat(BindingsExtractor.getBindings(oTemplateElement, null, true));
+					}
 				}
 			}
-			if (oBindings[i].getContext && oBindings[i].getContext()){
-				if (oInvisibleElement.bindingContextPaths.indexOf(oBindings[i].getContext().getPath()) === -1){
-					oInvisibleElement.bindingContextPaths.push(oBindings[i].getContext().getPath());
+		}
+
+		for (var i = 0, l = aBindings.length; i < l; i++) {
+			if (aBindings[i].getPath && aBindings[i].getPath()){
+				if (oInvisibleElement.bindingPaths.indexOf(aBindings[i].getPath()) === -1){
+					oInvisibleElement.bindingPaths.push(aBindings[i].getPath());
+				}
+			}
+			if (aBindings[i].getContext && aBindings[i].getContext()){
+				if (oInvisibleElement.bindingContextPaths.indexOf(aBindings[i].getContext().getPath()) === -1){
+					oInvisibleElement.bindingContextPaths.push(aBindings[i].getContext().getPath());
+				}
+			}
+			if (jQuery.isPlainObject(aBindings[i])){
+				if (oInvisibleElement.bindingPaths.indexOf(aBindings[i].parts[0].path) === -1){
+					oInvisibleElement.bindingPaths.push(aBindings[i].parts[0].path);
 				}
 			}
 		}
@@ -8594,8 +11057,12 @@ sap.ui.define("sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer",
 					aODataProperties = aODataProperties.filter(function(oDataProperty) {
 						var bHasBindingPath = false;
 						if (aBindings){
-							bHasBindingPath = aBindings.some(function(oBinding){
-								return !!oBinding.getPath && (oBinding.getPath() === oDataProperty.bindingPath);
+							bHasBindingPath = aBindings.some(function(vBinding) {
+								return (
+									jQuery.isPlainObject(vBinding)
+									? vBinding.parts[0].path
+									: !!vBinding.getPath && vBinding.getPath()
+								) === oDataProperty.bindingPath;
 							});
 						}
 						return !bHasBindingPath && fnFilter(mAction.relevantContainer, oDataProperty);
@@ -8652,7 +11119,7 @@ function(
 	 * @extends sap.m.Toolbar
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -8840,7 +11307,7 @@ function(
 			iNextZIndex = Popup.getNextZIndex();
 		}
 
-		return this.setZIndex(iNextZIndex);
+		this.setZIndex(iNextZIndex);
 	};
 
 	/**
@@ -8882,7 +11349,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Base
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -8957,13 +11424,17 @@ sap.ui.define("sap/ui/rta/plugin/CutPaste",[
 	'sap/ui/dt/plugin/CutPaste',
 	'sap/ui/dt/OverlayUtil',
 	'sap/ui/rta/plugin/Plugin',
-	'sap/ui/rta/plugin/RTAElementMover'
+	'sap/ui/rta/plugin/RTAElementMover',
+	'sap/ui/rta/Utils'
 ],
-function(jQuery,
-		ControlCutPaste,
-		OverlayUtil,
-		Plugin,
-		RTAElementMover) {
+function(
+	jQuery,
+	ControlCutPaste,
+	OverlayUtil,
+	Plugin,
+	RTAElementMover,
+	Utils
+) {
 	"use strict";
 
 	/**
@@ -8977,7 +11448,7 @@ function(jQuery,
 	 * @extends sap.ui.dt.plugin.CutPaste
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -9009,6 +11480,11 @@ function(jQuery,
 		}
 	});
 
+	// Extends the CutPaste Plugin with all the functions from our rta base plugin
+	Utils.extendWith(CutPaste.prototype, Plugin.prototype, function(vDestinationValue, vSourceValue, sProperty, mDestination, mSource) {
+		return sProperty !== "getMetadata";
+	});
+
 	/**
 	 * @override
 	 */
@@ -9018,16 +11494,37 @@ function(jQuery,
 	};
 
 	/**
+	 * @override
+	 */
+	CutPaste.prototype._isEditable = function(oOverlay, mPropertyBag) {
+		return this.getElementMover().isEditable(oOverlay, mPropertyBag.onRegistration) || this._isPasteEditable(oOverlay);
+	};
+
+	CutPaste.prototype._isPasteEditable = function (oOverlay) {
+		var	oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
+
+		return this.hasStableId(oOverlay) &&
+			this.getElementMover()._isMoveAvailableOnRelevantContainer(oOverlay) &&
+			oDesignTimeMetadata.isActionAvailableOnAggregations("move");
+	};
+
+	/**
+	 * @override
+	 * @param  {sap.ui.dt.Overlay}  oOverlay Selected overlay
+	 * @return {boolean}        Returns true if the plugin is available
+	 */
+	CutPaste.prototype.isAvailable = function(oOverlay) {
+		return oOverlay.getMovable();
+	};
+
+	/**
 	 * Register an overlay
 	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
 	 * @override
 	 */
 	CutPaste.prototype.registerElementOverlay = function(oOverlay) {
 		ControlCutPaste.prototype.registerElementOverlay.apply(this, arguments);
-
-		if (oOverlay.isMovable()) {
-			Plugin.prototype.addToPluginsList.apply(this, arguments);
-		}
+		Plugin.prototype.registerElementOverlay.apply(this, arguments);
 	};
 
 	/**
@@ -9054,6 +11551,46 @@ function(jQuery,
 		this.stopCutAndPaste();
 	};
 
+	/**
+	 * Retrieve the context menu item for the actions.
+	 * Two items are returned here: one for "cut" and one for "paste".
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
+	 * @return {object[]}          Returns array containing the items with required data
+	 */
+	CutPaste.prototype.getMenuItems = function(oOverlay){
+		var aMenuItems = [],
+			oCutMenuItem = {
+				id: 'CTX_CUT',
+				text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_CUT'),
+				handler: function(aOverlays){
+					return this.cut(aOverlays[0]);
+				}.bind(this),
+				enabled: function (){
+					return this.getDesignTime().getSelection().length === 1;
+				}.bind(this),
+				rank: 70
+			},
+			oPasteMenuItem = {
+				id: 'CTX_PASTE',
+				text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_PASTE'),
+				handler: function(aOverlays){
+					return this.paste(aOverlays[0]);
+				}.bind(this),
+				enabled: function(oOverlay) {
+					return this.isElementPasteable(oOverlay);
+				}.bind(this),
+				rank: 80
+			};
+
+		if (this.isAvailable(oOverlay)){
+			aMenuItems.push(oCutMenuItem, oPasteMenuItem);
+		} else if (this._isPasteEditable(oOverlay)) {
+			aMenuItems.push(oPasteMenuItem);
+		}
+
+		return aMenuItems;
+	};
+
 	return CutPaste;
 }, /* bExport= */ true);
 
@@ -9073,12 +11610,16 @@ sap.ui.define("sap/ui/rta/plugin/DragDrop",[
 	'jquery.sap.global',
 	'sap/ui/dt/plugin/ControlDragDrop',
 	'sap/ui/rta/plugin/RTAElementMover',
-	'sap/ui/rta/plugin/Plugin'
+	'sap/ui/rta/plugin/Plugin',
+	'sap/ui/rta/Utils'
 ],
-function(jQuery,
-		ControlDragDrop,
-		RTAElementMover,
-		Plugin) {
+function(
+	jQuery,
+	ControlDragDrop,
+	RTAElementMover,
+	Plugin,
+	Utils
+) {
 	"use strict";
 
 	/**
@@ -9092,7 +11633,7 @@ function(jQuery,
 	 * @extends sap.ui.dt.ControlDragDrop
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -9124,6 +11665,11 @@ function(jQuery,
 		}
 	});
 
+	// Extends the DragDrop Plugin with all the functions from our rta base plugin
+	Utils.extendWith(DragDrop.prototype, Plugin.prototype, function(vDestinationValue, vSourceValue, sProperty, mDestination, mSource) {
+		return sProperty !== "getMetadata";
+	});
+
 	/**
 	 * @override
 	 */
@@ -9138,17 +11684,24 @@ function(jQuery,
 	};
 
 	/**
+	 * @override
+	 */
+	DragDrop.prototype._isEditable = function(oOverlay, mPropertyBag) {
+		var bMovable = this.getElementMover().isEditable(oOverlay, mPropertyBag.onRegistration);
+		if (bMovable) {
+			this._attachMovableBrowserEvents(oOverlay);
+		}
+		return bMovable;
+	};
+
+	/**
 	 * Register an overlay
 	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
 	 * @override
 	 */
 	DragDrop.prototype.registerElementOverlay = function(oOverlay) {
 		ControlDragDrop.prototype.registerElementOverlay.apply(this, arguments);
-
-		if (oOverlay.isMovable()) {
-			this._attachMovableBrowserEvents(oOverlay);
-			Plugin.prototype.addToPluginsList.apply(this, arguments);
-		}
+		Plugin.prototype.registerElementOverlay.apply(this, arguments);
 	};
 
 	/**
@@ -9301,7 +11854,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Base
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -9323,7 +11876,8 @@ function(
 				"restore": {},
 				"transport": {},
 				"modeChange": {},
-				"manageApps": {}
+				"manageApps": {},
+				"saveAs": {}
 			},
 			properties: {
 				/** Determines whether publish button is visible */
@@ -9338,8 +11892,8 @@ function(
 					defaultValue: "adaptation"
 				},
 
-				/** Determines whether Message information icon button is visible */
-				"manageAppsVisible": {
+				/** Determines whether Message information icon button and 'Save As' button are visible */
+				"appVariantFeaturesSupported": {
 					"type": "boolean",
 					"defaultValue": false
 				}
@@ -9414,7 +11968,7 @@ function(
 			new Button({
 				type:"Transparent",
 				icon: "sap-icon://message-information",
-				visible: this.getManageAppsVisible(),
+				visible: this.getAppVariantFeaturesSupported(),
 				tooltip: this.getTextResources().getText("BTN_MANAGE_APPS"),
 				press: this.eventHandler.bind(this, 'ManageApps')
 			}).data('name', 'manageApps'),
@@ -9434,6 +11988,13 @@ function(
 				tooltip: this.getTextResources().getText("BTN_PUBLISH"),
 				press: this.eventHandler.bind(this, 'Transport') // Fixme: rename event
 			}).data('name', 'publish'),
+			new Button({
+				type: "Transparent",
+				text: this.getTextResources().getText("BTN_SAVE_AS"),
+				visible: this.getAppVariantFeaturesSupported(),
+				tooltip: this.getTextResources().getText("TOOLTIP_SAVE_AS"),
+				press: this.eventHandler.bind(this, 'SaveAs')
+			}).data('name', 'saveAs'),
 			new Button({
 				type:"Transparent",
 				text: this.getTextResources().getText("BTN_EXIT"),
@@ -9501,7 +12062,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Adaptation
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -9600,7 +12161,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Adaptation
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @private
@@ -9674,7 +12235,6 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 		"sap/ui/dt/plugin/ContextMenu",
 		"sap/ui/dt/plugin/TabHandling",
 		"sap/ui/fl/FlexControllerFactory",
-		"sap/ui/rta/ui/SettingsDialog",
 		"sap/ui/rta/Utils",
 		"sap/ui/fl/transport/Transports",
 		"sap/ui/fl/transport/TransportSelection",
@@ -9686,7 +12246,7 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 		"sap/ui/core/BusyIndicator",
 		"sap/ui/dt/DOMUtil",
 		"sap/ui/rta/util/StylesLoader",
-		"sap/ui/rta/appVariant/ManageAppsLoader",
+		"sap/ui/rta/appVariant/Feature",
 		"sap/ui/Device"
 	],
 	function(
@@ -9718,7 +12278,6 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 		ContextMenuPlugin,
 		TabHandlingPlugin,
 		FlexControllerFactory,
-		SettingsDialog,
 		Utils,
 		Transports,
 		TransportSelection,
@@ -9730,7 +12289,7 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 		BusyIndicator,
 		DOMUtil,
 		StylesLoader,
-		ManageAppsLoader,
+		RtaAppVariantFeature,
 		Device
 	) {
 	"use strict";
@@ -9743,7 +12302,7 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	 * @class The runtime authoring allows to adapt the fields of a running application.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -9778,14 +12337,6 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 				"triggeredFromDialog" : {
 					type : "boolean",
 					defaultValue : false
-				},
-
-				/** Temporary property : whether to show a dialog for changing control's properties#
-				 * should be removed after DTA will fully switch to a property panel
-				 */
-				"showSettingsDialog" : {
-					type : "boolean",
-					defaultValue : true
 				},
 
 				/** Whether the window unload dialog should be shown */
@@ -9917,15 +12468,10 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 				dragStarted: this._handleStopCutPaste.bind(this)
 			});
 
-			// Cut paste
-			this._mDefaultPlugins["cutPaste"] = new CutPastePlugin({
-				elementMover: oRTAElementMover,
-				commandFactory: oCommandFactory
-			});
-
-			// Remove
-			this._mDefaultPlugins["remove"] = new RemovePlugin({
-				commandFactory: oCommandFactory
+			// Rename
+			this._mDefaultPlugins["rename"] = new RTARenamePlugin({
+				commandFactory: oCommandFactory,
+				editable: this._handleStopCutPaste.bind(this)
 			});
 
 			// Additional elements
@@ -9935,19 +12481,24 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 				dialog: new AdditionalElementsDialog()
 			});
 
-			// Rename
-			this._mDefaultPlugins["rename"] = new RTARenamePlugin({
-				commandFactory: oCommandFactory,
-				editable: this._handleStopCutPaste.bind(this)
+			// Create container
+			this._mDefaultPlugins["createContainer"] = new CreateContainerPlugin({
+				commandFactory: oCommandFactory
+			});
+
+			// Remove
+			this._mDefaultPlugins["remove"] = new RemovePlugin({
+				commandFactory: oCommandFactory
+			});
+
+			// Cut paste
+			this._mDefaultPlugins["cutPaste"] = new CutPastePlugin({
+				elementMover: oRTAElementMover,
+				commandFactory: oCommandFactory
 			});
 
 			// Settings
 			this._mDefaultPlugins["settings"] = new SettingsPlugin({
-				commandFactory: oCommandFactory
-			});
-
-			// Create container
-			this._mDefaultPlugins["createContainer"] = new CreateContainerPlugin({
 				commandFactory: oCommandFactory
 			});
 
@@ -10085,8 +12636,8 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	};
 
 	/**
-	 * Start Runtime Authoring
-	 *
+	 * Start UI adaptation at runtime (RTA).
+	 * @return {Promise} Returns a Promise with the initialization of RTA
 	 * @public
 	 */
 	RuntimeAuthoring.prototype.start = function() {
@@ -10096,95 +12647,84 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 			//Check if the application has personalized changes and reload without them
 			return this._handlePersonalizationChangesOnStart()
 			.then(function(bReloadTriggered){
-				if (!bReloadTriggered) {
-					// Take default plugins if no plugins handed over
-					if (!this.getPlugins() || !Object.keys(this.getPlugins()).length) {
-						this.setPlugins(this.getDefaultPlugins());
-					}
-
-					// Destroy default plugins instantiated but not in use
-					this._destroyDefaultPlugins(this.getPlugins());
-
-					Object.keys(this.getPlugins()).forEach(function(sPluginName) {
-						if (this.getPlugins()[sPluginName].attachElementModified) {
-							this.getPlugins()[sPluginName].attachElementModified(this._handleElementModified, this);
-						}
-					}.bind(this));
-
-					// Hand over currrent command stack to setting plugin
-					if (this.getPlugins()["settings"]) {
-						this.getPlugins()["settings"].setCommandStack(this.getCommandStack());
-					}
-
-					this._buildContextMenu();
-
-					this._oSerializer = new LREPSerializer({commandStack : this.getCommandStack(), rootControl : this.getRootControl()});
-
-					// Create design time
-					var aKeys = Object.keys(this.getPlugins());
-					var aPlugins = aKeys.map(function(sKey) {
-						return this.getPlugins()[sKey];
-					}, this);
-
-					jQuery.sap.measure.start("rta.dt.startup","Measurement of RTA: DesignTime start up");
-					this._oDesignTime = new DesignTime({
-						rootElements : [this._oRootControl],
-						plugins : aPlugins
-					});
-
-					jQuery(Overlay.getOverlayContainer()).addClass("sapUiRta");
-					if (this.getLayer() === "USER") {
-						jQuery(Overlay.getOverlayContainer()).addClass("sapUiRtaPersonalize");
-					}
-
-					this._oRootControl.addStyleClass("sapUiRtaRoot");
-
-					this._oDesignTime.attachSelectionChange(function(oEvent) {
-						this.fireSelectionChange({selection: oEvent.getParameter("selection")});
-					}, this);
-
-					this._oDesignTime.attachEventOnce("synced", function() {
-						this.fireStart({
-							editablePluginsCount: this.iEditableOverlaysCount
-						});
-						jQuery.sap.measure.end("rta.dt.startup","Measurement of RTA: DesignTime start up");
-					}, this);
-
-					this._oDesignTime.attachEventOnce("syncFailed", function() {
-						this.fireFailed();
-					}, this);
-
-					// attach RuntimeAuthoring event to _$document
-					this._$document = jQuery(document);
-					this.fnKeyDown = this._onKeyDown.bind(this);
-					this._$document.on("keydown", this.fnKeyDown);
-
-					// Register function for checking unsaved before leaving RTA
-					this._oldUnloadHandler = window.onbeforeunload;
-					window.onbeforeunload = this._onUnload.bind(this);
-
-					sap.ui.getCore().getEventBus().subscribe("sap.ushell.renderers.fiori2.Renderer", "appClosed", this._onAppClosed, this);
+				if (bReloadTriggered) {
+					return Promise.reject(false);
 				}
 
-				return Promise.resolve(bReloadTriggered);
+				// Take default plugins if no plugins handed over
+				if (!this.getPlugins() || !Object.keys(this.getPlugins()).length) {
+					this.setPlugins(this.getDefaultPlugins());
+				}
+
+				// Destroy default plugins instantiated but not in use
+				this._destroyDefaultPlugins(this.getPlugins());
+
+				Object.keys(this.getPlugins()).forEach(function(sPluginName) {
+					if (this.getPlugins()[sPluginName].attachElementModified) {
+						this.getPlugins()[sPluginName].attachElementModified(this._handleElementModified, this);
+					}
+				}.bind(this));
+
+				// Hand over currrent command stack to settings plugin
+				if (this.getPlugins()["settings"]) {
+					this.getPlugins()["settings"].setCommandStack(this.getCommandStack());
+				}
+
+				this._oSerializer = new LREPSerializer({commandStack : this.getCommandStack(), rootControl : this.getRootControl()});
+
+				// Create design time
+				var aKeys = Object.keys(this.getPlugins());
+				var aPlugins = aKeys.map(function(sKey) {
+					return this.getPlugins()[sKey];
+				}, this);
+
+				jQuery.sap.measure.start("rta.dt.startup","Measurement of RTA: DesignTime start up");
+				this._oDesignTime = new DesignTime({
+					rootElements : [this._oRootControl],
+					plugins : aPlugins
+				});
+
+				jQuery(Overlay.getOverlayContainer()).addClass("sapUiRta");
+				if (this.getLayer() === "USER") {
+					jQuery(Overlay.getOverlayContainer()).addClass("sapUiRtaPersonalize");
+				}
+
+				this._oRootControl.addStyleClass("sapUiRtaRoot");
+
+				this._oDesignTime.attachSelectionChange(function(oEvent) {
+					this.fireSelectionChange({selection: oEvent.getParameter("selection")});
+				}, this);
+
+				this._oDesignTime.attachEventOnce("synced", function() {
+					this.fireStart({
+						editablePluginsCount: this.iEditableOverlaysCount
+					});
+					jQuery.sap.measure.end("rta.dt.startup","Measurement of RTA: DesignTime start up");
+				}, this);
+
+				this._oDesignTime.attachEventOnce("syncFailed", function() {
+					this.fireFailed();
+				}, this);
+
+				// Register function for checking unsaved before leaving RTA
+				this._oldUnloadHandler = window.onbeforeunload;
+				window.onbeforeunload = this._onUnload.bind(this);
 			}.bind(this))
-			.then(function (bReloadTriggered) {
-				var bIsAppVariantSupported;
-				if (this.getShowToolbars() && !bReloadTriggered) {
+			.then(function () {
+				if (this.getShowToolbars()) {
 					// Create ToolsMenu
-					return FlexSettings.getInstance(FlexUtils.getComponentClassName(this._oRootControl))
-						.then(function(oSettings) {
-							bIsAppVariantSupported = ManageAppsLoader.hasAppVariantsSupport(this.getLayer(), oSettings.isAtoEnabled() && oSettings.isAtoAvailable());
-							return !oSettings.isProductiveSystem() && !oSettings.hasMergeErrorOccured();
-						}.bind(this))
-						.catch(function(oError) {
-							return false;
-						})
-						.then(function (bShowPublish) {
+					return this._getPublishAndAppVariantSupportVisibility()
+						.then(function (aButtonsSupport) {
+							var bShowPublish = aButtonsSupport[0];
+							var bIsAppVariantSupported = aButtonsSupport[1];
 							this._createToolsMenu(bShowPublish, bIsAppVariantSupported);
 							return this.getToolbar().show();
 						}.bind(this));
 				}
+			}.bind(this))
+			.then(function () {
+				this.fnKeyDown = this._onKeyDown.bind(this);
+				jQuery(document).on("keydown", this.fnKeyDown);
 			}.bind(this))
 			.then(function() {
 				this.getPopupManager().setRta(this);
@@ -10201,8 +12741,24 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 						var sStyles = sData.replace(/%scrollWidth%/g, DOMUtil.getScrollbarWidth() + 'px');
 						DOMUtil.insertStyles(sStyles);
 					});
+			})
+			.catch(function(vError) {
+				if (vError) {
+					return Promise.reject(vError);
+				}
 			});
 		}
+	};
+
+	RuntimeAuthoring.prototype._getPublishAndAppVariantSupportVisibility = function() {
+		return FlexSettings.getInstance().then(function(oSettings) {
+			return RtaAppVariantFeature.isPlatFormEnabled(this.getLayer(), this._oRootControl).then(function(bIsAppVariantSupported) {
+				return [!oSettings.isProductiveSystem() && !oSettings.hasMergeErrorOccured(), bIsAppVariantSupported];
+			});
+		}.bind(this))
+		.catch(function(oError) {
+			return false;
+		});
 	};
 
 	var fnShowTechnicalError = function(vError) {
@@ -10214,10 +12770,6 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 		MessageBox.error(sMsg, {
 			styleClass: Utils.getRtaStyleClassName()
 		});
-	};
-
-	RuntimeAuthoring.prototype._onAppClosed = function() {
-		this.stop(true, true);
 	};
 
 	/**
@@ -10289,7 +12841,7 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	};
 
 	RuntimeAuthoring.prototype._closeToolbar = function() {
-		if (this.getShowToolbars()) {
+		if (this.getShowToolbars() && this.getToolbar) {
 			return this.getToolbar().hide();
 		}
 	};
@@ -10320,7 +12872,6 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 			.then(this._closeToolbar.bind(this))
 			.then(bSkipCheckPersChanges ? Promise.resolve() : this._handlePersonalizationChangesOnExit.bind(this))
 			.then(function(){
-				this.exit();
 				this.fireStop();
 			}.bind(this))['catch'](fnShowTechnicalError);
 	};
@@ -10388,7 +12939,8 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	};
 
 	/**
-	 * Check for unsaved changes before Leaving Runtime Authoring
+	 * Check for unsaved changes before leaving UI adaptation at runtime
+	 * @return {string} Returns the message to be displayed in the unsaved changes dialog
 	 *
 	 * @private
 	 */
@@ -10441,7 +12993,7 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 					modeSwitcher: this.getMode(),
 					publishVisible: bPublishAvailable,
 					textResources: this._getTextResources(),
-					manageAppsVisible: bIsAppVariantSupported,
+					appVariantFeaturesSupported: bIsAppVariantSupported,
 					//events
 					exit: this.stop.bind(this, false, false),
 					transport: this._onTransport.bind(this),
@@ -10449,7 +13001,8 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 					undo: this._onUndo.bind(this),
 					redo: this._onRedo.bind(this),
 					modeChange: this._onModeChange.bind(this),
-					manageApps: ManageAppsLoader.load.bind(null, this.getRootControl())
+					manageApps: RtaAppVariantFeature.onGetOverview.bind(null, this._oRootControl),
+					saveAs: RtaAppVariantFeature.onSaveAs.bind(null, this._oRootControl, null)
 				}), 'toolbar');
 			}
 
@@ -10468,7 +13021,8 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	 */
 	RuntimeAuthoring.prototype.exit = function() {
 		jQuery.map(this._dependents, function (oDependent) {
-			oDependent.destroy();
+			//Destroy should be called with supress invalidate = true here to prevent static UI Area invalidation
+			oDependent.destroy(true);
 		});
 
 		if (this._oDesignTime) {
@@ -10477,7 +13031,7 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 			this._oDesignTime = null;
 
 			// detach browser events
-			this._$document.off("keydown", this.fnKeyDown);
+			jQuery(document).off("keydown", this.fnKeyDown);
 			// Destroy default plugins
 			this._destroyDefaultPlugins();
 			// plugins have been destroyed as _oDesignTime.destroy()
@@ -10497,11 +13051,11 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 		}
 
 		window.onbeforeunload = this._oldUnloadHandler;
-		sap.ui.getCore().getEventBus().unsubscribe("sap.ushell.renderers.fiori2.Renderer", "appClosed", this._onAppClosed, this);
 	};
 
 	/**
 	 * Function to handle ABAP transport of the changes
+	 * @return {Promise} Returns a Promise processing the transport of changes
 	 *
 	 * @private
 	 */
@@ -10555,7 +13109,6 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	 *
 	 * @private
 	 * @param {array} aChangeSpecificData - array of objects with change specific data
-	 * @param {sap.ui.fl.FlexController} - instance of FlexController
 	 * @returns {Promise} promise that resolves with no parameters
 	 */
 	RuntimeAuthoring.prototype._createAndApplyChanges = function(aChangeSpecificData) {
@@ -10568,12 +13121,8 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 			}
 			aChangeSpecificData.filter(fnValidChanges).forEach(function(oChangeSpecificData) {
 				var oControl = sap.ui.getCore().byId(oChangeSpecificData.selector.id);
-				aPromises.push(function() {
-					return Promise.resolve()
-					.then(function() {
-						return this._getFlexController().createAndApplyChange(oChangeSpecificData, oControl);
-					}.bind(this));
-				}.bind(this));
+				var oFlexController = this._getFlexController();
+				aPromises.push(oFlexController.createAndApplyChange.bind(oFlexController, oChangeSpecificData, oControl));
 			}.bind(this));
 			return FlexUtils.execPromiseQueueSequentially(aPromises);
 		}.bind(this))
@@ -10601,7 +13150,6 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	 * Delete all changes for current layer and root control's component
 	 *
 	 * @private
-	 * @return {Promise} the promise from the FlexController
 	 */
 	RuntimeAuthoring.prototype._deleteChanges = function() {
 		var oTransportSelection = new TransportSelection();
@@ -10611,27 +13159,46 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 		var aUnsavedChanges = this.getCommandStack().getAllExecutedCommands().reduce(function(aChanges, oCommand) {
 			if (oCommand.getPreparedChange) {
 				aChanges.push(oCommand.getPreparedChange());
+			} else if (oCommand.getVariantChange && oCommand.getVariantChange()) {
+				aChanges.push(oCommand.getVariantChange());
 			}
 			return aChanges;
 		}, []);
 
 		this._getFlexController().getComponentChanges({currentLayer: sCurrentLayer}).then(function(aChanges) {
-			aChanges = aChanges.concat(aUnsavedChanges);
 			return FlexSettings.getInstance(FlexUtils.getComponentClassName(this._oRootControl)).then(function(oSettings) {
 				if (!oSettings.isProductiveSystem() && !oSettings.hasMergeErrorOccured()) {
 					return oTransportSelection.setTransports(aChanges, this._oRootControl);
 				}
 			}.bind(this)).then(function() {
+				BusyIndicator.show(0);
+				aChanges = aChanges.concat(aUnsavedChanges);
 				return this._getFlexController().discardChanges(aChanges, sCurrentLayer === "USER");
 			}.bind(this)).then(function() {
-				return window.location.reload();
-			});
+				BusyIndicator.hide();
+				this._reloadPage();
+			}.bind(this));
 		}.bind(this))["catch"](function(oError) {
+			BusyIndicator.hide();
 			return this._showMessage(MessageBox.Icon.ERROR, "HEADER_RESTORE_FAILED", "MSG_RESTORE_FAILED", oError);
 		}.bind(this));
 	};
 
 	/**
+	 * Reloads the page.
+	 * @private
+	 */
+	RuntimeAuthoring.prototype._reloadPage = function(){
+		window.location.reload();
+	};
+
+	/**
+	 * Shows a message box.
+	 * @param  {sap.m.MessageBox.Icon} oMessageType The type of the message box (icon to be displayed)
+	 * @param  {string} sTitleKey The text key for the title of the message box
+	 * @param  {string} sMessageKey The text key for the message of the message box
+	 * @param  {any} oError Optional - If an error is passed on, the message box text is derived from it
+	 * @return {Promise} Promise displaying the message box; resolves when it is closed
 	 * @private
 	 */
 	RuntimeAuthoring.prototype._showMessage = function(oMessageType, sTitleKey, sMessageKey, oError) {
@@ -10649,6 +13216,8 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	};
 
 	/**
+	 * Shows a message toast.
+	 * @param  {string} sMessageKey The text key for the message
 	 * @private
 	 */
 	RuntimeAuthoring.prototype._showMessageToast = function(sMessageKey) {
@@ -10658,13 +13227,12 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	};
 
 	/**
-	 * Check if restart of RTA is needed
-	 * the RTA FLP plugin will check this
-	 * and restart RTA if needed
+	 * The RTA FLP plugin checks whether RTA needs to be restarted and restarts it if needed.
 	 *
 	 * @public
 	 * @static
-	 * @returns {Boolean} if restart is needed
+	 * @param {string} sLayer The active layer
+	 * @returns {boolean} Returns true if restart is needed
 	 */
 	RuntimeAuthoring.needsRestart = function(sLayer) {
 
@@ -10674,10 +13242,11 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 
 	/**
 	 * Enable restart of RTA
-	 * the RTA FLP plugin would handle the restart
+	 * the RTA FLP plugin handles the restart
 	 *
 	 * @public
 	 * @static
+	 * @param {string} sLayer The active layer
 	 */
 	RuntimeAuthoring.enableRestart = function(sLayer) {
 		window.localStorage.setItem("sap.ui.rta.restart." + sLayer, true);
@@ -10685,10 +13254,10 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 
 	/**
 	 * Disable restart of RTA
-	 * the RTA FLP plugin whould handle the restart
 	 *
 	 * @public
 	 * @static
+	 * @param {string} sLayer The active layer
 	 */
 	RuntimeAuthoring.disableRestart = function(sLayer) {
 		window.localStorage.removeItem("sap.ui.rta.restart." + sLayer);
@@ -10728,14 +13297,15 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	};
 
 	/**
-	 * Prepare all changes and assign them to an existing transport
+	 * Prepare all changes and assign them to an existing transport.
 	 *
 	 * @private
-	 * @param {object} oTransportInfo - information about the selected transport
-	 * @param {sap.ui.fl.FlexController} - instance of FlexController
-	 * @returns {Promise} Promise which resolves without parameters
+	 * @param {Object} mTransportInfo - Map containing the package name and the transport
+	 * @param {string} mTransportInfo.packageName - Name of the package
+ 	 * @param {string} mTransportInfo.transport - ID of the transport
+	 * @returns {Promise} Returns a Promise which resolves without parameters
 	 */
-	RuntimeAuthoring.prototype._transportAllLocalChanges = function(oTransportInfo) {
+	RuntimeAuthoring.prototype._transportAllLocalChanges = function(mTransportInfo) {
 		return this._getFlexController().getComponentChanges({currentLayer: this.getLayer()}).then(function(aAllLocalChanges) {
 
 			// Pass list of changes to be transported with transport request to backend
@@ -10743,8 +13313,8 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 			var aTransportData = oTransports._convertToChangeTransportData(aAllLocalChanges);
 			var oTransportParams = {};
 			//packageName is '' in CUSTOMER layer (no package input field in transport dialog)
-			oTransportParams.package = oTransportInfo.packageName;
-			oTransportParams.transportId = oTransportInfo.transport;
+			oTransportParams.package = mTransportInfo.packageName;
+			oTransportParams.transportId = mTransportInfo.transport;
 			oTransportParams.changeIds = aTransportData;
 
 			return oTransports.makeChangesTransportable(oTransportParams).then(function() {
@@ -10755,7 +13325,7 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 
 					if (oChange.getPackage() === '$TMP') {
 						var oDefinition = oChange.getDefinition();
-						oDefinition.packageName = oTransportInfo.packageName;
+						oDefinition.packageName = mTransportInfo.packageName;
 						oChange.setResponse(oDefinition);
 					}
 				});
@@ -10767,13 +13337,13 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	};
 
 	/**
-	 * Checks the two parent-information maps for equality
+	 * Checks whether the two parent information maps are equal.
 	 *
-	 * @param {object}
-	 *          oInfo1 *
-	 * @param {object}
-	 *          oInfo2
-	 * @return {boolean} true if equal, false otherwise
+	 * @param {Object}
+	 *          oInfo1 First map of information
+	 * @param {Object}
+	 *          oInfo2 Second map of information
+	 * @return {boolean} Returns true if they are equal, false otherwise
 	 * @private
 	 */
 	RuntimeAuthoring.prototype._isEqualParentInfo = function(oInfo1, oInfo2) {
@@ -10841,6 +13411,8 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	};
 
 	/**
+	 * Increases or decreases the current number of editable Overlays.
+	 * @param  {sap.ui.base.Event} oEvent Event triggered by the 'editable' property change
 	 * @private
 	 */
 	RuntimeAuthoring.prototype._onElementEditableChange = function(oEvent) {
@@ -10853,289 +13425,14 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	};
 
 	/**
-	 * Function to handle hiding an element by the context menu
-	 *
-	 * @param {object}
-	 *          oOverlay object
-	 * @private
-	 */
-	RuntimeAuthoring.prototype._handleRemoveElement = function(aOverlays) {
-		this.getPlugins()["remove"].removeElement(aOverlays);
-	};
-
-	/**
-	 * @private
-	 */
-	RuntimeAuthoring.prototype._openSettingsDialog = function(oEventOrOverlays) {
-		var aSelectedOverlays = (oEventOrOverlays.mParameters) ? oEventOrOverlays.getParameter("selectedOverlays") : oEventOrOverlays;
-		var oElement = aSelectedOverlays[0].getElementInstance();
-		this._handleStopCutPaste();
-
-		if (!this._oSettingsDialog) {
-			this._oSettingsDialog = new SettingsDialog();
-		}
-		this._oSettingsDialog.setCommandStack(this.getCommandStack());
-		this._oSettingsDialog.open(oElement);
-	};
-
-
-	var fnMultiSelectionInactive = function(oOverlay) {
-		return this._oDesignTime.getSelection().length < 2;
-	};
-
-	var fnIsMovable = function(oOverlay) {
-		return oOverlay.getMovable();
-	};
-
-	var fnIsRemoveAvailable = function(oOverlay) {
-		return this.getPlugins()["remove"].isRemoveAvailable(oOverlay);
-	};
-
-	var fnIsRemoveEnabled = function(oOverlay) {
-		return this.getPlugins()["remove"].isRemoveEnabled(oOverlay);
-	};
-
-	var fnIsRenameAvailable = function(oOverlay) {
-		return this.getPlugins()["rename"].isRenameAvailable(oOverlay);
-	};
-
-	var fnIsRenameEnabled = function(oOverlay) {
-		return this.getPlugins()["rename"].isRenameEnabled(oOverlay);
-	};
-
-	var fnIsSettingsAvailable = function(oOverlay) {
-		return this.getPlugins()["settings"].isSettingsAvailable(oOverlay);
-	};
-
-	var fnIsSettingsEnabled = function(oOverlay) {
-		return this.getPlugins()["settings"].isSettingsEnabled(oOverlay);
-	};
-
-	var fnIsCombineAvailable = function(oOverlay) {
-		return this.getPlugins()["combine"].isCombineAvailable(oOverlay);
-	};
-
-	var fnIsCombineEnabled = function(oOverlay) {
-		return this.getPlugins()["combine"].isCombineEnabled(oOverlay);
-	};
-
-	var fnIsSplitAvailable = function(oOverlay) {
-		return this.getPlugins()["split"].isSplitAvailable(oOverlay);
-	};
-
-	var fnIsSplitEnabled = function(oOverlay) {
-		return this.getPlugins()["split"].isSplitEnabled(oOverlay);
-	};
-
-	RuntimeAuthoring.prototype._buildContextMenu = function() {
-		// Return if plugin missing
-		var oContextMenuPlugin = this.getPlugins()["contextMenu"];
-		if (!oContextMenuPlugin) {
-			return;
-		}
-
-		var oAdditionalElementsPlugin = this.getPlugins()["additionalElements"];
-		var oCreateContainerPlugin = this.getPlugins()["createContainer"];
-
-		if (this.getPlugins()["rename"]) {
-
-			oContextMenuPlugin.addMenuItem({
-				id : "CTX_RENAME_LABEL",
-				text : this._getTextResources().getText("CTX_RENAME"),
-				handler : this._handleRename.bind(this),
-				available : fnIsRenameAvailable.bind(this),
-				enabled : function(oOverlay) {
-					return (fnMultiSelectionInactive.call(this, oOverlay) && fnIsRenameEnabled.call(this, oOverlay));
-				}.bind(this)
-			});
-		}
-
-		if (oAdditionalElementsPlugin){
-			oContextMenuPlugin.addMenuItem({
-				id : "CTX_ADD_ELEMENTS_AS_SIBLING",
-				text : oAdditionalElementsPlugin.getContextMenuTitle.bind(oAdditionalElementsPlugin, true),
-				handler : oAdditionalElementsPlugin.showAvailableElements.bind(oAdditionalElementsPlugin, true),
-				available : oAdditionalElementsPlugin.isAvailable.bind(oAdditionalElementsPlugin, true),
-				enabled : function(oOverlay) {
-					return fnMultiSelectionInactive.call(this, oOverlay) && oAdditionalElementsPlugin.isEnabled(true, oOverlay);
-				}.bind(this)
-			});
-
-			oContextMenuPlugin.addMenuItem({
-				id : "CTX_ADD_ELEMENTS_AS_CHILD",
-				text : oAdditionalElementsPlugin.getContextMenuTitle.bind(oAdditionalElementsPlugin, false),
-				handler : oAdditionalElementsPlugin.showAvailableElements.bind(oAdditionalElementsPlugin, false),
-				available : oAdditionalElementsPlugin.isAvailable.bind(oAdditionalElementsPlugin, false),
-				enabled : function(oOverlay) {
-					return fnMultiSelectionInactive.call(this, oOverlay) && oAdditionalElementsPlugin.isEnabled(false, oOverlay);
-				}.bind(this)
-			});
-
-		}
-
-		if (oCreateContainerPlugin) {
-
-			oContextMenuPlugin.addMenuItem({
-				id : "CTX_CREATE_CHILD_CONTAINER",
-				text : oCreateContainerPlugin.getCreateContainerText.bind(oCreateContainerPlugin, false),
-				handler : this._createContainer.bind(this, false),
-				available : oCreateContainerPlugin.isCreateAvailable.bind(oCreateContainerPlugin, false),
-				enabled : oCreateContainerPlugin.isCreateEnabled.bind(oCreateContainerPlugin, false)
-			});
-
-			oContextMenuPlugin.addMenuItem({
-				id : "CTX_CREATE_SIBLING_CONTAINER",
-				text : oCreateContainerPlugin.getCreateContainerText.bind(oCreateContainerPlugin, true),
-				handler : this._createContainer.bind(this, true),
-				available : oCreateContainerPlugin.isCreateAvailable.bind(oCreateContainerPlugin, true),
-				enabled : oCreateContainerPlugin.isCreateEnabled.bind(oCreateContainerPlugin, true)
-			});
-		}
-
-		if (this.getPlugins()["remove"]) {
-
-			oContextMenuPlugin.addMenuItem({
-				id : "CTX_REMOVE",
-				text : this._getTextResources().getText("CTX_REMOVE"), // text can be defined also in designtime metadata
-				handler : this._handleRemoveElement.bind(this),
-				available : fnIsRemoveAvailable.bind(this),
-				enabled : fnIsRemoveEnabled.bind(this)
-			});
-		}
-
-		oContextMenuPlugin.addMenuItem({
-			id : "CTX_CUT",
-			text : this._getTextResources().getText("CTX_CUT"),
-			handler : this._handleCutElement.bind(this),
-			available : fnIsMovable,
-			enabled : function () {
-				return this._oDesignTime.getSelection().length === 1;
-			}.bind(this)
-		});
-
-		if (this.getPlugins()["cutPaste"]) {
-
-			oContextMenuPlugin.addMenuItem({
-				id : "CTX_PASTE",
-				text : this._getTextResources().getText("CTX_PASTE"),
-				handler : this._handlePasteElement.bind(this),
-				available : fnIsMovable,
-				enabled : function(oOverlay) {
-					return this.getPlugins()["cutPaste"].isElementPasteable(oOverlay);
-				}.bind(this)
-			});
-		}
-
-		oContextMenuPlugin.addMenuItem({
-			id : "CTX_GROUP_FIELDS",
-			text : this._getTextResources().getText("CTX_GROUP_FIELDS"),
-			handler : this._handleCombineElements.bind(this),
-			available : fnIsCombineAvailable.bind(this),
-			enabled : fnIsCombineEnabled.bind(this)
-		});
-
-		oContextMenuPlugin.addMenuItem({
-			id : "CTX_UNGROUP_FIELDS",
-			text : this._getTextResources().getText("CTX_UNGROUP_FIELDS"),
-			handler : this._handleSplitElements.bind(this),
-			available : fnIsSplitAvailable.bind(this),
-			enabled : fnIsSplitEnabled.bind(this)
-		});
-
-		if (this.getPlugins()["settings"]) {
-			oContextMenuPlugin.addMenuItem({
-				id : "CTX_SETTINGS",
-				text : this._getTextResources().getText("CTX_SETTINGS"),
-				handler : this._handleSettings.bind(this),
-				available : fnIsSettingsAvailable.bind(this),
-				enabled : fnIsSettingsEnabled.bind(this)
-			});
-		}
-	};
-
-	RuntimeAuthoring.prototype._createContainer = function(bSibling, aOverlays) {
-		this._handleStopCutPaste();
-
-		var oOverlay = aOverlays[0];
-		this.getPlugins()["createContainer"].handleCreate(bSibling, oOverlay);
-	};
-
-	/**
-	 * Function to handle renaming a label
-	 *
-	 * @param {array}
-	 *          aOverlays list of selected overlays
-	 * @private
-	 */
-	RuntimeAuthoring.prototype._handleRename = function(aOverlays) {
-		var oOverlay = aOverlays[0];
-		this.getPlugins()["rename"].startEdit(oOverlay);
-	};
-
-	/**
-	 * Function to handle cutting an element
-	 *
-	 * @param {array}
-	 *          aOverlays list of selected overlays
-	 * @private
-	 */
-	RuntimeAuthoring.prototype._handleCutElement = function(aOverlays) {
-		var oOverlay = aOverlays[0];
-		this.getPlugins()["cutPaste"].cut(oOverlay);
-	};
-
-	/**
-	 * Function to handle pasting an element
-	 *
-	 * @param {array}
-	 *          aOverlays list of selected overlays
-	 * @private
-	 */
-	RuntimeAuthoring.prototype._handlePasteElement = function(aOverlays) {
-		var oOverlay = aOverlays[0];
-		this.getPlugins()["cutPaste"].paste(oOverlay);
-	};
-
-	/**
-	 * Handler function to stop cut and paste, because some other operation has started
+	 * Handler function to stop cut and paste, because some other operation has started.
 	 *
 	 * @private
 	 */
 	RuntimeAuthoring.prototype._handleStopCutPaste = function() {
-		this.getPlugins()["cutPaste"].stopCutAndPaste();
-	};
-
-	/**
-	 * Function to handle combining of elements
-	 *
-	 * @private
-	 */
-	RuntimeAuthoring.prototype._handleCombineElements = function() {
-		this._handleStopCutPaste();
-
-		var oSelectedElement = this.getPlugins()["contextMenu"].getContextElement();
-		this.getPlugins()["combine"].handleCombine(oSelectedElement);
-	};
-
-	/**
-	 * Function to handle ungrouping of elements
-	 *
-	 * @private
-	 */
-	RuntimeAuthoring.prototype._handleSplitElements = function() {
-		this._handleStopCutPaste();
-
-		var oSelectedElement = this.getPlugins()["contextMenu"].getContextElement();
-		this.getPlugins()["split"].handleSplit(oSelectedElement);
-	};
-
-	/**
-	 * Function to handle settings
-	 *
-	 * @private
-	 */
-	RuntimeAuthoring.prototype._handleSettings = function(aOverlays) {
-		this.getPlugins()["settings"].handleSettings(aOverlays);
+		if (this.getPlugins()["cutPaste"]){
+			this.getPlugins()["cutPaste"].stopCutAndPaste();
+		}
 	};
 
 	/**
@@ -11322,8 +13619,6 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	 */
 	RuntimeAuthoring.prototype._handlePersonalizationChangesOnExit = function() {
 		var oUshellContainer = Utils.getUshellContainer();
-		sap.ui.getCore().getEventBus()
-			.unsubscribe("sap.ushell.renderers.fiori2.Renderer", "appClosed", this._onAppClosed, this);
 		if (oUshellContainer && this.getLayer() !== "USER") {
 			// When working with RTA, the MaxLayer parameter will be present in the URL and must
 			// be ignored in the decision to bring up the pop-up (ignoreMaxLayerParameter = true)
@@ -11351,7 +13646,8 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 	};
 
 	/**
-	 * Setter for property `mode`
+	 * Setter for property 'mode'.
+	 * @param {string} sNewMode The new value for the 'mode' property
 	 */
 	RuntimeAuthoring.prototype.setMode = function (sNewMode) {
 		if (this.getProperty('mode') !== sNewMode) {
@@ -11382,3 +13678,151 @@ sap.ui.define("sap/ui/rta/RuntimeAuthoring",[
 }, /* bExport= */true);
 
 }; // end of sap/ui/rta/RuntimeAuthoring.js
+if ( !jQuery.sap.isDeclared('sap.ui.rta.appVariant.manageApps.webapp.controller.ManageApps.controller') ) {
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+jQuery.sap.declare('sap.ui.rta.appVariant.manageApps.webapp.controller.ManageApps.controller'); // unresolved dependency added by SAPUI5 'AllInOne' Builder
+jQuery.sap.require('jquery.sap.global'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.core.mvc.Controller'); // unlisted dependency retained
+jQuery.sap.require('sap.m.MessageBox'); // unlisted dependency retained
+jQuery.sap.require('sap.ui.core.BusyIndicator'); // unlisted dependency retained
+sap.ui.define("sap/ui/rta/appVariant/manageApps/webapp/controller/ManageApps.controller",[
+	"jquery.sap.global",
+	"sap/ui/core/mvc/Controller",
+	"sap/ui/rta/appVariant/manageApps/webapp/model/models",
+	"sap/ui/rta/appVariant/Utils",
+	"sap/m/MessageBox",
+	"sap/ui/rta/Utils",
+	"sap/ui/rta/appVariant/Feature",
+	"sap/ui/rta/RuntimeAuthoring",
+	"sap/ui/core/BusyIndicator",
+	"sap/ui/rta/appVariant/AppVariantUtils"
+], function(jQuery, Controller, Model, AppVariantOverviewUtils, MessageBox, RtaUtils, RtaAppVariantFeature, RuntimeAuthoring, BusyIndicator, AppVariantUtils) {
+	"use strict";
+
+	var _sIdRunningApp, _oRootControlRunningApp, sModulePath, oI18n;
+	return Controller.extend("sap.ui.rta.appVariant.manageApps.webapp.controller.ManageApps", {
+		onInit: function() {
+			_sIdRunningApp = this.getOwnerComponent().getIdRunningApp();
+			_oRootControlRunningApp = this.getOwnerComponent().getRootControlRunningApp();
+
+			sModulePath = jQuery.sap.getModulePath( "sap.ui.rta.appVariant.manageApps.webapp" );
+			oI18n = jQuery.sap.resources({
+				url : sModulePath + "/i18n/i18n.properties"
+			});
+
+			BusyIndicator.show();
+			return AppVariantOverviewUtils.getAppVariantOverview(_sIdRunningApp).then(function(aAppVariantOverviewAttributes) {
+				BusyIndicator.hide();
+				return this._arrangeOverviewDataAndBindToModel(aAppVariantOverviewAttributes).then(function(aAppVariantOverviewAttributes) {
+					return this._highlightNewCreatedAppVariant(aAppVariantOverviewAttributes);
+				}.bind(this));
+			}.bind(this))["catch"](function(oError) {
+				BusyIndicator.hide();
+				return AppVariantUtils.showTechnicalError(MessageBox.Icon.ERROR, "HEADER_MANAGE_APPS_FAILED", "MSG_MANAGE_APPS_FAILED", oError);
+			});
+		},
+		_highlightNewCreatedAppVariant: function(aAppVariantOverviewAttributes) {
+			var oTable = this.getView().byId("Table1");
+			jQuery('.maaCurrentStatus,.maaSubTitle').css("font-size", '12px');
+
+			aAppVariantOverviewAttributes.forEach(function(oAppVariantDescriptor, index) {
+				if (oAppVariantDescriptor.rowStatus === "Information") {
+					oTable.setFirstVisibleRow(index);
+				}
+			});
+
+			return Promise.resolve();
+		},
+		_arrangeOverviewDataAndBindToModel: function(aAppVariantOverviewAttributes) {
+			var aAdaptingAppAttributes = aAppVariantOverviewAttributes.filter(function(oAppVariantProperty){
+				return oAppVariantProperty.appId === _sIdRunningApp;
+			});
+
+			var oAdaptingAppAttributes = aAdaptingAppAttributes[0];
+			if (oAdaptingAppAttributes) {
+				oAdaptingAppAttributes.currentStatus = oI18n.getText("MAA_CURRENTLY_ADAPTING");
+				oAdaptingAppAttributes.rowStatus = "Success";
+			}
+
+			aAppVariantOverviewAttributes = aAppVariantOverviewAttributes.filter(function(oAppVariantProperty) {
+				return oAppVariantProperty.appId !== _sIdRunningApp;
+			});
+
+			aAppVariantOverviewAttributes.unshift(oAdaptingAppAttributes);
+
+			var aReferenceAppAttributes = aAppVariantOverviewAttributes.filter(function(oAppVariantProperty){
+				return oAppVariantProperty.isOriginal;
+			});
+
+			var oReferenceAppAttributes = aReferenceAppAttributes[0];
+
+			aAppVariantOverviewAttributes = aAppVariantOverviewAttributes.filter(function(oAppVariantProperty) {
+				return !oAppVariantProperty.isOriginal;
+			});
+
+			aAppVariantOverviewAttributes.unshift(oReferenceAppAttributes);
+
+			// Bind the app variant overview to JSON model
+
+			var oModelData = {
+				appVariants: aAppVariantOverviewAttributes
+			};
+			var oModel = Model.createModel(oModelData);
+			this.getView().setModel(oModel);
+
+			return Promise.resolve(aAppVariantOverviewAttributes);
+		},
+		getModelProperty : function(sModelPropName, sBindingContext) {
+			return this.getView().getModel().getProperty(sModelPropName, sBindingContext);
+		},
+		handleUiAdaptation: function(oEvent) {
+			var oNavigationService = sap.ushell.Container.getService( "CrossApplicationNavigation" );
+
+			var sSemanticObject = this.getModelProperty("semanticObject", oEvent.getSource().getBindingContext());
+			var sAction = this.getModelProperty("action", oEvent.getSource().getBindingContext());
+			var oParams = this.getModelProperty("params", oEvent.getSource().getBindingContext());
+
+			var oNavigationParams;
+			if (sSemanticObject && sAction && oParams) {
+				oNavigationParams = {
+					target: {
+		                semanticObject : sSemanticObject,
+		                action : sAction
+					},
+					params: oParams
+				};
+
+				RuntimeAuthoring.enableRestart( "CUSTOMER" );
+
+				oNavigationService.toExternal(oNavigationParams);
+
+				sap.ui.getCore().getEventBus().publish("sap.ui.rta.appVariant.manageApps.controller.ManageApps", "navigate");
+			} else {
+				return false;
+			}
+		},
+		saveAsAppVariant: function(oEvent) {
+			sap.ui.getCore().getEventBus().publish("sap.ui.rta.appVariant.manageApps.controller.ManageApps", "navigate");
+
+			var sDescriptorUrl = this.getModelProperty("descriptorUrl", oEvent.getSource().getBindingContext());
+
+			BusyIndicator.show();
+			return AppVariantOverviewUtils.getDescriptor(sDescriptorUrl).then(function(oAppVariantDescriptor) {
+				BusyIndicator.hide();
+				return RtaAppVariantFeature.onSaveAs(_oRootControlRunningApp, oAppVariantDescriptor);
+			})["catch"](function(oError) {
+				BusyIndicator.hide();
+				return AppVariantUtils.showTechnicalError(MessageBox.Icon.ERROR, "HEADER_MANAGE_APPS_FAILED", "MSG_MANAGE_APPS_FAILED", oError);
+			});
+		},
+		copyId: function(oEvent) {
+			var sCopiedId = this.getModelProperty("appId", oEvent.getSource().getBindingContext());
+			AppVariantUtils.copyId(sCopiedId);
+		}
+	});
+});
+}; // end of sap/ui/rta/appVariant/manageApps/webapp/controller/ManageApps.controller.js

@@ -5,8 +5,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './BarInPageEnabler'],
-	function(jQuery, BarInPageEnabler) {
+sap.ui.define(['jquery.sap.global', './BarInPageEnabler', 'sap/ui/Device'],
+	function(jQuery, BarInPageEnabler, Device) {
 	"use strict";
 
 
@@ -46,7 +46,7 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler'],
 			"role": oControl._getRootAccessibilityRole()
 		});
 
-		if (oControl.getTranslucent() && (sap.ui.Device.support.touch  || jQuery.sap.simulateMobileOnDesktop)) {
+		if (oControl.getTranslucent() && (Device.support.touch  || jQuery.sap.simulateMobileOnDesktop)) {
 			oRM.addClass("sapMBarTranslucent");
 		}
 
@@ -140,7 +140,7 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler'],
 	 */
 	BarRenderer.renderAllControls = function (aControls, oRM, oBar) {
 		aControls.forEach(function (oControl) {
-			sap.m.BarInPageEnabler.addChildClassTo(oControl, oBar);
+			BarInPageEnabler.addChildClassTo(oControl, oBar);
 
 			oRM.renderControl(oControl);
 		});

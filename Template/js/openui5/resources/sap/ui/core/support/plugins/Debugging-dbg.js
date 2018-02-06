@@ -5,7 +5,7 @@
  */
 
 // Provides class sap.ui.core.support.plugins.Debugging
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin', 'jquery.sap.keycodes'],
 	function(jQuery, Plugin) {
 		"use strict";
 

@@ -20,7 +20,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.support.apps.contentbrowser.controller.LayerContentMaster
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 * @experimental Since 1.45
 	 */
 	return Controller.extend("sap.ui.fl.support.apps.contentbrowser.controller.LayerContentMaster", {

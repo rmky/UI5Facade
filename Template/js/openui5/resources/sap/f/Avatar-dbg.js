@@ -9,9 +9,22 @@ sap.ui.define([
 	"jquery.sap.global",
 	"./library",
 	"sap/ui/core/Control",
-	"sap/ui/core/IconPool"
+	"sap/ui/core/IconPool",
+	"jquery.sap.keycodes"
 ], function (jQuery, library, Control, IconPool) {
 	"use strict";
+
+	// shortcut for sap.f.AvatarType
+	var AvatarType = library.AvatarType;
+
+	// shortcut for sap.f.AvatarImageFitType
+	var AvatarImageFitType = library.AvatarImageFitType;
+
+	// shortcut for sap.f.AvatarSize
+	var AvatarSize = library.AvatarSize;
+
+	// shortcut for sap.f.AvatarShape
+	var AvatarShape = library.AvatarShape;
 
 	/**
 	 * Constructor for a new <code>Avatar</code>.
@@ -52,7 +65,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -75,11 +88,11 @@ sap.ui.define([
 				/**
 				 * Defines the shape of the <code>Avatar</code>.
 				 */
-				displayShape: {type: "sap.f.AvatarShape", group: "Appearance", defaultValue: sap.f.AvatarShape.Circle},
+				displayShape: {type: "sap.f.AvatarShape", group: "Appearance", defaultValue: AvatarShape.Circle},
 				/**
 				 * Sets a predefined display size of the <code>Avatar</code>.
 				 */
-				displaySize: {type: "sap.f.AvatarSize", group: "Appearance", defaultValue: sap.f.AvatarSize.S},
+				displaySize: {type: "sap.f.AvatarSize", group: "Appearance", defaultValue: AvatarSize.S},
 				/**
 				 * Specifies custom display size of the <code>Avatar</code>.
 				 *
@@ -95,7 +108,7 @@ sap.ui.define([
 				/**
 				 * Specifies how an image would fit in the <code>Avatar</code>.
 				 */
-				imageFitType: {type: "sap.f.AvatarImageFitType", group: "Appearance", defaultValue: sap.f.AvatarImageFitType.Cover}
+				imageFitType: {type: "sap.f.AvatarImageFitType", group: "Appearance", defaultValue: AvatarImageFitType.Cover}
 			},
 			aggregations : {
 				/**
@@ -240,7 +253,7 @@ sap.ui.define([
 		var validInitials = /^[a-zA-Z]{1,2}$/;
 		if (!validInitials.test(sInitials)) {
 			jQuery.sap.log.warning("Initials should consist of only 1 or 2 latin letters", this);
-			this._sActualType = sap.f.AvatarType.Icon;
+			this._sActualType = AvatarType.Icon;
 			this._bIsDefaultIcon = true;
 			return false;
 		}
@@ -257,10 +270,10 @@ sap.ui.define([
 	 */
 	Avatar.prototype._validateSrc = function (sSrc) {
 		if (IconPool.isIconURI(sSrc)) {
-			this._sActualType = sap.f.AvatarType.Icon;
+			this._sActualType = AvatarType.Icon;
 			this._bIsDefaultIcon = false;
 		} else {
-			this._sActualType = sap.f.AvatarType.Image;
+			this._sActualType = AvatarType.Image;
 		}
 
 		return this;
@@ -279,10 +292,10 @@ sap.ui.define([
 		if (sSrc) {
 			this._validateSrc(sSrc);
 		} else if (sInitials && this._areInitialsValid(sInitials)) {
-			this._sActualType = sap.f.AvatarType.Initials;
+			this._sActualType = AvatarType.Initials;
 		} else {
 			jQuery.sap.log.warning("No src and initials were provided", this);
-			this._sActualType = sap.f.AvatarType.Icon;
+			this._sActualType = AvatarType.Icon;
 			this._bIsDefaultIcon = true;
 		}
 
@@ -299,9 +312,9 @@ sap.ui.define([
 	Avatar.prototype._getDefaultIconPath = function (sDisplayShape) {
 		var sDefaultIconPath = null;
 
-		if (sDisplayShape === sap.f.AvatarShape.Circle) {
+		if (sDisplayShape === AvatarShape.Circle) {
 			sDefaultIconPath = Avatar.DEFAULT_CIRCLE_PLACEHOLDER;
-		} else if (sDisplayShape === sap.f.AvatarShape.Square) {
+		} else if (sDisplayShape === AvatarShape.Square) {
 			sDefaultIconPath = Avatar.DEFAULT_SQUARE_PLACEHOLDER;
 		}
 
@@ -356,4 +369,4 @@ sap.ui.define([
 
 	return Avatar;
 
-}, /* bExport= */ true);
+});

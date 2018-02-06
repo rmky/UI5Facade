@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/LayoutData', './library'],
 	 * @extends sap.ui.core.LayoutData
 	 *
 	 * @author SAP SE
-	 * @version 1.50.8
+	 * @version 1.52.5
 	 *
 	 * @constructor
 	 * @public
@@ -104,4 +104,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/LayoutData', './library'],
 
 	return ResponsiveFlowLayoutData;
 
-}, /* bExport= */ true);
+});

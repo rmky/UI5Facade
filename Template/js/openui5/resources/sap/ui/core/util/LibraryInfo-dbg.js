@@ -16,8 +16,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'jquery.sap.script'],
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.50.8
-	 * @constructor
+	 * @version 1.52.5
 	 * @private
 	 * @alias sap.ui.core.util.LibraryInfo
 	 */

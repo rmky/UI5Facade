@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/Control', './library'],
-	function(Control, library) {
+sap.ui.define(['sap/ui/core/Control', './library', 'jquery.sap.global', 'sap/ui/core/ResizeHandler'],
+	function(Control, library, jQuery, ResizeHandler) {
 		"use strict";
 
 		/**
@@ -44,7 +44,7 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 		 * </ul>
 		 * <h4>When not to use</h4>
 		 * <ul>
-		 * <li>You want to display properties or features of one content item. Use a {@link sap.uxap.ObjectPage object page} or {@link sap.f.DynamicPage dynamic page} instead.</li>
+		 * <li>You want to display properties or features of one content item. Use a {@link sap.uxap.ObjectPageLayout object page} or {@link sap.f.DynamicPage dynamic page} instead.</li>
 		 * </ul>
 		 * <h3>Responsive Behavior</h3>
 		 * <ul>
@@ -54,7 +54,7 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.50.8
+		 * @version 1.52.5
 		 *
 		 * @constructor
 		 * @public
@@ -79,7 +79,8 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 				 * The Rows to be included in the content of the control
 				 */
 				content: { type: "sap.ui.layout.BlockLayoutRow", multiple: true }
-			}
+			},
+			designTime : true
 		}});
 
 		/**
@@ -113,6 +114,7 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 		/**
 		 * Changes background type
 		 *
+		 * @public
 		 * @param {string} sNewBackground Background's style of type sap.ui.layout.BlockBackgroundType
 		 * @returns {sap.ui.layout.BlockLayout} BlockLayout instance. Allows method chaining
 		 */
@@ -192,7 +194,7 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 		 */
 		BlockLayout.prototype._attachResizeHandler = function () {
 			if (!this._parentResizeHandler) {
-				this._parentResizeHandler = sap.ui.core.ResizeHandler.register(this, this._onParentResize.bind(this));
+				this._parentResizeHandler = ResizeHandler.register(this, this._onParentResize.bind(this));
 			}
 		};
 
@@ -202,7 +204,7 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 		 */
 		BlockLayout.prototype._detachResizeHandler = function () {
 			if (this._parentResizeHandler) {
-				sap.ui.core.ResizeHandler.deregister(this._parentResizeHandler);
+				ResizeHandler.deregister(this._parentResizeHandler);
 				this._parentResizeHandler = null;
 			}
 		};
@@ -216,4 +218,4 @@ sap.ui.define(['sap/ui/core/Control', './library'],
 
 		return BlockLayout;
 
-	}, /* bExport= */ true);
+	});

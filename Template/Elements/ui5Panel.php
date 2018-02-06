@@ -9,7 +9,7 @@ class ui5Panel extends ui5Container
     public function buildJsConstructor()
     {
         return  <<<JS
-                new sap.m.Panel({
+                new sap.m.Panel("{$this->getId()}", {
                     height: "100%",
                     content: [
                         {$this->buildJsChildrenConstructors()}

@@ -362,8 +362,8 @@ JS;
         var oTable = {$this->getJsVar()};
         oTable.attachFirstVisibleRowChanged(function() {
             var pages = {$this->getId()}_pages;
-            if ((oTable.getFirstVisibleRow() + oTable.getVisibleRowCount() === pages.pageSize) &&
-                    (pages.end() + 1 !== pages.total)) {
+            var lastVisibleRow = oTable.getFirstVisibleRow() + oTable.getVisibleRowCount();
+            if ((pages.pageSize - lastVisibleRow <= 1) && (pages.end() + 1 !== pages.total)) {
                 pages.increasePageSize();
                 {$this->buildJsRefresh(true)}
             }

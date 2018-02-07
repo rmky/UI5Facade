@@ -129,7 +129,7 @@ JS;
      */
     protected function isValueBoundToModel()
     {
-        return $this->getWidget()->getValue() ? false : true;
+        return $this->getWidget()->hasValue() ? false : true;
     }
     
     /**

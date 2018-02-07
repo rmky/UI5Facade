@@ -72,19 +72,28 @@ JS;
         $widget = $this->getWidget();
         
         if ($this->getMetaObject()->hasUidAttribute() && ($uid_widget = $this->getWidget()->findChildrenByAttribute($this->getMetaObject()->getUidAttribute())[0]) && !is_null($uid_widget->getValue())) {
-            $uid_data_sheet = DataSheetFactory::createFromObject($this->getMetaObject());
-            if ($label_attr = $this->getMetaObject()->getLabelAttribute()) {
-                $uid_data_sheet->getColumns()->addFromAttribute($label_attr);
-            }
-            $uid_data_sheet->addFilterFromString($this->getMetaObject()->getUidAttributeAlias(), $uid_widget->getValue());
-            $uid_data_sheet->dataRead();
-            if ($label_attr) {
-                $label = $uid_data_sheet->getCellValue($this->getMetaObject()->getLabelAttribute()->getAlias(), 0);
-            } elseif ($this->getMetaObject()->hasUidAttribute()) {
-                $label = $uid_data_sheet->getCellValue($this->getMetaObject()->getUidAttribute()->getAlias(), 0);
+            
+            if ($widget->hasHeader()) {
+                $title_attr = $widget->getHeader()->getTitleAttribute();
+            } elseif ($widget->getMetaObject()->hasLabelAttribute()) {
+                $title_attr = $widget->getMetaObject()->getLabelAttribute();
+            } 
+            
+            if ($title_attr) {
+                $uid_data_sheet = DataSheetFactory::createFromObject($this->getMetaObject());
+                $uid_data_sheet->getColumns()->addFromAttribute($title_attr);
+                $uid_data_sheet->addFilterFromString($this->getMetaObject()->getUidAttributeAlias(), $uid_widget->getValue());
+                $uid_data_sheet->dataRead();
+                if ($title_attr) {
+                    $title = $uid_data_sheet->getCellValue($title_attr->getAliasWithRelationPath(), 0);
+                } elseif ($this->getMetaObject()->hasUidAttribute()) {
+                    $title = $uid_data_sheet->getCellValue($this->getMetaObject()->getUidAttribute()->getAlias(), 0);
+                }
+            } else {
+                $title = 'Object without title';
             }
         }
-        $heading = $label ? $label : 'New';
+        $heading = $title ? $title : 'New';
         
         if ($widget->hasHeader()) {
             foreach ($widget->getHeader()->getChildren() as $child) {
@@ -94,6 +103,7 @@ JS;
 			        objectImageShape: "Circle",
 JS;
                     $child->setHidden(true);
+                    break;
                 }
             }
             

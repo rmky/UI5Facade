@@ -133,19 +133,6 @@ JS;
     }
     
     /**
-     * Returns a comma-separated list of properties for the binding object
-     */
-    protected function buildJsBindingOptions()
-    {
-        $tpl = $this->getTemplate()->getElement($this->getWidget());
-        $js = '';
-        if ($tpl instanceof ui5ValueBindingInterface) {
-            $js .= $tpl->buildJsValueBindingOptions();
-        }
-        return $js;
-    }
-    
-    /**
      *
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Template\Interfaces\ui5ValueBindingInterface::buildJsValueBindingOptions()
@@ -162,13 +149,14 @@ JS;
      */
     public function buildJsValueBinding($customOptions = '')
     {
-        return <<<JS
+        $js = <<<JS
             {
                 path: "{$this->getValueBindingPath()}",
-                {$this->buildJsBindingOptions()}
+                {$this->buildJsValueBindingOptions()}
                 {$customOptions}
             }
 JS;
+                return $js;
     }
 
     /**
@@ -185,7 +173,7 @@ JS;
     protected function getValueBindingPath()
     {
         if (is_null($this->valueBindingPath)) {
-            return $this->getWidget()->getDataColumnName();
+            return '/' . $this->getWidget()->getDataColumnName();
         }
         return $this->valueBindingPath;
     }

@@ -4,6 +4,7 @@ namespace exface\OpenUI5Template\Template\Elements;
 use exface\Core\Widgets\Display;
 use exface\OpenUI5Template\Template\Interfaces\ui5BindingFormatterInterface;
 use exface\Core\DataTypes\BooleanDataType;
+use exface\Core\Widgets\DataColumn;
 
 /**
  * Generates sap.m.Text controls for Display widgets
@@ -35,20 +36,52 @@ class ui5Display extends ui5Value
     public function buildJsConstructorForMainControl()
     {
         if ($this->getWidget()->getValueDataType() instanceof BooleanDataType) {
-            return <<<JS
+            if ($this->getWidget()->getParent() instanceof DataColumn) {
+                $icon_yes = 'sap-icon://accept';
+                $icon_no = '';
+                $icon_width = '"100%"';
+            } else {
+                $icon_yes = 'sap-icon://message-success';
+                $icon_no = 'sap-icon://border';
+                $icon_width = '"14px"';
+            }
+            $js = <<<JS
 
         new sap.ui.core.Icon({
-            width: "100%",
+            width: {$icon_width},
             src: {$this->buildJsValueBinding('formatter: function(value) {
-                    if (value === "1" || value === "true" || value === 1 || value === true) return "sap-icon://accept";
-                    else return "";
+                    console.log("here");
+                    if (value === "1" || value === "true" || value === 1 || value === true) return "' . $icon_yes . '";
+                    else return "' . $icon_no . '";
                 }')}
         })
 
 JS;
+        } else {
+            $js = parent::buildJsConstructorForMainControl();
+        }
+
+        // TODO #binding store values in real model
+        if($this->getWidget()->hasValue()) {
+            $value = $this->escapeJsTextValue($this->getWidget()->getValue());
+            $value = '"' . str_replace("\n", '', $value) . '"';
+            $js .= <<<JS
+
+            .setModel(function(){
+                var oModel = new sap.ui.model.json.JSONModel();
+                oModel.setProperty("/{$this->getWidget()->getDataColumnName()}", {$value});
+                console.log(oModel.getData());
+                return oModel;
+            }())
+JS;
         }
         
-        return parent::buildJsConstructorForMainControl();
+        return $js;
+    }
+    
+    protected function isValueBoundToModel()
+    {
+        return true;
     }
     
     /**

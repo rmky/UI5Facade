@@ -65,6 +65,7 @@ JS;
         // Disable using widget id as control id because this is a template for multiple controls
         $tpl->setUseWidgetId(false);
         if ($tpl instanceof ui5Display) {
+            $tpl->setValueBindingPath($this->getWidget()->getDataColumnName());
             $tpl->setAlignment($this->buildJsAlignment());
         }
         if ($tpl instanceof ui5CompoundControlInterface) {

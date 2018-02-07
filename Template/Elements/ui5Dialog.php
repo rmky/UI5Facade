@@ -40,7 +40,13 @@ class ui5Dialog extends ui5Form
         if (is_null($widget_setting)) {
             if ($widget->hasParent() && $widget->getParent() instanceof iTriggerAction) {
                 $action = $widget->getParent()->getAction();
-                return $this->getTemplate()->getConfigMaximizeDialogByDefault($action);
+                $action_setting = $this->getTemplate()->getConfigMaximizeDialogByDefault($action);
+                if ($action_setting === true) {
+                    if (count($widget->getInputWidgets()) <= $this->getTemplate()->getConfig()->getOption('WIDGET.DIALOG.MAXIMIZE_BY_DEFAULT_IF_MORE_WIDGETS_THAN')) {
+                        return false;
+                    }
+                }
+                return $action_setting;
             }
             return false;
         }

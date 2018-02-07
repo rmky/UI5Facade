@@ -110,6 +110,7 @@ JS;
         		}
             })
             .setModel(new sap.ui.model.json.JSONModel());
+            {$this->buildJsClickListeners()}
             {$this->buildJsRefresh()};
             return {$this->getJsVar()}
         }()
@@ -707,7 +708,11 @@ JS;
         } elseif ($this->isEditable() && $action->implementsInterface('iModifyData')) {
             // TODO
         } else {
-            $rows = "sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data[sap.ui.getCore().byId('{$this->getId()}').getSelectedIndex()]";
+            if ($this->isUiTable()) {
+                $rows = "sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data[sap.ui.getCore().byId('{$this->getId()}').getSelectedIndex()]";
+            } else {
+                $rows = "sap.ui.getCore().byId('{$this->getId()}').getSelectedItem().getBindingContext().getObject()";
+            }
         }
         return <<<JS
     function() {
@@ -717,6 +722,45 @@ JS;
             rows: (rows === undefined ? [] : [rows])
         };
     }()
+JS;
+    }
+        
+    protected function buildJsClickListeners()
+    {
+        $widget = $this->getWidget();
+        $leftclick_script = '';
+        $dblclick_script = '';
+        $rightclick_script = '';
+        
+        // Click actions
+        // Single click. Currently only supports one double click action - the first one in the list of buttons
+        if ($leftclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
+            $leftclick_script = $this->getTemplate()->getElement($leftclick_button)->buildJsClickFunctionName() . '()';
+        }
+        // Double click. Currently only supports one double click action - the first one in the list of buttons
+        if ($dblclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[0]) {
+            $dblclick_script = $this->getTemplate()->getElement($dblclick_button)->buildJsClickFunctionName() . '()';
+        }
+        
+        // Double click. Currently only supports one double click action - the first one in the list of buttons
+        if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
+            $rightclick_script = $this->getTemplate()->getElement($rightclick_button)->buildJsClickFunctionName() . '()';
+        }
+        
+        return <<<JS
+        
+	{$this->getJsVar()}.attachBrowserEvent("click", function(oEvent) {
+		{$leftclick_script}
+    });
+    
+    {$this->getJsVar()}.attachBrowserEvent("dblclick", function(oEvent) {
+		{$dblclick_script}
+	});
+	
+	{$this->getJsVar()}.attachBrowserEvent("rightclick", function(oEvent) {
+		{$rightclick_script}
+	});
+	
 JS;
     }
 }

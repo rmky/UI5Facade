@@ -90,11 +90,13 @@ JS;
     {
         $col = $this->getWidget();
         $alignment = 'hAlign: ' . $this->buildJsAlignment() . ',';
+        
         return <<<JS
         
                     new sap.m.Column({
 						popinDisplay: "Inline",
 						demandPopin: true,
+						{$this->buildJsPropertyMinScreenWidth()}
 						header: [
                             new sap.m.Label({
                                 text: "{$col->getCaption()}"
@@ -105,6 +107,28 @@ JS;
 					})
 					
 JS;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsPropertyMinScreenWidth()
+    {
+        switch ($this->getWidget()->getVisibility()) {
+            case EXF_WIDGET_VISIBILITY_PROMOTED:
+                $val = '';
+                break;
+            case EXF_WIDGET_VISIBILITY_NORMAL:
+            default:
+                $val = 'Tablet';
+        }
+        
+        if ($val) {
+            return 'minScreenWidth: "' . $val . '",';
+        } else {
+            return '';
+        }
     }
     
     /**

@@ -57,8 +57,8 @@ JS;
      */
     public function buildJsConstructor()
     { 
-        if ($this->getWidget()->isResponsive()) {
-            
+        if ($this->isMTable()) {
+            $js = $this->buildJsConstructorForMTable();
         } else {
             $js = $this->buildJsConstructorForUiTable();
         }
@@ -70,6 +70,16 @@ JS;
         }
     }
     
+    protected function isMTable()
+    {
+        return $this->getWidget()->isResponsive();
+    }
+    
+    protected function isUiTable()
+    {
+        return ! $this->getWidget()->isResponsive();
+    }
+    
     /**
      * Returns the javascript constructor for a sap.m.Table
      * 
@@ -77,31 +87,32 @@ JS;
      */
     protected function buildJsConstructorForMTable()
     {
+        $mode = $this->getWidget()->getMultiSelect() ? 'sap.m.ListMode.MultiSelect' : 'sap.m.ListMode.SingleSelectMaster';
+        
         return <<<JS
-
-    new sap.m.Table("{$this->getId()}", {
-		headerToolbar: [
-            {$this->buildJsToolbar()}
-		],
-		columns: [
-            
-		]
-		items="{
-			path: '/ProductCollection',
-			sorter: {
-				path: 'Name'
-			}
-		}">
-		<items>
-			<ColumnListItem vAlign="Middle" type="Navigation">
-				<cells>
-					<Text text="{Name}" wrapping="false" />
-					<Text text="{SupplierName}" wrapping="false"/>
-					<Text text="{Description}" />
-				</cells>
-			</ColumnListItem>
-		</items>
-	</Table>
+        function() {
+            var {$this->getJsVar()} = new sap.m.Table("{$this->getId()}", {
+        		fixedLayout: false,
+        		mode: {$mode},
+                headerToolbar: [
+                    {$this->buildJsToolbar()}
+        		],
+        		columns: [
+                    {$this->buildJsColumnsForMTable()}
+        		],
+        		items: {
+        			path: '/data',
+                    template: new sap.m.ColumnListItem({
+                        cells: [
+                            {$this->buildJsCellsForMTable()}
+                        ]
+                    })
+        		}
+            })
+            .setModel(new sap.ui.model.json.JSONModel());
+            {$this->buildJsRefresh()};
+            return {$this->getJsVar()}
+        }()
 
 JS;
     }
@@ -167,6 +178,16 @@ JS;
         return $column_defs;
     }
     
+    protected function buildJsCellsForMTable()
+    {
+        $cells = '';
+        foreach ($this->getWidget()->getColumns() as $column) {
+            $cells .= ($cells ? ", " : '') . $this->getTemplate()->getElement($column)->buildJsConstructorForCell();
+        }
+        
+        return $cells;
+    }
+    
     /**
      * Returns a comma-separated list of column constructors for sap.m.Table
      * 
@@ -174,7 +195,27 @@ JS;
      */
     protected function buildJsColumnsForMTable()
     {
-        // Columns
+        $widget = $this->getWidget();
+        
+        // See if there are promoted columns. If not, make the first visible column promoted,
+        // because sap.m.table would otherwise have not column headers at all.
+        $promoted_cols = [];
+        $first_col = null;
+        foreach ($widget->getColumns() as $col) {
+            if (is_null($first_col) && ! $col->isHidden()) {
+                $first_col = $col;    
+            }
+            if ($col->getVisibility() === EXF_WIDGET_VISIBILITY_PROMOTED) {
+                $promoted_cols[] = $col;
+            }
+        }
+        
+        if (count($promoted_cols) === 0) {
+            $first_col->setVisibility(EXF_WIDGET_VISIBILITY_PROMOTED);
+        }
+        
+        
+        
         $column_defs = '';
         foreach ($this->getWidget()->getColumns() as $column) {
             $column_defs .= ($column_defs ? ", " : '') . $this->getTemplate()->getElement($column)->buildJsConstructorForMColumn();
@@ -289,6 +330,24 @@ JS;
         params.start = pages.start;
         params.length = pages.pageSize;
 
+        {$this->buildJsDataSourceColumnActions()}
+        
+        oModel.loadData("{$url}", params);
+	}
+
+    {$this->buildJsFilterSummaryFunction()}
+
+JS;
+    }
+    
+    protected function buildJsDataSourceColumnActions()
+    {
+        if ($this->isMTable()) {
+            return '';
+        }
+        
+        return <<<JS
+
         // Add filters and sorters from column menus
 		for (var i=0; i<oTable.getColumns().length; i++){
 			var oColumn = oTable.getColumns()[i];
@@ -311,11 +370,6 @@ JS;
 		if (oControlEvent && oControlEvent.getId() == 'filter'){
 			params['fltr99_' + oControlEvent.getParameters().column.getFilterProperty()] = oControlEvent.getParameters().value;
 		}
-		
-		oModel.loadData("{$url}", params);
-	}
-
-    {$this->buildJsFilterSummaryFunction()}
 
 JS;
     }

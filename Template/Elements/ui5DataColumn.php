@@ -147,9 +147,10 @@ JS;
     {
         $dim = $this->getWidget()->getWidth();
         
-        if ($dim->isRelative() || $dim->isTemplateSpecific()) {
+        if ($dim->isTemplateSpecific()) {
             return 'width: "' . $dim->getValue() . '",';
         }   
+        
         return '';
     }
 }

@@ -6,6 +6,11 @@ use exface\Core\Widgets\DataTable;
 use exface\OpenUI5Template\Template\Interfaces\ui5BindingFormatterInterface;
 use exface\OpenUI5Template\Template\Interfaces\ui5ValueBindingInterface;
 use exface\OpenUI5Template\Template\Interfaces\ui5CompoundControlInterface;
+use exface\Core\Formulas\NumberValue;
+use exface\Core\DataTypes\IntegerDataType;
+use exface\Core\DataTypes\TimestampDataType;
+use exface\Core\DataTypes\DateDataType;
+use exface\Core\DataTypes\NumberDataType;
 
 /**
  *
@@ -50,6 +55,7 @@ class ui5DataColumn extends ui5AbstractElement
 	    sortProperty: "{$widget->getAttributeAlias()}",
 	    filterProperty: "{$widget->getAttributeAlias()}",
 		{$this->buildJsPropertyVisibile()}
+	    {$this->buildJsPropertyWidth()}
 	})
 JS;
     }
@@ -135,6 +141,16 @@ JS;
         }
         
         return $alignment;
+    }
+    
+    protected function buildJsPropertyWidth()
+    {
+        $dim = $this->getWidget()->getWidth();
+        
+        if ($dim->isRelative() || $dim->isTemplateSpecific()) {
+            return 'width: "' . $dim->getValue() . '",';
+        }   
+        return '';
     }
 }
 ?>

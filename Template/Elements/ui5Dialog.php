@@ -8,6 +8,7 @@ use exface\Core\Widgets\Tab;
 use exface\Core\Widgets\Image;
 use exface\Core\Widgets\MenuButton;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
+use exface\Core\Interfaces\Widgets\iHaveValue;
 
 /**
  * In OpenUI5 dialog widgets are either rendered as an object page layout (if the dialog is maximized) or
@@ -41,11 +42,6 @@ class ui5Dialog extends ui5Form
             if ($widget->hasParent() && $widget->getParent() instanceof iTriggerAction) {
                 $action = $widget->getParent()->getAction();
                 $action_setting = $this->getTemplate()->getConfigMaximizeDialogByDefault($action);
-                if ($action_setting === true) {
-                    if (count($widget->getInputWidgets()) <= $this->getTemplate()->getConfig()->getOption('WIDGET.DIALOG.MAXIMIZE_BY_DEFAULT_IF_MORE_WIDGETS_THAN')) {
-                        return false;
-                    }
-                }
                 return $action_setting;
             }
             return false;

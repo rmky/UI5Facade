@@ -51,7 +51,6 @@ class ui5Display extends ui5Value
             width: {$icon_width},
             {$this->buildJsPropertyTooltip()}
             src: {$this->buildJsValueBinding('formatter: function(value) {
-                    console.log("here");
                     if (value === "1" || value === "true" || value === 1 || value === true) return "' . $icon_yes . '";
                     else return "' . $icon_no . '";
                 }')}
@@ -71,7 +70,6 @@ JS;
             .setModel(function(){
                 var oModel = new sap.ui.model.json.JSONModel();
                 oModel.setProperty("/{$this->getWidget()->getDataColumnName()}", {$value});
-                console.log(oModel.getData());
                 return oModel;
             }())
 JS;

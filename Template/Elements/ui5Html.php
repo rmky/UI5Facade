@@ -45,7 +45,6 @@ class ui5Html extends ui5Text
         new sap.ui.core.HTML("{$this->getId()}", {
             content: "{$content}",
             afterRendering: function() {
-                console.log('init'); 
                 {$scripts}
             }
         })

@@ -88,7 +88,6 @@ JS;
         return <<<JS
 
             change: function(event) {
-                console.log('change');
                 {$this->getOnChangeScript()}
                 
             },

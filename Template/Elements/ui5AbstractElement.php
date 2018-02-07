@@ -273,6 +273,31 @@ JS;
     }
     
     /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsValueSetter()
+     */
+    public function buildJsValueSetter($valueJs)
+    {
+        $widget = $this->getWidget();
+        if ($widget instanceof iHaveValue) {
+            return "sap.ui.getCore().byId('{$this->getId()}').{$this->buildJsValueSetterMethod($valueJs)}";
+        } else {
+            return '""';
+        }
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsValueSetterMethod()
+     */
+    public function buildJsValueSetterMethod($valueJs)
+    {
+        return "setValue(" . $valueJs . ")";
+    }
+    
+    /**
      * Returns the name of the UI5 view.
      * 
      * @return string

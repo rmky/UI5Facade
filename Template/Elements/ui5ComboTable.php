@@ -125,15 +125,25 @@ JS;
     {
         return '';
     }
-                        
-    public function buildJsValueGetter()
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsValueGetterMethod()
+     */
+    public function buildJsValueGetterMethod()
     {
-        return "sap.ui.getCore().byId('{$this->getId()}').getSelectedKey()";
+        return "getSelectedKey()";
     }
     
-    public function buildJsRefresh()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsValueSetter()
+     */
+    public function buildJsValueSetterMethod($valueJs)
     {
-        return "{$this->buildJsFunctionPrefix()}LoadData({$this->getJsVar()})";
+        return "setSelectedKey({$valueJs})";
     }
 }
 ?>

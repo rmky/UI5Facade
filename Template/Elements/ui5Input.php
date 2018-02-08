@@ -50,6 +50,7 @@ class ui5Input extends ui5Value
         return <<<JS
         new sap.m.Input("{$this->getId()}", {
             {$this->buildJsProperties()}
+            {$this->buildJsPropertyType()}
         })
         {$this->buildJsPseudoEventHandlers()}
 JS;
@@ -62,18 +63,39 @@ JS;
      */
     public function buildJsProperties()
     {
-        if ($height = $this->getHeight()) {
-            $height_option = 'height: "' . $height . '",';
-        }
         $options = parent::buildJsProperties() . <<<JS
-            width: "100%",
+            {$this->buildJsPropertyWidth()}
+            {$this->buildJsPropertyHeight()}
             {$this->buildJsPropertyChange()}
             {$this->buildJsPropertyRequired()}
             {$this->buildJsPropertyValue()}
-            {$height_option}
-            {$this->buildJsPropertyVisibile()}
 JS;
         return $options;
+    }
+    
+    /**
+     * Returns the property width with name, value and tailing comma - or an empty
+     * string if no width is defined.
+     *
+     * @return string
+     */
+    protected function buildJsPropertyWidth()
+    {
+        return 'width: "100%",';
+    }
+    
+    /**
+     * Returns the property height with name, value and tailing comma - or an empty
+     * string if no height is defined.
+     * 
+     * @return string
+     */
+    protected function buildJsPropertyHeight()
+    {
+        if ($height = $this->getHeight()) {
+            return 'height: "' . $height . '",';
+        }
+        return '';
     }
     
     /**
@@ -158,10 +180,14 @@ JS;
         return 'editable: true, ';
     }
     
+    /**
+     * Returns the type property including property name an tailing comma.
+     * 
+     * @return string
+     */
     protected function buildJsPropertyType()
     {
-        // TODO derive other types from data type
-        return 'Text';
+        return 'type: sap.m.InputType.Text,';
     }
 }
 ?>

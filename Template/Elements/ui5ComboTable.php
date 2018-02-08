@@ -64,7 +64,7 @@ class ui5ComboTable extends ui5Input
         return <<<JS
 	   new sap.m.Input("{$this->getId()}", {
 			{$this->buildJsProperties()}
-            type: "{$this->buildJsPropertyType()}",
+            {$this->buildJsPropertyType()}
 			textFormatMode: "ValueKey",
 			showSuggestion: true,
             maxSuggestionWidth: "400px",

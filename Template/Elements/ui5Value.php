@@ -87,24 +87,6 @@ JS;
     }
     
     /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsPropertyTooltip()
-     */
-    protected function buildJsPropertyTooltip()
-    {
-        if ($this->isValueBoundToModel()) {
-            $value = $this->buildJsValueBinding('formatter: function(value){return (value === null || value === undefined) ? value : value.toString();},');
-        } else {
-            $value = $this->buildJsValue();
-        }
-        
-        return <<<JS
-            tooltip: {$value},
-JS;
-    }
-    
-    /**
      * Wraps the element constructor in a layout with a label.
      * 
      * @param string $element_constructor

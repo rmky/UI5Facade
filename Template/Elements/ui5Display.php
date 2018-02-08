@@ -7,7 +7,7 @@ use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\Widgets\DataColumn;
 
 /**
- * Generates sap.m.Text controls for Display widgets
+ * Generates sap.m.Text controls for Display widgets.
  * 
  * @method Display getWidget()
  *
@@ -145,6 +145,31 @@ JS;
     protected function buildJsPropertyWrapping()
     {
         return 'wrapping: false,';
+    }
+    
+    /**
+     * {@inheritDoc}
+     * 
+     * If the display is used as cell widget in a DataColumn, the tooltip will
+     * contain the value instead of a description, because ui5 tables tend to
+     * cut off long values on smaller screens. On the other hande, the description 
+     * is already there in the column header.
+     * 
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsPropertyTooltip()
+     */
+    protected function buildJsPropertyTooltip()
+    {
+        if ($this->getWidget()->getParent() instanceof DataColumn) {
+            if ($this->isValueBoundToModel()) {
+                $value = $this->buildJsValueBinding('formatter: function(value){return (value === null || value === undefined) ? value : value.toString();},');
+            } else {
+                $value = $this->buildJsValue();
+            }
+            
+            return 'tooltip: ' . $value .',';
+        }
+        
+        return parent::buildJsPropertyTooltip();
     }
 
 }

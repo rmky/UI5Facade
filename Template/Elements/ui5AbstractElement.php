@@ -154,7 +154,14 @@ JS;
      */
     public function buildJsShowMessageSuccess($message_body_js, $title = null)
     {
-        return 'sap.m.MessageToast.show(' . $message_body_js . ');';
+        return <<<JS
+
+        sap.m.MessageToast.show(function(){
+            var tmp = document.createElement("DIV");
+            tmp.innerHTML = {$message_body_js};
+            return tmp.textContent || tmp.innerText || "";
+        }());
+JS;
     }
 
     public function escapeString($string)

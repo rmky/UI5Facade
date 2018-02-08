@@ -155,6 +155,7 @@ JS;
                 }
             })*/;
             {$this->getId()}_attachFirstVisibleRowChanged();
+            {$this->buildJsClickListeners()}
             {$this->buildJsRefresh()};
             return {$this->getJsVar()}
         }()

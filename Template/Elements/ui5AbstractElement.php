@@ -428,7 +428,7 @@ JS;
     protected function buildJsPropertyTooltip()
     {
         $widget = $this->getWidget();
-        return 'tooltip: "' . ($widget->getHint() ? $widget->getHint() : $widget->getCaption()) . '",';
+        return 'tooltip: "' . $this->escapeJsTextValue($widget->getHint() ? $widget->getHint() : $widget->getCaption()) . '",';
     }
     
     public function setUseWidgetId($true_or_false)

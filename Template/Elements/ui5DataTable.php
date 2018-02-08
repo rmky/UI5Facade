@@ -201,23 +201,22 @@ JS;
         
         // See if there are promoted columns. If not, make the first visible column promoted,
         // because sap.m.table would otherwise have not column headers at all.
-        $promoted_cols = [];
+        $promotedFound = false;
         $first_col = null;
         foreach ($widget->getColumns() as $col) {
             if (is_null($first_col) && ! $col->isHidden()) {
                 $first_col = $col;    
             }
-            if ($col->getVisibility() === EXF_WIDGET_VISIBILITY_PROMOTED) {
-                $promoted_cols[] = $col;
+            if ($col->getVisibility() === EXF_WIDGET_VISIBILITY_PROMOTED && ! $col->isHidden()) {
+                $promotedFound = true;
+                break;
             }
         }
         
-        if (count($promoted_cols) === 0) {
+        if (! $promotedFound) {
             $first_col->setVisibility(EXF_WIDGET_VISIBILITY_PROMOTED);
         }
-        
-        
-        
+
         $column_defs = '';
         foreach ($this->getWidget()->getColumns() as $column) {
             $column_defs .= ($column_defs ? ", " : '') . $this->getTemplate()->getElement($column)->buildJsConstructorForMColumn();
@@ -388,7 +387,7 @@ JS;
                 continue;
             }
             $elem = $this->getTemplate()->getElement($fltr);
-            $filter_checks .= 'if(' . $elem->buildJsValueGetter() . ") {filtersCount++; filtersList += '{$elem->getCaption()}';} \n";
+            $filter_checks .= 'if(' . $elem->buildJsValueGetter() . ") {filtersCount++; filtersList += (filtersList == '' ? '' : ', ') + '{$elem->getCaption()}';} \n";
         }
         return <<<JS
     function {$this->buildJsFilterSummaryFunctionName()}() {

@@ -42,6 +42,45 @@ class ui5ComboTable extends ui5Input
             $value_init_js = '';
         }
         
+        // See if there are promoted columns. If not, make the first two visible columns 
+        // promoted to make sap.m.table look nice on mobiles.
+        $promotedCols = [];
+        $firstVisibleCols = [];
+        foreach ($widget->getTable()->getColumns() as $col) {
+            if (! $col->isHidden()) {
+                if (empty($firstVisibleCols)) {
+                    $firstVisibleCols[] = $col;
+                } elseif (count($firstVisibleCols) === 1) {
+                    $firstVisibleCols[] = $col;
+                }
+                
+                if ($col->getVisibility() === EXF_WIDGET_VISIBILITY_PROMOTED) {
+                    $promotedCols[] = $col;
+                    break;
+                }
+            }
+            
+        }
+        if (empty($promotedCols) && ! empty($firstVisibleCols)) {
+            // If the first automatically selected column is right-aligned, it will not
+            // look nice, so change the order of the columns. Actually, the condition
+            // is right the opposite, because the columns will be added to the beginning
+            // of the list one after another, so the first column ends up being last.
+            // TODO Make column reordering depend on the screen size. On desktops, having
+            // right-aligned column in the middle does not look good, but on mobiles it
+            // is very important. Maybe generate two sets of columns and assign one of
+            // them depending on jQuery.device.is.phone?
+            if (! ($firstVisibleCols[0]->getAlign() !== EXF_ALIGN_DEFAULT || $firstVisibleCols[0]->getAlign() === EXF_ALIGN_LEFT)) {
+                $firstVisibleCols = array_reverse($firstVisibleCols);
+            }
+            foreach ($firstVisibleCols as $col) {
+                $widget->getTable()->removeColumn($col);
+                $col->setVisibility(EXF_WIDGET_VISIBILITY_PROMOTED);
+                $widget->getTable()->addColumn($col, 0);
+            }
+        }
+        
+        // Now generate columns and cells from the column widgets
         $columns = '';
         $cells = '';
         foreach ($widget->getTable()->getColumns() as $idx => $col) {

@@ -97,7 +97,8 @@ JS;
         if (! $this->getWidget()->getHideCaption()) {
             $js = <<<JS
         new sap.m.Label({
-            text: "{$this->getCaption()}"
+            text: "{$this->getCaption()}",
+            {$this->buildJsPropertyTooltip()}
         }),
 
 JS;

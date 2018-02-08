@@ -95,7 +95,7 @@ JS;
                 $title = 'Object without title';
             }
         }
-        $heading = $title ? $title : 'New';
+        $heading = $title ? $title : $this->translate('WIDGET.DIALOG.TITLE_NEW');
         
         if ($widget->hasHeader()) {
             foreach ($widget->getHeader()->getChildren() as $child) {

@@ -5,6 +5,7 @@ use exface\Core\Widgets\ComboTable;
 use exface\Core\Widgets\DataColumn;
 use exface\Core\Exceptions\Widgets\WidgetHasNoUidColumnError;
 use exface\Core\Exceptions\Widgets\WidgetLogicError;
+use exface\Core\Factories\DataSheetFactory;
 
 /**
  * Generates OpenUI5 selects
@@ -32,7 +33,11 @@ class ui5ComboTable extends ui5Input
         $widget = $this->getWidget();
         
         if ($value = $widget->getValueWithDefaults()) {
-            $value_init_js = '.setValue("' . $this->getWidget()->getValueText() . '").setSelectedKey("' . $this->escapeJsTextValue($value) . '")';
+            if (is_null($widget->getValueText())) {
+                $value_init_js = '.' . $this->buildJsValueSetterMethod('"' . $this->escapeJsTextValue($value) . '"');
+            } else {
+                $value_init_js = '.setValue("' . $widget->getValueText() . '").setSelectedKey("' . $this->escapeJsTextValue($value) . '")';
+            }
         } else {
             $value_init_js = '';
         }
@@ -72,21 +77,7 @@ class ui5ComboTable extends ui5Input
             showTableSuggestionValueHelp: false,
             filterSuggests: false,
             showValueHelp: true,
-			suggest: function(oEvent) {
-                var oInput = sap.ui.getCore().byId("{$this->getId()}");
-                var params = { 
-                    action: "{$widget->getLazyLoadingActionAlias()}",
-                    resource: "{$this->getPageId()}",
-                    element: "{$widget->getTable()->getId()}",
-                    object: "{$widget->getTable()->getMetaObject()->getId()}",
-                    length: "{$widget->getMaxSuggestions()}",
-				    start: 0,
-                    q: oEvent.getParameter("suggestValue")
-                };
-        		
-                var oModel = oInput.getModel();
-        		oModel.loadData("{$this->getAjaxUrl()}", params);
-    		},
+			suggest: {$this->buildJsPropertySuggest()},
             suggestionRows: {
                 path: "/data",
                 template: new sap.m.ColumnListItem({
@@ -111,6 +102,72 @@ class ui5ComboTable extends ui5Input
             var oModel = new sap.ui.model.json.JSONModel();
             return oModel;
         }()){$value_init_js}{$this->buildJsPseudoEventHandlers()}
+JS;
+    }
+	
+    /**
+     * Returns the function to be called for autosuggest.
+     * 
+     * This makes an AJAX requests to fetch suggestions. Normally the
+     * event parameter "suggestValue" will contain the text typed by
+     * the user and will be used as the autosuggest query. 
+     * 
+     * To make the programmatic value setter work, there is also a 
+     * possibility to pass an object instead of text when firing the 
+     * suggest event automatically (see buildJsDataSetterMethod()).
+     * In this case, the properties of that object will be used as 
+     * parameters of the AJAX request directly. This also will "silence"
+     * the request and make the control refresh it's value automatically
+     * if the expected suggestion rows (matching the filter) will be
+     * returned. This way, setting just the value (key) will lead to
+     * a silent autosuggest and the selection of the correkt text value.
+     * 
+     * @return string
+     */
+    protected function buildJsPropertySuggest()
+    {
+        $widget = $this->getWidget();
+        return <<<JS
+            function(oEvent) {
+                var oInput = sap.ui.getCore().byId("{$this->getId()}");
+                var q = oEvent.getParameter("suggestValue");
+                var qParams = {};
+                var silent = false;
+
+                if (typeof q == 'object') {
+                    qParams = q;
+                    silent = true;
+                } else {
+                    qParams.q = q;
+                }
+                var params = { 
+                    action: "{$widget->getLazyLoadingActionAlias()}",
+                    resource: "{$this->getPageId()}",
+                    element: "{$widget->getTable()->getId()}",
+                    object: "{$widget->getTable()->getMetaObject()->getId()}",
+                    length: "{$widget->getMaxSuggestions()}",
+				    start: 0
+                };
+                $.extend(params, qParams);
+        		
+                var oModel = oInput.getModel();
+                if (silent) {
+                    var silencer = function(oEvent){
+                        if (oEvent.getParameters().success) {
+                            var data = this.getProperty('/data');
+                            var curVal = oInput.getSelectedKey();
+                            if (parseInt(this.getProperty("/recordsTotal")) == 1 && data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curVal) {
+                                oInput.setValue(this.getProperty('/data')[0]['{$widget->getTextColumn()->getDataColumnName()}']).setSelectedKey(curVal);
+                            } else {
+                                oInput.setSelectedKey("");
+                            }
+                        }
+                        this.detachRequestCompleted(silencer);
+                    };
+                    oModel.attachRequestCompleted(silencer);
+                }
+                oModel.loadData("{$this->getAjaxUrl()}", params);
+    		}
 JS;
     }
     
@@ -143,7 +200,12 @@ JS;
      */
     public function buildJsValueSetterMethod($valueJs)
     {
-        return "setSelectedKey({$valueJs})";
+        // After setting the key, we need to fetch the corresponding text value, so we use a trick
+        // and pass the given value not directly, but wrapped in an object. The suggest-handler
+        // above will recognize this and use merge this object with the request parameters, so
+        // we can directly tell it to use our input as a value column filter instead of a regular
+        // suggest string.
+        return "setSelectedKey({$valueJs}).fireSuggest({suggestValue: {fltr00_" . $this->getWidget()->getValueColumn()->getDataColumnName() . ": {$valueJs}}})";
     }
 }
 ?>

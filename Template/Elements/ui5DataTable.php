@@ -710,9 +710,9 @@ JS;
             // TODO
         } else {
             if ($this->isUiTable()) {
-                $rows = "sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data[sap.ui.getCore().byId('{$this->getId()}').getSelectedIndex()]";
+                $rows = "[sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data[sap.ui.getCore().byId('{$this->getId()}').getSelectedIndex()]]";
             } else {
-                $rows = "sap.ui.getCore().byId('{$this->getId()}').getSelectedItem().getBindingContext().getObject()";
+                $rows = "(sap.ui.getCore().byId('{$this->getId()}').getSelectedItem() ? [sap.ui.getCore().byId('{$this->getId()}').getSelectedItem().getBindingContext().getObject()] : [])";
             }
         }
         return <<<JS
@@ -720,7 +720,7 @@ JS;
         var rows = {$rows};
         return {
             oId: '{$this->getWidget()->getMetaObject()->getId()}', 
-            rows: (rows === undefined ? [] : [rows])
+            rows: (rows === undefined ? [] : rows)
         };
     }()
 JS;

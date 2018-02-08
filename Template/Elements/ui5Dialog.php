@@ -145,6 +145,7 @@ JS;
 
         new sap.m.Dialog("{$this->getId()}", {
 			modal : true,
+            stretch: jQuery.device.is.phone,
             title: "{$this->getCaption()}",
 			buttons : [ {$this->buildJsDialogButtons()} ],
 			content : [ {$content} ]

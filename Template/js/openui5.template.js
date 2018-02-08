@@ -181,11 +181,11 @@ function closeTopDialog() {
 }
 
 function showDialog(title, content, state, onCloseCallback, responsive) {
-	var stretchOnPhone = responsive ? true : false;
+	var stretch = responsive ? jQuery.device.is.phone : false;
 	var dialog = new sap.m.Dialog({
 		title: title,
 		state: state,
-		stretchOnPhone: stretchOnPhone,
+		stretch: stretch,
 		content: content,
 		beginButton: new sap.m.Button({
 			text: 'OK',

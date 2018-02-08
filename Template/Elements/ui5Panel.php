@@ -41,8 +41,8 @@ JS;
                 layout: "ResponsiveGridLayout",
                 labelSpanXL: 4,
     			labelSpanL: 4,
-    			labelSpanM: 12,
-    			labelSpanS: 12,
+    			labelSpanM: 4,
+    			labelSpanS: 5,
     			adjustLabelSpan: false,
     			emptySpanXL: 0,
     			emptySpanL: 0,
@@ -51,7 +51,7 @@ JS;
     			columnsXL: 3,
     			columnsL: 2,
     			columnsM: 2,
-                singleContainerFullSize: false,
+                singleContainerFullSize: true,
                 content: [
                     {$content}
                 ]

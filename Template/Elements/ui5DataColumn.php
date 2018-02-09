@@ -90,11 +90,12 @@ JS;
     {
         $col = $this->getWidget();
         $alignment = 'hAlign: ' . $this->buildJsAlignment() . ',';
+        $popinDisplay = $col->getHideCaption() || $col->getCellWidget()->getHideCaption() ? 'sap.m.PopinDisplay.WithoutHeader' : 'sap.m.PopinDisplay.Inline';
         
         return <<<JS
         
                     new sap.m.Column({
-						popinDisplay: "Inline",
+						popinDisplay: {$popinDisplay},
 						demandPopin: true,
 						{$this->buildJsPropertyMinScreenWidth()}
 						header: [

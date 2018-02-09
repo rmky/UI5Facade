@@ -160,6 +160,47 @@ JS;
         }
         return $this->valueBindingPath;
     }
-
+    
+    protected function buildJsPropertyWidth()
+    {
+        $dim = $this->getWidget()->getWidth();
+        if ($dim->isTemplateSpecific() || $dim->isPercentual()) {
+            $val = $dim->getValue();
+        } else {
+            // TODO add support for relative units
+            $val = $this->buildCssWidthDefaultValue();
+        }
+        if (! is_null($val) && $val !== '') {
+            return 'width: "' . $val . '",';
+        } else {
+            return '';
+        }
+    }
+    
+    protected function buildCssWidthDefaultValue()
+    {
+        return '100%';
+    }
+    
+    protected function buildJsPropertyHeight()
+    {
+        $dim = $this->getWidget()->getHeight();
+        if ($dim->isTemplateSpecific() || $dim->isPercentual()) {
+            $val = $dim->getValue();
+        } else {
+            // TODO add support for relative units
+            $val = $this->buildCssHeightDefaultValue();
+        }
+        if (! is_null($val) && $val !== '') {
+            return 'height: "' . $val . '",';
+        } else {
+            return '';
+        }
+    }
+    
+    protected function buildCssHeightDefaultValue()
+    {
+        return '';
+    }
 }
 ?>

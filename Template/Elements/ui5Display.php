@@ -131,12 +131,13 @@ JS;
     public function buildJsProperties()
     {
         return parent::buildJsProperties() . <<<JS
-            width: "100%",
+            {$this->buildJsPropertyWidth()}
+            {$this->buildJsPropertyHeight()}
             {$this->buildJsPropertyAlignment()}
             {$this->buildJsPropertyWrapping()}
 JS;
     }
-    
+            
     /**
      * Returns "wrapping: false/true," with tailing comma.
      * 

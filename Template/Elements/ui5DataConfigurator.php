@@ -4,6 +4,7 @@ namespace exface\OpenUI5Template\Template\Elements;
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDataConfiguratorTrait;
 use exface\Core\Widgets\DataConfigurator;
 use exface\Core\DataTypes\BooleanDataType;
+use exface\Core\DataTypes\SortingDirectionsDataType;
 
 /**
  * 
@@ -39,11 +40,64 @@ JS;
     
     public function buildJsConstructor()
     {
-        if ($this->getIncludeFilterTab()) {
-            $filter_tab_js = <<<JS
+        
+        
+        return <<<JS
+
+        new sap.m.P13nDialog("{$this->getId()}", {
+            ok: function() { {$this->getJsVar()}.close(); {$this->getTemplate()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh()}; },
+            cancel: function() { {$this->getJsVar()}.close() },
+            showReset: true,
+            reset: "handleReset",
+            panels: [
+                {$this->buildJsTabFilters()}
+                {$this->buildJsTabSorters()}
+                {$this->buildJsTabSearch()}
+                {$this->buildJsTabColumns()}
+            ]
+        }).setModel(function(){
+            var oModel = new sap.ui.model.json.JSONModel();
+            var columns = {$this->buildJsonColumnData()};
+            var sortables = {$this->buildJsonSorterData()};
+            var data = {
+                "columns": columns,
+                "sortables": sortables,
+                "sorters": [{$this->buildJsInitialSortItems()}]
+            }
+            oModel.setData(data);
+            return oModel;        
+        }())
+
+JS;
+    }
+                
+    public function buildJsInitialSortItems()
+    {
+        $js = '';
+        $operations = [SortingDirectionsDataType::ASC => 'Ascending', SortingDirectionsDataType::DESC => 'Descending'];
+        foreach ($this->getWidget()->getWidgetConfigured()->getSorters() as $sorter) {
+            $js .= <<<JS
+
+                    {attribute_alias: "{$sorter->getProperty('attribute_alias')}", direction: "{$operations[strtoupper($sorter->getProperty('direction'))]}"},
+JS;
+        }
+        return $js;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsTabFilters()
+    {
+        if (! $this->getIncludeFilterTab()) {
+            return '';
+        }
+        
+        return <<<JS
+
                 new exface.core.P13nLayoutPanel({
                     title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.FILTERS')}",
-                    visible: true,
                     layoutMode: "Desktop",
                     content: [
                         new sap.ui.layout.Grid({
@@ -55,17 +109,82 @@ JS;
                     ]
                 }),
 JS;
-        }
         
+    }
+                                
+    protected function buildJsTabSorters()
+    {
         return <<<JS
 
-        new sap.m.P13nDialog("{$this->getId()}", {
-            ok: function() { {$this->getJsVar()}.close(); {$this->getTemplate()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh()}; },
-            cancel: function() { {$this->getJsVar()}.close() },
-            showReset: true,
-            reset: "handleReset",
-            panels: [
-                {$filter_tab_js}
+                new sap.m.P13nSortPanel("{$this->getIdOfSortPanel()}", {
+                    title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.SORTING')}",
+                    visible: true,
+                    type: "sort",
+                    /*containerQuery: true,*/
+                    layoutMode: "Desktop",
+                    items: {
+                        path: '/sortables',
+                        template: new sap.m.P13nItem({
+                            columnKey: "{attribute_alias}",
+                            text: "{caption}"
+                        })
+                    },
+                    sortItems: {
+                        path: '/sorters',
+                        template: new sap.m.P13nSortItem({
+                            columnKey: "{attribute_alias}",
+                            operation: "{direction}"
+                        })
+                    },
+                    addSortItem: function(oEvent) {
+            			var oParameters = oEvent.getParameters();
+            			var aSortItems = this.getModel().getProperty("/sorters");
+            			oParameters.index > -1 ? aSortItems.splice(oParameters.index, 0, {
+            				attribute_alias: oParameters.sortItemData.getColumnKey(),
+            				direction: oParameters.sortItemData.getOperation()
+            			}) : aSortItems.push({
+            				attribute_alias: oParameters.sortItemData.getColumnKey(),
+            				direction: oParameters.sortItemData.getOperation()
+            			});
+            			this.getModel().setProperty("/sorters", aSortItems);
+            		},
+                    onRemoveSortItem: function(oEvent) {
+            			var oParameters = oEvent.getParameters();
+            			if (oParameters.index > -1) {
+            				var aSortItems = this.getModel().getProperty("/sorters");
+            				aSortItems.splice(oParameters.index, 1);
+            				this.oJSONModel.setProperty("/sorters", aSortItems);
+            			}
+            		}
+                }),
+JS;
+    }
+        
+    protected function buildJsTabColumns()
+    {
+        return <<<JS
+
+                new sap.m.P13nColumnsPanel({
+                    title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.COLUMNS')}",
+                    visible: true,
+                    addColumnsItem: "onAddColumnsItem",
+                    type: "columns",
+                    items: {
+                        path: '/columns',
+                        template: new sap.m.P13nItem({
+                            columnKey: "{column_name}",
+                            text: "{caption}",
+                            visible: "{visible}"
+                        })
+                    }
+                }),
+JS;
+    }
+        
+    protected function buildJsTabSearch()
+    {
+        return <<<JS
+
                 new sap.m.P13nFilterPanel({
                     title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.ADVANCED_SEARCH')}",
                     visible: true,
@@ -82,53 +201,6 @@ JS;
 
                     ]
                 }),
-                new sap.m.P13nColumnsPanel({
-                    title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.COLUMNS')}",
-                    visible: true,
-                    addColumnsItem: "onAddColumnsItem",
-                    type: "columns",
-                    items: {
-                        path: '/columns',
-                        template: new sap.m.P13nItem({
-                            columnKey: "{column_name}",
-                            text: "{caption}",
-                            visible: "{visible}"
-                        })
-                    }
-                }),
-                new sap.m.P13nSortPanel({
-                    title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.SORTING')}",
-                    visible: true,
-                    type: "sort",
-                    containerQuer: true,
-                    layoutMode: "Desktop",
-                    items: {
-                        path: '/sorters',
-                        template: new sap.m.P13nItem({
-                            columnKey: "{alias}",
-                            text: "{caption}"
-                        })
-                    },
-                    /*sortItems: [
-                        new sap.m.P13nSortItem({
-                            columnKey: "name",
-                            operation: "Ascending"
-                        })
-                    ]*/
-                })
-            ]
-        }).setModel(function(){
-            var oModel = new sap.ui.model.json.JSONModel();
-            var columns = {$this->buildJsonColumnData()};
-            var sorters = {$this->buildJsonSorterData()};
-            var data = {
-                "columns": columns,
-                "sorters": sorters
-            }
-            oModel.setData(data);
-            return oModel;        
-        }())
-
 JS;
     }
                 
@@ -218,6 +290,11 @@ JS;
                         }),
                         
 JS;
+    }
+                        	    
+    public function getIdOfSortPanel()
+    {
+        return $this->getId() . '_SortPanel';
     }
 }
 ?>

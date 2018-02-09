@@ -255,18 +255,29 @@ JS;
      */
     protected function buildJsDataSource()
     {
-        $widget = $this->getWidget();
-        
         if (! $this->isLazyLoading()) {
-            $data = $widget->prepareDataSheetToRead($widget->getValuesDataSheet());
-            if (! $data->isFresh()) {
-                $data->dataRead();
-            }
-            
-            // FIXME make filtering, sorting, pagination, etc. work in lazy mode too!
-            
-            return <<<JS
-
+            return $this->buildJsDataSourceOnClient();
+        } else {
+            return $this->buildJsDataSourceOnServer();
+        } 
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsDataSourceOnClient()
+    {
+        $widget = $this->getWidget();
+        $data = $widget->prepareDataSheetToRead($widget->getValuesDataSheet());
+        if (! $data->isFresh()) {
+            $data->dataRead();
+        }
+        
+        // FIXME make filtering, sorting, pagination, etc. work in lazy mode too!
+        
+        return <<<JS
+        
     function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent, keep_page_pos) {
         try {
 			var data = {$this->getTemplate()->encodeData($this->prepareData($data, false))};
@@ -276,9 +287,17 @@ JS;
 		}
         sap.ui.getCore().byId("{$this->getId()}").getModel().setData(data);
     }
-
+    
 JS;
-        }
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsDataSourceOnServer()
+    {
+        $widget = $this->getWidget();
         
         $url = $this->getAjaxUrl();
         $params = '
@@ -287,9 +306,9 @@ JS;
 					, element: "' . $widget->getId() . '"
 					, object: "' . $widget->getMetaObject()->getId() . '"
 				';
-	
-		return <<<JS
-	
+        
+        return <<<JS
+        
 	function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent, keep_page_pos) {
 		var oTable = sap.ui.getCore().byId("{$this->getId()}");
         var params = { {$params} };
@@ -299,7 +318,7 @@ JS;
         oModel.attachRequestSent(function(){
 			{$this->buildJsBusyIconShow()}
 		});
-
+		
 		oModel.attachRequestCompleted(function(oEvent){
 			if (oEvent.getParameters().success) {
                 {$this->getId()}_pages.total = this.getProperty("/recordsFiltered");
@@ -317,17 +336,17 @@ JS;
                 var error = oEvent.getParameters().errorobject;
                 {$this->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}
             }
-
+            
             this.setProperty('/filterDescription', {$this->buildJsFilterSummaryFunctionName()}());
             
             {$this->buildJsBusyIconHide()}
 		});
-
+		
 		// Add quick search
         params.q = sap.ui.getCore().byId('{$this->getId()}_quickSearch').getValue();
-
+        
         // Add configurator data
-        params.data = {$this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter()};
+        params.data = {$this->getP13nElement()->buildJsDataGetter()};
         
 		// Add pagination
         var pages = {$this->getId()}_pages;
@@ -339,11 +358,19 @@ JS;
 
         {$this->buildJsDataSourceColumnActions()}
         
+        // Add sorters and filters from P13nDialog
+        var aSortItems = sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}').getSortItems();
+        console.log(aSortItems.length);
+        for (var i in aSortItems) {
+            params.sort = (params.sort ? params.sort+',' : '') + aSortItems[i].getColumnKey();
+            params.order = (params.order ? params.order+',' : '') + (aSortItems[i].getOperation() == 'Ascending' ? 'asc' : 'desc');
+        }
+        
         oModel.loadData("{$url}", params);
 	}
-
+	
     {$this->buildJsFilterSummaryFunction()}
-
+    
 JS;
     }
     
@@ -361,16 +388,18 @@ JS;
 			if (oColumn.getFiltered()){
 				params['fltr99_' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
 			}
-			if (oColumn.getSorted()){
-				params.sort = oColumn.getSortProperty();
-				params.order = (oColumn.getSortOrder() == 'Ascending' ? 'asc' : 'desc');
-			}
 		}
 		
 		// If sorting just now, make sure the sorter from the event is set too (eventually overwriting the previous sorting)
 		if (oControlEvent && oControlEvent.getId() == 'sort'){
-			params.sort = oControlEvent.getParameters().column.getSortProperty();
-			params.order = (oControlEvent.getParameters().sortOrder == 'Ascending' ? 'asc' : 'desc');
+            sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}')
+                .destroySortItems()
+                .addSortItem(
+                    new sap.m.P13nSortItem({
+                        columnKey: oControlEvent.getParameters().column.getSortProperty(),
+                        operation: oControlEvent.getParameters().sortOrder
+                    })
+                );
 		}
 		
 		// If filtering just now, make sure the filter from the event is set too (eventually overwriting the previous one)
@@ -887,6 +916,15 @@ JS;
 JS;
         }
         return $menu_item;
+    }
+    
+    /**
+     * 
+     * @return ui5DataConfigurator
+     */
+    protected function getP13nElement()
+    {
+        return $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget());
     }
 }
 ?>

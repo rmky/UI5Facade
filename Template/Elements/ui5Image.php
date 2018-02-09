@@ -5,16 +5,39 @@ use exface\Core\Widgets\Html;
 use exface\Core\Widgets\Image;
 
 /**
- * Generates OpenUI5 HTML
+ * Generates sap.m.Image
  * 
  * @method Image getWidget()
  *
  * @author Andrej Kabachnik
  *        
  */
-class ui5Image extends ui5AbstractElement
+class ui5Image extends ui5Display
 {
-    function generateJs()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsConstructor()
+     */
+    public function buildJsConstructorForMainControl()
+    {
+        return <<<JS
+
+        new sap.m.Image("{$this->getid()}", {
+    		src: {$this->buildJsValue()},
+            densityAware: false,
+            {$this->buildJsProperties()}
+    	})
+
+JS;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Value::buildCssHeightDefaultValue()
+     */
+    protected function buildCssHeightDefaultValue()
     {
         return '';
     }
@@ -22,18 +45,11 @@ class ui5Image extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Value::buildCssWidthDefaultValue()
      */
-    public function buildJsConstructor()
+    protected function buildCssWidthDefaultValue()
     {
-        return <<<JS
-
-    new sap.m.Image("{$this->getid()}", {
-		src: "{$this->getWidget()->getUri()}",
-        {$this->buildJsProperties()}
-	})
-
-JS;
+        return '';
     }
 }
 ?>

@@ -14,7 +14,9 @@ var oShell = new sap.ui.unified.Shell({
                 new sap.m.Image({
 					src: "exface/vendor/exface/OpenUI5Template/Template/images/sap_50x26.png",
 					height: "26px",
-					width: "50px"
+					width: "50px",
+					densityAware: false,
+					//visible: ! sap.ui.Device.system.phone
                 }),
                 new sap.m.ToolbarSpacer(),
                 new sap.m.Label("exf_pagetitle", {

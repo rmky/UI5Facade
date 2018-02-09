@@ -50,11 +50,11 @@ class ui5DataColumn extends ui5AbstractElement
             text: "{$this->getCaption()}"
         }),
         autoResizable: true,
-        tooltip: "{$this->escapeJsTextValue($this->buildJsPropertyTooltip())}",
-	    template: {$this->buildJsConstructorForCell()},
+        template: {$this->buildJsConstructorForCell()},
 	    sortProperty: "{$widget->getAttributeAlias()}",
 	    filterProperty: "{$widget->getAttributeAlias()}",
-		{$this->buildJsPropertyVisibile()}
+        {$this->buildJsPropertyTooltip()}
+	    {$this->buildJsPropertyVisibile()}
 	    {$this->buildJsPropertyWidth()}
 	})
 JS;
@@ -98,6 +98,7 @@ JS;
 						popinDisplay: {$popinDisplay},
 						demandPopin: true,
 						{$this->buildJsPropertyMinScreenWidth()}
+						{$this->buildJsPropertyTooltip()}
 						header: [
                             new sap.m.Label({
                                 text: "{$col->getCaption()}"
@@ -138,6 +139,11 @@ JS;
      * @see \exface\OpenUI5Template\Template\Elements\ui5AbstractElement::buildJsPropertyTooltip()
      */
     protected function buildJsPropertyTooltip()
+    {
+        return 'tooltip: "' . $this->escapeJsTextValue($this->buildTextTooltip()) . '",';
+    }
+    
+    protected function buildTextTooltip()
     {
         return $this->getWidget()->getCaption() . ($this->getWidget()->getCaption() ? ': ' : '') . $this->getWidget()->getHint();
     }

@@ -715,13 +715,14 @@ JS;
             // TODO
         } else {
             if ($this->isUiTable()) {
-                $rows = "[sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data[sap.ui.getCore().byId('{$this->getId()}').getSelectedIndex()]]";
+                $rows = "(oTable.getSelectedIndex() > -1 ? [oTable.getModel().getData().data[oTable.getSelectedIndex()]] : [])";
             } else {
-                $rows = "(sap.ui.getCore().byId('{$this->getId()}').getSelectedItem() ? [sap.ui.getCore().byId('{$this->getId()}').getSelectedItem().getBindingContext().getObject()] : [])";
+                $rows = "(oTable.getSelectedItem() ? [oTable.getSelectedItem().getBindingContext().getObject()] : [])";
             }
         }
         return <<<JS
     function() {
+        var oTable = sap.ui.getCore().byId('{$this->getId()}');
         var rows = {$rows};
         return {
             oId: '{$this->getWidget()->getMetaObject()->getId()}', 

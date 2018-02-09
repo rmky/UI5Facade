@@ -6,6 +6,9 @@ use exface\Core\Widgets\DataColumn;
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDataTableTrait;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Interfaces\Actions\iReadData;
+use exface\Core\Widgets\Button;
+use exface\Core\Widgets\ButtonGroup;
+use exface\Core\Widgets\MenuButton;
 
 /**
  *
@@ -88,11 +91,13 @@ JS;
     protected function buildJsConstructorForMTable()
     {
         $mode = $this->getWidget()->getMultiSelect() ? 'sap.m.ListMode.MultiSelect' : 'sap.m.ListMode.SingleSelectMaster';
+        $striped = $this->getWidget()->getStriped() ? 'true' : 'false';
         
         return <<<JS
         function() {
             var {$this->getJsVar()} = new sap.m.Table("{$this->getId()}", {
         		fixedLayout: false,
+                alternateRowColors: {$striped},
         		mode: {$mode},
                 headerToolbar: [
                     {$this->buildJsToolbar()}
@@ -103,6 +108,7 @@ JS;
         		items: {
         			path: '/data',
                     template: new sap.m.ColumnListItem({
+                        type: "Active",
                         cells: [
                             {$this->buildJsCellsForMTable()}
                         ]
@@ -728,40 +734,158 @@ JS;
     protected function buildJsClickListeners()
     {
         $widget = $this->getWidget();
-        $leftclick_script = '';
-        $dblclick_script = '';
+        $js = '';
         $rightclick_script = '';
-        
-        // Click actions
-        // Single click. Currently only supports one double click action - the first one in the list of buttons
-        if ($leftclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
-            $leftclick_script = $this->getTemplate()->getElement($leftclick_button)->buildJsClickFunctionName() . '()';
-        }
+        		
         // Double click. Currently only supports one double click action - the first one in the list of buttons
         if ($dblclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[0]) {
-            $dblclick_script = $this->getTemplate()->getElement($dblclick_button)->buildJsClickFunctionName() . '()';
+            $js .= <<<JS
+
+            {$this->getJsVar()}.attachBrowserEvent("dblclick", function(oEvent) {
+        		{$this->getTemplate()->getElement($dblclick_button)->buildJsClickFunctionName()}();
+            });
+JS;
         }
         
-        // Double click. Currently only supports one double click action - the first one in the list of buttons
+        // Right click. Currently only supports one double click action - the first one in the list of buttons
         if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
             $rightclick_script = $this->getTemplate()->getElement($rightclick_button)->buildJsClickFunctionName() . '()';
+        } else {
+            $rightclick_script = $this->buildJsContextMenuTrigger();
         }
         
+        if ($rightclick_script) {
+            $js .= <<<JS
+            
+            {$this->getJsVar()}.attachBrowserEvent("contextmenu", function(oEvent) {
+                oEvent.preventDefault();
+                {$rightclick_script}
+        	});
+
+JS;
+        }
+                
+        // Single click. Currently only supports one double click action - the first one in the list of buttons
+        if ($leftclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
+            if ($this->isUiTable()) {
+                $js .= <<<JS
+                
+            {$this->getJsVar()}.attachBrowserEvent("click", function(oEvent) {
+        		{$this->getTemplate()->getElement($leftclick_button)->buildJsClickFunctionName()}();
+            });
+JS;
+            } else {
+                $js .= <<<JS
+                
+            {$this->getJsVar()}.attachItemPress(function(oEvent) {
+                console.log('click');
+        		{$this->getTemplate()->getElement($leftclick_button)->buildJsClickFunctionName()}();
+            });
+JS;
+            }
+        }
+        
+        return $js;
+    }
+		
+    protected function buildJsContextMenuTrigger($eventJsVar = 'oEvent') {
         return <<<JS
         
-	{$this->getJsVar()}.attachBrowserEvent("click", function(oEvent) {
-		{$leftclick_script}
-    });
-    
-    {$this->getJsVar()}.attachBrowserEvent("dblclick", function(oEvent) {
-		{$dblclick_script}
-	});
-	
-	{$this->getJsVar()}.attachBrowserEvent("rightclick", function(oEvent) {
-		{$rightclick_script}
-	});
-	
+                var oMenu = {$this->buildJsContextMenu($this->getWidget()->getButtons())};
+                var eFocused = $(':focus');
+                var eDock = sap.ui.core.Popup.Dock;
+                oMenu.open(true, eFocused, eDock.CenterCenter, eDock.CenterBottom,  {$eventJsVar}.target);
+          
 JS;
+    }
+	
+    /**
+     * 
+     * @param Button[]
+     * @return string
+     */
+    protected function buildJsContextMenu(array $buttons)
+    {
+        return <<<JS
+
+                new sap.ui.unified.Menu({
+                    items: [
+                        {$this->buildJsContextMenuButtons($buttons)}
+                    ]
+                })
+JS;
+    }
+        
+    /**
+     *
+     * @param Button[] $buttons
+     * @return string
+     */
+    protected function buildJsContextMenuButtons(array $buttons)
+    {
+        $context_menu_js = '';
+        
+        $last_parent = null;
+        foreach ($buttons as $button) {
+            if ($button->isHidden()) {
+                continue;
+            }
+            if ($button->getParent() == $this->getWidget()->getToolbarMain()->getButtonGroupForSearchActions()) {
+                continue;
+            }
+            if (! is_null($last_parent) && $button->getParent() !== $last_parent) {
+                $startSection = true;
+            }
+            $last_parent = $button->getParent();
+            
+            $context_menu_js .= ($context_menu_js ? ',' : '') . $this->buildJsContextMenuItem($button, $startSection);
+        }
+        
+        return $context_menu_js;
+    }
+    
+    /**
+     * 
+     * @param Button $button
+     * @param boolean $startSection
+     * @return string
+     */
+    protected function buildJsContextMenuItem(Button $button, $startSection = false)
+    {
+        $menu_item = '';
+        
+        $startsSectionProperty = $startSection ? 'startsSection: true,' : '';
+        
+        /* @var $btn_element \exface\AdminLteTemplate\lteButton */
+        $btn_element = $this->getTemplate()->getElement($button);
+        
+        if ($button instanceof MenuButton){
+            if ($button->getParent() instanceof ButtonGroup && $button === $this->getTemplate()->getElement($button->getParent())->getMoreButtonsMenu()){
+                $caption = $button->getCaption() ? $button->getCaption() : '...';
+            } else {
+                $caption = $button->getCaption();
+            }
+            $menu_item = <<<JS
+
+                        new sap.ui.unified.MenuItem({
+                            icon: "{$btn_element->buildCssIconClass($button->getIcon())}",
+                            text: "{$caption}",
+                            {$startsSectionProperty}
+                            submenu: {$this->buildJsContextMenu($button->getButtons())}
+                        })
+JS;
+        } else {
+            $menu_item = <<<JS
+
+                        new sap.ui.unified.MenuItem({
+                            icon: "{$btn_element->buildCssIconClass($button->getIcon())}",
+                            text: "{$button->getCaption()}",
+                            select: {$btn_element->buildJsClickFunctionName()},
+                            {$startsSectionProperty}
+                        })
+JS;
+        }
+        return $menu_item;
     }
 }
 ?>

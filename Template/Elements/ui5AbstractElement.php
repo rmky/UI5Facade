@@ -251,7 +251,7 @@ JS;
     
     public function buildCssIconClass($icon)
     {
-        return $this->getIconSrc($icon);
+        return $icon ? $this->getIconSrc($icon) : '';
     }
     
     /**

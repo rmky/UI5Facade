@@ -388,7 +388,7 @@ JS;
             $code = implode("\n", $code_array);
             $js .= <<<JS
             
-            {$event}: function() {
+            {$event}: function(oEvent) {
                 {$code}
             },
             
@@ -411,7 +411,9 @@ JS;
     /**
      * Registers the given JS code to be executed on a specified pseudo event for this control.
      * 
-     * Example: ui5Input::addPseudoEventHandler('onsapenter', 'alert("Enter pressed!")')
+     * Note: the event fired will be available via the oEvent javascript variable.
+     * 
+     * Example: ui5Input::addPseudoEventHandler('onsapenter', 'console.log("Enter pressed:", oEvent)')
      * 
      * @link https://openui5.hana.ondemand.com/#/api/jQuery.sap.PseudoEvents
      * 

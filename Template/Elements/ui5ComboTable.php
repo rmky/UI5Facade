@@ -46,7 +46,8 @@ JS;
                 
                         oInput = oEvent.srcControl;
                         if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
-                            oEvent.stopPropagation().preventDefault();
+                            oEvent.stopPropagation();
+                            oEvent.preventDefault();
                             return false;
                         }
 JS;

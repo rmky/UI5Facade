@@ -107,12 +107,13 @@ JS;
         		],
         		items: {
         			path: '/data',
+                    {$this->buildJsBindingOptionsForGrouping()}
                     template: new sap.m.ColumnListItem({
                         type: "Active",
                         cells: [
                             {$this->buildJsCellsForMTable()}
                         ]
-                    })
+                    }),
         		}
             })
             .setModel(new sap.ui.model.json.JSONModel());
@@ -121,6 +122,31 @@ JS;
             return {$this->getJsVar()}
         }()
 
+JS;
+    }
+            
+    protected function buildJsBindingOptionsForGrouping()
+    {
+        $widget = $this->getWidget();
+        
+        if (! $colId = $widget->getRowGroupsByColumnId()) {
+            return '';
+        }
+        
+        return <<<JS
+
+                sorter: new sap.ui.model.Sorter(
+    				'{$colId}', // sPath
+    				false, // bDescending
+    				true // vGroup
+    			),
+    			/*groupHeaderFactory: function(oGroup) {
+                    // TODO add support for counters
+                    return new sap.m.GroupHeaderListItem({
+        				title: oGroup.key,
+        				upperCase: false
+        			});
+                },*/
 JS;
     }
     
@@ -139,20 +165,21 @@ JS;
         $js = <<<JS
         function() {
         	{$this->getJsVar()} = new sap.ui.table.Table("{$this->getId()}", {
-        		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto
-                , selectionMode: {$selection_mode}
-        		, selectionBehavior: {$selection_behavior}
-        	    , enableColumnReordering:true
-                , enableColumnFreeze: true
-        		, filter: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)}
-        		, sort: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)}
-        		, toolbar: [
+        		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto,
+                selectionMode: {$selection_mode},
+        		selectionBehavior: {$selection_behavior},
+                enableColumnReordering:true,
+                enableColumnFreeze: true,
+        		enableGrouping:false,
+        	    filter: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)},
+        		sort: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)},
+        		toolbar: [
         			{$this->buildJsToolbar()}
-        		]
-        		, columns: [
+        		],
+        		columns: [
         			{$this->buildJsColumnsForUiTable()}
-        		]
-                , rows: "{/data}"
+        		],
+                rows: "{/data}"
         	})
             .setModel(new sap.ui.model.json.JSONModel()) 
             /*.addEventDelegate({
@@ -360,7 +387,6 @@ JS;
         
         // Add sorters and filters from P13nDialog
         var aSortItems = sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}').getSortItems();
-        console.log(aSortItems.length);
         for (var i in aSortItems) {
             params.sort = (params.sort ? params.sort+',' : '') + aSortItems[i].getColumnKey();
             params.order = (params.order ? params.order+',' : '') + (aSortItems[i].getOperation() == 'Ascending' ? 'asc' : 'desc');
@@ -808,8 +834,7 @@ JS;
                 $js .= <<<JS
                 
             {$this->getJsVar()}.attachItemPress(function(oEvent) {
-                console.log('click');
-        		{$this->getTemplate()->getElement($leftclick_button)->buildJsClickFunctionName()}();
+                {$this->getTemplate()->getElement($leftclick_button)->buildJsClickFunctionName()}();
             });
 JS;
             }

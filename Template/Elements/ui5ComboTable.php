@@ -17,6 +17,7 @@ use exface\Core\Factories\DataSheetFactory;
  */
 class ui5ComboTable extends ui5Input
 {
+    
     protected function init()
     {
         // If the combo does not allow new values, we need to force the ui5 input to
@@ -24,16 +25,32 @@ class ui5ComboTable extends ui5Input
         // TODO this only works if there was no value before and needs to be
         // extended to work with changing values too.
         if (! $this->getWidget()->getAllowNewValues()) {
-            $onEnter = <<<JS
+            $onChange = <<<JS
     
-                        oInput = oEvent.srcControl;
+                        oInput = event.getSource();
                         if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
                             oInput.fireSuggest({suggestValue: {q: oInput.getValue()}})
+                            event.cancelBubble();
+                            event.preventDefault();
+                            return false;
+                        }
+                        if (oInput.getValue() === '' && oInput.getSelectedKey() === ''){
+                            oInput.setValueState(sap.ui.core.ValueState.None);
+                        }
+JS;
+            $this->addOnChangeScript($onChange);
+            
+            // TODO explicitly prevent propagation of enter-events to stop data widgets
+            // from autoreloading if enter was pressed to soon.
+            $onEnter = <<<JS
+                
+                        oInput = oEvent.srcControl;
+                        if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
                             oEvent.stopPropagation().preventDefault();
                             return false;
                         }
 JS;
-            
+                
             $this->addPseudoEventHandler('onsapenter', $onEnter);
         }
     }
@@ -118,8 +135,6 @@ JS;
             throw new WidgetLogicError($widget, 'Text column not found for ' . $this->getWidget()->getWidgetType() . ' with id "' . $this->getWidget()->getId() . '"!');
         }
         
-        // TODO do not instantiate the model every time, but rathe create it once and load data with every suggest.
-        
         return <<<JS
 	   new sap.m.Input("{$this->getId()}", {
 			{$this->buildJsProperties()}
@@ -147,6 +162,7 @@ JS;
                 var oInput = sap.ui.getCore().byId("{$this->getId()}");
                 oInput.setValue(aCells[ {$text_idx} ].getText());
                 oInput.setSelectedKey(aCells[ {$value_idx} ].getText());
+                oInput.setValueState(sap.ui.core.ValueState.None);
 			},
 			suggestionColumns: [
 				{$columns}

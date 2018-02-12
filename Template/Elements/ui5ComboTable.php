@@ -17,10 +17,25 @@ use exface\Core\Factories\DataSheetFactory;
  */
 class ui5ComboTable extends ui5Input
 {
-    
-    function generateJs()
+    protected function init()
     {
-        return '';
+        // If the combo does not allow new values, we need to force the ui5 input to
+        // check any input via autosuggest _before_ any other action is taken.
+        // TODO this only works if there was no value before and needs to be
+        // extended to work with changing values too.
+        if (! $this->getWidget()->getAllowNewValues()) {
+            $onEnter = <<<JS
+    
+                        oInput = oEvent.srcControl;
+                        if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
+                            oInput.fireSuggest({suggestValue: {q: oInput.getValue()}})
+                            oEvent.stopPropagation().preventDefault();
+                            return false;
+                        }
+JS;
+            
+            $this->addPseudoEventHandler('onsapenter', $onEnter);
+        }
     }
     
     /**
@@ -112,7 +127,7 @@ class ui5ComboTable extends ui5Input
 			textFormatMode: "ValueKey",
 			showSuggestion: true,
             maxSuggestionWidth: "400px",
-            startSuggestion: 0,
+            startSuggestion: 1,
             showTableSuggestionValueHelp: false,
             filterSuggests: false,
             showValueHelp: true,
@@ -191,17 +206,22 @@ JS;
         		
                 var oModel = oInput.getModel();
                 if (silent) {
+                    {$this->buildJsBusyIconShow()}
                     var silencer = function(oEvent){
                         if (oEvent.getParameters().success) {
                             var data = this.getProperty('/data');
-                            var curVal = oInput.getSelectedKey();
-                            if (parseInt(this.getProperty("/recordsTotal")) == 1 && data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curVal) {
-                                oInput.setValue(this.getProperty('/data')[0]['{$widget->getTextColumn()->getDataColumnName()}']).setSelectedKey(curVal);
+                            var curKey = oInput.getSelectedKey();
+                            if (parseInt(this.getProperty("/recordsTotal")) == 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
+                                oInput.setValue(data[0]['{$widget->getTextColumn()->getDataColumnName()}']).setSelectedKey(data[0]['{$widget->getValueColumn()->getDataColumnName()}']);
+                                oInput.closeSuggestions();
+                                oInput.setValueState(sap.ui.core.ValueState.None);
                             } else {
                                 oInput.setSelectedKey("");
+                                oInput.setValueState(sap.ui.core.ValueState.Error);
                             }
                         }
                         this.detachRequestCompleted(silencer);
+                        {$this->buildJsBusyIconHide()}
                     };
                     oModel.attachRequestCompleted(silencer);
                 }

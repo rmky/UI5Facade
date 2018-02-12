@@ -170,8 +170,7 @@ JS;
         		selectionBehavior: {$selection_behavior},
                 enableColumnReordering:true,
                 enableColumnFreeze: true,
-        		enableGrouping:false,
-        	    filter: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)},
+        		filter: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)},
         		sort: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)},
         		toolbar: [
         			{$this->buildJsToolbar()}

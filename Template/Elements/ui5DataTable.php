@@ -345,7 +345,7 @@ JS;
 			{$this->buildJsBusyIconShow()}
 		});
 		
-		oModel.attachRequestCompleted(function(oEvent){
+        var fnCompleted = function(oEvent){
 			if (oEvent.getParameters().success) {
                 {$this->getId()}_pages.total = this.getProperty("/recordsFiltered");
                 {$this->getId()}_drawPagination();
@@ -364,9 +364,11 @@ JS;
             }
             
             this.setProperty('/filterDescription', {$this->buildJsFilterSummaryFunctionName()}());
-            
+            this.detachRequestCompleted(fnCompleted);
             {$this->buildJsBusyIconHide()}
-		});
+		};
+
+		oModel.attachRequestCompleted(fnCompleted);
 		
 		// Add quick search
         params.q = sap.ui.getCore().byId('{$this->getId()}_quickSearch').getValue();

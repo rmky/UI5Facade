@@ -25,7 +25,8 @@
 		<script src="exface/vendor/exface/OpenUI5Template/Template/js/openui5/resources/sap-ui-core.js"
 				id="sap-ui-bootstrap"
 				data-sap-ui-libs="sap.m,sap.tnt,sap.ui.unified,sap.ui.commons,sap.ui.table,sap.f,sap.uxap"
-				data-sap-ui-theme="sap_belize">
+				data-sap-ui-theme="sap_belize"
+				data-sap-ui-language="[[Exface? &action=`exface.ModxCmsConnector.GetLanguageCode` &template=`exface.OpenUI5Template`]]">
 		</script>
 		
 		<!-- Font awesome -->
@@ -51,14 +52,6 @@
 			
 			oShell.addPaneContent(oNavMenu);
 			
-			/*oShell.setUser(
-				new sap.ui.unified.ShellHeadUserItem({
-					image: "[!UserManagerInfo? &field=`photo`!]",
-					username: "[!UserManagerInfo? &field=`fullname`!]",
-					press: function(){alert("User Item pressed");}
-				})
-			);*/
-			
 			sap.ui.getCore().byId('exf_pagetitle').setText('[*pagetitle*]');
 			sap.ui.getCore().byId('exf_avatar').setSrc('[!UserManagerInfo? &field=`photo`!]');
 			
@@ -71,7 +64,6 @@
 		[[Exface? &action=`exface.Core.ShowWidget` &template=`exface.OpenUI5Template` &fallback_field=`content`]]
 		
 		<script type="text/javascript">
-			//oApp.showView(oApp.getViewTop());
 			oShell.removeAllContent()
 		    oShell.addContent(
 		        (sap.ui.getCore().byId("view.[*alias*]") !== undefined ? sap.ui.getCore().byId("view.[*alias*]") : sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, height: "100%", viewName:"view.[*alias*]"}))

@@ -40,6 +40,18 @@ class ui5ComboTable extends ui5Input
 JS;
             $this->addOnChangeScript($onChange);
             
+            /*$onAfterRendering = <<<JS
+                        oInput = oEvent.srcControl;
+                        console.log(oInput.getValue() !== '' && oInput.getSelectedKey() === '');
+                        if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
+                            oInput.fireSuggest({suggestValue: {q: oInput.getValue()}})
+                            oEvent.stopPropagation();
+                            oEvent.preventDefault();
+                            return false;
+                        }
+JS;
+            $this->addPseudoEventHandler('onAfterRendering', $onAfterRendering);*/
+            
             // TODO explicitly prevent propagation of enter-events to stop data widgets
             // from autoreloading if enter was pressed to soon.
             $onEnter = <<<JS
@@ -66,7 +78,7 @@ JS;
         $widget = $this->getWidget();
         
         if ($value = $widget->getValueWithDefaults()) {
-            if (is_null($widget->getValueText())) {
+            if (is_null($widget->getValueText()) || $widget->getValueText() === '') {
                 $value_init_js = '.' . $this->buildJsValueSetterMethod('"' . $this->escapeJsTextValue($value) . '"');
             } else {
                 $value_init_js = '.setValue("' . $widget->getValueText() . '").setSelectedKey("' . $this->escapeJsTextValue($value) . '")';

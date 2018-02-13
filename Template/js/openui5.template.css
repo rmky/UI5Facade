@@ -25,3 +25,4 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 
 /* Tiles */
 .sapMTileCntContent .sapMFC.sapMTcInnerMarker {width: inherit !important;}
+.sapMTileCntContent ..sapMFCCTxt {overflow: visible !important;}

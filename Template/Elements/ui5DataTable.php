@@ -304,7 +304,7 @@ JS;
         
         return <<<JS
         
-    function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent, keep_page_pos) {
+    function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent, keep_page_pos, growing) {
         try {
 			var data = {$this->getTemplate()->encodeData($this->prepareData($data, false))};
 		} catch (err){
@@ -335,18 +335,24 @@ JS;
         
         return <<<JS
         
-	function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent, keep_page_pos) {
+	function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent, keep_page_pos, growing) {
 		var oTable = sap.ui.getCore().byId("{$this->getId()}");
         var params = { {$params} };
 		var cols = oTable.getColumns();
 		var oModel = oTable.getModel();
-		
+        var oData = oModel.getData();
+        
         oModel.attachRequestSent(function(){
 			{$this->buildJsBusyIconShow()}
 		});
 		
         var fnCompleted = function(oEvent){
 			if (oEvent.getParameters().success) {
+                if (growing) {
+                    var oDataNew = this.getData();
+                    oDataNew.data = oData.data.concat(oDataNew.data);
+                }
+                
                 {$this->getId()}_pages.total = this.getProperty("/recordsFiltered");
                 {$this->getId()}_drawPagination();
                 
@@ -381,8 +387,13 @@ JS;
         if (! keep_page_pos) {
             pages.resetAll();
         }
-        params.start = pages.start;
-        params.length = pages.pageSize;
+        if (growing) {
+            params.start = pages.growingLoadStart();
+            params.length = pages.growingLoadPageSize();
+        } else {
+            params.start = pages.start;
+            params.length = pages.pageSize;
+        }
 
         {$this->buildJsDataSourceColumnActions()}
         
@@ -515,6 +526,12 @@ JS;
             this.start = 0;
             this.pageSize = {$defaultPageSize};
             this.total = 0;
+        },
+        growingLoadStart: function() {
+            return this.start + this.pageSize - {$defaultPageSize};
+        },
+        growingLoadPageSize: function() {
+            return {$defaultPageSize};
         }
     };
 
@@ -540,7 +557,7 @@ JS;
             var lastVisibleRow = oTable.getFirstVisibleRow() + oTable.getVisibleRowCount();
             if ((pages.pageSize - lastVisibleRow <= 1) && (pages.end() + 1 !== pages.total)) {
                 pages.increasePageSize();
-                {$this->buildJsRefresh(true)}
+                {$this->buildJsRefresh(true, true)}
             }
         });
     };
@@ -640,9 +657,9 @@ JS;
      * {@inheritDoc}
      * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsRefresh()
      */
-    public function buildJsRefresh($keep_page_pos = false)
+    public function buildJsRefresh($keep_page_pos = false, $growing = false)
     {
-        return "{$this->buildJsFunctionPrefix()}LoadData(undefined, " . ($keep_page_pos ? 'true' : 'false') . ')';
+        return "{$this->buildJsFunctionPrefix()}LoadData(undefined, " . ($keep_page_pos ? 'true' : 'false') . ', ' . ($growing ? 'true' : 'false') . ')';
     }
     
     /**

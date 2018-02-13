@@ -11,7 +11,7 @@ use exface\Core\Widgets\Html;
  * @author Andrej Kabachnik
  *        
  */
-class ui5Html extends ui5Text
+class ui5Html extends ui5Value
 { 
     public function generateJs()
     {

@@ -347,6 +347,7 @@ JS;
 		});
 		
         var fnCompleted = function(oEvent){
+            {$this->buildJsBusyIconHide()}
 			if (oEvent.getParameters().success) {
                 if (growing) {
                     var oDataNew = this.getData();
@@ -371,7 +372,6 @@ JS;
             
             this.setProperty('/filterDescription', {$this->buildJsFilterSummaryFunctionName()}());
             this.detachRequestCompleted(fnCompleted);
-            {$this->buildJsBusyIconHide()}
 		};
 
 		oModel.attachRequestCompleted(fnCompleted);

@@ -22,11 +22,19 @@ class ui5InputHidden extends ui5Input
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Template\Elements\ui5Text::buildJsLabelWrapper()
+     * @see \exface\OpenUI5Template\Template\Elements\ui5Value::buildJsLabelWrapper()
      */
     protected function buildJsLabelWrapper($element_constructor)
     {
-        return $element_constructor;
+        if (! $this->getWidget()->getHideCaption()) {
+            $js = <<<JS
+        new sap.m.Label({
+            visible: false
+        }),
+        
+JS;
+        }
+        return $js . $element_constructor;
     }
 }
 ?>

@@ -129,14 +129,14 @@ JS;
     {
         $widget = $this->getWidget();
         
-        if (! $colId = $widget->getRowGroupsByColumnId()) {
+        if (! $widget->hasRowGrouping()) {
             return '';
         }
         
         return <<<JS
 
                 sorter: new sap.ui.model.Sorter(
-    				'{$colId}', // sPath
+    				'{$widget->getRowGrouper()->getGroupByColumn()->getDataColumnName()}', // sPath
     				false, // bDescending
     				true // vGroup
     			),

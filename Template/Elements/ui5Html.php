@@ -43,7 +43,7 @@ class ui5Html extends ui5Value
         $content = $this->escapeLinebreaks($this->escapeJsTextValue($html));
         return <<<JS
         new sap.ui.core.HTML("{$this->getId()}", {
-            content: "{$content}",
+            content: "<div class=\"exf-html\">{$content}</div>",
             afterRendering: function() {
                 {$scripts}
             }

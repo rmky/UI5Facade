@@ -141,10 +141,12 @@ JS;
         } else {
             $content = $this->buildJsLayoutForm($this->buildJsChildrenConstructors()); 
         }
+        $icon = $this->getWidget()->getIcon() ? 'icon: "' . $this->getIconSrc($this->getWidget()->getIcon()) . '",' : '';
         return <<<JS
 
         new sap.m.Dialog("{$this->getId()}", {
 			modal : true,
+            {$icon}
             stretch: jQuery.device.is.phone,
             title: "{$this->getCaption()}",
 			buttons : [ {$this->buildJsDialogButtons()} ],
@@ -161,7 +163,9 @@ JS;
      */
     protected function getCaption()
     {
-        return parent::getCaption() . ': ' . $this->getWidget()->getMetaObject()->getName();
+        $caption = parent::getCaption();
+        $objectName = $this->getWidget()->getMetaObject()->getName();
+        return $caption === $objectName ? $caption : $caption . ': ' . $objectName;
     }
     
     /**

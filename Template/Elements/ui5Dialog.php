@@ -117,7 +117,7 @@ JS;
             showTitleInHeaderContent: true,
             headerTitle:
 				new sap.uxap.ObjectPageHeader({
-					objectTitle:"{$heading}",
+					objectTitle:"{$this->escapeJsTextValue($heading)}",
     				  showMarkers: false,
     				  isObjectIconAlwaysVisible: false,
     				  isObjectTitleAlwaysVisible: false,

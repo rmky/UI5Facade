@@ -43,9 +43,31 @@
 					[!Wayfinder? &startId=`1` &level=`10` &hideSubMenus=`1`
 					 &outerTpl=`@CODE: [+wf.wrapper+]`
 					 &innerTpl=`@CODE: [+wf.wrapper+]`
-					 &rowTpl=`@CODE: new sap.tnt.NavigationListItem({icon: "folder-blank", text: "[+wf.linktext+]", select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} }),`
-					 &activeParentRowTpl=`@CODE: new sap.tnt.NavigationListItem({icon: "open-folder", text: "[+wf.linktext+]", items: [ [+wf.wrapper+] ], select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} }),`
-					 &lastRowTpl=`@CODE: new sap.tnt.NavigationListItem({icon: "folder-blank", text: "[+wf.linktext+]", select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} })`
+					 &rowTpl=`@CODE: 
+						 new sap.tnt.NavigationListItem({
+							 icon: "folder-blank", 
+							 text: "[+wf.linktext+]", 
+							 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} 
+						 }),`
+					 &activeParentRowTpl=`@CODE: 
+						 new sap.tnt.NavigationListItem({
+							 icon: "open-folder", 
+							 text: "[+wf.linktext+]", 
+							 items: [ 
+								 
+								 // BOF [+wf.linktext+] SUBMENU
+								 [+wf.wrapper+] 
+								 // EOF [+wf.linktext+] SUBMENU
+								 
+							 ], 
+							 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';}
+						 }),`
+					 &lastRowTpl=`@CODE: 
+						 new sap.tnt.NavigationListItem({
+							 icon: "folder-blank", 
+							 text: "[+wf.linktext+]", 
+							 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} 
+						 })`
 					 !]
 					]
 				});

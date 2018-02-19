@@ -129,7 +129,7 @@ JS;
     {
         $widget = $this->getWidget();
         
-        if (! $widget->hasRowGrouping()) {
+        if (! $widget->hasRowGroups()) {
             return '';
         }
         

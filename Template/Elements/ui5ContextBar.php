@@ -16,7 +16,7 @@ class ui5ContextBar extends ui5AbstractElement
 {
     use JqueryContextBarAjaxTrait;
     
-    public function generateJsView()
+    public function buildJsView()
     {
         return '';
     }

@@ -36,17 +36,17 @@ class ui5DataTable extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::generateJs()
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJs()
      */
-    function generateJs()
+    function buildJs()
     {
         $buttons_functions = '';
         foreach ($this->getWidget()->getButtons() as $btn) {
-            $buttons_functions .= $this->getTemplate()->getElement($btn)->generateJs();
+            $buttons_functions .= $this->getTemplate()->getElement($btn)->buildJs();
         }
         return <<<JS
     var {$this->getJsVar()};
-    {$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->generateJs()}
+    {$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJs()}
 	{$this->buildJsDataSource()}
     {$this->buildJsPagination()}
     {$buttons_functions}

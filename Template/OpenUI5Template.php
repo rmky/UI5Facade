@@ -77,13 +77,13 @@ class OpenUI5Template extends AbstractAjaxTemplate
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::generateJs()
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::buildJs()
      */
-    public function generateJs(\exface\Core\Widgets\AbstractWidget $widget)
+    public function buildJs(\exface\Core\Widgets\AbstractWidget $widget)
     {
         $instance = $this->getElement($widget);
-        $js = $instance->generateJs();
-        return $js . ($js ? "\n" : '') . $instance->generateJsView();
+        $js = $instance->buildJs();
+        return $js . ($js ? "\n" : '') . $instance->buildJsView();
     }
     
     /**

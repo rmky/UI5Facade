@@ -19,7 +19,7 @@ class ui5Button extends ui5AbstractElement
     
     use JqueryButtonTrait;
 
-    function generateJs()
+    function buildJs()
     {
         $output = '';
         $hotkey_handlers = array();
@@ -167,9 +167,9 @@ JS;
      * come with the AJAX-request.
      *
      * {@inheritdoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::generateHeaders()
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildHtmlHeadTags()
      */
-    public function generateHeaders()
+    public function buildHtmlHeadTags()
     {
         return array();
     }

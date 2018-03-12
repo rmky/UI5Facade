@@ -19,8 +19,8 @@ class ui5DataConfigurator extends ui5Tabs
     
     private $include_filter_tab = true;
     
-    public function generateJs(){
-        return parent::generateJs() . <<<JS
+    public function buildJs(){
+        return parent::buildJs() . <<<JS
 
     var {$this->getJsVar()} = {$this->buildJsConstructor()};
 

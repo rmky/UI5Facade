@@ -14,11 +14,11 @@ use exface\Core\Widgets\Button;
  */
 class ui5Menu extends ui5AbstractElement
 {
-    public function generateJs()
+    public function buildJs()
     {
         $js = '';
         foreach ($this->getWidget()->getButtons() as $b) {
-            $js .= $this->getTemplate()->getElement($b)->generateJs();
+            $js .= $this->getTemplate()->getElement($b)->buildJs();
         }
         return $js;
     }

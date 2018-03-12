@@ -17,7 +17,7 @@ class ui5Value extends ui5AbstractElement implements ui5ValueBindingInterface, u
 {
     private $valueBindingPath = null;
     
-    public function generateJs()
+    public function buildJs()
     {
         return '';
     }

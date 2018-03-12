@@ -30,7 +30,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
      * Returns the JS constructor for this element (without the semicolon!): e.g. "new sap.m.Button()" etc.
      * 
      * For complex widgets (e.g. requireing a model) either use an immediately invoked function expression
-     * like "function(){...}()" or place your code in generateJs() and the constructor-iife will be built
+     * like "function(){...}()" or place your code in buildJs() and the constructor-iife will be built
      * automatically. The name of your resulting JS object MUST be $this->getJsVar() in this case! 
      *
      * @return string
@@ -232,7 +232,7 @@ JS;
         return $data;
     }
     
-    public function generateHtml()
+    public function buildHtml()
     {
         return '';
     }
@@ -320,7 +320,7 @@ JS;
         }
     }
     
-    public function generateJsView()
+    public function buildJsView()
     {
         $constructor = trim($this->buildJsConstructor());
         

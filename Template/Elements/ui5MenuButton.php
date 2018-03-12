@@ -20,9 +20,9 @@ class ui5MenuButton extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::generateJs()
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJs()
      */
-    public function generateJs()
+    public function buildJs()
     {
         $output = '';
         foreach ($this->getWidget()->getButtons() as $b) {

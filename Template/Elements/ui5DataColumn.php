@@ -21,7 +21,7 @@ use exface\Core\DataTypes\NumberDataType;
  */
 class ui5DataColumn extends ui5AbstractElement
 {
-    public function generateJs()
+    public function buildJs()
     {
         return '';
     }

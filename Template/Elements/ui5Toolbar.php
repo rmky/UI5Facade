@@ -15,17 +15,17 @@ class ui5Toolbar extends ui5AbstractElement
 {
     use JqueryToolbarTrait;
     
-    public function generateHtml()
+    public function buildHtml()
     {
         return '';
     }
     
-    public function generateJs()
+    public function buildJs()
     {
         $js = '';
         
         foreach ($this->getWidget()->getButtons() as $btn) {
-            $js .= $this->getTemplate()->getElement($btn)->generateJs();
+            $js .= $this->getTemplate()->getElement($btn)->buildJs();
         }
         
         return $js;

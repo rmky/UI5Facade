@@ -39,16 +39,16 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::generateJs()
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJs()
      */
-    public function generateJs()
+    public function buildJs()
     {
         $widget = $this->getWidget();
         
         $output = $this->buildJsPlotFunction();
         
         // Add JS code for the configurator
-        $output .= $this->getTemplate()->getElement($widget->getConfiguratorWidget())->generateJs();
+        $output .= $this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJs();
         // Add JS for all buttons
         $output .= $this->buildJsButtons();
         
@@ -63,7 +63,7 @@ JS;
     {
         $js = '';
         foreach ($this->getWidget()->getButtons() as $btn) {
-            $js .= $this->getTemplate()->getElement($btn)->generateJs();
+            $js .= $this->getTemplate()->getElement($btn)->buildJs();
         }
         return $js;
     }
@@ -136,7 +136,7 @@ JS;
         return $output;
     }
     
-    public function generateHeaders()
+    public function buildHtmlHeadTags()
     {
         $includes = $this->generateHeadersByTrait();
         

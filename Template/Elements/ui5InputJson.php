@@ -12,9 +12,9 @@ use exface\Core\Widgets\InputJson;
  */
 class ui5InputJson extends ui5Input
 {    
-    public function generateJs()
+    public function buildJs()
     {
-        return parent::generateJs() . <<<JS
+        return parent::buildJs() . <<<JS
 
     var {$this->getId()}_JSONeditor;
 
@@ -74,11 +74,11 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::generateHeaders()
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildHtmlHeadTags()
      */
-    public function generateHeaders()
+    public function buildHtmlHeadTags()
     {
-        $includes = parent::generateHeaders();
+        $includes = parent::buildHtmlHeadTags();
         $includes[] = '<link href="exface/vendor/bower-asset/jsoneditor/dist/jsoneditor.min.css" rel="stylesheet">';
         $includes[] = '<script type="text/javascript" src="exface/vendor/bower-asset/jsoneditor/dist/jsoneditor.min.js"></script>';
         return $includes;

@@ -13,7 +13,7 @@ use exface\Core\Widgets\Html;
  */
 class ui5Html extends ui5Value
 { 
-    public function generateJs()
+    public function buildJs()
     {
         return $this->getWidget()->getJavascript();
     }
@@ -75,7 +75,7 @@ JS;
         return str_replace("\n","\\n", $text);
     }
     
-    public function generateHeaders()
+    public function buildHtmlHeadTags()
     {
         $widget = $this->getWidget();
         $headers = [];

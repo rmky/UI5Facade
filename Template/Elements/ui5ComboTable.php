@@ -293,7 +293,7 @@ JS;
         // above will recognize this and use merge this object with the request parameters, so
         // we can directly tell it to use our input as a value column filter instead of a regular
         // suggest string.
-        return "setSelectedKey({$valueJs}).fireSuggest({suggestValue: {fltr00_" . $this->getWidget()->getValueColumn()->getDataColumnName() . ": {$valueJs}}})";
+        return "setSelectedKey({$valueJs}).fireSuggest({suggestValue: {" . $this->getTemplate()->getUrlFilterPrefix() . $this->getWidget()->getValueColumn()->getDataColumnName() . ": {$valueJs}}})";
     }
 }
 ?>

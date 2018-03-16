@@ -264,7 +264,7 @@ JS;
      */
     protected function isLazyLoading()
     {
-        return $this->getWidget()->getLazyLoading(false);
+        return $this->getWidget()->getLazyLoading(true);
     }
 
     /**

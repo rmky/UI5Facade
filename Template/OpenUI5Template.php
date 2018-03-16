@@ -2,7 +2,6 @@
 namespace exface\OpenUI5Template\Template;
 
 use exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate;
-use exface\OpenUI5Template\Template\Elements\ui5AbstractElement;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Interfaces\DataTypes\DataTypeInterface;
@@ -15,6 +14,7 @@ use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsBooleanFormatter;
 use exface\OpenUI5Template\Template\Formatters\ui5BooleanFormatter;
 use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsNumberFormatter;
 use exface\OpenUI5Template\Template\Formatters\ui5NumberFormatter;
+use exface\OpenUI5Template\Template\Middleware\ui5TableUrlParamsReader;
 
 /**
  * 
@@ -34,44 +34,15 @@ class OpenUI5Template extends AbstractAjaxTemplate
      */
     private $config_maximize_dialog_on_actions = [];
 
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::init()
+     */
     public function init()
     {
         $this->setClassPrefix('ui5');
         $this->setClassNamespace(__NAMESPACE__);
-    }
-
-    /**
-     *
-     * {@inheritdoc}
-     *
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::processRequest($page_id=NULL, $widget_id=NULL, $action_alias=NULL, $disable_error_handling=false)
-     */
-    public function processRequest($page_id = NULL, $widget_id = NULL, $action_alias = NULL, $disable_error_handling = false)
-    {
-        $this->request_columns = $this->getWorkbench()->getRequestParams()['columns'];
-        $this->getWorkbench()->removeRequestParam('columns');
-        $this->getWorkbench()->removeRequestParam('search');
-        $this->getWorkbench()->removeRequestParam('draw');
-        $this->getWorkbench()->removeRequestParam('_');
-        return parent::processRequest($page_id, $widget_id, $action_alias, $disable_error_handling);
-    }
-
-    public function getRequestPagingOffset()
-    {
-        if (! $this->request_paging_offset) {
-            $this->request_paging_offset = $this->getWorkbench()->getRequestParams()['start'];
-            $this->getWorkbench()->removeRequestParam('start');
-        }
-        return $this->request_paging_offset;
-    }
-
-    public function getRequestPagingRows()
-    {
-        if (! $this->request_paging_rows) {
-            $this->request_paging_rows = $this->getWorkbench()->getRequestParams()['length'];
-            $this->getWorkbench()->removeRequestParam('length');
-        }
-        return $this->request_paging_rows;
     }
     
     /**
@@ -147,12 +118,29 @@ class OpenUI5Template extends AbstractAjaxTemplate
         return new ui5TransparentFormatter($formatter);
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Interfaces\Templates\HttpTemplateInterface::getUrlRoutePatterns()
+     */
     public function getUrlRoutePatterns() : array
     {
         return [
             "/[\?&]tpl=ui5/",
             "/\/api\/ui5[\/?]/"
         ];
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::getMiddleware()
+     */
+    public function getMiddleware() : array
+    {
+        $middleware = parent::getMiddleware();
+        $middleware[] = new ui5TableUrlParamsReader($this, 'getInputData', 'setInputData');
+        return $middleware;
     }
 }
 ?>

@@ -244,7 +244,7 @@ function contextBarLoad(delay){
 		//if ($('#contextBar .context-bar-spinner').length > 0){
 			$.ajax({
 				type: 'POST',
-				url: 'exface/exface.php?exftpl=exface.OpenUI5Template',
+				url: 'exface/api/ui5',
 				dataType: 'json',
 				data: {
 					action: 'exface.Core.ShowWidget',
@@ -334,7 +334,7 @@ function contextShowMenu(oButton){
 	}
 	$.ajax({
 		type: 'POST',
-		url: 'exface/exface.php?exftpl=exface.OpenUI5Template',
+		url: 'exface/api/ui5',
 		dataType: 'html',
 		data: {
 			action: 'exface.Core.ShowContextPopup',

@@ -136,7 +136,7 @@ class OpenUI5Template extends AbstractAjaxTemplate
      * {@inheritDoc}
      * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::getMiddleware()
      */
-    public function getMiddleware() : array
+    protected function getMiddleware() : array
     {
         $middleware = parent::getMiddleware();
         $middleware[] = new ui5TableUrlParamsReader($this, 'getInputData', 'setInputData');

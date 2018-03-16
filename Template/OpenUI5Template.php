@@ -146,5 +146,13 @@ class OpenUI5Template extends AbstractAjaxTemplate
         
         return new ui5TransparentFormatter($formatter);
     }
+    
+    public function getUrlRoutePatterns() : array
+    {
+        return [
+            "/[\?&]tpl=ui5/",
+            "/\/api\/ui5[\/?]/"
+        ];
+    }
 }
 ?>

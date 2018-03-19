@@ -30,7 +30,7 @@ class ui5Button extends ui5AbstractElement
             // Actions with template scripts may contain some helper functions or global variables.
             // Print the here first.
             if ($action && $action->implementsInterface('iRunTemplateScript')) {
-                $output .= $this->getAction()->buildScriptHelperFunctions();
+                $output .= $this->getAction()->buildScriptHelperFunctions($this->getTemplate());
             }
         }
         

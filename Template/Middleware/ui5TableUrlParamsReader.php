@@ -106,13 +106,11 @@ class ui5TableUrlParamsReader implements MiddlewareInterface
      */
     protected function readPaginationParams (TaskInterface $task, array $params, DataSheetInterface $dataSheet = null) 
     {
-        if (! array_key_exists('length', $params) && ! array_key_exists('start', $params)) {
-            return null;
+        if (array_key_exists('length', $params) || array_key_exists('start', $params)) {
+            $dataSheet = $dataSheet ? $dataSheet : $this->getDataSheet($task, $this->getterMethodName);
+            $dataSheet->setRowOffset(isset($params['start']) ? intval($params['start']) : 0);
+            $dataSheet->setRowsOnPage(isset($params['length']) ? intval($params['length']) : 0);
         }
-        
-        $dataSheet = $dataSheet ? $dataSheet : $this->getDataSheet($task, $this->getterMethodName);
-        $dataSheet->setRowOffset(isset($params['start']) ? intval($params['start']) : 0);
-        $dataSheet->setRowsOnPage(isset($params['length']) ? intval($params['length']) : 0);
         return $dataSheet;
     }
 }

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+		<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'>
+		<meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+		<meta name="HandheldFriendly" content="True">
+		<meta name="MobileOptimized" content="240"/>
+		<meta name="PalmComputingPlatform" content="true"/>
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="mobile-web-app-capable" content="yes">
+		
+		<link rel="shortcut icon" sizes="196x196" href="assets/images/alexa_icon_196.png">
+		<link rel="apple-touch-icon" sizes="128x128" href="assets/images/alexa_icon_128.png">
+		<link rel="apple-touch-icon-precomposed" sizes="128x128" href="assets/images/alexa_icon_128.png">
+
+		<meta name="page_id" content="[*id*]">
+		
+		<title>[*pagetitle*]</title>
+
+		<!-- Custom CSS -->
+		<link href="exface/vendor/exface/OpenUI5Template/Templates/js/openui5.template.css" rel="stylesheet" type="text/css" />
+		
+		<!-- Load SAPUI5, select theme and control library -->
+		<script src="exface/vendor/exface/OpenUI5Template/Templates/js/openui5/resources/sap-ui-core.js"
+				id="sap-ui-bootstrap"
+				data-sap-ui-libs="sap.m,sap.tnt,sap.ui.unified,sap.ui.commons,sap.ui.table,sap.f,sap.uxap"
+				data-sap-ui-theme="sap_belize"
+				data-sap-ui-language="[[Exface? &action=`exface.ModxCmsConnector.GetLanguageCode` &template=`exface.OpenUI5Template.OpenUI5Template`]]">
+		</script>
+		
+		<!-- Font awesome -->
+		<link href="exface/vendor/bower-asset/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+		<script type="text/javascript" src="exface/vendor/bower-asset/font-awesome-openui5/dist/font-awesome-openui5.min"></script>
+		
+		[[Exface? &action=`exface.Core.ShowHeaders` &template=`exface.OpenUI5Template.OpenUI5Template`]]
+		
+		<script type="text/javascript" src="exface/vendor/exface/OpenUI5Template/Templates/js/openui5.template.js"></script>
+		<script type="text/javascript">
+			// Main menu
+			var oNavMenu = new sap.tnt.NavigationList({
+				items:[
+					[!Wayfinder? &startId=`1` &level=`10` &hideSubMenus=`1`
+					 &outerTpl=`@CODE: [+wf.wrapper+]`
+					 &innerTpl=`@CODE: [+wf.wrapper+]`
+					 &rowTpl=`@CODE: 
+						 new sap.tnt.NavigationListItem({
+							 icon: "folder-blank", 
+							 text: "[+wf.linktext+]", 
+							 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} 
+						 }),`
+					 &activeParentRowTpl=`@CODE: 
+						 new sap.tnt.NavigationListItem({
+							 icon: "open-folder", 
+							 text: "[+wf.linktext+]", 
+							 items: [ 
+								 
+								 // BOF [+wf.linktext+] SUBMENU
+								 [+wf.wrapper+] 
+								 // EOF [+wf.linktext+] SUBMENU
+								 
+							 ], 
+							 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';}
+						 }),`
+					 &lastRowTpl=`@CODE: 
+						 new sap.tnt.NavigationListItem({
+							 icon: "folder-blank", 
+							 text: "[+wf.linktext+]", 
+							 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} 
+						 })`
+					 !]
+					]
+				});
+			
+			oShell.addPaneContent(oNavMenu);
+			
+			sap.ui.getCore().byId('exf_pagetitle').setText('[*pagetitle*]');
+			sap.ui.getCore().byId('exf_avatar').setSrc('[!UserManagerInfo? &field=`photo`!]');
+			
+			window.onload = function () {
+				oShell.placeAt("[*id*]");
+			}
+			
+		</script>
+		
+		[[Exface? &action=`exface.Core.ShowWidget` &template=`exface.OpenUI5Template.OpenUI5Template` &fallback_field=`content`]]
+		
+		<script type="text/javascript">
+			oShell.removeAllContent()
+		    oShell.addContent(
+		        (sap.ui.getCore().byId("view.[*alias*]") !== undefined ? sap.ui.getCore().byId("view.[*alias*]") : sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, height: "100%", viewName:"view.[*alias*]"}))
+		    );
+		</script>
+
+		
+	</head>
+	<body id="[*id*]" class="sapUiBody sapUiSizeCompact">
+		
+	</body>
+</html>

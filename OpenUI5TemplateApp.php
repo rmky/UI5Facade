@@ -20,7 +20,7 @@ class OpenUI5TemplateApp extends App
     {
         $installer = parent::getInstaller($injected_installer);
         $tplInstaller = new HttpTemplateInstaller($this->getSelector());
-        $tplInstaller->setTemplate(TemplateFactory::createFromString('exface.OpenUI5Template', $this->getWorkbench()));
+        $tplInstaller->setTemplate(TemplateFactory::createFromString('exface.OpenUI5Template.OpenUI5Template', $this->getWorkbench()));
         $installer->addInstaller($tplInstaller);
         return $installer;
     }

@@ -34,7 +34,10 @@ class ui5TableUrlParamsReader implements MiddlewareInterface
     
     /**
      * 
-     * @param WorkbenchInterface $workbench
+     * @param HttpTemplateInterface $template
+     * @param string $dataGetterMethod
+     * @param string $dataSetterMethod
+     * @param string $taskAttributeName
      */
     public function __construct(HttpTemplateInterface $template, string $dataGetterMethod, string $dataSetterMethod, $taskAttributeName = 'task')
     {

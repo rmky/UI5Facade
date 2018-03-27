@@ -6,4 +6,5 @@
 	<buildpathentry external="true" kind="lib" path="C:/wamp/www/exface/exface/vendor/psr/http-message/src"/>
 	<buildpathentry external="true" kind="lib" path="C:/wamp/www/exface/exface/vendor/psr/http-server-handler/src/"/>
 	<buildpathentry external="true" kind="lib" path="C:/wamp/www/exface/exface/vendor/psr/http-server-middleware/src/"/>
+	<buildpathentry external="true" kind="lib" path="C:/wamp/www/exface/exface/vendor/guzzlehttp/psr7/src"/>
 </buildpath>

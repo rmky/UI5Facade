@@ -15,6 +15,7 @@ use exface\OpenUI5Template\Templates\Formatters\ui5BooleanFormatter;
 use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsNumberFormatter;
 use exface\OpenUI5Template\Templates\Formatters\ui5NumberFormatter;
 use exface\OpenUI5Template\Templates\Middleware\ui5TableUrlParamsReader;
+use exface\OpenUI5Template\Templates\Middleware\ui5WebappRouter;
 
 /**
  * 
@@ -140,6 +141,7 @@ class OpenUI5Template extends AbstractAjaxTemplate
     {
         $middleware = parent::getMiddleware();
         $middleware[] = new ui5TableUrlParamsReader($this, 'getInputData', 'setInputData');
+        $middleware[] = new ui5WebappRouter($this);
         return $middleware;
     }
 }

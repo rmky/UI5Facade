@@ -6,6 +6,7 @@ use exface\OpenUI5Template\Templates\OpenUI5Template;
 use exface\Core\Exceptions\Templates\TemplateLogicError;
 use exface\Core\CommonLogic\Constants\Icons;
 use exface\Core\Interfaces\Widgets\iHaveValue;
+use exface\Core\Factories\UiPageFactory;
 
 /**
  *
@@ -315,7 +316,7 @@ JS;
         if ($widget->hasParent()) {
             return $this->getTemplate()->getElement($widget->getParent())->getViewName();
         } else {
-            $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : $this->getWorkbench()->ui()->getPageCurrent()->getAliasWithNamespace();
+            $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : UiPageFactory::createFromCmsPageCurrent()->getAliasWithNamespace();
             return 'view.' . $pageAlias;
         }
     }

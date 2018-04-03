@@ -15,9 +15,7 @@ use exface\Core\Widgets\Chart;
  */
 class ui5Chart extends ui5AbstractElement
 {
-    use JqueryFlotTrait {
-        buildHtmlHeadTags as buildHtmlHeadTagsByTrait;
-    }
+    use JqueryFlotTrait;
     
     /**
      * 
@@ -134,17 +132,6 @@ JS;
         }
         
         return $output;
-    }
-    
-    public function buildHtmlHeadTags()
-    {
-        $includes = $this->buildHtmlHeadTagsByTrait();
-        
-        $includes[] = '<script type="text/javascript" src="exface/vendor/exface/OpenUI5Template/Templates/js/flot/plugins/axislabels/jquery.flot.axislabels.js"></script>';
-        $includes[] = '<script type="text/javascript" src="exface/vendor/exface/OpenUI5Template/Templates/js/flot/plugins/jquery.flot.orderBars.js"></script>';
-        
-        return $includes;
-    }
-    
+    }    
 }
 ?>

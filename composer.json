@@ -1,29 +1,40 @@
 {
-	"name" : "exface/OpenUI5Template",
-	"description" : "UI-Template for the ExFace business web-app plattform based on the SAP OpenUI5 library",
-	"type" : "library",
-	"license" : "GPL-3.0+",
-	"authors" : [{
-			"name" : "Andrej Kabachnik",
-			"email" : "kabachnik@gmail.com",
-			"role" : "Creator"
-		}
-	],
-	"support" : {
-		"issues" : "https://github.com/exface/OpenUI5Template/issues"
-	},
-	"require" : {
-		"exface/core" : "~0.1",
-		"bower-asset/font-awesome-openui5": "^v2.1",
-		"bower-asset/jsoneditor": "^4.2",
-        "npm-asset/flot-charts" : "~0.8"
-	},
+    "name": "exface/OpenUI5Template",
+    "description": "UI-Template for the ExFace business web-app plattform based on the SAP OpenUI5 library",
+    "type": "library",
+    "license": "GPL-3.0+",
+    "authors": [
+        {
+            "name": "Andrej Kabachnik",
+            "email": "kabachnik@gmail.com",
+            "role": "Creator"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/exface/OpenUI5Template/issues"
+    },
+    "require": {
+        "exface/core": "~0.1",
+        "bower-asset/font-awesome-openui5": "^v2.1",
+        "bower-asset/jsoneditor": "^4.2",
+        "npm-asset/flot-charts": "~0.8"
+    },
     "autoload": {
-        "psr-4": { "exface\\OpenUI5Template\\": "" },
+        "psr-4": {
+            "exface\\OpenUI5Template\\": ""
+        },
         "exclude-from-classmap": [
             "/Config/",
             "/Translations/",
             "/Model/"
         ]
+    },
+    "extra": {
+        "app": {
+            "app_uid": "0x11e837e87a640bfd91380205857feb80",
+            "app_alias": "exface.OpenUI5Template",
+            "model_md5": "328b1045175a7b1d57325bb8cd6b84d4",
+            "model_timestamp": "2018-04-04 11:09:31"
+        }
     }
 }

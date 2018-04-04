@@ -1,7 +1,7 @@
 {
 	"_version": "1.8.0",
 	"sap.app": {
-		"id": "sap.ui.demo.nav",
+		"id": "[#app_id#]",
 		"type": "application",
 		"i18n": "i18n/i18n.properties",
 		"title": "{{appTitle}}",
@@ -11,14 +11,7 @@
 		},
 		"ach": "CA-UI5-FST",
 		"dataSources": {
-			"employeeRemote": {
-				"uri": "/here/goes/your/serviceUrl/",
-				"type": "OData",
-				"settings": {
-					"odataVersion": "2.0",
-					"localUri" : "localService/metadata.xml"
-				}
-			}
+			
 		}
 	},
 	"sap.ui": {
@@ -31,7 +24,7 @@
   	},
 	"sap.ui5": {
 		"rootView": {
-			"viewName": "sap.ui.demo.nav.view.App",
+			"viewName": "[#app_id#].view.App",
 			"type": "JS",
 			"async": true,
 			"id": "app"
@@ -39,28 +32,30 @@
 		"dependencies": {
 			"minUI5Version": "1.50",
 			"libs": {
-				"sap.m": { }
+				"sap.m": { },
+				"sap.f": { },
+				"sap.ui.table": { },
+				"sap.tnt": { },
+				"sap.ui.commons": { },
+				"sap.uxap": { }
 			}
 		},
 		"models": {
 			"i18n": {
 				"type": "sap.ui.model.resource.ResourceModel",
 				"settings": {
-					"bundleName": "sap.ui.demo.nav.i18n.i18n"
+					"bundleName": "[#app_id#].i18n.i18n"
 				}
-			},
-			"": {
-				"dataSource": "employeeRemote"
 			}
 		},
 		"routing": {
 			"config": {
 				"routerClass": "sap.m.routing.Router",
 				"viewType": "JS",
-				"viewPath": "sap.ui.demo.nav.view",
+				"viewPath": "[#app_id#].view",
 				"controlId": "app",
 				"controlAggregation": "pages",
-				"transition": "slide",
+				"transition": "show",
 				"async": true,
 				"bypassed": {
 					"target": "notFound"

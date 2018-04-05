@@ -33,7 +33,10 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $input = $this->getInputDataSheet($task);
         
         $input->getColumns()->addFromExpression('root_page_alias');
-        $input->getColumns()->addFromExpression('min_ui5_version');
+        $input->getColumns()->addFromExpression('ui5_min_version');
+        $input->getColumns()->addFromExpression('ui5_source');
+        $input->getColumns()->addFromExpression('ui5_theme');
+        $input->getColumns()->addFromExpression('ui5_app_control');
         $input->getColumns()->addFromExpression('app_id');
         $input->getColumns()->addFromExpression('app_title');
         $input->getColumns()->addFromExpression('app_subTitle');
@@ -47,6 +50,8 @@ class ExportFioriWebapp extends DownloadZippedFolder
         }
         
         $row = $input->getRows()[0];
+        $row['component_path'] = str_replace('.', '/', $row['app_id']);
+        $row['assets_path'] = './';
         $rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $row['root_page_alias']);
         
         $webappFolder = $this->exportWebapp($rootPage, $row);
@@ -70,9 +75,10 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $path = $path . DIRECTORY_SEPARATOR;
         
         $this->exportManifest($appDataRow, $path);
-        $this->exportIndexHtml($appDataRow, $path);
+        $this->exportFileTemplate($appDataRow, 'index.html', $path);
         $this->exportComponent($appDataRow['app_id'], $path);
         $this->exportTranslations($rootPage->getApp(), $path);
+        $this->exportStaticViews($appDataRow, $path);
         
         return $path;
     }
@@ -82,7 +88,7 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $tpl = file_get_contents($this->getWebappTemplateFolder() . 'manifest.json');
         $tpl = str_replace('[#app_id#]', $appDataRow['app_id'], $tpl);
         $json = json_decode($tpl, true);
-        $json['_version'] = $this->getManifestVersion($appDataRow['min_ui5_version']);
+        $json['_version'] = $this->getManifestVersion($appDataRow['ui5_min_version']);
         $json['sap.app']['id'] = $appDataRow['app_id'];
         $json['sap.app']['title'] = $appDataRow['app_title'];
         $json['sap.app']['subTitle'] = $appDataRow['app_subTitle'] ? $appDataRow['app_subTitle'] : '';
@@ -90,7 +96,7 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $json['sap.app']['info'] = $appDataRow['app_info'] ? $appDataRow['app_info'] : '';
         $json['sap.app']['description'] = $appDataRow['app_description'] ? $appDataRow['app_description'] : '';
         $json['sap.app']['applicationVersion']['version'] = $appDataRow['current_version'];
-        $json['sap.ui5']['dependencies']['minUI5Version'] = $appDataRow['min_ui5_version'];
+        $json['sap.ui5']['dependencies']['minUI5Version'] = $appDataRow['ui5_min_version'];
         
         $target = $exportFolder . 'manifest.json';
         file_put_contents($target, json_encode($json, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
@@ -109,8 +115,13 @@ class ExportFioriWebapp extends DownloadZippedFolder
     {
         $folder = $app->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Translations' . DIRECTORY_SEPARATOR;
         $defaultLang = $app->getDefaultLanguageCode();
+        $i18nFolder = $exportFolder . 'i18n' . DIRECTORY_SEPARATOR;
+        if (! file_exists($i18nFolder)) {
+            Filemanager::pathConstruct($i18nFolder);
+        }
+        
         foreach (glob($folder . "*.json") as $filename) {
-            $this->exportTranslation($filename, $defaultLang, $exportFolder);
+            $this->exportTranslation($filename, $defaultLang, $i18nFolder);
         }
         return $this;
     }
@@ -125,11 +136,7 @@ class ExportFioriWebapp extends DownloadZippedFolder
             $output .= $key . '=' . $text. "\n";
         }
         $i18nSuffix = (strcasecmp($lang, $defaultLang) === 0) ? '' : '_' . $lang;
-        $i18nFolder = $exportFolder . 'i18n' . DIRECTORY_SEPARATOR;
-        if (! file_exists($i18nFolder)) {
-            Filemanager::pathConstruct($i18nFolder);
-        }
-        $i18nFile = $i18nFolder . 'i18n' . $i18nSuffix . '.properties';
+        $i18nFile = $exportFolder . 'i18n' . $i18nSuffix . '.properties';
         file_put_contents($i18nFile, $output);
         return $i18nFile;
     }
@@ -155,12 +162,28 @@ class ExportFioriWebapp extends DownloadZippedFolder
         }
     }
     
-    protected function exportIndexHtml(array $appDataRow, string $exportFolder) : string
+    protected function exportFileTemplate(array $placeholders, string $pathRelativeToWebappFolder, string $exportFolder) : string
     {
-        $tpl = file_get_contents($this->getWebappTemplateFolder() . 'index.html');
-        $target = $exportFolder . 'index.html';
-        file_put_contents($target, str_replace('[#app_id#]', $appDataRow['app_id'], $tpl));
+        $tpl = file_get_contents($this->getWebappTemplateFolder() . $pathRelativeToWebappFolder);
+        $target = $exportFolder . $pathRelativeToWebappFolder;
+        file_put_contents($target, StringDataType::replacePlaceholders($tpl, $placeholders));
         return $target;
+    }
+    
+    protected function exportStaticViews(array $appDataRow, string $exportFolder) : string
+    {
+        if (! file_exists($exportFolder . 'view')) {
+            Filemanager::pathConstruct($exportFolder . 'view');
+        }
+        if (! file_exists($exportFolder . 'controller')) {
+            Filemanager::pathConstruct($exportFolder . 'controller');
+        }
+        $this->exportFileTemplate($appDataRow, 'view/App.view.js', $exportFolder);
+        $this->exportFileTemplate($appDataRow, 'view/NotFound.view.js', $exportFolder);
+        $this->exportFileTemplate($appDataRow, 'controller/BaseController.js', $exportFolder);
+        $this->exportFileTemplate($appDataRow, 'controller/App.controller.js', $exportFolder);
+        $this->exportFileTemplate($appDataRow, 'controller/NotFound.controller.js', $exportFolder);
+        return $exportFolder . 'view';
     }
     
 }

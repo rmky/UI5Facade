@@ -36,7 +36,7 @@
                 "attribute_alias": "app_title"
             },
             {
-                "attribute_alias": "min_ui5_version"
+                "attribute_alias": "ui5_min_version"
             }
         ],
         "buttons": [

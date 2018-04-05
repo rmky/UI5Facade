@@ -93,7 +93,7 @@ class Webapp implements WorkbenchDependantInterface
         try {
             return StringDataType::replacePlaceholders($tpl, $this->config);
         } catch (\exface\Core\Exceptions\RangeException $e) {
-            throw new LogicException('Incomplete webapp configuration - ' . $e->getMessage(), null, $e);
+            throw new LogicException('Incomplete  UI5 webapp configuration - ' . $e->getMessage(), null, $e);
         }
     }
     

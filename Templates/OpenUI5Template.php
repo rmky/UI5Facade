@@ -16,6 +16,8 @@ use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsNumberFormatter;
 use exface\OpenUI5Template\Templates\Formatters\ui5NumberFormatter;
 use exface\OpenUI5Template\Templates\Middleware\ui5TableUrlParamsReader;
 use exface\OpenUI5Template\Templates\Middleware\ui5WebappRouter;
+use exface\Core\Interfaces\Model\UiPageInterface;
+use exface\OpenUI5Template\Webapp;
 
 /**
  * 
@@ -56,6 +58,16 @@ class OpenUI5Template extends AbstractAjaxTemplate
         $instance = $this->getElement($widget);
         $js = $instance->buildJs();
         return $js . ($js ? "\n" : '') . $instance->buildJsView();
+    }
+    
+    public function buildJsView(string $viewName, string $appId) : string
+    {
+        
+    }
+    
+    public function buildJsController(string $controllerName, string $appId) : string
+    {
+        
     }
     
     /**
@@ -143,6 +155,25 @@ class OpenUI5Template extends AbstractAjaxTemplate
         $middleware[] = new ui5TableUrlParamsReader($this, 'getInputData', 'setInputData');
         $middleware[] = new ui5WebappRouter($this);
         return $middleware;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    public function getWebappTemplateFolder() : string
+    {
+        return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'webapp' . DIRECTORY_SEPARATOR;
+    }
+    
+    /**
+     * 
+     * @param string $id
+     * @return Webapp
+     */
+    public function createWebapp(string $id, array $config) : Webapp
+    {
+        return new Webapp($this, $id, $this->getWebappTemplateFolder(), $config);
     }
 }
 ?>

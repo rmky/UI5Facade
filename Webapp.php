@@ -6,6 +6,7 @@ use exface\Core\CommonLogic\Workbench;
 use exface\OpenUI5Template\Templates\OpenUI5Template;
 use exface\OpenUI5Template\Exceptions\Ui5RouteInvalidException;
 use exface\Core\DataTypes\StringDataType;
+use exface\Core\Exceptions\LogicException;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -89,7 +90,11 @@ class Webapp implements WorkbenchDependantInterface
     protected function getFromFileTemplate(string $pathRelativeToTemplatesFolder) : string
     {
         $tpl = file_get_contents($this->getTemplatesFolder() . $pathRelativeToTemplatesFolder);
-        return StringDataType::replacePlaceholders($tpl, $this->config);
+        try {
+            return StringDataType::replacePlaceholders($tpl, $this->config);
+        } catch (\exface\Core\Exceptions\RangeException $e) {
+            throw new LogicException('Incomplete webapp configuration - ' . $e->getMessage(), null, $e);
+        }
     }
     
     protected function getManifestVersion(string $ui5Version) : string

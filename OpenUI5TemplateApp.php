@@ -5,7 +5,7 @@ use exface\Core\Interfaces\InstallerInterface;
 use exface\Core\Templates\AbstractHttpTemplate\HttpTemplateInstaller;
 use exface\Core\CommonLogic\Model\App;
 use exface\Core\Factories\TemplateFactory;
-use exface\Core\CommonLogic\Filemanager;
+use exface\Core\CommonLogic\AppInstallers\SqlSchemaInstaller;
 
 class OpenUI5TemplateApp extends App
 {
@@ -21,9 +21,15 @@ class OpenUI5TemplateApp extends App
     public function getInstaller(InstallerInterface $injected_installer = null)
     {
         $installer = parent::getInstaller($injected_installer);
+        
         $tplInstaller = new HttpTemplateInstaller($this->getSelector());
         $tplInstaller->setTemplate(TemplateFactory::createFromString('exface.OpenUI5Template.OpenUI5Template', $this->getWorkbench()));
         $installer->addInstaller($tplInstaller);
+        
+        $schema_installer = new SqlSchemaInstaller($this->getSelector());
+        $schema_installer->setDataConnection($this->getWorkbench()->model()->getModelLoader()->getDataConnection());
+        $installer->addInstaller($schema_installer);
+        
         return $installer;
     }
     

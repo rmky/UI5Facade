@@ -1,4 +1,4 @@
-CREATE TABLE `fiori_webapp` (
+CREATE TABLE IF NOT EXISTS `fiori_webapp` (
   `oid` binary(16) NOT NULL,
   `created_on` datetime NOT NULL,
   `modified_on` datetime NOT NULL,

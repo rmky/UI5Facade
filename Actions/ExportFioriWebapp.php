@@ -14,6 +14,7 @@ use exface\OpenUI5Template\Webapp;
 use exface\OpenUI5Template\Templates\OpenUI5Template;
 use exface\Core\CommonLogic\Selectors\TemplateSelector;
 use exface\Core\Factories\TemplateFactory;
+use exface\Core\Interfaces\Selectors\AliasSelectorInterface;
 
 /**
  * 
@@ -81,12 +82,21 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $path = $path . DIRECTORY_SEPARATOR;
         /* @var $webapp \exface\OpenUI5Template\Webapp */ 
         $webapp = $template->createWebapp($appDataRow['app_id'], $appDataRow);
+        
+        if (! file_exists($path . 'view')) {
+            Filemanager::pathConstruct($path . 'view');
+        }
+        if (! file_exists($path . 'controller')) {
+            Filemanager::pathConstruct($path . 'controller');
+        }
+        
         $this
             ->exportFile($webapp, 'manifest.json', $path)
             ->exportFile($webapp, 'index.html', $path)
             ->exportFile($webapp, 'Component.js', $path)
             ->exportTranslations($rootPage->getApp(), $webapp, $path)
-            ->exportStaticViews($webapp, $path);
+            ->exportStaticViews($webapp, $path)
+            ->exportPages($webapp, $path);
         
         return $path;
     }
@@ -113,17 +123,31 @@ class ExportFioriWebapp extends DownloadZippedFolder
     
     protected function exportStaticViews(Webapp $webapp, string $exportFolder) : ExportFioriWebapp
     {
-        if (! file_exists($exportFolder . 'view')) {
-            Filemanager::pathConstruct($exportFolder . 'view');
-        }
-        if (! file_exists($exportFolder . 'controller')) {
-            Filemanager::pathConstruct($exportFolder . 'controller');
-        }
         $this->exportFile($webapp, 'view/App.view.js', $exportFolder);
         $this->exportFile($webapp, 'view/NotFound.view.js', $exportFolder);
         $this->exportFile($webapp, 'controller/BaseController.js', $exportFolder);
         $this->exportFile($webapp, 'controller/App.controller.js', $exportFolder);
         $this->exportFile($webapp, 'controller/NotFound.controller.js', $exportFolder);
+        return $this;
+    }
+    
+    protected function exportPages(Webapp $webapp, string $exportFolder) : ExportFioriWebapp
+    {
+        $this->exportPage($webapp, $webapp->getRootPage(), $exportFolder);
+        return $this;
+    }
+    
+    protected function exportPage(Webapp $webapp, UiPageInterface $page, string $exportFolder) : ExportFioriWebapp
+    {
+        $subfolder = str_replace(AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER, DIRECTORY_SEPARATOR, $page->getNamespace());
+        
+        $destination .= $exportFolder . 'view' . DIRECTORY_SEPARATOR . ($subfolder ? $subfolder . DIRECTORY_SEPARATOR : '');
+        
+        if (! file_exists($destination)) {
+            Filemanager::pathConstruct($destination);
+        }
+        
+        file_put_contents($destination . $page->getAlias() . '.view.js', $webapp->get('view/' . $page->getAliasWithNamespace() . '.view.js'));
         return $this;
     }
     

@@ -68,8 +68,8 @@
 			}],
 			"targets": {
 				"home": {
-				   "viewId": "home",
-				   "viewName": "Home",
+				   "viewId": "[#app_id#]",
+				   "viewName": "[#app_id#]",
 				   "viewLevel" : 1
 				},
 				"notFound": {

@@ -7,6 +7,11 @@ use exface\OpenUI5Template\Templates\OpenUI5Template;
 use exface\OpenUI5Template\Exceptions\Ui5RouteInvalidException;
 use exface\Core\DataTypes\StringDataType;
 use exface\Core\Exceptions\LogicException;
+use exface\Core\Factories\UiPageFactory;
+use exface\Core\Interfaces\Selectors\AliasSelectorInterface;
+use exface\Core\Exceptions\FileNotFoundError;
+use exface\Core\Exceptions\RuntimeException;
+use exface\Core\Interfaces\Model\UiPageInterface;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -15,6 +20,8 @@ class Webapp implements WorkbenchDependantInterface
     private $template = null;
     
     private $appId = null;
+    
+    private $rootPage = null;
     
     private $templateFolder = null;
     
@@ -44,6 +51,34 @@ class Webapp implements WorkbenchDependantInterface
                 return '';
             case file_exists($this->getTemplatesFolder() . $route):
                 return $this->getFromFileTemplate($route);
+            case StringDataType::startsWith($route, 'view/'):
+                $path = StringDataType::substringAfter($route, 'view/');
+                if (StringDataType::endsWith($path, '.view.js')) {
+                    $path = StringDataType::substringBefore($path, '.view.js');
+                    $parts = explode('/', $path);
+                    
+                    if (count($parts) === 1) {
+                        $pageAlias = $parts[0];
+                    } elseif (count($parts) !== 3 || count($parts) !== 4) {
+                       $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];
+                    } else {
+                        throw new Ui5RouteInvalidException('View "' . $path . '" not found!');
+                    }
+                    
+                    $page = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $pageAlias);
+                    
+                    if (count($parts) === 4) {
+                        $widget = $page->getWidget($parts[3]);
+                    } else {
+                        $widget = $page->getWidgetRoot();
+                    }
+                    
+                    $phs = $this->config;
+                    $phs['view_content'] = $this->template->buildJs($widget);
+                    $phs['view_name'] = $path;
+                    
+                    return $this->getFromFileTemplate('view/Empty.view.js', $phs);
+                }
             default:
                 throw new Ui5RouteInvalidException('Cannot match route "' . $route . '"!');
         }
@@ -87,11 +122,23 @@ class Webapp implements WorkbenchDependantInterface
         return $this->templateFolder;
     }
     
-    protected function getFromFileTemplate(string $pathRelativeToTemplatesFolder) : string
+    protected function getFromFileTemplate(string $pathRelativeToTemplatesFolder, array $placeholders = null) : string
     {
-        $tpl = file_get_contents($this->getTemplatesFolder() . $pathRelativeToTemplatesFolder);
+        $path = $this->getTemplatesFolder() . $pathRelativeToTemplatesFolder;
+        if (! file_exists($path)) {
+            throw new FileNotFoundError('Cannot load template file "' . $pathRelativeToTemplatesFolder . '": file does not exist!');
+        }
+        
+        $tpl = file_get_contents($path);
+        
+        if ($tpl === false) {
+            throw new RuntimeException('Cannot read template file "' . $pathRelativeToTemplatesFolder . '"!');
+        }
+        
+        $phs = $placeholders === null ? $this->config : $placeholders;
+        
         try {
-            return StringDataType::replacePlaceholders($tpl, $this->config);
+            return StringDataType::replacePlaceholders($tpl, $phs);
         } catch (\exface\Core\Exceptions\RangeException $e) {
             throw new LogicException('Incomplete  UI5 webapp configuration - ' . $e->getMessage(), null, $e);
         }
@@ -121,5 +168,13 @@ class Webapp implements WorkbenchDependantInterface
             $output .= $key . '=' . $text. "\n";
         }
         return $output;
+    }
+    
+    public function getRootPage() : UiPageInterface
+    {
+        if ($this->rootPage === null) {
+            $this->rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $this->appId);
+        }
+        return $this->rootPage;
     }
 }

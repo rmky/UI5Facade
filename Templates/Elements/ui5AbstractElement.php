@@ -316,7 +316,7 @@ JS;
         if ($widget->hasParent()) {
             return $this->getTemplate()->getElement($widget->getParent())->getViewName();
         } else {
-            $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : UiPageFactory::createFromCmsPageCurrent()->getAliasWithNamespace();
+            $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : UiPageFactory::createFromCmsPageCurrent($this->getWorkbench()->getCMS())->getAliasWithNamespace();
             return 'view.' . $pageAlias;
         }
     }

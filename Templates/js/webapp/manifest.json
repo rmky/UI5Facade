@@ -73,7 +73,7 @@
 				   "viewLevel" : 1
 				},
 				"notFound": {
-				   "viewName": "notFound",
+				   "viewId": "notFound",
 				   "viewName": "NotFound",
 				   "transition": "show"
 				}

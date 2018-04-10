@@ -163,7 +163,7 @@ JS;
     {
         $widget = $this->getWidget();
         if ($widget->getValueWidgetLink()) {
-            $value = $this->escapeJsTextValue($widget->getValueWidgetLink()->getWidget()->getValueWithDefaults());
+            $value = $this->escapeJsTextValue($widget->getValueWidgetLink()->getTargetWidget()->getValueWithDefaults());
             $value = '"' . str_replace("\n", '', $value) . '"';
         } else {
             $value = $this->getWidget()->getValueWithDefaults();

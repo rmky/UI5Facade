@@ -7,7 +7,7 @@ namespace exface\OpenUI5Template\Templates\Elements;
  * @author Andrej Kabachnik
  *        
  */
-class ui5CheckBox extends ui5Input
+class ui5InputCheckBox extends ui5Input
 {
     
     /**
@@ -19,7 +19,7 @@ class ui5CheckBox extends ui5Input
     {
         return <<<JS
 
-        new sap.m.CheckBox("{$this->getId()}", {
+        new sap.m.InputCheckBox("{$this->getId()}", {
             {$this->buildJsProperties()}
         })
 

@@ -1,7 +1,7 @@
 <?php
 namespace exface\OpenUI5Template\Templates\Elements;
 
-use exface\Core\Widgets\ComboTable;
+use exface\Core\Widgets\InputComboTable;
 use exface\Core\Widgets\DataColumn;
 use exface\Core\Exceptions\Widgets\WidgetHasNoUidColumnError;
 use exface\Core\Exceptions\Widgets\WidgetLogicError;
@@ -10,12 +10,12 @@ use exface\Core\Factories\DataSheetFactory;
 /**
  * Generates OpenUI5 selects
  *
- * @method ComboTable getWidget()
+ * @method InputComboTable getWidget()
  *
  * @author Andrej Kabachnik
  *        
  */
-class ui5ComboTable extends ui5Input
+class ui5InputComboTable extends ui5Input
 {
     
     protected function init()

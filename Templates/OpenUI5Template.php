@@ -87,7 +87,7 @@ class OpenUI5Template extends AbstractAjaxTemplate
         // If no cache hit, see if the action matches one of the action selectors from the config or
         // is derived from them. If so, return TRUE and cache the result to avoid having to do the
         // checks again for the next button with the same action. This saves a lot of checks as
-        // generic actions like EditObjectDialog are often used for multiple buttons.
+        // generic actions like ShowObjectEditDialog are often used for multiple buttons.
         $selectors = $this->getConfig()->getOption('WIDGET.DIALOG.MAXIMIZE_BY_DEFAULT_IN_ACTIONS');
         if ($selectors instanceof UxonObject) {
             foreach ($selectors as $selector) {

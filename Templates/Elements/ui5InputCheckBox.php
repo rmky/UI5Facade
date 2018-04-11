@@ -19,7 +19,7 @@ class ui5InputCheckBox extends ui5Input
     {
         return <<<JS
 
-        new sap.m.InputCheckBox("{$this->getId()}", {
+        new sap.m.CheckBox("{$this->getId()}", {
             {$this->buildJsProperties()}
         })
 

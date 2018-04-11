@@ -11,9 +11,10 @@ class ui5Tab extends ui5Panel
     
     protected function buildJsIconTabFilter()
     {
+        $caption = str_replace('"', '\"', $this->getCaption());
         return <<<JS
     new sap.m.IconTabFilter("{$this->getId()}", {
-        text: "{$this->getCaption()}",
+        text: "{$caption}",
         content: [
             {$this->buildJsLayoutConstructor($this->buildJsChildrenConstructors())}
         ]

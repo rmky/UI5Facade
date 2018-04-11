@@ -575,8 +575,10 @@ JS;
      */
     protected function buildJsToolbar()
     {
-        $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $this->buildTextTableHeading() . ': "}),';
-        $pager = <<<JS
+        $heading = $this->buildTextTableHeading();
+        if ($this->getWidget()->getPaginate()) {
+            $heading .= ': ';
+            $pager = <<<JS
         new sap.m.Label("{$this->getId()}_pager", {
             text: ""
         }),
@@ -602,6 +604,11 @@ JS;
         }),
         
 JS;
+        } else {
+            $pager = '';
+        }
+        $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $heading . '"}),';
+        
         $toolbar = <<<JS
 			new sap.m.OverflowToolbar({
                 design: "Transparent",
@@ -774,14 +781,14 @@ JS;
     
     public function buildJsDataGetter(ActionInterface $action = null)
     {
-        if (is_null($action)) {
+        if ($action === null) {
             $rows = "sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data";
         } elseif ($action instanceof iReadData) {
             // If we are reading, than we need the special data from the configurator
             // widget: filters, sorters, etc.
             return $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsDataGetter($action);
         } elseif ($this->isEditable() && $action->implementsInterface('iModifyData')) {
-            // TODO
+            $rows = "oTable.getModel().getData()";
         } else {
             if ($this->isUiTable()) {
                 $rows = "(oTable.getSelectedIndex() > -1 ? [oTable.getModel().getData().data[oTable.getSelectedIndex()]] : [])";

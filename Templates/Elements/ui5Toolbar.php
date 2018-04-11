@@ -34,7 +34,8 @@ class ui5Toolbar extends ui5AbstractElement
     public function buildJsConstructor()
     {
         $widget = $this->getWidget();
-        
+        $left_buttons = '';
+        $right_buttons = '';
         foreach ($widget->getButtons() as $btn) {
             switch ($btn->getAlign()) {
                 case EXF_ALIGN_OPPOSITE:
@@ -46,7 +47,6 @@ class ui5Toolbar extends ui5AbstractElement
             }
         }
         
-        $left_buttons = '';
         $toolbar = <<<JS
 			new sap.m.OverflowToolbar({
 				content: [

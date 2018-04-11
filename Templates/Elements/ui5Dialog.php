@@ -68,31 +68,50 @@ class ui5Dialog extends ui5Form
 
 JS;
     }
+				
+    protected function hasHeader()
+    {
+        
+    }
         
     protected function buildJsHeader()
     {
         $widget = $this->getWidget();
         
-        if ($this->getMetaObject()->hasUidAttribute() && ($uid_widget = $this->getWidget()->findChildrenByAttribute($this->getMetaObject()->getUidAttribute())[0]) && !is_null($uid_widget->getValue())) {
-            
-            if ($widget->hasHeader()) {
-                $title_attr = $widget->getHeader()->getTitleAttribute();
-            } elseif ($widget->getMetaObject()->hasLabelAttribute()) {
-                $title_attr = $widget->getMetaObject()->getLabelAttribute();
-            } 
-            
-            if ($title_attr) {
-                $uid_data_sheet = DataSheetFactory::createFromObject($this->getMetaObject());
-                $uid_data_sheet->getColumns()->addFromAttribute($title_attr);
-                $uid_data_sheet->addFilterFromString($this->getMetaObject()->getUidAttributeAlias(), $uid_widget->getValue());
-                $uid_data_sheet->dataRead();
-                if ($title_attr) {
-                    $title = $uid_data_sheet->getCellValue($title_attr->getAliasWithRelationPath(), 0);
-                } elseif ($this->getMetaObject()->hasUidAttribute()) {
-                    $title = $uid_data_sheet->getCellValue($this->getMetaObject()->getUidAttribute()->getAlias(), 0);
+        if ($this->getMetaObject()->hasUidAttribute()) {
+            $uid_widget = $widget->findChildrenByAttribute($this->getMetaObject()->getUidAttribute())[0];
+            if ($uid_widget === null) {
+                if ($widget->hasHeader()) {
+                    $uid_widget = $widget->getHeader()->findChildrenByAttribute($this->getMetaObject()->getUidAttribute())[0];
                 }
-            } else {
-                $title = 'Object without title';
+            }
+            
+            if ($uid_widget && $uid_widget->hasValue()) {
+                if ($widget->hasHeader()) {
+                    $title_attr = $widget->getHeader()->getTitleAttribute();
+                } elseif ($widget->getMetaObject()->hasLabelAttribute()) {
+                    $title_attr = $widget->getMetaObject()->getLabelAttribute();
+                } 
+                
+                if ($title_attr) {
+                    $uid_data_sheet = DataSheetFactory::createFromObject($this->getMetaObject());
+                    $uid_data_sheet->getColumns()->addFromAttribute($title_attr);
+                    $uid_data_sheet->addFilterFromString($this->getMetaObject()->getUidAttributeAlias(), $uid_widget->getValue());
+                    $uid_data_sheet->dataRead();
+                    if ($title_attr) {
+                        $title = $uid_data_sheet->getCellValue($title_attr->getAliasWithRelationPath(), 0);
+                    } elseif ($this->getMetaObject()->hasUidAttribute()) {
+                        $title = $uid_data_sheet->getCellValue($this->getMetaObject()->getUidAttribute()->getAlias(), 0);
+                    }
+                    if ($widget->hasHeader()) {
+                        $header = $widget->getHeader();
+                        if ($header->getCaption()) {
+                            $title = $header->getCaption() . ' ' . $title;
+                        }
+                    }
+                } else {
+                    $title = 'Object without title';
+                }
             }
         }
         $heading = $title ? $title : $this->translate('WIDGET.DIALOG.TITLE_NEW');
@@ -221,7 +240,7 @@ JS;
         }
         
         if ($non_tab_children_constructors) {
-            $js .= $this->buildJsObjectPageSection($this->buildJsLayoutConstructor($non_tab_children_constructors));
+            $js .= $this->buildJsObjectPageSection($this->buildJsLayoutConstructor($non_tab_children_constructors), 'sapUiTinyMarginTop');
         }
         
         return $js;
@@ -235,18 +254,20 @@ JS;
      * @param string $content_js
      * @return string
      */
-    protected function buildJsObjectPageSection($content_js)
+    protected function buildJsObjectPageSection($content_js, $cssClass = null)
     {
+        $suffix = $cssClass !== null ? '.addStyleClass("' . $cssClass . '")' : '';
         return <<<JS
 
                 // BOF ObjectPageSection
                 new sap.uxap.ObjectPageSection({
+                    showTitle: false,
                     subSections: new sap.uxap.ObjectPageSubSection({
 						blocks: [
                             {$content_js}
                         ]
 					})
-				}),
+				}){$suffix}
                 // EOF ObjectPageSection
 
 JS;

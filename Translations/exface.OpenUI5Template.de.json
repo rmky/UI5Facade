@@ -1,4 +1,6 @@
 {
+	"ACTION.EXPORTFIORIWEBAPP.NAME": "Export",
+	
 	"MESSAGE.SELECT_EXACTLY_X_ROWS": "Bitte genau %number% Zeile auswählen!|Bitte genau %number% Zeilen auswählen!",
 	"MESSAGE.SELECT_AT_MOST_X_ROWS": "Bitte maximal %number% Zeile auswählen!|Bitte maximal %number% Zeilen auswählen!",
 	"MESSAGE.SELECT_AT_LEAST_X_ROWS": "Bitte mindestens %number% Zeile auswählen!|Bitte mindestens %number% Zeilen auswählen!",

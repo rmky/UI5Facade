@@ -8,6 +8,8 @@
 	"FORBIDDEN_CHARS_IN_FUNCTION_PREFIX": ["-", "."],
 	"DEFAULT_AJAX_URL": "/api/ui5",
 	
+	"WEBAPP_EXPORT.FOLDER_RELATIVE_TO_BASE" : "export/fiori",
+	
 	"ICON_CLASSES.DEFAULT_CLASS_PREFIX": "",
 	"ICON_CLASSES.EDIT": "fa fa-pencil-square-o",
 	"ICON_CLASSES.REMOVE": "fa fa-times",
@@ -38,7 +40,7 @@
 	"WIDGET.DATATABLE.PAGE_SIZE": 30,
 	
 	"WIDGET.DIALOG.MAXIMIZE_BY_DEFAULT_IN_ACTIONS": [
-		"exface.Core.ShowObjectDialog"
+		"exface.Core.ShowObjectInfoDialog"
 	],
 	"WIDGET.DIALOG.MAXIMIZE_BY_DEFAULT_IF_MORE_WIDGETS_THAN": 7
 }

@@ -1,0 +1,113 @@
+{
+    "object_alias": "exface.Core.OBJECT",
+    "columns": [
+        {
+            "name": "CREATED_ON",
+            "attribute_alias": "CREATED_ON"
+        },
+        {
+            "name": "MODIFIED_ON",
+            "attribute_alias": "MODIFIED_ON"
+        },
+        {
+            "name": "CREATED_BY_USER",
+            "attribute_alias": "CREATED_BY_USER"
+        },
+        {
+            "name": "MODIFIED_BY_USER",
+            "attribute_alias": "MODIFIED_BY_USER"
+        },
+        {
+            "name": "UID",
+            "attribute_alias": "UID"
+        },
+        {
+            "name": "READABLE_FLAG",
+            "attribute_alias": "READABLE_FLAG"
+        },
+        {
+            "name": "WRITABLE_FLAG",
+            "attribute_alias": "WRITABLE_FLAG"
+        },
+        {
+            "name": "DATA_SOURCE",
+            "attribute_alias": "DATA_SOURCE"
+        },
+        {
+            "name": "APP",
+            "attribute_alias": "APP"
+        },
+        {
+            "name": "SHORT_DESCRIPTION",
+            "attribute_alias": "SHORT_DESCRIPTION"
+        },
+        {
+            "name": "PARENT_OBJECT",
+            "attribute_alias": "PARENT_OBJECT"
+        },
+        {
+            "name": "DATA_ADDRESS_PROPS",
+            "attribute_alias": "DATA_ADDRESS_PROPS"
+        },
+        {
+            "name": "DEFAULT_EDITOR_UXON",
+            "attribute_alias": "DEFAULT_EDITOR_UXON"
+        },
+        {
+            "name": "LABEL",
+            "attribute_alias": "LABEL"
+        },
+        {
+            "name": "ALIAS",
+            "attribute_alias": "ALIAS"
+        },
+        {
+            "name": "DATA_ADDRESS",
+            "attribute_alias": "DATA_ADDRESS"
+        }
+    ],
+    "rows": [
+        {
+            "CREATED_ON": "2018-04-04 09:15:51",
+            "MODIFIED_ON": "2018-04-05 10:20:44",
+            "CREATED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "UID": "0x11e837e8c505989491380205857feb80",
+            "READABLE_FLAG": "1",
+            "WRITABLE_FLAG": "1",
+            "DATA_SOURCE": "0x32000000000000000000000000000000",
+            "APP": "0x11e837e87a640bfd91380205857feb80",
+            "SHORT_DESCRIPTION": "",
+            "PARENT_OBJECT": "0x32370000000000000000000000000000",
+            "DATA_ADDRESS_PROPS": "{}",
+            "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"Form\",\"widgets\":[{\"widget_type\":\"WidgetGroup\",\"caption\":\"Project\",\"widgets\":[{\"attribute_alias\":\"name\"},{\"attribute_alias\":\"root_page_alias\",\"id\":\"root_page_alias\"},{\"attribute_alias\":\"current_version\"},{\"attribute_alias\":\"current_version_date\"},{\"attribute_alias\":\"ui5_min_version\"},{\"attribute_alias\":\"ui5_source\"},{\"attribute_alias\":\"ui5_theme\"},{\"attribute_alias\":\"ui5_app_control\"}]},{\"widget_type\":\"WidgetGroup\",\"caption\":\"Webapp Manifest\",\"widgets\":[{\"attribute_alias\":\"app_id\",\"disabled\":true,\"value\":\"=root_page_alias!root_page_alias\"},{\"attribute_alias\":\"app_title\"},{\"attribute_alias\":\"app_subTitle\"},{\"attribute_alias\":\"app_shortTitle\"},{\"attribute_alias\":\"app_info\"},{\"attribute_alias\":\"app_description\"}]}]}",
+            "LABEL": "Fiori Webapp",
+            "ALIAS": "FIORI_WEBAPP",
+            "DATA_ADDRESS": "fiori_webapp"
+        }
+    ],
+    "totals_rows": [],
+    "filters": {
+        "operator": "AND",
+        "conditions": [
+            {
+                "expression": "APP",
+                "comparator": "=",
+                "value": "0x11e837e87a640bfd91380205857feb80",
+                "object_alias": "exface.Core.OBJECT"
+            }
+        ]
+    },
+    "rows_on_page": null,
+    "row_offset": 0,
+    "sorters": [
+        {
+            "attribute_alias": "CREATED_ON",
+            "direction": "ASC"
+        },
+        {
+            "attribute_alias": "UID",
+            "direction": "ASC"
+        }
+    ]
+}

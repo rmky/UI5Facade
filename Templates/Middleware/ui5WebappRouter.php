@@ -5,9 +5,12 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use exface\Core\Interfaces\WorkbenchInterface;
 use exface\Core\Interfaces\Templates\HttpTemplateInterface;
 use GuzzleHttp\Psr7\Response;
+use exface\Core\DataTypes\StringDataType;
+use exface\OpenUI5Template\Exceptions\Ui5RouteInvalidException;
+use exface\OpenUI5Template\Templates\OpenUI5Template;
+use exface\OpenUI5Template\Webapp;
 
 /**
  * This PSR-15 middleware reads inline-filters from the URL and passes them to the task
@@ -24,11 +27,13 @@ class ui5WebappRouter implements MiddlewareInterface
     
     private $webappRoot = null;
     
+    private $webapp = null;
+    
     /**
      * 
      * @param HttpTemplateInterface $template
      */
-    public function __construct(HttpTemplateInterface $template, string $webappRoot = '/webapps/', string $taskAttributeName = 'task')
+    public function __construct(OpenUI5Template $template, string $webappRoot = '/webapps/', string $taskAttributeName = 'task')
     {
         $this->template = $template;
         $this->taskAttributeName = $taskAttributeName;
@@ -43,39 +48,49 @@ class ui5WebappRouter implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $path = $request->getUri()->getPath();
-        if (($pos = strpos($path, $this->webappRoot)) !== false) {
-            $webappRoute = substr($path, ($pos + strlen($this->webappRoot))); 
-            return $this->resolve($webappRoute);
+        if (($webappRoute = StringDataType::substringAfter($path, $this->webappRoot)) !== false) {
+            return $this->resolve($webappRoute, $handler);
         }
         return $handler->handle($request);
     }
     
     protected function resolve(string $route) : ResponseInterface
     {
-        $parts = explode('/', $route);
-        $target = $parts[1];
-        $rootAlias = $parts[0];
-        switch (true) {
-            case $target === 'manifest.json':
-                return $this->getManifest();
+        $target = StringDataType::substringAfter($route, '/');
+        $appId = StringDataType::substringBefore($route, '/');
+        
+        $config = [
+            'app_id' => $appId,
+            'ui5_min_version' => '1.52'
+        ];
+        
+        $webapp = $this->template->createWebapp($appId, $config);
+        $body = $webapp->get($target);
+        $type = pathinfo($target, PATHINFO_EXTENSION);
+        
+        switch (strtolower($type)) {
+            case 'json':
+                return $this->createResponseJson($body);
+            case 'js':
+                return $this->createResponseJs($body);
             default:
-                //return $fallbackHandler->handle($request)
+                // TODO ???;
         }
-    }
-    
-    protected function getWebappFolderAbsolutePath() : string
-    {
-        return $this->template->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'webapp';
     }
     
     protected function getManifest() : ResponseInterface
     {
-        $json = file_get_contents($this->getWebappFolderAbsolutePath() . DIRECTORY_SEPARATOR . 'manifest.json');
+        $json = file_get_contents($this->template->getWebappTemplateFolder() . DIRECTORY_SEPARATOR . 'manifest.json');
         return $this->createResponseJson($json);
     }
     
     protected function createResponseJson(string $jsonString) : ResponseInterface
     {
         return new Response(200, ['Content-type' => ['application/json;charset=utf-8']], $jsonString);
+    }
+    
+    protected function createResponseJs(string $body) : ResponseInterface
+    {
+        return new Response(200, ['Content-type' => ['application/javascript;']], $body);
     }
 }

@@ -208,7 +208,7 @@ JS;
     {
         $data = [];
         foreach ($this->getWidget()->getWidgetConfigured()->getColumns() as $col) {
-            if (! $col->getAttribute()) {
+            if (! $col->hasAttributeReference()) {
                 continue;
             }
             $data[] = [
@@ -234,7 +234,7 @@ JS;
             ];
         }
         foreach ($table->getColumns() as $col) {
-            if (! $col->getAttribute()) {
+            if (! $col->hasAttributeReference()) {
                 continue;
             }
             if (in_array($col->getAttributeAlias(), $sorters)) {

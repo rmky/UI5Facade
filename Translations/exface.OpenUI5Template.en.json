@@ -1,5 +1,5 @@
 {
-	"REFRESH": "Refresh",
+	"ACTION.EXPORTFIORIWEBAPP.NAME": "Export",
 	
 	"MESSAGE.SELECT_EXACTLY_X_ROWS": "Please select exactly %number% row!|Please select exactly %number% rows!",
 	"MESSAGE.SELECT_AT_MOST_X_ROWS": "Please select at most %number% row!|Please select at most %number% rows!",

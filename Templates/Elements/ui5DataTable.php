@@ -788,7 +788,7 @@ JS;
             // widget: filters, sorters, etc.
             return $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsDataGetter($action);
         } elseif ($this->isEditable() && $action->implementsInterface('iModifyData')) {
-            $rows = "oTable.getModel().getData()";
+            $rows = "oTable.getModel().getData().data";
         } else {
             if ($this->isUiTable()) {
                 $rows = "(oTable.getSelectedIndex() > -1 ? [oTable.getModel().getData().data[oTable.getSelectedIndex()]] : [])";

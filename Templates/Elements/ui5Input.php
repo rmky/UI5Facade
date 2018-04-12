@@ -107,6 +107,9 @@ JS;
      */
     protected function buildJsPropertyChange()
     {
+        if (! $this->getOnChangeScript()) {
+            return '';
+        }
         return <<<JS
 
             change: function(event) {
@@ -165,10 +168,12 @@ JS;
         if ($widget->getValueWidgetLink()) {
             $value = $this->escapeJsTextValue($widget->getValueWidgetLink()->getTargetWidget()->getValueWithDefaults());
             $value = '"' . str_replace("\n", '', $value) . '"';
+        } elseif ($this->isValueBoundToModel()) {
+            $value = $this->buildJsValueBinding();
         } else {
-            $value = $this->getWidget()->getValueWithDefaults();
+            $value = '"' . $this->escapeJsTextValue($this->getWidget()->getValueWithDefaults()) . '"';
         }
-        return ($value ? 'value: "' . $this->escapeJsTextValue($value) . '",' : '');
+        return ($value ? 'value: ' . $value . ',' : '');
     }
     
     /**

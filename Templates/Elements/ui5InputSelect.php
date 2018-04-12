@@ -70,8 +70,12 @@ JS;
      */
     protected function buildJsPropertyValue()
     {
-        $value = $this->getWidget()->getValueWithDefaults();
-        return ($value ? 'selectedKey: "' . $this->escapeJsTextValue($value) . '",' : '');
+        if ($this->isValueBoundToModel()) {
+            $value = $this->buildJsValueBinding();
+        } else {
+            $value = '"' . $this->escapeJsTextValue($this->getWidget()->getValueWithDefaults()) . '"';
+        }
+        return ($value ? 'selectedKey: ' . $value . ',' : '');
     }
     
     /**

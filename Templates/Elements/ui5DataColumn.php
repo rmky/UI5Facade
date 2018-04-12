@@ -73,6 +73,8 @@ JS;
         if ($tpl instanceof ui5Display) {
             $tpl->setValueBindingPath($this->getWidget()->getDataColumnName());
             $tpl->setAlignment($this->buildJsAlignment());
+        } elseif ($tpl instanceof ui5Input) {
+            $tpl->setValueBindingPath($this->getWidget()->getDataColumnName());
         }
         if ($tpl instanceof ui5CompoundControlInterface) {
             return $tpl->buildJsConstructorForMainControl();

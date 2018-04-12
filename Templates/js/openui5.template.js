@@ -53,16 +53,16 @@ var oShell = new sap.ui.unified.Shell({
 															{
 																"action_alias": "exface.Core.UpdateData",
 																"caption": "Speichern",
-																"object_alias": "alexa.RMS-demo.BBD_ALERT",
-																"object_name": "MHD-Alarm",
-																"triggered": "2017-02-05 14:23:30"
+																"object_alias": "axenox.WMS.picking_order_pos",
+																"object_name": "Pickauftragsposition",
+																"triggered": "2018-04-12 14:48:06"
 															},
 															{
-																"action_alias": "exface.Core.DeleteData",
-																"caption": "Löschen",
-																"object_alias": "alexa.RMS-demo.BBD_ALERT",
-																"object_name": "MHD-Alarm",
-																"triggered": "2017-02-05 14:48:06"
+																"action_alias": "exface.Core.UpdateData",
+																"caption": "Speichern",
+																"object_alias": "axenox.WMS.picking_order_pos",
+																"object_name": "Pickauftragsposition",
+																"triggered": "2018-04-12 16:38:22"
 															}
 														]
 												};

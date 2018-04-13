@@ -3,6 +3,7 @@ namespace exface\OpenUI5Template\Templates\Elements;
 
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryContainerTrait;
 use exface\Core\Widgets\Container;
+use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
 
 /**
  * 
@@ -28,6 +29,33 @@ class ui5Container extends ui5AbstractElement
         }
         
         return $js;
+    }
+    
+    public function buildJsDataSetter($jsInput) : string
+    {
+        $setters = '';
+        foreach ($this->getWidget()->getWidgets() as $child) {
+            if (! ($child instanceof iShowSingleAttribute) || ! $child->hasAttributeReference()) {
+                continue;
+            }
+            $setters .= <<<JS
+
+                if (row['{$child->getAttributeAlias()}']) {
+                    {$this->getTemplate()->getElement($child)->buildJsValueSetter('row["' . $child->getAttributeAlias() . '"]')};
+                }
+JS;
+        }
+        return <<<JS
+
+            var data = {$jsInput};
+            var row = data.rows[0];
+            console.log(row);
+            if (! row || row.length === 0) {
+                return;
+            }
+            {$setters}
+
+JS;
     }
 }
 ?>

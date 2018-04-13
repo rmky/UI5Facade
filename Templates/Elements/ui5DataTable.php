@@ -120,7 +120,9 @@ JS;
             {$this->buildJsClickListeners()}
             {$this->buildJsRefresh()};
             return {$this->getJsVar()}
-        }()
+        }().attachItemPress(function(event){
+            {$this->getOnChangeScript()}
+        })
 
 JS;
     }
@@ -842,7 +844,7 @@ JS;
 JS;
         }
                 
-        // Single click. Currently only supports one double click action - the first one in the list of buttons
+        // Single click. Currently only supports one click action - the first one in the list of buttons
         if ($leftclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
             if ($this->isUiTable()) {
                 $js .= <<<JS

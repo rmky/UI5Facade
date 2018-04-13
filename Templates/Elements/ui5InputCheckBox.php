@@ -95,5 +95,10 @@ JS;
 JS;
         }
     }
+    
+    public function buildJsValueSetterMethod($value)
+    {
+        return "setSelected({$value} ? true : false)";
+    }
 }
 ?>

@@ -172,6 +172,11 @@ JS;
         
         return parent::buildJsPropertyTooltip();
     }
+    
+    public function buildJsValueSetterMethod($value)
+    {
+        return "setText({$value})";
+    }
 
 }
 ?>

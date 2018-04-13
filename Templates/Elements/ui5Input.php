@@ -69,6 +69,7 @@ JS;
             {$this->buildJsPropertyChange()}
             {$this->buildJsPropertyRequired()}
             {$this->buildJsPropertyValue()}
+            {$this->buildJsPropertyDisabled()}
 JS;
         return $options;
     }
@@ -193,6 +194,13 @@ JS;
     protected function buildJsPropertyType()
     {
         return 'type: sap.m.InputType.Text,';
+    }
+    
+    protected function buildJsPropertyDisabled()
+    {
+        if ($this->getWidget()->isDisabled()) {
+            return 'enabled: false,';
+        }
     }
 }
 ?>

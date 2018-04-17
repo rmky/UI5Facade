@@ -31,4 +31,16 @@ interface ui5ValueBindingInterface {
      * @return string
      */
     public function buildJsValueBindingOptions();
+    
+    /**
+     * 
+     * @return string
+     */
+    public function getValueBindingPath() : string;
+    
+    /**
+     * 
+     * @return string
+     */
+    public function buildJsValueBindingPropertyName() : string;
 }

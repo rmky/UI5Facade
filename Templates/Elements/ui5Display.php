@@ -177,6 +177,5 @@ JS;
     {
         return "setText({$value})";
     }
-
 }
 ?>

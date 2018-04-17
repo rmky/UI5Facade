@@ -153,7 +153,12 @@ JS;
         return $this;
     }
     
-    protected function getValueBindingPath()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface::getValueBindingPath()
+     */
+    public function getValueBindingPath() : string
     {
         if (is_null($this->valueBindingPath)) {
             return '/' . $this->getWidget()->getDataColumnName();
@@ -201,6 +206,16 @@ JS;
     protected function buildCssHeightDefaultValue()
     {
         return '';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface::buildJsValueBindingPropertyName()
+     */
+    public function buildJsValueBindingPropertyName() : string
+    {
+        return 'text';
     }
 }
 ?>

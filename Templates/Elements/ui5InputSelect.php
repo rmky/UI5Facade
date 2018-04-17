@@ -105,5 +105,15 @@ JS;
             return "setSelectedKey(" . $value . ")";
         }
     }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsValueBindingPropertyName()
+     */
+    public function buildJsValueBindingPropertyName() : string
+    {
+        return 'selectedKey';
+    }
 }
 ?>

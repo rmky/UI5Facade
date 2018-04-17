@@ -202,5 +202,15 @@ JS;
             return 'enabled: false,';
         }
     }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsValueBindingPropertyName()
+     */
+    public function buildJsValueBindingPropertyName() : string
+    {
+        return 'value';
+    }
 }
 ?>

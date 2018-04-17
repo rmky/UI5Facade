@@ -295,5 +295,15 @@ JS;
         // suggest string.
         return "setSelectedKey({$valueJs}).fireSuggest({suggestValue: {" . $this->getTemplate()->getUrlFilterPrefix() . $this->getWidget()->getValueColumn()->getDataColumnName() . ": {$valueJs}}})";
     }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsValueBindingPropertyName()
+     */
+    public function buildJsValueBindingPropertyName() : string
+    {
+        return 'selectedKey';
+    }
 }
 ?>

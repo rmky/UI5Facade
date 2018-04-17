@@ -73,15 +73,25 @@ JS;
         // model every time the checkbox is checked or unchecked.
         // TODO restrict this to only two-way-binding somehow
         if ($this->isValueBoundToModel()) {
-            $script .= <<<JS
+            if ($this->getWidget()->isInTable()) {
+                $script .= <<<JS
 
             var oCtxt = event.getSource().getBindingContext();
             var path = oCtxt.sPath;
             var row = oCtxt.getModel().getProperty(path);
-            var index = parseInt(path.substring(path.lastIndexOf('/')+1));
             row["{$this->getValueBindingPath()}"] = event.getParameters().selected ? 1 : 0;
             oCtxt.getModel().setProperty(path, row);
+            
 JS;
+            } else {
+                $script .= <<<JS
+                
+            var oCtxt = event.getSource().getBindingContext();
+            var path = oCtxt.sPath;
+            oCtxt.getModel().setProperty(path, event.getParameters().selected ? 1 : 0);
+            
+JS;
+            }
         }
         
         if (empty($script)) {
@@ -99,6 +109,11 @@ JS;
     public function buildJsValueSetterMethod($value)
     {
         return "setSelected({$value} ? true : false)";
+    }
+    
+    public function buildJsValueBindingPropertyName() : string
+    {
+        return 'selected';
     }
 }
 ?>

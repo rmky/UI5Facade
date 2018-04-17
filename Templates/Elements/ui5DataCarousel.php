@@ -1,49 +1,65 @@
 <?php
 namespace exface\OpenUI5Template\Templates\Elements;
 
-use exface\Core\Factories\WidgetFactory;
-use exface\Core\Factories\ActionFactory;
-use exface\Core\Actions\ShowObjectInfoDialog;
+use exface\Core\Widgets\DataCarousel;
+use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface;
+use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDataCarouselTrait;
 
 /**
  * Generates OpenUI5 data carousels
  *
  * @author Andrej Kabachnik
+ * 
+ * @method DataCarousel getWidget()
  *        
  */
 class ui5DataCarousel extends ui5SplitHorizontal
 {
+    use JqueryDataCarouselTrait;
+    
     protected function init()
     {
-        parent::init();
+        parent::init(); 
+        $this->registerSyncOnMaster();
+    }
+    
+    protected function registerSyncOnMaster()
+    {
+        $children = $this->getWidget()->getDetailsWidget()->getChildrenRecursive();
+        $dataIsEditable = $this->getDataElement()->isEditable();
+        foreach ($children as $child) {
+            if (! ($child instanceof iShowSingleAttribute) || ! $child->hasAttributeReference()) {
+                continue;
+            }
+            if (! $dataIsEditable) {
+                $this->getDataElement()->setEditable(true);
+            }
+            $childElement = $this->getTemplate()->getElement($child);
+            if ($childElement instanceof ui5ValueBindingInterface) {
+                $bindings .= <<<JS
+            oControl = sap.ui.getCore().byId("{$childElement->getId()}");
+            oBindingInfo = oControl.getBindingInfo("{$childElement->buildJsValueBindingPropertyName()}");
+            oBindingInfo.parts[0].path = sPath + "{$childElement->getValueBindingPath()}";
+            oControl.setModel(oModel).bindProperty("{$childElement->buildJsValueBindingPropertyName()}", oBindingInfo);
+            oControl.setBindingContext(new sap.ui.model.Context(oModel, sPath + "{$childElement->getValueBindingPath()}"));
+JS;
+            }
+        }
         
-        $syncScript = <<<JS
-
+        $bindingScript = <<<JS
+        
         var oCtxt = event.getSource().getBindingContext();
-        {$this->getDetailsElement()->buildJsDataSetter($this->getDataElement()->buildJsDataGetter(ActionFactory::createFromString($this->getWorkbench(), ShowObjectInfoDialog::class)))};
-
+        var sPath = event.getParameters().srcControl.getBindingContext().sPath;
+        var oModel = event.getSource().getModel();
+        var oControl, oBindingInfo;
+        {$bindings}
+        
+        
 JS;
         
-        $this->getDataElement()->addOnChangeScript($syncScript);
-        
-    }
-    
-    /**
-     * 
-     * @return ui5DataTable
-     */
-    protected function getDataElement()
-    {
-        return $this->getTemplate()->getElement($this->getWidget()->getDataWidget());
-    }
-    
-    /**
-     * 
-     * @return ui5Form
-     */
-    protected function getDetailsElement()
-    {
-        return $this->getTemplate()->getElement($this->getWidget()->getDetailsWidget());
+        $this->getDataElement()->addOnChangeScript($bindingScript);
+        return $this;
     }
 }
 ?>

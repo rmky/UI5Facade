@@ -55,29 +55,25 @@ class Webapp implements WorkbenchDependantInterface
                 $path = StringDataType::substringAfter($route, 'view/');
                 if (StringDataType::endsWith($path, '.view.js')) {
                     $path = StringDataType::substringBefore($path, '.view.js');
-                    $parts = explode('/', $path);
-                    
-                    if (count($parts) === 1) {
-                        $pageAlias = $parts[0];
-                    } elseif (count($parts) !== 3 || count($parts) !== 4) {
-                       $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];
-                    } else {
-                        throw new Ui5RouteInvalidException('View "' . $path . '" not found!');
-                    }
-                    
-                    $page = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $pageAlias);
-                    
-                    if (count($parts) === 4) {
-                        $widget = $page->getWidget($parts[3]);
-                    } else {
-                        $widget = $page->getWidgetRoot();
-                    }
+                    $widget = $this->getWidgetFromPath($path);
                     
                     $phs = $this->config;
-                    $phs['view_content'] = $this->template->buildJs($widget);
+                    $phs['view_content'] = $this->template->buildJsView($widget, $path);
                     $phs['view_name'] = $path;
                     
                     return $this->getFromFileTemplate('view/Empty.view.js', $phs);
+                }
+            case StringDataType::startsWith($route, 'controller/'):
+                $path = StringDataType::substringAfter($route, 'controller/');
+                if (StringDataType::endsWith($path, '.controller.js')) {
+                    $path = StringDataType::substringBefore($path, '.controller.js');
+                    $widget = $this->getWidgetFromPath($path);
+                    
+                    $phs = $this->config;
+                    $phs['controller_methods'] = $this->template->buildJsController($widget, $path);
+                    $phs['controller_name'] = $path;
+                    
+                    return $this->getFromFileTemplate('controller/Empty.controller.js', $phs);
                 }
             default:
                 throw new Ui5RouteInvalidException('Cannot match route "' . $route . '"!');
@@ -176,5 +172,28 @@ class Webapp implements WorkbenchDependantInterface
             $this->rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $this->appId);
         }
         return $this->rootPage;
+    }
+    
+    protected function getWidgetFromPath($path)
+    {
+        $parts = explode('/', $path);
+        
+        if (count($parts) === 1) {
+            $pageAlias = $parts[0];
+        } elseif (count($parts) !== 3 || count($parts) !== 4) {
+            $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];
+        } else {
+            throw new Ui5RouteInvalidException('Route "' . $path . '" not found!');
+        }
+        
+        $page = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $pageAlias);
+        
+        if (count($parts) === 4) {
+            $widget = $page->getWidget($parts[3]);
+        } else {
+            $widget = $page->getWidgetRoot();
+        }
+        
+        return $widget;
     }
 }

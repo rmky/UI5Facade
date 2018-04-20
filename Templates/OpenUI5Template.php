@@ -18,6 +18,7 @@ use exface\OpenUI5Template\Templates\Middleware\ui5TableUrlParamsReader;
 use exface\OpenUI5Template\Templates\Middleware\ui5WebappRouter;
 use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\OpenUI5Template\Webapp;
+use exface\Core\Interfaces\WidgetInterface;
 
 /**
  * 
@@ -60,12 +61,12 @@ class OpenUI5Template extends AbstractAjaxTemplate
         return $js . ($js ? "\n" : '') . $instance->buildJsView();
     }
     
-    public function buildJsView(string $viewName, string $appId) : string
+    public function buildJsView(WidgetInterface $widget, string $viewName) : string
     {
         
     }
     
-    public function buildJsController(string $controllerName, string $appId) : string
+    public function buildJsController(WidgetInterface $widget, string $controllerName) : string
     {
         
     }

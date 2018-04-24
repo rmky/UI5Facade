@@ -3,10 +3,10 @@ sap.ui.define([
 ], function (BaseController) {
 	"use strict";
 
-	return BaseController.extend("[#app_id#].controller.App", {
+	return BaseController.extend("[#app_id#].controller.[#controller_name#]", {
 
 		onInit: function () {
-			
+			[#controller_methods#]
 		}
 
 	});

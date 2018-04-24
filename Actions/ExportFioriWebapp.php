@@ -138,17 +138,20 @@ class ExportFioriWebapp extends DownloadZippedFolder
     }
     
     protected function exportPage(Webapp $webapp, UiPageInterface $page, string $exportFolder) : ExportFioriWebapp
+    {      
+        file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'view') . $page->getAlias() . '.view.js', $webapp->get('view/' . $page->getAliasWithNamespace() . '.view.js'));
+        file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'controller') . $page->getAlias() . '.controller.js', $webapp->get('controller/' . $page->getAliasWithNamespace() . '.controller.js'));
+        return $this;
+    }
+    
+    protected function buildPathToPageAsset(UiPageInterface $page, string $exportFolder, string $assetType = 'view') : string
     {
         $subfolder = str_replace(AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER, DIRECTORY_SEPARATOR, $page->getNamespace());
-        
-        $destination .= $exportFolder . 'view' . DIRECTORY_SEPARATOR . ($subfolder ? $subfolder . DIRECTORY_SEPARATOR : '');
-        
+        $destination = $exportFolder . $assetType . DIRECTORY_SEPARATOR . ($subfolder ? $subfolder . DIRECTORY_SEPARATOR : '');
         if (! file_exists($destination)) {
             Filemanager::pathConstruct($destination);
         }
-        
-        file_put_contents($destination . $page->getAlias() . '.view.js', $webapp->get('view/' . $page->getAliasWithNamespace() . '.view.js'));
-        return $this;
+        return $destination;
     }
     
     protected function exportFile(Webapp $webapp, string $route, string $exportFolder) : ExportFioriWebapp

@@ -16,7 +16,6 @@ use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsNumberFormatter;
 use exface\OpenUI5Template\Templates\Formatters\ui5NumberFormatter;
 use exface\OpenUI5Template\Templates\Middleware\ui5TableUrlParamsReader;
 use exface\OpenUI5Template\Templates\Middleware\ui5WebappRouter;
-use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\OpenUI5Template\Webapp;
 use exface\Core\Interfaces\WidgetInterface;
 
@@ -63,12 +62,14 @@ class OpenUI5Template extends AbstractAjaxTemplate
     
     public function buildJsView(WidgetInterface $widget, string $viewName) : string
     {
-        
+        $instance = $this->getElement($widget);
+        return $instance->buildJsView();
     }
     
     public function buildJsController(WidgetInterface $widget, string $controllerName) : string
     {
-        
+        $instance = $this->getElement($widget);
+        return $instance->buildJs();
     }
     
     /**

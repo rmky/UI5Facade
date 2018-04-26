@@ -17,17 +17,12 @@ class ui5Value extends ui5AbstractElement implements ui5ValueBindingInterface, u
 {
     private $valueBindingPath = null;
     
-    public function buildJs()
-    {
-        return '';
-    }
-    
     /**
      * 
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor()
+    public function buildJsConstructor() : string
     {
         return $this->buildJsConstructorForMainControl();
     }

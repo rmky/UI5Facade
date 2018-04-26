@@ -15,12 +15,21 @@ class ui5Container extends ui5AbstractElement
 {
     use JqueryContainerTrait;
     
-    public function buildJsConstructor()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     */
+    public function buildJsConstructor() : string
     {
         return $this->buildJsChildrenConstructors();
     }
     
-    public function buildJsChildrenConstructors()
+    /**
+     * 
+     * @return string
+     */
+    public function buildJsChildrenConstructors() : string
     {
         $js = '';
         foreach ($this->getWidget()->getWidgets() as $widget) {
@@ -28,6 +37,38 @@ class ui5Container extends ui5AbstractElement
         }
         
         return $js;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsControllerProperties()
+     */
+    public function buildJsControllerProperties() : string
+    {
+        $js = parent::buildJsControllerProperties();
+        
+        foreach ($this->getWidget()->getChildren() as $subw) {
+            $js .= $this->getTemplate()->getElement($subw)->buildJsControllerProperties() . "\n";
+        }
+        
+        return $js;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsOnInitScript()
+     */
+    public function buildJsOnInitScript() : string
+    {
+        $output = parent::buildJsOnInitScript();
+        
+        foreach ($this->getWidget()->getChildren() as $subw) {
+            $output .= $this->getTemplate()->getElement($subw)->buildJsOnInitScript() . "\n";
+        }
+        
+        return $output;
     }
 }
 ?>

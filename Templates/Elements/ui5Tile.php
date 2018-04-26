@@ -15,7 +15,7 @@ class ui5Tile extends ui5Button
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5Button::buildJsConstructor()
      */
-    public function buildJsConstructor()
+    public function buildJsConstructor() : string
     {
         $widget = $this->getWidget();
         

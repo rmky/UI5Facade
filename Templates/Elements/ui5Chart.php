@@ -22,7 +22,7 @@ class ui5Chart extends ui5AbstractElement
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor()
+    public function buildJsConstructor() : string
     {
         return <<<JS
 

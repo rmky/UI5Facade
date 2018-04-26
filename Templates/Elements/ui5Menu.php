@@ -14,16 +14,40 @@ use exface\Core\Widgets\Button;
  */
 class ui5Menu extends ui5AbstractElement
 {
-    public function buildJs()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsOnInitScript()
+     */
+    public function buildJsOnInitScript() : string
     {
         $js = '';
         foreach ($this->getWidget()->getButtons() as $b) {
-            $js .= $this->getTemplate()->getElement($b)->buildJs();
+            $js .= $this->getTemplate()->getElement($b)->buildJsOnInitScript() . "\n";
         }
         return $js;
     }
     
-    public function buildJsConstructor()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsControllerProperties()
+     */
+    public function buildJsControllerProperties() : string
+    {
+        $js = '';
+        foreach ($this->getWidget()->getButtons() as $b) {
+            $js .= $this->getTemplate()->getElement($b)->buildJsControllerProperties() . "\n";
+        }
+        return $js;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     */
+    public function buildJsConstructor() : string
     {
         return <<<JS
 
@@ -36,7 +60,11 @@ class ui5Menu extends ui5AbstractElement
 
 JS;
     }
-        
+    
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsButtonsListItems()
     {
         $js = '';
@@ -64,7 +92,12 @@ JS;
         return $js;
     }
     
-    protected function buildJsButtonListItem(Button $button)
+    /**
+     * 
+     * @param Button $button
+     * @return string
+     */
+    protected function buildJsButtonListItem(Button $button) : string
     {
         $btn_element = $this->getTemplate()->getElement($button);
         
@@ -87,7 +120,11 @@ JS;
 
 JS;
     }
-        
+    
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsPropertyCaption()
     {
         return ! $this->getCaption() ? '' : <<<JS

@@ -21,7 +21,7 @@ use exface\Core\Interfaces\Widgets\iHaveValue;
  */
 class ui5Dialog extends ui5Form
 {
-    public function buildJsConstructor()
+    public function buildJsConstructor() : string
     {
         if ($this->isMaximized() === false) {
             return $this->buildJsDialog();
@@ -328,11 +328,6 @@ JS;
             $js = $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n" . $js;
         }
         return $js;
-    }
-                
-    public function getViewName()
-    {
-        return 'view.' . $this->getId();
     }
 }
 ?>

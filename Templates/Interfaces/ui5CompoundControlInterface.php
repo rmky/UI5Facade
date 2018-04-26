@@ -12,7 +12,7 @@ interface ui5CompoundControlInterface {
      * 
      * @return string
      */
-    public function buildJsConstructor();
+    public function buildJsConstructor() : string;
     
     /**
      * 

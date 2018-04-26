@@ -12,15 +12,6 @@ use exface\Core\Widgets\InputJson;
  */
 class ui5InputJson extends ui5Input
 {    
-    public function buildJs()
-    {
-        return parent::buildJs() . <<<JS
-
-    var {$this->getId()}_JSONeditor;
-
-JS;
-    }
-    
     /**
      * 
      * {@inheritDoc}
@@ -47,13 +38,13 @@ JS;
         $script = <<<JS
 
             if ($('#{$this->getId()} > .jsoneditor').length == 0) {
-                {$this->getId()}_JSONeditor = new JSONEditor(document.getElementById("{$this->getId()}"), {
+                this.{$this->getId()}_JSONeditor = new JSONEditor(document.getElementById("{$this->getId()}"), {
                                 					mode: 'tree',
                                						modes: ['code', 'form', 'text', 'tree', 'view'],
                                                     sortObjectKeys: false
                             					});
                 {$init_value}
-                {$this->getId()}_JSONeditor.expandAll();
+                this.{$this->getId()}_JSONeditor.expandAll();
                 $('#{$this->getId()}').parents('.exf-input').children('label').css('vertical-align', 'top');
             }
 

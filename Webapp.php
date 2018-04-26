@@ -56,9 +56,10 @@ class Webapp implements WorkbenchDependantInterface
                 if (StringDataType::endsWith($path, '.view.js')) {
                     $path = StringDataType::substringBefore($path, '.view.js');
                     $widget = $this->getWidgetFromPath($path);
+                    $constructor = $this->template->buildJsViewContent($widget);
                     
                     $phs = $this->config;
-                    $phs['view_content'] = $this->template->buildJsView($widget, $path);
+                    $phs['view_content'] = $constructor !== '' ? 'return ' . $constructor : '';
                     $phs['view_name'] = $path;
                     
                     return $this->getFromFileTemplate('view/Empty.view.js', $phs);
@@ -68,10 +69,12 @@ class Webapp implements WorkbenchDependantInterface
                 if (StringDataType::endsWith($path, '.controller.js')) {
                     $path = StringDataType::substringBefore($path, '.controller.js');
                     $widget = $this->getWidgetFromPath($path);
+                    $headTags = implode(' ', $this->getElement($widget)->buildHtmlHeadTags());
                     
                     $phs = $this->config;
-                    $phs['controller_methods'] = $this->template->buildJsController($widget, $path);
+                    $phs['controller_body'] = $this->template->buildJsControllerBody($widget);
                     $phs['controller_name'] = $path;
+                    $phs['html_head_tags'] = "$('head').append('{$headTags}')";
                     
                     return $this->getFromFileTemplate('controller/Empty.controller.js', $phs);
                 }

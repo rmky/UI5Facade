@@ -15,23 +15,39 @@ class ui5Toolbar extends ui5AbstractElement
 {
     use JqueryToolbarTrait;
     
-    public function buildHtml()
-    {
-        return '';
-    }
-    
-    public function buildJs()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsControllerProperties()
+     */
+    public function buildJsControllerProperties() : string
     {
         $js = '';
         
         foreach ($this->getWidget()->getButtons() as $btn) {
-            $js .= $this->getTemplate()->getElement($btn)->buildJs();
+            $js .= $this->getTemplate()->getElement($btn)->buildJsControllerProperties() . "\n";
         }
         
         return $js;
     }
     
-    public function buildJsConstructor()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsControllerProperties()
+     */
+    public function buildJsOnInitScript() : string
+    {
+        $js = '';
+        
+        foreach ($this->getWidget()->getButtons() as $btn) {
+            $js .= $this->getTemplate()->getElement($btn)->buildJsOnInitScript() . "\n";
+        }
+        
+        return $js;
+    }
+    
+    public function buildJsConstructor() : string
     {
         $widget = $this->getWidget();
         $left_buttons = '';

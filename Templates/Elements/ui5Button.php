@@ -19,7 +19,7 @@ class ui5Button extends ui5AbstractElement
     
     use JqueryButtonTrait;
 
-    function buildJs()
+    public function buildJsControllerProperties() : string
     {
         $output = '';
         $hotkey_handlers = array();
@@ -37,11 +37,15 @@ class ui5Button extends ui5AbstractElement
         if ($click = $this->buildJsClickFunction()) {
             
             // Generate the function to be called, when the button is clicked
-            $output .= "
-				function " . $this->buildJsClickFunctionName() . "(input){
-                    " . $click . "
-				}
-				";
+            $output .= <<<JS
+
+                // BOF Click function for button "{$this->getCaption()}"
+				{$this->buildJsClickFunctionName()}: function(input){
+                    {$click}
+				},
+                // EOF Click function for button "{$this->getCaption()}"
+
+JS;
             
             // Handle hotkeys
             if ($this->getWidget()->getHotkey()) {
@@ -57,7 +61,7 @@ class ui5Button extends ui5AbstractElement
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor()
+    public function buildJsConstructor() : string
     {
         return <<<JS
 new sap.m.Button("{$this->getId()}", { 
@@ -128,7 +132,7 @@ JS;
                                     dialog: sap.ui.view({
                                         type:sap.ui.core.mvc.ViewType.JS, 
                                         height: "100%", 
-                                        viewName:"{$this->getTemplate()->getElement($this->getWidget()->getAction()->getWidget())->getViewName()}"
+                                        viewName:"{$this->getTemplate()->getViewName($widget->getAction()->getWidget(), $widget->getPage())}"
                                     }),
                                     onClose: function(){
 								        {$this->buildJsInputRefresh($widget, $input_element)}

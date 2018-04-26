@@ -138,7 +138,8 @@ class ExportFioriWebapp extends DownloadZippedFolder
     }
     
     protected function exportPage(Webapp $webapp, UiPageInterface $page, string $exportFolder) : ExportFioriWebapp
-    {      
+    {     
+        // IMPORTANT: generate the view first to allow it to add controller methods!
         file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'view') . $page->getAlias() . '.view.js', $webapp->get('view/' . $page->getAliasWithNamespace() . '.view.js'));
         file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'controller') . $page->getAlias() . '.controller.js', $webapp->get('controller/' . $page->getAliasWithNamespace() . '.controller.js'));
         return $this;

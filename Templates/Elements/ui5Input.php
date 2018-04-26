@@ -35,7 +35,7 @@ class ui5Input extends ui5Value
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor()
+    public function buildJsConstructor() : string
     {
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl());
     }

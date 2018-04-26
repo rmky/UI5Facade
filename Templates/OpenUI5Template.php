@@ -18,6 +18,12 @@ use exface\OpenUI5Template\Templates\Middleware\ui5TableUrlParamsReader;
 use exface\OpenUI5Template\Templates\Middleware\ui5WebappRouter;
 use exface\OpenUI5Template\Webapp;
 use exface\Core\Interfaces\WidgetInterface;
+use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
+use exface\Core\Interfaces\Model\UiPageInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use exface\Core\Factories\UiPageFactory;
+use exface\Core\Exceptions\RuntimeException;
 
 /**
  * 
@@ -29,7 +35,7 @@ use exface\Core\Interfaces\WidgetInterface;
 class OpenUI5Template extends AbstractAjaxTemplate
 {
 
-    protected $request_columns = array();
+    private $requestPageAlias = null;
     
     /**
      * Cache for config key WIDGET.DIALOG.MAXIMIZE_BY_DEFAULT_IN_ACTIONS:
@@ -48,6 +54,16 @@ class OpenUI5Template extends AbstractAjaxTemplate
         $this->setClassNamespace(__NAMESPACE__);
     }
     
+    public function handle(ServerRequestInterface $request) : ResponseInterface
+    {
+        if ($pageAlias = $request->getAttribute($this->getRequestAttributeForPage())) {
+            if ($this->requestPageAlias === null) {
+                $this->requestPageAlias = $pageAlias;
+            }
+        }
+        return parent::handle($request);
+    }
+    
     /**
      * 
      * {@inheritDoc}
@@ -55,21 +71,116 @@ class OpenUI5Template extends AbstractAjaxTemplate
      */
     public function buildJs(\exface\Core\Widgets\AbstractWidget $widget)
     {
-        $instance = $this->getElement($widget);
-        $js = $instance->buildJs();
-        return $js . ($js ? "\n" : '') . $instance->buildJsView();
+        $requestPage = $this->getRequestPage();
+        
+        // Build view first!
+        // IMPORTANT: while building the view, there will be controller methods
+        // created, so we need to build the view first, although it will be put
+        // into the javascript after the controller.
+        $viewName = $this->getViewName($widget, $requestPage);
+        $viewBody = $this->buildJsViewContent($widget);
+        
+        // Build the controller last
+        // IMPORTANTE: the controller must be generated last, as all the other
+        // mvs-parts may require controller methods
+        $controllerName = $this->getControllerName($widget, $requestPage);
+        $controllerBody = $this->buildJsControllerBody($widget);
+        
+        return <<<JS
+    
+    // Controller
+    sap.ui.define([
+        "sap/ui/core/mvc/Controller"
+    ], function (Controller) {
+        "use strict";
+        
+        return Controller.extend("{$controllerName}", {
+            {$controllerBody}
+        });
+    });
+
+    // View
+    sap.ui.jsview("{$viewName}", {
+		
+		// View has no controller
+		getControllerName: function() {
+			return "{$controllerName}";
+		},
+		
+		// Instantiate all widgets for the view
+		createContent: function(oController) {
+            return {$viewBody};
+		}
+	});
+
+JS;
+    }
+         
+    /**
+     * 
+     * @param WidgetInterface $widget
+     * @return string
+     */
+    public function getViewName(WidgetInterface $widget, UiPageInterface $appRootPage) : string
+    {
+        $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : $appRootPage->getAliasWithNamespace();
+        return $appRootPage->getAliasWithNamespace() . '.view.' . $pageAlias . ($widget->hasParent() ? '.' . $widget->getId() : '');
+    }  
+    
+    /**
+     * 
+     * @param WidgetInterface $widget
+     * @return string
+     */
+    public function getControllerName(WidgetInterface $widget, UiPageInterface $appRootPage) : string
+    {
+        $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : $appRootPage->getAliasWithNamespace();
+        return $appRootPage->getAliasWithNamespace() . '.controller.' . $pageAlias . ($widget->hasParent() ? '.' . $widget->getId() : '');
     }
     
-    public function buildJsView(WidgetInterface $widget, string $viewName) : string
+    /**
+     * Returns the JS code to calculate the return value of the view-method createContent().
+     * 
+     * Usage example: 
+     * 
+     * createContent: function(oController) {
+     *      return {$this->buildJsViewContent($widget)};
+     * }
+     * 
+     * @param WidgetInterface $widget
+     * @return string
+     */
+    public function buildJsViewContent(WidgetInterface $widget) : string
     {
         $instance = $this->getElement($widget);
-        return $instance->buildJsView();
+        return trim($instance->buildJsConstructor());
     }
     
-    public function buildJsController(WidgetInterface $widget, string $controllerName) : string
+    /**
+     * Returns the JS code to calculate the return value of a UI5 controller constructor.
+     * 
+     * Example:
+     * 
+     * return Controller.extend("{$this->getControllerName($widget)}", {
+     *      {$this->buildJsControllerBody($widget)}
+     * });
+     * 
+     * @param WidgetInterface $widget
+     * @return string
+     */
+    public function buildJsControllerBody(WidgetInterface $widget) : string
     {
         $instance = $this->getElement($widget);
-        return $instance->buildJs();
+        return <<<JS
+
+        onInit: function () {
+            var oController = this;
+			{$instance->buildJsOnInitScript()}
+		},
+	
+		{$instance->buildJsControllerProperties()}
+
+JS;
     }
     
     /**
@@ -176,6 +287,14 @@ class OpenUI5Template extends AbstractAjaxTemplate
     public function createWebapp(string $id, array $config) : Webapp
     {
         return new Webapp($this, $id, $this->getWebappTemplateFolder(), $config);
+    }
+    
+    protected function getRequestPage() : UiPageInterface
+    {
+        if ($this->requestPageAlias === null) {
+            throw new RuntimeException('No root page found in request for template "' . $this->getAliasWithNamespace() . '"!');
+        }
+        return UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $this->requestPageAlias);
     }
 }
 ?>

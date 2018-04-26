@@ -44,6 +44,7 @@ class OpenUI5Template extends AbstractAjaxTemplate
      */
     public function init()
     {
+        parent::init();
         $this->setClassPrefix('ui5');
         $this->setClassNamespace(__NAMESPACE__);
     }

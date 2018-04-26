@@ -28,8 +28,8 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 .sapMTileCntContent ..sapMFCCTxt {overflow: visible !important;}
 
 /* HTML widgets */
-.exf-html {font-size: initial;}
-.sapUiSimpleForm .exf-html h1 {font-size: 1.375rem; font-weight: normal;}
-.sapUiSimpleForm .exf-html h2 {font-size: 1.375rem; font-weight: normal;}
-.sapUiSimpleForm .exf-html h3 {font-size: 1.3rem; font-weight: normal;}
-.sapUiSimpleForm .exf-html h4 {font-size: 1.2rem; font-weight: normal;}
+.exf-html {font-size: 0.875rem;}
+.sapUiSimpleForm .exf-html h1 {font-size: 1.275rem; font-weight: normal;}
+.sapUiSimpleForm .exf-html h2 {font-size: 1.175rem; font-weight: normal;}
+.sapUiSimpleForm .exf-html h3 {font-size: 1.075rem; font-weight: normal;}
+.sapUiSimpleForm .exf-html h4 {font-size: 1.0rem; font-weight: normal;}

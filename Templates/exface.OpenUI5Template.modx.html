@@ -88,7 +88,7 @@
 		<script type="text/javascript">
 			oShell.removeAllContent()
 		    oShell.addContent(
-		        (sap.ui.getCore().byId("[*alias*]") !== undefined ? sap.ui.getCore().byId("[*alias*]") : sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, height: "100%", viewName:"[*alias*]"}))
+		        (sap.ui.getCore().byId("[*alias*].view.[*alias*]") !== undefined ? sap.ui.getCore().byId("[*alias*].view.[*alias*]") : sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, height: "100%", viewName:"[*alias*].view.[*alias*]"}))
 		    );
 		</script>
 

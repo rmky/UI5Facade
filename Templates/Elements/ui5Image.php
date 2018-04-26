@@ -20,7 +20,7 @@ class ui5Image extends ui5Display
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructorForMainControl()
-    {
+    {        
         return <<<JS
 
         new sap.m.Image("{$this->getid()}", {
@@ -30,6 +30,24 @@ class ui5Image extends ui5Display
     	})
 
 JS;
+    }
+            
+    public function buildJsValueBindingOptions()
+    {
+        if ($this->getWidget()->getUseProxy()) {
+        
+            return <<<JS
+
+        formatter: function(value) {
+            var url = encodeURI(value);
+            var proxyUrl = "{$this->getWidget()->buildProxyUrl('xxurixx')}";
+            return proxyUrl.replace("xxurixx", url);
+        },
+
+JS;
+        }
+            
+        return parent::buildJsValueBindingOptions();
     }
     
     /**

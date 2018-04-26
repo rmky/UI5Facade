@@ -69,7 +69,7 @@ class Webapp implements WorkbenchDependantInterface
                 if (StringDataType::endsWith($path, '.controller.js')) {
                     $path = StringDataType::substringBefore($path, '.controller.js');
                     $widget = $this->getWidgetFromPath($path);
-                    $headTags = implode(' ', $this->getElement($widget)->buildHtmlHeadTags());
+                    $headTags = implode(' ', $this->template->getElement($widget)->buildHtmlHeadTags());
                     
                     $phs = $this->config;
                     $phs['controller_body'] = $this->template->buildJsControllerBody($widget);

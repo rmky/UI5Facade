@@ -29,5 +29,10 @@ class ui5Container extends ui5AbstractElement
         
         return $js;
     }
+    
+    public function buildJs()
+    {
+        return $this->buildJsForChildren();
+    }
 }
 ?>

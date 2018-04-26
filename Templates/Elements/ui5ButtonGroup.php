@@ -13,5 +13,10 @@ use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryButtonGroupTrait;
 class ui5ButtonGroup extends ui5AbstractElement
 {
     use JqueryButtonGroupTrait;
+    
+    public function buildJs()
+    {
+        $this->buildJsForButtons();
+    }
 }
 ?>

@@ -41,5 +41,10 @@ class ui5Filter extends ui5AbstractElement
         $this->getTemplate()->getElement($this->getWidget()->getInputWidget())->addPseudoEventHandler($event, $code);
         return $this;
     }
+    
+    public function buildJs()
+    {
+        return $this->getInputElement()->buildJs();
+    }
 }
 ?>

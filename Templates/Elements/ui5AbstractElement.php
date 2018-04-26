@@ -458,5 +458,10 @@ JS;
         
         return parent::getId();
     }
+    
+    public function buildJs()
+    {
+        return '';
+    }
 }
 ?>

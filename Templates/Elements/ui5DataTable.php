@@ -31,13 +31,6 @@ class ui5DataTable extends ui5AbstractElement
         if ($this->isWrappedInDynamicPage()) {
             $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->setIncludeFilterTab(false);
         }
-        $controller = $this->getController();
-        $controller->addControl($this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget()));
-        $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos, growing', $this->buildJsDataLoader());
-        $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
-        $controller->addProperty($this->getId() . '_pages', $this->buildJsPaginationObject());
-        $controller->addMethod('onPaginate', $this, '', $this->buildJsPaginationRefresh());
-        $controller->addOnInitScript($this->buildJsRefresh());
     }
     
     /**
@@ -47,6 +40,14 @@ class ui5DataTable extends ui5AbstractElement
      */
     public function buildJsConstructor($oController = 'oController') : string
     { 
+        $controller = $this->getController();
+        $controller->addControl($this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget()));
+        $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos, growing', $this->buildJsDataLoader());
+        $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
+        $controller->addProperty($this->getId() . '_pages', $this->buildJsPaginationObject());
+        $controller->addMethod('onPaginate', $this, '', $this->buildJsPaginationRefresh());
+        $controller->addOnInitScript($this->buildJsRefresh());
+        
         if ($this->isMTable()) {
             $js = $this->buildJsConstructorForMTable();
         } else {

@@ -13,35 +13,7 @@ use exface\Core\Widgets\Button;
  *        
  */
 class ui5Menu extends ui5AbstractElement
-{
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsOnInitScript()
-     */
-    public function buildJsOnInitScript() : string
-    {
-        $js = '';
-        foreach ($this->getWidget()->getButtons() as $b) {
-            $js .= $this->getTemplate()->getElement($b)->buildJsOnInitScript() . "\n";
-        }
-        return $js;
-    }
-    
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsControllerProperties()
-     */
-    public function buildJsControllerProperties() : string
-    {
-        $js = '';
-        foreach ($this->getWidget()->getButtons() as $b) {
-            $js .= $this->getTemplate()->getElement($b)->buildJsControllerProperties() . "\n";
-        }
-        return $js;
-    }
-    
+{    
     /**
      * 
      * {@inheritDoc}

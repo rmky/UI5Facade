@@ -15,38 +15,6 @@ class ui5Toolbar extends ui5AbstractElement
 {
     use JqueryToolbarTrait;
     
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsControllerProperties()
-     */
-    public function buildJsControllerProperties() : string
-    {
-        $js = '';
-        
-        foreach ($this->getWidget()->getButtons() as $btn) {
-            $js .= $this->getTemplate()->getElement($btn)->buildJsControllerProperties() . "\n";
-        }
-        
-        return $js;
-    }
-    
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsControllerProperties()
-     */
-    public function buildJsOnInitScript() : string
-    {
-        $js = '';
-        
-        foreach ($this->getWidget()->getButtons() as $btn) {
-            $js .= $this->getTemplate()->getElement($btn)->buildJsOnInitScript() . "\n";
-        }
-        
-        return $js;
-    }
-    
     public function buildJsConstructor($oController = 'oController') : string
     {
         $widget = $this->getWidget();

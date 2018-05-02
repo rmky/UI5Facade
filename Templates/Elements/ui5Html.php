@@ -12,17 +12,7 @@ use exface\Core\Widgets\Html;
  *        
  */
 class ui5Html extends ui5Value
-{ 
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsOnInitScript()
-     */
-    public function buildJsOnInitScript() : string
-    {
-        $js = $this->getWidget()->getJavascript();
-        return $js === null ? '' : $js;
-    }
+{
     
     /**
      * 
@@ -31,6 +21,9 @@ class ui5Html extends ui5Value
      */
     public function buildJsConstructor($oController = 'oController') : string
     {
+        if ($js = $this->getWidget()->getJavascript()) {
+            $this->addOnInitScript($js);
+        }
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl());
     }
     

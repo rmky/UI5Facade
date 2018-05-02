@@ -16,28 +16,6 @@ use exface\Core\Widgets\MenuButton;
 class ui5MenuButton extends ui5AbstractElement
 {
     use JqueryButtonTrait;
-
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsControllerProperties()
-     */
-    public function buildJsControllerProperties() : string
-    {
-        $output = '';
-        foreach ($this->getWidget()->getButtons() as $b) {
-            if ($js_click_function = $this->getTemplate()->getElement($b)->buildJsClickFunction()) {
-                $output .= <<<JS
-
-					{$this->getTemplate()->getElement($b)->buildJsClickFunctionName()}: function(){
-						{$js_click_function}
-					},
-
-JS;
-            }
-        }
-        return $output;
-    }
     
     public function buildJsConstructor($oController = 'oController') : string
     {

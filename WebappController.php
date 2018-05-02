@@ -117,6 +117,7 @@ JS;
 function() {
                     var oController = this;
                     this.{$name} = {$element->buildJsConstructor('oController')};
+                    oController.getView().addDependent(this.{$name});
                 },
 JS;
         $this->addProperty($name, 'null');
@@ -130,24 +131,11 @@ JS;
         return <<<JS
 
 sap.ui.define([
-    "sap/ui/core/mvc/Controller"
-], function (Controller) {
-    "use strict";
-    
-    return Controller.extend("{$this->getName()}", {
-        {$this->buildJsProperties()}
-    });
-});
-
-JS;
-        return <<<JS
-
-sap.ui.define([
 	"{$this->getWebapp()->getComponentPath()}/controller/BaseController"
 ], function (BaseController) {
 	"use strict";
 	
-	return BaseController.extend("{$this->getWebapp()->getComponentName()}.controller.$this->getName()", {
+	return BaseController.extend("{$this->getName()}", {
 
 		{$this->buildJsProperties()}
 
@@ -158,6 +146,11 @@ sap.ui.define([
 JS;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getName()
+     */
     public function getName() : string
     {
         return $this->controllerName;
@@ -181,16 +174,30 @@ JS;
         return $js;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getWebapp()
+     */
     public function getWebapp() : Webapp
     {
         return $this->webapp;
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsOnInitScript() : string
     {
         return $this->onInitScript;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addOnInitScript()
+     */
     public function addOnInitScript(string $js) : ui5ControllerInterface
     {
         $this->onInitScript .= "\n\n" . $js;

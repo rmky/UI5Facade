@@ -18,50 +18,13 @@ class ui5Button extends ui5AbstractElement
 {
     
     use JqueryButtonTrait;
-
-    public function buildJsControllerProperties() : string
-    {
-        $output = '';
-        $hotkey_handlers = array();
-        $action = $this->getAction();
-        
-        // Get the java script required for the action itself
-        if ($action) {
-            // Actions with template scripts may contain some helper functions or global variables.
-            // Print the here first.
-            if ($action && $action->implementsInterface('iRunTemplateScript')) {
-                $output .= $this->getAction()->buildScriptHelperFunctions($this->getTemplate());
-            }
-        }
-        
-        if ($click = $this->buildJsClickFunction()) {
-            
-            // Generate the function to be called, when the button is clicked
-            $output .= <<<JS
-
-                // BOF Click function for button "{$this->getCaption()}"
-				{$this->buildJsClickFunctionName()}: function(input){
-                    {$click}
-				},
-                // EOF Click function for button "{$this->getCaption()}"
-
-JS;
-            
-            // Handle hotkeys
-            if ($this->getWidget()->getHotkey()) {
-                $hotkey_handlers[$this->getWidget()->getHotkey()][] = $this->buildJsClickFunctionName();
-            }
-        }
-        
-        return $output;
-    }
     
     /**
      * 
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor() : string
+    public function buildJsConstructor($oController = 'oController') : string
     {
         return <<<JS
 new sap.m.Button("{$this->getId()}", { 
@@ -83,7 +46,8 @@ JS;
             
         }
         
-        $press = $this->buildJsClickFunction() ? 'press: function(){' . $this->buildJsClickFunctionName() . '()},' : '';
+        $clickJs = $this->buildJsClickFunction();
+        $press = $clickJs ? 'press: ' . $this->getController()->buildJsViewEventHandler('press', $this, "function(oEvent){ {$clickJs}; }") . ',' : '';
         
         $icon = $widget->getIcon() && ! $widget->getHideButtonIcon() ? 'icon: "' . $this->getIconSrc($widget->getIcon()) . '",' : '';
         
@@ -94,6 +58,11 @@ JS;
                     ' . $press . '
                     ' . $this->buildJsPropertyTooltip();
         return $options;
+    }
+    
+    public function buildJsClickFunctionName()
+    {
+        return $this->getController()->buildJsMethodName('press', $this);
     }
 
     protected function buildJsClickShowDialog(ActionInterface $action, AbstractJqueryElement $input_element)

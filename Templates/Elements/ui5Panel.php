@@ -6,7 +6,7 @@ use exface\Core\Interfaces\Widgets\iFillEntireContainer;
 class ui5Panel extends ui5Container
 {
     
-    public function buildJsConstructor() : string
+    public function buildJsConstructor($oController = 'oController') : string
     {
         return  <<<JS
                 new sap.m.Panel("{$this->getId()}", {

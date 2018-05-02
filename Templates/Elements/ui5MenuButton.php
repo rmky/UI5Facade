@@ -39,7 +39,7 @@ JS;
         return $output;
     }
     
-    public function buildJsConstructor() : string
+    public function buildJsConstructor($oController = 'oController') : string
     {
         return <<<JS
 

@@ -21,7 +21,7 @@ use exface\Core\DataTypes\NumberDataType;
  */
 class ui5DataColumn extends ui5AbstractElement
 {
-    public function buildJsConstructor() : string
+    public function buildJsConstructor($oController = 'oController') : string
     {
         $data_widget = $this->getWidget()->getParent();
         if (($data_widget instanceof DataTable) && $data_widget->isResponsive()) {

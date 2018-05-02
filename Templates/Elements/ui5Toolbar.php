@@ -47,7 +47,7 @@ class ui5Toolbar extends ui5AbstractElement
         return $js;
     }
     
-    public function buildJsConstructor() : string
+    public function buildJsConstructor($oController = 'oController') : string
     {
         $widget = $this->getWidget();
         $left_buttons = '';

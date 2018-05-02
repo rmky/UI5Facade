@@ -9,7 +9,7 @@ class ui5Tabs extends ui5Container
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5Container::buildJsConstructor()
      */
-    public function buildJsConstructor() : string
+    public function buildJsConstructor($oController = 'oController') : string
     {
         return $this->buildJsIconTabBar();
     }

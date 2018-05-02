@@ -59,12 +59,7 @@ class ui5WebappRouter implements MiddlewareInterface
         $target = StringDataType::substringAfter($route, '/');
         $appId = StringDataType::substringBefore($route, '/');
         
-        $config = [
-            'app_id' => $appId,
-            'ui5_min_version' => '1.52'
-        ];
-        
-        $webapp = $this->template->createWebapp($appId, $config);
+        $webapp = $this->template->initWebapp($appId);
         $body = $webapp->get($target);
         $type = pathinfo($target, PATHINFO_EXTENSION);
         

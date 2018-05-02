@@ -15,7 +15,7 @@ class ui5Form extends ui5Panel
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5Panel::buildJsConstructor()
      */
-    public function buildJsConstructor() : string
+    public function buildJsConstructor($oController = 'oController') : string
     {
         return  $this->buildJsLayoutForm($this->buildJsChildrenConstructors());
     }

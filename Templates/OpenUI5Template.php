@@ -24,6 +24,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use exface\Core\Factories\UiPageFactory;
 use exface\Core\Exceptions\RuntimeException;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
+use exface\OpenUI5Template\WebappController;
+use exface\Core\Exceptions\LogicException;
 
 /**
  * 
@@ -36,6 +39,12 @@ class OpenUI5Template extends AbstractAjaxTemplate
 {
 
     private $requestPageAlias = null;
+    
+    private $rootView = null;
+    
+    private $rootController = null;
+    
+    private $webapp = null;
     
     /**
      * Cache for config key WIDGET.DIALOG.MAXIMIZE_BY_DEFAULT_IN_ACTIONS:
@@ -57,9 +66,13 @@ class OpenUI5Template extends AbstractAjaxTemplate
     
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
-        if ($pageAlias = $request->getAttribute($this->getRequestAttributeForPage())) {
+        if ($task = $request->getAttribute($this->getRequestAttributeForTask())) {
+            $pageAlias = $task->getPageTriggeredOn()->getAliasWithNamespace();
             if ($this->requestPageAlias === null) {
                 $this->requestPageAlias = $pageAlias;
+            }
+            if ($this->webapp === null) {
+                $this->initWebapp($pageAlias);
             }
         }
         return parent::handle($request);
@@ -73,6 +86,7 @@ class OpenUI5Template extends AbstractAjaxTemplate
     public function buildJs(\exface\Core\Widgets\AbstractWidget $widget)
     {
         $requestPage = $this->getRequestPage();
+        $element = $this->getElement($widget);
         
         // Build view first!
         // IMPORTANT: while building the view, there will be controller methods
@@ -84,28 +98,18 @@ class OpenUI5Template extends AbstractAjaxTemplate
         // Build the controller last
         // IMPORTANTE: the controller must be generated last, as all the other
         // mvs-parts may require controller methods
-        $controllerName = $this->getControllerName($widget, $requestPage);
-        $controllerBody = $this->buildJsControllerBody($widget);
+        $controller = $element->getController();
+        $controllerJs = $controller->buildJsController();
         
         return <<<JS
     
-    // Controller
-    sap.ui.define([
-        "sap/ui/core/mvc/Controller"
-    ], function (Controller) {
-        "use strict";
-        
-        return Controller.extend("{$controllerName}", {
-            {$controllerBody}
-        });
-    });
+    {$controllerJs}
 
     // View
     sap.ui.jsview("{$viewName}", {
 		
-		// View has no controller
 		getControllerName: function() {
-			return "{$controllerName}";
+			return "{$controller->getName()}";
 		},
 		
 		// Instantiate all widgets for the view
@@ -280,14 +284,25 @@ JS;
         return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'webapp' . DIRECTORY_SEPARATOR;
     }
     
+    public function getWebapp() : Webapp
+    {
+        return $this->webapp;
+    }
+    
     /**
      * 
      * @param string $id
      * @return Webapp
      */
-    public function createWebapp(string $id, array $config) : Webapp
+    public function initWebapp(string $id, array $config = null) : Webapp
     {
-        return new Webapp($this, $id, $this->getWebappTemplateFolder(), $config);
+        if ($this->webapp !== null) {
+            throw new LogicException('Cannot initialize webapp in "' . $this->getAlias() . '": it had been already initialized previously!');
+        }
+        $config = $config === null ? $this->getWebappDefaultConfig($id) : $config;
+        $app = new Webapp($this, $id, $this->getWebappTemplateFolder(), $config);
+        $this->webapp = $app;
+        return $app;
     }
     
     protected function getRequestPage() : UiPageInterface
@@ -296,6 +311,22 @@ JS;
             throw new RuntimeException('No root page found in request for template "' . $this->getAliasWithNamespace() . '"!');
         }
         return UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $this->requestPageAlias);
+    }
+    
+    protected function getWebappDefaultConfig(string $appId) : array
+    {
+        return [
+            'app_id' => $appId,
+            'ui5_min_version' => '1.52'
+        ];
+    }
+    
+    public function createController(WidgetInterface $widget, $controllerName = null) : ui5ControllerInterface
+    {
+        if ($controllerName === null) {
+            $controllerName = $this->getControllerName($widget, $this->getWebapp()->getRootPage());
+        }
+        return new WebappController($this->getWebapp(), $controllerName, $widget);
     }
 }
 ?>

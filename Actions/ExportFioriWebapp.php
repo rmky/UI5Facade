@@ -81,7 +81,7 @@ class ExportFioriWebapp extends DownloadZippedFolder
         
         $path = $path . DIRECTORY_SEPARATOR;
         /* @var $webapp \exface\OpenUI5Template\Webapp */ 
-        $webapp = $template->createWebapp($appDataRow['app_id'], $appDataRow);
+        $webapp = $template->initWebapp($appDataRow['app_id'], $appDataRow);
         
         if (! file_exists($path . 'view')) {
             Filemanager::pathConstruct($path . 'view');

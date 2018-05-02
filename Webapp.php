@@ -12,6 +12,8 @@ use exface\Core\Interfaces\Selectors\AliasSelectorInterface;
 use exface\Core\Exceptions\FileNotFoundError;
 use exface\Core\Exceptions\RuntimeException;
 use exface\Core\Interfaces\Model\UiPageInterface;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
+use exface\Core\Interfaces\WidgetInterface;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -26,6 +28,8 @@ class Webapp implements WorkbenchDependantInterface
     private $templateFolder = null;
     
     private $config = [];
+    
+    private $controllers = [];
     
     public function __construct(OpenUI5Template $template, string $ui5AppId, string $templateFolder, array $config)
     {
@@ -69,14 +73,9 @@ class Webapp implements WorkbenchDependantInterface
                 if (StringDataType::endsWith($path, '.controller.js')) {
                     $path = StringDataType::substringBefore($path, '.controller.js');
                     $widget = $this->getWidgetFromPath($path);
-                    $headTags = implode(' ', $this->template->getElement($widget)->buildHtmlHeadTags());
+                    $controller = $this->template->getElement($widget)->getController();
                     
-                    $phs = $this->config;
-                    $phs['controller_body'] = $this->template->buildJsControllerBody($widget);
-                    $phs['controller_name'] = $path;
-                    $phs['html_head_tags'] = "$('head').append('{$headTags}')";
-                    
-                    return $this->getFromFileTemplate('controller/Empty.controller.js', $phs);
+                    return $controller->buildJsController();
                 }
             default:
                 throw new Ui5RouteInvalidException('Cannot match route "' . $route . '"!');
@@ -198,5 +197,15 @@ class Webapp implements WorkbenchDependantInterface
         }
         
         return $widget;
+    }
+    
+    public function getComponentName() : string
+    {
+        return $this->appId;
+    }
+    
+    public function getComponentPath() : string
+    {
+        return str_replace('.', '/', $this->getComponentName());
     }
 }

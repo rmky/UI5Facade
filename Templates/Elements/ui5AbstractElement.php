@@ -7,7 +7,8 @@ use exface\Core\CommonLogic\Constants\Icons;
 use exface\Core\Interfaces\Widgets\iHaveValue;
 use exface\Core\Factories\UiPageFactory;
 use exface\Core\DataTypes\StringDataType;
-use exface\Core\Exceptions\Templates\TemplateLogicError;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
+use exface\Core\Exceptions\LogicException;
 
 /**
  *
@@ -22,11 +23,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
     
     private $useWidgetId = true;
     
-    private $onInitScript = '';
-    
-    private $controllerProperties = '';
-    
-    private $controllerLocked = false;
+    private $controller = null;
     
     /**
      * 
@@ -38,16 +35,15 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
      * Returns the JS constructor for this element (without the semicolon!): e.g. "new sap.m.Button()" etc.
      * 
      * For complex widgets (e.g. requireing a model, init-scripts, etc.) you can use the following approaches:
+     * - create custom controller methods via $this->getController()->add...
+     * - add code to the onInit-method of the controller via $this->getController()->addOnInitScript()  
      * - use an immediately invoked function expression like "function(){...}()" as constructor 
-     * - create custom controller methods in ui5AbstractElement::buildJsControllerProperties()
-     * - add code to the onInit-method of the controller via ui5AbstractElement::addOnInitScript()  
      * 
-     * @see addOnInitScript()
-     * @see buildJsControllerProperties()
+     * @see getController()
      *
      * @return string
      */
-    public function buildJsConstructor() : string
+    public function buildJsConstructor($oController = 'oController') : string
     {
         return '';
     }
@@ -431,23 +427,6 @@ JS;
         return parent::getId();
     }
     
-    public function buildJsOnInitScript() : string
-    {
-        return $this->onInitScript;
-    }
-    
-    public function addOnInitScript(string $js) : ui5AbstractElement
-    {
-        $this->onInitScript .= "\n\n" . $js;
-        return $this;
-    }
-    
-    public function buildJsControllerProperties() : string
-    {
-        $this->controllerLocked = true;
-        return $this->controllerProperties;
-    }
-    
     /**
      * UI5-Elements do not have a general buildJs() method, because there is no place in the controller
      * where it's global variables and methods can be defined in "regular" JS syntax. E.g. instead of
@@ -476,50 +455,30 @@ JS;
         return '';
     }
     
-    /**
-     * 
-     * @param string $purpose
-     * @return string
-     */
-    protected function buildJsControllerMethodName(string $methodName) : string
+    public function getController() : ui5ControllerInterface
     {
-        return $methodName . StringDataType::convertCaseUnderscoreToPascal($this->getId());
-    }
-    
-    /**
-     * 
-     * @param string $methodName
-     * @return string
-     */
-    protected function buildJsControllerMethodCallFromView(string $methodName) : string
-    {
-        return "[oController.{$this->buildJsControllerMethodName($methodName)}, oController]";
-    }
-    
-    /**
-     * 
-     * @param string $methodName
-     * @param string $jsFunction
-     * @return string
-     */
-    protected function buildJsControllerMethod(string $methodName, string $jsFunction) : string
-    {
-        $this->addControllerProperty($this->buildJsControllerMethodName($methodName), $jsFunction);
-        return $this->buildJsControllerMethodCallFromView($methodName);
-    }
-    
-    /**
-     * 
-     * @param string $js
-     * @throws TemplateLogicError
-     * @return ui5AbstractElement
-     */
-    protected final function addControllerProperty(string $name, string $js) : ui5AbstractElement
-    {
-        if ($this->controllerLocked === true) {
-            throw new TemplateLogicError('Cannot add controller method after the controller for element "' . $this->getId() . '" had been built!');
+        if ($this->controller === null) {
+            if ($this->getWidget()->hasParent()) {
+                return $this->getTemplate()->getElement($this->getWidget()->getParent())->getController();
+            } else {
+                $this->controller = $this->getTemplate()->createController($this->getWidget());
+            }
         }
-        $this->controllerProperties .= $name . ': ' . rtrim($js, ", \r\n\t\0\0xB") . ",\n";
+        return $this->controller;
+    }
+    
+    public function setController(ui5ControllerInterface $controller) : ui5AbstractElement
+    {
+        if (! $this->controller === null) {
+            throw new LogicException('Cannot change the controller of a UI5 element after it had been set initially!');
+        }
+        $this->controller = $controller;
+        return $this;
+    }
+    
+    public function addOnInitScript(string $js) : ui5AbstractElement
+    {
+        $this->getController()->addOnInitScript($js);
         return $this;
     }
 }

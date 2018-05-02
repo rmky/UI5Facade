@@ -23,7 +23,7 @@ class ui5Display extends ui5Value
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor() : string
+    public function buildJsConstructor($oController = 'oController') : string
     {
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl());
     }

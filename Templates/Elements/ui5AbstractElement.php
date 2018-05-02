@@ -481,5 +481,28 @@ JS;
         $this->getController()->addOnInitScript($js);
         return $this;
     }
+    
+    /**
+     * 
+     * @return array
+     */
+    public function getCssIncludes() : array
+    {
+        return [];
+    }
+    
+    /**
+     * 
+     * @return array
+     */
+    public function getJsIncludes() : array
+    {
+        return [];
+    }
+    
+    public final function buildHtmlHeadTags()
+    {
+        return [];
+    }
 }
 ?>

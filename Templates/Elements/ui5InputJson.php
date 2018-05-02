@@ -62,17 +62,14 @@ JS;
         return 'function(){var text = ' . $this->getId() . '_JSONeditor.getText(); if (text === "{}" || text === "[]") { return ""; } else { return text;}}';
     }
     
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildHtmlHeadTags()
-     */
-    public function buildHtmlHeadTags()
+    public function getCssIncludes() : array
     {
-        $includes = parent::buildHtmlHeadTags();
-        $includes[] = '<link href="exface/vendor/bower-asset/jsoneditor/dist/jsoneditor.min.css" rel="stylesheet">';
-        $includes[] = '<script type="text/javascript" src="exface/vendor/bower-asset/jsoneditor/dist/jsoneditor.min.js"></script>';
-        return $includes;
+        return ['exface/vendor/bower-asset/jsoneditor/dist/jsoneditor.min.css'];
+    }
+    
+    public function getJsIncludes() : array
+    {
+        return ['exface/vendor/bower-asset/jsoneditor/dist/jsoneditor.min.js'];
     }
     
     /**

@@ -2,6 +2,7 @@
 namespace exface\OpenUI5Template\Templates\Elements;
 
 use exface\Core\Widgets\Html;
+use exface\Core\Exceptions\RuntimeException;
 
 /**
  * Generates OpenUI5 HTML
@@ -74,18 +75,25 @@ JS;
         return str_replace("\n","\\n", $text);
     }
     
-    public function buildHtmlHeadTags()
+    public function getCssIncludes() : array
     {
-        $widget = $this->getWidget();
-        $headers = [];
-        $headers[] = $widget->getHeadTags();
-        if ($widget->getCss()) {
-            $headers[] = '<style>' . $widget->getCss() . '</style>';
-        }/*
-        foreach ($this->getScriptTagsFromHtml($widget->getHtml()) as $script){
-            $headers[] = $script;
-        }*/
-        return $headers;
+        if (! empty($this->getWidget()->getHeadTags())) {
+            throw new RuntimeException('Property "head_tags" of widget "' . $this->getWidget()->getWidgetType() . '" currently not supported in the UI5 Template!');
+        }
+        return parent::getCssIncludes();
+    }
+    
+    public function getJsIncludes() : array
+    {
+        if (! empty($this->getWidget()->getHeadTags())) {
+            throw new RuntimeException('Property "head_tags" of widget "' . $this->getWidget()->getWidgetType() . '" currently not supported in the UI5 Template!');
+        }
+        return parent::getJsIncludes();
+    }
+    
+    public function buildCssInlineStyles() : string
+    {
+        return $this->getWidget()->getCss();
     }
 }
 ?>

@@ -134,18 +134,6 @@ JS;
          */
         return $output;
     }
-
-    /**
-     * In OpenUI5 the button does not need any extra headers, as all headers needed for whatever the button loads will
-     * come with the AJAX-request.
-     *
-     * {@inheritdoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildHtmlHeadTags()
-     */
-    public function buildHtmlHeadTags()
-    {
-        return array();
-    }
     
     protected function buildJsCloseDialog($widget, $input_element)
     {

@@ -78,7 +78,7 @@ class WebappController implements ui5ControllerInterface
     public final function addProperty(string $name, string $js) : ui5ControllerInterface
     {
         if ($this->wasExported === true) {
-            throw new TemplateLogicError('Cannot add controller method after the controller for element "' . $this->getId() . '" had been built!');
+            throw new TemplateLogicError('Cannot add controller property "' . $name . '" after the controller "' . $this->getName() . '" had been built!');
         }
         $this->properties[$name] = $js;
         return $this;

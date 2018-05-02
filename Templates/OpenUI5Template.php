@@ -101,8 +101,18 @@ class OpenUI5Template extends AbstractAjaxTemplate
         $controller = $element->getController();
         $controllerJs = $controller->buildJsController();
         
+        $css = '';
+        foreach ($this->getCssIncludes() as $url) {
+            $css .= "jQuery.sap.includeStyleSheet('{$url}');";
+        }
+        foreach ($element->getCssIncludes() as $url) {
+            $css .= "jQuery.sap.includeStyleSheet('{$url}');";
+        }
+        
         return <<<JS
-    
+
+    {$css}    
+
     {$controllerJs}
 
     // View
@@ -327,6 +337,13 @@ JS;
             $controllerName = $this->getControllerName($widget, $this->getWebapp()->getRootPage());
         }
         return new WebappController($this->getWebapp(), $controllerName, $widget);
+    }
+    
+    public function getCssIncludes() : array
+    {
+        return [
+            $this->buildUrlToSource('SOURCES.TEMPLATE.CSS')
+        ];
     }
 }
 ?>

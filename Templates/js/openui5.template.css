@@ -11,7 +11,6 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 
 /* Shell: custom header */
 #exf_pagetitle {color: #346187}
-.sapUiUfdShellHead {top: 0}
 .sapUiUfdShellCntnt > .sapMIBar.sapMTB {height: 44px; padding: 0 0.5rem 0 0;}
 .sapUiUfdShellCntnt > .sapMIBar.sapMTB .sapMBtnIcon:before {font-size: 16px}
 

@@ -39,17 +39,19 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $zip = new ArchiveManager($this->getWorkbench(), $this->getZipPathAbsolute());
         $input = $this->getInputDataSheet($task);
         
-        $input->getColumns()->addFromExpression('root_page_alias');
-        $input->getColumns()->addFromExpression('ui5_min_version');
-        $input->getColumns()->addFromExpression('ui5_source');
-        $input->getColumns()->addFromExpression('ui5_theme');
-        $input->getColumns()->addFromExpression('ui5_app_control');
-        $input->getColumns()->addFromExpression('app_id');
-        $input->getColumns()->addFromExpression('app_title');
-        $input->getColumns()->addFromExpression('app_subTitle');
-        $input->getColumns()->addFromExpression('app_shortTitle');
-        $input->getColumns()->addFromExpression('app_info');
-        $input->getColumns()->addFromExpression('app_description');
+        $columns = $input->getColumns();
+        
+        $columns->addFromExpression('root_page_alias');
+        $columns->addFromExpression('ui5_min_version');
+        $columns->addFromExpression('ui5_source');
+        $columns->addFromExpression('ui5_theme');
+        $columns->addFromExpression('ui5_app_control');
+        $columns->addFromExpression('app_id');
+        $columns->addFromExpression('app_title');
+        $columns->addFromExpression('app_subTitle');
+        $columns->addFromExpression('app_shortTitle');
+        $columns->addFromExpression('app_info');
+        $columns->addFromExpression('app_description');
         
         if (! $input->isFresh()) {
             $input->addFilterFromColumnValues($input->getUidColumn());
@@ -71,7 +73,7 @@ class ExportFioriWebapp extends DownloadZippedFolder
     
     protected function exportWebapp(UiPageInterface $rootPage, OpenUI5Template $template, array $appDataRow) : string
     {
-        $path = $this->getApp()->getExportFolderAbsolutePath() . DIRECTORY_SEPARATOR . $rootPage->getAliasWithNamespace();
+        $path = $this->getApp()->getExportFolderAbsolutePath() . DIRECTORY_SEPARATOR . $rootPage->getAliasWithNamespace() . DIRECTORY_SEPARATOR . 'WebContent';
         
         if (! file_exists($path)) {
             Filemanager::pathConstruct($path);
@@ -140,8 +142,12 @@ class ExportFioriWebapp extends DownloadZippedFolder
     protected function exportPage(Webapp $webapp, UiPageInterface $page, string $exportFolder) : ExportFioriWebapp
     {     
         // IMPORTANT: generate the view first to allow it to add controller methods!
-        file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'view') . $page->getAlias() . '.view.js', $webapp->get('view/' . $page->getAliasWithNamespace() . '.view.js'));
-        file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'controller') . $page->getAlias() . '.controller.js', $webapp->get('controller/' . $page->getAliasWithNamespace() . '.controller.js'));
+        $view = $webapp->get('view/' . $page->getAliasWithNamespace() . '.view.js');
+        $view = $this->escapeUnicode($view);
+        $controller = $webapp->get('controller/' . $page->getAliasWithNamespace() . '.controller.js');
+        $controller = $this->escapeUnicode($controller);
+        file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'view') . $page->getAlias() . '.view.js', $view);
+        file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'controller') . $page->getAlias() . '.controller.js', $controller);
         return $this;
     }
     
@@ -159,6 +165,26 @@ class ExportFioriWebapp extends DownloadZippedFolder
     {
         file_put_contents($exportFolder . $route, $webapp->get($route));
         return $this;
+    }
+    
+    /**
+     * Converts non-ASCII characters into unicode escape sequences (\uXXXX).
+     * 
+     * @param string $str
+     * @return string
+     */
+    protected function escapeUnicode(string $str) : string
+    {
+        // json_encode automatically escapes unicode, but it also escapes lots of other things
+        $string = json_encode($str);
+        // convert unicode escape sequences to their HTML equivalents, so they survive json_decode()
+        $string = preg_replace('/\\\u([0-9a-f]{4})/i', '&#x$1;', $string);
+        // decode JSON to remove all other escaped stuff (newlines, etc.)
+        $string = json_decode($string);
+        // convert HTML unicode back to \uXXXX notation.
+        $string = preg_replace('/&#x([0-9a-f]{4});/i', '\u$1', $string);
+        
+        return $string;
     }
     
 }

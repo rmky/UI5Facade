@@ -78,6 +78,8 @@ JS;
         }
         
         $output = $this->buildJsRequestDataCollector($action, $input_element);
+        $viewId = $this->getTemplate()->getViewName($widget->getAction()->getWidget(), $widget->getPage());
+        $viewName = $viewId;
         $output .= <<<JS
 						{$this->buildJsBusyIconShow()}
 						$.ajax({
@@ -98,10 +100,10 @@ JS;
                                 $('body').append(data);
                                 oDialogStack.push({
                                     content: oShell.getContent(),
-                                    dialog: sap.ui.view({
+                                    dialog: sap.ui.view("{$viewId}", {
                                         type:sap.ui.core.mvc.ViewType.JS, 
                                         height: "100%", 
-                                        viewName:"{$this->getTemplate()->getViewName($widget->getAction()->getWidget(), $widget->getPage())}"
+                                        viewName:"{$viewName}"
                                     }),
                                     onClose: function(){
 								        {$this->buildJsInputRefresh($widget, $input_element)}

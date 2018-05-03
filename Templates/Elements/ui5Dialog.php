@@ -9,6 +9,7 @@ use exface\Core\Widgets\Image;
 use exface\Core\Widgets\MenuButton;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\Widgets\iHaveValue;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
 
 /**
  * In OpenUI5 dialog widgets are either rendered as an object page layout (if the dialog is maximized) or
@@ -328,6 +329,19 @@ JS;
             $js = $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n" . $js;
         }
         return $js;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::getController()
+     */
+    public function getController() : ui5ControllerInterface
+    {
+        if ($this->controller === null) {
+            $this->controller = $this->getTemplate()->createController($this->getWidget());
+        }
+        return $this->controller;
     }
 }
 ?>

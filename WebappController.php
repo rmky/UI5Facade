@@ -48,13 +48,27 @@ class WebappController implements ui5ControllerInterface
         return "[{$oController}.{$this->buildJsMethodName($methodName, $callerElement)}, {$oController}]";
     }
     
-    public function buildJsMethodCallFromController(string $methodName, ui5AbstractElement $methodOwner, string $paramsJs, string $oControllerJsVar = 'this') : string
+    public function buildJsMethodCallFromController(string $methodName, ui5AbstractElement $methodOwner, string $paramsJs, string $oControllerJsVar = null) : string
     {
+        if ($oControllerJsVar === null) {
+            $oControllerJsVar = "sap.ui.getCore().byId('{$this->getViewId($methodOwner)}').getController()";
+        }
         if ($methodOwner->getController() === $this) {
             return "{$oControllerJsVar}.{$this->buildJsMethodName($methodName, $methodOwner)}({$paramsJs})";
         }
         
         throw new TemplateLogicError('Calling a controller method from another controller not implemented yet!');
+    }
+    
+    /**
+     * TODO replace by a dedicated view object and $this->getView()
+     * 
+     * @param ui5AbstractElement $element
+     * @return string
+     */
+    protected function getViewId(ui5AbstractElement $element) : string
+    {
+        return str_replace('.controller.', '.view.', $this->getId());
     }
     
     /**
@@ -152,6 +166,16 @@ JS;
      * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getName()
      */
     public function getName() : string
+    {
+        return $this->controllerName;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getId()
+     */
+    public function getId() : string
     {
         return $this->controllerName;
     }

@@ -36,13 +36,15 @@ interface ui5ControllerInterface {
     
     public function getName() : string;
     
+    public function getId() : string;
+    
     public function getWebapp() : Webapp;
     
     public function addOnInitScript(string $js) : ui5ControllerInterface;
     
     public function buildJsMethodCallFromView(string $methodName, ui5AbstractElement $callerElement, $oController = 'oController') : string;
     
-    public function buildJsMethodCallFromController(string $methodName, ui5AbstractElement $methodOwner, string $paramsJs) : string;
+    public function buildJsMethodCallFromController(string $methodName, ui5AbstractElement $methodOwner, string $paramsJs, string $oControllerJsVar = null) : string;
     
     public function buildJsMethodName(string $methodName, ui5AbstractElement $ownerElement) : string;
 }

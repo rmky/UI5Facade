@@ -15,7 +15,7 @@ class ui5Toolbar extends ui5AbstractElement
 {
     use JqueryToolbarTrait;
     
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $widget = $this->getWidget();
         $left_buttons = '';

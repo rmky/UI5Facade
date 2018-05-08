@@ -35,9 +35,9 @@ class ui5Input extends ui5Value
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl());
+        return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     
     /**
@@ -45,7 +45,7 @@ class ui5Input extends ui5Value
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsConstructorForMainControl()
      */
-    public function buildJsConstructorForMainControl()
+    public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
         return <<<JS
         new sap.m.Input("{$this->getId()}", {

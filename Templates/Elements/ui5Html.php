@@ -20,19 +20,19 @@ class ui5Html extends ui5Value
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         if ($js = $this->getWidget()->getJavascript()) {
             $this->addOnInitScript($js);
         }
-        return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl());
+        return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     
     /**
      * Returns the constructor of the text/input element without the label
      * @return string
      */
-    public function buildJsConstructorForMainControl()
+    public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
         $widget = $this->getWidget();
         $html = $widget->getHtml();
@@ -40,7 +40,7 @@ class ui5Html extends ui5Value
             $scripts .= $script;
             $html = str_replace($tag, '', $html);
         }
-        $content = $this->escapeLinebreaks($this->escapeJsTextValue($html));
+        $content = $this->escapeJsTextValue($html);
         return <<<JS
         new sap.ui.core.HTML("{$this->getId()}", {
             content: "<div class=\"exf-html\">{$content}</div>",
@@ -68,27 +68,6 @@ JS;
         //  ]
         preg_match_all("/<script.*?>(.*?)<\/script>/si", $html, $script_tags);
         return array_combine($script_tags[0], $script_tags[1]);
-    }
-        
-    protected function escapeLinebreaks($text)
-    {
-        return str_replace("\n","\\n", $text);
-    }
-    
-    public function getCssIncludes() : array
-    {
-        if (! empty($this->getWidget()->getHeadTags())) {
-            throw new RuntimeException('Property "head_tags" of widget "' . $this->getWidget()->getWidgetType() . '" currently not supported in the UI5 Template!');
-        }
-        return parent::getCssIncludes();
-    }
-    
-    public function getJsIncludes() : array
-    {
-        if (! empty($this->getWidget()->getHeadTags())) {
-            throw new RuntimeException('Property "head_tags" of widget "' . $this->getWidget()->getWidgetType() . '" currently not supported in the UI5 Template!');
-        }
-        return parent::getJsIncludes();
     }
     
     public function buildCssInlineStyles() : string

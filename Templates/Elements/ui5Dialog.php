@@ -22,7 +22,7 @@ use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
  */
 class ui5Dialog extends ui5Form
 {
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         if ($this->isMaximized() === false) {
             return $this->buildJsDialog();

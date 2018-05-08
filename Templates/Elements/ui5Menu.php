@@ -19,7 +19,7 @@ class ui5Menu extends ui5AbstractElement
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         return <<<JS
 

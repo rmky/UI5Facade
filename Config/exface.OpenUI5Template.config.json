@@ -29,13 +29,20 @@
 	"ICON_CLASSES.PRINT": "fa fa-print",
 	"ICON_CLASSES.INFO": "fa fa-info-circle",
 	
-	"SOURCES.TEMPLATE.CSS": "exface/OpenUI5Template/Templates/js/openui5.template.css",
+	"LIBS.TEMPLATE.CSS": "exface/OpenUI5Template/Templates/js/openui5.template.css",
+	"LIBS.TEMPLATE.CUSTOM_CONTROLS": "exface/OpenUI5Template/Templates/js/openui5.controls.js",
 	
-	"SOURCES.FLOT.CORE_FOLDER": "npm-asset/flot-charts/",
-	"SOURCES.FLOT.PLUGINS.ORDERBARS": "exface/OpenUI5Ttemplate/Templates/js/flot/plugins/jquery.flot.orderBars.js",
-	"SOURCES.FLOT.PLUGINS.AXISLABELS": "exface/OpenUI5Ttemplate/Templates/js/flot/plugins/jquery.flot.orderBars.js",
+	"LIBS.FLOT.CORE": "npm-asset/flot-charts/",
+	"LIBS.FLOT.PLUGINS.ORDERBARS": "exface/OpenUI5Ttemplate/Templates/js/flot/plugins/jquery.flot.orderBars.js",
+	"LIBS.FLOT.PLUGINS.AXISLABELS": "exface/OpenUI5Ttemplate/Templates/js/flot/plugins/jquery.flot.orderBars.js",
 	
-	"WIDGET.ALL.DEFAULT_ALIGNMENT": "left",
+	"LIBS.JSONEDITOR.CSS": "bower-asset/jsoneditor/dist/jsoneditor.min.css",
+	"LIBS.JSONEDITOR.JS": "bower-asset/jsoneditor/dist/jsoneditor.min.js",
+	
+	"LIBS.FONT_AWESOME.CSS": "bower-asset/font-awesome/css/font-awesome.min.css",
+    "LIBS.FONT_AWESOME.PLUGIN": "bower-asset/font-awesome-openui5/dist/font-awesome-openui5.min",
+    
+    "WIDGET.ALL.DEFAULT_ALIGNMENT": "left",
 	
 	"WIDGET.CHART.PAGE_SIZE": 20,
     

@@ -73,7 +73,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsConstructorForMainControl()
      */
-    public function buildJsConstructorForMainControl()
+    public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
         $widget = $this->getWidget();
         

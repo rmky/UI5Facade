@@ -44,7 +44,7 @@ class ui5DataConfigurator extends ui5Tabs
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5Tabs::buildJsConstructor()
      */
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $okScript = <<<JS
                 function(oEvent) {
@@ -115,7 +115,7 @@ JS;
         
         return <<<JS
 
-                new exface.core.P13nLayoutPanel({
+                new exface.openui5.P13nLayoutPanel({
                     title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.FILTERS')}",
                     layoutMode: "Desktop",
                     content: [

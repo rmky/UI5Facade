@@ -17,7 +17,7 @@ class ui5MenuButton extends ui5AbstractElement
 {
     use JqueryButtonTrait;
     
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         return <<<JS
 

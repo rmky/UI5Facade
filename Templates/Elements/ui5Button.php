@@ -24,7 +24,7 @@ class ui5Button extends ui5AbstractElement
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         return <<<JS
 new sap.m.Button("{$this->getId()}", { 

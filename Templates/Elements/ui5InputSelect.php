@@ -19,7 +19,7 @@ class ui5InputSelect extends ui5Input
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsConstructorForMainControl()
      */
-    public function buildJsConstructorForMainControl()
+    public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
         if ($this->getWidget()->getMultiSelect() === true) {
             $control = 'sap.m.MultiComboBox';

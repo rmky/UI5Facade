@@ -17,8 +17,11 @@ class ui5InputJson extends ui5Input
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsConstructorForMainControl()
      */
-    public function buildJsConstructorForMainControl()
+    public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
+        $this->getController()->addExternalCss($this->getTemplate()->buildUrlToSource('LIBS.JSONEDITOR.CSS'));
+        $this->getController()->addExternalModule('exface.openui5.jsoneditor', $this->getTemplate()->buildUrlToSource('LIBS.JSONEDITOR.JS'), 'JSONEditor');
+        
         // TODO create own control instead of using the HTML control in order to be able to destroy the JSONeditor
         // properly. The way the whole thing works now, the JS variable {$this->getId()}_JSONeditor lives even
         // after the control or it's view had been destroyed.
@@ -26,25 +29,26 @@ class ui5InputJson extends ui5Input
 
         new sap.ui.core.HTML("{$this->getId()}_wrapper", {
             content: "<div id=\"{$this->getId()}\" style=\"height: {$this->getHeight()}; width: 100%;\"></div>",
-            afterRendering: function() { {$this->buildJsJsonEditor()} }
+            afterRendering: function() { {$this->buildJsJsonEditor('oController')} }
         })
 
 JS;
     }
         
-    protected function buildJsJsonEditor()
+    protected function buildJsJsonEditor($oControllerJs = 'oController')
     {
-        $init_value = $this->getWidget()->getValueWithDefaults() ? $this->getId() . '_JSONeditor.set(' . $this->getWidget()->getValueWithDefaults() . ');' : '';
+        $controllerVar = $this->buildJsControllerVar();
+        $init_value = $this->getWidget()->getValueWithDefaults() ? $oControllerJs . '.' . $controllerVar . '.set(' . $this->getWidget()->getValueWithDefaults() . ');' : '';
         $script = <<<JS
 
             if ($('#{$this->getId()} > .jsoneditor').length == 0) {
-                this.{$this->getId()}_JSONeditor = new JSONEditor(document.getElementById("{$this->getId()}"), {
-                                					mode: 'tree',
-                               						modes: ['code', 'form', 'text', 'tree', 'view'],
-                                                    sortObjectKeys: false
-                            					});
+                {$oControllerJs}.{$controllerVar} = new JSONEditor(document.getElementById("{$this->getId()}"), {
+    				mode: 'tree',
+    				modes: ['code', 'form', 'text', 'tree', 'view'],
+                    sortObjectKeys: false
+    			});
                 {$init_value}
-                this.{$this->getId()}_JSONeditor.expandAll();
+                {$oControllerJs}.{$controllerVar}.expandAll();
                 $('#{$this->getId()}').parents('.exf-input').children('label').css('vertical-align', 'top');
             }
 
@@ -59,17 +63,12 @@ JS;
      */
     public function buildJsValueGetter()
     {
-        return 'function(){var text = ' . $this->getId() . '_JSONeditor.getText(); if (text === "{}" || text === "[]") { return ""; } else { return text;}}';
+        return 'function(){var text = ' . $this->getController()->buildJsAccessFromElement($this) . '.' . $this->buildJsControllerVar() . '.getText(); if (text === "{}" || text === "[]") { return ""; } else { return text;}}';
     }
     
-    public function getCssIncludes() : array
+    protected function buildJsControllerVar() : string
     {
-        return ['exface/vendor/bower-asset/jsoneditor/dist/jsoneditor.min.css'];
-    }
-    
-    public function getJsIncludes() : array
-    {
-        return ['exface/vendor/bower-asset/jsoneditor/dist/jsoneditor.min.js'];
+        return $this->buildJsVarName() . 'JsonEditor';
     }
     
     /**

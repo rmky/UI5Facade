@@ -43,7 +43,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
      *
      * @return string
      */
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         return '';
     }
@@ -313,7 +313,7 @@ JS;
         
     protected function escapeJsTextValue($text)
     {
-        return str_replace(['"', '\u'], ['\"', '&#92;u'], $text);
+        return str_replace(['"', '\u', "\n"], ['\"', '&#92;u', "\\n"], $text);
     }
     
     /**
@@ -480,24 +480,6 @@ JS;
     {
         $this->getController()->addOnInitScript($js);
         return $this;
-    }
-    
-    /**
-     * 
-     * @return array
-     */
-    public function getCssIncludes() : array
-    {
-        return [];
-    }
-    
-    /**
-     * 
-     * @return array
-     */
-    public function getJsIncludes() : array
-    {
-        return [];
     }
     
     public final function buildHtmlHeadTags()

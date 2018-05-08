@@ -27,6 +27,7 @@ use exface\Core\Exceptions\RuntimeException;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
 use exface\OpenUI5Template\WebappController;
 use exface\Core\Exceptions\LogicException;
+use exface\Core\DataTypes\StringDataType;
 
 /**
  * 
@@ -101,17 +102,7 @@ class OpenUI5Template extends AbstractAjaxTemplate
         $controller = $element->getController();
         $controllerJs = $controller->buildJsController();
         
-        $css = '';
-        foreach ($this->getCssIncludes() as $url) {
-            $css .= "jQuery.sap.includeStyleSheet('{$url}');";
-        }
-        foreach ($element->getCssIncludes() as $url) {
-            $css .= "jQuery.sap.includeStyleSheet('{$url}');";
-        }
-        
         return <<<JS
-
-    {$css}    
 
     {$controllerJs}
 
@@ -336,14 +327,15 @@ JS;
         if ($controllerName === null) {
             $controllerName = $this->getControllerName($widget, $this->getWebapp()->getRootPage());
         }
-        return new WebappController($this->getWebapp(), $controllerName, $widget);
-    }
-    
-    public function getCssIncludes() : array
-    {
-        return [
-            $this->buildUrlToSource('SOURCES.TEMPLATE.CSS')
-        ];
+        $controller = new WebappController($this->getWebapp(), $controllerName, $widget);
+        
+        $controller->addExternalCss($this->buildUrlToSource('LIBS.TEMPLATE.CSS'));
+        $controller->addExternalCss($this->buildUrlToSource('LIBS.FONT_AWESOME.CSS'));
+        
+        $controller->addExternalModule('libs.font_awesome.plugin', $this->buildUrlToSource('LIBS.FONT_AWESOME.PLUGIN'));
+        $controller->addExternalModule('libs.exface.custom_controls', $this->buildUrlToSource('LIBS.TEMPLATE.CUSTOM_CONTROLS'));
+        
+        return $controller;
     }
 }
 ?>

@@ -22,9 +22,9 @@ class ui5Value extends ui5AbstractElement implements ui5ValueBindingInterface, u
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        return $this->buildJsConstructorForMainControl();
+        return $this->buildJsConstructorForMainControl($oControllerJs);
     }
     
     /**
@@ -32,7 +32,7 @@ class ui5Value extends ui5AbstractElement implements ui5ValueBindingInterface, u
      * 
      * @return string
      */
-    public function buildJsConstructorForMainControl()
+    public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
         return <<<JS
 

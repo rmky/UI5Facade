@@ -15,7 +15,7 @@ class ui5InputCheckBox extends ui5Input
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5Text::buildJsConstructorForMainControl()
      */
-    public function buildJsConstructorForMainControl()
+    public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
         return <<<JS
 

@@ -14,14 +14,6 @@ use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryContextBarAjaxTrai
  */
 class ui5ContextBar extends ui5AbstractElement
 {
-    use JqueryContextBarAjaxTrait {
-        buildHtml as buildHtmlViaTrait;
-        buildJs as buildJsViaTrait;
-    }
-    
-    public function buildJsonContextData() : string
-    {
-        return $this->buildHtmlViaTrait();
-    }
+    use JqueryContextBarAjaxTrait;
 }
 ?>

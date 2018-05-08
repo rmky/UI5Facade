@@ -244,13 +244,8 @@ function contextBarLoad(delay){
 		//if ($('#contextBar .context-bar-spinner').length > 0){
 			$.ajax({
 				type: 'POST',
-				url: 'exface/api/ui5',
+				url: 'exface/api/ui5/' + getPageId() + '/context',
 				dataType: 'json',
-				data: {
-					action: 'exface.Core.ShowWidget',
-					resource: getPageId(),
-					element: 'ContextBar'
-				},
 				success: function(data, textStatus, jqXHR) {
 					contextBarRefresh(data);
 				},
@@ -367,34 +362,3 @@ function contextShowMenu(oButton){
 function getPageId(){
 	return $("meta[name='page_id']").attr("content");
 }
-
-/**
- * Define a custom control to display filters in the P13nDialog as the default filters are always
- * plain text inputs - no combos etc. possible.
- */
-(function () {
-	"use strict";
-
-	/** @lends sap.m.sample.P13nDialogWithCustomPanel.CustomPanel */
-	sap.m.P13nPanel.extend("exface.core.P13nLayoutPanel", {
-		constructor: function (sId, mSettings) {
-			sap.m.P13nPanel.apply(this, arguments);
-		},
-		metadata: {
-			library: "sap.m",
-			aggregations: {
-				content: {
-					type: "sap.ui.core.Control",
-					multiple: false,
-					singularName: "content"
-				}
-			}
-		},
-		renderer: function (oRm, oControl) {
-			if (!oControl.getVisible()) {
-				return;
-			}
-			oRm.renderControl(oControl.getContent());
-		}
-	});
-})();

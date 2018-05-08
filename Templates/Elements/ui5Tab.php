@@ -4,7 +4,7 @@ namespace exface\OpenUI5Template\Templates\Elements;
 class ui5Tab extends ui5Panel
 {
     
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         return $this->buildJsIconTabFilter();
     }

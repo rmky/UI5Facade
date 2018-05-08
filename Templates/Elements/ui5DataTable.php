@@ -38,10 +38,10 @@ class ui5DataTable extends ui5AbstractElement
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor($oController = 'oController') : string
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     { 
         $controller = $this->getController();
-        $controller->addControl($this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget()));
+        $controller->addDependentControl($this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget()));
         $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos, growing', $this->buildJsDataLoader());
         $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
         $controller->addProperty($this->getId() . '_pages', $this->buildJsPaginationObject());

@@ -21,6 +21,10 @@ class WebappController implements ui5ControllerInterface
     
     private $onInitScript = '';
     
+    private $externalModules = [];
+    
+    private $externalCss = [];
+    
     public function __construct(Webapp $webapp, string $controllerName, WidgetInterface $rootWidget)
     {
         $this->webapp = $webapp;
@@ -29,13 +33,19 @@ class WebappController implements ui5ControllerInterface
     }
     
     /**
-     *
-     * @param string $purpose
-     * @return string
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsMethodName()
      */
     public function buildJsMethodName(string $methodName, ui5AbstractElement $ownerElement) : string
     {
         return $methodName . StringDataType::convertCaseUnderscoreToPascal($ownerElement->getId());
+    }
+    
+    
+    public function buildJsObjectName(string $objectName, ui5AbstractElement $ownerElement) : string
+    {
+        return $objectName . StringDataType::convertCaseUnderscoreToPascal($ownerElement->getId());
     }
     
     /**
@@ -60,6 +70,11 @@ class WebappController implements ui5ControllerInterface
         throw new TemplateLogicError('Calling a controller method from another controller not implemented yet!');
     }
     
+    public function buildJsAccessFromElement(ui5AbstractElement $fromElement) : string
+    {
+        return "sap.ui.getCore().byId('{$this->getViewId($fromElement)}').getController()";
+    }
+    
     /**
      * TODO replace by a dedicated view object and $this->getView()
      * 
@@ -72,10 +87,9 @@ class WebappController implements ui5ControllerInterface
     }
     
     /**
-     *
-     * @param string $methodName
-     * @param string $jsFunction
-     * @return string
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsViewEventHandler()
      */
     public function buildJsViewEventHandler(string $methodName, ui5AbstractElement $callerElement, string $jsFunction) : string
     {
@@ -84,10 +98,9 @@ class WebappController implements ui5ControllerInterface
     }
     
     /**
-     *
-     * @param string $js
-     * @throws TemplateLogicError
-     * @return ui5AbstractElement
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addProperty()
      */
     public final function addProperty(string $name, string $js) : ui5ControllerInterface
     {
@@ -98,6 +111,37 @@ class WebappController implements ui5ControllerInterface
         return $this;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addDependentObject()
+     */
+    public function addDependentObject(string $objectName, ui5AbstractElement $ownerElement, string $initJs) : ui5ControllerInterface
+    {
+        $name = $this->buildJsObjectName($objectName, $ownerElement);
+        
+        $initFunctionCall = <<<JS
+        
+                this._{$name}Init();
+JS;
+        $initFunction = <<<JS
+function() {
+                    var oController = this;
+                    this.{$name} = {$initJs};
+                },
+JS;
+        $this->addProperty($name, 'null');
+        $this->addProperty('_'.$name.'Init', $initFunction);
+        $this->addOnInitScript('console.log(JSONEditor);' . $initFunctionCall);
+        
+        return $this;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addMethod()
+     */
     public final function addMethod(string $methodName, ui5AbstractElement $methodOwner, string $params, string $body, $comment = '') : ui5ControllerInterface
     {
         if ($comment !== '') {
@@ -117,7 +161,12 @@ JS;
         return $this;
     }
     
-    public function addControl(ui5AbstractElement $element, $name = null) : ui5ControllerInterface
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addDependentControl()
+     */
+    public function addDependentControl(ui5AbstractElement $element, $name = null) : ui5ControllerInterface
     {
         if ($name === null) {
             $name = $element->buildJsVarName();
@@ -142,14 +191,29 @@ JS;
     
     public function buildJsController() : string
     {
+        foreach ($this->externalModules as $name => $properties) {
+            $modules .= ",\n\t\"" . str_replace('.', '/', $name) . '"';
+            $controllerVars .= ', ' . ($properties['var'] ? $properties['var'] : $this->getDefaultVarForModule($name));
+            $moduleRegistration .= "\n" . $this->buildJsModulePathRegistration($name, $properties['path']);
+        }
+        $cssIncludes = $this->buildJsCssIncludes();
         return <<<JS
 
+{$cssIncludes}
+
+{$moduleRegistration}
+        
 sap.ui.define([
-	"{$this->getWebapp()->getComponentPath()}/controller/BaseController"
-], function (BaseController) {
+	"{$this->getWebapp()->getComponentPath()}/controller/BaseController"{$modules}
+], function (BaseController{$controllerVars}) {
 	"use strict";
 	
 	return BaseController.extend("{$this->getName()}", {
+
+        onInit: function () {
+            var oController = this;
+			{$this->buildJsOnInitScript()}
+		},
 
 		{$this->buildJsProperties()}
 
@@ -183,14 +247,7 @@ JS;
     protected function buildJsProperties() : string
     {
         $this->wasExported = true;
-        $js = <<<JS
-
-        onInit: function () {
-            var oController = this;
-			{$this->buildJsOnInitScript()}
-		},
-
-JS;
+        $js = '';
         
         foreach ($this->properties as $name => $script) {
             $js .= $name . ': ' . rtrim($script, ", \r\n\t\0\0xB") . ",\n";
@@ -227,4 +284,63 @@ JS;
         $this->onInitScript .= "\n\n" . $js;
         return $this;
     }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addExternalModule()
+     */
+    public function addExternalModule(string $name, string $path, string $var = null) : ui5ControllerInterface
+    {
+        $this->externalModules[$name] = ['path' => $path, 'var' => $var];
+        return $this;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addExternalCss()
+     */
+    public function addExternalCss(string $path, string $id = null) : ui5ControllerInterface
+    {
+        $this->externalCss[($id === null ? $path : $id)] = $path;
+        return $this;
+    }
+    
+    protected function getDefaultVarForModule(string $moduleName) : string
+    {
+        $split = explode('.', $moduleName);
+        $cnt = count($split);
+        for ($i=1; $i<$cnt; $i++) {
+            $var .= StringDataType::convertCaseUnderscoreToPascal($split[$i]);
+        }
+        $var = lcfirst($var);
+        return $var;
+    }
+    
+    protected function buildJsModulePathRegistration(string $moduleName, string $url) : string
+    {
+        if (StringDataType::endsWith($url, '.js')) {
+            $url = substr($url, 0, -3);
+        }
+        
+        return "jQuery.sap.registerModulePath('{$moduleName}', '{$url}');";
+    } 
+    
+    protected function buildJsCssIncludes() : string
+    {
+        $js = '';
+        foreach ($this->externalCss as $id => $path) {
+            $js .= <<<JS
+
+if (sap.ui.getCore().byId("{$id}") === undefined) {
+    jQuery.sap.includeStyleSheet('{$path}', '{$id}');
+}
+
+JS;
+        }
+        return $js;
+    }
+    
+    
 }

@@ -164,7 +164,7 @@ var oShell = new sap.ui.unified.Shell({
 		})
 	],
 	content: [
-		
+
 	]
 });
 contextBarInit();

@@ -15,6 +15,7 @@ use exface\OpenUI5Template\Templates\OpenUI5Template;
 use exface\Core\CommonLogic\Selectors\TemplateSelector;
 use exface\Core\Factories\TemplateFactory;
 use exface\Core\Interfaces\Selectors\AliasSelectorInterface;
+use exface\Core\Exceptions\RuntimeException;
 
 /**
  * 
@@ -91,6 +92,9 @@ class ExportFioriWebapp extends DownloadZippedFolder
         if (! file_exists($path . 'controller')) {
             Filemanager::pathConstruct($path . 'controller');
         }
+        if (! file_exists($path . 'libs')) {
+            Filemanager::pathConstruct($path . 'libs');
+        }
         
         $this
             ->exportFile($webapp, 'manifest.json', $path)
@@ -146,9 +150,48 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $view = $this->escapeUnicode($view);
         $controller = $webapp->get('controller/' . $page->getAliasWithNamespace() . '.controller.js');
         $controller = $this->escapeUnicode($controller);
+        
+        // Copy external includes and replace their paths in the controller
+        $controller = $this->exportExternalLibs($controller, $exportFolder . DIRECTORY_SEPARATOR . 'libs');
+        
+        // Save view and controller as files
         file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'view') . $page->getAlias() . '.view.js', $view);
         file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'controller') . $page->getAlias() . '.controller.js', $controller);
         return $this;
+    }
+    
+    protected function exportExternalLibs(string $controllerJs, string $libsFolder) : string
+    {
+        $filemanager = $this->getWorkbench()->filemanager();
+        $matches = [];
+        preg_match_all('/jQuery\.sap\.registerModulePath\((?>[\'"].*[\'"], )?[\'"](.*)["\']\)/mi', $controllerJs, $matches);
+        $jsIncludes = $matches[1];
+        
+        foreach ($jsIncludes as $path) {
+            $file = $filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . StringDataType::substringAfter($path, 'vendor/') . '.js';
+            if (! file_exists($file)) {
+                throw new RuntimeException('Cannot export module with path "' . $path . '": file "' . $file . '" not found!');
+            }
+            $filename = pathinfo($file, PATHINFO_BASENAME);
+            $filemanager->copyFile($file, $libsFolder . DIRECTORY_SEPARATOR . $filename);
+            $controllerJs = str_replace($path, 'libs/' . substr($filename, 0, -3), $controllerJs);
+        }
+        
+        $matches = [];
+        preg_match_all('/jQuery\.sap\.includeStyleSheet\((?>[\'"].*[\'"], )?[\'"](.*)["\']\)/mi', $controllerJs, $matches);
+        $cssIncludes = $matches[1];
+        
+        foreach ($cssIncludes as $path) {
+            $file = $filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . StringDataType::substringAfter($path, 'vendor/');
+            if (! file_exists($file)) {
+                throw new RuntimeException('Cannot export CSS stylesheet with path "' . $path . '": file "' . $file . '" not found!');
+            }
+            $filename = pathinfo($file, PATHINFO_BASENAME);
+            $filemanager->copyFile($file, $libsFolder . DIRECTORY_SEPARATOR . $filename);
+            $controllerJs = str_replace($path, 'libs/' . $filename, $controllerJs);
+        }
+        
+        return $controllerJs;
     }
     
     protected function buildPathToPageAsset(UiPageInterface $page, string $exportFolder, string $assetType = 'view') : string

@@ -318,7 +318,23 @@ JS;
     {
         return [
             'app_id' => $appId,
-            'ui5_min_version' => '1.52'
+            'component_path' => str_replace('.', '/', $appId),
+            'ui5_app_control' => 'sap.m.App',
+            'ui5_min_version' => '1.52'/*,
+            'name' => 'axenox WMS MDE', 
+            'current_version' => '1.0.0', 
+            'current_version_date' => '2018-04-25 14:10:40',
+            'app_title' => '{{appTitle}}', 
+            'ui5_min_version' => '1.52', 
+            'root_page_alias' => 'axenox.wms.mde-verladen-x', 
+            'ui5_source' => 'https://openui5.hana.ondemand.com/resources/sap-ui-core.js', 
+            'ui5_theme' => 'sap_belize', 
+            'ui5_app_control' => 'sap.m.App', 
+            'app_subTitle' => '', 
+            'app_shortTitle' => '', 
+            'app_info' => '', 
+            'app_description' => '{{appDescription}}', 
+            'assets_path' => './'*/
         ];
     }
     

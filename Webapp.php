@@ -64,7 +64,7 @@ class Webapp implements WorkbenchDependantInterface
                     
                     $phs = $this->config;
                     $phs['view_content'] = $constructor !== '' ? 'return ' . $constructor : '';
-                    $phs['view_name'] = $path;
+                    $phs['view_name'] = str_replace('/', '.', $path);
                     
                     return $this->getFromFileTemplate('view/Empty.view.js', $phs);
                 }
@@ -73,6 +73,7 @@ class Webapp implements WorkbenchDependantInterface
                 if (StringDataType::endsWith($path, '.controller.js')) {
                     $path = StringDataType::substringBefore($path, '.controller.js');
                     $widget = $this->getWidgetFromPath($path);
+                    $this->template->buildJsViewContent($widget);
                     $controller = $this->template->getElement($widget)->getController();
                     
                     return $controller->buildJsController();
@@ -202,6 +203,11 @@ class Webapp implements WorkbenchDependantInterface
     public function getComponentName() : string
     {
         return $this->appId;
+    }
+    
+    public function getComponentId() : string
+    {
+        return $this->appId . '.Component';
     }
     
     public function getComponentPath() : string

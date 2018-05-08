@@ -10,11 +10,9 @@ use GuzzleHttp\Psr7\Response;
 use exface\Core\DataTypes\StringDataType;
 use exface\OpenUI5Template\Exceptions\Ui5RouteInvalidException;
 use exface\OpenUI5Template\Templates\OpenUI5Template;
-use exface\OpenUI5Template\Webapp;
 
 /**
- * This PSR-15 middleware reads inline-filters from the URL and passes them to the task
- * in the attributes of the request.
+ * This PSR-15 middleware routes requests to components of a UI5 webapp.
  * 
  * @author Andrej Kabachnik
  *
@@ -60,7 +58,11 @@ class ui5WebappRouter implements MiddlewareInterface
         $appId = StringDataType::substringBefore($route, '/');
         
         $webapp = $this->template->initWebapp($appId);
-        $body = $webapp->get($target);
+        try {
+            $body = $webapp->get($target);
+        } catch (Ui5RouteInvalidException $e) {
+            return new Response(404, [], $e->getMessage());
+        }
         $type = pathinfo($target, PATHINFO_EXTENSION);
         
         switch (strtolower($type)) {
@@ -69,7 +71,7 @@ class ui5WebappRouter implements MiddlewareInterface
             case 'js':
                 return $this->createResponseJs($body);
             default:
-                // TODO ???;
+                return $this->createResponsePlain($body);
         }
     }
     
@@ -86,6 +88,11 @@ class ui5WebappRouter implements MiddlewareInterface
     
     protected function createResponseJs(string $body) : ResponseInterface
     {
-        return new Response(200, ['Content-type' => ['application/javascript;']], $body);
+        return new Response(200, ['Content-type' => ['application/javascript']], $body);
+    }
+    
+    protected function createResponsePlain(string $body) : ResponseInterface
+    {
+        return new Response(200, ['Content-type' => ['text/plain']], $body);
     }
 }

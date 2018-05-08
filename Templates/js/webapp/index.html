@@ -20,7 +20,7 @@
 
 		<script>
 
-			sap.ui.getCore().attachInit(function () {
+			window.onload = function () {
 				sap.ui.require([
 					"sap/m/Shell",
 					"sap/ui/core/ComponentContainer"
@@ -29,12 +29,12 @@
 						app : new ComponentContainer({
 							name : "[#app_id#]",
 							settings : {
-								id : "nav"
+								id : "[#app_id#].Component"
 							}
 						})
 					}).placeAt("content");
 				});
-			});
+			};
 
 		</script>
 

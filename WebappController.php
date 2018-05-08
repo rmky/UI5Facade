@@ -61,7 +61,7 @@ class WebappController implements ui5ControllerInterface
     public function buildJsMethodCallFromController(string $methodName, ui5AbstractElement $methodOwner, string $paramsJs, string $oControllerJsVar = null) : string
     {
         if ($oControllerJsVar === null) {
-            $oControllerJsVar = "sap.ui.getCore().byId('{$this->getViewId($methodOwner)}').getController()";
+            $oControllerJsVar = "{$this->buildJsComponentGetter()}.findViewOfControl(sap.ui.getCore().byId('{$methodOwner->getId()}')).getController()";
         }
         if ($methodOwner->getController() === $this) {
             return "{$oControllerJsVar}.{$this->buildJsMethodName($methodName, $methodOwner)}({$paramsJs})";
@@ -73,6 +73,11 @@ class WebappController implements ui5ControllerInterface
     public function buildJsAccessFromElement(ui5AbstractElement $fromElement) : string
     {
         return "sap.ui.getCore().byId('{$this->getViewId($fromElement)}').getController()";
+    }
+    
+    protected function buildJsComponentGetter()
+    {
+        return "sap.ui.getCore().getComponent('{$this->getWebapp()->getComponentId()}')";
     }
     
     /**
@@ -189,6 +194,11 @@ JS;
         return $this;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsController()
+     */
     public function buildJsController() : string
     {
         foreach ($this->externalModules as $name => $properties) {
@@ -244,6 +254,10 @@ JS;
         return $this->controllerName;
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsProperties() : string
     {
         $this->wasExported = true;
@@ -307,6 +321,11 @@ JS;
         return $this;
     }
     
+    /**
+     * 
+     * @param string $moduleName
+     * @return string
+     */
     protected function getDefaultVarForModule(string $moduleName) : string
     {
         $split = explode('.', $moduleName);
@@ -318,6 +337,13 @@ JS;
         return $var;
     }
     
+    /**
+     * Returns the JS to register a module path: jQuery.sap.registerModulePath('{$moduleName}', '{$url}');
+     * 
+     * @param string $moduleName
+     * @param string $url
+     * @return string
+     */
     protected function buildJsModulePathRegistration(string $moduleName, string $url) : string
     {
         if (StringDataType::endsWith($url, '.js')) {
@@ -327,6 +353,13 @@ JS;
         return "jQuery.sap.registerModulePath('{$moduleName}', '{$url}');";
     } 
     
+    /**
+     * Returns the JS to include an external CSS.
+     * 
+     * CSS files are automatically included only once.
+     * 
+     * @return string
+     */
     protected function buildJsCssIncludes() : string
     {
         $js = '';

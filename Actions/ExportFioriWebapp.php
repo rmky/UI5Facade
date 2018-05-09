@@ -163,35 +163,50 @@ class ExportFioriWebapp extends DownloadZippedFolder
     protected function exportExternalLibs(string $controllerJs, string $libsFolder) : string
     {
         $filemanager = $this->getWorkbench()->filemanager();
+        $copiedVendorFolders = [];
+        
+        // Process JS files
         $matches = [];
         preg_match_all('/jQuery\.sap\.registerModulePath\((?>[\'"].*[\'"], )?[\'"](.*)["\']\)/mi', $controllerJs, $matches);
         $jsIncludes = $matches[1];
         
         foreach ($jsIncludes as $path) {
-            $file = $filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . StringDataType::substringAfter($path, 'vendor/') . '.js';
-            if (! file_exists($file)) {
-                throw new RuntimeException('Cannot export module with path "' . $path . '": file "' . $file . '" not found!');
-            }
-            $filename = pathinfo($file, PATHINFO_BASENAME);
-            $filemanager->copyFile($file, $libsFolder . DIRECTORY_SEPARATOR . $filename);
-            $controllerJs = str_replace($path, 'libs/' . substr($filename, 0, -3), $controllerJs);
+            $pathExported = $this->exportExternalLib($path . '.js', $libsFolder, $filemanager);
+            $controllerJs = str_replace($path, substr($pathExported, 0, -3), $controllerJs);
         }
         
+        // Process CSS files
         $matches = [];
         preg_match_all('/jQuery\.sap\.includeStyleSheet\((?>[\'"].*[\'"], )?[\'"](.*)["\']\)/mi', $controllerJs, $matches);
         $cssIncludes = $matches[1];
         
         foreach ($cssIncludes as $path) {
-            $file = $filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . StringDataType::substringAfter($path, 'vendor/');
-            if (! file_exists($file)) {
-                throw new RuntimeException('Cannot export CSS stylesheet with path "' . $path . '": file "' . $file . '" not found!');
-            }
-            $filename = pathinfo($file, PATHINFO_BASENAME);
-            $filemanager->copyFile($file, $libsFolder . DIRECTORY_SEPARATOR . $filename);
-            $controllerJs = str_replace($path, 'libs/' . $filename, $controllerJs);
+            $pathExported = $this->exportExternalLib($path, $libsFolder, $filemanager);
+            $controllerJs = str_replace($path, $pathExported, $controllerJs);
         }
         
         return $controllerJs;
+    }
+    
+    protected function exportExternalLib(string $includePath, string $libsFolder, Filemanager $filemanager) : string
+    {
+        $pathInVendorFolder = Filemanager::pathNormalize(StringDataType::substringAfter($includePath, 'vendor/'));
+        $file = $filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $pathInVendorFolder;
+        if (! file_exists($file)) {
+            throw new RuntimeException('Cannot export external library with path "' . $includePath . '": file "' . $file . '" not found!');
+        }
+        $pathParts = explode('/', $pathInVendorFolder);
+        $folder = $pathParts[0] . DIRECTORY_SEPARATOR . $pathParts[1];
+        if (! file_exists($libsFolder . DIRECTORY_SEPARATOR . $folder)) {
+            if (strcasecmp($folder, $this->getApp()->getDirectory()) === 0) {
+                $jsFolder = '/Templates/js';
+                $filemanager->copyDir($filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $folder . $jsFolder, $libsFolder . DIRECTORY_SEPARATOR . $folder);
+                $pathInVendorFolder = str_replace($jsFolder, '', $pathInVendorFolder);
+            } else {
+                $filemanager->copyDir($filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $folder, $libsFolder . DIRECTORY_SEPARATOR . $folder);
+            }
+        }
+        return pathinfo($libsFolder, PATHINFO_BASENAME) . '/' . $pathInVendorFolder;
     }
     
     protected function buildPathToPageAsset(UiPageInterface $page, string $exportFolder, string $assetType = 'view') : string

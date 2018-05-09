@@ -37,7 +37,7 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
      * For complex widgets (e.g. requireing a model, init-scripts, etc.) you can use the following approaches:
      * - create custom controller methods via $this->getController()->add...
      * - add code to the onInit-method of the controller via $this->getController()->addOnInitScript()  
-     * - use an immediately invoked function expression like "function(){...}()" as constructor 
+     * - use an immediately invoked function expression like "function(){...}()" as constructor (not recommended!)
      * 
      * @see getController()
      *
@@ -473,12 +473,6 @@ JS;
             throw new LogicException('Cannot change the controller of a UI5 element after it had been set initially!');
         }
         $this->controller = $controller;
-        return $this;
-    }
-    
-    public function addOnInitScript(string $js) : ui5AbstractElement
-    {
-        $this->getController()->addOnInitScript($js);
         return $this;
     }
     

@@ -23,7 +23,7 @@ class ui5Html extends ui5Value
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         if ($js = $this->getWidget()->getJavascript()) {
-            $this->addOnInitScript($js);
+            $this->getController()->addOnInitScript($js, $this->getId() . '_JS');
         }
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }

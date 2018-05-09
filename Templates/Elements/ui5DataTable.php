@@ -46,7 +46,7 @@ class ui5DataTable extends ui5AbstractElement
         $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
         $controller->addProperty($this->getId() . '_pages', $this->buildJsPaginationObject());
         $controller->addMethod('onPaginate', $this, '', $this->buildJsPaginationRefresh());
-        $controller->addOnInitScript($this->buildJsRefresh());
+        $controller->addOnInitScript($this->buildJsRefresh(), $this->getId() . '_loadData');
         
         if ($this->isMTable()) {
             $js = $this->buildJsConstructorForMTable();

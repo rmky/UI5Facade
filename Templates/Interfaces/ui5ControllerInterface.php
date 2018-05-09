@@ -40,7 +40,7 @@ interface ui5ControllerInterface {
     
     public function getWebapp() : Webapp;
     
-    public function addOnInitScript(string $js) : ui5ControllerInterface;
+    public function addOnInitScript(string $js, string $id) : ui5ControllerInterface;
     
     public function buildJsMethodCallFromView(string $methodName, ui5AbstractElement $callerElement, $oController = 'oController') : string;
     

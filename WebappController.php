@@ -19,7 +19,7 @@ class WebappController implements ui5ControllerInterface
     
     private $properties = [];
     
-    private $onInitScript = '';
+    private $onInitScripts = [];
     
     private $externalModules = [];
     
@@ -137,7 +137,7 @@ function() {
 JS;
         $this->addProperty($name, 'null');
         $this->addProperty('_'.$name.'Init', $initFunction);
-        $this->addOnInitScript('console.log(JSONEditor);' . $initFunctionCall);
+        $this->addOnInitScript($initFunctionCall, $name);
         
         return $this;
     }
@@ -190,7 +190,7 @@ function() {
 JS;
         $this->addProperty($name, 'null');
         $this->addProperty('_'.$name.'Init', $initFunction);
-        $this->addOnInitScript($initFunctionCall);
+        $this->addOnInitScript($initFunctionCall, $name);
         return $this;
     }
     
@@ -264,9 +264,14 @@ JS;
         $js = '';
         
         foreach ($this->properties as $name => $script) {
-            $js .= $name . ': ' . rtrim($script, ", \r\n\t\0\0xB") . ",\n";
+            $js .= $name . ': ' . $this->sanitzeProperty($script) . ",\n";
         }
         return $js;
+    }
+    
+    protected function sanitzeProperty($js) : string
+    {
+        return rtrim($js, ", \r\n\t\0\0xB");
     }
     
     /**
@@ -285,7 +290,16 @@ JS;
      */
     protected function buildJsOnInitScript() : string
     {
-        return $this->onInitScript;
+        $js = '';
+        foreach ($this->onInitScripts as $script) {
+            $js .= "\n\n" . $this->sanitizeScript($script);
+        }
+        return $js;
+    }
+    
+    protected function sanitizeScript($js) : string
+    {
+        return rtrim($js, "; \r\n\t\0\0xB") . ';';
     }
     
     /**
@@ -293,9 +307,9 @@ JS;
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addOnInitScript()
      */
-    public function addOnInitScript(string $js) : ui5ControllerInterface
+    public function addOnInitScript(string $js, string $id) : ui5ControllerInterface
     {
-        $this->onInitScript .= "\n\n" . $js;
+        $this->onInitScripts[$id] = $js;
         return $this;
     }
     

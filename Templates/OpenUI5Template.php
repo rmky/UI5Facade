@@ -282,7 +282,7 @@ JS;
      */
     public function getWebappTemplateFolder() : string
     {
-        return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'webapp' . DIRECTORY_SEPARATOR;
+        return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'Webapp' . DIRECTORY_SEPARATOR;
     }
     
     public function getWebapp() : Webapp

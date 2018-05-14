@@ -32,9 +32,9 @@
 	"LIBS.TEMPLATE.CSS": "exface/OpenUI5Template/Templates/js/openui5.template.css",
 	"LIBS.TEMPLATE.CUSTOM_CONTROLS": "exface/OpenUI5Template/Templates/js/openui5.controls.js",
 	
-	"LIBS.FLOT.CORE": "npm-asset/flot-charts/",
-	"LIBS.FLOT.PLUGINS.ORDERBARS": "exface/OpenUI5Ttemplate/Templates/js/flot/plugins/jquery.flot.orderBars.js",
-	"LIBS.FLOT.PLUGINS.AXISLABELS": "exface/OpenUI5Ttemplate/Templates/js/flot/plugins/jquery.flot.orderBars.js",
+	"LIBS.FLOT.CORE_FOLDER": "npm-asset/flot-charts/",
+	"LIBS.FLOT.PLUGINS.ORDERBARS": "exface/OpenUI5Template/Templates/js/flot/plugins/jquery.flot.orderBars.js",
+	"LIBS.FLOT.PLUGINS.AXISLABELS": "exface/OpenUI5Template/Templates/js/flot/plugins/jquery.flot.orderBars.js",
 	
 	"LIBS.JSONEDITOR.CSS": "bower-asset/jsoneditor/dist/jsoneditor.min.css",
 	"LIBS.JSONEDITOR.JS": "bower-asset/jsoneditor/dist/jsoneditor.min.js",

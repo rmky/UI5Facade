@@ -61,11 +61,8 @@ class Webapp implements WorkbenchDependantInterface
                     $path = StringDataType::substringBefore($path, '.view.js');
                     $widget = $this->getWidgetFromPath($path);
                     if ($widget) {
-                        $constructor = $this->template->buildJsViewContent($widget);
-                        $phs = $this->config;
-                        $phs['view_content'] = $constructor !== '' ? 'return ' . $constructor : '';
-                        $phs['view_name'] = str_replace('/', '.', $path);
-                        return $this->getFromFileTemplate('view/Empty.view.js', $phs);
+                        $view = $this->template->getElement($widget)->getController()->getView();
+                        return $view->buildJsView();
                     } 
                     return '';
                 }
@@ -75,7 +72,6 @@ class Webapp implements WorkbenchDependantInterface
                     $path = StringDataType::substringBefore($path, '.controller.js');
                     $widget = $this->getWidgetFromPath($path);
                     if ($widget) {
-                        $this->template->buildJsViewContent($widget);
                         $controller = $this->template->getElement($widget)->getController();
                         return $controller->buildJsController();
                     }

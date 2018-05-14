@@ -5,15 +5,15 @@ use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
 use exface\Core\DataTypes\StringDataType;
 use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
 use exface\Core\Exceptions\Templates\TemplateLogicError;
-use exface\Core\Interfaces\WidgetInterface;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 
 class WebappController implements ui5ControllerInterface
 {
-    private $wasExported = false;
+    private $isBuilt = false;
     
     private $webapp = null;
     
-    private $rootWidget = null;
+    private $view = null;
     
     private $controllerName = '';
     
@@ -25,11 +25,11 @@ class WebappController implements ui5ControllerInterface
     
     private $externalCss = [];
     
-    public function __construct(Webapp $webapp, string $controllerName, WidgetInterface $rootWidget)
+    public function __construct(Webapp $webapp, string $controllerName, ui5ViewInterface $view)
     {
         $this->webapp = $webapp;
         $this->controllerName = $controllerName;
-        $this->rootWidget = $rootWidget;
+        $this->view = $view->setController($this);
     }
     
     /**
@@ -109,7 +109,7 @@ class WebappController implements ui5ControllerInterface
      */
     public final function addProperty(string $name, string $js) : ui5ControllerInterface
     {
-        if ($this->wasExported === true) {
+        if ($this->isBuilt === true) {
             throw new TemplateLogicError('Cannot add controller property "' . $name . '" after the controller "' . $this->getName() . '" had been built!');
         }
         $this->properties[$name] = $js;
@@ -201,6 +201,9 @@ JS;
      */
     public function buildJsController() : string
     {
+        // Build the view first to ensure, all view elements have contributed to the controller!
+        $this->getView()->buildJsView();
+        
         foreach ($this->externalModules as $name => $properties) {
             $modules .= ",\n\t\"" . str_replace('.', '/', $name) . '"';
             $controllerVars .= ', ' . ($properties['var'] ? $properties['var'] : $this->getDefaultVarForModule($name));
@@ -260,7 +263,7 @@ JS;
      */
     protected function buildJsProperties() : string
     {
-        $this->wasExported = true;
+        $this->isBuilt = true;
         $js = '';
         
         foreach ($this->properties as $name => $script) {
@@ -387,7 +390,10 @@ if (sap.ui.getCore().byId("{$id}") === undefined) {
 JS;
         }
         return $js;
+    }  
+    
+    public function getView() : ui5ViewInterface
+    {
+        return $this->view;
     }
-    
-    
 }

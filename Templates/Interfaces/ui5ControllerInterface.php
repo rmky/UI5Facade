@@ -88,4 +88,10 @@ interface ui5ControllerInterface {
      * @return string
      */
     public function buildJsAccessFromElement(ui5AbstractElement $fromElement) : string;
+    
+    /**
+     * 
+     * @return ui5ViewInterface
+     */
+    public function getView() : ui5ViewInterface;
 }

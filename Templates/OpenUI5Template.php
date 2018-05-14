@@ -291,7 +291,7 @@ JS;
     public function createController(WidgetInterface $widget, $controllerName = null) : ui5ControllerInterface
     {
         if ($controllerName === null) {
-            $controllerName = $this->getControllerName($widget, $this->getWebapp()->getRootPage());
+            $controllerName = $this->getControllerName($widget, $widget->getPage());
         }
         $controller = new WebappController($this->getWebapp(), $controllerName, $this->createView($widget));
         
@@ -313,7 +313,7 @@ JS;
     public function createView(WidgetInterface $widget, $viewName = null) : ui5ViewInterface
     {
         if ($viewName === null) {
-            $viewName = $this->getViewName($widget, $this->getRequestPage());
+            $viewName = $this->getViewName($widget, $widget->getPage());
         }
         return new WebappView($this->getWebapp(), $viewName, $this->getElement($widget));
     }

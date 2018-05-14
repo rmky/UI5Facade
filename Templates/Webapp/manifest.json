@@ -53,7 +53,7 @@
 				"routerClass": "sap.m.routing.Router",
 				"viewType": "JS",
 				"viewPath": "[#app_id#].view",
-				"controlId": "app",
+				"controlId": "[#app_id#].app",
 				"controlAggregation": "pages",
 				"transition": "show",
 				"async": true,

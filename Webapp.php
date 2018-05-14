@@ -60,23 +60,26 @@ class Webapp implements WorkbenchDependantInterface
                 if (StringDataType::endsWith($path, '.view.js')) {
                     $path = StringDataType::substringBefore($path, '.view.js');
                     $widget = $this->getWidgetFromPath($path);
-                    $constructor = $this->template->buildJsViewContent($widget);
-                    
-                    $phs = $this->config;
-                    $phs['view_content'] = $constructor !== '' ? 'return ' . $constructor : '';
-                    $phs['view_name'] = str_replace('/', '.', $path);
-                    
-                    return $this->getFromFileTemplate('view/Empty.view.js', $phs);
+                    if ($widget) {
+                        $constructor = $this->template->buildJsViewContent($widget);
+                        $phs = $this->config;
+                        $phs['view_content'] = $constructor !== '' ? 'return ' . $constructor : '';
+                        $phs['view_name'] = str_replace('/', '.', $path);
+                        return $this->getFromFileTemplate('view/Empty.view.js', $phs);
+                    } 
+                    return '';
                 }
             case StringDataType::startsWith($route, 'controller/'):
                 $path = StringDataType::substringAfter($route, 'controller/');
                 if (StringDataType::endsWith($path, '.controller.js')) {
                     $path = StringDataType::substringBefore($path, '.controller.js');
                     $widget = $this->getWidgetFromPath($path);
-                    $this->template->buildJsViewContent($widget);
-                    $controller = $this->template->getElement($widget)->getController();
-                    
-                    return $controller->buildJsController();
+                    if ($widget) {
+                        $this->template->buildJsViewContent($widget);
+                        $controller = $this->template->getElement($widget)->getController();
+                        return $controller->buildJsController();
+                    }
+                    return '';
                 }
             default:
                 throw new Ui5RouteInvalidException('Cannot match route "' . $route . '"!');

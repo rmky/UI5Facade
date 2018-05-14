@@ -102,7 +102,17 @@ class OpenUI5Template extends AbstractAjaxTemplate
         $controller = $element->getController();
         $controllerJs = $controller->buildJsController();
         
+        if ($widget === $widget->getPage()->getWidgetRoot()) {
+            $baseControllers = $this->getWebapp()->get('controller/BaseController.js') . "\n\n" . $this->getWebapp()->get('controller/App.controller.js');
+            $baseViews = $this->getWebapp()->get('view/App.view.js');
+        }
+        
         return <<<JS
+sap.ui.getCore().attachInit(function () {
+    
+    {$baseControllers}
+    
+    {$baseViews}
 
     {$controllerJs}
 
@@ -118,6 +128,8 @@ class OpenUI5Template extends AbstractAjaxTemplate
             return {$viewBody};
 		}
 	});
+
+});
 
 JS;
     }

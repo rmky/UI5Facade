@@ -18,11 +18,34 @@
 		
 		<title>[*pagetitle*]</title>
 		
+		<style>
+			#exf-loader-spinner {
+			    border: 16px solid #f3f3f3; /* Light grey */
+			    border-top: 16px solid #3498db; /* Blue */
+			    border-radius: 50%;
+			    width: 120px;
+			    height: 120px;
+			    animation: spin 2s linear infinite;
+				    margin: calc(100vh / 2 - 60px) auto
+			}
+			
+			@keyframes spin {
+			    0% { transform: rotate(0deg); }
+			    100% { transform: rotate(360deg); }
+			}
+		</style>
+		
+		<link rel="stylesheet" type="text/css" id="sap-ui-theme-sap.m" href="exface/vendor/exface/OpenUI5Template/Templates/js_openui5/resources/sap/m/themes/sap_belize/library.css" />
+		<link rel="stylesheet" type="text/css" id="sap-ui-theme-sap.ui.unified" href="exface/vendor/exface/OpenUI5Template/Templates/js_openui5/resources/sap/ui/unified/themes/sap_belize/library.css" />
+		
 		<!-- Load SAPUI5, select theme and control library -->
 		<script src="exface/vendor/exface/OpenUI5Template/Templates/js_openui5/resources/sap-ui-core.js"
 				id="sap-ui-bootstrap"
 				data-sap-ui-libs="sap.m,sap.tnt,sap.ui.unified,sap.ui.commons,sap.ui.table,sap.f,sap.uxap"
 				data-sap-ui-theme="sap_belize"
+				data-sap-ui-bindingSyntax="complex"
+				data-sap-ui-compatVersion="edge"
+				data-sap-ui-preload="async"
 				data-sap-ui-resourceroots='{
 					"[*alias*]": "exface/api/ui5/webapps/[*alias*]/"
 				}'
@@ -30,69 +53,79 @@
 		</script>
 		
 		<script type="text/javascript" src="exface/vendor/exface/OpenUI5Template/Templates/js/openui5.template.js"></script>
-		<script type="text/javascript">
-			// Main menu
-			var oNavMenu = new sap.tnt.NavigationList({
-				items:[
-					[!Wayfinder? &startId=`1` &level=`10` &hideSubMenus=`1`
-					 &outerTpl=`@CODE: [+wf.wrapper+]`
-					 &innerTpl=`@CODE: [+wf.wrapper+]`
-					 &rowTpl=`@CODE: 
-						 new sap.tnt.NavigationListItem({
-							 icon: "folder-blank", 
-							 text: "[+wf.linktext+]", 
-							 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} 
-						 }),`
-					 &activeParentRowTpl=`@CODE: 
-						 new sap.tnt.NavigationListItem({
-							 icon: "open-folder", 
-							 text: "[+wf.linktext+]", 
-							 items: [ 
-								 
-								 // BOF [+wf.linktext+] SUBMENU
-								 [+wf.wrapper+] 
-								 // EOF [+wf.linktext+] SUBMENU
-								 
-							 ], 
-							 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';}
-						 }),`
-					 &lastRowTpl=`@CODE: 
-						 new sap.tnt.NavigationListItem({
-							 icon: "folder-blank", 
-							 text: "[+wf.linktext+]", 
-							 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} 
-						 })`
-					 !]
-					]
-				});
-			
-			oShell.addPaneContent(oNavMenu);
-			
-			sap.ui.getCore().byId('exf_pagetitle').setText('[*pagetitle*]');
-			sap.ui.getCore().byId('exf_avatar').setSrc('[!UserManagerInfo? &field=`photo`!]');
-			
-			window.onload = function () {
-				oShell.placeAt("[*id*]");
-			}
-			
-		</script>
 		
 		[[Exface? &action=`exface.Core.ShowWidget` &template=`exface.OpenUI5Template.OpenUI5Template` &fallback_field=`content`]]
 		
 		<script type="text/javascript">
-		    oShell.addContent(
-	    		new sap.ui.core.ComponentContainer({
-					name: "[*alias*]",
-					settings: {
-						id: "[*alias*].Component"
-					}
-				})
-		    );
+			// Main menu
+			function initMainMenu(oShell) {
+				var oNavMenu = new sap.tnt.NavigationList({
+					items:[
+						[!Wayfinder? &startId=`1` &level=`10` &hideSubMenus=`1`
+						 &outerTpl=`@CODE: [+wf.wrapper+]`
+						 &innerTpl=`@CODE: [+wf.wrapper+]`
+						 &rowTpl=`@CODE: 
+							 new sap.tnt.NavigationListItem({
+								 icon: "folder-blank", 
+								 text: "[+wf.linktext+]", 
+								 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} 
+							 }),`
+						 &activeParentRowTpl=`@CODE: 
+							 new sap.tnt.NavigationListItem({
+								 icon: "open-folder", 
+								 text: "[+wf.linktext+]", 
+								 items: [ 
+									 
+									 // BOF [+wf.linktext+] SUBMENU
+									 [+wf.wrapper+] 
+									 // EOF [+wf.linktext+] SUBMENU
+									 
+								 ], 
+								 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';}
+							 }),`
+						 &lastRowTpl=`@CODE: 
+							 new sap.tnt.NavigationListItem({
+								 icon: "folder-blank", 
+								 text: "[+wf.linktext+]", 
+								 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} 
+							 })`
+					 	!]
+					]
+				});
+				
+				oShell.addPaneContent(oNavMenu);
+				
+				sap.ui.getCore().byId('exf_pagetitle').setText('[*pagetitle*]');
+				sap.ui.getCore().byId('exf_avatar').setSrc('[!UserManagerInfo? &field=`photo`!]');
+			}
+			
+			var oShell;
+			
+			sap.ui.getCore().attachInit(function () {
+				sap.ui.require([
+					"sap/ui/unified/Shell",
+					"sap/ui/core/ComponentContainer",
+					"sap/f/Avatar",
+					"sap/tnt/NavigationList"
+				], function (Shell, ComponentContainer, Avatar, NavigationList) {
+					oShell = initShell();
+					oShell.addContent(
+			    		new sap.ui.core.ComponentContainer({
+							name: "[*alias*]",
+							settings: {
+								id: "[*alias*].Component"
+							}
+						})
+				    );
+					oShell.placeAt("[*id*]");
+					initMainMenu(oShell);
+				});
+			});
 		</script>
 
 		
 	</head>
 	<body id="[*id*]" class="sapUiBody">
-		
+		<div id="exf-loader" style="width: 100%; height: 100vh; background: white; position: absolute;"><div id="exf-loader-spinner"></div></div>
 	</body>
 </html>

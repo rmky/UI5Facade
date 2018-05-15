@@ -43,7 +43,19 @@ JS;
     {
         $widget = $this->getWidget();
         
-        $output = $this->buildJsPlotFunction();
+        $output = <<<JS
+
+    function {$this->buildJsFunctionPrefix()}plot(data) {
+        {$this->buildJsPlotter('data')}
+    }
+
+    function {$this->buildJsFunctionPrefix()}load(){
+        {$this->buildJsDataLoader()}
+    }
+
+JS;
+        
+        
         
         // Add JS code for the configurator
         $output .= $this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJs();
@@ -81,7 +93,7 @@ JS;
      *
      * @return string
      */
-    protected function buildJsAjaxLoaderFunction()
+    protected function buildJsDataLoader()
     {
         $widget = $this->getWidget();
         $output = '';
@@ -110,7 +122,6 @@ JS;
             
             // Loader function
             $output .= '
-				function ' . $this->buildJsFunctionPrefix() . 'load(){
 					' . $this->buildJsBusyIconShow() . '
 					var data = { };
 					' . $post_data . '
@@ -128,10 +139,15 @@ JS;
 							' . $this->buildJsBusyIconHide() . '
 						}
 					});
-				}';
+				';
         }
         
         return $output;
-    }    
+    }  
+    
+    public function buildHtmlHeadTags()
+    {
+        return $this->buildHtmlHeadDefaultIncludes();
+    }
 }
 ?>

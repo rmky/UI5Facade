@@ -163,7 +163,6 @@ class ExportFioriWebapp extends DownloadZippedFolder
     protected function exportExternalLibs(string $controllerJs, string $libsFolder) : string
     {
         $filemanager = $this->getWorkbench()->filemanager();
-        $copiedVendorFolders = [];
         
         // Process JS files
         $matches = [];
@@ -201,11 +200,15 @@ class ExportFioriWebapp extends DownloadZippedFolder
             if (strcasecmp($folder, $this->getApp()->getDirectory()) === 0) {
                 $jsFolder = '/Templates/js';
                 $filemanager->copyDir($filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $folder . $jsFolder, $libsFolder . DIRECTORY_SEPARATOR . $folder);
-                $pathInVendorFolder = str_replace($jsFolder, '', $pathInVendorFolder);
             } else {
                 $filemanager->copyDir($filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $folder, $libsFolder . DIRECTORY_SEPARATOR . $folder);
             }
         }
+        
+        if (strcasecmp($folder, $this->getApp()->getDirectory()) === 0) {
+            $pathInVendorFolder = str_replace('/Templates/js', '', $pathInVendorFolder);
+        }
+        
         return pathinfo($libsFolder, PATHINFO_BASENAME) . '/' . $pathInVendorFolder;
     }
     

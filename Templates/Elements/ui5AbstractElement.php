@@ -345,7 +345,7 @@ JS;
         
     protected function escapeJsTextValue($text)
     {
-        return str_replace(['"', '\u'], ['\"', '&#92;u'], $text);
+        return str_replace(['"', '\u', "\n"], ['\"', '&#92;u', "\\n"], $text);
     }
     
     /**

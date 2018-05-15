@@ -40,7 +40,7 @@ class ui5Html extends ui5Value
             $scripts .= $script;
             $html = str_replace($tag, '', $html);
         }
-        $content = $this->escapeLinebreaks($this->escapeJsTextValue($html));
+        $content = $this->escapeJsTextValue($html);
         return <<<JS
         new sap.ui.core.HTML("{$this->getId()}", {
             content: "<div class=\"exf-html\">{$content}</div>",
@@ -68,11 +68,6 @@ JS;
         //  ]
         preg_match_all("/<script.*?>(.*?)<\/script>/si", $html, $script_tags);
         return array_combine($script_tags[0], $script_tags[1]);
-    }
-        
-    protected function escapeLinebreaks($text)
-    {
-        return str_replace("\n","\\n", $text);
     }
     
     public function buildHtmlHeadTags()

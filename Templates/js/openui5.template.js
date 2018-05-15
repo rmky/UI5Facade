@@ -244,13 +244,8 @@ function contextBarLoad(delay){
 		//if ($('#contextBar .context-bar-spinner').length > 0){
 			$.ajax({
 				type: 'POST',
-				url: 'exface/api/ui5',
+				url: 'exface/api/ui5/' + getPageId() + '/context',
 				dataType: 'json',
-				data: {
-					action: 'exface.Core.ShowWidget',
-					resource: getPageId(),
-					element: 'ContextBar'
-				},
 				success: function(data, textStatus, jqXHR) {
 					contextBarRefresh(data);
 				},

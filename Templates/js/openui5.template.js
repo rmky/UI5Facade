@@ -158,7 +158,7 @@ function initShell() {
 	                new sap.f.Avatar("exf_avatar", {
 						displaySize: "XS",
 						press: function(){
-							alert('clicked!');
+							window.location.href = 'login.html';
 						}
 	                })
 				]

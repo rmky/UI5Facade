@@ -37,12 +37,11 @@ class ExportFioriWebapp extends DownloadZippedFolder
     
     protected function createZip(TaskInterface $task) : ArchiveManager
     {
-        $zip = new ArchiveManager($this->getWorkbench(), $this->getZipPathAbsolute());
+        // Export app
         $input = $this->getInputDataSheet($task);
-        
         $columns = $input->getColumns();
-        
         $columns->addFromExpression('root_page_alias');
+        $columns->addFromExpression('current_version');
         $columns->addFromExpression('ui5_min_version');
         $columns->addFromExpression('ui5_source');
         $columns->addFromExpression('ui5_theme');
@@ -66,6 +65,12 @@ class ExportFioriWebapp extends DownloadZippedFolder
         
         $template = TemplateFactory::createFromString($this->templateSelectorString, $this->getWorkbench());
         $webappFolder = $this->exportWebapp($rootPage, $template, $row);
+        
+        // Create ZIP for download
+        $defaultPath = $this->getZipPathAbsolute();
+        $zipFolder = pathinfo($defaultPath, PATHINFO_DIRNAME);
+        $this->setZipPath($zipFolder . DIRECTORY_SEPARATOR . $row['app_id'] . '_v' . $row['app_id'] . '_' . date('YmdHis') . '.zip');
+        $zip = new ArchiveManager($this->getWorkbench(), $this->getZipPathAbsolute());
         $zip->addFolder($webappFolder);
         
         $zip->close();
@@ -74,37 +79,37 @@ class ExportFioriWebapp extends DownloadZippedFolder
     
     protected function exportWebapp(UiPageInterface $rootPage, OpenUI5Template $template, array $appDataRow) : string
     {
-        $path = $this->getApp()->getExportFolderAbsolutePath() . DIRECTORY_SEPARATOR . $rootPage->getAliasWithNamespace() . DIRECTORY_SEPARATOR . 'WebContent';
-        
-        if (! file_exists($path)) {
-            Filemanager::pathConstruct($path);
+        $appPath = $this->getApp()->getExportFolderAbsolutePath() . DIRECTORY_SEPARATOR . $rootPage->getAliasWithNamespace();
+        $exportPath =  $appPath . DIRECTORY_SEPARATOR . 'WebContent';
+        if (! file_exists($exportPath)) {
+            Filemanager::pathConstruct($exportPath);
         } else {
-            $this->getWorkbench()->filemanager()->emptyDir($path);
+            $this->getWorkbench()->filemanager()->emptyDir($exportPath);
         }
         
-        $path = $path . DIRECTORY_SEPARATOR;
+        $exportPath = $exportPath . DIRECTORY_SEPARATOR;
         /* @var $webapp \exface\OpenUI5Template\Webapp */ 
         $webapp = $template->initWebapp($appDataRow['app_id'], $appDataRow);
         
-        if (! file_exists($path . 'view')) {
-            Filemanager::pathConstruct($path . 'view');
+        if (! file_exists($exportPath . 'view')) {
+            Filemanager::pathConstruct($exportPath . 'view');
         }
-        if (! file_exists($path . 'controller')) {
-            Filemanager::pathConstruct($path . 'controller');
+        if (! file_exists($exportPath . 'controller')) {
+            Filemanager::pathConstruct($exportPath . 'controller');
         }
-        if (! file_exists($path . 'libs')) {
-            Filemanager::pathConstruct($path . 'libs');
+        if (! file_exists($exportPath . 'libs')) {
+            Filemanager::pathConstruct($exportPath . 'libs');
         }
         
         $this
-            ->exportFile($webapp, 'manifest.json', $path)
-            ->exportFile($webapp, 'index.html', $path)
-            ->exportFile($webapp, 'Component.js', $path)
-            ->exportTranslations($rootPage->getApp(), $webapp, $path)
-            ->exportStaticViews($webapp, $path)
-            ->exportPages($webapp, $path);
+            ->exportFile($webapp, 'manifest.json', $exportPath)
+            ->exportFile($webapp, 'index.html', $exportPath)
+            ->exportFile($webapp, 'Component.js', $exportPath)
+            ->exportTranslations($rootPage->getApp(), $webapp, $exportPath)
+            ->exportStaticViews($webapp, $exportPath)
+            ->exportPages($webapp, $exportPath);
         
-        return $path;
+        return $appPath;
     }
     
     protected function exportTranslations(AppInterface $app, Webapp $webapp, string $exportFolder) : ExportFioriWebapp
@@ -170,6 +175,9 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $jsIncludes = $matches[1];
         
         foreach ($jsIncludes as $path) {
+            if ($this->isExternalUrl($path)) {
+                continue;
+            }
             $pathExported = $this->exportExternalLib($path . '.js', $libsFolder, $filemanager);
             $controllerJs = str_replace($path, substr($pathExported, 0, -3), $controllerJs);
         }
@@ -180,6 +188,9 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $cssIncludes = $matches[1];
         
         foreach ($cssIncludes as $path) {
+            if ($this->isExternalUrl($path)) {
+                continue;
+            }
             $pathExported = $this->exportExternalLib($path, $libsFolder, $filemanager);
             $controllerJs = str_replace($path, $pathExported, $controllerJs);
         }
@@ -210,6 +221,11 @@ class ExportFioriWebapp extends DownloadZippedFolder
         }
         
         return pathinfo($libsFolder, PATHINFO_BASENAME) . '/' . $pathInVendorFolder;
+    }
+    
+    protected function isExternalUrl(string $uri) : bool
+    {
+        return StringDataType::startsWith($uri, 'https:', false) || StringDataType::startsWith($uri, 'http:', false) || StringDataType::startsWith($uri, 'ftp:', false);
     }
     
     protected function buildPathToPageAsset(UiPageInterface $page, string $exportFolder, string $assetType = 'view') : string

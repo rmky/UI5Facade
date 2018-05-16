@@ -17,7 +17,9 @@ use exface\Core\Interfaces\Actions\iShowDialog;
 class ui5Button extends ui5AbstractElement
 {
     
-    use JqueryButtonTrait;
+    use JqueryButtonTrait {
+        buildJsInputRefresh as buildJsInputRefreshViaTrait;
+    }
 
     function buildJs()
     {
@@ -144,6 +146,22 @@ JS;
 JS;
         
         return $output;
+    }
+    
+    /**
+     * 
+     * @param Button $widget
+     * @param unknown $input_element
+     * @return string
+     */
+    protected function buildJsInputRefresh(Button $widget, $input_element)
+    {
+        return <<<JS
+    if (sap.ui.getCore().byId("{$this->getId()}") !== undefined) {
+        {$this->buildJsInputRefreshViaTrait($widget, $input_element)}
+    }
+
+JS;
     }
 
     /**

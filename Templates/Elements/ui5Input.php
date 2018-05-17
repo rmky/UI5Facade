@@ -2,6 +2,7 @@
 namespace exface\OpenUI5Template\Templates\Elements;
 
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryLiveReferenceTrait;
+use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDisableConditionTrait;
 
 /**
  * Generates OpenUI5 inputs
@@ -12,6 +13,7 @@ use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryLiveReferenceTrait
 class ui5Input extends ui5Value
 {
     use JqueryLiveReferenceTrait;
+    use JqueryDisableConditionTrait;
     
     /**
      * 

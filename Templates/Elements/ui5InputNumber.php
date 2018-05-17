@@ -1,7 +1,6 @@
 <?php
 namespace exface\OpenUI5Template\Templates\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryLiveReferenceTrait;
 use exface\Core\DataTypes\NumberDataType;
 use exface\Core\Widgets\InputNumber;
 

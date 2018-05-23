@@ -302,6 +302,18 @@ JS;
         $widget = $this->getWidget();
         $controller = $this->getController();
         
+        if ($this->isWrappedInDynamicPage()) {
+            $dynamicPageFixes = <<<JS
+
+                        if (sap.ui.Device.system.phone) {
+                            sap.ui.getCore().byId('{$this->getId()}_page').setHeaderExpanded(false);
+                        }
+                        // Redraw the table to make it fit the page height agian. Otherwise it would be
+                        // of default height after dialogs close, etc.
+                        sap.ui.getCore().byId('{$this->getId()}').invalidate();
+JS;
+        }
+        
         $url = $this->getAjaxUrl();
         $params = '
 					action: "' . $widget->getLazyLoadingActionAlias() . '"
@@ -333,10 +345,8 @@ JS;
                         oController.{$this->getId()}_pages.total = this.getProperty("/recordsFiltered");
                         {$controller->buildJsMethodCallFromController('onPaginate', $this, '', 'oController')};
                         
-                        if (sap.ui.Device.system.phone) {
-                            sap.ui.getCore().byId('{$this->getId()}_page').setHeaderExpanded(false);
-                        }
-                        
+                        {$dynamicPageFixes}                     
+
             			var footerRows = this.getProperty("/footerRows");
                         if (footerRows){
             				oTable.setFixedBottomRowCount(parseInt(footerRows));

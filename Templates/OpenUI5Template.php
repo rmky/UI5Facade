@@ -90,10 +90,15 @@ class OpenUI5Template extends AbstractAjaxTemplate
     {
         $element = $this->getElement($widget);
         
-        if ($widget === $widget->getPage()->getWidgetRoot()) {
-            $baseControllers = $this->getWebapp()->get('controller/BaseController.js') . "\n\n" . $this->getWebapp()->get('controller/App.controller.js');
+        // If we are showing the root page of the app (more precisely the root widget of the root page),
+        // include common views and controllers to avoid extra ajax calls.
+        if ($widget === $this->getWebapp()->getRootPage()->getWidgetRoot()) {
+            $baseControllers = $this->getWebapp()->get('controller/BaseController.js') . "\n\n" 
+                             . $this->getWebapp()->get('controller/App.controller.js');
             $baseViews = $this->getWebapp()->get('view/App.view.js');
         }
+        
+        $controller = $this->createController($element);
         
         return <<<JS
 sap.ui.getCore().attachInit(function () {
@@ -102,9 +107,9 @@ sap.ui.getCore().attachInit(function () {
     
     {$baseViews}
 
-    {$element->getController()->buildJsController()}
+    {$controller->buildJsController()}
 
-    {$element->getController()->getView()->buildJsView()}
+    {$controller->getView()->buildJsView()}
 
 });
 
@@ -284,16 +289,17 @@ JS;
     
     /**
      * 
-     * @param WidgetInterface $widget
+     * @param ui5AbstractElement $element
      * @param string $controllerName
      * @return ui5ControllerInterface
      */
-    public function createController(WidgetInterface $widget, $controllerName = null) : ui5ControllerInterface
+    public function createController(ui5AbstractElement $element, $controllerName = null) : ui5ControllerInterface
     {
         if ($controllerName === null) {
-            $controllerName = $this->getControllerName($widget, $widget->getPage());
+            $controllerName = $this->getControllerName($element->getWidget(), $this->getWebapp()->getRootPage());
         }
-        $controller = new WebappController($this->getWebapp(), $controllerName, $this->createView($widget));
+        $controller = new WebappController($this->getWebapp(), $controllerName, $this->createView($element));
+        $element->setController($controller);
         
         $controller->addExternalCss($this->buildUrlToSource('LIBS.TEMPLATE.CSS'));
         $controller->addExternalCss($this->buildUrlToSource('LIBS.FONT_AWESOME.CSS'));
@@ -306,16 +312,17 @@ JS;
     
     /**
      * 
-     * @param WidgetInterface $widget
+     * @param ui5AbstractElement $element
      * @param string $viewName
      * @return ui5ViewInterface
      */
-    public function createView(WidgetInterface $widget, $viewName = null) : ui5ViewInterface
+    public function createView(ui5AbstractElement $element, $viewName = null) : ui5ViewInterface
     {
+        $widget = $element->getWidget();
         if ($viewName === null) {
-            $viewName = $this->getViewName($widget, $widget->getPage());
+            $viewName = $this->getViewName($widget, $this->getWebapp()->getRootPage());
         }
-        return new WebappView($this->getWebapp(), $viewName, $this->getElement($widget));
+        return new WebappView($this->getWebapp(), $viewName, $element);
     }
 }
 ?>

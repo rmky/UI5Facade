@@ -21,7 +21,8 @@ class ui5Tile extends ui5Button
         
         $header = $widget->getTitle() ? 'header: "' . $widget->getTitle() . '",' : '';
         $subheader = $widget->getSubtitle() ? 'subheader: "' . $widget->getSubtitle() . '",' : '';
-        $press = $this->buildJsClickFunction() ? 'press: function(){' . $this->buildJsClickFunctionName() . '()},' : '';
+        $handler = $this->buildJsClickViewEventHandlerCall();
+        $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
         if ($widget->hasDisplayWidget()) {
             $tileContentConstructor = $this->getTemplate()->getElement($widget->getDisplayWidget())->buildJsConstructor();
             

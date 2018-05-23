@@ -330,18 +330,5 @@ JS;
         }
         return $js;
     }
-    
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::getController()
-     */
-    public function getController() : ui5ControllerInterface
-    {
-        if ($this->controller === null) {
-            $this->controller = $this->getTemplate()->createController($this->getWidget());
-        }
-        return $this->controller;
-    }
 }
 ?>

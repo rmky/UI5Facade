@@ -48,9 +48,8 @@ JS;
             
         }
         
-        $clickJs = $this->buildJsClickFunction();
-        $press = $clickJs ? 'press: ' . $this->getController()->buildJsViewEventHandler('press', $this, "function(oEvent){ {$clickJs}; }") . ',' : '';
-        
+        $handler = $this->buildJsClickViewEventHandlerCall();
+        $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
         $icon = $widget->getIcon() && ! $widget->getHideButtonIcon() ? 'icon: "' . $this->getIconSrc($widget->getIcon()) . '",' : '';
         
         $options = '
@@ -62,6 +61,47 @@ JS;
         return $options;
     }
     
+    /**
+     * Returns the JS to call the press event handler from the view or $default if there is no handler.
+     * 
+     * Typical output would be `[oController.onPressXXX, oController]`.
+     * 
+     * Use buildJsClickEventHandlerCall() to get the JS to use in a controller.
+     * 
+     * Use buildJsClickFunctionName() to the name of the handler within the controller (e.g.
+     * just `onPressXXX`);
+     * 
+     * @see buildJsClickFunctionName()
+     * @see buildJsClickEventHandlerCall()
+     * 
+     * @return string
+     */
+    public function buildJsClickViewEventHandlerCall(string $default = '') : string
+    {
+        $clickJs = $this->buildJsClickFunction();
+        return $clickJs ? $this->getController()->buildJsViewEventHandler('press', $this, "function(oEvent){ {$clickJs}; }") : $default;        
+    }
+    
+    /**
+     * 
+     * @param string $oControllerJsVar
+     * @param string $default
+     * @return string
+     */
+    public function buildJsClickEventHandlerCall(string $oControllerJsVar = null, string $default = '') : string
+    {
+        if ($oControllerJsVar === null) {
+            return $this->getController()->buildJsMethodCallFromController('press', $this);
+        } else {
+            return $this->getController()->buildJsMethodCallFromController('press', $this, '', $oControllerJsVar);
+        }
+        
+    }
+    
+    /**
+     * 
+     * @return string
+     */
     public function buildJsClickFunctionName()
     {
         return $this->getController()->buildJsMethodName('press', $this);

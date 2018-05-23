@@ -69,15 +69,19 @@ JS;
                 if ($start_section) {
                     $properties .= 'startsSection: true,';
                 }
+                
+                /* @var $btnElement \exface\OpenUI5Template\Templates\Elements\ui5Button */
+                $btnElement = $this->getTemplate()->getElement($b);
+                $handler = $btnElement->buildJsClickViewEventHandlerCall();
+                $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
+                
                 $js .= <<<JS
 
                         new sap.m.MenuItem({
                             {$properties}
-                            text: "{$b->getCaption()}",
-                            icon: "{$this->getIconSrc($b->getIcon())}",
-                            press: function(oEvent) {
-                                {$this->getTemplate()->getElement($b)->buildJsClickFunctionName()}();
-                            }
+                            text: "{$btnElement->getCaption()}",
+                            icon: "{$btnElement->getIconSrc($b->getIcon())}",
+                            {$press}
                         }),
 
 JS;

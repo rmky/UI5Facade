@@ -28,6 +28,7 @@ class ui5DataTable extends ui5AbstractElement
      */
     protected function init()
     {
+        parent::init();
         if ($this->isWrappedInDynamicPage()) {
             $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->setIncludeFilterTab(false);
         }
@@ -41,11 +42,11 @@ class ui5DataTable extends ui5AbstractElement
     public function buildJsConstructor($oControllerJs = 'oController') : string
     { 
         $controller = $this->getController();
-        $controller->addDependentControl($this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget()));
-        $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos, growing', $this->buildJsDataLoader());
-        $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
         $controller->addProperty($this->getId() . '_pages', $this->buildJsPaginationObject());
         $controller->addMethod('onPaginate', $this, '', $this->buildJsPaginationRefresh());
+        $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
+        $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos, growing', $this->buildJsDataLoader());
+        $controller->addDependentControl('oConfigurator', $this, $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget()));
         $controller->addOnInitScript($this->buildJsRefresh(), $this->getId() . '_loadData');
         
         if ($this->isMTable()) {
@@ -106,7 +107,7 @@ class ui5DataTable extends ui5AbstractElement
         .setModel(new sap.ui.model.json.JSONModel())
         .attachItemPress(function(event){
             {$this->getOnChangeScript()}
-        })
+        }){$this->buildJsClickListeners('oController')}
 
 JS;
     }
@@ -150,8 +151,7 @@ JS;
         $selection_behavior = $widget->getMultiSelect() ? 'sap.ui.table.SelectionBehavior.Row' : 'sap.ui.table.SelectionBehavior.RowOnly';
         
         $js = <<<JS
-        function() {
-            var oTable = new sap.ui.table.Table("{$this->getId()}", {
+            new sap.ui.table.Table("{$this->getId()}", {
         		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto,
                 selectionMode: {$selection_mode},
         		selectionBehavior: {$selection_behavior},
@@ -175,11 +175,7 @@ JS;
                     pages.increasePageSize();
                     {$this->buildJsRefresh(true, true)}
                 }
-            });            
-
-            {$this->buildJsClickListeners('oTable')}
-            return oTable;
-        }()
+            }){$this->buildJsClickListeners('oController')}
 JS;
             
         return $js;
@@ -549,8 +545,9 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsToolbar()
+    protected function buildJsToolbar($oControllerJsVar = 'oController')
     {
+        $controller = $this->getController();
         $heading = $this->buildTextTableHeading();
         if ($this->getWidget()->getPaginate()) {
             $heading .= ': ';
@@ -564,8 +561,8 @@ JS;
             text: "{$this->translate('WIDGET.PAGINATOR.PREVIOUS_PAGE')}",
             enabled: false,
             press: function() {
-                oController.{$this->getId()}_pages.previous();
-                {$this->buildJsRefresh(true)}
+                {$oControllerJsVar}.{$this->getId()}_pages.previous();
+                {$this->buildJsRefresh(true, false, $oControllerJsVar)}
             }
         }),
         new sap.m.OverflowToolbarButton("{$this->getId()}_next", {
@@ -574,8 +571,8 @@ JS;
             text: "{$this->translate('WIDGET.PAGINATOR.NEXT_PAGE')}",
 			enabled: false,
             press: function() {
-                oController.{$this->getId()}_pages.next();
-                {$this->buildJsRefresh(true)}
+                {$oControllerJsVar}.{$this->getId()}_pages.next();
+                {$this->buildJsRefresh(true, false, $oControllerJsVar)}
             }
         }),
         
@@ -595,7 +592,7 @@ JS;
                     {$this->buildJsButtonsConstructors()}
 					new sap.m.SearchField("{$this->getId()}_quickSearch", {
                         width: "200px",
-                        search: {$this->getController()->buildJsMethodCallFromView('onLoadData', $this)},
+                        search: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
                         placeholder: "{$this->getQuickSearchPlaceholder(false)}",
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
                     }),
@@ -605,14 +602,8 @@ JS;
                         tooltip: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),
                         press: function() {
-                			oController.{$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsVarName()}.open();
+                			{$controller->buildJsDependentControlSelector('oConfigurator', $this, $oControllerJsVar)}.open();
                 		}
-                    }),
-                    new sap.m.HBox({
-                        visible: false,
-                        items: [
-                            oController.{$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsVarName()}
-                        ]
                     })		
 				]
 			})
@@ -632,13 +623,27 @@ JS;
     }
     
     /**
+     * Returns inline JS code to refresh the table.
      * 
-     * {@inheritDoc}
+     * If the code snippet is to be used somewhere, where the controller is directly accessible, you can pass the
+     * name of the controller variable to $oControllerJsVar to increase performance.
+     * 
      * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsRefresh()
+     * 
+     * @param bool $keep_page_pos
+     * @param bool $growing
+     * @param string $oControllerJsVar
+     * 
+     * @return ui5DataTable
      */
-    public function buildJsRefresh($keep_page_pos = false, $growing = false)
+    public function buildJsRefresh($keep_page_pos = false, $growing = false, string $oControllerJsVar = null)
     {
-        return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, "undefined, " . ($keep_page_pos ? 'true' : 'false') . ', ' . ($growing ? 'true' : 'false'));
+        $params = "undefined, " . ($keep_page_pos ? 'true' : 'false') . ', ' . ($growing ? 'true' : 'false');
+        if ($oControllerJsVar === null) {
+            return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, $params);
+        } else {
+            return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, $params, $oControllerJsVar);
+        }
     }
     
     /**
@@ -784,9 +789,10 @@ JS;
 JS;
     }
         
-    protected function buildJsClickListeners($jsVarTable = 'oTable')
+    protected function buildJsClickListeners($oControllerJsVar = 'oController')
     {
         $widget = $this->getWidget();
+        
         $js = '';
         $rightclick_script = '';
         		
@@ -794,15 +800,15 @@ JS;
         if ($dblclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[0]) {
             $js .= <<<JS
 
-            {$jsVarTable}.attachBrowserEvent("dblclick", function(oEvent) {
-        		{$this->getTemplate()->getElement($dblclick_button)->buildJsClickFunctionName()}();
-            });
+            .attachBrowserEvent("dblclick", function(oEvent) {
+        		{$this->getTemplate()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+            })
 JS;
         }
         
         // Right click. Currently only supports one double click action - the first one in the list of buttons
         if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
-            $rightclick_script = $this->getTemplate()->getElement($rightclick_button)->buildJsClickFunctionName() . '()';
+            $rightclick_script = $this->getTemplate()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar);
         } else {
             $rightclick_script = $this->buildJsContextMenuTrigger();
         }
@@ -810,10 +816,10 @@ JS;
         if ($rightclick_script) {
             $js .= <<<JS
             
-            {$jsVarTable}.attachBrowserEvent("contextmenu", function(oEvent) {
+            .attachBrowserEvent("contextmenu", function(oEvent) {
                 oEvent.preventDefault();
                 {$rightclick_script}
-        	});
+        	})
 
 JS;
         }
@@ -823,16 +829,16 @@ JS;
             if ($this->isUiTable()) {
                 $js .= <<<JS
                 
-            {$jsVarTable}.attachBrowserEvent("click", function(oEvent) {
-        		{$this->getTemplate()->getElement($leftclick_button)->buildJsClickFunctionName()}();
-            });
+            .attachBrowserEvent("click", function(oEvent) {
+        		{$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)}();
+            })
 JS;
             } else {
                 $js .= <<<JS
                 
-            {$jsVarTable}.attachItemPress(function(oEvent) {
-                {$this->getTemplate()->getElement($leftclick_button)->buildJsClickFunctionName()}();
-            });
+            .attachItemPress(function(oEvent) {
+                {$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)}();
+            })
 JS;
             }
         }
@@ -927,12 +933,14 @@ JS;
                         })
 JS;
         } else {
+            $handler = $btn_element->buildJsClickViewEventHandlerCall();
+            $select = $handler !== '' ? 'select: ' . $handler . ',' : '';
             $menu_item = <<<JS
 
                         new sap.ui.unified.MenuItem({
                             icon: "{$btn_element->buildCssIconClass($button->getIcon())}",
                             text: "{$button->getCaption()}",
-                            select: {$btn_element->buildJsClickFunctionName()},
+                            {$select}
                             {$startsSectionProperty}
                         })
 JS;

@@ -343,9 +343,9 @@ function contextShowMenu(oButton){
 			var viewMatch = data.match(/sap.ui.jsview\("(.*)"/i);
             if (viewMatch !== null) {
                 var view = viewMatch[1];
-                data = data.replace(view, view+'.'+oButton.data('widget'));
-                view = view+'.'+oButton.data('widget');
                 $('body').append(data);
+            } else {
+            	showHtmlInDialog(text.Status, data);
             }
             
             var page = oPopover.getContent()[0].getPages()[0];
@@ -356,8 +356,7 @@ function contextShowMenu(oButton){
 		},
 		error: function(jqXHR, textStatus, errorThrown){
 			oButton.setBusy(false);
-			console.log(textStatus);
-			//adminLteCreateDialog($("body"), "error", jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText, "error_tab_layouter()");
+			showHtmlInDialog(textStatus, jqXHR.responseText, "error");
 		}
 	});
 }

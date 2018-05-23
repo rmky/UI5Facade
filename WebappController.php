@@ -6,6 +6,7 @@ use exface\Core\DataTypes\StringDataType;
 use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
 use exface\Core\Exceptions\Templates\TemplateLogicError;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
+use exface\Core\Exceptions\OutOfBoundsException;
 
 class WebappController implements ui5ControllerInterface
 {
@@ -55,7 +56,12 @@ class WebappController implements ui5ControllerInterface
      */
     public function buildJsMethodCallFromView(string $methodName, ui5AbstractElement $callerElement, $oController = 'oController') : string
     {
-        return "[{$oController}.{$this->buildJsMethodName($methodName, $callerElement)}, {$oController}]";
+        $propertyName = $this->buildJsMethodName($methodName, $callerElement);
+        if (! $this->hasProperty($propertyName)) {
+            throw new OutOfBoundsException('Method "' . $propertyName . '" not found in controller "' . $this->getName() . '"!');
+        }
+        
+        return "[{$oController}.{$propertyName}, {$oController}]";
     }
     
     public function buildJsMethodCallFromController(string $methodName, ui5AbstractElement $methodOwner, string $paramsJs, string $oControllerJsVar = null) : string
@@ -63,14 +69,20 @@ class WebappController implements ui5ControllerInterface
         if ($oControllerJsVar === null) {
             $oControllerJsVar = "{$this->buildJsComponentGetter()}.findViewOfControl(sap.ui.getCore().byId('{$methodOwner->getId()}')).getController()";
         }
+        
+        $propertyName = $this->buildJsMethodName($methodName, $methodOwner);
+        if (! $this->hasProperty($propertyName)) {
+            throw new OutOfBoundsException('Method "' . $propertyName . '" not found in controller "' . $this->getName() . '"!');    
+        }
+        
         if ($methodOwner->getController() === $this) {
-            return "{$oControllerJsVar}.{$this->buildJsMethodName($methodName, $methodOwner)}({$paramsJs})";
+            return "{$oControllerJsVar}.{$propertyName}({$paramsJs})";
         }
         
         throw new TemplateLogicError('Calling a controller method from another controller not implemented yet!');
     }
     
-    public function buildJsAccessFromElement(ui5AbstractElement $fromElement) : string
+    public function buildJsAccessorFromElement(ui5AbstractElement $fromElement) : string
     {
         return "sap.ui.getCore().byId('{$this->getViewId($fromElement)}').getController()";
     }
@@ -171,25 +183,23 @@ JS;
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addDependentControl()
      */
-    public function addDependentControl(ui5AbstractElement $element, $name = null) : ui5ControllerInterface
+    public function addDependentControl(string $name, ui5AbstractElement $ownerElement, ui5AbstractElement $dependentElement) : ui5ControllerInterface
     {
-        if ($name === null) {
-            $name = $element->buildJsVarName();
-        }
+        $propertyName = $this->buildJsObjectName($name, $ownerElement);
         
         $initFunctionCall = <<<JS
         
-                this._{$name}Init();
+                this._{$propertyName}Init();
 JS;
         $initFunction = <<<JS
 function() {
                     var oController = this;
-                    this.{$name} = {$element->buildJsConstructor('oController')};
-                    oController.getView().addDependent(this.{$name});
+                    this.{$propertyName} = {$dependentElement->buildJsConstructor('oController')};
+                    oController.getView().addDependent(this.{$propertyName});
                 },
 JS;
-        $this->addProperty($name, 'null');
-        $this->addProperty('_'.$name.'Init', $initFunction);
+        $this->addProperty($propertyName, 'null');
+        $this->addProperty('_'.$propertyName.'Init', $initFunction);
         $this->addOnInitScript($initFunctionCall, $name);
         return $this;
     }
@@ -392,8 +402,62 @@ JS;
         return $js;
     }  
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getView()
+     */
     public function getView() : ui5ViewInterface
     {
         return $this->view;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::hasProperty()
+     */
+    public function hasProperty(string $name) : bool
+    {
+        return ! empty($this->properties[$name]);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::hasMethod()
+     */
+    public function hasMethod(string $name, ui5AbstractElement $ownerElement) : bool
+    {
+        return $this->hasProperty($this->buildJsMethodName($name, $ownerElement));
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::hasDependent()
+     */
+    public function hasDependent(string $name, ui5AbstractElement $ownerElement) : bool
+    {
+        return $this->hasProperty($this->buildJsObjectName($name, $ownerElement));
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsDependentControlSelector()
+     */
+    public function buildJsDependentControlSelector(string $controlName, ui5AbstractElement $ownerElement, string $oControllerJsVar = null) : string
+    {
+        $propertyName = $this->buildJsObjectName($controlName, $ownerElement);
+        if (! $this->hasProperty($propertyName)) {
+            throw new OutOfBoundsException('Dependent control "' . $propertyName . ' not found in controller "' . $this->getName() . '"');
+        }
+        
+        if ($oControllerJsVar === null) {
+            $oControllerJsVar = $ownerElement->getController()->buildJsAccessorFromElement($ownerElement);
+        }
+        
+        return $oControllerJsVar . '.' . $propertyName;
     }
 }

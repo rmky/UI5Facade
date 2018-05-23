@@ -71,6 +71,7 @@ JS;
      */
     protected function buildJsButtonListItem(Button $button) : string
     {
+        /* @var $btn_element \exface\OpenUI5Template\Templates\Elements\ui5Button */
         $btn_element = $this->getTemplate()->getElement($button);
         
         if ($button->getIcon()) {
@@ -79,15 +80,18 @@ JS;
             $icon = '';
         }
         
+        $handler = $btn_element->buildJsClickViewEventHandlerCall();
+        $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
+        
         return <<<JS
 
             new sap.m.StandardListItem({
 				title: "{$btn_element->getCaption()}",
                 iconDensityAware: false,
 				iconInset: false,
-                {$icon}
-				type: "Active",
-				press: function(){ {$btn_element->buildJsClickFunctionName()}() },
+                type: "Active",
+				{$icon}
+				{$press}
 			}),
 
 JS;

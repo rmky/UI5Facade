@@ -61,7 +61,7 @@ class Webapp implements WorkbenchDependantInterface
                     $path = StringDataType::substringBefore($path, '.view.js');
                     $widget = $this->getWidgetFromPath($path);
                     if ($widget) {
-                        $view = $this->template->getElement($widget)->getController()->getView();
+                        $view = $this->template->createController($this->template->getElement($widget))->getView();
                         return $view->buildJsView();
                     } 
                     return '';
@@ -72,7 +72,7 @@ class Webapp implements WorkbenchDependantInterface
                     $path = StringDataType::substringBefore($path, '.controller.js');
                     $widget = $this->getWidgetFromPath($path);
                     if ($widget) {
-                        $controller = $this->template->getElement($widget)->getController();
+                        $controller = $this->template->createController($this->template->getElement($widget));
                         return $controller->buildJsController();
                     }
                     return '';
@@ -179,10 +179,10 @@ class Webapp implements WorkbenchDependantInterface
     protected function getWidgetFromPath($path)
     {
         $parts = explode('/', $path);
-        
-        if (count($parts) === 1) {
+        $cnt = count($parts);
+        if ($cnt === 1) {
             $pageAlias = $parts[0];
-        } elseif (count($parts) !== 3 || count($parts) !== 4) {
+        } elseif ($cnt !== 3 || $cnt !== 4) {
             $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];
         } else {
             throw new Ui5RouteInvalidException('Route "' . $path . '" not found!');

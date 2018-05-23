@@ -9,6 +9,7 @@ use exface\Core\Factories\UiPageFactory;
 use exface\Core\DataTypes\StringDataType;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
 use exface\Core\Exceptions\LogicException;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 
 /**
  *
@@ -461,10 +462,15 @@ JS;
             if ($this->getWidget()->hasParent()) {
                 return $this->getTemplate()->getElement($this->getWidget()->getParent())->getController();
             } else {
-                $this->controller = $this->getTemplate()->createController($this->getWidget());
+                throw new LogicException('No controller was initialized for page "' . $this->getWidget()->getPage()->getAliasWithNamespace() . '"!');
             }
         }
         return $this->controller;
+    }
+    
+    public function getView() : ui5ViewInterface
+    {
+        return $this->controller->getView();
     }
     
     public function setController(ui5ControllerInterface $controller) : ui5AbstractElement

@@ -36,24 +36,43 @@ class ui5Html extends ui5Value
     {
         $widget = $this->getWidget();
         $html = $widget->getHtml();
-        foreach ($this->getScriptTagsFromHtml($html) as $tag => $script) {
+        
+        // Extract <script></script>
+        foreach ($this->getTagsFromHtml($html, 'script') as $tag => $script) {
             $scripts .= $script;
             $html = str_replace($tag, '', $html);
         }
+        
+        // Extract <style></style>
+        foreach ($this->getTagsFromHtml($html, 'style') as $tag => $style) {
+            $styles .= str_replace("\n", "\\n", $style);
+            $html = str_replace($tag, '', $html);
+        }
+        
         $content = $this->escapeJsTextValue($html);
         return <<<JS
         new sap.ui.core.HTML("{$this->getId()}", {
             content: "<div class=\"exf-html\">{$content}</div>",
             afterRendering: function() {
                 {$scripts}
+                if ($('#{$this->getId()}_styles').length === 0) {
+                    $('head').append('<style id="{$this->getId()}_styles">{$styles}</style>');
+                }
             }
         })
 JS;
     }
-        
-    protected function getScriptTagsFromHtml($html)
+                
+    protected function escapeJsTextValue($text)
     {
-        $script_tags = [];
+        $text = parent::escapeJsTextValue($text);
+        $text = str_replace(['{', '}'], ['&#123;', '&#125;'], $text);
+        return $text;
+    }
+    
+    protected function getTagsFromHtml($html, $tag) : array
+    {
+        $tags = [];
         // Fetch all <script> tags into a multidimensional array:
         // [
         //  0 => [
@@ -66,8 +85,8 @@ JS;
         //      1 => second script
         //      ...
         //  ]
-        preg_match_all("/<script.*?>(.*?)<\/script>/si", $html, $script_tags);
-        return array_combine($script_tags[0], $script_tags[1]);
+        preg_match_all("/<{$tag}.*?>(.*?)<\/{$tag}>/si", $html, $tags);
+        return array_combine($tags[0], $tags[1]);
     }
     
     public function buildCssInlineStyles() : string

@@ -196,11 +196,11 @@ JS;
     public function addDependentControl(string $name, ui5AbstractElement $ownerElement, ui5AbstractElement $dependentElement) : ui5ControllerInterface
     {
         $propertyName = $this->buildJsObjectName($name, $ownerElement);
+        $initMethodName = '_'.$propertyName.'Init';
         
         $initFunctionCall = <<<JS
         
-                this._{$propertyName}Init();
-                console.log(this.{$propertyName});
+                this.{$initMethodName}();
 JS;
         $initFunction = <<<JS
 function() {
@@ -210,8 +210,8 @@ function() {
                 },
 JS;
         $this->addProperty($propertyName, 'null');
-        $this->addProperty('_'.$propertyName.'Init', $initFunction);
-        $this->addOnInitScript($initFunctionCall, $name);
+        $this->addProperty($initMethodName, $initFunction);
+        $this->addOnInitScript($initFunctionCall, $initMethodName);
         return $this;
     }
     

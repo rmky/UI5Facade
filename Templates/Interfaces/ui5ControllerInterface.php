@@ -127,7 +127,7 @@ interface ui5ControllerInterface {
      * @param ui5AbstractElement $fromElement
      * @return string
      */
-    public function buildJsAccessorFromElement(ui5AbstractElement $fromElement) : string;
+    public function buildJsControllerGetter(ui5AbstractElement $fromElement) : string;
     
     /**
      * 
@@ -169,4 +169,10 @@ interface ui5ControllerInterface {
      * @return string
      */
     public function buildJsDependentControlSelector(string $controlName, ui5AbstractElement $ownerElement, string $oControllerJsVar = null) : string;
+    
+    /**
+     * 
+     * @return string
+     */
+    public function buildJsComponentGetter() : string;
 }

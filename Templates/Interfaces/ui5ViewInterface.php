@@ -22,4 +22,6 @@ interface ui5ViewInterface {
     
     public function setController(ui5ControllerInterface $controller) : ui5ViewInterface; 
     
+    public function buildJsViewGetter(ui5AbstractElement $fromElement) : string;
+    
 }

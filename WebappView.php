@@ -117,5 +117,14 @@ JS;
         return $this;
     }
 
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::buildJsViewGetter()
+     */
+    public function buildJsViewGetter(ui5AbstractElement $fromElement) : string
+    {
+        return "{$this->getController()->buildJsComponentGetter($fromElement)}.findViewOfControl(sap.ui.getCore().byId('{$fromElement->getId()}'))";
+    }
     
 }

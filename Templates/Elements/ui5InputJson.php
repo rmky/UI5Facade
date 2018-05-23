@@ -63,7 +63,7 @@ JS;
      */
     public function buildJsValueGetter()
     {
-        return 'function(){var text = ' . $this->getController()->buildJsAccessorFromElement($this) . '.' . $this->buildJsControllerVar() . '.getText(); if (text === "{}" || text === "[]") { return ""; } else { return text;}}';
+        return 'function(){var text = ' . $this->getController()->buildJsControllerGetter($this) . '.' . $this->buildJsControllerVar() . '.getText(); if (text === "{}" || text === "[]") { return ""; } else { return text;}}';
     }
     
     protected function buildJsControllerVar() : string

@@ -82,12 +82,22 @@ class WebappController implements ui5ControllerInterface
         throw new TemplateLogicError('Calling a controller method from another controller not implemented yet!');
     }
     
-    public function buildJsAccessorFromElement(ui5AbstractElement $fromElement) : string
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsControllerGetter()
+     */
+    public function buildJsControllerGetter(ui5AbstractElement $fromElement) : string
     {
         return "sap.ui.getCore().byId('{$this->getViewId($fromElement)}').getController()";
     }
     
-    protected function buildJsComponentGetter()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsComponentGetter()
+     */
+    public function buildJsComponentGetter() : string
     {
         return "sap.ui.getCore().getComponent('{$this->getWebapp()->getComponentId()}')";
     }
@@ -190,6 +200,7 @@ JS;
         $initFunctionCall = <<<JS
         
                 this._{$propertyName}Init();
+                console.log(this.{$propertyName});
 JS;
         $initFunction = <<<JS
 function() {
@@ -455,7 +466,7 @@ JS;
         }
         
         if ($oControllerJsVar === null) {
-            $oControllerJsVar = $ownerElement->getController()->buildJsAccessorFromElement($ownerElement);
+            $oControllerJsVar = $ownerElement->getController()->buildJsControllerGetter($ownerElement);
         }
         
         return $oControllerJsVar . '.' . $propertyName;

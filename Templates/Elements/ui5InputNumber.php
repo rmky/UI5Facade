@@ -73,7 +73,7 @@ JS;
             $this->addOnChangeScript($onChange);
         }
     }
-    public function buildJsConstructorForMainControl()
+    public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
         if (! $this->isStepInput()) {
             return parent::buildJsConstructorForMainControl();

@@ -23,9 +23,9 @@ class ui5Display extends ui5Value
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor()
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl());
+        return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     
     /**
@@ -33,7 +33,7 @@ class ui5Display extends ui5Value
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsConstructorForMainControl()
      */
-    public function buildJsConstructorForMainControl()
+    public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
         if ($this->getWidget()->getValueDataType() instanceof BooleanDataType) {
             if ($this->getWidget()->getParent() instanceof DataColumn) {

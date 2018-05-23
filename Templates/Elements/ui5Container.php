@@ -15,12 +15,21 @@ class ui5Container extends ui5AbstractElement
 {
     use JqueryContainerTrait;
     
-    public function buildJsConstructor()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     */
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         return $this->buildJsChildrenConstructors();
     }
     
-    public function buildJsChildrenConstructors()
+    /**
+     * 
+     * @return string
+     */
+    public function buildJsChildrenConstructors() : string
     {
         $js = '';
         foreach ($this->getWidget()->getWidgets() as $widget) {
@@ -28,11 +37,6 @@ class ui5Container extends ui5AbstractElement
         }
         
         return $js;
-    }
-    
-    public function buildJs()
-    {
-        return $this->buildJsForChildren();
     }
 }
 ?>

@@ -18,35 +18,50 @@ class ui5DataConfigurator extends ui5Tabs
     use JqueryDataConfiguratorTrait;
     
     private $include_filter_tab = true;
-    
-    public function buildJs(){
-        return parent::buildJs() . <<<JS
-
-    var {$this->getJsVar()} = {$this->buildJsConstructor()};
-
-JS;
-    }
-        
+       
+    /**
+     * 
+     * @param boolean $true_or_false
+     * @return \exface\OpenUI5Template\Templates\Elements\ui5DataConfigurator
+     */
     public function setIncludeFilterTab($true_or_false)
     {
         $this->include_filter_tab = BooleanDataType::cast($true_or_false);
         return $this;
     }
     
-    public function getIncludeFilterTab()
+    /**
+     * 
+     * @return bool
+     */
+    public function getIncludeFilterTab() : bool
     {
         return $this->include_filter_tab;
     }
     
-    public function buildJsConstructor()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Tabs::buildJsConstructor()
+     */
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        
+        $okScript = <<<JS
+                function(oEvent) {
+                    oEvent.getSource().close(); console.log(this);
+                    {$this->getTemplate()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh()};
+                }
+
+JS;
+        $cancelScript = 'function(oEvent) {oEvent.getSource().close();}';
+                    
+        $controller = $this->getController();
         
         return <<<JS
 
         new sap.m.P13nDialog("{$this->getId()}", {
-            ok: function() { {$this->getJsVar()}.close(); {$this->getTemplate()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh()}; },
-            cancel: function() { {$this->getJsVar()}.close() },
+            ok: {$controller->buildJsViewEventHandler('onOk', $this, $okScript)},
+            cancel: {$controller->buildJsViewEventHandler('onCancel', $this, $cancelScript)},
             showReset: true,
             reset: "handleReset",
             panels: [
@@ -70,8 +85,12 @@ JS;
 
 JS;
     }
-                
-    public function buildJsInitialSortItems()
+               
+    /**
+     * 
+     * @return string
+     */
+    public function buildJsInitialSortItems() : string
     {
         $js = '';
         $operations = [SortingDirectionsDataType::ASC => 'Ascending', SortingDirectionsDataType::DESC => 'Descending'];
@@ -88,7 +107,7 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsTabFilters()
+    protected function buildJsTabFilters() : string
     {
         if (! $this->getIncludeFilterTab()) {
             return '';
@@ -96,7 +115,7 @@ JS;
         
         return <<<JS
 
-                new exface.core.P13nLayoutPanel({
+                new exface.openui5.P13nLayoutPanel({
                     title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.FILTERS')}",
                     layoutMode: "Desktop",
                     content: [
@@ -111,8 +130,12 @@ JS;
 JS;
         
     }
-                                
-    protected function buildJsTabSorters()
+           
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsTabSorters() : string
     {
         return <<<JS
 
@@ -160,7 +183,11 @@ JS;
 JS;
     }
         
-    protected function buildJsTabColumns()
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsTabColumns() : string
     {
         return <<<JS
 
@@ -203,8 +230,12 @@ JS;
                 }),
 JS;
     }
-                
-    protected function buildJsonColumnData()
+              
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsonColumnData() : string
     {
         $data = [];
         foreach ($this->getWidget()->getWidgetConfigured()->getColumns() as $col) {
@@ -221,7 +252,11 @@ JS;
         return json_encode($data);
     }
     
-    protected function buildJsonSorterData()
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsonSorterData() : string
     {
         $data = [];
         $sorters = [];
@@ -253,7 +288,7 @@ JS;
      * 
      * @return string
      */
-    public function buildJsFilters()
+    public function buildJsFilters() : string
     {
         $filters = '';
         $filters_hidden = '';
@@ -277,7 +312,8 @@ JS;
      * @param ui5Filter $element
      * @return string
      */
-    protected function buildJsFilter(ui5Filter $element) {
+    protected function buildJsFilter(ui5Filter $element) : string
+    {
         $element->addPseudoEventHandler('onsapenter', $this->getTemplate()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh());
         return <<<JS
         
@@ -291,8 +327,12 @@ JS;
                         
 JS;
     }
-                        	    
-    public function getIdOfSortPanel()
+          
+    /**
+     * 
+     * @return string
+     */
+    public function getIdOfSortPanel() : string
     {
         return $this->getId() . '_SortPanel';
     }

@@ -16,28 +16,8 @@ use exface\Core\Widgets\MenuButton;
 class ui5MenuButton extends ui5AbstractElement
 {
     use JqueryButtonTrait;
-
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJs()
-     */
-    public function buildJs()
-    {
-        $output = '';
-        foreach ($this->getWidget()->getButtons() as $b) {
-            if ($js_click_function = $this->getTemplate()->getElement($b)->buildJsClickFunction()) {
-                $output .= "
-					function " . $this->getTemplate()->getElement($b)->buildJsClickFunctionName(). "(){
-						" . $js_click_function . "
-					}
-					";
-            }
-        }
-        return $output;
-    }
     
-    public function buildJsConstructor()
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         return <<<JS
 
@@ -89,15 +69,19 @@ JS;
                 if ($start_section) {
                     $properties .= 'startsSection: true,';
                 }
+                
+                /* @var $btnElement \exface\OpenUI5Template\Templates\Elements\ui5Button */
+                $btnElement = $this->getTemplate()->getElement($b);
+                $handler = $btnElement->buildJsClickViewEventHandlerCall();
+                $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
+                
                 $js .= <<<JS
 
                         new sap.m.MenuItem({
                             {$properties}
-                            text: "{$b->getCaption()}",
-                            icon: "{$this->getIconSrc($b->getIcon())}",
-                            press: function(oEvent) {
-                                {$this->getTemplate()->getElement($b)->buildJsClickFunctionName()}();
-                            }
+                            text: "{$btnElement->getCaption()}",
+                            icon: "{$btnElement->getIconSrc($b->getIcon())}",
+                            {$press}
                         }),
 
 JS;

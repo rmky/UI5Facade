@@ -16,8 +16,20 @@ use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsNumberFormatter;
 use exface\OpenUI5Template\Templates\Formatters\ui5NumberFormatter;
 use exface\OpenUI5Template\Templates\Middleware\ui5TableUrlParamsReader;
 use exface\OpenUI5Template\Templates\Middleware\ui5WebappRouter;
-use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\OpenUI5Template\Webapp;
+use exface\Core\Interfaces\WidgetInterface;
+use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
+use exface\Core\Interfaces\Model\UiPageInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use exface\Core\Factories\UiPageFactory;
+use exface\Core\Exceptions\RuntimeException;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
+use exface\OpenUI5Template\WebappController;
+use exface\Core\Exceptions\LogicException;
+use exface\Core\DataTypes\StringDataType;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
+use exface\OpenUI5Template\WebappView;
 
 /**
  * 
@@ -29,7 +41,13 @@ use exface\OpenUI5Template\Webapp;
 class OpenUI5Template extends AbstractAjaxTemplate
 {
 
-    protected $request_columns = array();
+    private $requestPageAlias = null;
+    
+    private $rootView = null;
+    
+    private $rootController = null;
+    
+    private $webapp = null;
     
     /**
      * Cache for config key WIDGET.DIALOG.MAXIMIZE_BY_DEFAULT_IN_ACTIONS:
@@ -49,6 +67,20 @@ class OpenUI5Template extends AbstractAjaxTemplate
         $this->setClassNamespace(__NAMESPACE__);
     }
     
+    public function handle(ServerRequestInterface $request) : ResponseInterface
+    {
+        if ($task = $request->getAttribute($this->getRequestAttributeForTask())) {
+            $pageAlias = $task->getPageTriggeredOn()->getAliasWithNamespace();
+            if ($this->requestPageAlias === null) {
+                $this->requestPageAlias = $pageAlias;
+            }
+            if ($this->webapp === null) {
+                $this->initWebapp($pageAlias);
+            }
+        }
+        return parent::handle($request);
+    }
+    
     /**
      * 
      * {@inheritDoc}
@@ -56,19 +88,54 @@ class OpenUI5Template extends AbstractAjaxTemplate
      */
     public function buildJs(\exface\Core\Widgets\AbstractWidget $widget)
     {
-        $instance = $this->getElement($widget);
-        $js = $instance->buildJs();
-        return $js . ($js ? "\n" : '') . $instance->buildJsView();
-    }
-    
-    public function buildJsView(string $viewName, string $appId) : string
-    {
+        $element = $this->getElement($widget);
         
-    }
-    
-    public function buildJsController(string $controllerName, string $appId) : string
-    {
+        // If we are showing the root page of the app (more precisely the root widget of the root page),
+        // include common views and controllers to avoid extra ajax calls.
+        if ($widget === $this->getWebapp()->getRootPage()->getWidgetRoot()) {
+            $baseControllers = $this->getWebapp()->get('controller/BaseController.js') . "\n\n" 
+                             . $this->getWebapp()->get('controller/App.controller.js');
+            $baseViews = $this->getWebapp()->get('view/App.view.js');
+        }
         
+        $controller = $this->createController($element);
+        
+        return <<<JS
+sap.ui.getCore().attachInit(function () {
+    
+    {$baseControllers}
+    
+    {$baseViews}
+
+    {$controller->buildJsController()}
+
+    {$controller->getView()->buildJsView()}
+
+});
+
+JS;
+    }
+         
+    /**
+     * 
+     * @param WidgetInterface $widget
+     * @return string
+     */
+    public function getViewName(WidgetInterface $widget, UiPageInterface $appRootPage) : string
+    {
+        $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : $appRootPage->getAliasWithNamespace();
+        return $appRootPage->getAliasWithNamespace() . '.view.' . $pageAlias . ($widget->hasParent() ? '.' . $widget->getId() : '');
+    }  
+    
+    /**
+     * 
+     * @param WidgetInterface $widget
+     * @return string
+     */
+    public function getControllerName(WidgetInterface $widget, UiPageInterface $appRootPage) : string
+    {
+        $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : $appRootPage->getAliasWithNamespace();
+        return $appRootPage->getAliasWithNamespace() . '.controller.' . $pageAlias . ($widget->hasParent() ? '.' . $widget->getId() : '');
     }
     
     /**
@@ -164,7 +231,12 @@ class OpenUI5Template extends AbstractAjaxTemplate
      */
     public function getWebappTemplateFolder() : string
     {
-        return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'webapp' . DIRECTORY_SEPARATOR;
+        return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'Webapp' . DIRECTORY_SEPARATOR;
+    }
+    
+    public function getWebapp() : Webapp
+    {
+        return $this->webapp;
     }
     
     /**
@@ -172,9 +244,85 @@ class OpenUI5Template extends AbstractAjaxTemplate
      * @param string $id
      * @return Webapp
      */
-    public function createWebapp(string $id, array $config) : Webapp
+    public function initWebapp(string $id, array $config = null) : Webapp
     {
-        return new Webapp($this, $id, $this->getWebappTemplateFolder(), $config);
+        if ($this->webapp !== null) {
+            throw new LogicException('Cannot initialize webapp in "' . $this->getAlias() . '": it had been already initialized previously!');
+        }
+        $config = $config === null ? $this->getWebappDefaultConfig($id) : $config;
+        $app = new Webapp($this, $id, $this->getWebappTemplateFolder(), $config);
+        $this->webapp = $app;
+        return $app;
+    }
+    
+    protected function getRequestPage() : UiPageInterface
+    {
+        if ($this->requestPageAlias === null) {
+            throw new RuntimeException('No root page found in request for template "' . $this->getAliasWithNamespace() . '"!');
+        }
+        return UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $this->requestPageAlias);
+    }
+    
+    protected function getWebappDefaultConfig(string $appId) : array
+    {
+        return [
+            'app_id' => $appId,
+            'component_path' => str_replace('.', '/', $appId),
+            'ui5_app_control' => 'sap.m.App',
+            'ui5_min_version' => '1.52'/*,
+            'name' => 'axenox WMS MDE', 
+            'current_version' => '1.0.0', 
+            'current_version_date' => '2018-04-25 14:10:40',
+            'app_title' => '{{appTitle}}', 
+            'ui5_min_version' => '1.52', 
+            'root_page_alias' => 'axenox.wms.mde-verladen-x', 
+            'ui5_source' => 'https://openui5.hana.ondemand.com/resources/sap-ui-core.js', 
+            'ui5_theme' => 'sap_belize', 
+            'ui5_app_control' => 'sap.m.App', 
+            'app_subTitle' => '', 
+            'app_shortTitle' => '', 
+            'app_info' => '', 
+            'app_description' => '{{appDescription}}', 
+            'assets_path' => './'*/
+        ];
+    }
+    
+    /**
+     * 
+     * @param ui5AbstractElement $element
+     * @param string $controllerName
+     * @return ui5ControllerInterface
+     */
+    public function createController(ui5AbstractElement $element, $controllerName = null) : ui5ControllerInterface
+    {
+        if ($controllerName === null) {
+            $controllerName = $this->getControllerName($element->getWidget(), $this->getWebapp()->getRootPage());
+        }
+        $controller = new WebappController($this->getWebapp(), $controllerName, $this->createView($element));
+        $element->setController($controller);
+        
+        $controller->addExternalCss($this->buildUrlToSource('LIBS.TEMPLATE.CSS'));
+        $controller->addExternalCss($this->buildUrlToSource('LIBS.FONT_AWESOME.CSS'));
+        
+        $controller->addExternalModule('libs.font_awesome.plugin', $this->buildUrlToSource('LIBS.FONT_AWESOME.PLUGIN'));
+        $controller->addExternalModule('libs.exface.custom_controls', $this->buildUrlToSource('LIBS.TEMPLATE.CUSTOM_CONTROLS'));
+        
+        return $controller;
+    }
+    
+    /**
+     * 
+     * @param ui5AbstractElement $element
+     * @param string $viewName
+     * @return ui5ViewInterface
+     */
+    public function createView(ui5AbstractElement $element, $viewName = null) : ui5ViewInterface
+    {
+        $widget = $element->getWidget();
+        if ($viewName === null) {
+            $viewName = $this->getViewName($widget, $this->getWebapp()->getRootPage());
+        }
+        return new WebappView($this->getWebapp(), $viewName, $element);
     }
 }
 ?>

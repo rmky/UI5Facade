@@ -28,6 +28,7 @@ class ui5DataTable extends ui5AbstractElement
      */
     protected function init()
     {
+        parent::init();
         if ($this->isWrappedInDynamicPage()) {
             $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->setIncludeFilterTab(false);
         }
@@ -36,30 +37,18 @@ class ui5DataTable extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJs()
-     */
-    function buildJs()
-    {
-        $buttons_functions = '';
-        foreach ($this->getWidget()->getButtons() as $btn) {
-            $buttons_functions .= $this->getTemplate()->getElement($btn)->buildJs();
-        }
-        return <<<JS
-    var {$this->getJsVar()};
-    {$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJs()}
-	{$this->buildJsDataSource()}
-    {$this->buildJsPagination()}
-    {$buttons_functions}
-JS;
-    }
-    
-    /**
-     * 
-     * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor()
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     { 
+        $controller = $this->getController();
+        $controller->addProperty($this->getId() . '_pages', $this->buildJsPaginationObject());
+        $controller->addMethod('onPaginate', $this, '', $this->buildJsPaginationRefresh());
+        $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
+        $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos, growing', $this->buildJsDataLoader());
+        $controller->addDependentControl('oConfigurator', $this, $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget()));
+        $controller->addOnInitScript($this->buildJsRefresh(), $this->getId() . '_loadData');
+        
         if ($this->isMTable()) {
             $js = $this->buildJsConstructorForMTable();
         } else {
@@ -94,35 +83,31 @@ JS;
         $striped = $this->getWidget()->getStriped() ? 'true' : 'false';
         
         return <<<JS
-        function() {
-            var {$this->getJsVar()} = new sap.m.Table("{$this->getId()}", {
-        		fixedLayout: false,
-                alternateRowColors: {$striped},
-        		mode: {$mode},
-                headerToolbar: [
-                    {$this->buildJsToolbar()}
-        		],
-        		columns: [
-                    {$this->buildJsColumnsForMTable()}
-        		],
-        		items: {
-        			path: '/data',
-                    {$this->buildJsBindingOptionsForGrouping()}
-                    template: new sap.m.ColumnListItem({
-                        type: "Active",
-                        cells: [
-                            {$this->buildJsCellsForMTable()}
-                        ]
-                    }),
-        		}
-            })
-            .setModel(new sap.ui.model.json.JSONModel());
-            {$this->buildJsClickListeners()}
-            {$this->buildJsRefresh()};
-            return {$this->getJsVar()}
-        }().attachItemPress(function(event){
-            {$this->getOnChangeScript()}
+        new sap.m.Table("{$this->getId()}", {
+    		fixedLayout: false,
+            alternateRowColors: {$striped},
+    		mode: {$mode},
+            headerToolbar: [
+                {$this->buildJsToolbar()}
+    		],
+    		columns: [
+                {$this->buildJsColumnsForMTable()}
+    		],
+    		items: {
+    			path: '/data',
+                {$this->buildJsBindingOptionsForGrouping()}
+                template: new sap.m.ColumnListItem({
+                    type: "Active",
+                    cells: [
+                        {$this->buildJsCellsForMTable()}
+                    ]
+                }),
+    		}
         })
+        .setModel(new sap.ui.model.json.JSONModel())
+        .attachItemPress(function(event){
+            {$this->getOnChangeScript()}
+        }){$this->buildJsClickListeners('oController')}
 
 JS;
     }
@@ -160,20 +145,20 @@ JS;
     protected function buildJsConstructorForUiTable()
     {
         $widget = $this->getWidget();
+        $controller = $this->getController();
         
         $selection_mode = $widget->getMultiSelect() ? 'sap.ui.table.SelectionMode.MultiToggle' : 'sap.ui.table.SelectionMode.Single';
         $selection_behavior = $widget->getMultiSelect() ? 'sap.ui.table.SelectionBehavior.Row' : 'sap.ui.table.SelectionBehavior.RowOnly';
         
         $js = <<<JS
-        function() {
-        	{$this->getJsVar()} = new sap.ui.table.Table("{$this->getId()}", {
+            new sap.ui.table.Table("{$this->getId()}", {
         		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto,
                 selectionMode: {$selection_mode},
         		selectionBehavior: {$selection_behavior},
                 enableColumnReordering:true,
                 enableColumnFreeze: true,
-        		filter: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)},
-        		sort: function(oControlEvent){{$this->buildJsFunctionPrefix()}LoadData(oControlEvent)},
+        		filter: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
+        		sort: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
         		toolbar: [
         			{$this->buildJsToolbar()}
         		],
@@ -182,17 +167,15 @@ JS;
         		],
                 rows: "{/data}"
         	})
-            .setModel(new sap.ui.model.json.JSONModel()) 
-            /*.addEventDelegate({
-                onAfterRendering : function() {
-                  console.log('func');
+            .setModel(new sap.ui.model.json.JSONModel())
+            .attachFirstVisibleRowChanged(function() {
+                var pages = this.{$this->getId()}_pages;
+                var lastVisibleRow = oTable.getFirstVisibleRow() + oTable.getVisibleRowCount();
+                if ((pages.pageSize - lastVisibleRow <= 1) && (pages.end() + 1 !== pages.total)) {
+                    pages.increasePageSize();
+                    {$this->buildJsRefresh(true, true)}
                 }
-            })*/;
-            {$this->getId()}_attachFirstVisibleRowChanged();
-            {$this->buildJsClickListeners()}
-            {$this->buildJsRefresh()};
-            return {$this->getJsVar()}
-        }()
+            }){$this->buildJsClickListeners('oController')}
 JS;
             
         return $js;
@@ -270,19 +253,16 @@ JS;
     }
 
     /**
-     * Returns the definition of a javascript function to fill the table with data: TableIdLoadData(oControlEvent).
-     * 
-     * The function accepts the following optional JS parameters:
-     * - oControlEvent - event that caused the reload (needed for sorting/filtering via column headers to work)
-     * 
+     * Returns the definition of a javascript function to fill the table with data: onLoadDataTableId(oControlEvent).
+     *  
      * @return string
      */
-    protected function buildJsDataSource()
+    protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos', $growingJsVar = 'growing')
     {
         if (! $this->isLazyLoading()) {
-            return $this->buildJsDataSourceOnClient();
+            return $this->buildJsDataLoaderOnClient($oControlEventJsVar, $keepPagePosJsVar, $growingJsVar);
         } else {
-            return $this->buildJsDataSourceOnServer();
+            return $this->buildJsDataLoaderOnServer($oControlEventJsVar, $keepPagePosJsVar, $growingJsVar);
         } 
     }
     
@@ -290,7 +270,7 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsDataSourceOnClient()
+    protected function buildJsDataLoaderOnClient($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos', $growingJsVar = 'growing')
     {
         $widget = $this->getWidget();
         $data = $widget->prepareDataSheetToRead($widget->getValuesDataSheet());
@@ -301,16 +281,14 @@ JS;
         // FIXME make filtering, sorting, pagination, etc. work in lazy mode too!
         
         return <<<JS
-        
-    function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent, keep_page_pos, growing) {
-        try {
-			var data = {$this->getTemplate()->encodeData($this->prepareData($data, false))};
-		} catch (err){
-            console.error('Cannot load data into widget {$this->getId()}!');
-            return;
-		}
-        sap.ui.getCore().byId("{$this->getId()}").getModel().setData(data);
-    }
+
+                try {
+        			var data = {$this->getTemplate()->encodeData($this->prepareData($data, false))};
+        		} catch (err){
+                    console.error('Cannot load data into widget {$this->getId()}!');
+                    return;
+        		}
+                sap.ui.getCore().byId("{$this->getId()}").getModel().setData(data);
     
 JS;
     }
@@ -319,9 +297,22 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsDataSourceOnServer()
+    protected function buildJsDataLoaderOnServer($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos', $growingJsVar = 'growing')
     {
         $widget = $this->getWidget();
+        $controller = $this->getController();
+        
+        if ($this->isWrappedInDynamicPage()) {
+            $dynamicPageFixes = <<<JS
+
+                        if (sap.ui.Device.system.phone) {
+                            sap.ui.getCore().byId('{$this->getId()}_page').setHeaderExpanded(false);
+                        }
+                        // Redraw the table to make it fit the page height agian. Otherwise it would be
+                        // of default height after dialogs close, etc.
+                        sap.ui.getCore().byId('{$this->getId()}').invalidate();
+JS;
+        }
         
         $url = $this->getAjaxUrl();
         $params = '
@@ -332,85 +323,79 @@ JS;
 				';
         
         return <<<JS
+
+        		var oTable = sap.ui.getCore().byId("{$this->getId()}");
+                var params = { {$params} };
+        		var cols = oTable.getColumns();
+        		var oModel = oTable.getModel();
+                var oData = oModel.getData(); 
+                var oController = this;
+                
+                oModel.attachRequestSent(function(){
+        			{$this->buildJsBusyIconShow()}
+        		});
+
+                var fnCompleted = function(oEvent){
+                    {$this->buildJsBusyIconHide()}
+        			if (oEvent.getParameters().success) {
+                        if (growing) {
+                            var oDataNew = this.getData();
+                            oDataNew.data = oData.data.concat(oDataNew.data);
+                        }
+                        oController.{$this->getId()}_pages.total = this.getProperty("/recordsFiltered");
+                        {$controller->buildJsMethodCallFromController('onPaginate', $this, '', 'oController')};
+                        
+                        {$dynamicPageFixes}                     
+
+            			var footerRows = this.getProperty("/footerRows");
+                        if (footerRows){
+            				oTable.setFixedBottomRowCount(parseInt(footerRows));
+            			}
+                    } else {
+                        var error = oEvent.getParameters().errorobject;
+                        {$this->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}
+                    }
+                    
+                    this.setProperty('/filterDescription', {$controller->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
+                    this.detachRequestCompleted(fnCompleted);
+        		};
         
-	function {$this->buildJsFunctionPrefix()}LoadData(oControlEvent, keep_page_pos, growing) {
-		var oTable = sap.ui.getCore().byId("{$this->getId()}");
-        var params = { {$params} };
-		var cols = oTable.getColumns();
-		var oModel = oTable.getModel();
-        var oData = oModel.getData();
+        		oModel.attachRequestCompleted(fnCompleted);
+        		
+        		// Add quick search
+                params.q = sap.ui.getCore().byId('{$this->getId()}_quickSearch').getValue();
+                
+                // Add configurator data
+                params.data = {$this->getP13nElement()->buildJsDataGetter()};
+                
+        		// Add pagination
+                var pages = this.{$this->getId()}_pages;
+                if (! {$keepPagePosJsVar}) {
+                    pages.resetAll();
+                }
+                if ({$growingJsVar}) {
+                    params.start = pages.growingLoadStart();
+                    params.length = pages.growingLoadPageSize();
+                } else {
+                    params.start = pages.start;
+                    params.length = pages.pageSize;
+                }
         
-        oModel.attachRequestSent(function(){
-			{$this->buildJsBusyIconShow()}
-		});
-		
-        var fnCompleted = function(oEvent){
-            {$this->buildJsBusyIconHide()}
-			if (oEvent.getParameters().success) {
-                if (growing) {
-                    var oDataNew = this.getData();
-                    oDataNew.data = oData.data.concat(oDataNew.data);
+                {$this->buildJsDataSourceColumnActions($oControlEventJsVar)}
+                
+                // Add sorters and filters from P13nDialog
+                var aSortItems = sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}').getSortItems();
+                for (var i in aSortItems) {
+                    params.sort = (params.sort ? params.sort+',' : '') + aSortItems[i].getColumnKey();
+                    params.order = (params.order ? params.order+',' : '') + (aSortItems[i].getOperation() == 'Ascending' ? 'asc' : 'desc');
                 }
                 
-                {$this->getId()}_pages.total = this.getProperty("/recordsFiltered");
-                {$this->getId()}_drawPagination();
-                
-                if (sap.ui.Device.system.phone) {
-                    sap.ui.getCore().byId('{$this->getId()}_page').setHeaderExpanded(false);
-                }
-                
-    			var footerRows = this.getProperty("/footerRows");
-                if (footerRows){
-    				oTable.setFixedBottomRowCount(parseInt(footerRows));
-    			}
-            } else {
-                var error = oEvent.getParameters().errorobject;
-                {$this->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}
-            }
-            
-            this.setProperty('/filterDescription', {$this->buildJsFilterSummaryFunctionName()}());
-            this.detachRequestCompleted(fnCompleted);
-		};
-
-		oModel.attachRequestCompleted(fnCompleted);
-		
-		// Add quick search
-        params.q = sap.ui.getCore().byId('{$this->getId()}_quickSearch').getValue();
-        
-        // Add configurator data
-        params.data = {$this->getP13nElement()->buildJsDataGetter()};
-        
-		// Add pagination
-        var pages = {$this->getId()}_pages;
-        if (! keep_page_pos) {
-            pages.resetAll();
-        }
-        if (growing) {
-            params.start = pages.growingLoadStart();
-            params.length = pages.growingLoadPageSize();
-        } else {
-            params.start = pages.start;
-            params.length = pages.pageSize;
-        }
-
-        {$this->buildJsDataSourceColumnActions()}
-        
-        // Add sorters and filters from P13nDialog
-        var aSortItems = sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}').getSortItems();
-        for (var i in aSortItems) {
-            params.sort = (params.sort ? params.sort+',' : '') + aSortItems[i].getColumnKey();
-            params.order = (params.order ? params.order+',' : '') + (aSortItems[i].getOperation() == 'Ascending' ? 'asc' : 'desc');
-        }
-        
-        oModel.loadData("{$url}", params);
-	}
-	
-    {$this->buildJsFilterSummaryFunction()}
+                oModel.loadData("{$url}", params);
     
 JS;
     }
     
-    protected function buildJsDataSourceColumnActions()
+    protected function buildJsDataSourceColumnActions($oControlEventJsVar = 'oControlEvent')
     {
         if ($this->isMTable()) {
             return '';
@@ -427,20 +412,20 @@ JS;
 		}
 		
 		// If sorting just now, make sure the sorter from the event is set too (eventually overwriting the previous sorting)
-		if (oControlEvent && oControlEvent.getId() == 'sort'){
+		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'sort'){
             sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}')
                 .destroySortItems()
                 .addSortItem(
                     new sap.m.P13nSortItem({
-                        columnKey: oControlEvent.getParameters().column.getSortProperty(),
-                        operation: oControlEvent.getParameters().sortOrder
+                        columnKey: {$oControlEventJsVar}.getParameters().column.getSortProperty(),
+                        operation: {$oControlEventJsVar}.getParameters().sortOrder
                     })
                 );
 		}
 		
 		// If filtering just now, make sure the filter from the event is set too (eventually overwriting the previous one)
-		if (oControlEvent && oControlEvent.getId() == 'filter'){
-			params['fltr99_' + oControlEvent.getParameters().column.getFilterProperty()] = oControlEvent.getParameters().value;
+		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'filter'){
+			params['fltr99_' + {$oControlEventJsVar}.getParameters().column.getFilterProperty()] = {$oControlEventJsVar}.getParameters().value;
 		}
 
 JS;
@@ -450,7 +435,7 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsFilterSummaryFunction()
+    protected function buildJsFilterSummaryUpdater()
     {
         $filter_checks = '';
         foreach ($this->getWidget()->getFilters() as $fltr) {
@@ -461,16 +446,14 @@ JS;
             $filter_checks .= 'if(' . $elem->buildJsValueGetter() . ") {filtersCount++; filtersList += (filtersList == '' ? '' : ', ') + '{$elem->getCaption()}';} \n";
         }
         return <<<JS
-    function {$this->buildJsFilterSummaryFunctionName()}() {
-        var filtersCount = 0;
-        var filtersList = '';
-        {$filter_checks}
-        if (filtersCount > 0) {
-            return '{$this->translate('WIDGET.DATATABLE.FILTERED_BY')} (' + filtersCount + '): ' + filtersList;
-        } else {
-            return '{$this->translate('WIDGET.DATATABLE.FILTERED_BY')}: {$this->translate('WIDGET.DATATABLE.FILTERED_BY_NONE')}';
-        }
-    }
+                var filtersCount = 0;
+                var filtersList = '';
+                {$filter_checks}
+                if (filtersCount > 0) {
+                    return '{$this->translate('WIDGET.DATATABLE.FILTERED_BY')} (' + filtersCount + '): ' + filtersList;
+                } else {
+                    return '{$this->translate('WIDGET.DATATABLE.FILTERED_BY')}: {$this->translate('WIDGET.DATATABLE.FILTERED_BY_NONE')}';
+                }
 JS;
     }
     
@@ -487,78 +470,75 @@ JS;
      *
      * @return string
      */
-    protected function buildJsPagination()
+    protected function buildJsPaginationObject()
     {
         $defaultPageSize = $this->getPaginationPageSize();
         
         return <<<JS
+{
+                	start: 0,
+                    pageSize: {$defaultPageSize},
+                    total: 0,
+                    end: function() {
+                        return Math.min(this.start + this.pageSize - 1, this.total - 1);
+                    },
+                    previous: function() {
+                        this.resetPageSize();
+                        if (this.start >= this.pageSize) {
+                            this.start -= this.pageSize;
+                        } else {
+                            this.start = 0;
+                        }
+                    },
+                    next: function() {
+                        if (this.start < this.total - this.pageSize) {
+                            this.start += this.pageSize;
+                        }
+                        this.resetPageSize();
+                    },
+                    increasePageSize: function() {
+                        this.pageSize += {$defaultPageSize};
+                    },
+                    resetPageSize: function() {
+                        this.pageSize = {$defaultPageSize};
+                    },
+                    resetAll: function() {
+                        this.start = 0;
+                        this.pageSize = {$defaultPageSize};
+                        this.total = 0;
+                    },
+                    growingLoadStart: function() {
+                        return this.start + this.pageSize - {$defaultPageSize};
+                    },
+                    growingLoadPageSize: function() {
+                        return {$defaultPageSize};
+                    }
+                },
 
-    var {$this->getId()}_pages = {
-    	start: 0,
-        pageSize: {$defaultPageSize},
-        total: 0,
-        end: function() {
-            return Math.min(this.start + this.pageSize - 1, this.total - 1);
-        },
-        previous: function() {
-            this.resetPageSize();
-            if (this.start >= this.pageSize) {
-                this.start -= this.pageSize;
-            } else {
-                this.start = 0;
-            }
-        },
-        next: function() {
-            if (this.start < this.total - this.pageSize) {
-                this.start += this.pageSize;
-            }
-            this.resetPageSize();
-        },
-        increasePageSize: function() {
-            this.pageSize += {$defaultPageSize};
-        },
-        resetPageSize: function() {
-            this.pageSize = {$defaultPageSize};
-        },
-        resetAll: function() {
-            this.start = 0;
-            this.pageSize = {$defaultPageSize};
-            this.total = 0;
-        },
-        growingLoadStart: function() {
-            return this.start + this.pageSize - {$defaultPageSize};
-        },
-        growingLoadPageSize: function() {
-            return {$defaultPageSize};
-        }
-    };
-
-    function {$this->getId()}_drawPagination() {
-        var pages = {$this->getId()}_pages;
-    	if (pages.start === 0) {
-            sap.ui.getCore().byId("{$this->getId()}_prev").setEnabled(false);
-    	} else {
-            sap.ui.getCore().byId("{$this->getId()}_prev").setEnabled(true);
-    	}
-    	if (pages.end() === (pages.total - 1)) {
-            sap.ui.getCore().byId("{$this->getId()}_next").setEnabled(false);
-    	} else {
-    		sap.ui.getCore().byId("{$this->getId()}_next").setEnabled(true);
-    	}
-        sap.ui.getCore().byId("{$this->getId()}_pager").setText((pages.start + 1) + ' - ' + (pages.end() + 1) + ' / ' + pages.total);
-	};
+JS;
+    }
     
-    function {$this->getId()}_attachFirstVisibleRowChanged() {
-        var oTable = {$this->getJsVar()};
-        oTable.attachFirstVisibleRowChanged(function() {
-            var pages = {$this->getId()}_pages;
-            var lastVisibleRow = oTable.getFirstVisibleRow() + oTable.getVisibleRowCount();
-            if ((pages.pageSize - lastVisibleRow <= 1) && (pages.end() + 1 !== pages.total)) {
-                pages.increasePageSize();
-                {$this->buildJsRefresh(true, true)}
-            }
-        });
-    };
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsPaginationRefresh() : string
+    {
+        return <<<JS
+                
+                    var pages = this.{$this->getId()}_pages;
+                	if (pages.start === 0) {
+                        sap.ui.getCore().byId("{$this->getId()}_prev").setEnabled(false);
+                	} else {
+                        sap.ui.getCore().byId("{$this->getId()}_prev").setEnabled(true);
+                	}
+                	if (pages.end() === (pages.total - 1)) {
+                        sap.ui.getCore().byId("{$this->getId()}_next").setEnabled(false);
+                	} else {
+                		sap.ui.getCore().byId("{$this->getId()}_next").setEnabled(true);
+                	}
+                    sap.ui.getCore().byId("{$this->getId()}_pager").setText((pages.start + 1) + ' - ' + (pages.end() + 1) + ' / ' + pages.total);
+
 JS;
     }
 
@@ -575,8 +555,9 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsToolbar()
+    protected function buildJsToolbar($oControllerJsVar = 'oController')
     {
+        $controller = $this->getController();
         $heading = $this->buildTextTableHeading();
         if ($this->getWidget()->getPaginate()) {
             $heading .= ': ';
@@ -590,8 +571,8 @@ JS;
             text: "{$this->translate('WIDGET.PAGINATOR.PREVIOUS_PAGE')}",
             enabled: false,
             press: function() {
-                {$this->getId()}_pages.previous();
-                {$this->buildJsRefresh(true)}
+                {$oControllerJsVar}.{$this->getId()}_pages.previous();
+                {$this->buildJsRefresh(true, false, $oControllerJsVar)}
             }
         }),
         new sap.m.OverflowToolbarButton("{$this->getId()}_next", {
@@ -600,8 +581,8 @@ JS;
             text: "{$this->translate('WIDGET.PAGINATOR.NEXT_PAGE')}",
 			enabled: false,
             press: function() {
-                {$this->getId()}_pages.next();
-                {$this->buildJsRefresh(true)}
+                {$oControllerJsVar}.{$this->getId()}_pages.next();
+                {$this->buildJsRefresh(true, false, $oControllerJsVar)}
             }
         }),
         
@@ -621,7 +602,7 @@ JS;
                     {$this->buildJsButtonsConstructors()}
 					new sap.m.SearchField("{$this->getId()}_quickSearch", {
                         width: "200px",
-                        search: function(){ {$this->buildJsRefresh()} },
+                        search: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
                         placeholder: "{$this->getQuickSearchPlaceholder(false)}",
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
                     }),
@@ -631,14 +612,8 @@ JS;
                         tooltip: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),
                         press: function() {
-                			{$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->getJsVar()}.open();
+                			{$controller->buildJsDependentControlSelector('oConfigurator', $this, $oControllerJsVar)}.open();
                 		}
-                    }),
-                    new sap.m.HBox({
-                        visible: false,
-                        items: [
-                            {$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->getJsVar()}
-                        ]
                     })		
 				]
 			})
@@ -658,13 +633,27 @@ JS;
     }
     
     /**
+     * Returns inline JS code to refresh the table.
      * 
-     * {@inheritDoc}
+     * If the code snippet is to be used somewhere, where the controller is directly accessible, you can pass the
+     * name of the controller variable to $oControllerJsVar to increase performance.
+     * 
      * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsRefresh()
+     * 
+     * @param bool $keep_page_pos
+     * @param bool $growing
+     * @param string $oControllerJsVar
+     * 
+     * @return ui5DataTable
      */
-    public function buildJsRefresh($keep_page_pos = false, $growing = false)
+    public function buildJsRefresh($keep_page_pos = false, $growing = false, string $oControllerJsVar = null)
     {
-        return "{$this->buildJsFunctionPrefix()}LoadData(undefined, " . ($keep_page_pos ? 'true' : 'false') . ', ' . ($growing ? 'true' : 'false') . ')';
+        $params = "undefined, " . ($keep_page_pos ? 'true' : 'false') . ', ' . ($growing ? 'true' : 'false');
+        if ($oControllerJsVar === null) {
+            return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, $params);
+        } else {
+            return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, $params, $oControllerJsVar);
+        }
     }
     
     /**
@@ -810,9 +799,10 @@ JS;
 JS;
     }
         
-    protected function buildJsClickListeners()
+    protected function buildJsClickListeners($oControllerJsVar = 'oController')
     {
         $widget = $this->getWidget();
+        
         $js = '';
         $rightclick_script = '';
         		
@@ -820,15 +810,15 @@ JS;
         if ($dblclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[0]) {
             $js .= <<<JS
 
-            {$this->getJsVar()}.attachBrowserEvent("dblclick", function(oEvent) {
-        		{$this->getTemplate()->getElement($dblclick_button)->buildJsClickFunctionName()}();
-            });
+            .attachBrowserEvent("dblclick", function(oEvent) {
+        		{$this->getTemplate()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+            })
 JS;
         }
         
         // Right click. Currently only supports one double click action - the first one in the list of buttons
         if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
-            $rightclick_script = $this->getTemplate()->getElement($rightclick_button)->buildJsClickFunctionName() . '()';
+            $rightclick_script = $this->getTemplate()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar);
         } else {
             $rightclick_script = $this->buildJsContextMenuTrigger();
         }
@@ -836,10 +826,10 @@ JS;
         if ($rightclick_script) {
             $js .= <<<JS
             
-            {$this->getJsVar()}.attachBrowserEvent("contextmenu", function(oEvent) {
+            .attachBrowserEvent("contextmenu", function(oEvent) {
                 oEvent.preventDefault();
                 {$rightclick_script}
-        	});
+        	})
 
 JS;
         }
@@ -849,16 +839,16 @@ JS;
             if ($this->isUiTable()) {
                 $js .= <<<JS
                 
-            {$this->getJsVar()}.attachBrowserEvent("click", function(oEvent) {
-        		{$this->getTemplate()->getElement($leftclick_button)->buildJsClickFunctionName()}();
-            });
+            .attachBrowserEvent("click", function(oEvent) {
+        		{$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+            })
 JS;
             } else {
                 $js .= <<<JS
                 
-            {$this->getJsVar()}.attachItemPress(function(oEvent) {
-                {$this->getTemplate()->getElement($leftclick_button)->buildJsClickFunctionName()}();
-            });
+            .attachItemPress(function(oEvent) {
+                {$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+            })
 JS;
             }
         }
@@ -934,7 +924,7 @@ JS;
         
         $startsSectionProperty = $startSection ? 'startsSection: true,' : '';
         
-        /* @var $btn_element \exface\AdminLteTemplate\lteButton */
+        /* @var $btn_element \exface\OpenUI5template\Templates\Elements\ui5Button */
         $btn_element = $this->getTemplate()->getElement($button);
         
         if ($button instanceof MenuButton){
@@ -953,12 +943,14 @@ JS;
                         })
 JS;
         } else {
+            $handler = $btn_element->buildJsClickViewEventHandlerCall();
+            $select = $handler !== '' ? 'select: ' . $handler . ',' : '';
             $menu_item = <<<JS
 
                         new sap.ui.unified.MenuItem({
                             icon: "{$btn_element->buildCssIconClass($button->getIcon())}",
                             text: "{$button->getCaption()}",
-                            select: {$btn_element->buildJsClickFunctionName()},
+                            {$select}
                             {$startsSectionProperty}
                         })
 JS;

@@ -20,46 +20,13 @@ class ui5Button extends ui5AbstractElement
     use JqueryButtonTrait {
         buildJsInputRefresh as buildJsInputRefreshViaTrait;
     }
-
-    function buildJs()
-    {
-        $output = '';
-        $hotkey_handlers = array();
-        $action = $this->getAction();
-        
-        // Get the java script required for the action itself
-        if ($action) {
-            // Actions with template scripts may contain some helper functions or global variables.
-            // Print the here first.
-            if ($action && $action->implementsInterface('iRunTemplateScript')) {
-                $output .= $this->getAction()->buildScriptHelperFunctions($this->getTemplate());
-            }
-        }
-        
-        if ($click = $this->buildJsClickFunction()) {
-            
-            // Generate the function to be called, when the button is clicked
-            $output .= "
-				function " . $this->buildJsClickFunctionName() . "(input){
-                    " . $click . "
-				}
-				";
-            
-            // Handle hotkeys
-            if ($this->getWidget()->getHotkey()) {
-                $hotkey_handlers[$this->getWidget()->getHotkey()][] = $this->buildJsClickFunctionName();
-            }
-        }
-        
-        return $output;
-    }
     
     /**
      * 
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor()
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         return <<<JS
 new sap.m.Button("{$this->getId()}", { 
@@ -81,8 +48,8 @@ JS;
             
         }
         
-        $press = $this->buildJsClickFunction() ? 'press: function(){' . $this->buildJsClickFunctionName() . '()},' : '';
-        
+        $handler = $this->buildJsClickViewEventHandlerCall();
+        $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
         $icon = $widget->getIcon() && ! $widget->getHideButtonIcon() ? 'icon: "' . $this->getIconSrc($widget->getIcon()) . '",' : '';
         
         $options = '
@@ -92,6 +59,52 @@ JS;
                     ' . $press . '
                     ' . $this->buildJsPropertyTooltip();
         return $options;
+    }
+    
+    /**
+     * Returns the JS to call the press event handler from the view or $default if there is no handler.
+     * 
+     * Typical output would be `[oController.onPressXXX, oController]`.
+     * 
+     * Use buildJsClickEventHandlerCall() to get the JS to use in a controller.
+     * 
+     * Use buildJsClickFunctionName() to the name of the handler within the controller (e.g.
+     * just `onPressXXX`);
+     * 
+     * @see buildJsClickFunctionName()
+     * @see buildJsClickEventHandlerCall()
+     * 
+     * @return string
+     */
+    public function buildJsClickViewEventHandlerCall(string $default = '') : string
+    {
+        $clickJs = $this->buildJsClickFunction();
+        return $clickJs ? $this->getController()->buildJsViewEventHandler('press', $this, "function(oEvent){ {$clickJs}; }") : $default;        
+    }
+    
+    /**
+     * 
+     * @param string $oControllerJsVar
+     * @param string $default
+     * @return string
+     */
+    public function buildJsClickEventHandlerCall(string $oControllerJsVar = null, string $default = '') : string
+    {
+        if ($oControllerJsVar === null) {
+            return $this->getController()->buildJsMethodCallFromController('press', $this);
+        } else {
+            return $this->getController()->buildJsMethodCallFromController('press', $this, '', $oControllerJsVar);
+        }
+        
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    public function buildJsClickFunctionName()
+    {
+        return $this->getController()->buildJsMethodName('press', $this);
     }
 
     protected function buildJsClickShowDialog(ActionInterface $action, AbstractJqueryElement $input_element)
@@ -107,6 +120,8 @@ JS;
         }
         
         $output = $this->buildJsRequestDataCollector($action, $input_element);
+        $viewId = $this->getTemplate()->getViewName($widget->getAction()->getWidget(), $widget->getPage());
+        $viewName = $viewId;
         $output .= <<<JS
 						{$this->buildJsBusyIconShow()}
 						$.ajax({
@@ -127,10 +142,10 @@ JS;
                                 $('body').append(data);
                                 oDialogStack.push({
                                     content: oShell.getContent(),
-                                    dialog: sap.ui.view({
+                                    dialog: sap.ui.view("{$viewId}", {
                                         type:sap.ui.core.mvc.ViewType.JS, 
                                         height: "100%", 
-                                        viewName:"{$this->getTemplate()->getElement($this->getWidget()->getAction()->getWidget())->getViewName()}"
+                                        viewName:"{$viewName}"
                                     }),
                                     onClose: function(){
 								        {$this->buildJsInputRefresh($widget, $input_element)}
@@ -178,18 +193,6 @@ JS;
          * }
          */
         return $output;
-    }
-
-    /**
-     * In OpenUI5 the button does not need any extra headers, as all headers needed for whatever the button loads will
-     * come with the AJAX-request.
-     *
-     * {@inheritdoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildHtmlHeadTags()
-     */
-    public function buildHtmlHeadTags()
-    {
-        return array();
     }
     
     protected function buildJsCloseDialog($widget, $input_element)

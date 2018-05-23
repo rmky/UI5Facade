@@ -11,7 +11,7 @@ use exface\Core\Widgets\SplitVertical;
  */
 class ui5SplitVertical extends ui5Container
 {
-    public function buildJsConstructor()
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         return <<<JS
 

@@ -13,17 +13,13 @@ use exface\Core\Widgets\Button;
  *        
  */
 class ui5Menu extends ui5AbstractElement
-{
-    public function buildJs()
-    {
-        $js = '';
-        foreach ($this->getWidget()->getButtons() as $b) {
-            $js .= $this->getTemplate()->getElement($b)->buildJs();
-        }
-        return $js;
-    }
-    
-    public function buildJsConstructor()
+{    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     */
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         return <<<JS
 
@@ -36,7 +32,11 @@ class ui5Menu extends ui5AbstractElement
 
 JS;
     }
-        
+    
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsButtonsListItems()
     {
         $js = '';
@@ -64,8 +64,14 @@ JS;
         return $js;
     }
     
-    protected function buildJsButtonListItem(Button $button)
+    /**
+     * 
+     * @param Button $button
+     * @return string
+     */
+    protected function buildJsButtonListItem(Button $button) : string
     {
+        /* @var $btn_element \exface\OpenUI5Template\Templates\Elements\ui5Button */
         $btn_element = $this->getTemplate()->getElement($button);
         
         if ($button->getIcon()) {
@@ -74,20 +80,27 @@ JS;
             $icon = '';
         }
         
+        $handler = $btn_element->buildJsClickViewEventHandlerCall();
+        $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
+        
         return <<<JS
 
             new sap.m.StandardListItem({
 				title: "{$btn_element->getCaption()}",
                 iconDensityAware: false,
 				iconInset: false,
-                {$icon}
-				type: "Active",
-				press: function(){ {$btn_element->buildJsClickFunctionName()}() },
+                type: "Active",
+				{$icon}
+				{$press}
 			}),
 
 JS;
     }
-        
+    
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsPropertyCaption()
     {
         return ! $this->getCaption() ? '' : <<<JS

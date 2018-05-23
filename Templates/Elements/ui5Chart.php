@@ -1,10 +1,9 @@
 <?php
 namespace exface\OpenUI5Template\Templates\Elements;
 
-use exface\Core\Widgets\ChartSeries;
-use exface\Core\Widgets\ChartAxis;
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryFlotTrait;
 use exface\Core\Widgets\Chart;
+use exface\Core\DataTypes\StringDataType;
 
 /**
  * 
@@ -22,8 +21,21 @@ class ui5Chart extends ui5AbstractElement
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor()
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        $controller = $this->getController();
+        $controller->addMethod('onLoadData', $this, '', $this->buildJsDataLoader());
+        $controller->addMethod('onPlot', $this, 'data', $this->buildJsPlotter());
+        
+        foreach ($this->getJsIncludes() as $path) {
+            $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path);
+        }
+        
+        
+        $controller->addExternalCss($this->getTemplate()->buildUrlToSource('LIBS.JSONEDITOR.CSS'));
+        $controller->addExternalModule('exface.openui5.jsoneditor', $this->getTemplate()->buildUrlToSource('LIBS.JSONEDITOR.JS'), 'JSONEditor');
+        
+        
         return <<<JS
 
         new sap.ui.core.HTML("{$this->getId()}", {
@@ -33,49 +45,23 @@ class ui5Chart extends ui5AbstractElement
 
 JS;
     }
-    
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJs()
-     */
-    public function buildJs()
+        
+    protected function getJsIncludes() : array
     {
-        $widget = $this->getWidget();
-        
-        $output = <<<JS
-
-    function {$this->buildJsFunctionPrefix()}plot(data) {
-        {$this->buildJsPlotter('data')}
+        $tags = implode('', $this->buildHtmlHeadDefaultIncludes());
+        $jsTags = [];
+        preg_match_all('#<script[^>]*src="([^"]*)"[^>]*></script>#is', $tags, $jsTags);
+        return $jsTags[1];
     }
-
-    function {$this->buildJsFunctionPrefix()}load(){
-        {$this->buildJsDataLoader()}
-    }
-
-JS;
         
-        
-        
-        // Add JS code for the configurator
-        $output .= $this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJs();
-        // Add JS for all buttons
-        $output .= $this->buildJsButtons();
-        
-        return $output;
+    public function buildJsRefresh()
+    {
+        return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, '');
     }
     
-    /**
-     * 
-     * @return string
-     */
-    protected function buildJsButtons()
+    protected function buildJsRedraw(string $dataJs) : string
     {
-        $js = '';
-        foreach ($this->getWidget()->getButtons() as $btn) {
-            $js .= $this->getTemplate()->getElement($btn)->buildJs();
-        }
-        return $js;
+        return $this->getController()->buildJsMethodCallFromController('onPlot', $this, $dataJs);
     }
     
     /**
@@ -131,8 +117,8 @@ JS;
                         method: "POST",
 						data: data,
 						success: function(data){
-							' . $this->buildJsFunctionPrefix() . 'plot(data);
-							' . $this->buildJsBusyIconHide() . '
+							' . $this->buildJsRedraw('data') . ';
+							' . $this->buildJsBusyIconHide() . ';
 						},
 						error: function(jqXHR, textStatus, errorThrown){
 							' . $this->buildJsShowError('jqXHR.responseText', 'jqXHR.status + " " + jqXHR.statusText') . '
@@ -143,11 +129,6 @@ JS;
         }
         
         return $output;
-    }  
-    
-    public function buildHtmlHeadTags()
-    {
-        return $this->buildHtmlHeadDefaultIncludes();
-    }
+    }    
 }
 ?>

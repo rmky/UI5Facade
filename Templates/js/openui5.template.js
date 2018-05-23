@@ -1,173 +1,176 @@
 var oDialogStack = [];
-var oShell = new sap.ui.unified.Shell({
-	header: [
-		new sap.m.OverflowToolbar({
-            design: "Transparent",
-			content: [
-				new sap.m.Button({
-                    icon: "sap-icon://menu2",
-                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
-                    press: function() {
-                    	oShell.setShowPane(! oShell.getShowPane());
-            		}
-                }),
-                new sap.m.Image({
-					src: "exface/vendor/exface/OpenUI5Template/Templates/images/sap_50x26.png",
-					height: "26px",
-					width: "50px",
-					densityAware: false,
-					//visible: ! sap.ui.Device.system.phone
-                }),
-                new sap.m.ToolbarSpacer(),
-                new sap.m.Label("exf_pagetitle", {
-                    text: "",
-                    design: "Bold",
-                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
-                }),
-                new sap.m.ToolbarSpacer(),
-                new sap.m.Button("exf_connection", {
-                    icon: "sap-icon://connected",
-                    text: "3/1",
-                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
-                    press: function(oEvent){
-						var oButton = oEvent.getSource();
-						var oPopover = new sap.m.Popover({
-							title: "Akt. Status: Online",
-							placement: "Bottom",
-							content: [
-								new sap.m.List({
-									items: [
-										new sap.m.StandardListItem({
-											title: "Sync-Puffer (3)",
-											type: "Active",
-											press: function(){
-												var oData = {
-														data: [
-															{
-																"action_alias": "exface.Core.CreateData",
-																"caption": "Speichern",
-																"object_alias": "alexa.RMS-demo.BBD_ALERT",
-																"object_name": "MHD-Alarm",
-																"triggered": "2017-02-05 13:55:37"
-															},
-															{
-																"action_alias": "exface.Core.UpdateData",
-																"caption": "Speichern",
-																"object_alias": "axenox.WMS.picking_order_pos",
-																"object_name": "Pickauftragsposition",
-																"triggered": "2018-04-12 14:48:06"
-															},
-															{
-																"action_alias": "exface.Core.UpdateData",
-																"caption": "Speichern",
-																"object_alias": "axenox.WMS.picking_order_pos",
-																"object_name": "Pickauftragsposition",
-																"triggered": "2018-04-12 16:38:22"
-															}
-														]
-												};
-												
-												var oTable = new sap.m.Table({
-													fixedLayout: false,
-													mode: sap.m.ListMode.MultiSelect,
-													headerToolbar: [
-														new sap.m.OverflowToolbar({
-															design: "Transparent",
-															content: [
-																new sap.m.Label({
-																	text: "Wartende Online-Aktionen"
-																}),
-																new sap.m.ToolbarSpacer(),
-																new sap.m.Button({
-																	text: "Abbrechen",
-																	icon: "sap-icon://cancel"
-																}),
-																new sap.m.Button({
-																	text: "Exportieren",
-																	icon: "sap-icon://download"
-																})
+function initShell() {
+	var oShell = new sap.ui.unified.Shell({
+		header: [
+			new sap.m.OverflowToolbar({
+	            design: "Transparent",
+				content: [
+					new sap.m.Button({
+	                    icon: "sap-icon://menu2",
+	                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
+	                    press: function() {
+	                    	oShell.setShowPane(! oShell.getShowPane());
+	            		}
+	                }),
+	                new sap.m.Image({
+						src: "exface/vendor/exface/OpenUI5Template/Templates/images/sap_50x26.png",
+						height: "26px",
+						width: "50px",
+						densityAware: false,
+						//visible: ! sap.ui.Device.system.phone
+	                }),
+	                new sap.m.ToolbarSpacer(),
+	                new sap.m.Label("exf_pagetitle", {
+	                    text: "",
+	                    design: "Bold",
+	                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
+	                }),
+	                new sap.m.ToolbarSpacer(),
+	                new sap.m.Button("exf_connection", {
+	                    icon: "sap-icon://connected",
+	                    text: "3/1",
+	                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
+	                    press: function(oEvent){
+							var oButton = oEvent.getSource();
+							var oPopover = new sap.m.Popover({
+								title: "Akt. Status: Online",
+								placement: "Bottom",
+								content: [
+									new sap.m.List({
+										items: [
+											new sap.m.StandardListItem({
+												title: "Sync-Puffer (3)",
+												type: "Active",
+												press: function(){
+													var oData = {
+															data: [
+																{
+																	"action_alias": "exface.Core.CreateData",
+																	"caption": "Speichern",
+																	"object_alias": "alexa.RMS-demo.BBD_ALERT",
+																	"object_name": "MHD-Alarm",
+																	"triggered": "2017-02-05 13:55:37"
+																},
+																{
+																	"action_alias": "exface.Core.UpdateData",
+																	"caption": "Speichern",
+																	"object_alias": "axenox.WMS.picking_order_pos",
+																	"object_name": "Pickauftragsposition",
+																	"triggered": "2018-04-12 14:48:06"
+																},
+																{
+																	"action_alias": "exface.Core.UpdateData",
+																	"caption": "Speichern",
+																	"object_alias": "axenox.WMS.picking_order_pos",
+																	"object_name": "Pickauftragsposition",
+																	"triggered": "2018-04-12 16:38:22"
+																}
 															]
-														})
-													],
-													columns: [
-														new sap.m.Column({
-															header: [
-																new sap.m.Label({
-																	text: "Objekt"
-																})
-															]
-														}),
-														new sap.m.Column({
-															header: [
-																new sap.m.Label({
-																	text: "Aktion"
-																})
-															]
-														}),
-														new sap.m.Column({
-															header: [
-																new sap.m.Label({
-																	text: "Alias"
-																})
-															],
-															minScreenWidth: "Tablet",
-															demandPopin: true
-														}),
-													],
-													items: {
-														path: "/data",
-														template: new sap.m.ColumnListItem({
-															cells: [
-																new sap.m.Text({
-																	text: "{object_name}"
-																}),
-																new sap.m.Text({
-																	text: "{caption}"
-																}),
-																new sap.m.Text({
-																	text: "{action_alias}"
-																})
-															]
-														})
-													}
-												}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
-												
-												showDialog('Sync-Puffer', oTable, undefined, undefined, true);
-											},
-										}),
-										new sap.m.StandardListItem({
-											title: "Ausgecheckte Objekte (0)",
-											type: "Active",
-											press: function(){alert('click 2!')},
-										}),
-										new sap.m.StandardListItem({
-											title: "Sync-Fehler (1)",
-											type: "Active",
-											press: function(){alert('click 3!')},
-										})
-									]
-								})
-							]
-						});
-						jQuery.sap.delayedCall(0, this, function () {
-							oPopover.openBy(oButton);
-						});
-					}
-                }),
-                new sap.f.Avatar("exf_avatar", {
-					displaySize: "XS",
-					press: function(){
-						window.location.href = 'login.html'
-					}
-                })
-			]
-		})
-	],
-	content: [
-		
-	]
-});
-contextBarInit();
+													};
+													
+													var oTable = new sap.m.Table({
+														fixedLayout: false,
+														mode: sap.m.ListMode.MultiSelect,
+														headerToolbar: [
+															new sap.m.OverflowToolbar({
+																design: "Transparent",
+																content: [
+																	new sap.m.Label({
+																		text: "Wartende Online-Aktionen"
+																	}),
+																	new sap.m.ToolbarSpacer(),
+																	new sap.m.Button({
+																		text: "Abbrechen",
+																		icon: "sap-icon://cancel"
+																	}),
+																	new sap.m.Button({
+																		text: "Exportieren",
+																		icon: "sap-icon://download"
+																	})
+																]
+															})
+														],
+														columns: [
+															new sap.m.Column({
+																header: [
+																	new sap.m.Label({
+																		text: "Objekt"
+																	})
+																]
+															}),
+															new sap.m.Column({
+																header: [
+																	new sap.m.Label({
+																		text: "Aktion"
+																	})
+																]
+															}),
+															new sap.m.Column({
+																header: [
+																	new sap.m.Label({
+																		text: "Alias"
+																	})
+																],
+																minScreenWidth: "Tablet",
+																demandPopin: true
+															}),
+														],
+														items: {
+															path: "/data",
+															template: new sap.m.ColumnListItem({
+																cells: [
+																	new sap.m.Text({
+																		text: "{object_name}"
+																	}),
+																	new sap.m.Text({
+																		text: "{caption}"
+																	}),
+																	new sap.m.Text({
+																		text: "{action_alias}"
+																	})
+																]
+															})
+														}
+													}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+													
+													showDialog('Sync-Puffer', oTable, undefined, undefined, true);
+												},
+											}),
+											new sap.m.StandardListItem({
+												title: "Ausgecheckte Objekte (0)",
+												type: "Active",
+												press: function(){alert('click 2!')},
+											}),
+											new sap.m.StandardListItem({
+												title: "Sync-Fehler (1)",
+												type: "Active",
+												press: function(){alert('click 3!')},
+											})
+										]
+									})
+								]
+							});
+							jQuery.sap.delayedCall(0, this, function () {
+								oPopover.openBy(oButton);
+							});
+						}
+	                }),
+	                new sap.f.Avatar("exf_avatar", {
+						displaySize: "XS",
+						press: function(){
+							window.location.href = 'login.html';
+						}
+	                })
+				]
+			})
+		],
+		content: [
+	
+		]
+	});
+	contextBarInit(oShell);
+	return oShell;
+}
 
 function closeTopDialog() {
 	var oDialogStackTop = oDialogStack.pop();
@@ -340,9 +343,9 @@ function contextShowMenu(oButton){
 			var viewMatch = data.match(/sap.ui.jsview\("(.*)"/i);
             if (viewMatch !== null) {
                 var view = viewMatch[1];
-                data = data.replace(view, view+'.'+oButton.data('widget'));
-                view = view+'.'+oButton.data('widget');
                 $('body').append(data);
+            } else {
+            	showHtmlInDialog(text.Status, data);
             }
             
             var page = oPopover.getContent()[0].getPages()[0];
@@ -353,8 +356,7 @@ function contextShowMenu(oButton){
 		},
 		error: function(jqXHR, textStatus, errorThrown){
 			oButton.setBusy(false);
-			console.log(textStatus);
-			//adminLteCreateDialog($("body"), "error", jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText, "error_tab_layouter()");
+			showHtmlInDialog(textStatus, jqXHR.responseText, "error");
 		}
 	});
 }
@@ -362,34 +364,3 @@ function contextShowMenu(oButton){
 function getPageId(){
 	return $("meta[name='page_id']").attr("content");
 }
-
-/**
- * Define a custom control to display filters in the P13nDialog as the default filters are always
- * plain text inputs - no combos etc. possible.
- */
-(function () {
-	"use strict";
-
-	/** @lends sap.m.sample.P13nDialogWithCustomPanel.CustomPanel */
-	sap.m.P13nPanel.extend("exface.core.P13nLayoutPanel", {
-		constructor: function (sId, mSettings) {
-			sap.m.P13nPanel.apply(this, arguments);
-		},
-		metadata: {
-			library: "sap.m",
-			aggregations: {
-				content: {
-					type: "sap.ui.core.Control",
-					multiple: false,
-					singularName: "content"
-				}
-			}
-		},
-		renderer: function (oRm, oControl) {
-			if (!oControl.getVisible()) {
-				return;
-			}
-			oRm.renderControl(oControl.getContent());
-		}
-	});
-})();

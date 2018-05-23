@@ -626,7 +626,7 @@
         },
         {
             "CREATED_ON": "2018-04-05 10:19:08",
-            "MODIFIED_ON": "2018-05-08 14:53:26",
+            "MODIFIED_ON": "2018-04-05 10:21:16",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e838bac604f3ba91380205857feb80",
@@ -641,7 +641,7 @@
             "DEFAULT_EDITOR_UXON": "",
             "LABEL": "UI5 App Control",
             "ALIAS": "ui5_app_control",
-            "DATATYPE": "0x11e7c3960c3586c38001e4b318306b9a",
+            "DATATYPE": "0x30000000000000000000000000000000",
             "DATA_ADDRESS": "ui5_app_control",
             "OBJECT": "0x11e837e8c505989491380205857feb80",
             "FORMATTER": "",
@@ -659,7 +659,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "'sap.m.App'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{\"values\":{\"sap.m.App\":\"sap.m.App (stand-alone)\",\"sap.m.NavContainer\":\"sap.m.NavContainer (plattform)\"}}"
+            "CUSTOM_DATA_TYPE": ""
         }
     ],
     "totals_rows": [],

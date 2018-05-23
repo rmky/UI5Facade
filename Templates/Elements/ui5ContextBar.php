@@ -15,10 +15,5 @@ use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryContextBarAjaxTrai
 class ui5ContextBar extends ui5AbstractElement
 {
     use JqueryContextBarAjaxTrait;
-    
-    public function buildJsView()
-    {
-        return '';
-    }
 }
 ?>

@@ -9,6 +9,7 @@ use exface\Core\Widgets\Image;
 use exface\Core\Widgets\MenuButton;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\Widgets\iHaveValue;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
 
 /**
  * In OpenUI5 dialog widgets are either rendered as an object page layout (if the dialog is maximized) or
@@ -21,7 +22,7 @@ use exface\Core\Interfaces\Widgets\iHaveValue;
  */
 class ui5Dialog extends ui5Form
 {
-    public function buildJsConstructor()
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         if ($this->isMaximized() === false) {
             return $this->buildJsDialog();
@@ -328,11 +329,6 @@ JS;
             $js = $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n" . $js;
         }
         return $js;
-    }
-                
-    public function getViewName()
-    {
-        return 'view.' . $this->getId();
     }
 }
 ?>

@@ -12,11 +12,11 @@ interface ui5CompoundControlInterface {
      * 
      * @return string
      */
-    public function buildJsConstructor();
+    public function buildJsConstructor($oControllerJs = 'oController') : string;
     
     /**
      * 
      * @return string
      */
-    public function buildJsConstructorForMainControl();
+    public function buildJsConstructorForMainControl($oControllerJs = 'oController');
 }

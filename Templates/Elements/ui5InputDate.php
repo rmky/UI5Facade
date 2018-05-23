@@ -13,7 +13,7 @@ use exface\Core\Widgets\InputDate;
 class ui5InputDate extends ui5Input
 {
     
-    public function buildJsConstructorForMainControl()
+    public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
         return <<<JS
 

@@ -12,6 +12,8 @@ use exface\Core\Interfaces\Selectors\AliasSelectorInterface;
 use exface\Core\Exceptions\FileNotFoundError;
 use exface\Core\Exceptions\RuntimeException;
 use exface\Core\Interfaces\Model\UiPageInterface;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
+use exface\Core\Interfaces\WidgetInterface;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -26,6 +28,8 @@ class Webapp implements WorkbenchDependantInterface
     private $templateFolder = null;
     
     private $config = [];
+    
+    private $controllers = [];
     
     public function __construct(OpenUI5Template $template, string $ui5AppId, string $templateFolder, array $config)
     {
@@ -55,29 +59,23 @@ class Webapp implements WorkbenchDependantInterface
                 $path = StringDataType::substringAfter($route, 'view/');
                 if (StringDataType::endsWith($path, '.view.js')) {
                     $path = StringDataType::substringBefore($path, '.view.js');
-                    $parts = explode('/', $path);
-                    
-                    if (count($parts) === 1) {
-                        $pageAlias = $parts[0];
-                    } elseif (count($parts) !== 3 || count($parts) !== 4) {
-                       $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];
-                    } else {
-                        throw new Ui5RouteInvalidException('View "' . $path . '" not found!');
+                    $widget = $this->getWidgetFromPath($path);
+                    if ($widget) {
+                        $view = $this->template->createController($this->template->getElement($widget))->getView();
+                        return $view->buildJsView();
+                    } 
+                    return '';
+                }
+            case StringDataType::startsWith($route, 'controller/'):
+                $path = StringDataType::substringAfter($route, 'controller/');
+                if (StringDataType::endsWith($path, '.controller.js')) {
+                    $path = StringDataType::substringBefore($path, '.controller.js');
+                    $widget = $this->getWidgetFromPath($path);
+                    if ($widget) {
+                        $controller = $this->template->createController($this->template->getElement($widget));
+                        return $controller->buildJsController();
                     }
-                    
-                    $page = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $pageAlias);
-                    
-                    if (count($parts) === 4) {
-                        $widget = $page->getWidget($parts[3]);
-                    } else {
-                        $widget = $page->getWidgetRoot();
-                    }
-                    
-                    $phs = $this->config;
-                    $phs['view_content'] = $this->template->buildJs($widget);
-                    $phs['view_name'] = $path;
-                    
-                    return $this->getFromFileTemplate('view/Empty.view.js', $phs);
+                    return '';
                 }
             default:
                 throw new Ui5RouteInvalidException('Cannot match route "' . $route . '"!');
@@ -176,5 +174,43 @@ class Webapp implements WorkbenchDependantInterface
             $this->rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $this->appId);
         }
         return $this->rootPage;
+    }
+    
+    protected function getWidgetFromPath($path)
+    {
+        $parts = explode('/', $path);
+        $cnt = count($parts);
+        if ($cnt === 1) {
+            $pageAlias = $parts[0];
+        } elseif ($cnt !== 3 || $cnt !== 4) {
+            $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];
+        } else {
+            throw new Ui5RouteInvalidException('Route "' . $path . '" not found!');
+        }
+        
+        $page = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $pageAlias);
+        
+        if (count($parts) === 4) {
+            $widget = $page->getWidget($parts[3]);
+        } else {
+            $widget = $page->getWidgetRoot();
+        }
+        
+        return $widget;
+    }
+    
+    public function getComponentName() : string
+    {
+        return $this->appId;
+    }
+    
+    public function getComponentId() : string
+    {
+        return $this->appId . '.Component';
+    }
+    
+    public function getComponentPath() : string
+    {
+        return str_replace('.', '/', $this->getComponentName());
     }
 }

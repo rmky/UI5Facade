@@ -3,10 +3,13 @@ namespace exface\OpenUI5Template\Templates\Elements;
 
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
 use exface\OpenUI5Template\Templates\OpenUI5Template;
-use exface\Core\Exceptions\Templates\TemplateLogicError;
 use exface\Core\CommonLogic\Constants\Icons;
 use exface\Core\Interfaces\Widgets\iHaveValue;
 use exface\Core\Factories\UiPageFactory;
+use exface\Core\DataTypes\StringDataType;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
+use exface\Core\Exceptions\LogicException;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 
 /**
  *
@@ -21,6 +24,8 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
     
     private $useWidgetId = true;
     
+    private $controller = null;
+    
     /**
      * 
      * @var array [ event_name => [code, code, ...] ]
@@ -30,22 +35,29 @@ abstract class ui5AbstractElement extends AbstractJqueryElement
     /**
      * Returns the JS constructor for this element (without the semicolon!): e.g. "new sap.m.Button()" etc.
      * 
-     * For complex widgets (e.g. requireing a model) either use an immediately invoked function expression
-     * like "function(){...}()" or place your code in buildJs() and the constructor-iife will be built
-     * automatically. The name of your resulting JS object MUST be $this->getJsVar() in this case! 
+     * For complex widgets (e.g. requireing a model, init-scripts, etc.) you can use the following approaches:
+     * - create custom controller methods via $this->getController()->add...
+     * - add code to the onInit-method of the controller via $this->getController()->addOnInitScript()  
+     * - use an immediately invoked function expression like "function(){...}()" as constructor (not recommended!)
+     * 
+     * @see getController()
      *
      * @return string
      */
-    public function buildJsConstructor()
+    public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         return '';
     }
     
-    public function getJsVar()
+    /**
+     * Returns a unique variable name for this element, that meets UI5 conventions: e.g. "oDataTableDataToolbarDataButton02".
+     * 
+     * @return string
+     */
+    public function buildJsVarName() : string
     {
         if (is_null($this->jsVarName)) {
-            //throw new TemplateLogicError('No JavaScript instance name specified for OpenUI5 element "' . get_class($this) . '"!');
-            $this->jsVarName = 'o' . $this->getId();
+            $this->jsVarName = 'o' . StringDataType::convertCaseUnderscoreToPascal($this->getId());
         }
         return $this->jsVarName;
     }
@@ -233,11 +245,6 @@ JS;
         return $data;
     }
     
-    public function buildHtml()
-    {
-        return '';
-    }
-    
     /**
      * Returns the SAP icon URI (e.g. "sap-icon://edit") for the given icon name
      * 
@@ -303,44 +310,6 @@ JS;
     public function buildJsValueSetterMethod($valueJs)
     {
         return "setValue(" . $valueJs . ")";
-    }
-    
-    /**
-     * Returns the name of the UI5 view.
-     * 
-     * @return string
-     */
-    public function getViewName()
-    {
-        $widget = $this->getWidget();
-        if ($widget->hasParent()) {
-            return $this->getTemplate()->getElement($widget->getParent())->getViewName();
-        } else {
-            $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : UiPageFactory::createFromCmsPageCurrent($this->getWorkbench()->getCMS())->getAliasWithNamespace();
-            return 'view.' . $pageAlias;
-        }
-    }
-    
-    public function buildJsView()
-    {
-        $constructor = trim($this->buildJsConstructor());
-        
-        return <<<JS
-
-    sap.ui.jsview("{$this->getViewName()}", {
-		
-		// View has no controller
-		getControllerName: function() {
-			return null;
-		},
-		
-		// Instantiate all widgets for the view
-		createContent: function(oController) {
-			return {$constructor};
-		}
-	});
-    
-JS;
     }
         
     protected function escapeJsTextValue($text)
@@ -459,9 +428,63 @@ JS;
         return parent::getId();
     }
     
-    public function buildJs()
+    /**
+     * UI5-Elements do not have a general buildJs() method, because there is no place in the controller
+     * where it's global variables and methods can be defined in "regular" JS syntax. E.g. instead of
+     * "function ... () {}" a controller method must be defined as "...: function(){}", etc.
+     * 
+     * Making this method final makes sure, no element makes use of it unintentionally (e.g.
+     * via trait).
+     * 
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJs()
+     */
+    public final function buildJs()
     {
         return '';
+    }
+    
+    /**
+     * UI5-Elements do not produce HTML, but rather views in JS/XML.
+     * 
+     * Making this method final makes sure, no element makes use of it unintentionally (e.g.
+     * via trait). 
+     * 
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildHtml()
+     */
+    public final function buildHtml()
+    {
+        return '';
+    }
+    
+    public function getController() : ui5ControllerInterface
+    {
+        if ($this->controller === null) {
+            if ($this->getWidget()->hasParent()) {
+                return $this->getTemplate()->getElement($this->getWidget()->getParent())->getController();
+            } else {
+                throw new LogicException('No controller was initialized for page "' . $this->getWidget()->getPage()->getAliasWithNamespace() . '"!');
+            }
+        }
+        return $this->controller;
+    }
+    
+    public function getView() : ui5ViewInterface
+    {
+        return $this->controller->getView();
+    }
+    
+    public function setController(ui5ControllerInterface $controller) : ui5AbstractElement
+    {
+        if (! $this->controller === null) {
+            throw new LogicException('Cannot change the controller of a UI5 element after it had been set initially!');
+        }
+        $this->controller = $controller;
+        return $this;
+    }
+    
+    public final function buildHtmlHeadTags()
+    {
+        return [];
     }
 }
 ?>

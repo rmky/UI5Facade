@@ -830,14 +830,14 @@ JS;
                 $js .= <<<JS
                 
             .attachBrowserEvent("click", function(oEvent) {
-        		{$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)}();
+        		{$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
             })
 JS;
             } else {
                 $js .= <<<JS
                 
             .attachItemPress(function(oEvent) {
-                {$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)}();
+                {$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
             })
 JS;
             }

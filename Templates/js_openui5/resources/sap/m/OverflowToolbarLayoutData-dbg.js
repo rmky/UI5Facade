@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,7 +22,7 @@ sap.ui.define(['sap/m/ToolbarLayoutData', 'sap/m/library', 'jquery.sap.global'],
 	 * Holds layout data for the {@link sap.m.OverflowToolbar} items.
 	 * @extends sap.m.ToolbarLayoutData
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

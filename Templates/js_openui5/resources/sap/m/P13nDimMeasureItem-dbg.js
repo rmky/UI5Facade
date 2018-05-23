@@ -1,6 +1,6 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,7 +16,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class Type for <code>columnsItems</code> aggregation in <code>P13nDimMeasurePanel</code> control.
 	 * @extends sap.ui.core.Item
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @author SAP SE
 	 * @public

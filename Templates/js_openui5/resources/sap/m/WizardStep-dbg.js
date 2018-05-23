@@ -1,11 +1,16 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["./library", "sap/ui/core/Control", "jquery.sap.global"],
-	function (library, Control, jQuery) {
+sap.ui.define([
+	"./library",
+	"sap/ui/core/Control",
+	"jquery.sap.global",
+	"./WizardStepRenderer"
+],
+	function(library, Control, jQuery, WizardStepRenderer) {
 
 	"use strict";
 
@@ -28,7 +33,7 @@ sap.ui.define(["./library", "sap/ui/core/Control", "jquery.sap.global"],
 	 * <li>If the execution needs to branch after a given step, you should set all possible next steps in the <code>subsequentSteps</code> aggregation.
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -54,8 +59,15 @@ sap.ui.define(["./library", "sap/ui/core/Control", "jquery.sap.global"],
 				/**
 				 * Indicates whether or not the step is validated.
 				 * When a step is validated a Next button is visualized in the Wizard control.
+				 * @since 1.32
 				 */
-				validated: {type: "boolean", group: "Behavior", defaultValue: true}
+				validated: {type: "boolean", group: "Behavior", defaultValue: true},
+				/**
+				 * Indicates whether or not the step is optional.
+				 * When a step is optional an "(Optional)" label is displayed under the step's title.
+				 * @since 1.54
+				 */
+				optional: {type: "boolean", group: "Appearance", defaultValue: false}
 			},
 			events: {
 				/**
@@ -84,11 +96,13 @@ sap.ui.define(["./library", "sap/ui/core/Control", "jquery.sap.global"],
 				 * This association is used only when the <code>enableBranching</code> property of the Wizard is set to true.
 				 * Use the association to store the next steps that are about to come after the current.
 				 * If this is going to be a final step - leave this association empty.
+				 * @since 1.32
 				 */
 				subsequentSteps : {type : "sap.m.WizardStep", multiple : true, singularName : "subsequentStep"},
 				/**
 				 * The next step to be taken after the step is completed.
 				 * Set this association value in the complete event of the current WizardStep.
+				 * @since 1.32
 				 */
 				nextStep : {type: "sap.m.WizardStep", multiple: false}
 			}
@@ -124,11 +138,11 @@ sap.ui.define(["./library", "sap/ui/core/Control", "jquery.sap.global"],
 
 		return this;
 	};
-
 	/**
 	 * setVisible shouldn't be used on wizard steps.
 	 * If you need to show/hide steps based on some condition - use the branching property instead
-	 * @returns {WizardStep}
+	 * @param {boolean} visible Whether the step should be visible
+	 * @returns {sap.m.WizardStep} this instance for method chaining
 	 */
 	WizardStep.prototype.setVisible = function (visible) {
 		this.setProperty("visible", visible, true);

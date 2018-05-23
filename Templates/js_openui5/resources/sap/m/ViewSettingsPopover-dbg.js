@@ -1,15 +1,50 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 // Provides control sap.m.ViewSettingsPopover.
-sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolbar", "./ToolbarSpacer", "./Bar", "./List",
-		"./StandardListItem", "./library", "sap/ui/core/Control", "sap/ui/core/IconPool",
-		"./SegmentedButton", "./Page", "./NavContainer", "./ViewSettingsItem", "sap/ui/base/ManagedObject", "sap/ui/Device", "sap/ui/core/InvisibleText"],
-
-	function (jQuery, ResponsivePopover, Button, Toolbar, ToolbarSpacer, Bar, List, StandardListItem, library, Control,
-			  IconPool, SegmentedButton, Page, NavContainer, ViewSettingsItem, ManagedObject, Device, InvisibleText) {
+sap.ui.define([
+	"jquery.sap.global",
+	"./ResponsivePopover",
+	"./Button",
+	"./Toolbar",
+	"./ToolbarSpacer",
+	"./Bar",
+	"./List",
+	"./StandardListItem",
+	"./library",
+	"sap/ui/core/Control",
+	"sap/ui/core/IconPool",
+	"./SegmentedButton",
+	"./Page",
+	"./NavContainer",
+	"./ViewSettingsItem",
+	"sap/ui/base/ManagedObject",
+	"sap/ui/Device",
+	"sap/ui/core/InvisibleText",
+	"./ViewSettingsPopoverRenderer"
+], function(
+	jQuery,
+	ResponsivePopover,
+	Button,
+	Toolbar,
+	ToolbarSpacer,
+	Bar,
+	List,
+	StandardListItem,
+	library,
+	Control,
+	IconPool,
+	SegmentedButton,
+	Page,
+	NavContainer,
+	ViewSettingsItem,
+	ManagedObject,
+	Device,
+	InvisibleText,
+	ViewSettingsPopoverRenderer
+	) {
 		"use strict";
 
 		// shortcut for sap.m.VerticalPlacementType
@@ -48,7 +83,7 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @private
@@ -1438,9 +1473,7 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 
 			if (bIsAdding) {
 				// attach and detach (or only detach if not adding) event listeners for the item
-				this._attachItemEventListeners(oObject);
-			} else {
-				this._detachItemEventListeners(oObject);
+				this._handleItemEventListeners(oObject);
 			}
 
 			this._handleListItemsAggregation(aNewArgs,  bIsAdding, sFunctionName, oObject);
@@ -1557,21 +1590,21 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 		};
 
 		/**
-		 * Attaches any previously added event handlers.
+		 * Attaches and detaches any previously added event handlers.
 		 *
-		 * @param {Object} oObject The <code>ViewSettingsItem</code> instance on which events will be detached/attached
+		 * @param {Object} oObject The <code>ViewSettingsItem</code> instance on which events will be attached
 		 * @private
 		 */
-		ViewSettingsPopover.prototype._attachItemEventListeners = function (oObject) {
+		ViewSettingsPopover.prototype._handleItemEventListeners = function (oObject) {
 			if (oObject instanceof ViewSettingsItem && oObject.getId().indexOf('nogrouping') === -1) {
 				// make sure we always have one listener at a time only
-				oObject.detachItemPropertyChanged(this._handleViewSettingsItemPropertyChanged.bind(this));
-				oObject.attachItemPropertyChanged(this._handleViewSettingsItemPropertyChanged.bind(this));
+				oObject.detachItemPropertyChanged(this._handleViewSettingsItemPropertyChanged, this);
+				oObject.attachItemPropertyChanged(this._handleViewSettingsItemPropertyChanged, this);
 			}
 
 			if (oObject instanceof sap.m.ViewSettingsFilterItem) {
-				oObject.detachFilterDetailItemsAggregationChange(this._handleFilterDetailItemsAggregationChange.bind(this));
-				oObject.attachFilterDetailItemsAggregationChange(this._handleFilterDetailItemsAggregationChange.bind(this));
+				oObject.detachFilterDetailItemsAggregationChange(this._handleFilterDetailItemsAggregationChange, this);
+				oObject.attachFilterDetailItemsAggregationChange(this._handleFilterDetailItemsAggregationChange, this);
 			}
 		};
 
@@ -1609,16 +1642,6 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 			if (oItem && oItem.getParent && oItem.getParent() instanceof ViewSettingsItem) {
 				this._updateFilterDetailListFor(oItem.getParent());
 			}
-		};
-
-		/**
-		 * Detaches any previously added event handlers.
-		 *
-		 * @param {Object} oObject The <code>ViewSettingsItem</code> instance on which events will be detached/attached.
-		 * @private
-		 */
-		ViewSettingsPopover.prototype._detachItemEventListeners = function (oObject) {
-			//TODO: detach handlers properly
 		};
 
 		/**
@@ -1881,14 +1904,9 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 					id: this.getId() + TOOLBAR_SUFFIX
 				});
 
-				this._oCloseBtnARIAInvText = new InvisibleText({
-					text: this._getText("MESSAGEPOPOVER_CLOSE")
-				});
-
 				// create close button
 				oCloseBtn = new Button({
 					icon: IconPool.getIconURI("decline"),
-					ariaLabelledBy: this._oCloseBtnARIAInvText.toStatic().getId(),
 					press: this._cancel.bind(this)
 				}).addStyleClass('sapMVSPCloseBtn');
 
@@ -2016,9 +2034,6 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 
 			this._popover.destroy();
 			this._popover = null;
-
-			this._oCloseBtnARIAInvText.destroy();
-			this._oCloseBtnARIAInvText = null;
 
 			this._title = null;
 			this._navContainer = null;

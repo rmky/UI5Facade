@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -447,6 +447,7 @@ html.sap-desktop .sapUiFioriObjectPage > section > .sapUiForm {
 div[class*="sapUiRespGrid"] > div[class*="sapUiRespGridSpan"] {
     float: left;
     overflow: hidden;
+	min-height: 1px; // BCP: 1770523047
 }
 
 /* CLEAR FIX */
@@ -506,6 +507,13 @@ div[class*="sapUiRespGrid"]:after {
 
 .sapUiRespGrid.sapUiRespGridVSpace2 > div {
     margin-bottom: 2rem;
+}
+
+.sapUiRespGrid[class*="sapUiRespGridVSpace0"] > .sapUiRespGridSpanInvisible,
+.sapUiRespGrid[class*="sapUiRespGridVSpace05"] > .sapUiRespGridSpanInvisible,
+.sapUiRespGrid[class*="sapUiRespGridVSpace1"] > .sapUiRespGridSpanInvisible,
+.sapUiRespGrid[class*="sapUiRespGridVSpace2"] > .sapUiRespGridSpanInvisible {
+	margin-bottom: 0;
 }
 
 /* GENERAL BREAK */
@@ -605,19 +613,7 @@ div[class*="sapUiRespGrid"]:after {
 /* =============================== */
 
 .sapUiRespGridWriteCSS(@_sap_ui_layout_Grid_RespGridMediaPhone, S, @_sap_ui_layout_Grid_RespGridMediaPhoneSize);
-
-/* SHOW and HIDE for SMALL contexts */
-
-.@{_sap_ui_layout_Grid_RespGridMediaPhone} > .@{_sap_ui_layout_Grid_RespGridVisible}XL { display: none }
-.@{_sap_ui_layout_Grid_RespGridMediaPhone} > .@{_sap_ui_layout_Grid_RespGridVisible}L { display: none }
-.@{_sap_ui_layout_Grid_RespGridMediaPhone} > .@{_sap_ui_layout_Grid_RespGridVisible}M { display: none }
-.@{_sap_ui_layout_Grid_RespGridMediaPhone} > .@{_sap_ui_layout_Grid_RespGridVisible}S { display: block }
-
-.@{_sap_ui_layout_Grid_RespGridMediaPhone} > .@{_sap_ui_layout_Grid_RespGridHidden}XL { display: block }
-.@{_sap_ui_layout_Grid_RespGridMediaPhone} > .@{_sap_ui_layout_Grid_RespGridHidden}L { display: block }
-.@{_sap_ui_layout_Grid_RespGridMediaPhone} > .@{_sap_ui_layout_Grid_RespGridHidden}M { display: block }
 .@{_sap_ui_layout_Grid_RespGridMediaPhone} > .@{_sap_ui_layout_Grid_RespGridHidden}S { display: none }
-
 
 
 /* =============================== */
@@ -625,17 +621,7 @@ div[class*="sapUiRespGrid"]:after {
 /* =============================== */
 
 .sapUiRespGridWriteCSS(@_sap_ui_layout_Grid_RespGridMediaTablet, M, @_sap_ui_layout_Grid_RespGridMediaTabletSize);
-
-  /* SHOW and HIDE for MEDIUM contexts */
-.@{_sap_ui_layout_Grid_RespGridMediaTablet} > .@{_sap_ui_layout_Grid_RespGridVisible}XL { display: none }
-.@{_sap_ui_layout_Grid_RespGridMediaTablet} > .@{_sap_ui_layout_Grid_RespGridVisible}L { display: none }
-.@{_sap_ui_layout_Grid_RespGridMediaTablet} > .@{_sap_ui_layout_Grid_RespGridVisible}M { display: block }
-.@{_sap_ui_layout_Grid_RespGridMediaTablet} > .@{_sap_ui_layout_Grid_RespGridVisible}S { display: none }
-
-.@{_sap_ui_layout_Grid_RespGridMediaTablet} > .@{_sap_ui_layout_Grid_RespGridHidden}XL { display: block }
-.@{_sap_ui_layout_Grid_RespGridMediaTablet} > .@{_sap_ui_layout_Grid_RespGridHidden}L { display: block }
 .@{_sap_ui_layout_Grid_RespGridMediaTablet} > .@{_sap_ui_layout_Grid_RespGridHidden}M { display: none }
-.@{_sap_ui_layout_Grid_RespGridMediaTablet} > .@{_sap_ui_layout_Grid_RespGridHidden}S { display: block }
 
 
 /* ============================= */
@@ -643,17 +629,7 @@ div[class*="sapUiRespGrid"]:after {
 /* ============================= */
 
 .sapUiRespGridWriteCSS(@_sap_ui_layout_Grid_RespGridMediaDesktop, L, @_sap_ui_layout_Grid_RespGridMediaDesktopSize);
-
- /* SHOW and HIDE for LARGE contexts */
-.@{_sap_ui_layout_Grid_RespGridMediaDesktop} > .@{_sap_ui_layout_Grid_RespGridVisible}XL { display: block }
-.@{_sap_ui_layout_Grid_RespGridMediaDesktop} > .@{_sap_ui_layout_Grid_RespGridVisible}L { display: block }
-.@{_sap_ui_layout_Grid_RespGridMediaDesktop} > .@{_sap_ui_layout_Grid_RespGridVisible}M { display: none }
-.@{_sap_ui_layout_Grid_RespGridMediaDesktop} > .@{_sap_ui_layout_Grid_RespGridVisible}S { display: none }
-
-.@{_sap_ui_layout_Grid_RespGridMediaDesktop} > .@{_sap_ui_layout_Grid_RespGridHidden}XL { display: none }
 .@{_sap_ui_layout_Grid_RespGridMediaDesktop} > .@{_sap_ui_layout_Grid_RespGridHidden}L { display: none }
-.@{_sap_ui_layout_Grid_RespGridMediaDesktop} > .@{_sap_ui_layout_Grid_RespGridHidden}M { display: block }
-.@{_sap_ui_layout_Grid_RespGridMediaDesktop} > .@{_sap_ui_layout_Grid_RespGridHidden}S { display: block }
 
 
 /* ====================================== */
@@ -661,17 +637,7 @@ div[class*="sapUiRespGrid"]:after {
 /* ====================================== */
 
 .sapUiRespGridWriteCSS(@_sap_ui_layout_Grid_RespGridMediaXL, XL, @_sap_ui_layout_Grid_RespGridMediaXLSize);
-
-/* SHOW and HIDE for XLARGE contexts */
-.@{_sap_ui_layout_Grid_RespGridMediaXL} > .@{_sap_ui_layout_Grid_RespGridVisible}XL { display: block }
-.@{_sap_ui_layout_Grid_RespGridMediaXL} > .@{_sap_ui_layout_Grid_RespGridVisible}L { display: block }
-.@{_sap_ui_layout_Grid_RespGridMediaXL} > .@{_sap_ui_layout_Grid_RespGridVisible}M { display: none }
-.@{_sap_ui_layout_Grid_RespGridMediaXL} > .@{_sap_ui_layout_Grid_RespGridVisible}S { display: none }
-
 .@{_sap_ui_layout_Grid_RespGridMediaXL} > .@{_sap_ui_layout_Grid_RespGridHidden}XL { display: none }
-.@{_sap_ui_layout_Grid_RespGridMediaXL} > .@{_sap_ui_layout_Grid_RespGridHidden}L { display: none }
-.@{_sap_ui_layout_Grid_RespGridMediaXL} > .@{_sap_ui_layout_Grid_RespGridHidden}M { display: block }
-.@{_sap_ui_layout_Grid_RespGridMediaXL} > .@{_sap_ui_layout_Grid_RespGridHidden}S { display: block }
 
 
 
@@ -2246,7 +2212,10 @@ html[data-sap-ui-browser^=ie].sap-phone .sapUiLoSplitterV > .sapUiLoSplitterBar:
 }
 
 // Styles & Sizes for Tablet
-.sapUiBlockLayoutSizeM {
+.sapUiBlockLayoutSizeM:not(.sapUiBlockLayoutKeepFontSize) {
+	.sapUiNoContentPadding .sapUiBlockCellContent {
+		padding: 0;
+	}
 	.sapUiBlockCellContent {
 		padding: 1rem 2rem;
 		font-size: @sapMFontMediumSize;
@@ -2262,7 +2231,10 @@ html[data-sap-ui-browser^=ie].sap-phone .sapUiLoSplitterV > .sapUiLoSplitterBar:
 }
 
 // Styles & Sizes for Desktop
-.sapUiBlockLayoutSizeL {
+.sapUiBlockLayoutSizeL:not(.sapUiBlockLayoutKeepFontSize) {
+	.sapUiNoContentPadding .sapUiBlockCellContent {
+		padding: 0;
+	}
 	.sapUiBlockCellContent {
 		padding: 2rem 3rem;
 		font-size: @sapMFontLargeSize;
@@ -2282,7 +2254,10 @@ html[data-sap-ui-browser^=ie].sap-phone .sapUiLoSplitterV > .sapUiLoSplitterBar:
 }
 
 // Styles & Sizes for LargeDesktop
-.sapUiBlockLayoutSizeXL {
+.sapUiBlockLayoutSizeXL:not(.sapUiBlockLayoutKeepFontSize) {
+	.sapUiNoContentPadding .sapUiBlockCellContent {
+		padding: 0;
+	}
 	.sapUiBlockCellContent {
 		padding: 2rem 3rem;
 		font-size: @sapMFontLargeSize;

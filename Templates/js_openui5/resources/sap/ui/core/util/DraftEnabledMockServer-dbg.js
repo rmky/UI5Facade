@@ -1,9 +1,9 @@
 /*
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["jquery.sap.global", "sap/ui/Device", "sap/ui/core/util/MockServer", "jquery.sap.sjax"], function(jQuery, Device, MockServer/*, jQuerySapSjax*/) {
+sap.ui.define(["jquery.sap.global", "sap/ui/core/util/MockServer", "jquery.sap.sjax"], function(jQuery, MockServer/*, jQuerySapSjax*/) {
 	"use strict";
 	return {
 
@@ -75,9 +75,9 @@ sap.ui.define(["jquery.sap.global", "sap/ui/Device", "sap/ui/core/util/MockServe
 						this._oDraftMetadata.annotations = oAnnotations;
 						this._oDraftMetadata.mockServerRootUri = oMockServer.getRootUri();
 						if (oEntitySetAnnotations[this._oConstants.COM_SAP_VOCABULARIES_COMMON_V1_DRAFTROOT][this._oConstants.ACTIVATION_ACTION]){
-                            this._oDraftMetadata.draftRootActivationName = oEntitySetAnnotations[this._oConstants.COM_SAP_VOCABULARIES_COMMON_V1_DRAFTROOT][this
-                                ._oConstants.ACTIVATION_ACTION
-                                ].String;
+							this._oDraftMetadata.draftRootActivationName = oEntitySetAnnotations[this._oConstants.COM_SAP_VOCABULARIES_COMMON_V1_DRAFTROOT][this
+								._oConstants.ACTIVATION_ACTION
+								].String;
 						}
 						if (this._oDraftMetadata.draftRootActivationName) {
 							this._oDraftMetadata.draftRootActivationName = this._oDraftMetadata.draftRootActivationName.substring(this._oDraftMetadata.draftRootActivationName

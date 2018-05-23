@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,15 +8,21 @@
 sap.ui.define([
 		'jquery.sap.global', 'sap/ui/Device',
 		'sap/ui/base/ManagedObject', 'sap/ui/base/Object', 'sap/ui/base/ObjectPool',
-		'./Control', './IntervalTrigger', './RenderManager', './Element', './ResizeHandler',
-		'jquery.sap.script'
+		'./Control', './IntervalTrigger', './RenderManager', './Element', './ResizeHandler', './library',
+		'jquery.sap.script', 'jquery.sap.dom'
 	], function(
 		jQuery, Device,
 		ManagedObject, BaseObject, ObjectPool,
-		Control, IntervalTrigger, RenderManager, Element, ResizeHandler
-		/* , jQuerySap */) {
-
+		Control, IntervalTrigger, RenderManager, Element, ResizeHandler, library
+		/* , jQuerySapScript, jQuerySapDom */) {
 	"use strict";
+
+
+	// shortcut for sap.ui.core.CSSSize
+	var CSSSize = library.CSSSize;
+
+	// shortcut for sap.ui.core.OpenState
+	var OpenState = library.OpenState;
 
 
 	/**
@@ -73,7 +79,7 @@ sap.ui.define([
 			this._popupUID = jQuery.sap.uid(); // internal ID to make event handlers unique
 
 			this.bOpen = false; // true exactly if the Popup is opening, open, or closing
-			this.eOpenState = sap.ui.core.OpenState.CLOSED;
+			this.eOpenState = OpenState.CLOSED;
 
 			this._mEvents = {};
 			this._mEvents["sap.ui.core.Popup.addFocusableContent-" + this._popupUID] = this._addFocusableArea;
@@ -118,7 +124,7 @@ sap.ui.define([
 					}
 					// call the close handler only when it's fully opened
 					// this also prevents calling close while closing
-					if (this.eOpenState === sap.ui.core.OpenState.CLOSING || this.eOpenState === sap.ui.core.OpenState.CLOSED) {
+					if (this.eOpenState === OpenState.CLOSING || this.eOpenState === OpenState.CLOSED) {
 						return;
 					}
 
@@ -572,11 +578,11 @@ sap.ui.define([
 		jQuery.sap.assert(this.oContent, "Popup content must have been set by now");
 		// other asserts follow after parameter shifting
 
-		if (this.eOpenState != sap.ui.core.OpenState.CLOSED) {
+		if (this.eOpenState != OpenState.CLOSED) {
 			return;
 		}
 
-		this.eOpenState = sap.ui.core.OpenState.OPENING;
+		this.eOpenState = OpenState.OPENING;
 
 		var oStatic;
 		try {
@@ -740,7 +746,7 @@ sap.ui.define([
 		// If the popup's state is changed again after 'open' function is called,
 		// for example, the 'close' is called before the opening animation finishes,
 		// it's needed to immediately return from this function.
-		if (this.eOpenState !== sap.ui.core.OpenState.OPENING) {
+		if (this.eOpenState !== OpenState.OPENING) {
 			return;
 		}
 
@@ -779,7 +785,7 @@ sap.ui.define([
 			}
 		}
 
-		this.eOpenState = sap.ui.core.OpenState.OPEN;
+		this.eOpenState = OpenState.OPEN;
 
 		// set and register listener of 'followOf' (given via Popup.open()) only when
 		// the popup has been opened already. Otherwise checking the opener's positio
@@ -1038,7 +1044,7 @@ sap.ui.define([
 
 		jQuery.sap.assert(iDuration === undefined || (typeof iDuration === "number" && (iDuration % 1 == 0)), "iDuration must be empty or an integer");
 
-		if (this.eOpenState == sap.ui.core.OpenState.CLOSED || this.eOpenState == sap.ui.core.OpenState.CLOSING) {
+		if (this.eOpenState == OpenState.CLOSED || this.eOpenState == OpenState.CLOSING) {
 			return;
 		} // also close when OPENING
 		// the above will queue the animations (close only after opening), but may lead to the CLOSED event happening before the OPENED event
@@ -1052,7 +1058,7 @@ sap.ui.define([
 
 		//if(this.eOpenState != sap.ui.core.OpenState.OPEN) return; // this is the more conservative approach: to only close when the Popup is OPEN
 
-		this.eOpenState = sap.ui.core.OpenState.CLOSING;
+		this.eOpenState = OpenState.CLOSING;
 
 		if (this.getFollowOf()) {
 			Popup.DockTrigger.removeListener(Popup.checkDocking, this);
@@ -1206,7 +1212,7 @@ sap.ui.define([
 		}
 
 		this.bOpen = false;
-		this.eOpenState = sap.ui.core.OpenState.CLOSED;
+		this.eOpenState = OpenState.CLOSED;
 
 		var aChildPopups = this.getChildPopups();
 		for (var j = 0, l = aChildPopups.length; j < l; j++) {
@@ -1362,7 +1368,7 @@ sap.ui.define([
 
 		this._oPosition = this._createPosition(my, at, of, offset, collision);
 
-		if (this.eOpenState != sap.ui.core.OpenState.CLOSED) {
+		if (this.eOpenState != OpenState.CLOSED) {
 			this._applyPosition(this._oPosition);
 			this._oBlindLayer && this._oBlindLayer.update(this._$());
 		}
@@ -1500,12 +1506,12 @@ sap.ui.define([
 				oDomRef.style.right = "";
 				$Ref.position(this._resolveReference(this._convertPositionRTL(oPosition, bRtl))); // must be visible, so browsers can calculate its offset!
 				this._fixPositioning(oPosition, bRtl);
-			} else if (sap.ui.core.CSSSize.isValid(oAt.left) && sap.ui.core.CSSSize.isValid(oAt.top)) {
+			} else if (CSSSize.isValid(oAt.left) && CSSSize.isValid(oAt.top)) {
 				$Ref.css({
 					"left" : oAt.left,
 					"top" : oAt.top
 				});
-			} else if (sap.ui.core.CSSSize.isValid(oAt.right) && sap.ui.core.CSSSize.isValid(oAt.top)) {
+			} else if (CSSSize.isValid(oAt.right) && CSSSize.isValid(oAt.top)) {
 				$Ref.css({
 					"right" : oAt.right,
 					"top" : oAt.top
@@ -1550,7 +1556,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Get the DOM reference of the given parameter. The "of" parameter can be different types. This methods returns the refered DOM reference base on the given parameter. If Event or jQuery.Event type parameter is given, null is returned.
+	 * Get the DOM reference of the given parameter. The "of" parameter can be different types. This methods returns the referred DOM reference based on the given parameter. If Event or jQuery.Event type parameter is given, null is returned.
 	 *
 	 * @param {String| DomNode | jQuery |sap.ui.core.Element | Event | jQuery.Event} oOf the DOM Element, UI Element instance on which the calculation is done
 	 * @returns {DomNode} the DOM reference calculated based on the given parameter. If Event, or jQuery Event type parameter is given, null is returned.
@@ -1712,7 +1718,7 @@ sap.ui.define([
 	Popup.prototype.setShadow = function(bShowShadow) {
 		jQuery.sap.assert(typeof bShowShadow === "boolean", "bShowShadow must be boolean");
 		this._bShadow = bShowShadow;
-		if (this.eOpenState != sap.ui.core.OpenState.CLOSED) {
+		if (this.eOpenState != OpenState.CLOSED) {
 			this._$().toggleClass("sapUiShd", bShowShadow);
 		}
 
@@ -2000,7 +2006,7 @@ sap.ui.define([
 			this._oLastOfRect = this._calcOfRect(this._oLastPosition.of);
 		}
 
-		if (this._bFollowOf && this.getOpenState() === sap.ui.core.OpenState.OPEN) {
+		if (this._bFollowOf && this.getOpenState() === OpenState.OPEN) {
 			Popup.DockTrigger.addListener(Popup.checkDocking, this);
 		}
 	};
@@ -2434,7 +2440,7 @@ sap.ui.define([
 	Popup.DockTrigger = new IntervalTrigger(200);
 
 	Popup.checkDocking = function(){
-		if (this.getOpenState() === sap.ui.core.OpenState.OPEN) {
+		if (this.getOpenState() === OpenState.OPEN) {
 			var oCurrentOfRef = this._getOfDom(this._oLastPosition.of),
 				oCurrentOfRect = jQuery(oCurrentOfRef).rect();
 
@@ -2656,7 +2662,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Popup.prototype.onresize = function(oEvent) {
-		if (this.eOpenState != sap.ui.core.OpenState.CLOSED && this._oBlindLayer) {
+		if (this.eOpenState != OpenState.CLOSED && this._oBlindLayer) {
 			var that = this;
 			setTimeout(function(){
 				that._updateBlindLayer();
@@ -2665,7 +2671,7 @@ sap.ui.define([
 	};
 
 	Popup.prototype._updateBlindLayer = function() {
-		if (this.eOpenState != sap.ui.core.OpenState.CLOSED && this._oBlindLayer) {
+		if (this.eOpenState != OpenState.CLOSED && this._oBlindLayer) {
 			this._oBlindLayer.update(this._$(/*forceRerender*/ false, /*getOnly*/ true));
 		}
 	};
@@ -2871,5 +2877,4 @@ sap.ui.define([
 	};
 
 	return Popup;
-
 });

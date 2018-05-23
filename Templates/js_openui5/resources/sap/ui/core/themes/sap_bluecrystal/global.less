@@ -583,6 +583,10 @@
 @sapUiChartScrollbarBorderSize: 0;
 @sapUiChartScrollbarThumbPadding: 0;
 
+@sapUiChartLegendHoverBackground: @sapUiListHoverBackground;  // #f0f0f0
+@sapUiChartLegendSelectionBackground: @sapUiListSelectionBackgroundColor;  // #e6f2f9
+@sapUiChartLegendSelectionHoverBackground: @sapUiListSelectionHoverBackground;  // #d9ecf6
+
 
 // qualitative palette
 
@@ -724,6 +728,15 @@
 @sapUiChartPaletteSequentialNeutral: @sapUiChartSequenceNeutral;
 @sapUiChartPaletteSequentialNeutralDark1: saturate(darken(@sapUiChartSequenceNeutral, 10), 1);
 @sapUiChartPaletteSequentialNeutralDark2: saturate(darken(@sapUiChartSequenceNeutral, 15), 1);
+
+@sapUiChartPaletteNoSemDiv1Light3: #f3dec9;
+@sapUiChartPaletteNoSemDiv1Light2: #e3cbb3;
+@sapUiChartPaletteNoSemDiv1Light1: #c8ab8e;
+@sapUiChartPaletteNoSemDiv1: #b08e6d;
+@sapUiChartPaletteNoSemDiv1Dark1: #8e6c4b;
+@sapUiChartPaletteNoSemDiv1Dark2: #754f2a;
+
+@sapUiChartPaletteMidArea: desaturate(lighten(@sapUiChartSequenceNeutral, 40), 7);
 
 @sapUiChoroplethBG: lighten(@sapUiChartSequenceNeutral, 42);
 @sapUiChoroplethRegionBorder: @sapUiLightestBorder;

@@ -1,16 +1,57 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 //Provides control sap.m.PlanningCalendar.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedObjectObserver', './PlanningCalendarRow',
-		'./library', 'sap/ui/unified/library', 'sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar/CalendarDate',
-		'sap/ui/unified/DateRange', 'sap/ui/unified/CalendarDateInterval', 'sap/ui/unified/CalendarWeekInterval',
-		'sap/ui/unified/CalendarOneMonthInterval', 'sap/ui/Device', 'sap/ui/core/ResizeHandler', 'sap/ui/core/Item', 'jquery.sap.events'],
-	function (jQuery, Control, ManagedObjectObserver, PlanningCalendarRow, library, unifiedLibrary, CalendarUtils, CalendarDate,
-			  DateRange, CalendarDateInterval, CalendarWeekInterval, CalendarOneMonthInterval, Device, ResizeHandler, Item) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/core/Control',
+	'sap/ui/base/ManagedObjectObserver',
+	'./PlanningCalendarRow',
+	'./library',
+	'sap/ui/unified/library',
+	'sap/ui/unified/calendar/CalendarUtils',
+	'sap/ui/unified/calendar/CalendarDate',
+	'sap/ui/unified/DateRange',
+	'sap/ui/unified/CalendarDateInterval',
+	'sap/ui/unified/CalendarWeekInterval',
+	'sap/ui/unified/CalendarOneMonthInterval',
+	'sap/ui/Device',
+	'sap/ui/core/ResizeHandler',
+	'sap/ui/core/Item',
+	'sap/m/Select',
+	'sap/m/Button',
+	'sap/m/Toolbar',
+	'sap/m/Table',
+	'sap/m/Column',
+	'./PlanningCalendarRenderer',
+	'jquery.sap.events'
+],
+	function(
+	jQuery,
+	Control,
+	ManagedObjectObserver,
+	PlanningCalendarRow,
+	library,
+	unifiedLibrary,
+	CalendarUtils,
+	CalendarDate,
+	DateRange,
+	CalendarDateInterval,
+	CalendarWeekInterval,
+	CalendarOneMonthInterval,
+	Device,
+	ResizeHandler,
+	Item,
+	Select,
+	Button,
+	Toolbar,
+	Table,
+	Column,
+	PlanningCalendarRenderer
+	) {
 		"use strict";
 
 	// shortcut for sap.ui.unified.CalendarDayType
@@ -93,7 +134,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 	 * {@link sap.m.PlanningCalendarView PlanningCalendarView}'s properties.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -227,7 +268,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 			 * The views should be specified by their keys.
 			 *
 			 * The default predefined views and their keys are available at
-			 * {@link sap.m.PlanningCalendarBuiltInViews}.
+			 * {@link sap.m.PlanningCalendarBuiltInView}.
 			 *
 			 * <b>Note:</b> If set, all specified views will be displayed along
 			 * with any custom views (if available). If not set and no custom
@@ -236,7 +277,27 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 			 * custom views will be displayed.
 			 * @since 1.50
 			 */
-			builtInViews : {type : "string[]", group : "Appearance", defaultValue : []}
+			builtInViews : {type : "string[]", group : "Appearance", defaultValue : []},
+
+			/**
+			 * Determines whether the header area will remain visible (fixed on top) when the rest of the content is scrolled out of view.
+			 *
+			 * The sticky header behavior is automatically disabled on phones in landscape mode for better visibility of the content.
+			 *
+			 * <b>Note:</b> There is limited browser support, hence the API is in experimental state.
+			 * Browsers that currently support this feature are Chrome (desktop and mobile), Safari (desktop and mobile) and Edge 41.
+			 *
+			 * There are also some known issues with respect to the scrolling behavior and focus handling. A few are given below:
+			 *
+			 * When the PlanningCalendar is placed in certain layout containers, for example the <code>GridLayout</code> control,
+			 * the column headers do not fix at the top of the viewport. Similar behavior is also observed with the <code>ObjectPage</code> control.
+			 *
+			 * This API should not be used in production environment.
+			 *
+			 * @experimental As of 1.54
+			 * @since 1.54
+			 */
+			stickyHeader : {type : "boolean", group : "Appearance", defaultValue : false}
 		},
 		aggregations : {
 
@@ -383,8 +444,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 				 */
 				row : {type : "sap.m.PlanningCalendarRow"}
 			}
+		},
+		designtime: "sap/m/designtime/PlanningCalendar.designtime"
+	},
+		constructor: function(vId, mSettings) {
+			Control.prototype.constructor.apply(this, arguments);
+
+			if (typeof vId !== "string"){
+				mSettings = vId;
+			}
+
+			if (mSettings && typeof mSettings.customAppointmentsSorterCallback === "function") {
+				this._fnCustomSortedAppointments = mSettings.customAppointmentsSorterCallback;
+			}
 		}
-	}});
+	});
 
 	//List of private properties controlling different intervals
 	var INTERVAL_CTR_REFERENCES = ["_oTimeInterval", "_oDateInterval", "_oMonthInterval", "_oWeekInterval", "_oOneMonthInterval"],
@@ -472,16 +546,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 		this._oRB = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
 		var sId = this.getId();
-		this._oIntervalTypeSelect = new sap.m.Select(sId + "-IntType", {maxWidth: "15rem", ariaLabelledBy: sId + "-SelDescr"});
+		this._oIntervalTypeSelect = new Select(sId + "-IntType", {maxWidth: "15rem", ariaLabelledBy: sId + "-SelDescr"});
 		this._oIntervalTypeSelect.attachEvent("change", _changeIntervalType, this);
 
-		this._oTodayButton = new sap.m.Button(sId + "-Today", {
+		this._oTodayButton = new Button(sId + "-Today", {
 			text: this._oRB.getText("PLANNINGCALENDAR_TODAY"),
 			type: ButtonType.Transparent
 		});
 		this._oTodayButton.attachEvent("press", this._handleTodayPress, this);
 
-		this._oHeaderToolbar = new sap.m.Toolbar(sId + "-HeaderToolbar", {
+		this._oHeaderToolbar = new Toolbar(sId + "-HeaderToolbar", {
 			design: ToolbarDesign.Transparent,
 			content: [this._oIntervalTypeSelect, this._oTodayButton]
 		});
@@ -490,19 +564,19 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 			toolbar: this._oHeaderToolbar
 		});
 
-		this._oInfoToolbar = new sap.m.Toolbar(sId + "-InfoToolbar", {
+		this._oInfoToolbar = new Toolbar(sId + "-InfoToolbar", {
 			height: "auto",
 			design: ToolbarDesign.Transparent,
 			content: [this._oCalendarHeader, this._oTimeInterval]
 		});
 
-		var oTable = new sap.m.Table(sId + "-Table", {
+		var oTable = new Table(sId + "-Table", {
 			infoToolbar: this._oInfoToolbar,
 			mode: ListMode.SingleSelectMaster,
-			columns: [ new sap.m.Column({
+			columns: [ new Column({
 					styleClass: "sapMPlanCalRowHead"
 				}),
-				new sap.m.Column({
+				new Column({
 					width: "80%",
 					styleClass: "sapMPlanCalAppRow",
 					minScreenWidth: APP_COLUMN_MIN_SCREEN_WIDTH,
@@ -534,6 +608,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 		this.setStartDate(new Date());
 
 		this._resizeProxy = jQuery.proxy(_handleResize, this);
+		this._fnCustomSortedAppointments = undefined; //transfers a custom appointments sorter function to the CalendarRow
 
 	};
 
@@ -543,6 +618,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 			ResizeHandler.deregister(this._sResizeListener);
 			this._sResizeListener = undefined;
 		}
+
+		Device.orientation.detachHandler(this._updateStickyHeader, this);
 
 		if (this._sUpdateCurrentTime) {
 			jQuery.sap.clearDelayedCall(this._sUpdateCurrentTime);
@@ -603,6 +680,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 
 		this._updateTodayButtonState();
 
+		Device.orientation.detachHandler(this._updateStickyHeader, this);
+
 		this._bBeforeRendering = undefined;
 
 	};
@@ -648,11 +727,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 	PlanningCalendar.prototype.onAfterRendering = function(oEvent){
 
 		// check if size is right and adopt it if necessary
+		// also it calls _updateStickyHeader function and in case of stickyHeader property set to true
+		// all needed classes will be updated
 		oEvent.size = {width: this.getDomRef().offsetWidth};
 		_handleResize.call(this, oEvent, true);
 
 		if (!this._sResizeListener) {
 			this._sResizeListener = ResizeHandler.register(this, this._resizeProxy);
+		}
+
+		if (Device.system.phone && this.getStickyHeader()) {
+			Device.orientation.attachHandler(this._updateStickyHeader, this);
 		}
 
 		this._updateCurrentTimeVisualization(false); // CalendarRow sets visualization onAfterRendering
@@ -1029,6 +1114,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 				// only set timer, CalendarRow will be re-rendered, so no update needed here
 				this._updateCurrentTimeVisualization(false);
 				_adaptCalHeaderForWeekNumbers.call(this, this.getShowWeekNumbers(), this._viewAllowsWeekNumbers(sKey));
+				_adaptCalHeaderForDayNamesLine.call(this, this.getShowDayNamesLine(), !!oInterval);
 			}
 		}
 
@@ -1064,6 +1150,19 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 			oIntervalMetadata = INTERVAL_METADATA[sIntervalType];
 
 		return !!oIntervalMetadata && !!oIntervalMetadata.oClass.prototype.setShowWeekNumbers;
+	};
+
+	/**
+	 * Determines if the day names line is allowed for a given view.
+	 * @param {string} sViewKey The view key
+	 * @returns {boolean} true if the day names line is allowed for the current view
+	 * @private
+	 */
+	PlanningCalendar.prototype._viewAllowsDayNamesLine = function(sViewKey) {
+		var sIntervalType = this._getView(sViewKey).getIntervalType(),
+			oIntervalMetadata = INTERVAL_METADATA[sIntervalType];
+
+		return !!oIntervalMetadata && !!oIntervalMetadata.oClass.prototype.setShowDayNamesLine;
 	};
 
 	/**
@@ -1197,18 +1296,63 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 
 		var intervalMetadata,
 			sInstanceName,
-			oCalDateInterval;
+			oCalDateInterval,
+			bRendered = !!this.getDomRef(),
+			sCurrentViewKey = this.getViewKey();
 
 		for (intervalMetadata in  INTERVAL_METADATA) {
 			sInstanceName = INTERVAL_METADATA[intervalMetadata].sInstanceName;
 			if (this[sInstanceName]) {
 				oCalDateInterval = this[sInstanceName];
 				oCalDateInterval.setShowDayNamesLine(bShowDayNamesLine);
+
+				if (bRendered && intervalMetadata === sCurrentViewKey) {
+					_adaptCalHeaderForDayNamesLine.call(this, bShowDayNamesLine, true);
+				}
 			}
 		}
 
 		return this.setProperty("showDayNamesLine", bShowDayNamesLine, false);
 
+	};
+
+	/**
+	 * Sets the stickyHeader property.
+	 * @override
+	 * @public
+	 * @param {boolean} bStick Whether the header area will remain visible (fixed on top)
+	 * @returns {sap.m.PlanningCalendar} this pointer for chaining
+	 */
+	PlanningCalendar.prototype.setStickyHeader = function(bStick) {
+		if (this.getStickyHeader() === bStick) {
+			return this;
+		}
+
+		this.setProperty("stickyHeader", bStick, true);
+		if (Device.system.phone) {
+			if (bStick) {
+				Device.orientation.attachHandler(this._updateStickyHeader, this);
+			} else {
+				Device.orientation.detachHandler(this._updateStickyHeader, this);
+			}
+		}
+		this._updateStickyHeader();
+
+		return this;
+	};
+
+	PlanningCalendar.prototype._updateStickyHeader = function() {
+		var bStick = this.getStickyHeader(),
+			bMobile1MonthView = this.getViewKey() === PlanningCalendarBuiltInView.OneMonth && this._iSize < 2,
+			bStickyToolbar = bStick && !Device.system.phone && !bMobile1MonthView,
+			bStickyInfoToolbar = bStick && !(Device.system.phone && Device.orientation.landscape) && !bMobile1MonthView;
+
+		if (this._oToolbar) {
+			this._oToolbar.toggleStyleClass("sapMPlanCalStickyHeader", bStickyToolbar);
+		}
+		if (this._oInfoToolbar) {
+			this._oInfoToolbar.toggleStyleClass("sapMPlanCalStickyHeader", bStickyInfoToolbar);
+		}
 	};
 
 	PlanningCalendar.prototype.addRow = function(oRow) {
@@ -1247,6 +1391,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 
 		_setSelectionMode.call(this);
 
+		//when there's a new row added, be sure that if there's a custom sorter, it'll be set to the corresponding row
+		if (this._fnCustomSortedAppointments){
+			oCalendarRow._setCustomAppointmentsSorterCallback(this._fnCustomSortedAppointments);
+		}
+
 		return this;
 
 	};
@@ -1272,6 +1421,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 		oCalendarRow.attachEvent("startDateChange", this._handleStartDateChange, this);
 		oCalendarRow.attachEvent("leaveRow", _handleLeaveRow, this);
 		oCalendarRow.attachEvent("intervalSelect", _handleIntervalSelect, this);
+
+		//when there's a new row inserted, be sure that if there's a custom sorter, it'll be set to the corresponding row
+		if (this._fnCustomSortedAppointments){
+			oCalendarRow._setCustomAppointmentsSorterCallback(this._fnCustomSortedAppointments);
+		}
 
 		_updateSelectAllCheckBox.call(this);
 
@@ -1306,6 +1460,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 		oCalendarRow.detachEvent("leaveRow", _handleLeaveRow, this);
 		oCalendarRow.detachEvent("intervalSelect", _handleIntervalSelect, this);
 
+		//the reference to the sorter function must be cleared, as it is invalid in other context
+		if (this._fnCustomSortedAppointments){
+			oCalendarRow._fnCustomSortedAppointments = undefined;
+		}
+
 		_updateSelectAllCheckBox.call(this);
 
 		_setSelectionMode.call(this);
@@ -1330,6 +1489,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 			oCalendarRow.detachEvent("startDateChange", this._handleStartDateChange, this);
 			oCalendarRow.detachEvent("leaveRow", _handleLeaveRow, this);
 			oCalendarRow.detachEvent("intervalSelect", _handleIntervalSelect, this);
+
+			//the reference to the sorter function must be cleared, as it is invalid in other context
+			if (this._fnCustomSortedAppointments){
+				oCalendarRow._fnCustomSortedAppointments = undefined;
+			}
 		}
 
 		_updateSelectAllCheckBox.call(this);
@@ -2034,6 +2198,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 		this.$().toggleClass("sapMPlanCalWithWeekNumbers", bShowWeekNumbers && bCurrentIntervalAllowsWeekNumbers);
 	}
 
+	function _adaptCalHeaderForDayNamesLine(bShowDayNamesLine, bCurrentIntervalAllowsDayNamesLine) {
+		this.$().toggleClass("sapMPlanCalWithDayNamesLine", bShowDayNamesLine && bCurrentIntervalAllowsDayNamesLine);
+	}
+
 	function _handleResize(oEvent, bNoRowResize){
 
 		this._applyContextualSettings();
@@ -2118,6 +2286,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 			// this._oOneMonthInterval._adjustSelectedDate(this.getStartDate());
 		}
 
+		// Call _updateStickyHeader only if the property stickyHeader is set to true
+		// in order to set or remove the sticky class in special cases like 1MonthView or phone landscape
+		// otherwise nothing should be updated
+		if (this.getStickyHeader()) {
+			this._updateStickyHeader();
+		}
 	}
 
 	function _handleAppointmentSelect(oEvent) {
@@ -2273,6 +2447,80 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 		}
 
 		return aResultViews;
+	};
+
+
+	/**
+	 * Holds the selected appointments. If no appointments are selected, an empty array is returned.
+	 * @returns {sap.ui.unified.CalendarAppointment[]} Array of IDs of selected appointments
+	 * @since 1.54
+	 * @public
+	 */
+	PlanningCalendar.prototype.getSelectedAppointments = function() {
+		var aSelAppointments = [];
+
+		this.getRows().filter(function(oRow){
+			aSelAppointments.push.apply(aSelAppointments, oRow.getCalendarRow().aSelectedAppointments);
+		});
+
+		return aSelAppointments;
+	};
+
+	/**
+	 * Setter for custom sorting of appointments. If not used, the appointments will be sorted according to their duration vertically.
+	 * For example, the start time and order to the X axis won't change.
+	 * @param {appointmentsSorterCallback} fnSorter
+	 * @since 1.54
+	 * @returns {sap.m.PlanningCalendar} <code>this</code> for chaining
+	 * @public
+	 */
+	PlanningCalendar.prototype.setCustomAppointmentsSorterCallback = function(fnSorter) {
+		/**
+		 * This callback is displayed as part of the Requester class.
+		 * @callback appointmentsSorterCallback
+		 * @param {sap.ui.unified.CalendarAppointment} appointment1
+		 * @param {sap.ui.unified.CalendarAppointment} appointment2
+		 */
+		if (typeof fnSorter === "function") {
+			this.getRows().forEach(function(oRow){
+				var oCalendarRow = oRow.getCalendarRow();
+				oCalendarRow._setCustomAppointmentsSorterCallback(fnSorter);
+			});
+
+			this._fnCustomSortedAppointments = fnSorter;
+		}
+		return this;
+	};
+
+	/**
+	 * Getter for custom appointments sorter (if any).
+	 * @since 1.54
+	 * @returns {appointmentsSorterCallback}
+	 * @public
+	 */
+	PlanningCalendar.prototype.getCustomAppointmentsSorterCallback = function() {
+		return this._fnCustomSortedAppointments;
+	};
+
+	/**
+	 * Removes all previously selected appointments on all rows whenever a new appointment is pressed
+	 * @private
+	 */
+	PlanningCalendar.prototype._onRowDeselectAppointment = function() {
+		var rows = this.getRows();
+
+		for (var i = 0; i < rows.length; i++) {
+			var aApps = rows[i].getCalendarRow().aSelectedAppointments;
+			for (var j = 0; j < aApps.length; j++) {
+				var oApp = sap.ui.getCore().byId(aApps[j]);
+				if (oApp) {
+					oApp.setProperty("selected", false, true);
+					oApp.$().removeClass("sapUiCalendarAppSel");
+				}
+
+			}
+			rows[i].getCalendarRow().aSelectedAppointments = [];
+		}
 	};
 
 	function _handleTableSelectionChange(oEvent) {
@@ -2570,5 +2818,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/base/ManagedO
 	function _isThereAnIntervalInstance() {
 		return this._oTimeInterval || this._oDateInterval || this._oMonthInterval || this._oWeekInterval || this._oOneMonthInterval;
 	}
+
 	return PlanningCalendar;
 });

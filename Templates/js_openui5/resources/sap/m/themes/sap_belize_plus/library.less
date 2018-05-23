@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -28,6 +28,30 @@
 
 @_sap_m_CheckBox_SelectedWarningColor: @sapUiFieldWarningColor;
 /* END "CheckBox.less" */
+
+/* START "ColorPalette.less" */
+.sap-desktop .sapMColorPalette .sapMBtn:focus {
+	&:after {
+		border-color: @sapUiContentContrastFocusColor;
+	}
+}
+
+.sap-desktop .sapContrastPlus,
+.sap-desktop.sapContrastPlus {
+	.sapMColorPalette .sapMBtn {
+		&:focus:after {
+			border-color: @sapUiContentFocusColor;
+		}
+		&:active,
+		> .sapMBtnActive,
+		&:hover > .sapMBtnActive,
+		&:active > .sapMBtnActive {
+			color: @sapUiListTextColor;
+		}
+	}
+}
+
+/* END "ColorPalette.less" */
 
 /* START "Dialog.less" */
 /* ============================= */
@@ -238,6 +262,17 @@ html.sap-phone .sapMTabStrip .sapMTSOverflowSelect {
 
 @_sap_m_TileContent_NewsFooterTextColor: @sapUiTileTextColor;
 /* END "TileContent.less" */
+
+/* START "TimePickerSliders.less" */
+/* ================================= */
+/* CSS for control sap.m/TimePickerSliders  */
+/* Belize Plus theme                 */
+/* ================================= */
+
+@_sap_m_TimePicker_ItemColor: @sapUiContentForegroundColor;
+@_sap_m_TimePicker_ItemHoverColor: darken(@sapUiContentForegroundColor, 6);
+@_sap_m_TimePicker_ItemBorderColor: darken(@sapUiListBorderColor, 7);
+/* END "TimePickerSliders.less" */
 
 /* START "Token.less" */
 /* ============================ */

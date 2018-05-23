@@ -321,6 +321,11 @@
 			"theme": "sap_hcb"
 		},
 		{
+			"name": "TimePickerSliders.less",
+			"designtime": true,
+			"theme": "sap_hcb"
+		},
+		{
 			"name": "ToggleButton.less",
 			"designtime": true,
 			"theme": "sap_hcb"

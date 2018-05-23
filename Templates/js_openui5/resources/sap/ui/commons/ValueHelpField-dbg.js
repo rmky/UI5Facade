@@ -1,12 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.commons.ValueHelpField.
-sap.ui.define(['jquery.sap.global', './TextField', './library', 'sap/ui/core/IconPool', 'sap/ui/core/theming/Parameters'],
-	function(jQuery, TextField, library, IconPool, Parameters) {
+sap.ui.define([
+    'jquery.sap.global',
+    './TextField',
+    './library',
+    'sap/ui/core/IconPool',
+    'sap/ui/core/theming/Parameters',
+    "./ValueHelpFieldRenderer"
+],
+	function(jQuery, TextField, library, IconPool, Parameters, ValueHelpFieldRenderer) {
 	"use strict";
 
 
@@ -22,7 +29,7 @@ sap.ui.define(['jquery.sap.global', './TextField', './library', 'sap/ui/core/Ico
 	 * @extends sap.ui.commons.TextField
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

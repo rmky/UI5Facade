@@ -1,10 +1,10 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['sap/ui/Device'],
-	function(Device) {
+sap.ui.define(['sap/ui/Device', 'sap/ui/core/InvisibleText'],
+	function(Device, InvisibleText) {
 	"use strict";
 
 
@@ -55,13 +55,14 @@ sap.ui.define(['sap/ui/Device'],
 
 		//ARIA attributes
 		oAccAttributes.labelledby = {
-			value: oControl._sAriaTokenizerLabelId,
+			value: InvisibleText.getStaticId("sap.m", "TOKENIZER_ARIA_LABEL"),
 			append: true
 		};
 
 		oRm.writeAccessibilityState(oControl, oAccAttributes);
 
 		oRm.write(">"); // div element
+		oRm.renderControl(oControl.getAggregation("_tokensInfo"));
 
 		oControl._bCopyToClipboardSupport = false;
 

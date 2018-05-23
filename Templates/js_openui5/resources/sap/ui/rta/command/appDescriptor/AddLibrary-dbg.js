@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -17,7 +17,7 @@ sap.ui.define([
 	 * @extends sap.ui.rta.command.appDescriptor.AppDescriptorCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @private
@@ -39,7 +39,7 @@ sap.ui.define([
 
 	/**
 	 * Execute the change (load the required libraries)
-	 * @return {promise} resolved if libraries could be loaded; rejected if not
+	 * @return {Promise} resolved if libraries could be loaded; rejected if not
 	 */
 	AddLibrary.prototype.execute = function(){
 		var aPromises = [];

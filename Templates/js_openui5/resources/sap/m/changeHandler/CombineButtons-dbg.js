@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,39 +13,10 @@ sap.ui.define(["sap/ui/fl/Utils", "jquery.sap.global"],
 		 *
 		 * @alias sap.m.changeHandler.CombineButtons
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 * @experimental Since 1.48
 		 */
 		var CombineButtons = { };
-
-		CombineButtons.ADD_HELPER_FUNCTIONS = {
-			_fnFindIndexInAggregation : function(oParent, oSourceControl, sParentAggregation) {
-				var oParentAggregation,
-					bMultipleAggregation = false,
-					sParentAggregationSingularName,
-					sAggregationNameToUpper;
-
-				// We need to check the aggregation name and if it is multiple or not.
-				// There are cases when the control's parent method is overwritten and
-				// this leads to differences in the result given by oParent.indexOfAggregation
-				// method. Having this in mind:
-				// 1. We get the aggregation from the Parent's metadata
-				oParentAggregation = oParent.getMetadata().getAllAggregations()[sParentAggregation];
-
-				// 2. Then we check if it is multiple
-				bMultipleAggregation = oParentAggregation.multiple;
-
-				// 3. We get the its name or its singular name if it is multiple
-				sParentAggregationSingularName = bMultipleAggregation ? oParentAggregation.singularName : oParentAggregation.name;
-
-				// 4. We change it to upper case in order to be able to create the method
-				// which is potentially overwritten and/or has additional logic to it
-				sAggregationNameToUpper = jQuery.sap.charToUpperCase(sParentAggregationSingularName);
-
-				// 5. We return the correct index of the control in its Parent aggregation
-				return oParent["indexOf" + sAggregationNameToUpper](oSourceControl);
-			}
-		};
 
 		/**
 		 * Combines sap.m.Button(s) in a sap.m.MenuButton
@@ -72,22 +43,32 @@ sap.ui.define(["sap/ui/fl/Utils", "jquery.sap.global"],
 				oParent = oModifier.getParent(oSourceControl),
 				iAggregationIndex, sParentAggregation, aButtons,
 				bIsRtl = sap.ui.getCore().getConfiguration().getRTL(),
-				oMenu, oMenuButton, aMenuButtonName = [];
+				oMenu, oMenuButton, aMenuButtonName = [],
+				oRevertData = {
+					menuButtonId: "",
+					parentAggregation: "",
+					insertIndex: 0
+				};
 
 			aButtons = oChangeDefinition.content.combineButtonSelectors.map(function (oCombineButtonSelector) {
 				return oModifier.bySelector(oCombineButtonSelector, oAppComponent);
 			});
 
 			sParentAggregation = aButtons[0].sParentAggregationName;
-			iAggregationIndex = this.ADD_HELPER_FUNCTIONS._fnFindIndexInAggregation(oParent, oSourceControl, sParentAggregation);
+			oRevertData.parentAggregation = sParentAggregation;
 
-			oMenu = oModifier.createControl("sap.m.Menu", mPropertyBag.appComponent, oView);
+			iAggregationIndex = oModifier.findIndexInParentAggregation(oSourceControl);
+			oRevertData.insertIndex = iAggregationIndex;
+
+			oMenu = oModifier.createControl("sap.m.Menu", mPropertyBag.appComponent, oView, oChangeDefinition.content.menuIdSelector);
 
 			aButtons.forEach(function (oButton, index) {
-				var sId = oView.createId(jQuery.sap.uid()),
+				var oIdToSave,
+					oMenuItem,
+					oSelector = oChangeDefinition.content.buttonsIdForSave[index],
 					sButtonText = oModifier.getProperty(oButton, "text");
 
-				var oMenuItem = oModifier.createControl("sap.m.MenuItem", mPropertyBag.appComponent, oView, sId);
+				oMenuItem = oModifier.createControl("sap.m.MenuItem", mPropertyBag.appComponent, oView, oSelector);
 				oModifier.setProperty(oMenuItem, "text", oButton.mProperties.text);
 				oModifier.setProperty(oMenuItem, "icon", oButton.mProperties.icon);
 				oMenuItem.attachPress(function(oEvent) {
@@ -98,24 +79,68 @@ sap.ui.define(["sap/ui/fl/Utils", "jquery.sap.global"],
 					bIsRtl ? aMenuButtonName.unshift(sButtonText) : aMenuButtonName.push(sButtonText);
 				}
 
-				var oIdToSave = oModifier.createControl("sap.ui.core.CustomData", mPropertyBag.appComponent, oView, sId + "-originalButtonId");
+				// add suffix to the id, so we can get the original ids of the combined buttons
+				// when we want to split the menu
+				// the suffix is used in SplitMenuButton file
+				oSelector.id = oSelector.id + "-originalButtonId";
+				// create CustomData, holding the original ids of the combined buttons
+				oIdToSave = oModifier.createControl("sap.ui.core.CustomData", mPropertyBag.appComponent, oView, oSelector);
 				oModifier.setProperty(oIdToSave, "key", "originalButtonId");
 				oModifier.setProperty(oIdToSave, "value", oModifier.getId(oButton));
 
 				oModifier.removeAggregation(oParent, sParentAggregation, oButton);
 				// adding each button control to the menuItem's dependents aggregation
-				// this way we can save all relevant information it my have
+				// this way we can save all relevant information it may have
 				oModifier.insertAggregation(oMenuItem, "dependents", oButton);
 				oModifier.insertAggregation(oMenuItem, "customData", oIdToSave);
 				oModifier.insertAggregation(oMenu, "items", oMenuItem, index);
 			});
 
-			oMenuButton = oModifier.createControl("sap.m.MenuButton", mPropertyBag.appComponent, oView, oView.createId(jQuery.sap.uid()));
+			oMenuButton = oModifier.createControl("sap.m.MenuButton", mPropertyBag.appComponent, oView, oChangeDefinition.content.menuButtonIdSelector);
+			oRevertData.menuButtonId = oModifier.getId(oMenuButton);
+
 			oModifier.setProperty(oMenuButton, "text", aMenuButtonName.join("/"));
 			oModifier.insertAggregation(oMenuButton, "menu", oMenu, 0);
 
 			oModifier.insertAggregation(oParent, sParentAggregation, oMenuButton, iAggregationIndex);
+			oChange.setRevertData(oRevertData);
 
+			return true;
+
+		};
+
+		/**
+		 * Reverts applied change
+		 *
+		 * @param {sap.ui.fl.Change} oChange change wrapper object with instructions to be applied on the control map
+		 * @param {sap.m.IBar} oControl Bar - Bar that matches the change selector for applying the change
+		 * @param {object} mPropertyBag - Property bag containing the modifier and the view
+		 * @param {object} mPropertyBag.modifier - modifier for the controls
+		 * @param {object} mPropertyBag.view - application view
+		 * @return {boolean} True if successful
+		 * @public
+		 */
+		CombineButtons.revertChange = function(oChange, oControl, mPropertyBag) {
+
+			var oModifier = mPropertyBag.modifier,
+				oRevertData =  oChange.getRevertData(),
+				oChangeDefinition = oChange.getDefinition(),
+				oParent = oControl,
+				sParentAggregation = oRevertData.parentAggregation,
+				iAggregationIndex = oRevertData.insertIndex,
+				oMenuButton =  oModifier.bySelector(oRevertData.menuButtonId, mPropertyBag.appComponent),
+				aButtonsIds = oChangeDefinition.content.combineButtonSelectors;
+
+			for (var i = 0; i < aButtonsIds.length; i++) {
+				var oButton = oModifier.bySelector(aButtonsIds[i], mPropertyBag.appComponent);
+				oModifier.insertAggregation(oParent, sParentAggregation, oButton, iAggregationIndex + i);
+			}
+
+			oModifier.removeAggregation(oParent, sParentAggregation, oMenuButton);
+
+			oChange.resetRevertData();
+
+			return true;
 		};
 
 		/**
@@ -141,6 +166,15 @@ sap.ui.define(["sap/ui/fl/Utils", "jquery.sap.global"],
 				oChange.addDependentControl(aCombineButtonIds, "combinedButtons", mPropertyBag);
 				oChangeDefinition.content.combineButtonSelectors = aCombineButtonIds.map(function(sCombineButtonId) {
 					return oModifier.getSelector(sCombineButtonId, oAppComponent);
+				});
+
+				// generate ids for Menu and MenuButton
+				oChangeDefinition.content.menuButtonIdSelector = oModifier.getSelector(oAppComponent.createId(jQuery.sap.uid()), oAppComponent);
+				oChangeDefinition.content.menuIdSelector = oModifier.getSelector(oAppComponent.createId(jQuery.sap.uid()), oAppComponent);
+
+				// generate id for menu button items
+				oChangeDefinition.content.buttonsIdForSave = aCombineButtonIds.map(function() {
+					return oModifier.getSelector(oAppComponent.createId(jQuery.sap.uid()), oAppComponent);
 				});
 			} else {
 				throw new Error("Combine buttons action cannot be completed: oSpecificChangeInfo.combineFieldIds attribute required");

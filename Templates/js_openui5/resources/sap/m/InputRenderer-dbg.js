@@ -1,11 +1,11 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/Renderer', './InputBaseRenderer', 'sap/m/library'],
-	function(Renderer, InputBaseRenderer, library) {
+sap.ui.define(['sap/ui/core/InvisibleText', 'sap/ui/core/Renderer', './InputBaseRenderer', 'sap/m/library'],
+	function(InvisibleText, Renderer, InputBaseRenderer, library) {
 	"use strict";
 
 
@@ -163,23 +163,19 @@ sap.ui.define(['sap/ui/core/Renderer', './InputBaseRenderer', 'sap/m/library'],
 
 		var sAriaDescribedBy = InputBaseRenderer.getAriaDescribedBy.apply(this, arguments);
 
+		function append( s ) {
+			sAriaDescribedBy = sAriaDescribedBy ? sAriaDescribedBy + " " + s : s;
+		}
+
 		if (oControl.getShowValueHelp() && oControl.getEnabled() && oControl.getEditable()) {
-			if (sAriaDescribedBy) {
-				sAriaDescribedBy = sAriaDescribedBy + " " + oControl._sAriaValueHelpLabelId;
-			} else {
-				sAriaDescribedBy = oControl._sAriaValueHelpLabelId;
-			}
+			append( InvisibleText.getStaticId("sap.m", "INPUT_VALUEHELP") );
 			if (oControl.getValueHelpOnly()) {
-				sAriaDescribedBy = sAriaDescribedBy + " " + oControl._sAriaInputDisabledLabelId;
+				append( InvisibleText.getStaticId("sap.m", "INPUT_DISABLED") );
 			}
 		}
 
 		if (oControl.getShowSuggestion() && oControl.getEnabled() && oControl.getEditable()) {
-			if (sAriaDescribedBy) {
-				sAriaDescribedBy = sAriaDescribedBy + " " + oControl.getId() + "-SuggDescr";
-			} else {
-				sAriaDescribedBy = oControl.getId() + "-SuggDescr";
-			}
+			append( oControl.getId() + "-SuggDescr" );
 		}
 
 		return sAriaDescribedBy;

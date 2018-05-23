@@ -1,12 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Table.
-sap.ui.define(['jquery.sap.global', './ListBase', './ListItemBase', './library', 'sap/ui/Device'],
-	function(jQuery, ListBase, ListItemBase, library, Device) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./ListBase',
+	'./ListItemBase',
+	'./library',
+	'sap/ui/Device',
+	'./TableRenderer'
+],
+	function(jQuery, ListBase, ListItemBase, library, Device, TableRenderer) {
 	"use strict";
 
 
@@ -23,6 +30,8 @@ sap.ui.define(['jquery.sap.global', './ListBase', './ListItemBase', './library',
 	// shortcut for sap.m.PopinLayout
 	var PopinLayout = library.PopinLayout;
 
+	// shortcut for sap.m.Sticky
+	var Sticky = library.Sticky;
 
 
 	/**
@@ -43,7 +52,7 @@ sap.ui.define(['jquery.sap.global', './ListBase', './ListItemBase', './library',
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -91,7 +100,25 @@ sap.ui.define(['jquery.sap.global', './ListBase', './ListItemBase', './library',
 			 * <b>Note:</b> The <code>demandPopin</code> and <code>minScreenWidth</code> properties of the <code>Column</code> control must be configured appropriately.
 			 * @since 1.52
 			 */
-			popinLayout : {type : "sap.m.PopinLayout", group : "Appearance", defaultValue : PopinLayout.Block}
+			popinLayout : {type : "sap.m.PopinLayout", group : "Appearance", defaultValue : PopinLayout.Block},
+
+			/**
+			 * Defines the section of the <code>sap.m.Table</code> control that remains fixed at the top of the page during vertical scrolling as long as the table is in the viewport.
+			 *
+			 * <b>Note:</b> There is limited browser support, hence the API is in experimental state.
+			 * Browsers that currently support this feature are Chrome (desktop and mobile), Safari (desktop and mobile) and Edge 41.
+			 *
+			 * There are also some known issues with respect to the scrolling behavior and focus handling. A few are given below:
+			 *
+			 * If the table is placed in certain layout containers, for example, the <code>sap.ui.layout.Grid</code> control,
+			 * the column headers are not fixed at the top of the viewport. Similar behavior is also observed with the <code>sap.m.ObjectPage</code> control.
+			 *
+			 * This API should not be used in a productive environment.
+			 *
+			 * @experimental As of 1.54
+			 * @since 1.54
+			 */
+			sticky : {type : "sap.m.Sticky", group : "Appearance", defaultValue : Sticky.None}
 		},
 		aggregations : {
 
@@ -100,7 +127,28 @@ sap.ui.define(['jquery.sap.global', './ListBase', './ListItemBase', './library',
 			 */
 			columns : {type : "sap.m.Column", multiple : true, singularName : "column"}
 		},
-		designTime: true
+		events : {
+			/**
+			 * Fired when the context menu is opened.
+			 * When the context menu is opened, the binding context of the item is set to the given <code>contextMenu</code>.
+			 * @since 1.54
+			 */
+			beforeOpenContextMenu : {
+				allowPreventDefault : true,
+				parameters : {
+					/**
+					 * Item in which the context menu was opened.
+					 */
+					listItem : {type : "sap.m.ColumnListItem"},
+					/**
+					 * Column in which the context menu was opened.
+					 * <b>Note:</b> This parameter might be undefined for the items that are not part of a column definition.
+					 */
+					column : {type : "sap.m.Column"}
+				}
+			}
+		},
+		designtime: "sap/m/designtime/Table.designtime"
 	}});
 
 	// class name for the navigation items

@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -205,7 +205,7 @@ html[data-sap-ui-browser^="ie"] {
 .sapFDynamicPage-Std-Phone {
 	.sapFDynamicPageContent,
 	.sapFDynamicPageContentFitContainer {
-		padding: 1rem 1rem 0 1rem;
+		padding: 2rem 1rem 0 1rem;
 	}
 }
 
@@ -313,33 +313,27 @@ html[data-sap-ui-browser^="ie"] {
 }
 
 /* Tablet and Desktop */
-.sapFDynamicPage-Std-Desktop,
-.sapFDynamicPage-Std-Tablet {
-	.sapFDynamicPageToggleHeaderIndicator {
-		width: 2.5rem;
-		height: 3rem;
-		font-size: 1.375rem;
-		bottom: -1.5rem;
-		margin-left: -1.25rem;// shift the button with half of its width for perfect centering
+.sapFDynamicPageToggleHeaderIndicator {
+	width: 2.5rem;
+	height: 3rem;
+	font-size: 1.375rem;
+	bottom: -1.5rem;
+	margin-left: -1.25rem;// shift the button with half of its width for perfect centering
 
-		.sapMBtnInner {
-			height: 1.5rem;
+	.sapMBtnInner {
+		height: 1.5rem;
 
-			.sapMBtnIcon {
-				line-height: 1.5rem;
-			}
+		.sapMBtnIcon {
+			line-height: 1.5rem;
 		}
 	}
 }
 
 /* Phone */
-.sapFDynamicPage-Std-Phone {
+.sap-phone {
 	.sapFDynamicPageToggleHeaderIndicator {
-		width: 2.5rem;
 		height: 2.5rem;
 		bottom: -1.25rem;
-		margin-left: -1.25rem;// shift the button with half of its width for perfect centering
-		font-size: 1.375rem;
 
 		.sapMBtnInner {
 			height: 1.25rem;
@@ -445,13 +439,13 @@ html[data-sap-ui-animation='on'] .sapFDynamicPage {
 .sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnapped > .sapFDynamicPageTitle {
 	.sapFDynamicPageTitleMain {
 		.sapFDynamicPageTitleMainContent {
-	 		padding-bottom: 1rem;
+			padding-bottom: 0;
 		}
 	}
 }
 
 .sapFDynamicPageTitle {
-	z-index: 2;
+	z-index: 3;
 	position: relative;
 	min-height: 3rem;
 	padding: 0.5rem 2rem 0.5rem 3rem;
@@ -478,7 +472,6 @@ html[data-sap-ui-animation='on'] .sapFDynamicPage {
 
 		&> .sapFDynamicPageTitleTopLeft {
 			min-height: 1rem;
-			padding-bottom: 0.125rem;
 			width: 75%;
 
 			&> :first-child {
@@ -514,14 +507,6 @@ html[data-sap-ui-animation='on'] .sapFDynamicPage {
 		flex-direction: row;
 		-webkit-flex-direction: row;
 		box-sizing: border-box;
-
-		&> .sapFDynamicPageTitleMainLeft {
-			width: 75%;
-		}
-
-		&> .sapFDynamicPageTitleMainRight {
-			width: 25%;
-		}
 
 		&> .sapFDynamicPageTitleMainNavigationArea,
 		&> .sapFDynamicPageTitleMainNavigationArea > .sapFDynamicPageTitleMainNavigationAreaInner{
@@ -590,16 +575,16 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 /* Title Main */
 /* ========== */
 
-/* Main Left area */
-.sapFDynamicPageTitleMain > .sapFDynamicPageTitleMainLeft {
+/* Heading area */
+.sapFDynamicPageTitleMain > .sapFDynamicPageTitleMainInner {
 	display: flex;
 	display: -webkit-flex;
-	justify-content: flex-start;
-	-webkit-justify-content: flex-start;
 	align-items: flex-start;
 	-webkit-align-items: flex-start;
+	flex-grow: 1;
+	width: 100%; // to make Edge work
 
-	.sapFDynamicPageTitleMainLeftInner {
+	.sapFDynamicPageTitleMainHeading {
 		display: flex;
 		display: -webkit-flex;
 		align-items: flex-start;
@@ -608,10 +593,10 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 		-webkit-flex-direction: column;
 		justify-content: space-between;
 		-webkit-justify-content: space-between;
-		min-width: 1px; /* fix for: flex-shrink does not work some nested flex structures */
+		min-width: 48px;
 
-		.sapFDynamicPageTitleMainLeftHeading,
-		.sapFDynamicPageTitleMainLeftSnappedExpandContent {
+		.sapFDynamicPageTitleMainHeadingInner,
+		.sapFDynamicPageTitleMainHeadingSnappedExpandContent {
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -619,45 +604,42 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 			vertical-align: middle;
 		}
 
-		.sapFDynamicPageTitleMainLeftHeading {
+		.sapFDynamicPageTitleMainHeadingInner {
 			min-width: 1px;
 			max-width: 100%;
 			color: @sapUiGroupTitleTextColor;
 			font-size: @sapMFontHeader3Size;
-
-			.sapMTitle {
-				margin-top: 0.25rem;
-			}
+			margin-top: 0.1875rem;
 		}
 
-		.sapFDynamicPageTitleMainLeftSnappedExpandContent {
-			margin-top: 1px;
+		.sapFDynamicPageTitleMainHeadingSnappedExpandContent {
 			color: @sapUiContentLabelColor;
 			font-size: @sapMFontMediumSize;
 		}
 
-		.sapFDynamicPageTitleMainLeftSnappedExpandContent.sapFDynamicPageTitleMainSnapContentVisible,
-		.sapFDynamicPageTitleMainLeftSnappedExpandContent.sapFDynamicPageTitleMainExpandContentVisible {
+		.sapFDynamicPageTitleMainHeadingSnappedExpandContent.sapFDynamicPageTitleMainSnapContentVisible,
+		.sapFDynamicPageTitleMainHeadingSnappedExpandContent.sapFDynamicPageTitleMainExpandContentVisible {
 			min-width: 4rem;
 			max-width: 100%;
 		}
 	}
 
 	.sapFDynamicPageTitleMainContent {
-		padding-left: 0.5rem;
-		min-width: 1px;
+		min-width: 48px;
+		padding: 0 0 0.5rem 0.5rem;
 	}
 
-	/* Area Priority */
-	.sapFDynamicPageTitleAreaHighPriority {
-		flex-shrink: 1;
-		-webkit-flex-shrink: 1;
-	}
+	.sapFDynamicPageTitleMainActions {
+		margin-left: auto;
+		min-width: 48px;
 
-	.sapFDynamicPageTitleAreaLowPriority {
-		flex-shrink: 1.6;
-		-webkit-flex-shrink: 1.6;
+	.sapFDynamicPageTitleActionsBar .sapMLabel.sapMLabelMaxWidth,
+	.sapFDynamicPageTitleActionsBar .sapMLnk.sapMLnkMaxWidth {
+		// overwriting the existing max-width constraint of sapMLabel and sapMLnk
+		// because in this context the label/link parent should instead adjust its flex-basis with respect to its content width
+		max-width: none;
 	}
+  }
 
 	/* Override Title and Label styles, required by VD */
 	.sapMTitle {
@@ -665,25 +647,17 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 	}
 }
 
-.sapFDynamicPageTitleMain.sapFDynamicPageTitleMainNoContent > .sapFDynamicPageTitleMainLeft {
+.sapFDynamicPageTitleMain.sapFDynamicPageTitleMainNoContent > .sapFDynamicPageTitleMainInner {
 	width: 60%;
 }
 .sapFDynamicPageTitleMain.sapFDynamicPageTitleMainNoContent > .sapFDynamicPageTitleMainRight {
 	width: 40%;
 }
 
-
 /* Tablet Size */
 .sapFDynamicPage-Std-Tablet {
 	.sapFDynamicPageTitle {
 		padding: 0.5rem 1rem 0.5rem 2rem;
-
-		.sapFDynamicPageTitleMain > .sapFDynamicPageTitleMainRight {
-			width: 20%;
-		}
-		.sapFDynamicPageTitleMain > .sapFDynamicPageTitleMainLeft {
-			width: 80%;
-		}
 
 		.sapFDynamicPageTitleTop > .sapFDynamicPageTitleTopLeft {
 			width: 65%;
@@ -716,23 +690,11 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 
 	.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnapped > .sapFDynamicPageTitle,
 	.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleOnly > .sapFDynamicPageTitle {
-		padding: 0 0 0.5rem 1rem;
+		padding: 0.5rem 0rem 0.5rem 1rem;
 	}
 
 	.sapFDynamicPageTitle {
-		padding: 0 0 0 1rem;
-
-		.sapFDynamicPageTitleMain > .sapFDynamicPageTitleMainRight {
-			width: 20%;
-		}
-		.sapFDynamicPageTitleMain > .sapFDynamicPageTitleMainLeft {
-			width: 80%;
-
-			.sapFDynamicPageTitleAreaLowPriority {
-				flex-shrink: 1.5;
-				-webkit-flex-shrink: 1.5;
-			}
-		}
+		padding: 0.5rem 0rem 0.5rem 1rem;
 
 		.sapFDynamicPageTitleTop > .sapFDynamicPageTitleTopLeft {
 			width: 60%;
@@ -751,6 +713,7 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 		}
 	}
 }
+
 /* END "DynamicPageTitle.less" */
 
 /* START "DynamicPageHeader.less" */
@@ -827,6 +790,14 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 		position: relative;
 	}
 
+	&.sapFFCLBackgroundDesignSolid {
+		background: @sapUiObjectHeaderBackground;
+	}
+
+	&.sapFFCLBackgroundDesignTranslucent {
+		background: @sapUiShellBackgroundGradient;
+	}
+
 	.sapFFCLColumn {
 		height: 100%;
 		position: relative;
@@ -843,22 +814,32 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 		}
 
 		.sapFFCLNavigationButton {
+			// Button hit area size
 			width: 2rem;
-			height: 3rem;
+			height: 2.5rem;
+			padding: 0; // Vertical button hit area must be the same size as its visible area
 			position: absolute;
 			top: 45%;
 			z-index: 10000;
 
 			&.sapFFCLNavigationButtonLeft {
-				left: 0;
+				// Button clickable|hit area additional 0.5rem must overlap the area separator
+				left: -0.5rem;
+				.sapMBtnInner {
+					// Compensate for the aditional hit area of 0.5rem only for the left button
+					margin-left: 0.5rem;
+				}
 			}
 
 			&.sapFFCLNavigationButtonRight {
-				right: 0;
+				// Button clickable|hit-area additional 0.5rem must overlap the area separator
+				right: -0.5rem;
 			}
 
 			.sapMBtnInner {
-				min-width: 1.67rem;
+				width: 1.5rem;
+				height: 2.5rem;
+				min-width: 1.5rem;
 			}
 		}
 
@@ -885,14 +866,18 @@ html[data-sap-ui-animation='on'] {
 .sapUiSizeCompact {
 	.sapFFCL {
 		.sapFFCLNavigationButton {
+			// Button hit area size
 			width: 1.5rem;
+			height: 2rem;
 
 			.sapMBtnInner {
-				min-width: 1.25rem;
-				height: 2.5rem;
+				// Button visible area size
+				width: 1rem;
+				height: 2rem;
+				min-width: 1rem;
 				.sapMBtnIcon {
-					line-height: 2.5rem;
-					width: 1.5rem;
+					line-height: 2rem;
+					width: 1rem;
 					font-size: 1rem;
 					margin-left: 0;
 					margin-right: 0;

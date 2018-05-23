@@ -1,12 +1,17 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.commons.form.SimpleForm.
-sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/layout/form/SimpleForm'],
-	function(jQuery, library, SimpleForm1) {
+sap.ui.define([
+ 'jquery.sap.global',
+ 'sap/ui/commons/library',
+ 'sap/ui/layout/form/SimpleForm',
+ "./SimpleFormRenderer"
+],
+	function(jQuery, library, SimpleForm1, SimpleFormRenderer) {
 	"use strict";
 
 
@@ -20,7 +25,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/layout/for
 	 * @class
 	 * Use the SimpleForm to create a form based on title, label and fields that are stacked in the content aggregation. Add Title to start a new FormContainer(Group). Add Label to start a new row in the container. Add Input/Display controls as needed. Use LayoutData to influence the layout for special cases in the Input/Display controls.
 	 * @extends sap.ui.layout.form.SimpleForm
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

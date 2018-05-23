@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -37,7 +37,7 @@ sap.ui.define([
 			relevantContainerOverlay : oRelevantContainerOverlay,
 			parentOverlay : oParentOverlay,
 			relevantContainer : oRelevantContainer,
-			parent : oParentOverlay.getElementInstance()
+			parent : oParentOverlay.getElement()
 		};
 	}
 
@@ -47,7 +47,7 @@ sap.ui.define([
 
 
 	function _getInvisibleElements (oParentOverlay, sAggregationName){
-		var oParentElement = oParentOverlay.getElementInstance();
+		var oParentElement = oParentOverlay.getElement();
 		var aInvisibleElements = ElementUtil.getAggregation(oParentElement, sAggregationName).filter(function(oControl){
 			var oOverlay = OverlayRegistry.getOverlay(oControl);
 
@@ -168,7 +168,7 @@ sap.ui.define([
 	 * @class The plugin allows to add additional elements that exist either hidden in the UI or in the OData service
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -307,7 +307,7 @@ sap.ui.define([
 			var mParents = _getParents(bSibling, oOverlay);
 
 			var oDesignTimeMetadata = mParents.parentOverlay.getDesignTimeMetadata();
-			var aActions = oDesignTimeMetadata.getAggregationAction("addODataProperty", mParents.parent);
+			var aActions = oDesignTimeMetadata.getActionDataFromAggregations("addODataProperty", mParents.parent);
 
 			var oCheckElement = mParents.parent;
 
@@ -360,7 +360,7 @@ sap.ui.define([
 		showAvailableElements: function(bOverlayIsSibling, aOverlays, iIndex, sControlName) {
 			var oOverlay = aOverlays[0];
 			var mParents = _getParents(bOverlayIsSibling, oOverlay);
-			var oSiblingElement = bOverlayIsSibling && oOverlay.getElementInstance();
+			var oSiblingElement = bOverlayIsSibling && oOverlay.getElement();
 			var aPromises = [];
 
 			var mActions = this._getActions(bOverlayIsSibling, oOverlay);
@@ -510,7 +510,7 @@ sap.ui.define([
 				oRefControlForId = mParents.relevantContainer; //e.g. SimpleForm
 			}
 			var iAddTargetIndex = Utils.getIndex(mParents.parent, oSiblingElement, mActions.aggregation, oParentAggregationDTMetadata.getData().getIndex);
-			var oChangeHandler = this._getChangeHandlerForControlType(mParents.parent.getMetadata().getName(), mODataPropertyActionDTMetadata.changeType);
+			var oChangeHandler = this._getChangeHandler(mODataPropertyActionDTMetadata.changeType, mParents.parent);
 			var sVariantManagementReference;
 			if (mParents.parentOverlay.getVariantManagement && oChangeHandler && oChangeHandler.revertChange) {
 				sVariantManagementReference = mParents.parentOverlay.getVariantManagement();
@@ -601,12 +601,10 @@ sap.ui.define([
 						targetIndex : iRevealTargetIndex
 					}],
 					source : {
-						publicParent : mParents.relevantContainer,
 						parent : oSourceParent,
 						aggregation : sParentAggregationName
 					},
 					target : {
-						publicParent : mParents.relevantContainer,
 						parent : oTargetParent,
 						aggregation : sParentAggregationName
 					}
@@ -631,8 +629,9 @@ sap.ui.define([
 		_isEditableCheck: function(oOverlay, bOverlayIsSibling) {
 			var bEditable = false;
 
-			var oRelevantContainerDesigntimeMetadata = Utils.getRelevantContainerDesigntimeMetadata(oOverlay);
-			if (!oRelevantContainerDesigntimeMetadata) {
+			var oRelevantContainer = oOverlay.getRelevantContainer();
+			var oRelevantContainerOverlay = OverlayRegistry.getOverlay(oRelevantContainer);
+			if (!oRelevantContainerOverlay) {
 				return false;
 			}
 
@@ -670,6 +669,7 @@ sap.ui.define([
 			var bOverlayIsSibling = true;
 			var sPluginId = "CTX_ADD_ELEMENTS_AS_SIBLING";
 			var iRank = 20;
+			var sIcon = "sap-icon://add";
 			var aMenuItems = [];
 			for (var i = 0; i < 2; i++){
 				if (this.isAvailable(bOverlayIsSibling, oOverlay)){
@@ -683,7 +683,9 @@ sap.ui.define([
 							return this.showAvailableElements(bOverlayIsSibling, aOverlays);
 						}.bind(this, bOverlayIsSibling),
 						enabled: this.isEnabled.bind(this, bOverlayIsSibling),
-						rank: iRank
+						rank: iRank,
+						icon: sIcon,
+						group: "Add"
 					});
 				}
 
@@ -708,7 +710,7 @@ sap.ui.define([
 	function _getSourceParent(oRevealedElement, mParents, oRevealedElementOverlay){
 		var oParent;
 		if (oRevealedElementOverlay) {
-			oParent = oRevealedElementOverlay.getParentElementOverlay().getElementInstance();
+			oParent = oRevealedElementOverlay.getParentElementOverlay().getElement();
 		}
 		if (!oParent && oRevealedElement.sParentId){
 			//stashed control has no parent, but remembers its parent id

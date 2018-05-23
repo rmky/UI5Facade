@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 	 * @class
 	 * The column menu provides all common actions that can be performed on a column.
 	 * @extends sap.ui.unified.Menu
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -284,7 +284,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 	ColumnMenu.prototype._addGroupMenuItem = function() {
 		var oColumn = this._oColumn;
 
-		if (oColumn.isGroupableByMenu()) {
+		if (oColumn.isGroupable()) {
 			var oTable = this._oTable;
 
 			this.addItem(this._createMenuItem(
@@ -361,6 +361,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 
 			var oBinding = oTable.getBinding();
 			var bAnalyticalBinding = TableUtils.isInstanceOf(oBinding, "sap/ui/model/analytics/AnalyticalBinding");
+			var aVisibleColumns = oTable._getVisibleColumns();
 
 			for (var i = 0, l = aColumns.length; i < l; i++) {
 				var oColumn = aColumns[i];
@@ -377,6 +378,10 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 				}
 				var oMenuItem = this._createColumnVisibilityMenuItem(oColumnVisibiltyMenu.getId() + "-item-" + i, oColumn);
 				oColumnVisibiltyMenu.addItem(oMenuItem);
+
+				if (aVisibleColumns.length == 1 && aVisibleColumns[0] === oColumn) {
+					oMenuItem.setEnabled(false); // Indicate to the user that changing the visibility of the least visible column is not allowed
+				}
 			}
 		}
 	};

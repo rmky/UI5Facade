@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Column...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 * @namespace
 		 * @name sap.ui.table.TableColumnUtils
 		 * @private

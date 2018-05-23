@@ -1,12 +1,16 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.uxap.ObjectPageDynamicHeaderContent.
-sap.ui.define(['jquery.sap.global', './library'],
-	function(jQuery, library) {
+sap.ui.define([
+    'jquery.sap.global',
+    './library',
+    "./ObjectPageDynamicHeaderContentRenderer"
+],
+	function(jQuery, library, ObjectPageDynamicHeaderContentRenderer) {
 		"use strict";
 
 		try {
@@ -25,12 +29,27 @@ sap.ui.define(['jquery.sap.global', './library'],
 		 * @param {object} [mSettings] Initial settings for the new control
 		 *
 		 * @class
-		 * Dynamic header content for the {@link sap.uxap.ObjectPageLayout ObjectPage}.
+		 * Header content for the dynamic header of the {@link sap.uxap.ObjectPageLayout}.
+		 *
+		 * <h3>Overview</h3>
+		 *
+		 * The <code>ObjectPageDynamicHeaderContent</code> represents the movable part of
+		 * the <code>ObjectPageLayout</code>'s dynamic header. It can contain any control and
+		 * scrolls along with the content of the page until it disappears (collapsed header).
+		 * When scrolled back to the top it becomes visible again (expanded header).
+		 * It contains all the additional information of the object.
+		 *
+		 * Documentation links:
+		 * <ul>
+		 * <li>{@link topic:d2ef0099542d44dc868719d908e576d0 Object Page Headers}</li>
+		 * <li>{@link topic:6e340c119ddd4c778b315f65a0432420 Object Page Dynamic Header}</li>
+		 * </ul>
+		 *
 		 * @extends sap.f.DynamicPageHeader
 		 * @implements sap.uxap.IHeaderContent
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -21,20 +21,20 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 	/**
 	 * Constructor for a new JSONModel.
 	 *
-	 * @class
-	 * Model implementation for JSON format
-	 *
 	 * The observation feature is experimental! When observation is activated, the application can directly change the
 	 * JS objects without the need to call setData, setProperty or refresh. Observation does only work for existing
-	 * properties in the JSON, it can not detect new properties or new array entries.
+	 * properties in the JSON, it cannot detect new properties or new array entries.
+	 *
+	 * @param {object|string} oData Either the URL where to load the JSON from or a JS object
+	 * @param {boolean} bObserve Whether to observe the JSON data for property changes (experimental)
+	 *
+	 * @class
+	 * Model implementation for JSON format
 	 *
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
-	 *
-	 * @param {object} oData either the URL where to load the JSON from or a JS object
-	 * @param {boolean} bObserve whether to observe the JSON data for property changes (experimental)
+	 * @version 1.54.5
 	 * @public
 	 * @alias sap.ui.model.json.JSONModel
 	 */
@@ -198,9 +198,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 		}.bind(this);
 
 		var fnError = function(oParams){
-			var oError = { message : oParams.textStatus, statusCode : oParams.request.status, statusText : oParams.request.statusText, responseText : oParams.request.responseText};
-			jQuery.sap.log.fatal("The following problem occurred: " + oParams.textStatus, oParams.request.responseText + ","
-						+ oParams.request.status + "," + oParams.request.statusText);
+			var oError = { message : oParams.textStatus, statusCode : oParams.status, statusText : oParams.statusText, responseText : oParams.responseText};
+			jQuery.sap.log.fatal("The following problem occurred: " + oParams.textStatus, oParams.responseText + ","
+						+ oParams.status + "," + oParams.statusText);
 
 			this.fireRequestCompleted({url : sURL, type : sType, async : bAsync, headers: mHeaders,
 				info : "cache=" + bCache + ";bMerge=" + bMerge, infoObject: {cache : bCache, merge : bMerge}, success: false, errorobject: oError});

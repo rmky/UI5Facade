@@ -1,10 +1,15 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/fl/Utils", "sap/ui/base/ManagedObject"], function(Utils, ManagedObject) {
+sap.ui.define([
+	"sap/ui/fl/Utils",
+	"sap/ui/base/ManagedObject"
+], function(
+	Utils, ManagedObject
+) {
 
 	"use strict";
 
@@ -30,11 +35,11 @@ sap.ui.define(["sap/ui/fl/Utils", "sap/ui/base/ManagedObject"], function(Utils, 
 		/** Function determining the control id from selector.
 		* The function differs between local ids generated starting with 1.40 and the global ids generated in previous versions.
 		*
-		* @param {object} oSelector - Target of a flexiblity change
-		* @param {string} oSelector.id - id of the control targeted by the change
-		* @param {boolean} oSelector.isLocalId - true if the id within the selector is a local id or a global id
-		* @param {sap.ui.core.UIComponent} oAppComponent
-		* @returns {sap.ui.core.Control} - control targeted within the selector
+		* @param {object} oSelector Target of a flexiblity change
+		* @param {string} oSelector.id Id of the control targeted by the change
+		* @param {boolean} oSelector.isLocalId True if the id within the selector is a local id or a global id
+		* @param {sap.ui.core.UIComponent} oAppComponent Application Component
+		* @returns {string} Returns the ID of the control
 		* @throws {Exception} oException - in case no control could be determined an error is thrown
 		* @public
 		*/

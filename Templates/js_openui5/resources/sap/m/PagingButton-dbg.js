@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.PagingButton.
-sap.ui.define(['jquery.sap.global', './Button', 'sap/ui/core/Control', 'sap/ui/core/IconPool'],
-	function (jQuery, Button, Control, IconPool) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./Button',
+	'sap/ui/core/Control',
+	'sap/ui/core/IconPool',
+	'./PagingButtonRenderer'
+],
+	function(jQuery, Button, Control, IconPool, PagingButtonRenderer) {
 		"use strict";
 
 		/**
@@ -20,7 +26,7 @@ sap.ui.define(['jquery.sap.global', './Button', 'sap/ui/core/Control', 'sap/ui/c
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -205,6 +211,7 @@ sap.ui.define(['jquery.sap.global', './Button', 'sap/ui/core/Control', 'sap/ui/c
 
 		/**
 		 * Validates the position property to ensure that it's not set higher than the total count.
+		 * @private
 		 * @param {number} iPosition
 		 * @returns {sap.m.PagingButton} Reference to the control instance for chaining
 		 */

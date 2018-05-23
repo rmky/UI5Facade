@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define([
 	 * @private
 	 * @sap-restricted
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 */
 	var Connector = function(mParameters) {
 		this._initClientParam();
@@ -326,9 +326,7 @@ sap.ui.define([
 			if (mOptions && mOptions.type) {
 				if (mOptions.type === "GET" || mOptions.type === "HEAD") {
 					bRequestCSRFToken = false;
-				}
-			} else {
-				if (that._sXsrfToken && that._sXsrfToken !== "fetch") {
+				} else if (that._sXsrfToken && that._sXsrfToken !== "fetch") {
 					bRequestCSRFToken = false;
 				}
 			}
@@ -338,7 +336,9 @@ sap.ui.define([
 				jQuery.ajax(sFetchXsrfTokenUrl, mFetchXsrfTokenOptions).done(fetchTokenAndHandleRequest).fail(function(oXhr, sStatus, sErrorThrown) {
 					// Fetching XSRF Token failed
 					reject({
-						status: "error"
+						status: "error",
+						code: oXhr.statusCode().status,
+						messages: that._getMessagesFromXHR(oXhr)
 					});
 				});
 			} else {
@@ -371,7 +371,7 @@ sap.ui.define([
 		var sUrl = "/sap/bc/lrep/flex/data/";
 		mPropertyBag = mPropertyBag || {};
 
-		if (!sComponentName) {
+		if (!sComponentName || sComponentName.match(new RegExp(/^\$*\{[a-zA-Z0-9\.]*\}/g))) {
 			return Promise.reject(new Error("Component name not specified"));
 		}
 
@@ -417,6 +417,9 @@ sap.ui.define([
 		}
 
 		if (oComponent.appVersion && (oComponent.appVersion !== FlexUtils.DEFAULT_APP_VERSION)) {
+			if (oComponent.appVersion.match(new RegExp(/^\$*\{[a-zA-Z0-9\.]*\}/g))) {
+				return Promise.reject(new Error("Component appVersion is invalid"));
+			}
 			sUrl += "&appVersion=" + oComponent.appVersion;
 		}
 

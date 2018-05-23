@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -62,7 +62,7 @@ sap.ui.define(['jquery.sap.global', './InstanceManager', 'sap/ui/core/Popup', 's
 		 * The message toast has the same behavior on all devices. However, you can adjust the width of the control, for example, for use on a desktop device.
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @namespace
 		 * @public
@@ -361,7 +361,6 @@ sap.ui.define(['jquery.sap.global', './InstanceManager', 'sap/ui/core/Popup', 's
 		 * @param {int} [mOptions.animationDuration=1000] Time in milliseconds that the close animation takes to complete. Needs to be a finite positive integer. For not animation set to 0. This feature is not supported in android and ie9 browsers.
 		 * @param {boolean} [mOptions.closeOnBrowserNavigation=true] Specifies if the message toast closes on browser navigation.
 		 *
-		 * @returns void
 		 * @public
 		 */
 		MessageToast.show = function(sMessage, mOptions) {

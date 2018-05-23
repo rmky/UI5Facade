@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -18,7 +18,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @private
 	 * @sap-restricted
 	 */
@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated.api
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @private
 	 * @sap-restricted
 	 */
@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChange
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @private
 	 * @sap-restricted
 	 */
@@ -178,7 +178,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChangeFactory
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @private
 	 * @sap-restricted
 	 */
@@ -192,13 +192,14 @@ sap.ui.define([
 	 * @param {object} oInlineChange the inline change instance
 	 * @param {string} sLayer layer of the descriptor change
 	 * @param {object} oAppComponent application component to get the version from
+	 * @param {string} sTool tool which creates the descriptor change (e.g. RTA, DTA, FCC ...)
 	 *
 	 * @return {Promise} resolving the new Change instance
 	 *
 	 * @private
 	 * @sap-restricted
 	 */
-	DescriptorChangeFactory.prototype.createNew = function(sReference, oInlineChange, sLayer, oAppComponent) {
+	DescriptorChangeFactory.prototype.createNew = function(sReference, oInlineChange, sLayer, oAppComponent, sTool) {
 		var fSetHostingIdForTextKey = function(_oDescriptorInlineChange, sId){
 			//providing "hosting id" for appdescr_app_setTitle and similar
 			//"hosting id" is descriptor variant id
@@ -222,6 +223,7 @@ sap.ui.define([
 			"creation": sAppVersion,
 			"from": sAppVersion
 		} : {};
+		mPropertyBag.generator = sTool;
 
 		if (!sLayer){
 			//default to 'CUSTOMER'

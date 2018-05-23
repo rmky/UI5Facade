@@ -1,13 +1,13 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 /**
  * Provides methods for information retrieval from the core.
  */
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/ToolsAPI', 'sap/ui/thirdparty/URI'],
+sap.ui.define(["jquery.sap.global", "sap/ui/core/support/ToolsAPI", "sap/ui/thirdparty/URI"],
 	function (jQuery, ToolsAPI, URI) {
 	"use strict";
 

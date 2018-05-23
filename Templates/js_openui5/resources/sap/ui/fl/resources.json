@@ -5,6 +5,9 @@
 			"name": ".library"
 		},
 		{
+			"name": ".supportrc"
+		},
+		{
 			"name": ".theming"
 		},
 		{
@@ -50,6 +53,8 @@
 			"module": "sap/ui/fl/ChangePersistence.js",
 			"isDebug": true,
 			"required": [
+				"sap/m/MessageBox.js",
+				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/fl/Cache.js",
 				"sap/ui/fl/Change.js",
 				"sap/ui/fl/LrepConnector.js",
@@ -57,6 +62,7 @@
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/context/ContextManager.js",
 				"sap/ui/fl/registry/Settings.js",
+				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/fl/variants/VariantController.js"
 			]
 		},
@@ -64,6 +70,8 @@
 			"name": "ChangePersistence.js",
 			"module": "sap/ui/fl/ChangePersistence.js",
 			"required": [
+				"sap/m/MessageBox.js",
+				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/fl/Cache.js",
 				"sap/ui/fl/Change.js",
 				"sap/ui/fl/LrepConnector.js",
@@ -71,6 +79,7 @@
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/context/ContextManager.js",
 				"sap/ui/fl/registry/Settings.js",
+				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/fl/variants/VariantController.js"
 			]
 		},
@@ -269,10 +278,9 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
-				"sap/ui/fl/Cache.js",
 				"sap/ui/fl/Change.js",
+				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/DefaultVariant.js",
-				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/StandardVariant.js",
 				"sap/ui/fl/Utils.js"
 			]
@@ -282,10 +290,9 @@
 			"module": "sap/ui/fl/Persistence.js",
 			"required": [
 				"jquery.sap.global.js",
-				"sap/ui/fl/Cache.js",
 				"sap/ui/fl/Change.js",
+				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/DefaultVariant.js",
-				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/StandardVariant.js",
 				"sap/ui/fl/Utils.js"
 			]
@@ -382,7 +389,8 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
-				"sap/ui/core/Component.js"
+				"sap/ui/core/Component.js",
+				"sap/ui/thirdparty/hasher.js"
 			]
 		},
 		{
@@ -390,7 +398,8 @@
 			"module": "sap/ui/fl/Utils.js",
 			"required": [
 				"jquery.sap.global.js",
-				"sap/ui/core/Component.js"
+				"sap/ui/core/Component.js",
+				"sap/ui/thirdparty/hasher.js"
 			]
 		},
 		{
@@ -439,6 +448,25 @@
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Utils.js"
+			]
+		},
+		{
+			"name": "changeHandler/AddXML-dbg.js",
+			"module": "sap/ui/fl/changeHandler/AddXML.js",
+			"isDebug": true,
+			"required": [
+				"jquery.sap.global.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/Base.js"
+			]
+		},
+		{
+			"name": "changeHandler/AddXML.js",
+			"module": "sap/ui/fl/changeHandler/AddXML.js",
+			"required": [
+				"jquery.sap.global.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/Base.js"
 			]
 		},
 		{
@@ -660,6 +688,8 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/base/DataType.js",
+				"sap/ui/core/XMLTemplateProcessor.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/BaseTreeModifier.js"
 			]
 		},
@@ -668,6 +698,8 @@
 			"module": "sap/ui/fl/changeHandler/XmlTreeModifier.js",
 			"required": [
 				"sap/ui/base/DataType.js",
+				"sap/ui/core/XMLTemplateProcessor.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/BaseTreeModifier.js"
 			]
 		},
@@ -884,6 +916,47 @@
 			"module": "sap/ui/fl/descriptorRelated/internal/Utils.js"
 		},
 		{
+			"name": "designtime/library-preload.designtime.js",
+			"module": "sap/ui/fl/designtime/library-preload.designtime.js",
+			"merged": true,
+			"designtime": true,
+			"included": [
+				"sap/ui/fl/designtime/library.designtime.js",
+				"sap/ui/fl/designtime/variants/VariantManagement.designtime.js"
+			]
+		},
+		{
+			"name": "designtime/library-preload.designtime.js.map",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/library.designtime-dbg.js",
+			"module": "sap/ui/fl/designtime/library.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/library.designtime.js",
+			"module": "sap/ui/fl/designtime/library.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/messagebundle.properties",
+			"module": "sap/ui/fl/designtime/messagebundle.properties",
+			"designtime": true
+		},
+		{
+			"name": "designtime/variants/VariantManagement.designtime-dbg.js",
+			"module": "sap/ui/fl/designtime/variants/VariantManagement.designtime.js",
+			"isDebug": true
+		},
+		{
+			"name": "designtime/variants/VariantManagement.designtime.js",
+			"module": "sap/ui/fl/designtime/variants/VariantManagement.designtime.js",
+			"designtime": true
+		},
+		{
 			"name": "fieldExt/Access-dbg.js",
 			"module": "sap/ui/fl/fieldExt/Access.js",
 			"isDebug": true,
@@ -899,21 +972,375 @@
 			]
 		},
 		{
-			"name": "library-all-dbg.js",
-			"isDebug": true,
-			"merged": true
-		},
-		{
-			"name": "library-all.js",
-			"merged": true
-		},
-		{
 			"name": "library-dbg.js",
 			"module": "sap/ui/fl/library.js",
 			"isDebug": true,
 			"required": [
 				"sap/ui/fl/RegistrationDelegator.js"
 			]
+		},
+		{
+			"name": "library-h2-preload-dbg.js",
+			"module": "sap/ui/fl/library-h2-preload.js",
+			"isDebug": true,
+			"merged": true,
+			"required": [
+				"jquery.sap.global.js",
+				"jquery.sap.storage.js",
+				"sap/m/Bar.js",
+				"sap/m/Button.js",
+				"sap/m/ButtonType.js",
+				"sap/m/CheckBox.js",
+				"sap/m/Column.js",
+				"sap/m/ColumnListItem.js",
+				"sap/m/ComboBox.js",
+				"sap/m/CustomListItem.js",
+				"sap/m/Dialog.js",
+				"sap/m/DialogRenderer.js",
+				"sap/m/DisplayListItem.js",
+				"sap/m/GroupHeaderListItem.js",
+				"sap/m/IconTabBar.js",
+				"sap/m/IconTabFilter.js",
+				"sap/m/Input.js",
+				"sap/m/InputListItem.js",
+				"sap/m/Label.js",
+				"sap/m/List.js",
+				"sap/m/MessageBox.js",
+				"sap/m/MessagePopover.js",
+				"sap/m/MessagePopoverItem.js",
+				"sap/m/MessageToast.js",
+				"sap/m/ObjectIdentifier.js",
+				"sap/m/OverflowToolbar.js",
+				"sap/m/OverflowToolbarLayoutData.js",
+				"sap/m/OverflowToolbarPriority.js",
+				"sap/m/Page.js",
+				"sap/m/PlacementType.js",
+				"sap/m/PopinDisplay.js",
+				"sap/m/RadioButton.js",
+				"sap/m/ResponsivePopover.js",
+				"sap/m/ScreenSize.js",
+				"sap/m/SearchField.js",
+				"sap/m/Select.js",
+				"sap/m/SelectList.js",
+				"sap/m/SplitApp.js",
+				"sap/m/StandardListItem.js",
+				"sap/m/StandardTreeItem.js",
+				"sap/m/Table.js",
+				"sap/m/Text.js",
+				"sap/m/TextArea.js",
+				"sap/m/Title.js",
+				"sap/m/Toolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/m/Tree.js",
+				"sap/m/VBox.js",
+				"sap/ui/Device.js",
+				"sap/ui/base/DataType.js",
+				"sap/ui/base/EventProvider.js",
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/base/Object.js",
+				"sap/ui/core/BusyIndicator.js",
+				"sap/ui/core/Component.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/CustomData.js",
+				"sap/ui/core/Element.js",
+				"sap/ui/core/HTML.js",
+				"sap/ui/core/Icon.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/ListItem.js",
+				"sap/ui/core/TextAlign.js",
+				"sap/ui/core/UIComponent.js",
+				"sap/ui/core/ValueState.js",
+				"sap/ui/core/XMLTemplateProcessor.js",
+				"sap/ui/core/mvc/Controller.js",
+				"sap/ui/core/mvc/View.js",
+				"sap/ui/core/mvc/XMLView.js",
+				"sap/ui/core/support/Plugin.js",
+				"sap/ui/core/support/Support.js",
+				"sap/ui/dt/DesignTime.js",
+				"sap/ui/layout/Grid.js",
+				"sap/ui/layout/HorizontalLayout.js",
+				"sap/ui/layout/Splitter.js",
+				"sap/ui/layout/SplitterLayoutData.js",
+				"sap/ui/layout/VerticalLayout.js",
+				"sap/ui/layout/form/SimpleForm.js",
+				"sap/ui/model/Context.js",
+				"sap/ui/model/Filter.js",
+				"sap/ui/model/FilterOperator.js",
+				"sap/ui/model/PropertyBinding.js",
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/support/library.js",
+				"sap/ui/thirdparty/URI.js",
+				"sap/ui/thirdparty/hasher.js"
+			],
+			"included": [
+				"sap/ui/fl/library.js",
+				"sap/ui/fl/manifest.json",
+				"sap/ui/fl/Cache.js",
+				"sap/ui/fl/Change.js",
+				"sap/ui/fl/ChangePersistence.js",
+				"sap/ui/fl/ChangePersistenceFactory.js",
+				"sap/ui/fl/DefaultVariant.js",
+				"sap/ui/fl/EventHistory.js",
+				"sap/ui/fl/FakeLrepConnector.js",
+				"sap/ui/fl/FakeLrepConnectorLocalStorage.js",
+				"sap/ui/fl/FakeLrepLocalStorage.js",
+				"sap/ui/fl/FlexController.js",
+				"sap/ui/fl/FlexControllerFactory.js",
+				"sap/ui/fl/LrepConnector.js",
+				"sap/ui/fl/Persistence.js",
+				"sap/ui/fl/Preprocessor.js",
+				"sap/ui/fl/PreprocessorImpl.js",
+				"sap/ui/fl/RegistrationDelegator.js",
+				"sap/ui/fl/StandardVariant.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/Variant.js",
+				"sap/ui/fl/XmlPreprocessorImpl.js",
+				"sap/ui/fl/changeHandler/AddXML.js",
+				"sap/ui/fl/changeHandler/Base.js",
+				"sap/ui/fl/changeHandler/BaseRename.js",
+				"sap/ui/fl/changeHandler/BaseTreeModifier.js",
+				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js",
+				"sap/ui/fl/changeHandler/HideControl.js",
+				"sap/ui/fl/changeHandler/JsControlTreeModifier.js",
+				"sap/ui/fl/changeHandler/MoveControls.js",
+				"sap/ui/fl/changeHandler/MoveElements.js",
+				"sap/ui/fl/changeHandler/PropertyBindingChange.js",
+				"sap/ui/fl/changeHandler/PropertyChange.js",
+				"sap/ui/fl/changeHandler/StashControl.js",
+				"sap/ui/fl/changeHandler/UnhideControl.js",
+				"sap/ui/fl/changeHandler/UnstashControl.js",
+				"sap/ui/fl/changeHandler/XmlTreeModifier.js",
+				"sap/ui/fl/codeExt/CodeExtManager.js",
+				"sap/ui/fl/context/BaseContextProvider.js",
+				"sap/ui/fl/context/Context.js",
+				"sap/ui/fl/context/ContextManager.js",
+				"sap/ui/fl/context/DeviceContextProvider.js",
+				"sap/ui/fl/context/SwitchContextProvider.js",
+				"sap/ui/fl/core/EventDelegate.js",
+				"sap/ui/fl/core/FlexVisualizer.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js",
+				"sap/ui/fl/descriptorRelated/internal/Utils.js",
+				"sap/ui/fl/designtime/library.designtime.js",
+				"sap/ui/fl/designtime/variants/VariantManagement.designtime.js",
+				"sap/ui/fl/fieldExt/Access.js",
+				"sap/ui/fl/library.support.js",
+				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
+				"sap/ui/fl/registry/ChangeRegistry.js",
+				"sap/ui/fl/registry/ChangeRegistryItem.js",
+				"sap/ui/fl/registry/ChangeTypeMetadata.js",
+				"sap/ui/fl/registry/Settings.js",
+				"sap/ui/fl/registry/SimpleChanges.js",
+				"sap/ui/fl/support/Flexibility.js",
+				"sap/ui/fl/support/apps/contentbrowser/Component.js",
+				"sap/ui/fl/support/apps/contentbrowser/controller/ContentDetails.controller.js",
+				"sap/ui/fl/support/apps/contentbrowser/controller/ContentDetailsEdit.controller.js",
+				"sap/ui/fl/support/apps/contentbrowser/controller/LayerContentMaster.controller.js",
+				"sap/ui/fl/support/apps/contentbrowser/controller/Layers.controller.js",
+				"sap/ui/fl/support/apps/contentbrowser/lrepConnector/LRepConnector.js",
+				"sap/ui/fl/support/apps/contentbrowser/manifest.json",
+				"sap/ui/fl/support/apps/contentbrowser/utils/DataUtils.js",
+				"sap/ui/fl/support/apps/contentbrowser/utils/ErrorUtils.js",
+				"sap/ui/fl/support/apps/contentbrowser/view/ContentDetails.view.xml",
+				"sap/ui/fl/support/apps/contentbrowser/view/ContentDetailsEdit.view.xml",
+				"sap/ui/fl/support/apps/contentbrowser/view/EmptyDetails.view.xml",
+				"sap/ui/fl/support/apps/contentbrowser/view/LayerContentMaster.view.xml",
+				"sap/ui/fl/support/apps/contentbrowser/view/Layers.view.xml",
+				"sap/ui/fl/support/apps/contentbrowser/view/MainView.view.xml",
+				"sap/ui/fl/support/diagnostics/Flexibility.controller.js",
+				"sap/ui/fl/support/diagnostics/Flexibility.view.xml",
+				"sap/ui/fl/transport/TransportDialog.js",
+				"sap/ui/fl/transport/TransportSelection.js",
+				"sap/ui/fl/transport/Transports.js",
+				"sap/ui/fl/variants/ControlVariantsAPI.js",
+				"sap/ui/fl/variants/VariantController.js",
+				"sap/ui/fl/variants/VariantManagement.js",
+				"sap/ui/fl/variants/VariantModel.js"
+			]
+		},
+		{
+			"name": "library-h2-preload.js",
+			"module": "sap/ui/fl/library-h2-preload.js",
+			"merged": true,
+			"required": [
+				"jquery.sap.global.js",
+				"jquery.sap.storage.js",
+				"sap/m/Bar.js",
+				"sap/m/Button.js",
+				"sap/m/ButtonType.js",
+				"sap/m/CheckBox.js",
+				"sap/m/Column.js",
+				"sap/m/ColumnListItem.js",
+				"sap/m/ComboBox.js",
+				"sap/m/CustomListItem.js",
+				"sap/m/Dialog.js",
+				"sap/m/DialogRenderer.js",
+				"sap/m/DisplayListItem.js",
+				"sap/m/GroupHeaderListItem.js",
+				"sap/m/IconTabBar.js",
+				"sap/m/IconTabFilter.js",
+				"sap/m/Input.js",
+				"sap/m/InputListItem.js",
+				"sap/m/Label.js",
+				"sap/m/List.js",
+				"sap/m/MessageBox.js",
+				"sap/m/MessagePopover.js",
+				"sap/m/MessagePopoverItem.js",
+				"sap/m/MessageToast.js",
+				"sap/m/ObjectIdentifier.js",
+				"sap/m/OverflowToolbar.js",
+				"sap/m/OverflowToolbarLayoutData.js",
+				"sap/m/OverflowToolbarPriority.js",
+				"sap/m/Page.js",
+				"sap/m/PlacementType.js",
+				"sap/m/PopinDisplay.js",
+				"sap/m/RadioButton.js",
+				"sap/m/ResponsivePopover.js",
+				"sap/m/ScreenSize.js",
+				"sap/m/SearchField.js",
+				"sap/m/Select.js",
+				"sap/m/SelectList.js",
+				"sap/m/SplitApp.js",
+				"sap/m/StandardListItem.js",
+				"sap/m/StandardTreeItem.js",
+				"sap/m/Table.js",
+				"sap/m/Text.js",
+				"sap/m/TextArea.js",
+				"sap/m/Title.js",
+				"sap/m/Toolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/m/Tree.js",
+				"sap/m/VBox.js",
+				"sap/ui/Device.js",
+				"sap/ui/base/DataType.js",
+				"sap/ui/base/EventProvider.js",
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/base/Object.js",
+				"sap/ui/core/BusyIndicator.js",
+				"sap/ui/core/Component.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/CustomData.js",
+				"sap/ui/core/Element.js",
+				"sap/ui/core/HTML.js",
+				"sap/ui/core/Icon.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/ListItem.js",
+				"sap/ui/core/TextAlign.js",
+				"sap/ui/core/UIComponent.js",
+				"sap/ui/core/ValueState.js",
+				"sap/ui/core/XMLTemplateProcessor.js",
+				"sap/ui/core/mvc/Controller.js",
+				"sap/ui/core/mvc/View.js",
+				"sap/ui/core/mvc/XMLView.js",
+				"sap/ui/core/support/Plugin.js",
+				"sap/ui/core/support/Support.js",
+				"sap/ui/dt/DesignTime.js",
+				"sap/ui/layout/Grid.js",
+				"sap/ui/layout/HorizontalLayout.js",
+				"sap/ui/layout/Splitter.js",
+				"sap/ui/layout/SplitterLayoutData.js",
+				"sap/ui/layout/VerticalLayout.js",
+				"sap/ui/layout/form/SimpleForm.js",
+				"sap/ui/model/Context.js",
+				"sap/ui/model/Filter.js",
+				"sap/ui/model/FilterOperator.js",
+				"sap/ui/model/PropertyBinding.js",
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/support/library.js",
+				"sap/ui/thirdparty/URI.js",
+				"sap/ui/thirdparty/hasher.js"
+			],
+			"included": [
+				"sap/ui/fl/library.js",
+				"sap/ui/fl/manifest.json",
+				"sap/ui/fl/Cache.js",
+				"sap/ui/fl/Change.js",
+				"sap/ui/fl/ChangePersistence.js",
+				"sap/ui/fl/ChangePersistenceFactory.js",
+				"sap/ui/fl/DefaultVariant.js",
+				"sap/ui/fl/EventHistory.js",
+				"sap/ui/fl/FakeLrepConnector.js",
+				"sap/ui/fl/FakeLrepConnectorLocalStorage.js",
+				"sap/ui/fl/FakeLrepLocalStorage.js",
+				"sap/ui/fl/FlexController.js",
+				"sap/ui/fl/FlexControllerFactory.js",
+				"sap/ui/fl/LrepConnector.js",
+				"sap/ui/fl/Persistence.js",
+				"sap/ui/fl/Preprocessor.js",
+				"sap/ui/fl/PreprocessorImpl.js",
+				"sap/ui/fl/RegistrationDelegator.js",
+				"sap/ui/fl/StandardVariant.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/Variant.js",
+				"sap/ui/fl/XmlPreprocessorImpl.js",
+				"sap/ui/fl/changeHandler/AddXML.js",
+				"sap/ui/fl/changeHandler/Base.js",
+				"sap/ui/fl/changeHandler/BaseRename.js",
+				"sap/ui/fl/changeHandler/BaseTreeModifier.js",
+				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js",
+				"sap/ui/fl/changeHandler/HideControl.js",
+				"sap/ui/fl/changeHandler/JsControlTreeModifier.js",
+				"sap/ui/fl/changeHandler/MoveControls.js",
+				"sap/ui/fl/changeHandler/MoveElements.js",
+				"sap/ui/fl/changeHandler/PropertyBindingChange.js",
+				"sap/ui/fl/changeHandler/PropertyChange.js",
+				"sap/ui/fl/changeHandler/StashControl.js",
+				"sap/ui/fl/changeHandler/UnhideControl.js",
+				"sap/ui/fl/changeHandler/UnstashControl.js",
+				"sap/ui/fl/changeHandler/XmlTreeModifier.js",
+				"sap/ui/fl/codeExt/CodeExtManager.js",
+				"sap/ui/fl/context/BaseContextProvider.js",
+				"sap/ui/fl/context/Context.js",
+				"sap/ui/fl/context/ContextManager.js",
+				"sap/ui/fl/context/DeviceContextProvider.js",
+				"sap/ui/fl/context/SwitchContextProvider.js",
+				"sap/ui/fl/core/EventDelegate.js",
+				"sap/ui/fl/core/FlexVisualizer.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js",
+				"sap/ui/fl/descriptorRelated/internal/Utils.js",
+				"sap/ui/fl/designtime/library.designtime.js",
+				"sap/ui/fl/designtime/variants/VariantManagement.designtime.js",
+				"sap/ui/fl/fieldExt/Access.js",
+				"sap/ui/fl/library.support.js",
+				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
+				"sap/ui/fl/registry/ChangeRegistry.js",
+				"sap/ui/fl/registry/ChangeRegistryItem.js",
+				"sap/ui/fl/registry/ChangeTypeMetadata.js",
+				"sap/ui/fl/registry/Settings.js",
+				"sap/ui/fl/registry/SimpleChanges.js",
+				"sap/ui/fl/support/Flexibility.js",
+				"sap/ui/fl/support/apps/contentbrowser/Component.js",
+				"sap/ui/fl/support/apps/contentbrowser/controller/ContentDetails.controller.js",
+				"sap/ui/fl/support/apps/contentbrowser/controller/ContentDetailsEdit.controller.js",
+				"sap/ui/fl/support/apps/contentbrowser/controller/LayerContentMaster.controller.js",
+				"sap/ui/fl/support/apps/contentbrowser/controller/Layers.controller.js",
+				"sap/ui/fl/support/apps/contentbrowser/lrepConnector/LRepConnector.js",
+				"sap/ui/fl/support/apps/contentbrowser/manifest.json",
+				"sap/ui/fl/support/apps/contentbrowser/utils/DataUtils.js",
+				"sap/ui/fl/support/apps/contentbrowser/utils/ErrorUtils.js",
+				"sap/ui/fl/support/apps/contentbrowser/view/ContentDetails.view.xml",
+				"sap/ui/fl/support/apps/contentbrowser/view/ContentDetailsEdit.view.xml",
+				"sap/ui/fl/support/apps/contentbrowser/view/EmptyDetails.view.xml",
+				"sap/ui/fl/support/apps/contentbrowser/view/LayerContentMaster.view.xml",
+				"sap/ui/fl/support/apps/contentbrowser/view/Layers.view.xml",
+				"sap/ui/fl/support/apps/contentbrowser/view/MainView.view.xml",
+				"sap/ui/fl/support/diagnostics/Flexibility.controller.js",
+				"sap/ui/fl/support/diagnostics/Flexibility.view.xml",
+				"sap/ui/fl/transport/TransportDialog.js",
+				"sap/ui/fl/transport/TransportSelection.js",
+				"sap/ui/fl/transport/Transports.js",
+				"sap/ui/fl/variants/ControlVariantsAPI.js",
+				"sap/ui/fl/variants/VariantController.js",
+				"sap/ui/fl/variants/VariantManagement.js",
+				"sap/ui/fl/variants/VariantModel.js"
+			]
+		},
+		{
+			"name": "library-h2-preload.js.map",
+			"isDebug": true
 		},
 		{
 			"name": "library-preload.js",
@@ -935,6 +1362,7 @@
 				"sap/m/InputListItem.js",
 				"sap/m/Label.js",
 				"sap/m/List.js",
+				"sap/m/MessageBox.js",
 				"sap/m/MessageToast.js",
 				"sap/m/ObjectIdentifier.js",
 				"sap/m/OverflowToolbar.js",
@@ -959,24 +1387,27 @@
 				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/ListItem.js",
 				"sap/ui/core/TextAlign.js",
 				"sap/ui/core/ValueState.js",
+				"sap/ui/core/XMLTemplateProcessor.js",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/core/mvc/View.js",
 				"sap/ui/core/mvc/XMLView.js",
-				"sap/ui/dt/DesignTime.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/model/Context.js",
 				"sap/ui/model/Filter.js",
+				"sap/ui/model/PropertyBinding.js",
 				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/support/library.js",
-				"sap/ui/thirdparty/URI.js"
+				"sap/ui/thirdparty/URI.js",
+				"sap/ui/thirdparty/hasher.js"
 			],
 			"included": [
 				"sap/ui/fl/Cache.js",
@@ -999,6 +1430,7 @@
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/XmlPreprocessorImpl.js",
+				"sap/ui/fl/changeHandler/AddXML.js",
 				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/BaseRename.js",
 				"sap/ui/fl/changeHandler/BaseTreeModifier.js",
@@ -1027,7 +1459,6 @@
 				"sap/ui/fl/descriptorRelated/internal/Utils.js",
 				"sap/ui/fl/fieldExt/Access.js",
 				"sap/ui/fl/library.js",
-				"sap/ui/fl/library.support.js",
 				"sap/ui/fl/manifest.json",
 				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
@@ -1038,8 +1469,8 @@
 				"sap/ui/fl/transport/TransportDialog.js",
 				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/fl/transport/Transports.js",
+				"sap/ui/fl/variants/ControlVariantsAPI.js",
 				"sap/ui/fl/variants/VariantController.js",
-				"sap/ui/fl/variants/VariantManagement.designtime.js",
 				"sap/ui/fl/variants/VariantManagement.js",
 				"sap/ui/fl/variants/VariantModel.js"
 			]
@@ -1068,6 +1499,7 @@
 				"sap/m/InputListItem.js",
 				"sap/m/Label.js",
 				"sap/m/List.js",
+				"sap/m/MessageBox.js",
 				"sap/m/MessageToast.js",
 				"sap/m/ObjectIdentifier.js",
 				"sap/m/OverflowToolbar.js",
@@ -1093,25 +1525,28 @@
 				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/ListItem.js",
 				"sap/ui/core/TextAlign.js",
 				"sap/ui/core/ValueState.js",
+				"sap/ui/core/XMLTemplateProcessor.js",
 				"sap/ui/core/library-preload.json",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/core/mvc/View.js",
 				"sap/ui/core/mvc/XMLView.js",
-				"sap/ui/dt/DesignTime.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/model/Context.js",
 				"sap/ui/model/Filter.js",
+				"sap/ui/model/PropertyBinding.js",
 				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/support/library.js",
-				"sap/ui/thirdparty/URI.js"
+				"sap/ui/thirdparty/URI.js",
+				"sap/ui/thirdparty/hasher.js"
 			],
 			"included": [
 				"sap/ui/fl/Cache.js",
@@ -1134,6 +1569,7 @@
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/XmlPreprocessorImpl.js",
+				"sap/ui/fl/changeHandler/AddXML.js",
 				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/BaseRename.js",
 				"sap/ui/fl/changeHandler/BaseTreeModifier.js",
@@ -1162,7 +1598,6 @@
 				"sap/ui/fl/descriptorRelated/internal/Utils.js",
 				"sap/ui/fl/fieldExt/Access.js",
 				"sap/ui/fl/library.js",
-				"sap/ui/fl/library.support.js",
 				"sap/ui/fl/manifest.json",
 				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
@@ -1173,11 +1608,30 @@
 				"sap/ui/fl/transport/TransportDialog.js",
 				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/fl/transport/Transports.js",
+				"sap/ui/fl/variants/ControlVariantsAPI.js",
 				"sap/ui/fl/variants/VariantController.js",
-				"sap/ui/fl/variants/VariantManagement.designtime.js",
 				"sap/ui/fl/variants/VariantManagement.js",
 				"sap/ui/fl/variants/VariantModel.js"
 			]
+		},
+		{
+			"name": "library-preload.support.js",
+			"module": "sap/ui/fl/library-preload.support.js",
+			"merged": true,
+			"support": true,
+			"required": [
+				"sap/ui/core/Component.js",
+				"sap/ui/dt/DesignTime.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/support/library.js"
+			],
+			"included": [
+				"sap/ui/fl/library.support.js"
+			]
+		},
+		{
+			"name": "library-preload.support.js.map",
+			"isDebug": true
 		},
 		{
 			"name": "library.dependencies.json",
@@ -1197,6 +1651,7 @@
 		{
 			"name": "library.support.js",
 			"module": "sap/ui/fl/library.support.js",
+			"support": true,
 			"required": [
 				"sap/ui/core/Component.js",
 				"sap/ui/dt/DesignTime.js",
@@ -1486,6 +1941,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/AddXML.js",
 				"sap/ui/fl/changeHandler/HideControl.js",
 				"sap/ui/fl/changeHandler/MoveControls.js",
 				"sap/ui/fl/changeHandler/MoveElements.js",
@@ -1505,6 +1961,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/AddXML.js",
 				"sap/ui/fl/changeHandler/HideControl.js",
 				"sap/ui/fl/changeHandler/MoveControls.js",
 				"sap/ui/fl/changeHandler/MoveElements.js",
@@ -2051,11 +2508,31 @@
 			]
 		},
 		{
+			"name": "variants/ControlVariantsAPI-dbg.js",
+			"module": "sap/ui/fl/variants/ControlVariantsAPI.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/Component.js",
+				"sap/ui/core/Element.js",
+				"sap/ui/fl/Utils.js"
+			]
+		},
+		{
+			"name": "variants/ControlVariantsAPI.js",
+			"module": "sap/ui/fl/variants/ControlVariantsAPI.js",
+			"required": [
+				"sap/ui/core/Component.js",
+				"sap/ui/core/Element.js",
+				"sap/ui/fl/Utils.js"
+			]
+		},
+		{
 			"name": "variants/VariantController-dbg.js",
 			"module": "sap/ui/fl/variants/VariantController.js",
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/fl/Cache.js",
 				"sap/ui/fl/Change.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js"
@@ -2066,6 +2543,7 @@
 			"module": "sap/ui/fl/variants/VariantController.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/fl/Cache.js",
 				"sap/ui/fl/Change.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js"
@@ -2112,26 +2590,16 @@
 				"sap/ui/core/ValueState.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/BaseTreeModifier.js",
-				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/model/Context.js",
 				"sap/ui/model/Filter.js",
+				"sap/ui/model/PropertyBinding.js",
 				"sap/ui/model/json/JSONModel.js"
 			]
 		},
 		{
 			"name": "variants/VariantManagement.control",
-			"designtime": true
-		},
-		{
-			"name": "variants/VariantManagement.designtime-dbg.js",
-			"module": "sap/ui/fl/variants/VariantManagement.designtime.js",
-			"isDebug": true
-		},
-		{
-			"name": "variants/VariantManagement.designtime.js",
-			"module": "sap/ui/fl/variants/VariantManagement.designtime.js",
 			"designtime": true
 		},
 		{
@@ -2174,11 +2642,11 @@
 				"sap/ui/core/ValueState.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/BaseTreeModifier.js",
-				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/model/Context.js",
 				"sap/ui/model/Filter.js",
+				"sap/ui/model/PropertyBinding.js",
 				"sap/ui/model/json/JSONModel.js"
 			]
 		},
@@ -2192,6 +2660,7 @@
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/BaseTreeModifier.js",
+				"sap/ui/fl/changeHandler/JsControlTreeModifier.js",
 				"sap/ui/model/json/JSONModel.js"
 			]
 		},
@@ -2204,6 +2673,7 @@
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/BaseTreeModifier.js",
+				"sap/ui/fl/changeHandler/JsControlTreeModifier.js",
 				"sap/ui/model/json/JSONModel.js"
 			]
 		}

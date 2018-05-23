@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.TabContainer.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/IconPool'],
-	function(jQuery, library, Control, IconPool) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/IconPool',
+	'./TabContainerRenderer'
+],
+	function(jQuery, library, Control, IconPool, TabContainerRenderer) {
 		"use strict";
 
 		// shortcut for sap.m.ButtonType
@@ -49,7 +55,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -124,7 +130,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 					 * Fired when the <i>Add New Tab</i> button is pressed.
 					 */
 					addNewButtonPress: { }
-				}
+				},
+				designtime: "sap/m/designtime/TabContainer.designtime"
 			},
 			constructor : function (vId, mSettings) {
 				var aStashedItems = [];
@@ -325,7 +332,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 					};
 
 			// Selection (causes invalidation)
-			if (bSetAsSelected && oNextItem) {
+			if (bSetAsSelected) {
 				this.setSelectedItem(oNextItem);
 				// Notify the subscriber
 				this.fireItemSelect({item: oNextItem});

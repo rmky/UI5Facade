@@ -1,12 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.ux3.Feeder.
-sap.ui.define(['jquery.sap.global', 'sap/ui/commons/Button', 'sap/ui/core/Control', 'sap/ui/core/theming/Parameters', './library'],
-	function(jQuery, Button, Control, Parameters, library) {
+sap.ui.define([
+    'jquery.sap.global',
+    'sap/ui/commons/Button',
+    'sap/ui/core/Control',
+    'sap/ui/core/theming/Parameters',
+    './library',
+    "./FeederRenderer"
+],
+	function(jQuery, Button, Control, Parameters, library, FeederRenderer) {
 	"use strict";
 
 
@@ -23,7 +30,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/Button', 'sap/ui/core/Contro
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

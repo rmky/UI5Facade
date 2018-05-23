@@ -1,12 +1,29 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.core.Icon.
-sap.ui.define(['jquery.sap.global', '../Device', './Control', './IconPool', './InvisibleText', './library'],
-	function(jQuery, Device, Control, IconPool, InvisibleText, library) {
+sap.ui.define([
+    'jquery.sap.global',
+    '../Device',
+    './Control',
+    './IconPool',
+    './InvisibleText',
+    './library',
+    "./IconRenderer",
+    'jquery.sap.keycodes'
+],
+	function(
+	    jQuery,
+		Device,
+		Control,
+		IconPool,
+		InvisibleText,
+		library /* ,jQuerySapKeycodes */,
+		IconRenderer
+	) {
 	"use strict";
 
 	// shortcut
@@ -26,7 +43,7 @@ sap.ui.define(['jquery.sap.global', '../Device', './Control', './IconPool', './I
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @public
 	 * @since 1.11.1
@@ -37,6 +54,7 @@ sap.ui.define(['jquery.sap.global', '../Device', './Control', './IconPool', './I
 
 		interfaces : ["sap.ui.core.IFormContent"],
 		library : "sap.ui.core",
+		designtime: "sap/ui/core/designtime/Icon.designtime",
 		properties : {
 
 			/**

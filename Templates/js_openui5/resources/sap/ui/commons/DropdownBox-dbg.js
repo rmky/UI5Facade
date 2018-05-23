@@ -1,12 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.commons.DropdownBox.
-sap.ui.define(['jquery.sap.global', './ComboBox', './library', 'sap/ui/core/History', 'sap/ui/core/SeparatorItem'],
-	function(jQuery, ComboBox, library, History, SeparatorItem) {
+sap.ui.define([
+    'jquery.sap.global',
+    './ComboBox',
+    './library',
+    'sap/ui/core/History',
+    'sap/ui/core/SeparatorItem',
+    "./DropdownBoxRenderer"
+],
+	function(jQuery, ComboBox, library, History, SeparatorItem, DropdownBoxRenderer) {
 	"use strict";
 
 
@@ -20,11 +27,11 @@ sap.ui.define(['jquery.sap.global', './ComboBox', './library', 'sap/ui/core/Hist
 	 * The control provides a field that allows end users to an entry out of a list of pre-defined items.
 	 * The choosable items can be provided in the form of a complete <code>ListBox</code>, single <code>ListItems</code>.
 	 * @extends sap.ui.commons.ComboBox
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
-	 * @deprecated Since version 1.38. Instead, use the <code>sap.m.ComboBox</code> control.
+	 * @deprecated as of version 1.38, replaced by {@link sap.m.ComboBox}
 	 * @alias sap.ui.commons.DropdownBox
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */

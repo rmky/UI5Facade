@@ -46,6 +46,11 @@
 			"theme": "sap_belize"
 		},
 		{
+			"name": "ColorPalette.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
 			"name": "ComboBoxBase.less",
 			"designtime": true,
 			"theme": "sap_belize"
@@ -296,6 +301,11 @@
 			"theme": "sap_belize"
 		},
 		{
+			"name": "SliderTooltip.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
 			"name": "SplitButton.less",
 			"designtime": true,
 			"theme": "sap_belize"
@@ -337,6 +347,11 @@
 		},
 		{
 			"name": "TimePicker.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "TimePickerSliders.less",
 			"designtime": true,
 			"theme": "sap_belize"
 		},

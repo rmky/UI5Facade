@@ -1,12 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.RatingIndicator.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/theming/Parameters', 'jquery.sap.keycodes'],
-	function(jQuery, library, Control, Parameters) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/theming/Parameters',
+	'./RatingIndicatorRenderer',
+	'jquery.sap.keycodes'
+],
+	function(jQuery, library, Control, Parameters, RatingIndicatorRenderer) {
 	"use strict";
 
 
@@ -43,7 +50,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -147,7 +154,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 				}
 			}
 		},
-		designTime: true
+		designtime: "sap/m/designtime/RatingIndicator.designtime"
 	}});
 
 	///**
@@ -221,7 +228,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	/**
 	 * Sets the icon size value. The method automatically updates the UI components if the control has been rendered before.
 	 *
-	 * @param {sap.ui.core.CSSSize} sIconSize
+	 * @param {sap.ui.core.CSSSize} sIconSize The size of the icon
 	 * @returns {sap.m.RatingIndicator} Returns <code>this</code> to facilitate method chaining.
 	 * @override
 	 * @public
@@ -315,7 +322,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	/**
 	 * get the form factor (Cozy/Compact/Condensed)
-	 *
+	 * @returns {string} The form factor
 	 * @private
 	 */
 	RatingIndicator.prototype._getDensityMode = function () {
@@ -336,7 +343,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	/**
 	 * Get icon size label
-	 *
+	 * @param {number} iPxIconSize The size of the icon in pixels
+	 * @returns {string} The icon size
 	 * @private
 	 */
 	RatingIndicator.prototype._getIconSizeLabel = function (iPxIconSize) {
@@ -423,7 +431,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	/**
 	 * Updates the ARIA values.
-	 *
+	 * @param {string} newValue The new ARIA value
 	 * @private
 	 */
 	RatingIndicator.prototype._updateAriaValues = function (newValue) {
@@ -737,7 +745,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	/**
 	 * Keyboard navigation event when the user presses Home.
 	 *
-	 * @param {jQuery.Event} oEvent
+	 * @param {jQuery.Event} oEvent oEvent The event object.
 	 * @private
 	 */
 	RatingIndicator.prototype.onsaphome = function (oEvent) {
@@ -748,7 +756,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	/**
 	 * Keyboard navigation event when the user presses End.
 	 *
-	 * @param {jQuery.Event} oEvent
+	 * @param {jQuery.Event} oEvent oEvent The event object.
 	 * @private
 	 */
 	RatingIndicator.prototype.onsapend = function (oEvent) {
@@ -777,7 +785,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	/**
 	 * Keyboard handling event when the user presses number keys.
 	 *
-	 * @param {jQuery.Event} oEvent
+	 * @param {jQuery.Event} oEvent oEvent The event object.
+	 * @returns {boolean} False, if the control is in read-only mode
 	 * @private
 	 */
 	RatingIndicator.prototype.onkeyup = function (oEvent) {
@@ -861,6 +870,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	/* =========================================================== */
 
 	/**
+ 	 * @returns {sap.m.RatingIndicator} this instance for method chaining
 	 * @see sap.ui.core.Control#getAccessibilityInfo
 	 * @protected
 	 */

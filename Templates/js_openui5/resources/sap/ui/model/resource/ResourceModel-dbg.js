@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -28,13 +28,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Mo
 	 * @extends sap.ui.model.Model
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @param {object} oData parameters used to initialize the ResourceModel; at least either bundle, bundleName or bundleUrl must be set on this object; if more than one is set, they will be used in the mentioned order
 	 * @param {string} [oData.bundleUrl] the URL to the base .properties file of a bundle (.properties file without any locale information, e.g. "mybundle.properties")
 	 * @param {string} [oData.bundleName] the UI5 module name of the .properties file; this name will be resolved to a path like the paths of normal UI5 modules and ".properties" will then be appended (e.g. a name like "myBundle" can be given)
 	 * @param {string} [oData.bundleLocale] an optional locale; when not given, the default is the active locale from the UI5 configuration
-	 * @param {string} [oData.bundle] an optional resource bundle; when given, the ResourceModel uses this bundle instead of creating another bundle using the provided bundleUrl, bundleName and bundleLocale
+	 * @param {string} [oData.bundle] an optional resource bundle; when given, the ResourceModel uses this bundle instead of creating another bundle using the provided bundleUrl, bundleName and bundleLocale.
 	 *                                To support reloading the bundle when the locale changes it is required to also provide the corresponding bundleName or bundleUrl. Otherwise the bundle isn't updated if only the bundle option is given.
 	 * @param {boolean} [oData.async=false] whether the language bundle should be loaded asynchronously
 	 * @public

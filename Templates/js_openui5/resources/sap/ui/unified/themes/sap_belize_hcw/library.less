@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -113,6 +113,11 @@ html.sap-desktop .sapUiCalItem:focus{
 	border: 0.125rem dotted @sapUiContentFocusColor;
 	line-height: 2.75rem;
 	outline: none;
+}
+
+html[data-sap-ui-browser^="ed"].sap-desktop .sapUiCalItem:focus,
+html[data-sap-ui-browser^="ie"].sap-desktop .sapUiCalItem:focus {
+	border-style: dashed;
 }
 
 html.sap-desktop .sapUiCalItem:hover > .sapUiCalItemText,
@@ -770,9 +775,6 @@ html.sap-desktop .sapUiCalendarApp:hover:not(:active) > .sapUiCalendarAppCont{
 /* Belize High Contrast White theme         */
 /* ======================================== */
 
-.sapUiUfdCurrencyCurrency {
-	width: 2rem;
-}
 /* END "Currency.less" */
 
 /* START "Menu.less" */
@@ -804,6 +806,16 @@ html.sap-desktop .sapUiCalendarApp:hover:not(:active) > .sapUiCalendarAppCont{
 
 .sapUiSizeCompact .sapUiMnuDiv {
   	height: 0.125rem;
+}
+
+.sapUiMnuItm:focus {
+	outline: 2px dotted @sapUiContentFocusColor;
+}
+
+html[data-sap-ui-browser*='ie'] {
+	.sapUiMnuItm:focus::before {
+		border: 2px dashed @sapUiContentFocusColor;
+	}
 }
 /* END "Menu.less" */
 

@@ -6,15 +6,18 @@
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Element.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/suite/TaskCircle.js" size="3357" compressedSize="1097">
+  <module name="sap/ui/suite/TaskCircle.js" size="3408" compressedSize="1122">
     <description>Provides control sap.ui.suite.TaskCircle.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/EnabledPropagator.js"/>
+      <module name="sap/ui/suite/TaskCircleRenderer.js"/>
       <module name="sap/ui/suite/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/suite/TaskCircleRenderer.js" size="3629" compressedSize="1728">
@@ -23,24 +26,27 @@
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Core.js"/>
       <module name="sap/ui/suite/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/suite/VerticalProgressIndicator.js" size="4402" compressedSize="1305">
+  <module name="sap/ui/suite/VerticalProgressIndicator.js" size="4496" compressedSize="1345">
     <description>Provides control sap.ui.suite.VerticalProgressIndicator.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/EnabledPropagator.js"/>
+      <module name="sap/ui/suite/VerticalProgressIndicatorRenderer.js"/>
       <module name="sap/ui/suite/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/suite/VerticalProgressIndicatorRenderer.js" size="2523" compressedSize="1177">
     <description>provides default renderer for sap.ui.suite.VerticalProgressIndicator</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/suite/library-preload.js" size="10387">
+  <module name="sap/ui/suite/library-h2-preload.js" size="2276">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Control.js"/>
@@ -48,6 +54,27 @@
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/core/EnabledPropagator.js"/>
       <module name="sap/ui/core/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+    <includes>
+      <module name="sap/ui/suite/library.js"/>
+      <module name="sap/ui/suite/manifest.json"/>
+      <module name="sap/ui/suite/QuickViewUtils.js"/>
+      <module name="sap/ui/suite/TaskCircle.js"/>
+      <module name="sap/ui/suite/TaskCircleRenderer.js"/>
+      <module name="sap/ui/suite/VerticalProgressIndicator.js"/>
+      <module name="sap/ui/suite/VerticalProgressIndicatorRenderer.js"/>
+    </includes>
+  </module>
+  <module name="sap/ui/suite/library-preload.js" size="10092">
+    <requires>
+      <module name="jquery.sap.global.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/core/Core.js"/>
+      <module name="sap/ui/core/Element.js"/>
+      <module name="sap/ui/core/EnabledPropagator.js"/>
+      <module name="sap/ui/core/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
       <module name="sap/ui/suite/QuickViewUtils.js"/>
@@ -68,6 +95,7 @@
       <module name="sap/ui/core/EnabledPropagator.js"/>
       <module name="sap/ui/core/library-preload.json"/>
       <module name="sap/ui/core/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
       <module name="sap/ui/suite/QuickViewUtils.js"/>
@@ -85,6 +113,7 @@
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Core.js"/>
       <module name="sap/ui/core/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/suite/manifest.json" size="972">

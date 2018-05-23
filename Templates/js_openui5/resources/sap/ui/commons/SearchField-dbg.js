@@ -1,12 +1,37 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.commons.SearchField.
-sap.ui.define(['jquery.sap.global', './ComboBox', './ComboBoxRenderer', './ListBox', './TextField', './TextFieldRenderer', './library', 'sap/ui/core/Control', 'sap/ui/core/History', 'sap/ui/core/Renderer', 'jquery.sap.dom'],
-	function(jQuery, ComboBox, ComboBoxRenderer, ListBox, TextField, TextFieldRenderer, library, Control, History, Renderer/*, DOM*/) {
+sap.ui.define([
+    'jquery.sap.global',
+    './ComboBox',
+    './ComboBoxRenderer',
+    './ListBox',
+    './TextField',
+    './TextFieldRenderer',
+    './library',
+    'sap/ui/core/Control',
+    'sap/ui/core/History',
+    'sap/ui/core/Renderer',
+    "./SearchFieldRenderer",
+    'jquery.sap.dom'
+],
+	function(
+	    jQuery,
+		ComboBox,
+		ComboBoxRenderer,
+		ListBox,
+		TextField,
+		TextFieldRenderer,
+		library,
+		Control,
+		History,
+		Renderer/*, DOM*/,
+		SearchFieldRenderer
+	) {
 	"use strict";
 
 
@@ -23,7 +48,7 @@ sap.ui.define(['jquery.sap.global', './ComboBox', './ComboBoxRenderer', './ListB
 	 * @implements sap.ui.commons.ToolbarItem
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

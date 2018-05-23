@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.layout.form.GridLayout.
-sap.ui.define(['jquery.sap.global', './FormLayout', './GridContainerData', './GridElementData', 'sap/ui/layout/library'],
-	function(jQuery, FormLayout, GridContainerData, GridElementData, library) {
+sap.ui.define(['jquery.sap.global', './FormLayout', 'sap/ui/layout/library', './GridLayoutRenderer'],
+	function(jQuery, FormLayout, library, GridLayoutRenderer) {
 	"use strict";
 
 	/**
@@ -29,7 +29,7 @@ sap.ui.define(['jquery.sap.global', './FormLayout', './GridContainerData', './Gr
 	 * @extends sap.ui.layout.form.FormLayout
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -234,7 +234,7 @@ sap.ui.define(['jquery.sap.global', './FormLayout', './GridContainerData', './Gr
 		if (this.getDomRef()) {
 			var bSingleColumn = this.getSingleColumn();
 			var oContainer = oElement.getParent();
-			var oContainerData = this.getLayoutDataForElement(oContainer, "sap.ui.layout.form.GridContainerData");
+			var oContainerData = this.getLayoutDataForElement(oContainer, "sap/ui/layout/form/GridContainerData");
 
 			if ((bSingleColumn || !oContainerData || !oContainerData.getHalfGrid()) && !this.getRenderer().checkFullSizeElement(this, oElement) ) {
 				return jQuery.sap.domById(oElement.getId());

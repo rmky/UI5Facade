@@ -1,12 +1,22 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.uxap.ObjectPageDynamicHeaderTitle.
-sap.ui.define(['jquery.sap.global', './library', 'sap/uxap/ObjectPageDynamicHeaderContent'],
-	function(jQuery, library, ObjectPageDynamicHeaderContent) {
+sap.ui.define([
+    'jquery.sap.global',
+    './library',
+    'sap/uxap/ObjectPageDynamicHeaderContent',
+    "./ObjectPageDynamicHeaderTitleRenderer"
+],
+	function(
+	    jQuery,
+		library,
+		ObjectPageDynamicHeaderContent,
+		ObjectPageDynamicHeaderTitleRenderer
+	) {
 		"use strict";
 
 		try {
@@ -19,24 +29,36 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/uxap/ObjectPageDynamicHead
 		var DynamicPageTitle = sap.ui.requireSync("sap/f/DynamicPageTitle");
 
 		/**
-		 * Constructor for a new <code>ObjectPageDynamicHeaderTitle<code>.
+		 * Constructor for a new <code>ObjectPageDynamicHeaderTitle</code>.
 		 *
 		 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
 		 * @param {object} [mSettings] Initial settings for the new control
 		 *
 		 * @class
-		 * Dynamic title for the {@link sap.uxap.ObjectPageLayout ObjectPage}.
+		 * Represents the static part (header title) of the dynamic header of the {@link sap.uxap.ObjectPageLayout}.
+		 *
+		 * <h3>Overview</h3>
+		 *
+		 * The <code>ObjectPageDynamicHeaderTitle</code> is used to represent the most important details of
+		 * the displayed business object, such as the object title and actions that the user can perform.
+		 *
+		 *<b>Note:</b> The <code>ObjectPageDynamicHeaderTitle</code> is meant to be used inside the <code>ObjectPageLayout</code>
+		 * control. Any other usage is not supported and can lead to unexpected behavior.
+		 *
 		 * @extends sap.f.DynamicPageTitle
 		 * @implements sap.uxap.IHeaderTitle
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
 		 * @alias sap.uxap.ObjectPageDynamicHeaderTitle
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 * @since 1.52
+		 * @see {@link topic:6e340c119ddd4c778b315f65a0432420 Object Page Dynamic Header}
+		 * @see {@link topic:d2ef0099542d44dc868719d908e576d0 Object Page Headers}
+		 * @see {@link topic:9c9d94fd28284539a9a5a57e9caf82a8 Object Page Headers Comparison}
 		 */
 		var ObjectPageDynamicHeaderTitle = DynamicPageTitle.extend("sap.uxap.ObjectPageDynamicHeaderTitle", /** @lends sap.uxap.ObjectPageDynamicHeaderTitle.prototype */ { metadata : {
 
@@ -102,15 +124,15 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/uxap/ObjectPageDynamicHead
 		/**
 		 * Required by the {@link sap.uxap.IHeaderTitle} interface.
 		 */
-		ObjectPageDynamicHeaderTitle.prototype.snap = function () {
-			this._toggleState(false);
+		ObjectPageDynamicHeaderTitle.prototype.snap = function (bUserInteraction) {
+			this._toggleState(false, bUserInteraction);
 		};
 
 		/**
 		 * Required by the {@link sap.uxap.IHeaderTitle} interface.
 		 */
-		ObjectPageDynamicHeaderTitle.prototype.unSnap = function () {
-			this._toggleState(true);
+		ObjectPageDynamicHeaderTitle.prototype.unSnap = function (bUserInteraction) {
+			this._toggleState(true, bUserInteraction);
 		};
 
 		/**

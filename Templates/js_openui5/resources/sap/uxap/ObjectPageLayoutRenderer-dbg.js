@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -56,6 +56,7 @@ sap.ui.define(["sap/ui/Device"],
 			oRm.write("<header ");
 			oRm.writeAttribute("role", "banner");
 			oRm.writeAttributeEscaped("id", oControl.getId() + "-headerTitle");
+			oRm.writeAttribute("data-sap-ui-customfastnavgroup", true);
 			oRm.addClass("sapUxAPObjectPageHeaderTitle");
 			oRm.addClass("sapContrastPlus");
 			oRm.writeClasses();

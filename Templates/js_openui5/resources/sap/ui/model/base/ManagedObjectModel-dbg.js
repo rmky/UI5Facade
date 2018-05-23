@@ -1,11 +1,11 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'jquery.sap.global', '../Binding', '../json/JSONModel', '../json/JSONPropertyBinding', '../json/JSONListBinding', 'sap/ui/base/ManagedObject', 'sap/ui/base/ManagedObjectObserver', '../Context', '../ChangeReason'
-], function(jQuery, Binding, JSONModel, JSONPropertyBinding, JSONListBinding, ManagedObject, ManagedObjectObserver, Context, ChangeReason) {
+	'jquery.sap.global', '../json/JSONModel', '../json/JSONPropertyBinding', '../json/JSONListBinding', 'sap/ui/base/ManagedObject', 'sap/ui/base/ManagedObjectObserver', '../Context', '../ChangeReason'
+], function(jQuery, JSONModel, JSONPropertyBinding, JSONListBinding, ManagedObject, ManagedObjectObserver, Context, ChangeReason) {
 	"use strict";
 
 	var ManagedObjectModelAggregationBinding = JSONListBinding.extend("sap.ui.model.base.ManagedObjectModelAggregationBinding"),
@@ -504,6 +504,22 @@ sap.ui.define([
 	};
 
 	ManagedObjectModel.prototype.observerChanges = function(oChange) {
+		if (oChange.type == "aggregation") {
+			if (oChange.mutation == "insert") {
+				// listen to inner changes
+				this._oObserver.observe(oChange.child, {
+					properties: true,
+					aggegations: true
+				});
+			} else {
+				// stop listening inner changes
+				this._oObserver.unobserve(oChange.child, {
+					properties: true,
+					aggegations: true
+				});
+			}
+		}
+
 		this.checkUpdate();
 	};
 

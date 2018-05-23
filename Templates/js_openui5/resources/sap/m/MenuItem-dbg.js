@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,7 +23,7 @@ sap.ui.define(['./library', 'sap/ui/core/Item'],
 		 * @extends sap.ui.core.Item
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -161,6 +161,16 @@ sap.ui.define(['./library', 'sap/ui/core/Item'],
 		MenuItem.prototype.destroyAggregation = function(sAggregationName, bSuppressInvalidate) {
 			this.fireEvent("aggregationChanged", { aggregationName: sAggregationName, methodName: "destroy"});
 			return Item.prototype.destroyAggregation.apply(this, arguments);
+		};
+
+		MenuItem.prototype.destroy = function() {
+			var oVisualControl = sap.ui.getCore().byId(this._getVisualControl());
+
+			if (oVisualControl) {
+				oVisualControl.destroy();
+			}
+
+			return Item.prototype.destroy.apply(this, arguments);
 		};
 
 		//Internal methods used to identify the item in the Menu's hierarchy.

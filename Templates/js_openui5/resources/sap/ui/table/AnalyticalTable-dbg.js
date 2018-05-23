@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @see http://scn.sap.com/docs/DOC-44986
 	 *
 	 * @extends sap.ui.table.Table
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -116,7 +116,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 			 */
 			dirty : {type : "boolean", group : "Appearance", defaultValue : null, deprecated: true}
 		},
-		designTime : true
+		designtime: "sap/ui/table/designtime/AnalyticalTable.designtime"
 	}, renderer: "sap.ui.table.TableRenderer"});
 
 	/**
@@ -272,6 +272,12 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 
 		// Create the binding.
 		Table.prototype._bindAggregation.call(this, sName, oBindingInfo);
+
+		if (sName === "rows") {
+			TableUtils.Binding.metadataLoaded(this).then(function() {
+				this._updateColumns(true);
+			}.bind(this));
+		}
 	};
 
 	/**
@@ -643,45 +649,6 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 		}
 	};
 
-	AnalyticalTable.prototype.expand = function(iRowIndex) {
-		var oBinding = this.getBinding("rows");
-		if (oBinding) {
-			oBinding.expand(iRowIndex);
-		}
-	};
-
-	AnalyticalTable.prototype.collapse = function(iRowIndex) {
-		var oBinding = this.getBinding("rows");
-		if (oBinding) {
-			oBinding.collapse(iRowIndex);
-		}
-	};
-
-	/**
-	 * Collapses all nodes (and lower if collapseRecursive is activated)
-	 *
-	 * @returns {sap.ui.table.AnalyticalTable} a reference on the <code>AnalyticalTable</code> control, can be used for chaining
-	 * @public
-	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
-	 */
-	AnalyticalTable.prototype.collapseAll = function () {
-		var oBinding = this.getBinding("rows");
-		if (oBinding) {
-			oBinding.collapseToLevel(0);
-			this.setFirstVisibleRow(0);
-		}
-
-		return this;
-	};
-
-	AnalyticalTable.prototype.isExpanded = function(iRowIndex) {
-		var oBinding = this.getBinding("rows");
-		if (oBinding) {
-			return oBinding.isExpanded(iRowIndex);
-		}
-		return false;
-	};
-
 	/**
 	 * Returns the context of a row by its index.
 	 *
@@ -793,6 +760,12 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 		if (!this._bSuspendUpdateAnalyticalInfo) {
 			this._updateTableColumnDetails();
 			this.updateAnalyticalInfo(bSuppressRefresh, bForceChange);
+
+			if (this.bOutput) {
+				// If the table was already rendered if the column information has been updated, it needs to be invalidated. The necessity to render
+				// certain columns might have changed.
+				this.invalidate();
+			}
 		}
 	};
 
@@ -1152,6 +1125,45 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @function
 	 */
 	AnalyticalTable.prototype.clearSelection = TreeTable.prototype.clearSelection;
+
+	/**
+	 * Expands one or more rows.
+	 *
+	 * @param {int|int[]} vRowIndex A single index or an array of indices of the rows to be expanded
+	 * @returns {sap.ui.table.AnalyticalTable} <code>this</code> to allow method chaining
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	AnalyticalTable.prototype.expand = TreeTable.prototype.expand;
+
+	/**
+	 * Collapses one or more rows.
+	 *
+	 * @param {int|int[]} vRowIndex A single index, or an array of indices of the rows to be collapsed
+	 * @returns {sap.ui.table.AnalyticalTable} <code>this</code> to allow method chaining
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	AnalyticalTable.prototype.collapse = TreeTable.prototype.collapse;
+
+	/**
+	 * Collapses all nodes (and their child nodes if collapseRecursive is activated).
+	 *
+	 * @returns {sap.ui.table.AnalyticalTable} <code>this</code> to allow method chaining
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	AnalyticalTable.prototype.collapseAll = TreeTable.prototype.collapseAll;
+
+	/**
+	 * Checks whether the row is expanded or collapsed.
+	 *
+	 * @param {int} iRowIndex The index of the row to be checked
+	 * @returns {boolean} <code>true</code> if the row is expanded, <code>false</code> if it is collapsed
+	 * @public
+	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	AnalyticalTable.prototype.isExpanded = TreeTable.prototype.isExpanded;
 
 	AnalyticalTable.prototype._isRowSelectable = function(iRowIndex) {
 		var oBinding = this.getBinding("rows");

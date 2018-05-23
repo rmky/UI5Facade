@@ -331,6 +331,11 @@
 			"theme": "sap_bluecrystal"
 		},
 		{
+			"name": "TimePickerSliders.less",
+			"designtime": true,
+			"theme": "sap_bluecrystal"
+		},
+		{
 			"name": "Title.less",
 			"designtime": true,
 			"theme": "sap_bluecrystal"

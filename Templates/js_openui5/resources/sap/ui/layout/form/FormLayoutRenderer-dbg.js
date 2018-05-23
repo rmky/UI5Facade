@@ -1,11 +1,11 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/layout/library", "sap/ui/core/library"],
-	function(library, coreLibrary) {
+sap.ui.define(["sap/ui/layout/library", "sap/ui/core/library", "sap/ui/core/theming/Parameters", "sap/ui/layout/form/Form"],
+	function(library, coreLibrary, themingParameters, Form) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TitleLevel
@@ -32,7 +32,7 @@ sap.ui.define(["sap/ui/layout/library", "sap/ui/core/library"],
 		var rm = oRenderManager;
 
 		var oForm = oLayout.getParent();
-		if (oForm && oForm instanceof sap.ui.layout.form.Form) {
+		if (oForm && oForm instanceof Form) {
 			this.renderForm(rm, oLayout, oForm);
 		}
 
@@ -63,7 +63,7 @@ sap.ui.define(["sap/ui/layout/library", "sap/ui/core/library"],
 		if (oToolbar) {
 			rm.renderControl(oToolbar);
 		} else {
-			var sSize = sap.ui.core.theming.Parameters.get('sap.ui.layout.FormLayout:_sap_ui_layout_FormLayout_FormTitleSize');
+			var sSize = themingParameters.get('sap.ui.layout.FormLayout:_sap_ui_layout_FormLayout_FormTitleSize');
 			this.renderTitle(rm, oForm.getTitle(), undefined, false, sSize, oForm.getId());
 		}
 
@@ -190,7 +190,7 @@ sap.ui.define(["sap/ui/layout/library", "sap/ui/core/library"],
 
 		if (oTitle) {
 			//determine title level -> if not set use H4 as default
-			var sLevel = sap.ui.core.theming.Parameters.get('sap.ui.layout.FormLayout:_sap_ui_layout_FormLayout_FormSubTitleSize');
+			var sLevel = themingParameters.get('sap.ui.layout.FormLayout:_sap_ui_layout_FormLayout_FormSubTitleSize');
 			if (sLevelDefault) {
 				sLevel = sLevelDefault;
 			}

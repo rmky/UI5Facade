@@ -1,6 +1,6 @@
 /*
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,6 +10,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	"use strict";
 
 	/*global Promise */
+
+	// TODO: dependency to sap/ui/core/library not possible due to cyclic dependency
+	var ViewType = {
+		JSON: "JSON",
+		XML: "XML",
+		HTML: "HTML",
+		JS: "JS",
+		Template: "Template"
+	};
 
 	/**
 	 * Utility function which adds SAP-specific parameters to a URI instance
@@ -179,7 +188,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	 * @extends sap.ui.base.ManagedObject
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @alias sap.ui.core.Component
 	 * @since 1.9.2
 	 */
@@ -643,6 +652,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 			this.getMetadata().exit();
 		} else {
 			this._oManifest.exit(this);
+			delete this._oManifest;
 		}
 
 	};
@@ -695,7 +705,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 		var oManifestModels = this._getManifestEntry("/sap.ui5/models", true) || {};
 
 		// pass the models and data sources to the internal helper
-		this._initComponentModels(oManifestModels, oManifestDataSources);
+		this._initComponentModels(oManifestModels, oManifestDataSources, this._mCacheTokens);
 
 	};
 
@@ -705,17 +715,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	 *
 	 * @param {object} mModels models configuration from manifest.json
 	 * @param {object} mDataSources data sources configuration from manifest.json
+	 * @param {object} mCacheTokens cache tokens for OData models
 	 *
 	 * @private
 	 */
-	Component.prototype._initComponentModels = function(mModels, mDataSources) {
+	Component.prototype._initComponentModels = function(mModels, mDataSources, mCacheTokens) {
 
 		var mAllModelConfigurations = Component._createManifestModelConfigurations({
 			models: mModels,
 			dataSources: mDataSources,
 			component: this,
 			mergeParent: true,
-			cacheTokens: this._mCacheTokens
+			cacheTokens: mCacheTokens
 		});
 
 		if (!mAllModelConfigurations) {
@@ -1062,7 +1073,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	 *
 	 * @param {string} sMessage The error message.
 	 * @param {string} sFile File where the error occurred
-	 * @param {number} iLine Line number of the error
+	 * @param {int} iLine Line number of the error
 	 * @public
 	 * @since 1.15.1
 	 * @name sap.ui.core.Component.prototype.onWindowError
@@ -1680,6 +1691,72 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 		return mModelConfigs;
 	}
 
+	function loadManifests(oRootMetadata, oRootManifest) {
+		var aManifestsToLoad = [];
+		var aMetadataObjects = [];
+
+		/**
+		 * Collects the promises to load the manifest content and all of its parents manifest files.
+		 *
+		 * Gathers promises within aManifestsToLoad.
+		 * Gathers associates meta data objects within aMetadataObjects.
+		 * @param {object} oMetadata The metadata object
+		 * @param {sap.ui.core.Manifest} [oManifest] root manifest, which is possibly already loaded
+		 */
+		function collectLoadManifestPromises(oMetadata, oManifest) {
+			// ComponentMetadata classes with a static manifest or with legacy metadata
+			// do already have a manifest, so no action required
+			if (!oMetadata._oManifest) {
+				// TODO: If the "manifest" property is set, the code to load the manifest.json could be moved up to run in
+				// parallel with the ResourceModels that are created (after the Component-preload has finished) to trigger
+				// a potential request a bit earlier. Right now the whole component loading would be delayed by the async request.
+
+				var sName = oMetadata.getComponentName();
+				var sDefaultManifestUrl = jQuery.sap.getModulePath(sName, "/manifest.json");
+
+				var pLoadManifest;
+				if (oManifest) {
+					// Apply a copy of the already loaded manifest to be used by the static metadata class
+					pLoadManifest = Promise.resolve(JSON.parse(JSON.stringify(oManifest.getRawJson())));
+				} else {
+					// We need to load the manifest.json for the metadata class as
+					// it might differ from the one already loaded
+					// If the manifest.json is part of the Component-preload it will be taken from there
+					pLoadManifest = jQuery.sap.loadResource({
+						url: sDefaultManifestUrl,
+						dataType: "json",
+						async: true
+					}).catch(function(oError) {
+						jQuery.sap.log.error(
+							"Failed to load component manifest from \"" + sDefaultManifestUrl + "\" (component " + sName
+							+ ")! Reason: " + oError
+						);
+
+						// If the request fails, ignoring the error would end up in a sync call, which would fail, too.
+						return {};
+					});
+				}
+				aManifestsToLoad.push(pLoadManifest);
+				aMetadataObjects.push(oMetadata);
+			}
+
+			var oParentMetadata = oMetadata.getParent();
+			if (oParentMetadata && (oParentMetadata instanceof ComponentMetadata) && !oParentMetadata.isBaseClass()) {
+				collectLoadManifestPromises(oParentMetadata);
+			}
+		}
+
+		collectLoadManifestPromises(oRootMetadata, oRootManifest);
+
+		return Promise.all(aManifestsToLoad).then(function(aManifestJson) {
+			// Inject the manifest into the metadata class
+			for (var i = 0; i < aManifestJson.length; i++) {
+				if (aManifestJson[i]) {
+					aMetadataObjects[i]._applyManifest(aManifestJson[i]);
+				}
+			}
+		});
+	}
 
 	/**
 	 * Callback handler which will be executed once the component is loaded. A copy of the
@@ -1887,7 +1964,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	 * Load a Component without instantiating it.
 	 *
 	 * Provides support for loading Components asynchronously by setting
-	 * <code>oConfig.async</code> to true. In that case, the method returns a Javascript 6
+	 * <code>oConfig.async</code> to true. In that case, the method returns a JavaScript 6
 	 * Promise that will be fulfilled with the component class after loading.
 	 *
 	 * Using <code>async = true</code> doesn't necessarily mean that no more synchronous loading
@@ -2039,7 +2116,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 		// the Components' modules namespace
 		if (bManifestFirst && !oManifest) {
 			oManifest = Manifest.load({
-				manifestUrl: jQuery.sap.getModulePath(sName) + "/manifest.json",
+				manifestUrl: jQuery.sap.getModulePath(sName, "/manifest.json"),
 				componentName: sName,
 				async: oConfig.async,
 				failOnError: false
@@ -2131,13 +2208,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 		function preload(sComponentName, bAsync) {
 
 			var sController = sComponentName + '.Component',
+				http2 = sap.ui.getCore().getConfiguration().getDepCache(),
 				sPreloadName;
 
 			// only load the Component-preload file if the Component module is not yet available
 			if ( bComponentPreload && sComponentName != null && !jQuery.sap.isDeclared(sController, /* bIncludePreloaded=*/ true) ) {
 
 				if ( bAsync ) {
-					sPreloadName = jQuery.sap.getResourceName(sController, '-preload.js'); // URN
+					sPreloadName = jQuery.sap.getResourceName(sController, http2 ? '-h2-preload.js' : '-preload.js'); // URN
 					return jQuery.sap._loadJSResourceAsync(sPreloadName, true);
 				}
 
@@ -2433,11 +2511,111 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 				return new Promise(function(resolve, reject) {
 					// asynchronously require component controller class
 					sap.ui.require( [ getControllerModuleName() ], function(oClass) {
+						// Directly resolve as otherwise uncaught exceptions can't be handled
+						resolve(oClass);
+					});
+				}).then(function(oClass) {
+					var oMetadata = oClass.getMetadata();
+					var sName = oMetadata.getComponentName();
+					var sDefaultManifestUrl = jQuery.sap.getModulePath(sName, "/manifest.json");
+					var pLoaded;
+
+					// Check if we loaded the manifest.json from the default location
+					// In this case it can be directly passed to its metadata class to prevent an additional request
+					if (oManifest && typeof vManifest !== "object" && (typeof sManifestUrl === "undefined" || sManifestUrl === sDefaultManifestUrl)) {
+						pLoaded = loadManifests(oMetadata, oManifest);
+					} else {
+						pLoaded = loadManifests(oMetadata);
+					}
+
+					return pLoaded.then(function() {
 						// prepare the loaded class and resolve with it
-						resolve( prepareControllerClass(oClass) );
+						return prepareControllerClass(oClass);
 					});
 				});
+			}).then(function(oControllerClass) {
+				if (!oManifest) {
+					return oControllerClass;
+				}
 
+				// Load all modules derived from "/sap.ui5" manifest entries asynchronously (if underlaying loader supports it)
+				// Note: this does not load modules declared / derived from parent manifests (e.g. extension scenario)
+				var aModuleNames = [];
+
+				// lookup rootView class
+				var sRootViewType;
+				var oRootView = oManifest.getEntry("/sap.ui5/rootView");
+				if (typeof oRootView === "string") {
+					// String as rootView defaults to ViewType XML
+					// See: UIComponent#createContent and UIComponentMetadata#_convertLegacyMetadata
+					sRootViewType = "XML";
+				} else if (oRootView && typeof oRootView === "object" && oRootView.type) {
+					sRootViewType = oRootView.type;
+				}
+				if (sRootViewType && ViewType[sRootViewType]) {
+					var sViewClass = "sap/ui/core/mvc/" + ViewType[sRootViewType] + "View";
+					aModuleNames.push(sViewClass);
+				}
+
+				// lookup router class
+				var oRouting = oManifest.getEntry("/sap.ui5/routing");
+				if (oRouting && oRouting.routes) {
+					var sRouterClass = oManifest.getEntry("/sap.ui5/routing/config/routerClass") || "sap.ui.core.routing.Router";
+					var sRouterClassModule = jQuery.sap.getResourceName(sRouterClass, "");
+					aModuleNames.push(sRouterClassModule);
+				}
+
+				// lookup model classes
+				var mManifestModels = jQuery.extend(true, {}, oManifest.getEntry("/sap.ui5/models"));
+				var mManifestDataSources = jQuery.extend(true, {}, oManifest.getEntry("/sap.app/dataSources"));
+				var mAllModelConfigurations = Component._createManifestModelConfigurations({
+					models: mManifestModels,
+					dataSources: mManifestDataSources,
+					manifest: oManifest,
+					cacheTokens: hints.cacheTokens
+				});
+				for (var mModelName in mAllModelConfigurations) {
+					if (!mAllModelConfigurations.hasOwnProperty(mModelName)) {
+						continue;
+					}
+					var oModelConfig = mAllModelConfigurations[mModelName];
+					if (!oModelConfig.type) {
+						continue;
+					}
+					var sModuleName = jQuery.sap.getResourceName(oModelConfig.type, "");
+					if (aModuleNames.indexOf(sModuleName) === -1) {
+						aModuleNames.push(sModuleName);
+					}
+				}
+
+				if (aModuleNames.length > 0) {
+					return Promise.all(aModuleNames.map(function(sModuleName) {
+						// All modules are required separately to have a better error logging.
+						// This "preloading" is done for optimization to enable async loading
+						// in case the underlaying loader supports it. If loading fails, the component
+						// should still be created which might fail once the required module is actually used / loaded
+						return new Promise(function(resolve, reject) {
+							var bResolved = false;
+							function logErrorAndResolve(err) {
+								if (bResolved) {
+									return;
+								}
+								jQuery.sap.log.warning("Can not preload module \"" + sModuleName + "\". " +
+									"This will most probably cause an error once the module is used later on.",
+									oManifest.getComponentName(), "sap.ui.core.Component");
+								jQuery.sap.log.warning(err);
+
+								bResolved = true;
+								resolve();
+							}
+							sap.ui.require([sModuleName], resolve, logErrorAndResolve);
+						});
+					})).then(function() {
+						return oControllerClass;
+					});
+				} else {
+					return oControllerClass;
+				}
 			}).then(function(oControllerClass) {
 				var waitFor = mOptions.waitFor;
 				if (waitFor) {

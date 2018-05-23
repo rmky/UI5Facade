@@ -1,15 +1,29 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.FlexBox.
-sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', './FlexItemData', './library', 'sap/ui/core/Control', 'sap/ui/core/RenderManager'],
-	function(jQuery, FlexBoxStylingHelper, FlexItemData, library, Control, RenderManager) {
-		"use strict";
-
-
+sap.ui.define([
+	'jquery.sap.global',
+	'./FlexBoxStylingHelper',
+	'./FlexItemData',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/RenderManager',
+	'./FlexBoxRenderer'
+],
+function(
+	jQuery,
+	FlexBoxStylingHelper,
+	FlexItemData,
+	library,
+	Control,
+	RenderManager,
+	FlexBoxRenderer
+) {
+	"use strict";
 
 	// shortcut for sap.m.BackgroundDesign
 	var BackgroundDesign = library.BackgroundDesign;
@@ -50,11 +64,13 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', './FlexItemData', 
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.m.FlexBox
+	 * @see https://www.w3.org/TR/css-flexbox-1/
+	 * @see https://www.w3schools.com/css/css3_flexbox.asp
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var FlexBox = Control.extend("sap.m.FlexBox", /** @lends sap.m.FlexBox.prototype */ { metadata : {
@@ -147,11 +163,11 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', './FlexItemData', 
 			 */
 			items : {type : "sap.ui.core.Control", multiple : true, singularName : "item"}
 		},
-		designTime : true
+		designtime: "sap/m/designtime/FlexBox.designtime"
 	}});
 
 	/**
-	 * Initiates the control.
+	 * Initializes the control.
 	 *
 	 * @name sap.m.FlexBox.init
 	 * @method
@@ -178,7 +194,7 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', './FlexItemData', 
 	 * @method
 	 * @public
 	 * @param {object} oItem Added item.
-	 * @returns {sap.m.FlexBox} this FlexBox reference for chaining.
+	 * @returns {sap.m.FlexBox} <code>this</code> FlexBox reference for chaining.
 	 */
 	FlexBox.prototype.addItem = function(oItem) {
 		this.addAggregation("items", oItem);
@@ -195,7 +211,7 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', './FlexItemData', 
 	 * @public
 	 * @param {object} oItem Inserted item.
 	 * @param {int} iIndex Index of the inserted item.
-	 * @returns {sap.m.FlexBox} this FlexBox reference for chaining.
+	 * @returns {sap.m.FlexBox} <code>this</code> FlexBox reference for chaining.
 	 */
 	FlexBox.prototype.insertItem = function(oItem, iIndex) {
 		this.insertAggregation("items", oItem, iIndex);
@@ -327,7 +343,7 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', './FlexItemData', 
 	 * @method
 	 * @public
 	 * @param {string} sValue Render type in string format.
-	 * @returns {sap.m.FlexBox} this FlexBox reference for chaining.
+	 * @returns {sap.m.FlexBox} <code>this</code> FlexBox reference for chaining.
 	 */
 	FlexBox.prototype.setRenderType = function(sValue) {
 		var sOldValue = this.getRenderType(),
@@ -357,7 +373,7 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', './FlexItemData', 
 	 * @method
 	 * @public
 	 * @param {boolean} bInline Indication for display inline.
-	 * @returns {sap.m.FlexBox} this FlexBox reference for chaining.
+	 * @returns {sap.m.FlexBox} <code>this</code> FlexBox reference for chaining.
 	 */
 	FlexBox.prototype.setDisplayInline = function(bInline) {
 		this.setProperty("displayInline", bInline, true);
@@ -373,7 +389,7 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', './FlexItemData', 
 	 * @method
 	 * @public
 	 * @param {string} sValue FlexBox direction in string format.
-	 * @returns {sap.m.FlexBox} this FlexBox reference for chaining.
+	 * @returns {sap.m.FlexBox} <code>this</code> FlexBox reference for chaining.
 	 */
 	FlexBox.prototype.setDirection = function(sValue) {
 		this.setProperty("direction", sValue, true);
@@ -393,13 +409,13 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', './FlexItemData', 
 	};
 
 	/**
-	 * Sets fitContainer so you can have nested FlexBox containers in columns or rows.
+	 * Sets <code>fitContainer</code> so you can have nested FlexBox containers in columns or rows.
 	 *
 	 * @name sap.m.FlexBox.setFitContainer
 	 * @method
 	 * @public
 	 * @param {string} sValue Fit container in string format.
-	 * @returns {sap.m.FlexBox} this FlexBox reference for chaining.
+	 * @returns {sap.m.FlexBox} <code>this</code> FlexBox reference for chaining.
 	 */
 	FlexBox.prototype.setFitContainer = function(sValue) {
 		this.setProperty("fitContainer", sValue, true);
@@ -415,7 +431,7 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', './FlexItemData', 
 	 * @method
 	 * @public
 	 * @param {string} sValue Wrapping in the flexbox.
-	 * @returns {sap.m.FlexBox} this FlexBox reference for chaining.
+	 * @returns {sap.m.FlexBox} <code>this</code> FlexBox reference for chaining.
 	 */
 	FlexBox.prototype.setWrap = function(sValue) {
 		var sOldValue = this.getWrap();
@@ -426,7 +442,7 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', './FlexItemData', 
 	};
 
 	/**
-	 * Sets the justifyContent - it can be flex-start, flex-end, center, space-between, space-around, space-evenly.
+	 * Sets the <code>justifyContent</code> - it can be flex-start, flex-end, center, space-between, space-around, space-evenly.
 	 *
 	 * @name sap.m.FlexBox.setJustifyContent
 	 * @method

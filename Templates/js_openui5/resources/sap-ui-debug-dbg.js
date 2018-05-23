@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.predefine('sap/ui/debug/ControlTree',['jquery.sap.global','sap/ui/base/EventProvider','sap/ui/core/Element','sap/ui/core/UIArea','./Highlighter'],function(q,E,a,U,H){"use strict";
@@ -47,9 +47,9 @@ L.NO_FILTER=function(l){return true;};
 L.prototype.clear=function(){this.oDomNode.innerHTML="";};
 L.xmlEscape=function(t){t=t.replace(/\&/g,"&amp;");t=t.replace(/\</g,"&lt;");t=t.replace(/\"/g,"&quot;");return t;};
 L.prototype.addEntry=function(l){var d=this.oWindow.document.createElement("div");if(this.sLogEntryClassPrefix){d.className=this.sLogEntryClassPrefix+l.level;}else{d.style.overflow="hidden";d.style.textOverflow="ellipsis";d.style.height="1.3em";d.style.width="100%";d.style.whiteSpace="noWrap";}var t=L.xmlEscape(l.time+"  "+l.message),T=this.oWindow.document.createTextNode(t);d.appendChild(T);d.title=l.message;d.style.display=this.oFilter(t)?"":"none";this.oDomNode.appendChild(d);return d;};
-L.prototype.fillFromLogger=function(f){this.clear();this.iFirstEntry=f;if(!this.oLogger){return;}var a=this.oLogger.getLog();for(var i=this.iFirstEntry,l=a.length;i<l;i++){if(a[i].level<=this.iLogLevel){this.addEntry(a[i]);}}this.scrollToBottom();};
+L.prototype.fillFromLogger=function(f){this.clear();this.iFirstEntry=f;if(!this.oLogger){return;}var a=this.oLogger.getLogEntries();for(var i=this.iFirstEntry,l=a.length;i<l;i++){if(a[i].level<=this.iLogLevel){this.addEntry(a[i]);}}this.scrollToBottom();};
 L.prototype.scrollToBottom=function(){this.oDomNode.scrollTop=this.oDomNode.scrollHeight;};
-L.prototype.truncate=function(){this.clear();this.fillFromLogger(this.oLogger.getLog().length);};
+L.prototype.truncate=function(){this.clear();this.fillFromLogger(this.oLogger.getLogEntries().length);};
 L.prototype.setFilter=function(f){this.oFilter=f=f||L.NO_FILTER;var c=this.oDomNode.childNodes;for(var i=0,l=c.length;i<l;i++){var t=c[i].innerText;if(!t){t=c[i].innerHTML;}c[i].style.display=f(t)?"":"none";}this.scrollToBottom();};
 L.prototype.setLogLevel=function(l){this.iLogLevel=l;if(this.oLogger){this.oLogger.setLevel(l);}this.fillFromLogger(this.iFirstEntry);};
 L.prototype.lock=function(){this.bLocked=true;};

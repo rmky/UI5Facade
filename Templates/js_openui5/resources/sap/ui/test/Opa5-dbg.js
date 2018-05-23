@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,42 +10,38 @@ sap.ui.define([
 		'./OpaPlugin',
 		'./PageObjectFactory',
 		'sap/ui/base/Object',
-		'sap/ui/Device',
 		'./launchers/iFrameLauncher',
 		'./launchers/componentLauncher',
 		'sap/ui/core/routing/HashChanger',
 		'./matchers/Matcher',
 		'./matchers/AggregationFilled',
 		'./matchers/PropertyStrictEquals',
-		'./pipelines/MatcherPipeline',
 		'./pipelines/ActionPipeline',
 		'./_ParameterValidator',
-		'./_LogCollector',
 		'./_OpaLogger',
 		'sap/ui/thirdparty/URI',
 		'sap/ui/base/EventProvider',
-		'sap/ui/qunit/QUnitUtils'
+		'sap/ui/qunit/QUnitUtils',
+		'./autowaiter/_autoWaiter'
 	],
 	function($,
 			 Opa,
 			 OpaPlugin,
 			 PageObjectFactory,
 			 Ui5Object,
-			 Device,
 			 iFrameLauncher,
 			 componentLauncher,
 			 HashChanger,
 			 Matcher,
 			 AggregationFilled,
 			 PropertyStrictEquals,
-			 MatcherPipeline,
 			 ActionPipeline,
 			 _ParameterValidator,
-			 _LogCollector,
 			 _OpaLogger,
 			 URI,
 			 EventProvider,
-			 QUnitUtils) {
+			 QUnitUtils,
+			 _autoWaiter) {
 		"use strict";
 
 		var oLogger = _OpaLogger.getLogger("sap.ui.test.Opa5"),
@@ -70,7 +66,7 @@ sap.ui.define([
 		Opa._extractAppParams = function() {
 			// extract all uri parameters except opa* and qunit parameters
 			var aBlacklistPatterns = [
-				/opa.*/,
+				/^opa((?!(Frame)).*)$/,
 				/hidepassed/,
 				/noglobals/,
 				/notrycatch/,
@@ -80,20 +76,18 @@ sap.ui.define([
 			];
 			var oParams = {};
 			var oUriParams = new URI().search(true);
-			for (var sUriParamName in oUriParams) {
+			Object.keys(oUriParams).forEach(function (sUriParamName) {
 				var bBlacklistedPattern = false;
-				for (var iPatternIndex = 0; iPatternIndex < aBlacklistPatterns.length; iPatternIndex++) {
-					if (sUriParamName.match(aBlacklistPatterns[iPatternIndex])) {
-						oLogger.debug("Skipping uri parameter: " + sUriParamName +
-							" as blacklisted with pattern: " + aBlacklistPatterns[iPatternIndex]);
+				aBlacklistPatterns.forEach(function (oPattern) {
+					if (!bBlacklistedPattern && sUriParamName.match(oPattern)) {
+						oLogger.debug("Skipping uri parameter: " + sUriParamName + " as blacklisted with pattern: " + oPattern);
 						bBlacklistedPattern = true;
-						break;
 					}
-				}
+				});
 				if (!bBlacklistedPattern) {
 					oParams[sUriParamName] = Opa._parseParam(oUriParams[sUriParamName]);
 				}
-			}
+			});
 			return oParams;
 		};
 
@@ -136,13 +130,18 @@ sap.ui.define([
 			)
 		);
 
-		function iStartMyAppInAFrame (sSource, iTimeout) {
+		function iStartMyAppInAFrame () {
 			var that = this;
+			// allow separate arguments for backwards compatibility
+			var oOptions = arguments.length === 1 && $.isPlainObject(arguments[0])
+				? arguments[0]
+				: {source: arguments[0], timeout: arguments[1], autoWait: arguments[2]};
+
 			// merge appParams over sSource search params
-			if (sSource && typeof sSource !== "string") {
-				sSource = sSource.toString();
+			if (oOptions.source && typeof oOptions.source !== "string") {
+				oOptions.source = oOptions.source.toString();
 			}
-			var uri = new URI(sSource);
+			var uri = new URI(oOptions.source);
 			uri.search($.extend(
 				uri.search(true),Opa.config.appParams));
 
@@ -156,8 +155,8 @@ sap.ui.define([
 			// wait till the frame is started
 			var oFrameCreatedOptions = createWaitForObjectWithoutDefaults();
 			oFrameCreatedOptions.check = iFrameLauncher.hasLaunched;
-			oFrameCreatedOptions.timeout = iTimeout || 80;
-			oFrameCreatedOptions.errorMessage = "unable to load the IFrame with the url: " + sSource;
+			oFrameCreatedOptions.timeout = oOptions.timeout || 80;
+			oFrameCreatedOptions.errorMessage = "unable to load the IFrame with the url: " + oOptions.source;
 			that.waitFor(oFrameCreatedOptions);
 
 			// load extensions
@@ -165,7 +164,13 @@ sap.ui.define([
 			oLoadExtensionOptions.success = function() {
 				that._loadExtensions(iFrameLauncher.getWindow());
 			};
-			return this.waitFor(oLoadExtensionOptions);
+			this.waitFor(oLoadExtensionOptions);
+
+			// wait for the app to load
+			var oWaitApplicationLoadOptions = createWaitForObjectWithoutDefaults();
+			oWaitApplicationLoadOptions.autoWait = oOptions.autoWait || false;
+			oWaitApplicationLoadOptions.timeout = oOptions.timeout || 80;
+			return this.waitFor(oWaitApplicationLoadOptions);
 		}
 
 		/**
@@ -175,6 +180,9 @@ sap.ui.define([
 		 * @param {string} [oOptions.hash] Sets the hash {@link sap.ui.core.routing.HashChanger#setHash} to the given value.
 		 * If this parameter is omitted, the hash will always be reset to the empty hash - "".
 		 * @param {number} [oOptions.timeout=15] The timeout for loading the UIComponent in seconds - {@link sap.ui.test.Opa5#waitFor}.
+		 * @param {boolean} [oOptions.autoWait=false] Since 1.53, activates autoWait while the application is starting up.
+		 * This allows more time for application startup and stabilizes tests for slow-loading applications.
+		 * This parameter is false by default, regardless of the global autoWait value, to prevent issues in existing tests.
 		 * @returns {jQuery.promise} A promise that gets resolved on success.
 		 *
 		 * @since 1.48 If appParams are provided in {@link sap.ui.test.Opa.config}, they are
@@ -202,7 +210,7 @@ sap.ui.define([
 			var oStartComponentOptions = createWaitForObjectWithoutDefaults();
 			oStartComponentOptions.success = function () {
 				// include stylesheet
-				var sComponentStyleLocation = jQuery.sap.getModulePath("sap.ui.test.OpaCss",".css");
+				var sComponentStyleLocation = $.sap.getModulePath("sap.ui.test.OpaCss",".css");
 				$.sap.includeStyleSheet(sComponentStyleLocation);
 
 				HashChanger.getInstance().setHash(oOptions.hash || "");
@@ -229,7 +237,13 @@ sap.ui.define([
 			oLoadExtensionOptions.success = function() {
 				that._loadExtensions(window);
 			};
-			return this.waitFor(oLoadExtensionOptions);
+			this.waitFor(oLoadExtensionOptions);
+
+			// wait for the entire app to load
+			var oWaitApplicationLoadOptions = createWaitForObjectWithoutDefaults();
+			oWaitApplicationLoadOptions.autoWait = oOptions.autoWait || false;
+			oWaitApplicationLoadOptions.timeout = oOptions.timeout || 80;
+			return this.waitFor(oWaitApplicationLoadOptions);
 		};
 
 
@@ -308,8 +322,13 @@ sap.ui.define([
 		 * @since 1.48 If appParams are provided in {@link sap.ui.test.Opa.config}, they are
 		 * merged in the query params of app URL
 		 *
-		 * @param {string} sSource The source of the IFrame
-		 * @param {number} [iTimeout=80] The timeout for loading the IFrame in seconds - default is 80
+		 * @param {string} sSource The source of the IFrame.
+		 * @param {number} [iTimeout=80] The timeout for loading the IFrame in seconds - default is 80.
+		 * @param {boolean} [autoWait=false] Since 1.53, activates autoWait while the application is starting up.
+		 * This allows more time for application startup and stabilizes tests for slow-loading applications.
+		 * This parameter is false by default, regardless of the global autoWait value, to prevent issues in existing tests.
+		 * @param {object} [oOptions] Since 1.53, you can provide a startup configuration object as an only parameter.
+		 * oOptions is expected to have the keys: source, timeout and autoWait.
 		 * @returns {jQuery.promise} A promise that gets resolved on success
 		 * @public
 		 * @function
@@ -323,7 +342,12 @@ sap.ui.define([
 		 * merged in the query params of app URL
 		 *
 		 * @param {string} sSource The source of the IFrame
-		 * @param {int} [iTimeout=80] The timeout for loading the IFrame in seconds - default is 80
+		 * @param {number} [iTimeout=80] The timeout for loading the IFrame in seconds - default is 80
+		 * @param {boolean} [autoWait=false] Since 1.53, activates autoWait while the application is starting up.
+		 * This allows more time for application startup and stabilizes tests for slow-loading applications.
+		 * This parameter is false by default, regardless of the global autoWait value, to prevent issues in existing tests.
+		 * @param {object} [oOptions] Since 1.53, you can provide a startup configuration object as an only parameter.
+		 * oOptions is expected to have the keys: source, timeout and autoWait.
 		 * @returns {jQuery.promise} A promise that gets resolved on success
 		 * @public
 		 * @function
@@ -507,22 +531,19 @@ sap.ui.define([
 		 *     };
 		 * </code>
 		 * But actions will only be executed once and only after the check function returned true.
-		 * Before actions are executed the {@link sap.ui.test.matchers.Interactable}
-		 * matcher will check if the Control is currently able to perform actions if it is not,
+		 * Before actions are executed the {@link sap.ui.test.matchers.Interactable} matcher
+		 * and the internal autoWait logic will check if the Control is currently able to perform actions if it is not,
 		 * Opa5 will try again after the 'pollingInterval'.
-		 * That means actions will only be executed if the control is not:
+		 * That means actions will only be executed if:
 		 * <ul>
 		 *     <li>
-		 *         Behind an open dialog
+		 *         Controls and their parents are visible, enabled and not busy
 		 *     </li>
 		 *     <li>
-		 *         Inside of a navigating NavContainer
+		 *         The controls are not hidden behind static elements such as dialogs
 		 *     </li>
 		 *     <li>
-		 *         Busy
-		 *     </li>
-		 *     <li>
-		 *         Inside a Parent control that is Busy
+		 *         There is no pending asynchronous work performed by the application
 		 *     </li>
 		 * </ul>
 		 * If there are multiple controls in Opa5's result set the action will be executed on all of them.
@@ -558,10 +579,11 @@ sap.ui.define([
 		 * </code>
 		 * Executing multiple actions will not wait between actions for a control to become "Interactable" again.
 		 * If you need waiting between actions you need to split the actions into multiple 'waitFor' statements.
-		 * @param {boolean} [options.autoWait=false] @since 1.42 Only has an effect if set to true.
-		 * The waitFor statement will not execute success callbacks as long as there are open XMLHTTPRequests (requests to a server).
-		 * It will only execute success if the control is {@link sap.ui.test.matchers.Interactable}
-		 * So success behaves like an action in terms of waiting.
+		 * @param {boolean} [options.autoWait=false] @since 1.42 Only has an effect if set to true. Since 1.53 it can also be a plain object.
+		 * The waitFor statement will not execute success callbacks as long as there is pending asynchronous work such as for example:
+		 * open XMLHTTPRequests (requests to a server), scheduled delayed work and promises, unfinished UI navigation.
+		 * In addition, the control must be {@link sap.ui.test.matchers.Interactable}
+		 * So when autoWait is enabled, success behaves like an action in terms of waiting.
 		 * It is recommended to set this value to true for all your waitFor statements using:
 		 * <code>
 		 *     <pre>
@@ -569,7 +591,7 @@ sap.ui.define([
 		 *         autoWait: true
 		 *     });
 		 *     </pre>
-	 	 * </code>
+		 * </code>
 		 * Why is it recommended:
 		 * When writing a huge set of tests and executing them frequently you might face tests that are sometimes successful but sometimes they are not.
 		 * Setting the autoWait to true should stabilize most of those tests.
@@ -590,6 +612,20 @@ sap.ui.define([
 		 * </code>
 		 * This is also the easiest way of migrating existing tests. First extend the config, then see which waitFors
 		 * will time out and finally disable autoWait in these Tests.
+		 *
+		 * @since 1.53 autoWait option can be a plain object used to configure what autoWait will consider pending, for example:
+		 * <ul>
+		 *     <li> maximum depth of a timeout chain. Longer chains are considered polling and are discarded as irrelevant to the application state in testing scenarios. </li>
+		 *     <li> maximum delay, in milliseconds, of tracked timeouts and promises. Long runners are discarded as they do not influence application state.</li>
+		 * </ul>
+		 * This is the default autoWait configuration:
+		 * autoWait: {
+		 *     timeoutWaiter: {
+		 *         maxDepth: 3,
+		 *         maxDelay: 1000
+		 *    }
+		 * }
+		 * If autoWait is set to true or the object doesn't contain the recognized keys, the default autoWait configuration will be used.
 		 *
 		 * @since 1.48 All config parameters could be overwritten from URL. Should be prefixed with 'opa'
 		 * and have uppercase first character. Like 'opaExecutionDelay=1000' will overwrite 'executionDelay'
@@ -623,11 +659,24 @@ sap.ui.define([
 			oOptionsPassedToOpa = Opa._createFilteredOptions(aPropertiesThatShouldBePassedToOpaWaitFor, options);
 
 			oOptionsPassedToOpa.check = function () {
+				var bInteractable = !!options.actions || options.autoWait;
+				var oAutoWaiter = Opa5._getAutoWaiter();
+
+				oAutoWaiter.extendConfig(options.autoWait);
+
+				if (bInteractable && oAutoWaiter.hasToWait()) {
+					return false;
+				}
+
 				// Create a new options object for the plugin to keep the original one as is
 				var oPlugin = Opa5.getPlugin();
+				var oPluginOptions = $.extend({}, options, {
+					// ensure Interactable matcher is applied if autoWait is true or actions are specified
+					interactable: bInteractable
+				});
 
 				// even if we have no control the matchers may provide a value for vControl
-				vResult = oPlugin.getFilterdControls(options, vControl);
+				vResult = oPlugin._getFilteredControls(oPluginOptions, vControl);
 
 				if (iFrameLauncher.hasLaunched() && $.isArray(vResult)) {
 					// People are using instanceof Array in their check so i need to make sure the Array
@@ -641,6 +690,7 @@ sap.ui.define([
 				}
 
 				if (vResult === OpaPlugin.FILTER_FOUND_NO_CONTROLS) {
+					oLogger.debug("Matchers found no controls so check function will be skipped");
 					return false;
 				}
 
@@ -683,8 +733,12 @@ sap.ui.define([
 				// Delay the current waitFor after a waitFor added by the actions.
 				// So waitFors added by an action will block the current execution of success
 				var oWaitForObject = createWaitForObjectWithoutDefaults();
-				// preserve the autoWaitFlag
-				oWaitForObject.autoWait = options.autoWait;
+				// preserve the autoWait value
+				if ($.isPlainObject(options.autoWait)) {
+					oWaitForObject.autoWait = $.extend({}, options.autoWait);
+				} else {
+					oWaitForObject.autoWait = options.autoWait;
+				}
 				oWaitForObject.success = function () {
 					fnOriginalSuccess.apply(this, aArgs);
 				};
@@ -743,6 +797,13 @@ sap.ui.define([
 		 */
 		Opa5.getHashChanger = function () {
 			return iFrameLauncher.getHashChanger() || HashChanger.getInstance();
+		};
+
+		/*
+		* @private
+		*/
+		Opa5._getAutoWaiter = function () {
+			return iFrameLauncher._getAutoWaiter() || _autoWaiter;
 		};
 
 		/**
@@ -858,6 +919,7 @@ sap.ui.define([
 			Opa.extendConfig({
 				appParams: appParams
 			});
+			Opa5._getAutoWaiter().extendConfig(options.autoWait);
 		};
 
 		/**
@@ -1025,10 +1087,11 @@ sap.ui.define([
 		Opa5.prototype._executeCheck = function (fnCheck, vControl) {
 			var aArgs = [];
 			vControl && aArgs.push(vControl);
-			oLogger.debug("Opa is executing the check: " + fnCheck);
+			oLogger.debug("Executing OPA check function on controls " + vControl);
+			oLogger.debug("Check function is:\n" + fnCheck);
 
 			var bResult = fnCheck.apply(this, aArgs);
-			oLogger.debug("Opa check was " + bResult);
+			oLogger.debug("Result of check function is: " + bResult || "not defined or null");
 
 			return bResult;
 		};
@@ -1081,7 +1144,7 @@ sap.ui.define([
 			id: "any",
 			controlType: "any",
 			searchOpenDialogs: "bool",
-			autoWait: "bool"
+			autoWait: "any"
 		}, Opa._validationInfo);
 
 		Opa5._getEventProvider = function() {
@@ -1207,6 +1270,5 @@ sap.ui.define([
 			return oDeferred.promise();
 		};
 
-
 		return Opa5;
-}, /* export= */ true);
+});

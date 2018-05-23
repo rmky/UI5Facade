@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,7 +24,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @class
 	 * Holds layout data for a FlexBox / HBox / VBox.
 	 * @extends sap.ui.core.LayoutData
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -121,7 +121,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @method
 	 * @public
 	 * @param {string} sValue Align option.
-	 * @returns {sap.m.FlexItemData} this FlexItemData reference for chaining.
+	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
 	 */
 	FlexItemData.prototype.setAlignSelf = function(sValue) {
 		var sOldValue = this.getAlignSelf();
@@ -138,7 +138,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @method
 	 * @public
 	 * @param {string} sValue Order in string format.
-	 * @returns {sap.m.FlexItemData} this FlexItemData reference for chaining.
+	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
 	 */
 	FlexItemData.prototype.setOrder = function(sValue) {
 		this.setProperty("order", sValue, true);
@@ -170,7 +170,8 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @method
 	 * @public
 	 * @param {string} sValue Shrink factor in string format.
-	 * @returns {sap.m.FlexItemData} this FlexItemData reference for chaining.
+	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
+	 * @see https://www.w3.org/TR/css-flexbox-1/#propdef-flex-shrink
 	 */
 	FlexItemData.prototype.setShrinkFactor = function(sValue) {
 		this.setProperty("shrinkFactor", sValue, true);
@@ -186,7 +187,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @method
 	 * @public
 	 * @param {string} sValue Base size in string format.
-	 * @returns {sap.m.FlexItemData} this FlexItemData reference for chaining.
+	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
 	 */
 	FlexItemData.prototype.setBaseSize = function(sValue) {
 		this.setProperty("baseSize", sValue, true);
@@ -202,7 +203,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @method
 	 * @public
 	 * @param {string} sValue Minimum height in string format.
-	 * @returns {sap.m.FlexItemData} this FlexItemData reference for chaining.
+	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
 	 */
 	FlexItemData.prototype.setMinHeight = function(sValue) {
 		this.setProperty("minHeight", sValue, true);
@@ -218,7 +219,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @method
 	 * @public
 	 * @param {string} sValue Maximum height in string format.
-	 * @returns {sap.m.FlexItemData} this FlexItemData reference for chaining.
+	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
 	 */
 	FlexItemData.prototype.setMaxHeight = function(sValue) {
 		this.setProperty("maxHeight", sValue, true);
@@ -234,7 +235,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @method
 	 * @public
 	 * @param {string} sValue Minimum width in string format.
-	 * @returns {sap.m.FlexItemData} this FlexItemData reference for chaining.
+	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
 	 */
 	FlexItemData.prototype.setMinWidth = function(sValue) {
 		this.setProperty("minWidth", sValue, true);
@@ -250,7 +251,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @method
 	 * @public
 	 * @param {string} sValue Maximum width in string format.
-	 * @returns {sap.m.FlexItemData} this FlexItemData reference for chaining.
+	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
 	 */
 	FlexItemData.prototype.setMaxWidth = function(sValue) {
 		this.setProperty("maxWidth", sValue, true);
@@ -266,7 +267,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @method
 	 * @public
 	 * @param {string} sValue Background design in string format.
-	 * @returns {sap.m.FlexItemData} this FlexItemData reference for chaining.
+	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
 	 */
 	FlexItemData.prototype.setBackgroundDesign = function(sValue) {
 		var sOldValue = this.getBackgroundDesign();
@@ -283,7 +284,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @method
 	 * @public
 	 * @param {string} sValue Style class.
-	 * @returns {sap.m.FlexItemData} this FlexItemData reference for chaining.
+	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
 	 */
 	FlexItemData.prototype.setStyleClass = function(sValue) {
 		var sOldValue = this.getStyleClass();

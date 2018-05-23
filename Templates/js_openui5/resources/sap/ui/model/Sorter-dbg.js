@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides the concept of a sorter for list bindings
-sap.ui.define(['sap/ui/base/Object'],
-	function(BaseObject) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object'],
+	function(jQuery, BaseObject) {
 	"use strict";
 
 
@@ -19,7 +19,7 @@ sap.ui.define(['sap/ui/base/Object'],
 	 * This object defines the sort order for the list binding.
 	 *
 	 *
-	 * @param {String} sPath the binding path used for sorting
+	 * @param {string} sPath the binding path used for sorting
 	 * @param {boolean} [bDescending=false] whether the sort order should be descending
 	 * @param {boolean|function} [vGroup] configure grouping of the content, can either be true to enable grouping
 	 *        based on the raw model property value, or a function which calculates the group value out of the
@@ -28,7 +28,8 @@ sap.ui.define(['sap/ui/base/Object'],
 	 *        is provided it must either return a primitive type value as the group key or an object containing
 	 *        a "key" property and additional properties needed for group visualization.
 	 * @param {function} [fnComparator] a custom comparator function, which is used for clientside sorting instead
-	 *        of the default comparator method.
+	 *        of the default comparator method. Information about parameters and expected return values of such a
+	 *        method can be found in the default comparator documentation.
 	 * @public
 	 * @alias sap.ui.model.Sorter
 	 * @extends sap.ui.base.Object
@@ -105,7 +106,7 @@ sap.ui.define(['sap/ui/base/Object'],
 	 *
 	 * This is the default comparator function used for clientside sorting, if no custom comparator is given in the
 	 * constructor. It does compare just by using equal/less than/greater than with automatic type casting, except
-	 * for null values, which are always last, and string values where localeCompare is used.
+	 * for null values, which are last in ascending order, and string values where localeCompare is used.
 	 *
 	 * The comparator method returns -1, 0 or 1, depending on the order of the two items and is
 	 * suitable to be used as a comparator method for Array.sort.
@@ -119,10 +120,10 @@ sap.ui.define(['sap/ui/base/Object'],
 		if (a == b) {
 			return 0;
 		}
-		if (a == null) {
+		if (b == null) {
 			return -1;
 		}
-		if (b == null) {
+		if (a == null) {
 			return 1;
 		}
 		if (typeof a == "string" && typeof b == "string") {

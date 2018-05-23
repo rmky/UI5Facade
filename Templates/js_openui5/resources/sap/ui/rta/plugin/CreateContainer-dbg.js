@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -27,7 +27,7 @@ sap.ui.define([
 	 * @class The CreateContainer allows trigger CreateContainer operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -77,7 +77,7 @@ sap.ui.define([
 			// In these cases the control might have a stable id (this.hasStableId()), but the view doesn't.
 			// As the view is needed create the id for the newly created container it
 			// has to be stable, otherwise the new id will not be stable.
-			var oParentView = FlexUtils.getViewForControl(oParentOverlay.getElementInstance());
+			var oParentView = FlexUtils.getViewForControl(oParentOverlay.getElement());
 			return this.hasStableId(oOverlay) && FlexUtils.checkControlId(oParentView);
 		} else {
 			return false;
@@ -97,7 +97,7 @@ sap.ui.define([
 	CreateContainer.prototype.getCreateAction = function(bSibling, oOverlay) {
 		var oParentOverlay = this._getParentOverlay(bSibling, oOverlay);
 		var oDesignTimeMetadata = oParentOverlay.getDesignTimeMetadata();
-		var aActions = oDesignTimeMetadata.getAggregationAction("createContainer", oOverlay.getElementInstance());
+		var aActions = oDesignTimeMetadata.getActionDataFromAggregations("createContainer", oOverlay.getElement());
 		return aActions[0];
 	};
 
@@ -114,27 +114,27 @@ sap.ui.define([
 		if (vAction.isEnabled && typeof vAction.isEnabled === "function") {
 			var fnIsEnabled = vAction.isEnabled;
 			var oParentOverlay = this._getParentOverlay(bSibling, oOverlay);
-			return fnIsEnabled.call(null, oParentOverlay.getElementInstance());
+			return fnIsEnabled.call(null, oParentOverlay.getElement());
 		} else {
 			return true;
 		}
 	};
 
 	/**
-	 * Returns the overlay of a newly created container using the function
-	 * defined in the control designtime metadata to retrieve the correct id
+	 * Returns the id of a newly created container using the function
+	 * defined in the control designtime metadata to retrieve the correct value
 	 * @param  {object} vAction       create container action from designtime metadata
 	 * @param  {string} sNewControlID id of the new control
-	 * @return {sap.ui.dt.Overlay}    overlay for the new container
+	 * @return {string}	              Returns the id of the created control
 	 */
-	CreateContainer.prototype.getCreatedContainerOverlay = function(vAction, sNewControlID) {
+	CreateContainer.prototype.getCreatedContainerId = function(vAction, sNewControlID) {
 		var sId = sNewControlID;
 		if (vAction.getCreatedContainerId && typeof vAction.getCreatedContainerId === "function") {
 			var fnMapToRelevantControlID = vAction.getCreatedContainerId;
 			sId = fnMapToRelevantControlID.call(null, sNewControlID);
 
 		}
-		return OverlayRegistry.getOverlay(sId);
+		return sId;
 	};
 
 	CreateContainer.prototype._determineIndex = function(oParentElement, oSiblingElement, sAggregationName, fnGetIndex) {
@@ -154,7 +154,7 @@ sap.ui.define([
 		var vAction = this.getCreateAction(bSibling, oOverlay);
 		var oParentOverlay = this._getParentOverlay(bSibling, oOverlay);
 		var oDesignTimeMetadata = oParentOverlay.getDesignTimeMetadata();
-		var oElement = oParentOverlay.getElementInstance();
+		var oElement = oParentOverlay.getElement();
 		var sText = "CTX_CREATE_CONTAINER";
 		return this._getText(vAction, oElement, oDesignTimeMetadata, sText);
 	};
@@ -168,12 +168,12 @@ sap.ui.define([
 		var vAction = this.getCreateAction(bSibling, oOverlay);
 		var oParentOverlay = this._getParentOverlay(bSibling, oOverlay);
 		var oDesignTimeMetadata = oParentOverlay.getDesignTimeMetadata();
-		var oTargetElement = oParentOverlay.getElementInstance();
+		var oTargetElement = oParentOverlay.getElement();
 		var oView = FlexUtils.getViewForControl(oTargetElement);
 
 		var oSiblingElement;
 		if (bSibling) {
-			oSiblingElement = oOverlay.getElementInstance();
+			oSiblingElement = oOverlay.getElement();
 		}
 
 		var sNewControlID = oView.createId(jQuery.sap.uid());
@@ -216,7 +216,9 @@ sap.ui.define([
 					text: sMenuItemText,
 					handler: this.handler.bind(this, bOverlayIsSibling),
 					enabled: this.isEnabled.bind(this, bOverlayIsSibling),
-					rank: iRank
+					icon: "sap-icon://add-folder",
+					rank: iRank,
+					group: "Add"
 				});
 			}
 			bOverlayIsSibling = false;

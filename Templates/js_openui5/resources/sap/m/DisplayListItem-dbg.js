@@ -1,12 +1,17 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.DisplayListItem.
-sap.ui.define(['./ListItemBase', './library', 'sap/ui/core/library'],
-	function(ListItemBase, library, coreLibrary) {
+sap.ui.define([
+	'./ListItemBase',
+	'./library',
+	'sap/ui/core/library',
+	'./DisplayListItemRenderer'
+],
+	function(ListItemBase, library, coreLibrary, DisplayListItemRenderer) {
 	"use strict";
 
 
@@ -25,7 +30,7 @@ sap.ui.define(['./ListItemBase', './library', 'sap/ui/core/library'],
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

@@ -1,13 +1,35 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 //Provides control sap.ui.unified.CalendarOneMonthInterval.
-sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar/CalendarDate', './library',
-		'sap/ui/unified/CalendarDateInterval', 'sap/ui/unified/CalendarDateIntervalRenderer', 'sap/ui/unified/calendar/OneMonthDatesRow', 'sap/ui/core/Renderer'],
-	function (jQuery, CalendarUtils, CalendarDate, library, CalendarDateInterval, CalendarDateIntervalRenderer, OneMonthDatesRow, Renderer) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/unified/calendar/CalendarUtils',
+	'sap/ui/unified/calendar/CalendarDate',
+	'./library',
+	'sap/ui/unified/CalendarDateInterval',
+	'sap/ui/unified/CalendarDateIntervalRenderer',
+	'sap/ui/unified/calendar/OneMonthDatesRow',
+	'sap/ui/core/Renderer',
+	'sap/ui/unified/Calendar',
+	'sap/ui/unified/CalendarRenderer',
+	"./CalendarOneMonthIntervalRenderer"
+], function(
+	jQuery,
+	CalendarUtils,
+	CalendarDate,
+	library,
+	CalendarDateInterval,
+	CalendarDateIntervalRenderer,
+	OneMonthDatesRow,
+	Renderer,
+	Calendar,
+	CalendarRenderer,
+	CalendarOneMonthIntervalRenderer
+	) {
 		"use strict";
 
 		/*
@@ -39,7 +61,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sa
 		 * Navigation via year picker switches to the corresponding year and the same month as before the navigation.
 		 *
 		 * @extends sap.ui.unified.CalendarDateInterval
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @private
@@ -47,7 +69,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sa
 		 * @alias sap.ui.unified.CalendarOneMonthInterval
 		 */
 		var CalendarOneMonthInterval = CalendarDateInterval.extend("sap.ui.unified.CalendarOneMonthInterval", /** @lends sap.ui.unified.CalendarOneMonthInterval.prototype */  {
-			renderer: CalendarDateIntervalRenderer
 		});
 
 		CalendarOneMonthInterval.prototype.init = function() {
@@ -163,10 +184,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sa
 			oOneMonthDatesRow.setDate(oLocalFocusDate);//really focus the given date
 			oOneMonthDatesRow._bNoRangeCheck = false;
 
-			//we need this to notify the planning calendar to update its rows
-			if (this.getSelectedDates().length) {//renders the appointments for the selected date, not focused one
-				this._setRowsStartDate(this.getSelectedDates()[0].getStartDate());
-			}
+			/* Planning Calendar is already notified about startDateChange event, so no need to manually update its
+			 row's startDate like we previously did  */
 
 			this._oFocusDateOneMonth = null;
 
@@ -256,8 +275,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sa
 
 		/****************************************** CUSTOM MONTH PICKER CONTROL ****************************************/
 
-		var CustomMonthPicker = sap.ui.unified.Calendar.extend("CustomMonthPicker", {
-			renderer: Renderer.extend(sap.ui.unified.CalendarRenderer)
+		var CustomMonthPicker = Calendar.extend("CustomMonthPicker", {
+			renderer: Renderer.extend(CalendarRenderer)
 		});
 
 		CustomMonthPicker.prototype._initializeHeader = function() {

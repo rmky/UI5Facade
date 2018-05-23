@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -36,7 +36,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "./CoreHelper.supp
 			var count = 0,
 				message = "";
 
-			var log = jQuery.sap.log.getLog();
+			var log = jQuery.sap.log.getLogEntries();
 			log.forEach(function(logEntry) {
 				if (logEntry.level === jQuery.sap.log.Level.ERROR) {
 					count++;
@@ -171,7 +171,49 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "./CoreHelper.supp
 		}
 	};
 
+	/**
+	 * checks the EventBus for logs
+	 *
+	 * Excluded are events which are published to the channel "sap." as these are internal
+	 */
+	var oEventBusLogs = {
+		id: "eventBusSilentPublish",
+		audiences: [Audiences.Internal],
+		categories: [Categories.Functionality],
+		enabled: true,
+		minversion: "1.32",
+		title: "EventBus publish",
+		description: "Checks the EventBus publications for missing listeners",
+		resolution: "Calls to EventBus#publish should be removed or adapted such that associated listeners are found",
+		resolutionurls: [],
+		check: function(oIssueManager, oCoreFacade) {
+
+			var aLogEntries = jQuery.sap.log.getLog();
+			var aMessages = [];
+			aLogEntries.forEach(function(oLogEntry) {
+				if (oLogEntry.component === "sap.ui.core.EventBus") {
+					if (oLogEntry.details && oLogEntry.details.indexOf("sap.") !== 0) {
+						if (aMessages.indexOf(oLogEntry.message) === -1) {
+							aMessages.push(oLogEntry.message);
+						}
+					}
+
+				}
+			});
+			aMessages.forEach(function(sMessage) {
+				oIssueManager.addIssue({
+					severity: Severity.Low,
+					details: "EventBus publish without listeners " + sMessage,
+					context: {
+						id: "WEBPAGE"
+					}
+				});
+			});
+		}
+	};
+
 	return [
+		oEventBusLogs,
 		oErrorLogs,
 		oCssCheckCustomStyles,
 		oCssCheckCustomStylesThatAffectControls

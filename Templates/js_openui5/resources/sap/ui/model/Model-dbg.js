@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides the base implementation for all model implementations
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/message/MessageProcessor', './BindingMode', './Context', './Filter', './FilterOperator'],
-	function(jQuery, MessageProcessor, BindingMode, Context, Filter, FilterOperator) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/message/MessageProcessor', './BindingMode', './Context', './Filter'],
+	function(jQuery, MessageProcessor, BindingMode, Context, Filter) {
 	"use strict";
 
 
@@ -38,7 +38,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/message/MessageProcessor', './B
 	 * @extends sap.ui.core.message.MessageProcessor
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @public
 	 * @alias sap.ui.model.Model
@@ -801,6 +801,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/message/MessageProcessor', './B
 
 	/**
 	 * Set the maximum number of entries which are used for list bindings.
+	 *
+	 * Default is 100.
 	 * @param {int} iSizeLimit collection size limit
 	 * @public
 	 */
@@ -939,7 +941,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/message/MessageProcessor', './B
 
 	/**
 	 * Returns whether a given path relative to the given contexts is in laundering state.
-	 * If data is send to the server the data state becomes laundering until the
+	 * If data is sent to the server, the data state becomes laundering until the
 	 * data was accepted or rejected
 	 *
 	 * @param {string} sPath path to resolve

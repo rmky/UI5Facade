@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,18 +11,22 @@ sap.ui.define([
 
 	var // The delimiters in a system query option, possibly %-encoded (their hex value listed in
 		// aMatches[3] if encoded)
-		sDelimiters = "[=(),; \"']|%(20|22|27|28|29|2c|2C|3b|3B)",
+		sDelimiters = "[=(),; \t\"']|%(09|20|22|27|28|29|2c|2C|3b|3B)",
 		// A system query option
 		sSystemQueryOption = "\\$\\w+",
 		// ABNF rule oDataIdentifier
 		sODataIdentifier = "[a-zA-Z_\\u0080-\\uFFFF][\\w\\u0080-\\uFFFF]*",
-		// "required white space" (but only one char)
-		sRws = "(?:[ \\t]|%09|%20)",
+		// a whitespace character
+		sWhitespace = "(?:[ \\t]|%09|%20)",
 		// "required white space"
-		rRws = new RegExp(sRws + "+", "g"),
+		rRws = new RegExp(sWhitespace + "+", "g"),
+		// "not" followed by "required white space"
+		rNot = new RegExp("^not" + sWhitespace + "+"),
 		// OData operators (only recognized when surrounded by spaces; aMatches[1] contains the
 		// leading spaces, aMatches[2] the operator if found)
-		sOperators = "(" + sRws + "+)(eq|ge|gt|le|lt|ne)" + sRws + "*",
+		sOperators = "(" + sWhitespace + "+)(and|eq|ge|gt|le|lt|ne|or)" + sWhitespace + "*",
+		// a GUID (has to be recognized before a path because it may start with a letter)
+		sGuid = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
 		// '*' (poss. %-encoded)
 		sStar = "(?:\\*|%2[aA])",
 		// A path consisting of simple identifiers separated by '/' or '.' optionally followed by
@@ -37,16 +41,177 @@ sap.ui.define([
 		// All other characters in expressions (constants of type double/date/time/GUID), '/' as
 		// part of rootExpr or implicitVariableExpr, '+' may be %-encoded
 		sValue = '(?:[-+:./\\w"]|%2[bB])+',
-		// A Token: either an operator, a delimiter, a path (in aMatches[4]), a value (in
-		// aMatches[5]) or a system query option (in aMatches[6])
-		rToken = new RegExp("^(?:" + sOperators +  "|" + sDelimiters + "|(" + sPath + ")|("
-			+ sValue + ")|(" + sSystemQueryOption + "))"),
+		// A Token: either an operator, a delimiter, a GUID (in aMatches[4]), a path (in
+		// aMatches[5]), a value (in aMatches[6]) or a system query option (in aMatches[7])
+		rToken = new RegExp("^(?:" + sOperators +  "|" + sDelimiters + "|(" + sGuid + ")|("
+			+ sPath + ")|(" + sValue + ")|(" + sSystemQueryOption + "))"),
 		// The two hex digits of a %-escape
-		rEscapeDigits = /^[0-9a-f]{2}$/i;
+		rEscapeDigits = /^[0-9a-f]{2}$/i,
+		// The list of built-in functions
+		mFunctions = {
+			"ceiling" : {
+				ambiguousParameters : true
+			},
+			"concat" : {
+				type : "Edm.String"
+			},
+			"contains" : {
+				type : "Edm.Boolean"
+			},
+			"day" : {
+				type : "Edm.Int32",
+				ambiguousParameters : true
+			},
+			"endswith" : {
+				type : "Edm.Boolean"
+			},
+			"floor" : {
+				ambiguousParameters : true
+			},
+			"hour" : {
+				type : "Edm.Int32",
+				ambiguousParameters : true
+			},
+			"indexof" : {
+				type : "Edm.Int32"
+			},
+			"length" : {
+				type : "Edm.Int32"
+			},
+			"minute" : {
+				type : "Edm.Int32",
+				ambiguousParameters : true
+			},
+			"month" : {
+				type : "Edm.Int32",
+				ambiguousParameters : true
+			},
+			"round" : {
+				ambiguousParameters : true
+			},
+			"second" : {
+				type : "Edm.Int32",
+				ambiguousParameters : true
+			},
+			"startswith" : {
+				type : "Edm.Boolean"
+			},
+			"substring" : {
+				type : "Edm.String"
+			},
+			"tolower" : {
+				type : "Edm.String"
+			},
+			"toupper" : {
+				type : "Edm.String"
+			},
+			"trim" : {
+				type : "Edm.String"
+			},
+			"year" : {
+				type : "Edm.Int32",
+				ambiguousParameters : true
+			}
+		},
+		// The symbol table for the filter parser
+		mFilterParserSymbols = {
+			"(" : {
+				lbp : 9,
+				led : function (oToken, oLeft) {
+					var oFunction, oParameter;
+
+					if (oLeft.id !== "PATH") {
+						this.error("Unexpected ", oToken);
+					}
+					oFunction = mFunctions[oLeft.value];
+					if (!oFunction) {
+						this.error("Unknown function ", oLeft);
+					}
+					oLeft.id = "FUNCTION";
+					if (oFunction.type) {
+						oLeft.type = oFunction.type;
+					}
+					oLeft.parameters = [];
+					do {
+						this.advanceBws();
+						oParameter = this.expression(0);
+						if (oFunction.ambiguousParameters) {
+							oParameter.ambiguous = true;
+						}
+						oLeft.parameters.push(oParameter);
+						this.advanceBws();
+					} while (this.advanceIf(","));
+					this.advanceBws();
+					this.advance(')');
+					return oLeft;
+				},
+				nud : function () {
+					this.advanceBws();
+					var oToken = this.expression(0);
+					this.advanceBws();
+					this.advance(')');
+					return oToken;
+				}
+			},
+			"not" : {
+				lbp : 7,
+				nud : function (oToken) {
+					oToken.precedence = 7;
+					oToken.right = this.expression(7);
+					oToken.type = "Edm.Boolean";
+					return oToken;
+				}
+			}
+		};
 
 	/**
-	 * The base class for the system query option parser and the filter parser. Takes care of token
-	 * and error handling.
+	 * Adds an infix operator to mFilterParserSymbols.
+	 *
+	 * @param {string} sId The token ID
+	 * @param {number} iLbp The "left binding power"
+	 */
+	function addInfixOperator(sId, iLbp) {
+		mFilterParserSymbols[sId] = {
+			lbp : iLbp,
+			led : function (oToken, oLeft) {
+				oToken.type = "Edm.Boolean"; // Note: currently we only support logical operators
+				oToken.precedence = iLbp;
+				oToken.left = oLeft;
+				oToken.right = this.expression(iLbp);
+				return oToken;
+			}
+		};
+	}
+
+	/**
+	 * Adds a leaf symbol to mFilterParserSymbols.
+	 *
+	 * @param {string} sId The token ID
+	 */
+	function addLeafSymbol(sId) {
+		mFilterParserSymbols[sId] = {
+			lbp : 0,
+			nud : function (oToken) {
+				oToken.precedence = 99; // prevent it from being enclosed in brackets
+				return oToken;
+			}
+		};
+	}
+
+	addInfixOperator("and", 2);
+	addInfixOperator("eq", 3);
+	addInfixOperator("ge", 4);
+	addInfixOperator("gt", 4);
+	addInfixOperator("le", 4);
+	addInfixOperator("lt", 4);
+	addInfixOperator("ne", 3);
+	addInfixOperator("or", 1);
+	addLeafSymbol("PATH");
+	addLeafSymbol("VALUE");
+
+	//*****************************************************************************************
+	/**
+	 * The base parser class. Takes care of token and error handling.
 	 */
 	function Parser() {
 	}
@@ -60,7 +225,7 @@ sap.ui.define([
 	 * @throws {SyntaxError} If the next token's ID is not as expected
 	 */
 	Parser.prototype.advance = function (sExpectedTokenId) {
-		var oToken = this.aTokens[this.iCurrentToken];
+		var oToken = this.current();
 
 		if (sExpectedTokenId && (!oToken || oToken.id !== sExpectedTokenId)) {
 			if (sExpectedTokenId === "OPTION") {
@@ -81,7 +246,7 @@ sap.ui.define([
 	 * @returns {boolean} True if the token is as expected and the parser has advanced
 	 */
 	Parser.prototype.advanceIf = function (sExpectedTokenId) {
-		var oToken = this.aTokens[this.iCurrentToken];
+		var oToken = this.current();
 
 		if (oToken && oToken.id === sExpectedTokenId) {
 			this.iCurrentToken += 1;
@@ -99,15 +264,15 @@ sap.ui.define([
 	};
 
 	/**
-	 * Throws an error that the token was not as expected.
+	 * Throws an error.
 	 *
-	 * @param {string} sWhat A description what was expected
-	 * @param {object} [oToken] The unexpected token or undefined to indicate end of input
-	 * @throws {SyntaxError} An error that the token was not as expected
+	 * @param {string} sMessage The error message
+	 * @param {object} [oToken] The token to report the error for or undefined to indicate end of
+	 *   input
+	 * @throws {SyntaxError} With this error message
 	 */
-	Parser.prototype.expected = function (sWhat, oToken) {
-		var sMessage = "Expected " + sWhat + " but instead saw ",
-			sValue;
+	Parser.prototype.error = function (sMessage, oToken) {
+		var sValue;
 
 		if (oToken) {
 			sValue = oToken.value;
@@ -117,6 +282,17 @@ sap.ui.define([
 			sMessage += "end of input";
 		}
 		throw new SyntaxError(sMessage + ": " + this.sText);
+	};
+
+	/**
+	 * Throws an error that the token was not as expected.
+	 *
+	 * @param {string} sWhat A description what was expected
+	 * @param {object} [oToken] The unexpected token or undefined to indicate end of input
+	 * @throws {SyntaxError} An error that the token was not as expected
+	 */
+	Parser.prototype.expected = function (sWhat, oToken) {
+		this.error("Expected " + sWhat + " but instead saw ", oToken);
 	};
 
 	/**
@@ -144,14 +320,70 @@ sap.ui.define([
 		this.iCurrentToken = 0;
 	};
 
+	//*****************************************************************************************
 	/**
 	 * A parser that is able to parse a filter string into a syntax tree which recognizes paths,
-	 * comparison operators and literals.
+	 * comparison operators, literals and built-in functions (which are identical in V2 and V4).
 	 */
 	function FilterParser() {
 	}
 
 	FilterParser.prototype = Object.create(Parser.prototype);
+
+	/**
+	 * Advances to the next token that is not a whitespace character. (Skips over "bad whitespace".)
+	 */
+	FilterParser.prototype.advanceBws = function () {
+		var oToken;
+
+		for (;;) {
+			oToken = this.current();
+			if (!oToken || (oToken.id !== " " && oToken.id !== "\t")) {
+				return;
+			}
+			this.advance();
+		}
+	};
+
+	/**
+	 * Parses a filter expression starting at the current token.
+	 *
+	 * @param {number} iRbp A "right binding power"
+	 * @returns {object} The syntax tree for that expression
+	 */
+	FilterParser.prototype.expression = function (iRbp) {
+		var fnLeft, oLeft, oToken;
+
+		oToken = this.advance();
+		if (!oToken) {
+			this.expected("expression");
+		}
+		fnLeft = this.getSymbolValue(oToken, "nud");
+		if (!fnLeft) {
+			this.expected("expression", oToken);
+		}
+		oLeft = fnLeft.call(this, oToken);
+		oToken = this.current();
+		while (oToken && this.getSymbolValue(oToken, "lbp", 0) > iRbp) {
+			oLeft = this.getSymbolValue(oToken, "led").call(this, this.advance(), oLeft);
+			oToken = this.current();
+		}
+		return oLeft;
+	};
+
+	/**
+	 * Returns a value from the symbol table entry for the token.
+	 *
+	 * @param {object} oToken The token
+	 * @param {string} sWhat The key in the symbol table entry
+	 * @param {any} [vDefault] The default value if nothing is found in the symbol table entry
+	 * @returns {any} The value
+	 */
+	FilterParser.prototype.getSymbolValue = function (oToken, sWhat, vDefault) {
+		var oSymbol = mFilterParserSymbols[oToken.id];
+
+		return oSymbol && sWhat in oSymbol ?  oSymbol[sWhat] : vDefault;
+	};
 
 	/**
 	 * Parses a filter string.
@@ -161,32 +393,49 @@ sap.ui.define([
 	 * @throws {SyntaxError} If there is a syntax error
 	 */
 	FilterParser.prototype.parse = function (sFilter) {
-		var oOperatorToken,
-			oPathToken,
-			oValueToken;
-
 		this.init(sFilter);
-		oPathToken = this.advance("PATH");
-		oOperatorToken = this.advance();
-		switch (oOperatorToken && oOperatorToken.id) {
-			case "eq":
-			case "ge":
-			case "gt":
-			case "le":
-			case "lt":
-			case "ne":
-				break;
-			default:
-				this.expected("operator", oOperatorToken);
-		}
-		oValueToken = this.advance("VALUE");
-
-		oOperatorToken.left = oPathToken;
-		oOperatorToken.right = oValueToken;
-
-		return oOperatorToken;
+		return this.finish(this.expression(0));
 	};
 
+	//*****************************************************************************************
+	/**
+	 * A parser that is able to parse key predicates.
+	 */
+	function KeyPredicateParser() {
+	}
+
+	KeyPredicateParser.prototype = Object.create(Parser.prototype);
+
+	/**
+	 * Parses a key predicate.
+	 *
+	 * @param {string} sKeyPredicate The key predicate
+	 * @returns {object} The object representation
+	 * @throws {SyntaxError} If there is a syntax error
+	 */
+	KeyPredicateParser.prototype.parse = function (sKeyPredicate) {
+		var sKey,
+			oKeyProperties = {},
+			sValue;
+
+		this.init(sKeyPredicate);
+		this.advance("(");
+		if (this.current().id === "VALUE") {
+			oKeyProperties[""] = this.advance().value;
+		} else {
+			do {
+				sKey = this.advance("PATH").value;
+				this.advance("=");
+				sValue = this.advance("VALUE").value;
+				oKeyProperties[sKey] = sValue;
+			} while (this.advanceIf(","));
+		}
+		this.advance(")");
+		this.finish();
+		return oKeyProperties;
+	};
+
+	//*****************************************************************************************
 	/**
 	 * A parser that is able to parse system query strings. It focuses on $select and $expand, all
 	 * other options remain strings, even when embedded into an expand statement.
@@ -199,7 +448,7 @@ sap.ui.define([
 	/**
 	 * Parses a system query option string.
 	 *
-	 * @param {string} sOption The option string (for error messages)
+	 * @param {string} sOption The option string
 	 * @returns {object} The object representation
 	 * @throws {SyntaxError} If there is a syntax error
 	 */
@@ -341,6 +590,7 @@ sap.ui.define([
 		}
 	};
 
+	//*****************************************************************************************
 	/**
 	 * Unescapes a %-encoded character.
 	 *
@@ -366,14 +616,14 @@ sap.ui.define([
 		function nextChar(bConsume) {
 			var c = sNext[i];
 
-			if (bConsume) {
-				i += 1;
-			}
-			if (c === "%" && sNext[i] === "2" && sNext[i + 1] === "7") {
+			if (c === "%" && sNext[i + 1] === "2" && sNext[i + 2] === "7") {
 				c = "'";
 				if (bConsume) {
 					i += 2;
 				}
+			}
+			if (bConsume) {
+				i += 1;
 			}
 			return c;
 		}
@@ -446,14 +696,20 @@ sap.ui.define([
 			iOffset = 0;
 			if (aMatches) {
 				sValue = aMatches[0];
-				if (aMatches[6]) {
+				if (aMatches[7]) {
 					sId = "OPTION";
-				} else if (aMatches[5]) {
+				} else if (aMatches[6] || aMatches[4]) {
 					sId = "VALUE";
-				} else if (aMatches[4]) {
+				} else if (aMatches[5]) {
 					sId = "PATH";
 					if (sValue === "false" || sValue === "true" || sValue === "null") {
 						sId = "VALUE";
+					} else if (sValue === "not") {
+						sId = "not";
+						aMatches = rNot.exec(sNext);
+						if (aMatches) {
+							sValue = aMatches[0];
+						}
 					}
 				} else if (aMatches[3]) { // a %-escaped delimiter
 					sId = unescape(aMatches[3]);
@@ -495,7 +751,28 @@ sap.ui.define([
 		 * @returns {string} The filter string
 		 */
 		buildFilterString : function (oSyntaxTree) {
-			return oSyntaxTree.left.value + oSyntaxTree.value + oSyntaxTree.right.value;
+
+			function serialize(oNode, iParentPrecedence) {
+				var sFilter;
+
+				if (!oNode) {
+					return "";
+				}
+				if (oNode.parameters) {
+					sFilter = oNode.parameters.map(function (oParameter) {
+						return serialize(oParameter, 0);
+					}).join(",");
+					return oNode.value + "(" + sFilter + ")";
+				}
+				sFilter = serialize(oNode.left, oNode.precedence) + oNode.value
+					+ serialize(oNode.right, oNode.precedence);
+				if (oNode.precedence < iParentPrecedence) {
+					sFilter = "(" + sFilter + ")";
+				}
+				return sFilter;
+			}
+
+			return serialize(oSyntaxTree, 0);
 		},
 
 		/**
@@ -504,19 +781,36 @@ sap.ui.define([
 		 * <li> paths are leafs with <code>id="PATH"</code> and the path in <code>value</code>
 		 * <li> literals are leafs with <code>id="VALUE"</code> and the literal (as parsed) in
 		 *   <code>value</code>
-		 * <li> binary operations are nodes with the operator in <code>id</code>, the operator incl.
-		 *   the surrounding space in <code>value</code> and <code>left</code> and
-		 *   <code>right</code> containing syntax trees for the operands.
+		 * <li> operations are nodes with the operator in <code>id</code>, the operator incl.
+		 *   the surrounding required space in <code>value</code> and <code>left</code> and
+		 *   <code>right</code> containing syntax trees for the operands. <code>not</code> only uses
+		 *   <code>right</code>.
+		 * <li> functions are nodes with <code>id="FUNCTION"</code>,the name in <code>value</code>
+		 *   and an array of <code>parameters</code>.
 		 * </ul>
+		 * If the type is known (especially for logical operators and functions), it is given in
+		 * <code>type</code>. If a function parameter may have different types (like Edm.Decimal or
+		 * Edm.Double in <code>round</code>), it has the property <code>ambiguous: true</code>.
 		 * <code>at</code> always contains the position where this token started (starting with 1).
 		 *
-		 * Example: <code>parseFilter("foo eq 'bar')</code> results in
+		 * Example: <code>parseFilter("foo eq 'bar' and length(baz) ne 5")</code> results in
 		 * <pre>
-			 {
-				id : "eq", value : " eq ", at : 5,
-	            left : {id : "PATH", value : "foo", at : 1},
-				right : {id : "VALUE", value : "'bar'", at : 8}
-			 }
+			{
+				id : "and", value : " and ", type : "Edm.Boolean", at : 14,
+				left : {
+					id : "eq", value : " eq ", type : "Edm.Boolean", at : 5,
+					left : {id : "PATH", value : "foo", at : 1},
+					right : {id : "VALUE", value : "'bar'", at : 8}
+				},
+				right : {
+					id : "ne", value : " ne ", type : "Edm.Boolean", at : 30,
+					left : {
+						id : "FUNCTION", value : "length", type : "Edm.Int32", at : 18,
+						parameters : [{id : "PATH", value : "baz", at : 25}]
+					},
+					right : {id : "VALUE", value : "5", at : 33}
+				}
+			}
 		 * </pre>
 		 *
 		 * @param {string} sFilter The filter string
@@ -524,6 +818,17 @@ sap.ui.define([
 		 */
 		parseFilter : function (sFilter) {
 			return new FilterParser().parse(sFilter);
+		},
+
+		/**
+		 * Parses a key predicate into an object containing name/value pairs. A predicate in the
+		 * form "('42')" is returned as <code>{"" : "'42'")</code>.
+		 *
+		 * @param {string} sKeyPredicate The key predicate
+		 * @returns {object} The name/value pairs
+		 */
+		parseKeyPredicate : function (sKeyPredicate) {
+			return new KeyPredicateParser().parse(sKeyPredicate);
 		},
 
 		/**

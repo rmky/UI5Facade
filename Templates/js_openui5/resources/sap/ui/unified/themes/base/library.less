@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -531,6 +531,7 @@ html.sapUiMedia-Std-Phone .sapUiCalHeadB0{
 }
 
 .sapUiCalRowWeekNumbers {
+	clear: left;
 	font-size: 0.875rem;
 	text-align: left;
 	line-height: 3rem;
@@ -643,6 +644,11 @@ html.sapUiMedia-Std-Phone .sapUiCalHeadB0{
 	line-height: 1.875rem;
 }
 
+.sapUiSizeCompact .sapUiCalInt.sapUiCalOneMonthInt .sapUiCalItem {
+	height: 3rem;
+	line-height: 2.875rem;
+}
+
 .sapUiSizeCompact .sapUiCalContent > .sapUiCalMonthPicker,
 .sapUiSizeCompact .sapUiCalContent > .sapUiCalYearPicker{
 	top: 0;
@@ -679,8 +685,7 @@ html.sapUiMedia-Std-Phone .sapUiCalHeadB0{
 }
 
 /* Day names inside day */
-.sapUiSizeCompact.sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalItemText,
-.sapUiSizeCompact .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalItemText{
+.sapUiSizeCompact .sapUiCalInt:not(.sapUiCalOneMonthInt) .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalItemText{
 	padding-top: 0;
 	padding-left: 50%;
 	line-height: inherit;
@@ -692,8 +697,7 @@ html.sapUiMedia-Std-Phone .sapUiCalHeadB0{
 	line-height: 1.6875rem;
 }
 
-.sapUiSizeCompact.sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalDayName,
-.sapUiSizeCompact .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalDayName{
+.sapUiSizeCompact .sapUiCalInt:not(.sapUiCalOneMonthInt) .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalDayName{
 	left: 0;
 	height: 100%;
 	width: 50%;
@@ -705,25 +709,21 @@ html.sapUiMedia-Std-Phone .sapUiCalHeadB0{
 }
 
 html[data-sap-ui-browser ^= "ie"], html[data-sap-ui-browser^="ed"] {
-	.sapUiSizeCompact.sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalItemText,
-	.sapUiSizeCompact .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalItemText{
+	.sapUiSizeCompact .sapUiCalInt:not(.sapUiCalOneMonthInt) .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalItemText{
 		text-align: left;
 	}
 
-	.sapUiSizeCompact.sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalDayName,
-	.sapUiSizeCompact .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalDayName{
+	.sapUiSizeCompact .sapUiCalInt:not(.sapUiCalOneMonthInt) .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalDayName{
 		text-align: right;
 	}
 }
 
 html[dir=rtl][data-sap-ui-browser ^= "ie"], html[dir=rtl][data-sap-ui-browser^="ed"] {
-	.sapUiSizeCompact.sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalItemText,
-	.sapUiSizeCompact .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalItemText{
+	.sapUiSizeCompact .sapUiCalInt:not(.sapUiCalOneMonthInt) .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalItemText{
 		text-align: right;
 	}
 
-	.sapUiSizeCompact.sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalDayName,
-	.sapUiSizeCompact .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalDayName{
+	.sapUiSizeCompact .sapUiCalInt:not(.sapUiCalOneMonthInt) .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem > .sapUiCalDayName{
 		text-align: left;
 	}
 }
@@ -1212,6 +1212,10 @@ html.sap-desktop .sapUiCalendarApp.sapUiCalendarAppSel:focus:not(:active) > .sap
 .sapUiCalendarMonthRowAppsS.sapUiCalendarRowAppsInt {
 	border: 0;
   	background-color: transparent;
+
+	.sapUiCalendarRowNow {
+		border-color: transparent;
+	}
 }
 
 .sapMPlanCal .sapUiCalMonthView {
@@ -1224,6 +1228,29 @@ html.sap-desktop .sapUiCalendarApp.sapUiCalendarAppSel:focus:not(:active) > .sap
   text-align: center;
   vertical-align: middle;
   border-top: 0.0625rem solid @sapUiListBorderColor;
+}
+
+.sapUiCalendarRowAppsPlaceholder {
+	min-height: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	float: left;
+	cursor: default;
+	z-index: 100;
+}
+
+.sapUiCalendarAppDragging {
+	z-index: 2;
+}
+
+.sapUiCalendarRowAppsOverlay {
+	position: absolute;
+	height: 100%;
+	width: 100%
+}
+
+.sapUiCalendarRowAppsOverlayDragging {
+	z-index: 1;
 }
 /* END "CalendarRow.less" */
 
@@ -1860,6 +1887,7 @@ html.sap-desktop .sapUiCalendarApp.sapUiCalendarAppSel:focus:not(:active) > .sap
 	margin-left: 0.5rem;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	width: 2rem;
 }
 
 .sapUiUfdCurrencyNoVal .sapUiUfdCurrencyValue,
@@ -2189,6 +2217,10 @@ html[data-sap-ui-browser*='ie'] {
 	color: @sapUiContentNonInteractiveIconColor;
 }
 
+.sapUiMnuItmIco > .sapUiIcon {
+	line-height: @_sap_ui_unified_Menu_ItmHeight;
+}
+
 .sapUiMnuItmIco > img{
 	max-width: 16px;
 	max-height: 16px;
@@ -2474,6 +2506,10 @@ html[data-sap-ui-browser*='ie'] {
 	.sapUiMnuItmIco {
 		width: @_sap_ui_unified_Menu_ItmHeightCozy;
 		font-size: @_sap_ui_unified_Menu_ItmHeightCozy / 2 - 0.125rem;
+	}
+
+	.sapUiMnuItmIco > .sapUiIcon {
+		line-height: @_sap_ui_unified_Menu_ItmHeightCozy;
 	}
 
 	.sapUiMnuItmIco > img {

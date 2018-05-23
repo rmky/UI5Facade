@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ function(
 	 * Utility functionality for DOM
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @private
 	 * @static
@@ -43,18 +43,24 @@ function(
 	};
 
 	/**
-	 *
+	 * Returns the offset for an element based on the parent position and scrolling
+	 * @param  {object} oPosition     Position object containing left and top values
+	 * @param  {object} mParentOffset Offset object from the parent containing left and top values
+	 * @param  {number} iScrollTop    Scrolling position from top in pixels
+	 * @param  {number} iScrollLeft   Scrolling position from left in pixels
+	 * @return {object}               Returns the calculated offset containing left and top values
 	 */
-	DOMUtil.getOffsetFromParent = function(oPosition, mParentOffset, scrollTop, scrollLeft) {
+	DOMUtil.getOffsetFromParent = function(oPosition, mParentOffset, iScrollTop, iScrollLeft) {
 		var mOffset = {
 			left : oPosition.left,
 			top : oPosition.top
 		};
 
 		if (mParentOffset) {
-			mOffset.left -= (mParentOffset.left - (scrollLeft ? scrollLeft : 0));
-			mOffset.top -= (mParentOffset.top - (scrollTop ? scrollTop : 0));
+			mOffset.left -= (mParentOffset.left - (iScrollLeft ? iScrollLeft : 0));
+			mOffset.top -= (mParentOffset.top - (iScrollTop ? iScrollTop : 0));
 		}
+
 		return mOffset;
 	};
 
@@ -140,17 +146,15 @@ function(
 
 
 	/**
-	 *
+	 * @param {HTMLElement} oDomRef
 	 */
 	DOMUtil.getOverflows = function(oDomRef) {
-		var oOverflows;
-		var $ElementDomRef = jQuery(oDomRef);
-		if ($ElementDomRef.length) {
-			oOverflows = {};
-			oOverflows.overflowX = $ElementDomRef.css("overflow-x");
-			oOverflows.overflowY = $ElementDomRef.css("overflow-y");
-		}
-		return oOverflows;
+		var $DomRef = jQuery(oDomRef);
+
+		return {
+			overflowX: $DomRef.css("overflow-x"),
+			overflowY: $DomRef.css("overflow-y")
+		};
 	};
 
 	/**
@@ -377,6 +381,11 @@ function(
 
 		// FIXME: we can't use Overlay module because of the cycled dependency
 		jQuery('#overlay-container').prepend(oStyle);
+	};
+
+	DOMUtil.contains = function (sId, oTargetNode) {
+		var oNode = document.getElementById(sId);
+		return oNode && oNode.contains(oTargetNode);
 	};
 
 	return DOMUtil;

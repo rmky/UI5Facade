@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*global QUnit */
@@ -16,7 +16,7 @@ sap.ui.define([
 			return !oAssertion.result && oAssertion.message === "Test timed out";
 		});
 		if (bTimedOut) {
-			Opa._stopQueue({qunitTimeout: true});
+			Opa._stopQueue({qunitTimeout: QUnit.config.testTimeout / 1000});
 		}
 	});
 	/**

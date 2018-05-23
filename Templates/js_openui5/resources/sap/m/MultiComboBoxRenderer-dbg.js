@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(['./ComboBoxBaseRenderer', 'sap/ui/core/Renderer'],
@@ -39,6 +39,20 @@ sap.ui.define(['./ComboBoxBaseRenderer', 'sap/ui/core/Renderer'],
 		if (oControl._hasTokens()) {
 			oRm.addClass("sapMMultiComboBoxHasToken");
 		}
+	};
+
+	/**
+	 * Add attributes to the element.
+	 *
+	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
+	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
+	 */
+	MultiComboBoxRenderer.writeInnerAttributes = function(oRm, oControl) {
+		var oInvisibleTextId = oControl._oTokenizer && oControl._oTokenizer.getTokensInfoId();
+
+		ComboBoxBaseRenderer.writeInnerAttributes.apply(this, arguments);
+
+		oRm.writeAttribute("aria-describedby", oInvisibleTextId);
 	};
 
 	/**

@@ -1,12 +1,37 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.ListBase.
-sap.ui.define(['jquery.sap.global', './GroupHeaderListItem', './ListItemBase', './library', 'sap/ui/core/Control', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/InvisibleText', 'sap/ui/core/LabelEnablement', 'sap/ui/Device', 'jquery.sap.keycodes'],
-	function(jQuery, GroupHeaderListItem, ListItemBase, library, Control, ItemNavigation, InvisibleText, LabelEnablement, Device) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./GroupHeaderListItem',
+	'./ListItemBase',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/delegate/ItemNavigation',
+	'sap/ui/core/InvisibleText',
+	'sap/ui/core/LabelEnablement',
+	'sap/ui/Device',
+	'sap/m/GrowingEnablement',
+	'./ListBaseRenderer',
+	'jquery.sap.keycodes'
+],
+function(
+	jQuery,
+	GroupHeaderListItem,
+	ListItemBase,
+	library,
+	Control,
+	ItemNavigation,
+	InvisibleText,
+	LabelEnablement,
+	Device,
+	GrowingEnablement,
+	ListBaseRenderer
+) {
 	"use strict";
 
 
@@ -50,7 +75,7 @@ sap.ui.define(['jquery.sap.global', './GroupHeaderListItem', './ListItemBase', '
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -213,7 +238,21 @@ sap.ui.define(['jquery.sap.global', './GroupHeaderListItem', './ListItemBase', '
 			 * A toolbar that is placed below the header to show extra information to the user.
 			 * @since 1.16
 			 */
-			infoToolbar : {type : "sap.m.Toolbar", multiple : false}
+			infoToolbar : {type : "sap.m.Toolbar", multiple : false},
+
+			/**
+			 * Defines the drag-and-drop configuration.
+			 *
+			 * @since 1.54
+			 */
+			dragDropConfig : {name : "dragDropConfig", type : "sap.ui.core.dnd.DragDropBase", multiple : true, singularName : "dragDropConfig"},
+
+			/**
+			 * Defines the context menu of the items.
+			 *
+			 * @since 1.54
+			 */
+			contextMenu : {type : "sap.ui.core.IContextMenu", multiple : false}
 		},
 		associations: {
 
@@ -415,9 +454,24 @@ sap.ui.define(['jquery.sap.global', './GroupHeaderListItem', './ListItemBase', '
 					 */
 					srcControl : {type : "sap.ui.core.Control"}
 				}
+			},
+
+			/**
+			 * Fired when the context menu is opened.
+			 * When the context menu is opened, the binding context of the item is set to the given <code>contextMenu</code>.
+			 * @since 1.54
+			 */
+			beforeOpenContextMenu : {
+				allowPreventDefault : true,
+				parameters : {
+					/**
+					 * Item in which the context menu was opened.
+					 */
+					listItem : {type : "sap.m.ListItemBase"}
+				}
 			}
 		},
-		designTime : true
+		designtime: "sap/m/designtime/ListBase.designtime"
 
 	}});
 
@@ -528,8 +582,8 @@ sap.ui.define(['jquery.sap.global', './GroupHeaderListItem', './ListItemBase', '
 				// Wrap the event handler of the other party to add our handler.
 				var fOriginalHandler = oBindingInfo.events[sEventName];
 				oBindingInfo.events[sEventName] = function() {
-					fOriginalHandler.apply(this, arguments);
 					fHandler.apply(this, arguments);
+					fOriginalHandler.apply(this, arguments);
 				};
 			}
 		}
@@ -620,8 +674,7 @@ sap.ui.define(['jquery.sap.global', './GroupHeaderListItem', './ListItemBase', '
 		if (this.getGrowing() != bGrowing) {
 			this.setProperty("growing", bGrowing, !bGrowing);
 			if (bGrowing) {
-				jQuery.sap.require("sap.m.GrowingEnablement");
-				this._oGrowingDelegate = new sap.m.GrowingEnablement(this);
+				this._oGrowingDelegate = new GrowingEnablement(this);
 			} else if (this._oGrowingDelegate) {
 				this._oGrowingDelegate.destroy();
 				this._oGrowingDelegate = null;
@@ -1446,8 +1499,7 @@ sap.ui.define(['jquery.sap.global', './GroupHeaderListItem', './ListItemBase', '
 			oSrcControl = oEvent.srcControl;
 
 		if (oContent && oSrcControl && !this._isSwipeActive && this !== oSrcControl && !this._eventHandledByControl
-				// also enable the swipe feature when runs on Windows 8 device
-				&& (Device.support.touch || (Device.os.windows && Device.os.version >= 8))) {
+				&& Device.support.touch) {
 			// source can be anything so, check parents and find the list item
 			/*eslint-disable no-extra-semi, curly */
 			for (var li = oSrcControl; li && !(li instanceof ListItemBase); li = li.oParent);
@@ -1518,8 +1570,7 @@ sap.ui.define(['jquery.sap.global', './GroupHeaderListItem', './ListItemBase', '
 			return this;
 		}
 
-		Control.prototype.invalidate.apply(this, arguments);
-		return this;
+		return Control.prototype.invalidate.apply(this, arguments);
 	};
 
 	ListBase.prototype.addItemGroup = function(oGroup, oHeader, bSuppressInvalidate) {
@@ -2010,7 +2061,7 @@ sap.ui.define(['jquery.sap.global', './GroupHeaderListItem', './ListItemBase', '
 	ListBase.prototype.onsapfocusleave = function(oEvent) {
 		if (this._oItemNavigation &&
 			!this.bAnnounceDetails &&
-			!this.getNavigationRoot().contains(jQuery.sap.domById(oEvent.relatedControlId))) {
+			!this.getNavigationRoot().contains(document.activeElement)) {
 			this.bAnnounceDetails = true;
 		}
 	};
@@ -2044,10 +2095,45 @@ sap.ui.define(['jquery.sap.global', './GroupHeaderListItem', './ListItemBase', '
 		}
 	};
 
+	ListBase.prototype.onItemContextMenu = function(oLI, oEvent) {
+		var oContextMenu = this.getContextMenu();
+		if (!oContextMenu) {
+			return;
+		}
+
+		var bExecuteDefault = this.fireBeforeOpenContextMenu({
+			listItem: oLI,
+			column: sap.ui.getCore().byId(jQuery(oEvent.target).closest(".sapMListTblCell", this.getNavigationRoot()).attr("data-sap-ui-column"))
+		});
+		if (bExecuteDefault) {
+			oEvent.setMarked();
+			oEvent.preventDefault();
+
+			var oBindingContext,
+				oBindingInfo = this.getBindingInfo("items");
+			if (oBindingInfo) {
+				oBindingContext = oLI.getBindingContext(oBindingInfo.model);
+				oContextMenu.setBindingContext(oBindingContext);
+			}
+
+			oContextMenu.openAsContextMenu(oEvent, oLI);
+		}
+	};
+
 	// return true if grouping is enabled on the binding, else false
 	ListBase.prototype.isGrouped = function() {
 		var oBinding = this.getBinding("items");
 		return oBinding && oBinding.isGrouped();
+	};
+
+	// invalidation of the table list is not required for setting the context menu
+	ListBase.prototype.setContextMenu = function(oContextMenu) {
+		this.setAggregation("contextMenu", oContextMenu, true);
+	};
+
+	// invalidation of the table list is not required for destroying the context menu
+	ListBase.prototype.destroyContextMenu = function() {
+		this.destroyAggregation("contextMenu", true);
 	};
 
 	return ListBase;

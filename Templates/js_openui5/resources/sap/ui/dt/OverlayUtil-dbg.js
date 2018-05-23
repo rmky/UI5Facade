@@ -1,6 +1,6 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,7 +22,7 @@ function(
 	 *
 	 * @class Utility functionality to work with overlays
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @private
 	 * @static
 	 * @since 1.30
@@ -56,10 +56,10 @@ function(
 		var oParentOverlay = oElementOverlay.getParentElementOverlay();
 		if (oParentOverlay){
 			//calculate index in direct (maybe in hidden tree) parent
-			var oParent = oParentOverlay.getElementInstance();
+			var oParent = oParentOverlay.getElement();
 			var sParentAggregationName = oElementOverlay.getParentAggregationOverlay().getAggregationName();
 			var aChildren = ElementUtil.getAggregation(oParent, sParentAggregationName);
-			var oElement = oElementOverlay.getElementInstance();
+			var oElement = oElementOverlay.getElement();
 			var iIndex = aChildren.indexOf(oElement);
 
 			return {
@@ -149,7 +149,7 @@ function(
 	 * @private
 	 */
 	OverlayUtil.getClosestOverlayForType = function(sType, oOverlay) {
-		while (oOverlay && !ElementUtil.isInstanceOf(oOverlay.getElementInstance(), sType)) {
+		while (oOverlay && !ElementUtil.isInstanceOf(oOverlay.getElement(), sType)) {
 			oOverlay = oOverlay.getParentElementOverlay();
 		}
 
@@ -209,19 +209,19 @@ function(
 	 * @returns {array} Returns an array of child overlays {sap.ui.dt.ElementOverlay}
 	 * @private
 	 */
-	OverlayUtil.getAllChildOverlays = function(oOverlay) {
-		var aChildOverlays = [], aChildren = [];
-		if (!oOverlay) {
-			return aChildOverlays;
+	OverlayUtil.getAllChildOverlays = function(oElementOverlay) {
+		var aChildElementOverlays = [], aChildren = [];
+		if (!oElementOverlay) {
+			return aChildElementOverlays;
 		}
-		var aAggregationOverlays = oOverlay.getAggregationOverlays();
+		var aAggregationOverlays = oElementOverlay.getChildren();
 		for (var i = 0; i < aAggregationOverlays.length; i++) {
 			aChildren = aAggregationOverlays[i].getChildren();
 			if (aChildren && aChildren.length > 0) {
-				aChildOverlays = aChildOverlays.concat(aChildren);
+				aChildElementOverlays = aChildElementOverlays.concat(aChildren);
 			}
 		}
-		return aChildOverlays;
+		return aChildElementOverlays;
 	};
 
 	/**
@@ -415,7 +415,7 @@ function(
 	 * @private
 	 */
 	OverlayUtil.iterateOverAggregationLikeChildren = function(oElementOverlay, sAggregationName, fnCallback) {
-		var oElement = oElementOverlay.getElementInstance();
+		var oElement = oElementOverlay.getElement();
 		var vChildren;
 		if (oElementOverlay.getAggregationOverlay(sAggregationName).isAssociation()){
 			vChildren = ElementUtil.getAssociationInstances(oElement, sAggregationName);
@@ -447,9 +447,7 @@ function(
 	 * @private
 	 */
 	OverlayUtil.isInOverlayContainer = function(oNode) {
-		if (oNode && jQuery(oNode).closest(".sapUiDtOverlay, #overlay-container").length) {
-			return true;
-		}
+		return oNode && jQuery(oNode).closest(".sapUiDtOverlay, #overlay-container").length > 0;
 	};
 
 	/**
@@ -506,7 +504,7 @@ function(
 	 */
 	OverlayUtil.findAllOverlaysInContainer = function(oOverlay) {
 		// The root control has no relevant container, therefore we use the element itself
-		var oRelevantContainer = oOverlay.getRelevantContainer() || oOverlay.getElementInstance();
+		var oRelevantContainer = oOverlay.getRelevantContainer() || oOverlay.getElement();
 		var oRelevantContainerOverlay = OverlayRegistry.getOverlay(oRelevantContainer);
 		var aRelevantOverlays = [];
 
@@ -542,7 +540,7 @@ function(
 	 * This function returns all the siblings and parents inside the relevant container. Siblings in different aggregations are ignored.
 	 * @param {sap.ui.dt.ElementOverlay} oOverlay Overlay from which we get the aggregations
 	 * @param {sap.ui.dt.ElementOverlay} oRelevantContainerOverlay Relevant container overlay
-	 * @param {integer} iLevel Current level in the hierarchy
+	 * @param {int} iLevel Current level in the hierarchy
 	 * @returns {object} Returns a map with all siblings sorted by the level
 	 * @private
 	 */
@@ -606,6 +604,27 @@ function(
 		}).filter(function(oOverlay, iPosition, aAggregationOverlays) {
 			return aAggregationOverlays.indexOf(oOverlay) === iPosition;
 		});
+	};
+
+	/**
+	 * Checks if an Overlay is part of an aggregation binding
+	 * The check is done recursively
+	 * @param  {sap.ui.dt.ElementOverlay} oElementOverlay Overlay being checked
+	 * @param  {string}  sAggregationName The name of the aggregation being checked
+	 * @return {Boolean}                  Returns true if Overlay is in aggregation binding
+	 */
+	OverlayUtil.isInAggregationBinding = function(oElementOverlay, sAggregationName) {
+		if (sAggregationName && oElementOverlay.getElement().getBinding(sAggregationName)) {
+			return true;
+		}
+		return oElementOverlay.isRoot()
+			? false
+			: (
+				this.isInAggregationBinding(
+					oElementOverlay.getParentElementOverlay(),
+					oElementOverlay.getElement().sParentAggregationName
+				)
+			);
 	};
 
 	return OverlayUtil;

@@ -1,13 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"./ObjectPageHeaderRenderer",
-	"./ObjectPageLayout",
-	"./ObjectImageHelper"], function (ObjectPageHeaderRenderer, ObjectPageLayout, ObjectImageHelper) {
+	"./ObjectImageHelper"], function (ObjectPageHeaderRenderer, ObjectImageHelper) {
 	"use strict";
 
 	/**
@@ -16,11 +15,16 @@ sap.ui.define([
 	 */
 	var ObjectPageHeaderContentRenderer = {};
 
+	function lazyInstanceof(o, sModule) {
+		var FNClass = sap.ui.require(sModule);
+		return typeof FNClass === 'function' && (o instanceof FNClass);
+	}
+
 	ObjectPageHeaderContentRenderer.render = function (oRm, oControl) {
 		var oParent = oControl.getParent(),
-			bParentLayout = (oParent instanceof ObjectPageLayout),
+			bParentLayout = lazyInstanceof(oParent, "sap/uxap/ObjectPageLayout"),
 			oHeader = (oParent && bParentLayout) ? oParent.getHeaderTitle() : undefined,
-			bRenderTitle = (oParent && bParentLayout) ? ((oParent instanceof ObjectPageLayout)
+			bRenderTitle = (oParent && bParentLayout) ? (lazyInstanceof(oParent, "sap/uxap/ObjectPageLayout")
 				&& oParent.getShowTitleInHeaderContent()) : false,
 			bRenderEditBtn = bParentLayout && oParent.getShowEditHeaderButton() && oControl.getContent() && oControl.getContent().length > 0;
 

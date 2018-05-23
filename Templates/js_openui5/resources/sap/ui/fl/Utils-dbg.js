@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"jquery.sap.global", "sap/ui/core/Component"
-], function (jQuery, Component) {
+	"jquery.sap.global",
+	"sap/ui/core/Component",
+	"sap/ui/thirdparty/hasher"
+], function(
+	jQuery,
+	Component,
+	hasher
+) {
 	"use strict";
 	//Stack of layers in the layered repository
 	var aLayers = [
@@ -27,7 +33,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.fl.Utils
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @experimental Since 1.25.0
 	 */
 	var Utils = {
@@ -316,7 +322,7 @@ sap.ui.define([
 		/**
 		 * Converts layer name into index
 		 * @param {string} sLayer - layer name
-		 * @returns {Integer} index of the layer
+		 * @returns {int} index of the layer
 		 * @function
 		 * @name sap.ui.fl.Utils.getLayerIndex
 		 */
@@ -327,7 +333,7 @@ sap.ui.define([
 		/**
 		 * Determines whether a layer is higher than the max layer.
 		 *
-		 * @param {String} sLayer - Layer name to be evaluated
+		 * @param {string} sLayer - Layer name to be evaluated
 		 * @returns {boolean} <code>true</code> if input layer is higher than max layer, otherwise <code>false</code>
 		 * @public
 		 * @function
@@ -339,6 +345,7 @@ sap.ui.define([
 
 		/**
 		 * Compares current layer with a provided layer
+		 * -1: Lower layer, 0: Same layer, 1: Layer above
 		 *
 		 * @param {String} sLayer - Layer name to be evaluated
 		 * @returns {boolean} <code>true</code> if input layer is higher than current layer
@@ -348,7 +355,8 @@ sap.ui.define([
 		 */
 		isLayerAboveCurrentLayer: function(sLayer) {
 			var sCurrentLayer = Utils.getCurrentLayer(false);
-			if (this.getLayerIndex(sCurrentLayer) > this.getLayerIndex(sLayer)) {
+			// If sLayer is undefined, it is assumed it be on the lowest layer
+			if ((this.getLayerIndex(sCurrentLayer) > this.getLayerIndex(sLayer)) || !sLayer) {
 				return -1;
 			} else if (this.getLayerIndex(sCurrentLayer) === this.getLayerIndex(sLayer)) {
 				return 0;
@@ -689,7 +697,7 @@ sap.ui.define([
 		 * Returns whether the hot fix mode is active (url parameter hotfix=true)
 		 *
 		 * @public
-		 * @returns {bool} is hotfix mode active, or not
+		 * @returns {boolean} is hotfix mode active, or not
 		 */
 		isHotfixMode: function () {
 			var oUriParams, aIsHotfixMode, sIsHotfixMode;
@@ -775,7 +783,7 @@ sap.ui.define([
 		},
 
 		/**
-		 * Converts ASCII coding into a string. Required for restoring stored code extinsions
+		 * Converts a string into ASCII coding. Required for restoring stored code extinsions
 		 *
 		 * @param {String} string string which has to be encoded
 		 * @returns {String} ascii imput parsed to ascii numbers seperated by ','
@@ -865,6 +873,51 @@ sap.ui.define([
 			return window.location.search.substring(1);
 		},
 
+		/**
+		 * Returns technical parameters for the passed component.
+		 *
+		 * @param  {object} oComponent Component instance used to get the technical parameters
+		 * @returns {object|undefined} Returns the technical parameters object or undefined if unavailable
+		 */
+		getTechnicalParametersForComponent : function(oComponent){
+			return oComponent
+				&& oComponent.getComponentData
+				&& oComponent.getComponentData()
+				&& oComponent.getComponentData().technicalParameters;
+		},
+
+		/**
+		 * Sets the values for url hash and technical parameters for the component data.
+		 * Deactivates hash based navigation while performing the operations, which is then re-activated upon completion.
+		 * If the passed doesn't exist in the url hash or technical parameters, then a new object is added respectively.
+		 *
+		 * @param {object} oComponent Component instance used to get the technical parameters
+		 * @param {string} sParameterName Name of the parameter (e.g. "sap-ui-fl-control-variant-id")
+		 * @param {string[]} aValues Array of values for the technical parameter
+		 */
+		setTechnicalURLParameterValues: function (oComponent, sParameterName, aValues) {
+			var oUshellContainer = Utils.getUshellContainer();
+			if (oUshellContainer) {
+				hasher.changed.active = false; //disable changed signal
+
+				var oURLParser = oUshellContainer.getService("URLParsing");
+				var oParsedHash = oURLParser.parseShellHash(oURLParser.getHash(window.location.href));
+				var mParams = oParsedHash.params;
+				var mTechnicalParameters = Utils.getTechnicalParametersForComponent(oComponent);
+				if (!mTechnicalParameters) {
+					this.log.error("Component instance not provided, so technical parameters in component data would remain unchanged");
+				}
+				if (aValues.length === 0) {
+					delete mParams[sParameterName];
+					mTechnicalParameters && delete mTechnicalParameters[sParameterName]; // Case when ControlVariantsAPI.clearVariantParameterInURL is called with a parameter
+				} else {
+					mParams[sParameterName] = aValues;
+					mTechnicalParameters && (mTechnicalParameters[sParameterName] = aValues); // Technical parameters need to be in sync with the URL hash
+				}
+				hasher.replaceHash(oURLParser.constructShellHash(oParsedHash)); // Set hash without dispatching changed signal nor writing history
+				hasher.changed.active = true; // Re-enable signal
+			}
+		},
 
 		/**
 		 * Checks the SAPUI5 debug settings to determine whether all or at least the <code>sap.ui.fl</code> library is debugged.
@@ -892,6 +945,10 @@ sap.ui.define([
 		 */
 		getUrlParameter: function (sParameterName) {
 			return jQuery.sap.getUriParameters().get(sParameterName);
+		},
+
+		getUshellContainer: function() {
+			return sap.ushell && sap.ushell.Container;
 		},
 
 		createDefaultFileName: function (sNameAddition) {
@@ -975,13 +1032,15 @@ sap.ui.define([
 
 		/**
 		 * Execute the passed asynchronous / synchronous (Utils.FakePromise) functions serialized - one after the other.
-		 * Errors do not break the sequentially execution of the queue. Error message will be written.
+		 * By default errors do not break the sequential execution of the queue, but this can be changed with the parameter bThrowError.
+		 * Error message will be written in any case.
 		 *
 		 * @param {array.<function>} aPromiseQueue - List of asynchronous functions that returns promises
+		 * @param {boolean} bThrowError - true: errors will be rethrown and therefore break the execution
 		 * @param {boolean} bAsync - true: asynchronous processing with Promise, false: synchronous processing with FakePromise
 		 * @returns {Promise} Returns empty resolved Promise or FakePromise when all passed promises inside functions have been executed
 		 */
-		execPromiseQueueSequentially : function(aPromiseQueue, bAsync) {
+		execPromiseQueueSequentially : function(aPromiseQueue, bThrowError, bAsync) {
 			if (aPromiseQueue.length === 0) {
 				if (bAsync) {
 					return Promise.resolve();
@@ -999,16 +1058,22 @@ sap.ui.define([
 				})
 
 				.catch(function(e) {
-					this.log.error("Error during execPromiseQueueSequentially processing occured: " + (e && e.message));
+					var sErrorMessage = "Error during execPromiseQueueSequentially processing occured";
+					sErrorMessage += e ?  ": " + e.message : "";
+					this.log.error(sErrorMessage);
+
+					if (bThrowError) {
+						throw new Error(sErrorMessage);
+					}
 				}.bind(this))
 
 				.then(function() {
-					return this.execPromiseQueueSequentially(aPromiseQueue, bAsync);
+					return this.execPromiseQueueSequentially(aPromiseQueue, bThrowError, bAsync);
 				}.bind(this));
 
 			} else {
 				this.log.error("Changes could not be applied, promise not wrapped inside function.");
-				return this.execPromiseQueueSequentially(aPromiseQueue, bAsync);
+				return this.execPromiseQueueSequentially(aPromiseQueue, bThrowError, bAsync);
 			}
 		},
 
@@ -1072,6 +1137,34 @@ sap.ui.define([
 				});
 			});
 			return oResult;
+		},
+
+		/**
+		 * Checks if the element is an instance of the type.
+		 *
+		 * @param {object} oElement Element to be checked
+		 * @param {string} sType type That the element should be checked against
+		 * @returns {boolean} Returns true if the element is an instance of the type
+		 */
+		isInstanceOf: function(oElement, sType) {
+			var oInstance = jQuery.sap.getObject(sType);
+			if (typeof oInstance === "function") {
+				return oElement instanceof oInstance;
+			} else {
+				return false;
+			}
+		},
+
+		/**
+		 * Checks if the element has the interface.
+		 *
+		 * @param {object} oElement Element
+		 * @param {string} sInterface Interface that should be in the element
+		 * @returns {boolean} Returns true if the element has the interface
+		 */
+		hasInterface: function(oElement, sInterface) {
+			var aInterfaces = oElement.getMetadata().getInterfaces();
+			return aInterfaces.indexOf(sInterface) !== -1;
 		}
 	};
 	return Utils;

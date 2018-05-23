@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', './Element', './library'],
 	 * @class
 	 * Contains a single key/value pair of custom data attached to an Element. See method data().
 	 * @extends sap.ui.core.Element
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @public
 	 * @alias sap.ui.core.CustomData
@@ -57,7 +57,7 @@ sap.ui.define(['jquery.sap.global', './Element', './library'],
 			 */
 			writeToDom : {type : "boolean", group : "Data", defaultValue : false}
 		},
-		designTime: true
+		designtime: "sap/ui/core/designtime/CustomData.designtime"
 	}});
 
 	CustomData.prototype.setValue = function(oValue) {

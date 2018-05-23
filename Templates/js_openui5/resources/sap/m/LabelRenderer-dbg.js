@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -39,8 +39,8 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/m/library', 'sap/ui/core/library'],
 			sTooltip = oLabel.getTooltip_AsString(),
 			labelForRendering = oLabel.getLabelForRendering(),
 			htmlTagToRender = labelForRendering ? "label" : "span",
-			bDisplayOnly = oLabel.isDisplayOnly();
-
+			bDisplayOnly = oLabel.isDisplayOnly(),
+			sVerticalAlign = oLabel.getVAlign();
 		// write the HTML into the render manager
 		// for accessibility reasons when a label doesn't have a "for" attribute, pointing at a HTML element it is rendered as span
 		rm.write("<" + htmlTagToRender);
@@ -51,7 +51,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/m/library', 'sap/ui/core/library'],
 		rm.addClass("sapUiSelectable");
 
 		// label wrapping
-		if (oLabel.getWrapping()) {
+		if (oLabel.isWrapping()) {
 			rm.addClass("sapMLabelWrapped");
 		}
 		// set design to bold
@@ -97,6 +97,10 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/m/library', 'sap/ui/core/library'],
 			rm.addClass("sapMLabelDisplayOnly");
 		}
 
+		if (sVerticalAlign != sap.ui.core.VerticalAlign.Inherit) {
+			rm.addStyle("vertical-align", sVerticalAlign.toLowerCase());
+		}
+
 		rm.writeStyles();
 		rm.writeClasses();
 
@@ -114,6 +118,11 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/m/library', 'sap/ui/core/library'],
 		rm.write("</bdi>");
 
 		rm.write("</" + htmlTagToRender + ">");
+
+		// add invisible ":" span in "display only" mode
+		if (!labelForRendering && oLabel.isDisplayOnly && oLabel.isDisplayOnly()) {
+			rm.write('<span id="' + oLabel.getId() + '-colon" class="sapUiPseudoInvisibleText">:</span>');
+		}
 	};
 
 	/**

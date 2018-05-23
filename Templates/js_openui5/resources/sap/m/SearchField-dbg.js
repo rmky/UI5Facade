@@ -1,12 +1,31 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.SearchField.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/EnabledPropagator', 'sap/ui/core/IconPool', 'sap/ui/core/InvisibleText', './Suggest', 'sap/ui/Device', 'jquery.sap.keycodes'],
-	function(jQuery, library, Control, EnabledPropagator, IconPool, InvisibleText, Suggest, Device) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/EnabledPropagator',
+	'sap/ui/core/IconPool',
+	'./Suggest',
+	'sap/ui/Device',
+	'./SearchFieldRenderer',
+	'jquery.sap.keycodes'
+],
+	function(
+	jQuery,
+	library,
+	Control,
+	EnabledPropagator,
+	IconPool,
+	Suggest,
+	Device,
+	SearchFieldRenderer
+	) {
 	"use strict";
 
 
@@ -45,7 +64,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	* @extends sap.ui.core.Control
 	* @implements sap.ui.core.IFormContent
 	* @author SAP SE
-	* @version 1.52.5
+	* @version 1.54.5
 	*
 	* @constructor
 	* @public
@@ -142,6 +161,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			ariaLabelledBy : {type : "sap.ui.core.Control", multiple : true, singularName : "ariaLabelledBy"}
 		},
 		defaultAggregation : "suggestionItems",
+		designtime: "sap/m/designtime/SearchField.designtime",
 		aggregations : {
 
 			/**
@@ -237,12 +257,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		// Default placeholder: "Search"
 		this.setProperty("placeholder", oRb.getText("FACETFILTER_SEARCH"),true);
 
-		// create an F5 ARIA announcement and remember its ID for later use in the renderer:
-		if (!SearchField.prototype._sAriaF5LabelId && sap.ui.getCore().getConfiguration().getAccessibility()) {
-			SearchField.prototype._sAriaF5LabelId = new InvisibleText({
-				text: oRb.getText("SEARCHFIELD_ARIA_F5")
-			}).toStatic().getId();
-		}
 	};
 
 	SearchField.prototype.getFocusDomRef = function() {

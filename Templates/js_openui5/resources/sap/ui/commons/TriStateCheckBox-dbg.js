@@ -1,12 +1,17 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.commons.TriStateCheckBox.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
-	function(jQuery, library, Control) {
+sap.ui.define([
+    'jquery.sap.global',
+    './library',
+    'sap/ui/core/Control',
+    "./TriStateCheckBoxRenderer"
+],
+	function(jQuery, library, Control, TriStateCheckBoxRenderer) {
 	"use strict";
 
 	/**
@@ -19,7 +24,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control'],
 	 * TriStateCheckBox to reflect mixed state for checkboxes. The control can display three states, namely checked, unchecked and mixed. However, mixed state cannot be directly reached by user interaction on the particular control.
 	 * It can be only set by the control's public toggle function, to make a behaviour possible which is e.g. required in checkbox trees.
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

@@ -1,12 +1,35 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.ListItemBase.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/ui/core/Icon', 'sap/m/Button', 'sap/ui/model/BindingMode', 'sap/ui/Device', 'jquery.sap.keycodes'],
-	function(jQuery, library, Control, IconPool, Icon, Button, BindingMode, Device) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/IconPool',
+	'sap/ui/core/Icon',
+	'sap/m/Button',
+	'sap/ui/model/BindingMode',
+	'sap/ui/Device',
+	'sap/m/CheckBox',
+	'./ListItemBaseRenderer',
+	'jquery.sap.keycodes'
+],
+function(
+	jQuery,
+	library,
+	Control,
+	IconPool,
+	Icon,
+	Button,
+	BindingMode,
+	Device,
+	CheckBox,
+	ListItemBaseRenderer
+) {
 	"use strict";
 
 
@@ -34,10 +57,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 *
 	 * @class
 	 * ListItemBase contains the base features of all specific list items.
+	 * <b>Note:</b> If not mentioned otherwise in the individual subclasses, list items must only be used in the <code>items</code> aggregation of <code>sap.m.ListBase</code> controls.
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -117,7 +141,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			 */
 			detailPress : {}
 		},
-		designTime : true
+		designtime: "sap/m/designtime/ListItemBase.designtime"
 	}});
 
 	ListItemBase.getAccessibilityText = function(oControl, bDetectEmpty) {
@@ -379,13 +403,14 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	};
 
 	/**
-	 * Returns the accessibility announcement for the content
+	 * Returns the accessibility announcement for the content.
+	 *
 	 * Hook for the subclasses.
 	 *
 	 * @returns {string}
 	 * @protected
-	 * ListItemBase.prototype.getContentAnnouncement = function() {
-	 * };
+	 * @name sap.m.ListItemBase.prototype.getContentAnnouncement
+	 * @function
 	 */
 
 	/*
@@ -527,7 +552,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			return this._oMultiSelectControl;
 		}
 
-		this._oMultiSelectControl = new sap.m.CheckBox({
+		this._oMultiSelectControl = new CheckBox({
 			id : this.getId() + "-selectMulti",
 			activeHandling : false,
 			selected : this.getSelected()
@@ -796,6 +821,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 		// do not handle already handled events
 		if (this._eventHandledByControl) {
+			return;
+		}
+
+		// do not handle in case of text selection
+		var sTextSelection = window.getSelection().toString().replace("\n", "");
+		if (sTextSelection) {
 			return;
 		}
 
@@ -1121,6 +1152,24 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		}
 
 		this.informList("ArrowUpDown", oEvent);
+	};
+
+	ListItemBase.prototype.oncontextmenu = function(oEvent) {
+		// context menu is not required on the group header.
+		if (this._bGroupHeader) {
+			return;
+		}
+
+		// do not handle already handled events
+		// allow the context menu to open on the SingleSelect or MultiSelect control
+		// is(":focusable") check is required as IE sets activeElement also  to text controls
+		if (jQuery(document.activeElement).is(":focusable") &&
+			document.activeElement !== this.getDomRef() &&
+			oEvent.srcControl !== this.getModeControl()) {
+			return;
+		}
+
+		this.informList("ContextMenu", oEvent);
 	};
 
 	// inform the list for the vertical navigation

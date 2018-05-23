@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/base/EventProv
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @public
 	 * @since 1.8.0
 	 * @alias sap.ui.core.EventBus
@@ -196,6 +196,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/base/EventProv
 
 		var oChannel = getChannel(this, sChannelId);
 		if (!oChannel) {
+			// no channel
+			if (jQuery.sap.log.isLoggable(jQuery.sap.log.Level.DEBUG, "sap.ui.core.EventBus")) {
+				jQuery.sap.log.debug("Failed to publish into channel '" + sChannelId + "'." + " No such channel.", sChannelId, "sap.ui.core.EventBus");
+			}
 			return;
 		}
 
@@ -209,6 +213,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/base/EventProv
 				oInfo = aEventListeners[i];
 				oInfo.fFunction.call(oInfo.oListener || this, sChannelId, sEventId, oData);
 			}
+		} else if (jQuery.sap.log.isLoggable(jQuery.sap.log.Level.DEBUG, "sap.ui.core.EventBus")) {
+			// no listeners
+			jQuery.sap.log.debug("Failed to publish Event '" + sEventId + "' in '" + sChannelId + "'." + " No listeners found.", sChannelId + "#" + sEventId, "sap.ui.core.EventBus");
 		}
 	};
 

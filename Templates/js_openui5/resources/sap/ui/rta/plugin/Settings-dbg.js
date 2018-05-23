@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,7 +8,9 @@
 sap.ui.define([
 	'sap/ui/rta/plugin/Plugin',
 	'sap/ui/rta/Utils'
-], function(Plugin, Utils) {
+], function(
+	Plugin,
+	Utils) {
 	"use strict";
 
 	/**
@@ -19,7 +21,7 @@ sap.ui.define([
 	 * @class The Settings allows trigger change of settings operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -49,10 +51,6 @@ sap.ui.define([
 	 * @private
 	 */
 	Settings.prototype._isEditable = function(oOverlay) {
-		if (!Utils.getRelevantContainerDesigntimeMetadata(oOverlay)) {
-			return false;
-		}
-
 		var vSettingsAction = this.getAction(oOverlay);
 		// If no additional actions are defined in settings, a handler must be present to make it available
 		if (vSettingsAction) {
@@ -86,7 +84,7 @@ sap.ui.define([
 
 		if (typeof oAction.isEnabled !== "undefined") {
 			if (typeof oAction.isEnabled === "function") {
-				return oAction.isEnabled(oOverlay.getElementInstance());
+				return oAction.isEnabled(oOverlay.getElement());
 			} else {
 				return oAction.isEnabled;
 			}
@@ -113,13 +111,14 @@ sap.ui.define([
 	 * Retrieves the available actions from the DesignTime Metadata and creates
 	 * the corresponding commands for them.
 	 * @param  {sap.ui.dt.ElementOverlay[]} aSelectedOverlays Target Overlays of the action
-	 * @param  {function} [fnHandler] handler function for the case of multiple settings actions
+	 * @param  {object} mPropertyBag Property bag
+	 * @param  {function} [mPropertyBag.fnHandler] Handler function for the case of multiple settings actions
 	 * @return {Promise} Returns promise resolving with the creation of the commands
 	 */
 	Settings.prototype.handler = function(aSelectedOverlays, mPropertyBag) {
 		mPropertyBag = mPropertyBag || {};
 		var oSettingsCommand, oAppDescriptorCommand, oCompositeCommand;
-		var oElement = aSelectedOverlays[0].getElementInstance();
+		var oElement = aSelectedOverlays[0].getElement();
 		var fnHandler = mPropertyBag.fnHandler;
 
 		if (!fnHandler){
@@ -141,12 +140,13 @@ sap.ui.define([
 						var sVariantManagementReference;
 						var vSelectorControl = mChange.selectorControl;
 						var sControlType;
+						var oControl;
 						if (vSelectorControl.controlType){
 							sControlType = vSelectorControl.controlType;
 						} else {
-							sControlType = vSelectorControl.getMetadata().getName();
+							oControl = vSelectorControl;
 						}
-						var oChangeHandler = this._getChangeHandlerForControlType(sControlType, mChangeSpecificData.changeType);
+						var oChangeHandler = this._getChangeHandler(mChangeSpecificData.changeType, oControl, sControlType);
 						if (aSelectedOverlays[0].getVariantManagement && oChangeHandler && oChangeHandler.revertChange) {
 							sVariantManagementReference = aSelectedOverlays[0].getVariantManagement();
 						}
@@ -216,7 +216,7 @@ sap.ui.define([
 						aMenuItems.push({
 							id : sPluginId + iActionCounter,
 							text : sActionText,
-							enabled : oSettingsAction.isEnabled && oSettingsAction.isEnabled.bind(this, oOverlay.getElementInstance()),
+							enabled : oSettingsAction.isEnabled && oSettingsAction.isEnabled.bind(this, oOverlay.getElement()),
 							handler : function(fnHandler, aOverlays, mPropertyBag){
 								mPropertyBag = mPropertyBag || {};
 								mPropertyBag.fnHandler = fnHandler;

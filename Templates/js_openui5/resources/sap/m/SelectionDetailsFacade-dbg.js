@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -10,7 +10,7 @@
  * @since 1.48.0
  * @public
  * @author SAP SE
- * @version 1.52.5
+ * @version 1.54.5
  * @borrows sap.ui.core.Element#addCustomData as addCustomData
  * @borrows sap.ui.core.Element#getCustomData as getCustomData
  * @borrows sap.ui.core.Element#indexOfCustomData as indexOfCustomData
@@ -43,7 +43,7 @@
  * @since 1.48.0
  * @public
  * @author SAP SE
- * @version 1.52.5
+ * @version 1.54.5
  * @borrows sap.ui.core.Element#addCustomData as addCustomData
  * @borrows sap.ui.core.Element#getCustomData as getCustomData
  * @borrows sap.ui.core.Element#indexOfCustomData as indexOfCustomData

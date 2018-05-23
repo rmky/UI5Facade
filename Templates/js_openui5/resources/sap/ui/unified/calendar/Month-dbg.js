@@ -1,17 +1,45 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 //Provides control sap.ui.unified.Calendar.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/Device', 'sap/ui/core/LocaleData', 'sap/ui/core/delegate/ItemNavigation',
-		'sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/library', 'sap/ui/core/format/DateFormat', 'sap/ui/core/library', 'sap/ui/core/Locale', 'jquery.sap.keycodes'],
-	function(jQuery, Control, Device, LocaleData, ItemNavigation, CalendarUtils, CalendarDate, library, DateFormat, coreLibrary, Locale) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/core/Control',
+	'sap/ui/Device',
+	'sap/ui/core/LocaleData',
+	'sap/ui/core/delegate/ItemNavigation',
+	'sap/ui/unified/calendar/CalendarUtils',
+	'sap/ui/unified/calendar/CalendarDate',
+	'sap/ui/unified/library',
+	'sap/ui/core/format/DateFormat',
+	'sap/ui/core/library',
+	'sap/ui/core/Locale',
+	"./MonthRenderer",
+	'jquery.sap.keycodes'
+], function(
+	jQuery,
+	Control,
+	Device,
+	LocaleData,
+	ItemNavigation,
+	CalendarUtils,
+	CalendarDate,
+	library,
+	DateFormat,
+	coreLibrary,
+	Locale,
+	MonthRenderer
+	) {
 	"use strict";
 
 	// shortcut for sap.ui.core.CalendarType
 	var CalendarType = coreLibrary.CalendarType;
+
+	// shortcut for sap.ui.unified.CalendarDayType
+	var CalendarDayType = library.CalendarDayType;
 
 	/*
 	 * Inside the Month CalendarDate objects are used. But in the API JS dates are used.
@@ -30,7 +58,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/Device', 'sap
 	 * If used inside the calendar the properties and aggregation are directly taken from the parent
 	 * (To not duplicate and sync DateRanges and so on...)
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -116,8 +144,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/Device', 'sap
 			selectedDates : {type : "sap.ui.unified.DateRange", multiple : true, singularName : "selectedDate"},
 
 			/**
-			 * Date Range with type to visualize special days in the Calendar.
-			 * If one day is assigned to more than one Type, only the first one will be used.
+			 * <code>DateRange</code> with type to visualize special days in the Calendar.
+			 *
+			 * <b>Note:</b> If one day is assigned to more than one DateTypeRange, only the first one
+			 * will be used. The only exception is when one of the types is
+			 * <code>NonWorking</code>, then you can have both <code>NonWorking</code>
+			 * and the other type.
+			 * For example, you can have <code>NonWorking</code> + <code>Type01</code>
+			 * but you can't have <code>Type01</code> + <code>Type02</code>.
 			 */
 			specialDates : {type : "sap.ui.unified.DateTypeRange", multiple : true, singularName : "specialDate"},
 
@@ -737,17 +771,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/Device', 'sap
 	};
 
 	/*
-	 * gets the type of a single date checking the specialDates aggregation
-	 * the first hit is used
+	 * Gets the type of a single date checking the specialDates aggregation
+	 * the first hit is used. The only exception is when one of the types is
+	 * NonWorking, then you can have both NonWorking and the other type.
 	 * @param {sap.ui.unified.calendar.CalendarDate} oDate
-	 * @return {object} date type and tooltip defined in CalendarDayType
+	 * @return {object[]} an array that contains maximum 2 objects each with date type and tooltip defined in CalendarDayType
 	 * @private
 	 */
-	Month.prototype._getDateType = function(oDate){
+	Month.prototype._getDateTypes = function(oDate){
 
 		CalendarUtils._checkCalendarDate(oDate);
 
-		var oType;
+		var oType, oTypeNW, bNonWorkingType, aTypes = [];
 		var aSpecialDates = this.getSpecialDates();
 		var oTimeStamp = oDate.toUTCJSDate().getTime();
 		var sCalendarType = this.getPrimaryCalendarType();
@@ -768,13 +803,24 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/Device', 'sap
 				oEndTimeStamp = oEndDate.toUTCJSDate().getTime();
 			}
 
+			bNonWorkingType = oRange.getType() === CalendarDayType.NonWorking;
+
+			// collects non working day with the first occurrence of one of the types01..types20
 			if ((oTimeStamp == oStartTimeStamp && !oEndDate) || (oTimeStamp >= oStartTimeStamp && oTimeStamp <= oEndTimeStamp)) {
-				oType = {type: oRange.getType(), tooltip: oRange.getTooltip_AsString()};
-				break;
+				if (!bNonWorkingType && !oType) {
+					oType = {type: oRange.getType(), tooltip: oRange.getTooltip_AsString()};
+					aTypes.push(oType);
+				} else if (bNonWorkingType && !oTypeNW) {
+						oTypeNW = {type: oRange.getType(), tooltip: oRange.getTooltip_AsString()};
+						aTypes.push(oTypeNW);
+				}
+				if (oType && oTypeNW) {
+					break;
+				}
 			}
 		}
 
-		return oType;
+		return aTypes;
 
 	};
 
@@ -952,6 +998,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/Device', 'sap
 		} else if (Device.support.touch
 			&& this._isValueInThreshold(this._oMousedownPosition.clientX, oEvent.clientX, 10)
 			&& this._isValueInThreshold(this._oMousedownPosition.clientY, oEvent.clientY, 10)
+			&& oEvent.target.classList.contains("sapUiCalItemText")
 		) {
 			var oSelectedDate = CalendarDate.fromLocalJSDate(this._oFormatYyyymmdd.parse(jQuery(oEvent.target).parent().attr("data-sap-day")), this.getPrimaryCalendarType());
 			_selectDay.call(this, oSelectedDate, false, false);

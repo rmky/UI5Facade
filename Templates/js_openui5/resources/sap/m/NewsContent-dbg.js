@@ -1,11 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/Text', 'sap/ui/Device', 'jquery.sap.keycodes'],
-	function(jQuery, library, Control, Text, Device) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/m/Text',
+	'sap/ui/Device',
+	'./NewsContentRenderer',
+	'jquery.sap.keycodes'
+],
+	function(jQuery, library, Control, Text, Device, NewsContentRenderer) {
 	"use strict";
 
 	/**
@@ -18,7 +26,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @since 1.34
 	 *
 	 * @public
@@ -28,6 +36,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/T
 	var NewsContent = Control.extend("sap.m.NewsContent", /** @lends sap.m.NewsContent.prototype */ {
 		metadata : {
 			library : "sap.m",
+			designtime: "sap/m/designtime/NewsContent.designtime",
 			properties : {
 				/**
 				 * Updates the size of the chart. If not set then the default size is applied based on the device tile.

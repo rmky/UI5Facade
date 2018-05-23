@@ -1,12 +1,26 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.ColumnListItem.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './ListItemBase', './library', 'sap/ui/core/library'],
-	function(jQuery, Element, ListItemBase, library, coreLibrary) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/core/Element',
+	'./ListItemBase',
+	'./library',
+	'sap/ui/core/library',
+	'./ColumnListItemRenderer'
+],
+	function(
+	jQuery,
+	Element,
+	ListItemBase,
+	library,
+	coreLibrary,
+	ColumnListItemRenderer
+	) {
 	"use strict";
 
 	// shortcut for sap.m.ListType
@@ -31,7 +45,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './ListItemBase', './
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -66,7 +80,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './ListItemBase', './
 	 * TablePopin element that handles own events.
 	 */
 	var TablePopin = Element.extend("sap.m.TablePopin", {
-		onfocusin: function(oEvent) {
+		ontap: function(oEvent) {
 			// focus to the main row if there is nothing to focus in the popin
 			if (oEvent.srcControl === this || !jQuery(oEvent.target).is(":sapFocusable")) {
 				this.getParent().focus();
@@ -142,7 +156,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './ListItemBase', './
 				onsaptabnext: this.onsaptabnext,
 				onsaptabprevious: this.onsaptabprevious,
 				onsapup: this.onsapup,
-				onsapdown: this.onsapdown
+				onsapdown: this.onsapdown,
+				oncontextmenu: this.oncontextmenu
 			}, this).setParent(this, null, true);
 		}
 

@@ -1,18 +1,56 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Input.
-sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List', './Popover',
-		'sap/ui/core/Item', './ColumnListItem', './StandardListItem', './DisplayListItem', 'sap/ui/core/ListItem',
-		'./Table', './Toolbar', './ToolbarSpacer', './library', 'sap/ui/core/IconPool', 'sap/ui/core/InvisibleText',
-		'sap/ui/Device', 'sap/ui/core/ResizeHandler', 'sap/ui/core/Control'],
-	function(jQuery, Bar, Dialog, InputBase, List, Popover,
-			Item, ColumnListItem, StandardListItem, DisplayListItem, ListItem,
-			Table, Toolbar, ToolbarSpacer, library, IconPool, InvisibleText,
-			Device, ResizeHandler, Control) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./Bar',
+	'./Dialog',
+	'./InputBase',
+	'./List',
+	'./Popover',
+	'sap/ui/core/Item',
+	'./ColumnListItem',
+	'./StandardListItem',
+	'./DisplayListItem',
+	'sap/ui/core/ListItem',
+	'./Table',
+	'./Toolbar',
+	'./ToolbarSpacer',
+	'./library',
+	'sap/ui/core/IconPool',
+	'sap/ui/core/InvisibleText',
+	'sap/ui/Device',
+	'sap/ui/core/ResizeHandler',
+	'sap/ui/core/Control',
+	'./InputRenderer'
+],
+function(
+	jQuery,
+	Bar,
+	Dialog,
+	InputBase,
+	List,
+	Popover,
+	Item,
+	ColumnListItem,
+	StandardListItem,
+	DisplayListItem,
+	ListItem,
+	Table,
+	Toolbar,
+	ToolbarSpacer,
+	library,
+	IconPool,
+	InvisibleText,
+	Device,
+	ResizeHandler,
+	Control,
+	InputRenderer
+) {
 	"use strict";
 
 
@@ -86,7 +124,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 	 *
 	 * @extends sap.m.InputBase
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -227,7 +265,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 			 * The suggestionColumns and suggestionRows are for tabular input suggestions. This aggregation allows for binding the table columns; for more details see the aggregation "suggestionRows".
 			 * @since 1.21.1
 			 */
-			suggestionColumns : {type : "sap.m.Column", multiple : true, singularName : "suggestionColumn", bindable : "bindable"},
+			suggestionColumns : {type : "sap.m.Column", multiple : true, singularName : "suggestionColumn", bindable : "bindable", forwarding: {getter:"_getSuggestionsTable", aggregation: "columns"}},
 
 			/**
 			 * The suggestionColumns and suggestionRows are for tabular input suggestions. This aggregation allows for binding the table cells.
@@ -235,7 +273,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 			 * Note: If this aggregation is filled, the aggregation suggestionItems will be ignored.
 			 * @since 1.21.1
 			 */
-			suggestionRows : {type : "sap.m.ColumnListItem", multiple : true, singularName : "suggestionRow", bindable : "bindable"},
+			suggestionRows : {type : "sap.m.ColumnListItem", multiple : true, singularName : "suggestionRow", bindable : "bindable", forwarding: {getter: "_getSuggestionsTable", aggregation: "items"}},
 
 			/**
 			 * The icon on the right side of the Input
@@ -356,7 +394,8 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 					value: { type: "string" }
 				}
 			}
-		}
+		},
+		designtime: "sap/m/designtime/Input.designtime"
 	}});
 
 
@@ -477,12 +516,6 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 
 		this._oRb = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
-		// Init static hidden text for ARIA
-		if (!Input._sAriaPopupLabelId) {
-			Input._sAriaPopupLabelId = new InvisibleText({
-				text: this._oRb.getText("INPUT_AVALIABLE_VALUES")
-			}).toStatic().getId();
-		}
 	};
 
 	/**
@@ -686,6 +719,29 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 			selectedItem: null,
 			selectedRow: null
 		});
+	};
+
+	/**
+	 * Updates selectedItem or selectedRow from the suggestion list or table.
+	 *
+	 * @private
+	 * @returns {boolean} Indicates if an item or row is selected
+	 */
+	Input.prototype._updateSelectionFromList = function () {
+		if (this._iPopupListSelectedIndex  < 0) {
+			return false;
+		}
+
+		var oSelectedItem = this._oList.getSelectedItem();
+		if (oSelectedItem) {
+			if (this._hasTabularSuggestions()) {
+				this.setSelectionRow(oSelectedItem, true);
+			} else {
+				this.setSelectionItem(oSelectedItem._oItem, true);
+			}
+		}
+
+		return true;
 	};
 
 	/**
@@ -974,6 +1030,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 			// if the property valueHelpOnly is set to true, the event is triggered in the ontap function
 			if (!that.getValueHelpOnly()) {
 				this.getParent().focus();
+				that.bValueHelpRequested = true;
 				that.fireValueHelpRequest({fromSuggestions: false});
 			}
 		});
@@ -1094,52 +1151,6 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 	 */
 	Input.prototype.closeSuggestions = function() {
 		this._closeSuggestionPopup();
-	};
-
-	/**
-	 * Shows the value help.
-	 *
-	 * @name sap.m.Input.setShowValueHelp
-	 * @method
-	 * @public
-	 * @param {boolean} bShowValueHelp Indication for showing the value help.
-	 * @returns {sap.m.Input} this pointer for chaining.
-	 */
-	Input.prototype.setShowValueHelp = function(bShowValueHelp) {
-
-		this.setProperty("showValueHelp", bShowValueHelp);
-
-		if (bShowValueHelp && !Input.prototype._sAriaValueHelpLabelId) {
-			// create an F4 ARIA announcement and remember its ID for later use in the renderer:
-			Input.prototype._sAriaValueHelpLabelId = new InvisibleText({
-				text: this._oRb.getText("INPUT_VALUEHELP")
-			}).toStatic().getId();
-		}
-		return this;
-
-	};
-
-	/**
-	 * Sets the value help.
-	 *
-	 * @name sap.m.Input.setValueHelpOnly
-	 * @method
-	 * @public
-	 * @param {boolean} bValueHelpOnly New value for the value help.
-	 * @returns {sap.m.Input} this pointer for chaining.
-	 */
-	Input.prototype.setValueHelpOnly = function(bValueHelpOnly) {
-
-		this.setProperty("valueHelpOnly", bValueHelpOnly);
-
-		if (bValueHelpOnly && !Input.prototype._sAriaInputDisabledLabelId) {
-			// create an F4 ARIA announcement and remember its ID for later use in the renderer:
-			Input.prototype._sAriaInputDisabledLabelId = new InvisibleText({
-				text: this._oRb.getText("INPUT_DISABLED")
-			}).toStatic().getId();
-		}
-		return this;
-
 	};
 
 	/**
@@ -1504,30 +1515,18 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 	 * @param {jQuery.Event} oEvent Keyboard event.
 	 */
 	Input.prototype.onsapenter = function(oEvent) {
-		if (InputBase.prototype.onsapenter) {
-			InputBase.prototype.onsapenter.apply(this, arguments);
-		}
 
 		// when enter is pressed before the timeout of suggestion delay, suggest event is cancelled
 		this.cancelPendingSuggest();
 
 		if (this._oSuggestionPopup && this._oSuggestionPopup.isOpen()) {
-			var oSelectedItem = this._oList.getSelectedItem();
-			if (oSelectedItem) {
-				if (this._hasTabularSuggestions()){
-					this.setSelectionRow(oSelectedItem, true);
-				} else {
-					this.setSelectionItem(oSelectedItem._oItem, true);
-				}
-			} else {
-				if (this._iPopupListSelectedIndex >= 0) {
-					this._fireSuggestionItemSelectedEvent();
-					this._doSelect();
-
-					this._iPopupListSelectedIndex = -1;
-				}
+			if (!this._updateSelectionFromList()) {
 				this._closeSuggestionPopup();
 			}
+		}
+
+		if (InputBase.prototype.onsapenter) {
+			InputBase.prototype.onsapenter.apply(this, arguments);
 		}
 
 		if (this.getEnabled() && this.getEditable() && !(this.getValueHelpOnly() && this.getShowValueHelp())) {
@@ -1568,6 +1567,8 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 			)) {
 			InputBase.prototype.onsapfocusleave.apply(this, arguments);
 		}
+
+		this.bValueHelpRequested = false;
 	};
 
 	/**
@@ -2004,7 +2005,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 		 */
 		Input.prototype.insertSuggestionRow = function(oItem, iIndex) {
 			oItem.setType(ListType.Active);
-			this.insertAggregation("suggestionRows", iIndex, oItem);
+			this.insertAggregation("suggestionRows", oItem, iIndex);
 			this._bShouldRefreshListItems = true;
 			this._refreshItemsDelayed();
 			createSuggestionPopupContent(this);
@@ -2057,46 +2058,12 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 			return this;
 		};
 
-		/**
-		 * Forwards aggregations with the name of items or columns to the internal table.
-		 *
-		 * @overwrite
-		 * @name sap.m.Input.bindAggregation
-		 * @method
-		 * @public
-		 * @param {string} sAggregationName the name for the binding
-		 * @param {object} oBindingInfo the configuration parameters for the binding
-		 * @returns {sap.m.Input} this pointer for chaining
-		 */
 		Input.prototype.bindAggregation = function() {
-			var args = Array.prototype.slice.call(arguments);
-
-			if (args[0] === "suggestionRows" || args[0] === "suggestionColumns" || args[0] === "suggestionItems") {
-				createSuggestionPopupContent(this, args[0] === "suggestionRows" || args[0] === "suggestionColumns");
+			if (arguments[0] === "suggestionRows" || arguments[0] === "suggestionColumns" || arguments[0] === "suggestionItems") {
+				createSuggestionPopupContent(this, arguments[0] === "suggestionRows" || arguments[0] === "suggestionColumns");
 				this._bBindingUpdated = true;
 			}
-
-			// propagate the bind aggregation function to list
-			this._callMethodInManagedObject.apply(this, ["bindAggregation"].concat(args));
-			return this;
-		};
-
-		/**
-		 * Forwards aggregations with the name of items or columns to the internal table.
-		 *
-		 * @overwrite
-		 * @name sap.m.Input.unbindAggregation
-		 * @method
-		 * @public
-		 * @param {string} sAggregationName the name for the binding
-		 * @returns {sap.m.Input} this pointer for chaining
-		 */
-		Input.prototype.unbindAggregation = function() {
-			var args = Array.prototype.slice.call(arguments);
-
-			// propagate the unbind aggregation function to list
-			this._callMethodInManagedObject.apply(this, ["unbindAggregation"].concat(args));
-			return this;
+			return InputBase.prototype.bindAggregation.apply(this, arguments);
 		};
 
 		/**
@@ -2190,9 +2157,9 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 					initialFocus: oInput,
 					horizontalScrolling: true
 				}).attachAfterClose(function() {
-					if (oInput._iPopupListSelectedIndex  >= 0) {
-						oInput._fireSuggestionItemSelectedEvent();
-					}
+
+					oInput._updateSelectionFromList();
+
 					// only destroy items in simple suggestion mode
 					if (oInput._oList instanceof Table) {
 						oInput._oList.removeSelections(true);
@@ -2265,7 +2232,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 				}));
 
 			oInput._oSuggestionPopup.addStyleClass("sapMInputSuggestionPopup");
-			oInput._oSuggestionPopup.addAriaLabelledBy(Input._sAriaPopupLabelId);
+			oInput._oSuggestionPopup.addAriaLabelledBy(InvisibleText.getStaticId("sap.m", "INPUT_AVALIABLE_VALUES"));
 
 			// add popup as dependent to also propagate the model and bindings to the content of the popover
 			oInput.addDependent(oInput._oSuggestionPopup);
@@ -2292,7 +2259,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 		 */
 		function createSuggestionPopupContent(oInput, bTabular) {
 			// only initialize the content once
-			if (oInput._oList) {
+			if (oInput._bIsBeingDestroyed || oInput._oList) {
 				return;
 			}
 
@@ -2687,6 +2654,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 			return;
 		}
 
+		this.bValueHelpRequested = true;
 		this.fireValueHelpRequest({fromSuggestions: false});
 		oEvent.preventDefault();
 		oEvent.stopPropagation();
@@ -2800,217 +2768,6 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 			}
 			this._iPopupListSelectedIndex = -1;
 		}
-	};
-
-		/* =========================================================== */
-	/*           begin: forward aggregation methods to table       */
-	/* =========================================================== */
-
-	/*
-	 * Forwards a function call to a managed object based on the aggregation name.
-	 * If the name is items, it will be forwarded to the table, otherwise called
-	 * locally
-	 * @name sap.m.Input._callMethodInManagedObject
-	 * @private
-	 * @param {string} sFunctionName the name of the function to be called.
-	 * @param {string} sAggregationName the name of the aggregation asociated.
-	 * @returns {any} the return type of the called function.
-	 */
-	Input.prototype._callMethodInManagedObject = function(sFunctionName, sAggregationName) {
-		var aArgs = Array.prototype.slice.call(arguments),
-			oSuggestionsTable;
-
-		if (sAggregationName === "suggestionColumns") {
-			// apply to the internal table (columns)
-			oSuggestionsTable = this._getSuggestionsTable();
-			if (!oSuggestionsTable) {
-				return null;
-			}
-			return oSuggestionsTable[sFunctionName].apply(oSuggestionsTable, ["columns"].concat(aArgs.slice(2)));
-		} else if (sAggregationName === "suggestionRows") {
-			// apply to the internal table (rows = table items)
-			oSuggestionsTable = this._getSuggestionsTable();
-			if (!oSuggestionsTable) {
-				return null;
-			}
-			return oSuggestionsTable[sFunctionName].apply(oSuggestionsTable, ["items"].concat(aArgs.slice(2)));
-		} else {
-			// apply to this control
-			return Control.prototype[sFunctionName].apply(this, aArgs .slice(1));
-		}
-	};
-
-	/**
-	 * Validates aggregation.
-	 *
-	 * @name sap.m.Input.validateAggregation
-	 * @public
-	 * @method
-	 * @param {string} sAggregationName Name of the aggregation to be validated.
-	 * @param {object} oObject Object to be validated.
-	 * @param {boolean} bMultiple Multiple objects to be validated.
-	 * @returns {any} the return type of the called function.
-	 */
-	Input.prototype.validateAggregation = function(sAggregationName, oObject, bMultiple) {
-		return this._callMethodInManagedObject("validateAggregation", sAggregationName, oObject, bMultiple);
-	};
-
-	/**
-	 * Sets aggregation.
-	 *
-	 * @name sap.m.Input.setAggregation
-	 * @public
-	 * @method
-	 * @param {string} sAggregationName Aggregation name.
-	 * @param {string} oObject Object that will set the aggregation to.
-	 * @param {string} bSuppressInvalidate Check for suppressing invalidate.
-	 * @returns {sap.m.Input} this Input instance for chaining.
-	 */
-	Input.prototype.setAggregation = function(sAggregationName, oObject, bSuppressInvalidate) {
-		this._callMethodInManagedObject("setAggregation", sAggregationName,	oObject, bSuppressInvalidate);
-		return this;
-	};
-
-	/**
-	 * Gets aggregation.
-	 *
-	 * @name sap.m.Input.getAggregation
-	 * @public
-	 * @method
-	 * @param {string} sAggregationName Aggregation name.
-	 * @param {object} oDefaultForCreation Object that we will get the aggregation from.
-	 * @returns {any} The return type of the called function.
-	 */
-	Input.prototype.getAggregation = function(sAggregationName, oDefaultForCreation) {
-		return this._callMethodInManagedObject("getAggregation", sAggregationName, oDefaultForCreation);
-	};
-
-	/**
-	 * Index of given aggregation.
-	 *
-	 * @name sap.m.Input.indexOfAggregation
-	 * @param {string} sAggregationName Aggregation name.
-	 * @param {object} oObject Object
-	 * @returns {any} The return type of the called function.
-	 */
-	Input.prototype.indexOfAggregation = function(sAggregationName, oObject) {
-		return this._callMethodInManagedObject("indexOfAggregation", sAggregationName, oObject);
-	};
-
-	/**
-	 * Inserts aggregation.
-	 *
-	 * @name sap.m.Input.insertAggregation
-	 * @public
-	 * @method
-	 * @param {string} sAggregationName Aggregation name.
-	 * @param {object} oObject Object that will insert aggregation.
-	 * @param {int} iIndex Index of the aggregation.
-	 * @param {boolean} bSuppressInvalidate Suppress invalidate.
-	 * @returns {sap.m.Input} this Input instance for chaining.
-	 */
-	Input.prototype.insertAggregation = function(sAggregationName, oObject, iIndex, bSuppressInvalidate) {
-		this._callMethodInManagedObject("insertAggregation", sAggregationName, oObject, iIndex, bSuppressInvalidate);
-		return this;
-	};
-
-	/**
-	 * Adds aggregation.
-	 *
-	 * @name sap.m.Input.addAggregation
-	 * @public
-	 * @method
-	 * @param {string} sAggregationName Aggregation name.
-	 * @param {object} oObject Object which will contain the new aggregation.
-	 * @param {boolean} bSuppressInvalidate Suppress invalidate.
-	 * @returns {sap.m.Input} this Input instance for chaining.
-	 */
-	Input.prototype.addAggregation = function(sAggregationName, oObject, bSuppressInvalidate) {
-		this._callMethodInManagedObject("addAggregation", sAggregationName,oObject, bSuppressInvalidate);
-		return this;
-	};
-
-	/**
-	 * Removes aggregation.
-	 *
-	 * @name sap.m.Input.removeAggregation
-	 * @public
-	 * @method
-	 * @param {string} sAggregationName Aggregation name.
-	 * @param {object} oObject Object from which we will remove the aggregation.
-	 * @param {boolean} bSuppressInvalidate Suppress invalidate.
-	 * @returns {any} The return type of the called function.
-	 */
-	Input.prototype.removeAggregation = function(sAggregationName, oObject, bSuppressInvalidate) {
-		return this._callMethodInManagedObject("removeAggregation", sAggregationName, oObject, bSuppressInvalidate);
-	};
-
-	/**
-	 * Removes all aggregations.
-	 *
-	 * @name sap.m.Input.removeAllAggregation
-	 * @public
-	 * @method
-	 * @param {string} sAggregationName Aggregation name.
-	 * @param {boolean} bSuppressInvalidate Suppress invalidate.
-	 * @returns {any} The return type of the called function.
-	 */
-	Input.prototype.removeAllAggregation = function(sAggregationName, bSuppressInvalidate) {
-		return this._callMethodInManagedObject("removeAllAggregation", sAggregationName, bSuppressInvalidate);
-	};
-
-	/**
-	 * Destroys aggregation.
-	 *
-	 * @name sap.m.Input.destroyAggregation
-	 * @public
-	 * @method
-	 * @param {string} sAggregationName Aggregation name.
-	 * @param {boolean} bSuppressInvalidate Suppress invalidate.
-	 * @returns {sap.m.Input} this Input instance for chaining.
-	 */
-	Input.prototype.destroyAggregation = function(sAggregationName, bSuppressInvalidate) {
-		this._callMethodInManagedObject("destroyAggregation", sAggregationName, bSuppressInvalidate);
-		return this;
-	};
-
-	/**
-	 * Gets binding.
-	 *
-	 * @name sap.m.Input.getBinding
-	 * @public
-	 * @method
-	 * @param {string} sAggregationName Aggregation name.
-	 * @returns {any} The binding.
-	 */
-	Input.prototype.getBinding = function(sAggregationName) {
-		return this._callMethodInManagedObject("getBinding", sAggregationName);
-	};
-
-	/**
-	 * Gets binding information.
-	 *
-	 * @name sap.m.Input.getBindingInfo
-	 * @public
-	 * @method
-	 * @param {string} sAggregationName Aggregation name.
-	 * @returns {any} The binding information.
-	 */
-	Input.prototype.getBindingInfo = function(sAggregationName) {
-		return this._callMethodInManagedObject("getBindingInfo", sAggregationName);
-	};
-
-	/**
-	 * Gets binding path.
-	 *
-	 * @name sap.m.Input.getBindingPath
-	 * @public
-	 * @method
-	 * @param {string} sAggregationName Aggregation name.
-	 * @returns {any} Binding path.
-	 */
-	Input.prototype.getBindingPath = function(sAggregationName) {
-		return this._callMethodInManagedObject("getBindingPath", sAggregationName);
 	};
 
 	/**
@@ -3172,6 +2929,17 @@ sap.ui.define(['jquery.sap.global', './Bar', './Dialog', './InputBase', './List'
 	 * @function
 	 */
 
+	/**
+	 * Hook method to prevent the change event from being fired when the text input field loses focus.
+	 *
+	 * @param {jQuery.Event} [oEvent] The event object.
+	 * @returns {boolean} Whether or not the change event should be prevented.
+	 * @protected
+	 * @since 1.46
+	 */
+	Input.prototype.preventChangeOnFocusLeave = function(oEvent) {
+		return this.bFocusoutDueRendering || this.bValueHelpRequested;
+	};
 
 
 	return Input;

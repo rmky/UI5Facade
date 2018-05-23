@@ -1,10 +1,10 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["./ObjectPageLayout", "./ObjectImageHelper", "sap/ui/Device"], function (ObjectPageLayout, ObjectImageHelper, Device) {
+sap.ui.define(["./ObjectImageHelper", "sap/ui/Device"], function (ObjectImageHelper, Device) {
 	"use strict";
 
 	/**
@@ -12,6 +12,11 @@ sap.ui.define(["./ObjectPageLayout", "./ObjectImageHelper", "sap/ui/Device"], fu
 	 * @static
 	 */
 	var ObjectPageHeaderRenderer = {};
+
+	function lazyInstanceof(o, sModule) {
+		var FNClass = sap.ui.require(sModule);
+		return typeof FNClass === 'function' && (o instanceof FNClass);
+	}
 
 	ObjectPageHeaderRenderer.render = function (oRm, oControl) {
 
@@ -22,7 +27,7 @@ sap.ui.define(["./ObjectPageLayout", "./ObjectImageHelper", "sap/ui/Device"], fu
 			oObjectImage = oControl._lazyLoadInternalAggregation("_objectImage", true),
 			oPlaceholder,
 			bIsDesktop = Device.system.desktop,
-			bIsHeaderContentVisible = oParent && oParent instanceof ObjectPageLayout && ((oParent.getHeaderContent()
+			bIsHeaderContentVisible = oParent && lazyInstanceof(oParent, "sap/uxap/ObjectPageLayout") && ((oParent.getHeaderContent()
 				&& oParent.getHeaderContent().length > 0 && oParent.getShowHeaderContent()) ||
 			(oParent.getShowHeaderContent() && oParent.getShowTitleInHeaderContent()));
 
@@ -53,7 +58,7 @@ sap.ui.define(["./ObjectPageLayout", "./ObjectImageHelper", "sap/ui/Device"], fu
 		oRm.writeClasses();
 		oRm.write(">");
 
-		if (oParent && oParent instanceof ObjectPageLayout && oParent.getIsChildPage()) {
+		if (oParent && lazyInstanceof(oParent, "sap/uxap/ObjectPageLayout") && oParent.getIsChildPage()) {
 			oRm.write("<div");
 			oRm.addClass('sapUxAPObjectChildPage');
 			oRm.writeClasses();
@@ -120,11 +125,8 @@ sap.ui.define(["./ObjectPageLayout", "./ObjectImageHelper", "sap/ui/Device"], fu
 	/**
 	 * Renders the SelectTitleArrow icon.
 	 *
-	 * @param {sap.ui.core.RenderManager}
-	 *            oRm the RenderManager that can be used for writing to the render output buffer
-	 *
-	 * @param {sap.uxap.ObjecPageHeader}
-	 *            oControl the ObjectPageHeader
+	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer
+	 * @param {sap.uxap.ObjecPageHeader} oControl The ObjectPageHeader
 	 *
 	 * @private
 	 */

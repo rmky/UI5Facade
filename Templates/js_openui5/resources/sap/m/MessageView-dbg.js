@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -25,9 +25,33 @@ sap.ui.define([
 	"./MessageItem",
 	"./GroupHeaderListItem",
 	"sap/ui/core/library",
+	"sap/ui/base/ManagedObject",
+	"./MessageViewRenderer",
 	"jquery.sap.keycodes"
-], function (jQuery, Control, CustomData, IconPool, HTML, Icon, Button, Toolbar, ToolbarSpacer, List, StandardListItem,
-			 library, Text, SegmentedButton, Page, NavContainer, Link, MessageItem, GroupHeaderListItem, coreLibrary) {
+], function(
+	jQuery,
+	Control,
+	CustomData,
+	IconPool,
+	HTML,
+	Icon,
+	Button,
+	Toolbar,
+	ToolbarSpacer,
+	List,
+	StandardListItem,
+	library,
+	Text,
+	SegmentedButton,
+	Page,
+	NavContainer,
+	Link,
+	MessageItem,
+	GroupHeaderListItem,
+	coreLibrary,
+	ManagedObject,
+	MessageViewRenderer
+) {
 	"use strict";
 
 	// shortcut for sap.ui.core.ValueState
@@ -74,7 +98,7 @@ sap.ui.define([
 	 * As part of the messaging concept, MessageView provides a way to centrally manage messages and show them to the user without additional work for the developer.
 	 * <br><br>
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -402,7 +426,7 @@ sap.ui.define([
 	/**
 	 * Groups items in an object of keys and correspoding array of items
 	 * @param {sap.m.MessageItem[]} aItems An array of items
-	 * @returns oGroups Item object
+	 * @returns {object} Item object
 	 * @private
 	 */
 	MessageView.prototype._groupItems = function (aItems) {
@@ -644,8 +668,8 @@ sap.ui.define([
 		var sType = oMessageItem.getType(),
 			listItemType = this._getItemType(oMessageItem),
 			oListItem = new StandardListItem({
-				title: oMessageItem.getTitle(),
-				description: oMessageItem.getSubtitle(),
+				title: ManagedObject.escapeSettingsValue(oMessageItem.getTitle()),
+				description: ManagedObject.escapeSettingsValue(oMessageItem.getSubtitle()),
 				counter: oMessageItem.getCounter(),
 				icon: this._mapIcon(sType),
 				infoState: this._mapInfoState(sType),
@@ -800,7 +824,7 @@ sap.ui.define([
 	 */
 	MessageView.prototype._setTitle = function (oMessageItem) {
 		this._oMessageTitleText = new Text(this.getId() + "MessageTitleText", {
-			text: oMessageItem.getTitle()
+			text: ManagedObject.escapeSettingsValue(oMessageItem.getTitle())
 		}).addStyleClass("sapMMsgViewTitleText");
 		this._detailsPage.addAggregation("content", this._oMessageTitleText);
 	};
@@ -821,7 +845,7 @@ sap.ui.define([
 			});
 		} else {
 			this._oMessageDescriptionText = new Text(this.getId() + "MessageDescriptionText", {
-				text: oMessageItem.getDescription()
+				text: ManagedObject.escapeSettingsValue(oMessageItem.getDescription())
 			}).addStyleClass("sapMMsgViewDescriptionText");
 		}
 
@@ -995,6 +1019,7 @@ sap.ui.define([
 
 	/**
 	 * Perform description sanitization based on Caja HTML sanitizer
+	 * @param {sap.m.MessageItem} oMessageItem The item to be sanitized
 	 * @private
 	 */
 	MessageView.prototype._sanitizeDescription = function (oMessageItem) {
@@ -1095,7 +1120,7 @@ sap.ui.define([
 
 	/**
 	 * Destroys the content of details page
-	 *
+	 * @param {sap.ui.core.Control} aDetailsPageContent The details page content
 	 * @private
 	 */
 	MessageView.prototype._clearDetailsPage = function (aDetailsPageContent) {

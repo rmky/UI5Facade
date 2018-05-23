@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -23,10 +23,11 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 	 * Checks for wrongly configured view namespace
 	 */
 	var oXMLViewWrongNamespace = {
-		id: "XMLViewWrongNamespace",
+		id: "xmlViewWrongNamespace",
 		audiences: [Audiences.Application],
 		categories: [Categories.Functionality],
 		enabled: true,
+		minversion: "-",
 		title: "XML View is not configured with namespace 'sap.ui.core.mvc'",
 		description: "For consistency and proper resource loading, the root node of an XML view must be configured with the namespace 'mvc'",
 		resolution: "Define the XML view as '<core:View ...>' and configure the XML namepspace as 'xmlns:mvc=\"sap.ui.core.mvc\"'",
@@ -55,10 +56,11 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 	 * Checks if a default namespaces is set in an XML view
 	 */
 	var oXMLViewDefaultNamespace = {
-		id: "XMLViewDefaultNamespace",
+		id: "xmlViewDefaultNamespace",
 		audiences: [Audiences.Control, Audiences.Application],
 		categories: [Categories.Performance],
 		enabled: true,
+		minversion: "-",
 		title: "Default namespace missing in XML view",
 		description: "If the default namespace is missing, the code is less readable and parsing performance may be slow",
 		resolution: "Set the namespace of the control library that holds most of the controls you use as default namespace (e.g. xmlns=\"sap.m\")",
@@ -85,10 +87,11 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 	};
 
 	var oXMLViewLowerCaseControl = {
-		id: "XMLViewLowerCaseControl",
+		id: "xmlViewLowerCaseControl",
 		audiences: ["Control","Application"],
 		categories: ["Performance"],
 		enabled: true,
+		minversion: "-",
 		title: "Control tag in XML view starts with lower case",
 		description: "Control tags with lower case cannot be loaded in Linux-based systems",
 		resolution: "Start the Control tag with upper case",
@@ -148,10 +151,11 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 	 * Checks for unused namespaces inside an XML view
 	 */
 	var oXMLViewUnusedNamespaces = {
-		id: "XMLViewUnusedNamespaces",
+		id: "xmlViewUnusedNamespaces",
 		audiences: [Audiences.Control, Audiences.Application],
 		categories: [Categories.Performance],
 		enabled: true,
+		minversion: "-",
 		title: "Unused namespaces in XML view",
 		description: "Namespaces that are declared but not used have a negative impact on performance (and may confuse readers of the code)",
 		resolution: "Remove the unused namespaces from the view definition",
@@ -198,10 +202,180 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 		}
 	};
 
+	/**
+	 * Checks for deprecated properties
+	 */
+	var oDeprecatedPropertyRule = {
+		id: "deprecatedProperty",
+		audiences: [Audiences.Application],
+		categories: [Categories.Functionality],
+		enabled: true,
+		minversion: "1.38",
+		title: "Control is using deprecated property",
+		description: "Using deprecated properties should be avoided, because they are not maintained anymore",
+		resolution: "Refer to the API of the element which property should be used instead.",
+		resolutionurls: [{
+			text: "API Reference",
+			href: "https://sapui5.hana.ondemand.com/#/api/deprecated"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName(sap.ui.core.Element)
+				.forEach(function(oElement) {
+
+					var oMetadata = oElement.getMetadata(),
+						mProperties = oMetadata.getAllProperties();
+
+					for (var sProperty in mProperties) {
+						// if property is deprecated and it is set to a different from the default value
+						// Checks only the deprecated properties with defaultValue property is not null
+						if (mProperties[sProperty].deprecated
+							&& mProperties[sProperty].defaultValue != oElement.getProperty(sProperty)
+							&& mProperties[sProperty].defaultValue !== null) {
+
+							oIssueManager.addIssue({
+								severity: Severity.Medium,
+								details: "Deprecated property '" + sProperty + "' is used for element '" + oElement.getId() + "'.",
+								context: {
+									id: oElement.getId()
+								}
+							});
+						}
+					}
+				});
+		}
+	};
+
+	/**
+	 * Checks for deprecated aggregations
+	 */
+	var oDeprecatedAggregationRule = {
+		id: "deprecatedAggregation",
+		audiences: [Audiences.Application],
+		categories: [Categories.Functionality],
+		enabled: true,
+		minversion: "1.38",
+		title: "Control is using deprecated aggregation",
+		description: "Using deprecated aggregation should be avoided, because they are not maintained anymore",
+		resolution: "Refer to the API of the element which aggregation should be used instead.",
+		resolutionurls: [{
+			text: "API Reference",
+			href: "https://sapui5.hana.ondemand.com/#/api/deprecated"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName(sap.ui.core.Element)
+				.forEach(function(oElement) {
+
+					var oMetadata = oElement.getMetadata(),
+						mAggregations = oMetadata.getAllAggregations();
+
+					for (var sAggregation in mAggregations) {
+						// if aggregation is deprecated and contains elements
+						if (mAggregations[sAggregation].deprecated
+							&& !jQuery.isEmptyObject(oElement.getAggregation(sAggregation))) {
+
+							oIssueManager.addIssue({
+								severity: Severity.Medium,
+								details: "Deprecated aggregation '" + sAggregation + "' is used for element '" + oElement.getId() + "'.",
+								context: {
+									id: oElement.getId()
+								}
+							});
+						}
+					}
+				});
+		}
+	};
+
+	/**
+	 * Checks for deprecated associations
+	 */
+	var oDeprecatedAssociationRule = {
+		id: "deprecatedAssociation",
+		audiences: [Audiences.Application],
+		categories: [Categories.Functionality],
+		enabled: true,
+		minversion: "1.38",
+		title: "Control is using deprecated association",
+		description: "Using deprecated association should be avoided, because they are not maintained anymore",
+		resolution: "Refer to the API of the element which association should be used instead.",
+		resolutionurls: [{
+			text: "API Reference",
+			href: "https://sapui5.hana.ondemand.com/#/api/deprecated"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName(sap.ui.core.Element)
+				.forEach(function(oElement) {
+
+					var oMetadata = oElement.getMetadata(),
+						mAssociations = oMetadata.getAllAssociations();
+
+					for (var sAssociation in mAssociations) {
+						// if association is deprecated and set by developer
+						if (mAssociations[sAssociation].deprecated
+							&& !jQuery.isEmptyObject(oElement.getAssociation(sAssociation))) {
+
+							oIssueManager.addIssue({
+								severity: Severity.Medium,
+								details: "Deprecated association '" + sAssociation + "' is used for element '" + oElement.getId() + "'.",
+								context: {
+									id: oElement.getId()
+								}
+							});
+						}
+					}
+				});
+		}
+	};
+
+	/**
+	 * Checks for deprecated events
+	 */
+	var oDeprecatedEventRule = {
+		id: "deprecatedEvent",
+		audiences: [Audiences.Application],
+		categories: [Categories.Functionality],
+		enabled: true,
+		minversion: "1.38",
+		title: "Control is using deprecated event",
+		description: "Using deprecated event should be avoided, because they are not maintained anymore",
+		resolution: "Refer to the API of the element which event should be used instead.",
+		resolutionurls: [{
+			text: "API Reference",
+			href: "https://sapui5.hana.ondemand.com/#/api/deprecated"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName(sap.ui.core.Element)
+				.forEach(function(oElement) {
+
+					var oMetadata = oElement.getMetadata(),
+						mEvents = oMetadata.getAllEvents();
+
+					for (var sEvent in mEvents) {
+						// if event is deprecated and developer added event handler
+						if (mEvents[sEvent].deprecated
+							&& oElement.mEventRegistry[sEvent] && oElement.mEventRegistry[sEvent].length > 0) {
+
+							oIssueManager.addIssue({
+								severity: Severity.Medium,
+								details: "Deprecated event '" + sEvent + "' is used for element '" + oElement.getId() + "'.",
+								context: {
+									id: oElement.getId()
+								}
+							});
+						}
+					}
+				});
+		}
+	};
+
 	return [
 		oXMLViewWrongNamespace,
 		oXMLViewDefaultNamespace,
 		oXMLViewLowerCaseControl,
-		oXMLViewUnusedNamespaces
+		oXMLViewUnusedNamespaces,
+		oDeprecatedPropertyRule,
+		oDeprecatedAggregationRule,
+		oDeprecatedAssociationRule,
+		oDeprecatedEventRule
 	];
 }, true);

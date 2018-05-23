@@ -1,13 +1,28 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-		"jquery.sap.global", "./library", "sap/ui/core/Control", "sap/ui/core/delegate/ScrollEnablement",
-		"./WizardProgressNavigator", "./Button", "sap/ui/Device"],
-	function (jQuery, library, Control, ScrollEnablement, WizardProgressNavigator, Button, Device) {
+	"jquery.sap.global",
+	"./library",
+	"sap/ui/core/Control",
+	"sap/ui/core/delegate/ScrollEnablement",
+	"./WizardProgressNavigator",
+	"./Button",
+	"sap/ui/Device",
+	"./WizardRenderer"
+], function(
+	jQuery,
+	library,
+	Control,
+	ScrollEnablement,
+	WizardProgressNavigator,
+	Button,
+	Device,
+	WizardRenderer
+	) {
 		"use strict";
 
 		// shortcut for sap.m.ButtonType
@@ -47,7 +62,7 @@ sap.ui.define([
 		 * On mobile devices the steps in the StepNavigator are grouped together and overlap. Tapping on them will show a popover to select the step to navigate to.
 		 * @extends sap.ui.core.Control
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -58,6 +73,7 @@ sap.ui.define([
 		var Wizard = Control.extend("sap.m.Wizard", /** @lends sap.m.Wizard.prototype */ {
 			metadata: {
 				library: "sap.m",
+				designtime: "sap/m/designtime/Wizard.designtime",
 				properties: {
 					/**
 					 * Determines the width of the Wizard.
@@ -87,6 +103,7 @@ sap.ui.define([
 					 * current step and set a concrete next step amongs the available subsequent steps.
 					 * Note: If this property is set to false, <code>next</code> and <code>subSequentSteps</code>
 					 * associations of the WizardStep control are ignored.
+					 * @since 1.32
 					 */
 					enableBranching : {type: "boolean", group: "Behavior", defaultValue : false}
 				},
@@ -98,6 +115,7 @@ sap.ui.define([
 					steps: {type: "sap.m.WizardStep", multiple: true, singularName: "step"},
 					/**
 					 * The progress navigator for the wizard.
+					 * @since 1.32
 					 */
 					_progressNavigator: {type: "sap.ui.core.Control", multiple: false, visibility: "hidden"},
 					/**
@@ -110,6 +128,7 @@ sap.ui.define([
 					 * This association controls the current activated step of the wizard (meaning the last step)
 					 * For example if we have A->B->C->D steps, we are on step A and we setCurrentStep(C) A,B and C are going to be activated. D will still remain unvisited.
 					 * The parameter needs to be a Wizard step that is part of the current Wizard
+					 * @since 1.50
 					 */
 					currentStep: {type: "sap.m.WizardStep", multiple: false}
 				},
@@ -927,6 +946,7 @@ sap.ui.define([
 				allSteps = this.getSteps(),
 				stepTitles = [currentStep.getTitle()],
 				stepIcons = [currentStep.getIcon()],
+				stepOptionalIndication = [],
 				stepCount = 1;
 
 			if (this.getEnableBranching()) {
@@ -935,6 +955,7 @@ sap.ui.define([
 					stepCount++;
 					currentStep = currentStep._getNextStepReference();
 					stepTitles.push(currentStep.getTitle());
+					stepOptionalIndication.push(currentStep.getOptional());
 					stepIcons.push(currentStep.getIcon());
 				}
 
@@ -942,10 +963,12 @@ sap.ui.define([
 				progressNavigator.setStepCount(stepCount);
 			} else {
 				stepTitles = allSteps.map(function (step) { return step.getTitle(); });
+				stepOptionalIndication = allSteps.map(function (step) { return step.getOptional(); });
 				stepIcons = allSteps.map(function (step) { return step.getIcon(); });
 			}
 
 			progressNavigator.setStepTitles(stepTitles);
+			progressNavigator._stepOptionalIndication = stepOptionalIndication;
 			progressNavigator.setStepIcons(stepIcons);
 		};
 

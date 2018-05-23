@@ -1,6 +1,6 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The P13nGroupPanel control is used to define group-specific settings for table personalization.
 	 * @extends sap.m.P13nPanel
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -219,9 +219,6 @@ sap.ui.define([
 		this.setTitle(sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("GROUPPANEL_TITLE"));
 
 		sap.ui.getCore().loadLibrary("sap.ui.layout");
-		jQuery.sap.require("sap.ui.layout.Grid");
-
-		sap.ui.layout.Grid.prototype.init.apply(this);
 
 		this._aKeyFields = [];
 		this.addStyleClass("sapMGroupPanel");
@@ -367,9 +364,10 @@ sap.ui.define([
 	P13nGroupPanel.prototype.updateGroupItems = function(sReason) {
 		this.updateAggregation("groupItems");
 
-		if (sReason == "change" && !this._bIgnoreBindCalls) {
-			this._bUpdateRequired = true;
-		}
+        if (sReason === "change" && !this._bIgnoreBindCalls) {
+            this._bUpdateRequired = true;
+            this.invalidate();
+        }
 	};
 
 	P13nGroupPanel.prototype.removeGroupItem = function(oGroupItem) {

@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.ux3.ActionBar.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/delegate/ItemNavigation', './library'],
-	function(jQuery, Control, ItemNavigation, library) {
+sap.ui.define([
+    'jquery.sap.global',
+    'sap/ui/core/Control',
+    'sap/ui/core/delegate/ItemNavigation',
+    './library',
+    "./ActionBarRenderer"
+],
+	function(jQuery, Control, ItemNavigation, library, ActionBarRenderer) {
 	"use strict";
 
 
@@ -24,7 +30,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/delegate
 	 *
 	 * When using this control, please be aware that it fulfills rather specific requirements: it has been designed for and is used within composite controls QuickView and ThingInspector.
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

@@ -1,12 +1,26 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.ProgressIndicator.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
-	function(jQuery, library, Control, ValueStateSupport, coreLibrary) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/ValueStateSupport',
+	'sap/ui/core/library',
+	'./ProgressIndicatorRenderer'
+],
+	function(
+	jQuery,
+	library,
+	Control,
+	ValueStateSupport,
+	coreLibrary,
+	ProgressIndicatorRenderer
+	) {
 	"use strict";
 
 
@@ -31,7 +45,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -61,6 +75,9 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 			/**
 			 * Specifies the numerical value in percent for the length of the progress bar.
+			 *
+			 * <b>Note:</b> If a value greater than 100 is provided, the <code>percentValue</code> is set to 100.
+			 * In other cases of invalid value, <code>percentValue</code> is set to its default of 0.
 			 */
 			percentValue : {type : "float", group : "Data", defaultValue : 0},
 
@@ -91,7 +108,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			 * @since 1.50
 			 */
 			displayOnly : {type : "boolean", group : "Behavior", defaultValue : false}
-		}
+		},
+		designtime: "sap/m/designtime/ProgressIndicator.designtime"
 	}});
 
 	var bUseAnimations = sap.ui.getCore().getConfiguration().getAnimation();
@@ -101,11 +119,15 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			$progressBar,
 			fPercentDiff,
 			$progressIndicator = this.$(),
-			fAnimationDuration;
+			fAnimationDuration,
+			fNotValidValue;
+
+		fPercentValue = this.validateProperty("percentValue", fPercentValue);
 
 		if (!isValidPercentValue(fPercentValue)) {
-			fPercentValue = 0;
-			jQuery.sap.log.warning(this + ": percentValue (" + fPercentValue + ") is not correct! Setting the default percentValue:0.");
+			fNotValidValue = fPercentValue;
+			fPercentValue = fPercentValue > 100 ? 100 : 0;
+			jQuery.sap.log.warning(this + ": percentValue (" + fNotValidValue + ") is not correct! Setting the percentValue to " + fPercentValue);
 		}
 
 		if (this.getPercentValue() !== fPercentValue) {
@@ -210,8 +232,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	};
 
 	/**
+	 * Returns the <code>sap.m.ProgressIndicator</code>  accessibility information.
+	 *
 	 * @see sap.ui.core.Control#getAccessibilityInfo
 	 * @protected
+	 * @returns {object} The <code>sap.m.ProgressIndicator</code> accessibility information
 	 */
 	ProgressIndicator.prototype.getAccessibilityInfo = function() {
 		var oBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
@@ -225,7 +250,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	};
 
 	function isValidPercentValue(value) {
-		return (typeof (value) === 'number') && !isNaN(value) && value >= 0 && value <= 100;
+		return value >= 0 && value <= 100;
 	}
 
 	return ProgressIndicator;

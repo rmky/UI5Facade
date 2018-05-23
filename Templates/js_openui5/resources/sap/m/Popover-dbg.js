@@ -1,13 +1,45 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Popover.
-sap.ui.define(['jquery.sap.global', './Bar', './Button', './InstanceManager', './library', 'sap/ui/core/Control',
-		'sap/ui/core/Popup', 'sap/ui/core/delegate/ScrollEnablement', 'sap/ui/core/theming/Parameters', 'sap/ui/Device', 'sap/ui/base/ManagedObject', 'sap/ui/core/library', 'sap/ui/core/Element', 'sap/ui/core/ResizeHandler', 'jquery.sap.keycodes'],
-	function (jQuery, Bar, Button, InstanceManager, library, Control, Popup, ScrollEnablement, Parameters, Device, ManagedObject, coreLibrary, Element, ResizeHandler) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./Bar',
+	'./Button',
+	'./InstanceManager',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/Popup',
+	'sap/ui/core/delegate/ScrollEnablement',
+	'sap/ui/core/theming/Parameters',
+	'sap/ui/Device',
+	'sap/ui/base/ManagedObject',
+	'sap/ui/core/library',
+	'sap/ui/core/Element',
+	'sap/ui/core/ResizeHandler',
+	'./PopoverRenderer',
+	'jquery.sap.keycodes'
+],
+	function(
+	jQuery,
+	Bar,
+	Button,
+	InstanceManager,
+	library,
+	Control,
+	Popup,
+	ScrollEnablement,
+	Parameters,
+	Device,
+	ManagedObject,
+	coreLibrary,
+	Element,
+	ResizeHandler,
+	PopoverRenderer
+	) {
 		"use strict";
 
 		// shortcut for sap.m.PopupHelper
@@ -64,7 +96,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Button', './InstanceManager', '.
 		* @extends sap.ui.core.Control
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.52.5
+		* @version 1.54.5
 		*
 		* @public
 		* @alias sap.m.Popover
@@ -302,7 +334,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Button', './InstanceManager', '.
 						}
 					}
 				},
-				designTime: true
+				designtime: "sap/m/designtime/Popover.designtime"
 			}
 		});
 
@@ -479,13 +511,20 @@ sap.ui.define(['jquery.sap.global', './Bar', './Button', './InstanceManager', '.
 			// autoclose.
 			this.oPopup.close = function (bBeforeCloseFired) {
 				var bBooleanParam = typeof bBeforeCloseFired === "boolean";
+				var eOpenState = that.oPopup.getOpenState();
 
 				// Only when the given parameter is "true", the beforeClose event isn't fired here.
 				// Because it's already fired in the sap.m.Popover.prototype.close function.
+				//
 				// The event also should not be fired if the focus is still inside the Popup. This could occur when the
 				// autoclose mechanism is fired by the child Popup and is called throught the EventBus
-				// Also when the Popup is being destroyed, its close method is called. We should not fire beforeClose event in that case.
-				if (bBeforeCloseFired !== true && (this.touchEnabled || !this._isFocusInsidePopup()) && this.isOpen()) {
+				//
+				// When Popup's destroy method is called without even being opened there should not be onBeforeClose event.
+				//
+				// When the Popover/Popoup is already closed or is closing, this should not be triggered.
+				if (bBeforeCloseFired !== true && (this.touchEnabled || !this._isFocusInsidePopup()) && this.isOpen() &&
+					!(eOpenState === OpenState.CLOSED || eOpenState === OpenState.CLOSING)) {
+
 					that.fireBeforeClose({openBy: that._oOpenBy});
 				}
 

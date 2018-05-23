@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Text
-sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/library', 'sap/ui/Device'],
-	function(library, Control, coreLibrary, Device) {
+sap.ui.define([
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/library',
+	'sap/ui/Device',
+	'./TextRenderer'
+],
+	function(library, Control, coreLibrary, Device, TextRenderer) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TextAlign
@@ -29,7 +35,7 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/library', 'sap/u
 	 * @implements sap.ui.core.IShrinkable, sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -88,7 +94,7 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/library', 'sap/u
 			renderWhitespace : {type : "boolean", group : "Appearance", defaultValue : false}
 
 		},
-		designTime: true
+		designtime: "sap/m/designtime/Text.designtime"
 	}});
 
 	/**

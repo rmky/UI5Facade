@@ -1,12 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.commons.MenuButton.
-sap.ui.define(['jquery.sap.global', './Button', './Menu', './MenuItemBase', './library'],
-	function(jQuery, Button, Menu, MenuItemBase, library) {
+sap.ui.define([
+    'jquery.sap.global',
+    './Button',
+    './Menu',
+    './MenuItemBase',
+    './library',
+    "./MenuButtonRenderer"
+],
+	function(jQuery, Button, Menu, MenuItemBase, library, MenuButtonRenderer) {
 	"use strict";
 
 	/**
@@ -19,7 +26,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Menu', './MenuItemBase', './l
 	 * Common button control that opens a menu when clicked by the user. The control provides an API for configuring the docking position
 	 * of the menu.
 	 * @extends sap.ui.commons.Button
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

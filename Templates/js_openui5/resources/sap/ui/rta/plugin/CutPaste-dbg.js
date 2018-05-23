@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -34,7 +34,7 @@ function(
 	 * @extends sap.ui.dt.plugin.CutPaste
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @private
@@ -152,9 +152,10 @@ function(
 					return this.cut(aOverlays[0]);
 				}.bind(this),
 				enabled: function (){
-					return this.getDesignTime().getSelection().length === 1;
+					return this.getSelectedOverlays().length === 1;
 				}.bind(this),
-				rank: 70
+				rank: 70,
+				icon: "sap-icon://scissors"
 			},
 			oPasteMenuItem = {
 				id: 'CTX_PASTE',
@@ -165,7 +166,8 @@ function(
 				enabled: function(oOverlay) {
 					return this.isElementPasteable(oOverlay);
 				}.bind(this),
-				rank: 80
+				rank: 80,
+				icon: "sap-icon://paste"
 			};
 
 		if (this.isAvailable(oOverlay)){

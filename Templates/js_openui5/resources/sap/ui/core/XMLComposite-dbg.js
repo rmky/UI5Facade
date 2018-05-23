@@ -1,17 +1,22 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 /**
- * This class provides the possibly to declare the "view" part of a composite control
+ * This class provides the possibility to declare the "view" part of a composite control
  * in an XML fragment which will automatically define the rendering accordingly.
- * Additionally, the XMLComposite allows aggregations defined on the control
+ * Additionally, the <code>XMLComposite</code> control allows aggregations defined on the control
  * to be forwarded (on an instance level) to the inner controls used in the
  * XML fragment.
  *
- * CAUTION: naming, location and APIs of this entity will possibly change and should
+ * <b>Note:</b> If you use aggregation forwarding with <code>idSuffix</<code> as defined
+ * in {@link sap.ui.base.ManagedObject ManagedObject} and refer to IDs defined in the XML fragment
+ * of the XML composite control, then these types of <code>idSuffix</<code> have the form
+ * "--ID" where ID is the ID that you have defined in the XML fragment.
+ *
+ * CAUTION: Naming, location and APIs of this entity will possibly change and should
  * therefore be considered experimental
  *
  * @private
@@ -20,8 +25,8 @@
  */
 sap.ui.define([
 	'jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/XMLCompositeMetadata', 'sap/ui/model/base/ManagedObjectModel', 'sap/ui/core/util/XMLPreprocessor',
-	'sap/ui/model/json/JSONModel', 'sap/ui/core/Fragment', 'sap/ui/base/ManagedObject', 'sap/ui/base/DataType', 'sap/ui/core/AggregationProxy'
-], function (jQuery, Control, XMLCompositeMetadata, ManagedObjectModel, XMLPreprocessor, JSONModel, Fragment, ManagedObject, DataType, Proxy) {
+	'sap/ui/model/json/JSONModel', 'sap/ui/core/Fragment', 'sap/ui/base/ManagedObject', 'sap/ui/base/DataType', 'sap/ui/model/base/XMLNodeAttributesModel'
+], function (jQuery, Control, XMLCompositeMetadata, ManagedObjectModel, XMLPreprocessor, JSONModel, Fragment, ManagedObject, DataType, XMLNodeAttributesModel) {
 	"use strict";
 
 	// private functions
@@ -58,22 +63,20 @@ sap.ui.define([
 	}
 
 	function addAttributesContext(mContexts, sName, oElement, oImpl, oVisitor) {
-		var oAttributesModel = new JSONModel(oElement),
-			oMetadata = oImpl.getMetadata(),
-			mAggregations = oMetadata.getAllAggregations(),
-			mProperties = oMetadata.getAllProperties(),
-			mSpecialSettings = oMetadata._mAllSpecialSettings;
+		var oAttributesModel = new JSONModel(oElement), oMetadata = oImpl.getMetadata(), mAggregations = oMetadata.getAllAggregations(), mProperties = oMetadata.getAllProperties(), mSpecialSettings = oMetadata._mAllSpecialSettings;
 
-		oAttributesModel.getVisitor = function () {
+		oAttributesModel.getVisitor = function() {
 			return oVisitor;
 		};
-		oAttributesModel.getProperty = function (sPath, oContext) {
+
+		oAttributesModel._getObject = function(sPath, oContext) {
 			var oResult;
 			sPath = this.resolve(sPath, oContext);
 			sPath = sPath.substring(1);
+			var aPath = sPath.split("/");
 
 			if (sPath && sPath.startsWith && sPath.startsWith("metadataContexts")) {
-				return this._navInMetadataContexts(sPath);//note as metadataContexts is an object the path can be deep
+				return this._navInMetadataContexts(sPath);// note as metadataContexts is an object the path can be deep
 			}
 
 			if (mProperties.hasOwnProperty(sPath)) {
@@ -93,17 +96,33 @@ sap.ui.define([
 				}
 				return null;
 
-			} else if (mAggregations.hasOwnProperty(sPath)) {
-				var oAggregation = mAggregations[sPath],
-					sControlName = oMetadata.getName(),
-					sNamespace = sControlName.slice(0, sControlName.lastIndexOf("."));
-				if (oAggregation.multiple === true && oAggregation.type === "TemplateMetadataContext") {
-					if (!oElement.hasAttribute(sPath)) {
-						return null;
-					}
-					return oElement.getAttribute(sPath);
+			} else if (mAggregations.hasOwnProperty(aPath[0])) {
+				var oAggregation = mAggregations[aPath[0]], sControlName = oMetadata.getName(), sNamespace = sControlName.slice(0, sControlName.lastIndexOf("."));
+				var oAggregationModel, oContent = oElement.getElementsByTagNameNS(sNamespace, aPath[0])[0];
+				if (!oContent) {
+					return null;
 				}
-				return oElement.getElementsByTagNameNS(sNamespace, sPath);
+
+				if (oAggregation.multiple) {
+					// return a list of context
+					var oChild, aContexts = [];
+					for (var i = 0; i < oContent.childNodes.length; i++) {
+						oChild = oContent.childNodes[i];
+
+					if (oChild.nodeType == 1 /* Node.ELEMENT_NODE */) {
+							oAggregationModel = new XMLNodeAttributesModel(oChild, oVisitor, "");
+							aContexts.push(oAggregationModel.getContext("/"));
+						}
+					}
+
+					oResult = aContexts;
+				} else {
+					oAggregationModel = new XMLNodeAttributesModel(oContent, oVisitor, "");
+					oResult = oAggregationModel.getContext("/");
+				}
+
+				aPath.shift();
+				return this._getNode(aPath, oResult);
 			} else if (mSpecialSettings.hasOwnProperty(sPath)) {
 				var oSpecialSetting = mSpecialSettings[sPath];
 
@@ -128,18 +147,21 @@ sap.ui.define([
 			}
 		};
 
-		oAttributesModel._navInMetadataContexts = function (sPath) {
+		oAttributesModel._navInMetadataContexts = function(sPath) {
 			var sRemainPath = sPath.replace("metadataContexts", "");
-			var sInnerPath, aPath = sRemainPath.split("/");
+			var aPath = sRemainPath.split("/"), vNode = mContexts["metadataContexts"].getObject();
 
 			aPath.shift();
+			return this._getNode(aPath, vNode);
+		};
 
-			var oResult, vNode = mContexts["metadataContexts"].getObject();
+		oAttributesModel._getNode = function(aPath, vNode) {
+			var oResult = null, sInnerPath;
 
 			while (aPath.length > 0 && vNode) {
 
 				if (vNode.getObject) {
-					//try to nav deep
+					// try to nav deep
 					oResult = vNode.getObject(aPath.join("/"));
 				}
 
@@ -152,16 +174,16 @@ sap.ui.define([
 			}
 
 			return vNode;
-
 		};
 
-		oAttributesModel.getContextName = function () {
+		oAttributesModel.getContextName = function() {
 			return sName;
 		};
+
 		mContexts[sName] = oAttributesModel.getContext("/");
 		if (mContexts["metadataContexts"]) {
-			//make attributes model available via metadataContexts
-			mContexts["metadataContexts"].oModel.setProperty("/" + sName,mContexts[sName]);
+			// make attributes model available via metadataContexts
+			mContexts["metadataContexts"].oModel.setProperty("/" + sName, mContexts[sName]);
 		}
 	}
 
@@ -205,6 +227,8 @@ sap.ui.define([
 		// extend the contexts from metadataContexts
 		for (var j = 0; j < oMetadataContexts.parts.length; j++) {
 			addSingleContext(mContexts, oVisitor, oMetadataContexts.parts[j], oMetadataContexts, sDefaultMetaModel);
+			// Make sure every previously defined context can be used in the next binding
+			oVisitor = oVisitor["with"](mContexts, false);
 		}
 
 		var oMdCModel = new JSONModel(oMetadataContexts);
@@ -337,7 +361,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @since 1.50.0
 	 * @alias sap.ui.core.XMLComposite
 	 *
@@ -809,94 +833,5 @@ sap.ui.define([
 		oElement.appendChild(oNode);
 	};
 
-	/**
-	 * TODO: Where to put default helpers
-	 */
-	XMLComposite.helper = {
-		// Annotation Helper to go to the meta model context of the corresponding meta model
-		listContext: function (oContext) {
-			var oBindingInfo = oContext.getModel().getProperty(oContext.getPath());
-			if (typeof oBindingInfo === "string") {
-				oBindingInfo = ManagedObject.bindingParser(oBindingInfo);
-			}
-			if (jQuery.isArray(oBindingInfo)) {
-				var oBinding = oContext.getModel().getProperty(oContext.getPath() + "/@binding");
-				if (oBinding) {
-					return oBinding.getModel().getMetaModel().getMetaContext(oBinding.getPath());
-				} else {
-					return undefined;
-				}
-			}
-			if (typeof oBindingInfo === "object") {
-				var oVisitor = oContext.getModel().getVisitor();
-				var oModel = oVisitor.getSettings().models[oBindingInfo.model];
-				if (oModel) {
-					return oModel.createBindingContext(oBindingInfo.path);
-				}
-				return null;
-			} else {
-				return undefined;
-			}
-		},
-		// TODO: very similar to listContext, maybe parts like the identical first 60% can be factored out
-		listMetaContext: function (oContext) {
-			var oBindingInfo = oContext.getModel().getProperty(oContext.getPath());
-			if (typeof oBindingInfo === "string") {
-				oBindingInfo = ManagedObject.bindingParser(oBindingInfo);
-			}
-			if (jQuery.isArray(oBindingInfo)) {
-				var oBinding = oContext.getModel().getProperty(oContext.getPath() + "/@binding");
-				if (oBinding) {
-					return oBinding.getModel().getMetaModel().getMetaContext(oBinding.getPath());
-				} else {
-					return undefined;
-				}
-			}
-			if (typeof oBindingInfo === "object") {
-				var oVisitor = oContext.getModel().getVisitor();
-				oBindingInfo = ManagedObject.bindingParser("{" + oBindingInfo.path + "}");
-				var oModel = oVisitor.getSettings().models[oBindingInfo.model];
-				if (oModel) {
-					var oMetaModel = oModel.getMetaModel();
-					if (oMetaModel && oMetaModel.getMetaContext) {
-						return oMetaModel.getMetaContext(oBindingInfo.path);
-					}
-				}
-				return null;
-			} else {
-				return undefined;
-			}
-		},
-
-		// Annotation Helper to bind a property to the managed object model
-		runtimeProperty: function (oContext, vValue) {
-			if (oContext.getModel().getContextName) {
-				return "{$" + oContext.getModel().getContextName() + ">" + oContext.getPath() + "}";
-			}
-			return vValue;
-		},
-
-		// Annotation Helper to bind a property to the managed object model
-		runtimeBinding: function (oContext, vValue) {
-			return "{Name}";
-		},
-
-		// Annotation Helper to bind an aggregation
-		runtimeListBinding: function (oContext, vValue) {
-			// if the value is an array, this is an resolved list binding and the binding needs to be as string
-			if (jQuery.isArray(vValue)) {
-				var oBinding = oContext.getModel().getProperty(oContext.getPath() + "/@binding");
-				if (oBinding) {
-					return "{path: '" + oBinding.getPath() + "'}";
-				}
-				return null;
-			}
-			return vValue;
-		}
-	};
-	XMLComposite.helper.listMetaContext.requiresIContext = true;
-	XMLComposite.helper.runtimeProperty.requiresIContext = true;
-	XMLComposite.helper.runtimeListBinding.requiresIContext = true;
-	XMLComposite.helper.runtimeBinding.requiresIContext = true;
 	return XMLComposite;
-}, true);
+});

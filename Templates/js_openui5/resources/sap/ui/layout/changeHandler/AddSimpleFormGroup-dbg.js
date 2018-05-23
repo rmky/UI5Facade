@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,7 +13,7 @@ sap.ui.define([
 		 * Change handler for adding a simple form group.
 		 * @alias sap.ui.layout.changeHandler.AddSimpleFormGroup
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 * @experimental Since 1.27.0
 		 */
 		var AddSimpleFormGroup = {};
@@ -24,7 +24,7 @@ sap.ui.define([
 			for (var i = 0; i < aContent.length; i++) {
 				var sType = oModifier.getControlType(aContent[i]);
 				if (aStopToken.indexOf(sType) === -1) {
-					if (aContent[i].getVisible()) {
+					if (oModifier.getVisible(aContent[i])) {
 						return true;
 					}
 				} else {

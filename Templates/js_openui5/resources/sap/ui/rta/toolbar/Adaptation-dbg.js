@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,6 +9,9 @@ sap.ui.define([
 	'sap/m/Button',
 	'sap/m/SegmentedButton',
 	'sap/m/SegmentedButtonItem',
+	'sap/m/MenuButton',
+	'sap/m/MenuItem',
+	'sap/m/Menu',
 	'./Base'
 ],
 function(
@@ -16,6 +19,9 @@ function(
 	Button,
 	SegmentedButton,
 	SegmentedButtonItem,
+	MenuButton,
+	MenuItem,
+	Menu,
 	Base
 ) {
 	"use strict";
@@ -28,7 +34,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Base
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @private
@@ -51,6 +57,7 @@ function(
 				"transport": {},
 				"modeChange": {},
 				"manageApps": {},
+				"appVariantOverview": {},
 				"saveAs": {}
 			},
 			properties: {
@@ -64,12 +71,6 @@ function(
 				"modeSwitcher": {
 					type: "string",
 					defaultValue: "adaptation"
-				},
-
-				/** Determines whether Message information icon button and 'Save As' button are visible */
-				"appVariantFeaturesSupported": {
-					"type": "boolean",
-					"defaultValue": false
 				}
 			}
 		}
@@ -142,10 +143,29 @@ function(
 			new Button({
 				type:"Transparent",
 				icon: "sap-icon://message-information",
-				visible: this.getAppVariantFeaturesSupported(),
+				enabled: false,
+				visible: false,
 				tooltip: this.getTextResources().getText("BTN_MANAGE_APPS"),
 				press: this.eventHandler.bind(this, 'ManageApps')
 			}).data('name', 'manageApps'),
+			new MenuButton({
+				type:"Transparent",
+				icon: "sap-icon://message-information",
+				enabled: false,
+				visible: false,
+				tooltip: this.getTextResources().getText("BTN_MANAGE_APPS"),
+				menu: new Menu({
+					itemSelected: this.eventHandler.bind(this, 'AppVariantOverview'),
+					items: [
+						new MenuItem('keyUser', {
+							text: this.getTextResources().getText("MENU_ITEM_KEY_USER")
+						}),
+						new MenuItem('developer', {
+							text: this.getTextResources().getText("MENU_ITEM_SAP_DEVELOPER")
+						})
+					]
+				})
+			}).data('name', 'appVariantOverview'),
 			new Button({
 				type: "Transparent",
 				text: this.getTextResources().getText("BTN_RESTORE"),
@@ -154,7 +174,7 @@ function(
 				tooltip: this.getTextResources().getText("BTN_RESTORE"),
 				press: this.eventHandler.bind(this, 'Restore')
 			}).data('name', 'restore'),
-			new sap.m.Button({
+			new Button({
 				type: "Transparent",
 				enabled: false,
 				visible: this.getPublishVisible(),
@@ -165,7 +185,8 @@ function(
 			new Button({
 				type: "Transparent",
 				text: this.getTextResources().getText("BTN_SAVE_AS"),
-				visible: this.getAppVariantFeaturesSupported(),
+				enabled: false,
+				visible: false,
 				tooltip: this.getTextResources().getText("TOOLTIP_SAVE_AS"),
 				press: this.eventHandler.bind(this, 'SaveAs')
 			}).data('name', 'saveAs'),
@@ -194,7 +215,6 @@ function(
 	/* Methods propagation */
 	Adaptation.prototype.show = function () { return Base.prototype.show.apply(this, arguments); };
 	Adaptation.prototype.hide = function () { return Base.prototype.hide.apply(this, arguments); };
-
 
 	return Adaptation;
 

@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.commons.RangeSlider.
-sap.ui.define(['jquery.sap.global', './Slider', './library'],
-	function(jQuery, Slider, library) {
+sap.ui.define(['jquery.sap.global', './Slider', './library', "./RangeSliderRenderer"],
+	function(jQuery, Slider, library, RangeSliderRenderer) {
 	"use strict";
 
 
@@ -22,12 +22,12 @@ sap.ui.define(['jquery.sap.global', './Slider', './library'],
 	 * @extends sap.ui.commons.Slider
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.8.0
-	 * @deprecated Since version 1.38. Instead, use the <code>sap.m.RangeSlider</code> control.
+	 * @deprecated as of version 1.38, replaced by {@link sap.m.RangeSlider}
 	 * @alias sap.ui.commons.RangeSlider
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */

@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.unified.CalendarLegend.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/Device', 'sap/ui/core/InvisibleText'],
-	function(jQuery, Control, library, Device, InvisibleText) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/Device', './CalendarLegendRenderer'],
+	function(jQuery, Control, library, Device, CalendarLegendRenderer) {
 	"use strict";
 
 	// shortcut for sap.ui.unified.CalendarDayType
@@ -26,7 +26,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -34,30 +34,49 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 	 * @alias sap.ui.unified.CalendarLegend
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	var CalendarLegend = Control.extend("sap.ui.unified.CalendarLegend", /** @lends sap.ui.unified.CalendarLegend.prototype */ { metadata : {
+	var CalendarLegend = Control.extend("sap.ui.unified.CalendarLegend", /** @lends sap.ui.unified.CalendarLegend.prototype */ {
+		metadata: {
 
-		library : "sap.ui.unified",
-		properties : {
+			library: "sap.ui.unified",
+			properties: {
+				/**
+				 * Determines the standard items related to the calendar days, such as, today, selected, working and non-working.
+				 * Values must be one of <code>sap.ui.unified.StandardCalendarLegendItem</code>.
+				 * Note: for versions 1.50 and 1.52, this property was defined in the the subclass <code>sap.m.PlanningCalendarLegend</code>
+				 * @since 1.54
+				 */
+				standardItems: {type: "string[]", group: "Misc", defaultValue: ['Today', 'Selected', 'WorkingDay', 'NonWorkingDay']},
 
-			/**
-			 * Defines the width of the created columns in which the items are arranged.
-			 */
-			columnWidth : {type : "sap.ui.core.CSSSize", group : "Misc", defaultValue : '120px'}
+				/**
+				 * Defines the width of the created columns in which the items are arranged.
+				 */
+				columnWidth: {type: "sap.ui.core.CSSSize", group: "Misc", defaultValue: '120px'}
+			},
+			aggregations: {
+
+				/**
+				 * Items to be displayed.
+				 */
+				items: {type: "sap.ui.unified.CalendarLegendItem", multiple: true, singularName: "item"},
+
+				// holds a reference to all standard items in the given format, which will be eventually rendered.
+				_standardItems: {type: "sap.ui.unified.CalendarLegendItem", multiple: true, visibility: "hidden"}
+			},
+			designtime: "sap/ui/unified/designtime/CalendarLegend.designtime"
 		},
-		aggregations : {
 
-			/**
-			 * Items to be displayed.
-			 */
-			items : {type : "sap.ui.unified.CalendarLegendItem", multiple : true, singularName : "item"},
-			_standardItems : {type : "sap.ui.unified.CalendarLegendItem", multiple : true, visibility : "hidden"}
+		constructor: function (vId, mSettings) {
+			Control.prototype.constructor.apply(this, arguments);
+
+			if (typeof vId !== "string"){
+				mSettings = vId;
+			}
+
+			if (!mSettings || (mSettings && !mSettings.standardItems)) {
+				this._addStandardItems(this.getStandardItems()); // Default items should be used if nothing is given
+			}
 		}
-	}});
-
-	CalendarLegend.prototype.init = function() {
-		//Populates the default translated standard items
-		this._addStandardItems(CalendarLegend._All_Standard_Items);
-	};
+	});
 
 	// IE9 workaround for responsive layout of legend items
 	CalendarLegend.prototype.onAfterRendering = function() {
@@ -66,6 +85,28 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 				jQuery(".sapUiUnifiedLegendItem").css("width", this.getColumnWidth() + 4 + "px").css("display", "inline-block");
 			}
 		}
+	};
+
+	CalendarLegend.prototype.setStandardItems = function (aValues) {
+		var i;
+
+		if (aValues && aValues.length === 1 && aValues[0] === "") { // [""] - when standardItems="" in XML view
+			aValues = [];
+		}
+
+		if (aValues && aValues.length) {
+			aValues = this.validateProperty("standardItems", aValues);
+			for (i = 0; i < aValues.length; i++) { // we use loop instead forEach in order to interrupt the execution in case of exception
+				if (!StandardCalendarLegendItem[aValues[i]]) {
+					throw new Error("Invalid value '" + aValues[i] +
+						"'. Property standardItems must contain values from sap.ui.unified.StandardCalendarLegendItem.");
+				}
+			}
+		}
+
+		this.setProperty("standardItems", aValues);
+		this._addStandardItems(this.getStandardItems(), true);
+		return this;
 	};
 
 	/**
@@ -91,13 +132,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 			this.addAggregation("_standardItems", oItem);
 		}
 	};
-
-	CalendarLegend._All_Standard_Items = [
-		StandardCalendarLegendItem.Today,
-		StandardCalendarLegendItem.Selected,
-		StandardCalendarLegendItem.WorkingDay,
-		StandardCalendarLegendItem.NonWorkingDay
-	];
 
 	CalendarLegend._Standard_Items_TextKeys = {
 		"Today": "LEGEND_TODAY",
@@ -187,32 +221,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 		}
 
 		return Object.keys(oFreeTypes);
-	};
-
-	CalendarLegend.typeARIATexts = {};
-
-	/**
-	 * Creates and returns an invisible static label containing the translated type of the text.
-	 * @param {string} sType A string in the same format as sap.ui.unified.CalendarDayType entries
-	 * @returns {sap.ui.core.InvisibleText} An invisible static label containing the translated type of the text
-	 * @private
-	 */
-	CalendarLegend.getTypeAriaText = function(sType) {
-		var rb,
-			sText;
-
-		if (sType.indexOf("Type") !== 0) {
-			return;
-		}
-
-		if (!CalendarLegend.typeARIATexts[sType]) {
-			rb = sap.ui.getCore().getLibraryResourceBundle("sap.ui.unified");
-			sText = rb.getText("LEGEND_UNNAMED_TYPE", parseInt(sType.slice(4), 10).toString());
-			CalendarLegend.typeARIATexts[sType] = new InvisibleText({ text: sText });
-			CalendarLegend.typeARIATexts[sType].toStatic();
-		}
-
-		return CalendarLegend.typeARIATexts[sType];
 	};
 
 	return CalendarLegend;

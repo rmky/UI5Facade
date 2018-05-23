@@ -1,10 +1,10 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/fl/Utils"], function(FlexUtils) {
+sap.ui.define(["sap/ui/fl/Utils", "jquery.sap.strings"], function(FlexUtils, jQuery) {
 		"use strict";
 
 		/**
@@ -12,48 +12,18 @@ sap.ui.define(["sap/ui/fl/Utils"], function(FlexUtils) {
 		 *
 		 * @alias sap.m.changeHandler.SplitMenuButton
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 * @experimental Since 1.48
 		 */
 		var SplitMenuButton = { };
 
 		var SOURCE_CONTROL = "sourceControl";
 
-		SplitMenuButton.ADD_HELPER_FUNCTIONS = {
-			_fnFindIndexInAggregation : function(oParent, oSourceControl, sParentAggregation) {
-				var oParentAggregation,
-					bMultipleAggregation = false,
-					sParentAggregationSingularName,
-					sAggregationNameToUpper;
-
-				// We need to check the aggregation name and if it is multiple or not.
-				// There are cases when the control's parent method is overwritten and
-				// this leads to differences in the result given by oParent.indexOfAggregation
-				// method. Having this in mind:
-				// 1. We get the aggregation from the Parent's metadata
-				oParentAggregation = oParent.getMetadata().getAllAggregations()[sParentAggregation];
-
-				// 2. Then we check if it is multiple
-				bMultipleAggregation = oParentAggregation.multiple;
-
-				// 3. We get the its name or its singular name if it is multiple
-				sParentAggregationSingularName = bMultipleAggregation ? oParentAggregation.singularName : oParentAggregation.name;
-
-				// 4. We change it to upper case in order to be able to create the method
-				// which is potentially overwritten and/or has additional logic to it
-				sAggregationNameToUpper = jQuery.sap.charToUpperCase(sParentAggregationSingularName);
-
-				// 5. We return the correct index of the control in its Parent aggregation
-				return oParent["indexOf" + sAggregationNameToUpper](oSourceControl);
-			}
-		};
-
-
 		/**
 		 * Split a MenuButton into separate Buttons
 		 *
 		 * @param {sap.ui.fl.Change} oChange Change wrapper object with instructions to be applied on the control map
-		 * @param {sap.m.MenuButton} oControl Menubutton control that matches the change selector for applying the change
+		 * @param {sap.m.IBar} oControl Bar control that matches the change selector for applying the change
 		 * @param {object} mPropertyBag Map of properties
 		 * @param {object} mPropertyBag.modifier Modifier for the controls
 		 * @return {boolean} true if change could be applied
@@ -74,8 +44,13 @@ sap.ui.define(["sap/ui/fl/Utils"], function(FlexUtils) {
 				aMenuItems = oModifier.getAggregation(oMenu, "items"),
 				sParentAggregation = oSourceControl.sParentAggregationName,
 				oParent = oModifier.getParent(oSourceControl),
-				iAggregationIndex = this.ADD_HELPER_FUNCTIONS._fnFindIndexInAggregation(oParent, oSourceControl, sParentAggregation),
-				aNewElementIds = oChangeDefinition.content.newElementIds.slice();
+				iAggregationIndex = oModifier.findIndexInParentAggregation(oSourceControl),
+				aNewElementIds = oChangeDefinition.content.newElementIds.slice(),
+				oRevertData = {
+					sParentAggregation : sParentAggregation,
+					insertIndex: iAggregationIndex,
+					insertedButtonsIds: []
+				};
 
 			aMenuItems.forEach(function (oMenuItem, index) {
 				var aMenuItemCustomData = oModifier.getAggregation(oMenuItem, "customData"),
@@ -101,6 +76,8 @@ sap.ui.define(["sap/ui/fl/Utils"], function(FlexUtils) {
 					aMenuItemDependents.some(function(oControl) {
 						if (sSavedId === oModifier.getId(oControl)) {
 							oButton = oControl;
+							oRevertData.insertedButtonsIds.push(oModifier.getId(oButton));
+
 							return true;
 						}
 					});
@@ -115,6 +92,7 @@ sap.ui.define(["sap/ui/fl/Utils"], function(FlexUtils) {
 					var sId = aNewElementIds[index];
 
 					oButton = oModifier.createControl("sap.m.Button", mPropertyBag.appComponent, oView, sId);
+					oRevertData.insertedButtonsIds.push(oModifier.getId(oButton));
 
 					oModifier.setProperty(oButton, "text", oModifier.getProperty(oMenuItem, "text"));
 					oModifier.setProperty(oButton, "icon",  oModifier.getProperty(oMenuItem, "icon"));
@@ -129,8 +107,46 @@ sap.ui.define(["sap/ui/fl/Utils"], function(FlexUtils) {
 			oModifier.removeAggregation(oParent, sParentAggregation, oSourceControl);
 			oModifier.insertAggregation(oControl, "dependents", oSourceControl);
 
+			oChange.setRevertData(oRevertData);
+
 			return true;
 
+		};
+
+		/**
+		 * Reverts applied change
+		 *
+		 * @param {sap.ui.fl.Change} oChange Change wrapper object with instructions to be applied on the control map
+		 * @param {sap.m.IBar} oControl Bar control that matches the change selector for applying the change
+		 * @param {object} mPropertyBag Map of properties
+		 * @param {object} mPropertyBag.modifier Modifier for the controls
+		 * @return {boolean} true if change could be applied
+		 *
+		 * @public
+		 */
+		SplitMenuButton.revertChange = function(oChange, oControl, mPropertyBag) {
+
+			var oModifier = mPropertyBag.modifier,
+				oRevertData =  oChange.getRevertData(),
+				oSourceControl = oChange.getDependentControl(SOURCE_CONTROL, mPropertyBag),
+				oAppComponent = mPropertyBag.appComponent,
+				oParent = oModifier.getParent(oSourceControl),
+				sParentAggregation = oRevertData.sParentAggregation,
+				iAggregationIndex = oRevertData.insertIndex,
+				aButtonsIds = oRevertData.insertedButtonsIds,
+				aButtons = aButtonsIds.map(function(sId){
+					return oModifier.bySelector(sId, oAppComponent);
+				});
+
+			aButtons.forEach(function(oButton){
+				oModifier.removeAggregation(oParent, sParentAggregation, oButton);
+			});
+
+			oModifier.insertAggregation(oParent, sParentAggregation, oSourceControl, iAggregationIndex);
+
+			oChange.resetRevertData();
+
+			return true;
 		};
 
 		/**

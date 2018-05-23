@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -89,11 +89,11 @@ sap.ui.define(['jquery.sap.global', '../Device', '../base/Object', 'jquery.sap.s
 			var oControl = this.oCore && this.oCore.byId(sControlId);
 			if (oControl) {
 				return {
-				    id : sControlId,
-				    control : oControl,
-				    info : oControl.getFocusInfo(),
-				    type : oControl.getMetadata().getName(),
-				    focusref : oControl.getFocusDomRef()
+					id : sControlId,
+					control : oControl,
+					info : oControl.getFocusInfo(),
+					type : oControl.getMetadata().getName(),
+					focusref : oControl.getFocusDomRef()
 				};
 			}
 			return null;

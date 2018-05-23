@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -43,7 +43,7 @@ sap.ui.define(['./library', 'sap/ui/core/Item',
 	 * @implements sap.m.IconTab
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -59,6 +59,7 @@ sap.ui.define(['./library', 'sap/ui/core/Item',
 			"sap.ui.core.PopupInterface"
 		],
 		library : "sap.m",
+		designtime: "sap/m/designtime/IconTabFilter.designtime",
 		properties : {
 
 			/**
@@ -68,6 +69,10 @@ sap.ui.define(['./library', 'sap/ui/core/Item',
 
 			/**
 			 * Enables special visualization for disabled filter (show all items).
+			 * <b>Note:</b> You can use this property when you use <code>IconTabBar</code> as a filter.
+			 * In order for it to be displayed correctly, the other tabs in the filter should consist of an icon, text and an optional count.
+			 * It can be set to true for the first tab filter.
+			 * You can find more detailed guidelines at https://experience.sap.com/fiori-design-web/icontabbar/#tabs-as-filters.
 			 */
 			showAll : {type : "boolean", group : "Misc", defaultValue : false},
 
@@ -115,8 +120,7 @@ sap.ui.define(['./library', 'sap/ui/core/Item',
 			 * @since 1.15.0
 			 */
 			content : {type : "sap.ui.core.Control", multiple : true, singularName : "content"}
-		},
-		designTime: false
+		}
 	}});
 
 	/**
@@ -164,6 +168,11 @@ sap.ui.define(['./library', 'sap/ui/core/Item',
 
 		if (Item.prototype.exit) {
 			Item.prototype.exit.call(this, oEvent);
+		}
+
+		if (this._invisibleText) {
+			this._invisibleText.destroy();
+			this._invisibleText = null;
 		}
 	};
 
@@ -424,6 +433,12 @@ sap.ui.define(['./library', 'sap/ui/core/Item',
 	IconTabFilter.prototype.renderInSelectList = function (rm, selectList, visibleIndex, visibleItemsCount) {
 		var that = this;
 
+		// destroy the invisible text if exists
+		if (this._invisibleText) {
+			this._invisibleText.destroy();
+			this._invisibleText = null;
+		}
+
 		if (!that.getVisible()) {
 			return;
 		}
@@ -472,7 +487,6 @@ sap.ui.define(['./library', 'sap/ui/core/Item',
 		rm.writeClasses();
 
 		var itemId = that.getId(),
-			invisibleText,
 			iiconColorRead = iconColor == 'Positive' || iconColor == 'Critical' || iconColor == 'Negative';
 
 		var labelledBy = ' aria-labelledby="';
@@ -487,19 +501,19 @@ sap.ui.define(['./library', 'sap/ui/core/Item',
 
 		if (iiconColorRead) {
 
-			invisibleText = new InvisibleText({
+			this._invisibleText = new InvisibleText({
 				text: resourceBundle.getText('ICONTABBAR_ICONCOLOR_' + iconColor.toUpperCase())
 			});
 
-			labelledBy += invisibleText.getId();
+			labelledBy += this._invisibleText.getId();
 		}
 
 		labelledBy += '"';
 
 		rm.write(labelledBy + '>');
 
-		if (invisibleText) {
-			rm.renderControl(invisibleText);
+		if (this._invisibleText) {
+			rm.renderControl(this._invisibleText);
 		}
 
 		if (!isTextOnly) {

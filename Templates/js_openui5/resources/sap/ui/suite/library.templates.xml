@@ -5,6 +5,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	value: 0, // int
@@ -28,6 +29,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	value="0"
@@ -48,6 +50,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	percentage: undefined, // int
@@ -68,6 +71,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	percentage=""

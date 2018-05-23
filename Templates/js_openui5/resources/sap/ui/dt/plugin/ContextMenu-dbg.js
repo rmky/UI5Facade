@@ -1,6 +1,6 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,11 +8,13 @@
 sap.ui.define([
 	'jquery.sap.global',
 	'sap/ui/dt/Plugin',
-	'sap/ui/dt/ContextMenuControl'
+	'sap/ui/dt/ContextMenuControl',
+	'sap/ui/dt/OverlayRegistry'
 ], function(
 	jQuery,
 	Plugin,
-	ContextMenuControl
+	ContextMenuControl,
+    OverlayRegistry
 ) {
 	"use strict";
 
@@ -24,7 +26,7 @@ sap.ui.define([
 	 * @class The ContextMenu registers event handler to open the context menu. Menu entries can dynamically be added
 	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -90,7 +92,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Add menu items in the following format.
+	 * Add menu items in the following format
 	 *
 	 * @param {object} mMenuItem json object with the menu item settings
 	 * @param {string} mMenuItem.id id, which corresponds to the text key
@@ -119,7 +121,7 @@ sap.ui.define([
 	 * @param  {sap.ui.dt.ElementOverlay} oTargetOverlay Overlay where the menu was triggered
 	 */
 	ContextMenu.prototype.open = function(oOriginalEvent, oTargetOverlay) {
-		this.setContextElement(oTargetOverlay.getElementInstance());
+		this.setContextElement(oTargetOverlay.getElement());
 
 		//Remove all previous entries retrieved by plugins (the list should always be rebuilt)
 		this._aMenuItems = this._aMenuItems.filter(function(mMenuItemEntry){
@@ -190,14 +192,13 @@ sap.ui.define([
 
 		aMenuItems.some(function(oItem) {
 			if (sId === oItem.id) {
-				var oDesignTime = this.getDesignTime();
-				aSelection = oDesignTime.getSelection();
+				aSelection = this.getSelectedOverlays();
 
 				jQuery.sap.assert(aSelection.length > 0, "sap.ui.rta - Opening context menu, with empty selection - check event order");
 
 				if (!oEventItem.getSubmenu()) {
 					var mPropertiesBag = {};
-					mPropertiesBag.eventITem = oEventItem;
+					mPropertiesBag.eventItem = oEventItem;
 					mPropertiesBag.contextElement = oContextElement;
 					oItem.handler(aSelection, mPropertiesBag);
 				}
@@ -217,7 +218,7 @@ sap.ui.define([
 		oEvent.preventDefault();
 		document.activeElement.blur();
 
-		var oOverlay = sap.ui.getCore().byId(oEvent.currentTarget.id);
+		var oOverlay = OverlayRegistry.getOverlay(oEvent.currentTarget.id);
 		var sTargetClasses = oEvent.target.className;
 
 		if (oOverlay && oOverlay.isSelectable() && sTargetClasses.indexOf("sapUiDtOverlay") > -1) {
@@ -237,7 +238,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ContextMenu.prototype._onKeyDown = function(oEvent) {
-		var oOverlay = sap.ui.getCore().byId(oEvent.currentTarget.id);
+		var oOverlay = OverlayRegistry.getOverlay(oEvent.currentTarget.id);
 
 		if ((oEvent.keyCode === jQuery.sap.KeyCodes.F10) && (oEvent.shiftKey === true) && (oEvent.altKey === false) && (oEvent.ctrlKey === false)) {
 			// hide browser-context menu

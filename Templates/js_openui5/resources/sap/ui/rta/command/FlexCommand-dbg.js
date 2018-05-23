@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactory",
@@ -15,7 +15,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @private
@@ -120,7 +120,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 
 	/**
 	 * @override
-	 * @returns {promise} empty promise after finishing execution
+	 * @returns {Promise} empty promise after finishing execution
 	 */
 	FlexCommand.prototype.execute = function() {
 		var vChange = this.getPreparedChange();
@@ -226,15 +226,21 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 
 		return Promise.resolve(oFlexController.checkTargetAndApplyChange(oChange, oSelectorElement, {modifier: RtaControlTreeModifier, appComponent: oAppComponent}))
 
-		.then(function() {
-			if (bNotMarkAsAppliedChange) {
-				oFlexController.removeFromAppliedChangesOnControl(oChange, oAppComponent, oSelectorElement);
+		.then(function(bSuccess) {
+			if (bSuccess) {
+				if (bNotMarkAsAppliedChange) {
+					oFlexController.removeFromAppliedChangesOnControl(oChange, oAppComponent, oSelectorElement);
+				}
 			}
+			return bSuccess;
 		})
 
-		.then(function() {
+		.then(function(bSuccess) {
 			if (!this.getFnGetState()){
 				this._aRecordedUndo = RtaControlTreeModifier.stopRecordingUndo();
+			}
+			if (!bSuccess) {
+				return Promise.reject();
 			}
 		}.bind(this));
 	};

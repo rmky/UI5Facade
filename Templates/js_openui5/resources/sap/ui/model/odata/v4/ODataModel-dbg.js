@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -45,6 +45,7 @@ sap.ui.define([
 		mSupportedParameters = {
 			annotationURI : true,
 			autoExpandSelect : true,
+			earlyRequests : true,
 			groupId : true,
 			groupProperties : true,
 			odataVersion : true,
@@ -77,6 +78,16 @@ sap.ui.define([
 	 *   options from the binding hierarchy.
 	 *   Note: Dynamic changes to the binding hierarchy are not supported.
 	 *   Supported since 1.47.0
+	 * @param {boolean} [mParameters.earlyRequests=false]
+	 *   Whether the following is requested at the earliest convenience:
+	 *   <ul>
+	 *   <li> root $metadata document and annotation files;
+	 *   <li> the security token.
+	 *   </ul>
+	 *   Note: The root $metadata document and annotation files are just requested but not yet
+	 *   converted from XML to JSON unless really needed.
+	 *   Supported since 1.53.0
+	 *   <b>BEWARE:</b> The default value may change to <code>true</code> in later releases.
 	 * @param {string} [mParameters.groupId="$auto"]
 	 *   Controls the model's use of batch requests: '$auto' bundles requests from the model in a
 	 *   batch request which is sent automatically before rendering; '$direct' sends requests
@@ -140,7 +151,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.Model
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 */
 	var ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */
@@ -226,14 +237,10 @@ sap.ui.define([
 						_MetadataRequestor.create(mHeaders, sODataVersion, this.mUriParameters),
 						this.sServiceUrl + "$metadata", mParameters.annotationURI, this,
 						mParameters.supportReferences);
-					this.oRequestor = _Requestor.create(this.sServiceUrl, mHeaders,
-						this.mUriParameters, {
+					this.oRequestor = _Requestor.create(this.sServiceUrl, {
 							fnFetchEntityContainer :
 								this.oMetaModel.fetchEntityContainer.bind(this.oMetaModel),
-							fnFetchMetadata : function (sPath) {
-								return that.oMetaModel.fetchObject(
-									that.oMetaModel.getMetaPath(sPath));
-							},
+							fnFetchMetadata : this.oMetaModel.fetchObject.bind(this.oMetaModel),
 							fnGetGroupProperty : this.getGroupProperty.bind(this),
 							fnOnCreateGroup : function (sGroupId) {
 								if (that.isAutoGroup(sGroupId)) {
@@ -241,7 +248,11 @@ sap.ui.define([
 										that._submitBatch.bind(that, sGroupId));
 								}
 							}
-						}, sODataVersion);
+						}, mHeaders, this.mUriParameters, sODataVersion);
+					if (mParameters.earlyRequests) {
+						this.oMetaModel.fetchEntityContainer(true);
+						this.initializeSecurityToken();
+					}
 
 					this.aAllBindings = [];
 					this.sDefaultBindingMode = BindingMode.TwoWay;
@@ -539,7 +550,7 @@ sap.ui.define([
 	/**
 	 * Constructs a map of query options from the given binding parameters.
 	 * Parameters starting with '$$' indicate binding-specific parameters, which must not be part
-	 * of a back end query; they are ignored and not added to the map.
+	 * of a back-end query; they are ignored and not added to the map.
 	 * The following query options are disallowed:
 	 * <ul>
 	 * <li> System query options (key starts with "$"), unless
@@ -702,15 +713,23 @@ sap.ui.define([
 	 * a '/'; a trailing '/' is allowed here, see
 	 * {@link sap.ui.model.odata.v4.ODataMetaModel#requestObject} for the effect it has.
 	 *
+	 * A binding path may also point to an operation advertisement which is addressed with
+	 * '#<namespace>.<operation>' and is part of the data payload, not the metadata. The metadata
+	 * of an operation can be addressed via '##' as described above.
+	 *
 	 * Examples:
 	 * <ul>
-	 * <li><code>/Products('42')/Name#@com.sap.vocabularies.Common.v1.Label</code>
+	 * <li><code>/Products('42')/Name##@com.sap.vocabularies.Common.v1.Label</code>
 	 *   points to the "Label" annotation of the "Name" property of the entity set "Products".
-	 * <li><code>/#Products/Name@com.sap.vocabularies.Common.v1.Label</code> has no data path part
+	 * <li><code>/##Products/Name@com.sap.vocabularies.Common.v1.Label</code> has no data path part
 	 *   and thus starts at the metadata root. It also points to the "Label" annotation of the
 	 *   "Name" property of the entity set "Products".
-	 * <li><code>/Products#/</code>
+	 * <li><code>/Products##/</code>
 	 *   points to the entity type (note the trailing '/') of the entity set "Products".
+	 * <li><code>/EMPLOYEES('1')/##com.sap.Action</code>
+	 *   points to the metadata of an action bound to the entity set "EMPLOYEES".
+	 * <li><code>/EMPLOYEES('1')/#com.sap.Action</code>
+	 *   does not point to metadata, but to the action advertisement.
 	 * </ul>
 	 *
 	 * @param {string} sPath
@@ -734,6 +753,19 @@ sap.ui.define([
 			sResolvedPath,
 			iSeparator;
 
+		/**
+		 * Checks if the given meta path contains a dot in its first segment.
+		 *
+		 * @param {string} sMetaPath The meta path
+		 * @returns {boolean} Whether the given meta path contains a dot in its first segment
+		 */
+		function startsWithQualifiedName(sMetaPath) {
+			var iDotPos = sMetaPath.indexOf("."),
+				iSlashPos = sMetaPath.indexOf("/");
+
+			return iDotPos > 0 && (iSlashPos < 0 || iDotPos < iSlashPos);
+		}
+
 		if (arguments.length > 2) {
 			throw new Error("Only the parameters sPath and oContext are supported");
 		}
@@ -753,6 +785,9 @@ sap.ui.define([
 			sMetaPath = sResolvedPath.slice(iSeparator + 1);
 			if (sMetaPath[0] === "#") {
 				sMetaPath = sMetaPath.slice(1);
+			} else if (sDataPath.length > 1 && sMetaPath[0] !== "@"
+					&& startsWithQualifiedName(sMetaPath)) { // action advertisement
+				return new BaseContext(this, sResolvedPath);
 			}
 			if (sMetaPath[0] === "/") {
 				sMetaPath = "." + sMetaPath;
@@ -810,19 +845,16 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.model.Binding|sap.ui.model.Context} oParent
 	 *   The parent binding or context
-	 * @param {boolean} bSkipCreatedEntities
-	 *   Whether to skip bindings with a context that has been created by ODataListBinding#create
 	 * @returns {sap.ui.model.Binding[]}
 	 *   A list of all dependent bindings, never <code>null</code>
 	 *
 	 * @private
 	 */
-	ODataModel.prototype.getDependentBindings = function (oParent, bSkipCreatedEntities) {
+	ODataModel.prototype.getDependentBindings = function (oParent) {
 		return this.aAllBindings.filter(function (oBinding) {
 			var oContext = oBinding.getContext();
 
 			return oBinding.isRelative()
-				&& !(bSkipCreatedEntities && oContext && oContext.created && oContext.created())
 				&& (oContext === oParent
 						|| oContext && oContext.getBinding && oContext.getBinding() === oParent
 					);
@@ -968,6 +1000,15 @@ sap.ui.define([
 	};
 
 	/**
+	 * Initializes the security token used by this model's requestor.
+	 *
+	 * @private
+	 */
+	ODataModel.prototype.initializeSecurityToken = function () {
+		this.oRequestor.refreshSecurityToken();
+	};
+
+	/**
 	 * Method not supported
 	 *
 	 * @throws {Error}
@@ -1048,8 +1089,6 @@ sap.ui.define([
 	/**
 	 * Reports a technical error by adding a message to the MessageManager and logging the error to
 	 * the console. Takes care that the error is only added once to the MessageManager.
-	 * Errors caused by cancellation of backend requests are not reported but just logged to the
-	 * console with level DEBUG.
 	 *
 	 * @param {string} sLogMessage
 	 *   The message to write to the console log
@@ -1057,12 +1096,22 @@ sap.ui.define([
 	 *   The name of the class reporting the error
 	 * @param {Error} oError
 	 *   The error
+	 * @param {boolean|"noDebugLog"} [oError.canceled]
+	 *   A boolean value indicates whether the error is not reported but just logged to the
+	 *   console with level DEBUG; example: errors caused by cancellation of backend requests.
+	 *   For the string value "noDebugLog", the method does nothing; example: errors caused by
+	 *   suspended bindings.
 	 *
 	 * @private
 	 */
 	ODataModel.prototype.reportError = function (sLogMessage, sReportingClassName, oError) {
-		var sDetails = oError.stack || oError.message;
+		var sDetails;
 
+		if (oError.canceled === "noDebugLog") {
+			return;
+		}
+
+		sDetails = oError.stack || oError.message;
 		if (sDetails.indexOf(oError.message) < 0) {
 			sDetails = oError.message + "\n" + oError.stack;
 		}

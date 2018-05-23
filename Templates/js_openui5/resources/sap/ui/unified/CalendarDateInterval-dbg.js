@@ -1,13 +1,33 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 //Provides control sap.ui.unified.Calendar.
-sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils',
-		'./Calendar', './calendar/DatesRow', './calendar/MonthPicker', './calendar/YearPicker', 'sap/ui/unified/calendar/CalendarDate', './library', 'sap/ui/Device'],
-	function(jQuery, CalendarUtils, Calendar, DatesRow, MonthPicker, YearPicker, CalendarDate, library, Device) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/unified/calendar/CalendarUtils',
+	'./Calendar',
+	'./calendar/DatesRow',
+	'./calendar/MonthPicker',
+	'./calendar/YearPicker',
+	'sap/ui/unified/calendar/CalendarDate',
+	'./library',
+	'sap/ui/Device',
+	"./CalendarDateIntervalRenderer"
+], function(
+	jQuery,
+	CalendarUtils,
+	Calendar,
+	DatesRow,
+	MonthPicker,
+	YearPicker,
+	CalendarDate,
+	library,
+	Device,
+	CalendarDateIntervalRenderer
+) {
 	"use strict";
 
 	/*
@@ -24,7 +44,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils',
 	 * @class
 	 * Calendar with dates displayed in one line.
 	 * @extends sap.ui.unified.Calendar
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -68,7 +88,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils',
 			 */
 			calendarPicker : {type : "sap.ui.unified.Calendar", multiple : false, visibility : "hidden"}
 
-		}
+		},
+		designtime: "sap/ui/unified/designtime/CalendarDateInterval.designtime"
 	}});
 
 	CalendarDateInterval.prototype.init = function(){

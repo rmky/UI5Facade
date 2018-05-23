@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -51,8 +51,7 @@ sap.ui.define([
 
 			if (oIN != null
 				&& !oTable._getKeyboardExtension()._isItemNavigationSuspended()
-				&& !oEvent.isMarked("sapUiTableSkipItemNavigation")
-				&& !TableUtils.isBusyIndicatorVisible(oTable)) {
+				&& !oEvent.isMarked("sapUiTableSkipItemNavigation")) {
 
 				oIN["on" + oEvent.type](oEvent);
 			}
@@ -113,11 +112,6 @@ sap.ui.define([
 		 */
 		_initItemNavigation: function(oExtension) {
 			var oTable = oExtension.getTable();
-
-			if (TableUtils.isBusyIndicatorVisible(oTable)) {
-				return;
-			}
-
 			var $Table = oTable.$();
 			var iColumnCount = TableUtils.getVisibleColumnCount(oTable);
 			var iTotalColumnCount = iColumnCount;
@@ -243,7 +237,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles keyboard related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardExtension
@@ -366,7 +360,7 @@ sap.ui.define([
 	/**
 	 * Returns whether the table is in action mode.
 	 *
-	 * @returns {boolean} Returns <code>true/code>, if the table is in action mode.
+	 * @returns {boolean} Returns <code>true</code>, if the table is in action mode.
 	 * @public
 	 */
 	TableKeyboardExtension.prototype.isInActionMode = function() {

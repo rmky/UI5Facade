@@ -1,13 +1,34 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.DateTimeInput.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/model/type/Date', 'sap/ui/model/type/Time',
-	'sap/ui/model/type/DateTime', 'sap/ui/model/odata/type/ODataType', 'sap/ui/core/library', 'sap/ui/Device'],
-	function(jQuery, Control, library, Date1, Time, DateTime, ODataType, coreLibrary, Device) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/core/Control',
+	'./library',
+	'sap/ui/model/type/Date',
+	'sap/ui/model/type/Time',
+	'sap/ui/model/type/DateTime',
+	'sap/ui/model/odata/type/ODataType',
+	'sap/ui/core/library',
+	'sap/ui/Device',
+	'./DateTimeInputRenderer'
+],
+function(
+	jQuery,
+	Control,
+	library,
+	Date1,
+	Time,
+	DateTime,
+	ODataType,
+	coreLibrary,
+	Device,
+	DateTimeInputRenderer
+	) {
 	"use strict";
 
 	// shortcut for sap.m.DateTimeInputType
@@ -35,18 +56,19 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.9.1
-	 * @deprecated Since version 1.32.8. Instead, use the dedicated <code>sap.m.DatePicker</code>, <code>sap.m.TimePicker</code> or <code>sap.m.DateTimePicker</code> controls.
+	 * @deprecated as of version 1.32.8, replaced by {@link sap.m.DatePicker}, {@link sap.m.TimePicker} or {@link sap.m.DateTimePicker}
 	 * @alias sap.m.DateTimeInput
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var DateTimeInput = Control.extend("sap.m.DateTimeInput", /** @lends sap.m.DateTimeInput.prototype */ { metadata : {
 
 		library : "sap.m",
+		designtime: "sap/m/designtime/DateTimeInput.designtime",
 		properties : {
 
 			/**
@@ -349,7 +371,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 
 	DateTimeInput.prototype.setDateValue = function(oDate) {
 
-		if (oDate && !(oDate instanceof Date)) {
+		if (this._isValidDate(oDate)) {
 			throw new Error("Date must be a JavaScript date object; " + this);
 		}
 
@@ -604,6 +626,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 		return this.getAggregation("_picker");
 
 	}
+
+	// Cross frame check for a date should be performed here otherwise setDateValue would fail in OPA tests
+	// because Date object in the test is different than the Date object in the application (due to the iframe).
+	// We can use jQuery.type or this method:
+	// function isValidDate (date) {
+	//	return date && Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date);
+	//}
+	DateTimeInput.prototype._isValidDate = function (oDate) {
+		return oDate && jQuery.type(oDate) !== "date";
+	};
 
 	function _updateFormatFromBinding(){
 

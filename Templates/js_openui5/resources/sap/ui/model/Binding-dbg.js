@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './ChangeReason
 	 * and provides getters for accessing properties or lists.
 	 *
 	 * @param {sap.ui.model.Model} oModel the model
-	 * @param {String} sPath the path
+	 * @param {string} sPath the path
 	 * @param {sap.ui.model.Context} oContext the context object
 	 * @param {object} [mParameters]
 	 * @abstract
@@ -130,7 +130,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './ChangeReason
 	// Getter
 	/**
 	 * Getter for path
-	 * @return {String} the binding path
+	 * @return {string} the binding path
 	 */
 	Binding.prototype.getPath = function() {
 		return this.sPath;
@@ -401,8 +401,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './ChangeReason
 	 * _refresh for compatibility
 	 * @private
 	 */
-	Binding.prototype._refresh = function() {
-		this.refresh();
+	Binding.prototype._refresh = function(bForceUpdate) {
+		this.refresh(bForceUpdate);
 	};
 
 	/**

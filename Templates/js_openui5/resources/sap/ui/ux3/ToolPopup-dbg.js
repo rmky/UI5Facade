@@ -1,12 +1,30 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.ux3.ToolPopup.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/ui/core/Popup', 'sap/ui/core/theming/Parameters', 'sap/ui/core/RenderManager', './library'],
-    function (jQuery, Control, IconPool, Popup, Parameters, RenderManager, library) {
+sap.ui.define([
+    'jquery.sap.global',
+    'sap/ui/core/Control',
+    'sap/ui/core/IconPool',
+    'sap/ui/core/Popup',
+    'sap/ui/core/theming/Parameters',
+    'sap/ui/core/RenderManager',
+    './library',
+    "./ToolPopupRenderer"
+],
+    function(
+	    jQuery,
+		Control,
+		IconPool,
+		Popup,
+		Parameters,
+		RenderManager,
+		library,
+		ToolPopupRenderer
+	) {
         "use strict";
 
 
@@ -27,7 +45,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
          *
          * @namespace
          * @author SAP SE
-         * @version 1.52.5
+         * @version 1.54.5
          *
          * @constructor
          * @public

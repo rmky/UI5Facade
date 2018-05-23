@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([],
@@ -86,7 +86,17 @@ sap.ui.define([],
 			/**
 			 * High severity of produced issue by Support Assistant
 			 */
-			SUPPORT_ASSISTANT_ISSUE_SEVERITY_HIGH: "High"
+			SUPPORT_ASSISTANT_ISSUE_SEVERITY_HIGH: "High",
+
+			/**
+			 * Extension added to library.js files of every library that contains support rules
+			 */
+			SUPPORT_ASSISTANT_EXTENSION: "sap.ui.support",
+
+			/**
+			 * The maximum number of visible issues for selected rule (in the issues table)
+			 */
+			MAX_VISIBLE_ISSUES_FOR_RULE: 5
 
 		};
 

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["jquery.sap.global"],function($){"use strict";function r(){var e=new Error();var s;if(e.stack){s=e.stack;}try{throw e;}catch(b){s=b.stack;}return s.replace(/^Error\s/,"");}function f(b){return b.toString().replace(/\"/g,'\'');}function a(A){try{return Array.prototype.map.call(A,b).join("; ");}catch(e){return"'"+A+"'";}function b(c){if($.isFunction(c)){return"'"+f(c)+"'";}if($.isArray(c)){var v=Array.prototype.map.call(c,b);return"["+v.join(", ")+"]";}if($.isPlainObject(c)){return JSON.stringify(c);}return"'"+c.toString()+"'";}}return{resolveStackTrace:r,functionToString:f,argumentsToString:a};},true);
+sap.ui.define(["jquery.sap.global",'sap/ui/thirdparty/URI'],function($,U){"use strict";var u=new U().search(true);var f=["false",undefined].indexOf(u.opaFrameIEStackTrace)<0;function r(){var e=new Error();var s="No stack trace available";if(e.stack){s=e.stack;}else if(f){try{throw e;}catch(c){s=c.stack;}}return s.replace(/^Error\s/,"");}function a(c){return c.toString().replace(/\"/g,'\'');}function b(A){try{return Array.prototype.map.call(A,c).join("; ");}catch(e){return"'"+A+"'";}function c(d){if($.isFunction(d)){return"'"+a(d)+"'";}if($.isArray(d)){var v=Array.prototype.map.call(d,c);return"["+v.join(", ")+"]";}if($.isPlainObject(d)){return JSON.stringify(d);}return"'"+d.toString()+"'";}}return{resolveStackTrace:r,functionToString:a,argumentsToString:b};},true);

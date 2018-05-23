@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,12 +8,14 @@
 sap.ui.define([
 	'sap/ui/rta/plugin/Plugin',
 	'sap/ui/rta/Utils',
-	'sap/ui/fl/Utils'
+	'sap/ui/fl/Utils',
+	'sap/ui/dt/OverlayRegistry'
 ],
 function(
 	Plugin,
 	Utils,
-	FlexUtils
+	FlexUtils,
+	OverlayRegistry
 ){
 	"use strict";
 
@@ -25,7 +27,7 @@ function(
 	 * @class The Selection plugin allows you to select or focus overlays with mouse or keyboard and navigate to others.
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -168,7 +170,7 @@ function(
 	};
 
 	Selection.prototype._selectOverlay = function (oEvent) {
-		var oOverlay = sap.ui.getCore().byId(oEvent.currentTarget.id);
+		var oOverlay = OverlayRegistry.getOverlay(oEvent.currentTarget.id);
 		var bMultiSelection = oEvent.metaKey || oEvent.ctrlKey;
 		var oTargetClasses = oEvent.target.className;
 
@@ -199,9 +201,9 @@ function(
 		if (sap.ui.Device.browser.name == "ie"){
 			// when the EasyAdd Button is clicked, we don't want to focus/stopPropagation.
 			// but when the OverlayScrollContainer is the target, we want it to behave like a click on an overlay
-			var oTarget = sap.ui.getCore().byId(oEvent.target.id);
+			var oTarget = OverlayRegistry.getOverlay(oEvent.target.id);
 			var bTargetIsScrollContainer = oEvent.target.className === "sapUiDtOverlayScrollContainer";
-			var oOverlay = sap.ui.getCore().byId(oEvent.currentTarget.id);
+			var oOverlay = OverlayRegistry.getOverlay(oEvent.currentTarget.id);
 			if ((bTargetIsScrollContainer || oTarget instanceof sap.ui.dt.Overlay) && oOverlay instanceof sap.ui.dt.Overlay) {
 				if (oOverlay.getSelectable()){
 					oOverlay.focus();
@@ -237,7 +239,7 @@ function(
 		}
 
 		var oCurrentSelectedOverlay = oEvent.getParameter("selection")[oEvent.getParameter("selection").length - 1];
-		var aSelections = this.getDesignTime().getSelection();
+		var aSelections = this.getSelectedOverlays();
 		if (aSelections && aSelections.length === 1) {
 			oCurrentSelectedOverlay.setSelected(true);
 			return;
@@ -285,9 +287,9 @@ function(
 	}
 
 	function _isOfSameType(aSelections, oSelectedOverlay){
-		var sSelectedOverlayElementName = oSelectedOverlay.getElementInstance().getMetadata().getName();
+		var sSelectedOverlayElementName = oSelectedOverlay.getElement().getMetadata().getName();
 		return !aSelections.some(function(oSelection){
-			var sCurrentSelectionElementName = oSelection.getElementInstance().getMetadata().getName();
+			var sCurrentSelectionElementName = oSelection.getElement().getMetadata().getName();
 			return (sCurrentSelectionElementName !== sSelectedOverlayElementName);
 		});
 	}

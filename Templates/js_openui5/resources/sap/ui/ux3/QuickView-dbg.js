@@ -1,12 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.ux3.QuickView.
-sap.ui.define(['jquery.sap.global', 'sap/ui/commons/CalloutBase', 'sap/ui/core/delegate/ItemNavigation', './ActionBar', './library'],
-	function(jQuery, CalloutBase, ItemNavigation, ActionBar, library) {
+sap.ui.define([
+    'jquery.sap.global',
+    'sap/ui/commons/CalloutBase',
+    'sap/ui/core/delegate/ItemNavigation',
+    './ActionBar',
+    './library',
+    "./QuickViewRenderer"
+],
+	function(jQuery, CalloutBase, ItemNavigation, ActionBar, library, QuickViewRenderer) {
 	"use strict";
 
 
@@ -23,7 +30,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/CalloutBase', 'sap/ui/core/d
 	 * @extends sap.ui.commons.CalloutBase
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

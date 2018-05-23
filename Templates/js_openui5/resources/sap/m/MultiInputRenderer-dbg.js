@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(['./InputRenderer', 'sap/ui/core/Renderer'],
@@ -31,7 +31,8 @@ sap.ui.define(['./InputRenderer', 'sap/ui/core/Renderer'],
 	MultiInputRenderer.getAriaDescribedBy = function(oControl) {
 
 		var sAriaDescribedBy = InputRenderer.getAriaDescribedBy.apply(this, arguments),
-			oInvisibleTextId = oControl.getAggregation("_tokensInfo").getId();
+			oInvisibleTextId = oControl.getAggregation("tokenizer") &&
+				oControl.getAggregation("tokenizer").getTokensInfoId();
 
 		if (sAriaDescribedBy) {
 			sAriaDescribedBy = sAriaDescribedBy + " " + oInvisibleTextId;
@@ -40,12 +41,6 @@ sap.ui.define(['./InputRenderer', 'sap/ui/core/Renderer'],
 		}
 
 		return sAriaDescribedBy;
-	};
-
-	MultiInputRenderer.renderAriaDescribedBy  = function(oRm, oControl) {
-		InputRenderer.renderAriaDescribedBy.call(this, oRm, oControl);
-
-		oRm.renderControl(oControl.getAggregation("_tokensInfo"));
 	};
 
 	MultiInputRenderer.openInputTag = function(oRm, oControl) {

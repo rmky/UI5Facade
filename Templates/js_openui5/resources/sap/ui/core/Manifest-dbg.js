@@ -1,6 +1,6 @@
 /*
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -135,7 +135,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/thirdparty/URI
 	 * @class The Manifest class.
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @alias sap.ui.core.Manifest
 	 * @since 1.33.0
 	 */
@@ -166,7 +166,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/thirdparty/URI
 			var sComponentName = this.getComponentName(),
 			    sBaseUrl = mOptions && mOptions.baseUrl || sComponentName && jQuery.sap.getModulePath(sComponentName, "/");
 			if (sBaseUrl) {
-				this._oBaseUri = new URI(sBaseUrl).absoluteTo(new URI().search(""));
+				this._oBaseUri = new URI(sBaseUrl).absoluteTo(new URI(document.baseURI).search(""));
 			}
 
 			// make sure to freeze the raw manifest (avoid manipulations)
@@ -641,7 +641,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/thirdparty/URI
 		if (oUri.is("absolute") || (oUri.path() && oUri.path()[0] === "/")) {
 			return oUri;
 		}
-		var oPageBase = new URI().search("");
+		var oPageBase = new URI(document.baseURI).search("");
 		oBase = oBase.absoluteTo(oPageBase);
 		return oUri.absoluteTo(oBase).relativeTo(oPageBase);
 	};

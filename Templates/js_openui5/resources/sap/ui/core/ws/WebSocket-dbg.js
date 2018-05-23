@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/EventProvider'
 	 * @class Basic WebSocket class
 	 * @extends sap.ui.base.EventProvider
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @alias sap.ui.core.ws.WebSocket
 	 */
 	var WebSocket = EventProvider.extend("sap.ui.core.ws.WebSocket", /** @lends sap.ui.core.ws.WebSocket.prototype */ {
@@ -346,7 +346,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/EventProvider'
 		var oUri = new URI(sUrl);
 
 		// create base URI to resolve absolute URL
-		var oBaseUri = new URI();
+		var oBaseUri = new URI(document.baseURI);
 
 		// clear search string to remove parameters from the current page
 		oBaseUri.search('');

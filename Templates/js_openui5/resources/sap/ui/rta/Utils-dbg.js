@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,14 +10,16 @@ sap.ui.define([
 	'sap/ui/fl/Utils',
 	'sap/ui/dt/OverlayUtil',
 	'sap/ui/dt/OverlayRegistry',
-	'sap/ui/fl/registry/Settings'
+	'sap/ui/fl/registry/Settings',
+	'sap/m/MessageBox'
 ],
 function(
 	jQuery,
 	FlexUtils,
 	OverlayUtil,
 	OverlayRegistry,
-	Settings
+	Settings,
+	MessageBox
 ) {
 	"use strict";
 
@@ -27,7 +29,7 @@ function(
 	 * @class Utility functionality to work with controls, e.g. iterate through aggregations, find parents, etc.
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @private
 	 * @static
@@ -84,21 +86,6 @@ function(
 			}
 			return false;
 		});
-	};
-
-	/**
-	 * Utility function for retrieving designtime metadata from the relevant container for a specified overlay object
-	 *
-	 * @param {sap.ui.dt.Overlay} oOverlay - Overlay object
-	 * @returns {Object|undefined} Metadata object or false if there is no aggregation
-	 */
-	Utils.getRelevantContainerDesigntimeMetadata = function(oOverlay) {
-		var oRelevantContainer = oOverlay.getRelevantContainer();
-		if (!oRelevantContainer || !oOverlay.getParent()) {
-			return undefined;
-		}
-		var oRelevantContainerOverlay = OverlayRegistry.getOverlay(oRelevantContainer);
-		return oRelevantContainerOverlay ? oRelevantContainerOverlay.getDesignTimeMetadata() : undefined;
 	};
 
 	/**
@@ -593,6 +580,30 @@ function(
 			mRect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
 			mRect.right <= (window.innerWidth || document.documentElement.clientWidth)
 		);
+	};
+
+	/**
+	 * Shows a message box.
+	 * @param  {sap.m.MessageBox.Icon|string} oMessageType The type of the message box (icon to be displayed)
+	 * @param  {string} sTitleKey The text key for the title of the message box
+	 * @param  {string} sMessageKey The text key for the message of the message box
+	 * @param  {any} oError Optional - If an error is passed on, the message box text is derived from it
+	 * @return {Promise} Promise displaying the message box; resolves when it is closed
+	 * @private
+	 */
+	Utils._showMessageBox = function(oMessageType, sTitleKey, sMessageKey, oError) {
+		var oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
+		var sMessage = oResourceBundle.getText(sMessageKey, oError ? [oError.message || oError] : undefined);
+		var sTitle = oResourceBundle.getText(sTitleKey);
+
+		return new Promise(function(resolve) {
+			MessageBox.show(sMessage, {
+				icon: oMessageType,
+				title: sTitle,
+				onClose: resolve,
+				styleClass: Utils.getRtaStyleClassName()
+			});
+		});
 	};
 
 	return Utils;

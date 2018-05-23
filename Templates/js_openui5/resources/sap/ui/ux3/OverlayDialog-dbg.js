@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.ux3.OverlayDialog.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/IntervalTrigger', './Overlay', './library'],
-	function(jQuery, IntervalTrigger, Overlay, library) {
+sap.ui.define([
+    'jquery.sap.global',
+    'sap/ui/core/IntervalTrigger',
+    './Overlay',
+    './library',
+    "./OverlayDialogRenderer"
+],
+	function(jQuery, IntervalTrigger, Overlay, library, OverlayDialogRenderer) {
 	"use strict";
 
 	/**
@@ -18,7 +24,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/IntervalTrigger', './Overlay', 
 	 * @class
 	 * Dialog implementation based on the Overlay. If used in a Shell it leaves the Tool-Palette, Pane-Bar and Header-Items accessible.
 	 * @extends sap.ui.ux3.Overlay
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

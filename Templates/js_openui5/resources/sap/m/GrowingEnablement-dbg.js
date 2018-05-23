@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.m.GrowingEnablement
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/NumberFormat', 'sap/m/library', 'sap/ui/model/ChangeReason', 'sap/ui/base/ManagedObjectMetadata'],
-	function(jQuery, BaseObject, NumberFormat, library, ChangeReason, ManagedObjectMetadata) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/NumberFormat', 'sap/m/library', 'sap/ui/model/ChangeReason', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui/core/HTML'],
+	function(jQuery, BaseObject, NumberFormat, library, ChangeReason, ManagedObjectMetadata, HTML) {
 	"use strict";
 
 
@@ -45,6 +45,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 			this._sGroupingPath = "";
 			this._bDataRequested = false;
 			this._oContainerDomRef = null;
+			this._iLastItemsCount = 0;
 			this._iTriggerTimer = 0;
 			this._aChunk = [];
 			this._oRM = null;
@@ -203,7 +204,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 				id: sTriggerID,
 				busyIndicatorDelay: 0,
 				type: ListType.Active,
-				content: new sap.ui.core.HTML({
+				content: new HTML({
 					content:	'<div class="sapMGrowingListTrigger">' +
 									'<div class="sapMSLITitleDiv sapMGrowingListTriggerText">' +
 										'<span class="sapMSLITitle" id="' + sTriggerID + 'Text">' + jQuery.sap.encodeHTML(sTriggerText) + '</span>' +
@@ -239,6 +240,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 
 		// returns the growing information to be shown at the growing button
 		_getListItemInfo : function() {
+			this._iLastItemsCount = this._oControl.getItems(true).length;
 			return ("[ " + this._iRenderedDataItems + " / " + NumberFormat.getFloatInstance().format(this._oControl.getMaxItemsCount()) + " ]");
 		},
 
@@ -611,16 +613,19 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 					iItemsLength = aItems.length,
 					iBindingLength = oBinding.getLength() || 0,
 					bLengthFinal = oBinding.isLengthFinal(),
-					bHasScrollToLoad = oControl.getGrowingScrollToLoad();
+					bHasScrollToLoad = oControl.getGrowingScrollToLoad(),
+					oTriggerDomRef = oTrigger.getDomRef();
+
+				// put the focus to the newly added item if growing button is pressed
+				if (oTriggerDomRef && oTriggerDomRef.contains(document.activeElement)) {
+					(aItems[this._iLastItemsCount] || oControl).focus();
+				}
 
 				// show, update or hide the growing button
 				if (!iItemsLength || !this._iLimit ||
 					(bLengthFinal && this._iLimit >= iBindingLength) ||
 					(bHasScrollToLoad && this._getHasScrollbars())) {
 					oControl.$("triggerList").css("display", "none");
-					if (document.activeElement === oTrigger.getDomRef()) {
-						oControl.$("after").focus();
-					}
 				} else {
 					if (bLengthFinal) {
 						oControl.$("triggerInfo").css("display", "block").text(this._getListItemInfo());

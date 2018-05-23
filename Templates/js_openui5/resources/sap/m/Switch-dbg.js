@@ -1,12 +1,28 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Switch.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/EnabledPropagator', 'sap/ui/core/IconPool', 'sap/ui/core/theming/Parameters'],
-	function(jQuery, library, Control, EnabledPropagator, IconPool, Parameters) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/EnabledPropagator',
+	'sap/ui/core/IconPool',
+	'sap/ui/core/theming/Parameters',
+	'./SwitchRenderer'
+],
+function(
+	jQuery,
+	library,
+	Control,
+	EnabledPropagator,
+	IconPool,
+	Parameters,
+	SwitchRenderer
+	) {
 		"use strict";
 
 		// shortcut for sap.m.touch
@@ -26,7 +42,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -96,7 +112,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 						state: { type: "boolean" }
 					}
 				}
-			}
+			},
+			designtime: "sap/m/designtime/Switch.designtime"
 		}});
 
 		IconPool.insertFontFaceStyle();
@@ -441,9 +458,9 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Change the switch state between on and off.
 		 *
-		 * @param {boolean} bState
+		 * @param {boolean} bState The new state - true for 'on' and false for 'off'
 		 * @public
-		 * @return {sap.m.Switch} <code>this</code> to allow method chaining.
+		 * @returns {sap.m.Switch} <code>this</code> to allow method chaining.
 		 */
 		Switch.prototype.setState = function(bState) {
 			this.setProperty("state", bState, true);

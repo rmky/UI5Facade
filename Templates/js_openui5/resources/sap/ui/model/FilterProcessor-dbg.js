@@ -1,11 +1,11 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['./Filter', 'jquery.sap.global', "jquery.sap.unicode"],
-	function(Filter, jQuery) {
+sap.ui.define(['./Filter', 'jquery.sap.global', 'jquery.sap.unicode'],
+	function(Filter, jQuery /* jQuerySapUnicode */) {
 	"use strict";
 
 	/**
@@ -103,7 +103,7 @@ sap.ui.define(['./Filter', 'jquery.sap.global', "jquery.sap.unicode"],
 		if (typeof oValue == "string") {
 			// Internet Explorer and Edge cannot uppercase properly on composed characters
 			if (String.prototype.normalize && (sap.ui.Device.browser.msie || sap.ui.Device.browser.edge)) {
-				oValue = oValue.normalize("NFD");
+				oValue = oValue.normalize("NFKD");
 			}
 			oValue = oValue.toUpperCase();
 			// use canonical composition as recommended by W3C

@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -164,7 +164,8 @@
 }
 
 
-.sapTntNavLIItemSelected .sapTntNavLIItem,
+.sapTntNavLIItemSelected.sapTntNavLIItem,
+.sapTntNavLIItemSelected .sapTntNavLIGroup,
 .sapTntNavLIItemSelected.sapTntNavLIGroupItem.sapTntNavLIGroupItem {
 	background-color: @sapUiListSelectionBackgroundColor;
 }
@@ -273,6 +274,7 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 
 	.sapMITBScrollContainer {
 		margin: 0 3.25rem 0 0.75rem;
+		padding-top: 0;
 	}
 
 	.sapMITBArrowScroll {
@@ -448,7 +450,7 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 @_sap_tnt_ToolPage_FooterHeight : 3rem;
 
 @_sap_tnt_ToolPage_CompactAsideWidth : 15rem;
-@_sap_tnt_ToolPage_CompactAsideWidthOnTablet : 2rem;
+@_sap_tnt_ToolPage_CompactAsideWidthOnTablet : 3rem;
 @_sap_tnt_ToolPage_CompactHeaderHeight : 3rem;
 @_sap_tnt_ToolPage_CompactFooterHeight : 2rem;
 
@@ -734,4 +736,82 @@ html[dir=rtl] {
   }
 }
 /* END "ToolPage.less" */
+
+/* START "InfoLabel.less" */
+/* ================================= */
+/* CSS for control sap.tnt/InfoLabel */
+/* Base theme                        */
+/* ================================= */
+
+/* ==========================================================================
+   Root element
+   ========================================================================== */
+.sapTntInfoLabel {
+	box-sizing: border-box;
+	padding: 0 0.625rem;
+	text-align: center;
+	border-radius: 1.125rem;
+	height: 1.125rem;
+	display: inline-block;
+	max-width: 100%;
+
+	.sapTntInfoLabelInner {
+		font-size: @sapMFontSmallSize;
+		vertical-align: top;
+		line-height: 1.125rem;
+		font-weight: 600;
+		letter-spacing: 0.0125rem;
+		text-transform: uppercase;
+		display: inline-block;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		overflow: hidden;
+		max-width: 100%;
+	}
+}
+
+.sapTntInfoLabelRenderModeNarrow{
+	padding: 0 0.3125rem;
+}
+
+/* ==========================================================================
+   InfoLabel Display Only
+   ========================================================================== */
+.sapTntInfoLabel.sapTntInfoLabelDisplayOnly {
+	height: 1rem;
+
+	.sapTntInfoLabelInner {
+		font-size: 0.6875rem;
+		line-height: 1rem;
+	}
+}
+
+/* ==========================================================================
+   InfoLabel No Text
+   ========================================================================== */
+   .sapTntInfoLabel.sapTntInfoLabelNoText {
+	padding: 0 0.5625rem;
+
+		&.sapTntInfoLabelDisplayOnly{
+			padding: 0 0.5rem;
+		}
+   }
+
+/* ==========================================================================
+   InfoLabel in Form
+   ========================================================================== */
+
+.sapUiFormM:not(.sapUiFormEdit) .sapUiFormResGridCont > div .sapTntInfoLabel {
+	font-size: 1rem;
+}
+
+.sapUiFormEdit .sapTntInfoLabel:not(.sapTntInfoLabelDisplayOnly) {
+	margin: 0.9375rem 0;
+}
+
+/* Compact size */
+.sapUiSizeCompact .sapUiFormEdit .sapTntInfoLabel:not(.sapTntInfoLabelDisplayOnly) {
+	margin: 0.4375rem 0;
+}
+/* END "InfoLabel.less" */
 

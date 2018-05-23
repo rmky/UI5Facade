@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.52.5"
+      "version": "1.54.5"
     },
     "title": "UI5 library: sap.ui.support",
     "description": "UI5 library: sap.ui.support",
@@ -14,35 +14,20 @@
   },
   "sap.ui": {
     "technology": "UI5",
-    "supportedThemes": [
-      "base",
-      "sap_belize",
-      "sap_belize_plus"
-    ]
+    "supportedThemes": []
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.52",
+      "minUI5Version": "1.54",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.52.5"
-        },
-        "sap.ui.fl": {
-          "minVersion": "1.52.5"
-        },
-        "sap.ui.layout": {
-          "minVersion": "1.52.5"
-        },
-        "sap.ui.codeeditor": {
-          "minVersion": "1.52.5"
-        },
-        "sap.m": {
-          "minVersion": "1.52.5"
+          "minVersion": "1.54.5"
         }
       }
     },
     "library": {
       "i18n": false,
+      "css": false,
       "content": {
         "controls": [],
         "elements": [],

@@ -1,12 +1,26 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Label
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/LabelEnablement', 'sap/ui/core/library'],
-	function(jQuery, library, Control, LabelEnablement, coreLibrary) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/LabelEnablement',
+	'sap/ui/core/library',
+	'./LabelRenderer'
+],
+function(
+	jQuery,
+	library,
+	Control,
+	LabelEnablement,
+	coreLibrary,
+	LabelRenderer
+	) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TextDirection
@@ -17,6 +31,9 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	// shortcut for sap.m.LabelDesign
 	var LabelDesign = library.LabelDesign;
+
+	// shortcut for sap.ui.core.VerticalAlign
+	var VerticalAlign = coreLibrary.VerticalAlign;
 
 	/**
 	 * Constructor for a new Label.
@@ -47,7 +64,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @implements sap.ui.core.Label, sap.ui.core.IShrinkable
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -58,7 +75,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 		interfaces : [
 			"sap.ui.core.Label",
-			"sap.ui.core.IShrinkable"
+			"sap.ui.core.IShrinkable",
+			"sap.m.IOverflowToolbarContent"
 		],
 		library : "sap.m",
 		properties : {
@@ -109,7 +127,13 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			 *
 			 * @since 1.50
 			 */
-			wrapping: {type : "boolean", group : "Appearance", defaultValue : false}
+			wrapping: {type : "boolean", group : "Appearance", defaultValue : false},
+
+			/**
+			 * Specifies the vertical alignment of the <code>Label</code> related to the tallest and lowest element on the line.
+			 * @since 1.54
+			 */
+			vAlign : {type : "sap.ui.core.VerticalAlign", group : "Appearance", defaultValue : VerticalAlign.Inherit}
 		},
 		associations : {
 
@@ -119,7 +143,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			 */
 			labelFor : {type : "sap.ui.core.Control", multiple : false}
 		},
-		designTime : true
+		designtime: "sap/m/designtime/Label.designtime"
 	}});
 
 	Label.prototype.setText = function(sText) {
@@ -163,15 +187,76 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	};
 
 	/**
-	 * @see sap.ui.core.Control#getAccessibilityInfo Provides the current accessibility state of the control.
+	 * See {@link sap.ui.core.Control#getAccessibilityInfo}. Provides the current accessibility state of the control.
 	 * @protected
 	 */
 	Label.prototype.getAccessibilityInfo = function() {
 		return {description: this.getText()};
 	};
 
+	/**
+	 * Required by the {@link sap.m.IOverflowToolbarContent} interface.
+	 */
+	Label.prototype.getOverflowToolbarConfig = function() {
+		var oConfig = {
+			canOverflow: true,
+			propsUnrelatedToSize: ["design", "required", "displayOnly"]
+		};
+
+		function getOwnGroup(oControl) {
+			var oLayoutData = oControl && oControl.getLayoutData();
+
+			if (isInstanceOf(oLayoutData, "sap/m/OverflowToolbarLayoutData")) {
+				return oLayoutData.getGroup();
+			}
+		}
+
+		oConfig.onBeforeEnterOverflow = function(oLabel) {
+			var bIsLabelFor = false,
+				oToolbar,
+				sLabelledControlId,
+				oLabelledControl,
+				sLabelGroupId,
+				sLabelledControlGroupId;
+
+			oToolbar = oLabel.getParent();
+			if (!isInstanceOf(oToolbar, "sap/m/OverflowToolbar")) {
+				return;
+			}
+
+			// check that the label is for a control from the same toolbar
+			sLabelledControlId = oLabel.getLabelFor();
+			oLabelledControl = sLabelledControlId && sap.ui.getCore().byId(sLabelledControlId);
+			if (!oLabelledControl || (oToolbar.indexOfContent(oLabelledControl) < 0)) {
+				return;
+			}
+
+			// check that the label and the labeled control are grouped in the toolbar
+			sLabelGroupId = getOwnGroup(oLabel);
+			sLabelledControlGroupId = getOwnGroup(oLabelledControl);
+			bIsLabelFor = sLabelGroupId && (sLabelGroupId === sLabelledControlGroupId);
+
+			oLabel.toggleStyleClass("sapMLabelMediumMarginTop", bIsLabelFor, true /* suppress invalidate */);
+		};
+
+		oConfig.onAfterExitOverflow = function(oLabel) {
+			oLabel.toggleStyleClass("sapMLabelMediumMarginTop", false, true /* suppress invalidate */);
+		};
+
+		return oConfig;
+	};
+
 	// enrich Label functionality
 	LabelEnablement.enrich(Label.prototype);
+
+	// utility function to check if an object is an instance of a class
+	// without forcing the loading of the module that defines the class
+	function isInstanceOf (oObject, sModule) {
+		if (oObject && sModule) {
+			var fnClass = sap.ui.require(sModule); // will return the fnClass only if the module is already loaded
+			return (typeof fnClass === 'function')  && (oObject instanceof fnClass);
+		}
+	}
 
 	return Label;
 

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -201,11 +201,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', './Calenda
 		/**
 		 * Retrieves the first date of the same week in which is the given date.
 		 * This function works with date values in UTC to produce timezone agnostic results.
-		 * <br><br>
-		 * The US weeks at the end of December and at the beginning of January(53th and 0th), are not considered.
-		 * If a given date is in the beginning of January (e.g. Friday, 2 Jan 2015, week 0), the function will return
-		 * week start date in the previous year(e.g. Sunday, 28 Dec 2014, week 53).
-		 *
 		 * @param {Date} oDate the input date for which we search the first week date.
 		 * This date is considered as is (no UTC conversion, time cut etc).
 		 *
@@ -359,7 +354,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', './Calenda
 		 * @private
 		 */
 		CalendarUtils._checkJSDateObject = function(oDate) {
-			if (!(oDate instanceof Date)) {
+			// Cross frame check for a date should be performed here otherwise setDateValue would fail in OPA tests
+			// because Date object in the test is different than the Date object in the application (due to the iframe).
+			// We can use jQuery.type or this method:
+			// function isValidDate (date) {
+			//	return date && Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date);
+			//}
+			if (jQuery.type(oDate) !== "date") {
 				throw new Error("Date must be a JavaScript date object.");
 			}
 		};

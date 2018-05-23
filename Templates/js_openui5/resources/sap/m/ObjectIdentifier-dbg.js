@@ -1,12 +1,30 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.ObjectIdentifier.
-sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/ui/core/InvisibleText', 'sap/ui/core/library', 'sap/ui/Device', 'sap/ui/base/ManagedObject'],
-	function(library, Control, IconPool, InvisibleText, coreLibrary, Device, ManagedObject) {
+sap.ui.define([
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/IconPool',
+	'sap/ui/core/InvisibleText',
+	'sap/ui/core/library',
+	'sap/ui/Device',
+	'sap/ui/base/ManagedObject',
+	'./ObjectIdentifierRenderer'
+],
+function(
+	library,
+	Control,
+	IconPool,
+	InvisibleText,
+	coreLibrary,
+	Device,
+	ManagedObject,
+	ObjectIdentifierRenderer
+	) {
 	"use strict";
 
 
@@ -25,7 +43,7 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/
 	 * @class
 	 * The ObjectIdentifier is a display control that enables the user to easily identify a specific object. The ObjectIdentifier title is the key identifier of the object and additional text and icons can be used to further distinguish it from other objects.
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -36,7 +54,7 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/
 	var ObjectIdentifier = Control.extend("sap.m.ObjectIdentifier", /** @lends sap.m.ObjectIdentifier.prototype */ { metadata : {
 
 		library : "sap.m",
-		designTime: true,
+		designtime: "sap/m/designtime/ObjectIdentifier.designtime",
 		properties : {
 
 			/**
@@ -51,22 +69,19 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/
 
 			/**
 			 * Indicates whether or not the notes icon is displayed.
-			 * @deprecated Since version 1.24.0.
-			 * Will be replaced in the future by a more generic mechanism.
+			 * @deprecated as of version 1.24.0. There is no replacement for the moment.
 			 */
 			badgeNotes : {type : "boolean", group : "Misc", defaultValue : null, deprecated: true},
 
 			/**
 			 * Indicates whether or not the address book icon is displayed.
-			 * @deprecated Since version 1.24.0.
-			 * Will be replaced in the future by a more generic mechanism.
+			 * @deprecated as of version 1.24.0. There is no replacement for the moment.
 			 */
 			badgePeople : {type : "boolean", group : "Misc", defaultValue : null, deprecated: true},
 
 			/**
 			 * Indicates whether or not the attachments icon is displayed.
-			 * @deprecated Since version 1.24.0.
-			 * Will be replaced in the future by a more generic mechanism.
+			 * @deprecated as of version 1.24.0. There is no replacement for the moment.
 			 */
 			badgeAttachments : {type : "boolean", group : "Misc", defaultValue : null, deprecated: true},
 
@@ -342,7 +357,7 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/
 		//if text is empty or not
 		var oTitleControl = this._getTitleControl();
 		oTitleControl.setProperty("text", sTitle, false);
-		oTitleControl.setVisible(!!sTitle);
+		oTitleControl.setVisible(!!oTitleControl.getText());
 		this.setProperty("title", sTitle, true);
 		this.$("text").toggleClass("sapMObjectIdentifierTextBellow",
 				!!this.getProperty("text") && !!this.getProperty("title"));

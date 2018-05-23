@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -44,7 +44,7 @@ sap.ui.define([
 			 *   are assumed to be valid "Edm.DateTimeOffset" values and are compared based on the
 			 *   corresponding number of milliseconds since 1 January, 1970 UTC.
 			 *   Otherwise the values are compared with the JavaScript operators <code>===</code>
-			 *   and <code>&gt;</code>.
+			 *   and <code>></code>.
 			 * @return {number}
 			 *   The result of the comparison: <code>0</code> if the values are equal,
 			 *   <code>1</code> if the first value is larger, <code>-1</code> if the second value

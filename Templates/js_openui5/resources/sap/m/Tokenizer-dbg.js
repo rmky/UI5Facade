@@ -1,12 +1,31 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Tokenizer.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/delegate/ScrollEnablement', 'sap/ui/Device', 'sap/ui/core/InvisibleText', 'sap/ui/core/ResizeHandler', 'jquery.sap.keycodes'],
-	function(jQuery, library, Control, ScrollEnablement, Device, InvisibleText, ResizeHandler) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/delegate/ScrollEnablement',
+	'sap/ui/Device',
+	'sap/ui/core/InvisibleText',
+	'sap/ui/core/ResizeHandler',
+	'./TokenizerRenderer',
+	'jquery.sap.keycodes'
+],
+	function(
+	jQuery,
+	library,
+	Control,
+	ScrollEnablement,
+	Device,
+	InvisibleText,
+	ResizeHandler,
+	TokenizerRenderer
+	) {
 	"use strict";
 
 
@@ -30,7 +49,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * The tokenizer can only be used as part of {@link sap.m.MultiComboBox MultiComboBox},{@link sap.m.MultiInput MultiInput} or {@link sap.ui.comp.valuehelpdialog.ValueHelpDialog ValueHelpDialog}
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -58,7 +77,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			/**
 			 * the currently displayed tokens
 			 */
-			tokens : {type : "sap.m.Token", multiple : true, singularName : "token"}
+			tokens : {type : "sap.m.Token", multiple : true, singularName : "token"},
+			/**
+			 * Hidden text used for accesibility
+			 */
+			_tokensInfo: {type: "sap.ui.core.InvisibleText", multiple: false, visibility: "hidden"}
 		},
 		associations : {
 
@@ -114,7 +137,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			},
 
 			/**
-			 * Fired when the tokens aggregation changed (add / remove token)
+			 * Fired when the tokens aggregation changed due to a user interaction (add / remove token)
 			 */
 			tokenUpdate: {
 				allowPreventDefault : true,
@@ -144,11 +167,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	var oRb = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
-	// create an ARIA announcement and remember its ID for later use in the renderer:
-	Tokenizer.prototype._sAriaTokenizerLabelId = new InvisibleText({
-		text: oRb.getText("TOKENIZER_ARIA_LABEL")
-	}).toStatic().getId();
-
 	///**
 	// * This file defines behavior for the control,
 	// */
@@ -163,6 +181,14 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			vertical : false,
 			nonTouchScrolling : true
 		});
+
+		if (sap.ui.getCore().getConfiguration().getAccessibility()) {
+			var sAriaTokenizerContainToken = new InvisibleText({
+				text: oRb.getText("TOKENIZER_ARIA_CONTAIN_TOKEN")
+			});
+
+			this.setAggregation("_tokensInfo", sAriaTokenizerContainToken);
+		}
 	};
 
 	/**
@@ -264,6 +290,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	};
 
 	Tokenizer.prototype.onBeforeRendering = function() {
+		this._setTokensAria();
 		this._deregisterResizeHandler();
 	};
 
@@ -640,8 +667,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * Function validates a given token using the set validators
 	 *
 	 * @private
-	 * @param {object}oParameters Parameter bag containing fields for text, token, suggestionObject and validation callback
-	 * @param {function[]} aValidator [optional] Array of all validators to be used
+	 * @param {object} oParameters Parameter bag containing fields for text, token, suggestionObject and validation callback
+	 * @param {function[]} aValidators [optional] Array of all validators to be used
 	 * @returns {sap.m.Token} A valid token or null
 	 */
 	Tokenizer.prototype._validateToken = function(oParameters, aValidators) {
@@ -703,6 +730,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @param {string} sInitialText The initial text used for validation
 	 * @param {object} oSuggestionObject A pre-validated token or suggestion item
 	 * @param {function} fValidateCallback Callback after validation has finished
+	 * @returns {function} A callback function which is used for executing validators
 	 * @private
 	 */
 	Tokenizer.prototype._getAsyncValidationCallback = function(aValidators, iValidatorIndex, sInitialText,
@@ -740,8 +768,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * Function validates the given text and adds a new token if validation was successful
 	 *
 	 * @public
-	 * @param {object}
-	 *          oParameters - parameter bag containing following fields:
+	 * @param {object} oParameters - parameter bag containing following fields:
 	 *          {sap.m.String} text - the source text {sap.m.Token}
 	 *          [optional] token - a suggested token
 	 *          {object} [optional] suggestionObject - any object used to find the suggested token
@@ -1010,7 +1037,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * Function selects all tokens
 	 *
 	 * @public
-	 * @param {boolean} bSelect -[optional] true for selecting, false for deselecting
+	 * @param {boolean} bSelect [optional] true for selecting, false for deselecting
 	 * @returns {sap.m.Tokenizer} this instance for method chaining
 	 */
 	Tokenizer.prototype.selectAllTokens = function(bSelect) {
@@ -1033,6 +1060,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	/**
 	 * Function selects/deselects all tokens and fires the correct "select" or "deselect" events.
+	 * @param {boolean} bSelect Whether the tokens should be selected
 	 * @param {sap.m.Token} skipToken  [optional] this token will be skipped when changing the selection
 	 * @private
 	 */
@@ -1080,7 +1108,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * Function is called when token's delete icon was pressed function destroys token from Tokenizer's aggregation
 	 *
 	 * @private
-	 * @param {jQuery.Event} oEvent  The event object
+	 * @param {sap.m.Token} token  The deleted token
 	 */
 	Tokenizer.prototype._onTokenDelete = function(token) {
 		if (token && this.getEditable()) {
@@ -1237,6 +1265,34 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	};
 
 	/**
+	 * Sets accessibility information about the tokens
+	 *
+	 * @private
+	 */
+	Tokenizer.prototype._setTokensAria = function() {
+		var iTokenCount = this.getTokens().length,
+		oInvisibleText,
+		sTokenizerAria = "";
+
+		if (sap.ui.getCore().getConfiguration().getAccessibility()) {
+			oInvisibleText = this.getAggregation("_tokensInfo");
+			switch (iTokenCount) {
+				case 0:
+					sTokenizerAria = oRb.getText("TOKENIZER_ARIA_CONTAIN_TOKEN");
+					break;
+				case 1:
+					sTokenizerAria = oRb.getText("TOKENIZER_ARIA_CONTAIN_ONE_TOKEN");
+					break;
+				default:
+					sTokenizerAria = oRb.getText("TOKENIZER_ARIA_CONTAIN_SEVERAL_TOKENS", iTokenCount);
+					break;
+			}
+
+			oInvisibleText.setText(sTokenizerAria);
+		}
+	};
+
+	/**
 	 * Selects the hidden clip div to enable copy to clipboad.
 	 *
 	 * @private
@@ -1273,6 +1329,15 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 */
 	Tokenizer.prototype.setReverseTokens = function(bReverseTokens) {
 		this._reverseTokens = bReverseTokens;
+	};
+
+	/**
+	 * Gets the accessibility text aggregation id
+	 * @returns {string} Returns the InvisibleText control id
+	 * @protected
+	 */
+	Tokenizer.prototype.getTokensInfoId = function() {
+		return this.getAggregation("_tokensInfo").getId();
 	};
 
 	Tokenizer.TokenChangeType = {

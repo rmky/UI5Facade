@@ -1,15 +1,15 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides the render manager sap.ui.core.RenderManager
 sap.ui.define([
 		'jquery.sap.global',
-		'../base/Interface', '../base/Object', './LabelEnablement',
+		'./LabelEnablement',
 		'jquery.sap.act', 'jquery.sap.encoder', 'jquery.sap.dom', 'jquery.sap.trace'
-	], function(jQuery, Interface, BaseObject, LabelEnablement /* , jQuerySap1, jQuerySap */) {
+], function(jQuery, LabelEnablement /* , jQuerySapAct, jQuerySapEncoder, jQuerySapDom, jQuerySapTrace */) {
 
 	"use strict";
 
@@ -54,7 +54,7 @@ sap.ui.define([
 	 *
 	 * @extends Object
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @alias sap.ui.core.RenderManager
 	 * @public
 	 */
@@ -1304,6 +1304,40 @@ sap.ui.define([
 		jQuery("<DIV/>", { id: RenderPrefixes.Dummy + node.id}).addClass("sapUiHidden").insertBefore(node);
 	}
 
+	// Stores {@link sap.ui.core.RenderManager.preserveContent} listener as objects with following structure:
+	// {fn: <listener>, context: <context>}
+	var aPreserveContentListeners = [];
+
+	/**
+	 * Attaches a listener which is called on {@link sap.ui.core.RenderManager.preserveContent} call
+	 *
+	 * @param {function} fnListener listener function
+	 * @param {object} [oContext=RenderManager] context for the listener function
+	 * @private
+	 * @sap-restricted sap.ui.richtexteditor.RichTextEditor
+	 */
+	RenderManager.attachPreserveContent = function(fnListener, oContext) {
+		// discard duplicates first
+		RenderManager.detachPreserveContent(fnListener);
+		aPreserveContentListeners.push({
+			fn: fnListener,
+			context: oContext
+		});
+	};
+
+	/**
+	 * Detaches a {@link sap.ui.core.RenderManager.preserveContent} listener
+	 *
+	 * @param {function} fnListener listener function
+	 * @private
+	 * @sap-restricted sap.ui.richtexteditor.RichTextEditor
+	 */
+	RenderManager.detachPreserveContent = function(fnListener) {
+		aPreserveContentListeners = aPreserveContentListeners.filter(function(oListener) {
+			return oListener.fn !== fnListener;
+		});
+	};
+
 	/**
 	 * Collects descendants of the given root node that need to be preserved before the root node
 	 * is wiped out. The "to-be-preserved" nodes are moved to a special, hidden 'preserve' area.
@@ -1326,7 +1360,9 @@ sap.ui.define([
 	RenderManager.preserveContent = function(oRootNode, bPreserveRoot, bPreserveNodesWithId) {
 		jQuery.sap.assert(typeof oRootNode === "object" && oRootNode.ownerDocument == document, "oRootNode must be a DOM element");
 
-		sap.ui.getCore().getEventBus().publish("sap.ui","__preserveContent", { domNode : oRootNode});
+		aPreserveContentListeners.forEach(function(oListener) {
+			oListener.fn.call(oListener.context || RenderManager, {domNode : oRootNode});
+		});
 
 		var $preserve = getPreserveArea();
 
@@ -1466,7 +1502,7 @@ sap.ui.define([
 
 	/**
 	 * Determines whether Dom Patching is enabled or not
-	 * @returns {Boolean}
+	 * @returns {boolean}
 	 * @private
 	 */
 	function isDomPatchingEnabled() {

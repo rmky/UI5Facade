@@ -354,7 +354,7 @@
 @sapUiChartGridlineColor: darken(@sapUiContentForegroundBorderColor, 40);  // #999999
 @sapUiChartReferenceLineColor: @sapUiContentForegroundBorderColor;   // #ffffff
 @sapUiChartDataLabelFontColor: @sapUiBaseText;                      // #ffffff
-@sapUiChartReferenceLineLabelColor: @sapUiBaseText;                 // #ffffff
+@sapUiChartReferenceLineLabelColor: darken(@sapUiBaseText, 100);	// #000000
 @sapUiChartDataLabelFontSize: @sapMFontSmallSize;                   // 12px
 @sapUiChartPopoverDataItemFontColor: @sapUiBaseText;                // #ffffff
 @sapUiChartPopoverGroupFontColor: @sapUiContentForegroundTextColor; // #ffffff
@@ -401,6 +401,10 @@
 @sapUiChartRadialRemainingCircle: @sapUiGroupContentBackground;  // #000000
 @sapUiChartRadialRemainingCircleBorderColor: @sapUiChartNeutral;  // #ffffff
 @sapUiChartRadialBG: @sapUiGroupContentBackground;  // #000000
+
+@sapUiChartLegendHoverBackground: @sapUiListHoverBackground;  // #7a5100
+@sapUiChartLegendSelectionBackground: @sapUiListSelectionBackgroundColor;  // #0f5d94
+@sapUiChartLegendSelectionHoverBackground: @sapUiListSelectionHoverBackground;  // #7a5100
 
 
 // qualitative palette
@@ -543,6 +547,15 @@
 @sapUiChartPaletteSequentialNeutral: @sapUiChartSequenceNeutral;
 @sapUiChartPaletteSequentialNeutralDark1: @sapUiChartSequenceNeutral;
 @sapUiChartPaletteSequentialNeutralDark2: @sapUiChartSequenceNeutral;
+
+@sapUiChartPaletteNoSemDiv1Light3: #f2e4d7;
+@sapUiChartPaletteNoSemDiv1Light2: #e3d0bf;
+@sapUiChartPaletteNoSemDiv1Light1: #d1baa4;
+@sapUiChartPaletteNoSemDiv1: #bea287;
+@sapUiChartPaletteNoSemDiv1Dark1: #a78b6f;
+@sapUiChartPaletteNoSemDiv1Dark2: #8a6e52;
+
+@sapUiChartPaletteMidArea: desaturate(lighten(@sapUiChartSequenceNeutral, 40), 7);
 
 @sapUiChoroplethBG: @sapUiGroupContentBackground;
 @sapUiChoroplethRegionBorder: @sapUiGroupContentBackground;

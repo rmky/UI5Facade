@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -65,7 +65,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/supportRules/IssueManager","
 		 * @param {array} aRules Selected rules for execution
 		 * @param {object} oCoreFacade Metadata, Models, UI areas and Components of the Core object
 		 * @param {object} oExecutionScope selected execution scope from user in UI
-		 * @returns {promise} When all rules are analyzed
+		 * @returns {Promise} When all rules are analyzed
 		 */
 		Analyzer.prototype.start = function (aRules, oCoreFacade, oExecutionScope) {
 			var oIssueManagerFacade,

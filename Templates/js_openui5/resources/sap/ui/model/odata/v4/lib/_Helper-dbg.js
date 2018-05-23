@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,6 +17,8 @@ sap.ui.define([
 		rEscapedOpenBracket = /%28/g,
 		rEscapedTick = /%27/g,
 		rHash = /#/g,
+		// matches the rest of a segment after '(' and any segment that consists only of a number
+		rNotMetaContext = /\([^/]*|\/-?\d+/g,
 		rNumber = /^-?\d+$/,
 		rPlus = /\+/g,
 		rSingleQuote = /'/g,
@@ -170,6 +172,66 @@ sap.ui.define([
 		},
 
 		/**
+		 * Returns a "get*" method corresponding to the given "fetch*" method.
+		 *
+		 * @param {string} sFetch
+		 *   A "fetch*" method's name
+		 * @param {boolean} [bThrow=false]
+		 *   Whether the "get*" method throws if the promise is not fulfilled
+		 * @returns {function}
+		 *   A "get*" method returning the "fetch*" method's result or
+		 *   <code>undefined</code> in case the promise is not (yet) fulfilled
+		 */
+		createGetMethod : function (sFetch, bThrow) {
+			return function () {
+				var oSyncPromise = this[sFetch].apply(this, arguments);
+
+				if (oSyncPromise.isFulfilled()) {
+					return oSyncPromise.getResult();
+				} else if (bThrow) {
+					if (oSyncPromise.isRejected()) {
+						oSyncPromise.caught();
+						throw oSyncPromise.getResult();
+					} else {
+						throw new Error("Result pending");
+					}
+				}
+			};
+		},
+
+		/**
+		 * Returns a "request*" method corresponding to the given "fetch*" method.
+		 *
+		 * @param {string} sFetch
+		 *   A "fetch*" method's name
+		 * @returns {function}
+		 *   A "request*" method returning the "fetch*" method's result wrapped via
+		 *   <code>Promise.resolve()</code>
+		 */
+		createRequestMethod : function (sFetch) {
+			return function () {
+				return Promise.resolve(this[sFetch].apply(this, arguments));
+			};
+		},
+
+		/**
+		 * Drills down into the given object according to <code>aPath</code>.
+		 *
+		 * @param {object} oData
+		 *   The object to start at
+		 * @param {string[]} aPath
+		 *   Relative path to drill-down into, as array of segments
+		 * @returns {*}
+		 *   The result matching to <code>aPath</code> or <code>undefined</code> if the path leads
+		 *   into void
+		 */
+		drillDown : function (oData, aPath) {
+			return aPath.reduce(function (oData, sSegment) {
+				return (oData && sSegment in oData) ? oData[sSegment] : undefined;
+			}, oData);
+		},
+
+		/**
 		 * Encodes a query part, either a key or a value.
 		 *
 		 * @param {string} sPart
@@ -297,6 +359,74 @@ sap.ui.define([
 			default:
 				throw new Error("Unsupported type: " + sType);
 			}
+		},
+
+		/**
+		 * Returns the key predicate (see "4.3.1 Canonical URL") for the given entity using the
+		 * given meta data.
+		 *
+		 * @param {object} oInstance
+		 *   Entity instance runtime data
+		 * @param {string} sMetaPath
+		 *   The meta path of the entity in the cache incl. the cache's resource path
+		 * @param {object} mTypeForMetaPath
+		 *   Maps meta paths to the corresponding (entity or complex) types
+		 * @returns {string}
+		 *   The key predicate, e.g. "(Sector='DevOps',ID='42')" or "('42')" or undefined if one
+		 *   key property is undefined
+		 *
+		 * @private
+		 */
+		getKeyPredicate : function (oInstance, sMetaPath, mTypeForMetaPath) {
+			var bFailed,
+				aKey = mTypeForMetaPath[sMetaPath].$Key,
+				aKeyProperties = [],
+				bSingleKey = aKey.length === 1;
+
+			bFailed = aKey.some(function (vKey) {
+				var sAlias, sKeyPath, aPath, sPropertyName, oType, vValue;
+
+				if (typeof vKey === "string") {
+					sAlias = sKeyPath = vKey;
+				} else {
+					sAlias = Object.keys(vKey)[0];
+					sKeyPath = vKey[sAlias];
+				}
+				aPath = sKeyPath.split("/");
+
+				vValue = Helper.drillDown(oInstance, aPath);
+				if (vValue === undefined) {
+					return true;
+				}
+
+				// the last path segment is the name of the simple property
+				sPropertyName = aPath.pop();
+				// find the type containing the simple property
+				oType = mTypeForMetaPath[Helper.buildPath(sMetaPath, aPath.join("/"))];
+
+				vValue = encodeURIComponent(
+					Helper.formatLiteral(vValue, oType[sPropertyName].$Type));
+				aKeyProperties.push(
+					bSingleKey ? vValue : encodeURIComponent(sAlias) + "=" + vValue);
+			});
+
+			return bFailed ? undefined : "(" + aKeyProperties.join(",") + ")";
+		},
+
+		/**
+		 * Returns the OData metadata model path corresponding to the given OData data model path.
+		 *
+		 * @param {string} sPath
+		 *   An absolute data path within the OData data model, for example
+		 *   "/EMPLOYEES/0/ENTRYDATE" or "/EMPLOYEES('42')/ENTRYDATE
+		 * @returns {string}
+		 *   The corresponding metadata path within the OData metadata model, for example
+		 *   "/EMPLOYEES/ENTRYDATE"
+		 *
+		 * @private
+		 */
+		getMetaPath : function (sPath) {
+			return sPath.replace(rNotMetaContext, "");
 		},
 
 		/**

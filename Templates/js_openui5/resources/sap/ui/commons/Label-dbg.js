@@ -1,12 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.commons.Label.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/Popup', 'sap/ui/core/LabelEnablement'],
-	function(jQuery, library, Control, Popup, LabelEnablement) {
+sap.ui.define([
+    'jquery.sap.global',
+    './library',
+    'sap/ui/core/Control',
+    'sap/ui/core/Popup',
+    'sap/ui/core/LabelEnablement',
+    "./LabelRenderer"
+],
+	function(jQuery, library, Control, Popup, LabelEnablement, LabelRenderer) {
 	"use strict";
 
 
@@ -24,7 +31,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @implements sap.ui.commons.ToolbarItem, sap.ui.core.Label
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

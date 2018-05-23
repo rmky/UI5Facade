@@ -1,12 +1,49 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/ui/core/delegate/ItemNavigation',
-	'sap/ui/base/ManagedObject', 'sap/ui/core/delegate/ScrollEnablement', 'sap/ui/core/InvisibleText', './AccButton', './TabStripItem', 'sap/m/Select', 'sap/m/SelectList', 'sap/ui/Device', 'sap/ui/core/Renderer', 'sap/ui/core/ResizeHandler', 'sap/m/library', 'sap/ui/core/Icon'],
-	function(jQuery, Control, IconPool, ItemNavigation, ManagedObject, ScrollEnablement, InvisibleText, AccButton, TabStripItem, Select, SelectList, Device, Renderer, ResizeHandler, library, Icon) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/core/Control',
+	'sap/ui/core/IconPool',
+	'sap/ui/core/delegate/ItemNavigation',
+	'sap/ui/base/ManagedObject',
+	'sap/ui/core/delegate/ScrollEnablement',
+	'./AccButton',
+	'./TabStripItem',
+	'sap/m/Select',
+	'sap/m/SelectList',
+	'sap/ui/Device',
+	'sap/ui/core/Renderer',
+	'sap/ui/core/ResizeHandler',
+	'sap/m/library',
+	'sap/ui/core/Icon',
+	'sap/m/SelectRenderer',
+	'sap/m/SelectListRenderer',
+	'./TabStripRenderer'
+],
+function(
+	jQuery,
+	Control,
+	IconPool,
+	ItemNavigation,
+	ManagedObject,
+	ScrollEnablement,
+	AccButton,
+	TabStripItem,
+	Select,
+	SelectList,
+	Device,
+	Renderer,
+	ResizeHandler,
+	library,
+	Icon,
+	SelectRenderer,
+	SelectListRenderer,
+	TabStripRenderer
+	) {
 		"use strict";
 
 		// shortcut for sap.m.SelectType
@@ -26,7 +63,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 		 * space is exceeded, a horizontal scrollbar appears.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @private
@@ -190,26 +227,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 		 */
 		TabStrip.SCROLL_ANIMATION_DURATION = sap.ui.getCore().getConfiguration().getAnimation() ? 500 : 0;
 
-		/**
-		 * <code>TabStripItem</code> states translations
-		 *
-		 * @enum
-		 * @type {{closable: sap.ui.core.InvisibleText, modified: sap.ui.core.InvisibleText, notModified: sap.ui.core.InvisibleText}}
-		 */
-		TabStrip.ARIA_STATIC_TEXTS = {
-			/**
-			 * Holds the static text for "Closable" item that should be read by screen reader
-			 */
-			closable: new InvisibleText({text: oRb.getText("TABSTRIP_ITEM_CLOSABLE")}).toStatic(),
-			/**
-			 * Holds the static text for "Unsaved" item that should be read by screen reader
-			 */
-			modified: new InvisibleText({text: oRb.getText("TABSTRIP_ITEM_MODIFIED")}).toStatic(),
-			/**
-			 * Holds the static text for "Saved" item that should be read by screen reader
-			 */
-			notModified:  new InvisibleText({text: oRb.getText("TABSTRIP_ITEM_NOT_MODIFIED")}).toStatic()
-		};
 
 		/**
 		 * Initializes the control.
@@ -392,8 +409,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 			}
 
 			if (bScrollNeeded && oTabsDomRef && oTabsContainerDomRef) {
-				if (this._bRtl && Device.browser.firefox) {
-					iScrollLeft = -oTabsContainerDomRef.scrollLeft;
+				if (this._bRtl) {
+					iScrollLeft = jQuery(oTabsContainerDomRef).scrollLeftRTL();
 				} else {
 					iScrollLeft = oTabsContainerDomRef.scrollLeft;
 				}
@@ -405,14 +422,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 				}
 
 				if (iScrollLeft > 0) {
-					if (this._bRtl && Device.browser.webkit) {
+					if (this._bRtl) {
 						bScrollForward = true;
 					} else {
 						bScrollBack = true;
 					}
 				}
 				if ((realWidth > availableWidth) && (iScrollLeft + availableWidth < realWidth)) {
-					if (this._bRtl && Device.browser.webkit) {
+					if (this._bRtl) {
 						bScrollBack = true;
 					} else {
 						bScrollForward = true;
@@ -1226,9 +1243,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 
 		/****************************************** CUSTOM SELECT CONTROL **********************************************/
 
-		var CustomSelectRenderer = Renderer.extend(sap.m.SelectRenderer);
+		var CustomSelectRenderer = Renderer.extend(SelectRenderer);
 
-		var CustomSelect = Select.extend("CustomSelect", {
+		var CustomSelect = Select.extend("sap.m.internal.TabStripSelect", {
 			renderer: CustomSelectRenderer
 		});
 
@@ -1283,22 +1300,22 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 
 		/****************************************** CUSTOM SELECT LIST CONTROL *****************************************/
 
-		var CustomSelectListRenderer = Renderer.extend(sap.m.SelectListRenderer);
+		var CustomSelectListRenderer = Renderer.extend(SelectListRenderer);
 
 		CustomSelectListRenderer.renderItem = function(oRm, oList, oItem, mStates) {
 			oRm.write("<li");
 			oRm.writeElementData(oItem);
-			oRm.addClass(sap.m.SelectListRenderer.CSS_CLASS + "ItemBase");
-			oRm.addClass(sap.m.SelectListRenderer.CSS_CLASS + "Item");
+			oRm.addClass(SelectListRenderer.CSS_CLASS + "ItemBase");
+			oRm.addClass(SelectListRenderer.CSS_CLASS + "Item");
 			oRm.addClass("sapMTSOverflowSelectListItem");
 			if (oItem.getProperty("modified")) {
 				oRm.addClass("sapMTSOverflowSelectListItemModified");
 			}
 			if (Device.system.desktop) {
-				oRm.addClass(sap.m.SelectListRenderer.CSS_CLASS + "ItemBaseHoverable");
+				oRm.addClass(SelectListRenderer.CSS_CLASS + "ItemBaseHoverable");
 			}
 			if (oItem === oList.getSelectedItem()) {
-				oRm.addClass(sap.m.SelectListRenderer.CSS_CLASS + "ItemBaseSelected");
+				oRm.addClass(SelectListRenderer.CSS_CLASS + "ItemBaseSelected");
 			}
 			oRm.writeClasses();
 			this.writeItemAccessibilityState.apply(this, arguments);
@@ -1319,7 +1336,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IconPool
 			oRm.write("</li>");
 		};
 
-		var CustomSelectList = SelectList.extend("CustomSelectList", {
+		var CustomSelectList = SelectList.extend("sap.m.internal.TabStripSelectList", {
 			renderer: CustomSelectListRenderer
 		});
 

@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides the base implementation for all model implementations
-sap.ui.define(['./FormatException', './ParseException', './SimpleType', './ValidateException'],
-	function(FormatException, ParseException, SimpleType, ValidateException) {
+sap.ui.define(['./SimpleType'],
+	function(SimpleType) {
 	"use strict";
 
 	/**
@@ -25,7 +25,7 @@ sap.ui.define(['./FormatException', './ParseException', './SimpleType', './Valid
 	 * @extends sap.ui.model.SimpleType
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @param {object} [oFormatOptions] options as provided by concrete subclasses
 	 * @param {object} [oConstraints] constraints as supported by concrete subclasses

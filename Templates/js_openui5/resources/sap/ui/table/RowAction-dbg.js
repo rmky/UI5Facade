@@ -1,12 +1,21 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.table.RowAction
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/core/Icon', 'sap/ui/unified/Menu', 'sap/ui/core/Popup', 'jquery.sap.keycodes'],
-function(jQuery, Control, library, Icon, Menu, Popup) {
+sap.ui.define([
+    'jquery.sap.global',
+    'sap/ui/core/Control',
+    './library',
+    'sap/ui/core/Icon',
+    'sap/ui/unified/Menu',
+    'sap/ui/core/Popup',
+    "./RowActionRenderer",
+    'jquery.sap.keycodes'
+],
+function(jQuery, Control, library, Icon, Menu, Popup, RowActionRenderer) {
 	"use strict";
 
 	/**
@@ -20,7 +29,7 @@ function(jQuery, Control, library, Icon, Menu, Popup) {
 	 * If more action items are available as the available space allows to display an overflow mechanism is provided.
 	 * This control must only be used in the context of the <code>sap.ui.table.Table</code> control to define row actions.
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

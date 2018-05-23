@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -33,7 +33,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Element
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -64,7 +64,7 @@ sap.ui.define([
 		 * @param {float} fStep - The step walking from start to end.
 		 * @param {int} iTickmarksThreshold - Limits the number of tickmarks.
 		 *
-		 * @returns {number}
+		 * @returns {number} The max number of possible tickmarks
 		 */
 		Scale.prototype.calcNumTickmarks = function (fSize, fStep, iTickmarksThreshold) {
 			var iMaxPossible = Math.floor(fSize / fStep); //How many tickmarks would be there if we show one for each step?
@@ -81,9 +81,9 @@ sap.ui.define([
 		 * The result of this method still might not be an integer, but at least there's a try to optimize the space,
 		 * so the tickmarks would look like in the best case.
 		 *
-		 * @param {int} iTickmarksCount
-		 * @param {int} iMaxPossibleTickmarks
-		 * @returns {int}
+		 * @param {int} iTickmarksCount The number of tickmarks
+		 * @param {int} iMaxPossibleTickmarks The maximum number of tickmarks
+		 * @returns {int} Yhe optimized number of tickmarks
 		 * @private
 		 */
 		Scale.prototype._runStepsOptimization = function (iTickmarksCount, iMaxPossibleTickmarks) {
@@ -105,11 +105,11 @@ sap.ui.define([
 		 * Actually this calculates the distance between the first and the second tickmark, but as it's
 		 * assumed that the tickmarks are spread evenly, it doesn't matter.
 		 *
-		 * @param {int} iTickmarksCount - Number of tickmarks that'd be drawn
-		 * @param {float} fStart - The start value of the scale.
-		 * @param {float} fEnd - The end value of the scale.
-		 * @param {float} fStep - The step walking from start to end.
-		 * @returns {float}
+		 * @param {int} iTickmarksCount Number of tickmarks that'd be drawn
+		 * @param {float} fStart The start value of the scale.
+		 * @param {float} fEnd The end value of the scale.
+		 * @param {float} fStep The step walking from start to end.
+		 * @returns {float} The distance between tickmarks
 		 * @private
 		 */
 		Scale.prototype.calcTickmarksDistance = function (iTickmarksCount, fStart, fEnd, fStep) {
@@ -150,7 +150,7 @@ sap.ui.define([
 		 * @param {int} iTotalLabelsCount - Number of tickmarks with labels
 		 * @param {float} fOffsetLeftPx - The distance in Px between the first and the second label
 		 * @param {int} iLabelsMinDistance - The minimum distance between two labels
-		 * @returns {Array}
+		 * @returns {Array} A flagged array with the indices of the hidden tickmarks
 		 * @private
 		 */
 		Scale.prototype.getHiddenTickmarksLabels = function (iScaleWidth, iTotalLabelsCount, fOffsetLeftPx, iLabelsMinDistance) {

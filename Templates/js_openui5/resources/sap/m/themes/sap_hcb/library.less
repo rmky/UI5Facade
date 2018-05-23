@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -262,10 +262,6 @@ html.sap-desktop .sapMBtn:focus > .sapMFocusable:not(.sapMBtnActive) {
 	color: @sapUiContentDisabledTextColor;
 }
 
-.sapMBtnDisabled > span.sapMBtnInner.sapMBtnTransparent > .sapMBtnContent {
-	color: @sapUiContentDisabledTextColor;
-}
-
 .sapMBtnDisabled > span.sapMBtnInner.sapMBtnAccept,
 .sapMBtnDisabled > span.sapMBtnInner.sapMBtnReject,
 .sapMBtnDisabled > span.sapMBtnInner.sapMBtnEmphasized {
@@ -490,7 +486,7 @@ html.sap-desktop {
 	background-color: @sapUiGroupContentBackground;
 }
 
-.sapMDialog > header.sapMDialogTitle > .sapMBarMiddle > .sapMBarPH > .sapMTitle {
+.sapMDialog > header.sapMDialogTitle .sapMBarMiddle > .sapMBarPH > .sapMTitle {
 	color: @sapUiPageHeaderTextColor;
 }
 
@@ -1976,38 +1972,38 @@ html.sap-phone {
 }
 
 /* padding for title in header is removed because of ticket 0120031469 0004432742 2013*/
-.sapMPopoverHeader > .sapMBarMiddle > .sapMBarPH {
+.sapMPopoverHeader .sapMBarMiddle > .sapMBarPH {
 	box-sizing: border-box;
 }
 
-.sapMPopoverHeader > .sapMBarMiddle > .sapMBarPH > .sapMLabel {
+.sapMPopoverHeader .sapMBarMiddle > .sapMBarPH > .sapMLabel {
 	display: inline-block;
 }
 
 /*for only two buttons in footer's contentMiddle aggregation*/
-.sapMPopoverSpecialFooter > .sapMBarMiddle {
+.sapMPopoverSpecialFooter .sapMBarMiddle {
 	display: block;
 	height: 100%;
 	padding: 0 0.25rem;
 	box-sizing: border-box;
 }
 
-.sapMPopoverSpecialFooter > .sapMBarMiddle > .sapMBarPH {
+.sapMPopoverSpecialFooter .sapMBarMiddle > .sapMBarPH {
 	display: block;
 	padding: 0;
 }
 
-.sapMPopoverSpecialFooter > .sapMBarLeft,
-.sapMPopoverSpecialFooter > .sapMBarRight {
+.sapMPopoverSpecialFooter .sapMBarLeft,
+.sapMPopoverSpecialFooter .sapMBarRight {
 	display: none;
 }
 
-.sapMPopoverSpecialFooter > .sapMBarMiddle > .sapMBarPH > .sapMBtn {
+.sapMPopoverSpecialFooter .sapMBar > .sapMBarMiddle > .sapMBarPH > .sapMBtn {
 	width: 50%;
 	padding-left: 0.25rem;
 }
 
-.sapMPopoverSpecialFooter > .sapMBarMiddle > .sapMBarPH {
+.sapMPopoverSpecialFooter .sapMBarMiddle > .sapMBarPH {
 
 	.sapMBtn:last-child {
 		margin-left: 0;
@@ -2168,8 +2164,8 @@ html.sap-phone {
 	}
 
 	/* 2.5rem height for header and footer in popover */
-	& > header:first-of-type.sapMHeader-CTX,
-	& > footer:last-of-type.sapMFooter-CTX {
+	& > div:first-of-type.sapMHeader-CTX,
+	& > div:last-of-type.sapMFooter-CTX {
 		height: 2.5rem;
 
 		.sapMBarLeft,
@@ -2719,12 +2715,12 @@ html[data-sap-ui-browser^="ff"] .sapMBar .sapMSlt:focus {
 html[data-sap-ui-browser^="ie"].sap-desktop,
 html[data-sap-ui-browser^="ed"].sap-desktop {
 
-	.sapMSlt:focus.sapMSltIconOnly {
+	.sapMSlt:focus.sapMSltIconOnly:not(.sapMSltExpanded) {
 		outline:          none;
 		position:         relative;
 	}
 
-	.sapMSlt:focus.sapMSltIconOnly:before {
+	.sapMSlt:focus.sapMSltIconOnly:not(.sapMSltExpanded):before {
 		content: "";
 		box-sizing:       border-box;
 		width:            100%;
@@ -2801,8 +2797,8 @@ html.sap-desktop .sapMSltPressed.sapMSltIconOnly:not(.sapMSltDisabled) {
 
 /* focus: Select IconOnly in all contexts get dotted outline */
 
-html.sap-desktop .sapMBar-CTX .sapMSltIconOnly:focus:not(.sapMSltPressed),
-html.sap-desktop .sapMSltIconOnly:focus:not(.sapMSltPressed) {
+html.sap-desktop .sapMBar-CTX .sapMSltIconOnly:focus:not(.sapMSltPressed):not(.sapMSltExpanded),
+html.sap-desktop .sapMSltIconOnly:focus:not(.sapMSltPressed):not(.sapMSltExpanded) {
 	outline: 0.125rem dotted @sapUiContentFocusColor;
 	outline-offset: -0.125rem;
 	border-color: transparent;
@@ -2825,6 +2821,7 @@ html.sap-desktop .sapMSltIconOnly:hover:not(.sapMSltPressed):not(.sapMTSSlt) {
 /* High Contrast Black theme         */
 /* ================================= */
 
+@_sap_m_SelectListItemHCBFocus_Height: 7px; // 2 borders * 2px + 2 offsets (top and bottom) * 1px + 1px due to browser rendering issues
 /* ------------------------------ */
 /* item                           */
 /* ------------------------------ */
@@ -2859,14 +2856,44 @@ html.sap-desktop li.sapMSelectListItemBase:focus {
 /* FIX: IE and Edge do not support css outline-offset */
 html[data-sap-ui-browser^="ie"].sap-desktop,
 html[data-sap-ui-browser^="ed"].sap-desktop {
-	.sapMSltPicker-CTX .sapMSelectListItemBaseSelected::before {
+
+	.sapMSelectListItemBase:not(.sapMSelectListRow):focus::before {
 		border: 0.125rem dashed @sapUiContentFocusColor;
 	}
-	.sapMComboBoxBasePicker-CTX .sapMSelectListItemBaseSelected::before {
-		border: 0.125rem dashed @sapUiContentFocusColor;
+
+	.sapMSltPicker-CTX,
+	.sapMComboBoxBasePicker-CTX {
+		.sapMSelectListItemBaseSelected:not(.sapMSelectListRow)::before {
+			border: 0.125rem dashed @sapUiContentFocusColor;
+		}
 	}
-	.sapMSelectListItemBase:focus::before {
-		border: 0.125rem dashed @sapUiContentFocusColor;
+
+	.sapMSelectListItemBase:focus,
+	.sapMSltPicker-CTX .sapMSelectListItemBaseSelected,
+	.sapMComboBoxBasePicker-CTX .sapMSelectListItemBaseSelected {
+		.sapMSelectListCell::before {
+			border-top: 0.125rem dashed @sapUiContentFocusColor;
+			border-bottom: 0.125rem dashed @sapUiContentFocusColor;
+			height: calc(@_sap_m_SelectListItem_Height ~" - " @_sap_m_SelectListItemHCBFocus_Height);
+		}
+
+		.sapMSelectListFirstCell.sapMSelectListCell::before {
+			border-left: 0.125rem dashed @sapUiContentFocusColor;
+		}
+
+		.sapMSelectListLastCell.sapMSelectListCell::before {
+			border-right: 0.125rem dashed @sapUiContentFocusColor;
+		}
+	}
+
+	.sapUiSizeCompact {
+		.sapMSelectListItemBase:focus,
+		.sapMSltPicker-CTX .sapMSelectListItemBaseSelected,
+		.sapMComboBoxBasePicker-CTX .sapMSelectListItemBaseSelected {
+			.sapMSelectListCell::before {
+				height: calc(@_sap_m_SelectListItem_CompactHeight ~" - " @_sap_m_SelectListItemHCBFocus_Height);
+			}
+		}
 	}
 }
 /* END "SelectList.less" */
@@ -3405,26 +3432,41 @@ html[data-sap-ui-browser^='ed'] .sapMListTbl {
 	}
 }
 
-/* ======================================== */
-/* TimePicker Dropdown                      */
-/* ======================================== */
+/* PHONE STYLES */
+html.sap-phone {
+	/* ======================================== */
+	/* TimePicker Input Field                   */
+	/* ======================================== */
+	.sapMTimePicker {
+		&.sapMTPInputActive {
+			.sapUiIcon {
+				border-left: 1px solid @sapUiFieldActiveBorderColor;
+				margin-left: -1px;
+			}
+		}
+	}
+}
+/* END "TimePicker.less" */
 
-.sapMTimePickerDropDown {
-	.sapMTimePickerContainer {
-		.sapMTPColumn {
+/* START "TimePickerSliders.less" */
+/* ================================= */
+/* CSS for control sap.m/TimePickerSliders  */
+/* High Contrast Black theme         */
+/* ================================= */
+.sapMTimePickerContainer {
+	.sapMTPColumn {
+		.sapMTimePickerSlider {
+			.sapMTimePickerItem {
+				&:focus {
+					outline: 0.125rem dotted @sapUiContentContrastFocusColor;
+				}
+			}
+		}
+		&.sapMTPSliderExpanded {
 			.sapMTimePickerSlider {
 				.sapMTimePickerItem {
 					&:focus {
-						outline: 0.125rem dotted @sapUiContentContrastFocusColor;
-					}
-				}
-			}
-			&.sapMTPSliderExpanded {
-				.sapMTimePickerSlider {
-					.sapMTimePickerItem {
-						&:focus {
-							outline: 0.125rem dotted @sapUiContentFocusColor;
-						}
+						outline: 0.125rem dotted @sapUiContentFocusColor;
 					}
 				}
 			}
@@ -3434,7 +3476,7 @@ html[data-sap-ui-browser^='ed'] .sapMListTbl {
 
 /* IE mobile and desktop ignores outline-offset. Use an overlay: */
 html[data-sap-ui-browser^="ie"] {
-	.sapMTimePickerDropDown .sapMTimePickerContainer .sapMTPColumn.sapMTPSliderExpanded .sapMTPPickerSelectionFrame {
+	.sapMTimePickerContainer .sapMTPColumn.sapMTPSliderExpanded .sapMTPPickerSelectionFrame {
 		outline: none;
 	}
 	.sapMTPPickerSelectionFrame:before {
@@ -3468,39 +3510,21 @@ html[data-sap-ui-browser^="ie"] .sapUiSizeCompact {
 	}
 }
 
-/* PHONE STYLES */
-html.sap-phone {
-	/* ======================================== */
-	/* TimePicker Input Field                   */
-	/* ======================================== */
-	.sapMTimePicker {
-		&.sapMTPInputActive {
-			.sapUiIcon {
-				border-left: 1px solid @sapUiFieldActiveBorderColor;
-				margin-left: -1px;
+.sap-phone {
+	.sapMTimePickerContainer {
+		.sapMTPColumn {
+			.sapMTimePickerSlider {
+				.sapMTimePickerItem {
+					&:focus {
+						outline: 0.125rem dotted @sapUiContentContrastFocusColor;
+					}
+				}
 			}
-		}
-	}
-
-	/* ======================================== */
-	/* TimePicker Dropdown                      */
-	/* ======================================== */
-	.sapMTimePickerDropDown {
-		.sapMTimePickerContainer {
-			.sapMTPColumn {
+			&.sapMTPSliderExpanded {
 				.sapMTimePickerSlider {
 					.sapMTimePickerItem {
 						&:focus {
-							outline: 0.125rem dotted @sapUiContentContrastFocusColor;
-						}
-					}
-				}
-				&.sapMTPSliderExpanded {
-					.sapMTimePickerSlider {
-						.sapMTimePickerItem {
-							&:focus {
-								outline: 0.125rem dotted @sapUiContentFocusColor;
-							}
+							outline: 0.125rem dotted @sapUiContentFocusColor;
 						}
 					}
 				}
@@ -3508,7 +3532,7 @@ html.sap-phone {
 		}
 	}
 }
-/* END "TimePicker.less" */
+/* END "TimePickerSliders.less" */
 
 /* START "ToggleButton.less" */
 /* =================================== */

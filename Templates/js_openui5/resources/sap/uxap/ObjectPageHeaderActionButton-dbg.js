@@ -1,22 +1,22 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.uxap.ObjectPageHeaderActionButton.
-sap.ui.define(["sap/m/Button", "./library"], function (Button, library) {
+sap.ui.define(["sap/m/Button", "./library", "./ObjectPageHeaderActionButtonRenderer"], function(Button, library, ObjectPageHeaderActionButtonRenderer) {
 	"use strict";
 
 	/**
-	 * Constructor for a new ObjectPageHeaderActionButton.
+	 * Constructor for a new <code>ObjectPageHeaderActionButton</code>.
 	 *
-	 * @param {string} [sId] id for the new control, generated automatically if no id is given
-	 * @param {object} [mSettings] initial settings for the new control
+	 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
+	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
+	 * A Button that is used in the <code>actions</code> aggregation of the {@link sap.uxap.ObjectPageHeader}.
 	 *
-	 * Button that can be used in the ObjectPageHeader action aggregation.
 	 * @extends sap.m.Button
 	 *
 	 * @author SAP SE
@@ -30,6 +30,9 @@ sap.ui.define(["sap/m/Button", "./library"], function (Button, library) {
 	var ObjectPageHeaderActionButton = Button.extend("sap.uxap.ObjectPageHeaderActionButton", /** @lends sap.uxap.ObjectPageHeaderActionButton.prototype */ {
 		metadata: {
 
+			interfaces : [
+			    "sap.m.IOverflowToolbarContent"
+			],
 			library: "sap.uxap",
 			properties: {
 
@@ -114,6 +117,31 @@ sap.ui.define(["sap/m/Button", "./library"], function (Button, library) {
 
 	ObjectPageHeaderActionButton.prototype._getInternalVisible = function () {
 		return this._bInternalVisible;
+	};
+
+	/**
+	 * Required by the {@link sap.m.IOverflowToolbarContent} interface.
+	 */
+	ObjectPageHeaderActionButton.prototype.getOverflowToolbarConfig = function() {
+		var oConfig = {
+			canOverflow: true,
+			propsUnrelatedToSize: ["importance"],
+			getCustomImportance: function () {
+				return this.getImportance();
+			}.bind(this)
+		};
+
+		oConfig.onBeforeEnterOverflow = function(oActionButton) {
+			oActionButton.toggleStyleClass("sapUxAPObjectPageHeaderActionButtonHideText", false, true /* suppress invalidate */);
+			oActionButton.toggleStyleClass("sapUxAPObjectPageHeaderActionButtonHideIcon", false, true /* suppress invalidate */);
+		};
+
+		oConfig.onAfterExitOverflow = function(oActionButton) {
+			oActionButton.toggleStyleClass("sapUxAPObjectPageHeaderActionButtonHideText", oActionButton.getHideText(), true /* suppress invalidate */);
+			oActionButton.toggleStyleClass("sapUxAPObjectPageHeaderActionButtonHideIcon", oActionButton.getHideIcon(), true /* suppress invalidate */);
+		};
+
+		return oConfig;
 	};
 
 	return ObjectPageHeaderActionButton;

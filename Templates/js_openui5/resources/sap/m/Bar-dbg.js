@@ -1,12 +1,28 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Bar.
-sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './library', 'sap/ui/core/Control', 'sap/ui/core/ResizeHandler', 'sap/ui/Device'],
-	function(jQuery, BarInPageEnabler, library, Control, ResizeHandler, Device) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./BarInPageEnabler',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/ResizeHandler',
+	'sap/ui/Device',
+	'./BarRenderer'
+],
+	function(
+	jQuery,
+	BarInPageEnabler,
+	library,
+	Control,
+	ResizeHandler,
+	Device,
+	BarRenderer
+	) {
 	"use strict";
 
 
@@ -47,7 +63,7 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './library', 'sap/ui/c
 	 * @implements sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -64,8 +80,8 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './library', 'sap/ui/c
 
 			/**
 			 * If this flag is set to true, contentMiddle will be rendered as a HBox and layoutData can be used to allocate available space.
-			 * @deprecated Since version 1.16.
-			 * This property is no longer supported, instead, contentMiddle will always occupy 100% width when no contentLeft and contentRight are being set.
+			 * @deprecated since version 1.16, replaced by <code>contentMiddle</code> aggregation.
+			 * <code>contentMiddle</code> will always occupy of the 100% width when no <code>contentLeft</code> and <code>contentRight</code> are being set.
 			 */
 			enableFlexBox : {type : "boolean", group : "Misc", defaultValue : false, deprecated: true},
 
@@ -73,7 +89,7 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './library', 'sap/ui/c
 			 * Indicates whether the Bar is partially translucent.
 			 * It is only applied for touch devices.
 			 * @since 1.12
-			 * @deprecated Since version 1.18.6.
+			 * @deprecated since version 1.18.6.
 			 * This property has no effect since release 1.18.6 and should not be used. Translucent bar may overlay an input and make it difficult to edit.
 			 */
 			translucent : {type : "boolean", group : "Appearance", defaultValue : false, deprecated: true},
@@ -108,7 +124,7 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './library', 'sap/ui/c
 			 */
 			ariaLabelledBy : {type : "sap.ui.core.Control", multiple : true, singularName : "ariaLabelledBy"}
 		},
-		designTime: true
+		designtime: "sap/m/designtime/Bar.designtime"
 	}});
 
 	Bar.prototype.onBeforeRendering = function() {

@@ -1,27 +1,43 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.uxap.ObjectPageHeader.
 sap.ui.define([
-	"jquery.sap.global",
-	"sap/ui/core/Control",
-	"sap/ui/core/IconPool",
-	"sap/ui/core/CustomData",
-	"sap/ui/Device",
-	"sap/m/Breadcrumbs",
-	"./ObjectPageHeaderActionButton",
-	"sap/ui/core/ResizeHandler",
-	"sap/m/Button",
-	"sap/m/ActionSheet",
-	"./ObjectImageHelper",
-	"./ObjectPageHeaderContent",
-	"./library",
-	"sap/m/library"
-], function (jQuery, Control, IconPool, CustomData, Device, Breadcrumbs, ObjectPageHeaderActionButton,
-			 ResizeHandler, Button, ActionSheet, ObjectImageHelper, ObjectPageHeaderContent, library, mobileLibrary) {
+    "jquery.sap.global",
+    "sap/ui/core/Control",
+    "sap/ui/core/IconPool",
+    "sap/ui/core/CustomData",
+    "sap/ui/Device",
+    "sap/m/Breadcrumbs",
+    "./ObjectPageHeaderActionButton",
+    "sap/ui/core/ResizeHandler",
+    "sap/m/Button",
+    "sap/m/ActionSheet",
+    "./ObjectImageHelper",
+    "./ObjectPageHeaderContent",
+    "./library",
+    "sap/m/library",
+    "./ObjectPageHeaderRenderer"
+], function(
+    jQuery,
+	Control,
+	IconPool,
+	CustomData,
+	Device,
+	Breadcrumbs,
+	ObjectPageHeaderActionButton,
+	ResizeHandler,
+	Button,
+	ActionSheet,
+	ObjectImageHelper,
+	ObjectPageHeaderContent,
+	library,
+	mobileLibrary,
+	ObjectPageHeaderRenderer
+) {
 	"use strict";
 
 	// shortcut for sap.uxap.Importance
@@ -40,14 +56,22 @@ sap.ui.define([
 	var ObjectPageHeaderPictureShape = library.ObjectPageHeaderPictureShape;
 
 	/**
-	 * Constructor for a new ObjectPageHeader.
+	 * Constructor for a new <code>ObjectPageHeader</code>.
 	 *
-	 * @param {string} [sId] id for the new control, generated automatically if no id is given
-	 * @param {object} [mSettings] initial settings for the new control
+	 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
+	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
-	 * ObjectPageHeader represents the static part of an Object page header.
-	 * Typically used to display the basic information about a business object, such as title/description/picture, as well as a list of common actions.
+	 * Represents the static part (header title) of the classic header of the {@link sap.uxap.ObjectPageLayout}.
+	 *
+	 * <h3>Overview</h3>
+	 *
+	 * The <code>ObjectPageHeader</code> is used to display the basic information about a business object,
+	 * such as title/description/picture, as well as a list of common actions.
+	 *
+	 * <b>Note:</b> The <code>ObjectPageHeader</code> is meant to be used inside the <code>ObjectPageLayout</code>
+	 * control. Any other usage is not supported and can lead to unexpected behavior.
+	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.uxap.IHeaderTitle
 	 *
@@ -57,6 +81,9 @@ sap.ui.define([
 	 * @public
 	 * @alias sap.uxap.ObjectPageHeader
 	 * @since 1.26
+	 * @see {@link topic:0fecbce45e39406aa939bd25e89823f4 Object Page Classic Header}
+	 * @see {@link topic:d2ef0099542d44dc868719d908e576d0 Object Page Headers}
+	 * @see {@link topic:9c9d94fd28284539a9a5a57e9caf82a8 Object Page Headers Comparison}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var ObjectPageHeader = Control.extend("sap.uxap.ObjectPageHeader", /** @lends sap.uxap.ObjectPageHeader.prototype */ {
@@ -284,7 +311,7 @@ sap.ui.define([
 					}
 				}
 			},
-			designTime: true
+			designtime: "sap/uxap/designtime/ObjectPageHeader.designtime"
 		}
 	});
 
@@ -314,6 +341,16 @@ sap.ui.define([
 		this._oChangesIcon = this._lazyLoadInternalAggregation("_changesIcon", true).attachPress(this._handleChangesPress, this);
 		this._oChangesIconCont = this._lazyLoadInternalAggregation("_changesIconCont", true).attachPress(this._handleChangesPress, this);
 	};
+
+	ObjectPageHeader.getMetadata().forwardAggregation(
+		"breadCrumbsLinks",
+		{
+			getter: function() { // TODO: is invalidation needed for non-getters?
+				return this._lazyLoadInternalAggregation("_breadCrumbs");
+			},
+			aggregation: "links"
+		}
+	);
 
 	ObjectPageHeader.prototype._handleOverflowButtonPress = function (oEvent) {
 		this._oOverflowActionSheet.openBy(this._oOverflowButton);
@@ -355,10 +392,10 @@ sap.ui.define([
 			return this._getButton(oParent, "sap-icon://private", "lock", oParent.oLibraryResourceBundleOP.getText("TOOLTIP_OP_LOCK_MARK_VALUE"));
 		},
 		"_titleArrowIconCont": function (oParent) {
-			return this._getButton(oParent, "sap-icon://arrow-down", "titleArrow-cont", oParent.oLibraryResourceBundleOP.getText("OP_SELECT_ARROW_TOOLTIP"));
+			return this._getButton(oParent, "sap-icon://slim-arrow-down", "titleArrow-cont", oParent.oLibraryResourceBundleOP.getText("OP_SELECT_ARROW_TOOLTIP"));
 		},
 		"_titleArrowIcon": function (oParent) {
-			return this._getButton(oParent, "sap-icon://arrow-down", "titleArrow", oParent.oLibraryResourceBundleOP.getText("OP_SELECT_ARROW_TOOLTIP"));
+			return this._getButton(oParent, "sap-icon://slim-arrow-down", "titleArrow", oParent.oLibraryResourceBundleOP.getText("OP_SELECT_ARROW_TOOLTIP"));
 		},
 		"_favIcon": function (oParent) {
 			return this._getIcon(oParent, "favorite", oParent.oLibraryResourceBundleOP.getText("TOOLTIP_OP_FAVORITE_MARK_VALUE"));
@@ -438,13 +475,6 @@ sap.ui.define([
 		return this;
 	};
 
-	ObjectPageHeader.prototype._proxyMethodToBreadCrumbControl = function (sFuncName, aArguments) {
-		var oBreadCrumbs = this._lazyLoadInternalAggregation("_breadCrumbs"),
-			vResult = oBreadCrumbs[sFuncName].apply(oBreadCrumbs, aArguments);
-		this.invalidate();
-		return vResult;
-	};
-
 	ObjectPageHeader.prototype.setHeaderDesign = function (sHeaderDesign) {
 		this.setProperty("headerDesign", sHeaderDesign);
 		if (this.getParent()) {
@@ -509,34 +539,6 @@ sap.ui.define([
 	aPropertiesToOverride.forEach(fnGenerateSetterForAction);
 	aObjectImageProperties.forEach(fnGenerateSetterForObjectImageProperties);
 
-	ObjectPageHeader.prototype.getBreadCrumbsLinks = function () {
-		return this._lazyLoadInternalAggregation("_breadCrumbs").getLinks();
-	};
-
-	ObjectPageHeader.prototype.addBreadCrumbLink = function () {
-		return this._proxyMethodToBreadCrumbControl("addLink", arguments);
-	};
-
-	ObjectPageHeader.prototype.indexOfBreadCrumbLink = function () {
-		return this._proxyMethodToBreadCrumbControl("indexOfLink", arguments);
-	};
-
-	ObjectPageHeader.prototype.insertBreadCrumbLink = function () {
-		return this._proxyMethodToBreadCrumbControl("insertLink", arguments);
-	};
-
-	ObjectPageHeader.prototype.removeBreadCrumbLink = function () {
-		return this._proxyMethodToBreadCrumbControl("removeLink", arguments);
-	};
-
-	ObjectPageHeader.prototype.removeAllBreadCrumbsLinks = function () {
-		return this._proxyMethodToBreadCrumbControl("removeAllLinks", arguments);
-	};
-
-	ObjectPageHeader.prototype.destroyBreadCrumbsLinks = function () {
-		return this._proxyMethodToBreadCrumbControl("destroyLinks", arguments);
-	};
-
 	ObjectPageHeader.prototype._destroyObjectImage = function () {
 		var sObjectImage = "_objectImage",
 			oObjectImage = this.getAggregation(sObjectImage);
@@ -581,8 +583,6 @@ sap.ui.define([
 					oAction.setVisible = function (bVisible) {
 						oAction._setInternalVisible(bVisible, true);
 						Button.prototype.setVisible.call(this, bVisible);
-
-						oAction.getParent()._adaptOverflow();
 					};
 
 					oAction.onAfterRendering = function () {
@@ -769,8 +769,8 @@ sap.ui.define([
 	/**
 	 * Adapts the layout of the tiven headerTitle domElement
 	 *
-	 * @param {object} jQuery reference to the header dom element
-	 * @param {object} change event of child-element that brought the need to adapt the headerTitle layout
+	 * @param {object} $headerDomRef The reference to the header dom element
+	 * @param {object} oEvent The event of child-element that brought the need to adapt the headerTitle layout
 	 *
 	 * @private
 	 */
@@ -853,7 +853,7 @@ sap.ui.define([
 	 */
 	ObjectPageHeader.prototype._adaptActions = function (iAvailableSpaceForActions) {
 		var bMobileScenario = library.Utilities.isPhoneScenario(this._getCurrentMediaContainerRange()) || Device.system.phone,
-			iVisibleActionsWidth = this._oOverflowButton.$().show().width(),
+			iVisibleActionsWidth = this._oOverflowButton.$().show().width(), // overflowButton is now visible
 			aActions = this.getActions(),
 			iActionsLength = aActions.length,
 			oActionSheetButton;
@@ -972,9 +972,8 @@ sap.ui.define([
 	/*************************************************************************************/
 
 	/**
-	 * Notifies the parent control, when <code>ObjectPageHeader> changes.
-	 * @param {boolean}
-	 *            bIsObjectImageChange - flag if an image-related property was changed
+	 * Notifies the parent control, when <code>sap.uxap.ObjectPageHeader</code> changes.
+	 * @param {boolean} bIsObjectImageChange Whether the image-related property was changed
 	 * @private
 	 */
 	ObjectPageHeader.prototype._notifyParentOfChanges = function (bIsObjectImageChange) {
@@ -1089,6 +1088,15 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectPageHeader.prototype._focusExpandButton = function () {
+
+	};
+
+	/**
+	 * Required by the {@link sap.uxap.IHeaderTitle} interface
+	 * @param {boolean} bFocusable
+	 * @private
+	 */
+	ObjectPageHeader.prototype._toggleFocusableState = function (bFocusable) {
 
 	};
 

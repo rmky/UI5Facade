@@ -1,11 +1,11 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["jquery.sap.global", "sap/ui/model/odata/ODataUtils", "sap/ui/Device", "sap/ui/core/library", "sap/ui/thirdparty/URI", "sap/ui/core/message/MessageParser", "sap/ui/core/message/Message"],
-	function(jQuery, ODataUtils, Device, coreLibrary, URI, MessageParser, Message) {
+sap.ui.define(["jquery.sap.global", "sap/ui/model/odata/ODataUtils", "sap/ui/core/library", "sap/ui/thirdparty/URI", "sap/ui/core/message/MessageParser", "sap/ui/core/message/Message"],
+	function(jQuery, ODataUtils, coreLibrary, URI, MessageParser, Message) {
 	"use strict";
 
 // shortcuts for enums
@@ -70,7 +70,7 @@ var mSeverityMap = {
  * @extends sap.ui.core.message.MessageParser
  *
  * @author SAP SE
- * @version 1.52.5
+ * @version 1.54.5
  * @public
  * @abstract
  * @alias sap.ui.model.odata.ODataMessageParser
@@ -396,37 +396,38 @@ ODataMessageParser.prototype._getFunctionTarget = function(mFunctionInfo, mReque
 		} else if (mFunctionInfo.returnType) {
 			mEntityType = this._metadata._getEntityTypeByName(mFunctionInfo.returnType);
 		}
+		if (mEntityType){
+			var mEntitySet = this._metadata._getEntitySetByType(mEntityType);
 
-		var mEntitySet = this._metadata._getEntitySetByType(mEntityType);
+			if (mEntitySet && mEntityType && mEntityType.key && mEntityType.key.propertyRef) {
 
-		if (mEntitySet && mEntityType && mEntityType.key && mEntityType.key.propertyRef) {
+				var sId = "";
+				var sParam;
 
-			var sId = "";
-			var sParam;
-
-			if (mEntityType.key.propertyRef.length === 1) {
-				// Just the ID in brackets
-				sParam = mEntityType.key.propertyRef[0].name;
-				if (mUrlData.parameters[sParam]) {
-					sId = mUrlData.parameters[sParam];
-				}
-			} else {
-				// Build ID string from keys
-				var aKeys = [];
-				for (i = 0; i < mEntityType.key.propertyRef.length; ++i) {
-					sParam = mEntityType.key.propertyRef[i].name;
+				if (mEntityType.key.propertyRef.length === 1) {
+					// Just the ID in brackets
+					sParam = mEntityType.key.propertyRef[0].name;
 					if (mUrlData.parameters[sParam]) {
-						aKeys.push(sParam + "=" + mUrlData.parameters[sParam]);
+						sId = mUrlData.parameters[sParam];
 					}
+				} else {
+					// Build ID string from keys
+					var aKeys = [];
+					for (i = 0; i < mEntityType.key.propertyRef.length; ++i) {
+						sParam = mEntityType.key.propertyRef[i].name;
+						if (mUrlData.parameters[sParam]) {
+							aKeys.push(sParam + "=" + mUrlData.parameters[sParam]);
+						}
+					}
+					sId = aKeys.join(",");
 				}
-				sId = aKeys.join(",");
-			}
 
-			sTarget = "/" + mEntitySet.name + "(" + sId + ")";
-		} else if (!mEntitySet) {
-			jQuery.sap.log.error("Could not determine path of EntitySet for function call: " + mUrlData.url);
-		} else {
-			jQuery.sap.log.error("Could not determine keys of EntityType for function call: " + mUrlData.url);
+				sTarget = "/" + mEntitySet.name + "(" + sId + ")";
+			} else if (!mEntitySet) {
+				jQuery.sap.log.error("Could not determine path of EntitySet for function call: " + mUrlData.url);
+			} else {
+				jQuery.sap.log.error("Could not determine keys of EntityType for function call: " + mUrlData.url);
+			}
 		}
 	}
 

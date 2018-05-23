@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,15 +20,16 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.layout
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.layout",
-		version: "1.52.5",
-		dependencies : ["sap.ui.core"],
+		version: "1.54.5",
+		dependencies: ["sap.ui.core"],
+		designtime: "sap/ui/layout/designtime/library.designtime",
 		types: [
 			"sap.ui.layout.BackgroundDesign",
 			"sap.ui.layout.GridIndent",
@@ -82,6 +83,11 @@ sap.ui.define([
 					"unhideControl": "default"
 				},
 				"sap.ui.layout.BlockLayoutCell": "sap/ui/layout/flexibility/BlockLayoutCell",
+				"sap.ui.layout.DynamicSideContent": {
+					"moveControls": "default",
+					"hideControl": "default",
+					"unhideControl": "default"
+				},
 				"sap.ui.layout.form.SimpleForm": "sap/ui/layout/flexibility/SimpleForm",
 				"sap.ui.layout.Grid": {
 					"moveControls": "default",
@@ -111,6 +117,11 @@ sap.ui.define([
 					"hideControl": "default",
 					"unhideControl": "default"
 				}
+			},
+			//Configuration used for rule loading of Support Assistant
+			"sap.ui.support": {
+				publicRules:true,
+				internalRules:true
 			}
 		}
 	});

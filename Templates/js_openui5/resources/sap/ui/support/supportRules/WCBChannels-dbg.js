@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -68,6 +68,13 @@ function () {
 		 * @const
 		 */
 		ON_PROGRESS_UPDATE:         "ON_PROGRESS_UPDATE",
+
+		/**
+		 * Notifies that the analysis has started.
+		 * @type {string}
+		 * @const
+		 */
+		ON_ANALYZE_STARTED:          "ON_ANALYZE_STARTED",
 
 		/**
 		 * Notifies after the analysis has finished.
@@ -228,6 +235,20 @@ function () {
 		 * @type {string}
 		 * @const
 		 */
-		GET_ISSUES:                 "GET_ISSUES"
+		GET_ISSUES:                 "GET_ISSUES",
+
+		/**
+		 * Posts a message.
+		 * @type {string}
+		 * @const
+		 */
+		POST_MESSAGE:               "POST_MESSAGE",
+
+		/**
+		 * Get non loaded libraries with rules names
+		 * @type {string}
+		 * @const
+		 */
+		GET_NON_LOADED_RULE_SETS: "GET_NON_LOADED_RULE_SETS"
 	};
 }, true);

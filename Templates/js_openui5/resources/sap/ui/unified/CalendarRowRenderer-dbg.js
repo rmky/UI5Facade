@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/unified/CalendarAppointment',
-		'sap/ui/unified/CalendarRow', 'sap/ui/unified/CalendarLegend', 'sap/ui/Device', 'sap/ui/unified/library'],
-	function (jQuery, UniversalDate, CalendarAppointment, CalendarRow, CalendarLegend, Device, library) {
+		'sap/ui/unified/CalendarLegendRenderer', 'sap/ui/Device', 'sap/ui/unified/library', 'sap/ui/core/InvisibleText'],
+	function (jQuery, UniversalDate, CalendarAppointment, CalendarLegendRenderer, Device, library, InvisibleText) {
 		"use strict";
 
 
@@ -51,13 +51,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 			oRm.addClass("sapUiCalendarRowVis" + sVisualisation);
 		}
 
-		// This makes the row focusable
-		if (oRow._sFocusedAppointmentId) {
-			oRm.writeAttribute("tabindex", "-1");
-		} else {
-			oRm.writeAttribute("tabindex", "0");
-		}
-
 		if (sTooltip) {
 			oRm.writeAttributeEscaped("title", sTooltip);
 		}
@@ -89,10 +82,30 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 		var sId = oRow.getId();
 		oRm.write("<div id=\"" + sId + "-Apps\" class=\"sapUiCalendarRowApps\">");
 
+		this.renderBeforeAppointments(oRm, oRow);
 		this.renderAppointments(oRm, oRow, aTypes);
+		this.renderAfterAppointments(oRm, oRow);
 
 		oRm.write("</div>");
 
+	};
+
+	/**
+	 * This hook method is reserved for derived classes to render more handles.
+	 *
+	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
+	 * @param {sap.ui.unified.CalendarRow} oRow An object representation of the control that should be rendered.
+	 */
+	CalendarRowRenderer.renderBeforeAppointments = function(oRm, oRow) {
+	};
+
+	/**
+	 * This hook method is reserved for derived classes to render more handles.
+	 *
+	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
+	 * @param {sap.ui.unified.CalendarRow} oRow An object representation of the control that should be rendered.
+	 */
+	CalendarRowRenderer.renderAfterAppointments = function(oRm, oRow) {
 	};
 
 	CalendarRowRenderer.renderAppointments = function(oRm, oRow, aTypes){
@@ -461,7 +474,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 		var sText = oAppointment.getText();
 		var sIcon = oAppointment.getIcon();
 		var sId = oAppointment.getId();
-		var mAccProps = {labelledby: {value: CalendarRow._oStaticAppointmentText.getId() + " " + sId + "-Descr", append: true}};
+		var mAccProps = {labelledby: {value: InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT") + " " + sId + "-Descr", append: true}};
 		var aAriaLabels = oRow.getAriaLabelledBy();
 
 		if (aAriaLabels.length > 0) {
@@ -482,12 +495,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 
 		if (oAppointment.getSelected()) {
 			oRm.addClass("sapUiCalendarAppSel");
-			mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + CalendarRow._oStaticSelectedText.getId();
+			mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT_SELECTED");
 		}
 
 		if (oAppointment.getTentative()) {
 			oRm.addClass("sapUiCalendarAppTent");
-			mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + CalendarRow._oStaticTentativeText.getId();
+			mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT_TENTATIVE");
 		}
 
 		if (!sText) {
@@ -787,7 +800,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 
 		if (!sTypeLabelText) {
 			//use static invisible labels - "Type 1", "Type 2"
-			oStaticLabel = CalendarLegend.getTypeAriaText(sType);
+			oStaticLabel = CalendarLegendRenderer.getTypeAriaText(sType);
 			if (oStaticLabel) {
 				sTypeLabelText = oStaticLabel.getText();
 			}

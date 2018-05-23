@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -74,7 +74,7 @@ sap.ui.define([
 		 *  Opens the support tools online help in a new tab
 		 */
 		onShowHelp: function () {
-			mobileLibrary.URLHelper.redirect("https://sapui5.hana.ondemand.com/#docs/guide/37a34cc084014bcdb1d13e6c0976042a.html", true);
+			mobileLibrary.URLHelper.redirect("https://ui5.sap.com/#/topic/616a3ef07f554e20a3adf749c11f64e9.html#loio616a3ef07f554e20a3adf749c11f64e9", true);
 		},
 
 		/**
@@ -298,10 +298,18 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent The select change event
 		 */
 		onChangeStandardBootstrapURL: function (oEvent) {
-			var sValue = oEvent.getParameter("selectedItem").getKey();
+			var sValue = oEvent.getParameter("selectedItem").getKey(),
+				oControl = oEvent.getSource();
 			this._storage.put("sap-ui-standard-bootstrap-URL", sValue);
-			this._resetValueState(oEvent.getSource());
-			this._pingUrl(sValue, oEvent.getSource());
+			this._resetValueState(oControl);
+			this._pingUrl(sValue, oControl)
+				.then(function success() {
+					oControl.setValueState("Success");
+				}, function error() {
+					var sMessage = this._getText("TechInfo.SupportAssistantConfigPopup.NotAvailableAtTheMoment");
+					this._showError(oControl, sMessage);
+					jQuery.sap.log.error("Support Assistant could not be loaded from the URL you entered");
+				});
 		},
 
 		/**
@@ -470,23 +478,23 @@ sap.ui.define([
 		 * @private
 		 */
 		_loadAssistant: function (sUrl, oSettings) {
-			jQuery.ajax({
-				type: "HEAD",
-				async: true,
-				context:this,
-				url: sUrl + "Bootstrap.js",
-				success: function () {
+			this._pingUrl(sUrl)
+				.then(function success() {
 					this.close();
-					jQuery.sap.registerModulePath("sap.ui.support", sUrl);
-					var oBootstrap = sap.ui.requireSync("sap/ui/support/Bootstrap"),
-					// Settings needs to be converted to array required by initSupportRules function
-					aSettings = [oSettings.support];
-					if (oSettings.window) {
-						aSettings.push("window");
-					}
-					oBootstrap.initSupportRules(aSettings);
-				},
-				error: function (jqXHR, exception) {
+					var aSettings = [oSettings.support];
+					sap.ui.getCore().loadLibrary("sap.ui.support", { async: true, url: sUrl })
+						.then(function () {
+							if (oSettings.window) {
+								aSettings.push("window");
+							}
+
+							if (aSettings[0].toLowerCase() === "true" || aSettings[0].toLowerCase() === "silent") {
+								sap.ui.require(["sap/ui/support/Bootstrap"], function (oBootstrap) {
+									oBootstrap.initSupportRules(aSettings);
+								});
+							}
+						});
+				}, function error(jqXHR, exception) {
 					var msg = this._getText("TechInfo.SupportAssistantConfigPopup.SupportAssistantNotFound");
 					if (jqXHR.status === 0) {
 						msg += this._getText("TechInfo.SupportAssistantConfigPopup.ErrorTryingToGetRecourse");
@@ -506,8 +514,7 @@ sap.ui.define([
 					this._sErrorMessage = msg;
 					this.onConfigureAssistantBootstrap();
 					jQuery.sap.log.error("Support Assistant could not be loaded from the URL you entered");
-				}
-			});
+				});
 		},
 
 		/**
@@ -784,23 +791,15 @@ sap.ui.define([
 		/**
 		 * Pings specific Url to get the status.
 		 * @param sUrl {string} URL that needs to be ping
-		 * @param oControl {Object} Control that will display the status.
+		 * @returns {Promise}
 		 * @private
 		 */
-		_pingUrl: function (sUrl, oControl) {
-			jQuery.ajax({
+		_pingUrl: function (sUrl) {
+			return jQuery.ajax({
 				type: "HEAD",
 				async: true,
-				context:this,
-				url: sUrl + "Bootstrap.js",
-				success: function () {
-					oControl.setValueState("Success");
-				},
-				error: function () {
-					var sMessage = this._getText("TechInfo.SupportAssistantConfigPopup.NotAvailableAtTheMoment");
-					this._showError(oControl, sMessage);
-					jQuery.sap.log.error("Support Assistant could not be loaded from the URL you entered");
-				}
+				context: this,
+				url: sUrl + "Bootstrap.js"
 			});
 		},
 

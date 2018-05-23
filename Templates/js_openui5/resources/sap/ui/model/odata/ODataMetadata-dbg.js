@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -25,7 +25,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 	 * Implementation to access oData metadata
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @public
 	 * @alias sap.ui.model.odata.ODataMetadata
@@ -519,8 +519,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 
 			//extract property
 			sPath = aParts[0].replace(/^\/|\/$/g, "");
-			sPropertyPath = sPath.substr(sPath.indexOf('/') + 1);
-			oProperty = this._getPropertyMetadata(oEntityType,sPropertyPath);
+			sPropertyPath = sPath;
+			while (!oProperty && sPropertyPath.indexOf("/") > 0) {
+				sPropertyPath = sPropertyPath.substr(sPropertyPath.indexOf('/') + 1);
+				oProperty = this._getPropertyMetadata(oEntityType, sPropertyPath);
+			}
 
 			jQuery.sap.assert(oProperty, sPropertyPath + " is not a valid property path");
 			if (!oProperty) {

@@ -66,6 +66,11 @@
 			"theme": "base"
 		},
 		{
+			"name": "ColorPalette.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "ColumnHeader.less",
 			"designtime": true,
 			"theme": "base"
@@ -526,6 +531,16 @@
 			"theme": "base"
 		},
 		{
+			"name": "SliderTooltip.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "SliderTooltipContainer.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "SplitButton.less",
 			"designtime": true,
 			"theme": "base"
@@ -622,6 +637,11 @@
 		},
 		{
 			"name": "TimePicker.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "TimePickerSliders.less",
 			"designtime": true,
 			"theme": "base"
 		},

@@ -1,6 +1,6 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /* global Promise */
@@ -9,14 +9,12 @@ sap.ui.define([
 	'jquery.sap.global',
 	'./library',
 	'sap/ui/unified/Menu',
-	'sap/ui/unified/MenuItem',
-	'sap/ui/fl/Utils'
+	'sap/ui/unified/MenuItem'
 ], function(
 	jQuery,
 	library,
 	Menu,
-	MenuItem,
-	flUtils
+	MenuItem
 ) {
 	"use strict";
 
@@ -26,7 +24,7 @@ sap.ui.define([
 	 * @class Context - Menu for Design time
 	 * @extends sap.ui.unified.Menu
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -86,37 +84,30 @@ sap.ui.define([
 		Menu.prototype.addStyleClass.apply(this, arguments);
 	};
 
-	ContextMenuControl.prototype._createSubMenuWithBinding = function(oRootMenuItem, oTargetOverlay, bEnabled) {
-		var oAppComponent = flUtils.getAppComponentForControl(oTargetOverlay.getElementInstance()),
-			oSubmenuModel = oAppComponent.getModel(oRootMenuItem.submenu.model),
-			sCurrentItemKey = oRootMenuItem.submenu.current(oTargetOverlay, oSubmenuModel),
-			aSubmenuItems = oRootMenuItem.submenu.items(oTargetOverlay, oSubmenuModel);
+	ContextMenuControl.prototype._createSubMenuWithBinding = function(aItems, sRootMenuItemId, bEnabled) {
+		var oSubmenu = new Menu({
+			enabled: bEnabled
+		});
 
-		var aMenuItems = aSubmenuItems.map(function(oSubmenuItem) {
-			var bCurrentItem = (sCurrentItemKey === oSubmenuItem.key),
-				sIcon = bCurrentItem ? "sap-icon://journey-depart" : "";
-			var oMenuItemTemplate = new MenuItem({
-				text: oSubmenuItem.title,
-				icon: sIcon,
-				enabled: !bCurrentItem
+		aItems.forEach(function(oItem) {
+			var oSubmenuItem = new MenuItem({
+				text: oItem.text,
+				icon: oItem.icon,
+				enabled: oItem.enabled
 			});
-			return oMenuItemTemplate.data({
-				id: oRootMenuItem.id,
-				key: oSubmenuItem.key,
-				current: sCurrentItemKey,
-				targetOverlay: oTargetOverlay
+			oSubmenuItem.data({
+				id: sRootMenuItemId,
+				key: oItem.id
 			});
-		}, this);
 
-		var oSubMenu = new Menu({
-			enabled: bEnabled,
-			items: aMenuItems
+			oSubmenu.addItem(oSubmenuItem);
 		});
 
 		this.aStyleClasses.forEach(function(sStyleClass) {
-			oSubMenu.addStyleClass(sStyleClass);
+			oSubmenu.addStyleClass(sStyleClass);
 		});
-		return oSubMenu;
+
+		return oSubmenu;
 	};
 
 	/**
@@ -155,15 +146,15 @@ sap.ui.define([
 				});
 
 				// create new subMenu with Binding
-				if (oItem.type === "subMenuWithBinding") {
-					var oSubMenu = this._createSubMenuWithBinding(oItem, oTargetOverlay, bEnabled);
-					oMenuItem.setSubmenu(oSubMenu);
+				if (oItem.submenu) {
+					var oSubmenu = this._createSubMenuWithBinding(oItem.submenu, oItem.id, bEnabled);
+					oMenuItem.setSubmenu(oSubmenu);
 				}
 
 				oMenuItem.data({
 					id: oItem.id
 				});
-				if ((oItem.startSection && typeof (oItem.startSection) === "boolean" ) || (typeof (oItem.startSection) === "function" && oItem.startSection(oTargetOverlay.getElementInstance()))) {
+				if ((oItem.startSection && typeof (oItem.startSection) === "boolean" ) || (typeof (oItem.startSection) === "function" && oItem.startSection(oTargetOverlay.getElement()))) {
 					oMenuItem.setStartsSection(true);
 				}
 
@@ -188,7 +179,7 @@ sap.ui.define([
 		if (this.getItems().length === 0 || !oTargetOverlay.getDomRef()) {
 			return;
 		}
-		this.openAsContextMenu(oOriginalEvent, oTargetOverlay);
+		this.openAsContextMenu(oOriginalEvent, oTargetOverlay.getDomRef());
 	};
 
 	/**

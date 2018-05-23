@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.52.5"
+      "version": "1.54.5"
     },
     "title": "The SAPUI5 Core Runtime.",
     "description": "The SAPUI5 Core Runtime.\n\n  Contains the UI5 jQuery plugins (jQuery.sap.*), the Core and all its components,\n  base classes for Controls, Components and the Model View Controller classes.",
@@ -159,6 +159,31 @@
         "version": "0.0.0"
       },
       {
+        "name": "es6-string-method-startsWith",
+        "packagedWithMySelf": true,
+        "version": "0.0.0"
+      },
+      {
+        "name": "es6-string-methods-endsWith",
+        "packagedWithMySelf": true,
+        "version": "0.0.0"
+      },
+      {
+        "name": "es6-string-methods-includes",
+        "packagedWithMySelf": true,
+        "version": "0.0.0"
+      },
+      {
+        "name": "es6-string-methods-repeat",
+        "packagedWithMySelf": true,
+        "version": "0.0.0"
+      },
+      {
+        "name": "es6-string-methods-pad",
+        "packagedWithMySelf": true,
+        "version": "0.0.0"
+      },
+      {
         "name": "klayjs",
         "packagedWithMySelf": true,
         "version": "0.0.0"
@@ -174,7 +199,7 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.52",
+      "minUI5Version": "1.54",
       "libs": {}
     },
     "library": {
@@ -229,6 +254,7 @@
           "sap.ui.core.AccessibleRole",
           "sap.ui.core.AccessibleLandmarkRole",
           "sap.ui.core.BarColor",
+          "sap.ui.core.BusyIndicatorSize",
           "sap.ui.core.CalendarType",
           "sap.ui.core.CSSColor",
           "sap.ui.core.CSSSize",

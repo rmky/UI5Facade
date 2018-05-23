@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -9,22 +9,24 @@ sap.ui.define([
 	"sap/ui/fl/LrepConnector",
 	"sap/ui/fl/Utils",
 	"sap/m/MessageBox",
-	"sap/ui/rta/Utils"],
+	"sap/ui/rta/Utils"
+	],
 	function(
 		DescriptorVariantFactory,
 		DescriptorInlineChangeFactory,
 		LrepConnector,
 		FlexUtils,
 		MessageBox,
-		RtaUtils) {
+		RtaUtils
+	) {
 
 		"use strict";
 		var AppVariantUtils = {};
 
-		// S/4 Hana expects us to pass an ID of 56 characters
+		// S/4Hana Cloud Platform expects an ID of 56 characters
 		var HANA_CLOUD_ID_LENGTH = 56;
 
-		AppVariantUtils.newAppVariantId = "";
+		AppVariantUtils._newAppVariantId = null;
 
 		AppVariantUtils.getManifirstSupport = function(sRunningAppId) {
 	        var sRoute = '/sap/bc/ui2/app_index/ui5_app_mani_first_supported/?id=' + sRunningAppId;
@@ -41,11 +43,11 @@ sap.ui.define([
 		};
 
 		AppVariantUtils.getNewAppVariantId = function() {
-			return AppVariantUtils.newAppVariantId;
+			return AppVariantUtils._newAppVariantId;
 		};
 
 		AppVariantUtils.setNewAppVariantId = function(sNewAppVariantID) {
-			AppVariantUtils.newAppVariantId = sNewAppVariantID;
+			AppVariantUtils._newAppVariantId = sNewAppVariantID;
 		};
 
 		AppVariantUtils.trimIdIfRequired = function(sId) {
@@ -61,8 +63,9 @@ sap.ui.define([
 			}
 
 			var bRegFound = false;
+			var regex = /^id.*/i;
+
 			aIdStrings.forEach(function(sString, index, array) {
-				var regex = /^id.*/i;
 				if (sString.match(regex)) {
 					sString = sString.replace(regex, jQuery.sap.uid().replace(/-/g, "_"));
 					array[index] = sString;
@@ -123,17 +126,21 @@ sap.ui.define([
 
 		AppVariantUtils.getInboundInfo = function(oInbounds) {
 			var oInboundInfo = {};
+			if (!oInbounds) {
+				oInboundInfo.currentRunningInbound = "customer.savedAsAppVariant";
+				oInboundInfo.addNewInboundRequired = true;
+				return oInboundInfo;
+			}
+
 			var oParsedHash = this.getURLParsedHash();
 			var aInbounds = Object.keys(oInbounds);
 			var aInboundsFound = [];
 
-			if (aInbounds.length) {
-				aInbounds.forEach(function(sInboundId) {
-					if ((oInbounds[sInboundId].action === oParsedHash.action) && (oInbounds[sInboundId].semanticObject === oParsedHash.semanticObject)) {
-						aInboundsFound.push(sInboundId);
-					}
-				});
-			}
+			aInbounds.forEach(function(sInboundId) {
+				if ((oInbounds[sInboundId].action === oParsedHash.action) && (oInbounds[sInboundId].semanticObject === oParsedHash.semanticObject)) {
+					aInboundsFound.push(sInboundId);
+				}
+			});
 
 			switch (aInboundsFound.length) {
 				case 0:
@@ -218,7 +225,7 @@ sap.ui.define([
 				return DescriptorInlineChangeFactory.create_app_setTitle(mParameters);
 			} else if (sChange === "description" ){
 				return DescriptorInlineChangeFactory.create_app_setDescription(mParameters);
-			} else if (sChange === "subTitle" ){
+			} else if (sChange === "subtitle" ){
 				return DescriptorInlineChangeFactory.create_app_setSubTitle(mParameters);
 			} else if (sChange === "icon" ){
 				return DescriptorInlineChangeFactory.create_ui_setIcon(mParameters);
@@ -267,36 +274,6 @@ sap.ui.define([
 			return oLREPConnector.send(sRoute, 'POST');
 		};
 
-		AppVariantUtils.showTechnicalError = function(oMessageType, sTitleKey, sMessageKey, vError) {
-			var oTextResources = this.getTextResources();
-			var sErrorMessage = "";
-			if (vError.messages && vError.messages.length) {
-				if (vError.messages.length > 1) {
-					vError.messages.forEach(function(oError) {
-						sErrorMessage += oError.text + "\n";
-					});
-				} else {
-					sErrorMessage += vError.messages[0].text;
-				}
-			} else {
-				sErrorMessage += vError.stack || vError.message || vError.status || vError;
-			}
-
-			var sTitle = oTextResources.getText(sTitleKey);
-			var sMessage = oTextResources.getText(sMessageKey, sErrorMessage);
-
-			return new Promise(function(resolve) {
-				MessageBox.error(sMessage, {
-					icon: oMessageType,
-					title: sTitle,
-					onClose: function() {
-						resolve(false);
-					},
-					styleClass: RtaUtils.getRtaStyleClassName()
-				});
-			});
-		};
-
 		AppVariantUtils.isS4HanaCloud = function(oSettings) {
 			return oSettings.isAtoEnabled() && oSettings.isAtoAvailable();
 		};
@@ -309,10 +286,108 @@ sap.ui.define([
 
 			document.execCommand('copy');
 			document.body.removeChild(textArea);
+
+			return true;
 		};
 
 		AppVariantUtils.getTextResources = function() {
 			return sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
+		};
+
+		AppVariantUtils.getText = function(sMessageKey, sText) {
+			var oTextResources = this.getTextResources();
+			return sText ? oTextResources.getText(sMessageKey, sText) : oTextResources.getText(sMessageKey);
+		};
+
+		AppVariantUtils._getErrorMessageText = function(oError) {
+			var sErrorMessage;
+
+			if (oError.messages && oError.messages.length) {
+				sErrorMessage = oError.messages.map(function(oError) {
+					return oError.text;
+				}).join("\n");
+			} else if (oError.iamAppId) {
+				sErrorMessage = "IAM App Id: " + oError.iamAppId;
+			} else {
+				sErrorMessage = oError.stack || oError.message || oError.status || oError;
+			}
+
+			return sErrorMessage;
+		};
+
+		AppVariantUtils.buildErrorInfo = function(sMessageKey, oError, sAppVariantId) {
+			var sErrorMessage = this._getErrorMessageText(oError);
+			var sMessage = AppVariantUtils.getText(sMessageKey) + "\n\n";
+
+			if (sAppVariantId) {
+				sMessage += AppVariantUtils.getText("MSG_APP_VARIANT_ID", sAppVariantId) + "\n";
+			}
+
+			sMessage += AppVariantUtils.getText("MSG_TECHNICAL_ERROR", sErrorMessage);
+			jQuery.sap.log.error("App variant error: ", sErrorMessage);
+
+			return {
+				text: sMessage,
+				appVariantId: sAppVariantId
+			};
+		};
+
+		AppVariantUtils.showRelevantDialog = function(oInfo, bSuccessful) {
+			var sTitle, sRightButtonText;
+			if (bSuccessful) {
+				sTitle = this.getText("SAVE_APP_VARIANT_SUCCESS_MESSAGE_TITLE");
+				sRightButtonText = this.getText("SAVE_APP_VARIANT_OK_TEXT");
+			} else {
+				sTitle = this.getText("HEADER_SAVE_APP_VARIANT_FAILED");
+				sRightButtonText = this.getText("SAVE_APP_VARIANT_CLOSE_TEXT");
+			}
+
+			var sCopyIdButtonText;
+
+			var aActions = [];
+
+			if (oInfo.copyId) {
+				sCopyIdButtonText = this.getText("SAVE_APP_VARIANT_COPY_ID_TEXT");
+				aActions.push(sCopyIdButtonText);
+			}
+
+			aActions.push(sRightButtonText);
+
+			return new Promise(function(resolve, reject) {
+				var fnCallback = function (sAction) {
+					if (bSuccessful && sAction === sRightButtonText) {
+						resolve();
+					} else if (bSuccessful && sAction === sCopyIdButtonText) {
+						AppVariantUtils.copyId(oInfo.appVariantId);
+						resolve();
+					} else if (oInfo.overviewDialog && sAction === sRightButtonText) {
+						resolve(false);
+					} else if (sAction === sRightButtonText) {
+						reject();
+					} else if (sAction === sCopyIdButtonText) {
+						AppVariantUtils.copyId(oInfo.appVariantId);
+						reject();
+					}
+				};
+
+				MessageBox.show(oInfo.text, {
+					icon: bSuccessful ? MessageBox.Icon.INFORMATION : MessageBox.Icon.ERROR,
+					onClose : fnCallback,
+					title: sTitle,
+					actions: aActions,
+					styleClass: RtaUtils.getRtaStyleClassName()
+				});
+			});
+		};
+
+		AppVariantUtils.publishEventBus = function() {
+			sap.ui.getCore().getEventBus().publish("sap.ui.rta.appVariant.manageApps.controller.ManageApps", "navigate");
+		};
+
+		AppVariantUtils.triggerDeleteAppVariantFromLREP = function(sAppVariantId) {
+			return DescriptorVariantFactory.createDeletion(sAppVariantId).then(function(oAppVariantDescriptor) {
+				return oAppVariantDescriptor.submit();
+			});
 		};
 
 		return AppVariantUtils;

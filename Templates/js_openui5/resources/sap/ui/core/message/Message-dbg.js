@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './MessageProcessor'],
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 *
 	 * @param {object} [mParameters] (optional) a map which contains the following parameter properties:
@@ -35,7 +35,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './MessageProcessor'],
 	 * @param {string} [mParameters.code] The message code
 	 * @param {boolean} [mParameters.technical=false] If the message is set as technical message
 	 * @param {sap.ui.core.message.MessageProcessor} [mParameters.processor]
-	 * @param {string} [mParameters.target] The message target: The syntax MessageProcessor dependent. Read the documentation of the respective MessageProcessor.
+	 * @param {string} [mParameters.target] The message target: The syntax is MessageProcessor dependent. Read the documentation of the respective MessageProcessor.
 	 * @param {boolean} [mParameters.persistent] Sets message persistent: If persistent is set <code>true</code> the message lifecycle is controlled by the application
 	 * @param {int} [mParameters.date=Date.now()] Sets message date which can be used to remove old messages. Number of milliseconds elapsed since 1 January 1970 00:00:00 UTC
 	 *
@@ -179,7 +179,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './MessageProcessor'],
 	};
 
 	/**
-	 * Set message target: The syntax MessageProcessor dependent. See the documentation of the
+	 * Set message target: The syntax is MessageProcessor dependent. See the documentation of the
 	 * respective MessageProcessor.
 	 *
 	 * @param {string} sTarget The Message target

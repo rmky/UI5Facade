@@ -1,11 +1,17 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/Control', './library', 'jquery.sap.global', 'sap/ui/core/ResizeHandler'],
-	function(Control, library, jQuery, ResizeHandler) {
+sap.ui.define([
+    'sap/ui/core/Control',
+    './library',
+    'jquery.sap.global',
+    'sap/ui/core/ResizeHandler',
+    "./BlockLayoutRenderer"
+],
+	function(Control, library, jQuery, ResizeHandler, BlockLayoutRenderer) {
 		"use strict";
 
 		/**
@@ -54,7 +60,7 @@ sap.ui.define(['sap/ui/core/Control', './library', 'jquery.sap.global', 'sap/ui/
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -70,8 +76,13 @@ sap.ui.define(['sap/ui/core/Control', './library', 'jquery.sap.global', 'sap/ui/
 				 * Determines the background used for the Layout
 				 * @since 1.42
 				 */
-				background: { type: "sap.ui.layout.BlockBackgroundType", group: "Appearance", defaultValue: "Default" }
+				background: { type: "sap.ui.layout.BlockBackgroundType", group: "Appearance", defaultValue: "Default" },
 
+				/**
+				 * Keeps the font-size of the contents as is, independent from the screen size.
+				 * @since 1.52
+				 */
+				keepFontSize: { type: "boolean", group:"Behaviour", defaultValue: false}
 			},
 			defaultAggregation : "content",
 			aggregations : {
@@ -80,7 +91,7 @@ sap.ui.define(['sap/ui/core/Control', './library', 'jquery.sap.global', 'sap/ui/
 				 */
 				content: { type: "sap.ui.layout.BlockLayoutRow", multiple: true }
 			},
-			designTime : true
+			designtime: "sap/ui/layout/designtime/BlockLayout.designtime"
 		}});
 
 		/**

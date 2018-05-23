@@ -1,12 +1,12 @@
 /*!
 
 * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 
 */
-sap.ui.define(["sap/ui/core/library"],
-	function(coreLibrary) {
+sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleText"],
+	function(coreLibrary, InvisibleText) {
 	"use strict";
 
 
@@ -58,14 +58,14 @@ sap.ui.define(["sap/ui/core/library"],
 
 		//ARIA attributes
 		oAccAttributes.describedby = {
-			value: oControl._sAriaTokenLabelId,
+			value: InvisibleText.getStaticId("sap.m", "TOKEN_ARIA_LABEL"),
 			append: true
 		};
 
 		if (oControl.getEditable()) {
 			oAccAttributes.describedby = {
-					value: oControl._sAriaTokenDeletableId,
-					append: true
+				value: InvisibleText.getStaticId("sap.m", "TOKEN_ARIA_DELETABLE"),
+				append: true
 			};
 		}
 

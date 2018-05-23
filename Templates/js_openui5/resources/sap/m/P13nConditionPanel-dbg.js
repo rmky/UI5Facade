@@ -1,12 +1,12 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.P13nConditionPanel.
 sap.ui.define([
-	'jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/format/DateFormat', 'sap/ui/core/format/NumberFormat', 'sap/ui/core/IconPool', 'sap/ui/Device', 'sap/ui/core/InvisibleText', 'sap/ui/core/library', 'sap/ui/core/ResizeHandler', 'sap/ui/core/Item'
+		'jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/format/DateFormat', 'sap/ui/core/format/NumberFormat', 'sap/ui/core/IconPool', 'sap/ui/Device', 'sap/ui/core/InvisibleText', 'sap/ui/core/library', 'sap/ui/core/ResizeHandler', 'sap/ui/core/Item'
 ], function(jQuery, library, Control, DateFormat, NumberFormat, IconPool, Device, InvisibleText, coreLibrary, ResizeHandler, Item) {
 	"use strict";
 
@@ -25,6 +25,9 @@ sap.ui.define([
 	// shortcut for sap.m.OverflowToolbarPriority
 	var OverflowToolbarPriority = library.OverflowToolbarPriority;
 
+	// lazy dependency to sap.ui.layout.Grid
+	var Grid;
+
 	/**
 	 * Constructor for a new P13nConditionPanel.
 	 *
@@ -32,7 +35,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The ConditionPanel Control will be used to implement the Sorting, Filtering and Grouping panel of the new Personalization dialog.
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -582,9 +585,7 @@ sap.ui.define([
 	P13nConditionPanel.prototype.init = function() {
 		// load the required layout lib
 		sap.ui.getCore().loadLibrary("sap.ui.layout");
-		jQuery.sap.require("sap.ui.layout.Grid");
-
-		sap.ui.layout.Grid.prototype.init.apply(this);
+		Grid = Grid || sap.ui.requireSync("sap/ui/layout/Grid");
 
 		this.addStyleClass("sapMConditionPanel");
 
@@ -616,7 +617,7 @@ sap.ui.define([
 		this._iBreakPointDesktop = Device.media._predefinedRangeSets[Device.media.RANGESETS.SAP_STANDARD].points[1];
 
 		// create the main grid and add it into the hidden content aggregation
-		this._oConditionsGrid = new sap.ui.layout.Grid({
+		this._oConditionsGrid = new Grid({
 			width: "100%",
 			defaultSpan: "L12 M12 S12",
 			hSpacing: 0,
@@ -1110,7 +1111,7 @@ sap.ui.define([
 			iPos = oTargetGrid.getContent().length;
 		}
 
-		var oConditionGrid = new sap.ui.layout.Grid({
+		var oConditionGrid = new Grid({
 			width: "100%",
 			defaultSpan: "L12 M12 S12",
 			hSpacing: 1,
@@ -1624,9 +1625,34 @@ sap.ui.define([
 				}
 				oControl = new sap.m.DateTimePicker(params);
 				break;
+			case "stringdate":
+				oConditionGrid.oFormatter = new sap.m.P13nConditionStringDateFormatter(jQuery.extend({}, oCurrentKeyField.formatSettings, {strictParsing: true}));
+				if (oCurrentKeyField.formatSettings && oCurrentKeyField.formatSettings.style) {
+					params.displayFormat = oCurrentKeyField.formatSettings.style;
+				}
+				oControl = new sap.m.DatePicker(params);
+				break;
 			default:
-				oConditionGrid.oFormatter = null;
-				oControl = new sap.m.Input(params);
+				if (sCtrlType == "numc") {
+					oConditionGrid.oFormatter = {
+						format: function(oValue) {
+							return this.oType.formatValue(oValue, "string");
+						},
+						parse: function(sValue) {
+							try {
+								this.oType.validateValue(sValue, "string");
+							} catch (err) {
+								return NaN;
+							}
+							return this.oType.parseValue(sValue, "string");
+						},
+						oType: new sap.ui.model.odata.type.String({}, oCurrentKeyField.formatSettings)
+					};
+				} else {
+					oConditionGrid.oFormatter = null;
+				}
+
+			oControl = new sap.m.Input(params);
 
 				if (this._fSuggestCallback) {
 					var oCurrentKeyField = this._getCurrentKeyFieldItem(oConditionGrid.keyField);
@@ -1656,42 +1682,42 @@ sap.ui.define([
 				var oConditionGrid = oEvent.srcControl.getParent();
 				var aSeparatedText = sOriginalText.split(/\r\n|\r|\n/g);
 
-				if (aSeparatedText) {
+				var oOperation = oConditionGrid.operation;
+				var op = oOperation.getSelectedKey();
+
+				if (aSeparatedText && aSeparatedText.length > 1 && op !== "BT") {
 					setTimeout(function() {
 						var iLength = aSeparatedText ? aSeparatedText.length : 0;
-						if (iLength > 1) {
+						var oKeyField = that._getCurrentKeyFieldItem(oConditionGrid.keyField);
+						var oOperation = oConditionGrid.operation;
 
-							var oKeyField = that._getCurrentKeyFieldItem(oConditionGrid.keyField);
-							var oOperation = oConditionGrid.operation;
-
-							for (var i = 0; i < iLength; i++) {
-								if (that._aConditionKeys.length >= that._getMaxConditionsAsNumber()) {
-									break;
-								}
-
-								if (aSeparatedText[i]) {
-									var oCondition = {
-										"key": that._createConditionKey(),
-										"exclude": that.getExclude(),
-										"operation": oOperation.getSelectedKey(),
-										"keyField": oKeyField.key,
-										"value1": aSeparatedText[i],
-										"value2": null
-									};
-									that._addCondition2Map(oCondition);
-
-									that.fireDataChange({
-										key: oCondition.key,
-										index: oCondition.index,
-										operation: "add",
-										newData: oCondition
-									});
-								}
+						for (var i = 0; i < iLength; i++) {
+							if (that._aConditionKeys.length >= that._getMaxConditionsAsNumber()) {
+								break;
 							}
 
-							that._clearConditions();
-							that._fillConditions();
+							if (aSeparatedText[i]) {
+								var oCondition = {
+									"key": that._createConditionKey(),
+									"exclude": that.getExclude(),
+									"operation": oOperation.getSelectedKey(),
+									"keyField": oKeyField.key,
+									"value1": aSeparatedText[i],
+									"value2": null
+								};
+								that._addCondition2Map(oCondition);
+
+								that.fireDataChange({
+									key: oCondition.key,
+									index: oCondition.index,
+									operation: "add",
+									newData: oCondition
+								});
+							}
 						}
+
+						that._clearConditions();
+						that._fillConditions();
 					}, 0);
 				}
 			};
@@ -1729,7 +1755,7 @@ sap.ui.define([
 		if (sType === "_TIME_" || sType === "_DATETIME_") {
 			sType = "_DATE_";
 		}
-		if (sType === "_BOOLEAN_") {
+		if (sType === "_BOOLEAN_" || sType === "_NUMC_") {
 			sType = "";
 		}
 
@@ -1765,6 +1791,7 @@ sap.ui.define([
 				tooltip: oItem.tooltip ? oItem.tooltip : oItem.text
 			}));
 		}
+		oCtrl.setEditable( oCtrl.getItems().length > 1);
 	};
 
 	/**
@@ -1868,7 +1895,9 @@ sap.ui.define([
 					oCtrl.setValue(sValue);
 				}
 			}
-			if (!sValue) {
+			if (!sValue && !oConditionGrid.oFormatter && sOldValue) {
+				// BCP: 1780426620
+				// if type conversion fails and no formatter exist, display the old value
 				oCtrl.setValue(sOldValue);
 			}
 		};
@@ -1983,6 +2012,7 @@ sap.ui.define([
 						}));
 					}
 				}
+				oKeyField.setEditable( oKeyField.getItems().length > 1);
 			}
 
 			if (sOldKey) {
@@ -2253,6 +2283,13 @@ sap.ui.define([
 			var sTrueValue = aValues[aValues.length - 1].toString();
 			oValue1 = sValue1 === sTrueValue;
 			oValue2 = null; // for boolean we only support EQ and value2 can be null
+		}
+
+		if (oCurrentKeyField && oCurrentKeyField.type === "numc") {
+			// in case of type numc and Contains or EndsWith operator the leading 0 will be removed
+			if ([sap.m.P13nConditionOperation.Contains, sap.m.P13nConditionOperation.EndsWith].indexOf(sOperation) != -1) {
+				oValue1 = oConditionGrid.oFormatter.format(oValue1);
+			}
 		}
 
 		var bShowIfGrouped = oConditionGrid.showIfGrouped.getSelected();
@@ -2864,6 +2901,47 @@ sap.ui.define([
 		Average: "Average",
 		Minimum: "Minimum",
 		Maximum: "Maximum"
+	};
+
+	/**
+	 * @private
+	 * @expertimental since version 1.54
+	 */
+	sap.m.P13nConditionStringDateFormatter = function(oFormatOptions) {
+		oFormatOptions = jQuery.extend({}, oFormatOptions, {
+			UTC: false
+		});
+
+		this.parseFormatter = DateFormat.getDateInstance({
+			UTC: false,
+			pattern: "yyyyMMdd"
+		});
+
+		this.displayFormatter = DateFormat.getDateInstance(oFormatOptions);
+
+		this.format = function(oValue) {
+			if (oValue === null || oValue === undefined || oValue == "") {
+				return null;
+			}
+
+			if (!(oValue instanceof Date)) {
+				oValue = this.parseFormatter.parse(oValue);
+			}
+
+			return this.displayFormatter.format(oValue);
+		};
+
+		this.parse = function(vValue) {  // should return null, when parse fails
+			if (vValue != null && vValue != "") {
+				var oValueDate = this.parseFormatter.parse(vValue, true);
+				if (oValueDate) {
+					vValue = this.parseFormatter.format(oValueDate);
+					return vValue;
+				}
+			}
+			return null;
+		};
+
 	};
 
 	return P13nConditionPanel;

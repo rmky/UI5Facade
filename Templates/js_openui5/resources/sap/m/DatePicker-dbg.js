@@ -1,12 +1,32 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.DatePicker.
-sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './InputBase', './DateTimeField', 'sap/ui/core/date/UniversalDate', './library', 'sap/ui/core/Control', 'sap/ui/core/library'],
-	function(jQuery, Device, InputBase, DateTimeField, UniversalDate, library, Control, coreLibrary) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/Device',
+	'./InputBase',
+	'./DateTimeField',
+	'sap/ui/core/date/UniversalDate',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/library',
+	"./DatePickerRenderer"
+],
+	function(
+	jQuery,
+	Device,
+	InputBase,
+	DateTimeField,
+	UniversalDate,
+	library,
+	Control,
+	coreLibrary,
+	DatePickerRenderer
+	) {
 	"use strict";
 
 
@@ -93,7 +113,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './InputBase', './DateTimeF
 	 * the close event), or select Cancel.
 	 *
 	 * @extends sap.m.DateTimeField
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -185,7 +205,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './InputBase', './DateTimeF
 				}
 			}
 		},
-		designTime : true
+		designtime: "sap/m/designtime/DatePicker.designtime"
 	}});
 
 
@@ -459,7 +479,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './InputBase', './DateTimeF
 
 	DatePicker.prototype.setMinDate = function(oDate) {
 
-		if (oDate && !(oDate instanceof Date)) {
+		if (this._isValidDate(oDate)) {
 			throw new Error("Date must be a JavaScript date object; " + this);
 		}
 
@@ -498,7 +518,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './InputBase', './DateTimeF
 
 	DatePicker.prototype.setMaxDate = function(oDate) {
 
-		if (oDate && !(oDate instanceof Date)) {
+		if (this._isValidDate(oDate)) {
 			throw new Error("Date must be a JavaScript date object; " + this);
 		}
 
@@ -832,7 +852,27 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './InputBase', './DateTimeF
 		return this;
 	};
 
+	DatePicker.prototype._storeInputSelection = function (oInput) {
+		if ((Device.browser.msie || Device.browser.edge) && !Device.support.touch) {
+			//For IE & Edge, any selection of the underlying input must be removed before opening the picker popup,
+			//otherwise the input will receive focus via TAB during the picker is opened. The selection is restored back
+			//when the popup is closed
+			this._oInputSelBeforePopupOpen = {
+				iStart: oInput.selectionStart,
+				iEnd: oInput.selectionEnd
+			};
+			oInput.selectionStart = 0;
+			oInput.selectionEnd = 0;
+		}
+	};
 
+	DatePicker.prototype._restoreInputSelection = function (oInput) {
+		if ((Device.browser.msie || Device.browser.edge) && !Device.support.touch) {
+			//The selection is restored back due to issue with IE & Edge. See _handleBeforeOpen
+			oInput.selectionStart = this._oInputSelBeforePopupOpen.iStart;
+			oInput.selectionEnd = this._oInputSelBeforePopupOpen.iEnd;
+		}
+	};
 
 
 	function _open(){
@@ -896,6 +936,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './InputBase', './DateTimeF
 		if (!this._oPopup) {
 			return;
 		}
+
+		this._storeInputSelection(this._$input.get(0));
 
 		this._oPopup.setAutoCloseAreas([this.getDomRef()]);
 
@@ -979,7 +1021,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './InputBase', './DateTimeF
 				this._oDateRange.setStartDate(new Date(oDate.getTime()));
 			}
 		} else {
-			var oFocusDate = new Date();
+			var oInitialFocusedDateValue = this.getInitialFocusedDateValue();
+			var oFocusDate = oInitialFocusedDateValue ? oInitialFocusedDateValue : new Date();
 			var iMaxTimeMillis = this._oMaxDate.getTime() + 86400000 /* one day in milliseconds */;
 
 			if (oFocusDate.getTime() < this._oMinDate.getTime() || oFocusDate.getTime() > iMaxTimeMillis) {
@@ -1158,7 +1201,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './InputBase', './DateTimeF
 	}
 
 	function _handleOpened(oEvent) {
-
 		this._renderedDays = this._oCalendar.$("-Month0-days").find(".sapUiCalItem").length;
 
 		this.$("inner").attr("aria-owns", this.getId() + "-cal");
@@ -1168,6 +1210,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './InputBase', './DateTimeF
 
 	function _handleClosed(oEvent) {
 		this.$("inner").attr("aria-expanded", false);
+
+		this._restoreInputSelection(this._$input.get(0));
 	}
 
 	function _resizeCalendar(oEvent){
@@ -1205,7 +1249,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './InputBase', './DateTimeF
 	}
 
 	/**
-	 * This event gets fired when the input operation has finished and the value has changed.
+	 * Fired when the input operation has finished and the value has changed.
+	 *
+	 * <b>Note:</b> Fired only when a new date is selected. If you change the month or year from the picker but not
+	 * select a new date from the newly selected month/year, the value of the <code>sap.m.DatePicker</code> won't be
+	 * updated and no change event will be fired.
 	 *
 	 * @name sap.m.DatePicker#change
 	 * @event

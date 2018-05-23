@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/m/library"],
+sap.ui.define(["sap/m/library", "sap/ui/core/InvisibleText"],
 
-	function(library) {
+	function(library, InvisibleText) {
 		"use strict";
 
 		// shortcut for sap.m.ButtonType
@@ -97,7 +97,7 @@ sap.ui.define(["sap/m/library"],
 		SplitButtonRenderer.writeAriaLabelledBy = function(oButton, mAccProperties) {
 			var sAriaLabelledByValue = "",
 				sTitleAttribute = oButton.getTitleAttributeValue(),
-				oButtonTypeAriaLabel = oButton.getButtonTypeAriaLabel();
+				oButtonTypeAriaLabelId = oButton.getButtonTypeAriaLabelId();
 
 			if (sTitleAttribute) {
 				sAriaLabelledByValue += oButton.getTooltipInfoLabel(sTitleAttribute).getId();
@@ -109,14 +109,14 @@ sap.ui.define(["sap/m/library"],
 				sAriaLabelledByValue += " ";
 			}
 
-			if (oButtonTypeAriaLabel) {
-				sAriaLabelledByValue += oButtonTypeAriaLabel.getId();
+			if (oButtonTypeAriaLabelId) {
+				sAriaLabelledByValue += oButtonTypeAriaLabelId;
 				sAriaLabelledByValue += " ";
 			}
 
-			sAriaLabelledByValue += oButton.getSplitButtonAriaLabel().getId();
+			sAriaLabelledByValue += InvisibleText.getStaticId("sap.m", "SPLIT_BUTTON_DESCRIPTION");
 
-			sAriaLabelledByValue += " " + oButton.getKeyboardDescriptionAriaLabel().getId();
+			sAriaLabelledByValue += " " + InvisibleText.getStaticId("sap.m", "SPLIT_BUTTON_KEYBOARD_HINT");
 
 			mAccProperties["labelledby"] = {value: sAriaLabelledByValue, append: true };
 		};

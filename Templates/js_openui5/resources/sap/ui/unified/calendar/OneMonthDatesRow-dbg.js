@@ -1,10 +1,16 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['sap/ui/unified/calendar/DatesRow', 'sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/library'],
-	function(DatesRow, CalendarUtils, CalendarDate, library) {
+sap.ui.define([
+	'sap/ui/unified/calendar/DatesRow',
+	'sap/ui/unified/calendar/CalendarUtils',
+	'sap/ui/unified/calendar/CalendarDate',
+	'sap/ui/unified/library',
+	"./OneMonthDatesRowRenderer"
+],
+	function(DatesRow, CalendarUtils, CalendarDate, library, OneMonthDatesRowRenderer) {
 		"use strict";
 
 	/*
@@ -28,7 +34,7 @@ sap.ui.define(['sap/ui/unified/calendar/DatesRow', 'sap/ui/unified/calendar/Cale
 	 * Other usages are not supported.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @private

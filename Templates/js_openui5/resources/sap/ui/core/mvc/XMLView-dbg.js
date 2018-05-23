@@ -1,18 +1,43 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.core.mvc.XMLView.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/XMLTemplateProcessor', 'sap/ui/core/library', './View', 'sap/ui/model/resource/ResourceModel', 'sap/ui/base/ManagedObject', 'sap/ui/core/Control', 'sap/ui/core/RenderManager', 'sap/ui/core/cache/CacheManager', 'jquery.sap.xml', 'jquery.sap.script'],
-	function(jQuery, XMLTemplateProcessor, library, View, ResourceModel, ManagedObject, Control, RenderManager, Cache/* , jQuerySap */) {
+sap.ui.define([
+    'jquery.sap.global',
+    'sap/ui/core/XMLTemplateProcessor',
+    'sap/ui/core/library',
+    './View',
+    'sap/ui/model/resource/ResourceModel',
+    'sap/ui/base/ManagedObject',
+    'sap/ui/core/Control',
+    'sap/ui/core/RenderManager',
+    'sap/ui/core/cache/CacheManager',
+    "./XMLViewRenderer",
+    'jquery.sap.xml',
+    'jquery.sap.script'
+],
+	function(
+	    jQuery,
+		XMLTemplateProcessor,
+		library,
+		View,
+		ResourceModel,
+		ManagedObject,
+		Control,
+		RenderManager,
+		Cache/* , jQuerySap */,
+		XMLViewRenderer
+	) {
 	"use strict";
 
 	// actual constants
 	var RenderPrefixes = RenderManager.RenderPrefixes,
 		ViewType = library.mvc.ViewType,
-		sXMLViewCacheError = "XMLViewCacheError";
+		sXMLViewCacheError = "XMLViewCacheError",
+		notCacheRelevant = {};
 
 
 	/**
@@ -36,7 +61,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/XMLTemplateProcessor', 'sap/ui/
 	 * control's dependents aggregation or add it by using {@link sap.ui.core.mvc.XMLView#addDependent}.
 	 *
 	 * @extends sap.ui.core.mvc.View
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.XMLView
@@ -67,7 +92,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/XMLTemplateProcessor', 'sap/ui/
 			cache : 'Object'
 		},
 
-		designTime: true
+		designtime: "sap/ui/core/designtime/mvc/XMLView.designtime"
 	}});
 
 		/**
@@ -243,6 +268,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/XMLTemplateProcessor', 'sap/ui/
 
 		function validateCacheKey(oView, aFutureKeyParts) {
 			return Promise.all(aFutureKeyParts).then(function(aKeys) {
+				aKeys = aKeys.filter(function(oElement) {
+					return oElement !== notCacheRelevant;
+				});
 				if (aKeys.every(isValidKey)) {
 					return aKeys.join('_');
 				} else {
@@ -263,14 +291,27 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/XMLTemplateProcessor', 'sap/ui/
 		}
 
 		function getCacheKeyProviders(oView) {
-			var mPreprocessors = View._mPreprocessors["XML"],
+			var mPreprocessors = oView.getPreprocessors(),
 				oPreprocessorInfo = oView.getPreprocessorInfo(/*bSync =*/false),
 				aFutureCacheKeys = [];
 
 			function pushFutureKey(o) {
-				if (o.preprocessor.getCacheKey) {
-					aFutureCacheKeys.push(o.preprocessor.getCacheKey(oPreprocessorInfo));
-				}
+				aFutureCacheKeys.push(o.preprocessor
+					.then(function(oPreprocessorImpl) {
+						if (oPreprocessorImpl.getCacheKey) {
+							return oPreprocessorImpl.getCacheKey(oPreprocessorInfo);
+						} else {
+							/* We cannot check for the getCacheKey function synchronous, but we later need
+							 * to differentiate wether the result of getCacheKey returns an invalid result
+							 * (null/undefined) or the function simply does not exist.
+							 * Therefore we use the 'notCacheRelevant' token to mark preProcessors that does
+							 * not provide a getCacheKey function and so are not relevant for caching.
+							 * See validateCacheKey function.
+							 */
+							return notCacheRelevant;
+						}
+					})
+				);
 			}
 
 			for (var sType in mPreprocessors) {
@@ -474,24 +515,26 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/XMLTemplateProcessor', 'sap/ui/
 			// unset any preprocessors (e.g. from an enclosing JSON view)
 
 			// create a function, which scopes the instance creation of a class with the corresponding owner ID
-			// XMLView special logic for asynchronous template parsing,
-			// when component loading is async but instance creation is sync.
-			var oParseConfig = {
-				"fnRunWithPreprocessor": function(fn) {
-					return ManagedObject.runWithPreprocessors(fn, {
-						settings: that._fnSettingsPreprocessor
-					});
-				}
-			};
+			// XMLView special logic for asynchronous template parsing, when component loading is async but
+			// instance creation is sync.
+			function fnRunWithPreprocessor(fn) {
+				return ManagedObject.runWithPreprocessors(fn, {
+					settings: that._fnSettingsPreprocessor
+				});
+			}
 
 			// parse the XML tree
-			var bAsync = !!that.oAsyncState;
-			return XMLTemplateProcessor.parseTemplatePromise(that._xContent, that, bAsync, oParseConfig).then(function(aParsedContent) {
-				that._aParsedContent = aParsedContent;
-				if (bAsync) {
+			if (!this.oAsyncState) {
+				this._aParsedContent = fnRunWithPreprocessor(XMLTemplateProcessor.parseTemplate.bind(null, this._xContent, this));
+			} else {
+				return XMLTemplateProcessor.parseTemplatePromise(this._xContent, this, true, {
+					fnRunWithPreprocessor: fnRunWithPreprocessor
+				}).then(function(aParsedContent) {
+					that._aParsedContent = aParsedContent;
+					// allow rendering of preserve content
 					delete that.oAsyncState.suppressPreserve;
-				}
-			});
+				});
+			}
 		};
 
 		XMLView.prototype.getControllerName = function() {
@@ -564,7 +607,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/XMLTemplateProcessor', 'sap/ui/
 		* either the plain "xml" or the already initialized "controls" , see {@link sap.ui.core.mvc.XMLView.PreprocessorType}.
 		* For each type one preprocessor is executed. If there is a preprocessor passed to or activated at the
 		* view instance already, that one is used. When several preprocessors are registered for one hook, it has to be made
-		* sure, that they do not conflict when beeing processed serially.
+		* sure, that they do not conflict when being processed serially.
 		*
 		* It can be either a module name as string of an implementation of {@link sap.ui.core.mvc.View.Preprocessor} or a
 		* function with a signature according to {@link sap.ui.core.mvc.View.Preprocessor.process}.

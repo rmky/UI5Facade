@@ -1,10 +1,52 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Library name="sap.tnt" xmlns="http://www.sap.com/ui5/ide/templates/xmlview">
+<Template name="sap.tnt.InfoLabel" alias="InfoLabel,Label">
+	<jsTemplate><![CDATA[new sap.tnt.InfoLabel({
+	id: "${id}", // sap.ui.core.ID
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	text: "", // string
+	renderMode: sap.tnt.RenderMode.Loose, // sap.tnt.RenderMode
+	colorScheme: 7, // int
+	width: undefined, // sap.ui.core.CSSSize
+	displayOnly: false, // boolean
+	textDirection: sap.ui.core.TextDirection.Inherit, // sap.ui.core.TextDirection
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<InfoLabel xmlns="sap.tnt"
+	id="${id}"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	text=""
+	renderMode="Loose"
+	colorScheme="7"
+	width=""
+	displayOnly="false"
+	textDirection="Inherit"
+	validateFieldGroup="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+</InfoLabel>
+]]></xmlTemplate>
+</Template>
 <Template name="sap.tnt.NavigationList" alias="NavigationList,List">
 	<jsTemplate><![CDATA[new sap.tnt.NavigationList({
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	width: undefined, // sap.ui.core.CSSSize
@@ -28,6 +70,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	width=""
@@ -85,6 +128,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	expanded: true, // boolean
@@ -107,6 +151,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	expanded="true"
@@ -126,6 +171,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	width: undefined, // sap.ui.core.CSSSize
@@ -133,6 +179,7 @@
 	enabled: true, // boolean
 	height: "", // sap.ui.core.CSSSize
 	design: sap.m.ToolbarDesign.Auto, // sap.m.ToolbarDesign, since 1.16.8
+	style: sap.m.ToolbarStyle.Standard, // sap.m.ToolbarStyle, since 1.54
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -150,6 +197,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	width=""
@@ -157,6 +205,7 @@
 	enabled="true"
 	height=""
 	design="Auto"
+	style="Standard"
 	ariaLabelledBy=""
 	validateFieldGroup=""
 	press="">
@@ -171,6 +220,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	tooltip: undefined, // sap.ui.core.TooltipBase
@@ -185,6 +235,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	validateFieldGroup="">
@@ -198,6 +249,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	sideExpanded: true, // boolean
@@ -216,6 +268,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	sideExpanded="true"

@@ -5,6 +5,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	icon: undefined, // sap.ui.core.URI
@@ -66,6 +67,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	icon=""
@@ -114,20 +116,16 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	showExecuteOnSelection: false, // boolean
-	showShare: false, // boolean
 	showSetAsDefault: true, // boolean
-	showFavorites: false, // boolean
-	industrySolutionMode: false, // boolean
-	vendorLayer: false, // boolean
 	manualVariantKey: false, // boolean
-	showSave: true, // boolean
-	showSaveAs: true, // boolean
-	showManage: true, // boolean
-	showVariantListFooter: true, // boolean
 	inErrorState: false, // boolean
+	editable: true, // boolean
+	modelName: undefined, // string
+	updateVariantInURL: false, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -140,6 +138,9 @@
 	}, this],
 	manage: [function (oEvent) {
 		var ${control} = oEvent.getSource();
+	}, this],
+	initialized: [function (oEvent) {
+		var ${control} = oEvent.getSource();
 	}, this]
 })
 ]]></jsTemplate>
@@ -147,24 +148,21 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	showExecuteOnSelection="false"
-	showShare="false"
 	showSetAsDefault="true"
-	showFavorites="false"
-	industrySolutionMode="false"
-	vendorLayer="false"
 	manualVariantKey="false"
-	showSave="true"
-	showSaveAs="true"
-	showManage="true"
-	showVariantListFooter="true"
 	inErrorState="false"
+	editable="true"
+	modelName=""
+	updateVariantInURL="false"
 	"for"=""
 	validateFieldGroup=""
 	save=""
-	manage="">
+	manage=""
+	initialized="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 </variants/VariantManagement>

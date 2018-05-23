@@ -1,17 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.f.Avatar.
 sap.ui.define([
-	"jquery.sap.global",
-	"./library",
-	"sap/ui/core/Control",
-	"sap/ui/core/IconPool",
-	"jquery.sap.keycodes"
-], function (jQuery, library, Control, IconPool) {
+    "jquery.sap.global",
+    "./library",
+    "sap/ui/core/Control",
+    "sap/ui/core/IconPool",
+    "./AvatarRenderer",
+    "jquery.sap.keycodes"
+], function(jQuery, library, Control, IconPool, AvatarRenderer) {
 	"use strict";
 
 	// shortcut for sap.f.AvatarType
@@ -65,7 +66,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -125,7 +126,8 @@ sap.ui.define([
 				 * Fired when the user selects the control.
 				 */
 				press: {}
-			}
+			},
+			designtime: "sap/f/designtime/Avatar.designtime"
 		}
 	});
 
@@ -193,6 +195,28 @@ sap.ui.define([
 		return this.setAggregation("detailBox", oLightBox);
 	};
 
+	/**
+	 * @override
+	 */
+	Avatar.prototype.clone = function () {
+		var oClone = Control.prototype.clone.apply(this, arguments),
+			oCloneDetailBox = oClone.getDetailBox();
+
+		// Handle press event if DetailBox is available
+		if (oCloneDetailBox) {
+
+			// Detach the old event
+			oClone.detachPress(this._fnLightBoxOpen, this.getDetailBox());
+
+			// Attach new event with the cloned detail box
+			oClone._fnLightBoxOpen = oCloneDetailBox.open;
+			oClone.attachPress(oClone._fnLightBoxOpen, oCloneDetailBox);
+
+		}
+
+		return oClone;
+	};
+
 	Avatar.prototype.attachPress = function() {
 		Array.prototype.unshift.apply(arguments, ["press"]);
 		Control.prototype.attachEvent.apply(this, arguments);
@@ -222,7 +246,7 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	Avatar.prototype.ontap = function (oEvent) {
+	Avatar.prototype.ontap = function () {
 		this.firePress({/* no parameters */});
 	};
 
@@ -245,8 +269,8 @@ sap.ui.define([
 	 * Checks the validity of the <code>initials</code> parameter and returns <code>true</code> if the
 	 * initials are correct.
 	 *
-	 * @param {string} sInitials
-	 * @returns {boolean}
+	 * @param {string} sInitials The initials value
+	 * @returns {boolean} The initials are valid or not
 	 * @private
 	 */
 	Avatar.prototype._areInitialsValid = function (sInitials) {
@@ -348,10 +372,21 @@ sap.ui.define([
 		return this._icon;
 	};
 
+	// Escape single quotes. BCP: 1780430119
+	Avatar.prototype._getEscapedSrc = function () {
+		var sSrc = this.getSrc();
+
+		if (!sSrc) {
+			return '';
+		}
+
+		return sSrc.replace(/'/g, "\\'");
+	};
 
 	/**
 	 * @see sap.ui.core.Control#getAccessibilityInfo
 	 * @protected
+	 * @returns {Object} The <code>sap.f.Avatar</code> accessibility information
 	 */
 	Avatar.prototype.getAccessibilityInfo = function() {
 		var bHasPressListeners = this.hasListeners("press");

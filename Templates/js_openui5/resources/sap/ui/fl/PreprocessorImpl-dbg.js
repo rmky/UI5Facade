@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,7 +17,7 @@ sap.ui.define([
 	 * @class
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @experimental Since 1.27.0
 	 */
 	var PreprocessorImpl = function(){
@@ -39,7 +39,8 @@ sap.ui.define([
 
 			if (!sComponentId) {
 				jQuery.sap.log.warning("No component ID for determining the anchor of the code extensions was passed.");
-				return [];
+				//always return a promise if async
+				return Promise.resolve([]);
 			}
 
 			var oComponent = sap.ui.component(sComponentId);
@@ -61,6 +62,9 @@ sap.ui.define([
 
 				return aExtensionProviders;
 			});
+		} else {
+			jQuery.sap.log.warning("Synchronous extensions are not supported by sap.ui.fl.PreprocessorImpl");
+			return [];
 		}
 	};
 

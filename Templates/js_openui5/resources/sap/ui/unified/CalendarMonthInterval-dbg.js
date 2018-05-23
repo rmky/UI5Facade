@@ -1,14 +1,43 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 //Provides control sap.ui.unified.Calendar.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleData', 'sap/ui/unified/calendar/CalendarUtils',
-		'./calendar/Header', './calendar/MonthsRow', './calendar/YearPicker', 'sap/ui/unified/calendar/CalendarDate',
-		'sap/ui/core/Renderer', 'sap/ui/core/format/DateFormat', 'sap/ui/Device', 'sap/ui/core/Locale'],
-	function (jQuery, Control, LocaleData, CalendarUtils, Header, MonthsRow, YearPicker, CalendarDate, Renderer, DateFormat, Device, Locale) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/Device',
+	'sap/ui/core/Control',
+	'sap/ui/core/Locale',
+	'sap/ui/core/LocaleData',
+	'sap/ui/core/Renderer',
+	'sap/ui/core/format/DateFormat',
+	'./calendar/CalendarUtils',
+	'./calendar/Header',
+	'./calendar/MonthsRow',
+	'./calendar/YearPicker',
+	'./calendar/CalendarDate',
+	'./Calendar',
+	'./CalendarRenderer',
+	"./CalendarMonthIntervalRenderer"
+], function(
+	jQuery,
+	Device,
+	Control,
+	Locale,
+	LocaleData,
+	Renderer,
+	DateFormat,
+	CalendarUtils,
+	Header,
+	MonthsRow,
+	YearPicker,
+	CalendarDate,
+	Calendar,
+	CalendarRenderer,
+	CalendarMonthIntervalRenderer
+) {
 		"use strict";
 
 	/*
@@ -28,7 +57,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	 * <b>Note:</b> JavaScript Date objects are used to set and return the months, mark them as selected or as a special type.
 	 * But the date part of the Date object is not used. If a Date object is returned the date will be set to the 1st of the corresponding month.
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -1366,8 +1395,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 
 	/****************************************** CUSTOM YEAR PICKER CONTROL *********************************************/
 
-	var CustomYearPicker = sap.ui.unified.Calendar.extend("CustomYearPicker", {
-		renderer: Renderer.extend(sap.ui.unified.CalendarRenderer)
+	var CustomYearPicker = Calendar.extend("CustomYearPicker", {
+		renderer: Renderer.extend(CalendarRenderer)
 	});
 
 	CustomYearPicker.prototype._initializeHeader = function() {
@@ -1382,7 +1411,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	};
 
 	CustomYearPicker.prototype.onAfterRendering = function () {
-		sap.ui.unified.Calendar.prototype.onAfterRendering.apply(this, arguments);
+		Calendar.prototype.onAfterRendering.apply(this, arguments);
 		var oHeader = this.getAggregation("header");
 
 		oHeader.$("B2")
@@ -1395,7 +1424,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	};
 
 	CustomYearPicker.prototype.onThemeChanged = function () {
-		sap.ui.unified.Calendar.prototype.onThemeChanged.apply(this, arguments);
+		Calendar.prototype.onThemeChanged.apply(this, arguments);
 
 		var oHeader = this.getAggregation("header");
 

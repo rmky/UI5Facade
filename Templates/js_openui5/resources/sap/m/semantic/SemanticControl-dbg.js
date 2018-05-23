@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define(["jquery.sap.global", "sap/m/semantic/SemanticConfiguration", "sap
 	 * @abstract
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -142,10 +142,10 @@ sap.ui.define(["jquery.sap.global", "sap/m/semantic/SemanticConfiguration", "sap
 	};
 
 	/**
-	 * Implementation of a commonly used function that adapts sap.ui.core.Element
-	 * to provide dom reference for opening popovers
-	 * @ return the dom reference of the actual wrapped control
-	 * @ public
+	 * Implementation of a commonly used function that adapts <code>sap.ui.core.Element</code>
+	 * to provide DOM reference for opening popovers.
+	 * @returns The DOM reference of the actual wrapped control
+	 * @public
 	 */
 	SemanticControl.prototype.getPopupAnchorDomRef = function() {
 		return this._getControl().getDomRef();

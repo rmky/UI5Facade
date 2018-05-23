@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,8 +8,14 @@
   * @typedef {Object} sap.ui.layout.BlockRowColorSets
   * @typedef {Object} sap.ui.layout.BlockLayoutRow
   */
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/layout/BlockLayoutCellData'],
-	function(jQuery, Control, library, BlockLayoutCellData) {
+sap.ui.define([
+    'jquery.sap.global',
+    'sap/ui/core/Control',
+    './library',
+    'sap/ui/layout/BlockLayoutCellData',
+    "./BlockLayoutRowRenderer"
+],
+	function(jQuery, Control, library, BlockLayoutCellData, BlockLayoutRowRenderer) {
 		"use strict";
 
 		// shortcut for sap.ui.layout.BlockBackgroundType
@@ -30,7 +36,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -77,7 +83,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 					 */
 					accentCells: {type: "sap.ui.layout.BlockLayoutCell", multiple: true, singularName: "accentCell"}
 				},
-				designTime: true
+				designtime: "sap/ui/layout/designtime/BlockLayoutRow.designtime"
 			}
 		});
 
@@ -110,7 +116,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 		};
 
 		/**
-		 * Changes dynamically row's color set
+		 * Changes dynamically row color set
 		 * Note: this might invalidate cells inside and also change color sets of the other BlockLayoutRow-s below it.
 		 * @public
 		 * @method
@@ -234,7 +240,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 		 * @private
 		 * @method
 		 * @param {string} sSizeName The size that needs to be calculated
-		 * @returns {[*]}
+		 * @returns {any[][]}
 		 */
 		BlockLayoutRow.prototype._calcArrangementForSize = function (sSizeName) {
 			var aContent = this.getContent();

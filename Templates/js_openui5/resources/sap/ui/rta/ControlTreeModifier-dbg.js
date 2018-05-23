@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,7 @@ sap.ui.define(["sap/ui/fl/changeHandler/JsControlTreeModifier"], function (JsCon
 	 * @extends sap.ui.fl.changehandler.jsControlTreeModifier
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @private
 	 * @since 1.44
@@ -219,6 +219,20 @@ sap.ui.define(["sap/ui/fl/changeHandler/JsControlTreeModifier"], function (JsCon
 			}
 
 			return vReturnValue;
+		},
+
+		/**
+		 * When a fragment is instantiated in JS, a control is created.
+		 * This control has to be destroyed on undo
+		 * @override
+		 */
+		instantiateFragment: function(sFragment, sChangeId, oView, oController) {
+			var aControls = JsControlTreeModifier.instantiateFragment.apply(this, arguments);
+
+			aControls.forEach(function(oControl) {
+				this._saveUndoOperation("destroy", [oControl]);
+			}.bind(this));
+			return aControls;
 		},
 
 		/**

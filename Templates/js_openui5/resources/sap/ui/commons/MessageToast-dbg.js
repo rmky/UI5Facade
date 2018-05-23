@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.commons.MessageToast.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/thirdparty/jqueryui/jquery-ui-core'],
-	function(jQuery, library, Control, jqueryuicore) {
+sap.ui.define([
+  'jquery.sap.global',
+  './library',
+  'sap/ui/core/Control',
+  'sap/ui/thirdparty/jqueryui/jquery-ui-core',
+  "./MessageToastRenderer"
+],
+	function(jQuery, library, Control, jqueryuicore, MessageToastRenderer) {
 	"use strict";
 
 
@@ -20,7 +26,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @class
 	 * Responsible for displaying the new incoming messages, one at the time, on top of the MessageBar.
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -322,7 +322,7 @@ sap.ui.define([
 	 *   (append only)
 	 * @param {string} sInput
 	 *   The input string from which to resolve an embedded binding
-	 * @param {number} iStart
+	 * @param {int} iStart
 	 *   The start index for binding resolution in the input string
 	 * @returns {object}
 	 *   An object with the following properties:
@@ -394,7 +394,7 @@ sap.ui.define([
 		 * Parses an expression. Sets the flags accordingly.
 		 *
 		 * @param {string} sInput The input string to parse from
-		 * @param {number} iStart The start index
+		 * @param {int} iStart The start index
 		 * @param {sap.ui.model.BindingMode} oBindingMode the binding mode
 		 * @returns {object} a result object with the binding in <code>result</code> and the index
 		 * after the last character belonging to the expression in <code>at</code>
@@ -410,7 +410,7 @@ sap.ui.define([
 			 *
 			 * @param {object} oBinding
 			 *   a binding which may be composite
-			 * @param {number} [iIndex]
+			 * @param {int} [iIndex]
 			 *   index provided by <code>forEach</code>
 			 */
 			function setMode(oBinding, iIndex) {
@@ -599,7 +599,7 @@ sap.ui.define([
 	 *
 	 * @param {string} sInput
 	 *   the string to be parsed
-	 * @param {number} iStart
+	 * @param {int} iStart
 	 *   the index to start parsing
 	 * @returns {object}
 	 *   the parse result with the following properties

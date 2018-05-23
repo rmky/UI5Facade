@@ -1,12 +1,42 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 //Provides control sap.ui.unified.Calendar.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleData', 'sap/ui/unified/calendar/CalendarUtils',
-		'./calendar/Header', './calendar/Month', './calendar/MonthPicker', './calendar/YearPicker', './calendar/CalendarDate', './library', 'sap/ui/Device', 'sap/ui/core/format/DateFormat', 'sap/ui/core/ResizeHandler', 'sap/ui/core/Locale'],
-	function (jQuery, Control, LocaleData, CalendarUtils, Header, Month, MonthPicker, YearPicker, CalendarDate, library, Device, DateFormat, ResizeHandler, Locale) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/core/Control',
+	'sap/ui/core/LocaleData',
+	'sap/ui/unified/calendar/CalendarUtils',
+	'./calendar/Header',
+	'./calendar/Month',
+	'./calendar/MonthPicker',
+	'./calendar/YearPicker',
+	'./calendar/CalendarDate',
+	'./library',
+	'sap/ui/Device',
+	'sap/ui/core/format/DateFormat',
+	'sap/ui/core/ResizeHandler',
+	'sap/ui/core/Locale',
+	"./CalendarRenderer"
+], function(
+	jQuery,
+	Control,
+	LocaleData,
+	CalendarUtils,
+	Header,
+	Month,
+	MonthPicker,
+	YearPicker,
+	CalendarDate,
+	library,
+	Device,
+	DateFormat,
+	ResizeHandler,
+	Locale,
+	CalendarRenderer
+) {
 	"use strict";
 
 	/*
@@ -24,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	 * Basic Calendar.
 	 * This calendar is used for DatePickers
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -35,6 +65,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	var Calendar = Control.extend("sap.ui.unified.Calendar", /** @lends sap.ui.unified.Calendar.prototype */ { metadata : {
 
 		library : "sap.ui.unified",
+		designtime: "sap/ui/unified/designtime/Calendar.designtime",
 		properties : {
 
 			/**
@@ -1288,6 +1319,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		case 1: // month picker
 			oFocusedDate.setYear(oFocusedDate.getYear() - 1);
 			oHeader.setTextButton2(this._oYearFormat.format(oFocusedDate.toUTCJSDate(), true));
+			oHeader.setAriaLabelButton1(this._oYearFormat.format(oFocusedDate.toUTCJSDate(), true));
 			var sSecondaryCalendarType = this._getSecondaryCalendarType();
 			if (sSecondaryCalendarType) {
 				oDate = new CalendarDate(oFocusedDate, sSecondaryCalendarType);
@@ -1341,6 +1373,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		case 1: // month picker
 			oFocusedDate.setYear(oFocusedDate.getYear() + 1);
 			oHeader.setTextButton2(this._oYearFormat.format(oFocusedDate.toUTCJSDate(), true));
+			oHeader.setAriaLabelButton1(this._oYearFormat.format(oFocusedDate.toUTCJSDate(), true));
 			var sSecondaryCalendarType = this._getSecondaryCalendarType();
 			if (sSecondaryCalendarType) {
 				oDate = new CalendarDate(oFocusedDate, sSecondaryCalendarType);
@@ -1880,25 +1913,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 				sPattern = oLocaleData.getIntervalPattern();
 			}
 			sText = sPattern.replace(/\{0\}/, aMonthNames[aMonths[0]]).replace(/\{1\}/, aMonthNames[aMonths[aMonths.length - 1]]);
-			if (bShort) {
-				sAriaLabel = sPattern.replace(/\{0\}/, aMonthNamesWide[aMonths[0]]).replace(/\{1\}/, aMonthNamesWide[aMonths[aMonths.length - 1]]);
-			}
-		}else {
+			sAriaLabel = aMonthNamesWide.length ? sPattern.replace(/\{0\}/, aMonthNamesWide[aMonths[0]]).replace(/\{1\}/, aMonthNamesWide[aMonths[aMonths.length - 1]]) : sText;
+		} else {
 			sText = aMonthNames[aMonths[0]];
-			if (bShort) {
-				sAriaLabel = aMonthNamesWide[aMonths[0]];
-			}
+			sAriaLabel = aMonthNamesWide[aMonths[0]] || sText;
 		}
 
 		oHeader.setTextButton1(sText);
-		if (bShort) {
-			oHeader.setAriaLabelButton1(sAriaLabel);
-		}
+		oHeader.setAriaLabelButton1(sAriaLabel);
+
 
 		var oFirstDate = new CalendarDate(oDate, sPrimaryCalendarType);
 		oFirstDate.setDate(1); // always use the first of the month to have stable year in Japanese calendar
 		sYear = this._oYearFormat.format(oFirstDate.toUTCJSDate(), true);
 		oHeader.setTextButton2(sYear);
+		oHeader.setAriaLabelButton2(sYear);
 
 		if (sSecondaryCalendarType) {
 			oFirstDate = new CalendarDate(oFirstDate, sSecondaryCalendarType);
@@ -1927,10 +1956,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 		}
 
 		var oCalDate = CalendarDate.fromLocalJSDate(oDate, this.getPrimaryCalendarType());
-
-		if (this._oFocusedDate && this._oFocusedDate.isSame(oCalDate)) {
-			return;
-		}
 
 		var iYear = oCalDate.getYear();
 		CalendarUtils._checkYearInValidRange(iYear);

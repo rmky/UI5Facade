@@ -1,12 +1,21 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.dt.plugin.ControlDragDrop.
-sap.ui.define(['sap/ui/dt/plugin/DragDrop', 'sap/ui/dt/plugin/ElementMover', 'sap/ui/dt/ElementUtil'], function(
-		DragDrop, ElementMover, ElementUtil) {
+sap.ui.define([
+	'sap/ui/dt/plugin/DragDrop',
+	'sap/ui/dt/plugin/ElementMover',
+	'sap/ui/dt/ElementUtil',
+	'sap/ui/dt/OverlayUtil'
+], function(
+	DragDrop,
+	ElementMover,
+	ElementUtil,
+	OverlayUtil
+) {
 	"use strict";
 
 	/**
@@ -19,7 +28,7 @@ sap.ui.define(['sap/ui/dt/plugin/DragDrop', 'sap/ui/dt/plugin/ElementMover', 'sa
 	 * @class The ControlDragDrop enables D&D functionality for the overlays based on aggregation types
 	 * @extends sap.ui.dt.plugin.DragDrop"
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -80,8 +89,12 @@ sap.ui.define(['sap/ui/dt/plugin/DragDrop', 'sap/ui/dt/plugin/ElementMover', 'sa
 	 */
 	ControlDragDrop.prototype.registerElementOverlay = function(oOverlay) {
 		DragDrop.prototype.registerElementOverlay.apply(this, arguments);
-		var oElement = oOverlay.getElementInstance();
-		if (this.getElementMover().isMovableType(oElement) && this.getElementMover().checkMovable(oOverlay)) {
+		var oElement = oOverlay.getElement();
+		if (
+			this.getElementMover().isMovableType(oElement)
+			&& this.getElementMover().checkMovable(oOverlay)
+			&& !OverlayUtil.isInAggregationBinding(oOverlay, oElement.sParentAggregationName)
+		) {
 			oOverlay.setMovable(true);
 		}
 
@@ -137,7 +150,7 @@ sap.ui.define(['sap/ui/dt/plugin/DragDrop', 'sap/ui/dt/plugin/ElementMover', 'sa
 	 */
 	ControlDragDrop.prototype.onDragEnter = function(oTargetOverlay) {
 		var oDraggedOverlay = this.getDraggedOverlay();
-		if (oTargetOverlay.getElementInstance() !== oDraggedOverlay.getElementInstance()
+		if (oTargetOverlay.getElement() !== oDraggedOverlay.getElement()
 				&& oTargetOverlay !== this._oPreviousTarget) {
 			this.getElementMover().repositionOn(oDraggedOverlay, oTargetOverlay);
 		}

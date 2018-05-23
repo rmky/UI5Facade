@@ -1,13 +1,13 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides helper sap.ui.table.TableAccExtension.
 sap.ui.define([
-	"jquery.sap.global", "sap/ui/core/Control", "./library", "./TableExtension", "./TableAccRenderExtension", "./TableUtils"
-], function(jQuery, Control, library, TableExtension, TableAccRenderExtension, TableUtils) {
+	"jquery.sap.global", "sap/ui/core/Control", "./library", "./TableExtension", "./TableAccRenderExtension", "./TableUtils", "sap/ui/Device"
+], function(jQuery, Control, library, TableExtension, TableAccRenderExtension, TableUtils, Device) {
 	"use strict";
 
 	// shortcuts
@@ -246,8 +246,9 @@ sap.ui.define([
 				var iColumnNumber = ExtensionHelper.getColumnIndexOfFocusedCell(oExtension) + 1; // +1 -> we want to announce a count and not the
 																								 // index, the action column is handled like a normal
 																								 // column
-				var iRowNumber = TableUtils.getRowIndexOfFocusedCell(oTable) + oTable.getFirstVisibleRow() + 1; // same here + take virtualization
-																												// into account
+				var iRowNumber = TableUtils.getRowIndexOfFocusedCell(oTable) + oTable._getFirstRenderedRowIndex() + 1; // same here + take
+																													   // virtualization
+																													   // into account
 				var iColCount = TableUtils.getVisibleColumnCount(oTable) + (TableUtils.hasRowActions(oTable) ? 1 : 0);
 				var iRowCount = TableUtils.isNoDataVisible(oTable) ? 0 : TableUtils.getTotalRowCount(oTable, true);
 
@@ -507,6 +508,8 @@ sap.ui.define([
 		modifyAccOfCOLUMNROWHEADER: function($Cell, bOnCellFocus) {
 			var oTable = this.getTable(),
 				bEnabled = $Cell.hasClass("sapUiTableSelAllEnabled");
+			oTable.$("sapUiTableGridCnt").removeAttr("role");
+
 			var mAttributes = ExtensionHelper.getAriaAttributesFor(
 				this, TableAccExtension.ELEMENTTYPES.COLUMNROWHEADER,
 				{enabled: bEnabled, checked: bEnabled && !oTable.$().hasClass("sapUiTableSelAll")}
@@ -677,15 +680,14 @@ sap.ui.define([
 
 				case TableAccExtension.ELEMENTTYPES.DATACELL:
 					mAttributes["role"] = "gridcell";
-					if (mParams && typeof mParams.index === "number") {
-						mAttributes["headers"] = sTableId + "_col" + mParams.index;
-					}
 
 					var aLabels = [],
 						oColumn = mParams && mParams.column ? mParams.column : null;
 
 					if (oColumn) {
 						aLabels = ExtensionHelper.getRelevantColumnHeaders(oTable, oColumn);
+						mAttributes["headers"] = aLabels.join(" ");
+
 						for (var i = 0; i < aLabels.length; i++) {
 							aLabels[i] = aLabels[i] + "-inner";
 						}
@@ -860,7 +862,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension
@@ -874,6 +876,7 @@ sap.ui.define([
 		_init: function(oTable, sTableType, mSettings) {
 			this._accMode = sap.ui.getCore().getConfiguration().getAccessibility();
 			this._readonly = sTableType === TableExtension.TABLETYPES.ANALYTICAL;
+			this._busyCells = [];
 
 			oTable.addEventDelegate(this);
 
@@ -901,6 +904,7 @@ sap.ui.define([
 			this.getTable().removeEventDelegate(this);
 
 			this._readonly = false;
+			this._busyCells = [];
 
 			TableExtension.prototype.destroy.apply(this, arguments);
 		},
@@ -947,6 +951,7 @@ sap.ui.define([
 			if (!oTable) {
 				return;
 			}
+			oTable.$("sapUiTableGridCnt").attr("role", ExtensionHelper.getAriaAttributesFor(this, "CONTENT", {}).role);
 			oTable._mTimeouts._cleanupACCExtension = jQuery.sap.delayedCall(100, this, function() {
 				var oTable = this.getTable();
 				if (!oTable) {
@@ -1017,11 +1022,6 @@ sap.ui.define([
 
 		var oTable = this.getTable();
 
-		if (oTable._mTimeouts._cleanupACCFocusRefresh) {
-			jQuery.sap.clearDelayedCall(oTable._mTimeouts._cleanupACCFocusRefresh);
-			oTable._mTimeouts._cleanupACCFocusRefresh = null;
-		}
-
 		if (bOnCellFocus) {
 			ExtensionHelper.cleanupCellModifications(this);
 		}
@@ -1050,22 +1050,29 @@ sap.ui.define([
 		}
 
 		if (!bOnCellFocus) {
-			// Delayed reinitialize the focus when scrolling (focus stays on the same cell, only content is replaced)
+			// Set cell to busy when scrolling (focus stays on the same cell, only content is replaced)
 			// to force screenreader announcements
 			if (oInfo.isOfType(CellType.DATACELL | CellType.ROWHEADER)) {
-				oTable._mTimeouts._cleanupACCFocusRefresh = jQuery.sap.delayedCall(100, this, function($Cell) {
-					var oTable = this.getTable();
-					if (!oTable) {
-						return;
+				if (oTable._mTimeouts._cleanupACCCellBusy) {
+					jQuery.sap.clearDelayedCall(oTable._mTimeouts._cleanupACCCellBusy);
+					oTable._mTimeouts._cleanupACCCellBusy = null;
+				}
+				oTable._mTimeouts._cleanupACCCellBusy = jQuery.sap.delayedCall(100, this, function() {
+					for (var i = 0; i < this._busyCells.length; i++) {
+						this._busyCells[i].removeAttr("aria-hidden");
+						this._busyCells[i].removeAttr("aria-busy");
 					}
-					var oInfo = ExtensionHelper.getInfoOfFocusedCell(this);
-					if (oInfo && oInfo.cell && oInfo.cell.get(0) && $Cell.get(0) === oInfo.cell.get(0)) {
-						oInfo.cell.blur().focus();
-					}
-					oTable._mTimeouts._cleanupACCFocusRefresh = null;
-				}, [oInfo.cell]);
+					oTable._mTimeouts._cleanupACCCellBusy = null;
+					this._busyCells = [];
+				});
+				if (Device.browser.chrome) {
+					oInfo.cell.attr("aria-hidden", "true"); //Seems to be needed for Chrome
+				}
+				oInfo.cell.attr("aria-busy", "true"); // Should be right thing, works in IE
+				this._busyCells.push(oInfo.cell);
+			} else {
+				return;
 			}
-			return;
 		}
 
 		ExtensionHelper["modifyAccOf" + sCellType].apply(this, [oInfo.cell, bOnCellFocus]);

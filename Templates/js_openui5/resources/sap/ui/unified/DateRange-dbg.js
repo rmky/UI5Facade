@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 //Provides control sap.ui.unified.DateRange.
 sap.ui.define(['sap/ui/core/Element', './library', 'sap/ui/unified/calendar/CalendarUtils'],
-		function(Element, library, CalendarUtils) {
+	function(Element, library, CalendarUtils) {
 	"use strict";
 
 
@@ -20,7 +20,7 @@ sap.ui.define(['sap/ui/core/Element', './library', 'sap/ui/unified/calendar/Cale
 	 * @class
 	 * Date range for use in DatePicker
 	 * @extends sap.ui.core.Element
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

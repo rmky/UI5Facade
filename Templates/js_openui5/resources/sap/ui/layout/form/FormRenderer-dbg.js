@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,6 +26,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/library'],
 		// convenience variable
 		var rm = oRenderManager;
 		var oLayout = oForm.getLayout();
+		var mAriaProps = {role: "form"};
 
 		// write only a DIV for the form and let the layout render the rest
 		rm.write("<div");
@@ -42,6 +43,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/library'],
 		if (oForm.getEditable()) {
 			rm.addClass("sapUiFormEdit");
 			rm.addClass("sapUiFormEdit-CTX");
+		} else {
+			mAriaProps.readonly = ""; // to prevent rendering of aria-readonly
 		}
 
 		if (oForm.getWidth()) {
@@ -53,7 +56,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/library'],
 		rm.writeClasses();
 		rm.writeStyles();
 
-		var mAriaProps = {role: "form"};
 		var oTitle = oForm.getTitle();
 		var oToolbar = oForm.getToolbar();
 		if (oToolbar) {

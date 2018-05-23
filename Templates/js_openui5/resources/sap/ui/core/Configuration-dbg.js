@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,13 +20,13 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 	 * The Configuration is initialized once when the {@link sap.ui.core.Core} is created.
 	 * There are different ways to set the environment configuration (in ascending priority):
 	 * <ol>
-	 * <li>System defined defaults
-	 * <li>Server wide defaults, read from /sap-ui-config.json
-	 * <li>Properties of the global configuration object window["sap-ui-config"]
-	 * <li>A configuration string in the data-sap-ui-config attribute of the bootstrap tag
-	 * <li>Individual data-sap-ui-xyz attributes of the bootstrap tag
-	 * <li>Using URL parameters
-	 * <li>Setters in this Configuration object (only for some parameters)
+	 * <li>System defined defaults</li>
+	 * <li>Server wide defaults, read from /sap-ui-config.json</li>
+	 * <li>Properties of the global configuration object window["sap-ui-config"]</li>
+	 * <li>A configuration string in the data-sap-ui-config attribute of the bootstrap tag</li>
+	 * <li>Individual data-sap-ui-<i>xyz</i> attributes of the bootstrap tag</li>
+	 * <li>Using URL parameters</li>
+	 * <li>Setters in this Configuration object (only for some parameters)</li>
 	 * </ol>
 	 *
 	 * That is, attributes of the DOM reference override the system defaults, URL parameters
@@ -36,8 +36,8 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 	 *
 	 * The naming convention for parameters is:
 	 * <ul>
-	 * <li>in the URL : sap-ui-<i>PARAMETER-NAME</i>="value"
-	 * <li>in the DOM : data-sap-ui-<i>PARAMETER-NAME</i>="value"
+	 * <li>in the URL : sap-ui-<i>PARAMETER-NAME</i>="value"</li>
+	 * <li>in the DOM : data-sap-ui-<i>PARAMETER-NAME</i>="value"</li>
 	 * </ul>
 	 * where <i>PARAMETER-NAME</i> is the name of the parameter in lower case.
 	 *
@@ -94,7 +94,7 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 					"modules"               : { type : "string[]", defaultValue : [],        noUrl:true },
 					"areas"                 : { type : "string[]", defaultValue : null,      noUrl:true },
 					// "libs"               : { type : "string[]", defaultValue : [],        noUrl:true }, deprecated, handled below
-					"onInit"                : { type : "code",     defaultValue : undefined, noUrl:true },
+					"onInit"                : { type : "code",     defaultValue : undefined, noUrl:true }, // could be either a reference to a JavaScript function, the name of a global function (string value) or the name of a module (indicated with prefix "module:")
 					"uidPrefix"             : { type : "string",   defaultValue : "__",      noUrl:true },
 					"ignoreUrlParams"       : { type : "boolean",  defaultValue : false,     noUrl:true },
 					"preload"               : { type : "string",   defaultValue : "auto" },
@@ -115,9 +115,9 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 					"xx-appCacheBusterMode" : { type : "string",   defaultValue : "sync" },
 					"xx-appCacheBusterHooks": { type : "object",   defaultValue : undefined, noUrl:true }, // e.g.: { handleURL: fn, onIndexLoad: fn, onIndexLoaded: fn }
 					"xx-disableCustomizing" : { type : "boolean",  defaultValue : false,     noUrl:true },
-					"xx-loadAllMode"        : { type : "boolean",  defaultValue : false,     noUrl:true },
 					"xx-viewCache"          : { type : "boolean",  defaultValue : true },
 					"xx-test-mobile"        : { type : "boolean",  defaultValue : false },
+					"xx-depCache"           : { type : "boolean",  defaultValue : false },
 					"xx-domPatching"        : { type : "boolean",  defaultValue : false },
 					"xx-libraryPreloadFiles": { type : "string[]", defaultValue : [] },
 					"xx-componentPreload"   : { type : "string",   defaultValue : "" },
@@ -133,7 +133,7 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 					"xx-cache-serialization": { type : "boolean",  defaultValue : false},
 					"xx-nosync"             : { type : "string",   defaultValue : "" },
 					"xx-waitForTheme"       : { type : "boolean",  defaultValue : false},
-					"xx-xml-processing"    : { type : "string",  defaultValue : "" },
+					"xx-xml-processing"     : { type : "string",  defaultValue : "" },
 					"statistics"            : { type : "boolean",  defaultValue : false }
 			};
 
@@ -836,6 +836,8 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 				case "A":
 				case "B":
 					return CalendarType.Islamic;
+				case "C":
+					return CalendarType.Persian;
 				case "7":
 				case "8":
 				case "9":
@@ -1256,6 +1258,16 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 		},
 
 		/**
+		 * Whether dependency cache info files should be loaded instead of preload files.
+		 *
+		 * This is an experimental feature intended for HTTP/2 scenarios.
+		 * @private
+		 */
+		getDepCache : function() {
+			return this["xx-depCache"];
+		},
+
+		/**
 		 * Flag whether a Component should load the manifest first.
 		 *
 		 * @returns {boolean} true if a Component should load the manifest first
@@ -1513,7 +1525,7 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 		"9": {pattern: "Gyy-MM-dd"},
 		"A": {pattern: "yyyy/MM/dd"},
 		"B": {pattern: "yyyy/MM/dd"},
-		"C": {pattern: "yyyy/MM/dd", ignore:true}
+		"C": {pattern: "yyyy/MM/dd"}
 	};
 
 	var M_ABAP_TIME_FORMAT_PATTERN = {
@@ -1620,11 +1632,136 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 			} else {
 				delete this.mSettings[sKey];
 			}
-			if ( (oOldValue == null != oValue == null) || !jQuery.sap.equal(oOldValue, oValue) ) {
+			// report a change only if old and new value differ (null/undefined are treated as the same value)
+			if ( (oOldValue != null || oValue != null) && !jQuery.sap.equal(oOldValue, oValue) ) {
 				var mChanges = this.oConfiguration._collect();
 				mChanges[sKey] = oValue;
 				this.oConfiguration._endCollect();
 			}
+		},
+
+		/**
+		 * Sets custom units which can be used to do Unit Formatting.
+		 *
+		 * The custom unit object consists of:
+		 * * a custom unit key which can then be referenced to use this unit.
+		 * * <code>displayName</code> which represents the name of the unit.
+		 * * <code>unitPattern-count-&lt;pluralName&gt;</code> which represents the plural category of the locale for the given value.
+		 * The plural category is defined within the locale, e.g. in the 'en' locale:
+		 * <code>unitPattern-count-one</code> for <code>1</code>,
+		 * <code>unitPattern-count-zero</code> for <code>0</code>,
+		 * <code>unitPattern-count-other</code> for all the res
+		 * To retrieve all plural categories defined for a locale use <code>sap.ui.core.LocaleData.prototype.getPluralCategories</code>.
+		 *
+		 * A Sample custom unit definition could look like this:
+		 * <code>
+		 * {
+		 *  "BAG": {
+		 *      "displayName": "Bag",
+		 *		"unitPattern-count-one": "{0} bag",
+		 *		"unitPattern-count-other": "{0} bags"
+		 *  }
+		 * }
+	     * </code>
+		 * In the above snippet:
+		 * * <code>"BAG"</code> represent the unit key which is used to reference it.
+		 * * <code>"unitPattern-count-one"</code> represent the unit pattern for the form "one", e.g. the number <code>1</code> in the 'en' locale.
+		 * * <code>"unitPattern-count-other"</code> represent the unit pattern for all other numbers which do not
+		 *   match the plural forms of the previous patterns.
+		 * * In the patterns <code>{0}</code> is replaced by the number
+		 *
+		 * E.g. In locale 'en' value <code>1</code> would result in <code>1 Bag</code>, while <code>2</code> would result in <code>2 Bags</code>
+		 * @param mUnits {object} custom unit object which replaces the current custom unit definition. Call with <code>null</code> to delete custom units.
+		 * @return {sap.ui.core.Configuration.FormatSettings}
+		 */
+		setCustomUnits: function (mUnits) {
+			// add custom units, or remove the existing ones if none are given
+			var mUnitsshort = null;
+			if (mUnits) {
+				mUnitsshort = {
+					"short": mUnits
+				};
+			}
+			this._set("units", mUnitsshort);
+			return this;
+		},
+
+		/**
+		 * Retrieves the custom units.
+		 * These custom units are set by {@link sap.ui.core.Configuration#setCustomUnits} and {@link sap.ui.core.Configuration#addCustomUnits}
+		 * @return {object} custom units object
+		 * @see sap.ui.core.Configuration#setCustomUnits
+		 * @see sap.ui.core.Configuration#addCustomUnits
+		 */
+		getCustomUnits: function () {
+			return this.mSettings["units"] ? this.mSettings["units"]["short"] : undefined;
+		},
+
+		/**
+		 * Adds custom units.
+		 * Similar to {@link sap.ui.core.Configuration#setCustomUnits} but instead of setting the custom units, it will add additional ones.
+		 * @param mUnits {object} custom unit object which replaces the current custom unit definition. Call with <code>null</code> to delete custom units.
+		 * @return {sap.ui.core.Configuration.FormatSettings}
+		 * @see sap.ui.core.Configuration#setCustomUnits
+		 */
+		addCustomUnits: function (mUnits) {
+			// add custom units, or remove the existing ones if none are given
+			var mExistingUnits = this.getCustomUnits();
+			if (mExistingUnits){
+				mUnits = jQuery.extend({}, mExistingUnits, mUnits);
+			}
+			this.setCustomUnits(mUnits);
+			return this;
+		},
+
+		/**
+		 * Sets custom unit mappings.
+		 * Unit mappings contain key value pairs (both strings)
+		 * * {string} key: a new entry which maps to an existing unit key
+		 * * {string} value: an existing unit key
+		 *
+		 * Example:
+		 * <code>
+		 * {
+		 *  "my": "my-custom-unit",
+		 *  "cm": "length-centimeter"
+		 * }
+		 * </code>
+		 * Note: It is possible to create multiple entries per unit key.
+		 * @param mUnitMappings {object} unit mappings
+		 * @return {sap.ui.core.Configuration.FormatSettings}. Call with <code>null</code> to delete unit mappings.
+		 */
+		setUnitMappings: function (mUnitMappings) {
+			this._set("unitMappings", mUnitMappings);
+			return this;
+		},
+
+		/**
+		 * Adds unit mappings.
+		 * Similar to {@link sap.ui.core.Configuration#setUnitMappings} but instead of setting the unit mappings, it will add additional ones.
+		 * @param mUnitMappings {object} unit mappings
+		 * @return {sap.ui.core.Configuration.FormatSettings}
+		 * @see sap.ui.core.Configuration#setUnitMappings
+		 */
+		addUnitMappings: function (mUnitMappings) {
+			// add custom units, or remove the existing ones if none are given
+			var mExistingUnits = this.getUnitMappings();
+			if (mExistingUnits){
+				mUnitMappings = jQuery.extend({}, mExistingUnits, mUnitMappings);
+			}
+			this.setUnitMappings(mUnitMappings);
+			return this;
+		},
+
+		/**
+		 * Retrieves the unit mappings.
+		 * These unit mappings are set by {@link sap.ui.core.Configuration#setUnitMappings} and {@link sap.ui.core.Configuration#addUnitMappings}
+		 * @returns {object} unit mapping object
+		 * @see sap.ui.core.Configuration#setUnitMappings
+		 * @see sap.ui.core.Configuration#addUnitMappings
+		 */
+		getUnitMappings: function () {
+			return this.mSettings["unitMappings"];
 		},
 
 		/**
@@ -1743,7 +1880,7 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 		 * specific parts of the UI. See the documentation of {@link sap.ui.core.Configuration#setLanguage}
 		 * for details and restrictions.
 		 *
-		 * @param {number} iValue must be an integer value between 0 and 6
+		 * @param {int} iValue must be an integer value between 0 and 6
 		 * @return {sap.ui.core.Configuration.FormatSettings} Returns <code>this</code> to allow method chaining
 		 * @public
 		 */
@@ -1778,10 +1915,6 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 		 * specific parts of the UI. See the documentation of {@link sap.ui.core.Configuration#setLanguage}
 		 * for details and restrictions.
 		 *
-		 * Note: Iranian date format 'C' is NOT yet supported by UI5. It's accepted by this method for convenience
-		 * (user settings from ABAP system can be used without filtering), but it's ignored. Instead, the formats
-		 * from the current format locale will be used and a warning will be logged.
-		 *
 		 * @param {string} sFormatId id of the ABAP data format (one of '1','2','3','4','5','6','7','8','9','A','B','C')
 		 * @return {sap.ui.core.Configuration.FormatSettings} Returns <code>this</code> to allow method chaining
 		 * @public
@@ -1789,10 +1922,6 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 		setLegacyDateFormat : function(sFormatId) {
 			sFormatId = sFormatId ? String(sFormatId).toUpperCase() : "";
 			check(!sFormatId || M_ABAP_DATE_FORMAT_PATTERN.hasOwnProperty(sFormatId), "sFormatId must be one of ['1','2','3','4','5','6','7','8','9','A','B','C'] or empty");
-			if ( M_ABAP_DATE_FORMAT_PATTERN[sFormatId].ignore ) {
-				jQuery.sap.log.warning("The ABAP date format '" + sFormatId + "' (" + M_ABAP_DATE_FORMAT_PATTERN[sFormatId].pattern + ") is not supported yet. Falling back to locale specific date formats.");
-				sFormatId = "";
-			}
 			var mChanges = this.oConfiguration._collect();
 			this.sLegacyDateFormat = mChanges.legacyDateFormat = sFormatId;
 			this.setDatePattern("short", M_ABAP_DATE_FORMAT_PATTERN[sFormatId].pattern);

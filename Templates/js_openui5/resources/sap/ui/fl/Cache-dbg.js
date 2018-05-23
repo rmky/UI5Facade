@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 	 * @alias sap.ui.fl.Cache
 	 * @experimental Since 1.25.0
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 */
 	var Cache = function () {
 	};
@@ -97,7 +97,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 	 * Returns the entry stored in the cache and creates an entry if needed.
 	 *
 	 * @param {string} sComponentName - Name of the application component
-	 * @param {string} sAppVersion - Current running version of application
+	 * @param {string} sAppVersion - Currently running version of application
 	 * @return {object} Cache entry of specific application component and application version
 	 *
 	 * @protected
@@ -111,7 +111,9 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 				file: {
 					changes: {
 						changes: [],
-						contexts: []
+						contexts: [],
+						variantSection: {},
+						ui2personalization: {}
 					}
 				}
 			};
@@ -193,18 +195,24 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 
 		// in case of no changes present according to async hints
 		if (mPropertyBag && mPropertyBag.cacheKey === "<NO CHANGES>") {
-			return oChangesBundleLoadingPromise.then(function (aChanges) {
-				return {
+			var currentLoadChanges = oChangesBundleLoadingPromise.then(function (aChanges) {
+				oCacheEntry.file = {
 					changes: {
-						changes: aChanges,
-						contexts: []
+						changes : aChanges,
+						contexts : [],
+						variantSection : {},
+						ui2personalization : {}
 					},
 					componentClassName: sComponentName
 				};
+				return oCacheEntry.file;
 			});
+			oCacheEntry.promise = currentLoadChanges;
+			return currentLoadChanges;
 		}
 
-		var oChangesLoadingPromise = oLrepConnector.loadChanges(mComponent, mPropertyBag).then(function (oResult) {
+		var oFlexDataPromise = oLrepConnector.loadChanges(mComponent, mPropertyBag);
+		var oChangesLoadingPromise = oFlexDataPromise.then(function (oResult) {
 			return oResult;
 		}, function (oError) {
 			// if the back end is not reachable we still cache the results in a valid way because the url request is
@@ -216,7 +224,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 					changes: [],
 					contexts: [],
 					variantSection: {},
-					settings: {}
+					ui2personalization: {}
 				}
 			});
 		});
@@ -242,7 +250,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 		});
 
 		oCacheEntry.promise = currentLoadChanges;
-		Cache._oFlexDataPromise = currentLoadChanges;
+		Cache._oFlexDataPromise = oFlexDataPromise;
 
 		return currentLoadChanges;
 	};
@@ -252,8 +260,8 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
      * This data is returned only in case it is part of the application preload or in debug mode.
      * In case no debugging takes place and the file is not loaded an empty list is returned.
      *
-     * @param {map}mPropertyBag
-     * @param {string} mPropertyBag.appName Full qualified name of the application
+     * @param {map} mPropertyBag
+     * @param {string} mPropertyBag.appName Fully qualified name of the application
      * @return {Promise} Promise resolving with an array of changes stored in the application source code
      *
      * @private
@@ -393,6 +401,116 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 			}
 		}
 	};
+
+
+
+	/**
+	 * Retrievea a personalization object stored for an application under a given container ID and item name;
+	 * in case no itemName is given all items for the given container key are returned.
+	 *
+	 * @param {string} sReference The reference of the application for which the personalization should be retrieved
+	 * @param {string} sAppVersion Currently running version of the application
+	 * @param {string} sContainerKey The key of the container in which the personalization was stored
+	 * @param {string} [sItemName] The item name under which the personalization was stored
+	 * @returns {Promise} Promise resolving with the object stored under the passed container key and item name,
+	 * or undefined in case no entry was stored for these;
+	 * in case no sItemName was passed all entries known for the container key
+	 */
+	Cache.getPersonalization = function (sReference, sAppVersion, sContainerKey, sItemName) {
+		var mComponent = {
+			name: sReference,
+			appVersion: sAppVersion
+		};
+		return this.getChangesFillingCache(LrepConnector.createConnector(), mComponent).then(function (oResponse) {
+			if (!oResponse || !oResponse.changes || !oResponse.changes.ui2personalization ||
+				!oResponse.changes.ui2personalization[sContainerKey]) {
+				// return undefined in case there is no personalization for the item or an empty array if a list was requested
+				return sItemName ? undefined : [];
+			}
+
+			if (!sItemName) {
+				return oResponse.changes.ui2personalization[sContainerKey] || [];
+			}
+
+			return oResponse.changes.ui2personalization[sContainerKey].filter(function (oEntry) {
+				return oEntry.itemName === sItemName;
+			})[0];
+		});
+	};
+
+	/**
+	 * Stores a personalization object for an application under a given key pair.
+	 *
+	 * @param {map} mPersonalization
+	 * @param {string} mPersonalization.reference The reference of the application for which the personalization should be stored
+	 * @param {string} mPersonalization.containerKey The key of the container in which the personalization should stored
+	 * @param {string} mPersonalization.itemName The name under which the personalization should be stored
+	 * @param {string} mPersonalization.content The personalization content to be stored
+	 * @returns {Promise} Promise resolving with the object stored under the passed container key and item name,
+	 * or undefined in case no entry was stored for these
+	 */
+	Cache.setPersonalization = function (mPersonalization) {
+		if (!mPersonalization || !mPersonalization.reference ||
+				!mPersonalization.containerKey || !mPersonalization.itemName || !mPersonalization.content) {
+			return Promise.reject("not all mandatory properties were provided for the storage of the personalization");
+		}
+
+		return LrepConnector.createConnector().send("/sap/bc/lrep/ui2personalization/", "PUT", mPersonalization, {})
+			.then(this._addPersonalizationToEntries.bind(this, mPersonalization));
+	};
+
+	Cache._addPersonalizationToEntries = function (mPersonalization) {
+		Object.keys(this._entries[mPersonalization.reference]).forEach(function (sVersion) {
+			var oEntry = this._entries[mPersonalization.reference][sVersion];
+			var oPersonalizationSubsection = oEntry.file.changes.ui2personalization;
+			if (!oPersonalizationSubsection[mPersonalization.containerKey]) {
+				oPersonalizationSubsection[mPersonalization.containerKey] = [];
+			}
+
+			oPersonalizationSubsection[mPersonalization.containerKey].push(mPersonalization);
+		}.bind(this));
+	};
+
+	/**
+	 * Deletes the personalization for a given reference
+	 *
+	 * @param {string} sReference The reference of the application for which the personalization should be deleted
+	 * @param {string} sContainerKey The key of the container for which the personalization should be deleted
+	 * @param {string} sItemName The name under which the personalization should be deleted
+	 * @returns {Promise} Promise resolving in case the deletion request was successful
+	 */
+	Cache.deletePersonalization = function(sReference, sContainerKey, sItemName) {
+		if (!sReference || !sContainerKey || !sItemName) {
+			return Promise.reject("not all mandatory properties were provided for the storage of the personalization");
+		}
+
+		var sUrl = "/sap/bc/lrep/ui2personalization/?reference=";
+		sUrl += sReference + "&containerkey=" + sContainerKey + "&itemname=" + sItemName;
+
+		return LrepConnector.createConnector().send(sUrl, "DELETE", {})
+			.then(this._removePersonalizationFromEntries.bind(this, sReference, sContainerKey, sItemName));
+	};
+
+	Cache._removePersonalizationFromEntries = function (sReference, sContainerKey, sItemName) {
+		var aDeletionPromises = [];
+
+		Object.keys(this._entries[sReference]).forEach(function (sAppVersion) {
+			var oGetAllItemsPromise = this.getPersonalization(sReference, sAppVersion, sContainerKey);
+			var oGetItemPromise = this.getPersonalization(sReference, sAppVersion, sContainerKey, sItemName);
+
+			var oDeletionPromise = Promise.all([oGetAllItemsPromise, oGetItemPromise]).then(function (aParams) {
+				var aItems = aParams[0];
+				var oToBeDeletedItem = aParams[1];
+				var nIndexOfItem = aItems.indexOf(oToBeDeletedItem);
+				aItems.splice(nIndexOfItem, 1);
+			});
+
+			aDeletionPromises.push(oDeletionPromise);
+		}.bind(this));
+
+		return Promise.all(aDeletionPromises);
+	};
+
 
 	return Cache;
 }, /* bExport= */true);

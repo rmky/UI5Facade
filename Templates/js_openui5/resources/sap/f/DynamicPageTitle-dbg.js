@@ -1,19 +1,29 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.f.DynamicPageTitle.
 sap.ui.define([
-	"./library",
-	"sap/ui/core/Control",
-	"sap/ui/base/ManagedObjectObserver",
-	"sap/m/Toolbar",
-	"sap/m/ToolbarSeparator",
-	"sap/m/OverflowToolbar",
-	"sap/m/Button"
-], function (library, Control, ManagedObjectObserver, Toolbar, ToolbarSeparator, OverflowToolbar, Button) {
+    "./library",
+    "sap/ui/core/Control",
+    "sap/ui/base/ManagedObjectObserver",
+    "sap/m/Toolbar",
+    "sap/m/ToolbarSeparator",
+    "sap/m/OverflowToolbar",
+    "sap/m/Button",
+    "./DynamicPageTitleRenderer"
+], function(
+    library,
+	Control,
+	ManagedObjectObserver,
+	Toolbar,
+	ToolbarSeparator,
+	OverflowToolbar,
+	Button,
+	DynamicPageTitleRenderer
+) {
 	"use strict";
 
 	// shortcut for sap.f.DynamicPageTitleArea
@@ -60,7 +70,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -78,8 +88,38 @@ sap.ui.define([
 				* <b>Note:</b> The primary area is shrinking at lower rate, remaining visible as much as it can.
 				*
 				* @since 1.50
+				* @deprecated Since version 1.54. Please use the <code>areaShrinkRatio</code> property instead.
+				* The value of <code>areaShrinkRatio</code> must be set in <code>Heading:Content:Actions</code> format
+				* where Heading, Content and Actions are numbers greater than or equal to 0. The greater value a
+				* section has the faster it shrinks when the screen size is being reduced.
+				*
+				* <code>primaryArea=Begin</code> can be achieved by setting a low number for the Heading area to
+				* <code>areaShrinkRatio</code>, for example <code>1:1.6:1.6</code>.
+				*
+				* <code>primaryArea=Middle</code> can be achieved by setting a low number for the Content area to
+				* <code>areaShrinkRatio</code>, for example <code>1.6:1:1.6</code>.
 				*/
-				primaryArea : {type: "sap.f.DynamicPageTitleArea", group: "Appearance", defaultValue: DynamicPageTitleArea.Begin}
+				primaryArea : {type: "sap.f.DynamicPageTitleArea", group: "Appearance", defaultValue: DynamicPageTitleArea.Begin},
+
+				/**
+				 * Assigns shrinking ratio to the <code>DynamicPageTitle</code> areas (Heading, Content, Actions).
+				 * The greater value a section has the faster it shrinks when the screen size is being reduced.
+				 *
+				 * The value must be set in <code>Heading:Content:Actions</code> format where Title, Content and Actions
+				 * are numbers greater than or equal to 0. If set to 0, the respective area will not shrink.
+				 *
+				 * For example, if <code>2:7:1</code> is set, the Content area will shrink seven times faster than
+				 * the Actions area. So, when all three areas have width of 500px and the available space is reduced by 100px
+				 * the Title area will reduced by 20px, the Content area - by 70px and the Actions area - by 10px.
+				 *
+				 * If all the areas have assigned values greater than 1, the numbers are scaled so that at least one of them
+				 * is equal to 1. For example, value of <code>2:4:8</code> is equal to <code>1:2:4</code>.
+				 *
+				 * <Note:> When this property is set the <code>primaryArea</code> property has no effect.
+				 *
+				 * @since 1.54
+				 */
+				areaShrinkRatio : {type: "sap.f.DynamicPageTitleShrinkRatio", group: "Appearance", defaultValue: "1:1.6:1.6"}
 			},
 			aggregations: {
 
@@ -188,7 +228,26 @@ sap.ui.define([
 				 */
 				_expandButton: {type: "sap.m.Button", multiple: false,  visibility: "hidden"}
 			},
-			designTime: true
+			events: {
+				/**
+				 * Fired when the title state (expanded/collapsed) is toggled by user interaction.
+				 * For example, scrolling, title clicking/tapping, using expand/collapse button.
+				 *
+				 * Also fired when the developer toggles the title state by programmatically
+				 * changing the scroll position of the scrollbar of <code>DynamicPage</code>.
+				 *
+				 * @since 1.54
+				 */
+				stateChange: {
+					parameters: {
+						/**
+						 * Whether the title was expanded (true) or collapsed (false).
+						 */
+						isExpanded: {type : "boolean"}
+					}
+				}
+			},
+			designtime: "sap/f/designtime/DynamicPageTitle.designtime"
 		}
 	});
 
@@ -209,6 +268,12 @@ sap.ui.define([
 	/* ========== STATIC MEMBERS  ========== */
 
 	DynamicPageTitle.NAV_ACTIONS_PLACEMENT_BREAK_POINT = 1280; // px.
+
+	DynamicPageTitle.PRIMARY_AREA_MIDDLE_SHRINK_FACTORS = {
+		headingAreaShrinkFactor: 1.6,
+		contentAreaShrinkFactor: 1,
+		actionsAreaShrinkFactor: 1.6
+	};
 
 	/**
 	 * Flushes the given control into the given container.
@@ -239,6 +304,7 @@ sap.ui.define([
 	DynamicPageTitle.prototype.init = function () {
 		this._bExpandedState = true;
 		this._bShowExpandButton = false;
+		this._bIsFocusable = true;
 		this._fnActionSubstituteParentFunction = function () {
 			return this;
 		}.bind(this);
@@ -249,7 +315,8 @@ sap.ui.define([
 		this._oObserver = new ManagedObjectObserver(DynamicPageTitle.prototype._observeChanges.bind(this));
 		this._oObserver.observe(this, {
 			aggregations: [
-				"content"
+				"content",
+				"_actionsToolbar"
 			]
 		});
 
@@ -258,6 +325,7 @@ sap.ui.define([
 
 	DynamicPageTitle.prototype.onBeforeRendering = function () {
 		this._getActionsToolbar();
+		this._observeControl(this.getBreadcrumbs());
 	};
 
 	DynamicPageTitle.prototype.onAfterRendering = function () {
@@ -276,16 +344,67 @@ sap.ui.define([
 	/* ========== PUBLIC METHODS  ========== */
 
 	DynamicPageTitle.prototype.setPrimaryArea = function (sArea) {
-		if (this.getDomRef()) {
-			this._toggleAreaPriorityClasses(sArea === DynamicPageTitleArea.Begin);
+		var sAreaShrinkRatio = this.getAreaShrinkRatio(),
+			oShrinkFactorsInfo = this._getShrinkFactorsObject(),
+			sAreaShrinkRatioDefaultValue = this.getMetadata().getProperty("areaShrinkRatio").getDefaultValue();
+
+		if (!this.getDomRef()) {
+			return this.setProperty("primaryArea", sArea, true);
 		}
+
+		if (sAreaShrinkRatio !== sAreaShrinkRatioDefaultValue) {
+			return this.setProperty("primaryArea", sArea, true);
+		}
+
+		// areaShrinkRatio is not set and primaryArea is set to Begin - use areaShrinkRatio default values
+		if (sArea === DynamicPageTitleArea.Begin) {
+			this._setShrinkFactors(oShrinkFactorsInfo.headingAreaShrinkFactor,
+									oShrinkFactorsInfo.contentAreaShrinkFactor,
+									oShrinkFactorsInfo.actionsAreaShrinkFactor);
+		} else { // areaShrinkRatio is not set and primaryArea is set to Middle - use primaryArea values
+			this._setShrinkFactors(DynamicPageTitle.PRIMARY_AREA_MIDDLE_SHRINK_FACTORS.headingAreaShrinkFactor,
+									DynamicPageTitle.PRIMARY_AREA_MIDDLE_SHRINK_FACTORS.contentAreaShrinkFactor,
+									DynamicPageTitle.PRIMARY_AREA_MIDDLE_SHRINK_FACTORS.actionsAreaShrinkFactor);
+		}
+
 		return this.setProperty("primaryArea", sArea, true);
 	};
 
+	/**
+	 * Sets the value of the <code>areaShrinkRatio</code> property.
+	 *
+	 * @param {sap.f.DynamicPageTitleShrinkRatio} sAreaShrinkRatio - new value of the <code>areaShrinkRatio</code>
+	 * @return {sap.f.DynamicPageTitle} <code>this</code> to allow method chaining
+	 * @public
+	 * @since 1.54
+	 */
+	DynamicPageTitle.prototype.setAreaShrinkRatio = function (sAreaShrinkRatio) {
+		sAreaShrinkRatio = this.validateProperty("areaShrinkRatio", sAreaShrinkRatio);
+
+		// suppress control invalidation and only update the CSS flex-shrink values
+		this.setProperty("areaShrinkRatio", sAreaShrinkRatio, true);
+
+		var oShrinkFactorsInfo = this._getShrinkFactorsObject();
+
+		if (this.getPrimaryArea() === DynamicPageTitleArea.Middle) {
+			jQuery.sap.log.warning("DynamicPageTitle :: Property primaryArea is disregarded when areaShrinkRatio is set.", this);
+		}
+
+		// scale priority factors
+		if (oShrinkFactorsInfo.headingAreaShrinkFactor > 1 && oShrinkFactorsInfo.contentAreaShrinkFactor > 1 && oShrinkFactorsInfo.actionsAreaShrinkFactor > 1) {
+			jQuery.sap.log.warning("DynamicPageTitle :: One of the shrink factors should be set to 1.", this);
+		}
+
+		this._setShrinkFactors(oShrinkFactorsInfo.headingAreaShrinkFactor,
+								oShrinkFactorsInfo.contentAreaShrinkFactor,
+								oShrinkFactorsInfo.actionsAreaShrinkFactor);
+
+		return this;
+	};
 
 	/**
 	 * Fires the <code>DynamicPageTitle</code> press event.
-	 * @param {jQuery.Event} oEvent
+	 * @param {jQuery.Event} oEvent The <code>tap</code> event object
 	 */
 	DynamicPageTitle.prototype.ontap = function (oEvent) {
 		var oSrcControl = oEvent.srcControl;
@@ -297,17 +416,17 @@ sap.ui.define([
 		}
 	};
 
-	DynamicPageTitle.prototype.onmouseover = function (oEvent) {
+	DynamicPageTitle.prototype.onmouseover = function () {
 		this.fireEvent("_titleMouseOver");
 	};
 
-	DynamicPageTitle.prototype.onmouseout = function (oEvent) {
+	DynamicPageTitle.prototype.onmouseout = function () {
 		this.fireEvent("_titleMouseOut");
 	};
 
 	/**
 	 * Fires the <code>DynamicPageTitle</code> press event.
-	 * @param {jQuery.Event} oEvent
+	 * @param {jQuery.Event} oEvent The SPACE keyboard key press event object
 	 */
 	DynamicPageTitle.prototype.onsapspace = function (oEvent) {
 		this.onsapenter(oEvent);
@@ -315,7 +434,7 @@ sap.ui.define([
 
 	/**
 	 * Fires the <code>DynamicPageTitle</code> press event.
-	 * @param {jQuery.Event} oEvent
+	 * @param {jQuery.Event} oEvent The ENTER keyboard key press event object
 	 */
 	DynamicPageTitle.prototype.onsapenter = function (oEvent) {
 		if (oEvent.srcControl === this) {
@@ -371,7 +490,7 @@ sap.ui.define([
 			DynamicPageTitle.prototype[sMethod] = function (oControl) {
 				var oToolbar = this._getNavigationActionsToolbar(),
 					sToolbarMethod = sMethod.replace(/NavigationActions?/, "Content"),
-					bSeparatorVisibilityUpdateNeeded = true,
+					bTopAreaVisibilityUpdateNeeded = true,
 					vResult;
 
 				if (sMethod === "addNavigationAction" || sMethod === "insertNavigationAction") {
@@ -387,12 +506,12 @@ sap.ui.define([
 					oToolbar[sToolbarMethod].apply(oToolbar, arguments);
 					vResult = this;
 				} else if (sMethod === "getNavigationActions") {
-					bSeparatorVisibilityUpdateNeeded = false;
+					bTopAreaVisibilityUpdateNeeded = false;
 				}
 
 				vResult = vResult || oToolbar[sToolbarMethod].apply(oToolbar, arguments);
 
-				bSeparatorVisibilityUpdateNeeded && this._updateSeparatorVisibility();
+				bTopAreaVisibilityUpdateNeeded && this._updateTopAreaVisibility();
 
 				return vResult;
 			};
@@ -413,18 +532,6 @@ sap.ui.define([
 		this.$expandHeadingWrapper = this.$("expand-heading-wrapper");
 		this.$snappedWrapper = this.$("snapped-wrapper");
 		this.$expandWrapper = this.$("expand-wrapper");
-	};
-
-	/**
-	 * Updates the priority classes of the <code>DynamicPageTitle</code> areas.
-	 * @param {boolean} isPrimaryAreaBegin
-	 * @private
-	 */
-	DynamicPageTitle.prototype._toggleAreaPriorityClasses = function (isPrimaryAreaBegin) {
-		this.$beginArea.toggleClass("sapFDynamicPageTitleAreaHighPriority", isPrimaryAreaBegin);
-		this.$beginArea.toggleClass("sapFDynamicPageTitleAreaLowPriority", !isPrimaryAreaBegin);
-		this.$middleArea.toggleClass("sapFDynamicPageTitleAreaHighPriority", !isPrimaryAreaBegin);
-		this.$middleArea.toggleClass("sapFDynamicPageTitleAreaLowPriority", isPrimaryAreaBegin);
 	};
 
 	/**
@@ -472,6 +579,18 @@ sap.ui.define([
 		return this.getAggregation("_navActionsToolbarSeparator");
 	};
 
+	/**
+	 * Toggles the <code>DynamicPageTitle</code>'s <code>tabindex</code> according to the provided state.
+	 * @param {Boolean} bFocusable
+	 * @private
+	 */
+	DynamicPageTitle.prototype._toggleFocusableState = function (bFocusable) {
+		var $oTitle = this.$();
+
+		this._bIsFocusable = bFocusable;
+		bFocusable ? $oTitle.attr("tabindex", 0) : $oTitle.removeAttr("tabindex");
+	};
+
 	/* ========== DynamicPageTitle actions and navigationActions processing ========== */
 
 	/**
@@ -487,7 +606,7 @@ sap.ui.define([
 			return;
 		}
 
-		this._observeAction(oAction);
+		this._observeControl(oAction);
 
 		oAction._fnOriginalGetParent = oAction.getParent;
 		oAction.getParent = this._fnActionSubstituteParentFunction;
@@ -507,7 +626,7 @@ sap.ui.define([
 			return;
 		}
 
-		this._unobserveAction(oAction);
+		this._unobserveControl(oAction);
 
 		// The runtime adaptation tipically removes and then adds aggregations multiple times.
 		// That is why we need to make sure that the controls are in their previous state
@@ -524,7 +643,7 @@ sap.ui.define([
 	 * @param {sap.ui.core.Control} oControl
 	 * @private
 	 */
-	DynamicPageTitle.prototype._observeAction = function(oControl) {
+	DynamicPageTitle.prototype._observeControl = function(oControl) {
 		this._oObserver.observe(oControl, {
 			properties: ["visible"]
 		});
@@ -535,7 +654,7 @@ sap.ui.define([
 	 * @param {sap.ui.core.Control} oControl
 	 * @private
 	 */
-	DynamicPageTitle.prototype._unobserveAction = function(oControl) {
+	DynamicPageTitle.prototype._unobserveControl = function(oControl) {
 		this._oObserver.unobserve(oControl, {
 			properties: ["visible"]
 		});
@@ -560,7 +679,7 @@ sap.ui.define([
 		}
 
 		oNavigationActionsBar = this._getNavigationActionsToolbar();
-		bRenderNavigationActionsInTopArea = this._shouldRenderActionsInTopArea();
+		bRenderNavigationActionsInTopArea = this._shouldRenderNavigationActionsInTopArea();
 
 		if (bRenderNavigationActionsInTopArea) {
 			oNavigationActionsContainerDOM = this.$topNavigationActionsArea[0]; // Element should be rendered and cached already.
@@ -575,28 +694,35 @@ sap.ui.define([
 	};
 
 	/**
+	 * Toggles navigation actions placement change if certain preconditions are met.
+	 *
+	 * @param {Number} iCurrentWidth
+	 * @private
+	 */
+	DynamicPageTitle.prototype._updateTopAreaVisibility = function (iCurrentWidth) {
+		var bNavigationActionsAreInTopArea = this._areNavigationActionsInTopArea(),
+			bNavigationActionsShouldBeInTopArea = this._shouldRenderNavigationActionsInTopArea(iCurrentWidth),
+			bHasVisibleBreadcrumbs = this.getBreadcrumbs() && this.getBreadcrumbs().getVisible(),
+			bShoudShowTopArea = bHasVisibleBreadcrumbs || bNavigationActionsShouldBeInTopArea,
+			bShouldChangeNavigationActionsPlacement = this.getNavigationActions().length > 0 && (bNavigationActionsShouldBeInTopArea ^ bNavigationActionsAreInTopArea);
+
+		this._toggleTopAreaVisibility(bShoudShowTopArea);
+
+		if (bShouldChangeNavigationActionsPlacement) {
+			this._toggleNavigationActionsPlacement(bNavigationActionsShouldBeInTopArea);
+		} else {
+			this._updateSeparatorVisibility();
+		}
+	};
+
+	/**
 	 * Handles control re-sizing.
 	 * <b>Note:</b> The method is called by the parent <code>DynamicPage</code>.
 	 * @param {Number} iCurrentWidth
 	 * @private
 	 */
 	DynamicPageTitle.prototype._onResize = function (iCurrentWidth) {
-		var bNavigationActionsShouldBeInTopArea,
-			bNavigationActionsAreInTopArea,
-			bShouldChangeNavigationActionsPlacement;
-
-		if (this.getNavigationActions().length === 0) {
-			return;
-		}
-
-		bNavigationActionsShouldBeInTopArea = iCurrentWidth < DynamicPageTitle.NAV_ACTIONS_PLACEMENT_BREAK_POINT;
-		bNavigationActionsAreInTopArea = this._areNavigationActionsInTopArea();
-		// expression evaluates to true, when we have 'false' and 'true' or 'true' and 'false'.
-		bShouldChangeNavigationActionsPlacement = bNavigationActionsShouldBeInTopArea ^ bNavigationActionsAreInTopArea;
-
-		if (bShouldChangeNavigationActionsPlacement) {
-			this._toggleNavigationActionsPlacement(bNavigationActionsShouldBeInTopArea);
-		}
+		this._updateTopAreaVisibility(iCurrentWidth);
 	};
 
 	/**
@@ -654,6 +780,18 @@ sap.ui.define([
 	};
 
 	/**
+	 * Updates the top title area visibility.
+	 *
+	 * @param {Boolean} bShoudShowTopArea
+	 * @private
+	 */
+	DynamicPageTitle.prototype._toggleTopAreaVisibility = function(bShoudShowTopArea) {
+		if (this.getDomRef()) {
+			this.$("top").toggleClass("sapUiHidden", !bShoudShowTopArea);
+		}
+	};
+
+	/**
 	 * Determines if the <code>ToolbarSeparator</code> should be displayed.
 	 * @returns {Boolean}
 	 * @private
@@ -695,12 +833,38 @@ sap.ui.define([
 	};
 
 	/**
+	 * Sets flex-shrink CSS style to the Heading, Content and Actions areas
+	 * @param {Number} fHeadingFactor - Heading shrink factor
+	 * @param {Number} fContentFactor - Content shrink factor
+	 * @param {Number} fActionsFactor - Actions shrink factor
+	 * @private
+	 */
+	DynamicPageTitle.prototype._setShrinkFactors = function(fHeadingFactor, fContentFactor, fActionsFactor) {
+		this.$("left-inner").css("flex-shrink", fHeadingFactor);
+		this.$("content").css("flex-shrink", fContentFactor);
+		this.$("mainActions").css("flex-shrink", fActionsFactor);
+	};
+
+	/**
 	 * Determines if the <code>navigationActions</code> should be rendered in the top area.
+	 * @param {Number} iCurrentWidth
 	 * @returns {Boolean}
 	 * @private
 	 */
-	DynamicPageTitle.prototype._shouldRenderActionsInTopArea = function () {
-		return this._getWidth() < DynamicPageTitle.NAV_ACTIONS_PLACEMENT_BREAK_POINT;
+	DynamicPageTitle.prototype._shouldRenderNavigationActionsInTopArea = function (iCurrentWidth) {
+		var iWidth,
+			bHasVisibleActions,
+			bHasVisibleBreadcrumbs;
+
+		if (this.getNavigationActions().length === 0) {
+			return false;
+		}
+
+		iWidth = iCurrentWidth ? iCurrentWidth : this._getWidth();
+		bHasVisibleActions = this._getVisibleActions().length > 0;
+		bHasVisibleBreadcrumbs = this.getBreadcrumbs() && this.getBreadcrumbs().getVisible();
+
+		return iWidth < DynamicPageTitle.NAV_ACTIONS_PLACEMENT_BREAK_POINT && (bHasVisibleBreadcrumbs || bHasVisibleActions);
 	};
 
 	/* ========== DynamicPageTitle expand and snapped content ========== */
@@ -708,9 +872,12 @@ sap.ui.define([
 	/**
 	 * Toggles the title state to expanded (if bExpanded=true) or to snapped otherwise
 	 * @param bExpanded
+	 * @param {boolean} bUserInteraction - indicates if toggleState was caused by user interaction (scroll, collapse button press, etc.)
 	 * @private
 	 */
-	DynamicPageTitle.prototype._toggleState = function (bExpanded) {
+	DynamicPageTitle.prototype._toggleState = function (bExpanded, bUserInteraction) {
+		var oldExpandedState = this._bExpandedState;
+
 		this._bExpandedState = bExpanded;
 
 		// Snapped content
@@ -733,6 +900,10 @@ sap.ui.define([
 		// Expanded heading
 		if (exists(this.getExpandedHeading())) {
 			this.$expandHeadingWrapper.toggleClass("sapUiHidden", !bExpanded);
+		}
+
+		if (bUserInteraction && oldExpandedState !== bExpanded) {
+			this.fireEvent("stateChange", {isExpanded: bExpanded});
 		}
 	};
 
@@ -823,42 +994,72 @@ sap.ui.define([
 			aExpandContent = this.getExpandedContent(),
 			bHasExpandedContent = aExpandContent.length > 0,
 			bHasSnappedContent = aSnapContent.length > 0,
-			bisPrimaryAreaBegin = this.getPrimaryArea() === DynamicPageTitleArea.Begin,
+			oShrinkFactorsInfo = this._getShrinkFactorsObject(),
 			oExpandButton = this._getExpandButton(),
 			oBreadcrumbs = this.getBreadcrumbs(),
 			bHasTopContent = oBreadcrumbs || bHasNavigationActions,
 			bHasOnlyBreadcrumbs = !!(oBreadcrumbs && !bHasNavigationActions),
-			bHasOnlyNavigationActions = bHasNavigationActions && !oBreadcrumbs;
+			bHasOnlyNavigationActions = bHasNavigationActions && !oBreadcrumbs,
+			sAreaShrinkRatioDefaultValue = this.getMetadata().getProperty("areaShrinkRatio").getDefaultValue();
 
-			oExpandButton.toggleStyleClass("sapUiHidden", !this._getShowExpandButton());
+		// if areaShrinkRatio is set to default value (or not set at all) and primaryArea is set,
+		// use shrink factors defined for primaryArea
+		if (this.getAreaShrinkRatio() === sAreaShrinkRatioDefaultValue && this.getPrimaryArea() === DynamicPageTitleArea.Middle) {
+			oShrinkFactorsInfo.headingAreaShrinkFactor = DynamicPageTitle.PRIMARY_AREA_MIDDLE_SHRINK_FACTORS.headingAreaShrinkFactor;
+			oShrinkFactorsInfo.contentAreaShrinkFactor = DynamicPageTitle.PRIMARY_AREA_MIDDLE_SHRINK_FACTORS.contentAreaShrinkFactor;
+			oShrinkFactorsInfo.actionsAreaShrinkFactor = DynamicPageTitle.PRIMARY_AREA_MIDDLE_SHRINK_FACTORS.actionsAreaShrinkFactor;
+		}
 
-			return {
-				id: this.getId(),
-				actionBar: this._getActionsToolbar(),
-				navigationBar: this._getNavigationActionsToolbar(),
-				hasActions: bHasActions,
-				hasNavigationActions: bHasNavigationActions,
-				content: aContent,
-				hasContent: aContent.length > 0,
-				heading: this.getHeading(),
-				snappedHeading: this.getSnappedHeading(),
-				expandedHeading: this.getExpandedHeading(),
-				expandButton: oExpandButton,
-				snappedContent: aSnapContent,
-				expandedContent: aExpandContent,
-				hasSnappedContent:bHasSnappedContent,
-				hasExpandedContent: bHasExpandedContent,
-				hasAdditionalContent: bHasExpandedContent || bHasSnappedContent,
-				isSnapped: !this._bExpandedState,
-				isPrimaryAreaBegin: bisPrimaryAreaBegin,
-				ariaText: this._oRB.getText("TOGGLE_HEADER"),
-				breadcrumbs: this.getBreadcrumbs(),
-				separator: this._getToolbarSeparator(),
-				hasTopContent: bHasTopContent,
-				hasOnlyBreadcrumbs: bHasOnlyBreadcrumbs,
-				hasOnlyNavigationActions: bHasOnlyNavigationActions,
-				contentAreaFlexBasis: this._sContentAreaFlexBasis
-			};
+		oExpandButton.toggleStyleClass("sapUiHidden", !this._getShowExpandButton());
+
+		return {
+			id: this.getId(),
+			actionBar: this._getActionsToolbar(),
+			navigationBar: this._getNavigationActionsToolbar(),
+			hasActions: bHasActions,
+			hasNavigationActions: bHasNavigationActions,
+			content: aContent,
+			hasContent: aContent.length > 0,
+			heading: this.getHeading(),
+			snappedHeading: this.getSnappedHeading(),
+			expandedHeading: this.getExpandedHeading(),
+			expandButton: oExpandButton,
+			snappedContent: aSnapContent,
+			expandedContent: aExpandContent,
+			hasSnappedContent:bHasSnappedContent,
+			hasExpandedContent: bHasExpandedContent,
+			hasAdditionalContent: bHasExpandedContent || bHasSnappedContent,
+			isSnapped: !this._bExpandedState,
+			headingAreaShrinkFactor: oShrinkFactorsInfo.headingAreaShrinkFactor,
+			contentAreaShrinkFactor: oShrinkFactorsInfo.contentAreaShrinkFactor,
+			actionsAreaShrinkFactor: oShrinkFactorsInfo.actionsAreaShrinkFactor,
+			ariaText: this._oRB.getText("TOGGLE_HEADER"),
+			breadcrumbs: this.getBreadcrumbs(),
+			separator: this._getToolbarSeparator(),
+			hasTopContent: bHasTopContent,
+			hasOnlyBreadcrumbs: bHasOnlyBreadcrumbs,
+			hasOnlyNavigationActions: bHasOnlyNavigationActions,
+			contentAreaFlexBasis: this._sContentAreaFlexBasis,
+			actionsAreaFlexBasis: this._sActionsAreaFlexBasis,
+			isFocusable: this._bIsFocusable
+		};
+	};
+
+	/**
+	 * Returns the value of the <code>areaShrinkRatio</code> property in the format of an Object.
+	 *
+	 * @returns {Object} Object with 3 fields representing the shrink factors of the 3 areas in the DynamicPageTitle
+	 * @private
+	 */
+	DynamicPageTitle.prototype._getShrinkFactorsObject = function() {
+		var oResult = {},
+			aAreaShrinkFactors = this.getAreaShrinkRatio().split(":");
+
+		oResult.headingAreaShrinkFactor = parseFloat(aAreaShrinkFactors[0]);
+		oResult.contentAreaShrinkFactor = parseFloat(aAreaShrinkFactors[1]);
+		oResult.actionsAreaShrinkFactor = parseFloat(aAreaShrinkFactors[2]);
+
+		return oResult;
 	};
 
 	/**
@@ -872,12 +1073,12 @@ sap.ui.define([
 
 		if (oObject === this) {// changes on DynamicPageTitle level
 
-			if (sChangeName === "content") { // change of the content aggregation
+			if (sChangeName === "content" || sChangeName === "_actionsToolbar") { // change of the content or _actionsToolbar aggregation
 				this._observeContentChanges(oChanges);
 			}
 
 		} else if (sChangeName === "visible") { // change of the actions or navigationActions elements` visibility
-				this._updateSeparatorVisibility();
+			this._updateTopAreaVisibility();
 		}
 	};
 
@@ -887,8 +1088,8 @@ sap.ui.define([
 	* @private
 	*/
 	DynamicPageTitle.prototype._observeContentChanges = function (oChanges) {
-			var oControl = oChanges.child,
-				sMutation = oChanges.mutation;
+		var oControl = oChanges.child,
+			sMutation = oChanges.mutation;
 
 		// Only overflow toolbar is supported as of now
 		if (!(oControl instanceof OverflowToolbar)) {
@@ -899,7 +1100,7 @@ sap.ui.define([
 			oControl.attachEvent("_contentSizeChange", this._onContentSizeChange, this);
 		} else if (sMutation === "remove") {
 			oControl.detachEvent("_contentSizeChange", this._onContentSizeChange, this);
-			this._setContentAreaFlexBasis(0);
+			this._setContentAreaFlexBasis(0, oControl.$().parent());
 		}
 	};
 
@@ -911,25 +1112,32 @@ sap.ui.define([
 	 */
 	DynamicPageTitle.prototype._onContentSizeChange = function (oEvent) {
 		var iContentSize = oEvent.getParameter("contentSize");
-		this._setContentAreaFlexBasis(iContentSize);
+		this._setContentAreaFlexBasis(iContentSize, oEvent.getSource().$().parent());
 	};
 
 	/**
 	 * Sets (if iContentSize is non-zero) or resets (otherwise) the flex-basis of the HTML element where the
 	 * content aggregation is rendered.
 	 * @param iContentSize - the total width of the overflow toolbar's overflow-enabled content (items that can overflow)
+	 * @param $node - the DOM node to which flex-basis style will be set
 	 * @private
 	 */
-	DynamicPageTitle.prototype._setContentAreaFlexBasis = function (iContentSize) {
-		var sFlexBasis;
+	DynamicPageTitle.prototype._setContentAreaFlexBasis = function (iContentSize, $node) {
+		var sFlexBasis,
+			sFlexBasisCachedValue;
 
 		iContentSize = parseInt(iContentSize, 10);
 		sFlexBasis = iContentSize ? iContentSize + "px" : "auto";
-		this.$("content").css({
-			"flex-basis": sFlexBasis,
-			"-webkit-flex-basis": sFlexBasis
-		});
-		this._sContentAreaFlexBasis = sFlexBasis !== "auto" ? sFlexBasis : undefined;
+
+		sFlexBasisCachedValue = sFlexBasis !== "auto" ? sFlexBasis : undefined;
+
+		$node.css({ "flex-basis": sFlexBasis });
+
+		if ($node.hasClass("sapFDynamicPageTitleMainContent")) {
+			this._sContentAreaFlexBasis = sFlexBasisCachedValue;
+		} else if ($node.hasClass("sapFDynamicPageTitleMainActions")) {
+			this._sActionsAreaFlexBasis = sFlexBasisCachedValue;
+		}
 	};
 
 	return DynamicPageTitle;

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,14 +19,14 @@ sap.ui.define(['jquery.sap.global',
 	 * @namespace
 	 * @name sap.tnt
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : 'sap.tnt',
-		version: '1.52.5',
+		version: '1.54.5',
 		dependencies : ['sap.ui.core','sap.m'],
 		types: [],
 		interfaces: [],
@@ -35,12 +35,34 @@ sap.ui.define(['jquery.sap.global',
 			'sap.tnt.ToolHeaderUtilitySeparator',
 			'sap.tnt.ToolHeader',
 			'sap.tnt.SideNavigation',
-			'sap.tnt.ToolPage'
+			'sap.tnt.ToolPage',
+			'sap.tnt.InfoLabel'
 		],
 		elements: [
 			"sap.tnt.NavigationListItem"
 		]
 	});
+
+	/**
+	 * Predefined types of <code>InfoLabel</code>
+	 *
+	 * @enum {string}
+	 * @public
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.tnt.RenderMode = {
+		/**
+		 * When type of the content of <code>InfoLabel</code> is numeric paddings are narrow
+		 * @public
+		 */
+		Narrow: "Narrow",
+
+		/**
+		 * When type of the content of <code>InfoLabel</code> is text padding are loose
+		 * @public
+		 */
+		Loose: "Loose"
+	};
 
 	return sap.tnt;
 

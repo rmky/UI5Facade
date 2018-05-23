@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -134,7 +134,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/thirdparty/URI', '../Element', 'jque
 			if (jQuery.sap.getUriParameters().get("sap-ui-xx-no-inline-theming-parameters") !== "true") {
 				var $link = jQuery(oLink);
 				var sDataUri = $link.css("background-image");
-				var aParams = /\(["']data:text\/plain;utf-8,(.*)["']\)$/i.exec(sDataUri);
+				var aParams = /\(["']?data:text\/plain;utf-8,(.*?)['"]?\)$/i.exec(sDataUri);
 				if (aParams && aParams.length >= 2) {
 					var sParams = aParams[1];
 					// decode only if necessary

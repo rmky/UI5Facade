@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 /*global HTMLTemplateElement, DocumentFragment, Promise*/
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/ManagedObject', 'sap/ui/core/CustomData', './mvc/View', './ExtensionPoint', './StashedControlSupport', 'sap/ui/model/odata/v4/lib/_SyncPromise'],
+sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/ManagedObject', 'sap/ui/core/CustomData', './mvc/View', './ExtensionPoint', './StashedControlSupport', 'sap/ui/base/SyncPromise'],
 function(jQuery, DataType, ManagedObject, CustomData, View, ExtensionPoint, StashedControlSupport, SyncPromise) {
 	"use strict";
 
@@ -186,7 +186,7 @@ function(jQuery, DataType, ManagedObject, CustomData, View, ExtensionPoint, Stas
 	 *
 	 * @param {Element} xmlNode the XML element representing the View/Fragment
 	 * @param {sap.ui.core.mvc.XMLView|sap.ui.core.Fragment} oView the View/Fragment which corresponds to the parsed XML
-	 * @param {Boolean} bAsync Whether or not to perform the template processing asynchronously
+	 * @param {boolean} bAsync Whether or not to perform the template processing asynchronously
 	 * @returns {Promise} which resolves with the xmlNode
 	 * @private
 	 */
@@ -212,7 +212,7 @@ function(jQuery, DataType, ManagedObject, CustomData, View, ExtensionPoint, Stas
 	 *
 	 * @param {Element} xmlNode the XML element representing the View/Fragment
 	 * @param {sap.ui.core.mvc.XMLView|sap.ui.core.Fragment} oView the View/Fragment which corresponds to the parsed XML
-	 * @param {Boolean} bAsync Whether or not to perform the template processing asynchronously
+	 * @param {boolean} bAsync Whether or not to perform the template processing asynchronously
 	 * @param {object} oParseConfig parse configuration options, e.g. settings pre-processor
 	 * @return {Promise} with an array containing Controls and/or plain HTML element strings
 	 * @private
@@ -226,9 +226,9 @@ function(jQuery, DataType, ManagedObject, CustomData, View, ExtensionPoint, Stas
 	 *
 	 * @param {Element} xmlNode the XML element representing the View/Fragment
 	 * @param {sap.ui.core.mvc.XMLView|sap.ui.core.Fragment} oView the View/Fragment which corresponds to the parsed XML
-	 * @param {Boolean} bEnrichFullIds Flag for running in a mode which only resolves the ids and writes them back
+	 * @param {boolean} bEnrichFullIds Flag for running in a mode which only resolves the ids and writes them back
 	 *     to the xml source.
-	 * @param {Boolean} bAsync Whether or not to perform the template processing asynchronously.
+	 * @param {boolean} bAsync Whether or not to perform the template processing asynchronously.
 	 *     Will only be active in conjunction with <code>sap.ui.getCore().getConfiguration().getXMLProcessingMode()</code> being <code>sequential</code>
 	 * @param {object} oParseConfig parse configuration options, e.g. settings pre-processor
 	 *
@@ -544,8 +544,10 @@ function(jQuery, DataType, ManagedObject, CustomData, View, ExtensionPoint, Stas
 					// they are skipped as well as their potentially overwritten default content.
 					return SyncPromise.resolve([]);
 				} else {
-					// if oView is an XMLView created from an html node there is no sViewName, hence we use the _oContainingView
-					return SyncPromise.resolve(ExtensionPoint(oView._oContainingView, node.getAttribute("name"), function() {
+					// for Views the containing View's name is required to retrieve the according extension configuration,
+					// whereas for Fragments the actual Fragment's name is required - oView can be either View or Fragment
+					var oContainer = oView instanceof View ? oView._oContainingView : oView;
+					return SyncPromise.resolve(ExtensionPoint(oContainer, node.getAttribute("name"), function() {
 						// create extensionpoint with callback function for defaultContent - will only be executed if there is no customizing configured or if customizing is disabled
 						var pChild = SyncPromise.resolve();
 						var aChildControlPromises = [];

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(["sap/m/library"],
@@ -139,6 +139,13 @@ sap.ui.define(["sap/m/library"],
 		}
 
 		oRm.writeClasses();
+
+		if (sap.ui.Device.browser.firefox) {
+			// ensure that the content is not included in the tab chain
+			// this happens in FF, when we have a scrollable content
+			oRm.writeAttribute('tabindex', '-1');
+		}
+
 		oRm.write(">");
 	};
 

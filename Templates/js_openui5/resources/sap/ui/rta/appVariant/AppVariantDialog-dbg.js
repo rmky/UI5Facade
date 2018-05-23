@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,16 +8,16 @@
 sap.ui.define([
 	'sap/m/Dialog',
 	'sap/m/DialogRenderer',
-	'sap/ui/rta/Utils',
 	'sap/ui/layout/form/SimpleForm',
-	'sap/ui/layout/form/ResponsiveGridLayout'
+	'sap/ui/layout/form/ResponsiveGridLayout',
+	'sap/ui/rta/Utils'
 ],
 function(
 	Dialog,
 	DialogRenderer,
-	RtaUtils,
 	SimpleForm,
-	ResponsiveGridLayout
+	ResponsiveGridLayout,
+	RtaUtils
 ){
 
 	"use strict";
@@ -41,6 +41,7 @@ function(
 		oDataSet  = new sap.m.GenericTile("tile", {
 			header: "{/title}",
 			subheader: "{/subtitle}",
+			ariaLabel: oResources.getText("APP_VARIANT_TILE_ARIA_LABEL"),
 			tileContent: [
 				new sap.m.TileContent({
 					content: [
@@ -64,7 +65,7 @@ function(
 		var aContexts = oEvent.getParameter("selectedContexts");
 
 		if (aContexts && aContexts.length) {
-			aContexts.some(function(oContext) {
+			aContexts.forEach(function(oContext) {
 				var newValue = oContext.getObject().name;
 				oIconInput.setValue(newValue);
 				oCustomTileModel.setProperty("/icon", oContext.getObject().icon);
@@ -108,7 +109,7 @@ function(
 		var aUI5Icons = sap.ui.core.IconPool.getIconNames();
 		var aIcons = [];
 
-		aUI5Icons.some(function(sName) {
+		aUI5Icons.forEach(function(sName) {
 			aIcons.push({
 				icon: sap.ui.core.IconPool.getIconInfo(sName).uri,
 				name : sName.toLowerCase()
@@ -133,6 +134,7 @@ function(
 		oTitleInput = new sap.m.Input("titleInput", {
 			value: "{/title}",
 			valueLiveUpdate: true,
+			placeholder: oResources.getText("SAVE_AS_DIALOG_PLACEHOLDER_TITLE_TEXT"),
 			liveChange: function() {
 				var oSaveButton = sap.ui.getCore().byId("saveButton");
 				if (this.getValue() === "") {
@@ -200,9 +202,7 @@ function(
 			columnsM: 2,
 			singleContainerFullSize: false,
 			content: [
-				new sap.ui.core.Title("title1", {
-					text: ""
-				}),
+				new sap.ui.core.Title("title1"),
 				oTitleLabel,
 				oTitleInput,
 				oSubTitleLabel,
@@ -211,9 +211,7 @@ function(
 				oIconInput,
 				oDescriptionLabel,
 				oDescriptionText,
-				new sap.ui.core.Title("title2", {
-					text: ""
-				}),
+				new sap.ui.core.Title("title2"),
 				oDataSet
 			]
 		});
@@ -256,10 +254,10 @@ function(
 			this.setContentHeight("250px");
 
 			oCustomTileModel = new sap.ui.model.json.JSONModel({
-				title: oResources.getText("SAVE_AS_DIALOG_TITLE_TEXT"),
-				subtitle: "",
-				icon: "sap-icon://history",
-				iconname: "history"
+				title: null,
+				subtitle: null,
+				icon: " ", // icon is a blank string because otherwise it would read undefined in ariaLabel
+				iconname: null
 			});
 
 			oSelectDialogModel = new sap.ui.model.json.JSONModel({
@@ -275,7 +273,6 @@ function(
 
 			// create, and cancel buttons.
 			this._createButtons();
-
 			this.addStyleClass(RtaUtils.getRtaStyleClassName());
 		},
 		onAfterRendering: function() {
@@ -284,10 +281,11 @@ function(
 			document.getElementById('tile').style.float = "left";
 		},
 		_onCreate: function() {
-			var sTitle = oTitleInput.getValue();
-			var sSubTitle = oSubTitleInput.getValue();
-			var sDescription = oDescriptionText.getValue();
-			var sIconValue = sap.ui.core.IconPool.getIconInfo(oIconInput.getValue()).uri;
+			var sTitle = oTitleInput.getValue() || " ";
+			var sSubTitle = oSubTitleInput.getValue() || " ";
+			var sDescription = oDescriptionText.getValue() || " ";
+
+			var sIconValue = oIconInput.getValue() ? sap.ui.core.IconPool.getIconInfo(oIconInput.getValue()).uri : " ";
 
 			this.fireCreate({
 				title: sTitle,
@@ -303,6 +301,7 @@ function(
 			this.addButton(new sap.m.Button("saveButton", {
 				text: oResources.getText("APP_VARIANT_DIALOG_SAVE"),
 				tooltip: oResources.getText("TOOLTIP_APP_VARIANT_DIALOG_SAVE"),
+				enabled: false,
 				press: function() {
 					this._onCreate();
 				}.bind(this)

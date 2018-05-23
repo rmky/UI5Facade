@@ -1,19 +1,17 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.rta.plugin.Split.
 sap.ui.define([
 	'sap/ui/rta/plugin/Plugin',
-	'sap/ui/dt/Selection',
 	'sap/ui/dt/OverlayRegistry',
 	'sap/ui/rta/Utils',
 	'sap/ui/fl/Utils'
 ], function(
 	Plugin,
-	Selection,
 	OverlayRegistry,
 	Utils,
 	FlexUtils
@@ -26,7 +24,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -52,9 +50,6 @@ sap.ui.define([
 	 * @private
 	 */
 	Split.prototype._isEditable = function(oOverlay) {
-		if (!Utils.getRelevantContainerDesigntimeMetadata(oOverlay)) {
-			return false;
-		}
 		var oSplitAction = this.getAction(oOverlay);
 		if (oSplitAction && oSplitAction.changeType && oSplitAction.changeOnRelevantContainer) {
 			return this.hasStableId(oOverlay) && this.hasChangeHandler(oSplitAction.changeType, oOverlay.getRelevantContainer());
@@ -75,13 +70,13 @@ sap.ui.define([
 			return false;
 		}
 
-		var aSelectedOverlays = this.getDesignTime().getSelection();
+		var aSelectedOverlays = this.getSelectedOverlays();
 		if (aSelectedOverlays.length !== 1) {
 			return false;
 		}
 
 		var vSplitAction = this.getAction(oOverlay);
-		var oElement = aSelectedOverlays[0].getElementInstance();
+		var oElement = aSelectedOverlays[0].getElement();
 		if (vSplitAction && vSplitAction.getControlsCount(oElement) <= 1) {
 			return false;
 		}
@@ -108,7 +103,7 @@ sap.ui.define([
 		var bActionIsEnabled = true;
 		if (typeof oAction.isEnabled !== "undefined") {
 			if (typeof oAction.isEnabled === "function") {
-				 bActionIsEnabled = oAction.isEnabled(oOverlay.getElementInstance());
+				 bActionIsEnabled = oAction.isEnabled(oOverlay.getElement());
 			} else {
 				bActionIsEnabled = oAction.isEnabled;
 			}

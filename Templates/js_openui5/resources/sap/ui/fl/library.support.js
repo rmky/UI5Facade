@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -37,9 +37,7 @@ sap.ui.define(["sap/ui/support/library", "sap/ui/fl/Utils", "sap/ui/dt/DesignTim
 			minversion: "1.28",
 			title: "Stable control IDs are required for SAPUI5 flexibility services",
 			description: "Checks whether the IDs of controls support SAPUI5 flexibility services",
-			resolution: "Replace the generated control ID with a stable ID.\n" +
-			"We strongly recommend that you use stable IDs for all controls in your app, not only for the ones that are currently enabled for SAPUI5 flexiblity services.\n" +
-			"Reason: Only then you will be able to adapt the controls that will be enabled for flexibility services in future SAPUI5 versions",
+			resolution: "Replace the generated control ID with a stable ID. We strongly recommend that you use stable IDs for all controls in your app.",
 			resolutionurls: [{
 				text: "Documentation: Stable IDs: All You Need to Know",
 				href: "https://sapui5.hana.ondemand.com/#docs/guide/f51dbb78e7d5448e838cdc04bdf65403.html"

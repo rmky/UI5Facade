@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.uxap">
-  <module name="sap/uxap/AnchorBar.js" size="35411" compressedSize="16268">
+  <module name="sap/uxap/AnchorBar.js" size="37572" compressedSize="16830">
     <description>Provides control sap.uxap.AnchorBar.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -16,28 +16,23 @@
       <module name="sap/ui/core/ResizeHandler.js"/>
       <module name="sap/ui/core/delegate/ScrollEnablement.js"/>
       <module name="sap/ui/layout/HorizontalLayout.js"/>
+      <module name="sap/uxap/AnchorBarRenderer.js"/>
       <module name="sap/uxap/HierarchicalSelect.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/AnchorBarRenderer.js" size="2123" compressedSize="1353">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/uxap/AnchorBarRenderer.js" size="2277" compressedSize="1418">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/m/BarInPageEnabler.js"/>
       <module name="sap/m/ToolbarRenderer.js"/>
       <module name="sap/ui/core/Renderer.js"/>
-      <module name="sap/uxap/AnchorBar.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/BlockBase.designtime.js" size="409" compressedSize="285">
-    <description>Provides the Design Time Metadata for the sap.uxap.BlockBase control.</description>
-    <requires>
-      <module name="jquery.sap.global.js"/>
-    </requires>
-  </module>
-  <module name="sap/uxap/BlockBase.js" size="26239" compressedSize="10154">
+  <module name="sap/uxap/BlockBase.js" size="27268" compressedSize="10207">
     <description>Provides control sap.uxap.BlockBase.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -50,25 +45,26 @@
       <module name="sap/ui/model/Context.js"/>
       <module name="sap/uxap/BlockBaseMetadata.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/BlockBaseMetadata.js" size="3297" compressedSize="1359">
+  <module name="sap/uxap/BlockBaseMetadata.js" size="3316" compressedSize="1359">
     <description>Provides class sap.uxap.BlockBaseMetadata</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/ElementMetadata.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/BlockBaseRenderer.js" size="1014" compressedSize="728">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/BreadCrumbs.js" size="13568" compressedSize="6079">
+  <module name="sap/uxap/BreadCrumbs.js" size="13772" compressedSize="6105">
     <description>Provides control sap.uxap.BreadCrumbs.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/m/Link.js"/>
       <module name="sap/m/Select.js"/>
       <module name="sap/ui/Device.js"/>
@@ -78,99 +74,102 @@
       <module name="sap/ui/core/Item.js"/>
       <module name="sap/ui/core/ResizeHandler.js"/>
       <module name="sap/ui/core/delegate/ItemNavigation.js"/>
+      <module name="sap/uxap/BreadCrumbsRenderer.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/BreadCrumbsRenderer.js" size="1910" compressedSize="1251">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/HierarchicalSelect.js" size="5207" compressedSize="2286">
+  <module name="sap/uxap/HierarchicalSelect.js" size="5370" compressedSize="2319">
     <description>Provides control sap.uxap.HierarchicalSelect.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/m/Select.js"/>
       <module name="sap/ui/Device.js"/>
+      <module name="sap/uxap/HierarchicalSelectRenderer.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/HierarchicalSelectRenderer.js" size="604" compressedSize="376">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/m/SelectRenderer.js"/>
       <module name="sap/ui/core/Renderer.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/LazyLoading.js" size="12009" compressedSize="4487">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/base/Metadata.js"/>
       <module name="sap/uxap/ObjectPageSubSection.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ModelMapping.js" size="1477" compressedSize="554">
+  <module name="sap/uxap/ModelMapping.js" size="1508" compressedSize="554">
     <description>Provides control sap.uxap.ModelMapping.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectImageHelper.js" size="3503" compressedSize="1933">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/uxap/ObjectImageHelper.js" size="3481" compressedSize="1933">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/m/Image.js"/>
       <module name="sap/ui/core/Icon.js"/>
       <module name="sap/ui/core/IconPool.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageDynamicHeaderContent.js" size="2840" compressedSize="917">
+  <module name="sap/uxap/ObjectPageDynamicHeaderContent.js" size="3602" compressedSize="962">
     <description>Provides control sap.uxap.ObjectPageDynamicHeaderContent.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/f/DynamicPageHeader.js" conditional="true"/>
+      <module name="sap/uxap/ObjectPageDynamicHeaderContentRenderer.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/ObjectPageDynamicHeaderContentRenderer.js" size="496" compressedSize="322">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/f/DynamicPageHeaderRenderer.js"/>
       <module name="sap/ui/core/Renderer.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageDynamicHeaderTitle.js" size="4110" compressedSize="1413">
+  <module name="sap/uxap/ObjectPageDynamicHeaderTitle.js" size="5031" compressedSize="1462">
     <description>Provides control sap.uxap.ObjectPageDynamicHeaderTitle.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/f/DynamicPageTitle.js" conditional="true"/>
       <module name="sap/uxap/ObjectPageDynamicHeaderContent.js"/>
+      <module name="sap/uxap/ObjectPageDynamicHeaderTitleRenderer.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/ObjectPageDynamicHeaderTitleRenderer.js" size="489" compressedSize="321">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/f/DynamicPageTitleRenderer.js"/>
       <module name="sap/ui/core/Renderer.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageHeader.designtime.js" size="554" compressedSize="376">
-    <description>Provides the Design Time Metadata for the sap.uxap.ObjectPageHeader control</description>
-    <requires>
-      <module name="jquery.sap.global.js"/>
-    </requires>
-  </module>
-  <module name="sap/uxap/ObjectPageHeader.js" size="38084" compressedSize="18590">
+  <module name="sap/uxap/ObjectPageHeader.js" size="37981" compressedSize="17879">
     <description>Provides control sap.uxap.ObjectPageHeader.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -186,69 +185,64 @@
       <module name="sap/uxap/ObjectImageHelper.js"/>
       <module name="sap/uxap/ObjectPageHeaderActionButton.js"/>
       <module name="sap/uxap/ObjectPageHeaderContent.js"/>
+      <module name="sap/uxap/ObjectPageHeaderRenderer.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageHeaderActionButton.js" size="3963" compressedSize="1740">
+  <module name="sap/uxap/ObjectPageHeaderActionButton.js" size="5168" compressedSize="2422">
     <description>Provides control sap.uxap.ObjectPageHeaderActionButton.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/m/Button.js"/>
+      <module name="sap/uxap/ObjectPageHeaderActionButtonRenderer.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/ObjectPageHeaderActionButtonRenderer.js" size="527" compressedSize="311">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/m/ButtonRenderer.js"/>
       <module name="sap/ui/core/Renderer.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageHeaderContent.js" size="7910" compressedSize="3215">
+  <module name="sap/uxap/ObjectPageHeaderContent.js" size="8438" compressedSize="3253">
     <description>Provides control sap.uxap.ObjectPageHeaderContent.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/m/Button.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/uxap/ObjectImageHelper.js"/>
+      <module name="sap/uxap/ObjectPageHeaderContentRenderer.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageHeaderContentRenderer.js" size="7075" compressedSize="3302">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/uxap/ObjectPageHeaderContentRenderer.js" size="7214" compressedSize="3399">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/uxap/ObjectImageHelper.js"/>
       <module name="sap/uxap/ObjectPageHeaderRenderer.js"/>
-      <module name="sap/uxap/ObjectPageLayout.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageHeaderLayoutData.js" size="2720" compressedSize="754">
+  <module name="sap/uxap/ObjectPageHeaderLayoutData.js" size="2759" compressedSize="754">
     <description>Provides control sap.uxap.ObjectPageHeaderLayoutData.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/LayoutData.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageHeaderRenderer.js" size="12906" compressedSize="6333">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/uxap/ObjectPageHeaderRenderer.js" size="13016" compressedSize="6434">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/uxap/ObjectImageHelper.js"/>
-      <module name="sap/uxap/ObjectPageLayout.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageLayout.designtime.js" size="1634" compressedSize="1153">
-    <description>Provides the Design Time Metadata for the sap.uxap.ObjectPageLayout control</description>
-    <requires>
-      <module name="jquery.sap.global.js"/>
-      <module name="sap/uxap/library.js"/>
-    </requires>
-  </module>
-  <module name="sap/uxap/ObjectPageLayout.js" size="124168" compressedSize="52580">
+  <module name="sap/uxap/ObjectPageLayout.js" size="130612" compressedSize="54222">
     <description>Provides control sap.uxap.ObjectPageLayout.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -262,62 +256,61 @@
       <module name="sap/uxap/LazyLoading.js"/>
       <module name="sap/uxap/ObjectPageHeaderContent.js"/>
       <module name="sap/uxap/ObjectPageLayoutABHelper.js"/>
+      <module name="sap/uxap/ObjectPageLayoutRenderer.js"/>
       <module name="sap/uxap/ObjectPageSection.js"/>
       <module name="sap/uxap/ObjectPageSectionBase.js"/>
       <module name="sap/uxap/ObjectPageSubSection.js"/>
       <module name="sap/uxap/ThrottledTaskHelper.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageLayoutABHelper.js" size="6033" compressedSize="2674">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/uxap/ObjectPageLayoutABHelper.js" size="7185" compressedSize="3248">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/m/Button.js"/>
+      <module name="sap/ui/base/ManagedObjectObserver.js"/>
       <module name="sap/ui/base/Metadata.js"/>
       <module name="sap/ui/core/CustomData.js"/>
       <module name="sap/ui/core/IconPool.js"/>
       <module name="sap/uxap/AnchorBar.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageLayoutRenderer.js" size="9860" compressedSize="4599">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/uxap/ObjectPageLayoutRenderer.js" size="9923" compressedSize="4655">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/Device.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageLazyLoader.js" size="2511" compressedSize="695">
+  <module name="sap/uxap/ObjectPageLazyLoader.js" size="2633" compressedSize="695">
     <description>Provides control sap.uxap.ObjectPageLazyLoader.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/core/StashedControlSupport.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageSection.designtime.js" size="1160" compressedSize="822">
-    <description>Provides the Design Time Metadata for the sap.uxap.ObjectPageSection control</description>
-    <requires>
-      <module name="jquery.sap.global.js"/>
-      <module name="sap/uxap/library.js"/>
-    </requires>
-  </module>
-  <module name="sap/uxap/ObjectPageSection.js" size="10301" compressedSize="5891">
+  <module name="sap/uxap/ObjectPageSection.js" size="10732" compressedSize="6045">
     <description>Provides control sap.uxap.ObjectPageSection.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/m/Button.js"/>
       <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/core/InvisibleText.js"/>
       <module name="sap/ui/core/StashedControlSupport.js"/>
       <module name="sap/uxap/ObjectPageSectionBase.js"/>
+      <module name="sap/uxap/ObjectPageSectionRenderer.js"/>
       <module name="sap/uxap/ObjectPageSubSection.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageSectionBase.js" size="16637" compressedSize="6334">
+  <module name="sap/uxap/ObjectPageSectionBase.js" size="17299" compressedSize="6402">
     <description>Provides control sap.uxap.ObjectPageSectionBase.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -325,21 +318,16 @@
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageSectionRenderer.js" size="2059" compressedSize="1498">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/uxap/ObjectPageSectionRenderer.js" size="2103" compressedSize="1490">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageSubSection.designtime.js" size="932" compressedSize="621">
-    <description>Provides the Design Time Metadata for the sap.uxap.ObjectPageSubSection control</description>
-    <requires>
-      <module name="jquery.sap.global.js"/>
-    </requires>
-  </module>
-  <module name="sap/uxap/ObjectPageSubSection.js" size="29888" compressedSize="13629">
+  <module name="sap/uxap/ObjectPageSubSection.js" size="30704" compressedSize="13789">
     <description>Provides control sap.uxap.ObjectPageSubSection.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -354,56 +342,69 @@
       <module name="sap/uxap/BlockBase.js"/>
       <module name="sap/uxap/ObjectPageLazyLoader.js"/>
       <module name="sap/uxap/ObjectPageSectionBase.js"/>
+      <module name="sap/uxap/ObjectPageSubSectionRenderer.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/ObjectPageSubSectionRenderer.js" size="3036" compressedSize="2016">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/uxap/ObjectPageSubSectionRenderer.js" size="3106" compressedSize="2072">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/ThrottledTaskHelper.js" size="2786" compressedSize="1457">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/base/Object.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/changeHandler/RenameObjectPageSection.js" size="2509" compressedSize="1040">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/uxap/changeHandler/MoveObjectPageSection.js" size="1548" compressedSize="786">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
+      <module name="sap/ui/fl/changeHandler/MoveControls.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/uxap/changeHandler/RenameObjectPageSection.js" size="3532" compressedSize="1554">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/component/Component.js" size="3891" compressedSize="1816">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Component.js"/>
       <module name="sap/ui/core/UIComponent.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/component/ObjectPageComponentContainer.js" size="2741" compressedSize="1334">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Component.js"/>
       <module name="sap/ui/core/ComponentContainer.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/component/ObjectPageLayoutUXDrivenFactory.controller.js" size="4215" compressedSize="1685">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/core/mvc/Controller.js"/>
       <module name="sap/ui/model/BindingMode.js"/>
       <module name="sap/ui/model/Context.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/component/ObjectPageLayoutUXDrivenFactory.view.xml" size="2714">
@@ -415,31 +416,100 @@
       <module name="sap/uxap/component/ObjectPageLayoutUXDrivenFactory.controller.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/flexibility/ObjectPageHeader.flexibility.js" size="652" compressedSize="477">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/uxap/designtime/BlockBase.designtime.js" size="409" compressedSize="285">
+    <description>Provides the Design Time Metadata for the sap.uxap.BlockBase control.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/uxap/designtime/ObjectPageHeader.designtime.js" size="673" compressedSize="462">
+    <description>Provides the Design Time Metadata for the sap.uxap.ObjectPageHeader control</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/uxap/designtime/ObjectPageLayout.create.fragment.xml" size="743">
+    <requires>
+      <module name="sap/m/Text.js"/>
+      <module name="sap/ui/core/Fragment.js"/>
+      <module name="sap/uxap/ObjectPageHeader.js"/>
+      <module name="sap/uxap/ObjectPageLayout.js"/>
+      <module name="sap/uxap/ObjectPageSection.js"/>
+      <module name="sap/uxap/ObjectPageSubSection.js"/>
+    </requires>
+  </module>
+  <module name="sap/uxap/designtime/ObjectPageLayout.designtime.js" size="2038" compressedSize="1361">
+    <description>Provides the Design Time Metadata for the sap.uxap.ObjectPageLayout control</description>
+    <requires>
+      <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/uxap/designtime/ObjectPageSection.designtime.js" size="1276" compressedSize="911">
+    <description>Provides the Design Time Metadata for the sap.uxap.ObjectPageSection control</description>
+    <requires>
+      <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/uxap/designtime/ObjectPageSubSection.designtime.js" size="1057" compressedSize="713">
+    <description>Provides the Design Time Metadata for the sap.uxap.ObjectPageSubSection control</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/uxap/designtime/library-preload.designtime.js" size="3589">
+    <requires>
+      <module name="sap/uxap/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+    <includes>
+      <module name="sap/uxap/designtime/BlockBase.designtime.js"/>
+      <module name="sap/uxap/designtime/ObjectPageHeader.designtime.js"/>
+      <module name="sap/uxap/designtime/ObjectPageLayout.designtime.js"/>
+      <module name="sap/uxap/designtime/ObjectPageSection.designtime.js"/>
+      <module name="sap/uxap/designtime/ObjectPageSubSection.designtime.js"/>
+      <module name="sap/uxap/designtime/library.designtime.js"/>
+    </includes>
+  </module>
+  <module name="sap/uxap/designtime/library.designtime.js" size="343" compressedSize="240">
+    <description>Initialization of designtime Code and shared classes for the library sap.ui.layout.</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/uxap/flexibility/ObjectPageHeader.flexibility.js" size="652" compressedSize="477">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
       <module name="sap/m/changeHandler/CombineButtons.js"/>
       <module name="sap/m/changeHandler/SplitMenuButton.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/uxap/flexibility/ObjectPageLayout.flexibility.js" size="448" compressedSize="349">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/uxap/changeHandler/MoveObjectPageSection.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/flexibility/ObjectPageSection.flexibility.js" size="787" compressedSize="595">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/uxap/changeHandler/RenameObjectPageSection.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/flexibility/ObjectPageSubSection.flexibility.js" size="875" compressedSize="654">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2017 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/m/changeHandler/CombineButtons.js"/>
       <module name="sap/m/changeHandler/SplitMenuButton.js"/>
       <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/uxap/i18n/i18n.properties" size="2650">
+  <module name="sap/uxap/i18n/i18n.properties" size="2659">
   </module>
   <module name="sap/uxap/i18n/i18n_ar.properties" size="3576">
   </module>
@@ -455,13 +525,13 @@
   </module>
   <module name="sap/uxap/i18n/i18n_el.properties" size="3900">
   </module>
-  <module name="sap/uxap/i18n/i18n_en.properties" size="2526">
+  <module name="sap/uxap/i18n/i18n_en.properties" size="2535">
   </module>
   <module name="sap/uxap/i18n/i18n_en_US.properties" size="71">
   </module>
-  <module name="sap/uxap/i18n/i18n_en_US_sappsd.properties" size="4279">
+  <module name="sap/uxap/i18n/i18n_en_US_sappsd.properties" size="4340">
   </module>
-  <module name="sap/uxap/i18n/i18n_en_US_saptrc.properties" size="3009">
+  <module name="sap/uxap/i18n/i18n_en_US_saptrc.properties" size="3018">
   </module>
   <module name="sap/uxap/i18n/i18n_es.properties" size="2662">
   </module>
@@ -525,7 +595,130 @@
   </module>
   <module name="sap/uxap/i18n/i18n_zh_TW.properties" size="2788">
   </module>
-  <module name="sap/uxap/library-preload.js" size="190207">
+  <module name="sap/uxap/library-h2-preload.js" size="12367">
+    <requires>
+      <module name="jquery.sap.global.js"/>
+      <module name="jquery.sap.keycodes.js"/>
+      <module name="sap/f/DynamicPageHeader.js" conditional="true"/>
+      <module name="sap/f/DynamicPageHeaderRenderer.js"/>
+      <module name="sap/f/DynamicPageTitle.js" conditional="true"/>
+      <module name="sap/f/DynamicPageTitleRenderer.js"/>
+      <module name="sap/m/ActionSheet.js"/>
+      <module name="sap/m/BarInPageEnabler.js"/>
+      <module name="sap/m/Breadcrumbs.js"/>
+      <module name="sap/m/Button.js"/>
+      <module name="sap/m/ButtonRenderer.js"/>
+      <module name="sap/m/Image.js"/>
+      <module name="sap/m/Link.js"/>
+      <module name="sap/m/Popover.js"/>
+      <module name="sap/m/Select.js"/>
+      <module name="sap/m/SelectRenderer.js"/>
+      <module name="sap/m/Text.js"/>
+      <module name="sap/m/Toolbar.js"/>
+      <module name="sap/m/ToolbarRenderer.js"/>
+      <module name="sap/m/changeHandler/CombineButtons.js"/>
+      <module name="sap/m/changeHandler/SplitMenuButton.js"/>
+      <module name="sap/m/library.js"/>
+      <module name="sap/ui/Device.js"/>
+      <module name="sap/ui/base/DataType.js"/>
+      <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/base/ManagedObjectObserver.js"/>
+      <module name="sap/ui/base/Metadata.js"/>
+      <module name="sap/ui/base/Object.js"/>
+      <module name="sap/ui/core/Component.js"/>
+      <module name="sap/ui/core/ComponentContainer.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/core/Core.js"/>
+      <module name="sap/ui/core/CustomData.js"/>
+      <module name="sap/ui/core/Element.js"/>
+      <module name="sap/ui/core/ElementMetadata.js"/>
+      <module name="sap/ui/core/Fragment.js"/>
+      <module name="sap/ui/core/Icon.js"/>
+      <module name="sap/ui/core/IconPool.js"/>
+      <module name="sap/ui/core/InvisibleText.js"/>
+      <module name="sap/ui/core/Item.js"/>
+      <module name="sap/ui/core/LayoutData.js"/>
+      <module name="sap/ui/core/Renderer.js"/>
+      <module name="sap/ui/core/ResizeHandler.js"/>
+      <module name="sap/ui/core/ScrollBar.js"/>
+      <module name="sap/ui/core/StashedControlSupport.js"/>
+      <module name="sap/ui/core/UIComponent.js"/>
+      <module name="sap/ui/core/delegate/ItemNavigation.js"/>
+      <module name="sap/ui/core/delegate/ScrollEnablement.js"/>
+      <module name="sap/ui/core/library.js"/>
+      <module name="sap/ui/core/mvc/Controller.js"/>
+      <module name="sap/ui/core/mvc/XMLView.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
+      <module name="sap/ui/fl/changeHandler/MoveControls.js"/>
+      <module name="sap/ui/layout/Grid.js"/>
+      <module name="sap/ui/layout/GridData.js"/>
+      <module name="sap/ui/layout/HorizontalLayout.js"/>
+      <module name="sap/ui/layout/form/ResponsiveGridLayout.js"/>
+      <module name="sap/ui/layout/library.js"/>
+      <module name="sap/ui/model/BindingMode.js"/>
+      <module name="sap/ui/model/Context.js"/>
+      <module name="sap/ui/support/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+    <includes>
+      <module name="sap/uxap/library.js"/>
+      <module name="sap/uxap/manifest.json"/>
+      <module name="sap/uxap/AnchorBar.js"/>
+      <module name="sap/uxap/AnchorBarRenderer.js"/>
+      <module name="sap/uxap/BlockBase.js"/>
+      <module name="sap/uxap/BlockBaseMetadata.js"/>
+      <module name="sap/uxap/BlockBaseRenderer.js"/>
+      <module name="sap/uxap/BreadCrumbs.js"/>
+      <module name="sap/uxap/BreadCrumbsRenderer.js"/>
+      <module name="sap/uxap/HierarchicalSelect.js"/>
+      <module name="sap/uxap/HierarchicalSelectRenderer.js"/>
+      <module name="sap/uxap/LazyLoading.js"/>
+      <module name="sap/uxap/ModelMapping.js"/>
+      <module name="sap/uxap/ObjectImageHelper.js"/>
+      <module name="sap/uxap/ObjectPageDynamicHeaderContent.js"/>
+      <module name="sap/uxap/ObjectPageDynamicHeaderContentRenderer.js"/>
+      <module name="sap/uxap/ObjectPageDynamicHeaderTitle.js"/>
+      <module name="sap/uxap/ObjectPageDynamicHeaderTitleRenderer.js"/>
+      <module name="sap/uxap/ObjectPageHeader.js"/>
+      <module name="sap/uxap/ObjectPageHeaderActionButton.js"/>
+      <module name="sap/uxap/ObjectPageHeaderActionButtonRenderer.js"/>
+      <module name="sap/uxap/ObjectPageHeaderContent.js"/>
+      <module name="sap/uxap/ObjectPageHeaderContentRenderer.js"/>
+      <module name="sap/uxap/ObjectPageHeaderLayoutData.js"/>
+      <module name="sap/uxap/ObjectPageHeaderRenderer.js"/>
+      <module name="sap/uxap/ObjectPageLayout.js"/>
+      <module name="sap/uxap/ObjectPageLayoutABHelper.js"/>
+      <module name="sap/uxap/ObjectPageLayoutRenderer.js"/>
+      <module name="sap/uxap/ObjectPageLazyLoader.js"/>
+      <module name="sap/uxap/ObjectPageSection.js"/>
+      <module name="sap/uxap/ObjectPageSectionBase.js"/>
+      <module name="sap/uxap/ObjectPageSectionRenderer.js"/>
+      <module name="sap/uxap/ObjectPageSubSection.js"/>
+      <module name="sap/uxap/ObjectPageSubSectionRenderer.js"/>
+      <module name="sap/uxap/ThrottledTaskHelper.js"/>
+      <module name="sap/uxap/changeHandler/MoveObjectPageSection.js"/>
+      <module name="sap/uxap/changeHandler/RenameObjectPageSection.js"/>
+      <module name="sap/uxap/component/Component.js"/>
+      <module name="sap/uxap/component/ObjectPageComponentContainer.js"/>
+      <module name="sap/uxap/component/ObjectPageLayoutUXDrivenFactory.controller.js"/>
+      <module name="sap/uxap/component/ObjectPageLayoutUXDrivenFactory.view.xml"/>
+      <module name="sap/uxap/designtime/BlockBase.designtime.js"/>
+      <module name="sap/uxap/designtime/ObjectPageHeader.designtime.js"/>
+      <module name="sap/uxap/designtime/ObjectPageLayout.create.fragment.xml"/>
+      <module name="sap/uxap/designtime/ObjectPageLayout.designtime.js"/>
+      <module name="sap/uxap/designtime/ObjectPageSection.designtime.js"/>
+      <module name="sap/uxap/designtime/ObjectPageSubSection.designtime.js"/>
+      <module name="sap/uxap/designtime/library.designtime.js"/>
+      <module name="sap/uxap/flexibility/ObjectPageHeader.flexibility.js"/>
+      <module name="sap/uxap/flexibility/ObjectPageLayout.flexibility.js"/>
+      <module name="sap/uxap/flexibility/ObjectPageSection.flexibility.js"/>
+      <module name="sap/uxap/flexibility/ObjectPageSubSection.flexibility.js"/>
+      <module name="sap/uxap/library.support.js"/>
+      <module name="sap/uxap/rules/ObjectPageLayout.support.js"/>
+    </includes>
+  </module>
+  <module name="sap/uxap/library-preload.js" size="190504">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="jquery.sap.keycodes.js"/>
@@ -578,6 +771,7 @@
       <module name="sap/ui/core/mvc/XMLView.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
+      <module name="sap/ui/fl/changeHandler/MoveControls.js"/>
       <module name="sap/ui/layout/Grid.js"/>
       <module name="sap/ui/layout/GridData.js"/>
       <module name="sap/ui/layout/HorizontalLayout.js"/>
@@ -585,12 +779,11 @@
       <module name="sap/ui/layout/library.js"/>
       <module name="sap/ui/model/BindingMode.js"/>
       <module name="sap/ui/model/Context.js"/>
-      <module name="sap/ui/support/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
       <module name="sap/uxap/AnchorBar.js"/>
       <module name="sap/uxap/AnchorBarRenderer.js"/>
-      <module name="sap/uxap/BlockBase.designtime.js"/>
       <module name="sap/uxap/BlockBase.js"/>
       <module name="sap/uxap/BlockBaseMetadata.js"/>
       <module name="sap/uxap/BlockBaseRenderer.js"/>
@@ -605,7 +798,6 @@
       <module name="sap/uxap/ObjectPageDynamicHeaderContentRenderer.js"/>
       <module name="sap/uxap/ObjectPageDynamicHeaderTitle.js"/>
       <module name="sap/uxap/ObjectPageDynamicHeaderTitleRenderer.js"/>
-      <module name="sap/uxap/ObjectPageHeader.designtime.js"/>
       <module name="sap/uxap/ObjectPageHeader.js"/>
       <module name="sap/uxap/ObjectPageHeaderActionButton.js"/>
       <module name="sap/uxap/ObjectPageHeaderActionButtonRenderer.js"/>
@@ -613,31 +805,28 @@
       <module name="sap/uxap/ObjectPageHeaderContentRenderer.js"/>
       <module name="sap/uxap/ObjectPageHeaderLayoutData.js"/>
       <module name="sap/uxap/ObjectPageHeaderRenderer.js"/>
-      <module name="sap/uxap/ObjectPageLayout.designtime.js"/>
       <module name="sap/uxap/ObjectPageLayout.js"/>
       <module name="sap/uxap/ObjectPageLayoutABHelper.js"/>
       <module name="sap/uxap/ObjectPageLayoutRenderer.js"/>
       <module name="sap/uxap/ObjectPageLazyLoader.js"/>
-      <module name="sap/uxap/ObjectPageSection.designtime.js"/>
       <module name="sap/uxap/ObjectPageSection.js"/>
       <module name="sap/uxap/ObjectPageSectionBase.js"/>
       <module name="sap/uxap/ObjectPageSectionRenderer.js"/>
-      <module name="sap/uxap/ObjectPageSubSection.designtime.js"/>
       <module name="sap/uxap/ObjectPageSubSection.js"/>
       <module name="sap/uxap/ObjectPageSubSectionRenderer.js"/>
       <module name="sap/uxap/ThrottledTaskHelper.js"/>
+      <module name="sap/uxap/changeHandler/MoveObjectPageSection.js"/>
       <module name="sap/uxap/changeHandler/RenameObjectPageSection.js"/>
       <module name="sap/uxap/component/Component.js"/>
       <module name="sap/uxap/component/ObjectPageComponentContainer.js"/>
       <module name="sap/uxap/component/ObjectPageLayoutUXDrivenFactory.controller.js"/>
       <module name="sap/uxap/component/ObjectPageLayoutUXDrivenFactory.view.xml"/>
       <module name="sap/uxap/flexibility/ObjectPageHeader.flexibility.js"/>
+      <module name="sap/uxap/flexibility/ObjectPageLayout.flexibility.js"/>
       <module name="sap/uxap/flexibility/ObjectPageSection.flexibility.js"/>
       <module name="sap/uxap/flexibility/ObjectPageSubSection.flexibility.js"/>
       <module name="sap/uxap/library.js"/>
-      <module name="sap/uxap/library.support.js"/>
       <module name="sap/uxap/manifest.json"/>
-      <module name="sap/uxap/rules/ObjectPageLayout.support.js"/>
     </includes>
   </module>
   <module name="sap/uxap/library-preload.json" size="0">
@@ -695,6 +884,7 @@
       <module name="sap/ui/core/mvc/XMLView.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
+      <module name="sap/ui/fl/changeHandler/MoveControls.js"/>
       <module name="sap/ui/layout/Grid.js"/>
       <module name="sap/ui/layout/GridData.js"/>
       <module name="sap/ui/layout/HorizontalLayout.js"/>
@@ -703,12 +893,11 @@
       <module name="sap/ui/layout/library.js"/>
       <module name="sap/ui/model/BindingMode.js"/>
       <module name="sap/ui/model/Context.js"/>
-      <module name="sap/ui/support/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
       <module name="sap/uxap/AnchorBar.js"/>
       <module name="sap/uxap/AnchorBarRenderer.js"/>
-      <module name="sap/uxap/BlockBase.designtime.js"/>
       <module name="sap/uxap/BlockBase.js"/>
       <module name="sap/uxap/BlockBaseMetadata.js"/>
       <module name="sap/uxap/BlockBaseRenderer.js"/>
@@ -723,7 +912,6 @@
       <module name="sap/uxap/ObjectPageDynamicHeaderContentRenderer.js"/>
       <module name="sap/uxap/ObjectPageDynamicHeaderTitle.js"/>
       <module name="sap/uxap/ObjectPageDynamicHeaderTitleRenderer.js"/>
-      <module name="sap/uxap/ObjectPageHeader.designtime.js"/>
       <module name="sap/uxap/ObjectPageHeader.js"/>
       <module name="sap/uxap/ObjectPageHeaderActionButton.js"/>
       <module name="sap/uxap/ObjectPageHeaderActionButtonRenderer.js"/>
@@ -731,34 +919,41 @@
       <module name="sap/uxap/ObjectPageHeaderContentRenderer.js"/>
       <module name="sap/uxap/ObjectPageHeaderLayoutData.js"/>
       <module name="sap/uxap/ObjectPageHeaderRenderer.js"/>
-      <module name="sap/uxap/ObjectPageLayout.designtime.js"/>
       <module name="sap/uxap/ObjectPageLayout.js"/>
       <module name="sap/uxap/ObjectPageLayoutABHelper.js"/>
       <module name="sap/uxap/ObjectPageLayoutRenderer.js"/>
       <module name="sap/uxap/ObjectPageLazyLoader.js"/>
-      <module name="sap/uxap/ObjectPageSection.designtime.js"/>
       <module name="sap/uxap/ObjectPageSection.js"/>
       <module name="sap/uxap/ObjectPageSectionBase.js"/>
       <module name="sap/uxap/ObjectPageSectionRenderer.js"/>
-      <module name="sap/uxap/ObjectPageSubSection.designtime.js"/>
       <module name="sap/uxap/ObjectPageSubSection.js"/>
       <module name="sap/uxap/ObjectPageSubSectionRenderer.js"/>
       <module name="sap/uxap/ThrottledTaskHelper.js"/>
+      <module name="sap/uxap/changeHandler/MoveObjectPageSection.js"/>
       <module name="sap/uxap/changeHandler/RenameObjectPageSection.js"/>
       <module name="sap/uxap/component/Component.js"/>
       <module name="sap/uxap/component/ObjectPageComponentContainer.js"/>
       <module name="sap/uxap/component/ObjectPageLayoutUXDrivenFactory.controller.js"/>
       <module name="sap/uxap/component/ObjectPageLayoutUXDrivenFactory.view.xml"/>
       <module name="sap/uxap/flexibility/ObjectPageHeader.flexibility.js"/>
+      <module name="sap/uxap/flexibility/ObjectPageLayout.flexibility.js"/>
       <module name="sap/uxap/flexibility/ObjectPageSection.flexibility.js"/>
       <module name="sap/uxap/flexibility/ObjectPageSubSection.flexibility.js"/>
       <module name="sap/uxap/library.js"/>
-      <module name="sap/uxap/library.support.js"/>
       <module name="sap/uxap/manifest.json"/>
+    </includes>
+  </module>
+  <module name="sap/uxap/library-preload.support.js" size="3554">
+    <requires>
+      <module name="sap/ui/support/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+    <includes>
+      <module name="sap/uxap/library.support.js"/>
       <module name="sap/uxap/rules/ObjectPageLayout.support.js"/>
     </includes>
   </module>
-  <module name="sap/uxap/library.js" size="8511" compressedSize="2942">
+  <module name="sap/uxap/library.js" size="10436" compressedSize="3002">
     <description>Initialization Code and shared classes of library sap.uxap.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -767,13 +962,14 @@
       <module name="sap/ui/base/DataType.js"/>
       <module name="sap/ui/core/Core.js"/>
       <module name="sap/ui/layout/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/library.support.js" size="500" compressedSize="337">
     <description>Adds support rules of the sap.uxap library to the support infrastructure.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/uxap/rules/ObjectPageLayout.support.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/uxap/manifest.json" size="1923">
@@ -781,8 +977,8 @@
   <module name="sap/uxap/rules/ObjectPageLayout.support.js" size="2928" compressedSize="1438">
     <description>Defines support rules of the ObjectPageHeader control of sap.uxap library.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/support/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
 </library>

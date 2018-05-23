@@ -16,6 +16,11 @@
 			"theme": "sap_belize_plus"
 		},
 		{
+			"name": "ColorPalette.less",
+			"designtime": true,
+			"theme": "sap_belize_plus"
+		},
+		{
 			"name": "Dialog.less",
 			"designtime": true,
 			"theme": "sap_belize_plus"
@@ -132,6 +137,11 @@
 		},
 		{
 			"name": "TimePicker.less",
+			"designtime": true,
+			"theme": "sap_belize_plus"
+		},
+		{
+			"name": "TimePickerSliders.less",
 			"designtime": true,
 			"theme": "sap_belize_plus"
 		},

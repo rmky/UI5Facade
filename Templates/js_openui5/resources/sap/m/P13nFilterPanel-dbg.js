@@ -1,13 +1,13 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.P13nFilterPanel.
 sap.ui.define([
-	'jquery.sap.global', './P13nConditionPanel', './P13nPanel', './library'
-], function(jQuery, P13nConditionPanel, P13nPanel, library) {
+	'./P13nConditionPanel', './P13nPanel', './library', 'sap/m/Panel'
+], function(P13nConditionPanel, P13nPanel, library, Panel) {
 	"use strict";
 
 	// shortcut for sap.m.P13nPanelType
@@ -20,7 +20,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The P13nFilterPanel control is used to define filter-specific settings for table personalization.
 	 * @extends sap.m.P13nPanel
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -373,9 +373,6 @@ sap.ui.define([
 		this.setTitle(sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("FILTERPANEL_TITLE"));
 
 		sap.ui.getCore().loadLibrary("sap.ui.layout");
-		jQuery.sap.require("sap.ui.layout.Grid");
-
-		sap.ui.layout.Grid.prototype.init.apply(this);
 
 		this._aKeyFields = [];
 		this.addStyleClass("sapMFilterPanel");
@@ -416,6 +413,11 @@ sap.ui.define([
 				sap.m.P13nConditionOperation.EQ, sap.m.P13nConditionOperation.BT, sap.m.P13nConditionOperation.LT, sap.m.P13nConditionOperation.LE, sap.m.P13nConditionOperation.GT, sap.m.P13nConditionOperation.GE
 			], "numeric");
 		}
+		if (!this._aIncludeOperations["numc"]) {
+			this.setIncludeOperations([
+				sap.m.P13nConditionOperation.Contains, sap.m.P13nConditionOperation.EQ, sap.m.P13nConditionOperation.BT, sap.m.P13nConditionOperation.EndsWith, sap.m.P13nConditionOperation.LT, sap.m.P13nConditionOperation.LE, sap.m.P13nConditionOperation.GT, sap.m.P13nConditionOperation.GE
+			], "numc");
+		}
 		if (!this._aIncludeOperations["boolean"]) {
 			this.setIncludeOperations([
 				sap.m.P13nConditionOperation.EQ
@@ -430,7 +432,7 @@ sap.ui.define([
 			]);
 		}
 
-		this._oIncludePanel = new sap.m.Panel({
+		this._oIncludePanel = new Panel({
 			expanded: true,
 			expandable: true,
 			headerText: this._oRb.getText("FILTERPANEL_INCLUDES"),
@@ -453,7 +455,7 @@ sap.ui.define([
 
 		this.addAggregation("content", this._oIncludePanel);
 
-		this._oExcludePanel = new sap.m.Panel({
+		this._oExcludePanel = new Panel({
 			expanded: false,
 			expandable: true,
 			headerText: this._oRb.getText("FILTERPANEL_EXCLUDES"),
@@ -613,14 +615,15 @@ sap.ui.define([
 	};
 
 	P13nFilterPanel.prototype.updateFilterItems = function(sReason) {
-		this.updateAggregation("filterItems");
+        this.updateAggregation("filterItems");
 
-		if (sReason == "change" && !this._bIgnoreBindCalls) {
-			this._bUpdateRequired = true;
-		}
-	};
+        if (sReason === "change" && !this._bIgnoreBindCalls) {
+            this._bUpdateRequired = true;
+            this.invalidate();
+        }
+    };
 
-	P13nFilterPanel.prototype.removeFilterItem = function(oFilterItem) {
+    P13nFilterPanel.prototype.removeFilterItem = function(oFilterItem) {
 		oFilterItem = this.removeAggregation("filterItems", oFilterItem, true);
 
 		if (!this._bIgnoreBindCalls) {

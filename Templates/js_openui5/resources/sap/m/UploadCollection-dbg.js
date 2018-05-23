@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -32,8 +32,38 @@ sap.ui.define([
 	"sap/m/CustomListItem",
 	"sap/ui/core/ResizeHandler",
 	"sap/ui/Device",
+	"./UploadCollectionRenderer",
 	"jquery.sap.keycodes"
-], function(jQuery, Library, MobileLibrary, MessageBox, Dialog, Control, Icon, IconPool, Image, Text, Title, Button, List, StandardListItem, FileUploaderParameter, FileUploader, FileSizeFormat, OverflowToolbar, ToolbarSpacer, ObjectAttribute, UploadCollectionItem, UploadCollectionParameter, UploadCollectionToolbarPlaceholder, HTML, CustomListItem, ResizeHandler, Device) {
+], function(
+	jQuery,
+	Library,
+	MobileLibrary,
+	MessageBox,
+	Dialog,
+	Control,
+	Icon,
+	IconPool,
+	Image,
+	Text,
+	Title,
+	Button,
+	List,
+	StandardListItem,
+	FileUploaderParameter,
+	FileUploader,
+	FileSizeFormat,
+	OverflowToolbar,
+	ToolbarSpacer,
+	ObjectAttribute,
+	UploadCollectionItem,
+	UploadCollectionParameter,
+	UploadCollectionToolbarPlaceholder,
+	HTML,
+	CustomListItem,
+	ResizeHandler,
+	Device,
+	UploadCollectionRenderer
+) {
 	"use strict";
 
 	/**
@@ -49,7 +79,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -244,7 +274,7 @@ sap.ui.define([
 				 * Specifies the info toolbar for filtering information. Sorting information will not displayed.
 				 * @since 1.44.0
 				 */
-				infoToolbar: {type: "sap.m.Toolbar", multiple: false},
+				infoToolbar: {type: "sap.m.Toolbar", multiple: false, forwarding: {idSuffix: "-list", aggregation: "infoToolbar"}},
 
 				/**
 				 * Internal aggregation to hold the list in controls tree.
@@ -744,10 +774,6 @@ sap.ui.define([
 		return this._oHeaderToolbar;
 	};
 
-	UploadCollection.prototype.getInfoToolbar = function() {
-		return this._oList.getAggregation("infoToolbar");
-	};
-
 	UploadCollection.prototype.getNoDataText = function() {
 		var sNoDataText = this.getProperty("noDataText");
 		sNoDataText = sNoDataText || this._oRb.getText("UPLOADCOLLECTION_NO_DATA_TEXT");
@@ -758,12 +784,6 @@ sap.ui.define([
 		var sNoDataDescription = this.getProperty("noDataDescription");
 		sNoDataDescription = sNoDataDescription || this._oRb.getText("UPLOADCOLLECTION_NO_DATA_DESCRIPTION");
 		return sNoDataDescription;
-	};
-
-	UploadCollection.prototype.setInfoToolbar = function(infoToolbar) {
-		if (this.getInfoToolbar() !== infoToolbar) {
-			this._oList.setAggregation("infoToolbar", infoToolbar, false);
-		}
 	};
 
 	UploadCollection.prototype.setUploadButtonInvisible = function(uploadButtonInvisible) {
@@ -894,7 +914,7 @@ sap.ui.define([
 
 	/**
 	 * Downloads the given item.
-	 * This function delegates to {@link sap.m.UploadCollectionItem.download UploadCollectionItem.download}.
+	 * This function delegates to {@link sap.m.UploadCollectionItem#download uploadCollectionItem.download}.
 	 * @param {sap.m.UploadCollectionItem} uploadCollectionItem The item to download. This parameter is mandatory.
 	 * @param {boolean} askForLocation Decides whether to ask for a location to download or not.
 	 * @returns {boolean} True if the download has started successfully. False if the download couldn't be started.

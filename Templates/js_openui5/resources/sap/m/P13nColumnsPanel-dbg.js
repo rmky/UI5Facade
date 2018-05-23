@@ -1,13 +1,13 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.P13nColumnsPanel.
 sap.ui.define([
-	'jquery.sap.global', './ColumnListItem', './P13nPanel', './P13nColumnsItem', './SearchField', './Table', './library', 'sap/ui/model/ChangeReason', 'sap/ui/model/json/JSONModel', 'sap/ui/model/BindingMode', 'sap/ui/core/ResizeHandler', 'sap/ui/core/IconPool'
-], function(jQuery, ColumnListItem, P13nPanel, P13nColumnsItem, SearchField, Table, library, ChangeReason, JSONModel, BindingMode, ResizeHandler, IconPool) {
+	'jquery.sap.global', './ColumnListItem', './P13nPanel', './P13nColumnsItem', './SearchField', './Table', './library', 'sap/ui/model/ChangeReason', 'sap/ui/model/json/JSONModel', 'sap/ui/model/BindingMode', 'sap/ui/core/ResizeHandler', 'sap/ui/core/IconPool', 'sap/m/ScrollContainer'
+], function(jQuery, ColumnListItem, P13nPanel, P13nColumnsItem, SearchField, Table, library, ChangeReason, JSONModel, BindingMode, ResizeHandler, IconPool, ScrollContainer) {
 	"use strict";
 
 	// shortcut for sap.m.OverflowToolbarPriority
@@ -36,7 +36,7 @@ sap.ui.define([
 	 * @class The <code>P13nColumnsPanel</code> control is used to define column-specific settings for table personalization.
 	 * @extends sap.m.P13nPanel
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -232,7 +232,7 @@ sap.ui.define([
 		this._createToolbar();
 
 		this.setVerticalScrolling(false);
-		var oScrollContainer = new sap.m.ScrollContainer({
+		var oScrollContainer = new ScrollContainer({
 			horizontal: false,
 			vertical: true,
 			content: [

@@ -1,13 +1,35 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 //Provides control sap.ui.unified.CalendarMonthInterval.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleData', 'sap/ui/core/delegate/ItemNavigation',
-		'sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/library', 'sap/ui/core/format/DateFormat', 'sap/ui/core/library', 'sap/ui/core/Locale'],
-	function(jQuery, Control, LocaleData, ItemNavigation, CalendarUtils, CalendarDate, library, DateFormat, coreLibrary, Locale) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/core/Control',
+	'sap/ui/core/LocaleData',
+	'sap/ui/core/delegate/ItemNavigation',
+	'sap/ui/unified/calendar/CalendarUtils',
+	'sap/ui/unified/calendar/CalendarDate',
+	'sap/ui/unified/library',
+	'sap/ui/core/format/DateFormat',
+	'sap/ui/core/library',
+	'sap/ui/core/Locale',
+	"./MonthsRowRenderer"
+], function(
+	jQuery,
+	Control,
+	LocaleData,
+	ItemNavigation,
+	CalendarUtils,
+	CalendarDate,
+	library,
+	DateFormat,
+	coreLibrary,
+	Locale,
+	MonthsRowRenderer
+	) {
 	"use strict";
 
 	// shortcut for sap.ui.core.CalendarType
@@ -35,7 +57,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/LocaleDa
 	 * The MontsRow works with JavaScript Date objects, but only the month and the year are used to display and interact.
 	 * As representation for a month, the 1st of the month will always be returned in the API.
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -134,7 +134,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject'],
 	 * @see sap.ui.core.LabelEnablement#enrich
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @protected
 	 * @alias sap.ui.core.LabelEnablement
 	 * @namespace
@@ -340,6 +340,26 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject'],
 
 			if (this.getDisplayOnly) {
 				return this.getDisplayOnly();
+			} else {
+				return false;
+			}
+
+		};
+
+		/**
+		 * Checks whether the <code>Label</code> should be rendered wrapped instead of trucated.
+		 *
+		 * In the standard case it just uses the <code>Wrapping</code> property of the <code>Label</code>.
+		 *
+		 * In the Form another type of logic is used.
+		 *
+		 * @protected
+		 * @returns {boolean} Returns if the Label should be rendered in display only mode
+		 */
+		oControl.isWrapping = function(){
+
+			if (this.getWrapping) {
+				return this.getWrapping();
 			} else {
 				return false;
 			}

@@ -1,16 +1,36 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Toolbar.
-sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './ToolbarLayoutData', './ToolbarSpacer', './library', 'sap/ui/core/Control', 'sap/ui/core/EnabledPropagator', 'sap/ui/core/ResizeHandler'],
-	function(jQuery, BarInPageEnabler, ToolbarLayoutData, ToolbarSpacer, library, Control, EnabledPropagator, ResizeHandler) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./BarInPageEnabler',
+	'./ToolbarLayoutData',
+	'./ToolbarSpacer',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/EnabledPropagator',
+	'sap/ui/core/ResizeHandler',
+	'./ToolbarRenderer'
+],
+function(
+	jQuery,
+	BarInPageEnabler,
+	ToolbarLayoutData,
+	ToolbarSpacer,
+	library,
+	Control,
+	EnabledPropagator,
+	ResizeHandler,
+	ToolbarRenderer
+) {
 	"use strict";
 
-
-	var ToolbarDesign = library.ToolbarDesign;
+	var ToolbarDesign = library.ToolbarDesign,
+		ToolbarStyle = library.ToolbarStyle;
 
 	/**
 	 * Constructor for a new <code>Toolbar</code>.
@@ -48,7 +68,7 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './ToolbarLayoutData',
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -94,10 +114,19 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './ToolbarLayoutData',
 
 			/**
 			 * Defines the toolbar design.
-			 * Note: Design settings are theme-dependent. They also determine the default height of the toolbar.
+			 *
+			 * <b>Note:</b> Design settings are theme-dependent. They also determine the default height of the toolbar.
 			 * @since 1.16.8
 			 */
-			design : {type : "sap.m.ToolbarDesign", group : "Appearance", defaultValue : ToolbarDesign.Auto}
+			design : {type : "sap.m.ToolbarDesign", group : "Appearance", defaultValue : ToolbarDesign.Auto},
+
+			/**
+			 * Defines the visual style of the <code>Toolbar</code>.
+			 *
+			 * <b>Note:</b> The visual styles are theme-dependent.
+			 * @since 1.54
+			 */
+			style : {type : "sap.m.ToolbarStyle", group : "Appearance", defaultValue : ToolbarStyle.Standard}
 		},
 		defaultAggregation : "content",
 		aggregations : {
@@ -129,7 +158,7 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './ToolbarLayoutData',
 				}
 			}
 		},
-		designTime: true
+		designtime: "sap/m/designtime/Toolbar.designtime"
 	}});
 
 	EnabledPropagator.call(Toolbar.prototype);
@@ -217,12 +246,6 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './ToolbarLayoutData',
 			return oControl.addStyleClass(sShrinkClass);
 		}
 	};
-
-	// determines whether toolbar has new flexbox (shrink) support
-	Toolbar.hasNewFlexBoxSupport = (function() {
-		var oStyle = document.documentElement.style;
-		return (oStyle.flex !== undefined || oStyle.webkitFlexShrink !== undefined);
-	}());
 
 	Toolbar.prototype.init = function() {
 		// define group for F6 handling
@@ -323,7 +346,7 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './ToolbarLayoutData',
 
 	// apply the layout calculation according to flexbox support
 	Toolbar.prototype._doLayout = function() {
-		if (Toolbar.hasNewFlexBoxSupport) {
+		if (ToolbarRenderer.hasNewFlexBoxSupport) {
 			return;
 		}
 
@@ -487,11 +510,31 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './ToolbarLayoutData',
 		return this;
 	};
 
+	Toolbar.prototype.setStyle = function(sNewStyle) {
+		var sTbStyleClass, bEnable;
+
+		if (this.getStyle() === sNewStyle) {
+			return this;
+		}
+
+		this.setProperty("style", sNewStyle, true /* suppress invalidate */);
+
+		if (this.getDomRef()) {
+			Object.keys(ToolbarStyle).forEach(function(sStyleKey) {
+
+				sTbStyleClass = "sapMTB" + sStyleKey;
+				bEnable = (sStyleKey === sNewStyle);
+				this.$().toggleClass(sTbStyleClass, bEnable);
+			}, this);
+		}
+
+		return this;
+	};
+
 	/**
 	 * Returns the currently applied design property of the Toolbar.
 	 *
-	 * @returns {sap.m.ToolbarDesign}
-	 * @protected
+	 * @returns {sap.m.ToolbarDesign} The <code>sap.m.ToolbarDesign</code> instance
 	 */
 	Toolbar.prototype.getActiveDesign = function() {
 		var sDesign = this.getDesign();
@@ -505,7 +548,7 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './ToolbarLayoutData',
 	/**
 	 * Returns the first sap.m.Title control instance inside the toolbar for the accessibility
 	 *
-	 * @returns {sap.m.Title|undefined}
+	 * @returns {sap.m.Title|undefined} The <code>sap.m.Title</code> instance or undefined
 	 * @since 1.44
 	 * @protected
 	 */
@@ -526,7 +569,7 @@ sap.ui.define(['jquery.sap.global', './BarInPageEnabler', './ToolbarLayoutData',
 	/**
 	 * Returns the first sap.m.Title control id inside the toolbar for the accessibility
 	 *
-	 * @returns {String}
+	 * @returns {String} The <code>sap.m.Title</code> ID
 	 * @since 1.28
 	 * @protected
 	 */

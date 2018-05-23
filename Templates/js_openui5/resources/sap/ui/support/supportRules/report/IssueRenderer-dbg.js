@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -91,7 +91,7 @@ sap.ui.define(['jquery.sap.global'], function(jQuery) {
 		}
 
 		try {
-			content += '<table class="sapUiTable"><tr><th>Title</th><th>Categories</th><th>Audiences</th></tr>';
+			content += '<table class="sapUiTable"><tr><th>Name</th><th>Categories</th><th>Audiences</th></tr>';
 
 			for (var group in groups) {
 				content += renderGroup(group, groups[group], 'group' + groupNumber, groupNumber);

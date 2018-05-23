@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -76,12 +76,8 @@
 	outline-offset: -0.125rem;
 }
 
-.sapFDynamicPageTitle > .sapFDynamicPageTitleMain > .sapFDynamicPageTitleMainRight {
-	.sapFDynamicPageTitleMainRightActions {
-		.sapFDynamicPageTitleMainRightActionsBar {
-			background: none; // The Actions toolbar should not have a background in belize_hcw
-		}
-	}
+.sapFDynamicPageTitle .sapFDynamicPageTitleActionsBar {
+	background: none;
 }
 
 /* IE and Edge ignores outline-offset. Use an overlay: */
@@ -155,6 +151,10 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 
 .sapFFCL {
 	.sapFFCLNavigationButton {
+		.sapMBtnInner .sapMBtnIcon {
+			width: auto;
+		}
+
 		&.sapFFCLNavigationButtonLeft {
 			.sapMBtnInner {
 				border: 1px solid @sapUiButtonBorderColor;

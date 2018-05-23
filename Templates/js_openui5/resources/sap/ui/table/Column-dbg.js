@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -25,7 +25,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	 * @class
 	 * The column allows you to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -419,7 +419,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 			return (
 				this.isSortableByMenu() || // Sorter
 				this.isFilterableByMenu() || // Filter
-				this.isGroupableByMenu() || // Grouping
+				this.isGroupable() || // Grouping
 				(oTable && oTable.getEnableColumnFreeze()) || // Column Freeze
 				(oTable && oTable.getShowColumnVisibilityMenu()) // Column Visibility Menu
 			);
@@ -468,7 +468,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	 *
 	 * @returns {boolean}
 	 */
-	Column.prototype.isGroupableByMenu = function() {
+	Column.prototype.isGroupable = function() {
 		var oTable = this.getParent();
 		return !!(oTable && oTable.getEnableGrouping && oTable.getEnableGrouping() && this.getSortProperty());
 	};

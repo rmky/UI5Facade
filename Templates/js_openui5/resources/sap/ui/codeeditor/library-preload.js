@@ -1,9 +1,9 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.predefine('sap/ui/codeeditor/CodeEditor',['jquery.sap.global',"sap/ui/core/Control",'sap/ui/codeeditor/js/ace/ace','sap/ui/codeeditor/js/ace/ext-language_tools','sap/ui/codeeditor/js/ace/mode-javascript','sap/ui/codeeditor/js/ace/mode-json'],function(q,C){"use strict";
+sap.ui.predefine('sap/ui/codeeditor/CodeEditor',['jquery.sap.global',"sap/ui/core/Control",'sap/ui/codeeditor/js/ace/ace','sap/ui/codeeditor/js/ace/ext-language_tools','sap/ui/codeeditor/js/ace/ext-beautify','sap/ui/codeeditor/js/ace/mode-javascript','sap/ui/codeeditor/js/ace/mode-json'],function(q,C){"use strict";
 var a=C.extend("sap.ui.codeeditor.CodeEditor",{
 metadata:{library:"sap.ui.core",properties:{value:{type:"string",group:"Misc",defaultValue:""},type:{type:"string",group:"Appearance",defaultValue:"javascript"},width:{type:"sap.ui.core.CSSSize",group:"Appearance",defaultValue:"100%"},height:{type:"sap.ui.core.CSSSize",group:"Appearance",defaultValue:"100%"},editable:{type:"boolean",group:"Behavior",defaultValue:true},lineNumbers:{type:"boolean",group:"Behavior",defaultValue:true},valueSelection:{type:"boolean",group:"Behavior",defaultValue:false},maxLines:{type:"int",group:"Behavior",defaultValue:0},colorTheme:{type:"string",group:"Behavior",defaultValue:"default"},syntaxHints:{type:"boolean",group:"Behavior",defaultValue:true}},events:{liveChange:{},change:{}},defaultProperty:"content"},
 renderer:function(r,c){r.write("<div ");r.writeControlData(c);r.addStyle("width",c.getWidth());r.addStyle("height",c.getHeight());r.addClass("sapCEd");r.writeAttributeEscaped("data-sap-ui-syntaxhints",c.getSyntaxHints());r.writeStyles();r.writeClasses();r.write(">");r.write("</div>");}
@@ -23,13 +23,15 @@ a.prototype.onAfterRendering=function(){var d=this.getDomRef(),P=this.getMetadat
 a.prototype.setMaxLines=function(m){this._oEditor.setOption("maxLines",m);return this.setProperty("maxLines",m,true);};
 a.prototype.addCustomCompleter=function(c){l.addCompleter({getCompletions:function(e,s,P,b,f){c.getCompletions(f,{oPos:P,sPrefix:b});}});};
 a.prototype._getEditorInstance=function(){return this._oEditor;};
+a.prototype.setVisible=function(v){if(this.getVisible()!==v){this.setProperty("visible",v);this.rerender();}return this;};
+a.prototype.prettyPrint=function(){ace.require("ace/ext/beautify").beautify(this._oEditor.session);};
 a.prototype.destroy=function(s){this._oEditor.destroy(s);C.prototype.destroy.call(this,s);};
 return a;},true);
-sap.ui.predefine('sap/ui/codeeditor/library',['sap/ui/core/Core'],function(C){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.codeeditor",dependencies:["sap.ui.core"],types:[],interfaces:[],controls:["sap.ui.codeeditor.CodeEditor"],elements:[],noLibraryCSS:false,version:"1.52.5"});return sap.ui.codeeditor;});
+sap.ui.predefine('sap/ui/codeeditor/library',['sap/ui/core/Core'],function(C){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.codeeditor",dependencies:["sap.ui.core"],types:[],interfaces:[],controls:["sap.ui.codeeditor.CodeEditor"],elements:[],noLibraryCSS:false,version:"1.54.5"});return sap.ui.codeeditor;});
 jQuery.sap.registerPreloadedModules({
 "name":"sap/ui/codeeditor/library-preload",
 "version":"2.0",
 "modules":{
-	"sap/ui/codeeditor/manifest.json":'{\n  "_version": "1.9.0",\n  "sap.app": {\n    "id": "sap.ui.codeeditor",\n    "type": "library",\n    "embeds": [],\n    "applicationVersion": {\n      "version": "1.52.5"\n    },\n    "title": "UI5 library: sap.ui.codeeditor",\n    "description": "UI5 library: sap.ui.codeeditor",\n    "resources": "resources.json",\n    "offline": true,\n    "openSourceComponents": [\n      {\n        "name": "ace",\n        "packagedWithMySelf": true,\n        "version": "0.0.0"\n      }\n    ]\n  },\n  "sap.ui": {\n    "technology": "UI5",\n    "supportedThemes": [\n      "base"\n    ]\n  },\n  "sap.ui5": {\n    "dependencies": {\n      "minUI5Version": "1.52",\n      "libs": {\n        "sap.ui.core": {\n          "minVersion": "1.52.5"\n        }\n      }\n    },\n    "library": {\n      "i18n": false,\n      "content": {\n        "controls": [\n          "sap.ui.codeeditor.CodeEditor"\n        ],\n        "elements": [],\n        "types": [],\n        "interfaces": []\n      }\n    }\n  }\n}'
+	"sap/ui/codeeditor/manifest.json":'{"_version":"1.9.0","sap.app":{"id":"sap.ui.codeeditor","type":"library","embeds":[],"applicationVersion":{"version":"1.54.5"},"title":"UI5 library: sap.ui.codeeditor","description":"UI5 library: sap.ui.codeeditor","resources":"resources.json","offline":true,"openSourceComponents":[{"name":"ace","packagedWithMySelf":true,"version":"0.0.0"}]},"sap.ui":{"technology":"UI5","supportedThemes":["base"]},"sap.ui5":{"dependencies":{"minUI5Version":"1.54","libs":{"sap.ui.core":{"minVersion":"1.54.5"}}},"library":{"i18n":false,"content":{"controls":["sap.ui.codeeditor.CodeEditor"],"elements":[],"types":[],"interfaces":[]}}}}'
 }});
 //# sourceMappingURL=library-preload.js.map

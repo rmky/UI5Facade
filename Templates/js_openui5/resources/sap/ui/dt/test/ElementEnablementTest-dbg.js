@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -45,7 +45,7 @@ function(jQuery, Test, DesignTime, ElementTest) {
 	 * @extends sap.ui.dt.test.Test
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @private
@@ -200,7 +200,6 @@ function(jQuery, Test, DesignTime, ElementTest) {
 							rootElements : [this._oElement]
 						});
 						this._oDesignTime.attachEventOnce("synced", function() {
-							sap.ui.getCore().applyChanges();
 							if (this.getTimeout()) {
 								this._iTimeout = window.setTimeout(function() {
 									fnResolve();

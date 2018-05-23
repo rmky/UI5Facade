@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -22,7 +22,7 @@ sap.ui.define([
 			return oLREPConnector.send(sRoute, sOperation);
 		};
 
-		Utils.getAppVariantOverviewAttributes = function(oAppVariantInfo) {
+		Utils.getAppVariantOverviewAttributes = function(oAppVariantInfo, bKeyUser) {
 			var oAppVariantAttributes;
 			var fnCheckAppType = function() {
 				if (oAppVariantInfo.isOriginal && oAppVariantInfo.isAppVariant) {
@@ -52,7 +52,7 @@ sap.ui.define([
 					};
 
 					return fncheckNavigationSupported(oNavigationParams).then(function(aResult) {
-						if (aResult.length) {
+						if (aResult.length && bKeyUser) {
 							oAppVariantAttributes.adaptUIButtonVisibility = true;
 						} else {
 							oAppVariantAttributes.adaptUIButtonVisibility = false;
@@ -79,43 +79,49 @@ sap.ui.define([
 
 			oAppVariantAttributes = {
 				appId : oAppVariantInfo.appId,
-				title : oAppVariantInfo.title,
-				subTitle : oAppVariantInfo.subTitle,
-				description : oAppVariantInfo.description,
-				icon : oAppVariantInfo.iconUrl,
-				originalId : oAppVariantInfo.originalId,
+				title : oAppVariantInfo.title || '',
+				subTitle : oAppVariantInfo.subTitle || '',
+				description : oAppVariantInfo.description || '',
+				icon : oAppVariantInfo.iconUrl || '',
 				isOriginal : oAppVariantInfo.isOriginal,
 				typeOfApp : fnCheckAppType(),
-				descriptorUrl : oAppVariantInfo.descriptorUrl
+				descriptorUrl : oAppVariantInfo.descriptorUrl,
+				isKeyUser : bKeyUser
 			};
 
 			var sNewAppVariantId = AppVariantUtils.getNewAppVariantId();
 
 			if (sNewAppVariantId === oAppVariantInfo.appId) {
-				oAppVariantAttributes.rowStatus = "Information";
+				oAppVariantAttributes.currentStatus = oI18n.getText("MAA_NEW_APP_VARIANT");
 			}
 
 			return fnGetNavigationInfo(oAppVariantAttributes);
 		};
 
-		Utils.getAppVariantOverview = function(sReferenceAppId) {
-			var sRoute = '/sap/bc/lrep/app_variant_overview/?sap.app/id=' + sReferenceAppId;
+		Utils.getAppVariantOverview = function(sReferenceAppId, bKeyUser) {
+			// Customer* means the layer can be either CUSTOMER or CUSTOMER_BASE. This layer calculation will be done backendside
+			var sLayer = bKeyUser ? 'CUSTOMER*' : 'VENDOR';
+			var sRoute = '/sap/bc/lrep/app_variant_overview/?sap.app/id=' + sReferenceAppId + '&layer=' + sLayer;
 
 			return this.sendRequest(sRoute, 'GET').then(function(oResult) {
 				var aAppVariantOverviewInfo = [];
-				var aAppVariantInfo = oResult.response.items;
-				if (aAppVariantInfo.length) {
-					var that = this;
-					aAppVariantInfo.forEach(function(oAppVariantInfo) {
-						if (!oAppVariantInfo.isDescriptorVariant) {
-							aAppVariantOverviewInfo.push(that.getAppVariantOverviewAttributes(oAppVariantInfo));
-						}
-					});
-
-					return Promise.all(aAppVariantOverviewInfo).then(function(aResponses) {
-						return aResponses;
-					});
+				var aAppVariantInfo;
+				if (oResult.response && oResult.response.items) {
+					aAppVariantInfo = oResult.response.items;
+				} else {
+					return Promise.resolve([]);
 				}
+
+				aAppVariantInfo.forEach(function(oAppVariantInfo) {
+					if (!oAppVariantInfo.isDescriptorVariant) {
+						aAppVariantOverviewInfo.push(this.getAppVariantOverviewAttributes(oAppVariantInfo, bKeyUser));
+					}
+				}, this);
+
+				return Promise.all(aAppVariantOverviewInfo).then(function(aResponses) {
+					return aResponses;
+				});
+
 			}.bind(this));
 		};
 

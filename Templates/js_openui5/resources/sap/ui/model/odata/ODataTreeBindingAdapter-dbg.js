@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.model.odata.ODataTreeBindingAdapter
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', './v2/ODataTreeBinding', 'sap/ui/model/TreeBindingAdapter' ,'sap/ui/model/TreeAutoExpandMode', 'sap/ui/model/ChangeReason', 'sap/ui/model/TreeBindingUtils', './OperationMode'],
-	function(jQuery, TreeBinding, ODataTreeBinding, TreeBindingAdapter, TreeAutoExpandMode, ChangeReason, TreeBindingUtils, OperationMode) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', './v2/ODataTreeBinding', 'sap/ui/model/TreeBindingAdapter', 'sap/ui/model/TreeAutoExpandMode', 'sap/ui/model/ChangeReason', './OperationMode'],
+	function(jQuery, TreeBinding, ODataTreeBinding, TreeBindingAdapter, TreeAutoExpandMode, ChangeReason, OperationMode) {
 	"use strict";
 
 	/**

@@ -1,17 +1,38 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.MessagePopover.
-sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolbar", "./Bar",
-		"sap/ui/core/Control", "sap/ui/core/IconPool",
-		"./semantic/SemanticPage", "./Popover", "./MessageView", "sap/ui/Device"],
-	function (jQuery, ResponsivePopover, Button, Toolbar, Bar,
-			  Control, IconPool,
-			  SemanticPage, Popover,
-			  MessageView, Device) {
+sap.ui.define([
+	"jquery.sap.global",
+	"./ResponsivePopover",
+	"./Button",
+	"./Toolbar",
+	"./Bar",
+	"sap/ui/core/Control",
+	"sap/ui/core/IconPool",
+	"./semantic/SemanticPage",
+	"./Popover",
+	"./MessageView",
+	"sap/ui/Device",
+	"./MessagePopoverRenderer"
+],
+function(
+	jQuery,
+	ResponsivePopover,
+	Button,
+	Toolbar,
+	Bar,
+	Control,
+	IconPool,
+	SemanticPage,
+	Popover,
+	MessageView,
+	Device,
+	MessagePopoverRenderer
+	) {
 		"use strict";
 
 		/**
@@ -45,11 +66,13 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 		 * The message popover is triggered from a messaging button in the footer toolbar. If an error has occurred at any validation point,
 		 * the total number of messages should be incremented, but the user's work shouldn't be interrupted.
 		 * <h3>Responsive Behavior</h3>
-		 * On mobile phones, the message popover is automatically shown in full screen mode.
+		 * On mobile phones, the message popover is automatically shown in full screen mode.<br>
+		 * On desktop and tablet, the message popover opens in a popover.<br>
+		 * On desktop the opened popover is resizable if it is placed in a {@link sap.m.Toolbar}, {@link sap.m.Bar} or used in {@link sap.f.semantic.SemanticPage}
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -105,7 +128,7 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 					/**
 					 * A custom header button
 					 */
-					headerButton: {type: "sap.m.Button", multiple: false}
+					headerButton: {type: "sap.m.Button", multiple: false, forwarding: {idSuffix: "-messageView", aggregation: "headerButton"}}
 				},
 				events: {
 					/**
@@ -683,22 +706,6 @@ sap.ui.define(["jquery.sap.global", "./ResponsivePopover", "./Button", "./Toolba
 			this._oMessageView.setProperty('asyncURLHandler', asyncURLHandler, true);
 
 			return this;
-		};
-
-		/*
-		 * =========================================
-		 * MessagePopover HeaderButton
-		 * proxy methods
-		 * =========================================
-		 */
-
-		MessagePopover.prototype.setHeaderButton = function (oBtn) {
-			this._oMessageView.setHeaderButton(oBtn);
-			return this;
-		};
-
-		MessagePopover.prototype.getHeaderButton = function () {
-			return this._oMessageView.getHeaderButton();
 		};
 
 		MessagePopover.prototype.setModel = function(oModel, sName) {

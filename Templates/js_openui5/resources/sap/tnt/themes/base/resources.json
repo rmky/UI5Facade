@@ -6,6 +6,11 @@
 			"theme": "base"
 		},
 		{
+			"name": "InfoLabel.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "NavigationList.less",
 			"designtime": true,
 			"theme": "base"

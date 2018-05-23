@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils", "sap/ui/fl/context/
 	 * @alias sap.ui.fl.context.ContextManager
 	 * @since 1.38.0
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 */
 	var ContextManager;
 
@@ -224,6 +224,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils", "sap/ui/fl/context/
 		 * @param {String} oPropertyBag.validAppVersions.creation - Original application version
 		 * @param {String} oPropertyBag.validAppVersions.from - Minimum application version
 		 * @param {String} oPropertyBag.validAppVersions.to - Maximum application version
+		 * @param {String} [oPropertyBag.generator] - Tool which is used to generate the context file
 		 */
 		createOrUpdateContextObject: function (oPropertyBag) {
 			if (!oPropertyBag.reference) {
@@ -250,7 +251,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils", "sap/ui/fl/context/
 				creation: oPropertyBag.creation || "",
 				originalLanguage: oPropertyBag.originalLanguage || Utils.getCurrentLanguage(),
 				support: oPropertyBag.support || {
-					generator: "",
+					generator: oPropertyBag.generator || "",
 					service: "",
 					user: ""
 				},

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,9 +10,12 @@ sap.ui.define([
 	'sap/ui/dt/DesignTimeMetadata',
 	'sap/ui/dt/AggregationDesignTimeMetadata'
 ],
-function(jQuery, DesignTimeMetadata, AggregationDesignTimeMetadata) {
+function(
+	jQuery,
+	DesignTimeMetadata,
+	AggregationDesignTimeMetadata
+) {
 	"use strict";
-
 
 	/**
 	 * Constructor for a new ElementDesignTimeMetadata.
@@ -25,7 +28,7 @@ function(jQuery, DesignTimeMetadata, AggregationDesignTimeMetadata) {
 	 * @extends sap.ui.core.DesignTimeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @private
@@ -95,15 +98,14 @@ function(jQuery, DesignTimeMetadata, AggregationDesignTimeMetadata) {
 	/**
 	 * Creates an aggregation DT metadata class for an aggregation,
 	 * ensure to destroy it if it is no longer needed, otherwise you get memory leak.
-	 * @param {string} sAggregationName an aggregation name
+	 * @param {object} mMetadata DesignTime data
 	 * @return {sap.ui.dt.AggregationDesignTimeMetadata} returns the aggregation DT metadata for an aggregation with a given name
 	 * @public
 	 */
-	ElementDesignTimeMetadata.prototype.createAggregationDesignTimeMetadata  = function(sAggregationName) {
-		var oData =  this.getAggregation(sAggregationName);
+	ElementDesignTimeMetadata.prototype.createAggregationDesignTimeMetadata  = function(mMetadata) {
 		return new AggregationDesignTimeMetadata({
-			libraryName : this.getLibraryName(),
-			data : oData
+			libraryName: this.getLibraryName(),
+			data: mMetadata
 		});
 	};
 
@@ -132,21 +134,22 @@ function(jQuery, DesignTimeMetadata, AggregationDesignTimeMetadata) {
 		});
 	};
 
-	ElementDesignTimeMetadata.prototype.getAggregationAction = function(sAction, oElement, aArgs) {
+	ElementDesignTimeMetadata.prototype.getActionDataFromAggregations = function(sAction, oElement, aArgs) {
 		var vAction;
-		var oAggregations = this.getAggregations();
+		var mAggregations = this.getAggregations();
 		var aActions = [];
 
-		for (var sAggregation in oAggregations) {
-			if (oAggregations[sAggregation].actions && oAggregations[sAggregation].actions[sAction]) {
-				vAction = oAggregations[sAggregation].actions[sAction];
+		for (var sAggregation in mAggregations) {
+			if (mAggregations[sAggregation].actions && mAggregations[sAggregation].actions[sAction]) {
+				vAction = mAggregations[sAggregation].actions[sAction];
 				if (typeof vAction === "function") {
 					var aActionParameters = [oElement];
 					if (aArgs){
 						aActionParameters = aActionParameters.concat(aArgs);
 					}
 					vAction = vAction.apply(null, aActionParameters);
-				} else if (typeof (vAction) === "string" ) {
+				}
+				if (typeof (vAction) === "string" ) {
 					vAction = { changeType : vAction };
 				}
 				if (vAction) {

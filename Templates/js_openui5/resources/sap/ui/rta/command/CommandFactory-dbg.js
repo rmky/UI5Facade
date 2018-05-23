@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/OverlayRegistry', 'sap/ui/fl/registry/ChangeRegistry'],
@@ -25,7 +25,7 @@ sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/
 
 	var fnConfigureCreateContainerCommand = function(oElement, mSettings, oDesignTimeMetadata){
 		var oNewAddedElement = mSettings.element || sap.ui.getCore().byId(mSettings.element.id);
-		var oAction = oDesignTimeMetadata.getAggregationAction("createContainer", oNewAddedElement)[0];
+		var oAction = oDesignTimeMetadata.getActionDataFromAggregations("createContainer", oNewAddedElement)[0];
 		return oAction;
 	};
 
@@ -34,10 +34,9 @@ sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/
 		var oAction = oDesignTimeMetadata.getAction("move", oMovedElement);
 		// needed for Stashed Controls
 		if (!oAction && oDesignTimeMetadata.getMetadata().getName() === "sap.ui.dt.ElementDesignTimeMetadata") {
-			var sSourceAggregation = mSettings.source.aggregation;
-			var oAggregationDesignTimeMetadata = oDesignTimeMetadata.createAggregationDesignTimeMetadata(sSourceAggregation);
-			oAction = oAggregationDesignTimeMetadata.getAction("move", oMovedElement);
-			oAggregationDesignTimeMetadata.destroy();
+			oAction = oDesignTimeMetadata.getActionDataFromAggregations("move", oElement).filter(function(oAggAction){
+				return oAggAction.aggregation === mSettings.source.aggregation;
+			})[0];
 		}
 		return oAction;
 	};
@@ -93,6 +92,9 @@ sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/
 		"bindProperty" : {
 			clazz : 'sap.ui.rta.command.BindProperty'
 		},
+		"addXML" : {
+			clazz : 'sap.ui.rta.command.AddXML'
+		},
 
 		/* NEW COMMANDS, ALIGNED WITH A SCALABILITY CONCEPT */
 		"createContainer" : {
@@ -135,6 +137,9 @@ sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/
 		},
 		"setTitle" : {
 			clazz : 'sap.ui.rta.command.ControlVariantSetTitle'
+		},
+		"configure" : {
+			clazz : 'sap.ui.rta.command.ControlVariantConfigure'
 		},
 		"settings" : {
 			clazz : 'sap.ui.rta.command.Settings'
@@ -216,7 +221,7 @@ sap.ui.define(['sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil', 'sap/ui/dt/
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @private

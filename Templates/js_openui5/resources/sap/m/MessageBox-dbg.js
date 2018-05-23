@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -220,8 +220,8 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {string|sap.m.MessageBox.Action} [mOptions.initialFocus] Added since version 1.28.0. initialFocus, this option sets the action name, the text of the button or the control that gets the focus as first focusable element after the MessageBox is opened.
 				 * The usage of sap.ui.core.Control to set initialFocus is deprecated since version 1.30.4.
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Added since version 1.28. Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
-				 * @param {boolean} [deprecated mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
-				 * @param {boolean} [deprecated mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
 				 * @param {string} [mOptions.details] Added since version 1.28.0. If 'details' is set in the MessageBox, a 'Show detail' link is added. When you click the link, it is set to visible = false and the text area containing 'details' information is then displayed.
 				 * @param {sap.ui.core.CSSSize} [mOptions.contentWidth] The width of the MessageBox
 				 * @public
@@ -315,9 +315,19 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 						var oShowLink = new Link({
 							text: that._rb.getText("MSGBOX_LINK_TITLE"),
 							press: function () {
+								var oInitialFocus = oDialog.getInitialFocus();
+								oDialog.addAriaLabelledBy(oFT);
+
 								oFT.setVisible(true);
-								this.setVisible(false);
-								oDialog._setInitialFocus();
+								oShowLink.setVisible(false);
+
+								if (oInitialFocus && oInitialFocus !== oShowLink.getId()) {
+									oDialog._setInitialFocus();
+								} else {
+									// if the initialFocus is not set or is set to the "Show details" link
+									// focus the first action button
+									aButtons[0].focus();
+								}
 							}
 						});
 
@@ -456,8 +466,9 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {string|sap.m.MessageBox.Action} [mOptions.initialFocus] Added since version 1.28.0. initialFocus, this option sets the action name, the text of the button or the control that gets the focus as first focusable element after the MessageBox is opened.
 				 * The usage of sap.ui.core.Control to set initialFocus is deprecated since version 1.30.4.
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Added since version 1.28. Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
-				 * @param {boolean} [deprecated mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
-				 * @param {boolean} [deprecated mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
 				 * @static
 				 */
@@ -531,8 +542,9 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {string|sap.m.MessageBox.Action} [mOptions.initialFocus] Added since version 1.28.0. initialFocus, this option sets the action name, the text of the button or the control that gets the focus as first focusable element after the MessageBox is opened.
 				 * The usage of sap.ui.core.Control to set initialFocus is deprecated since version 1.30.4.
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Added since version 1.28. Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
-				 * @param {boolean} [deprecated mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
-				 * @param {boolean} [deprecated mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
 				 * @static
 				 */
@@ -602,10 +614,11 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {string|sap.m.MessageBox.Action} [mOptions.initialFocus] This option sets the action name, the text of the button or the control that gets the focus as first focusable element after the MessageBox is opened.
 				 * The usage of sap.ui.core.Control to set initialFocus is deprecated since version 1.30.4.
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
-				 * @param {boolean} [deprecated mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
-				 * @param {boolean} [deprecated mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
-								 * @since 1.30
+				 * @since 1.30
 				 * @static
 				 */
 				MessageBox.error = function (vMessage, mOptions) {
@@ -658,10 +671,11 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {string|sap.m.MessageBox.Action} [mOptions.initialFocus] This option sets the action name, the text of the button or the control that gets the focus as first focusable element after the MessageBox is opened.
 				 * The usage of sap.ui.core.Control to set initialFocus is deprecated since version 1.30.4.
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
-				 * @param {boolean} [deprecated mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
-				 * @param {boolean} [deprecated mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
-								 * @since 1.30
+				 * @since 1.30
 				 * @static
 				 */
 				MessageBox.information = function (vMessage, mOptions) {
@@ -714,10 +728,11 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {string|sap.m.MessageBox.Action} [mOptions.initialFocus] This option sets the action name, the text of the button or the control that gets the focus as first focusable element after the MessageBox is opened.
 				 * The usage of sap.ui.core.Control to set initialFocus is deprecated since version 1.30.4.
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
-				 * @param {boolean} [deprecated mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
-				 * @param {boolean} [deprecated mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
-								 * @since 1.30
+				 * @since 1.30
 				 * @static
 				 */
 				MessageBox.warning = function (vMessage, mOptions) {
@@ -770,10 +785,11 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {string|sap.m.MessageBox.Action} [mOptions.initialFocus] This option sets the action name, the text of the button or the control that gets the focus as first focusable element after the MessageBox is opened.
 				 * The usage of sap.ui.core.Control to set initialFocus is deprecated since version 1.30.4.
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
-				 * @param {boolean} [deprecated mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
-				 * @param {boolean} [deprecated mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
-								 * @since 1.30
+				 * @since 1.30
 				 * @static
 				 */
 				MessageBox.success = function (vMessage, mOptions) {

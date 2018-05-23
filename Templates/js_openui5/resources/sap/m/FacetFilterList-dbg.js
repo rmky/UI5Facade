@@ -1,12 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.FacetFilterList.
-sap.ui.define(['jquery.sap.global', './List', './library', 'sap/ui/model/ChangeReason', 'sap/ui/model/Filter'],
-	function(jQuery, List, library, ChangeReason, Filter) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./List',
+	'./library',
+	'sap/ui/model/ChangeReason',
+	'sap/ui/model/Filter',
+	'./FacetFilterListRenderer'
+],
+	function(jQuery, List, library, ChangeReason, Filter, FacetFilterListRenderer) {
 	"use strict";
 
 
@@ -42,7 +49,7 @@ sap.ui.define(['jquery.sap.global', './List', './library', 'sap/ui/model/ChangeR
 	 * be closed.
 	 *
 	 * @extends sap.m.List
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -65,8 +72,9 @@ sap.ui.define(['jquery.sap.global', './List', './library', 'sap/ui/model/ChangeR
 
 			/**
 			 * Specifies whether multiple or single selection is used.
-			 * @deprecated Since version 1.20.0.
-			 * This property is no longer supported. Use the setMode method instead. FacetFilterList overrides the setMode method to restrict the possible modes to MultiSelect and SingleSelectMaster. All other modes are ignored and will not be set.
+			 * @deprecated as of version 1.20.0, replaced by <code>setMode</code> method.
+			 * <code>FacetFilterList</code> overrides the <code>setMode</code> method to restrict the possible modes to
+			 * <code>MultiSelect</code> and <code>SingleSelectMaster</code>. All other modes are ignored and will not be set.
 			 */
 			multiSelect : {type : "boolean", group : "Behavior", defaultValue : true, deprecated: true},
 
@@ -756,7 +764,7 @@ sap.ui.define(['jquery.sap.global', './List', './library', 'sap/ui/model/ChangeR
 	FacetFilterList.prototype.onItemTextChange = function(oItem, sNewValue) {
 		var sKeyName = oItem.getKey();
 
-		if (this._oSelectedKeys[sKeyName] && sNewValue) {
+		if (this._oSelectedKeys[sKeyName] && sNewValue && !this._filtering) {
 			this._oSelectedKeys[sKeyName] = sNewValue;
 		}
 	};

@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.ObjectStatus.
-sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
-	function(library, Control, ValueStateSupport, coreLibrary) {
+sap.ui.define([
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/ValueStateSupport',
+	'sap/ui/core/library',
+	'./ObjectStatusRenderer'
+],
+	function(library, Control, ValueStateSupport, coreLibrary, ObjectStatusRenderer) {
 	"use strict";
 
 
@@ -32,7 +38,7 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/ValueStateSuppor
 	 * Status information that can be either text with a value state, or an icon.
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -43,6 +49,7 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/ValueStateSuppor
 
 		interfaces : ["sap.ui.core.IFormContent"],
 		library : "sap.m",
+		designtime: "sap/m/designtime/ObjectStatus.designtime",
 		properties : {
 
 			/**
@@ -54,6 +61,15 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/ValueStateSuppor
 			 * Defines the ObjectStatus text.
 			 */
 			text : {type : "string", group : "Misc", defaultValue : null},
+
+			/**
+			 * Indicates if the <code>ObjectStatus</code> text and icon can be clicked/tapped by the user.
+			 *
+			 * <b>Note:</b> If you set this property to <code>true</code>, you have to also set the <code>text</code> or <code>icon</code> property.
+			 *
+			 * @since 1.54
+			 */
+			active : {type : "boolean", group : "Misc", defaultValue : false},
 
 			/**
 			 * Defines the text value state.
@@ -84,6 +100,14 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/ValueStateSuppor
 			 * Association to controls / IDs, which describe this control (see WAI-ARIA attribute aria-describedby).
 			 */
 			ariaDescribedBy : {type : "sap.ui.core.Control", multiple : true, singularName : "ariaDescribedBy"}
+		},
+		events : {
+
+			/**
+			 * Fires when the user clicks/taps on active text.
+			 * @since 1.54
+			 */
+			press : {}
 		}
 	}});
 
@@ -159,6 +183,47 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/ValueStateSuppor
 	};
 
 	/**
+	 * @private
+	 * @param {object} oEvent The fired event
+	 */
+	ObjectStatus.prototype.ontap = function(oEvent) {
+		if (this._isClickable(oEvent)) {
+			this.firePress();
+		}
+	};
+
+	/**
+	 * @private
+	 * @param {object} oEvent The fired event
+	 */
+	ObjectStatus.prototype.onsapenter = function(oEvent) {
+		if (this._isActive()) {
+			this.firePress();
+
+			// mark the event that it is handled by the control
+			oEvent.setMarked();
+		}
+	};
+
+	/**
+	 * @private
+	 * @param {object} oEvent The fired event
+	 */
+	ObjectStatus.prototype.onsapspace = function(oEvent) {
+		this.onsapenter(oEvent);
+	};
+
+	/**
+	 * Checks if the ObjectStatus should be set to active.
+	 * @private
+	 * @returns {boolean} If the ObjectStatus is active
+	 */
+	ObjectStatus.prototype._isActive = function() {
+
+		return  this.getActive() && (this.getText().trim() || this.getIcon().trim());
+	};
+
+	/**
 	 * Checks if the ObjectStatus is empty.
 	 * @private
 	 * @returns {boolean} If the ObjectStatus is empty
@@ -166,6 +231,18 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/ValueStateSuppor
 	ObjectStatus.prototype._isEmpty = function() {
 
 		return !(this.getText().trim() || this.getIcon().trim() || this.getTitle().trim());
+	};
+
+	/**
+	 * Called when the control is touched.
+	 * @param {object} oEvent The fired event
+	 * @private
+	 */
+	ObjectStatus.prototype.ontouchstart = function(oEvent) {
+		if (this._isClickable(oEvent)) {
+			// mark the event that it is handled by the control
+			oEvent.setMarked();
+		}
 	};
 
 	/**
@@ -180,6 +257,13 @@ sap.ui.define(['./library', 'sap/ui/core/Control', 'sap/ui/core/ValueStateSuppor
 		return {
 			description: ((this.getTitle() || "") + " " + (this.getText() || "") + " " + sState + " " + (this.getTooltip() || "")).trim()
 		};
+	};
+
+	ObjectStatus.prototype._isClickable = function(oEvent) {
+		var sSourceId = oEvent.target.id;
+
+		//event should only be fired if the click is on the text, link or icon
+		return this._isActive() && (sSourceId === this.getId() + "-link" || sSourceId === this.getId() + "-text" || sSourceId === this.getId() + "-icon");
 	};
 
 	return ObjectStatus;

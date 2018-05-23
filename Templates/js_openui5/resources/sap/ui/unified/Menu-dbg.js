@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,12 +15,10 @@ sap.ui.define([
 	'./library',
 	'sap/ui/core/library',
 	'sap/ui/unified/MenuRenderer',
-	'sap/ui/core/delegate/ScrollEnablement',
 	'jquery.sap.script',
 	'jquery.sap.keycodes',
 	'jquery.sap.events'
-],
-function(
+], function(
 	jQuery,
 	Element,
 	Control,
@@ -29,8 +27,7 @@ function(
 	MenuItemBase,
 	library,
 	coreLibrary,
-	MenuRenderer,
-	ScrollEnablement
+	MenuRenderer
 ) {
 	"use strict";
 
@@ -53,7 +50,7 @@ function(
 	 * @implements sap.ui.core.IContextMenu
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -76,7 +73,7 @@ function(
 
 			/**
 			 * Accessible label / description of the menu for assistive technologies like screenreaders.
-			 * @deprecated Since version 1.27.0 Please use association <code>ariaLabelledBy</code> instead.
+			 * @deprecated as of version 1.27.0, replaced by <code>ariaLabelledBy</code> association
 			 */
 			ariaDescription : {type : "string", group : "Accessibility", defaultValue : null},
 
@@ -175,11 +172,6 @@ function(
 			delete this.oPopup;
 		}
 
-		if (this._oScroller) {
-			this._oScroller.destroy();
-			this._oScroller = null;
-		}
-
 		jQuery.sap.unbindAnyEvent(this.fAnyEventHandlerProxy);
 		if (this._bOrientationChangeBound) {
 			jQuery(window).unbind("orientationchange", this.fOrientationChangeHandler);
@@ -188,10 +180,12 @@ function(
 
 		// Cleanup
 		this._resetDelayedRerenderItems();
+		this._detachResizeHandler();
 	};
 
 	/**
 	 * Called when the control or its children are changed.
+	 * @param {sap.ui.core.Control} The originating control
 	 * @private
 	 */
 	Menu.prototype.invalidate = function(oOrigin){
@@ -208,23 +202,6 @@ function(
 	 */
 	Menu.prototype.onBeforeRendering = function() {
 		this._resetDelayedRerenderItems();
-
-		if (!this._oScroller && Device.os.ios && Device.support.touch) {
-			this._oScroller = new ScrollEnablement(this, null, {
-				scrollContainerId: this.getId(),
-				horizontal: false,
-				vertical: true
-			});
-		}
-	};
-
-	/**
-	 * Returns the sap.ui.core.ScrollEnablement delegate which is used with this control.
-	 * @returns {sap.ui.core.ScrollEnablement} The scroll enablement delegate
-	 * @private
-	 */
-	Menu.prototype.getScrollDelegate = function () {
-		return this._oScroller;
 	};
 
 	/**
@@ -334,7 +311,18 @@ function(
 		}
 	};
 
-
+	/**
+	 * Called when the resize handler should be detached (e.g. on exit and close).
+	 * @private
+	 */
+	Menu.prototype._detachResizeHandler = function(){
+		// detach listener in case it is not detached in close
+		// in IE when destroy is called both close and exit were called and detach was called twice
+		if (this._hasResizeListener) {
+			Device.resize.detachHandler(this._handleResizeChange, this);
+			this._hasResizeListener = false;
+		}
+	};
 
 	/**
 	 * Opens the menu at the specified position.
@@ -372,6 +360,8 @@ function(
 		this.bOpen = true;
 
 		Device.resize.attachHandler(this._handleResizeChange, this);
+		// mark that the resize handler is attach so we know to detach it later on
+		this._hasResizeListener = true;
 
 		// Set the tab index of the menu and focus
 		var oDomRef = this.getDomRef();
@@ -395,6 +385,7 @@ function(
 
 	/**
 	 * Opens the menu as a context menu.
+	 * @param {jQuery.Event} oEvent The event object
 	 * @param {sap.ui.core.Element|HTMLElement} oOpenerRef - Might be UI5 Element or DOM Element
 	 */
 	Menu.prototype.openAsContextMenu = function(oEvent, oOpenerRef) {
@@ -499,7 +490,7 @@ function(
 		// Close the sap.ui.core.Popup
 		this.getPopup().close(0);
 
-		Device.resize.detachHandler(this._handleResizeChange, this);
+		this._detachResizeHandler();
 
 		//Remove the Menus DOM after it is closed
 		this._resetDelayedRerenderItems();
@@ -697,6 +688,10 @@ function(
 			if (!Device.browser.msie && !Device.browser.edge) { //for IE & Edge skip it, otherwise it will move the focus out of the hovered item set before
 				this.getDomRef().focus();
 			}
+		}
+
+		if (Device.browser.msie) {
+			this.getDomRef().focus();
 		}
 
 		this._openSubMenuDelayed(oItem);

@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -50,6 +50,8 @@
 	box-sizing: border-box;
 	// IE will read a clientHeight of 0px, if the clientWidth is 0, although the table has a height
 	min-width: 1rem;
+	// Define stacking context to avoid conflicts with other controls
+	z-index: 0;
 }
 
 .sapUiTableFtr {
@@ -82,14 +84,6 @@
 	font-size: @sapUiFontHeader3Size;
 	height: 100%;
 	color: @sapUiGroupTitleTextColor;
-}
-
-.sapUiTableTbr {
-	height: 2rem;
-}
-
-.sapUiSizeCozy .sapUiTableTbr {
-	height: 3rem;
 }
 
 .sapUiTableCnt {
@@ -183,6 +177,10 @@
 		display: block;
 	}
 
+	.sapUiTableCtrlAfter {
+		display: none;
+	}
+
 	.sapUiTableRowHdr,
 	.sapUiTableRowAction {
 		opacity: 0;
@@ -191,7 +189,8 @@
 }
 
 .sapUiTableOverlayArea:focus,
-.sapUiTableCtrlEmpty:focus {
+.sapUiTableCtrlEmpty:focus,
+.sapUiTableCnt > .sapUiLocalBusyIndicator:focus {
 	outline-width: @_sap_ui_table_FocusOutlineWidth;
 	outline-style: dotted;
 	outline-offset: -3px;
@@ -201,12 +200,14 @@
 html[data-sap-ui-browser^="ie"], html[data-sap-ui-browser^="ed"] {
 
 	.sapUiTableOverlayArea:focus,
-	.sapUiTableCtrlEmpty:focus {
+	.sapUiTableCtrlEmpty:focus,
+	.sapUiTableCnt > .sapUiLocalBusyIndicator:focus {
 		outline-width: 0;
 	}
 
 	.sapUiTableOverlayArea:focus:before,
-	.sapUiTableCtrlEmpty:focus:before {
+	.sapUiTableCtrlEmpty:focus:before,
+	.sapUiTableCnt > .sapUiLocalBusyIndicator:focus:before {
 		position: absolute;
 		top: 2px;
 		left: 2px;
@@ -317,7 +318,6 @@ html[data-sap-ui-browser^="ie"], html[data-sap-ui-browser^="ed"] {
 	overflow: hidden;
 	white-space: nowrap;
 	min-height: @_sap_ui_table_Table_ColHdrHeight;
-	border-top: 1px solid @sapUiListHeaderBorderColor;
 	border-bottom: 1px solid @sapUiListVerticalBorderColor;
 	color: @sapUiListTextColor;
 }
@@ -1539,6 +1539,17 @@ html.sap-desktop.sap-tablet {
 		}
 	}
 
+	.sapUiTableVSb,
+	.sapUiTableHSb {
+		&::-webkit-scrollbar-thumb {
+			background-color: @sapUiScrollBarFaceColor;
+		}
+
+		&::-webkit-scrollbar {
+			background-color: @sapUiScrollBarTrackColor;
+		}
+	}
+
 }
 
 html.sap-tablet:not(.sap-desktop), html.sap-phone {
@@ -1895,12 +1906,12 @@ html[data-sap-ui-browser^="ie"] .sapUiTableTreeIcon:focus::before {
 }
 
 .sapUiTableTreeIcon:focus:not(*:root) { /*Webkit*/
-	outline-offset: -1px;
+	outline-offset: -2px;
 }
 
 @supports (-moz-appearance:meterbar) { /* Firefox */
 	.sapUiTableTreeIcon:focus {
-		outline-offset: -1px;
+		outline-offset: -2px;
 	}
 }
 
@@ -2115,6 +2126,10 @@ html.sap-tablet:not(.sap-desktop), html.sap-phone {
 		border-left: 0;
 		border-right: 0;
 		background-color: @sapUiListBackground;
+	}
+
+	&.sapUiAnalyticalTableSum.sapUiTableRowHvr {
+		background-color: @sapUiListHoverBackground;
 	}
 
 	&.sapUiAnalyticalTableDummy {

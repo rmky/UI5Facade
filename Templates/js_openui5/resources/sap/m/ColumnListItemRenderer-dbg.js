@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -138,6 +138,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 			rm.write("<td");
 			rm.addClass("sapMListTblCell");
 			rm.writeAttribute("id", oLI.getId() + "_cell" + i);
+			rm.writeAttribute("data-sap-ui-column", oColumn.getId());
 
 			// check column properties
 			if (oColumn) {

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -49,7 +49,7 @@ sap.ui.define([
 	 *
 	 * For more information, see {@link sap.f.FlexibleColumnLayoutSemanticHelper#getCurrentUIState} and {@link sap.f.FlexibleColumnLayoutSemanticHelper#getNextUIState}
 	 *
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @param {sap.f.FlexibleColumnLayout} oFlexibleColumnLayout
 	 * The <code>sap.f.FlexibleColumnLayout</code> object whose state will be manipulated.
 	 *
@@ -152,7 +152,7 @@ sap.ui.define([
 	 *
 	 * @public
 	 * @static
-	 * @returns {sap.f.FlexibleColumnLayoutSemanticHelper}
+	 * @returns {sap.f.FlexibleColumnLayoutSemanticHelper} The <code>sap.f.FlexibleColumnLayoutSemanticHelper</code> instance
 	 */
 	FlexibleColumnLayoutSemanticHelper.getInstanceFor = function (oFlexibleColumnLayout, oSettings) {
 
@@ -224,7 +224,7 @@ sap.ui.define([
 	 *  </code>
 	 *  </pre>
 	 * @public
-	 * @returns {{layout: string, maxColumnsCount: number, columnsSizes: {beginColumn, midColumn, endColumn}, columnsVisibility: {beginColumn, midColumn, endColumn}, isFullScreen, isLogicallyFullScreen, actionButtonsInfo: {midColumn, endColumn}}}
+	 * @returns {Object} The object describing the current UI state
 	 */
 	FlexibleColumnLayoutSemanticHelper.prototype.getCurrentUIState = function () {
 		var sCurrentLayout = this._oFCL.getLayout();
@@ -240,7 +240,7 @@ sap.ui.define([
 	 * 2 - master-detail-detail, 3 and above - subsequent views
 	 *
 	 * @public
-	 * @returns {{layout: string, maxColumnsCount: number, columnsSizes: {beginColumn, midColumn, endColumn}, columnsVisibility: {beginColumn, midColumn, endColumn}, isFullScreen, isLogicallyFullScreen, actionButtonsInfo: {midColumn, endColumn}}}
+	 * @returns {Object} The object describing the next UI state
 	 */
 	FlexibleColumnLayoutSemanticHelper.prototype.getNextUIState = function (iNextLevel) {
 
@@ -449,7 +449,7 @@ sap.ui.define([
 	 * <li>defaultThreeColumnLayoutType - the layout that will be suggested by default when 3 columns have to be shown side by side</li></ul>
 	 *
 	 * @public
-	 * @returns {{defaultLayoutType: string, defaultTwoColumnLayoutType: string, defaultThreeColumnLayoutType: string}}
+	 * @returns {Object} The object describing the default layout types for the different numbers of columns
 	 */
 	FlexibleColumnLayoutSemanticHelper.prototype.getDefaultLayouts = function () {
 		return {

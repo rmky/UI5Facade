@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.FacetFilterItem.
-sap.ui.define(['./ListItemBase', './library'],
-	function(ListItemBase, library) {
+sap.ui.define(['./ListItemBase', './library', './FacetFilterItemRenderer'],
+	function(ListItemBase, library, FacetFilterItemRenderer) {
 	"use strict";
 
 
@@ -20,7 +20,7 @@ sap.ui.define(['./ListItemBase', './library'],
 	 * @class
 	 * Represents a value for the {@link sap.m.FacetFilterList} control.
 	 * @extends sap.m.ListItemBase
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -44,7 +44,7 @@ sap.ui.define(['./ListItemBase', './library'],
 
 			/**
 			 * Defines the number of objects that match this item in the target data set.
-			 * @deprecated Since version 1.18.11. Use setCounter instead.
+			 * @deprecated as of version 1.18.11, replaced by <code>setCounter</code> method
 			 */
 			count : {type : "int", group : "Misc", defaultValue : null, deprecated: true}
 		}

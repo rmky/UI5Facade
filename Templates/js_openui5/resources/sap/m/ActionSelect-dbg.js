@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.ActionSelect.
-sap.ui.define(['./Select', './library'],
-	function(Select, library) {
+sap.ui.define(['./Select', 'sap/ui/core/InvisibleText', './library', './ActionSelectRenderer'],
+	function(Select, InvisibleText, library, ActionSelectRenderer) {
 		"use strict";
 
 		/**
@@ -20,7 +20,7 @@ sap.ui.define(['./Select', './library'],
 		 * @extends sap.m.Select
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -57,7 +57,7 @@ sap.ui.define(['./Select', './library'],
 		/**
 		 * Determines whether the ActionSelect has content or not.
 		 *
-		 * @return {boolean}
+		 * @return {boolean} Whether the ActionSelect has content
 		 * @override
 		 * @private
 		 */
@@ -83,6 +83,11 @@ sap.ui.define(['./Select', './library'],
 		/* =========================================================== */
 		/* Lifecycle methods                                           */
 		/* =========================================================== */
+
+		ActionSelect.prototype._onBeforeRenderingPopover = function () {
+			Select.prototype._onBeforeRenderingPopover.call(this);
+			this._updateTutorMessage();
+		};
 
 		ActionSelect.prototype.onAfterRenderingPicker = function() {
 			Select.prototype.onAfterRenderingPicker.call(this);
@@ -149,7 +154,7 @@ sap.ui.define(['./Select', './library'],
 		/**
 		 * Handler for SHIFT-TAB key  - 'tab previous' key event.
 		 *
-		 * @param oEvent - key event
+		 * @param {jQuery.Event} oEvent The event object.
 		 * @private
 		 *
 		 */
@@ -180,7 +185,7 @@ sap.ui.define(['./Select', './library'],
 		/**
 		 * Handler for TAB key - sap 'tab next' key event.
 		 *
-		 * @param oEvent - key event
+		 * @param {jQuery.Event} oEvent The event object.
 		 * @private
 		 *
 		 */
@@ -231,7 +236,7 @@ sap.ui.define(['./Select', './library'],
 		/**
 		 * Handler for focus in event on The Selection List.
 		 *
-		 * @param oEvent - key event
+		 * @param {jQuery.Event} oEvent The event object.
 		 * @private
 		 */
 		ActionSelect.prototype.onfocusinList = function(oEvent) {
@@ -257,6 +262,47 @@ sap.ui.define(['./Select', './library'],
 
 			if (this.isOpen() && oSelecteditem) {
 				oSelecteditem.$().toggleClass("sapMActionSelectItemWithoutFocus", bRemove);
+			}
+		};
+
+		/**
+		 * Handles the creating and setting of a tutor message when the control has buttons.
+		 *
+		 * @private
+		 */
+		ActionSelect.prototype._updateTutorMessage = function() {
+			var oPicker = this.getPicker(),
+				aAriaLabels = oPicker.getAriaLabelledBy(),
+				bHasButtons = !!this.getButtons().length,
+				bTutorMessageNotReferenced;
+
+			if (!this._sTutorMessageId) {
+				this._sTutorMessageId = this.getId() + "-tutorMessage";
+				this._oTutorMessageText = new InvisibleText(this._sTutorMessageId, {
+					text: sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("ACTION_SELECT_TUTOR_MESSAGE")
+				}).toStatic();
+			}
+
+			bTutorMessageNotReferenced = (aAriaLabels.indexOf(this._sTutorMessageId) === -1);
+
+			if (bTutorMessageNotReferenced && bHasButtons) {
+				oPicker.addAriaLabelledBy(this._sTutorMessageId);
+			} else {
+				if (!bHasButtons) {
+					oPicker.removeAriaLabelledBy(this._sTutorMessageId);
+				}
+			}
+		};
+
+		/**
+		 * Called when the control is destroyed
+		 *
+		 * @private
+		 */
+		ActionSelect.prototype.exit = function () {
+			if (this._oTutorMessageText) {
+				this._oTutorMessageText.destroy();
+				this._oTutorMessageText = null;
 			}
 		};
 

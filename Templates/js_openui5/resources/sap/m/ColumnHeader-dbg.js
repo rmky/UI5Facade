@@ -1,11 +1,9 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define([
-	'sap/ui/core/Control', 'sap/ui/core/Icon'
-], function(Control, Icon) {
+sap.ui.define(['sap/ui/core/Control', 'sap/ui/core/Icon', './ColumnHeaderRenderer'], function(Control, Icon, ColumnHeaderRenderer) {
 	"use strict";
 
 	/**
@@ -18,7 +16,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @since 1.52
@@ -197,8 +195,8 @@ sap.ui.define([
 	};
 
 	/**
-	 * Click event for opening the <code>ViewSettingsPopover<code> control.
-	 * @param {object} oEvent Triggers the opening of the <code>ViewSettingsPopover<code> control.
+	 * Click event for opening the <code>ViewSettingsPopover</code> control.
+	 * @param {object} oEvent Triggers the opening of the <code>ViewSettingsPopover</code> control.
 	 * @private
 	 */
 	ColumnHeader.prototype.onclick = function(oEvent) {

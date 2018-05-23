@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,12 +26,12 @@ sap.ui.define(["jquery.sap.global", "sap/ui/base/Metadata", "sap/m/library"], fu
 
 	/**
 	 * Generates anchors based on the provided configuration.
-	 * @param {string} sText
-	 * @param {sap.m.LinkConversion} sLinkConversionStrategy
-	 * @param {string} sTarget
+	 * @param {string} sText The text to be processed
+	 * @param {sap.m.LinkConversion} sLinkConversionStrategy The link conversion strategy
+	 * @param {string} sTarget The target attribute of the newly created anchors
 	 * @static
 	 * @public
-	 * @returns {string}
+	 * @returns {string} The resulting text after the anchor generation
 	 */
 	AnchorGenerator.generateAnchors = function (sText, sLinkConversionStrategy, sTarget) {
 		if (sLinkConversionStrategy === LinkConversion.ProtocolOnly) {

@@ -1,41 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Library name="sap.ui.layout" xmlns="http://www.sap.com/ui5/ide/templates/xmlview">
-<Template name="sap.ui.layout.BlockLayout" alias="BlockLayout,Layout">
-	<jsTemplate><![CDATA[new sap.ui.layout.BlockLayout({
-	id: "${id}", // sap.ui.core.ID
-	busy: false, // boolean
-	busyIndicatorDelay: 1000, // int
-	visible: true, // boolean
-	fieldGroupIds: [], // string[], since 1.31
-	background: sap.ui.layout.BlockBackgroundType.Default, // sap.ui.layout.BlockBackgroundType, since 1.42
-	tooltip: undefined, // sap.ui.core.TooltipBase
-	customData: [], // sap.ui.core.CustomData
-	dependents: [], // sap.ui.core.Element, since 1.19
-	content: [], // sap.ui.layout.BlockLayoutRow
-	validateFieldGroup: [function (oEvent) {
-		var ${control} = oEvent.getSource();
-	}, this]
-})
-]]></jsTemplate>
-	<xmlTemplate><![CDATA[<BlockLayout xmlns="sap.ui.layout"
-	id="${id}"
-	busy="false"
-	busyIndicatorDelay="1000"
-	visible="true"
-	fieldGroupIds=""
-	background="Default"
-	validateFieldGroup="">
-		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
-		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
-		<content></content> <!-- sap.ui.layout.BlockLayoutRow -->
-</BlockLayout>
-]]></xmlTemplate>
-</Template>
 <Template name="sap.ui.layout.BlockLayoutCell" alias="BlockLayoutCell,Cell">
 	<jsTemplate><![CDATA[new sap.ui.layout.BlockLayoutCell({
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	title: undefined, // string
@@ -57,6 +27,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	title=""
@@ -100,6 +71,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	scrollable: false, // boolean
@@ -118,6 +90,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	scrollable="false"
@@ -135,6 +108,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	vertical: true, // boolean
@@ -155,6 +129,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	vertical="true"
@@ -174,6 +149,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	width: "100%", // sap.ui.core.CSSSize
@@ -197,6 +173,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	width="100%"
@@ -294,6 +271,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	allowWrapping: false, // boolean
@@ -310,6 +288,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	allowWrapping="false"
@@ -325,6 +304,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	responsive: true, // boolean
@@ -342,6 +322,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	responsive="true"
@@ -383,6 +364,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	orientation: sap.ui.core.Orientation.Horizontal, // sap.ui.core.Orientation
@@ -404,6 +386,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	orientation="Horizontal"
@@ -443,6 +426,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	width: undefined, // sap.ui.core.CSSSize
@@ -460,6 +444,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	width=""
@@ -476,6 +461,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	width: undefined, // sap.ui.core.CSSSize
@@ -497,6 +483,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	width=""
@@ -567,6 +554,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	backgroundDesign: sap.ui.layout.BackgroundDesign.Translucent, // sap.ui.layout.BackgroundDesign, since 1.36.0
@@ -582,6 +570,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	backgroundDesign="Translucent"
@@ -632,6 +621,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	backgroundDesign: sap.ui.layout.BackgroundDesign.Translucent, // sap.ui.layout.BackgroundDesign, since 1.36.0
@@ -648,6 +638,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	backgroundDesign="Translucent"
@@ -663,6 +654,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	backgroundDesign: sap.ui.layout.BackgroundDesign.Translucent, // sap.ui.layout.BackgroundDesign, since 1.36.0
@@ -694,6 +686,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	backgroundDesign="Translucent"
@@ -724,6 +717,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	backgroundDesign: sap.ui.layout.BackgroundDesign.Translucent, // sap.ui.layout.BackgroundDesign, since 1.36.0
@@ -739,6 +733,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	backgroundDesign="Translucent"
@@ -753,6 +748,7 @@
 	id: "${id}", // sap.ui.core.ID
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	maxContainerCols: 2, // int
@@ -794,6 +790,7 @@
 	id="${id}"
 	busy="false"
 	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
 	maxContainerCols="2"

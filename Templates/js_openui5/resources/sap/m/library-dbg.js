@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,15 +22,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	 * @namespace
 	 * @name sap.m
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.m",
-		version: "1.52.5",
+		version: "1.54.5",
 		dependencies : ["sap.ui.core"],
+		designtime: "sap/m/designtime/library.designtime",
 		types: [
 			"sap.m.BackgroundDesign",
 			"sap.m.BarDesign",
@@ -87,6 +88,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.StringFilterOperator",
 			"sap.m.SwipeDirection",
 			"sap.m.SwitchType",
+			"sap.m.TimePickerMaskMode",
 			"sap.m.ToolbarDesign",
 			"sap.m.VerticalPlacementType",
 			"sap.m.semantic.SemanticRuleSetType"
@@ -96,6 +98,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.IBreadcrumbs",
 			"sap.m.IconTab",
 			"sap.m.IScale",
+			"sap.m.ISliderTooltip",
 			"sap.m.semantic.IGroup",
 			"sap.m.semantic.IFilter",
 			"sap.m.semantic.ISort",
@@ -115,6 +118,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.Carousel",
 			"sap.m.CheckBox",
 			"sap.m.ColumnListItem",
+			"sap.m.ColorPalette",
+			"sap.m.ColorPalettePopover",
 			"sap.m.ComboBox",
 			"sap.m.ComboBoxTextField",
 			"sap.m.ComboBoxBase",
@@ -217,6 +222,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.SelectionDetails",
 			"sap.m.Shell",
 			"sap.m.Slider",
+			"sap.m.SliderTooltip",
+			"sap.m.SliderTooltipContainer",
 			"sap.m.SlideTile",
 			"sap.m.StepInput",
 			"sap.m.SplitApp",
@@ -235,6 +242,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.TileContainer",
 			"sap.m.TileContent",
 			"sap.m.TimePicker",
+			"sap.m.TimePickerSliders",
 			"sap.m.Title",
 			"sap.m.ToggleButton",
 			"sap.m.Token",
@@ -250,6 +258,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.ViewSettingsDialog",
 			"sap.m.ViewSettingsPopover",
 			"sap.m.semantic.DetailPage",
+			"sap.m.semantic.SemanticPage",
+			"sap.m.semantic.ShareMenuPage",
 			"sap.m.semantic.FullscreenPage",
 			"sap.m.semantic.MasterPage",
 			"sap.m.Wizard",
@@ -340,6 +350,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 					"hideControl": "default",
 					"unhideControl": "default"
 				},
+				"sap.m.Dialog": "sap/m/flexibility/Dialog",
 				"sap.m.FlexBox": {
 					"hideControl": "default",
 					"unhideControl": "default",
@@ -398,9 +409,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 				"sap.m.OverflowToolbar":"sap/m/flexibility/OverflowToolbar",
 				"sap.m.Page": "sap/m/flexibility/Page",
 				"sap.m.Panel": "sap/m/flexibility/Panel",
-				"sap.m.Popover": {
-					"moveControls": "default"
-				},
+				"sap.m.Popover": "sap/m/flexibility/Popover",
 				"sap.m.RadioButton": "sap/m/flexibility/RadioButton",
 				"sap.m.RatingIndicator": {
 					"hideControl": "default",
@@ -433,6 +442,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 					"unhideControl": "default",
 					"moveControls": "default"
 				}
+			},
+			//Configuration used for rule loading of Support Assistant
+			"sap.ui.support": {
+				publicRules:true,
+				internalRules:true
 			}
 		}
 	});
@@ -542,6 +556,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 		 * @public
 		 */
 		Transparent : "Transparent",
+
+		/**
+		 * ghost type
+		 * @public
+		 */
+		Ghost : "Ghost",
 
 		/**
 		 * up type (up navigation button for header)
@@ -1368,6 +1388,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	 */
 
 	/**
+	 *
+	 *   Interface for controls which are suitable as a Tooltip for the Slider/RangeSlider.
+	 *
+	 *
+	 * @since 1.54
+	 * @name sap.m.ISliderTooltip
+	 * @interface
+	 * @public
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	/**
 	 * Allowed tags for the implementation of the IBar interface.
 	 *
 	 * @enum {string}
@@ -1472,6 +1504,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	 *       <li><code>onAfterExitOverflow(oControl)</code> - A callback function that will be invoked after taking the control out of the overflow menu (before moving it back to the toolbar itself). The control instance will be passed as an argument.
 	 *
 	 *       <b>Note:</b> See: <code>onBeforeEnterOverflow</code> for details about the function's context.</li>
+	 *
+	 *       <li><code>getCustomImportance()</code> - A function that, if provided, will be called to determine the priority of the control.
+	 *       This function must return a value of type <code>sap.m.OverflowToolbarPriority</code>. The string "Medium" is also accepted and interpreted as priority between <code>Low</code> and <code>High<code>.
+	 *
+	 *       <b>Note:</b> Normally priority in <code>sap.m.OverflowToolbar</code> is managed with the <code>priority</code> property of <code>sap.m.OverflowToolbarLayoutData</code>.
+	 *       However, some controls may have other means of defining priority, such as dedicated properties or other types of layout data for that purpose.
+	 *       In summary, implementing this function allows a control to override the default priority logic (<code>sap.m.OverflowToolbarLayoutData</code>) by providing its own.</li>
 	 *   </ul>
 	 *
 	 *   <b>Important:</b> In addition, the control can implement a CSS class, scoped with the <code>.sapMOverflowToolbarMenu-CTX</code> context selector, that will be applied whenever the control is inside the overflow menu.
@@ -2546,6 +2585,29 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	};
 
 	/**
+	 * Defines which area of the control remains fixed at the top of the page during vertical scrolling as long as the control is in the viewport.
+	 * @enum {string}
+	 * @public
+	 * @since 1.54
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.m.Sticky = {
+
+		/**
+		 * No area remains in a fixed position.
+		 * @public
+		 */
+		None: "None",
+
+		/**
+		 * Only column headers remain in a fixed position.
+		 * If no column headers are available, this option behaves the same as <code>None</code>.
+		 * @public
+		 */
+		ColumnHeaders: "ColumnHeaders"
+	};
+
+	/**
 	 * Possible values for the visualization of float values in the RatingIndicator control.
 	 *
 	 * @enum {string}
@@ -2962,6 +3024,54 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	};
 
 	/**
+	 * Types of visual styles for the {@link sap.m.Toolbar}.
+	 *
+	 * <b>Note:</b> Keep in mind that the styles are theme-dependent and can differ based on the currently used theme.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.54
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.m.ToolbarStyle = {
+
+		/**
+		 * Default visual style dependent on the used theme.
+		 * @public
+		 */
+		Standard : "Standard",
+
+		/**
+		 * Simplified visual style dependent on the used theme.
+		 * @public
+		 */
+		Clear : "Clear"
+
+	};
+
+	/**
+	 * Different modes for the <code>sap.m.TimePicker</code> mask.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.54
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.m.TimePickerMaskMode = {
+		/**
+		 * <code>MaskInput</code> is enabled for the <code>sap.m.TimePicker</code>.
+		 * @public
+		 */
+		On: "On",
+
+		/**
+		 * <code>MaskInput</code> is disabled for the <code>sap.m.TimePicker</code>.
+		 * @public
+		 */
+		Off: "Off"
+	};
+
+	/**
 	 * Types of string filter operators.
 	 *
 	 * @enum {string}
@@ -3030,6 +3140,76 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 		 * @public
 		 */
 		Error : "ERROR"
+	};
+
+	/**
+	 * Available validation modes for {@link sap.m.StepInput}.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.m.StepInputValidationMode = {
+
+		/**
+		 * Validation happens on <code>FocusOut</code>.
+		 * @public
+		 */
+		FocusOut : "FocusOut",
+
+		/**
+		 * Validation happens on <code>LiveChange</code>.
+		 * @public
+		 */
+		LiveChange : "LiveChange"
+
+	};
+
+	/**
+	 * Available step modes for {@link sap.m.StepInput}.
+	 * @enum {string}
+	 * @public
+	 * @since 1.54
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.m.StepInputStepModeType = {
+		/**
+		 * Choosing increase/decrease button will add/subtract the <code>step</code> value
+		 * to/from the current value. For example, if <code>step</code> is 5, current
+		 * <code>value</code> is 17 and increase button is chosen, the result will be 22 (5+17).
+		 *
+		 * <b>Note:</b> Using keyboard PageUp/PageDown will add/subtract the <code>step</code>
+		 * multiplied by the <code>largerStep</code> values to/from the current
+		 * <code>value</code>. For example, if <code>step</code> is 5, <code>largerStep</code>
+		 * is 3, current <code>value</code> is 17 and PageUp is chosen, the result would be 32 (5*3+17).
+		 *
+		 * For more information, see {@link sap.m.StepInput}'s <code>step</code>,
+		 * <code>largerStep</code> and <code>stepMode</code> properties.
+		 */
+		AdditionAndSubtraction: "AdditionAndSubtraction",
+		 /**
+		 * Pressing increase/decrease button will increase/decrease the current
+		 * <code>value</code> to the closest number that is divisible by the
+		 * <code>step</code>.
+		 *
+		 * For example, if <code>step</code> is 5, current <code>value</code> is 17 and
+		 * increase button is chosen, the result will be 20 as it is the closest larger number
+		 * that is divisible by 5.
+		 *
+		 * <b>Note:</b> Using keyboard PageUp/PageDown will increase/decrease the current
+		 * <code>value</code> to the closest number that is divisible by the multiplication of
+		 * the <code>step</code> and the <code>largerStep</code> values. For example, if
+		 * <code>step</code> is 5, <code>largerStep</code> is 3, current <code>value</code> is
+		 * 17 and PageUp is chosen, the result would be 30 as it is the closest larger number
+		 * that is divisible by 15.
+		 *
+		 * The logic above will work only if both <code>step</code> and
+		 * <code>largerStep</code> are integers.
+		 *
+		 * For more information, see {@link sap.m.StepInput}'s <code>step</code>,
+		 * <code>largerStep</code> and <code>stepMode</code> properties.
+		 */
+		Multiple: "Multiple"
 	};
 
 
@@ -3217,7 +3397,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 		 * @since 1.12
 		 * @name sap.m#BaseFontSize
 		 */
-		oLib.BaseFontSize = jQuery(document.documentElement).css("font-size");
+		oLib.BaseFontSize = jQuery(document.documentElement).css("font-size") || "16px";
 
 		/**
 		 * Hide the soft keyboard.
@@ -3577,7 +3757,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			},
 
 
-			/**
+			/*
 			 * @protected
 			 * @returns
 			 */

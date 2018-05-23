@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,7 +22,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.FakeLrepConnector
 	 * @experimental Since 1.27.0
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 */
 	function FakeLrepConnector(sInitialComponentJsonPath){
 		this.sInitialComponentJsonPath = sInitialComponentJsonPath;
@@ -102,8 +102,23 @@ sap.ui.define([
 			handleGetTransports(sUri, sMethod, oData, mOptions, resolve, reject);
 			handleMakeChangesTransportable(sUri, sMethod, oData, mOptions, resolve, reject);
 			handleManifirstSupport(sUri, sMethod, oData, mOptions, resolve, reject);
+			handleResetChanges(sUri, sMethod, oData, mOptions, resolve, reject);
 		});
 	};
+
+	function handleResetChanges(sUri, sMethod, oData, mOptions, resolve) {
+		if (sUri.match(/^\/sap\/bc\/lrep\/changes\//) && sMethod === 'DELETE') {
+			var aUriParameters = [];
+			var regExp = /\?reference=([\w.]+)\&.+\&layer=(\w+)\&generator=([\w.]+)/;
+			aUriParameters = sUri.match(regExp);
+			resolve({
+				response: {
+					"parameters": aUriParameters
+				},
+				status: "success"
+			});
+		}
+	}
 
 	function handleManifirstSupport(sUri, sMethod, oData, mOptions, resolve) {
 		if (sUri.match(/^\/sap\/bc\/ui2\/app_index\/ui5_app_mani_first_supported\//) && sMethod === 'GET') {

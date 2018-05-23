@@ -18,13 +18,14 @@
 			"desktop": true,
 			"tablet": true,
 			"phone": true
-		},
-		"supportedThemes": [
-			"sap_bluecrystal"
-		]
+		}
 	},
 	"sap.ui5": {
-		"rootView": "sap.ui.fl.support.apps.contentbrowser.view.MainView",
+		"rootView": {
+			"viewName": "sap.ui.fl.support.apps.contentbrowser.view.MainView",
+			"type": "XML",
+			"async": true
+		},
 		"dependencies": {
 			"minUI5Version": "1.45",
 			"libs": {
@@ -52,7 +53,8 @@
 				"viewType": "XML",
 				"viewPath": "sap.ui.fl.support.apps.contentbrowser.view",
 				"controlId": "sap.ui.fl.support.apps.contentbrowser.App",
-				"controlAggregation": "masterPages"
+				"controlAggregation": "masterPages",
+				"async": true
 			},
 			"routes": [
 				{

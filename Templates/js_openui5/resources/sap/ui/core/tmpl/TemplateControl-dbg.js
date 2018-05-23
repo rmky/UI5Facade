@@ -1,12 +1,30 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.core.tmpl.TemplateControl.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/DeclarativeSupport', 'sap/ui/core/library', 'sap/ui/core/UIArea', './DOMElement', './Template'],
-	function(jQuery, Control, DeclarativeSupport, library, UIArea, DOMElement, Template) {
+sap.ui.define([
+    'jquery.sap.global',
+    'sap/ui/core/Control',
+    'sap/ui/core/DeclarativeSupport',
+    'sap/ui/core/library',
+    'sap/ui/core/UIArea',
+    './DOMElement',
+    './Template',
+    "./TemplateControlRenderer"
+],
+	function(
+	    jQuery,
+		Control,
+		DeclarativeSupport,
+		library,
+		UIArea,
+		DOMElement,
+		Template,
+		TemplateControlRenderer
+	) {
 	"use strict";
 
 
@@ -20,7 +38,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Declarat
 	 * @class
 	 * This is the base class for all template controls. Template controls are declared based on templates.
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @public
 	 * @since 1.15

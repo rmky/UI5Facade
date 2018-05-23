@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,13 +16,23 @@ sap.ui.define([
 	"sap/m/OverflowToolbarAssociativePopover",
 	"sap/m/OverflowToolbarAssociativePopoverControls",
 	"sap/ui/core/IconPool",
-	"sap/m/SearchField",
-	"sap/ui/Device"
-], function (jQuery, library, ToggleButton, InvisibleText, Toolbar, ToolbarSpacer, OverflowToolbarLayoutData,
-			 OverflowToolbarAssociativePopover, OverflowToolbarAssociativePopoverControls,
-			 IconPool, SearchField, Device) {
+	"sap/ui/Device",
+	"./OverflowToolbarRenderer"
+], function(
+	jQuery,
+	library,
+	ToggleButton,
+	InvisibleText,
+	Toolbar,
+	ToolbarSpacer,
+	OverflowToolbarLayoutData,
+	OverflowToolbarAssociativePopover,
+	OverflowToolbarAssociativePopoverControls,
+	IconPool,
+	Device,
+	OverflowToolbarRenderer
+) {
 	"use strict";
-
 
 	// shortcut for sap.m.PlacementType
 	var PlacementType = library.PlacementType;
@@ -58,11 +68,12 @@ sap.ui.define([
 	 * <h3>Usage</h3>
 	 *
 	 * Different behavior and priorities can be set for each control inside the
-	 * <code>OverflowToolbar</code>, such as certain actions to appear only in the
+	 * <code>OverflowToolbar</code>, such as certain controls to appear only in the
 	 * overflow area or to never move there. For more information, see
 	 * {@link sap.m.OverflowToolbarLayoutData} and {@link sap.m.OverflowToolbarPriority}.
 	 *
-	 * Only the following controls can be moved in the overflow area:
+	 * <h3>Overflow Behavior</h3>
+	 * By default, only the following controls can move to the overflow area:
 	 *
 	 * <ul><li>{@link sap.m.Button}</li>
 	 * <li>{@link sap.m.CheckBox}</li>
@@ -71,7 +82,10 @@ sap.ui.define([
 	 * <li>{@link sap.m.DateTimeInput}</li>
 	 * <li>{@link sap.m.DateTimePicker}</li>
 	 * <li>{@link sap.m.Input}</li>
+	 * <li>{@link sap.m.Label}</li>
+	 * <li>{@link sap.m.MenuButton}</li>
 	 * <li>{@link sap.m.OverflowToolbarButton}</li>
+	 * <li>{@link sap.m.OverflowToolbarToggleButton}</li>
 	 * <li>{@link sap.m.SearchField}</li>
 	 * <li>{@link sap.m.SegmentedButton}</li>
 	 * <li>{@link sap.m.Select}</li>
@@ -79,6 +93,9 @@ sap.ui.define([
 	 * <li>{@link sap.m.ToggleButton}</li>
 	 * <li>{@link sap.ui.comp.smartfield.SmartField}</li>
 	 * <li>{@link sap.ui.comp.smartfield.SmartLabel}</li></ul>
+	 *
+	 * Additionally, any control that implements the {@link sap.m.IOverflowToolbarContent} interface may define
+	 * its behavior (most importantly overflow behavior) when placed inside <code>OverflowToolbar</code>.
 	 *
 	 * <b>Note:</b> The <code>OverflowToolbar</code> is an adaptive container that checks the available
 	 * width and hides the part of its content that doesn't fit. It is intended that simple controls,
@@ -95,7 +112,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -109,7 +126,8 @@ sap.ui.define([
 			aggregations: {
 				_overflowButton: {type: "sap.m.ToggleButton", multiple: false, visibility: "hidden"},
 				_popover: {type: "sap.m.Popover", multiple: false, visibility: "hidden"}
-			}
+			},
+			designtime: "sap/m/designtime/OverflowToolbar.designtime"
 		}
 	});
 
@@ -149,19 +167,6 @@ sap.ui.define([
 
 		// When set to true, the recalculation algorithm will bypass an optimization to determine if anything moved from/to the action sheet
 		this._bSkipOptimization = false;
-
-		// Init static hidden text for ARIA
-		if (!OverflowToolbar._sAriaOverflowButtonLabelId) {
-
-			// Load the resources, needed for the text of the overflow button
-			var oCoreResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.core");
-
-			// Use Icon-Font text
-			OverflowToolbar._sAriaOverflowButtonLabelId = new InvisibleText({
-				text: oCoreResourceBundle.getText("Icon.overflow")
-			}).toStatic().getId();
-
-		}
 
 		this._aControlSizes = {}; // A map of control id -> control *optimal* size in pixels; the optimal size is outerWidth for most controls and min-width for spacers
 	};
@@ -257,7 +262,7 @@ sap.ui.define([
 	 */
 	OverflowToolbar.prototype._polyfillFlexboxSupport = function () {
 		// Modern clients have flexbox natively, do nothing
-		if (Toolbar.hasNewFlexBoxSupport) {
+		if (OverflowToolbarRenderer.hasNewFlexBoxSupport) {
 			return;
 		}
 
@@ -312,6 +317,19 @@ sap.ui.define([
 		// This causes an overflow of the last element/button
 		if (Device.system.phone) {
 			this._iContentSize -= 1;
+		}
+
+		if (this._aActionSheetOnlyControls.length) {
+
+			var aVisibleActionSheetOnlyControls = this._aActionSheetOnlyControls.filter(function(oControl) {
+				return oControl.getVisible();
+			}),
+				bHasVisibleActionSheetOnlyControls = (aVisibleActionSheetOnlyControls.length > 0);
+
+			if (bHasVisibleActionSheetOnlyControls) {
+				// At least one control will be in the action sheet, so the overflow button is required within content
+				this._iContentSize += this._getOverflowButtonSize();
+			}
 		}
 
 		this._bControlsInfoCached = true;
@@ -385,7 +403,7 @@ sap.ui.define([
 
 						oGroups[iControlGroup] = oGroups[iControlGroup] || [];
 						aGroup = oGroups[iControlGroup];
-						aGroup.push(oControl);
+						aGroup.unshift(oControl);
 
 						// The overall group priority is the max priority of its elements
 						if (!aGroup._priority || oPriorityOrder[aGroup._priority] < oPriorityOrder[sControlPriority]) {
@@ -458,7 +476,7 @@ sap.ui.define([
 
 			if (aButtonsToMoveToActionSheet.length > 0) {
 				// At least one control will be in the action sheet, so the overflow button is needed
-				iContentSize = fnAddOverflowButton.call(this, iContentSize);
+				this._setOverflowButtonNeeded(true);
 			}
 		}
 
@@ -553,6 +571,12 @@ sap.ui.define([
 
 		this._resetToolbar();
 
+		for (var iControlSize in this._aControlSizes) {
+			if (this._aControlSizes.hasOwnProperty(iControlSize)) {
+				this._aControlSizes[iControlSize] = 0; // reset saved control sizes
+			}
+		}
+
 		this._bControlsInfoCached = false;
 		this._bNestedInAPopover = null;
 		this._iPreviousToolbarWidth = null;
@@ -612,7 +636,7 @@ sap.ui.define([
 				id: this.getId() + "-overflowButton",
 				icon: IconPool.getIconURI("overflow"),
 				press: this._overflowButtonPressed.bind(this),
-				ariaLabelledBy: this._sAriaOverflowButtonLabelId,
+				ariaLabelledBy: InvisibleText.getStaticId("sap.ui.core", "Icon.overflow"),
 				type: ButtonType.Transparent
 			});
 
@@ -660,7 +684,8 @@ sap.ui.define([
 				modal: false,
 				horizontalScrolling: Device.system.phone ? false : true,
 				contentWidth: Device.system.phone ? "100%" : "auto",
-				offsetY: this._detireminePopoverVerticalOffset()
+				offsetY: this._detireminePopoverVerticalOffset(),
+				ariaLabelledBy: InvisibleText.getStaticId("sap.m", "INPUT_AVALIABLE_VALUES")
 			});
 
 			// Override popover positioning mechanism
@@ -788,7 +813,6 @@ sap.ui.define([
 
 	OverflowToolbar.prototype.addContent = function (oControl) {
 		this._registerControlListener(oControl);
-		this._preProcessControl(oControl);
 		this._resetAndInvalidateToolbar(false);
 		return this._callToolbarMethod("addContent", arguments);
 	};
@@ -796,7 +820,6 @@ sap.ui.define([
 
 	OverflowToolbar.prototype.insertContent = function (oControl, iIndex) {
 		this._registerControlListener(oControl);
-		this._preProcessControl(oControl);
 		this._resetAndInvalidateToolbar(false);
 		return this._callToolbarMethod("insertContent", arguments);
 	};
@@ -809,7 +832,6 @@ sap.ui.define([
 		}
 		this._resetAndInvalidateToolbar(false);
 
-		this._postProcessControl(vContent);
 		this._deregisterControlListener(vContent);
 
 		return vContent;
@@ -821,7 +843,6 @@ sap.ui.define([
 
 		aContents.forEach(function (oControl) {
 			this._deregisterControlListener(oControl);
-			this._postProcessControl(oControl);
 		}, this);
 		this._resetAndInvalidateToolbar(false);
 
@@ -932,40 +953,6 @@ sap.ui.define([
 		});
 	};
 
-
-	/**
-	 * Make changes to certain controls before entering the overflow toolbar
-	 * SearchField - always keep selectOnFocus to false while inside the toolbar
-	 * @param oControl
-	 * @private
-	 */
-	OverflowToolbar.prototype._preProcessControl = function (oControl) {
-		if (!(oControl instanceof SearchField)) {
-			return;
-		}
-
-		if (oControl.getSelectOnFocus()) {
-			oControl.setProperty("selectOnFocus", false, true);
-			oControl._origSelectOnFocus = true;
-		}
-	};
-
-	/**
-	 * Restore changes to controls when removing them from the overflow toolbar
-	 * @param oControl
-	 * @private
-	 */
-	OverflowToolbar.prototype._postProcessControl = function (oControl) {
-		if (!(oControl instanceof SearchField)) {
-			return;
-		}
-
-		if (typeof oControl._origSelectOnFocus !== "undefined") {
-			oControl.setProperty("selectOnFocus", oControl._origSelectOnFocus, true);
-			delete oControl._origSelectOnFocus;
-		}
-	};
-
 	/**
 	 * Returns the control index in the OverflowToolbar content aggregation or the index of a group, which is defined by the rightmost item in the group.
 	 * @param vControl array of controls or single control
@@ -1009,12 +996,20 @@ sap.ui.define([
 	 * @private
 	 */
 	OverflowToolbar._getControlPriority = function (vControl) {
+		// 1. Check if it is a group of controls (treated as a single entity in terms of overflow), rather a single control
 		if (vControl.length) {
 			return vControl._priority;
 		}
 
-		var oLayoutData = vControl.getLayoutData && vControl.getLayoutData();
+		// 2. Check if the control has custom priority given by implementing sap.m.IOverflowToolbarContent
+		var bImplementsIOTBContent = vControl.getMetadata().getInterfaces().indexOf("sap.m.IOverflowToolbarContent") > -1,
+			fnGetCustomImportance = bImplementsIOTBContent && vControl.getOverflowToolbarConfig().getCustomImportance;
+		if (bImplementsIOTBContent && typeof fnGetCustomImportance === "function") {
+			return fnGetCustomImportance();
+		}
 
+		// 3. Check for priority given by layout data (standard use case)
+		var oLayoutData = vControl.getLayoutData && vControl.getLayoutData();
 		if (oLayoutData && oLayoutData instanceof OverflowToolbarLayoutData) {
 
 			if (oLayoutData.getMoveToOverflow() === false) {
@@ -1038,6 +1033,7 @@ sap.ui.define([
 			return sPriority;
 		}
 
+		// 4. Default priority (High) as a fallback if nothing else was supplied
 		return OverflowToolbarPriority.High;
 	};
 
@@ -1065,7 +1061,10 @@ sap.ui.define([
 
 		oPriorityOrder[OverflowToolbarPriority.Disappear] = 1;
 		oPriorityOrder[OverflowToolbarPriority.Low] = 2;
-		oPriorityOrder[OverflowToolbarPriority.High] = 3;
+		// If a control sets custom priority (by implementing sap.m.IOverflowToolbarContent), the string "Medium" is
+		// also accepted along with the standard priority values, such as High, Low, NeverOverflow, etc... therefore "Medium" should also be mapped
+		oPriorityOrder["Medium"] = 3;
+		oPriorityOrder[OverflowToolbarPriority.High] = 4;
 
 		return oPriorityOrder;
 	})();

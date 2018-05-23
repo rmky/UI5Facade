@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -52,7 +52,7 @@ sap.ui.define([ 'jquery.sap.global', '../base/Object' ], function(jQuery, BaseOb
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @public
 	 * @alias sap.ui.model.DataState
@@ -240,7 +240,7 @@ sap.ui.define([ 'jquery.sap.global', '../base/Object' ], function(jQuery, BaseOb
 
 	/**
 	 * Returns whether the data state is in laundering.
-	 * If data is send to the server the data state becomes laundering until the
+	 * If data is sent to the server, the data state becomes laundering until the
 	 * data was accepted or rejected.
 	 *
 	 * @returns {boolean} true if the data is laundering

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(['sap/ui/core/IconPool', 'sap/ui/Device'],
@@ -119,7 +119,7 @@ sap.ui.define(['sap/ui/core/IconPool', 'sap/ui/Device'],
 	};
 
 	RatingIndicatorRenderer.renderAriaLabel = function (oRm, oControl) {
-		oRm.write("<label id='" + this._sLabelID + "' class='sapMRIAriaLabel' aria-hidden='true'>" + oControl._oResourceBundle.getText("RATING_ARIA_NAME") + "</label>");
+		oRm.write("<span id='" + this._sLabelID + "' class='sapUiInvisibleText' aria-hidden='true'>" + oControl._oResourceBundle.getText("RATING_ARIA_NAME") + "</span>");
 	};
 
 	RatingIndicatorRenderer.renderSelectedItems = function (oRm, oControl) {

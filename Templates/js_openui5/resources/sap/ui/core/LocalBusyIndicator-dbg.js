@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.core.LocalBusyIndicator.
-sap.ui.define(['jquery.sap.global', './Control', './library', './theming/Parameters'],
-	function(jQuery, Control, library, Parameters) {
+sap.ui.define([
+    'jquery.sap.global',
+    './Control',
+    './library',
+    './theming/Parameters',
+    "./LocalBusyIndicatorRenderer"
+],
+	function(jQuery, Control, library, Parameters, LocalBusyIndicatorRenderer) {
 	"use strict";
 
 
@@ -27,7 +33,7 @@ sap.ui.define(['jquery.sap.global', './Control', './library', './theming/Paramet
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @public
 	 * @since 1.11.0

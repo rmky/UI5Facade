@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
@@ -189,7 +189,7 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 				'browse-folder': 0xe277, 'primary-key': 0xe278, 'two-keys': 0xe279,
 				'strikethrough': 0xe27a, 'text': 0xe27b, 'responsive': 0xe27c, 'desktop-mobile': 0xe27d,
 				'table-row': 0xe27e, 'table-column': 0xe27f, 'validate': 0x1e280, 'keyboard-and-mouse': 0xe281,
-				'touch': 0xe282
+				'touch': 0xe282, 'expand-all': 0xe283, 'collapse-all': 0xe284
 			}
 		};
 

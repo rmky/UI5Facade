@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(["sap/ui/core/Element", "sap/ui/Device"],
@@ -70,16 +70,24 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/Device"],
 		 * @param {sap.ui.core.Control} oList An object representation of the control that should be rendered.
 		 */
 		SelectListRenderer.renderItems = function(oRm, oList) {
-			var iSize = oList.getItems().length,
-				oSelectedItem = oList.getSelectedItem();
+			var iSize = oList._getNonSeparatorItemsCount(),
+				aItems = oList.getItems(),
+				oSelectedItem = oList.getSelectedItem(),
+				iCurrentPosInSet = 1,
+				oItemStates;
 
-			for (var i = 0, aItems = oList.getItems(); i < aItems.length; i++) {
-				this.renderItem(oRm, oList, aItems[i], {
+			for (var i = 0; i < aItems.length; i++) {
+				oItemStates = {
 					selected: oSelectedItem === aItems[i],
 					setsize: iSize,
-					posinset: i + 1,
 					elementData: true
-				});
+				};
+
+				if (!(aItems[i] instanceof sap.ui.core.SeparatorItem)) {
+					oItemStates.posinset = iCurrentPosInSet++;
+				}
+
+				this.renderItem(oRm, oList, aItems[i], oItemStates);
 			}
 		};
 
@@ -162,6 +170,7 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/Device"],
 				oRm.addClass(CSS_CLASS + "Cell");
 				oRm.addClass(CSS_CLASS + "FirstCell");
 				oRm.writeClasses();
+				oRm.writeAttribute("disabled", "disabled"); // fixes span obtaining focus in IE
 				oRm.write(">");
 				oRm.writeEscaped(oItem.getText());
 				oRm.write("</span>");
@@ -170,6 +179,7 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/Device"],
 				oRm.addClass(CSS_CLASS + "Cell");
 				oRm.addClass(CSS_CLASS + "LastCell");
 				oRm.writeClasses();
+				oRm.writeAttribute("disabled", "disabled"); // fixes span obtaining focus in IE
 				oRm.write(">");
 
 				if (typeof oItem.getAdditionalText === "function") {

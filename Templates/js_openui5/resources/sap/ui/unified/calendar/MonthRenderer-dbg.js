@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -330,12 +330,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sa
 				label: "",
 				describedby: ""
 			},
-			bBeforeFirstYear = oDay._bBeforeFirstYear;
+			bBeforeFirstYear = oDay._bBeforeFirstYear,
+			sAriaType = "";
 
 		var sYyyymmdd = oMonth._oFormatYyyymmdd.format(oDay.toUTCJSDate(), true);
 		var iWeekDay = oDay.getDay();
 		var iSelected = oMonth._checkDateSelected(oDay);
-		var oType = oMonth._getDateType(oDay);
+		var aDayTypes = oMonth._getDateTypes(oDay);
 		var bEnabled = oMonth._checkDateEnabled(oDay);
 		var i = 0;
 
@@ -400,19 +401,23 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sa
 			mAccProps["describedby"] = mAccProps["describedby"] + " " + oHelper.sId + "-End";
 		}
 
-		if (oType && oType.type != CalendarDayType.None) {
-			if (oType.type === CalendarDayType.NonWorking) {
-				oRm.addClass("sapUiCalItemWeekEnd");
-			} else {
-				oRm.addClass("sapUiCalItem" + oType.type);
-				if (oType.tooltip) {
-					oRm.writeAttributeEscaped('title', oType.tooltip);
+		aDayTypes.forEach(function(oDayType) {
+			if (oDayType.type != CalendarDayType.None) {
+				if (oDayType.type === CalendarDayType.NonWorking) {
+					oRm.addClass("sapUiCalItemWeekEnd");
+					return;
+				}
+				oRm.addClass("sapUiCalItem" + oDayType.type);
+				sAriaType = oDayType.type;
+				if (oDayType.tooltip) {
+					oRm.writeAttributeEscaped('title', oDayType.tooltip);
 				}
 			}
-		}
+		});
+
 
 		//oMonth.getDate() is a public date object, so it is always considered local timezones.
-		if (oMonth.getParent() && oMonth.getParent().getMetadata().getName() === "CalendarOneMonthInterval" && oDay.getMonth() !== oMonth.getStartDate().getMonth()){
+		if (oMonth.getParent() && oMonth.getParent().getMetadata().getName() === "sap.ui.unified.CalendarOneMonthInterval" && oDay.getMonth() !== oMonth.getStartDate().getMonth()){
 			oRm.addClass("sapUiCalItemOtherMonth");
 		}
 
@@ -440,8 +445,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sa
 		}
 		mAccProps["label"] = mAccProps["label"] + oHelper.oFormatLong.format(oDay.toUTCJSDate(), true);
 
-		if (oType && oType.type != CalendarDayType.None) {
-			CalendarLegendRenderer.addCalendarTypeAccInfo(mAccProps, oType.type, oHelper.oLegend);
+		if (sAriaType !== "") {
+			CalendarLegendRenderer.addCalendarTypeAccInfo(mAccProps, sAriaType, oHelper.oLegend);
 		}
 
 		if (oHelper.sSecondaryCalendarType) {

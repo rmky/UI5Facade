@@ -2,7 +2,7 @@
 
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 @import "../../../../../Base/baseLib/baseTheme/base.less"; /* ORIGINAL IMPORT PATH: "../../../../sap/ui/core/themes/base/base.less" */
@@ -33,8 +33,13 @@ Common Compact/Cozy
 .sapUiMedia-Std-Tablet .sapUxAPAnchorBar.sapMTB,
 .sapUiMedia-Std-Desktop .sapMSplitContainerDetail .sapUxAPAnchorBar.sapMTB,
 html .sapUiContainer-Medium .sapUxAPAnchorBar.sapMTB,
+html.sapUiMedia-Std-Desktop .sapUiContainer-Medium .sapUxAPAnchorBar.sapMTB,
 html .sapUiContainer-Wide .sapMSplitContainerDetail .sapUxAPAnchorBar.sapMTB {
 	padding-left: 1rem;
+}
+
+html.sapUiMedia-Std-Desktop .sapUiContainer-Narrow .sapUxAPAnchorBar.sapMTB {
+	padding-left: 0;
 }
 
 .sapUxAPAnchorBar {
@@ -390,6 +395,10 @@ Compact
 /* Base theme                          */
 /* =================================== */
 
+.sapUxAPBlockBase {
+	min-height: 8rem;
+}
+
 .sapUxAPBlockBaseDefaultSize {
 	height: 8rem;
 }
@@ -532,7 +541,8 @@ Compact
 	}
 }
 
-.sapUiSizeCompact .sapUxAPHierarchicalSelect.sapMSlt {
+.sapUiSizeCompact .sapUxAPHierarchicalSelect.sapMSlt,
+.sapUiSizeCompact .sapUiContainer-Narrow .sapUxAPHierarchicalSelect.sapMSlt {
 	height: 2rem;
 	margin-top: 0;
 	margin-bottom: 0;
@@ -730,6 +740,31 @@ Expose class for rounded images
 	vertical-align: center;
 }
 
+// Action Button START
+.sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnContent {
+	display: none;
+}
+
+.sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnIconFirst,
+.sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnBack {
+	padding-left: 0;
+}
+
+.sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnIconFirst.sapMBtnText,
+.sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnBack.sapMBtnText {
+	padding-left: 0.75rem;
+}
+
+.sapUxAPObjectPageHeaderActionButtonHideIcon {
+	.sapMBtnIcon {
+		display: none;
+	}
+	.sapMBtnContent {
+		padding: 0;
+	}
+}
+// Action Button END
+
 /*
 objectPageHeader Title
 */
@@ -760,29 +795,6 @@ objectPageHeader Title
 		}
 	}
 
-	.sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnContent {
-		display: none;
-	}
-
-	.sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnIconFirst,
-	.sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnBack {
-		padding-left: 0;
-	}
-
-	.sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnIconFirst.sapMBtnText,
-	.sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnBack.sapMBtnText {
-		padding-left: 0.75rem;
-	}
-
-	.sapUxAPObjectPageHeaderActionButtonHideIcon {
-		.sapMBtnIcon {
-			display: none;
-		}
-		.sapMBtnContent {
-			padding: 0;
-		}
-	}
-
 	.sapUxAPObjectPageHeaderIdentifierContainer {
 		display: inline-block;
 		line-height: normal;
@@ -808,6 +820,8 @@ objectPageHeader Title
 		vertical-align: top;
 		> * {
 			margin-left: 0.5rem;
+		}
+		> *:not(.sapMSegB) {
 			padding: 0;
 		}
 		> *:first-child {
@@ -953,11 +967,24 @@ html[dir=rtl] .sapUxAPObjectPageHeaderPlaceholder.sapUxAPObjectPageHeaderObjectI
 }
 
 .sapUxAPObjectPageHeaderTitleArrow .sapMBtn {
-	margin-top: -0.525rem;
+	margin-top: -0.325rem;
+	margin-left: 0.125rem;
+	height: 2rem;
+	.sapMBtnInner {
+		height: 1.625rem;
+		min-width: 2rem;
+	}
+	.sapMBtnIcon {
+		line-height: 1.5rem;
+		width: 1rem;
+	}
 }
 
 .sapUiSizeCompact .sapUxAPObjectPageHeaderTitleArrow .sapMBtn {
-	margin-top: -0.1rem;
+	margin-top: -0.25rem;
+	.sapMBtnIcon {
+		font-size: 1.375rem;
+	}
 }
 
 .sapUxAPObjectPageHeaderTitleFollowArrow > .sapUxAPObjectPageHeaderIdentifierTitle {
@@ -1185,7 +1212,8 @@ html[dir=rtl] .sapUxAPObjectPageHeaderMarks .sapMObjStatusMarker .sapUiIcon:firs
 		}
 		.sapMObjectAttributeActive .sapMObjectAttributeTitle,
 		.sapMObjectAttributeActive .sapMObjectAttributeText {
-			display: initial;
+			display: inline;
+			position: relative;
 			white-space: pre-line;
 			word-wrap: break-word;
 		}
@@ -1473,7 +1501,7 @@ body > .sapUxAPObjectPageLayout,
 	position: relative;
 }
 
-.sapUxAPObjectPageContainerNoBar > .sapUxAPObjectPageSection:first-child {
+.sapUxAPObjectPageContainerNoBar > .sapUxAPObjectPageSection:first-child:not(.sapUxAPObjectPageSectionNoTitle) {
 	margin-top:  2rem;
 }
 
@@ -1553,78 +1581,21 @@ body > .sapUxAPObjectPageLayout,
   }
 }
 
-/* Tablet and Desktop */
-.sapUiMedia-Std-Desktop,
-.sapUiMedia-Std-Tablet,
-.sapUiContainer-Medium,
-.sapUiContainer-Wide {
-
-  .sapUxAPObjectPageLayout:not(.sapUxAPObjectPageLayoutWithNavigation) .sapFDynamicPageToggleHeaderIndicator {
-    bottom: -1.5rem;
-  }
-
-  .sapUxAPObjectPageLayout .sapFDynamicPageToggleHeaderIndicator {
-    width: 2.5rem;
-    height: 3rem;
-    font-size: 1.375rem;
-    bottom: -4.5rem; // -1.5 by default and -3 the height of the AnchorBar
-    margin-left: -1.25rem;// shift the button with half of its width for perfect centering
-
-    .sapMBtnInner {
-      height: 1.5rem;
-
-      .sapMBtnIcon {
-        line-height: 1.5rem;
-      }
-    }
-  }
+.sapUxAPObjectPageLayout.sapUxAPObjectPageLayoutWithNavigation .sapFDynamicPageToggleHeaderIndicator {
+  bottom: -4.5rem; // -1.5 by default and -3 the height of the AnchorBar
 }
 
 /* Phone */
-.sapUiMedia-Std-Phone,
-.sapUiContainer-Narrow {
-
-  .sapUxAPObjectPageLayout:not(.sapUxAPObjectPageLayoutWithNavigation) .sapFDynamicPageToggleHeaderIndicator {
-    bottom: -1.25rem;
-  }
-
-  .sapUxAPObjectPageLayout .sapFDynamicPageToggleHeaderIndicator {
-    width: 2.5rem;
-    height: 2.5rem;
+.sap-phone {
+  .sapUxAPObjectPageLayout.sapUxAPObjectPageLayoutWithNavigation .sapFDynamicPageToggleHeaderIndicator {
     bottom: -4.25rem; // -1.25 by default and -3 the height of the AnchorBar
-    margin-left: -1.25rem;// shift the button with half of its width for perfect centering
-    font-size: 1.375rem;
-
-    .sapMBtnInner {
-      height: 1.25rem;
-
-      .sapMBtnIcon {
-        line-height: 1.25rem;
-      }
-    }
   }
 }
 
 /* Compact */
 .sapUiSizeCompact {
-  .sapUxAPObjectPageLayout:not(.sapUxAPObjectPageLayoutWithNavigation) .sapFDynamicPageToggleHeaderIndicator {
-    bottom: -1rem;
-  }
-
-  .sapUxAPObjectPageLayout .sapFDynamicPageToggleHeaderIndicator {
-    width: 2rem;
-    height: 2rem;
-    font-size: 1rem;
-    bottom: -4rem; // -1 by default and -3 the height of the AnchorBar
-    margin-left: -1rem;// shift the button with half of its width for perfect centering
-
-    .sapMBtnInner {
-      height: 1rem;
-
-      .sapMBtnIcon {
-        line-height: 1rem;
-      }
-    }
+  .sapUxAPObjectPageLayout.sapUxAPObjectPageLayoutWithNavigation .sapFDynamicPageToggleHeaderIndicator {
+    bottom: -3rem; // -1 by default and -2 the height of the AnchorBar
   }
 }
 
@@ -1980,25 +1951,25 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 .sapUxAPBlockContainerDesktop {
 	padding: 1rem 2rem 3rem 2rem;
 	.sapUiFormResGrid > div {
-		padding: 0 0;
+		padding: 1rem 0;
 	}
 }
 .sapUxAPBlockContainerTablet {
 	padding: 1rem 1rem 3rem 1rem;
 	.sapUiFormResGrid > div {
-		padding: 0 0;
+		padding: 1rem 0;
 	}
 }
 .sapUxAPBlockContainerPhone {
 	padding: 0 1rem;
 	.sapUiFormResGrid > div {
-		padding: 0 0;
+		padding: 1rem 0;
 	}
 	.sapUiRespGrid.sapUiRespGridHSpace1 {
-		padding: 0 0;
+		padding: 0;
 	}
 	.sapUiRespGrid.sapUiRespGridHSpace1 > div {
-		margin: 0 0;
+		margin: 0;
 	}
 }
 
@@ -2009,10 +1980,10 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 .sapUiMedia-Std-Desktop .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageSubSection,
 .sapUiMedia-Std-Phone .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapUxAPObjectPageSubSection {
 	.sapUiRespGrid.sapUiRespGridHSpace1 {
-		padding: 0 0;
+		padding: 0;
 	}
 	.sapUiRespGrid.sapUiRespGridHSpace1 > div {
-		margin: 0 0;
+		margin: 0;
 	}
 }
 
@@ -2031,13 +2002,7 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 	}
 	.sapUxAPBlockContainerPhone {
 		.sapUiFormResGrid > div {
-			padding: 0 0;
-		}
-		.sapUiRespGrid.sapUiRespGridHSpace1 {
-			padding: 0 0;
-		}
-		.sapUiRespGrid.sapUiRespGridHSpace1 > div {
-			margin: 0 0;
+			padding: 1rem 0;
 		}
 	}
 }

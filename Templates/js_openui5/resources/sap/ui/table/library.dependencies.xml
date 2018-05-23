@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.table">
-  <module name="sap/ui/table/AnalyticalColumn.js" size="13338" compressedSize="5171">
+  <module name="sap/ui/table/AnalyticalColumn.js" size="13088" compressedSize="5040">
     <description>Provides control sap.ui.table.AnalyticalColumn.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -14,30 +14,26 @@
       <module name="sap/ui/table/Column.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/AnalyticalColumnMenu.js" size="3581" compressedSize="1671">
+  <module name="sap/ui/table/AnalyticalColumnMenu.js" size="3575" compressedSize="1665">
     <description>Provides control sap.ui.table.AnalyticalColumnMenu.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/table/ColumnMenu.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/AnalyticalColumnMenuRenderer.js" size="538" compressedSize="309">
     <description>Provides default renderer for control sap.ui.table.AnalyticalColumnMenu</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/table/AnalyticalColumnMenu.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/AnalyticalTable.designtime.js" size="838" compressedSize="432">
-    <description>Provides the Design Time Metadata for the sap.ui.table.AnalyticalTable control</description>
-    <requires>
-      <module name="jquery.sap.global.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/table/AnalyticalTable.js" size="46493" compressedSize="17988">
+  <module name="sap/ui/table/AnalyticalTable.js" size="47472" compressedSize="17937">
     <description>Provides control sap.ui.table.AnalyticalTable.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -52,16 +48,17 @@
       <module name="sap/ui/table/library.js"/>
       <module name="sap/ui/unified/Menu.js"/>
       <module name="sap/ui/unified/MenuItem.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/AnalyticalTableRenderer.js" size="525" compressedSize="304">
     <description>Provides default renderer for control sap.ui.table.AnalyticalTable</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/table/AnalyticalTable.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/Column.js" size="37283" compressedSize="12230">
+  <module name="sap/ui/table/Column.js" size="37271" compressedSize="12218">
     <description>Provides control sap.ui.table.Column.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -77,9 +74,10 @@
       <module name="sap/ui/table/ColumnMenu.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/ColumnMenu.js" size="15033" compressedSize="6331">
+  <module name="sap/ui/table/ColumnMenu.js" size="15291" compressedSize="6401">
     <description>Provides control sap.ui.table.ColumnMenu.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -89,25 +87,27 @@
       <module name="sap/ui/unified/Menu.js"/>
       <module name="sap/ui/unified/MenuItem.js"/>
       <module name="sap/ui/unified/MenuTextFieldItem.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/ColumnMenuRenderer.js" size="509" compressedSize="299">
     <description>Provides default renderer for control sap.ui.table.ColumnMenu</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/table/ColumnMenu.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/Row.js" size="16306" compressedSize="6439">
+  <module name="sap/ui/table/Row.js" size="16283" compressedSize="6438">
     <description>Provides control sap.ui.table.Row.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/model/Context.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/RowAction.js" size="11969" compressedSize="5995">
+  <module name="sap/ui/table/RowAction.js" size="12045" compressedSize="6019">
     <description>Provides control sap.ui.table.RowAction</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -115,43 +115,39 @@
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Icon.js"/>
       <module name="sap/ui/core/Popup.js"/>
+      <module name="sap/ui/table/RowActionRenderer.js"/>
       <module name="sap/ui/table/library.js"/>
       <module name="sap/ui/unified/Menu.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/RowActionItem.js" size="6180" compressedSize="2573">
     <description>Provides control sap.ui.table.RowActionItem.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/table/library.js"/>
       <module name="sap/ui/unified/MenuItem.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/RowActionRenderer.js" size="1489" compressedSize="771">
     <description>Provides default renderer for control sap.ui.table.RowAction</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/table/Row.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/RowSettings.js" size="3997" compressedSize="1461">
     <description>Provides control sap.ui.table.RowSettings</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/Table.designtime.js" size="828" compressedSize="432">
-    <description>Provides the Design Time Metadata for the sap.ui.table.Table control</description>
-    <requires>
-      <module name="jquery.sap.global.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/table/Table.js" size="134353" compressedSize="49140">
+  <module name="sap/ui/table/Table.js" size="139558" compressedSize="50908">
     <description>Provides control sap.ui.table.Table.</description>
     <requires>
       <module name="jquery.sap.dom.js"/>
@@ -176,20 +172,24 @@
       <module name="sap/ui/table/TableExtension.js"/>
       <module name="sap/ui/table/TableKeyboardExtension.js"/>
       <module name="sap/ui/table/TablePointerExtension.js"/>
+      <module name="sap/ui/table/TableRenderer.js"/>
       <module name="sap/ui/table/TableScrollExtension.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableAccExtension.js" size="48512" compressedSize="20226">
+  <module name="sap/ui/table/TableAccExtension.js" size="48844" compressedSize="20472">
     <description>Provides helper sap.ui.table.TableAccExtension.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
+      <module name="sap/ui/Device.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/table/TableAccRenderExtension.js"/>
       <module name="sap/ui/table/TableExtension.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/TableAccRenderExtension.js" size="8337" compressedSize="2836">
@@ -198,6 +198,13 @@
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/table/TableExtension.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/table/TableBindingUtils.js" size="1842" compressedSize="655">
+    <description>Provides helper sap.ui.table.TableBindingUtils.</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/TableColumnUtils.js" size="27010" compressedSize="6376">
@@ -206,25 +213,26 @@
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/TableDragAndDropExtension.js" size="10971" compressedSize="3651">
     <description>Provides helper sap.ui.table.TableDragAndDropExtension.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/table/TableExtension.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/TableExtension.js" size="6091" compressedSize="1794">
     <description>Provides helper sap.ui.table.TableExtension.</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/base/Object.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableGrouping.js" size="23200" compressedSize="8508">
+  <module name="sap/ui/table/TableGrouping.js" size="25098" compressedSize="8845">
     <description>Provides helper sap.ui.table.TableUtils.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -232,9 +240,10 @@
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/model/Sorter.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableKeyboardDelegate2.js" size="78183" compressedSize="26832">
+  <module name="sap/ui/table/TableKeyboardDelegate2.js" size="77999" compressedSize="26785">
     <description>Provides helper sap.ui.table.TableKeyboardDelegate2.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -243,9 +252,10 @@
       <module name="sap/ui/base/Object.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableKeyboardExtension.js" size="18773" compressedSize="7689">
+  <module name="sap/ui/table/TableKeyboardExtension.js" size="18653" compressedSize="7619">
     <description>Provides helper sap.ui.table.TableKeyboardExtension.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -254,9 +264,10 @@
       <module name="sap/ui/table/TableExtension.js"/>
       <module name="sap/ui/table/TableKeyboardDelegate2.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableMenuUtils.js" size="14602" compressedSize="4262">
+  <module name="sap/ui/table/TableMenuUtils.js" size="16057" compressedSize="4762">
     <description>Provides helper sap.ui.table.TableMenuUtils.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -264,6 +275,7 @@
       <module name="sap/ui/core/Popup.js"/>
       <module name="sap/ui/unified/Menu.js"/>
       <module name="sap/ui/unified/MenuItem.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/TablePersoController.js" size="13288" compressedSize="6412">
@@ -272,9 +284,10 @@
       <module name="jquery.sap.global.js"/>
       <module name="sap/m/TablePersoDialog.js" conditional="true"/>
       <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TablePointerExtension.js" size="35426" compressedSize="16486">
+  <module name="sap/ui/table/TablePointerExtension.js" size="35566" compressedSize="16556">
     <description>Provides helper sap.ui.table.TablePointerExtension.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -283,12 +296,12 @@
       <module name="sap/ui/table/TableExtension.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableRenderer.js" size="36380" compressedSize="20893">
+  <module name="sap/ui/table/TableRenderer.js" size="36469" compressedSize="21012">
     <description>Provides default renderer for control sap.ui.table.Table</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/IconPool.js"/>
@@ -296,6 +309,7 @@
       <module name="sap/ui/core/theming/Parameters.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/TableRendererUtils.js" size="6954" compressedSize="1534">
@@ -303,9 +317,10 @@
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Control.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableScrollExtension.js" size="44394" compressedSize="17529">
+  <module name="sap/ui/table/TableScrollExtension.js" size="64730" compressedSize="23760">
     <description>Provides helper sap.ui.table.TableScrollExtension.</description>
     <requires>
       <module name="jquery.sap.events.js"/>
@@ -315,9 +330,10 @@
       <module name="sap/ui/table/TableExtension.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableUtils.js" size="41976" compressedSize="10309">
+  <module name="sap/ui/table/TableUtils.js" size="43086" compressedSize="10491">
     <description>Provides helper sap.ui.table.TableUtils.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -325,13 +341,15 @@
       <module name="sap/ui/core/ResizeHandler.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/model/ChangeReason.js"/>
+      <module name="sap/ui/table/TableBindingUtils.js"/>
       <module name="sap/ui/table/TableColumnUtils.js"/>
       <module name="sap/ui/table/TableGrouping.js"/>
       <module name="sap/ui/table/TableMenuUtils.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TreeTable.js" size="26072" compressedSize="6901">
+  <module name="sap/ui/table/TreeTable.js" size="25939" compressedSize="6874">
     <description>Provides control sap.ui.table.TreeTable.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -341,16 +359,140 @@
       <module name="sap/ui/table/Table.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
       <module name="sap/ui/table/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/TreeTableRenderer.js" size="507" compressedSize="298">
     <description>Provides default renderer for control sap.ui.table.TreeTable</description>
     <requires>
-      <module name="jquery.sap.global.js"/>
       <module name="sap/ui/table/TreeTable.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/library-preload.js" size="273905">
+  <module name="sap/ui/table/designtime/AnalyticalTable.designtime.js" size="838" compressedSize="432">
+    <description>Provides the Design Time Metadata for the sap.ui.table.AnalyticalTable control</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/table/designtime/Table.designtime.js" size="828" compressedSize="432">
+    <description>Provides the Design Time Metadata for the sap.ui.table.Table control</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/table/designtime/library-preload.designtime.js" size="936">
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+    <includes>
+      <module name="sap/ui/table/designtime/AnalyticalTable.designtime.js"/>
+      <module name="sap/ui/table/designtime/Table.designtime.js"/>
+      <module name="sap/ui/table/designtime/library.designtime.js"/>
+    </includes>
+  </module>
+  <module name="sap/ui/table/designtime/library.designtime.js" size="343" compressedSize="240">
+    <description>Initialization of designtime Code and shared classes for the library sap.ui.layout.</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/table/designtime/messagebundle.properties" size="143">
+  </module>
+  <module name="sap/ui/table/library-h2-preload.js" size="10136">
+    <requires>
+      <module name="jquery.sap.dom.js"/>
+      <module name="jquery.sap.events.js"/>
+      <module name="jquery.sap.global.js"/>
+      <module name="jquery.sap.keycodes.js"/>
+      <module name="jquery.sap.trace.js"/>
+      <module name="sap/m/TablePersoDialog.js" conditional="true"/>
+      <module name="sap/ui/Device.js"/>
+      <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/base/Object.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/core/Core.js"/>
+      <module name="sap/ui/core/Element.js"/>
+      <module name="sap/ui/core/Icon.js"/>
+      <module name="sap/ui/core/IconPool.js"/>
+      <module name="sap/ui/core/Popup.js"/>
+      <module name="sap/ui/core/Renderer.js"/>
+      <module name="sap/ui/core/ResizeHandler.js"/>
+      <module name="sap/ui/core/delegate/ItemNavigation.js"/>
+      <module name="sap/ui/core/library.js"/>
+      <module name="sap/ui/core/theming/Parameters.js"/>
+      <module name="sap/ui/core/util/Export.js" conditional="true"/>
+      <module name="sap/ui/core/util/ExportTypeCSV.js" conditional="true"/>
+      <module name="sap/ui/model/BindingMode.js"/>
+      <module name="sap/ui/model/ChangeReason.js"/>
+      <module name="sap/ui/model/ClientTreeBindingAdapter.js"/>
+      <module name="sap/ui/model/Context.js"/>
+      <module name="sap/ui/model/Filter.js"/>
+      <module name="sap/ui/model/FilterOperator.js"/>
+      <module name="sap/ui/model/FilterType.js"/>
+      <module name="sap/ui/model/SelectionModel.js"/>
+      <module name="sap/ui/model/Sorter.js"/>
+      <module name="sap/ui/model/TreeAutoExpandMode.js"/>
+      <module name="sap/ui/model/TreeBindingCompatibilityAdapter.js"/>
+      <module name="sap/ui/model/Type.js"/>
+      <module name="sap/ui/model/analytics/ODataModelAdapter.js"/>
+      <module name="sap/ui/model/type/Boolean.js"/>
+      <module name="sap/ui/model/type/DateTime.js"/>
+      <module name="sap/ui/model/type/Float.js"/>
+      <module name="sap/ui/model/type/Integer.js"/>
+      <module name="sap/ui/model/type/String.js"/>
+      <module name="sap/ui/model/type/Time.js"/>
+      <module name="sap/ui/support/library.js"/>
+      <module name="sap/ui/support/supportRules/RuleSet.js"/>
+      <module name="sap/ui/unified/Menu.js"/>
+      <module name="sap/ui/unified/MenuItem.js"/>
+      <module name="sap/ui/unified/MenuTextFieldItem.js"/>
+      <module name="sap/ui/unified/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+    <includes>
+      <module name="sap/ui/table/library.js"/>
+      <module name="sap/ui/table/manifest.json"/>
+      <module name="sap/ui/table/AnalyticalColumn.js"/>
+      <module name="sap/ui/table/AnalyticalColumnMenu.js"/>
+      <module name="sap/ui/table/AnalyticalColumnMenuRenderer.js"/>
+      <module name="sap/ui/table/AnalyticalTable.js"/>
+      <module name="sap/ui/table/AnalyticalTableRenderer.js"/>
+      <module name="sap/ui/table/Column.js"/>
+      <module name="sap/ui/table/ColumnMenu.js"/>
+      <module name="sap/ui/table/ColumnMenuRenderer.js"/>
+      <module name="sap/ui/table/Row.js"/>
+      <module name="sap/ui/table/RowAction.js"/>
+      <module name="sap/ui/table/RowActionItem.js"/>
+      <module name="sap/ui/table/RowActionRenderer.js"/>
+      <module name="sap/ui/table/RowSettings.js"/>
+      <module name="sap/ui/table/Table.js"/>
+      <module name="sap/ui/table/TableAccExtension.js"/>
+      <module name="sap/ui/table/TableAccRenderExtension.js"/>
+      <module name="sap/ui/table/TableBindingUtils.js"/>
+      <module name="sap/ui/table/TableColumnUtils.js"/>
+      <module name="sap/ui/table/TableDragAndDropExtension.js"/>
+      <module name="sap/ui/table/TableExtension.js"/>
+      <module name="sap/ui/table/TableGrouping.js"/>
+      <module name="sap/ui/table/TableKeyboardDelegate2.js"/>
+      <module name="sap/ui/table/TableKeyboardExtension.js"/>
+      <module name="sap/ui/table/TableMenuUtils.js"/>
+      <module name="sap/ui/table/TablePersoController.js"/>
+      <module name="sap/ui/table/TablePointerExtension.js"/>
+      <module name="sap/ui/table/TableRenderer.js"/>
+      <module name="sap/ui/table/TableRendererUtils.js"/>
+      <module name="sap/ui/table/TableScrollExtension.js"/>
+      <module name="sap/ui/table/TableUtils.js"/>
+      <module name="sap/ui/table/TreeTable.js"/>
+      <module name="sap/ui/table/TreeTableRenderer.js"/>
+      <module name="sap/ui/table/designtime/AnalyticalTable.designtime.js"/>
+      <module name="sap/ui/table/designtime/Table.designtime.js"/>
+      <module name="sap/ui/table/designtime/library.designtime.js"/>
+      <module name="sap/ui/table/library.support.js"/>
+      <module name="sap/ui/table/rules/TableHelper.support.js"/>
+    </includes>
+  </module>
+  <module name="sap/ui/table/library-preload.js" size="282538">
     <requires>
       <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.events.js"/>
@@ -397,12 +539,12 @@
       <module name="sap/ui/unified/MenuItem.js"/>
       <module name="sap/ui/unified/MenuTextFieldItem.js"/>
       <module name="sap/ui/unified/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
       <module name="sap/ui/table/AnalyticalColumn.js"/>
       <module name="sap/ui/table/AnalyticalColumnMenu.js"/>
       <module name="sap/ui/table/AnalyticalColumnMenuRenderer.js"/>
-      <module name="sap/ui/table/AnalyticalTable.designtime.js"/>
       <module name="sap/ui/table/AnalyticalTable.js"/>
       <module name="sap/ui/table/AnalyticalTableRenderer.js"/>
       <module name="sap/ui/table/Column.js"/>
@@ -413,10 +555,10 @@
       <module name="sap/ui/table/RowActionItem.js"/>
       <module name="sap/ui/table/RowActionRenderer.js"/>
       <module name="sap/ui/table/RowSettings.js"/>
-      <module name="sap/ui/table/Table.designtime.js"/>
       <module name="sap/ui/table/Table.js"/>
       <module name="sap/ui/table/TableAccExtension.js"/>
       <module name="sap/ui/table/TableAccRenderExtension.js"/>
+      <module name="sap/ui/table/TableBindingUtils.js"/>
       <module name="sap/ui/table/TableColumnUtils.js"/>
       <module name="sap/ui/table/TableDragAndDropExtension.js"/>
       <module name="sap/ui/table/TableExtension.js"/>
@@ -485,12 +627,12 @@
       <module name="sap/ui/unified/MenuTextFieldItem.js"/>
       <module name="sap/ui/unified/library-preload.json"/>
       <module name="sap/ui/unified/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
       <module name="sap/ui/table/AnalyticalColumn.js"/>
       <module name="sap/ui/table/AnalyticalColumnMenu.js"/>
       <module name="sap/ui/table/AnalyticalColumnMenuRenderer.js"/>
-      <module name="sap/ui/table/AnalyticalTable.designtime.js"/>
       <module name="sap/ui/table/AnalyticalTable.js"/>
       <module name="sap/ui/table/AnalyticalTableRenderer.js"/>
       <module name="sap/ui/table/Column.js"/>
@@ -501,10 +643,10 @@
       <module name="sap/ui/table/RowActionItem.js"/>
       <module name="sap/ui/table/RowActionRenderer.js"/>
       <module name="sap/ui/table/RowSettings.js"/>
-      <module name="sap/ui/table/Table.designtime.js"/>
       <module name="sap/ui/table/Table.js"/>
       <module name="sap/ui/table/TableAccExtension.js"/>
       <module name="sap/ui/table/TableAccRenderExtension.js"/>
+      <module name="sap/ui/table/TableBindingUtils.js"/>
       <module name="sap/ui/table/TableColumnUtils.js"/>
       <module name="sap/ui/table/TableDragAndDropExtension.js"/>
       <module name="sap/ui/table/TableExtension.js"/>
@@ -524,17 +666,30 @@
       <module name="sap/ui/table/manifest.json"/>
     </includes>
   </module>
-  <module name="sap/ui/table/library.js" size="8708" compressedSize="2218">
-    <description>Initialization Code and shared classes of library sap.ui.table.</description>
+  <module name="sap/ui/table/library-preload.support.js" size="18613">
     <requires>
       <module name="jquery.sap.global.js"/>
+      <module name="sap/ui/Device.js"/>
+      <module name="sap/ui/support/library.js"/>
+      <module name="sap/ui/support/supportRules/RuleSet.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+    <includes>
+      <module name="sap/ui/table/library.support.js"/>
+      <module name="sap/ui/table/rules/TableHelper.support.js"/>
+    </includes>
+  </module>
+  <module name="sap/ui/table/library.js" size="8880" compressedSize="2310">
+    <description>Initialization Code and shared classes of library sap.ui.table.</description>
+    <requires>
       <module name="sap/ui/core/Core.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/model/TreeAutoExpandMode.js"/>
       <module name="sap/ui/unified/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/library.support.js" size="11821" compressedSize="6382" excludeFromAllInOne="true">
+  <module name="sap/ui/table/library.support.js" size="11695" compressedSize="6379">
     <description>Adds support rules of the sap.ui.table library to the support infrastructure.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -542,6 +697,7 @@
       <module name="sap/ui/support/library.js"/>
       <module name="sap/ui/support/supportRules/RuleSet.js"/>
       <module name="sap/ui/table/rules/TableHelper.support.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
   <module name="sap/ui/table/manifest.json" size="1697">
@@ -630,11 +786,12 @@
   </module>
   <module name="sap/ui/table/messagebundle_zh_TW.properties" size="8305">
   </module>
-  <module name="sap/ui/table/rules/TableHelper.support.js" size="6788" compressedSize="1388" excludeFromAllInOne="true">
+  <module name="sap/ui/table/rules/TableHelper.support.js" size="6788" compressedSize="1388">
     <description>Helper functionality for table, list and tree controls for the Support Tool infrastructure.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/support/library.js"/>
+      <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
 </library>

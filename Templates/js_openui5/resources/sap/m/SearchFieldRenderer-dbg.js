@@ -1,11 +1,11 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/Device"],
-	function(Device) {
+sap.ui.define(["sap/ui/Device", "sap/ui/core/InvisibleText"],
+	function(Device, InvisibleText) {
 	"use strict";
 
 
@@ -113,11 +113,14 @@ sap.ui.define(["sap/ui/Device"],
 			if (sValue) { rm.writeAttributeEscaped("value", sValue); }
 
 			//ARIA attributes
-			if (oSF.getEnabled() && bShowRefreshButton && oSF._sAriaF5LabelId) {
-				oAccAttributes.describedby = {
-					value: oSF._sAriaF5LabelId,
-					append: true
-				};
+			if (oSF.getEnabled() && bShowRefreshButton) {
+				var sAriaF5LabelId = InvisibleText.getStaticId("sap.m", "SEARCHFIELD_ARIA_F5");
+				if ( sAriaF5LabelId ) {
+					oAccAttributes.describedby = {
+						value: sAriaF5LabelId,
+						append: true
+					};
+				}
 			}
 			rm.writeAccessibilityState(oSF, oAccAttributes);
 

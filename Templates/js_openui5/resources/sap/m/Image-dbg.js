@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Image.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'jquery.sap.keycodes'],
-	function(jQuery, library, Control) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'./ImageRenderer',
+	'jquery.sap.keycodes'
+],
+	function(jQuery, library, Control, ImageRenderer) {
 	"use strict";
 
 
@@ -35,7 +41,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'jquery.
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -46,6 +52,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'jquery.
 
 		interfaces : ["sap.ui.core.IFormContent"],
 		library : "sap.m",
+		designtime: "sap/m/designtime/Image.designtime",
 		properties : {
 
 			/**
@@ -129,6 +136,17 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'jquery.
 			 */
 			detailBox: {type: 'sap.m.LightBox', multiple: false, bindable: "bindable"}
 		},
+		associations : {
+			/**
+			 * Association to controls / ids which describe this control (see WAI-ARIA attribute aria-describedby).
+			 */
+			ariaDescribedBy : {type : "sap.ui.core.Control", multiple : true, singularName : "ariaDescribedBy"},
+
+			/**
+			 * Association to controls / ids which label this control (see WAI-ARIA attribute aria-labelledBy).
+			 */
+			ariaLabelledBy: {type : "sap.ui.core.Control", multiple : true, singularName : "ariaLabelledBy"}
+		},
 		events : {
 
 			/**
@@ -152,8 +170,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'jquery.
 			 * @since 1.36.2
 			 */
 			error : {}
-		},
-		designTime: true
+		}
 	}});
 
 	Image._currentDevicePixelRatio = (function() {
@@ -313,6 +330,28 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'jquery.
 	};
 
 	/**
+	 * @override
+	 */
+	Image.prototype.clone = function () {
+		var oClone = Control.prototype.clone.apply(this, arguments),
+			oCloneDetailBox = oClone.getDetailBox();
+
+		// Handle press event if DetailBox is available
+		if (oCloneDetailBox) {
+
+			// Detach the old event
+			oClone.detachPress(this._fnLightBoxOpen, this.getDetailBox());
+
+			// Attach new event with the cloned detail box
+			oClone._fnLightBoxOpen = oCloneDetailBox.open;
+			oClone.attachPress(oClone._fnLightBoxOpen, oCloneDetailBox);
+
+		}
+
+		return oClone;
+	};
+
+	/**
 	 * the 'beforeRendering' event handler
 	 * @private
 	 */
@@ -403,12 +442,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'jquery.
 		}
 	};
 
-	/**
-	 * This overrides the default setter of the src property and update the dom node.
-	 *
-	 * @param {sap.ui.core.URI} sSrc
-	 * @public
-	 */
 	Image.prototype.setSrc = function(sSrc) {
 		if (sSrc === this.getSrc()) {
 			return this;
@@ -424,13 +457,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'jquery.
 		return this;
 	};
 
-	/**
-	 * This overrides the default setter of the activeSrc property in order to avoid the rerendering.
-	 *
-	 * @param {sap.ui.core.URI} sActiveSrc
-	 * @returns {sap.m.Image} <code>this</code> pointer for chaining
-	 * @public
-	 */
 	Image.prototype.setActiveSrc = function(sActiveSrc) {
 		if (!sActiveSrc) {
 			sActiveSrc = "";
@@ -629,8 +655,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'jquery.
 	};
 
 	/**
+	 * Returns the <code>sap.m.Image</code>  accessibility information.
+	 *
 	 * @see sap.ui.core.Control#getAccessibilityInfo
 	 * @protected
+	 * @returns {Object} The <code>sap.m.Image</code> accessibility information
 	 */
 	Image.prototype.getAccessibilityInfo = function() {
 		var bHasPressListeners = this.hasListeners("press");

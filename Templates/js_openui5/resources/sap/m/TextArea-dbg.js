@@ -1,12 +1,30 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.TextArea.
-sap.ui.define(['jquery.sap.global', './InputBase', './Text', 'sap/ui/core/ResizeHandler', './library', 'sap/ui/core/library', 'sap/ui/Device'],
-	function(jQuery, InputBase, Text, ResizeHandler, library, coreLibrary, Device) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./InputBase',
+	'./Text',
+	'sap/ui/core/ResizeHandler',
+	'./library',
+	'sap/ui/core/library',
+	'sap/ui/Device',
+	'./TextAreaRenderer'
+],
+function(
+	jQuery,
+	InputBase,
+	Text,
+	ResizeHandler,
+	library,
+	coreLibrary,
+	Device,
+	TextAreaRenderer
+	) {
 	"use strict";
 
 
@@ -60,7 +78,7 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', 'sap/ui/core/Resize
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -71,6 +89,7 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', 'sap/ui/core/Resize
 	var TextArea = InputBase.extend("sap.m.TextArea", /** @lends sap.m.TextArea.prototype */ { metadata : {
 
 		library : "sap.m",
+		designtime: "sap/m/designtime/TextArea.designtime",
 		properties : {
 
 			/**
@@ -385,7 +404,6 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', 'sap/ui/core/Resize
 	 * because when the <code>showExceededText</code> is set to
 	 * <code>true</code> the exceeded text should be selected on paste.
 	 * @param {jQuery.Event} oEvent The event object
-	 * @returns {boolean} Whether the paste event is triggered
 	 */
 	TextArea.prototype.onpaste = function (oEvent) {
 		if (this.getShowExceededText()) {
@@ -574,7 +592,6 @@ sap.ui.define(['jquery.sap.global', './InputBase', './Text', 'sap/ui/core/Resize
 	/**
 	 * Special handling for the focusing issue in SAP Fiori Client on Windows Phone.
 	 * @param {jQuery.Event} oEvent The event object
-	 * @returns {sap.m.TextArea} <code>this</code> pointer for chaining
 	 * @private
 	 */
 	TextArea.prototype.onfocusin = function(oEvent) {

@@ -1,12 +1,19 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.core.mvc.JSONView.
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', 'sap/ui/core/library', 'sap/ui/model/resource/ResourceModel', './View'],
-	function(jQuery, ManagedObject, library, ResourceModel, View) {
+sap.ui.define([
+    'jquery.sap.global',
+    'sap/ui/base/ManagedObject',
+    'sap/ui/core/library',
+    'sap/ui/model/resource/ResourceModel',
+    './View',
+    "./JSONViewRenderer"
+],
+	function(jQuery, ManagedObject, library, ResourceModel, View, JSONViewRenderer) {
 	"use strict";
 
 	// shortcut for enum(s)
@@ -22,7 +29,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', 'sap/ui/core/li
 	 * @class
 	 * A View defined using JSON.
 	 * @extends sap.ui.core.mvc.View
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.JSONView

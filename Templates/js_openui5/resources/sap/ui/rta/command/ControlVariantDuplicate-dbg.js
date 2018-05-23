@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -16,7 +16,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.BaseCommand
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @since 1.52
@@ -30,6 +30,9 @@ sap.ui.define([
 					type : "string"
 				},
 				newVariantReference : {
+					type : "string"
+				},
+				newVariantTitle : {
 					type : "string"
 				}
 			},
@@ -48,9 +51,16 @@ sap.ui.define([
 		return true;
 	};
 
+	ControlVariantDuplicate.prototype.getPreparedChange = function() {
+		if (!this._aPreparedChanges) {
+			jQuery.sap.log.error("No prepared change available for ControlVariantDuplicate");
+		}
+		return this._aPreparedChanges;
+	};
+
 	/**
 	 * @public Triggers the duplication of a variant
-	 * @returns {promise} Returns resolve after execution
+	 * @returns {Promise} Returns resolve after execution
 	 */
 	ControlVariantDuplicate.prototype.execute = function() {
 		var oVariantManagementControl = this.getElement(),
@@ -59,7 +69,7 @@ sap.ui.define([
 		this.oAppComponent = flUtils.getAppComponentForControl(oVariantManagementControl);
 
 		if (!sNewVariantReference) {
-			sNewVariantReference = flUtils.createDefaultFileName(sSourceVariantReference + "_Copy");
+			sNewVariantReference = flUtils.createDefaultFileName("Copy");
 			this.setNewVariantReference(sNewVariantReference);
 		}
 
@@ -67,28 +77,31 @@ sap.ui.define([
 		this.oModel = this.oAppComponent.getModel(this.MODEL_NAME);
 
 		var mPropertyBag = {
-				variantManagementControl : oVariantManagementControl,
+				variantManagementReference : this.sVariantManagementReference,
 				appComponent : this.oAppComponent,
 				layer : this.sLayer,
 				newVariantReference : sNewVariantReference,
-				sourceVariantReference : sSourceVariantReference
+				sourceVariantReference : sSourceVariantReference,
+				title: this.getNewVariantTitle()
 		};
 
 		return this.oModel._copyVariant(mPropertyBag)
-			.then(function(oVariant){
-				this._oVariantChange = oVariant;
+			.then(function(aChanges){
+				this._oVariantChange = aChanges[0];
+				this._aPreparedChanges = aChanges;
 			}.bind(this));
 	};
 
 	/**
 	 * @public Undo logic for the execution
-	 * @returns {promise} Returns resolve after undo
+	 * @returns {Promise} Returns resolve after undo
 	 */
 	ControlVariantDuplicate.prototype.undo = function() {
 		if (this._oVariantChange) {
-			return this.oModel._removeVariant(this._oVariantChange, this.getSourceVariantReference(), this.sVariantManagementReference)
+			return this.oModel.removeVariant(this._oVariantChange, this.getSourceVariantReference(), this.sVariantManagementReference)
 				.then(function() {
 					this._oVariantChange = null;
+					this._aPreparedChanges = null;
 				}.bind(this));
 		}
 	};

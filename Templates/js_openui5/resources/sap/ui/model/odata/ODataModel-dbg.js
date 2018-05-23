@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -48,7 +48,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 	 *
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @public
 	 * @deprecated Please use {@link sap.ui.model.odata.v2.ODataModel} instead.
@@ -3100,7 +3100,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 	 *
 	 * Please note that deep creates (including data defined by navigationproperties) are not supported
 	 *
-	 * @param {String} sPath Name of the path to the collection
+	 * @param {string} sPath Name of the path to the collection
 	 * @param {array|object} vProperties An array that specifies a set of properties or the entry
 	 * @return {sap.ui.model.Context} oContext A Context object that point to the new created entry.
 	 * @public

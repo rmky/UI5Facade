@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -31,7 +31,6 @@ sap.ui.define([
 		categories: [Categories.Performance],
 		enabled: true,
 		minversion: "1.32",
-		maxversion: "-",
 		title: "Preload Configuration",
 		description: "Checks whether the preload configuration was set correctly to async",
 		resolution: "Add \"data-sap-ui-preload=\"async\"\" to script tag that includes \"sap-ui-core.js\"",
@@ -40,10 +39,13 @@ sap.ui.define([
 			href: "https://sapui5.hana.ondemand.com/#docs/guide/408b40efed3c416681e1bd8cdd8910d4.html"
 		}],
 		check: function(oIssueManager, oCoreFacade) {
-			if (sap.ui.getCore().getConfiguration().getPreload() !== "async") {
+			// Check for FLP scenario
+			var oUshellLib = sap.ui.getCore().getLoadedLibraries()["sap.ushell"];
+
+			if (sap.ui.getCore().getConfiguration().getPreload() !== "async" && !oUshellLib) {
 				oIssueManager.addIssue({
 					severity: Severity.High,
-					details: "None",
+					details: "Preloading libraries asynchronously improves the application performance massively.",
 					context: {
 						id: "WEBPAGE"
 					}

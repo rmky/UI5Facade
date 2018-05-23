@@ -1,12 +1,12 @@
 /*
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides TablePersoDialog
-sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', './List', './Toolbar', 'sap/ui/base/ManagedObject', 'sap/m/library', 'sap/ui/Device', 'sap/ui/model/Sorter', 'sap/ui/model/Filter'],
-	function(jQuery, Button, Dialog, InputListItem, List, Toolbar, ManagedObject, library, Device, Sorter, Filter) {
+sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', './List', './Toolbar', 'sap/ui/base/ManagedObject', 'sap/m/library', 'sap/ui/Device', 'sap/ui/model/Sorter', 'sap/ui/model/Filter', 'sap/ui/model/json/JSONModel', 'sap/m/CheckBox', 'sap/m/SearchField', 'sap/m/ScrollContainer'],
+	function(jQuery, Button, Dialog, InputListItem, List, Toolbar, ManagedObject, library, Device, Sorter, Filter, JSONModel, CheckBox, SearchField, ScrollContainer) {
 	"use strict";
 
 
@@ -38,7 +38,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', '
 	 * @class Table Personalization Dialog
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @alias sap.m.TablePersoDialog
 	 */
 	var TablePersoDialog = ManagedObject.extend("sap.m.TablePersoDialog", /** @lends sap.m.TablePersoDialog */
@@ -105,7 +105,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', '
 		this._oRb = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
 		// To store the column settings
-		this._oP13nModel = new sap.ui.model.json.JSONModel();
+		this._oP13nModel = new JSONModel();
 		// Make sure that model can contain more than the 100 entries
 		// it may contain by default.
 		// SUGGESTED IMPROVEMENT: use number of table columns instead
@@ -147,7 +147,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', '
 		// Template for list inside the dialog - 1 item per column
 		this._oColumnItemTemplate = new InputListItem(this.getId() + "-li", {
 			label: "{Personalization>text}",
-			content: new sap.m.CheckBox(this.getId() + "-cb", {
+			content: new CheckBox(this.getId() + "-cb", {
 				selected: "{Personalization>visible}",
 				select: this._fnUpdateCheckBoxes
 			})
@@ -287,7 +287,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', '
 
 		this._oList.addDelegate({onAfterRendering : this._fnListUpdateFinished});
 
-		this._oSearchField = new sap.m.SearchField(this.getId() + "-searchField", {
+		this._oSearchField = new SearchField(this.getId() + "-searchField", {
 			width: "100%",
 			liveChange: function (oEvent) {
 				var sValue = oEvent.getSource().getValue(),
@@ -309,7 +309,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', '
 			}
 		});
 
-		this._oScrollContainer = new sap.m.ScrollContainer({
+		this._oScrollContainer = new ScrollContainer({
 			horizontal: false,
 			vertical: true,
 			content:[this._oList],
@@ -326,7 +326,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', '
 			}.bind(this)
 		}).addStyleClass("sapMPersoDialogResetBtn");
 
-		this._oSelectAllCheckbox = new sap.m.CheckBox(this._getSelectAllCheckboxId(), {
+		this._oSelectAllCheckbox = new CheckBox(this._getSelectAllCheckboxId(), {
 			selected: "{Personalization>/oHeader/visible}",
 			select: this._fnUpdateCheckBoxes,
 			text: "{Personalization>/oHeader/text}"

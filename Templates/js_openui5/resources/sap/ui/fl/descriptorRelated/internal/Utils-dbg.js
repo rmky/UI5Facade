@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,13 +20,24 @@ sap.ui.define(function() {
 
 	Utils.prototype.checkEntityPropertyChange = function(mParameters) {
 		this.checkParameterAndType(mParameters, "entityPropertyChange", "object");
-		this.checkParameterAndType(mParameters.entityPropertyChange, "propertyPath", "string");
-		this.checkParameterAndType(mParameters.entityPropertyChange, "operation", "string");
+		if (mParameters.entityPropertyChange instanceof Array){
+			for (var i = 0; i < mParameters.entityPropertyChange.length; i++){
+				var oChange = mParameters.entityPropertyChange[i];
+				this.checkEntityPropertyChangeContent(oChange);
+			}
+		}else if (mParameters.entityPropertyChange instanceof Object){
+				this.checkEntityPropertyChangeContent(mParameters.entityPropertyChange);
+		}
+	};
 
-		if (jQuery.inArray(mParameters.entityPropertyChange.operation, ['INSERT', 'UPDATE', 'UPSERT', 'DELETE']) < 0) {
+	Utils.prototype.checkEntityPropertyChangeContent = function(oChange){
+		this.checkParameterAndType(oChange, "propertyPath", "string");
+		this.checkParameterAndType(oChange, "operation", "string");
+
+		if (jQuery.inArray(oChange.operation, ['INSERT', 'UPDATE', 'UPSERT', 'DELETE']) < 0) {
 			throw new Error("Parameter \"entityPropertyChange.operation\" needs to be one of 'INSERT', 'UPDATE', 'UPSERT', 'DELETE'");
 		}
-		if (mParameters.entityPropertyChange.propertyValue === undefined && mParameters.entityPropertyChange.operation !== 'DELETE') {
+		if (oChange.propertyValue === undefined && oChange.operation !== 'DELETE') {
 			throw new Error("No parameter \"entityPropertyChange.propertyValue\" provided");
 		}
 	};

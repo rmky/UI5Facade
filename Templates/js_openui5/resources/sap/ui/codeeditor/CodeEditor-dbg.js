@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,6 +11,7 @@ sap.ui.define([
 	"sap/ui/core/Control",
 	'sap/ui/codeeditor/js/ace/ace',
 	'sap/ui/codeeditor/js/ace/ext-language_tools',
+	'sap/ui/codeeditor/js/ace/ext-beautify',
 	'sap/ui/codeeditor/js/ace/mode-javascript',
 	'sap/ui/codeeditor/js/ace/mode-json'
 ], function(jQuery, Control) {
@@ -32,7 +33,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -127,7 +128,12 @@ sap.ui.define([
 					},
 					/**
 					 * Sets the editors color theme
-					 * possible values
+					 * Possible values are: default, hcb, hcb_bright, hcb_blue,
+					 * theme-ambiance, chaos, chrome, clouds, clouds_midnight, cobalt, crimson_editor, dawn, dreamweaver, eclipse,
+					 * github, gob, gruvbox, idle_fingers, iplastic, katzenmilch, kr_theme, kuroir, merbivore, merbivore_soft,
+					 * mono_industrial, monokai, pastel_on_dark, solarized_dark, solarized_light, sqlserver, terminal, textmate,
+					 * tomorrow, tomorrow_night, tomorrow_night_blue, tomorrow_night_bright, tomorrow_night_eighties, twilight,
+					 * vibrant_ink, xcode
 					 */
 					colorTheme: {
 						type: "string",
@@ -289,7 +295,7 @@ sap.ui.define([
 
 	/**
 	 * Sets the color theme  of the code editor
-	 * @param {string} sTheme 'default', 'hcb', 'hcb_bright', 'hcb_blue'
+	 * @param {string} sTheme See property documentation for accepted values
 	 * @returns {sap.ui.codeeditor.CodeEditor} Returns <code>this</code> to allow method chaining
 	 * @public
 	 */
@@ -403,6 +409,31 @@ sap.ui.define([
 	 */
 	CodeEditor.prototype._getEditorInstance = function() {
 		return this._oEditor;
+	};
+
+	/**
+	 * Sets <code>visible</code> property.
+	 * @param {boolean} bVisible Whether the code editor is visible.
+	 * @override
+	 * @public
+	 * @since 1.54.1
+	 */
+	CodeEditor.prototype.setVisible = function(bVisible) {
+		if (this.getVisible() !== bVisible) {
+			this.setProperty("visible", bVisible);
+			//trigger re-rendering as the usual invalidation is turned off by default.
+			this.rerender();
+		}
+		return this;
+	};
+
+	/**
+	 * Pretty-prints the content of the editor
+	 * @public
+	 * @since 1.54.1
+	 */
+	CodeEditor.prototype.prettyPrint = function () {
+		ace.require("ace/ext/beautify").beautify(this._oEditor.session);
 	};
 
 	CodeEditor.prototype.destroy = function (bSuppressInvalidate) {

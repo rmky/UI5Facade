@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -53,7 +53,7 @@ sap.ui.define(['jquery.sap.global', './CustomStyleClassSupport', './Element', '.
 	 * @extends sap.ui.core.Element
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @alias sap.ui.core.Control
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -75,6 +75,16 @@ sap.ui.define(['jquery.sap.global', './CustomStyleClassSupport', './Element', '.
 				 * The delay in milliseconds, after which the busy indicator will show up for this control.
 				 */
 				"busyIndicatorDelay" : {type: "int", defaultValue: 1000},
+
+				/**
+				 * The size of the BusyIndicator. For controls with a width smaller 3rem a
+				 * <code>sap.ui.core.BusyIndicatorSize.Small</code> should be used.
+				 * If the size could vary in width and the width could get smaller than 3rem, the
+				 * <code>sap.ui.core.BusyIndicatorSize.Auto</code> option could be used.
+				 * The default is set to <code>sap.ui.core.BusyIndicatorSize.Medium</code>
+				 * For a full screen BusyIndicator use <code>sap.ui.core.BusyIndicatorSize.Large</code>.
+				 */
+				"busyIndicatorSize" : {type: "sap.ui.core.BusyIndicatorSize", defaultValue: 'Medium'},
 
 				/**
 				 * Whether the control should be visible on the screen.
@@ -144,9 +154,9 @@ sap.ui.define(['jquery.sap.global', './CustomStyleClassSupport', './Element', '.
 	 *
 	 * The additionally cloned information contains:
 	 * <ul>
-	 * <li>browser event handlers attached with {@link #attachBrowserEvent}
-	 * <li>text selection behavior
-	 * <li>style classes added with {@link #addStyleClass}
+	 * <li>browser event handlers attached with {@link #attachBrowserEvent}</li>
+	 * <li>text selection behavior</li>
+	 * <li>style classes added with {@link #addStyleClass}</li>
 	 * </ul>
 	 *
 	 * @param {string} [sIdSuffix] a suffix to be appended to the cloned element id
@@ -581,11 +591,12 @@ sap.ui.define(['jquery.sap.global', './CustomStyleClassSupport', './Element', '.
 	 *
 	 * Subclasses of Control should override this hook to implement any necessary actions before the rendering.
 	 *
-	 * @function
-	 * @name sap.ui.core.Control.prototype.onBeforeRendering
 	 * @protected
 	 */
-	//sap.ui.core.Control.prototype.onBeforeRendering = function() {};
+	Control.prototype.onBeforeRendering = function() {
+		// Before adding any implementation, please remember that this method was first implemented in release 1.54.
+		// Therefore, many subclasses will not call this method at all.
+	};
 
 	/**
 	 * Function is called when the rendering of the control is completed.
@@ -594,11 +605,12 @@ sap.ui.define(['jquery.sap.global', './CustomStyleClassSupport', './Element', '.
 	 *
 	 * Subclasses of Control should override this hook to implement any necessary actions after the rendering.
 	 *
-	 * @function
-	 * @name sap.ui.core.Control.prototype.onAfterRendering
 	 * @protected
 	 */
-	//sap.ui.core.Control.prototype.onAfterRendering = function() {};
+	Control.prototype.onAfterRendering = function() {
+		// Before adding any implementation, please remember that this method was first implemented in release 1.54.
+		// Therefore, many subclasses will not call this method at all.
+	};
 
 	/**
 	 * Returns the DOMNode Id to be used for the "labelFor" attribute of the label.
@@ -640,6 +652,7 @@ sap.ui.define(['jquery.sap.global', './CustomStyleClassSupport', './Element', '.
 		rForbiddenTags = /^(?:area|base|br|col|embed|hr|img|input|keygen|link|menuitem|meta|param|source|track|wbr|tr)$/i,
 		oBusyIndicatorDelegate = {
 			onBeforeRendering: function() {
+				// deregister handler/DomRef as after rendering new handler/DomRef exists and must be registered
 				if (this.getBusy() && this.getDomRef() && !this._busyIndicatorDelayedCallId && this.getDomRef("busyIndicator")) {
 					fnHandleInteraction.call(this, false);
 				}
@@ -706,7 +719,7 @@ sap.ui.define(['jquery.sap.global', './CustomStyleClassSupport', './Element', '.
 		}
 
 		//Append busy indicator to control DOM
-		this._$BusyIndicator = BusyIndicatorUtils.addHTML($this, this.getId() + "-busyIndicator");
+		this._$BusyIndicator = BusyIndicatorUtils.addHTML($this, this.getId() + "-busyIndicator", this.getBusyIndicatorSize());
 
 		fnHandleInteraction.call(this, true);
 	}
@@ -754,9 +767,11 @@ sap.ui.define(['jquery.sap.global', './CustomStyleClassSupport', './Element', '.
 			oBusyTabbable.focus();
 			this.bIgnoreBusyFocus = false;
 			oBusyTabbable.setAttribute("tabindex", 0);
-		} else if (bTargetIsBusyIndicator && (oEvent.type === 'mousedown' || oEvent.type === 'touchdown')) {
+			oEvent.stopImmediatePropagation();
+		} else if (bTargetIsBusyIndicator && (oEvent.type === 'mousedown' || oEvent.type === 'touchstart')) {
 			// Do not "preventDefault" to allow to focus busy indicator
 			jQuery.sap.log.debug("Local Busy Indicator click handled on busy area: " + oEvent.target.id);
+			oEvent.stopImmediatePropagation();
 		} else {
 			jQuery.sap.log.debug("Local Busy Indicator Event Suppressed: " + oEvent.type);
 			oEvent.preventDefault();
@@ -850,7 +865,7 @@ sap.ui.define(['jquery.sap.global', './CustomStyleClassSupport', './Element', '.
 	/**
 	 * Suppress interactions on all DOM elements in the busy section
 	 *
-	 * @param {Boolean} bBusy New busy state
+	 * @param {boolean} bBusy New busy state
 	 * @private
 	 */
 	function fnHandleInteraction(bBusy) {

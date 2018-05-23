@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.52.5"
+      "version": "1.54.5"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -22,13 +22,13 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.52",
+      "minUI5Version": "1.54",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.52.5"
+          "minVersion": "1.54.5"
         },
         "sap.ui.unified": {
-          "minVersion": "1.52.5",
+          "minVersion": "1.54.5",
           "lazy": true
         }
       }
@@ -49,6 +49,8 @@
           "sap.m.Carousel",
           "sap.m.CheckBox",
           "sap.m.ColumnListItem",
+          "sap.m.ColorPalette",
+          "sap.m.ColorPalettePopover",
           "sap.m.ComboBox",
           "sap.m.ComboBoxTextField",
           "sap.m.ComboBoxBase",
@@ -151,6 +153,8 @@
           "sap.m.SelectionDetails",
           "sap.m.Shell",
           "sap.m.Slider",
+          "sap.m.SliderTooltip",
+          "sap.m.SliderTooltipContainer",
           "sap.m.SlideTile",
           "sap.m.StepInput",
           "sap.m.SplitApp",
@@ -169,6 +173,7 @@
           "sap.m.TileContainer",
           "sap.m.TileContent",
           "sap.m.TimePicker",
+          "sap.m.TimePickerSliders",
           "sap.m.Title",
           "sap.m.ToggleButton",
           "sap.m.Token",
@@ -184,6 +189,8 @@
           "sap.m.ViewSettingsDialog",
           "sap.m.ViewSettingsPopover",
           "sap.m.semantic.DetailPage",
+          "sap.m.semantic.SemanticPage",
+          "sap.m.semantic.ShareMenuPage",
           "sap.m.semantic.FullscreenPage",
           "sap.m.semantic.MasterPage",
           "sap.m.Wizard",
@@ -309,6 +316,7 @@
           "sap.m.StringFilterOperator",
           "sap.m.SwipeDirection",
           "sap.m.SwitchType",
+          "sap.m.TimePickerMaskMode",
           "sap.m.ToolbarDesign",
           "sap.m.VerticalPlacementType",
           "sap.m.semantic.SemanticRuleSetType"
@@ -318,6 +326,7 @@
           "sap.m.IBreadcrumbs",
           "sap.m.IconTab",
           "sap.m.IScale",
+          "sap.m.ISliderTooltip",
           "sap.m.semantic.IGroup",
           "sap.m.semantic.IFilter",
           "sap.m.semantic.ISort",

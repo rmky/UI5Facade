@@ -1,12 +1,28 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.TileContainer.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/IconPool', 'sap/ui/Device', 'sap/ui/core/ResizeHandler'],
-	function(jQuery, library, Control, IconPool, Device, ResizeHandler) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/IconPool',
+	'sap/ui/Device',
+	'sap/ui/core/ResizeHandler',
+	'./TileContainerRenderer'
+],
+function(
+	jQuery,
+	library,
+	Control,
+	IconPool,
+	Device,
+	ResizeHandler,
+	TileContainerRenderer
+	) {
 	"use strict";
 
 
@@ -22,12 +38,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.12
-	 * @deprecated As of version 1.50, instead, use a container of your choice with {@link sap.m.GenericTile} instances
+	 * @deprecated as of version 1.50, replaced by a container of your choice with {@link sap.m.GenericTile} instances
 	 * @alias sap.m.TileContainer
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -455,13 +471,13 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 				},
 				oldCurrentPageIsLast: function() {
 					if (isNaN(iOldCurrentPage)) {
-						return;
+						return false;
 					}
 					return bRtl ? (iOldCurrentPage === 0) : (iOldCurrentPage === iOldCount - 1);
 				},
 				oldCurrentPageIsFirst: function() {
 					if (isNaN(iOldCurrentPage)) {
-						return;
+						return false;
 					}
 					return bRtl ? (iOldCurrentPage === iOldCount - 1) : (iOldCurrentPage === 0);
 				},
@@ -472,6 +488,10 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 				/*Is the 'currentPage is first' has changed. Example - it wasn't first before, but now it is and vice versa*/
 				currentPageIsFirstChanged: function() {
 					return this.currentPageIsFirst() !== this.oldCurrentPageIsFirst();
+				},
+				/* true if current page's relative position is changed - the page becomes first, last or was first or last and now it is not*/
+				currentPageRelativePositionChanged: function() {
+					return this.currentPageIsFirstChanged() || this.currentPageIsLastChanged();
 				},
 				pageCountChanged: function() {
 					return iCount !== iOldCount;
@@ -542,7 +562,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			this._bRenderFirstPage = false;
 			aVisibleTiles = this._getVisibleTiles();
 			this._updateTileDimensionInfoAndPageSize(aVisibleTiles);
-			if (this._iMaxTiles !== Infinity && this._iMaxTiles ) {
+			if (this.getTiles().length === 1) {
+				// in case of only one tile, it was rendered
+				// but still needs it's position and visibility to be updated
+				this._update(false, aVisibleTiles);
+			} else if (this._iMaxTiles !== Infinity && this._iMaxTiles ) {
 				this._renderTiles(aVisibleTiles, 0, this._iMaxTiles - 1);
 			}
 		} else {
@@ -714,7 +738,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	/**
 	 * Updates all Tiles.
 	 * @param {boolean} bAnimated to apply animation during update
-	 * @param {[sap.m.Tile[]]} aVisibleTiles optional list of visible tiles in order to avoid filtering them again.
+	 * @param {sap.m.Tile[]} [aVisibleTiles] optional list of visible tiles in order to avoid filtering them again.
 	 * @return {void}
 	 * @private
 	 */
@@ -1082,7 +1106,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 *
 	 * @param {sap.m.Tile|int} vTile The Tile or tile index to be scrolled into view
 	 * @param {boolean} bAnimated Whether the scroll should be animated
-	 * @param {[sap.m.Tile[]]} aVisibleTiles optional list of visible tiles in order to avoid filtering them again.
+	 * @param {sap.m.Tile[]} [aVisibleTiles] optional list of visible tiles in order to avoid filtering them again.
 	 * @public
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -1120,7 +1144,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	};
 
 	/**
-	 * Updates the tile positions.
+	 * Updates the tile positions only of the rendered tiles.
+	 * Tile property _rendered is set inside Tile.js onAfterRendering.
 	 *
 	 * @private
 	 */
@@ -1192,7 +1217,9 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		var oPager,
 			oScrollLeft,
 			oScrollRight,
-			aHTML;
+			aHTML,
+			/* true if the pager is created as part of this function*/
+			bPagerJustCreated = false;
 
 		if (!this._oPagesInfo.pageCountChanged() && !this._oPagesInfo.currentPageChanged()) {
 			return;
@@ -1222,6 +1249,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			oPager.style.display = "block";
 			oPager.childNodes[0].className = "sapMTCActive"; //initially active page is the 1st(span)
 			this._oPagesInfo.setPagerCreated(true);
+			bPagerJustCreated = true;
 		} else if (this._oPagesInfo.pageCountChanged()) {
 			if (this._oPagesInfo.getCount() - this._oPagesInfo.getOldCount() < 0) {//one page less
 				oPager.removeChild(oPager.lastChild);
@@ -1235,12 +1263,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			if (oPager.childNodes[this._oPagesInfo.getOldCurrentPage()]) {
 				oPager.childNodes[this._oPagesInfo.getOldCurrentPage()].className = "";
 			}
-			if (this._oPagesInfo.getCurrentPage() >= 2) { //deactivate the initially active page (span)
+			if (this._oPagesInfo.getCurrentPage() >= 1) { //deactivate the initially active page (span)
 				oPager.childNodes[0].className = "";
 			}
 		}
-		if (Device.system.desktop &&
-			(this._oPagesInfo.currentPageIsFirstChanged() || this._oPagesInfo.currentPageIsLastChanged())) {
+
+		if (Device.system.desktop && (bPagerJustCreated || this._oPagesInfo.currentPageRelativePositionChanged())) {
 			if (this._bRtl) {
 				// Less builder swaps left and right in RTL styles,
 				// and that is not required here, otherwise left scroller will go right and vice versa.
@@ -1381,7 +1409,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * Applies the start index of the pages' first Tile according to the given index.
 	 *
 	 * @param {int} iIndex The index of the tile that should be visible
-	 * @param {[sap.m.Tile[]]} aVisibleTiles optional list of visible tiles in order to avoid filtering them again.
+	 * @param {sap.m.Tile[]} [aVisibleTiles] optional list of visible tiles in order to avoid filtering them again.
 	 * @private
 	 */
 	TileContainer.prototype._applyPageStartIndex = function (iIndex, aVisibleTiles) {
@@ -2003,7 +2031,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	/**
 	 * Finds given tile amongst visible tiles list
 	 * @param {sap.m.Tile} oTile the tile to look for
-	 * @param {[sap.m.Tile[]]} aTiles optional list of visible tiles in order to avoid filtering them again.
+	 * @param {sap.m.Tile[]} [aTiles] optional list of visible tiles in order to avoid filtering them again.
 	 * @returns {number} the index of the visible tile. If tile is not found, -1 will be returned
 	 * @private
 	 */
@@ -2025,7 +2053,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 
 	/**
 	 * Updates the information about the dimension of a tile and the page size.
-	 * @param {[sap.m.Tile[]]} tiles optional list of visible tiles in order to avoid filtering them again.
+	 * @param {sap.m.Tile[]} [aVisibleTiles] optional list of visible tiles in order to avoid filtering them again.
 	 * @private
 	 */
 	TileContainer.prototype._updateTileDimensionInfoAndPageSize = function(aVisibleTiles) {
@@ -2120,7 +2148,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 	 * Handles the WAI ARIA property aria-posinset after a change in the TileContainer.
 	 * @param {int} iStartIndex The index of the Tile to start with
 	 * @param {int} iEndIndex The index of the Tile to complete with
-	 * @param {[sap.m.Tile[]]} visibleTiles optional list of visible tiles in order to avoid filtering them again.
+	 * @param {sap.m.Tile[]} [aVisibleTiles] optional list of visible tiles in order to avoid filtering them again.
 	 * @private
 	 */
 	function handleAriaPositionInSet(iStartIndex, iEndIndex, aVisibleTiles) {

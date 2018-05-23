@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @class Change class.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @alias sap.ui.fl.Change
 	 * @experimental Since 1.25.0
 	 */
@@ -40,7 +40,6 @@ sap.ui.define([
 			}
 
 			this._oDefinition = oFile;
-			this._oOriginDefinition = jQuery.extend(true, {}, oFile);
 			this._sRequest = '';
 			this._bUserDependent = (oFile.layer === "USER");
 			this._vRevertData = null;
@@ -62,10 +61,6 @@ sap.ui.define([
 		DIRTY: "UPDATE"
 	};
 
-	Change.events = {
-		markForDeletion: "markForDeletion"
-	};
-
 	Change.prototype.setState = function(sState) {
 		if (this._isValidState(sState)) {
 			this.setProperty("state", sState);
@@ -75,8 +70,8 @@ sap.ui.define([
 
 	/**
 	 * Validates if the new state of change has a valid value
-	 * The new state value has to be in the <code>Change.states<code> list
-	 * Moving of state directly from <code>Change.states.NEW<code> to <code>Change.states.DIRTY<code> is not allowed.
+	 * The new state value has to be in the <code>Change.states</code> list
+	 * Moving of state directly from <code>Change.states.NEW</code> to <code>Change.states.DIRTY</code> is not allowed.
 	 * @param {string} sState - value of target state
 	 * @returns {boolean} - new state is valid
 	 * @private
@@ -545,7 +540,6 @@ sap.ui.define([
 		var sResponse = JSON.stringify(oResponse);
 		if (sResponse) {
 			this._oDefinition = JSON.parse(sResponse);
-			this._oOriginDefinition = JSON.parse(sResponse);
 			this.setState(Change.states.PERSISTED);
 		}
 	};
@@ -764,6 +758,7 @@ sap.ui.define([
 	 * @param {Object}  [oPropertyBag.validAppVersions] Application versions where the change is active
 	 * @param {String}  [oPropertyBag.reference] Application component name
 	 * @param {String}  [oPropertyBag.namespace] The namespace of the change file
+	 * @param {String}  [oPropertyBag.generator] The tool which is used to generate the change file
 	 *
 	 * @returns {Object} The content of the change file
 	 *
@@ -799,7 +794,7 @@ sap.ui.define([
 			conditions: {},
 			context: oPropertyBag.context || "",
 			support: {
-				generator: "Change.createInitialFileContent",
+				generator: oPropertyBag.generator || "Change.createInitialFileContent",
 				service: oPropertyBag.service || "",
 				user: "",
 				sapui5Version: sap.ui.version

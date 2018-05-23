@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -198,7 +198,7 @@ sap.ui.define(['jquery.sap.global', './Binding', './SimpleType','./DataState'],
 	 * The internal type is the property type of the element which the value is formatted to.
 	 *
 	 * @param {sap.ui.model.Type} oType the type for the binding
-	 * @param {String} sInternalType the internal type of the element property which this binding is bound against.
+	 * @param {string} sInternalType the internal type of the element property which this binding is bound against.
 	 *
 	 * @public
 	 */

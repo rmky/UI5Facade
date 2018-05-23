@@ -1,11 +1,44 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolbar', './Button', './Bar', './Text', './Title', 'sap/ui/core/InvisibleText', 'sap/ui/core/IconPool', 'sap/ui/core/ValueStateSupport', './library', 'sap/ui/Device', 'sap/ui/core/library', 'jquery.sap.keycodes'],
-	function(jQuery, Dialog, ComboBoxTextField, Toolbar, Button, Bar, Text, Title, InvisibleText, IconPool, ValueStateSupport, library, Device, coreLibrary) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./Dialog',
+	'./ComboBoxTextField',
+	'./Toolbar',
+	'./Button',
+	'./Bar',
+	'./Text',
+	'./Title',
+	'sap/ui/core/InvisibleText',
+	'sap/ui/core/IconPool',
+	'sap/ui/core/ValueStateSupport',
+	'./library',
+	'sap/ui/Device',
+	'sap/ui/core/library',
+	'./ComboBoxBaseRenderer',
+	'jquery.sap.keycodes'
+],
+	function(
+	jQuery,
+	Dialog,
+	ComboBoxTextField,
+	Toolbar,
+	Button,
+	Bar,
+	Text,
+	Title,
+	InvisibleText,
+	IconPool,
+	ValueStateSupport,
+	library,
+	Device,
+	coreLibrary,
+	ComboBoxBaseRenderer
+	) {
 		"use strict";
 
 		// shortcut for sap.m.PlacementType
@@ -26,7 +59,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		 * @abstract
 		 *
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -82,9 +115,6 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 				}
 			}
 		});
-
-		//Keeps the ID of the static aria text for available options
-		var sPickerHiddenLabelId;
 
 		/* =========================================================== */
 		/* Private methods                                             */
@@ -242,19 +272,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		 * @protected
 		 */
 		ComboBoxBase.prototype.getPickerInvisibleTextId = function() {
-			if (!sap.ui.getCore().getConfiguration().getAccessibility()) {
-				return "";
-			}
-
-			// Load the resources
-			var oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
-
-			if (!sPickerHiddenLabelId) {
-				sPickerHiddenLabelId = new InvisibleText({
-					text: oResourceBundle.getText("COMBOBOX_AVAILABLE_OPTIONS")
-				}).toStatic().getId();
-			}
-			return sPickerHiddenLabelId;
+			return InvisibleText.getStaticId("sap.m", "COMBOBOX_AVAILABLE_OPTIONS");
 		};
 
 		/* =========================================================== */
@@ -761,7 +779,6 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 		 * To be overwritten by subclasses.
 		 *
 		 * @param {string} sPickerType The picker type
-		 * @returns {sap.m.Popover | sap.m.Dialog} The picker popup to be used.
 		 * @protected
 		 */
 		ComboBoxBase.prototype.createPicker = function(sPickerType) {};
@@ -1065,7 +1082,7 @@ sap.ui.define(['jquery.sap.global', './Dialog', './ComboBoxTextField', './Toolba
 
 		/**
 		 * Scrolls an item into the visual viewport.
-		 * @param {object} The item to be scrolled
+		 * @param {object} oItem The item to be scrolled
 		 *
 		 */
 		ComboBoxBase.prototype.scrollToItem = function(oItem) {

@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -31,7 +31,10 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 		// get control properties
 		var sId = oCheckBox.getId(),
 			bEnabled = oCheckBox.getEnabled(),
+			bDisplayOnly = oCheckBox.getDisplayOnly(),
 			bEditable = oCheckBox.getEditable(),
+			bInteractive = bEnabled && !bDisplayOnly,
+			bDisplayOnlyApplied = bEnabled && bDisplayOnly,
 			oCbLabel = oCheckBox.getAggregation("_label"),
 			bInErrorState = ValueState.Error === oCheckBox.getValueState(),
 			bInWarningState = ValueState.Warning === oCheckBox.getValueState(),
@@ -43,6 +46,10 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 
 		if (!bEditable) {
 			oRm.addClass("sapMCbRo");
+		}
+
+		if (bDisplayOnlyApplied) {
+			oRm.addClass("sapMCbDisplayOnly");
 		}
 
 		if (!bEnabled) {
@@ -59,6 +66,10 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 			oRm.addClass("sapMCbHasLabel");
 		}
 
+		if (oCheckBox.getWrapping()) {
+			oRm.addClass("sapMCbWrapped");
+		}
+
 		oRm.writeControlData(oCheckBox);
 		oRm.writeClasses();
 
@@ -72,7 +83,7 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 			oRm.writeAttributeEscaped("title", sTooltip);
 		}
 
-		if (bEnabled) {
+		if (bInteractive) {
 			oRm.writeAttribute("tabindex", oCheckBox.getTabIndex());
 		}
 
@@ -84,6 +95,10 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 			describedby: sTooltip ? sId + "-Descr" : undefined
 		});
 
+		if (bDisplayOnlyApplied) {
+			oRm.writeAttribute("aria-readonly", true);
+		}
+
 		oRm.write(">");		// DIV element
 
 		// write the HTML into the render manager
@@ -93,7 +108,7 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 		// CheckBox style class
 		oRm.addClass("sapMCbBg");
 
-		if (bEnabled && bEditable && Device.system.desktop) {
+		if (bInteractive && bEditable && Device.system.desktop) {
 			oRm.addClass("sapMCbHoverable");
 		}
 

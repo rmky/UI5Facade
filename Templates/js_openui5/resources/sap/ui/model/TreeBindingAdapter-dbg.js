@@ -1,12 +1,12 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.model.odata.TreeBindingAdapter
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/ClientTreeBinding', 'sap/ui/model/TreeAutoExpandMode', 'sap/ui/model/ChangeReason', 'sap/ui/model/TreeBindingUtils', 'sap/ui/model/odata/OperationMode'],
-	function(jQuery, TreeBinding, ClientTreeBinding, TreeAutoExpandMode, ChangeReason, TreeBindingUtils, OperationMode) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/TreeAutoExpandMode', 'sap/ui/model/ChangeReason', 'sap/ui/model/TreeBindingUtils'],
+	function(jQuery, TreeBinding, TreeAutoExpandMode, ChangeReason, TreeBindingUtils) {
 		"use strict";
 
 		/**
@@ -890,7 +890,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/Cl
 						rowIndices: []
 					};
 					// Collect the changed indices
-					var iNodeCounter = 0;
+					var iNodeCounter = -1;
 					this._map(this._oRootNode, function (oNode) {
 						if (!oNode || !oNode.isArtificial) {
 							iNodeCounter++;

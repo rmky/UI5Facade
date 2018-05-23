@@ -1,16 +1,20 @@
 /*
  * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-// Provides class sap.ui.dt.plugin.CutPaste.
 sap.ui.define([
 	'sap/ui/dt/Plugin',
 	'sap/ui/dt/plugin/ElementMover',
 	'sap/ui/dt/OverlayUtil',
 	'sap/ui/dt/OverlayRegistry'
-], function(Plugin, ElementMover, OverlayUtil, OverlayRegistry) {
+], function(
+	Plugin,
+	ElementMover,
+	OverlayUtil,
+	OverlayRegistry
+) {
 	"use strict";
 
 	/**
@@ -21,7 +25,7 @@ sap.ui.define([
 	 * @class The CutPaste enables Cut & Paste functionality for the overlays based on aggregation types
 	 * @extends sap.ui.dt.Plugin"
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -31,9 +35,6 @@ sap.ui.define([
 	var CutPaste = Plugin.extend("sap.ui.dt.plugin.CutPaste", /** @lends sap.ui.dt.plugin.CutPaste.prototype */
 	{
 		metadata: {
-			// ---- object ----
-
-			// ---- control specific ----
 			library: "sap.ui.dt",
 			properties: {
 				movableTypes: {
@@ -58,10 +59,14 @@ sap.ui.define([
 	 * @override
 	 */
 	CutPaste.prototype.registerElementOverlay = function(oOverlay) {
-		var oElement = oOverlay.getElementInstance();
+		var oElement = oOverlay.getElement();
 		//Register key down so that ESC is possible on all overlays
 		oOverlay.attachBrowserEvent("keydown", this._onKeyDown, this);
-		if (this.getElementMover().isMovableType(oElement) && this.getElementMover().checkMovable(oOverlay)) {
+		if (
+			this.getElementMover().isMovableType(oElement)
+			&& this.getElementMover().checkMovable(oOverlay)
+			&& !OverlayUtil.isInAggregationBinding(oOverlay, oElement.sParentAggregationName)
+		) {
 			oOverlay.setMovable(true);
 		}
 
@@ -106,7 +111,7 @@ sap.ui.define([
 	};
 
 	CutPaste.prototype._onKeyDown = function(oEvent) {
-		var oOverlay = sap.ui.getCore().byId(oEvent.currentTarget.id);
+		var oOverlay = OverlayRegistry.getOverlay(oEvent.currentTarget.id);
 
 		// on macintosh os cmd-key is used instead of ctrl-key
 		var bCtrlKey = sap.ui.Device.os.macintosh ? oEvent.metaKey : oEvent.ctrlKey;
@@ -200,7 +205,7 @@ sap.ui.define([
 	};
 
 	CutPaste.prototype._isForSameElement = function(oCutOverlay, oTargetOverlay) {
-		return oTargetOverlay.getElementInstance() === oCutOverlay.getElementInstance();
+		return oTargetOverlay.getElement() === oCutOverlay.getElement();
 	};
 
 	CutPaste.prototype._getTargetZoneAggregation = function(oTargetOverlay) {

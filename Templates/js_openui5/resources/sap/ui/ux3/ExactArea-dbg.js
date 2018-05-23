@@ -1,12 +1,18 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.ux3.ExactArea.
-sap.ui.define(['jquery.sap.global', 'sap/ui/commons/Toolbar', 'sap/ui/core/Control', './library'],
-	function(jQuery, Toolbar, Control, library) {
+sap.ui.define([
+ 'jquery.sap.global',
+ 'sap/ui/commons/Toolbar',
+ 'sap/ui/core/Control',
+ './library',
+ "./ExactAreaRenderer"
+],
+	function(jQuery, Toolbar, Control, library, ExactAreaRenderer) {
 	"use strict";
 
 
@@ -23,7 +29,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/Toolbar', 'sap/ui/core/Contr
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public

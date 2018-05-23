@@ -5,6 +5,9 @@
 			"name": ".library"
 		},
 		{
+			"name": ".supportrc"
+		},
+		{
 			"name": ".theming"
 		},
 		{
@@ -15,6 +18,7 @@
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/layout/AlignedFlowLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -25,6 +29,7 @@
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/layout/AlignedFlowLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -78,22 +83,9 @@
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/layout/BlockLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
-		},
-		{
-			"name": "BlockLayout.control",
-			"designtime": true
-		},
-		{
-			"name": "BlockLayout.designtime-dbg.js",
-			"module": "sap/ui/layout/BlockLayout.designtime.js",
-			"isDebug": true
-		},
-		{
-			"name": "BlockLayout.designtime.js",
-			"module": "sap/ui/layout/BlockLayout.designtime.js",
-			"designtime": true
 		},
 		{
 			"name": "BlockLayout.js",
@@ -102,6 +94,7 @@
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/layout/BlockLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -111,6 +104,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/core/Control.js",
+				"sap/ui/layout/BlockLayoutCellRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -119,20 +113,11 @@
 			"designtime": true
 		},
 		{
-			"name": "BlockLayoutCell.designtime-dbg.js",
-			"module": "sap/ui/layout/BlockLayoutCell.designtime.js",
-			"isDebug": true
-		},
-		{
-			"name": "BlockLayoutCell.designtime.js",
-			"module": "sap/ui/layout/BlockLayoutCell.designtime.js",
-			"designtime": true
-		},
-		{
 			"name": "BlockLayoutCell.js",
 			"module": "sap/ui/layout/BlockLayoutCell.js",
 			"required": [
 				"sap/ui/core/Control.js",
+				"sap/ui/layout/BlockLayoutCellRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -207,21 +192,12 @@
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/layout/BlockLayoutCellData.js",
+				"sap/ui/layout/BlockLayoutRowRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
 		{
 			"name": "BlockLayoutRow.control",
-			"designtime": true
-		},
-		{
-			"name": "BlockLayoutRow.designtime-dbg.js",
-			"module": "sap/ui/layout/BlockLayoutRow.designtime.js",
-			"isDebug": true
-		},
-		{
-			"name": "BlockLayoutRow.designtime.js",
-			"module": "sap/ui/layout/BlockLayoutRow.designtime.js",
 			"designtime": true
 		},
 		{
@@ -231,6 +207,7 @@
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/layout/BlockLayoutCellData.js",
+				"sap/ui/layout/BlockLayoutRowRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -261,6 +238,7 @@
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/layout/DynamicSideContentRenderer.js",
 				"sap/ui/layout/library.js"
 			],
 			"condRequired": [
@@ -274,6 +252,7 @@
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/layout/DynamicSideContentRenderer.js",
 				"sap/ui/layout/library.js"
 			],
 			"condRequired": [
@@ -307,21 +286,12 @@
 				"sap/ui/core/EnabledPropagator.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/layout/FixFlexRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
 		{
 			"name": "FixFlex.control",
-			"designtime": true
-		},
-		{
-			"name": "FixFlex.designtime-dbg.js",
-			"module": "sap/ui/layout/FixFlex.designtime.js",
-			"isDebug": true
-		},
-		{
-			"name": "FixFlex.designtime.js",
-			"module": "sap/ui/layout/FixFlex.designtime.js",
 			"designtime": true
 		},
 		{
@@ -333,6 +303,7 @@
 				"sap/ui/core/EnabledPropagator.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/layout/FixFlexRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -358,8 +329,10 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/layout/GridRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -368,23 +341,15 @@
 			"designtime": true
 		},
 		{
-			"name": "Grid.designtime-dbg.js",
-			"module": "sap/ui/layout/Grid.designtime.js",
-			"isDebug": true
-		},
-		{
-			"name": "Grid.designtime.js",
-			"module": "sap/ui/layout/Grid.designtime.js",
-			"designtime": true
-		},
-		{
 			"name": "Grid.js",
 			"module": "sap/ui/layout/Grid.js",
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/layout/GridRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -446,6 +411,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/core/Control.js",
+				"sap/ui/layout/HorizontalLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -454,20 +420,11 @@
 			"designtime": true
 		},
 		{
-			"name": "HorizontalLayout.designtime-dbg.js",
-			"module": "sap/ui/layout/HorizontalLayout.designtime.js",
-			"isDebug": true
-		},
-		{
-			"name": "HorizontalLayout.designtime.js",
-			"module": "sap/ui/layout/HorizontalLayout.designtime.js",
-			"designtime": true
-		},
-		{
 			"name": "HorizontalLayout.js",
 			"module": "sap/ui/layout/HorizontalLayout.js",
 			"required": [
 				"sap/ui/core/Control.js",
+				"sap/ui/layout/HorizontalLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -511,6 +468,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/layout/ResponsiveFlowLayoutData.js",
+				"sap/ui/layout/ResponsiveFlowLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -527,6 +485,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/layout/ResponsiveFlowLayoutData.js",
+				"sap/ui/layout/ResponsiveFlowLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -573,6 +532,7 @@
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/layout/PaneContainer.js",
 				"sap/ui/layout/ResponsiveSplitterPage.js",
+				"sap/ui/layout/ResponsiveSplitterRenderer.js",
 				"sap/ui/layout/ResponsiveSplitterUtilities.js",
 				"sap/ui/layout/SplitPane.js",
 				"sap/ui/layout/library.js"
@@ -588,6 +548,7 @@
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/layout/PaneContainer.js",
 				"sap/ui/layout/ResponsiveSplitterPage.js",
+				"sap/ui/layout/ResponsiveSplitterRenderer.js",
 				"sap/ui/layout/ResponsiveSplitterUtilities.js",
 				"sap/ui/layout/SplitPane.js",
 				"sap/ui/layout/library.js"
@@ -670,8 +631,10 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/RenderManager.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/library.js",
+				"sap/ui/layout/SplitterRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -680,23 +643,15 @@
 			"designtime": true
 		},
 		{
-			"name": "Splitter.designtime-dbg.js",
-			"module": "sap/ui/layout/Splitter.designtime.js",
-			"isDebug": true
-		},
-		{
-			"name": "Splitter.designtime.js",
-			"module": "sap/ui/layout/Splitter.designtime.js",
-			"designtime": true
-		},
-		{
 			"name": "Splitter.js",
 			"module": "sap/ui/layout/Splitter.js",
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/RenderManager.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/library.js",
+				"sap/ui/layout/SplitterRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -743,6 +698,7 @@
 			"required": [
 				"sap/ui/core/Control.js",
 				"sap/ui/core/EnabledPropagator.js",
+				"sap/ui/layout/VerticalLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -751,21 +707,12 @@
 			"designtime": true
 		},
 		{
-			"name": "VerticalLayout.designtime-dbg.js",
-			"module": "sap/ui/layout/VerticalLayout.designtime.js",
-			"isDebug": true
-		},
-		{
-			"name": "VerticalLayout.designtime.js",
-			"module": "sap/ui/layout/VerticalLayout.designtime.js",
-			"designtime": true
-		},
-		{
 			"name": "VerticalLayout.js",
 			"module": "sap/ui/layout/VerticalLayout.js",
 			"required": [
 				"sap/ui/core/Control.js",
 				"sap/ui/core/EnabledPropagator.js",
+				"sap/ui/layout/VerticalLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -936,6 +883,535 @@
 			]
 		},
 		{
+			"name": "designtime/BlockLayout.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/BlockLayout.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/BlockLayout.designtime.js",
+			"module": "sap/ui/layout/designtime/BlockLayout.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/BlockLayout.icon.svg",
+			"designtime": true
+		},
+		{
+			"name": "designtime/BlockLayoutCell.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/BlockLayoutCell.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/BlockLayoutCell.designtime.js",
+			"module": "sap/ui/layout/designtime/BlockLayoutCell.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/BlockLayoutRow.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/BlockLayoutRow.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/BlockLayoutRow.designtime.js",
+			"module": "sap/ui/layout/designtime/BlockLayoutRow.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/DynamicSideContent.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/DynamicSideContent.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/DynamicSideContent.designtime.js",
+			"module": "sap/ui/layout/designtime/DynamicSideContent.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/FixFlex.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/FixFlex.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/FixFlex.designtime.js",
+			"module": "sap/ui/layout/designtime/FixFlex.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/Grid.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/Grid.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/Grid.designtime.js",
+			"module": "sap/ui/layout/designtime/Grid.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/HorizontalLayout.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/HorizontalLayout.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/HorizontalLayout.designtime.js",
+			"module": "sap/ui/layout/designtime/HorizontalLayout.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/HorizontalLayout.icon.svg",
+			"designtime": true
+		},
+		{
+			"name": "designtime/Splitter.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/Splitter.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/Splitter.designtime.js",
+			"module": "sap/ui/layout/designtime/Splitter.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/VerticalLayout.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/VerticalLayout.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/VerticalLayout.designtime.js",
+			"module": "sap/ui/layout/designtime/VerticalLayout.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/VerticalLayout.icon.svg",
+			"designtime": true
+		},
+		{
+			"name": "designtime/form/Form.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/form/Form.designtime.js",
+			"isDebug": true
+		},
+		{
+			"name": "designtime/form/Form.designtime.js",
+			"module": "sap/ui/layout/designtime/form/Form.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/form/Form.icon.svg"
+		},
+		{
+			"name": "designtime/form/FormContainer.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/form/FormContainer.designtime.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
+			]
+		},
+		{
+			"name": "designtime/form/FormContainer.designtime.js",
+			"module": "sap/ui/layout/designtime/form/FormContainer.designtime.js",
+			"designtime": true,
+			"required": [
+				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
+			]
+		},
+		{
+			"name": "designtime/form/FormContainer.icon.svg"
+		},
+		{
+			"name": "designtime/form/FormElement.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/form/FormElement.designtime.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/layout/form/Form.js",
+				"sap/ui/layout/form/FormContainer.js",
+				"sap/ui/layout/form/ResponsiveGridLayout.js"
+			]
+		},
+		{
+			"name": "designtime/form/FormElement.designtime.js",
+			"module": "sap/ui/layout/designtime/form/FormElement.designtime.js",
+			"designtime": true,
+			"required": [
+				"sap/ui/layout/form/Form.js",
+				"sap/ui/layout/form/FormContainer.js",
+				"sap/ui/layout/form/ResponsiveGridLayout.js"
+			]
+		},
+		{
+			"name": "designtime/form/FormElement.icon.svg"
+		},
+		{
+			"name": "designtime/form/GridLayout.icon.svg"
+		},
+		{
+			"name": "designtime/form/ResponsiveGridLayout.icon.svg"
+		},
+		{
+			"name": "designtime/form/SimpleForm.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/form/SimpleForm.designtime.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
+			]
+		},
+		{
+			"name": "designtime/form/SimpleForm.designtime.js",
+			"module": "sap/ui/layout/designtime/form/SimpleForm.designtime.js",
+			"designtime": true,
+			"required": [
+				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
+			]
+		},
+		{
+			"name": "designtime/form/SimpleForm.icon.svg"
+		},
+		{
+			"name": "designtime/library-preload.designtime.js",
+			"module": "sap/ui/layout/designtime/library-preload.designtime.js",
+			"merged": true,
+			"designtime": true,
+			"required": [
+				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js",
+				"sap/ui/layout/form/Form.js",
+				"sap/ui/layout/form/FormContainer.js",
+				"sap/ui/layout/form/ResponsiveGridLayout.js"
+			],
+			"included": [
+				"sap/ui/layout/designtime/BlockLayout.designtime.js",
+				"sap/ui/layout/designtime/BlockLayoutCell.designtime.js",
+				"sap/ui/layout/designtime/BlockLayoutRow.designtime.js",
+				"sap/ui/layout/designtime/DynamicSideContent.designtime.js",
+				"sap/ui/layout/designtime/FixFlex.designtime.js",
+				"sap/ui/layout/designtime/Grid.designtime.js",
+				"sap/ui/layout/designtime/HorizontalLayout.designtime.js",
+				"sap/ui/layout/designtime/Splitter.designtime.js",
+				"sap/ui/layout/designtime/VerticalLayout.designtime.js",
+				"sap/ui/layout/designtime/form/Form.designtime.js",
+				"sap/ui/layout/designtime/form/FormContainer.designtime.js",
+				"sap/ui/layout/designtime/form/FormElement.designtime.js",
+				"sap/ui/layout/designtime/form/SimpleForm.designtime.js",
+				"sap/ui/layout/designtime/library.designtime.js"
+			]
+		},
+		{
+			"name": "designtime/library-preload.designtime.js.map",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/library.designtime-dbg.js",
+			"module": "sap/ui/layout/designtime/library.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/library.designtime.js",
+			"module": "sap/ui/layout/designtime/library.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/messagebundle.properties",
+			"module": "sap/ui/layout/designtime/messagebundle.properties",
+			"designtime": true,
+			"locale": "",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_ar.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_ar.properties",
+			"designtime": true,
+			"locale": "ar",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_bg.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_bg.properties",
+			"designtime": true,
+			"locale": "bg",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_ca.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_ca.properties",
+			"designtime": true,
+			"locale": "ca",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_cs.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_cs.properties",
+			"designtime": true,
+			"locale": "cs",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_da.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_da.properties",
+			"designtime": true,
+			"locale": "da",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_de.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_de.properties",
+			"designtime": true,
+			"locale": "de",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_el.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_el.properties",
+			"designtime": true,
+			"locale": "el",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_en.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_en.properties",
+			"designtime": true,
+			"locale": "en",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_en_US_sappsd.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_en_US_sappsd.properties",
+			"designtime": true,
+			"locale": "en_US_sappsd",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_en_US_saptrc.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_en_US_saptrc.properties",
+			"designtime": true,
+			"locale": "en_US_saptrc",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_es.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_es.properties",
+			"designtime": true,
+			"locale": "es",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_et.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_et.properties",
+			"designtime": true,
+			"locale": "et",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_fi.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_fi.properties",
+			"designtime": true,
+			"locale": "fi",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_fr.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_fr.properties",
+			"designtime": true,
+			"locale": "fr",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_hi.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_hi.properties",
+			"designtime": true,
+			"locale": "hi",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_hr.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_hr.properties",
+			"designtime": true,
+			"locale": "hr",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_hu.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_hu.properties",
+			"designtime": true,
+			"locale": "hu",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_it.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_it.properties",
+			"designtime": true,
+			"locale": "it",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_iw.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_iw.properties",
+			"designtime": true,
+			"locale": "iw",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_ja.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_ja.properties",
+			"designtime": true,
+			"locale": "ja",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_kk.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_kk.properties",
+			"designtime": true,
+			"locale": "kk",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_ko.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_ko.properties",
+			"designtime": true,
+			"locale": "ko",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_lt.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_lt.properties",
+			"designtime": true,
+			"locale": "lt",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_lv.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_lv.properties",
+			"designtime": true,
+			"locale": "lv",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_ms.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_ms.properties",
+			"designtime": true,
+			"locale": "ms",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_nl.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_nl.properties",
+			"designtime": true,
+			"locale": "nl",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_no.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_no.properties",
+			"designtime": true,
+			"locale": "no",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_pl.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_pl.properties",
+			"designtime": true,
+			"locale": "pl",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_pt.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_pt.properties",
+			"designtime": true,
+			"locale": "pt",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_ro.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_ro.properties",
+			"designtime": true,
+			"locale": "ro",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_ru.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_ru.properties",
+			"designtime": true,
+			"locale": "ru",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_sh.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_sh.properties",
+			"designtime": true,
+			"locale": "sh",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_sk.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_sk.properties",
+			"designtime": true,
+			"locale": "sk",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_sl.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_sl.properties",
+			"designtime": true,
+			"locale": "sl",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_sv.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_sv.properties",
+			"designtime": true,
+			"locale": "sv",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_th.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_th.properties",
+			"designtime": true,
+			"locale": "th",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_tr.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_tr.properties",
+			"designtime": true,
+			"locale": "tr",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_uk.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_uk.properties",
+			"designtime": true,
+			"locale": "uk",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_vi.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_vi.properties",
+			"designtime": true,
+			"locale": "vi",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_zh_CN.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_zh_CN.properties",
+			"designtime": true,
+			"locale": "zh_CN",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
+			"name": "designtime/messagebundle_zh_TW.properties",
+			"module": "sap/ui/layout/designtime/messagebundle_zh_TW.properties",
+			"designtime": true,
+			"locale": "zh_TW",
+			"raw": "designtime/messagebundle.properties"
+		},
+		{
 			"name": "flexibility/BlockLayoutCell.flexibility-dbg.js",
 			"module": "sap/ui/layout/flexibility/BlockLayoutCell.flexibility.js",
 			"isDebug": true,
@@ -1030,6 +1506,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/core/Control.js",
+				"sap/ui/layout/form/FormRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1038,20 +1515,11 @@
 			"designtime": true
 		},
 		{
-			"name": "form/Form.designtime-dbg.js",
-			"module": "sap/ui/layout/form/Form.designtime.js",
-			"isDebug": true
-		},
-		{
-			"name": "form/Form.designtime.js",
-			"module": "sap/ui/layout/form/Form.designtime.js",
-			"designtime": true
-		},
-		{
 			"name": "form/Form.js",
 			"module": "sap/ui/layout/form/Form.js",
 			"required": [
 				"sap/ui/core/Control.js",
+				"sap/ui/layout/form/FormRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1069,22 +1537,6 @@
 		{
 			"name": "form/FormContainer.control",
 			"designtime": true
-		},
-		{
-			"name": "form/FormContainer.designtime-dbg.js",
-			"module": "sap/ui/layout/form/FormContainer.designtime.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
-			]
-		},
-		{
-			"name": "form/FormContainer.designtime.js",
-			"module": "sap/ui/layout/form/FormContainer.designtime.js",
-			"designtime": true,
-			"required": [
-				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
-			]
 		},
 		{
 			"name": "form/FormContainer.js",
@@ -1112,26 +1564,6 @@
 			"designtime": true
 		},
 		{
-			"name": "form/FormElement.designtime-dbg.js",
-			"module": "sap/ui/layout/form/FormElement.designtime.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/layout/form/Form.js",
-				"sap/ui/layout/form/FormContainer.js",
-				"sap/ui/layout/form/ResponsiveGridLayout.js"
-			]
-		},
-		{
-			"name": "form/FormElement.designtime.js",
-			"module": "sap/ui/layout/form/FormElement.designtime.js",
-			"designtime": true,
-			"required": [
-				"sap/ui/layout/form/Form.js",
-				"sap/ui/layout/form/FormContainer.js",
-				"sap/ui/layout/form/ResponsiveGridLayout.js"
-			]
-		},
-		{
 			"name": "form/FormElement.js",
 			"module": "sap/ui/layout/form/FormElement.js",
 			"required": [
@@ -1148,7 +1580,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/layout/form/Form.js",
+				"sap/ui/layout/form/FormLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1162,7 +1594,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/layout/form/Form.js",
+				"sap/ui/layout/form/FormLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1172,6 +1604,8 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/core/library.js",
+				"sap/ui/core/theming/Parameters.js",
+				"sap/ui/layout/form/Form.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1180,6 +1614,8 @@
 			"module": "sap/ui/layout/form/FormLayoutRenderer.js",
 			"required": [
 				"sap/ui/core/library.js",
+				"sap/ui/core/theming/Parameters.js",
+				"sap/ui/layout/form/Form.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1253,8 +1689,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/layout/form/FormLayout.js",
-				"sap/ui/layout/form/GridContainerData.js",
-				"sap/ui/layout/form/GridElementData.js",
+				"sap/ui/layout/form/GridLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1268,8 +1703,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/layout/form/FormLayout.js",
-				"sap/ui/layout/form/GridContainerData.js",
-				"sap/ui/layout/form/GridElementData.js",
+				"sap/ui/layout/form/GridLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1302,7 +1736,11 @@
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
+				"sap/ui/layout/form/Form.js",
+				"sap/ui/layout/form/FormContainer.js",
+				"sap/ui/layout/form/FormElement.js",
 				"sap/ui/layout/form/FormLayout.js",
+				"sap/ui/layout/form/ResponsiveGridLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1319,7 +1757,11 @@
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
+				"sap/ui/layout/form/Form.js",
+				"sap/ui/layout/form/FormContainer.js",
+				"sap/ui/layout/form/FormElement.js",
 				"sap/ui/layout/form/FormLayout.js",
+				"sap/ui/layout/form/ResponsiveGridLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1349,7 +1791,11 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/layout/ResponsiveFlowLayout.js",
 				"sap/ui/layout/ResponsiveFlowLayoutData.js",
+				"sap/ui/layout/form/Form.js",
+				"sap/ui/layout/form/FormContainer.js",
+				"sap/ui/layout/form/FormElement.js",
 				"sap/ui/layout/form/FormLayout.js",
+				"sap/ui/layout/form/ResponsiveLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1365,7 +1811,11 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/layout/ResponsiveFlowLayout.js",
 				"sap/ui/layout/ResponsiveFlowLayoutData.js",
+				"sap/ui/layout/form/Form.js",
+				"sap/ui/layout/form/FormContainer.js",
+				"sap/ui/layout/form/FormElement.js",
 				"sap/ui/layout/form/FormLayout.js",
+				"sap/ui/layout/form/ResponsiveLayoutRenderer.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1399,6 +1849,7 @@
 				"sap/ui/layout/form/FormContainer.js",
 				"sap/ui/layout/form/FormElement.js",
 				"sap/ui/layout/form/FormLayout.js",
+				"sap/ui/layout/form/SimpleFormRenderer.js",
 				"sap/ui/layout/library.js"
 			],
 			"condRequired": [
@@ -1415,22 +1866,6 @@
 			"designtime": true
 		},
 		{
-			"name": "form/SimpleForm.designtime-dbg.js",
-			"module": "sap/ui/layout/form/SimpleForm.designtime.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
-			]
-		},
-		{
-			"name": "form/SimpleForm.designtime.js",
-			"module": "sap/ui/layout/form/SimpleForm.designtime.js",
-			"designtime": true,
-			"required": [
-				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
-			]
-		},
-		{
 			"name": "form/SimpleForm.js",
 			"module": "sap/ui/layout/form/SimpleForm.js",
 			"required": [
@@ -1442,6 +1877,7 @@
 				"sap/ui/layout/form/FormContainer.js",
 				"sap/ui/layout/form/FormElement.js",
 				"sap/ui/layout/form/FormLayout.js",
+				"sap/ui/layout/form/SimpleFormRenderer.js",
 				"sap/ui/layout/library.js"
 			],
 			"condRequired": [
@@ -1467,15 +1903,6 @@
 			"module": "sap/ui/layout/form/SimpleFormRenderer.js"
 		},
 		{
-			"name": "library-all-dbg.js",
-			"isDebug": true,
-			"merged": true
-		},
-		{
-			"name": "library-all.js",
-			"merged": true
-		},
-		{
 			"name": "library-dbg.js",
 			"module": "sap/ui/layout/library.js",
 			"isDebug": true,
@@ -1483,6 +1910,235 @@
 				"sap/ui/base/DataType.js",
 				"sap/ui/core/library.js"
 			]
+		},
+		{
+			"name": "library-h2-preload-dbg.js",
+			"module": "sap/ui/layout/library-h2-preload.js",
+			"isDebug": true,
+			"merged": true,
+			"required": [
+				"jquery.sap.global.js",
+				"sap/ui/Device.js",
+				"sap/ui/base/DataType.js",
+				"sap/ui/base/ManagedObjectObserver.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/Element.js",
+				"sap/ui/core/EnabledPropagator.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/core/LayoutData.js",
+				"sap/ui/core/RenderManager.js",
+				"sap/ui/core/Renderer.js",
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/core/delegate/ItemNavigation.js",
+				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/library.js",
+				"sap/ui/core/theming/Parameters.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/Base.js",
+				"sap/ui/fl/changeHandler/BaseRename.js",
+				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js",
+				"sap/ui/fl/changeHandler/JsControlTreeModifier.js",
+				"sap/ui/support/library.js"
+			],
+			"included": [
+				"sap/ui/layout/library.js",
+				"sap/ui/layout/manifest.json",
+				"sap/ui/layout/AlignedFlowLayout.js",
+				"sap/ui/layout/AlignedFlowLayoutRenderer.js",
+				"sap/ui/layout/AssociativeSplitter.js",
+				"sap/ui/layout/BlockLayout.js",
+				"sap/ui/layout/BlockLayoutCell.js",
+				"sap/ui/layout/BlockLayoutCellData.js",
+				"sap/ui/layout/BlockLayoutCellRenderer.js",
+				"sap/ui/layout/BlockLayoutRenderer.js",
+				"sap/ui/layout/BlockLayoutRow.js",
+				"sap/ui/layout/BlockLayoutRowRenderer.js",
+				"sap/ui/layout/DynamicSideContent.js",
+				"sap/ui/layout/DynamicSideContentRenderer.js",
+				"sap/ui/layout/FixFlex.js",
+				"sap/ui/layout/FixFlexRenderer.js",
+				"sap/ui/layout/Grid.js",
+				"sap/ui/layout/GridData.js",
+				"sap/ui/layout/GridRenderer.js",
+				"sap/ui/layout/HorizontalLayout.js",
+				"sap/ui/layout/HorizontalLayoutRenderer.js",
+				"sap/ui/layout/PaneContainer.js",
+				"sap/ui/layout/ResponsiveFlowLayout.js",
+				"sap/ui/layout/ResponsiveFlowLayoutData.js",
+				"sap/ui/layout/ResponsiveFlowLayoutRenderer.js",
+				"sap/ui/layout/ResponsiveSplitter.js",
+				"sap/ui/layout/ResponsiveSplitterPage.js",
+				"sap/ui/layout/ResponsiveSplitterRenderer.js",
+				"sap/ui/layout/ResponsiveSplitterUtilities.js",
+				"sap/ui/layout/SplitPane.js",
+				"sap/ui/layout/Splitter.js",
+				"sap/ui/layout/SplitterLayoutData.js",
+				"sap/ui/layout/SplitterRenderer.js",
+				"sap/ui/layout/VerticalLayout.js",
+				"sap/ui/layout/VerticalLayoutRenderer.js",
+				"sap/ui/layout/changeHandler/AddFormContainer.js",
+				"sap/ui/layout/changeHandler/AddFormField.js",
+				"sap/ui/layout/changeHandler/AddSimpleFormField.js",
+				"sap/ui/layout/changeHandler/AddSimpleFormGroup.js",
+				"sap/ui/layout/changeHandler/HideSimpleForm.js",
+				"sap/ui/layout/changeHandler/MoveSimpleForm.js",
+				"sap/ui/layout/changeHandler/RenameFormContainer.js",
+				"sap/ui/layout/changeHandler/RenameSimpleForm.js",
+				"sap/ui/layout/changeHandler/UnhideSimpleForm.js",
+				"sap/ui/layout/designtime/BlockLayout.designtime.js",
+				"sap/ui/layout/designtime/BlockLayoutCell.designtime.js",
+				"sap/ui/layout/designtime/BlockLayoutRow.designtime.js",
+				"sap/ui/layout/designtime/DynamicSideContent.designtime.js",
+				"sap/ui/layout/designtime/FixFlex.designtime.js",
+				"sap/ui/layout/designtime/Grid.designtime.js",
+				"sap/ui/layout/designtime/HorizontalLayout.designtime.js",
+				"sap/ui/layout/designtime/Splitter.designtime.js",
+				"sap/ui/layout/designtime/VerticalLayout.designtime.js",
+				"sap/ui/layout/designtime/form/Form.designtime.js",
+				"sap/ui/layout/designtime/form/FormContainer.designtime.js",
+				"sap/ui/layout/designtime/form/FormElement.designtime.js",
+				"sap/ui/layout/designtime/form/SimpleForm.designtime.js",
+				"sap/ui/layout/designtime/library.designtime.js",
+				"sap/ui/layout/flexibility/BlockLayoutCell.flexibility.js",
+				"sap/ui/layout/flexibility/Form.flexibility.js",
+				"sap/ui/layout/flexibility/FormContainer.flexibility.js",
+				"sap/ui/layout/flexibility/FormElement.flexibility.js",
+				"sap/ui/layout/flexibility/SimpleForm.flexibility.js",
+				"sap/ui/layout/form/Form.js",
+				"sap/ui/layout/form/FormContainer.js",
+				"sap/ui/layout/form/FormElement.js",
+				"sap/ui/layout/form/FormLayout.js",
+				"sap/ui/layout/form/FormLayoutRenderer.js",
+				"sap/ui/layout/form/FormRenderer.js",
+				"sap/ui/layout/form/GridContainerData.js",
+				"sap/ui/layout/form/GridElementData.js",
+				"sap/ui/layout/form/GridLayout.js",
+				"sap/ui/layout/form/GridLayoutRenderer.js",
+				"sap/ui/layout/form/ResponsiveGridLayout.js",
+				"sap/ui/layout/form/ResponsiveGridLayoutRenderer.js",
+				"sap/ui/layout/form/ResponsiveLayout.js",
+				"sap/ui/layout/form/ResponsiveLayoutRenderer.js",
+				"sap/ui/layout/form/SimpleForm.js",
+				"sap/ui/layout/form/SimpleFormRenderer.js",
+				"sap/ui/layout/library.support.js",
+				"sap/ui/layout/rules/Form.support.js"
+			]
+		},
+		{
+			"name": "library-h2-preload.js",
+			"module": "sap/ui/layout/library-h2-preload.js",
+			"merged": true,
+			"required": [
+				"jquery.sap.global.js",
+				"sap/ui/Device.js",
+				"sap/ui/base/DataType.js",
+				"sap/ui/base/ManagedObjectObserver.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/Element.js",
+				"sap/ui/core/EnabledPropagator.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/core/LayoutData.js",
+				"sap/ui/core/RenderManager.js",
+				"sap/ui/core/Renderer.js",
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/core/delegate/ItemNavigation.js",
+				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/library.js",
+				"sap/ui/core/theming/Parameters.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/Base.js",
+				"sap/ui/fl/changeHandler/BaseRename.js",
+				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js",
+				"sap/ui/fl/changeHandler/JsControlTreeModifier.js",
+				"sap/ui/support/library.js"
+			],
+			"included": [
+				"sap/ui/layout/library.js",
+				"sap/ui/layout/manifest.json",
+				"sap/ui/layout/AlignedFlowLayout.js",
+				"sap/ui/layout/AlignedFlowLayoutRenderer.js",
+				"sap/ui/layout/AssociativeSplitter.js",
+				"sap/ui/layout/BlockLayout.js",
+				"sap/ui/layout/BlockLayoutCell.js",
+				"sap/ui/layout/BlockLayoutCellData.js",
+				"sap/ui/layout/BlockLayoutCellRenderer.js",
+				"sap/ui/layout/BlockLayoutRenderer.js",
+				"sap/ui/layout/BlockLayoutRow.js",
+				"sap/ui/layout/BlockLayoutRowRenderer.js",
+				"sap/ui/layout/DynamicSideContent.js",
+				"sap/ui/layout/DynamicSideContentRenderer.js",
+				"sap/ui/layout/FixFlex.js",
+				"sap/ui/layout/FixFlexRenderer.js",
+				"sap/ui/layout/Grid.js",
+				"sap/ui/layout/GridData.js",
+				"sap/ui/layout/GridRenderer.js",
+				"sap/ui/layout/HorizontalLayout.js",
+				"sap/ui/layout/HorizontalLayoutRenderer.js",
+				"sap/ui/layout/PaneContainer.js",
+				"sap/ui/layout/ResponsiveFlowLayout.js",
+				"sap/ui/layout/ResponsiveFlowLayoutData.js",
+				"sap/ui/layout/ResponsiveFlowLayoutRenderer.js",
+				"sap/ui/layout/ResponsiveSplitter.js",
+				"sap/ui/layout/ResponsiveSplitterPage.js",
+				"sap/ui/layout/ResponsiveSplitterRenderer.js",
+				"sap/ui/layout/ResponsiveSplitterUtilities.js",
+				"sap/ui/layout/SplitPane.js",
+				"sap/ui/layout/Splitter.js",
+				"sap/ui/layout/SplitterLayoutData.js",
+				"sap/ui/layout/SplitterRenderer.js",
+				"sap/ui/layout/VerticalLayout.js",
+				"sap/ui/layout/VerticalLayoutRenderer.js",
+				"sap/ui/layout/changeHandler/AddFormContainer.js",
+				"sap/ui/layout/changeHandler/AddFormField.js",
+				"sap/ui/layout/changeHandler/AddSimpleFormField.js",
+				"sap/ui/layout/changeHandler/AddSimpleFormGroup.js",
+				"sap/ui/layout/changeHandler/HideSimpleForm.js",
+				"sap/ui/layout/changeHandler/MoveSimpleForm.js",
+				"sap/ui/layout/changeHandler/RenameFormContainer.js",
+				"sap/ui/layout/changeHandler/RenameSimpleForm.js",
+				"sap/ui/layout/changeHandler/UnhideSimpleForm.js",
+				"sap/ui/layout/designtime/BlockLayout.designtime.js",
+				"sap/ui/layout/designtime/BlockLayoutCell.designtime.js",
+				"sap/ui/layout/designtime/BlockLayoutRow.designtime.js",
+				"sap/ui/layout/designtime/DynamicSideContent.designtime.js",
+				"sap/ui/layout/designtime/FixFlex.designtime.js",
+				"sap/ui/layout/designtime/Grid.designtime.js",
+				"sap/ui/layout/designtime/HorizontalLayout.designtime.js",
+				"sap/ui/layout/designtime/Splitter.designtime.js",
+				"sap/ui/layout/designtime/VerticalLayout.designtime.js",
+				"sap/ui/layout/designtime/form/Form.designtime.js",
+				"sap/ui/layout/designtime/form/FormContainer.designtime.js",
+				"sap/ui/layout/designtime/form/FormElement.designtime.js",
+				"sap/ui/layout/designtime/form/SimpleForm.designtime.js",
+				"sap/ui/layout/designtime/library.designtime.js",
+				"sap/ui/layout/flexibility/BlockLayoutCell.flexibility.js",
+				"sap/ui/layout/flexibility/Form.flexibility.js",
+				"sap/ui/layout/flexibility/FormContainer.flexibility.js",
+				"sap/ui/layout/flexibility/FormElement.flexibility.js",
+				"sap/ui/layout/flexibility/SimpleForm.flexibility.js",
+				"sap/ui/layout/form/Form.js",
+				"sap/ui/layout/form/FormContainer.js",
+				"sap/ui/layout/form/FormElement.js",
+				"sap/ui/layout/form/FormLayout.js",
+				"sap/ui/layout/form/FormLayoutRenderer.js",
+				"sap/ui/layout/form/FormRenderer.js",
+				"sap/ui/layout/form/GridContainerData.js",
+				"sap/ui/layout/form/GridElementData.js",
+				"sap/ui/layout/form/GridLayout.js",
+				"sap/ui/layout/form/GridLayoutRenderer.js",
+				"sap/ui/layout/form/ResponsiveGridLayout.js",
+				"sap/ui/layout/form/ResponsiveGridLayoutRenderer.js",
+				"sap/ui/layout/form/ResponsiveLayout.js",
+				"sap/ui/layout/form/ResponsiveLayoutRenderer.js",
+				"sap/ui/layout/form/SimpleForm.js",
+				"sap/ui/layout/form/SimpleFormRenderer.js",
+				"sap/ui/layout/library.support.js",
+				"sap/ui/layout/rules/Form.support.js"
+			]
+		},
+		{
+			"name": "library-h2-preload.js.map",
+			"isDebug": true
 		},
 		{
 			"name": "library-preload.js",
@@ -1498,6 +2154,7 @@
 				"sap/ui/core/EnabledPropagator.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/LayoutData.js",
+				"sap/ui/core/RenderManager.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
@@ -1514,26 +2171,20 @@
 				"sap/ui/layout/AlignedFlowLayout.js",
 				"sap/ui/layout/AlignedFlowLayoutRenderer.js",
 				"sap/ui/layout/AssociativeSplitter.js",
-				"sap/ui/layout/BlockLayout.designtime.js",
 				"sap/ui/layout/BlockLayout.js",
-				"sap/ui/layout/BlockLayoutCell.designtime.js",
 				"sap/ui/layout/BlockLayoutCell.js",
 				"sap/ui/layout/BlockLayoutCellData.js",
 				"sap/ui/layout/BlockLayoutCellRenderer.js",
 				"sap/ui/layout/BlockLayoutRenderer.js",
-				"sap/ui/layout/BlockLayoutRow.designtime.js",
 				"sap/ui/layout/BlockLayoutRow.js",
 				"sap/ui/layout/BlockLayoutRowRenderer.js",
 				"sap/ui/layout/DynamicSideContent.js",
 				"sap/ui/layout/DynamicSideContentRenderer.js",
-				"sap/ui/layout/FixFlex.designtime.js",
 				"sap/ui/layout/FixFlex.js",
 				"sap/ui/layout/FixFlexRenderer.js",
-				"sap/ui/layout/Grid.designtime.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
 				"sap/ui/layout/GridRenderer.js",
-				"sap/ui/layout/HorizontalLayout.designtime.js",
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/layout/HorizontalLayoutRenderer.js",
 				"sap/ui/layout/PaneContainer.js",
@@ -1545,11 +2196,9 @@
 				"sap/ui/layout/ResponsiveSplitterRenderer.js",
 				"sap/ui/layout/ResponsiveSplitterUtilities.js",
 				"sap/ui/layout/SplitPane.js",
-				"sap/ui/layout/Splitter.designtime.js",
 				"sap/ui/layout/Splitter.js",
 				"sap/ui/layout/SplitterLayoutData.js",
 				"sap/ui/layout/SplitterRenderer.js",
-				"sap/ui/layout/VerticalLayout.designtime.js",
 				"sap/ui/layout/VerticalLayout.js",
 				"sap/ui/layout/VerticalLayoutRenderer.js",
 				"sap/ui/layout/changeHandler/AddFormContainer.js",
@@ -1566,11 +2215,8 @@
 				"sap/ui/layout/flexibility/FormContainer.flexibility.js",
 				"sap/ui/layout/flexibility/FormElement.flexibility.js",
 				"sap/ui/layout/flexibility/SimpleForm.flexibility.js",
-				"sap/ui/layout/form/Form.designtime.js",
 				"sap/ui/layout/form/Form.js",
-				"sap/ui/layout/form/FormContainer.designtime.js",
 				"sap/ui/layout/form/FormContainer.js",
-				"sap/ui/layout/form/FormElement.designtime.js",
 				"sap/ui/layout/form/FormElement.js",
 				"sap/ui/layout/form/FormLayout.js",
 				"sap/ui/layout/form/FormLayoutRenderer.js",
@@ -1583,7 +2229,6 @@
 				"sap/ui/layout/form/ResponsiveGridLayoutRenderer.js",
 				"sap/ui/layout/form/ResponsiveLayout.js",
 				"sap/ui/layout/form/ResponsiveLayoutRenderer.js",
-				"sap/ui/layout/form/SimpleForm.designtime.js",
 				"sap/ui/layout/form/SimpleForm.js",
 				"sap/ui/layout/form/SimpleFormRenderer.js",
 				"sap/ui/layout/library.js",
@@ -1608,6 +2253,7 @@
 				"sap/ui/core/EnabledPropagator.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/LayoutData.js",
+				"sap/ui/core/RenderManager.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
@@ -1625,26 +2271,20 @@
 				"sap/ui/layout/AlignedFlowLayout.js",
 				"sap/ui/layout/AlignedFlowLayoutRenderer.js",
 				"sap/ui/layout/AssociativeSplitter.js",
-				"sap/ui/layout/BlockLayout.designtime.js",
 				"sap/ui/layout/BlockLayout.js",
-				"sap/ui/layout/BlockLayoutCell.designtime.js",
 				"sap/ui/layout/BlockLayoutCell.js",
 				"sap/ui/layout/BlockLayoutCellData.js",
 				"sap/ui/layout/BlockLayoutCellRenderer.js",
 				"sap/ui/layout/BlockLayoutRenderer.js",
-				"sap/ui/layout/BlockLayoutRow.designtime.js",
 				"sap/ui/layout/BlockLayoutRow.js",
 				"sap/ui/layout/BlockLayoutRowRenderer.js",
 				"sap/ui/layout/DynamicSideContent.js",
 				"sap/ui/layout/DynamicSideContentRenderer.js",
-				"sap/ui/layout/FixFlex.designtime.js",
 				"sap/ui/layout/FixFlex.js",
 				"sap/ui/layout/FixFlexRenderer.js",
-				"sap/ui/layout/Grid.designtime.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
 				"sap/ui/layout/GridRenderer.js",
-				"sap/ui/layout/HorizontalLayout.designtime.js",
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/layout/HorizontalLayoutRenderer.js",
 				"sap/ui/layout/PaneContainer.js",
@@ -1656,11 +2296,9 @@
 				"sap/ui/layout/ResponsiveSplitterRenderer.js",
 				"sap/ui/layout/ResponsiveSplitterUtilities.js",
 				"sap/ui/layout/SplitPane.js",
-				"sap/ui/layout/Splitter.designtime.js",
 				"sap/ui/layout/Splitter.js",
 				"sap/ui/layout/SplitterLayoutData.js",
 				"sap/ui/layout/SplitterRenderer.js",
-				"sap/ui/layout/VerticalLayout.designtime.js",
 				"sap/ui/layout/VerticalLayout.js",
 				"sap/ui/layout/VerticalLayoutRenderer.js",
 				"sap/ui/layout/changeHandler/AddFormContainer.js",
@@ -1677,11 +2315,8 @@
 				"sap/ui/layout/flexibility/FormContainer.flexibility.js",
 				"sap/ui/layout/flexibility/FormElement.flexibility.js",
 				"sap/ui/layout/flexibility/SimpleForm.flexibility.js",
-				"sap/ui/layout/form/Form.designtime.js",
 				"sap/ui/layout/form/Form.js",
-				"sap/ui/layout/form/FormContainer.designtime.js",
 				"sap/ui/layout/form/FormContainer.js",
-				"sap/ui/layout/form/FormElement.designtime.js",
 				"sap/ui/layout/form/FormElement.js",
 				"sap/ui/layout/form/FormLayout.js",
 				"sap/ui/layout/form/FormLayoutRenderer.js",
@@ -1694,12 +2329,29 @@
 				"sap/ui/layout/form/ResponsiveGridLayoutRenderer.js",
 				"sap/ui/layout/form/ResponsiveLayout.js",
 				"sap/ui/layout/form/ResponsiveLayoutRenderer.js",
-				"sap/ui/layout/form/SimpleForm.designtime.js",
 				"sap/ui/layout/form/SimpleForm.js",
 				"sap/ui/layout/form/SimpleFormRenderer.js",
 				"sap/ui/layout/library.js",
 				"sap/ui/layout/manifest.json"
 			]
+		},
+		{
+			"name": "library-preload.support.js",
+			"module": "sap/ui/layout/library-preload.support.js",
+			"merged": true,
+			"support": true,
+			"required": [
+				"jquery.sap.global.js",
+				"sap/ui/support/library.js"
+			],
+			"included": [
+				"sap/ui/layout/library.support.js",
+				"sap/ui/layout/rules/Form.support.js"
+			]
+		},
+		{
+			"name": "library-preload.support.js.map",
+			"isDebug": true
 		},
 		{
 			"name": "library.dependencies.json",
@@ -1720,6 +2372,7 @@
 		{
 			"name": "library.support.js",
 			"module": "sap/ui/layout/library.support.js",
+			"support": true,
 			"required": [
 				"sap/ui/layout/rules/Form.support.js"
 			]
@@ -1990,6 +2643,7 @@
 		{
 			"name": "rules/Form.support.js",
 			"module": "sap/ui/layout/rules/Form.support.js",
+			"support": true,
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/support/library.js"

@@ -1,15 +1,41 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/core/Popup', 'sap/m/Text',
-		'sap/m/Button', 'sap/ui/core/ResizeHandler', 'sap/ui/Device',
-		'sap/ui/core/Icon', 'sap/ui/layout/VerticalLayout', './InstanceManager', 'sap/ui/core/InvisibleText', 'sap/ui/core/library'],
-	function(jQuery, library, Control, Popup, Text,
-			Button, ResizeHandler, Device,
-			Icon, VerticalLayout, InstanceManager, InvisibleText, coreLibrary) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/Popup',
+	'sap/m/Text',
+	'sap/m/Button',
+	'sap/ui/core/ResizeHandler',
+	'sap/ui/Device',
+	'sap/ui/core/Icon',
+	'sap/ui/layout/VerticalLayout',
+	'./InstanceManager',
+	'sap/ui/core/InvisibleText',
+	'sap/ui/core/library',
+	'./LightBoxRenderer'
+],
+	function(
+		jQuery,
+		library,
+		Control,
+		Popup,
+		Text,
+		Button,
+		ResizeHandler,
+		Device,
+		Icon,
+		VerticalLayout,
+		InstanceManager,
+		InvisibleText,
+		coreLibrary,
+		LightBoxRenderer
+	) {
 
 		'use strict';
 
@@ -64,7 +90,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		 *
 		 * Check out the <a href="/#docs/api/symbols/sap.m.LightBox.html" >API Reference</a>.
 		 * @author SAP SE
-		 * @version 1.52.5
+		 * @version 1.54.5
 		 *
 		 * @constructor
 		 * @public
@@ -121,7 +147,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 					_busy: {type: "sap.m.BusyIndicator", multiple: false, visibility: "hidden"}
 				},
 				events: {},
-				defaultAggregation: 'imageContent'
+				defaultAggregation: 'imageContent',
+				designtime: "sap/m/designtime/LightBox.designtime"
 			}
 		});
 
@@ -132,8 +159,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Sets up the initial values of the control.
 		 *
-		 * @name sap.m.LightBox.init
-		 * @method
 		 * @protected
 		 */
 		LightBox.prototype.init = function () {
@@ -158,7 +183,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Overwrites the onBeforeRendering.
 		 *
-		 * @name sap.m.LightBox.onBeforeRendering
 		 * @public
 		 */
 		LightBox.prototype.onBeforeRendering = function () {
@@ -208,8 +232,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Overwrites the onAfterRendering.
 		 *
-		 * @name sap.m.LightBox.onAfterRendering
-		 * @method
 		 * @public
 		 */
 		LightBox.prototype.onAfterRendering = function () {
@@ -217,8 +239,9 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			this._$lightBox = this.$();
 
 			if (!this._resizeListenerId) {
-				Device.resize.attachHandler(this._onResize.bind(this));
-				this._resizeListenerId = ResizeHandler.register(this, this._onResize.bind(this));
+				this._onResizeHandler = this._onResize.bind(this);
+				Device.resize.attachHandler(this._onResizeHandler);
+				this._resizeListenerId = ResizeHandler.register(this, this._onResizeHandler);
 			}
 		};
 
@@ -227,8 +250,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Rerenders the LightBox.
 		 *
-		 * @name sap.m.LightBox.invalidate
-		 * @method
 		 * @public
 		 * @param {object} oOrigin Origin of the invalidation.
 		 * @returns {sap.m.LightBox} this LightBox reference for chaining.
@@ -250,8 +271,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Detaches all handlers and destroys the instance.
 		 *
-		 * @name sap.m.LightBox.exit
-		 * @method
 		 * @public
 		 */
 		LightBox.prototype.exit = function () {
@@ -263,7 +282,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 			}
 
 			if (this._resizeListenerId) {
-				Device.resize.detachHandler(this._onResize);
+				Device.resize.detachHandler(this._onResizeHandler);
 				ResizeHandler.deregister(this._resizeListenerId);
 				this._resizeListenerId = null;
 			}
@@ -278,8 +297,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Opens the LightBox.
 		 *
-		 * @name sap.m.LightBox.open
-		 * @method
 		 * @public
 		 * @returns {sap.m.LightBox} Pointer to the control instance for chaining.
 		 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
@@ -301,8 +318,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Returns if the LightBox is open.
 		 *
-		 * @name sap.m.LightBox
-		 * @method
 		 * @public
 		 * @returns {boolean} Is the LightBox open
 		 */
@@ -317,15 +332,13 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Closes the LightBox.
 		 *
-		 * @name sap.m.LightBox.close
-		 * @method
 		 * @public
 		 * @returns {sap.m.LightBox} Pointer to the control instance for chaining.
 		 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		LightBox.prototype.close = function () {
 			if (this._resizeListenerId) {
-				Device.resize.detachHandler(this._onResize);
+				Device.resize.detachHandler(this._onResizeHandler);
 				ResizeHandler.deregister(this._resizeListenerId);
 				this._resizeListenerId = null;
 			}
@@ -343,8 +356,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Instantiates (if not defined) and returns the close button for the LightBox.
 		 *
-		 * @name sap.m.LightBox._getCloseButton
-		 * @method
 		 * @private
 		 * @returns {sap.m.Button} The close button.
 		 */
@@ -369,8 +380,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Instantiates (if not defined) and returns the BusyIndicator for the LightBox.
 		 *
-		 * @name sap.m.LightBox._getBusyIndicator
-		 * @method
 		 * @private
 		 * @returns {sap.m.BusyIndicator} The BusyIndicator displayed while the image is loading.
 		 */
@@ -388,9 +397,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Forces rerendering of the control when an image loads/fails to load.
 		 *
-		 * @name sap.m.LightBox._imageStateChanged
 		 * @private
-		 * @method
 		 * @param {string} newState The new state of the image. Possible values are: "LOADING", "LOADED" and "ERROR".
 		 */
 		LightBox.prototype._imageStateChanged = function (newState) {
@@ -405,8 +412,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		 * Creates the popup in which the LightBox is displayed and adds event handlers. Event handlers are necessary
 		 * to close the popup when the user clicks on the overlay around the popup.
 		 *
-		 * @name sap.m.LightBox._createPopup
-		 * @method
 		 * @private
 		 */
 		LightBox.prototype._createPopup = function () {
@@ -418,8 +423,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Adds event listener to the blocklayer area to close the lightbox when the area is clicked.
 		 *
-		 * @name sap.m.LightBox._fnOpened
-		 * @method
 		 * @private
 		 */
 		LightBox.prototype._fnOpened = function() {
@@ -432,8 +435,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Removes the event listener.
 		 *
-		 * @name sap.m.LightBox._fnClosed
-		 * @method
 		 * @private
 		 */
 		LightBox.prototype._fnClosed = function() {
@@ -443,8 +444,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Creates the controls used to display error state of the LightBox.
 		 *
-		 * @name sap.m.LightBox._createErrorControls
-		 * @method
 		 * @private
 		 */
 		LightBox.prototype._createErrorControls = function() {
@@ -482,8 +481,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Handles the resize of the LightBox (usually caused by window resize).
 		 *
-		 * @name sap.m.LightBox._onResize
-		 * @method
 		 * @private
 		 */
 		LightBox.prototype._onResize = function () {
@@ -538,8 +535,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Calculates the target size of the image and the lightbox based on the size of the image that will be loaded.
 		 *
-		 * @name sap.m.LightBox._calculateSizes
-		 * @method
 		 * @private
 		 * @param {window.Image} internalImage The javascript native object referring to the image that will be loaded.
 		 */
@@ -562,8 +557,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Calculates the height of the footer of the LightBox in pixels.
 		 *
-		 * @name sap.m.LightBox._calculateFooterHeightInPx
-		 * @method
 		 * @private
 		 * @returns {int} The height of the footer.
 		 */
@@ -587,8 +580,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Calculates and sets in private properties the width and height of the LightBox.
 		 *
-		 * @name sap.m.LightBox._calculateAndSetLightBoxSize
-		 * @method
 		 * @private
 		 * @param {sap.m.Image} image The image of the LightBoxItem.
 		 */
@@ -607,8 +598,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Calculates and sets the Image size in the LightBox.
 		 *
-		 * @name sap.m.LightBox._setImageSize
-		 * @method
 		 * @private
 		 * @param {sap.m.Image} image The image instance.
 		 * @param {int} imageWidth The width of the internal image.
@@ -625,8 +614,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Calculates the size for an image inside the LightBox.
 		 *
-		 * @name sap.m.LightBox._getDimensions
-		 * @method
 		 * @private
 		 * @param {int} imageWidth The natural width of the loaded images in px.
 		 * @param {int} imageHeight The natural height of the loaded images in px.
@@ -675,8 +662,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Converts size from px to a number.
 		 *
-		 * @name sap.m.LightBox._pxToNumber
-		 * @method
 		 * @private
 		 * @param {string} sizeToConvert The size to be converted
 		 * @returns {int} The size in number value
@@ -688,8 +673,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		/**
 		 * Returns the first LightBoxItem in the aggregation.
 		 *
-		 * @name sap.m.LightBox._getImageContent
-		 * @method
 		 * @private
 		 * @returns {sap.m.LightBoxItem|null} The first LightBoxItem in the imageContent aggregation.
 		 */
@@ -703,7 +686,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/ui/
 		 * Helper function for calculating offset.
 		 *
 		 * @name calculateOffset
-		 * @function
 		 * @private
 		 * @returns {int} Calculated offset.
 		 */

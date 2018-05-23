@@ -1,11 +1,35 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.ObjectMarker.
-sap.ui.define(["sap/ui/core/Control", 'sap/ui/core/Renderer', "sap/ui/Device", "sap/m/library", "sap/ui/core/library", "sap/ui/core/Icon"], function(Control, Renderer, Device, library, coreLibrary, Icon) {
+sap.ui.define([
+	"sap/ui/core/Control",
+	"sap/ui/core/Renderer",
+	"sap/ui/Device",
+	"sap/m/library",
+	"sap/ui/core/library",
+	"sap/ui/core/Icon",
+	"sap/m/TextRenderer",
+	"sap/m/Text",
+	"sap/m/LinkRenderer",
+	"sap/m/Link",
+	"./ObjectMarkerRenderer"
+], function(
+	Control,
+	Renderer,
+	Device,
+	library,
+	coreLibrary,
+	Icon,
+	TextRenderer,
+	Text,
+	LinkRenderer,
+	Link,
+	ObjectMarkerRenderer
+) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TextAlign
@@ -38,7 +62,7 @@ sap.ui.define(["sap/ui/core/Control", 'sap/ui/core/Renderer', "sap/ui/Device", "
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -49,6 +73,7 @@ sap.ui.define(["sap/ui/core/Control", 'sap/ui/core/Renderer', "sap/ui/Device", "
 	var ObjectMarker = Control.extend("sap.m.ObjectMarker", /** @lends sap.m.ObjectMarker.prototype */ {
 		metadata: {
 			library: "sap.m",
+			designtime: "sap/m/designtime/ObjectMarker.designtime",
 			properties: {
 
 				/**
@@ -514,14 +539,14 @@ sap.ui.define(["sap/ui/core/Control", 'sap/ui/core/Renderer', "sap/ui/Device", "
 
 	/****************************************** CUSTOM TEXT CONTROL ****************************************************/
 
-	var CustomTextRenderer = Renderer.extend(sap.m.TextRenderer);
+	var CustomTextRenderer = Renderer.extend(TextRenderer);
 
 	CustomTextRenderer.renderText = function(oRm, oControl) {
 		oRm.renderControl(oControl._getIconAggregation());
-		sap.m.TextRenderer.renderText(oRm, oControl);
+		TextRenderer.renderText(oRm, oControl);
 	};
 
-	var CustomText = sap.m.Text.extend("CustomText", {
+	var CustomText = Text.extend("CustomText", {
 		metadata: {
 			properties: {
 				icon: {type : "sap.ui.core.URI", group : "Data", defaultValue : null}
@@ -557,14 +582,14 @@ sap.ui.define(["sap/ui/core/Control", 'sap/ui/core/Renderer', "sap/ui/Device", "
 
 	/****************************************** CUSTOM LINK CONTROL ****************************************************/
 
-	var CustomLinkRenderer = Renderer.extend(sap.m.LinkRenderer);
+	var CustomLinkRenderer = Renderer.extend(LinkRenderer);
 
 	CustomLinkRenderer.renderText = function(oRm, oControl) {
 		oRm.renderControl(oControl._getIconAggregation());
-		sap.m.LinkRenderer.renderText(oRm, oControl);
+		LinkRenderer.renderText(oRm, oControl);
 	};
 
-	var CustomLink = sap.m.Link.extend("CustomLink", {
+	var CustomLink = Link.extend("CustomLink", {
 		metadata: {
 			properties: {
 				icon: {type : "sap.ui.core.URI", group : "Data", defaultValue : null}

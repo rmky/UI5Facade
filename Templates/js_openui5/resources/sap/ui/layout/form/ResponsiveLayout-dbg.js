@@ -1,12 +1,15 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.ui.layout.form.ResponsiveLayout.
-sap.ui.define(['jquery.sap.global', 'sap/ui/layout/ResponsiveFlowLayout', 'sap/ui/layout/ResponsiveFlowLayoutData', './FormLayout', 'sap/ui/layout/library', 'sap/ui/core/Control'],
-	function(jQuery, ResponsiveFlowLayout, ResponsiveFlowLayoutData, FormLayout, library, Control) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/layout/ResponsiveFlowLayout', 'sap/ui/layout/ResponsiveFlowLayoutData',
+               './Form', './FormContainer', './FormElement', './FormLayout',
+               'sap/ui/layout/library', 'sap/ui/core/Control', './ResponsiveLayoutRenderer'],
+	function(jQuery, ResponsiveFlowLayout, ResponsiveFlowLayoutData,
+	         Form, FormContainer, FormElement, FormLayout, library, Control, ResponsiveLayoutRenderer) {
 	"use strict";
 
 	/**
@@ -30,7 +33,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/ResponsiveFlowLayout', 'sap/u
 	 * @extends sap.ui.layout.form.FormLayout
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -99,7 +102,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/ResponsiveFlowLayout', 'sap/u
 			var oLayout    = sap.ui.getCore().byId(this.getLayout());
 			var oLD;
 			if (oLayout && oContainer) {
-				oLD = oLayout.getLayoutDataForElement(oContainer, "sap.ui.layout.ResponsiveFlowLayoutData");
+				oLD = oLayout.getLayoutDataForElement(oContainer, "sap/ui/layout/ResponsiveFlowLayoutData");
 			}
 			return oLD;
 
@@ -215,7 +218,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/ResponsiveFlowLayout', 'sap/u
 	ResponsiveLayout.prototype.onBeforeRendering = function( oEvent ){
 
 		var oForm = this.getParent();
-		if (!oForm || !(oForm instanceof sap.ui.layout.form.Form)) {
+		if (!oForm || !(oForm instanceof Form)) {
 			// layout not assigned to form - nothing to do
 			return;
 		}
@@ -262,18 +265,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/ResponsiveFlowLayout', 'sap/u
 		// if layoutData changed for a Container, Element, or Field call the
 		// onLayoutDataChange function of the parent ResponsiveFlowLayout
 
-		if (oSource instanceof sap.ui.layout.form.FormContainer) {
+		if (oSource instanceof FormContainer) {
 			if (this._mainRFLayout) {
 				this._mainRFLayout.onLayoutDataChange(oEvent);
 			}
-		} else if (oSource instanceof sap.ui.layout.form.FormElement) {
+		} else if (oSource instanceof FormElement) {
 			sContainerId = oSource.getParent().getId();
 			if (this.mContainers[sContainerId] && this.mContainers[sContainerId][1]) {
 				this.mContainers[sContainerId][1].onLayoutDataChange(oEvent);
 			}
 		} else {
 			var oParent = oSource.getParent();
-			if (oParent instanceof sap.ui.layout.form.FormElement) {
+			if (oParent instanceof FormElement) {
 				oContainer = oParent.getParent();
 				sContainerId = oContainer.getId();
 				sElementId = oParent.getId();
@@ -683,9 +686,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/ResponsiveFlowLayout', 'sap/u
 
 				var oLD;
 				if (oElement) {
-					oLD = oLayout.getLayoutDataForElement(oElement, "sap.ui.layout.ResponsiveFlowLayoutData");
+					oLD = oLayout.getLayoutDataForElement(oElement, "sap/ui/layout/ResponsiveFlowLayoutData");
 				} else if (oContainer) {
-					oLD = oLayout.getLayoutDataForElement(oContainer, "sap.ui.layout.ResponsiveFlowLayoutData");
+					oLD = oLayout.getLayoutDataForElement(oContainer, "sap/ui/layout/ResponsiveFlowLayoutData");
 				}
 
 				if (oLD) {
@@ -709,7 +712,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/ResponsiveFlowLayout', 'sap/u
 		var iWeight = 0;
 		for ( var i = 0; i < aFields.length; i++) {
 			var oField = aFields[i];
-			oLD = this.getLayoutDataForElement(oField, "sap.ui.layout.ResponsiveFlowLayoutData");
+			oLD = this.getLayoutDataForElement(oField, "sap/ui/layout/ResponsiveFlowLayoutData");
 			if (oLD) {
 				iWeight = iWeight + oLD.getWeight();
 			} else {

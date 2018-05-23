@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -97,13 +97,9 @@ sap.ui.define([
 	/**
 	 * Renders the SelectTitleArrow icon.
 	 *
-	 * @param {sap.ui.core.RenderManager}
-	 *            oRm the RenderManager that can be used for writing to the render output buffer
-	 *
-	 * @param {sap.uxap.ObjecPageHeader}
-	 *            oControl the ObjectPageHeader
-	 *
-	 * @param {bVisible}  if the placeholder will be visible
+	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer
+	 * @param {sap.uxap.ObjecPageHeader} oPlaceholder The ObjectPageHeader
+	 * @param {boolean} bVisible Whether the placeholder will be visible
 	 *
 	 * @private
 	 */

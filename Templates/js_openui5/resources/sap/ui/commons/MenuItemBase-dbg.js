@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,11 +20,10 @@ sap.ui.define(['jquery.sap.global'],
 	 * @extends sap.ui.unified.MenuItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.52.5
+	 * @version 1.54.5
 	 * @since 1.0.0
 	 *
-	 * @deprecated Since version 1.21.0.
-	 * Please use the element <code>sap.ui.unified.MenuItemBase</code> of the library <code>sap.ui.unified</code> instead.
+	 * @deprecated as of version 1.21.0, replaced by {@link sap.ui.unified.MenuItemBase}
 	 *
 	 * @constructor
 	 * @public

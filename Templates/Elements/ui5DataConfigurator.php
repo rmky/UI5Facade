@@ -214,40 +214,44 @@ JS;
     protected function buildJsTabSearch()
     {
         return <<<JS
+                function() {
+                    var oPanel = new sap.m.P13nFilterPanel("{$this->getId()}_QuickSearchPanel", {
+                        title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.ADVANCED_SEARCH')}",
+                        visible: true,
+                        containerQuer: true, 
+                        layoutMode: "Desktop",
+                        addFilterItem: function(oEvent){
+                            var oParameters = oEvent.getParameters();
+                            var oFilterItem = new sap.m.P13nFilterItem(oParameters.filterItemData.mProperties);
+                            oEvent.getSource().insertFilterItem(oFilterItem, oParameters.index);
+                        },
+                        updateFilterItem: function(oEvent){
+                            var oParameters = oEvent.getParameters();
+                            var oPanel = oEvent.getSource();
+                            var idx = oParameters.index;
+                            var oFilterItem = new sap.m.P13nFilterItem(oParameters.filterItemData.mProperties);
+                            oPanel.removeFilterItem(idx);
+                            oPanel.insertFilterItem(oFilterItem, idx);
+                        },
+                        removeFilterItem: function(oEvent){
+                            var oParameters = oEvent.getParameters();
+                            oEvent.getSource().removeFilterItem(oParameters.index);
+                        },
+                        items: {
+                            path: '/columns',
+                            template: new sap.m.P13nItem({
+                                columnKey: "{attribute_alias}",
+                                text: "{caption}"
+                            })
+                        },
+                        filterItems: [
+    
+                        ]
+                    });
 
-                new sap.m.P13nFilterPanel("{$this->getId()}_QuickSearchPanel", {
-                    title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.ADVANCED_SEARCH')}",
-                    visible: true,
-                    containerQuer: true, 
-                    layoutMode: "Desktop",
-                    addFilterItem: function(oEvent){
-                        var oParameters = oEvent.getParameters();
-                        var oFilterItem = new sap.m.P13nFilterItem(oParameters.filterItemData.mProperties);
-                        oEvent.getSource().insertFilterItem(oFilterItem, oParameters.index);
-                    },
-                    updateFilterItem: function(oEvent){
-                        var oParameters = oEvent.getParameters();
-                        var oPanel = oEvent.getSource();
-                        var idx = oParameters.index;
-                        var oFilterItem = new sap.m.P13nFilterItem(oParameters.filterItemData.mProperties);
-                        oPanel.removeFilterItem(idx);
-                        oPanel.insertFilterItem(oFilterItem, idx);
-                    },
-                    removeFilterItem: function(oEvent){
-                        var oParameters = oEvent.getParameters();
-                        oEvent.getSource().removeFilterItem(oParameters.index);
-                    },
-                    items: {
-                        path: '/columns',
-                        template: new sap.m.P13nItem({
-                            columnKey: "{attribute_alias}",
-                            text: "{caption}"
-                        })
-                    },
-                    filterItems: [
-
-                    ]
-                }),
+                    oPanel.setIncludeOperations(["Contains", "EQ", "LT", "LE", "GT", "GE"]);
+                    return oPanel;
+                }(),
 JS;
     }
               
@@ -364,6 +368,7 @@ function(){
     var oData = {$this->buildJsDataGetterViaTrait($action)};
     var aFilters = sap.ui.getCore().byId('{$this->getId()}_QuickSearchPanel').getFilterItems();
     var i = 0;
+    console.log(sap.ui.getCore().byId('{$this->getId()}_QuickSearchPanel').getIncludeOperations());
     if (aFilters.length > 0) {
         var includeGroup = {operator: "AND", conditions: []};
         var excludeGroup = {operator: "NAND", conditions: []};

@@ -5,6 +5,7 @@ use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDataConfiguratorTr
 use exface\Core\Widgets\DataConfigurator;
 use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\DataTypes\SortingDirectionsDataType;
+use exface\Core\Interfaces\Actions\ActionInterface;
 
 /**
  * 
@@ -15,7 +16,9 @@ use exface\Core\DataTypes\SortingDirectionsDataType;
  */
 class ui5DataConfigurator extends ui5Tabs
 {
-    use JqueryDataConfiguratorTrait;
+    use JqueryDataConfiguratorTrait {
+        buildJsDataGetter as buildJsDataGetterViaTrait;
+    }
     
     private $include_filter_tab = true;
        
@@ -48,7 +51,7 @@ class ui5DataConfigurator extends ui5Tabs
     {
         $okScript = <<<JS
                 function(oEvent) {
-                    oEvent.getSource().close(); console.log(this);
+                    oEvent.getSource().close();
                     {$this->getTemplate()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh()};
                 }
 
@@ -212,15 +215,32 @@ JS;
     {
         return <<<JS
 
-                new sap.m.P13nFilterPanel({
+                new sap.m.P13nFilterPanel("{$this->getId()}_QuickSearchPanel", {
                     title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.ADVANCED_SEARCH')}",
                     visible: true,
                     containerQuer: true, 
                     layoutMode: "Desktop",
+                    addFilterItem: function(oEvent){
+                        var oParameters = oEvent.getParameters();
+                        var oFilterItem = new sap.m.P13nFilterItem(oParameters.filterItemData.mProperties);
+                        oEvent.getSource().insertFilterItem(oFilterItem, oParameters.index);
+                    },
+                    updateFilterItem: function(oEvent){
+                        var oParameters = oEvent.getParameters();
+                        var oPanel = oEvent.getSource();
+                        var idx = oParameters.index;
+                        var oFilterItem = new sap.m.P13nFilterItem(oParameters.filterItemData.mProperties);
+                        oPanel.removeFilterItem(idx);
+                        oPanel.insertFilterItem(oFilterItem, idx);
+                    },
+                    removeFilterItem: function(oEvent){
+                        var oParameters = oEvent.getParameters();
+                        oEvent.getSource().removeFilterItem(oParameters.index);
+                    },
                     items: {
                         path: '/columns',
                         template: new sap.m.P13nItem({
-                            columnKey: "{attribute_alias}", 
+                            columnKey: "{attribute_alias}",
                             text: "{caption}"
                         })
                     },
@@ -335,6 +355,49 @@ JS;
     public function getIdOfSortPanel() : string
     {
         return $this->getId() . '_SortPanel';
+    }
+    
+    public function buildJsDataGetter(ActionInterface $action = null)
+    {
+        return <<<JS
+function(){
+    var oData = {$this->buildJsDataGetterViaTrait($action)};
+    var aFilters = sap.ui.getCore().byId('{$this->getId()}_QuickSearchPanel').getFilterItems();
+    var i = 0;
+    if (aFilters.length > 0) {
+        var includeGroup = {operator: "AND", conditions: []};
+        var excludeGroup = {operator: "NAND", conditions: []};
+        var oComponent = {$this->getController()->buildJsComponentGetter()};
+        var oFilter, oCondition;
+        for (i in aFilters) {
+            oFilter = aFilters[i];
+            oCondition = {
+                expression: oFilter.getColumnKey(), 
+                comparator: oComponent.convertConditionOperationToConditionGroupOperator(oFilter.getOperation()), 
+                value: oFilter.getValue1(), 
+                object_alias: "{$this->getWidget()->getMetaObject()->getAliasWithNamespace()}"
+            };
+            if (oFilter.getExclude() === false) {
+                includeGroup.conditions.push(oCondition);
+            } else {
+                excludeGroup.conditions.push(oCondition);
+            }
+        }
+        
+        if (oData.filters === undefined) {
+            oData.filters = {};
+        }
+        
+        if (oData.filters.nested_groups === undefined) {
+            oData.filters.nested_groups = [];
+        }
+        oData.filters.nested_groups.push(includeGroup);
+        //oData.filters.nested_groups.push(excludeGroup);
+    }
+    return oData;
+}()
+
+JS;
     }
 }
 ?>

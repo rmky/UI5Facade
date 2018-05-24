@@ -24,7 +24,37 @@ sap.ui.define([
 				sName = oControl.getMetadata().getName()
 			} while (sName !== 'sap.ui.core.mvc.JSView' && sName !== 'sap.ui.core.mvc.XMLView');
 			return oControl;
-		}
+		},
+        
+        convertConditionOperationToConditionGroupOperator: function(operation) {
+			var map = {
+				//Ascending
+				//Average
+				//BT
+				Contains: '=',
+				//Descending
+				//Empty
+				//EndsWith
+				EQ: '==',
+				GE: '>=',
+				//GroupAscending
+				//GroupDescending
+				GT: '>',
+				//Initial
+				LE: '<=',
+				LT: '<',
+				//Maximum
+				//Minimum
+				//NotEmpty
+				//StartsWith
+				//Total
+			}; 
+			if (map[operation] !== undefined) {
+				return map[operation];
+			} else {
+				throw 'UI5 Condintion operation "'+operation+'" cannot be mapped to a condition group operator!';
+			}
+        }
 
 	});
 

@@ -67,7 +67,7 @@ class OpenUI5Template extends AbstractAjaxTemplate
         $this->setClassNamespace(__NAMESPACE__);
     }
     
-    public function handle(ServerRequestInterface $request) : ResponseInterface
+    public function handle(ServerRequestInterface $request, $useCacheKey = null) : ResponseInterface
     {
         if ($task = $request->getAttribute($this->getRequestAttributeForTask())) {
             $pageAlias = $task->getPageTriggeredOn()->getAliasWithNamespace();

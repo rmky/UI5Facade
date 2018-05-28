@@ -9,6 +9,7 @@ use exface\Core\Interfaces\Actions\iReadData;
 use exface\Core\Widgets\Button;
 use exface\Core\Widgets\ButtonGroup;
 use exface\Core\Widgets\MenuButton;
+use exface\Core\Widgets\DataTableResponsive;
 
 /**
  *
@@ -64,12 +65,12 @@ class ui5DataTable extends ui5AbstractElement
     
     protected function isMTable()
     {
-        return $this->getWidget()->isResponsive();
+        return $this->getWidget() instanceof DataTableResponsive;
     }
     
     protected function isUiTable()
     {
-        return ! $this->getWidget()->isResponsive();
+        return ! ($this->getWidget() instanceof DataTableResponsive);
     }
     
     /**

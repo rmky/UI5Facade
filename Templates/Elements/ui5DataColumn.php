@@ -23,8 +23,8 @@ class ui5DataColumn extends ui5AbstractElement
 {
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        $data_widget = $this->getWidget()->getParent();
-        if (($data_widget instanceof DataTable) && $data_widget->isResponsive()) {
+        $parentElement = $this->getTemplate()->getElement($this->getWidget()->getParent());
+        if (($parentElement instanceof ui5DataTable) && $parentElement->isMTable()) {
             return $this->buildJsConstructorForMColumn();
         }
         return $this->buildJsConstructorForUiColumn();

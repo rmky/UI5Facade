@@ -24,8 +24,8 @@ class ui5Chart extends ui5AbstractElement
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $controller = $this->getController();
-        $controller->addMethod('onLoadData', $this, '', $this->buildJsDataLoader());
         $controller->addMethod('onPlot', $this, 'data', $this->buildJsPlotter());
+        $controller->addMethod('onLoadData', $this, '', $this->buildJsDataLoader());
         
         foreach ($this->getJsIncludes() as $path) {
             $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path);
@@ -111,7 +111,7 @@ JS;
 					' . $this->buildJsBusyIconShow() . '
 					var data = { };
 					' . $post_data . '
-                    //data.data = ' . $this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter() . '
+                    /*data.data = ' . $this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter() . ';*/
 					$.ajax({
 						url: "' . $this->getAjaxUrl() . '",
                         method: "POST",

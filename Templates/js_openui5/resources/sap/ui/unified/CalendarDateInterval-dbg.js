@@ -44,7 +44,7 @@ sap.ui.define([
 	 * @class
 	 * Calendar with dates displayed in one line.
 	 * @extends sap.ui.unified.Calendar
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @public

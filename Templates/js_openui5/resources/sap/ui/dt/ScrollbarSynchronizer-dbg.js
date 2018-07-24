@@ -19,10 +19,10 @@ function(
 	 *
 	 * @class
 	 * The ScrollbarSynchronizer helps to keep a set of targets up-to-date with the scrolling events of each other
-	 * @extends sap.ui.dt.ManagedObject
+	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @private

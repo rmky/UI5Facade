@@ -20,7 +20,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPage.js" size="56032" compressedSize="23885">
+  <module name="sap/f/DynamicPage.js" size="57925" compressedSize="24103">
     <description>Provides control sap.f.DynamicPage.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -403,7 +403,7 @@
       <module name="sap/f/semantic/TitleMainAction.js"/>
     </includes>
   </module>
-  <module name="sap/f/library-preload.js" size="138672">
+  <module name="sap/f/library-preload.js" size="138890">
     <requires>
       <module name="jquery.sap.events.js"/>
       <module name="jquery.sap.global.js"/>
@@ -793,21 +793,21 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/semantic/FavoriteAction.js" size="1167" compressedSize="342">
+  <module name="sap/f/semantic/FavoriteAction.js" size="1173" compressedSize="342">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/f/semantic/SemanticToggleButton.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/semantic/FlagAction.js" size="1139" compressedSize="338">
+  <module name="sap/f/semantic/FlagAction.js" size="1145" compressedSize="338">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/f/semantic/SemanticToggleButton.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/semantic/FooterMainAction.js" size="1153" compressedSize="334">
+  <module name="sap/f/semantic/FooterMainAction.js" size="1149" compressedSize="334">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/f/semantic/MainAction.js"/>
@@ -979,7 +979,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/semantic/TitleMainAction.js" size="1144" compressedSize="333">
+  <module name="sap/f/semantic/TitleMainAction.js" size="1140" compressedSize="333">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/f/semantic/MainAction.js"/>

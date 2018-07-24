@@ -23,10 +23,10 @@ function(ManagedObject, OverlayRegistry, Util) {
 	 * @class
 	 * The Selection Manager is used to manage the selection of overlays. Overlays and Elements
 	 * with overlays can be added to / removed from the current selection.
-	 * @extends sap.ui.dt.ManagedObject
+	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @private

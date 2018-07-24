@@ -612,6 +612,10 @@ sap.ui.define([
 		this._oFavIcon.setVisible(this.getMarkFavorite());
 		this._oFlagIcon.setVisible(this.getMarkFlagged());
 		this._attachDetachActionButtonsHandler(false);
+		if (this._iResizeId) {
+			ResizeHandler.deregister(this._iResizeId);
+			this._iResizeId = null;
+		}
 		this._bFirstRendering = false;
 	};
 
@@ -853,7 +857,8 @@ sap.ui.define([
 	 */
 	ObjectPageHeader.prototype._adaptActions = function (iAvailableSpaceForActions) {
 		var bMobileScenario = library.Utilities.isPhoneScenario(this._getCurrentMediaContainerRange()) || Device.system.phone,
-			iVisibleActionsWidth = this._oOverflowButton.$().show().width(), // overflowButton is now visible
+			$_oOverflowButton = this._oOverflowButton.$(),
+			iVisibleActionsWidth = $_oOverflowButton.show().width(), // overflowButton is now visible
 			aActions = this.getActions(),
 			iActionsLength = aActions.length,
 			oActionSheetButton;
@@ -871,8 +876,10 @@ sap.ui.define([
 				iVisibleActionsWidth += oAction.$().width();
 				if (iAvailableSpaceForActions > iVisibleActionsWidth && !bMobileScenario) {
 					this._setActionButtonVisibility(oAction, true);
+					$_oOverflowButton.hide();
 				} else {
 					this._setActionButtonVisibility(oAction, false);
+					$_oOverflowButton.show();
 				}
 			}
 		}, this);
@@ -988,6 +995,7 @@ sap.ui.define([
 		this._clearImageNotFoundHandler();
 		if (this._iResizeId) {
 			ResizeHandler.deregister(this._iResizeId);
+			this._iResizeId = null;
 		}
 	};
 

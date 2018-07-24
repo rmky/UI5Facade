@@ -42,10 +42,10 @@ function(
 	 * @class
 	 * The ElementOverlay allows to create an absolute positioned DIV above the associated element.
 	 * It also creates AggregationOverlays for every public aggregation of the associated element.
-	 * @extends sap.ui.core.Control
+	 * @extends sap.ui.dt.Overlay
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @private
@@ -427,11 +427,9 @@ function(
 		});
 
 		if (bOrderChanged) {
-			var $Children = jQuery(oContainer);
-
 			aSorted.forEach(function(oChild) {
-				$Children.append(oChild);
-			}, this);
+				DOMUtil.appendChild(oContainer, oChild);
+			});
 		}
 
 	};
@@ -491,7 +489,6 @@ function(
 			}
 
 			oDesignTimeMetadata = new ElementDesignTimeMetadata({
-				libraryName: this.getElement().getMetadata().getLibraryName(),
 				data: mDesignTimeMetadata
 			});
 		}

@@ -23,9 +23,9 @@ sap.ui.define([
 	 * @param {string} [sId] id for the new object, generated automatically if no id is given
 	 * @param {object} [mSettings] initial settings for the new object
 	 * @class The CutPaste enables Cut & Paste functionality for the overlays based on aggregation types
-	 * @extends sap.ui.dt.Plugin"
+	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 * @constructor
 	 * @private
 	 * @since 1.34

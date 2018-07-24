@@ -147,7 +147,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/Table.js" size="139558" compressedSize="50908">
+  <module name="sap/ui/table/Table.js" size="140064" compressedSize="51010">
     <description>Provides control sap.ui.table.Table.</description>
     <requires>
       <module name="jquery.sap.dom.js"/>
@@ -320,7 +320,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableScrollExtension.js" size="64730" compressedSize="23760">
+  <module name="sap/ui/table/TableScrollExtension.js" size="64972" compressedSize="23968">
     <description>Provides helper sap.ui.table.TableScrollExtension.</description>
     <requires>
       <module name="jquery.sap.events.js"/>
@@ -333,7 +333,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableUtils.js" size="43086" compressedSize="10491">
+  <module name="sap/ui/table/TableUtils.js" size="43096" compressedSize="10494">
     <description>Provides helper sap.ui.table.TableUtils.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -492,7 +492,7 @@
       <module name="sap/ui/table/rules/TableHelper.support.js"/>
     </includes>
   </module>
-  <module name="sap/ui/table/library-preload.js" size="282538">
+  <module name="sap/ui/table/library-preload.js" size="282851">
     <requires>
       <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.events.js"/>

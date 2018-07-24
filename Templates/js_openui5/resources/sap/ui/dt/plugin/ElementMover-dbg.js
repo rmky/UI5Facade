@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @class The ElementMover enables movement of UI5 elements based on aggregation types, which can be used by drag and
 	 *        drop or cut and paste behavior.
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 * @constructor
 	 * @private
 	 * @since 1.34

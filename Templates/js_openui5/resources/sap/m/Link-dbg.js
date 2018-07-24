@@ -71,7 +71,7 @@ function(
 	 * @implements sap.ui.core.IShrinkable, sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @public
@@ -126,7 +126,7 @@ function(
 			 * If validation fails, the value of the <code>href</code> property will still be set, but will not be applied to the DOM.
 			 *
 			 * <b>Note:</b> Additional whitelisting of URLs is allowed through
-			 * {@link jQuery.sap/methods/jQuery.sap.addUrlWhitelist jQuery.sap.addUrlWhitelist}.
+			 * {@link jQuery.sap.addUrlWhitelist}.
 			 *
 			 * @since 1.54.0
 			 */

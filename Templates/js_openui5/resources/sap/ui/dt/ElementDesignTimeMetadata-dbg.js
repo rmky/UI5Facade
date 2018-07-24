@@ -25,10 +25,10 @@ function(
 	 *
 	 * @class
 	 * The ElementDesignTimeMetadata is a wrapper for the ElementDesignTimeMetadata of the associated element
-	 * @extends sap.ui.core.DesignTimeMetadata
+	 * @extends sap.ui.dt.DesignTimeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @private
@@ -104,7 +104,6 @@ function(
 	 */
 	ElementDesignTimeMetadata.prototype.createAggregationDesignTimeMetadata  = function(mMetadata) {
 		return new AggregationDesignTimeMetadata({
-			libraryName: this.getLibraryName(),
 			data: mMetadata
 		});
 	};
@@ -161,11 +160,11 @@ function(
 		return aActions;
 	};
 
-	ElementDesignTimeMetadata.prototype._getText = function(vName){
+	ElementDesignTimeMetadata.prototype._getText = function(oElement, vName){
 		if (typeof vName === "function") {
 			return vName();
 		} else {
-			return this.getLibraryText(vName);
+			return this.getLibraryText(oElement, vName);
 		}
 	};
 
@@ -176,8 +175,8 @@ function(
 		}
 		if (vChildNames){
 			return {
-				singular : this._getText(vChildNames.singular),
-				plural : this._getText(vChildNames.plural)
+				singular : this._getText(oElement, vChildNames.singular),
+				plural : this._getText(oElement, vChildNames.plural)
 			};
 		}
 	};
@@ -189,8 +188,8 @@ function(
 		}
 		if (vName){
 			return {
-				singular : this._getText(vName.singular),
-				plural : this._getText(vName.plural)
+				singular : this._getText(oElement, vName.singular),
+				plural : this._getText(oElement, vName.plural)
 			};
 		}
 	};

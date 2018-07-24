@@ -451,14 +451,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/designtime/form/SimpleForm.designtime.js" size="9094" compressedSize="4483">
+  <module name="sap/ui/layout/designtime/form/SimpleForm.designtime.js" size="9773" compressedSize="4805">
     <description>Provides the Design Time Metadata for the sap.ui.layout.form.SimpleForm control</description>
     <requires>
       <module name="sap/ui/fl/changeHandler/ChangeHandlerMediator.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/designtime/library-preload.designtime.js" size="10702">
+  <module name="sap/ui/layout/designtime/library-preload.designtime.js" size="11024">
     <requires>
       <module name="sap/ui/fl/changeHandler/ChangeHandlerMediator.js"/>
       <module name="sap/ui/layout/form/Form.js"/>

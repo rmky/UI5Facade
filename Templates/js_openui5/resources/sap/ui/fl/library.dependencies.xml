@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.fl">
-  <module name="sap/ui/fl/Cache.js" size="18334" compressedSize="5293">
+  <module name="sap/ui/fl/Cache.js" size="18346" compressedSize="5305">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/LrepConnector.js"/>
@@ -18,7 +18,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/ChangePersistence.js" size="40076" compressedSize="15359">
+  <module name="sap/ui/fl/ChangePersistence.js" size="41889" compressedSize="15971">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/MessageBox.js"/>
@@ -89,7 +89,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/FlexController.js" size="47664" compressedSize="17092">
+  <module name="sap/ui/fl/FlexController.js" size="49110" compressedSize="17807">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -120,7 +120,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/LrepConnector.js" size="24388" compressedSize="7809">
+  <module name="sap/ui/fl/LrepConnector.js" size="25428" compressedSize="8272">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -335,7 +335,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/codeExt/CodeExtManager.js" size="4282" compressedSize="1925">
+  <module name="sap/ui/fl/codeExt/CodeExtManager.js" size="4294" compressedSize="1937">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/Change.js"/>
@@ -358,7 +358,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/context/ContextManager.js" size="10356" compressedSize="2800">
+  <module name="sap/ui/fl/context/ContextManager.js" size="10368" compressedSize="2812">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/LrepConnector.js"/>
@@ -644,7 +644,7 @@
       <module name="sap/ui/fl/variants/VariantModel.js"/>
     </includes>
   </module>
-  <module name="sap/ui/fl/library-preload.js" size="239851" dynamicDependencies="true">
+  <module name="sap/ui/fl/library-preload.js" size="241681" dynamicDependencies="true">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="jquery.sap.storage.js"/>

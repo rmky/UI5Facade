@@ -3651,6 +3651,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/base/EventProvider.js",
+				"sap/ui/core/cache/CacheManager.js",
 				"sap/ui/thirdparty/datajs.js"
 			]
 		},
@@ -3660,6 +3661,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/base/EventProvider.js",
+				"sap/ui/core/cache/CacheManager.js",
 				"sap/ui/thirdparty/datajs.js"
 			]
 		},
@@ -4385,6 +4387,7 @@
 				"jquery.sap.global.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/EventProvider.js",
+				"sap/ui/core/cache/CacheManager.js",
 				"sap/ui/model/odata/AnnotationParser.js"
 			]
 		},
@@ -4395,6 +4398,7 @@
 				"jquery.sap.global.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/EventProvider.js",
+				"sap/ui/core/cache/CacheManager.js",
 				"sap/ui/model/odata/AnnotationParser.js"
 			]
 		},

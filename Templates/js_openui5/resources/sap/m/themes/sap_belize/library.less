@@ -423,7 +423,7 @@ html.sap-desktop {
 		top: 0.6875rem;
 		bottom: 0.6875rem;
 		left: 0.6875rem;
-		right: -1px; /* Cb in BC the outline should have offset 1px from the control */
+		right: 0;
 		border: 1px dotted @sapUiContentFocusColor;
 	}
 
@@ -884,7 +884,7 @@ html.sap-desktop .sapMGT.sapMGTBackgroundImage:active .sapMGTFocusDiv {
 /* Arrow */
 
 .sapMITBSelected > .sapMITBContentArrow {
-	border-bottom-color: @sapUiSelected;
+	border-bottom-color: @_sap_m_IconTabBar_SelectedTextColor;
 }
 
 .sapMITBSelected.sapMITBFilterNeutral > .sapMITBContentArrow {
@@ -995,7 +995,7 @@ html.sap-desktop .sapMGT.sapMGTBackgroundImage:active .sapMGTFocusDiv {
 }
 
 .sapMITBSelected .sapMITBFilterDefault {
-	background: @sapUiSelected;
+	background: @_sap_m_IconTabBar_SelectedTextColor;
 	color: @sapUiContentContrastIconColor;
 }
 
@@ -2244,10 +2244,6 @@ html.sap-desktop .sapMSegBBtnFocusable:hover {
 	background: @sapUiSegmentedButtonHoverBackground;
 }
 
-.sapMSegBBtn:last-child {
-	border-right: 1px solid @sapUiSegmentedButtonBorderColor;
-}
-
 /* Custom focus outline: */
 html.sap-desktop {
 	.sapMSegBBtnFocusable:focus {
@@ -2389,6 +2385,12 @@ html[data-sap-ui-os^="Android4.1"][data-sap-ui-browser^="an"] {
 	.sapUiSizeCompact .sapMSegBBtn img {
 		margin-bottom: 0.128rem;
 	}
+}
+
+.sapMSegBBtn.sapMSegBtnLastVisibleButton {
+	border-right: 1px solid @sapUiSegmentedButtonBorderColor;
+	border-top-right-radius: 0.2rem;
+	border-bottom-right-radius: 0.2rem;
 }
 /* END "SegmentedButton.less" */
 

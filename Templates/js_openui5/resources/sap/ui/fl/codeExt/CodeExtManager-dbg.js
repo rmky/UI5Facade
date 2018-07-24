@@ -16,13 +16,13 @@ sap.ui.define([
 	 * @alias sap.ui.fl.codeExt.CodeExtManager
 	 * @since 1.40.0
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 */
 	var CodeExtManager;
 
 	CodeExtManager = {
 
-		_oLrepConnector: new LrepConnector(),
+		_oLrepConnector: LrepConnector.createConnector(),
 
 		/**
 		 * @param {string} oPropertyBag.id - change Id if not present it will be generated

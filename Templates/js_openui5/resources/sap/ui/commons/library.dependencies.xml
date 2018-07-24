@@ -172,7 +172,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/ColorPicker.js" size="1612" compressedSize="642">
+  <module name="sap/ui/commons/ColorPicker.js" size="1619" compressedSize="642">
     <description>Provides control sap.ui.commons.ColorPicker.</description>
     <requires>
       <module name="jquery.sap.global.js"/>

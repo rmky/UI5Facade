@@ -505,6 +505,10 @@ sap.ui.define([
 		this._bMobileScenario = library.Utilities.isPhoneScenario(this._getCurrentMediaContainerRange());
 		this._bTabletScenario = library.Utilities.isTabletScenario(this._getCurrentMediaContainerRange());
 
+		if (this._checkAlwaysShowContentHeader()) {
+			this._bHeaderExpanded = true; // enforce to expanded header whenever the <code>alwaysShowContentHeader</code> takes effect (it takes effect depending on screen size and header type)
+		}
+
 		this._bHeaderInTitleArea = this._shouldPreserveHeaderInTitleArea();
 
 		this._initializeScroller();
@@ -983,6 +987,17 @@ sap.ui.define([
 
 		if (bOldValue !== bValue) {
 			this.setProperty("alwaysShowContentHeader", bValue, bSuppressInvalidate);
+		}
+		return this;
+	};
+
+	ObjectPageLayout.prototype.setShowEditHeaderButton = function (bValue) {
+		var bOldValue = this.getShowEditHeaderButton(),
+			oHeaderContent = this.getAggregation("_headerContent");
+
+		if (bOldValue !== bValue) {
+			this.setProperty("showEditHeaderButton", bValue, true);
+			oHeaderContent && oHeaderContent.invalidate();
 		}
 		return this;
 	};
@@ -1987,15 +2002,16 @@ sap.ui.define([
 	* Computes the height of the viewport bellow the sticky area
 	* */
 	ObjectPageLayout.prototype._getScrollableViewportHeight = function(bIsStickyMode) {
-		var iScreenHeight = this.$().height();
-		return iScreenHeight - this._getStickyAreaHeight(bIsStickyMode);
+		return this.getDomRef().getBoundingClientRect().height - this._getStickyAreaHeight(bIsStickyMode);
 	};
 
 	ObjectPageLayout.prototype._getSectionPositionTop = function(oSectionBase, bShouldStick) {
-		var iPosition = this._oSectionInfo[oSectionBase.getId()].positionTop; //sticky position
-		if (!bShouldStick) {
-			iPosition += this.iAnchorBarHeight;
+		var iPosition = oSectionBase.$().position().top;
+
+		if (!this._bStickyAnchorBar && !this._bHeaderInTitleArea && bShouldStick) { // in sticky mode the anchor bar is not part of the content
+			iPosition -= this.iAnchorBarHeight;
 		}
+
 		return iPosition;
 	};
 
@@ -2185,10 +2201,7 @@ sap.ui.define([
 	};
 
 	ObjectPageLayout.prototype._onUpdateContentSize = function (oEvent) {
-		var iScrollTop,
-			iPageHeight,
-			sClosestSectionId,
-			sSelectedSectionId;
+		var iScrollTop;
 
 		if (this._preserveHeaderStateOnScroll()) {
 			this._overridePreserveHeaderStateOnScroll();
@@ -2200,25 +2213,14 @@ sap.ui.define([
 
 		// problem if this happened BEFORE _requestAdjustLayout executed => wrong section may have been selected
 
-		// solution [implemented bellow] is to compare (1) the currently visible section with (2) the currently selected section in the anchorBar
-		// and reselect if the two do not match
+		// solution [implemented bellow] is to ensure that scroll handler is called with the latest scrollTop => we ensure the correct section is selected
 		if (this._hasDynamicTitle()) {
 			this._adjustHeaderHeights();
 		}
 		this._requestAdjustLayout() // call adjust layout to calculate the new section sizes
 			.then(function () {
 				iScrollTop = this._$opWrapper.scrollTop();
-				iPageHeight = this.iScreenHeight;
-				if (iPageHeight === 0) {
-					return; // page is hidden and further computation will produce invalid results
-				}
-				sClosestSectionId = this._getClosestScrolledSectionId(iScrollTop, iPageHeight);
-				sSelectedSectionId = this.getSelectedSection();
-
-				if (sClosestSectionId && sSelectedSectionId !== sClosestSectionId) { // if the currently visible section is not the currently selected section in the anchorBar
-					// then change the selection to match the correct section
-					this.getAggregation("_anchorBar").setSelectedButton(this._oSectionInfo[sClosestSectionId].buttonId);
-				}
+				this._updateSelectionOnScroll(iScrollTop);
 			}.bind(this));
 	};
 
@@ -2305,8 +2307,6 @@ sap.ui.define([
 			oHeader = this.getHeaderTitle(),
 			bShouldStick = this._shouldSnapHeaderOnScroll(iScrollTop),
 			bShouldPreserveHeaderInTitleArea = this._shouldPreserveHeaderInTitleArea(),
-			sClosestId,
-			sClosestSubSectionId,
 			bScrolled = false;
 
 		if (this._bSupressModifyOnScrollOnce) {
@@ -2347,6 +2347,44 @@ sap.ui.define([
 
 		jQuery.sap.log.debug("ObjectPageLayout :: lazy loading : Scrolling at " + iScrollTop, "----------------------------------------");
 
+		this._updateSelectionOnScroll(iScrollTop);
+
+		//lazy load only the visible subSections
+		if (this.getEnableLazyLoading()) {
+			//calculate the progress done between this scroll event and the previous one
+			//to see if we are scrolling fast (more than 5% of the page height)
+			this._oLazyLoading.lazyLoadDuringScroll(iScrollTop, oEvent.timeStamp, iPageHeight);
+		}
+
+		if (oHeader && oHeader.supportsTitleInHeaderContent() &&  this.getShowHeaderContent() && this.getShowTitleInHeaderContent() && oHeader.getShowTitleSelector()) {
+			if (iScrollTop === 0) {
+				// if we have arrow from the title inside the ContentHeader and the ContentHeader isn't scrolled we have to put higher z-index to the ContentHeader
+				// otherwise part of the arrow is cut off
+				jQuery.sap.byId(this.getId() + "-scroll").css("z-index", "1000");
+				bScrolled = false;
+			} else if (!bScrolled) {
+				bScrolled = true;
+				// and we have to "reset" the z-index it when we start scrolling
+				jQuery.sap.byId(this.getId() + "-scroll").css("z-index", "0");
+			}
+		}
+	};
+
+	/**
+	 * Finds the section that corresponds to the new scrollTop and sets it as selected section in the anchorBar
+	 * @param iScrollTop
+	 * @private
+	 */
+	ObjectPageLayout.prototype._updateSelectionOnScroll = function(iScrollTop) {
+
+		var iPageHeight = this.iScreenHeight,
+			sClosestId,
+			sClosestSubSectionId;
+
+		if (iPageHeight === 0) {
+			return; // page is hidden
+		}
+
 		//find the currently scrolled section = where position - iScrollTop is closest to 0
 		sClosestId = this._getClosestScrolledSectionId(iScrollTop, iPageHeight);
 		sClosestSubSectionId = this._getClosestScrolledSectionId(iScrollTop, iPageHeight, true /* subSections only */);
@@ -2384,26 +2422,6 @@ sap.ui.define([
 					section: this.oCore.byId(sClosestId),
 					subSection: this.oCore.byId(sClosestSubSectionId)
 				});
-			}
-		}
-
-		//lazy load only the visible subSections
-		if (this.getEnableLazyLoading()) {
-			//calculate the progress done between this scroll event and the previous one
-			//to see if we are scrolling fast (more than 5% of the page height)
-			this._oLazyLoading.lazyLoadDuringScroll(iScrollTop, oEvent.timeStamp, iPageHeight);
-		}
-
-		if (oHeader && oHeader.supportsTitleInHeaderContent() &&  this.getShowHeaderContent() && this.getShowTitleInHeaderContent() && oHeader.getShowTitleSelector()) {
-			if (iScrollTop === 0) {
-				// if we have arrow from the title inside the ContentHeader and the ContentHeader isn't scrolled we have to put higher z-index to the ContentHeader
-				// otherwise part of the arrow is cut off
-				jQuery.sap.byId(this.getId() + "-scroll").css("z-index", "1000");
-				bScrolled = false;
-			} else if (!bScrolled) {
-				bScrolled = true;
-				// and we have to "reset" the z-index it when we start scrolling
-				jQuery.sap.byId(this.getId() + "-scroll").css("z-index", "0");
 			}
 		}
 	};
@@ -2720,6 +2738,7 @@ sap.ui.define([
 
 		var $headerTitleClone = this._$headerTitle.clone();
 		//prepare: make sure it won't be visible ever and fix width to the original headerTitle which is 100%
+		$headerTitleClone.css({position: "absolute"});
 		$headerTitleClone.css({left: "-10000px", top: "-10000px", width: this._$headerTitle.width() + "px"});
 		$headerTitleClone.toggleClass("sapUxAPObjectPageHeaderStickied", bEnableStickyMode);
 		$headerTitleClone.appendTo(this._$headerTitle.parent());
@@ -2738,9 +2757,13 @@ sap.ui.define([
 			iHeight;
 
 		if (bViaClone) {
+			// BCP: 1870298358 - setting overflow-y to hidden of the wrapper element during clone to eliminate unwanted
+			// scrollbar appearing during measurement of cloned header
+			this._$opWrapper.css("overflow-y", "hidden");
 			$Clone = this._appendTitleCloneToDOM(true /* enable snapped mode */);
 			iHeight = $Clone.height();
 			$Clone.remove(); //clean dom
+			this._$opWrapper.css("overflow-y", "auto");
 		} else if (oTitle && oTitle.snap) {
 			oTitle.snap(false);
 			iHeight = oTitle.$().outerHeight();
@@ -2757,9 +2780,13 @@ sap.ui.define([
 			iHeight;
 
 		if (bViaClone) {
+			// BCP: 1870298358 - setting overflow-y to hidden of the wrapper element during clone to eliminate unwanted
+			// scrollbar appearing during measurement of cloned header
+			this._$opWrapper.css("overflow-y", "hidden");
 			$Clone = this._appendTitleCloneToDOM(false /* disable snapped mode */);
 			iHeight = $Clone.is(":visible") ? $Clone.height() - this.iAnchorBarHeight : 0;
 			$Clone.remove(); //clean dom
+			this._$opWrapper.css("overflow-y", "auto");
 		} else if (oTitle && oTitle.unSnap) {
 			oTitle.unSnap(false);
 			iHeight = oTitle.$().outerHeight();

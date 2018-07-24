@@ -43,8 +43,9 @@ sap.ui.define([
 	 * <h4>When to use:</h4>
 	 * Tokens can only be used with the Tokenizer as a container.
 	 *
+	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @public

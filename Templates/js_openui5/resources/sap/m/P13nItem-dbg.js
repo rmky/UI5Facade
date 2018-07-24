@@ -16,8 +16,8 @@ sap.ui.define([
 	 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class Base type for <code>items</code> aggregation in <code>P13nPanel</code> control.
-	 * @extends sap.ui.core.Item
-	 * @version 1.54.5
+	 * @extends sap.ui.core.Element
+	 * @version 1.54.7
 	 * @constructor
 	 * @public
 	 * @since 1.26.0

@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.dt">
-  <module name="sap/ui/dt/AggregationDesignTimeMetadata.js" size="1260" compressedSize="367">
+  <module name="sap/ui/dt/AggregationDesignTimeMetadata.js" size="1258" compressedSize="367">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dt/DesignTimeMetadata.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/AggregationOverlay.js" size="7124" compressedSize="2724">
+  <module name="sap/ui/dt/AggregationOverlay.js" size="7122" compressedSize="2724">
     <description>Provides class sap.ui.dt.AggregationOverlay.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -36,14 +36,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/DOMUtil.js" size="10276" compressedSize="3997">
+  <module name="sap/ui/dt/DOMUtil.js" size="10818" compressedSize="4110">
     <description>Provides object sap.ui.dt.DOMUtil.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/DesignTime.js" size="32450" compressedSize="12912">
+  <module name="sap/ui/dt/DesignTime.js" size="32390" compressedSize="12867">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
@@ -63,7 +63,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/DesignTimeMetadata.js" size="6302" compressedSize="1723">
+  <module name="sap/ui/dt/DesignTimeMetadata.js" size="7321" compressedSize="2063">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -73,7 +73,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ElementDesignTimeMetadata.js" size="6894" compressedSize="2432">
+  <module name="sap/ui/dt/ElementDesignTimeMetadata.js" size="6913" compressedSize="2410">
     <description>Provides class sap.ui.dt.ElementDesignTimeMetadata.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -82,7 +82,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ElementOverlay.js" size="29616" compressedSize="12362">
+  <module name="sap/ui/dt/ElementOverlay.js" size="29516" compressedSize="12287">
     <description>Provides class sap.ui.dt.ElementOverlay.</description>
     <requires>
       <module name="sap/ui/core/Control.js"/>
@@ -183,14 +183,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/Plugin.js" size="11228" compressedSize="3112">
+  <module name="sap/ui/dt/Plugin.js" size="11265" compressedSize="3122">
     <description>Provides class sap.ui.dt.Plugin.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ScrollbarSynchronizer.js" size="5113" compressedSize="2345">
+  <module name="sap/ui/dt/ScrollbarSynchronizer.js" size="5115" compressedSize="2345">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
@@ -198,7 +198,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/SelectionManager.js" size="7073" compressedSize="2589">
+  <module name="sap/ui/dt/SelectionManager.js" size="7075" compressedSize="2589">
     <description>Provides class sap.ui.dt.SelectionManager.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
@@ -305,7 +305,7 @@
       <module name="sap/ui/dt/test/report/TableRenderer.js"/>
     </includes>
   </module>
-  <module name="sap/ui/dt/library-preload.js" size="165644">
+  <module name="sap/ui/dt/library-preload.js" size="165968">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/m/Button.js"/>
@@ -480,7 +480,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/ControlDragDrop.js" size="4691" compressedSize="2345">
+  <module name="sap/ui/dt/plugin/ControlDragDrop.js" size="4690" compressedSize="2345">
     <description>Provides class sap.ui.dt.plugin.ControlDragDrop.</description>
     <requires>
       <module name="sap/ui/dt/ElementUtil.js"/>
@@ -490,7 +490,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/CutPaste.js" size="6915" compressedSize="3576">
+  <module name="sap/ui/dt/plugin/CutPaste.js" size="6914" compressedSize="3576">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dt/OverlayRegistry.js"/>
@@ -500,7 +500,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/DragDrop.js" size="23637" compressedSize="12084">
+  <module name="sap/ui/dt/plugin/DragDrop.js" size="23630" compressedSize="12084">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dt/DOMUtil.js"/>

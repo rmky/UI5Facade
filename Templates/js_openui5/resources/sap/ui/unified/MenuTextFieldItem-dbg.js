@@ -28,7 +28,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport', './MenuItem
 	 * @extends sap.ui.unified.MenuItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -142,7 +142,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/ValueStateSupport', './MenuItem
 
 		if (bHovered && oMenu.checkEnabled(this)) {
 			oMenu.closeSubmenu(false, true);
-			this.$("tf").focus();
+			if (Device.browser.msie) {
+				jQuery.sap.delayedCall(0, this, function () {
+					this.$("tf").focus();
+				}.bind(this));
+			} else {
+				this.$("tf").focus();
+			}
 		}
 	};
 

@@ -14,7 +14,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils", "sap/ui/fl/context/
 	 * @alias sap.ui.fl.context.ContextManager
 	 * @since 1.38.0
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 */
 	var ContextManager;
 
@@ -26,7 +26,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils", "sap/ui/fl/context/
 				"switches" : "sap/ui/fl/context/SwitchContextProvider"
 			}
 		}),
-		_oLrepConnector: new LrepConnector(),
+		_oLrepConnector: LrepConnector.createConnector(),
 
 		/**
 		 * Helper to check if a passed change is free of contexts or in a matching context.

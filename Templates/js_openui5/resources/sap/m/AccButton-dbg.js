@@ -18,10 +18,10 @@ sap.ui.define(['./Button','./AccButtonRenderer'],
 	 * @class
 	 * The AccButton control represents button with additional capabilities for accessability settings. It is meant for private usage.
 	 *
-	 * @extends sap.ui.core.Control
+	 * @extends sap.m.Button
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @private

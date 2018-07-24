@@ -435,14 +435,14 @@
     {
       "name" : "sap/ui/layout/designtime/form/SimpleForm.designtime.js",
       "description" : "Provides the Design Time Metadata for the sap.ui.layout.form.SimpleForm control",
-      "size" : 9094,
-      "compressedSize" : 4483,
+      "size" : 9773,
+      "compressedSize" : 4805,
       "required" : ["sap/ui/fl/changeHandler/ChangeHandlerMediator.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/layout/designtime/library-preload.designtime.js",
-      "size" : 10702,
+      "size" : 11024,
       "required" : ["sap/ui/fl/changeHandler/ChangeHandlerMediator.js", "sap/ui/layout/form/Form.js", "sap/ui/layout/form/FormContainer.js", "sap/ui/layout/form/ResponsiveGridLayout.js", "ui5loader-autoconfig.js"],
       "includes" : ["sap/ui/layout/designtime/BlockLayout.designtime.js", "sap/ui/layout/designtime/BlockLayoutCell.designtime.js", "sap/ui/layout/designtime/BlockLayoutRow.designtime.js", "sap/ui/layout/designtime/DynamicSideContent.designtime.js", "sap/ui/layout/designtime/FixFlex.designtime.js", "sap/ui/layout/designtime/Grid.designtime.js", "sap/ui/layout/designtime/HorizontalLayout.designtime.js", "sap/ui/layout/designtime/Splitter.designtime.js", "sap/ui/layout/designtime/VerticalLayout.designtime.js", "sap/ui/layout/designtime/form/Form.designtime.js", "sap/ui/layout/designtime/form/FormContainer.designtime.js", "sap/ui/layout/designtime/form/FormElement.designtime.js", "sap/ui/layout/designtime/form/SimpleForm.designtime.js", "sap/ui/layout/designtime/library.designtime.js"]
     },

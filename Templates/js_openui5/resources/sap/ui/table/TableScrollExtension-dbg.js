@@ -830,7 +830,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles scrolling.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
@@ -1470,7 +1470,7 @@ sap.ui.define([
 	TableScrollExtension.prototype.getVerticalScrollRangeBuffer = function() {
 		var oTable = this.getTable();
 
-		if (oTable == null || !TableUtils.isVariableRowHeightEnabled(oTable)) {
+		if (!TableUtils.isVariableRowHeightEnabled(oTable)) {
 			return 0;
 		}
 
@@ -1533,7 +1533,7 @@ sap.ui.define([
 		var oTable = this.getTable();
 		var oContentDomRef = oTable == null ? null : oTable.getDomRef("tableCCnt");
 
-		if (oContentDomRef == null || VerticalScrollingHelper.isUpdatePending(oTable)) {
+		if (!TableUtils.isVariableRowHeightEnabled(oTable) || !oContentDomRef == null || VerticalScrollingHelper.isUpdatePending(oTable)) {
 			return;
 		}
 
@@ -1545,12 +1545,16 @@ sap.ui.define([
 			// position should be reset.
 
 			jQuery.sap.log.debug("sap.ui.table.TableScrollExtension", "updateInnerVerticalScrollPosition: 0", oTable);
+			oTable.setFirstVisibleRow(0, true);
+			this._nVerticalScrollPosition = 0;
 			oContentDomRef.scrollTop = 0;
 			return;
 		}
 
 		// Only update the inner scroll position if the table is not going to update the rows.
 		if (oTable._getFirstRenderedRowIndex() !== oTable._iRenderedFirstVisibleRow) {
+			jQuery.sap.log.debug("sap.ui.table.TableScrollExtension",
+				"updateInnerVerticalScrollPosition: Skipped, because rows will be updated", oTable);
 			return;
 		}
 
@@ -1633,7 +1637,7 @@ sap.ui.define([
 	TableScrollExtension.prototype.isVerticalScrollPositionInBuffer = function() {
 		var oTable = this.getTable();
 
-		if (oTable == null || !TableUtils.isVariableRowHeightEnabled(oTable)) {
+		if (!TableUtils.isVariableRowHeightEnabled(oTable)) {
 			return false;
 		}
 

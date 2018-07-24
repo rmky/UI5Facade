@@ -14,7 +14,7 @@ sap.ui.define([], function() {
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Binding...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 * @namespace
 	 * @name sap.ui.table.TableBindingUtils
 	 * @private

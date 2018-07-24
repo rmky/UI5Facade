@@ -66,7 +66,7 @@ sap.ui.define([
 		 * </ul>
 		 *
 		 * @author SAP SE
-		 * @version 1.54.5
+		 * @version 1.54.7
 		 *
 		 * @constructor
 		 * @extends sap.m.ComboBoxBase
@@ -517,6 +517,9 @@ sap.ui.define([
 
 			// the first item with matching text property if such exists
 			this._oFirstItemTextMatched = null;
+
+			// indicated if the ComboBox is already focused
+			this.bIsFocused = false;
 		};
 
 		ComboBox.prototype.onBeforeRendering = function() {
@@ -1208,11 +1211,13 @@ sap.ui.define([
 				if (bDropdownPickerType) {
 					setTimeout(function() {
 						if (document.activeElement === this.getFocusDomRef() &&
+							!this.bIsFocused &&
 							!this.bFocusoutDueRendering &&
 							!this.getSelectedText()) {
 
 							this.selectText(0, this.getValue().length);
 						}
+						this.bIsFocused = true;
 					}.bind(this), 0);
 				}
 
@@ -1233,6 +1238,9 @@ sap.ui.define([
 		 * @param {jQuery.Event} oEvent The event object.
 		 */
 		ComboBox.prototype.onsapfocusleave = function(oEvent) {
+
+			this.bIsFocused = false;
+
 			var bTablet, oPicker,
 				oRelatedControl, oFocusDomRef,
 				oControl = oEvent.srcControl,

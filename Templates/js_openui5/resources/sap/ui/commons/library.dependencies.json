@@ -147,7 +147,7 @@
     {
       "name" : "sap/ui/commons/ColorPicker.js",
       "description" : "Provides control sap.ui.commons.ColorPicker.",
-      "size" : 1612,
+      "size" : 1619,
       "compressedSize" : 642,
       "required" : ["jquery.sap.global.js", "sap/ui/commons/library.js", "sap/ui/core/Control.js", "sap/ui/unified/ColorPicker.js", "ui5loader-autoconfig.js"],
       "includes" : []

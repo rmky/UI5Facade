@@ -61,7 +61,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @public
@@ -821,7 +821,7 @@ function(
 
 		// do not handle already handled events
 		if (this._eventHandledByControl) {
-			return;
+			return oEvent.setMarked();
 		}
 
 		// do not handle in case of text selection

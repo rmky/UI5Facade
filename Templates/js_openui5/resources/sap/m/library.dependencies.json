@@ -3,7 +3,7 @@
     {
       "name" : "sap/m/AccButton.js",
       "description" : "Provides control sap.m.AccButton.",
-      "size" : 1237,
+      "size" : 1230,
       "compressedSize" : 483,
       "required" : ["sap/m/AccButtonRenderer.js", "sap/m/Button.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -131,8 +131,8 @@
     {
       "name" : "sap/m/BusyDialog.js",
       "description" : "Provides control sap.m.BusyDialog.",
-      "size" : 16343,
-      "compressedSize" : 5265,
+      "size" : 16630,
+      "compressedSize" : 5417,
       "required" : ["jquery.sap.global.js", "sap/m/BusyIndicator.js", "sap/m/Button.js", "sap/m/Dialog.js", "sap/m/Label.js", "sap/m/library.js", "sap/ui/core/Control.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -251,8 +251,8 @@
     {
       "name" : "sap/m/ColumnListItem.js",
       "description" : "Provides control sap.m.ColumnListItem.",
-      "size" : 8450,
-      "compressedSize" : 3743,
+      "size" : 8496,
+      "compressedSize" : 3768,
       "required" : ["jquery.sap.global.js", "sap/m/ColumnListItemRenderer.js", "sap/m/ListItemBase.js", "sap/m/library.js", "sap/ui/core/Element.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -267,8 +267,8 @@
     {
       "name" : "sap/m/ComboBox.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 53232,
-      "compressedSize" : 19807,
+      "size" : 53399,
+      "compressedSize" : 19890,
       "required" : ["jquery.sap.global.js", "jquery.sap.keycodes.js", "sap/m/ComboBoxBase.js", "sap/m/ComboBoxRenderer.js", "sap/m/ComboBoxTextField.js", "sap/m/Popover.js", "sap/m/SelectList.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Item.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -427,8 +427,8 @@
     {
       "name" : "sap/m/DateTimePicker.js",
       "description" : "Provides control sap.m.DateTimePicker.",
-      "size" : 20445,
-      "compressedSize" : 9900,
+      "size" : 21017,
+      "compressedSize" : 10220,
       "required" : ["jquery.sap.global.js", "jquery.sap.keycodes.js", "sap/m/DatePicker.js", "sap/m/DateTimePickerRenderer.js", "sap/m/TimePickerSliders.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/LocaleData.js", "sap/ui/core/format/DateFormat.js", "sap/ui/model/type/Date.js", "sap/ui/unified/DateRange.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -491,8 +491,8 @@
     {
       "name" : "sap/m/FacetFilter.js",
       "description" : "Provides control sap.m.FacetFilter.",
-      "size" : 73103,
-      "compressedSize" : 27865,
+      "size" : 74509,
+      "compressedSize" : 28487,
       "required" : ["jquery.sap.global.js", "jquery.sap.keycodes.js", "sap/m/FacetFilterRenderer.js", "sap/m/NavContainer.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/base/ManagedObject.js", "sap/ui/core/Control.js", "sap/ui/core/Icon.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/delegate/ItemNavigation.js", "sap/ui/model/Filter.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -515,8 +515,8 @@
     {
       "name" : "sap/m/FacetFilterList.js",
       "description" : "Provides control sap.m.FacetFilterList.",
-      "size" : 29560,
-      "compressedSize" : 9602,
+      "size" : 29556,
+      "compressedSize" : 9598,
       "required" : ["jquery.sap.global.js", "sap/m/FacetFilterListRenderer.js", "sap/m/List.js", "sap/m/library.js", "sap/ui/model/ChangeReason.js", "sap/ui/model/Filter.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -651,8 +651,8 @@
     {
       "name" : "sap/m/FormattedTextAnchorGenerator.js",
       "description" : "<code>FormattedText</code> helper. This class handles the <code>AnchorGeneration</code> for the <code>FormattedText</code> control.",
-      "size" : 5463,
-      "compressedSize" : 1703,
+      "size" : 5466,
+      "compressedSize" : 1706,
       "required" : ["jquery.sap.global.js", "sap/m/library.js", "sap/ui/base/Metadata.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -875,8 +875,8 @@
     {
       "name" : "sap/m/InputBase.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 32200,
-      "compressedSize" : 10740,
+      "size" : 32488,
+      "compressedSize" : 10914,
       "required" : ["jquery.sap.global.js", "jquery.sap.keycodes.js", "sap/m/InputBaseRenderer.js", "sap/m/delegate/ValueStateMessage.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/EnabledPropagator.js", "sap/ui/core/IconPool.js", "sap/ui/core/library.js", "sap/ui/core/message/MessageMixin.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -907,8 +907,8 @@
     {
       "name" : "sap/m/InputRenderer.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 6965,
-      "compressedSize" : 2875,
+      "size" : 7160,
+      "compressedSize" : 2933,
       "required" : ["sap/m/InputBaseRenderer.js", "sap/m/library.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Renderer.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -939,8 +939,8 @@
     {
       "name" : "sap/m/LightBox.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 21256,
-      "compressedSize" : 7626,
+      "size" : 21336,
+      "compressedSize" : 7633,
       "required" : ["jquery.sap.global.js", "sap/m/Button.js", "sap/m/InstanceManager.js", "sap/m/LightBoxRenderer.js", "sap/m/Text.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/Icon.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Popup.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/library.js", "sap/ui/layout/VerticalLayout.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -963,7 +963,7 @@
     {
       "name" : "sap/m/Link.js",
       "description" : "Provides control sap.m.Link.",
-      "size" : 14921,
+      "size" : 14875,
       "compressedSize" : 5478,
       "required" : ["jquery.sap.global.js", "sap/m/LinkRenderer.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/EnabledPropagator.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -1003,8 +1003,8 @@
     {
       "name" : "sap/m/ListItemBase.js",
       "description" : "Provides control sap.m.ListItemBase.",
-      "size" : 32138,
-      "compressedSize" : 15414,
+      "size" : 32157,
+      "compressedSize" : 15428,
       "required" : ["jquery.sap.global.js", "jquery.sap.keycodes.js", "sap/m/Button.js", "sap/m/CheckBox.js", "sap/m/ListItemBaseRenderer.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/Icon.js", "sap/ui/core/IconPool.js", "sap/ui/model/BindingMode.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -1027,8 +1027,8 @@
     {
       "name" : "sap/m/MaskEnabler.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 45187,
-      "compressedSize" : 15207,
+      "size" : 48967,
+      "compressedSize" : 16049,
       "required" : ["jquery.sap.global.js", "jquery.sap.keycodes.js", "sap/m/InputBase.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -1147,7 +1147,7 @@
     {
       "name" : "sap/m/MessagePopoverItem.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 1090,
+      "size" : 1091,
       "compressedSize" : 316,
       "required" : ["sap/m/MessageItem.js", "sap/m/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -1241,8 +1241,8 @@
     {
       "name" : "sap/m/MultiInput.js",
       "description" : "Provides control sap.m.MultiInput.",
-      "size" : 41316,
-      "compressedSize" : 18506,
+      "size" : 41544,
+      "compressedSize" : 18530,
       "required" : ["jquery.sap.global.js", "jquery.sap.keycodes.js", "sap/m/Input.js", "sap/m/MultiInputRenderer.js", "sap/m/Token.js", "sap/m/Tokenizer.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/EnabledPropagator.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -1377,8 +1377,8 @@
     {
       "name" : "sap/m/ObjectIdentifier.js",
       "description" : "Provides control sap.m.ObjectIdentifier.",
-      "size" : 14021,
-      "compressedSize" : 6101,
+      "size" : 14089,
+      "compressedSize" : 6088,
       "required" : ["sap/m/ObjectIdentifierRenderer.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/base/ManagedObject.js", "sap/ui/core/Control.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -1393,16 +1393,16 @@
     {
       "name" : "sap/m/ObjectListItem.js",
       "description" : "Provides control sap.m.ObjectListItem.",
-      "size" : 18509,
-      "compressedSize" : 6053,
+      "size" : 18109,
+      "compressedSize" : 5894,
       "required" : ["sap/m/ListItemBase.js", "sap/m/ObjectListItemRenderer.js", "sap/m/ObjectNumber.js", "sap/m/library.js", "sap/ui/core/IconPool.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/m/ObjectListItemRenderer.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 7963,
-      "compressedSize" : 3484,
+      "size" : 7955,
+      "compressedSize" : 3476,
       "required" : ["sap/m/ListItemBaseRenderer.js", "sap/ui/Device.js", "sap/ui/core/Renderer.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -1465,7 +1465,7 @@
     {
       "name" : "sap/m/OverflowToolbarAssociativePopover.js",
       "description" : "Provides control sap.m._overflowToolbarHelpers.OverflowToolbarAssociativePopover.",
-      "size" : 8274,
+      "size" : 8268,
       "compressedSize" : 3090,
       "required" : ["sap/m/OverflowToolbarAssociativePopoverControls.js", "sap/m/OverflowToolbarLayoutData.js", "sap/m/Popover.js", "sap/m/PopoverRenderer.js", "sap/m/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -1553,8 +1553,8 @@
     {
       "name" : "sap/m/P13nDimMeasurePanel.js",
       "description" : "Provides control sap.m.P13nDimMeasurePanel.",
-      "size" : 40692,
-      "compressedSize" : 22792,
+      "size" : 40952,
+      "compressedSize" : 22983,
       "required" : ["jquery.sap.global.js", "sap/m/ColumnListItem.js", "sap/m/P13nDimMeasureItem.js", "sap/m/P13nPanel.js", "sap/m/ScrollContainer.js", "sap/m/SearchField.js", "sap/m/Table.js", "sap/m/library.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Item.js", "sap/ui/core/ResizeHandler.js", "sap/ui/model/BindingMode.js", "sap/ui/model/ChangeReason.js", "sap/ui/model/json/JSONModel.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -1593,7 +1593,7 @@
     {
       "name" : "sap/m/P13nItem.js",
       "description" : "Provides control sap.m.P13nItem.",
-      "size" : 4324,
+      "size" : 4327,
       "compressedSize" : 1188,
       "required" : ["sap/m/library.js", "sap/ui/core/Element.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -1753,8 +1753,8 @@
     {
       "name" : "sap/m/PlanningCalendarRow.js",
       "description" : "Provides control sap.ui.unified.PlanningCalendarRow.",
-      "size" : 27926,
-      "compressedSize" : 11987,
+      "size" : 27951,
+      "compressedSize" : 12010,
       "required" : ["jquery.sap.global.js", "sap/m/ColumnListItem.js", "sap/m/ColumnListItemRenderer.js", "sap/m/StandardListItem.js", "sap/m/StandardListItemRenderer.js", "sap/m/library.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/Renderer.js", "sap/ui/core/dnd/DragDropInfo.js", "sap/ui/unified/CalendarRow.js", "sap/ui/unified/CalendarRowRenderer.js", "sap/ui/unified/DateRange.js", "sap/ui/unified/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -1817,8 +1817,8 @@
     {
       "name" : "sap/m/QuickView.js",
       "description" : "Provides control sap.m.QuickView.",
-      "size" : 13477,
-      "compressedSize" : 5444,
+      "size" : 13507,
+      "compressedSize" : 5463,
       "required" : ["sap/m/Bar.js", "sap/m/Button.js", "sap/m/NavContainer.js", "sap/m/Page.js", "sap/m/QuickViewBase.js", "sap/m/QuickViewRenderer.js", "sap/m/ResponsivePopover.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/IconPool.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -2025,8 +2025,8 @@
     {
       "name" : "sap/m/SegmentedButtonRenderer.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 5122,
-      "compressedSize" : 2359,
+      "size" : 5302,
+      "compressedSize" : 2469,
       "required" : ["sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -2160,8 +2160,8 @@
     {
       "name" : "sap/m/Slider.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 41681,
-      "compressedSize" : 14917,
+      "size" : 42394,
+      "compressedSize" : 15048,
       "required" : ["jquery.sap.global.js", "sap/m/ResponsiveScale.js", "sap/m/SliderRenderer.js", "sap/m/SliderTooltip.js", "sap/m/SliderTooltipContainer.js", "sap/m/SliderUtilities.js", "sap/m/library.js", "sap/ui/core/Control.js", "sap/ui/core/EnabledPropagator.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -2360,8 +2360,8 @@
     {
       "name" : "sap/m/Switch.js",
       "description" : "Provides control sap.m.Switch.",
-      "size" : 14686,
-      "compressedSize" : 5534,
+      "size" : 14658,
+      "compressedSize" : 5521,
       "required" : ["jquery.sap.global.js", "sap/m/SwitchRenderer.js", "sap/m/library.js", "sap/ui/core/Control.js", "sap/ui/core/EnabledPropagator.js", "sap/ui/core/IconPool.js", "sap/ui/core/theming/Parameters.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -2480,8 +2480,8 @@
     {
       "name" : "sap/m/Text.js",
       "description" : "Provides control sap.m.Text",
-      "size" : 14232,
-      "compressedSize" : 3722,
+      "size" : 14226,
+      "compressedSize" : 3724,
       "required" : ["sap/m/TextRenderer.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -2504,8 +2504,8 @@
     {
       "name" : "sap/m/TextRenderer.js",
       "description" : "Provides default renderer for control sap.m.Text",
-      "size" : 3696,
-      "compressedSize" : 1578,
+      "size" : 3675,
+      "compressedSize" : 1557,
       "required" : ["sap/ui/core/Renderer.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -2520,8 +2520,8 @@
     {
       "name" : "sap/m/TileContainer.js",
       "description" : "Provides control sap.m.TileContainer.",
-      "size" : 67982,
-      "compressedSize" : 31909,
+      "size" : 68014,
+      "compressedSize" : 31941,
       "required" : ["jquery.sap.global.js", "sap/m/TileContainerRenderer.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/IconPool.js", "sap/ui/core/ResizeHandler.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -2640,7 +2640,7 @@
     {
       "name" : "sap/m/Token.js",
       "description" : "Provides control sap.m.Token.",
-      "size" : 8904,
+      "size" : 8937,
       "compressedSize" : 3255,
       "required" : ["jquery.sap.global.js", "jquery.sap.keycodes.js", "sap/m/TokenRenderer.js", "sap/m/Tokenizer.js", "sap/m/library.js", "sap/ui/core/Control.js", "sap/ui/core/Icon.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -2656,7 +2656,7 @@
     {
       "name" : "sap/m/Tokenizer.js",
       "description" : "Provides control sap.m.Tokenizer.",
-      "size" : 34921,
+      "size" : 34954,
       "compressedSize" : 14139,
       "required" : ["jquery.sap.global.js", "jquery.sap.keycodes.js", "sap/m/TokenizerRenderer.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/delegate/ScrollEnablement.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -2672,7 +2672,7 @@
     {
       "name" : "sap/m/Toolbar.js",
       "description" : "Provides control sap.m.Toolbar.",
-      "size" : 19768,
+      "size" : 19775,
       "compressedSize" : 7294,
       "required" : ["jquery.sap.global.js", "sap/m/BarInPageEnabler.js", "sap/m/ToolbarLayoutData.js", "sap/m/ToolbarRenderer.js", "sap/m/ToolbarSpacer.js", "sap/m/library.js", "sap/ui/core/Control.js", "sap/ui/core/EnabledPropagator.js", "sap/ui/core/ResizeHandler.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -2832,8 +2832,8 @@
     {
       "name" : "sap/m/ViewSettingsDialog.js",
       "description" : "Provides control sap.m.ViewSettingsDialog.",
-      "size" : 106597,
-      "compressedSize" : 43345,
+      "size" : 106530,
+      "compressedSize" : 43261,
       "required" : ["jquery.sap.global.js", "sap/m/CheckBox.js", "sap/m/List.js", "sap/m/SearchField.js", "sap/m/StandardListItem.js", "sap/m/Toolbar.js", "sap/m/ViewSettingsDialogRenderer.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/base/EventProvider.js", "sap/ui/base/ManagedObject.js", "sap/ui/core/Control.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -2848,7 +2848,7 @@
     {
       "name" : "sap/m/ViewSettingsFilterItem.js",
       "description" : "Provides control sap.m.ViewSettingsFilterItem.",
-      "size" : 5983,
+      "size" : 6008,
       "compressedSize" : 1714,
       "required" : ["sap/m/ViewSettingsItem.js", "sap/m/library.js", "sap/ui/base/ManagedObject.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -2856,7 +2856,7 @@
     {
       "name" : "sap/m/ViewSettingsItem.js",
       "description" : "Provides control sap.m.ViewSettingsItem.",
-      "size" : 2882,
+      "size" : 3069,
       "compressedSize" : 893,
       "required" : ["sap/m/library.js", "sap/ui/base/ManagedObject.js", "sap/ui/core/Item.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -4373,7 +4373,7 @@
     },
     {
       "name" : "sap/m/library-preload.js",
-      "size" : 2005211,
+      "size" : 2007743,
       "required" : ["jquery.sap.dom.js", "jquery.sap.encoder.js", "jquery.sap.events.js", "jquery.sap.global.js", "jquery.sap.keycodes.js", "jquery.sap.mobile.js", "jquery.sap.strings.js", "jquery.sap.xml.js", "sap/m/OverflowToolbarPriority.js", "sap/ui/Device.js", "sap/ui/base/DataType.js", "sap/ui/base/EventProvider.js", "sap/ui/base/Interface.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/ManagedObjectMetadata.js", "sap/ui/base/ManagedObjectObserver.js", "sap/ui/base/Metadata.js", "sap/ui/base/Object.js", "sap/ui/core/CSSColor.js", "sap/ui/core/ContextMenuSupport.js", "sap/ui/core/Control.js", "sap/ui/core/CustomData.js", "sap/ui/core/CustomStyleClassSupport.js", "sap/ui/core/Element.js", "sap/ui/core/ElementMetadata.js", "sap/ui/core/EnabledPropagator.js", "sap/ui/core/HTML.js", "sap/ui/core/Icon.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Item.js", "sap/ui/core/LabelEnablement.js", "sap/ui/core/LayoutData.js", "sap/ui/core/ListItem.js", "sap/ui/core/Locale.js", "sap/ui/core/LocaleData.js", "sap/ui/core/Popup.js", "sap/ui/core/RenderManager.js", "sap/ui/core/Renderer.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/Title.js", "sap/ui/core/ValueStateSupport.js", "sap/ui/core/XMLComposite.js", "sap/ui/core/date/UniversalDate.js", "sap/ui/core/delegate/ItemNavigation.js", "sap/ui/core/delegate/ScrollEnablement.js", "sap/ui/core/dnd/DragDropInfo.js", "sap/ui/core/format/DateFormat.js", "sap/ui/core/format/FileSizeFormat.js", "sap/ui/core/format/NumberFormat.js", "sap/ui/core/library.js", "sap/ui/core/message/MessageMixin.js", "sap/ui/core/routing/History.js", "sap/ui/core/routing/Router.js", "sap/ui/core/routing/Target.js", "sap/ui/core/routing/Targets.js", "sap/ui/core/support/ToolsAPI.js", "sap/ui/core/support/trace/E2eTraceLib.js", "sap/ui/core/theming/Parameters.js", "sap/ui/core/util/File.js", "sap/ui/fl/Utils.js", "sap/ui/fl/changeHandler/BaseRename.js", "sap/ui/fl/changeHandler/ChangeHandlerMediator.js", "sap/ui/layout/FixFlex.js", "sap/ui/layout/Grid.js", "sap/ui/layout/HorizontalLayout.js", "sap/ui/layout/VerticalLayout.js", "sap/ui/layout/form/ResponsiveGridLayout.js", "sap/ui/layout/form/SimpleForm.js", "sap/ui/layout/library.js", "sap/ui/model/BindingMode.js", "sap/ui/model/ChangeReason.js", "sap/ui/model/ClientTreeBinding.js", "sap/ui/model/ClientTreeBindingAdapter.js", "sap/ui/model/Filter.js", "sap/ui/model/Sorter.js", "sap/ui/model/TreeBindingCompatibilityAdapter.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/odata/ODataTreeBinding.js", "sap/ui/model/odata/type/ODataType.js", "sap/ui/model/odata/v2/ODataTreeBinding.js", "sap/ui/model/type/Date.js", "sap/ui/model/type/DateTime.js", "sap/ui/model/type/Time.js", "sap/ui/thirdparty/caja-html-sanitizer.js", "sap/ui/thirdparty/mobify-carousel.js", "sap/ui/unified/Calendar.js", "sap/ui/unified/CalendarDateInterval.js", "sap/ui/unified/CalendarLegend.js", "sap/ui/unified/CalendarLegendRenderer.js", "sap/ui/unified/CalendarOneMonthInterval.js", "sap/ui/unified/CalendarRow.js", "sap/ui/unified/CalendarRowRenderer.js", "sap/ui/unified/CalendarWeekInterval.js", "sap/ui/unified/ColorPicker.js", "sap/ui/unified/DateRange.js", "sap/ui/unified/FileUploader.js", "sap/ui/unified/FileUploaderParameter.js", "sap/ui/unified/Menu.js", "sap/ui/unified/MenuItem.js", "sap/ui/unified/calendar/CalendarDate.js", "sap/ui/unified/calendar/CalendarUtils.js", "sap/ui/unified/library.js", "ui5loader-autoconfig.js"],
       "includes" : ["sap/m/AccButton.js", "sap/m/AccButtonRenderer.js", "sap/m/ActionListItem.js", "sap/m/ActionListItemRenderer.js", "sap/m/ActionSelect.js", "sap/m/ActionSelectRenderer.js", "sap/m/ActionSheet.js", "sap/m/ActionSheetRenderer.js", "sap/m/App.js", "sap/m/AppRenderer.js", "sap/m/AssociativeOverflowToolbar.js", "sap/m/Bar.js", "sap/m/BarInPageEnabler.js", "sap/m/BarRenderer.js", "sap/m/Breadcrumbs.js", "sap/m/BreadcrumbsRenderer.js", "sap/m/BusyDialog.js", "sap/m/BusyIndicator.js", "sap/m/BusyIndicatorRenderer.js", "sap/m/Button.js", "sap/m/ButtonRenderer.js", "sap/m/Carousel.js", "sap/m/CarouselRenderer.js", "sap/m/CheckBox.js", "sap/m/CheckBoxRenderer.js", "sap/m/ColorPalette.js", "sap/m/ColorPalettePopover.js", "sap/m/ColorPaletteRenderer.js", "sap/m/Column.js", "sap/m/ColumnHeader.js", "sap/m/ColumnHeaderRenderer.js", "sap/m/ColumnListItem.js", "sap/m/ColumnListItemRenderer.js", "sap/m/ComboBox.js", "sap/m/ComboBoxBase.js", "sap/m/ComboBoxBaseRenderer.js", "sap/m/ComboBoxRenderer.js", "sap/m/ComboBoxTextField.js", "sap/m/ComboBoxTextFieldRenderer.js", "sap/m/CustomListItem.js", "sap/m/CustomListItemRenderer.js", "sap/m/CustomTile.js", "sap/m/CustomTileRenderer.js", "sap/m/CustomTreeItem.js", "sap/m/CustomTreeItemRenderer.js", "sap/m/DatePicker.js", "sap/m/DatePickerRenderer.js", "sap/m/DateRangeSelection.js", "sap/m/DateRangeSelectionRenderer.js", "sap/m/DateTimeField.js", "sap/m/DateTimeFieldRenderer.js", "sap/m/DateTimeInput.js", "sap/m/DateTimeInputRenderer.js", "sap/m/DateTimePicker.js", "sap/m/DateTimePickerRenderer.js", "sap/m/Dialog.js", "sap/m/DialogRenderer.js", "sap/m/DisplayListItem.js", "sap/m/DisplayListItemRenderer.js", "sap/m/DraftIndicator.js", "sap/m/DraftIndicatorRenderer.js", "sap/m/FacetFilter.js", "sap/m/FacetFilterItem.js", "sap/m/FacetFilterItemRenderer.js", "sap/m/FacetFilterList.js", "sap/m/FacetFilterListRenderer.js", "sap/m/FacetFilterRenderer.js", "sap/m/FeedContent.js", "sap/m/FeedContentRenderer.js", "sap/m/FeedInput.js", "sap/m/FeedInputRenderer.js", "sap/m/FeedListItem.js", "sap/m/FeedListItemAction.js", "sap/m/FeedListItemRenderer.js", "sap/m/Fiori20Adapter.js", "sap/m/FlexBox.js", "sap/m/FlexBoxCssPropertyMap.js", "sap/m/FlexBoxRenderer.js", "sap/m/FlexBoxStylingHelper.js", "sap/m/FlexItemData.js", "sap/m/FormattedText.js", "sap/m/FormattedTextAnchorGenerator.js", "sap/m/FormattedTextRenderer.js", "sap/m/GenericTile.js", "sap/m/GenericTileLineModeRenderer.js", "sap/m/GenericTileRenderer.js", "sap/m/GroupHeaderListItem.js", "sap/m/GroupHeaderListItemRenderer.js", "sap/m/GrowingEnablement.js", "sap/m/GrowingList.js", "sap/m/GrowingListRenderer.js", "sap/m/HBox.js", "sap/m/HBoxRenderer.js", "sap/m/HeaderContainer.js", "sap/m/HeaderContainerRenderer.js", "sap/m/IconTabBar.js", "sap/m/IconTabBarDragAndDropUtil.js", "sap/m/IconTabBarRenderer.js", "sap/m/IconTabBarSelectList.js", "sap/m/IconTabBarSelectListRenderer.js", "sap/m/IconTabFilter.js", "sap/m/IconTabHeader.js", "sap/m/IconTabHeaderRenderer.js", "sap/m/IconTabSeparator.js", "sap/m/Image.js", "sap/m/ImageContent.js", "sap/m/ImageContentRenderer.js", "sap/m/ImageRenderer.js", "sap/m/Input.js", "sap/m/InputBase.js", "sap/m/InputBaseRenderer.js", "sap/m/InputListItem.js", "sap/m/InputListItemRenderer.js", "sap/m/InputRenderer.js", "sap/m/InstanceManager.js", "sap/m/Label.js", "sap/m/LabelRenderer.js", "sap/m/LightBox.js", "sap/m/LightBoxItem.js", "sap/m/LightBoxRenderer.js", "sap/m/Link.js", "sap/m/LinkRenderer.js", "sap/m/List.js", "sap/m/ListBase.js", "sap/m/ListBaseRenderer.js", "sap/m/ListItemBase.js", "sap/m/ListItemBaseRenderer.js", "sap/m/ListRenderer.js", "sap/m/MaskEnabler.js", "sap/m/MaskInput.js", "sap/m/MaskInputRenderer.js", "sap/m/MaskInputRule.js", "sap/m/Menu.js", "sap/m/MenuButton.js", "sap/m/MenuButtonRenderer.js", "sap/m/MenuItem.js", "sap/m/MenuListItem.js", "sap/m/MenuListItemRenderer.js", "sap/m/MessageBox.js", "sap/m/MessageItem.js", "sap/m/MessagePage.js", "sap/m/MessagePageRenderer.js", "sap/m/MessagePopover.js", "sap/m/MessagePopoverItem.js", "sap/m/MessagePopoverRenderer.js", "sap/m/MessageStrip.js", "sap/m/MessageStripRenderer.js", "sap/m/MessageStripUtilities.js", "sap/m/MessageToast.js", "sap/m/MessageView.js", "sap/m/MessageViewRenderer.js", "sap/m/MultiComboBox.js", "sap/m/MultiComboBoxRenderer.js", "sap/m/MultiEditField.control.xml", "sap/m/MultiEditField.js", "sap/m/MultiInput.js", "sap/m/MultiInputRenderer.js", "sap/m/NavContainer.js", "sap/m/NavContainerRenderer.js", "sap/m/NewsContent.js", "sap/m/NewsContentRenderer.js", "sap/m/NotificationListBase.js", "sap/m/NotificationListGroup.js", "sap/m/NotificationListGroupRenderer.js", "sap/m/NotificationListItem.js", "sap/m/NotificationListItemRenderer.js", "sap/m/NumericContent.js", "sap/m/NumericContentRenderer.js", "sap/m/ObjectAttribute.js", "sap/m/ObjectAttributeRenderer.js", "sap/m/ObjectHeader.js", "sap/m/ObjectHeaderRenderer.js", "sap/m/ObjectIdentifier.js", "sap/m/ObjectIdentifierRenderer.js", "sap/m/ObjectListItem.js", "sap/m/ObjectListItemRenderer.js", "sap/m/ObjectMarker.js", "sap/m/ObjectMarkerRenderer.js", "sap/m/ObjectNumber.js", "sap/m/ObjectNumberRenderer.js", "sap/m/ObjectStatus.js", "sap/m/ObjectStatusRenderer.js", "sap/m/OverflowToolbar.js", "sap/m/OverflowToolbarAssociativePopover.js", "sap/m/OverflowToolbarAssociativePopoverControls.js", "sap/m/OverflowToolbarButton.js", "sap/m/OverflowToolbarLayoutData.js", "sap/m/OverflowToolbarRenderer.js", "sap/m/OverflowToolbarToggleButton.js", "sap/m/P13nColumnsItem.js", "sap/m/P13nColumnsPanel.js", "sap/m/P13nConditionPanel.js", "sap/m/P13nDialog.js", "sap/m/P13nDimMeasureItem.js", "sap/m/P13nDimMeasurePanel.js", "sap/m/P13nFilterItem.js", "sap/m/P13nFilterPanel.js", "sap/m/P13nGroupItem.js", "sap/m/P13nGroupPanel.js", "sap/m/P13nItem.js", "sap/m/P13nPanel.js", "sap/m/P13nSelectionItem.js", "sap/m/P13nSelectionPanel.js", "sap/m/P13nSortItem.js", "sap/m/P13nSortPanel.js", "sap/m/PDFViewer.js", "sap/m/PDFViewerRenderManager.js", "sap/m/PDFViewerRenderer.js", "sap/m/Page.js", "sap/m/PageAccessibleLandmarkInfo.js", "sap/m/PageRenderer.js", "sap/m/PagingButton.js", "sap/m/PagingButtonRenderer.js", "sap/m/Panel.js", "sap/m/PanelRenderer.js", "sap/m/PlanningCalendar.js", "sap/m/PlanningCalendarLegend.js", "sap/m/PlanningCalendarLegendRenderer.js", "sap/m/PlanningCalendarRenderer.js", "sap/m/PlanningCalendarRow.js", "sap/m/PlanningCalendarView.js", "sap/m/Popover.js", "sap/m/PopoverRenderer.js", "sap/m/ProgressIndicator.js", "sap/m/ProgressIndicatorRenderer.js", "sap/m/PullToRefresh.js", "sap/m/PullToRefreshRenderer.js", "sap/m/QuickView.js", "sap/m/QuickViewBase.js", "sap/m/QuickViewCard.js", "sap/m/QuickViewCardRenderer.js", "sap/m/QuickViewGroup.js", "sap/m/QuickViewGroupElement.js", "sap/m/QuickViewPage.js", "sap/m/QuickViewPageRenderer.js", "sap/m/QuickViewRenderer.js", "sap/m/RadioButton.js", "sap/m/RadioButtonGroup.js", "sap/m/RadioButtonGroupRenderer.js", "sap/m/RadioButtonRenderer.js", "sap/m/RangeSlider.js", "sap/m/RangeSliderRenderer.js", "sap/m/RatingIndicator.js", "sap/m/RatingIndicatorRenderer.js", "sap/m/ResponsivePopover.js", "sap/m/ResponsivePopoverRenderer.js", "sap/m/ResponsiveScale.js", "sap/m/ScrollContainer.js", "sap/m/ScrollContainerRenderer.js", "sap/m/SearchField.js", "sap/m/SearchFieldRenderer.js", "sap/m/SegmentedButton.js", "sap/m/SegmentedButtonItem.js", "sap/m/SegmentedButtonRenderer.js", "sap/m/Select.js", "sap/m/SelectDialog.js", "sap/m/SelectDialogRenderer.js", "sap/m/SelectList.js", "sap/m/SelectListRenderer.js", "sap/m/SelectRenderer.js", "sap/m/SelectionDetails.js", "sap/m/SelectionDetailsFacade.js", "sap/m/SelectionDetailsItem.js", "sap/m/SelectionDetailsItemLine.js", "sap/m/SelectionDetailsListItemRenderer.js", "sap/m/SelectionDetailsRenderer.js", "sap/m/Shell.js", "sap/m/ShellRenderer.js", "sap/m/SlideTile.js", "sap/m/SlideTileRenderer.js", "sap/m/Slider.js", "sap/m/SliderRenderer.js", "sap/m/SliderTooltip.js", "sap/m/SliderTooltipContainer.js", "sap/m/SliderTooltipContainerRenderer.js", "sap/m/SliderTooltipRenderer.js", "sap/m/SliderUtilities.js", "sap/m/SplitApp.js", "sap/m/SplitAppRenderer.js", "sap/m/SplitButton.js", "sap/m/SplitButtonRenderer.js", "sap/m/SplitContainer.js", "sap/m/SplitContainerRenderer.js", "sap/m/StandardListItem.js", "sap/m/StandardListItemRenderer.js", "sap/m/StandardTile.js", "sap/m/StandardTileRenderer.js", "sap/m/StandardTreeItem.js", "sap/m/StandardTreeItemRenderer.js", "sap/m/StepInput.js", "sap/m/StepInputRenderer.js", "sap/m/Suggest.js", "sap/m/SuggestionItem.js", "sap/m/SuggestionsList.js", "sap/m/Support.js", "sap/m/Switch.js", "sap/m/SwitchRenderer.js", "sap/m/TabContainer.js", "sap/m/TabContainerItem.js", "sap/m/TabContainerRenderer.js", "sap/m/TabStrip.js", "sap/m/TabStripItem.js", "sap/m/TabStripRenderer.js", "sap/m/Table.js", "sap/m/TablePersoController.js", "sap/m/TablePersoDialog.js", "sap/m/TablePersoProvider.js", "sap/m/TableRenderer.js", "sap/m/TableSelectDialog.js", "sap/m/TableSelectDialogRenderer.js", "sap/m/Text.js", "sap/m/TextArea.js", "sap/m/TextAreaRenderer.js", "sap/m/TextRenderer.js", "sap/m/Tile.js", "sap/m/TileContainer.js", "sap/m/TileContainerRenderer.js", "sap/m/TileContent.js", "sap/m/TileContentRenderer.js", "sap/m/TileRenderer.js", "sap/m/TimePicker.js", "sap/m/TimePickerRenderer.js", "sap/m/TimePickerSlider.js", "sap/m/TimePickerSliderRenderer.js", "sap/m/TimePickerSliders.js", "sap/m/TimePickerSlidersRenderer.js", "sap/m/Title.js", "sap/m/TitleRenderer.js", "sap/m/ToggleButton.js", "sap/m/ToggleButtonRenderer.js", "sap/m/Token.js", "sap/m/TokenRenderer.js", "sap/m/Tokenizer.js", "sap/m/TokenizerRenderer.js", "sap/m/Toolbar.js", "sap/m/ToolbarLayoutData.js", "sap/m/ToolbarRenderer.js", "sap/m/ToolbarSeparator.js", "sap/m/ToolbarSeparatorRenderer.js", "sap/m/ToolbarSpacer.js", "sap/m/ToolbarSpacerRenderer.js", "sap/m/Tree.js", "sap/m/TreeItemBase.js", "sap/m/TreeItemBaseRenderer.js", "sap/m/TreeRenderer.js", "sap/m/UploadCollection.js", "sap/m/UploadCollectionItem.js", "sap/m/UploadCollectionParameter.js", "sap/m/UploadCollectionRenderer.js", "sap/m/UploadCollectionToolbarPlaceholder.js", "sap/m/VBox.js", "sap/m/VBoxRenderer.js", "sap/m/ViewSettingsCustomItem.js", "sap/m/ViewSettingsCustomTab.js", "sap/m/ViewSettingsDialog.js", "sap/m/ViewSettingsDialogRenderer.js", "sap/m/ViewSettingsFilterItem.js", "sap/m/ViewSettingsItem.js", "sap/m/ViewSettingsPopover.js", "sap/m/ViewSettingsPopoverRenderer.js", "sap/m/VisibleItem.js", "sap/m/Wizard.js", "sap/m/WizardProgressNavigator.js", "sap/m/WizardProgressNavigatorRenderer.js", "sap/m/WizardRenderer.js", "sap/m/WizardStep.js", "sap/m/WizardStepRenderer.js", "sap/m/changeHandler/AddTableColumn.js", "sap/m/changeHandler/CombineButtons.js", "sap/m/changeHandler/MoveTableColumns.js", "sap/m/changeHandler/SplitMenuButton.js", "sap/m/delegate/ValueStateMessage.js", "sap/m/flexibility/Bar.flexibility.js", "sap/m/flexibility/Button.flexibility.js", "sap/m/flexibility/CheckBox.flexibility.js", "sap/m/flexibility/Dialog.flexibility.js", "sap/m/flexibility/IconTabFilter.flexibility.js", "sap/m/flexibility/InputListItem.flexibility.js", "sap/m/flexibility/Label.flexibility.js", "sap/m/flexibility/MenuButton.flexibility.js", "sap/m/flexibility/OverflowToolbar.flexibility.js", "sap/m/flexibility/Page.flexibility.js", "sap/m/flexibility/Panel.flexibility.js", "sap/m/flexibility/Popover.flexibility.js", "sap/m/flexibility/RadioButton.flexibility.js", "sap/m/flexibility/StandardListItem.flexibility.js", "sap/m/flexibility/Table.flexibility.js", "sap/m/flexibility/Text.flexibility.js", "sap/m/flexibility/Title.flexibility.js", "sap/m/flexibility/Toolbar.flexibility.js", "sap/m/ios7.js", "sap/m/library.js", "sap/m/manifest.json", "sap/m/routing/RouteMatchedHandler.js", "sap/m/routing/Router.js", "sap/m/routing/Target.js", "sap/m/routing/TargetHandler.js", "sap/m/routing/Targets.js", "sap/m/routing/async/Target.js", "sap/m/routing/async/Targets.js", "sap/m/routing/sync/Target.js", "sap/m/routing/sync/Targets.js", "sap/m/semantic/AddAction.js", "sap/m/semantic/CancelAction.js", "sap/m/semantic/DeleteAction.js", "sap/m/semantic/DetailPage.js", "sap/m/semantic/DiscussInJamAction.js", "sap/m/semantic/EditAction.js", "sap/m/semantic/FavoriteAction.js", "sap/m/semantic/FilterAction.js", "sap/m/semantic/FilterSelect.js", "sap/m/semantic/FlagAction.js", "sap/m/semantic/ForwardAction.js", "sap/m/semantic/FullscreenPage.js", "sap/m/semantic/GroupAction.js", "sap/m/semantic/GroupSelect.js", "sap/m/semantic/MainAction.js", "sap/m/semantic/MasterPage.js", "sap/m/semantic/MessagesIndicator.js", "sap/m/semantic/MultiSelectAction.js", "sap/m/semantic/NegativeAction.js", "sap/m/semantic/OpenInAction.js", "sap/m/semantic/PositiveAction.js", "sap/m/semantic/PrintAction.js", "sap/m/semantic/SaveAction.js", "sap/m/semantic/Segment.js", "sap/m/semantic/SegmentedContainer.js", "sap/m/semantic/SemanticButton.js", "sap/m/semantic/SemanticConfiguration.js", "sap/m/semantic/SemanticControl.js", "sap/m/semantic/SemanticOverflowToolbarButton.js", "sap/m/semantic/SemanticPage.js", "sap/m/semantic/SemanticPageRenderer.js", "sap/m/semantic/SemanticSelect.js", "sap/m/semantic/SemanticToggleButton.js", "sap/m/semantic/SendEmailAction.js", "sap/m/semantic/SendMessageAction.js", "sap/m/semantic/ShareInJamAction.js", "sap/m/semantic/ShareMenu.js", "sap/m/semantic/ShareMenuPage.js", "sap/m/semantic/SortAction.js", "sap/m/semantic/SortSelect.js"]
     },
@@ -4392,7 +4392,7 @@
     {
       "name" : "sap/m/library.js",
       "description" : "Initialization Code and shared classes of library sap.m.",
-      "size" : 116035,
+      "size" : 116152,
       "compressedSize" : 29319,
       "required" : ["jquery.sap.global.js", "jquery.sap.mobile.js", "sap/m/Image.js", "sap/m/Support.js", "sap/m/ios7.js", "sap/ui/Device.js", "sap/ui/base/DataType.js", "sap/ui/core/library.js", "sap/ui/model/type/Date.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -4413,7 +4413,7 @@
     },
     {
       "name" : "sap/m/messagebundle.properties",
-      "size" : 49423,
+      "size" : 49638,
       "required" : [],
       "includes" : []
     },

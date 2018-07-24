@@ -125,7 +125,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IShrinkable
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @public
@@ -529,7 +529,9 @@ sap.ui.define([
 			sap.ui.getCore().attachIntervalTimer(this._checkOverflow, this); // proxy() is needed for the additional parameters, not for "this"
 		}
 
-		this._startItemNavigation();
+		if (this.getType() !== FacetFilterType.Light) {
+			this._startItemNavigation();
+		}
 	};
 
 	/* Keyboard Handling */
@@ -591,19 +593,24 @@ sap.ui.define([
 	FacetFilter.prototype.onsapdelete = function(oEvent) {
 		var oButton, oList;
 
+		// no special handling is needed in case of Light mode
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 		//  no deletion - showpersonalization  set to false"
 		if (!this.getShowPersonalization()) {
 			return;
 		}
 
 		oButton = sap.ui.getCore().byId(oEvent.target.id);
-		if (!oButton) { //not a UI5 object
+		if (!oButton) {//not a UI5 object
 			return;
 		}
 
 		oList = sap.ui.getCore().byId(oButton.getAssociation("list"));
 		// no deletion on button 'Add', "Reset"
-		if (!oList) { //We allow only buttons with attached list.
+		if (!oList) {//We allow only buttons with attached list.
 			return;
 		}
 
@@ -619,7 +626,6 @@ sap.ui.define([
 		var $Tabbables = this.$().find(":sapTabbable");
 		jQuery($Tabbables[$Tabbables.length - 1]).focus();
 		var nextFocusIndex = this.oItemNavigation.getFocusedIndex();
-
 		jQuery(oEvent.target).blur();
 		this.oItemNavigation.setFocusedIndex(nextFocusIndex + 1);
 		this.focus();
@@ -639,6 +645,11 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when the TAB key is pressed
 	 */
 	FacetFilter.prototype.onsaptabnext = function(oEvent) {
+		// no special handling for TAB is needed in case of Light mode
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 		this._previousTarget = oEvent.target;
 
 		if (oEvent.target.parentNode.className == "sapMFFHead" ) { //if focus on category, and then press tab, then focus on reset
@@ -667,7 +678,12 @@ sap.ui.define([
 	 */
 	//[SHIFT]+[TAB]
 	FacetFilter.prototype.onsaptabprevious = function(oEvent) {
-	//		without tabnext, and keep entering shift+tab, focus move to the 1st facetfilter list Button
+		// no special handling for SHIFT + TAB is needed in case of Light mode
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
+		// without tabnext, and keep entering shift+tab, focus move to the 1st facetfilter list Button
 		if (oEvent.target.parentNode.className == "sapMFFResetDiv" && this._previousTarget == null) {
 			jQuery(this.$().find(":sapTabbable")[0]).focus();
 			oEvent.preventDefault();
@@ -691,6 +707,11 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when END key is pressed
 	 */
 	FacetFilter.prototype.onsapend = function(oEvent) {
+		// no special handling in Light mode
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 		if (this._addTarget != null) {
 			jQuery(this._addTarget).focus();
 			oEvent.preventDefault();
@@ -708,6 +729,11 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when HOME key is pressed
 	 */
 	FacetFilter.prototype.onsaphome = function(oEvent) {
+		// no special handling for HOME is needed in case of Light mode
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 		jQuery(this._aRows[0]).focus();
 		oEvent.preventDefault();
 		oEvent.setMarked();
@@ -735,6 +761,10 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when CTRL + RIGHT keys are pressed
 	 */
 	FacetFilter.prototype.onsapincreasemodifiers = function(oEvent) {
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 	// [CTRL]+[RIGHT] - keycode 39 - page down
 		if (oEvent.which == jQuery.sap.KeyCodes.ARROW_RIGHT) {
 			this._previousTarget = oEvent.target;
@@ -752,6 +782,10 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when CTRL + LEFT keys are pressed
 	 */
 	FacetFilter.prototype.onsapdecreasemodifiers = function(oEvent) {
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 	// [CTRL]+[LEFT] - keycode 37 - page up
 		var currentFocusIndex = 0;
 		if (oEvent.which == jQuery.sap.KeyCodes.ARROW_LEFT) {
@@ -769,6 +803,10 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when CTRL + DOWN keys are pressed
 	 */
 	FacetFilter.prototype.onsapdownmodifiers = function(oEvent) {
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 	// [CTRL]+[DOWN] - page down
 		this._previousTarget = oEvent.target;
 		var currentFocusIndex = 0;
@@ -784,6 +822,10 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when CTRL + UP keys are pressed
 	 */
 	FacetFilter.prototype.onsapupmodifiers = function(oEvent) {
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 	// [CTRL]+[UP] - page up
 		this._previousTarget = oEvent.target;
 		var currentFocusIndex = 0;
@@ -803,6 +845,10 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when RIGHT or DOWN key is pressed
 	 */
 	FacetFilter.prototype.onsapexpand = function(oEvent) {
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 	//		[+] = right/down - keycode 107
 		this._previousTarget = oEvent.target;
 		var nextDocusIndex = this.oItemNavigation.getFocusedIndex() + 1;
@@ -817,6 +863,10 @@ sap.ui.define([
 	 * @param {object} oEvent The event fired when LEFT or UP ARROW key is pressed
 	 */
 	FacetFilter.prototype.onsapcollapse = function(oEvent) {
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 	//		[-] = left/up - keycode 109
 		this._previousTarget = oEvent.target;
 		var nextDocusIndex = this.oItemNavigation.getFocusedIndex() - 1;
@@ -831,6 +881,10 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when DOWN ARROW key is pressed
 	 */
 	FacetFilter.prototype.onsapdown = function(oEvent) {
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 		this._previousTarget = oEvent.target;
 		if (oEvent.target.parentNode.className == "sapMFFResetDiv") {
 			jQuery(oEvent.target).focus();
@@ -846,6 +900,10 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when UP ARROW key is pressed
 	 */
 	FacetFilter.prototype.onsapup = function(oEvent) {
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 		this._previousTarget = oEvent.target;
 		if (oEvent.target.parentNode.className == "sapMFFResetDiv") {
 			jQuery(oEvent.target).focus();
@@ -860,6 +918,10 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when LEFT ARROW key is pressed
 	 */
 	FacetFilter.prototype.onsapleft = function(oEvent) {
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 		this._previousTarget = oEvent.target;
 		if (oEvent.target.parentNode.className == "sapMFFResetDiv") {
 			jQuery(oEvent.target).focus();
@@ -874,6 +936,10 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when RIGHT ARROW key is pressed
 	 */
 	FacetFilter.prototype.onsapright = function(oEvent) {
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
+
 		this._previousTarget = oEvent.target;
 		if (oEvent.target.parentNode.className == "sapMFFResetDiv") {
 			jQuery(oEvent.target).focus();
@@ -888,7 +954,9 @@ sap.ui.define([
 	 * @param {object} oEvent Fired when ESCAPE key is pressed
 	 */
 	FacetFilter.prototype.onsapescape = function(oEvent) {
-
+		if (this.getType() === FacetFilterType.Light) {
+			return;
+		}
 		if (oEvent.target.parentNode.className == "sapMFFResetDiv") {
 			return;
 		}

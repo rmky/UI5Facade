@@ -24,7 +24,7 @@ sap.ui.define(['./ViewSettingsItem', './library', 'sap/ui/base/ManagedObject'],
 	 * @extends sap.m.ViewSettingsItem
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @public
@@ -45,7 +45,8 @@ sap.ui.define(['./ViewSettingsItem', './library', 'sap/ui/base/ManagedObject'],
 		aggregations : {
 
 			/**
-			 * Items that are logically grouped under this filter item. They are used to display filter details in the ViewSettingsDialog.
+			 * Items with key and value that are logically grouped under this filter item.
+			 * They are used to display filter details in the ViewSettingsDialog.
 			 */
 			items : {type : "sap.m.ViewSettingsItem", multiple : true, singularName : "item", bindable: "bindable"}
 		},

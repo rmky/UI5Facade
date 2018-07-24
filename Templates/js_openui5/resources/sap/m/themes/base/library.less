@@ -3548,7 +3548,7 @@ html[dir=rtl] .sapMDLIValue {
 
 /* Allow MessagePage to be positioned inside ObjectPage */
 .sapUxAPBlockContainer .sapMMessagePageInner {
-	position: initial;
+	position: static;
 }
 
 .sapMMessagePageContentWrapper {
@@ -11642,6 +11642,13 @@ html[dir=rtl] .sapMNCValueScr {
 	vertical-align: middle;
 }
 
+html[data-sap-ui-browser^='ie'], html[data-sap-ui-browser^='ed'] {
+	.sapMObjectAttributeActive .sapMObjectAttributeTitle,
+	.sapMObjectAttributeActive .sapMObjectAttributeText {
+		display: inline-block;
+	}
+}
+
 .sapMListTblCell .sapMObjectAttributeActive .sapMObjectAttributeTitle,
 .sapMListTblCell .sapMObjectAttributeActive .sapMObjectAttributeText {
 	white-space: normal;
@@ -11680,7 +11687,7 @@ html.sap-desktop .sapMObjectAttributeActive:focus {
 	line-height: normal;
 }
 
-html[data-sap-ui-browser^='ie'], html[data-sap-ui-browser^='ie'] {
+html[data-sap-ui-browser^='ie'], html[data-sap-ui-browser^='ed'] {
 	.sapMObjectAttributeActive:focus .sapMObjectAttributeText::after {
 		outline-style: dashed;
 	}
@@ -13446,6 +13453,7 @@ html[data-sap-ui-os^="Android"] {
 .sapMObjStatusIcon > .sapUiIcon {
 	font-size: 1rem;
 	vertical-align: bottom;
+	line-height: inherit;
 }
 
 .sapMObjStatusIcon {
@@ -14650,14 +14658,22 @@ html[data-sap-ui-browser^="ie"].sap-desktop .sapMPlanCal .sapUiCalRow:not(.sapUi
 		}
 
 		.sapMSLIDiv {
+			.sapMSLITitleOnly,
+			.sapMSLITitle {
+				white-space: normal;
+			}
+		}
+
+		.sapMSLIDescIcon .sapMSLIDiv,
+		.sapMSLIImgIcon + .sapMSLIDiv {
 			box-sizing: border-box;
 			position: absolute;
 			padding-left: calc(3rem + 0.75rem); // Width of the image + right margin
 			width: 100%;
 
-			.sapMSLITitleOnly,
-			.sapMSLITitle {
-				white-space: normal;
+			html[data-sap-ui-browser^="ie"] & {
+				top: .5rem;
+				left: 0;
 			}
 		}
 	}

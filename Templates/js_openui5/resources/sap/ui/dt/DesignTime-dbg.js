@@ -49,7 +49,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @private
@@ -720,7 +720,6 @@ function(
 					aggregationName: sAggregationName,
 					element: oElement,
 					designTimeMetadata: new AggregationDesignTimeMetadata({
-						libraryName: oElement.getMetadata().getLibraryName(),
 						data: mAggregationMetadata
 					}),
 					beforeDestroy: function (oEvent) {

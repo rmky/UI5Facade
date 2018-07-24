@@ -33,8 +33,8 @@ sap.ui.define([
 	 * </ul>
 	 * Other usages are not supported.
 	 *
-	 * @extends sap.ui.core.Control
-	 * @version 1.54.5
+	 * @extends sap.ui.unified.calendar.DatesRow
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @private

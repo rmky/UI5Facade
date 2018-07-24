@@ -23,7 +23,7 @@ function(ManagedObject) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.54.5
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @private
@@ -259,11 +259,12 @@ function(ManagedObject) {
 	 */
 	Plugin.prototype.getActionText = function(oOverlay, mAction, sPluginId){
 		var vName = mAction.name;
+		var oElement = oOverlay.getElement();
 		if (vName){
 			if (typeof vName === "function") {
-				return vName.call(null, oOverlay.getElement());
+				return vName.call(null, oElement);
 			} else {
-				return oOverlay.getDesignTimeMetadata() ? oOverlay.getDesignTimeMetadata().getLibraryText(vName) : "";
+				return oOverlay.getDesignTimeMetadata() ? oOverlay.getDesignTimeMetadata().getLibraryText(oElement, vName) : "";
 			}
 		} else {
 			return sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText(sPluginId);

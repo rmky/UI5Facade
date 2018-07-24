@@ -80,7 +80,7 @@ function(
 	* @extends sap.m.Input
 	*
 	* @author SAP SE
-	* @version 1.54.5
+	* @version 1.54.7
 	*
 	* @constructor
 	* @public
@@ -792,6 +792,13 @@ function(
 		}
 
 		var aSeparatedText = this._tokenizer._parseString(sOriginalText);
+
+		// if only one piece of text was pasted, we can assume that the user wants to alter it before it is converted into a token
+		// in this case we leave it as plain text input
+		if (aSeparatedText.length <= 1) {
+			return;
+		}
+
 		setTimeout(function () {
 			if (aSeparatedText) {
 				if (this.fireEvent("_validateOnPaste", {texts: aSeparatedText}, true)) {

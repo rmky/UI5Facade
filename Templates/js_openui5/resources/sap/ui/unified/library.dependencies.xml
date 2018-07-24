@@ -370,7 +370,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/MenuTextFieldItem.js" size="10201" compressedSize="5059">
+  <module name="sap/ui/unified/MenuTextFieldItem.js" size="10345" compressedSize="5156">
     <description>Provides control sap.ui.unified.MenuTextFieldItem.</description>
     <requires>
       <module name="jquery.sap.events.js"/>
@@ -629,7 +629,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/calendar/OneMonthDatesRow.js" size="5121" compressedSize="1789">
+  <module name="sap/ui/unified/calendar/OneMonthDatesRow.js" size="5134" compressedSize="1789">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/unified/calendar/CalendarDate.js"/>
@@ -896,7 +896,7 @@
       <module name="sap/ui/unified/rules/FileUploader.support.js"/>
     </includes>
   </module>
-  <module name="sap/ui/unified/library-preload.js" size="423259">
+  <module name="sap/ui/unified/library-preload.js" size="423356">
     <requires>
       <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.events.js"/>

@@ -307,7 +307,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/BindProperty.js" size="2388" compressedSize="952">
+  <module name="sap/ui/rta/command/BindProperty.js" size="2393" compressedSize="952">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/rta/Utils.js"/>
@@ -417,7 +417,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/Property.js" size="1561" compressedSize="830">
+  <module name="sap/ui/rta/command/Property.js" size="1566" compressedSize="830">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/rta/Utils.js"/>
@@ -447,7 +447,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/Settings.js" size="1545" compressedSize="808">
+  <module name="sap/ui/rta/command/Settings.js" size="1550" compressedSize="808">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/rta/command/FlexCommand.js"/>
@@ -468,7 +468,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/appDescriptor/AddLibrary.js" size="1544" compressedSize="691">
+  <module name="sap/ui/rta/command/appDescriptor/AddLibrary.js" size="1530" compressedSize="691">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/rta/command/AppDescriptorCommand.js"/>
@@ -644,7 +644,7 @@
       <module name="sap/ui/rta/view/RemoveElementDialog.fragment.xml"/>
     </includes>
   </module>
-  <module name="sap/ui/rta/library-preload.js" size="197845" dynamicDependencies="true">
+  <module name="sap/ui/rta/library-preload.js" size="197838" dynamicDependencies="true">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/m/Button.js"/>
@@ -1117,7 +1117,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/DragDrop.js" size="6153" compressedSize="2986">
+  <module name="sap/ui/rta/plugin/DragDrop.js" size="6160" compressedSize="2986">
     <description>Provides class sap.ui.rta.plugin.DragDrop.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1241,7 +1241,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/additionalElements/AddElementsDialog.js" size="10016" compressedSize="5176">
+  <module name="sap/ui/rta/plugin/additionalElements/AddElementsDialog.js" size="10022" compressedSize="5176">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1280,7 +1280,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin.js" size="27957" compressedSize="12164">
+  <module name="sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin.js" size="28069" compressedSize="12157">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>

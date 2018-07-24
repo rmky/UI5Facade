@@ -2289,7 +2289,8 @@ if (!String.prototype.padEnd) {
 		}
 
 		xhr.addEventListener('load', function(e) {
-			if ( xhr.status === 200 ) {
+			// File protocol (file://) always has status code 0
+			if ( xhr.status === 200 || xhr.status === 0 ) {
 				oModule.state = LOADED;
 				oModule.data = xhr.responseText;
 			} else {

@@ -16,6 +16,7 @@ use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 use GuzzleHttp\Psr7\Uri;
+use exface\Core\Interfaces\Log\LoggerInterface;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -227,6 +228,11 @@ class Webapp implements WorkbenchDependantInterface
         return str_replace('.', '/', $this->getComponentName());
     }
     
+    public function getComponentUrl() : string
+    {
+        return 'exface' . $this->template->getConfig()->getOption('DEFAULT_AJAX_URL') . '/webapps/' . $this->getComponentName() . '/';
+    }
+    
     public function getComponentPreload() : string
     {
         $prefix = $this->getComponentPath() . '/';
@@ -272,9 +278,18 @@ class Webapp implements WorkbenchDependantInterface
         // External libs for
         foreach ($controller->getExternalModulePaths() as $name => $path) {
             $filePath = StringDataType::endsWith($path, '.js', false) ? $path : $path . '.js';
+            // FIXME At this point a path (not URL) of the external module is required. Where do we get it? What do we
+            // do with scripts hosted on other servers? The current script simply assumes, that all external modules
+            // reside in subfolders of the platform and the platform itself is located in the subfolder exface of the
+            // server root.
+            $filePath = $this->getWorkbench()->filemanager()->getPathToBaseFolder() . StringDataType::substringAfter($filePath, 'exface/');
             $lib = str_replace('.', '/', $name);
             $lib = StringDataType::endsWith($lib, '.js', false) ? $lib : $lib . '.js';
-            $resources[$lib] = file_get_contents($this->getWorkbench()->filemanager()->getPathToBaseFolder() . substr($filePath, 6));
+            if (file_exists($filePath)) {
+                $resources[$lib] = file_get_contents($filePath);
+            } else {
+                $this->getWorkbench()->getLogger()->logException(new FileNotFoundError('File "' . $filePath . '" not found for required UI5 module "' . $name . '"!'), LoggerInterface::ERROR);
+            }
         }
         
         return $resources;
@@ -284,7 +299,10 @@ class Webapp implements WorkbenchDependantInterface
     {
         $resources = [];
         foreach ($locales as $loc) {
-            $resources['sap/ui/core/cldr/' . $loc . '.json'] = file_get_contents($this->template->getUI5LibrariesPath() . 'resources/sap/ui/core/cldr/' . $loc . '.json');
+            $cldrPath = $this->template->getUI5LibrariesPath() . 'resources/sap/ui/core/cldr/' . $loc . '.json';
+            if (file_exists($cldrPath)) {
+                $resources['sap/ui/core/cldr/' . $loc . '.json'] = file_get_contents($cldrPath);
+            }
         }
         return $resources;
     }

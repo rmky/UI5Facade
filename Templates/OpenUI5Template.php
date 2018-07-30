@@ -371,5 +371,18 @@ JS;*/
     {
         return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'js_openui5' . DIRECTORY_SEPARATOR;
     }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::buildHtmlHeadCommonIncludes()
+     */
+    public function buildHtmlHeadCommonIncludes() : array
+    {
+        $tags = $this->buildHtmlHeadIcons();
+        $webapp = $this->getWebapp();
+        $tags[] = '<link rel="manifest" href="' . $webapp->getComponentUrl() . 'manifest.json">';
+        return $tags;
+    }
 }
 ?>

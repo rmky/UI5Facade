@@ -330,7 +330,7 @@ class Webapp implements WorkbenchDependantInterface
     
     public function isPWA() : bool
     {
-        return true;
+        return $this->config['pwa_flag'] ? true : false;
     }
     
     public function getStartUrl() : string

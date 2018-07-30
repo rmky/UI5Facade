@@ -304,7 +304,8 @@ JS;*/
             //'app_shortTitle' => '', 
             //'app_info' => '', 
             //'app_description' => '{{appDescription}}', 
-            //'assets_path' => './'
+            //'assets_path' => './',
+            'pwa_flag' => $this->getConfig()->getOption('PWA.ENABLED')
         ];
     }
     

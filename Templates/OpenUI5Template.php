@@ -89,13 +89,35 @@ class OpenUI5Template extends AbstractAjaxTemplate
     public function buildJs(\exface\Core\Widgets\AbstractWidget $widget)
     {
         $element = $this->getElement($widget);
+        $webapp = $this->getWebapp();
+        $controller = $this->createController($element);
+        
+        if ($widget !== $webapp->getRootPage()->getWidgetRoot()) {
+            return <<<JS
+sap.ui.getCore().attachInit(function () {
+    
+    {$controller->buildJsController()}
+    
+    {$controller->getView()->buildJsView()}
+    
+});
+
+JS;
+        }
+        
+        /* TODO remove this if we are going to continue using Component-preload
         
         // If we are showing the root page of the app (more precisely the root widget of the root page),
         // include common views and controllers to avoid extra ajax calls.
-        if ($widget === $this->getWebapp()->getRootPage()->getWidgetRoot()) {
-            $baseControllers = $this->getWebapp()->get('controller/BaseController.js') . "\n\n" 
-                             . $this->getWebapp()->get('controller/App.controller.js');
-            $baseViews = $this->getWebapp()->get('view/App.view.js');
+        if ($widget === $webapp->getRootPage()->getWidgetRoot()) {
+            $baseControllers = '';
+            $baseViews = '';
+            foreach ($webapp->getBaseControllers() as $controllerPath) {
+                $baseControllers .= $this->getWebapp()->get($controllerPath) . "\n\n";
+            }
+            foreach ($webapp->getBaseViews() as $viewPath) {
+                $baseViews .= $this->getWebapp()->get($viewPath);
+            }
         }
         
         $controller = $this->createController($element);
@@ -113,7 +135,7 @@ sap.ui.getCore().attachInit(function () {
 
 });
 
-JS;
+JS;*/
     }
          
     /**
@@ -268,22 +290,21 @@ JS;
         return [
             'app_id' => $appId,
             'component_path' => str_replace('.', '/', $appId),
-            'ui5_app_control' => 'sap.m.App',
-            'ui5_min_version' => '1.52'/*,
-            'name' => 'axenox WMS MDE', 
-            'current_version' => '1.0.0', 
-            'current_version_date' => '2018-04-25 14:10:40',
-            'app_title' => '{{appTitle}}', 
+            //'name' => 'axenox WMS MDE', 
+            //'current_version' => '1.0.0', 
+            //'current_version_date' => '2018-04-25 14:10:40',
+            //'app_title' => '{{appTitle}}', 
             'ui5_min_version' => '1.52', 
-            'root_page_alias' => 'axenox.wms.mde-verladen-x', 
-            'ui5_source' => 'https://openui5.hana.ondemand.com/resources/sap-ui-core.js', 
-            'ui5_theme' => 'sap_belize', 
-            'ui5_app_control' => 'sap.m.App', 
-            'app_subTitle' => '', 
-            'app_shortTitle' => '', 
-            'app_info' => '', 
-            'app_description' => '{{appDescription}}', 
-            'assets_path' => './'*/
+            //'root_page_alias' => 'axenox.wms.mde-verladen-x', 
+            'root_url' => '/exface',
+            //'ui5_source' => 'https://openui5.hana.ondemand.com/resources/sap-ui-core.js', 
+            //'ui5_theme' => 'sap_belize', 
+            'ui5_app_control' => 'sap.m.App',
+            //'app_subTitle' => '', 
+            //'app_shortTitle' => '', 
+            //'app_info' => '', 
+            //'app_description' => '{{appDescription}}', 
+            //'assets_path' => './'
         ];
     }
     
@@ -323,6 +344,31 @@ JS;
             $viewName = $this->getViewName($widget, $this->getWebapp()->getRootPage());
         }
         return new WebappView($this->getWebapp(), $viewName, $element);
+    }
+    
+    public function getUI5LibrariesUsed() : array
+    {
+        return [
+            'sap.m',
+            'sap.tnt',
+            'sap.ui.unified',
+            'sap.ui.commons',
+            'sap.ui.table',
+            'sap.f',
+            'sap.uxap'
+        ];
+    }
+    
+    /**
+     * Returns the absolute path to the UI5 sources ending with a directory separator.
+     * 
+     * E.g. C:\wamp\www\exface\exface\vendor\exface\OpenUI5Template\templates\js_openui5\
+     * 
+     * @return string
+     */
+    public function getUI5LibrariesPath() : string
+    {
+        return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'js_openui5' . DIRECTORY_SEPARATOR;
     }
 }
 ?>

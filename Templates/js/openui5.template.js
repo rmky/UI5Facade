@@ -1,4 +1,14 @@
 var oDialogStack = [];
+
+
+// Toggle online/offlie icon
+window.addEventListener('online', function(){
+	toggleOnlineIndicator();
+});
+window.addEventListener('offline', function(){
+	toggleOnlineIndicator();
+});
+
 function initShell() {
 	var oShell = new sap.ui.unified.Shell({
 		header: [
@@ -26,8 +36,8 @@ function initShell() {
 	                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
 	                }),
 	                new sap.m.ToolbarSpacer(),
-	                new sap.m.Button("exf_connection", {
-	                    icon: "sap-icon://connected",
+	                new sap.m.Button("exf-connection-indicator", {
+	                    icon: function(){return navigator.onLine ? "sap-icon://connected" : "sap-icon://disconnected"}(),
 	                    text: "3/1",
 	                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
 	                    press: function(oEvent){
@@ -271,7 +281,7 @@ function contextBarRefresh(data){
 	
 	for (var i=0; i<aItemsOld.length; i++) {
 		oControl = aItemsOld[i];
-		if (i < iItemsIndex || oControl.getId() == 'exf_connection' || oControl.getId() == 'exf_pagetitle' || oControl.getId() == 'exf_avatar') {
+		if (i < iItemsIndex || oControl.getId() == 'exf-connection-indicator' || oControl.getId() == 'exf_pagetitle' || oControl.getId() == 'exf_avatar') {
 			oToolbar.addContent(oControl);
 		} else {
 			oControl.destroy();
@@ -363,4 +373,11 @@ function contextShowMenu(oButton){
 
 function getPageId(){
 	return $("meta[name='page_id']").attr("content");
+}
+
+function toggleOnlineIndicator() {
+	sap.ui.getCore().byId('exf-connection-indicator').setIcon(navigator.onLine ? 'sap-icon://connected' : 'sap-icon://disconnected');
+	if (navigator.onLine) {
+		contextBarLoad();
+	}
 }

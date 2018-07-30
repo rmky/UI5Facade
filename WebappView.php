@@ -58,6 +58,16 @@ class WebappView implements ui5ViewInterface
     {
         return $this->viewName;
     }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::getPath()
+     */
+    public function getPath() : string
+    {
+        return $this->webapp::convertNameToPath($this->getName(), '.view.js');
+    }
 
     /**
      * 

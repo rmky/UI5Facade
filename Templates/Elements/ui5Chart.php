@@ -28,13 +28,8 @@ class ui5Chart extends ui5AbstractElement
         $controller->addMethod('onLoadData', $this, '', $this->buildJsDataLoader());
         
         foreach ($this->getJsIncludes() as $path) {
-            $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path);
+            $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path, null, $path);
         }
-        
-        
-        $controller->addExternalCss($this->getTemplate()->buildUrlToSource('LIBS.JSONEDITOR.CSS'));
-        $controller->addExternalModule('exface.openui5.jsoneditor', $this->getTemplate()->buildUrlToSource('LIBS.JSONEDITOR.JS'), 'JSONEditor');
-        
         
         return <<<JS
 

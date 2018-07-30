@@ -271,6 +271,16 @@ JS;
     /**
      * 
      * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getPath()
+     */
+    public function getPath() : string
+    {
+        return $this->webapp::convertNameToPath($this->getName(), '.controller.js');
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getId()
      */
     public function getId() : string
@@ -342,10 +352,24 @@ JS;
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addExternalModule()
      */
-    public function addExternalModule(string $name, string $path, string $var = null) : ui5ControllerInterface
+    public function addExternalModule(string $name, string $urlRelativeToAppRoot, string $var = null) : ui5ControllerInterface
     {
-        $this->externalModules[$name] = ['path' => $path, 'var' => $var];
+        $this->externalModules[$name] = ['path' => $urlRelativeToAppRoot, 'var' => $var];
         return $this;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getExternalModules()
+     */
+    public function getExternalModulePaths() : array
+    {
+        $arr = [];
+        foreach ($this->externalModules as $name => $properties) {
+            $arr[$name] = $properties['path'];
+        }
+        return $arr;
     }
     
     /**

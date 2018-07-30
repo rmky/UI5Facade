@@ -14,6 +14,8 @@ use exface\Core\Exceptions\RuntimeException;
 use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
 use exface\Core\Interfaces\WidgetInterface;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
+use GuzzleHttp\Psr7\Uri;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -50,6 +52,8 @@ class Webapp implements WorkbenchDependantInterface
         switch (true) {
             case $route === 'manifest.json':
                 return $this->getManifestJson();
+            case $route === 'Component-preload.js':
+                return $this->getComponentPreload();
             case StringDataType::startsWith($route, 'i18n/'):
                 //$filename = pathinfo($filePath, PATHINFO_FILENAME);
                 return '';
@@ -61,8 +65,7 @@ class Webapp implements WorkbenchDependantInterface
                     $path = StringDataType::substringBefore($path, '.view.js');
                     $widget = $this->getWidgetFromPath($path);
                     if ($widget) {
-                        $view = $this->template->createController($this->template->getElement($widget))->getView();
-                        return $view->buildJsView();
+                        return $this->getViewForWidget($widget)->buildJsView();
                     } 
                     return '';
                 }
@@ -72,8 +75,7 @@ class Webapp implements WorkbenchDependantInterface
                     $path = StringDataType::substringBefore($path, '.controller.js');
                     $widget = $this->getWidgetFromPath($path);
                     if ($widget) {
-                        $controller = $this->template->createController($this->template->getElement($widget));
-                        return $controller->buildJsController();
+                        return $this->getControllerForWidget($widget)->buildJsController();
                     }
                     return '';
                 }
@@ -100,13 +102,24 @@ class Webapp implements WorkbenchDependantInterface
         $json = json_decode($tpl, true);
         $json['_version'] = $this->getManifestVersion($placeholders['ui5_min_version']);
         $json['sap.app']['id'] = $placeholders['app_id'];
-        $json['sap.app']['title'] = $placeholders['app_title'];
+        $json['sap.app']['title'] = $this->getTitle();
         $json['sap.app']['subTitle'] = $placeholders['app_subTitle'] ? $placeholders['app_subTitle'] : '';
         $json['sap.app']['shortTitle'] = $placeholders['app_shortTitle'] ? $placeholders['app_shortTitle'] : '';
         $json['sap.app']['info'] = $placeholders['app_info'] ? $placeholders['app_info'] : '';
         $json['sap.app']['description'] = $placeholders['app_description'] ? $placeholders['app_description'] : '';
         $json['sap.app']['applicationVersion']['version'] = $placeholders['current_version'];
         $json['sap.ui5']['dependencies']['minUI5Version'] = $placeholders['ui5_min_version'];
+        
+        if ($this->isPWA() === true) {
+            $json["short_name"] = $this->getName();
+            $json["name"] = $this->getTitle();
+            $json["icons"] = $this->getWorkbench()->getCMS()->getFavIcons();
+            $json["start_url"] = $this->getStartUrl();
+            $json["scope"] = $this->getRootUrl() . "/";
+            $json["background_color"] = "#3367D6";
+            $json["theme_color"] = "#3367D6";
+            $json["display"] = "standalone";
+        }
         
         return json_encode($json, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
     }
@@ -212,5 +225,134 @@ class Webapp implements WorkbenchDependantInterface
     public function getComponentPath() : string
     {
         return str_replace('.', '/', $this->getComponentName());
+    }
+    
+    public function getComponentPreload() : string
+    {
+        $prefix = $this->getComponentPath() . '/';
+        $resources = [];
+        
+        // Component and manifest
+        $resources[$prefix . 'Component.js'] = $this->get('Component.js');
+        $resources[$prefix . 'manifest.json'] = $this->get('manifest.json');
+        
+        // Base views and controllers (App.view.js, NotFound.view.js, BaseController.js, etc.)
+        foreach ($this->getBaseControllers() as $controllerPath) {
+            $resources[$prefix . $controllerPath] = $this->get($controllerPath);
+        }
+        foreach ($this->getBaseViews() as $viewPath) {
+            $resources[$prefix . $viewPath] = $this->get($viewPath);
+        }
+        
+        // i18n
+        $currentLocale = $this->getWorkbench()->getContext()->getScopeSession()->getSessionLocale();
+        $locales = [StringDataType::substringBefore($currentLocale, '_')];
+        $resources = array_merge($resources, $this->getComponentPreloadForLangs($locales));
+        
+        // Root view and controller
+        $rootWidget = $this->getRootPage()->getWidgetRoot();
+        $rootController = $this->getControllerForWidget($rootWidget);
+        $resources = array_merge($resources, $this->getComponentPreloadForController($rootController));
+        
+        return 'sap.ui.require.preload(' . json_encode($resources, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT) . ', "' . $prefix . 'Component-preload");';
+    }
+    
+    /**
+     * 
+     * @param ui5ControllerInterface $controller
+     * @return string[]
+     */
+    protected function getComponentPreloadForController(ui5ControllerInterface $controller) : array
+    {
+        $resources = [
+            $controller->getView()->getPath() => $controller->getView()->buildJsView(),
+            $controller->getPath() => $controller->buildJsController()
+        ];
+        
+        // External libs for
+        foreach ($controller->getExternalModulePaths() as $name => $path) {
+            $filePath = StringDataType::endsWith($path, '.js', false) ? $path : $path . '.js';
+            $lib = str_replace('.', '/', $name);
+            $lib = StringDataType::endsWith($lib, '.js', false) ? $lib : $lib . '.js';
+            $resources[$lib] = file_get_contents($this->getWorkbench()->filemanager()->getPathToBaseFolder() . substr($filePath, 6));
+        }
+        
+        return $resources;
+    }
+    
+    protected function getComponentPreloadForLangs(array $locales) : array
+    {
+        $resources = [];
+        foreach ($locales as $loc) {
+            $resources['sap/ui/core/cldr/' . $loc . '.json'] = file_get_contents($this->template->getUI5LibrariesPath() . 'resources/sap/ui/core/cldr/' . $loc . '.json');
+        }
+        return $resources;
+    }
+    
+    public static function convertNameToPath(string $name, string $suffix = '.view.js') : string
+    {
+        $path = str_replace('.', '/', $name);
+        return $path . $suffix;
+    }
+    
+    /**
+     * 
+     * @return string[]
+     */
+    public function getBaseControllers() : array
+    {
+        return [
+            'controller/BaseController.js',
+            'controller/App.controller.js'
+        ];
+    }
+    
+    /**
+     * 
+     * @return string[]
+     */
+    public function getBaseViews() : array
+    {
+        return [
+            'view/App.view.js'
+        ];
+    }
+    
+    public function getViewForWidget(WidgetInterface $widget) : ui5ViewInterface
+    {
+        return $this->getControllerForWidget($widget)->getView();
+    }
+    
+    public function getControllerForWidget(WidgetInterface $widget) : ui5ControllerInterface
+    {
+        return $this->template->createController($this->template->getElement($widget));
+    }
+    
+    public function isPWA() : bool
+    {
+        return true;
+    }
+    
+    public function getStartUrl() : string
+    {
+        $uri = new Uri($this->getWorkbench()->getCMS()->buildUrlToPage($this->getRootPage()));
+        $path = $uri->getPath();
+        $path = '/' . ltrim($path, "/");        
+        return $path;
+    }
+    
+    public function getRootUrl() : string
+    {
+        return $this->config['root_url'];
+    }
+    
+    public function getName() : string
+    {
+        return $this->config['name'] ? $this->config['name'] : $this->getRootPage()->getName();
+    }
+    
+    public function getTitle() : string
+    {
+        return $this->config['app_title'] ? $this->config['app_title'] : $this->getRootPage()->getName();
     }
 }

@@ -41,7 +41,19 @@ interface ui5ControllerInterface {
     
     public function buildJsController() : string;
     
+    /**
+     * Returns the name of the controller: e.g. my.app.root.controller.my.app.widgetPage
+     * 
+     * @return string
+     */
     public function getName() : string;
+    
+    /**
+     * Returns the path to the controller: e.g. my/app/root/controller/my/app/widgetPage.controller.js
+     * 
+     * @return string
+     */
+    public function getPath() : string;
     
     public function getId() : string;
     
@@ -95,7 +107,14 @@ interface ui5ControllerInterface {
      * @param string $var
      * @return ui5ControllerInterface
      */
-    public function addExternalModule(string $name, string $path, string $var = null) : ui5ControllerInterface;
+    public function addExternalModule(string $name, string $urlRelativeToAppRoot, string $var = null) : ui5ControllerInterface;
+    
+    /**
+     * Returns an array with module names for keys and respecitve JS include paths for values (relative to site root)
+     * 
+     * @return string[]
+     */
+    public function getExternalModulePaths() : array;
     
     /**
      * 

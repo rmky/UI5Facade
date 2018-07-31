@@ -157,7 +157,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "Root page alias",
             "ALIAS": "root_page_alias",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -178,7 +178,7 @@
             "DATA_ADDRESS_PROPS": "",
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-04 09:53:27",
@@ -194,7 +194,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "Current version",
             "ALIAS": "current_version",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -215,7 +215,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "'1.0.0'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-04 09:53:27",
@@ -231,7 +231,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "Built on",
             "ALIAS": "current_version_date",
             "DATATYPE": "0x33000000000000000000000000000000",
@@ -252,7 +252,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -268,7 +268,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "App ID",
             "ALIAS": "app_id",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -289,7 +289,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -305,7 +305,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "Title",
             "ALIAS": "app_title",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -326,7 +326,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "'{{appTitle}}'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -342,7 +342,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "Subtitle",
             "ALIAS": "app_subTitle",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -363,7 +363,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -379,7 +379,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "Short Title",
             "ALIAS": "app_shortTitle",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -400,7 +400,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -416,7 +416,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "CDM-Info",
             "ALIAS": "app_info",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -437,7 +437,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -453,7 +453,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "Description",
             "ALIAS": "app_description",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -474,7 +474,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "'{{appDescription}}'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-04 10:22:24",
@@ -490,7 +490,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "Project Name",
             "ALIAS": "name",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -511,7 +511,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-05 10:02:06",
@@ -527,7 +527,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "Min. UI5 version required",
             "ALIAS": "ui5_min_version",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -548,7 +548,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-05 10:02:06",
@@ -564,7 +564,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "UI5 Source URI",
             "ALIAS": "ui5_source",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -585,7 +585,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "'https:\/\/openui5.hana.ondemand.com\/resources\/sap-ui-core.js'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-05 10:02:06",
@@ -601,7 +601,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "UI5 Theme",
             "ALIAS": "ui5_theme",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -622,7 +622,7 @@
             "DATA_ADDRESS_PROPS": "{}",
             "DEFAULT_VALUE": "'sap_belize'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": ""
+            "CUSTOM_DATA_TYPE": "{}"
         },
         {
             "CREATED_ON": "2018-04-05 10:19:08",
@@ -638,7 +638,7 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "",
+            "DEFAULT_EDITOR_UXON": "{}",
             "LABEL": "UI5 App Control",
             "ALIAS": "ui5_app_control",
             "DATATYPE": "0x11e7c3960c3586c38001e4b318306b9a",
@@ -660,6 +660,80 @@
             "DEFAULT_VALUE": "'sap.m.App'",
             "FIXED_VALUE": "",
             "CUSTOM_DATA_TYPE": "{\"values\":{\"sap.m.App\":\"sap.m.App (stand-alone)\",\"sap.m.NavContainer\":\"sap.m.NavContainer (plattform)\"}}"
+        },
+        {
+            "CREATED_ON": "2018-07-31 10:28:56",
+            "MODIFIED_ON": "2018-04-04 09:53:27",
+            "CREATED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "UID": "0x11e894ac83c7ce4994f4e4b318306b9a",
+            "SORTABLEFLAG": "1",
+            "FILTERABLEFLAG": "1",
+            "AGGREGATABLEFLAG": "1",
+            "DEFAULT_AGGREGATE_FUNCTION": "",
+            "VALUE_LIST_DELIMITER": ",",
+            "READABLEFLAG": "1",
+            "WRITABLEFLAG": "1",
+            "SYSTEMFLAG": "0",
+            "DEFAULT_EDITOR_UXON": "{}",
+            "LABEL": "Root URL",
+            "ALIAS": "root_url",
+            "DATATYPE": "0x30000000000000000000000000000000",
+            "DATA_ADDRESS": "root_url",
+            "OBJECT": "0x11e837e8c505989491380205857feb80",
+            "FORMATTER": "",
+            "DISPLAYORDER": null,
+            "LABELFLAG": "0",
+            "UIDFLAG": "0",
+            "HIDDENFLAG": "0",
+            "EDITABLEFLAG": "1",
+            "REQUIREDFLAG": "0",
+            "RELATED_OBJ": "",
+            "SORTERPOS": null,
+            "SORTERDIR": "",
+            "RELATED_OBJ_ATTR": "",
+            "SHORT_DESCRIPTION": "Path to the folder containing the app's index.html relative to server root",
+            "DATA_ADDRESS_PROPS": "{}",
+            "DEFAULT_VALUE": "",
+            "FIXED_VALUE": "",
+            "CUSTOM_DATA_TYPE": "{}"
+        },
+        {
+            "CREATED_ON": "2018-07-31 10:30:01",
+            "MODIFIED_ON": "2018-04-04 09:53:27",
+            "CREATED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "UID": "0x11e894acab14cc2694f4e4b318306b9a",
+            "SORTABLEFLAG": "1",
+            "FILTERABLEFLAG": "1",
+            "AGGREGATABLEFLAG": "1",
+            "DEFAULT_AGGREGATE_FUNCTION": "",
+            "VALUE_LIST_DELIMITER": ",",
+            "READABLEFLAG": "1",
+            "WRITABLEFLAG": "1",
+            "SYSTEMFLAG": "0",
+            "DEFAULT_EDITOR_UXON": "{}",
+            "LABEL": "Progressive Web App",
+            "ALIAS": "pwa_flag",
+            "DATATYPE": "0x37000000000000000000000000000000",
+            "DATA_ADDRESS": "pwa_flag",
+            "OBJECT": "0x11e837e8c505989491380205857feb80",
+            "FORMATTER": "",
+            "DISPLAYORDER": null,
+            "LABELFLAG": "0",
+            "UIDFLAG": "0",
+            "HIDDENFLAG": "0",
+            "EDITABLEFLAG": "1",
+            "REQUIREDFLAG": "0",
+            "RELATED_OBJ": "",
+            "SORTERPOS": null,
+            "SORTERDIR": "",
+            "RELATED_OBJ_ATTR": "",
+            "SHORT_DESCRIPTION": "Check to make this app progressive allowing it to work offline.",
+            "DATA_ADDRESS_PROPS": "{}",
+            "DEFAULT_VALUE": "",
+            "FIXED_VALUE": "",
+            "CUSTOM_DATA_TYPE": "{}"
         }
     ],
     "totals_rows": [],

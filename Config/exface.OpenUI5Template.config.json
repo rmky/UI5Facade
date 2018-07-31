@@ -46,12 +46,14 @@
     "PWA.SERVICEWORKER.ROUTES.CACHE": {
     	"index.html and JavaScript files": {
 			"regex": "(.*\\.html|.*\\.js)",
-			"strategy": "staleWhileRevalidate"
+			"strategy": "staleWhileRevalidate",
+    		"maxAgeSeconds": 604800
 		},
     	"CSS, fonts, i18n": {
 			"regex": "(.*\\.css|.*\\.woff2|.*\\.properties|.*\\/cldr\\/.*\\.json)",
 			"strategy": "staleWhileRevalidate",
-			"cacheName": "asset-cache"
+			"cacheName": "asset-cache",
+    		"maxAgeSeconds": 604800
 		},
     	"Data": {
 			"regex": ".*\\/api\\/ui5\\?(?!.*context).*",
@@ -65,7 +67,7 @@
 			"strategy": "cacheFirst",
 			"cacheName": "image-cache",
     		"maxEntries": 50,
-    		"maxAgeSeconds": 86400
+    		"maxAgeSeconds": 604800
 		}
     },
     "PWA.SERVICEWORKER.ROUTES.SYNC": {

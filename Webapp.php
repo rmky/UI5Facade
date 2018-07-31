@@ -282,7 +282,7 @@ class Webapp implements WorkbenchDependantInterface
             // do with scripts hosted on other servers? The current script simply assumes, that all external modules
             // reside in subfolders of the platform and the platform itself is located in the subfolder exface of the
             // server root.
-            $filePath = $this->getWorkbench()->filemanager()->getPathToBaseFolder() . StringDataType::substringAfter($filePath, 'exface/');
+            $filePath = $this->getWorkbench()->filemanager()->getPathToBaseFolder() . StringDataType::substringAfter($filePath, 'exface');
             $lib = str_replace('.', '/', $name);
             $lib = StringDataType::endsWith($lib, '.js', false) ? $lib : $lib . '.js';
             if (file_exists($filePath)) {

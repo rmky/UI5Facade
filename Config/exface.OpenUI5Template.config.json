@@ -44,13 +44,12 @@
     "PWA.WORKBOX.PATH": "npm-asset/workbox-sw/build/workbox-sw.js",
     "PWA.SERVICEWORKER.URL": "/exface.OpenUI5Template.ServiceWorker.js",
     "PWA.SERVICEWORKER.ROUTES.CACHE": {
-    	"index.html and JavaScript files": {
-			"regex": "(.*\\.html|.*\\.js)",
-			"strategy": "staleWhileRevalidate",
-    		"maxAgeSeconds": 604800
+    	"HTML pages": {
+			"regex": ".*\\.html",
+			"strategy": "networkFirst"
 		},
-    	"CSS, fonts, i18n": {
-			"regex": "(.*\\.css|.*\\.woff2|.*\\.properties|.*\\/cldr\\/.*\\.json)",
+    	"Static assets: JS, CSS, fonts, i18n": {
+			"regex": "(.*\\.js|.*\\.css|.*\\.woff2|.*\\.properties|.*\\/cldr\\/.*\\.json)",
 			"strategy": "staleWhileRevalidate",
 			"cacheName": "asset-cache",
     		"maxAgeSeconds": 604800

@@ -6,6 +6,9 @@ use exface\Core\Templates\AbstractHttpTemplate\HttpTemplateInstaller;
 use exface\Core\CommonLogic\Model\App;
 use exface\Core\Factories\TemplateFactory;
 use exface\Core\CommonLogic\AppInstallers\SqlSchemaInstaller;
+use exface\Core\Templates\AbstractPWATemplate\ServiceWorkerInstaller;
+use exface\Core\Templates\AbstractPWATemplate\ServiceWorkerBuilder;
+use exface\Core\CommonLogic\Filemanager;
 
 class OpenUI5TemplateApp extends App
 {
@@ -29,6 +32,24 @@ class OpenUI5TemplateApp extends App
         $schema_installer = new SqlSchemaInstaller($this->getSelector());
         $schema_installer->setDataConnection($this->getWorkbench()->model()->getModelLoader()->getDataConnection());
         $installer->addInstaller($schema_installer);
+        
+        $workboxUrl = $this->getWorkbench()->getCms()->buildUrlToInclude($this->getConfig()->getOption('PWA.WORKBOX.PATH'));
+        $serviceWorkerBuilder = new ServiceWorkerBuilder($workboxUrl);
+        foreach ($this->getConfig()->getOption('PWA.SERVICEWORKER.ROUTES.CACHE') as $id => $uxon) {
+            $serviceWorkerBuilder->addRouteToCache(
+                $id, 
+                $uxon->getProperty('regex'),
+                $uxon->getProperty('strategy'),
+                $uxon->getProperty('cacheName'),
+                $uxon->getProperty('maxEntries'),
+                $uxon->getProperty('maxAgeSeconds')
+            );
+        }
+        $serviceWorkerInstaller = new ServiceWorkerInstaller($this->getSelector());
+        $serviceWorkerInstaller
+            ->setServiceWorkerUrl($this->getConfig()->getOption('PWA.SERVICEWORKER.URL'))
+            ->setServiceWorkerBuilder($serviceWorkerBuilder);
+        $installer->addInstaller($serviceWorkerInstaller);
         
         return $installer;
     }

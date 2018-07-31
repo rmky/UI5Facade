@@ -41,6 +41,36 @@
     "LIBS.FONT_AWESOME.PLUGIN": "bower-asset/font-awesome-openui5/dist/font-awesome-openui5.min",
     
     "PWA.ENABLED": true,
+    "PWA.WORKBOX.PATH": "npm-asset/workbox-sw/build/workbox-sw.js",
+    "PWA.SERVICEWORKER.URL": "/exface.OpenUI5Template.ServiceWorker.js",
+    "PWA.SERVICEWORKER.ROUTES.CACHE": {
+    	"index.html and JavaScript files": {
+			"regex": "(.*\\.html|.*\\.js)",
+			"strategy": "staleWhileRevalidate"
+		},
+    	"CSS, fonts, i18n": {
+			"regex": "(.*\\.css|.*\\.woff2|.*\\.properties|.*\\/cldr\\/.*\\.json)",
+			"strategy": "staleWhileRevalidate",
+			"cacheName": "asset-cache"
+		},
+    	"Data": {
+			"regex": ".*\\/api\\/ui5\\?(?!.*context).*",
+			"strategy": "networkFirst",
+			"cacheName": "data-cache",
+    		"maxEntries": 50,
+    		"maxAgeSeconds": 86400
+		},
+		"Static images": {
+			"regex": "\\.(?:png|gif|jpg|jpeg|svg)$",
+			"strategy": "cacheFirst",
+			"cacheName": "image-cache",
+    		"maxEntries": 50,
+    		"maxAgeSeconds": 86400
+		}
+    },
+    "PWA.SERVICEWORKER.ROUTES.SYNC": {
+    	
+    },
 	
 	"WEBAPP_EXPORT.FOLDER_RELATIVE_TO_BASE" : "export/fiori",
 	

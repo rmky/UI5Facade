@@ -30,6 +30,7 @@ use exface\Core\Exceptions\LogicException;
 use exface\Core\DataTypes\StringDataType;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 use exface\OpenUI5Template\WebappView;
+use exface\Core\Templates\AbstractPWATemplate\Middleware\ServiceWorkerBuilder;
 
 /**
  * 
@@ -244,6 +245,7 @@ JS;*/
         $middleware = parent::getMiddleware();
         $middleware[] = new ui5TableUrlParamsReader($this, 'getInputData', 'setInputData');
         $middleware[] = new ui5WebappRouter($this);
+        
         return $middleware;
     }
     

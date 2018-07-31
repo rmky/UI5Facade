@@ -117,8 +117,8 @@ class Webapp implements WorkbenchDependantInterface
             $json["icons"] = $this->getWorkbench()->getCMS()->getFavIcons();
             $json["start_url"] = $this->getStartUrl();
             $json["scope"] = $this->getRootUrl() . "/";
-            $json["background_color"] = "#3367D6";
-            $json["theme_color"] = "#3367D6";
+            $json["background_color"] = $this->config['pwa_background_color'];
+            $json["theme_color"] = $this->config['pwa_theme_color'];
             $json["display"] = "standalone";
         }
         

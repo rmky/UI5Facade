@@ -289,6 +289,7 @@ JS;*/
     
     protected function getWebappDefaultConfig(string $appId) : array
     {
+        $config = $this->getConfig();
         return [
             'app_id' => $appId,
             'component_path' => str_replace('.', '/', $appId),
@@ -307,7 +308,9 @@ JS;*/
             //'app_info' => '', 
             //'app_description' => '{{appDescription}}', 
             //'assets_path' => './',
-            'pwa_flag' => $this->getConfig()->getOption('PWA.ENABLED')
+            'pwa_flag' => $config->getOption('PWA.ENABLED'),
+            'pwa_theme_color' => $config->getOption('PWA.DEFAULT_STYLE.THEME_COLOR'),
+            'pwa_background_color' => $config->getOption('PWA.DEFAULT_STYLE.BACKGROUND_COLOR')
         ];
     }
     

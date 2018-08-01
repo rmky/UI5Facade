@@ -42,31 +42,36 @@
     
     "PWA.ENABLED": true,
     "PWA.WORKBOX.PATH": "npm-asset/workbox-sw/build/workbox-sw.js",
-    "PWA.SERVICEWORKER.URL": "/exface.OpenUI5Template.ServiceWorker.js",
+    "PWA.SERVICEWORKER.URL": "/ServiceWorker.js",
     "PWA.SERVICEWORKER.ROUTES.CACHE": {
-    	"pages": {
-    		"description": "Cache all HTML files, that are not located in manager or assets. Use cache only if offline.",
-			"regex": "^(?!\\/?[^\\/]+\\/(assets|manager)\\/).*\\.html",
+    	"modx_excludes": {
+    		"description": "Do not cache any manager content",
+			"matcher": "/\\/(assets|manager)\\/.*/",
+			"strategy": "networkOnly"
+		},
+		"pages": {
+    		"description": "Cache all HTML files. Use cache only if offline.",
+			"matcher": "/^.*\\.html/",
 			"strategy": "networkFirst"
 		},
     	"assets": {
 			"description": "Cache static assets if not located in the folder assets or manager (i.e. not part of the CMS).",
-			"regex": "^(?!\\/?[^\\/]+\\/(assets|manager)\\/)(.*\\.js|.*\\.css|.*\\.woff2)",
+			"matcher": "/.*(\\.js|\\.css|\\.woff2)/",
 			"strategy": "staleWhileRevalidate",
 			"cacheName": "asset-cache",
     		"maxAgeSeconds": 604800
 		},
     	"data": {
 			"description": "Cache data from the UI5 API",
-			"regex": ".*\\/api\\/ui5\\?(?!.*context).*",
+			"matcher": "/.*\\/api\\/ui5\\?(?!.*context).*/",
 			"strategy": "networkFirst",
 			"cacheName": "data-cache",
     		"maxEntries": 50,
     		"maxAgeSeconds": 86400
 		},
 		"images": {
-			"description": "Cache images if not in manager.",
-			"regex": "^(?!\\/?[^\\/]+\\/(assets|manager)\\/)\\.(?:png|gif|jpg|jpeg|svg)$",
+			"description": "Cache images.",
+			"matcher": "/.*\\.(?:png|gif|jpg|jpeg|svg)$/",
 			"strategy": "cacheFirst",
 			"cacheName": "image-cache",
     		"maxEntries": 50,
@@ -74,7 +79,7 @@
 		},
     	"ui5_i18n": {
 			"description": "Cache static assets if not located in the folder assets or manager (i.e. not part of the CMS).",
-			"regex": "(.*\\.properties|.*\\/cldr\\/.*\\.json)",
+			"matcher": "/(.*\\.properties|.*\\/cldr\\/.*\\.json)/",
 			"strategy": "staleWhileRevalidate",
 			"cacheName": "ui5-cache",
     		"maxAgeSeconds": 604800

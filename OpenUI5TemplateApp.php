@@ -38,7 +38,7 @@ class OpenUI5TemplateApp extends App
         foreach ($this->getConfig()->getOption('PWA.SERVICEWORKER.ROUTES.CACHE') as $id => $uxon) {
             $serviceWorkerBuilder->addRouteToCache(
                 $id, 
-                $uxon->getProperty('regex'),
+                $uxon->getProperty('matcher'),
                 $uxon->getProperty('strategy'),
                 $uxon->getProperty('description'),
                 $uxon->getProperty('cacheName'),

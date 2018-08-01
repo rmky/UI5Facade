@@ -44,28 +44,39 @@
     "PWA.WORKBOX.PATH": "npm-asset/workbox-sw/build/workbox-sw.js",
     "PWA.SERVICEWORKER.URL": "/exface.OpenUI5Template.ServiceWorker.js",
     "PWA.SERVICEWORKER.ROUTES.CACHE": {
-    	"HTML pages": {
-			"regex": ".*\\.html",
+    	"pages": {
+    		"description": "Cache all HTML files, that are not located in manager or assets. Use cache only if offline.",
+			"regex": "^(?!\\/?[^\\/]+\\/(assets|manager)\\/).*\\.html",
 			"strategy": "networkFirst"
 		},
-    	"Static assets: JS, CSS, fonts, i18n": {
-			"regex": "(.*\\.js|.*\\.css|.*\\.woff2|.*\\.properties|.*\\/cldr\\/.*\\.json)",
+    	"assets": {
+			"description": "Cache static assets if not located in the folder assets or manager (i.e. not part of the CMS).",
+			"regex": "^(?!\\/?[^\\/]+\\/(assets|manager)\\/)(.*\\.js|.*\\.css|.*\\.woff2)",
 			"strategy": "staleWhileRevalidate",
 			"cacheName": "asset-cache",
     		"maxAgeSeconds": 604800
 		},
-    	"Data": {
+    	"data": {
+			"description": "Cache data from the UI5 API",
 			"regex": ".*\\/api\\/ui5\\?(?!.*context).*",
 			"strategy": "networkFirst",
 			"cacheName": "data-cache",
     		"maxEntries": 50,
     		"maxAgeSeconds": 86400
 		},
-		"Static images": {
-			"regex": "\\.(?:png|gif|jpg|jpeg|svg)$",
+		"images": {
+			"description": "Cache images if not in manager.",
+			"regex": "^(?!\\/?[^\\/]+\\/(assets|manager)\\/)\\.(?:png|gif|jpg|jpeg|svg)$",
 			"strategy": "cacheFirst",
 			"cacheName": "image-cache",
     		"maxEntries": 50,
+    		"maxAgeSeconds": 604800
+		},
+    	"ui5_i18n": {
+			"description": "Cache static assets if not located in the folder assets or manager (i.e. not part of the CMS).",
+			"regex": "(.*\\.properties|.*\\/cldr\\/.*\\.json)",
+			"strategy": "staleWhileRevalidate",
+			"cacheName": "ui5-cache",
     		"maxAgeSeconds": 604800
 		}
     },

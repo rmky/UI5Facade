@@ -40,6 +40,7 @@ class OpenUI5TemplateApp extends App
                 $id, 
                 $uxon->getProperty('regex'),
                 $uxon->getProperty('strategy'),
+                $uxon->getProperty('description'),
                 $uxon->getProperty('cacheName'),
                 $uxon->getProperty('maxEntries'),
                 $uxon->getProperty('maxAgeSeconds')

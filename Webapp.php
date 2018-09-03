@@ -53,7 +53,7 @@ class Webapp implements WorkbenchDependantInterface
         switch (true) {
             case $route === 'manifest.json':
                 return $this->getManifestJson();
-            case $route === 'Component-preload.js':
+            case $route === 'Component-preload.js' && $this->template->getConfig()->getOption('UI5.USE_COMPONENT_PRELOAD'):
                 return $this->getComponentPreload();
             case StringDataType::startsWith($route, 'i18n/'):
                 //$filename = pathinfo($filePath, PATHINFO_FILENAME);

@@ -116,7 +116,6 @@
 				"sap/f/library.js",
 				"sap/m/Button.js",
 				"sap/m/ToggleButton.js",
-				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js"
 			]
@@ -133,7 +132,6 @@
 				"sap/f/library.js",
 				"sap/m/Button.js",
 				"sap/m/ToggleButton.js",
-				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js"
 			]
@@ -173,8 +171,10 @@
 				"sap/m/OverflowToolbar.js",
 				"sap/m/Toolbar.js",
 				"sap/m/ToolbarSeparator.js",
+				"sap/m/library.js",
 				"sap/ui/base/ManagedObjectObserver.js",
-				"sap/ui/core/Control.js"
+				"sap/ui/core/Control.js",
+				"sap/ui/core/InvisibleText.js"
 			]
 		},
 		{
@@ -191,8 +191,10 @@
 				"sap/m/OverflowToolbar.js",
 				"sap/m/Toolbar.js",
 				"sap/m/ToolbarSeparator.js",
+				"sap/m/library.js",
 				"sap/ui/base/ManagedObjectObserver.js",
-				"sap/ui/core/Control.js"
+				"sap/ui/core/Control.js",
+				"sap/ui/core/InvisibleText.js"
 			]
 		},
 		{
@@ -231,6 +233,7 @@
 				"sap/m/NavContainer.js",
 				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js"
 			]
@@ -251,6 +254,7 @@
 				"sap/m/NavContainer.js",
 				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js"
 			]
@@ -793,6 +797,7 @@
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Metadata.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/Fragment.js",
@@ -903,6 +908,7 @@
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Metadata.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/Fragment.js",
@@ -1015,6 +1021,7 @@
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Metadata.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/IconPool.js",
@@ -1118,6 +1125,7 @@
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Metadata.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/IconPool.js",

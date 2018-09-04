@@ -18,7 +18,7 @@ sap.ui.define([], function() {
 	 *        only the defined functions will be visible, no internals of the class can be accessed.
 	 *
 	 * @author Malte Wedel, Daniel Brinkmann
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @param {sap.ui.base.Object}
 	 *            oObject the instance that needs an interface created
 	 * @param {string[]}
@@ -63,7 +63,10 @@ sap.ui.define([], function() {
 		// PERFOPT: 'cache' length of aMethods to reduce # of resolutions
 		for (var i = 0, ml = aMethods.length; i < ml; i++) {
 			sMethodName = aMethods[i];
-			this[sMethodName] = fCreateDelegator(oObject, sMethodName);
+			//!oObject[sMethodName] for 'lazy' loading interface methods ;-)
+			if (!oObject[sMethodName] || typeof oObject[sMethodName] === "function") {
+				this[sMethodName] = fCreateDelegator(oObject, sMethodName);
+			}
 		}
 
 	};

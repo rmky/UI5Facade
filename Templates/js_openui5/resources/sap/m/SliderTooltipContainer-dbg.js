@@ -35,7 +35,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @private
@@ -62,7 +62,7 @@ function(
 					 *
 					 * @since 1.54
 					 */
-					associatedTooltips: { type: "sap.m.ISliderTooltip", multiple: true }
+					associatedTooltips: { type: "sap.m.SliderTooltipBase", multiple: true }
 				}
 			}
 		});
@@ -83,7 +83,7 @@ function(
 		};
 
 		SliderTooltipContainer.prototype._handleTabNavigation = function (oEvent) {
-			var bParentRangeSlider = (this._oParentSlider.getMetadata().getName() ===  SliderUtilities.CONSTANTS.RANGE_SLIDER_NAME);
+			var bParentRangeSlider = this._oParentSlider instanceof sap.m.RangeSlider;
 
 			oEvent.preventDefault();
 			this[bParentRangeSlider ? "_handleRangeSliderF2" : "_handleSliderF2"].apply(this, arguments);
@@ -149,14 +149,16 @@ function(
 		 * @public
 		 */
 		SliderTooltipContainer.prototype.repositionTooltips = function () {
-			var bParentRangeSlider = (this._oParentSlider.getMetadata().getName() ===  SliderUtilities.CONSTANTS.RANGE_SLIDER_NAME);
+			var bParentRangeSlider = this._oParentSlider instanceof sap.m.RangeSlider,
+				aTooltips = this._oParentSlider.getUsedTooltips(),
+				// we are considering that both tooltips have the same rendering
+				fTooltipHeight = this.getAssociatedTooltipsAsControls()[0].$().outerHeight(true);
 
 			if (this.getDomRef()) {
-				this[bParentRangeSlider ? "_positionRangeTooltips" : "_positionTooltip"].call(this, this._oParentSlider.getAggregation("_tooltips"), arguments[0], arguments[1]);
-				this.getDomRef().style["top"] = (this._$ParentSlider.offset().top - SliderUtilities.CONSTANTS.TOOLTIP_CONTAINER_HEIGHT) + "px";
+				this[bParentRangeSlider ? "_positionRangeTooltips" : "_positionTooltip"].call(this, aTooltips, arguments[0], arguments[1]);
+				this.getDomRef().style["top"] = (this._$ParentSlider.offset().top - fTooltipHeight) + "px";
 				this._handleOverflow();
 			}
-
 		};
 
 		/**
@@ -351,6 +353,7 @@ function(
 		SliderTooltipContainer.prototype.exit = function () {
 			this._oParentSlider = null;
 			this._$ParentSlider = null;
+			document.removeEventListener("scroll", this._scrollListener, true);
 		};
 
 		return SliderTooltipContainer;

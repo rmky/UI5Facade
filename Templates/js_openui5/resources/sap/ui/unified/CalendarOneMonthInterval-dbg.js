@@ -61,7 +61,7 @@ sap.ui.define([
 		 * Navigation via year picker switches to the corresponding year and the same month as before the navigation.
 		 *
 		 * @extends sap.ui.unified.CalendarDateInterval
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @private
@@ -102,6 +102,8 @@ sap.ui.define([
 					this._oFocusDateOneMonth = oCalPickerFocusedDate;
 					// true means do not focus, as we set the this._oFocusDateOneMonth and focus will happen in .focusDateExtend
 					this._focusDate(oCalPickerFocusedDate, true);
+
+					jQuery.sap.focus(this.getAggregation("header").getDomRef("B1"));
 				}, this);
 				this.setAggregation("calendarPicker", oCalPicker);
 			}

@@ -6,8 +6,8 @@
 
 // Provides control sap.m.P13nSelectionPanel.
 sap.ui.define([
-	'jquery.sap.global', './ColumnListItem', './P13nPanel', './SearchField', './Table', './library', 'sap/ui/model/ChangeReason', 'sap/ui/model/json/JSONModel', 'sap/ui/model/BindingMode', 'sap/ui/core/ResizeHandler', 'sap/m/ScrollContainer', './P13nSelectionItem'
-], function(jQuery, ColumnListItem, P13nPanel, SearchField, Table, library, ChangeReason, JSONModel, BindingMode, ResizeHandler, ScrollContainer /*, kept for compatibility: P13nSelectionItem */) {
+	'jquery.sap.global', './ColumnListItem', './P13nPanel', './SearchField', './Table', './library', 'sap/ui/core/library','sap/ui/model/ChangeReason', 'sap/ui/model/json/JSONModel', 'sap/ui/model/BindingMode', 'sap/ui/core/ResizeHandler', 'sap/m/ScrollContainer', './P13nSelectionItem'
+], function(jQuery, ColumnListItem, P13nPanel, SearchField, Table, library, CoreLibrary, ChangeReason, JSONModel, BindingMode, ResizeHandler, ScrollContainer /*, kept for compatibility: P13nSelectionItem */) {
 	"use strict";
 
 	// shortcut for sap.m.ToolbarDesign
@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @class The P13nSelectionPanel control is used to define selection settings like the visibility or the order of items.
 	 * @extends sap.m.P13nPanel
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @since 1.46.0
@@ -147,8 +147,8 @@ sap.ui.define([
 				var $dialogCont = null, iContentHeight, iHeaderHeight;
 				var oParent = that.getParent();
 				var oToolbar = that._getToolbar();
-				if (oParent) {
-					$dialogCont = jQuery("#" + oParent.getId() + "-cont");
+				if (oParent && oParent.$) {
+					$dialogCont = oParent.$("cont");
 					if ($dialogCont.children().length > 0 && oToolbar.$().length > 0) {
 						iScrollContainerHeightOld = oScrollContainer.$()[0].clientHeight;
 
@@ -334,10 +334,10 @@ sap.ui.define([
 		this._oTable = new Table({
 			mode: ListMode.MultiSelect,
 			rememberSelections: false,
-			// itemPress: jQuery.proxy(this._onItemPressed, this),
 			selectionChange: jQuery.proxy(this._onSelectionChange, this),
 			columns: [
 				new sap.m.Column({
+                    vAlign: CoreLibrary.VerticalAlign.Middle,
 					header: new sap.m.Text({
 						text: {
 							parts: [
@@ -360,28 +360,38 @@ sap.ui.define([
 				path: "/items",
 				templateShareable: false,
 				template: new ColumnListItem({
-					cells: [
-						new sap.m.Link({
-							href: "{href}",
-							text: "{text}",
-							target: "{target}",
-							enabled: {
-								path: 'href',
-								formatter: function(oValue) {
-									if (!oValue) {
-										this.addStyleClass("sapUiCompSmartLink");
+					cells: new sap.m.VBox({
+						items: [
+							new sap.m.Link({
+								href: "{href}",
+								text: "{text}",
+								target: "{target}",
+								enabled: {
+									path: 'href',
+									formatter: function(oValue) {
+										if (!oValue) {
+											this.addStyleClass("sapUiCompSmartLink");
+										}
+										return !!oValue;
 									}
-									return !!oValue;
+								},
+								press: function(oEvent) {
+									var fOnLinkPress = that._getInternalModel().getProperty("/linkPressMap")[this.getText() + "---" + this.getHref()];
+									if (fOnLinkPress) {
+										fOnLinkPress(oEvent);
+									}
 								}
-							},
-							press: function(oEvent) {
-								var fOnLinkPress = that._getInternalModel().getProperty("/linkPressMap")[this.getText() + "---" + this.getHref()];
-								if (fOnLinkPress) {
-									fOnLinkPress(oEvent);
-								}
-							}
-						})
-					],
+							}), new sap.m.Text({
+								visible: {
+									path: 'description',
+									formatter: function(sDescription) {
+										return !!sDescription;
+									}
+								},
+								text: "{description}"
+							})
+						]
+					}),
 					visible: "{visible}",
 					selected: "{persistentSelected}",
 					tooltip: "{tooltip}",
@@ -577,7 +587,8 @@ sap.ui.define([
 				href: oItem.getHref(),
 				target: oItem.getTarget(),
 				// default value
-				persistentSelected: oItem.getVisible()
+				persistentSelected: oItem.getVisible(),
+				description: oItem.getDescription()
 			};
 		}, this));
 

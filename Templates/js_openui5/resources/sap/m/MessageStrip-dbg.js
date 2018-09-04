@@ -65,12 +65,13 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.30
 	 * @alias sap.m.MessageStrip
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/message-strip/ Message Strip}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var MessageStrip = Control.extend("sap.m.MessageStrip", /** @lends sap.m.MessageStrip.prototype */ {

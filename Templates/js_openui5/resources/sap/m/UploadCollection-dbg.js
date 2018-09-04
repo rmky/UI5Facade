@@ -79,7 +79,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -1962,9 +1962,11 @@ sap.ui.define([
 			oItemsBinding = this.getBinding("items"),
 			bGroupCreated = false,
 			sGroupKey,
+			sModelName = this.getBindingInfo("items") ? this.getBindingInfo("items").model : undefined,
 			fnGroupHeader = this.getBindingInfo("items") ? this.getBindingInfo("items").groupHeaderFactory : null;
 		var fnGroup = function(oItem) {
-			return oItem.getBindingContext() ? oItemsBinding.getGroup(oItem.getBindingContext()) : null;
+			//Added sModelName to consider named model cases if empty default model is picked without checking model bind to items.
+			return oItem.getBindingContext(sModelName) ? oItemsBinding.getGroup(oItem.getBindingContext(sModelName)) : null;
 		};
 		var fnGroupKey = function(item) {
 			return fnGroup(item) && fnGroup(item).key;

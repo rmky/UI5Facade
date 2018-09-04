@@ -8,8 +8,8 @@
  * Code other than the OpenUI5 libraries must not introduce dependencies to this module.
  */
 /*global XMLHttpRequest, document, location, window */
-sap.ui.define(['sap/base/log', 'sap/ui/thirdparty/URI', 'sap/base/util/now'
-], function(log, URI, now) {
+sap.ui.define(['sap/base/Log', 'sap/ui/thirdparty/URI', 'sap/base/util/now'
+], function(Log, URI, now) {
 
 	"use strict";
 
@@ -88,9 +88,9 @@ sap.ui.define(['sap/base/log', 'sap/ui/thirdparty/URI', 'sap/base/util/now'
 			mMeasurements = {};
 
 		/**
-		 * Gets the current state of the perfomance measurement functionality.
+		 * Gets the current state of the performance measurement functionality.
 		 *
-		 * @return {boolean} current state of the perfomance measurement functionality
+		 * @return {boolean} current state of the performance measurement functionality
 		 * @name getActive
 		 * @function
 		 * @private
@@ -104,9 +104,9 @@ sap.ui.define(['sap/base/log', 'sap/ui/thirdparty/URI', 'sap/base/util/now'
 		 *
 		 * Optionally a category or list of categories can be passed to restrict measurements to certain categories
 		 * like "javascript", "require", "xmlhttprequest", "render"
-		 * @param {boolean} bOn - state of the perfomance measurement functionality to set
+		 * @param {boolean} bOn - state of the performance measurement functionality to set
 		 * @param {string | string[]} aCategories - An optional list of categories that should be measured
-		 * @return {boolean} current state of the perfomance measurement functionality
+		 * @return {boolean} current state of the performance measurement functionality
 		 * @name setActive
 		 * @function
 		 * @private
@@ -192,11 +192,11 @@ sap.ui.define(['sap/base/log', 'sap/ui/thirdparty/URI', 'sap/base/util/now'
 
 			// create timeline entries if available
 			/*eslint-disable no-console */
-			if (log.getLevel("sap.ui.Performance") >= 4 && window.console && console.time) {
+			if (Log.getLevel("sap.ui.Performance") >= 4 && window.console && console.time) {
 				console.time(sInfo + " - " + sId);
 			}
 			/*eslint-enable no-console */
-			log.info("Performance measurement start: " + sId + " on " + iTime);
+			Log.info("Performance measurement start: " + sId + " on " + iTime);
 
 			if (oMeasurement) {
 				mMeasurements[sId] = oMeasurement;
@@ -239,7 +239,7 @@ sap.ui.define(['sap/base/log', 'sap/ui/thirdparty/URI', 'sap/base/util/now'
 			}
 
 			if (oMeasurement) {
-				log.info("Performance measurement pause: " + sId + " on " + iTime + " duration: " + oMeasurement.duration);
+				Log.info("Performance measurement pause: " + sId + " on " + iTime + " duration: " + oMeasurement.duration);
 				return this.getMeasurement(oMeasurement.id);
 			} else {
 				return false;
@@ -270,7 +270,7 @@ sap.ui.define(['sap/base/log', 'sap/ui/thirdparty/URI', 'sap/base/util/now'
 			}
 
 			if (oMeasurement) {
-				log.info("Performance measurement resume: " + sId + " on " + iTime + " duration: " + oMeasurement.duration);
+				Log.info("Performance measurement resume: " + sId + " on " + iTime + " duration: " + oMeasurement.duration);
 				return this.getMeasurement(oMeasurement.id);
 			} else {
 				return false;
@@ -294,7 +294,7 @@ sap.ui.define(['sap/base/log', 'sap/ui/thirdparty/URI', 'sap/base/util/now'
 			var iTime = now();
 
 			var oMeasurement = mMeasurements[sId];
-			log.info("Performance measurement end: " + sId + " on " + iTime);
+			Log.info("Performance measurement end: " + sId + " on " + iTime);
 
 			if (oMeasurement && !oMeasurement.end) {
 				oMeasurement.end = iTime;
@@ -322,7 +322,7 @@ sap.ui.define(['sap/base/log', 'sap/ui/thirdparty/URI', 'sap/base/util/now'
 			if (oMeasurement) {
 				// end timeline entry
 				/*eslint-disable no-console */
-				if (log.getLevel("sap.ui.Performance") >= 4 && window.console && console.timeEnd) {
+				if (Log.getLevel("sap.ui.Performance") >= 4 && window.console && console.timeEnd) {
 					console.timeEnd(oMeasurement.info + " - " + sId);
 				}
 				/*eslint-enable no-console */
@@ -538,7 +538,7 @@ sap.ui.define(['sap/base/log', 'sap/ui/thirdparty/URI', 'sap/base/util/now'
 					return true;
 				}
 			} else {
-				log.debug(sMethod + " in not a function. Measurement.register failed");
+				Log.debug(sMethod + " in not a function. Measurement.register failed");
 			}
 			return false;
 		};

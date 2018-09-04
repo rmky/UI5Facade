@@ -7,11 +7,17 @@
 // Provides object sap.ui.dt.ElementUtil.
 sap.ui.define([
 	'jquery.sap.global',
-	'sap/ui/base/ManagedObject'
+	'sap/ui/base/Object',
+	'sap/ui/base/ManagedObject',
+	'sap/ui/core/Element',
+	'sap/ui/dt/Util'
 ],
 function(
 	jQuery,
-	ManagedObject
+	BaseObject,
+	ManagedObject,
+	Element,
+	Util
 ) {
 	"use strict";
 
@@ -21,7 +27,7 @@ function(
 	 * @class Utility functionality to work with elements, e.g. iterate through aggregations, find parents, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @private
 	 * @static
@@ -32,27 +38,6 @@ function(
 	 */
 
 	var ElementUtil = {};
-
-	ElementUtil.sACTION_MOVE = 'move';
-	ElementUtil.sACTION_CUT = 'cut';
-	ElementUtil.sACTION_PASTE = 'paste';
-	ElementUtil.sREORDER_AGGREGATION = 'reorder_aggregation';
-
-	/**
-	 *
-	 */
-	ElementUtil.iterateOverElements = function(vElement, fnCallback) {
-		if (vElement && vElement.length) {
-			for (var i = 0; i < vElement.length; i++) {
-				var oElement = vElement[i];
-				if (oElement instanceof sap.ui.base.ManagedObject) {
-					fnCallback(oElement);
-				}
-			}
-		} else if (vElement instanceof sap.ui.base.ManagedObject) {
-			fnCallback(vElement);
-		}
-	};
 
 	/**
 	 *
@@ -105,30 +90,10 @@ function(
 	};
 
 	/**
-	 * ! Please, use this method only if OverlayUtil.getClosestOverlayForType is not available in your case ! find the
-	 * closest element of the given type
-	 *
-	 * @param {sap.ui.core.Element}
-	 *          oSourceElement to start search for
-	 * @param {string}
-	 *          sType to check instance of
-	 * @return {sap.ui.core.Element} element of the given type, if found
-	 */
-	ElementUtil.getClosestElementOfType = function(oSourceElement, sType) {
-		var oElement = oSourceElement;
-
-		while (oElement && !this.isInstanceOf(oElement, sType)) {
-			oElement = oElement.getParent();
-		}
-
-		return oElement;
-	};
-
-	/**
 	 *
 	 */
 	ElementUtil.fixComponentParent = function(oElement) {
-		if (this.isInstanceOf(oElement, "sap.ui.core.UIComponent")) {
+		if (BaseObject.isA(oElement, "sap.ui.core.UIComponent")) {
 			var oComponentContainer = oElement.oContainer;
 			if (oComponentContainer) {
 				return oComponentContainer.getParent();
@@ -142,7 +107,7 @@ function(
 	 *
 	 */
 	ElementUtil.fixComponentContainerElement = function(oElement) {
-		if (this.isInstanceOf(oElement, "sap.ui.core.ComponentContainer")) {
+		if (BaseObject.isA(oElement, "sap.ui.core.ComponentContainer")) {
 			// This happens when the compontentContainer has not been rendered yet
 			if (!oElement.getComponentInstance()) {
 				return;
@@ -151,27 +116,6 @@ function(
 		} else {
 			return oElement;
 		}
-	};
-
-	/**
-	 *
-	 */
-	ElementUtil.findAllPublicElements = function(oElement) {
-		var aFoundElements = [];
-
-		var internalFind = function (oElement) {
-			oElement = this.fixComponentContainerElement(oElement);
-			if (oElement) {
-				aFoundElements.push(oElement);
-				this.iterateOverAllPublicAggregations(oElement, function(oAggregation, vElements) {
-					this.iterateOverElements(vElements, internalFind);
-				}.bind(this));
-			}
-		}.bind(this);
-
-		internalFind(oElement);
-
-		return aFoundElements;
 	};
 
 	/**
@@ -187,51 +131,6 @@ function(
 				oDomRef = oElement.getRenderedDomRef();
 			}
 			return oDomRef;
-		}
-	};
-
-	/**
-	 *
-	 */
-	ElementUtil.findAllPublicChildren = function(oElement) {
-		var aFoundElements = this.findAllPublicElements(oElement);
-		var iIndex = aFoundElements.indexOf(oElement);
-		if (iIndex > -1) {
-			aFoundElements.splice(iIndex, 1);
-		}
-		return aFoundElements;
-
-	};
-
-	/**
-	 *
-	 */
-	ElementUtil.isElementFiltered = function(oControl, aType) {
-		// TODO: Is this method still needed?
-		aType = aType || this.getControlFilter();
-		var bFiltered = false;
-
-		aType.forEach(function(sType) {
-			bFiltered = this.isInstanceOf(oControl, sType);
-			if (bFiltered) {
-				return false;
-			}
-		}, this);
-
-		return bFiltered;
-	};
-
-	/**
-	 *
-	 */
-	ElementUtil.findClosestControlInDom = function(oNode) {
-		// TODO: Is this method still needed?
-		if (oNode && oNode.getAttribute("data-sap-ui")) {
-			return sap.ui.getCore().byId(oNode.getAttribute("data-sap-ui"));
-		} else if (oNode.parentNode) {
-			this.findClosestControlInDom(oNode.parentNode);
-		} else {
-			return null;
 		}
 	};
 
@@ -385,7 +284,7 @@ function(
 					this.getAggregation(oParent, sAggregationName).length > 0) {
 				return false;
 			}
-			return this.isInstanceOf(oElement, sTypeOrInterface) || this.hasInterface(oElement, sTypeOrInterface);
+			return BaseObject.isA(oElement, sTypeOrInterface) || this.hasInterface(oElement, sTypeOrInterface);
 		}
 
 	};
@@ -421,12 +320,7 @@ function(
 	};
 
 	ElementUtil.getAssociationInstances = function(oElement, sAssociationName) {
-		var vValue = this.getAssociation(oElement, sAssociationName);
-
-		if (!Array.isArray(vValue)) {
-			vValue = vValue ? [vValue] : [];
-		}
-
+		var vValue = Util.castArray(this.getAssociation(oElement, sAssociationName));
 		return vValue
 			.map(function (sId) {
 				return this.getElementInstance(sId);
@@ -439,91 +333,6 @@ function(
 	ElementUtil.hasInterface = function(oElement, sInterface) {
 		var aInterfaces = oElement.getMetadata().getInterfaces();
 		return aInterfaces.indexOf(sInterface) !== -1;
-	};
-
-	/**
-	 *
-	 */
-	ElementUtil.isInstanceOf = function(oElement, sType) {
-		var oInstance = jQuery.sap.getObject(sType);
-		if (typeof oInstance === "function") {
-			return oElement instanceof oInstance;
-		} else {
-			return false;
-		}
-	};
-
-	/**
-	 * .* Executes an array of actions. An action is a JSON object having the following structure: .* .* <action> = { .*
-	 * 'element' : <ui5 id of element to be moved>, .* 'source' : { .* 'index': <source index>, .* 'parent' : <ui5 id
-	 * of element actual parent>, .* 'aggregation' : <name of aggregation> .* }, .* 'target' : { .* 'index': <target
-	 * index>, .* 'parent' : <ui5 id of element future parent>, .* 'aggregation' : <name of aggregation> .* }, .*
-	 * 'changeType' : <name of change type e.g "Move" .* })
-	 */
-	ElementUtil.executeActions = function(aActions) {
-		var oTargetParent, oMovedElement;
-
-		for (var i = 0; i < aActions.length; i++) {
-			var oAction = aActions[i];
-			switch (oAction.changeType) {
-				case ElementUtil.sACTION_MOVE :
-					oTargetParent = sap.ui.getCore().byId(oAction.target.parent);
-					oMovedElement = sap.ui.getCore().byId(oAction.element);
-					ElementUtil.insertAggregation(oTargetParent, oAction.target.aggregation, oMovedElement,
-							oAction.target.index);
-					break;
-				case ElementUtil.sACTION_CUT :
-					oTargetParent = sap.ui.getCore().byId(oAction.source.parent);
-					oMovedElement = sap.ui.getCore().byId(oAction.element);
-					ElementUtil.removeAggregation(oTargetParent, oAction.source.aggregation, oMovedElement);
-					break;
-				case ElementUtil.sACTION_PASTE :
-					oTargetParent = sap.ui.getCore().byId(oAction.target.parent);
-					oMovedElement = sap.ui.getCore().byId(oAction.element);
-					ElementUtil.insertAggregation(oTargetParent, oAction.target.aggregation, oMovedElement,
-							oAction.target.index);
-					break;
-				case ElementUtil.sREORDER_AGGREGATION :
-					oTargetParent = sap.ui.getCore().byId(oAction.target.parent);
-					var sAggregationRemoveAllMutator = this
-							.getAggregationAccessors(oTargetParent, oAction.target.aggregation).removeAll;
-					oTargetParent[sAggregationRemoveAllMutator]();
-					var sAggregationAddMutator = this.getAggregationAccessors(oTargetParent, oAction.target.aggregation).add;
-					for (var j = 0; j < oAction.source.elements.length; j++) {
-						var oElement = sap.ui.getCore().byId(oAction.source.elements[j]);
-						oTargetParent[sAggregationAddMutator](oElement);
-					}
-					break;
-				default :
-			}
-		}
-
-	};
-
-	/**
-	 * Checks if the Element is in the dom (jQuery.is(":visible")) and if it is not hidden / opacity > 0.
-	 *
-	 * @param {jQuery} $Element jQuery object
-	 * @returns {boolean} Returns true if any of the jQuery objects is jQuery-visible, bot hidden and opacity > 0
-	 */
-	ElementUtil.isVisible = function($Element) {
-		var bVisible = false;
-		var $CurrentElement;
-		// check every jQuery object for itself
-		for (var i = 0, n = $Element.length; i < n; i++) {
-			$CurrentElement = $Element.eq(i);
-			// $().is("visible") returns true even if opacity = 0 or visibility = hidden,
-			// so we need to check it seperately
-			var bFilterOpacity = $CurrentElement.css("filter").match(/opacity\(([^)]*)\)/);
-			bVisible = $CurrentElement.is(":visible")
-				&& $CurrentElement.css("visibility") !== "hidden"
-				&& $CurrentElement.css("opacity") > 0
-				&& (bFilterOpacity ? parseFloat(bFilterOpacity[1]) > 0 : true);
-			if (bVisible) {
-				break;
-			}
-		}
-		return bVisible;
 	};
 
 	/**
@@ -546,9 +355,47 @@ function(
 	};
 
 	ElementUtil.getParent = function (oElement) {
-		return this.isInstanceOf(oElement, 'sap.ui.core.Component')
+		return BaseObject.isA(oElement, 'sap.ui.core.Component')
 			? oElement.oContainer
 			: oElement.getParent();
+	};
+
+	/**
+	 * Extract potential label part from the passed managed object instance
+	 *
+	 * @param {sap.ui.base.ManagedObject} oElement - managed object class instance for which label has to be extracted
+	 * @param {Function} [fnFunction] - custom function for retrieving label
+	 * @return {String|undefined} label string or undefined when no label can be extracted
+	 */
+	ElementUtil.getLabelForElement = function(oElement, fnFunction) {
+
+		if (!ElementUtil.isElementValid(oElement)) {
+			throw Util.createError("ElementUtil#getLabelForElement", "A valid managed object instance should be passed as parameter", "sap.ui.dt");
+		}
+		// if there is a function, only the function is executed
+		if (typeof fnFunction === "function") {
+			return fnFunction(oElement);
+		} else {
+
+			var fnCalculateLabel = function(oElement) {
+
+				var vFieldLabel = (
+					typeof oElement.getText === "function" && oElement.getText()
+					|| typeof oElement.getLabelText === "function" && oElement.getLabelText()
+					|| typeof oElement.getLabel === "function" && oElement.getLabel()
+					|| typeof oElement.getTitle === "function" && oElement.getTitle()
+					|| typeof oElement.getHeading === "function" && oElement.getHeading()
+				);
+
+				if (ElementUtil.isElementValid(vFieldLabel)) {
+					return fnCalculateLabel(vFieldLabel);
+				} else {
+					return vFieldLabel;
+				}
+			};
+			var vCalculatedLabel = fnCalculateLabel(oElement);
+			return typeof vCalculatedLabel !== "string" ? oElement.getId() : vCalculatedLabel;
+		}
 	};
 
 	return ElementUtil;

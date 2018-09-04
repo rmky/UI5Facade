@@ -81,7 +81,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 * @mixes sap.ui.core.ContextMenuSupport
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @public
 		 * @alias sap.m.Page
@@ -155,7 +155,7 @@ function(
 					icon: {type: "sap.ui.core.URI", group: "Appearance", defaultValue: null, deprecated: true},
 
 					/**
-					 * This property is used to set the background color of a page. When a list is placed inside a page, the value "List" should be used to display a gray background. "Standard", with the value white, is used as default if not specified.
+					 * This property is used to set the background color of a page. When a list is placed inside a page, the value "List" should be used to display a gray background. "Standard", with the default background color, is used if not specified.
 					 */
 					backgroundDesign: {
 						type: "sap.m.PageBackgroundDesign",

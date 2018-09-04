@@ -100,17 +100,19 @@ function(
 	 * The app developer only has to specify the action type, and the required styling and
 	 * positioning are automatically added.
 	 *
+	 * @see {@link topic:4a97a07ec8f5441d901994d82eaab1f5 Semantic Page}
+	 * @see {@link topic:84f3d52f492648d5b594e4f45dca7727 Semantic Pages}
+	 *
 	 * @extends sap.ui.core.Control
 	 * @abstract
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.30.0
 	 * @alias sap.m.semantic.SemanticPage
-	 * @see topic:4a97a07ec8f5441d901994d82eaab1f5
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var SemanticPage = Control.extend("sap.m.semantic.SemanticPage", /** @lends sap.m.semantic.SemanticPage.prototype */ {

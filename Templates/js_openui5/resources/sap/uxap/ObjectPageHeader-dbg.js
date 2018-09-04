@@ -55,6 +55,10 @@ sap.ui.define([
 	// shortcut for sap.uxap.ObjectPageHeaderPictureShape
 	var ObjectPageHeaderPictureShape = library.ObjectPageHeaderPictureShape;
 
+	function isFunction(oObject) {
+		return typeof oObject === "function";
+	}
+
 	/**
 	 * Constructor for a new <code>ObjectPageHeader</code>.
 	 *
@@ -72,6 +76,12 @@ sap.ui.define([
 	 * <b>Note:</b> The <code>ObjectPageHeader</code> is meant to be used inside the <code>ObjectPageLayout</code>
 	 * control. Any other usage is not supported and can lead to unexpected behavior.
 	 *
+	 * @see {@link topic:0fecbce45e39406aa939bd25e89823f4 Object Page Classic Header}
+	 * @see {@link topic:d2ef0099542d44dc868719d908e576d0 Object Page Headers}
+	 * @see {@link topic:9c9d94fd28284539a9a5a57e9caf82a8 Object Page Headers Comparison}
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/snapping-header/ Object Page Header}
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/object-page/ UX Guidelines: Object Page}
+	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.uxap.IHeaderTitle
 	 *
@@ -81,9 +91,6 @@ sap.ui.define([
 	 * @public
 	 * @alias sap.uxap.ObjectPageHeader
 	 * @since 1.26
-	 * @see {@link topic:0fecbce45e39406aa939bd25e89823f4 Object Page Classic Header}
-	 * @see {@link topic:d2ef0099542d44dc868719d908e576d0 Object Page Headers}
-	 * @see {@link topic:9c9d94fd28284539a9a5a57e9caf82a8 Object Page Headers Comparison}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var ObjectPageHeader = Control.extend("sap.uxap.ObjectPageHeader", /** @lends sap.uxap.ObjectPageHeader.prototype */ {
@@ -267,7 +274,20 @@ sap.ui.define([
 				 * A button that is used for opening the side content of the page or some additional content.
 				 * @since 1.38.0
 				 */
-				sideContentButton: {type: "sap.m.Button", multiple: false}
+				sideContentButton: {type: "sap.m.Button", multiple: false},
+
+				/**
+				 * A custom tooltip for the title selector button.
+				 *
+				 * The custom tooltip will be visible if the <code>showTitleSelector</code>
+				 * property is set to <code>true</code>.
+				 *
+				 * <b>Note:</b> If the aggregation is destroyed or set to invalid value, the
+				 * default tooltip will be set. The default tooltip text is "Related options".
+				 *
+				 * @since 1.56
+				 */
+				titleSelectorTooltip: {type: "sap.ui.core.TooltipBase", altTypes: ["string"], multiple: false}
 			},
 			events: {
 
@@ -475,6 +495,26 @@ sap.ui.define([
 		return this;
 	};
 
+	ObjectPageHeader.prototype._setAggregationTooltip = function (sAggregationName, vTooltip) {
+		var oAggregation = this.getAggregation(sAggregationName);
+
+	   if (oAggregation) {
+		   oAggregation.setTooltip(vTooltip);
+	   }
+
+	   return this;
+	};
+
+	ObjectPageHeader.prototype._setTitleSelectorTooltip = function(vTooltip) {
+		if (vTooltip === null || vTooltip === undefined) {
+			vTooltip = this.oLibraryResourceBundleOP.getText("OP_SELECT_ARROW_TOOLTIP");
+		}
+		this._setAggregationTooltip("_titleArrowIcon", vTooltip);
+		this._setAggregationTooltip("_titleArrowIconCont", vTooltip);
+
+		return this;
+	};
+
 	ObjectPageHeader.prototype.setHeaderDesign = function (sHeaderDesign) {
 		this.setProperty("headerDesign", sHeaderDesign);
 		if (this.getParent()) {
@@ -485,10 +525,12 @@ sap.ui.define([
 
 	ObjectPageHeader.prototype.setObjectTitle = function (sNewTitle) {
 
-		var sOldTitle = this.getProperty("objectTitle"),
+		var oParent = this.getParent(),
+			sOldTitle = this.getProperty("objectTitle"),
 			bChanged = sOldTitle !== sNewTitle;
 
 		this._applyActionProperty("objectTitle", Array.prototype.slice.call(arguments));
+		oParent && isFunction(oParent._updateRootAriaLabel) && oParent._updateRootAriaLabel();
 
 		if (bChanged && this.mEventRegistry["_titleChange"]) {
 			this.fireEvent("_titleChange", {
@@ -557,7 +599,9 @@ sap.ui.define([
 
 		var aActions = this.getActions() || [];
 		this._oOverflowActionSheet.removeAllButtons();
-		this._oActionSheetButtonMap = {};
+
+		// BCP: 1870085555 - Ensure all buttons from previous rendering are being destroyed
+		this._resetActionSheetMap();
 
 		//display overflow if there are more than 1 item or only 1 item and it is showing its text
 		if (aActions.length > 1 || this._hasOneButtonShowText(aActions)) {
@@ -620,6 +664,17 @@ sap.ui.define([
 	};
 
 	/**
+	 * Destroys all created action sheet buttons contained in _oActionSheetButtonMap and empty the object
+	 * @private
+	 */
+	ObjectPageHeader.prototype._resetActionSheetMap = function () {
+		Object.keys(this._oActionSheetButtonMap).forEach(function (sButton) {
+			this._oActionSheetButtonMap[sButton].destroy();
+		}.bind(this));
+		this._oActionSheetButtonMap = {};
+	};
+
+	/**
 	 * "clone" the button provided by the app developer in order to create an equivalent for the actionsheet (displayed in overflowing scenarios)
 	 * @param {*} oButton the button to copy
 	 * @returns {sap.m.Button} the copied button
@@ -675,10 +730,10 @@ sap.ui.define([
 		this._attachDetachActionButtonsHandler(true);
 	};
 
-	ObjectPageHeader.prototype._onHeaderResize = function () {
+	ObjectPageHeader.prototype._onHeaderResize = function (oEvent) {
 		this._adaptLayout();
-		if (this.getParent() && typeof this.getParent()._adjustHeaderHeights === "function") {
-			this.getParent()._adjustHeaderHeights();
+		if (this.getParent() && typeof this.getParent()._onUpdateHeaderTitleSize === "function") {
+			this.getParent()._onUpdateHeaderTitleSize(oEvent);
 		}
 	};
 
@@ -796,7 +851,12 @@ sap.ui.define([
 		}
 
 		if (Device.system.phone) {
-			$actionButtons.css("visibility", "visible");
+			// revert the visibility css style only for the actions whose style was modified by _getActionsWidth
+			this.getActions().forEach(function (oAction) {
+				if (oAction instanceof Button) {
+					oAction.$().css("visibility", "visible");
+				}
+			});
 		}
 
 		// verify overflow button visibility
@@ -991,12 +1051,31 @@ sap.ui.define([
 		}
 	};
 
+	ObjectPageHeader.prototype.setTitleSelectorTooltip = function (vTooltip) {
+		this._setTitleSelectorTooltip(vTooltip);
+
+		this.setAggregation("titleSelectorTooltip", vTooltip, true);
+
+		return this;
+	};
+
+	ObjectPageHeader.prototype.destroyTitleSelectorTooltip = function () {
+		this._setTitleSelectorTooltip(null);
+
+		this.destroyAggregation("titleSelectorTooltip", true);
+
+		return this;
+	};
+
 	ObjectPageHeader.prototype.exit = function () {
 		this._clearImageNotFoundHandler();
 		if (this._iResizeId) {
 			ResizeHandler.deregister(this._iResizeId);
 			this._iResizeId = null;
 		}
+
+		// BCP: 1870085555 - Ensure all action sheet buttons are destroyed
+		this._resetActionSheetMap();
 	};
 
 	/* Fiori 2.0 adaptation */
@@ -1033,6 +1112,14 @@ sap.ui.define([
 	 */
 	ObjectPageHeader.prototype.getCompatibleHeaderContentClass = function () {
 		return ObjectPageHeaderContent;
+	};
+
+	/**
+	 * Required by the {@link sap.uxap.IHeaderTitle} interface
+	 * @returns {boolean}
+	 */
+	ObjectPageHeader.prototype.supportsToggleHeaderOnTitleClick = function () {
+		return false;
 	};
 
 	/**

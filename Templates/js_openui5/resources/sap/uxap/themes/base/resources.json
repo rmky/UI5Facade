@@ -26,11 +26,6 @@
 			"theme": "base"
 		},
 		{
-			"name": "ObjectPageDynamicHeaderContent.less",
-			"designtime": true,
-			"theme": "base"
-		},
-		{
 			"name": "ObjectPageHeader.less",
 			"designtime": true,
 			"theme": "base"

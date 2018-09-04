@@ -6,12 +6,14 @@
 
 // Provides class sap.ui.dt.plugin.ElementMover.
 sap.ui.define([
+	'sap/ui/base/Object',
 	'sap/ui/base/ManagedObject',
 	'sap/ui/dt/ElementUtil',
 	'sap/ui/dt/OverlayUtil',
 	'sap/ui/dt/OverlayRegistry'
 ], function
-(	ManagedObject,
+(	BaseObject,
+	ManagedObject,
 	ElementUtil,
 	OverlayUtil,
 	OverlayRegistry
@@ -28,7 +30,7 @@ sap.ui.define([
 	 * @class The ElementMover enables movement of UI5 elements based on aggregation types, which can be used by drag and
 	 *        drop or cut and paste behavior.
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -69,7 +71,7 @@ sap.ui.define([
 		var aMovableTypes = this._getMovableTypes();
 
 		return aMovableTypes.some(function(sType) {
-			return ElementUtil.isInstanceOf(oElement, sType);
+			return BaseObject.isA(oElement, sType);
 		});
 	};
 

@@ -62,12 +62,13 @@ sap.ui.define([
 	 * @extends sap.m.QuickViewBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.28.11
 	 * @alias sap.m.QuickView
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/quickview/ Quick View}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var QuickView = QuickViewBase.extend("sap.m.QuickView", /** @lends sap.m.QuickView.prototype */	{
@@ -358,6 +359,11 @@ sap.ui.define([
 	 * @private
 	 */
 	QuickView.prototype._adjustContainerHeight = function() {
+
+		if (this.getPages().length <= 1) {
+			return;
+		}
+
 		var oPopupControl = this._oPopover.getAggregation("_popup");
 		var $container = oPopupControl.$().find('.sapMPopoverCont');
 

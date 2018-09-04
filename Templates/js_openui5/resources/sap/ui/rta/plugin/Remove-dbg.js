@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @class The Remove allows trigger remove operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -64,20 +64,21 @@ sap.ui.define([
 	 * @returns {boolean} editable or not
 	 * @private
 	 */
-	Remove.prototype._isEditable = function(oOverlay) {
+	Remove.prototype._isEditable = function (oElementOverlay) {
 		var bEditable = false;
-		var oElement = oOverlay.getElement();
+		var oElement = oElementOverlay.getElement();
 
-		var oRemoveAction = this.getAction(oOverlay);
+		var oRemoveAction = this.getAction(oElementOverlay);
 		if (oRemoveAction && oRemoveAction.changeType) {
 			if (oRemoveAction.changeOnRelevantContainer) {
-				oElement = oOverlay.getRelevantContainer();
+				oElement = oElementOverlay.getRelevantContainer();
 			}
-			bEditable = this.hasChangeHandler(oRemoveAction.changeType, oElement);
+			bEditable = this.hasChangeHandler(oRemoveAction.changeType, oElement) &&
+						this._checkRelevantContainerStableID(oRemoveAction, oElementOverlay);
 		}
 
 		if (bEditable) {
-			return this.hasStableId(oOverlay);
+			return this.hasStableId(oElementOverlay);
 		}
 
 		return bEditable;
@@ -224,29 +225,31 @@ sap.ui.define([
 
 		var oNextOverlaySelection = Remove._getElementToFocus(aSelectedOverlays);
 
-		aSelectedOverlays
-			.forEach(function(oOverlay) {
-				var oCommand;
-				var oRemovedElement = oOverlay.getElement();
-				var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
-				var oRemoveAction = this.getAction(oOverlay);
-				var sVariantManagementReference = this.getVariantManagementReference(oOverlay, oRemoveAction);
-				var sConfirmationText = this._getConfirmationText(oOverlay);
+		aSelectedOverlays.forEach(function(oOverlay) {
+			var oCommand;
+			var oRemovedElement = oOverlay.getElement();
+			var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
+			var oRemoveAction = this.getAction(oOverlay);
+			var sVariantManagementReference = this.getVariantManagementReference(oOverlay, oRemoveAction);
+			var sConfirmationText = this._getConfirmationText(oOverlay);
 
-				if (sConfirmationText) {
-					aPromises.push(
-						Utils.openRemoveConfirmationDialog(oRemovedElement, sConfirmationText)
-						.then(function(bConfirmed) {
-							if (bConfirmed) {
-								oCommand = this._getRemoveCommand(oRemovedElement, oDesignTimeMetadata, sVariantManagementReference);
-								oCompositeCommand.addCommand(oCommand);
-							}
-						}.bind(this))
-					);
-				} else {
-					oCommand = this._getRemoveCommand(oRemovedElement, oDesignTimeMetadata, sVariantManagementReference);
-					oCompositeCommand.addCommand(oCommand);
-				}
+			if (sConfirmationText) {
+				aPromises.push(
+					Utils.openRemoveConfirmationDialog(oRemovedElement, sConfirmationText)
+					.then(function(bConfirmed) {
+						if (bConfirmed) {
+							oCommand = this._getRemoveCommand(oRemovedElement, oDesignTimeMetadata, sVariantManagementReference);
+							oCompositeCommand.addCommand(oCommand);
+						}
+					}.bind(this))
+				);
+			} else {
+				oCommand = this._getRemoveCommand(oRemovedElement, oDesignTimeMetadata, sVariantManagementReference);
+				oCompositeCommand.addCommand(oCommand);
+			}
+
+			// deselect overlay before we remove to avoid unnecessary checks which could happen when multiple elements get removed at once
+			oOverlay.setSelected(false);
 		}, this);
 
 		// since Promise.all is always asynchronous, we want to call it only if at least one promise exists

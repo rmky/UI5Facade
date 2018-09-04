@@ -4,8 +4,16 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Renderer', './ColumnHeader', './Label', 'sap/ui/core/library', 'sap/ui/Device', 'sap/m/library'],
-	function(jQuery, ListItemBaseRenderer, Renderer, ColumnHeader, Label, coreLibrary, Device, library) {
+sap.ui.define([
+	"jquery.sap.global",
+	"sap/ui/core/Renderer",
+	"sap/ui/core/library",
+	"sap/ui/Device",
+	"./library",
+	"./ListItemBaseRenderer",
+	"./Label"
+],
+	function(jQuery, Renderer, coreLibrary, Device, library, ListItemBaseRenderer, Label) {
 	"use strict";
 
 	// shortcut for sap.m.PopinDisplay
@@ -160,19 +168,20 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 
 					if (typeof oCell[sFuncName] != "function") {
 						jQuery.sap.log.warning("mergeFunctionName property is defined on " + oColumn + " but this is not function of " + oCell);
-					} else {
+					} else if (oTable._bRendering || !oCell.bOutput) {
 						var lastColumnValue = oColumn.getLastValue(),
 							cellValue = oCell[sFuncName](sFuncParam);
 
 						if (lastColumnValue === cellValue) {
-							// it is not necessary to render cell content but
-							// screen readers need content to announce it
+							// it is not necessary to render the cell content but screen readers need the content to announce it
 							bRenderCell = sap.ui.getCore().getConfiguration().getAccessibility();
 							oCell.addStyleClass("sapMListTblCellDupCnt");
 							rm.addClass("sapMListTblCellDup");
 						} else {
 							oColumn.setLastValue(cellValue);
 						}
+					} else if (oCell.hasStyleClass("sapMListTblCellDupCnt")) {
+						rm.addClass("sapMListTblCellDup");
 					}
 				}
 
@@ -250,7 +259,7 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 
 		var sPopinLayout = oTable.getPopinLayout();
 		// overwrite sPopinLayout=Block to avoid additional margin-top in IE and Edge
-		if (Device.browser.msie || Device.browser.edge) {
+		if (Device.browser.msie || (Device.browser.edge && Device.browser.version < 16)) {
 			sPopinLayout = PopinLayout.Block;
 		}
 		rm.write("><div");
@@ -290,12 +299,15 @@ sap.ui.define(['jquery.sap.global', './ListItemBaseRenderer', 'sap/ui/core/Rende
 				rm.addClass("sapMListTblSubCntHdr");
 				rm.writeClasses();
 				rm.write(">");
-				if (oHeader instanceof ColumnHeader) {
+
+				var fnColumnHeaderClass = sap.ui.require("sap/m/ColumnHeader");
+				if (typeof fnColumnHeaderClass == "function" && oHeader instanceof fnColumnHeaderClass) {
 					var sColumnHeaderTitle = oHeader.getText();
 					oHeader = new Label({text: sColumnHeaderTitle});
 				} else {
 					oHeader = oHeader.clone();
 				}
+
 				oColumn.addDependent(oHeader);
 				oLI._addClonedHeader(oHeader);
 				oColumn.applyAlignTo(oHeader, "Begin");

@@ -17,13 +17,14 @@ function(ManagedObject) {
 	 * @param {string} [sId] id for the new object, generated automatically if no id is given
 	 * @param {object} [mSettings] initial settings for the new object
 	 *
+	 * @abstract
 	 * @class
 	 * The Plugin allows to handle the overlays and aggregation overlays from the DesignTime
-	 * The Plugin should be overriden by the real plugin implementations, which define some actions through events attached to an overlays
+	 * The Plugin should be overridden by the real plugin implementations, which define some actions through events attached to an overlays
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private

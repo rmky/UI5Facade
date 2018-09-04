@@ -14,6 +14,7 @@ sap.ui.define([
     "sap/m/library",
     "sap/m/Button",
     "sap/m/NavContainer",
+    "sap/ui/core/Configuration",
     "./FlexibleColumnLayoutRenderer",
     "jquery.sap.events"
 ], function(
@@ -25,6 +26,7 @@ sap.ui.define([
 	mobileLibrary,
 	Button,
 	NavContainer,
+	Configuration,
 	FlexibleColumnLayoutRenderer
 ) {
 	"use strict";
@@ -79,7 +81,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -586,6 +588,8 @@ sap.ui.define([
 		}
 	});
 
+	FlexibleColumnLayout.COLUMN_RESIZING_ANIMATION_DURATION = 560; // ms
+
 	FlexibleColumnLayout.prototype.init = function () {
 
 		// Create the 3 nav containers
@@ -879,18 +883,20 @@ sap.ui.define([
 		iAvailableWidth = this._getControlWidth() - iTotalMargin;
 
 		aColumns.forEach(function (sColumn) {
+			var oColumn = this._$columns[sColumn];
+
 			iPercentWidth = this._getColumnSize(sColumn);
 
 			// Add the left margin if the column has width and there was already a non-zero width column before it (bNeedsMargin = true)
-			this._$columns[sColumn].toggleClass("sapFFCLColumnMargin", bNeedsMargin && iPercentWidth > 0);
+			oColumn.toggleClass("sapFFCLColumnMargin", bNeedsMargin && iPercentWidth > 0);
 
 			// Add the active class to the column if it shows something
-			this._$columns[sColumn].toggleClass("sapFFCLColumnActive", iPercentWidth > 0);
+			oColumn.toggleClass("sapFFCLColumnActive", iPercentWidth > 0);
 
 			// Remove all the classes that are used for HCB theme borders, they will be set again later
-			this._$columns[sColumn].removeClass("sapFFCLColumnOnlyActive");
-			this._$columns[sColumn].removeClass("sapFFCLColumnLastActive");
-			this._$columns[sColumn].removeClass("sapFFCLColumnFirstActive");
+			oColumn.removeClass("sapFFCLColumnOnlyActive");
+			oColumn.removeClass("sapFFCLColumnLastActive");
+			oColumn.removeClass("sapFFCLColumnFirstActive");
 
 			// Change the width of the column
 			iNewWidth = Math.round(iAvailableWidth * (iPercentWidth / 100));
@@ -899,7 +905,28 @@ sap.ui.define([
 			} else {
 				sNewWidth = iNewWidth + "px";
 			}
-			this._$columns[sColumn].width(sNewWidth);
+
+			// Animations on - suspend ResizeHandler while animation is running
+			if (sap.ui.getCore().getConfiguration().getAnimationMode() !== Configuration.AnimationMode.none) {
+
+				var oColumnDomRef = oColumn.get(0);
+
+				// Suspending ResizeHandler temporarily
+				ResizeHandler.suspend(oColumnDomRef);
+
+				// Clear previous timeouts if present
+				if (oColumn._iResumeResizeHandlerTimeout) {
+					clearTimeout(oColumn._iResumeResizeHandlerTimeout);
+				}
+
+				// Schedule resume of ResizeHandler
+				oColumn._iResumeResizeHandlerTimeout = setTimeout(function() {
+					ResizeHandler.resume(oColumnDomRef);
+					oColumn._iResumeResizeHandlerTimeout = null;
+				}, FlexibleColumnLayout.COLUMN_RESIZING_ANIMATION_DURATION);
+			}
+
+			oColumn.width(sNewWidth);
 
 			// For tablet and desktop - notify child controls to render with reduced container size, if they need to
 			if (!Device.system.phone) {

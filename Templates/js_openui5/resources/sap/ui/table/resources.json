@@ -272,6 +272,7 @@
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/Popup.js",
 				"sap/ui/table/RowActionRenderer.js",
+				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js",
 				"sap/ui/unified/Menu.js"
 			]
@@ -290,6 +291,7 @@
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/Popup.js",
 				"sap/ui/table/RowActionRenderer.js",
+				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js",
 				"sap/ui/unified/Menu.js"
 			]
@@ -300,6 +302,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/core/Element.js",
+				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js",
 				"sap/ui/unified/MenuItem.js"
 			]
@@ -313,6 +316,7 @@
 			"module": "sap/ui/table/RowActionItem.js",
 			"required": [
 				"sap/ui/core/Element.js",
+				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js",
 				"sap/ui/unified/MenuItem.js"
 			]
@@ -480,6 +484,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/table/TableExtension.js",
+				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js"
 			]
 		},
@@ -489,6 +494,7 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/table/TableExtension.js",
+				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js"
 			]
 		},
@@ -525,6 +531,7 @@
 			"module": "sap/ui/table/TableDragAndDropExtension.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/core/dnd/DropPosition.js",
 				"sap/ui/table/TableExtension.js",
 				"sap/ui/table/TableUtils.js"
 			]
@@ -533,6 +540,7 @@
 			"name": "TableDragAndDropExtension.js",
 			"module": "sap/ui/table/TableDragAndDropExtension.js",
 			"required": [
+				"sap/ui/core/dnd/DropPosition.js",
 				"sap/ui/table/TableExtension.js",
 				"sap/ui/table/TableUtils.js"
 			]
@@ -657,9 +665,6 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/base/ManagedObject.js"
-			],
-			"condRequired": [
-				"sap/m/TablePersoDialog.js"
 			]
 		},
 		{
@@ -668,9 +673,6 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/base/ManagedObject.js"
-			],
-			"condRequired": [
-				"sap/m/TablePersoDialog.js"
 			]
 		},
 		{
@@ -940,6 +942,7 @@
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
+				"sap/ui/core/dnd/DropPosition.js",
 				"sap/ui/core/library.js",
 				"sap/ui/core/theming/Parameters.js",
 				"sap/ui/model/BindingMode.js",
@@ -969,7 +972,6 @@
 				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
-				"sap/m/TablePersoDialog.js",
 				"sap/ui/core/util/Export.js",
 				"sap/ui/core/util/ExportTypeCSV.js"
 			],
@@ -1037,6 +1039,7 @@
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
+				"sap/ui/core/dnd/DropPosition.js",
 				"sap/ui/core/library.js",
 				"sap/ui/core/theming/Parameters.js",
 				"sap/ui/model/BindingMode.js",
@@ -1066,7 +1069,6 @@
 				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
-				"sap/m/TablePersoDialog.js",
 				"sap/ui/core/util/Export.js",
 				"sap/ui/core/util/ExportTypeCSV.js"
 			],
@@ -1138,6 +1140,7 @@
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
+				"sap/ui/core/dnd/DropPosition.js",
 				"sap/ui/core/library.js",
 				"sap/ui/core/theming/Parameters.js",
 				"sap/ui/model/BindingMode.js",
@@ -1165,7 +1168,6 @@
 				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
-				"sap/m/TablePersoDialog.js",
 				"sap/ui/core/util/Export.js",
 				"sap/ui/core/util/ExportTypeCSV.js"
 			],
@@ -1232,6 +1234,7 @@
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
+				"sap/ui/core/dnd/DropPosition.js",
 				"sap/ui/core/library-preload.json",
 				"sap/ui/core/library.js",
 				"sap/ui/core/theming/Parameters.js",
@@ -1261,7 +1264,6 @@
 				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
-				"sap/m/TablePersoDialog.js",
 				"sap/ui/core/util/Export.js",
 				"sap/ui/core/util/ExportTypeCSV.js"
 			],

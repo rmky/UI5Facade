@@ -24,7 +24,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -52,7 +52,9 @@ sap.ui.define([
 	Split.prototype._isEditable = function(oOverlay) {
 		var oSplitAction = this.getAction(oOverlay);
 		if (oSplitAction && oSplitAction.changeType && oSplitAction.changeOnRelevantContainer) {
-			return this.hasStableId(oOverlay) && this.hasChangeHandler(oSplitAction.changeType, oOverlay.getRelevantContainer());
+			return this.hasChangeHandler(oSplitAction.changeType, oOverlay.getRelevantContainer()) &&
+					this.hasStableId(oOverlay) &&
+					this._checkRelevantContainerStableID(oSplitAction, oOverlay);
 		} else {
 			return false;
 		}
@@ -147,7 +149,7 @@ sap.ui.define([
 	 * @return {object[]}          Returns array containing the items with required data
 	 */
 	Split.prototype.getMenuItems = function(oOverlay){
-		return this._getMenuItems(oOverlay, {pluginId : "CTX_UNGROUP_FIELDS", rank : 100});
+		return this._getMenuItems(oOverlay, {pluginId : "CTX_UNGROUP_FIELDS", rank : 100, icon : "sap-icon://screen-split-two"});
 	};
 
 	/**

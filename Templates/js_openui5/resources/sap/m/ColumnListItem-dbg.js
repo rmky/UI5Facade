@@ -6,28 +6,23 @@
 
 // Provides control sap.m.ColumnListItem.
 sap.ui.define([
-	'jquery.sap.global',
-	'sap/ui/core/Element',
-	'./ListItemBase',
-	'./library',
-	'sap/ui/core/library',
-	'./ColumnListItemRenderer'
+	"jquery.sap.global",
+	"sap/ui/core/Element",
+	"sap/ui/core/library",
+	"./library",
+	"./ListItemBase",
+	"./ColumnListItemRenderer"
 ],
-	function(
-	jQuery,
-	Element,
-	ListItemBase,
-	library,
-	coreLibrary,
-	ColumnListItemRenderer
-	) {
+	function(jQuery, Element, coreLibrary, library, ListItemBase, ColumnListItemRenderer) {
 	"use strict";
 
+
 	// shortcut for sap.m.ListType
-	var ListType = library.ListType;
+	var ListItemType = library.ListType;
 
 	// shortcut for sap.ui.core.VerticalAlign
 	var VerticalAlign = coreLibrary.VerticalAlign;
+
 
 	/**
 	 * Constructor for a new ColumnListItem.
@@ -45,7 +40,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -130,12 +125,7 @@ sap.ui.define([
 	// returns responsible table control for the item
 	ColumnListItem.prototype.getTable = function() {
 		var oParent = this.getParent();
-		if (oParent instanceof sap.m.Table) {
-			return oParent;
-		}
-
-		// support old list with columns aggregation
-		if (oParent && oParent.getMetadata().getName() == "sap.m.Table") {
+		if (oParent && oParent.isA("sap.m.Table")) {
 			return oParent;
 		}
 	};
@@ -261,14 +251,13 @@ sap.ui.define([
 
 	// determines whether type column for this item is necessary or not
 	ColumnListItem.prototype._needsTypeColumn = function() {
-		var sType = this.getType(),
-			mType = ListType;
+		var sType = this.getType();
 
-		return	this.getVisible() && (
-					sType == mType.Detail ||
-					sType == mType.Navigation ||
-					sType == mType.DetailAndActive
-				);
+		return this.getVisible() && (
+			sType == ListItemType.Detail ||
+			sType == ListItemType.Navigation ||
+			sType == ListItemType.DetailAndActive
+		);
 	};
 
 	// Adds cloned header to the local collection

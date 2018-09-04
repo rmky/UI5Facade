@@ -14,7 +14,11 @@ sap.ui.define([
 ], function (jQuery, Controller, XMLView, Filter, FilterType, JSONModel) {
 	"use strict";
 
-	var sStyle = '\
+	// lower case package names, UpperCamelCase class name, optional lowerCamelCase method name
+	// 1st group: qualified class name
+	// 2nd group: optional method name (incl. leading dot!)
+	var rModule = /^((?:[a-z0-9]+\.)+_?[A-Z]\w+)(\.[a-z]\w+)?$/,
+		sStyle = '\
 		.blanket-source {\
 			overflow-x: scroll;\
 			background-color: #FFFFFF;\
@@ -59,6 +63,16 @@ sap.ui.define([
 		}\
 		.blanket-source .miss span.highlight {\
 			background-color: #e6c3c7\
+		}\
+		.coverageSummary {\
+			background-color: #0D3349;\
+			border-radius: 0 0 5px 5px;\
+			color: #C6E746;\
+			font-size: 1.5em;\
+			font-family: Calibri, Helvetica, Arial, sans-serif;\
+			line-height: 1em;\
+			font-weight: 400;\
+			padding: 0.5em 0 0.5em 1em;\
 		}\
 	';
 
@@ -318,11 +332,13 @@ sap.ui.define([
 	 * @param {number} iThreshold
 	 *   Threshold for KPIs as a percentage
 	 * @param {string[]} [aTestedFiles]
-	 *   The tested files (derived from the module names) or undefined if all tests were run
+	 *   The tested files (derived from the module names) or undefined if all tests were run.
+	 *   Note: unsorted, may still contain duplicates or even <code>undefined</code>!
 	 * @returns {JSONModel} The JSON model
 	 */
 	function createModel(oCoverageData, iLinesOfContext, iThreshold, aTestedFiles) {
-		var oTotal = {
+		var mSummarizedFiles = {}, // maps file name to true for already summarized files
+			oTotal = {
 				files : [],
 				lines : {
 					total : 0,
@@ -357,6 +373,11 @@ sap.ui.define([
 				},
 				i;
 
+			if (sFile in mSummarizedFiles) {
+				return;
+			}
+			mSummarizedFiles[sFile] = true;
+
 			for (i = 0; i < aFileData.length; i++) {
 				if (aFileData[i] !== undefined) {
 					oFileSummary.lines.total++;
@@ -384,14 +405,13 @@ sap.ui.define([
 			oTotal.branches.missed += oFileSummary.branches.missed;
 		}
 
-		if (aTestedFiles) {
-			aTestedFiles.filter(function (sFile) {
-				return sFile in oCoverageData.files;
-			}).forEach(summarize);
+		if (aTestedFiles
+				&& aTestedFiles.every(function (sFile) {return sFile in oCoverageData.files;})) {
 			oTotal.filterThreshold = false;
 		} else {
-			Object.keys(oCoverageData.files).sort().forEach(summarize);
+			aTestedFiles = Object.keys(oCoverageData.files);
 		}
+		aTestedFiles.sort().forEach(summarize);
 
 		oTotal.linesOfContext = iLinesOfContext;
 		oTotal.threshold = iThreshold;
@@ -411,38 +431,80 @@ sap.ui.define([
 		return sap.ui.xmlview({viewName: "sap.ui.test.BlanketReporterUI", models: oModel});
 	}
 
+	function convertToFile(sModule) {
+		var aMatches = rModule.exec(sModule);
+
+		return !aMatches || aMatches[2] === ".integration"
+			? undefined // "all"
+			: jQuery.sap.getResourceName(aMatches[1]);
+	}
+
 	/**
-	 * Places the view into a new <div> at the end of the body.
+	 * Creates a new <div> at the end of the body and includes our style.
 	 *
-	 * @param {sap.ui.core.mvc.XMLView} oView The view
+	 * @returns {object}
+	 *   The new <div>
 	 */
-	function placeView(oView) {
+	function getDiv() {
 		var oDiv = document.createElement("div"),
 			oStyle = document.createElement("style");
 
 		oDiv.setAttribute("id", "blanket-view");
 		oDiv.setAttribute("class", "sapUiBody");
 		document.body.appendChild(oDiv);
-		oView.placeAt(oDiv);
 
 		oStyle.innerHTML = sStyle;
 		document.head.appendChild(oStyle);
-	}
 
-	function convertToFile(sModule) {
-		return jQuery.sap.getResourceName(sModule);
+		return oDiv;
 	}
 
 	return function (oScript, fnGetTestedModules, oCoverageData) {
-		var iLinesOfContext, aTestedModules, iThreshold;
+		var oDiv, iLinesOfContext, oModel, aTestedModules, iThreshold;
+
+		/*
+		 * Tells whether the given module corresponds 1:1 to a single class.
+		 *
+		 * @param {string} sModule
+		 * @return {boolean}
+		 */
+		function isSingleClass(sModule) {
+			var aMatches = rModule.exec(sModule);
+
+			return aMatches && !aMatches[2];
+		}
 
 		// Sometimes, when refreshing, this function is called twice. Ignore the 2nd call.
 		if (!document.getElementById("blanket-view")) {
 			iLinesOfContext = getAttributeAsInteger(oScript, "data-lines-of-context", 3);
 			iThreshold = Math.min(getAttributeAsInteger(oScript, "data-threshold", 0), 100);
 			aTestedModules = fnGetTestedModules();
-			placeView(createView(createModel(oCoverageData, iLinesOfContext, iThreshold,
-				aTestedModules && aTestedModules.map(convertToFile))));
+			oModel = createModel(oCoverageData, iLinesOfContext, iThreshold,
+				aTestedModules && aTestedModules.map(convertToFile));
+			oDiv = getDiv();
+
+			if (jQuery.sap.getUriParameters().get("testId")
+				|| aTestedModules && !aTestedModules.every(isSingleClass)) {
+				// do not fail due to coverage
+				createView(oModel).placeAt(oDiv);
+				return;
+			}
+
+			// make QUnit fail (indirectly) and show UI
+			if (oModel.getProperty("/lines/coverage") < iThreshold) {
+				createView(oModel).placeAt(oDiv);
+				throw new Error("Line coverage too low! "
+					+ oModel.getProperty("/lines/coverage") + " < " + iThreshold);
+			}
+			if (oModel.getProperty("/branches/coverage") < iThreshold) {
+				createView(oModel).placeAt(oDiv);
+				throw new Error("Branch coverage too low! "
+					+ oModel.getProperty("/branches/coverage") + " < " + iThreshold);
+			}
+
+			oDiv.setAttribute("class", "coverageSummary");
+			oDiv.innerHTML = "Blanket Code Coverage: OK";
+			//TODO checkbox to show/hide details UI
 		}
 	};
 }, /* bExport= */ false);

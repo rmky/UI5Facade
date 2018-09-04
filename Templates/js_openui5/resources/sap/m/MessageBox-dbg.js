@@ -18,9 +18,17 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 			/**
 			 * Provides easier methods to create sap.m.Dialog with type sap.m.DialogType.Message, such as standard alerts,
 			 * confirmation dialogs, or arbitrary message dialogs.
-			 *
+             *
 			 * As <code>MessageBox</code> is a static class, a <code>jQuery.sap.require("sap.m.MessageBox");</code> statement
-			 * must be explicitly executed before the class can be used. Example:
+			 * must be explicitly executed before the class can be used.
+			 * MessageBox provides several functions.
+			 * <ul>
+			 * <li>show() - open a generic MessageBox. You can customize its contents thought the options described below in function option section.</li>
+			 * <li>alert(), confirm(), error(), information(), success() and warning() - predefined templates of MessageBoxes of the corresponding type with predefined action buttons and icon.
+			 * Only the recommended options are documented for those functions.
+			 * </ul>
+			 * <b>NOTE:</b> All options of show() are available for the other template functions as well, but it is recommended to use show() only in more specific scenarios.
+			 * Example:
 			 * <pre>
 			 *   jQuery.sap.require("sap.m.MessageBox");
 			 *   sap.m.MessageBox.show(
@@ -37,6 +45,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 			 * @alias sap.m.MessageBox
 			 * @public
 			 * @since 1.21.2
+			 * @see {@link fiori:https://experience.sap.com/fiori-design-web/message-box/ Message Box}
 			 */
 			var MessageBox = {};
 
@@ -228,7 +237,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @static
 				 */
 				MessageBox.show = function (vMessage, mOptions) {
-					var oDialog, oMessageText, vMessageContent, oResult = null, that = this, aButtons = [], i,
+					var oDialog, oMessageText, vMessageContent, oResult = null, aButtons = [], i,
 							sIcon, sTitle, vActions, fnCallback, sDialogId, sClass,
 							mDefaults = {
 								id: ElementMetadata.uid("mbox"),
@@ -283,7 +292,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 
 						// Don't check in ResourceBundle library if the button is with custom text
 						if (MessageBox.Action.hasOwnProperty(sAction)) {
-							sText = that._rb.getText("MSGBOX_" + sAction);
+							sText = MessageBox._rb.getText("MSGBOX_" + sAction);
 						}
 
 						var oButton = new Button({
@@ -313,7 +322,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 						var oFT = new FormattedText().setVisible(false).setHtmlText(mOptions.details);
 
 						var oShowLink = new Link({
-							text: that._rb.getText("MSGBOX_LINK_TITLE"),
+							text: MessageBox._rb.getText("MSGBOX_LINK_TITLE"),
 							press: function () {
 								var oInitialFocus = oDialog.getInitialFocus();
 								oDialog.addAriaLabelledBy(oFT);
@@ -362,7 +371,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 							if (typeof mOptions.initialFocus === "string") {//covers string and MessageBox.Action cases
 								for (i = 0; i < aButtons.length; i++) {
 									if (MessageBox.Action.hasOwnProperty(mOptions.initialFocus)) {
-										if (that._rb.getText("MSGBOX_" + mOptions.initialFocus).toLowerCase() === aButtons[i].getText().toLowerCase()) {
+										if (MessageBox._rb.getText("MSGBOX_" + mOptions.initialFocus).toLowerCase() === aButtons[i].getText().toLowerCase()) {
 											oInitialFocusControl = aButtons[i];
 											break;
 										}
@@ -468,7 +477,6 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Added since version 1.28. Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
-				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
 				 * @static
 				 */
@@ -477,7 +485,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 
 					var mDefaults = {
 						icon: Icon.NONE,
-						title: this._rb.getText("MSGBOX_TITLE_ALERT"),
+						title: MessageBox._rb.getText("MSGBOX_TITLE_ALERT"),
 						actions: Action.OK,
 						id: ElementMetadata.uid("alert"),
 						initialFocus: null
@@ -544,7 +552,6 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Added since version 1.28. Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
-				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
 				 * @static
 				 */
@@ -553,7 +560,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 
 					var mDefaults = {
 						icon: Icon.QUESTION,
-						title: this._rb.getText("MSGBOX_TITLE_CONFIRM"),
+						title: MessageBox._rb.getText("MSGBOX_TITLE_CONFIRM"),
 						actions: [Action.OK, Action.CANCEL],
 						id: ElementMetadata.uid("confirm"),
 						initialFocus: null
@@ -616,7 +623,6 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
-				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
 				 * @since 1.30
 				 * @static
@@ -626,7 +632,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 
 					var mDefaults = {
 						icon: Icon.ERROR,
-						title: this._rb.getText("MSGBOX_TITLE_ERROR"),
+						title: MessageBox._rb.getText("MSGBOX_TITLE_ERROR"),
 						actions: [Action.CLOSE],
 						id: ElementMetadata.uid("error"),
 						initialFocus: null
@@ -673,7 +679,6 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
-				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
 				 * @since 1.30
 				 * @static
@@ -683,7 +688,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 
 					var mDefaults = {
 						icon: Icon.INFORMATION,
-						title: this._rb.getText("MSGBOX_TITLE_INFO"),
+						title: MessageBox._rb.getText("MSGBOX_TITLE_INFO"),
 						actions: [Action.OK],
 						id: ElementMetadata.uid("info"),
 						initialFocus: null
@@ -730,7 +735,6 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
-				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
 				 * @since 1.30
 				 * @static
@@ -740,7 +744,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 
 					var mDefaults = {
 						icon: Icon.WARNING ,
-						title: this._rb.getText("MSGBOX_TITLE_WARNING"),
+						title: MessageBox._rb.getText("MSGBOX_TITLE_WARNING"),
 						actions: [Action.OK],
 						id: ElementMetadata.uid("warning"),
 						initialFocus: null
@@ -787,7 +791,6 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
-				 * @returns {sap.m.MessageBox} The created MessageBox
 				 * @public
 				 * @since 1.30
 				 * @static
@@ -797,7 +800,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 
 					var mDefaults = {
 						icon: Icon.SUCCESS ,
-						title: this._rb.getText("MSGBOX_TITLE_SUCCESS"),
+						title: MessageBox._rb.getText("MSGBOX_TITLE_SUCCESS"),
 						actions: [Action.OK],
 						id: ElementMetadata.uid("success"),
 						initialFocus: null

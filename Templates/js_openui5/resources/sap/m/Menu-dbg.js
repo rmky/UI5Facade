@@ -28,7 +28,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 		 * @implements sap.ui.core.IContextMenu
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
@@ -171,9 +171,16 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 		 * Opens the <code>Menu</code> next to the given control.
 		 * @param {object} oControl The control that defines the position for the menu
 		 * @param {boolean} bWithKeyboard Whether the menu is opened with a shortcut or not
+		 * @param {sap.ui.core.Dock} [sDockMy=sap.ui.core.Popup.Dock.BeginTop] The reference docking location
+		 * of the <code>Menu</code> for positioning the menu on the screen
+		 * @param {sap.ui.core.Dock} [sDockAt=sap.ui.core.Popup.Dock.BeginBottom] The <code>oControl</code>
+		 * reference docking location for positioning the menu on the screen
+		 * @param {string} [sOffset="0 -2"] The offset relative to the docking point,
+		 * specified as a string with space-separated pixel values (e.g. "0 10" to move the popup 10 pixels to the right).
+		 * If the docking of both "my" and "at" is RTL-sensitive ("begin" or "end"), this offset is automatically mirrored in the RTL case as well.
 		 * @public
 		 */
-		Menu.prototype.openBy = function(oControl, bWithKeyboard) {
+		Menu.prototype.openBy = function(oControl, bWithKeyboard, sDockMy, sDockAt, sOffset) {
 			if (Device.system.phone) {
 				this._openDialog();
 			} else {
@@ -183,7 +190,16 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 				}
 
 				var eDock = sap.ui.core.Popup.Dock;
-				this._getMenu().open(bWithKeyboard, oControl, eDock.BeginTop, eDock.BeginBottom, oControl, "0 -2");
+				if (!sDockMy) {
+					sDockMy = eDock.BeginTop;
+				}
+				if (!sDockAt) {
+					sDockAt = eDock.BeginBottom;
+				}
+				if (!sOffset) {
+					sOffset = "0 -2";
+				}
+				this._getMenu().open(bWithKeyboard, oControl, sDockMy, sDockAt, oControl, sOffset);
 			}
 		};
 
@@ -823,7 +839,8 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', './Butto
 
 		/**
 		 * Opens the menu as a context menu.
-		 * @param {object} oEvent The event that is fired
+		 * @param {jQuery.Event | object} oEvent The event object or an object containing offsetX, offsetY
+		 * values and left, top values of the element's position
 		 * @param {object} oOpenerRef The reference of the opener
 		 */
 		Menu.prototype.openAsContextMenu = function(oEvent, oOpenerRef) {

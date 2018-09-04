@@ -49,7 +49,7 @@ sap.ui.define([
 		 * @implements sap.uxap.IHeaderTitle
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
@@ -80,6 +80,14 @@ sap.ui.define([
 		 */
 		ObjectPageDynamicHeaderTitle.prototype.getCompatibleHeaderContentClass = function () {
 			return ObjectPageDynamicHeaderContent;
+		};
+
+		/**
+		 * Required by the {@link sap.uxap.IHeaderTitle} interface
+		 * @returns {boolean}
+		 */
+		ObjectPageDynamicHeaderTitle.prototype.supportsToggleHeaderOnTitleClick = function () {
+			return true;
 		};
 
 		/**

@@ -161,7 +161,21 @@ sap.ui.define([
 				/**
 				 * This event is fired when the model and context are set.
 				 */
-				initialized: {}
+				initialized: {},
+
+				/**
+				 * This event is fired when a new variant is selected.
+				 */
+				select: {
+					parameters: {
+						/**
+						 * The variant key
+						 */
+						key: {
+							type: "string"
+						}
+					}
+				}
 			}
 		},
 
@@ -351,6 +365,7 @@ sap.ui.define([
 		if (oModel && this.oContext) {
 			oModel.setProperty(this.oContext + "/currentVariant", sKey);
 		}
+
 		return this;
 	};
 
@@ -761,6 +776,10 @@ sap.ui.define([
 				if (sSelectionKey) {
 					// this.setModified(false);
 					this.setCurrentVariantKey(sSelectionKey);
+
+					this.fireEvent("select", {
+						key: sSelectionKey
+					});
 					this.oVariantPopOver.close();
 				}
 			}.bind(this)
@@ -1533,8 +1552,15 @@ sap.ui.define([
 	VariantManagement.prototype._handleManageSavePressed = function() {
 		this._getDeletedItems().some(function(oItem) {
 			if (oItem.key === this.getCurrentVariantKey()) {
+
+				var sKey = this.getStandardVariantKey();
+
 				this.setModified(false);
-				this.setCurrentVariantKey(this.getStandardVariantKey());
+				this.setCurrentVariantKey(sKey);
+
+				this.fireEvent("select", {
+					key: sKey
+				});
 				return true;
 			}
 

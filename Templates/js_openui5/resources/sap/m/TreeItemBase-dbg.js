@@ -12,9 +12,9 @@ sap.ui.define([
 	'sap/ui/core/IconPool',
 	'sap/ui/core/Icon',
 	'./TreeItemBaseRenderer',
-	'jquery.sap.keycodes'
+	'sap/base/events/KeyCodes'
 ],
-	function(jQuery, ListItemBase, library, IconPool, Icon, TreeItemBaseRenderer) {
+	function(jQuery, ListItemBase, library, IconPool, Icon, TreeItemBaseRenderer, KeyCodes) {
 	"use strict";
 
 	// shortcut for sap.m.ListMode
@@ -31,7 +31,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -48,7 +48,7 @@ sap.ui.define([
 
 	TreeItemBase.prototype.getTree = function() {
 		var oParent = this.getParent();
-		if (oParent instanceof sap.m.Tree) {
+		if (oParent && oParent.isA("sap.m.Tree")) {
 			return oParent;
 		}
 	};
@@ -65,13 +65,15 @@ sap.ui.define([
 	 */
 	TreeItemBase.prototype.getItemNodeContext = function() {
 		var oTree = this.getTree();
-		var oContext = null;
-		var oBinding = null;
-		if (oTree) {
+		var oNode = null;
+		var oBinding = oTree ? oTree.getBinding("items") : null;
+
+		if (oTree && oBinding) {
 			oBinding = oTree.getBinding("items");
-			oContext = oBinding.getNodeByIndex(oTree.indexOfItem(this));
+			oNode = oBinding.getNodeByIndex(oTree.indexOfItem(this));
 		}
-		return oContext;
+
+		return oNode;
 	};
 
 	/**
@@ -125,7 +127,10 @@ sap.ui.define([
 	 * @since 1.42.0
 	 */
 	TreeItemBase.prototype.isLeaf = function() {
-		return (this.getItemNodeContext() || {}).isLeaf;
+		var oTree = this.getTree(),
+			oNode = this.getItemNodeContext();
+
+		return oNode ? !oTree.getBinding("items").nodeHasChildren(oNode) : false;
 	};
 
 	/**
@@ -158,11 +163,14 @@ sap.ui.define([
 	 * @since 1.42.0
 	 */
 	TreeItemBase.prototype.getExpanded = function() {
-		var bExpanded = false;
-		if (this.getItemNodeContext() && this.getItemNodeContext().nodeState) {
-			bExpanded = this.getItemNodeContext().nodeState.expanded;
+		var oTree = this.getTree();
+		if (!oTree) {
+			return false;
 		}
-		return bExpanded;
+
+		var iIndex = oTree.indexOfItem(this);
+		var oBinding = oTree.getBinding("items");
+		return (oBinding && oBinding.isExpanded(iIndex));
 	};
 
 	TreeItemBase.prototype.setSelected = function (bSelected) {
@@ -313,7 +321,7 @@ sap.ui.define([
 			this.informTree("ExpanderPressed", true);
 		} else {
 			// Change the keyCode so that the item navigation handles the down navigation.
-			oEvent.keyCode = jQuery.sap.KeyCodes.ARROW_DOWN;
+			oEvent.keyCode = KeyCodes.ARROW_DOWN;
 		}
 
 	};

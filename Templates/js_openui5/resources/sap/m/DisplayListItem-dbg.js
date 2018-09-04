@@ -6,12 +6,12 @@
 
 // Provides control sap.m.DisplayListItem.
 sap.ui.define([
-	'./ListItemBase',
-	'./library',
-	'sap/ui/core/library',
-	'./DisplayListItemRenderer'
+	"sap/ui/core/library",
+	"./library",
+	"./ListItemBase",
+	"./DisplayListItemRenderer"
 ],
-	function(ListItemBase, library, coreLibrary, DisplayListItemRenderer) {
+	function(coreLibrary, library, ListItemBase, DisplayListItemRenderer) {
 	"use strict";
 
 
@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public

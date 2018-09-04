@@ -11,18 +11,19 @@ sap.ui.define([
 	"sap/ui/model/BindingMode",
 	"sap/ui/model/ChangeReason",
 	"sap/ui/model/ClientListBinding",
-	"sap/ui/model/ClientPropertyBinding",
 	"sap/ui/model/ContextBinding",
 	"sap/ui/model/Context",
 	"sap/ui/model/MetaModel",
 	"sap/ui/model/odata/OperationMode",
 	"sap/ui/model/odata/type/Int64",
+	"sap/ui/model/odata/type/Raw",
+	"sap/ui/model/PropertyBinding",
 	"sap/ui/thirdparty/URI",
 	"./lib/_Helper",
 	"./ValueListType"
-], function (jQuery, SyncPromise, BindingMode, ChangeReason, ClientListBinding,
-		ClientPropertyBinding, ContextBinding, BaseContext, MetaModel, OperationMode, Int64, URI,
-		_Helper, ValueListType) {
+], function (jQuery, SyncPromise, BindingMode, ChangeReason, ClientListBinding, ContextBinding,
+		BaseContext, MetaModel, OperationMode, Int64, Raw, PropertyBinding, URI, _Helper,
+		ValueListType) {
 	"use strict";
 	/*eslint max-nested-callbacks: 0 */
 
@@ -33,6 +34,7 @@ sap.ui.define([
 		sODataMetaModel = "sap.ui.model.odata.v4.ODataMetaModel",
 		ODataMetaPropertyBinding,
 		rNumber = /^-?\d+$/,
+		oRawType = new Raw(),
 		mSupportedEvents = {
 			messageChange : true
 		},
@@ -243,17 +245,36 @@ sap.ui.define([
 	 *   a schema; schema children are ignored because they do not contain $Annotations
 	 * @param {object} mAnnotations
 	 *   the root scope's $Annotations
+	 * @param {boolean} [bPrivileged=false]
+	 *   whether the schema has been loaded from a privileged source and thus may overwrite
+	 *   existing annotations
 	 */
-	function mergeAnnotations(oSchema, mAnnotations) {
+	function mergeAnnotations(oSchema, mAnnotations, bPrivileged) {
 		var sTarget;
 
-		for (sTarget in oSchema.$Annotations) {
-			if (sTarget in mAnnotations) {
-				// "PUT" semantics on term level, last annotation file wins
-				jQuery.extend(mAnnotations[sTarget], oSchema.$Annotations[sTarget]);
-			} else {
-				mAnnotations[sTarget] = oSchema.$Annotations[sTarget];
+		/*
+		 * "PUT" semantics on term/qualifier level, only privileged sources may overwrite.
+		 *
+		 * @param {object} oTarget
+		 *   The target object (which is modified)
+		 * @param {object} oSource
+		 *   The source object
+		 */
+		function extend(oTarget, oSource) {
+			var sName;
+
+			for (sName in oSource) {
+				if (bPrivileged || !(sName in oTarget)) {
+					oTarget[sName] = oSource[sName];
+				}
 			}
+		}
+
+		for (sTarget in oSchema.$Annotations) {
+			if (!(sTarget in mAnnotations)) {
+				mAnnotations[sTarget] = {};
+			}
+			extend(mAnnotations[sTarget], oSchema.$Annotations[sTarget]);
 		}
 		delete oSchema.$Annotations;
 	}
@@ -451,42 +472,56 @@ sap.ui.define([
 	/**
 	 * @class Property binding implementation for the OData metadata model.
 	 *
-	 * @extends sap.ui.model.ClientPropertyBinding
+	 * @extends sap.ui.model.PropertyBinding
 	 * @private
 	 */
 	ODataMetaPropertyBinding
-		= ClientPropertyBinding.extend("sap.ui.model.odata.v4.ODataMetaPropertyBinding", {
+		= PropertyBinding.extend("sap.ui.model.odata.v4.ODataMetaPropertyBinding", {
 			constructor : function () {
-				ClientPropertyBinding.apply(this, arguments);
+				PropertyBinding.apply(this, arguments);
+				this.vValue = undefined;
 			},
-			// @override
-			// @see sap.ui.model.ClientPropertyBinding#_getValue
-			_getValue : function () {
-				var oPromise,
-				that = this;
 
-				oPromise = this.oModel.fetchObject(this.sPath, this.oContext, this.mParameters);
-				if (oPromise.isFulfilled()) {
-					return oPromise.getResult();
-				}
-				// This is the async case
-				oPromise.then(function () {
-					// Now the value is available, fetch it again (now synchronously) and notify
-					// listeners
-					that.checkUpdate();
-				});
-				return undefined;
-			},
+			// Updates the binding's value and sends a change event if the <code>bForceUpdate</code>
+			// parameter is set to <code>true</code> or if the value has changed.
+			//
+			// @param {boolean} [bForceUpdate=false]
+			//   If <code>true</code>, the change event is always fired.
+			// @param {sap.ui.model.ChangeReason} [sChangeReason=ChangeReason.Change]
+			//   The change reason for the change event
 			// @override
 			// @see sap.ui.model.Binding#checkUpdate
-			checkUpdate : function (bForceUpdate) {
-				var vValue = this._getValue();
+			checkUpdate : function (bForceUpdate, sChangeReason) {
+				var that = this;
 
-				if (bForceUpdate || vValue !== this.oValue) {
-					this.oValue = vValue;
-					this._fireChange({reason : ChangeReason.Change});
+				this.oModel.fetchObject(this.sPath, this.oContext, this.mParameters)
+					.then(function (vValue) {
+						if (bForceUpdate || vValue !== that.vValue) {
+							that.vValue = vValue;
+							that._fireChange({
+								reason : sChangeReason || ChangeReason.Change
+							});
+						}
+					});
+			},
+
+			// @override
+			// @see sap.ui.model.PropertyBinding#getValue
+			getValue : function () {
+				return this.vValue;
+			},
+
+			// @override
+			// @see sap.ui.model.Binding#setContext
+			setContext : function (oContext) {
+				if (this.oContext != oContext) {
+					this.oContext = oContext;
+					if (this.bRelative) {
+						this.checkUpdate(false, ChangeReason.Context);
+					}
 				}
 			},
+
 			// @override
 			// @see sap.ui.model.PropertyBinding#setValue
 			setValue : function () {
@@ -523,7 +558,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.MetaModel
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 */
 	var ODataMetaModel = MetaModel.extend("sap.ui.model.odata.v4.ODataMetaModel", {
 		/*
@@ -600,7 +635,7 @@ sap.ui.define([
 					mScope[sQualifiedName] = oElement;
 					if (oElement.$kind === "Schema") {
 						addUrlForSchema(that, sQualifiedName, that.aAnnotationUris[i]);
-						mergeAnnotations(oElement, mScope.$Annotations);
+						mergeAnnotations(oElement, mScope.$Annotations, true);
 					}
 				}
 			}
@@ -1183,8 +1218,8 @@ sap.ui.define([
 	 *   An absolute path to an OData property within the OData data model
 	 * @returns {sap.ui.base.SyncPromise}
 	 *   A promise that gets resolved with the corresponding UI5 type from
-	 *   {@link sap.ui.model.odata.type} or rejected with an error; if no specific type can be
-	 *   determined, a warning is logged and {@link sap.ui.model.odata.type.Raw} is used
+	 *   {@link sap.ui.model.odata.type}; if no specific type can be determined, a warning is logged
+	 *   and {@link sap.ui.model.odata.type.Raw} is used
 	 *
 	 * @private
 	 * @see #requestUI5Type
@@ -1201,9 +1236,9 @@ sap.ui.define([
 		return this.fetchObject(undefined, oMetaContext).then(function (oProperty) {
 			var mConstraints,
 				sConstraintPath,
-				oType = oProperty["$ui5.type"],
+				oType,
 				oTypeInfo,
-				sTypeName = "sap.ui.model.odata.type.Raw";
+				sTypeName = oRawType.getName();
 
 			function setConstraint(sKey, vValue) {
 				if (vValue !== undefined) {
@@ -1212,6 +1247,13 @@ sap.ui.define([
 				}
 			}
 
+			if (!oProperty) {
+				jQuery.sap.log.warning("No metadata for path '" + sPath + "', using " + sTypeName,
+					undefined, sODataMetaModel);
+				return oRawType;
+			}
+
+			oType = oProperty["$ui5.type"];
 			if (oType) {
 				return oType;
 			}
@@ -1239,11 +1281,15 @@ sap.ui.define([
 				}
 			}
 
-			oProperty["$ui5.type"] = that.fetchModule(sTypeName).then(function (Type) {
-				oType = new Type(undefined, mConstraints);
-				oProperty["$ui5.type"] = oType;
-				return oType;
-			});
+			if (sTypeName === oRawType.getName()) {
+				oProperty["$ui5.type"] = oRawType;
+			} else {
+				oProperty["$ui5.type"] = that.fetchModule(sTypeName).then(function (Type) {
+					oType = new Type(undefined, mConstraints);
+					oProperty["$ui5.type"] = oType;
+					return oType;
+				});
+			}
 			return oProperty["$ui5.type"];
 		});
 	};
@@ -1269,12 +1315,15 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataMetaModel.prototype.fetchUpdateData = function (sPropertyPath, oContext) {
-		var sResolvedPath = this.resolve(sPropertyPath, oContext),
+		var oModel = oContext.getModel(),
+			sResolvedPath = oModel.resolve(sPropertyPath, oContext),
 			that = this;
 
 		function error(sMessage) {
-			jQuery.sap.log.error(sMessage, sResolvedPath, sODataMetaModel);
-			throw new Error(sResolvedPath + ": " + sMessage);
+			var oError = new Error(sResolvedPath + ": " + sMessage);
+
+			oModel.reportError(sMessage, sODataMetaModel, oError);
+			throw oError;
 		}
 
 		// First fetch the complete metapath to ensure that everything is in mScope
@@ -1374,17 +1423,20 @@ sap.ui.define([
 				}
 				// calculate the key predicate asynchronously and append it to the prefix
 				return oContext.fetchValue(vSegment.path).then(function (oEntity) {
+					var sPredicate;
+
 					if (!oEntity) {
 						error("No instance to calculate key predicate at " + vSegment.path);
 					}
-					if ("@$ui5.transient" in oEntity) {
+					if (_Helper.hasPrivateAnnotation(oEntity, "transient")) {
 						bTransient = true;
 						return undefined;
 					}
-					if (!oEntity["@$ui5.predicate"]) {
+					sPredicate = _Helper.getPrivateAnnotation(oEntity, "predicate");
+					if (!sPredicate) {
 						error("No key predicate known at " + vSegment.path);
 					}
-					return vSegment.prefix + oEntity["@$ui5.predicate"];
+					return vSegment.prefix + sPredicate;
 				}, function (oError) { // enrich the error message with the path
 					error(oError.message + " at " + vSegment.path);
 				});
@@ -1511,6 +1563,21 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns the module path to the model specific adapter factory.
+	 *
+	 * @returns {string}
+	 *   The module path to the model specific adapter factory
+	 *
+	 * @private
+	 * @see sap.ui.model.MetaModel#getAdapterFactoryModulePath
+	 * @since 1.55.0
+	 */
+	// @override
+	ODataMetaModel.prototype.getAdapterFactoryModulePath = function () {
+		return "sap/ui/model/odata/v4/meta/ODataAdapterFactory";
+	};
+
+	/**
 	 * Returns a map of entity tags for each $metadata or annotation file loaded so far.
 	 *
 	 * @returns {object}
@@ -1541,8 +1608,8 @@ sap.ui.define([
 	 *   of "cross-service references" (see parameter <code>supportReferences</code> of
 	 *   {@link sap.ui.model.odata.v4.ODataModel#constructor}).
 	 *
-	 * @deprecated Use {@link #getETags} instead because modifications to old files may be
-	 *   shadowed by a new file in certain scenarios.
+	 * @deprecated As of 1.51.0, use {@link #getETags} instead because modifications to old files
+	 *   may be shadowed by a new file in certain scenarios.
 	 * @public
 	 * @since 1.47.0
 	 */
@@ -1659,7 +1726,7 @@ sap.ui.define([
 	ODataMetaModel.prototype.getObject = _Helper.createGetMethod("fetchObject");
 
 	/**
-	 * @deprecated Use {@link #getObject}.
+	 * @deprecated As of 1.37.0, use {@link #getObject}.
 	 * @function
 	 * @public
 	 * @see sap.ui.model.Model#getProperty
@@ -1679,8 +1746,7 @@ sap.ui.define([
 	 *   metadata to calculate this type is already available; if no specific type can be
 	 *   determined, a warning is logged and {@link sap.ui.model.odata.type.Raw} is used
 	 * @throws {Error}
-	 *   If the UI5 type cannot be determined synchronously (due to a pending metadata request) or
-	 *   cannot be determined at all (due to a wrong data path)
+	 *   If the UI5 type cannot be determined synchronously (due to a pending metadata request)
 	 *
 	 * @function
 	 * @public
@@ -1930,7 +1996,7 @@ sap.ui.define([
 	 *   An absolute path to an OData property within the OData data model
 	 * @returns {Promise}
 	 *   A promise that gets resolved with the corresponding UI5 type from
-	 *   {@link sap.ui.model.odata.type} or rejected with an error; if no specific type can be
+	 *   {@link sap.ui.model.odata.type}; if no specific type can be
 	 *   determined, a warning is logged and {@link sap.ui.model.odata.type.Raw} is used
 	 *
 	 * @function

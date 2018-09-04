@@ -50,12 +50,13 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.14
 	 * @alias sap.m.RatingIndicator
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/rating-indicator/ Rating Indicator}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var RatingIndicator = Control.extend("sap.m.RatingIndicator", /** @lends sap.m.RatingIndicator.prototype */ { metadata: {
@@ -523,8 +524,10 @@ sap.ui.define([
 		if (bInputMode) { // we only support full selection of stars
 			if (fValue < 0.25) { // to be able to also select 0 stars
 				fValue = 0;
-			} else if (fValue < this.getMaxValue() - 0.25) { // to optimize selection behaviour
-				fValue += 0.25;
+			} else if (fValue < this.getMaxValue() - 0.4) { // to optimize selection behaviour
+				//threshold is increased to take into account the font's stroke width
+				// BCP: 1870119890
+				fValue += 0.4;
 			}
 			fValue = Math.round(fValue);
 		} else { // for display we round to the correct behavior

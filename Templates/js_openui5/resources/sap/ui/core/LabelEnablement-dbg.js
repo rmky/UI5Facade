@@ -9,17 +9,12 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject'],
 	function(jQuery, ManagedObject) {
 	"use strict";
 
-	function lazyInstanceof(o, sModule) {
-		var FNClass = sap.ui.require(sModule);
-		return typeof FNClass === 'function' && (o instanceof FNClass);
-	}
-
 	// Mapping between controls and labels
 	var CONTROL_TO_LABELS_MAPPING = {};
 
 	// The controls which should not be referenced by a "for" attribute (Specified in the HTML standard).
 	// Extend when needed.
-	var NON_LABELABLE_CONTROLS = ["sap.m.Link", "sap.m.Select", "sap.m.Label", "sap.m.Text"];
+	var NON_LABELABLE_CONTROLS = ["sap.m.Link", "sap.m.Label", "sap.m.Text"];
 
 	// Returns the control for the given id (if available) and invalidates it if desired
 	function toControl(sId, bInvalidate) {
@@ -30,7 +25,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject'],
 		var oControl = sap.ui.getCore().byId(sId);
 		// a control must only be invalidated if there is already a DOM Ref. If there is no DOM Ref yet, it will get
 		// rendered later in any case. Elements must always be invalidated because they have no own renderer.
-		if (oControl && bInvalidate && (!lazyInstanceof(oControl, 'sap/ui/core/Control') || oControl.getDomRef())) {
+		if (oControl && bInvalidate && (!oControl.isA('sap.ui.core.Control') || oControl.getDomRef())) {
 			oControl.invalidate();
 		}
 
@@ -134,7 +129,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject'],
 	 * @see sap.ui.core.LabelEnablement#enrich
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @protected
 	 * @alias sap.ui.core.LabelEnablement
 	 * @namespace

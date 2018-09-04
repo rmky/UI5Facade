@@ -8,7 +8,7 @@
  * Code other than the OpenUI5 libraries must not introduce dependencies to this module.
  */
 
-sap.ui.define(["sap/base/log"], function(Log) {
+sap.ui.define(["sap/base/Log"], function(Log) {
 	"use strict";
 
 	/*
@@ -34,11 +34,13 @@ sap.ui.define(["sap/base/log"], function(Log) {
 			configurable: true,
 			enumerable: true,
 			get: function() {
+				var ae = null;
 				try {
-					return getActiveElement.call(this);
+					ae = getActiveElement.call(this);
 				} catch (e) {
-					return null;
+					// ignore
 				}
+				return (ae && ae.nodeType) ? ae : document.body;
 			}
 		});
 	};

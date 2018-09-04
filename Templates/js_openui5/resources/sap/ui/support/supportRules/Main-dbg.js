@@ -60,7 +60,7 @@ function (jQuery, ManagedObject, JSONModel, Analyzer, CoreFacade,
 				 * @namespace
 				 * @alias jQuery.sap.support
 				 * @author SAP SE
-				 * @version 1.54.7
+				 * @version 1.56.6
 				 * @public
 				 */
 				jQuery.sap.support = {
@@ -217,7 +217,9 @@ function (jQuery, ManagedObject, JSONModel, Analyzer, CoreFacade,
 						});
 					});
 				} else {
-					RuleSetLoader.updateRuleSets();
+					RuleSetLoader.updateRuleSets(function () {
+						that.fireEvent("ready");
+					});
 				}
 			},
 			stopPlugin: function () {
@@ -344,7 +346,9 @@ function (jQuery, ManagedObject, JSONModel, Analyzer, CoreFacade,
 		}, this);
 
 		CommunicationBus.subscribe(channelNames.ON_INIT_ANALYSIS_CTRL, function () {
-			RuleSetLoader.updateRuleSets();
+			RuleSetLoader.updateRuleSets(function () {
+				this.fireEvent("ready");
+			}.bind(this));
 		}, this);
 
 		CommunicationBus.subscribe(channelNames.ON_SHOW_REPORT_REQUEST, function (reportConstants) {

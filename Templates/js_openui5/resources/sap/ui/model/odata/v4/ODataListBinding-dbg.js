@@ -16,18 +16,23 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/ui/model/odata/OperationMode",
 	"./Context",
+	"./lib/_AggregationCache",
 	"./lib/_Cache",
+	"./lib/_GroupLock",
 	"./lib/_Helper",
 	"./ODataParentBinding"
 ], function (jQuery, SyncPromise, Binding, ChangeReason, FilterOperator, FilterType, ListBinding,
-		Sorter, OperationMode, Context, _Cache, _Helper, asODataParentBinding) {
+		Sorter, OperationMode, Context, _AggregationCache, _Cache, _GroupLock, _Helper,
+		asODataParentBinding) {
 	"use strict";
 
 	var sClassName = "sap.ui.model.odata.v4.ODataListBinding",
 		mSupportedEvents = {
+			AggregatedDataStateChange : true,
 			change : true,
 			dataReceived : true,
 			dataRequested : true,
+			DataStateChange : true,
 			refresh : true
 		};
 
@@ -48,19 +53,20 @@ sap.ui.define([
 	 * @param {object} [mParameters]
 	 *   Map of binding parameters
 	 * @throws {Error}
-	 *   If disallowed binding parameters are provided or an unsupported operation mode is used
+	 *   If incorrect binding parameters are provided, an unsupported operation mode is used, or
+	 *   if any given filter including their embedded filters is marked as case insensitive
 	 *
 	 * @alias sap.ui.model.odata.v4.ODataListBinding
 	 * @author SAP SE
 	 * @class List binding for an OData V4 model.
-	 *   An event handler can only be attached to this binding for the following events: 'change',
-	 *   'dataReceived', 'dataRequested', and 'refresh'.
-	 *   For other events, an error is thrown.
+	 *   An event handler can only be attached to this binding for the following events:
+	 *   'AggregatedDataStateChange', 'change', 'dataReceived', 'dataRequested', 'DataStateChange'
+	 *   and 'refresh'. For other events, an error is thrown.
 	 * @extends sap.ui.model.ListBinding
 	 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#hasPendingChanges as #hasPendingChanges
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#isInitial as #isInitial
@@ -78,9 +84,12 @@ sap.ui.define([
 				if (sPath.slice(-1) === "/") {
 					throw new Error("Invalid path: " + sPath);
 				}
+				this.oAggregation = null;
 				this.mAggregatedQueryOptions = {};
 				this.bAggregatedQueryOptionsInitial = true;
 				this.aApplicationFilters = _Helper.toArray(vFilters);
+				ODataListBinding.checkCaseSensitiveFilters(this.aApplicationFilters);
+
 				this.oCachePromise = SyncPromise.resolve();
 				this.sChangeReason = oModel.bAutoExpandSelect ? "AddVirtualContext" : undefined;
 				// auto-$expand/$select: promises to wait until child bindings have provided
@@ -90,7 +99,7 @@ sap.ui.define([
 				this.aFilters = [];
 				this.mPreviousContextsByPath = {};
 				this.aPreviousData = [];
-				this.sRefreshGroupId = undefined;
+				this.oRefreshGroupLock = undefined;
 				this.aSorters = _Helper.toArray(vSorters);
 
 				this.applyParameters(jQuery.extend(true, {}, mParameters));
@@ -105,10 +114,39 @@ sap.ui.define([
 	asODataParentBinding(ODataListBinding.prototype);
 
 	/**
+	 * Check whether all given <code>sap.ui.model.Filter</code> and their embedded filters are case
+	 * sensitive.
+	 *
+	 * @param {sap.ui.model.Filter[]} aFilters
+	 *   An array of filter objects
+	 * @throws {Error}
+	 *   If any given filter is marked as case insensitive
+	 *
+	 * @private
+	 */
+	ODataListBinding.checkCaseSensitiveFilters = function (aFilters) {
+		function checkSingleFilter(oFilter) {
+			if (oFilter.bCaseSensitive === false) {
+				throw new Error("Filter for path '" + oFilter.sPath
+					+ "' has unsupported value for 'caseSensitive' : false");
+			}
+			if (oFilter.aFilters) {
+				ODataListBinding.checkCaseSensitiveFilters(oFilter.aFilters);
+			}
+			if (oFilter.oCondition) {
+				checkSingleFilter(oFilter.oCondition);
+			}
+		}
+
+		aFilters.forEach(checkSingleFilter);
+	};
+
+	/**
 	 * Deletes the entity identified by the edit URL.
 	 *
-	 * @param {string} [sGroupId=getUpdateGroupId()]
-	 *   The group ID to be used for the DELETE request
+	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
+	 *   A lock for the group ID to be used for the DELETE request; if no group ID is specified, it
+	 *   defaults to <code>getUpdateGroupId()</code>()
 	 * @param {string} sEditUrl
 	 *   The edit URL to be used for the DELETE request
 	 * @param {number} oContext
@@ -121,13 +159,13 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype._delete = function (sGroupId, sEditUrl, oContext) {
+	ODataListBinding.prototype._delete = function (oGroupLock, sEditUrl, oContext) {
 		var that = this;
 
 		if (!oContext.isTransient() && this.hasPendingChanges()) {
 			throw new Error("Cannot delete due to pending changes");
 		}
-		return this.deleteFromCache(sGroupId, sEditUrl, String(oContext.iIndex),
+		return this.deleteFromCache(oGroupLock, sEditUrl, String(oContext.iIndex),
 			function (iIndex, aEntities) {
 				var sContextPath, i, sPredicate, sResolvedPath;
 
@@ -148,7 +186,7 @@ sap.ui.define([
 					for (i = iIndex; i < that.aContexts.length; i += 1) {
 						if (that.aContexts[i]) {
 							// calculate the context path and try to re-use the context for it
-							sPredicate = aEntities[i]["@$ui5.predicate"];
+							sPredicate = _Helper.getPrivateAnnotation(aEntities[i], "predicate");
 							sContextPath = sResolvedPath + (sPredicate || "/" + i);
 							oContext = that.mPreviousContextsByPath[sContextPath];
 							if (oContext) {
@@ -171,6 +209,53 @@ sap.ui.define([
 	};
 
 	/**
+	 * Applies the given map of parameters to this binding's parameters and triggers the
+	 * creation of a new cache if called with a change reason.
+	 *
+	 * @param {object} [mParameters]
+	 *   Map of binding parameters, {@link sap.ui.model.odata.v4.ODataModel#constructor}
+	 * @param {sap.ui.model.ChangeReason} [sChangeReason]
+	 *   A change reason for {@link #reset}
+	 * @throws {Error}
+	 *   If disallowed binding parameters are provided or an unsupported operation mode is used
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype.applyParameters = function (mParameters, sChangeReason) {
+		var oAggregation,
+			oBindingParameters = this.oModel.buildBindingParameters(mParameters,
+				["$$aggregation", "$$groupId", "$$operationMode", "$$ownRequest",
+					"$$updateGroupId"]),
+			sOperationMode;
+
+		sOperationMode = oBindingParameters.$$operationMode || this.oModel.sOperationMode;
+		// Note: $$operationMode is validated before, this.oModel.sOperationMode also
+		// Just check for the case that no mode was specified, but sort/filter takes place
+		if (!sOperationMode && (this.aSorters.length || this.aApplicationFilters.length)) {
+			throw new Error("Unsupported operation mode: " + sOperationMode);
+		}
+		this.sOperationMode = sOperationMode;
+		this.sGroupId = oBindingParameters.$$groupId;
+		this.sUpdateGroupId = oBindingParameters.$$updateGroupId;
+		this.mQueryOptions = this.oModel.buildQueryOptions(mParameters, true);
+		this.mParameters = mParameters; // store mParameters at binding after validation
+		if ("$$aggregation" in oBindingParameters) {
+			// Note: this.mQueryOptions has been recreated from mParameters which does not contain
+			// our "implicit" $apply
+			if ("$apply" in this.mQueryOptions) {
+				throw new Error("Cannot combine $$aggregation and $apply");
+			}
+			oAggregation = _Helper.clone(oBindingParameters.$$aggregation);
+			this.mQueryOptions.$apply = _Helper.buildApply(oAggregation);
+			this.oAggregation = oAggregation;
+		}
+
+		this.mCacheByContext = undefined;
+		this.fetchCache(this.oContext);
+		this.reset(sChangeReason);
+	};
+
+	/**
 	 * The 'change' event is fired when the binding is initialized or new contexts are created or
 	 * its parent context is changed. It is to be used by controls to get notified about changes to
 	 * the binding contexts of this list binding. Registered event handlers are called with the
@@ -186,59 +271,8 @@ sap.ui.define([
 	 * @event
 	 * @name sap.ui.model.odata.v4.ODataListBinding#change
 	 * @public
-	 * @see sap.ui.base.Event
 	 * @since 1.37.0
 	 */
-
-	/**
-	 * The 'dataRequested' event is fired directly after data has been requested from a backend.
-	 * It is to be used by applications for example to switch on a busy indicator.
-	 * Registered event handlers are called without parameters.
-	 *
-	 * @param {sap.ui.base.Event} oEvent
-	 *
-	 * @event
-	 * @name sap.ui.model.odata.v4.ODataListBinding#dataRequested
-	 * @public
-	 * @see sap.ui.base.Event
-	 * @since 1.37.0
-	 */
-
-	/**
-	 * Applies the given map of parameters to this binding's parameters and triggers the
-	 * creation of a new cache if called with a change reason.
-	 *
-	 * @param {object} [mParameters]
-	 *   Map of binding parameters, {@link sap.ui.model.odata.v4.ODataModel#constructor}
-	 * @param {sap.ui.model.ChangeReason} [sChangeReason]
-	 *   A change reason for {@link #reset}
-	 * @throws {Error}
-	 *   If disallowed binding parameters are provided or an unsupported operation mode is used
-	 *
-	 * @private
-	 */
-	ODataListBinding.prototype.applyParameters = function (mParameters, sChangeReason) {
-		var oBindingParameters = this.oModel.buildBindingParameters(mParameters,
-				["$$groupId", "$$operationMode", "$$updateGroupId"]),
-			sOperationMode;
-
-		sOperationMode = oBindingParameters.$$operationMode || this.oModel.sOperationMode;
-		// Note: $$operationMode is validated before, this.oModel.sOperationMode also
-		// Just check for the case that no mode was specified, but sort/filter takes place
-		if (!sOperationMode && (this.aSorters.length || this.aApplicationFilters.length)) {
-			throw new Error("Unsupported operation mode: " + sOperationMode);
-		}
-		this.sOperationMode = sOperationMode;
-
-		this.sGroupId = oBindingParameters.$$groupId;
-		this.sUpdateGroupId = oBindingParameters.$$updateGroupId;
-		this.mQueryOptions = this.oModel.buildQueryOptions(mParameters, true);
-		this.mParameters = mParameters; // store mParameters at binding after validation
-
-		this.mCacheByContext = undefined;
-		this.fetchCache(this.oContext);
-		this.reset(sChangeReason);
-	};
 
 	/**
 	 * The 'dataReceived' event is fired after the back-end data has been processed and the
@@ -266,7 +300,19 @@ sap.ui.define([
 	 * @event
 	 * @name sap.ui.model.odata.v4.ODataListBinding#dataReceived
 	 * @public
-	 * @see sap.ui.base.Event
+	 * @since 1.37.0
+	 */
+
+	/**
+	 * The 'dataRequested' event is fired directly after data has been requested from a backend.
+	 * It is to be used by applications for example to switch on a busy indicator.
+	 * Registered event handlers are called without parameters.
+	 *
+	 * @param {sap.ui.base.Event} oEvent
+	 *
+	 * @event
+	 * @name sap.ui.model.odata.v4.ODataListBinding#dataRequested
+	 * @public
 	 * @since 1.37.0
 	 */
 
@@ -322,6 +368,7 @@ sap.ui.define([
 		var oContext,
 			vCreatePath, // {string|SyncPromise}
 			oCreatePromise,
+			oGroupLock,
 			sResolvedPath = this.oModel.resolve(this.sPath, this.oContext),
 			that = this;
 
@@ -340,7 +387,8 @@ sap.ui.define([
 			});
 		}
 
-		oCreatePromise = this.createInCache(this.getUpdateGroupId(), vCreatePath, "", oInitialData,
+		oGroupLock = this.oModel.lockGroup(this.getUpdateGroupId(), true); // only for createInCache
+		oCreatePromise = this.createInCache(oGroupLock, vCreatePath, "", oInitialData,
 			function () {
 				// cancel callback
 				oContext.destroy();
@@ -353,11 +401,14 @@ sap.ui.define([
 			that.iMaxLength += 1;
 			if (that.isRefreshable()) {
 				sGroupId = that.getGroupId();
-				return that.refreshSingle(oContext,
-					that.oModel.isDirectGroup(sGroupId) || that.oModel.isAutoGroup(sGroupId)
-						? sGroupId
-						: "$auto");
+				if (!that.oModel.isDirectGroup(sGroupId) && !that.oModel.isAutoGroup(sGroupId)) {
+					sGroupId = "$auto";
+				}
+				return that.refreshSingle(oContext, that.oModel.lockGroup(sGroupId));
 			}
+		}, function (oError) {
+			oGroupLock.unlock(true); // createInCache failed, so the lock might still be blocking
+			throw oError;
 		});
 		oContext = Context.create(this.oModel, this, sResolvedPath + "/-1", -1, oCreatePromise);
 
@@ -418,7 +469,7 @@ sap.ui.define([
 		for (i = iStart; i < iStart + aResults.length; i += 1) {
 			if (this.aContexts[i] === undefined) {
 				bChanged = true;
-				sPredicate = aResults[i - iStart]["@$ui5.predicate"];
+				sPredicate = _Helper.getPrivateAnnotation(aResults[i - iStart], "predicate");
 				sContextPath = sPath + (sPredicate || "/" + i);
 				if (sContextPath in this.mPreviousContextsByPath) {
 					this.aContexts[i] = this.mPreviousContextsByPath[sContextPath];
@@ -469,34 +520,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Deregisters the given change listener.
-	 *
-	 * @param {string} sPath
-	 *   The path
-	 * @param {sap.ui.model.odata.v4.ODataPropertyBinding} oListener
-	 *   The change listener
-	 * @param {number} iIndex
-	 *   Index corresponding to some current context of this binding
-	 *
-	 * @private
-	 */
-	ODataListBinding.prototype.deregisterChange = function (sPath, oListener, iIndex) {
-		var oCache = this.oCachePromise.getResult();
-
-		if (!this.oCachePromise.isFulfilled()) {
-			// Be prepared for late deregistrations by dependents of parked contexts
-			return;
-		}
-
-		if (oCache) {
-			oCache.deregisterChange(_Helper.buildPath(iIndex, sPath), oListener);
-		} else if (this.oContext) {
-			this.oContext.deregisterChange(_Helper.buildPath(this.sPath, iIndex, sPath),
-				oListener);
-		}
-	};
-
-	/**
 	 * Destroys the object. The object must not be used anymore after this function was called.
 	 *
 	 * @public
@@ -528,30 +551,24 @@ sap.ui.define([
 	 * @param {object} mQueryOptions
 	 *   The query options
 	 * @param {sap.ui.model.Context} [oContext]
-	 *   The context instance to be used, must be undefined for absolute bindings
+	 *   The context instance to be used, must be <code>undefined</code> for absolute bindings
 	 * @returns {sap.ui.model.odata.v4.lib._Cache}
-	 *   The new cache instance
+	 *   The new cache instance, either a collection cache or an aggregation cache
 	 *
 	 * @private
 	 */
 	ODataListBinding.prototype.doCreateCache = function (sResourcePath, mQueryOptions, oContext) {
-		var mInheritedQueryOptions;
+		var bAggregate = this.oAggregation && (this.oAggregation.groupLevels.length
+				|| _Helper.hasMinOrMax(this.oAggregation.aggregate));
 
-		if (!Object.keys(this.mParameters).length) {
-			// mQueryOptions can contain only dynamic filter and sorter AND model options;
-			// mix-in inherited static query options
-			mInheritedQueryOptions = this.getQueryOptionsForPath("", oContext);
-			if (mQueryOptions.$orderby && mInheritedQueryOptions.$orderby) {
-				mQueryOptions.$orderby += "," + mInheritedQueryOptions.$orderby;
-			}
-			if (mQueryOptions.$filter && mInheritedQueryOptions.$filter) {
-				mQueryOptions.$filter = "(" + mQueryOptions.$filter + ") and ("
-					+ mInheritedQueryOptions.$filter + ")";
-			}
-			mQueryOptions = jQuery.extend({}, mInheritedQueryOptions, mQueryOptions);
-		}
-		return _Cache.create(this.oModel.oRequestor, sResourcePath, mQueryOptions,
-			this.oModel.bAutoExpandSelect);
+		mQueryOptions = this.inheritQueryOptions(mQueryOptions, oContext);
+
+		// w/o grouping or min/max, $apply is sufficient; else _AggregationCache is needed
+		return bAggregate
+			? _AggregationCache.create(this.oModel.oRequestor, sResourcePath, this.oAggregation,
+				mQueryOptions, this.oModel.bAutoExpandSelect)
+			: _Cache.create(this.oModel.oRequestor, sResourcePath, mQueryOptions,
+				this.oModel.bAutoExpandSelect);
 	};
 
 	/**
@@ -788,9 +805,15 @@ sap.ui.define([
 			fetchArrayFilter(this.aApplicationFilters, /*bAnd*/true, {}),
 			fetchArrayFilter(this.aFilters, /*bAnd*/true, {})
 		]).then(function (aFilterValues) {
-			if (aFilterValues[0]) { aNonEmptyFilters.push(aFilterValues[0]); }
-			if (aFilterValues[1]) { aNonEmptyFilters.push(aFilterValues[1]); }
-			if (sStaticFilter) { aNonEmptyFilters.push(sStaticFilter); }
+			if (aFilterValues[0]) {
+				aNonEmptyFilters.push(aFilterValues[0]);
+			}
+			if (aFilterValues[1]) {
+				aNonEmptyFilters.push(aFilterValues[1]);
+			}
+			if (sStaticFilter) {
+				aNonEmptyFilters.push(sStaticFilter);
+			}
 
 			return combineFilterValues(aNonEmptyFilters, ") and (");
 		});
@@ -804,15 +827,12 @@ sap.ui.define([
 	 *   Some absolute path
 	 * @param {sap.ui.model.odata.v4.ODataPropertyBinding} [oListener]
 	 *   A property binding which registers itself as listener at the cache
-	 * @param {string} [sGroupId]
-	 *   The group ID to be used for the request; it is hard-coded to "$cached" in case this
-	 *   binding's cache is used because requests must only be triggered via {@link #getContexts}
 	 * @returns {sap.ui.base.SyncPromise}
 	 *   A promise on the outcome of the cache's <code>read</code> call
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype.fetchValue = function (sPath, oListener, sGroupId) {
+	ODataListBinding.prototype.fetchValue = function (sPath, oListener) {
 		var that = this;
 
 		return this.oCachePromise.then(function (oCache) {
@@ -821,11 +841,12 @@ sap.ui.define([
 			if (oCache) {
 				sRelativePath = that.getRelativePath(sPath);
 				if (sRelativePath !== undefined) {
-					return oCache.fetchValue("$cached", sRelativePath, undefined, oListener);
+					return oCache.fetchValue(_GroupLock.$cached, sRelativePath, undefined,
+						oListener);
 				}
 			}
 			if (that.oContext) {
-				return that.oContext.fetchValue(sPath, oListener, sGroupId);
+				return that.oContext.fetchValue(sPath, oListener);
 			}
 		});
 	};
@@ -855,14 +876,19 @@ sap.ui.define([
 	 * @returns {sap.ui.model.odata.v4.ODataListBinding}
 	 *   <code>this</code> to facilitate method chaining
 	 * @throws {Error}
-	 *   If the binding's root binding is suspended, there are pending changes or if an unsupported
-	 *   operation mode is used (see {@link sap.ui.model.odata.v4.ODataModel#bindList})
+	 *   If the binding's root binding is suspended, if there are pending changes, if an unsupported
+	 *   operation mode is used (see {@link sap.ui.model.odata.v4.ODataModel#bindList}), or if any
+	 *   given filter including their embedded filters is marked as case
+	 *   insensitive
 	 *
 	 * @public
 	 * @see sap.ui.model.ListBinding#filter
 	 * @since 1.39.0
 	 */
 	ODataListBinding.prototype.filter = function (vFilters, sFilterType) {
+		var aFilters = _Helper.toArray(vFilters);
+
+		ODataListBinding.checkCaseSensitiveFilters(aFilters);
 		this.checkSuspended();
 		if (this.sOperationMode !== OperationMode.Server) {
 			throw new Error("Operation mode has to be sap.ui.model.odata.OperationMode.Server");
@@ -871,10 +897,11 @@ sap.ui.define([
 			throw new Error("Cannot filter due to pending changes");
 		}
 
+		this.createRefreshGroupLock(this.getGroupId(), true);
 		if (sFilterType === FilterType.Control) {
-			this.aFilters = _Helper.toArray(vFilters);
+			this.aFilters = aFilters;
 		} else {
-			this.aApplicationFilters = _Helper.toArray(vFilters);
+			this.aApplicationFilters = aFilters;
 		}
 		this.mCacheByContext = undefined;
 		this.fetchCache(this.oContext);
@@ -920,7 +947,7 @@ sap.ui.define([
 			aContexts,
 			bDataRequested = false,
 			bFireChange = false,
-			sGroupId,
+			oGroupLock,
 			oPromise,
 			bRefreshEvent = !!this.sChangeReason,
 			iStartInModel, // in model coordinates
@@ -945,6 +972,7 @@ sap.ui.define([
 		}
 
 		if (this.bRelative && !oContext) { // unresolved relative binding
+			this.aPreviousData = []; // compute diff from scratch when binding is resolved again
 			return [];
 		}
 
@@ -975,17 +1003,22 @@ sap.ui.define([
 		}
 		iStartInModel = this.aContexts[-1] ? iStart - 1 : iStart;
 
+		oGroupLock = this.oRefreshGroupLock;
+		this.oRefreshGroupLock = undefined;
 		if (!this.bUseExtendedChangeDetection || !this.oDiff) {
 			oPromise = this.oCachePromise.then(function (oCache) {
 				if (oCache) {
-					sGroupId = that.sRefreshGroupId || that.getGroupId();
-					that.sRefreshGroupId = undefined;
-					return oCache.read(iStartInModel, iLength, iMaximumPrefetchSize, sGroupId,
+					// getContexts needs no lock, only the group ID (or re-use the refresh lock)
+					oGroupLock = that.oModel.lockGroup(that.getGroupId(), oGroupLock);
+					return oCache.read(iStartInModel, iLength, iMaximumPrefetchSize, oGroupLock,
 						function () {
 							bDataRequested = true;
 							that.fireDataRequested();
 						});
 				} else {
+					if (oGroupLock) {
+						oGroupLock.unlock();
+					}
 					return oContext.fetchValue(that.sPath).then(function (aResult) {
 						var iCount;
 
@@ -1040,6 +1073,9 @@ sap.ui.define([
 				}
 				throw oError;
 			})["catch"](function (oError) {
+				if (oGroupLock) {
+					oGroupLock.unlock(true);
+				}
 				that.oModel.reportError("Failed to get contexts for "
 						+ that.oModel.sServiceUrl
 						+ that.oModel.resolve(that.sPath, that.oContext).slice(1)
@@ -1229,6 +1265,40 @@ sap.ui.define([
 	};
 
 	/**
+	 * Enhance the inherited query options by the given query options if this binding does not have
+	 * any binding parameters. If both have a '$orderby', the resulting '$orderby' is the
+	 * concatenation of both '$orderby' with the given one first. If both have a '$filter', the
+	 * resulting '$filter' is the conjunction of both '$filter'.
+	 *
+	 * @param {object} mQueryOptions
+	 *   The query options
+	 * @param {sap.ui.model.Context} [oContext]
+	 *   The context instance to be used, must be <code>undefined</code> for absolute bindings
+	 * @returns {object} The merged query options
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype.inheritQueryOptions = function (mQueryOptions, oContext) {
+		var mInheritedQueryOptions;
+
+		if (!Object.keys(this.mParameters).length) {
+			// mQueryOptions can contain only dynamic filter and sorter AND model options;
+			// mix-in inherited static query options
+			mInheritedQueryOptions = this.getQueryOptionsForPath("", oContext);
+			if (mQueryOptions.$orderby && mInheritedQueryOptions.$orderby) {
+				mQueryOptions.$orderby += "," + mInheritedQueryOptions.$orderby;
+			}
+			if (mQueryOptions.$filter && mInheritedQueryOptions.$filter) {
+				mQueryOptions.$filter = "(" + mQueryOptions.$filter + ") and ("
+					+ mInheritedQueryOptions.$filter + ")";
+			}
+			mQueryOptions = jQuery.extend({}, mInheritedQueryOptions, mQueryOptions);
+		}
+
+		return mQueryOptions;
+	};
+
+	/**
 	 * Returns <code>true</code> if the length has been determined by the data returned from
 	 * server. If the length is a client side estimation <code>false</code> is returned.
 	 *
@@ -1266,7 +1336,7 @@ sap.ui.define([
 		function set(sProperty, sValue) {
 			if (sValue && (!mQueryOptions || mQueryOptions[sProperty] !== sValue)) {
 				if (!mResult) {
-					mResult = mQueryOptions ? JSON.parse(JSON.stringify(mQueryOptions)) : {};
+					mResult = mQueryOptions ? _Helper.clone(mQueryOptions) : {};
 				}
 				mResult[sProperty] = sValue;
 			}
@@ -1284,7 +1354,7 @@ sap.ui.define([
 	ODataListBinding.prototype.refreshInternal = function (sGroupId) {
 		var that = this;
 
-		this.sRefreshGroupId = sGroupId;
+		this.createRefreshGroupLock(sGroupId, this.isRefreshable());
 		this.oCachePromise.then(function (oCache) {
 			if (oCache) {
 				that.mCacheByContext = undefined;
@@ -1307,20 +1377,22 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.model.odata.v4.Context} oContext
 	 *   The context object for the entity to be refreshed
-	 * @param {string} [sGroupId]
-	 *   The group ID to be used for refresh
+	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
+	 *   A lock for the group ID to be used for refresh
+	 * @param {boolean} [bAllowRemoval=false]
+	 *   Allows the list binding to remove the given context from its collection because the
+	 *   entity does not match the binding's filter anymore,
+	 *   see {@link sap.ui.model.odata.v4.ODataListBinding#filter}; a removed context is
+	 *   destroyed, see {@link sap.ui.model.Context#destroy}.
+	 *   Supported since 1.55.0
 	 * @returns {sap.ui.base.SyncPromise}
 	 *   A promise which resolves with <code>undefined</code> when the entity is updated in the
 	 *   cache.
-	 * @throws {Error}
-	 *   For invalid group IDs, if the binding is not refreshable or has pending changes.
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype.refreshSingle = function (oContext, sGroupId) {
+	ODataListBinding.prototype.refreshSingle = function (oContext, oGroupLock, bAllowRemoval) {
 		var that = this;
-
-		this.oModel.checkGroupId(sGroupId);
 
 		if (!this.isRefreshable()) {
 			throw new Error("Binding is not refreshable; cannot refresh entity: " + oContext);
@@ -1334,34 +1406,71 @@ sap.ui.define([
 			var bDataRequested = false,
 				oPromise;
 
-			function fireDataReceived (oData) {
+			function fireDataReceived(oData) {
 				if (bDataRequested) {
 					that.fireDataReceived(oData);
 				}
 			}
 
-			sGroupId = sGroupId || that.getGroupId();
-			oPromise = oCache.refreshSingle(sGroupId, oContext.iIndex, function () {
-					bDataRequested = true;
-					that.fireDataRequested();
-				}
-			).then(function () {
-				fireDataReceived({data : {}});
-				oContext.checkUpdate();
-			}, function (oError) {
-				fireDataReceived({error : oError});
-				throw oError;
-			})["catch"](function (oError) {
-				that.oModel.reportError("Failed to refresh entity: " + oContext, sClassName,
-					oError);
-			});
+			function fireDataRequested() {
+				bDataRequested = true;
+				that.fireDataRequested();
+			}
 
-			// call refreshInternal on all dependent bindings to ensure that all resulting data
-			// requests are in the same batch request
-			that.oModel.getDependentBindings(oContext).forEach(function (oDependentBinding) {
-				// with bCheckUpdate = false because it is done after data is received
-				oDependentBinding.refreshInternal(sGroupId, false);
-			});
+			function refreshDependentBindings() {
+				that.oModel.getDependentBindings(oContext).forEach(function (oDependentBinding) {
+					// with bCheckUpdate = false because it is done after data is received
+					oDependentBinding.refreshInternal(oGroupLock.getGroupId(), false);
+				});
+			}
+
+			function onRemove(iIndex) {
+				var oContextOfDeletedRow = that.aContexts[iIndex],
+					i;
+
+				if (iIndex === -1) {
+					delete that.aContexts[-1];
+				} else {
+					that.aContexts.splice(iIndex, 1);
+					for (i = iIndex; i < that.aContexts.length; i += 1) {
+						if (that.aContexts[i]) {
+							that.aContexts[i].setIndex(i);
+						}
+					}
+				}
+				oContextOfDeletedRow.destroy();
+				that.iMaxLength -= 1; // this doesn't change Infinity
+				that._fireChange({reason : ChangeReason.Remove});
+			}
+
+			oGroupLock.setGroupId(that.getGroupId());
+			oPromise =
+				(bAllowRemoval
+					? oCache.refreshSingleWithRemove(oGroupLock, oContext.iIndex, fireDataRequested,
+						onRemove)
+					: oCache.refreshSingle(oGroupLock, oContext.iIndex, fireDataRequested))
+				.then(function () {
+					fireDataReceived({data : {}});
+					if (oContext.oBinding) { // do not update destroyed context
+						oContext.checkUpdate();
+						if (bAllowRemoval) {
+							refreshDependentBindings();
+						}
+					}
+				}, function (oError) {
+					fireDataReceived({error : oError});
+					throw oError;
+				})["catch"](function (oError) {
+					oGroupLock.unlock(true);
+					that.oModel.reportError("Failed to refresh entity: " + oContext, sClassName,
+						oError);
+				});
+
+			if (!bAllowRemoval) {
+				// call refreshInternal on all dependent bindings to ensure that all resulting data
+				// requests are in the same batch request
+				refreshDependentBindings();
+			}
 
 			return oPromise;
 		});
@@ -1432,6 +1541,76 @@ sap.ui.define([
 	};
 
 	/**
+	 * Sets a new data aggregation object and derives the system query option <code>$apply</code>
+	 * implicitly from it.
+	 *
+	 * @param {object} oAggregation
+	 *   An object holding the information needed for data aggregation; see also
+	 *   <a href="http://docs.oasis-open.org/odata/odata-data-aggregation-ext/v4.0/">OData
+	 *   Extension for Data Aggregation Version 4.0</a>.
+	 * @param {object} [oAggregation.aggregate]
+	 *   A map from aggregatable property names or aliases to objects containing the following
+	 *   details:
+	 *   <ul>
+	 *   <li><code>subtotals</code>: An optional boolean that tells whether subtotals for this
+	 *     aggregatable property are needed
+	 *   <li><code>with</code>: An optional string that provides the name of the method (for
+	 *     example "sum") used for aggregation of this aggregatable property; see
+	 *     "3.1.2 Keyword with"
+	 *   <li><code>name</code>: An optional string that provides the original aggregatable
+	 *     property name in case a different alias is chosen as the name of the dynamic property
+	 *     used for aggregation of this aggregatable property; see "3.1.1 Keyword as"
+	 *   </ul>
+	 * @param {object} [oAggregation.group]
+	 *   A map from groupable property names to empty objects
+	 * @param {string[]} [oAggregation.groupLevels]
+	 *   A list of groupable property names used to determine group levels. They may, but don't need
+	 *   to, be repeated in <code>oAggregation.group</code>. Group levels cannot be combined with
+	 *   filtering or with the system query option <code>$count</code>; only a single group level
+	 *   is supported.
+	 * @throws {Error}
+	 *   If the given data aggregation object is unsupported, if the system query option
+	 *   <code>$apply</code> has been specified explicitly before, if the binding's root binding
+	 *   is suspended, or if there are pending changes
+	 *
+	 * @example <caption>First group level is product category including subtotals for the net
+	 *     amount in display currency. On leaf level, transaction currency is used as an additional
+	 *     dimension and the net amount is averaged.</caption>
+	 *   oListBinding.setAggregation({
+	 *     aggregate : {
+	 *       AverageNetAmountInTransactionCurrency : {
+	 *         name : "NetAmountInTransactionCurrency", // original name
+	 *         with : "average" // aggregation method
+	 *       },
+	 *       NetAmountInDisplayCurrency : {subtotals : true}
+	 *     },
+	 *     group : {
+	 *       ProductCategory : {}, // optional
+	 *       TransactionCurrency : {}
+	 *     },
+	 *     groupLevels : ['ProductCategory']
+	 *   });
+	 * @public
+	 * @since 1.55.0
+	 */
+	ODataListBinding.prototype.setAggregation = function (oAggregation) {
+		this.checkSuspended();
+		if (this.hasPendingChanges()) {
+			throw new Error("Cannot set $$aggregation due to pending changes");
+		}
+		if (!this.oAggregation && "$apply" in this.mQueryOptions) {
+			throw new Error("Cannot override existing $apply : '" + this.mQueryOptions.$apply
+				+ "'");
+		}
+		oAggregation = _Helper.clone(oAggregation);
+		this.mQueryOptions.$apply = _Helper.buildApply(oAggregation);
+		this.oAggregation = oAggregation;
+		this.mCacheByContext = undefined;
+		this.fetchCache(this.oContext);
+		this.reset(ChangeReason.Change);
+	};
+
+	/**
 	 * Sets the context and resets the cached contexts of the list items.
 	 *
 	 * @param {sap.ui.model.Context} oContext
@@ -1451,7 +1630,7 @@ sap.ui.define([
 				// Keep the header context even if we lose the parent context, so that the header
 				// context remains unchanged if the parent context is temporarily dropped during a
 				// refresh.
-				if (this.aContexts && this.aContexts[-1] && this.aContexts[-1].isTransient()) {
+				if (this.aContexts[-1] && this.aContexts[-1].isTransient()) {
 					// to allow switching the context for new created entities (transient or not)
 					// we first have to implement a store/restore mechanism for the -1 entry
 					throw new Error("setContext on relative binding is forbidden if a transient " +
@@ -1516,82 +1695,110 @@ sap.ui.define([
 
 		this.aSorters = _Helper.toArray(vSorters);
 		this.mCacheByContext = undefined;
+		this.createRefreshGroupLock(this.getGroupId(), true);
 		this.fetchCache(this.oContext);
 		this.reset(ChangeReason.Sort);
 		return this;
 	};
 
 	/**
-	 * Returns a string representation of this object including the binding path. If the binding is
-	 * relative, the parent path is also given, separated by a '|'.
-	 *
-	 * @return {string} A string description of this binding
-	 * @public
-	 * @since 1.37.0
-	 */
-	ODataListBinding.prototype.toString = function () {
-		return sClassName + ": " + (this.bRelative ? this.oContext + "|" : "") + this.sPath;
-	};
-
-	/**
-	 * Updates the binding's "$apply" parameter based on the given analytical information as
+	 * Updates the binding's system query option <code>$apply</code> based on the given data
+	 * aggregation information. Its value is
 	 * "groupby((&lt;dimension_1,...,dimension_N,unit_or_text_1,...,unit_or_text_K>),
-	 * aggregate(&lt;measure_1,...,measure_M>))" where the "aggregate" part is only present if
-	 * measures are given.
+	 * aggregate(&lt;measure> with &lt;method> as &lt;alias>, ...))" where the "aggregate" part is
+	 * only present if measures are given and both "with" and "as" are optional.
 	 *
-	 * Analytical information is the mapping of UI columns to properties in the bound OData entity
-	 * set. Every column object contains at least the <code>name</code> of the bound property.
-	 * <ol>
-	 *   <li>A column bound to a dimension property has further boolean properties:
-	 *     <ul>
-	 *       <li><code>grouped</code>: its presence is used to detect a dimension</li>
-	 *       <li><code>inResult</code> and <code>visible</code>: the dimension is ignored unless at
-	 *         least one of these is <code>true</code></li>
-	 *     </ul>
-	 *   </li>
-	 *   <li>A column bound to a measure property has further boolean properties:
-	 *     <ul>
-	 *       <li><code>total</code>: its presence is used to detect a measure</li>
-	 *     </ul>
-	 *   </li>
-	 *   <li>A column bound to neither a dimension nor a measure property, but for instance
-	 *   bound to a text property or in some cases to a unit property, has no further boolean
-	 *   properties</li>
-	 * </ol>
-	 *
-	 * @param {object[]} aColumns
-	 *   An array with objects holding the analytical information for every column, from left to
-	 *   right
+	 * @param {object[]} aAggregation
+	 *   An array with objects holding the information needed for data aggregation; see also
+	 *   <a href="http://docs.oasis-open.org/odata/odata-data-aggregation-ext/v4.0/">OData Extension
+	 *   for Data Aggregation Version 4.0</a>
+	 * @param {string} aAggregation[].name
+	 *   The name of an OData property. A property which is neither a dimension nor a measure, but
+	 *   for instance a text property or in some cases a unit property, has no further details.
+	 * @param {boolean} [aAggregation[].grouped]
+	 *   Its presence is used to detect a dimension; the dimension is ignored unless at least one of
+	 *   <code>inResult</code> and <code>visible</code> is <code>true</code>
+	 * @param {boolean} [aAggregation[].inResult]
+	 *   Dimensions only: see above
+	 * @param {boolean} [aAggregation[].visible]
+	 *   Dimensions only: see above
+	 * @param {boolean} [aAggregation[].total]
+	 *   Its presence is used to detect a measure
+	 * @param {boolean} [aAggregation[].max]
+	 *   Measures only: Whether the maximum value (ignoring currencies or units of measure) for this
+	 *   measure is needed (since 1.55.0);
+	 *   <b>filtering and sorting is not supported in this case</b>
+	 * @param {boolean} [aAggregation[].min]
+	 *   Measures only: Whether the minimum value (ignoring currencies or units of measure) for this
+	 *   measure is needed (since 1.55.0);
+	 *   <b>filtering and sorting is not supported in this case</b>
+	 * @param {string} [aAggregation[].with]
+	 *   Measures only: The name of the method (for example "sum") used for aggregation of this
+	 *   measure; see "3.1.2 Keyword with" (since 1.55.0)
+	 * @param {string} [aAggregation[].as]
+	 *   Measures only: The alias, that is the name of the dynamic property used for aggregation of
+	 *   this measure; see "3.1.1 Keyword as" (since 1.55.0)
+	 * @returns {object}
+	 *   The return object contains a property <code>measureRangePromise</code> if and only if at
+	 *   least one measure has requested a minimum or maximum value; its value is a
+	 *   promise which resolves with the measure range map as soon as data has been received; the
+	 *   measure range map contains measure names as keys and objects as values which have a
+	 *   <code>min</code> and <code>max</code> property as requested above.
+	 *   <code>undefined</code> is returned instead of an empty object.
 	 * @throws {Error}
-	 *   If the binding's root binding is suspended or a column is both a dimension and a measure
+	 *   If the binding's root binding is suspended or a property is both a dimension and a measure
 	 *
 	 * @protected
 	 * @see sap.ui.model.analytics.AnalyticalBinding#updateAnalyticalInfo
 	 * @see #changeParameters
+	 * @see #setAggregation
 	 * @since 1.53.0
 	 */
-	ODataListBinding.prototype.updateAnalyticalInfo = function (aColumns) {
-		var aAggregate = [],
-			aGroupBy = [],
-			aGroupByNoDimension = [];
+	ODataListBinding.prototype.updateAnalyticalInfo = function (aAggregation) {
+		var oAggregation = {
+				aggregate : {},
+				group : {}
+			},
+			bHasMinMax = false;
 
-		aColumns.forEach(function (oColumn) {
+		aAggregation.forEach(function (oColumn) {
+			var oDetails = {};
+
 			if ("total" in oColumn) { // measure
 				if ("grouped" in oColumn) {
 					throw new Error("Both dimension and measure: " + oColumn.name);
 				}
-				aAggregate.push(oColumn.name);
-			} else if ("grouped" in oColumn) { // dimension
-				if (oColumn.inResult || oColumn.visible) {
-					aGroupBy.push(oColumn.name);
+				if (oColumn.as) {
+					oDetails.name = oColumn.name;
+					oAggregation.aggregate[oColumn.as] = oDetails;
+				} else {
+					oAggregation.aggregate[oColumn.name] = oDetails;
 				}
-			} else {
-				aGroupByNoDimension.push(oColumn.name);
+				if (oColumn.min) {
+					oDetails.min = true;
+					bHasMinMax = true;
+				}
+				if (oColumn.max) {
+					oDetails.max = true;
+					bHasMinMax = true;
+				}
+				if (oColumn.with) {
+					oDetails.with = oColumn.with;
+				}
+			} else if (!("grouped" in oColumn) || oColumn.inResult || oColumn.visible) {
+				// dimension or unit/text property
+				oAggregation.group[oColumn.name] = oDetails;
 			}
 		});
-
-		this.changeParameters({$apply : "groupby((" + aGroupBy.concat(aGroupByNoDimension).join(",")
-			+ (aAggregate.length ? "),aggregate(" + aAggregate.join(",") + "))" : "))")});
+		this.oAggregation = oAggregation; // Note: needed by #doCreateCache!
+		this.changeParameters({$apply : _Helper.buildApply(oAggregation)});
+		if (bHasMinMax) {
+			return {
+				measureRangePromise : Promise.resolve(this.oCachePromise.then(function (oCache) {
+					return oCache.getMeasureRangePromise();
+				}))
+			};
+		}
 	};
 
 	return ODataListBinding;

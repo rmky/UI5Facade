@@ -15,9 +15,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Column...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 * @namespace
-		 * @name sap.ui.table.TableColumnUtils
+		 * @alias sap.ui.table.TableColumnUtils
 		 * @private
 		 */
 		var TableColumnUtils = {
@@ -387,7 +387,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 
 				var iCurrentIndex = oTable.indexOfColumn(oColumn);
 
-				if (iCurrentIndex < oTable.getFixedColumnCount() || iCurrentIndex < oTable._iFirstReorderableIndex) {
+				if (iCurrentIndex < oTable.getComputedFixedColumnCount() || iCurrentIndex < oTable._iFirstReorderableIndex) {
 					// No movement of fixed columns or e.g. the first column in the TreeTable
 					return false;
 				}
@@ -446,7 +446,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 
 				iNewIndex = TableColumnUtils._normalizeColumnMoveTargetIndex(oColumn, iNewIndex);
 
-				if (iNewIndex < oTable.getFixedColumnCount() || iNewIndex < oTable._iFirstReorderableIndex) {
+				if (iNewIndex < oTable.getComputedFixedColumnCount() || iNewIndex < oTable._iFirstReorderableIndex) {
 					// No movement of fixed columns or e.g. the first column in the TreeTable
 					return false;
 				}
@@ -552,7 +552,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 			 * @private
 			 */
 			resizeColumn: function(oTable, iColumnIndex, iWidth, bFireEvent, iColumnSpan) {
-				if (oTable == null ||
+				if (!oTable ||
 					iColumnIndex == null || iColumnIndex < 0 ||
 					iWidth == null || iWidth <= 0) {
 					return false;
@@ -675,7 +675,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 			 * @private
 			 */
 			getColumnWidth: function(oTable, iColumnIndex) {
-				if (oTable == null ||
+				if (!oTable ||
 					iColumnIndex == null || iColumnIndex < 0) {
 					return null;
 				}
@@ -692,7 +692,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 				if (sColumnWidth === "" || sColumnWidth === "auto" || sColumnWidth.match(/%$/)) {
 					if (oColumn.getVisible()) {
 						var oColumnElement = oColumn.getDomRef();
-						return oColumnElement != null ? oColumnElement.offsetWidth : 0;
+						return oColumnElement ? oColumnElement.offsetWidth : 0;
 					} else {
 						return 0;
 					}
@@ -705,13 +705,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 			 * Returns the number of fixed columns depending on the parameter <code>bConsiderVisibility</code>.
 			 *
 			 * @param {sap.ui.table.Table} oTable Instance of the table.
-			 * @param {boolean} bConsiderVisibility If <code>false</code> the result of the <code>getFixedColumnCount</code> function of the table is returned.
+			 * @param {boolean} bConsiderVisibility If <code>false</code> the result of the <code>getComputedFixedColumnCount</code> function of the table is returned.
 			 * 										If <code>true</code> the visibility is included into the determination of the count.
 			 * @returns {int} Returns the number of fixed columns depending on the parameter <code>bConsiderVisibility</code>.
 			 * @private
 			 */
 			getFixedColumnCount: function(oTable, bConsiderVisibility) {
-				var iFixed = oTable.getFixedColumnCount();
+				var iFixed = oTable.getComputedFixedColumnCount();
 
 				if (!bConsiderVisibility) {
 					return iFixed;

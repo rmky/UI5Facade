@@ -91,7 +91,7 @@ sap.ui.define([
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -236,10 +236,14 @@ sap.ui.define([
 			minAutoRowCount : {type : "int", group : "Appearance", defaultValue : 5},
 
 			/**
-			 * Number of columns that are fix on the left. When you use a horizontal scrollbar, only
-			 * the columns which are not fixed, will scroll. Fixed columns need a defined width for the feature to work.
-			 * Please note that the aggregated width of all fixed columns must not exceed the table width since there
-			 * will be no scrollbar for fixed columns.
+			 * Number of columns that are fixed on the left. Only columns which are not fixed can be scrolled horizontally.
+			 *
+			 * <b>Note</b>
+			 * <ul>
+			 *  <li>Fixed columns need a defined width for the feature to work.</li>
+			 *  <li>The aggregated width of all fixed columns must not exceed the table width. Otherwise the table ignores the value of the
+			 *  property and adapts the behavior in an appropriate way to ensure that the user is still able to scroll horizontally.</li>
+			 * </ul>
 			 */
 			fixedColumnCount : {type : "int", group : "Appearance", defaultValue : 0},
 
@@ -345,7 +349,7 @@ sap.ui.define([
 			/**
 			 * Rows of the Table
 			 */
-			rows : {type : "sap.ui.table.Row", multiple : true, singularName : "row", bindable : "bindable"},
+			rows : {type : "sap.ui.table.Row", multiple : true, singularName : "row", bindable : "bindable", selector : "#{id}-tableCCnt", dnd : true},
 
 			/**
 			 * The value for the noData aggregation can be either a string value or a control instance.
@@ -367,37 +371,6 @@ sap.ui.define([
 			 * <code>setRowSettingsTemplate</code> for the changes to take effect.
 			 */
 			rowSettingsTemplate : {type : "sap.ui.table.RowSettings", multiple : false},
-
-			/**
-			 * Defines the drag-and-drop configuration via {@link sap.ui.core.dnd.DragDropInfo}
-			 *
-			 * The following restrictions apply:
-			 * <ul>
-			 *   <li>Drag and drop is not supported on mobile devices and there is no accessible alternative.</li>
-			 *   <li>Columns cannot be configured to be draggable.</li>
-			 *   <li>The following rows are not draggable:
-			 *     <ul>
-			 *       <li>Empty rows</li>
-			 *       <li>Group header rows</li>
-			 *       <li>Sum rows</li>
-			 *     </ul>
-			 *   </li>
-			 *   <li>Columns cannot be configured to be droppable.</li>
-			 *   <li>The following rows are not droppable:
-			 *     <ul>
-			 *       <li>The dragged row itself</li>
-			 *       <li>Empty rows</li>
-			 *       <li>Group header rows</li>
-			 *       <li>Sum rows</li>
-			 *     </ul>
-			 *   </li>
-			 *   <li>Texts in draggable rows cannot be selected.</li>
-			 *   <li>The text of input fields in draggable rows can be selected, but not dragged.</li>
-			 * </ul>
-			 *
-			 * @since 1.52
-			 */
-			dragDropConfig : {name : "dragDropConfig", type : "sap.ui.core.dnd.DragDropBase", multiple : true, singularName : "dragDropConfig"},
 
 			/**
 			 * Defines the context menu for the table.
@@ -747,6 +720,37 @@ sap.ui.define([
 		designtime:  "sap/ui/table/designtime/Table.designtime"
 	}});
 
+	/**
+	 * Gets content of aggregation <code>dragDropConfig</code> which defines the drag-and-drop configuration.
+	 *
+	 * The following restrictions apply:
+	 * <ul>
+	 *   <li>Columns cannot be configured to be draggable.</li>
+	 *   <li>The following rows are not draggable:
+	 *     <ul>
+	 *       <li>Empty rows</li>
+	 *       <li>Group header rows</li>
+	 *       <li>Sum rows</li>
+	 *     </ul>
+	 *   </li>
+	 *   <li>Columns cannot be configured to be droppable.</li>
+	 *   <li>The following rows are not droppable:
+	 *     <ul>
+	 *       <li>The dragged row itself</li>
+	 *       <li>Empty rows</li>
+	 *       <li>Group header rows</li>
+	 *       <li>Sum rows</li>
+	 *     </ul>
+	 *   </li>
+	 * </ul>
+	 *
+	 * @name sap.ui.table.Table#getDragDropConfig
+	 * @returns sap.ui.core.dnd.DragDropBase[]
+	 * @function
+	 * @public
+	 * @since 1.52
+	 */
+
 
 	// =============================================================================
 	// BASIC CONTROL API
@@ -761,7 +765,6 @@ sap.ui.define([
 	Table.prototype.init = function() {
 		this._iBaseFontSize = parseFloat(jQuery("body").css("font-size")) || 16;
 		// create an information object which contains always required infos
-		this._oResBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.table");
 		this._bRtlMode = sap.ui.getCore().getConfiguration().getRTL();
 
 		this._attachExtensions();
@@ -880,7 +883,7 @@ sap.ui.define([
 		this._detachExtensions();
 
 		// cleanup
-		if (this._dataReceivedHandlerId != null) {
+		if (this._dataReceivedHandlerId) {
 			jQuery.sap.clearDelayedCall(this._dataReceivedHandlerId);
 			delete this._dataReceivedHandlerId;
 		}
@@ -924,53 +927,44 @@ sap.ui.define([
 		var oChanges = oEvent.changes || {};
 		var bRtlChanged = oChanges.hasOwnProperty("rtl");
 		var bLangChanged = oChanges.hasOwnProperty("language");
-		if (bRtlChanged || bLangChanged) {
-			this._adaptLocalization(bRtlChanged, bLangChanged);
-			// Trigger rerendering of whole table
+		this._adaptLocalization(bRtlChanged, bLangChanged).then(function() {
 			this.invalidate();
-		}
+		}.bind(this));
 	};
 
 	/**
-	 * Localization changed
+	 * Adapts the table to localization changes. Re-rendering or invalidation of the table needs to be taken care of by the caller.
+	 *
+	 * @param {boolean} bRtlChanged Whether the text direction changed.
+	 * @param {boolean} bLangChanged Whether the language changed.
+	 * @return {Promise} A promise on the adaptation. If no adaptation is required, because text direction and language did not change, the
+	 * promise will be rejected.
 	 * @private
 	 */
 	Table.prototype._adaptLocalization = function(bRtlChanged, bLangChanged) {
+		if (!bRtlChanged && !bLangChanged) {
+			return Promise.reject();
+		}
+
+		var pUpdateLocalizationInfo = Promise.resolve();
+
 		if (bRtlChanged) {
 			this._bRtlMode = sap.ui.getCore().getConfiguration().getRTL();
 		}
 
 		if (bLangChanged) {
-			var aRows = this.getRows();
-			var i;
-
-			// Update the resource bundle.
-			this._oResBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.table");
-
-			// Update the resource bundle of row actions.
-			var oRowAction;
-			for (i = 0; i < aRows.length; i++) {
-				oRowAction = aRows[i].getAggregation("_rowAction");
-				if (oRowAction) {
-					oRowAction._oResBundle = this._oResBundle;
-				}
-			}
-
-			// Update the resource bundle of row settings.
-			var oRowSettings;
-			for (i = 0; i < aRows.length; i++) {
-				oRowSettings = aRows[i].getAggregation("_settings");
-				if (oRowSettings) {
-					oRowSettings._oResBundle = this._oResBundle;
-				}
-			}
-
-			// Clear the cell context menu.
-			TableUtils.Menu.cleanupDataCellContextMenu(this);
-
-			// Update the column menus.
-			this._invalidateColumnMenus(true);
+			pUpdateLocalizationInfo = TableUtils.getResourceBundle({async: true, reload: true});
 		}
+
+		return pUpdateLocalizationInfo.then(function() {
+			if (bLangChanged) {
+				// Clear the cell context menu.
+				TableUtils.Menu.cleanupDataCellContextMenu(this);
+
+				// Update the column menus.
+				this._invalidateColumnMenus();
+			}
+		}.bind(this));
 	};
 
 	/**
@@ -1000,8 +994,8 @@ sap.ui.define([
 		var bIsZoomedInChrome = Device.browser.chrome && window.devicePixelRatio != 1;
 
 		for (var i = 0; i < iRowCount; i++) {
-			var nFixedColumnsAreaRowHeight = aRowsInFixedColumnsArea[i] == null ? 0 : aRowsInFixedColumnsArea[i].getBoundingClientRect().height;
-			var nScrollableColumnsAreaRowHeight = aRowsInScrollableColumnsArea[i] == null ? 0 : aRowsInScrollableColumnsArea[i].getBoundingClientRect().height;
+			var nFixedColumnsAreaRowHeight = aRowsInFixedColumnsArea[i] ? aRowsInFixedColumnsArea[i].getBoundingClientRect().height : 0;
+			var nScrollableColumnsAreaRowHeight = aRowsInScrollableColumnsArea[i] ? aRowsInScrollableColumnsArea[i].getBoundingClientRect().height : 0;
 			var nRowHeight = Math.max(nFixedColumnsAreaRowHeight, nScrollableColumnsAreaRowHeight);
 
 			if (bIsZoomedInChrome) {
@@ -1091,7 +1085,7 @@ sap.ui.define([
 				var oScrollExtension = this._getScrollExtension();
 				var oHSb = oScrollExtension.getHorizontalScrollbar();
 
-				if (oHSb == null || !oScrollExtension.isHorizontalScrollbarVisible()) {
+				if (!oHSb || !oScrollExtension.isHorizontalScrollbarVisible()) {
 					var mDefaultScrollbarHeight = {};
 					mDefaultScrollbarHeight[Device.browser.BROWSER.CHROME] = 16;
 					mDefaultScrollbarHeight[Device.browser.BROWSER.FIREFOX] = 16;
@@ -1172,14 +1166,27 @@ sap.ui.define([
 			oSizes.tableCtrlFixedWidth = oCtrlFixed.clientWidth;
 		}
 
-		var iFixedColumnCount = this.getProperty("fixedColumnCount");
+		var iFixedColumnCount = this.getFixedColumnCount();
 		var iFixedHeaderWidthSum = 0;
+
 		if (iFixedColumnCount) {
+			var aColumns = this.getColumns();
 			var aHeaderElements = oDomRef.querySelectorAll(".sapUiTableCtrlFirstCol:not(.sapUiTableCHTHR) > th");
+
 			for (var i = 0; i < aHeaderElements.length; i++) {
 				var iColIndex = parseInt(aHeaderElements[i].getAttribute("data-sap-ui-headcolindex"), 10);
+
 				if (!isNaN(iColIndex) && (iColIndex < iFixedColumnCount)) {
-					iFixedHeaderWidthSum += aHeaderElements[i].getBoundingClientRect().width;
+					var oColumn = aColumns[iColIndex];
+					var iWidth;
+
+					if (oColumn._iFixWidth != null) {
+						iWidth = oColumn._iFixWidth;
+					} else {
+						iWidth = aHeaderElements[i].getBoundingClientRect().width;
+					}
+
+					iFixedHeaderWidthSum += iWidth;
 				}
 			}
 		}
@@ -1199,38 +1206,22 @@ sap.ui.define([
 				}
 			}
 
-			// If the columns fit into the table, we do not need to ignore the fixed column count.
-			// Otherwise, check if the new fixed columns fit into the table. If they don't, the fixed column count setting will be ignored.
-			var bNonFixedColumnsFitIntoTable = oSizes.tableCtrlScrollWidth === oSizes.tableCtrlScrWidth; // Also true if no non-fixed columns exist.
+			iUsedHorizontalTableSpace += TableUtils.Column.getMinColumnWidth();
 
-			if (!bNonFixedColumnsFitIntoTable) { // horizontal scrollbar should be at least 48px wide
-				iUsedHorizontalTableSpace += TableUtils.Column.getMinColumnWidth();
-			}
-
-			var bFixedColumnsFitIntoTable = oSizes.tableCtrlFixedWidth + iUsedHorizontalTableSpace <= oSizes.tableCntWidth; // Also true if no fixed columns exist.
-			var bIgnoreFixedColumnCountCandidate = false;
-
-			if (!bNonFixedColumnsFitIntoTable || !bFixedColumnsFitIntoTable) {
-				bIgnoreFixedColumnCountCandidate = (oSizes.tableCntWidth - iUsedHorizontalTableSpace < iFixedHeaderWidthSum);
-			}
+			var iAvailableSpace = oSizes.tableCntWidth - iUsedHorizontalTableSpace;
+			var bFixedColumnsFitIntoTable = iAvailableSpace > iFixedHeaderWidthSum;
+			var bIgnoreFixedColumnCountCandidate = !bFixedColumnsFitIntoTable;
 
 			if (this._bIgnoreFixedColumnCount !== bIgnoreFixedColumnCountCandidate) {
 				this._bIgnoreFixedColumnCount = bIgnoreFixedColumnCountCandidate;
+				if (this.getEnableColumnFreeze()) {
+					this._invalidateColumnMenus();
+				}
 				this.invalidate();
 			}
 		}
 
 		return oSizes;
-	};
-
-	/**
-	 * Returns the aggregation containers DOM reference.
-	 * @private
-	 */
-	Table.prototype.getAggregationDomRef = function(sAggregationName) {
-		if (sAggregationName == "rows") {
-			return this.getDomRef("tableCCnt");
-		}
 	};
 
 	/**
@@ -1395,7 +1386,7 @@ sap.ui.define([
 			return;
 		}
 
-		if (!oDomRef.offsetWidth) { // do not update sizes of an invisible table
+		if (oDomRef.offsetWidth === 0) { // do not update sizes of an invisible table
 			TableUtils.deregisterResizeHandler(this, "");
 			registerResizeHandler();
 			return;
@@ -1792,9 +1783,9 @@ sap.ui.define([
 
 		var oBinding = this.getBinding("rows");
 
-		if (sName === "rows" && oBinding != null) {
+		if (sName === "rows" && oBinding) {
 			var oModel = oBinding.getModel();
-			if (oModel != null && oModel.getDefaultBindingMode() === BindingMode.OneTime) {
+			if (oModel && oModel.getDefaultBindingMode() === BindingMode.OneTime) {
 				jQuery.sap.log.error("The binding mode of the model is set to \"OneTime\"."
 									 + " This binding mode is not supported for the \"rows\" aggregation!"
 									 + " Scrolling can not be performed.", this);
@@ -1849,11 +1840,11 @@ sap.ui.define([
 	};
 
 	Table._addBindingListener = function(oBindingInfo, sEventName, fHandler) {
-		if (oBindingInfo.events == null) {
+		if (!oBindingInfo.events) {
 			oBindingInfo.events = {};
 		}
 
-		if (oBindingInfo.events[sEventName] == null) {
+		if (!oBindingInfo.events[sEventName]) {
 			oBindingInfo.events[sEventName] = fHandler;
 		} else {
 			// Wrap the event handler of the other party to add our handler.
@@ -1941,7 +1932,7 @@ sap.ui.define([
 		}
 
 		iVisibleRowCount = this.validateProperty("visibleRowCount", iVisibleRowCount);
-		if (this.getBinding("rows") != null && this._getTotalRowCount() <= iVisibleRowCount) {
+		if (this.getBinding("rows") && this._getTotalRowCount() <= iVisibleRowCount) {
 			this.setProperty("firstVisibleRow", 0);
 		}
 		this.setProperty("visibleRowCount", iVisibleRowCount);
@@ -2173,7 +2164,7 @@ sap.ui.define([
 
 		var oBinding = this.getBinding("rows");
 		var iCurrentTotalRowCount = this._getTotalRowCount();
-		var iNewTotalRowCount = oBinding == null ? 0 : oBinding.getLength();
+		var iNewTotalRowCount = oBinding ? oBinding.getLength() : 0;
 
 		if (iCurrentTotalRowCount !== iNewTotalRowCount) {
 			this._iBindingLength = iNewTotalRowCount;
@@ -2407,7 +2398,7 @@ sap.ui.define([
 		bSuppressUpdate = bSuppressUpdate === true;
 
 		// Get the contexts from the binding.
-		if (oBinding != null) {
+		if (oBinding) {
 			aContexts = this._getRowContexts(iRowCount, bSuppressUpdate);
 		}
 
@@ -2514,7 +2505,7 @@ sap.ui.define([
 	Table.prototype._getTotalRowCount = function(bIgnoreCache) {
 		if (this._iBindingLength === null || bIgnoreCache === true) {
 			var oBinding = this.getBinding("rows");
-			return oBinding == null ? 0 : oBinding.getLength();
+			return oBinding ? oBinding.getLength() : 0;
 		} else {
 			return this._iBindingLength;
 		}
@@ -2817,7 +2808,7 @@ sap.ui.define([
 		// Focus is handled by the item navigation. It's not the root element of the table which may get the focus but
 		// the last focused column header or cell.
 		var oFocusedItemInfo = TableUtils.getFocusedItemInfo(this);
-		if (oFocusedItemInfo !== null) {
+		if (oFocusedItemInfo) {
 			return oFocusedItemInfo.domRef || Control.prototype.getFocusDomRef.apply(this, arguments);
 		}
 
@@ -2970,8 +2961,7 @@ sap.ui.define([
 			this._getAccExtension().setSelectAllState(bAllRowsSelected);
 
 			if (this._getShowStandardTooltips()) {
-				var sSelectAllResourceTextID = bAllRowsSelected ? "TBL_DESELECT_ALL" : "TBL_SELECT_ALL";
-				$SelectAll.attr('title', this._oResBundle.getText(sSelectAllResourceTextID));
+				$SelectAll.attr('title', TableUtils.getResourceText(bAllRowsSelected ? "TBL_DESELECT_ALL" : "TBL_SELECT_ALL"));
 			}
 		}
 	};
@@ -3179,7 +3169,7 @@ sap.ui.define([
 		// only for columns we do the full handling here - otherwise the method
 		// setAssociation will fail below with a specific fwk error message
 		var bReset = false;
-		if (oGroupByColumn != null && oGroupByColumn instanceof Column && oGroupByColumn !== oOldGroupByColumn) {
+		if (oGroupByColumn instanceof Column && oGroupByColumn !== oOldGroupByColumn) {
 
 			// check for column being part of the columns aggregation
 			if (jQuery.inArray(oGroupByColumn, this.getColumns()) === -1) {
@@ -3190,7 +3180,7 @@ sap.ui.define([
 			var bExecuteDefault = this.fireGroup({column: oGroupByColumn, groupedColumns: [oGroupByColumn.getId()], type: GroupEventType.group});
 
 			// first we reset the grouping indicator of the old column (will show the column)
-			if (oOldGroupByColumn != null) {
+			if (oOldGroupByColumn) {
 				oOldGroupByColumn.setGrouped(false);
 				bReset = true;
 			}
@@ -3204,8 +3194,8 @@ sap.ui.define([
 
 		// reset the binding when no value is given or the binding needs to be reseted
 		// TODO: think about a better handling to recreate the group binding
-		if (oGroupByColumn == null || bReset) {
-			if (oOldGroupByColumn != null) {
+		if (!oGroupByColumn || bReset) {
+			if (oOldGroupByColumn) {
 				oOldGroupByColumn.setGrouped(false);
 			}
 
@@ -3229,7 +3219,7 @@ sap.ui.define([
 
 		this.setProperty("enableGrouping", bEnableGrouping);
 
-		if (oGroupedByColumn != null) {
+		if (oGroupedByColumn) {
 			oGroupedByColumn.setGrouped(bEnableGrouping);
 		}
 
@@ -3268,15 +3258,21 @@ sap.ui.define([
 		return this;
 	};
 
-	/*
-	 * @see JSDoc generated by SAPUI5 control API generator
+	/**
+	 * In contrast to the function <code>getFixedColumnCount</code> which returns the value of the property <code>fixedColumnCount</code>, this function
+	 * returns the actual fixed column count computed based on the table width.
+	 *
+	 * <b>Note:</b> The computed column count is only available after the table is fully rendered.
+	 *
+	 * @returns {int} The actual fixed column count computed based on the table width.
+	 * @protected
 	 */
-	Table.prototype.getFixedColumnCount = function() {
+	Table.prototype.getComputedFixedColumnCount = function() {
 		if (this._bIgnoreFixedColumnCount) {
 			return 0;
-		} else {
-			return this.getProperty("fixedColumnCount");
 		}
+
+		return this.getFixedColumnCount();
 	};
 
 	/*
@@ -3315,7 +3311,9 @@ sap.ui.define([
 		// call collectTableSizes to determine whether the number of fixed columns can be displayed at all
 		// this is required to avoid flickering of the table in IE if the fixedColumnCount must be adjusted
 		this._collectTableSizes();
-		this._invalidateColumnMenus();
+		if (this.getEnableColumnFreeze()) {
+			this._invalidateColumnMenus();
+		}
 		return this;
 	};
 
@@ -3366,13 +3364,12 @@ sap.ui.define([
 
 	/**
 	 * Invalidates all column menus.
-	 * @param {boolean} bUpdateLocalization Whether the texts of the menu should be updated too.
 	 * @private
 	 */
-	Table.prototype._invalidateColumnMenus = function(bUpdateLocalization) {
+	Table.prototype._invalidateColumnMenus = function() {
 		var aCols = this.getColumns();
 		for (var i = 0, l = aCols.length; i < l; i++) {
-			aCols[i].invalidateMenu(bUpdateLocalization);
+			aCols[i].invalidateMenu();
 		}
 	};
 
@@ -3384,7 +3381,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Table.prototype._isTouchEvent = function(oEvent) {
-		return oEvent != null && oEvent.originalEvent != null && oEvent.originalEvent.touches != null;
+		return !!(oEvent && oEvent.originalEvent && oEvent.originalEvent.touches);
 	};
 
 	Table.prototype._getRowClone = function(iIndex) {
@@ -3731,18 +3728,16 @@ sap.ui.define([
 	 * Creates a new {@link sap.ui.core.util.Export} object and fills row/column information from the table if not provided. For the cell content,
 	 * the column's "sortProperty" will be used (experimental!)
 	 *
-	 * <p><b>Please note: The return value was changed from jQuery Promises to standard ES6 Promises.
-	 * jQuery specific Promise methods ('done', 'fail', 'always', 'pipe' and 'state') are still available but should not be used.
-	 * Please use only the standard methods 'then' and 'catch'!</b></p>
+	 * <p><b>Please note: This method uses synchronous requests. Support and functioning ends with the support for synchronous requests in browsers.</b></p>
 	 *
 	 * @param {object} [mSettings] settings for the new Export, see {@link sap.ui.core.util.Export} <code>constructor</code>
-	 * @returns {Promise} Promise object
+	 * @returns {sap.ui.core.util.Export} Export object
 	 *
 	 * @experimental Experimental because the property for the column/cell definitions (sortProperty) could change in future.
+	 * @deprecated As of 1.56, replaced by the <code>sap.ui.export</code> library.
 	 * @public
 	 */
 	Table.prototype.exportData = function(mSettings) {
-		//TBD: Use async APIs instead (should be possible because anyhow a Promise is returned)
 		var Export = sap.ui.requireSync("sap/ui/core/util/Export");
 
 		mSettings = mSettings || {};

@@ -22,14 +22,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	 * @namespace
 	 * @name sap.m
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.m",
-		version: "1.54.7",
+		version: "1.56.6",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		types: [
@@ -89,6 +89,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.SwipeDirection",
 			"sap.m.SwitchType",
 			"sap.m.TimePickerMaskMode",
+			"sap.m.TileSizeBehaviour",
 			"sap.m.ToolbarDesign",
 			"sap.m.VerticalPlacementType",
 			"sap.m.semantic.SemanticRuleSetType"
@@ -98,7 +99,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 			"sap.m.IBreadcrumbs",
 			"sap.m.IconTab",
 			"sap.m.IScale",
-			"sap.m.ISliderTooltip",
 			"sap.m.semantic.IGroup",
 			"sap.m.semantic.IFilter",
 			"sap.m.semantic.ISort",
@@ -1310,6 +1310,27 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	};
 
 	/**
+	 * Describes the behavior of tiles when displayed on a small-screened phone (374px wide and lower).
+	 *
+	 * @enum {string}
+	 * @since 1.56.0
+	 * @ui5-metamodel This enumeration will also be described in the SAPUI5 (legacy) designtime metamodel
+	 * @public
+	 */
+	sap.m.TileSizeBehavior = {
+		/**
+		 * Default behavior: Tiles adapt to the size of the screen, getting smaller on small screens.
+		 * @public
+		 */
+		Responsive: "Responsive",
+		/**
+		 * Tiles are small all the time, regardless of the actual screen size.
+		 * @public
+		 */
+		Small: "Small"
+	};
+
+	/**
 	 * Different levels for headers.
 	 *
 	 * @enum {string}
@@ -1382,8 +1403,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 
 	/**
 	 *
-	 *   Interface for controls which are suitable as a Scale for the Slider/RangeSlider.
-	 *
+	 * Interface for controls which are suitable as a Scale for the Slider/RangeSlider.
+	 * Implementation of this interface should implement the following methods:
+	 * <ul>
+	 * <li><code>getTickmarksBetweenLabels</code></li>
+	 * <li><code>calcNumberOfTickmarks</code></li>
+	 * <li><code>handleResize</code></li>
+	 * <li><code>getLabel</code></li>
+	 * </ul>
 	 *
 	 * @since 1.46
 	 * @name sap.m.IScale
@@ -1393,15 +1420,49 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	 */
 
 	/**
+	 * Returns the number of tickmarks, which should be placed between labels.
+	 * <b>Note:</b> There would always be a tickmark in the begining and in the end of the slider,
+	 * regardless of the value this method returns.
 	 *
-	 *   Interface for controls which are suitable as a Tooltip for the Slider/RangeSlider.
+	 * @param {object} mOptions The option array
+	 * @returns {integer} The number of tickmarks
 	 *
+	 * @function
+	 * @name sap.m.IScale.getTickmarksBetweenLabels
+	 */
+
+	/**
+	 * Returns How many tickmarks would be drawn on the screen.
+	 * * <b>Note:</b> There would always be a tickmark in the begining and in the end of the slider,
+	 * regardless of the value this method returns. The start and the end tickmark are taken into account
+	 * for the later calculations.
 	 *
-	 * @since 1.54
-	 * @name sap.m.ISliderTooltip
-	 * @interface
-	 * @public
-	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 * @param {object} mOptions The option array
+	 * @returns {integer} The number of tickmarks
+	 *
+	 * @function
+	 * @name sap.m.IScale.calcNumberOfTickmarks
+	 */
+
+	/**
+	 * Called, when the slider is getting resized.
+	 * The Slider/RangeSlider control, could be accessed via the oEvent.control parameter.
+	 * @param {jQuery.Event} oEvent The event object passed.
+	 *
+	 * @function
+	 * @name sap.m.IScale.handleResize
+	 */
+
+	/**
+	 * Provides a custom tickmark label.
+	 * This method is optional. If it is not provided, the slider values will be placed as labels.
+	 * If provided, the value of the tickmark labels and accessibility attributes
+	 * (aria-valuenow and aria-valuetext) of the slider are changed accordingly.
+	 *
+	 * @returns {string | number} The label that should be placed in the current position.
+	 *
+	 * @function
+	 * @name sap.m.IScale.getLabel
 	 */
 
 	/**
@@ -1556,7 +1617,32 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 		Inline : "Inline"
 	};
 
+	/**
+	 * Specifies <code>IconTabBar</code> tab density mode.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.m.IconTabDensityMode = {
+
 		/**
+		 * Inherit. In this mode the global configuration of the density mode will be applied.
+		 */
+		Inherit : "Inherit",
+
+		/**
+		 * Compact. In this mode the tabs will be set explicitly to compact mode independent of what mode is applied globally.
+		 */
+		Compact : "Compact",
+
+		/**
+		 * Cozy. In this mode the tabs will be set explicitly to compact mode independent of what mode is applied globally.
+		 */
+		Cozy : "Cozy"
+	};
+
+	/**
 	 * Available Filter Item Design.
 	 *
 	 * @enum {string}
@@ -2574,7 +2660,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 		 * The grid width for each table popin is small, hence this allows more content to be rendered in a single popin row.
 		 * This value defines small grid width for the table popins.
 		 *
-		 * <b>Note:</b> This feature is currently not supported with IE and Edge browsers.
+		 * <b>Note:</b> This feature is currently not supported with Internet Explorer and Edge (version lower than 16) browsers.
 		 * @public
 		 * @since 1.52
 		 */
@@ -2584,7 +2670,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 		 * Sets grid layout for rendering the table popins.
 		 * The grid width for each table popin is comparatively larger than <code>GridSmall</code>, hence this allows less content to be rendered in a single popin row.
 		 *
-		 * <b>Note:</b> This feature is currently not supported with IE and Edge browsers.
+		 * <b>Note:</b> This feature is currently not supported with Internet Explorer and Edge (version lower than 16) browsers.
 		 * @public
 		 * @since 1.52
 		 */
@@ -2599,19 +2685,25 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	sap.m.Sticky = {
-
 		/**
-		 * No area remains in a fixed position.
+		 * The column headers remain in a fixed position.
 		 * @public
 		 */
-		None: "None",
+		ColumnHeaders: "ColumnHeaders",
 
 		/**
-		 * Only column headers remain in a fixed position.
-		 * If no column headers are available, this option behaves the same as <code>None</code>.
+		 * The header toolbar remains in a fixed position.
 		 * @public
+		 * @since 1.56
 		 */
-		ColumnHeaders: "ColumnHeaders"
+		HeaderToolbar: "HeaderToolbar",
+
+		/**
+		 * The info toolbar remains in a fixed position.
+		 * @public
+		 * @since 1.56
+		 */
+		InfoToolbar: "InfoToolbar"
 	};
 
 	/**
@@ -2996,6 +3088,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	/**
 	 * Types of the Toolbar Design.
 	 *
+	 * To preview the different combinations of <code>sap.m.ToolbarDesign</code> and <code>sap.m.ToolbarStyle</code>,
+	 * see the <b>OverflowToolbar - Design and styling</b> sample of the {@link sap.m.OverflowToolbar} control.
+	 *
 	 * @enum {string}
 	 * @public
 	 * @since 1.16.8
@@ -3035,6 +3130,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	 *
 	 * <b>Note:</b> Keep in mind that the styles are theme-dependent and can differ based on the currently used theme.
 	 *
+	 * To preview the different combinations of <code>sap.m.ToolbarDesign</code> and <code>sap.m.ToolbarStyle</code>,
+	 * see the <b>OverflowToolbar - Design and styling</b> sample of the {@link sap.m.OverflowToolbar} control.
+	 *
 	 * @enum {string}
 	 * @public
 	 * @since 1.54
@@ -3050,6 +3148,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 
 		/**
 		 * Simplified visual style dependent on the used theme.
+		 *
+		 * <b>Note:</b> For the Belize themes, the <code>sap.m.Toolbar</code> is displayed with no border.
 		 * @public
 		 */
 		Clear : "Clear"
@@ -3355,22 +3455,32 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 
 
 		/**
-		 * Search given control's parents and try to find ScrollDelegate.
+		 * Search given control's parents and try to find a ScrollDelegate.
 		 *
-		 * @param {sap.ui.core.Control} oControl
-		 * @return {Object|undefined} ScrollDelegate or undefined if cannot find
+		 * @param {sap.ui.core.Control} oControl Starting point for the search
+		 * @param {boolean} bGlobal Whether the search should stop on component level (<code>false</code>) or not
+		 * @return {Object|undefined} ScrollDelegate or undefined if it cannot be found
 		 * @name sap.m#getScrollDelegate
 		 * @public
 		 * @since 1.11
 		 */
-		oLib.getScrollDelegate = function(oControl) {
+		oLib.getScrollDelegate = function(oControl, bGlobal) {
 			if (!(oControl instanceof sap.ui.core.Control)) {
 				return;
 			}
 
+			var oComponentType = sap.ui.require("sap/ui/core/UIComponent");
+
+			function doGetParent(c) {
+				if (!c) {
+					return;
+				}
+				return bGlobal && oComponentType && (c instanceof oComponentType) ? c.oContainer : c.oParent;
+			}
+
 			/*eslint-disable no-cond-assign */
-			for (var parent = oControl; parent = parent.oParent;) {
-				if (typeof parent.getScrollDelegate == "function") {
+			for (var parent = oControl; parent = doGetParent(parent);) {
+				if (parent && typeof parent.getScrollDelegate == "function") {
 					return parent.getScrollDelegate();
 				}
 			}
@@ -3521,7 +3631,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	};
 
 	/**
-	 * URL(Uniform Resource Locator) Helper.
+	 * URL (Uniform Resource Locator) Helper.
 	 *
 	 * This helper can be used to trigger a native application (e.g. email, sms, phone) from the browser.
 	 * That means we are restricted of browser or application implementation. e.g.
@@ -3534,7 +3644,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/DataType',
 	 * <li>Some mail applications(Outlook) do not respect all encodings(e.g. Cyrillic texts are not encoded correctly)</li>
 	 * </ul>
 	 *
-	 * Note: all the given limitation lengths are for encoded text(e.g space character will be encoded to "%20").
+	 * <b>Note:</b> all the given limitation lengths are for encoded text(e.g space character will be encoded to "%20").
+	 *
+	 * @see {@link topic:4f1c1075d88c41a5904389fa12b28f6b URL Helper}
 	 *
 	 * @namespace
 	 * @name sap.m.URLHelper

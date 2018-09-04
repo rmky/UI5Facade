@@ -16,7 +16,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.layout.changeHandler.RenameFormContainer
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @since 1.48
 	 * @private
 	 * @experimental Since 1.48. This class is experimental and provides only limited functionality. Also the API might be changed in future.
@@ -33,10 +33,9 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.fl.Change} oChangeWrapper Change object with instructions to be applied on the control
 	 * @param {object} oControl The control which has been determined by the selector id
-	 * @param {object} mPropertyBag Map containing the control modifier object (either sap.ui.fl.changeHandler.JsControlTreeModifier or
-	 *                                sap.ui.fl.changeHandler.XmlTreeModifier), the view object where the controls are embedded and the application component
+	 * @param {object} mPropertyBag Map containing the control modifier object (either sap.ui.core.util.reflection.JsControlTreeModifier or
+	 *                                sap.ui.core.util.reflection.XmlTreeModifier), the view object where the controls are embedded and the application component
 	 * @private
-	 * @name sap.ui.layout.changeHandler.RenameFormControl#applyChange
 	 */
 	RenameFormContainer.applyChange = function(oChangeWrapper, oControl, mPropertyBag) {
 		var oModifier = mPropertyBag.modifier,

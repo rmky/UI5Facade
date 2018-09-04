@@ -21,8 +21,9 @@ sap.ui.define([
 	'sap/ui/Device',
 	'sap/ui/core/ResizeHandler',
 	'sap/ui/core/Icon',
-	'sap/ui/core/dnd/DragDropInfo',
 	'./IconTabBarDragAndDropUtil',
+	'sap/ui/core/dnd/DragInfo',
+	'sap/ui/core/dnd/DropInfo',
 	'./IconTabHeaderRenderer'
 ],
 function(
@@ -40,8 +41,9 @@ function(
 	Device,
 	ResizeHandler,
 	Icon,
-	DragDropInfo,
 	IconTabBarDragAndDropUtil,
+	DragInfo,
+	DropInfo,
 	IconTabHeaderRenderer
 ) {
 	"use strict";
@@ -64,6 +66,9 @@ function(
 	// shortcut for sap.m.IconTabHeaderMode
 	var IconTabHeaderMode = library.IconTabHeaderMode;
 
+	// shortcut for sap.m.IconTabDensityMode
+	var IconTabDensityMode = library.IconTabDensityMode;
+
 	/**
 	 * Constructor for a new IconTabHeader.
 	 *
@@ -76,7 +81,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -139,23 +144,29 @@ function(
 
 			/**
 			 * Specifies whether tab reordering is enabled. Relevant only for desktop devices.
+			 * The {@link sap.m.IconTabSeparator sap.m.IconTabSeparator} cannot be dragged  and dropped
+			 * Items can be moved around {@link sap.m.IconTabSeparator sap.m.IconTabSeparator}
 			 * @since 1.46
 			 */
-			enableTabReordering : {type : "boolean", group : "Behavior", defaultValue : false}
+			enableTabReordering : {type : "boolean", group : "Behavior", defaultValue : false},
+
+			/**
+			 * Specifies the visual density mode of the tabs.
+			 *
+			 * The values that can be applied are <code>Cozy</code>, <code>Compact</code> and <code>Inherit</code>.
+			 * <code>Cozy</code> and <code>Compact</code> render the control in one of these modes independent of the global density settings.
+			 * The <code>Inherit</code> value follows the global density settings which are applied.
+			 * For compatibility reasons, the default value is <code>Cozy</code>.
+			 * @since 1.56
+			 */
+			tabDensityMode :{type : "sap.m.IconTabDensityMode", group : "Appearance", defaultValue : IconTabDensityMode.Cozy}
 		},
 		aggregations : {
 
 			/**
 			 * The items displayed in the IconTabHeader.
 			 */
-			items : {type : "sap.m.IconTab", multiple : true, singularName : "item"},
-
-			/**
-			 * Defines the drag-and-drop configuration via {@link sap.ui.core.dnd.DragDropInfo}
-			 * This configuration is set internally by the control
-			 * @private
-			 */
-			dragDropConfig : {name : "dragDropConfig", type : "sap.ui.core.dnd.DragDropInfo", multiple : true}
+			items : {type : "sap.m.IconTab", multiple : true, singularName : "item", dnd : {draggable: true, droppable: true, layout: "Horizontal"} }
 		},
 		events : {
 
@@ -251,7 +262,7 @@ function(
 		if (!this._oOverflowButton) {
 			this._oOverflowButton = new Button({
 				id: this.getId() + '-overflow',
-				icon: "sap-icon://overflow",
+				icon: "sap-icon://slim-arrow-down",
 				type: ButtonType.Transparent,
 				press: this._overflowButtonPress.bind(this)
 			});
@@ -477,8 +488,38 @@ function(
 		}
 
 		if (this._oOverflowButton) {
+			this._oOverflowButton.removeEventDelegate(this._onDragOverEventDelegate);
 			this._oOverflowButton.destroy();
 			this._oOverflowButton = null;
+		}
+	};
+
+	/**
+	 * Handles onDragOver of overflow button.
+	 * @private
+	 */
+	IconTabHeader.prototype._handlesOnDragOver = function() {
+		if (!this._oPopover || !this._oPopover.isOpen()) {
+			this._overflowButtonPress();
+		}
+	};
+
+	/**
+	 * Sets or remove Drag and Drop configurations.
+	 * @private
+	 */
+	IconTabHeader.prototype._setsDragAndDropConfigurations = function() {
+		var oOverflowButton = this._getOverflowButton();
+
+		if (!this.getEnableTabReordering() && this.getDragDropConfig().length) {
+			//Destroying Drag&Drop aggregation
+			this.destroyDragDropConfig();
+		} else if (this.getEnableTabReordering() && !this.getDragDropConfig().length) {
+
+			//open select list when drag element is over it
+			oOverflowButton.addEventDelegate(this._onDragOverEventDelegate);
+			//Adding Drag&Drop configuration to the dragDropConfig aggregation if needed
+			IconTabBarDragAndDropUtil.setDragDropAggregations(this, DragInfo, DropInfo, "Horizontal");
 		}
 	};
 
@@ -490,6 +531,9 @@ function(
 			bIsParentIconTabBar = oParent instanceof sap.m.IconTabBar,
 			bIsParentToolHeader = oParent && oParent.getMetadata().getName() == 'sap.tnt.ToolHeader';
 			this._bRtl = sap.ui.getCore().getConfiguration().getRTL();
+			this._onDragOverEventDelegate = {
+				ondragover: this._handlesOnDragOver.bind(this)
+			};
 
 		if (this._sResizeListenerId) {
 			ResizeHandler.deregister(this._sResizeListenerId);
@@ -537,21 +581,7 @@ function(
 		this._isTouchScrollingDisabled = this.isTouchScrollingDisabled();
 		this._oScroller.setHorizontal(!this._isTouchScrollingDisabled && (!this.getEnableTabReordering() || !Device.system.desktop));
 
-
-		if (!this.getEnableTabReordering() && this.getDragDropConfig().length) {
-			//Destroying Drag&Drop aggregation
-			this.destroyDragDropConfig();
-		} else if (this.getEnableTabReordering() && !this.getDragDropConfig().length) {
-			//Adding Drag&Drop configuration to the dragDropConfig aggregation if needed
-			var oDragDropInfo = new DragDropInfo({
-				sourceAggregation: "items",
-				targetAggregation: "items",
-				dropPosition: "Between",
-				dropLayout: "Horizontal",
-				drop: this._handleDragAndDrop.bind(this)
-			});
-			this.addAggregation("dragDropConfig", oDragDropInfo, true);
-		}
+		this._setsDragAndDropConfigurations();
 
 		// Deregister resize event before re-rendering
 		if (this._sResizeListenerNoFlexboxSupportId) {
@@ -804,7 +834,28 @@ function(
 		this._oItemNavigation.setSelectedIndex(iSelectedDomIndex);
 	};
 
+	IconTabHeader.prototype.onThemeChanged = function() {
+		this._applyTabDensityMode();
+	};
+
+	IconTabHeader.prototype._applyTabDensityMode = function() {
+		var sTabDensityMode = this.getTabDensityMode();
+		this.$().removeClass("sapUiSizeCompact");
+
+		switch (sTabDensityMode) {
+			case IconTabDensityMode.Compact:
+				this.$().addClass("sapUiSizeCompact");
+				break;
+			case  IconTabDensityMode.Inherit:
+				if (this.$().closest(".sapUiSizeCompact").length) {
+					this.$().addClass("sapUiSizeCompact");
+				}
+				break;
+		}
+	};
+
 	IconTabHeader.prototype.onAfterRendering = function() {
+		this._applyTabDensityMode();
 		// initialize scrolling
 		if (this._oScroller) {
 			this._oScroller.setIconTabBar(this, jQuery.proxy(this._afterIscroll, this), jQuery.proxy(this._scrollPreparation, this));
@@ -883,7 +934,7 @@ function(
 
 	IconTabHeader.prototype.removeAllItems = function() {
 		this._aTabKeys = [];
-		this.removeAllAggregation("items");
+		return this.removeAllAggregation("items");
 	};
 
 	IconTabHeader.prototype.removeItem = function(oItem) {
@@ -1603,20 +1654,45 @@ function(
 	/* =========================================================== */
 
 	/**
-	 * Handles drop event for drag &  drop functionality
+	 * Handles drop event for drag &  drop functionality in sap.m.IconTabHeader
 	 * @param {jQuery.Event} oEvent
 	 * @private
 	 */
 	IconTabHeader.prototype._handleDragAndDrop = function (oEvent) {
-		var oDropPosition = oEvent.getParameter("dropPosition"),
+		var sDropPosition = oEvent.getParameter("dropPosition"),
 			oDraggedControl = oEvent.getParameter("draggedControl"),
-			oDroppedControl = oEvent.getParameter("droppedControl");
+			oDroppedControl = oEvent.getParameter("droppedControl"),
+			isParentSelectList = oDraggedControl.getParent().getMetadata().getName() === "sap.m.IconTabBarSelectList";
 
-		IconTabBarDragAndDropUtil.handleDrop.call(this, oDropPosition, oDraggedControl, oDroppedControl);
+		//drag and drop is between overflow list and header
+		if (isParentSelectList) {
+			this._handleDragAndDropBetweenHeaderAndList(sDropPosition, oDroppedControl, oDraggedControl);
+		} else {
+			IconTabBarDragAndDropUtil.handleDrop(this, sDropPosition, oDraggedControl, oDroppedControl, false);
+		}
+
 		this._initItemNavigation();
 		oDraggedControl.$().focus();
 	};
 
+	/**
+	 * Handles drop event for drag &  drop between sap.m.IconTabHeader and sap.m.IconTabBarSelectList.
+	 * @param {string} sDropPosition position where the control will be dropped (e.g. Before/After)
+	 * @param {object} oDraggedControl item that is dragged
+	 * @param {object} oDroppedControl item that the dragged control will be dropped on
+	 * @private
+	 */
+	IconTabHeader.prototype._handleDragAndDropBetweenHeaderAndList = function (sDropPosition, oDroppedControl, oDraggedControl) {
+		var oSelectList = this._getSelectList(),
+			oDraggedAndDroppedItemFromSelectList = IconTabBarDragAndDropUtil.getDraggedDroppedItemsFromList(oSelectList.getAggregation("items"), oDraggedControl, oDroppedControl);
+			if (!oDraggedAndDroppedItemFromSelectList) {
+
+				return;
+			}
+			IconTabBarDragAndDropUtil.handleDrop(this, sDropPosition, oDraggedControl._tabFilter, oDroppedControl, false);
+			IconTabBarDragAndDropUtil.handleDrop(oSelectList, sDropPosition, oDraggedControl, oDraggedAndDroppedItemFromSelectList.oDroppedControlFromList, false);
+			oSelectList._initItemNavigation();
+	};
 	/* =========================================================== */
 	/*           end: tab drag-drop		                           */
 	/* =========================================================== */
@@ -1629,7 +1705,7 @@ function(
 	 * Moves a tab by a specific key code
 	 *
 	 * @param {object} oTab The event object
-	 * @param {int} iKeyCode The key code
+	 * @param {number} iKeyCode Key code
 	 * @private
 	 */
 	IconTabHeader.prototype._moveTab = function (oTab, iKeyCode) {
@@ -1651,7 +1727,7 @@ function(
 			return;
 		}
 
-		var oTab = sap.ui.getCore().byId(oEvent.target.id);
+		var oTab = oEvent.srcControl;
 		this._moveTab(oTab, oEvent.keyCode);
 		oTab.$().focus();
 	};

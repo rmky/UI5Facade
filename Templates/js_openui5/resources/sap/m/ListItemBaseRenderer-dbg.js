@@ -4,13 +4,13 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/InvisibleText"],
+sap.ui.define(["./library", "sap/ui/Device", "sap/ui/core/InvisibleText"],
 	function(library, Device, InvisibleText) {
 	"use strict";
 
 
 	// shortcut for sap.m.ListType
-	var ListType = library.ListType;
+	var ListItemType = library.ListType;
 
 	// shortcut for sap.m.ListMode
 	var ListMode = library.ListMode;
@@ -51,8 +51,8 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/InvisibleText"],
 	};
 
 	ListItemBaseRenderer.isModeMatched = function(sMode, iOrder) {
-		var mOrderConfig = (sap.m.ListBaseRenderer || {}).ModeOrder || {};
-		return (mOrderConfig[sMode] == iOrder);
+		var mOrderConfig = (sap.ui.require("sap/m/ListBaseRenderer") || {}).ModeOrder || {};
+		return mOrderConfig[sMode] == iOrder;
 	};
 
 	/**
@@ -82,7 +82,7 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/InvisibleText"],
 
 	ListItemBaseRenderer.decorateMode = function(oModeControl, oLI) {
 
-		/* Remove animation classes to avoid unexpected re-rendering bahavior */
+		// remove animation classes to avoid unexpected re-rendering behavior
 		oModeControl.removeStyleClass("sapMLIBSelectAnimation sapMLIBUnselectAnimation");
 
 		// determine whether animation is necessary or not
@@ -140,7 +140,7 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/InvisibleText"],
 	 * @protected
 	 */
 	ListItemBaseRenderer.renderType = function(rm, oLI) {
-		var oTypeControl = oLI.getTypeControl();
+		var oTypeControl = oLI.getTypeControl(true);
 		if (oTypeControl) {
 			rm.renderControl(oTypeControl);
 		}
@@ -259,24 +259,23 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/InvisibleText"],
 		}
 
 		var aDescribedBy = [],
-			sType = oLI.getType(),
-			mType = ListType;
+			sType = oLI.getType();
 
 		if (oLI.getListProperty("showUnread") && oLI.getUnread()) {
 			aDescribedBy.push(this.getAriaAnnouncement("unread"));
 		}
 
 		if (oLI.getMode() == ListMode.Delete) {
-			aDescribedBy.push(this.getAriaAnnouncement("deletable"));
+			aDescribedBy.push(this.getAriaAnnouncement("delete"));
 		}
 
-		if (sType == mType.Navigation) {
+		if (sType == ListItemType.Navigation) {
 			aDescribedBy.push(this.getAriaAnnouncement("navigation"));
 		} else {
-			if (sType == mType.Detail || sType == mType.DetailAndActive) {
+			if (sType == ListItemType.Detail || sType == ListItemType.DetailAndActive) {
 				aDescribedBy.push(this.getAriaAnnouncement("detail"));
 			}
-			if (sType == mType.Active || sType == mType.DetailAndActive) {
+			if (sType == ListItemType.Active || sType == ListItemType.DetailAndActive) {
 				aDescribedBy.push(this.getAriaAnnouncement("active"));
 			}
 		}

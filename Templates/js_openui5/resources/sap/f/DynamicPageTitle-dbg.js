@@ -9,25 +9,30 @@ sap.ui.define([
     "./library",
     "sap/ui/core/Control",
     "sap/ui/base/ManagedObjectObserver",
+    "sap/m/library",
     "sap/m/Toolbar",
     "sap/m/ToolbarSeparator",
     "sap/m/OverflowToolbar",
     "sap/m/Button",
+    "sap/ui/core/InvisibleText",
     "./DynamicPageTitleRenderer"
 ], function(
     library,
 	Control,
 	ManagedObjectObserver,
+	mobileLibrary,
 	Toolbar,
 	ToolbarSeparator,
 	OverflowToolbar,
 	Button,
+	InvisibleText,
 	DynamicPageTitleRenderer
 ) {
 	"use strict";
 
 	// shortcut for sap.f.DynamicPageTitleArea
-	var DynamicPageTitleArea = library.DynamicPageTitleArea;
+	var DynamicPageTitleArea = library.DynamicPageTitleArea,
+		ToolbarStyle = mobileLibrary.ToolbarStyle;
 	var oCore = sap.ui.getCore();
 
 	/**
@@ -70,7 +75,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -274,6 +279,10 @@ sap.ui.define([
 		contentAreaShrinkFactor: 1,
 		actionsAreaShrinkFactor: 1.6
 	};
+
+	DynamicPageTitle.TOGGLE_HEADER_TEXT_ID = InvisibleText.getStaticId("sap.f", "TOGGLE_HEADER");
+	DynamicPageTitle.EXPANDED_HEADER_TEXT_ID = InvisibleText.getStaticId("sap.f", "EXPANDED_HEADER");
+	DynamicPageTitle.COLLAPSED_HEADER_TEXT_ID = InvisibleText.getStaticId("sap.f", "SNAPPED_HEADER");
 
 	/**
 	 * Flushes the given control into the given container.
@@ -517,6 +526,37 @@ sap.ui.define([
 			};
 		});
 
+	DynamicPageTitle.prototype.clone = function (sIdSuffix, aLocalIds, oOptions) {
+
+		var oTitleClone = Control.prototype.clone.apply(this, arguments),
+			bCloneChildren = true;
+
+		if (oOptions) {
+			bCloneChildren = !!oOptions.cloneChildren;
+		}
+
+		if (!bCloneChildren) {
+			return oTitleClone;
+		}
+
+		// need to clone the aggregations that forward its children to internal aggregations
+		var fnCloneForwardedAggregation = function (sAggregationName) {
+
+			if (!this.isBound(sAggregationName)) {
+				var oAggregation = this.getMetadata().getAggregation(sAggregationName);
+
+				oAggregation.get(this).forEach(function(oChild) {
+					oAggregation.add(oTitleClone, oChild.clone()); // use the *public* mutator to aggregate the child-clones into the title-clone => ensures children *preprocessed* correctly
+				}, this);
+			}
+		}.bind(this);
+
+		fnCloneForwardedAggregation("actions");
+		fnCloneForwardedAggregation("navigationActions");
+
+		return oTitleClone;
+	};
+
 	/* ========== PRIVATE METHODS  ========== */
 
 	/**
@@ -542,7 +582,8 @@ sap.ui.define([
 	DynamicPageTitle.prototype._getActionsToolbar = function () {
 		if (!this.getAggregation("_actionsToolbar")) {
 			this.setAggregation("_actionsToolbar", new OverflowToolbar({
-				id: this.getId() + "-_actionsToolbar"
+				id: this.getId() + "-_actionsToolbar",
+				style: ToolbarStyle.Clear
 			}).addStyleClass("sapFDynamicPageTitleActionsBar"), true); // suppress invalidate, as this is always called onBeforeRendering
 		}
 
@@ -557,7 +598,8 @@ sap.ui.define([
 	DynamicPageTitle.prototype._getNavigationActionsToolbar = function () {
 		if (!this.getAggregation("_navActionsToolbar")) {
 			this.setAggregation("_navActionsToolbar", new Toolbar({
-				id: this.getId() + "-navActionsToolbar"
+				id: this.getId() + "-navActionsToolbar",
+				style: ToolbarStyle.Clear
 			}).addStyleClass("sapFDynamicPageTitleActionsBar"), true);
 		}
 
@@ -1000,7 +1042,9 @@ sap.ui.define([
 			bHasTopContent = oBreadcrumbs || bHasNavigationActions,
 			bHasOnlyBreadcrumbs = !!(oBreadcrumbs && !bHasNavigationActions),
 			bHasOnlyNavigationActions = bHasNavigationActions && !oBreadcrumbs,
-			sAreaShrinkRatioDefaultValue = this.getMetadata().getProperty("areaShrinkRatio").getDefaultValue();
+			sAreaShrinkRatioDefaultValue = this.getMetadata().getProperty("areaShrinkRatio").getDefaultValue(),
+			oParent = this.getParent(),
+			bIsToggleable = isFunction(oParent.getToggleHeaderOnTitleClick) ? oParent.getToggleHeaderOnTitleClick() : false;
 
 		// if areaShrinkRatio is set to default value (or not set at all) and primaryArea is set,
 		// use shrink factors defined for primaryArea
@@ -1033,7 +1077,7 @@ sap.ui.define([
 			headingAreaShrinkFactor: oShrinkFactorsInfo.headingAreaShrinkFactor,
 			contentAreaShrinkFactor: oShrinkFactorsInfo.contentAreaShrinkFactor,
 			actionsAreaShrinkFactor: oShrinkFactorsInfo.actionsAreaShrinkFactor,
-			ariaText: this._oRB.getText("TOGGLE_HEADER"),
+			ariaLabelledByIDs: bIsToggleable ? this._getARIALabelReferences(this._bExpandedState) : "",
 			breadcrumbs: this.getBreadcrumbs(),
 			separator: this._getToolbarSeparator(),
 			hasTopContent: bHasTopContent,
@@ -1138,6 +1182,22 @@ sap.ui.define([
 		} else if ($node.hasClass("sapFDynamicPageTitleMainActions")) {
 			this._sActionsAreaFlexBasis = sFlexBasisCachedValue;
 		}
+	};
+
+	DynamicPageTitle.prototype._updateARIAState = function (bHeaderExpanded, bToggleHeaderOnTitleClick) {
+		var sARIAText = bToggleHeaderOnTitleClick ? this._getARIALabelReferences(bHeaderExpanded) : "";
+
+		this.$().attr("aria-labelledby", sARIAText);
+		return this;
+	};
+
+	DynamicPageTitle.prototype._getARIALabelReferences = function (bHeaderExpanded) {
+		var sReferences = "";
+
+		sReferences += bHeaderExpanded ? DynamicPageTitle.EXPANDED_HEADER_TEXT_ID : DynamicPageTitle.COLLAPSED_HEADER_TEXT_ID;
+		sReferences += " " + DynamicPageTitle.TOGGLE_HEADER_TEXT_ID;
+
+		return sReferences;
 	};
 
 	return DynamicPageTitle;

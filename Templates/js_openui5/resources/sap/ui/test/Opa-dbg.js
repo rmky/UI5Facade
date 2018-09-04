@@ -11,8 +11,9 @@ sap.ui.define([
 	'./_LogCollector',
 	'./_OpaLogger',
 	'./_ParameterValidator',
-	'sap/ui/thirdparty/URI'
-], function ($, Device, _LogCollector, _OpaLogger, _ParameterValidator,URI) {
+	'sap/ui/thirdparty/URI',
+	'sap/ui/test/_UsageReport'
+], function ($, Device, _LogCollector, _OpaLogger, _ParameterValidator, URI, _UsageReport) {
 	"use strict";
 
 	///////////////////////////////
@@ -42,11 +43,7 @@ sap.ui.define([
 		opaCheck();
 
 		function opaCheck () {
-			/* eslint-disable no-console */
-			if (console.timeStamp){
-                console.timeStamp("opa.check");
-			}
-			/* eslint-enable no-console */
+			oLogger.timestamp("opa.check");
 			oLogCollector.getAndClearLog();
 
 			var oResult = fnCallback();
@@ -99,7 +96,7 @@ sap.ui.define([
 
 		timeout = setTimeout(function () {
 			internalWait(queueElement.callback, queueElement.options);
-		}, Opa.config.executionDelay);
+		}, (Opa.config.asyncPolling ? queueElement.options.pollingInterval : 0) + Opa.config.executionDelay);
 	}
 
 	function ensureNewlyAddedWaitForStatementsPrepended (oWaitForCounter, oNestedInOptions){
@@ -221,7 +218,8 @@ sap.ui.define([
 	 * 		<li>assertions: A new Opa instance</li>
 	 * 		<li>timeout : 15 seconds, 0 for infinite timeout</li>
 	 * 		<li>pollingInterval: 400 milliseconds</li>
-	 * 		<li>debugTimeout: 0 seconds, infinite timeout by default. This will be used instead of timeout if running in debug mode.</li>
+	 *		<li>debugTimeout: 0 seconds, infinite timeout by default. This will be used instead of timeout if running in debug mode.</li>
+	 * 		<li>asyncPolling: false</li>
 	 * </ul>
 	 * You can either directly manipulate the config, or extend it using {@link sap.ui.test.Opa.extendConfig}
 	 * @public
@@ -370,6 +368,7 @@ sap.ui.define([
 	 * 			Use this parameter to slow down OPA when you want to watch your test during development or checking the UI of your app.
 	 * 			It is not recommended to use this parameter in any automated test executions.
 	 * 		</li>
+	 * 		<li>asyncPolling: false</li>
 	 * </ul>
 	 *
 	 * @public
@@ -384,7 +383,8 @@ sap.ui.define([
 			pollingInterval : 400,
 			debugTimeout: 0,
 			_stackDropCount : 0, //Internal use. Specify numbers of additional stack frames to remove for logging
-			executionDelay: executionDelayDefault
+			executionDelay: executionDelayDefault,
+			asyncPolling: false
 		},opaUriParams);
 	};
 
@@ -469,6 +469,8 @@ sap.ui.define([
 	//create the default config
 	Opa.resetConfig();
 
+	Opa._usageReport = new _UsageReport(Opa.config);
+
 	// set the maximum level for OPA logs
 	_OpaLogger.setLevel(Opa.config.logLevel);
 
@@ -501,6 +503,7 @@ sap.ui.define([
 		 * @param {int} [options.timeout] default: 15 - (seconds) Specifies how long the waitFor function polls before it fails.O means it will wait forever.
 		 * @param {int} [options.debugTimeout] @since 1.47 default: 0 - (seconds) Specifies how long the waitFor function polls before it fails in debug mode.O means it will wait forever.
 		 * @param {int} [options.pollingInterval] default: 400 - (milliseconds) Specifies how often the waitFor function polls.
+		 * @param {boolean} [options.asyncPolling] @since 1.55 default: false Enable asynchronous polling after success() call. This allows more stable autoWaiter synchronization with event flows originating from within success(). Especially usefull to stabilize synchronization with overflow toolbars.
 		 * @param {function} [options.check] Will get invoked in every polling interval.
 		 * If it returns true, the check is successful and the polling will stop.
 		 * The first parameter passed into the function is the same value that gets passed to the success function.
@@ -666,7 +669,8 @@ sap.ui.define([
 		"timeout",
 		"debugTimeout",
 		"pollingInterval",
-		"_stackDropCount"
+		"_stackDropCount",
+		"asyncPolling"
 	];
 
 	/* all config values  that will be used in waitFor */
@@ -678,7 +682,8 @@ sap.ui.define([
 		debugTimeout: "numeric",
 		pollingInterval: "numeric",
 		_stackDropCount: "numeric",
-		errorMessage: "string"
+		errorMessage: "string",
+		asyncPolling: "bool"
 	};
 
 

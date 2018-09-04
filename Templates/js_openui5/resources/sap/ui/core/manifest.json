@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.54.7"
+      "version": "1.56.6"
     },
     "title": "The SAPUI5 Core Runtime.",
     "description": "The SAPUI5 Core Runtime.\n\n  Contains the UI5 jQuery plugins (jQuery.sap.*), the Core and all its components,\n  base classes for Controls, Components and the Model View Controller classes.",
@@ -187,6 +187,11 @@
         "name": "klayjs",
         "packagedWithMySelf": true,
         "version": "0.0.0"
+      },
+      {
+        "name": "bignumber",
+        "packagedWithMySelf": true,
+        "version": "0.0.0"
       }
     ]
   },
@@ -199,7 +204,7 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.54",
+      "minUI5Version": "1.56",
       "libs": {}
     },
     "library": {
@@ -237,6 +242,8 @@
           "sap.ui.core.Title",
           "sap.ui.core.VariantLayoutData",
           "sap.ui.core.dnd.DragDropBase",
+          "sap.ui.core.dnd.DragInfo",
+          "sap.ui.core.dnd.DropInfo",
           "sap.ui.core.dnd.DragDropInfo",
           "sap.ui.core.search.OpenSearchProvider",
           "sap.ui.core.search.SearchProvider",
@@ -295,7 +302,8 @@
           "sap.ui.core.IContextMenu",
           "sap.ui.core.IFormContent",
           "sap.ui.core.dnd.IDragInfo",
-          "sap.ui.core.dnd.IDropInfo"
+          "sap.ui.core.dnd.IDropInfo",
+          "sap.ui.core.IDScope"
         ]
       }
     }

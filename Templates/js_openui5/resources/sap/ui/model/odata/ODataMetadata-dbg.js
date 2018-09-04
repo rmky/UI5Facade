@@ -7,8 +7,8 @@
 
 
 // Provides class sap.ui.model.odata.ODataMetadata
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdparty/datajs', 'sap/ui/core/cache/CacheManager'],
-	function(jQuery, EventProvider, OData, CacheManager) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdparty/datajs', 'sap/ui/core/cache/CacheManager', './_ODataMetaModelUtils'],
+	function(jQuery, EventProvider, OData, CacheManager, Utils) {
 	"use strict";
 
 	/**
@@ -26,7 +26,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 	 * Implementation to access oData metadata
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @public
 	 * @alias sap.ui.model.odata.ODataMetadata
@@ -373,6 +373,72 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 		return this;
 	};
 
+	/**
+	 * Retrieves the association end which contains the multiplicity
+	 * @param {object} oEntityType the entity type
+	 * @param {string} sName the name
+	 * @returns {*} entity association end
+	 * @private
+	 */
+	ODataMetadata.prototype._getEntityAssociationEnd = function(oEntityType, sName) {
+
+		if (!this.oMetadata || jQuery.isEmptyObject(this.oMetadata)) {
+			jQuery.sap.assert(undefined, "No metadata loaded!");
+			return null;
+		}
+		// fill the cache
+		if (!this._mGetEntityAssociationEndCache || !this._mGetEntityAssociationEndCache[oEntityType.name + "|" + sName]) {
+			this._mGetEntityAssociationEndCache = {};
+			var oNavigationProperty = oEntityType
+				? Utils.findObject(oEntityType.navigationProperty, sName)
+				: null,
+				oAssociation = oNavigationProperty
+					? Utils.getObject(this.oMetadata.dataServices.schema, "association", oNavigationProperty.relationship)
+					: null,
+				oAssociationEnd = oAssociation
+					? Utils.findObject(oAssociation.end, oNavigationProperty.toRole, "role")
+					: null;
+
+			this._mGetEntityAssociationEndCache[oEntityType.name + "|" + sName] = oAssociationEnd;
+		}
+
+		// return the value from the cache
+		return this._mGetEntityAssociationEndCache[oEntityType.name + "|" + sName];
+	};
+
+	function getEntitySetsMap(schema){
+		var mEntitySets = {};
+		for (var i = 0; i < schema.length; i++) {
+			var oSchema = schema[i];
+			if (oSchema.entityContainer) {
+				for (var j = 0; j < oSchema.entityContainer.length; j++) {
+					var oEntityContainer = oSchema.entityContainer[j];
+					if (oEntityContainer.entitySet) {
+						for (var k = 0; k < oEntityContainer.entitySet.length; k++) {
+							if (oEntityContainer.entitySet[k].name != null) {
+								mEntitySets[oEntityContainer.entitySet[k].name] = oEntityContainer.entitySet[k];
+							}
+						}
+					}
+				}
+			}
+		}
+		return mEntitySets;
+	}
+
+	/**
+	 * Finds the first matching entity set by name
+	 * @param {string} sName name of the entityset
+	 * @returns {*} the first matching entity set by name
+	 * @private
+	 */
+	ODataMetadata.prototype._findEntitySetByName = function(sName) {
+		// fill the cache
+		if (!this.mEntitySets) {
+			this.mEntitySets = getEntitySetsMap(this.oMetadata.dataServices.schema);
+		}
+		return this.mEntitySets[sName];
+	};
 
 	/**
 	 * Extract the entity type name of a given sPath. Also navigation properties in the path will be followed to get the right entity type for that property.
@@ -400,7 +466,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 			aParts = sCandidate.split("/"),
 			iLength = aParts.length,
 			oParentEntityType,
-			aEntityTypeName,
+			oEntityTypeInfo,
 			oEntityType,
 			oResultEntityType,
 			that = this;
@@ -436,8 +502,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 			}
 		} else {
 			// if only one part exists it should be the name of the collection and we can get the entity type for it
-			aEntityTypeName = this._splitName(this._getEntityTypeName(aParts[0]));
-			oEntityType = this._getObjectMetadata("entityType", aEntityTypeName[0], aEntityTypeName[1]);
+			oEntityTypeInfo = this._splitName(this._getEntityTypeName(aParts[0]));
+			oEntityType = this._getObjectMetadata("entityType", oEntityTypeInfo.name, oEntityTypeInfo.namespace);
 			if (oEntityType) {
 				// store the type name also in the oEntityType
 				oEntityType.entityType = this._getEntityTypeName(aParts[0]);
@@ -477,19 +543,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 	 * @return {object} the entity type or null if not found
 	 */
 	ODataMetadata.prototype._getEntityTypeByName = function(sName) {
-		var oEntityType, that = this, sEntityName, sNamespace, iSeparator;
+		var oEntityType, that = this, sEntityName, sNamespace, oEntityTypeInfo;
 
 		if (!sName) {
 			jQuery.sap.assert(undefined, "sName not defined!");
 			return null;
 		}
-		iSeparator = sName.indexOf(".");
-		if (iSeparator > 0) {
-			sNamespace = sName.substr(0, iSeparator);
-			sEntityName = sName.substr(iSeparator + 1);
-		} else {
-			sEntityName = sName;
-		}
+		oEntityTypeInfo = this._splitName(sName);
+		sNamespace = oEntityTypeInfo.namespace;
+		sEntityName = oEntityTypeInfo.name;
+
 		if (!this.oMetadata || jQuery.isEmptyObject(this.oMetadata)) {
 			jQuery.sap.assert(undefined, "No metadata loaded!");
 			return null;
@@ -688,13 +751,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 	 * splits a name e.g. Namespace.Name into [Name, Namespace]
 	 */
 	ODataMetadata.prototype._splitName = function(sFullName) {
-		var aParts = [];
+		var oInfo = {};
 		if (sFullName) {
 			var iSepIdx = sFullName.lastIndexOf(".");
-			aParts[0] = sFullName.substr(iSepIdx + 1);
-			aParts[1] = sFullName.substr(0, iSepIdx);
+			oInfo.name = sFullName.substr(iSepIdx + 1);
+			oInfo.namespace = sFullName.substr(0, iSepIdx);
 		}
-		return aParts;
+		return oInfo;
 	};
 
 
@@ -702,22 +765,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 	*  search metadata for specified collection name (= entity set name)
 	*/
 	ODataMetadata.prototype._getEntityTypeName = function(sCollection) {
-		var sEntityTypeName;
+		var sEntityTypeName, oEntitySet;
+
 		if (sCollection) {
-			jQuery.each(this.oMetadata.dataServices.schema, function(i, oSchema) {
-				if (oSchema.entityContainer) {
-					jQuery.each(oSchema.entityContainer, function(k, oEntityContainer) {
-						if (oEntityContainer.entitySet) {
-							jQuery.each(oEntityContainer.entitySet, function(j, oEntitySet) {
-								if (oEntitySet.name === sCollection) {
-									sEntityTypeName = oEntitySet.entityType;
-									return false;
-								}
-							});
-						}
-					});
-				}
-			});
+			oEntitySet = this._findEntitySetByName(sCollection);
+			if (oEntitySet){
+				sEntityTypeName = oEntitySet.entityType;
+			}
 		}
 		//jQuery.sap.assert(sEntityTypeName, "EntityType name of EntitySet "+ sCollection + " not found!");
 		return sEntityTypeName;
@@ -845,8 +899,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 	ODataMetadata.prototype._getEntityTypeByNavPropertyObject = function(mNavProperty) {
 		var mToEntityType;
 
-		var aAssociationName = this._splitName(mNavProperty.relationship);
-		var mAssociation = this._getObjectMetadata("association", aAssociationName[0], aAssociationName[1]);
+		var oAssociationInfo = this._splitName(mNavProperty.relationship);
+		var mAssociation = this._getObjectMetadata("association", oAssociationInfo.name, oAssociationInfo.namespace);
 
 		// get association for navigation property and then the collection name
 		if (mAssociation) {
@@ -854,8 +908,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 			if (mEnd.role !== mNavProperty.toRole) {
 				mEnd = mAssociation.end[1];
 			}
-			var aEntityTypeName = this._splitName(mEnd.type);
-			mToEntityType = this._getObjectMetadata("entityType", aEntityTypeName[0], aEntityTypeName[1]);
+			var oEntityTypeInfo = this._splitName(mEnd.type);
+			mToEntityType = this._getObjectMetadata("entityType", oEntityTypeInfo.name, oEntityTypeInfo.namespace);
 			if (mToEntityType) {
 				// store the type name also in the oEntityType
 				mToEntityType.entityType = mEnd.type;
@@ -909,8 +963,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 					oPropertyMetadata = that._getPropertyMetadata(oEntityType, aParts[0]);
 				}
 			} else if (!jQuery.sap.startsWith(oPropertyMetadata.type.toLowerCase(), "edm.")) {
-				var aName = this._splitName(oPropertyMetadata.type);
-				oPropertyMetadata = this._getPropertyMetadata(this._getObjectMetadata("complexType", aName[0], aName[1]), aParts[1]);
+				var oNameInfo = this._splitName(oPropertyMetadata.type);
+				oPropertyMetadata = this._getPropertyMetadata(this._getObjectMetadata("complexType", oNameInfo.name, oNameInfo.namespace), aParts[1]);
 			}
 		}
 
@@ -1025,6 +1079,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', 'sap/ui/thirdpa
 	 */
 	ODataMetadata.prototype.merge = function(oTarget, oSource, aEntitySets) {
 		var that = this;
+
+		// invalidate cache for entity set map
+		if (this.mEntitySets) {
+			delete this.mEntitySets;
+		}
 		jQuery.each(oTarget.dataServices.schema, function(i, oTargetSchema) {
 			// find schema
 			jQuery.each(oSource.dataServices.schema, function(j, oSourceSchema) {

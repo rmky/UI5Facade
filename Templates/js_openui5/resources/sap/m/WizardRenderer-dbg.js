@@ -13,7 +13,6 @@ sap.ui.define([], function () {
 		this.startWizard(oRm, oWizard);
 		this.renderProgressNavigator(oRm, oWizard);
 		this.renderWizardSteps(oRm, oWizard);
-		this.renderNextButton(oRm, oWizard);
 		this.endWizard(oRm);
 	};
 
@@ -48,10 +47,6 @@ sap.ui.define([], function () {
 		aRenderingOrder.forEach(oRm.renderControl);
 
 		oRm.write("</section>");
-	};
-
-	WizardRenderer.renderNextButton = function (oRm, oWizard) {
-		oRm.renderControl(oWizard.getAggregation("_nextButton"));
 	};
 
 	WizardRenderer.endWizard = function (oRm) {

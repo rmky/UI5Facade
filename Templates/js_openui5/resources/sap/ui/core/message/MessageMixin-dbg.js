@@ -29,20 +29,23 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/library"], function(jQuery, lib
 	/**
 	 * If messages are present:
 	 * - Adds an additional text to the message from the label(s) of the corresponding control instance
+	 * - Adds the control ID to the messages
 	 * - Propagates the value state
 	 */
 	function refreshDataState (sName, oDataState) {
 		if (oDataState.getChanges().messages) {
 			var aMessages = oDataState.getMessages();
 			var aLabels = sap.ui.core.LabelEnablement.getReferencingLabels(this);
+			var sLabelId = aLabels[0];
+			var bForceUpdate = false;
 
-			if (aLabels && aLabels.length > 0) {
+			aMessages.forEach(function(oMessage) {
+				if (aLabels && aLabels.length > 0) {
 				// we simply take the first label text and ignore all others
-				var sLabelId = aLabels[0];
-				aMessages.forEach(function(oMessage) {
 					var oLabel = sap.ui.getCore().byId(sLabelId);
-					if (oLabel.getMetadata().isInstanceOf("sap.ui.core.Label") && oLabel.getText) {
+					if (oLabel.getMetadata().isInstanceOf("sap.ui.core.Label") && oLabel.getText && oMessage.getAdditionalText() !== oLabel.getText()) {
 						oMessage.setAdditionalText(oLabel.getText());
+						bForceUpdate = true;
 					} else {
 						jQuery.sap.log.warning(
 							"sap.ui.core.message.Message: Can't create labelText." +
@@ -51,12 +54,15 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/library"], function(jQuery, lib
 						);
 
 					}
-				}.bind(this));
-			}
-
+				}
+				if (oMessage.getControlId() !== this.getId()){
+					oMessage.setControlId(this.getId());
+					bForceUpdate = true;
+				}
+			}.bind(this));
 			// Update the model to apply the changes
 			var oMessageModel = sap.ui.getCore().getMessageManager().getMessageModel();
-			oMessageModel.checkUpdate();
+			oMessageModel.checkUpdate(bForceUpdate, true);
 
 			// propagate messages
 			if (aMessages && aMessages.length > 0) {

@@ -20,7 +20,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.fl.changeHandler.AddXML
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @since 1.54
 	 * @private
 	 * @experimental Since 1.54. This class is experimental and provides only limited functionality. Also the API might be changed in future.
@@ -43,7 +43,6 @@ sap.ui.define([
 	 * @param {object} mPropertyBag Property bag
 	 * @param {object} mPropertyBag.modifier Modifier for the controls
 	 * @param {object} mPropertyBag.view Root view
-	 * @param {object} mPropertyBag.appComponent App component
 	 * @returns {boolean} Returns true if the change got applied successfully
 	 * @public
 	 * @name sap.ui.fl.changeHandler.AddXML#applyChange
@@ -60,14 +59,13 @@ sap.ui.define([
 		var sFragment = Utils.asciiToString(oChangeDefinition.content.fragment);
 		var iIndex = oChangeDefinition.content.index;
 		var oView = mPropertyBag.view;
-		var oViewInstance = Utils.getViewForControl(oControl);
-		var oController = oViewInstance && oViewInstance.getController();
+		var sNamespace = oChange.getProjectId();
 
 		var aNewControls;
 		try {
-			aNewControls = oModifier.instantiateFragment(sFragment, oChange.getId(), oViewInstance, oController);
+			aNewControls = oModifier.instantiateFragment(sFragment, sNamespace, oView);
 		} catch (oError) {
-			throw new Error("The following XML Fragment could not be instantiated: " + sFragment);
+			throw new Error("The following XML Fragment could not be instantiated: " + sFragment + " Reason: " + oError.message);
 		}
 
 		var oAggregationDefinition = oModifier.findAggregation(oControl, sAggregationName);
@@ -101,6 +99,8 @@ sap.ui.define([
 	 * @param {object} oControl Control which has been determined by the selector id
 	 * @param {object} mPropertyBag Property bag
 	 * @param {object} mPropertyBag.modifier Modifier for the controls
+	 * @param {object} mPropertyBag.appComponent App component
+	 * @param {object} mPropertyBag.view Root view
 	 * @return {boolean} Returns true if change has been reverted successfully
 	 * @public
 	 * @name sap.ui.fl.changeHandler.AddXML#revertChange
@@ -109,11 +109,12 @@ sap.ui.define([
 		var oModifier = mPropertyBag.modifier;
 		var oChangeDefinition = oChange.getDefinition();
 		var sAggregationName = oChangeDefinition.content.targetAggregation;
-		var oView = mPropertyBag.view;
+		var oView = mPropertyBag.view || Utils.getViewForControl(oControl);
 		var oAppComponent = mPropertyBag.appComponent;
 		var aRevertData = oChange.getRevertData() || [];
 		var aControlsToRemove = aRevertData.map(function(sId) {
-			return oModifier.bySelector(sId, oAppComponent, oView);
+			// when we apply the change in XML and revert in JS, the saved ID is not yet concatinated with the view
+			return oModifier.bySelector(sId, oAppComponent, oView) || oView && oView.createId && oModifier.bySelector(oView.createId(sId));
 		});
 
 		aControlsToRemove.forEach(function(oControlToRemove) {

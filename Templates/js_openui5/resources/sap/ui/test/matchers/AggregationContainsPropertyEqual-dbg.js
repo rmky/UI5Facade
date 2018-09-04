@@ -55,8 +55,7 @@ sap.ui.define([
 		 * @public
 		 */
 		isMatching : function (oControl) {
-			var aAggregation,
-				sAggregationName = this.getAggregationName(),
+			var sAggregationName = this.getAggregationName(),
 				sPropertyName = this.getPropertyName(),
 				vPropertyValue = this.getPropertyValue(),
 				fnAggregation = oControl["get" + $.sap.charToUpperCase(sAggregationName, 0)];
@@ -66,7 +65,8 @@ sap.ui.define([
 				return false;
 			}
 
-			aAggregation = fnAggregation.call(oControl);
+			var vAggregation = fnAggregation.call(oControl);
+			var aAggregation = $.isArray(vAggregation) ? vAggregation : [vAggregation];
 
 			var bMatches = aAggregation.some(function (vAggregationItem) {
 				var fnPropertyGetter = vAggregationItem["get" + $.sap.charToUpperCase(sPropertyName, 0)];

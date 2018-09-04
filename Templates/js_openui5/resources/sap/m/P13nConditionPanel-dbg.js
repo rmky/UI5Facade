@@ -35,7 +35,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The ConditionPanel Control will be used to implement the Sorting, Filtering and Grouping panel of the new Personalization dialog.
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -704,7 +704,7 @@ sap.ui.define([
 			}
 		];
 		this._oButtonGroupSpan = {
-			"SpanFilter": "L1 M2 S2",
+			"SpanFilter": "L2 M2 S2",
 			"SpanSort": Device.system.phone ? "L2 M2 S4" : "L2 M2 S3",
 			"SpanGroup": "L2 M2 S3"
 		};
@@ -1334,6 +1334,9 @@ sap.ui.define([
 							if (typeof sValue === "string" && oConditionGrid.oFormatter instanceof NumberFormat) {
 								oValue = parseFloat(sValue);
 								sValue = oConditionGrid.oFormatter.format(oValue);
+								if (isNaN(oValue)) {
+									break;
+								}
 							}
 
 							if (typeof sValue === "string" && oConditionGrid.oFormatter) {
@@ -1640,6 +1643,9 @@ sap.ui.define([
 						},
 						parse: function(sValue) {
 							try {
+								if (sValue === "") {
+									return "";
+								}
 								this.oType.validateValue(sValue, "string");
 							} catch (err) {
 								return NaN;

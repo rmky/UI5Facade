@@ -30,7 +30,7 @@ sap.ui.define([
 	 * Provides Rename handling functionality
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -45,7 +45,7 @@ sap.ui.define([
 		 */
 		_manageClickEvent : function (vEventOrElement) {
 			var oOverlay = vEventOrElement.getSource ? vEventOrElement.getSource() : vEventOrElement;
-			if (oOverlay.isSelected() && this.isRenameAvailable(oOverlay)) {
+			if (oOverlay.isSelected() && this.isRenameAvailable(oOverlay) && this.isRenameEnabled(oOverlay)) {
 				oOverlay.attachBrowserEvent("click", RenameHandler._onClick, this);
 			} else {
 				oOverlay.detachBrowserEvent("click", RenameHandler._onClick, this);
@@ -223,6 +223,8 @@ sap.ui.define([
 		 * @private
 		 */
 		_stopEdit : function (bRestoreFocus, sPluginMethodName) {
+			this._bPreventMenu = false;
+
 			// exchange the dummy text at the label with the genuine empty text (see start_edit function)
 			if (this._$oEditableControlDomRef.text() === "_?_") {
 				this._$oEditableControlDomRef.text("");

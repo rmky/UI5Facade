@@ -166,8 +166,8 @@ html[data-sap-ui-browser^="ie"].sap-desktop {
 	}
 }
 
-html.sap-desktop .sapUiCalItem:not(.sapUiCalItemNow):focus > .sapUiCalItemText,
-html.sap-desktop .sapUiCalItem:not(.sapUiCalItemNow):hover > .sapUiCalItemText {
+html.sap-desktop .sapUiCalItem:not(.sapUiCalItemNow):focus > .sapUiCalItemText:not(.sapUiCalWeekNum):hover,
+html.sap-desktop .sapUiCalItem:not(.sapUiCalItemNow):hover > .sapUiCalItemText:not(.sapUiCalWeekNum):hover {
 	border: 0 none;
 	border-left: 0.0625rem solid transparent;
 }
@@ -199,11 +199,11 @@ html.sap-desktop .sapUiCalItemSel:focus{
 }
 
 /* define after weekend and selection focus to overrule it*/
-html.sap-desktop .sapUiCalItem:hover{
+html.sap-desktop .sapUiCalItem:not(.sapUiCalItemSel) :not(.sapUiCalWeekNum):hover{
 	background-color: @sapUiHighlight;
 }
 
-html.sap-desktop .sapUiCalItemOtherMonth:hover > .sapUiCalItemText {
+html.sap-desktop .sapUiCalItemOtherMonth:hover > .sapUiCalItemText:not(.sapUiCalWeekNum):hover {
 	margin-left: -0.125rem;
 }
 
@@ -756,6 +756,12 @@ html.sap-desktop .sapUiCalendarApp:hover:not(:active) > .sapUiCalendarAppCont{
 .calendarRowTypeColorIntervalMixIn(sapUiCalendarRowAppsIntHeadType18, darken(desaturate(@sapUiAccent8,50),15));
 .calendarRowTypeColorIntervalMixIn(sapUiCalendarRowAppsIntHeadType19, lighten(desaturate(@sapUiAccent6,30),10));
 .calendarRowTypeColorIntervalMixIn(sapUiCalendarRowAppsIntHeadType20, saturate(@sapUiAccent5,70));
+
+.sapUiAppCreate.sapUiCalendarApp.sapUiCalendarAppType01 {
+	border-top-color: @sapUiContentForegroundBorderColor;
+	border-right-color: @sapUiContentForegroundBorderColor;
+	border-bottom-color: @sapUiContentForegroundBorderColor;
+}
 /* END "CalendarRow.less" */
 
 /* START "ColorPicker.less" */

@@ -22,11 +22,11 @@
 	/*global console, document, jQuery, sap, window */
 	"use strict";
 
-	var _ui5loader = window.sap && window.sap.ui && window.sap.ui._ui5loader,
-		oCfg = window['sap-ui-config'],
+	var ui5loader = window.sap && window.sap.ui && window.sap.ui.loader,
+		oCfg = window['sap-ui-config'] || {},
 		sBaseUrl, bNojQuery,
 		aScripts, rBootScripts, i,
-		oBootstrapScript, sBootstrapUrl, bNoConflict = true;
+		oBootstrapScript, sBootstrapUrl, bExposeAsAMDLoader = false;
 
 	function findBaseUrl(oScript, rUrlPattern) {
 		var sUrl = oScript && oScript.getAttribute("src"),
@@ -41,10 +41,10 @@
 	}
 
 	function ensureSlash(path) {
-		return path && path[path.length] !== '/' ? path + '/' : path;
+		return path && path[path.length - 1] !== '/' ? path + '/' : path;
 	}
 
-	if (_ui5loader == null) {
+	if (ui5loader == null) {
 		throw new Error("ui5loader-autoconfig.js: ui5loader is needed, but could not be found");
 	}
 
@@ -61,15 +61,6 @@
 				break;
 			}
 		}
-	}
-
-	var sNoConflictBootstrapValue = oBootstrapScript && oBootstrapScript.getAttribute("data-sap-ui-noloaderconflict");
-	if (sNoConflictBootstrapValue) {
-		bNoConflict = /^(?:true|x|X)$/.test(sNoConflictBootstrapValue);
-	}
-	var aNoConflictURLMatches = window.location.search.match(/(?:^\?|&)sap-ui-noLoaderConflict=(true|x|X|false)(?:&|$)/);
-	if (aNoConflictURLMatches) {
-		bNoConflict = aNoConflictURLMatches[1] != "false";
 	}
 
 	// configuration via window['sap-ui-config'] always overrides an auto detected base URL
@@ -134,8 +125,20 @@
 					// debug boot script from it, so fall back to a default debug boot script
 					sDebugUrl = ensureSlash(sBaseUrl) + 'sap-ui-core.js';
 				}
+				// revert changes to global names
+				ui5loader.config({
+					amd:false
+				});
 				window["sap-ui-optimized"] = false;
-				document.write("<script src=\"" + sDebugUrl + "\"></script>");
+
+				if (ui5loader.config().async) {
+					var script = document.createElement("script");
+					script.src = sDebugUrl;
+					document.head.appendChild(script);
+				} else {
+					document.write("<script src=\"" + sDebugUrl + "\"></script>");
+				}
+
 				var oRestart = new Error("This is not a real error. Aborting UI5 bootstrap and restarting from: " + sDebugUrl);
 				oRestart.name = "Restart";
 				throw oRestart;
@@ -165,7 +168,7 @@
 				return rFilter.test(sModuleName);
 			};
 
-			_ui5loader.logger.debug("Modules that should be excluded from preload: '" + sPattern + "'");
+			ui5loader._.logger.debug("Modules that should be excluded from preload: '" + sPattern + "'");
 
 		} else if (vDebugInfo === true) {
 
@@ -173,22 +176,53 @@
 				return true;
 			};
 
-			_ui5loader.logger.debug("All modules should be excluded from preload");
+			ui5loader._.logger.debug("All modules should be excluded from preload");
 
 		}
 
-		_ui5loader.config({
+		ui5loader.config({
 			debugSources: !!window['sap-ui-loaddbg'],
 			ignoreBundledResources: fnIgnorePreload
 		});
 
 	})();
 
+	function _getOption(name, defaultValue, pattern) {
+		// check for an URL parameter ...
+		var match = window.location.search.match(new RegExp("(?:^\\??|&)sap-ui-" + name + "=([^&]*)(?:&|$)"));
+		if ( match && (pattern == null || pattern.test(match[1])) ) {
+			return match[1];
+		}
+		// ... or an attribute of the bootstrap tag
+		var attrValue = oBootstrapScript && oBootstrapScript.getAttribute("data-sap-ui-" + name.toLowerCase());
+		if ( attrValue != null && (pattern == null || pattern.test(attrValue)) ) {
+			return attrValue;
+		}
+		// ... or an entry in the global config object
+		if ( Object.prototype.hasOwnProperty.call(oCfg, name) && (pattern == null || pattern.test(oCfg[name])) ) {
+			return oCfg[name];
+		}
+		// if no valid config value is found, fall back to a system default value
+		return defaultValue;
+	}
 
-	_ui5loader.config({
+	function _getBooleanOption(name, defaultValue) {
+		return /^(?:true|x|X)$/.test( _getOption(name, defaultValue, /^(?:true|x|X|false)$/) );
+	}
+
+	if ( _getBooleanOption("xx-async", false) ) {
+		ui5loader.config({
+			async: true
+		});
+	}
+
+	// support legacy switch 'noLoaderConflict', but 'amdLoader' has higher precedence
+	var bExposeAsAMDLoader = _getBooleanOption("amd", !_getBooleanOption("noLoaderConflict", true));
+
+	ui5loader.config({
 		baseUrl: sBaseUrl,
 
-		noConflict: bNoConflict,
+		amd: bExposeAsAMDLoader,
 
 		map: {
 			"*": {
@@ -289,6 +323,10 @@
 				amd: false,
 				exports: 'Mobify' // or Mobify.UI.Carousel?
 			},
+			'sap/ui/thirdparty/qunit-2': {
+				amd: false,
+				exports: 'QUnit'
+			},
 			'sap/ui/thirdparty/punycode': {
 				amd: true,
 				exports: 'punycode'
@@ -305,6 +343,10 @@
 				exports: 'signals'
 			},
 			'sap/ui/thirdparty/sinon': {
+				amd: true,
+				exports: 'sinon'
+			},
+			'sap/ui/thirdparty/sinon-4': {
 				amd: true,
 				exports: 'sinon'
 			},
@@ -363,6 +405,10 @@
 			},
 			'sap/viz/controls/libs/sap-viz-vizservices': {
 				amd: true
+			},
+			'sap/ui/thirdparty/bignumber': {
+				amd: true,
+				exports: 'BigNumber'
 			}
 		}
 	});
@@ -390,6 +436,26 @@
 				return jQuery;
 			});
 		}
+	}
+
+	var sMainModule = oBootstrapScript && oBootstrapScript.getAttribute('data-sap-ui-main');
+	if ( sMainModule ) {
+		sap.ui.require(sMainModule.trim().split(/\s*,\s*/));
+	}
+
+	try {
+		if (window.localStorage.getItem("sap-ui-reboot-URL")) {
+			var sDebugRebootPath = ensureSlash(sBaseUrl) + 'sap/ui/bootstrap/Debug.js';
+			if (ui5loader.config().async) {
+				var oScript = document.createElement("script");
+				oScript.src = sDebugRebootPath;
+				document.head.appendChild(oScript);
+			} else {
+				document.write("<script src=\"" + sDebugRebootPath + "\"></script>");
+			}
+		}
+	} catch (e) {
+		// access to localStorage might be disallowed
 	}
 
 }());

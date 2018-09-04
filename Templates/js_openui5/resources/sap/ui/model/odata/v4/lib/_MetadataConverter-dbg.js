@@ -4,6 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
+//Provides class sap.ui.model.odata.v4.lib._MetadataConverter
 sap.ui.define([
 	"./_Helper"
 ], function (_Helper) {
@@ -619,30 +620,6 @@ sap.ui.define([
 			aSegments[i] = this.resolveAlias(aSegments[i]);
 		}
 		return aSegments.join("/") + sTerm;
-	};
-
-	/**
-	 * Resolves a target path including resolve aliases.
-	 *
-	 * @param {string} sPath The target path
-	 * @returns {string} The target path with the alias resolved (if there was one)
-	 */
-	MetadataConverter.prototype.resolveTargetPath = function (sPath) {
-		var iSlash;
-
-		if (!sPath) {
-			return sPath;
-		}
-
-		sPath = this.resolveAliasInPath(sPath);
-		iSlash = sPath.indexOf("/");
-
-		if (iSlash >= 0 && sPath.indexOf("/", iSlash + 1) < 0) { // there is exactly one slash
-			if (sPath.slice(0, iSlash) === this.result.$EntityContainer) {
-				return sPath.slice(iSlash + 1);
-			}
-		}
-		return sPath;
 	};
 
 	/**

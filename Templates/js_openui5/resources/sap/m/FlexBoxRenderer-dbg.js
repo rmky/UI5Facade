@@ -19,11 +19,6 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', 'sap/m/library'],
 		jQuery.sap.log.warning("This browser does not support flexible box layouts natively.");
 	}
 
-
-	var lazyInstanceof = function(oControl, sModule) {
-		var FNClass = sap.ui.require(sModule);
-		return typeof FNClass === 'function' && (oControl instanceof FNClass);
-	};
 	/**
 	 * FlexBox renderer
 	 * @namespace
@@ -49,7 +44,7 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', 'sap/m/library'],
 
 		// Special treatment if FlexBox is itself an item of a parent FlexBox
 		var oParent = oControl.getParent();
-		if (lazyInstanceof(oControl.getParent(), "sap/m/FlexBox")) {
+		if (oParent && oParent.isA("sap.m.FlexBox")) {
 			oRm.addClass("sapMFlexItem");
 
 			// Set layout properties for flex item
@@ -124,7 +119,7 @@ sap.ui.define(['jquery.sap.global', './FlexBoxStylingHelper', 'sap/m/library'],
 
 		for (var i = 0; i < aChildren.length; i++) {
 			// Don't wrap if it's a FlexBox control
-			if (lazyInstanceof(aChildren[i], 'sap/m/FlexBox') || oControl.getRenderType() === FlexRendertype.Bare) {
+			if (aChildren[i].isA('sap.m.FlexBox') || oControl.getRenderType() === FlexRendertype.Bare) {
 				sWrapperTag = "";
 			} else if (oControl.getRenderType() === FlexRendertype.List) {
 				sWrapperTag = "li";

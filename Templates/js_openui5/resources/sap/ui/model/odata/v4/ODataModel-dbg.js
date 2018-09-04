@@ -16,12 +16,14 @@
 //Provides class sap.ui.model.odata.v4.ODataModel
 sap.ui.define([
 	"jquery.sap.global",
+	"sap/ui/base/SyncPromise",
 	"sap/ui/core/message/Message",
 	"sap/ui/model/BindingMode",
 	"sap/ui/model/Context",
 	"sap/ui/model/Model",
 	"sap/ui/model/odata/OperationMode",
 	"sap/ui/thirdparty/URI",
+	"./lib/_GroupLock",
 	"./lib/_MetadataRequestor",
 	"./lib/_Requestor",
 	"./lib/_Parser",
@@ -30,8 +32,8 @@ sap.ui.define([
 	"./ODataMetaModel",
 	"./ODataPropertyBinding",
 	"./SubmitMode"
-], function (jQuery, Message, BindingMode, BaseContext, Model, OperationMode, URI,
-		_MetadataRequestor, _Requestor, _Parser, ODataContextBinding, ODataListBinding,
+], function (jQuery, SyncPromise, Message, BindingMode, BaseContext, Model, OperationMode, URI,
+		_GroupLock, _MetadataRequestor, _Requestor, _Parser, ODataContextBinding, ODataListBinding,
 		ODataMetaModel, ODataPropertyBinding, SubmitMode) {
 
 	"use strict";
@@ -147,11 +149,12 @@ sap.ui.define([
 	 *   binding and do not access data with their own service requests unless parameters are
 	 *   provided.
 	 *
-	 *   The model does not support any public events; attaching an event handler leads to an error.
+	 *   <b>Note: The model does not support any public events; attaching an event handler
+	 *   leads to an error.</b>
 	 * @extends sap.ui.model.Model
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 */
 	var ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */
@@ -212,6 +215,7 @@ sap.ui.define([
 					this.checkGroupId(mParameters.updateGroupId, false,
 						"Invalid update group ID: ");
 					this.sUpdateGroupId = mParameters.updateGroupId || this.getGroupId();
+					this.aLockedGroupLocks = [];
 					this.mGroupProperties = {};
 					for (sGroupId in mParameters.groupProperties) {
 						that.checkGroupId(sGroupId, true);
@@ -265,7 +269,8 @@ sap.ui.define([
 			});
 
 	/**
-	 * Submits the requests associated with the given group ID in one batch request.
+	 * Waits until all group locks for the given group ID have been unlocked and submits the
+	 * requests associated with this group ID in one batch request.
 	 *
 	 * @param {string} sGroupId
 	 *   The group ID
@@ -276,12 +281,78 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataModel.prototype._submitBatch = function (sGroupId) {
-		return this.oRequestor.submitBatch(sGroupId)
-			["catch"](function (oError) {
-				jQuery.sap.log.error("$batch failed", oError.message, sClassName);
+		var bBlocked,
+			oPromise,
+			that = this;
+
+		// Use SyncPromise.all to call the requestor synchronously when there is no lock -> The
+		// batch is sent before the rendering. Rendering and server processing run in parallel.
+		oPromise = SyncPromise.all(this.aLockedGroupLocks.map(function (oGroupLock) {
+			return oGroupLock.waitFor(sGroupId);
+		}));
+		bBlocked = oPromise.isPending();
+		if (bBlocked) {
+			jQuery.sap.log.info("submitBatch('" + sGroupId + "') is waiting for locks", null,
+				sClassName);
+		}
+		return Promise.resolve(oPromise.then(function () {
+			if (bBlocked) {
+				jQuery.sap.log.info("submitBatch('" + sGroupId + "') continues", null, sClassName);
+			}
+			that.aLockedGroupLocks = that.aLockedGroupLocks.filter(function (oGroupLock) {
+				return oGroupLock.isLocked();
+			});
+			return that.oRequestor.submitBatch(sGroupId).catch(function (oError) {
+				that.reportError("$batch failed", sClassName, oError.message);
 				throw oError;
 			});
+		}));
 	};
+
+	/**
+	 * The 'parseError' event is not supported by this model.
+	 *
+	 * @event
+	 * @name sap.ui.model.odata.v4.ODataModel#parseError
+	 * @public
+	 * @since 1.37.0
+	 */
+
+	/**
+	 * The 'propertyChange' event is not supported by this model.
+	 *
+	 * @event
+	 * @name sap.ui.model.odata.v4.ODataModel#propertyChange
+	 * @public
+	 * @since 1.37.0
+	 */
+
+	/**
+	 * The 'requestCompleted' event is not supported by this model.
+	 *
+	 * @event
+	 * @name sap.ui.model.odata.v4.ODataModel#requestCompleted
+	 * @public
+	 * @since 1.37.0
+	 */
+
+	/**
+	 * The 'requestFailed' event is not supported by this model.
+	 *
+	 * @event
+	 * @name sap.ui.model.odata.v4.ODataModel#requestFailed
+	 * @public
+	 * @since 1.37.0
+	 */
+
+	/**
+	 * The 'requestSent' event is not supported by this model.
+	 *
+	 * @event
+	 * @name sap.ui.model.odata.v4.ODataModel#requestSent
+	 * @public
+	 * @since 1.37.0
+	 */
 
 	// See class documentation
 	// @override
@@ -309,8 +380,8 @@ sap.ui.define([
 	 *   The context which is required as base for a relative path
 	 * @param {object} [mParameters]
 	 *   Map of binding parameters which can be OData query options as specified in
-	 *   "OData Version 4.0 Part 2: URL Conventions" or the binding-specific parameters "$$groupId"
-	 *   and "$$updateGroupId".
+	 *   "OData Version 4.0 Part 2: URL Conventions" or the binding-specific parameters as specified
+	 *   below.
 	 *   Note: The binding creates its own data service request if it is absolute or if it has any
 	 *   parameters or if it is relative and has a context created via
 	 *   {@link #createBindingContext}.
@@ -330,6 +401,15 @@ sap.ui.define([
 	 *   model's group ID is used, see {@link sap.ui.model.odata.v4.ODataModel#constructor}.
 	 *   Valid values are <code>undefined</code>, '$auto', '$direct' or application group IDs as
 	 *   specified in {@link #submitBatch}.
+	 * @param {boolean} [mParameters.$$inheritExpandSelect]
+	 *   For operation bindings only: Whether $expand and $select from the parent binding are used
+	 *   in the request sent on {@link #execute}. If set to <code>true</code>, the binding must not
+	 *   set the $expand or $select parameter itself and its
+	 *   {@link sap.ui.model.odata.v4.ODataContextBinding#execute} must resolve with a return value
+	 *   context.
+	 * @param {boolean} [mParameters.$$ownRequest]
+	 *   Whether the binding always uses an own service request to read its data; only the value
+	 *   <code>true</code> is allowed.
 	 * @param {string} [mParameters.$$updateGroupId]
 	 *   The group ID to be used for <b>update</b> requests triggered by this binding;
 	 *   if not specified, either the parent binding's update group ID (if the binding is relative)
@@ -401,8 +481,8 @@ sap.ui.define([
 	 *   Supported since 1.39.0.
 	 * @param {object} [mParameters]
 	 *   Map of binding parameters which can be OData query options as specified in
-	 *   "OData Version 4.0 Part 2: URL Conventions" or the binding-specific parameters "$$groupId"
-	 *   and "$$updateGroupId".
+	 *   "OData Version 4.0 Part 2: URL Conventions" or binding-specific parameters as specified
+	 *   below.
 	 *   Note: The binding creates its own data service request if it is absolute or if it has any
 	 *   parameters or if it is relative and has a context created via {@link #createBindingContext}
 	 *   or if it has sorters or filters.
@@ -419,12 +499,18 @@ sap.ui.define([
 	 *   {@link sap.ui.model.odata.OperationMode.Server} is supported. All other operation modes
 	 *   including <code>undefined</code> lead to an error if 'vSorters' are given or if
 	 *   {@link sap.ui.model.odata.v4.ODataListBinding#sort} is called.
+	 * @param {object} [mParameters.$$aggregation]
+	 *   An object holding the information needed for data aggregation, see
+	 *   {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation} for details.
 	 * @param {string} [mParameters.$$groupId]
 	 *   The group ID to be used for <b>read</b> requests triggered by this binding; if not
 	 *   specified, either the parent binding's group ID (if the binding is relative) or the
 	 *   model's group ID is used, see {@link sap.ui.model.odata.v4.ODataModel#constructor}.
 	 *   Valid values are <code>undefined</code>, '$auto', '$direct' or application group IDs as
 	 *   specified in {@link #submitBatch}.
+	 * @param {boolean} [mParameters.$$ownRequest]
+	 *   Whether the binding always uses an own service request to read its data; only the value
+	 *   <code>true</code> is allowed.
 	 * @param {string} [mParameters.$$updateGroupId]
 	 *   The group ID to be used for <b>update</b> requests triggered by this binding;
 	 *   if not specified, either the parent binding's update group ID (if the binding is relative)
@@ -501,9 +587,14 @@ sap.ui.define([
 	 * binding parameters are not contained in the map. The following parameters and parameter
 	 * values are supported, if the parameter is contained in the given 'aAllowed' parameter:
 	 * <ul>
+	 * <li> '$$aggregation' with allowed values as specified in
+	 *      {@link sap.ui.model.odata.v4.ODataListBinding#updateAnalyticalInfo} (but without
+	 *      validation here)
 	 * <li> '$$groupId' with allowed values as specified in {@link #checkGroupId}
 	 * <li> '$$updateGroupId' with allowed values as specified in {@link #checkGroupId}
+	 * <li> '$$inheritExpandSelect' with allowed values <code>false</code> and <code>true</code>
 	 * <li> '$$operationMode' with value {@link sap.ui.model.odata.OperationMode.Server}
+	 * <li> '$$ownRequest' with value <code>true</code>
 	 * </ul>
 	 *
 	 * @param {object} mParameters
@@ -523,7 +614,7 @@ sap.ui.define([
 
 		if (mParameters) {
 			Object.keys(mParameters).forEach(function (sKey) {
-				var sValue = mParameters[sKey];
+				var vValue = mParameters[sKey];
 
 				if (sKey.indexOf("$$") !== 0) {
 					return;
@@ -532,16 +623,36 @@ sap.ui.define([
 					throw new Error("Unsupported binding parameter: " + sKey);
 				}
 
-				if (sKey === "$$groupId" || sKey === "$$updateGroupId") {
-					that.checkGroupId(sValue, false,
-						"Unsupported value for binding parameter '" + sKey + "': ");
-				} else if (sKey === "$$operationMode") {
-					if (sValue !== OperationMode.Server) {
-						throw new Error("Unsupported operation mode: " + sValue);
-					}
+				switch (sKey) {
+					case "$$aggregation":
+						// no validation here
+						break;
+					case "$$groupId":
+					case "$$updateGroupId":
+						that.checkGroupId(vValue, false,
+							"Unsupported value for binding parameter '" + sKey + "': ");
+						break;
+					case "$$inheritExpandSelect":
+						if (vValue !== true && vValue !== false) {
+							throw new Error("Unsupported value for binding parameter "
+								+ "'$$inheritExpandSelect': " + vValue);
+						}
+						break;
+					case "$$operationMode":
+						if (vValue !== OperationMode.Server) {
+							throw new Error("Unsupported operation mode: " + vValue);
+						}
+						break;
+					case "$$ownRequest":
+						if (vValue !== true) {
+							throw new Error("Unsupported value for binding parameter "
+								+ "'$$ownRequest': " + vValue);
+						}
+						break;
+					default:
+						throw new Error("Unknown binding-specific parameter: " + sKey);
 				}
-
-				mResult[sKey] = sValue;
+				mResult[sKey] = vValue;
 			});
 		}
 		return mResult;
@@ -856,8 +967,7 @@ sap.ui.define([
 
 			return oBinding.isRelative()
 				&& (oContext === oParent
-						|| oContext && oContext.getBinding && oContext.getBinding() === oParent
-					);
+						|| oContext && oContext.getBinding && oContext.getBinding() === oParent);
 		});
 	};
 
@@ -1050,6 +1160,46 @@ sap.ui.define([
 	};
 
 	/**
+	 * Creates or modifies a lock for a group. {@link #_submitBatch} has to wait until all locks for
+	 * <code>sGroupId</code> are unlocked. The goal of such a lock is to allow the user of the
+	 * ODataModel to call an API that creates a request in a batch group and immediately call
+	 * {@link #submitBatch} for this group. In such cases the request has to be sent with this
+	 * submitBatch, even if the request is created later asynchronously. To achieve this, the API
+	 * function creates a lock that blocks _submitBatch until the request is created.
+	 *
+	 * It is possible to create a lock without giving a group ID initially. In this case all queues
+	 * for all group IDs are locked until a group ID is given. Once a group ID has been set, it
+	 * cannot be changed anymore.
+	 *
+	 * For performance reasons it is possible to create a group lock that actually doesn't lock. All
+	 * non-API functions use this group lock instead of the group ID so that a lock is possible. But
+	 * not in every case a lock is necessary and suitable.
+	 *
+	 * @param {string} [sGroupId]
+	 *   The group ID. If not given here, it can be set later on the created lock.
+	 * @param {boolean|sap.ui.model.odata.v4.lib._GroupLock} [vLock]
+	 *   If vLock is a group lock, it is modified and returned. Otherwise a lock is created which
+	 *   locks if vLock is truthy.
+	 * @returns {sap.ui.model.odata.v4.lib._GroupLock}
+	 *   The group lock
+	 *
+	 * @private
+	 */
+	ODataModel.prototype.lockGroup = function (sGroupId, vLock) {
+		var oGroupLock;
+
+		if (vLock instanceof _GroupLock) {
+			vLock.setGroupId(sGroupId);
+			return vLock;
+		}
+		oGroupLock = new _GroupLock(sGroupId, vLock);
+		if (oGroupLock.isLocked()) {
+			this.aLockedGroupLocks.push(oGroupLock);
+		}
+		return oGroupLock;
+	};
+
+	/**
 	 * Refreshes the model by calling refresh on all bindings which have a change event handler
 	 * attached.
 	 *
@@ -1096,7 +1246,7 @@ sap.ui.define([
 	 *   The name of the class reporting the error
 	 * @param {Error} oError
 	 *   The error
-	 * @param {boolean|"noDebugLog"} [oError.canceled]
+	 * @param {boolean|string} [oError.canceled]
 	 *   A boolean value indicates whether the error is not reported but just logged to the
 	 *   console with level DEBUG; example: errors caused by cancellation of backend requests.
 	 *   For the string value "noDebugLog", the method does nothing; example: errors caused by

@@ -48,10 +48,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 	 *
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @public
-	 * @deprecated Please use {@link sap.ui.model.odata.v2.ODataModel} instead.
+	 * @deprecated As of version 1.48, please use {@link sap.ui.model.odata.v2.ODataModel} instead.
 	 * @alias sap.ui.model.odata.ODataModel
 	 * @extends sap.ui.model.Model
 	 */
@@ -1277,10 +1277,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 
 	/**
 	 * Sets whether this OData service supports $count on its collections.
-	 * This method is deprecated, please use setDefaultCountMode instead.
 	 *
 	 * @param {boolean} bCountSupported
-	 * @deprecated
+	 * @deprecated As of version 1.20, please use {@link #setDefaultCountMode} instead.
 	 * @public
 	 */
 	ODataModel.prototype.setCountSupported = function(bCountSupported) {
@@ -1289,10 +1288,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 
 	/**
 	 * Returns whether this model supports the $count on its collections
-	 * This method is deprecated, please use getDefaultCountMode instead.
 	 *
 	 * @returns {boolean}
-	 * @deprecated
+	 * @deprecated As of version 1.20, please use {@link #getDefaultCountMode} instead.
 	 * @public
 	 */
 	ODataModel.prototype.isCountSupported = function() {
@@ -1913,7 +1911,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 	 *
 	 * @return {object} oData Object containing the requested data if the path is valid.
 	 * @public
-	 * @deprecated please use {@link #getProperty} instead
+	 * @deprecated As of version 1.6.0, please use {@link #getProperty} instead
 	 */
 	ODataModel.prototype.getData = function(sPath, oContext, bIncludeExpandEntries) {
 		return this.getProperty(sPath, oContext, bIncludeExpandEntries);
@@ -3021,7 +3019,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 	 * Force no caching
 	 * @param {boolean} [bForceNoCache=false] whether to force no caching
 	 * @public
-	 * @deprecated The caching should be controlled by the backend by setting the correct cache control header
+	 * @deprecated As of version 1.13, the caching should be controlled by the backend by setting the correct cache control header
 	 */
 	ODataModel.prototype.forceNoCache = function(bForceNoCache) {
 		this.bCache = !bForceNoCache;
@@ -3166,9 +3164,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Co
 	 * @private
 	 */
 	ODataModel.prototype._createPropertyValue = function(sType) {
-		var aTypeName = this.oMetadata._splitName(sType); // name, namespace
-		var sNamespace = aTypeName[1];
-		var sTypeName = aTypeName[0];
+		var oTypeInfo = this.oMetadata._splitName(sType); // name, namespace
+		var sNamespace = oTypeInfo.namespace;
+		var sTypeName = oTypeInfo.name;
 		if (sNamespace.toUpperCase() !== 'EDM') {
 			var oComplexType = {};
 			var oComplexTypeMetadata = this.oMetadata._getObjectMetadata("complexType",sTypeName,sNamespace);

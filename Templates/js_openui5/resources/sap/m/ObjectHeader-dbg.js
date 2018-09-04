@@ -63,7 +63,7 @@ sap.ui.define([
 	 * a specific object. The object header title is the key identifier of the object and
 	 * additional text and icons can be used to further distinguish it from other objects.
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -789,6 +789,11 @@ sap.ui.define([
 			this.fireTitleSelectorPress({
 				domRef : jQuery.sap.domById(sSourceId)
 			});
+		} else {
+			// we didn't click on any of the active parts of the ObjectHeader
+			// event should not trigger any further actions
+			oEvent.setMarked();
+			oEvent.preventDefault();
 		}
 	};
 

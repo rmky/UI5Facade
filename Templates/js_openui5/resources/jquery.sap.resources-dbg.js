@@ -7,13 +7,9 @@
 // Provides access to Java-like resource bundles in properties file format
 sap.ui.define([
 	'sap/ui/Resources',
-	'jquery.sap.global',
-
-	// load old modules for compatibility
-	'jquery.sap.properties',
-	'jquery.sap.strings'
-], function(Resources, jQuery /* jQuerySap1, jQuerySap2 */) {
-		"use strict";
+	'jquery.sap.global'
+], function(Resources, jQuery) {
+	"use strict";
 
 	/**
 	 * Creates and returns a new instance of {@link jQuery.sap.util.ResourceBundle}
@@ -67,7 +63,7 @@ sap.ui.define([
 	 * Exception: Fallback for "zh_HK" is "zh_TW" before zh.
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @since 0.9.0
 	 * @name jQuery.sap.util.ResourceBundle
 	 * @public

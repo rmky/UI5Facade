@@ -52,7 +52,7 @@ function(
 		 * <li> If the message cannot be fully displayed or includes a long description, the message popover provides navigation to the detailed description.</li>
 		 * </ul>
 		 * <h3>Structure</h3>
-		 * The message popover stores all messages in an association of type {@link sap.m.MessageItem} named <code>items</code>.
+		 * The message popover stores all messages in an aggregation of type {@link sap.m.MessageItem} named <code>items</code>.
 		 *
 		 * A set of properties determines how the items are rendered:
 		 * <ul>
@@ -72,12 +72,13 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
 		 * @since 1.28
 		 * @alias sap.m.MessagePopover
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/message-popover/ Message Popover}
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		var MessagePopover = Control.extend("sap.m.MessagePopover", /** @lends sap.m.MessagePopover.prototype */ {

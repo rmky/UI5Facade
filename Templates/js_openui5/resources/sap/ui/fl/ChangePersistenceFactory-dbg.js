@@ -15,7 +15,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.ChangePersistenceFactory
 	 * @experimental Since 1.27.0
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 */
 	var ChangePersistenceFactory = {};
 
@@ -155,6 +155,8 @@ sap.ui.define([
 		}
 
 		var oChangePersistenceWrapper = this._doLoadComponent(oConfig, oManifest);
+		oChangePersistenceWrapper.oRequestOptions.componentData = {};
+		jQuery.extend(oChangePersistenceWrapper.oRequestOptions.componentData, oConfig.componentData);
 
 		oChangePersistenceWrapper.oChangePersistence.getChangesForComponent(oChangePersistenceWrapper.oRequestOptions);
 	};

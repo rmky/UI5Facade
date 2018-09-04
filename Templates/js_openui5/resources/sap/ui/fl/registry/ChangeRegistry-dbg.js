@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.registry.ChangeRegistry
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @experimental Since 1.27.0
 	 *
 	 */
@@ -155,7 +155,7 @@ sap.ui.define([
 	 * Returns the Change Registry Item for a specific control instance (if available)
 	 * @param  {string} sChangeType Change type of a <code>sap.ui.fl.Change</code> change
 	 * @param  {sap.ui.core.Control} oControl  The control instance for which the registry item will be retrieved
-	 * @param  {sap.ui.fl.changeHandler.BaseTreeModifier} oModifier Control tree modifier
+	 * @param  {sap.ui.core.util.reflection.BaseTreeModifier} oModifier Control tree modifier
 	 * @return {sap.ui.fl.registry.ChangeRegistryItem|undefined} Returns the registry item or undefined if not found
 	 * @private
 	 */
@@ -258,7 +258,7 @@ sap.ui.define([
 	 * @param  {string} sChangeType The Change type of a <code>sap.ui.fl.Change</code> change
 	 * @param  {string} sControlType The name of the ui5 control type i.e. sap.m.Button
 	 * @param  {sap.ui.core.Control} oControl The Control instance for which the change handler will be retrieved
-	 * @param  {sap.ui.fl.changeHandler.BaseTreeModifier} oModifier Control tree modifier
+	 * @param  {sap.ui.core.util.reflection.BaseTreeModifier} oModifier Control tree modifier
 	 * @param  {string} sLayer The layer to be considered when getting the change handlers
 	 * @return {object} Returns the change handler object
 	 */

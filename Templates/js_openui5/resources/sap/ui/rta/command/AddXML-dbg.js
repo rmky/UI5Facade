@@ -20,7 +20,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @since 1.54
@@ -53,6 +53,16 @@ sap.ui.define([
 			events : {}
 		}
 	});
+
+	/**
+	 * @override to suppress the binding strings to be used as
+	 */
+	AddXML.prototype.bindProperty = function(sName, oBindingInfo){
+		if (sName === "fragment"){
+			return this.setFragment(oBindingInfo.bindingString);
+		}
+		return FlexCommand.prototype.bindProperty.apply(this, arguments);
+	};
 
 	AddXML.prototype._getChangeSpecificData = function() {
 		var mSpecificInfo = {

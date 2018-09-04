@@ -43,12 +43,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
-		 * @constructor
 		 * @public
 		 * @alias sap.m.BusyDialog
-		 * @see https://experience.sap.com/fiori-design-web/busydialog/
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/busydialog Busy Dialog}
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		var BusyDialog = Control.extend("sap.m.BusyDialog", /** @lends sap.m.BusyDialog.prototype */ {
@@ -136,7 +135,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 
 		/**
 		 * Initiates the BusyDialog.
-		 * @name sap.m.BusyDialog.init
 		 * @private
 		 */
 		BusyDialog.prototype.init = function () {
@@ -206,7 +204,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 
 		/**
 		 * Destroys the BusyDialog.
-		 * @name sap.m.BusyDialog.exit
 		 * @private
 		 */
 		BusyDialog.prototype.exit = function () {
@@ -235,8 +232,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Opens the BusyDialog.
 		 *
-		 * @name sap.m.BusyDialog.open
-		 * @method
 		 * @public
 		 * @returns {sap.m.BusyDialog} BusyDialog reference for chaining.
 		 */
@@ -265,8 +260,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Closes the BusyDialog.
 		 *
-		 * @name sap.m.BusyDialog.close
-		 * @method
 		 * @public
 		 * @param {boolean} isClosedFromUserInteraction Indicates if the BusyDialog is closed from a user interaction.
 		 * @returns {sap.m.BusyDialog} The modified BusyDialog.
@@ -294,8 +287,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Sets the title for the BusyDialog.
 		 *
-		 * @name sap.m.BusyDialog.setTitle
-		 * @method
 		 * @public
 		 * @param {string} sTitle The title for the BusyDialog.
 		 * @returns {sap.m.BusyDialog} BusyDialog reference for chaining.
@@ -311,8 +302,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Sets the tooltip for the BusyDialog.
 		 *
-		 * @name sap.m.BusyDialog.setTooltip
-		 * @method
 		 * @public
 		 * @param {string} sTooltip The tooltip for the BusyDialog.
 		 * @returns {sap.m.BusyDialog} BusyDialog reference for chaining.
@@ -326,8 +315,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Gets the tooltip for the BusyDialog.
 		 *
-		 * @name sap.m.BusyDialog.getTooltip
-		 * @method
 		 * @public
 		 * @returns {sap.m.BusyDialog} BusyDialog reference for chaining.
 		 */
@@ -340,8 +327,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Sets the text for the BusyDialog.
 		 *
-		 * @name sap.m.BusyDialog.setText
-		 * @method
 		 * @public
 		 * @param {string} sText The text for the BusyDialog.
 		 * @returns {sap.m.BusyDialog} BusyDialog reference for chaining.
@@ -370,8 +355,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Sets custom icon.
 		 *
-		 * @name sap.m.BusyDialog.setCustomIcon
-		 * @method
 		 * @public
 		 * @param {string} sIcon Icon to use as a busy animation.
 		 * @returns {sap.m.BusyDialog} BusyDialog reference for chaining.
@@ -385,8 +368,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Sets the rotation speed of the custom icon.
 		 *
-		 * @name sap.m.BusyDialog.setCustomIconRotationSpeed
-		 * @method
 		 * @public
 		 * @param {int} iSpeed Defines the rotation speed of the given image.
 		 * @returns {sap.m.BusyDialog} BusyDialog reference for chaining.
@@ -400,8 +381,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Sets the density of the custom icon.
 		 *
-		 * @name sap.m.BusyDialog.setCustomIconDensityAware
-		 * @method
 		 * @public
 		 * @param {boolean} bIsDensityAware Determines if the source image will be loaded directly without attempting to fetch the density for high density devices.
 		 * @returns {sap.m.BusyDialog} BusyDialog reference for chaining.
@@ -415,8 +394,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Sets the width of the custom icon.
 		 *
-		 * @name sap.m.BusyDialog.setCustomIconWidth
-		 * @method
 		 * @public
 		 * @param {string} sWidth Width of the provided icon in CSSSize.
 		 * @returns {sap.m.BusyDialog} BusyDialog reference for chaining.
@@ -430,8 +407,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Sets the height of the custom icon.
 		 *
-		 * @name sap.m.BusyDialog.setCustomIconHeight
-		 * @method
 		 * @public
 		 * @param {string} sHeight Height of the provided icon in CSSSize.
 		 * @returns {sap.m.BusyDialog} BusyDialog reference for chaining.
@@ -445,8 +420,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Shows the cancel button.
 		 *
-		 * @name sap.m.BusyDialog.setShowCancelButton
-		 * @method
 		 * @public
 		 * @param {boolean} bIsCancelButtonShown Determines if the Cancel button is shown.
 		 * @returns {sap.m.BusyDialog} BusyDialog reference for chaining.
@@ -466,8 +439,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Shows the text for the cancel button.
 		 *
-		 * @name sap.m.BusyDialog.setCancelButtonText
-		 * @method
 		 * @public
 		 * @param {string} sText Text for the cancel button.
 		 * @returns {sap.m.BusyDialog} The modified BusyDialog.
@@ -488,8 +459,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Gets the DOM reference for the BusyDialog.
 		 *
-		 * @name sap.m.BusyDialog.getDomRef
-		 * @method
 		 * @public
 		 * @returns {sap.m.BusyDialog} Dom reference.
 		 */
@@ -497,13 +466,20 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 			return this._oDialog && this._oDialog.getDomRef();
 		};
 
+		//Forward methods to the inner dialog: addStyleClass, removeStyleClass, hasStyleClass, toggleStyleClass
+		["addStyleClass", "removeStyleClass", "toggleStyleClass", "hasStyleClass"].forEach(function (sActionName) {
+			BusyDialog.prototype[sActionName] = function () {
+				if (this._oDialog && this._oDialog[sActionName]) {
+					return this._oDialog[sActionName].apply(this._oDialog, arguments);
+				}
+			};
+		});
+
 		//private functions
 
 		/**
 		 * Destroys the cancel button.
 		 *
-		 * @name sap.m.BusyDialog._destroyTheCancelButton
-		 * @method
 		 * @private
 		 */
 		BusyDialog.prototype._destroyTheCancelButton = function () {
@@ -514,8 +490,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', 'sap/m/D
 		/**
 		 * Gets the cancel button.
 		 *
-		 * @name sap.m.BusyDialog._getCancelButton
-		 * @method
 		 * @private
 		 * @returns {sap.m.Button} The cancel button in the BusyDialog.
 		 */

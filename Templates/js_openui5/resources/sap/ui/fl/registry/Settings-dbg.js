@@ -45,6 +45,11 @@ sap.ui.define([
 			};
 		}
 
+		// By default, variant sharing is enabled
+		if (!(Settings._IS_VARIANT_SHARING_ENABLED in oSettings)) {
+			oSettings.isVariantSharingEnabled = true;
+		}
+
 		this._oSettings = oSettings;
 		this._hasMergeErrorOccured = false;
 	};
@@ -60,6 +65,7 @@ sap.ui.define([
 	Settings._bFlexChangeMode = true;
 	Settings._bFlexibilityAdaptationButtonAllowed = false;
 	Settings._oEventProvider = new EventProvider();
+	Settings._IS_VARIANT_SHARING_ENABLED = "isVariantSharingEnabled";
 
 	/**
 	 * fires the passed event via its event provider
@@ -361,6 +367,16 @@ sap.ui.define([
 			bIsProductiveSystem = this._oSettings.isProductiveSystem;
 		}
 		return bIsProductiveSystem;
+	};
+
+	/**
+	 * Checks whether sharing of variants is enabled.
+	 *
+	 * @public
+	 * @returns {boolean} true if sharing of variants is enabled
+	 */
+	Settings.prototype.isVariantSharingEnabled = function() {
+		return (this._oSettings.isVariantSharingEnabled === true);
 	};
 
 	Settings.prototype.setMergeErrorOccured = function(bErrorOccured) {

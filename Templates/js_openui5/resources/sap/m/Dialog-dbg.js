@@ -107,11 +107,12 @@ function(
 		*
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.54.7
+		* @version 1.56.6
 		*
 		* @constructor
 		* @public
 		* @alias sap.m.Dialog
+		* @see {@link fiori:https://experience.sap.com/fiori-design-web/dialog/ Dialog}
 		* @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		*/
 		var Dialog = Control.extend("sap.m.Dialog", /** @lends sap.m.Dialog.prototype */ {
@@ -158,7 +159,7 @@ function(
 					stretchOnPhone: {type: "boolean", group: "Appearance", defaultValue: false, deprecated: true},
 
 					/**
-					 * Determines  if the dialog will be stretched to full screen. This property is only applicable to standard dialog and message type dialog ignores this property.
+					 * Determines  if the dialog will be stretched to full screen on mobile, when on desktop the dialog will be stretched to 93% of the viewport. This property is only applicable to standard dialog and message type dialog ignores this property.
 					 * @since 1.13.1
 					 */
 					stretch: {type: "boolean", group: "Appearance", defaultValue: false},
@@ -410,7 +411,7 @@ function(
 
 					// on iOS this can be a negative integer
 					// which is causing the dialog to be rendered partially off-screen
-					if (scrollPosY < 0) {
+					if (Device.os.ios || scrollPosY < 0) {
 						scrollPosY = 0;
 					}
 
@@ -950,9 +951,12 @@ function(
 				}
 
 				sTranslateY = '-' + Math.floor(iDialogHeight / 2) + "px";
-				$dialog.css('transform', 'translate(' + sTranslateX + ',' + sTranslateY + ') scale(1)');
+				var sCalculatedPosition = 'translate(' + sTranslateX + ',' + sTranslateY + ') scale(1) ';
+				$dialog.css('transform', sCalculatedPosition );
+				$dialog.css('-webkit-transform', sCalculatedPosition + ' translateZ(0px)');
 			} else {
 				$dialog.css('transform', '');
+				$dialog.css('-webkit-transform', '');
 			}
 		};
 
@@ -1324,6 +1328,13 @@ function(
 				this._oButtonDelegate = {
 					ontap: function(){
 						that._oCloseTrigger = this;
+					},
+					//BCP: 1870320154
+					onkeyup: function(){
+						that._oCloseTrigger = this;
+					},
+					onkeydown: function(){
+						that._oCloseTrigger = this;
 					}
 				};
 			}
@@ -1510,7 +1521,7 @@ function(
 			} else {
 				this._headerTitle = new sap.m.Title(this.getId() + "-title", {
 					text: sTitle,
-					level: "H1"
+					level: "H2"
 				}).addStyleClass("sapMDialogTitle");
 
 				this._createHeader();

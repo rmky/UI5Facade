@@ -9,9 +9,15 @@ sap.ui.define([
 	'sap/ui/base/ManagedObject',
 	'sap/ui/dt/OverlayRegistry',
 	'sap/ui/dt/Util',
+	'sap/ui/base/Object',
 	'./library'
 ],
-function(ManagedObject, OverlayRegistry, Util) {
+function(
+	ManagedObject,
+	OverlayRegistry,
+	Util,
+	BaseObject
+) {
 	"use strict";
 
 	/**
@@ -26,13 +32,13 @@ function(ManagedObject, OverlayRegistry, Util) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
-	 * @since 1.30
+	 * @since 1.54
 	 * @alias sap.ui.dt.SelectionManager
-	 * @experimental Since 1.30. This class is experimental and provides only limited functionality. Also the API might be changed in future.
+	 * @experimental Since 1.54. This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
 	var SelectionManager = ManagedObject.extend("sap.ui.dt.SelectionManager", /** @lends sap.ui.dt.SelectionManager.prototype */ {
 		metadata : {
@@ -40,13 +46,6 @@ function(ManagedObject, OverlayRegistry, Util) {
 
 			// ---- control specific ----
 			library : "sap.ui.dt",
-			properties : {
-				"mode" : {
-					type : "sap.ui.dt.SelectionMode",
-					defaultValue : sap.ui.dt.SelectionMode.Single
-				}
-			},
-			associations : {},
 			aggregations : {},
 			events : {
 				"change" : {
@@ -106,7 +105,6 @@ function(ManagedObject, OverlayRegistry, Util) {
 			bSelectionChanged = true;
 		}, this);
 		this._aSelection = [];
-		this._updateMode(this.get());
 
 		// add selection if parameter provided
 		if (vSelection){
@@ -159,7 +157,6 @@ function(ManagedObject, OverlayRegistry, Util) {
 		}, this);
 		// fire event if selection changed
 		if (bSelectionChanged){
-			this._updateMode(this.get());
 			this.fireChange({
 				selection : this.get()
 			});
@@ -188,84 +185,36 @@ function(ManagedObject, OverlayRegistry, Util) {
 		var aSelection = Util.castArray(vSelection);
 
 		// remove the overlay(s) from the current selection
-		aSelection.forEach(function(oSelection){
-			var oOverlay = null;
-			oOverlay = OverlayRegistry.getOverlay(oSelection);
-			// check if already selected
-			if (oOverlay && (this._aSelection.indexOf(oOverlay) !== -1)) {
-				this._aSelection = this._aSelection.filter(function (oItem) {
-					return oOverlay !== oItem;
-				});
-				oOverlay.setSelected(false, true);
-				bSelectionChanged = true;
-			}
+		aSelection.forEach(function(oRemovedItem){
+			this._aSelection = this._aSelection.filter(function(oSelectedOverlay){
+				var bRemoved = false;
+				// Existing Overlay or Element
+				var oOverlay = OverlayRegistry.getOverlay(oRemovedItem);
+				if (!oOverlay){
+					// Destroyed Overlay
+					var oOverlay = BaseObject.isA(oRemovedItem, 'sap.ui.dt.ElementOverlay') ? oRemovedItem : undefined;
+					if (!oOverlay){
+						// Destroyed Element
+						bRemoved = oRemovedItem === oSelectedOverlay.getElement().getId();
+					}
+				}
+				if (!bRemoved){
+					bRemoved = oOverlay === oSelectedOverlay;
+				}
+				if (bRemoved){
+					oSelectedOverlay.setSelected(false, true);
+					bSelectionChanged = true;
+				}
+				return !bRemoved;
+			});
 		}, this);
 		// fire event if selection changed
 		if (bSelectionChanged){
-			this._updateMode(this.get());
 			this.fireChange({
 				selection : this.get()
 			});
 		}
 		return bSelectionChanged;
-	};
-
-	/**
-	 * @public
-	 */
-	SelectionManager.prototype._add = function(oOverlay) {
-		this._syncSelectionWithMode();
-
-		this._aSelection = this._aSelection.concat(oOverlay);
-		this.fireChange({
-			selection : this.get()
-		});
-	};
-
-	/**
-	 * @public
-	 */
-	SelectionManager.prototype._remove = function(oOverlay) {
-		this._syncSelectionWithMode();
-
-		if (this._aSelection.indexOf(oOverlay) !== -1) {
-			this._aSelection = this._aSelection.filter(function (oItem) {
-				return oOverlay !== oItem;
-			});
-		}
-		this.fireChange({
-			selection : this.get()
-		});
-	};
-
-	/**
-	 * @private
-	 */
-	SelectionManager.prototype._isSingleMode = function() {
-		return this.getMode() === sap.ui.dt.SelectionMode.Single;
-	};
-
-
-	SelectionManager.prototype._syncSelectionWithMode = function() {
-		if (this._isSingleMode()) {
-			this._aSelection.forEach(function(oOverlay) {
-				oOverlay.setSelected(false, true);
-			});
-			this._aSelection = [];
-		}
-	};
-
-	/**
-	 * Updates the mode in relation to the current selection
-	 * @param  {sap.ui.dt.Overlay[]} aSelection array with selected overlays
-	 * @private
-	 */
-	SelectionManager.prototype._updateMode = function(aSelection) {
-		if (aSelection.length > 1){
-			this.setMode(sap.ui.dt.SelectionMode.Multi);
-		} else {
-			this.setMode(sap.ui.dt.SelectionMode.Single);
-		}
 	};
 
 	return SelectionManager;

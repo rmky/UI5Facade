@@ -92,6 +92,11 @@ function(
 	 * <li> You need to select a range of item. Use {@link sap.ui.comp.valuehelpdialog.ValueHelpDialog value help dialog instead. </li>
 	 * <li> You need to be able to add your own values to an existing list. Use a {@link sap.m.Dialog dialog} instead. </li>
 	 * </ul>
+	 * <h4>Note:</h4>
+	 * The property <code>growing</code> determines the progressive loading. If it's set to true (the default value), the
+	 * <code>selected count</code> in info bar and search  will work only for the currently loaded items.
+	 * To make sure that all items in the list are loaded at once and the above feature works properly,
+	 * we recommend setting the <code>growing</code> property to false.
 	 * <h3>Responsive Behavior</h3>
 	 * <ul>
 	 * <li> On phones, the select dialog takes up the whole screen. </li>
@@ -100,11 +105,12 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.m.SelectDialog
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/select-dialog/ Select Dialog}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var SelectDialog = Control.extend("sap.m.SelectDialog", /** @lends sap.m.SelectDialog.prototype */ { metadata : {
@@ -129,8 +135,17 @@ function(
 
 			/**
 			 * Determines the number of items initially displayed in the list. Also defines the number of items to be requested from the model for each grow.
+			 * <b>Note:</b> This property could take affect only be used if the property <code>growing</code> is set to <code>true</code>.
 			 */
 			growingThreshold : {type : "int", group : "Misc", defaultValue : null},
+
+			/**
+			 * If set to <code>true</code>, enables the growing feature of the control to load more items by requesting from the bound model (progressive loading).
+			 * <b>Note:</b> This feature only works when an <code>items</code> aggregation is bound.
+			 * <b>Note:</b> Growing property, must not be used together with two-way binding.
+			 * @since 1.56
+			 */
+			growing : {type : "boolean", group : "Behavior", defaultValue : true},
 
 			/**
 			 * Determines the content width of the inner dialog. For more information, see the dialog documentation.
@@ -264,8 +279,8 @@ function(
 
 		// store a reference to the list for binding management
 		this._oList = new List(this.getId() + "-list", {
-			growing: true,
-			growingScrollToLoad: true,
+			growing: that.getGrowing(),
+			growingScrollToLoad: that.getGrowing(),
 			mode: ListMode.SingleSelectMaster,
 			infoToolbar: new Toolbar({
 				visible: false,
@@ -373,6 +388,20 @@ function(
 		this._iListUpdateRequested = 0; // to only show the busy indicator when we initiated the change
 	};
 
+	/**
+	* Sets the growing  to the internal list
+	* @public
+	* @param {boolean} bValue Value for the list's growing.
+	* @returns {sap.m.SelectDialog} <code>this</code> pointer for chaining
+	*/
+	SelectDialog.prototype.setGrowing = function (bValue) {
+		this._oList.setGrowing(bValue);
+		this._oList.setGrowingScrollToLoad(bValue);
+		this.setProperty("growing", bValue, true);
+
+		return this;
+	};
+
 	SelectDialog.prototype.setBusy = function () {
 		// Overwrite setBusy as it should be handled in the "real" dialog
 		this._oDialog.setBusy.apply(this._oDialog, arguments);
@@ -466,8 +495,6 @@ function(
 	/**
 	 * Opens the internal dialog with a searchfield and a list.
 	 *
-	 * @name sap.m.SelectDialog#open
-	 * @function
 	 * @param {string} sSearchValue  A value for the search can be passed to match with the filter applied to the list binding.
 	 * @returns {sap.m.SelectDialog} <code>this</code> pointer for chaining
 	 * @public

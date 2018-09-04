@@ -4,19 +4,13 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
+//Provides class sap.ui.model.odata.v4.Context
 sap.ui.define([
 	"sap/ui/base/SyncPromise",
 	"sap/ui/model/Context",
 	"./lib/_Helper"
 ], function (SyncPromise, BaseContext, _Helper) {
 	"use strict";
-
-	/*
-	 * Clones the object.
-	 */
-	function clone(o) {
-		return o && JSON.parse(JSON.stringify(o));
-	}
 
 	/*
 	 * Fetches and formats the primitive value at the given path.
@@ -86,7 +80,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.Context
 	 * @public
 	 * @since 1.39.0
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 */
 	var Context = BaseContext.extend("sap.ui.model.odata.v4.Context", {
 			constructor : function (oModel, oBinding, sPath, iIndex, oCreatePromise) {
@@ -100,6 +94,30 @@ sap.ui.define([
 			}
 		}),
 		sClassName = "sap.ui.model.odata.v4.Context";
+
+	/**
+	 * Deletes the OData entity this context points to.
+	 *
+	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
+	 *   A lock for the group ID to be used for the DELETE request; if no group ID is specified, it
+	 *   defaults to the binding's <code>getUpdateGroupId()</code>
+	 * @returns {Promise}
+	 *   A promise which is resolved without a result in case of success, or rejected with an
+	 *   instance of <code>Error</code> in case of failure
+	 *
+	 * @private
+	 * @see sap.ui.model.odata.v4.Context#delete
+	 */
+	Context.prototype._delete = function (oGroupLock) {
+		var that = this;
+
+		if (this.isTransient()) {
+			return this.oBinding._delete(oGroupLock, "n/a", this);
+		}
+		return this.fetchCanonicalPath().then(function (sCanonicalPath) {
+			return that.oBinding._delete(oGroupLock, sCanonicalPath.slice(1), that);
+		});
+	};
 
 	/**
 	 * Updates all dependent bindings of this context.
@@ -160,7 +178,8 @@ sap.ui.define([
 	 *   has been detected; this should be shown to the user who needs to decide whether to try
 	 *   deletion again. If the entity does not exist, we assume it has already been deleted by
 	 *   someone else and report success.
-	 * @throws {Error} If the context's root binding is suspended
+	 * @throws {Error} If the given group ID is invalid or if the context's root binding is
+	 *   suspended
 	 *
 	 * @function
 	 * @name sap.ui.model.odata.v4.Context#delete
@@ -168,30 +187,17 @@ sap.ui.define([
 	 * @since 1.41.0
 	 */
 	Context.prototype["delete"] = function (sGroupId) {
-		var that = this;
+		var oGroupLock,
+			that = this;
 
 		this.oBinding.checkSuspended();
-		if (this.isTransient()) {
-			return that.oBinding._delete(sGroupId, "n/a", that);
-		}
-		return this.fetchCanonicalPath().then(function (sCanonicalPath) {
-			return that.oBinding._delete(sGroupId, sCanonicalPath.slice(1), that);
+		this.oModel.checkGroupId(sGroupId);
+		oGroupLock = this.oModel.lockGroup(sGroupId, true);
+		return this._delete(oGroupLock).catch(function (oError) {
+			oGroupLock.unlock(true);
+			that.oModel.reportError("Failed to delete " + that, sClassName, oError);
+			throw oError;
 		});
-	};
-
-	/**
-	 * Deregisters the given change listener.
-	 *
-	 * @param {string} sPath
-	 *   The path
-	 * @param {sap.ui.model.odata.v4.ODataPropertyBinding} oListener
-	 *   The change listener
-	 *
-	 * @private
-	 */
-	Context.prototype.deregisterChange = function (sPath, oListener) {
-		// Note: iIndex === -2 is OK here, no listener will be found...
-		this.oBinding.deregisterChange(sPath, oListener, this.iIndex);
 	};
 
 	/**
@@ -235,15 +241,12 @@ sap.ui.define([
 	 *   A path (absolute or relative to this context)
 	 * @param {sap.ui.model.odata.v4.ODataPropertyBinding} [oListener]
 	 *   A property binding which registers itself as listener at the cache
-	 * @param {string} [sGroupId]
-	 *   The group ID to be used for the request; if not specified, it depends on the parent binding
-	 *   which owns the cache
 	 * @returns {sap.ui.base.SyncPromise}
 	 *   A promise on the outcome of the binding's <code>fetchValue</code> call
 	 *
 	 * @private
 	 */
-	Context.prototype.fetchValue = function (sPath, oListener, sGroupId) {
+	Context.prototype.fetchValue = function (sPath, oListener) {
 		if (this.iIndex === -2) {
 			return SyncPromise.resolve(); // no cache access for virtual contexts
 		}
@@ -251,8 +254,7 @@ sap.ui.define([
 		// predicates if the context does. Then the path to register the listener in the cache is
 		// the same that is used for an update and the update notifies the listener.
 		return this.oBinding.fetchValue(
-			sPath && sPath[0] === "/" ? sPath : _Helper.buildPath(this.sPath, sPath),
-			oListener, sGroupId);
+			sPath && sPath[0] === "/" ? sPath : _Helper.buildPath(this.sPath, sPath), oListener);
 	};
 
 	/**
@@ -337,6 +339,8 @@ sap.ui.define([
 	 *   A relative path within the JSON structure
 	 * @returns {any}
 	 *   The requested value
+	 * @throws {Error}
+	 *   If the context's root binding is suspended
 	 *
 	 * @public
 	 * @see sap.ui.model.Context#getObject
@@ -344,12 +348,14 @@ sap.ui.define([
 	 */
 	// @override
 	Context.prototype.getObject = function (sPath) {
-		var oSyncPromise = this.fetchValue(sPath);
+		var oSyncPromise;
 
-		if (!oSyncPromise.isFulfilled()) {
-			return undefined;
+		this.oBinding.checkSuspended();
+		oSyncPromise = this.fetchValue(sPath);
+
+		if (oSyncPromise.isFulfilled()) {
+			return _Helper.publicClone(oSyncPromise.getResult());
 		}
-		return clone(oSyncPromise.getResult());
 	};
 
 	/**
@@ -366,7 +372,7 @@ sap.ui.define([
 	 * @returns {any}
 	 *   The requested property value
 	 * @throws {Error}
-	 *   If the value is not primitive
+	 *   If the context's root binding is suspended or if the value is not primitive
 	 *
 	 * @public
 	 * @see sap.ui.model.Context#getProperty
@@ -375,8 +381,10 @@ sap.ui.define([
 	 */
 	// @override
 	Context.prototype.getProperty = function (sPath, bExternalFormat) {
-		var oError,
-			oSyncPromise = fetchPrimitiveValue(this, sPath, bExternalFormat);
+		var oError, oSyncPromise;
+
+		this.oBinding.checkSuspended();
+		oSyncPromise = fetchPrimitiveValue(this, sPath, bExternalFormat);
 
 		if (oSyncPromise.isRejected()) {
 			oSyncPromise.caught();
@@ -455,6 +463,12 @@ sap.ui.define([
 	 * @param {string} [sGroupId]
 	 *   The group ID to be used for the refresh; if not specified, the group ID for the context's
 	 *   binding is used, see {@link sap.ui.model.odata.v4.ODataModel#bindList}.
+	 * @param {boolean} [bAllowRemoval=false]
+	 *   Allows the list binding to remove this context from its collection because the entity does
+	 *   not match the binding's filter anymore,
+	 *   see {@link sap.ui.model.odata.v4.ODataListBinding#filter}; a removed context is
+	 *   destroyed, see {@link #destroy}.
+	 *   Supported since 1.55.0
 	 * @throws {Error}
 	 *   If <code>refresh</code> is called on a context not created by a
 	 *   {@link sap.ui.model.odata.v4.ODataListBinding}, if the group ID is not valid, if the
@@ -463,11 +477,12 @@ sap.ui.define([
 	 * @public
 	 * @since 1.53.0
 	 */
-	Context.prototype.refresh = function (sGroupId) {
+	Context.prototype.refresh = function (sGroupId, bAllowRemoval) {
 		if (!this.oBinding.refreshSingle) {
 			throw new Error("Refresh is only supported for contexts of a list binding");
 		}
-		this.oBinding.refreshSingle(this, sGroupId);
+		this.oModel.checkGroupId(sGroupId);
+		this.oBinding.refreshSingle(this, this.oModel.lockGroup(sGroupId, true), bAllowRemoval);
 	};
 
 	/**
@@ -519,9 +534,7 @@ sap.ui.define([
 	Context.prototype.requestObject = function (sPath) {
 		this.oBinding.checkSuspended();
 
-		return Promise.resolve(this.fetchValue(sPath)).then(function (vResult) {
-			return clone(vResult);
-		});
+		return Promise.resolve(this.fetchValue(sPath)).then(_Helper.publicClone);
 	};
 
 	/**

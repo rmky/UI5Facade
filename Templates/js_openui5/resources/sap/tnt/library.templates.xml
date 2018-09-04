@@ -3,9 +3,10 @@
 <Template name="sap.tnt.InfoLabel" alias="InfoLabel,Label">
 	<jsTemplate><![CDATA[new sap.tnt.InfoLabel({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	text: "", // string
@@ -17,6 +18,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -24,6 +26,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<InfoLabel xmlns="sap.tnt"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -38,15 +41,17 @@
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </InfoLabel>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.tnt.NavigationList" alias="NavigationList,List">
 	<jsTemplate><![CDATA[new sap.tnt.NavigationList({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	width: undefined, // sap.ui.core.CSSSize
@@ -54,6 +59,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	items: [], // sap.tnt.NavigationListItem
 	ariaDescribedBy: [], // sap.ui.core.Control
 	ariaLabelledBy: [], // sap.ui.core.Control
@@ -68,6 +74,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<NavigationList xmlns="sap.tnt"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -82,6 +89,7 @@
 	itemSelect="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<items></items> <!-- sap.tnt.NavigationListItem -->
 </NavigationList>
 ]]></xmlTemplate>
@@ -100,6 +108,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	items: [], // sap.tnt.NavigationListItem
 	select: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -119,6 +128,7 @@
 	select="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<items></items> <!-- sap.tnt.NavigationListItem -->
 </NavigationListItem>
 ]]></xmlTemplate>
@@ -126,15 +136,17 @@
 <Template name="sap.tnt.SideNavigation" alias="SideNavigation,Navigation">
 	<jsTemplate><![CDATA[new sap.tnt.SideNavigation({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	expanded: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	item: undefined, // sap.tnt.NavigationList
 	fixedItem: undefined, // sap.tnt.NavigationList
 	footer: undefined, // sap.tnt.NavigationList
@@ -149,6 +161,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<SideNavigation xmlns="sap.tnt"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -160,6 +173,7 @@
 	itemSelect="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<item></item> <!-- sap.tnt.NavigationList -->
 		<fixedItem></fixedItem> <!-- sap.tnt.NavigationList -->
 		<footer></footer> <!-- sap.tnt.NavigationList -->
@@ -169,9 +183,10 @@
 <Template name="sap.tnt.ToolHeader" alias="ToolHeader,Header">
 	<jsTemplate><![CDATA[new sap.tnt.ToolHeader({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	width: undefined, // sap.ui.core.CSSSize
@@ -183,6 +198,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	content: [], // sap.ui.core.Control
 	ariaLabelledBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
@@ -195,6 +211,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<ToolHeader xmlns="sap.tnt"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -211,6 +228,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<content></content> <!-- sap.ui.core.Control -->
 </ToolHeader>
 ]]></xmlTemplate>
@@ -218,14 +236,16 @@
 <Template name="sap.tnt.ToolHeaderUtilitySeparator" alias="ToolHeaderUtilitySeparator,Separator">
 	<jsTemplate><![CDATA[new sap.tnt.ToolHeaderUtilitySeparator({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -233,6 +253,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<ToolHeaderUtilitySeparator xmlns="sap.tnt"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -241,21 +262,24 @@
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </ToolHeaderUtilitySeparator>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.tnt.ToolPage" alias="ToolPage,Page">
 	<jsTemplate><![CDATA[new sap.tnt.ToolPage({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	sideExpanded: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	header: undefined, // sap.tnt.ToolHeader
 	sideContent: undefined, // sap.tnt.SideNavigation
 	mainContents: [], // sap.ui.core.Control
@@ -266,6 +290,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<ToolPage xmlns="sap.tnt"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -275,6 +300,7 @@
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<header></header> <!-- sap.tnt.ToolHeader -->
 		<sideContent></sideContent> <!-- sap.tnt.SideNavigation -->
 		<mainContents></mainContents> <!-- sap.ui.core.Control -->

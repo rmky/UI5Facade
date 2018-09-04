@@ -14,7 +14,8 @@ sap.ui.define([
 	'sap/ui/dt/DOMUtil',
 	'sap/ui/dt/ScrollbarSynchronizer',
 	'sap/ui/dt/Util',
-	'sap/ui/dt/Map'
+	'sap/ui/dt/Map',
+	'sap/ui/Device'
 ],
 function(
 	jQuery,
@@ -25,7 +26,8 @@ function(
 	DOMUtil,
 	ScrollbarSynchronizer,
 	Util,
-	Map
+	Map,
+	Device
 ) {
 	"use strict";
 
@@ -44,7 +46,7 @@ function(
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -539,15 +541,15 @@ function(
 	 * Calculate and update CSS styles for the Overlay's DOM
 	 * The calculation is based on original associated DOM state and parent overlays
 	 * This method also calls "applyStyles" method for every child Overlay of this Overlay (cascade)
-	 * @param {boolean} bInvalidateGeometry
 	 * @public
 	 */
-	Overlay.prototype.applyStyles = function(bInvalidateGeometry) {
-		if (!(typeof bInvalidateGeometry === 'boolean')) {
-			bInvalidateGeometry = true;
+	Overlay.prototype.applyStyles = function() {
+		if (!this.isRendered()) {
+			return;
 		}
+
 		if (this.isVisible()) {
-			var oGeometry = this.getGeometry(bInvalidateGeometry);
+			var oGeometry = this.getGeometry(true);
 
 			if (oGeometry && oGeometry.visible) {
 				this._setSize(this.$(), oGeometry);
@@ -625,19 +627,7 @@ function(
 	 * @protected
 	 */
 	Overlay.prototype._setPosition = function($Target, oGeometry, $Parent) {
-		var bRTL = sap.ui.getCore().getConfiguration().getRTL();
-
-		var iParentScrollTop = $Parent ? $Parent.scrollTop() : null;
-		var iParentScrollLeft = $Parent ? $Parent.scrollLeft() : null;
-		var mParentOffset = $Parent ? $Parent.offset() : null;
-
-		var mPosition = DOMUtil.getOffsetFromParent(oGeometry.position, mParentOffset, iParentScrollTop, iParentScrollLeft);
-
-		if (bRTL) {
-			var iParentWidth = this.isRoot() ? jQuery(window).width() : $Parent.width();
-			mPosition.left = mPosition.left - (iParentWidth - oGeometry.size.width);
-		}
-
+		var mPosition = DOMUtil.getOffsetFromParent(oGeometry, $Parent ? $Parent.get(0) : null);
 		$Target.css("transform", "translate(" + mPosition.left + "px, " + mPosition.top + "px)");
 	};
 
@@ -711,15 +701,21 @@ function(
 
 		if ($DummyScrollContainer.length) {
 			$DummyScrollContainer.remove();
-			if (this.getParent() && this.getParent().$) { // FIXME: replace with isRoot() check?
-				var $Parent = this.getParent().$();
-				$Parent.removeClass("sapUiDtOverlayWithScrollBar");
-				$Parent.removeClass("sapUiDtOverlayWithScrollBarVertical");
-				$Parent.removeClass("sapUiDtOverlayWithScrollBarHorizontal");
-			}
-
 			this._oScrollbarSynchronizers.get($Overlay.get(0)).destroy();
 			this._oScrollbarSynchronizers.delete($Overlay.get(0));
+
+			if (
+				!this.isRoot()
+				&& this.getParent()._oScrollbarSynchronizers.size === 0
+				&& !this.getParent().getChildren().some(function (oAggregationOverlay) {
+					return oAggregationOverlay._oScrollbarSynchronizers.size > 0;
+				})
+			) {
+				var $Parent = this.getParent();
+				$Parent.removeStyleClass("sapUiDtOverlayWithScrollBar");
+				$Parent.removeStyleClass("sapUiDtOverlayWithScrollBarVertical");
+				$Parent.removeStyleClass("sapUiDtOverlayWithScrollBarHorizontal");
+			}
 		}
 	};
 
@@ -759,12 +755,12 @@ function(
 				oDummyScrollContainer = jQuery("<div class='sapUiDtDummyScrollContainer' style='height: " + iScrollHeight + "px; width: " + iScrollWidth + "px;'></div>");
 
 				if (oOverlayParent && DOMUtil.hasVerticalScrollBar(oOriginalDomRef)) {
-					oOverlayParent.$().addClass("sapUiDtOverlayWithScrollBar");
-					oOverlayParent.$().addClass("sapUiDtOverlayWithScrollBarVertical");
+					oOverlayParent.addStyleClass("sapUiDtOverlayWithScrollBar");
+					oOverlayParent.addStyleClass("sapUiDtOverlayWithScrollBarVertical");
 				}
 				if (oOverlayParent && DOMUtil.hasHorizontalScrollBar(oOriginalDomRef)) {
-					oOverlayParent.$().addClass("sapUiDtOverlayWithScrollBar");
-					oOverlayParent.$().addClass("sapUiDtOverlayWithScrollBarHorizontal");
+					oOverlayParent.addStyleClass("sapUiDtOverlayWithScrollBar");
+					oOverlayParent.addStyleClass("sapUiDtOverlayWithScrollBarHorizontal");
 				}
 				$overlayDomRef.append(oDummyScrollContainer);
 				var oScrollbarSynchronizer = new ScrollbarSynchronizer({

@@ -39,7 +39,7 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar
 		 * its start date to the first date of the same week as the date the user chose.
 		 *
 		 * @extends sap.ui.unified.CalendarDateInterval
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @private
@@ -176,6 +176,23 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar
 			}
 
 			this._closeCalendarPicker(true);
+		};
+
+		/**
+		 * Calculates the startDate of the interval, corrected to the minDate and maxDate
+		 *
+		 * @param {sap.ui.unified.calendar.CalendarDate} oMaxDate maxDate of the Interval
+		 * @param {sap.ui.unified.calendar.CalendarDate} oMinDate minDate of the Interval
+		 * @param {sap.ui.unified.calendar.CalendarDate} oStartDate initial startDate
+		 * @private
+		 */
+		CalendarWeekInterval.prototype._calculateStartDate = function (oMaxDate, oMinDate, oStartDate) {
+			var oMaxDate = new CalendarDate(this._oMaxDate, this.getPrimaryCalendarType());
+
+			oMaxDate = this._getMaxDateAlignedToMinDate(oMaxDate, this._oMinDate);
+			oStartDate = this._getStartDateAlignedToMinAndMaxDate(oMaxDate, this._oMinDate, oStartDate);
+
+			return oStartDate;
 		};
 
 		return CalendarWeekInterval;

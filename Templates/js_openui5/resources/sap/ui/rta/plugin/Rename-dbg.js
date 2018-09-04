@@ -39,7 +39,7 @@ sap.ui.define([
 	 * @extends sap.ui.rta.plugin.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -75,6 +75,7 @@ sap.ui.define([
 	Rename.prototype.exit = function() {
 		Plugin.prototype.exit.apply(this, arguments);
 
+		this._bPreventMenu = false;
 		RenameHandler._exit.call(this);
 	};
 
@@ -86,7 +87,6 @@ sap.ui.define([
 	};
 
 	Rename.prototype.startEdit = function (oOverlay) {
-		this._bPreventMenu = true;
 		var oElement = oOverlay.getElement(),
 			oDesignTimeMetadata = oOverlay.getDesignTimeMetadata(),
 			vDomRef = oDesignTimeMetadata.getAction("rename", oElement).domRef;
@@ -98,7 +98,6 @@ sap.ui.define([
 	};
 
 	Rename.prototype.stopEdit = function (bRestoreFocus) {
-		this._bPreventMenu = false;
 		RenameHandler._stopEdit.call(this, bRestoreFocus, "plugin.Rename.stopEdit");
 	};
 
@@ -176,7 +175,8 @@ sap.ui.define([
 			if (oRenameAction.changeOnRelevantContainer) {
 				oElement = oOverlay.getRelevantContainer();
 			}
-			bEditable = this.hasChangeHandler(oRenameAction.changeType, oElement);
+			bEditable = this.hasChangeHandler(oRenameAction.changeType, oElement) &&
+						this._checkRelevantContainerStableID(oRenameAction, oOverlay);
 		}
 
 		if (bEditable) {

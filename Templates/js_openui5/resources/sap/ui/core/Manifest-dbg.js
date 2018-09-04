@@ -135,7 +135,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/thirdparty/URI
 	 * @class The Manifest class.
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @alias sap.ui.core.Manifest
 	 * @since 1.33.0
 	 */
@@ -167,6 +167,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/thirdparty/URI
 			    sBaseUrl = mOptions && mOptions.baseUrl || sComponentName && jQuery.sap.getModulePath(sComponentName, "/");
 			if (sBaseUrl) {
 				this._oBaseUri = new URI(sBaseUrl).absoluteTo(new URI(document.baseURI).search(""));
+			}
+
+			// determine the base URL of the manifest or use the component base
+			// as by default the manifest is next to the component controller
+			if (mOptions && typeof mOptions.url === "string") {
+				this._oManifestBaseUri = new URI(mOptions.url).absoluteTo(new URI(document.baseURI).search("")).search("");
+			} else {
+				this._oManifestBaseUri = this._oBaseUri;
 			}
 
 			// make sure to freeze the raw manifest (avoid manipulations)
@@ -454,7 +462,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/thirdparty/URI
 					for (var sName in mComponents) {
 						if (!mComponents[sName].lazy) {
 							jQuery.sap.log.info("Component \"" + sComponentName + "\" is loading component: \"" + sName + ".Component\"");
-							sap.ui.component.load({
+							sap.ui.requireSync("sap/ui/core/Component").load({
 								name: sName
 							});
 						}
@@ -508,14 +516,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/thirdparty/URI
 
 
 		/**
-		 * Resolves the given URI relative to the manifest.
+		 * Resolves the given URI relative to the Component by default
+		 * or optional relative to the manifest when passing 'manifest'
+		 * as second parameter.
 		 *
 		 * @param {URI} oUri URI to resolve
+		 * @param {string} [sRelativeTo] defines to which base URI the given URI will be resolved to; one of ‘component' (default) or 'manifest'
 		 * @return {URI} resolved URI
 		 * @private
 		 */
-		resolveUri: function(oUri) {
-			return Manifest._resolveUriRelativeTo(oUri, this._oBaseUri);
+		resolveUri: function(oUri, sRelativeTo) {
+			return Manifest._resolveUriRelativeTo(oUri, sRelativeTo === "manifest" ? this._oManifestBaseUri : this._oBaseUri);
 		},
 
 
@@ -694,13 +705,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/thirdparty/URI
 			return oManifestJSON.then(function(oManifestJSON) {
 				return new Manifest(oManifestJSON, {
 					componentName: sComponentName,
-					process: false
+					process: false,
+					url: sManifestUrl
 				});
 			});
 		}
 		return new Manifest(oManifestJSON, {
 			componentName: sComponentName,
-			process: false
+			process: false,
+			url: sManifestUrl
 		});
 	};
 

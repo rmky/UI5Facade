@@ -85,12 +85,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './FormLayoutRendere
 			}
 			rm.write("<tr class=\"sapUiGridTitle\"><th colspan=" + iTitleCells + ">");
 
-			if (oToolbar) {
-				rm.renderControl(oToolbar);
-			} else {
-				var sSize = sap.ui.core.theming.Parameters.get('sap.ui.layout.FormLayout:_sap_ui_layout_FormLayout_FormTitleSize');
-				this.renderTitle(rm, oTitle, undefined, false, sSize, oForm.getId());
+			var sSize;
+			if (!oToolbar) {
+				sSize = sap.ui.core.theming.Parameters.get('sap.ui.layout.FormLayout:_sap_ui_layout_FormLayout_FormTitleSize');
 			}
+			this.renderHeader(rm, oToolbar, oTitle, undefined, false, sSize, oForm.getId());
 			rm.write("</th></tr>");
 		}
 
@@ -159,11 +158,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './FormLayoutRendere
 			rm.writeClasses();
 
 			rm.write(">");
-			if (oToolbar) {
-				rm.renderControl(oToolbar);
-			} else {
-				this.renderTitle(rm, oContainer.getTitle(), oContainer._oExpandButton, bExpandable, false, oContainer.getId());
-			}
+			this.renderHeader(rm, oToolbar, oContainer.getTitle(), oContainer._oExpandButton, bExpandable, false, oContainer.getId());
 			rm.write("</td></tr>");
 		}
 
@@ -267,10 +262,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './FormLayoutRendere
 			}
 			rm.writeClasses();
 			rm.write(">");
-			if (oToolbar1) {
-				rm.renderControl(oToolbar1);
-			} else if (oTitle1) {
-				this.renderTitle(rm, oTitle1, oContainer1._oExpandButton, bExpandable1, false, oContainer1.getId());
+			if (oContainer1) {
+				this.renderHeader(rm, oToolbar1, oTitle1, oContainer1._oExpandButton, bExpandable1, false, oContainer1.getId());
 			}
 			rm.write("</td><td></td><td colspan=" + iContainerColumns);
 			rm.addClass("sapUiGridHeader");
@@ -284,10 +277,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './FormLayoutRendere
 			}
 			rm.writeClasses();
 			rm.write(">");
-			if (oToolbar2) {
-				rm.renderControl(oToolbar2);
-			} else if (oTitle2) {
-				this.renderTitle(rm, oTitle2, oContainer2._oExpandButton, bExpandable2, false, oContainer2.getId());
+			if (oContainer2) {
+				this.renderHeader(rm, oToolbar2, oTitle2, oContainer2._oExpandButton, bExpandable2, false, oContainer2.getId());
 			}
 			rm.write("</td></tr>");
 		}
@@ -571,13 +562,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './FormLayoutRendere
 
 	GridLayoutRenderer.getContainerData = function(oLayout, oContainer){
 
-		return oLayout.getLayoutDataForElement(oContainer, "sap/ui/layout/form/GridContainerData");
+		return oLayout.getLayoutDataForElement(oContainer, "sap.ui.layout.form.GridContainerData");
 
 	};
 
 	GridLayoutRenderer.getElementData = function(oLayout, oControl){
 
-		return oLayout.getLayoutDataForElement(oControl, "sap/ui/layout/form/GridElementData");
+		return oLayout.getLayoutDataForElement(oControl, "sap.ui.layout.form.GridElementData");
 
 	};
 

@@ -56,22 +56,6 @@
 			"theme": "base"
 		},
 		{
-			"name": "fonts/SAP-icons-TNT.json",
-			"theme": "base"
-		},
-		{
-			"name": "fonts/SAP-icons-TNT.ttf",
-			"theme": "base"
-		},
-		{
-			"name": "fonts/SAP-icons-TNT.woff",
-			"theme": "base"
-		},
-		{
-			"name": "fonts/SAP-icons-TNT.woff2",
-			"theme": "base"
-		},
-		{
 			"name": "fonts/SAP-icons.ttf",
 			"theme": "base"
 		},

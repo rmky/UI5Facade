@@ -4,7 +4,9 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([], function () {
+sap.ui.define([
+	"sap/ui/support/supportRules/Constants"
+], function (constants) {
 	"use strict";
 
 	return {
@@ -17,6 +19,17 @@ sap.ui.define([], function () {
 				return true;
 			}
 			return false;
+		},
+
+		filteredText: function (severityFilter, categoryFilter, audienceFilter, elementFilter) {
+			var sResultText = "Filtered by: ";
+
+			sResultText += severityFilter === constants.FILTER_VALUE_ALL ? "" : "Severity - " + severityFilter + ";";
+			sResultText += categoryFilter === constants.FILTER_VALUE_ALL ? "" : " Category    - " + categoryFilter + ";";
+			sResultText += audienceFilter === constants.FILTER_VALUE_ALL ? "" : " Audience - " + audienceFilter + ";";
+			sResultText += elementFilter === constants.FILTER_VALUE_ALL ? "" : " Control Element - " + elementFilter + ";";
+
+			return sResultText;
 		}
 	};
 });

@@ -66,13 +66,14 @@ sap.ui.define([
 		 * </ul>
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @extends sap.m.ComboBoxBase
 		 * @public
 		 * @since 1.22
 		 * @alias sap.m.ComboBox
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/combo-box/ Combo Box}
 		 * @ui5-metamodel This control will also be described in the UI5 (legacy) design time meta model.
 		 */
 		var ComboBox = ComboBoxBase.extend("sap.m.ComboBox", /** @lends sap.m.ComboBox.prototype */ {
@@ -742,7 +743,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oControlEvent The control event
 		 * @since 1.32.4
 		 */
-		ComboBox.prototype.onItemPress = function(oControlEvent) {
+		ComboBox.prototype.onItemPress = function (oControlEvent) {
 			var oItem = oControlEvent.getParameter("item"),
 				sText = oItem.getText(),
 				mParam = this.getChangeEventParams(),
@@ -761,7 +762,9 @@ sap.ui.define([
 			this.setProperty("value", oItem.getText(), true);
 
 			// deselect the text and move the text cursor at the endmost position
-			setTimeout(this.selectText.bind(this, this.getValue().length, this.getValue().length), 0);
+			if (this.getPickerType() === "Dropdown") {
+				setTimeout(this.selectText.bind(this, this.getValue().length, this.getValue().length), 0);
+			}
 		};
 
 		/**

@@ -13,7 +13,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/base/ManagedO
 	 * Constructor for a new sap.ui.layout.form.FormElement.
 	 *
 	 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
-	 * @param {object} [mSettings] initial settings for the new control
+	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
 	 * A <code>FormElement</code> represents a row in a <code>FormContainer</code>.
@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/base/ManagedO
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -353,7 +353,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/base/ManagedO
 	function _fieldChanged(oField, sMutation) {
 
 		if (sMutation == "insert") {
-			if (!oField.getMetadata().isInstanceOf("sap.ui.core.IFormContent")) {
+			if (!oField.isA("sap.ui.core.IFormContent")) {
 				jQuery.sap.log.warning(oField + " is not valid Form content", this);
 			}
 			_attachDelegate.call(this, oField);

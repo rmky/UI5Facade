@@ -26,7 +26,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 	 *
 	 * @author SAP SE
 	 * @version
-	 * 1.54.7
+	 * 1.56.6
 	 *
 	 * @public
 	 * @since 1.37.0
@@ -45,15 +45,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 			this._pLoaded = oMetadata.loaded();
 			this._mCustomHeaders = {};
 			this._mAnnotations = {};
+			this._hasErrors = false;
 
 			function writeCache(aResults) {
-				// write annotations to cache
-				// as aResults is an Array with additional properties we cannot stringify directly
-				var cacheObject = {
-					results: aResults,
-					annotations: aResults.annotations
-				};
-				CacheManager.set(that.sCacheKey, JSON.stringify(cacheObject));
+				// write annotations to cache if no errors occured
+				if (!that._hasErrors) {
+					CacheManager.set(that.sCacheKey, JSON.stringify(aResults));
+				}
 			}
 
 			if (!mOptions || !mOptions.skipMetadata) {
@@ -84,16 +82,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 				this.setHeaders(mOptions.headers);
 				if (this.sCacheKey) {
 					//check cache
-					this._pLoaded =	CacheManager.get(that.sCacheKey)
+					this._pLoaded = CacheManager.get(that.sCacheKey)
 						.then(function(sAnnotations){
+							var aResults;
 							if (sAnnotations) {
+								aResults = JSON.parse(sAnnotations);
+							}
+							//old cache entries are an object; invalidate the cache in this case
+							if (Array.isArray(aResults)) {
 								// restore return array structure
-								var oAnnotations = JSON.parse(sAnnotations);
-								that._mAnnotations = oAnnotations.annotations;
-								var aResults = oAnnotations.results;
-								// Add for Promise compatibility with v1 version:
-								aResults.annotations = that._mAnnotations;
-
+								aResults.annotations = {};
+								aResults.forEach(function(oAnnotation) {
+									AnnotationParser.restoreAnnotationsAtArrays(oAnnotation.annotations);
+									AnnotationParser.merge(aResults.annotations, oAnnotation.annotations);
+								});
+								that._mAnnotations = aResults.annotations;
 								// only valid loading was cached - fire loaded event in this case
 								that._fireSomeLoaded(aResults);
 								that._fireLoaded(aResults);
@@ -134,12 +137,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 	};
 
 	/**
-	 * V1 API Compatibility method. @see sap.ui.model.odata.v2.ODataAnnotations#getData
-	 * Returns the parsed and merged annotation data object
+	 * Returns the parsed and merged annotation data object.
 	 *
 	 * @public
 	 * @returns {object} returns annotations data
-	 * @deprecated
+	 * @deprecated As of version 1.37.0, only kept for compatibility with V1 API, use {@link #getData} instead.
 	 */
 	ODataAnnotations.prototype.getAnnotationsData = function() {
 		return this._mAnnotations;
@@ -255,6 +257,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 					return oResult instanceof Error;
 				});
 				if (aErrors.length > 0) {
+					that._hasErrors = true;
 					if (aErrors.length !== aResults.length) {
 						that._fireSomeLoaded(aResults);
 						that._fireFailed(aResults);

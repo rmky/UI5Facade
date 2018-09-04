@@ -15,7 +15,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 	 * @alias sap.ui.fl.Cache
 	 * @experimental Since 1.25.0
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 */
 	var Cache = function () {
 	};
@@ -255,17 +255,17 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 		return currentLoadChanges;
 	};
 
-    /**
-     * Function to get the changes-bundle.json file stored in the application sources.
-     * This data is returned only in case it is part of the application preload or in debug mode.
-     * In case no debugging takes place and the file is not loaded an empty list is returned.
-     *
-     * @param {map} mPropertyBag
-     * @param {string} mPropertyBag.appName Fully qualified name of the application
-     * @return {Promise} Promise resolving with an array of changes stored in the application source code
-     *
-     * @private
-     */
+	/**
+	 * Function to get the changes-bundle.json file stored in the application sources.
+	 * This data is returned only in case it is part of the application preload or in debug mode.
+	 * In case no debugging takes place and the file is not loaded an empty list is returned.
+	 *
+	 * @param {map} mPropertyBag
+	 * @param {string} mPropertyBag.appName Fully qualified name of the application
+	 * @return {Promise} Promise resolving with an array of changes stored in the application source code
+	 *
+	 * @private
+	 */
 	Cache._getChangesFromBundle = function (mPropertyBag) {
 		var bChangesBundleDeterminable = mPropertyBag && mPropertyBag.appName;
 
@@ -451,7 +451,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 	 */
 	Cache.setPersonalization = function (mPersonalization) {
 		if (!mPersonalization || !mPersonalization.reference ||
-				!mPersonalization.containerKey || !mPersonalization.itemName || !mPersonalization.content) {
+			!mPersonalization.containerKey || !mPersonalization.itemName || !mPersonalization.content) {
 			return Promise.reject("not all mandatory properties were provided for the storage of the personalization");
 		}
 

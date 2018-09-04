@@ -16,7 +16,7 @@ sap.ui.define(['./Model'],
 	 * @extends sap.ui.model.Model
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @public
 	 * @alias sap.ui.model.MetaModel
@@ -75,6 +75,15 @@ sap.ui.define(['./Model'],
 	MetaModel.prototype.destroyBindingContext = function(oContext) {
 		// TODO: what todo here?
 	};
+
+	/**
+	 * Returns the module path to the model specific adapter factory
+	 *
+	 * @see sap.ui.model.meta.AdapterFactory
+	 *
+	 * @return {string} the module path to a factory class that is tailored to create context specific adapters
+	 */
+	MetaModel.prototype.getAdapterFactoryModulePath = null;
 
 	return MetaModel;
 

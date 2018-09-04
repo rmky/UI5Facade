@@ -8,6 +8,7 @@ sap.ui.define([
 	'jquery.sap.global',
 	'./library',
 	'./SliderUtilities',
+	'./SliderTooltipBase',
 	'sap/ui/core/Control',
 	'sap/ui/core/library',
 	'./delegate/ValueStateMessage',
@@ -17,6 +18,7 @@ function(
 	jQuery,
 	Library,
 	SliderUtilities,
+	SliderTooltipBase,
 	Control,
 	coreLibrary,
 	ValueStateMessage,
@@ -36,10 +38,9 @@ function(
 		 * A Control that visualizes <code>Slider</code> and <code>RangeSlider</code> tooltips.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @implements sap.m.IScale
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @private
@@ -47,11 +48,8 @@ function(
 		 * @alias sap.m.SliderTooltip
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
-		var SliderTooltip = Control.extend("sap.m.SliderTooltip", /** @lends sap.m.SliderTooltip.prototype */ {
+		var SliderTooltip = SliderTooltipBase.extend("sap.m.SliderTooltip", /** @lends sap.m.SliderTooltip.prototype */ {
 			metadata: {
-				interfaces: [
-					"sap.m.ISliderTooltip"
-				],
 				library: "sap.m",
 				properties: {
 					/**
@@ -101,12 +99,7 @@ function(
 							/**
 							 * The new <code>value</code> of the <code>control</code>.
 							 */
-							value: { type: "float" },
-
-							/**
-							 * Indicates whether the value of the input is valid
-							 */
-							valid: { type: "boolean" }
+							value: { type: "float" }
 						}
 					}
 				}
@@ -131,19 +124,24 @@ function(
 			return this.getDomRef();
 		};
 
+		SliderTooltip.prototype.setValue = function (fValue) {
+			// validate given value
+			fValue = this.validateProperty("value", fValue);
+
+			SliderTooltipBase.prototype.setValue.call(this, fValue);
+
+			return this.setProperty("value", fValue, true);
+		};
+
 		/**
-		 * Sets the property <code>value</code>.
+		 * Changes the value of tooltip depending on Slider's value.
 		 *
 		 * Default value is <code>0</code>.
 		 *
-		 * @param {float} fValue new value for property <code>value</code>.
-		 * @returns {sap.m.SliderTooltip} <code>this</code> to allow method chaining.
+		 * @param {float} fValue New value for property <code>value</code>.
 		 * @public
 		 */
-		SliderTooltip.prototype.setValue = function (fValue) {
-
-			// validate given value
-			fValue = this.validateProperty("value", fValue);
+		SliderTooltip.prototype.sliderValueChanged = function (fValue) {
 
 			if (this.getDomRef()) {
 				this.getFocusDomRef().val(fValue);
@@ -153,14 +151,13 @@ function(
 			this._fLastValidValue = fValue;
 
 			this.setValueState(ValueState.None);
-			return this.setProperty("value", parseFloat(fValue), true);
 		};
 
 		/**
 		 * Sets the property <code>editable</code>.
 		 * Indicates whether the Tooltip can be edited or not.
 		 *
-		 * @param {boolean} bEditable new value for property <code>editable</code>.
+		 * @param {boolean} bEditable New value for property <code>editable</code>.
 		 * @returns {sap.m.SliderTooltip} <code>this</code> to allow method chaining.
 		 * @public
 		 */
@@ -212,13 +209,13 @@ function(
 		};
 
 		SliderTooltip.prototype.onsapescape = function (oEvent) {
-			this.setValue(this._fLastValidValue);
+			this.sliderValueChanged(this._fLastValidValue);
 			this.setValueState(ValueState.None);
 		};
 
 		SliderTooltip.prototype._validateValue = function (fValue) {
 			if (this._isValueValid(fValue)) {
-				this.setValue(fValue);
+				this.sliderValueChanged(fValue);
 				this.fireChange({ value: fValue });
 			} else {
 				this.setValueState(ValueState.Error);

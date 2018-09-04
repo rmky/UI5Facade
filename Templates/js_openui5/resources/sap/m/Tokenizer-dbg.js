@@ -50,11 +50,12 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.m.Tokenizer
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/token/ Tokenizer}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var Tokenizer = Control.extend("sap.m.Tokenizer", /** @lends sap.m.Tokenizer.prototype */ { metadata : {
@@ -601,10 +602,6 @@ sap.ui.define([
 		}
 
 		var oFocusedElement = jQuery(document.activeElement).control()[0];
-		if (oFocusedElement === this) {
-			// focus is on tokenizer itself - we do not handle this event and let it bubble
-			return;
-		}
 
 		// oFocusedElement could be undefined since the focus element might not correspond to an SAPUI5 Control
 		var index = oFocusedElement ? this.getTokens().indexOf(oFocusedElement) : -1;
@@ -951,7 +948,7 @@ sap.ui.define([
 	Tokenizer.prototype.removeAllTokens = function(bFireEvent) {
 		var tokens = this.getTokens();
 
-		this.removeAllAggregation("tokens");
+		var aRemoved = this.removeAllAggregation("tokens");
 
 		if (typeof (bFireEvent) === "boolean" && !bFireEvent) {
 			return;
@@ -967,6 +964,8 @@ sap.ui.define([
 			tokens : tokens,
 			type : Tokenizer.TokenChangeType.RemovedAll
 		});
+
+		return aRemoved;
 	};
 
 	Tokenizer.prototype.updateTokens = function () {

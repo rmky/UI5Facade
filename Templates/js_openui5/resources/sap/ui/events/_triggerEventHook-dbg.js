@@ -9,11 +9,11 @@
  */
 /*global window */
 sap.ui.define([
-	'sap/base/log',
+	'sap/base/Log',
 	'sap/ui/dom/containsOrEquals',
 	'sap/ui/thirdparty/jquery',
 	'sap/base/util/uid'
-], function(log, containsOrEquals, jQuery, uid) {
+], function(Log, containsOrEquals, jQuery, uid) {
 	"use strict";
 
 	var mTriggerEventInfo = {};
@@ -23,7 +23,7 @@ sap.ui.define([
 	 * Checks whether the event should be suppressed for the given target or not.
 	 */
 	function fnTriggerHook(oEvent) {
-		var bIsLoggable = log.isLoggable(log.Level.DEBUG),
+		var bIsLoggable = Log.isLoggable(Log.Level.DEBUG),
 			mEventInfo = mTriggerEventInfo[oEvent.type],
 			fnOriginalTriggerHook = mEventInfo.originalTriggerHook,
 			t0 = window.performance.now(),
@@ -37,7 +37,7 @@ sap.ui.define([
 					oEvent.stopImmediatePropagation();
 					if (bIsLoggable) {
 						t1 = window.performance.now();
-						log.debug("Perf: jQuery trigger supression event handler " + oEvent.type + " took " + (t1 - t0) + " milliseconds.");
+						Log.debug("Perf: jQuery trigger supression event handler " + oEvent.type + " took " + (t1 - t0) + " milliseconds.");
 					}
 					return false; //prevent further jQuery processing.
 				}
@@ -126,7 +126,7 @@ sap.ui.define([
 		if (!mEventInfo) {
 			return;
 		} else if (!mEventInfo.domRefs[oHandler.id] || !mEventInfo.domRefs[oHandler.id].domRef) {
-			log.warning("Release trigger event for event type " + oHandler.type + "on Control " + oHandler.id + ": DomRef does not exists");
+			Log.warning("Release trigger event for event type " + oHandler.type + "on Control " + oHandler.id + ": DomRef does not exists");
 			return;
 		}
 

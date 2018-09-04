@@ -67,11 +67,12 @@ sap.ui.define([
 	 * @mixes sap.ui.core.ContextMenuSupport
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.m.Button
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/button/ Button}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var Button = Control.extend("sap.m.Button", /** @lends sap.m.Button.prototype */ { metadata : {
@@ -204,6 +205,16 @@ sap.ui.define([
 			this._activeButton();
 			// now, this._bActive may be false if the button was disabled
 			this._bRenderActive = this._bActive;
+		}
+
+		// button element is not draggable on Firefox so make the inner draggable
+		// https://bugzilla.mozilla.org/show_bug.cgi?id=568313
+		if (Device.browser.firefox) {
+			var oDomRef = this.getDomRef();
+			if (oDomRef.draggable) {
+				oDomRef.draggable = false;
+				oDomRef.firstChild.draggable = true;
+			}
 		}
 	};
 

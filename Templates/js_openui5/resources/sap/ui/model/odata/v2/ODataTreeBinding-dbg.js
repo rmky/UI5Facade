@@ -151,7 +151,7 @@ sap.ui.define(['jquery.sap.global',
 
 			this.sCountMode = (mParameters && mParameters.countMode) || this.oModel.sDefaultCountMode;
 			if (this.sCountMode == CountMode.None) {
-				jQuery.log.fatal("To use an ODataTreeBinding at least one CountMode must be supported by the service!");
+				jQuery.sap.log.fatal("To use an ODataTreeBinding at least one CountMode must be supported by the service!");
 			}
 
 			if (mParameters) {
@@ -782,7 +782,7 @@ sap.ui.define(['jquery.sap.global',
 		var sCountType = "";
 		if (this.sCountMode == CountMode.Request || this.sCountMode == CountMode.Both) {
 			sCountType = "/$count";
-		} else if (this.sCountMode == CountMode.Inline) {
+		} else if (this.sCountMode == CountMode.Inline || this.sCountMode == CountMode.InlineRepeat) {
 			aParams.push("$top=0");
 			aParams.push("$inlinecount=allpages");
 		}
@@ -899,9 +899,9 @@ sap.ui.define(['jquery.sap.global',
 		}
 
 		//check if we already have a count
-		if (!this.oFinalLengths[sNodeId]) {
+		if (!this.oFinalLengths[sNodeId] || this.sCountMode == CountMode.InlineRepeat) {
 			// issue $inlinecount
-			if (this.sCountMode == CountMode.Inline || this.sCountMode == CountMode.Both) {
+			if (this.sCountMode == CountMode.Inline || this.sCountMode == CountMode.InlineRepeat || this.sCountMode == CountMode.Both) {
 				aParams.push("$inlinecount=allpages");
 				bInlineCountRequested = true;
 			} else if (this.sCountMode == CountMode.Request) {
@@ -1663,7 +1663,7 @@ sap.ui.define(['jquery.sap.global',
 	 * The property mapping describing the tree will be placed in "this.oTreeProperties".
 	 * Also checks if clientside property mappings are given.
 	 *
-	 * The extracted hierarchy informations will be stored in "this.oTreeProperties" (if any)
+	 * The extracted hierarchy information will be stored in "this.oTreeProperties" (if any)
 	 *
 	 * @private
 	 */
@@ -2014,6 +2014,19 @@ sap.ui.define(['jquery.sap.global',
 			jQuery.sap.log.error("Neither navigation paths parameters, nor (complete/valid) tree hierarchy annotations where provided to the TreeBinding.");
 			this.oNavigationPaths = {};
 		}
+	};
+
+	/**
+	 * Returns the value of a given hierarchy annotation.
+	 *
+	 * @param {string} sAttributeName The name of the hierarchy annotation
+	 * @return {string|undefined} The value of the hierarchy annotation
+	 * @since 1.56
+	 * @private
+	 * @ui5-restricted sap.ui.comp
+	 */
+	ODataTreeBinding.prototype.getTreeAnnotation = function(sAttributeName) {
+		return this.bHasTreeAnnotations ? this.oTreeProperties[sAttributeName] : undefined;
 	};
 
 	/**

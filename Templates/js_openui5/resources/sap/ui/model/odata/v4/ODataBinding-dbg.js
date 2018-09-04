@@ -61,6 +61,7 @@ sap.ui.define([
 			}
 		}
 		aPromises = [this.fetchQueryOptionsForOwnCache(oContext), this.oModel.oRequestor.ready()];
+		this.mCacheQueryOptions = undefined;
 		oCachePromise = SyncPromise.all(aPromises).then(function (aResult) {
 			var vCanonicalPath,
 				mQueryOptions = aResult[0];
@@ -71,13 +72,12 @@ sap.ui.define([
 					? oContext.fetchCanonicalPath() : oContext.getPath()));
 				return vCanonicalPath.then(function (sCanonicalPath) {
 					var oCache,
-						mCacheQueryOptions,
 						oError;
 
 					// create cache only for the latest call to fetchCache
 					if (!oCachePromise || that.oFetchCacheCallToken === oCallToken) {
-						mCacheQueryOptions = jQuery.extend(true, {}, that.oModel.mUriParameters,
-							mQueryOptions);
+						that.mCacheQueryOptions = jQuery.extend(true, {},
+							that.oModel.mUriParameters, mQueryOptions);
 						if (sCanonicalPath) { // quasi-absolute or relative binding
 							// mCacheByContext has to be reset if parameters are changing
 							that.mCacheByContext = that.mCacheByContext || {};
@@ -87,13 +87,13 @@ sap.ui.define([
 							} else {
 								oCache = that.doCreateCache(
 									_Helper.buildPath(sCanonicalPath, that.sPath).slice(1),
-									mCacheQueryOptions, oContext);
+										that.mCacheQueryOptions, oContext);
 								that.mCacheByContext[sCanonicalPath] = oCache;
 								oCache.$canonicalPath = sCanonicalPath;
 							}
 						} else { // absolute binding
-							oCache = that.doCreateCache(that.sPath.slice(1), mCacheQueryOptions,
-								oContext);
+							oCache = that.doCreateCache(that.sPath.slice(1),
+								that.mCacheQueryOptions, oContext);
 						}
 						return oCache;
 					} else {
@@ -164,7 +164,7 @@ sap.ui.define([
 		}
 
 		// (quasi-)absolute binding
-		if (!that.bRelative || oContext && !oContext.fetchValue) {
+		if (!this.bRelative || !oContext.fetchValue) {
 			return oQueryOptionsPromise;
 		}
 
@@ -212,43 +212,45 @@ sap.ui.define([
 
 	/**
 	 * Returns the relative path for a given absolute path by stripping off the binding's resolved
-	 * path. Returns relative paths unchanged.
+	 * path or the path of the binding's return value context. Returns relative paths unchanged.
 	 * Note that the resulting path may start with a key predicate.
 	 *
 	 * Example: (The binding's resolved path is "/foo/bar"):
 	 * baz -> baz
 	 * /foo/bar/baz -> baz
 	 * /foo/bar('baz') -> ('baz')
-	 * /foo -> undefined if the binding is relative, an Error is thrown otherwise
+	 * /foo -> undefined if the binding is relative
 	 *
 	 * @param {string} sPath
 	 *   A path
 	 * @returns {string}
 	 *   The path relative to the binding's path or <code>undefined</code> if the path is not a sub
 	 *   path and the binding is relative
-	 * @throws {Error}
-	 *   If the binding is absolute and the path does not start with the binding's path
 	 *
 	 * @private
 	 */
 	ODataBinding.prototype.getRelativePath = function (sPath) {
-		var sResolvedPath;
+		var sPathPrefix,
+			sResolvedPath;
 
 		if (sPath[0] === "/") {
 			sResolvedPath = this.oModel.resolve(this.sPath, this.oContext);
-
 			if (sPath.indexOf(sResolvedPath) === 0) {
-				sPath = sPath.slice(sResolvedPath.length);
-
-				if (sPath[0] === "/") {
-					sPath = sPath.slice(1);
-				}
-			} else if (this.bRelative) {
-				// this path doesn't match, but some parent binding might possibly fulfill it
-				sPath = undefined;
+				sPathPrefix = sResolvedPath;
+			} else if (this.oReturnValueContext
+					&& sPath.indexOf(this.oReturnValueContext.getPath()) === 0) {
+				sPathPrefix = this.oReturnValueContext.getPath();
 			} else {
-				// this path definitely does not match
-				throw new Error(sPath + ": invalid path, must start with " + this.sPath);
+				// A mismatch can only happen when a list binding's context has been parked and is
+				// destroyed later. Such a context does no longer have a subpath of the binding's
+				// path. The only caller in this case is ODataPropertyBinding#deregisterChange
+				// which can safely be ignored.
+				return undefined;
+			}
+			sPath = sPath.slice(sPathPrefix.length);
+
+			if (sPath[0] === "/") {
+				sPath = sPath.slice(1);
 			}
 		}
 		return sPath;
@@ -312,10 +314,11 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataBinding.prototype.hasPendingChangesForPath = function (sPath) {
-		var oPromise = this.withCache(function (oCache, sCachePath) {
+		var that = this,
+			oPromise = this.withCache(function (oCache, sCachePath) {
 				return oCache.hasPendingChangesForPath(sCachePath);
 			}, sPath).catch(function (oError) {
-				jQuery.sap.log.error("Error in hasPendingChangesForPath", oError, sClassName);
+				that.oModel.reportError("Error in hasPendingChangesForPath", sClassName, oError);
 				return false;
 			});
 
@@ -481,10 +484,11 @@ sap.ui.define([
 	ODataBinding.prototype.resetChangesForPath = function (sPath) {
 		var oPromise = this.withCache(function (oCache, sCachePath) {
 				oCache.resetChangesForPath(sCachePath);
-			}, sPath);
+			}, sPath),
+			that = this;
 
 		oPromise.catch(function (oError) {
-			jQuery.sap.log.error("Error in resetChangesForPath", oError, sClassName);
+			that.oModel.reportError("Error in resetChangesForPath", sClassName, oError);
 		});
 		if (oPromise.isRejected()) {
 			throw oPromise.getResult();
@@ -529,6 +533,19 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataBinding.prototype.resetInvalidDataState = function () {
+	};
+
+	/**
+	 * Returns a string representation of this object including the binding path. If the binding is
+	 * relative, the parent path is also given, separated by a '|'.
+	 *
+	 * @returns {string} A string description of this binding
+	 * @public
+	 * @since 1.37.0
+	 */
+	ODataBinding.prototype.toString = function () {
+		return this.getMetadata().getName() + ": " + (this.bRelative  ? this.oContext + "|" : "")
+			+ this.sPath;
 	};
 
 	/**

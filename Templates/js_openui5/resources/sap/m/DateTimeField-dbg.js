@@ -44,7 +44,7 @@ sap.ui.define([
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -193,6 +193,8 @@ sap.ui.define([
 		this.setProperty("displayFormat", sDisplayFormat, true); // no rerendering
 
 		this.updateDomValue(this._formatValue(this.getDateValue()));
+
+		this._updateDomPlaceholder(this._getPlaceholder());
 
 		return this;
 	};
@@ -373,6 +375,19 @@ sap.ui.define([
 	//}
 	DateTimeField.prototype._isValidDate = function (oDate) {
 		return oDate && jQuery.type(oDate) !== "date";
+	};
+
+
+	/**
+	 * Updates the placeholder of the input element with a given valye
+	 * @param {string} sValue the new value
+	 * @private
+	 * @returns void
+	 */
+	DateTimeField.prototype._updateDomPlaceholder = function (sValue) {
+		if (this.getDomRef()) {
+			this._$input.attr("placeholder", sValue);
+		}
 	};
 
 	return DateTimeField;

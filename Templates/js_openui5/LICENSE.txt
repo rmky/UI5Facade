@@ -398,7 +398,7 @@ License: MIT License
 
 Component: JUnit Reporter for QUnit
 Licensor: jQuery Foundation and other contributors
-Website: https://github.com/jquery/qunit-reporter-junit
+Website: https://github.com/JamesMGreene/qunit-reporter-junit
 License: MIT License
 
 Component: klay.js 0.4.1
@@ -483,7 +483,7 @@ License: BSD 3-clause "New" or "Revised" License
 <ORGANIZATION> = Christian Johansen
 <YEAR> = 2010-2014
 
-Component: Sinon.JS 4.1.3
+Component: Sinon.JS 4.4.6
 Licensor: Christian Johansen
 Website: http://github.com/cjohansen/Sinon.JS/
 License: BSD 3-clause "New" or "Revised" License
@@ -557,7 +557,7 @@ License: MIT License
 <copyright holders> = Bjarke Walling
 <year> = 2014
 
-Component: URI.js 1.11.2
+Component: URI.js 1.19.1
 Licensor: Rodney Rehm
 Website: http://github.com/medialize/URI.js/
 License: MIT License
@@ -584,6 +584,13 @@ Website: https://github.com/jalaali/jalaali-js/
 License: MIT License
 <copyright holders> = Behrang Noruzi Niya
 <year> = unspecified
+
+Component: bignumber.js 6.0.0
+Licensor: Michael Mclaughlin
+Website: https://github.com/MikeMcl/bignumber.js/
+License: MIT License
+<year> = 2018
+<copyright holders> = Michael Mclaughlin
 
 
 --------------------------------------------------------------------------------------------------------------------------

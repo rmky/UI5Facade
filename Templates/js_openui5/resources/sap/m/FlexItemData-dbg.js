@@ -24,7 +24,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @class
 	 * Holds layout data for a FlexBox / HBox / VBox.
 	 * @extends sap.ui.core.LayoutData
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -117,8 +117,6 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	/**
 	 * Sets the <code>alignSelf</code> property.
 	 *
-	 * @name sap.m.FlexItemData.setAlignSelf
-	 * @method
 	 * @public
 	 * @param {string} sValue Align option.
 	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
@@ -134,8 +132,6 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	/**
 	 * Sets the order.
 	 *
-	 * @name sap.m.FlexItemData.setOrder
-	 * @method
 	 * @public
 	 * @param {string} sValue Order in string format.
 	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
@@ -150,8 +146,6 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	/**
 	 * Sets the <code>growFactor</code> property.
 	 *
-	 * @name sap.m.FlexItemData.setGrowFactor
-	 * @method
 	 * @public
 	 * @param {string} sValue Grow factor in string format.
 	 * @returns {sap.m.FlexItemData} this FlexItemData reference for chaining.
@@ -166,8 +160,6 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	/**
 	 * Sets the <code>shrinkFactor</code> property.
 	 *
-	 * @name sap.m.FlexItemData.setShrinkFactor
-	 * @method
 	 * @public
 	 * @param {string} sValue Shrink factor in string format.
 	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
@@ -183,8 +175,6 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	/**
 	 * Sets the base size for flex items.
 	 *
-	 * @name sap.m.FlexItemData.setBaseSize
-	 * @method
 	 * @public
 	 * @param {string} sValue Base size in string format.
 	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
@@ -199,8 +189,6 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	/**
 	 * Sets minimum height.
 	 *
-	 * @name sap.m.FlexItemData.setMinHeight
-	 * @method
 	 * @public
 	 * @param {string} sValue Minimum height in string format.
 	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
@@ -215,8 +203,6 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	/**
 	 * Sets maximum height.
 	 *
-	 * @name sap.m.FlexItemData.setMaxHeight
-	 * @method
 	 * @public
 	 * @param {string} sValue Maximum height in string format.
 	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
@@ -231,8 +217,6 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	/**
 	 * Sets minimum width.
 	 *
-	 * @name sap.m.FlexItemData.setMinWidth
-	 * @method
 	 * @public
 	 * @param {string} sValue Minimum width in string format.
 	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
@@ -247,8 +231,6 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	/**
 	 * Sets maximum width.
 	 *
-	 * @name sap.m.FlexItemData.setMaxWidth
-	 * @method
 	 * @public
 	 * @param {string} sValue Maximum width in string format.
 	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
@@ -263,8 +245,6 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	/**
 	 * Sets background design for flex items.
 	 *
-	 * @name sap.m.FlexItemData.setBackgroundDesign
-	 * @method
 	 * @public
 	 * @param {string} sValue Background design in string format.
 	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.
@@ -280,8 +260,6 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	/**
 	 * Sets style class.
 	 *
-	 * @name sap.m.FlexItemData.setStyleClass
-	 * @method
 	 * @public
 	 * @param {string} sValue Style class.
 	 * @returns {sap.m.FlexItemData} <code>this</code> FlexItemData reference for chaining.

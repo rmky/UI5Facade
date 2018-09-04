@@ -18,11 +18,13 @@ sap.ui.define([
 	'sap/ui/model/FilterType',
 	'sap/ui/model/Sorter',
 	'sap/ui/model/odata/CountMode',
+	'sap/ui/model/TreeAutoExpandMode',
 	'./odata4analytics',
 	'./BatchResponseCollector',
 	'./AnalyticalVersionInfo'
 ], function(jQuery, TreeBinding, ChangeReason, Filter, FilterOperator, FilterType, Sorter,
-		CountMode, odata4analytics, BatchResponseCollector, AnalyticalVersionInfo) {
+		CountMode, TreeAutoExpandMode, odata4analytics, BatchResponseCollector,
+		AnalyticalVersionInfo) {
 	"use strict";
 
 	var sClassName = "sap.ui.model.analytics.AnalyticalBinding";
@@ -216,6 +218,9 @@ sap.ui.define([
 	 * @param {array}
 	 *            [aFilters=null] predefined filter/s contained in an array
 	 * @param {object} [mParameters=null] a map which contains additional control parameters.
+	 * @param {sap.ui.model.TreeAutoExpandMode} [mParameters.autoExpandMode=sap.ui.model.TreeAutoExpandMode.Bundled]
+	 *            the auto expand mode; applying sorters to groups is only possible with auto expand
+	 *            mode {@link sap.ui.model.TreeAutoExpandMode.Sequential}
 	 * @param [mParameters.entitySet] if set, it explicitly specifies the entity set addressed by
 	 *            the last segment of the given binding path
 	 * @param [mParameters.useBatchRequests] if true, multiple OData requests will be wrapped into a
@@ -291,6 +296,11 @@ sap.ui.define([
 			this.mMultiUnitKey = {}; // keys of multi-currency entities
 			this.aMultiUnitLoadFactor = {}; // compensate discarded multi-unit entities by a load factor per aggregation level to increase number of loaded entities
 			this.bNeedsUpdate = false;
+			// use this.aSorter to sort the groups (only for non multi-unit cases)
+			this.bApplySortersToGroups = true;
+			// Content of this._autoExpandMode during last call of _canApplySortersToGroups;
+			// used for logging a warning if auto expand mode is bundled
+			this.sLastAutoExpandMode = undefined;
 			/* entity keys of loaded group Id's */
 			this.mEntityKey = {};
 			/* increased load factor due to ratio of non-multi-unit entities versus loaded entities */
@@ -336,7 +346,6 @@ sap.ui.define([
 
 			//this flag indicates if the analytical binding was initialized via initialize(), called either via bindAggregation or the Model
 			this.bInitial = true;
-
 		}
 
 	});
@@ -362,22 +371,27 @@ sap.ui.define([
 	 * @param {Object} oContext the new context object
 	 */
 	AnalyticalBinding.prototype.setContext = function (oContext) {
+		var sResolvedPath;
+
 		if (this.oContext !== oContext) {
 			this.oContext = oContext;
-			this.oDataState = null;
 
-			// If binding is not a relative binding, nothing to do here
 			if (!this.isRelative()) {
+				// If binding is not a relative binding, nothing to do here
 				return;
 			}
 
+			this.oDataState = null;
+			this.bApplySortersToGroups = true;
 			// resolving the path makes sure that we can safely analyze the metadata,
 			// as we have a resourcepath for the QueryResult
-			var sResolvedPath = this.oModel.resolve(this.sPath, this.oContext);
+			sResolvedPath = this.oModel.resolve(this.sPath, this.oContext);
 			if (sResolvedPath) {
 				this.resetData();
 				this._initialize(); // triggers metadata/annotation check
 				this._fireChange({ reason: ChangeReason.Context });
+			} else {
+				this.bInitial = true;
 			}
 		}
 	};
@@ -929,6 +943,9 @@ sap.ui.define([
 		this._abortAllPendingRequests();
 
 		this.resetData();
+		// resets the flag to sort groups by this.aSorter; a new filter might resolve a multi-unit
+		// case; do it before refresh event is fired
+		this.bApplySortersToGroups = true;
 		this._fireRefresh({
 			reason : ChangeReason.Filter
 		});
@@ -1183,7 +1200,9 @@ sap.ui.define([
 		}
 
 		// parameter is an array with elements whose structure is defined by sap.ui.analytics.model.AnalyticalTable.prototype._getColumnInformation()
-		var oPreviousDimensionDetailsSet = this.oDimensionDetailsSet;
+		var oPreviousDimensionDetailsSet = this.oDimensionDetailsSet || {},
+			oPreviousMeasureDetailsSet = this.oMeasureDetailsSet || {};
+
 		this.mAnalyticalInfoByProperty = {}; // enable associative access to analytical update information
 		this.aMaxAggregationLevel = []; // names of all dimensions referenced by any column
 		this.aAggregationLevel = []; // names of all currently grouped dimensions
@@ -1303,15 +1322,16 @@ sap.ui.define([
 		}
 
 		// check if any dimension has been added or removed. If so, invalidate the total size
-		var compileDimensionNames = function (oDimensionDetailsSet) {
-			var aName = [];
-			for (var oDimDetails in oDimensionDetailsSet) {
-				aName.push(oDimDetails.name);
-			}
-			return aName.sort().join(";");
-		};
-		if (compileDimensionNames(oPreviousDimensionDetailsSet) != compileDimensionNames(this.oDimensionDetailsSet)) {
+		var bDimensionsChanged = Object.keys(oPreviousDimensionDetailsSet).sort().join(";")
+				!== Object.keys(this.oDimensionDetailsSet).sort().join(";");
+		if (bDimensionsChanged) {
 			this.iTotalSize = -1;
+		}
+		if (bDimensionsChanged
+				|| Object.keys(oPreviousMeasureDetailsSet).sort().join(";")
+					!== Object.keys(this.oMeasureDetailsSet).sort().join(";")) {
+			// do not reset the flag if the dimensions and the measures are the same
+			this.bApplySortersToGroups = true;
 		}
 
 		// remember column settings for later reference
@@ -1764,6 +1784,8 @@ sap.ui.define([
 	 */
 	AnalyticalBinding.prototype._prepareGroupMembersQueryRequest = function(iRequestType, sGroupId, iStartIndex, iLength) {
 		var aGroupId = [],
+			// array of sap.ui.model.Sorter like objects ({sPatch, bDescending})
+			aGroupingSorters = [],
 			aHierarchyLevelFilters;
 
 		// (0) set up analytical OData request object
@@ -1827,7 +1849,10 @@ sap.ui.define([
 
 			// define a default sort order in case no sort criteria have been provided externally
 			if (oDimensionDetails.grouped) {
-				oAnalyticalQueryRequest.getSortExpression().addSorter(aAggregationLevelNoHierarchy[i], odata4analytics.SortOrder.Ascending);
+				aGroupingSorters.push({
+					sPath : aAggregationLevelNoHierarchy[i],
+					bDescending : false
+				});
 			}
 		}
 
@@ -1857,7 +1882,11 @@ sap.ui.define([
 
 		var aSelectedUnitPropertyName = [];
 
-		if (sGroupId != null || this.bProvideGrandTotals) {
+		if (sGroupId != null || this.bProvideGrandTotals
+				// get also grand total for group ID "null" (virtual root), independent of
+				// bProvideGrandTotals, if there are sorters in this.aSorter and they need to be
+				// applied to groups
+				|| (this._canApplySortersToGroups() && this.aSorter.length > 0)) {
 			// select measures if the requested group is not the root context i.e. the grand totals row, or grand totals shall be determined
 			oAnalyticalQueryRequest.setMeasures(this.aMeasureName);
 
@@ -1891,12 +1920,7 @@ sap.ui.define([
 		}
 
 		// (6) set sort order
-		var oSorter = oAnalyticalQueryRequest.getSortExpression();
-		for (var m = 0; m < this.aSorter.length; m++) {
-			if (this.aSorter[m]) {
-				oSorter.addSorter(this.aSorter[m].sPath, this.aSorter[m].bDescending ? odata4analytics.SortOrder.Descending : odata4analytics.SortOrder.Ascending);
-			}
-		}
+		this._addSorters(oAnalyticalQueryRequest.getSortExpression(), aGroupingSorters);
 
 		// (7) set result page boundaries
 		if (iLength == 0) {
@@ -2945,6 +2969,7 @@ sap.ui.define([
 	AnalyticalBinding.prototype._processGroupMembersQueryResponse = function(oRequestDetails, oData) {
 		var sEntryGroupId,
 			sGroupId = oRequestDetails.sGroupId,
+			bHasSorters = this.aSorter.length > 0, // this.aSorter is always an array
 			aSelectedUnitPropertyName = oRequestDetails.aSelectedUnitPropertyName,
 			aAggregationLevel = oRequestDetails.aAggregationLevel,
 			iStartIndex = oRequestDetails.oKeyIndexMapping.iIndex,
@@ -2964,6 +2989,17 @@ sap.ui.define([
 		// entry at start position may be a multi-unit entry w.r.t. entry at position before
 		// prepare merging with this preceding entry
 		var iODataResultsLength = oData.results.length;
+
+		if (sGroupId === null && iODataResultsLength > 1 && this._canApplySortersToGroups()) {
+			this._warnNoSortingOfGroups(bHasSorters ? "binding is refreshed" : undefined);
+			if (bHasSorters) {
+				// do refresh after _executeQueryRequest is finished to avoid an error while
+				// cleaning the pending request queue (see _deregisterCompletedRequest)
+				setTimeout(this.refresh.bind(this), 0);
+				return;
+			}
+		}
+
 		var aPreviousEntryServiceKey = this._getServiceKeys(sGroupId, oKeyIndexMapping.iIndex - 1);
 		sPreviousEntryDimensionKeyString = undefined;
 		if (aPreviousEntryServiceKey && aPreviousEntryServiceKey.length > 0) { // copy previous service keys to results for homogeneous processing below
@@ -2994,6 +3030,7 @@ sap.ui.define([
 					sDimensionKeyString += oEntry[aAggregationLevel[g]] + "|";
 				}
 				if (sPreviousEntryDimensionKeyString == sDimensionKeyString) {
+					this._warnNoSortingOfGroups();
 					if (iFirstMatchingEntryIndex === undefined) {
 						if (h == 0) { // adjust indexes such that the entry at position before is covered
 							iFirstMatchingEntryIndex = -aPreviousEntryServiceKey.length;
@@ -4546,7 +4583,7 @@ sap.ui.define([
 			// if the value is an empty string, it should be treated as such in the generated key
 			var sSaveDimVal = sDimVal === "" ? '""' : sDimVal;
 			sSaveDimVal = sSaveDimVal === undefined ? "" : sSaveDimVal;
-			sMultiUnitEntryKey += (sSaveDimVal + ",");
+			sMultiUnitEntryKey += (encodeURIComponent(sSaveDimVal) + ",");
 		}
 		sMultiUnitEntryKey += "-multiple-units-not-dereferencable";
 
@@ -4932,7 +4969,79 @@ sap.ui.define([
 	};
 
 	**/
-	return AnalyticalBinding;
 
+	//**********************************
+	//*** Grouping together with Sorting
+	//**********************************
+	/**
+	 * Adds the given sorters and 'this.aSorter' to the given sort expression object.
+	 * Depending on the result of {@link #_canApplySortersToGroups}, 'this.aSorter' are added
+	 * before the given sorters or after them.
+	 *
+	 * @param {sap.ui.model.analytics.odata4analytics.SortExpression} oSortExpression
+	 *    The sort expression
+	 * @param {sap.ui.model.Sorter[]} aGroupingSorters
+	 *    An array of sorter objects resulting from grouping
+	 * @private
+	 */
+	AnalyticalBinding.prototype._addSorters = function (oSortExpression, aGroupingSorters) {
+		var aSorters = this._canApplySortersToGroups()
+				? [].concat(this.aSorter).concat(aGroupingSorters)
+				: [].concat(aGroupingSorters).concat(this.aSorter);
+
+		aSorters.forEach(function (oSorter) {
+			oSortExpression.addSorter(oSorter.sPath, oSorter.bDescending
+				? odata4analytics.SortOrder.Descending : odata4analytics.SortOrder.Ascending);
+		});
+	};
+
+	/**
+	 * Returns whether sorters in 'this.aSorter' can be applied to the groups. This feature is only
+	 * enabled if binding's auto expand mode is set to 'Sequential'.
+	 * Logs a warning if applying sorters to groups is not possible because of auto expand mode.
+	 * Do not log the warning twice if auto expand mode does not change.
+	 *
+	 * @returns {boolean} Whether 'this.aSorter' can be applied to the groups
+	 * @private
+	 */
+	AnalyticalBinding.prototype._canApplySortersToGroups = function () {
+		var sCurrentAutoExpandMode = this._autoExpandMode;
+
+		if (this.bApplySortersToGroups) {
+			if (this.aSorter.length > 0) {
+				// check whether to log a warning and update sLastAutoExpandMode
+				if (sCurrentAutoExpandMode !== this.sLastAutoExpandMode
+						&& sCurrentAutoExpandMode !== TreeAutoExpandMode.Sequential) {
+					jQuery.sap.log.warning("Applying sorters to groups is only possible with auto"
+						+ " expand mode 'Sequential'; current mode is: " + sCurrentAutoExpandMode,
+						this.sPath, sClassName);
+				}
+				this.sLastAutoExpandMode = sCurrentAutoExpandMode;
+			}
+			return sCurrentAutoExpandMode === TreeAutoExpandMode.Sequential;
+		}
+		return false;
+	};
+
+	/**
+	 * Resets the flag that sorters can be applied to groups and logs a warning if not yet done.
+	 *
+	 * @param {string} sDetails Details for the warning
+	 * @private
+	 */
+	AnalyticalBinding.prototype._warnNoSortingOfGroups = function (sDetails) {
+		var sMessage;
+
+		if (this.bApplySortersToGroups) {
+			sMessage = "Detected a multi-unit case, so sorting is only possible on leaves";
+			if (sDetails) {
+				sMessage += "; " + sDetails;
+			}
+			jQuery.sap.log.warning(sMessage, this.sPath, sClassName);
+		}
+		this.bApplySortersToGroups = false;
+	};
+
+	return AnalyticalBinding;
 });
 

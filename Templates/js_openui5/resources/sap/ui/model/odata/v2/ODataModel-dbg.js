@@ -70,8 +70,8 @@ sap.ui.define([
 	 *            Sets the default binding mode for the model
 	 * @param {sap.ui.model.odata.CountMode} [mParameters.defaultCountMode=Request]
 	 *            Sets the default count mode for the model
-	 * @param {string} [mParameters.preliminaryContext=false]
-	 *            Wether a preliminary Context will be created/used by a binding
+	 * @param {boolean} [mParameters.preliminaryContext=false]
+	 *            Whether a preliminary Context will be created/used by a binding
 	 * @param {sap.ui.model.odata.OperationMode} [mParameters.defaultOperationMode=Default]
 	 *            Sets the default operation mode for the model
 	 * @param {sap.ui.model.odata.UpdateMethod} [mParameters.defaultUpdateMethod=Merge]
@@ -109,11 +109,12 @@ sap.ui.define([
 	 *
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @public
 	 * @alias sap.ui.model.odata.v2.ODataModel
 	 * @extends sap.ui.model.Model
+	 * @since 1.24.0
 	 */
 	var ODataModel = Model.extend("sap.ui.model.odata.v2.ODataModel", /** @lends sap.ui.model.odata.v2.ODataModel.prototype */ {
 
@@ -348,7 +349,6 @@ sap.ui.define([
 			if (this.sMaxDataServiceVersion) {
 				this.oHeaders["MaxDataServiceVersion"] = this.sMaxDataServiceVersion;
 			}
-			this.oHeaders["sap-cancel-on-close"] = true;
 
 		},
 		metadata : {
@@ -814,7 +814,7 @@ sap.ui.define([
 	 *
 	 * @returns {Promise} A promise on metadata loaded state or <code>null</code> if metadata is not initialized or currently refreshed.
 	 *
-	 * @deprecated
+	 * @deprecated As of version 1.42.
 	 *
 	 * @public
 	 */
@@ -1682,7 +1682,7 @@ sap.ui.define([
 	 * @param {map} [mParameters] Map which contains additional parameters for the binding
 	 * @param {string} [mParameters.expand] Value for the OData <code>$expand</code> query parameter which should be included in the request
 	 * @param {string} [mParameters.select] Value for the OData <code>$select</code> query parameter which should be included in the request
-	 * @param {boolean} [mParameters.preliminaryContext] Wether a preliminary Context will be created
+	 * @param {boolean} [mParameters.preliminaryContext] Whether a preliminary Context will be created
 	 * @param {map} [mParameters.custom] Optional map of custom query parameters, names of custom parameters must not start with <code>$</code>.
 	 * @param {function} [fnCallBack] Function to be called when context has been created. The parameter of the callback function is the newly created binding context.
 	 * @param {boolean} [bReload] Whether to reload data
@@ -2664,7 +2664,7 @@ sap.ui.define([
 
 		function requestToken(sRequestType, fnError) {
 			// trigger a read to the service url to fetch the token
-			var oRequest = that._createRequest(sUrl, sRequestType, that._getHeaders(), null, null, !!bAsync);
+			var oRequest = that._createRequest(sUrl, sRequestType, that._getHeaders(false, true), null, null, !!bAsync);
 			oRequest.headers["x-csrf-token"] = "Fetch";
 			return that._request(oRequest, handleSuccess, fnError, undefined, undefined, that.getServiceMetadata());
 		}
@@ -3039,10 +3039,20 @@ sap.ui.define([
 	ODataModel.prototype._createBatchRequest = function(aBatchRequests) {
 		var sUrl, oRequest,
 		oChangeHeader = {},
-		oPayload = {};
+		oPayload = {},
+		bCancelOnClose = true;
 
 		oPayload.__batchRequests = aBatchRequests;
 
+
+		// If one requests leads to data changes at the back-end side, the canceling of the batch request must be prevented.
+		for (var sIndex in aBatchRequests) {
+			if (aBatchRequests[sIndex] && aBatchRequests[sIndex].__changeRequests ||
+				aBatchRequests[sIndex] && aBatchRequests[sIndex].headers && !aBatchRequests[sIndex].headers['sap-cancel-on-close']) {
+				bCancelOnClose = false;
+				break;
+			}
+		}
 		sUrl = this.sServiceUrl	+ "/$batch";
 
 
@@ -3057,6 +3067,8 @@ sap.ui.define([
 
 		// reset
 		delete oChangeHeader["Content-Type"];
+
+		oChangeHeader['sap-cancel-on-close'] = bCancelOnClose;
 
 		oRequest = {
 				headers : oChangeHeader,
@@ -3324,7 +3336,7 @@ sap.ui.define([
 						}
 					}
 					if (aReadRequests.length > 0) {
-						var oBatchRequest = that._createBatchRequest(aReadRequests, true);
+						var oBatchRequest = that._createBatchRequest(aReadRequests);
 						oWrappedBatchRequestHandle.oRequestHandle = that._submitBatchRequest(oBatchRequest, aBatchGroup, fnSuccess, fnError);
 						aRequestHandles.push(oWrappedBatchRequestHandle.oRequestHandle);
 					}
@@ -3821,7 +3833,7 @@ sap.ui.define([
 	 *
 	 * @return {object} Object containing the requested data if the path is valid.
 	 * @public
-	 * @deprecated please use {@link #getProperty} instead
+	 * @deprecated As of version 1.24, please use {@link #getProperty} instead
 	 */
 	ODataModel.prototype.getData = function(sPath, oContext, bIncludeExpandEntries) {
 		return this.getProperty(sPath, oContext, bIncludeExpandEntries);
@@ -4444,7 +4456,9 @@ sap.ui.define([
 		}
 
 		aUrlParams = ODataUtils._createUrlParamsArray(mUrlParams);
-		mHeaders = this._getHeaders(mHeaders);
+
+		mHeaders = this._getHeaders(mHeaders, true);
+
 		sMethod = "GET";
 		sETag = this._getETag(sPath, oContext);
 
@@ -5054,7 +5068,8 @@ sap.ui.define([
 		}
 	};
 
-	ODataModel.prototype._getHeaders = function(mHeaders) {
+	ODataModel.prototype._getHeaders = function(mHeaders, bCancelOnClose) {
+
 		var mCheckedHeaders = {},
 		that = this;
 		if (mHeaders) {
@@ -5067,7 +5082,7 @@ sap.ui.define([
 				}
 			});
 		}
-		return jQuery.extend({}, this.mCustomHeaders, mCheckedHeaders, this.oHeaders);
+		return jQuery.extend({'sap-cancel-on-close': !!bCancelOnClose}, this.mCustomHeaders, mCheckedHeaders, this.oHeaders);
 	};
 
 	/**
@@ -5272,7 +5287,7 @@ sap.ui.define([
 				return undefined;
 			}
 			if (typeof vProperties === "object" && !Array.isArray(vProperties)) {
-				oEntity = vProperties;
+				oEntity = jQuery.sap.extend(true, {}, vProperties);
 			} else {
 				for (var i = 0; i < oEntityMetadata.property.length; i++) {
 					var oPropertyMetadata = oEntityMetadata.property[i];
@@ -5359,9 +5374,9 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataModel.prototype._createPropertyValue = function(sType) {
-		var aTypeName = this.oMetadata._splitName(sType); // name, namespace
-		var sNamespace = aTypeName[1];
-		var sTypeName = aTypeName[0];
+		var oTypeInfo = this.oMetadata._splitName(sType); // name, namespace
+		var sNamespace = oTypeInfo.namespace;
+		var sTypeName = oTypeInfo.name;
 		if (sNamespace.toUpperCase() !== 'EDM') {
 			var oComplexType = {};
 			var oComplexTypeMetadata = this.oMetadata._getObjectMetadata("complexType",sTypeName,sNamespace);

@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 	 * @class
 	 * The column menu provides all common actions that can be performed on a column.
 	 * @extends sap.ui.unified.Menu
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -47,7 +47,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 			Menu.prototype.init.apply(this, arguments);
 		}
 		this.addStyleClass("sapUiTableColumnMenu");
-		this._oResBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.table");
 		this._bInvalidated = true;
 		this._iPopupClosedTimeoutId = null;
 		this._oColumn = null;
@@ -142,15 +141,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 	 */
 	ColumnMenu.prototype._invalidate = function() {
 		this._bInvalidated = true;
-	};
-
-	/**
-	 * Invalidates the column menu control items and refreshes the loaded language bundle.
-	 * @private
-	 */
-	ColumnMenu.prototype._updateResourceBundle = function() {
-		this._oResBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.table");
-		this._invalidate();
 	};
 
 	/**
@@ -310,7 +300,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 
 		if (bColumnFreezeEnabled) {
 			var iColumnIndex = oColumn.getIndex();
-			var bIsFixedColumn = iColumnIndex + TableUtils.Column.getHeaderSpan(oColumn) == oTable.getFixedColumnCount();
+			var bIsFixedColumn = iColumnIndex + TableUtils.Column.getHeaderSpan(oColumn) == oTable.getComputedFixedColumnCount();
 
 			this.addItem(this._createMenuItem(
 				"freeze",
@@ -445,7 +435,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 	 */
 	ColumnMenu.prototype._createMenuItem = function(sId, sTextI18nKey, sIcon, fHandler) {
 		return new MenuItem(this.getId() + "-" + sId, {
-			text: this._oResBundle.getText(sTextI18nKey),
+			text: TableUtils.getResourceText(sTextI18nKey),
 			icon: sIcon ? "sap-icon://" + sIcon : null,
 			select: fHandler || function() {}
 		});
@@ -465,7 +455,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 	ColumnMenu.prototype._createMenuTextFieldItem = function(sId, sTextI18nKey, sIcon, sValue, fHandler) {
 		fHandler = fHandler || function() {};
 		return new MenuTextFieldItem(this.getId() + "-" + sId, {
-			label: this._oResBundle.getText(sTextI18nKey),
+			label: TableUtils.getResourceText(sTextI18nKey),
 			icon: sIcon ? "sap-icon://" + sIcon : null,
 			value: sValue,
 			select: fHandler || function() {}

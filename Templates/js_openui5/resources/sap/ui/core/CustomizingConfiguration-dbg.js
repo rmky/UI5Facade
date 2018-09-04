@@ -35,7 +35,7 @@ sap.ui.define(['jquery.sap.global', './Core', './Component'],
 				// configuration is checked - the customizing configuration is
 				// merged in case of extending components - so the configuration
 				// should be available properly
-				var oComponent = sap.ui.component(sComponentId);
+				var oComponent = Component.get(sComponentId);
 				var sComponentName = oComponent && oComponent.getMetadata().getComponentName();
 				// starting with manifest first we need to check the instance
 				// specific configuration first and fallback to the general
@@ -67,7 +67,7 @@ sap.ui.define(['jquery.sap.global', './Core', './Component'],
 		 * gets removed again.
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 * @constructor
 		 * @private
 		 * @since 1.15.1

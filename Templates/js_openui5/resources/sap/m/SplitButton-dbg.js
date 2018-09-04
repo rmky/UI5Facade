@@ -48,7 +48,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @sap-restricted sap.m.MenuButton,sap.ui.richtextEditor.ToolbarWrapper
@@ -58,6 +58,9 @@ function(
 		 */
 		var SplitButton = Control.extend("sap.m.SplitButton", /** @lends sap.m.SplitButton.prototype */ { metadata : {
 
+			interfaces : [
+				"sap.m.IOverflowToolbarContent"
+			],
 			library : "sap.m",
 			properties : {
 
@@ -333,6 +336,20 @@ function(
 			}
 
 			return sResult;
+		};
+
+		/**
+		 * Required by the {@link sap.m.IOverflowToolbarContent} interface.
+		 */
+		SplitButton.prototype.getOverflowToolbarConfig = function() {
+			var oConfig = {
+				canOverflow: true,
+				propsUnrelatedToSize: ["enabled", "type", "icon", "activeIcon"],
+				autoCloseEvents: ["press"]
+			};
+
+
+			return oConfig;
 		};
 
 		return SplitButton;

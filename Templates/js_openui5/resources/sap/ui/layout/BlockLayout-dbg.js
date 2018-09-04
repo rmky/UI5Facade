@@ -26,6 +26,8 @@ sap.ui.define([
 		 * The BlockLayout uses horizontal and vertical subdivisions, and full-width banners to display a set of elements.
 		 * By placing pictorial and textual elements side-by-side in different blocks, you can establish a visual connection between blocks and between similar elements.
 		 * <h3>Structure</h3>
+		 * The BlockLayout contains BlockLayout cells. Every cell consists of a title and content. The title can be text or a link.
+		 *
 		 * The BlockLayout comes in five predefined types for background colors:
 		 * <ul>
 		 * <li>Layout only (default) - a layout scheme and no background colors</li>
@@ -41,6 +43,8 @@ sap.ui.define([
 		 * <b>Note:</b> With version 1.48 colors can be set for each individual {@link sap.ui.layout.BlockLayoutCell cell}. There are 10 pre-defined color sets, each with 4 different shades.
 		 * The main colors of the sets can be changed in Theme Designer. To change the background of a particular cell, set <code>backgroundColorSet</code> (main color)
 		 * and <code>backgroundColorShade</code> (shade).
+		 *
+		 * <b>Note:</b> Usage of disabled, emphasized or subtle links as titles is not recommended. Dark background designs, for example Accent, are not fully supported with regards to Аccessibility when used with links as titles.
 		 *
 		 * <h3>Usage</h3>
 		 * <h4>When to use</h4>
@@ -60,12 +64,13 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
 		 * @since 1.34
 		 * @alias sap.ui.layout.BlockLayout
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/block-layout/ Block Layout}
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		var BlockLayout = Control.extend("sap.ui.layout.BlockLayout", { metadata : {
@@ -82,7 +87,7 @@ sap.ui.define([
 				 * Keeps the font-size of the contents as is, independent from the screen size.
 				 * @since 1.52
 				 */
-				keepFontSize: { type: "boolean", group:"Behaviour", defaultValue: false}
+				keepFontSize: { type: "boolean", group:"Behavior", defaultValue: false}
 			},
 			defaultAggregation : "content",
 			aggregations : {

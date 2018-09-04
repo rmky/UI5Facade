@@ -180,7 +180,7 @@ sap.ui.define([
 	 * {@link #loaded loaded} has been resolved!
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @alias sap.ui.model.odata.ODataMetaModel
 	 * @extends sap.ui.model.MetaModel
 	 * @public
@@ -277,8 +277,8 @@ sap.ui.define([
 				try {
 					oResult = BindingParser.parseExpression(sResolvedPath, 1);
 					iEnd = oResult.at;
-					if (iEnd >= 0 && (sResolvedPath.length === iEnd + 1
-							|| sResolvedPath.charAt(iEnd + 1) === '/')) {
+					if (sResolvedPath.length === iEnd + 1
+							|| sResolvedPath.charAt(iEnd + 1) === '/') {
 						oBinding = oResult.result;
 						vPart = sResolvedPath.slice(0, iEnd + 1);
 						sResolvedPath = sResolvedPath.slice(iEnd + 2);
@@ -461,6 +461,21 @@ sap.ui.define([
 	ODataMetaModel.prototype.destroy = function () {
 		MetaModel.prototype.destroy.apply(this, arguments);
 		return this.oModel && this.oModel.destroy.apply(this.oModel, arguments);
+	};
+
+	/**
+	 * Returns the module path to the model specific adapter factory.
+	 *
+	 * @returns {string}
+	 *   The module path to the model specific adapter factory
+	 *
+	 * @private
+	 * @see sap.ui.model.MetaModel#getAdapterFactoryModulePath
+	 * @since 1.55.0
+	 */
+	// @override
+	ODataMetaModel.prototype.getAdapterFactoryModulePath = function() {
+		return "sap/ui/model/odata/v2/meta/ODataAdapterFactory";
 	};
 
 	/**
@@ -868,9 +883,8 @@ sap.ui.define([
 					resolve : function (oResponse) {
 						// enhance property by annotations from response to get value lists
 						jQuery.extend(oProperty,
-							((oResponse.annotations.propertyAnnotations || {})
-								[sQualifiedTypeName] || {})
-									[oProperty.name]
+							(oResponse.annotations.propertyAnnotations[sQualifiedTypeName] || {})
+								[oProperty.name]
 						);
 						mValueLists = Utils.getValueLists(oProperty);
 						if (jQuery.isEmptyObject(mValueLists)) {

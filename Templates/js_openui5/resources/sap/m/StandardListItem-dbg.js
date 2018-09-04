@@ -6,15 +6,15 @@
 
 // Provides control sap.m.StandardListItem.
 sap.ui.define([
-	'./ListItemBase',
-	'./library',
-	'sap/ui/core/IconPool',
-	'sap/ui/core/library',
-	'./StandardListItemRenderer'
+	"sap/ui/core/library",
+	"sap/ui/core/IconPool",
+	"./library",
+	"./ListItemBase",
+	"./Image",
+	"./StandardListItemRenderer"
 ],
-	function(ListItemBase, library, IconPool, coreLibrary, StandardListItemRenderer) {
+	function(coreLibrary, IconPool, library, ListItemBase, Image, StandardListItemRenderer) {
 	"use strict";
-
 
 
 	// shortcut for sap.ui.core.TextDirection
@@ -22,7 +22,6 @@ sap.ui.define([
 
 	// shortcut for sap.ui.core.ValueState
 	var ValueState = coreLibrary.ValueState;
-
 
 
 	/**
@@ -36,7 +35,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -140,20 +139,20 @@ sap.ui.define([
 
 		if (oImage) {
 			oImage.setSrc(this.getIcon());
-			if (oImage instanceof sap.m.Image) {
+			if (oImage.setDensityAware) {
 				oImage.setDensityAware(this.getIconDensityAware());
 			}
 		} else {
 			oImage = IconPool.createControlByURI({
-				id : this.getId() + "-img",
-				src : this.getIcon(),
-				densityAware : this.getIconDensityAware(),
-				useIconTooltip : false
-			}, sap.m.Image).setParent(this, null, true);
+				id: this.getId() + "-img",
+				src: this.getIcon(),
+				densityAware: this.getIconDensityAware(),
+				useIconTooltip: false
+			}, Image).setParent(this, null, true);
 		}
 
 		var sImgStyle = this.getIconInset() ? "sapMSLIImg" : "sapMSLIImgThumb";
-		oImage.addStyleClass(oImage instanceof sap.m.Image ? sImgStyle : sImgStyle + "Icon", true);
+		oImage.addStyleClass(oImage instanceof Image ? sImgStyle : sImgStyle + "Icon", true);
 
 		this._oImage = oImage;
 		return this._oImage;

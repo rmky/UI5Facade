@@ -6,16 +6,16 @@
 
 // Provides control sap.ui.unified.ShellLayout.
 sap.ui.define([
-    'jquery.sap.global',
-    'sap/ui/Device',
-    'sap/ui/core/Control',
-    'sap/ui/core/Popup',
-    'sap/ui/core/theming/Parameters',
-    './SplitContainer',
-    './library',
-    "./ShellLayoutRenderer",
-    'jquery.sap.dom',
-    'jquery.sap.script'
+	'jquery.sap.global',
+	'sap/ui/Device',
+	'sap/ui/core/Control',
+	'sap/ui/core/Popup',
+	'sap/ui/core/theming/Parameters',
+	'./SplitContainer',
+	'./library',
+	'./ShellLayoutRenderer',
+	'jquery.sap.dom',
+	'jquery.sap.script'
 ], function(
 	jQuery,
 	Device,
@@ -25,6 +25,7 @@ sap.ui.define([
 	SplitContainer,
 	library,
 	ShellLayoutRenderer
+	/* , jQueryDom, jQueryScript */
 ) {
 	"use strict";
 
@@ -44,7 +45,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public

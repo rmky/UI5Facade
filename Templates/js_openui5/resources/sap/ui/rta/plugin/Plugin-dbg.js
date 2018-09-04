@@ -12,7 +12,8 @@ sap.ui.define([
 	'sap/ui/dt/OverlayRegistry',
 	'sap/ui/dt/OverlayUtil',
 	'sap/ui/dt/ElementOverlay',
-	'sap/ui/fl/changeHandler/JsControlTreeModifier'
+	'sap/ui/fl/changeHandler/JsControlTreeModifier',
+	'sap/ui/base/ManagedObject'
 ],
 function(
 	Plugin,
@@ -21,7 +22,8 @@ function(
 	OverlayRegistry,
 	OverlayUtil,
 	ElementOverlay,
-	JsControlTreeModifier
+	JsControlTreeModifier,
+	ManagedObject
 ) {
 	"use strict";
 
@@ -37,7 +39,7 @@ function(
 	 * @extends sap.ui.dt.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -108,6 +110,9 @@ function(
 		};
 
 		oOverlay.attachElementModified(_onElementModified, this);
+
+		// the control can be set to visible, but still the control has no size when we do the check.
+		// that's why we also attach to 'geometryChanged' and check if the overlay has a size
 		if (!oOverlay.getGeometry() || !oOverlay.getGeometry().visible) {
 			oOverlay.attachEvent('geometryChanged', fnGeometryChangedCallback, this);
 		}
@@ -133,6 +138,12 @@ function(
 		return aAlreadyDefinedRelevantOverlays;
 	};
 
+	function _isInAggregationBinding(aElements) {
+		return aElements.some(function(oStableElement) {
+			return oStableElement && OverlayUtil.isInAggregationBinding(OverlayRegistry.getOverlay(oStableElement), oStableElement.sParentAggregationName);
+		});
+	}
+
 	/**
 	 * Checks if the overlay has an associated element and calls the _isEditable function.
 	 * If there is an associated element it also modifies the plugin list.
@@ -140,16 +151,32 @@ function(
 	 * @param {object} mPropertyBag Map of additional information to be passed to isEditable
 	 */
 	BasePlugin.prototype.evaluateEditable = function(aOverlays, mPropertyBag) {
+		var aPlugins = this.getDesignTime() ? this.getDesignTime().getPlugins() : [];
+		var bSkipEvaluation = aPlugins.some(function (oPlugin) {
+			// If a plugin is busy, do not evaluate
+			// When the action is finished, if the affected controls are modified, the evaluation will be done anyway
+			return oPlugin.isBusy && oPlugin.isBusy();
+		});
+		if (bSkipEvaluation){
+			return;
+		}
 		var vEditable;
 		aOverlays.forEach(function(oOverlay) {
-			var oElement = oOverlay.getElement();
-			if (oElement && OverlayUtil.isInAggregationBinding(oOverlay, oElement.sParentAggregationName)) {
+			var bIsInAggregationBinding = false;
+			var aStableElements = oOverlay.getDesignTimeMetadata().getStableElements(oOverlay);
+
+			// for controls that don't return a ManagedObject, like for example the SmartLink, we skip this check
+			if (aStableElements[0] instanceof ManagedObject) {
+				bIsInAggregationBinding = _isInAggregationBinding(aStableElements);
+			}
+
+			if (bIsInAggregationBinding) {
 				vEditable = false;
 			} else {
 				// when a control gets destroyed it gets deregistered before it gets removed from the parent aggregation.
 				// this means that getElementInstance is undefined when we get here via removeAggregation mutation
 				// when an overlay is not registered yet, we should not evaluate editable. In this case getDesignTimeMetadata returns null.
-				vEditable = oElement && oOverlay.getDesignTimeMetadata() && this._isEditable(oOverlay, mPropertyBag);
+				vEditable = oOverlay.getElement() && oOverlay.getDesignTimeMetadata() && this._isEditable(oOverlay, mPropertyBag);
 			}
 			// for the createContainer and additionalElements plugin the isEditable function returns an object with 2 properties, asChild and asSibling.
 			// for every other plugin isEditable should be a boolean.
@@ -157,8 +184,8 @@ function(
 				if (typeof vEditable === "boolean") {
 					this._modifyPluginList(oOverlay, vEditable);
 				} else {
-					this._modifyPluginList(oOverlay, vEditable["asChild"], false);
-					this._modifyPluginList(oOverlay, vEditable["asSibling"], true);
+					this._modifyPluginList(oOverlay, vEditable.asChild, false);
+					this._modifyPluginList(oOverlay, vEditable.asSibling, true);
 				}
 			}
 		}.bind(this));
@@ -215,24 +242,14 @@ function(
 		}
 
 		if (oOverlay.getElementHasStableId() === undefined){
-			var bStable = false;
-			var oElement = oOverlay.getElement();
-			var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
-			var fnGetStableElements = oDesignTimeMetadata && oDesignTimeMetadata.getData().getStableElements;
-			if (fnGetStableElements){
-				var aStableElements = fnGetStableElements(oElement);
-				var bUnstable = aStableElements ? aStableElements.some(function(vStableElement) {
-					var oControl = vStableElement.id || vStableElement;
-					if (!FlexUtils.checkControlId(oControl, vStableElement.appComponent)) {
-						return true;
-					}
-				}) : true;
-				bStable = !bUnstable;
-			} else {
-				bStable = FlexUtils.checkControlId(oElement);
-			}
-
-			oOverlay.setElementHasStableId(bStable);
+			var aStableElements = oOverlay.getDesignTimeMetadata().getStableElements(oOverlay);
+			var bUnstable = aStableElements.length > 0 ? aStableElements.some(function(vStableElement) {
+				var oControl = vStableElement.id || vStableElement;
+				if (!FlexUtils.checkControlId(oControl, vStableElement.appComponent)) {
+					return true;
+				}
+			}) : true;
+			oOverlay.setElementHasStableId(!bUnstable);
 		}
 		return oOverlay.hasElementStableId();
 	};
@@ -266,7 +283,6 @@ function(
 
 	/**
 	 * Checks the Aggregations on the Overlay for a specific Action
-	 * @name sap.ui.rta.plugin.Plugin.prototype.checkAggregationsOnSelf
 	 * @param {sap.ui.dt.ElementOverlay} oOverlay overlay to be checked for action
 	 * @param {string} sAction action to be checked
 	 * @return {boolean} whether the Aggregation has a valid Action
@@ -282,6 +298,10 @@ function(
 		var bChangeOnRelevantContainer = oAction && oAction.changeOnRelevantContainer;
 		if (bChangeOnRelevantContainer) {
 			oElement = oOverlay.getRelevantContainer();
+			var oRelevantOverlay = OverlayRegistry.getOverlay(oElement);
+			if (!this.hasStableId(oRelevantOverlay)){
+				return false;
+			}
 		}
 
 		if (sChangeType && this.hasChangeHandler(sChangeType, oElement)) {
@@ -318,6 +338,17 @@ function(
 		}
 		var sLayer = this.getCommandFactory().getFlexSettings().layer;
 		return ChangeRegistry.getInstance().getChangeHandler(sChangeType, sControlType, oElement, JsControlTreeModifier, sLayer);
+	};
+
+	BasePlugin.prototype._checkRelevantContainerStableID = function(oAction, oElementOverlay){
+		if (oAction.changeOnRelevantContainer) {
+			var oRelevantContainer = oElementOverlay.getRelevantContainer();
+			var oRelevantOverlay = OverlayRegistry.getOverlay(oRelevantContainer);
+			if (!this.hasStableId(oRelevantOverlay)){
+				return false;
+			}
+		}
+		return true;
 	};
 
 	return BasePlugin;

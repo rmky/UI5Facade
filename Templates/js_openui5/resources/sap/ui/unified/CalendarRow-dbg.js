@@ -64,7 +64,7 @@ sap.ui.define([
 	 * @class
 	 * A calendar row with a header and appointments. The Appointments will be placed in the defined interval.
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -213,9 +213,7 @@ sap.ui.define([
 			 */
 			intervalHeaders : {type : "sap.ui.unified.CalendarAppointment", multiple : true, singularName : "intervalHeader"},
 
-			groupAppointments : {type : "sap.ui.unified.CalendarAppointment", multiple : true, singularName : "groupAppointment", visibility : "hidden"},
-
-			_nonWorkingDates : {type : "sap.ui.unified.DateRange", multiple : true, visibility : "hidden"}
+			groupAppointments : {type : "sap.ui.unified.CalendarAppointment", multiple : true, singularName : "groupAppointment", visibility : "hidden"}
 
 		},
 		associations: {
@@ -308,18 +306,6 @@ sap.ui.define([
 			}
 		}
 	}});
-
-	/**
-	 * Used to link the items (DateRange) in aggregation _nonWorkingDates to any PlanningCalendarRow _nonWorkingDates
-	 * @private
-	 */
-	CalendarRow.PCROW_FOREIGN_KEY_NAME = "relatedToPCRowDateRange";
-
-	/**
-	 * Holds the name of the aggregation corresponding to non working dates
-	 * @private
-	 */
-	CalendarRow.AGGR_NONWORKING_DATES_NAME = "_nonWorkingDates";
 
 	CalendarRow.prototype.init = function(){
 
@@ -895,6 +881,7 @@ sap.ui.define([
 	*/
 	CalendarRow.prototype._setCustomAppointmentsSorterCallback = function(fnSorter) {
 		this._fnCustomSortedAppointments = fnSorter;
+		this.invalidate();
 	};
 
 	function _getLocale(){
@@ -1024,8 +1011,6 @@ sap.ui.define([
 	 */
 	function _determineVisibleAppointments() {
 
-		// only use appointments in visible time frame for rendering
-		var aOldVisibleAppointments = this._aVisibleAppointments || [];
 		var aAppointments = this._getAppointmentsSorted();
 		var oAppointment;
 		var oGroupAppointment;
@@ -1101,14 +1086,6 @@ sap.ui.define([
 
 				iBegin = _calculateBegin.call(this, sIntervalType, iIntervals, oStartDate, oEndDate, iStartTime, oAppointmentStartDate);
 				iEnd = _calculateEnd.call(this, sIntervalType, iIntervals, oStartDate, oEndDate, iStartTime, oAppointmentEndDate);
-
-				// check if displayed before -> keep level
-				for (j = 0; j < aOldVisibleAppointments.length; j++) {
-					var oOldAppointment = aOldVisibleAppointments[j];
-					if (oAppointment == oOldAppointment.appointment) {
-						iLevel = oOldAppointment.level;
-					}
-				}
 
 				if (oGroupAppointment) {
 					oGroupAppointment._iBegin = iBegin;

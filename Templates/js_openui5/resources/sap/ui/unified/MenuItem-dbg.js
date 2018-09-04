@@ -23,7 +23,7 @@ sap.ui.define(['sap/ui/core/IconPool', './MenuItemBase', './library'],
 	 * @extends sap.ui.unified.MenuItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -48,7 +48,7 @@ sap.ui.define(['sap/ui/core/IconPool', './MenuItemBase', './library'],
 		}
 	}});
 
-	IconPool.getIconInfo("", ""); //Ensure Icon Font is loaded
+	IconPool.insertFontFaceStyle(); //Ensure Icon Font is loaded
 
 	MenuItem.prototype.render = function(oRenderManager, oItem, oMenu, oInfo){
 		var rm = oRenderManager;

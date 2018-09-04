@@ -17,6 +17,7 @@ sap.ui.define(['sap/ui/core/Locale', 'sap/ui/core/LocaleData'],
 	 * to a set of format options.
 	 *
 	 * @public
+	 * @hideconstructor
 	 * @alias sap.ui.core.format.ListFormat
 	 */
 	var ListFormat = function() {

@@ -5,8 +5,16 @@
  */
 
 // Provides base class sap.ui.core.Component for all components
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', './ComponentMetadata', './Core', 'sap/ui/thirdparty/URI', 'jquery.sap.trace'],
-	function(jQuery, ManagedObject, Manifest, ComponentMetadata, Core, URI /*, jQuery*/) {
+sap.ui.define([
+	'jquery.sap.global',
+	'./Manifest',
+	'./ComponentMetadata',
+	'./Core',
+	'sap/base/util/extend',
+	'sap/ui/base/ManagedObject',
+	'sap/ui/thirdparty/URI',
+	'jquery.sap.trace'
+], function(jQuery, Manifest, ComponentMetadata, Core, extend, ManagedObject, URI /*, jQuery*/) {
 	"use strict";
 
 	/*global Promise */
@@ -188,7 +196,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	 * @extends sap.ui.base.ManagedObject
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @alias sap.ui.core.Component
 	 * @since 1.9.2
 	 */
@@ -528,8 +536,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	 * @since 1.25.1
 	 */
 	Component.getOwnerComponentFor = function(oObject) {
-		var sOwnerId = Component.getOwnerIdFor(oObject);
-		return sOwnerId && sap.ui.component(sOwnerId);
+		return Component.get(Component.getOwnerIdFor(oObject));
 	};
 
 	/**
@@ -836,7 +843,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 					var oServiceManifestEntry = this.getManifestEntry("/sap.ui5/services/" + sLocalServiceAlias);
 
 					// lookup the factoryName in the manifest
-					var sServiceFactoryName = oServiceManifestEntry.factoryName;
+					var sServiceFactoryName = oServiceManifestEntry && oServiceManifestEntry.factoryName;
 					if (!sServiceFactoryName) {
 						fnReject(new Error("Service " + sLocalServiceAlias + " not declared!"));
 						return;
@@ -1003,7 +1010,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 		}
 		// create the nested component in the context of this component
 		return this.runAsOwner(function() {
-			return sap.ui.component(mConfig);
+			if ( mConfig.async === true ) {
+				return Component.create(mConfig);
+			} else {
+				// use deprecated factory for sync use case only
+				return sap.ui.component(mConfig);
+			}
 		});
 	};
 
@@ -1551,6 +1563,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 				oModelConfig.settings.annotationURI = aOriginAnnotations;
 			}
 
+			// resolve the bundleUrl of the enhancing resource bundle relative to
+			// the component (default) or relative to manifest, e.g.:
+			// bundleUrlRelativeTo: 'component|manifest'
+			if (oModelConfig.type === 'sap.ui.model.resource.ResourceModel' &&
+				oModelConfig.settings &&
+				Array.isArray(oModelConfig.settings.enhanceWith)) {
+				/* eslint-disable no-loop-func */
+				oModelConfig.settings.enhanceWith.forEach(function(mBundle) {
+					if (mBundle.bundleUrl) {
+						mBundle.bundleUrl = oManifest.resolveUri(new URI(mBundle.bundleUrl), mBundle.bundleUrlRelativeTo).toString();
+					}
+				});
+				/* eslint-enable no-loop-func */
+			}
+
 			// normalize settings object to array
 			if (oModelConfig.settings && !Array.isArray(oModelConfig.settings)) {
 				oModelConfig.settings = [ oModelConfig.settings ];
@@ -1611,7 +1638,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 
 	/**
 	 * Returns two maps of model configurations to be used for the model "preload" feature.
-	 * Used within sap.ui.component.load to create models during component load.
+	 * Used within loadComponent to create models during component load.
 	 *
 	 * "afterManifest"
 	 * Models that are activated for preload via "preload=true" or URI parameter.
@@ -1813,6 +1840,96 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	Component._fnOnInstanceCreated = null;
 
 	/**
+	 * Asynchronously creates a new component instance from the given configuration.
+	 *
+	 * To optimize the loading process, additional <code>asyncHints</code> can be provided. The structure of
+	 * these hints and how they impact the loading of components is an internal feature of this API and reserved
+	 * for UI5 internal use only. Code that wants to be safe wrt. version updates, should not use the
+	 * <code>asyncHints</code> property.
+	 *
+	 * If Components and/or libraries are listed in the <code>asyncHints</code>, all the corresponding preload
+	 * files will be requested in parallel, loading errors (404s) will be ignored. The constructor class will
+	 * only be required after all preloads have been rejected or resolved. Only then, the new instance will
+	 * be created.
+	 *
+	 * @example
+	 *
+	 *   Component.create({
+	 *     name: "my.comp",
+	 *     url: "find/my/comp/here",
+	 *     id: "myCompId1"
+	 *   }).then(function(oComponent) {
+	 *     ...
+	 *   });
+	 *
+	 * @param {object} mOptions Configuration options
+	 * @param {string} mOptions.name Name of the component to load, this is the dot-separated name of the package
+	 *     that contains the Component.js module;
+	 *     Even when an alternative location is specified from which the manifest should be loaded
+	 *     (<code>mOptions.manifest</code> is set to a non-empty string), then the name specified in that
+	 *     manifest will be ignored and this name will be used instead to determine the module to be loaded.
+	 * @param {string} [mOptions.url] Alternative location from where to load the Component. If <code>mOptions.manifest</code>
+	 *     is set to a non-empty string, this URL specifies the location of the final component defined via that
+	 *     manifest, otherwise it specifies the location of the component defined via its name <code>mOptions.name</code>.
+	 * @param {object} [mOptions.componentData] Initial data of the Component, see {@link sap.ui.core.Component#getComponentData}.
+	 * @param {sap.ui.core.ID} [mOptions.id] ID of the new Component
+	 * @param {object} [mOptions.settings] Settings of the new Component
+	 * @param {boolean|string|object} [mOptions.manifest=true] Whether and from where to load the manifest.json for the Component.
+	 *     When set to any truthy value, the manifest will be loaded and evaluated before the Component controller.
+	 *     If it is set to a falsy value, the manifest will not be evaluated before the controller. It might still be loaded synchronously
+	 *     if declared in the Component metadata.
+	 *     A non-empty string value will be interpreted as the URL to load the manifest from.
+	 *     A non-null object value will be interpreted as manifest content.
+	 * @param {string} [mOptions.handleValidation=false] If set to <code>true</code> validation of the component is handled by the <code>MessageManager</code>
+	 * @param {object} [mOptions.asyncHints] Hints for asynchronous loading
+	 * @param {string[]|object[]} [mOptions.asyncHints.components] a list of components needed by the current component and its subcomponents
+	 *     The framework will try to preload these components (their Component-preload.js) asynchronously, errors will be ignored.
+	 *     Please note that the framework has no knowledge about whether a Component provides a preload file or whether it is bundled
+	 *     in some library preload. If Components are listed in the hints section, they will be preloaded.
+	 *     Instead of specifying just the names of components, an object might be given that contains a
+	 *     mandatory <code>name</code> property and optionally, an <code>url</code> that will be used for a <code>registerModulePath</code>,
+	 *     and/or a <code>lazy</code> property. When <code>lazy</code> is set to a truthy value, only a necessary <code>registerModulePath</code>
+	 *     will be executed, but the corresponding component won't be preloaded.
+	 * @param {string[]|object[]} [mOptions.asyncHints.libs] libraries needed by the Component and its subcomponents
+	 *     These libraries should be (pre-)loaded before the Component.
+	 *     The framework will asynchronously load those libraries, if they're not loaded yet.
+	 *     Instead of specifying just the names of libraries, an object might be given that contains a
+	 *     mandatory <code>name</code> property and optionally, an <code>url</code> that will be used for a <code>registerModulePath</code>,
+	 *     and/or a <code>lazy</code> property. When <code>lazy</code> is set to a truthy value, only a necessary <code>registerModulePath</code>
+	 *     will be executed, but the corresponding library won't be preloaded.
+	 * @param {string[]|object[]} [mOptions.asyncHints.preloadBundles] a list of additional preload bundles
+	 *     The framework will try to load these bundles asynchronously before requiring the Component, errors will be ignored.
+	 *     The named modules must only represent preload bundles. If they are normal modules, their dependencies
+	 *     will be loaded with the normal synchronous request mechanism and performance might degrade.
+	 *     Instead of specifying just the names of components, an object might be given that contains a
+	 *     mandatory <code>name</code> property and optionally, an <code>url</code> that will be used for a <code>registerModulePath</code>.
+	 * @param {Promise|Promise[]} [mOptions.asyncHints.waitFor] <code>Promise</code> or array of <code>Promise</code>s for which the Component instantiation should wait
+	 * @returns {Promise<sap.ui.core.Component>} A Promise that resolves with the newly created component instance
+	 * @throws {TypeError} When <code>mOptions</code> is null or not an object.
+	 * @since 1.56.0
+	 * @static
+	 * @public
+	 * @experimental Since 1.56.0. Support for <code>asyncHints</code> is still experimental and might be modified or removed completely again.
+	 *   It must not be used in productive code, except in code delivered by the UI5 teams.
+	 */
+	Component.create = function(mOptions) {
+		if (mOptions == null || typeof mOptions !== "object") {
+			throw new TypeError("Component.create() must be called with a configuration object.");
+		}
+
+		var mParameters = extend(true, {}, mOptions);
+		mParameters.async = true;
+
+		// if no manifest option is given, the default is true
+		// Note: this intentionally prevents the use of the legacy options manifestUrl and manifestFirst
+		if (mParameters.manifest === undefined) {
+			mParameters.manifest = true;
+		}
+
+		return componentFactory(mParameters);
+	};
+
+	/**
 	 * Creates a new instance of a <code>Component</code> or returns the instance
 	 * of an existing <code>Component</code>.
 	 *
@@ -1834,10 +1951,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	 *
 	 * @param {string|object} vConfig ID of an existing Component or the configuration object to create the Component
 	 * @param {string} vConfig.name Name of the Component to load, as a dot-separated name;
-	 *              Even when an alternate location is specified from which the manifest should be loaded (e.g.
+	 *              Even when an alternative location is specified from which the manifest should be loaded (e.g.
 	 *              <code>vConfig.manifest</code> is set to a non-empty string), then the name specified in that
 	 *              manifest will be ignored and this name will be used instead to determine the module to be loaded.
-	 * @param {string} [vConfig.url] Alternate location from where to load the Component. If a <code>manifestUrl</code> is given, this URL specifies the location of the final component defined via that manifest, otherwise it specifies the location of the component defined via its name <code>vConfig.name</code>.
+	 * @param {string} [vConfig.url] Alternative location from where to load the Component. If a <code>manifestUrl</code> is given, this URL specifies the location of the final component defined via that manifest, otherwise it specifies the location of the component defined via its name <code>vConfig.name</code>.
 	 * @param {object} [vConfig.componentData] Initial data of the Component (@see sap.ui.core.Component#getComponentData)
 	 * @param {string} [vConfig.id] sId of the new Component
 	 * @param {object} [vConfig.settings] Settings of the new Component
@@ -1862,30 +1979,42 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	 *              <br/><b>DEPRECATED since 1.49.0, use <code>vConfig.manifest=true|false</code> instead!</b>
 	 *              Note that this property is ignored when <code>vConfig.manifest</code> has a value other than <code>undefined</code>.
 	 * @param {string} [vConfig.handleValidation=false] If set to <code>true</code> validation of the component is handled by the <code>MessageManager</code>
-	 * @return {sap.ui.core.Component|Promise} the Component instance or a Promise in case of asynchronous loading
+	 * @returns {sap.ui.core.Component|Promise} the Component instance or a Promise in case of asynchronous loading
 	 *
+	 * @deprecated Since 1.56, use {@link #.get Component.get} or {@link #.create Component.create} instead.
+	 *   Note: {@link #.create Component.create} does not support synchronous loading or the deprecated options <code>manifestFirst</code> and <code>manifestUrl</code>.
 	 * @public
 	 * @static
 	 * @since 1.15.0
-	 * @experimental Since 1.27.0. Support for asyncHints is still experimental and might be modified or removed completely again.
+	 * @experimental Since 1.27.0. Support for <code>asyncHints</code> is still experimental and might be modified or removed completely again.
 	 *   It must not be used in productive code, except in code delivered by the UI5 teams. The synchronous usage of the API is
 	 *   not experimental and can be used without restrictions.
 	 */
 	sap.ui.component = function(vConfig) {
-
 		// a parameter must be given!
 		if (!vConfig) {
 			throw new Error("sap.ui.component cannot be called without parameter!");
 		}
 
-		// when only a string is given then this function behaves like a
-		// getter and returns an existing component instance
 		if (typeof vConfig === 'string') {
-
-			// lookup and return the component
+			jQuery.sap.log.warning("Do not use deprecated function 'sap.ui.component' for Component instance lookup. Use 'Component.get' instead");
+			// when only a string is given then this function behaves like a
+			// getter and returns an existing component instance
 			return sap.ui.getCore().getComponent(vConfig);
-
 		}
+
+		if (vConfig.async) {
+			jQuery.sap.log.info("Do not use deprecated factory function 'sap.ui.component'. Use 'Component.create' instead");
+		} else {
+			jQuery.sap.log.warning("Do not use synchronous component creation! Use the new asynchronous factory 'Component.create' instead");
+		}
+		return componentFactory(vConfig);
+	};
+
+	/*
+	 * Part of the old sap.ui.component implementation than can be re-used by the new factory
+	 */
+	function componentFactory(vConfig) {
 
 		function createInstance(oClass) {
 
@@ -1958,12 +2087,107 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 			// sync: constructor has been returned, instantiate component immediately
 			return createInstance(vClassOrPromise);
 		}
+	}
+
+	/**
+	 * Asynchronously loads a component class without instantiating it; returns a promise on the loaded class.
+	 *
+	 * Beware: "Asynchronous component loading" doesn't necessarily mean that no more synchronous loading
+	 * occurs. Both the framework as well as component implementations might still execute synchronous
+	 * requests. <code>Component.load</code> just allows to use async calls internally.
+	 *
+	 * When a manifest is referenced in <code>mOptions</code>, this manifest is not automatically used
+	 * for instances of the Component class that are created after loading. The manifest or the manifest url
+	 * must be provided for every instance explicitly.
+	 *
+	 * To optimize the loading process, additional <code>asyncHints</code> can be provided.
+	 * If components and/or libraries are listed in the <code>asyncHints</code>, all the corresponding preload
+	 * files will be requested in parallel, loading errors (404s) will be ignored. The constructor class will
+	 * only be required after all preloads have been rejected or resolved.
+	 * The structure of the hints and how they impact the loading of components is an internal feature
+	 * of this API and reserved for UI5 internal use only. Code that wants to be safe wrt. version updates,
+	 * should not use the <code>asyncHints</code> property.
+	 *
+	 * @param {object} mOptions Configuration options
+	 * @param {string} mOptions.name Name of the Component to load, as a dot-separated name;
+	 *     Even when an alternative location is specified from which the manifest should be loaded
+	 *     (<code>mOptions.manifest</code> is set to a non-empty string), then the name specified in that
+	 *     manifest will be ignored and this name will be used instead to determine the module to be loaded.
+	 * @param {string} [mOptions.url] Alternative location from where to load the Component. If <code>mOptions.manifest</code>
+	 *     is set to a non-empty string, this URL specifies the location of the final component defined via that
+	 *     manifest, otherwise it specifies the location of the component defined via its name <code>mOptions.name</code>.
+	 * @param {boolean|string|object} [mOptions.manifest=true] Whether and from where to load the manifest.json for the Component.
+	 *     When set to any truthy value, the manifest will be loaded and evaluated before the Component controller.
+	 *     If it is set to a falsy value, the manifest will not be evaluated before the controller. It might still be loaded synchronously
+	 *     if declared in the Component metadata.
+	 *     A non-empty string value will be interpreted as the URL to load the manifest from.
+	 *     A non-null object value will be interpreted as manifest content.
+	 * @param {object} [mOptions.asyncHints] Hints for asynchronous loading
+	 * @param {string[]|object[]} [mOptions.asyncHints.components] a list of components needed by the current component and its subcomponents
+	 *     The framework will try to preload these components (their Component-preload.js) asynchronously, errors will be ignored.
+	 *     Please note that the framework has no knowledge about whether a Component provides a preload file or whether it is bundled
+	 *     in some library preload. If Components are listed in the hints section, they will be preloaded.
+	 *     Instead of specifying just the names of components, an object might be given that contains a
+	 *     mandatory <code>name</code> property and optionally, an <code>url</code> that will be used for a <code>registerModulePath</code>,
+	 *     and/or a <code>lazy</code> property. When <code>lazy</code> is set to a truthy value, only a necessary <code>registerModulePath</code>
+	 *     will be executed, but the corresponding component won't be preloaded.
+	 * @param {string[]|object[]} [mOptions.asyncHints.libs] libraries needed by the Component and its subcomponents
+	 *     These libraries should be (pre-)loaded before the Component.
+	 *     The framework will asynchronously load those libraries, if they're not loaded yet.
+	 *     Instead of specifying just the names of libraries, an object might be given that contains a
+	 *     mandatory <code>name</code> property and optionally, an <code>url</code> that will be used for a <code>registerModulePath</code>,
+	 *     and/or a <code>lazy</code> property. When <code>lazy</code> is set to a truthy value, only a necessary <code>registerModulePath</code>
+	 *     will be executed, but the corresponding library won't be preloaded.
+	 * @param {string[]|object[]} [mOptions.asyncHints.preloadBundles] a list of additional preload bundles
+	 *     The framework will try to load these bundles asynchronously before requiring the component, errors will be ignored.
+	 *     The named modules must only represent preload bundles. If they are normal modules, their dependencies
+	 *     will be loaded with the standard module loading mechanism and performance might degrade.
+	 *     Instead of specifying just the names of components, an object might be given that contains a
+	 *     mandatory <code>name</code> property and, optionally, a <code>url</code> that will be used for a <code>registerModulePath</code>.
+	 * @param {boolean} [mOptions.asyncHints.preloadOnly=false] Whether only the preloads should be done, but not the loading of the Component controller class itself.
+	 * @returns {Promise<function>} A Promise that resolves with the loaded component class or <code>undefined</code> in case
+	 *      <code>mOptions.asyncHints.preloadOnly</code> is set to <code>true</code>
+	 *
+	 * @since 1.56.0
+	 * @static
+	 * @public
+	 * @experimental Since 1.56.0. Support for <code>asyncHints</code> is still experimental and might be modified or removed completely again.
+	 *   It must not be used in productive code, except in code delivered by the UI5 teams.
+	 */
+	Component.load = function (mOptions) {
+
+		var mParameters = extend(true, {}, mOptions);
+		mParameters.async = true;
+
+		// if no manifest option is given, the default is true
+		if (mParameters.manifest === undefined) {
+			mParameters.manifest = true;
+		}
+
+		return loadComponent(mParameters, {
+			preloadOnly: mParameters.asyncHints && mParameters.asyncHints.preloadOnly
+		});
 	};
 
 	/**
-	 * Load a Component without instantiating it.
+	 * Returns an existing component instance, identified by its ID.
 	 *
-	 * Provides support for loading Components asynchronously by setting
+	 * @param {string} sId ID of the component.
+	 * @returns {sap.ui.core.Component} Component instance or <code>undefined</code> when no component
+	 *     with the given ID exists.
+	 * @since 1.56.0
+	 * @static
+	 * @public
+	 */
+	Component.get = function (sId) {
+		// lookup and return the component
+		return sap.ui.getCore().getComponent(sId);
+	};
+
+	/**
+	 * Load a component without instantiating it.
+	 *
+	 * Provides support for loading components asynchronously by setting
 	 * <code>oConfig.async</code> to true. In that case, the method returns a JavaScript 6
 	 * Promise that will be fulfilled with the component class after loading.
 	 *
@@ -2002,11 +2226,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	 * instead of a simple name, but there only the <code>url</code> property is supported, not the <code>lazy</code> property.
 	 *
 	 * Note: so far, only the requests for the preload files (library and/or component) are executed asynchronously.
-	 * If a preload is deactivated by configuration (e.g. debug mode), then requests won't be asynchronous.
+	 * If a preload is deactivated by configuration (e.g. debug mode), then remaining requests still might be synchronous.
 	 *
 	 * @param {object} oConfig Configuration object describing the Component to be loaded. See {@link sap.ui.component} for more information.
-	 * @return {function|Promise} the constructor of the Component class or a Promise that will be fulfilled with the same
+	 * @returns {function|Promise} Constructor of the component class or a Promise that will be fulfilled with the same
 	 *
+	 * @deprecated since 1.56, use {@link sap.ui.core.Component.load}
 	 * @since 1.16.3
 	 * @static
 	 * @public
@@ -2015,6 +2240,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	 *   not experimental and can be used without restrictions.
 	 */
 	sap.ui.component.load = function(oConfig, bFailOnError) {
+		jQuery.sap.log.warning("Do not use deprecated function 'sap.ui.component.load'! Use 'Component.load' instead");
 		return loadComponent(oConfig, {
 			failOnError: bFailOnError,
 			preloadOnly: oConfig.asyncHints && oConfig.asyncHints.preloadOnly
@@ -2030,7 +2256,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 	 * @param {boolean} mOptions.createModels whether models from manifest should be created during
 	 *                                        component preload (should only be set via <code>sap.ui.component</code>)
 	 * @param {boolean} mOptions.preloadOnly see <code>sap.ui.component.load</code> (<code>vConfig.asyncHints.preloadOnly</code>)
-	 * @param {Promise|Promise[]} mOptions.waitFor see <code>sap.ui.component.load</code> (<code>vConfig.asyncHints.waitFor</code>)
+	 * @param {Promise|Promise[]} mOptions.waitFor see <code>sap.ui.component</code> (<code>vConfig.asyncHints.waitFor</code>)
 	 * @return {function|Promise} the constructor of the Component class or a Promise that will be fulfilled with the same
 	 *
 	 * @private
@@ -2264,15 +2490,35 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject', './Manifest', '
 				fnCollect(preload(sExtendedComponent, bAsync));
 			}
 
-			// lookup the components and preload them
+			// lookup the non-lazy components from component dependencies
+			var aComponents = [];
 			var mComponents = oManifest.getEntry("/sap.ui5/dependencies/components");
 			if (mComponents) {
 				for (var sComponentName in mComponents) {
 					// filter the lazy components
 					if (!mComponents[sComponentName].lazy) {
-						fnCollect(preload(sComponentName, bAsync));
+						aComponents.push(sComponentName);
 					}
 				}
+			}
+
+			// lookup the non-lazy components from component usages
+			var mUsages = oManifest.getEntry("/sap.ui5/componentUsages");
+			if (mUsages) {
+				// filter the lazy usages
+				for (var sUsage in mUsages) {
+					// default value is true, so explicit check for false
+					if (mUsages[sUsage].lazy === false && aComponents.indexOf(mUsages[sUsage].name) === -1) {
+						aComponents.push(mUsages[sUsage].name);
+					}
+				}
+			}
+
+			// preload the collected components
+			if (aComponents.length > 0) {
+				aComponents.forEach(function(sComponentName) {
+					fnCollect(preload(sComponentName, bAsync));
+				});
 			}
 
 			return bAsync ? Promise.all(aPromises) : undefined;

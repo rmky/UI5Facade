@@ -53,12 +53,13 @@ function(
 		 *
 		 * <b>Note:</b> The control must only be used in the context of a list.
 		 * @extends sap.m.ListItemBase
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
 		 * @since 1.12
 		 * @alias sap.m.ObjectListItem
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/object-list-item/ Object List Item}
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		var ObjectListItem = ListItemBase.extend("sap.m.ObjectListItem", /** @lends sap.m.ObjectListItem.prototype */ { metadata : {
@@ -287,24 +288,6 @@ function(
 		ObjectListItem.prototype._hasBottomContent = function() {
 
 			return (this._hasAttributes() || this._hasStatus() || this.getShowMarkers() || this.getMarkLocked() || this.getMarkers().length > 0);
-		};
-
-		/**
-		 * @private
-		 * @returns {Array} The visible attributes of the control
-		 */
-		ObjectListItem.prototype._getVisibleAttributes = function() {
-
-			var aAllAttributes = this.getAttributes();
-			var aVisibleAttributes = [];
-
-			for (var i = 0; i < aAllAttributes.length; i++) {
-				if (aAllAttributes[i].getVisible()) {
-					aVisibleAttributes.push(aAllAttributes[i]);
-				}
-			}
-
-			return aVisibleAttributes;
 		};
 
 		/**

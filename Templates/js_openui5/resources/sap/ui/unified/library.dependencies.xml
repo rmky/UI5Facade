@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.unified">
-  <module name="sap/ui/unified/Calendar.js" size="65983" compressedSize="31488">
+  <module name="sap/ui/unified/Calendar.js" size="73987" compressedSize="35497">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -11,6 +11,7 @@
       <module name="sap/ui/core/ResizeHandler.js"/>
       <module name="sap/ui/core/format/DateFormat.js"/>
       <module name="sap/ui/unified/CalendarRenderer.js"/>
+      <module name="sap/ui/unified/DateRange.js"/>
       <module name="sap/ui/unified/calendar/CalendarDate.js"/>
       <module name="sap/ui/unified/calendar/CalendarUtils.js"/>
       <module name="sap/ui/unified/calendar/Header.js"/>
@@ -31,7 +32,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/CalendarDateInterval.js" size="28964" compressedSize="14093">
+  <module name="sap/ui/unified/CalendarDateInterval.js" size="31021" compressedSize="14526">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -82,7 +83,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/CalendarMonthInterval.js" size="42516" compressedSize="20555">
+  <module name="sap/ui/unified/CalendarMonthInterval.js" size="42586" compressedSize="20614">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -110,7 +111,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/CalendarOneMonthInterval.js" size="13080" compressedSize="4429">
+  <module name="sap/ui/unified/CalendarOneMonthInterval.js" size="13151" compressedSize="4488">
     <description>Provides control sap.ui.unified.CalendarOneMonthInterval.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -135,13 +136,13 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/CalendarRenderer.js" size="3216" compressedSize="1798">
+  <module name="sap/ui/unified/CalendarRenderer.js" size="3361" compressedSize="1879">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/CalendarRow.js" size="64112" compressedSize="25313">
+  <module name="sap/ui/unified/CalendarRow.js" size="63272" compressedSize="25036">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -159,7 +160,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/CalendarRowRenderer.js" size="25259" compressedSize="12346">
+  <module name="sap/ui/unified/CalendarRowRenderer.js" size="24657" compressedSize="11924">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -172,7 +173,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/CalendarTimeInterval.js" size="64283" compressedSize="33653">
+  <module name="sap/ui/unified/CalendarTimeInterval.js" size="64353" compressedSize="33712">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -201,7 +202,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/CalendarWeekInterval.js" size="7623" compressedSize="2340">
+  <module name="sap/ui/unified/CalendarWeekInterval.js" size="8368" compressedSize="2573">
     <description>Provides control sap.ui.unified.CalendarWeekInterval.</description>
     <requires>
       <module name="sap/ui/unified/CalendarDateInterval.js"/>
@@ -291,7 +292,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/FileUploader.js" size="57054" compressedSize="22956">
+  <module name="sap/ui/unified/FileUploader.js" size="57476" compressedSize="23000">
     <description>Provides control sap.ui.unified.FileUploader.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -329,7 +330,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/Menu.js" size="41667" compressedSize="18985">
+  <module name="sap/ui/unified/Menu.js" size="42151" compressedSize="19086">
     <description>Provides control sap.ui.unified.Menu.</description>
     <requires>
       <module name="jquery.sap.events.js"/>
@@ -347,7 +348,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/MenuItem.js" size="3727" compressedSize="1890">
+  <module name="sap/ui/unified/MenuItem.js" size="3729" compressedSize="1893">
     <description>Provides control sap.ui.unified.MenuItem.</description>
     <requires>
       <module name="sap/ui/core/IconPool.js"/>
@@ -370,7 +371,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/MenuTextFieldItem.js" size="10345" compressedSize="5156">
+  <module name="sap/ui/unified/MenuTextFieldItem.js" size="10405" compressedSize="5156">
     <description>Provides control sap.ui.unified.MenuTextFieldItem.</description>
     <requires>
       <module name="jquery.sap.events.js"/>
@@ -393,9 +394,10 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/ShellHeadItem.js" size="6230" compressedSize="2805">
+  <module name="sap/ui/unified/ShellHeadItem.js" size="6272" compressedSize="2826">
     <description>Provides control sap.ui.unified.ShellHeadItem.</description>
     <requires>
+      <module name="jquery.sap.encoder.js"/>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/core/IconPool.js"/>
@@ -403,9 +405,10 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/ShellHeadUserItem.js" size="4472" compressedSize="1942">
+  <module name="sap/ui/unified/ShellHeadUserItem.js" size="4516" compressedSize="1966">
     <description>Provides control sap.ui.unified.ShellHeadUserItem.</description>
     <requires>
+      <module name="jquery.sap.encoder.js"/>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/core/IconPool.js"/>
@@ -413,18 +416,18 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/ShellHeader.js" size="7924" compressedSize="5750">
+  <module name="sap/ui/unified/ShellHeader.js" size="7893" compressedSize="5708">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/core/Control.js"/>
-      <module name="sap/ui/core/theming/Parameters.js" conditional="true"/>
+      <module name="sap/ui/core/theming/Parameters.js"/>
       <module name="sap/ui/unified/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/ShellLayout.js" size="17422" compressedSize="10718">
+  <module name="sap/ui/unified/ShellLayout.js" size="17425" compressedSize="10718">
     <description>Provides control sap.ui.unified.ShellLayout.</description>
     <requires>
       <module name="jquery.sap.dom.js"/>
@@ -446,14 +449,16 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/ShellOverlay.js" size="10573" compressedSize="6395">
+  <module name="sap/ui/unified/ShellOverlay.js" size="10628" compressedSize="6405">
     <description>Provides control sap.ui.unified.ShellOverlay.</description>
     <requires>
+      <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.global.js"/>
       <module name="jquery.sap.script.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Popup.js"/>
+      <module name="sap/ui/core/theming/Parameters.js"/>
       <module name="sap/ui/unified/ShellOverlayRenderer.js"/>
       <module name="sap/ui/unified/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
@@ -473,10 +478,11 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/SplitContainer.js" size="12098" compressedSize="5352">
+  <module name="sap/ui/unified/SplitContainer.js" size="12140" compressedSize="5372">
     <description>Provides control sap.ui.unified.SplitContainer.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
+      <module name="jquery.sap.script.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/core/theming/Parameters.js"/>
@@ -511,7 +517,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/calendar/DatesRow.js" size="10837" compressedSize="4248">
+  <module name="sap/ui/unified/calendar/DatesRow.js" size="10697" compressedSize="4248">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -532,7 +538,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/calendar/Header.js" size="7701" compressedSize="3818">
+  <module name="sap/ui/unified/calendar/Header.js" size="12744" compressedSize="5896">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -542,14 +548,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/calendar/HeaderRenderer.js" size="4480" compressedSize="2770">
+  <module name="sap/ui/unified/calendar/HeaderRenderer.js" size="5843" compressedSize="3506">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/calendar/Month.js" size="58147" compressedSize="25987">
+  <module name="sap/ui/unified/calendar/Month.js" size="58724" compressedSize="26272">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -715,7 +721,7 @@
       <module name="sap/ui/unified/CalendarDateInterval.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/designtime/CalendarDateInterval.designtime.js" size="758" compressedSize="443">
+  <module name="sap/ui/unified/designtime/CalendarDateInterval.designtime.js" size="705" compressedSize="513">
     <description>Provides the Design Time Metadata for the sap.ui.unified.CalendarDateInterval control</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
@@ -752,7 +758,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/designtime/library-preload.designtime.js" size="1686">
+  <module name="sap/ui/unified/designtime/library-preload.designtime.js" size="1756">
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
@@ -773,15 +779,92 @@
   </module>
   <module name="sap/ui/unified/designtime/messagebundle.properties" size="697">
   </module>
+  <module name="sap/ui/unified/designtime/messagebundle_ar.properties" size="1041">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_bg.properties" size="1077">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_ca.properties" size="638">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_cs.properties" size="681">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_da.properties" size="618">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_de.properties" size="627">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_el.properties" size="1103">
+  </module>
   <module name="sap/ui/unified/designtime/messagebundle_en.properties" size="617">
   </module>
   <module name="sap/ui/unified/designtime/messagebundle_en_US_sappsd.properties" size="1291">
   </module>
   <module name="sap/ui/unified/designtime/messagebundle_en_US_saptrc.properties" size="755">
   </module>
-  <module name="sap/ui/unified/library-h2-preload.js" size="19900">
+  <module name="sap/ui/unified/designtime/messagebundle_es.properties" size="644">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_et.properties" size="630">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_fi.properties" size="689">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_fr.properties" size="656">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_hi.properties" size="997">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_hr.properties" size="633">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_hu.properties" size="675">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_it.properties" size="635">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_iw.properties" size="929">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_ja.properties" size="715">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_kk.properties" size="1129">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_ko.properties" size="673">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_lt.properties" size="648">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_lv.properties" size="698">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_ms.properties" size="619">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_nl.properties" size="614">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_no.properties" size="619">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_pl.properties" size="630">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_pt.properties" size="661">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_ro.properties" size="668">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_ru.properties" size="1063">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_sh.properties" size="626">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_sk.properties" size="652">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_sl.properties" size="627">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_sv.properties" size="628">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_th.properties" size="1003">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_tr.properties" size="682">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_uk.properties" size="1063">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_vi.properties" size="721">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_zh_CN.properties" size="667">
+  </module>
+  <module name="sap/ui/unified/designtime/messagebundle_zh_TW.properties" size="691">
+  </module>
+  <module name="sap/ui/unified/library-h2-preload.js" size="20024">
     <requires>
       <module name="jquery.sap.dom.js"/>
+      <module name="jquery.sap.encoder.js"/>
       <module name="jquery.sap.events.js"/>
       <module name="jquery.sap.global.js"/>
       <module name="jquery.sap.keycodes.js"/>
@@ -896,9 +979,10 @@
       <module name="sap/ui/unified/rules/FileUploader.support.js"/>
     </includes>
   </module>
-  <module name="sap/ui/unified/library-preload.js" size="423356">
+  <module name="sap/ui/unified/library-preload.js" size="430859">
     <requires>
       <module name="jquery.sap.dom.js"/>
+      <module name="jquery.sap.encoder.js"/>
       <module name="jquery.sap.events.js"/>
       <module name="jquery.sap.global.js"/>
       <module name="jquery.sap.keycodes.js"/>
@@ -1003,6 +1087,7 @@
   <module name="sap/ui/unified/library-preload.json" size="0">
     <requires>
       <module name="jquery.sap.dom.js"/>
+      <module name="jquery.sap.encoder.js"/>
       <module name="jquery.sap.events.js"/>
       <module name="jquery.sap.global.js"/>
       <module name="jquery.sap.keycodes.js"/>

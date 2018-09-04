@@ -18,7 +18,7 @@ sap.ui.define(['sap/ui/core/Control', 'sap/ui/core/theming/Parameters', 'sap/ui/
 	 * Table renderer.
 	 *
 	 * @namespace
-	 * @name sap.ui.table.TableRenderer
+	 * @alias sap.ui.table.TableRenderer
 	 */
 	var TableRenderer = {};
 
@@ -31,6 +31,9 @@ sap.ui.define(['sap/ui/core/Control', 'sap/ui/core/theming/Parameters', 'sap/ui/
 	TableRenderer.render = function(rm, oTable) {
 		// Clear cashed header row count
 		delete oTable._iHeaderRowCount;
+
+		// The resource bundle is required for rendering. In case it is not already loaded, it should be loaded synchronously.
+		TableUtils.getResourceBundle();
 
 		// basic table div
 		rm.write("<div");
@@ -283,7 +286,7 @@ sap.ui.define(['sap/ui/core/Control', 'sap/ui/core/theming/Parameters', 'sap/ui/
 	TableRenderer.renderColHdr = function(rm, oTable) {
 		var nRows = TableUtils.getHeaderRowCount(oTable);
 		var aCols = oTable.getColumns();
-		var iFixedColumnCount = oTable.getFixedColumnCount();
+		var iFixedColumnCount = oTable.getComputedFixedColumnCount();
 
 		rm.write("<div");
 		rm.addClass("sapUiTableColHdrCnt");
@@ -340,7 +343,7 @@ sap.ui.define(['sap/ui/core/Control', 'sap/ui/core/theming/Parameters', 'sap/ui/
 			rm.write("<div class='sapUiTableRowActionHeader' id='" + oTable.getId() + "-rowacthdr'");
 			oTable._getAccRenderExtension().writeAriaAttributesFor(rm, oTable, "ROWACTIONHEADER");
 			rm.write("><span>");
-			rm.writeEscaped(oTable._oResBundle.getText("TBL_ROW_ACTION_COLUMN_LABEL"));
+			rm.writeEscaped(TableUtils.getResourceText("TBL_ROW_ACTION_COLUMN_LABEL"));
 			rm.write("</span></div>");
 		}
 
@@ -360,7 +363,7 @@ sap.ui.define(['sap/ui/core/Control', 'sap/ui/core/theming/Parameters', 'sap/ui/
 
 			if (oTable._getShowStandardTooltips()) {
 				var sSelectAllResourceTextID = bAllRowsSelected ? "TBL_DESELECT_ALL" : "TBL_SELECT_ALL";
-				rm.writeAttributeEscaped("title", oTable._oResBundle.getText(sSelectAllResourceTextID));
+				rm.writeAttributeEscaped("title", TableUtils.getResourceText(sSelectAllResourceTextID));
 			}
 			if (!bAllRowsSelected) {
 				rm.addClass("sapUiTableSelAll");
@@ -586,7 +589,7 @@ sap.ui.define(['sap/ui/core/Control', 'sap/ui/core/theming/Parameters', 'sap/ui/
 
 	TableRenderer.renderTableCtrl = function(rm, oTable) {
 
-		if (oTable.getFixedColumnCount() > 0) {
+		if (oTable.getComputedFixedColumnCount() > 0) {
 			rm.write("<div");
 			rm.writeAttribute("id", oTable.getId() + "-sapUiTableCtrlScrFixed");
 			rm.addClass("sapUiTableCtrlScrFixed");
@@ -602,7 +605,7 @@ sap.ui.define(['sap/ui/core/Control', 'sap/ui/core/theming/Parameters', 'sap/ui/
 		rm.writeAttribute("id", oTable.getId() + "-sapUiTableCtrlScr");
 		rm.addClass("sapUiTableCtrlScr");
 		rm.writeClasses();
-		if (oTable.getFixedColumnCount() > 0) {
+		if (oTable.getComputedFixedColumnCount() > 0) {
 			if (oTable._bRtlMode) {
 				rm.addStyle("margin-right", "0");
 			} else {
@@ -637,9 +640,9 @@ sap.ui.define(['sap/ui/core/Control', 'sap/ui/core/theming/Parameters', 'sap/ui/
 		var iStartColumn, iEndColumn;
 		if (bFixedTable) {
 			iStartColumn = 0;
-			iEndColumn = oTable.getFixedColumnCount();
+			iEndColumn = oTable.getComputedFixedColumnCount();
 		} else {
-			iStartColumn = oTable.getFixedColumnCount();
+			iStartColumn = oTable.getComputedFixedColumnCount();
 			iEndColumn = oTable.getColumns().length;
 		}
 		var iFixedRows = oTable.getFixedRowCount();
@@ -726,10 +729,13 @@ sap.ui.define(['sap/ui/core/Control', 'sap/ui/core/theming/Parameters', 'sap/ui/
 					bRenderDummyColumn = false;
 					// in fixed area, use stored fixed width or 10rem:
 					if (bFixedTable) {
-						sWidth = (oColumn._iFixWidth || 160) + "px";
+						oColumn._iFixWidth = oColumn._iFixWidth || 160;
+						sWidth = oColumn._iFixWidth + "px";
 					} else if (sWidth && sWidth.indexOf("%") > 0) {
 						bHasPercentageWidths = true;
 					}
+				} else if (bFixedTable) {
+					delete oColumn._iFixWidth;
 				}
 				oColParam.width = sWidth;
 			}

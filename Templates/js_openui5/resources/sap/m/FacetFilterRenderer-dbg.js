@@ -51,6 +51,9 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/InvisibleText"],
 		oRm.write("<div");
 		oRm.writeControlData(oControl);
 		oRm.addClass("sapMFF");
+		oRm.writeAccessibilityState(oControl, {
+			"role": "toolbar"
+		});
 
 		if (oControl.getShowSummaryBar()) {
 

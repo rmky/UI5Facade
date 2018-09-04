@@ -14,6 +14,8 @@ sap.ui.define([
 	'sap/ui/Device',
 	'sap/ui/core/EnabledPropagator',
 	'sap/ui/core/library',
+	'sap/ui/core/Popup',
+	'sap/m/Menu',
 	"./MenuButtonRenderer"
 ], function(
 	jQuery,
@@ -24,6 +26,8 @@ sap.ui.define([
 	Device,
 	EnabledPropagator,
 	coreLibrary,
+	Popup,
+	Menu,
 	MenuButtonRenderer
 	) {
 		"use strict";
@@ -37,6 +41,12 @@ sap.ui.define([
 		// shortcut for sap.m.ButtonType
 		var ButtonType = library.ButtonType;
 
+		// shortcut for sap.ui.core.Popup.Dock
+		var Dock = Popup.Dock;
+
+		// properties which shouldn't be applied on inner Button or SplitButton control since they don't have such properties
+		var aNoneForwardableProps = ["buttonMode", "useDefaultActionOnly", "width", "menuPosition"];
+
 		/**
 		 * Constructor for a new MenuButton.
 		 *
@@ -48,11 +58,12 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
 		 * @alias sap.m.MenuButton
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/menu-button/ Menu Button}
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		var MenuButton = Control.extend("sap.m.MenuButton", /** @lends sap.m.MenuButton.prototype */ { metadata : {
@@ -116,6 +127,18 @@ sap.ui.define([
 				buttonMode : { type : "sap.m.MenuButtonMode", group : "Misc", defaultValue : MenuButtonMode.Regular },
 
 				/**
+				 * Specifies the position of the popup menu with enumerated options.
+				 * By default, the control opens the menu at its bottom left side.
+				 *
+				 * <b>Note:</b> In the case that the menu has no space to show itself in the view port
+				 * of the current window it tries to open itself to
+				 * the inverted direction.
+				 *
+				 * @since 1.56.0
+				 */
+				menuPosition : {type : "sap.ui.core.Popup.Dock", group : "Misc", defaultValue : Dock.BeginBottom},
+
+				/**
 				 * Controls whether the default action handler is invoked always or it is invoked only until a menu item is selected.
 				 * Usable only if <code>buttonMode</code> is set to <code>Split</code>.
 				 */
@@ -165,8 +188,8 @@ sap.ui.define([
 			if (this._sDefaultIcon) {
 				this._sDefaultIcon = null;
 			}
-			if (this._iInitialWidth) {
-				this._iInitialWidth = null;
+			if (this._iInitialTextBtnContentWidth) {
+				this._iInitialTextBtnContentWidth = null;
 			}
 			if (this._lastActionItemId) {
 				this._lastActionItemId = null;
@@ -190,27 +213,46 @@ sap.ui.define([
 
 		};
 
+		MenuButton.prototype._needsWidth = function() {
+			return this._isSplitButton() && this.getWidth() === "";
+		};
+
+		/**
+		 * Gets the text button control DOM Element.
+		 * @returns {Element} The Element's DOM Element
+		 * @private
+		 */
+		MenuButton.prototype._getTextBtnContentDomRef = function() {
+			return this._getButtonControl()._getTextButton().getDomRef("content");
+		};
+
 		MenuButton.prototype.onAfterRendering = function() {
-			// call the function with delay to assure that the
-			// inner buttons are rendered with correct width before setting the initial width
-			jQuery.sap.delayedCall(0, this, "_setInitialBtnWidth");
+			if (this._needsWidth() && sap.ui.getCore().isThemeApplied() && this._getTextBtnContentDomRef()) {
+				this._getTextBtnContentDomRef().style.width = this._getInitialTextBtnWidth() + 'px';
+			}
 
 			this._setAriaHasPopup();
 		};
 
+		MenuButton.prototype.onThemeChanged = function(oEvent) {
+			//remember the initial width of the text button and hardcode it in the dom
+			if (this._needsWidth() && this.getDomRef() && !this._iInitialTextBtnContentWidth) {
+				this._getTextBtnContentDomRef().style.width = this._getInitialTextBtnWidth() + 'px';
+			}
+		};
 
 		/**
-		 * Sets the initial width of the control.
+		 * Gets the initial width of the text button control. To be used for 'split' mode only.
+		 * @returns {int} The width after the text button control was rendered for the first time and theme applied
 		 * @private
 		 */
-		MenuButton.prototype._setInitialBtnWidth = function() {
-			var iInitialWidth;
-			if (this._isSplitButton() && !this._iInitialWidth) {
-				iInitialWidth = this.$().outerWidth();
-				if (iInitialWidth) {
-					this._iInitialWidth = iInitialWidth + 1; //for IE
-				}
+		MenuButton.prototype._getInitialTextBtnWidth = function() {
+			if (!this._iInitialTextBtnContentWidth) {
+				//round the width upward in order to prevent content overflow (ellipses)
+				this._iInitialTextBtnContentWidth = Math.ceil(this._getTextBtnContentDomRef().getBoundingClientRect().width);
 			}
+
+			return this._iInitialTextBtnContentWidth;
 		};
 
 		MenuButton.prototype._setAriaHasPopup = function() {
@@ -236,12 +278,7 @@ sap.ui.define([
 
 			//update all properties
 			for (var key in this.mProperties) {
-				if (
-					this.mProperties.hasOwnProperty(key) &&
-					key !== "buttonMode" &&
-					key !== "useDefaultActionOnly" &&
-					key !== "width"
-				) {
+				if (this.mProperties.hasOwnProperty(key) && aNoneForwardableProps.indexOf(key) < 0) {
 					this._getButtonControl().setProperty(key, this.mProperties[key], true);
 				}
 			}
@@ -329,7 +366,14 @@ sap.ui.define([
 		 * @private
 		 */
 		MenuButton.prototype._handleButtonPress = function(bWithKeyboard) {
-			var oMenu = this.getMenu();
+			var oMenu = this.getMenu(),
+				oOffset = {
+					zero: "0 0",
+					plus2_right: "0 +2",
+					minus2_right: "0 -2",
+					plus2_left: "+2 0",
+					minus2_left: "-2 0"
+				};
 
 			if (!oMenu) {
 				return;
@@ -338,7 +382,56 @@ sap.ui.define([
 			if (!oMenu.getTitle()) {
 				oMenu.setTitle(this.getText());
 			}
-			oMenu.openBy(this, bWithKeyboard);
+			var aParam = [this, bWithKeyboard];
+			switch (this.getMenuPosition()) {
+				case Dock.BeginTop:
+					aParam.push(Dock.BeginBottom, Dock.BeginTop, oOffset.plus2_right);
+					break;
+				case Dock.BeginCenter:
+					aParam.push(Dock.BeginCenter, Dock.BeginCenter, oOffset.zero);
+					break;
+				case Dock.LeftTop:
+					aParam.push(Dock.RightBottom, Dock.LeftBottom, oOffset.plus2_left);
+					break;
+				case Dock.LeftCenter:
+					aParam.push(Dock.RightCenter, Dock.LeftCenter, oOffset.plus2_left);
+					break;
+				case Dock.LeftBottom:
+					aParam.push(Dock.RightTop, Dock.LeftTop, oOffset.plus2_left);
+					break;
+				case Dock.CenterTop:
+					aParam.push(Dock.CenterBottom, Dock.CenterTop, oOffset.plus2_left);
+					break;
+				case Dock.CenterCenter:
+					aParam.push(Dock.CenterCenter, Dock.CenterCenter, oOffset.zero);
+					break;
+				case Dock.CenterBottom:
+					aParam.push(Dock.CenterTop, Dock.CenterBottom, oOffset.minus2_right);
+					break;
+				case Dock.RightTop:
+					aParam.push(Dock.LeftBottom, Dock.RightBottom, oOffset.minus2_left);
+					break;
+				case Dock.RightCenter:
+					aParam.push(Dock.LeftCenter, Dock.RightCenter, oOffset.minus2_left);
+					break;
+				case Dock.RightBottom:
+					aParam.push(Dock.LeftTop, Dock.RightTop, oOffset.minus2_left);
+					break;
+				case Dock.EndTop:
+					aParam.push(Dock.EndBottom, Dock.EndTop, oOffset.plus2_right);
+					break;
+				case Dock.EndCenter:
+					aParam.push(Dock.EndCenter, Dock.EndCenter, oOffset.zero);
+					break;
+				case Dock.EndBottom:
+					aParam.push(Dock.EndTop, Dock.EndBottom, oOffset.minus2_right);
+					break;
+				default:
+				case Dock.BeginBottom:
+					aParam.push(Dock.BeginTop, Dock.BeginBottom, oOffset.minus2_right);
+					break;
+			}
+			Menu.prototype.openBy.apply(oMenu, aParam);
 
 			this._writeAriaAttributes();
 
@@ -431,6 +524,7 @@ sap.ui.define([
 				case 'activeIcon':
 				case 'iconDensityAware':
 				case 'textDirection':
+				case 'enabled':
 					this._getButtonControl().setProperty(sPropertyName, vValue);
 					break;
 			}

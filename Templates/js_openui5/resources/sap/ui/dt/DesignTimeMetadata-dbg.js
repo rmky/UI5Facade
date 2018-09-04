@@ -29,7 +29,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -220,6 +220,18 @@ function(
 		}
 
 		return aTriggers;
+	};
+
+	/**
+	 * Returns "label" from designtime metadata
+	 * @return {string|undefined} Returns the label calculated from getLabel() in designtime metadata
+	 * @public
+	 */
+	DesignTimeMetadata.prototype.getLabel = function() {
+		var vLabel = this.getData().getLabel;
+		return typeof vLabel === "function"
+			? vLabel.apply(this, arguments)
+			: undefined;
 	};
 
 	return DesignTimeMetadata;

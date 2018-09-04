@@ -5,15 +5,9 @@
  */
 
 // Provides control sap.m.GroupHeaderListItem.
-sap.ui.define([
-	'./ListItemBase',
-	'./library',
-	'sap/ui/core/library',
-	'./GroupHeaderListItemRenderer'
-],
-	function(ListItemBase, library, coreLibrary, GroupHeaderListItemRenderer) {
+sap.ui.define(["sap/ui/core/library", "./library", "./ListItemBase", "./GroupHeaderListItemRenderer"],
+	function(coreLibrary, library, ListItemBase, GroupHeaderListItemRenderer) {
 	"use strict";
-
 
 
 	// shortcut for sap.m.ListMode
@@ -21,11 +15,6 @@ sap.ui.define([
 
 	// shortcut for sap.ui.core.TextDirection
 	var TextDirection = coreLibrary.TextDirection;
-
-	function isTable(o) {
-		var FNClass = sap.ui.require('sap/m/Table');
-		return typeof FNClass === 'function' && (o instanceof FNClass);
-	}
 
 
 	/**
@@ -41,7 +30,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -92,21 +81,16 @@ sap.ui.define([
 	// returns responsible table control for the item
 	GroupHeaderListItem.prototype.getTable = function() {
 		var oParent = this.getParent();
-		if (isTable(oParent)) {
-			return oParent;
-		}
-
-		// support old list with columns aggregation
-		if (oParent && oParent.getMetadata().getName() == "sap.m.Table") {
+		if (oParent && oParent.isA("sap.m.Table")) {
 			return oParent;
 		}
 	};
 
 	GroupHeaderListItem.prototype.onBeforeRendering = function() {
-		var oParent = this.getParent();
-		if (isTable(oParent)) {
+		var oTable = this.getTable();
+		if (oTable) {
 			// clear column last value to reset cell merging
-			oParent.getColumns().forEach(function(oColumn) {
+			oTable.getColumns().forEach(function(oColumn) {
 				oColumn.clearLastValue();
 			});
 

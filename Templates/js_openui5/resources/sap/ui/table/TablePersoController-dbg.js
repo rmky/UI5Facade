@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @since 1.21.1
 	 *
 	 * @constructor
@@ -122,8 +122,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
 
 		delete this._oInitialPersoData;
 
-		delete this._oDialog;
-
+		if (this._oDialog) {
+			this._oDialog.destroy();
+			delete this._oDialog;
+		}
 	};
 
 	TablePersoController.prototype.setPersoService = function(oService) {
@@ -396,39 +398,46 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
 	 * @experimental since 1.21.2 - API might change / feature requires the sap.m library!
 	 */
 	TablePersoController.prototype.openDialog = function(mSettings) {
+		var that = this;
 
-		// include the mobile library to re-use the sap.m.TablePersoDialog
-		sap.ui.getCore().loadLibrary("sap.m");
-		//TBD: Use async APIs instead (should be possible because open the dialog could be delayed)
-		var TablePersoDialog = sap.ui.requireSync("sap/m/TablePersoDialog");
-
-		// create and open the dialog
-		if (!this._oDialog) {
-			var that = this;
-			this._oDialog = new TablePersoDialog({
-				persoService: this.getPersoService(),
-				showSelectAll: true,
-				showResetAll: true,
-				grouping: false,
-				contentWidth: mSettings && mSettings.contentWidth,
-				contentHeight: mSettings && mSettings.contentHeight || "20rem",
-				initialColumnState: this._oInitialPersoData.aColumns,
-				columnInfoCallback: function(oTable, mPersoMap, oPersoService) {
-					return that._getCurrentTablePersoData(true).aColumns;
-				},
-				confirm : function() {
-					that._adjustTable(this.retrievePersonalizations());
-					if (that.getAutoSave()) {
-						that.savePersonalizations();
-					}
-				}
-			});
-			this._oDialog._oDialog.removeStyleClass("sapUiPopupWithPadding"); // otherwise height calculation doesn't work properly!
-			jQuery.sap.syncStyleClass("sapUiSizeCompact", this._getTable(), this._oDialog._oDialog);
+		function _open() {
+			if (that._oDialog) {
+				jQuery.sap.syncStyleClass("sapUiSizeCompact", that._getTable(), that._oDialog._oDialog);
+				that._oDialog.open();
+			}
 		}
 
-		this._oDialog.open();
+		if (!this._oDialog) {
+			// include the mobile library to re-use the sap.m.TablePersoDialog
+			sap.ui.getCore().loadLibrary("sap.m", {async: true}).then(function() {
+				sap.ui.require(["sap/m/TablePersoDialog"], function(TablePersoDialog) {
+					// create and open the dialog
+					that._oDialog = new TablePersoDialog(that._getTable().getId() + "-PersoDialog", {
+						persoService: that.getPersoService(),
+						showSelectAll: true,
+						showResetAll: true,
+						grouping: false,
+						contentWidth: mSettings && mSettings.contentWidth,
+						contentHeight: mSettings && mSettings.contentHeight || "20rem",
+						initialColumnState: that._oInitialPersoData.aColumns,
+						columnInfoCallback: function(oTable, mPersoMap, oPersoService) {
+							return that._getCurrentTablePersoData(true).aColumns;
+						},
+						confirm: function() {
+							that._adjustTable(this.retrievePersonalizations());
+							if (that.getAutoSave()) {
+								that.savePersonalizations();
+							}
+						}
+					});
+					that._oDialog._oDialog.removeStyleClass("sapUiPopupWithPadding"); // otherwise height calculation doesn't work properly!
 
+					_open();
+				});
+			});
+		} else {
+			_open();
+		}
 	};
 
 

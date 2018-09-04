@@ -49,7 +49,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -71,7 +71,7 @@ function(
 				},
 
 				/**
-				 * DesignTime metadata for classses to use with overlays (will overwrite default DTMetadata fields)
+				 * DesignTime metadata for classes to use with overlays (will overwrite default DTMetadata fields)
 				 * should have a map structure { "sClassName" : oDesignTimeMetadata, ... }
 				 */
 				designTimeMetadata: {
@@ -330,7 +330,6 @@ function(
 	 */
 	DesignTime.prototype.setSelectionMode = function (oMode) {
 		this.setProperty("selectionMode", oMode);
-		this.getSelectionManager().setMode(oMode);
 
 		return this;
 	};
@@ -525,18 +524,21 @@ function(
 	};
 
 	/**
-	 * Creates overlay and returns a Promise which is resolved when whole hierarchy is created. If creation
-	 * of an overlay is in a process, then same promise object will be returned as after first call.
-	 *
-	 * @typedef {object} CreateOverlayParameters
+	 * @typedef {object} sap.ui.dt.DesignTime.CreateOverlayParameters
 	 * @property {sap.ui.base.ManagedObject} element - Control instance for which overlay is being created
 	 * @property {boolean} [root] - Proxy for "isRoot" property of sap.ui.dt.ElementOverlay constructor
 	 * @property {object} [parentMetadata] - Map with metadata from the parent
 	 * @property {boolean} [visible] - Proxy for "visible" property of sap.ui.dt.ElementOverlay constructor
+	 * @private
+	 */
+
+	/**
+	 * Creates overlay and returns a Promise which is resolved when whole hierarchy is created. If creation
+	 * of an overlay is in a process, then same promise object will be returned as after first call.
 	 *
 	 * @param {sap.ui.base.ManagedObject|CreateOverlayParameters} vArg - Accepts control instance or parameters object
 	 * @return {Promise} - resolves with overlay as the only argument for specified Element
-	 * @public
+	 * @private
 	 */
 	DesignTime.prototype.createOverlay = function (vArg) {
 		// Function can receive an element as the only argument or object with parameters
@@ -810,7 +812,7 @@ function(
 		}
 
 		if (oElementOverlay.getSelected()) {
-			this.getSelectionManager()._remove(oElementOverlay);
+			this.getSelectionManager().remove(oElementOverlay);
 		}
 
 		this.fireElementOverlayDestroyed({
@@ -843,7 +845,15 @@ function(
 		var oElementOverlay = oEvent.getSource();
 		var bSelected = oEvent.getParameter("selected");
 
-		this.getSelectionManager()[bSelected ? "_add" : "_remove"](oElementOverlay);
+		if (bSelected){
+			if (this.getSelectionMode() === sap.ui.dt.SelectionMode.Multi){
+				this.getSelectionManager().add(oElementOverlay);
+			} else {
+				this.getSelectionManager().set(oElementOverlay);
+			}
+		} else {
+			this.getSelectionManager().remove(oElementOverlay);
+		}
 	};
 
 	/**
@@ -886,9 +896,9 @@ function(
 					parentMetadata: oParentAggregationOverlay.getDesignTimeMetadata().getData()
 				})
 					.then(
-						function (oOverlay) {
-							oParentAggregationOverlay.insertChild(null, oOverlay);
-							oOverlay.applyStyles(); // TODO: remove after Task Manager implementation
+						function (oElementOverlay) {
+							oParentAggregationOverlay.insertChild(null, oElementOverlay);
+							oElementOverlay.applyStyles(); // TODO: remove after Task Manager implementation
 							this._oTaskManager.complete(iTaskId);
 						}.bind(this),
 						function (vError) {
@@ -904,7 +914,7 @@ function(
 							vError,
 							"DesignTime#_onAddAggregation",
 							Util.printf(
-								"Failed to add new ElementOverlay (elementId='{0}') into AggregationOverlay (id='{1}')",
+								"Failed to add new element overlay (elementId='{0}') into aggregation overlay (id='{1}')",
 								sElementId,
 								sAggregationOverlayId
 							)
@@ -950,7 +960,9 @@ function(
 		var oElementOverlay = OverlayRegistry.getOverlay(oElement);
 		// Overlays of elements in "dependents" aggregation or not in root elements should be destroyed
 		if (
-			oElementOverlay
+			!oElement.bIsDestroyed 	// element overlays for destroyed elements will be destroyed already,
+									// but element might be recreated with the same id, so a new element overlay might exist that shouldn't be removed
+			&& oElementOverlay
 			&& (!this._isElementInRootElements(oElement) || oElement.sParentAggregationName === "dependents")
 		) {
 			oElementOverlay.destroy();

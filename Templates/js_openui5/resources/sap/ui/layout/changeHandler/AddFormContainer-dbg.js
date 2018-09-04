@@ -5,7 +5,7 @@
  */
 
 sap.ui.define([
-		"sap/ui/fl/Utils", "jquery.sap.global", "sap/ui/fl/changeHandler/Base", "sap/ui/fl/changeHandler/JsControlTreeModifier"
+		"sap/ui/fl/Utils", "jquery.sap.global", "sap/ui/fl/changeHandler/Base", "sap/ui/core/util/reflection/JsControlTreeModifier"
 	], function(FlexUtils, jQuery, Base, JsControlTreeModifier) {
 		"use strict";
 
@@ -13,7 +13,7 @@ sap.ui.define([
 		 * Change handler for adding a form group.
 		 * @alias sap.ui.layout.changeHandler.AddFormContainer
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 * @experimental Since 1.48.0
 		 */
 		var AddGroup = { };

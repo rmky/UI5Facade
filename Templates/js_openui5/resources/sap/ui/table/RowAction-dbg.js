@@ -8,6 +8,7 @@
 sap.ui.define([
     'jquery.sap.global',
     'sap/ui/core/Control',
+    "sap/ui/table/TableUtils",
     './library',
     'sap/ui/core/Icon',
     'sap/ui/unified/Menu',
@@ -15,7 +16,7 @@ sap.ui.define([
     "./RowActionRenderer",
     'jquery.sap.keycodes'
 ],
-function(jQuery, Control, library, Icon, Menu, Popup, RowActionRenderer) {
+function(jQuery, Control, TableUtils, library, Icon, Menu, Popup, RowActionRenderer) {
 	"use strict";
 
 	/**
@@ -29,7 +30,7 @@ function(jQuery, Control, library, Icon, Menu, Popup, RowActionRenderer) {
 	 * If more action items are available as the available space allows to display an overflow mechanism is provided.
 	 * This control must only be used in the context of the <code>sap.ui.table.Table</code> control to define row actions.
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -91,8 +92,6 @@ function(jQuery, Control, library, Icon, Menu, Popup, RowActionRenderer) {
 		oIcon.setTooltip = fnSetTooltip;
 		oIcon.onkeyup = fnOnKeyUp;
 		this.addAggregation("_icons", oIcon);
-
-		this._oResBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.table");
 
 		this._iLen = 0;
 		this._iCount = 2;
@@ -182,9 +181,9 @@ function(jQuery, Control, library, Icon, Menu, Popup, RowActionRenderer) {
 
 		var sText;
 		if (bActive) {
-			sText = this._oResBundle.getText(this._iLen == 1 ? "TBL_ROW_ACTION_SINGLE_ACTION" : "TBL_ROW_ACTION_MULTIPLE_ACTION", [this._iLen]);
+			sText = TableUtils.getResourceText(this._iLen == 1 ? "TBL_ROW_ACTION_SINGLE_ACTION" : "TBL_ROW_ACTION_MULTIPLE_ACTION", [this._iLen]);
 		} else {
-			sText = this._oResBundle.getText("TBL_ROW_ACTION_NO_ACTION");
+			sText = TableUtils.getResourceText("TBL_ROW_ACTION_NO_ACTION");
 		}
 
 		return {
@@ -363,13 +362,13 @@ function(jQuery, Control, library, Icon, Menu, Popup, RowActionRenderer) {
 		} else if (this._iLen > 2 && this._iCount == 2) {
 			aItems[0]._syncIcon(aIcons[0]);
 			aIcons[1].setSrc("sap-icon://overflow");
-			aIcons[1].setTooltip(this._oResBundle.getText("TBL_ROW_ACTION_MORE"));
+			aIcons[1].setTooltip(TableUtils.getResourceText("TBL_ROW_ACTION_MORE"));
 			$Icons.toggleClass("sapUiTableActionHidden", false);
 			setMenuAriaOfIcon(1);
 			this._aActions = ["action", "menu"];
 		} else { // this._iLen > 2 && this._iCount == 1
 			aIcons[0].setSrc("sap-icon://overflow");
-			aIcons[0].setTooltip(this._oResBundle.getText("TBL_ROW_ACTION_MORE"));
+			aIcons[0].setTooltip(TableUtils.getResourceText("TBL_ROW_ACTION_MORE"));
 			jQuery($Icons.get(0)).toggleClass("sapUiTableActionHidden", false);
 			jQuery($Icons.get(1)).toggleClass("sapUiTableActionHidden", true);
 			setMenuAriaOfIcon(0);

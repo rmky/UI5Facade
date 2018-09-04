@@ -8,7 +8,7 @@
  * Code other than the OpenUI5 libraries must not introduce dependencies to this module.
  */
 /*global XMLHttpRequest */
-sap.ui.define(["sap/ui/bootstrap/Info", "sap/base/util/extend", "sap/base/log"], function(_oBootstrap, extend, log) {
+sap.ui.define(["sap/ui/bootstrap/Info", "sap/base/util/extend", "sap/base/Log"], function(_oBootstrap, extend, Log) {
 
 	"use strict";
 
@@ -28,9 +28,9 @@ sap.ui.define(["sap/ui/bootstrap/Info", "sap/base/util/extend", "sap/base/log"],
 		var sCfgFile = "sap-ui-config.json",
 			config;
 
-		log.warning("Loading external bootstrap configuration from \"" + url + "\". This is a design time feature and not for productive usage!");
+		Log.warning("Loading external bootstrap configuration from \"" + url + "\". This is a design time feature and not for productive usage!");
 		if (url !== sCfgFile) {
-			log.warning("The external bootstrap configuration file should be named \"" + sCfgFile + "\"!");
+			Log.warning("The external bootstrap configuration file should be named \"" + sCfgFile + "\"!");
 		}
 
 		var xhr = new XMLHttpRequest();
@@ -39,17 +39,17 @@ sap.ui.define(["sap/ui/bootstrap/Info", "sap/base/util/extend", "sap/base/log"],
 				try {
 					config = JSON.parse( xhr.responseText );
 				} catch (error) {
-					log.error("Parsing externalized bootstrap configuration from \"" + url + "\" failed! Reason: " + error + "!");
+					Log.error("Parsing externalized bootstrap configuration from \"" + url + "\" failed! Reason: " + error + "!");
 				}
 			} else {
-				log.error("Loading externalized bootstrap configuration from \"" + url + "\" failed! Response: " + xhr.status + "!");
+				Log.error("Loading externalized bootstrap configuration from \"" + url + "\" failed! Response: " + xhr.status + "!");
 			}
 		});
 		xhr.open('GET', url, false);
 		try {
 			xhr.send();
 		} catch (error) {
-			log.error("Loading externalized bootstrap configuration from \"" + url + "\" failed! Reason: " + error + "!");
+			Log.error("Loading externalized bootstrap configuration from \"" + url + "\" failed! Reason: " + error + "!");
 		}
 
 		config = config || {};
@@ -73,7 +73,7 @@ sap.ui.define(["sap/ui/bootstrap/Info", "sap/base/util/extend", "sap/base/log"],
 
 	// map loadall mode to sync preload mode
 	if ( /(^|\/)(sap-?ui5|[^\/]+-all).js([?#]|$)/.test(_oBootstrap.url) ) {
-		log.error(
+		Log.error(
 			"The all-in-one file 'sap-ui-core-all.js' has been abandoned in favour of standard preloads." +
 			" Please migrate to sap-ui-core.js and consider to use async preloads.");
 		oCfg.preload = 'sync';
@@ -85,12 +85,21 @@ sap.ui.define(["sap/ui/bootstrap/Info", "sap/base/util/extend", "sap/base/log"],
 		var sConfig = oScriptTag.getAttribute("data-sap-ui-config");
 		if ( sConfig ) {
 			try {
-				/*eslint-disable no-new-func */
-				extend(oCfg, normalize((new Function("return {" + sConfig + "};"))())); // TODO jQuery.parseJSON would be better but imposes unwanted restrictions on valid syntax
-				/*eslint-enable no-new-func */
+				var oParsedConfig;
+				try {
+					// first try to parse the config as a plain JSON
+					oParsedConfig = JSON.parse("{" + sConfig + "}");
+				} catch (e) {
+					// if the JSON.parse fails, we fall back to the more lenient "new Function" eval for compatibility reasons
+					Log.error("JSON.parse on the data-sap-ui-config attribute failed. Please check the config for JSON syntax violations.");
+					/*eslint-disable no-new-func */
+					oParsedConfig = (new Function("return {" + sConfig + "};"))();
+					/*eslint-enable no-new-func */
+				}
+				extend(oCfg, normalize(oParsedConfig));
 			} catch (e) {
 				// no log yet, how to report this error?
-				log.error("failed to parse data-sap-ui-config attribute: " + (e.message || e));
+				Log.error("failed to parse data-sap-ui-config attribute: " + (e.message || e));
 			}
 		}
 

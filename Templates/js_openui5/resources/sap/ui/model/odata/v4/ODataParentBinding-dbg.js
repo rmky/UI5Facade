@@ -182,7 +182,7 @@ sap.ui.define([
 	 * Creates the entity in the cache. If the binding doesn't have a cache, it forwards to the
 	 * parent binding adjusting <code>sPathInCache</code>.
 	 *
-	 * @param {string} sUpdateGroupId
+	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oUpdateGroupLock
 	 *   The group ID to be used for the POST request
 	 * @param {string|SyncPromise} vCreatePath
 	 *   The path for the POST request or a SyncPromise that resolves with that path
@@ -198,13 +198,13 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	ODataParentBinding.prototype.createInCache = function (sUpdateGroupId, vCreatePath,
+	ODataParentBinding.prototype.createInCache = function (oUpdateGroupLock, vCreatePath,
 			sPathInCache, oInitialData, fnCancelCallback) {
 		var that = this;
 
 		return this.oCachePromise.then(function (oCache) {
 			if (oCache) {
-				return oCache.create(sUpdateGroupId, vCreatePath, sPathInCache, oInitialData,
+				return oCache.create(oUpdateGroupLock, vCreatePath, sPathInCache, oInitialData,
 					fnCancelCallback, function (oError) {
 						// error callback
 						that.oModel.reportError("POST on '" + vCreatePath
@@ -219,10 +219,38 @@ sap.ui.define([
 					return oResult;
 				});
 			}
-			return that.oContext.getBinding().createInCache(sUpdateGroupId, vCreatePath,
+			return that.oContext.getBinding().createInCache(oUpdateGroupLock, vCreatePath,
 				_Helper.buildPath(that.oContext.iIndex, that.sPath, sPathInCache), oInitialData,
 				fnCancelCallback);
 		});
+	};
+
+	/**
+	 * Creates a group lock and keeps it in this.oRefreshGroupLock.
+	 * ODataListBinding#getContexts or ODataContextBinding#fetchValue are expected to use and remove
+	 * it. To ensure that the queue does not remain locked forever the lock is unlocked and taken
+	 * out again if it still resides there on the next rendering.
+	 *
+	 * @param {string} [sGroupId]
+	 *   The group ID
+	 * @param {boolean} [bLocked]
+	 *   Whether the group lock is locked
+	 * @private
+	 */
+	ODataParentBinding.prototype.createRefreshGroupLock = function (sGroupId, bLocked) {
+		var that = this;
+
+		if (!this.oRefreshGroupLock) {
+			this.oRefreshGroupLock = this.oModel.lockGroup(sGroupId, bLocked);
+			if (bLocked) {
+				sap.ui.getCore().addPrerenderingTask(function () {
+					if (that.oRefreshGroupLock) { // The lock is still unused
+						that.oRefreshGroupLock.unlock(true);
+						that.oRefreshGroupLock = undefined;
+					}
+				});
+			}
+		}
 	};
 
 	/**
@@ -299,8 +327,9 @@ sap.ui.define([
 	 * Deletes the entity in the cache. If the binding doesn't have a cache, it forwards to the
 	 * parent binding adjusting the path.
 	 *
-	 * @param {string} sGroupId
-	 *   The group ID to be used for the DELETE request
+	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
+	 *   A lock for the group ID to be used for the DELETE request; if no group ID is specified, it
+	 *   defaults to <code>getUpdateGroupId()</code>()
 	 * @param {string} sEditUrl
 	 *   The edit URL to be used for the DELETE request
 	 * @param {string} sPath
@@ -312,32 +341,29 @@ sap.ui.define([
 	 *   A promise which is resolved without a result in case of success, or rejected with an
 	 *   instance of <code>Error</code> in case of failure
 	 * @throws {Error}
-	 *   If this binding is a deferred operation binding, if the group ID has
-	 *   {@link sap.ui.model.odata.v4.SubmitMode.Auto} or if the cache promise for this binding is
-	 *   not yet fulfilled
+	 *   If the group ID has {@link sap.ui.model.odata.v4.SubmitMode.Auto} or if the cache promise
+	 *   for this binding is not yet fulfilled
 	 *
 	 * @private
 	 */
-	ODataParentBinding.prototype.deleteFromCache = function (sGroupId, sEditUrl, sPath,
+	ODataParentBinding.prototype.deleteFromCache = function (oGroupLock, sEditUrl, sPath,
 			fnCallback) {
-		var oCache = this.oCachePromise.getResult();
-
-		if (this.oOperation) {
-			throw new Error("Cannot delete a deferred operation");
-		}
+		var oCache = this.oCachePromise.getResult(),
+			sGroupId;
 
 		if (!this.oCachePromise.isFulfilled()) {
 			throw new Error("DELETE request not allowed");
 		}
 
 		if (oCache) {
-			sGroupId = sGroupId || this.getUpdateGroupId();
+			oGroupLock.setGroupId(this.getUpdateGroupId());
+			sGroupId = oGroupLock.getGroupId();
 			if (!this.oModel.isAutoGroup(sGroupId) && !this.oModel.isDirectGroup(sGroupId)) {
 				throw new Error("Illegal update group ID: " + sGroupId);
 			}
-			return oCache._delete(sGroupId, sEditUrl, sPath, fnCallback);
+			return oCache._delete(oGroupLock, sEditUrl, sPath, fnCallback);
 		}
-		return this.oContext.getBinding().deleteFromCache(sGroupId, sEditUrl,
+		return this.oContext.getBinding().deleteFromCache(oGroupLock, sEditUrl,
 			_Helper.buildPath(this.oContext.iIndex, this.sPath, sPath), fnCallback);
 	};
 
@@ -606,21 +632,21 @@ sap.ui.define([
 				return true;
 			}
 
-			mExpandValue = mQueryOptions && mQueryOptions.$expand;
+			mExpandValue = mQueryOptions.$expand;
 			if (mExpandValue) {
 				mAggregatedQueryOptions.$expand = mAggregatedQueryOptions.$expand || {};
 				if (!Object.keys(mExpandValue).every(mergeExpandPath)) {
 					return false;
 				}
 			}
-			aSelectValue = mQueryOptions && mQueryOptions.$select;
+			aSelectValue = mQueryOptions.$select;
 			if (aSelectValue) {
 				mAggregatedQueryOptions.$select = mAggregatedQueryOptions.$select || [];
 				if (!aSelectValue.every(mergeSelectPath)) {
 					return false;
 				}
 			}
-			if (mQueryOptions && mQueryOptions.$count) {
+			if (mQueryOptions.$count) {
 				mAggregatedQueryOptions.$count = true;
 			}
 			return Object.keys(mQueryOptions).concat(Object.keys(mAggregatedQueryOptions))
@@ -689,7 +715,7 @@ sap.ui.define([
 	ODataParentBinding.prototype.selectKeyProperties = function (mQueryOptions, sMetaPath) {
 		var oType = this.oModel.getMetaModel().getObject(sMetaPath + "/");
 
-		if (oType.$Key) {
+		if (oType && oType.$Key) {
 			this.addToSelect(mQueryOptions, oType.$Key.map(function (vKey) {
 				if (typeof vKey === "object") {
 					return vKey[Object.keys(vKey)[0]];

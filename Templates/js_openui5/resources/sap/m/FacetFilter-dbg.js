@@ -125,11 +125,12 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IShrinkable
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.m.FacetFilter
+	 * @see {@link topic:c6c38217a4a64001a22ad76cdfa97fae/ Facet Filter}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var FacetFilter = Control.extend("sap.m.FacetFilter", /** @lends sap.m.FacetFilter.prototype */ { metadata : {
@@ -411,7 +412,9 @@ sap.ui.define([
 		oDialog.addContent(oNavContainer);
 
 		this.getLists().forEach(function (oList) {
-			oList._preserveOriginalActiveState();
+			if (oList.getMode() === ListMode.MultiSelect) {
+				oList._preserveOriginalActiveState();
+			}
 		});
 
 		//keyboard acc - focus on 1st item of 1st page
@@ -1201,7 +1204,9 @@ sap.ui.define([
 					that._openPopover(oPopover, oThisButton);
 				};
 
-				oList._preserveOriginalActiveState();
+				if (oList.getMode() === ListMode.MultiSelect) {
+					oList._preserveOriginalActiveState();
+				}
 
 				// TODO: Remove when ie 9 is no longer supported
 				if (Device.browser.internet_explorer && Device.browser.version < 10) {
@@ -1263,7 +1268,6 @@ sap.ui.define([
 			}
 
 			oButton.setText(sText);
-			oButton.setTooltip(sText);
 		}
 	};
 
@@ -1373,9 +1377,11 @@ sap.ui.define([
 			// a slight visual change in the filter items page just prior to navigation.
 			var oToPage = oEvent.getParameters()["to"];
 			var oFromPage = oEvent.getParameters()['from'];
-			//keyboard acc - focus on 1st item of 2nd page
+			//keyboard acc
 			if (oFromPage === oFacetPage) {
-				var oFirstItem = oToPage.getContent(0)[1].getItems()[0];
+				// in SingleSelectMaster focus on the 1st content item 1st item
+				// in MultiSelect mode focus on 1st item of 2nd content item, since the first content item is the Bar with "Select All" checkbox
+				var oFirstItem = (that._displayedList.getMode() === ListMode.MultiSelect) ? oToPage.getContent(0)[1].getItems()[0] : oToPage.getContent(0)[0].getItems()[0];
 				if (oFirstItem) {
 					oFirstItem.focus();
 				}
@@ -1383,6 +1389,8 @@ sap.ui.define([
 			if (oToPage === oFacetPage) {
 				// Destroy the search field bar
 				oFromPage.destroySubHeader();
+
+				oFacetPage.getContent()[0].getModel().setData({ items: that._getMapFacetLists() });
 
 				jQuery.sap.assert(that._displayedList === null, "Filter items list should have been placed back in the FacetFilter aggregation before page content is destroyed.");
 				oFromPage.destroyContent(); // Destroy the select all checkbox bar
@@ -1539,7 +1547,10 @@ sap.ui.define([
 					if (oNavContainer.getCurrentPage() === oFilterItemsPage) {
 
 						var oList = that._restoreListFromDisplayContainer(oFilterItemsPage);
-						oList._updateActiveState();
+
+						if (oList.getMode() === ListMode.MultiSelect) {
+							oList._updateActiveState();
+						}
 						oList._fireListCloseEvent();
 						oList._search("");
 					}
@@ -1631,16 +1642,7 @@ sap.ui.define([
 		});
 
 		// Create the facet list from a model binding so that we can implement facet list search using a filter.
-		var aFacetFilterLists = [];
-		for ( var i = 0; i < this.getLists().length; i++) {
-			var oList = this.getLists()[i];
-
-			aFacetFilterLists.push({
-				text: oList.getTitle(),
-				count: oList.getAllCount(),
-				index : i
-			});
-		}
+		var aFacetFilterLists = this._getMapFacetLists();
 
 		var oModel = new sap.ui.model.json.JSONModel({
 			items: aFacetFilterLists
@@ -1664,6 +1666,16 @@ sap.ui.define([
 
 		oFacetList.setModel(oModel);
 		return oFacetList;
+	};
+
+	FacetFilter.prototype._getMapFacetLists = function () {
+		return this.getLists().map(function (oList, iIndex) {
+			return {
+				text: oList.getTitle(),
+				count: oList.getAllCount(),
+				index: iIndex
+			};
+		});
 	};
 
 	/**
@@ -1776,7 +1788,9 @@ sap.ui.define([
 		var oFilterItemsPage = oNavContainer.getPages()[1];
 		var oList = this._restoreListFromDisplayContainer(oFilterItemsPage);
 
-		oList._updateActiveState();
+		if (oList.getMode() === ListMode.MultiSelect) {
+			oList._updateActiveState();
+		}
 		oList._fireListCloseEvent();
 		oList._search("");
 		this._selectedFacetItem.setCounter(oList.getAllCount());

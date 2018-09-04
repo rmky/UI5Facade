@@ -6,8 +6,8 @@
 
 // Provides control sap.m.P13nDimMeasurePanel.
 sap.ui.define([
-	'jquery.sap.global', './ColumnListItem', './P13nPanel', './P13nDimMeasureItem', './SearchField', './Table', './library', 'sap/ui/model/ChangeReason', 'sap/ui/model/json/JSONModel', 'sap/ui/model/BindingMode', 'sap/ui/core/ResizeHandler', 'sap/ui/core/Item', 'sap/ui/core/InvisibleText', 'sap/ui/core/IconPool', 'sap/m/ScrollContainer'
-], function(jQuery, ColumnListItem, P13nPanel, P13nDimMeasureItem, SearchField, Table, library, ChangeReason, JSONModel, BindingMode, ResizeHandler, Item, InvisibleText, IconPool, ScrollContainer) {
+	'jquery.sap.global', './ColumnListItem', './P13nPanel', './P13nDimMeasureItem', './SearchField', './Table', './library', 'sap/ui/core/library', 'sap/ui/model/ChangeReason', 'sap/ui/model/json/JSONModel', 'sap/ui/model/BindingMode', 'sap/ui/core/ResizeHandler', 'sap/ui/core/Item', 'sap/ui/core/InvisibleText', 'sap/ui/core/IconPool', 'sap/m/ScrollContainer'
+], function(jQuery, ColumnListItem, P13nPanel, P13nDimMeasureItem, SearchField, Table, library, CoreLibrary, ChangeReason, JSONModel, BindingMode, ResizeHandler, Item, InvisibleText, IconPool, ScrollContainer) {
 	"use strict";
 
 	// shortcut for sap.m.OverflowToolbarPriority
@@ -37,7 +37,7 @@ sap.ui.define([
 	 *        dimensions and measures for table personalization.
 	 * @extends sap.m.P13nPanel
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @public
 	 * @since 1.34.0
@@ -162,7 +162,7 @@ sap.ui.define([
 				}, {
 					key: "category2",
 					text: oRb.getText('COLUMNSPANEL_CHARTROLE_CATEGORY2')
-				},{
+				}, {
 					key: "series",
 					text: oRb.getText('COLUMNSPANEL_CHARTROLE_SERIES')
 				}
@@ -174,8 +174,7 @@ sap.ui.define([
 				}, {
 					key: "axis2",
 					text: oRb.getText('COLUMNSPANEL_CHARTROLE_AXIS2')
-				},
-				{
+				}, {
 					key: "axis3",
 					text: oRb.getText('COLUMNSPANEL_CHARTROLE_AXIS3')
 				}, {
@@ -227,8 +226,8 @@ sap.ui.define([
 				var $dialogCont = null, iContentHeight, iHeaderHeight;
 				var oParent = that.getParent();
 				var oToolbar = that._getToolbar();
-				if (oParent) {
-					$dialogCont = jQuery("#" + oParent.getId() + "-cont");
+				if (oParent && oParent.$) {
+					$dialogCont = oParent.$("cont");
 					if ($dialogCont.children().length > 0 && oToolbar.$().length > 0) {
 						iScrollContainerHeightOld = oScrollContainer.$()[0].clientHeight;
 
@@ -465,49 +464,6 @@ sap.ui.define([
 		return this;
 	};
 
-	P13nDimMeasurePanel.prototype.onBeforeNavigationFrom = function() {
-		// Check if chart type fits selected dimensions and measures
-		var sChartType = this.getChartTypeKey();
-		var aDimensionItems = [];
-		var aMeasureItems = [];
-
-		this.getDimMeasureItems().forEach(function(oDimMeasureItem) {
-			var oMItem = this._getModelItemByColumnKey(oDimMeasureItem.getColumnKey());
-			if (!oMItem) {
-				return;
-			}
-			if (oMItem.aggregationRole === "Dimension") {
-				aDimensionItems.push(oDimMeasureItem);
-			} else if (oMItem.aggregationRole === "Measure") {
-				aMeasureItems.push(oDimMeasureItem);
-			}
-		}, this);
-
-		aDimensionItems = aDimensionItems.filter(function(oItem) {
-			return oItem.getVisible();
-		}).map(function(oItem) {
-			return {
-				name: oItem.getColumnKey()
-			};
-		});
-		aMeasureItems = aMeasureItems.filter(function(oItem) {
-			return oItem.getVisible();
-		}).map(function(oItem) {
-			return {
-				name: oItem.getColumnKey()
-			};
-		});
-
-		sap.ui.getCore().loadLibrary("sap.chart");
-		var oResult;
-		try {
-			oResult = sap.chart.api.getChartTypeLayout(sChartType, aDimensionItems, aMeasureItems);
-		} catch (oException) {
-			return false;
-		}
-		return oResult.errors.length === 0;
-	};
-
 	P13nDimMeasurePanel.prototype._notifyChange = function() {
 		var fListener = this.getChangeNotifier();
 		if (fListener) {
@@ -539,6 +495,7 @@ sap.ui.define([
 			selectionChange: jQuery.proxy(this._onSelectionChange, this),
 			columns: [
 				new sap.m.Column({
+					vAlign: CoreLibrary.VerticalAlign.Middle,
 					header: new sap.m.Text({
 						text: {
 							parts: [
@@ -556,10 +513,12 @@ sap.ui.define([
 						}
 					})
 				}), new sap.m.Column({
+					vAlign: CoreLibrary.VerticalAlign.Middle,
 					header: new sap.m.Text({
 						text: oRb.getText('COLUMNSPANEL_COLUMN_TYPE')
 					})
 				}), new sap.m.Column({
+					vAlign: CoreLibrary.VerticalAlign.Middle,
 					header: new sap.m.Text({
 						text: oRb.getText('COLUMNSPANEL_COLUMN_ROLE')
 					})

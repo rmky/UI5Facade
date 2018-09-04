@@ -8,25 +8,17 @@
 sap.ui.define([
 	'jquery.sap.global',
 	'./ListBase',
-	'./TreeItemBase',
 	'./library',
 	'sap/ui/model/ClientTreeBindingAdapter',
 	'sap/ui/model/TreeBindingCompatibilityAdapter',
-	'sap/ui/model/odata/ODataTreeBinding',
-	'sap/ui/model/odata/v2/ODataTreeBinding',
-	'sap/ui/model/ClientTreeBinding',
 	'./TreeRenderer'
 ],
 function(
 	jQuery,
 	ListBase,
-	TreeItemBase,
 	library,
 	ClientTreeBindingAdapter,
 	TreeBindingCompatibilityAdapter,
-	ODataTreeBinding,
-	V2ODataTreeBinding,
-	ClientTreeBinding,
 	TreeRenderer
 	) {
 	"use strict";
@@ -45,7 +37,7 @@ function(
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -94,15 +86,15 @@ function(
 
 		if (oBinding && sName === "items" && !oBinding.getLength) {
 			// try to resolve optional dependencies
-			if (ODataTreeBinding && oBinding instanceof ODataTreeBinding) {
+			if (oBinding.isA("sap.ui.model.odata.v2.ODataTreeBinding")) {
+				oBinding.applyAdapterInterface();
+			} else if (oBinding.isA("sap.ui.model.ClientTreeBinding")) {
+				ClientTreeBindingAdapter.apply(oBinding);
+			} else if (oBinding.isA("sap.ui.model.odata.ODataTreeBinding")) {
 				// use legacy tree binding adapter
 				TreeBindingCompatibilityAdapter(oBinding, this);
-			} else if (V2ODataTreeBinding && oBinding instanceof V2ODataTreeBinding) {
-				oBinding.applyAdapterInterface();
-			} else if (ClientTreeBinding && oBinding instanceof ClientTreeBinding) {
-				ClientTreeBindingAdapter.apply(oBinding);
 			} else {
-				jQuery.sap.log.error("TreeBinding is not supported for the control " + this);
+				jQuery.sap.log.error("TreeBinding is not supported for the " + this);
 			}
 		}
 
@@ -158,7 +150,7 @@ function(
 
 	Tree.prototype.validateAggregation = function(sAggregationName, oObject, bMultiple) {
 		var oResult = ListBase.prototype.validateAggregation.apply(this, arguments);
-		if (sAggregationName === "items" && !(oObject instanceof TreeItemBase)) {
+		if (sAggregationName === "items" && !oObject.isA("sap.m.TreeItemBase")) {
 			throw new Error(oObject + " is not a valid items aggregation of " + this + ". Items aggregation in Tree control only supports TreeItemBase-based objects, e.g. StandardTreeItem.");
 		}
 		return oResult;
@@ -199,7 +191,7 @@ function(
 	/**
 	 * The <code>growing</code> property is not supported for control <code>Tree</code>.
 	 * @public
-	 * @deprecated
+	 * @deprecated As of version 1.46.
 	 */
 	Tree.prototype.setGrowing = function() {
 		jQuery.sap.log.error("Growing feature of " + this + " is not supported!");
@@ -209,7 +201,7 @@ function(
 	/**
 	 * The <code>growingThreshold</code> property is not supported for control <code>Tree</code>.
 	 * @public
-	 * @deprecated
+	 * @deprecated As of version 1.46.
 	 */
 	Tree.prototype.setGrowingThreshold = function() {
 		jQuery.sap.log.error("GrowingThreshold of " + this + " is not supported!");
@@ -219,7 +211,7 @@ function(
 	/**
 	 * The <code>growingTriggerText</code> property is not supported for control <code>Tree</code>.
 	 * @public
-	 * @deprecated
+	 * @deprecated As of version 1.46.
 	 */
 	Tree.prototype.setGrowingTriggerText = function() {
 		jQuery.sap.log.error("GrowingTriggerText of " + this + " is not supported!");
@@ -229,7 +221,7 @@ function(
 	/**
 	 * The <code>growingScrollToLoad</code> property is not supported for control <code>Tree</code>.
 	 * @public
-	 * @deprecated
+	 * @deprecated As of version 1.46.
 	 */
 	Tree.prototype.setGrowingScrollToLoad = function() {
 		jQuery.sap.log.error("GrowingScrollToLoad of " + this + " is not supported!");
@@ -239,7 +231,7 @@ function(
 	/**
 	 * The <code>growingDirection</code> property is not supported for control <code>Tree</code>.
 	 * @public
-	 * @deprecated
+	 * @deprecated As of version 1.46.
 	 */
 	Tree.prototype.setGrowingDirection = function() {
 		jQuery.sap.log.error("GrowingDirection of " + this + " is not supported!");
@@ -305,6 +297,93 @@ function(
 
 		if (oBinding) {
 			oBinding.collapseToLevel(0);
+		}
+
+		return this;
+	};
+
+	Tree.prototype._sortHelper = function (vParam) {
+		var aIndices = [];
+
+		if ( typeof vParam === "number" ) {
+			aIndices.push(vParam);
+		} else if ( Array.isArray(vParam) ) {
+			//sort
+			aIndices = vParam.sort().reverse();
+		}
+
+		return aIndices;
+
+	};
+
+	Tree.prototype._removeLeaf = function(aSortedIndices) {
+		var oItem = null,
+			iItemIndex,
+			aIndices = [];
+
+		for (var i = 0; i < aSortedIndices.length; i++) {
+			iItemIndex = aSortedIndices[i];
+			oItem = this.getItems()[iItemIndex];
+			if (oItem && !oItem.isLeaf()) {
+				aIndices.push(iItemIndex);
+			}
+		}
+
+		return aIndices;
+
+	};
+
+	Tree.prototype._preExpand = function(vParam) {
+		var aIndices = this._sortHelper(vParam);
+
+		aIndices = this._removeLeaf(aIndices);
+
+		return aIndices;
+	};
+
+	/**
+	 *
+	 * Expands one or multiple items.
+	 *
+	 * @return {sap.m.Tree} A reference to the Tree control
+	 * @public
+	 * @param {int|int[]} vParam The index or indices of the item to be expanded
+	 * @since 1.56.0
+	 */
+	Tree.prototype.expand = function(vParam) {
+		var oBinding = this.getBinding("items");
+
+		if (oBinding && oBinding.expand) {
+			var aIndices = this._preExpand(vParam);
+			for (var i = 0; i < aIndices.length - 1; i++) {
+				oBinding.expand(aIndices[i], true);
+			}
+			// trigger change
+			oBinding.expand(aIndices[aIndices.length - 1], false);
+		}
+
+		return this;
+	};
+
+	/**
+	 *
+	 * Collapses one or multiple items.
+	 *
+	 * @return {sap.m.Tree} A reference to the Tree control
+	 * @public
+	 * @param {int|int[]} vParam The index or indices of the tree items to be collapsed
+	 * @since 1.56.0
+	 */
+	Tree.prototype.collapse = function(vParam) {
+		var oBinding = this.getBinding("items");
+
+		if (oBinding && oBinding.collapse) {
+			var aIndices = this._preExpand(vParam);
+			for (var i = 0; i < aIndices.length - 1; i++) {
+				oBinding.collapse(aIndices[i], true);
+			}
+			// trigger change
+			oBinding.collapse(aIndices[aIndices.length - 1], false);
 		}
 
 		return this;

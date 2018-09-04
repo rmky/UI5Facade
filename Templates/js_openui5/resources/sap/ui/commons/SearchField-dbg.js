@@ -48,7 +48,7 @@ sap.ui.define([
 	 * @implements sap.ui.commons.ToolbarItem
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -618,7 +618,7 @@ sap.ui.define([
 
 
 	var isMobile = function() {
-		return sap.ui.Device.browser.mobile;
+		return sap.ui.Device.browser.mobile && !sap.ui.Device.system.desktop;
 	};
 
 

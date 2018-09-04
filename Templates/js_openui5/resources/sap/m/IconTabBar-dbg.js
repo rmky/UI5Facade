@@ -23,6 +23,9 @@ sap.ui.define([
 	// shortcut for sap.m.BackgroundDesign
 	var BackgroundDesign = library.BackgroundDesign;
 
+	// shortcut for sap.m.IconTabDensityMode
+	var IconTabDensityMode = library.IconTabDensityMode;
+
 
 
 	/**
@@ -86,11 +89,11 @@ sap.ui.define([
 	 * @implements sap.m.ObjectHeaderContainer
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
-	 * @constructor
 	 * @public
 	 * @alias sap.m.IconTabBar
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/icontabbar/ Icon Tab Bar}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var IconTabBar = Control.extend("sap.m.IconTabBar", /** @lends sap.m.IconTabBar.prototype */ { metadata : {
@@ -191,10 +194,24 @@ sap.ui.define([
 
 			/**
 			 * Specifies whether tab reordering is enabled. Relevant only for desktop devices.
+			 * The {@link sap.m.IconTabSeparator sap.m.IconTabSeparator} cannot be dragged  and dropped
+			 * Items can be moved around {@link sap.m.IconTabSeparator sap.m.IconTabSeparator}
 			 * @since 1.46
 			 */
-			enableTabReordering : {type : "boolean", group : "Behavior", defaultValue : false}
-		},
+			enableTabReordering : {type : "boolean", group : "Behavior", defaultValue : false},
+
+			/**
+			 * Specifies the visual density mode of the tabs.
+			 *
+			 * The values that can be applied are <code>Cozy</code>, <code>Compact</code> and <code>Inherit</code>.
+			 * <code>Cozy</code> and <code>Compact</code> render the control in one of these modes independent of the global density settings.
+			 * The <code>Inherit</code> value follows the global density settings which are applied.
+			 * For compatibility reasons, the default value is <code>Cozy</code>.
+			 * @since 1.56
+			 */
+			tabDensityMode : {type : "sap.m.IconTabDensityMode", group : "Appearance", defaultValue : IconTabDensityMode.Cozy}
+
+			},
 		aggregations : {
 
 			/**
@@ -279,8 +296,6 @@ sap.ui.define([
 	/**
 	 * Clones the IconTabBar.
 	 *
-	 * @name sap.m.IconTabBar.clone
-	 * @method
 	 * @public
 	 * @returns {sap.m.IconTabBar} The cloned IconTabBar.
 	 */
@@ -297,9 +312,6 @@ sap.ui.define([
 	/**
 	 * Sets the tab content as expanded.
 	 *
-	 * @overwrite
-	 * @name sap.m.IconTabBar.setExpanded
-	 * @method
 	 * @public
 	 * @param {boolean} bExpanded New parameter value.
 	 * @return {sap.m.IconTabBar} this IconTabBar reference for chaining.
@@ -318,9 +330,6 @@ sap.ui.define([
 	/**
 	 * Sets the tabs as collapsible and expandable without re-rendering the control.
 	 *
-	 * @overwrite
-	 * @name sap.m.IconTabBar.setExpandable
-	 * @method
 	 * @public
 	 * @param {boolean} bExpandable New parameter value.
 	 * @return {sap.m.IconTabBar} this IconTabBar reference for chaining.
@@ -334,9 +343,6 @@ sap.ui.define([
 	/**
 	 * Sets the header mode.
 	 *
-	 * @overwrite
-	 * @name sap.m.IconTabBar.setHeaderMode
-	 * @method
 	 * @public
 	 * @param {sap.m.IconTabHeaderMode} mode New parameter value.
 	 * @return {sap.m.IconTabBar} this IconTabBar reference for chaining.
@@ -350,13 +356,26 @@ sap.ui.define([
 		return this;
 	};
 
+	/**
+	 * Sets the tab density mode.
+	 *
+	 * @public
+	 * @param {sap.m.IconTabHeaderMode} mode New parameter value.
+	 * @return {sap.m.IconTabBar} this IconTabBar reference for chaining.
+	 */
+	IconTabBar.prototype.setTabDensityMode = function (mode) {
+		// set internal property
+		this.setProperty("tabDensityMode", mode);
+
+		this._getIconTabHeader().setTabDensityMode(mode);
+
+		return this;
+	};
+
 
 	/**
 	 * Sets the header background design.
 	 *
-	 * @overwrite
-	 * @name sap.m.IconTabBar.setHeaderBackgroundDesign
-	 * @method
 	 * @public
 	 * @param {sap.m.BackgroundDesign} headerBackgroundDesign New parameter value.
 	 * @return {sap.m.IconTabBar} this IconTabBar reference for chaining.
@@ -373,9 +392,6 @@ sap.ui.define([
 	/**
 	 * Sets the showOverflowSelectList property.
 	 *
-	 * @overwrite
-	 * @name sap.m.IconTabBar.setShowOverflowSelectList
-	 * @method
 	 * @public
 	 * @param {boolean} value New value for showOverflowSelectList.
 	 * @return {sap.m.IconTabBar} this IconTabBar reference for chaining.
@@ -392,9 +408,6 @@ sap.ui.define([
 	/**
 	 * Sets the enableTabReordering property.
 	 *
-	 * @overwrite
-	 * @name sap.m.IconTabBar.setEnableTabReordering
-	 * @method
 	 * @public
 	 * @param {boolean} value New value for enableTabReordering.
 	 * @return {sap.m.IconTabBar} this IconTabBar reference for chaining.
@@ -411,8 +424,6 @@ sap.ui.define([
 	/**
 	 * Re-renders only the displayed content of the IconTabBar.
 	 *
-	 * @name sap.m.IconTabBar._rerenderContent
-	 * @method
 	 * @private
 	 * @param oContent Content, which should be rendered.
 	 */
@@ -431,8 +442,6 @@ sap.ui.define([
 	/**
 	 * Opens and closes the content container.
 	 *
-	 * @name sap.m.IconTabBar._toggleExpandCollapse
-	 * @method
 	 * @private
 	 * @param {boolean|undefined} bExpanded The new state of the container. If not specified, it will use the property expanded.
 	 * @return {sap.m.IconTabBar} this IconTabBar reference for chaining.
@@ -500,8 +509,6 @@ sap.ui.define([
 	/**
 	 * Function is executed when the expand/collapse animation is finished to adjust the UI.
 	 *
-	 * @name sap.m.IconTabBar.onTransitionEnded
-	 * @method
 	 * @private
 	 * @param {boolean} bExpanded The new state of the container.
 	 * @return {sap.m.IconTabBar} this IconTabBar reference for chaining.
@@ -535,8 +542,6 @@ sap.ui.define([
 	/**
 	 * Lazy initializes the iconTabHeader aggregation.
 	 *
-	 * @name sap.m.IconTabBar._getIconTabHeader
-	 * @method
 	 * @private
 	 * @returns {sap.m.IconTabBar} Aggregation for the IconTabBar.
 	 */
@@ -558,9 +563,6 @@ sap.ui.define([
 	/**
 	 * Reflector for the internal header's showSelection property.
 	 *
-	 * @overwrite
-	 * @name sap.m.IconTabBar.setShowSelection
-	 * @method
 	 * @public
 	 * @param {boolean} bValue the new value.
 	 * @returns {sap.m.IconTabBar} this IconTabBar reference for chaining.
@@ -573,8 +575,6 @@ sap.ui.define([
 	/**
 	 * Reflector for the internal header's showSelection property.
 	 *
-	 * @overwrite
-	 * @name sap.m.IconTabBar.getShowSelection
 	 * @public
 	 * @returns {boolean} The current property value.
 	 */
@@ -585,8 +585,6 @@ sap.ui.define([
 	/**
 	 * Reflector for the internal header's selectedKey property.
 	 *
-	 * @overwrite
-	 * @name sap.m.IconTabBar.setSelectedKey
 	 * @public
 	 * @param {string} sValue The new value.
 	 * @returns {sap.m.IconTabBar} this Pointer for chaining.
@@ -599,9 +597,6 @@ sap.ui.define([
 	/**
 	 * Reflector for the internal header's selectedKey property.
 	 *
-	 * @overwrite
-	 * @name sap.m.IconTabBar.getSelectedKey
-	 * @method
 	 * @public
 	 * @returns {string} The current property value.
 	 */
@@ -613,9 +608,6 @@ sap.ui.define([
 	 * Reflector for the internal header's selectedItem.
 	 * Sets the selected item, updates the UI, and fires the select event.
 	 *
-	 * @overwrite
-	 * @name sap.m.IconTabBar.setSelectedItem
-	 * @method
 	 * @private
 	 * @param {sap.m.IconTabFilter} oItem Item to be selected.
 	 * @return {sap.m.IconTabHeader} this IconTabBar reference for chaining.

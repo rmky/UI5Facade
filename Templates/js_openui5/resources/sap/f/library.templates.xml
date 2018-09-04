@@ -3,9 +3,10 @@
 <Template name="sap.f.Avatar" alias="Avatar">
 	<jsTemplate><![CDATA[new sap.f.Avatar({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	src: undefined, // sap.ui.core.URI
@@ -18,6 +19,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	detailBox: undefined, // sap.m.LightBox, since 1.48
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -29,6 +31,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<Avatar xmlns="sap.f"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -45,6 +48,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<detailBox></detailBox> <!-- sap.m.LightBox, since 1.48 -->
 </Avatar>
 ]]></xmlTemplate>
@@ -52,9 +56,10 @@
 <Template name="sap.f.DynamicPage" alias="DynamicPage,Page">
 	<jsTemplate><![CDATA[new sap.f.DynamicPage({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	preserveHeaderStateOnScroll: false, // boolean
@@ -65,6 +70,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	title: undefined, // sap.f.DynamicPageTitle
 	header: undefined, // sap.f.DynamicPageHeader
 	content: undefined, // sap.ui.core.Control
@@ -76,6 +82,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<DynamicPage xmlns="sap.f"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -89,6 +96,7 @@
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<title></title> <!-- sap.f.DynamicPageTitle -->
 		<header></header> <!-- sap.f.DynamicPageHeader -->
 		<content></content> <!-- sap.ui.core.Control -->
@@ -99,15 +107,17 @@
 <Template name="sap.f.DynamicPageHeader" alias="DynamicPageHeader,Header">
 	<jsTemplate><![CDATA[new sap.f.DynamicPageHeader({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	pinnable: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	content: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -116,6 +126,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<DynamicPageHeader xmlns="sap.f"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -125,6 +136,7 @@
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<content></content> <!-- sap.ui.core.Control -->
 </DynamicPageHeader>
 ]]></xmlTemplate>
@@ -132,9 +144,10 @@
 <Template name="sap.f.DynamicPageTitle" alias="DynamicPageTitle,Title">
 	<jsTemplate><![CDATA[new sap.f.DynamicPageTitle({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	primaryArea: sap.f.DynamicPageTitleArea.Begin, // sap.f.DynamicPageTitleArea, since 1.50
@@ -142,6 +155,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	heading: undefined, // sap.ui.core.Control
 	snappedHeading: undefined, // sap.ui.core.Control, since 1.52
 	expandedHeading: undefined, // sap.ui.core.Control, since 1.52
@@ -161,6 +175,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<DynamicPageTitle xmlns="sap.f"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -172,6 +187,7 @@
 	stateChange="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<heading></heading> <!-- sap.ui.core.Control -->
 		<snappedHeading></snappedHeading> <!-- sap.ui.core.Control, since 1.52 -->
 		<expandedHeading></expandedHeading> <!-- sap.ui.core.Control, since 1.52 -->
@@ -187,9 +203,10 @@
 <Template name="sap.f.FlexibleColumnLayout" alias="FlexibleColumnLayout,Layout">
 	<jsTemplate><![CDATA[new sap.f.FlexibleColumnLayout({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	layout: sap.f.LayoutType.OneColumn, // sap.f.LayoutType
@@ -200,6 +217,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	beginColumnPages: [], // sap.ui.core.Control
 	midColumnPages: [], // sap.ui.core.Control
 	endColumnPages: [], // sap.ui.core.Control
@@ -234,6 +252,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<FlexibleColumnLayout xmlns="sap.f"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -257,6 +276,7 @@
 	afterEndColumnNavigate="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<beginColumnPages></beginColumnPages> <!-- sap.ui.core.Control -->
 		<midColumnPages></midColumnPages> <!-- sap.ui.core.Control -->
 		<endColumnPages></endColumnPages> <!-- sap.ui.core.Control -->
@@ -271,6 +291,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -283,6 +304,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/AddAction>
 ]]></xmlTemplate>
 </Template>
@@ -294,6 +316,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -306,6 +329,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/CloseAction>
 ]]></xmlTemplate>
 </Template>
@@ -317,6 +341,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -329,6 +354,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/CopyAction>
 ]]></xmlTemplate>
 </Template>
@@ -340,6 +366,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -352,6 +379,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/DeleteAction>
 ]]></xmlTemplate>
 </Template>
@@ -363,6 +391,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -375,6 +404,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/DiscussInJamAction>
 ]]></xmlTemplate>
 </Template>
@@ -386,6 +416,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -398,6 +429,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/EditAction>
 ]]></xmlTemplate>
 </Template>
@@ -409,6 +441,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -421,6 +454,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/ExitFullScreenAction>
 ]]></xmlTemplate>
 </Template>
@@ -433,6 +467,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -446,6 +481,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/FavoriteAction>
 ]]></xmlTemplate>
 </Template>
@@ -458,6 +494,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -471,6 +508,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/FlagAction>
 ]]></xmlTemplate>
 </Template>
@@ -483,6 +521,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -496,6 +535,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/FooterMainAction>
 ]]></xmlTemplate>
 </Template>
@@ -507,6 +547,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -519,6 +560,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/FullScreenAction>
 ]]></xmlTemplate>
 </Template>
@@ -531,6 +573,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -544,6 +587,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/MainAction>
 ]]></xmlTemplate>
 </Template>
@@ -555,6 +599,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -567,6 +612,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/MessagesIndicator>
 ]]></xmlTemplate>
 </Template>
@@ -579,6 +625,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -592,6 +639,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/NegativeAction>
 ]]></xmlTemplate>
 </Template>
@@ -604,6 +652,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -617,6 +666,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/PositiveAction>
 ]]></xmlTemplate>
 </Template>
@@ -628,6 +678,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -640,6 +691,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/PrintAction>
 ]]></xmlTemplate>
 </Template>
@@ -651,6 +703,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -663,6 +716,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/SemanticButton>
 ]]></xmlTemplate>
 </Template>
@@ -672,7 +726,8 @@
 	visible: true, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
-	dependents: [] // sap.ui.core.Element, since 1.19
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [] // sap.ui.core.dnd.DragDropBase, since 1.56
 })
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<semantic/SemanticControl xmlns="sap.f"
@@ -680,15 +735,17 @@
 	visible="true">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/SemanticControl>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.f.semantic.SemanticPage" alias="SemanticPage,Page">
 	<jsTemplate><![CDATA[new sap.f.semantic.SemanticPage({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	headerExpanded: true, // boolean
@@ -700,6 +757,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	titleHeading: undefined, // sap.ui.core.Control
 	titleBreadcrumbs: undefined, // sap.m.IBreadcrumbs, since 1.52
 	titleSnappedContent: [], // sap.ui.core.Control
@@ -739,6 +797,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<semantic/SemanticPage xmlns="sap.f"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -753,6 +812,7 @@
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<titleHeading></titleHeading> <!-- sap.ui.core.Control -->
 		<titleBreadcrumbs></titleBreadcrumbs> <!-- sap.m.IBreadcrumbs, since 1.52 -->
 		<titleSnappedContent></titleSnappedContent> <!-- sap.ui.core.Control -->
@@ -797,6 +857,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -810,6 +871,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/SemanticToggleButton>
 ]]></xmlTemplate>
 </Template>
@@ -821,6 +883,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -833,6 +896,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/SendEmailAction>
 ]]></xmlTemplate>
 </Template>
@@ -844,6 +908,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -856,6 +921,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/SendMessageAction>
 ]]></xmlTemplate>
 </Template>
@@ -867,6 +933,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -879,6 +946,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/ShareInJamAction>
 ]]></xmlTemplate>
 </Template>
@@ -891,6 +959,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	press: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -904,6 +973,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </semantic/TitleMainAction>
 ]]></xmlTemplate>
 </Template>

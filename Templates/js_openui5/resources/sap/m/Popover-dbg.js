@@ -96,10 +96,11 @@ sap.ui.define([
 		* @extends sap.ui.core.Control
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.54.7
+		* @version 1.56.6
 		*
 		* @public
 		* @alias sap.m.Popover
+		* @see {@link fiori:https://experience.sap.com/fiori-design-web/popover/ Popover}
 		* @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		*/
 		var Popover = Control.extend("sap.m.Popover", /** @lends sap.m.Popover.prototype */ {
@@ -945,7 +946,7 @@ sap.ui.define([
 			//	recalculate the arrow position when the size of the popover changes.
 			if (!Device.support.touch) {
 				setTimeout(function () {
-					Device.resize.attachHandler(that._fnOrientationChange);
+					!that.bIsDestroyed && Device.resize.attachHandler(that._fnOrientationChange);
 				}, 0);
 			}
 
@@ -1517,6 +1518,7 @@ sap.ui.define([
 		Popover.prototype._getPositionParams = function ($popover, $arrow, $content, $scrollArea) {
 			var oComputedStyle = window.getComputedStyle($popover[0]),
 				oContentComputedStyle = window.getComputedStyle($content[0]),
+				fScrollWidth = this.getDomRef().clientHeight != this.getDomRef().scrollHeight ? jQuery.sap.scrollbarSize().width : 0,
 				oPosParams = {};
 
 			oPosParams._$popover = $popover;
@@ -1540,7 +1542,7 @@ sap.ui.define([
 
 			oPosParams._fArrowHeight = $arrow.outerHeight(true);
 			oPosParams._fWidth = Popover.outerWidth($popover[0]);
-			oPosParams._fWidthInner = oPosParams._$scrollArea ? (oPosParams._$scrollArea.width() || 0) : 0;
+			oPosParams._fWidthInner = oPosParams._$scrollArea ? (oPosParams._$scrollArea.width() + fScrollWidth) : 0;
 			oPosParams._fHeight = Popover.outerHeight($popover[0]);
 			oPosParams._fHeaderHeight = oPosParams._$header.length > 0 ? oPosParams._$header.outerHeight(true) : 0;
 			oPosParams._fSubHeaderHeight = oPosParams._$subHeader.length > 0 ? oPosParams._$subHeader.outerHeight(true) : 0;
@@ -2021,7 +2023,17 @@ sap.ui.define([
 
 			$Ref.on("webkitTransitionEnd transitionend", fnTransitionEnd);
 
-			vTimeout = setTimeout(fnTransitionEnd, 300);
+			vTimeout = setTimeout(fnTransitionEnd, this._getAnimationDuration());
+		};
+
+
+		/**
+		 * Returns the duration for the Popover's closing animation
+		 * @sap-restricted sap.ui.dt.plugin.MiniMenu
+		 * @private
+		 */
+		Popover.prototype._getAnimationDuration = function () {
+			return 300;
 		};
 
 		Popover.prototype._openAnimation = function ($Ref, iRealDuration, fnOpened) {
@@ -2238,7 +2250,7 @@ sap.ui.define([
 			} else {
 				this._headerTitle = new sap.m.Title(this.getId() + "-title", {
 					text: this.getTitle(),
-					level: "H1"
+					level: "H2"
 				});
 
 				this._createInternalHeader();

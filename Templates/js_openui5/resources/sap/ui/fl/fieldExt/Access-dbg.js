@@ -12,7 +12,7 @@ sap.ui.define(["jquery.sap.storage"], function(Storage) {
 	 * @alias sap.ui.fl.fieldExt.Access
 	 * @experimental Since 1.25.0
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 */
 	var Access = {};
 
@@ -554,9 +554,9 @@ sap.ui.define(["jquery.sap.storage"], function(Storage) {
 	};
 
 	/**
-	 * Returns informations about the current backend system
+	 * Returns information about the current backend system
 	 *
-	 * @return {map}	System informations
+	 * @return {map}	System information
 	 */
 	Access._getSystemInfo = function() {
 		return sap.ushell.Container.getLogonSystem();

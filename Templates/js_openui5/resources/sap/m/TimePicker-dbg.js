@@ -117,12 +117,13 @@ function(
 		 * @extends sap.m.DateTimeField
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
 		 * @since 1.32
 		 * @alias sap.m.TimePicker
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/time-picker/ Time Picker}
 		 */
 		var TimePicker = DateTimeField.extend("sap.m.TimePicker", /** @lends sap.m.TimePicker.prototype */ {
 			metadata : {

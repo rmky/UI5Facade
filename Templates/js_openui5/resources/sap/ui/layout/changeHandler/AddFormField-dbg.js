@@ -19,7 +19,7 @@ sap.ui.define([
 		 *
 		 * @author SAP SE
 		 *
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @experimental Since 1.50.0 This class is experimental and provides only limited functionality. Also the API might be
 		 *               changed in future.

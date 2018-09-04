@@ -112,18 +112,33 @@ sap.ui.define([
 	 * mobile devices, it opens in full screen.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.38.0
 	 * @alias sap.m.DateTimePicker
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/datetime-picker/ Date/Time Picker}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var DateTimePicker = DatePicker.extend("sap.m.DateTimePicker", /** @lends sap.m.DateTimePicker.prototype */ { metadata : {
 
 		library : "sap.m",
+		properties: {
+			/**
+			 * Sets the minutes slider step. If the step is less than 1, it will be automatically converted back to 1.
+			 * The minutes slider is populated only by multiples of the step.
+			 * @since 1.56
+			 */
+			minutesStep: {type: "int", group: "Misc", defaultValue: 1 },
 
+			/**
+			 * Sets the seconds slider step. If the step is less than 1, it will be automatically converted back to 1.
+			 * The seconds slider is populated only by multiples of the step.
+			 * @since 1.56
+			 */
+			secondsStep: {type: "int", group: "Misc", defaultValue: 1 }
+		},
 		aggregations: {
 			/**
 			 * Internal aggregation that contains the inner _picker pop-up.
@@ -221,22 +236,8 @@ sap.ui.define([
 				var oSwitcher = this.getAggregation("_switcher");
 				var sKey = oSwitcher.getSelectedKey();
 				this._switchVisibility(sKey);
-				if (Device.system.phone) {
-					this._adjustTimePickerHeightOnPhone();
-				}
 			}
 
-		},
-
-		_adjustTimePickerHeightOnPhone: function() {
-			var oSwitcher = this.getAggregation("_switcher"),
-				// height of the area containing the buttons that switch from date picker to time picker
-				sSwhitcherButtonsHeight = oSwitcher.$().children(0).css("height").replace('px','');
-
-			// we have to set the height of the DateTimePicker container ("sapMDateTimePopupCont")
-			// so the TimePicker can calculate correctly it's height depending on the container height minus height of the dialog footer height
-			// for doing this we get the document height and extract the switch buttons area height
-			this.$().css("height", (document.documentElement.clientHeight - parseInt(sSwhitcherButtonsHeight, 10)) + "px");
 		},
 
 		_handleSelect: function(oEvent) {
@@ -318,6 +319,18 @@ sap.ui.define([
 
 	};
 
+	DateTimePicker.prototype.setMinutesStep = function(iMinutesStep) {
+
+		this.setProperty('minutesStep', iMinutesStep, true);
+
+		if (this._oSliders) {
+			this._oSliders.setMinutesStep(iMinutesStep);
+		}
+
+		return this;
+
+	};
+
 	DateTimePicker.prototype.setMinDate = function (oDate) {
 		DatePicker.prototype.setMinDate.call(this, oDate);
 
@@ -334,6 +347,18 @@ sap.ui.define([
 			this._oMaxDate.setHours(oDate.getHours(), oDate.getMinutes(), oDate.getSeconds());
 		}
 		return this;
+	};
+
+	DateTimePicker.prototype.setSecondsStep = function(iSecondsStep) {
+
+		this.setProperty('secondsStep', iSecondsStep, true);
+
+		if (this._oSliders) {
+			this._oSliders.setSecondsStep(iSecondsStep);
+		}
+
+		return this;
+
 	};
 
 	DateTimePicker.prototype._getFormatInstance = function(oArguments, bDisplayFormat){
@@ -546,6 +571,8 @@ sap.ui.define([
 		if (!this._oSliders) {
 			jQuery.sap.require("sap.m.TimePickerSliders");
 			this._oSliders = new sap.m.TimePickerSliders(this.getId() + "-Sliders", {
+				minutesStep: this.getMinutesStep(),
+				secondsStep: this.getSecondsStep(),
 				displayFormat: _getTimePattern.call(this),
 				localeId: this.getLocaleId()
 			})._setShouldOpenSliderAfterRendering(true);

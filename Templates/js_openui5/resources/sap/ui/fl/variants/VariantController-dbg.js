@@ -19,8 +19,6 @@ sap.ui.define([
 ) {
 	"use strict";
 
-
-
 	/**
 	 * Helper object to handle variants and their changes
 	 *
@@ -32,7 +30,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.variants.VariantController
 	 * @experimental Since 1.50.0
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 */
 	var VariantController = function (sComponentName, sAppVersion, oChangeFileContent) {
 		this._sComponentName = sComponentName || "";
@@ -63,7 +61,7 @@ sap.ui.define([
 		return this._sAppVersion;
 	};
 
-	VariantController.prototype._setChangeFileContent = function (oChangeFileContent, oComponent) {
+	VariantController.prototype._setChangeFileContent = function (oChangeFileContent, mTechnicalParameters) {
 		var oCacheEntry = Cache.getEntry(this.getComponentName(), this.getAppVersion());
 		if (Object.keys(this._mVariantManagement).length === 0) {
 			this._mVariantManagement = {};
@@ -74,7 +72,6 @@ sap.ui.define([
 				var oVariantManagementReference = oChangeFileContent.changes.variantSection[sVariantManagementReference];
 				var aVariants = oVariantManagementReference.variants.concat();
 				var sVariantFromUrl;
-				var mTechnicalParameters = Utils.getTechnicalParametersForComponent(oComponent);
 
 				var iIndex = -1;
 				aVariants.forEach(function (oVariant, index) {
@@ -412,7 +409,9 @@ sap.ui.define([
 			oActiveChange;
 		if (Object.keys(mVariantManagementChanges).length > 0) {
 			oActiveChange = this._getActiveChange("setDefault", mVariantManagementChanges);
-			oVariantManagement.defaultVariant = oActiveChange.getContent().defaultVariant;
+			if (oActiveChange) {
+				oVariantManagement.defaultVariant = oActiveChange.getContent().defaultVariant;
+			}
 		}
 	};
 
@@ -533,6 +532,15 @@ sap.ui.define([
 			this._mVariantManagement[sVariantManagementReference].variants.splice(iIndex, 1);
 		}
 		return iIndex;
+	};
+
+	/**
+	 * Clears variant controller map
+	 *
+	 * @public
+	 */
+	VariantController.prototype.resetMap = function () {
+		this._mVariantManagement = {};
 	};
 
 	return VariantController;

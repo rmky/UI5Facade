@@ -33,18 +33,24 @@ sap.ui.define([
 
 
 	/**
-	 * Constructor for a new FileUploader.
+	 * Constructor for a new <code>FileUploader</code>.
 	 *
-	 * @param {string} [sId] id for the new control, generated automatically if no id is given
-	 * @param {object} [mSettings] initial settings for the new control
+	 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
+	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
-	 * The framework generates an input field and a button with text "Browse ...". The API supports features such as on change uploads (the upload starts immediately after a file has been selected), file uploads with explicit calls, adjustable control sizes, text display after uploads, or tooltips containing complete file paths.
+	 * The framework generates an input field and a button with text "Browse ...".
+	 * The API supports features such as on change uploads (the upload starts immediately after
+	 * a file has been selected), file uploads with explicit calls, adjustable control sizes,
+	 * text display after uploads, or tooltips containing complete file paths.
+	 *
+	 * @see {@link https://experience.sap.com/fiori-design-web/upload-collection/ Upload Collection}
+	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent, sap.ui.unified.IProcessableBlobs
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -110,7 +116,12 @@ sap.ui.define([
 			fileType : {type : "string[]", group : "Data", defaultValue : null},
 
 			/**
-			 * Allows multiple files to be chosen and uploaded from the same folder. This property is not supported by Internet Explorer 9.
+			 * Allows multiple files to be chosen and uploaded from the same folder.
+			 * This property is not supported by Internet Explorer 9.
+			 *
+			 * <b>Note:</b> Keep in mind that the various operating systems for mobile devices
+			 * can react differently to the property so that fewer upload functions may be
+			 * available in some cases.
 			 */
 			multiple : {type : "boolean", group : "Behavior", defaultValue : false},
 
@@ -1189,6 +1200,7 @@ sap.ui.define([
 					iKeyCode != eKC.PAGE_UP &&
 					iKeyCode != eKC.PAGE_DOWN &&
 					iKeyCode != eKC.END &&
+					iKeyCode != eKC.ESCAPE &&
 					iKeyCode != eKC.HOME &&
 					iKeyCode != eKC.ARROW_LEFT &&
 					iKeyCode != eKC.ARROW_UP &&
@@ -1241,7 +1253,7 @@ sap.ui.define([
 				bWrongType = true;
 				sName = this.oFileUpload.value || "";
 				iIdx = sName.lastIndexOf(".");
-				sFileEnding = sName.substring(iIdx + 1);
+				sFileEnding = (iIdx === -1) ? "" : sName.substring(iIdx + 1);
 				for (var l = 0; l < aFileTypes.length; l++) {
 					if (sFileEnding == aFileTypes[l]) {
 						bWrongType = false;
@@ -1488,7 +1500,7 @@ sap.ui.define([
 			if (aFileTypes && aFileTypes.length > 0) {
 				bWrongType = true;
 				iIdx = sName.lastIndexOf(".");
-				sFileEnding = sName.substring(iIdx + 1);
+				sFileEnding = (iIdx === -1) ? "" : sName.substring(iIdx + 1);
 				for (var k = 0; k < aFileTypes.length; k++) {
 					if (sFileEnding.toLowerCase() == aFileTypes[k].toLowerCase()) {
 						bWrongType = false;
@@ -1656,7 +1668,7 @@ sap.ui.define([
 					jQuery.sap.log.info("File uploaded to " + that.getUploadUrl());
 					var sResponse;
 					try {
-						sResponse = that.oIFrameRef.contentDocument.body.innerHTML;
+						sResponse = that.oIFrameRef.contentWindow.document.body.innerHTML;
 					} catch (ex) {
 						// in case of cross-domain submit we get a permission denied exception
 						// when we try to access the body of the IFrame document

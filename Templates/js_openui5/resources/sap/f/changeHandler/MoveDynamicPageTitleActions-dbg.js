@@ -12,7 +12,7 @@ sap.ui.define(["sap/ui/fl/Utils"], function(FlexUtils) {
 		 *
 		 * @alias sap.f.changeHandler.MoveDynamicPageTitleActions
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 * @experimental Since 1.52
 		 */
 		var MoveActions = { };
@@ -59,8 +59,6 @@ sap.ui.define(["sap/ui/fl/Utils"], function(FlexUtils) {
 		 * @param {object} mPropertyBag Map of properties
 		 * @return {boolean} true Indicates whether the change can be applied
 		 * @public
-		 * @function
-		 * @name sap.f.changeHandler.MoveDynamicPageTitleActions#revertChange
 		 */
 		MoveActions.revertChange = function(oChange, oControl, mPropertyBag) {
 			var oModifier = mPropertyBag.modifier,

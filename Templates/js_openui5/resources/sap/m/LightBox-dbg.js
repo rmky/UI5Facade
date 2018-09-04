@@ -92,11 +92,12 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
 		 * @alias sap.m.LightBox
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/lightbox/ Light Box}
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		var LightBox = Control.extend('sap.m.LightBox', /** @lends sap.m.LightBox.prototype */ {
@@ -202,7 +203,7 @@ sap.ui.define([
 			}
 
 			if (this._resizeListenerId) {
-				Device.resize.detachHandler(this._onResize);
+				Device.resize.detachHandler(this._onResizeHandler);
 				ResizeHandler.deregister(this._resizeListenerId);
 				this._resizeListenerId = null;
 			}
@@ -689,7 +690,6 @@ sap.ui.define([
 		/**
 		 * Helper function for calculating offset.
 		 *
-		 * @name calculateOffset
 		 * @private
 		 * @returns {int} Calculated offset.
 		 */

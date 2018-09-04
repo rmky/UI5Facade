@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["jquery.sap.global", "sap/ui/fl/changeHandler/JsControlTreeModifier"],
+sap.ui.define(["jquery.sap.global", "sap/ui/core/util/reflection/JsControlTreeModifier"],
 		function(jQuery, JsControlTreeModifier) {
 			"use strict";
 
@@ -13,7 +13,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/fl/changeHandler/JsControlTreeModifi
 			 *
 			 * @alias sap.ui.fl.changeHandler.MoveElements
 			 * @author SAP SE
-			 * @version 1.54.7
+			 * @version 1.56.6
 			 * @experimental Since 1.34.0
 			 */
 			var MoveSimpleForm = {};
@@ -211,8 +211,8 @@ sap.ui.define(["jquery.sap.global", "sap/ui/fl/changeHandler/JsControlTreeModifi
 			 *          oSourceParent control that matches the change selector for applying the change, which is the source of
 			 *          the move
 			 * @param {object} mPropertyBag
-			 *          map containing the control modifier object (either sap.ui.fl.changeHandler.JsControlTreeModifier or
-			 *          sap.ui.fl.changeHandler.XmlTreeModifier), the view object where the controls are embedded and the application component
+			 *          map containing the control modifier object (either sap.ui.core.util.reflection.JsControlTreeModifier or
+			 *          sap.ui.core.util.reflection.XmlTreeModifier), the view object where the controls are embedded and the application component
 			 * @returns {boolean} true - if change could be applied
 			 * @public
 			 */

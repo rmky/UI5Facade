@@ -415,7 +415,12 @@ sap.ui.define([
 			 */
 			function setMode(oBinding, iIndex) {
 				if (oBinding.parts) {
-					oBinding.parts.forEach(setMode);
+					oBinding.parts.forEach(function (vPart, i) {
+						if (typeof vPart === "string") {
+							vPart = oBinding.parts[i] = {path : vPart};
+						}
+						setMode(vPart, i);
+					});
 					b2ndLevelMergedNeeded = b2ndLevelMergedNeeded || iIndex !== undefined;
 				} else {
 					oBinding.mode = oBindingMode;
@@ -601,6 +606,10 @@ sap.ui.define([
 	 *   the string to be parsed
 	 * @param {int} iStart
 	 *   the index to start parsing
+	 * @param {object} [oEnv]
+	 *   the "environment" (see resolveEmbeddedBinding function for details)
+	 * @param {object} [mGlobals]
+	 *   global variables allowed in the expression as map of variable name to its value
 	 * @returns {object}
 	 *   the parse result with the following properties
 	 *   <ul>
@@ -615,8 +624,9 @@ sap.ui.define([
 	 *   the error contains the position where parsing failed.
 	 * @private
 	 */
-	BindingParser.parseExpression = function (sInput, iStart) {
-		return ExpressionParser.parse(resolveEmbeddedBinding.bind(null, {}), sInput, iStart);
+	BindingParser.parseExpression = function (sInput, iStart, oEnv, mGlobals) {
+		return ExpressionParser.parse(resolveEmbeddedBinding.bind(null, oEnv || {}), sInput, iStart,
+			mGlobals);
 	};
 
 	return BindingParser;

@@ -4,6 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
+//Provides class sap.ui.model.odata.v4.lib._V2MetadataConverter
 sap.ui.define([
 	"jquery.sap.global",
 	"./_Helper",

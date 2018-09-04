@@ -36,7 +36,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
@@ -316,7 +316,6 @@ sap.ui.define([
 			var oBlockLayout, bProcessAccentCells;
 
 			if (!aCells || !aCells.length) {
-				jQuery.sap.log.warning("No accent cells were set");
 				return this;
 			}
 
@@ -364,7 +363,6 @@ sap.ui.define([
 				aAccentCellsCopy = Array.prototype.slice.call(aAccentCells);
 
 			if (!aAccentCells || !aAccentCells.length) {
-				jQuery.sap.log.warning("No accent cells were set");
 				return this;
 			}
 

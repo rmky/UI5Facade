@@ -28,7 +28,11 @@ sap.ui.define([
 			oRm.writeAttribute("tabindex", 0);
 		}
 		oRm.writeControlData(oDynamicPageTitle);
-		oRm.writeAccessibilityState({role: "heading", level: 2});
+		oRm.writeAccessibilityState({
+			role: "heading",
+			level: 2,
+			labelledBy: oDynamicPageTitleState.ariaLabelledByIDs
+		});
 		oRm.addClass("sapFDynamicPageTitle");
 		oRm.writeClasses();
 		oRm.write(">");
@@ -37,7 +41,6 @@ sap.ui.define([
 		this._renderMainArea(oRm, oDynamicPageTitleState);
 		oRm.renderControl(oDynamicPageTitleState.expandButton);
 
-		oRm.write("<span id=\"" + oDynamicPageTitleState.id + "-Descr\" class=\"sapUiInvisibleText\">" + oDynamicPageTitleState.ariaText + "</span>");
 		oRm.write("</div>");
 	};
 

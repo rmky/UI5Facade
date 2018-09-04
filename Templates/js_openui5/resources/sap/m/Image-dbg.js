@@ -37,11 +37,14 @@ sap.ui.define([
 	 *
 	 * From version 1.30, new image mode sap.m.ImageMode.Background is added. When this mode is set, the src property is set using the css style 'background-image'. The properties 'backgroundSize', 'backgroundPosition', 'backgroundRepeat' have effect only when image is in sap.m.ImageMode.Background mode. In order to make the high density image correctly displayed, the 'backgroundSize' should be set to the dimension of the normal density version.
 	 *
+	 * @see {@link topic:f86dbe9d7f7d48dea5286003b1322165 Image}
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/image/ Image}
+	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -259,7 +262,7 @@ sap.ui.define([
 		var $DomNode = this.$(),
 			sMode = this.getMode(),
 			// In Background mode, the src property should be read from the temp Image object
-			sSrc = (sMode === ImageMode.Image) ? $DomNode.attr("src") : this._oImage.src,
+			sSrc = (sMode === ImageMode.Image) ? this._getDomImg().attr("src") : this._oImage.src,
 			d = Image._currentDevicePixelRatio,
 			sCurrentSrc = this._isActiveState ? this.getActiveSrc() : this.getSrc();
 
@@ -530,12 +533,22 @@ sap.ui.define([
 			// the src is updated on the output DOM element when mode is set to Image
 			// the src is updated on the temp Image object when mode is set to Background
 			if (sMode === ImageMode.Image) {
-				$DomNode.attr("src", sSrc);
+				this._getDomImg().attr("src", sSrc);
 			} else {
 				$DomNode.addClass("sapMNoImg");
 				jQuery(this._oImage).attr("src", sSrc);
 			}
 		}
+	};
+
+	/**
+	 * Returns the img Dom element
+	 * @private
+	 */
+	Image.prototype._getDomImg = function() {
+		var $DomNode = this.$();
+
+		return this.getDetailBox() ? $DomNode.children("img") : $DomNode;
 	};
 
 	/**

@@ -177,7 +177,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @alias sap.ui.model.odata.type.Decimal
 	 * @param {object} [oFormatOptions]
@@ -368,7 +368,7 @@ sap.ui.define([
 				[iPrecision - iScale]));
 		}
 		if (sMinimum) {
-			bMinimumExclusive = this.oConstraints && this.oConstraints.minimumExclusive;
+			bMinimumExclusive = this.oConstraints.minimumExclusive;
 			if (BaseODataUtils.compare(sMinimum, sValue, true) >= (bMinimumExclusive ? 0 : 1)) {
 				throw new ValidateException(
 					getText(bMinimumExclusive
@@ -378,7 +378,7 @@ sap.ui.define([
 			}
 		}
 		if (sMaximum) {
-			bMaximumExclusive = this.oConstraints && this.oConstraints.maximumExclusive;
+			bMaximumExclusive = this.oConstraints.maximumExclusive;
 			if (BaseODataUtils.compare(sMaximum, sValue, true) <= (bMaximumExclusive ? 0 : -1)) {
 				throw new ValidateException(
 					getText(bMaximumExclusive

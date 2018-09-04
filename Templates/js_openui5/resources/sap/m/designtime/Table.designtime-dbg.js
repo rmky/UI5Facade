@@ -44,6 +44,9 @@ sap.ui.define([
 					}
 				}
 			},
+			items: {
+				domRef: ":sap-domref .sapMListItems"
+			},
 			contextMenu: {
 				ignore: true
 			}

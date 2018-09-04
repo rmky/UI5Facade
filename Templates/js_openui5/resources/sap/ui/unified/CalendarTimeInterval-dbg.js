@@ -59,7 +59,7 @@ sap.ui.define([
 	 * @class
 	 * Calendar with granularity of time items displayed in one line.
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -344,6 +344,8 @@ sap.ui.define([
 			oCalPicker.attachEvent("select", _handleCalendarDateSelect, this);
 			oCalPicker.attachEvent("cancel", function (oEvent) {
 				this._oPopup.close();
+
+				jQuery.sap.focus(this.getAggregation("header").getDomRef("B1"));
 			}, this);
 			this.setAggregation("calendarPicker", oCalPicker);
 		}

@@ -30,7 +30,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @private
@@ -146,6 +146,7 @@ sap.ui.define([
 
 			oDomRef = oDomRef || this.getDomRef();
 
+			// skip unnecessary style recalculations if the control root DOM element has been removed from the DOM
 			if (!oDomRef) {
 				return;
 			}
@@ -154,18 +155,24 @@ sap.ui.define([
 				bEnoughSpaceForEndItem = true;
 
 			oEndItemDomRef = oEndItemDomRef || this.getDomRef("endItem");
+			var oLastItemDomRef = this.getLastItemDomRef();
 
-			if (oEndItemDomRef) {
+			if (oEndItemDomRef && oLastItemDomRef) {
 				var mLastSpacerStyle = oDomRef.lastElementChild.style;
 				mLastSpacerStyle.height = "";
 				mLastSpacerStyle.display = "";
 				oDomRef.classList.remove(CSS_CLASS_ONE_LINE);
 
-				var oLastItemDomRef = this.getLastItemDomRef(),
-					iEndItemHeight = oEndItemDomRef.offsetHeight,
+				var iEndItemHeight = oEndItemDomRef.offsetHeight,
 					iEndItemWidth = oEndItemDomRef.offsetWidth,
 					iLastItemOffsetLeft = oLastItemDomRef.offsetLeft,
 					iAvailableWidthForEndItem;
+
+				// skip unnecessary style recalculations if the control root DOM element or any ancestor is hidden
+				// (the "display" style property is set to "none")
+				if (!oDomRef.offsetParent) {
+					return;
+				}
 
 				if (sap.ui.getCore().getConfiguration().getRTL()) {
 					iAvailableWidthForEndItem = iLastItemOffsetLeft;
@@ -299,8 +306,9 @@ sap.ui.define([
 
 			if (fMinItemWidth) {
 
-				// we do not need more spacers than (documentElement.clientWidth / minItemWidth)
-				iSpacers = Math.abs(document.documentElement.clientWidth / fMinItemWidth);
+				// we do not need more spacers than (iAvailableWidth / minItemWidth)
+				var iAvailableWidth = Math.max(document.documentElement.clientWidth, window.screen.width);
+				iSpacers = Math.abs(iAvailableWidth / fMinItemWidth);
 			}
 
 			// we do not need more spacers than items

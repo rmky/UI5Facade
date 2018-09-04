@@ -15,9 +15,9 @@ sap.ui.define(function() {
 	 * Selection Mode of the designtime selection.
 	 *
 	 * @namespace
-	 * @name sap.ui.dt
+	 * @name sap.ui.dt.SelectionMode
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @experimental This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 * @private
 	 */

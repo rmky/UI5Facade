@@ -14,14 +14,14 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @private
 	 * @sap-restricted
 	 */
 
 	sap.ui.getCore().initLibrary({
 		name: "sap.ui.fl",
-		version: "1.54.7",
+		version: "1.56.6",
 		controls: ["sap.ui.fl.variants.VariantManagement"],
 		dependencies: [
 			"sap.ui.core", "sap.m"
@@ -37,6 +37,18 @@ sap.ui.define([
 			}
 		}
 	});
+
+	/**
+	 * Available Scenarios
+	 *
+	 * @enum {string}
+	 */
+	sap.ui.fl.Scenario = {
+		AppVariant: "APP_VARIANT",
+		AdaptationProject: "ADAPTATION_PROJECT",
+		FioriElementsFromScratch: "FE_FROM_SCRATCH",
+		UiAdaptation: "UI_ADAPTATION"
+	};
 
 	RegistrationDelegator.registerAll();
 

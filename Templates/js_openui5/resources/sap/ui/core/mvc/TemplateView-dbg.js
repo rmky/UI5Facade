@@ -29,10 +29,10 @@ sap.ui.define([
 	 * @extends sap.ui.core.mvc.View
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @public
-	 * @since 1.16.0
+	 * @deprecated Since version 1.56.0, use XMLView or JSView instead.
 	 * @alias sap.ui.core.mvc.TemplateView
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -65,6 +65,7 @@ sap.ui.define([
 		 * @return {sap.ui.core.mvc.TemplateView | undefined} the created TemplateView instance in the creation case, otherwise undefined
 		 */
 		sap.ui.templateview = function(sId, vView) {
+			jQuery.sap.log.warning("sap.ui.core.mvc.TemplateView is deprecated. Use XMLView or JSView instead.");
 			return sap.ui.view(sId, vView, ViewType.Template);
 		};
 

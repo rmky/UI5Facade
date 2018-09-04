@@ -14,7 +14,7 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.core",
-		version: "1.54.7",
+		version: "1.56.6",
 		designtime: "sap/ui/core/designtime/library.designtime",
 		types: [
 
@@ -73,7 +73,8 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 			"sap.ui.core.IContextMenu",
 			"sap.ui.core.IFormContent",
 			"sap.ui.core.dnd.IDragInfo",
-			"sap.ui.core.dnd.IDropInfo"
+			"sap.ui.core.dnd.IDropInfo",
+			"sap.ui.core.IDScope"
 		],
 		controls: [
 			"sap.ui.core.ComponentContainer",
@@ -107,6 +108,8 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 			"sap.ui.core.Title",
 			"sap.ui.core.VariantLayoutData",
 			"sap.ui.core.dnd.DragDropBase",
+			"sap.ui.core.dnd.DragInfo",
+			"sap.ui.core.dnd.DropInfo",
 			"sap.ui.core.dnd.DragDropInfo",
 			"sap.ui.core.search.OpenSearchProvider",
 			"sap.ui.core.search.SearchProvider",
@@ -143,7 +146,7 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 	 * @namespace
 	 * @alias sap.ui.core
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @public
 	 */
 	var thisLib = sap.ui.core;
@@ -805,7 +808,9 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 	 * The CSS specifications calls this the <code>'&lt;length&gt; type'</code>.
 	 * Allowed values are CSS sizes like "1px" or "2em" or "50%". The special values <code>auto</code>
 	 * and <code>inherit</code> are also accepted as well as mathematical expressions using the CSS3
-	 * <code>calc(<i>expression</i>)</code> operator.
+	 * <code>calc(<i>expression</i>)</code> operator. Furthermore, length units representing a percentage of the
+	 * current viewport dimensions: width (vw), height (vh), the smaller of the two (vmin), or the larger of the two (vmax)
+	 * can also be defined as a CSS size.
 	 *
 	 * Note that CSS does not allow all these values for every CSS property representing a size.
 	 * E.g. <code>padding-left</code> doesn't allow the value <code>auto</code>. So even if a value is
@@ -815,8 +820,9 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 	 *
 	 * <b>Units</b>
 	 *
-	 * Valid font-relative units are <code>em, ex</code> and <code>rem</code>. Supported absolute units
-	 * are <code>cm, mm, in, pc, pt</code> and <code>px</code>. Other units are not supported yet.
+	 * Valid font-relative units are <code>em, ex</code> and <code>rem</code>. Viewport relative units
+	 * <code>vw, vh, vmin, vmax</code> are also valid. Supported absolute units are <code>cm, mm, in, pc, pt</code>
+	 * and <code>px</code>.Other units are not supported yet.
 	 *
 	 *
 	 * <b>Mathematical Expressions</b>
@@ -848,7 +854,7 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 				// Note: the following regexp by intention is a single regexp literal.
 				// It could be made much more readable by constructing it out of (reused) sub-expressions (strings)
 				// but this would not be parseable by the metamodel recovery tooling that is used inside SAP
-				return /^(auto|inherit|[-+]?(0*|([0-9]+|[0-9]*\.[0-9]+)([rR][eE][mM]|[eE][mM]|[eE][xX]|[pP][xX]|[cC][mM]|[mM][mM]|[iI][nN]|[pP][tT]|[pP][cC]|%))|calc\(\s*(\(\s*)*[-+]?(([0-9]+|[0-9]*\.[0-9]+)([rR][eE][mM]|[eE][mM]|[eE][xX]|[pP][xX]|[cC][mM]|[mM][mM]|[iI][nN]|[pP][tT]|[pP][cC]|%)?)(\s*(\)\s*)*(\s[-+]\s|[*\/])\s*(\(\s*)*([-+]?(([0-9]+|[0-9]*\.[0-9]+)([rR][eE][mM]|[eE][mM]|[eE][xX]|[pP][xX]|[cC][mM]|[mM][mM]|[iI][nN]|[pP][tT]|[pP][cC]|%)?)))*\s*(\)\s*)*\))$/.test(vValue);
+				return /^(auto|inherit|[-+]?(0*|([0-9]+|[0-9]*\.[0-9]+)([rR][eE][mM]|[eE][mM]|[eE][xX]|[pP][xX]|[cC][mM]|[mM][mM]|[iI][nN]|[pP][tT]|[pP][cC]|[vV][wW]|[vV][hH]|[vV][mM][iI][nN]|[vV][mM][aA][xX]|%))|calc\(\s*(\(\s*)*[-+]?(([0-9]+|[0-9]*\.[0-9]+)([rR][eE][mM]|[eE][mM]|[eE][xX]|[pP][xX]|[cC][mM]|[mM][mM]|[iI][nN]|[pP][tT]|[pP][cC]|[vV][wW]|[vV][hH]|[vV][mM][iI][nN]|[vV][mM][aA][xX]|%)?)(\s*(\)\s*)*(\s[-+]\s|[*\/])\s*(\(\s*)*([-+]?(([0-9]+|[0-9]*\.[0-9]+)([rR][eE][mM]|[eE][mM]|[eE][xX]|[pP][xX]|[cC][mM]|[mM][mM]|[iI][nN]|[pP][tT]|[pP][cC]|[vV][wW]|[vV][hH]|[vV][mM][iI][nN]|[vV][mM][aA][xX]|%)?)))*\s*(\)\s*)*\))$/.test(vValue);
 			}
 		},
 		DataType.getType('string')
@@ -1531,6 +1537,26 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 	 */
 
 	/**
+	 * Marker interface to flag controls that provide access to substructures from a byId method.
+	 *
+	 * @since 1.56.0
+	 * @name sap.ui.core.IDScope
+	 * @interface
+	 * @private
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	/**
+	 * Marker interface for a ControllerExtension.
+	 *
+	 * @since 1.56.0
+	 * @name sap.ui.core.mvc.IControllerExtension
+	 * @interface
+	 * @public
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	/**
 	 * Opens the control by given opener ref.
 	 * @param {string} oEvent oncontextmenu event
 	 * @param {sap.ui.core.Element|DOMRef} oOpenerRef The element which will get the focus back again after the menu was closed.
@@ -1738,6 +1764,11 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	thisLib.dnd.DropLayout = {
+		/**
+		 * Default {@link sap.ui.core.Element.extend layout} definition of the aggregations.
+		 * @public
+		 */
+		Default: "Default",
 
 		/**
 		 * Droppable controls are arranged vertically.
@@ -1920,7 +1951,7 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 	// lazy imports
 	lazy("sap.ui.core.BusyIndicator", "show hide attachOpen detachOpen attachClose detachClose");
 	lazy("sap.ui.core.tmpl.Template", "registerType unregisterType");
-	lazy("sap.ui.core.Fragment", "registerType");
+	lazy("sap.ui.core.Fragment", "registerType byId createId");
 	lazy("sap.ui.core.IconPool", "createControlByURI addIcon getIconURI getIconInfo isIconURI getIconCollectionNames getIconNames getIconForMimeType");
 	lazy("sap.ui.core.service.ServiceFactoryRegistry", "register unregister get");
 

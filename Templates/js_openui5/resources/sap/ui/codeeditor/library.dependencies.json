@@ -3,20 +3,20 @@
     {
       "name" : "sap/ui/codeeditor/CodeEditor.js",
       "description" : "global ace",
-      "size" : 14140,
-      "compressedSize" : 5033,
+      "size" : 14726,
+      "compressedSize" : 5225,
       "required" : ["jquery.sap.global.js", "sap/ui/codeeditor/js/ace/ace.js", "sap/ui/codeeditor/js/ace/ext-beautify.js", "sap/ui/codeeditor/js/ace/ext-language_tools.js", "sap/ui/codeeditor/js/ace/mode-javascript.js", "sap/ui/codeeditor/js/ace/mode-json.js", "sap/ui/core/Control.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/codeeditor/library-h2-preload.js",
-      "size" : 1742,
+      "size" : 1673,
       "required" : ["jquery.sap.global.js", "sap/ui/codeeditor/js/ace/ace.js", "sap/ui/codeeditor/js/ace/ext-beautify.js", "sap/ui/codeeditor/js/ace/ext-language_tools.js", "sap/ui/codeeditor/js/ace/mode-javascript.js", "sap/ui/codeeditor/js/ace/mode-json.js", "sap/ui/core/Control.js", "sap/ui/core/Core.js", "ui5loader-autoconfig.js"],
       "includes" : ["sap/ui/codeeditor/library.js", "sap/ui/codeeditor/manifest.json", "sap/ui/codeeditor/CodeEditor.js"]
     },
     {
       "name" : "sap/ui/codeeditor/library-preload.js",
-      "size" : 6228,
+      "size" : 6372,
       "required" : ["jquery.sap.global.js", "sap/ui/codeeditor/js/ace/ace.js", "sap/ui/codeeditor/js/ace/ext-beautify.js", "sap/ui/codeeditor/js/ace/ext-language_tools.js", "sap/ui/codeeditor/js/ace/mode-javascript.js", "sap/ui/codeeditor/js/ace/mode-json.js", "sap/ui/core/Control.js", "sap/ui/core/Core.js", "ui5loader-autoconfig.js"],
       "includes" : ["sap/ui/codeeditor/CodeEditor.js", "sap/ui/codeeditor/library.js", "sap/ui/codeeditor/manifest.json"]
     },

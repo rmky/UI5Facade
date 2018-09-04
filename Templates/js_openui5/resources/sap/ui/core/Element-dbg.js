@@ -51,10 +51,11 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 	 *      Note: this can be omitted, no matter whether <code>mSettings</code> will be given or not!
 	 * @param {object} [mSettings] optional map/JSON-object with initial property values, aggregated objects etc. for the new element
 	 *
+	 * @abstract
 	 * @class Base Class for Elements.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @public
 	 * @alias sap.ui.core.Element
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
@@ -91,7 +92,18 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 				 * Dependents are not rendered, but their databinding context and lifecycle are bound to the aggregating Element.
 				 * @since 1.19
 				 */
-				dependents : {name : "dependents", type : "sap.ui.core.Element", multiple : true}
+				dependents : {name : "dependents", type : "sap.ui.core.Element", multiple : true},
+
+				/**
+				 * Defines the drag-and-drop configuration.
+				 *
+				 * This aggregation is provided exclusively to test drag-and-drop functionality of all controls.
+				 * It might be removed or the functionality might be limited due to control {@link sap.ui.core.Element.extend metadata} restrictions.
+				 *
+				 * @experimental As of 1.56
+				 * @since 1.56
+				 */
+				dragDropConfig : {name : "dragDropConfig", type : "sap.ui.core.dnd.DragDropBase", multiple : true, singularName : "dragDropConfig"}
 			}
 		},
 
@@ -126,6 +138,63 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 	Element.prototype.getInterface = function() {
 		return this;
 	};
+
+	/**
+	 * Defines a new subclass of Element with the name <code>sClassName</code> and enriches it with
+	 * the information contained in <code>oClassInfo</code>.
+	 *
+	 * <code>oClassInfo</code> can contain the same information that {@link sap.ui.base.ManagedObject.extend} already accepts,
+	 * plus the following <code>dnd</code> property to configure drag-and-drop behavior in the metadata object literal:
+	 *
+	 * Example:
+	 * <pre>
+	 * Element.extend('sap.mylib.MyElement', {
+	 *   metadata : {
+	 *     library : 'sap.mylib',
+	 *     properties : {
+	 *       value : 'string',
+	 *       width : 'sap.ui.core.CSSSize'
+	 *     },
+	 *     dnd : { draggable: true, droppable: false },
+	 *     aggregations : {
+	 *       items : { type: 'sap.ui.core.Control', multiple : true, dnd : {draggable: false, dropppable: true, layout: "Horizontal" } },
+	 *       header : {type : "sap.ui.core.Control", multiple : false, dnd : false },
+	 *     }
+	 *   }
+	 * });
+	 * </pre>
+	 *
+	 * <h3><code>dnd</code> key as a metadata property</h3>
+	 *
+	 * <b>dnd</b>: <i>object|boolean</i><br>
+	 * Defines draggable and droppable configuration of the element.
+	 * The following keys can be provided via <code>dnd</code> object literal to configure drag-and-drop behavior of the element:
+	 * <ul>
+	 *  <li><code>[draggable=true]: <i>boolean</i></code>Defines whether the element is draggable or not.</li>
+	 *  <li><code>[droppable=true]: <i>boolean</i></code>Defines whether the element is droppable (it allows being dropped on by a draggable element) or not.</li>
+	 * </ul>
+	 * If <code>dnd</code> property is of type Boolean, then the <code>draggable</code> and <code>droppable</code> configuration are set to this Boolean value.
+	 *
+	 * <h3><code>dnd</code> key as an aggregation metadata property</h3>
+	 *
+	 * <b>dnd</b>: <i>object|boolean</i><br>
+	 * In addition to draggable and droppable configuration, the layout of the aggregation can be defined as a hint at the drop position indicator.
+	 * Default behavior of draggable and droppable depends on the multiplicity of the aggregation:
+	 * <ul>
+	 *  <li><code>[draggable]: <i>boolean</i></code>Defines whether this aggregation is draggable or not. The default value is <code>false</code> for the aggregation with multiplicity 0..n (<code>multiple: true</code>), otherwise <code>true<code>.</li>
+	 *  <li><code>[droppable]: <i>boolean</i></code>Defines whether dropping is allowed on and/or between the aggregation. The default value is <code>false</code> for the aggregation with multiplicity 0..n (<code>multiple: true</code>), otherwise <code>true<code>.</li>
+	 *  <li><code>[layout="Vertical"]: <i>boolean</i></code>The arrangement of the items in this aggregation. This setting is recommended for the aggregation with multiplicity 0..n (<code>multiple: true</code>). Possible values are <code>Vertical</code>(e.g. rows in a table) and <code>Horizontal</code>(e.g. buttons in a toolbar). It is recommended to use <code>Horizontal</code> layout if the arrangement is multidimensional.</li>
+	 * </ul>
+	 * If <code>dnd</code> property is of type Boolean, then the <code>draggable</code> and <code>droppable</code> configuration are set to this Boolean value.
+	 *
+	 * @param {string} sClassName fully qualified name of the class that is described by this metadata object
+	 * @param {object} oStaticInfo static info to construct the metadata from
+	 *
+	 * @public
+	 * @static
+	 * @name sap.ui.core.Element.extend
+	 * @function
+	 */
 
 	/**
 	 * Dispatches the given event, usually a browser event or a UI5 pseudo event.
@@ -386,6 +455,10 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 	 * @public
 	 */
 	Element.prototype.destroy = function(bSuppressInvalidate) {
+		// ignore repeated calls
+		if (this.bIsDestroyed) {
+			return;
+		}
 
 		// update the focus information (potentionally) stored by the central UI5 focus handling
 		Element._updateFocusInfo(this);
@@ -950,7 +1023,7 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 	 * @param {object} [vPath.parameters] map of additional parameters for this binding
 	 * @param {string} [vPath.model] name of the model
 	 * @param {object} [vPath.events] map of event listeners for the binding events
-	 * @param {object} [mParameters] map of additional parameters for this binding (only taken into account when vPath is a string in that case the properties described for vPath above are valid here).
+	 * @param {object} [mParameters] map of additional parameters for this binding (only taken into account when vPath is a string in that case it corresponds to vPath.parameters).
 	 * The supported parameters are listed in the corresponding model-specific implementation of <code>sap.ui.model.ContextBinding</code>.
 	 *
 	 * @return {sap.ui.core.Element} reference to the instance itself

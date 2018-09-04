@@ -49,7 +49,7 @@ sap.ui.define(['jquery.sap.global',
 	 * @return The escaped string
 	 * @type {string}
 	 * @public
-	 * @deprecated Has been renamed, use {@link jQuery.sap.encodeHTML} instead.
+	 * @deprecated As of version 1.4.0, has been renamed, use {@link jQuery.sap.encodeHTML} instead.
 	 * @function
 	 */
 	jQuery.sap.escapeHTML = encodeXML;
@@ -159,6 +159,9 @@ sap.ui.define(['jquery.sap.global',
 
 	/**
 	 * Validates a URL. Check if it's not a script or other security issue.
+	 *
+	 * By default the URL validation does only allow the http, https and ftp protocol. If
+	 * other protocols are required, a whitelist of all allowed protocols needs to be defined.
 	 *
 	 * Split URL into components and check for allowed characters according to RFC 3986:
 	 *

@@ -15,11 +15,12 @@ sap.ui.define([
 	 *
 	 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
 	 * @param {object} [mSettings] initial settings for the new control
-	 * @class Base type for <code>panels</code> aggregation in <code>P13nDialog</code> control.
+	 * @class An abstract base type for <code>panels</code> aggregation in <code>P13nDialog</code> control.
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @public
+	 * @abstract
 	 * @since 1.26.0
 	 * @alias sap.m.P13nPanel
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
@@ -27,6 +28,7 @@ sap.ui.define([
 	var P13nPanel = Control.extend("sap.m.P13nPanel", /** @lends sap.m.P13nPanel.prototype */
 	{
 		metadata: {
+			"abstract": true,
 			library: "sap.m",
 			properties: {
 				/**

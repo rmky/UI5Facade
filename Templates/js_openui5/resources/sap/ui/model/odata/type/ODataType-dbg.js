@@ -64,6 +64,15 @@
  * type. However it does not ensure that the user really entered something if the field was empty
  * before.
  *
+ * <b><code>Date</code> vs. <code>DateTime</code></b>:
+ *
+ * The type {@link sap.ui.model.odata.type.Date} is only valid for an OData V4 service. If you use
+ * the type for an OData V2 service, displaying is possible but you get an error message from server
+ * if you try to save changes.
+ *
+ * For an OData V2 service use {@link sap.ui.model.odata.type.DateTime} with the constraint
+ * <code>displayFormat: "Date"</code> to display only a date.
+ *
  * @namespace
  * @name sap.ui.model.odata.type
  * @public
@@ -101,7 +110,7 @@ sap.ui.define(['sap/ui/model/SimpleType'],
 	 * @extends sap.ui.model.SimpleType
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @abstract
 	 * @alias sap.ui.model.odata.type.ODataType

@@ -6,8 +6,8 @@
 
 // Provides helper sap.ui.table.TableDragAndDropExtension.
 sap.ui.define([
-	"./TableExtension", "sap/ui/table/TableUtils"
-], function(TableExtension, TableUtils) {
+	"./TableExtension", "sap/ui/table/TableUtils", "sap/ui/core/dnd/DropPosition"
+], function(TableExtension, TableUtils, DropPosition) {
 	"use strict";
 
 	var SESSION_DATA_KEY_NAMESPACE = "sap.ui.table";
@@ -62,11 +62,11 @@ sap.ui.define([
 		ondragstart: function(oEvent) {
 			var oDragSession = oEvent.dragSession;
 
-			if (oDragSession == null || oDragSession.draggedControl == null) {
+			if (!oDragSession || !oDragSession.getDragControl()) {
 				return;
 			}
 
-			var oDraggedControl = oDragSession.draggedControl;
+			var oDraggedControl = oDragSession.getDragControl();
 			var oSessionData = {};
 
 			if (TableUtils.isInstanceOf(oDraggedControl, "sap/ui/table/Row")) {
@@ -79,7 +79,7 @@ sap.ui.define([
 				var oDraggedRowContext = this.getContextByIndex(oDraggedControl.getIndex());
 				var oDraggedRowDomRef = oDraggedControl.getDomRef();
 
-				if (oDraggedRowContext == null // Empty row
+				if (!oDraggedRowContext // Empty row
 					|| oDraggedRowDomRef.classList.contains("sapUiTableGroupHeader") // Group header row
 					|| oDraggedRowDomRef.classList.contains("sapUiAnalyticalTableSum")) { // Sum row
 
@@ -92,26 +92,21 @@ sap.ui.define([
 				}
 			}
 
-			if (TableUtils.isInstanceOf(oDraggedControl, "sap/ui/table/Column")) {
-				oEvent.preventDefault();
-				return;
-			}
-
 			ExtensionHelper.setInstanceSessionData(oDragSession, this, oSessionData);
 		},
 
 		ondragenter: function(oEvent) {
 			var oDragSession = oEvent.dragSession;
 
-			if (oDragSession == null || oDragSession.dropControl == null) {
+			if (!oDragSession || !oDragSession.getDropControl()) {
 				return;
 			}
 
 			var oSessionData = ExtensionHelper.getInstanceSessionData(oDragSession, this);
-			var oDraggedControl = oDragSession.draggedControl;
-			var oDropControl = oDragSession.dropControl;
+			var oDraggedControl = oDragSession.getDragControl();
+			var oDropControl = oDragSession.getDropControl();
 
-			if (oSessionData == null) {
+			if (!oSessionData) {
 				oSessionData = {};
 			}
 
@@ -119,36 +114,42 @@ sap.ui.define([
 				/*
 				 * Rows which must not be droppable:
 				 * - Itself // TODO: Should this be possible, e.g. for copying a row/node next to or into itself?
-				 * - Empty rows (rows without context), except all rows are empty
+				 * - Empty rows (rows without context), if the drop position is "On"
 				 * - Group header rows
 				 * - Sum rows
 				 */
 				var oDraggedRowContext = oSessionData.draggedRowContext;
 				var oDropRowContext = this.getContextByIndex(oDropControl.getIndex());
 				var oDropRowDomRef = oDropControl.getDomRef();
-				var bAllRowsAreEmpty = this._getTotalRowCount() === 0;
+				var sDropPosition = oDragSession.getDropInfo().getDropPosition();
 
-				if ((oDropRowContext == null && !bAllRowsAreEmpty) // Empty row
-					|| (oDraggedRowContext != null && oDraggedRowContext === oDropRowContext) // The dragged row itself
+				if ((!oDropRowContext && sDropPosition === DropPosition.On && TableUtils.hasData(this)) // On empty row, table has data
+					|| (oDraggedRowContext && oDraggedRowContext === oDropRowContext) // The dragged row itself
 					|| oDropRowDomRef.classList.contains("sapUiTableGroupHeader") // Group header row
 					|| oDropRowDomRef.classList.contains("sapUiAnalyticalTableSum")) { // Sum row
-					oEvent.preventDefault();
+					oEvent.setMarked("NonDroppable");
 				} else {
-					// Because the vertical scrollbar can appear after expanding rows on "longdragover",
-					// the dimensions of the drop indicator always need to be updated.
-					var bVerticalScrollbarVisible = this._getScrollExtension().isVerticalScrollbarVisible();
-					var mTableCntRect = this.getDomRef("sapUiTableCnt").getBoundingClientRect();
-					oSessionData.indicatorSize = {
-						width: mTableCntRect.width - (bVerticalScrollbarVisible ? 16 : 0),
-						left: mTableCntRect.left + (this._bRtlMode && bVerticalScrollbarVisible ? 16 : 0)
-					};
+					// If dragging over an empty row with a drop position other than "On", the drop control should be the first non-empty row. If
+					// all rows are empty, the drop target should be the table to perform a drop in aggregation.
+					if (!oDropRowContext) {
+						var oLastNonEmptyRow = this.getRows()[TableUtils.getNonEmptyVisibleRowCount(this) - 1];
+						oDragSession.setDropControl(oLastNonEmptyRow || this);
+					}
+
+					// Because the vertical scrollbar can appear after expanding rows on "longdragover", the dimensions of the drop indicator
+					// always need to be updated. The only exception is when all rows are empty. In this case a "drop in aggregation" will be
+					// performed, for which no indicator adjustment is necessary.
+					if (oDragSession.getDropControl() !== this) {
+						var bVerticalScrollbarVisible = this._getScrollExtension().isVerticalScrollbarVisible();
+						var mTableCntRect = this.getDomRef("sapUiTableCnt").getBoundingClientRect();
+						oDragSession.setIndicatorConfig({
+							width: mTableCntRect.width - (bVerticalScrollbarVisible ? 16 : 0),
+							left: mTableCntRect.left + (this._bRtlMode && bVerticalScrollbarVisible ? 16 : 0)
+						});
+					}
 				}
-			} else if (TableUtils.isInstanceOf(oDropControl, "sap/ui/table/Column")) {
-				oEvent.preventDefault();
 			} else if (oDraggedControl === oDropControl) {
-				oEvent.preventDefault();
-			} else {
-				delete oSessionData.indicatorSize;
+				oEvent.setMarked("NonDroppable");
 			}
 
 			/*
@@ -161,7 +162,7 @@ sap.ui.define([
 
 			// It is unlikely, that during a drag&drop action the horizontal scrollbar appears or disappears,
 			// therefore the vertical scroll edge only needs to be set once.
-			if (oSessionData.verticalScrollEdge == null) {
+			if (!oSessionData.verticalScrollEdge) {
 				var iPageYOffset = window.pageYOffset;
 				var mVerticalScrollRect = this.getDomRef("table").getBoundingClientRect();
 				oSessionData.verticalScrollEdge = {
@@ -185,28 +186,26 @@ sap.ui.define([
 		ondragover: function(oEvent) {
 			var oDragSession = oEvent.dragSession;
 
-			if (oDragSession == null) {
+			if (!oDragSession) {
 				return;
 			}
 
 			var oSessionData = ExtensionHelper.getInstanceSessionData(oDragSession, this);
 
-			if (oSessionData == null) {
+			if (!oSessionData) {
 				return;
 			}
 
 			var iScrollDistance = 32;
 			var iThreshold = 50;
-			var oDropControl = oDragSession.dropControl;
-			var oIndicator = jQuery(oDragSession.getIndicator());
+			var oDropControl = oDragSession.getDropControl();
 			var oScrollExtension = this._getScrollExtension();
 			var oVerticalScrollbar = oScrollExtension.getVerticalScrollbar();
 			var oHorizontalScrollbar = oScrollExtension.getHorizontalScrollbar();
 			var oVerticalScrollEdge = oSessionData.verticalScrollEdge;
 			var oHorizontalScrollEdge = oSessionData.horizontalScrollEdge;
-			var oIndicatorSize = oSessionData.indicatorSize;
 
-			if (oVerticalScrollEdge != null && oVerticalScrollbar != null && oDropControl !== this) {
+			if (oVerticalScrollEdge && oVerticalScrollbar && oDropControl !== this) {
 				var iPageY = oEvent.pageY;
 
 				if (iPageY >= oVerticalScrollEdge.top - iThreshold && iPageY <= oVerticalScrollEdge.top + iThreshold) {
@@ -216,7 +215,7 @@ sap.ui.define([
 				}
 			}
 
-			if (oHorizontalScrollEdge != null && oHorizontalScrollbar != null && oDropControl !== this) {
+			if (oHorizontalScrollEdge && oHorizontalScrollbar && oDropControl !== this) {
 				var iPageX = oEvent.pageX;
 
 				if (iPageX >= oHorizontalScrollEdge.left - iThreshold && iPageX <= oHorizontalScrollEdge.left + iThreshold) {
@@ -225,25 +224,21 @@ sap.ui.define([
 					oHorizontalScrollbar.scrollLeft += iScrollDistance;
 				}
 			}
-
-			if (oIndicator != null && oIndicatorSize != null && oDropControl != null) {
-				oIndicator.css(oIndicatorSize);
-			}
 		},
 
 		onlongdragover: function(oEvent) {
 			var oDragSession = oEvent.dragSession;
 
-			if (oDragSession == null) {
+			if (!oDragSession) {
 				return;
 			}
 
 			var $Cell = TableUtils.getCell(this, oEvent.target);
 			var iRowIndex = TableUtils.getCellInfo($Cell).rowIndex;
 			var oRow = iRowIndex == null ? null : this.getRows()[iRowIndex];
-			var oDropControl = oDragSession.dropControl;
+			var oDropControl = oDragSession.getDropControl();
 
-			if (oRow != null && (oDropControl == oRow || oDropControl == null)) {
+			if (oRow && (oDropControl == oRow || !oDropControl)) {
 				TableUtils.Grouping.toggleGroupHeader(this, oRow.getIndex(), true);
 			}
 		}
@@ -256,7 +251,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableDragAndDropExtension

@@ -3,9 +3,19 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactory",
-		"sap/ui/rta/ControlTreeModifier", "sap/ui/fl/Utils"], function(BaseCommand, FlexControllerFactory,
-		RtaControlTreeModifier, Utils) {
+sap.ui.define([
+	"sap/ui/rta/command/BaseCommand",
+	"sap/ui/fl/FlexControllerFactory",
+	"sap/ui/rta/ControlTreeModifier",
+	"sap/ui/fl/Utils",
+	"sap/ui/core/util/reflection/JsControlTreeModifier"
+], function(
+	BaseCommand,
+	FlexControllerFactory,
+	RtaControlTreeModifier,
+	Utils,
+	JsControlTreeModifier
+) {
 	"use strict";
 
 	/**
@@ -15,7 +25,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -32,16 +42,10 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 					type : "string"
 				},
 				/**
-				 * getState and restoreState are used for retrieving custom undo/redo implementations from design time metadata
+				 * Change can only be applied on js, other modifiers like xml will not work
 				 */
-				fnGetState : {
-					type : "any"
-				},
-				state : {
-					type : "any"
-				},
-				fnRestoreState : {
-					type : "any"
+				jsOnly : {
+					type : "boolean"
 				},
 				/**
 				 * selector object containing id, appComponent and controlType to create a command for an element, which is not instantiated
@@ -56,7 +60,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 	});
 
 	/**
-	 * Retrives id of element or selector
+	 * Retrieves id of element or selector
 	 *
 	 * @returns {string} id value
 	 * @public
@@ -67,7 +71,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 	};
 
 	/**
-	 * Retrives app component of element or selector
+	 * Retrieves app component of element or selector
 	 *
 	 * @returns {sap.ui.core.UIComponent} component
 	 * @private
@@ -167,6 +171,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 		if (mFlexSettings) {
 			jQuery.extend(mChangeSpecificData, mFlexSettings);
 		}
+		mChangeSpecificData.jsOnly = this.getJsOnly();
 		var oModel = this.getAppComponent().getModel("$FlexVariants");
 		var sVariantReference;
 		if (oModel && sVariantManagementReference) {
@@ -187,15 +192,26 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 	 * @override
 	 */
 	FlexCommand.prototype.undo = function() {
-		//If the command has a "restoreState" implementation, use that to perform the undo
-		if (this.getFnRestoreState()){
-			this.getFnRestoreState()((this.getElement() || this.getSelector()), this.getState());
-		} else if (this._aRecordedUndo) {
-			RtaControlTreeModifier.performUndo(this._aRecordedUndo);
-		} else {
-			jQuery.sap.log.warning("Undo is not available for " + this.getElement() || this.getSelector());
-		}
-		return Promise.resolve();
+		return Promise.resolve()
+			.then(function() {
+				var oControl = this.getElement() || this.getSelector();
+				var oChange = this.getPreparedChange();
+
+				if (oChange.getRevertData()) {
+					var oFlexController = FlexControllerFactory.createForControl(this.getAppComponent());
+					var bRevertible = oFlexController.isChangeHandlerRevertible(oChange, oControl);
+					if (!bRevertible) {
+						jQuery.sap.log.error("No revert change function available to handle revert data for " + oControl);
+						return;
+					}
+					var oAppComponent = this.getAppComponent();
+					return oFlexController.revertChangesOnControl([oChange], oAppComponent);
+				} else if (this._aRecordedUndo) {
+					RtaControlTreeModifier.performUndo(this._aRecordedUndo);
+				} else {
+					jQuery.sap.log.warning("Undo is not available for " + oControl);
+				}
+			}.bind(this));
 	};
 
 	/**
@@ -209,38 +225,41 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand', "sap/ui/fl/FlexControllerFactor
 		var oChange = vChange.change || vChange;
 
 		var oAppComponent = this.getAppComponent();
-		var oChangeDefinition = oChange.getDefinition();
 		var oSelectorElement = RtaControlTreeModifier.bySelector(oChange.getSelector(), oAppComponent);
+		var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
+		var bRevertible = oFlexController.isChangeHandlerRevertible(oChange, oSelectorElement);
+		var mPropertyBag = {
+			modifier: bRevertible ? JsControlTreeModifier : RtaControlTreeModifier,
+			appComponent: oAppComponent,
+			view: Utils.getViewForControl(oSelectorElement)
+		};
 
-		// If the command has a "getState" implementation, use that instead of recording the undo
-		if (this.getFnGetState()){
-			this.setState.call(this, (this.getFnGetState()((this.getElement() || this.getSelector()), oChangeDefinition, {
-			modifier: RtaControlTreeModifier,
-			appComponent : oAppComponent
-			})));
-		} else {
+		if (!bRevertible) {
 			RtaControlTreeModifier.startRecordingUndo();
 		}
 
-		var oFlexController = FlexControllerFactory.createForControl(this.getAppComponent());
+		return Promise.resolve(oFlexController.checkTargetAndApplyChange(oChange, oSelectorElement, mPropertyBag))
 
-		return Promise.resolve(oFlexController.checkTargetAndApplyChange(oChange, oSelectorElement, {modifier: RtaControlTreeModifier, appComponent: oAppComponent}))
-
-		.then(function(bSuccess) {
-			if (bSuccess) {
+		.then(function(oResult) {
+			if (oResult.success) {
 				if (bNotMarkAsAppliedChange) {
 					oFlexController.removeFromAppliedChangesOnControl(oChange, oAppComponent, oSelectorElement);
 				}
 			}
-			return bSuccess;
+			return oResult;
 		})
 
-		.then(function(bSuccess) {
-			if (!this.getFnGetState()){
-				this._aRecordedUndo = RtaControlTreeModifier.stopRecordingUndo();
+		.then(function(oResult) {
+			if (!bRevertible){
+				if (!oChange.getUndoOperations()) {
+					this._aRecordedUndo = RtaControlTreeModifier.stopRecordingUndo();
+				} else {
+					this._aRecordedUndo = oChange.getUndoOperations();
+					oChange.resetUndoOperations();
+				}
 			}
-			if (!bSuccess) {
-				return Promise.reject();
+			if (!oResult.success) {
+				return Promise.reject(oResult.error);
 			}
 		}.bind(this));
 	};

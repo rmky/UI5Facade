@@ -6,19 +6,17 @@
 
 // Provides control sap.m.InputListItem.
 sap.ui.define([
-	'./ListItemBase',
-	'./library',
-	'sap/ui/core/library',
-	'./InputListItemRenderer'
+	"sap/ui/core/library",
+	"./library",
+	"./ListItemBase",
+	"./InputListItemRenderer"
 ],
-	function(ListItemBase, library, coreLibrary, InputListItemRenderer) {
+	function(coreLibrary, library, ListItemBase, InputListItemRenderer) {
 	"use strict";
-
 
 
 	// shortcut for sap.ui.core.TextDirection
 	var TextDirection = coreLibrary.TextDirection;
-
 
 
 	/**
@@ -32,7 +30,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public

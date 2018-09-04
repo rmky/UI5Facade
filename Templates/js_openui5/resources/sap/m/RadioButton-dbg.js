@@ -78,11 +78,12 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.m.RadioButton
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/radio-button/ Radio Button}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var RadioButton = Control.extend("sap.m.RadioButton", /** @lends sap.m.RadioButton.prototype */ { metadata : {
@@ -374,6 +375,13 @@ function(
 			enabled: this.getEnabled(),
 			editable: this.getEditable()
 		};
+	};
+
+	/*
+	 * RadioButton without label must not be stretched in Form.
+	 */
+	RadioButton.prototype.getFormDoNotAdjustWidth = function() {
+		return this.getText() ? false : true;
 	};
 
 	/**

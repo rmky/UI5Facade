@@ -8,7 +8,7 @@
 
 sap.ui.define([
 	'jquery.sap.global',
-	"sap/ui/core/Control",
+	'sap/ui/core/Control',
 	'sap/ui/codeeditor/js/ace/ace',
 	'sap/ui/codeeditor/js/ace/ext-language_tools',
 	'sap/ui/codeeditor/js/ace/ext-beautify',
@@ -33,7 +33,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -186,9 +186,16 @@ sap.ui.define([
 		this._oEditorDomRef.style.width = "100%";
 		this._oEditor = ace.edit(oDomRef);
 
-		this._oEditor.getSession().setValue("");
-		this._oEditor.getSession().setUseWrapMode(true);
-		this._oEditor.getSession().setMode("ace/mode/javascript");
+		var oSession = this._oEditor.getSession();
+
+		// Ensure worker is used only when the CodeEditor has focus.
+		// This helps preventing race conditions between the framework's
+		// lifecycle and the Ace editor's lifecycle.
+		oSession.setUseWorker(false);
+
+		oSession.setValue("");
+		oSession.setUseWrapMode(true);
+		oSession.setMode("ace/mode/javascript");
 		this._oEditor.setTheme("ace/theme/tomorrow");
 
 		this._oEditor.setOptions({
@@ -251,7 +258,9 @@ sap.ui.define([
 			//hide the cursor
 			this._oEditor.renderer.$cursorLayer.element.style.display = "none";
 		}
-		this._oEditor.setReadOnly(!this.getEditable());
+
+		// This is required for BCP:1880235178
+		this._oEditor.textInput.setReadOnly(!bValue);
 		return this;
 	};
 
@@ -262,6 +271,7 @@ sap.ui.define([
 	 */
 	CodeEditor.prototype.focus = function() {
 		this._oEditor.focus();
+
 		return this;
 	};
 
@@ -439,6 +449,17 @@ sap.ui.define([
 	CodeEditor.prototype.destroy = function (bSuppressInvalidate) {
 		this._oEditor.destroy(bSuppressInvalidate);
 		Control.prototype.destroy.call(this, bSuppressInvalidate);
+	};
+
+	CodeEditor.prototype.onfocusout = function () {
+		this._oEditor.getSession().setUseWorker(false);
+	};
+
+	CodeEditor.prototype.onfocusin = function () {
+		if (!this.getEditable()) {
+			document.activeElement.blur(); // prevent virtual keyboard from opening when control is not editable
+		}
+		this._oEditor.getSession().setUseWorker(true);
 	};
 
 	return CodeEditor;

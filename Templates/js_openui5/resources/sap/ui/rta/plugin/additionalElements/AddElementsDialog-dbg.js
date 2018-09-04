@@ -6,8 +6,8 @@
 sap.ui.define([
 	'jquery.sap.global',
 	'sap/ui/base/ManagedObject',
-	'sap/ui/commons/Label',
-	'sap/ui/commons/LabelDesign',
+	'sap/m/Label',
+	'sap/m/LabelDesign',
 	'sap/m/Dialog',
 	'sap/ui/model/json/JSONModel',
 	'sap/m/SearchField',
@@ -58,7 +58,7 @@ sap.ui.define([
 	 * @class Context - Dialog for available Fields in Runtime Authoring
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @since 1.44

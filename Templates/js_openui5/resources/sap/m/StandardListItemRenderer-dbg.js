@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['./ListItemBaseRenderer', 'sap/ui/core/Renderer', 'sap/m/library', 'sap/ui/core/library'],
-	function(ListItemBaseRenderer, Renderer, library, coreLibrary) {
+sap.ui.define(["sap/ui/core/library", "sap/ui/core/Renderer", "./library", "./ListItemBaseRenderer"],
+	function(coreLibrary, Renderer, library, ListItemBaseRenderer ) {
 	"use strict";
 
 

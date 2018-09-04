@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './Plugin', 'sa
 	 * @class This class provides the support tool functionality of UI5. This class is internal and all its functions must not be used by an application.
 	 *
 	 * @extends sap.ui.base.EventProvider
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @private
 	 * @alias sap.ui.core.support.Support
 	 */
@@ -691,7 +691,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './Plugin', 'sa
 		};
 
 		/**
-		 * Returns all support informations optionally filtered by a caller name
+		 * Returns all support information optionally filtered by a caller name
 		 * @experimental
 		 * @private
 		 */
@@ -833,7 +833,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './Plugin', 'sa
 
 		/**
 		 * Returns the list of elements that reported the given support data.
-		 * @param {string} Comma seperated list of indices that should be looked up
+		 * @param {string} sSupportData Comma separated list of indices that should be looked up
 		 * @returns {sap.ui.core.Element[]} list of elements
 		 * @experimental
 		 * @private

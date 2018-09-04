@@ -463,10 +463,6 @@ html.sapUiMedia-Std-Desktop, html.sapUiMedia-Std-Tablet {
 /* Belize High Contrast Black theme           */
 /* ========================================== */
 
-.sapUxAPObjectPageNavigation {
-	background-color: @sapUiObjectHeaderBackground;
-}
-
 .sapUxAPObjectChildPage {
 	width: 0.25rem;
 }
@@ -493,14 +489,14 @@ html.sapUiMedia-Std-Desktop, html.sapUiMedia-Std-Tablet {
 }
 
 // title hover
-.sapUxAPObjectPageLayout.sapUxAPObjectPageLayoutTitleClickEnabled:not(.sapUxAPObjectPageLayoutHeaderPinned) .sapFDynamicPageTitle:hover {
+.sapUxAPObjectPageLayout.sapUxAPObjectPageLayoutTitleClickEnabled .sapFDynamicPageTitle:hover {
 	background: @sapUiHighlight;
 	box-shadow: @sapUiShadowHeader;
 }
 
 // toggle header visual indicator
 .sapUxAPObjectPageLayout {
-  &.sapUxAPObjectPageLayoutTitleClickEnabled:not(.sapUxAPObjectPageLayoutHeaderPinned) {
+  &.sapUxAPObjectPageLayoutTitleClickEnabled {
     .sapFDynamicPageTitle:hover,
     &.sapUxAPObjectPageLayoutTitleForceHovered .sapFDynamicPageTitle {
       background: @sapUiHighlight;

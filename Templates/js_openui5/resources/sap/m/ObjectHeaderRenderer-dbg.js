@@ -1328,6 +1328,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 		oRM.write(">");
 
 		oRM.write("<span");
+		oRM.writeAttribute("id", oOH.getId() + "-titletxtwrap");
 		oRM.addClass("sapMOHRTitleTextWrappable");
 		oRM.writeClasses();
 		oRM.write(">");

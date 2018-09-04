@@ -3,9 +3,8 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-
-sap.ui.define(['./ListItemBaseRenderer', 'sap/m/library', 'sap/ui/Device'],
-	function(ListItemBaseRenderer, library, Device) {
+sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
+	function(library, Device, ListItemBaseRenderer) {
 	"use strict";
 
 
@@ -20,7 +19,7 @@ sap.ui.define(['./ListItemBaseRenderer', 'sap/m/library', 'sap/ui/Device'],
 
 
 	/**
-	 * List renderer.
+	 * ListBase renderer.
 	 * @namespace
 	 */
 	var ListBaseRenderer = {};
@@ -88,11 +87,12 @@ sap.ui.define(['./ListItemBaseRenderer', 'sap/m/library', 'sap/ui/Device'],
 		var oHeaderTBar = oControl.getHeaderToolbar();
 		if (oHeaderTBar) {
 			oHeaderTBar.setDesign(ToolbarDesign.Transparent, true);
+			oHeaderTBar.addStyleClass("sapMListHdr");
 			oHeaderTBar.addStyleClass("sapMListHdrTBar");
 			oHeaderTBar.addStyleClass("sapMTBHeader-CTX");
 			rm.renderControl(oHeaderTBar);
 		} else if (sHeaderText) {
-			rm.write("<header class='sapMListHdr'");
+			rm.write("<header class='sapMListHdr sapMListHdrText'");
 			rm.writeAttribute("id", oControl.getId("header"));
 			rm.write(">");
 			rm.writeEscaped(sHeaderText);
@@ -104,7 +104,11 @@ sap.ui.define(['./ListItemBaseRenderer', 'sap/m/library', 'sap/ui/Device'],
 		if (oInfoTBar) {
 			oInfoTBar.setDesign(ToolbarDesign.Info, true);
 			oInfoTBar.addStyleClass("sapMListInfoTBar");
+			// render div for infoToolbar, as there is margin in HCB and HCW
+			// when sticky is enabled, the content behind the infoToolbar is visible due to the margins
+			rm.write("<div class='sapMListInfoTBarContainer'>");
 			rm.renderControl(oInfoTBar);
+			rm.write("</div>");
 		}
 
 		// determine items rendering
@@ -226,6 +230,7 @@ sap.ui.define(['./ListItemBaseRenderer', 'sap/m/library', 'sap/ui/Device'],
 	 */
 	ListBaseRenderer.renderListStartAttributes = function(rm, oControl) {
 		rm.write("<ul");
+		rm.addClass("sapMListItems");
 		oControl.addNavSection(oControl.getId("listUl"));
 	};
 

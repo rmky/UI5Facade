@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @implements sap.ui.commons.ToolbarItem
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -403,7 +403,7 @@ sap.ui.define([
 
 
 	/**
-	 * @deprecated NOT SUPPORTED
+	 * @deprecated As of version 1.10.0, NOT SUPPORTED
 	 * @public
 	 * @name sap.ui.commons.AutoComplete#getListBox
 	 * @function
@@ -411,7 +411,7 @@ sap.ui.define([
 
 
 	/**
-	 * @deprecated NOT SUPPORTED
+	 * @deprecated As of version 1.10.0, NOT SUPPORTED
 	 * @public
 	 */
 	AutoComplete.prototype.setListBox = function(){
@@ -420,7 +420,7 @@ sap.ui.define([
 
 
 	/**
-	 * @deprecated NOT SUPPORTED
+	 * @deprecated As of version 1.10.0, NOT SUPPORTED
 	 * @public
 	 * @name sap.ui.commons.AutoComplete#getSelectedKey
 	 * @function
@@ -428,7 +428,7 @@ sap.ui.define([
 
 
 	/**
-	 * @deprecated NOT SUPPORTED
+	 * @deprecated As of version 1.10.0, NOT SUPPORTED
 	 * @public
 	 */
 	AutoComplete.prototype.setSelectedKey = function(){
@@ -437,7 +437,7 @@ sap.ui.define([
 
 
 	/**
-	 * @deprecated NOT SUPPORTED
+	 * @deprecated As of version 1.10.0, NOT SUPPORTED
 	 * @public
 	 * @name sap.ui.commons.AutoComplete#getSelectedItemId
 	 * @function
@@ -445,7 +445,7 @@ sap.ui.define([
 
 
 	/**
-	 * @deprecated NOT SUPPORTED
+	 * @deprecated As of version 1.10.0, NOT SUPPORTED
 	 * @public
 	 */
 	AutoComplete.prototype.setSelectedItemId = function(){

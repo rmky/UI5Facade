@@ -18,9 +18,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Menu...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 * @namespace
-		 * @name sap.ui.table.TableMenuUtils
+		 * @alias sap.ui.table.TableMenuUtils
 		 * @private
 		 */
 		var MenuUtils = {
@@ -55,7 +55,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 			 * @private
 			 */
 			openContextMenu: function(oTable, oElement, bHoverFirstMenuItem, bFireEvent, oEvent) {
-				if (oTable == null || oElement == null) {
+				if (!oTable || !oElement) {
 					return;
 				}
 				if (bFireEvent == null) {
@@ -65,7 +65,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 				var $Target = jQuery(oElement);
 
 				var $TableCell = MenuUtils.TableUtils.getCell(oTable, $Target);
-				if ($TableCell === null) {
+				if (!$TableCell) {
 					return;
 				}
 
@@ -103,7 +103,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 
 						var oRowBindingContext;
 						var oRowBindingInfo = oTable.getBindingInfo("rows");
-						if (oRowBindingInfo != null) {
+						if (oRowBindingInfo) {
 							oRowBindingContext = oRow.getBindingContext(oRowBindingInfo.model);
 						}
 
@@ -127,7 +127,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 						if (bExecuteDefault) {
 							bExecuteDefault = oTable.fireBeforeOpenContextMenu({
 								rowIndex: oRow.getIndex(),
-								columnIndex: oRowColCell.column === null ? null : iColumnIndex,
+								columnIndex: oRowColCell.column ? iColumnIndex : null,
 								contextMenu: oRowContextMenu
 							});
 						}
@@ -152,7 +152,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 			 * @private
 			 */
 			openColumnContextMenu: function(oTable, iColumnIndex, bHoverFirstMenuItem, oCell) {
-				if (oTable == null ||
+				if (!oTable ||
 					iColumnIndex == null || iColumnIndex < 0) {
 					return;
 				}
@@ -197,7 +197,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 			 * @private
 			 */
 			closeColumnContextMenu: function(oTable, iColumnIndex) {
-				if (oTable == null ||
+				if (!oTable ||
 					iColumnIndex == null || iColumnIndex < 0) {
 					return;
 				}
@@ -226,9 +226,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 			 * @private
 			 */
 			openDataCellContextMenu: function(oTable, oCellInfo, bHoverFirstMenuItem, oEvent) {
-				if (oTable == null ||
-					oCellInfo == null ||
-					oCellInfo.cell == null || oCellInfo.rowIndex >= MenuUtils.TableUtils.getNonEmptyVisibleRowCount(oTable)) {
+				if (!oTable ||
+					!oCellInfo ||
+					!oCellInfo.cell || oCellInfo.rowIndex >= MenuUtils.TableUtils.getNonEmptyVisibleRowCount(oTable)) {
 					return;
 				}
 
@@ -261,12 +261,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 					}
 				} else if (oTable.getEnableCellFilter() && oColumn && oColumn.isFilterableByMenu()) {
 					// Create the menu instance the first time it is needed.
-					if (oTable._oCellContextMenu == null) {
-
+					if (!oTable._oCellContextMenu) {
 						oTable._oCellContextMenu = new Menu(oTable.getId() + "-cellcontextmenu");
 
 						var oCellContextMenuItem = new MenuItem({
-							text: oTable._oResBundle.getText("TBL_FILTER")
+							text: MenuUtils.TableUtils.getResourceText("TBL_FILTER")
 						});
 
 						oCellContextMenuItem._onSelect = function (oColumn, iRowIndex) {
@@ -299,7 +298,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 					var oCell =  oRow.getCells()[iColumnIndex];
 					var $Cell =  MenuUtils.TableUtils.getParentCell(oTable, oCell.getDomRef());
 
-					if ($Cell !== null && !MenuUtils.TableUtils.Grouping.isInGroupingRow($Cell)) {
+					if ($Cell && !MenuUtils.TableUtils.Grouping.isInGroupingRow($Cell)) {
 						oCell = $Cell[0];
 
 						var bMenuOpenAtAnotherDataCell = oTable._oCellContextMenu.bOpen && oTable._oCellContextMenu.oOpenerRef !== oCell;
@@ -326,7 +325,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 			 * @private
 			 */
 			closeDataCellContextMenu: function(oTable) {
-				if (oTable == null) {
+				if (!oTable) {
 					return;
 				}
 
@@ -369,7 +368,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 			 * @private
 			 */
 			applyColumnHeaderCellMenu: function(oTable, iColumnIndex, $TableCell) {
-				if (oTable == null ||
+				if (!oTable ||
 					iColumnIndex == null || iColumnIndex < 0) {
 					return;
 				}

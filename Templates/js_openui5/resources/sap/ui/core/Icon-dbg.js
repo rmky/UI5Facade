@@ -7,6 +7,7 @@
 // Provides control sap.ui.core.Icon.
 sap.ui.define([
     'jquery.sap.global',
+    'sap/base/assert',
     '../Device',
     './Control',
     './IconPool',
@@ -17,6 +18,7 @@ sap.ui.define([
 ],
 	function(
 	    jQuery,
+		assert,
 		Device,
 		Control,
 		IconPool,
@@ -43,7 +45,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @public
 	 * @since 1.11.1
@@ -315,25 +317,31 @@ sap.ui.define([
 	/* =========================================================== */
 
 	Icon.prototype.setSrc = function(sSrc) {
-		var oIconInfo = IconPool.getIconInfo(sSrc),
+		assert(sSrc == null || IconPool.isIconURI(sSrc), this + ": Property 'src' (value: '" + sSrc + "') should be a valid Icon URI (sap-icon://...)");
+
+		var vIconInfo = IconPool.getIconInfo(sSrc, undefined, "mixed"),
 			$Icon = this.$(),
 			sIconLabel, sTooltip, bUseIconTooltip, aLabelledBy, oInvisibleText;
 
-		// when the given sSrc can't be found in IconPool, rerender the icon is needed.
-		this.setProperty("src", sSrc, !!oIconInfo);
+		// when the given sSrc can't be found in IconPool
+		// rerender the icon is needed.
+		this.setProperty("src", sSrc, !!vIconInfo);
 
-		if (oIconInfo && $Icon.length) {
-			$Icon.css("font-family", oIconInfo.fontFamily);
-			$Icon.attr("data-sap-ui-icon-content", oIconInfo.content);
-			$Icon.toggleClass("sapUiIconMirrorInRTL", !oIconInfo.suppressMirroring);
+		if (vIconInfo instanceof Promise) {
+			// trigger a rerendering once the icon info is available
+			vIconInfo.then(this.invalidate.bind(this));
+		} else if (vIconInfo && $Icon.length) {
+			$Icon.css("font-family", vIconInfo.fontFamily);
+			$Icon.attr("data-sap-ui-icon-content", vIconInfo.content);
+			$Icon.toggleClass("sapUiIconMirrorInRTL", !vIconInfo.suppressMirroring);
 
 			sTooltip = this.getTooltip_AsString();
 			aLabelledBy = this.getAriaLabelledBy();
 			bUseIconTooltip = this.getUseIconTooltip();
-			sIconLabel = this._getIconLabel();
+			sIconLabel = this._getIconLabel(vIconInfo);
 
-			if (sTooltip || (bUseIconTooltip && oIconInfo.text)) {
-				$Icon.attr("title", sTooltip || oIconInfo.text);
+			if (sTooltip || (bUseIconTooltip && vIconInfo.text)) {
+				$Icon.attr("title", sTooltip || vIconInfo.text);
 			} else {
 				$Icon.attr("title", null);
 			}
@@ -350,6 +358,7 @@ sap.ui.define([
 					oInvisibleText.setText(sIconLabel);
 				}
 			}
+
 		}
 
 		return this;
@@ -471,13 +480,12 @@ sap.ui.define([
 
 	/**
 	 * Returns the string which is set to the 'title' attribute of the DOM output
-	 *
+	 * @param {object} oIconInfo icon metadata
 	 * @return {string|undefined} the string which is output as title attribute
 	 * @private
 	 */
-	Icon.prototype._getOutputTitle = function() {
-		var oIconInfo = IconPool.getIconInfo(this.getSrc()),
-			sTooltip = this.getTooltip_AsString(),
+	Icon.prototype._getOutputTitle = function(oIconInfo) {
+		var sTooltip = this.getTooltip_AsString(),
 			bUseIconTooltip = this.getUseIconTooltip();
 
 		if (sTooltip || (bUseIconTooltip && oIconInfo && oIconInfo.text)) {
@@ -495,16 +503,16 @@ sap.ui.define([
 	 * which is set to the 'title' attribute of the DOM, this method returns undefined in
 	 * order not to set the aria-label or aria-labelledby attribute.
 	 *
+	 * @param {object} oIconInfo icon metadata
 	 * @return {string} the label when it's necessary to be output
 	 * @private
 	 */
-	Icon.prototype._getIconLabel = function() {
-		var oIconInfo = IconPool.getIconInfo(this.getSrc()),
-			sAlt = this.getAlt(),
+	Icon.prototype._getIconLabel = function(oIconInfo) {
+		var sAlt = this.getAlt(),
 			sTooltip = this.getTooltip_AsString(),
 			bUseIconTooltip = this.getUseIconTooltip(),
 			sLabel = sAlt || sTooltip || (bUseIconTooltip && oIconInfo && (oIconInfo.text || oIconInfo.name)),
-			sOutputTitle = this._getOutputTitle();
+			sOutputTitle = this._getOutputTitle(oIconInfo);
 
 		if (sLabel && sLabel !== sOutputTitle) {
 			return sLabel;
@@ -515,10 +523,10 @@ sap.ui.define([
 		var oInvisibleText = this.getAggregation("_invisibleText");
 
 		if (!oInvisibleText) {
+			// create control without rerendering
 			oInvisibleText = new InvisibleText(this.getId() + "-label", {
 				text: sText
 			});
-
 			this.setAggregation("_invisibleText", oInvisibleText, true);
 		} else {
 			// avoid triggering invalidation during rendering
@@ -528,10 +536,10 @@ sap.ui.define([
 		return oInvisibleText;
 	};
 
-	Icon.prototype._getAccessibilityAttributes = function() {
+	Icon.prototype._getAccessibilityAttributes = function(oIconInfo) {
 		var aLabelledBy = this.getAriaLabelledBy(),
 			mAccAttributes = {},
-			sIconLabel = this._getIconLabel(),
+			sIconLabel = this._getIconLabel(oIconInfo),
 			oInvisibleText;
 
 		if (this.getDecorative()) {
@@ -568,7 +576,7 @@ sap.ui.define([
 		}
 
 		var bHasPressListeners = this.hasListeners("press");
-		var oIconInfo = IconPool.getIconInfo(this.getSrc());
+		var oIconInfo = IconPool.getIconInfo(this.getSrc(), undefined, "sync");
 
 		return {
 			role: bHasPressListeners ? "button" : "img",

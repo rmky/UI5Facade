@@ -44,7 +44,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 		 *
 		 * @protected
 		 * @alias sap.ui.core.delegate.ScrollEnablement
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 * @author SAP SE
 		 */
 		var ScrollEnablement = BaseObject.extend("sap.ui.core.delegate.ScrollEnablement", /** @lends sap.ui.core.delegate.ScrollEnablement.prototype */ {
@@ -202,10 +202,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 			 * Scrolls to an element within a container.
 			 * @param {HTMLElement} oElement A DOM element.
 			 * @param {int} [iTime=0] The duration of animated scrolling in milliseconds. To scroll immediately without animation, give 0 as value.
+			 * @param {Array} Specifies the offset left and top for the DOM Element.
 			 * @returns {sap.ui.core.delegate.ScrollEnablement}
 			 * @protected
 			 */
-			scrollToElement: function(oElement, iTime) {
+			scrollToElement: function(oElement, iTime, aOffset) {
+				aOffset = aOffset || [0, 0];
+
 				// do nothing if _$Container is not a (grand)parent of oElement
 				if (!this._$Container[0].contains(oElement) ||
 					oElement.style.display === "none" ||
@@ -215,8 +218,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 
 				var $Element = $(oElement),
 					oScrollPosition = this.getChildPosition($Element),
-					iLeftScroll = this.getScrollLeft() + oScrollPosition.left,
-					iTopScroll = this.getScrollTop() + oScrollPosition.top;
+					iLeftScroll = this.getScrollLeft() + oScrollPosition.left + aOffset[0],
+					iTopScroll = this.getScrollTop() + oScrollPosition.top + aOffset[1];
 
 				if (this._bFlipX) {
 					// in IE RTL scrollLeft goes opposite direction
@@ -699,16 +702,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 		 * Init delegator prototype according to various conditions.
 		 */
 		function initDelegateMembers(oScrollerInstance) {
-			var oDelegateMembers;
-
-			if (Device.support.touch || $.sap.simulateMobileOnDesktop) {
-				$.sap.require("jquery.sap.mobile");
-			}
-
-			oDelegateMembers = {
+			var oDelegateMembers = {
 				_init : function(oControl, sScrollContentDom, oConfig) {
 					// default scroll supression threshold of jQuery mobile is too small and prevent native scrolling
-					if ($.mobile && $.event.special.swipe && $.event.special.swipe.scrollSupressionThreshold < 120) {
+					if ($.event && $.event.special && $.event.special.swipe && $.event.special.swipe.scrollSupressionThreshold < 120) {
 						$.event.special.swipe.scrollSupressionThreshold = 120;
 					}
 

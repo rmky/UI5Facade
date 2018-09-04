@@ -44,12 +44,13 @@ sap.ui.define([
 		 * @extends sap.m.OverflowToolbar
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
 		 * @since 1.34
 		 * @alias sap.tnt.ToolHeader
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/tool-header/ Tool Header}
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		var ToolHeader = OverflowToolbar.extend("sap.tnt.ToolHeader", /** @lends sap.tnt.ToolHeader.prototype */ {

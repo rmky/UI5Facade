@@ -35,7 +35,7 @@ sap.ui.define([
 	 * Constructor for an sap.m.semantic.SemanticConfiguration.
 	 *
 	 * @class Defines the visual properties and positioning for each supported semantic type
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @private
 	 * @since 1.30.0
 	 * @alias sap.m.semantic.SemanticConfiguration
@@ -323,7 +323,7 @@ sap.ui.define([
 			getEventDelegates: function(oContext) {
 				return {
 					onAfterRendering: function () {
-						this.$().attr({"aria-haspopup": true, "role": ""});
+						this.$().attr({"aria-haspopup": true});
 					}.bind(oContext)
 				};
 			},
@@ -381,7 +381,7 @@ sap.ui.define([
 			getEventDelegates: function(oContext) {
 				return {
 					onAfterRendering: function () {
-						this.$().attr({"aria-haspopup": true, "role": ""});
+						this.$().attr({"aria-haspopup": true});
 					}.bind(oContext)
 				};
 			},

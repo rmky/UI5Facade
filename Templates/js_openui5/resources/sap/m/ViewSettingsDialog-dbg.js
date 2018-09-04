@@ -71,7 +71,7 @@ function(
 	 * to create sorters and filters for the table.
 	 *
 	 * <b>Note:</b> If the app does not offer all three sorting, filtering, and grouping
-	 * functionalities, but only one of these (such as sort), we recommend placing the
+	 * operations, but only one of these (such as sort), we recommend placing the
 	 * icon button directly in the toolbar. Do not place sort, filter, or group buttons in
 	 * the footer toolbar if they refer to a table. Place group, sort, and filter buttons
 	 * in the footer toolbar if they refer to a master list.
@@ -101,12 +101,13 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.16
 	 * @alias sap.m.ViewSettingsDialog
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/view-settings-dialog/ View Settings Dialog}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var ViewSettingsDialog = Control.extend("sap.m.ViewSettingsDialog", /** @lends sap.m.ViewSettingsDialog.prototype */ { metadata : {

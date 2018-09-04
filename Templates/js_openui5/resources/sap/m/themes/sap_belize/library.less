@@ -1048,6 +1048,19 @@ html.sap-desktop .sapMITBItem:focus.sapMITBAll {
 		bottom: 1.75rem;
 	}
 }
+html.sap-desktop .sapMITH.sapUiSizeCompact {
+	.sapMITBItem:focus.sapMITBAll {
+		&::after {
+			bottom: 1.5rem;
+		}
+	}
+	.sapMITBTextOnly .sapMITBItem:focus .sapMITBText{
+		&::after {
+			top: 0.25rem;
+		}
+	}
+}
+
 
 html[data-sap-ui-browser^="ie"].sap-desktop .sapMITBItem:focus .sapMITBFilterIcon,
 html[data-sap-ui-browser^="ed"].sap-desktop .sapMITBItem:focus .sapMITBFilterIcon,
@@ -1930,7 +1943,7 @@ html.sap-phone {
 }
 
 .sapMPanelContent:not(.sapMPanelBGTransparent) {
-	border-bottom: 1px solid @sapUiGroupContentBorderColor;
+	border-bottom: 1px solid @sapUiGroupTitleBorderColor;
 }
 /* END "Panel.less" */
 
@@ -2063,6 +2076,21 @@ html.sap-desktop .sapMQuickViewPage .sapUiIcon:focus {
 .sapMRbWarn.sapMRbBTouched .sapMRbBOut {
 	border-color: @sapUiFieldWarningColor;
 	background-color: @sapUiFieldWarningBackground;
+}
+
+/* When printing border is needed for the selection */
+@media only print {
+	.sapMLIBActive .sapMRbSel .sapMRbBOut {
+		border-color: @sapUiListActiveBackground;
+	}
+
+	.sapMRbErr.sapMRbSel .sapMRbBInn {
+		border-color: @sapUiFieldInvalidColor;
+	}
+
+	.sapMRbWarn.sapMRbSel .sapMRbBInn {
+		border-color: @_sap_m_RadioButton_SelectedWarningColor;
+	}
 }
 /* END "RadioButton.less" */
 
@@ -2877,6 +2905,11 @@ html.sap-desktop .sapMSwtCont:focus > .sapMSwt {
 .sapMListBGSolid .sapMListTblFooter {
 	background-color: @sapUiListBackground;
 }
+
+/* make the focus visible on all sides */
+.sapMSticky .sapMLIBShowSeparator:first-child > td {
+	border-top-color: transparent;
+}
 /* END "Table.less" */
 
 /* START "TabStrip.less" */
@@ -3125,6 +3158,11 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 /* Belize theme                   */
 /* ============================== */
 
+html.sap-desktop .sapMTBActive:focus {
+	outline: 1px dotted @sapUiContentFocusColor;
+	outline-offset: -0.125rem;
+}
+
 /* Info Toolbar Context */
 .sapMTB-Info-CTX.sapMTB {
 	height: 2rem;
@@ -3133,17 +3171,16 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 }
 
 html.sap-desktop .sapMTB-Info-CTX.sapMTBActive:focus {
-	outline: 1px dotted @sapUiContentContrastFocusColor;
-	outline-offset: -0.125rem;
+	outline-color: @sapUiContentContrastFocusColor;
 }
 
 /* IE ignores outline-offset. Use an overlay: */
 html[data-sap-ui-browser^="ie"].sap-desktop {
-	.sapMTB-Info-CTX.sapMTBActive:focus {
+	.sapMTBActive:focus {
 		outline: none;
 		position: relative;
 	}
-	.sapMTB-Info-CTX.sapMTBActive:focus:before {
+	.sapMTBActive:focus:before {
 		content: " ";
 		box-sizing: border-box;
 		width: calc(~'100% - 0.0625rem');
@@ -3151,8 +3188,11 @@ html[data-sap-ui-browser^="ie"].sap-desktop {
 		position: absolute;
 		left: 0;
 		top: 0;
-		border: 0.0625rem dashed @sapUiContentContrastFocusColor;
+		border: 0.0625rem dashed @sapUiContentFocusColor;
 		pointer-events: none;
+	}
+	.sapMTB-Info-CTX.sapMTBActive:focus:before {
+		border-color: @sapUiContentContrastFocusColor;
 	}
 }
 /* END "Toolbar.less" */

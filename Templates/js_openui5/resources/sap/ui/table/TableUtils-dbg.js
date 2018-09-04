@@ -17,6 +17,12 @@ sap.ui.define([
 	var MessageType = coreLibrary.MessageType;
 
 	/**
+	 * The resource bundle of the sap.ui.table library.
+	 * @type {jQuery.sap.util.ResourceBundle}
+	 */
+	var oResourceBundle;
+
+	/**
 	 * Table cell type.
 	 *
 	 * @type {sap.ui.table.TableUtils.CellType}
@@ -135,9 +141,9 @@ sap.ui.define([
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @namespace
-	 * @name sap.ui.table.TableUtils
+	 * @alias sap.ui.table.TableUtils
 	 * @private
 	 */
 	var TableUtils = {
@@ -172,7 +178,7 @@ sap.ui.define([
 		 * @private
 		 */
 		hasSelectAll: function(oTable) {
-			var sSelectionMode = oTable != null ? oTable.getSelectionMode() : SelectionMode.None;
+			var sSelectionMode = oTable ? oTable.getSelectionMode() : SelectionMode.None;
 			return (sSelectionMode === SelectionMode.Multi || sSelectionMode === SelectionMode.MultiToggle)
 				   && oTable.getEnableSelectAll();
 		},
@@ -185,13 +191,13 @@ sap.ui.define([
 		 * @private
 		 */
 		hasRowHighlights: function(oTable) {
-			if (oTable == null) {
+			if (!oTable) {
 				return false;
 			}
 
 			var oRowSettingsTemplate = oTable.getRowSettingsTemplate();
 
-			if (oRowSettingsTemplate == null) {
+			if (!oRowSettingsTemplate) {
 				return false;
 			}
 
@@ -255,7 +261,7 @@ sap.ui.define([
 		 * @returns {boolean} Returns <code>true</code> if all rows in the table are selected.
 		 */
 		areAllRowsSelected: function(oTable) {
-			if (oTable == null) {
+			if (!oTable) {
 				return false;
 			}
 
@@ -306,7 +312,7 @@ sap.ui.define([
 		 * @private
 		 */
 		isBusyIndicatorVisible: function(oTable) {
-			if (oTable == null || oTable.getDomRef() == null) {
+			if (!oTable || !oTable.getDomRef()) {
 				return false;
 			}
 
@@ -321,7 +327,7 @@ sap.ui.define([
 		 * @private
 		 */
 		hasPendingRequests: function(oTable) {
-			if (oTable == null) {
+			if (!oTable) {
 				return false;
 			}
 
@@ -352,7 +358,7 @@ sap.ui.define([
 		 * @returns {boolean} Returns <code>true</code>, if the table can use a counter for pending request detection.
 		 */
 		canUsePendingRequestsCounter: function(oTable) {
-			var oBinding = oTable != null ? oTable.getBinding("rows") : null;
+			var oBinding = oTable ? oTable.getBinding("rows") : null;
 
 			if (TableUtils.isInstanceOf(oBinding, "sap/ui/model/analytics/AnalyticalBinding")) {
 				return oBinding.bUseBatchRequests;
@@ -383,18 +389,18 @@ sap.ui.define([
 		 * Toggles the selection state of the row which contains the given cell DOM element.
 		 *
 		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @param {jQuery|HTMLElement|int} oRowIndicator The data cell in the row, or the data row index of the row,
+		 * @param {jQuery|HTMLElement|int} vRowIndicator The data cell in the row, or the data row index of the row,
 		 * 												 where the selection state should be toggled.
 		 * @param {boolean} [bSelect] If defined, then instead of toggling the desired state is set.
 		 * @param {function} [fnDoSelect] If defined, then instead of the default selection code, this custom callback is used.
 		 * @returns {boolean} Returns <code>true</code> if the selection state of the row has been changed.
 		 * @private
 		 */
-		toggleRowSelection: function(oTable, oRowIndicator, bSelect, fnDoSelect) {
-			if (oTable == null ||
-				oTable.getBinding("rows") == null ||
+		toggleRowSelection: function(oTable, vRowIndicator, bSelect, fnDoSelect) {
+			if (!oTable ||
+				!oTable.getBinding("rows") ||
 				oTable.getSelectionMode() === SelectionMode.None ||
-				oRowIndicator == null) {
+				vRowIndicator == null) {
 
 				return false;
 			}
@@ -410,35 +416,32 @@ sap.ui.define([
 
 				if (fnDoSelect) {
 					bSelectionChanged = fnDoSelect(iAbsoluteRowIndex, bSelect);
-				} else {
-
-					if (oTable.isIndexSelected(iAbsoluteRowIndex)) {
-						if (bSelect != null && bSelect) {
-							return false;
-						}
-						oTable.removeSelectionInterval(iAbsoluteRowIndex, iAbsoluteRowIndex);
-					} else {
-						if (bSelect != null && !bSelect) {
-							return false;
-						}
-						oTable.addSelectionInterval(iAbsoluteRowIndex, iAbsoluteRowIndex);
+				} else if (oTable.isIndexSelected(iAbsoluteRowIndex)) {
+					if (bSelect === true) {
+						return false;
 					}
+					oTable.removeSelectionInterval(iAbsoluteRowIndex, iAbsoluteRowIndex);
+				} else {
+					if (bSelect === false) {
+						return false;
+					}
+					oTable.addSelectionInterval(iAbsoluteRowIndex, iAbsoluteRowIndex);
 				}
 
 				delete oTable._iSourceRowIndex;
 				return bSelectionChanged;
 			}
 
-			// Variable oRowIndicator is a row index value.
-			if (typeof oRowIndicator === "number") {
-				if (oRowIndicator < 0 || oRowIndicator >= oTable._getTotalRowCount()) {
+			// Variable vRowIndicator is a row index value.
+			if (typeof vRowIndicator === "number") {
+				if (vRowIndicator < 0 || vRowIndicator >= oTable._getTotalRowCount()) {
 					return false;
 				}
-				return setSelectionState(oRowIndicator);
+				return setSelectionState(vRowIndicator);
 
-			// Variable oRowIndicator is a jQuery object or DOM element.
+			// Variable vRowIndicator is a jQuery object or DOM element.
 			} else {
-				var $Cell = jQuery(oRowIndicator);
+				var $Cell = jQuery(vRowIndicator);
 				var oCellInfo = TableUtils.getCellInfo($Cell[0]);
 				var bIsRowSelectionAllowed = TableUtils.isRowSelectionAllowed(oTable);
 
@@ -474,7 +477,7 @@ sap.ui.define([
 			} else if (typeof oNoData === "string" || oTable.getNoData() instanceof String) {
 				return oNoData;
 			} else {
-				return oTable._oResBundle.getText("TBL_NO_DATA");
+				return TableUtils.getResourceText("TBL_NO_DATA");
 			}
 		},
 
@@ -631,7 +634,7 @@ sap.ui.define([
 		 * @private
 		 */
 		isFixedColumn : function(oTable, iColIdx) {
-			return iColIdx < oTable.getFixedColumnCount();
+			return iColIdx < oTable.getComputedFixedColumnCount();
 		},
 
 		/**
@@ -641,7 +644,7 @@ sap.ui.define([
 		 * @private
 		 */
 		hasFixedColumns : function(oTable) {
-			return oTable.getFixedColumnCount() > 0;
+			return oTable.getComputedFixedColumnCount() > 0;
 		},
 
 		/**
@@ -719,7 +722,7 @@ sap.ui.define([
 				rRowIndex = /_([\d]+)/;
 				sColumnId = $Cell.attr("id");
 				aRowIndexMatch = rRowIndex.exec(sColumnId);
-				iRowIndex =  aRowIndexMatch == null || aRowIndexMatch[1] == null ? 0 : parseInt(aRowIndexMatch[1], 10);
+				iRowIndex =  aRowIndexMatch && aRowIndexMatch[1] != null ? parseInt(aRowIndexMatch[1], 10) : 0;
 
 				oCellInfo.type = TableUtils.CELLTYPE.COLUMNHEADER;
 				oCellInfo.rowIndex = iRowIndex;
@@ -829,7 +832,7 @@ sap.ui.define([
 		 * @private
 		 */
 		getCell: function(oTable, oElement) {
-			if (oTable == null || oElement == null) {
+			if (!oTable || !oElement) {
 				return null;
 			}
 
@@ -869,7 +872,7 @@ sap.ui.define([
 			var $Element = jQuery(oElement);
 			var $Cell = TableUtils.getCell(oTable, oElement);
 
-			if ($Cell === null || $Cell[0] === $Element[0]) {
+			if (!$Cell || $Cell[0] === $Element[0]) {
 				return null; // The element is not inside a table cell.
 			} else {
 				return $Cell;
@@ -1128,6 +1131,51 @@ sap.ui.define([
 			}
 
 			return iFirstFixedButtomIndex;
+		},
+
+		/**
+		 * Gets the resource bundle of the sap.ui.table library. The bundle will be loaded if it is not already loaded or if it should be reloaded.
+		 * After the bundle is loaded, {@link sap.ui.table.TableUtils.getResourceText} can be used to get texts.
+		 *
+		 * @param {object} [mOptions] Configuration options
+		 * @param {boolean} [mOptions.async=false] Whether to load the bundle asynchronously.
+		 * @param {boolean} [mOptions.reload=false] Whether to reload the bundle, if it already was loaded.
+		 * @returns {jQuery.sap.util.ResourceBundle | Promise} The resource bundle, or a Promise if the bundle is loaded asynchronously.
+		 */
+		getResourceBundle: function(mOptions) {
+			mOptions = jQuery.extend({async: false, reload: false}, mOptions);
+
+			if (oResourceBundle && mOptions.reload !== true) {
+				if (mOptions.async === true) {
+					return Promise.resolve(oResourceBundle);
+				} else {
+					return oResourceBundle;
+				}
+			}
+
+			var vResult = sap.ui.getCore().getLibraryResourceBundle("sap.ui.table", mOptions.async === true);
+
+			if (vResult instanceof Promise) {
+				vResult = vResult.then(function(oBundle) {
+					oResourceBundle = oBundle;
+					return oResourceBundle;
+				});
+			} else {
+				oResourceBundle = vResult;
+			}
+
+			return vResult;
+		},
+
+		/**
+		 * Gets a resource text, if the resource bundle was already loaded with {@link sap.ui.table.TableUtils.getResourceBundle}.
+		 *
+		 * @param {string} sKey The key of the resource text.
+		 * @param {string[]} [aValues] List of parameters values which should replace the placeholders.
+		 * @returns {string} The resource text, or an empty string if the resource bundle is not yet loaded.
+		 */
+		getResourceText: function(sKey, aValues) {
+			return oResourceBundle ? oResourceBundle.getText(sKey, aValues) : "";
 		}
 	};
 

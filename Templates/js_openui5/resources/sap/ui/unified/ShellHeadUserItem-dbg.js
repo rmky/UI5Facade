@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.unified.ShellHeadUserItem.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/IconPool', './library'],
-	function(jQuery, Element, IconPool, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/IconPool', './library', 'jquery.sap.encoder'],
+	function(jQuery, Element, IconPool, library /*, jQueryEncoder*/) {
 	"use strict";
 
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/IconPool
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -68,7 +68,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/IconPool
 		}
 	}});
 
-	IconPool.getIconInfo("", ""); //Ensure Icon Font is loaded
+	IconPool.insertFontFaceStyle(); //Ensure Icon Font is loaded
 
 	ShellHeadUserItem.prototype.onclick = function(oEvent){
 		this.firePress();

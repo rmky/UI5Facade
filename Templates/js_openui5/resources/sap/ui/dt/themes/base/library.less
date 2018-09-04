@@ -63,11 +63,6 @@
 }
 
 .sapUiDtOverlayTargetZone {
-	.sapUiDtOverlaySelected {
-		&:after {
-			content: none;
-		}
-	}
 	&:after {
 		content: " ";
 		border: 1px dashed @_sap_ui_dt_Overlay_TargetZoneColor;
@@ -122,29 +117,29 @@
 }
 /* END "Overlay.less" */
 
-/* START "MiniMenu.less" */
-.sapUiDtMiniMenu.sapMPopover {
+/* START "ContextMenu.less" */
+.sapUiDtContextMenu.sapMPopover {
 	padding-left: 0.5rem;
 	padding-right: 0.5rem;
 }
 
-.sapUiDtMiniMenu .sapMPopoverScroll {
+.sapUiDtContextMenu .sapMPopoverScroll {
 	margin-right: 0px !important;
 }
 
-.sapUiDtMiniMenu .sapMBtnInner {
+.sapUiDtContextMenu .sapMBtnInner {
 	text-align: left;
 }
 
-.sapUiDtMiniMenu.sapMPopover {
+.sapUiDtContextMenu.sapMPopover {
 	min-width: 0px;
 }
 
-.sapUiDtMiniMenu.sapMPopover.sapUiSizeCompact {
+.sapUiDtContextMenu.sapMPopover.sapUiSizeCompact {
 	padding-left: 0.2rem;
 	padding-right: 0.2rem;
 }
-/* END "MiniMenu.less" */
+/* END "ContextMenu.less" */
 
 /* START "shared.less" */
 /* This CSS shares it rules with all other CSS of this library */

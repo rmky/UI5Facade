@@ -136,6 +136,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 		},
 
 		onScrollToLoad: function() {
+			if (this._oControl.getDomRef("triggerList").style.display != "none") {
+				return;
+			}
+
 			if (!this._bLoading && this._oControl.getGrowingDirection() == ListGrowingDirection.Upwards) {
 				var oScrollDelegate = this._oScrollDelegate;
 				this._oScrollPosition = {
@@ -275,7 +279,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 			}
 
 			// after growing-button gets hidden scroll container should still be scrollable
-			return this._oScrollDelegate.getMaxScrollTop() > 80;
+			return this._oScrollDelegate.getMaxScrollTop() > this._oControl.getDomRef("triggerList").clientHeight;
 		},
 
 		// destroy all items in the list and cleanup

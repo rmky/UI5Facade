@@ -38,10 +38,11 @@ sap.ui.define([
 	 * @class
 	 * This is the base class for all template controls. Template controls are declared based on templates.
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @public
 	 * @since 1.15
+	 * @deprecated since 1.56
 	 * @alias sap.ui.core.tmpl.TemplateControl
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -90,7 +91,7 @@ sap.ui.define([
 	 */
 	TemplateControl.prototype.init = function() {
 
-		// list of binding informations to cleanup once the
+		// list of binding information to cleanup once the
 		// control is destroyed or re-rendering happens
 		this._aBindingInfos = [];
 

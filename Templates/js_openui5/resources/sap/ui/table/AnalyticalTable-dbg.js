@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @see http://scn.sap.com/docs/DOC-44986
 	 *
 	 * @extends sap.ui.table.Table
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -160,10 +160,11 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	};
 
 	AnalyticalTable.prototype._adaptLocalization = function(bRtlChanged, bLangChanged) {
-		Table.prototype._adaptLocalization.apply(this, arguments);
-		if (bLangChanged) {
-			this._cleanupGroupHeaderMenu();
-		}
+		return Table.prototype._adaptLocalization.apply(this, arguments).then(function() {
+			if (bLangChanged) {
+				this._cleanupGroupHeaderMenu();
+			}
+		}.bind(this));
 	};
 
 	AnalyticalTable.prototype.setFixedRowCount = function() {
@@ -329,7 +330,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	};
 
 	AnalyticalTable.prototype._applyODataModelAnalyticalAdapter = function (oModel) {
-		if (oModel != null) {
+		if (oModel) {
 			ODataModelAdapter.apply(oModel);
 		}
 	};
@@ -422,7 +423,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 				if (oContextInfo && !oContextInfo.context) {
 					$row.addClass("sapUiAnalyticalTableDummy");
 					$rowHdr.addClass("sapUiAnalyticalTableDummy");
-					//TBD: $rowHdr.html('<div class="sapUiAnalyticalTableLoading">' + this._oResBundle.getText("TBL_CELL_LOADING") + '</div>');
+					//TBD: $rowHdr.html('<div class="sapUiAnalyticalTableLoading">' + TableUtils.getResourceText("TBL_CELL_LOADING") + '</div>');
 				}
 				continue;
 			}
@@ -497,7 +498,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 		if (!this._oGroupHeaderMenu) {
 			this._oGroupHeaderMenu = new Menu();
 			this._oGroupHeaderMenuVisibilityItem = new MenuItem({
-				text: this._oResBundle.getText("TBL_SHOW_COLUMN"),
+				text: TableUtils.getResourceText("TBL_SHOW_COLUMN"),
 				select: function() {
 					var oGroupColumnInfo = getGroupColumnInfo();
 
@@ -512,11 +513,11 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 			});
 			this._oGroupHeaderMenu.addItem(this._oGroupHeaderMenuVisibilityItem);
 			this._oGroupHeaderMenu.addItem(new MenuItem({
-				text: this._oResBundle.getText("TBL_UNGROUP"),
+				text: TableUtils.getResourceText("TBL_UNGROUP"),
 				select: function() {
 					var oGroupColumnInfo = getGroupColumnInfo();
 
-					if (oGroupColumnInfo != null && oGroupColumnInfo.column != null) {
+					if (oGroupColumnInfo && oGroupColumnInfo.column) {
 						var oUngroupedColumn = oGroupColumnInfo.column;
 
 						oUngroupedColumn.setGrouped(false);
@@ -525,7 +526,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 				}
 			}));
 			this._oGroupHeaderMenu.addItem(new MenuItem({
-				text: this._oResBundle.getText("TBL_UNGROUP_ALL"),
+				text: TableUtils.getResourceText("TBL_UNGROUP_ALL"),
 				select: function() {
 					var aColumns = that.getColumns();
 
@@ -540,7 +541,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 				}
 			}));
 			this._oGroupHeaderMoveUpItem = new MenuItem({
-				text: this._oResBundle.getText("TBL_MOVE_UP"),
+				text: TableUtils.getResourceText("TBL_MOVE_UP"),
 				select: function() {
 					var oGroupColumnInfo = getGroupColumnInfo();
 
@@ -558,7 +559,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 			});
 			this._oGroupHeaderMenu.addItem(this._oGroupHeaderMoveUpItem);
 			this._oGroupHeaderMoveDownItem = new MenuItem({
-				text: this._oResBundle.getText("TBL_MOVE_DOWN"),
+				text: TableUtils.getResourceText("TBL_MOVE_DOWN"),
 				select: function() {
 					var oGroupColumnInfo = getGroupColumnInfo();
 
@@ -576,7 +577,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 			});
 			this._oGroupHeaderMenu.addItem(this._oGroupHeaderMoveDownItem);
 			this._oGroupHeaderMenu.addItem(new MenuItem({
-				text: this._oResBundle.getText("TBL_SORT_ASC"),
+				text: TableUtils.getResourceText("TBL_SORT_ASC"),
 				select: function() {
 					var oGroupColumnInfo = getGroupColumnInfo();
 
@@ -588,7 +589,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 				icon: "sap-icon://up"
 			}));
 			this._oGroupHeaderMenu.addItem(new MenuItem({
-				text: this._oResBundle.getText("TBL_SORT_DESC"),
+				text: TableUtils.getResourceText("TBL_SORT_DESC"),
 				select: function() {
 					var oGroupColumnInfo = getGroupColumnInfo();
 
@@ -600,7 +601,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 				icon: "sap-icon://down"
 			}));
 			this._oGroupHeaderMenu.addItem(new MenuItem({
-				text: this._oResBundle.getText("TBL_COLLAPSE_LEVEL"),
+				text: TableUtils.getResourceText("TBL_COLLAPSE_LEVEL"),
 				select: function() {
 					// Why -1? Because the "Collapse Level" Menu Entry should collapse TO the given level - 1
 					// So collapsing level 1 means actually all nodes up TO level 0 will be collapsed.
@@ -611,7 +612,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 				}
 			}));
 			this._oGroupHeaderMenu.addItem(new MenuItem({
-				text: this._oResBundle.getText("TBL_COLLAPSE_ALL"),
+				text: TableUtils.getResourceText("TBL_COLLAPSE_ALL"),
 				select: function() {
 					that.getBinding("rows").collapseToLevel(0);
 					that.setFirstVisibleRow(0); //scroll to top after collapsing (so no rows vanish)
@@ -624,9 +625,9 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 		if (oGroupColumnInfo) {
 			var oColumn = oGroupColumnInfo.column;
 			if (oColumn.getShowIfGrouped()) {
-				this._oGroupHeaderMenuVisibilityItem.setText(this._oResBundle.getText("TBL_HIDE_COLUMN"));
+				this._oGroupHeaderMenuVisibilityItem.setText(TableUtils.getResourceText("TBL_HIDE_COLUMN"));
 			} else {
-				this._oGroupHeaderMenuVisibilityItem.setText(this._oResBundle.getText("TBL_SHOW_COLUMN"));
+				this._oGroupHeaderMenuVisibilityItem.setText(TableUtils.getResourceText("TBL_SHOW_COLUMN"));
 			}
 			this._oGroupHeaderMoveUpItem.setEnabled(oGroupColumnInfo.index > 0);
 			this._oGroupHeaderMoveDownItem.setEnabled(oGroupColumnInfo.index < this._aGroupedColumns.length - 1);
@@ -995,12 +996,12 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	AnalyticalTable.prototype._getSelectableRowCount = function() {
 		var oBinding = this.getBinding("rows");
 
-		if (oBinding == null) {
+		if (!oBinding) {
 			return 0;
 		}
 
 		var oRootNode = oBinding.getGrandTotalContextInfo();
-		return oRootNode == null ? 0 : oRootNode.totalNumberOfLeafs;
+		return oRootNode ? oRootNode.totalNumberOfLeafs : 0;
 	};
 
 	/**

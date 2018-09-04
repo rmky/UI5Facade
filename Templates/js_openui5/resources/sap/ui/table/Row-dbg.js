@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 	 * @class
 	 * The row.
 	 * @extends sap.ui.core.Element
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -408,7 +408,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 		oGhostElement.classList.remove("sapUiTableHScr");
 		oGhostElement.style.width = oTableElement.getBoundingClientRect().width + "px";
 
-		if (mRowAreas.rowSelector != null) {
+		if (mRowAreas.rowSelector) {
 			oGhostAreaElement = oTable.getDomRef("sapUiTableRowHdrScr").cloneNode();
 			oRowElementClone = mRowAreas.rowSelector.cloneNode(true);
 
@@ -416,7 +416,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 			oGhostElement.appendChild(oGhostAreaElement);
 		}
 
-		if (mRowAreas.rowFixedPart != null) {
+		if (mRowAreas.rowFixedPart) {
 			oGhostAreaElement = oTable.getDomRef("sapUiTableCtrlScrFixed").cloneNode();
 			oRowElementClone = cloneTableAndRow(oTable.getDomRef("table-fixed"), mRowAreas.rowFixedPart);
 
@@ -424,7 +424,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 			oGhostElement.appendChild(oGhostAreaElement);
 		}
 
-		if (mRowAreas.rowScrollPart != null) {
+		if (mRowAreas.rowScrollPart) {
 			var oScrollableColumnsContainer = oTable.getDomRef("sapUiTableCtrlScr");
 
 			oGhostAreaElement = oScrollableColumnsContainer.cloneNode();
@@ -439,13 +439,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 			// Could work, if custom ghost handling is implemented in D&D.
 			/*Promise.resolve().then(function(oGhostAreaElement, iScrollLeft) {
 				// Needs to be done asynchronously, because the browser first needs to include this element into the layout.
-				if (oGhostAreaElement != null) {
+				if (oGhostAreaElement) {
 					oGhostAreaElement.scrollLeft = iScrollLeft;
 				}
 			}.bind(this, oGhostAreaElement, oScrollableColumnsContainer.scrollLeft));*/
 		}
 
-		if (mRowAreas.rowAction != null) {
+		if (mRowAreas.rowAction) {
 			oGhostAreaElement = oTable.getDomRef("sapUiTableRowActionScr").cloneNode();
 			oRowElementClone = mRowAreas.rowAction.cloneNode(true);
 

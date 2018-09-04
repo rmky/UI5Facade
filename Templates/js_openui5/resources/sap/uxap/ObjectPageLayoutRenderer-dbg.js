@@ -22,8 +22,8 @@ sap.ui.define(["sap/ui/Device"],
 				bIsTitleInHeaderContent = oControl.getShowTitleInHeaderContent() && oControl.getShowHeaderContent(),
 				bRenderHeaderContent = bIsHeaderContentVisible || bIsTitleInHeaderContent,
 				bUseIconTabBar = oControl.getUseIconTabBar(),
-				bTitleClickable = oControl.getToggleHeaderOnTitleClick(),
-				sTitleText;
+				bTitleClickable = oControl.getToggleHeaderOnTitleClick() && oControl.getHeaderTitle() && oControl.getHeaderTitle().supportsToggleHeaderOnTitleClick(),
+				sRootAriaLabelText = oControl._getRootAriaLabelText();
 
 			if (oControl.getShowAnchorBar() && oControl._getInternalAnchorBarVisible()) {
 				oAnchorBar = oControl.getAggregation("_anchorBar");
@@ -31,10 +31,8 @@ sap.ui.define(["sap/ui/Device"],
 
 			oRm.write("<div");
 			oRm.writeControlData(oControl);
-			if (oHeader) {
-				sTitleText = oHeader.getTitleText() || "";
-				oRm.writeAttributeEscaped("aria-label", sTitleText);
-			}
+			oRm.writeAttribute("role", "region");
+			oRm.writeAttributeEscaped("aria-label", sRootAriaLabelText);
 			oRm.addClass("sapUxAPObjectPageLayout");
 			if (bTitleClickable) {
 				oRm.addClass("sapUxAPObjectPageLayoutTitleClickEnabled");

@@ -6,38 +6,40 @@
 
 // Provides control sap.m.ListBase.
 sap.ui.define([
-	'jquery.sap.global',
-	'./GroupHeaderListItem',
-	'./ListItemBase',
-	'./library',
-	'sap/ui/core/Control',
-	'sap/ui/core/delegate/ItemNavigation',
-	'sap/ui/core/InvisibleText',
-	'sap/ui/core/LabelEnablement',
-	'sap/ui/Device',
-	'sap/m/GrowingEnablement',
-	'./ListBaseRenderer',
-	'jquery.sap.keycodes'
+	"jquery.sap.global",
+	"sap/base/events/KeyCodes",
+	"sap/ui/Device",
+	"sap/ui/core/Control",
+	"sap/ui/core/InvisibleText",
+	"sap/ui/core/LabelEnablement",
+	"sap/ui/core/delegate/ItemNavigation",
+	"./library",
+	"./InstanceManager",
+	"./GrowingEnablement",
+	"./GroupHeaderListItem",
+	"./ListItemBase",
+	"./ListBaseRenderer"
 ],
 function(
 	jQuery,
-	GroupHeaderListItem,
-	ListItemBase,
-	library,
+	KeyCodes,
+	Device,
 	Control,
-	ItemNavigation,
 	InvisibleText,
 	LabelEnablement,
-	Device,
+	ItemNavigation,
+	library,
+	InstanceManager,
 	GrowingEnablement,
+	GroupHeaderListItem,
+	ListItemBase,
 	ListBaseRenderer
 ) {
 	"use strict";
 
 
-
 	// shortcut for sap.m.ListType
-	var ListType = library.ListType;
+	var ListItemType = library.ListType;
 
 	// shortcut for sap.m.ListKeyboardMode
 	var ListKeyboardMode = library.ListKeyboardMode;
@@ -58,7 +60,6 @@ function(
 	var ListHeaderDesign = library.ListHeaderDesign;
 
 
-
 	/**
 	 * Constructor for a new ListBase.
 	 *
@@ -75,7 +76,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -119,7 +120,7 @@ function(
 			/**
 			 * Sets the width of the control.
 			 */
-			width : {type : "sap.ui.core.CSSSize", group : "Dimension", defaultValue : '100%'},
+			width : {type : "sap.ui.core.CSSSize", group : "Dimension", defaultValue : "100%"},
 
 			/**
 			 * Defines whether the items are selectable by clicking on the item itself (<code>true</code>) rather than having to set the selection control first.
@@ -219,7 +220,7 @@ function(
 			/**
 			 * Defines the items contained within this control.
 			 */
-			items : {type : "sap.m.ListItemBase", multiple : true, singularName : "item", bindable : "bindable"},
+			items : {type : "sap.m.ListItemBase", multiple : true, singularName : "item", bindable : "bindable", selector: "#{id} .sapMListItems", dnd : true},
 
 			/**
 			 * User can swipe to bring in this control on the right hand side of an item.
@@ -239,13 +240,6 @@ function(
 			 * @since 1.16
 			 */
 			infoToolbar : {type : "sap.m.Toolbar", multiple : false},
-
-			/**
-			 * Defines the drag-and-drop configuration.
-			 *
-			 * @since 1.54
-			 */
-			dragDropConfig : {name : "dragDropConfig", type : "sap.ui.core.dnd.DragDropBase", multiple : true, singularName : "dragDropConfig"},
 
 			/**
 			 * Defines the context menu of the items.
@@ -322,7 +316,7 @@ function(
 			},
 
 			/**
-			 * Fires after user's swipe action and before the <code>swipeContent</code> is shown. On the <code>swipe</code> event handler, <code>swipeContent</code> can be changed according to the swiped item.
+			 * Fires after us"r's swipe action and before the <code>swipeContent</code> is shown. On the <code>swipe</code> event handler, <code>swipeContent</code> can be changed according to the swiped item.
 			 * Calling the <code>preventDefault</code> method of the event cancels the swipe action.
 			 */
 			swipe : {allowPreventDefault : true,
@@ -1077,7 +1071,7 @@ function(
 	};
 
 	/*
-	 * This hook method get called if growing feature is enabled and after new page loaded
+	 * This hook method get called if growing feature is enabled and after page loaded
 	 * @protected
 	 */
 	ListBase.prototype.onAfterPageLoaded = function(oGrowingInfo, sChangeReason) {
@@ -1149,6 +1143,13 @@ function(
 			actual : oInfo ? oInfo.actual : this.getItems(true).length,
 			total : oInfo ? oInfo.total : this.getMaxItemsCount()
 		});
+	};
+
+	// event listener for theme changed
+	ListBase.prototype.onThemeChanged = function() {
+		if (this._oGrowingDelegate) {
+			this._oGrowingDelegate._updateTrigger();
+		}
 	};
 
 	// called on after rendering to finalize item update finished
@@ -1285,7 +1286,7 @@ function(
 	ListBase.prototype.onItemPress = function(oListItem, oSrcControl) {
 
 		// do not fire press event for inactive type
-		if (oListItem.getType() == ListType.Inactive) {
+		if (oListItem.getType() == ListItemType.Inactive) {
 			return;
 		}
 
@@ -1346,7 +1347,6 @@ function(
 
 	ListBase.prototype._getSwipeContainer = function() {
 		return this._$swipeContainer || (
-			jQuery.sap.require("sap.m.InstanceManager"),
 			this._$swipeContainer = jQuery("<div>", {
 				"id" : this.getId("swp"),
 				"class" : "sapMListSwp"
@@ -1392,7 +1392,7 @@ function(
 		that._renderSwipeContent();
 
 		// add to instance manager
-		sap.m.InstanceManager.addDialogInstance(that);
+		InstanceManager.addDialogInstance(that);
 
 		// maybe keyboard is opened
 		window.document.activeElement.blur();
@@ -1443,7 +1443,7 @@ function(
 		this._isSwipeActive = false;
 
 		// remove from instance manager
-		sap.m.InstanceManager.removeDialogInstance(this);
+		InstanceManager.removeDialogInstance(this);
 	};
 
 
@@ -1675,8 +1675,12 @@ function(
 		};
 	};
 
-	// this gets called when items are focused
-	ListBase.prototype.onItemFocusIn = function(oItem) {
+	// this gets called when the focus is on the item or its content
+	ListBase.prototype.onItemFocusIn = function(oItem, oFocusedControl) {
+		if (oItem !== oFocusedControl) {
+			return;
+		}
+
 		if (!sap.ui.getCore().getConfiguration().getAccessibility()) {
 			return;
 		}
@@ -1744,8 +1748,13 @@ function(
 		}
 
 		// if focus is not on the navigation items then only invalidate the item navigation
-		if (bIfNeeded && !this.getNavigationRoot().contains(document.activeElement)) {
+		var oNavigationRoot = this.getNavigationRoot();
+		var iTabIndex = (sKeyboardMode == mKeyboardMode.Edit) ? -1 : 0;
+		if (bIfNeeded && !oNavigationRoot.contains(document.activeElement)) {
 			this._bItemNavigationInvalidated = true;
+			if (!oNavigationRoot.getAttribute("tabindex")) {
+				oNavigationRoot.tabIndex = iTabIndex;
+			}
 			return;
 		}
 
@@ -1756,7 +1765,6 @@ function(
 			this.addEventDelegate(this._oItemNavigation);
 
 			// set the tab index of active items
-			var iTabIndex = (sKeyboardMode == mKeyboardMode.Edit) ? -1 : 0;
 			this._setItemNavigationTabIndex(iTabIndex);
 
 			// explicitly setting table mode with one column
@@ -1775,10 +1783,9 @@ function(
 		this._oItemNavigation.setPageSize(this.getGrowingThreshold());
 
 		// configure navigation root
-		var oNavigationRoot = this.getNavigationRoot();
 		this._oItemNavigation.setRootDomRef(oNavigationRoot);
 
-		// configure navigatable items
+		// configure navigation items
 		this.setNavigationItems(this._oItemNavigation, oNavigationRoot);
 
 		// clear invalidations
@@ -1947,7 +1954,7 @@ function(
 	ListBase.prototype.onsapshow = function(oEvent) {
 		// handle events that are only coming from navigation items and ignore F4
 		if (oEvent.isMarked() ||
-			oEvent.which == jQuery.sap.KeyCodes.F4 ||
+			oEvent.which == KeyCodes.F4 ||
 			oEvent.target.id != this.getId("trigger") &&
 			!jQuery(oEvent.target).hasClass(this.sNavItemClass)) {
 			return;
@@ -1979,7 +1986,7 @@ function(
 	// Ctrl + A to switch select all/none
 	ListBase.prototype.onkeydown = function(oEvent) {
 
-		var bCtrlA = (oEvent.which == jQuery.sap.KeyCodes.A) && (oEvent.metaKey || oEvent.ctrlKey);
+		var bCtrlA = (oEvent.which == KeyCodes.A) && (oEvent.metaKey || oEvent.ctrlKey);
 		if (oEvent.isMarked() || !bCtrlA || !jQuery(oEvent.target).hasClass(this.sNavItemClass)) {
 			return;
 		}
@@ -2087,12 +2094,6 @@ function(
 		$Element[0] ? $Element.focus() : oItem.focus();
 		oEvent.preventDefault();
 		oEvent.setMarked();
-	};
-
-	ListBase.prototype.getAggregationDomRef = function(sAggregationName) {
-		if (sAggregationName == "items") {
-			return this.getItemsContainerDomRef();
-		}
 	};
 
 	ListBase.prototype.onItemContextMenu = function(oLI, oEvent) {

@@ -12,6 +12,7 @@ sap.ui.define([
 	'./Token',
 	'./library',
 	'sap/ui/core/EnabledPropagator',
+	'sap/ui/base/ManagedObjectMetadata',
 	'sap/ui/Device',
 	'./MultiInputRenderer',
 	'jquery.sap.keycodes'
@@ -23,6 +24,7 @@ function(
 	Token,
 	library,
 	EnabledPropagator,
+	ManagedObjectMetadata,
 	Device,
 	MultiInputRenderer
 	) {
@@ -80,11 +82,12 @@ function(
 	* @extends sap.m.Input
 	*
 	* @author SAP SE
-	* @version 1.54.7
+	* @version 1.56.6
 	*
 	* @constructor
 	* @public
 	* @alias sap.m.MultiInput
+	* @see {@link fiori:https://experience.sap.com/fiori-design-web/multiinput/ Multi-Input Field}
 	* @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	*/
 	var MultiInput = Input.extend("sap.m.MultiInput", /** @lends sap.m.MultiInput.prototype */ {
@@ -1411,6 +1414,7 @@ function(
 		if (Array.isArray(aTokens)) {
 			for (i = 0; i < aTokens.length; i++) {
 				oValidatedToken = this.validateAggregation("tokens", aTokens[i], true);
+				ManagedObjectMetadata.addAPIParentInfo(aTokens[i], this, "tokens");
 				aValidatedTokens.push(oValidatedToken);
 			}
 

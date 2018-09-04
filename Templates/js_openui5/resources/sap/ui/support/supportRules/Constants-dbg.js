@@ -96,7 +96,22 @@ sap.ui.define([],
 			/**
 			 * The maximum number of visible issues for selected rule (in the issues table)
 			 */
-			MAX_VISIBLE_ISSUES_FOR_RULE: 5
+			MAX_VISIBLE_ISSUES_FOR_RULE: 5,
+
+			/**
+			 * Copy text for ruleset loading indicator
+			 */
+			RULESET_LOADING: "Loading ruleset files:",
+
+			/**
+			 * Initial value of all filters in Support Assistant views
+			 */
+			FILTER_VALUE_ALL: "All",
+
+			/**
+			 * Name of file produced by selection export
+			 */
+			RULE_SELECTION_EXPORT_FILE_NAME: "sa-rule-selections"
 
 		};
 

@@ -12,7 +12,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/rta/command/FlexCommand'], function(
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -32,6 +32,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/rta/command/FlexCommand'], function(
 				},
 				label : {
 					type : "string"
+				},
+				parentId : {
+					type : "string"
 				}
 			},
 			associations : {},
@@ -45,7 +48,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/rta/command/FlexCommand'], function(
 			changeType : this.getChangeType(),
 			index : this.getIndex(),
 			newControlId : this.getNewControlId(),
-			newLabel : this.getLabel()
+			newLabel : this.getLabel(),
+			parentId : this.getParentId()
 		};
 
 		return mSpecificInfo;

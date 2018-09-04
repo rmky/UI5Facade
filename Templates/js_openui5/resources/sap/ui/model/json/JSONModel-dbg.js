@@ -34,7 +34,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @public
 	 * @alias sap.ui.model.json.JSONModel
 	 */
@@ -57,7 +57,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 	});
 
 	/**
-	 * Sets the JSON encoded data to the model.
+	 * Sets the data, passed as a JS object tree, to the model.
 	 *
 	 * @param {object} oData the data to set on the model
 	 * @param {boolean} [bMerge=false] whether to merge the data instead of replacing it
@@ -125,17 +125,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 	};
 
 	/**
-	 * Sets the JSON encoded string data to the model.
+	 * Sets the data, passed as a string in JSON format, to the model.
 	 *
-	 * @param {string} sJSONText the string data to set on the model
+	 * @param {string} sJSON the JSON data to set on the model
 	 * @param {boolean} [bMerge=false] whether to merge the data instead of replacing it
 	 *
 	 * @public
 	 */
-	JSONModel.prototype.setJSON = function(sJSONText, bMerge){
+	JSONModel.prototype.setJSON = function(sJSON, bMerge){
 		var oJSONData;
 		try {
-			oJSONData = jQuery.parseJSON(sJSONText);
+			oJSONData = jQuery.parseJSON(sJSON);
 			this.setData(oJSONData, bMerge);
 		} catch (e) {
 			jQuery.sap.log.fatal("The following problem occurred: JSON parse Error: " + e);
@@ -243,7 +243,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 
 			this.pSequentialImportCompleted = this.pSequentialImportCompleted.then(function() {
 				//must always resolve
-				return pImportCompleted.then(fnSuccess, fnError).catch(function() {});
+				return pImportCompleted.then(fnSuccess, fnError).catch(function(oError) {
+					jQuery.sap.log.error("Loading of data failed: " + oError.stack);
+				});
 			});
 		} else {
 			_loadData(fnSuccess, fnError);

@@ -49,11 +49,12 @@ sap.ui.define([
 	 * be closed.
 	 *
 	 * @extends sap.m.List
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.m.FacetFilterList
+	 * @see {@link topic:395392f30f2a4c4d80d110d5f923da77/ Facet Filter List}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var FacetFilterList = List.extend("sap.m.FacetFilterList", /** @lends sap.m.FacetFilterList.prototype */ { metadata : {
@@ -324,7 +325,9 @@ sap.ui.define([
 			bKeyAdded = true;
 		}, this);
 		if (bKeyAdded) {
-			this.setActive(true);
+			if (this.getMode() === ListMode.MultiSelect) {
+				this.setActive(true);
+			}
 			this._selectItemsByKeys();
 		} else {
 			sap.m.ListBase.prototype.removeSelections.call(this);
@@ -514,9 +517,9 @@ sap.ui.define([
 		});
 	};
 
-
 	/**
 	 * Sets this list active if at least one list item is selected, or the all checkbox is selected.
+	 * Used in MultiSelect mode of the list.
 	 *
 	 * @private
 	 */
@@ -527,7 +530,6 @@ sap.ui.define([
 			this.setActive(true);
 		}
 	};
-
 
 	/**
 	 * Handles both liveChange and search events.
@@ -752,9 +754,11 @@ sap.ui.define([
 			oItem.setSelected(bSelected, true);
 		}, this);
 
-		// At least one item needs to be selected to consider the list as active or it appeared as active once
-		bActive = this._getOriginalActiveState() || bSelected;
-		this.setActive(bActive);
+		if (this.getMode() === ListMode.MultiSelect) {
+			// At least one item needs to be selected to consider the list as active or it appeared as active once
+			bActive = this._getOriginalActiveState() || bSelected;
+			this.setActive(bActive);
+		}
 		jQuery.sap.delayedCall(0, this, this._updateSelectAllCheckBox);
 	};
 
@@ -787,10 +791,12 @@ sap.ui.define([
 		}
 		sap.m.ListBase.prototype.onItemSelectedChange.apply(this, arguments);
 
-		/* At least one item needs to be selected to consider the list as active.
-		 When selectedItems == 1 and bSelect is false, that means this is the last item currently being deselected */
-		bActive = this._getOriginalActiveState() || bSelect || this.getSelectedItems().length > 1;
-		this.setActive(bActive);
+		if (this.getMode() === ListMode.MultiSelect) {
+			/* At least one item needs to be selected to consider the list as active.
+			 When selectedItems == 1 and bSelect is false, that means this is the last item currently being deselected */
+			bActive = this._getOriginalActiveState() || bSelect || this.getSelectedItems().length > 1;
+			this.setActive(bActive);
+		}
 
 		!this.getDomRef() && this.getParent() && this.getParent().getDomRef() && this.getParent().invalidate();
 
@@ -798,7 +804,6 @@ sap.ui.define([
 		// See ListItemBase.prototype.setSelected
 		jQuery.sap.delayedCall(0, this, this._updateSelectAllCheckBox);
 	};
-
 
 	/**
 	 * This method overrides runs when the list updates its items.

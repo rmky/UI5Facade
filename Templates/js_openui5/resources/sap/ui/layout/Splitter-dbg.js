@@ -40,7 +40,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -191,7 +191,7 @@ sap.ui.define([
 	 *
 	 * @returns {Number[]} Array of px values that correspond to the content area sizes
 	 * @protected
-	 * @deprecated This method is declared as protected in order to assess the need for this feature. It is declared as deprecated because the API might change in case the need for this is high enough to make it part of the official Splitter interface
+	 * @deprecated As of version 1.21. This method is declared as protected in order to assess the need for this feature. It is declared as deprecated because the API might change in case the need for this is high enough to make it part of the official Splitter interface
 	 */
 	Splitter.prototype.getCalculatedSizes = function() {
 		return this._calculatedSizes;
@@ -205,7 +205,7 @@ sap.ui.define([
 	 *
 	 * @param {boolean} [bTemporarily=false] Only enables autoResize if it was previously disabled temporarily (used for live resize)
 	 * @protected
-	 * @deprecated This method is declared as protected in order to assess the need for this feature. It is declared as deprecated because the API might change in case the need for this is high enough to make it part of the official Splitter interface
+	 * @deprecated As of version 1.21. This method is declared as protected in order to assess the need for this feature. It is declared as deprecated because the API might change in case the need for this is high enough to make it part of the official Splitter interface
 	 */
 	Splitter.prototype.enableAutoResize = function(bTemporarily) {
 		// Do not enable autoResize if it was deactivated temporarily and wasn't enabled before
@@ -231,7 +231,7 @@ sap.ui.define([
 	 *
 	 * @param {boolean} [bTemporarily=false] Only disable autoResize temporarily (used for live resize), so that the previous status can be restored afterwards
 	 * @protected
-	 * @deprecated This method is declared as protected in order to assess the need for this feature. It is declared as deprecated because the API might change in case the need for this is high enough to make it part of the official Splitter interface
+	 * @deprecated As of version 1.21. This method is declared as protected in order to assess the need for this feature. It is declared as deprecated because the API might change in case the need for this is high enough to make it part of the official Splitter interface
 	 */
 	Splitter.prototype.disableAutoResize = function(bTemporarily) {
 		ResizeHandler.deregister(this._resizeHandlerId);
@@ -246,7 +246,7 @@ sap.ui.define([
 	 * This means that the contents are resized several times per second when moving the splitter bar.
 	 *
 	 * @protected
-	 * @deprecated This method is declared as protected in order to assess the need for this feature. It is declared as deprecated because the API might change in case the need for this is high enough to make it part of the official Splitter interface
+	 * @deprecated As of version 1.21. This method is declared as protected in order to assess the need for this feature. It is declared as deprecated because the API might change in case the need for this is high enough to make it part of the official Splitter interface
 	 */
 	Splitter.prototype.enableLiveResize = function() {
 		this._liveResize = true;
@@ -258,7 +258,7 @@ sap.ui.define([
 	 * This means that the contents are resized only once after moving the splitter bar.
 	 *
 	 * @protected
-	 * @deprecated This method is declared as protected in order to assess the need for this feature. It is declared as deprecated because the API might change in case the need for this is high enough to make it part of the official Splitter interface
+	 * @deprecated As of version 1.21. This method is declared as protected in order to assess the need for this feature. It is declared as deprecated because the API might change in case the need for this is high enough to make it part of the official Splitter interface
 	 */
 	Splitter.prototype.disableLiveResize = function() {
 		this._liveResize = false;
@@ -764,7 +764,7 @@ sap.ui.define([
 				: this.$("splitbar-" + i).innerHeight();
 		}
 
-		return iFullSize - iSplitBarsWidth;
+		return Math.max(0, iFullSize - iSplitBarsWidth);
 	};
 
 	/**

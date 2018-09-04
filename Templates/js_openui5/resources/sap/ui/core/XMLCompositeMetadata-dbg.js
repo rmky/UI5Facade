@@ -34,10 +34,12 @@ sap.ui.define([
 	 * @param {object} oClassInfo static info to construct the metadata from
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @since 1.50.0
 	 * @alias sap.ui.core.XMLCompositeMetadata
-	 * @private
+	 *
+	 * @public
+	 * @experimental
 	 */
 	var XMLCompositeMetadata = function (sClassName, oClassInfo) {
 		if (!oClassInfo.hasOwnProperty("renderer")) {
@@ -58,12 +60,14 @@ sap.ui.define([
 			}
 			if (!this._fragment && oClassInfo.fragment) {
 				try {
-					this._fragment = mFragmentCache[oClassInfo.fragment];
 					if (!this._fragment) {
-						this._fragment
-							= XMLTemplateProcessor.loadTemplate(oClassInfo.fragment, "control");
-						mFragmentCache[oClassInfo.fragment] = this._fragment;//cache the fragments similar to XMLPreprocessor
-						this.requireFor(this._fragment);
+						this._fragment = this._loadFragment(oClassInfo.fragment, "control");
+					}
+					if (oClassInfo.aggregationFragments) {
+						this._aggregationFragments = {};
+						oClassInfo.aggregationFragments.forEach(function(sAggregationFragment) {
+							this._aggregationFragments[sAggregationFragment] = this._loadFragment(oClassInfo.fragment + "_" + sAggregationFragment, "aggregation");
+						}.bind(this));
 					}
 				} catch (e) {
 					if (!oClassInfo.fragmentUnspecified) {
@@ -134,7 +138,7 @@ sap.ui.define([
 	};
 
 	XMLCompositeMetadata.prototype._requestFragmentRetemplatingCheck = function (oControl, oMember, bForce) {
-		if (!oControl._bIsInitializing && oMember && oMember.appData && oMember.appData.invalidate === InvalidationMode.Template &&
+		if (!oControl._bIsCreating && !oControl._bIsBeingDestroyed && oMember && oMember.appData && oMember.appData.invalidate === InvalidationMode.Template &&
 			!oControl._requestFragmentRetemplatingPending) {
 			if (oControl.requestFragmentRetemplating) {
 				oControl._requestFragmentRetemplatingPending = true;
@@ -169,6 +173,20 @@ sap.ui.define([
 		if (sModuleNames) {
 			jQuery.sap.require.apply(jQuery.sap, sModuleNames.split(" "));
 		}
+	};
+
+	XMLCompositeMetadata.prototype._loadFragment = function (sFragmentName, sExtension) {
+		if (!mFragmentCache[sFragmentName]) {
+			mFragmentCache[sFragmentName] = XMLTemplateProcessor.loadTemplate(sFragmentName, sExtension);
+			this.requireFor(mFragmentCache[sFragmentName]);
+		}
+
+		return mFragmentCache[sFragmentName];
+	};
+
+	XMLCompositeMetadata.prototype.hasAggregation = function(sName) {
+		//needed for copy
+		return !!this._mAllAggregations[sName] || !!this._mAllPrivateAggregations[sName];
 	};
 
 	return XMLCompositeMetadata;

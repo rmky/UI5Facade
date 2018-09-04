@@ -16,6 +16,7 @@ sap.ui.define(['./Binding', './Filter', './Sorter'],
 	 * This constructor should only be called by subclasses or model implementations, not by application or control code.
 	 * Such code should use {@link sap.ui.model.Model#bindTree Model#bindTree} on the corresponding model instead.
 	 *
+	 * @abstract
 	 * @class
 	 * The TreeBinding is a specific binding for trees in the model, which can be used
 	 * to populate Trees.
@@ -142,7 +143,7 @@ sap.ui.define(['./Binding', './Filter', './Sorter'],
 	 * @param {function} fnFunction The function to call, when the event occurs.
 	 * @param {object} [oListener] object on which to call the given function.
 	 * @protected
-	 * @deprecated use the change event. It now contains a parameter (reason : "filter") when a filter event is fired.
+	 * @deprecated As of version 1.11, use the change event. It now contains a parameter (reason : "filter") when a filter event is fired.
 	 */
 	TreeBinding.prototype.attachFilter = function(fnFunction, oListener) {
 		this.attachEvent("_filter", fnFunction, oListener);
@@ -153,7 +154,7 @@ sap.ui.define(['./Binding', './Filter', './Sorter'],
 	 * @param {function} fnFunction The function to call, when the event occurs.
 	 * @param {object} [oListener] object on which to call the given function.
 	 * @protected
-	 * @deprecated use the change event.
+	 * @deprecated As of version 1.11, use the change event.
 	 */
 	TreeBinding.prototype.detachFilter = function(fnFunction, oListener) {
 		this.detachEvent("_filter", fnFunction, oListener);
@@ -163,12 +164,48 @@ sap.ui.define(['./Binding', './Filter', './Sorter'],
 	 * Fire event _filter to attached listeners.
 	 * @param {Map} [mArguments] the arguments to pass along with the event.
 	 * @private
-	 * @deprecated use the change event. It now contains a parameter (reason : "filter") when a filter event is fired.
+	 * @deprecated As of version 1.11, use the change event. It now contains a parameter (reason : "filter") when a filter event is fired.
 	 */
 	TreeBinding.prototype._fireFilter = function(mArguments) {
 		this.fireEvent("_filter", mArguments);
 	};
 
+	/**
+	 * Checks whether an update of the data state of this binding is required.
+	 *
+	 * @param {map} mPaths A Map of paths to check if update needed
+	 * @private
+	 * @since 1.58
+	 */
+	TreeBinding.prototype.checkDataState = function(mPaths) {
+		var oDataState = this.getDataState(),
+			sResolvedPath = this.oModel ? this.oModel.resolve(this.sPath, this.oContext) : null,
+			that = this;
+
+		function fireChange() {
+			that.fireEvent("AggregatedDataStateChange", { dataState: oDataState });
+			oDataState.changed(false);
+			that._sDataStateTimout = null;
+		}
+
+		if (!mPaths || sResolvedPath && sResolvedPath in mPaths) {
+			if (sResolvedPath) {
+				oDataState.setModelMessages(this.oModel.getMessagesByPath(sResolvedPath));
+			}
+			if (oDataState && oDataState.changed()) {
+				if (this.mEventRegistry["DataStateChange"]) {
+					this.fireEvent("DataStateChange", { dataState: oDataState });
+				}
+				if (this.bIsBeingDestroyed) {
+					fireChange();
+				} else if (this.mEventRegistry["AggregatedDataStateChange"]) {
+					if (!this._sDataStateTimout) {
+						this._sDataStateTimout = setTimeout(fireChange, 0);
+					}
+				}
+			}
+		}
+	};
 
 	return TreeBinding;
 

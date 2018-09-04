@@ -11,7 +11,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/format/NumberFormat',
 	"use strict";
 
 	// Math.fround polyfill
-	if (!Math.fround) {
+	if (!Math.fround) { // sap-ui-cover-browser msie
 		// IE 10+
 		var aArray = new window.Float32Array(1);
 
@@ -97,7 +97,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/format/NumberFormat',
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @alias sap.ui.model.odata.type.Single
 	 * @param {object} [oFormatOptions]

@@ -5,8 +5,17 @@
  */
 
 // Provides control sap.ui.unified.ShellOverlay.
-sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap/ui/core/Popup', './library', 'sap/ui/unified/ShellOverlayRenderer', 'jquery.sap.script'],
-	function(jQuery, Device, Control, Popup, library/* , jQuerySap */, ShellOverlayRenderer) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/Device',
+	'sap/ui/core/Control',
+	'sap/ui/core/Popup',
+	'./library',
+	'sap/ui/core/theming/Parameters',
+	'./ShellOverlayRenderer',
+	'jquery.sap.script',
+	'jquery.sap.dom'],
+	function(jQuery, Device, Control, Popup, library, Parameters, ShellOverlayRenderer/* , jQueryScript, jQueryDom */) {
 	"use strict";
 
 
@@ -22,7 +31,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -264,7 +273,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/Control', 'sap
 	/**** Private Helpers ****/
 
 	ShellOverlay.prototype._getAnimDurationThemeParam = function(sParam, bClearIfNotActive){
-		var val = parseInt(sap.ui.core.theming.Parameters.get(sParam), 10);
+		var val = parseInt(Parameters.get(sParam), 10);
 		if (!this._getAnimActive() && bClearIfNotActive) {
 			val = 0;
 		}

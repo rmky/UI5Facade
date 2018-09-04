@@ -5,8 +5,8 @@
  */
 
 // Provides class sap.ui.core.DeclarativeSupport
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/ManagedObject', './Control', './CustomData', './HTML', './mvc/View'],
-	function(jQuery, DataType, ManagedObject, Control, CustomData, HTML, View) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/ManagedObject', './Control', './CustomData', './HTML', './mvc/View', './mvc/EventHandlerResolver'],
+	function(jQuery, DataType, ManagedObject, Control, CustomData, HTML, View, EventHandlerResolver) {
 	"use strict";
 
 
@@ -14,7 +14,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/Managed
 	 * @class Static class for enabling declarative UI support.
 	 *
 	 * @author Peter Muessig, Tino Butz
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @since 1.7.0
 	 * @public
 	 * @alias sap.ui.core.DeclarativeSupport
@@ -280,7 +280,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/Managed
 						}
 					} else if (that._getEvent(fnClass, sName)) {
 						var oController = oView && (oView._oContainingView || oView).getController();
-						var vHandler = View._resolveEventHandler(sValue, oController);
+						var vHandler = EventHandlerResolver.resolveEventHandler(sValue, oController);
 						if ( vHandler ) {
 							mSettings[sName] = vHandler;
 						} else {

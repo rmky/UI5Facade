@@ -9,9 +9,10 @@ sap.ui.define([
 	'./TreeItemBase',
 	'./library',
 	'sap/ui/core/IconPool',
+	'./Image',
 	'./StandardTreeItemRenderer'
 ],
-	function(TreeItemBase, library, IconPool, StandardTreeItemRenderer) {
+	function(TreeItemBase, library, IconPool, Image, StandardTreeItemRenderer) {
 	"use strict";
 
 	/**
@@ -25,7 +26,7 @@ sap.ui.define([
 	 * @extends sap.m.TreeItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -68,7 +69,7 @@ sap.ui.define([
 			src: sURI,
 			useIconTooltip: false,
 			noTabStop: true
-		}, sap.m.Image).setParent(this, null, true).addStyleClass("sapMSTIIcon");
+		}, Image).setParent(this, null, true).addStyleClass("sapMSTIIcon");
 
 		return this._oIconControl;
 	};
@@ -88,12 +89,12 @@ sap.ui.define([
 		this.destroyControls(["Icon"]);
 	};
 
-	sap.m.StandardTreeItem.prototype.setIcon = function(sIcon) {
+	StandardTreeItem.prototype.setIcon = function(sIcon) {
 		var sOldIcon = this.getIcon();
 		this.setProperty("icon", sIcon);
 
 		// destroy the internal control if it is changed from Icon to Image or Image to Icon
-		if (this._oIconControl && (!sIcon || sap.ui.core.IconPool.isIconURI(sIcon) != sap.ui.core.IconPool.isIconURI(sOldIcon))) {
+		if (this._oIconControl && (!sIcon || IconPool.isIconURI(sIcon) != IconPool.isIconURI(sOldIcon))) {
 			this._oIconControl.destroy("KeepDom");
 			this._oIconControl = undefined;
 		}

@@ -6,8 +6,17 @@
 
 /*global HTMLTemplateElement, DocumentFragment, Promise*/
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/ManagedObject', 'sap/ui/core/CustomData', './mvc/View', './ExtensionPoint', './StashedControlSupport', 'sap/ui/base/SyncPromise'],
-function(jQuery, DataType, ManagedObject, CustomData, View, ExtensionPoint, StashedControlSupport, SyncPromise) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/base/DataType',
+	'sap/ui/base/ManagedObject',
+	'sap/ui/core/CustomData',
+	'./mvc/View',
+	'./mvc/EventHandlerResolver',
+	'./ExtensionPoint',
+	'./StashedControlSupport',
+	'sap/ui/base/SyncPromise'],
+function(jQuery, DataType, ManagedObject, CustomData, View, EventHandlerResolver, ExtensionPoint, StashedControlSupport, SyncPromise) {
 	"use strict";
 
 
@@ -23,7 +32,7 @@ function(jQuery, DataType, ManagedObject, CustomData, View, ExtensionPoint, Stas
 		var oType = DataType.getType(sType);
 		if (oType) {
 			if (oType instanceof DataType) {
-				vValue = oType.parseValue(sValue);
+				vValue = oType.parseValue(sValue, {context: oController});
 			}
 			// else keep original sValue (e.g. for enums)
 		} else {
@@ -239,10 +248,10 @@ function(jQuery, DataType, ManagedObject, CustomData, View, ExtensionPoint, Stas
 		// the output of the template parsing, containing strings and promises which resolve to control or control arrays
 		// later this intermediate state with promises gets resolved to a flat array containing only strings and controls
 		var aResult = [],
-			pResultChain = SyncPromise.resolve();
+			pResultChain = SyncPromise.resolve(),
+			sProcessingMode = oView._sProcessingMode || sap.ui.getCore().getConfiguration().getXMLProcessingMode();
 
-
-		bAsync = bAsync && sap.ui.getCore().getConfiguration().getXMLProcessingMode() === "sequential";
+		bAsync = bAsync && sProcessingMode === "sequential";
 		jQuery.sap.log.debug("XML processing mode is " + (bAsync ? "sequential" : "default"), "", "XMLTemplateProcessor");
 
 		var bDesignMode = sap.ui.getCore().getConfiguration().getDesignMode();
@@ -547,7 +556,11 @@ function(jQuery, DataType, ManagedObject, CustomData, View, ExtensionPoint, Stas
 					// for Views the containing View's name is required to retrieve the according extension configuration,
 					// whereas for Fragments the actual Fragment's name is required - oView can be either View or Fragment
 					var oContainer = oView instanceof View ? oView._oContainingView : oView;
-					return SyncPromise.resolve(ExtensionPoint(oContainer, node.getAttribute("name"), function() {
+
+					// @evo-todo: The factory call needs to be refactored into a proper async/sync switch.
+					// @evo-todo: The ExtensionPoint module is actually the sap.ui.extensionpoint function.
+					//            We still call _factory for skipping the deprecation warning for now.
+					return SyncPromise.resolve(ExtensionPoint._factory(oContainer, node.getAttribute("name"), function() {
 						// create extensionpoint with callback function for defaultContent - will only be executed if there is no customizing configured or if customizing is disabled
 						var pChild = SyncPromise.resolve();
 						var aChildControlPromises = [];
@@ -707,14 +720,14 @@ function(jQuery, DataType, ManagedObject, CustomData, View, ExtensionPoint, Stas
 
 					} else if (oInfo && oInfo._iKind === 5 /* EVENT */ ) {
 						// EVENT
-						var vEventHandler = View._resolveEventHandler(sValue, oView._oContainingView.oController);
+						var vEventHandler = EventHandlerResolver.resolveEventHandler(sValue, oView._oContainingView.oController); // TODO: can this be made async? (to avoid the hard resolver dependency)
 						if ( vEventHandler ) {
 							mSettings[sName] = vEventHandler;
 						} else {
 							jQuery.sap.log.warning(oView + ": event handler function \"" + sValue + "\" is not a function or does not exist in the controller.");
 						}
 					} else if (oInfo && oInfo._iKind === -1) {
-						// SPECIAL SETTING - currently only allowed for View´s async setting
+						// SPECIAL SETTING - currently only allowed for View's async setting
 						if (View.prototype.isPrototypeOf(oClass.prototype) && sName == "async") {
 							mSettings[sName] = parseScalarType(oInfo.type, sValue, sName, oView._oContainingView.oController);
 						} else {

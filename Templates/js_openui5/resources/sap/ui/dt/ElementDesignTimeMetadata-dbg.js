@@ -8,12 +8,14 @@
 sap.ui.define([
 	'jquery.sap.global',
 	'sap/ui/dt/DesignTimeMetadata',
-	'sap/ui/dt/AggregationDesignTimeMetadata'
+	'sap/ui/dt/AggregationDesignTimeMetadata',
+	'sap/ui/dt/ElementUtil'
 ],
 function(
 	jQuery,
 	DesignTimeMetadata,
-	AggregationDesignTimeMetadata
+	AggregationDesignTimeMetadata,
+	ElementUtil
 ) {
 	"use strict";
 
@@ -28,7 +30,7 @@ function(
 	 * @extends sap.ui.dt.DesignTimeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -68,6 +70,9 @@ function(
 			},
 			tooltip: {
 				ignore : true
+			},
+			dragDropConfig: {
+				ignore: true
 			}
 		};
 
@@ -220,6 +225,42 @@ function(
 	 */
 	ElementDesignTimeMetadata.prototype.getScrollContainers = function() {
 		return this.getData().scrollContainers || [];
+	};
+
+	/**
+	 * Returns "label" from element designtime metadata or present in a metadata property
+	 * @param {sap.ui.core.Element} oElement element for which label has to retrieved
+	 *
+	 * @return {string|undefined} Returns the label as string or undefined
+	 * @public
+	 */
+	ElementDesignTimeMetadata.prototype.getLabel = function(oElement) {
+		return DesignTimeMetadata.prototype.getLabel.apply(this, arguments) || ElementUtil.getLabelForElement(oElement);
+	};
+
+	/**
+	 * This function checks the designtime metadata for a getStableElements function
+	 * returns the result of the DTMD function if it is an array or an empty array if it is anything else
+	 * if no function is available in DTMD it will return an array with the element of the overlay
+	 *
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay overlay
+	 * @returns {sap.ui.base.ManagedObject[]|object[]} Returns an array of elements or selectors.
+	 */
+	ElementDesignTimeMetadata.prototype.getStableElements = function(oOverlay) {
+		var oElement = oOverlay.getElement();
+		var aStableElements;
+		var fnGetStableElements = this.getData().getStableElements;
+		if (fnGetStableElements) {
+			aStableElements = fnGetStableElements(oElement);
+		} else {
+			aStableElements = [oElement];
+		}
+
+		// if the result is undefined or not an array we return an empty array
+		if (!aStableElements || !Array.isArray(aStableElements)) {
+			aStableElements = [];
+		}
+		return aStableElements;
 	};
 
 	return ElementDesignTimeMetadata;

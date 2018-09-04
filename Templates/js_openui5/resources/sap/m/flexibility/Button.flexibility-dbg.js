@@ -10,21 +10,11 @@ sap.ui.define([
 	"use strict";
 
 	return {
-		"hideControl": {
-			"changeHandler": "default",
-			"layers": {
-				"CUSTOMER": false
-			}
-		},
+		"hideControl": "default",
 		"rename": BaseRename.createRenameChangeHandler({
 			propertyName: "text",
 			translationTextType: "XBUT"
 		}),
-		"unhideControl": {
-			"changeHandler": "default",
-			"layers": {
-				"CUSTOMER": false
-			}
-		}
+		"unhideControl": "default"
 	};
 }, /* bExport= */false);

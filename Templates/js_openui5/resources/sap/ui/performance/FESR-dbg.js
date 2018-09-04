@@ -8,8 +8,8 @@
  * Code other than the OpenUI5 libraries must not introduce dependencies to this module.
  */
 sap.ui.define(['sap/ui/thirdparty/URI', 'sap/ui/Device', 'sap/ui/performance/E2ETrace/Passport', './Interaction',
-	'./XHRInterceptor', 'sap/base/log', 'sap/base/Version'
-], function (URI, Device, Passport, Interaction, XHRInterceptor, log, Version) {
+	'./XHRInterceptor', 'sap/base/Version'
+], function (URI, Device, Passport, Interaction, XHRInterceptor, Version) {
 	"use strict";
 
 	// activation by meta tag or url parameter as fallback
@@ -151,7 +151,7 @@ sap.ui.define(['sap/ui/thirdparty/URI', 'sap/ui/Device', 'sap/ui/performance/E2E
 	/**
 	 * @namespace FESR API, consumed by E2eTraceLib instead of former EppLib.js <br>
 	 *<p>
-	 * Provides functionalities for creating the headers for the frontend-subrecords which will be sent with each
+	 * Provides functionality for creating the headers for the frontend-subrecords which will be sent with each
 	 * first request of an interaction. The headers have a specific format, you may have a look at the createFESR
 	 * methods.<br>
 	 *</p><p>

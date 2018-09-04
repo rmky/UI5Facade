@@ -23,7 +23,7 @@ sap.ui.define(["sap/ui/core/Element"],
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @protected
@@ -43,7 +43,7 @@ sap.ui.define(["sap/ui/core/Element"],
 
 				/**
 				 * The value of the line, for example the value of the currently selected measure.
-				 * Expected type is a string or a plain object, including date and time properties of type string.
+				 * Expected type is a string, number or a plain object, including date and time properties of type string.
 				 */
 				value: { type: "any", group: "Data" },
 
@@ -78,6 +78,8 @@ sap.ui.define(["sap/ui/core/Element"],
 			oValue = this.getValue();
 		if (jQuery.type(oValue) === "string") {
 			sValue = oValue;
+		} else if (jQuery.type(oValue) === "number") {
+			sValue = oValue.toString();
 		} else if (jQuery.isPlainObject(oValue)) {
 			if (oValue.day && oValue.day.length > 0) {
 				sValue = oValue.day;
@@ -85,6 +87,8 @@ sap.ui.define(["sap/ui/core/Element"],
 			if (oValue.time && oValue.time.length > 0) {
 				sValue = (sValue.length > 0) ? oValue.time + " " + sValue : oValue.time;
 			}
+		} else {
+			jQuery.sap.log.warning("Value '" + oValue + "' is not supported. Expected type is a string, number or a plain object, including date and time properties of type string.");
 		}
 		return sValue;
 	};

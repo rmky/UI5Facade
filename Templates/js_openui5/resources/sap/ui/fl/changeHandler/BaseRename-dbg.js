@@ -5,7 +5,8 @@
  */
 
 sap.ui.define([
-	"./Base", "sap/ui/fl/Utils"
+	"sap/ui/fl/changeHandler/Base",
+	"sap/ui/fl/Utils"
 ], function(
 	Base,
 	Utils
@@ -18,7 +19,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.changeHandler.BaseRename
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @experimental Since 1.46
 	 */
 	var BaseRename = {
@@ -116,11 +117,9 @@ sap.ui.define([
 						throw new Error("oSpecificChangeInfo.value attribute required");
 					}
 				}
-
 			};
 		}
 	};
-
 	return BaseRename;
 },
 /* bExport= */true);

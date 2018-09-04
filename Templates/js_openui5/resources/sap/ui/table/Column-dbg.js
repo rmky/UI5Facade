@@ -25,7 +25,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	 * @class
 	 * The column allows you to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -390,18 +390,13 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	/**
 	 * This function invalidates the column's menu. All items will be re-created the next time the menu opens. This only
 	 * happens for generated menus.
-	 * @param {boolean} bUpdateLocalization Whether the texts of the menu should be updated too.
 	 * @private
 	 */
-	Column.prototype.invalidateMenu = function(bUpdateLocalization) {
+	Column.prototype.invalidateMenu = function() {
 		var oMenu = this.getAggregation("menu");
 
 		if (this._bMenuIsColumnMenu) {
-			if (bUpdateLocalization) {
-				oMenu._updateResourceBundle(); // Also invalidates the menu
-			} else {
-				oMenu._invalidate();
-			}
+			oMenu._invalidate();
 		}
 	};
 
@@ -971,10 +966,10 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 		var oFreeTemplateClone = null;
 
 		for (var i = 0; i < this._aTemplateClones.length; i++) {
-			if (this._aTemplateClones[i] == null || this._aTemplateClones[i].bIsDestroyed) {
+			if (!this._aTemplateClones[i] || this._aTemplateClones[i].bIsDestroyed) {
 				this._aTemplateClones.splice(i, 1); // Remove the reference to a destroyed clone.
 				i--;
-			} else if (oFreeTemplateClone === null && this._aTemplateClones[i].getParent() == null) {
+			} else if (!oFreeTemplateClone && !this._aTemplateClones[i].getParent()) {
 				oFreeTemplateClone = this._aTemplateClones[i];
 			}
 		}
@@ -998,7 +993,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 
 		var oClone = this._getFreeTemplateClone();
 
-		if (oClone === null) {
+		if (!oClone) {
 			// No free template clone available, create one.
 			var oTemplate = this.getTemplate();
 			if (oTemplate) {
@@ -1007,13 +1002,13 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 			}
 		}
 
-		if (oClone != null) {
+		if (oClone) {
 			// Update sap-ui-* as the column index in the column aggregation may have changed.
 			oClone.data("sap-ui-colindex", iIndex);
 			oClone.data("sap-ui-colid", this.getId());
 
 			var oTable = this.getParent();
-			if (oTable != null) {
+			if (oTable) {
 				oTable._getAccExtension().addColumnHeaderLabel(this, oClone);
 			}
 		}

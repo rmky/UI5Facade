@@ -5,7 +5,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/core/UIComponent",
+sap.ui.define([
+	"sap/ui/core/UIComponent",
 	"sap/ui/core/ComponentContainer",
 	"sap/ui/core/mvc/XMLView",
 	"sap/ui/rta/command/CommandFactory",
@@ -16,6 +17,7 @@ sap.ui.define(["sap/ui/core/UIComponent",
 	"sap/ui/fl/ChangePersistence",
 	"sap/ui/model/Model",
 	'sap/ui/fl/FlexControllerFactory',
+	'sap/ui/fl/registry/Settings',
 	'sap/ui/rta/ControlTreeModifier',
 	"sap/ui/fl/library", //we have to ensure to load fl, so that change handler gets registered,
 	'sap/ui/thirdparty/sinon',
@@ -33,6 +35,7 @@ function(
 	ChangePersistence,
 	Model,
 	FlexControllerFactory,
+	Settings,
 	ControlTreeModifier
 ){
 
@@ -50,7 +53,7 @@ function(
 	 * E.g. <code>controlEnablingCheck.only("Remove");<\code>
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @static
 	 * @since 1.42
@@ -81,6 +84,7 @@ function(
 				viewContent : mOptions.xmlView
 			};
 		}
+		var sandbox = sinon.sandbox.create();
 
 		// Do QUnit tests
 		QUnit.module(sMsg, {});
@@ -147,7 +151,7 @@ function(
 			}
 
 			sap.ui.getCore().applyChanges();
-			return this.oView.loaded();
+			return Promise.all([this.oView.loaded(), mOptions.model && mOptions.model.getMetaModel() && mOptions.model.getMetaModel().loaded()]);
 		}
 
 		function buildCommand(assert){
@@ -203,10 +207,14 @@ function(
 		//XML View checks
 		if (!mOptions.jsOnly) {
 			QUnit.module(sMsg + " on async views", {
+				beforeEach: function() {
+					sandbox.stub(Settings, "getInstance").returns(Promise.resolve({_oSettings: {recordUndo: false}}));
+				},
 				afterEach : function(){
 					this.oUiComponentContainer.destroy();
 					this.oDesignTime.destroy();
 					this.oCommand.destroy();
+					sandbox.restore();
 				}
 			});
 
@@ -225,7 +233,8 @@ function(
 					//destroy and recreate component and view to get the changes applied
 					this.oUiComponentContainer.destroy();
 					return createViewInComponent.call(this, ASYNC);
-				}.bind(this)).then(function(oView){
+				}.bind(this)).then(function(args){
+					var oView = args[0];
 					// Verify that UI change has been applied on XML view
 					mOptions.afterAction(this.oUiComponent, oView, assert);
 				}.bind(this));
@@ -237,9 +246,9 @@ function(
 
 			beforeEach : function(assert){
 				//no LREP response needed
-				this.sandbox = sinon.sandbox.create();
-				this.sandbox.stub(ChangePersistence.prototype, "getChangesForComponent").returns(Promise.resolve([]));
-				this.sandbox.stub(ChangePersistence.prototype, "getCacheKey").returns(ChangePersistence.NOTAG); //no cache key => no xml view processing
+				sandbox.stub(ChangePersistence.prototype, "getChangesForComponent").returns(Promise.resolve([]));
+				sandbox.stub(ChangePersistence.prototype, "getCacheKey").returns(ChangePersistence.NOTAG); //no cache key => no xml view processing
+				sandbox.stub(Settings, "getInstance").returns(Promise.resolve({_oSettings: {recordUndo: false}}));
 
 				return createViewInComponent.call(this, SYNC).then(function(){
 					return buildCommand.call(this, assert);
@@ -247,7 +256,7 @@ function(
 			},
 
 			afterEach : function(){
-				this.sandbox.restore();
+				sandbox.restore();
 				this.oUiComponentContainer.destroy();
 				this.oDesignTime.destroy();
 				this.oCommand.destroy();

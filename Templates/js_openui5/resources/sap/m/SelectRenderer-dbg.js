@@ -100,6 +100,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 			}
 
 			oRm.write(">");
+			this.renderHiddenInput(oRm, oSelect);
 			this.renderLabel(oRm, oSelect);
 
 			switch (sType) {
@@ -125,6 +126,22 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 			}
 
 			oRm.write("</div>");
+		};
+
+		SelectRenderer.renderHiddenInput = function (oRm, oSelect) {
+			oRm.write("<input");
+
+			// Attributes
+			oRm.writeAttribute("id", oSelect.getId() + "-hiddenInput");
+			oRm.writeAttribute("aria-multiline", "false");
+			oRm.writeAttribute("aria-readonly", "true");
+			oRm.writeAttribute("tabindex", "-1");
+
+			// Classes
+			oRm.addClass("sapUiPseudoInvisibleText");
+			oRm.writeClasses();
+
+			oRm.write(" />");
 		};
 
 		/**
@@ -340,6 +357,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 
 			oRm.writeAccessibilityState(oSelect, {
 				role: this.getAriaRole(oSelect),
+				disabled: !oSelect.getEnabled(),
 				expanded: oSelect.isOpen(),
 				invalid: (oSelect.getValueState() === ValueState.Error) ? true : undefined,
 				labelledby: {

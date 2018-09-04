@@ -28,7 +28,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Mo
 	 * @extends sap.ui.model.Model
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @param {object} oData parameters used to initialize the ResourceModel; at least either bundle, bundleName or bundleUrl must be set on this object; if more than one is set, they will be used in the mentioned order
 	 * @param {string} [oData.bundleUrl] the URL to the base .properties file of a bundle (.properties file without any locale information, e.g. "mybundle.properties")
@@ -37,6 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Mo
 	 * @param {string} [oData.bundle] an optional resource bundle; when given, the ResourceModel uses this bundle instead of creating another bundle using the provided bundleUrl, bundleName and bundleLocale.
 	 *                                To support reloading the bundle when the locale changes it is required to also provide the corresponding bundleName or bundleUrl. Otherwise the bundle isn't updated if only the bundle option is given.
 	 * @param {boolean} [oData.async=false] whether the language bundle should be loaded asynchronously
+	 * @param {object[]} [oData.enhanceWith] optional parameter to provide a list of additional resource bundle configurations to enhance the ResourceModel with
 	 * @public
 	 * @alias sap.ui.model.resource.ResourceModel
 	 */
@@ -71,6 +72,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Mo
 				_load(this);
 			} else {
 				throw new Error("At least bundle, bundleName or bundleUrl must be provided!");
+			}
+
+			if (oData && Array.isArray(oData.enhanceWith) && oData.enhanceWith.length > 0) {
+				if (this.bAsync) {
+					this._pEnhanced = oData.enhanceWith.reduce(function(chain, bundle) {
+						return chain.then(this.enhance.bind(this, bundle));
+					}.bind(this), Promise.resolve());
+				} else {
+					oData.enhanceWith.forEach(this.enhance.bind(this));
+				}
 			}
 
 		},

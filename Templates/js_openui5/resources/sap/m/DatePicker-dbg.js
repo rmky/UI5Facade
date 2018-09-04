@@ -113,12 +113,13 @@ sap.ui.define([
 	 * the close event), or select Cancel.
 	 *
 	 * @extends sap.m.DateTimeField
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.22.0
 	 * @alias sap.m.DatePicker
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/date-picker/ Date Picker}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var DatePicker = DateTimeField.extend("sap.m.DatePicker", /** @lends sap.m.DatePicker.prototype */ { metadata : {
@@ -1094,6 +1095,9 @@ sap.ui.define([
 					this._$input.val(sValue);
 					this._lastValue = sValue;
 				}
+				// we have to format the value with the existing format
+				// before setting it and firing the change event
+				sValue = this._formatValue(oDate, true);
 				this.setProperty("value", sValue, true); // no rerendering
 				this.fireChangeEvent(sValue, {valid: true});
 			}

@@ -16,7 +16,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.BaseCommand
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @since 1.50
@@ -51,7 +51,7 @@ sap.ui.define([
 	ControlVariantSetTitle.prototype.getPreparedChange = function() {
 		this._oPreparedChange = this.getVariantChange();
 		if (!this._oPreparedChange) {
-			jQuery.sap.log.error("No prepared change available for ControlVariantSetTitle");
+			return undefined;
 		}
 		return this._oPreparedChange;
 	};

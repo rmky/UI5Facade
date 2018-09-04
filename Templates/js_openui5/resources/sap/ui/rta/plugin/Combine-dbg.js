@@ -22,7 +22,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -51,7 +51,10 @@ sap.ui.define([
 	Combine.prototype._isEditable = function(oOverlay) {
 		var oCombineAction = this.getAction(oOverlay);
 		if (oCombineAction && oCombineAction.changeType && oCombineAction.changeOnRelevantContainer) {
-			return this.hasChangeHandler(oCombineAction.changeType, oOverlay.getRelevantContainer()) && this.hasStableId(oOverlay);
+			var oRelevantContainer = oOverlay.getRelevantContainer();
+			return this.hasChangeHandler(oCombineAction.changeType, oRelevantContainer) &&
+				this.hasStableId(oOverlay) &&
+				this._checkRelevantContainerStableID(oCombineAction, oOverlay);
 		} else {
 			return false;
 		}
@@ -165,7 +168,7 @@ sap.ui.define([
 	 * @return {object[]}          Returns array containing the items with required data
 	 */
 	Combine.prototype.getMenuItems = function(oOverlay){
-		return this._getMenuItems(oOverlay, {pluginId : "CTX_GROUP_FIELDS", rank : 90});
+		return this._getMenuItems(oOverlay, {pluginId : "CTX_GROUP_FIELDS", rank : 90, icon : "sap-icon://border"});
 	};
 
 	/**

@@ -13,7 +13,7 @@ sap.ui.define(function () {
 	WizardStepRenderer.render = function (oRm, oStep) {
 		this.startWizardStep(oRm, oStep);
 		this.renderWizardStepTitle(oRm, oStep);
-		this.renderContent(oRm, oStep.getContent());
+		this.renderContent(oRm, oStep);
 		this.endWizardStep(oRm);
 	};
 
@@ -39,8 +39,9 @@ sap.ui.define(function () {
 		return oStep.getId() + "-Title";
 	};
 
-	WizardStepRenderer.renderContent = function (oRm, aChildren) {
-		aChildren.forEach(oRm.renderControl);
+	WizardStepRenderer.renderContent = function (oRm, oStep) {
+		oStep.getContent().forEach(oRm.renderControl);
+		oRm.renderControl(oStep.getAggregation("_nextButton"));
 	};
 
 	WizardStepRenderer.endWizardStep = function (oRm) {

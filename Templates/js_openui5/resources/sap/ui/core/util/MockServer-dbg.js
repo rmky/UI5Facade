@@ -34,7 +34,7 @@ sap.ui
 			 * @extends sap.ui.base.ManagedObject
 			 * @abstract
 			 * @author SAP SE
-			 * @version 1.54.7
+			 * @version 1.56.6
 			 * @public
 			 * @alias sap.ui.core.util.MockServer
 			 */
@@ -1083,7 +1083,7 @@ sap.ui
 			MockServer.prototype._refreshData = function() {
 
 				// load the metadata
-				var oMetadata = this._loadMetadata(this._sMetadataUrl);
+				var oMetadata = this._loadMetadata(this._sMetadataString);
 				if (!oMetadata) {
 					return;
 				}
@@ -1121,15 +1121,22 @@ sap.ui
 			 * @return {XMLDocument} the xml document object
 			 * @private
 			 */
-			MockServer.prototype._loadMetadata = function(sMetadataUrl) {
-				// load the metadata as string to avoid usage of serializer
-				var sMetadata = jQuery.sap.sjax({
-					url: sMetadataUrl,
-					dataType: "text"
-				}).data;
-				if (!sMetadata) {
-					jQuery.sap.log.error("MockServer: The metadata for url \"" + sMetadataUrl + "\" could not be found!");
+			MockServer.prototype._loadMetadata = function(sMetadata) {
+				var sMetadata;
+				sMetadata = sMetadata.trim();
+
+				// "<" as first character is a strong indicator for an XML-containing string. Everything else: URL...
+				if (sMetadata.substring(0,1) !== "<") {
+					// load the metadata as string to avoid usage of serializer
+					sMetadata = jQuery.sap.sjax({
+						url: sMetadata,
+						dataType: "text"
+					}).data;
+					if (!sMetadata) {
+						jQuery.sap.log.error("MockServer: The metadata for url \"" + sMetadata + "\" could not be found!");
+					}
 				}
+
 				this._sMetadata = sMetadata;
 				try {
 					this._oMetadata = jQuery.parseXML(sMetadata);
@@ -1913,7 +1920,7 @@ sap.ui
 			 * each entity type in a separate JSON file. The name of the JSON file needs to match the name of the entity type. If
 			 * no base url for the mockdata is specified then the mockdata are generated from the metadata
 			 *
-			 * @param {string} sMetadataUrl url to the service metadata document
+			 * @param {string} sMetadataString Either the URL to the service metadata document or the metadata document as xml string itself (starting with "<?xml")
 			 * @param {string|object} [vMockdataSettings] (optional) base url which contains the path to the mockdata, or an object which contains the following properties: sMockdataBaseUrl, bGenerateMissingMockData, aEntitySetsNames. See below for descriptions of these parameters. Ommit this parameter to produce random mock data based on the service metadata.
 			 * @param {string} [vMockdataSettings.sMockdataBaseUrl] base url which contains the mockdata as single .json files or the .json file containing the complete mock data
 			 * @param {boolean} [vMockdataSettings.bGenerateMissingMockData] true for the MockServer to generate mock data for missing .json files that are not found in sMockdataBaseUrl. Default value is false.
@@ -1922,9 +1929,9 @@ sap.ui
 			 * @since 1.13.2
 			 * @public
 			 */
-			MockServer.prototype.simulate = function(sMetadataUrl, vMockdataSettings) {
+			MockServer.prototype.simulate = function(sMetadataString, vMockdataSettings) {
 				var that = this;
-				this._sMetadataUrl = sMetadataUrl;
+				this._sMetadataString = sMetadataString;
 				if (!vMockdataSettings || typeof vMockdataSettings === "string") {
 					this._sMockdataBaseUrl = vMockdataSettings;
 				} else {
@@ -1934,7 +1941,7 @@ sap.ui
 				}
 
 				// load the metadata
-				var oMetadata = this._loadMetadata(this._sMetadataUrl);
+				var oMetadata = this._loadMetadata(this._sMetadataString);
 				if (!oMetadata) {
 					return;
 				}

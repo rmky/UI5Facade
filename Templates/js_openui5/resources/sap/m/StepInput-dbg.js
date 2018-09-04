@@ -100,12 +100,13 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
 		 * @since 1.40
 		 * @alias sap.m.StepInput
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/step-input/ Step Input}
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		var StepInput = Control.extend("sap.m.StepInput", /** @lends sap.m.StepInput.prototype */ {
@@ -1258,7 +1259,9 @@ function(
 					//if the characters after the decimal are more than the displayValuePrecision -> keep the current value after the decimal
 					if (iCharsAfterTheDecimalSign > iCharsSet) {
 						iValue = sCharsBeforeTheEventDecimalValue + "." + sCharsAfterTheEventDecimalValue;
+						this._showWrongValueVisualEffect();
 					}
+
 					//scenario 2 - paste - cut the chars with length, bigger than displayValuePrecision
 				} else {
 					if (sEventValue.indexOf(".")){
@@ -1270,6 +1273,22 @@ function(
 
 			this._getInput().updateDomValue(iValue);
 			return iValue;
+		};
+
+		/**
+		 * Triggers the value state "Error" for 1s, and resets the state to the previous one.
+		 *
+		 * @private
+		 */
+		StepInput.prototype._showWrongValueVisualEffect = function() {
+			var sOldValueState = this.getValueState();
+
+			if (sOldValueState === ValueState.Error) {
+				return;
+			}
+
+			this.setValueState(ValueState.Error);
+			jQuery.sap.delayedCall(1000, this, "setValueState", [sOldValueState]);
 		};
 
 		/**

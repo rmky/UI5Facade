@@ -14,9 +14,9 @@ sap.ui.define([], function() {
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Binding...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @namespace
-	 * @name sap.ui.table.TableBindingUtils
+	 * @alias sap.ui.table.TableBindingUtils
 	 * @private
 	 */
 	return {
@@ -30,7 +30,7 @@ sap.ui.define([], function() {
 		 */
 		metadataLoaded: function(oTable) {
 			var oBinding = oTable.getBinding("rows");
-			var oModel = oBinding != null ? oBinding.getModel() : null;
+			var oModel = oBinding ? oBinding.getModel() : null;
 			var fResolvePromise = null;
 			var fRejectPromise = null;
 			var pMetadataLoaded = new Promise(function(resolve, reject) {
@@ -38,17 +38,17 @@ sap.ui.define([], function() {
 				fRejectPromise = reject;
 			});
 
-			if (oModel == null) {
+			if (!oModel) {
 				fRejectPromise();
 				return pMetadataLoaded;
 			}
 
-			if (oModel.metadataLoaded != null) { // v2
+			if (oModel.metadataLoaded) { // v2
 				oModel.metadataLoaded().then(function() {
 					fResolvePromise();
 				});
-			} else if (oModel.attachMetadataLoaded != null) { // v1
-				if (oModel.oMetadata != null && oModel.oMetadata.isLoaded()) {
+			} else if (oModel.attachMetadataLoaded) { // v1
+				if (oModel.oMetadata && oModel.oMetadata.isLoaded()) {
 					fResolvePromise();
 				} else {
 					oModel.attachMetadataLoaded(function() {

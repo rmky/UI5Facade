@@ -3,9 +3,10 @@
 <Template name="sap.ui.suite.TaskCircle" alias="TaskCircle,Circle">
 	<jsTemplate><![CDATA[new sap.ui.suite.TaskCircle({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	value: 0, // int
@@ -15,6 +16,7 @@
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	ariaLabelledBy: [], // sap.ui.core.Control
 	ariaDescribedBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
@@ -27,6 +29,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<TaskCircle xmlns="sap.ui.suite"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -42,21 +45,24 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </TaskCircle>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.ui.suite.VerticalProgressIndicator" alias="VerticalProgressIndicator,Indicator">
 	<jsTemplate><![CDATA[new sap.ui.suite.VerticalProgressIndicator({
 	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
 	busy: false, // boolean
 	busyIndicatorDelay: 1000, // int
-	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	percentage: undefined, // int
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	ariaLabelledBy: [], // sap.ui.core.Control
 	ariaDescribedBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
@@ -69,6 +75,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<VerticalProgressIndicator xmlns="sap.ui.suite"
 	id="${id}"
+	blocked="false"
 	busy="false"
 	busyIndicatorDelay="1000"
 	busyIndicatorSize="Medium"
@@ -81,6 +88,7 @@
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </VerticalProgressIndicator>
 ]]></xmlTemplate>
 </Template>

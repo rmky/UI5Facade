@@ -4,8 +4,14 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './Action'], function ($, Action) {
+sap.ui.define([
+	"jquery.sap.global",
+	"sap/ui/test/_OpaLogger",
+	"./Action"
+], function ($, _OpaLogger, Action) {
 	"use strict";
+
+	var oLogger = _OpaLogger.getLogger("sap.ui.test.actions.EnterText");
 
 	/**
 	 * The EnterText action is used to simulate a user entering texts to inputs.
@@ -67,6 +73,9 @@ sap.ui.define(['jquery.sap.global', './Action'], function ($, Action) {
 			}
 
 			var oUtils = this.getUtils();
+
+			oLogger.timestamp("opa.actions.enterText");
+			oLogger.debug("Enter text in control " + oControl);
 
 			this._tryOrSimulateFocusin($ActionDomRef, oControl);
 

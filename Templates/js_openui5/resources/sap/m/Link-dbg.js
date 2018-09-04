@@ -67,11 +67,13 @@ function(
 	 * If the <code>wrapping</code> property is set to <code>true</code>, the text will be
 	 * displayed on several lines, instead of being truncated.
 	 *
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/link/ Link}
+	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IShrinkable, sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public

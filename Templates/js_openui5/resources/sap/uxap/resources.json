@@ -1095,6 +1095,25 @@
 			"designtime": true
 		},
 		{
+			"name": "flexibility/ObjectPageDynamicHeaderTitle.flexibility-dbg.js",
+			"module": "sap/uxap/flexibility/ObjectPageDynamicHeaderTitle.flexibility.js",
+			"isDebug": true,
+			"required": [
+				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
+				"sap/m/changeHandler/CombineButtons.js",
+				"sap/m/changeHandler/SplitMenuButton.js"
+			]
+		},
+		{
+			"name": "flexibility/ObjectPageDynamicHeaderTitle.flexibility.js",
+			"module": "sap/uxap/flexibility/ObjectPageDynamicHeaderTitle.flexibility.js",
+			"required": [
+				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
+				"sap/m/changeHandler/CombineButtons.js",
+				"sap/m/changeHandler/SplitMenuButton.js"
+			]
+		},
+		{
 			"name": "flexibility/ObjectPageHeader.flexibility-dbg.js",
 			"module": "sap/uxap/flexibility/ObjectPageHeader.flexibility.js",
 			"isDebug": true,
@@ -1441,6 +1460,7 @@
 				"jquery.sap.keycodes.js",
 				"sap/f/DynamicPageHeaderRenderer.js",
 				"sap/f/DynamicPageTitleRenderer.js",
+				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
 				"sap/m/ActionSheet.js",
 				"sap/m/BarInPageEnabler.js",
 				"sap/m/Breadcrumbs.js",
@@ -1551,6 +1571,7 @@
 				"sap/uxap/designtime/ObjectPageSection.designtime.js",
 				"sap/uxap/designtime/ObjectPageSubSection.designtime.js",
 				"sap/uxap/designtime/library.designtime.js",
+				"sap/uxap/flexibility/ObjectPageDynamicHeaderTitle.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageHeader.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageLayout.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageSection.flexibility.js",
@@ -1568,6 +1589,7 @@
 				"jquery.sap.keycodes.js",
 				"sap/f/DynamicPageHeaderRenderer.js",
 				"sap/f/DynamicPageTitleRenderer.js",
+				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
 				"sap/m/ActionSheet.js",
 				"sap/m/BarInPageEnabler.js",
 				"sap/m/Breadcrumbs.js",
@@ -1678,6 +1700,7 @@
 				"sap/uxap/designtime/ObjectPageSection.designtime.js",
 				"sap/uxap/designtime/ObjectPageSubSection.designtime.js",
 				"sap/uxap/designtime/library.designtime.js",
+				"sap/uxap/flexibility/ObjectPageDynamicHeaderTitle.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageHeader.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageLayout.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageSection.flexibility.js",
@@ -1699,6 +1722,7 @@
 				"jquery.sap.keycodes.js",
 				"sap/f/DynamicPageHeaderRenderer.js",
 				"sap/f/DynamicPageTitleRenderer.js",
+				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
 				"sap/m/ActionSheet.js",
 				"sap/m/BarInPageEnabler.js",
 				"sap/m/Breadcrumbs.js",
@@ -1797,6 +1821,7 @@
 				"sap/uxap/component/ObjectPageComponentContainer.js",
 				"sap/uxap/component/ObjectPageLayoutUXDrivenFactory.controller.js",
 				"sap/uxap/component/ObjectPageLayoutUXDrivenFactory.view.xml",
+				"sap/uxap/flexibility/ObjectPageDynamicHeaderTitle.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageHeader.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageLayout.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageSection.flexibility.js",
@@ -1818,6 +1843,7 @@
 				"jquery.sap.keycodes.js",
 				"sap/f/DynamicPageHeaderRenderer.js",
 				"sap/f/DynamicPageTitleRenderer.js",
+				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
 				"sap/m/ActionSheet.js",
 				"sap/m/BarInPageEnabler.js",
 				"sap/m/Breadcrumbs.js",
@@ -1919,6 +1945,7 @@
 				"sap/uxap/component/ObjectPageComponentContainer.js",
 				"sap/uxap/component/ObjectPageLayoutUXDrivenFactory.controller.js",
 				"sap/uxap/component/ObjectPageLayoutUXDrivenFactory.view.xml",
+				"sap/uxap/flexibility/ObjectPageDynamicHeaderTitle.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageHeader.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageLayout.flexibility.js",
 				"sap/uxap/flexibility/ObjectPageSection.flexibility.js",
@@ -2012,11 +2039,6 @@
 		},
 		{
 			"name": "themes/base/HierarchicalSelect.less",
-			"designtime": true,
-			"theme": "base"
-		},
-		{
-			"name": "themes/base/ObjectPageDynamicHeaderContent.less",
 			"designtime": true,
 			"theme": "base"
 		},

@@ -60,7 +60,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/AutoComplete.js" size="11379" compressedSize="5349">
+  <module name="sap/ui/commons/AutoComplete.js" size="11511" compressedSize="5349">
     <description>Provides control sap.ui.commons.AutoComplete.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -836,7 +836,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/RowRepeater.js" size="43557" compressedSize="17444">
+  <module name="sap/ui/commons/RowRepeater.js" size="43555" compressedSize="17444">
     <description>Provides control sap.ui.commons.RowRepeater.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -874,7 +874,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/SearchField.js" size="30086" compressedSize="15935">
+  <module name="sap/ui/commons/SearchField.js" size="30119" compressedSize="15966">
     <description>Provides control sap.ui.commons.SearchField.</description>
     <requires>
       <module name="jquery.sap.dom.js"/>
@@ -1305,7 +1305,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/layout/AbsoluteLayout.js" size="16147" compressedSize="5658">
+  <module name="sap/ui/commons/layout/AbsoluteLayout.js" size="18343" compressedSize="5658">
     <description>Provides control sap.ui.commons.layout.AbsoluteLayout.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1393,7 +1393,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/layout/MatrixLayoutRenderer.js" size="19725" compressedSize="7912">
+  <module name="sap/ui/commons/layout/MatrixLayoutRenderer.js" size="19820" compressedSize="7950">
     <description>Provides default renderer for control sap.ui.commons.layout.MatrixLayout</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1466,7 +1466,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/library-h2-preload.js" size="36285">
+  <module name="sap/ui/commons/library-h2-preload.js" size="36216">
     <requires>
       <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.encoder.js"/>
@@ -1697,7 +1697,7 @@
       <module name="sap/ui/commons/layout/VerticalLayoutRenderer.js"/>
     </includes>
   </module>
-  <module name="sap/ui/commons/library-preload.js" size="548997">
+  <module name="sap/ui/commons/library-preload.js" size="549016">
     <requires>
       <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.encoder.js"/>

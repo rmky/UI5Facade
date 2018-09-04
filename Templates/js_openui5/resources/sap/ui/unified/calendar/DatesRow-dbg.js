@@ -32,7 +32,7 @@ sap.ui.define([
 	 * If used inside the calendar the properties and aggregation are directly taken from the parent
 	 * (To not duplicate and sync DateRanges and so on...)
 	 * @extends sap.ui.unified.calendar.Month
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
@@ -132,8 +132,6 @@ sap.ui.define([
 	 * @param {object} oDate JavaScript date object for start date.
 	 * @returns {sap.ui.unified.calendar.DatesRow} <code>this</code> to allow method chaining
 	 * @public
-	 * @name sap.ui.unified.calendar.DatesRow#setDate
-	 * @function
 	 */
 	DatesRow.prototype.setDate = function(oDate){
 
@@ -192,9 +190,7 @@ sap.ui.define([
 	 *
 	 * @protected
 	 * @param {int} iFirstDayOfWeek The first day of the week
-	 * @name sap.ui.unified.calendar.DatesRow#setFirstDayOfWeek
 	 * @returns {sap.ui.unified.calendar.DatesRow} <code>this</code> to allow method chaining
-	 * @function
 	 */
 	DatesRow.prototype.setFirstDayOfWeek = function(iFirstDayOfWeek){
 

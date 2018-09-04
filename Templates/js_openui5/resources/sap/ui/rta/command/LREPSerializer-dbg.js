@@ -11,6 +11,7 @@ sap.ui.define([
 	'sap/ui/rta/command/AppDescriptorCommand',
 	'sap/ui/fl/FlexControllerFactory',
 	'sap/ui/fl/Utils',
+	'sap/ui/fl/Change',
 	'sap/ui/rta/ControlTreeModifier',
 	'sap/ui/fl/registry/Settings'
 ], function(
@@ -21,6 +22,7 @@ sap.ui.define([
 	AppDescriptorCommand,
 	FlexControllerFactory,
 	FlexUtils,
+	Change,
 	RtaControlTreeModifier,
 	Settings
 ) {
@@ -31,7 +33,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @since 1.42
@@ -63,20 +65,29 @@ sap.ui.define([
 	LREPSerializer.prototype._lastPromise = Promise.resolve();
 
 	LREPSerializer.prototype.setCommandStack = function(oCommandStack) {
+		if (this.getCommandStack()){
+			this.getCommandStack().removeCommandExecutionHandler(this._fnHandleCommandExecuted);
+		}
 		this.setProperty("commandStack", oCommandStack);
-		oCommandStack.attachCommandExecuted(function(oEvent) {
-			this.handleCommandExecuted(oEvent);
-		}.bind(this));
+		oCommandStack.addCommandExecutionHandler(this._fnHandleCommandExecuted);
+	};
+	LREPSerializer.prototype.init = function(){
+		this._fnHandleCommandExecuted = this.handleCommandExecuted.bind(this);
+	};
+	LREPSerializer.prototype.exit = function(){
+		this.getCommandStack().removeCommandExecutionHandler(this._fnHandleCommandExecuted);
+	};
+	LREPSerializer.prototype._isPersistedChange = function(oPreparedChange) {
+		return !!this.getCommandStack()._aPersistedChanges && this.getCommandStack()._aPersistedChanges.indexOf(oPreparedChange.getId()) !== -1;
 	};
 
 	LREPSerializer.prototype.handleCommandExecuted = function(oEvent) {
-		(function (oEvent) {
-			var oParams = oEvent.getParameters();
+		return (function (oEvent) {
+			var oParams = oEvent;
 			this._lastPromise = this._lastPromise.catch(function() {
-				// _lastPromise chain must not be interupted
+				// _lastPromise chain must not be interrupted
 			}).then(function() {
 				var aCommands = this.getCommandStack().getSubCommands(oParams.command);
-
 				var oFlexController;
 				if (oParams.undo) {
 					aCommands.forEach(function(oCommand) {
@@ -87,15 +98,17 @@ sap.ui.define([
 						}
 						var oChange = oCommand.getPreparedChange();
 						var oAppComponent = oCommand.getAppComponent();
-						if (oCommand instanceof FlexCommand){
-							oFlexController = FlexControllerFactory.createForControl(oAppComponent);
-							var oControl = RtaControlTreeModifier.bySelector(oChange.getSelector(), oAppComponent);
-							oFlexController.removeFromAppliedChangesOnControl(oChange, oAppComponent, oControl);
-						} else if (oCommand instanceof AppDescriptorCommand) {
-							//other flex controller!
-							oFlexController = this._getAppDescriptorFlexController(oAppComponent);
+						if (oAppComponent) {
+							if (oCommand instanceof FlexCommand){
+								oFlexController = FlexControllerFactory.createForControl(oAppComponent);
+								var oControl = RtaControlTreeModifier.bySelector(oChange.getSelector(), oAppComponent);
+								oFlexController.removeFromAppliedChangesOnControl(oChange, oAppComponent, oControl);
+							} else if (oCommand instanceof AppDescriptorCommand) {
+								//other flex controller!
+								oFlexController = this._getAppDescriptorFlexController(oAppComponent);
+							}
+							oFlexController.deleteChange(oChange, oAppComponent);
 						}
-						oFlexController.deleteChange(oChange, oAppComponent);
 					}.bind(this));
 				} else {
 					var aDescriptorCreateAndAdd = [];
@@ -106,19 +119,45 @@ sap.ui.define([
 						}
 						if (oCommand instanceof FlexCommand){
 							var oAppComponent = oCommand.getAppComponent();
-							var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
-							oFlexController.addPreparedChange(oCommand.getPreparedChange(), oAppComponent);
+							if (oAppComponent) {
+								var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
+								var oPreparedChange = oCommand.getPreparedChange();
+								if (oPreparedChange.getState() === Change.states.DELETED) {
+									oPreparedChange.setState(Change.states.NEW);
+								}
+								if (!this._isPersistedChange(oPreparedChange)) {
+									oFlexController.addPreparedChange(oCommand.getPreparedChange(), oAppComponent);
+								}
+							}
 						} else if (oCommand instanceof AppDescriptorCommand) {
 							aDescriptorCreateAndAdd.push(oCommand.createAndStoreChange());
 						}
-					});
+					}.bind(this));
 
 					return Promise.all(aDescriptorCreateAndAdd);
 				}
 			}.bind(this));
+			return this._lastPromise;
 		}.bind(this))(oEvent);
 	};
 
+	/**
+	 * Checks if the app needs to restart for the current active changes to be effective
+	 *
+	 * @returns {Promise} return boolean answer
+	 * @public
+	 */
+	LREPSerializer.prototype.needsReload = function() {
+		this._lastPromise = this._lastPromise.catch(function() {
+			// _lastPromise chain must not be interrupted
+		}).then(function() {
+			var aCommands = this.getCommandStack().getAllExecutedCommands();
+			return aCommands.some(function(oCommand){
+				return !!oCommand.needsReload;
+			});
+		}.bind(this));
+		return this._lastPromise;
+	};
 	/**
 	 * Serializes and saves all changes to LREP
 	 *
@@ -127,7 +166,7 @@ sap.ui.define([
 	 */
 	LREPSerializer.prototype.saveCommands = function() {
 		this._lastPromise = this._lastPromise.catch(function() {
-			// _lastPromise chain must not be interupted
+			// _lastPromise chain must not be interrupted
 		}).then(function() {
 			var oRootControl = sap.ui.getCore().byId(this.getRootControl());
 			if (!oRootControl) {
@@ -138,7 +177,7 @@ sap.ui.define([
 		}.bind(this))
 
 		// needed because the AppDescriptorChanges are stored with a different ComponentName (without ".Component" at the end)
-		// -> two different ChangePersistences
+		// -> two different ChangePersistence
 		.then(function() {
 			var oRootControl = sap.ui.getCore().byId(this.getRootControl());
 			var oFlexController = this._getAppDescriptorFlexController(oRootControl);
@@ -146,7 +185,7 @@ sap.ui.define([
 		}.bind(this))
 
 		.then(function() {
-			jQuery.sap.log.info("UI adaptation successfully transferred changes to layered repository");
+			jQuery.sap.log.info("UI adaptation successfully transfered changes to layered repository");
 			this.getCommandStack().removeAllCommands();
 		}.bind(this));
 
@@ -225,7 +264,7 @@ sap.ui.define([
 			}
 		});
 
-		// Once the changes are undoed, all commands shall be removed
+		// Once the changes are undone, all commands shall be removed
 		oCommandStack.removeAllCommands();
 	};
 

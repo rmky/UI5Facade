@@ -28,7 +28,7 @@ sap.ui.define(['sap/ui/base/DataType', './Type', './FormatException', './ParseEx
 	 * @extends sap.ui.model.Type
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @param {object} [oFormatOptions] options as provided by concrete subclasses
 	 * @param {object} [oConstraints] constraints as supported by concrete subclasses
@@ -155,6 +155,21 @@ sap.ui.define(['sap/ui/base/DataType', './Type', './FormatException', './ParseEx
 			default:
 				var oInternalType = DataType.getType(sInternalType);
 				return oInternalType && oInternalType.getPrimitiveType().getName();
+		}
+	};
+
+	/**
+	 * Combine message texts.
+	 * Join multiple messages into a combined message text
+	 *
+	 * @param {array} aMessages an array of message strings
+	 * @return {string} the combined message text
+	 */
+	SimpleType.prototype.combineMessages = function(aMessages) {
+		if (aMessages.length === 1) {
+			return aMessages[0];
+		} else {
+			return aMessages.join(". ") + ".";
 		}
 	};
 

@@ -12,9 +12,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './ListBaseRenderer'
 	// shortcut for sap.m.ListKeyboardMode
 	var ListKeyboardMode = library.ListKeyboardMode;
 
-	// shortcut for sap.m.Sticky
-	var Sticky = library.Sticky;
-
 
 	/**
 	 * List renderer.
@@ -81,9 +78,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './ListBaseRenderer'
 		if (isHeaderHidden) {
 			rm.addClass("sapMListTblHeaderNone");
 		} else {
-			if (type === "Head" && oTable.getSticky() === Sticky.ColumnHeaders) {
-				rm.addClass("sapMListTblStickyColHdr");
-			}
 			rm.addClass("sapMListTblRow sapMLIBFocusable sapMListTbl" + type + "er");
 			ColumnListItemRenderer.addLegacyOutlineClass.call(ColumnListItemRenderer, rm);
 		}
@@ -105,7 +99,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './ListBaseRenderer'
 				rm.write("</th>");
 				index++;
 			} else {
-				createBlankCell("SelCol");
+				createBlankCell("SelCol", "", true);
 			}
 		}
 
@@ -169,7 +163,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './ListBaseRenderer'
 		createBlankCell("NavCol", type + "Nav", !oTable._iItemNeedsColumn);
 
 		if (iModeOrder == 1) {
-			createBlankCell("SelCol");
+			createBlankCell("SelCol", "", true);
 		}
 
 		rm.write("</tr></" + groupTag + ">");
@@ -187,6 +181,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './ListBaseRenderer'
 	 */
 	TableRenderer.renderContainerAttributes = function(rm, oControl) {
 		rm.addClass("sapMListTblCnt");
+
+		// add sticky style classes
+		var iStickyValue = oControl.getStickyStyleValue();
+		if (iStickyValue) {
+			rm.addClass("sapMSticky");
+			rm.addClass("sapMSticky" + iStickyValue);
+		}
 	};
 
 	/**
@@ -218,11 +219,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './ListBaseRenderer'
 	TableRenderer.renderListHeadAttributes = function(rm, oControl) {
 		this.renderColumns(rm, oControl, "Head");
 		rm.write("<tbody");
+		rm.addClass("sapMListItems");
+		rm.addClass("sapMTableTBody");
 		rm.writeAttribute("id", oControl.addNavSection(oControl.getId("tblBody")));
 		if (oControl.getAlternateRowColors()) {
 			rm.addClass(oControl._getAlternateRowColorsClass());
-			rm.writeClasses();
 		}
+		rm.writeClasses();
 		rm.write(">");
 	};
 

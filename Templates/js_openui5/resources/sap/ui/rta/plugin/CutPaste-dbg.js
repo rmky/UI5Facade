@@ -34,7 +34,7 @@ function(
 	 * @extends sap.ui.dt.plugin.CutPaste
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -135,6 +135,14 @@ function(
 		});
 
 		this.stopCutAndPaste();
+	};
+
+	/**
+	 * @override
+	 */
+	CutPaste.prototype.cut = function(oOverlay) {
+		ControlCutPaste.prototype.cut.apply(this, arguments);
+		oOverlay.setSelected(false);
 	};
 
 	/**

@@ -45,7 +45,7 @@ function(
 	 * @extends sap.ui.dt.Overlay
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -322,8 +322,6 @@ function(
 		// Apply Overlay position first, then extra logic based on this new position
 		Overlay.prototype._setPosition.apply(this, arguments);
 
-		this._sortChildren(this.getChildrenDomRef());
-
 		this.getScrollContainers().forEach(function(mScrollContainer, iIndex) {
 			// TODO: write Unit test for the case when getAssociatedDomRef() returns undefined (domRef func returns undefined)
 			var $ScrollContainerDomRef = this.getDesignTimeMetadata().getAssociatedDomRef(this.getElement(), mScrollContainer.domRef) || jQuery();
@@ -334,12 +332,39 @@ function(
 				this._setSize($ScrollContainerOverlayDomRef, DOMUtil.getGeometry(oScrollContainerDomRef));
 				Overlay.prototype._setPosition.call(this, $ScrollContainerOverlayDomRef, DOMUtil.getGeometry(oScrollContainerDomRef), this.$());
 				this._handleOverflowScroll(DOMUtil.getGeometry(oScrollContainerDomRef), $ScrollContainerOverlayDomRef, this);
-				this._sortChildren($ScrollContainerOverlayDomRef.get(0));
 			} else {
 				this._deleteDummyContainer($ScrollContainerOverlayDomRef);
 				$ScrollContainerOverlayDomRef.css("display", "none");
 			}
 		}, this);
+	};
+
+	ElementOverlay.prototype._applySizes = function () {
+		// We need to know when all our children have correct positions
+		var aPromises = this.getChildren()
+			.filter(function (oChild) {
+				return oChild.isRendered();
+			})
+			.map(function(oChild) {
+				return new Promise(function (fnResolve) {
+					oChild.attachEventOnce('geometryChanged', fnResolve);
+				});
+			});
+
+		Overlay.prototype._applySizes.apply(this, arguments);
+
+		Promise.all(aPromises).then(function () {
+			this._sortChildren(this.getChildrenDomRef());
+
+			this.getScrollContainers().forEach(function(mScrollContainer, iIndex) {
+				var $ScrollContainerDomRef = this.getDesignTimeMetadata().getAssociatedDomRef(this.getElement(), mScrollContainer.domRef) || jQuery();
+				var $ScrollContainerOverlayDomRef = this.getScrollContainerById(iIndex);
+
+				if ($ScrollContainerDomRef.length) {
+					this._sortChildren($ScrollContainerOverlayDomRef.get(0));
+				}
+			}, this);
+		}.bind(this));
 	};
 
 	/**
@@ -681,21 +706,13 @@ function(
 	ElementOverlay.prototype._onChildAdded = function (oEvent) {
 		var oAggregationOverlay = oEvent.getSource();
 		if (this.isRendered() && !oAggregationOverlay.isRendered()) {
-			this._getRenderingContainer(oAggregationOverlay).append(oAggregationOverlay.render());
+			var $Target = (
+				Util.isInteger(oAggregationOverlay.getScrollContainerId())
+				? this.getScrollContainerById(oAggregationOverlay.getScrollContainerId())
+				: jQuery(this.getChildrenDomRef())
+			);
+			$Target.append(oAggregationOverlay.render());
 		}
-	};
-
-	/**
-	 * Gets rendering DOM Node for specified child (aggregation overlay)
-	 * @param {sap.ui.dt.AggregationOverlay} oAggregationOverlay - aggregation overlay
-	 * @return {jQuery} - jQuery object with rendering DOM Node
-	 */
-	ElementOverlay.prototype._getRenderingContainer = function (oAggregationOverlay) {
-		return (
-			Util.isInteger(oAggregationOverlay.getScrollContainerId())
-			? this.getScrollContainerById(oAggregationOverlay.getScrollContainerId())
-			: jQuery(this.getChildrenDomRef())
-		);
 	};
 
 	/**
@@ -704,18 +721,6 @@ function(
 	 * @param {sap.ui.dt.AggregationOverlay} oAggregationOverlay - The aggregation overlay where the child is being added.
 	 */
 	ElementOverlay.prototype.addChild = function (oAggregationOverlay) {
-		if (this.isRendered()) {
-			var $Target = this._getRenderingContainer(oAggregationOverlay);
-
-			// 1. Move aggregation in rendering container
-			$Target.append(oAggregationOverlay.getDomRef());
-
-			// 2. Move rendering container if it's a scroll container
-			if (Util.isInteger(oAggregationOverlay.getScrollContainerId())) {
-				jQuery(this.getChildrenDomRef()).append($Target);
-			}
-		}
-
 		// Since we can't check whether the listener was attached before or not, we re-attach it to avoid multiple listeners
 		oAggregationOverlay.detachChildAdded(this._onChildAdded, this);
 		oAggregationOverlay.attachChildAdded(this._onChildAdded, this);

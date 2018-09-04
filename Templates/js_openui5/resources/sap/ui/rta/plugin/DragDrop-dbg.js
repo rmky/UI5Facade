@@ -34,7 +34,7 @@ function(
 	 * @extends sap.ui.dt.plugin.ControlDragDrop
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -109,27 +109,7 @@ function(
 	DragDrop.prototype.deregisterElementOverlay = function(oOverlay) {
 		ControlDragDrop.prototype.deregisterElementOverlay.apply(this, arguments);
 		Plugin.prototype.removeFromPluginsList.apply(this, arguments);
-		this._detachMovableBrowserEvents(oOverlay);
 	};
-
-	/**
-	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
-	 * @private
-	 */
-	DragDrop.prototype._attachMovableBrowserEvents = function(oOverlay) {
-		oOverlay.attachBrowserEvent("mouseover", this._onMouseOver, this);
-		oOverlay.attachBrowserEvent("mouseleave", this._onMouseLeave, this);
-	};
-
-	/**
-	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
-	 * @private
-	 */
-	DragDrop.prototype._detachMovableBrowserEvents = function(oOverlay) {
-		oOverlay.detachBrowserEvent("mouseover", this._onMouseOver, this);
-		oOverlay.detachBrowserEvent("mouseleave", this._onMouseLeave, this);
-	};
-
 
 	/**
 	 * Additionally to super->onDragStart this method stores the parent's id in an instance variable
@@ -172,43 +152,6 @@ function(
 	 */
 	DragDrop.prototype.onMovableChange = function(oOverlay) {
 		ControlDragDrop.prototype.onMovableChange.apply(this, arguments);
-		if (oOverlay.isMovable()) {
-			this._attachMovableBrowserEvents(oOverlay);
-		} else {
-			this._detachMovableBrowserEvents(oOverlay);
-		}
-	};
-	/**
-	 * Handle mouse over event
-	 * @param  {sap.ui.base.Event} oEvent event object
-	 * @private
-	 */
-	DragDrop.prototype._onMouseOver = function(oEvent) {
-		var oOverlay = OverlayRegistry.getOverlay(oEvent.currentTarget.id);
-		if (oOverlay !== this._oPreviousHoverTarget) {
-			if (this._oPreviousHoverTarget) {
-				this._oPreviousHoverTarget.$().removeClass("sapUiRtaOverlayHover");
-			}
-			this._oPreviousHoverTarget = oOverlay;
-			oOverlay.$().addClass("sapUiRtaOverlayHover");
-		}
-		oEvent.preventDefault();
-		oEvent.stopPropagation();
-
-	};
-
-	/**
-	 * Handle mouse leave event
-	 * @param  {sap.ui.base.Event} oEvent event object
-	 * @private
-	 */
-	DragDrop.prototype._onMouseLeave = function(oEvent) {
-		if (this._oPreviousHoverTarget) {
-			this._oPreviousHoverTarget.$().removeClass("sapUiRtaOverlayHover");
-		}
-		delete this._oPreviousHoverTarget;
-		oEvent.preventDefault();
-		oEvent.stopPropagation();
 	};
 
 	return DragDrop;

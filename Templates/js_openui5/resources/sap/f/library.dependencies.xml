@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.f">
-  <module name="sap/f/Avatar.js" size="11767" compressedSize="4299">
+  <module name="sap/f/Avatar.js" size="11849" compressedSize="4299">
     <description>Provides control sap.f.Avatar.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -20,7 +20,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPage.js" size="57925" compressedSize="24103">
+  <module name="sap/f/DynamicPage.js" size="60879" compressedSize="25424">
     <description>Provides control sap.f.DynamicPage.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -35,20 +35,19 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPageHeader.js" size="11202" compressedSize="4498">
+  <module name="sap/f/DynamicPageHeader.js" size="11101" compressedSize="4494">
     <description>Provides control sap.f.DynamicPageHeader.</description>
     <requires>
       <module name="sap/f/DynamicPageHeaderRenderer.js"/>
       <module name="sap/f/library.js"/>
       <module name="sap/m/Button.js"/>
       <module name="sap/m/ToggleButton.js"/>
-      <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPageHeaderRenderer.js" size="2327" compressedSize="1139">
+  <module name="sap/f/DynamicPageHeaderRenderer.js" size="2048" compressedSize="958">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
@@ -61,7 +60,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPageTitle.js" size="41838" compressedSize="15995">
+  <module name="sap/f/DynamicPageTitle.js" size="44066" compressedSize="17032">
     <description>Provides control sap.f.DynamicPageTitle.</description>
     <requires>
       <module name="sap/f/DynamicPageTitleRenderer.js"/>
@@ -70,19 +69,21 @@
       <module name="sap/m/OverflowToolbar.js"/>
       <module name="sap/m/Toolbar.js"/>
       <module name="sap/m/ToolbarSeparator.js"/>
+      <module name="sap/m/library.js"/>
       <module name="sap/ui/base/ManagedObjectObserver.js"/>
       <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/core/InvisibleText.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPageTitleRenderer.js" size="8974" compressedSize="5053">
+  <module name="sap/f/DynamicPageTitleRenderer.js" size="8896" compressedSize="4994">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/f/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/FlexibleColumnLayout.js" size="68452" compressedSize="18415">
+  <module name="sap/f/FlexibleColumnLayout.js" size="69246" compressedSize="18747">
     <description>Provides control sap.f.FlexibleColumnLayout.</description>
     <requires>
       <module name="jquery.sap.events.js"/>
@@ -93,6 +94,7 @@
       <module name="sap/m/NavContainer.js"/>
       <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
+      <module name="sap/ui/core/Configuration.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/ResizeHandler.js"/>
       <module name="ui5loader-autoconfig.js"/>
@@ -116,7 +118,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/changeHandler/MoveDynamicPageTitleActions.js" size="4274" compressedSize="1229">
+  <module name="sap/f/changeHandler/MoveDynamicPageTitleActions.js" size="4187" compressedSize="1229">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/Utils.js"/>
@@ -295,7 +297,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/library-h2-preload.js" size="10775">
+  <module name="sap/f/library-h2-preload.js" size="10768">
     <requires>
       <module name="jquery.sap.events.js"/>
       <module name="jquery.sap.global.js"/>
@@ -324,6 +326,7 @@
       <module name="sap/ui/base/ManagedObjectObserver.js"/>
       <module name="sap/ui/base/Metadata.js"/>
       <module name="sap/ui/base/Object.js"/>
+      <module name="sap/ui/core/Configuration.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/core/Fragment.js"/>
@@ -403,7 +406,7 @@
       <module name="sap/f/semantic/TitleMainAction.js"/>
     </includes>
   </module>
-  <module name="sap/f/library-preload.js" size="138890">
+  <module name="sap/f/library-preload.js" size="141420">
     <requires>
       <module name="jquery.sap.events.js"/>
       <module name="jquery.sap.global.js"/>
@@ -430,6 +433,7 @@
       <module name="sap/ui/base/ManagedObjectObserver.js"/>
       <module name="sap/ui/base/Metadata.js"/>
       <module name="sap/ui/base/Object.js"/>
+      <module name="sap/ui/core/Configuration.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/core/IconPool.js"/>
@@ -527,6 +531,7 @@
       <module name="sap/ui/base/ManagedObjectObserver.js"/>
       <module name="sap/ui/base/Metadata.js"/>
       <module name="sap/ui/base/Object.js"/>
+      <module name="sap/ui/core/Configuration.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/core/IconPool.js"/>
@@ -711,7 +716,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/routing/TargetHandler.js" size="7453" compressedSize="2608">
+  <module name="sap/f/routing/TargetHandler.js" size="7698" compressedSize="2735">
     <description>global Promise</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -903,7 +908,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/semantic/SemanticPage.js" size="31039" compressedSize="11282">
+  <module name="sap/f/semantic/SemanticPage.js" size="31303" compressedSize="11282">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/f/DynamicPage.js"/>

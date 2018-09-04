@@ -61,12 +61,13 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.16
 	 * @alias sap.m.Panel
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/panel/ Panel}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var Panel = Control.extend("sap.m.Panel", /** @lends sap.m.Panel.prototype */ { metadata: {
@@ -327,17 +328,18 @@ sap.ui.define([
 
 	Panel.prototype._createIcon = function () {
 		var that = this,
-			sCollapsedIconURI = IconPool.getIconURI("navigation-right-arrow");
+			sCollapsedIconURI = IconPool.getIconURI("navigation-right-arrow"),
+			sTooltipBundleText = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("PANEL_ICON");
 
 		return IconPool.createControlByURI({
 			id: that.getId() + "-CollapsedImg",
 			src: sCollapsedIconURI,
 			decorative: false,
-			useIconTooltip: false,
 			press: function () {
 				that._bInteractiveExpand = true;
 				that.setExpanded(!that.getExpanded());
-			}
+			},
+			tooltip: sTooltipBundleText
 		}).addStyleClass("sapMPanelExpandableIcon");
 	};
 

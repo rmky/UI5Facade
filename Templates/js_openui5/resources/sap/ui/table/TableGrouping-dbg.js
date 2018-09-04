@@ -15,9 +15,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Grouping...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @namespace
-	 * @name sap.ui.table.TableGrouping
+	 * @alias sap.ui.table.TableGrouping
 	 * @private
 	 */
 	var TableGrouping = {
@@ -124,9 +124,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 		 */
 		toggleGroupHeader : function(oTable, vRowIndex, bExpand) {
 			var aIndices = [];
-			var oBinding = oTable != null ? oTable.getBinding("rows") : null;
+			var oBinding = oTable ? oTable.getBinding("rows") : null;
 
-			if (oTable == null || oBinding == null || oBinding.expand == null || vRowIndex == null) {
+			if (!oTable || !oBinding || !oBinding.expand || vRowIndex == null) {
 				return null;
 			}
 
@@ -153,8 +153,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 				var bIsExpanded = oBinding.isExpanded(iIndex);
 				var bIsLeaf = true; // If the node state cannot be determined, we assume it is a leaf.
 
-				if (oBinding.nodeHasChildren != null) {
-					if (oBinding.getNodeByIndex != null) {
+				if (oBinding.nodeHasChildren) {
+					if (oBinding.getNodeByIndex) {
 						bIsLeaf = !oBinding.nodeHasChildren(oBinding.getNodeByIndex(iIndex));
 					} else {
 						// The sap.ui.model.TreeBindingCompatibilityAdapter has no #getNodeByIndex function and #nodeHasChildren always returns true.
@@ -218,7 +218,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 				var iGroupHeaderRowIndex = $GroupRef.data("sap-ui-rowindex");
 				var oRow = oTable.getRows()[iGroupHeaderRowIndex];
 
-				if (oRow != null) {
+				if (oRow) {
 					var iAbsoluteRowIndex = oRow.getIndex();
 					var bIsExpanded = TableGrouping.toggleGroupHeader(oTable, iAbsoluteRowIndex, bExpand);
 					var bChanged = bIsExpanded === true || bIsExpanded === false;
@@ -664,7 +664,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 
 				// For compatibility with TreeBinding adapters.
 				nodeHasChildren: function(oContext) {
-					if (oContext == null || oContext.__groupInfo == null) {
+					if (!oContext || !oContext.__groupInfo) {
 						return false;
 					} else {
 						return oContext.__groupInfo.groupHeader === true;

@@ -170,6 +170,15 @@
 	 */
 	var bGlobalAsyncMode = false;
 
+
+	/**
+	 * Whether ui5loader currently exposes its AMD implementation as global properties
+	 * <code>define</code> and <code>require</code>. Defaults to <code>false</code>.
+	 * @type {boolean}
+	 * @private
+	 */
+	var bExposeAsAMDLoader = false;
+
 	/**
 	 * How the loader should react to calls of sync APIs or when global names are accessed:
 	 * 0: tolerate
@@ -207,8 +216,6 @@
 
 	/**
 	 * A map of URL prefixes keyed by the corresponding module name prefix.
-	 * URL prefix can either be given as string or as object with properties url and final.
-	 * When final is set to true, module name prefix cannot be overwritten.
 	 *
 	 * Note that the empty prefix ('') will always match and thus serves as a fallback.
 	 * @type {Object.<string,{url:string,absoluteUrl:string}>}
@@ -530,6 +537,8 @@
 		assert((p > 0 || sNamePrefix === '') && mUrlPrefixes[sNamePrefix], "there always must be a mapping");
 
 		sPath = mUrlPrefixes[sNamePrefix].url + sResourceName.slice(p + 1); // also skips a leading slash!
+
+		//remove trailing slash
 		if ( sPath.slice(-1) === '/' ) {
 			sPath = sPath.slice(0, -1);
 		}
@@ -544,6 +553,11 @@
 
 		// Make sure to have an absolute URL to check against absolute prefix URLs
 		sURL = resolveURL(sURL);
+		// remove url parameters
+		var pos = sURL.search(/[?#]/);
+		if (pos >= 0) {
+			sURL = sURL.slice(0, pos);
+		}
 
 		for (sNamePrefix in mUrlPrefixes) {
 
@@ -1161,6 +1175,13 @@
 			throw new Error("can only require Javascript module, not " + sModuleName);
 		}
 
+		// Module names should not start with a "/"
+		if ( bLoggable ) {
+			if (sModuleName[0] == "/") {
+				log.error("Module names that start with a slash should not be used, as they are reserved for future use.");
+			}
+		}
+
 		oModule = Module.get(sModuleName);
 
 		// when there's a shim with dependencies for the module
@@ -1258,17 +1279,12 @@
 				}
 
 				// call notification hook
-				require.load({ completeLoad:noop, async: false }, oModule.url, oSplitName.baseID);
+				ui5Require.load({ completeLoad:noop, async: false }, oModule.url, oSplitName.baseID);
 
 				loadSyncXHR(oModule);
 			}
 
 			if ( oModule.state === LOADING ) {
-				// loading failed for some reason, load again as script for better error reporting
-				// (but without further eventing)
-				if ( fnIgnorePreload ) {
-					loadScript(oModule);
-				}
 				// transition to FAILED
 				oModule.fail(
 					makeNestedError("failed to load '" + sModuleName +  "' from " + oModule.url, oModule.error));
@@ -1280,6 +1296,11 @@
 			measure && measure.end(sModuleName);
 
 			if ( oModule.state !== READY ) {
+				// loading or executing failed for some reason, load again as script for better error reporting
+				// (but without further eventing)
+				if ( fnIgnorePreload ) {
+					loadScript(oModule);
+				}
 				throw oModule.error;
 			}
 
@@ -1290,7 +1311,7 @@
 			// @evo-todo support debug mode also in async mode
 			oModule.url = getResourcePath(oSplitName.baseID, oSplitName.subType);
 			// call notification hook
-			require.load({ completeLoad:noop, async: true }, oModule.url, oSplitName.baseID);
+			ui5Require.load({ completeLoad:noop, async: true }, oModule.url, oSplitName.baseID);
 			loadScript(oModule, /* bRetryOnFailure= */ true);
 
 			// process dep cache info
@@ -1337,7 +1358,7 @@
 				if ( typeof oModule.data === "function" ) {
 					oModule.data.call(__global);
 				} else if ( Array.isArray(oModule.data) ) {
-					define.apply(null, oModule.data);
+					ui5Define.apply(null, oModule.data);
 				} else {
 
 					sScript = oModule.data;
@@ -1440,7 +1461,8 @@
 				if ( oRequestingModule ) {
 					switch ( sDepModName ) {
 					case 'require.js':
-						aModules[i] = createContextualRequire(sBaseName);
+						// the injected local require should behave like the Standard require (2nd argument = true)
+						aModules[i] = createContextualRequire(sBaseName, true);
 						break;
 					case 'module.js':
 						aModules[i] = oRequestingModule.api();
@@ -1477,7 +1499,24 @@
 		}
 	}
 
-	function define(sModuleName, aDependencies, vFactory, bExport) {
+	/**
+	 * The amdDefine() function is closer to the AMD spec, as opposed to sap.ui.define.
+	 * It's later assigned as the global define() if the loader is running in amd=true
+	 * mode (has to be configured explicitly).
+	 */
+	function amdDefine (sModuleName, aDependencies, vFactory) {
+		var oArgs = arguments;
+		var bExportIsSet = typeof oArgs[oArgs.length - 1] === "boolean";
+
+		// bExport parameter is proprietary and should not be used for an AMD compliant define()
+		if (bExportIsSet) {
+			oArgs = Array.prototype.slice.call(oArgs, 0, oArgs.length - 1);
+		}
+
+		ui5Define.apply(this, oArgs);
+	}
+
+	function ui5Define(sModuleName, aDependencies, vFactory, bExport) {
 		var sResourceName,
 			oCurrentExecInfo;
 
@@ -1536,7 +1575,6 @@
 	}
 
 	function defineModule(sResourceName, aDependencies, vFactory, bExport, bAsync) {
-
 		var bLoggable = log.isLoggable();
 		sResourceName = normalize(sResourceName);
 
@@ -1617,9 +1655,10 @@
 	 * Create a require() function which acts in the context of the given resource.
 	 *
 	 * @param {string|null} sContextName Name of the context resource (module) in URN syntax, incl. extension
+	 * @param {boolean} bAMDCompliance If set to true, the behavior of the require() function is closer to the AMD specification.
 	 * @returns {function} Require function.
 	 */
-	function createContextualRequire(sContextName) {
+	function createContextualRequire(sContextName, bAMDCompliance) {
 		var fnRequire = function(vDependencies, fnCallback, fnErrCallback) {
 			var sModuleName;
 
@@ -1627,9 +1666,23 @@
 			assert(fnCallback == null || typeof fnCallback === 'function', "callback must be a function or null/undefined");
 			assert(fnErrCallback == null || typeof fnErrCallback === 'function', "error callback must be a function or null/undefined");
 
+			// Probing for existing module
 			if ( typeof vDependencies === 'string' ) {
 				sModuleName = getMappedName(vDependencies + '.js', sContextName);
-				return Module.get(sModuleName).value();
+				var oModule = Module.get(sModuleName);
+
+				// check the modules internal state
+				// everything from PRELOADED to LOADED (incl. FAILED) is considered erroneous
+				if (bAMDCompliance && oModule.state !== EXECUTING && oModule.state !== READY) {
+					throw new Error(
+						"Module '" + sModuleName + "' has not been loaded yet. " +
+						"Use require(['" + sModuleName + "']) to load it."
+					);
+				}
+
+				// Module is in state READY or EXECUTING; or require() was called from sap.ui.require().
+				// A modules value might be undefined (no return statement) even though the state is READY.
+				return oModule.value();
 			}
 
 			requireAll(sContextName, vDependencies, function(aModules) {
@@ -1660,11 +1713,44 @@
 			// return undefined;
 		};
 		fnRequire.toUrl = function(sName) {
-			sName = getMappedName(sName, sContextName);
-			var oName = urnToIDAndType( sName );
-			return getResourcePath(oName.id, oName.type);
+			var sMappedName = ensureTrailingSlash(getMappedName(sName, sContextName), sName);
+			return toUrl(sMappedName);
 		};
 		return fnRequire;
+	}
+
+	function ensureTrailingSlash(sName, sInput) {
+		//restore trailing slash
+		if (sInput.slice(-1) === "/" && sName.slice(-1) !== "/") {
+			return sName + "/";
+		}
+		return sName;
+	}
+
+	/**
+	 * Retrieves the url from the provided name.
+	 * Supports relative segments within the path such as <code>./</code> and <code>../</code>
+	 *
+	 * <pre>
+	 *      "sap/ui/test/../mypath/myFile"     -->   "sap/ui/mypath/myFile"
+	 *      "sap/ui/test/./mypath/myFile"      -->   "sap/ui/test/mypath/myFile"
+	 *      "sap/ui/test/mypath/myFile"        -->   "sap/ui/test/mypath/myFile"
+	 *      "sap/ui/test/mypath/.ext"          -->   "sap/ui/test/mypath/.ext"
+	 *      "sap/ui/test/mypath/myFile.ext"    -->   "sap/ui/test/mypath/myFile.ext"
+	 *      "sap/ui/test/mypath/               -->   "sap/ui/test/mypath/"
+	 *      "/sap/ui/test"                     -->   Error because first character is a slash
+	 * </pre>
+	 *
+	 * @param {string} sName name of the resource e.g. sap/ui/test/../mypath/myFile
+	 * @returns {string} the path to the resource, e.g. sap/ui/mypath/myFile
+	 * @see https://github.com/amdjs/amdjs-api/wiki/require#requiretourlstring-
+	 * @throws Error if the input name is absolute (starts with a slash character <code>'/'</code>)
+	 */
+	function toUrl(sName) {
+		if (sName.indexOf("/") === 0) {
+			throw new Error("The provided argument '" + sName + "' may not start with a slash");
+		}
+		return ensureTrailingSlash(getResourcePath(sName), sName);
 	}
 
 	/**
@@ -1717,7 +1803,14 @@
 	 * @experimental Since 1.27.0 - not all aspects of sap.ui.require are settled yet. E.g. the return value
 	 * of the asynchronous use case might change (currently it is undefined).
 	 */
-	var require = createContextualRequire(null);
+	var ui5Require = createContextualRequire(null, false);
+
+	/**
+	 * difference between require (sap.ui.require) and amdRequire (window.require):
+	 * - require("my/module"), returns undefined if the module was not loaded yet
+	 * - amdRequire("my/module"), throws an error if the module was not loaded yet
+	 */
+	var amdRequire = createContextualRequire(null, true);
 
 	function requireSync(sModuleName) {
 		sModuleName = getMappedName(sModuleName + '.js');
@@ -1901,7 +1994,29 @@
 			}
 			mShims[module + '.js'] = shim;
 		},
+		amd: function(bValue) {
+			bValue = !!bValue;
+			if ( bExposeAsAMDLoader !== bValue ) {
+				bExposeAsAMDLoader = bValue;
+				if (bValue) {
+					vOriginalDefine = __global.define;
+					vOriginalRequire = __global.require;
+					__global.define = amdDefine;
+					__global.require = amdRequire;
+
+					// Enable async loading behaviour implicitly when switching to amd mode
+					bGlobalAsyncMode = true;
+				} else {
+					__global.define = vOriginalDefine;
+					__global.require = vOriginalRequire;
+					// NOTE: Do not set async mode back to false when amd mode gets deactivated
+				}
+			}
+		},
 		async: function(async) {
+			if (bGlobalAsyncMode && !async) {
+				throw new Error("Changing the ui5loader config from async to sync is not supported. Only a change from sync to async is allowed.");
+			}
 			bGlobalAsyncMode = !!async;
 		},
 		debugSources: function(debug) {
@@ -1938,18 +2053,21 @@
 			}
 		},
 		noConflict: function(bValue) {
-			if (bValue) {
-				__global.define = vOriginalDefine;
-				__global.require = vOriginalRequire;
-			} else {
-				__global.define = define;
-				__global.require = require;
-			}
+			log.warning("Config option 'noConflict' has been deprecated, use option 'amd' instead, if still needed.");
+			mConfigHandlers.amd(!bValue);
 		}
 	};
 
-	function config(oConfig) {
-		forEach(oConfig, function(key, value) {
+	function config(cfg) {
+		if ( cfg === undefined ) {
+			return {
+				amd: bExposeAsAMDLoader,
+				async: bGlobalAsyncMode,
+				noConflict: !bExposeAsAMDLoader // TODO needed?
+			};
+		}
+
+		forEach(cfg, function(key, value) {
 			var handler = mConfigHandlers[key];
 			if ( typeof handler === 'function' ) {
 				if ( handler.length === 1) {
@@ -1963,14 +2081,15 @@
 		});
 	}
 
+
 	// @evo-todo really use this hook for loading. But how to differentiate between sync and async?
 	// for now, it is only a notification hook to attach load tests
-	require.load = function(context, url, id) {
+	ui5Require.load = function(context, url, id) {
 	};
 
-	var ui5loader = {
-		amdDefine: define,
-		amdRequire: require,
+	var privateAPI = {
+		amdDefine: amdDefine,
+		amdRequire: amdRequire,
 		config: config,
 		declareModule: function(sResourceName) {
 			/* void */ declareModule( normalize(sResourceName) );
@@ -1985,10 +2104,10 @@
 		getUrlPrefixes: getUrlPrefixes,
 		loadJSResourceAsync: loadJSResourceAsync,
 		resolveURL: resolveURL,
-		toUrl: getResourcePath,
+		toUrl: toUrl,
 		unloadResources: unloadResources
 	};
-	Object.defineProperties(ui5loader, {
+	Object.defineProperties(privateAPI, {
 		logger: {
 			get: function() {
 				return log;
@@ -2024,9 +2143,9 @@
 		}
 	});
 
-	require.sync = requireSync;
+	ui5Require.sync = requireSync;
 
-	require.predefine = function(sModuleName, aDependencies, vFactory, bExport) {
+	ui5Require.predefine = function(sModuleName, aDependencies, vFactory, bExport) {
 		if ( typeof sModuleName !== 'string' ) {
 			throw new Error("predefine requires a module name");
 		}
@@ -2034,7 +2153,7 @@
 		Module.get(sModuleName + '.js').preload("<unknown>/" + sModuleName, [sModuleName, aDependencies, vFactory, bExport], null);
 	};
 
-	require.preload = function(modules, group, url) {
+	ui5Require.preload = function(modules, group, url) {
 		group = group || null;
 		url = url || "<unknown>";
 		for ( var name in modules ) {
@@ -2048,23 +2167,161 @@
 	}
 	Module.get('sap/ui/thirdparty/es6-string-methods.js').ready(null); // no module value
 
-	// Store current global define and require values
-	vOriginalDefine = __global.define;
-	vOriginalRequire = __global.require;
-
-	__global.define = define;
-	__global.require = require;
-
 	__global.sap = __global.sap || {};
 	sap.ui = sap.ui || {};
 
 	/**
-	 * Internal API of the UI5 loader.
+	 * Provides access to UI5 loader configuration.
 	 *
-	 * Must not be used by code outside sap.ui.core.
-	 * @private
+	 * The configuration is used by {@link sap.ui.require} and {@link sap.ui.define}.
+	 *
+	 * @public
+	 * @namespace
 	 */
-	sap.ui._ui5loader = ui5loader;
+	sap.ui.loader = {
+
+		/**
+		 * Sets the configuration for the UI5 loader. The configuration can be updated multiple times.
+		 * Later changes do not impact modules that have been loaded before.
+		 *
+		 * If no parameter is given, a partial copy of UI5 loader configuration in use is returned.
+		 *
+		 * The configuration options are aligned with the "Common Config" draft of the AMD spec
+		 * (https://github.com/amdjs/amdjs-api/blob/master/CommonConfig.md).
+		 *
+		 * The following code shows an example of what a UI5 loader configuration might look like:
+		 * <pre>
+		 *
+		 *   sap.ui.loader.config({
+		 *
+		 *     // location from where to load all modules by default
+		 *     baseUrl: '../../resources/',
+		 *
+		 *     paths: {
+		 *       // load modules whose ID equals to or starts with 'my/module' from example.com
+		 *       'my/module': 'https://example.com/resources/my/module'
+		 *     },
+		 *
+		 *     map: {
+		 *       // if any module requires 'sinon', load module 'sap/ui/thirdparty/sinon-4'
+		 *       '*': {
+		 *         'sinon': 'sap/ui/thirdparty/sinon-4'
+		 *       },
+		 *       // but if a module whose ID equals to or starts with 'app' requires 'sinon'
+		 *       // then load a legacy version instead
+		 *       "app": {
+		 *         'sinon': 'sap/ui/legacy/sinon'
+		 *       }
+		 *     },
+		 *
+		 *     // activate real async loading and module definitions
+		 *     async: true,
+		 *
+		 *     // provide dependency and export metadata for non-UI5 modules
+		 *     shim: {
+		 *       'sap/ui/thirdparty/blanket': {
+		 *         amd: true,
+		 *         exports: 'blanket'
+		 *       }
+		 *     }
+		 *
+		 *   });
+		 *
+		 * </pre>
+		 *
+		 * @param {object|undefined} [cfg]
+		 *   The provided configuration gets merged with the UI5 loader configuration in use.
+		 *   If <code>cfg</code> is omitted or <code>undefined</code>, a copy of the current configuration
+		 *   gets returned, containing at least the properties <code>amd</code> and <code>async</code>.
+		 *
+		 * @param {string} [cfg.baseUrl='resources/']
+		 *   Default location to load modules from. If none of the configured <code>paths</code> prefixes
+		 *   matches a module ID, the module will be loaded from the concatenation of the <code>baseUrl</code>
+		 *   and the module ID.
+		 *
+		 *   If the <code>baseUrl</code> itself is a relative URL, it is evaluated relative to <code>document.baseURI</code>.
+		 *
+		 * @param {Object.<string, string>} [cfg.paths]
+		 *   A map of resource locations keyed by a corresponding module ID prefix.
+		 *   When a module is to be loaded, the longest key in <code>paths</code> is searched that is a
+		 *   prefix of the module ID. The module will be loaded from the concatenation of the corresponding
+		 *   value in <code>paths</code> and the remainder of the module ID (after the prefix). If no entry
+		 *   in <code>paths</code> matches, then the module will be loaded from the <code>baseUrl</code>.
+		 *
+		 *   The prefixes (keys) must not contain relative segments (./ or ../), a trailing slash will be
+		 *   removed, and only full name segment matches are considered a match (prefix 'sap/m' does not
+		 *   match a module ID 'sap/main').
+		 *
+		 *   <b>Note</b>: In contrast to the "Common Config" of the AMD spec, the paths (values in the map)
+		 *   are interpreted relative to <code>document.baseURI</code>, not relative to <code>cfg.baseUrl</code>.
+		 *
+		 * @param {Object.<string, Object.<string, string>>} [cfg.map]
+		 *   A map of maps that defines how to map module IDs to other module IDs (inner maps)
+		 *   in the context of a specific set of modules (keys of outer map).
+		 *
+		 *   Each key of the outer map represents a module ID prefix that describes the context for which
+		 *   its value (inner map) has to be used. The special key <code>*</code> describes the default
+		 *   context which applies for any module. Only the most specific matching context will be taken
+		 *   into account.
+		 *
+		 *   Each inner map maps a module ID or module ID prefix to another module ID or module ID prefix.
+		 *   Again, only the most specific match is taken into account and only one mapping is evaluated
+		 *   (the evaluation of the mappings is not done recursively).
+		 *
+		 *   Matches are always complete matches, a prefix 'a/b/c' does not match the module ID 'a/b/com'.
+		 *
+		 * @param {Object.<string, {amd:boolean, deps:string[], exports:(string|string[])}>} [cfg.shim]
+		 *   Defines additional metadata for modules for which the normal behavior of the AMD APIs is
+		 *   not sufficient.
+		 *
+		 *   A typical example are scripts that don't use <code>define</code> or <code>sap.ui.define</code>,
+		 *   but export to a global name. With the <code>exports</code> property, one or more export
+		 *   names can be specified, and the loader can retrieve the exported value after executing the
+		 *   corresponding module. If such a module has dependencies, they can be specified in the
+		 *   <code>deps</code> array and are loaded and executed before executing the module.
+		 *
+		 *   The <code>amd</code> flag of a shim is a ui5loader-specific extension of the standard AMD shims.
+		 *   If set, the ui5loader hides a currently active AMD loader before executing the module
+		 *   and restores it afterwards. Otherwise, it might miss the export of third party modules that
+		 *   check for an AMD loader and register with it instead of exporting to a global name. A future
+		 *   version of the ui5loader might ignore this flag when it acts as an AMD loader by itself.
+		 *
+		 *   <b>Note</b>: The ui5loader does not support the <code>init</code> option described by the
+		 *   "Common Config" section of the AMD spec.
+		 *
+		 * @param {boolean} [cfg.async=false]
+		 *   When set to true, <code>sap.ui.require</code> loads modules asynchronously via script tags and
+		 *   <code>sap.ui.define</code> executes asynchronously.
+		 *
+		 *   <b>Note</b>: Switching back from async to sync is not supported and trying to do so will throw
+		 *   an <code>Error</code>
+		 *
+		 * @param {boolean} [cfg.amd=false]
+		 *   When set to true, the ui5loader will overwrite the global properties <code>define</code>
+		 *   and <code>require</code> with its own implementations. Any previously active AMD loader will
+		 *   be remembered internally and can be restored by setting <code>amd</code> to false again.
+		 *
+		 *   <b>Note:</b> Switching to the <code>amd</code> mode, the ui5loader will set <code>async</code>
+		 *   to true implicitly for activating asynchronous loading. Once the loading behaviour has been
+		 *   defined to be asynchronous, it can not be changed to synchronous behaviour again, also not
+		 *   via setting <code>amd</code> to false.
+		 *
+		 * @returns {object|undefined} UI5 loader configuration in use.
+		 * @throws {Error} When trying to switch back from async mode to sync mode.
+		 * @public
+		 * @since 1.56.0
+		 * @function
+		 */
+		config: config,
+
+		/**
+		 * Internal API of the UI5 loader.
+		 *
+		 * Must not be used by code outside sap.ui.core.
+		 * @private
+		 */
+		_: privateAPI
+	};
 
 	/**
 	 * Defines a Javascript module with its name, its dependencies and a module value or factory.
@@ -2200,7 +2457,7 @@
 	 * there will be a transition phase where UI5 enables AMD modules and local references to module
 	 * values in parallel to the old global names. The fourth parameter of <code>sap.ui.define</code>
 	 * has been added to support that transition phase. When this parameter is set to true, the framework
-	 * provides two additional functionalities
+	 * provides two additional features
 	 *
 	 * <ol>
 	 * <li>Before the factory function is called, the existence of the global parent namespace for
@@ -2305,12 +2562,12 @@
 	 *        constraints and limitations are obeyed, SAP-owned code might use it. If the fourth parameter
 	 *        is not used and if the asynchronous contract is respected, even Non-SAP code might use it.
 	 */
-	sap.ui.define = define;
+	sap.ui.define = ui5Define;
 
 	/**
 	 * @private
 	 */
-	sap.ui.predefine = require.predefine;
+	sap.ui.predefine = ui5Require.predefine;
 
 	/**
 	 * Resolves one or more module dependencies.
@@ -2362,7 +2619,7 @@
 	 * @experimental Since 1.27.0 - not all aspects of sap.ui.require are settled yet. E.g. the return value
 	 * of the asynchronous use case might change (currently it is undefined).
 	 */
-	sap.ui.require = require;
+	sap.ui.require = ui5Require;
 
 	/**
 	 * Load a single module synchronously and return its module value.
@@ -2387,6 +2644,6 @@
 	 * @returns {any} value of the loaded module or undefined
 	 * @private
 	 */
-	sap.ui.requireSync = require.sync;
+	sap.ui.requireSync = ui5Require.sync;
 
 }(window));

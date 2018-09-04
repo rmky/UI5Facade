@@ -18,7 +18,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand',
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -53,6 +53,11 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand',
 			events : {}
 		}
 	});
+
+	/**
+	 * For app descriptor commands to take effect usually the app needs to be restarted as server-side processing is involved.
+	 */
+	AppDescriptorCommand.prototype.needsReload = true;
 
 	/**
 	 * Prepare the app descriptor change, setting the layer.

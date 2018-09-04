@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 	 * <li>System defined defaults</li>
 	 * <li>Server wide defaults, read from /sap-ui-config.json</li>
 	 * <li>Properties of the global configuration object window["sap-ui-config"]</li>
-	 * <li>A configuration string in the data-sap-ui-config attribute of the bootstrap tag</li>
+	 * <li>A configuration string in the data-sap-ui-config attribute of the bootstrap tag.</li>
 	 * <li>Individual data-sap-ui-<i>xyz</i> attributes of the bootstrap tag</li>
 	 * <li>Using URL parameters</li>
 	 * <li>Setters in this Configuration object (only for some parameters)</li>
@@ -134,6 +134,7 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 					"xx-nosync"             : { type : "string",   defaultValue : "" },
 					"xx-waitForTheme"       : { type : "boolean",  defaultValue : false},
 					"xx-xml-processing"     : { type : "string",  defaultValue : "" },
+					"xx-avoidAriaApplicationRole" : { type : "boolean",  defaultValue : false}, // Avoid ACC role 'application'
 					"statistics"            : { type : "boolean",  defaultValue : false }
 			};
 
@@ -800,7 +801,7 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 		},
 
 		/**
-		 * Returns the calendar type which is being used in locale dependent functionalities.
+		 * Returns the calendar type which is being used in locale dependent functionality.
 		 *
 		 * When it's explicitly set by calling <code>setCalendar</code>, the set calendar type is returned.
 		 * Otherwise, the calendar type is determined by checking the format settings and current locale.
@@ -848,7 +849,7 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 		},
 
 		/**
-		 * Sets the new calendar type to be used from now on in locale dependent functionalities (for example,
+		 * Sets the new calendar type to be used from now on in locale dependent functionality (for example,
 		 * formatting, translation texts, etc.).
 		 *
 		 * @param {sap.ui.core.CalendarType|null} sCalendarType the new calendar type. Set it with null to clear the calendar type
@@ -957,6 +958,13 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 		 */
 		getAutoAriaBodyRole : function () {
 			return this.autoAriaBodyRole;
+		},
+
+		/**
+		 * @experimental
+		 */
+		getAvoidAriaApplicationRole : function() {
+			return this.getAutoAriaBodyRole() && this["xx-avoidAriaApplicationRole"];
 		},
 
 		/**
@@ -1641,6 +1649,17 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 		},
 
 		/**
+		 * Retrieves the custom units.
+		 * These custom units are set by {@link sap.ui.core.Configuration#setCustomUnits} and {@link sap.ui.core.Configuration#addCustomUnits}
+		 * @return {object} custom units object
+		 * @see sap.ui.core.Configuration#setCustomUnits
+		 * @see sap.ui.core.Configuration#addCustomUnits
+		 */
+		getCustomUnits: function () {
+			return this.mSettings["units"] ? this.mSettings["units"]["short"] : undefined;
+		},
+
+		/**
 		 * Sets custom units which can be used to do Unit Formatting.
 		 *
 		 * The custom unit object consists of:
@@ -1662,7 +1681,7 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 		 *		"unitPattern-count-other": "{0} bags"
 		 *  }
 		 * }
-	     * </code>
+		  * </code>
 		 * In the above snippet:
 		 * * <code>"BAG"</code> represent the unit key which is used to reference it.
 		 * * <code>"unitPattern-count-one"</code> represent the unit pattern for the form "one", e.g. the number <code>1</code> in the 'en' locale.
@@ -1684,17 +1703,6 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 			}
 			this._set("units", mUnitsshort);
 			return this;
-		},
-
-		/**
-		 * Retrieves the custom units.
-		 * These custom units are set by {@link sap.ui.core.Configuration#setCustomUnits} and {@link sap.ui.core.Configuration#addCustomUnits}
-		 * @return {object} custom units object
-		 * @see sap.ui.core.Configuration#setCustomUnits
-		 * @see sap.ui.core.Configuration#addCustomUnits
-		 */
-		getCustomUnits: function () {
-			return this.mSettings["units"] ? this.mSettings["units"]["short"] : undefined;
 		},
 
 		/**
@@ -1861,6 +1869,71 @@ sap.ui.define(['jquery.sap.global', '../Device', '../Global', '../base/Object', 
 		setNumberSymbol : function(sType, sSymbol) {
 			check(sType == "decimal" || sType == "group" || sType == "plusSign" || sType == "minusSign", "sType must be decimal, group, plusSign or minusSign");
 			this._set("symbols-latn-" + sType, sSymbol);
+			return this;
+		},
+
+		/**
+		 * Retrieves the custom currencies.
+		 * E.g.
+		 * <code>
+		 * {
+		 *  "KWD": {"digits": 3},
+		 *  "TND" : {"digits": 3}
+		 * }
+		 * </code>
+		 * @public
+		 * @returns {object} the mapping between custom currencies and its digits
+		 */
+		getCustomCurrencies : function() {
+			return this.mSettings["currency"];
+		},
+
+		/**
+		 * Sets custom currencies and replaces existing entries.
+		 * E.g.
+		 * <code>
+		 * {
+		 *  "KWD": {"digits": 3},
+		 *  "TND" : {"digits": 3}
+		 * }
+		 * </code>
+		 * Note: To unset the custom currencies: call with <code>undefined</code>
+		 * @public
+		 * @param {object} mCurrencies currency map which is set
+		 * @returns {sap.ui.core.Configuration.FormatSettings}
+		 */
+		setCustomCurrencies : function(mCurrencies) {
+			check(typeof mCurrencies === "object" || mCurrencies == null, "mCurrencyDigits must be an object");
+			Object.keys(mCurrencies || {}).forEach(function(sCurrencyDigit) {
+				check(typeof sCurrencyDigit === "string");
+				check(typeof mCurrencies[sCurrencyDigit] === "object");
+			});
+			this._set("currency", mCurrencies);
+			return this;
+		},
+
+		/**
+		 * Adds custom currencies to the existing entries.
+		 * E.g.
+		 * <code>
+		 * {
+		 *  "KWD": {"digits": 3},
+		 *  "TND" : {"digits": 3}
+		 * }
+		 * </code>
+		 *
+		 * @public
+		 * @param {object} mCurrencies adds to the currency map
+		 * @returns {sap.ui.core.Configuration.FormatSettings}
+		 * @see sap.ui.core.Configuration.FormatSettings#setCustomCurrencies
+		 */
+		addCustomCurrencies: function (mCurrencies) {
+			// add custom units, or remove the existing ones if none are given
+			var mExistingCurrencies = this.getCustomCurrencies();
+			if (mExistingCurrencies){
+				mCurrencies = jQuery.extend({}, mExistingCurrencies, mCurrencies);
+			}
+			this.setCustomCurrencies(mCurrencies);
 			return this;
 		},
 

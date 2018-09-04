@@ -89,11 +89,12 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.m.Carousel
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/carousel/ Carousel}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var Carousel = Control.extend("sap.m.Carousel", /** @lends sap.m.Carousel.prototype */ { metadata : {
@@ -221,7 +222,8 @@ function(
 	Carousel._LATERAL_CLASSES = "sapMCrslLeftmost sapMCrslRightmost";
 	Carousel._MODIFIERNUMBERFORKEYBOARDHANDLING = 10; // The number 10 is by keyboard specification
 	Carousel._BULLETS_TO_NUMBERS_THRESHOLD = 9; //The number 9 is by visual specification. Less than 9 pages - bullets for page indicator. 9 or more pages - numeric page indicator.
-
+	Carousel._PREVIOUS_CLASS_ARROW = "sapMCrslPrev";
+	Carousel._NEXT_CLASS_ARROW = "sapMCrslNext";
 	/**
 	 * Initialize member variables which are needed later on.
 	 *
@@ -530,14 +532,31 @@ function(
 			//update HUD arrow visibility for left- and
 			//rightmost pages
 			var $HUDContainer = this.$('hud');
+
 			//clear marker classes first
 			$HUDContainer.removeClass(Carousel._LATERAL_CLASSES);
 
 			if (iNextSlide === 1) {
 				$HUDContainer.addClass(Carousel._LEFTMOST_CLASS);
+				this._focusCarouselContainer($HUDContainer, Carousel._PREVIOUS_CLASS_ARROW);
 			} else if (iNextSlide === this.getPages().length) {
 				$HUDContainer.addClass(Carousel._RIGHTMOST_CLASS);
+				this._focusCarouselContainer($HUDContainer, Carousel._NEXT_CLASS_ARROW);
 			}
+		}
+	};
+
+	/*
+	 * Focus Carousel container.
+	 * Focus is moved to carousel container if clicked arrow is first or last from carousel
+	 * @param {object} $HUDContainer Arrow container inside Carousel
+	 * @param {string} sArrowClassName Arrow class name
+	 * @private
+	 *
+	 */
+	Carousel.prototype._focusCarouselContainer = function($HUDContainer, sArrowClassName) {
+		if ($HUDContainer.find('.' + sArrowClassName)[0] === document.activeElement) {
+			this.focus();
 		}
 	};
 

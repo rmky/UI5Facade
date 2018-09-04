@@ -9,7 +9,6 @@ sap.ui.define([
 	'jquery.sap.global',
 	'sap/ui/fl/Utils',
 	'sap/ui/dt/OverlayUtil',
-	'sap/ui/dt/OverlayRegistry',
 	'sap/ui/fl/registry/Settings',
 	'sap/m/MessageBox'
 ],
@@ -17,7 +16,6 @@ function(
 	jQuery,
 	FlexUtils,
 	OverlayUtil,
-	OverlayRegistry,
 	Settings,
 	MessageBox
 ) {
@@ -29,7 +27,7 @@ function(
 	 * @class Utility functionality to work with controls, e.g. iterate through aggregations, find parents, etc.
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @private
 	 * @static
@@ -45,7 +43,7 @@ function(
 
 	Utils._sFocusableOverlayClass = ".sapUiDtOverlaySelectable";
 
-	Utils._sRtaStyleClassName = null;
+	Utils._sRtaStyleClassName = '';
 
 	/**
 	 * Returns the rta specific Style Class
@@ -384,39 +382,6 @@ function(
 	};
 
 	/**
-	 * Secure extract a label from an element
-	 *
-	 * @param {sap.ui.core.Element} oElement - Any Object
-	 * @param {Function} [fnFunction] - Custom function for retrieving label
-	 * @return {String|undefined} Label string or undefined
-	 */
-	Utils.getLabelForElement = function(oElement, fnFunction) {
-		// if there is a function, only the function is executed
-		if (fnFunction) {
-			return fnFunction(oElement);
-		} else {
-			// first try getText(), then getlabelText(), if not available try getLabel().getText(), then getTitle(), then getId()
-			var sFieldLabel = oElement.getText && oElement.getText();
-			if (!sFieldLabel) {
-				sFieldLabel = oElement.getLabelText && oElement.getLabelText();
-			}
-			if (!sFieldLabel) {
-				sFieldLabel = oElement.getLabel && oElement.getLabel();
-				if (sFieldLabel && sFieldLabel.getText){
-					sFieldLabel = sFieldLabel.getText();
-				}
-			}
-			if (!sFieldLabel) {
-				sFieldLabel = oElement.getTitle && oElement.getTitle();
-			}
-			if (!sFieldLabel) {
-				sFieldLabel = oElement.getId && oElement.getId();
-			}
-			return (typeof sFieldLabel) === "string" ? sFieldLabel : undefined;
-		}
-	};
-
-	/**
 	 * Get the entity type based on the binding of a control
 	 *
 	 * @param {sap.ui.core.Element} oElement - Any Object
@@ -492,7 +457,7 @@ function(
 	 * @returns {Object|null} Plain object with entity description
 	 */
 	Utils.getEntityTypeByPath = function (oModel, sPath) {
-		return oModel.oMetadata._getEntityTypeByPath(sPath);
+		return oModel.oMetadata && oModel.oMetadata._getEntityTypeByPath(sPath);
 	};
 
 	/**
@@ -588,19 +553,22 @@ function(
 	 * @param  {string} sTitleKey The text key for the title of the message box
 	 * @param  {string} sMessageKey The text key for the message of the message box
 	 * @param  {any} oError Optional - If an error is passed on, the message box text is derived from it
+	 * @param  {string} [sAction] text key for the confirm button default @see sap.m.MessageBox.show
 	 * @return {Promise} Promise displaying the message box; resolves when it is closed
 	 * @private
 	 */
-	Utils._showMessageBox = function(oMessageType, sTitleKey, sMessageKey, oError) {
+	Utils._showMessageBox = function(oMessageType, sTitleKey, sMessageKey, oError, sAction) {
 		var oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
 		var sMessage = oResourceBundle.getText(sMessageKey, oError ? [oError.message || oError] : undefined);
 		var sTitle = oResourceBundle.getText(sTitleKey);
+		var vAction = sAction ? oResourceBundle.getText(sAction) : MessageBox.Action.OK;
 
 		return new Promise(function(resolve) {
 			MessageBox.show(sMessage, {
 				icon: oMessageType,
 				title: sTitle,
 				onClose: resolve,
+				actions: vAction,
 				styleClass: Utils.getRtaStyleClassName()
 			});
 		});

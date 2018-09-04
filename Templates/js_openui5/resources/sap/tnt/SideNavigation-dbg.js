@@ -42,12 +42,13 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
 		 * @since 1.34
 		 * @alias sap.tnt.SideNavigation
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/side-navigation/ Side Navigation}
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		var SideNavigation = Control.extend('sap.tnt.SideNavigation', /** @lends sap.t.SideNavigation.prototype */ {
@@ -128,8 +129,6 @@ sap.ui.define([
 		/**
 		 * Sets if the control is in expanded or collapsed mode.
 		 *
-		 * @name sap.tnt.SideNavigation.setExpanded
-		 * @method
 		 * @public
 		 * @param {boolean} isExpanded Indication if the SideNavigation is expanded.
 		 * @returns {sap.tnt.SideNavigation} this SideNavigation reference for chaining.

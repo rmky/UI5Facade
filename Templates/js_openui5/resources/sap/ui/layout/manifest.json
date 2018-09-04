@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.54.7"
+      "version": "1.56.6"
     },
     "title": "SAPUI5 library with layout controls.",
     "description": "SAPUI5 library with layout controls.",
@@ -22,10 +22,10 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.54",
+      "minUI5Version": "1.56",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.54.7"
+          "minVersion": "1.56.6"
         }
       }
     },
@@ -49,6 +49,7 @@
           "sap.ui.layout.form.Form",
           "sap.ui.layout.form.FormLayout",
           "sap.ui.layout.form.GridLayout",
+          "sap.ui.layout.form.ColumnLayout",
           "sap.ui.layout.form.ResponsiveGridLayout",
           "sap.ui.layout.form.ResponsiveLayout",
           "sap.ui.layout.form.SimpleForm"
@@ -62,7 +63,9 @@
           "sap.ui.layout.form.GridContainerData",
           "sap.ui.layout.PaneContainer",
           "sap.ui.layout.SplitPane",
-          "sap.ui.layout.form.GridElementData"
+          "sap.ui.layout.form.GridElementData",
+          "sap.ui.layout.form.ColumnElementData",
+          "sap.ui.layout.form.ColumnContainerData"
         ],
         "types": [
           "sap.ui.layout.BackgroundDesign",
@@ -71,7 +74,12 @@
           "sap.ui.layout.GridSpan",
           "sap.ui.layout.BlockBackgroundType",
           "sap.ui.layout.form.GridElementCells",
-          "sap.ui.layout.form.SimpleFormLayout"
+          "sap.ui.layout.form.SimpleFormLayout",
+          "sap.ui.layout.form.ColumnsXL",
+          "sap.ui.layout.form.ColumnsL",
+          "sap.ui.layout.form.ColumnsM",
+          "sap.ui.layout.form.ColumnCells",
+          "sap.ui.layout.form.EmptyCells"
         ],
         "interfaces": []
       }

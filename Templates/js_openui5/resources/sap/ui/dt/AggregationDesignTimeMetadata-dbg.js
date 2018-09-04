@@ -23,7 +23,7 @@ function (
 	 * @extends sap.ui.dt.DesignTimeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @private
@@ -36,6 +36,18 @@ function (
 			library: "sap.ui.dt"
 		}
 	});
+
+	/**
+	 * Returns "label" from aggregation designtime metadata
+	 * @param {sap.ui.core.Element} oElement element for which label should be retrieved
+	 * @param {string} [sAggregationName] aggregation name responsible for the aggregation designtime metadata
+	 *
+	 * @return {string|undefined} Returns the label as string or undefined
+	 * @public
+	 */
+	AggregationDesignTimeMetadata.prototype.getLabel = function(oElement, sAggregationName) {
+		return DesignTimeMetadata.prototype.getLabel.apply(this, arguments) || sAggregationName;
+	};
 
 	return AggregationDesignTimeMetadata;
 }, /* bExport= */ true);

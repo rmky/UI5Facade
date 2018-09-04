@@ -22,29 +22,18 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 
 	/* eslint-disable no-lonely-if */
 
-	function _isLazyInstance(oObj, sModule) {
-		var fnClass = sap.ui.require(sModule);
-		return oObj && typeof fnClass === 'function' && (oObj instanceof fnClass);
-	}
-
 	function isSimpleForm(oControl){
-		if (oControl) {
-			var oMetadata = oControl.getMetadata();
-			if (oMetadata.getName() == "sap.ui.layout.form.SimpleForm") {
-				return true;
-			}
+		if (oControl && oControl.isA("sap.ui.layout.form.SimpleForm")) {
+			return true;
 		}
 
 		return false;
 	}
 
 	function isSmartForm(oControl){
-		if (oControl) {
-			var oMetadata = oControl.getMetadata();
-			if (oMetadata.getName() == "sap.ui.comp.smartform.SmartForm" ||
-					(oMetadata.getName() == "sap.m.Panel" && oControl.getParent().getMetadata().getName() == "sap.ui.comp.smartform.SmartForm")) {
-				return true;
-			}
+		if (oControl && (oControl.isA("sap.ui.comp.smartform.SmartForm") ||
+				(oControl.isA("sap.m.Panel") && oControl.getParent().isA("sap.ui.comp.smartform.SmartForm")))) {
+			return true;
 		}
 
 		return false;
@@ -75,7 +64,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 			oScope.getElementsByClassName("sap.ui.layout.form.Form")
 				.forEach(function (oForm) {
 					var oLayout = oForm.getLayout();
-					if (oLayout && oLayout.getMetadata().getName() == "sap.ui.layout.form.ResponsiveLayout") {
+					if (oLayout && oLayout.isA("sap.ui.layout.form.ResponsiveLayout")) {
 						var oParent = oForm.getParent();
 						var sId;
 						var sName = "Form";
@@ -222,11 +211,10 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 
 	function checkAllowedContent(oField, sName, oIssueManager) {
 		var sId = oField.getId();
-		var oMetadata = oField.getMetadata();
-		if (!oMetadata.isInstanceOf("sap.ui.core.IFormContent")) {
+		if (!oField.isA("sap.ui.core.IFormContent")) {
 			oIssueManager.addIssue({
 				severity: Severity.High,
-				details: oMetadata.getName() + " " + sId + " is not allowed as " + sName + " content.",
+				details: oField.getMetadata().getName() + " " + sId + " is not allowed as " + sName + " content.",
 				context: {
 					id: sId
 				}
@@ -290,8 +278,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 				var aContent = oSimpleForm.getContent();
 				for (var i = 0; i < aContent.length; i++) {
 					var oField = aContent[i];
-					if (!(_isLazyInstance(oField, "sap/ui/core/Title") || oField.getMetadata().isInstanceOf("sap.ui.core.Toolbar")
-								|| oField.getMetadata().isInstanceOf("sap.ui.core.Label"))) {
+					if (!(oField.isA(["sap.ui.core.Title", "sap.ui.core.Toolbar", "sap.ui.core.Label"]))) {
 						checkAllowedContent(oField, "SimpleForm", oIssueManager);
 					}
 				}
@@ -332,7 +319,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 
 			for (var i = 0; i < aContent.length; i++) {
 				var oControl = aContent[i];
-				if (_isLazyInstance(oControl, "sap/ui/core/Title") || oControl.getMetadata().getName() == "sap.m.Title") {
+				if (oControl.isA(["sap.ui.core.Title", "sap.m.Title"])) {
 					var bFound = false;
 					for (var j = 0; j < aAriaLabel.length; j++) {
 						var sAriaLabel = aAriaLabel[j];
@@ -431,19 +418,23 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 					}
 				};
 
+				if (sLayout != sap.ui.layout.form.SimpleFormLayout.ResponsiveGridLayout &&
+						sLayout != sap.ui.layout.form.SimpleFormLayout.ColumnLayout) {
+					checkProperty("labelSpanL");
+					checkProperty("emptySpanL");
+					checkProperty("columnsXL");
+					checkProperty("columnsL");
+					checkProperty("columnsM");
+				}
+
 				if (sLayout != sap.ui.layout.form.SimpleFormLayout.ResponsiveGridLayout) {
 					checkProperty("labelSpanXL");
-					checkProperty("labelSpanL");
 					checkProperty("labelSpanM");
 					checkProperty("labelSpanS");
 					checkProperty("adjustLabelSpan");
 					checkProperty("emptySpanXL");
-					checkProperty("emptySpanL");
 					checkProperty("emptySpanM");
 					checkProperty("emptySpanS");
-					checkProperty("columnsXL");
-					checkProperty("columnsL");
-					checkProperty("columnsM");
 					checkProperty("singleContainerFullSize");
 					checkProperty("breakpointXL");
 					checkProperty("breakpointL");
@@ -526,25 +517,25 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 
 							if (bEditable) {
 								// check if no non editable fields are used (can only check for known fields)
-								if (/*_isLazyInstance(oField, "sap/m/Text") ||
-										_isLazyInstance(oField, "sap/m/Link") ||*/
-										_isLazyInstance(oField, "sap/ui/core/Icon") ||
-										/*_isLazyInstance(oField, "sap/m/Image") ||
-										_isLazyInstance(oField, "sap/m/ObjectNumber") ||
-										_isLazyInstance(oField, "sap/m/ObjectStatus") ||*/
+								if (/*oField.isA("sap.m.Text") ||
+										oField.isA("sap.m.Link") ||*/
+										oField.isA("sap.ui.core.Icon") ||
+										/*oField.isA("sap.m.Image") ||
+										oField.isA("sap.m.ObjectNumber") ||
+										oField.isA("sap.m.ObjectStatus") ||*/
 										(oMetadata.hasProperty("displayOnly") && oField.getDisplayOnly())){
 									bError = true;
 									break;
 								}
 							}
 							// check if editable fields are used (can only check for known fields)
-							if (_isLazyInstance(oField, "sap/m/InputBase") ||
-									_isLazyInstance(oField, "sap/m/Select") ||
-									_isLazyInstance(oField, "sap/m/CheckBox") ||
-									_isLazyInstance(oField, "sap/m/RadioButton") ||
-									_isLazyInstance(oField, "sap/m/RadioButtonGroup") ||
-									(_isLazyInstance(oField, "sap/m/Button") && oFormElement.getLabel()) || //allow buttons only without label
-									_isLazyInstance(oField, "sap/m/Slider") ||
+							if (oField.isA("sap.m.InputBase") ||
+									oField.isA("sap.m.Select") ||
+									oField.isA("sap.m.CheckBox") ||
+									oField.isA("sap.m.RadioButton") ||
+									oField.isA("sap.m.RadioButtonGroup") ||
+									(oField.isA("sap.m.Button") && oFormElement.getLabel()) || //allow buttons only without label
+									oField.isA("sap.m.Slider") ||
 									(oMetadata.hasProperty("displayOnly") && !oField.getDisplayOnly())) {
 								bEditableField = true;
 								if (!bEditable) {
@@ -621,6 +612,16 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 			}
 			break;
 
+		case "sap.ui.layout.form.ColumnLayout":
+			if (sLayoutData != "sap.ui.layout.form.ColumnElementData") {
+				if (!(sElement == "sap.ui.layout.form.FormContainer" && sLayoutData == "sap.ui.layout.form.ColumnContainerData")) {
+					bWrong = true;
+				}
+			} else if (sElement == "sap.ui.layout.form.FormElement" || sElement == "sap.ui.layout.form.FormContainer") {
+				bUnsupported = true;
+			}
+			break;
+
 		default:
 			break;
 		}
@@ -650,7 +651,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 
 		var oLayoutData = oElement.getLayoutData();
 		if (oLayoutData) {
-			if (oLayoutData.getMetadata().getName() == "sap.ui.core.VariantLayoutData") {
+			if (oLayoutData.isA("sap.ui.core.VariantLayoutData")) {
 				var aLayoutData = oLayoutData.getMultipleLayoutData();
 				for ( var l = 0; l < aLayoutData.length; l++) {
 					oLayoutData = aLayoutData[l];
@@ -777,9 +778,9 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 									oMetadata = oField.getMetadata();
 									if (oMetadata.getAssociation("ariaLabelledBy") &&
 											(!oField.getAriaLabelledBy() || oField.getAriaLabelledBy().length == 0) &&
-											!_isLazyInstance(oField, "sap/m/Button") &&
-											!(_isLazyInstance(oField, "sap/m/CheckBox") && oField.getText()) &&
-											!(_isLazyInstance(oField, "sap/m/RadioButton") && oField.getText())) {
+											!oField.isA("sap.m.Button") &&
+											!(oField.isA("sap.m.CheckBox") && oField.getText()) &&
+											!(oField.isA("sap.m.RadioButton") && oField.getText())) {
 										oIssueManager.addIssue({
 											severity: Severity.High,
 											details: "In " + sName + " " + sId + ", no label has been assigned to field " + oMetadata.getName() + " " + sFieldId + ".",

@@ -8,18 +8,43 @@
 			"name": ".theming"
 		},
 		{
+			"name": "Client-dbg.js",
+			"module": "sap/ui/rta/Client.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/extend.js",
+				"sap/base/util/uid.js",
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/core/postmessage/Bus.js",
+				"sap/ui/rta/util/ServiceEventBus.js",
+				"sap/ui/thirdparty/URI.js"
+			]
+		},
+		{
+			"name": "Client.js",
+			"module": "sap/ui/rta/Client.js",
+			"required": [
+				"sap/base/util/extend.js",
+				"sap/base/util/uid.js",
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/core/postmessage/Bus.js",
+				"sap/ui/rta/util/ServiceEventBus.js",
+				"sap/ui/thirdparty/URI.js"
+			]
+		},
+		{
 			"name": "ControlTreeModifier-dbg.js",
 			"module": "sap/ui/rta/ControlTreeModifier.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/fl/changeHandler/JsControlTreeModifier.js"
+				"sap/ui/core/util/reflection/JsControlTreeModifier.js"
 			]
 		},
 		{
 			"name": "ControlTreeModifier.js",
 			"module": "sap/ui/rta/ControlTreeModifier.js",
 			"required": [
-				"sap/ui/fl/changeHandler/JsControlTreeModifier.js"
+				"sap/ui/core/util/reflection/JsControlTreeModifier.js"
 			]
 		},
 		{
@@ -36,8 +61,9 @@
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/dt/Overlay.js",
+				"sap/ui/dt/OverlayRegistry.js",
+				"sap/ui/dt/Util.js",
 				"sap/ui/dt/plugin/ContextMenu.js",
-				"sap/ui/dt/plugin/MiniMenu.js",
 				"sap/ui/dt/plugin/TabHandling.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/Utils.js",
@@ -61,10 +87,12 @@
 				"sap/ui/rta/plugin/additionalElements/AddElementsDialog.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin.js",
+				"sap/ui/rta/service/index.js",
 				"sap/ui/rta/toolbar/Fiori.js",
 				"sap/ui/rta/toolbar/Personalization.js",
 				"sap/ui/rta/toolbar/Standalone.js",
 				"sap/ui/rta/util/PopupManager.js",
+				"sap/ui/rta/util/ServiceEventBus.js",
 				"sap/ui/rta/util/StylesLoader.js",
 				"sap/ui/rta/util/UrlParser.js"
 			]
@@ -82,8 +110,9 @@
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/dt/Overlay.js",
+				"sap/ui/dt/OverlayRegistry.js",
+				"sap/ui/dt/Util.js",
 				"sap/ui/dt/plugin/ContextMenu.js",
-				"sap/ui/dt/plugin/MiniMenu.js",
 				"sap/ui/dt/plugin/TabHandling.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/Utils.js",
@@ -107,10 +136,12 @@
 				"sap/ui/rta/plugin/additionalElements/AddElementsDialog.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin.js",
+				"sap/ui/rta/service/index.js",
 				"sap/ui/rta/toolbar/Fiori.js",
 				"sap/ui/rta/toolbar/Personalization.js",
 				"sap/ui/rta/toolbar/Standalone.js",
 				"sap/ui/rta/util/PopupManager.js",
+				"sap/ui/rta/util/ServiceEventBus.js",
 				"sap/ui/rta/util/StylesLoader.js",
 				"sap/ui/rta/util/UrlParser.js"
 			]
@@ -122,7 +153,6 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/m/MessageBox.js",
-				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/registry/Settings.js"
@@ -134,7 +164,6 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/m/MessageBox.js",
-				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/registry/Settings.js"
@@ -171,7 +200,6 @@
 				"sap/m/MessageBox.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/core/BusyIndicator.js",
-				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/rta/Utils.js",
 				"sap/ui/rta/appVariant/AppVariantDialog.js",
@@ -187,7 +215,6 @@
 				"sap/m/MessageBox.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/core/BusyIndicator.js",
-				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/rta/Utils.js",
 				"sap/ui/rta/appVariant/AppVariantDialog.js",
@@ -756,6 +783,7 @@
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/dt/ElementUtil.js",
 				"sap/ui/dt/OverlayRegistry.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/registry/ChangeRegistry.js"
 			]
 		},
@@ -766,6 +794,7 @@
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/dt/ElementUtil.js",
 				"sap/ui/dt/OverlayRegistry.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/registry/ChangeRegistry.js"
 			]
 		},
@@ -884,6 +913,7 @@
 			"module": "sap/ui/rta/command/FlexCommand.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/rta/ControlTreeModifier.js",
@@ -894,6 +924,7 @@
 			"name": "command/FlexCommand.js",
 			"module": "sap/ui/rta/command/FlexCommand.js",
 			"required": [
+				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/rta/ControlTreeModifier.js",
@@ -906,6 +937,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/fl/Change.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/registry/Settings.js",
@@ -921,6 +953,7 @@
 			"module": "sap/ui/rta/command/LREPSerializer.js",
 			"required": [
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/fl/Change.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/registry/Settings.js",
@@ -1047,14 +1080,24 @@
 			"module": "sap/ui/rta/command/Stack.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/base/ManagedObject.js"
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/fl/ChangePersistenceFactory.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/rta/ControlTreeModifier.js",
+				"sap/ui/rta/command/CompositeCommand.js",
+				"sap/ui/rta/command/Settings.js"
 			]
 		},
 		{
 			"name": "command/Stack.js",
 			"module": "sap/ui/rta/command/Stack.js",
 			"required": [
-				"sap/ui/base/ManagedObject.js"
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/fl/ChangePersistenceFactory.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/rta/ControlTreeModifier.js",
+				"sap/ui/rta/command/CompositeCommand.js",
+				"sap/ui/rta/command/Settings.js"
 			]
 		},
 		{
@@ -1089,6 +1132,9 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/base/Log.js",
+				"sap/base/util/extend.js",
+				"sap/base/util/uid.js",
 				"sap/m/Button.js",
 				"sap/m/Column.js",
 				"sap/m/ColumnListItem.js",
@@ -1097,6 +1143,8 @@
 				"sap/m/DialogRenderer.js",
 				"sap/m/Image.js",
 				"sap/m/InstanceManager.js",
+				"sap/m/Label.js",
+				"sap/m/LabelDesign.js",
 				"sap/m/List.js",
 				"sap/m/ListType.js",
 				"sap/m/Menu.js",
@@ -1119,13 +1167,12 @@
 				"sap/m/delegate/ValueStateMessage.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js",
-				"sap/ui/commons/Label.js",
-				"sap/ui/commons/LabelDesign.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/ComponentContainer.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Element.js",
+				"sap/ui/core/EventBus.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/InvisibleText.js",
@@ -1136,6 +1183,8 @@
 				"sap/ui/core/library.js",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/core/mvc/XMLView.js",
+				"sap/ui/core/postmessage/Bus.js",
+				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/dt/ElementDesignTimeMetadata.js",
@@ -1146,12 +1195,13 @@
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/Plugin.js",
+				"sap/ui/dt/Util.js",
 				"sap/ui/dt/plugin/ContextMenu.js",
 				"sap/ui/dt/plugin/ControlDragDrop.js",
 				"sap/ui/dt/plugin/CutPaste.js",
 				"sap/ui/dt/plugin/ElementMover.js",
-				"sap/ui/dt/plugin/MiniMenu.js",
 				"sap/ui/dt/plugin/TabHandling.js",
+				"sap/ui/fl/Change.js",
 				"sap/ui/fl/ChangePersistence.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/FlexControllerFactory.js",
@@ -1176,12 +1226,14 @@
 				"sap/ui/model/Sorter.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/odata/v2/ODataModel.js",
+				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/sinon-qunit.js",
 				"sap/ui/thirdparty/sinon.js"
 			],
 			"included": [
 				"sap/ui/rta/library.js",
 				"sap/ui/rta/manifest.json",
+				"sap/ui/rta/Client.js",
 				"sap/ui/rta/ControlTreeModifier.js",
 				"sap/ui/rta/RuntimeAuthoring.js",
 				"sap/ui/rta/Utils.js",
@@ -1239,6 +1291,11 @@
 				"sap/ui/rta/plugin/additionalElements/AddElementsDialog.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin.js",
+				"sap/ui/rta/service/ControllerExtension.js",
+				"sap/ui/rta/service/Outline.js",
+				"sap/ui/rta/service/Receiver.js",
+				"sap/ui/rta/service/Selection.js",
+				"sap/ui/rta/service/index.js",
 				"sap/ui/rta/test/controlEnablingCheck.js",
 				"sap/ui/rta/toolbar/Adaptation.js",
 				"sap/ui/rta/toolbar/Base.js",
@@ -1249,6 +1306,7 @@
 				"sap/ui/rta/util/Animation.js",
 				"sap/ui/rta/util/BindingsExtractor.js",
 				"sap/ui/rta/util/PopupManager.js",
+				"sap/ui/rta/util/ServiceEventBus.js",
 				"sap/ui/rta/util/StylesLoader.js",
 				"sap/ui/rta/util/UrlParser.js",
 				"sap/ui/rta/view/RemoveElementDialog.fragment.xml"
@@ -1260,6 +1318,9 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/base/Log.js",
+				"sap/base/util/extend.js",
+				"sap/base/util/uid.js",
 				"sap/m/Button.js",
 				"sap/m/Column.js",
 				"sap/m/ColumnListItem.js",
@@ -1268,6 +1329,8 @@
 				"sap/m/DialogRenderer.js",
 				"sap/m/Image.js",
 				"sap/m/InstanceManager.js",
+				"sap/m/Label.js",
+				"sap/m/LabelDesign.js",
 				"sap/m/List.js",
 				"sap/m/ListType.js",
 				"sap/m/Menu.js",
@@ -1290,13 +1353,12 @@
 				"sap/m/delegate/ValueStateMessage.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js",
-				"sap/ui/commons/Label.js",
-				"sap/ui/commons/LabelDesign.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/ComponentContainer.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Element.js",
+				"sap/ui/core/EventBus.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/InvisibleText.js",
@@ -1307,6 +1369,8 @@
 				"sap/ui/core/library.js",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/core/mvc/XMLView.js",
+				"sap/ui/core/postmessage/Bus.js",
+				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/dt/ElementDesignTimeMetadata.js",
@@ -1317,12 +1381,13 @@
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/Plugin.js",
+				"sap/ui/dt/Util.js",
 				"sap/ui/dt/plugin/ContextMenu.js",
 				"sap/ui/dt/plugin/ControlDragDrop.js",
 				"sap/ui/dt/plugin/CutPaste.js",
 				"sap/ui/dt/plugin/ElementMover.js",
-				"sap/ui/dt/plugin/MiniMenu.js",
 				"sap/ui/dt/plugin/TabHandling.js",
+				"sap/ui/fl/Change.js",
 				"sap/ui/fl/ChangePersistence.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/FlexControllerFactory.js",
@@ -1347,12 +1412,14 @@
 				"sap/ui/model/Sorter.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/odata/v2/ODataModel.js",
+				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/sinon-qunit.js",
 				"sap/ui/thirdparty/sinon.js"
 			],
 			"included": [
 				"sap/ui/rta/library.js",
 				"sap/ui/rta/manifest.json",
+				"sap/ui/rta/Client.js",
 				"sap/ui/rta/ControlTreeModifier.js",
 				"sap/ui/rta/RuntimeAuthoring.js",
 				"sap/ui/rta/Utils.js",
@@ -1410,6 +1477,11 @@
 				"sap/ui/rta/plugin/additionalElements/AddElementsDialog.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin.js",
+				"sap/ui/rta/service/ControllerExtension.js",
+				"sap/ui/rta/service/Outline.js",
+				"sap/ui/rta/service/Receiver.js",
+				"sap/ui/rta/service/Selection.js",
+				"sap/ui/rta/service/index.js",
 				"sap/ui/rta/test/controlEnablingCheck.js",
 				"sap/ui/rta/toolbar/Adaptation.js",
 				"sap/ui/rta/toolbar/Base.js",
@@ -1420,6 +1492,7 @@
 				"sap/ui/rta/util/Animation.js",
 				"sap/ui/rta/util/BindingsExtractor.js",
 				"sap/ui/rta/util/PopupManager.js",
+				"sap/ui/rta/util/ServiceEventBus.js",
 				"sap/ui/rta/util/StylesLoader.js",
 				"sap/ui/rta/util/UrlParser.js",
 				"sap/ui/rta/view/RemoveElementDialog.fragment.xml"
@@ -1435,6 +1508,9 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/base/Log.js",
+				"sap/base/util/extend.js",
+				"sap/base/util/uid.js",
 				"sap/m/Button.js",
 				"sap/m/Column.js",
 				"sap/m/ColumnListItem.js",
@@ -1443,6 +1519,8 @@
 				"sap/m/DialogRenderer.js",
 				"sap/m/Image.js",
 				"sap/m/InstanceManager.js",
+				"sap/m/Label.js",
+				"sap/m/LabelDesign.js",
 				"sap/m/List.js",
 				"sap/m/ListType.js",
 				"sap/m/Menu.js",
@@ -1465,13 +1543,12 @@
 				"sap/m/delegate/ValueStateMessage.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js",
-				"sap/ui/commons/Label.js",
-				"sap/ui/commons/LabelDesign.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/ComponentContainer.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Element.js",
+				"sap/ui/core/EventBus.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/InvisibleText.js",
@@ -1482,6 +1559,8 @@
 				"sap/ui/core/library.js",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/core/mvc/XMLView.js",
+				"sap/ui/core/postmessage/Bus.js",
+				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/dt/ElementDesignTimeMetadata.js",
@@ -1492,12 +1571,14 @@
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/Plugin.js",
+				"sap/ui/dt/Util.js",
 				"sap/ui/dt/plugin/ContextMenu.js",
 				"sap/ui/dt/plugin/ControlDragDrop.js",
 				"sap/ui/dt/plugin/CutPaste.js",
 				"sap/ui/dt/plugin/ElementMover.js",
-				"sap/ui/dt/plugin/MiniMenu.js",
 				"sap/ui/dt/plugin/TabHandling.js",
+				"sap/ui/fl/Change.js",
+				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Utils.js",
@@ -1517,9 +1598,11 @@
 				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/Sorter.js",
 				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/model/odata/v2/ODataModel.js"
+				"sap/ui/model/odata/v2/ODataModel.js",
+				"sap/ui/thirdparty/URI.js"
 			],
 			"included": [
+				"sap/ui/rta/Client.js",
 				"sap/ui/rta/ControlTreeModifier.js",
 				"sap/ui/rta/RuntimeAuthoring.js",
 				"sap/ui/rta/Utils.js",
@@ -1579,6 +1662,11 @@
 				"sap/ui/rta/plugin/additionalElements/AddElementsDialog.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin.js",
+				"sap/ui/rta/service/ControllerExtension.js",
+				"sap/ui/rta/service/Outline.js",
+				"sap/ui/rta/service/Receiver.js",
+				"sap/ui/rta/service/Selection.js",
+				"sap/ui/rta/service/index.js",
 				"sap/ui/rta/toolbar/Adaptation.js",
 				"sap/ui/rta/toolbar/Base.js",
 				"sap/ui/rta/toolbar/BaseRenderer.js",
@@ -1588,6 +1676,7 @@
 				"sap/ui/rta/util/Animation.js",
 				"sap/ui/rta/util/BindingsExtractor.js",
 				"sap/ui/rta/util/PopupManager.js",
+				"sap/ui/rta/util/ServiceEventBus.js",
 				"sap/ui/rta/util/StylesLoader.js",
 				"sap/ui/rta/util/UrlParser.js",
 				"sap/ui/rta/view/RemoveElementDialog.fragment.xml"
@@ -1603,6 +1692,9 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/base/Log.js",
+				"sap/base/util/extend.js",
+				"sap/base/util/uid.js",
 				"sap/m/Button.js",
 				"sap/m/Column.js",
 				"sap/m/ColumnListItem.js",
@@ -1611,6 +1703,8 @@
 				"sap/m/DialogRenderer.js",
 				"sap/m/Image.js",
 				"sap/m/InstanceManager.js",
+				"sap/m/Label.js",
+				"sap/m/LabelDesign.js",
 				"sap/m/List.js",
 				"sap/m/ListType.js",
 				"sap/m/Menu.js",
@@ -1634,13 +1728,12 @@
 				"sap/m/library-preload.json",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js",
-				"sap/ui/commons/Label.js",
-				"sap/ui/commons/LabelDesign.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/ComponentContainer.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Element.js",
+				"sap/ui/core/EventBus.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/InvisibleText.js",
@@ -1652,6 +1745,8 @@
 				"sap/ui/core/library.js",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/core/mvc/XMLView.js",
+				"sap/ui/core/postmessage/Bus.js",
+				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/dt/ElementDesignTimeMetadata.js",
@@ -1662,13 +1757,15 @@
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/Plugin.js",
+				"sap/ui/dt/Util.js",
 				"sap/ui/dt/library-preload.json",
 				"sap/ui/dt/plugin/ContextMenu.js",
 				"sap/ui/dt/plugin/ControlDragDrop.js",
 				"sap/ui/dt/plugin/CutPaste.js",
 				"sap/ui/dt/plugin/ElementMover.js",
-				"sap/ui/dt/plugin/MiniMenu.js",
 				"sap/ui/dt/plugin/TabHandling.js",
+				"sap/ui/fl/Change.js",
+				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Utils.js",
@@ -1690,9 +1787,11 @@
 				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/Sorter.js",
 				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/model/odata/v2/ODataModel.js"
+				"sap/ui/model/odata/v2/ODataModel.js",
+				"sap/ui/thirdparty/URI.js"
 			],
 			"included": [
+				"sap/ui/rta/Client.js",
 				"sap/ui/rta/ControlTreeModifier.js",
 				"sap/ui/rta/RuntimeAuthoring.js",
 				"sap/ui/rta/Utils.js",
@@ -1752,6 +1851,11 @@
 				"sap/ui/rta/plugin/additionalElements/AddElementsDialog.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer.js",
 				"sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin.js",
+				"sap/ui/rta/service/ControllerExtension.js",
+				"sap/ui/rta/service/Outline.js",
+				"sap/ui/rta/service/Receiver.js",
+				"sap/ui/rta/service/Selection.js",
+				"sap/ui/rta/service/index.js",
 				"sap/ui/rta/toolbar/Adaptation.js",
 				"sap/ui/rta/toolbar/Base.js",
 				"sap/ui/rta/toolbar/BaseRenderer.js",
@@ -1761,6 +1865,7 @@
 				"sap/ui/rta/util/Animation.js",
 				"sap/ui/rta/util/BindingsExtractor.js",
 				"sap/ui/rta/util/PopupManager.js",
+				"sap/ui/rta/util/ServiceEventBus.js",
 				"sap/ui/rta/util/StylesLoader.js",
 				"sap/ui/rta/util/UrlParser.js",
 				"sap/ui/rta/view/RemoveElementDialog.fragment.xml"
@@ -2104,7 +2209,6 @@
 			"module": "sap/ui/rta/plugin/CreateContainer.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/rta/Utils.js",
 				"sap/ui/rta/plugin/Plugin.js"
@@ -2114,7 +2218,6 @@
 			"name": "plugin/CreateContainer.js",
 			"module": "sap/ui/rta/plugin/CreateContainer.js",
 			"required": [
-				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/rta/Utils.js",
 				"sap/ui/rta/plugin/Plugin.js"
@@ -2211,6 +2314,7 @@
 			"module": "sap/ui/rta/plugin/Plugin.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/base/ManagedObject.js",
 				"sap/ui/dt/ElementOverlay.js",
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
@@ -2224,6 +2328,7 @@
 			"name": "plugin/Plugin.js",
 			"module": "sap/ui/rta/plugin/Plugin.js",
 			"required": [
+				"sap/ui/base/ManagedObject.js",
 				"sap/ui/dt/ElementOverlay.js",
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
@@ -2371,6 +2476,7 @@
 			"module": "sap/ui/rta/plugin/Settings.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/Log.js",
 				"sap/ui/rta/Utils.js",
 				"sap/ui/rta/plugin/Plugin.js"
 			]
@@ -2379,6 +2485,7 @@
 			"name": "plugin/Settings.js",
 			"module": "sap/ui/rta/plugin/Settings.js",
 			"required": [
+				"sap/base/Log.js",
 				"sap/ui/rta/Utils.js",
 				"sap/ui/rta/plugin/Plugin.js"
 			]
@@ -2413,6 +2520,8 @@
 				"sap/m/Button.js",
 				"sap/m/CustomListItem.js",
 				"sap/m/Dialog.js",
+				"sap/m/Label.js",
+				"sap/m/LabelDesign.js",
 				"sap/m/List.js",
 				"sap/m/ListType.js",
 				"sap/m/ScrollContainer.js",
@@ -2421,8 +2530,6 @@
 				"sap/m/ToolbarSpacer.js",
 				"sap/m/VBox.js",
 				"sap/ui/base/ManagedObject.js",
-				"sap/ui/commons/Label.js",
-				"sap/ui/commons/LabelDesign.js",
 				"sap/ui/dt/ElementUtil.js",
 				"sap/ui/model/Filter.js",
 				"sap/ui/model/FilterOperator.js",
@@ -2441,6 +2548,8 @@
 				"sap/m/Button.js",
 				"sap/m/CustomListItem.js",
 				"sap/m/Dialog.js",
+				"sap/m/Label.js",
+				"sap/m/LabelDesign.js",
 				"sap/m/List.js",
 				"sap/m/ListType.js",
 				"sap/m/ScrollContainer.js",
@@ -2449,8 +2558,6 @@
 				"sap/m/ToolbarSpacer.js",
 				"sap/m/VBox.js",
 				"sap/ui/base/ManagedObject.js",
-				"sap/ui/commons/Label.js",
-				"sap/ui/commons/LabelDesign.js",
 				"sap/ui/dt/ElementUtil.js",
 				"sap/ui/model/Filter.js",
 				"sap/ui/model/FilterOperator.js",
@@ -2517,6 +2624,85 @@
 			"name": "resources.json"
 		},
 		{
+			"name": "service/ControllerExtension-dbg.js",
+			"module": "sap/ui/rta/service/ControllerExtension.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/dt/Util.js",
+				"sap/ui/fl/Utils.js"
+			]
+		},
+		{
+			"name": "service/ControllerExtension.js",
+			"module": "sap/ui/rta/service/ControllerExtension.js",
+			"required": [
+				"sap/ui/dt/Util.js",
+				"sap/ui/fl/Utils.js"
+			]
+		},
+		{
+			"name": "service/Outline-dbg.js",
+			"module": "sap/ui/rta/service/Outline.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/dt/ElementOverlay.js",
+				"sap/ui/dt/ElementUtil.js",
+				"sap/ui/dt/Overlay.js",
+				"sap/ui/dt/OverlayRegistry.js",
+				"sap/ui/dt/Util.js",
+				"sap/ui/rta/Utils.js"
+			]
+		},
+		{
+			"name": "service/Outline.js",
+			"module": "sap/ui/rta/service/Outline.js",
+			"required": [
+				"sap/ui/dt/ElementOverlay.js",
+				"sap/ui/dt/ElementUtil.js",
+				"sap/ui/dt/Overlay.js",
+				"sap/ui/dt/OverlayRegistry.js",
+				"sap/ui/dt/Util.js",
+				"sap/ui/rta/Utils.js"
+			]
+		},
+		{
+			"name": "service/Receiver-dbg.js",
+			"module": "sap/ui/rta/service/Receiver.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/uid.js",
+				"sap/ui/core/postmessage/Bus.js",
+				"sap/ui/dt/Util.js"
+			]
+		},
+		{
+			"name": "service/Receiver.js",
+			"module": "sap/ui/rta/service/Receiver.js",
+			"required": [
+				"sap/base/util/uid.js",
+				"sap/ui/core/postmessage/Bus.js",
+				"sap/ui/dt/Util.js"
+			]
+		},
+		{
+			"name": "service/Selection-dbg.js",
+			"module": "sap/ui/rta/service/Selection.js",
+			"isDebug": true
+		},
+		{
+			"name": "service/Selection.js",
+			"module": "sap/ui/rta/service/Selection.js"
+		},
+		{
+			"name": "service/index-dbg.js",
+			"module": "sap/ui/rta/service/index.js",
+			"isDebug": true
+		},
+		{
+			"name": "service/index.js",
+			"module": "sap/ui/rta/service/index.js"
+		},
+		{
 			"name": "test/controlEnablingCheck-dbg.js",
 			"module": "sap/ui/rta/test/controlEnablingCheck.js",
 			"isDebug": true,
@@ -2531,6 +2717,7 @@
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/library.js",
+				"sap/ui/fl/registry/Settings.js",
 				"sap/ui/model/Model.js",
 				"sap/ui/rta/ControlTreeModifier.js",
 				"sap/ui/rta/command/CommandFactory.js",
@@ -2552,6 +2739,7 @@
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/library.js",
+				"sap/ui/fl/registry/Settings.js",
 				"sap/ui/model/Model.js",
 				"sap/ui/rta/ControlTreeModifier.js",
 				"sap/ui/rta/command/CommandFactory.js",
@@ -2874,6 +3062,21 @@
 				"sap/ui/dt/Overlay.js",
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/fl/Utils.js"
+			]
+		},
+		{
+			"name": "util/ServiceEventBus-dbg.js",
+			"module": "sap/ui/rta/util/ServiceEventBus.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/EventBus.js"
+			]
+		},
+		{
+			"name": "util/ServiceEventBus.js",
+			"module": "sap/ui/rta/util/ServiceEventBus.js",
+			"required": [
+				"sap/ui/core/EventBus.js"
 			]
 		},
 		{

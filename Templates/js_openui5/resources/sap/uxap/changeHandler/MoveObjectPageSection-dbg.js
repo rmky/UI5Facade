@@ -17,7 +17,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.uxap.changeHandler.MoveObjectPageSection
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @experimental Since 1.54
 	 */
 

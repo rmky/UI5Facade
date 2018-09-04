@@ -48,11 +48,12 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.m.SegmentedButton
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/button/ Segmented Button}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var SegmentedButton = Control.extend("sap.m.SegmentedButton", /** @lends sap.m.SegmentedButton.prototype */ { metadata : {
@@ -280,7 +281,8 @@ function(
 	 */
 	SegmentedButton.prototype._getRenderedButtonWidths = function (aButtons) {
 		return aButtons.map(function (oButton) {
-			return oButton.$().outerWidth();
+			var oButtonDomRef = oButton.getDomRef();
+			return oButtonDomRef && oButtonDomRef.getBoundingClientRect ? oButtonDomRef.getBoundingClientRect().width : oButton.$().outerWidth();
 		});
 	};
 

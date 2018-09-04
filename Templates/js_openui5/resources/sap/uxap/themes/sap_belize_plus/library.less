@@ -54,20 +54,6 @@
 }
 /* END "ObjectPageHeader.less" */
 
-/* START "ObjectPageHeaderContent.less" */
-/* ================================================= */
-/* CSS for control sap.uxap/ObjectPageHeaderContent  */
-/* Belize Plus theme                                 */
-/* ================================================= */
-
-.sapUshellShell {
-	.sapUxAPObjectPageHeaderContentDesign-Light,
-	.sapUxAPObjectPageHeaderContentDesign-Dark {
-		background: fade(@sapUiObjectHeaderBackground, 60%);
-	}
-}
-/* END "ObjectPageHeaderContent.less" */
-
 /* START "ObjectPageLayout.less" */
 /* ========================================== */
 /* CSS for control sap.uxap/ObjectPageLayout  */
@@ -78,16 +64,19 @@
 /* ======================================== */
 /* Title                                    */
 /* ======================================== */
-.sapUxAPObjectPageLayout.sapUxAPObjectPageLayoutTitleClickEnabled:not(.sapUxAPObjectPageLayoutHeaderPinned) .sapFDynamicPageTitle:hover {
+.sapUxAPObjectPageLayout.sapUxAPObjectPageLayoutTitleClickEnabled .sapFDynamicPageTitle:hover {
 	background-color: darken(@sapUiObjectHeaderBackground, 3);
 }
 
+.sapUxAPObjectPageLayoutTitleClickEnabled > .sapUxAPObjectPageHeaderStickied > .sapFDynamicPageTitle {
+	box-shadow: @sapUiShadowHeader;
+}
 
 /* ======================================== */
 /* Title and Toggle Header Visual Indicator */
 /* ======================================== */
 .sapUxAPObjectPageLayout {
-  &.sapUxAPObjectPageLayoutTitleClickEnabled:not(.sapUxAPObjectPageLayoutHeaderPinned) {
+  &.sapUxAPObjectPageLayoutTitleClickEnabled {
     .sapFDynamicPageTitle:hover,
     &.sapUxAPObjectPageLayoutTitleForceHovered .sapFDynamicPageTitle {
       background-color: darken(@sapUiObjectHeaderBackground, 3);
@@ -126,7 +115,7 @@
 
 .sapUshellShell {
   .sapUxAPObjectPageLayout {
-    &.sapUxAPObjectPageLayoutTitleClickEnabled:not(.sapUxAPObjectPageLayoutHeaderPinned) {
+    &.sapUxAPObjectPageLayoutTitleClickEnabled {
       .sapFDynamicPageTitle:hover,
       &.sapUxAPObjectPageLayoutTitleForceHovered .sapFDynamicPageTitle {
         background-color: fade(@sapUiObjectHeaderBackground, 75%);
@@ -154,17 +143,3 @@
 
 @_sap_uxap_ObjectPageSubSection_BorderColor: darken(@sapUiListBorderColor, 5);
 /* END "ObjectPageSubSection.less" */
-
-/* START "ObjectPageDynamicHeaderContent.less" */
-/* ================================================= */
-/* CSS for control sap.uxap/ObjectPageDynamicHeaderContent  */
-/* Base theme                                        */
-/* ================================================= */
-
-.sapUxAPObjectPageHeaderDetails .sapContrastPlus.sapUxAPObjectPageHeaderDetails > .sapFDynamicPageHeader.sapFDynamicPageHeaderWithContent,
-.sapUxAPObjectPageHeaderDetails .sapContrastPlus.sapFDynamicPageHeader.sapFDynamicPageHeaderWithContent,
-.sapContrastPlus .sapUxAPObjectPageHeaderDetails .sapFDynamicPageHeader.sapFDynamicPageHeaderWithContent{
-    box-shadow: none;
-}
-
-/* END "ObjectPageDynamicHeaderContent.less" */

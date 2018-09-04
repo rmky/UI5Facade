@@ -3,6 +3,8 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
+
+//Provides class sap.ui.model.odata.v4.AnnotationHelper
 sap.ui.define([
 	"./_AnnotationHelperExpression"
 ], function (Expression) {
@@ -135,7 +137,7 @@ sap.ui.define([
 					sPath = sPath.slice(0, -1);
 				}
 
-				if (sPath.indexOf(".")) {
+				if (sPath.indexOf(".") > -1) {
 					sPath = sPath.split("/")
 						.filter(function (sSegment) { // remove type casts
 							return sSegment.indexOf(".") < 0;

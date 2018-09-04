@@ -73,11 +73,14 @@ function(
 		 *
 		 * @class
 		 * The <code>sap.m.Select</code> control provides a list of items that allows users to select an item.
+		 *
+		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/select/ Select}
+		 *
 		 * @extends sap.ui.core.Control
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
@@ -360,7 +363,7 @@ function(
 			}
 		}
 
-		Select.prototype._handleFocusout = function() {
+		Select.prototype._handleFocusout = function(oEvent) {
 			this._bFocusoutDueRendering = this.bRenderingPhase;
 
 			if (this._bFocusoutDueRendering) {
@@ -369,7 +372,14 @@ function(
 			}
 
 			if (this._bProcessChange) {
-				this._checkSelectionChange();
+
+				// if the focus-out is outside of the picker we should revert the selection
+				if (!this.isOpen() || oEvent.target === this.getAggregation("picker")) {
+					this._checkSelectionChange();
+				} else {
+					this._revertSelection();
+				}
+
 				this._bProcessChange = false;
 			} else {
 				this._bProcessChange = true;
@@ -601,7 +611,8 @@ function(
 		 */
 		Select.prototype.onAfterOpen = function(oControlEvent) {
 			var oDomRef = this.getFocusDomRef(),
-				oItem = null;
+				oItem = null,
+				$oLabel = this.$("label");
 
 			if (!oDomRef) {
 				return;
@@ -609,6 +620,10 @@ function(
 
 			oItem = this.getSelectedItem();
 			oDomRef.setAttribute("aria-expanded", "true");
+
+			// Needs to be removed while popover is opened. Otherwise when going through the items, the currently
+			// selected item would be read out for a second time due to this label's update.
+			$oLabel.attr("aria-live", null);
 
 			// expose a parent/child contextual relationship to assistive technologies
 			// note: the "aria-owns" attribute is set when the list is visible and in view
@@ -657,11 +672,15 @@ function(
 		Select.prototype.onAfterClose = function(oControlEvent) {
 			var oDomRef = this.getFocusDomRef(),
 				CSS_CLASS = this.getRenderer().CSS_CLASS,
-				sPressedCSSClass = CSS_CLASS + "Pressed";
+				sPressedCSSClass = CSS_CLASS + "Pressed",
+				$oLabel = this.$("label");
 
 			if (oDomRef) {
 				oDomRef.setAttribute("aria-expanded", "false");
 				oDomRef.removeAttribute("aria-activedescendant");
+
+				// Add it back, because we want to hear updates when going through the items, while the popover is closed
+				$oLabel.attr("aria-live", "polite");
 			}
 
 			// Remove the active state
@@ -991,6 +1010,10 @@ function(
 					this.close();
 					this.removeStyleClass(CSS_CLASS + "Pressed");
 					return;
+				}
+
+				if (Device.system.phone) {
+					this.focus();
 				}
 
 				this.open();
@@ -1404,7 +1427,7 @@ function(
 		 * @private
 		 */
 		Select.prototype.onfocusout = function(oEvent) {
-			this._handleFocusout();
+			this._handleFocusout(oEvent);
 
 			if (this.bRenderingPhase) {
 				return;
@@ -2434,6 +2457,18 @@ function(
 			}
 
 			return oInfo;
+		};
+
+		/**
+		 * Returns the DOMNode Id to be used for the "labelFor" attribute of the label.
+		 *
+		 * By default, this is the Id of the control itself.
+		 *
+		 * @return {string} Id to be used for the <code>labelFor</code>
+		 * @public
+		 */
+		Select.prototype.getIdForLabel = function () {
+			return this.getId() + "-hiddenInput";
 		};
 
 		return Select;

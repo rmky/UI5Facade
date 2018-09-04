@@ -540,7 +540,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/library-h2-preload.js" size="11709">
+  <module name="sap/ui/ux3/library-h2-preload.js" size="11640">
     <requires>
       <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.global.js"/>
@@ -636,7 +636,7 @@
       <module name="sap/ui/ux3/ToolPopupRenderer.js"/>
     </includes>
   </module>
-  <module name="sap/ui/ux3/library-preload.js" size="313783">
+  <module name="sap/ui/ux3/library-preload.js" size="313733">
     <requires>
       <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.global.js"/>

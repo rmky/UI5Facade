@@ -98,12 +98,14 @@ sap.ui.define([
 	 * As part of the messaging concept, MessageView provides a way to centrally manage messages and show them to the user without additional work for the developer.
 	 * <br><br>
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
+	 * @extends sap.ui.core.Control
 	 * @constructor
 	 * @public
 	 * @since 1.46
 	 * @alias sap.m.MessageView
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/message-view/ Message View}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var MessageView = Control.extend("sap.m.MessageView", /** @lends sap.m.MessageView.prototype */ {
@@ -771,13 +773,15 @@ sap.ui.define([
 
 		LIST_TYPES.forEach(function (sListName) {
 			var oList = this._oLists[sListName],
+				sBundleText = sListName == "all" ? "MESSAGEPOPOVER_ALL" : "MESSAGEVIEW_BUTTON_TOOLTIP_" + sListName.toUpperCase(),
 				iCount = oList.getItems().filter(function(oItem) {
 					return (oItem instanceof StandardListItem);
 				}).length, oButton;
 
 			if (iCount > 0) {
 				oButton = new Button(this.getId() + "-" + sListName, {
-					text: sListName == "all" ? this._oResourceBundle.getText("MESSAGEPOPOVER_ALL") : iCount,
+					text: sListName == "all" ? this._oResourceBundle.getText(sBundleText) : iCount,
+					tooltip: this._oResourceBundle.getText(sBundleText),
 					icon: ICONS[sListName],
 					press: pressClosure(sListName)
 				}).addStyleClass(CSS_CLASS + "Btn" + sListName.charAt(0).toUpperCase() + sListName.slice(1));

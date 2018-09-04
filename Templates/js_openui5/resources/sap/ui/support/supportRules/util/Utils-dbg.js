@@ -32,6 +32,28 @@ sap.ui.define([],
 				}
 
 				return bResult;
+			},
+			/**
+			 * Checks if there are internal rules files that has to be loaded
+			 * @returns {boolean} whether there could be internal rules to load
+			 */
+			canLoadInternalRules: function () {
+				var sFilePath = jQuery.sap.getModulePath("sap.ui.support").replace("/resources/", "/test-resources/") + "/internal/.ping";
+				var bCanLoadInternalRules;
+
+				jQuery.ajax({
+					type: "HEAD",
+					async: false,
+					url: sFilePath,
+					success: function () {
+						bCanLoadInternalRules =  true;
+					},
+					error: function() {
+						bCanLoadInternalRules =  false;
+					}
+				});
+
+				return bCanLoadInternalRules;
 			}
 		};
 

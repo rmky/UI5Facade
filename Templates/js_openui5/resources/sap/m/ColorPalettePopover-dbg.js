@@ -23,7 +23,7 @@ sap.ui.define(['sap/ui/core/Control', 'sap/ui/Device', './Button', './Responsive
 		 * A thin wrapper over {@link sap.m.ColorPalette} allowing the latter to be used in a popover.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
@@ -39,7 +39,7 @@ sap.ui.define(['sap/ui/core/Control', 'sap/ui/Device', './Button', './Responsive
 
 					/**
 					 * The color, which the app developer will receive when end-user chooses the "Default color" button.
-					 * See event {@link sap.m.ColorPalettePopover#colorSelect}.
+					 * See event {@link #event:colorSelect colorSelect}.
 					 */
 					defaultColor: {type: "sap.ui.core.CSSColor", group: "Appearance", defaultValue: null},
 

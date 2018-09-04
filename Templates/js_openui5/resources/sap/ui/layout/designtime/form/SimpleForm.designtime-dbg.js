@@ -30,6 +30,8 @@ sap.ui.define(["sap/ui/fl/changeHandler/ChangeHandlerMediator"], function(Change
 				}
 				aStableElements = aStableElements.concat(oFormElement.getFields());
 			});
+		} else if (oElement.getMetadata().getName() === "sap.ui.layout.form.Form") {
+			aStableElements.push(oElement);
 		}
 		return aStableElements;
 	};
@@ -171,27 +173,6 @@ sap.ui.define(["sap/ui/fl/changeHandler/ChangeHandlerMediator"], function(Change
 							var oTextResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.layout.designtime");
 							return oTextResources.getText("MSG_REMOVING_TOOLBAR");
 						}
-					},
-					getState : function(oSimpleForm) { //TODO has to be relevant container/selector, TODO extract as function
-						var aContent = oSimpleForm.getContent();
-						return {
-							content : aContent.map(function(oElement) {
-								return {
-									element : oElement,
-									visible : oElement.getVisible ? oElement.getVisible() : undefined,
-									index : aContent.indexOf(oElement)
-								};
-							})
-						};
-					},
-					restoreState : function(oSimpleForm, oState) { //TODO has to be relevant container/selector, TODO extract as function
-						oSimpleForm.removeAllContent();
-						oState.content.forEach(function(oElementState) {
-							oSimpleForm.insertContent(oElementState.element, oElementState.index);
-							if (oElementState.element.setVisible){
-								oElementState.element.setVisible(oElementState.visible);
-							}
-						});
 					}
 				};
 			}
@@ -210,53 +191,11 @@ sap.ui.define(["sap/ui/fl/changeHandler/ChangeHandlerMediator"], function(Change
 				changeOnRelevantContainer : true,
 				domRef : function (oControl){
 					return oControl.getLabel().getDomRef();
-				},
-				getState : function(oSimpleForm) {
-					var aContent = oSimpleForm.getContent();
-					return {
-						content : aContent.map(function(oElement) {
-							return {
-								element : oElement,
-								text : oElement.getText ? oElement.getText() : undefined,
-								index : aContent.indexOf(oElement)
-							};
-						})
-					};
-				},
-				restoreState : function(oSimpleForm, oState) {
-					oSimpleForm.removeAllContent();
-					oState.content.forEach(function(oElementState) {
-						oSimpleForm.insertContent(oElementState.element, oElementState.index);
-						if (oElementState.element.setText){
-							oElementState.element.setText(oElementState.text);
-						}
-					});
 				}
 			},
 			remove : {
 				changeType : "hideSimpleFormField",
-				changeOnRelevantContainer : true,
-				getState : function(oSimpleForm) { //TODO has to be relevant container/selector, TODO extract as function
-					var aContent = oSimpleForm.getContent();
-					return {
-						content : aContent.map(function(oElement) {
-							return {
-								element : oElement,
-								visible : oElement.getVisible ? oElement.getVisible() : undefined,
-								index : aContent.indexOf(oElement)
-							};
-						})
-					};
-				},
-				restoreState : function(oSimpleForm, oState) { //TODO has to be relevant container/selector, TODO extract as function
-					oSimpleForm.removeAllContent();
-					oState.content.forEach(function(oElementState) {
-						oSimpleForm.insertContent(oElementState.element, oElementState.index);
-						if (oElementState.element.setVisible){
-							oElementState.element.setVisible(oElementState.visible);
-						}
-					});
-				}
+				changeOnRelevantContainer : true
 			},
 			reveal : {
 				changeType : "unhideSimpleFormField",

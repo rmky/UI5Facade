@@ -9,7 +9,6 @@ sap.ui.define([
     "./library",
     "sap/ui/Device",
     "sap/ui/core/Control",
-    "sap/m/library",
     "sap/m/ToggleButton",
     "sap/m/Button",
     "./DynamicPageHeaderRenderer"
@@ -17,15 +16,11 @@ sap.ui.define([
     library,
 	Device,
 	Control,
-	mobileLibrary,
 	ToggleButton,
 	Button,
 	DynamicPageHeaderRenderer
 ) {
 		"use strict";
-
-		// shortcut for sap.m.ButtonType
-		var ButtonType = mobileLibrary.ButtonType;
 
 		/**
 		 * Constructor for a new <code>DynamicPageHeader</code>.
@@ -58,7 +53,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.54.7
+		 * @version 1.56.6
 		 *
 		 * @constructor
 		 * @public
@@ -111,7 +106,7 @@ sap.ui.define([
 			ARIA_EXPANDED: "aria-expanded",
 			ARIA_LABEL: "aria-label",
 			LABEL_EXPANDED: DynamicPageHeader._getResourceBundle().getText("EXPANDED_HEADER"),
-			LABEL_SNAPPED: DynamicPageHeader._getResourceBundle().getText("SNAPPED_HEADER"),
+			LABEL_COLLAPSED: DynamicPageHeader._getResourceBundle().getText("SNAPPED_HEADER"),
 			LABEL_PINNED: DynamicPageHeader._getResourceBundle().getText("PIN_HEADER"),
 			LABEL_UNPINNED: DynamicPageHeader._getResourceBundle().getText("UNPIN_HEADER"),
 			TOOLTIP_COLLAPSE_BUTTON: DynamicPageHeader._getResourceBundle().getText("COLLAPSE_HEADER_BUTTON_TOOLTIP"),
@@ -218,7 +213,7 @@ sap.ui.define([
 				$header.attr(DynamicPageHeader.ARIA.ARIA_LABEL, DynamicPageHeader.ARIA.LABEL_EXPANDED);
 			} else {
 				$header.attr(DynamicPageHeader.ARIA.ARIA_EXPANDED, DynamicPageHeader.ARIA.STATE_FALSE);
-				$header.attr(DynamicPageHeader.ARIA.ARIA_LABEL, DynamicPageHeader.ARIA.LABEL_SNAPPED);
+				$header.attr(DynamicPageHeader.ARIA.ARIA_LABEL, DynamicPageHeader.ARIA.LABEL_COLLAPSED);
 			}
 		};
 
@@ -248,9 +243,8 @@ sap.ui.define([
 					id: this.getId() + "-pinBtn",
 					icon: "sap-icon://pushpin-off",
 					tooltip: DynamicPageHeader.ARIA.LABEL_PINNED,
-					type: ButtonType.Transparent,
 					press: this._pinUnpinFireEvent.bind(this)
-				});
+				}).addStyleClass("sapFDynamicPageHeaderPinButton");
 				this.setAggregation("_pinButton", oPinButton, true);
 			}
 

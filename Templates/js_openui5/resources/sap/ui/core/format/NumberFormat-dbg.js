@@ -26,6 +26,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/Locale', 
 	 * to a set of format options.
 	 *
 	 * @public
+	 * @hideconstructor
 	 * @param {object} [oFormatOptions] The option object which support the following parameters. If no options is given, default values according to the type and locale settings are used.
 	 * @param {int} [oFormatOptions.minIntegerDigits] defines minimal number of non-decimal digits
 	 * @param {int} [oFormatOptions.maxIntegerDigits] defines maximum number of non-decimal digits
@@ -45,11 +46,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/Locale', 
 	 * @param {int} [oFormatOptions.groupingSize] defines the grouping size in digits, the default is three
 	 * @param {int} [oFormatOptions.groupingBaseSize] defines the grouping base size in digits, in case it is different from the grouping size (e.g. indian grouping)
 	 * @param {string} [oFormatOptions.decimalSeparator] defines the used decimal separator
-	 * @param {string} [oFormatOptions.customUnits] defines a set of custom units, e.g. {"my-unit": {
-				"displayName": "mine",
-				"unitPattern-count-one": "{0} mine",
-				"unitPattern-count-other": "{0} mine",
-				"perUnitPattern": "{0}/mine"
+	 * @param {string} [oFormatOptions.customUnits] defines a set of custom units, e.g. {"electric-inductance": {
+				"displayName": "henry",
+				"unitPattern-count-one": "{0} H",
+				"unitPattern-count-other": "{0} H",
+				"perUnitPattern": "{0}/H",
+				"decimals": 2,
+				"precision": 4
 			}}
 	 * @param {array} [oFormatOptions.allowedUnits] defines the allowed units for formatting and parsing, e.g. ["size-meter", "volume-liter", ...]
 	 * @param {string} [oFormatOptions.plusSign] defines the used plus symbol
@@ -382,7 +385,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/Locale', 
 	};
 
 	/**
-	 * Get a unit instance of the NumberFormat, which can be used for formatting.
+	 * Get a unit instance of the NumberFormat, which can be used for formatting units.
 	 *
 	 * If no locale is given, the currently configured
 	 * {@link sap.ui.core.Configuration.FormatSettings#getFormatLocale formatLocale} will be used.
@@ -395,7 +398,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/Locale', 
 	 *
 	 * @param {object} [oFormatOptions] Object which defines the format options
 	 * @param {sap.ui.core.Locale} [oLocale] Locale to get the formatter for
-	 * @returns {sap.ui.core.format.NumberFormat} unit instance of the NumberFormat
+	 * @return {sap.ui.core.format.NumberFormat} unit instance of the NumberFormat
+	 * @static
+	 * @public
 	 */
 	NumberFormat.getUnitInstance = function(oFormatOptions, oLocale) {
 		var oFormat = this.createInstance(oFormatOptions, oLocale),
@@ -635,12 +640,29 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/Locale', 
 			aPatternParts,
 			oShortFormat,
 			nShortRefNumber,
-			sPluralCategory;
+			sPluralCategory,
+			mUnitPatterns,
+			sLookupMeasure;
 
 		if (vValue === oOptions.emptyString || (isNaN(vValue) && isNaN(oOptions.emptyString))) {
 			// if the value equals the 'emptyString' format option, return empty string.
 			// the NaN case has to be checked by using isNaN because NaN !== NaN
 			return "";
+		}
+
+		// Recognize the correct unit definition (either custom unit or CLDR unit)
+		if (oOptions.type === mNumberType.UNIT) {
+			if (oOptions.customUnits && typeof oOptions.customUnits === "object") {
+				//custom units are exclusive (no fallback to LocaleData)
+				mUnitPatterns = oOptions.customUnits[sMeasure];
+			} else {
+				//check if there is a unit mapping for the given unit
+				sLookupMeasure = this.oLocaleData.getUnitFromMapping(sMeasure) || sMeasure;
+				mUnitPatterns = this.oLocaleData.getUnitFormat(sLookupMeasure);
+			}
+
+			oOptions.decimals = (mUnitPatterns && (typeof mUnitPatterns.decimals === "number" && mUnitPatterns.decimals >= 0)) ? mUnitPatterns.decimals : oOptions.decimals;
+			oOptions.precision = (mUnitPatterns && (typeof mUnitPatterns.precision === "number" && mUnitPatterns.precision >= 0)) ? mUnitPatterns.precision : oOptions.precision;
 		}
 
 		if (oOptions.decimals !== undefined) {
@@ -843,16 +865,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/Locale', 
 			if (!bUnitTypeAllowed) {
 				jQuery.sap.assert(bUnitTypeAllowed, "The given unit '" + sMeasure + "' is not part of the allowed unit types: [" + oOptions.allowedUnits.join(",") + "].");
 				return "";
-			}
-
-			var mUnitPatterns, sLookupMeasure;
-			if (oOptions.customUnits && typeof oOptions.customUnits === "object") {
-				//custom units are exclusive (no fallback to LocaleData)
-				mUnitPatterns = oOptions.customUnits[sMeasure];
-			} else {
-				//check if there is a unit mapping for the given unit
-				sLookupMeasure = this.oLocaleData.getUnitFromMapping(sMeasure) || sMeasure;
-				mUnitPatterns = this.oLocaleData.getUnitFormat(sLookupMeasure);
 			}
 
 			if (mUnitPatterns) {

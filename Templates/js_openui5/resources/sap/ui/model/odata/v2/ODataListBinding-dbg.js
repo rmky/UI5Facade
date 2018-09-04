@@ -31,7 +31,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Context', 'sap/ui/model/Filter
 	 * @param {int} [mParameters.threshold] Threshold that defines how many entries should be fetched at least
 	 *                                      by the binding if <code>operationMode</code> is set to <code>Auto</code>
 	 *                                      (See documentation for {@link sap.ui.model.odata.OperationMode.Auto})
-	 *
+	 * @param {boolean} [mParameters.usePreliminaryContext] Whether a preliminary Context will be used
 	 * @public
 	 * @alias sap.ui.model.odata.v2.ODataListBinding
 	 * @extends sap.ui.model.ListBinding
@@ -393,6 +393,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Context', 'sap/ui/model/Filter
 
 			sResolvedPath = this.oModel.resolve(this.sPath, this.oContext);
 
+			if (!this._checkPathType()) {
+				jQuery.sap.log.error("List Binding is not bound against a list for " + sResolvedPath);
+			}
+
+
 			// If path does not resolve or parent context is created, reset current list
 			if (!sResolvedPath || bCreated) {
 				if (this.aAllKeys || this.aKeys.length > 0 || this.iLength > 0) {
@@ -436,7 +441,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Context', 'sap/ui/model/Filter
 			return false;
 		} else {
 			this.bUseExpandedList = true;
-			this.aExpandRefs = oRef;
 			if (Array.isArray(oRef)) {
 				// For performance, only check first and last entry, whether reload is needed
 				if (!bSkipReloadNeeded && (this.oModel._isReloadNeeded("/" + oRef[0], this.mParameters) || this.oModel._isReloadNeeded("/" + oRef[oRef.length - 1], this.mParameters))) {
@@ -444,6 +448,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Context', 'sap/ui/model/Filter
 					this.aExpandRefs = undefined;
 					return false;
 				}
+				this.aExpandRefs = oRef;
 				this.aAllKeys = oRef;
 				this.iLength = oRef.length;
 				this.bLengthFinal = true;
@@ -451,6 +456,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Context', 'sap/ui/model/Filter
 				this.applyFilter();
 				this.applySort();
 			} else { // means that expanded data has no data available e.g. for 0..n relations
+				this.aExpandRefs = undefined;
 				this.aAllKeys = null;
 				this.aKeys = [];
 				this.iLength = 0;
@@ -462,7 +468,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Context', 'sap/ui/model/Filter
 	};
 
 	/**
-	 * In case the list is cucrently based on expanded data, update the original data array
+	 * In case the list is currently based on expanded data, update the original data array
 	 * if new data has been loaded
 	 *
 	 * @private
@@ -470,6 +476,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Context', 'sap/ui/model/Filter
 	 */
 	ODataListBinding.prototype.updateExpandedList = function(aKeys) {
 		if (this.aExpandRefs) {
+			// update each entity within the array to update the model data
 			for (var i = 0; i < aKeys.length; i++) {
 				this.aExpandRefs[i] = aKeys[i];
 			}
@@ -865,6 +872,48 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Context', 'sap/ui/model/Filter
 	};
 
 	/**
+	 * Retrieves the type from the path and checks whether or not the resolved path relates to a list type
+	 * (multiplicity * or if it matches an entityset)
+	 *
+	 * @returns {boolean} whether or not the type matches a list
+	 * @private
+	 */
+	ODataListBinding.prototype._checkPathType = function () {
+		var sPath = this.oModel.resolve(this.sPath, this.oContext);
+
+		if (sPath) {
+			if (!this._mPathType || !this._mPathType[sPath]) {
+				this._mPathType = {};
+
+				var iIndex = sPath.lastIndexOf("/");
+				var oTypeSet, oEntityType;
+				if (iIndex > 1) {
+					oEntityType = this.oModel.oMetadata._getEntityTypeByPath(sPath.substring(0, iIndex));
+
+					if (oEntityType) {
+						oTypeSet = this.oModel.oMetadata._getEntityAssociationEnd(oEntityType, sPath.substring(iIndex + 1));
+						//multiplicity can only be one of the following:
+						// 0..1 at most one
+						// 1    exactly one
+						// *    one or more
+						if (oTypeSet && oTypeSet.multiplicity === "*") {
+							this._mPathType[sPath] = true;
+						}
+					}
+				} else if (iIndex === 0) {
+					var oMatchingSet, sName = sPath.substring(1);
+					oMatchingSet = this.oModel.oMetadata._findEntitySetByName(sName);
+					if (oMatchingSet) {
+						this._mPathType[sPath] = true;
+					}
+				}
+			}
+			return !!this._mPathType[sPath];
+		}
+		return true;
+	};
+
+	/**
 	 * Initialize binding.
 	 *
 	 * Fires a change if data is already available ($expand) or a refresh.
@@ -877,6 +926,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Context', 'sap/ui/model/Filter
 	ODataListBinding.prototype.initialize = function() {
 		var bCreatedRelative = this.isRelative() && this.oContext && this.oContext.bCreated;
 		if (this.oModel.oMetadata && this.oModel.oMetadata.isLoaded() && this.bInitial && !bCreatedRelative) {
+
+
+			if (!this._checkPathType()) {
+				jQuery.sap.log.error("List Binding is not bound against a list for " + this.oModel.resolve(this.sPath, this.oContext));
+			}
+
+
 			this.bInitial = false;
 			this._initSortersFilters();
 			if (!this.bSuspended) {

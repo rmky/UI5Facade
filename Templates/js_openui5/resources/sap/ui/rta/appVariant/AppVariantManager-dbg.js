@@ -7,7 +7,6 @@ sap.ui.define([
 	"sap/ui/base/ManagedObject",
 	"sap/ui/rta/appVariant/AppVariantDialog",
 	"sap/ui/rta/appVariant/AppVariantUtils",
-	"sap/ui/fl/FlexControllerFactory",
 	"sap/m/MessageBox",
 	"sap/ui/rta/appVariant/Feature",
 	"sap/ui/fl/transport/TransportSelection",
@@ -18,7 +17,6 @@ sap.ui.define([
 	ManagedObject,
 	AppVariantDialog,
 	AppVariantUtils,
-	FlexControllerFactory,
 	MessageBox,
 	RtaAppVariantFeature,
 	TransportSelection,
@@ -34,7 +32,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @since 1.53

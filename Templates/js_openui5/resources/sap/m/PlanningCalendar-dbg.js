@@ -134,12 +134,13 @@ sap.ui.define([
 	 * {@link sap.m.PlanningCalendarView PlanningCalendarView}'s properties.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.7
+	 * @version 1.56.6
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.34
 	 * @alias sap.m.PlanningCalendar
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/planning-calendar/ Planning Calendar}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var PlanningCalendar = Control.extend("sap.m.PlanningCalendar", /** @lends sap.m.PlanningCalendar.prototype */ { metadata : {
@@ -571,6 +572,7 @@ sap.ui.define([
 		});
 
 		var oTable = new Table(sId + "-Table", {
+			sticky: [], // set sticky property to an empty array this correspondents to PlanningCalendar stickyHeader = false
 			infoToolbar: this._oInfoToolbar,
 			mode: ListMode.SingleSelectMaster,
 			columns: [ new Column({
@@ -1342,17 +1344,20 @@ sap.ui.define([
 	};
 
 	PlanningCalendar.prototype._updateStickyHeader = function() {
-		var bStick = this.getStickyHeader(),
+		var aStickyParts = [],
+			bStick = this.getStickyHeader(),
 			bMobile1MonthView = this.getViewKey() === PlanningCalendarBuiltInView.OneMonth && this._iSize < 2,
 			bStickyToolbar = bStick && !Device.system.phone && !bMobile1MonthView,
 			bStickyInfoToolbar = bStick && !(Device.system.phone && Device.orientation.landscape) && !bMobile1MonthView;
 
-		if (this._oToolbar) {
-			this._oToolbar.toggleStyleClass("sapMPlanCalStickyHeader", bStickyToolbar);
+		if (this._oToolbar && bStickyToolbar) {
+			aStickyParts.push(sap.m.Sticky.HeaderToolbar);
 		}
-		if (this._oInfoToolbar) {
-			this._oInfoToolbar.toggleStyleClass("sapMPlanCalStickyHeader", bStickyInfoToolbar);
+		if (this._oInfoToolbar && bStickyInfoToolbar) {
+			aStickyParts.push(sap.m.Sticky.InfoToolbar);
 		}
+
+		this.getAggregation("table").setSticky(aStickyParts);
 	};
 
 	PlanningCalendar.prototype.addRow = function(oRow) {
@@ -2467,6 +2472,12 @@ sap.ui.define([
 	};
 
 	/**
+	 * @callback appointmentsSorterCallback
+	 * @param {sap.ui.unified.CalendarAppointment} appointment1
+	 * @param {sap.ui.unified.CalendarAppointment} appointment2
+	 */
+
+	/**
 	 * Setter for custom sorting of appointments. If not used, the appointments will be sorted according to their duration vertically.
 	 * For example, the start time and order to the X axis won't change.
 	 * @param {appointmentsSorterCallback} fnSorter
@@ -2474,20 +2485,17 @@ sap.ui.define([
 	 * @returns {sap.m.PlanningCalendar} <code>this</code> for chaining
 	 * @public
 	 */
-	PlanningCalendar.prototype.setCustomAppointmentsSorterCallback = function(fnSorter) {
-		/**
-		 * This callback is displayed as part of the Requester class.
-		 * @callback appointmentsSorterCallback
-		 * @param {sap.ui.unified.CalendarAppointment} appointment1
-		 * @param {sap.ui.unified.CalendarAppointment} appointment2
-		 */
-		if (typeof fnSorter === "function") {
+
+		PlanningCalendar.prototype.setCustomAppointmentsSorterCallback = function(fnSorter) {
+		if (typeof fnSorter === "function" || fnSorter === null || fnSorter === undefined) {
 			this.getRows().forEach(function(oRow){
 				var oCalendarRow = oRow.getCalendarRow();
 				oCalendarRow._setCustomAppointmentsSorterCallback(fnSorter);
 			});
 
 			this._fnCustomSortedAppointments = fnSorter;
+		} else {
+			jQuery.sap.log.warning("Your custom sort function won't be used, but the old one will be preserved.", this);
 		}
 		return this;
 	};

@@ -66,14 +66,15 @@ sap.ui.define([
 			"sap.uxap.ModelMapping",
 			"sap.uxap.ObjectPageHeaderLayoutData"
 		],
-		version: "1.54.7",
+		version: "1.56.6",
 		extensions: {
 			flChangeHandlers: {
-				"sap.uxap.ObjectPageHeader" : "sap/uxap/flexibility/ObjectPageHeader",
+				"sap.uxap.ObjectPageHeader": "sap/uxap/flexibility/ObjectPageHeader",
 				"sap.uxap.ObjectPageLayout": "sap/uxap/flexibility/ObjectPageLayout",
 				"sap.uxap.ObjectPageSection": "sap/uxap/flexibility/ObjectPageSection",
-				"sap.uxap.ObjectPageSubSection" : "sap/uxap/flexibility/ObjectPageSubSection",
-				"sap.ui.core._StashedControl" : {
+				"sap.uxap.ObjectPageSubSection": "sap/uxap/flexibility/ObjectPageSubSection",
+				"sap.uxap.ObjectPageDynamicHeaderTitle": "sap/uxap/flexibility/ObjectPageDynamicHeaderTitle",
+				"sap.ui.core._StashedControl": {
 					"unstashControl": {
 						"changeHandler": "default",
 						"layers": {

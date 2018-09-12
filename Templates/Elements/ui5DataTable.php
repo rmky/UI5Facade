@@ -719,7 +719,7 @@ JS;
             headerExpanded: true,
             title: new sap.f.DynamicPageTitle({
 				expandedHeading: [
-					new sap.m.Title({
+                    new sap.m.Title({
                         text: "{$this->buildTextTableHeading()}"
                     })
 				],
@@ -737,6 +737,13 @@ JS;
                         ]
                     })
 				],
+                navigationActions: [
+                    new sap.m.Button({
+                        icon: "sap-icon://nav-back",
+                        press: [oController.onNavBack, oController],
+                        type: sap.m.ButtonType.Transparent
+                    })
+                ],
 				actions: [
 				    {$top_buttons}
 				]

@@ -120,6 +120,22 @@ JS;
         }
         
         $output = $this->buildJsRequestDataCollector($action, $input_element);
+        $targetWidget = $widget->getAction()->getWidget();
+        
+        $output .= <<<JS
+                        {$this->buildJsBusyIconShow()}
+                        
+						var xhrSettings = {
+							type: 'POST',
+							data: {
+								data: requestData
+								{$prefill}
+							}
+						};
+                        {$this->getController()->buildJsNavTo($targetWidget->getPage()->getAliasWithNamespace(), $targetWidget->getId(), 'xhrSettings')}
+JS;
+        
+        /*
         $viewId = $this->getTemplate()->getViewName($widget->getAction()->getWidget(), $widget->getPage());
         $viewName = $viewId;
         $output .= <<<JS
@@ -158,15 +174,31 @@ JS;
 								{$this->buildJsBusyIconHide()}
 							}
 						});
-JS;
+JS;*/
         
         return $output;
+    }
+    
+    protected function buildJsNavigateToPage(string $pageSelector, string $urlParams = '', AbstractJqueryElement $inputElement) : string
+    {
+        return <<<JS
+						
+                        this.navTo("{$pageSelector}", '', {
+                            success: function(){ 
+                                {$inputElement->buildJsBusyIconHide()} 
+                            },
+                            error: function(){ 
+                                {$inputElement->buildJsBusyIconHide()} 
+                            }
+                        });
+
+JS;
     }
     
     /**
      * 
      * @param Button $widget
-     * @param unknown $input_element
+     * @param ui5AbstractElement $input_element
      * @return string
      */
     protected function buildJsInputRefresh(Button $widget, $input_element)

@@ -7,6 +7,8 @@ use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
 use exface\Core\Exceptions\Templates\TemplateLogicError;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 use exface\Core\Exceptions\OutOfBoundsException;
+use exface\Core\Interfaces\Model\UiPageInterface;
+use exface\Core\Interfaces\WidgetInterface;
 
 class WebappController implements ui5ControllerInterface
 {
@@ -494,5 +496,19 @@ JS;
         }
         
         return $oControllerJsVar . '.' . $propertyName;
+    }
+    
+    /**
+     * 
+     * @param string $pageSelector
+     * @param string $widgetId
+     * @param string $xhrSettingsJs
+     * @return string
+     */
+    public function buildJsNavTo(string $pageSelector, string $widgetId = null, string $xhrSettingsJs = null) : string
+    {
+        $widgetId = $widgetId ?? '';
+        $xhrSettingsJs = $xhrSettingsJs !== null ? ', ' . $xhrSettingsJs : '';
+        return "this.navTo('{$pageSelector}', '{$widgetId}'{$xhrSettingsJs});";
     }
 }

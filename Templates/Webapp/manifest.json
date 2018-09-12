@@ -61,11 +61,13 @@
 					"target": "notFound"
 				}
 			},
-			"routes": [{
+			"routes": [
+				{
 				"pattern": "",
 				"name": "appHome",
 				"target": "home"
-			}],
+				}
+			],
 			"targets": {
 				"home": {
 				   "viewId": "[#app_id#]",

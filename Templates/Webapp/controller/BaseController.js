@@ -42,11 +42,26 @@ sap.ui.define([
 			// 1) By default, views and controllers are loaded with sync requests (not compatible with CacheAPI)
 			// 2) Loading a single viewcontroller is faster, than the view and the controller separately
 			if (! sap.ui.getCore().byId(sViewId)) {
+				if (oXHRSettings) {
+					var oCallbacks = {
+						success: oXHRSettings.success,
+						error: oXHRSettings.error
+					}
+					delete oXHRSettings.success;
+					delete oXHRSettings.error;
+				}
+				
 				var oDefSettings = {
 					url: this._getUrlFromRoute(sViewName, 'viewcontroller'),
 					dataType: "script",
+					cache: true,
 					success: function(script, textStatus) {
 						console.log("Loaded page " + sViewName + ", timestamp = " + new Date().getTime());
+						
+						if (oCallbacks && oCallbacks.success) {
+							oCallbacks.success();
+						}
+						
 						// TODO this produces the following error: Modules that use an anonymous define() 
 						// call must be loaded with a require() call; they must not be executed via script 
 						// tag or nested into other modules. All other usages will fail in future releases 
@@ -58,11 +73,30 @@ sap.ui.define([
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
 						console.warn("Failed loading combined viewcontroller for " + sViewName + ": using fallback to native routing.");
-						oRouter.navTo(sViewName);
+						if (oCallbacks && oCallbacks.error) {
+							oCallbacks.error();
+						}
+						
+						if (navigator.onLine === false) {
+							oRouter.getTargets().display("offline", {
+								fromTarget : "home"
+							});
+						} else {
+							oRouter.navTo(sViewName);
+						}
 					}
 				}
+				
 				return $.ajax($.extend({}, oDefSettings, oXHRSettings));
 			} else {
+				if (oXHRSettings) {
+					if (oXHRSettings.success) {
+						oXHRSettings.success();
+					}
+					if (oXHRSettings.complete) {
+						oXHRSettings.complete();
+					}
+				}
 				oRouter.navTo(sViewName);
 			}
 		},

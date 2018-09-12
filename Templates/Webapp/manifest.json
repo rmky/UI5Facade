@@ -76,6 +76,11 @@
 				   "viewId": "notFound",
 				   "viewName": "NotFound",
 				   "transition": "show"
+				},
+				"offline": {
+				   "viewId": "offline",
+				   "viewName": "Offline",
+				   "transition": "show"
 				}
 			}
 		}

@@ -332,7 +332,9 @@ class Webapp implements WorkbenchDependantInterface
     {
         return [
             'controller/BaseController.js',
-            'controller/App.controller.js'
+            'controller/App.controller.js',
+            'controller/NotFound.controller.js',
+            'controller/Offline.controller.js'
         ];
     }
     
@@ -343,7 +345,9 @@ class Webapp implements WorkbenchDependantInterface
     public function getBaseViews() : array
     {
         return [
-            'view/App.view.js'
+            'view/App.view.js',
+            'view/NotFound.view.js',
+            'view/Offline.view.js'
         ];
     }
     

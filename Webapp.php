@@ -205,9 +205,15 @@ class Webapp implements WorkbenchDependantInterface
     {
         $parts = explode('/', $path);
         $cnt = count($parts);
-        if ($cnt === 1) {
+        if ($cnt === 1 || $cnt === 2) {
+            // URLs of non-namespaced pages like 
+            // - appRoot/view/mypage
+            // - appRoot/view/mypage/widget_id
             $pageAlias = $parts[0];
-        } elseif ($cnt !== 3 || $cnt !== 4) {
+        } elseif ($cnt === 3 || $cnt === 4) {
+            // URLs of namespaced pages like 
+            // - appRoot/view/vendor/app/page
+            // - appRoot/view/vendor/app/page/widget_id
             $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];
         } else {
             throw new Ui5RouteInvalidException('Route "' . $path . '" not found!');
@@ -215,8 +221,10 @@ class Webapp implements WorkbenchDependantInterface
         
         $page = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $pageAlias);
         
-        if (count($parts) === 4) {
+        if ($cnt === 4) {
             $widget = $page->getWidget($parts[3]);
+        } elseif ($cnt === 2) {
+            $widget = $page->getWidget($parts[1]);
         } else {
             $widget = $page->getWidgetRoot();
         }

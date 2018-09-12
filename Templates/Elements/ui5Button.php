@@ -130,7 +130,10 @@ JS;
 							data: {
 								data: requestData
 								{$prefill}
-							}
+							},
+                            complete: function() {
+                                {$this->buildJsBusyIconHide()}
+                            }
 						};
                         {$this->getController()->buildJsNavTo($targetWidget->getPage()->getAliasWithNamespace(), $targetWidget->getId(), 'xhrSettings')}
 JS;

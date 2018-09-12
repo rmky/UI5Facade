@@ -205,9 +205,7 @@ JS;
         new sap.m.Page("{$this->getId()}", {
             title: "{$this->getCaption()}",
             showNavButton: true,
-            navButtonPress: function(){
-                closeTopDialog();
-            },
+            navButtonPress: [oController.onNavBack, oController],
             content: [
                 {$content_js}
             ],

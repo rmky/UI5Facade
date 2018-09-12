@@ -1,8 +1,12 @@
 <?php
 namespace exface\OpenUI5Template\Templates\Elements;
 
+use exface\Core\Widgets\Tile;
+
 /**
  * Tile widget for OpenUI5-Template.
+ * 
+ * @method Tile getWidget()
  * 
  * @author SFL
  *
@@ -20,12 +24,13 @@ class ui5Tile extends ui5Button
         $widget = $this->getWidget();
         
         $header = $widget->getTitle() ? 'header: "' . $widget->getTitle() . '",' : '';
-        $subheader = $widget->getSubtitle() ? 'subheader: "' . $widget->getSubtitle() . '",' : '';
         $handler = $this->buildJsClickViewEventHandlerCall();
         $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
+        
         if ($widget->hasDisplayWidget()) {
-            $tileContentConstructor = $this->getTemplate()->getElement($widget->getDisplayWidget())->buildJsConstructor();
+            $subheader = $widget->getSubtitle() ? 'subheader: "' . $widget->getSubtitle() . '",' : '';
             
+            $tileContentConstructor = $this->getTemplate()->getElement($widget->getDisplayWidget())->buildJsConstructor();
             $tileContent = <<<JS
 
     tileContent: [
@@ -36,8 +41,19 @@ class ui5Tile extends ui5Button
         })
     ]
 JS;
-        } else {
-            $tileContent = '';
+        } elseif ($subtitle = $widget->getSubtitle()) {
+            $tileContent = <<<JS
+
+    tileContent: [
+        new sap.m.TileContent({
+			content: [
+				new sap.m.FeedContent({
+					contentText: "{$subtitle}"
+				})
+			]
+		})
+    ]
+JS;
         }
         
         return <<<JS

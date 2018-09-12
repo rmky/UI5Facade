@@ -80,6 +80,17 @@ class Webapp implements WorkbenchDependantInterface
                     }
                     return '';
                 }
+            case StringDataType::startsWith($route, 'viewcontroller/'):
+                $path = StringDataType::substringAfter($route, 'viewcontroller/');
+                if (StringDataType::endsWith($path, '.viewcontroller.js')) {
+                    $path = StringDataType::substringBefore($path, '.viewcontroller.js');
+                    $widget = $this->getWidgetFromPath($path);
+                    if ($widget) {
+                        $controller = $this->getControllerForWidget($widget);
+                        return $controller->buildJsController() . "\n\n" . $controller->getView()->buildJsView();
+                    }
+                    return '';
+                }
             default:
                 throw new Ui5RouteInvalidException('Cannot match route "' . $route . '"!');
         }

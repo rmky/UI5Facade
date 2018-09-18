@@ -10,6 +10,8 @@ use exface\Core\Interfaces\Actions\iShowDialog;
 
 /**
  * Generates jQuery Mobile buttons for ExFace
+ * 
+ * @method Button getWidget()
  *
  * @author Andrej Kabachnik
  *        
@@ -131,12 +133,52 @@ JS;
 								data: requestData
 								{$prefill}
 							},
+                            success: function(data, textStatus, jqXHR) {
+                                {$this->buildJsCloseDialog($widget, $input_element)}
+                            },
                             complete: function() {
                                 {$this->buildJsBusyIconHide()}
                             }
 						};
-                        {$this->getController()->buildJsNavTo($targetWidget->getPage()->getAliasWithNamespace(), $targetWidget->getId(), 'xhrSettings')}
+
 JS;
+        
+        if ($this->opensDialogPage()) {
+            // If the dialog is actually a UI5 page, just navigate to the respecitve view.
+            $output .= <<<JS
+                        this.navTo('{$targetWidget->getPage()->getAliasWithNamespace()}', '{$targetWidget->getId()}', xhrSettings);
+
+JS;
+        } else {
+            // If it's a dialog, load the view and open the dialog after it has been loaded.
+            // Note, that the promise resolves _before_ the content of the view is rendered,
+            // so opening the dialog right away will make it appear blank. Instead, we use
+            // setTimeout() to wait for the view to render completely.
+            $output .= <<<JS
+                        var sViewName = this.getViewName('{$targetWidget->getPage()->getAliasWithNamespace()}', '{$targetWidget->getId()}'); 
+                        var sViewId = this.getViewId(sViewName);
+                        var jqXHR = this._loadView(sViewName, function(){ 
+                            var oView = sap.ui.getCore().byId(sViewId);
+                            if (oView === undefined) {
+                                sap.ui.core.mvc.JSView.create({
+                                    id: sViewId,
+                                    viewName: "{$this->getTemplate()->getViewName($targetWidget, $this->getController()->getWebapp()->getRootPage())}"
+                                }).then(function(oView){
+                                    setTimeout(function() {
+                                        var oDialog = oView.getContent()[0];
+                                        oDialog.attachAfterClose(function() {
+                                            {$this->buildJsInputRefresh($widget, $input_element)}
+                                        });
+                                        oDialog.open();
+                                    });
+                                })
+                            } else {
+                                oView.getContent()[0].open();
+                            }
+                        }, xhrSettings);
+                        
+JS;
+        }
         
         /*
         $viewId = $this->getTemplate()->getViewName($widget->getAction()->getWidget(), $widget->getPage());
@@ -232,7 +274,7 @@ JS;
     
     protected function buildJsCloseDialog($widget, $input_element)
     {
-        return ($widget->getWidgetType() == 'DialogButton' && $widget->getCloseDialogAfterActionSucceeds() ? "closeTopDialog();" : "");
+        return ($widget->getWidgetType() == 'DialogButton' && $widget->getCloseDialogAfterActionSucceeds() ? "sap.ui.getCore().byId('{$input_element->getId()}').close();" : "");
     }
     
     protected function buildJsDialogLoader()

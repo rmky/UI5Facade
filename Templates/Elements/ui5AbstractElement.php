@@ -141,22 +141,7 @@ JS;
     public function buildJsShowError($message_body_js, $title_js = null)
     {
         $title_js = $title_js ? $title_js : '"' . $this->translate('MESSAGE.ERROR_TITLE') . '"';
-        return <<<JS
-                var view = '';
-                var errorBody = {$message_body_js};
-                var viewMatch = errorBody.match(/sap.ui.jsview\("(.*)"/i);
-                if (viewMatch !== null) {
-                    view = viewMatch[1];
-                    var randomizer = window.performance.now().toString();
-                    errorBody = errorBody.replace(view, view+randomizer);
-                    view = view+randomizer;
-                    $('body').append(errorBody);
-                    showDialog({$title_js}, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}), 'Error');
-                } else {
-                    showHtmlInDialog({$title_js}, errorBody, 'Error');
-                }
-
-JS;
+        return "showAjaxErrorDialog({$message_body_js}, {$title_js});";
     }
 
     /**

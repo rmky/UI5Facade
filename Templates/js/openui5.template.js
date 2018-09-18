@@ -1,6 +1,3 @@
-var oDialogStack = [];
-
-
 // Toggle online/offlie icon
 window.addEventListener('online', function(){
 	toggleOnlineIndicator();
@@ -180,19 +177,6 @@ function initShell() {
 	});
 	contextBarInit(oShell);
 	return oShell;
-}
-
-function closeTopDialog() {
-	var oDialogStackTop = oDialogStack.pop();
-	oShell.removeAllContent();
-    for (var i in oDialogStackTop.content) {
-        oShell.addContent(
-            oDialogStackTop.content[i]
-        );
-    }
-    oDialogStackTop.dialog.destroy(true);
-    oDialogStackTop.onClose();
-    delete oDialogStackTop;
 }
 
 function showDialog(title, content, state, onCloseCallback, responsive) {

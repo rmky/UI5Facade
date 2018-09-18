@@ -32,10 +32,39 @@ sap.ui.define([
 		navTo : function(sPageAlias, sWidgetId, oXHRSettings) {
 			var oRouter = this.getRouter();	
 			var sViewName = this.getViewName(sPageAlias, sWidgetId);
-			var sViewId = this.getViewId(sViewName);
 			
 			// Register page in router
 			this._addRoute(oRouter, sViewName);
+			
+			// TODO this produces the following error: Modules that use an anonymous define() 
+			// call must be loaded with a require() call; they must not be executed via script 
+			// tag or nested into other modules. All other usages will fail in future releases 
+			// or when standard AMD loaders are used or when ui5loader runs in async mode. 
+			// Now using substitute name ~anonymous~1.js -  sap.ui.ModuleSystem
+			// Obviously, we need to wrap ap.ui.jsview(...) in the view definition file in
+			// something - but what???
+			return this._loadView(sViewName, function(){oRouter.navTo(sViewName)}, oXHRSettings);
+		},
+		
+		/**
+		 * Loads a view using async jQuery.ajax() instead of the sync-only ui5Loader.
+		 * 
+		 * The view is only loaded via AJAX if not found in the UI5 cache. However,
+		 * the callback function provided here will be executed once the view is
+		 * available regardless of where it was loaded from.
+		 * 
+		 * Returns the the jQuery XHR object used to load the view or nothing if no request
+		 * to the server was made (view loaded from cache).
+		 * 
+		 * @param String sViewName
+		 * @param function fnCallback
+		 * @param Object oXHRSettings
+		 * 
+		 * @return jqXHR|undefined
+		 */
+		_loadView : function(sViewName, fnCallback, oXHRSettings) {
+			var sViewId = this.getViewId(sViewName);
+			var oController = this;
 			
 			// Load view and controller with a custom async AJAX if running on UI server. 
 			// Reasons:
@@ -56,20 +85,13 @@ sap.ui.define([
 					dataType: "script",
 					cache: true,
 					success: function(script, textStatus) {
-						console.log("Loaded page " + sViewName + ", timestamp = " + new Date().getTime());
+						console.log("Loaded page " + sViewName);
 						
 						if (oCallbacks && oCallbacks.success) {
 							oCallbacks.success();
 						}
 						
-						// TODO this produces the following error: Modules that use an anonymous define() 
-						// call must be loaded with a require() call; they must not be executed via script 
-						// tag or nested into other modules. All other usages will fail in future releases 
-						// or when standard AMD loaders are used or when ui5loader runs in async mode. 
-						// Now using substitute name ~anonymous~1.js -  sap.ui.ModuleSystem
-						// Obviously, we need to wrap ap.ui.jsview(...) in the view definition file in
-						// something - but what???
-						oRouter.navTo(sViewName);
+						fnCallback();
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
 						console.warn("Failed loading combined viewcontroller for " + sViewName + ": using fallback to native routing.");
@@ -82,11 +104,12 @@ sap.ui.define([
 								fromTarget : "home"
 							});
 						} else {
-							oRouter.navTo(sViewName);
+							oController.showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText);
+							fnCallback();
 						}
 					}
 				}
-				
+				// TODO 
 				return $.ajax($.extend({}, oDefSettings, oXHRSettings));
 			} else {
 				if (oXHRSettings) {
@@ -97,7 +120,7 @@ sap.ui.define([
 						oXHRSettings.complete();
 					}
 				}
-				oRouter.navTo(sViewName);
+				fnCallback();
 			}
 		},
 		
@@ -157,6 +180,25 @@ sap.ui.define([
 			} else {
 				this.getRouter().navTo("appHome", {}, true /*no history*/);
 			}
+		},
+		
+		/**
+		 * 
+		 */
+		showAjaxErrorDialog : function(sBody, sTitle) {
+			var view = '';
+		    var errorBody = sBody;
+		    var viewMatch = errorBody.match(/sap.ui.jsview\("(.*)"/i);
+		    if (viewMatch !== null) {
+		        view = viewMatch[1];
+		        var randomizer = window.performance.now().toString();
+		        errorBody = errorBody.replace(view, view+randomizer);
+		        view = view+randomizer;
+		        $('body').append(errorBody);
+		        showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}), 'Error');
+		    } else {
+		        showHtmlInDialog(sTitle, errorBody, 'Error');
+		    }
 		}
 		
 	});

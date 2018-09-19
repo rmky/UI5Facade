@@ -17,13 +17,20 @@ sap.ui.define([
             this.getRouter().initialize();
         },
 		
+        /**
+         * Returns the view, that the given control belongs to
+         * 
+         * @param sap.ui.core.Control oControl
+         * 
+         * @return sap.ui.core.mvc.View
+         */
 		findViewOfControl: function(oControl) {
-			var sName;
-			do {
+			while (oControl && oControl.getParent) {
 				oControl = oControl.getParent();
-				sName = oControl.getMetadata().getName()
-			} while (sName !== 'sap.ui.core.mvc.JSView' && sName !== 'sap.ui.core.mvc.XMLView');
-			return oControl;
+				if (oControl instanceof sap.ui.core.mvc.View){
+					return oControl;
+				}
+		    }
 		},
         
         convertConditionOperationToConditionGroupOperator: function(operation) {
@@ -54,7 +61,31 @@ sap.ui.define([
 			} else {
 				throw 'UI5 Condintion operation "'+operation+'" cannot be mapped to a condition group operator!';
 			}
-        }
+        },
+		
+		/**
+		 * Shows an error dialog for an AJAX error with either HTML or a UI5 JSView in the response body.
+		 * 
+		 * @param String sBody
+		 * @param String sTitle
+		 * 
+		 * @return void
+		 */
+		showAjaxErrorDialog : function(sBody, sTitle) {
+			var view = '';
+		    var errorBody = sBody;
+		    var viewMatch = errorBody.match(/sap.ui.jsview\("(.*)"/i);
+		    if (viewMatch !== null) {
+		        view = viewMatch[1];
+		        var randomizer = window.performance.now().toString();
+		        errorBody = errorBody.replace(view, view+randomizer);
+		        view = view+randomizer;
+		        $('body').append(errorBody);
+		        showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}), 'Error');
+		    } else {
+		        showHtmlInDialog(sTitle, errorBody, 'Error');
+		    }
+		}
 
 	});
 

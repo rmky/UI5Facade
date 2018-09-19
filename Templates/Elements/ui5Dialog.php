@@ -10,6 +10,8 @@ use exface\Core\Widgets\MenuButton;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\Widgets\iHaveValue;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
+use exface\Core\Interfaces\Actions\iUsePrefillData;
+use exface\Core\Interfaces\Actions\iShowWidget;
 
 /**
  * In OpenUI5 dialog widgets are either rendered as an object page layout (if the dialog is maximized) or
@@ -200,6 +202,10 @@ JS;
      */
     protected function buildJsPage($content_js)
     {
+        if ($this->needsPrefill()) {
+            $this->getController()->addOnRouteMatchedScript($this->buildJsPrefillLoader('oView'), 'loadPrefill');
+        }
+        
         return <<<JS
         
         new sap.m.Page("{$this->getId()}", {
@@ -211,6 +217,62 @@ JS;
             ],
             footer: {$this->buildJsFloatingToolbar()}
         })
+JS;
+    }
+        
+    /**
+     * Returns TRUE if the dialog needs to be prefilled and FALSE otherwise.
+     * 
+     * @return bool
+     */
+    protected function needsPrefill() : bool
+    {
+        $widget = $this->getWidget();
+        if ($widget->getParent() instanceof iTriggerAction) {
+            $action = $widget->getParent()->getAction();
+            if (($action instanceof iShowWidget) && $action->getPrefillWithInputData()) {
+                return true;
+            }
+        } 
+        
+        return false;
+    }
+          
+    /**
+     * Returns the JS code to load prefill data for the dialog. 
+     * 
+     * TODO will this work with with explicit prefill data too? 
+     * 
+     * @param string $oViewJs
+     * @return string
+     */
+    protected function buildJsPrefillLoader(string $oViewJs = 'oView') : string
+    {
+        return <<<JS
+        
+            {$this->buildJsBusyIconShow()}
+            var oRouteParams = {$oViewJs}.getModel('view').getProperty('/_route');
+            var data = $.extend({}, {
+                action: "exface.Core.ReadPrefill",
+				resource: "{$this->getWidget()->getPage()->getAliasWithNamespace()}",
+				element: "{$this->getWidget()->getId()}",
+            }, oRouteParams.params);
+			$.ajax({
+                url: "{$this->getAjaxUrl()}",
+                type: "POST",
+				data: data,
+                success: function(response, textStatus, jqXHR) {
+                    if (response.data && response.data && response.data.length === 1) {
+                        {$oViewJs}.setModel(new sap.ui.model.json.JSONModel(response.data[0]));
+                    }
+                    {$this->buildJsBusyIconHide()}
+                },
+                error: function(jqXHR, textStatus, errorThrown){
+                    {$this->buildJsBusyIconHide()}
+                    {$this->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText)
+                }
+			})
+			
 JS;
     }
     

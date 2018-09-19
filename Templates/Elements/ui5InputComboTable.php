@@ -30,7 +30,7 @@ class ui5InputComboTable extends ui5Input
     
                         oInput = event.getSource();
                         if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
-                            oInput.fireSuggest({suggestValue: {q: oInput.getValue()}})
+                            oInput.fireSuggest({suggestValue: {q: oInput.getValue()}});
                             event.cancelBubble();
                             event.preventDefault();
                             return false;
@@ -78,8 +78,8 @@ JS;
     {
         $widget = $this->getWidget();
         
-        if ($value = $widget->getValueWithDefaults()) {
-            if (is_null($widget->getValueText()) || $widget->getValueText() === '') {
+        if (! $this->isValueBoundToModel() && $value = $widget->getValueWithDefaults()) {
+            if ($widget->getValueText() === null || $widget->getValueText() === '') {
                 $value_init_js = '.' . $this->buildJsValueSetterMethod('"' . $this->escapeJsTextValue($value) . '"');
             } else {
                 $value_init_js = '.setValue("' . $widget->getValueText() . '").setSelectedKey("' . $this->escapeJsTextValue($value) . '")';
@@ -133,7 +133,7 @@ JS;
             /* @var $element \exface\OpenUI5Template\Templates\Elements\ui5DataColumn */
             $element = $this->getTemplate()->getElement($col);
             $columns .= ($columns ? ",\n" : '') . $element->buildJsConstructorForMColumn();
-            $cells .= ($cells ? ",\n" : '') . $element->buildJsConstructorForCell();
+            $cells .= ($cells ? ",\n" : '') . $element->buildJsConstructorForCell($this->getModelNameForAutosuggest());
             if ($col->getId() === $widget->getValueColumn()->getId()) {
                 $value_idx = $idx;
             }
@@ -162,7 +162,7 @@ JS;
             showValueHelp: true,
 			suggest: {$this->buildJsPropertySuggest()},
             suggestionRows: {
-                path: "/data",
+                path: "{$this->getModelNameForAutosuggest()}>/data",
                 template: new sap.m.ColumnListItem({
 				   cells: [
 				       {$cells}
@@ -182,10 +182,8 @@ JS;
 				{$columns}
             ],
 			{$this->buildJsProperties()}
-        }).setModel(function(){
-            var oModel = new sap.ui.model.json.JSONModel();
-            return oModel;
-        }()){$value_init_js}{$this->buildJsPseudoEventHandlers()}
+        }).setModel(new sap.ui.model.json.JSONModel(), "{$this->getModelNameForAutosuggest()}")
+        {$value_init_js}{$this->buildJsPseudoEventHandlers()}
 JS;
     }
 	
@@ -234,7 +232,7 @@ JS;
                 };
                 $.extend(params, qParams);
         		
-                var oModel = oInput.getModel();
+                var oModel = oInput.getModel('{$this->getModelNameForAutosuggest()}');
                 if (silent) {
                     {$this->buildJsBusyIconShow()}
                     var silencer = function(oEvent){
@@ -269,6 +267,10 @@ JS;
      */
     protected function buildJsPropertyValue()
     {
+        $widget = $this->getWidget();
+        if ($this->isValueBoundToModel()) {
+            return 'value: "{/site__LABEL}", selectedKey: ' . $this->buildJsValueBinding() . ',';
+        }
         return '';
     }
     
@@ -306,6 +308,11 @@ JS;
     public function buildJsValueBindingPropertyName() : string
     {
         return 'selectedKey';
+    }
+    
+    protected function getModelNameForAutosuggest() : string
+    {
+        return 'suggest';
     }
 }
 ?>

@@ -18,22 +18,6 @@ sap.ui.define([
 		},
 		
 		/**
-		 * This method is executed every time a route leading to the view of this controller is matched.
-		 * 
-		 * @private
-		 * 
-		 * @param sap.ui.base.Event oEvent
-		 * 
-		 * @return void
-		 */
-		_onRouteMatched : function (oEvent) {
-			var oViewModel = this.getView().getModel('view');
-			var oArgs = oEvent.getParameter("arguments");
-			var oParams = (oArgs.params === undefined ? {} : this._decodeRouteParams(oArgs.params));
-			oViewModel.setProperty("/_route", {params: oParams, prefill: true});
-		},
-		
-		/**
 		 * Navigates to the view matching the given page and widget.
 		 * 
 		 * Returns the the jQuery XHR object used to load the view or nothing if no request
@@ -111,7 +95,7 @@ sap.ui.define([
 						fnCallback();
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
-						console.warn("Failed loading combined viewcontroller for " + sViewName + ": using fallback to native routing.");
+						console.warn("Failed loading combined viewcontroller for " + sViewName + ": " + errorThrown + " (" + textStatus + ")");
 						if (oCallbacks && oCallbacks.error) {
 							oCallbacks.error();
 						}
@@ -121,7 +105,7 @@ sap.ui.define([
 								fromTarget : "home"
 							});
 						} else {
-							oController.showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText);
+							oController.getOwnerComponent().showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText);
 							fnCallback();
 						}
 					}
@@ -197,30 +181,6 @@ sap.ui.define([
 			} else {
 				this.getRouter().navTo("appHome", {}, true /*no history*/);
 			}
-		},
-		
-		/**
-		 * Shows an error dialog for an AJAX error with either HTML or a UI5 JSView in the response body.
-		 * 
-		 * @param String sBody
-		 * @param String sTitle
-		 * 
-		 * @return void
-		 */
-		showAjaxErrorDialog : function(sBody, sTitle) {
-			var view = '';
-		    var errorBody = sBody;
-		    var viewMatch = errorBody.match(/sap.ui.jsview\("(.*)"/i);
-		    if (viewMatch !== null) {
-		        view = viewMatch[1];
-		        var randomizer = window.performance.now().toString();
-		        errorBody = errorBody.replace(view, view+randomizer);
-		        view = view+randomizer;
-		        $('body').append(errorBody);
-		        showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}), 'Error');
-		    } else {
-		        showHtmlInDialog(sTitle, errorBody, 'Error');
-		    }
 		},
 		
 		/**

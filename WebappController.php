@@ -24,6 +24,8 @@ class WebappController implements ui5ControllerInterface
     
     private $onInitScripts = [];
     
+    private $onRouteMatchedScripts = [];
+    
     private $externalModules = [];
     
     private $externalCss = [];
@@ -91,7 +93,7 @@ class WebappController implements ui5ControllerInterface
      */
     public function buildJsControllerGetter(ui5AbstractElement $fromElement) : string
     {
-        return "sap.ui.getCore().byId('{$this->getViewId($fromElement)}').getController()";
+        return $this->buildJsComponentGetter() . ".findViewOfControl(sap.ui.getCore().byId('{$fromElement->getId()}')).getController()";
     }
     
     /**
@@ -102,17 +104,6 @@ class WebappController implements ui5ControllerInterface
     public function buildJsComponentGetter() : string
     {
         return "sap.ui.getCore().getComponent('{$this->getWebapp()->getComponentId()}')";
-    }
-    
-    /**
-     * TODO replace by a dedicated view object and $this->getView()
-     * 
-     * @param ui5AbstractElement $element
-     * @return string
-     */
-    protected function getViewId(ui5AbstractElement $element) : string
-    {
-        return str_replace('.controller.', '.view.', $this->getId());
     }
     
     /**
@@ -256,6 +247,24 @@ sap.ui.define([
 			{$this->buildJsOnInitScript()}
 		},
 
+        /**
+		 * This method is executed every time a route leading to the view of this controller is matched.
+		 * 
+		 * @private
+		 * 
+		 * @param sap.ui.base.Event oEvent
+		 * 
+		 * @return void
+		 */
+		_onRouteMatched : function (oEvent) {
+			var oView = this.getView();
+			var oArgs = oEvent.getParameter("arguments");
+			var oParams = (oArgs.params === undefined ? {} : this._decodeRouteParams(oArgs.params));
+			oView.getModel('view').setProperty("/_route", {params: oParams});
+            
+            {$this->buildJsOnRouteMatched()}
+		},
+
         {$this->buildJsProperties()}
 
 	});
@@ -352,6 +361,26 @@ JS;
     {
         $this->onInitScripts[$id] = $js;
         return $this;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addOnRouteMatchedScript()
+     */
+    public function addOnRouteMatchedScript(string $js, string $id) : ui5ControllerInterface
+    {
+        $this->onRouteMatchedScripts[$id] = $js;
+        return $this;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsOnRouteMatched() : string
+    {
+        return implode($this->onRouteMatchedScripts);
     }
     
     /**

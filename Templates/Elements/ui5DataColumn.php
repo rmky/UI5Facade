@@ -60,16 +60,18 @@ JS;
      * 
      * @return string
      */
-    public function buildJsConstructorForCell()
+    public function buildJsConstructorForCell(string $modelName = null)
     {
         $tpl = $this->getTemplate()->getElement($this->getWidget()->getCellWidget());
         // Disable using widget id as control id because this is a template for multiple controls
         $tpl->setUseWidgetId(false);
+        
+        $modelPrefix = $modelName ? $modelName . '>' : '';
         if ($tpl instanceof ui5Display) {
-            $tpl->setValueBindingPath($this->getWidget()->getDataColumnName());
+            $tpl->setValueBindingPath($modelPrefix . $this->getWidget()->getDataColumnName());
             $tpl->setAlignment($this->buildJsAlignment());
         } elseif ($tpl instanceof ui5Input) {
-            $tpl->setValueBindingPath($this->getWidget()->getDataColumnName());
+            $tpl->setValueBindingPath($modelPrefix . $this->getWidget()->getDataColumnName());
         }
         if ($tpl instanceof ui5CompoundControlInterface) {
             return $tpl->buildJsConstructorForMainControl();

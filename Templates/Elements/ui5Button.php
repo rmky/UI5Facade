@@ -276,7 +276,15 @@ JS;
     
     protected function buildJsCloseDialog($widget, $input_element)
     {
-        return ($widget->getWidgetType() == 'DialogButton' && $widget->getCloseDialogAfterActionSucceeds() ? "sap.ui.getCore().byId('{$input_element->getId()}').close();" : "");
+        if ($widget->getWidgetType() == 'DialogButton' && $widget->getCloseDialogAfterActionSucceeds()) {
+            $dialogElement = $this->getTemplate()->getElement($widget->getDialog());
+            if ($dialogElement->isMaximized()) {
+                return $this->getController()->buildJsControllerGetter($this) . '.onNavBack();';
+            } else {
+                return "sap.ui.getCore().byId('{$input_element->getId()}').close();";
+            }
+        }
+        return "";
     }
     
     protected function buildJsDialogLoader()

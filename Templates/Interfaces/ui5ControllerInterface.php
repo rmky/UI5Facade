@@ -69,6 +69,14 @@ interface ui5ControllerInterface {
     
     /**
      * 
+     * @param string $js
+     * @param string $id
+     * @return ui5ControllerInterface
+     */
+    public function addOnRouteMatchedScript(string $js, string $id) : ui5ControllerInterface;
+    
+    /**
+     * 
      * @param string $methodName
      * @param ui5AbstractElement $callerElement
      * @param string $oController

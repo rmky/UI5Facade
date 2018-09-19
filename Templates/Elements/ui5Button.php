@@ -124,6 +124,7 @@ JS;
         $output = $this->buildJsRequestDataCollector($action, $input_element);
         $targetWidget = $widget->getAction()->getWidget();
         
+        // Build the AJAX request
         $output .= <<<JS
                         {$this->buildJsBusyIconShow()}
                         
@@ -143,6 +144,7 @@ JS;
 
 JS;
         
+        // Load the view and open the dialog or page
         if ($this->opensDialogPage()) {
             // If the dialog is actually a UI5 page, just navigate to the respecitve view.
             $output .= <<<JS

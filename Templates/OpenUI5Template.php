@@ -83,6 +83,16 @@ class OpenUI5Template extends AbstractAjaxTemplate
     /**
      * 
      * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::buildHtmlBody()
+     */
+    public function buildHtmlBody(WidgetInterface $widget)
+    {
+        return $this->buildJs($widget);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
      * @see \exface\Core\Templates\AbstractAjaxTemplate\AbstractAjaxTemplate::buildJs()
      */
     public function buildJs(\exface\Core\Widgets\AbstractWidget $widget)
@@ -93,13 +103,10 @@ class OpenUI5Template extends AbstractAjaxTemplate
         
         if ($widget !== $webapp->getRootPage()->getWidgetRoot()) {
             return <<<JS
-sap.ui.getCore().attachInit(function () {
     
     {$controller->buildJsController()}
     
     {$controller->getView()->buildJsView()}
-    
-});
 
 JS;
         }

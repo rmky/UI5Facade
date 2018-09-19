@@ -38,6 +38,16 @@
 		<link rel="stylesheet" type="text/css" id="sap-ui-theme-sap.m" href="exface/vendor/exface/OpenUI5Template/Templates/js_openui5/resources/sap/m/themes/sap_belize/library.css" />
 		<link rel="stylesheet" type="text/css" id="sap-ui-theme-sap.ui.unified" href="exface/vendor/exface/OpenUI5Template/Templates/js_openui5/resources/sap/ui/unified/themes/sap_belize/library.css" />
 		
+		<script>
+			// Check that service workers are registered
+			if ('serviceWorker' in navigator) {				
+			  // Use the window load event to keep the page load performant
+			  window.addEventListener('load', () => {
+				navigator.serviceWorker.register('ServiceWorker.js');
+			  });
+			}			
+		</script>
+		
 		<!-- Load SAPUI5, select theme and control library -->
 		<script src="exface/vendor/exface/OpenUI5Template/Templates/js_openui5/resources/sap-ui-core.js"
 				id="sap-ui-bootstrap"
@@ -55,6 +65,12 @@
 		<script type="text/javascript" src="exface/vendor/exface/OpenUI5Template/Templates/js/openui5.template.js"></script>
 		
 		[[Exface? &action=`exface.Core.ShowWidget` &template=`exface.OpenUI5Template.OpenUI5Template` &fallback_field=`content`]]
+		
+		<script type="text/javascript">
+			sap.ui.getCore().attachInit(function () {
+				[[Exface? &action=`exface.Core.ShowWidget` &template=`exface.OpenUI5Template.OpenUI5Template` &fallback_field=`content`]]
+			});
+		</script>
 		
 		<script type="text/javascript">
 			// Main menu
@@ -112,6 +128,8 @@
 					oShell.addContent(
 			    		new sap.ui.core.ComponentContainer({
 							name: "[*alias*]",
+							async: true,
+							manifest: true,
 							settings: {
 								id: "[*alias*].Component"
 							}

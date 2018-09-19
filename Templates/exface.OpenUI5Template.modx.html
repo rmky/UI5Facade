@@ -10,6 +10,10 @@
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="mobile-web-app-capable" content="yes">
 		
+		<link rel="shortcut icon" sizes="196x196" href="assets/images/alexa_icon_196.png">
+		<link rel="apple-touch-icon" sizes="128x128" href="assets/images/alexa_icon_128.png">
+		<link rel="apple-touch-icon-precomposed" sizes="128x128" href="assets/images/alexa_icon_128.png">
+
 		<meta id="exf-page-id" name="page_id" content="[*id*]">
 		
 		<title>[*pagetitle*]</title>
@@ -60,9 +64,13 @@
 		
 		<script type="text/javascript" src="exface/vendor/exface/OpenUI5Template/Templates/js/openui5.template.js"></script>
 		
-		[[Exface? &action=`exface.Core.ShowHeaders` &template=`exface.OpenUI5Template.OpenUI5Template` &fallback_field=``]]
-		
 		[[Exface? &action=`exface.Core.ShowWidget` &template=`exface.OpenUI5Template.OpenUI5Template` &fallback_field=`content`]]
+		
+		<script type="text/javascript">
+			sap.ui.getCore().attachInit(function () {
+				[[Exface? &action=`exface.Core.ShowWidget` &template=`exface.OpenUI5Template.OpenUI5Template` &fallback_field=`content`]]
+			});
+		</script>
 		
 		<script type="text/javascript">
 			// Main menu

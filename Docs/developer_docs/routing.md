@@ -80,6 +80,64 @@ Each app uses an instance of <code>sap.m.routing.Router</code> for routing, whic
 
 The router is initially empty (except for built-in routes to the static views - see above). Routes to pages and widgets are added dynamically by button handlers in the controller. This is especially important for complex data management apps, that often have deeply nested dialogs (e.g. Administration > Metamodel > Objects > Dialog "edit object" > Dialog "edit attribute" > Dialog "show related object" > ...): in this case, the generation of a predefined routing configuration would become overly complex or even impossible if recursions lead to an infinite depth.
 
+### Route names
+
+The following routing configuration (in <code>manifest.json</code>) shows some examples for route names and corresponding targets.
+
+```
+"routing": {
+	"config": {...},
+	"routes": [
+		{
+		"pattern": "",
+		"name": "rootVendor.rootApp.rootPageAlias",
+		"target": "rootVendor.rootApp.rootPageAlias"
+		},
+		{
+		"pattern": "pageVendor.pageApp.Page1Alias/:params:",
+		"name": "pageVendor.pageApp.Page1Alias",
+		"target": "pageVendor.pageApp.PageAlias"
+		},
+		{
+		"pattern": "pageVendor.pageApp.Page1Alias.Widget_Id/:params:",
+		"name": "pageVendor.pageApp.Page1Alias.Widget_Id",
+		"target": "pageVendor.pageApp.Page1Alias.Widget_Id"
+		}
+	],
+	"targets": {
+		"rootVendor.rootApp.rootPageAlias": {
+		   "viewId": "rootVendor.rootApp.rootPageAlias",
+		   "viewName": "rootVendor.rootApp.rootPageAlias",
+		   "viewLevel" : 1
+		},
+		"pageVendor.pageApp.Page1Alias": {
+		   "viewId": "pageVendor.pageApp.Page1Alias",
+		   "viewName": "pageVendor.pageApp.Page1Alias",
+		   "viewLevel" : 2
+		},
+		"pageVendor.pageApp.Page1Alias.Widget_Id": {
+		   "viewId": "pageVendor.pageApp.Page1Alias.Widget_Id",
+		   "viewName": "pageVendor.pageApp.Page1Alias.Widget_Id",
+		   "viewLevel" : 3
+		},
+		"notFound": {
+		   "viewId": "notFound",
+		   "viewName": "NotFound",
+		   "transition": "show"
+		},
+		"offline": {
+		   "viewId": "offline",
+		   "viewName": "Offline",
+		   "transition": "show"
+		}
+	}
+}
+```
+
+Basically every view has a default route matching it's view name. Thus, you can call <code>this.getRouter().getRoute("vendor.app.PageAlias")</code> in a controller to get the route to a specific page. Keep in mind, though, that routes are only created when the view is loaded via <code>BaseController.navTo()</code> (see below), so when getting a route, you must be sure, it was already loaded!
+
+Every route also has a generic optional parameter <code>params</code>, which accepts a JSON encoded object with parameters like data, prefill, etc.
+
 ### Custom async view loader
 
 The <code>BaseController</code> provides a custom resource loader, that preloads view and controller files before the router performs the actual navigation. This was neccessary because UI5 uses synchronous AJAX requests to fetch the files and these are incompatible with offline PWAs. 
@@ -104,6 +162,10 @@ this.navTo('pageVendor.pageApp.PageAlias', '', {
 	headers: [/* ... */]
 });
 ```
+
+### Passing data
+
+Every route has a generic optional parameter <code>params</code>, that accepts a JSON encoded object with any kind of parameters. Thes parameter object is automatically made available in the view model and, thus, the target controller via <code>this.getView().getModel('view').getProperty('_route/params')</code>. This way, you can allways access data, prefill and other parameters passed when the view was loaded.
 
 ### Modifying/extending fetched views
 
@@ -130,7 +192,7 @@ Be careful: this will only work for views loaded dynamically. While navigation w
 
 ## Preloading resources
 
-
+TODO
 
 ## Routing in exported Fiori apps
 

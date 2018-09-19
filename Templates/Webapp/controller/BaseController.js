@@ -18,6 +18,22 @@ sap.ui.define([
 		},
 		
 		/**
+		 * This method is executed every time a route leading to the view of this controller is matched.
+		 * 
+		 * @private
+		 * 
+		 * @param sap.ui.base.Event oEvent
+		 * 
+		 * @return void
+		 */
+		_onRouteMatched : function (oEvent) {
+			var oViewModel = this.getView().getModel('view');
+			var oArgs = oEvent.getParameter("arguments");
+			var oParams = (oArgs.params === undefined ? {} : this._decodeRouteParams(oArgs.params));
+			oViewModel.setProperty("/_route", {params: oParams, prefill: true});
+		},
+		
+		/**
 		 * Navigates to the view matching the given page and widget.
 		 * 
 		 * Returns the the jQuery XHR object used to load the view or nothing if no request
@@ -32,6 +48,7 @@ sap.ui.define([
 		navTo : function(sPageAlias, sWidgetId, oXHRSettings) {
 			var oRouter = this.getRouter();	
 			var sViewName = this.getViewName(sPageAlias, sWidgetId);
+			var sRouteParams = this._encodeRouteParams(oXHRSettings && oXHRSettings.data ? oXHRSettings.data : {});
 			
 			// Register page in router
 			this._addRoute(oRouter, sViewName);
@@ -43,7 +60,7 @@ sap.ui.define([
 			// Now using substitute name ~anonymous~1.js -  sap.ui.ModuleSystem
 			// Obviously, we need to wrap ap.ui.jsview(...) in the view definition file in
 			// something - but what???
-			return this._loadView(sViewName, function(){oRouter.navTo(sViewName)}, oXHRSettings);
+			return this._loadView(sViewName, function(){oRouter.navTo(sViewName, {params: sRouteParams})}, oXHRSettings);
 		},
 		
 		/**
@@ -131,23 +148,23 @@ sap.ui.define([
 		 * @param sap.ui.core.routing.Router oRouter
 		 * @param String sPattern
 		 */
-		_addRoute: function(oRouter, sPattern) {
+		_addRoute: function(oRouter, sName) {
 			var aTargets = oRouter.getTargets();
 			
-			if (aTargets.getTarget(sPattern) === undefined) {
-				jQuery.sap.log.info('Adding target ' + sPattern);
-				aTargets.addTarget(sPattern, {
-					"viewId": sPattern,
-					"viewName": sPattern
+			if (aTargets.getTarget(sName) === undefined) {
+				jQuery.sap.log.info('Adding target ' + sName);
+				aTargets.addTarget(sName, {
+					"viewId": sName,
+					"viewName": sName
 				});
 			}
 			
-			if (oRouter.getRoute(sPattern) === undefined) {
-				jQuery.sap.log.info('Adding route ' + sPattern);
+			if (oRouter.getRoute(sName) === undefined) {
+				jQuery.sap.log.info('Adding route ' + sName);
 				oRouter.addRoute({
-					"pattern": sPattern,
-					"name": sPattern,
-					"target": sPattern
+					"pattern": sName + "/:params:",
+					"name": sName,
+					"target": sName
 				});
 			}
 		},
@@ -183,7 +200,12 @@ sap.ui.define([
 		},
 		
 		/**
+		 * Shows an error dialog for an AJAX error with either HTML or a UI5 JSView in the response body.
 		 * 
+		 * @param String sBody
+		 * @param String sTitle
+		 * 
+		 * @return void
 		 */
 		showAjaxErrorDialog : function(sBody, sTitle) {
 			var view = '';
@@ -199,6 +221,24 @@ sap.ui.define([
 		    } else {
 		        showHtmlInDialog(sTitle, errorBody, 'Error');
 		    }
+		},
+		
+		/**
+		 * Produces a string to be used as route parameter from a given object.		 * 
+		 * @param Object oParams
+		 * @return String
+		 */
+		_encodeRouteParams : function(oParams) {
+			// Need URI encoding to prevent crossroads invalid value error
+			return encodeURIComponent(JSON.stringify(oParams));
+		},
+		
+		/**
+		 * @param String sParams
+		 * @return Object
+		 */
+		_decodeRouteParams : function(sParams) {
+			return JSON.parse(decodeURIComponent(sParams));
 		}
 		
 	});

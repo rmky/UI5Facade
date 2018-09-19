@@ -248,10 +248,15 @@ sap.ui.define([
 
         onInit: function () {
             var oController = this;
+            
+            this.getView().setModel(new sap.ui.model.json.JSONModel(), "view");
+
+            this.getRouter().getRoute("{$this->getView()->getRouteName()}").attachMatched(this._onRouteMatched, this);
+            
 			{$this->buildJsOnInitScript()}
 		},
 
-		{$this->buildJsProperties()}
+        {$this->buildJsProperties()}
 
 	});
 

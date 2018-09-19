@@ -5,6 +5,7 @@ use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
+use exface\Core\DataTypes\StringDataType;
 
 class WebappView implements ui5ViewInterface
 {
@@ -57,6 +58,11 @@ class WebappView implements ui5ViewInterface
     public function getName(): string
     {
         return $this->viewName;
+    }
+    
+    public function getRouteName(): string
+    {
+        return StringDataType::substringAfter($this->getName(), $this->getController()->getWebapp()->getComponentName() . '.view.');
     }
     
     /**

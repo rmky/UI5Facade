@@ -64,12 +64,12 @@
 			"routes": [
 				{
 				"pattern": "",
-				"name": "appHome",
-				"target": "home"
+				"name": "[#app_id#]",
+				"target": "[#app_id#]"
 				}
 			],
 			"targets": {
-				"home": {
+				"[#app_id#]": {
 				   "viewId": "[#app_id#]",
 				   "viewName": "[#app_id#]",
 				   "viewLevel" : 1

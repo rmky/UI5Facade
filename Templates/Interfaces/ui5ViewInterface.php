@@ -15,18 +15,25 @@ interface ui5ViewInterface {
     public function getRootElement() : ui5AbstractElement;
     
     /**
-     * Returns the name of the view: e.g. my.app.root.view.my.app.widgetPage
+     * Returns the name of the view: e.g. my.app.root.view.my.app.Page
      *
      * @return string
      */
     public function getName() : string;
     
     /**
-     * Returns the path to the controller: e.g. my/app/root/view/my/app/widgetPage.view.js
+     * Returns the path to the controller: e.g. my.app.root/view/my/app/Page.view.js
      *
      * @return string
      */
     public function getPath() : string;
+    
+    /**
+     * Returns the name of the default route of the view: e.g. my.app.Page
+     * 
+     * @return string
+     */
+    public function getRouteName(): string;
     
     public function isBuilt() : bool;
     

@@ -71,11 +71,6 @@ class ui5Dialog extends ui5Form
 
 JS;
     }
-				
-    protected function hasHeader()
-    {
-        
-    }
         
     protected function buildJsHeader()
     {
@@ -136,6 +131,7 @@ JS;
         }
         
         return <<<JS
+
             showTitleInHeaderContent: true,
             headerTitle:
 				new sap.uxap.ObjectPageHeader({
@@ -152,7 +148,6 @@ JS;
 			headerContent:[
 				{$header_content}
 			]
-
 JS;
     }
 				

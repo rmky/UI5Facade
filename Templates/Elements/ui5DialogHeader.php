@@ -37,20 +37,9 @@ class ui5DialogHeader extends ui5Container
             return '';
         }
         
-        if ($widget instanceof InputSelect) {
-            $text = $widget->getValueText();
-        } else {
-            $text = $widget->getValue();
-        }
+        $element = new ui5ObjectStatus($widget, $this->getTemplate());
         
-        return <<<JS
-        
-                    new sap.m.ObjectStatus({
-                        title: "{$widget->getCaption()}",
-                        text: "{$text}"
-                    }),
-                    
-JS;
+        return $element->buildJsConstructor();
     }
         
     protected function buildJsVerticalLayout(iContainOtherWidgets $widget)

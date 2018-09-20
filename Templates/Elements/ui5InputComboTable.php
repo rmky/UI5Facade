@@ -69,6 +69,11 @@ JS;
         }
     }
     
+    protected function buildJsValueLoader(string $oInputJs) : string
+    {
+        
+    }
+    
     /**
      *
      * {@inheritDoc}
@@ -79,13 +84,38 @@ JS;
         $widget = $this->getWidget();
         
         if (! $this->isValueBoundToModel() && $value = $widget->getValueWithDefaults()) {
+            // If the widget value is set explicitly, we either set the key only or the 
+            // key and the text (= value of the input)
             if ($widget->getValueText() === null || $widget->getValueText() === '') {
-                $value_init_js = '.' . $this->buildJsValueSetterMethod('"' . $this->escapeJsTextValue($value) . '"');
+                $value_init_js = <<<JS
+
+        .{$this->buildJsValueSetterMethod('"' . $this->escapeJsTextValue($value) . '"')}
+JS;
             } else {
-                $value_init_js = '.setValue("' . $widget->getValueText() . '").setSelectedKey("' . $this->escapeJsTextValue($value) . '")';
+                $value_init_js = <<<JS
+
+        .setValue("{$widget->getValueText()}")
+        .setSelectedKey("{$this->escapeJsTextValue($value)}")
+JS;
             }
         } else {
-            $value_init_js = '';
+            // If the value is to be taken from a model, we need to check if both - key
+            // and value are there. If not, the value needs to be fetched from the server.
+            // TODO Check if a value can be taken from the model instead of loading it
+            // from the server. I didn't come up with an elegant solution though: how
+            // to determine, which column of the model (= prefill sheet) to look for???
+            $value_init_js = <<<JS
+
+        .attachModelContextChange(function(oEvent) {
+            var oInput = oEvent.getSource();
+            var sKey = oInput.getSelectedKey();
+            var sVal = oInput.getValue();
+            
+            if (sKey !== '' && sVal === '') {
+                oInput.{$this->buildJsValueSetterMethod('sKey')};
+            }
+        })
+JS;
         }
         
         // See if there are promoted columns. If not, make the first two visible columns 
@@ -150,6 +180,7 @@ JS;
         }
         
         return <<<JS
+
 	   new sap.m.Input("{$this->getId()}", {
 			{$this->buildJsProperties()}
             {$this->buildJsPropertyType()}
@@ -182,7 +213,8 @@ JS;
 				{$columns}
             ],
 			{$this->buildJsProperties()}
-        }).setModel(new sap.ui.model.json.JSONModel(), "{$this->getModelNameForAutosuggest()}")
+        })
+        .setModel(new sap.ui.model.json.JSONModel(), "{$this->getModelNameForAutosuggest()}")
         {$value_init_js}{$this->buildJsPseudoEventHandlers()}
 JS;
     }
@@ -269,7 +301,7 @@ JS;
     {
         $widget = $this->getWidget();
         if ($this->isValueBoundToModel()) {
-            return 'value: "{/site__LABEL}", selectedKey: ' . $this->buildJsValueBinding() . ',';
+            return 'selectedKey: ' . $this->buildJsValueBinding() . ',';
         }
         return '';
     }

@@ -96,9 +96,9 @@ JS;
             }
             
             // send pagination/limit information. Charts currently do not support real pagination, but just a TOP-X display.
-            if ($widget->getData()->getPaginate()) {
+            if ($widget->getData()->isPaged()) {
                 $post_data .= 'data.start = 0;';
-                $post_data .= 'data.length = ' . (! is_null($widget->getData()->getPaginatePageSize()) ? $widget->getData()->getPaginatePageSize() : $this->getTemplate()->getConfig()->getOption('WIDGET.CHART.PAGE_SIZE')) . ';';
+                $post_data .= 'data.length = ' . $widget->getData()->getPaginator()->getPageSize($this->getTemplate()->getConfig()->getOption('WIDGET.CHART.PAGE_SIZE')) . ';';
             }
             
             // Loader function

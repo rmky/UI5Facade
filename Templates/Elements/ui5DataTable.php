@@ -43,8 +43,9 @@ class ui5DataTable extends ui5AbstractElement
     public function buildJsConstructor($oControllerJs = 'oController') : string
     { 
         $controller = $this->getController();
-        $controller->addProperty($this->getId() . '_pages', $this->buildJsPaginationObject());
-        $controller->addMethod('onPaginate', $this, '', $this->buildJsPaginationRefresh());
+        
+        $this->getPaginatorElement()->registerControllerMethods();
+        
         $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
         $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos, growing', $this->buildJsDataLoader());
         $controller->addDependentControl('oConfigurator', $this, $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget()));
@@ -169,17 +170,27 @@ JS;
                 rows: "{/data}"
         	})
             .setModel(new sap.ui.model.json.JSONModel())
-            .attachFirstVisibleRowChanged(function() {
-                var pages = this.{$this->getId()}_pages;
-                var lastVisibleRow = oTable.getFirstVisibleRow() + oTable.getVisibleRowCount();
-                if ((pages.pageSize - lastVisibleRow <= 1) && (pages.end() + 1 !== pages.total)) {
-                    pages.increasePageSize();
-                    {$this->buildJsRefresh(true, true)}
-                }
-            }){$this->buildJsClickListeners('oController')}
+            {$this->buildJsScrollHandlerForUiTable()}
+            {$this->buildJsClickListeners('oController')}
 JS;
             
         return $js;
+    }
+    
+    protected function buildJsScrollHandlerForUiTable() : string
+    {
+        return <<<JS
+
+            .attachFirstVisibleRowChanged(function(oEvent) {
+                var oTable = oEvent.getSource();
+                var oPaginator = {$this->getPaginatorElement()->buildJsGetPaginator('this')};
+                var lastVisibleRow = oTable.getFirstVisibleRow() + oTable.getVisibleRowCount();
+                if ((oPaginator.pageSize - lastVisibleRow <= 1) && (oPaginator.end() + 1 !== oPaginator.total)) {
+                    oPaginator.increasePageSize();
+                    {$this->buildJsRefresh(true, true)}
+                }
+            })
+JS;
     }
     
     /**
@@ -314,6 +325,9 @@ JS;
                         sap.ui.getCore().byId('{$this->getId()}').invalidate();
 JS;
         }
+            
+        $paginationSwitch = $widget->isPaged() ? 'true' : 'false';
+        $paginator = $this->getPaginatorElement();
         
         $url = $this->getAjaxUrl();
         $params = '
@@ -343,8 +357,8 @@ JS;
                             var oDataNew = this.getData();
                             oDataNew.data = oData.data.concat(oDataNew.data);
                         }
-                        oController.{$this->getId()}_pages.total = this.getProperty("/recordsFiltered");
-                        {$controller->buildJsMethodCallFromController('onPaginate', $this, '', 'oController')};
+                        {$paginator->buildJsSetTotal('this.getProperty("/recordsFiltered")', 'oController')};
+                        {$paginator->buildJsRefresh('oController')};
                         
                         {$dynamicPageFixes}                     
 
@@ -370,16 +384,18 @@ JS;
                 params.data = {$this->getP13nElement()->buildJsDataGetter()};
                 
         		// Add pagination
-                var pages = this.{$this->getId()}_pages;
-                if (! {$keepPagePosJsVar}) {
-                    pages.resetAll();
-                }
-                if ({$growingJsVar}) {
-                    params.start = pages.growingLoadStart();
-                    params.length = pages.growingLoadPageSize();
-                } else {
-                    params.start = pages.start;
-                    params.length = pages.pageSize;
+                if ({$paginationSwitch}) {
+                    var paginator = {$this->getPaginatorElement()->buildJsGetPaginator('oController')};
+                    if (! {$keepPagePosJsVar}) {
+                        paginator.resetAll();
+                    }
+                    if ({$growingJsVar}) {
+                        params.start = paginator.growingLoadStart();
+                        params.length = paginator.growingLoadPageSize();
+                    } else {
+                        params.start = paginator.start;
+                        params.length = paginator.pageSize;
+                    }
                 }
         
                 {$this->buildJsDataSourceColumnActions($oControlEventJsVar)}
@@ -466,83 +482,6 @@ JS;
         return "{$this->buildJsFunctionPrefix()}CountFilters";
     }
 
-	/**
-     * Returns JavaScript-Functions which are necessary for the pagination.
-     *
-     * @return string
-     */
-    protected function buildJsPaginationObject()
-    {
-        $defaultPageSize = $this->getPaginationPageSize();
-        
-        return <<<JS
-{
-                	start: 0,
-                    pageSize: {$defaultPageSize},
-                    total: 0,
-                    end: function() {
-                        return Math.min(this.start + this.pageSize - 1, this.total - 1);
-                    },
-                    previous: function() {
-                        this.resetPageSize();
-                        if (this.start >= this.pageSize) {
-                            this.start -= this.pageSize;
-                        } else {
-                            this.start = 0;
-                        }
-                    },
-                    next: function() {
-                        if (this.start < this.total - this.pageSize) {
-                            this.start += this.pageSize;
-                        }
-                        this.resetPageSize();
-                    },
-                    increasePageSize: function() {
-                        this.pageSize += {$defaultPageSize};
-                    },
-                    resetPageSize: function() {
-                        this.pageSize = {$defaultPageSize};
-                    },
-                    resetAll: function() {
-                        this.start = 0;
-                        this.pageSize = {$defaultPageSize};
-                        this.total = 0;
-                    },
-                    growingLoadStart: function() {
-                        return this.start + this.pageSize - {$defaultPageSize};
-                    },
-                    growingLoadPageSize: function() {
-                        return {$defaultPageSize};
-                    }
-                },
-
-JS;
-    }
-    
-    /**
-     * 
-     * @return string
-     */
-    protected function buildJsPaginationRefresh() : string
-    {
-        return <<<JS
-                
-                    var pages = this.{$this->getId()}_pages;
-                	if (pages.start === 0) {
-                        sap.ui.getCore().byId("{$this->getId()}_prev").setEnabled(false);
-                	} else {
-                        sap.ui.getCore().byId("{$this->getId()}_prev").setEnabled(true);
-                	}
-                	if (pages.end() === (pages.total - 1)) {
-                        sap.ui.getCore().byId("{$this->getId()}_next").setEnabled(false);
-                	} else {
-                		sap.ui.getCore().byId("{$this->getId()}_next").setEnabled(true);
-                	}
-                    sap.ui.getCore().byId("{$this->getId()}_pager").setText((pages.start + 1) + ' - ' + (pages.end() + 1) + ' / ' + pages.total);
-
-JS;
-    }
-
     /**
      * Returns the constructor for the table's main toolbar (OverflowToolbar).
      * 
@@ -559,38 +498,7 @@ JS;
     protected function buildJsToolbar($oControllerJsVar = 'oController')
     {
         $controller = $this->getController();
-        $heading = $this->buildTextTableHeading();
-        if ($this->getWidget()->getPaginate()) {
-            $heading .= ': ';
-            $pager = <<<JS
-        new sap.m.Label("{$this->getId()}_pager", {
-            text: ""
-        }),
-        new sap.m.OverflowToolbarButton("{$this->getId()}_prev", {
-            icon: "sap-icon://navigation-left-arrow",
-            layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
-            text: "{$this->translate('WIDGET.PAGINATOR.PREVIOUS_PAGE')}",
-            enabled: false,
-            press: function() {
-                {$oControllerJsVar}.{$this->getId()}_pages.previous();
-                {$this->buildJsRefresh(true, false, $oControllerJsVar)}
-            }
-        }),
-        new sap.m.OverflowToolbarButton("{$this->getId()}_next", {
-            icon: "sap-icon://navigation-right-arrow",
-            layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
-            text: "{$this->translate('WIDGET.PAGINATOR.NEXT_PAGE')}",
-			enabled: false,
-            press: function() {
-                {$oControllerJsVar}.{$this->getId()}_pages.next();
-                {$this->buildJsRefresh(true, false, $oControllerJsVar)}
-            }
-        }),
-        
-JS;
-        } else {
-            $pager = '';
-        }
+        $heading = $this->buildTextTableHeading() . ($this->getWidget()->isPaged() ? ': ' : '');
         $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $heading . '"}),';
         
         $toolbar = <<<JS
@@ -598,7 +506,7 @@ JS;
                 design: "Transparent",
 				content: [
 					{$heading}
-			        {$pager}
+			        {$this->getPaginatorElement()->buildJsConstructor($oControllerJsVar)}
                     new sap.m.ToolbarSpacer(),
                     {$this->buildJsButtonsConstructors()}
 					new sap.m.SearchField("{$this->getId()}_quickSearch", {
@@ -620,6 +528,15 @@ JS;
 			})
 JS;
         return $toolbar;
+    }
+    
+    /**
+     * 
+     * @return ui5DataPaginator
+     */
+    protected function getPaginatorElement() : ui5DataPaginator
+    {
+        return $this->getTemplate()->getElement($this->getWidget()->getPaginator());
     }
     
     /**
@@ -683,16 +600,6 @@ JS;
             }
         }
         return $buttons;
-    }
-
-    /**
-     * Returns the number of records to show on one page.
-     * 
-     * @return number
-     */
-    protected function getPaginationPageSize()
-    {
-        return $this->getWidget()->getPaginatePageSize() ? $this->getWidget()->getPaginatePageSize() : $this->getTemplate()->getConfig()->getOption('WIDGET.DATATABLE.PAGE_SIZE');
     }
     
     /**

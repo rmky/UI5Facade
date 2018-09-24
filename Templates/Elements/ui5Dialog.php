@@ -9,9 +9,10 @@ use exface\Core\Widgets\Image;
 use exface\Core\Widgets\MenuButton;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\Widgets\iHaveValue;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
-use exface\Core\Interfaces\Actions\iUsePrefillData;
 use exface\Core\Interfaces\Actions\iShowWidget;
+use exface\Core\Interfaces\Model\MetaAttributeInterface;
+use exface\Core\Factories\WidgetFactory;
+use exface\Core\CommonLogic\UxonObject;
 
 /**
  * In OpenUI5 dialog widgets are either rendered as an object page layout (if the dialog is maximized) or
@@ -76,49 +77,13 @@ JS;
     {
         $widget = $this->getWidget();
         
-        if ($this->getMetaObject()->hasUidAttribute()) {
-            $uid_widget = $widget->findChildrenByAttribute($this->getMetaObject()->getUidAttribute())[0];
-            if ($uid_widget === null) {
-                if ($widget->hasHeader()) {
-                    $uid_widget = $widget->getHeader()->findChildrenByAttribute($this->getMetaObject()->getUidAttribute())[0];
-                }
-            }
-            
-            if ($uid_widget && $uid_widget->hasValue()) {
-                if ($widget->hasHeader()) {
-                    $title_attr = $widget->getHeader()->getTitleAttribute();
-                } elseif ($widget->getMetaObject()->hasLabelAttribute()) {
-                    $title_attr = $widget->getMetaObject()->getLabelAttribute();
-                } 
-                
-                if ($title_attr) {
-                    $uid_data_sheet = DataSheetFactory::createFromObject($this->getMetaObject());
-                    $uid_data_sheet->getColumns()->addFromAttribute($title_attr);
-                    $uid_data_sheet->addFilterFromString($this->getMetaObject()->getUidAttributeAlias(), $uid_widget->getValue());
-                    $uid_data_sheet->dataRead();
-                    if ($title_attr) {
-                        $title = $uid_data_sheet->getCellValue($title_attr->getAliasWithRelationPath(), 0);
-                    } elseif ($this->getMetaObject()->hasUidAttribute()) {
-                        $title = $uid_data_sheet->getCellValue($this->getMetaObject()->getUidAttribute()->getAlias(), 0);
-                    }
-                    if ($widget->hasHeader()) {
-                        $header = $widget->getHeader();
-                        if ($header->getCaption()) {
-                            $title = $header->getCaption() . ' ' . $title;
-                        }
-                    }
-                } else {
-                    $title = 'Object without title';
-                }
-            }
-        }
-        $heading = $title ? $title : $this->translate('WIDGET.DIALOG.TITLE_NEW');
-        
         if ($widget->hasHeader()) {
             foreach ($widget->getHeader()->getChildren() as $child) {
                 if ($child instanceof Image) {
+                    $imageElement = $this->getTemplate()->getElement($child);
                     $image = <<<JS
-                    objectImageURI: "{$child->getUri()}",
+
+                    objectImageURI: {$imageElement->buildJsValue()},
 			        objectImageShape: "Circle",
 JS;
                     $child->setHidden(true);
@@ -135,11 +100,11 @@ JS;
             showTitleInHeaderContent: true,
             headerTitle:
 				new sap.uxap.ObjectPageHeader({
-					objectTitle:"{$this->escapeJsTextValue($heading)}",
-    				  showMarkers: false,
-    				  isObjectIconAlwaysVisible: false,
-    				  isObjectTitleAlwaysVisible: false,
-    				  isObjectSubtitleAlwaysVisible: false,
+					objectTitle: {$this->buildJsObjectTitle()},
+				    showMarkers: false,
+				    isObjectIconAlwaysVisible: false,
+				    isObjectTitleAlwaysVisible: false,
+				    isObjectSubtitleAlwaysVisible: false,
                     {$image}
 					actions: [
 						
@@ -149,6 +114,62 @@ JS;
 				{$header_content}
 			]
 JS;
+    }
+				
+    protected function buildJsObjectTitle() : string
+    {
+        $widget = $this->getWidget();
+        
+        // If the dialog has a header and it has a fixed or prefilled title, take it as is.
+        if ($widget->hasHeader()) {
+            $header = $widget->getHeader();
+            if ($header->isPrefilled() || ! $header->isTitleBoundToAttribute()) {
+                return '"' . $this->escapeJsTextValue($widget->getCaption()) . '"';
+            }
+        }
+        
+        // Otherwise try to find a good title
+        $object = $widget->getMetaObject();
+        if ($widget->hasHeader()) {
+            $title_attr = $widget->getHeader()->getTitleAttribute();
+        } elseif ($object->hasLabelAttribute()) {
+            $title_attr = $object->getLabelAttribute();
+        } elseif ($object->hasUidAttribute()) {
+            $title_attr = $object->getUidAttribute();
+        } else {
+            // If no suitable attribute can be found, use the object name as static title
+            return '"' . $this->escapeJsTextValue($object->getName()) . '"';
+        }
+        
+        // Once a title attribute is found, create an invisible display widget and
+        // let it's element produce a binding.
+        $titleWidget = WidgetFactory::createFromUxon($widget->getPage(), new UxonObject([
+            'widget_type' => 'Display',
+            'hidden' => true,
+            'attribute_alias' => $title_attr->getAliasWithRelationPath()
+        ]), $widget);
+        $titleElement = $this->getTemplate()->getElement($titleWidget);
+        return $titleElement->buildJsValue();
+    }
+    
+    /**
+     * 
+     * @param MetaAttributeInterface $attribute
+     * @return iHaveValue|NULL
+     */
+    protected function findWidgetByAttribute(MetaAttributeInterface $attribute) : ?iHaveValue
+    {
+        $widget = $this->getWidget();
+        $found = null;
+        
+        $found = $widget->findChildrenByAttribute($attribute)[0];
+        if ($found === null) {
+            if ($widget->hasHeader()) {
+                $found = $widget->getHeader()->findChildrenByAttribute($attribute)[0];
+            }
+        }
+        
+        return $found;
     }
 				
     protected function buildJsDialog()

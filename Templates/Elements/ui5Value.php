@@ -70,7 +70,7 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsValue()
+    public function buildJsValue()
     {
         if (! $this->isValueBoundToModel()) {
             $value = $this->escapeJsTextValue($this->getWidget()->getValue());

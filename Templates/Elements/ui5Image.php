@@ -24,8 +24,7 @@ class ui5Image extends ui5Display
         return <<<JS
 
         new sap.m.Image("{$this->getid()}", {
-    		src: {$this->buildJsValue()},
-            densityAware: false,
+    		densityAware: false,
             {$this->buildJsProperties()}
     	})
 
@@ -68,6 +67,11 @@ JS;
     protected function buildCssWidthDefaultValue()
     {
         return '';
+    }
+    
+    public function buildJsValueBindingPropertyName() : string
+    {
+        return 'src';
     }
 }
 ?>

@@ -174,12 +174,32 @@ JS;
 				
     protected function buildJsDialog()
     {
-        if ($this->getWidget()->countWidgetsVisible() === 1) {
+        $widget = $this->getWidget();
+        $icon = $widget->getIcon() ? 'icon: "' . $this->getIconSrc($widget->getIcon()) . '",' : '';
+        
+        // The content of the dialog is either a single widget or a layout with multiple widgets
+        if ($widget->countWidgetsVisible() === 1) {
             $content = $this->buildJsChildrenConstructors();
         } else {
             $content = $this->buildJsLayoutForm($this->buildJsChildrenConstructors()); 
         }
-        $icon = $this->getWidget()->getIcon() ? 'icon: "' . $this->getIconSrc($this->getWidget()->getIcon()) . '",' : '';
+        
+        // If the dialog requires a prefill, we need to load the data once the dialog is opened.
+        if ($this->needsPrefill()) {
+            $prefill = <<<JS
+
+            beforeOpen: function(oEvent) {
+                var oDialog = oEvent.getSource();
+                var oView = {$this->getController()->getView()->buildJsViewGetter($this)};
+                {$this->buildJsPrefillLoader('oView')}
+            },
+
+JS;
+        } else {
+            $prefill = '';
+        }
+        
+        // Finally, instantiate the dialog
         return <<<JS
 
         new sap.m.Dialog("{$this->getId()}", {
@@ -188,9 +208,9 @@ JS;
             stretch: jQuery.device.is.phone,
             title: "{$this->getCaption()}",
 			buttons : [ {$this->buildJsDialogButtons()} ],
-			content : [ {$content} ]
+			content : [ {$content} ],
+            {$prefill}
 		});
-
 JS;
     }
     

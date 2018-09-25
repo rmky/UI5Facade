@@ -153,9 +153,14 @@ JS;
 JS;
         } else {
             // If it's a dialog, load the view and open the dialog after it has been loaded.
+            
             // Note, that the promise resolves _before_ the content of the view is rendered,
             // so opening the dialog right away will make it appear blank. Instead, we use
             // setTimeout() to wait for the view to render completely.
+            
+            // Also make sure, the view model receives route parameters despite the fact, that
+            // it was not actually handled by a router. This is importat as all kinds of on-show
+            // handler will use route parameters (e.g. data, prefill, etc.) for their own needs.
             $output .= <<<JS
                         var sViewName = this.getViewName('{$targetWidget->getPage()->getAliasWithNamespace()}', '{$targetWidget->getId()}'); 
                         var sViewId = this.getViewId(sViewName);
@@ -166,6 +171,7 @@ JS;
                                     id: sViewId,
                                     viewName: "{$this->getTemplate()->getViewName($targetWidget, $this->getController()->getWebapp()->getRootPage())}"
                                 }).then(function(oView){
+                                    oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
                                     setTimeout(function() {
                                         var oDialog = oView.getContent()[0];
                                         oDialog.attachAfterClose(function() {
@@ -226,6 +232,11 @@ JS;*/
         return $output;
     }
     
+    /**
+     * 
+     * {@inheritdoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryButtonTrait::buildJsNavigateToPage
+     */
     protected function buildJsNavigateToPage(string $pageSelector, string $urlParams = '', AbstractJqueryElement $inputElement) : string
     {
         return <<<JS
@@ -352,4 +363,3 @@ JS;
         return parent::buildJsBusyIconHide(true);
     }
 }
-?>

@@ -241,8 +241,11 @@ sap.ui.define([
             var oController = this;
             
             this.getView().setModel(new sap.ui.model.json.JSONModel(), "view");
-
-            this.getRouter().getRoute("{$this->getView()->getRouteName()}").attachMatched(this._onRouteMatched, this);
+            
+            var oRouter = this.getRouter();
+            if (oRouter !== undefined) {
+                oRouter.getRoute("{$this->getView()->getRouteName()}").attachMatched(this._onRouteMatched, this);
+            }
             
 			{$this->buildJsOnInitScript()}
 		},

@@ -49,7 +49,12 @@ class ui5Html extends ui5Value
             $html = str_replace($tag, '', $html);
         }
         
-        $content = $this->escapeJsTextValue($html);
+        if ($this->isValueBoundToModel()) {
+            $content = '{' . $this->getValueBindingPath() . '}';
+        } else {
+            $content = $this->escapeJsTextValue($html);
+        }
+        
         return <<<JS
         new sap.ui.core.HTML("{$this->getId()}", {
             content: "<div class=\"exf-html\">{$content}</div>",

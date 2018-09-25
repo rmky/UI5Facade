@@ -284,14 +284,16 @@ JS;
      */
     protected function buildJsPrefillLoader(string $oViewJs = 'oView') : string
     {
+        $widget = $this->getWidget();
+        $triggerWidget = $widget->getParent() instanceof iTriggerAction ? $widget->getParent() : $widget;
         return <<<JS
         
             {$this->buildJsBusyIconShow()}
             var oRouteParams = {$oViewJs}.getModel('view').getProperty('/_route');
             var data = $.extend({}, {
                 action: "exface.Core.ReadPrefill",
-				resource: "{$this->getWidget()->getPage()->getAliasWithNamespace()}",
-				element: "{$this->getWidget()->getId()}",
+				resource: "{$widget->getPage()->getAliasWithNamespace()}",
+				element: "{$triggerWidget->getId()}",
             }, oRouteParams.params);
 			$.ajax({
                 url: "{$this->getAjaxUrl()}",

@@ -7,7 +7,6 @@ use exface\Core\CommonLogic\Model\App;
 use exface\Core\Factories\TemplateFactory;
 use exface\Core\CommonLogic\AppInstallers\SqlSchemaInstaller;
 use exface\Core\Templates\AbstractPWATemplate\ServiceWorkerInstaller;
-use exface\Core\Templates\AbstractPWATemplate\ServiceWorkerBuilder;
 use exface\Core\CommonLogic\Filemanager;
 
 class OpenUI5TemplateApp extends App

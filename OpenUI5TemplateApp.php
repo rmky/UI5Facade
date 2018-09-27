@@ -29,28 +29,13 @@ class OpenUI5TemplateApp extends App
         $tplInstaller->setTemplate(TemplateFactory::createFromString('exface.OpenUI5Template.OpenUI5Template', $this->getWorkbench()));
         $installer->addInstaller($tplInstaller);
         
+        // Install routes
         $schema_installer = new SqlSchemaInstaller($this->getSelector());
         $schema_installer->setDataConnection($this->getWorkbench()->model()->getModelLoader()->getDataConnection());
         $installer->addInstaller($schema_installer);
         
-        $serviceWorkerBuilder = new ServiceWorkerBuilder();
-        foreach ($this->getConfig()->getOption('INSTALLER.SERVICEWORKER.ROUTES') as $id => $uxon) {
-            $serviceWorkerBuilder->addRouteToCache(
-                $id, 
-                $uxon->getProperty('matcher'),
-                $uxon->getProperty('strategy'),
-                $uxon->getProperty('method'),
-                $uxon->getProperty('description'),
-                $uxon->getProperty('cacheName'),
-                $uxon->getProperty('maxEntries'),
-                $uxon->getProperty('maxAgeSeconds')
-            );
-        }
-        foreach ($this->getConfig()->getOption('INSTALLER.SERVICEWORKER.IMPORTS') as $path) {
-            $serviceWorkerBuilder->addImport($this->getWorkbench()->getCMS()->buildUrlToInclude($path));
-        }
-        $serviceWorkerInstaller = new ServiceWorkerInstaller($this->getSelector(), $serviceWorkerBuilder);
-        $installer->addInstaller($serviceWorkerInstaller);
+        // Install ServiceWorker
+        $installer->addInstaller(ServiceWorkerInstaller::fromConfig($this->getSelector(), $this->getConfig(), $this->getWorkbench()->getCMS()));
         
         return $installer;
     }

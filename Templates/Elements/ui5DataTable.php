@@ -424,7 +424,7 @@ JS;
 		for (var i=0; i<oTable.getColumns().length; i++){
 			var oColumn = oTable.getColumns()[i];
 			if (oColumn.getFiltered()){
-				params['fltr99_' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
+				params['{$this->getTemplate()->getUrlFilterPrefix()}' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
 			}
 		}
 		
@@ -442,7 +442,7 @@ JS;
 		
 		// If filtering just now, make sure the filter from the event is set too (eventually overwriting the previous one)
 		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'filter'){
-			params['fltr99_' + {$oControlEventJsVar}.getParameters().column.getFilterProperty()] = {$oControlEventJsVar}.getParameters().value;
+			params['{$this->getTemplate()->getUrlFilterPrefix()}' + {$oControlEventJsVar}.getParameters().column.getFilterProperty()] = {$oControlEventJsVar}.getParameters().value;
 		}
 
 JS;

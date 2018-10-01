@@ -25,6 +25,7 @@ class ui5Image extends ui5Display
 
         new sap.m.Image("{$this->getid()}", {
     		densityAware: false,
+            src: {$this->buildJsValue()},
             {$this->buildJsProperties()}
     	})
 

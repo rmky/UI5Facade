@@ -458,7 +458,7 @@ JS;
     
     public function getView() : ui5ViewInterface
     {
-        return $this->controller->getView();
+        return $this->getController()->getView();
     }
     
     public function setController(ui5ControllerInterface $controller) : ui5AbstractElement

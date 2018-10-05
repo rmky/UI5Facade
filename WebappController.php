@@ -30,6 +30,8 @@ class WebappController implements ui5ControllerInterface
     
     private $externalCss = [];
     
+    private $pseudo_events = [];
+    
     public function __construct(Webapp $webapp, string $controllerName, ui5ViewInterface $view)
     {
         $this->webapp = $webapp;
@@ -75,9 +77,6 @@ class WebappController implements ui5ControllerInterface
         }
         
         $propertyName = $this->buildJsMethodName($methodName, $methodOwner);
-        if (! $this->hasProperty($propertyName)) {
-            throw new OutOfBoundsException('Method "' . $propertyName . '" not found in controller "' . $this->getName() . '"!');    
-        }
         
         if ($methodOwner->getController() === $this) {
             return "{$oControllerJsVar}.{$propertyName}({$paramsJs})";
@@ -239,11 +238,19 @@ sap.ui.define([
 
         onInit: function () {
             var oController = this;
+            var oView = this.getView();
             
             // Init model for view settings
-            this.getView().setModel(new sap.ui.model.json.JSONModel(), "view");
+            oView.setModel(new sap.ui.model.json.JSONModel({
+                _prefill: {
+                    pending: false, 
+                    data: {}
+                } 
+            }), "view");
             // Init base view model (used for prefills, control values, etc.)
-            this.getView().setModel(new sap.ui.model.json.JSONModel());
+            oView.setModel(new sap.ui.model.json.JSONModel());
+
+            oView{$this->buildJsPseudoEventHandlers()};
             
             var oRouter = this.getRouter();
             if (oRouter !== undefined) {
@@ -268,7 +275,6 @@ sap.ui.define([
 			var oParams = (oArgs.params === undefined ? {} : this._decodeRouteParams(oArgs.params));
             var oViewModel = oView.getModel('view');
 			oViewModel.setProperty("/_route", {params: oParams});
-            oViewModel.setProperty("/_prefill", {pending: false, data: {}});
             
             {$this->buildJsOnRouteMatched()}
 		},
@@ -355,6 +361,33 @@ JS;
         return $js;
     }
     
+    protected function buildJsPseudoEventHandlers() : string
+    {
+        $js = '';
+        foreach ($this->pseudo_events as $event => $code_array) {
+            $code = implode("\n", array_unique($code_array));
+            $js .= <<<JS
+            
+            {$event}: function(oEvent) {
+                {$code}
+            },
+            
+JS;
+        }
+        
+        if ($js) {
+            $js = <<<JS
+            
+        .addEventDelegate({
+            {$js}
+        })
+        
+JS;
+        }
+        
+        return $js;
+    }
+    
     protected function sanitizeScript($js) : string
     {
         return rtrim($js, "; \r\n\t\0\0xB") . ';';
@@ -368,6 +401,28 @@ JS;
     public function addOnInitScript(string $js, string $id) : ui5ControllerInterface
     {
         $this->onInitScripts[$id] = $js;
+        return $this;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addOnShowViewScript()
+     */
+    public function addOnShowViewScript(string $js, bool $onBeforeShow = true) : ui5ControllerInterface
+    {
+        $this->pseudo_events[($onBeforeShow ? 'onBeforeShow' : 'onAfterShow')][] = $js;
+        return $this;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addOnHideViewScript()
+     */
+    public function addOnHideViewScript(string $js, bool $onBeforeHide = true) : ui5ControllerInterface
+    {
+        $this->pseudo_events[($onBeforeHide ? 'onBeforeHide' : 'onAfterHide')][] = $js;
         return $this;
     }
     

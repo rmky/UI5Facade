@@ -68,6 +68,24 @@ interface ui5ControllerInterface {
     public function addOnInitScript(string $js, string $id) : ui5ControllerInterface;
     
     /**
+     * Adds a script to be performed before or after the view of this controller is shown.
+     * 
+     * @param string $js
+     * @param bool $onBeforeShow
+     * @return ui5ControllerInterface
+     */
+    public function addOnShowViewScript(string $js, bool $onBeforeShow = true) : ui5ControllerInterface;
+    
+    /**
+     * Adds a script to be performed before or after the view of this controller is hidden.
+     * 
+     * @param string $js
+     * @param bool $onBeforeHide
+     * @return ui5ControllerInterface
+     */
+    public function addOnHideViewScript(string $js, bool $onBeforeHide = true) : ui5ControllerInterface;
+    
+    /**
      * 
      * @param string $js
      * @param string $id

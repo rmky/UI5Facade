@@ -51,13 +51,18 @@ class ui5DataTable extends ui5AbstractElement
         $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
         $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos, growing', $this->buildJsDataLoader());
         $controller->addDependentControl('oConfigurator', $this, $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget()));
-        $controller->addOnInitScript($this->buildJsRefresh(), $this->getId() . '_loadData');
+        $controller->addOnShowViewScript($this->buildJsRefresh());
         
         if ($this->isMTable()) {
             $js = $this->buildJsConstructorForMTable();
         } else {
             $js = $this->buildJsConstructorForUiTable();
         }
+        
+        $js .= <<<JS
+        {$this->buildJsPseudoEventHandlers()}
+
+JS;
         
         $initConfigModel = ".setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForConfigurator()}')";
         
@@ -275,7 +280,27 @@ JS;
      */
     protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos', $growingJsVar = 'growing')
     {
+        // Before we load anything, we need to make sure, the view data is loaded.
+        // The view model has a special property to indicate if view (prefill) data
+        // is being loaded. So we check that property and, if it shows a prefill
+        // running right now, we listen for changes on the property. Once it is not
+        // set to true anymore, we can do the refresh. The setTimeout() wrapper is
+        // needed to make sure all filters bound to the prefill model got their values!
         $js = <<<JS
+
+                var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
+                var sPendingPropery = "/_prefill/pending";
+                if (oViewModel.getProperty(sPendingPropery) === true) {
+                    var oPrefillBinding = new sap.ui.model.Binding(oViewModel, sPendingPropery, oViewModel.getContext(sPendingPropery));
+                    var fnPrefillHandler = function(oEvent) {
+                        oPrefillBinding.detachChange(fnPrefillHandler);
+                        setTimeout(function() {
+                            {$this->buildJsRefresh()};
+                        }, 0);
+                    };
+                    oPrefillBinding.attachChange(fnPrefillHandler);
+                    return;
+                }
 
 JS;
         

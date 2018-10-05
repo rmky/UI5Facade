@@ -27,6 +27,14 @@ class ui5Dialog extends ui5Form
 {
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        // If we need a prefill, we need to let the view model know this, so all the wigdget built
+        // for this dialog can see, that a prefill will be done. This is especially important for
+        // widget with lazy loading (like tables), that should postpone loading until the prefill data
+        // is there.
+        if ($this->needsPrefill()) {
+            $this->getController()->addOnInitScript('this.getView().getModel("view").setProperty("/_prefill/pending", true);', 'prefill_fix');            
+        }
+        
         if ($this->isMaximized() === false) {
             return $this->buildJsDialog();
         } else {

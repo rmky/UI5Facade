@@ -322,7 +322,9 @@ JS;
                 success: function(response, textStatus, jqXHR) {
                     oViewModel.setProperty('/_prefill/pending', false);
                     if (response.data && response.data && response.data.length === 1) {
-                        {$oViewJs}.setModel(new sap.ui.model.json.JSONModel(response.data[0]));
+                        {$oViewJs}.getModel().setData(response.data[0]);
+                    } else {
+                        {$oViewJs}.getModel().setData({});
                     }
                     {$this->buildJsBusyIconHide()}
                 },

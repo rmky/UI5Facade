@@ -62,7 +62,7 @@ JS;
         }
 
         // TODO #binding store values in real model
-        if($this->getWidget()->hasValue()) {
+        if(! $this->isValueBoundToModel()) {
             $value = $this->escapeJsTextValue($this->getWidget()->getValue());
             $value = '"' . str_replace("\n", '', $value) . '"';
             $js .= <<<JS

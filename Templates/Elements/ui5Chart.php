@@ -34,8 +34,10 @@ class ui5Chart extends ui5AbstractElement
         return <<<JS
 
         new sap.ui.core.HTML("{$this->getId()}", {
-            content: "<div style=\"height: calc(100% - 10px); margin: 5px 0; overflow: hidden; position: relative;\"></div>",
-            afterRendering: function() { {$this->buildJsRefresh()} }
+            content: "<div class=\"exf-flot-wrapper\" style=\"height: calc(100% - 10px); margin: 5px 0; overflow: hidden; position: relative;\"></div>",
+            afterRendering: function() { 
+                {$this->buildJsRefresh()} 
+            }
         })
 
 JS;

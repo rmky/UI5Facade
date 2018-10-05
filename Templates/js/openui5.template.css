@@ -35,3 +35,6 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 .sapUiSimpleForm .exf-html h2 {font-size: 1.175rem; font-weight: normal;}
 .sapUiSimpleForm .exf-html h3 {font-size: 1.075rem; font-weight: normal;}
 .sapUiSimpleForm .exf-html h4 {font-size: 1.0rem; font-weight: normal;}
+
+/* Flot */
+.exf-flot-wrapper .error {display: none;}

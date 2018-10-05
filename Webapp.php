@@ -17,6 +17,11 @@ use exface\Core\Interfaces\WidgetInterface;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 use GuzzleHttp\Psr7\Uri;
 use exface\Core\Interfaces\Log\LoggerInterface;
+use exface\Core\Interfaces\Tasks\HttpTaskInterface;
+use exface\Core\Interfaces\Widgets\iTriggerAction;
+use exface\Core\Interfaces\Tasks\ResultWidgetInterface;
+use exface\Core\Interfaces\Actions\iShowWidget;
+use exface\Core\Events\Widget\OnPrefillChangePropertyEvent;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -34,6 +39,8 @@ class Webapp implements WorkbenchDependantInterface
     
     private $controllers = [];
     
+    private $models = [];
+    
     public function __construct(OpenUI5Template $template, string $ui5AppId, string $templateFolder, array $config)
     {
         $this->workbench = $template->getWorkbench();
@@ -48,7 +55,39 @@ class Webapp implements WorkbenchDependantInterface
         return $this->workbench;
     }
     
-    public function get(string $route) : string
+    protected function handlePrefill(WidgetInterface $widget, HttpTaskInterface $task) : WidgetInterface
+    {
+        if ($task !== null && $widget->getParent() instanceof iTriggerAction) {
+            $button = $widget->getParent();
+            $task->setPageSelector($button->getPage()->getSelector());
+            $task->setWidgetIdTriggeredBy($button->getId());
+            
+            $action = $button->getAction();
+            if (($action instanceof iShowWidget) && ($action->getPrefillWithInputData() || $action->getPrefillWithPrefillData())) {
+                $model = $this->createViewModel($this->template->getViewName($widget, $this->getRootPage()));
+                $webapp = $this;
+                $eventHandler = function($event) use ($webapp, $model) {
+                    return $webapp->onPrefillChangePropertyHandler($event, $model);
+                };
+                $this->getWorkbench()->eventManager()->addListener(OnPrefillChangePropertyEvent::getEventName(), $eventHandler);
+            }
+            $task->setActionSelector($action->getSelector());
+            
+            try {
+                $result = $this->getWorkbench()->handle($task);
+                if ($result instanceof ResultWidgetInterface) {
+                    $widget = $result->getWidget();
+                }
+            } catch (\Throwable $e) {
+                // TODO
+                throw $e;
+            }
+        }
+        
+        return $widget;
+    }
+    
+    public function get(string $route, HttpTaskInterface $task = null) : string
     {
         switch (true) {
             case $route === 'manifest.json':
@@ -85,7 +124,9 @@ class Webapp implements WorkbenchDependantInterface
                 if (StringDataType::endsWith($path, '.viewcontroller.js')) {
                     $path = StringDataType::substringBefore($path, '.viewcontroller.js');
                     $widget = $this->getWidgetFromPath($path);
+                    
                     if ($widget) {
+                        $widget = $this->handlePrefill($widget, $task);
                         $controller = $this->getControllerForWidget($widget);
                         return $controller->buildJsController() . "\n\n" . $controller->getView()->buildJsView();
                     }
@@ -201,7 +242,13 @@ class Webapp implements WorkbenchDependantInterface
         return $this->rootPage;
     }
     
-    protected function getWidgetFromPath($path)
+    /**
+     * 
+     * @param string $path
+     * @throws Ui5RouteInvalidException
+     * @return WidgetInterface|NULL
+     */
+    protected function getWidgetFromPath(string $path) : ?WidgetInterface
     {
         $parts = explode('/', $path);
         $cnt = count($parts);
@@ -395,5 +442,27 @@ class Webapp implements WorkbenchDependantInterface
     public function getTitle() : string
     {
         return $this->config['app_title'] ? $this->config['app_title'] : $this->getRootPage()->getName();
+    }
+    
+    public function onPrefillChangePropertyHandler(OnPrefillChangePropertyEvent $event, ui5Model $model)
+    {
+        $model->setBindingPointer($event->getWidget(), $event->getPropertyName(), $event->getPrefillValuePointer());
+        return;
+    }
+    
+    public function createViewModel(string $viewName, string $modelName = '') : ui5Model
+    {
+        $model = new ui5Model($this, $viewName, $modelName);
+        $this->models[$viewName . ':' . $modelName] = $model;
+        return $model;
+    }
+    
+    public function getViewModel(string $viewName, string $modelName = '') : ui5Model
+    {
+        $model = $this->models[$viewName . ':' . $modelName];
+        if ($model === null) {
+            $model = $this->createViewModel($viewName, $modelName);
+        }
+        return $model;
     }
 }

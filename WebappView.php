@@ -6,6 +6,7 @@ use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
 use exface\Core\DataTypes\StringDataType;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ModelInterface;
 
 class WebappView implements ui5ViewInterface
 {
@@ -22,6 +23,8 @@ class WebappView implements ui5ViewInterface
     private $template = null;
     
     private $controller = null;
+    
+    private $model = null;
     
     public function __construct(Webapp $webapp, string $viewName, ui5AbstractElement $rootElement)
     {
@@ -143,4 +146,16 @@ JS;
         return "{$this->getController()->buildJsComponentGetter($fromElement)}.findViewOfControl(sap.ui.getCore().byId('{$fromElement->getId()}'))";
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::getModel()
+     */
+    public function getModel(string $name = '') : ui5ModelInterface
+    {
+        if ($this->model === null) {
+            $this->model =  $this->webapp->getViewModel($this->getName(), $name);
+        }
+        return $this->model;
+    }
 }

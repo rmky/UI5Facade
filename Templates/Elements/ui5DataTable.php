@@ -30,8 +30,10 @@ class ui5DataTable extends ui5AbstractElement
     protected function init()
     {
         parent::init();
+        $configuratorElement = $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget());
+        $configuratorElement->setModelNameForConfig($this->getModelNameForConfigurator());
         if ($this->isWrappedInDynamicPage()) {
-            $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->setIncludeFilterTab(false);
+            $configuratorElement->setIncludeFilterTab(false);
         }
     }
     
@@ -57,10 +59,12 @@ class ui5DataTable extends ui5AbstractElement
             $js = $this->buildJsConstructorForUiTable();
         }
         
+        $initConfigModel = ".setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForConfigurator()}')";
+        
         if ($this->isWrappedInDynamicPage()){
-            return $this->buildJsPage($js) . ".setModel(sap.ui.getCore().byId('{$this->getId()}').getModel())";
+            return $this->buildJsPage($js) . $initConfigModel;
         } else {
-            return $js;
+            return $js . $initConfigModel;
         }
     }
     
@@ -183,7 +187,7 @@ JS;
 
             .attachFirstVisibleRowChanged(function(oEvent) {
                 var oTable = oEvent.getSource();
-                var oPaginator = {$this->getPaginatorElement()->buildJsGetPaginator('this')};
+                var oPaginator = {$this->getPaginatorElement()->buildJsGetPaginator('oController')};
                 var lastVisibleRow = oTable.getFirstVisibleRow() + oTable.getVisibleRowCount();
                 if ((oPaginator.pageSize - lastVisibleRow <= 1) && (oPaginator.end() + 1 !== oPaginator.total)) {
                     oPaginator.increasePageSize();
@@ -271,11 +275,17 @@ JS;
      */
     protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos', $growingJsVar = 'growing')
     {
+        $js = <<<JS
+
+JS;
+        
         if (! $this->isLazyLoading()) {
-            return $this->buildJsDataLoaderOnClient($oControlEventJsVar, $keepPagePosJsVar, $growingJsVar);
+            $js .= $this->buildJsDataLoaderOnClient($oControlEventJsVar, $keepPagePosJsVar, $growingJsVar);
         } else {
-            return $this->buildJsDataLoaderOnServer($oControlEventJsVar, $keepPagePosJsVar, $growingJsVar);
+            $js .= $this->buildJsDataLoaderOnServer($oControlEventJsVar, $keepPagePosJsVar, $growingJsVar);
         } 
+        
+        return $js;
     }
     
     /**
@@ -318,7 +328,7 @@ JS;
             $dynamicPageFixes = <<<JS
 
                         if (sap.ui.Device.system.phone) {
-                            sap.ui.getCore().byId('{$this->getId()}_page').setHeaderExpanded(false);
+                            sap.ui.getCore().byId('{$this->getIdOfDynamicPage()}').setHeaderExpanded(false);
                         }
                         // Redraw the table to make it fit the page height agian. Otherwise it would be
                         // of default height after dialogs close, etc.
@@ -371,7 +381,7 @@ JS;
                         {$this->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}
                     }
                     
-                    this.setProperty('/filterDescription', {$controller->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
+                    oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$controller->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
                     this.detachRequestCompleted(fnCompleted);
         		};
         
@@ -620,7 +630,7 @@ JS;
         }
         return <<<JS
 
-        new sap.f.DynamicPage("{$this->getId()}_page", {
+        new sap.f.DynamicPage("{$this->getIdOfDynamicPage()}", {
             fitContent: true,
             preserveHeaderStateOnScroll: true,
             headerExpanded: true,
@@ -636,10 +646,8 @@ JS;
         					new sap.m.Title({
                                 text: "{$this->buildTextTableHeading()}"
                             }),
-                            new sap.m.Text({
-                                text: {
-                                    path: "/filterDescription",
-                                }
+                            new sap.m.Text("asdf", {
+                                text: "{{$this->getModelNameForConfigurator()}>/filterDescription}"
                             })
                         ]
                     })
@@ -880,6 +888,16 @@ JS;
     protected function getP13nElement()
     {
         return $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget());
+    }
+    
+    protected function getModelNameForConfigurator() : string
+    {
+        return 'configurator';
+    }
+    
+    protected function getIdOfDynamicPage() : string
+    {
+        return $this->getId() . "_DynamicPageWrapper";
     }
 }
 ?>

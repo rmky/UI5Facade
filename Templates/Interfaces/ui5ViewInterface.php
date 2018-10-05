@@ -43,4 +43,11 @@ interface ui5ViewInterface {
     
     public function buildJsViewGetter(ui5AbstractElement $fromElement) : string;
     
+    /**
+     * 
+     * @param string $name
+     * @return ui5ModelInterface
+     */
+    public function getModel(string $name = '') : ui5ModelInterface; 
+    
 }

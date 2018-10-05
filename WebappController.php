@@ -240,7 +240,10 @@ sap.ui.define([
         onInit: function () {
             var oController = this;
             
+            // Init model for view settings
             this.getView().setModel(new sap.ui.model.json.JSONModel(), "view");
+            // Init base view model (used for prefills, control values, etc.)
+            this.getView().setModel(new sap.ui.model.json.JSONModel());
             
             var oRouter = this.getRouter();
             if (oRouter !== undefined) {
@@ -263,7 +266,9 @@ sap.ui.define([
 			var oView = this.getView();
 			var oArgs = oEvent.getParameter("arguments");
 			var oParams = (oArgs.params === undefined ? {} : this._decodeRouteParams(oArgs.params));
-			oView.getModel('view').setProperty("/_route", {params: oParams});
+            var oViewModel = oView.getModel('view');
+			oViewModel.setProperty("/_route", {params: oParams});
+            oViewModel.setProperty("/_prefill", {pending: false, data: {}});
             
             {$this->buildJsOnRouteMatched()}
 		},

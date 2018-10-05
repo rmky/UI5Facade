@@ -10,6 +10,7 @@ use GuzzleHttp\Psr7\Response;
 use exface\Core\DataTypes\StringDataType;
 use exface\OpenUI5Template\Exceptions\Ui5RouteInvalidException;
 use exface\OpenUI5Template\Templates\OpenUI5Template;
+use exface\Core\Interfaces\Tasks\HttpTaskInterface;
 
 /**
  * This PSR-15 middleware routes requests to components of a UI5 webapp.
@@ -47,19 +48,19 @@ class ui5WebappRouter implements MiddlewareInterface
     {
         $path = $request->getUri()->getPath();
         if (($webappRoute = StringDataType::substringAfter($path, $this->webappRoot)) !== false) {
-            return $this->resolve($webappRoute, $handler);
+            return $this->resolve($webappRoute, $request->getAttribute($this->taskAttributeName));
         }
         return $handler->handle($request);
     }
     
-    protected function resolve(string $route) : ResponseInterface
+    protected function resolve(string $route, HttpTaskInterface $task = null) : ResponseInterface
     {
         $target = StringDataType::substringAfter($route, '/');
         $appId = StringDataType::substringBefore($route, '/');
         
         $webapp = $this->template->initWebapp($appId);
         try {
-            $body = $webapp->get($target);
+            $body = $webapp->get($target, $task);
         } catch (Ui5RouteInvalidException $e) {
             return new Response(404, [], $e->getMessage());
         }

@@ -107,7 +107,16 @@ JS;
      */
     protected function isValueBoundToModel()
     {
-        return $this->getWidget()->hasValue() ? false : true;
+        $widget = $this->getWidget();
+        $model = $this->getView()->getModel();
+        
+        // If there is a model binding, obviously return true
+        if ($model->hasBinding($widget, $this->getValueBindingWidgetPropertyName())) {
+            return true;
+        }
+        
+        // Otherwise assume model binding unless the widget has an explicit value
+        return $widget->hasValue() ? false : true;
     }
     
     /**
@@ -155,7 +164,12 @@ JS;
      */
     public function getValueBindingPath() : string
     {
-        if (is_null($this->valueBindingPath)) {
+        if ($this->valueBindingPath === null) {
+            $widget = $this->getWidget();
+            $model = $this->getView()->getModel();
+            if ($model->hasBinding($widget, $this->getValueBindingWidgetPropertyName())) {
+                return $model->getBindingPath($widget, $this->getValueBindingWidgetPropertyName());
+            }
             return '/' . $this->getWidget()->getDataColumnName();
         }
         return $this->valueBindingPath;
@@ -211,6 +225,11 @@ JS;
     public function buildJsValueBindingPropertyName() : string
     {
         return 'text';
+    }
+    
+    protected function getValueBindingWidgetPropertyName() : string
+    {
+        return 'value';
     }
 }
 ?>

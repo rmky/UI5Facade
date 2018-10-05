@@ -123,7 +123,7 @@ JS;
         // If the dialog has a header and it has a fixed or prefilled title, take it as is.
         if ($widget->hasHeader()) {
             $header = $widget->getHeader();
-            if ($header->isPrefilled() || ! $header->isTitleBoundToAttribute()) {
+            if (! $header->isTitleBoundToAttribute()) {
                 return '"' . $this->escapeJsTextValue($widget->getCaption()) . '"';
             }
         }
@@ -143,12 +143,22 @@ JS;
         
         // Once a title attribute is found, create an invisible display widget and
         // let it's element produce a binding.
+        /* @var $titleElement \exface\OpenUI5Template\Templates\Elements\ui5Display */
         $titleWidget = WidgetFactory::createFromUxon($widget->getPage(), new UxonObject([
             'widget_type' => 'Display',
             'hidden' => true,
             'attribute_alias' => $title_attr->getAliasWithRelationPath()
         ]), $widget);
         $titleElement = $this->getTemplate()->getElement($titleWidget);
+        
+        // If there is a caption binding in the view model, use it in the title element
+        if ($header !== null) {
+            $model = $this->getView()->getModel();
+            if ($model->hasBinding($header, 'caption')) {
+                $titleElement->setValueBindingPath($model->getBindingPath($header, 'caption'));
+            }
+        }
+        
         return $titleElement->buildJsValue();
     }
     
@@ -289,7 +299,9 @@ JS;
         return <<<JS
         
             {$this->buildJsBusyIconShow()}
-            var oRouteParams = {$oViewJs}.getModel('view').getProperty('/_route');
+            var oViewModel = {$oViewJs}.getModel('view');
+            oViewModel.setProperty('/_prefill/pending', true);
+            var oRouteParams = oViewModel.getProperty('/_route');
             var data = $.extend({}, {
                 action: "exface.Core.ReadPrefill",
 				resource: "{$widget->getPage()->getAliasWithNamespace()}",
@@ -300,12 +312,14 @@ JS;
                 type: "POST",
 				data: data,
                 success: function(response, textStatus, jqXHR) {
+                    oViewModel.setProperty('/_prefill/pending', false);
                     if (response.data && response.data && response.data.length === 1) {
                         {$oViewJs}.setModel(new sap.ui.model.json.JSONModel(response.data[0]));
                     }
                     {$this->buildJsBusyIconHide()}
                 },
                 error: function(jqXHR, textStatus, errorThrown){
+                    oViewModel.setProperty('/_prefill/pending', false);
                     {$this->buildJsBusyIconHide()}
                     {$this->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText)
                 }

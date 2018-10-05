@@ -21,6 +21,8 @@ class ui5DataConfigurator extends ui5Tabs
     }
     
     private $include_filter_tab = true;
+    
+    private $modelNameForConfig = null;
        
     /**
      * 
@@ -84,7 +86,7 @@ JS;
             }
             oModel.setData(data);
             return oModel;        
-        }())
+        }(), "{$this->getModelNameForConfig()}")
 
 JS;
     }
@@ -149,22 +151,23 @@ JS;
                     /*containerQuery: true,*/
                     layoutMode: "Desktop",
                     items: {
-                        path: '/sortables',
+                        path: '{$this->getModelNameForConfig()}>/sortables',
                         template: new sap.m.P13nItem({
-                            columnKey: "{attribute_alias}",
-                            text: "{caption}"
+                            columnKey: "{{$this->getModelNameForConfig()}>attribute_alias}",
+                            text: "{{$this->getModelNameForConfig()}>caption}"
                         })
                     },
                     sortItems: {
-                        path: '/sorters',
+                        path: '{$this->getModelNameForConfig()}>/sorters',
                         template: new sap.m.P13nSortItem({
-                            columnKey: "{attribute_alias}",
-                            operation: "{direction}"
+                            columnKey: "{{$this->getModelNameForConfig()}>attribute_alias}",
+                            operation: "{{$this->getModelNameForConfig()}>direction}"
                         })
                     },
                     addSortItem: function(oEvent) {
             			var oParameters = oEvent.getParameters();
-            			var aSortItems = this.getModel().getProperty("/sorters");
+                        var oModel = this.getModel("{$this->getModelNameForConfig()}");
+            			var aSortItems = oModel.getProperty("/sorters");
             			oParameters.index > -1 ? aSortItems.splice(oParameters.index, 0, {
             				attribute_alias: oParameters.sortItemData.getColumnKey(),
             				direction: oParameters.sortItemData.getOperation()
@@ -172,12 +175,12 @@ JS;
             				attribute_alias: oParameters.sortItemData.getColumnKey(),
             				direction: oParameters.sortItemData.getOperation()
             			});
-            			this.getModel().setProperty("/sorters", aSortItems);
+            			oModel.setProperty("/sorters", aSortItems);
             		},
                     onRemoveSortItem: function(oEvent) {
             			var oParameters = oEvent.getParameters();
             			if (oParameters.index > -1) {
-            				var aSortItems = this.getModel().getProperty("/sorters");
+            				var aSortItems = this.getModel("{$this->getModelNameForConfig()}").getProperty("/sorters");
             				aSortItems.splice(oParameters.index, 1);
             				this.oJSONModel.setProperty("/sorters", aSortItems);
             			}
@@ -200,11 +203,11 @@ JS;
                     addColumnsItem: "onAddColumnsItem",
                     type: "columns",
                     items: {
-                        path: '/columns',
+                        path: '{$this->getModelNameForConfig()}>/columns',
                         template: new sap.m.P13nItem({
-                            columnKey: "{column_name}",
-                            text: "{caption}",
-                            visible: "{visible}"
+                            columnKey: "{{$this->getModelNameForConfig()}>column_name}",
+                            text: "{{$this->getModelNameForConfig()}>caption}",
+                            visible: "{{$this->getModelNameForConfig()}>visible}"
                         })
                     }
                 }),
@@ -238,10 +241,10 @@ JS;
                             oEvent.getSource().removeFilterItem(oParameters.index);
                         },
                         items: {
-                            path: '/columns',
+                            path: '{$this->getModelNameForConfig()}>/columns',
                             template: new sap.m.P13nItem({
-                                columnKey: "{attribute_alias}",
-                                text: "{caption}"
+                                columnKey: "{{$this->getModelNameForConfig()}>attribute_alias}",
+                                text: "{{$this->getModelNameForConfig()}>caption}"
                             })
                         },
                         filterItems: [
@@ -368,7 +371,6 @@ function(){
     var oData = {$this->buildJsDataGetterViaTrait($action)};
     var aFilters = sap.ui.getCore().byId('{$this->getId()}_QuickSearchPanel').getFilterItems();
     var i = 0;
-    console.log(sap.ui.getCore().byId('{$this->getId()}_QuickSearchPanel').getIncludeOperations());
     if (aFilters.length > 0) {
         var includeGroup = {operator: "AND", conditions: []};
         var excludeGroup = {operator: "NAND", conditions: []};
@@ -403,6 +405,17 @@ function(){
 }()
 
 JS;
+    }
+        
+    protected function getModelNameForConfig() : string
+    {
+        return $this->modelNameForConfig;
+    }
+    
+    public function setModelNameForConfig(string $name) : ui5DataConfigurator
+    {
+        $this->modelNameForConfig = $name;
+        return $this;
     }
 }
 ?>

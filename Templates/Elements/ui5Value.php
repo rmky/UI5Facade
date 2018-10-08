@@ -89,16 +89,21 @@ JS;
      */
     protected function buildJsLabelWrapper($element_constructor)
     {
-        if (! $this->getWidget()->getHideCaption()) {
-            $js = <<<JS
+        $widget = $this->getWidget();
+        if ($widget->getHideCaption() === true) {
+            $labelVisible = 'visible: false,';
+        }
+        
+        $label = <<<JS
         new sap.m.Label({
             text: "{$this->getCaption()}",
             {$this->buildJsPropertyTooltip()}
+            {$labelVisible}
         }),
 
 JS;
-        }
-        return $js . $element_constructor;
+        
+        return $label . $element_constructor;
     }
     
     /**

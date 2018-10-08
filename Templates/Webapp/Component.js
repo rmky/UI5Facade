@@ -81,9 +81,9 @@ sap.ui.define([
 		        errorBody = errorBody.replace(view, view+randomizer);
 		        view = view+randomizer;
 		        $('body').append(errorBody);
-		        showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}), 'Error');
+		        exfLauncher.showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}), 'Error');
 		    } else {
-		        showHtmlInDialog(sTitle, errorBody, 'Error');
+		        exfLauncher.showHtmlInDialog(sTitle, errorBody, 'Error');
 		    }
 		},
         
@@ -143,7 +143,7 @@ sap.ui.define([
 		 */
 		_loadView : function(sViewName, fnCallback, oXHRSettings) {
 			var sViewId = this.getViewId(sViewName);
-			var oController = this;
+			var oComponent = this;
 			
 			// Load view and controller with a custom async AJAX if running on UI server. 
 			// Reasons:
@@ -183,7 +183,7 @@ sap.ui.define([
 								fromTarget : "home"
 							});
 						} else {
-							oController.getOwnerComponent().showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText);
+							oComponent.showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText);
 							fnCallback();
 						}
 					}

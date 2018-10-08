@@ -175,7 +175,7 @@ function initShell() {
 	
 		]
 	});
-	contextBarInit(oShell);
+	
 	return oShell;
 }
 
@@ -210,7 +210,11 @@ function showHtmlInDialog(title, html, state) {
 	showDialog(title, content, state);
 }
 
-function contextBarInit(){
+function contextBarInit(oComponent) {
+	oComponent.getRouter().attachRouteMatched(function (oEvent){
+		contextBarLoad();
+	});
+	
 	$(document).ajaxSuccess(function(event, jqXHR, ajaxOptions, data){
 		var extras = {};
 		if (jqXHR.responseJSON){
@@ -226,8 +230,6 @@ function contextBarInit(){
 			contextBarRefresh(extras.ContextBar);
 		}
 	});
-	
-	contextBarLoad();
 }
 
 function contextBarLoad(delay){

@@ -132,6 +132,10 @@
 							manifest: true,
 							settings: {
 								id: "[*alias*].Component"
+							},
+							componentCreated: function(oEvent) {
+								var oComponent = oEvent.getParameters().component;
+								contextBarInit(oComponent);
 							}
 						})
 				    );

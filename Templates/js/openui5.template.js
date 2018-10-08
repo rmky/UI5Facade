@@ -6,11 +6,11 @@ window.addEventListener('offline', function(){
 	toggleOnlineIndicator();
 });
 
-const exface = {
+const exfLauncher = {
 	_oShell : {},
 	
 	getShell : function() {
-		return exface._oShell;
+		return exfLauncher._oShell;
 	},
 	
 	initShell : function() {
@@ -59,21 +59,21 @@ const exface = {
 														var oData = {
 																data: [
 																	{
-																		"action_alias": "exface.Core.CreateData",
+																		"action_alias": "exfLauncher.Core.CreateData",
 																		"caption": "Speichern",
 																		"object_alias": "alexa.RMS-demo.BBD_ALERT",
 																		"object_name": "MHD-Alarm",
 																		"triggered": "2017-02-05 13:55:37"
 																	},
 																	{
-																		"action_alias": "exface.Core.UpdateData",
+																		"action_alias": "exfLauncher.Core.UpdateData",
 																		"caption": "Speichern",
 																		"object_alias": "axenox.WMS.picking_order_pos",
 																		"object_name": "Pickauftragsposition",
 																		"triggered": "2018-04-12 14:48:06"
 																	},
 																	{
-																		"action_alias": "exface.Core.UpdateData",
+																		"action_alias": "exfLauncher.Core.UpdateData",
 																		"caption": "Speichern",
 																		"object_alias": "axenox.WMS.picking_order_pos",
 																		"object_name": "Pickauftragsposition",
@@ -183,7 +183,7 @@ const exface = {
 			]
 		});
 		
-		exface._oShell = oShell;
+		exfLauncher._oShell = oShell;
 		return oShell;
 	},
 
@@ -219,10 +219,13 @@ const exface = {
 	},
 	
 	contextBar: {
-
+		_oComponent : {},
+		
 		init : function (oComponent) {
+			exfLauncher.contextBar._oComponent = oComponent;
+			
 			oComponent.getRouter().attachRouteMatched(function (oEvent){
-				exface.contextBar.load();
+				exfLauncher.contextBar.load();
 			});
 			
 			$(document).ajaxSuccess(function(event, jqXHR, ajaxOptions, data){
@@ -237,9 +240,13 @@ const exface = {
 					}
 				}
 				if (extras && extras.ContextBar){
-					exface.contextBar.refresh(extras.ContextBar);
+					exfLauncher.contextBar.refresh(extras.ContextBar);
 				}
 			});
+		},
+		
+		getComponent : function() {
+			return exfLauncher.contextBar._oComponent;
 		},
 
 		load : function(delay){
@@ -253,24 +260,24 @@ const exface = {
 				//if ($('#contextBar .context-bar-spinner').length > 0){
 					$.ajax({
 						type: 'POST',
-						url: 'exface/api/ui5/' + exface.getPageId() + '/context',
+						url: 'exface/api/ui5/' + exfLauncher.getPageId() + '/context',
 						dataType: 'json',
 						success: function(data, textStatus, jqXHR) {
-							exface.contextBar.refresh(data);
+							exfLauncher.contextBar.refresh(data);
 						},
 						error: function(jqXHR, textStatus, errorThrown){
-							exface.contextBar.refresh({});
+							exfLauncher.contextBar.refresh({});
 						}
 					});
 				/*} else {
-					exface.contextBar.load(delay*3);
+					exfLauncher.contextBar.load(delay*3);
 				}*/
 			}, delay);
 		},
 
 		refresh : function(data){
-			var oToolbar = exface.getShell().getHeader();
-			var aItemsOld = exface.getShell().getHeader().getContent();
+			var oToolbar = exfLauncher.getShell().getHeader();
+			var aItemsOld = exfLauncher.getShell().getHeader().getContent();
 			var iItemsIndex = 5;
 			var oControl = {};
 			oToolbar.removeAllContent();
@@ -293,7 +300,7 @@ const exface = {
 							text: data[id].indicator,
 							press: function(oEvent) {
 								var oButton = oEvent.getSource();
-								exface.contextBar.showMenu(oButton);
+								exfLauncher.contextBar.showMenu(oButton);
 							}
 						}).data('widget', data[id].bar_widget_id, true), 
 						iItemsIndex);
@@ -341,8 +348,8 @@ const exface = {
 				url: 'exface/api/ui5',
 				dataType: 'html',
 				data: {
-					action: 'exface.Core.ShowContextPopup',
-					resource: exface.getPageId(),
+					action: 'exfLauncher.Core.ShowContextPopup',
+					resource: exfLauncher.getPageId(),
 					element: oButton.data('widget')
 				},
 				success: function(data, textStatus, jqXHR) {			
@@ -375,7 +382,7 @@ const exface = {
 	toggleOnlineIndicator : function() {
 		sap.ui.getCore().byId('exf-connection-indicator').setIcon(navigator.onLine ? 'sap-icon://connected' : 'sap-icon://disconnected');
 		if (navigator.onLine) {
-			exface.contextBar.load();
+			exfLauncher.contextBar.load();
 		}
 	}
 }

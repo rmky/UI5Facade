@@ -343,6 +343,8 @@ const exfLauncher = {
 					oPopover.openBy(oButton);
 				});
 			}
+			
+			var oComponent = exfLauncher.contextBar.getComponent();
 			$.ajax({
 				type: 'POST',
 				url: 'exface/api/ui5',

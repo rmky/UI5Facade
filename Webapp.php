@@ -55,7 +55,7 @@ class Webapp implements WorkbenchDependantInterface
         return $this->workbench;
     }
     
-    protected function handlePrefill(WidgetInterface $widget, HttpTaskInterface $task) : WidgetInterface
+    protected function handlePrefill(WidgetInterface $widget, HttpTaskInterface $task = null) : WidgetInterface
     {
         if ($task !== null && $widget->getParent() instanceof iTriggerAction) {
             $button = $widget->getParent();

@@ -249,12 +249,15 @@ sap.ui.define([
             }), "view");
             // Init base view model (used for prefills, control values, etc.)
             oView.setModel(new sap.ui.model.json.JSONModel());
-
+            // Add pseudo event handlers if any defined
             oView{$this->buildJsPseudoEventHandlers()};
             
             var oRouter = this.getRouter();
             if (oRouter !== undefined) {
-                oRouter.getRoute("{$this->getView()->getRouteName()}").attachMatched(this._onRouteMatched, this);
+                var oRoute = oRouter.getRoute("{$this->getView()->getRouteName()}");
+                if (oRoute) {
+                    oRoute.attachMatched(this._onRouteMatched, this);
+                }
             }
             
 			{$this->buildJsOnInitScript()}

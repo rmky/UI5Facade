@@ -164,22 +164,25 @@ JS;
             $output .= <<<JS
                         var sViewName = this.getViewName('{$targetWidget->getPage()->getAliasWithNamespace()}', '{$targetWidget->getId()}'); 
                         var sViewId = this.getViewId(sViewName);
+                        var oComponent = this.getOwnerComponent();
                         var jqXHR = this._loadView(sViewName, function(){ 
                             var oView = sap.ui.getCore().byId(sViewId);
                             if (oView === undefined) {
-                                sap.ui.core.mvc.JSView.create({
-                                    id: sViewId,
-                                    viewName: "{$this->getTemplate()->getViewName($targetWidget, $this->getController()->getWebapp()->getRootPage())}"
-                                }).then(function(oView){
-                                    oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
-                                    setTimeout(function() {
-                                        var oDialog = oView.getContent()[0];
-                                        oDialog.attachAfterClose(function() {
-                                            {$this->buildJsInputRefresh($widget, $input_element)}
+                                oComponent.runAsOwner(function(){
+                                    return sap.ui.core.mvc.JSView.create({
+                                        id: sViewId,
+                                        viewName: "{$this->getTemplate()->getViewName($targetWidget, $this->getController()->getWebapp()->getRootPage())}"
+                                    }).then(function(oView){
+                                        oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
+                                        setTimeout(function() {
+                                            var oDialog = oView.getContent()[0];
+                                            oDialog.attachAfterClose(function() {
+                                                {$this->buildJsInputRefresh($widget, $input_element)}
+                                            });
+                                            oDialog.open();
                                         });
-                                        oDialog.open();
                                     });
-                                })
+                                });
                             } else {
                                 oView.getContent()[0].open();
                             }

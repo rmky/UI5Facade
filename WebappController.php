@@ -272,7 +272,7 @@ sap.ui.define([
 		_onRouteMatched : function (oEvent) {
 			var oView = this.getView();
 			var oArgs = oEvent.getParameter("arguments");
-			var oParams = (oArgs.params === undefined ? {} : this._decodeRouteParams(oArgs.params));
+			var oParams = (oArgs.params === undefined ? {} : this.getOwnerComponent()._decodeRouteParams(oArgs.params));
             var oViewModel = oView.getModel('view');
 			oViewModel.setProperty("/_route", {params: oParams});
             

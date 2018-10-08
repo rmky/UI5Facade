@@ -110,38 +110,6 @@ class OpenUI5Template extends AbstractAjaxTemplate
 
 JS;
         }
-        
-        /* TODO remove this if we are going to continue using Component-preload
-        
-        // If we are showing the root page of the app (more precisely the root widget of the root page),
-        // include common views and controllers to avoid extra ajax calls.
-        if ($widget === $webapp->getRootPage()->getWidgetRoot()) {
-            $baseControllers = '';
-            $baseViews = '';
-            foreach ($webapp->getBaseControllers() as $controllerPath) {
-                $baseControllers .= $this->getWebapp()->get($controllerPath) . "\n\n";
-            }
-            foreach ($webapp->getBaseViews() as $viewPath) {
-                $baseViews .= $this->getWebapp()->get($viewPath);
-            }
-        }
-        
-        $controller = $this->createController($element);
-        
-        return <<<JS
-sap.ui.getCore().attachInit(function () {
-    
-    {$baseControllers}
-    
-    {$baseViews}
-
-    {$controller->buildJsController()}
-
-    {$controller->getView()->buildJsView()}
-
-});
-
-JS;*/
     }
          
     /**

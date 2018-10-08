@@ -162,9 +162,10 @@ JS;
             // it was not actually handled by a router. This is importat as all kinds of on-show
             // handler will use route parameters (e.g. data, prefill, etc.) for their own needs.
             $output .= <<<JS
-                        var sViewName = this.getViewName('{$targetWidget->getPage()->getAliasWithNamespace()}', '{$targetWidget->getId()}'); 
-                        var sViewId = this.getViewId(sViewName);
-                        var jqXHR = this._loadView(sViewName, function(){ 
+                        var oComponent = this.getOwnerComponent();
+                        var sViewName = oComponent.getViewName('{$targetWidget->getPage()->getAliasWithNamespace()}', '{$targetWidget->getId()}'); 
+                        var sViewId = oComponent.getViewId(sViewName);
+                        var jqXHR = oComponent._loadView(sViewName, function(){ 
                             var oView = sap.ui.getCore().byId(sViewId);
                             if (oView === undefined) {
                                 sap.ui.core.mvc.JSView.create({

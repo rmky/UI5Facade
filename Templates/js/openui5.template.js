@@ -346,9 +346,9 @@ const exfLauncher = {
 			$.ajax({
 				type: 'POST',
 				url: 'exface/api/ui5',
-				dataType: 'html',
+				dataType: 'script',
 				data: {
-					action: 'exfLauncher.Core.ShowContextPopup',
+					action: 'exface.Core.ShowContextPopup',
 					resource: exfLauncher.getPageId(),
 					element: oButton.data('widget')
 				},
@@ -356,20 +356,24 @@ const exfLauncher = {
 					var viewMatch = data.match(/sap.ui.jsview\("(.*)"/i);
 		            if (viewMatch !== null) {
 		                var view = viewMatch[1];
-		                $('body').append(data);
+		                //$('body').append(data);
 		            } else {
 		            	showHtmlInDialog(text.Status, data);
 		            }
 		            
-		            var page = oPopover.getContent()[0].getPages()[0];
-		            page.removeAllContent();
-		            page.addContent(sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}));
+		            var oPopoverPage = oPopover.getContent()[0].getPages()[0];
+		            oPopoverPage.removeAllContent();
+		            
+		            var oView = oComponent.runAsOwner(function() {
+	            		return sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view});
+            		}); 
+	            	oPopoverPage.addContent(oView);
 		        	oPopover.setBusy(false);
 					
 				},
 				error: function(jqXHR, textStatus, errorThrown){
 					oButton.setBusy(false);
-					showHtmlInDialog(textStatus, jqXHR.responseText, "error");
+					exfLauncher.showHtmlInDialog(textStatus, jqXHR.responseText, "error");
 				}
 			});
 		}

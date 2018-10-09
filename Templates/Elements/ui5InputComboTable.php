@@ -69,11 +69,6 @@ JS;
         }
     }
     
-    protected function buildJsValueLoader(string $oInputJs) : string
-    {
-        
-    }
-    
     /**
      *
      * {@inheritDoc}
@@ -215,7 +210,8 @@ JS;
 			{$this->buildJsProperties()}
         })
         .setModel(new sap.ui.model.json.JSONModel(), "{$this->getModelNameForAutosuggest()}")
-        {$value_init_js}{$this->buildJsPseudoEventHandlers()}
+        {$value_init_js}
+        {$this->buildJsPseudoEventHandlers()}
 JS;
     }
 	
@@ -300,8 +296,12 @@ JS;
     protected function buildJsPropertyValue()
     {
         $widget = $this->getWidget();
+        $model = $this->getView()->getModel();
+        if ($model->hasBinding($widget, 'value_text')) {
+            $valueBinding = ' value: "{' . $model->getBindingPath($widget, 'value_text') . '}",';
+        }
         if ($this->isValueBoundToModel()) {
-            return 'selectedKey: ' . $this->buildJsValueBinding() . ',';
+            return 'selectedKey: ' . $this->buildJsValueBinding() . ',' . $valueBinding;
         }
         return '';
     }

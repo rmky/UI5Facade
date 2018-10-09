@@ -97,6 +97,7 @@ JS;
         new sap.m.Table("{$this->getId()}", {
     		fixedLayout: false,
             alternateRowColors: {$striped},
+            noDataText: "{$this->translate('WIDGET.DATATABLE.NO_DATA_HINT')}",
     		mode: {$mode},
             headerToolbar: [
                 {$this->buildJsToolbar()}
@@ -301,6 +302,7 @@ JS;
                     oPrefillBinding.attachChange(fnPrefillHandler);
                     return;
                 }
+                {$this->buildJsDataLoaderPrepare()}
 
 JS;
         
@@ -403,7 +405,15 @@ JS;
             			}
                     } else {
                         var error = oEvent.getParameters().errorobject;
-                        {$this->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}
+                        if (! navigator.onLine) {
+                            if (oData.length = 0) { 
+                                {$this->buildJsOfflineHint('oTable')}
+                            } else {
+                                {$this->buildJsShowError("'{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR')}'", "'{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR_TITLE')}'")}
+                            }
+                        } else {
+                            {$this->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}
+                        }
                     }
                     
                     oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$controller->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
@@ -923,6 +933,24 @@ JS;
     protected function getIdOfDynamicPage() : string
     {
         return $this->getId() . "_DynamicPageWrapper";
+    }
+    
+    protected function buildJsDataLoaderPrepare() : string
+    {
+        if ($this->isMTable()) {
+            return "sap.ui.getCore().byId('{$this->getId()}').setNoDataText('{$this->translate('WIDGET.DATATABLE.NO_DATA_HINT')}');";
+        }
+        
+        return '';
+    }
+    
+    protected function buildJsOfflineHint(string $oTableJs = 'oTable') : string
+    {
+        if ($this->isMTable()) {
+            return $oTableJs . ".setNoDataText('{$this->translate('WIDGET.DATATABLE.OFFLINE_HINT')}');";
+        }
+        
+        return '';
     }
 }
 ?>

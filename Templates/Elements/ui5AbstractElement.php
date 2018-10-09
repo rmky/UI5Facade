@@ -141,7 +141,12 @@ JS;
     public function buildJsShowError($message_body_js, $title_js = null)
     {
         $title_js = $title_js ? $title_js : '"' . $this->translate('MESSAGE.ERROR_TITLE') . '"';
-        return $this->getController()->buildJsComponentGetter() . ".showAjaxErrorDialog({$message_body_js}, {$title_js});";
+        
+        if (substr(trim($message_body_js), 0, 1) !== '<') {
+            return $this->getController()->buildJsComponentGetter() . ".showDialog({$title_js}, {$message_body_js}, 'Error');";
+        } else {
+            return $this->getController()->buildJsComponentGetter() . ".showAjaxErrorDialog({$message_body_js}, {$title_js});";
+        }
     }
 
     /**

@@ -85,6 +85,38 @@ sap.ui.define([
 		    } else {
 		    	exfLauncher.showHtmlInDialog(sTitle, errorBody, 'Error');
 		    }
+		},
+		
+		showDialog : function (title, content, state, onCloseCallback, responsive) {
+			var stretch = responsive ? jQuery.device.is.phone : false;
+			var type = sap.m.DialogType.Standard;
+			if (typeof content === 'string' || content instanceof String) {
+				content = new sap.m.Text({
+					text: content
+				});
+				type = sap.m.DialogType.Message;
+			} 
+			var dialog = new sap.m.Dialog({
+				title: title,
+				state: state,
+				type: type,
+				stretch: stretch,
+				content: content,
+				beginButton: new sap.m.Button({
+					text: 'OK',
+					press: function () {
+						dialog.close();
+					}
+				}),
+				afterClose: function() {
+					if (onCloseCallback) {
+						onCloseCallback();
+					}
+					dialog.destroy();
+				}
+			});
+		
+			dialog.open();
 		}
 
 	});

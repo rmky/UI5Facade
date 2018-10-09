@@ -127,8 +127,7 @@ JS;
         // Build the AJAX request
         $output .= <<<JS
                         {$this->buildJsBusyIconShow()}
-                        
-						var xhrSettings = {
+                        var xhrSettings = {
 							type: 'POST',
 							data: {
 								data: requestData
@@ -165,6 +164,7 @@ JS;
                         var sViewName = this.getViewName('{$targetWidget->getPage()->getAliasWithNamespace()}', '{$targetWidget->getId()}'); 
                         var sViewId = this.getViewId(sViewName);
                         var oComponent = this.getOwnerComponent();
+                        console.log(xhrSettings);
                         var jqXHR = this._loadView(sViewName, function(){ 
                             var oView = sap.ui.getCore().byId(sViewId);
                             if (oView === undefined) {
@@ -184,6 +184,7 @@ JS;
                                     });
                                 });
                             } else {
+                                oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
                                 oView.getContent()[0].open();
                             }
                         }, xhrSettings);

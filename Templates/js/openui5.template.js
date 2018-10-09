@@ -1,9 +1,9 @@
 // Toggle online/offlie icon
 window.addEventListener('online', function(){
-	toggleOnlineIndicator();
+	exfLauncher.toggleOnlineIndicator();
 });
 window.addEventListener('offline', function(){
-	toggleOnlineIndicator();
+	exfLauncher.toggleOnlineIndicator();
 });
 
 const exfLauncher = {
@@ -147,7 +147,7 @@ const exfLauncher = {
 															}
 														}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
 														
-														showDialog('Sync-Puffer', oTable, undefined, undefined, true);
+														exfLauncher.showDialog('Sync-Puffer', oTable, undefined, undefined, true);
 													},
 												}),
 												new sap.m.StandardListItem({
@@ -215,7 +215,7 @@ const exfLauncher = {
 		var content = new sap.ui.core.HTML({
 			content: html
 		});
-		showDialog(title, content, state);
+		exfLauncher.showDialog(title, content, state);
 	},
 	
 	contextBar: {
@@ -360,7 +360,7 @@ const exfLauncher = {
 		                var view = viewMatch[1];
 		                //$('body').append(data);
 		            } else {
-		            	showHtmlInDialog(text.Status, data);
+		            	exfLauncher.showHtmlInDialog(text.Status, data);
 		            }
 		            
 		            var oPopoverPage = oPopover.getContent()[0].getPages()[0];

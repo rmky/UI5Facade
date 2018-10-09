@@ -73,7 +73,7 @@ sap.ui.define([
 		 */
 		showAjaxErrorDialog : function(sBody, sTitle) {
 			var view = '';
-		    var errorBody = sBody;
+		    var errorBody = sBody ? sBody : '';
 		    var viewMatch = errorBody.match(/sap.ui.jsview\("(.*)"/i);
 		    if (viewMatch !== null) {
 		        view = viewMatch[1];
@@ -81,9 +81,9 @@ sap.ui.define([
 		        errorBody = errorBody.replace(view, view+randomizer);
 		        view = view+randomizer;
 		        $('body').append(errorBody);
-		        showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}), 'Error');
+		        exfLauncher.showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}), 'Error');
 		    } else {
-		        showHtmlInDialog(sTitle, errorBody, 'Error');
+		    	exfLauncher.showHtmlInDialog(sTitle, errorBody, 'Error');
 		    }
 		}
 

@@ -32,7 +32,7 @@ class ui5Dialog extends ui5Form
         // widget with lazy loading (like tables), that should postpone loading until the prefill data
         // is there.
         if ($this->needsPrefill()) {
-            $this->getController()->addOnInitScript('this.getView().getModel("view").setProperty("/_prefill/pending", true);', 'prefill_fix');            
+            $this->getController()->addOnInitScript('this.getView().getModel("view").setProperty("/_prefill/pending", true);');            
         }
         
         if ($this->isMaximized() === false) {

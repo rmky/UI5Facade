@@ -65,7 +65,7 @@ interface ui5ControllerInterface {
      * @param string $id
      * @return ui5ControllerInterface
      */
-    public function addOnInitScript(string $js, string $id) : ui5ControllerInterface;
+    public function addOnInitScript(string $js) : ui5ControllerInterface;
     
     /**
      * Adds a script to be performed before or after the view of this controller is shown.

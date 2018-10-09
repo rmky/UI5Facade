@@ -474,5 +474,19 @@ JS;
     {
         return [];
     }
+    
+    public function addOnBindingChangeScript(string $bindingName, string $script, string $oEventJs = 'oEvent') : ui5AbstractElement
+    {
+        $handler = <<<JS
+
+                sap.ui.getCore().byId("{$this->getId()}")
+                    .getBinding("{$bindingName}")
+                    .attachChange(function({$oEventJs}){
+                    {$script}
+                });
+JS;
+        $this->getController()->addOnInitScript($handler);
+        return $this;
+    }
 }
 ?>

@@ -151,7 +151,7 @@ function() {
 JS;
         $this->addProperty($name, 'null');
         $this->addProperty('_'.$name.'Init', $initFunction);
-        $this->addOnInitScript($initFunctionCall, $name);
+        $this->addOnInitScript($initFunctionCall);
         
         return $this;
     }
@@ -203,7 +203,7 @@ function() {
 JS;
         $this->addProperty($propertyName, 'null');
         $this->addProperty($initMethodName, $initFunction);
-        $this->addOnInitScript($initFunctionCall, $initMethodName);
+        $this->addOnInitScript($initFunctionCall);
         return $this;
     }
     
@@ -358,7 +358,8 @@ JS;
     protected function buildJsOnInitScript() : string
     {
         $js = '';
-        foreach ($this->onInitScripts as $script) {
+        $scripts = array_unique($this->onInitScripts);
+        foreach ($scripts as $script) {
             $js .= "\n\n" . $this->sanitizeScript($script);
         }
         return $js;
@@ -401,9 +402,9 @@ JS;
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addOnInitScript()
      */
-    public function addOnInitScript(string $js, string $id) : ui5ControllerInterface
+    public function addOnInitScript(string $js) : ui5ControllerInterface
     {
-        $this->onInitScripts[$id] = $js;
+        $this->onInitScripts[] = $js;
         return $this;
     }
     

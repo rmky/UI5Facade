@@ -1,7 +1,6 @@
 <?php
 namespace exface\OpenUI5Template\Templates\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryLiveReferenceTrait;
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDisableConditionTrait;
 
 /**
@@ -12,7 +11,6 @@ use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDisableConditionTr
  */
 class ui5Input extends ui5Value
 {
-    use JqueryLiveReferenceTrait;
     use JqueryDisableConditionTrait;
     
     /**
@@ -23,10 +21,6 @@ class ui5Input extends ui5Value
     protected function init()
     {
         parent::init();
-        // If the input's value is bound to another element via an expression, we need to make sure, that other element will
-        // change the input's value every time it changes itself. This needs to be done on init() to make sure, the other element
-        // has not generated it's JS code yet!
-        $this->registerLiveReferenceAtLinkedElement();
         
         // Register an onChange-Script on the element linked by a disable condition.
         $this->registerDisableConditionAtLinkedElement();

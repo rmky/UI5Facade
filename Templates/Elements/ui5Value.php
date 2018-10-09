@@ -4,6 +4,7 @@ namespace exface\OpenUI5Template\Templates\Elements;
 use exface\Core\Widgets\Value;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface;
 use exface\OpenUI5Template\Templates\Interfaces\ui5CompoundControlInterface;
+use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryLiveReferenceTrait;
 
 /**
  * Generates sap.m.Text controls for Value widgets
@@ -15,7 +16,24 @@ use exface\OpenUI5Template\Templates\Interfaces\ui5CompoundControlInterface;
  */
 class ui5Value extends ui5AbstractElement implements ui5ValueBindingInterface, ui5CompoundControlInterface
 {
+    use JqueryLiveReferenceTrait;
+    
     private $valueBindingPath = null;
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::init()
+     */
+    protected function init()
+    {
+        parent::init();
+        
+        // If the input's value is bound to another element via an expression, we need to make sure, that other element will
+        // change the input's value every time it changes itself. This needs to be done on init() to make sure, the other element
+        // has not generated it's JS code yet!
+        $this->registerLiveReferenceAtLinkedElement();
+    }
     
     /**
      * 
@@ -34,6 +52,10 @@ class ui5Value extends ui5AbstractElement implements ui5ValueBindingInterface, u
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
+        if ($onChange = $this->getOnChangeScript()) {
+            $this->addOnBindingChangeScript('text', $onChange);  
+        }
+        
         return <<<JS
 
         new sap.m.Text("{$this->getId()}", {

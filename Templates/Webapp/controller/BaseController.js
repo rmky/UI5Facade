@@ -101,8 +101,8 @@ sap.ui.define([
 						}
 						
 						if (navigator.onLine === false) {
-							oRouter.getTargets().display("offline", {
-								fromTarget : "home"
+							oController.getRouter().getTargets().display("offline", {
+								fromTarget : "[#app_id#]"
 							});
 						} else {
 							oController.getOwnerComponent().showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText);

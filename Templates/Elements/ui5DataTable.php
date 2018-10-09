@@ -671,7 +671,7 @@ JS;
         					new sap.m.Title({
                                 text: "{$this->buildTextTableHeading()}"
                             }),
-                            new sap.m.Text("asdf", {
+                            new sap.m.Text({
                                 text: "{{$this->getModelNameForConfigurator()}>/filterDescription}"
                             })
                         ]

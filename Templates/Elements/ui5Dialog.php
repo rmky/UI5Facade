@@ -304,6 +304,15 @@ JS;
     {
         $widget = $this->getWidget();
         $triggerWidget = $widget->getParent() instanceof iTriggerAction ? $widget->getParent() : $widget;
+        
+        // If the prefill cannot be fetched due to being offline, show the offline message view
+        // (if the dialog is a page) or an error-popup (if the dialog is a regular dialog).
+        if ($this->isMaximized()) {
+            $offlineError = $oViewJs . '.getController().getRouter().getTargets().display("offline")';
+        } else {
+            $offlineError = $this->getController()->buildJsComponentGetter() . ".showDialog('{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR')}', '{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR_TITLE')}', 'Error');";
+        }
+        
         return <<<JS
         
             {$this->buildJsBusyIconShow()}
@@ -332,7 +341,7 @@ JS;
                     oViewModel.setProperty('/_prefill/pending', false);
                     {$this->buildJsBusyIconHide()}
                     if (navigator.onLine === false) {
-                        {$oViewJs}.getController().getRouter().getTargets().display("offline");
+                        {$offlineError}
                     } else {
                         {$this->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText)
                     }

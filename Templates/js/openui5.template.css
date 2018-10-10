@@ -24,7 +24,7 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 .sapMTB-Info-CTX .sapMBtnTransparent>.sapMBtnIcon {color: #fff}
 
 /* sap.f.DynamicPage */
-.exf-page-heading-btn {margin-top: -5px}
+.exf-page-heading-btn {margin-top: -5px; margin-left: -11px;}
 
 /* sap.m.P13nDialog */
 .sapMP13nDialog > .sapMDialogResizeHandler {position: inherit}

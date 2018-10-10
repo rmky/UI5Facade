@@ -715,22 +715,22 @@ JS;
                     })
 				],
                 snappedHeading: [
-                    new sap.m.HBox({
+                    new sap.m.VBox({
                         items: [
-                            new sap.m.Button({
-                                icon: "sap-icon://nav-back",
-                                press: [oController.onNavBack, oController],
-                                type: sap.m.ButtonType.Transparent
-                            }).addStyleClass('exf-page-heading-btn'),
-                            new sap.m.VBox({
+        					new sap.m.HBox({
                                 items: [
-                					new sap.m.Title({
+                                    new sap.m.Button({
+                                        icon: "sap-icon://nav-back",
+                                        press: [oController.onNavBack, oController],
+                                        type: sap.m.ButtonType.Transparent
+                                    }).addStyleClass('exf-page-heading-btn'),
+                                    new sap.m.Title({
                                         text: "{$this->buildTextTableHeading()}"
-                                    }),
-                                    new sap.m.Text({
-                                        text: "{{$this->getModelNameForConfigurator()}>/filterDescription}"
                                     })
                                 ]
+                            }),
+                            new sap.m.Text({
+                                text: "{{$this->getModelNameForConfigurator()}>/filterDescription}"
                             })
                         ]
                     })

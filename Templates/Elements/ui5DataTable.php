@@ -54,15 +54,10 @@ class ui5DataTable extends ui5AbstractElement
         $controller->addOnShowViewScript($this->buildJsRefresh());
         
         if ($this->isMTable()) {
-            $js = $this->buildJsConstructorForMTable();
+            $js = $this->buildJsConstructorForMTable($oControllerJs);
         } else {
-            $js = $this->buildJsConstructorForUiTable();
+            $js = $this->buildJsConstructorForUiTable($oControllerJs);
         }
-        
-        $js .= <<<JS
-        {$this->buildJsPseudoEventHandlers()}
-
-JS;
         
         $initConfigModel = ".setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForConfigurator()}')";
         
@@ -88,38 +83,69 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsConstructorForMTable()
+    protected function buildJsConstructorForMTable(string $oControllerJs = 'oController')
     {
         $mode = $this->getWidget()->getMultiSelect() ? 'sap.m.ListMode.MultiSelect' : 'sap.m.ListMode.SingleSelectMaster';
         $striped = $this->getWidget()->getStriped() ? 'true' : 'false';
         
         return <<<JS
-        new sap.m.Table("{$this->getId()}", {
-    		fixedLayout: false,
-            alternateRowColors: {$striped},
-            noDataText: "{$this->translate('WIDGET.DATATABLE.NO_DATA_HINT')}",
-    		mode: {$mode},
-            headerToolbar: [
-                {$this->buildJsToolbar()}
-    		],
-    		columns: [
-                {$this->buildJsColumnsForMTable()}
-    		],
-    		items: {
-    			path: '/data',
-                {$this->buildJsBindingOptionsForGrouping()}
-                template: new sap.m.ColumnListItem({
-                    type: "Active",
-                    cells: [
-                        {$this->buildJsCellsForMTable()}
-                    ]
-                }),
-    		}
+        new sap.m.VBox({
+            items: [
+                new sap.m.Table("{$this->getId()}", {
+            		fixedLayout: false,
+                    alternateRowColors: {$striped},
+                    noDataText: "{$this->translate('WIDGET.DATATABLE.NO_DATA_HINT')}",
+            		mode: {$mode},
+                    headerToolbar: [
+                        {$this->buildJsToolbar()}
+            		],
+            		columns: [
+                        {$this->buildJsColumnsForMTable()}
+            		],
+            		items: {
+            			path: '/data',
+                        {$this->buildJsBindingOptionsForGrouping()}
+                        template: new sap.m.ColumnListItem({
+                            type: "Active",
+                            cells: [
+                                {$this->buildJsCellsForMTable()}
+                            ]
+                        }),
+            		}
+                })
+                .setModel(new sap.ui.model.json.JSONModel())
+                .attachItemPress(function(event){
+                    {$this->getOnChangeScript()}
+                })
+                {$this->buildJsClickListeners('oController')}
+                {$this->buildJsPseudoEventHandlers()}
+                ,
+                {$this->buildJsFooter()}
+            ]
         })
-        .setModel(new sap.ui.model.json.JSONModel())
-        .attachItemPress(function(event){
-            {$this->getOnChangeScript()}
-        }){$this->buildJsClickListeners('oController')}
+
+JS;
+    }
+                
+    protected function buildJsFooter(string $oControllerJs = 'oController') : string
+    {
+        return <<<JS
+                new sap.m.OverflowToolbar({
+                    design: "Info",
+    				content: [
+                        {$this->getPaginatorElement()->buildJsConstructor($oControllerJs)},
+                        new sap.m.ToolbarSpacer(),
+                        new sap.m.OverflowToolbarButton({
+                            type: sap.m.ButtonType.Transparent,
+                            icon: "sap-icon://drop-down-list",
+                            text: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
+                            tooltip: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
+                            press: function() {
+                    			{$this->getController()->buildJsDependentControlSelector('oConfigurator', $this, $oControllerJs)}.open();
+                    		}
+                        })
+                    ]
+                })
 
 JS;
     }
@@ -154,7 +180,7 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsConstructorForUiTable()
+    protected function buildJsConstructorForUiTable(string $oControllerJs = 'oController')
     {
         $widget = $this->getWidget();
         $controller = $this->getController();
@@ -172,7 +198,7 @@ JS;
         		filter: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
         		sort: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
         		toolbar: [
-        			{$this->buildJsToolbar()}
+        			{$this->buildJsToolbar($oControllerJs, $this->getPaginatorElement()->buildJsConstructor($oControllerJs))}
         		],
         		columns: [
         			{$this->buildJsColumnsForUiTable()}
@@ -540,20 +566,24 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsToolbar($oControllerJsVar = 'oController')
+    protected function buildJsToolbar($oControllerJsVar = 'oController', string $leftExtras = null, string $rightExtras = null)
     {
         $controller = $this->getController();
         $heading = $this->buildTextTableHeading() . ($this->getWidget()->isPaged() ? ': ' : '');
         $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $heading . '"}),';
+        
+        $leftExtras = $leftExtras === null ? '' : rtrim($leftExtras, ", ") . ',';
+        $rightExtras = $rightExtras === null ? '' : rtrim($leftExtras, ", ") . ',';
         
         $toolbar = <<<JS
 			new sap.m.OverflowToolbar({
                 design: "Transparent",
 				content: [
 					{$heading}
-			        {$this->getPaginatorElement()->buildJsConstructor($oControllerJsVar)}
-                    new sap.m.ToolbarSpacer(),
+                    {$leftExtras}
+			        new sap.m.ToolbarSpacer(),
                     {$this->buildJsButtonsConstructors()}
+                    {$rightExtras}
 					new sap.m.SearchField("{$this->getId()}_quickSearch", {
                         width: "200px",
                         search: {$controller->buildJsMethodCallFromView('onLoadData', $this)},

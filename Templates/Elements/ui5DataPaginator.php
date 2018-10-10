@@ -28,6 +28,7 @@ class ui5DataPaginator extends ui5AbstractElement
             text: ""
         }),
         new sap.m.OverflowToolbarButton("{$this->getId()}_prev", {
+            type: sap.m.ButtonType.Transparent,
             icon: "sap-icon://navigation-left-arrow",
             layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
             text: "{$this->translate('WIDGET.PAGINATOR.PREVIOUS_PAGE')}",
@@ -39,6 +40,7 @@ class ui5DataPaginator extends ui5AbstractElement
             }
         }),
         new sap.m.OverflowToolbarButton("{$this->getId()}_next", {
+            type: sap.m.ButtonType.Transparent,
             icon: "sap-icon://navigation-right-arrow",
             layoutData: new sap.m.OverflowToolbarLayoutData({priority: "Low"}),
             text: "{$this->translate('WIDGET.PAGINATOR.NEXT_PAGE')}",

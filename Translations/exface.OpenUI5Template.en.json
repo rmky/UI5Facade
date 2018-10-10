@@ -17,6 +17,8 @@
 	"WEBAPP.ROUTING.OFFLINE.TEXT": "This function is not available offline!",
 	"WEBAPP.ROUTING.OFFLINE.DESCRIPTION": "Connect to the network and try again.",
 	
+	"WIDGET.DATATPAGINATOR.SHOWING": "Showing %from% - %to% of %total%",
+	
 	"WIDGET.DATATABLE.FILTERED_BY": "Filtered by",
 	"WIDGET.DATATABLE.FILTERED_BY_NONE": "None",
 	"WIDGET.DATATABLE.GO_BUTTON_TEXT": "Go",

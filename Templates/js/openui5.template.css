@@ -23,6 +23,9 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 .sapMList.sapMListBGTranslucent.sapMListTblCnt {overflow-x: scroll}
 .sapMTB-Info-CTX .sapMBtnTransparent>.sapMBtnIcon {color: #fff}
 
+/* sap.f.DynamicPage */
+.exf-page-heading-btn {margin-top: -5px}
+
 /* sap.m.P13nDialog */
 .sapMP13nDialog > .sapMDialogResizeHandler {position: inherit}
 

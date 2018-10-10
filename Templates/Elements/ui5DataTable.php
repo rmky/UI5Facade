@@ -683,7 +683,7 @@ JS;
      * @param string $content
      * @return string
      */
-    protected function buildJsPage($content)
+    protected function buildJsPage(string $content) : string
     {  
         foreach ($this->getWidget()->getToolbarMain()->getButtonGroupForSearchActions()->getButtons() as $btn) {
             if ($btn->getAction()->isExactly('exface.Core.RefreshWidget')){
@@ -701,29 +701,40 @@ JS;
             headerExpanded: true,
             title: new sap.f.DynamicPageTitle({
 				expandedHeading: [
-                    new sap.m.Title({
-                        text: "{$this->buildTextTableHeading()}"
-                    })
-				],
-                snappedHeading: [
-                    new sap.m.VBox({
+                    new sap.m.HBox({
                         items: [
-        					new sap.m.Title({
+                            new sap.m.Button({
+                                icon: "sap-icon://nav-back",
+                                press: [oController.onNavBack, oController],
+                                type: sap.m.ButtonType.Transparent
+                            }).addStyleClass('exf-page-heading-btn'),
+                            new sap.m.Title({
                                 text: "{$this->buildTextTableHeading()}"
-                            }),
-                            new sap.m.Text({
-                                text: "{{$this->getModelNameForConfigurator()}>/filterDescription}"
                             })
                         ]
                     })
 				],
-                navigationActions: [
-                    new sap.m.Button({
-                        icon: "sap-icon://nav-back",
-                        press: [oController.onNavBack, oController],
-                        type: sap.m.ButtonType.Transparent
+                snappedHeading: [
+                    new sap.m.HBox({
+                        items: [
+                            new sap.m.Button({
+                                icon: "sap-icon://nav-back",
+                                press: [oController.onNavBack, oController],
+                                type: sap.m.ButtonType.Transparent
+                            }).addStyleClass('exf-page-heading-btn'),
+                            new sap.m.VBox({
+                                items: [
+                					new sap.m.Title({
+                                        text: "{$this->buildTextTableHeading()}"
+                                    }),
+                                    new sap.m.Text({
+                                        text: "{{$this->getModelNameForConfigurator()}>/filterDescription}"
+                                    })
+                                ]
+                            })
+                        ]
                     })
-                ],
+				],
 				actions: [
 				    {$top_buttons}
 				]

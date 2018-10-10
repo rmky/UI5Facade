@@ -114,20 +114,16 @@ class ExportFioriWebapp extends DownloadZippedFolder
     
     protected function exportTranslations(AppInterface $app, Webapp $webapp, string $exportFolder) : ExportFioriWebapp
     {
-        $folder = $app->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Translations' . DIRECTORY_SEPARATOR;
         $defaultLang = $app->getDefaultLanguageCode();
         $i18nFolder = $exportFolder . 'i18n' . DIRECTORY_SEPARATOR;
         if (! file_exists($i18nFolder)) {
             Filemanager::pathConstruct($i18nFolder);
         }
         
-        foreach (glob($folder . "*.json") as $path) {
-            $filename = pathinfo($path, PATHINFO_FILENAME);
-            $lang = StringDataType::substringAfter($filename, '.', false, false, true);
-            
+        foreach ($app->getLanguages() as $lang) {
             $i18nSuffix = (strcasecmp($lang, $defaultLang) === 0) ? '' : '_' . $lang;
             $i18nFile = $i18nFolder . 'i18n' . $i18nSuffix . '.properties';
-            file_put_contents($i18nFile, $webapp->get($path));
+            file_put_contents($i18nFile, $webapp->get($i18nFile));
         }
         return $this;
     }

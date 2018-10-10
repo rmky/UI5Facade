@@ -237,9 +237,9 @@ class Webapp implements WorkbenchDependantInterface
         
         if ($locale === null) {
             if ($app) {
-                $locale = $app->getDefaultLanguageCode();
+                $locale = $app->getLanguageDefault();
             } else {
-                $locale = $this->getWorkbench()->getCoreApp()->getDefaultLanguageCode();
+                $locale = $this->getWorkbench()->getCoreApp()->getLanguageDefault();
             }
         }
         

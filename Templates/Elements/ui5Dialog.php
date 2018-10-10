@@ -331,7 +331,11 @@ JS;
                 error: function(jqXHR, textStatus, errorThrown){
                     oViewModel.setProperty('/_prefill/pending', false);
                     {$this->buildJsBusyIconHide()}
-                    {$this->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText)
+                    if (navigator.onLine === false) {
+                        {$oViewJs}.getController().getRouter().getTargets().display("offline");
+                    } else {
+                        {$this->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText)
+                    }
                 }
 			})
 			

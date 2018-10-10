@@ -405,11 +405,11 @@ JS;
             			}
                     } else {
                         var error = oEvent.getParameters().errorobject;
-                        if (! navigator.onLine) {
+                        if (navigator.onLine === false) {
                             if (oData.length = 0) { 
                                 {$this->buildJsOfflineHint('oTable')}
                             } else {
-                                {$this->buildJsShowError("'{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR')}'", "'{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR_TITLE')}'")}
+                                {$this->getController()->buildJsComponentGetter()}.showDialog('{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR')}', '{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR_TITLE')}', 'Error');
                             }
                         } else {
                             {$this->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}

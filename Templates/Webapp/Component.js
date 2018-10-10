@@ -87,8 +87,20 @@ sap.ui.define([
 		    }
 		},
 		
-		showDialog : function (title, content, state, onCloseCallback, responsive) {
-			var stretch = responsive ? jQuery.device.is.phone : false;
+		/**
+		 * Convenience method to create and open a dialog.
+		 * 
+		 * The dialog is automatically destroyed when closed.
+		 * 
+		 * @param string|sap.ui.core.Control content
+		 * @param string sTitle
+		 * @param string sState
+		 * @param bResponsive
+		 * 
+		 * @return sap.m.Dialog
+		 */
+		showDialog : function (content, sTitle, sState, bResponsive) {
+			var stretch = bResponsive ? jQuery.device.is.phone : false;
 			var type = sap.m.DialogType.Standard;
 			if (typeof content === 'string' || content instanceof String) {
 				content = new sap.m.Text({
@@ -97,8 +109,8 @@ sap.ui.define([
 				type = sap.m.DialogType.Message;
 			} 
 			var dialog = new sap.m.Dialog({
-				title: title,
-				state: state,
+				title: sTitle,
+				state: sState,
 				type: type,
 				stretch: stretch,
 				content: content,
@@ -109,14 +121,13 @@ sap.ui.define([
 					}
 				}),
 				afterClose: function() {
-					if (onCloseCallback) {
-						onCloseCallback();
-					}
 					dialog.destroy();
 				}
 			});
 		
 			dialog.open();
+			
+			return dialog;
 		}
 
 	});

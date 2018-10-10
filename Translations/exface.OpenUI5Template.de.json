@@ -9,6 +9,14 @@
 	"MESSAGE.SUCCESS_TITLE": "",
 	"MESSAGE.FILL_REQUIRED_ATTRIBUTES": "Bitte füllen Sie die benötigten Felder aus: ",
 	
+	"WEBAPP.ROUTING.NOTFOUND.TITLE": "URL nicht gefunden",
+	"WEBAPP.ROUTING.NOTFOUND.TEXT": "Seite nicht gefunden!",
+	"WEBAPP.ROUTING.NOTFOUND.DESCRIPTION": "Versuchen Sie die App neu zu starten.",
+	
+	"WEBAPP.ROUTING.OFFLINE.TITLE": "Offline",
+	"WEBAPP.ROUTING.OFFLINE.TEXT": "Diese Funktion is offline nicht verfügbar!",
+	"WEBAPP.ROUTING.OFFLINE.DESCRIPTION": "Stellen Sie eine Verbindung zum Netzwerk her und versuchen Sie es erneut.",
+	
 	"WIDGET.DATATABLE.FILTERED_BY": "Filter",
 	"WIDGET.DATATABLE.FILTERED_BY_NONE": "Keine",
 	"WIDGET.DATATABLE.GO_BUTTON_TEXT": "Los",

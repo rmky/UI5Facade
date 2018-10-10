@@ -127,7 +127,7 @@ class ExportFioriWebapp extends DownloadZippedFolder
             
             $i18nSuffix = (strcasecmp($lang, $defaultLang) === 0) ? '' : '_' . $lang;
             $i18nFile = $i18nFolder . 'i18n' . $i18nSuffix . '.properties';
-            file_put_contents($i18nFile, $webapp->getTranslation($path));
+            file_put_contents($i18nFile, $webapp->get($path));
         }
         return $this;
     }

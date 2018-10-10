@@ -9,6 +9,14 @@
 	"MESSAGE.SUCCESS_TITLE": "",
 	"MESSAGE.FILL_REQUIRED_ATTRIBUTES": "Please fill in the required fields: ",
 	
+	"WEBAPP.ROUTING.NOTFOUND.TITLE": "Invalid Route",
+	"WEBAPP.ROUTING.NOTFOUND.TEXT": "Page not found!",
+	"WEBAPP.ROUTING.NOTFOUND.DESCRIPTION": "Try relaunching the app.",
+	
+	"WEBAPP.ROUTING.OFFLINE.TITLE": "Offline",
+	"WEBAPP.ROUTING.OFFLINE.TEXT": "This function is not available offline!",
+	"WEBAPP.ROUTING.OFFLINE.DESCRIPTION": "Connect to the network and try again.",
+	
 	"WIDGET.DATATABLE.FILTERED_BY": "Filtered by",
 	"WIDGET.DATATABLE.FILTERED_BY_NONE": "None",
 	"WIDGET.DATATABLE.GO_BUTTON_TEXT": "Go",

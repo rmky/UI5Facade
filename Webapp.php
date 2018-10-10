@@ -95,8 +95,8 @@ class Webapp implements WorkbenchDependantInterface
             case $route === 'Component-preload.js' && $this->template->getConfig()->getOption('UI5.USE_COMPONENT_PRELOAD'):
                 return $this->getComponentPreload();
             case StringDataType::startsWith($route, 'i18n/'):
-                //$filename = pathinfo($filePath, PATHINFO_FILENAME);
-                return '';
+                $lang = explode('_', pathinfo($route, PATHINFO_FILENAME))[1];
+                return $this->getTranslation($lang);
             case file_exists($this->getTemplatesFolder() . $route):
                 return $this->getFromFileTemplate($route);
             case StringDataType::startsWith($route, 'view/'):
@@ -224,13 +224,37 @@ class Webapp implements WorkbenchDependantInterface
         }
     }
     
-    public function getTranslation(string $filePath) : string
+    public function getTranslation(string $locale = null) : string
     {
-        $json = json_decode(file_get_contents($filePath), true);
-        $output = '';
-        foreach ($json as $key => $text) {
+        try {
+            $app = $this->getRootPage()->getApp();
+        } catch (\Throwable $e) {
+            if ($this->getRootPage()->isEmpty() === false) {
+                $rootObj = $this->getRootPage()->getWidgetRoot()->getMetaObject();
+                $app = $rootObj->getApp();
+            }
+        }
+        
+        if ($locale === null) {
+            if ($app) {
+                $locale = $app->getDefaultLanguageCode();
+            } else {
+                $locale = $this->getWorkbench()->getCoreApp()->getDefaultLanguageCode();
+            }
+        }
+        
+        $tplTranslator = $this->template->getApp()->getTranslator();
+        $dict = $tplTranslator->getDictionary($locale);
+        
+        if ($app) {
+            $dict = array_merge($dict, $app->getTranslator()->getDictionary($locale));
+        }
+        
+        // Transform the array into a properties file
+        foreach ($dict as $key => $text) {
             $output .= $key . '=' . $text. "\n";
         }
+        
         return $output;
     }
     

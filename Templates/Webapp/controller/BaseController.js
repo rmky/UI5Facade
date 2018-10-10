@@ -177,7 +177,7 @@ sap.ui.define([
 			if (sPreviousHash !== undefined) {
 				window.history.go(-1);
 			} else {
-				this.getRouter().navTo("appHome", {}, true /*no history*/);
+				this.getRouter().navTo("[#app_id#]", {}, true /*no history*/);
 			}
 		},
 		

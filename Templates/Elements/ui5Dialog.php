@@ -310,7 +310,12 @@ JS;
         if ($this->isMaximized()) {
             $offlineError = $oViewJs . '.getController().getRouter().getTargets().display("offline")';
         } else {
-            $offlineError = $this->getController()->buildJsComponentGetter() . ".showDialog('{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR')}', '{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR_TITLE')}', 'Error');";
+            $offlineError = <<<JS
+
+            {$this->getController()->buildJsComponentGetter()}.showDialog('{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR')}', '{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR_TITLE')}', 'Error');
+            sap.ui.getCore().byId("{$this->getId()}").close();
+
+JS;
         }
         
         return <<<JS

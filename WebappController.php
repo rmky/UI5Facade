@@ -26,6 +26,8 @@ class WebappController implements ui5ControllerInterface
     
     private $onRouteMatchedScripts = [];
     
+    private $onDefineScripts = [];
+    
     private $externalModules = [];
     
     private $externalCss = [];
@@ -228,6 +230,8 @@ JS;
 {$cssIncludes}
 
 {$moduleRegistration}
+
+{$this->buildJsOnDefineScript()}
         
 sap.ui.define([
 	"{$this->getWebapp()->getComponentPath()}/controller/BaseController"{$modules}
@@ -611,5 +615,16 @@ JS;
         $widgetId = $widgetId ?? '';
         $xhrSettingsJs = $xhrSettingsJs !== null ? ', ' . $xhrSettingsJs : '';
         return "this.navTo('{$pageSelector}', '{$widgetId}'{$xhrSettingsJs});";
+    }
+    
+    public function addOnDefineScript(string $js) : ui5ControllerInterface
+    {
+        $this->onDefineScripts[] = $js;
+        return $this;
+    }
+    
+    protected function buildJsOnDefineScript() : string
+    {
+        return implode("\n", array_unique($this->onDefineScripts));
     }
 }

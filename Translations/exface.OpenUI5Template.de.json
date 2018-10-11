@@ -17,6 +17,9 @@
 	"WEBAPP.ROUTING.OFFLINE.TEXT": "Diese Funktion is offline nicht verfügbar!",
 	"WEBAPP.ROUTING.OFFLINE.DESCRIPTION": "Stellen Sie eine Verbindung zum Netzwerk her und versuchen Sie es erneut.",
 	
+	"WEBAPP.SHELL.STATE.ONLINE": "Akt. Status: online",
+	"WEBAPP.SHELL.STATE.OFFLINE": "Akt. Status: offline",
+	
 	"WIDGET.DATATPAGINATOR.SHOWING": "Zeige %from% - %to% aus %total%",
 	
 	"WIDGET.DATATABLE.FILTERED_BY": "Filter",

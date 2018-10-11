@@ -47,18 +47,18 @@ const exfLauncher = {
 		                    press: function(oEvent){
 								var oButton = oEvent.getSource();
 								var oPopover = new sap.m.Popover({
-									title: "Akt. Status: Online",
+									title: function(){return navigator.onLine === false ? 'Online' : 'Offline'},
 									placement: "Bottom",
 									content: [
 										new sap.m.List({
 											items: [
 												new sap.m.StandardListItem({
-													title: "Sync-Puffer (3)",
+													title: "Sync-Puffer (0)",
 													type: "Active",
 													press: function(){
 														var oData = {
 																data: [
-																	{
+																	/*{
 																		"action_alias": "exfLauncher.Core.CreateData",
 																		"caption": "Speichern",
 																		"object_alias": "alexa.RMS-demo.BBD_ALERT",
@@ -78,7 +78,7 @@ const exfLauncher = {
 																		"object_alias": "axenox.WMS.picking_order_pos",
 																		"object_name": "Pickauftragsposition",
 																		"triggered": "2018-04-12 16:38:22"
-																	}
+																	}*/
 																]
 														};
 														
@@ -153,12 +153,28 @@ const exfLauncher = {
 												new sap.m.StandardListItem({
 													title: "Ausgecheckte Objekte (0)",
 													type: "Active",
-													press: function(){alert('click 2!')},
+													press: function(){},
 												}),
 												new sap.m.StandardListItem({
-													title: "Sync-Fehler (1)",
+													title: "Sync-Fehler (0)",
 													type: "Active",
-													press: function(){alert('click 3!')},
+													press: function(){},
+												}),
+												new sap.m.GroupHeaderListItem({
+														title: 'Tools',
+														upperCase: false
+												}),
+												new sap.m.StandardListItem({
+													title: "Sync Preload Data",
+													tooltip: "Preload-Daten jetzt synchronisieren",
+													type: "Active",
+													press: function(oEvent){
+														oButton = oEvent.getSource();
+														oButton.setBusyIndicatorDelay(0).setBusy(true);
+														exfPreload.syncAll(function(){
+															oButton.setBusy(false)
+														});
+													},
 												})
 											]
 										})
@@ -392,3 +408,86 @@ const exfLauncher = {
 		}
 	}
 }
+
+const exfPreload = {
+		
+	_tables: {},
+		
+	_db: function() {
+		var dexie = new Dexie('exf-preload');
+		/*dexie.version(1).stores({
+			'powerui.DemoBJ.bereich': 'id'
+		});*/
+		
+		return dexie;
+	}(),
+	
+	addObjectStore: function(sAlias, aIndexedAttributes, sPageAlias, sWidgetId){
+		exfPreload._tables[sAlias] = aIndexedAttributes.join(',');
+		var db = exfPreload._db;
+		if (db.isOpen() === true) {
+			db.close();
+		}
+		db.version(1).stores(exfPreload._tables);
+		return exfPreload;
+	},
+	
+	getObjectStore: function(sAlias, aIndexedAttributes, sPageAlias, sWidgetId) {
+		return exfPreload._db.table(sAlias);
+	},
+	
+	syncAll: function(fnCallback) {
+		var deferreds = [];
+		$.each(exfPreload._tables, function(alias, indexes){
+		    deferreds.push(
+		    	exfPreload._refresh(alias, exfLauncher.getPageId(), 'DataTableResponsive_DataTableConfigurator_Tab_Filter_InputComboTable_DataTable')
+		    );
+		});
+		// Can't pass a literal array, so use apply.
+		$.when.apply($, deferreds).then(function(){
+		    // Do your success stuff
+		}).fail(function(){
+		    // Probably want to catch failure
+		}).always(function(){
+			if (fnCallback) {
+				fnCallback();
+			}
+		});
+		
+		/*
+		$.when(
+				exfPreload._refresh('powerui.DemoBJ.bereich', exfLauncher.getPageId(), 'DataTableResponsive_DataTableConfigurator_Tab_Filter_InputComboTable_DataTable')
+		).done(function(){
+			if (fnCallback) {
+				fnCallback();
+			}
+		})*/
+	},
+	
+	/**
+	 * @return jqXHR
+	 */
+	_refresh: function(sObjectAlias, sPageAlias, sWidgetId) {
+		var db = exfPreload._db
+		if (db.isOpen() === false) {
+			db.open();
+		}
+		return $.ajax({
+			type: 'POST',
+			url: 'exface/api/ui5',
+			dataType: 'json',
+			data: {
+				action: 'exface.Core.ReadPreload',
+				resource: sPageAlias,
+				element: sWidgetId
+			},
+			success: function(data, textStatus, jqXHR) {
+				console.log(sObjectAlias, db.tables);
+				db.table(sObjectAlias).bulkPut(data.data);
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				exfLauncher.showHtmlInDialog(textStatus, jqXHR.responseText, "error");
+			}
+		})
+	}
+};

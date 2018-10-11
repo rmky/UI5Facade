@@ -78,6 +78,13 @@ JS;
     {
         $widget = $this->getWidget();
         
+        if ($widget->isPreloadDataEnabled()) {
+            $this->getController()->addOnDefineScript("exfPreload.addObjectStore('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$this->getMetaObject()->getUidAttributeAlias()}'], '{$widget->getPage()->getId()}', '{$widget->getId()}');");
+        }
+        
+        $this->getController()->addMethod('loadDataFromServer', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));
+        $this->getController()->addMethod('loadDataFromPreload', $this, 'oEvent', $this->buildJsDataLoaderFromPreload('oEvent'));
+        
         if (! $this->isValueBoundToModel() && $value = $widget->getValueWithDefaults()) {
             // If the widget value is set explicitly, we either set the key only or the 
             // key and the text (= value of the input)
@@ -237,9 +244,26 @@ JS;
     protected function buildJsPropertySuggest()
     {
         $widget = $this->getWidget();
+        
+        if ($widget->isPreloadDataEnabled()) {
+            $js = $this->getController()->buildJsMethodCallFromController('loadDataFromPreload', $this, 'oEvent', 'oController');
+        } else {
+            $js = $this->getController()->buildJsMethodCallFromController('loadDataFromServer', $this, 'oEvent', 'oController');
+        }
+        
         return <<<JS
             function(oEvent) {
-                var oInput = sap.ui.getCore().byId("{$this->getId()}");
+                {$js}
+    		}
+JS;
+    }
+        
+    protected function buildJsDataLoderFromServer(string $oEventJs = 'oEvent', string $onRequestCompletedJs = '') : string
+    {
+        $widget = $this->getWidget();
+        return <<<JS
+
+                var oInput = oEvent.getSource();
                 var q = oEvent.getParameter("suggestValue");
                 var qParams = {};
                 var silent = false;
@@ -282,7 +306,54 @@ JS;
                     oModel.attachRequestCompleted(silencer);
                 }
                 oModel.loadData("{$this->getAjaxUrl()}", params);
-    		}
+
+JS;
+    }
+                        
+    protected function buildJsDataLoaderFromPreload() : string
+    {
+        $widget = $this->getWidget();
+        return <<<JS
+                
+                var oInput = oEvent.getSource();
+                var q = oEvent.getParameter("suggestValue");
+                var qParams = {};
+                var silent = false;
+
+                if (typeof q == 'object') {
+                    qParams = q;
+                    silent = true;
+                } else {
+                    qParams.q = q;
+                }
+                
+                var oModel = oInput.getModel('{$this->getModelNameForAutosuggest()}');
+                
+                var oTable = exfPreload.getObjectStore('{$widget->getTableObject()->getAliasWithNamespace()}');
+                if (oTable) {
+                    oTable.toArray().then(function(aPreloadData){
+                        var curKey = oInput.getSelectedKey();
+                        oModel.setProperty('/data', aPreloadData);
+                        if (silent && curKey !== undefined && curKey !== '') {
+                            oTable.get(curKey).then(item => {
+                                if (item !== undefined) {
+                                    oInput.setValue(item['{$widget->getTextColumn()->getDataColumnName()}']).setSelectedKey(item['{$widget->getValueColumn()->getDataColumnName()}']);
+                                    oInput.closeSuggestions();
+                                    oInput.setValueState(sap.ui.core.ValueState.None);
+                                } else {
+                                    oInput.setSelectedKey("");
+                                    oInput.setValueState(sap.ui.core.ValueState.Error);
+                                }
+                            })
+                        } else {
+                            oInput.getBinding('suggestionRows').filter([new sap.ui.model.Filter(
+                				"{$widget->getTextColumn()->getDataColumnName()}",
+                				sap.ui.model.FilterOperator.Contains, qParams.q
+                			)]);
+                        }                           
+                    })
+                }
+
 JS;
     }
     

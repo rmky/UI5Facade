@@ -79,11 +79,11 @@ JS;
         $widget = $this->getWidget();
         
         if ($widget->isPreloadDataEnabled()) {
-            $this->getController()->addOnDefineScript("exfPreload.addObjectStore('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$this->getMetaObject()->getUidAttributeAlias()}'], '{$widget->getPage()->getId()}', '{$widget->getId()}');");
+            $this->getController()->addOnDefineScript("exfPreloader.addPreload('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$this->getMetaObject()->getUidAttributeAlias()}'], '{$widget->getPage()->getId()}', '{$widget->getTable()->getId()}');");
         }
         
-        $this->getController()->addMethod('loadDataFromServer', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));
-        $this->getController()->addMethod('loadDataFromPreload', $this, 'oEvent', $this->buildJsDataLoaderFromPreload('oEvent'));
+        $this->getController()->addMethod('onSuggestFromServer', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));
+        $this->getController()->addMethod('onSuggestFromPreload', $this, 'oEvent', $this->buildJsDataLoaderFromPreload('oEvent'));
         
         if (! $this->isValueBoundToModel() && $value = $widget->getValueWithDefaults()) {
             // If the widget value is set explicitly, we either set the key only or the 
@@ -246,9 +246,9 @@ JS;
         $widget = $this->getWidget();
         
         if ($widget->isPreloadDataEnabled()) {
-            $js = $this->getController()->buildJsMethodCallFromController('loadDataFromPreload', $this, 'oEvent', 'oController');
+            $js = $this->getController()->buildJsMethodCallFromController('onSuggestFromPreload', $this, 'oEvent', 'oController');
         } else {
-            $js = $this->getController()->buildJsMethodCallFromController('loadDataFromServer', $this, 'oEvent', 'oController');
+            $js = $this->getController()->buildJsMethodCallFromController('onSuggestFromServer', $this, 'oEvent', 'oController');
         }
         
         return <<<JS
@@ -258,13 +258,13 @@ JS;
 JS;
     }
         
-    protected function buildJsDataLoderFromServer(string $oEventJs = 'oEvent', string $onRequestCompletedJs = '') : string
+    protected function buildJsDataLoderFromServer(string $oEventJs = 'oEvent') : string
     {
         $widget = $this->getWidget();
         return <<<JS
 
-                var oInput = oEvent.getSource();
-                var q = oEvent.getParameter("suggestValue");
+                var oInput = {$oEventJs}.getSource();
+                var q = {$oEventJs}.getParameter("suggestValue");
                 var qParams = {};
                 var silent = false;
 
@@ -309,14 +309,23 @@ JS;
 
 JS;
     }
-                        
-    protected function buildJsDataLoaderFromPreload() : string
+    
+    /**
+     * Returns the code for a controller method to load suggestion data from a preload.
+     * 
+     * If no preload data is there, the server data loader method will be called as fallback. So
+     * it is important to keep both methods in the controller.
+     * 
+     * @param string $oEventJs
+     * @return string
+     */
+    protected function buildJsDataLoaderFromPreload(string $oEventJs = 'oEvent') : string
     {
         $widget = $this->getWidget();
         return <<<JS
                 
-                var oInput = oEvent.getSource();
-                var q = oEvent.getParameter("suggestValue");
+                var oInput = {$oEventJs}.getSource();
+                var q = {$oEventJs}.getParameter("suggestValue");
                 var qParams = {};
                 var silent = false;
 
@@ -326,33 +335,53 @@ JS;
                 } else {
                     qParams.q = q;
                 }
+
+                // Copy the event for the server fallback in case there is no preloaded data.
+                // Need to use a copy, because otherwise the event is emptied before we
+                // actually come to the fallback.
+                var oSuggestEvent = jQuery.extend({}, oEvent);
                 
                 var oModel = oInput.getModel('{$this->getModelNameForAutosuggest()}');
                 
-                var oTable = exfPreload.getObjectStore('{$widget->getTableObject()->getAliasWithNamespace()}');
-                if (oTable) {
-                    oTable.toArray().then(function(aPreloadData){
+                exfPreloader
+                .getPreload('{$widget->getTableObject()->getAliasWithNamespace()}')
+                .then(preload => {
+                    if (preload.response && preload.response.data) {
                         var curKey = oInput.getSelectedKey();
-                        oModel.setProperty('/data', aPreloadData);
+                        oModel.setData(preload.response);
                         if (silent && curKey !== undefined && curKey !== '') {
-                            oTable.get(curKey).then(item => {
-                                if (item !== undefined) {
-                                    oInput.setValue(item['{$widget->getTextColumn()->getDataColumnName()}']).setSelectedKey(item['{$widget->getValueColumn()->getDataColumnName()}']);
-                                    oInput.closeSuggestions();
-                                    oInput.setValueState(sap.ui.core.ValueState.None);
-                                } else {
-                                    oInput.setSelectedKey("");
-                                    oInput.setValueState(sap.ui.core.ValueState.Error);
-                                }
-                            })
+                            var oContext = oInput
+                                .getBinding('suggestionRows')
+                                .filter([
+                                    new sap.ui.model.Filter(
+                        				"{$widget->getValueColumn()->getDataColumnName()}",
+                        				sap.ui.model.FilterOperator.EQ, 
+                                        curKey
+                                    )
+                                ])
+                                .getCurrentContexts()[0];
+                            if (oContext !== undefined) {
+                                var item = oContext.getProperty();
+                                oInput.setValue(item['{$widget->getTextColumn()->getDataColumnName()}']).setSelectedKey(item['{$widget->getValueColumn()->getDataColumnName()}']);
+                                oInput.closeSuggestions();
+                                oInput.setValueState(sap.ui.core.ValueState.None);
+                            } else {
+                                oInput.setSelectedKey("");
+                                oInput.setValueState(sap.ui.core.ValueState.Error);
+                            }
                         } else {
-                            oInput.getBinding('suggestionRows').filter([new sap.ui.model.Filter(
-                				"{$widget->getTextColumn()->getDataColumnName()}",
-                				sap.ui.model.FilterOperator.Contains, qParams.q
-                			)]);
-                        }                           
-                    })
-                }
+                            oInput.getBinding('suggestionRows').filter([
+                                new sap.ui.model.Filter(
+                    				"{$widget->getTextColumn()->getDataColumnName()}",
+                    				sap.ui.model.FilterOperator.Contains, 
+                                    qParams.q
+                    			)
+                            ]);
+                        }  
+                    } else {
+                        {$this->getController()->buildJsMethodCallFromController('onSuggestFromServer', $this, 'oSuggestEvent', 'this')}
+                    }
+                });
 
 JS;
     }

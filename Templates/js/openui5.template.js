@@ -6,15 +6,18 @@ window.addEventListener('offline', function(){
 	exfLauncher.toggleOnlineIndicator();
 });
 
-const exfLauncher = {
-	_oShell : {},
+const exfLauncher = {};
+(function() {
 	
-	getShell : function() {
-		return exfLauncher._oShell;
-	},
+	var _oShell = {};
+	var _oLauncher = this;
 	
-	initShell : function() {
-		var oShell = new sap.ui.unified.Shell({
+	this.getShell = function() {
+		return _oShell;
+	};
+	
+	this.initShell = function() {
+		_oShell = new sap.ui.unified.Shell({
 			header: [
 				new sap.m.OverflowToolbar({
 		            design: "Transparent",
@@ -59,21 +62,21 @@ const exfLauncher = {
 														var oData = {
 																data: [
 																	/*{
-																		"action_alias": "exfLauncher.Core.CreateData",
+																		"action_alias": "exface.Core.CreateData",
 																		"caption": "Speichern",
 																		"object_alias": "alexa.RMS-demo.BBD_ALERT",
 																		"object_name": "MHD-Alarm",
 																		"triggered": "2017-02-05 13:55:37"
 																	},
 																	{
-																		"action_alias": "exfLauncher.Core.UpdateData",
+																		"action_alias": "exface.Core.UpdateData",
 																		"caption": "Speichern",
 																		"object_alias": "axenox.WMS.picking_order_pos",
 																		"object_name": "Pickauftragsposition",
 																		"triggered": "2018-04-12 14:48:06"
 																	},
 																	{
-																		"action_alias": "exfLauncher.Core.UpdateData",
+																		"action_alias": "exface.Core.UpdateData",
 																		"caption": "Speichern",
 																		"object_alias": "axenox.WMS.picking_order_pos",
 																		"object_name": "Pickauftragsposition",
@@ -147,7 +150,7 @@ const exfLauncher = {
 															}
 														}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
 														
-														exfLauncher.showDialog('Sync-Puffer', oTable, undefined, undefined, true);
+														_oLauncher.showDialog('Sync-Puffer', oTable, undefined, undefined, true);
 													},
 												}),
 												new sap.m.StandardListItem({
@@ -166,14 +169,22 @@ const exfLauncher = {
 												}),
 												new sap.m.StandardListItem({
 													title: "Sync Preload Data",
+													icon: "sap-icon://synchronize",
 													tooltip: "Preload-Daten jetzt synchronisieren",
 													type: "Active",
 													press: function(oEvent){
 														oButton = oEvent.getSource();
 														oButton.setBusyIndicatorDelay(0).setBusy(true);
-														exfPreload.syncAll(function(){
+														exfPreloader.syncAll(function(){
 															oButton.setBusy(false)
 														});
+													},
+												}),
+												new sap.m.StandardListItem({
+													title: "Storage quota",
+													icon: "sap-icon://performance",
+													type: "Active",
+													press: function(oEvent){
 													},
 												})
 											]
@@ -199,11 +210,10 @@ const exfLauncher = {
 			]
 		});
 		
-		exfLauncher._oShell = oShell;
-		return oShell;
-	},
+		return _oShell;
+	};
 
-	showDialog : function (title, content, state, onCloseCallback, responsive) {
+	this.showDialog = function (title, content, state, onCloseCallback, responsive) {
 		var stretch = responsive ? jQuery.device.is.phone : false;
 		var dialog = new sap.m.Dialog({
 			title: title,
@@ -225,253 +235,256 @@ const exfLauncher = {
 		});
 	
 		dialog.open();
-	},
+	};
 
-	showHtmlInDialog : function (title, html, state) {
+	this.showHtmlInDialog = function (title, html, state) {
 		var content = new sap.ui.core.HTML({
 			content: html
 		});
-		exfLauncher.showDialog(title, content, state);
-	},
+		_oLauncher.showDialog(title, content, state);
+	};
 	
-	contextBar: {
-		_oComponent : {},
+	this.contextBar = function(){
+		var _oComponent = {};
+		var _oContextBar = {
+			init : function (oComponent) {
+				_oComponent = oComponent;
+				
+				oComponent.getRouter().attachRouteMatched(function (oEvent){
+					_oContextBar.load();
+				});
+				
+				$(document).ajaxSuccess(function(event, jqXHR, ajaxOptions, data){
+					var extras = {};
+					if (jqXHR.responseJSON){
+						extras = jqXHR.responseJSON.extras;
+					} else {
+						try {
+							extras = $.parseJSON(jqXHR.responseText).extras;
+						} catch (err) {
+							extras = {};
+						}
+					}
+					if (extras && extras.ContextBar){
+						_oContextBar.refresh(extras.ContextBar);
+					}
+				});
+			},
 		
-		init : function (oComponent) {
-			exfLauncher.contextBar._oComponent = oComponent;
-			
-			oComponent.getRouter().attachRouteMatched(function (oEvent){
-				exfLauncher.contextBar.load();
-			});
-			
-			$(document).ajaxSuccess(function(event, jqXHR, ajaxOptions, data){
-				var extras = {};
-				if (jqXHR.responseJSON){
-					extras = jqXHR.responseJSON.extras;
-				} else {
-					try {
-						extras = $.parseJSON(jqXHR.responseText).extras;
-					} catch (err) {
-						extras = {};
+			getComponent : function() {
+				return _oComponent;
+			},
+
+			load : function(delay){
+				if (delay == undefined) delay = 100;
+				setTimeout(function(){
+					// IDEA had to disable adding context bar extras to every request due to
+					// performance issues. This will be needed for asynchronous contexts like
+					// user messaging, external task management, etc. So put the line back in
+					// place to fetch context data with every request instead of a dedicated one.
+					// if ($.active == 0 && $('#contextBar .context-bar-spinner').length > 0){
+					//if ($('#contextBar .context-bar-spinner').length > 0){
+						$.ajax({
+							type: 'POST',
+							url: 'exface/api/ui5/' + _oLauncher.getPageId() + '/context',
+							dataType: 'json',
+							success: function(data, textStatus, jqXHR) {
+								_oContextBar.refresh(data);
+							},
+							error: function(jqXHR, textStatus, errorThrown){
+								_oContextBar.refresh({});
+							}
+						});
+					/*} else {
+						_oContextBar.load(delay*3);
+					}*/
+				}, delay);
+			},
+
+			refresh : function(data){
+				var oToolbar = _oShell.getHeader();
+				var aItemsOld = _oShell.getHeader().getContent();
+				var iItemsIndex = 5;
+				var oControl = {};
+				oToolbar.removeAllContent();
+				
+				for (var i=0; i<aItemsOld.length; i++) {
+					oControl = aItemsOld[i];
+					if (i < iItemsIndex || oControl.getId() == 'exf-connection-indicator' || oControl.getId() == 'exf_pagetitle' || oControl.getId() == 'exf_avatar') {
+						oToolbar.addContent(oControl);
+					} else {
+						oControl.destroy();
 					}
 				}
-				if (extras && extras.ContextBar){
-					exfLauncher.contextBar.refresh(extras.ContextBar);
-				}
-			});
-		},
-		
-		getComponent : function() {
-			return exfLauncher.contextBar._oComponent;
-		},
-
-		load : function(delay){
-			if (delay == undefined) delay = 100;
-			setTimeout(function(){
-				// IDEA had to disable adding context bar extras to every request due to
-				// performance issues. This will be needed for asynchronous contexts like
-				// user messaging, external task management, etc. So put the line back in
-				// place to fetch context data with every request instead of a dedicated one.
-				// if ($.active == 0 && $('#contextBar .context-bar-spinner').length > 0){
-				//if ($('#contextBar .context-bar-spinner').length > 0){
-					$.ajax({
-						type: 'POST',
-						url: 'exface/api/ui5/' + exfLauncher.getPageId() + '/context',
-						dataType: 'json',
-						success: function(data, textStatus, jqXHR) {
-							exfLauncher.contextBar.refresh(data);
-						},
-						error: function(jqXHR, textStatus, errorThrown){
-							exfLauncher.contextBar.refresh({});
-						}
-					});
-				/*} else {
-					exfLauncher.contextBar.load(delay*3);
-				}*/
-			}, delay);
-		},
-
-		refresh : function(data){
-			var oToolbar = exfLauncher.getShell().getHeader();
-			var aItemsOld = exfLauncher.getShell().getHeader().getContent();
-			var iItemsIndex = 5;
-			var oControl = {};
-			oToolbar.removeAllContent();
-			
-			for (var i=0; i<aItemsOld.length; i++) {
-				oControl = aItemsOld[i];
-				if (i < iItemsIndex || oControl.getId() == 'exf-connection-indicator' || oControl.getId() == 'exf_pagetitle' || oControl.getId() == 'exf_avatar') {
-					oToolbar.addContent(oControl);
-				} else {
-					oControl.destroy();
-				}
-			}
-			
-			for (var id in data){
-				var sColor = data[id].color ? 'background-color:'+data[id].color+' !important;' : '';
-				oToolbar.insertContent(
-						new sap.m.Button(id, { 
-							icon: data[id].icon,
-							tooltip: data[id].hint,
-							text: data[id].indicator,
-							press: function(oEvent) {
-								var oButton = oEvent.getSource();
-								exfLauncher.contextBar.showMenu(oButton);
-							}
-						}).data('widget', data[id].bar_widget_id, true), 
-						iItemsIndex);
-			}
-		},
-
-		showMenu : function (oButton){
-			var sPopoverId = oButton.data('widget')+"_popover";
-			var iPopoverWidth = "350px";
-			var iPopoverHeight = "300px";
-			var oPopover = sap.ui.getCore().byId(sPopoverId);
-			if (oPopover) {
-				return;
-			} else {
-				oPopover = new sap.m.Popover(sPopoverId, {
-					title: oButton.getTooltip(),
-					placement: "Bottom",
-					busy: true,
-					contentWidth: iPopoverWidth,
-					contentHeight: iPopoverHeight,
-					horizontalScrolling: false,
-					afterClose: function(oEvent) {
-						oEvent.getSource().destroy();
-					},
-					content: [
-						new sap.m.NavContainer({
-							pages: [
-								new sap.m.Page({
-									showHeader: false,
-									content: [
-										
-									]
-								})
-							]
-						})
-					]
-				}).setBusyIndicatorDelay(0);
 				
-				jQuery.sap.delayedCall(0, this, function () {
-					oPopover.openBy(oButton);
+				for (var id in data){
+					var sColor = data[id].color ? 'background-color:'+data[id].color+' !important;' : '';
+					oToolbar.insertContent(
+							new sap.m.Button(id, { 
+								icon: data[id].icon,
+								tooltip: data[id].hint,
+								text: data[id].indicator,
+								press: function(oEvent) {
+									var oButton = oEvent.getSource();
+									_oContextBar.showMenu(oButton);
+								}
+							}).data('widget', data[id].bar_widget_id, true), 
+							iItemsIndex);
+				}
+			},
+
+			showMenu : function (oButton){
+				var sPopoverId = oButton.data('widget')+"_popover";
+				var iPopoverWidth = "350px";
+				var iPopoverHeight = "300px";
+				var oPopover = sap.ui.getCore().byId(sPopoverId);
+				if (oPopover) {
+					return;
+				} else {
+					oPopover = new sap.m.Popover(sPopoverId, {
+						title: oButton.getTooltip(),
+						placement: "Bottom",
+						busy: true,
+						contentWidth: iPopoverWidth,
+						contentHeight: iPopoverHeight,
+						horizontalScrolling: false,
+						afterClose: function(oEvent) {
+							oEvent.getSource().destroy();
+						},
+						content: [
+							new sap.m.NavContainer({
+								pages: [
+									new sap.m.Page({
+										showHeader: false,
+										content: [
+											
+										]
+									})
+								]
+							})
+						]
+					}).setBusyIndicatorDelay(0);
+					
+					jQuery.sap.delayedCall(0, this, function () {
+						oPopover.openBy(oButton);
+					});
+				}
+				
+				$.ajax({
+					type: 'POST',
+					url: 'exface/api/ui5',
+					dataType: 'script',
+					data: {
+						action: 'exface.Core.ShowContextPopup',
+						resource: _oLauncher.getPageId(),
+						element: oButton.data('widget')
+					},
+					success: function(data, textStatus, jqXHR) {			
+						var viewMatch = data.match(/sap.ui.jsview\("(.*)"/i);
+			            if (viewMatch !== null) {
+			                var view = viewMatch[1];
+			                //$('body').append(data);
+			            } else {
+			            	_oLauncher.showHtmlInDialog(text.Status, data);
+			            }
+			            
+			            var oPopoverPage = oPopover.getContent()[0].getPages()[0];
+			            oPopoverPage.removeAllContent();
+			            
+			            var oView = _oComponent.runAsOwner(function() {
+		            		return sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view});
+	            		}); 
+		            	oPopoverPage.addContent(oView);
+			        	oPopover.setBusy(false);
+						
+					},
+					error: function(jqXHR, textStatus, errorThrown){
+						oButton.setBusy(false);
+						_oLauncher.showHtmlInDialog(textStatus, jqXHR.responseText, "error");
+					}
 				});
 			}
-			
-			var oComponent = exfLauncher.contextBar.getComponent();
-			$.ajax({
-				type: 'POST',
-				url: 'exface/api/ui5',
-				dataType: 'script',
-				data: {
-					action: 'exface.Core.ShowContextPopup',
-					resource: exfLauncher.getPageId(),
-					element: oButton.data('widget')
-				},
-				success: function(data, textStatus, jqXHR) {			
-					var viewMatch = data.match(/sap.ui.jsview\("(.*)"/i);
-		            if (viewMatch !== null) {
-		                var view = viewMatch[1];
-		                //$('body').append(data);
-		            } else {
-		            	exfLauncher.showHtmlInDialog(text.Status, data);
-		            }
-		            
-		            var oPopoverPage = oPopover.getContent()[0].getPages()[0];
-		            oPopoverPage.removeAllContent();
-		            
-		            var oView = oComponent.runAsOwner(function() {
-	            		return sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view});
-            		}); 
-	            	oPopoverPage.addContent(oView);
-		        	oPopover.setBusy(false);
-					
-				},
-				error: function(jqXHR, textStatus, errorThrown){
-					oButton.setBusy(false);
-					exfLauncher.showHtmlInDialog(textStatus, jqXHR.responseText, "error");
-				}
-			});
-		}
-	},
+		};
+		return _oContextBar;
+	}();
 
-	getPageId : function(){
+	this.getPageId = function(){
 		return $("meta[name='page_id']").attr("content");
-	},
+	};
 
-	toggleOnlineIndicator : function() {
+	this.toggleOnlineIndicator = function() {
 		sap.ui.getCore().byId('exf-connection-indicator').setIcon(navigator.onLine ? 'sap-icon://connected' : 'sap-icon://disconnected');
 		if (navigator.onLine) {
-			exfLauncher.contextBar.load();
+			_oLauncher.contextBar.load();
 		}
 	}
-}
+}).apply(exfLauncher);
 
-const exfPreload = {
+const exfPreloader = {};
+(function(){
+	
+	var _preloader = this;
 		
-	_tables: {},
-		
-	_db: function() {
+	var _db = function() {
 		var dexie = new Dexie('exf-preload');
-		/*dexie.version(1).stores({
-			'powerui.DemoBJ.bereich': 'id'
-		});*/
-		
+		dexie.version(1).stores({
+			'preloads': 'id, object'
+		});
+		dexie.open();
 		return dexie;
-	}(),
+	}();
 	
-	addObjectStore: function(sAlias, aIndexedAttributes, sPageAlias, sWidgetId){
-		exfPreload._tables[sAlias] = aIndexedAttributes.join(',');
-		var db = exfPreload._db;
-		if (db.isOpen() === true) {
-			db.close();
-		}
-		db.version(1).stores(exfPreload._tables);
-		return exfPreload;
-	},
+	var _preloadTable = _db.table('preloads');
 	
-	getObjectStore: function(sAlias, aIndexedAttributes, sPageAlias, sWidgetId) {
-		return exfPreload._db.table(sAlias);
-	},
+	this.addPreload = function(sAlias, aColumns, sPageAlias, sWidgetId){
+		_preloadTable
+		.get(sAlias)
+		.then(item => {
+			var data = {
+				id: sAlias,
+				object: sAlias,
+				columns: aColumns,
+				page: sPageAlias,
+				widget: sWidgetId
+			};
+			if (item === undefined) {
+				_preloadTable.put(data);
+			} else {
+				_preloadTable.update(sAlias, data);
+			}
+		})
+		return _preloader;
+	};
 	
-	syncAll: function(fnCallback) {
+	this.getPreload = function(sAlias, sPageAlias, sWidgetId) {
+		return _preloadTable.get(sAlias);
+	};
+	
+	this.syncAll = function(fnCallback) {
 		var deferreds = [];
-		$.each(exfPreload._tables, function(alias, indexes){
-		    deferreds.push(
-		    	exfPreload._refresh(alias, exfLauncher.getPageId(), 'DataTableResponsive_DataTableConfigurator_Tab_Filter_InputComboTable_DataTable')
-		    );
+		_preloadTable.toArray().then(data => {
+			$.each(data, function(idx, item){
+				deferreds.push(
+			    	_preloader.sync(item.object, item.page, item.widget)
+			    );
+			});
+			// Can't pass a literal array, so use apply.
+			$.when.apply($, deferreds).then(function(){
+			    // Do your success stuff
+			}).fail(function(){
+			    // Probably want to catch failure
+			}).always(function(){
+				if (fnCallback) {
+					fnCallback();
+				}
+			});
 		});
-		// Can't pass a literal array, so use apply.
-		$.when.apply($, deferreds).then(function(){
-		    // Do your success stuff
-		}).fail(function(){
-		    // Probably want to catch failure
-		}).always(function(){
-			if (fnCallback) {
-				fnCallback();
-			}
-		});
-		
-		/*
-		$.when(
-				exfPreload._refresh('powerui.DemoBJ.bereich', exfLauncher.getPageId(), 'DataTableResponsive_DataTableConfigurator_Tab_Filter_InputComboTable_DataTable')
-		).done(function(){
-			if (fnCallback) {
-				fnCallback();
-			}
-		})*/
-	},
+	};
 	
 	/**
 	 * @return jqXHR
 	 */
-	_refresh: function(sObjectAlias, sPageAlias, sWidgetId) {
-		var db = exfPreload._db
-		if (db.isOpen() === false) {
-			db.open();
-		}
+	this.sync = function(sObjectAlias, sPageAlias, sWidgetId) {
 		return $.ajax({
 			type: 'POST',
 			url: 'exface/api/ui5',
@@ -482,12 +495,14 @@ const exfPreload = {
 				element: sWidgetId
 			},
 			success: function(data, textStatus, jqXHR) {
-				console.log(sObjectAlias, db.tables);
-				db.table(sObjectAlias).bulkPut(data.data);
+				_preloadTable.update(sObjectAlias, {
+					response: data
+					//lastSync: + new Date()
+				});
 			},
 			error: function(jqXHR, textStatus, errorThrown){
 				exfLauncher.showHtmlInDialog(textStatus, jqXHR.responseText, "error");
 			}
 		})
-	}
-};
+	};
+}).apply(exfPreloader);

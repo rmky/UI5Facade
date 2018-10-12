@@ -182,7 +182,7 @@ const exfLauncher = {};
 												}),
 												new sap.m.StandardListItem({
 													title: "Storage quota",
-													icon: "sap-icon://performance",
+													icon: "sap-icon://unwired",
 													type: "Active",
 													press: function(oEvent){
 													},

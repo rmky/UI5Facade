@@ -79,7 +79,12 @@ JS;
         $widget = $this->getWidget();
         
         if ($widget->isPreloadDataEnabled()) {
-            $this->getController()->addOnDefineScript("exfPreloader.addPreload('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$this->getMetaObject()->getUidAttributeAlias()}'], '{$widget->getPage()->getId()}', '{$widget->getTable()->getId()}');");
+            $cols = '';
+            foreach ($widget->getTable()->getColumns() as $col) {
+                $cols .= $col->getDataColumnName() . ',';
+            }
+            $cols = rtrim($cols, ",");
+            $this->getController()->addOnDefineScript("exfPreloader.addPreload('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$cols}'], '{$widget->getPage()->getId()}', '{$widget->getTable()->getId()}');");
         }
         
         $this->getController()->addMethod('onSuggestFromServer', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));

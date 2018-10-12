@@ -453,7 +453,7 @@ JS;
                 exfPreloader
                 .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
                 .then(preload => {
-                    if (preload.response && preload.response.data) {
+                    if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
                         var aData = preload.response.data;
                         if (params.data && params.data.filters && params.data.filters.conditions) {
                             var conditions = params.data.filters.conditions;

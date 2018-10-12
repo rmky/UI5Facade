@@ -179,12 +179,30 @@ const exfLauncher = {};
 															oButton.setBusy(false)
 														});
 													},
-												}),
+												}),/*
 												new sap.m.StandardListItem({
 													title: "Storage quota",
 													icon: "sap-icon://unwired",
 													type: "Active",
 													press: function(oEvent){
+													},
+												}),*/
+												new sap.m.StandardListItem({
+													title: "Clear Preload Data",
+													icon: "sap-icon://sys-cancel",
+													type: "Active",
+													press: function(oEvent){
+														oButton = oEvent.getSource();
+														oButton.setBusyIndicatorDelay(0).setBusy(true);
+														exfPreloader
+														.reset()
+														.then(() => {
+															oButton.setBusy(false);
+															_oLauncher.showDialog('Offline Storage', 'All preload data cleared!', 'Success');
+														}).catch(() => {
+															oButton.setBusy(false);
+															_oLauncher.showDialog('Error!', 'Failed to clear preload data!', 'Error');
+														})
 													},
 												})
 											]
@@ -215,9 +233,17 @@ const exfLauncher = {};
 
 	this.showDialog = function (title, content, state, onCloseCallback, responsive) {
 		var stretch = responsive ? jQuery.device.is.phone : false;
+		var type = sap.m.DialogType.Standard;
+		if (typeof content === 'string' || content instanceof String) {
+			content = new sap.m.Text({
+				text: content
+			});
+			type = sap.m.DialogType.Message;
+		}
 		var dialog = new sap.m.Dialog({
 			title: title,
 			state: state,
+			type: type,
 			stretch: stretch,
 			content: content,
 			beginButton: new sap.m.Button({
@@ -505,4 +531,8 @@ const exfPreloader = {};
 			}
 		})
 	};
+	
+	this.reset = function() {
+		return _db.delete();
+	}
 }).apply(exfPreloader);

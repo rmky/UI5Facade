@@ -351,7 +351,7 @@ JS;
                 exfPreloader
                 .getPreload('{$widget->getTableObject()->getAliasWithNamespace()}')
                 .then(preload => {
-                    if (preload.response && preload.response.data) {
+                    if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
                         var curKey = oInput.getSelectedKey();
                         oModel.setData(preload.response);
                         if (silent && curKey !== undefined && curKey !== '') {

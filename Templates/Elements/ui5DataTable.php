@@ -10,6 +10,7 @@ use exface\Core\Widgets\Button;
 use exface\Core\Widgets\ButtonGroup;
 use exface\Core\Widgets\MenuButton;
 use exface\Core\Widgets\DataTableResponsive;
+use exface\Core\Interfaces\Widgets\iShowImage;
 
 /**
  *
@@ -55,12 +56,17 @@ class ui5DataTable extends ui5AbstractElement
         $controller->addOnShowViewScript($this->buildJsRefresh());
         
         if ($widget->isPreloadDataEnabled()) {
-            $cols = '';
+            $dataCols = [];
+            $imgCols = [];
             foreach ($widget->getColumns() as $col) {
-                $cols .= $col->getDataColumnName() . ',';
+                $dataCols[] = $col->getDataColumnName();
+                if ($col->getCellWidget() instanceof iShowImage) {
+                    $imgCols[] = $col->getDataColumnName();
+                }
             }
-            $cols = rtrim($cols, ",");
-            $controller->addOnDefineScript("exfPreloader.addPreload('{$this->getMetaObject()->getAliasWithNamespace()}', ['{$cols}'], '{$widget->getPage()->getId()}', '{$widget->getId()}');");
+            $preloadDataCols = json_encode($dataCols);
+            $preloadImgCols = json_encode($imgCols);
+            $controller->addOnDefineScript("exfPreloader.addPreload('{$this->getMetaObject()->getAliasWithNamespace()}', {$preloadDataCols}, {$preloadImgCols}, '{$widget->getPage()->getId()}', '{$widget->getId()}');");
         }
         
         if ($this->isMTable()) {
@@ -470,10 +476,11 @@ JS;
                                         break;
                                     case '=':
                                     default: 
+                                        var val = cond.value.toString().toLowerCase();
                                         aData = aData.filter(oRow => {
                                             if (oRow[cond.expression] === undefined) return false;
-                                            return oRow[cond.expression].toString().includes(cond.value.toString())
-                                        });   
+                                            return oRow[cond.expression].toString().toLowerCase().includes(val);
+                                        });  
                                 }
                             }
 

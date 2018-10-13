@@ -462,16 +462,17 @@ const exfPreloader = {};
 	
 	var _preloadTable = _db.table('preloads');
 	
-	this.addPreload = function(sAlias, aColumns, sPageAlias, sWidgetId){
+	this.addPreload = function(sAlias, aDataCols, aImageCols, sPageAlias, sWidgetId){
 		_preloadTable
 		.get(sAlias)
 		.then(item => {
 			var data = {
 				id: sAlias,
 				object: sAlias,
-				columns: aColumns,
 				page: sPageAlias,
-				widget: sWidgetId
+				widget: sWidgetId,
+				dataCols: aDataCols,
+				imageCols: aImageCols
 			};
 			if (item === undefined) {
 				_preloadTable.put(data);
@@ -491,7 +492,7 @@ const exfPreloader = {};
 		_preloadTable.toArray().then(data => {
 			$.each(data, function(idx, item){
 				deferreds.push(
-			    	_preloader.sync(item.object, item.page, item.widget)
+			    	_preloader.sync(item.object, item.page, item.widget, item.imageCols)
 			    );
 			});
 			// Can't pass a literal array, so use apply.
@@ -510,7 +511,7 @@ const exfPreloader = {};
 	/**
 	 * @return jqXHR
 	 */
-	this.sync = function(sObjectAlias, sPageAlias, sWidgetId) {
+	this.sync = function(sObjectAlias, sPageAlias, sWidgetId, aImageCols) {
 		return $.ajax({
 			type: 'POST',
 			url: 'exface/api/ui5',
@@ -522,9 +523,15 @@ const exfPreloader = {};
 			},
 			success: function(data, textStatus, jqXHR) {
 				_preloadTable.update(sObjectAlias, {
-					response: data
-					//lastSync: + new Date()
+					response: data/*,
+					lastSync: (+ new Date())*/
 				});
+				if (aImageCols && aImageCols.length > 0) {
+					for (i in aImageCols) {
+						var urls = data.data.map(function(value,index) { return value[aImageCols[i]]; });
+						_preloader.syncImages(urls);
+					}
+				}
 			},
 			error: function(jqXHR, textStatus, errorThrown){
 				exfLauncher.showHtmlInDialog(textStatus, jqXHR.responseText, "error");
@@ -532,7 +539,41 @@ const exfPreloader = {};
 		})
 	};
 	
+	this.syncImages = function (aUrls, sCacheName = 'image-cache') {
+		console.log(window.caches);
+		if (window.caches === undefined) {
+			console.error('Cannot preload images: Cache API not supported by browser!');
+			return;
+		}
+		
+		return window.caches.open(sCacheName).then(cache => {
+			// Remove duplicates
+			aUrls = aUrls.filter((value, index, self) => { 
+			    return self.indexOf(value) === index;
+			});
+			// Fetch and cache images
+			for (var i in aUrls) {
+				if (! aUrls[i]) continue;
+				var request = new Request(aUrls[i]);
+				fetch(request.clone()).then(response => {
+					// Check if we received a valid response
+					if(!response || response.status !== 200 || response.type !== 'basic') {
+					  return response;
+					}
+					
+					// IMPORTANT: Clone the response. A response is a stream
+					// and because we want the browser to consume the response
+					// as well as the cache consuming the response, we need
+					// to clone it so we have two streams.
+					var responseToCache = response.clone();
+					
+					cache.put(request, responseToCache);
+				});
+			}
+		});
+	};
+	
 	this.reset = function() {
 		return _db.delete();
-	}
+	};
 }).apply(exfPreloader);

@@ -19,6 +19,9 @@
 	
 	"WEBAPP.SHELL.STATE.ONLINE": "Your are online",
 	"WEBAPP.SHELL.STATE.OFFLINE": "You are offline",
+	"WEBAPP.SHELL.PRELOAD.SYNC": "Sync Preload Data",
+	"WEBAPP.SHELL.PRELOAD.RESET": "Clear Preload Data",
+	
 	
 	"WIDGET.DATATPAGINATOR.SHOWING": "Showing %from% - %to% of %total%",
 	

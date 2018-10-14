@@ -19,6 +19,8 @@
 	
 	"WEBAPP.SHELL.STATE.ONLINE": "Akt. Status: online",
 	"WEBAPP.SHELL.STATE.OFFLINE": "Akt. Status: offline",
+	"WEBAPP.SHELL.PRELOAD.SYNC": "Offline-Daten synchronisieren",
+	"WEBAPP.SHELL.PRELOAD.RESET": "Offline-Daten zurücksetzen",
 	
 	"WIDGET.DATATPAGINATOR.SHOWING": "Zeige %from% - %to% aus %total%",
 	

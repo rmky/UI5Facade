@@ -50,7 +50,7 @@ const exfLauncher = {};
 		                    press: function(oEvent){
 								var oButton = oEvent.getSource();
 								var oPopover = new sap.m.Popover({
-									title: function(){return navigator.onLine === false ? 'Online' : 'Offline'},
+									title: "{= ${/_online} > 0 ? ${i18n>/WEBAPP.SHELL.STATE.ONLINE} : ${i18n>/WEBAPP.SHELL.STATE.OFFLINE} }",
 									placement: "Bottom",
 									content: [
 										new sap.m.List({
@@ -170,7 +170,7 @@ const exfLauncher = {};
 												new sap.m.StandardListItem({
 													title: "Sync Preload Data",
 													icon: "sap-icon://synchronize",
-													tooltip: "Preload-Daten jetzt synchronisieren",
+													tooltip: "Offline-Daten synchronisieren",
 													type: "Active",
 													press: function(oEvent){
 														oButton = oEvent.getSource();
@@ -188,7 +188,7 @@ const exfLauncher = {};
 													},
 												}),*/
 												new sap.m.StandardListItem({
-													title: "Clear Preload Data",
+													title: "Offline-Daten zurücksetzen",
 													icon: "sap-icon://sys-cancel",
 													type: "Active",
 													press: function(oEvent){
@@ -226,7 +226,8 @@ const exfLauncher = {};
 			content: [
 		
 			]
-		});
+		})
+		.setModel(new sap.ui.model.json.JSONModel())
 		
 		return _oShell;
 	};
@@ -440,6 +441,7 @@ const exfLauncher = {};
 
 	this.toggleOnlineIndicator = function() {
 		sap.ui.getCore().byId('exf-connection-indicator').setIcon(navigator.onLine ? 'sap-icon://connected' : 'sap-icon://disconnected');
+		_oShell.getModel().setValue("/_online", navigator.onLine);
 		if (navigator.onLine) {
 			_oLauncher.contextBar.load();
 		}

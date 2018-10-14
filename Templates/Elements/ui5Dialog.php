@@ -13,6 +13,7 @@ use exface\Core\Interfaces\Actions\iShowWidget;
 use exface\Core\Interfaces\Model\MetaAttributeInterface;
 use exface\Core\Factories\WidgetFactory;
 use exface\Core\CommonLogic\UxonObject;
+use exface\Core\Interfaces\WidgetInterface;
 
 /**
  * In OpenUI5 dialog widgets are either rendered as an object page layout (if the dialog is maximized) or
@@ -305,17 +306,12 @@ JS;
         $widget = $this->getWidget();
         $triggerWidget = $widget->getParent() instanceof iTriggerAction ? $widget->getParent() : $widget;
         
-        // If the prefill cannot be fetched due to being offline, show the offline message view
-        // (if the dialog is a page) or an error-popup (if the dialog is a regular dialog).
-        if ($this->isMaximized()) {
-            $offlineError = $oViewJs . '.getController().getRouter().getTargets().display("offline")';
+        // FIXME #DataPreloader this will force the form to use any preload - regardless of the columns.
+        if ($widget->isPreloadDataEnabled() === true) {
+            $this->getController()->addOnDefineScript("exfPreloader.addPreload('{$this->getMetaObject()->getAliasWithNamespace()}');");
+            $loadPrefillData = $this->buildJsPrefillLoaderFromPreload($triggerWidget, $oViewJs, 'oViewModel');
         } else {
-            $offlineError = <<<JS
-
-            {$this->getController()->buildJsComponentGetter()}.showDialog('{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR')}', '{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR_TITLE')}', 'Error');
-            sap.ui.getCore().byId("{$this->getId()}").close();
-
-JS;
+            $loadPrefillData = $this->buildJsPrefillLoaderFromServer($triggerWidget, $oViewJs, 'oViewModel');
         }
         
         return <<<JS
@@ -323,7 +319,64 @@ JS;
             {$this->buildJsBusyIconShow()}
             var oViewModel = {$oViewJs}.getModel('view');
             oViewModel.setProperty('/_prefill/pending', true);
-            var oRouteParams = oViewModel.getProperty('/_route');
+            {$loadPrefillData}
+			
+JS;
+    }
+            
+    protected function buildJsPrefillLoaderFromPreload(WidgetInterface $triggerWidget, string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
+    {
+        $widget = $this->getWidget();
+        return <<<JS
+        
+                exfPreloader
+                .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
+                .then(preload => {
+                    var failed = false;
+                    if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
+                        var uid = {$oViewModelJs}.getProperty('/_route').params.data.rows[0]['{$widget->getMetaObject()->getUidAttributeAlias()}'];
+                        var aData = preload.response.data.filter(oRow => {
+                            return oRow['{$widget->getMetaObject()->getUidAttributeAlias()}'] == uid;
+                        });
+                        if (aData.length === 1) {
+                            var response = $.extend({}, preload.response, {data: aData});
+                            console.log(response);
+                            {$this->buildJsPrefillLoaderSuccess('response', $oViewJs, $oViewModelJs)}
+                        } else {
+                            failed = true;
+                        }
+                    } else {
+                        failed = true;
+                    }
+
+                    if (failed == true) {
+                        console.warn('Failed to prefill dialog from preload data: falling back to server request');
+                        {$this->buildJsPrefillLoaderFromServer($triggerWidget, $oViewJs, $oViewModelJs)}
+                    }
+                });
+                
+JS;
+    }
+                        
+    protected function buildJsPrefillLoaderFromServer(WidgetInterface $triggerWidget, string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
+    {
+        $widget = $this->getWidget();
+        // If the prefill cannot be fetched due to being offline, show the offline message view
+        // (if the dialog is a page) or an error-popup (if the dialog is a regular dialog).
+        if ($this->isMaximized()) {
+            $offlineError = $oViewJs . '.getController().getRouter().getTargets().display("offline")';
+        } else {
+            $offlineError = <<<JS
+            
+            {$this->getController()->buildJsComponentGetter()}.showDialog('{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR')}', '{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR_TITLE')}', 'Error');
+            sap.ui.getCore().byId("{$this->getId()}").close();
+            
+JS;
+        }
+        
+        return <<<JS
+
+            var oRouteParams = {$oViewModelJs}.getProperty('/_route');
             var data = $.extend({}, {
                 action: "exface.Core.ReadPrefill",
 				resource: "{$widget->getPage()->getAliasWithNamespace()}",
@@ -334,13 +387,7 @@ JS;
                 type: "POST",
 				data: data,
                 success: function(response, textStatus, jqXHR) {
-                    oViewModel.setProperty('/_prefill/pending', false);
-                    if (response.data && response.data && response.data.length === 1) {
-                        {$oViewJs}.getModel().setData(response.data[0]);
-                    } else {
-                        {$oViewJs}.getModel().setData({});
-                    }
-                    {$this->buildJsBusyIconHide()}
+                    {$this->buildJsPrefillLoaderSuccess('response', $oViewJs, $oViewModelJs)}
                 },
                 error: function(jqXHR, textStatus, errorThrown){
                     oViewModel.setProperty('/_prefill/pending', false);
@@ -352,7 +399,21 @@ JS;
                     }
                 }
 			})
-			
+JS;
+    }
+                        
+    protected function buildJsPrefillLoaderSuccess(string $responseJs = 'response', string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
+    {
+        return <<<JS
+
+                    {$oViewModelJs}.setProperty('/_prefill/pending', false);
+                    if ({$responseJs}.data && {$responseJs}.data && {$responseJs}.data.length === 1) {
+                        {$oViewJs}.getModel().setData({$responseJs}.data[0]);
+                    } else {
+                        {$oViewJs}.getModel().setData({});
+                    }
+                    {$this->buildJsBusyIconHide()}
+
 JS;
     }
     

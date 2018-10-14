@@ -164,8 +164,16 @@ const exfLauncher = {};
 													press: function(){},
 												}),
 												new sap.m.GroupHeaderListItem({
-														title: 'Tools',
+														title: 'Offline-Data',
 														upperCase: false
+												}),
+												new sap.m.StandardListItem({
+													title: "Offline-Daten",
+													info: "{/_preload/data}"
+												}),
+												new sap.m.StandardListItem({
+													title: "Offline-Media",
+													info: "{/_preload/images}"
 												}),
 												new sap.m.StandardListItem({
 													title: "Sync Preload Data",
@@ -207,8 +215,29 @@ const exfLauncher = {};
 												})
 											]
 										})
-									]
-								});
+									],
+									beforeOpen(oEvent){
+										var oPopover = oEvent.getSource();
+										exfPreloader
+										.getStorageInfo()
+										.then(data => { 
+											var info = {};
+											for (var i in data) {
+												oPopover.getModel().setProperty('/_preload/'+data[i].type, data[i].counter);
+											}
+										})
+										.catch(error => {
+											console.error(error);
+										});
+									}
+								})
+								.setModel(new sap.ui.model.json.JSONModel({
+									_online: 0,
+									_preload: {
+										data: 0,
+										images: 0
+									}
+								}));
 								jQuery.sap.delayedCall(0, this, function () {
 									oPopover.openBy(oButton);
 								});
@@ -227,7 +256,6 @@ const exfLauncher = {};
 		
 			]
 		})
-		.setModel(new sap.ui.model.json.JSONModel())
 		
 		return _oShell;
 	};
@@ -456,13 +484,16 @@ const exfPreloader = {};
 	var _db = function() {
 		var dexie = new Dexie('exf-preload');
 		dexie.version(1).stores({
-			'preloads': 'id, object'
+			'preloads': 'id, object',
+			'preloads-info': 'type, counter'
 		});
 		dexie.open();
 		return dexie;
 	}();
 	
 	var _preloadTable = _db.table('preloads');
+	
+	var _infoTable = _db.table('preloads-info');
 	
 	this.addPreload = function(sAlias, aDataCols, aImageCols, sPageAlias, sWidgetId){
 		_preloadTable
@@ -491,6 +522,7 @@ const exfPreloader = {};
 	
 	this.syncAll = function(fnCallback) {
 		var deferreds = [];
+		_infoTable.clear();
 		return _preloadTable.toArray()
 		.then(data => {
 			$.each(data, function(idx, item){
@@ -526,6 +558,15 @@ const exfPreloader = {};
 						lastSync: (+ new Date())*/
 					})
 				);
+				_infoTable
+				.get('data')
+				.then(item => {
+					item.counter = item.counter + data.data.length;
+					_infoTable.put(item);
+				})
+				.catch(error => {
+					_infoTable.put({type: 'data', counter: data.data.length});
+				});
 				if (aImageCols && aImageCols.length > 0) {
 					for (i in aImageCols) {
 						var urls = data.data.map(function(value,index) { return value[aImageCols[i]]; });
@@ -573,6 +614,17 @@ const exfPreloader = {};
 						// to clone it so we have two streams.
 						var responseToCache = response.clone();
 						
+						_infoTable
+						.get('images')
+						.then(item => {
+							if (item === undefined) {
+								item = {type: 'images', counter: 1};
+							} else {
+								item.counter = item.counter + 1;
+							}
+							_infoTable.put(item);
+						});
+						
 						return cache.put(request, responseToCache);
 					})
 				);
@@ -583,5 +635,9 @@ const exfPreloader = {};
 	
 	this.reset = function() {
 		return _db.delete();
+	};
+	
+	this.getStorageInfo = function() {
+		return _infoTable.toArray();
 	};
 }).apply(exfPreloader);

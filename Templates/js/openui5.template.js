@@ -175,7 +175,7 @@ const exfLauncher = {};
 													press: function(oEvent){
 														oButton = oEvent.getSource();
 														oButton.setBusyIndicatorDelay(0).setBusy(true);
-														exfPreloader.syncAll(function(){
+														exfPreloader.syncAll().then(function(){
 															oButton.setBusy(false)
 														});
 													},
@@ -491,22 +491,15 @@ const exfPreloader = {};
 	
 	this.syncAll = function(fnCallback) {
 		var deferreds = [];
-		_preloadTable.toArray().then(data => {
+		return _preloadTable.toArray()
+		.then(data => {
 			$.each(data, function(idx, item){
 				deferreds.push(
 			    	_preloader.sync(item.object, item.page, item.widget, item.imageCols)
 			    );
 			});
 			// Can't pass a literal array, so use apply.
-			$.when.apply($, deferreds).then(function(){
-			    // Do your success stuff
-			}).fail(function(){
-			    // Probably want to catch failure
-			}).always(function(){
-				if (fnCallback) {
-					fnCallback();
-				}
-			});
+			return $.when.apply($, deferreds)
 		});
 	};
 	
@@ -522,56 +515,69 @@ const exfPreloader = {};
 				action: 'exface.Core.ReadPreload',
 				resource: sPageAlias,
 				element: sWidgetId
-			},
-			success: function(data, textStatus, jqXHR) {
-				_preloadTable.update(sObjectAlias, {
-					response: data/*,
-					lastSync: (+ new Date())*/
-				});
+			}
+		})
+		.then(
+			function(data, textStatus, jqXHR) {
+				var promises = [];
+				promises.push(
+					_preloadTable.update(sObjectAlias, {
+						response: data/*,
+						lastSync: (+ new Date())*/
+					})
+				);
 				if (aImageCols && aImageCols.length > 0) {
 					for (i in aImageCols) {
 						var urls = data.data.map(function(value,index) { return value[aImageCols[i]]; });
-						_preloader.syncImages(urls);
+						promises.push(_preloader.syncImages(urls));
 					}
 				}
+				return Promise.all(promises);
 			},
-			error: function(jqXHR, textStatus, errorThrown){
+			function(jqXHR, textStatus, errorThrown){
 				exfLauncher.showHtmlInDialog(textStatus, jqXHR.responseText, "error");
+				return textStatus;
 			}
-		})
+		);
 	};
 	
 	this.syncImages = function (aUrls, sCacheName = 'image-cache') {
-		console.log(window.caches);
 		if (window.caches === undefined) {
 			console.error('Cannot preload images: Cache API not supported by browser!');
 			return;
 		}
 		
-		return window.caches.open(sCacheName).then(cache => {
+		return window.caches
+		.open(sCacheName)
+		.then(cache => {
 			// Remove duplicates
 			aUrls = aUrls.filter((value, index, self) => { 
 			    return self.indexOf(value) === index;
 			});
 			// Fetch and cache images
+			var requests = [];
 			for (var i in aUrls) {
 				if (! aUrls[i]) continue;
 				var request = new Request(aUrls[i]);
-				fetch(request.clone()).then(response => {
-					// Check if we received a valid response
-					if(!response || response.status !== 200 || response.type !== 'basic') {
-					  return response;
-					}
-					
-					// IMPORTANT: Clone the response. A response is a stream
-					// and because we want the browser to consume the response
-					// as well as the cache consuming the response, we need
-					// to clone it so we have two streams.
-					var responseToCache = response.clone();
-					
-					cache.put(request, responseToCache);
-				});
+				requests.push(
+					fetch(request.clone())
+					.then(response => {
+						// Check if we received a valid response
+						if(! response || response.status !== 200 || response.type !== 'basic') {
+						  return response;
+						}
+						
+						// IMPORTANT: Clone the response. A response is a stream
+						// and because we want the browser to consume the response
+						// as well as the cache consuming the response, we need
+						// to clone it so we have two streams.
+						var responseToCache = response.clone();
+						
+						return cache.put(request, responseToCache);
+					})
+				);
 			}
+			return Promise.all(requests);
 		});
 	};
 	

@@ -474,6 +474,18 @@ JS;
                                             return oRow[cond.expression] == cond.value
                                         });
                                         break;
+                                    case '!==':
+                                        aData = aData.filter(oRow => {
+                                            return oRow[cond.expression] !== cond.value
+                                        });
+                                        break;
+                                    case '!=':
+                                        var val = cond.value.toString().toLowerCase();
+                                        aData = aData.filter(oRow => {
+                                            if (oRow[cond.expression] === undefined) return true;
+                                            return ! oRow[cond.expression].toString().toLowerCase().includes(val);
+                                        }); 
+                                        break;
                                     case '=':
                                     default: 
                                         var val = cond.value.toString().toLowerCase();

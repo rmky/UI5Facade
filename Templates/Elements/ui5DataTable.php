@@ -395,9 +395,9 @@ JS;
         $paginationSwitch = $widget->isPaged() ? 'true' : 'false';
         
         if ($widget->isPreloadDataEnabled()) {
-            $doLoad = $this->buildJsDataLoaderFromServerPreload('oModel', $growingJsVar);
+            $doLoad = $this->buildJsDataLoaderFromServerPreload('oModel', 'params', $growingJsVar);
         } else {
-            $doLoad = $this->buildJsDataLoaderFromServerRemote('oModel', $growingJsVar);
+            $doLoad = $this->buildJsDataLoaderFromServerRemote('oModel', 'params', $growingJsVar);
         }
         
         return <<<JS
@@ -437,7 +437,7 @@ JS;
                     }
                 }
                 
-                {$this->buildJsDataSourceColumnActions($oControlEventJsVar)}
+                {$this->buildJsDataSourceColumnActions($oControlEventJsVar, 'params')}
                 
                 // Add sorters and filters from P13nDialog
                 var aSortItems = sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}').getSortItems();
@@ -465,7 +465,7 @@ JS;
         return 'true';
     }
                 
-    protected function buildJsDataLoaderFromServerPreload(string $oModelJs = 'oModel', string $growingJsVar = 'growing') : string
+    protected function buildJsDataLoaderFromServerPreload(string $oModelJs = 'oModel', string $oParamsJs = 'params', string $growingJsVar = 'growing') : string
     {
         $widget = $this->getWidget();
         return <<<JS
@@ -475,8 +475,8 @@ JS;
                 .then(preload => {
                     if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
                         var aData = preload.response.data;
-                        if (params.data && params.data.filters && params.data.filters.conditions) {
-                            var conditions = params.data.filters.conditions;
+                        if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {
+                            var conditions = {$oParamsJs}.data.filters.conditions;
                             var fnFilter;
                             
                             for (var i in conditions) {
@@ -510,8 +510,8 @@ JS;
                                 }
                             }
 
-                            if (params.q !== undefined && params.q !== '') {
-                                var sQuery = params.q.toString().toLowerCase();
+                            if ({$oParamsJs}.q !== undefined && {$oParamsJs}.q !== '') {
+                                var sQuery = {$oParamsJs}.q.toString().toLowerCase();
                                 aData = aData.filter(oRow => {
                                     if (oRow[cond.expression] === undefined) return false;
                                     return {$this->buildJsQuickSearch('sQuery', 'oRow')};
@@ -521,29 +521,22 @@ JS;
                             var iFiltered = aData.length;
                         }
 
-                        if (params.start >= 0 && params.length > 0) {
-                            aData = aData.slice(params.start, params.start+params.length);
+                        if ({$oParamsJs}.start >= 0 && {$oParamsJs}.length > 0) {
+                            aData = aData.slice({$oParamsJs}.start, {$oParamsJs}.start+{$oParamsJs}.length);
                         }
                         
                         oModel.setData($.extend({}, preload.response, {data: aData, recordsFiltered: iFiltered})); 
                         {$this->buildJsDataLoaderOnLoaded($oModelJs, $growingJsVar)}
                         {$this->buildJsBusyIconHide()}
                     } else {
-                        {$this->buildJsDataLoaderFromServerRemote($oModelJs, $growingJsVar)}
+                        {$this->buildJsDataLoaderFromServerRemote($oModelJs, 'params', $growingJsVar)}
                     }
                 });
 
 JS;
     }
-                        
-    protected function buildJsDataFilter(string $sourceJs, string $resultJs, string $column, string $comparator, string $value) : string
-    {
-        switch ($comparator) {
-            default: return 'return true';
-        }
-    }
                 
-    protected function buildJsDataLoaderFromServerRemote(string $oModelJs = 'oModel', string $growingJsVar = 'growing') : string
+    protected function buildJsDataLoaderFromServerRemote(string $oModelJs = 'oModel', string $oParamsJs = 'params', string $growingJsVar = 'growing') : string
     {
         return <<<JS
 
@@ -569,7 +562,7 @@ JS;
         		
         		oModel.attachRequestCompleted(fnCompleted);
 
-                oModel.loadData("{$this->getAjaxUrl()}", params);
+                oModel.loadData("{$this->getAjaxUrl()}", {$oParamsJs});
 
 JS;
     }
@@ -611,7 +604,7 @@ JS;
 JS;
     }
     
-    protected function buildJsDataSourceColumnActions($oControlEventJsVar = 'oControlEvent')
+    protected function buildJsDataSourceColumnActions($oControlEventJsVar = 'oControlEvent', string $oParamsJs = 'params')
     {
         if ($this->isMTable()) {
             return '';
@@ -623,7 +616,7 @@ JS;
 		for (var i=0; i<oTable.getColumns().length; i++){
 			var oColumn = oTable.getColumns()[i];
 			if (oColumn.getFiltered()){
-				params['{$this->getTemplate()->getUrlFilterPrefix()}' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
+				{$oParamsJs}['{$this->getTemplate()->getUrlFilterPrefix()}' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
 			}
 		}
 		
@@ -641,7 +634,7 @@ JS;
 		
 		// If filtering just now, make sure the filter from the event is set too (eventually overwriting the previous one)
 		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'filter'){
-			params['{$this->getTemplate()->getUrlFilterPrefix()}' + {$oControlEventJsVar}.getParameters().column.getFilterProperty()] = {$oControlEventJsVar}.getParameters().value;
+			{$oParamsJs}['{$this->getTemplate()->getUrlFilterPrefix()}' + {$oControlEventJsVar}.getParameters().column.getFilterProperty()] = {$oControlEventJsVar}.getParameters().value;
 		}
 		
 JS;

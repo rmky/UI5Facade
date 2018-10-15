@@ -108,8 +108,11 @@ sap.ui.define([
 						}
 					}
 				}
-				// TODO 
-				return $.ajax($.extend({}, oDefSettings, oXHRSettings));
+				
+				var params = $.extend({}, oDefSettings, oXHRSettings);
+				delete params.data;
+				
+				return $.ajax(params);
 			} else {
 				if (oXHRSettings) {
 					if (oXHRSettings.success) {

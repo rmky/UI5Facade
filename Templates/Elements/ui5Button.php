@@ -128,7 +128,6 @@ JS;
         $output .= <<<JS
                         {$this->buildJsBusyIconShow()}
                         var xhrSettings = {
-							type: 'POST',
 							data: {
 								data: requestData
 								{$prefill}

@@ -451,6 +451,20 @@ JS;
 JS;
     }
                 
+    protected function buildJsQuickSearch(string $sQueryJs = 'sQuery', string $oRowJs = 'oRow') : string
+    {
+        $filters = [];
+        foreach ($this->getWidget()->getAttributesForQuickSearch() as $alias) {
+            $filters[] = "(oRow['{$alias}'].toString().toLowerCase().indexOf({$sQueryJs}) !== -1)";
+        }
+        
+        if (! empty($filters)) {
+            return implode(' || ', $filters);
+        }
+        
+        return 'true';
+    }
+                
     protected function buildJsDataLoaderFromServerPreload(string $oModelJs = 'oModel', string $growingJsVar = 'growing') : string
     {
         $widget = $this->getWidget();
@@ -494,6 +508,14 @@ JS;
                                             return oRow[cond.expression].toString().toLowerCase().includes(val);
                                         });  
                                 }
+                            }
+
+                            if (params.q !== undefined && params.q !== '') {
+                                var sQuery = params.q.toString().toLowerCase();
+                                aData = aData.filter(oRow => {
+                                    if (oRow[cond.expression] === undefined) return false;
+                                    return {$this->buildJsQuickSearch('sQuery', 'oRow')};
+                                });
                             }
 
                             var iFiltered = aData.length;

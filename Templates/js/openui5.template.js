@@ -441,7 +441,7 @@ const exfLauncher = {};
 
 	this.toggleOnlineIndicator = function() {
 		sap.ui.getCore().byId('exf-connection-indicator').setIcon(navigator.onLine ? 'sap-icon://connected' : 'sap-icon://disconnected');
-		_oShell.getModel().setValue("/_online", navigator.onLine);
+		_oShell.getModel().setProperty("/_online", navigator.onLine);
 		if (navigator.onLine) {
 			_oLauncher.contextBar.load();
 		}

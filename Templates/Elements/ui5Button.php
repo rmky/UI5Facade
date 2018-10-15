@@ -295,7 +295,7 @@ JS;
             if ($dialogElement->isMaximized()) {
                 return $this->getController()->buildJsControllerGetter($this) . '.onNavBack();';
             } else {
-                return "sap.ui.getCore().byId('{$input_element->getId()}').close();";
+                return "try{ sap.ui.getCore().byId('{$input_element->getId()}').close(); } catch (e) { console.error('Could not close dialog: ' + e); }";
             }
         }
         return "";

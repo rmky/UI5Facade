@@ -87,8 +87,8 @@ JS;
 
             new sap.m.StandardListItem({
 				title: "{$btn_element->getCaption()}",
-                iconDensityAware: false,
-				iconInset: false,
+                iconDensityAware: true,
+				iconInset: true,
                 type: "Active",
 				{$icon}
 				{$press}

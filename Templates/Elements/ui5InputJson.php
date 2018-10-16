@@ -43,8 +43,8 @@ JS;
 
             if ($('#{$this->getId()} > .jsoneditor').length == 0) {
                 {$oControllerJs}.{$controllerVar} = new JSONEditor(document.getElementById("{$this->getId()}"), {
-    				mode: 'tree',
-    				modes: ['code', 'form', 'text', 'tree', 'view'],
+    				mode: {$this->buildJsEditorModeDefault()},
+    				modes: {$this->buildJsEditorModes()},
                     sortObjectKeys: false
     			});
                 {$init_value}
@@ -54,6 +54,30 @@ JS;
 
 JS;
             return $script;
+    }
+    
+    /**
+     *
+     * @return string
+     */
+    protected function buildJsEditorModes() : string
+    {
+        if ($this->getWidget()->isDisabled()) {
+            return "['view']";
+        }
+        return "['code', 'tree']";
+    }
+    
+    /**
+     *
+     * @return string
+     */
+    protected function buildJsEditorModeDefault() : string
+    {
+        if ($this->getWidget()->isDisabled()) {
+            return "'view'";
+        }
+        return "'tree'";
     }
     
     /**

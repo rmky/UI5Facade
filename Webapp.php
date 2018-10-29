@@ -55,15 +55,48 @@ class Webapp implements WorkbenchDependantInterface
         return $this->workbench;
     }
     
-    protected function handlePrefill(WidgetInterface $widget, HttpTaskInterface $task = null) : WidgetInterface
+    /**
+     * Prefills the given widget if required by the task.
+     * 
+     * This method takes care of prefilling widgets loaded via app routing (i.e. in views and viewcontrollers).
+     * These resources are loaded without any input data, so just performing the corresponding task would not
+     * result in a prefill. If the widget is actually supposed to be prefilled (e.g. an edit dialog), we need
+     * that prefill operation to figure out model bindings. 
+     * 
+     * Technically, the task is being modified in a way, that the prefill is performed. Than, the task is being
+     * handled by the workbench and the resulting prefilled widget is returned.
+     * 
+     * @param WidgetInterface $widget
+     * @param HttpTaskInterface $task
+     * 
+     * @return WidgetInterface
+     */
+    protected function handlePrefill(WidgetInterface $widget, HttpTaskInterface $task) : WidgetInterface
     {
-        if ($task !== null && $widget->getParent() instanceof iTriggerAction) {
+        // The whole trick only makes sense for widgets, that are created by actions (e.g. via button press).
+        // Otherwise we would not be able to find out, if the widget is supposed to be prefilled because 
+        // actions controll the prefill.
+        if ($widget->getParent() instanceof iTriggerAction) {
             $button = $widget->getParent();
+            // Make sure, the task has page and widget selectors (they are not set automatically, for routed URLs)
             $task->setPageSelector($button->getPage()->getSelector());
             $task->setWidgetIdTriggeredBy($button->getId());
             
+            // Now see, what action, we are dealing with and whether it requires a prefill
             $action = $button->getAction();
             if (($action instanceof iShowWidget) && ($action->getPrefillWithInputData() || $action->getPrefillWithPrefillData())) {
+                // If a prefill is required, but there is no input data (e.g. a button with ShowObjectEditDialog was pressed and
+                // the corresponding view or viewcontroller is being loaded), just fake the input data by reading the first row of
+                // the default data for the input widget. Since we are just interested in model bindings, id does not matter, what
+                // data we use as prefill - only it's structure matters!
+                if ($action->getInputRowsMin() > 0 && ! $task->hasInputData()) {
+                    $inputData = $button->getInputWidget()->prepareDataSheetToRead();
+                    $inputData->setRowsOnPage(1);
+                    $inputData->dataRead();
+                    $task->setInputData($inputData);
+                }
+                
+                // Listen to OnPrefillChangePropertyEvent and generate model bindings from it
                 $model = $this->createViewModel($this->template->getViewName($widget, $this->getRootPage()));
                 $webapp = $this;
                 $eventHandler = function($event) use ($webapp, $model) {
@@ -71,8 +104,10 @@ class Webapp implements WorkbenchDependantInterface
                 };
                 $this->getWorkbench()->eventManager()->addListener(OnPrefillChangePropertyEvent::getEventName(), $eventHandler);
             }
+            // Overwrite the task's action with the action of the trigger widget to make sure, the prefill is really performed
             $task->setActionSelector($action->getSelector());
             
+            // Handle the modified task
             try {
                 $result = $this->getWorkbench()->handle($task);
                 if ($result instanceof ResultWidgetInterface) {
@@ -107,6 +142,7 @@ class Webapp implements WorkbenchDependantInterface
                     if ($widget) {
                         return $this->getViewForWidget($widget)->buildJsView();
                     } 
+                    $widget = $this->handlePrefill($widget, $task);
                     return '';
                 }
             case StringDataType::startsWith($route, 'controller/'):
@@ -115,6 +151,7 @@ class Webapp implements WorkbenchDependantInterface
                     $path = StringDataType::substringBefore($path, '.controller.js');
                     $widget = $this->getWidgetFromPath($path);
                     if ($widget) {
+                        $widget = $this->handlePrefill($widget, $task);
                         return $this->getControllerForWidget($widget)->buildJsController();
                     }
                     return '';

@@ -11,6 +11,7 @@ use exface\Core\DataTypes\StringDataType;
 use exface\OpenUI5Template\Exceptions\Ui5RouteInvalidException;
 use exface\OpenUI5Template\Templates\OpenUI5Template;
 use exface\Core\Interfaces\Tasks\HttpTaskInterface;
+use exface\Core\Templates\AbstractHttpTemplate\Middleware\Traits\TaskRequestTrait;
 
 /**
  * This PSR-15 middleware routes requests to components of a UI5 webapp.
@@ -20,6 +21,8 @@ use exface\Core\Interfaces\Tasks\HttpTaskInterface;
  */
 class ui5WebappRouter implements MiddlewareInterface
 {
+    use TaskRequestTrait;
+    
     private $template = null;
     
     private $taskAttributeName = null;
@@ -48,7 +51,7 @@ class ui5WebappRouter implements MiddlewareInterface
     {
         $path = $request->getUri()->getPath();
         if (($webappRoute = StringDataType::substringAfter($path, $this->webappRoot)) !== false) {
-            return $this->resolve($webappRoute, $request->getAttribute($this->taskAttributeName));
+            return $this->resolve($webappRoute, $this->getTask($request, $this->taskAttributeName, $this->template));
         }
         return $handler->handle($request);
     }

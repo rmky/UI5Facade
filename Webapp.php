@@ -98,9 +98,8 @@ class Webapp implements WorkbenchDependantInterface
                 
                 // Listen to OnPrefillChangePropertyEvent and generate model bindings from it
                 $model = $this->createViewModel($this->template->getViewName($widget, $this->getRootPage()));
-                $webapp = $this;
-                $eventHandler = function($event) use ($webapp, $model) {
-                    return $webapp->onPrefillChangePropertyHandler($event, $model);
+                $eventHandler = function($event) use ($model) {
+                    $model->setBindingPointer($event->getWidget(), $event->getPropertyName(), $event->getPrefillValuePointer());
                 };
                 $this->getWorkbench()->eventManager()->addListener(OnPrefillChangePropertyEvent::getEventName(), $eventHandler);
             }
@@ -503,12 +502,6 @@ class Webapp implements WorkbenchDependantInterface
     public function getTitle() : string
     {
         return $this->config['app_title'] ? $this->config['app_title'] : $this->getRootPage()->getName();
-    }
-    
-    public function onPrefillChangePropertyHandler(OnPrefillChangePropertyEvent $event, ui5Model $model)
-    {
-        $model->setBindingPointer($event->getWidget(), $event->getPropertyName(), $event->getPrefillValuePointer());
-        return;
     }
     
     public function createViewModel(string $viewName, string $modelName = '') : ui5Model

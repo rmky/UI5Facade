@@ -163,7 +163,7 @@ JS;
                         var sViewName = this.getViewName('{$targetWidget->getPage()->getAliasWithNamespace()}', '{$targetWidget->getId()}'); 
                         var sViewId = this.getViewId(sViewName);
                         var oComponent = this.getOwnerComponent();
-                        console.log(xhrSettings);
+                        
                         var jqXHR = this._loadView(sViewName, function(){ 
                             var oView = sap.ui.getCore().byId(sViewId);
                             if (oView === undefined) {

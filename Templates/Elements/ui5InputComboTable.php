@@ -77,6 +77,7 @@ JS;
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
         $widget = $this->getWidget();
+        $controller = $this->getController();
         
         if ($widget->isPreloadDataEnabled()) {
             $cols = '';
@@ -84,11 +85,11 @@ JS;
                 $cols .= $col->getDataColumnName() . ',';
             }
             $cols = rtrim($cols, ",");
-            $this->getController()->addOnDefineScript("exfPreloader.addPreload('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$cols}'], [], '{$widget->getPage()->getId()}', '{$widget->getTable()->getId()}');");
+            $controller->addOnDefineScript("exfPreloader.addPreload('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$cols}'], [], '{$widget->getPage()->getId()}', '{$widget->getTable()->getId()}');");
         }
         
-        $this->getController()->addMethod('onSuggestFromServer', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));
-        $this->getController()->addMethod('onSuggestFromPreload', $this, 'oEvent', $this->buildJsDataLoaderFromPreload('oEvent'));
+        $controller->addMethod('onSuggestFromServer', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));
+        $controller->addMethod('onSuggestFromPreload', $this, 'oEvent', $this->buildJsDataLoaderFromPreload('oEvent'));
         
         if (! $this->isValueBoundToModel() && $value = $widget->getValueWithDefaults()) {
             // If the widget value is set explicitly, we either set the key only or the 
@@ -108,16 +109,14 @@ JS;
         } else {
             // If the value is to be taken from a model, we need to check if both - key
             // and value are there. If not, the value needs to be fetched from the server.
-            // TODO Check if a value can be taken from the model instead of loading it
-            // from the server. I didn't come up with an elegant solution though: how
-            // to determine, which column of the model (= prefill sheet) to look for???
+            // FIXME for some reason sKey is sometimes empty despite the binding getting a value...
+            // This seems to happen in non-maximized dialogs (e.g. editor of a small object).
             $value_init_js = <<<JS
 
         .attachModelContextChange(function(oEvent) {
             var oInput = oEvent.getSource();
-            var sKey = oInput.getSelectedKey();
+            var sKey = sap.ui.getCore().byId('{$this->getId()}').getSelectedKey();
             var sVal = oInput.getValue();
-            
             if (sKey !== '' && sVal === '') {
                 oInput.{$this->buildJsValueSetterMethod('sKey')};
             }

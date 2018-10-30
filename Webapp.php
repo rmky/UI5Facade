@@ -89,7 +89,7 @@ class Webapp implements WorkbenchDependantInterface
                 // the corresponding view or viewcontroller is being loaded), just fake the input data by reading the first row of
                 // the default data for the input widget. Since we are just interested in model bindings, id does not matter, what
                 // data we use as prefill - only it's structure matters!
-                if ($action->getInputRowsMin() > 0 && ! $task->hasInputData()) {
+                if (! $task->hasInputData()) {
                     $inputData = $button->getInputWidget()->prepareDataSheetToRead();
                     $inputData->setRowsOnPage(1);
                     $inputData->dataRead();

@@ -17,11 +17,16 @@
 	"WEBAPP.ROUTING.OFFLINE.TEXT": "This function is not available offline!",
 	"WEBAPP.ROUTING.OFFLINE.DESCRIPTION": "Connect to the network and try again.",
 	
-	"WEBAPP.SHELL.STATE.ONLINE": "Your are online",
-	"WEBAPP.SHELL.STATE.OFFLINE": "You are offline",
-	"WEBAPP.SHELL.PRELOAD.SYNC": "Sync Preload Data",
-	"WEBAPP.SHELL.PRELOAD.RESET": "Clear Preload Data",
-	
+	"WEBAPP.SHELL.NETWORK.ONLINE": "Currently ONLINE",
+	"WEBAPP.SHELL.NETWORK.OFFLINE": "Currently OFFLINE",
+	"WEBAPP.SHELL.NETWORK.SYNC_MENU": "Offline Actions",
+	"WEBAPP.SHELL.NETWORK.SYNC_MENU_QUEUE": "In Queue",
+	"WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS": "Errors",
+	"WEBAPP.SHELL.PRELOAD.MENU": "Offline Data",
+	"WEBAPP.SHELL.PRELOAD.MENU_SYNC": "Synchronize",
+	"WEBAPP.SHELL.PRELOAD.MENU_SYNC_TOOLTIP": "Synchronize all offline data for this client",
+	"WEBAPP.SHELL.PRELOAD.MENU_RESET": "Clear",
+	"WEBAPP.SHELL.PRELOAD.MENU_RESET_TOOLTIP": "Remove all offline data from this client",
 	
 	"WIDGET.DATATPAGINATOR.SHOWING": "Showing %from% - %to% of %total%",
 	

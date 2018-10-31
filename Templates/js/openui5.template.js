@@ -43,172 +43,178 @@ const exfLauncher = {};
 		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
 		                }),
 		                new sap.m.ToolbarSpacer(),
-		                new sap.m.Button("exf-connection-indicator", {
+		                new sap.m.Button("exf-network-indicator", {
 		                    icon: function(){return navigator.onLine ? "sap-icon://connected" : "sap-icon://disconnected"}(),
-		                    text: "3/1",
+		                    text: "0/0",
 		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
 		                    press: function(oEvent){
 								var oButton = oEvent.getSource();
-								var oPopover = new sap.m.Popover({
-									title: "{= ${/_online} > 0 ? ${i18n>/WEBAPP.SHELL.STATE.ONLINE} : ${i18n>/WEBAPP.SHELL.STATE.OFFLINE} }",
-									placement: "Bottom",
-									content: [
-										new sap.m.List({
-											items: [
-												new sap.m.StandardListItem({
-													title: "Sync-Puffer (0)",
-													type: "Active",
-													press: function(){
-														var oData = {
-																data: [
-																	/*{
-																		"action_alias": "exface.Core.CreateData",
-																		"caption": "Speichern",
-																		"object_alias": "alexa.RMS-demo.BBD_ALERT",
-																		"object_name": "MHD-Alarm",
-																		"triggered": "2017-02-05 13:55:37"
-																	},
-																	{
-																		"action_alias": "exface.Core.UpdateData",
-																		"caption": "Speichern",
-																		"object_alias": "axenox.WMS.picking_order_pos",
-																		"object_name": "Pickauftragsposition",
-																		"triggered": "2018-04-12 14:48:06"
-																	},
-																	{
-																		"action_alias": "exface.Core.UpdateData",
-																		"caption": "Speichern",
-																		"object_alias": "axenox.WMS.picking_order_pos",
-																		"object_name": "Pickauftragsposition",
-																		"triggered": "2018-04-12 16:38:22"
-																	}*/
-																]
-														};
-														
-														var oTable = new sap.m.Table({
-															fixedLayout: false,
-															mode: sap.m.ListMode.MultiSelect,
-															headerToolbar: [
-																new sap.m.OverflowToolbar({
-																	design: "Transparent",
-																	content: [
-																		new sap.m.Label({
-																			text: "Wartende Online-Aktionen"
-																		}),
-																		new sap.m.ToolbarSpacer(),
-																		new sap.m.Button({
-																			text: "Abbrechen",
-																			icon: "sap-icon://cancel"
-																		}),
-																		new sap.m.Button({
-																			text: "Exportieren",
-																			icon: "sap-icon://download"
-																		})
-																	]
-																})
-															],
-															columns: [
-																new sap.m.Column({
-																	header: [
-																		new sap.m.Label({
-																			text: "Objekt"
-																		})
-																	]
-																}),
-																new sap.m.Column({
-																	header: [
-																		new sap.m.Label({
-																			text: "Aktion"
-																		})
-																	]
-																}),
-																new sap.m.Column({
-																	header: [
-																		new sap.m.Label({
-																			text: "Alias"
-																		})
-																	],
-																	minScreenWidth: "Tablet",
-																	demandPopin: true
-																}),
-															],
-															items: {
-																path: "/data",
-																template: new sap.m.ColumnListItem({
-																	cells: [
-																		new sap.m.Text({
-																			text: "{object_name}"
-																		}),
-																		new sap.m.Text({
-																			text: "{caption}"
-																		}),
-																		new sap.m.Text({
-																			text: "{action_alias}"
-																		})
-																	]
-																})
-															}
-														}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
-														
-														_oLauncher.showDialog('Sync-Puffer', oTable, undefined, undefined, true);
-													},
-												}),
-												new sap.m.StandardListItem({
-													title: "Ausgecheckte Objekte (0)",
-													type: "Active",
-													press: function(){},
-												}),
-												new sap.m.StandardListItem({
-													title: "Sync-Fehler (0)",
-													type: "Active",
-													press: function(){},
-												}),
-												new sap.m.GroupHeaderListItem({
-														title: 'Tools',
+								var oPopover = sap.ui.getCore().byId('exf-network-menu');
+								if (oPopover === undefined) {
+									oPopover = new sap.m.Popover("exf-network-menu", {
+										title: "{= ${/_network/online} > 0 ? ${i18n>WEBAPP.SHELL.NETWORK.ONLINE} : ${i18n>WEBAPP.SHELL.NETWORK.OFFLINE} }",
+										placement: "Bottom",
+										content: [
+											new sap.m.List({
+												items: [
+													new sap.m.GroupHeaderListItem({
+														title: '{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU}',
 														upperCase: false
-												}),
-												new sap.m.StandardListItem({
-													title: "Sync Preload Data",
-													icon: "sap-icon://synchronize",
-													tooltip: "Offline-Daten synchronisieren",
-													type: "Active",
-													press: function(oEvent){
-														oButton = oEvent.getSource();
-														oButton.setBusyIndicatorDelay(0).setBusy(true);
-														exfPreloader.syncAll().then(function(){
-															oButton.setBusy(false)
-														});
-													},
-												}),/*
-												new sap.m.StandardListItem({
-													title: "Storage quota",
-													icon: "sap-icon://unwired",
-													type: "Active",
-													press: function(oEvent){
-													},
-												}),*/
-												new sap.m.StandardListItem({
-													title: "Offline-Daten zurücksetzen",
-													icon: "sap-icon://sys-cancel",
-													type: "Active",
-													press: function(oEvent){
-														oButton = oEvent.getSource();
-														oButton.setBusyIndicatorDelay(0).setBusy(true);
-														exfPreloader
-														.reset()
-														.then(() => {
-															oButton.setBusy(false);
-															_oLauncher.showDialog('Offline Storage', 'All preload data cleared!', 'Success');
-														}).catch(() => {
-															oButton.setBusy(false);
-															_oLauncher.showDialog('Error!', 'Failed to clear preload data!', 'Error');
-														})
-													},
-												})
-											]
-										})
-									]
-								});
+													}),
+													new sap.m.StandardListItem({
+														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_QUEUE} ({/_network/queueCnt})",
+														type: "Active",
+														press: function(){
+															var oData = {
+																	data: [
+																		/*{
+																			"action_alias": "exface.Core.CreateData",
+																			"caption": "Speichern",
+																			"object_alias": "alexa.RMS-demo.BBD_ALERT",
+																			"object_name": "MHD-Alarm",
+																			"triggered": "2017-02-05 13:55:37"
+																		},
+																		{
+																			"action_alias": "exface.Core.UpdateData",
+																			"caption": "Speichern",
+																			"object_alias": "axenox.WMS.picking_order_pos",
+																			"object_name": "Pickauftragsposition",
+																			"triggered": "2018-04-12 14:48:06"
+																		},
+																		{
+																			"action_alias": "exface.Core.UpdateData",
+																			"caption": "Speichern",
+																			"object_alias": "axenox.WMS.picking_order_pos",
+																			"object_name": "Pickauftragsposition",
+																			"triggered": "2018-04-12 16:38:22"
+																		}*/
+																	]
+															};
+															
+															var oTable = new sap.m.Table({
+																fixedLayout: false,
+																mode: sap.m.ListMode.MultiSelect,
+																headerToolbar: [
+																	new sap.m.OverflowToolbar({
+																		design: "Transparent",
+																		content: [
+																			new sap.m.Label({
+																				text: "Wartende Online-Aktionen"
+																			}),
+																			new sap.m.ToolbarSpacer(),
+																			new sap.m.Button({
+																				text: "Abbrechen",
+																				icon: "sap-icon://cancel"
+																			}),
+																			new sap.m.Button({
+																				text: "Exportieren",
+																				icon: "sap-icon://download"
+																			})
+																		]
+																	})
+																],
+																columns: [
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: "Objekt"
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: "Aktion"
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: "Alias"
+																			})
+																		],
+																		minScreenWidth: "Tablet",
+																		demandPopin: true
+																	}),
+																],
+																items: {
+																	path: "/data",
+																	template: new sap.m.ColumnListItem({
+																		cells: [
+																			new sap.m.Text({
+																				text: "{object_name}"
+																			}),
+																			new sap.m.Text({
+																				text: "{caption}"
+																			}),
+																			new sap.m.Text({
+																				text: "{action_alias}"
+																			})
+																		]
+																	})
+																}
+															}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+															
+															_oLauncher.showDialog('Sync-Puffer', oTable, undefined, undefined, true);
+														},
+													}),
+													new sap.m.StandardListItem({
+														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS} ({/_network/syncErrorCnt})",
+														type: "Active",
+														press: function(){},
+													}),
+													new sap.m.GroupHeaderListItem({
+														title: '{i18n>WEBAPP.SHELL.PRELOAD.MENU}',
+														upperCase: false
+													}),
+													new sap.m.StandardListItem({
+														title: "{i18n>WEBAPP.SHELL.PRELOAD.MENU_SYNC}",
+														tooltip: "{i18n>WEBAPP.SHELL.PRELOAD.MENU_SYNC_TOOLTIP}",
+														icon: "sap-icon://synchronize",
+														type: "Active",
+														press: function(oEvent){
+															oButton = oEvent.getSource();
+															oButton.setBusyIndicatorDelay(0).setBusy(true);
+															exfPreloader.syncAll().then(function(){
+																oButton.setBusy(false)
+															});
+														},
+													}),/*
+													new sap.m.StandardListItem({
+														title: "Storage quota",
+														icon: "sap-icon://unwired",
+														type: "Active",
+														press: function(oEvent){
+														},
+													}),*/
+													new sap.m.StandardListItem({
+														title: "{i18n>WEBAPP.SHELL.PRELOAD.MENU_RESET}",
+														tooltip: "{i18n>WEBAPP.SHELL.PRELOAD.MENU_RESET_TOOLTIP}",
+														icon: "sap-icon://sys-cancel",
+														type: "Active",
+														press: function(oEvent){
+															oButton = oEvent.getSource();
+															oButton.setBusyIndicatorDelay(0).setBusy(true);
+															exfPreloader
+															.reset()
+															.then(() => {
+																oButton.setBusy(false);
+																_oLauncher.showDialog('Offline Storage', 'All preload data cleared!', 'Success');
+															}).catch(() => {
+																oButton.setBusy(false);
+																_oLauncher.showDialog('Error!', 'Failed to clear preload data!', 'Error');
+															})
+														},
+													})
+												]
+											})
+										]
+									})
+									.setModel(oButton.getModel())
+									.setModel(oButton.getModel('i18n'), 'i18n');
+								}
+								
 								jQuery.sap.delayedCall(0, this, function () {
 									oPopover.openBy(oButton);
 								});
@@ -227,7 +233,13 @@ const exfLauncher = {};
 		
 			]
 		})
-		.setModel(new sap.ui.model.json.JSONModel())
+		.setModel(new sap.ui.model.json.JSONModel({
+			_network: {
+				online: navigator.onLine,
+				queueCnt: 0,
+				syncErrorCnt: 0
+			}
+		}));
 		
 		return _oShell;
 	};
@@ -276,6 +288,9 @@ const exfLauncher = {};
 		var _oContextBar = {
 			init : function (oComponent) {
 				_oComponent = oComponent;
+				
+				// Give the shell the translation model of the component
+				_oShell.setModel(oComponent.getModel('i18n'), 'i18n');
 				
 				oComponent.getRouter().attachRouteMatched(function (oEvent){
 					_oContextBar.load();
@@ -337,7 +352,7 @@ const exfLauncher = {};
 				
 				for (var i=0; i<aItemsOld.length; i++) {
 					oControl = aItemsOld[i];
-					if (i < iItemsIndex || oControl.getId() == 'exf-connection-indicator' || oControl.getId() == 'exf_pagetitle' || oControl.getId() == 'exf_avatar') {
+					if (i < iItemsIndex || oControl.getId() == 'exf-network-indicator' || oControl.getId() == 'exf_pagetitle' || oControl.getId() == 'exf_avatar') {
 						oToolbar.addContent(oControl);
 					} else {
 						oControl.destroy();
@@ -440,8 +455,8 @@ const exfLauncher = {};
 	};
 
 	this.toggleOnlineIndicator = function() {
-		sap.ui.getCore().byId('exf-connection-indicator').setIcon(navigator.onLine ? 'sap-icon://connected' : 'sap-icon://disconnected');
-		_oShell.getModel().setProperty("/_online", navigator.onLine);
+		sap.ui.getCore().byId('exf-network-indicator').setIcon(navigator.onLine ? 'sap-icon://connected' : 'sap-icon://disconnected');
+		_oShell.getModel().setProperty("/_network/online", navigator.onLine);
 		if (navigator.onLine) {
 			_oLauncher.contextBar.load();
 		}

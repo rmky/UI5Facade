@@ -91,8 +91,10 @@ class Webapp implements WorkbenchDependantInterface
                 // data we use as prefill - only it's structure matters!
                 if (! $task->hasInputData()) {
                     $inputData = $button->getInputWidget()->prepareDataSheetToRead();
-                    $inputData->setRowsOnPage(1);
-                    $inputData->dataRead();
+                    if ($inputData->getMetaObject()->isReadable() === true) {
+                        $inputData->setRowsOnPage(1);
+                        $inputData->dataRead();
+                    }
                     $task->setInputData($inputData);
                 }
                 

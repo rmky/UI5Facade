@@ -308,7 +308,7 @@ JS;
         
         // FIXME #DataPreloader this will force the form to use any preload - regardless of the columns.
         if ($widget->isPreloadDataEnabled() === true) {
-            $this->getController()->addOnDefineScript("exfPreloader.addPreload('{$this->getMetaObject()->getAliasWithNamespace()}');");
+            $this->getController()->addOnDefineScript("exfPreloader.addPreload('{$this->getMetaObject()->getAliasWithNamespace()}', [], [], '{$widget->getPage()->getAliasWithNamespace()}', '{$widget->getId()}');");
             $loadPrefillData = $this->buildJsPrefillLoaderFromPreload($triggerWidget, $oViewJs, 'oViewModel');
         } else {
             $loadPrefillData = $this->buildJsPrefillLoaderFromServer($triggerWidget, $oViewJs, 'oViewModel');
@@ -330,7 +330,7 @@ JS;
         return <<<JS
         
                 exfPreloader
-                .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
+                .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}', '{$widget->getPage()->getAliasWithNamespace()}', '{$widget->getId()}')
                 .then(preload => {
                     var failed = false;
                     if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {

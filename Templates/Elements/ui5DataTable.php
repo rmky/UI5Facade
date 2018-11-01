@@ -66,7 +66,7 @@ class ui5DataTable extends ui5AbstractElement
             }
             $preloadDataCols = json_encode($dataCols);
             $preloadImgCols = json_encode($imgCols);
-            $controller->addOnDefineScript("exfPreloader.addPreload('{$this->getMetaObject()->getAliasWithNamespace()}', {$preloadDataCols}, {$preloadImgCols}, '{$widget->getPage()->getId()}', '{$widget->getId()}');");
+            $controller->addOnDefineScript("exfPreloader.addPreload('{$this->getMetaObject()->getAliasWithNamespace()}', {$preloadDataCols}, {$preloadImgCols}, '{$widget->getPage()->getAliasWithNamespace()}', '{$widget->getId()}');");
         }
         
         if ($this->isMTable()) {
@@ -471,7 +471,7 @@ JS;
         return <<<JS
 
                 exfPreloader
-                .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
+                .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}', '{$widget->getPage()->getAliasWithNamespace()}', '{$widget->getId()}')
                 .then(preload => {
                     if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
                         var aData = preload.response.data;

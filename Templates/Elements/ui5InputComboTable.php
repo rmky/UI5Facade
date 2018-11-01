@@ -82,10 +82,10 @@ JS;
         if ($widget->isPreloadDataEnabled()) {
             $cols = '';
             foreach ($widget->getTable()->getColumns() as $col) {
-                $cols .= $col->getDataColumnName() . ',';
+                $cols .= '"' . $col->getDataColumnName() . '",';
             }
             $cols = rtrim($cols, ",");
-            $controller->addOnDefineScript("exfPreloader.addPreload('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$cols}'], [], '{$widget->getPage()->getId()}', '{$widget->getTable()->getId()}');");
+            $controller->addOnDefineScript("exfPreloader.addPreload('{$widget->getTableObject()->getAliasWithNamespace()}', [{$cols}], [], '{$widget->getPage()->getAliasWithNamespace()}', '{$widget->getTable()->getId()}');");
         }
         
         $controller->addMethod('onSuggestFromServer', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));
@@ -348,7 +348,7 @@ JS;
                 var oModel = oInput.getModel('{$this->getModelNameForAutosuggest()}');
                 
                 exfPreloader
-                .getPreload('{$widget->getTableObject()->getAliasWithNamespace()}')
+                .getPreload('{$widget->getTableObject()->getAliasWithNamespace()}', '{$widget->getPage()->getAliasWithNamespace()}', '{$widget->getId()}')
                 .then(preload => {
                     if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
                         var curKey = oInput.getSelectedKey();

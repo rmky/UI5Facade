@@ -26,7 +26,7 @@ const exfLauncher = {};
 		                    icon: "sap-icon://menu2",
 		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
 		                    press: function() {
-		                    	oShell.setShowPane(! oShell.getShowPane());
+		                    	_oShell.setShowPane(! _oShell.getShowPane());
 		            		}
 		                }),
 		                new sap.m.Image({
@@ -473,44 +473,103 @@ const exfPreloader = {};
 		dexie.version(1).stores({
 			'preloads': 'id, object'
 		});
+		dexie.version(2).stores({
+		    preloads: '++id, object, ownerWidgetId, ownerPageSelector',
+		    widgets: '++id, preloadId, [widgetId+pageSelector]',
+		    log: '++id, preloadId, op'
+		}).upgrade(tx => {
+		    return tx.preloads.toCollection().modify(preload => {
+		        preload.ownerWidgetId = preload.widget;
+		        preload.ownerPageSelector = preload.page;
+		    });
+		});
 		dexie.open();
 		return dexie;
 	}();
 	
-	var _preloadTable = _db.table('preloads');
+	var _preloadData = _db.table('preloads');
+	var _preloadWidgets = _db.table('widgets');
 	
-	this.addPreload = function(sAlias, aDataCols, aImageCols, sPageAlias, sWidgetId){
-		_preloadTable
-		.get(sAlias)
-		.then(item => {
-			var data = {
-				id: sAlias,
-				object: sAlias,
-				page: sPageAlias,
-				widget: sWidgetId,
-				dataCols: aDataCols,
-				imageCols: aImageCols
-			};
-			if (item === undefined) {
-				_preloadTable.put(data);
-			} else {
-				_preloadTable.update(sAlias, data);
-			}
-		})
+	this.addPreload = function(sObjectAlias, aDataCols, aImageCols, sPageAlias, sWidgetId){
+		console.log('adding preload '+ sObjectAlias + ' ' + sPageAlias + ' ' + sWidgetId);
+		this.getPreload(sObjectAlias, sPageAlias, sWidgetId)
+			.then(item => {
+				if (item !== undefined) {
+					console.log('preload exists!');
+					// TODO check columns
+				} else {
+					_preloadData.where({object: sObjectAlias}).toArray().then(preloads => {
+						var bFound = false;
+						var item;
+						for (var i in preloads) {
+							item = preloads[i];
+							if (aDataCols.filter(j => {return item.dataCols.indexOf(j) < 0;}).length === 0) {
+								console.log('found match ' + item.id + ' for '+ sObjectAlias + ' ' + sPageAlias + ' ' + sWidgetId);
+								_preloader.addPreloadWidget(item.id, sPageAlias, sWidgetId);
+								bFound = true;
+								break;
+							} 
+						}
+						
+						if (bFound === false) {
+							console.log('No match for '+ sObjectAlias + ' ' + sPageAlias + ' ' + sWidgetId);
+							_preloadData.add({
+								object: sObjectAlias,
+								ownerPageSelector: sPageAlias,
+								ownerWidgetId: sWidgetId,
+								dataCols: aDataCols,
+								imageCols: aImageCols,
+								tsLastInit: (+ new Date())
+							}).then(id => {
+								_preloader.addPreloadWidget(id, sPageAlias, sWidgetId);
+							});
+						}
+					})
+				}
+			})
 		return _preloader;
 	};
 	
-	this.getPreload = function(sAlias, sPageAlias, sWidgetId) {
-		return _preloadTable.get(sAlias);
+	this.addPreloadWidget = function (iPreloadId, sPageAlias, sWidgetId) {
+		console.log('adding preload widget ' + iPreloadId + ' ' + sPageAlias + ' ' + sWidgetId);
+		_preloadWidgets
+		.where({pageSelector: sPageAlias, widgetId: sWidgetId})
+		.first()
+		.then(item => {
+			var data = {
+				preloadId: iPreloadId,
+				pageSelector: sPageAlias,
+				widgetId: sWidgetId,
+				tsLastInit: (+ new Date())
+			};
+			if (item === undefined) {
+				_preloadWidgets.add(data)
+			} else {
+				_preloadWidgets.update(item.id, data);
+			}
+		})
+	};
+	
+	this.getPreload = function(sObjectAlias, sPageAlias, sWidgetId) {
+		console.log('getting preload for ' + sPageAlias + ' ' + sWidgetId);
+		return _preloadWidgets
+			.where({widgetId: sWidgetId, pageSelector: sPageAlias})
+			.first()
+			.then(item => {
+				if (item !== undefined) {
+					return _preloadData.get(item.preloadId);
+				}
+				return Promise.resolve(undefined);
+			});
 	};
 	
 	this.syncAll = function(fnCallback) {
 		var deferreds = [];
-		return _preloadTable.toArray()
+		return _preloadData.toArray()
 		.then(data => {
 			$.each(data, function(idx, item){
 				deferreds.push(
-			    	_preloader.sync(item.object, item.page, item.widget, item.imageCols)
+			    	_preloader.sync(item.object, item.ownerPageSelector, item.ownerWidgetId, item.imageCols)
 			    );
 			});
 			// Can't pass a literal array, so use apply.
@@ -536,9 +595,9 @@ const exfPreloader = {};
 			function(data, textStatus, jqXHR) {
 				var promises = [];
 				promises.push(
-					_preloadTable.update(sObjectAlias, {
-						response: data/*,
-						lastSync: (+ new Date())*/
+					_preloadData.update(sObjectAlias, {
+						response: data,
+						tsLastSync: (+ new Date())
 					})
 				);
 				if (aImageCols && aImageCols.length > 0) {

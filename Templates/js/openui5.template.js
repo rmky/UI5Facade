@@ -26,7 +26,7 @@ const exfLauncher = {};
 		                    icon: "sap-icon://menu2",
 		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
 		                    press: function() {
-		                    	oShell.setShowPane(! oShell.getShowPane());
+		                    	_oShell.setShowPane(! _oShell.getShowPane());
 		            		}
 		                }),
 		                new sap.m.Image({

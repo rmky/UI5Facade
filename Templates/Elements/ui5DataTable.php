@@ -136,18 +136,20 @@ class ui5DataTable extends ui5AbstractElement
                 {$this->buildJsClickListeners('oController')}
                 {$this->buildJsPseudoEventHandlers()}
                 ,
-                {$this->buildJsFooter()}
+                {$this->buildJsConstructorForMTableFooter()}
             ]
         })
         
 JS;
     }
     
-    protected function buildJsFooter(string $oControllerJs = 'oController') : string
+    protected function buildJsConstructorForMTableFooter(string $oControllerJs = 'oController') : string
     {
+        $visible = $this->getWidget()->isPaged() ? 'true' : 'false';
         return <<<JS
                 new sap.m.OverflowToolbar({
                     design: "Info",
+                    visible: {$visible},
     				content: [
                         {$this->getPaginatorElement()->buildJsConstructor($oControllerJs)},
                         new sap.m.ToolbarSpacer(),

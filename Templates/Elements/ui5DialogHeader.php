@@ -22,9 +22,9 @@ class ui5DialogHeader extends ui5Container
     {
         foreach ($this->getWidget()->getWidgets() as $widget) {
             if ($widget instanceof iHaveValue) {
-                $js .= $this->buildJsObjectStatus($widget);
+                $js .= $this->buildJsObjectStatus($widget) . ',';
             } elseif ($widget instanceof WidgetGrid) {
-                $js .= $this->buildJsVerticalLayout($widget);
+                $js .= $this->buildJsVerticalLayout($widget) . ',';
             }
         }
         

@@ -133,7 +133,8 @@ JS;
         if ($widget->hasHeader()) {
             $header = $widget->getHeader();
             if (! $header->isTitleBoundToAttribute()) {
-                return '"' . $this->escapeJsTextValue($widget->getCaption()) . '"';
+                $caption = $header->getCaption() ? $header->getCaption() : $this->getCaption();
+                return '"' . $this->escapeJsTextValue($caption) . '"';
             }
         }
         

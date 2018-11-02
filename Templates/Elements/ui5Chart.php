@@ -32,12 +32,31 @@ class ui5Chart extends ui5AbstractElement
         }
         
         return <<<JS
-
-        new sap.ui.core.HTML("{$this->getId()}", {
-            content: "<div class=\"exf-flot-wrapper\" style=\"height: calc(100% - 10px); margin: 5px 0; overflow: hidden; position: relative;\"></div>",
-            afterRendering: function() { 
-                {$this->buildJsRefresh()} 
-            }
+        new sap.m.Panel({
+            height: "100%",
+            headerToolbar: [
+                new sap.m.OverflowToolbar({
+                    design: "Transparent",
+    				content: [
+    					new sap.m.Label({
+                            text: "{$this->getCaption()}"
+                        }),
+    			        new sap.m.ToolbarSpacer(),
+                        new sap.m.OverflowToolbarButton({
+                            icon: "sap-icon://drop-down-list",
+                            enabled: false
+                        })
+                    ]
+                }).addStyleClass("sapMTBHeader-CTX")
+            ],
+            content: [
+                new sap.ui.core.HTML("{$this->getId()}", {
+                    content: "<div class=\"exf-flot-wrapper\" style=\"height: 100%; overflow: hidden; position: relative;\"></div>",
+                    afterRendering: function() { 
+                        {$this->buildJsRefresh()} 
+                    }
+                })
+            ]
         })
 
 JS;

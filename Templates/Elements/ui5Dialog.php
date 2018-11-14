@@ -148,7 +148,7 @@ JS;
             $title_attr = $object->getUidAttribute();
         } else {
             // If no suitable attribute can be found, use the object name as static title
-            return '"' . $this->escapeJsTextValue($object->getName()) . '"';
+            return '"' . $this->escapeJsTextValue($widget->getCaption() ? $widget->getCaption() : $object->getName()) . '"';
         }
         
         // Once a title attribute is found, create an invisible display widget and

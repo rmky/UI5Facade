@@ -816,31 +816,19 @@ JS;
             }
             $top_buttons .= $this->getTemplate()->getElement($btn)->buildJsConstructor() . ',';
         }
-        return <<<JS
         
-        new sap.f.DynamicPage("{$this->getIdOfDynamicPage()}", {
-            fitContent: true,
-            preserveHeaderStateOnScroll: true,
-            headerExpanded: true,
-            title: new sap.f.DynamicPageTitle({
-				expandedHeading: [
-                    new sap.m.HBox({
-                        items: [
-                            new sap.m.Button({
-                                icon: "sap-icon://nav-back",
-                                press: [oController.onNavBack, oController],
-                                type: sap.m.ButtonType.Transparent
-                            }).addStyleClass('exf-page-heading-btn'),
+        if ($this->getView()->isWebAppRoot() === true) {
+            $title = <<<JS
+            
                             new sap.m.Title({
                                 text: "{$this->buildTextTableHeading()}"
                             })
-                        ]
-                    })
-				],
-                snappedHeading: [
-                    new sap.m.VBox({
-                        items: [
-        					new sap.m.HBox({
+                            
+JS;
+        } else {
+            $title = <<<JS
+
+                            new sap.m.HBox({
                                 items: [
                                     new sap.m.Button({
                                         icon: "sap-icon://nav-back",
@@ -851,7 +839,25 @@ JS;
                                         text: "{$this->buildTextTableHeading()}"
                                     })
                                 ]
-                            }),
+                            })
+
+JS;
+        }
+        
+        return <<<JS
+        
+        new sap.f.DynamicPage("{$this->getIdOfDynamicPage()}", {
+            fitContent: true,
+            preserveHeaderStateOnScroll: true,
+            headerExpanded: true,
+            title: new sap.f.DynamicPageTitle({
+				expandedHeading: [
+                    {$title}
+				],
+                snappedHeading: [
+                    new sap.m.VBox({
+                        items: [
+        					{$title},
                             new sap.m.Text({
                                 text: "{{$this->getModelNameForConfigurator()}>/filterDescription}"
                             })

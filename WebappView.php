@@ -158,4 +158,10 @@ JS;
         }
         return $this->model;
     }
+    
+    public function isWebAppRoot() : bool
+    {
+        $rootWidget = $this->getRootElement()->getWidget();
+        return $rootWidget->hasParent() === false && $rootWidget->getPage()->is($this->webapp->getRootPage());
+    }
 }

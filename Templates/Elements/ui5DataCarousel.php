@@ -26,9 +26,8 @@ class ui5DataCarousel extends ui5SplitHorizontal
     
     protected function registerSyncOnMaster()
     {
-        $children = $this->getWidget()->getDetailsWidget()->getChildrenRecursive();
         $dataIsEditable = $this->getDataElement()->isEditable();
-        foreach ($children as $child) {
+        foreach ($this->getWidget()->getDetailsWidget()->getChildrenRecursive() as $child) {
             if (! ($child instanceof iShowSingleAttribute) || ! $child->hasAttributeReference()) {
                 continue;
             }

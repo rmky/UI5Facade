@@ -224,7 +224,6 @@ JS;
             $data['recordsLimit'] = $data_sheet->getRowsOnPage();
             $data['recordsOffset'] = $data_sheet->getRowOffset();
         }
-        $data['recordsTotal'] = $data_sheet->countRowsAll();
         
         $data['footerRows'] = count($data_sheet->getTotalsRows());
         return $data;

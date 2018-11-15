@@ -128,12 +128,19 @@ JS;
     protected function buildJsObjectTitle() : string
     {
         $widget = $this->getWidget();
+
+        if ($widget->getHideCaption()) {
+            return '""';
+        }
         
         // If the dialog has a header and it has a fixed or prefilled title, take it as is.
         if ($widget->hasHeader()) {
             $header = $widget->getHeader();
+            if ($header->getHideCaption() === true) {
+                return '""';
+            }
             if (! $header->isTitleBoundToAttribute()) {
-                $caption = $header->getCaption() ? $header->getCaption() : $this->getCaption();
+                $caption = $header->getCaption() ? $header->getCaption() : $widget->getCaption();
                 return '"' . $this->escapeJsTextValue($caption) . '"';
             }
         }

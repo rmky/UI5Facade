@@ -218,8 +218,8 @@ JS;
         
         $data = array();
         $data['data'] = array_merge($data_sheet->getRows(), $data_sheet->getTotalsRows());
-        $data['recordsFiltered'] = $data_sheet->countRowsAll();
-        $data['recordsTotal'] = $data_sheet->countRowsAll();
+        $data['recordsFiltered'] = $data_sheet->countRowsInDataSource();
+        $data['recordsTotal'] = $data_sheet->countRowsInDataSource();
         if (! is_null($data_sheet->getRowsOnPage())) {
             $data['recordsLimit'] = $data_sheet->getRowsOnPage();
             $data['recordsOffset'] = $data_sheet->getRowOffset();

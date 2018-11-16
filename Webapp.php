@@ -92,7 +92,7 @@ class Webapp implements WorkbenchDependantInterface
                 if (! $task->hasInputData()) {
                     $inputData = $button->getInputWidget()->prepareDataSheetToRead();
                     if ($inputData->getMetaObject()->isReadable() === true) {
-                        $inputData->setRowsOnPage(1);
+                        $inputData->setRowsLimit(1);
                         $inputData->dataRead();
                     }
                     $task->setInputData($inputData);

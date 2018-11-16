@@ -220,9 +220,9 @@ JS;
         $data['data'] = array_merge($data_sheet->getRows(), $data_sheet->getTotalsRows());
         $data['recordsFiltered'] = $data_sheet->countRowsInDataSource();
         $data['recordsTotal'] = $data_sheet->countRowsInDataSource();
-        if (! is_null($data_sheet->getRowsOnPage())) {
-            $data['recordsLimit'] = $data_sheet->getRowsOnPage();
-            $data['recordsOffset'] = $data_sheet->getRowOffset();
+        if (! is_null($data_sheet->getRowsLimit())) {
+            $data['recordsLimit'] = $data_sheet->getRowsLimit();
+            $data['recordsOffset'] = $data_sheet->getRowsOffset();
         }
         
         $data['footerRows'] = count($data_sheet->getTotalsRows());

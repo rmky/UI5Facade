@@ -10,6 +10,8 @@
 		}
 	],
 	"support" : {
+		"source" : "https://github.com/exface/OpenUI5Template",
+		"docs" : "https://github.com/exface/OpenUI5Template/Docs",
 		"issues" : "https://github.com/exface/OpenUI5Template/issues"
 	},
 	"require" : {

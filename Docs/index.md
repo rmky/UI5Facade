@@ -4,6 +4,6 @@ By default, all apps run within the Power UI launchpad, which automatically prov
 
 ## Table of contents
 
-1. [Building UI5 apps](designing_ui5_apps/index.md)
+1. [Building UI5 apps](Designing_UI5_apps/index.md)
 2. [Exporting "native" Fiori apps](exporting_fiori_apps/index.md)
 3. [Developer documentation](developer_docs/index.md)

@@ -30,6 +30,14 @@
             "attribute_alias": "WRITABLE_FLAG"
         },
         {
+            "name": "COMMENTS",
+            "attribute_alias": "COMMENTS"
+        },
+        {
+            "name": "DOCS",
+            "attribute_alias": "DOCS"
+        },
+        {
             "name": "DATA_SOURCE",
             "attribute_alias": "DATA_SOURCE"
         },
@@ -75,11 +83,13 @@
             "UID": "0x11e837e8c505989491380205857feb80",
             "READABLE_FLAG": "1",
             "WRITABLE_FLAG": "1",
+            "COMMENTS": null,
+            "DOCS": null,
             "DATA_SOURCE": "0x32000000000000000000000000000000",
             "APP": "0x11e837e87a640bfd91380205857feb80",
-            "SHORT_DESCRIPTION": "",
+            "SHORT_DESCRIPTION": null,
             "PARENT_OBJECT": "0x32370000000000000000000000000000",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"Form\",\"widgets\":[{\"widget_type\":\"WidgetGroup\",\"caption\":\"Project\",\"widgets\":[{\"attribute_alias\":\"name\"},{\"attribute_alias\":\"root_page_alias\",\"id\":\"root_page_alias\"},{\"attribute_alias\":\"current_version\"},{\"attribute_alias\":\"current_version_date\"},{\"attribute_alias\":\"ui5_min_version\"},{\"attribute_alias\":\"ui5_source\"},{\"attribute_alias\":\"ui5_theme\"},{\"attribute_alias\":\"ui5_app_control\"}]},{\"widget_type\":\"WidgetGroup\",\"caption\":\"UI5 Manifest\",\"widgets\":[{\"attribute_alias\":\"app_id\",\"disabled\":true,\"value\":\"=root_page_alias!root_page_alias\"},{\"attribute_alias\":\"app_title\"},{\"attribute_alias\":\"app_subTitle\"},{\"attribute_alias\":\"app_shortTitle\"},{\"attribute_alias\":\"app_info\"},{\"attribute_alias\":\"app_description\"}]},{\"widget_type\":\"WidgetGroup\",\"caption\":\"PWA Manifest\",\"widgets\":[{\"attribute_alias\":\"pwa_flag\"},{\"attribute_alias\":\"root_url\"},{\"attribute_alias\":\"pwa_theme_color\"},{\"attribute_alias\":\"pwa_background_color\"}]}]}",
             "LABEL": "Fiori Webapp",
             "ALIAS": "FIORI_WEBAPP",
@@ -98,8 +108,8 @@
             }
         ]
     },
-    "rows_on_page": null,
-    "row_offset": 0,
+    "rows_limit": null,
+    "rows_offset": 0,
     "sorters": [
         {
             "attribute_alias": "CREATED_ON",

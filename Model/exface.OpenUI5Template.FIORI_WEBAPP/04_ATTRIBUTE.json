@@ -58,6 +58,22 @@
             "attribute_alias": "DEFAULT_EDITOR_UXON"
         },
         {
+            "name": "COPY_WITH_RELATED_OBJECT",
+            "attribute_alias": "COPY_WITH_RELATED_OBJECT"
+        },
+        {
+            "name": "DELETE_WITH_RELATED_OBJECT",
+            "attribute_alias": "DELETE_WITH_RELATED_OBJECT"
+        },
+        {
+            "name": "DEFAULT_DISPLAY_UXON",
+            "attribute_alias": "DEFAULT_DISPLAY_UXON"
+        },
+        {
+            "name": "COMMENTS",
+            "attribute_alias": "COMMENTS"
+        },
+        {
             "name": "LABEL",
             "attribute_alias": "LABEL"
         },
@@ -157,7 +173,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Root page alias",
             "ALIAS": "root_page_alias",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -174,11 +194,11 @@
             "SORTERPOS": null,
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
-            "SHORT_DESCRIPTION": "",
+            "SHORT_DESCRIPTION": null,
             "DATA_ADDRESS_PROPS": "",
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-04 09:53:27",
@@ -194,7 +214,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Current version",
             "ALIAS": "current_version",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -211,11 +235,11 @@
             "SORTERPOS": null,
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
-            "SHORT_DESCRIPTION": "",
-            "DATA_ADDRESS_PROPS": "{}",
+            "SHORT_DESCRIPTION": null,
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "'1.0.0'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-04 09:53:27",
@@ -231,7 +255,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Built on",
             "ALIAS": "current_version_date",
             "DATATYPE": "0x33000000000000000000000000000000",
@@ -248,11 +276,11 @@
             "SORTERPOS": null,
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
-            "SHORT_DESCRIPTION": "",
-            "DATA_ADDRESS_PROPS": "{}",
+            "SHORT_DESCRIPTION": null,
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -268,7 +296,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "App ID",
             "ALIAS": "app_id",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -286,10 +318,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "Unique identifier of the app, which must correspond to the component name",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -305,7 +337,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Title",
             "ALIAS": "app_title",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -323,10 +359,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "The entry is language-dependent and specified via {{\u2026}} syntax",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "'{{appTitle}}'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -342,7 +378,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Subtitle",
             "ALIAS": "app_subTitle",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -360,10 +400,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "Language-dependent entry for a subtitle; specified via {{...}} syntax",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -379,7 +419,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Short Title",
             "ALIAS": "app_shortTitle",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -397,10 +441,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "Short version of the title. Language-dependent entry has to be specified via {{...}} syntax",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -416,7 +460,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "CDM-Info",
             "ALIAS": "app_info",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -434,10 +482,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "Needed for CDM (Common Data Model) conversion of tiles. Language-dependent entry has to be specified via {{...}} syntax",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-04 10:18:53",
@@ -453,7 +501,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Description",
             "ALIAS": "app_description",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -471,10 +523,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "Language-dependent entry that is specified via {{\u2026}} syntax",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "'{{appDescription}}'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-04 10:22:24",
@@ -490,7 +542,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Project Name",
             "ALIAS": "name",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -508,10 +564,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "Language-independent project name",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-05 10:02:06",
@@ -527,7 +583,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Min. UI5 version required",
             "ALIAS": "ui5_min_version",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -544,11 +604,11 @@
             "SORTERPOS": null,
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
-            "SHORT_DESCRIPTION": "",
-            "DATA_ADDRESS_PROPS": "{}",
+            "SHORT_DESCRIPTION": null,
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-05 10:02:06",
@@ -564,7 +624,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "UI5 Source URI",
             "ALIAS": "ui5_source",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -582,10 +646,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "URI of the UI5 sources relative to app root (index.html) or absolute",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "'https:\/\/openui5.hana.ondemand.com\/resources\/sap-ui-core.js'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-05 10:02:06",
@@ -601,7 +665,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "UI5 Theme",
             "ALIAS": "ui5_theme",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -619,10 +687,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "Theme to use in the exported app: e.g. sap_belize",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "'sap_belize'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-04-05 10:19:08",
@@ -638,7 +706,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "UI5 App Control",
             "ALIAS": "ui5_app_control",
             "DATATYPE": "0x11e7c3960c3586c38001e4b318306b9a",
@@ -656,7 +728,7 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "Qualified name of the app control to be used: e.g. sap.m.App",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "'sap.m.App'",
             "FIXED_VALUE": "",
             "CUSTOM_DATA_TYPE": "{\"values\":{\"sap.m.App\":\"sap.m.App (stand-alone)\",\"sap.m.NavContainer\":\"sap.m.NavContainer (plattform)\"}}"
@@ -675,7 +747,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Root URL",
             "ALIAS": "root_url",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -693,10 +769,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "Path to the folder containing the app's index.html relative to server root",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-07-31 10:30:01",
@@ -712,7 +788,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Progressive Web App",
             "ALIAS": "pwa_flag",
             "DATATYPE": "0x37000000000000000000000000000000",
@@ -730,10 +810,10 @@
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
             "SHORT_DESCRIPTION": "Check to make this app progressive allowing it to work offline.",
-            "DATA_ADDRESS_PROPS": "{}",
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-07-31 12:04:33",
@@ -749,7 +829,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Background Color",
             "ALIAS": "pwa_background_color",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -766,11 +850,11 @@
             "SORTERPOS": null,
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
-            "SHORT_DESCRIPTION": "",
-            "DATA_ADDRESS_PROPS": "{}",
+            "SHORT_DESCRIPTION": null,
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         },
         {
             "CREATED_ON": "2018-07-31 12:04:33",
@@ -786,7 +870,11 @@
             "READABLEFLAG": "1",
             "WRITABLEFLAG": "1",
             "SYSTEMFLAG": "0",
-            "DEFAULT_EDITOR_UXON": "{}",
+            "DEFAULT_EDITOR_UXON": null,
+            "COPY_WITH_RELATED_OBJECT": null,
+            "DELETE_WITH_RELATED_OBJECT": null,
+            "DEFAULT_DISPLAY_UXON": null,
+            "COMMENTS": null,
             "LABEL": "Theme Color",
             "ALIAS": "pwa_theme_color",
             "DATATYPE": "0x30000000000000000000000000000000",
@@ -803,11 +891,11 @@
             "SORTERPOS": null,
             "SORTERDIR": "",
             "RELATED_OBJ_ATTR": "",
-            "SHORT_DESCRIPTION": "",
-            "DATA_ADDRESS_PROPS": "{}",
+            "SHORT_DESCRIPTION": null,
+            "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{}"
+            "CUSTOM_DATA_TYPE": null
         }
     ],
     "totals_rows": [],
@@ -822,8 +910,8 @@
             }
         ]
     },
-    "rows_on_page": null,
-    "row_offset": 0,
+    "rows_limit": null,
+    "rows_offset": 0,
     "sorters": [
         {
             "attribute_alias": "CREATED_ON",

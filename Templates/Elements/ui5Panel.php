@@ -2,6 +2,7 @@
 namespace exface\OpenUI5Template\Templates\Elements;
 
 use exface\Core\Interfaces\Widgets\iFillEntireContainer;
+use exface\OpenUI5Template\Templates\Interfaces\ui5ControlWithToolbarInterface;
 
 class ui5Panel extends ui5Container
 {
@@ -19,9 +20,10 @@ class ui5Panel extends ui5Container
 JS;
     }
                     
-    public function buildJsLayoutConstructor($content, $use_form = true)
+    public function buildJsLayoutConstructor(string $content = null, bool $use_form = true) : string
     {
         $widget = $this->getWidget();
+        $content = $content ?? $this->buildJsChildrenConstructors();
         if ($widget->countWidgetsVisible() === 1 && ($widget->getWidget(0) instanceof iFillEntireContainer)) {
             return $content;
         } elseif ($use_form) {
@@ -29,6 +31,25 @@ JS;
         } else {
             return $this->buildJsLayoutGrid($content);
         }
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Container::buildJsChildrenConstructors()
+     */
+    public function buildJsChildrenConstructors() : string
+    {
+        $js = '';
+        foreach ($this->getWidget()->getWidgets() as $widget) {
+            // Larger widgets need a Title before them to make SimpleForm generate a new FormContainer
+            if (($widget instanceof iFillEntireContainer) || $widget->getWidth()->isMax()) {
+                $js .= ($js ? ",\n" : '') . 'new sap.ui.core.Title()';                
+            } 
+            $js .= ($js ? ",\n" : '') . $this->getTemplate()->getElement($widget)->buildJsConstructor();
+        }
+        
+        return $js;
     }
     
     protected function buildJsLayoutForm($content)

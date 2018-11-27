@@ -500,7 +500,7 @@ JS;
                     titleUppercase: false,
 					subSections: new sap.uxap.ObjectPageSubSection({
 						blocks: [
-                            {$tabElement->buildJsLayoutConstructor($tabElement->buildJsChildrenConstructors())}
+                            {$tabElement->buildJsLayoutConstructor()}
                         ]
 					})
 				}),

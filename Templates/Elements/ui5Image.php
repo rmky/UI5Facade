@@ -70,9 +70,34 @@ JS;
         return '';
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsValueBindingPropertyName()
+     */
     public function buildJsValueBindingPropertyName() : string
     {
         return 'src';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Display::buildJsPropertyAlignment()
+     */
+    protected function buildJsPropertyAlignment()
+    {
+        return '';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Display::buildJsPropertyWrapping()
+     */
+    protected function buildJsPropertyWrapping()
+    {
+        return '';
     }
 }
 ?>

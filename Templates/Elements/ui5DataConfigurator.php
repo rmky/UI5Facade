@@ -177,7 +177,7 @@ JS;
             			});
             			oModel.setProperty("/sorters", aSortItems);
             		},
-                    onRemoveSortItem: function(oEvent) {
+                    removeSortItem: function(oEvent) {
             			var oParameters = oEvent.getParameters();
             			if (oParameters.index > -1) {
             				var aSortItems = this.getModel("{$this->getModelNameForConfig()}").getProperty("/sorters");
@@ -221,7 +221,7 @@ JS;
                     var oPanel = new sap.m.P13nFilterPanel("{$this->getId()}_QuickSearchPanel", {
                         title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.ADVANCED_SEARCH')}",
                         visible: true,
-                        containerQuer: true, 
+                        /*containerQuery: true, */
                         layoutMode: "Desktop",
                         addFilterItem: function(oEvent){
                             var oParameters = oEvent.getParameters();

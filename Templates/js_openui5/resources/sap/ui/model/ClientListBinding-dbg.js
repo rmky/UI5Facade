@@ -5,8 +5,26 @@
  */
 
 // Provides the JSON model implementation of a list binding
-sap.ui.define(['jquery.sap.global', './ChangeReason', './Filter', './FilterType', './ListBinding', './FilterProcessor', './Sorter', './SorterProcessor'],
-	function(jQuery, ChangeReason, Filter, FilterType, ListBinding, FilterProcessor, Sorter, SorterProcessor) {
+sap.ui.define([
+	'./ChangeReason',
+	'./Filter',
+	'./FilterType',
+	'./ListBinding',
+	'./FilterProcessor',
+	'./Sorter',
+	'./SorterProcessor',
+	"sap/ui/thirdparty/jquery"
+],
+	function(
+		ChangeReason,
+		Filter,
+		FilterType,
+		ListBinding,
+		FilterProcessor,
+		Sorter,
+		SorterProcessor,
+		jQuery
+	) {
 	"use strict";
 
 	/**
@@ -36,6 +54,7 @@ sap.ui.define(['jquery.sap.global', './ChangeReason', './Filter', './FilterType'
 			ListBinding.apply(this, arguments);
 
 			this.oModel.checkFilterOperation(this.aApplicationFilters);
+			this.oCombinedFilter = FilterProcessor.combineFilters(this.aFilters, this.aApplicationFilters);
 
 			this.bIgnoreSuspend = false;
 			this.update();
@@ -71,7 +90,7 @@ sap.ui.define(['jquery.sap.global', './ChangeReason', './Filter', './FilterType'
 		aContexts = [],
 		sPrefix = this.oModel.resolve(this.sPath, this.oContext);
 
-		if (sPrefix && !jQuery.sap.endsWith(sPrefix, "/")) {
+		if (sPrefix && !sPrefix.endsWith("/")) {
 			sPrefix += "/";
 		}
 
@@ -205,8 +224,10 @@ sap.ui.define(['jquery.sap.global', './ChangeReason', './Filter', './FilterType'
 			this.aFilters = aFilters || [];
 			this.aApplicationFilters = [];
 		}
-		aFilters = this.aFilters.concat(this.aApplicationFilters);
-		if (aFilters.length == 0) {
+
+		this.oCombinedFilter = FilterProcessor.combineFilters(this.aFilters, this.aApplicationFilters);
+
+		if (this.aFilters.length === 0 && this.aApplicationFilters.length === 0) {
 			this.iLength = this._getLength();
 		} else {
 			this.applyFilter();
@@ -239,14 +260,9 @@ sap.ui.define(['jquery.sap.global', './ChangeReason', './Filter', './FilterType'
 	 * @private
 	 */
 	ClientListBinding.prototype.applyFilter = function(){
-		if (!this.aFilters) {
-			return;
-		}
+		var that = this;
 
-		var aFilters = this.aFilters.concat(this.aApplicationFilters),
-			that = this;
-
-		this.aIndices = FilterProcessor.apply(this.aIndices, aFilters, function(vRef, sPath) {
+		this.aIndices = FilterProcessor.apply(this.aIndices, this.oCombinedFilter, function(vRef, sPath) {
 			return that.oModel.getProperty(sPath, that.oList[vRef]);
 		});
 

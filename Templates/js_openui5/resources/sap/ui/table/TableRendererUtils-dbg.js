@@ -5,8 +5,8 @@
  */
 
 // Provides helper sap.ui.table.TableRendererUtils.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control'],
-	function(jQuery, Control) {
+sap.ui.define(['sap/ui/core/Control'],
+	function(Control) {
 	"use strict";
 
 	var TAGCONTEXT = null;
@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control'],
 	 * Static collection of utility functions related to the sap.ui.table.TableRenderer
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @namespace
 	 * @alias sap.ui.table.TableRendererUtils
 	 * @private
@@ -101,7 +101,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control'],
 				oConfig.furtherSettings(rm, oTable);
 			}
 
-			if (jQuery.isArray(oConfig.classname) && oConfig.classname.length) {
+			if (Array.isArray(oConfig.classname) && oConfig.classname.length) {
 				for (var i = 0; i < oConfig.classname.length; i++) {
 					TableRendererUtils.addClass(rm, oConfig.classname[i]);
 				}

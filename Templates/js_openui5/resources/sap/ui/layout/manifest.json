@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.56.6"
+      "version": "1.60.1"
     },
     "title": "SAPUI5 library with layout controls.",
     "description": "SAPUI5 library with layout controls.",
@@ -22,10 +22,10 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.56",
+      "minUI5Version": "1.60",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.56.6"
+          "minVersion": "1.60.1"
         }
       }
     },
@@ -52,7 +52,8 @@
           "sap.ui.layout.form.ColumnLayout",
           "sap.ui.layout.form.ResponsiveGridLayout",
           "sap.ui.layout.form.ResponsiveLayout",
-          "sap.ui.layout.form.SimpleForm"
+          "sap.ui.layout.form.SimpleForm",
+          "sap.ui.layout.cssgrid.CSSGrid"
         ],
         "elements": [
           "sap.ui.layout.GridData",
@@ -65,7 +66,8 @@
           "sap.ui.layout.SplitPane",
           "sap.ui.layout.form.GridElementData",
           "sap.ui.layout.form.ColumnElementData",
-          "sap.ui.layout.form.ColumnContainerData"
+          "sap.ui.layout.form.ColumnContainerData",
+          "sap.ui.layout.cssgrid.GridItemLayoutData"
         ],
         "types": [
           "sap.ui.layout.BackgroundDesign",
@@ -79,9 +81,14 @@
           "sap.ui.layout.form.ColumnsL",
           "sap.ui.layout.form.ColumnsM",
           "sap.ui.layout.form.ColumnCells",
-          "sap.ui.layout.form.EmptyCells"
+          "sap.ui.layout.form.EmptyCells",
+          "sap.ui.layout.cssgrid.CSSGridTrack",
+          "sap.ui.layout.cssgrid.CSSGridLine",
+          "sap.ui.layout.cssgrid.CSSGridGapShortHand"
         ],
-        "interfaces": []
+        "interfaces": [
+          "sap.ui.layout.cssgrid.IGridConfigurable"
+        ]
       }
     }
   }

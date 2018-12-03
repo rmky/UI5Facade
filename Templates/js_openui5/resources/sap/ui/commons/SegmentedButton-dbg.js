@@ -26,7 +26,7 @@ sap.ui.define([
 	 * The SegmentedButton provides a group of multiple buttons. Only one button can be active. The behaviour is more ore less like a radio button group.
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.commons.ToolbarItem, sap.ui.core.IFormContent
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -274,6 +274,7 @@ sap.ui.define([
 			this.addDelegate(this._oItemNavigation);
 		}
 		this.setProperty("enabled", bEnabled);
+		return this;
 	};
 
 	/*

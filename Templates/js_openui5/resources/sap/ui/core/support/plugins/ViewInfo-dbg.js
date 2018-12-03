@@ -6,8 +6,13 @@
 
 // Provides class sap.ui.core.support.plugins.ViewInfo (ViewInfo support plugin)
 sap.ui.define([
-	'jquery.sap.global', 'sap/ui/core/support/Plugin', 'sap/ui/core/support/controls/TreeViewer', 'sap/ui/core/support/controls/ObjectViewer', 'sap/ui/Device'
-], function(jQuery, Plugin, TreeViewer, ObjectViewer, Device) {
+	'sap/ui/core/support/Plugin',
+	'sap/ui/core/support/controls/TreeViewer',
+	'sap/ui/core/support/controls/ObjectViewer',
+	'sap/ui/Device',
+	"sap/base/Log",
+	"sap/base/security/encodeXML"
+], function(Plugin, TreeViewer, ObjectViewer, Device, Log, encodeXML) {
 	"use strict";
 
 	/*global Blob, Uint8Array, alert */
@@ -17,7 +22,7 @@ sap.ui.define([
 		 * Creates an instance of sap.ui.core.support.plugins.ViewInfo.
 		 * @class This class represents the ViewInfo plugin for the support tool functionality of UI5. This class is internal and all its functions must not be used by an application.
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @private
 		 * @alias sap.ui.core.support.plugins.ViewInfo
 		 */
@@ -240,7 +245,7 @@ sap.ui.define([
 							this.aMetamodels.push(oMetadata);
 							var oTree = this.createTree(oMetadata, i);
 							this.aTrees[i] = oTree;
-							rm.write('<div class="viewxmlheader" collapsed="true"><span class="toggle"></span><span class="info">Metadata: ' + jQuery.sap.encodeHTML(oMetadata.env.settings.response.requestUri) + '</span><div class="settingscontainer"><span class="settings"  style="display:none" raise="_onToggleDebugNodes" idx="' + i + '">Expand debugged nodes</span><span class="settings"  style="display:none" raise="_onToggleRealIds" idx="' + i + '" style=\"display:none\"><span selected="false"></span>Show XML View Ids</span><span class="settings" raise="_onToggleNamespace" idx="' + i + '" ><span selected="false"></span>Hide tag namespace</span><span class="settings" raise="_onToggleInactive" idx="' + i + '" ><span selected="false"></span>Hide inactive</span></div></div>');
+							rm.write('<div class="viewxmlheader" collapsed="true"><span class="toggle"></span><span class="info">Metadata: ' + encodeXML(oMetadata.env.settings.response.requestUri) + '</span><div class="settingscontainer"><span class="settings"  style="display:none" raise="_onToggleDebugNodes" idx="' + i + '">Expand debugged nodes</span><span class="settings"  style="display:none" raise="_onToggleRealIds" idx="' + i + '" style=\"display:none\"><span selected="false"></span>Show XML View Ids</span><span class="settings" raise="_onToggleNamespace" idx="' + i + '" ><span selected="false"></span>Hide tag namespace</span><span class="settings" raise="_onToggleInactive" idx="' + i + '" ><span selected="false"></span>Hide inactive</span></div></div>');
 							rm.write('<div style="display:none"><div id="treecontent_' + i + '"></div>');
 							rm.write('<div class="viewxmlsplitter">');
 							rm.write('</div>');
@@ -311,7 +316,7 @@ sap.ui.define([
 							if (oView.env.settings.cache) {
 								sCache += " from client cache " + JSON.stringify(oView.env.settings.cache);
 							}
-							rm.write('<div class="viewxmlheader" collapsed="true"><span class="toggle"></span><span class="info">' + sId + ' (' + oView.env.type + jQuery.sap.encodeHTML(String(sTemplatedBy)) + ') ' + jQuery.sap.encodeHTML(String(sCache)) + '</span><div class="settingscontainer"><span class="settings" raise="_onToggleDebugNodes" idx="' + i + '">Expand debugged nodes</span><span class="settings" raise="_onToggleRealIds" idx="' + i + '" ><span selected="false"></span>Show XML View Ids</span><span class="settings" raise="_onToggleNamespace" idx="' + i + '" ><span selected="false"></span>Hide tag namespace</span></div></div>');
+							rm.write('<div class="viewxmlheader" collapsed="true"><span class="toggle"></span><span class="info">' + sId + ' (' + oView.env.type + encodeXML(String(sTemplatedBy)) + ') ' + encodeXML(String(sCache)) + '</span><div class="settingscontainer"><span class="settings" raise="_onToggleDebugNodes" idx="' + i + '">Expand debugged nodes</span><span class="settings" raise="_onToggleRealIds" idx="' + i + '" ><span selected="false"></span>Show XML View Ids</span><span class="settings" raise="_onToggleNamespace" idx="' + i + '" ><span selected="false"></span>Hide tag namespace</span></div></div>');
 						}
 						rm.write('<div style="display:none"><div id="treecontent_' + i + '"></div>');
 						rm.write('<div class="viewxmlsplitter">');
@@ -646,7 +651,7 @@ sap.ui.define([
 					}
 				}
 			} catch (ex) {
-				jQuery.sap.log.debug("Diagnostics: ViewInfo failed to remove highlighting of controls");
+				Log.debug("Diagnostics: ViewInfo failed to remove highlighting of controls");
 			}
 
 		};

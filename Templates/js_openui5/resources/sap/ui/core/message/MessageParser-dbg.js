@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["jquery.sap.global", "sap/ui/base/Object"],
-	function(jQuery, Object) {
+sap.ui.define(["sap/ui/base/Object", "sap/base/Log"],
+	function(Object, Log) {
 	"use strict";
 
 /**
@@ -24,7 +24,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/base/Object"],
  * @extends sap.ui.base.Object
  *
  * @author SAP SE
- * @version 1.56.6
+ * @version 1.60.1
  * @public
  * @abstract
  * @alias sap.ui.core.message.MessageParser
@@ -71,7 +71,7 @@ MessageParser.prototype.getProcessor = function() {
  * @abstract
  */
 MessageParser.prototype.parse = function(oResponse) {
-	jQuery.sap.log.error(
+	Log.error(
 		"MessageParser: parse-method must be implemented in the specific parser class. Messages " +
 		"have been ignored."
 	);

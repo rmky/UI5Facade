@@ -6,7 +6,6 @@
 
 // Provides control sap.m.Button.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/EnabledPropagator',
@@ -15,9 +14,8 @@ sap.ui.define([
 	'sap/ui/core/ContextMenuSupport',
 	'sap/ui/core/library',
 	'./ButtonRenderer',
-	'jquery.sap.keycodes'
+	"sap/ui/events/KeyCodes"
 ], function(
-	jQuery,
 	library,
 	Control,
 	EnabledPropagator,
@@ -25,7 +23,8 @@ sap.ui.define([
 	Device,
 	ContextMenuSupport,
 	coreLibrary,
-	ButtonRenderer
+	ButtonRenderer,
+	KeyCodes
 ) {
 	"use strict";
 
@@ -67,7 +66,7 @@ sap.ui.define([
 	 * @mixes sap.ui.core.ContextMenuSupport
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -206,16 +205,6 @@ sap.ui.define([
 			// now, this._bActive may be false if the button was disabled
 			this._bRenderActive = this._bActive;
 		}
-
-		// button element is not draggable on Firefox so make the inner draggable
-		// https://bugzilla.mozilla.org/show_bug.cgi?id=568313
-		if (Device.browser.firefox) {
-			var oDomRef = this.getDomRef();
-			if (oDomRef.draggable) {
-				oDomRef.draggable = false;
-				oDomRef.firstChild.draggable = true;
-			}
-		}
 	};
 
 	/**
@@ -310,7 +299,7 @@ sap.ui.define([
 	 */
 	Button.prototype.onkeydown = function(oEvent) {
 
-		if (oEvent.which === jQuery.sap.KeyCodes.SPACE || oEvent.which === jQuery.sap.KeyCodes.ENTER) {
+		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
 
 			// mark the event for components that needs to know if the event was handled by the button
 			oEvent.setMarked();
@@ -319,7 +308,7 @@ sap.ui.define([
 			this._activeButton();
 		}
 
-		if (oEvent.which === jQuery.sap.KeyCodes.ENTER) {
+		if (oEvent.which === KeyCodes.ENTER) {
 			this.firePress({/* no parameters */});
 		}
 	};
@@ -332,7 +321,7 @@ sap.ui.define([
 	 */
 	Button.prototype.onkeyup = function(oEvent) {
 
-		if (oEvent.which === jQuery.sap.KeyCodes.SPACE || oEvent.which === jQuery.sap.KeyCodes.ENTER) {
+		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
 
 			// mark the event for components that needs to know if the event was handled by the button
 			oEvent.setMarked();
@@ -341,7 +330,7 @@ sap.ui.define([
 			this._inactiveButton();
 		}
 
-		if (oEvent.which === jQuery.sap.KeyCodes.SPACE) {
+		if (oEvent.which === KeyCodes.SPACE) {
 			this.firePress({/* no parameters */});
 		}
 	};
@@ -521,7 +510,7 @@ sap.ui.define([
 		}
 
 		if (sValue !== sText) {
-			var oDomRef = this.getDomRef("content");
+			var oDomRef = this.getDomRef("BDI-content") || this.getDomRef("content");
 			var bShouldSupressRendering = !!oDomRef;
 
 			// Render control if element is not available in the DOM
@@ -530,7 +519,7 @@ sap.ui.define([
 			if (bShouldSupressRendering) {
 				// Get text to have the type conversation for non-string values done by the framework
 				sText = this.getText();
-				oDomRef.innerHTML = jQuery.sap.encodeHTML(sText);
+				oDomRef.textContent = sText;
 				this.$("inner").toggleClass("sapMBtnText", !!sText);
 			}
 		}

@@ -39,7 +39,7 @@ sap.ui.define('sap/ui/debug/LogViewer', function() {
 			this.oWindow.document.body.appendChild(oDiv);
 			this.oDomNode = oDiv;
 		}
-		this.iLogLevel = 3; /* jQuery.sap.log.LogLevel.INFO */
+		this.iLogLevel = 3; /* Log.LogLevel.INFO */
 		this.sLogEntryClassPrefix = undefined;
 		this.clear();
 		this.setFilter(LogViewer.NO_FILTER);
@@ -109,7 +109,7 @@ sap.ui.define('sap/ui/debug/LogViewer', function() {
 
 		// when attached to a log, clear the dom node and add all entries from the log
 		var aLog = this.oLogger.getLogEntries();
-		for (var i = this.iFirstEntry,l = aLog.length;i < l;i++) {
+		for (var i = this.iFirstEntry,l = aLog.length;i < l; i++) {
 			if ( aLog[i].level <= this.iLogLevel ) {
 				this.addEntry(aLog[i]);
 			}

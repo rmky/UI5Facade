@@ -31,7 +31,7 @@ sap.ui.define(['./Binding', './Filter', './Sorter'],
 	 *         [aFilters=null] Predefined filter or an array of filters (optional)
 	 * @param {string}
 	 *         [mParameters=null] Additional model specific parameters (optional)
-	 * @param {sap.ui.model.Sorter|sap.ui.model.Sorter}
+	 * @param {sap.ui.model.Sorter|sap.ui.model.Sorter[]}
 	 *         [aSorters=null] Predefined sorter or an array of sorters (optional)
 	 * @public
 	 * @alias sap.ui.model.TreeBinding
@@ -45,6 +45,7 @@ sap.ui.define(['./Binding', './Filter', './Sorter'],
 
 			this.aSorters = makeArray(aSorters, Sorter);
 			this.aApplicationFilters = makeArray(aFilters, Filter);
+			this.oCombinedFilter = null;
 
 			this.bDisplayRootNode = mParameters && mParameters.displayRootNode === true;
 		},
@@ -207,6 +208,23 @@ sap.ui.define(['./Binding', './Filter', './Sorter'],
 		}
 	};
 
+	/**
+	 * Return the filter information as an AST. The default implementation checks for this.oCombinedFilter,
+	 * models not using this member may override the method.
+	 * Consumers must not rely on the origin information to be available, future filter implementations will
+	 * not provide this information.
+	 *
+	 * @param {boolean} bIncludeOrigin include information about the filter objects the tree has been created from
+	 * @returns {object} The AST of the filter tree
+	 * @private
+	 * @ui5-restricted sap.ui.table, sap.ui.export
+	 */
+	TreeBinding.prototype.getFilterInfo = function(bIncludeOrigin) {
+		if (this.oCombinedFilter) {
+			return this.oCombinedFilter.getAST(bIncludeOrigin);
+		}
+		return null;
+	};
 	return TreeBinding;
 
 });

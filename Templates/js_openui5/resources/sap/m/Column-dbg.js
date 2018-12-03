@@ -5,8 +5,15 @@
  */
 
 // Provides control sap.m.Column.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element', 'sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
-	function(jQuery, library, Element, Renderer, coreLibrary, Device) {
+sap.ui.define([
+	'./library',
+	'sap/ui/core/Element',
+	'sap/ui/core/Renderer',
+	'sap/ui/core/library',
+	'sap/ui/Device',
+	"sap/ui/thirdparty/jquery"
+],
+	function(library, Element, Renderer, coreLibrary, Device, jQuery) {
 	"use strict";
 
 
@@ -36,7 +43,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element', 'sap/ui/
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -152,6 +159,51 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element', 'sap/ui/
 		this._clearMedia();
 	};
 
+	Column.prototype.getTable = function() {
+		var oParent = this.getParent();
+		if (oParent && oParent.isA("sap.m.Table")) {
+			return oParent;
+		}
+	};
+
+	Column.prototype.informTable = function(sEvent, vParam1, vParam2) {
+		var oTable = this.getTable();
+		if (oTable) {
+			var sMethod = "onColumn" + sEvent;
+			if (oTable[sMethod]) {
+				oTable[sMethod](this, vParam1, vParam2);
+			}
+		}
+	};
+
+	Column.prototype.ontouchstart = function(oEvent) {
+		this._bTouchStartMarked = oEvent.isMarked();
+	};
+
+	Column.prototype.ontap = function(oEvent) {
+		if (!this._bTouchStartMarked && !oEvent.isMarked()) {
+			this.informTable("Press");
+		}
+	};
+
+	Column.prototype.onsapspace = function(oEvent) {
+		if (oEvent.srcControl === this) {
+			this.informTable("Press");
+			oEvent.preventDefault();
+		}
+	};
+
+	Column.prototype.onsapenter = Column.prototype.onsapspace;
+
+	Column.prototype.invalidate = function() {
+		var oParent = this.getParent();
+		if (!oParent || !oParent.bOutput) {
+			return;
+		}
+
+		Element.prototype.invalidate.apply(this, arguments);
+	};
+
 	Column.prototype._clearMedia = function() {
 		if (this._media && this._minWidth) {
 			this._detachMediaContainerWidthChange(this._notifyResize, this, this.getId());
@@ -189,13 +241,10 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element', 'sap/ui/
 		this._media.matches = !!oMedia.from;
 
 		// inform parent delayed
-		jQuery.sap.delayedCall(0, this, function() {
-			var parent = this.getParent();
+		setTimeout(function() {
 			this.fireEvent("media", this);
-			if (parent && parent.onColumnResize) {
-				parent.onColumnResize(this);
-			}
-		});
+			this.informTable("Resize");
+		}.bind(this), 0);
 	};
 
 	Column.prototype._validateMinWidth = function(sWidth) {
@@ -241,38 +290,6 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element', 'sap/ui/
 			this._minWidth = parseFloat(sWidth) * baseFontSize + "px";
 		}
 	};
-
-	/**
-	 * Apply text alignment of the Column to the Text controls
-	 *
-	 * @param {sap.ui.core.Control} oControl List control
-	 * @param {String} [sAlign] TextAlign enumeration
-	 * @return {sap.ui.core.Control} oControl
-	 * @protected
-	 */
-	Column.prototype.applyAlignTo = function(oControl, sAlign) {
-		// TODO: This is so ugly to check content functions
-		// instead we should document how to use our controls
-		// to inherit text-alignment and we should add a new
-		// sap.ui.core.TextAlign type called "Inherit"
-		sAlign = sAlign || this.getHAlign();
-		if (sAlign === TextAlign.Initial ||
-			!oControl.getMetadata().getProperties().textAlign ||
-			oControl.getTextAlign() === sAlign) {
-			return oControl;
-		}
-
-		oControl.setProperty("textAlign", sAlign, true);
-		var oDomRef = oControl.getDomRef();
-		sAlign = this.getCssAlign(sAlign);
-
-		if (oDomRef && sAlign) {
-			oDomRef.style.textAlign = sAlign;
-		}
-
-		return oControl;
-	};
-
 
 	/**
 	 * Returns CSS alignment according to column hAlign setting or given parameter
@@ -362,12 +379,12 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element', 'sap/ui/
 			return this._initialOrder;
 		}
 
-		var oParent = this.getParent();
-		if (oParent && oParent.indexOfColumn) {
-			return oParent.indexOfColumn(this);
+		var oTable = this.getTable();
+		if (!oTable) {
+			return -1;
 		}
 
-		return -1;
+		return oTable.indexOfColumn(this);
 	};
 
 	/**
@@ -583,6 +600,19 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element', 'sap/ui/
 	 */
 	Column.prototype.onItemsRemoved = function() {
 		this.clearLastValue();
+	};
+
+	// when the popover opens and later closed, the focus is lost
+	// hence overwriting the getFocusDomRef to restore the focus on the active column header
+	Column.prototype.getFocusDomRef = function() {
+		var oParent = this.getParent();
+		if (oParent && oParent.bActiveHeaders) {
+			var oColumnDomRef = this.getDomRef();
+			if (oColumnDomRef) {
+				return oColumnDomRef.firstChild;
+			}
+		}
+		return Element.prototype.getFocusDomRef.apply(this, arguments);
 	};
 
 	return Column;

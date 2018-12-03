@@ -24,7 +24,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @class
 	 * Holds layout data for a FlexBox / HBox / VBox.
 	 * @extends sap.ui.core.LayoutData
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -41,7 +41,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 			 *
 			 * @see http://www.w3.org/TR/css-flexbox-1/#align-items-property
 			 */
-			alignSelf : {type : "sap.m.FlexAlignSelf", group : "Misc", defaultValue : FlexAlignSelf.Auto},
+			alignSelf : {type : "sap.m.FlexAlignSelf", group : "Misc", defaultValue : FlexAlignSelf.Auto}, // TODO remove after 1.62 version
 
 			/**
 			 * Determines the display order of flex items independent of their source code order.
@@ -62,10 +62,9 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 			 *
 			 * @see http://www.w3.org/TR/css-flexbox-1/#flex-shrink-property
 			 *
-			 * <b>Note:</b> This property is not supported in Internet Explorer 9, Android Native Browser/Webview <4.4, and Safari <7.
 			 * @since 1.24.0
 			 */
-			shrinkFactor : {type : "float", group : "Misc", defaultValue : 1},
+			shrinkFactor : {type : "float", group : "Misc", defaultValue : 1}, //This property is not supported in Internet Explorer 9, Android Native Browser/Webview <4.4, and Safari <7
 
 			/**
 			 * The base size is the initial main size of the item for the flex algorithm. If set to "auto", this will be the computed size of the item.

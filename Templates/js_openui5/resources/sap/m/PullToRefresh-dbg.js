@@ -11,9 +11,10 @@ sap.ui.define([
 	'sap/ui/core/Control',
 	'sap/ui/Device',
 	'./PullToRefreshRenderer',
-	'jquery.sap.keycodes'
+	"sap/ui/events/KeyCodes",
+	"sap/base/security/encodeXML"
 ],
-	function(jQuery, library, Control, Device, PullToRefreshRenderer) {
+	function(jQuery, library, Control, Device, PullToRefreshRenderer, KeyCodes, encodeXML) {
 	"use strict";
 
 
@@ -39,7 +40,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -83,6 +84,7 @@ sap.ui.define([
 	}});
 
 	PullToRefresh.prototype.init = function(){
+		//TODO: global jquery call found
 		this._bTouchMode = Device.support.touch && !Device.system.combi || jQuery.sap.simulateMobileOnDesktop;
 		this._iState = 0; // 0 - normal; 1 - release to refresh; 2 - loading
 	};
@@ -90,8 +92,8 @@ sap.ui.define([
 	PullToRefresh.prototype._loadBI = function(){
 		// lazy create a Busy indicator to avoid overhead when invisible at start
 		if (this.getVisible() && !this._oBusyIndicator) {
-			jQuery.sap.require("sap.m.BusyIndicator");
-			this._oBusyIndicator = new sap.m.BusyIndicator({
+			var BusyIndicator = sap.ui.requireSync("sap/m/BusyIndicator");
+			this._oBusyIndicator = new BusyIndicator({
 				size: "1.7rem",
 				design: "auto"
 			});
@@ -221,7 +223,7 @@ sap.ui.define([
 				$this.toggleClass("sapMFlip", false).toggleClass("sapMLoading", false);
 				$text.html(oResourceBundle.getText(this._bTouchMode ? "PULL2REFRESH_PULLDOWN" : "PULL2REFRESH_REFRESH"));
 				$this.removeAttr("aria-live");
-				$this.find(".sapMPullDownInfo").html(jQuery.sap.encodeHTML(this.getDescription()));
+				$this.find(".sapMPullDownInfo").html(encodeXML(this.getDescription()));
 				break;
 			case 1:
 				$this.toggleClass("sapMFlip", true);
@@ -244,7 +246,7 @@ sap.ui.define([
 	*/
 	PullToRefresh.prototype.setDescription = function(sDescription){
 		if (this._oDomRef) {
-			this.$().find(".sapMPullDownInfo").html(jQuery.sap.encodeHTML(sDescription));
+			this.$().find(".sapMPullDownInfo").html(encodeXML(sDescription));
 		}
 		return this.setProperty("description", sDescription, true);
 	};
@@ -282,7 +284,7 @@ sap.ui.define([
 	 * @private
 	 */
 	PullToRefresh.prototype.onkeydown = function(event) {
-		if ( event.which == jQuery.sap.KeyCodes.F5) {
+		if ( event.which == KeyCodes.F5) {
 			this.onclick();
 			// do not refresh browser window
 			event.stopPropagation();

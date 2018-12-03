@@ -6,14 +6,15 @@
 
 //Provides class sap.ui.model.odata.v4.ODataPropertyBinding
 sap.ui.define([
-	"jquery.sap.global",
+	"./ODataBinding",
+	"./lib/_Cache",
+	"sap/base/Log",
 	"sap/ui/base/SyncPromise",
 	"sap/ui/model/ChangeReason",
-	"sap/ui/model/PropertyBinding",
-	"./lib/_Cache",
-	"./ODataBinding"
-], function (jQuery, SyncPromise, ChangeReason, PropertyBinding, _Cache, asODataBinding) {
+	"sap/ui/model/PropertyBinding"
+], function (asODataBinding, _Cache, Log, SyncPromise, ChangeReason, PropertyBinding) {
 	"use strict";
+	/*eslint max-nested-callbacks: 0 */
 
 	var sClassName = "sap.ui.model.odata.v4.ODataPropertyBinding",
 		oDoFetchQueryOptionsPromise = SyncPromise.resolve({}),
@@ -47,10 +48,11 @@ sap.ui.define([
 	 *   'AggregatedDataStateChange', 'change', 'dataReceived', 'dataRequested' and
 	 *   'DataStateChange'. For unsupported events, an error is thrown.
 	 * @extends sap.ui.model.PropertyBinding
+	 * @hideconstructor
 	 * @mixes sap.ui.model.odata.v4.ODataBinding
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#hasPendingChanges as #hasPendingChanges
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#isInitial as #isInitial
@@ -60,16 +62,21 @@ sap.ui.define([
 	var ODataPropertyBinding
 		= PropertyBinding.extend("sap.ui.model.odata.v4.ODataPropertyBinding", {
 			constructor : function (oModel, sPath, oContext, mParameters) {
-				var oBindingParameters;
 
 				PropertyBinding.call(this, oModel, sPath);
+				// initialize mixin members
+				asODataBinding.call(this);
 
 				if (sPath.slice(-1) === "/") {
 					throw new Error("Invalid path: " + sPath);
 				}
-				oBindingParameters = this.oModel.buildBindingParameters(mParameters, ["$$groupId"]);
+				if (mParameters) {
+					this.checkBindingParameters(mParameters, ["$$groupId"]);
+					this.sGroupId = mParameters.$$groupId;
+				} else {
+					this.sGroupId = undefined;
+				}
 				this.oCheckUpdateCallToken = undefined;
-				this.sGroupId = oBindingParameters.$$groupId;
 				// Note: no system query options supported at property binding
 				this.mQueryOptions = this.oModel.buildQueryOptions(mParameters,
 					/*bSystemQueryOptionsAllowed*/false);
@@ -110,8 +117,9 @@ sap.ui.define([
 
 	/**
 	 * The 'dataReceived' event is fired after the back-end data has been processed and the
-	 * registered 'change' event listeners have been notified. It is to be used by applications for
-	 * example to switch off a busy indicator or to process an error.
+	 * registered 'change' event listeners have been notified. It is only fired for GET requests.
+	 * The 'dataReceived' event is to be used by applications for example to switch off a busy
+	 * indicator or to process an error.
 	 *
 	 * If back-end requests are successful, the event has almost no parameters. For compatibility
 	 * with {@link sap.ui.model.Binding#event:dataReceived}, an event parameter
@@ -138,8 +146,9 @@ sap.ui.define([
 
 	/**
 	 * The 'dataRequested' event is fired directly after data has been requested from a backend.
-	 * It is to be used by applications for example to switch on a busy indicator. Registered event
-	 * handlers are called without parameters.
+	 * It is only fired for GET requests. The 'dataRequested' event is to be used by applications
+	 * for example to switch on a busy indicator. Registered event handlers are called without
+	 * parameters.
 	 *
 	 * @param {sap.ui.base.Event} oEvent
 	 *
@@ -175,7 +184,10 @@ sap.ui.define([
 	 * If the binding's path cannot be resolved or if reading the binding's value fails or if the
 	 * value read is invalid (e.g. not a primitive value), the binding's value is reset to
 	 * <code>undefined</code>. As described above, this may trigger a change event depending on the
-	 * previous value and the <code>bForceUpdate</code> parameter.
+	 * previous value and the <code>bForceUpdate</code> parameter. In the end the data state is
+	 * checked (see {@link sap.ui.model.PropertyBinding#checkDataState}) even if there is no change
+	 * event. If there are multiple synchronous <code>checkUpdate</code> calls the data state is
+	 * checked only after the last call is processed.
 	 *
 	 * @param {boolean} [bForceUpdate=false]
 	 *   If <code>true</code> the change event is always fired except there is no context for a
@@ -191,6 +203,7 @@ sap.ui.define([
 	 *
 	 * @private
 	 * @see sap.ui.model.Binding#checkUpdate
+	 * @see sap.ui.model.PropertyBinding#checkDataState
 	 */
 	// @override
 	ODataPropertyBinding.prototype.checkUpdate = function (bForceUpdate, sChangeReason, sGroupId,
@@ -216,7 +229,7 @@ sap.ui.define([
 			// Use Promise to become async so that only the latest sync call to checkUpdate wins
 			vValue = Promise.resolve(this.oCachePromise.then(function (oCache) {
 				if (oCache) {
-					return oCache.fetchValue(that.oModel.lockGroup(sGroupId || that.getGroupId()),
+					return oCache.fetchValue(that.lockGroup(sGroupId || that.getGroupId()),
 						/*sPath*/undefined, function () {
 							bDataRequested = true;
 							that.fireDataRequested();
@@ -236,7 +249,7 @@ sap.ui.define([
 						&& that.sPath[that.sPath.lastIndexOf("/") + 1] === "#")) {
 					return vValue;
 				}
-				jQuery.sap.log.error("Accessed value is not primitive", sResolvedPath, sClassName);
+				Log.error("Accessed value is not primitive", sResolvedPath, sClassName);
 			}, function (oError) {
 				// do not rethrow, ManagedObject doesn't react on this either
 				// throwing an exception would cause "Uncaught (in promise)" in Chrome
@@ -263,6 +276,7 @@ sap.ui.define([
 					that.vValue = vValue;
 					that._fireChange({reason : sChangeReason || ChangeReason.Change});
 				}
+				that.checkDataState();
 			}
 			if (bDataRequested) {
 				that.fireDataReceived(mParametersForDataReceived);
@@ -299,6 +313,8 @@ sap.ui.define([
 		// resolving functions e.g. for oReadPromise in #checkUpdate may run after destroy of this
 		// binding and must not access the context
 		this.oContext = undefined;
+		this.mQueryOptions = undefined;
+		this.vValue = undefined;
 		PropertyBinding.prototype.destroy.apply(this, arguments);
 	};
 
@@ -580,8 +596,8 @@ sap.ui.define([
 	 *   The group ID to be used for this update call; if not specified, the update group ID for
 	 *   this binding (or its relevant parent binding) is used, see
 	 *   {@link sap.ui.model.odata.v4.ODataPropertyBinding#constructor}.
-	 *   Valid values are <code>undefined</code>, '$auto', '$direct' or application group IDs as
-	 *   specified in {@link sap.ui.model.odata.v4.ODataModel#submitBatch}.
+	 *   Valid values are <code>undefined</code>, '$auto', '$auto.*', '$direct' or application group
+	 *   IDs as specified in {@link sap.ui.model.odata.v4.ODataModel}.
 	 * @throws {Error}
 	 *   If the binding's root binding is suspended, the new value is not primitive or no value has
 	 *   been read before
@@ -598,6 +614,7 @@ sap.ui.define([
 			that.oModel.reportError("Failed to update path "
 				+ that.oModel.resolve(that.sPath, that.oContext),
 				sClassName, oError);
+
 			return oError;
 		}
 
@@ -611,7 +628,7 @@ sap.ui.define([
 		}
 
 		if (this.vValue !== vValue) {
-			oGroupLock = that.oModel.lockGroup(sGroupId, true);
+			oGroupLock = that.lockGroup(sGroupId, true);
 			this.oCachePromise.then(function (oCache) {
 				if (oCache) {
 					reportError(new Error("Cannot set value on this binding"));
@@ -620,10 +637,35 @@ sap.ui.define([
 					return that.oModel.getMetaModel().fetchUpdateData(that.sPath, that.oContext)
 						.then(function (oResult) {
 							return that.withCache(function (oCache, sCachePath, oBinding) {
+								// If a PATCH is merged into a POST request, firePatchSent is not
+								// called so don't call firePatchCompleted
+								var bFirePatchCompleted = false;
+
+								function errorCallback(oError) {
+									reportError(oError);
+									if (bFirePatchCompleted) {
+										oBinding.firePatchCompleted(false);
+										bFirePatchCompleted = false;
+									}
+								}
+
+								function patchSent() {
+									bFirePatchCompleted = true;
+									oBinding.firePatchSent();
+								}
+
 								oGroupLock.setGroupId(oBinding.getUpdateGroupId());
-								return oCache.update(oGroupLock,
-									oResult.propertyPath, vValue, reportError, oResult.editUrl,
-									sCachePath, that.getUnitOrCurrencyPath());
+								// if request is canceled fnPatchSent and fnErrorCallback are not
+								// called and update Promise is rejected -> no patch events
+								return oCache.update(oGroupLock, oResult.propertyPath, vValue,
+									errorCallback, oResult.editUrl, sCachePath,
+									that.getUnitOrCurrencyPath(),
+									oBinding.isPatchWithoutSideEffects(), patchSent
+								).then(function () {
+									if (bFirePatchCompleted) {
+										oBinding.firePatchCompleted(true);
+									}
+								});
 							}, oResult.entityPath);
 						});
 				}

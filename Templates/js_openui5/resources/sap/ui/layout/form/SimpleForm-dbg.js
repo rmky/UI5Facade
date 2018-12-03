@@ -5,11 +5,31 @@
  */
 
 // Provides control sap.ui.layout.form.SimpleForm.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control',
-               './Form', './FormContainer', './FormElement', './FormLayout',
-               'sap/ui/base/ManagedObjectObserver', 'sap/ui/layout/library', 'sap/ui/core/ResizeHandler', './SimpleFormRenderer'],
-	function(jQuery, Control, Form, FormContainer, FormElement, FormLayout,
-	         ManagedObjectObserver, library, ResizeHandler, SimpleFormRenderer) {
+sap.ui.define([
+	'sap/ui/core/Control',
+	'sap/ui/base/ManagedObjectObserver',
+	'sap/ui/core/ResizeHandler',
+	'sap/ui/layout/library',
+	'./Form',
+	'./FormContainer',
+	'./FormElement',
+	'./FormLayout',
+	'./SimpleFormRenderer',
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+], function(
+	Control,
+	ManagedObjectObserver,
+	ResizeHandler,
+	library,
+	Form,
+	FormContainer,
+	FormElement,
+	FormLayout,
+	SimpleFormRenderer,
+	Log,
+	jQuery
+) {
 	"use strict";
 
 	// shortcut for sap.ui.layout.BackgroundDesign
@@ -46,7 +66,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control',
 	 * <b>Note:</b> If a more complex form is needed, use <code>Form</code> instead.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -129,7 +149,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control',
 			/**
 			 * Default span for labels in large size.
 			 *
-			 * <b>Note:</b> If <code>adjustLabelSpanThis</code> is set, this property is only used if more than 1 <code>FormContainer</code> is in one line.
+			 * <b>Note:</b> If <code>adjustLabelSpan</code> is set, this property is only used if more than 1 <code>FormContainer</code> is in one line.
 			 * If only 1 <code>FormContainer</code> is in the line, then the <code>labelSpanM</code> value is used.
 			 *
 			 * <b>Note:</b> This property is only used if <code>ResponsiveGridLayout</code> or <code>ColumnLayout</code> is used as a layout.
@@ -141,7 +161,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control',
 			/**
 			 * Default span for labels in medium size.
 			 *
-			 * <b>Note:</b> If <code>adjustLabelSpanThis</code> is set, this property is used for full-size <code>FormContainers</code>.
+			 * <b>Note:</b> If <code>adjustLabelSpan</code> is set, this property is used for full-size <code>FormContainers</code>.
 			 * If more than one <code>FormContainer</code> is in one line, <code>labelSpanL</code> is used.
 			 *
 			 * <b>Note:</b> This property is only used if a <code>ResponsiveGridLayout</code> is used as a layout.
@@ -445,8 +465,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control',
 		_removeResize.call(this);
 
 		var oForm = this.getAggregation("form");
-		if (!this._bResponsiveLayoutRequested && !this._bGridLayoutRequested &&
-				!this._bResponsiveGridLayoutRequested && !this._bColumnLayoutRequested) {
+		var sLayout = this.getLayout();
+		if ((!this._bResponsiveLayoutRequested && sLayout === SimpleFormLayout.ResponsiveLayout) ||
+				(!this._bGridLayoutRequested && sLayout === SimpleFormLayout.GridLayout) ||
+				(!this._bResponsiveGridLayoutRequested && sLayout === SimpleFormLayout.ResponsiveGridLayout) ||
+				(!this._bColumnLayoutRequested && sLayout === SimpleFormLayout.ColumnLayout)) {
 			// if Layout is still loaded do it after it is loaded
 			var bLayout = true;
 			if (!oForm.getLayout()) {
@@ -562,7 +585,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control',
 
 		if (this.indexOfContent(oElement) >= 0) {
 			// element is already there, remove before adding it
-			jQuery.sap.log.warning("SimpleForm.addContent: Content element '" + oElement + "' already assigned. Please remove before adding!", this);
+			Log.warning("SimpleForm.addContent: Content element '" + oElement + "' already assigned. Please remove before adding!", this);
 			this.removeContent(oElement);
 		}
 
@@ -649,7 +672,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control',
 
 		if (this.indexOfContent(oElement) >= 0) {
 			// element is already there, remove before insert it
-			jQuery.sap.log.warning("SimpleForm.insertContent: Content element '" + oElement + "' already assigned. Please remove before insert!", this);
+			Log.warning("SimpleForm.insertContent: Content element '" + oElement + "' already assigned. Please remove before insert!", this);
 			this.removeContent(oElement);
 		}
 
@@ -667,7 +690,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control',
 			iNewIndex = iIndex;
 		}
 		if (iNewIndex !== iIndex) {
-			jQuery.sap.log.warning("SimpleForm.insertContent: index '" + iIndex + "' out of range [0," + iLength + "], forced to " + iNewIndex);
+			Log.warning("SimpleForm.insertContent: index '" + iIndex + "' out of range [0," + iLength + "], forced to " + iNewIndex);
 		}
 
 		if (iNewIndex == iLength) {
@@ -892,7 +915,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control',
 
 			if (typeof (vElement) == "number") { // "vElement" is the index now
 				if (vElement < 0 || vElement >= this._aElements.length) {
-					jQuery.sap.log.warning("Element.removeAggregation called with invalid index: Items, " + vElement);
+					Log.warning("Element.removeAggregation called with invalid index: Items, " + vElement);
 				} else {
 					iIndex = vElement;
 					oElement = this._aElements[iIndex];
@@ -1501,7 +1524,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control',
 			} else if (!oLayoutData) {
 				oField.setLayoutData(_createRFLayoutData.call(this, iWeight, bLinebreak, bLinebreakable, iMinWidth));
 			} else {
-				jQuery.sap.log.warning("ResponsiveFlowLayoutData can not be set on Field " + oField.getId(), "_createFieldLayoutData", "SimpleForm");
+				Log.warning("ResponsiveFlowLayoutData can not be set on Field " + oField.getId(), "_createFieldLayoutData", "SimpleForm");
 			}
 		}
 
@@ -1950,6 +1973,23 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control',
 				// no default
 			}
 		}
+
+	};
+
+	/**
+	 * Method used to propagate the <code>Title</code> control ID of a container control
+	 * (like a <code>Dialog</code> control) to use it as aria-label in the <code>SimpleForm</code>.
+	 * So the <code>SimpleForm</code> must not have an own title.
+	 * @param {string} sTitleID <code>Title</code> control ID
+	 * @private
+	 * @return {sap.ui.layout.form.SimpleForm} Reference to <code>this</code> to allow method chaining
+	 */
+	SimpleForm.prototype._suggestTitleId = function (sTitleID) {
+
+		var oForm = this.getAggregation("form");
+		oForm._suggestTitleId(sTitleID);
+
+		return this;
 
 	};
 

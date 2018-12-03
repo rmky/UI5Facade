@@ -6,22 +6,22 @@
 
 // Provides control sap.ui.layout.FixFlex.
 sap.ui.define([
-    "jquery.sap.global",
-    "sap/ui/core/Control",
-    "sap/ui/core/EnabledPropagator",
-    "sap/ui/core/ResizeHandler",
-    "./library",
-    "sap/ui/core/delegate/ScrollEnablement",
-    "./FixFlexRenderer"
+	"sap/ui/core/Control",
+	"sap/ui/core/EnabledPropagator",
+	"sap/ui/core/ResizeHandler",
+	"./library",
+	"sap/ui/core/delegate/ScrollEnablement",
+	"./FixFlexRenderer",
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
-	    jQuery,
 		Control,
 		EnabledPropagator,
 		ResizeHandler,
 		library,
 		ScrollEnablement,
-		FixFlexRenderer
+		FixFlexRenderer,
+		jQuery
 	) {
 		"use strict";
 
@@ -57,7 +57,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -332,13 +332,6 @@ sap.ui.define([
 		 * @private
 		 */
 		FixFlex.prototype.onAfterRendering = function () {
-			// Fallback for older browsers
-			if (!jQuery.support.hasFlexBoxSupport) {
-				this.sResizeListenerNoFlexBoxSupportFixedId = ResizeHandler.register(this.getDomRef("Fixed"), jQuery.proxy(this._handlerResizeNoFlexBoxSupport, this));
-				this.sResizeListenerNoFlexBoxSupportId = ResizeHandler.register(this.getDomRef(), jQuery.proxy(this._handlerResizeNoFlexBoxSupport, this));
-				this._handlerResizeNoFlexBoxSupport();
-			}
-
 			// Add handler for FixFlex scrolling option
 			if (this.getMinFlexSize() !== 0) {
 				this.sResizeListenerFixFlexScroll = ResizeHandler.register(this.getDomRef(), jQuery.proxy(this._changeScrolling, this));

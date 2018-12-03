@@ -5,8 +5,8 @@
  */
 
 // Provides an abstraction for model bindings
-sap.ui.define(['sap/ui/base/Object'],
-	function(BaseObject) {
+sap.ui.define(['sap/ui/base/Object', "sap/base/util/isPlainObject"],
+	function(BaseObject, isPlainObject) {
 	"use strict";
 
 
@@ -86,7 +86,7 @@ sap.ui.define(['sap/ui/base/Object'],
 	 * @return {object} the context object
 	 */
 	Context.prototype.getObject = function(sPath, mParameters) {
-		if (jQuery.isPlainObject(sPath)) {
+		if (isPlainObject(sPath)) {
 			mParameters = sPath;
 			sPath = undefined;
 		}

@@ -4,7 +4,12 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["jquery.sap.global", "sap/m/semantic/SemanticConfiguration", "sap/ui/base/ManagedObject", "sap/ui/core/Element"], function (jQuery, SemanticConfiguration, ManagedObject, Element) {
+sap.ui.define([
+	"sap/m/semantic/SemanticConfiguration",
+	"sap/ui/base/ManagedObject",
+	"sap/ui/core/Element",
+	"sap/ui/thirdparty/jquery"
+], function(SemanticConfiguration, ManagedObject, Element, jQuery) {
 	"use strict";
 
 	/**
@@ -20,7 +25,7 @@ sap.ui.define(["jquery.sap.global", "sap/m/semantic/SemanticConfiguration", "sap
 	 * @abstract
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public

@@ -3579,7 +3579,8 @@
 				"jquery.sap.global.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/core/library.js",
-				"sap/ui/layout/library.js"
+				"sap/ui/layout/library.js",
+				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
 				"sap/ui/commons/Button.js"
@@ -3656,11 +3657,11 @@
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js",
 				"sap/ui/unified/MenuRenderer.js",
-				"sap/ui/unified/MenuTextFieldItem.js"
+				"sap/ui/unified/MenuTextFieldItem.js",
+				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
-				"sap/ui/unified/MenuItemBase.js",
-				"sap/ui/unified/library.js"
+				"sap/ui/unified/MenuItemBase.js"
 			],
 			"included": [
 				"sap/ui/commons/library.js",
@@ -3891,11 +3892,11 @@
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js",
 				"sap/ui/unified/MenuRenderer.js",
-				"sap/ui/unified/MenuTextFieldItem.js"
+				"sap/ui/unified/MenuTextFieldItem.js",
+				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
-				"sap/ui/unified/MenuItemBase.js",
-				"sap/ui/unified/library.js"
+				"sap/ui/unified/MenuItemBase.js"
 			],
 			"included": [
 				"sap/ui/commons/library.js",
@@ -4130,11 +4131,11 @@
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js",
 				"sap/ui/unified/MenuRenderer.js",
-				"sap/ui/unified/MenuTextFieldItem.js"
+				"sap/ui/unified/MenuTextFieldItem.js",
+				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
-				"sap/ui/unified/MenuItemBase.js",
-				"sap/ui/unified/library.js"
+				"sap/ui/unified/MenuItemBase.js"
 			],
 			"included": [
 				"sap/ui/commons/Accordion.js",
@@ -4372,11 +4373,11 @@
 				"sap/ui/unified/MenuItem.js",
 				"sap/ui/unified/MenuRenderer.js",
 				"sap/ui/unified/MenuTextFieldItem.js",
-				"sap/ui/unified/library-preload.json"
+				"sap/ui/unified/library-preload.json",
+				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
-				"sap/ui/unified/MenuItemBase.js",
-				"sap/ui/unified/library.js"
+				"sap/ui/unified/MenuItemBase.js"
 			],
 			"included": [
 				"sap/ui/commons/Accordion.js",
@@ -4552,7 +4553,8 @@
 				"jquery.sap.global.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/core/library.js",
-				"sap/ui/layout/library.js"
+				"sap/ui/layout/library.js",
+				"sap/ui/unified/library.js"
 			],
 			"condRequired": [
 				"sap/ui/commons/Button.js"

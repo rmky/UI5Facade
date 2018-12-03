@@ -5,16 +5,30 @@
  */
 
 // Provides class sap.ui.core.support.plugins.Performance
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin',
-		'sap/ui/core/support/controls/InteractionSlider',
-		'sap/ui/core/support/controls/InteractionTree',
-		'sap/ui/core/support/controls/TimelineOverview',
-		'sap/m/MessageToast',
-		'sap/ui/thirdparty/jszip',
-		'sap/ui/core/util/File',
-		'jquery.sap.trace'
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/core/support/Plugin',
+	'sap/ui/core/support/controls/InteractionSlider',
+	'sap/ui/core/support/controls/InteractionTree',
+	'sap/ui/core/support/controls/TimelineOverview',
+	'sap/m/MessageToast',
+	'sap/ui/thirdparty/jszip',
+	'sap/ui/core/util/File',
+	"sap/ui/performance/trace/Interaction",
+	"sap/ui/performance/Measurement"
 	],
-	function(jQuery, Plugin, InteractionSlider, InteractionTree, TimelineOverview, MessageToast, JSZip, File) {
+	function(
+		jQuery,
+		Plugin,
+		InteractionSlider,
+		InteractionTree,
+		TimelineOverview,
+		MessageToast,
+		JSZip,
+		File,
+		TraceInteraction,
+		Measurement
+	) {
 		"use strict";
 
 		/**
@@ -24,7 +38,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin',
 		 * With this plugIn the performance measurements are displayed
 		 *
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @private
 		 * @alias sap.ui.core.support.plugins.Interaction
 		 */
@@ -191,11 +205,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin',
 		}
 
 		function getPerformanceData(oSupportStub, jsonData) {
-			var bActive = jQuery.sap.interaction.getActive() || this._bFesrActive;
+			var bActive = TraceInteraction.getActive() || this._bFesrActive;
 			var aMeasurements = [];
 
 			if (bActive || jsonData) {
-				aMeasurements = jsonData || jQuery.sap.measure.getAllInteractionMeasurements(/*bFinalize=*/true);
+				aMeasurements = jsonData || TraceInteraction.getAll(/*bFinalize=*/true);
 
 				var fetchStart = window.performance.timing.fetchStart;
 
@@ -303,7 +317,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin',
 		 */
 		Interaction.prototype.onsapUiSupportInteractionClear = function(oEvent) {
 
-			jQuery.sap.measure.clearInteractionMeasurements();
+			TraceInteraction.clear();
 			this._oStub.sendEvent(this.getId() + "SetMeasurements", {"measurements":[]});
 
 		};
@@ -316,7 +330,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin',
 		 */
 		Interaction.prototype.onsapUiSupportInteractionStart = function(oEvent) {
 
-			jQuery.sap.measure.start(this.getId() + "-perf","Measurement by support tool");
+			Measurement.start(this.getId() + "-perf","Measurement by support tool");
 
 		};
 
@@ -329,7 +343,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin',
 		Interaction.prototype.onsapUiSupportInteractionEnd = function(oEvent) {
 
 			//jQuery.sap.measure.end(this.getId() + "-perf");
-			jQuery.sap.measure.endInteraction(/* bForce= */true);
+			Interaction.end(/* bForce= */true);
 		};
 
 		/**
@@ -342,8 +356,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin',
 
 			var bActive = oEvent.getParameter("active");
 
-			if (jQuery.sap.interaction.getActive() != bActive) {
-				jQuery.sap.interaction.setActive(bActive);
+			if (TraceInteraction.getActive() != bActive) {
+				TraceInteraction.setActive(bActive);
 			}
 
 		};

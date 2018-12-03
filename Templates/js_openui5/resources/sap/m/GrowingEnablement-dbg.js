@@ -5,8 +5,24 @@
  */
 
 // Provides class sap.m.GrowingEnablement
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/NumberFormat', 'sap/m/library', 'sap/ui/model/ChangeReason', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui/core/HTML'],
-	function(jQuery, BaseObject, NumberFormat, library, ChangeReason, ManagedObjectMetadata, HTML) {
+sap.ui.define([
+	'sap/ui/base/Object',
+	'sap/ui/core/format/NumberFormat',
+	'sap/m/library',
+	'sap/ui/model/ChangeReason',
+	'sap/ui/base/ManagedObjectMetadata',
+	'sap/ui/core/HTML',
+	"sap/base/security/encodeXML"
+],
+	function(
+		BaseObject,
+		NumberFormat,
+		library,
+		ChangeReason,
+		ManagedObjectMetadata,
+		HTML,
+		encodeXML
+	) {
 	"use strict";
 
 
@@ -136,11 +152,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 		},
 
 		onScrollToLoad: function() {
-			if (this._oControl.getDomRef("triggerList").style.display != "none") {
+			var oTriggerButton = this._oControl.getDomRef("triggerList");
+
+			if (this._bLoading || !oTriggerButton || oTriggerButton.style.display != "none") {
 				return;
 			}
 
-			if (!this._bLoading && this._oControl.getGrowingDirection() == ListGrowingDirection.Upwards) {
+			if (this._oControl.getGrowingDirection() == ListGrowingDirection.Upwards) {
 				var oScrollDelegate = this._oScrollDelegate;
 				this._oScrollPosition = {
 					left : oScrollDelegate.getScrollLeft(),
@@ -211,7 +229,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/core/format/Nu
 				content: new HTML({
 					content:	'<div class="sapMGrowingListTrigger">' +
 									'<div class="sapMSLITitleDiv sapMGrowingListTriggerText">' +
-										'<span class="sapMSLITitle" id="' + sTriggerID + 'Text">' + jQuery.sap.encodeHTML(sTriggerText) + '</span>' +
+										'<span class="sapMSLITitle" id="' + sTriggerID + 'Text">' + encodeXML(sTriggerText) + '</span>' +
 									'</div>' +
 									'<div class="sapMGrowingListDescription sapMSLIDescription" id="' + sTriggerID + 'Info"></div>' +
 								'</div>'

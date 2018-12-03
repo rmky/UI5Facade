@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.m.OverflowToolbarLayoutData.
-sap.ui.define(['sap/m/ToolbarLayoutData', 'sap/m/library', 'jquery.sap.global'],
-	function(ToolbarLayoutData, library, jQuery) {
+sap.ui.define(['sap/m/ToolbarLayoutData', 'sap/m/library', "sap/base/Log"],
+	function(ToolbarLayoutData, library, Log) {
 	"use strict";
 
 	// shortcut for sap.m.OverflowToolbarPriority
@@ -22,7 +22,7 @@ sap.ui.define(['sap/m/ToolbarLayoutData', 'sap/m/library', 'jquery.sap.global'],
 	 * Holds layout data for the {@link sap.m.OverflowToolbar} items.
 	 * @extends sap.m.ToolbarLayoutData
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -87,7 +87,7 @@ sap.ui.define(['sap/m/ToolbarLayoutData', 'sap/m/library', 'jquery.sap.global'],
 
 		// Validate layoutData priority and group properties
 		if (this.getGroup() && bInvalidPriority) {
-			jQuery.sap.log.error("It is not allowed to set AlwaysOverflow or NeverOverflow to a group items.");
+			Log.error("It is not allowed to set AlwaysOverflow or NeverOverflow to a group items.");
 		}
 
 		return ToolbarLayoutData.prototype.invalidate.call(this);

@@ -31,7 +31,10 @@
 	}, this],
 	componentCreated: [function (oEvent) {
 		var ${control} = oEvent.getSource();
-	}, this] // since 1.50
+	}, this], // since 1.50
+	componentFailed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this] // since 1.60
 })
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<ComponentContainer xmlns="sap.ui.core"
@@ -56,7 +59,8 @@
 	manifest=""
 	component=""
 	validateFieldGroup=""
-	componentCreated="">
+	componentCreated=""
+	componentFailed="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
@@ -766,6 +770,43 @@
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </dnd/DropInfo>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.ui.core.hyphenation.Hyphenation" alias="Hyphenation">
+	<jsTemplate><![CDATA[new sap.ui.core.hyphenation.Hyphenation({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	error: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<hyphenation/Hyphenation xmlns="sap.ui.core"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	validateFieldGroup=""
+	error="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</hyphenation/Hyphenation>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.ui.core.mvc.HTMLView" alias="HTMLView">

@@ -5,7 +5,9 @@
  */
 
 sap.ui.define([
-	"sap/ui/fl/RegistrationDelegator"
+	"sap/ui/fl/RegistrationDelegator",
+	"sap/ui/core/library", // library dependency
+	"sap/m/library" // library dependency
 ], function(RegistrationDelegator) {
 	"use strict";
 
@@ -14,14 +16,14 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @private
 	 * @sap-restricted
 	 */
 
 	sap.ui.getCore().initLibrary({
 		name: "sap.ui.fl",
-		version: "1.56.6",
+		version: "1.60.1",
 		controls: ["sap.ui.fl.variants.VariantManagement"],
 		dependencies: [
 			"sap.ui.core", "sap.m"
@@ -33,7 +35,7 @@ sap.ui.define([
 					"sap/ui/fl/support/Flexibility"
 				],
 				//Configuration used for rule loading of Support Assistant
-				publicRules:true
+				publicRules: true
 			}
 		}
 	});

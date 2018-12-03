@@ -15,32 +15,47 @@
 
 //Provides class sap.ui.model.odata.v4.ODataModel
 sap.ui.define([
-	"jquery.sap.global",
+	"./ODataContextBinding",
+	"./ODataListBinding",
+	"./ODataMetaModel",
+	"./ODataPropertyBinding",
+	"./SubmitMode",
+	"./lib/_GroupLock",
+	"./lib/_Helper",
+	"./lib/_MetadataRequestor",
+	"./lib/_Parser",
+	"./lib/_Requestor",
+	"sap/base/assert",
+	"sap/base/Log",
 	"sap/ui/base/SyncPromise",
+	"sap/ui/core/library",
 	"sap/ui/core/message/Message",
 	"sap/ui/model/BindingMode",
 	"sap/ui/model/Context",
 	"sap/ui/model/Model",
 	"sap/ui/model/odata/OperationMode",
-	"sap/ui/thirdparty/URI",
-	"./lib/_GroupLock",
-	"./lib/_MetadataRequestor",
-	"./lib/_Requestor",
-	"./lib/_Parser",
-	"./ODataContextBinding",
-	"./ODataListBinding",
-	"./ODataMetaModel",
-	"./ODataPropertyBinding",
-	"./SubmitMode"
-], function (jQuery, SyncPromise, Message, BindingMode, BaseContext, Model, OperationMode, URI,
-		_GroupLock, _MetadataRequestor, _Requestor, _Parser, ODataContextBinding, ODataListBinding,
-		ODataMetaModel, ODataPropertyBinding, SubmitMode) {
-
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/thirdparty/URI"
+], function (ODataContextBinding, ODataListBinding, ODataMetaModel, ODataPropertyBinding,
+		SubmitMode, _GroupLock, _Helper, _MetadataRequestor, _Parser, _Requestor, assert, Log,
+		SyncPromise, coreLibrary, Message, BindingMode, BaseContext, Model, OperationMode, jQuery,
+		URI) {
 	"use strict";
 
-	var sClassName = "sap.ui.model.odata.v4.ODataModel",
-		rApplicationGroupID = /^\w+$/,
-		rGroupID = /^(\$auto|\$direct|\w+)$/,
+	var rApplicationGroupID = /^\w+$/,
+		sClassName = "sap.ui.model.odata.v4.ODataModel",
+		// system query options allowed within a $expand query option
+		aExpandQueryOptions = ["$count", "$expand", "$filter", "$levels", "$orderby", "$search",
+			"$select"],
+		rGroupID = /^(\$auto(\.\w+)?|\$direct|\w+)$/,
+		MessageType = coreLibrary.MessageType,
+		aMessageTypes = [
+			undefined,
+			MessageType.Success,
+			MessageType.Information,
+			MessageType.Warning,
+			MessageType.Error
+		],
 		mSupportedEvents = {
 			messageChange : true
 		},
@@ -59,9 +74,6 @@ sap.ui.define([
 		},
 		// system query options allowed in mParameters
 		aSystemQueryOptions = ["$apply", "$count", "$expand", "$filter", "$orderby", "$search",
-			"$select"],
-		// system query options allowed within a $expand query option
-		aExpandQueryOptions = ["$count", "$expand", "$filter", "$levels", "$orderby", "$search",
 			"$select"];
 
 	/**
@@ -124,8 +136,7 @@ sap.ui.define([
 	 * @param {string} [mParameters.updateGroupId]
 	 *   The group ID that is used for update requests. If no update group ID is specified, <code>
 	 *   mParameters.groupId</code> is used. Valid update group IDs are <code>undefined</code>,
-	 *   '$auto', '$direct' or an application group ID, which is a non-empty string consisting of
-	 *   alphanumeric characters from the basic Latin alphabet, including the underscore.
+	 *   '$auto', '$direct' or an application group ID.
 	 * @throws {Error} If an unsupported synchronization mode is given, if the given service root
 	 *   URL does not end with a forward slash, if an unsupported parameter is given, if OData
 	 *   system query options or parameter aliases are specified as parameters, if an invalid group
@@ -149,12 +160,31 @@ sap.ui.define([
 	 *   binding and do not access data with their own service requests unless parameters are
 	 *   provided.
 	 *
-	 *   <b>Note: The model does not support any public events; attaching an event handler
-	 *   leads to an error.</b>
+	 *   <b>Group IDs</b> control the model's use of batch requests. Valid group IDs are:
+	 *   <ul>
+	 *   <li><b>$auto</b> and <b>$auto.*</b>: Bundles requests from the model in a batch request
+	 *   which is sent automatically before rendering. You can use different '$auto.*' group IDs to
+	 *   use different batch requests. The suffix may be any non-empty string consisting of
+	 *   alphanumeric characters from the basic Latin alphabet, including the underscore. The submit
+	 *   mode for these group IDs is always {@link sap.ui.model.odata.v4.SubmitMode#Auto}.
+	 *   </li>
+	 *   <li><b>$direct</b>: Sends requests directly without batch. The submit mode for this group
+	 *   ID is always {@link sap.ui.model.odata.v4.SubmitMode#Direct}.
+	 *   </li>
+	 *   <li>An application group ID, which is a non-empty string consisting of alphanumeric
+	 *   characters from the basic Latin alphabet, including the underscore. By default, an
+	 *   application group has the submit mode {@link sap.ui.model.odata.v4.SubmitMode#API}. It is
+	 *   possible to use a different submit mode; for details see
+	 *   <code>mParameters.groupProperties</code>.
+	 *   </li>
+	 *   </ul>
+	 *
+	 *   <b>Note: The model does not support any public events; attaching an event handler leads to
+	 *   an error.</b>
 	 * @extends sap.ui.model.Model
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 */
 	var ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */
@@ -246,12 +276,15 @@ sap.ui.define([
 								this.oMetaModel.fetchEntityContainer.bind(this.oMetaModel),
 							fnFetchMetadata : this.oMetaModel.fetchObject.bind(this.oMetaModel),
 							fnGetGroupProperty : this.getGroupProperty.bind(this),
+							lockGroup : this.lockGroup.bind(this),
 							fnOnCreateGroup : function (sGroupId) {
 								if (that.isAutoGroup(sGroupId)) {
 									sap.ui.getCore().addPrerenderingTask(
-										that._submitBatch.bind(that, sGroupId));
+										that._submitBatch.bind(that, sGroupId, true));
 								}
-							}
+							},
+							fnReportBoundMessages : this.reportBoundMessages.bind(this),
+							fnReportUnboundMessages : this.reportUnboundMessages.bind(this)
 						}, mHeaders, this.mUriParameters, sODataVersion);
 					if (mParameters.earlyRequests) {
 						this.oMetaModel.fetchEntityContainer(true);
@@ -274,13 +307,16 @@ sap.ui.define([
 	 *
 	 * @param {string} sGroupId
 	 *   The group ID
+	 * @param {boolean} [bCatch=false]
+	 *   Whether the returned promise always resolves and never rejects
 	 * @returns {Promise}
 	 *   A promise on the outcome of the HTTP request resolving with <code>undefined</code>; it is
-	 *   rejected with an error if the batch request itself fails
+	 *   rejected with an error if the batch request itself fails. Use <code>bCatch</code> to catch
+	 *   that error and make the promise resolve with <code>undefined</code> instead.
 	 *
 	 * @private
 	 */
-	ODataModel.prototype._submitBatch = function (sGroupId) {
+	ODataModel.prototype._submitBatch = function (sGroupId, bCatch) {
 		var bBlocked,
 			oPromise,
 			that = this;
@@ -292,19 +328,20 @@ sap.ui.define([
 		}));
 		bBlocked = oPromise.isPending();
 		if (bBlocked) {
-			jQuery.sap.log.info("submitBatch('" + sGroupId + "') is waiting for locks", null,
-				sClassName);
+			Log.info("submitBatch('" + sGroupId + "') is waiting for locks", null, sClassName);
 		}
 		return Promise.resolve(oPromise.then(function () {
 			if (bBlocked) {
-				jQuery.sap.log.info("submitBatch('" + sGroupId + "') continues", null, sClassName);
+				Log.info("submitBatch('" + sGroupId + "') continues", null, sClassName);
 			}
 			that.aLockedGroupLocks = that.aLockedGroupLocks.filter(function (oGroupLock) {
 				return oGroupLock.isLocked();
 			});
 			return that.oRequestor.submitBatch(sGroupId).catch(function (oError) {
-				that.reportError("$batch failed", sClassName, oError.message);
-				throw oError;
+				that.reportError("$batch failed", sClassName, oError);
+				if (!bCatch) {
+					throw oError;
+				}
 			});
 		}));
 	};
@@ -399,8 +436,8 @@ sap.ui.define([
 	 *   The group ID to be used for <b>read</b> requests triggered by this binding; if not
 	 *   specified, either the parent binding's group ID (if the binding is relative) or the
 	 *   model's group ID is used, see {@link sap.ui.model.odata.v4.ODataModel#constructor}.
-	 *   Valid values are <code>undefined</code>, '$auto', '$direct' or application group IDs as
-	 *   specified in {@link #submitBatch}.
+	 *   Valid values are <code>undefined</code>, '$auto', '$auto.*', '$direct' or application group
+	 *   IDs as specified in {@link sap.ui.model.odata.v4.ODataModel}.
 	 * @param {boolean} [mParameters.$$inheritExpandSelect]
 	 *   For operation bindings only: Whether $expand and $select from the parent binding are used
 	 *   in the request sent on {@link #execute}. If set to <code>true</code>, the binding must not
@@ -410,6 +447,10 @@ sap.ui.define([
 	 * @param {boolean} [mParameters.$$ownRequest]
 	 *   Whether the binding always uses an own service request to read its data; only the value
 	 *   <code>true</code> is allowed.
+	 * @param {boolean} [mParameters.$$patchWithoutSideEffects]
+	 *   Whether implicit loading of side effects via PATCH requests is switched off; only the value
+	 *   <code>true</code> is allowed. This requires the service to return an ETag header even for
+	 *   "204 No Content" responses (for example, if the "return=minimal" preference is used).
 	 * @param {string} [mParameters.$$updateGroupId]
 	 *   The group ID to be used for <b>update</b> requests triggered by this binding;
 	 *   if not specified, either the parent binding's update group ID (if the binding is relative)
@@ -506,8 +547,8 @@ sap.ui.define([
 	 *   The group ID to be used for <b>read</b> requests triggered by this binding; if not
 	 *   specified, either the parent binding's group ID (if the binding is relative) or the
 	 *   model's group ID is used, see {@link sap.ui.model.odata.v4.ODataModel#constructor}.
-	 *   Valid values are <code>undefined</code>, '$auto', '$direct' or application group IDs as
-	 *   specified in {@link #submitBatch}.
+	 *   Valid values are <code>undefined</code>, '$auto', '$auto.*', '$direct' or application group
+	 *   IDs as specified in {@link sap.ui.model.odata.v4.ODataModel}.
 	 * @param {boolean} [mParameters.$$ownRequest]
 	 *   Whether the binding always uses an own service request to read its data; only the value
 	 *   <code>true</code> is allowed.
@@ -553,8 +594,8 @@ sap.ui.define([
 	 *   The group ID to be used for <b>read</b> requests triggered by this binding; if not
 	 *   specified, either the parent binding's group ID (if the binding is relative) or the
 	 *   model's group ID is used, see {@link sap.ui.model.odata.v4.ODataModel#constructor}.
-	 *   Valid values are <code>undefined</code>, '$auto', '$direct' or application group IDs as
-	 *   specified in {@link #submitBatch}.
+	 *   Valid values are <code>undefined</code>, '$auto', '$auto.*', '$direct' or application group
+	 *   IDs as specified in {@link sap.ui.model.odata.v4.ODataModel}.
 	 * @returns {sap.ui.model.odata.v4.ODataPropertyBinding}
 	 *   The property binding
 	 * @throws {Error}
@@ -579,83 +620,6 @@ sap.ui.define([
 	 */
 	ODataModel.prototype.bindTree = function () {
 		throw new Error("Unsupported operation: v4.ODataModel#bindTree");
-	};
-
-	/**
-	 * Returns the map of binding-specific parameters from the given map. "Binding-specific"
-	 * parameters are those with a key starting with '$$', i.e. OData query options provided as
-	 * binding parameters are not contained in the map. The following parameters and parameter
-	 * values are supported, if the parameter is contained in the given 'aAllowed' parameter:
-	 * <ul>
-	 * <li> '$$aggregation' with allowed values as specified in
-	 *      {@link sap.ui.model.odata.v4.ODataListBinding#updateAnalyticalInfo} (but without
-	 *      validation here)
-	 * <li> '$$groupId' with allowed values as specified in {@link #checkGroupId}
-	 * <li> '$$updateGroupId' with allowed values as specified in {@link #checkGroupId}
-	 * <li> '$$inheritExpandSelect' with allowed values <code>false</code> and <code>true</code>
-	 * <li> '$$operationMode' with value {@link sap.ui.model.odata.OperationMode.Server}
-	 * <li> '$$ownRequest' with value <code>true</code>
-	 * </ul>
-	 *
-	 * @param {object} mParameters
-	 *   The map of binding parameters
-	 * @param {string[]} aAllowed
-	 *   The array of allowed binding parameters
-	 * @returns {object}
-	 *   The map of binding-specific parameters
-	 * @throws {Error}
-	 *   For unsupported parameters or parameter values
-	 *
-	 * @private
-	 */
-	ODataModel.prototype.buildBindingParameters = function (mParameters, aAllowed) {
-		var mResult = {},
-			that = this;
-
-		if (mParameters) {
-			Object.keys(mParameters).forEach(function (sKey) {
-				var vValue = mParameters[sKey];
-
-				if (sKey.indexOf("$$") !== 0) {
-					return;
-				}
-				if (!aAllowed || aAllowed.indexOf(sKey) < 0) {
-					throw new Error("Unsupported binding parameter: " + sKey);
-				}
-
-				switch (sKey) {
-					case "$$aggregation":
-						// no validation here
-						break;
-					case "$$groupId":
-					case "$$updateGroupId":
-						that.checkGroupId(vValue, false,
-							"Unsupported value for binding parameter '" + sKey + "': ");
-						break;
-					case "$$inheritExpandSelect":
-						if (vValue !== true && vValue !== false) {
-							throw new Error("Unsupported value for binding parameter "
-								+ "'$$inheritExpandSelect': " + vValue);
-						}
-						break;
-					case "$$operationMode":
-						if (vValue !== OperationMode.Server) {
-							throw new Error("Unsupported operation mode: " + vValue);
-						}
-						break;
-					case "$$ownRequest":
-						if (vValue !== true) {
-							throw new Error("Unsupported value for binding parameter "
-								+ "'$$ownRequest': " + vValue);
-						}
-						break;
-					default:
-						throw new Error("Unknown binding-specific parameter: " + sKey);
-				}
-				mResult[sKey] = vValue;
-			});
-		}
-		return mResult;
 	};
 
 	/**
@@ -763,10 +727,10 @@ sap.ui.define([
 	};
 
 	/**
-	 * Checks whether the given group ID is a deferred application group, which is a non-empty
-	 * string consisting of alphanumeric characters from the basic Latin alphabet, including the
-	 * underscore and not having group property {@link sap.ui.model.odata.v4.SubmitMode.Auto}
-	 * or {@link sap.ui.model.odata.v4.SubmitMode.Direct}.
+	 * Checks whether the given group ID is a deferred application group as specified in
+	 * {@link sap.ui.model.odata.v4.ODataModel} and not having group property
+	 * {@link sap.ui.model.odata.v4.SubmitMode.Auto} or
+	 * {@link sap.ui.model.odata.v4.SubmitMode.Direct}.
 	 *
 	 * @param {string} sGroupId
 	 *   The group ID
@@ -786,8 +750,8 @@ sap.ui.define([
 
 	/**
 	 * Checks whether the given group ID is valid, which means it is either undefined, '$auto',
-	 * '$direct' or an application group ID, which is a non-empty string consisting of
-	 * alphanumeric characters from the basic Latin alphabet, including the underscore.
+	 * '$auto.*', '$direct' or an application group ID as specified in
+	 * {@link sap.ui.model.odata.v4.ODataModel}.
 	 *
 	 * @param {string} sGroupId
 	 *   The group ID
@@ -1002,6 +966,9 @@ sap.ui.define([
 	ODataModel.prototype.getGroupProperty = function (sGroupId, sPropertyName) {
 		switch (sPropertyName) {
 			case "submit":
+				if (sGroupId.startsWith("$auto.")) {
+					return SubmitMode.Auto;
+				}
 				return this.mGroupProperties[sGroupId]
 					? this.mGroupProperties[sGroupId].submit
 					: SubmitMode.API;
@@ -1119,18 +1086,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Method not supported
-	 *
-	 * @throws {Error}
-	 *
-	 * @private
-	 * @see sap.ui.model.Model#isList
-	 */
-	ODataModel.prototype.isList = function () {
-		throw new Error("Unsupported operation: v4.ODataModel#isList");
-	};
-
-	/**
 	 * Determines whether the given group ID uses mode {@link sap.ui.model.odata.v4.SubmitMode.Auto}
 	 *
 	 * @param {string} sGroupId
@@ -1140,8 +1095,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataModel.prototype.isAutoGroup = function (sGroupId) {
-		return this.mGroupProperties[sGroupId]
-			&& this.mGroupProperties[sGroupId].submit === SubmitMode.Auto;
+		return this.getGroupProperty(sGroupId, "submit") === SubmitMode.Auto;
 	};
 
 	/**
@@ -1155,8 +1109,19 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataModel.prototype.isDirectGroup = function (sGroupId) {
-		return this.mGroupProperties[sGroupId]
-			&& this.mGroupProperties[sGroupId].submit === SubmitMode.Direct;
+		return this.getGroupProperty(sGroupId, "submit") === SubmitMode.Direct;
+	};
+
+	/**
+	 * Method not supported
+	 *
+	 * @throws {Error}
+	 *
+	 * @private
+	 * @see sap.ui.model.Model#isList
+	 */
+	ODataModel.prototype.isList = function () {
+		throw new Error("Unsupported operation: v4.ODataModel#isList");
 	};
 
 	/**
@@ -1180,19 +1145,21 @@ sap.ui.define([
 	 * @param {boolean|sap.ui.model.odata.v4.lib._GroupLock} [vLock]
 	 *   If vLock is a group lock, it is modified and returned. Otherwise a lock is created which
 	 *   locks if vLock is truthy.
+	 * @param {object} [oOwner]
+	 *   The lock's owner for debugging
 	 * @returns {sap.ui.model.odata.v4.lib._GroupLock}
 	 *   The group lock
 	 *
 	 * @private
 	 */
-	ODataModel.prototype.lockGroup = function (sGroupId, vLock) {
+	ODataModel.prototype.lockGroup = function (sGroupId, vLock, oOwner) {
 		var oGroupLock;
 
 		if (vLock instanceof _GroupLock) {
 			vLock.setGroupId(sGroupId);
 			return vLock;
 		}
-		oGroupLock = new _GroupLock(sGroupId, vLock);
+		oGroupLock = new _GroupLock(sGroupId, vLock, oOwner, this.oRequestor.getSerialNumber());
 		if (oGroupLock.isLocked()) {
 			this.aLockedGroupLocks.push(oGroupLock);
 		}
@@ -1212,8 +1179,9 @@ sap.ui.define([
 	 * changes or {@link #resetChanges} to reset the changes before calling {@link #refresh}.
 	 *
 	 * @param {string} [sGroupId]
-	 *   The group ID to be used for refresh; valid values are <code>undefined</code>,
-	 *   '$auto', '$direct' or application group IDs as specified in {@link #submitBatch}
+	 *   The group ID to be used for refresh; valid values are <code>undefined</code>, '$auto',
+	 *   '$auto.*', '$direct' or application group IDs as specified in
+	 *   {@link sap.ui.model.odata.v4.ODataModel}
 	 * @throws {Error}
 	 *   If the given group ID is invalid or if there are pending changes, see
 	 *   {@link #hasPendingChanges}
@@ -1237,8 +1205,79 @@ sap.ui.define([
 	};
 
 	/**
-	 * Reports a technical error by adding a message to the MessageManager and logging the error to
-	 * the console. Takes care that the error is only added once to the MessageManager.
+	 * Reports the given bound OData messages by firing a <code>messageChange</code> event with
+	 * the new messages.
+	 *
+	 * @param {string} sResourcePath
+	 *   The resource path of the cache that saw the messages
+	 * @param {object} mPathToODataMessages
+	 *   Maps a cache-relative path with key predicates to an array of messages with the following
+	 *   properties:
+	 *   {string} code - The error code
+	 *   {string} [longtextUrl] - The absolute URL for the message's long text
+	 *   {string} message - The message text
+	 *   {number} numericSeverity
+	 *      The numeric message severity (1 for "success", 2 for "info", 3 for "warning" and 4 for
+	 *      "error")
+	 *   {boolean} [technical]
+	 *      Whether the message is reported as <code>technical</code> (used by reportError)
+	 *   {string} target
+	 *      The relative target for the message; the reported target path is a concatenation of the
+	 *      resource path, the cache-relative path and this property
+	 *   {boolean} [transition] - Whether the message is reported as <code>persistent=true</code>
+	 *      and therefore needs to be managed by the application
+	 * @param {string[]} [aCachePaths]
+	 *    An array of cache-relative paths of the entities for which non-persistent messages have to
+	 *    be removed; if the array is not given, all entities are affected
+	 *
+	 * @private
+	 */
+	ODataModel.prototype.reportBoundMessages = function (sResourcePath, mPathToODataMessages,
+			aCachePaths) {
+		var sDataBindingPath = "/" + sResourcePath,
+			aNewMessages = [],
+			aOldMessages = [],
+			that = this;
+
+		Object.keys(mPathToODataMessages).forEach(function (sCachePath) {
+			mPathToODataMessages[sCachePath].forEach(function (oRawMessage) {
+				var sTarget = _Helper.buildPath(sDataBindingPath, sCachePath, oRawMessage.target);
+
+				aNewMessages.push(new Message({
+					code : oRawMessage.code,
+					descriptionUrl : oRawMessage.longtextUrl || undefined,
+					message : oRawMessage.message,
+					persistent : oRawMessage.transition,
+					processor : that,
+					target : sTarget,
+					technical : oRawMessage.technical,
+					type : aMessageTypes[oRawMessage.numericSeverity] || MessageType.None
+				}));
+			});
+		});
+		(aCachePaths || [""]).forEach(function (sCachePath) {
+			var sPath = _Helper.buildPath(sDataBindingPath, sCachePath);
+
+			Object.keys(that.mMessages || {}).forEach(function (sMessageTarget) {
+				if (sMessageTarget === sPath
+						|| sMessageTarget.startsWith(sPath + "/")
+						|| sMessageTarget.startsWith(sPath + "(")) {
+					aOldMessages = aOldMessages.concat(
+						that.mMessages[sMessageTarget].filter(function (oMessage) {
+							return !oMessage.persistent;
+						}));
+				}
+			});
+		});
+		if (aNewMessages.length || aOldMessages.length) {
+			this.fireMessageChange({newMessages : aNewMessages, oldMessages : aOldMessages});
+		}
+	};
+
+	/**
+	 * Reports a technical error by firing a <code>messageChange</code> event with a new message and
+	 * logging the error to the console. Takes care that the error is only reported once via the
+	 * <code>messageChange</code> event. Existing messages remain untouched.
 	 *
 	 * @param {string} sLogMessage
 	 *   The message to write to the console log
@@ -1251,11 +1290,63 @@ sap.ui.define([
 	 *   console with level DEBUG; example: errors caused by cancellation of backend requests.
 	 *   For the string value "noDebugLog", the method does nothing; example: errors caused by
 	 *   suspended bindings.
+	 * @param {object} [oError.error]
+	 *   An error response as sent from the OData server
+	 * @param {object[]} [oError.error.details]
+	 *   A list of detail messages sent from the OData server. These messages are reported, too.
+	 * @param {string} [oError.requestUrl]
+	 *   The request URL of the failed OData request, added by the requestor; it is required to
+	 *   resolve a longtextUrl.
+	 * @param {string} [oError.resourcePath]
+	 *   The resource path by which the resource causing the error has originally been requested;
+	 *   since a request can fail before reaching the server this may be set even if there is no
+	 *   error property; it is required to resolve a longtextUrl or a target.
 	 *
 	 * @private
 	 */
 	ODataModel.prototype.reportError = function (sLogMessage, sReportingClassName, oError) {
-		var sDetails;
+		var aBoundMessages = [],
+			sDetails,
+			sResourcePath,
+			aUnboundMessages = [];
+
+		/*
+		 * Clones the message object taking all relevant properties, converts the annotations for
+		 * numeric severity and longtext to the corresponding properties and adds it to one of the
+		 * arrays to be reported later.
+		 * @param {object} oMessage The message
+		 */
+		function addMessage(oMessage) {
+			var oReportMessage = {
+					code : oMessage.code,
+					message : oMessage.message,
+					technical : oMessage.technical
+				};
+
+			Object.keys(oMessage).forEach(function (sProperty) {
+				if (sProperty[0] === '@') {
+					if (sProperty.endsWith(".numericSeverity")) {
+						oReportMessage.numericSeverity = oMessage[sProperty];
+					} else if (sProperty.endsWith(".longtextUrl") && oError.requestUrl
+							&& sResourcePath) {
+						oReportMessage.longtextUrl =
+							_Helper.makeAbsolute(oMessage[sProperty], oError.requestUrl);
+					}
+				}
+			});
+
+			if (typeof oMessage.target !== "string") {
+				aUnboundMessages.push(oReportMessage);
+			} else if (oMessage.target[0] === "$" || !sResourcePath) {
+				// target for the bound message cannot be resolved -> report as unbound message
+				oReportMessage.message = oMessage.target + ": " + oReportMessage.message;
+				aUnboundMessages.push(oReportMessage);
+			} else {
+				oReportMessage.target = oMessage.target;
+				oReportMessage.transition = true;
+				aBoundMessages.push(oReportMessage);
+			}
+		}
 
 		if (oError.canceled === "noDebugLog") {
 			return;
@@ -1267,21 +1358,81 @@ sap.ui.define([
 		}
 
 		if (oError.canceled) {
-			jQuery.sap.log.debug(sLogMessage, sDetails, sReportingClassName);
+			Log.debug(sLogMessage, sDetails, sReportingClassName);
 			return;
 		}
 
-		jQuery.sap.log.error(sLogMessage, sDetails, sReportingClassName);
+		Log.error(sLogMessage, sDetails, sReportingClassName);
 		if (oError.$reported) {
 			return;
 		}
 		oError.$reported = true;
-		sap.ui.getCore().getMessageManager().addMessages(new Message({
-			message : oError.message,
-			processor : this,
-			technical : true,
-			type : "Error"
-		}));
+
+		if (oError.error) {
+			sResourcePath = oError.resourcePath && oError.resourcePath.split("?")[0];
+			oError.error["@.numericSeverity"] = 4; //"Error"
+			oError.error.technical = true;
+			addMessage(oError.error);
+			if (oError.error.details) {
+				oError.error.details.forEach(addMessage);
+			}
+			if (aBoundMessages.length) {
+				this.reportBoundMessages(sResourcePath, {"" : aBoundMessages}, []);
+			}
+		} else {
+			oError["@.numericSeverity"] = 4; //"Error"
+			oError.technical = true;
+			addMessage(oError);
+		}
+
+		this.reportUnboundMessages(sResourcePath, aUnboundMessages);
+	};
+
+	/**
+	 * Reports the given unbound OData messages by firing a <code>messageChange</code> event with
+	 * the new messages.
+	 *
+	 * @param {string} [sResourcePath]
+	 *   The resource path of the request whose response contained the messages. If it is
+	 *   <code>undefined</code> the message's long text URL cannot be determined.
+	 * @param {object[]} [aMessages]
+	 *   The array of messages as contained in the <code>sap-messages</code> response header with
+	 *   the following properties:
+	 *   {string} code - The error code
+	 *   {string} [longtextUrl] - The absolute URL for the message's long text
+	 *   {string} message - The message text
+	 *   {number} numericSeverity
+	 *      The numeric message severity (1 for "success", 2 for "info", 3 for "warning" and 4 for
+	 *      "error")
+	 *   {boolean} [technical]
+	 *      Whether the message is reported as <code>technical</code> (used by reportError)
+	 *
+	 * @private
+	 */
+	ODataModel.prototype.reportUnboundMessages = function (sResourcePath, aMessages) {
+		var that = this;
+
+		if (aMessages && aMessages.length) {
+			this.fireMessageChange({
+				newMessages : aMessages.map(function (oMessage) {
+					var sMessageLongTextUrl = oMessage.longtextUrl;
+
+					return new Message({
+						code : oMessage.code,
+						descriptionUrl : sMessageLongTextUrl && sResourcePath
+							? _Helper.makeAbsolute(sMessageLongTextUrl,
+								that.sServiceUrl + sResourcePath)
+							: undefined,
+						message : oMessage.message,
+						persistent : true,
+						processor : that,
+						target : "",
+						technical : oMessage.technical,
+						type : aMessageTypes[oMessage.numericSeverity] || MessageType.None
+					});
+				})
+			});
+		}
 	};
 
 	/**
@@ -1305,8 +1456,7 @@ sap.ui.define([
 	 * @since 1.37.0
 	 */
 	ODataModel.prototype.requestCanonicalPath = function (oEntityContext) {
-		jQuery.sap.assert(oEntityContext.getModel() === this,
-				"oEntityContext must belong to this model");
+		assert(oEntityContext.getModel() === this, "oEntityContext must belong to this model");
 		return oEntityContext.requestCanonicalPath();
 	};
 
@@ -1318,8 +1468,7 @@ sap.ui.define([
 	 * (see {@link sap.ui.model.odata.v4.ODataContextBinding#execute}).
 	 *
 	 * @param {string} [sGroupId]
-	 *   The application group ID, which is a non-empty string consisting of alphanumeric
-	 *   characters from the basic Latin alphabet, including the underscore. If it is
+	 *   The application group ID as specified in {@link sap.ui.model.odata.v4.ODataModel}. If it is
 	 *   <code>undefined</code>, the model's <code>updateGroupId</code> is used. Note that the
 	 *   default <code>updateGroupId</code> is '$auto', which is invalid here.
 	 * @throws {Error}
@@ -1370,14 +1519,12 @@ sap.ui.define([
 		if (sPath && sPath[0] === "/") {
 			sResolvedPath = sPath;
 		} else if (oContext) {
+			sResolvedPath = oContext.getPath();
 			if (sPath) {
-				if (oContext.getPath().slice(-1) === "/") {
-					sResolvedPath = oContext.getPath() + sPath;
-				} else {
-					sResolvedPath = oContext.getPath() + "/" + sPath;
+				if (sResolvedPath.slice(-1) !== "/") {
+					sResolvedPath += "/";
 				}
-			} else {
-				sResolvedPath = oContext.getPath();
+				sResolvedPath += sPath;
 			}
 		}
 
@@ -1407,10 +1554,11 @@ sap.ui.define([
 
 	/**
 	 * Submits the requests associated with the given application group ID in one batch request.
+	 * Requests from subsequent calls to this method for the same group ID may be combined in one
+	 * batch request using separate change sets.
 	 *
 	 * @param {string} sGroupId
-	 *   The application group ID, which is a non-empty string consisting of alphanumeric
-	 *   characters from the basic Latin alphabet, including the underscore.
+	 *   The application group ID as specified in {@link sap.ui.model.odata.v4.ODataModel}.
 	 * @returns {Promise}
 	 *   A promise on the outcome of the HTTP request resolving with <code>undefined</code>; it is
 	 *   rejected with an error if the batch request itself fails
@@ -1427,6 +1575,7 @@ sap.ui.define([
 
 		this.checkDeferredGroupId(sGroupId);
 
+		this.oRequestor.addChangeSet(sGroupId);
 		return new Promise(function (resolve) {
 			sap.ui.getCore().addPrerenderingTask(function () {
 				resolve(that._submitBatch(sGroupId));

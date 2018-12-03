@@ -4,7 +4,12 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils", "sap/ui/fl/context/Context"], function(LrepConnector, Utils, Context) {
+sap.ui.define([
+	"sap/ui/fl/LrepConnector",
+	"sap/ui/fl/Utils",
+	"sap/ui/fl/context/Context",
+	"sap/base/Log"
+], function(LrepConnector, Utils, Context, Log) {
 	"use strict";
 
 	/**
@@ -14,7 +19,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils", "sap/ui/fl/context/
 	 * @alias sap.ui.fl.context.ContextManager
 	 * @since 1.38.0
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 */
 	var ContextManager;
 
@@ -43,7 +48,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils", "sap/ui/fl/context/
 				return true;
 			}
 
-			return jQuery.inArray(sChangeContext, aActiveContexts) !== -1;
+			return aActiveContexts && aActiveContexts.indexOf(sChangeContext) !== -1;
 		},
 
 		/**
@@ -118,7 +123,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils", "sap/ui/fl/context/
 			var aActiveContexts = [];
 
 			aContextObjects.forEach(function (oContext) {
-				var bContextActive = jQuery.inArray(oContext.id, aDesignTimeContextIdsByUrl) !== -1;
+				var bContextActive = ((aDesignTimeContextIdsByUrl ? Array.prototype.indexOf.call(aDesignTimeContextIdsByUrl, oContext.id) : -1)) !== -1;
 
 				if (bContextActive) {
 					aActiveContexts.push(oContext.id);
@@ -192,7 +197,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils", "sap/ui/fl/context/
 				case "NE":
 					return !this._checkEquals(sSelector, oValue, aRuntimeContext);
 				default:
-					jQuery.sap.log.info("A context within a flexibility change with the operator '" + sOperator + "' could not be verified");
+					Log.info("A context within a flexibility change with the operator '" + sOperator + "' could not be verified");
 					return false;
 			}
 		},

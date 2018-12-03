@@ -5,9 +5,7 @@
  */
 
 // Provides helper sap.ui.table.TableAccRenderExtension.
-sap.ui.define([
-	"jquery.sap.global", "./TableExtension", "./TableUtils", "./library"
-], function(jQuery, TableExtension, TableUtils, library) {
+sap.ui.define(["./TableExtension", "./TableUtils", "./library"], function(TableExtension, TableUtils, library) {
 	"use strict";
 
 	// Shortcuts
@@ -41,7 +39,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.TableRenderer which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccRenderExtension
@@ -112,6 +110,10 @@ sap.ui.define([
 			_writeAccText(oRm, sTableId, "ariacolsorteddes", TableUtils.getResourceText("TBL_COL_DESC_SORTED_DES"));
 			// aria description for invalid table (table with overlay)
 			_writeAccText(oRm, sTableId, "ariainvalid", TableUtils.getResourceText("TBL_TABLE_INVALID"));
+			// aria description for column vsisiblity menu item (Show Column)
+			_writeAccText(oRm, sTableId, "ariashowcolmenu", TableUtils.getResourceText("TBL_COL_VISBILITY_MENUITEM_SHOW"));
+			// aria description for column vsisiblity menu item (Hide Column)
+			_writeAccText(oRm, sTableId, "ariahidecolmenu", TableUtils.getResourceText("TBL_COL_VISBILITY_MENUITEM_HIDE"));
 
 			var oSelectionMode = oTable.getSelectionMode();
 			if (oSelectionMode !== SelectionMode.None) {
@@ -150,7 +152,7 @@ sap.ui.define([
 			var oValue, sKey;
 			for (sKey in mAttributes) {
 				oValue = mAttributes[sKey];
-				if (jQuery.isArray(oValue)) {
+				if (Array.isArray(oValue)) {
 					oValue = oValue.join(" ");
 				}
 				if (oValue) {

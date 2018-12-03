@@ -5,8 +5,18 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global', 'sap/ui/dt/Plugin', 'sap/ui/dt/Overlay'
-], function(jQuery, Plugin, Overlay) {
+	"sap/ui/thirdparty/jquery",
+	'sap/ui/dt/Plugin',
+	'sap/ui/dt/Overlay',
+	'sap/ui/dt/OverlayRegistry',
+	// jQuery custom selectors ":focusable"
+	"sap/ui/dom/jquery/Selectors"
+], function(
+	jQuery,
+	Plugin,
+	Overlay,
+	OverlayRegistry
+) {
 	"use strict";
 
 	/**
@@ -17,7 +27,7 @@ sap.ui.define([
 	 * @class The TabHandling plugin adjusts the tabindex for the elements.
 	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @since 1.38
@@ -77,10 +87,14 @@ sap.ui.define([
 		var oDesignTime = this.getDesignTime();
 		var aRootElements = oDesignTime.getRootElements();
 		aRootElements.forEach(function(oRootElement) {
-			oRootElement.$().find(":focusable:not([tabIndex=-1], #overlay-container *)").each(function(iIndex, oNode) {
-				oNode.setAttribute("data-sap-ui-dt-tabindex", oNode.tabIndex);
-				oNode.setAttribute("tabIndex", -1);
-			});
+			var oRootOverlay = OverlayRegistry.getOverlay(oRootElement);
+			var $RootElement = oRootOverlay && oRootOverlay.getAssociatedDomRef();
+			if ($RootElement){
+				$RootElement.find(":focusable:not([tabIndex=-1], #overlay-container *)").each(function(iIndex, oNode) {
+					oNode.setAttribute("data-sap-ui-dt-tabindex", oNode.tabIndex);
+					oNode.setAttribute("tabIndex", -1);
+				});
+			}
 		});
 	};
 

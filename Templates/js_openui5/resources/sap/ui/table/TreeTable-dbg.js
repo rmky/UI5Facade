@@ -5,9 +5,30 @@
  */
 
 // Provides control sap.ui.table.TreeTable.
-sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAdapter', 'sap/ui/model/TreeBindingCompatibilityAdapter', './library', 'sap/ui/core/Element', './TableUtils'],
-	function(jQuery, Table, ClientTreeBindingAdapter, TreeBindingCompatibilityAdapter, library, Element, TableUtils) {
+sap.ui.define([
+	'./Table',
+	'sap/ui/model/ClientTreeBindingAdapter',
+	'sap/ui/model/TreeBindingCompatibilityAdapter',
+	'./library',
+	'sap/ui/core/Element',
+	'./TableUtils',
+	"sap/base/Log",
+	"sap/base/assert"
+],
+	function(
+		Table,
+		ClientTreeBindingAdapter,
+		TreeBindingCompatibilityAdapter,
+		library,
+		Element,
+		TableUtils,
+		Log,
+		assert
+	) {
 	"use strict";
+
+	// shortcuts
+	var SelectionMode = library.SelectionMode;
 
 	/**
 	 * Constructor for a new TreeTable.
@@ -18,12 +39,15 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.ui.table.TreeTable
+	 * @see {@link topic:08197fa68e4f479cbe30f639cc1cd22c sap.ui.table}
+	 * @see {@link topic:a05fe0659b9c49729168a48697ce0000 sap.ui.table.TreeTable}
 	 * @see {@link topic:148892ff9aea4a18b912829791e38f3e Tables: Which One Should I Choose?}
+	 * @see {@link fiori:/tree-table/ Tree Table}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var TreeTable = Table.extend("sap.ui.table.TreeTable", /** @lends sap.ui.table.TreeTable.prototype */ { metadata : {
@@ -33,20 +57,21 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 
 			/**
 			 * Specifies whether the first level is expanded.
-			 * @deprecated As of version 1.46.3, replaced by the corresponding binding parameter <code>numberOfExpandedLevels</code>.
+			 *
+			 * The value of the property is only taken into account if no parameter <code>numberOfExpandedLevels</code> is given in the binding information.
+			 * Changes to this property after the table is bound do not have any effect unless an explicit (re-)bind of the <code>rows</code> aggregation is done.
 			 *
 			 * Example:
 			 * <pre>
 			 *   oTable.bindRows({
-			 *      path: "...",
-			 *      parameters: {
-			 *         numberOfExpandedLevels: 1
-			 *      }
+			 *     path: "...",
+			 *     parameters: {
+			 *       numberOfExpandedLevels: 1
+			 *     }
 			 *   });
 			 * </pre>
 			 *
-			 * The value of the property is only taken into account if no parameter <code>numberOfExpandedLevels</code> is given in the binding information.
-			 * Changes to this property after the table is bound do not have any effect unless an explicit (re-)bind of the <code>rows</code> aggregation is done.
+			 * @deprecated As of version 1.46.3, replaced by the corresponding binding parameter <code>numberOfExpandedLevels</code>.
 			 */
 			expandFirstLevel : {type : "boolean", defaultValue : false, deprecated: true},
 
@@ -174,13 +199,13 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 	 *
 	 * Default value is <code>0</code>
 	 *
-	 * @param {int} iFixedRowCount  new value for property <code>fixedRowCount</code>
+	 * @param {int} iRowCount New value for property <code>fixedRowCount</code>
 	 * @returns {sap.ui.table.TreeTable} <code>this</code> to allow method chaining
 	 * @public
 	 */
 	TreeTable.prototype.setFixedRowCount = function(iRowCount) {
 		// this property makes no sense for the TreeTable
-		jQuery.sap.log.warning("TreeTable: the property \"fixedRowCount\" is not supported and will be ignored!");
+		Log.warning("TreeTable: the property \"fixedRowCount\" is not supported and will be ignored!");
 		return this;
 	};
 
@@ -198,15 +223,15 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 		var oBinding = Element.prototype.getBinding.call(this, sName);
 
 		if (oBinding && sName === "rows" && !oBinding.getLength) {
-			if (TableUtils.isInstanceOf(oBinding, "sap/ui/model/odata/ODataTreeBinding")) {
+			if (oBinding.isA("sap.ui.model.odata.ODataTreeBinding")) {
 				// use legacy tree binding adapter
 				TreeBindingCompatibilityAdapter(oBinding, this);
-			} else if (TableUtils.isInstanceOf(oBinding, "sap/ui/model/odata/v2/ODataTreeBinding")) {
+			} else if (oBinding.isA("sap.ui.model.odata.v2.ODataTreeBinding")) {
 				oBinding.applyAdapterInterface();
-			} else if (TableUtils.isInstanceOf(oBinding, "sap/ui/model/ClientTreeBinding")) {
+			} else if (oBinding.isA("sap.ui.model.ClientTreeBinding")) {
 				ClientTreeBindingAdapter.apply(oBinding);
 			} else {
-				jQuery.sap.log.error("Binding not supported by sap.ui.table.TreeTable");
+				Log.error("Binding not supported by sap.ui.table.TreeTable");
 			}
 		}
 
@@ -290,7 +315,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 	TreeTable.prototype.expandToLevel = function (iLevel) {
 		var oBinding = this.getBinding("rows");
 
-		jQuery.sap.assert(oBinding && oBinding.expandToLevel, "TreeTable.expandToLevel is not supported with your current Binding. Please check if you are running on an ODataModel V2.");
+		assert(oBinding && oBinding.expandToLevel, "TreeTable.expandToLevel is not supported with your current Binding. Please check if you are running on an ODataModel V2.");
 
 		if (oBinding && oBinding.expandToLevel) {
 			oBinding.expandToLevel(iLevel);
@@ -345,6 +370,10 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	TreeTable.prototype.setSelectedIndex = function (iRowIndex) {
+		if (this.getSelectionMode() === SelectionMode.None) {
+			return this;
+		}
+
 		if (iRowIndex === -1) {
 			//If Index eq -1 no item is selected, therefore clear selection is called
 			//SelectionModel doesn't know that -1 means no selection
@@ -391,8 +420,8 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 
 	/**
 	 * Sets the selection of the TreeTable to the given range (including boundaries).
-	 * Beware: The previous selection will be lost/overriden. If this is not wanted, please use "addSelectionInterval" and
-	 * "removeSelectionIntervall".
+	 * Beware: The previous selection will be lost/overridden. If this is not wanted, please use "addSelectionInterval" and
+	 * "removeSelectionInterval".
 	 *
 	 * @param {int} iFromIndex the start index of the selection range
 	 * @param {int} iToIndex the end index of the selection range
@@ -403,7 +432,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 	TreeTable.prototype.setSelectionInterval = function (iFromIndex, iToIndex) {
 		var sSelectionMode = this.getSelectionMode();
 
-		if (sSelectionMode === library.SelectionMode.None) {
+		if (sSelectionMode === SelectionMode.None) {
 			return this;
 		}
 
@@ -411,7 +440,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 		var oBinding = this.getBinding("rows");
 
 		if (oBinding && oBinding.findNode && oBinding.setSelectionInterval) {
-			if (sSelectionMode === library.SelectionMode.Single) {
+			if (sSelectionMode === SelectionMode.Single) {
 				oBinding.setSelectionInterval(iFromIndex, iFromIndex);
 			} else {
 				oBinding.setSelectionInterval(iFromIndex, iToIndex);
@@ -441,14 +470,14 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 	TreeTable.prototype.addSelectionInterval = function (iFromIndex, iToIndex) {
 		var sSelectionMode = this.getSelectionMode();
 
-		if (sSelectionMode === library.SelectionMode.None) {
+		if (sSelectionMode === SelectionMode.None) {
 			return this;
 		}
 
 		var oBinding = this.getBinding("rows");
 		//TBA check
 		if (oBinding && oBinding.findNode && oBinding.addSelectionInterval) {
-			if (sSelectionMode === library.SelectionMode.Single) {
+			if (sSelectionMode === SelectionMode.Single) {
 				oBinding.setSelectionInterval(iFromIndex, iFromIndex);
 			} else {
 				oBinding.addSelectionInterval(iFromIndex, iToIndex);
@@ -567,7 +596,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
-			jQuery.sap.assert(oBinding.setRootLevel, "rootLevel is not supported by the used binding");
+			assert(oBinding.setRootLevel, "rootLevel is not supported by the used binding");
 			if (oBinding.setRootLevel) {
 				oBinding.setRootLevel(iRootLevel);
 			}
@@ -585,7 +614,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 	TreeTable.prototype.setCollapseRecursive = function(bCollapseRecursive) {
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
-			jQuery.sap.assert(oBinding.setCollapseRecursive, "Collapse Recursive is not supported by the used binding");
+			assert(oBinding.setCollapseRecursive, "Collapse Recursive is not supported by the used binding");
 			if (oBinding.setCollapseRecursive) {
 				oBinding.setCollapseRecursive(bCollapseRecursive);
 			}
@@ -639,12 +668,12 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 	 *
 	 * @deprecated Since version 1.28.
 	 * To get a group-like visualization the <code>useGroupMode</code> property can be used.
-	 * @returns {sap.ui.table.TreeTable} Reference to this in order to allow method chaining
+	 * @returns {sap.ui.table.TreeTable} Reference to <code>this</code> in order to allow method chaining
 	 * @see sap.ui.table.TreeTable#setUseGroupMode
 	 * @public
 	 */
 	TreeTable.prototype.setEnableGrouping = function() {
-		jQuery.sap.log.warning("The property enableGrouping is not supported by the sap.ui.table.TreeTable control");
+		Log.warning("The property enableGrouping is not supported by the sap.ui.table.TreeTable control");
 		return this;
 	};
 
@@ -661,11 +690,11 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 	 * The <code>groupBy</code> association is not supported by the <code>TreeTable</code> control.
 	 *
 	 * @deprecated Since version 1.28.
-	 * @returns {sap.ui.table.TreeTable} Reference to this in order to allow method chaining
+	 * @returns {sap.ui.table.TreeTable} Reference to <code>this</code> in order to allow method chaining
 	 * @public
 	 */
 	TreeTable.prototype.setGroupBy = function() {
-		jQuery.sap.log.warning("The groupBy association is not supported by the sap.ui.table.TreeTable control");
+		Log.warning("The groupBy association is not supported by the sap.ui.table.TreeTable control");
 		return this;
 	};
 
@@ -680,7 +709,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 	 *
 	 * @param {boolean} bFlat If set to <code>true</code>, the flat mode is enabled
 	 *
-	 * @returns {sap.ui.table.TreeTable} Reference to this in order to allow method chaining
+	 * @returns {sap.ui.table.TreeTable} Reference to <code>this</code> in order to allow method chaining
 	 * @protected
 	 */
 	TreeTable.prototype.setUseFlatMode = function(bFlat) {

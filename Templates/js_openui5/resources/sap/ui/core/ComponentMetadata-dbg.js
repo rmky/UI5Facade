@@ -5,8 +5,16 @@
  */
 
 // Provides class sap.ui.core.ComponentMetadata
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui/core/Manifest', 'sap/ui/thirdparty/URI', 'jquery.sap.resources'],
-	function(jQuery, ManagedObjectMetadata, Manifest, URI /*, jQuery2 */) {
+sap.ui.define([
+	'sap/ui/thirdparty/jquery',
+	'sap/ui/base/ManagedObjectMetadata',
+	'sap/ui/core/Manifest',
+	'sap/ui/thirdparty/URI',
+	'sap/base/Log',
+	'sap/base/util/isPlainObject',
+	'sap/base/util/LoaderExtensions'
+],
+	function(jQuery, ManagedObjectMetadata, Manifest, URI, Log, isPlainObject, LoaderExtensions) {
 	"use strict";
 
 	var oCfgData = window["sap-ui-config"] || {};
@@ -28,7 +36,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @public
 	 * @class
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 1.9.2
 	 * @alias sap.ui.core.ComponentMetadata
 	 */
@@ -65,20 +73,20 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 		    sPackage = sName.replace(/\.\w+?$/, "");
 		if (oStaticInfo._src) {
 			if (oStaticInfo._src == "component.json") {
-				jQuery.sap.log.warning("Usage of declaration \"metadata: 'component.json'\" is deprecated (component " + sName + "). Use \"metadata: 'json'\" instead.");
+				Log.warning("Usage of declaration \"metadata: 'component.json'\" is deprecated (component " + sName + "). Use \"metadata: 'json'\" instead.");
 			} else if (oStaticInfo._src != "json") {
 				throw new Error("Invalid metadata declaration for component " + sName + ": \"" + oStaticInfo._src + "\"! Use \"metadata: 'json'\" to load metadata from component.json.");
 			}
 
 			var sResource = sPackage.replace(/\./g, "/") + "/component.json";
-			jQuery.sap.log.info("The metadata of the component " + sName + " is loaded from file " + sResource + ".");
+			Log.info("The metadata of the component " + sName + " is loaded from file " + sResource + ".");
 			try {
-				var oResponse = jQuery.sap.loadResource(sResource, {
+				var oResponse = LoaderExtensions.loadResource(sResource, {
 					dataType: "json"
 				});
 				jQuery.extend(oStaticInfo, oResponse);
 			} catch (err) {
-				jQuery.sap.log.error("Failed to load component metadata from \"" + sResource + "\" (component " + sName + ")! Reason: " + err);
+				Log.error("Failed to load component metadata from \"" + sResource + "\" (component " + sName + ")! Reason: " + err);
 			}
 		}
 
@@ -140,7 +148,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 		// This could happen when the manifest is accessed (via #getManifestObject) while sap.ui.component is loading it.
 		// Then the async request wouldn't be cancelled and the manifest already loaded (sync) should not be be overridden.
 		if (this._oManifest) {
-			jQuery.sap.log.warning("Can't apply manifest to ComponentMetadata as it has already been created.", this.getName(), "sap.ui.core.ComponentMetadata");
+			Log.warning("Can't apply manifest to ComponentMetadata as it has already been created.", this.getName(), "sap.ui.core.ComponentMetadata");
 			return;
 		}
 
@@ -161,7 +169,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 
 		this._oManifest = new Manifest(oManifestJson, {
 			componentName: this.getComponentName(),
-			baseUrl: jQuery.sap.getModulePath(this.getComponentName(), "/"),
+			baseUrl: sap.ui.require.toUrl(this.getComponentName().replace(/\./g, "/")) + "/",
 			process: this._oStaticInfo.__metadataVersion === 2
 		});
 	};
@@ -216,7 +224,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @private
 	 */
 	ComponentMetadata.prototype.onInitComponent = function(oInstance) {
-		jQuery.sap.log.error("The function ComponentMetadata#onInitComponent will be removed soon!");
+		Log.error("The function ComponentMetadata#onInitComponent will be removed soon!");
 	};
 
 	/**
@@ -227,7 +235,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @private
 	 */
 	ComponentMetadata.prototype.onExitComponent = function(oInstance) {
-		jQuery.sap.log.error("The function ComponentMetadata#onExitComponent will be removed soon!");
+		Log.error("The function ComponentMetadata#onExitComponent will be removed soon!");
 	};
 
 	/**
@@ -271,17 +279,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 				var sResource = sPackage.replace(/\./g, "/") + "/manifest.json";
 
 				// Check if resource is available in preload cache
-				var bIsResourceLoaded = jQuery.sap.isResourceLoaded(sResource);
+				var bIsResourceLoaded = !!sap.ui.loader._.getModuleState(sResource);
 
 				// Only handle sync behavior if resource is not taken from preload cache
 				if (!bIsResourceLoaded && syncCallBehavior === 2) {
-					jQuery.sap.log.error("[nosync] Loading manifest of the component " + sName + " ignored.", sResource, "sap.ui.core.ComponentMetadata");
+					Log.error("[nosync] Loading manifest of the component " + sName + " ignored.", sResource, "sap.ui.core.ComponentMetadata");
 					oManifest = {};
 				} else {
 					if (!bIsResourceLoaded && syncCallBehavior === 1) {
-						jQuery.sap.log.error("[nosync] The manifest of the component " + sName + " is loaded with sync XHR.", sResource, "sap.ui.core.ComponentMetadata");
+						Log.error("[nosync] The manifest of the component " + sName + " is loaded with sync XHR.", sResource, "sap.ui.core.ComponentMetadata");
 					} else {
-						jQuery.sap.log.info("The manifest of the component " + sName + " is loaded from file " + sResource + ".");
+						Log.info("The manifest of the component " + sName + " is loaded from file " + sResource + ".");
 					}
 
 					try {
@@ -291,12 +299,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 						// - sap.ui.component / sap.ui.component.load are used with "async=true" and/or
 						//   "manifest=true|String|Object" to create / load the component
 						//   (Also see #_applyManifest)
-						var oResponse = jQuery.sap.loadResource(sResource, {
+						var oResponse = LoaderExtensions.loadResource(sResource, {
 							dataType: "json"
 						});
 						oManifest = oResponse;
 					} catch (err) {
-						jQuery.sap.log.error("Failed to load component manifest from \"" + sResource + "\" (component " + sName + ")! Reason: " + err);
+						Log.error("Failed to load component manifest from \"" + sResource + "\" (component " + sName + ")! Reason: " + err);
 						// in case of error the manifest is an empty object
 						// to behave similar like for missing component.json
 						oManifest = {};
@@ -336,7 +344,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated  Since 1.33.0. Please use the sap.ui.core.Component#getManifest
 	 */
 	ComponentMetadata.prototype._getManifest = function() {
-		jQuery.sap.log.warning("ComponentMetadata#_getManifest: do not use deprecated functions anymore!");
+		Log.warning("ComponentMetadata#_getManifest: do not use deprecated functions anymore!");
 		return this.getManifestObject().getJson();
 	};
 
@@ -361,7 +369,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated  Since 1.33.0. Please use the sap.ui.core.Component#getRawManifest
 	 */
 	ComponentMetadata.prototype._getRawManifest = function() {
-		jQuery.sap.log.warning("ComponentMetadata#_getRawManifest: do not use deprecated functions anymore!");
+		Log.warning("ComponentMetadata#_getRawManifest: do not use deprecated functions anymore!");
 		return this.getManifestObject().getRawJson();
 	};
 
@@ -406,7 +414,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 		var oData = this.getManifestObject().getEntry(sKey);
 
 		// merge / extend should only be done for objects or when entry wasn't found
-		if (oData !== undefined && !jQuery.isPlainObject(oData)) {
+		if (oData !== undefined && !isPlainObject(oData)) {
 			return oData;
 		}
 
@@ -452,15 +460,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 */
 	ComponentMetadata.prototype.getCustomEntry = function(sKey, bMerged) {
 		if (!sKey || sKey.indexOf(".") <= 0) {
-			jQuery.sap.log.warning("Component Metadata entries with keys without namespace prefix can not be read via getCustomEntry. Key: " + sKey + ", Component: " + this.getName());
+			Log.warning("Component Metadata entries with keys without namespace prefix can not be read via getCustomEntry. Key: " + sKey + ", Component: " + this.getName());
 			return null;
 		}
 
 		var oParent,
 		    oData = this._oStaticInfo[sKey] || {};
 
-		if (!jQuery.isPlainObject(oData)) {
-			jQuery.sap.log.warning("Custom Component Metadata entry with key '" + sKey + "' must be an object. Component: " + this.getName());
+		if (!isPlainObject(oData)) {
+			Log.warning("Custom Component Metadata entry with key '" + sKey + "' must be an object. Component: " + this.getName());
 			return null;
 		}
 
@@ -494,7 +502,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated Since 1.27.1. Please use {@link sap.ui.core.Component#getManifestEntry}("/sap.ui5/dependencies")
 	 */
 	ComponentMetadata.prototype.getDependencies = function() {
-		//jQuery.sap.log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getDependencies is deprecated!");
+		// Log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getDependencies is deprecated!");
 		if (!this._oLegacyDependencies) {
 
 			var mDependencies = this.getManifestEntry("/sap.ui5/dependencies"),
@@ -533,7 +541,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated Since 1.27.1. Please use {@link sap.ui.core.Component#getManifestEntry}("/sap.ui5/resources")
 	 */
 	ComponentMetadata.prototype.getIncludes = function() {
-		//jQuery.sap.log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getIncludes is deprecated!");
+		// Log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getIncludes is deprecated!");
 		if (!this._aLegacyIncludes) {
 			var aIncludes = [],
 			    mResources = this.getManifestEntry("/sap.ui5/resources") || {},
@@ -570,7 +578,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated Since 1.27.1. Please use {@link sap.ui.core.Component#getManifestEntry}("/sap.ui5/dependencies/minUI5Version")
 	 */
 	ComponentMetadata.prototype.getUI5Version = function() {
-		//jQuery.sap.log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getUI5Version is deprecated!");
+		// Log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getUI5Version is deprecated!");
 		return this.getManifestEntry("/sap.ui5/dependencies/minUI5Version");
 	};
 
@@ -589,7 +597,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated Since 1.27.1. Please use {@link sap.ui.core.Component#getManifestEntry}("/sap.ui5/dependencies/components")
 	 */
 	ComponentMetadata.prototype.getComponents = function() {
-		//jQuery.sap.log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getComponents is deprecated!");
+		// Log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getComponents is deprecated!");
 		return this.getDependencies().components;
 	};
 
@@ -609,7 +617,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated Since 1.27.1. Please use {@link sap.ui.core.Component#getManifestEntry}("/sap.ui5/dependencies/libs")
 	 */
 	ComponentMetadata.prototype.getLibs = function() {
-		//jQuery.sap.log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getLibs is deprecated!");
+		// Log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getLibs is deprecated!");
 		return this.getDependencies().libs;
 	};
 
@@ -643,7 +651,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated Since 1.27.1. Please use {@link sap.ui.core.Component#getManifestEntry}("/sap.ui5/config")
 	 */
 	ComponentMetadata.prototype.getConfig = function(sKey, bDoNotMerge) {
-		//jQuery.sap.log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getConfig is deprecated!");
+		//Log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getConfig is deprecated!");
 		var mConfig = this.getManifestEntry("/sap.ui5/config", !bDoNotMerge);
 
 		if (!mConfig) {
@@ -675,7 +683,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated Since 1.27.1. Please use {@link sap.ui.core.Component#getManifestEntry}("/sap.ui5/extends/extensions")
 	 */
 	ComponentMetadata.prototype.getCustomizing = function(bDoNotMerge) {
-		//jQuery.sap.log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getCustomizing is deprecated!");
+		// Log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getCustomizing is deprecated!");
 		return this.getManifestEntry("/sap.ui5/extends/extensions", !bDoNotMerge);
 	};
 
@@ -698,7 +706,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated Since 1.27.1. Please use {@link sap.ui.core.Component#getManifestEntry}("/sap.ui5/models")
 	 */
 	ComponentMetadata.prototype.getModels = function(bDoNotMerge) {
-		//jQuery.sap.log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getModels is deprecated!");
+		// Log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getModels is deprecated!");
 		if (!this._oLegacyModels) {
 			this._oLegacyModels = {};
 			var mDataSources = this.getManifestEntry("/sap.ui5/models") || {};
@@ -737,7 +745,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated Since 1.28.1. Please use {@link sap.ui.core.Component#getManifestEntry}("/sap.ui5/handleValidation")
 	 */
 	ComponentMetadata.prototype.handleValidation = function() {
-		//jQuery.sap.log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.handleValidation is deprecated!");
+		// Log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.handleValidation is deprecated!");
 		return this.getManifestEntry("/sap.ui5/handleValidation");
 	};
 
@@ -758,7 +766,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 * @deprecated Since 1.27.1. Please use the sap.ui.core.ComponentMetadata#getManifest
 	 */
 	ComponentMetadata.prototype.getServices = function() {
-		jQuery.sap.log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getServices is deprecated!");
+		Log.warning("Usage of sap.ui.core.ComponentMetadata.protoype.getServices is deprecated!");
 		// legacy API - for the manifest services has a different meaning!
 		return this._oStaticInfo.services || {};
 	};

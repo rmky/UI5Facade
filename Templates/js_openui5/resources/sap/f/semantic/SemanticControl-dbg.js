@@ -5,7 +5,7 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global",
+	"sap/ui/thirdparty/jquery",
 	"sap/ui/base/ManagedObject",
 	"sap/ui/core/Element",
 	"./SemanticConfiguration"
@@ -25,7 +25,7 @@ sap.ui.define([
 	* @abstract
 	*
 	* @author SAP SE
-	* @version 1.56.6
+	* @version 1.60.1
 	*
 	* @constructor
 	* @public

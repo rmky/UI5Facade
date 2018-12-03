@@ -9,8 +9,14 @@
 /*eslint-disable camelcase, valid-jsdoc, no-warning-comments */
 
 // Provides API for analytical extensions in OData service metadata
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/FilterOperator', 'sap/ui/model/Sorter', './AnalyticalVersionInfo'],
-	function(jQuery, Filter, FilterOperator, Sorter, AnalyticalVersionInfo) {
+sap.ui.define([
+	'sap/ui/model/Filter',
+	'sap/ui/model/FilterOperator',
+	'sap/ui/model/Sorter',
+	'./AnalyticalVersionInfo',
+	"sap/base/security/encodeURL"
+],
+	function(Filter, FilterOperator, Sorter, AnalyticalVersionInfo, encodeURL) {
 	"use strict";
 
 	/**
@@ -29,7 +35,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/FilterO
 	 * @alias sap.ui.model.analytics.odata4analytics
 	 * @protected
 	 */
-	var odata4analytics = odata4analytics || {};
+	var odata4analytics = odata4analytics || {},
+		rOnlyDigits = /^\d+$/;
 
 	odata4analytics.constants = {};
 	odata4analytics.constants["SAP_NAMESPACE"] = "http://www.sap.com/Protocols/SAPData";
@@ -241,7 +248,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/FilterO
 				checkForMetadata();
 			}
 
-			if (this._oModel.getServiceMetadata().dataServices == undefined) {
+			if (this._oModel.getServiceMetadata()
+					&& this._oModel.getServiceMetadata().dataServices == undefined) {
 				throw "Model could not be loaded";
 			}
 
@@ -1756,8 +1764,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/FilterO
 		 */
 		getSuperOrdinateDimension : function() {
 			if (!this._sSuperOrdinateDimension) {
-				var sSuperOrdPropName = this._oQueryResult.getEntityType().getSuperOrdinatePropertyOfProperty(this.getName()).name;
-				this._sSuperOrdinateDimension = this._oQueryResult.findDimensionByName(sSuperOrdPropName);
+				var oSuperOrdProperty = this._oQueryResult.getEntityType().getSuperOrdinatePropertyOfProperty(this.getName());
+				if (oSuperOrdProperty) {
+					this._sSuperOrdinateDimension = this._oQueryResult.findDimensionByName(oSuperOrdProperty.name);
+				}
 			}
 			return this._sSuperOrdinateDimension;
 		},
@@ -3036,9 +3046,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/FilterO
 		 * @private
 		 */
 		_renderPropertyFilterValue : function(sFilterValue, sPropertyEDMTypeName) {
-			// initial implementation called odata4analytics.helper.renderPropertyFilterValue, which had problems with locale-specific input values
+			if (sPropertyEDMTypeName === "Edm.Time" && rOnlyDigits.test(sFilterValue)) {
+				sFilterValue = {ms : parseInt(sFilterValue, 10), __edmType : "Edm.Time"};
+			}
+
+			// initial implementation called odata4analytics.helper.renderPropertyFilterValue,
+			// which had problems with locale-specific input values
 			// this is handled in the ODataModel
-			return  jQuery.sap.encodeURL(
+			return encodeURL(
 					this._oModel.getODataModel().formatValue(sFilterValue, sPropertyEDMTypeName));
 		},
 
@@ -3102,7 +3117,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/FilterO
 				throw "Cannot add filter condition for unknown property name " + sPropertyName; // TODO
 			}
 			var aFilterablePropertyNames = this._oEntityType.getFilterablePropertyNames();
-			if (jQuery.inArray(sPropertyName,aFilterablePropertyNames) === -1) {
+			if (((aFilterablePropertyNames ? Array.prototype.indexOf.call(aFilterablePropertyNames, sPropertyName) : -1)) === -1) {
 				throw "Cannot add filter condition for not filterable property name " + sPropertyName; // TODO
 			}
 			this._addCondition(sPropertyName, sOperator, oValue, oValue2);
@@ -3160,7 +3175,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/FilterO
 				throw "Cannot add filter condition for unknown property name " + sPropertyName; // TODO
 			}
 			var aFilterablePropertyNames = this._oEntityType.getFilterablePropertyNames();
-			if (jQuery.inArray(sPropertyName, aFilterablePropertyNames) === -1) {
+			if (((aFilterablePropertyNames ? Array.prototype.indexOf.call(aFilterablePropertyNames, sPropertyName) : -1)) === -1) {
 				throw "Cannot add filter condition for not filterable property name " + sPropertyName; // TODO
 			}
 			for ( var i = -1, oValue; (oValue = aValues[++i]) !== undefined;) {
@@ -3277,34 +3292,45 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/FilterO
 		 * @private
 		 */
 		renderUI5Filter : function(oUI5Filter) {
-			var oProperty = this._oEntityType.findPropertyByName(oUI5Filter.sPath);
+			var sFilterExpression = null,
+				oProperty = this._oEntityType.findPropertyByName(oUI5Filter.sPath);
+
 			if (oProperty == null) {
 				throw "Cannot add filter condition for unknown property name " + oUI5Filter.sPath; // TODO
 			}
 
-			var sFilterExpression = null;
 			switch (oUI5Filter.sOperator) {
 			case FilterOperator.BT:
-				sFilterExpression = "(" + oUI5Filter.sPath + " "
-						+ FilterOperator.GE.toLowerCase() + " "
-						+ this._renderPropertyFilterValue(oUI5Filter.oValue1, oProperty.type)
-						+ " and " + oUI5Filter.sPath + " " + FilterOperator.LE.toLowerCase() + " "
-						+ this._renderPropertyFilterValue(oUI5Filter.oValue2, oProperty.type)
-						+ ")";
+				sFilterExpression = "(" + oUI5Filter.sPath + " ge "
+					+ this._renderPropertyFilterValue(oUI5Filter.oValue1, oProperty.type)
+					+ " and " + oUI5Filter.sPath + " le "
+					+ this._renderPropertyFilterValue(oUI5Filter.oValue2, oProperty.type)
+					+ ")";
+				break;
+			case FilterOperator.NB:
+				sFilterExpression = "(" + oUI5Filter.sPath + " lt "
+					+ this._renderPropertyFilterValue(oUI5Filter.oValue1, oProperty.type)
+					+ " or " + oUI5Filter.sPath + " gt "
+					+ this._renderPropertyFilterValue(oUI5Filter.oValue2, oProperty.type)
+					+ ")";
 				break;
 			case FilterOperator.Contains:
-				sFilterExpression = "substringof("
-								+ this._renderPropertyFilterValue(oUI5Filter.oValue1, "Edm.String") + "," +  oUI5Filter.sPath + ")";
+			case FilterOperator.NotContains:
+				sFilterExpression = (oUI5Filter.sOperator[0] === "N" ? "not " : "") + "substringof("
+					+ this._renderPropertyFilterValue(oUI5Filter.oValue1, "Edm.String")
+					+ "," +  oUI5Filter.sPath + ")";
 				break;
 			case FilterOperator.StartsWith:
 			case FilterOperator.EndsWith:
-				sFilterExpression = oUI5Filter.sOperator.toLowerCase() + "("
-						+ oUI5Filter.sPath + ","
-						+ this._renderPropertyFilterValue(oUI5Filter.oValue1, "Edm.String") + ")";
+			case FilterOperator.NotStartsWith:
+			case FilterOperator.NotEndsWith:
+				sFilterExpression = oUI5Filter.sOperator.toLowerCase().replace("not", "not ") + "("
+					+ oUI5Filter.sPath + ","
+					+ this._renderPropertyFilterValue(oUI5Filter.oValue1, "Edm.String") + ")";
 				break;
 			default:
-				sFilterExpression = oUI5Filter.sPath + " " + oUI5Filter.sOperator.toLowerCase() + " "
-						+ this._renderPropertyFilterValue(oUI5Filter.oValue1, oProperty.type);
+				sFilterExpression = oUI5Filter.sPath + " " + oUI5Filter.sOperator.toLowerCase()
+					+ " " + this._renderPropertyFilterValue(oUI5Filter.oValue1, oProperty.type);
 			}
 
 			return sFilterExpression;
@@ -3631,7 +3657,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/FilterO
 				return this;
 			}
 			var aSortablePropertyNames = this._oEntityType.getSortablePropertyNames();
-			if (jQuery.inArray(sPropertyName, aSortablePropertyNames) === -1) {
+			if (((aSortablePropertyNames ? Array.prototype.indexOf.call(aSortablePropertyNames, sPropertyName) : -1)) === -1) {
 				throw "Cannot add sort condition for not sortable property name " + sPropertyName; // TODO
 			}
 
@@ -3797,7 +3823,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/Filter', 'sap/ui/model/FilterO
 			// this is handled in the ODataModel
 
 			// TODO refactor with corresponding method FilterExpression._renderPropertyFilterValue
-			return  jQuery.sap.encodeURL(
+			return encodeURL(
 					this._oParameterization.getTargetQueryResult().getModel().getODataModel().formatValue(sKeyValue, sPropertyEDMTypeName));
 		},
 

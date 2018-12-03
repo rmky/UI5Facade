@@ -6,24 +6,30 @@
 
 // Provides control sap.ui.core.tmpl.TemplateControl.
 sap.ui.define([
-    'jquery.sap.global',
-    'sap/ui/core/Control',
-    'sap/ui/core/DeclarativeSupport',
-    'sap/ui/core/library',
-    'sap/ui/core/UIArea',
-    './DOMElement',
-    './Template',
-    "./TemplateControlRenderer"
+	'sap/ui/core/Control',
+	'sap/ui/core/DeclarativeSupport',
+	'sap/ui/core/library',
+	'sap/ui/core/UIArea',
+	'./DOMElement',
+	'./Template',
+	"./TemplateControlRenderer",
+	"sap/base/strings/capitalize",
+	"sap/base/strings/hyphenate",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
-	    jQuery,
 		Control,
 		DeclarativeSupport,
 		library,
 		UIArea,
 		DOMElement,
 		Template,
-		TemplateControlRenderer
+		TemplateControlRenderer,
+		capitalize,
+		hyphenate,
+		Log,
+		jQuery
 	) {
 	"use strict";
 
@@ -38,7 +44,7 @@ sap.ui.define([
 	 * @class
 	 * This is the base class for all template controls. Template controls are declared based on templates.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @public
 	 * @since 1.15
@@ -258,7 +264,7 @@ sap.ui.define([
 		var oPathInfo = Template.parsePath(sPath),
 			oModel = this.getModel(oPathInfo.model),
 			sPath = oPathInfo.path,
-			sModelFunc = sType ? "bind" + jQuery.sap.charToUpperCase(sType) : "bindProperty",
+			sModelFunc = sType ? "bind" + capitalize(sType) : "bindProperty",
 			oBinding = oModel && oModel[sModelFunc](sPath),
 			oBindingInfo = {
 				binding: oBinding,
@@ -269,7 +275,7 @@ sap.ui.define([
 		// attach a change handler (if the binding exists)
 		if (oBinding) {
 			oBindingInfo.changeHandler = function() {
-				jQuery.sap.log.debug("TemplateControl#" + this.getId() + ": " + sType + " binding changed for path \"" + sPath + "\"");
+				Log.debug("TemplateControl#" + this.getId() + ": " + sType + " binding changed for path \"" + sPath + "\"");
 				this.invalidate();
 			}.bind(this);
 			oBinding.attachChange(oBindingInfo.changeHandler);
@@ -295,8 +301,8 @@ sap.ui.define([
 	TemplateControl.prototype.calculatePath = function(sPath, sType) {
 		var oBindingContext = this.getBindingContext(),
 		    sBindingContextPath = oBindingContext && oBindingContext.getPath();
-		if (sPath && sBindingContextPath && !jQuery.sap.startsWith(sPath, "/")) {
-			if (!jQuery.sap.endsWith(sBindingContextPath, "/")) {
+		if (sPath && sBindingContextPath && !sPath.startsWith("/")) {
+			if (!sBindingContextPath.endsWith("/")) {
 				sBindingContextPath += "/";
 			}
 			sPath = sBindingContextPath + sPath;
@@ -376,7 +382,7 @@ sap.ui.define([
 		// conversion for the values done (would be the better approach)
 		var mHTMLSettings = {};
 		jQuery.each(mSettings, function(sKey, oValue) {
-			mHTMLSettings["data-" + jQuery.sap.hyphen(sKey)] = oValue;
+			mHTMLSettings["data-" + hyphenate(sKey)] = oValue;
 		});
 		var $control = jQuery("<div/>", mHTMLSettings);
 		var oControl = DeclarativeSupport._createControl($control.get(0), oView);

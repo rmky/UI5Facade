@@ -6,14 +6,15 @@
 
 // Provides class sap.ui.rta.plugin.RenameHandler.
 sap.ui.define([
-	'jquery.sap.global',
+	"sap/ui/thirdparty/jquery",
 	'sap/ui/rta/plugin/Plugin',
 	'sap/ui/dt/Overlay',
 	'sap/ui/dt/ElementUtil',
 	'sap/ui/dt/OverlayUtil',
 	'sap/ui/dt/OverlayRegistry',
 	'sap/ui/rta/Utils',
-	'sap/ui/dt/DOMUtil'
+	'sap/ui/dt/DOMUtil',
+	"sap/ui/events/KeyCodes"
 ], function(
 	jQuery,
 	Plugin,
@@ -22,7 +23,8 @@ sap.ui.define([
 	OverlayUtil,
 	OverlayRegistry,
 	Utils,
-	DOMUtil
+	DOMUtil,
+	KeyCodes
 ) {
 	"use strict";
 
@@ -30,7 +32,7 @@ sap.ui.define([
 	 * Provides Rename handling functionality
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -45,7 +47,7 @@ sap.ui.define([
 		 */
 		_manageClickEvent : function (vEventOrElement) {
 			var oOverlay = vEventOrElement.getSource ? vEventOrElement.getSource() : vEventOrElement;
-			if (oOverlay.isSelected() && this.isRenameAvailable(oOverlay) && this.isRenameEnabled(oOverlay)) {
+			if (oOverlay.isSelected() && this.isRenameAvailable(oOverlay) && this.isRenameEnabled([oOverlay])) {
 				oOverlay.attachBrowserEvent("click", RenameHandler._onClick, this);
 			} else {
 				oOverlay.detachBrowserEvent("click", RenameHandler._onClick, this);
@@ -53,7 +55,7 @@ sap.ui.define([
 		},
 
 		/**
-		 * @param {sap.ui.dt.Overlay} oOverlay - target overlay
+		 * @param {map} mPropertyBag - (required) contains required properties
 		 * @public
 		 */
 		startEdit : function (mPropertyBag) {
@@ -71,37 +73,42 @@ sap.ui.define([
 				vEditableControlDomRef.get(0).scrollIntoView();
 			}
 
-			var _$ControlForWrapperDomRef = jQuery(ElementUtil.getDomRef(oElement)); /* Main Control */
 			this._$oEditableControlDomRef = jQuery(vEditableControlDomRef); /* Text Control */
-			var _$oEditableControlParentDomRef = this._$oEditableControlDomRef.parent(); /* Text Control parent*/
-
 			var iWidthDifference = 0;
 
-			var iControlForWrapperWidth = parseInt(_$ControlForWrapperDomRef.outerWidth(), 10);
-
-			if (!isNaN(iControlForWrapperWidth)) {
-				var iEditableControlWidth = parseInt(this._$oEditableControlDomRef.outerWidth(), 10);
-				var iEditableControlParentWidth = parseInt(_$oEditableControlParentDomRef.outerWidth(), 10);
-
-				iWidthDifference = iControlForWrapperWidth - iEditableControlWidth;
-
-				if (iWidthDifference < 0 && iEditableControlParentWidth) {
-					if (_$oEditableControlParentDomRef.get(0).id !== _$ControlForWrapperDomRef.get(0).id
-						&& _$oEditableControlParentDomRef.children(":visible").length === 1
-						&& _$oEditableControlParentDomRef.children(":visible").get(0).id === this._$oEditableControlDomRef.get(0).id
-						&& iControlForWrapperWidth > iEditableControlParentWidth) {
-						iWidthDifference = iControlForWrapperWidth - iEditableControlParentWidth;
-					} else {
-						iWidthDifference = 0;
-					}
-				}
-			}
-
-			var oOverlayForWrapper = sap.ui.dt.OverlayRegistry.getOverlay(
+			// case where the editable control has it's own overlay
+			var oOverlayForWrapper = OverlayRegistry.getOverlay(
 				vEditableControlDomRef instanceof jQuery
 					? vEditableControlDomRef.get(0).id
 					: vEditableControlDomRef.id
-			) || mPropertyBag.overlay;
+			);
+
+			// if the editable control overlay could not be found, then the passed overlay should be considered
+			// for this purpose the width of the editable control should be adjusted
+			if (!oOverlayForWrapper) {
+				oOverlayForWrapper = this._oEditedOverlay;
+				var _$ControlForWrapperDomRef = jQuery(ElementUtil.getDomRef(oElement)); /* Main Control */
+				var _$oEditableControlParentDomRef = this._$oEditableControlDomRef.parent(); /* Text Control parent */
+				var iControlForWrapperWidth = parseInt(_$ControlForWrapperDomRef.outerWidth(), 10); /* Main Control Width */
+
+				if (!isNaN(iControlForWrapperWidth)) {
+					var iEditableControlWidth = parseInt(this._$oEditableControlDomRef.outerWidth(), 10);
+					var iEditableControlParentWidth = parseInt(_$oEditableControlParentDomRef.outerWidth(), 10);
+
+					iWidthDifference = iControlForWrapperWidth - iEditableControlWidth;
+
+					if (iWidthDifference < 0 && iEditableControlParentWidth) {
+						if (_$oEditableControlParentDomRef.get(0).id !== _$ControlForWrapperDomRef.get(0).id
+							&& _$oEditableControlParentDomRef.children(":visible").length === 1
+							&& _$oEditableControlParentDomRef.children(":visible").get(0).id === this._$oEditableControlDomRef.get(0).id
+							&& iControlForWrapperWidth > iEditableControlParentWidth) {
+							iWidthDifference = iControlForWrapperWidth - iEditableControlParentWidth;
+						} else {
+							iWidthDifference = 0;
+						}
+					}
+				}
+			}
 
 			var _$oWrapper = jQuery("<div class='sapUiRtaEditableField'></div>")
 				.css({
@@ -125,16 +132,22 @@ sap.ui.define([
 			this._$editableField.children().remove();
 			this._$editableField.css('visibility', 'hidden');
 
-			// TODO : for all browsers
 			this._$editableField.css({
 				"-moz-user-modify": "read-write",
 				"-webkit-user-modify": "read-write",
 				"-ms-user-modify": "read-write",
 				"user-modify": "read-write",
 				"text-overflow": "clip",
-				"white-space": "nowrap",
-				"line-height": "normal" //to avoid incorrectly sized field in Edge
+				"white-space": "nowrap"
 			});
+
+			//only for renaming variants in edge browser [SPECIAL CASE]
+			if (sap.ui.Device.browser.name == "ed" &&
+				  oElement.getMetadata().getName() == "sap.ui.fl.variants.VariantManagement"){
+				this._$editableField.css({
+					"line-height": "normal"
+				});
+			}
 
 			Overlay.getMutationObserver().ignoreOnce({
 				target: this._$oEditableControlDomRef.get(0)
@@ -174,12 +187,12 @@ sap.ui.define([
 			var oOldDesignTime = this.getDesignTime();
 
 			if (oOldDesignTime) {
-				oOldDesignTime.detachSelectionChange(RenameHandler._onDesignTimeSelectionChange, this);
+				oOldDesignTime.getSelectionManager().detachChange(RenameHandler._onDesignTimeSelectionChange, this);
 			}
 			Plugin.prototype.setDesignTime.apply(this, arguments);
 
 			if (oDesignTime) {
-				oDesignTime.attachSelectionChange(RenameHandler._onDesignTimeSelectionChange, this);
+				oDesignTime.getSelectionManager().attachChange(RenameHandler._onDesignTimeSelectionChange, this);
 				this._aSelection = this.getSelectedOverlays();
 			}
 		},
@@ -197,12 +210,21 @@ sap.ui.define([
 
 			this._aSelection = aSelection;
 		},
+
 		/**
 		 * @param {sap.ui.base.Event} oEvent - event object
 		 * @private
 		 */
 		_stopPropagation : function (oEvent) {
 			oEvent.stopPropagation();
+		},
+
+		/**
+		 * @param {sap.ui.base.Event} oEvent - event object
+		 * @private
+		 */
+		_preventDefault : function (oEvent) {
+			oEvent.preventDefault();
 		},
 
 		/**
@@ -220,9 +242,11 @@ sap.ui.define([
 
 		/**
 		 * @param {boolean} bRestoreFocus - true if the focus should be restored on overlay after rename
+		 * @param {string} sPluginMethodName - method name of the plugin
 		 * @private
 		 */
 		_stopEdit : function (bRestoreFocus, sPluginMethodName) {
+			var oOverlay;
 			this._bPreventMenu = false;
 
 			// exchange the dummy text at the label with the genuine empty text (see start_edit function)
@@ -237,7 +261,7 @@ sap.ui.define([
 			this._$oEditableControlDomRef.css("visibility", "visible");
 
 			if (bRestoreFocus) {
-				var oOverlay = this._oEditedOverlay;
+				oOverlay = this._oEditedOverlay;
 
 				oOverlay.setSelected(true);
 				oOverlay.focus();
@@ -246,6 +270,7 @@ sap.ui.define([
 			delete this._$editableField;
 			delete this._$oEditableControlDomRef;
 			delete this._oEditedOverlay;
+			delete this._bBlurOrKeyDownStarted;
 
 			sap.ui.getCore().getEventBus().publish('sap.ui.rta', sPluginMethodName, {
 				overlay: oOverlay
@@ -257,8 +282,30 @@ sap.ui.define([
 		 * @private
 		 */
 		_onEditableFieldBlur : function (oEvent) {
-			this._emitLabelChangeEvent();
-			this.stopEdit(false);
+			return RenameHandler._handlePostRename.call(this, false);
+		},
+
+		/**
+		 * Handles events after rename has been performed
+		 * @param {boolean} bRestoreFocus - to restore focus to overlay after rename completes
+		 * @private
+		 */
+		_handlePostRename : function (bRestoreFocus, oEvent) {
+			if (!this._bBlurOrKeyDownStarted) {
+				this._bBlurOrKeyDownStarted = true;
+				if (oEvent) {
+					RenameHandler._preventDefault.call(this, oEvent);
+					RenameHandler._stopPropagation.call(this, oEvent);
+				}
+				return this._emitLabelChangeEvent()
+					.then(function (fnErrorHandler) {
+						this.stopEdit(bRestoreFocus);
+						if (typeof fnErrorHandler === "function") {
+							fnErrorHandler(); // contains startEdit() and valueStateMessage
+						}
+					}.bind(this));
+			}
+			return Promise.resolve();
 		},
 
 		/**
@@ -267,21 +314,19 @@ sap.ui.define([
 		 */
 		_onEditableFieldKeydown : function (oEvent) {
 			switch (oEvent.keyCode) {
-				case jQuery.sap.KeyCodes.ENTER:
-					this._emitLabelChangeEvent();
+				case KeyCodes.ENTER:
+					return RenameHandler._handlePostRename.call(this, true, oEvent);
+				case KeyCodes.ESCAPE:
 					this.stopEdit(true);
-					oEvent.preventDefault();
+					RenameHandler._preventDefault.call(this, oEvent);
 					break;
-				case jQuery.sap.KeyCodes.ESCAPE:
-					this.stopEdit(true);
-					oEvent.preventDefault();
-					break;
-				case jQuery.sap.KeyCodes.DELETE:
+				case KeyCodes.DELETE:
 					//Incident ID: #1680315103
-					oEvent.stopPropagation();
+					RenameHandler._stopPropagation.call(this, oEvent);
 					break;
 				default:
 			}
+			return Promise.resolve();
 		},
 
 		/**
@@ -302,9 +347,9 @@ sap.ui.define([
 		 */
 		_onClick : function(oEvent) {
 			var oOverlay = sap.ui.getCore().byId(oEvent.currentTarget.id);
-			if (this.isRenameEnabled(oOverlay) && !oEvent.metaKey && !oEvent.ctrlKey) {
+			if (this.isRenameEnabled([oOverlay]) && !oEvent.metaKey && !oEvent.ctrlKey) {
 				this.startEdit(oOverlay);
-				oEvent.preventDefault();
+				RenameHandler._preventDefault.call(this, oEvent);
 			}
 		},
 

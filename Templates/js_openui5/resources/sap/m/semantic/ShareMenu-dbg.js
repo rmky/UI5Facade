@@ -14,23 +14,26 @@
 
 // Provides class sap.m.semantic.ShareMenu
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/base/Metadata',
 	'sap/ui/base/ManagedObjectObserver',
+	'sap/m/library',
 	'sap/m/Button',
 	'sap/m/OverflowToolbarLayoutData',
 	'sap/ui/core/IconPool',
 	'sap/m/OverflowToolbarButton',
-	'sap/m/OverflowToolbarPriority'],
-	function(jQuery,
-			 Metadata,
+	"sap/base/Log"],
+	function(Metadata,
 			 ManagedObjectObserver,
+			 library,
 			 Button,
 			 OverflowToolbarLayoutData,
 			 IconPool,
 			 OverflowToolbarButton,
-			 OverflowToolbarPriority) {
+			 Log) {
 	"use strict";
+
+	// shortcut for sap.m.OverflowToolbarPriority
+	var OverflowToolbarPriority = library.OverflowToolbarPriority;
 
 	/**
 	 * Constructor for an sap.m.semantic.ShareMenu.
@@ -40,7 +43,7 @@ sap.ui.define([
 	 * ShareMenu is a special menu that is represented by (1) an actionSheet with the menu items and (2) a button that opens the actionSheet.
 	 * If the menu has only one item, then that item appears in place of the button that opens the actionSheet.
 	 *
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @private
 	 * @since 1.30.0
 	 * @alias sap.m.semantic.ShareMenu
@@ -50,7 +53,7 @@ sap.ui.define([
 
 		constructor : function(oActionSheet) {
 			if (!oActionSheet) {
-				jQuery.sap.log.error("missing argumment: constructor expects an actionsheet reference", this);
+				Log.error("missing argumment: constructor expects an actionsheet reference", this);
 				return;
 			}
 
@@ -341,7 +344,7 @@ sap.ui.define([
 	ShareMenu.prototype._setMode = function (sMode, bSuppressInvalidate, oBaseButton) {
 
 		if (!ShareMenu._Mode[sMode]) {
-			jQuery.sap.log.error("unknown shareMenu mode " + sMode, this);
+			Log.error("unknown shareMenu mode " + sMode, this);
 			return this;
 		}
 

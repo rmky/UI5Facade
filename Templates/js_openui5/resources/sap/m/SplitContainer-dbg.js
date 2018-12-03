@@ -6,7 +6,6 @@
 
 // Provides control sap.m.SplitContainer.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
@@ -16,10 +15,12 @@ sap.ui.define([
 	'sap/ui/base/ManagedObject',
 	'sap/m/NavContainer',
 	'sap/m/Popover',
-	'./SplitContainerRenderer'
+	'./SplitContainerRenderer',
+	"sap/ui/dom/containsOrEquals",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
 ],
 function(
-	jQuery,
 	library,
 	Control,
 	IconPool,
@@ -29,8 +30,11 @@ function(
 	ManagedObject,
 	NavContainer,
 	Popover,
-	SplitContainerRenderer
-	) {
+	SplitContainerRenderer,
+	containsOrEquals,
+	Log,
+	jQuery
+) {
 	"use strict";
 
 
@@ -58,7 +62,7 @@ function(
 	 *
 	 * NOTE: This control must be rendered as a full screen control in order to make the show/hide master area work properly.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -473,11 +477,6 @@ function(
 	**************************************************************/
 	SplitContainer.prototype.init = function() {
 		var that = this;
-		this._isMie9 = false;
-		//Check for IE9
-		if (Device.browser.internet_explorer && Device.browser.version < 10) {
-			this._isMie9 = true;
-		}
 
 		// Init static hidden text for ARIA
 		if (sap.ui.getCore().getConfiguration().getAccessibility() && !SplitContainer._sAriaPopupLabelId) {
@@ -572,7 +571,7 @@ function(
 		var fnPatchRemoveChild = function(fnRemoveChild, sNavContainerProperty, sPagesArrayProperty) {
 			return function(oChild, sAggregationName, bSuppressInvalidate) {
 				fnRemoveChild.apply(that[sNavContainerProperty], arguments);
-				if (sAggregationName === "pages" && jQuery.inArray(oChild, that[sPagesArrayProperty]) !== -1) {
+				if (sAggregationName === "pages" && that[sPagesArrayProperty] && that[sPagesArrayProperty].indexOf(oChild) !== -1) {
 					that._removePageFromArray(that[sPagesArrayProperty], oChild);
 				}
 			};
@@ -623,14 +622,14 @@ function(
 		}
 		Device.resize.attachHandler(this._fnResize);
 
-		if (Device.os.windows && Device.browser.internet_explorer) { // not for windows_phone
+		if (Device.os.windows && Device.browser.internet_explorer) { // not for windows_phone// TODO remove after 1.62 version
 			this._oMasterNav.$().append('<iframe class="sapMSplitContainerMasterBlindLayer" src="about:blank"></iframe>');
 		}
 
 		// "sapMSplitContainerNoTransition" prevents initial flickering, after that it needs to be removed
-		jQuery.sap.delayedCall(0, this, function () {
+		setTimeout(function () {
 			this._oMasterNav.removeStyleClass("sapMSplitContainerNoTransition");
-		});
+		}.bind(this), 0);
 	};
 	/**************************************************************
 	* END - Life Cycle Methods
@@ -687,7 +686,7 @@ function(
 				// press isn't occurring in master area
 				&& !bIsMasterNav
 				// press isn't triggered by the showMasterButton
-				&& !jQuery.sap.containsOrEquals(this._oShowMasterBtn.getDomRef(), oEvent.target)
+				&& !containsOrEquals(this._oShowMasterBtn.getDomRef(), oEvent.target)
 				&& (!metaData.getEvent("tap") || !metaData.getEvent("press"))) {
 			this.hideMaster();
 		}
@@ -1030,7 +1029,7 @@ function(
 		// aggregated by this NavContainer, but in the other "virtual" aggregation of this SplitContainer (i.e. moved from detailPages to masterPages).
 		// This would lead to the page being added to the "master" array, but not removed from the "detail" array because the patched method
 		// in the NavContainer (removePage) is not called. Hence, remove it directly from the detail array.
-		if (this._oMasterNav === this._oDetailNav && jQuery.inArray(oPage, this._oDetailNav.getPages()) !== -1) {
+		if (this._oMasterNav === this._oDetailNav && this._oDetailNav.getPages() && this._oDetailNav.getPages().indexOf(oPage) !== -1) {
 			this._removePageFromArray(this._aDetailPages, oPage);
 		}
 		this._oMasterNav.insertPage(oPage, this._aMasterPages.length);
@@ -1115,7 +1114,7 @@ function(
 		// aggregated by this NavContainer, but in the other "virtual" aggregation of this SplitContainer (i.e. moved from masterPages to detailPages).
 		// This would lead to the page being added to the "detail" array, but not removed from the "master" array because the patched method
 		// in the NavContainer (removePage) is not called. Hence, remove it directly from the master array.
-		if (this._oMasterNav === this._oDetailNav && jQuery.inArray(oPage, this._oMasterNav.getPages()) !== -1) {
+		if (this._oMasterNav === this._oDetailNav && this._oMasterNav.getPages() && this._oMasterNav.getPages().indexOf(oPage) !== -1) {
 			this._removePageFromArray(this._aMasterPages, oPage);
 		}
 
@@ -1231,9 +1230,7 @@ function(
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	SplitContainer.prototype.showMaster = function() {
-		var _this$ = this._oMasterNav.$(),
-			that = this,
-			fnAnimationEnd = jQuery.proxy(this._afterShowMasterAnimation, this),
+		var that = this,
 			_curPage = this._getRealPage(this._oDetailNav.getCurrentPage());
 
 		function afterPopoverOpen(){
@@ -1250,41 +1247,32 @@ function(
 				this._oPopOver.openBy(this._oShowMasterBtn, true);
 				this._bMasterOpening = true;
 			}
-		} else {
-			if ((this._portraitHide() || this._hideMode())
-				&& (!this._bMasterisOpen || this._bMasterClosing)) {
-				if (this._isMie9) {
-					this._oMasterNav.$().css("width", "320px");
-					_this$.animate({
-						left: "+=320"
-					}, {
-						duration: 300,
-						complete: fnAnimationEnd
-					});
-					this._bMasterisOpen = true;
-					that._bMasterOpening = false;
-					this._removeMasterButton(_curPage);
-				} else {
-					_this$.bind("webkitTransitionEnd transitionend", fnAnimationEnd);
-				}
+		} else if ((this._portraitHide() || this._hideMode())
+					&& (!this._bMasterisOpen || this._bMasterClosing)) {
 
-				this.fireBeforeMasterOpen();
-				this._oMasterNav.toggleStyleClass("sapMSplitContainerMasterVisible", true);
-				this._oMasterNav.toggleStyleClass("sapMSplitContainerMasterHidden", false);
-				this._bMasterOpening = true;
-				that._removeMasterButton(_curPage);
+			this._oMasterNav.$().one(
+				"webkitTransitionEnd transitionend",
+				jQuery.proxy(this._afterShowMasterAnimation, this)
+			);
 
-				// workaround for bug in current webkit versions: in slided-in elements the z-order may be wrong and will be corrected once a re-layout is enforced
-				// see http://code.google.com/p/chromium/issues/detail?id=246965
-				if (Device.browser.webkit) {
-					var oMNav = this._oMasterNav;
+			this.fireBeforeMasterOpen();
+			this._oMasterNav.toggleStyleClass("sapMSplitContainerMasterVisible", true);
+			//BCP: 1870368506
+			this._oMasterNav.getDomRef().offsetHeight;
+			this._oMasterNav.toggleStyleClass("sapMSplitContainerMasterHidden", false);
+			this._bMasterOpening = true;
+			that._removeMasterButton(_curPage);
+
+			// workaround for bug in current webkit versions: in slided-in elements the z-order may be wrong and will be corrected once a re-layout is enforced
+			// see http://code.google.com/p/chromium/issues/detail?id=246965
+			if (Device.browser.webkit) {
+				var oMNav = this._oMasterNav;
+				window.setTimeout(function(){
+					oMNav.$().css("box-shadow", "none"); // remove box-shadow
 					window.setTimeout(function(){
-						oMNav.$().css("box-shadow", "none"); // remove box-shadow
-						window.setTimeout(function(){
-							oMNav.$().css("box-shadow", "");  // add it again
-						},50);
-					},0);
-				}
+						oMNav.$().css("box-shadow", "");  // add it again
+					},50);
+				},0);
 			}
 		}
 		return this;
@@ -1299,42 +1287,31 @@ function(
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	SplitContainer.prototype.hideMaster = function() {
-		var _this$ = this._oMasterNav.$(),
-			fnAnimationEnd = jQuery.proxy(this._afterHideMasterAnimation, this);
 		if (this._portraitPopover()) {
 			if (this._oPopOver.isOpen()) {
 				this._oPopOver.close();
 				this._bMasterClosing = true;
 			}
-		} else {
-			if ((this._portraitHide() || this._hideMode()) &&
-				(this._bMasterisOpen || this._oMasterNav.$().hasClass("sapMSplitContainerMasterVisible"))) {
-				if (this._isMie9) {
-					_this$.animate({
-						left: "-=320"
-					}, {
-						duration: 300,
-						complete: fnAnimationEnd
-					});
-				} else {
-					_this$.bind("webkitTransitionEnd transitionend", fnAnimationEnd);
-				}
+		} else if ((this._portraitHide() || this._hideMode()) &&
+					(this._bMasterisOpen || this._oMasterNav.$().hasClass("sapMSplitContainerMasterVisible"))) {
 
-				this.fireBeforeMasterClose();
-				this._oMasterNav.toggleStyleClass("sapMSplitContainerMasterVisible", false);
-				this._oMasterNav.toggleStyleClass("sapMSplitContainerMasterHidden", true);
-				this._bMasterClosing = true;
-			}
+			this._oMasterNav.$().one(
+				"webkitTransitionEnd transitionend",
+				jQuery.proxy(this._afterHideMasterAnimation, this)
+			);
+
+			this.fireBeforeMasterClose();
+			this._oMasterNav.toggleStyleClass("sapMSplitContainerMasterVisible", false);
+			//BCP: 1870368506
+			this._oMasterNav.getDomRef().offsetHeight;
+			this._oMasterNav.toggleStyleClass("sapMSplitContainerMasterHidden", true);
+			this._bMasterClosing = true;
 		}
 		return this;
 	};
 
 	SplitContainer.prototype._afterShowMasterAnimation = function() {
 		if (this._portraitHide() || this._hideMode()) {
-			if (!this._isMie9) {
-				var $MasterNav = this._oMasterNav.$();
-				$MasterNav.unbind("webkitTransitionEnd transitionend", this._afterShowMasterAnimation);
-			}
 			this._bMasterOpening = false;
 			this._bMasterisOpen = true;
 			this.fireAfterMasterOpen();
@@ -1342,12 +1319,6 @@ function(
 	};
 
 	SplitContainer.prototype._afterHideMasterAnimation = function() {
-		if (this._portraitHide() || this._hideMode()) {
-			if (!this._isMie9) {
-				var $MasterNav = this._oMasterNav.$();
-				$MasterNav.unbind("webkitTransitionEnd transitionend", this._afterHideMasterAnimation);
-			}
-		}
 		var oCurPage = this._getRealPage(this._oDetailNav.getCurrentPage());
 		this._setMasterButton(oCurPage);
 
@@ -1355,7 +1326,7 @@ function(
 		this._bMasterisOpen = false;
 		// If the focus is still inside the master area after master is open, the focus should be removed.
 		// Otherwise user can still type something on mobile device and the browser will show the master area again.
-		if (jQuery.sap.containsOrEquals(this._oMasterNav.getDomRef(), document.activeElement)) {
+		if (containsOrEquals(this._oMasterNav.getDomRef(), document.activeElement)) {
 			document.activeElement.blur();
 		}
 		this.fireAfterMasterClose();
@@ -1565,12 +1536,6 @@ function(
 			if (sOldMode === "HideMode" && this._oldIsLandscape) {
 				//remove the master button
 				this._removeMasterButton(this._oDetailNav.getCurrentPage());
-				if (this._isMie9) {
-					this._oMasterNav.$().css({
-						left: 0,
-						width: ""
-					});
-				}
 			}
 
 			if (sMode !== "PopoverMode" && this._oPopOver.getContent().length > 0) {
@@ -1619,13 +1584,6 @@ function(
 				this._bMasterisOpen = false;
 
 				this._setMasterButton(this._oDetailNav.getCurrentPage());
-
-				if (this._isMie9) {
-					this._oMasterNav.$().css({
-						left: "",
-						width: "auto"
-					});
-				}
 			}
 		}
 		return this;
@@ -1633,7 +1591,7 @@ function(
 
 	SplitContainer.prototype.setBackgroundOpacity = function(fOpacity) {
 		if (fOpacity > 1 || fOpacity < 0) {
-			jQuery.sap.log.warning("Invalid value " + fOpacity + " for SplitContainer.setBackgroundOpacity() ignored. Valid values are: floats between 0 and 1.");
+			Log.warning("Invalid value " + fOpacity + " for SplitContainer.setBackgroundOpacity() ignored. Valid values are: floats between 0 and 1.");
 			return this;
 		}
 		this.$("BG").css("opacity", fOpacity);
@@ -1649,14 +1607,14 @@ function(
 	 * @private
 	 */
 	SplitContainer.prototype._indexOfMasterPage = function(oPage) {
-		return jQuery.inArray(oPage, this._aMasterPages);
+		return this._aMasterPages.indexOf(oPage);
 	};
 
 	/**
 	 * @private
 	 */
 	SplitContainer.prototype._indexOfDetailPage = function(oPage) {
-		return jQuery.inArray(oPage, this._aDetailPages);
+		return this._aDetailPages.indexOf(oPage);
 	};
 
 
@@ -1673,7 +1631,7 @@ function(
 		} else {
 			i = iIndex;
 		}
-		var iOldIndex = jQuery.inArray(oPage, aPageArray);
+		var iOldIndex = (aPageArray ? Array.prototype.indexOf.call(aPageArray, oPage) : -1);
 		aPageArray.splice(i, 0, oPage);
 		if (iOldIndex != -1) {
 			// this is the insert order ui5 is doing it: first add, then remove when it was added before (even so this would remove the just added control)
@@ -1699,7 +1657,7 @@ function(
 	 * @private
 	 */
 	SplitContainer.prototype._removePageFromArray = function(aPageArray, oPage) {
-		var iIndex = jQuery.inArray(oPage, aPageArray);
+		var iIndex = (aPageArray ? Array.prototype.indexOf.call(aPageArray, oPage) : -1);
 		if (iIndex != -1) {
 			aPageArray.splice(iIndex, 1);
 			if (aPageArray === this._aDetailPages) {
@@ -1740,22 +1698,6 @@ function(
 						this.fireBeforeMasterOpen();
 					} else {
 						this.fireBeforeMasterClose();
-					}
-				}
-
-				if (this._isMie9) {
-					if (isLandscape) {
-						this._oMasterNav.$().css({
-							left: 0,
-							width: ""
-						});
-					} else {
-						if (mode === "ShowHideMode" || mode === "PopoverMode") {
-							this._oMasterNav.$().css({
-								left: -320,
-								width: "auto"
-							});
-						}
 					}
 				}
 
@@ -1990,9 +1932,6 @@ function(
 				oPageHeader.insertAggregation(sHeaderAggregationName, this._oShowMasterBtn, 0, bSuppressRerendering);
 			}
 		} else {
-			if (this._isMie9) {
-				this._oShowMasterBtn.$().fadeIn();
-			}
 			this._oShowMasterBtn.$().parent().toggleClass("sapMSplitContainerMasterBtnHide", false);
 			this._oShowMasterBtn.removeStyleClass("sapMSplitContainerMasterBtnHidden");
 			this._oShowMasterBtn.$().parent().toggleClass("sapMSplitContainerMasterBtnShow", true);
@@ -2060,12 +1999,6 @@ function(
 				var aHeaderContent = SplitContainer._getHeaderButtonAggregation(oPage).aAggregationContent;
 				for (var i = 0; i < aHeaderContent.length; i++) {
 					if (aHeaderContent[i] === this._oShowMasterBtn) {
-						if (this._isMie9) {
-							this._oShowMasterBtn.$().fadeOut();
-							if (fnCallBack) {
-								fnCallBack(oPage);
-							}
-						}
 
 						this._oShowMasterBtn.destroy();
 						/*eslint-disable no-loop-func */
@@ -2077,7 +2010,7 @@ function(
 							}
 						});
 						/*eslint-enable no-loop-func */
-						return;
+						break;
 					}
 				}
 			}

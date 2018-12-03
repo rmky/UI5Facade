@@ -6,15 +6,17 @@
 
 // Provides class sap.ui.fl.support.Flexibility
 sap.ui.define([
-		"jquery.sap.global",
+		"sap/ui/thirdparty/jquery",
 		"sap/ui/core/support/Plugin",
 		"sap/ui/core/support/Support",
+		"sap/ui/core/util/reflection/JsControlTreeModifier",
 		"sap/ui/model/json/JSONModel",
 		"sap/ui/fl/FlexController",
 		"sap/ui/fl/ChangePersistenceFactory",
-		"sap/ui/fl/Utils"
+		"sap/ui/fl/Utils",
+		"sap/ui/fl/support/apps/uiFlexibilityDiagnostics/helper/Extractor"
 	],
-	function (jQuery, Plugin, Support, JSONModel, FlexController, ChangePersistenceFactory, Utils) {
+	function (jQuery, Plugin, Support, JsControlTreeModifier, JSONModel, FlexController, ChangePersistenceFactory, Utils, Extractor) {
 		"use strict";
 
 		/**
@@ -24,7 +26,7 @@ sap.ui.define([
 		 *
 		 * @abstract
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @sap-restricted
 		 * @constructor
 		 * @private
@@ -64,9 +66,14 @@ sap.ui.define([
 				"library \'<b> sap.ui.fl</b>\' has to be debugged.</div>" +
 				"<div class='sapUiSmallMargin'>To set the debug sources use the URL parameter '<b>sap-ui-debug</b> " +
 				"with general debug setting <b>sap-ui-debug=true</b> or to debug single libraries by naming the libraries " +
-				"<b>sap-ui-debug=lib1, lib2, ...</b> (including '<b>sap.ui.fl</b>').</div>" +
+				"<b>sap-ui-debug=lib1, lib2, ...</b> (including '<b>sap/ui/fl</b>' like '<b>sap-ui-debug=sap/ui/fl</b>').</div>" +
 				"<div class='sapUiSmallMargin'>Another option is to enable the debugging in this 'Diagnostics' window by " +
 				"toggle the <b>Debug Sources</b> under the <b>Technical Info</b> panel.</div>";
+
+			var sPanelInfoText = "<div class='sapUiSmallMargin'>The applications listed below have been handled by the sap.ui.fl library in this session.</div>" +
+				"<div class='sapUiSmallMarginBegin'>You can download a file containing the data that has been applied to an application as well as " +
+				"relevant runtime information, and then upload this file to the UI Flexibility Diagnostics application for further investigation.</div>" +
+				"<div class='sapUiSmallMarginBegin'>The UI Flexibility Diagnostics application displays graphs and is only available with SAPUI5.</div>";
 
 			if (oSupportStub.isToolStub()) {
 				this.addStylesheet("sap/ui/fl/support/flexibility");
@@ -75,7 +82,8 @@ sap.ui.define([
 				this.oToolSettings = new JSONModel({
 					hideDependingChanges: false,
 					flInDebug: true,
-					noDebugInfoText: sNoDebugInfoText
+					noDebugInfoText: sNoDebugInfoText,
+					panelInfoText: sPanelInfoText
 				});
 				this.oChangeDetails = new JSONModel();
 				this._renderToolPlugin([]);
@@ -125,19 +133,6 @@ sap.ui.define([
 		};
 
 		/**
-		 * Sends a request to synchronize the tool window with the running applications;
-		 * The function is called after filling the app list (with the first item) or user selection of an app.
-		 *
-		 * @param {string} sAppKey Concatenated application name and version
-		 *
-		 * @private
-		 * @restricted sap.ui.fl.support
-		 */
-		Flexibility.prototype._onAppSelected = function (sAppKey) {
-			Support.getStub().sendEvent(this.getId() + "GetChangesMaps", {appKey: sAppKey});
-		};
-
-		/**
 		 * Requests the data from the application side support plugin
 		 *
 		 * @private
@@ -158,11 +153,12 @@ sap.ui.define([
 
 				if (ChangePersistenceFactory._instanceCache) {
 					jQuery.each(ChangePersistenceFactory._instanceCache, function (sReference, mInstancesOfVersions) {
-						Object.keys(mInstancesOfVersions).forEach(function (sVersion) {
+						jQuery.each(mInstancesOfVersions, function (sVersion, oChangePersistanceInstance) {
 							aApps.push({
 								key : sReference + that.sDelimiter + sVersion,
 								text : sReference,
-								additionalText : sVersion
+								additionalText : sVersion,
+								data: Extractor.extractData(oChangePersistanceInstance)
 							});
 						});
 					});
@@ -201,11 +197,6 @@ sap.ui.define([
 
 			if (bFlInDebug) {
 				this.oAppModel.setData(mApps);
-
-				var oAppSelection = this.oView.byId("appSelection");
-				var oFirstItem = oAppSelection.getItems()[0];
-				oAppSelection.setSelectedItem(oFirstItem);
-				oAppSelection.fireChange({selectedItem : oFirstItem});
 			}
 		};
 
@@ -285,11 +276,12 @@ sap.ui.define([
 					oChangeDetails.indexOfFirstFailing = aAllFailedChanges.indexOf(oChange.getId());
 				}
 
-				if (oChange._aDependentIdList) {
-					oChangeDetails.dependentControls = oChange._aDependentIdList.map(function (sDependentId) {
+				if (oChange._aDependentSelectorList) {
+					var oAppComponent = Extractor.getAppComponentInstance(sAppName);
+					oChangeDetails.dependentControls = oChange._aDependentSelectorList.map(function (oDependentSelector) {
 						return {
-							id : sDependentId,
-							controlPresent : !!sap.ui.getCore().byId(sDependentId)
+							id : oDependentSelector.id,
+							controlPresent : JsControlTreeModifier.bySelector(oDependentSelector, oAppComponent)
 						};
 					});
 				}

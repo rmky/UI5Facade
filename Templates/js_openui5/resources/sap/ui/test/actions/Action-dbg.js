@@ -6,13 +6,14 @@
 
 /*global FocusEvent, MouseEvent, document */
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/base/ManagedObject',
 	'sap/ui/qunit/QUnitUtils',
 	'sap/ui/test/Opa5',
-	'sap/ui/Device'
+	'sap/ui/Device',
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
 ],
-function ($, ManagedObject, QUnitUtils, Opa5, Device) {
+function (ManagedObject, QUnitUtils, Opa5, Device, Log, jQueryDOM) {
 	"use strict";
 
 	/**
@@ -76,16 +77,16 @@ function ($, ManagedObject, QUnitUtils, Opa5, Device) {
 			if (sAdapterDomRefId) {
 				$FocusDomRef = oControl.$(sAdapterDomRefId);
 			} else {
-				$FocusDomRef = $(oControl.getFocusDomRef());
+				$FocusDomRef = jQueryDOM(oControl.getFocusDomRef());
 			}
 
 			if (!$FocusDomRef.length) {
 				var sErrorMessage = "Control " + oControl + " has no dom representation idSuffix was " + sAdapterDomRefId;
 
-				$.sap.log.error(sErrorMessage, this._sLogPrefix);
+				Log.error(sErrorMessage, this._sLogPrefix);
 				throw new Error(sErrorMessage);
 			} else {
-				$.sap.log.info("Found a domref for the Control " + oControl + " the action is going to be executed on the dom id" + $FocusDomRef[0].id, this._sLogPrefix);
+				Log.info("Found a domref for the Control " + oControl + " the action is going to be executed on the dom id" + $FocusDomRef[0].id, this._sLogPrefix);
 			}
 
 			return $FocusDomRef;
@@ -129,10 +130,11 @@ function ($, ManagedObject, QUnitUtils, Opa5, Device) {
 			var bFireArtificialEvents;
 			var oDomRef = $DomRef[0];
 
-			if (isAlreadyFocused || (Device.browser.msie && (Device.browser.version < 12))) {
+			if (isAlreadyFocused || (Device.browser.msie && Device.browser.version < 12) ||
+				(Device.browser.firefox && Device.browser.version > 60)) {
 				// If the event is already focused, make sure onfocusin event of the control will be properly fired when executing this action,
 				// otherwise the next blur will not be able to safely remove the focus.
-				// In IE11, if the focus action fails and focusin is dispatched, onfocusin will be called twice
+				// In IE11 (and often in Firefox v61.0), if the focus action fails and focusin is dispatched, onfocusin will be called twice
 				// to avoid this, directly dispatch the artificial events
 				bFireArtificialEvents = true;
 			} else {
@@ -145,7 +147,7 @@ function ($, ManagedObject, QUnitUtils, Opa5, Device) {
 			}
 
 			if (bFireArtificialEvents) {
-				$.sap.log.debug("Control " + oControl + " could not be focused - maybe you are debugging?", this._sLogPrefix);
+				Log.debug("Control " + oControl + " could not be focused - maybe you are debugging?", this._sLogPrefix);
 
 				this._createAndDispatchFocusEvent("focusin", oDomRef);
 				this._createAndDispatchFocusEvent("focus", oDomRef);
@@ -207,7 +209,7 @@ function ($, ManagedObject, QUnitUtils, Opa5, Device) {
 			}
 
 			oDomRef.dispatchEvent(oFocusEvent);
-			$.sap.log.info("Dispatched focus event: '" + sName + "'", this._sLogPrefix);
+			Log.info("Dispatched focus event: '" + sName + "'", this._sLogPrefix);
 		},
 
 		_sLogPrefix : "sap.ui.test.actions"

@@ -5,8 +5,14 @@
  */
 
 // Provides control sap.ui.unified.ShellHeadItem.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/IconPool', './library', 'jquery.sap.encoder'],
-	function(jQuery, Element, IconPool, library /*, jQueryEncoder*/) {
+sap.ui.define([
+	'sap/ui/core/Element',
+	'sap/ui/core/IconPool',
+	'./library',
+	"sap/base/security/encodeXML",
+	"sap/ui/thirdparty/jquery"
+],
+	function(Element, IconPool, library, encodeXML, jQuery) {
 	"use strict";
 
 
@@ -22,7 +28,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/IconPool
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -189,7 +195,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/IconPool
 		} else {
 			var $Image = this.$("img-inner");
 			if ($Image.length == 0 || $Image.attr("src") != sIco) {
-				$Ico.css("style", "").attr("aria-label", null).html("<img role='presentation' id='" + this.getId() + "-img-inner' src='" + jQuery.sap.encodeHTML(sIco) + "'/>");
+				$Ico.css("style", "").attr("aria-label", null).html("<img role='presentation' id='" + this.getId() + "-img-inner' src='" + encodeXML(sIco) + "'/>");
 			}
 		}
 	};

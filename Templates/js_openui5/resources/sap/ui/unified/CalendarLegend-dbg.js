@@ -5,8 +5,15 @@
  */
 
 // Provides control sap.ui.unified.CalendarLegend.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/Device', './CalendarLegendRenderer'],
-	function(jQuery, Control, library, Device, CalendarLegendRenderer) {
+sap.ui.define([
+	'sap/ui/core/Control',
+	'./library',
+	'sap/ui/Device',
+	'./CalendarLegendRenderer',
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+	function(Control, library, Device, CalendarLegendRenderer, Log, jQuery) {
 	"use strict";
 
 	// shortcut for sap.ui.unified.CalendarDayType
@@ -26,7 +33,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -77,15 +84,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 			}
 		}
 	});
-
-	// IE9 workaround for responsive layout of legend items
-	CalendarLegend.prototype.onAfterRendering = function() {
-		if (Device.browser.msie) {
-			if (Device.browser.version < 10) {
-				jQuery(".sapUiUnifiedLegendItem").css("width", this.getColumnWidth() + 4 + "px").css("display", "inline-block");
-			}
-		}
-	};
 
 	CalendarLegend.prototype.setStandardItems = function (aValues) {
 		var i;
@@ -162,7 +160,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', 'sap/ui/
 		}).indexOf(oItem);
 
 		if (iNoTypeItemIndex < 0) {
-			jQuery.sap.log.error('Legend item is not in the legend', this);
+			Log.error('Legend item is not in the legend', this);
 			return sType;
 		}
 

@@ -5,9 +5,7 @@
  */
 
 // Provides object sap.ui.fl.Processor
-sap.ui.define([
-	'jquery.sap.global', 'sap/ui/base/Object'
-], function(jQuery, BaseObject) {
+sap.ui.define(['sap/ui/base/Object'], function(BaseObject) {
 	'use strict';
 
 	/**
@@ -17,7 +15,7 @@ sap.ui.define([
 	 * @class
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @experimental Since 1.27.0
 	 * @implements sap.ui.core.mvc.View.Preprocessor
 	 */

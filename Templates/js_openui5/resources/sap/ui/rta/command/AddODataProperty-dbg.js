@@ -14,7 +14,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -44,6 +44,12 @@ sap.ui.define([
 				},
 				oDataServiceVersion : {
 					type : "string"
+				},
+				oDataServiceUri: {
+					type: "string"
+				},
+				propertyName: {
+					type: "string"
 				}
 			}
 		}
@@ -56,9 +62,13 @@ sap.ui.define([
 			index: this.getIndex(),
 			newControlId: this.getNewControlId(),
 			bindingPath: this.getBindingString(),
-			entityType: this.getEntityType(),
 			parentId: this.getParentId(),
-			oDataServiceVersion: this.getODataServiceVersion()
+			oDataServiceVersion: this.getODataServiceVersion(),
+			oDataInformation: {
+				oDataServiceUri: this.getODataServiceUri(),
+				propertyName: this.getPropertyName(),
+				entityType: this.getEntityType()
+			}
 		};
 	};
 

@@ -3,4 +3,4 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global','sap/ui/base/Object'],function(q,B){'use strict';return B.extend("sap.ui.fl.Preprocessor",{});},true);
+sap.ui.define(['sap/ui/base/Object'],function(B){'use strict';return B.extend("sap.ui.fl.Preprocessor",{});},true);

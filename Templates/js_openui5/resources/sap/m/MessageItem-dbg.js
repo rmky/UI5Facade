@@ -4,8 +4,14 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Item", "sap/ui/core/library"],
-	function(jQuery, library, Item, coreLibrary) {
+sap.ui.define([
+	"./library",
+	"sap/ui/core/Item",
+	"sap/ui/core/library",
+	"sap/base/Log",
+	"sap/base/security/sanitizeHTML"
+],
+	function(library, Item, coreLibrary, Log, sanitizeHTML) {
 		"use strict";
 
 		// shortcut for sap.ui.core.MessageType
@@ -31,7 +37,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Item", "sap/ui/cor
 		 *
 		 * @extends sap.ui.core.Item
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -83,7 +89,13 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Item", "sap/ui/cor
 					/**
 					 * Name of a message group the current item belongs to.
 					 */
-					groupName: { type: "string", group: "Misc", defaultValue: "" }
+					groupName: { type: "string", group: "Misc", defaultValue: "" },
+
+					/**
+					 * Defines whether the title of the item will be interactive.
+					 * @since 1.58
+					 */
+					activeTitle: { type: "boolean", group: "Misc", defaultValue: false }
 				},
 				defaultAggregation: "link",
 				aggregations: {
@@ -141,7 +153,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Item", "sap/ui/cor
 			}
 
 			if (this.getMarkupDescription()) {
-				sDescription = jQuery.sap._sanitizeHTML(sDescription);
+				sDescription = sanitizeHTML(sDescription);
 			}
 
 			this.setProperty("description", sDescription, true);
@@ -160,7 +172,7 @@ sap.ui.define(["jquery.sap.global", "./library", "sap/ui/core/Item", "sap/ui/cor
 		MessageItem.prototype.setType = function (sType) {
 			if (sType === MessageType.None) {
 				sType = MessageType.Information;
-				jQuery.sap.log.warning("The provided None type is handled and rendered as Information type");
+				Log.warning("The provided None type is handled and rendered as Information type");
 			}
 
 			return this.setProperty("type", sType, true);

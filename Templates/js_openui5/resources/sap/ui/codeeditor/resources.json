@@ -15,7 +15,6 @@
 			"module": "sap/ui/codeeditor/CodeEditor.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
@@ -28,7 +27,6 @@
 			"name": "CodeEditor.js",
 			"module": "sap/ui/codeeditor/CodeEditor.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
@@ -2565,7 +2563,8 @@
 			"module": "sap/ui/codeeditor/library.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/core/Core.js"
+				"sap/ui/core/Core.js",
+				"sap/ui/core/library.js"
 			]
 		},
 		{
@@ -2574,14 +2573,14 @@
 			"isDebug": true,
 			"merged": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
 				"sap/ui/codeeditor/js/ace/mode-javascript.js",
 				"sap/ui/codeeditor/js/ace/mode-json.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/core/Core.js"
+				"sap/ui/core/Core.js",
+				"sap/ui/core/library.js"
 			],
 			"included": [
 				"sap/ui/codeeditor/library.js",
@@ -2594,14 +2593,14 @@
 			"module": "sap/ui/codeeditor/library-h2-preload.js",
 			"merged": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
 				"sap/ui/codeeditor/js/ace/mode-javascript.js",
 				"sap/ui/codeeditor/js/ace/mode-json.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/core/Core.js"
+				"sap/ui/core/Core.js",
+				"sap/ui/core/library.js"
 			],
 			"included": [
 				"sap/ui/codeeditor/library.js",
@@ -2618,14 +2617,14 @@
 			"module": "sap/ui/codeeditor/library-preload.js",
 			"merged": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
 				"sap/ui/codeeditor/js/ace/mode-javascript.js",
 				"sap/ui/codeeditor/js/ace/mode-json.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/core/Core.js"
+				"sap/ui/core/Core.js",
+				"sap/ui/core/library.js"
 			],
 			"included": [
 				"sap/ui/codeeditor/CodeEditor.js",
@@ -2642,7 +2641,6 @@
 			"module": "sap/ui/codeeditor/library-preload.json",
 			"merged": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
@@ -2650,7 +2648,8 @@
 				"sap/ui/codeeditor/js/ace/mode-json.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
-				"sap/ui/core/library-preload.json"
+				"sap/ui/core/library-preload.json",
+				"sap/ui/core/library.js"
 			],
 			"included": [
 				"sap/ui/codeeditor/CodeEditor.js",
@@ -2670,7 +2669,8 @@
 			"name": "library.js",
 			"module": "sap/ui/codeeditor/library.js",
 			"required": [
-				"sap/ui/core/Core.js"
+				"sap/ui/core/Core.js",
+				"sap/ui/core/library.js"
 			]
 		},
 		{

@@ -6,20 +6,20 @@
 
 // Provides control sap.m.RadioButtonGroup.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/delegate/ItemNavigation',
 	'sap/ui/core/library',
-	'./RadioButtonGroupRenderer'
+	'./RadioButtonGroupRenderer',
+	"sap/base/Log"
 ],
 	function(
-		jQuery,
 		library,
 		Control,
 		ItemNavigation,
 		coreLibrary,
-		RadioButtonGroupRenderer
+		RadioButtonGroupRenderer,
+		Log
 		) {
 			"use strict";
 
@@ -57,7 +57,7 @@ sap.ui.define([
 			 * @implements sap.ui.core.IFormContent
 			 *
 			 * @author SAP SE
-			 * @version 1.56.6
+			 * @version 1.60.1
 			 *
 			 * @constructor
 			 * @public
@@ -176,7 +176,7 @@ sap.ui.define([
 			RadioButtonGroup.prototype.onBeforeRendering = function() {
 
 				if (this.getSelectedIndex() > this.getButtons().length) {
-					jQuery.sap.log.warning("Invalid index, set to 0");
+					Log.warning("Invalid index, set to 0");
 					this.setSelectedIndex(0);
 				}
 			};
@@ -273,7 +273,7 @@ sap.ui.define([
 
 				if (iSelectedIndex < -1) {
 					// invalid negative index -> don't change index.
-					jQuery.sap.log.warning("Invalid index, will not be changed");
+					Log.warning("Invalid index, will not be changed");
 					return this;
 				}
 

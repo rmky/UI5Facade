@@ -237,7 +237,10 @@
 	}, this], // since 1.37.0
 	busyStateChanged: [function (oEvent) {
 		var ${control} = oEvent.getSource();
-	}, this] // since 1.37.0
+	}, this], // since 1.37.0
+	paste: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this] // since 1.60
 })
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<AnalyticalTable xmlns="sap.ui.table"
@@ -300,7 +303,8 @@
 	columnFreeze=""
 	customFilter=""
 	firstVisibleRowChanged=""
-	busyStateChanged="">
+	busyStateChanged=""
+	paste="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
@@ -642,7 +646,10 @@
 	}, this], // since 1.37.0
 	busyStateChanged: [function (oEvent) {
 		var ${control} = oEvent.getSource();
-	}, this] // since 1.37.0
+	}, this], // since 1.37.0
+	paste: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this] // since 1.60
 })
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<Table xmlns="sap.ui.table"
@@ -699,7 +706,8 @@
 	columnFreeze=""
 	customFilter=""
 	firstVisibleRowChanged=""
-	busyStateChanged="">
+	busyStateChanged=""
+	paste="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
@@ -823,6 +831,9 @@
 	busyStateChanged: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this], // since 1.37.0
+	paste: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this], // since 1.60
 	toggleOpenState: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -888,6 +899,7 @@
 	customFilter=""
 	firstVisibleRowChanged=""
 	busyStateChanged=""
+	paste=""
 	toggleOpenState="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->

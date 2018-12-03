@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global'],
-	function(jQuery) {
+sap.ui.define(["sap/base/Log", "sap/base/util/ObjectPath", "sap/ui/core/mvc/View"],
+	function(Log, ObjectPath, View) {
 
 	"use strict";
 
@@ -35,7 +35,12 @@ sap.ui.define(['jquery.sap.global'],
 	 * @static
 	 */
 	sap.ui.extensionpoint = function(oContainer, sExtName, fnCreateDefaultContent,  oTargetControl, sAggregationName) {
-		jQuery.sap.log.warning("Do not use deprecated factory function 'sap.ui.extensionpoint'. Use 'sap.ui.core.ExtensionPoint.load' instead");
+		Log.warning("Do not use deprecated factory function 'sap.ui.extensionpoint'. Use 'sap.ui.core.ExtensionPoint.load' instead", "sap.ui.extensionpoint", null, function () {
+			return {
+				type: "sap.ui.extensionpoint",
+				name: sExtName
+			};
+		});
 		return ExtensionPoint._factory(oContainer, sExtName, fnCreateDefaultContent,  oTargetControl, sAggregationName);
 	};
 
@@ -78,14 +83,14 @@ sap.ui.define(['jquery.sap.global'],
 
 			if (extensionConfig) {
 				if (extensionConfig.className) {
-					jQuery.sap.require(extensionConfig.className); // make sure oClass.getMetadata() exists
-					var oClass = jQuery.sap.getObject(extensionConfig.className),
-						sId = oView && extensionConfig.id ? oView.createId(extensionConfig.id) : extensionConfig.id;
-					jQuery.sap.log.info("Customizing: View extension found for extension point '" + sExtName
+					var fnClass = sap.ui.requireSync(extensionConfig.className.replace(/\./g, "/")); // make sure fnClass.getMetadata() exists
+					fnClass = fnClass || ObjectPath.get(extensionConfig.className);
+					var sId = oView && extensionConfig.id ? oView.createId(extensionConfig.id) : extensionConfig.id;
+					Log.info("Customizing: View extension found for extension point '" + sExtName
 							+ "' in View '" + oView.sViewName + "': " + extensionConfig.className + ": " + (extensionConfig.viewName || extensionConfig.fragmentName));
 
 					if (extensionConfig.className === "sap.ui.core.Fragment") {
-						var oFragment = new oClass({
+						var oFragment = new fnClass({
 							id: sId,
 							type: extensionConfig.type,
 							fragmentName: extensionConfig.fragmentName,
@@ -94,16 +99,16 @@ sap.ui.define(['jquery.sap.global'],
 						vResult = (Array.isArray(oFragment) ? oFragment : [oFragment]); // vResult is now an array, even if empty - so if a Fragment is configured, the default content below is not added anymore
 
 					} else if (extensionConfig.className === "sap.ui.core.mvc.View") {
-						var oView = sap.ui.view({type: extensionConfig.type, viewName: extensionConfig.viewName, id: sId});
+						var oView = View._legacyCreate({type: extensionConfig.type, viewName: extensionConfig.viewName, id: sId});
 						vResult = [oView]; // vResult is now an array, even if empty - so if a Fragment is configured, the default content below is not added anymore
 
 					} else {
 						// unknown extension class
-						jQuery.sap.log.warning("Customizing: Unknown extension className configured (and ignored) in Component.js for extension point '" + sExtName
+						Log.warning("Customizing: Unknown extension className configured (and ignored) in Component.js for extension point '" + sExtName
 								+ "' in View '" + oView.sViewName + "': " + extensionConfig.className);
 					}
 				} else {
-					jQuery.sap.log.warning("Customizing: no extension className configured in Component.js for extension point '" + sExtName
+					Log.warning("Customizing: no extension className configured in Component.js for extension point '" + sExtName
 							+ "' in View '" + oView.sViewName + "': " + extensionConfig.className);
 				}
 			}
@@ -132,7 +137,7 @@ sap.ui.define(['jquery.sap.global'],
 					}
 				} else {
 					// the target control has no default aggregation, or the aggregationName provided doesn't match an existing aggregation as defined at the targetControl
-					jQuery.sap.log.error("Creating extension point failed - Tried to add extension point with name " + sExtName + " to an aggregation of " +
+					Log.error("Creating extension point failed - Tried to add extension point with name " + sExtName + " to an aggregation of " +
 							oTargetControl.getId() + " in view " + oView.sViewName + ", but sAggregationName was not provided correctly and I could not find a default aggregation");
 				}
 			}

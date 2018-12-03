@@ -5,7 +5,6 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
 	'./Dialog',
 	'./Popover',
 	'./SelectList',
@@ -23,10 +22,10 @@ sap.ui.define([
 	'sap/ui/Device',
 	'sap/ui/core/InvisibleText',
 	'./SelectRenderer',
-	'jquery.sap.keycodes'
+	"sap/ui/dom/containsOrEquals",
+	"sap/ui/events/KeyCodes"
 ],
 function(
-	jQuery,
 	Dialog,
 	Popover,
 	SelectList,
@@ -43,8 +42,10 @@ function(
 	Item,
 	Device,
 	InvisibleText,
-	SelectRenderer
-	) {
+	SelectRenderer,
+	containsOrEquals,
+	KeyCodes
+) {
 		"use strict";
 
 		// shortcut for sap.m.SelectListKeyboardNavigationMode
@@ -80,7 +81,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -89,7 +90,10 @@ function(
 		 */
 		var Select = Control.extend("sap.m.Select", /** @lends sap.m.Select.prototype */ {
 			metadata: {
-				interfaces: ["sap.ui.core.IFormContent"],
+				interfaces: [
+					"sap.ui.core.IFormContent",
+					"sap.m.IOverflowToolbarContent"
+				],
 				library: "sap.m",
 				properties: {
 
@@ -143,7 +147,16 @@ function(
 					/**
 					 * Key of the selected item.
 					 *
-					 * <b>Note:</b> If duplicate keys exist, the first item matching the key is used.
+					 * <b>Notes:</b>
+					 * <ul>
+					 * <li> If duplicate keys exist, the first item matching the key is used.</li>
+					 * <li> If invalid or none <code>selectedKey</code> is used, the first item is
+					 * being selected.</li>
+					 * <li> Invalid or missing <code>selectedKey</code> leads to severe functional
+					 * issues in <code>sap.m.Table</code>, when the <code>sap.m.Select</code> is used inside a
+					 * <code>sap.m.Table</code> column.</li>
+					 * </ul>
+					 *
 					 * @since 1.11
 					 */
 					selectedKey: {
@@ -215,7 +228,7 @@ function(
 
 					/**
 					 * Visualizes the validation state of the control, e.g. <code>Error</code>, <code>Warning</code>,
-					 * <code>Success</code>.
+					 * <code>Success</code>, <code>Information</code>.
 					 * @since 1.40.2
 					 */
 					valueState: {
@@ -415,6 +428,58 @@ function(
 			}
 
 			return "";
+		};
+
+		/**
+		 * Enables the <code>sap.m.Select</code> to move inside the sap.m.OverflowToolbar.
+		 * Required by the {@link sap.m.IOverflowToolbarContent} interface.
+		 *
+		 * @public
+		 * @returns {object} Configuration information for the <code>sap.m.IOverflowToolbarContent</code> interface.
+		 */
+		Select.prototype.getOverflowToolbarConfig = function() {
+
+			var noInvalidationProps = ["enabled", "selectedKey"];
+
+			if (!this.getAutoAdjustWidth() || this._bIsInOverflow) {
+				noInvalidationProps.push("selectedItemId");
+			}
+
+			var oConfig = {
+				canOverflow: true,
+				autoCloseEvents: ["change"],
+				invalidationEvents: ["_itemTextChange"],
+				propsUnrelatedToSize: noInvalidationProps
+			};
+
+			oConfig.onBeforeEnterOverflow = function(oSelect) {
+				var oToolbar = oSelect.getParent();
+				if (!oToolbar.isA("sap.m.OverflowToolbar")) {
+					return;
+				}
+
+				oSelect._prevSelectType = oSelect.getType();
+				oSelect._bIsInOverflow = true;
+
+				if (oSelect.getType() !== SelectType.Default) {
+					oSelect.setProperty("type", SelectType.Default, true);
+				}
+			};
+
+			oConfig.onAfterExitOverflow = function(oSelect) {
+				var oToolbar = oSelect.getParent();
+				if (!oToolbar.isA("sap.m.OverflowToolbar")) {
+					return;
+				}
+
+				oSelect._bIsInOverflow = false;
+
+				if (oSelect.getType() !== oSelect._prevSelectType) {
+					oSelect.setProperty("type", oSelect._prevSelectType, true);
+				}
+			};
+
+			return oConfig;
 		};
 
 		/**
@@ -1069,9 +1134,13 @@ function(
 
 			this.sTypedChars += sTypedCharacter;
 
-			// the typed characters match the text of the selected item
-			if ((oSelectedItem && jQuery.sap.startsWithIgnoreCase(oSelectedItem.getText(), this.sTypedChars)) ||
+			var bStartsWithTypedChars = typeof this.sTypedChars === "string" &&
+				this.sTypedChars !== "" &&
+				oSelectedItem &&
+				oSelectedItem.getText().toLowerCase().startsWith(this.sTypedChars.toLowerCase());
 
+			// the typed characters match the text of the selected item
+			if (bStartsWithTypedChars ||
 				// one or more characters have been typed (excluding patterns such as "aa" or "bb")
 				((this.sTypedChars.length === 1) ||
 				((this.sTypedChars.length > 1) &&
@@ -1107,7 +1176,7 @@ function(
 			oEvent.setMarked();
 
 			// note: prevent browser address bar to be open in ie9, when F4 is pressed
-			if (oEvent.which === jQuery.sap.KeyCodes.F4) {
+			if (oEvent.which === KeyCodes.F4) {
 				oEvent.preventDefault();
 			}
 
@@ -1453,7 +1522,7 @@ function(
 			var oControl = sap.ui.getCore().byId(oEvent.relatedControlId),
 				oFocusDomRef = oControl && oControl.getFocusDomRef();
 
-			if (Device.system.desktop && jQuery.sap.containsOrEquals(oPicker.getFocusDomRef(), oFocusDomRef)) {
+			if (Device.system.desktop && containsOrEquals(oPicker.getFocusDomRef(), oFocusDomRef)) {
 
 				// force the focus to stay in the input field
 				this.focus();
@@ -1576,8 +1645,8 @@ function(
 
 			for (var i = 0, oItem; i < aItems.length; i++) {
 				oItem = aItems[i];
-
-				if (oItem.getEnabled() && !(oItem instanceof sap.ui.core.SeparatorItem) && jQuery.sap.startsWithIgnoreCase(oItem.getText(), sText)) {
+				var bTextIsRelevantString = typeof sText === "string" && sText !== "";
+				if (oItem.getEnabled() && !(oItem instanceof sap.ui.core.SeparatorItem) && oItem.getText().toLowerCase().startsWith(sText.toLowerCase()) && bTextIsRelevantString) {
 					return oItem;
 				}
 			}
@@ -1785,6 +1854,8 @@ function(
 
 				switch (sProperty) {
 					case "text":
+						// Notify interested controls that an item's text was changed
+						this.fireEvent("_itemTextChange");
 						this.setValue(sNewValue);
 						break;
 
@@ -1856,18 +1927,8 @@ function(
 
 		Select.prototype.clone = function() {
 			var oSelectClone = Control.prototype.clone.apply(this, arguments),
-				oList = this.getList(),
 				oSelectedItem = this.getSelectedItem(),
 				sSelectedKey = this.getSelectedKey();
-
-			// note: clone the items because the select forward its aggregation items
-			// to an inner list control. In this case, the standard clone functionality
-			// doesn't detect and clone the items that are forwarded to an inner control.
-			if (!this.isBound("items") && oList) {
-				for (var i = 0, aItems = oList.getItems(); i < aItems.length; i++) {
-					oSelectClone.addItem(aItems[i].clone());
-				}
-			}
 
 			if (!this.isBound("selectedKey") && !oSelectClone.isSelectionSynchronized()) {
 
@@ -2319,10 +2380,9 @@ function(
 		 * @public
 		 */
 		Select.prototype.removeItem = function(vItem) {
-			var oList = this.getList(),
-				oItem;
+			var oItem;
 
-			vItem = oList ? oList.removeItem(vItem) : null;
+			vItem = this.removeAggregation("items", vItem);
 
 			if (this.getItems().length === 0) {
 				this.clearSelection();
@@ -2351,8 +2411,7 @@ function(
 		 * @public
 		 */
 		Select.prototype.removeAllItems = function() {
-			var oList = this.getList(),
-				aItems = oList ? oList.removeAllItems() : [];
+			var aItems = this.removeAllAggregation("items");
 
 			this.setValue("");
 
@@ -2374,11 +2433,7 @@ function(
 		 * @public
 		 */
 		Select.prototype.destroyItems = function() {
-			var oList = this.getList();
-
-			if (oList) {
-				oList.destroyItems();
-			}
+			this.destroyAggregation("items");
 
 			this.setValue("");
 

@@ -6,24 +6,24 @@
 
 // Provides control sap.m.ObjectHeader.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
 	'sap/ui/core/library',
 	'sap/ui/Device',
 	'sap/m/Text',
-	'./ObjectHeaderRenderer'
+	'./ObjectHeaderRenderer',
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
-	jQuery,
-	library,
-	Control,
-	IconPool,
-	coreLibrary,
-	Device,
-	Text,
-	ObjectHeaderRenderer
+		library,
+		Control,
+		IconPool,
+		coreLibrary,
+		Device,
+		Text,
+		ObjectHeaderRenderer,
+		jQuery
 	) {
 	"use strict";
 
@@ -63,7 +63,7 @@ sap.ui.define([
 	 * a specific object. The object header title is the key identifier of the object and
 	 * additional text and icons can be used to further distinguish it from other objects.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -757,7 +757,7 @@ sap.ui.define([
 		if (this.getIntroActive() && sSourceId === this.getId() + "-intro") {
 			if (!this.getIntroHref()) {
 				this.fireIntroPress({
-					domRef : jQuery.sap.domById(sSourceId)
+					domRef : window.document.getElementById(sSourceId)
 				});
 			}
 		} else if (!this.getResponsive() && this.getTitleActive() && ( sSourceId === this.getId() + "-title" ||
@@ -768,7 +768,7 @@ sap.ui.define([
 				sSourceId = this.getId() + "-title";
 
 				this.fireTitlePress({
-					domRef : jQuery.sap.domById(sSourceId)
+					domRef : window.document.getElementById(sSourceId)
 				});
 			}
 		} else if (this.getResponsive() && this.getTitleActive() && ( sSourceId === this.getId() + "-txt" || jQuery(oEvent.target).parent().attr('id') === this.getId() + "-txt" )) {
@@ -778,18 +778,18 @@ sap.ui.define([
 				sSourceId = this.getId() + "-txt";
 
 				this.fireTitlePress({
-					domRef : jQuery.sap.domById(sSourceId)
+					domRef : window.document.getElementById(sSourceId)
 				});
 			}
 		} else if (this.getIconActive() && (sSourceId === this.getId() + "-img" || sSourceId === this.getId() + "-icon")) {
 			this.fireIconPress({
-				domRef : jQuery.sap.domById(sSourceId)
+				domRef : window.document.getElementById(sSourceId)
 			});
 		} else if (sSourceId === this.getId() + "-titleArrow") {
 			this.fireTitleSelectorPress({
-				domRef : jQuery.sap.domById(sSourceId)
+				domRef : window.document.getElementById(sSourceId)
 			});
-		} else {
+		} else if (sSourceId.indexOf(this.getId()) !== -1) {
 			// we didn't click on any of the active parts of the ObjectHeader
 			// event should not trigger any further actions
 			oEvent.setMarked();
@@ -819,7 +819,7 @@ sap.ui.define([
 			if (!this.getTitleHref()) {
 				oEvent.preventDefault();
 				this.fireTitlePress({
-					domRef : jQuery.sap.domById(sSourceId)
+					domRef : (sSourceId ? window.document.getElementById(sSourceId) : null)
 				});
 			} else {
 				if (oEvent.type === "sapspace") {
@@ -836,7 +836,7 @@ sap.ui.define([
 			if (!this.getTitleHref()) {
 				oEvent.preventDefault();
 				this.fireTitlePress({
-					domRef : jQuery.sap.domById(sSourceId)
+					domRef : (sSourceId ? window.document.getElementById(sSourceId) : null)
 				});
 			} else {
 				if (oEvent.type === "sapspace") {
@@ -849,7 +849,7 @@ sap.ui.define([
 			}
 			if (!this.getIntroHref()) {
 				this.fireIntroPress({
-					domRef : jQuery.sap.domById(sSourceId)
+					domRef : (sSourceId ? window.document.getElementById(sSourceId) : null)
 				});
 			}
 		} else if (this.getIconActive() && jQuery(oEvent.target).is('.sapMOHIcon,.sapMOHRIcon')){
@@ -857,9 +857,9 @@ sap.ui.define([
 				oEvent.preventDefault();
 			}
 
-			var iconOrImg = jQuery.sap.domById(this.getId() + "-icon");
+			var iconOrImg = (this.getId() + "-icon" ? window.document.getElementById(this.getId() + "-icon") : null);
 			if (!iconOrImg) {
-				iconOrImg = jQuery.sap.domById(this.getId() + "-img");
+				iconOrImg = (this.getId() + "-img" ? window.document.getElementById(this.getId() + "-img") : null);
 			}
 
 			this.fireIconPress({
@@ -870,7 +870,7 @@ sap.ui.define([
 				oEvent.preventDefault();
 			}
 			this.fireTitleSelectorPress({
-				domRef : jQuery.sap.domById(sSourceId)
+				domRef : (sSourceId ? window.document.getElementById(sSourceId) : null)
 			});
 		}
 	};
@@ -903,7 +903,7 @@ sap.ui.define([
 		// To make the browser REALLY do the same (history, referrer, frames, target,...), create a new "click" event and let the browser "do the needful".
 		var oClickEvent = document.createEvent('MouseEvents');
 		oClickEvent.initEvent('click', false, true); //event type, non-bubbling, cancelable
-		jQuery.sap.domById(sSourceId).dispatchEvent(oClickEvent);
+		((sSourceId ? window.document.getElementById(sSourceId) : null)).dispatchEvent(oClickEvent);
 	};
 
 	/**
@@ -928,8 +928,8 @@ sap.ui.define([
 				}
 
 				if (this.getIcon()){
-					jQuery.sap.byId(sId + "-titlediv").removeClass("sapMOHRTitleIcon");
-					jQuery.sap.byId(sId + "-titleIcon").addClass("sapMOHRHideIcon");
+					jQuery(document.getElementById(sId + "-titlediv")).removeClass("sapMOHRTitleIcon");
+					jQuery(document.getElementById(sId + "-titleIcon")).addClass("sapMOHRHideIcon");
 				}
 			} else {
 				if (Device.orientation.landscape) {
@@ -938,8 +938,8 @@ sap.ui.define([
 						this._rerenderTitle(80);
 					}
 					if (this.getIcon()){
-						jQuery.sap.byId(sId + "-titlediv").addClass("sapMOHRTitleIcon");
-						jQuery.sap.byId(sId + "-titleIcon").removeClass("sapMOHRHideIcon");
+						jQuery(document.getElementById(sId + "-titlediv")).addClass("sapMOHRTitleIcon");
+						jQuery(document.getElementById(sId + "-titleIcon")).removeClass("sapMOHRHideIcon");
 					}
 				}
 			}
@@ -1106,8 +1106,8 @@ sap.ui.define([
 		var bPageRTL = sap.ui.getCore().getConfiguration().getRTL();
 
 		if (oObjectNumber && oObjectNumber.getNumber()) {
-			var $numberDiv = jQuery.sap.byId(sId + "-number");
-			var $titleDiv = jQuery.sap.byId(sId + "-titlediv");
+			var $numberDiv = jQuery(document.getElementById(sId + "-number"));
+			var $titleDiv = jQuery(document.getElementById(sId + "-titlediv"));
 
 			if (this._isMediaSize("Phone")) {
 				if ($numberDiv.hasClass("sapMObjectNumberBelowTitle")) {
@@ -1136,9 +1136,9 @@ sap.ui.define([
 	 */
 	ObjectHeader.prototype._adjustIntroDiv = function() {
 		var sId = this.getId();
-		var $titleTxt = jQuery.sap.byId(sId + "-txt");
-		var $titleArrow = jQuery.sap.byId(sId + "-titleArrow");
-		var $intro = jQuery.sap.byId(sId + "-intro");
+		var $titleTxt = jQuery(document.getElementById(sId + "-txt"));
+		var $titleArrow = jQuery(document.getElementById(sId + "-titleArrow"));
+		var $intro = jQuery(document.getElementById(sId + "-intro"));
 
 		if ($intro.parent().hasClass("sapMOHRIntroMargin")) {
 			$intro.parent().removeClass("sapMOHRIntroMargin");
@@ -1220,9 +1220,9 @@ sap.ui.define([
 	ObjectHeader.prototype._hasMarkers = function() {
 		var aMarkers = this.getMarkers(),
 			bHasOldMarkers = this.getShowMarkers() && (this.getMarkFavorite() || this.getMarkFlagged()),
-			bHasMаrkers = aMarkers && aMarkers.length;
+			bHasMarkers = aMarkers && aMarkers.length;
 
-		return (bHasOldMarkers || bHasMаrkers);
+		return (bHasOldMarkers || bHasMarkers);
 	};
 
 	/**

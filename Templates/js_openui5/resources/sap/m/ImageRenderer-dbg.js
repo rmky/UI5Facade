@@ -5,8 +5,8 @@
  */
 
 // Provides default renderer for control sap.m.Image
-sap.ui.define(['jquery.sap.global', 'sap/m/library'],
-	function(jQuery, library) {
+sap.ui.define(['sap/m/library', "sap/base/security/encodeXML"],
+	function(library, encodeXML) {
 	"use strict";
 
 	// shortcut for sap.m.ImageMode
@@ -68,9 +68,9 @@ sap.ui.define(['jquery.sap.global', 'sap/m/library'],
 		} else {
 			// preload the image with a window.Image instance. The source uri is set to the output DOM node via CSS style 'background-image' after the source image is loaded (in onload function)
 			oImage._preLoadImage(oImage._getDensityAwareSrc());
-			oRm.addStyle("background-size", jQuery.sap.encodeHTML(oImage.getBackgroundSize()));
-			oRm.addStyle("background-position", jQuery.sap.encodeHTML(oImage.getBackgroundPosition()));
-			oRm.addStyle("background-repeat", jQuery.sap.encodeHTML(oImage.getBackgroundRepeat()));
+			oRm.addStyle("background-size", encodeXML(oImage.getBackgroundSize()));
+			oRm.addStyle("background-position", encodeXML(oImage.getBackgroundPosition()));
+			oRm.addStyle("background-repeat", encodeXML(oImage.getBackgroundRepeat()));
 		}
 
 		oRm.addClass("sapMImg");
@@ -86,7 +86,7 @@ sap.ui.define(['jquery.sap.global', 'sap/m/library'],
 
 		//TODO implement the ImageMap control
 		if (sUseMap) {
-			if (!(jQuery.sap.startsWith(sUseMap, "#"))) {
+			if (!(sUseMap.startsWith("#"))) {
 				sUseMap = "#" + sUseMap;
 			}
 			oRm.writeAttributeEscaped("useMap", sUseMap);

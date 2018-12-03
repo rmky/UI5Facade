@@ -6,8 +6,9 @@
 
 //Provides class sap.ui.model.odata.v4.lib._MetadataConverter
 sap.ui.define([
-	"./_Helper"
-], function (_Helper) {
+	"./_Helper",
+	"sap/ui/performance/Measurement"
+], function (_Helper, Measurement) {
 	"use strict";
 
 	/**
@@ -97,7 +98,7 @@ sap.ui.define([
 	MetadataConverter.prototype.convertXMLMetadata = function (oDocument, sUrl) {
 		var oElement;
 
-		jQuery.sap.measure.average("convertXMLMetadata", "",
+		Measurement.average("convertXMLMetadata", "",
 			"sap.ui.model.odata.v4.lib._V4MetadataConverter");
 
 		oElement = oDocument.documentElement;
@@ -115,7 +116,7 @@ sap.ui.define([
 
 		this.finalize();
 
-		jQuery.sap.measure.end("convertXMLMetadata");
+		Measurement.end("convertXMLMetadata");
 		return this.result;
 	};
 

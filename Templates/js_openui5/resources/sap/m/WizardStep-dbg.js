@@ -7,11 +7,12 @@
 sap.ui.define([
 	"./library",
 	"sap/ui/core/Control",
-	"jquery.sap.global",
 	"./WizardStepRenderer",
-	"./Button"
+	"./Button",
+	"./TitlePropagationSupport",
+	"sap/base/Log"
 ],
-	function(library, Control, jQuery, WizardStepRenderer, Button) {
+	function(library, Control, WizardStepRenderer, Button, TitlePropagationSupport, Log) {
 
 	"use strict";
 
@@ -34,7 +35,7 @@ sap.ui.define([
 	 * <li>If the execution needs to branch after a given step, you should set all possible next steps in the <code>subsequentSteps</code> aggregation.
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -115,18 +116,22 @@ sap.ui.define([
 		}
 	});
 
+	// Add title propagation support
+	TitlePropagationSupport.call(WizardStep.prototype, "content", function () {return this.getId() + "-title";});
+
 	WizardStep.prototype.init = function () {
 		this._resourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
-		this._oNextButton = new Button({
+		this._fnNextButtonPress;
+
+		this._oNextButton = new Button(this.getId() + "-nextButton", {
 			text: this._resourceBundle.getText("WIZARD_STEP") + 2,
 			type: "Emphasized",
-			enabled: this.getValidated(),
-			press: this._handleNextButtonPress.bind(this)
+			enabled: this.getValidated()
 		}).addStyleClass("sapMWizardNextButton");
 
 		this._oNextButton.addEventDelegate({
 			onAfterRendering: function () {
-				jQuery.sap.delayedCall(0, this, function () {
+				setTimeout(function () {
 					var oButton = this._oNextButton,
 						oButtonDomRef = oButton.getDomRef();
 
@@ -139,24 +144,14 @@ sap.ui.define([
 						// in order to preserve the current animation implementation
 						oButtonDomRef && oButtonDomRef.setAttribute("aria-hidden", true);
 					}
-				});
+				}.bind(this), 0);
 			}
 		}, this);
 
 		this.setAggregation("_nextButton", this._oNextButton);
-	};
 
-	/**
-	 * Called before the control is rendered.
-	 *
-	 * @private
-	 */
-	WizardStep.prototype.onBeforeRendering = function () {
-		var bVisible = this._getWizardParent() ? this._getWizardParent().getShowNextButton() : true;
-		this._oNextButton.setProperty("visible", bVisible, true);
+		this._initTitlePropagationSupport();
 	};
-
-	WizardStep.prototype._handleNextButtonPress = function () {};
 
 	WizardStep.prototype.setValidated = function (validated) {
 		this.setProperty("validated", validated, true);
@@ -195,7 +190,7 @@ sap.ui.define([
 	 */
 	WizardStep.prototype.setVisible = function (visible) {
 		this.setProperty("visible", visible, true);
-		jQuery.sap.log.warning("Don't use the set visible method for wizard steps. If you need to show/hide steps based on some condition - use the branching property of the Wizard instead.");
+		Log.warning("Don't use the set visible method for wizard steps. If you need to show/hide steps based on some condition - use the branching property of the Wizard instead.");
 		return this;
 	};
 
@@ -248,9 +243,35 @@ sap.ui.define([
 		this.removeStyleClass("sapMWizardLastActivatedStep");
 	};
 
+	/**
+	 * Attaches the press handler for the next button press
+	 * @param {function} fnPress The press handler to be executed on next button press
+	 * @sap-restricted sap.m.Wizard
+	 * @private
+	 */
+	WizardStep.prototype._attachNextButtonHandler = function (fnPress) {
+		this._fnNextButtonPress = fnPress;
+		this._oNextButton.attachPress(fnPress);
+	};
+
+	/**
+	 * Detaches the press handler for the next button press
+	 * @sap-restricted sap.m.Wizard
+	 * @private
+	 */
+	WizardStep.prototype._detachNextButtonHandler = function () {
+		this._oNextButton.detachPress(this._fnNextButtonPress);
+	};
+
 	WizardStep.prototype._activate = function () {
+		var parent = this._getWizardParent();
+
 		if (this.hasStyleClass("sapMWizardStepActivated")) {
 			return;
+		}
+
+		if (parent) {
+			this._oNextButton.setVisible(parent.getShowNextButton());
 		}
 
 		this._markAsLast();

@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/fl/Utils", "jquery.sap.global"],
-	function(FlexUtils, jQuery) {
+sap.ui.define(["sap/ui/fl/Utils", "sap/base/util/uid", 'sap/ui/base/ManagedObjectObserver'],
+	function(FlexUtils, uid, ManagedObjectObserver) {
 		"use strict";
 
 		/**
@@ -13,7 +13,7 @@ sap.ui.define(["sap/ui/fl/Utils", "jquery.sap.global"],
 		 *
 		 * @alias sap.m.changeHandler.CombineButtons
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @experimental Since 1.48
 		 */
 		var CombineButtons = { };
@@ -70,8 +70,16 @@ sap.ui.define(["sap/ui/fl/Utils", "jquery.sap.global"],
 				oMenuItem = oModifier.createControl("sap.m.MenuItem", mPropertyBag.appComponent, oView, oSelector);
 				oModifier.setProperty(oMenuItem, "text", oButton.mProperties.text);
 				oModifier.setProperty(oMenuItem, "icon", oButton.mProperties.icon);
+				oModifier.setProperty(oMenuItem, "enabled", oButton.mProperties.enabled);
 				oMenuItem.attachPress(function(oEvent) {
 					return oButton.firePress(oEvent);
+				});
+
+				// observe the Button enabled property so in case it is changed the new value should be applied to the MenuItem also
+				new ManagedObjectObserver(function (oChanges) {
+					oModifier.setProperty(oMenuItem, "enabled", oChanges.current);
+				}).observe(oButton, {
+					properties: ["enabled"]
 				});
 
 				if (sButtonText) {
@@ -169,12 +177,12 @@ sap.ui.define(["sap/ui/fl/Utils", "jquery.sap.global"],
 				});
 
 				// generate ids for Menu and MenuButton
-				oChangeDefinition.content.menuButtonIdSelector = oModifier.getSelector(oAppComponent.createId(jQuery.sap.uid()), oAppComponent);
-				oChangeDefinition.content.menuIdSelector = oModifier.getSelector(oAppComponent.createId(jQuery.sap.uid()), oAppComponent);
+				oChangeDefinition.content.menuButtonIdSelector = oModifier.getSelector(oAppComponent.createId(uid()), oAppComponent);
+				oChangeDefinition.content.menuIdSelector = oModifier.getSelector(oAppComponent.createId(uid()), oAppComponent);
 
 				// generate id for menu button items
 				oChangeDefinition.content.buttonsIdForSave = aCombineButtonIds.map(function() {
-					return oModifier.getSelector(oAppComponent.createId(jQuery.sap.uid()), oAppComponent);
+					return oModifier.getSelector(oAppComponent.createId(uid()), oAppComponent);
 				});
 			} else {
 				throw new Error("Combine buttons action cannot be completed: oSpecificChangeInfo.combineFieldIds attribute required");

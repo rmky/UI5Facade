@@ -5,7 +5,6 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/m/Text',
@@ -17,9 +16,27 @@ sap.ui.define([
 	'sap/m/GenericTileLineModeRenderer',
 	'sap/ui/Device',
 	'sap/ui/core/ResizeHandler',
-	'jquery.sap.events'
-], function (jQuery, library, Control, Text, HTML, Icon, IconPool, Button, GenericTileRenderer, LineModeRenderer, Device,
-			 ResizeHandler) {
+	"sap/base/strings/camelize",
+	"sap/base/util/deepEqual",
+	"sap/ui/events/PseudoEvents",
+	"sap/ui/thirdparty/jquery"
+], function(
+	library,
+	Control,
+	Text,
+	HTML,
+	Icon,
+	IconPool,
+	Button,
+	GenericTileRenderer,
+	LineModeRenderer,
+	Device,
+	ResizeHandler,
+	camelize,
+	deepEqual,
+	PseudoEvents,
+	jQuery
+) {
 	"use strict";
 
 	var GenericTileScope = library.GenericTileScope,
@@ -27,7 +44,8 @@ sap.ui.define([
 		FrameType = library.FrameType,
 		Size = library.Size,
 		GenericTileMode = library.GenericTileMode,
-		TileSizeBehavior = library.TileSizeBehavior;
+		TileSizeBehavior = library.TileSizeBehavior,
+		WrappingType = library.WrappingType;
 
 	var DEVICE_SET = "GenericTileDeviceSet";
 
@@ -42,7 +60,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 1.34.0
 	 *
 	 * @public
@@ -110,7 +128,12 @@ sap.ui.define([
 				 * Additional description for aria-label. The aria-label is rendered before the standard aria-label.
 				 * @since 1.50.0
 				 */
-				ariaLabel: {type: "string", group: "Accessibility", defaultValue: null}
+				ariaLabel: {type: "string", group: "Accessibility", defaultValue: null},
+				/**
+				 * Defines the type of text wrapping to be used (hyphenated or normal).
+				 * @since 1.60
+				 */
+				wrappingType : {type: "sap.m.WrappingType", group : "Appearance", defaultValue : WrappingType.Normal}
 			},
 			defaultAggregation: "tileContent",
 			aggregations: {
@@ -222,6 +245,13 @@ sap.ui.define([
 		} else {
 			this._handleCoreInitialized();
 		}
+	};
+
+	GenericTile.prototype.setWrappingType = function (sWrappingType) {
+		this.setProperty("wrappingType", sWrappingType, true);
+		this._oTitle.setWrappingType(sWrappingType);
+		this._oFailedText.setWrappingType(sWrappingType);
+		return this;
 	};
 
 
@@ -380,7 +410,7 @@ sap.ui.define([
 			// attach handler in order to check the device type based on width and invalidate on change
 			Device.media.attachHandler(this._handleMediaChange, this, DEVICE_SET);
 		}
-
+            this._oTitle.clampText();
 	};
 
 	/**
@@ -537,7 +567,7 @@ sap.ui.define([
 	GenericTile.prototype._getStyleData = function () {
 		var oStyleData = this._calculateStyleData();
 
-		if (!jQuery.sap.equal(this._oStyleData, oStyleData)) {
+		if (!deepEqual(this._oStyleData, oStyleData)) {
 			delete this._oStyleData;
 
 			//cache style data in order for it to be reused by other functions
@@ -555,7 +585,7 @@ sap.ui.define([
 	 * @private
 	 */
 	GenericTile.prototype._getAnimationEvents = function () {
-		return "transitionend.sapMGT$id animationend.sapMGT$id".replace(/\$id/g, jQuery.sap.camelCase(this.getId()));
+		return "transitionend.sapMGT$id animationend.sapMGT$id".replace(/\$id/g, camelize(this.getId()));
 	};
 
 	/**
@@ -611,7 +641,7 @@ sap.ui.define([
 		}
 
 		this._cHoverStyleUpdates++;
-		this._oAnimationEndCallIds[this._cHoverStyleUpdates] = jQuery.sap.delayedCall(10, this, this._handleAnimationEnd, [this._cHoverStyleUpdates]);
+		this._oAnimationEndCallIds[this._cHoverStyleUpdates] = setTimeout(this._handleAnimationEnd.bind(this, this._cHoverStyleUpdates), 10);
 	};
 
 	/**
@@ -636,7 +666,7 @@ sap.ui.define([
 	 */
 	GenericTile.prototype._clearAnimationUpdateQueue = function () {
 		for (var k in this._oAnimationEndCallIds) {
-			jQuery.sap.clearDelayedCall(this._oAnimationEndCallIds[k]);
+			clearTimeout(this._oAnimationEndCallIds[k]);
 			delete this._oAnimationEndCallIds[k];
 		}
 	};
@@ -724,9 +754,6 @@ sap.ui.define([
 		if (this.getMode() === library.GenericTileMode.LineMode) {
 			this.addStyleClass("sapMGTLineModePress");
 		}
-		if (Device.browser.internet_explorer && this.getState() !== library.LoadState.Disabled) {
-			this.$().focus();
-		}
 	};
 
 	GenericTile.prototype.ontouchcancel = function () {
@@ -742,9 +769,6 @@ sap.ui.define([
 		if (this.getMode() === library.GenericTileMode.LineMode) {
 			this.removeStyleClass("sapMGTLineModePress");
 		}
-		if (Device.browser.internet_explorer && this.getState() !== library.LoadState.Disabled) {
-			this.$().focus();
-		}
 	};
 
 	GenericTile.prototype.ontap = function (event) {
@@ -758,7 +782,7 @@ sap.ui.define([
 	};
 
 	GenericTile.prototype.onkeydown = function (event) {
-		if (jQuery.sap.PseudoEvents.sapselect.fnCheck(event) && this.getState() !== library.LoadState.Disabled) {
+		if (PseudoEvents.events.sapselect.fnCheck(event) && this.getState() !== library.LoadState.Disabled) {
 			if (this.$("hover-overlay").length > 0) {
 				this.$("hover-overlay").addClass("sapMGTPressActive");
 			}
@@ -786,7 +810,7 @@ sap.ui.define([
 			sScope = this.getScope(),
 			bActionsScope = sScope === library.GenericTileScope.Actions;
 
-		if (bActionsScope && (jQuery.sap.PseudoEvents.sapdelete.fnCheck(event) || jQuery.sap.PseudoEvents.sapbackspace.fnCheck(event))) {
+		if (bActionsScope && (PseudoEvents.events.sapdelete.fnCheck(event) || PseudoEvents.events.sapbackspace.fnCheck(event))) {
 			oParams = {
 				scope: sScope,
 				action: GenericTile._Action.Remove,
@@ -794,7 +818,7 @@ sap.ui.define([
 			};
 			bFirePress = true;
 		}
-		if (jQuery.sap.PseudoEvents.sapselect.fnCheck(event) && this.getState() !== library.LoadState.Disabled) {
+		if (PseudoEvents.events.sapselect.fnCheck(event) && this.getState() !== library.LoadState.Disabled) {
 			if (this.$("hover-overlay").length > 0) {
 				this.$("hover-overlay").removeClass("sapMGTPressActive");
 			}
@@ -831,7 +855,7 @@ sap.ui.define([
 	};
 
 	GenericTile.prototype.setHeaderImage = function (uri) {
-		var bValueChanged = !jQuery.sap.equal(this.getHeaderImage(), uri);
+		var bValueChanged = !deepEqual(this.getHeaderImage(), uri);
 
 		if (bValueChanged) {
 			if (this._oImage) {

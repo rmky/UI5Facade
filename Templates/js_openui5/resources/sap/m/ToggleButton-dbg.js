@@ -6,14 +6,13 @@
 
 // Provides control sap.m.ToggleButton.
 sap.ui.define([
-	'jquery.sap.global',
 	'./Button',
 	'./library',
 	'sap/ui/core/EnabledPropagator',
 	'./ToggleButtonRenderer',
-	'jquery.sap.keycodes'
+	"sap/ui/events/KeyCodes"
 ],
-	function(jQuery, Button, library, EnabledPropagator, ToggleButtonRenderer) {
+	function(Button, library, EnabledPropagator, ToggleButtonRenderer, KeyCodes) {
 	"use strict";
 
 
@@ -33,7 +32,7 @@ sap.ui.define([
 	 * @extends sap.m.Button
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -88,7 +87,7 @@ sap.ui.define([
 	 */
 	ToggleButton.prototype.onkeydown = function(oEvent) {
 
-		if (oEvent.which === jQuery.sap.KeyCodes.SPACE || oEvent.which === jQuery.sap.KeyCodes.ENTER) {
+		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
 			this.ontap(oEvent);
 		}
 	};
@@ -98,7 +97,7 @@ sap.ui.define([
 	 * @param {jQuery.Event} oEvent The fired event
 	 */
 	ToggleButton.prototype.onkeyup = function(oEvent) {
-		if (oEvent.which === jQuery.sap.KeyCodes.SPACE || oEvent.which === jQuery.sap.KeyCodes.ENTER) {
+		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
 			oEvent.setMarked();
 		}
 	};

@@ -5,8 +5,13 @@
  */
 
 //Provides an abstraction for list bindings
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/Context', 'sap/ui/model/ContextBinding', 'sap/ui/model/ChangeReason'],
-		function(jQuery, Context, ContextBinding, ChangeReason) {
+sap.ui.define([
+	'sap/ui/model/Context',
+	'sap/ui/model/ContextBinding',
+	'sap/ui/model/ChangeReason',
+	"sap/ui/thirdparty/jquery"
+],
+		function(Context, ContextBinding, ChangeReason, jQuery) {
 	"use strict";
 
 

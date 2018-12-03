@@ -3,8 +3,15 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library', 'sap/m/library', 'sap/ui/Device'],
-	function(jQuery, Control, coreLibrary, library, Device) {
+sap.ui.define([
+	'sap/ui/core/Control',
+	'sap/ui/core/library',
+	'sap/m/library',
+	'sap/ui/Device',
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+	function(Control, coreLibrary, library, Device, Log, jQuery) {
 	"use strict";
 
 
@@ -239,10 +246,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 			var aStatuses = oOH.getStatuses();
 			for (var i = 0; i < aStatuses.length; i++) {
 				if (!aStatuses[i].getVisible || aStatuses[i].getVisible()) {
-					if (aStatuses[i] instanceof sap.m.ObjectStatus || aStatuses[i] instanceof sap.m.ProgressIndicator) {
+					if ((aStatuses[i] instanceof sap.m.ObjectStatus && !aStatuses[i]._isEmpty()) || aStatuses[i] instanceof sap.m.ProgressIndicator) {
 						aVisibleStatuses.push([aStatuses[i]]);
 					} else {
-						jQuery.sap.log.warning("Only sap.m.ObjectStatus or sap.m.ProgressIndicator are allowed in \"sap.m.ObjectHeader.statuses\" aggregation." + " Current object is "
+						Log.warning("Only sap.m.ObjectStatus or sap.m.ProgressIndicator are allowed in \"sap.m.ObjectHeader.statuses\" aggregation." + " Current object is "
 								+ aStatuses[i].constructor.getMetadata().getName() + " with id \"" + aStatuses[i].getId() + "\"");
 					}
 				}
@@ -265,7 +272,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 			aVisibleAttribs = [];
 
 		for (var j = 0; j < aAttribs.length; j++) {
-			if (aAttribs[j].getVisible()) {
+			if (aAttribs[j].getVisible() && !aAttribs[j]._isEmpty()) {
 				aVisibleAttribs.push(aAttribs[j]);
 			}
 		}
@@ -828,7 +835,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 		if (!oOH.getTitle()) {
 			 //if value is set through data binding, there is time delay and fake warning will be logged, so set warning only if not data binding
 			if (!oOH.getBinding("title")) {
-				jQuery.sap.log.warning("The title shouldn't be empty!");
+				Log.warning("The title shouldn't be empty!");
 			}
 		}
 	};
@@ -1207,7 +1214,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 				// render the header container
 				this._renderChildControl(oRM, oControl, oHeaderContainer);
 			} else {
-				jQuery.sap.log.warning("The control " + oHeaderContainer + " is not supported for aggregation \"headerContainer\"");
+				Log.warning("The control " + oHeaderContainer + " is not supported for aggregation \"headerContainer\"");
 			}
 		}
 		oRM.write("</div>");
@@ -1278,7 +1285,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 		var sId = oOH.getId();
 
 		this._renderResponsiveTitleAndArrow(oRM, oOH, nCutLen);
-		oRM.flush(jQuery.sap.byId(sId + "-title-arrow"));
+		oRM.flush(jQuery(document.getElementById(sId + "-title-arrow")));
 	};
 
 	/**
@@ -1425,7 +1432,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 
 		this._renderResponsiveStatesColumn(oRM, oOH, iRenderCols, aVisibleAttrAndStat, iCountVisibleAttr, sClassColCount);
 
-		oRM.flush(jQuery.sap.byId(sId + "-states")[0]);
+		oRM.flush(jQuery(document.getElementById(sId + "-states"))[0]);
 	};
 
 	/**** responsive rendering end ****/

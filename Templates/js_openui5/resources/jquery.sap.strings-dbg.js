@@ -7,14 +7,12 @@
 // Provides useful string operations not available in pure JavaScript.
 sap.ui.define([
 	'jquery.sap.global',
-	'sap/base/strings/endsWithIgnoreCase',
-	'sap/base/strings/startsWithIgnoreCase',
-	'sap/base/strings/charToUpperCase',
-	'sap/base/strings/camelCase',
-	'sap/base/strings/hyphen',
+	'sap/base/strings/capitalize',
+	'sap/base/strings/camelize',
+	'sap/base/strings/hyphenate',
 	'sap/base/strings/escapeRegExp',
 	'sap/base/strings/formatMessage'
-], function(jQuery, endsWithIgnoreCase, startsWithIgnoreCase, charToUpperCase, camelCase, hyphen, escapeRegExp, formatMessage) {
+], function(jQuery, capitalize, camelize, hyphenate, escapeRegExp, formatMessage) {
 		"use strict";
 
 	/**
@@ -24,7 +22,7 @@ sap.ui.define([
 	 * @param {string} sString String to be checked
 	 * @param {string} sEndString The end string to be searched
 	 * @returns {boolean} Whether <code>sString</code> ends with <code>sEndString</code>
-	 * @see jQuery.sap.endsWithIgnoreCase
+	 * @deprecated since 1.58 use the native solution <code>String#endsWith</code>
 	 * @public
 	 */
 	jQuery.sap.endsWith = function(sString, sEndString) {
@@ -43,9 +41,17 @@ sap.ui.define([
 	 * @returns {boolean} Whether <code>sString</code> ends with <code>sEndString</code>
 	 * @see jQuery.sap.endsWith
 	 * @public
+	 * @deprecated since 1.58 use the native solution <code>sString.toLowerCase().endsWith(sEndString.toLowerCase())</code>
 	 * @function
 	 */
-	jQuery.sap.endsWithIgnoreCase = endsWithIgnoreCase;
+	jQuery.sap.endsWithIgnoreCase = function(sString, sEndString) {
+		if (typeof (sEndString) != "string" || sEndString == "") {
+			return false;
+		}
+		sString = sString.toUpperCase();
+		sEndString = sEndString.toUpperCase();
+		return sString.endsWith(sEndString);
+	};
 
 	/**
 	 * Checks whether a given <code>sString</code> starts with <code>sStartString</code>
@@ -54,7 +60,7 @@ sap.ui.define([
 	 * @param {string} sString String to be checked
 	 * @param {string} sStartString The start string to be searched
 	 * @returns {boolean} Whether <code>sString</code> starts with <code>sStartString</code>
-	 * @see jQuery.sap.startsWithIgnoreCase
+	 * @deprecated since 1.58 use the native <code>String#startsWith</code>
 	 * @public
 	 */
 	jQuery.sap.startsWith = function(sString, sStartString) {
@@ -73,9 +79,17 @@ sap.ui.define([
 	 * @returns {boolean} Whether <code>sString</code> starts with <code>sStartString</code>
 	 * @see jQuery.sap.startsWith
 	 * @public
+	 * @deprecated since 1.58 use the native solution <code>sString.toLowerCase().startsWith(sEndString.toLowerCase())</code>
 	 * @function
 	 */
-	jQuery.sap.startsWithIgnoreCase = startsWithIgnoreCase;
+	jQuery.sap.startsWithIgnoreCase = function(sString, sStartString) {
+		if (typeof (sStartString) != "string" || sStartString == "") {
+			return false;
+		}
+		sString = sString.toUpperCase();
+		sStartString = sStartString.toUpperCase();
+		return sString.startsWith(sStartString);
+	};
 
 	/**
 	 * Converts one character of the string to upper case, at a given position.
@@ -90,8 +104,21 @@ sap.ui.define([
 	 * @public
 	 * @SecPassthrough {0|return}
 	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/base/strings/capitalize} instead
 	 */
-	jQuery.sap.charToUpperCase = charToUpperCase;
+	jQuery.sap.charToUpperCase = function (sString, iPos) {
+		if (!sString) {
+			return sString;
+		}
+		if (!iPos || isNaN(iPos) || iPos <= 0 || iPos >= sString.length) {
+			return capitalize(sString);
+		}
+		var sChar = sString.charAt(iPos).toUpperCase();
+		if (iPos > 0) {
+			return sString.substring(0,iPos) + sChar + sString.substring(iPos + 1);
+		}
+		return sChar + sString.substring(iPos + 1);
+	};
 
 	/**
 	 * Pads a string on the left side until is has at least the given length.
@@ -105,6 +132,7 @@ sap.ui.define([
 	 * @param {int} iLength Target length of the string
 	 * @returns {string} The padded string
 	 * @public
+	 * @deprecated since 1.58 use the native <code>String#padStart</code> instead
 	 * @SecPassthrough {0 1|return}
 	 */
 	jQuery.sap.padLeft = function (sString, sPadChar, iLength) {
@@ -134,6 +162,7 @@ sap.ui.define([
 	 * @param {int} iLength Target length of the string
 	 * @returns {string} The padded string
 	 * @public
+	 * @deprecated since 1.58 use the native <code>String#padEnd</code> instead
 	 * @SecPassthrough {0 1|return}
 	 */
 	jQuery.sap.padRight = function (sString, sPadChar, iLength) {
@@ -160,8 +189,9 @@ sap.ui.define([
 	 * @public
 	 * @SecPassthrough {0|return}
 	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/base/strings/camelize} instead
 	 */
-	jQuery.sap.camelCase = camelCase;
+	jQuery.sap.camelCase = camelize;
 
 
 	/**
@@ -173,8 +203,9 @@ sap.ui.define([
 	 * @public
 	 * @SecPassthrough {0|return}
 	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/base/strings/hyphenate} instead
 	 */
-	jQuery.sap.hyphen = hyphen;
+	jQuery.sap.hyphen = hyphenate;
 
 	/**
 	 * Escapes all characters that would have a special meaning in a regular expression.
@@ -197,10 +228,11 @@ sap.ui.define([
 	 * @public
 	 * @SecPassthrough {0|return}
 	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/base/strings/escapeRegExp} instead
 	 */
 	jQuery.sap.escapeRegExp = escapeRegExp;
 
-/**
+	/**
 	 * Creates a string from a pattern by replacing placeholders with concrete values.
 	 *
 	 * The syntax of the pattern is inspired by (but not fully equivalent to) the
@@ -244,6 +276,7 @@ sap.ui.define([
 	 * @SecPassthrough {*|return}
 	 * @public
 	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/base/strings/formatMessage} instead
 	 */
 	jQuery.sap.formatMessage = formatMessage;
 

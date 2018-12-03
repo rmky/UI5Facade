@@ -26,7 +26,7 @@ sap.ui.define([
 	 * ThingViewer: Same as ThingInspector but decoupled from the Overlay and the ActionBar.
 	 * The control can be added to a Parent container that has a defined width. The ThingViewer fill the whole container. If the parent container has no width defined the control will not work properly.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -499,11 +499,13 @@ sap.ui.define([
 		ThingViewer.prototype.setTitle = function(sTitle) {
 			this.setProperty("title", sTitle, true);
 			this._rerenderHeader();
+			return this;
 		};
 		//Implementation of API method
 		ThingViewer.prototype.setSubtitle = function(sTitle) {
 			this.setProperty("subtitle", sTitle, true);
 			this._rerenderHeader();
+			return this;
 		};
 		// Implementation of API method
 		ThingViewer.prototype.setActionBar = function(oActionBar) {

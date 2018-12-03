@@ -3,8 +3,12 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/m/library'],
-	function (jQuery, Device, library) {
+sap.ui.define([
+	'sap/ui/Device',
+	'sap/m/library',
+	"sap/ui/dom/getScrollbarSize"
+],
+	function(Device, library, getScrollbarSize) {
 		"use strict";
 
 		// shortcut for sap.m.PlacementType
@@ -161,7 +165,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/m/library'],
 			rm.writeAttribute("id", oControl.getId() + "-scroll");
 
 			if (!oControl.getHorizontalScrolling()) {
-				rm.addStyle(sap.ui.getCore().getConfiguration().getRTL() ? "margin-left" : "margin-right", jQuery.sap.scrollbarSize().width + "px");
+				rm.addStyle(sap.ui.getCore().getConfiguration().getRTL() ? "margin-left" : "margin-right", getScrollbarSize().width + "px");
 			}
 
 			rm.writeStyles();

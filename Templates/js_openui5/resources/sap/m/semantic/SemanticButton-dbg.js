@@ -4,7 +4,12 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/m/semantic/SemanticControl', 'sap/m/Button', 'sap/m/semantic/SemanticOverflowToolbarButton'], function(SemanticControl, Button, SemanticOverflowToolbarButton) {
+sap.ui.define([
+	'sap/m/semantic/SemanticControl',
+	'sap/m/Button',
+	'sap/m/semantic/SemanticOverflowToolbarButton',
+	"sap/ui/thirdparty/jquery"
+], function(SemanticControl, Button, SemanticOverflowToolbarButton, jQuery) {
 	"use strict";
 
 	/**
@@ -20,7 +25,7 @@ sap.ui.define(['sap/m/semantic/SemanticControl', 'sap/m/Button', 'sap/m/semantic
 	 * @abstract
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public

@@ -29,7 +29,7 @@ sap.ui.define([
 	 * @extends sap.ui.commons.TextField
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -120,6 +120,7 @@ sap.ui.define([
 				oIcon.addClass('sapUiTfValueHelpDsblIcon');
 			}
 		}
+		return this;
 	};
 
 	ValueHelpField.prototype.setEditable = function(bEditable) {
@@ -136,6 +137,7 @@ sap.ui.define([
 				oIcon.addClass('sapUiTfValueHelpDsblIcon');
 			}
 		}
+		return this;
 	};
 
 	/**

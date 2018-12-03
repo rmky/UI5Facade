@@ -19,7 +19,7 @@ sap.ui.define([
 	 * @abstract
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableExtension
@@ -56,9 +56,9 @@ sap.ui.define([
 			this._settings = mSettings || {};
 
 			this._type = TableExtension.TABLETYPES.STANDARD;
-			if (TableUtils.isInstanceOf(oTable, "sap/ui/table/TreeTable")) {
+			if (oTable.isA("sap.ui.table.TreeTable")) {
 				this._type = TableExtension.TABLETYPES.TREE;
-			} else if (TableUtils.isInstanceOf(oTable, "sap/ui/table/AnalyticalTable")) {
+			} else if (oTable.isA("sap.ui.table.AnalyticalTable")) {
 				this._type = TableExtension.TABLETYPES.ANALYTICAL;
 			}
 
@@ -217,6 +217,28 @@ sap.ui.define([
 		}
 		delete oTable._aExtensions;
 		delete oTable._bExtensionsInitialized;
+	};
+
+	/**
+	 * Checks whether a table is enriched with a certain extension.
+	 *
+	 * @param {sap.ui.table.Table} oTable The table instance.
+	 * @param {string} sExtensionFullName The fully qualified name of the extension.
+	 * @returns {boolean} Whether the table is enriched with the specified extension.
+	 * @static
+	 */
+	TableExtension.isEnrichedWith = function(oTable, sExtensionFullName) {
+		if (!oTable || !oTable._aExtensions) {
+			return false;
+		}
+
+		for (var i = 0; i < oTable._aExtensions.length; i++) {
+			if (oTable._aExtensions[i].getMetadata().getName() === sExtensionFullName) {
+				return true;
+			}
+		}
+
+		return false;
 	};
 
 	return TableExtension;

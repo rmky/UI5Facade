@@ -6,18 +6,22 @@
 
 // Provides control sap.m.FormattedText.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'./FormattedTextAnchorGenerator',
-	'./FormattedTextRenderer'
+	'./FormattedTextRenderer',
+	"sap/base/Log",
+	"sap/base/security/URLWhitelist",
+	"sap/base/security/sanitizeHTML"
 ],
 function(
-	jQuery,
 	library,
 	Control,
 	FormattedTextAnchorGenerator,
-	FormattedTextRenderer
+	FormattedTextRenderer,
+	Log,
+	URLWhitelist,
+	sanitizeHTML0
 	) {
 		"use strict";
 
@@ -35,7 +39,7 @@ function(
 		 * @class
 		 * The FormattedText control allows the usage of a limited set of tags for inline display of formatted text in HTML format.
 		 * @extends sap.ui.core.Control
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -79,7 +83,7 @@ function(
 					 * </ul>
 					 * <p><code>class, style,</code> and <code>target</code> attributes are allowed.
 					 * If <code>target</code> is not set, links open in a new window by default.
-					 * <p>Only safe <code>href</code> attributes can be used. See {@link jQuery.sap.validateUrl}.
+					 * <p>Only safe <code>href</code> attributes can be used. See {@link sap.base.security.URLWhiteList}.
 					 *
 					 * <b>Note:</b> Keep in mind that not supported HTML tags and
 					 * the content nested inside them are both not rendered by the control.
@@ -209,7 +213,7 @@ function(
 
 				if (!this._renderingRules.ATTRIBS[attr] && !this._renderingRules.ATTRIBS[tagName + "::" + attr]) {
 					sWarning = 'FormattedText: <' + tagName + '> with attribute [' + attr + '="' + value + '"] is not allowed';
-					jQuery.sap.log.warning(sWarning, this);
+					Log.warning(sWarning, this);
 					// to remove the attribute by the sanitizer, set the value to null
 					attribs[i + 1] = null;
 					continue;
@@ -217,8 +221,8 @@ function(
 
 				// sanitize hrefs
 				if (attr == "href") { // a::href
-					if (!jQuery.sap.validateUrl(value)) {
-						jQuery.sap.log.warning("FormattedText: incorrect href attribute:" + value, this);
+					if (!URLWhitelist.validate(value)) {
+						Log.warning("FormattedText: incorrect href attribute:" + value, this);
 						attribs[i + 1] = "#";
 						addTarget = false;
 					}
@@ -253,7 +257,7 @@ function(
 				return fnSanitizeAttribs.call(this, tagName, attribs);
 			} else {
 				var sWarning = '<' + tagName + '> is not allowed';
-				jQuery.sap.log.warning(sWarning, this);
+				Log.warning(sWarning, this);
 			}
 		}
 
@@ -265,11 +269,11 @@ function(
 		 * @private
 		 */
 		function sanitizeHTML(sText) {
-			return jQuery.sap._sanitizeHTML(sText, {
+			return sanitizeHTML0(sText, {
 				tagPolicy: fnPolicy.bind(this),
 				uriRewriter: function (sUrl) {
 					// by default we use the URL whitelist to check the URLs
-					if (jQuery.sap.validateUrl(sUrl)) {
+					if (URLWhitelist.validate(sUrl)) {
 						return sUrl;
 					}
 				}

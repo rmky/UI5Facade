@@ -52,9 +52,20 @@
 
 	// DynamicPageTitle and Toggle Header Visual Indicator hover state
 	&.sapFDynamicPageTitleClickEnabled {
+
 		.sapFDynamicPageTitle:hover,
 		&.sapFDynamicPageTitleForceHovered .sapFDynamicPageTitle {
-			background-color: darken(@sapUiObjectHeaderBackground, 3);
+			.title-hover(@sapUiObjectHeaderBackground);
+		}
+
+		.sapFDynamicPageTitleTranslucent:hover,
+		&.sapFDynamicPageTitleForceHovered .sapFDynamicPageTitleTranslucent {
+			.title-hover(lighten(@sapUiObjectHeaderBackground, 10));
+		}
+
+		.sapFDynamicPageTitleTransparent:hover,
+		&.sapFDynamicPageTitleForceHovered .sapFDynamicPageTitleTransparent {
+			.title-hover(transparent);
 		}
 
 		&.sapFDynamicPageTitleForceHovered {
@@ -97,7 +108,43 @@
 	box-shadow: @sapUiShadowLevel1;
 	border-bottom: 0 none;
 }
+
+.title-hover(@backgroundColor) {
+	background-color: darken(@backgroundColor, 3);
+}
 /* END "DynamicPage.less" */
+
+/* START "DynamicPageHeader.less" */
+/* ================================== */
+/* CSS for control sap.f/DynamicPageHeader  */
+/* Belize theme                       */
+/* ================================== */
+
+
+.sapFDynamicPageHeader.sapFDynamicPageHeaderTranslucent {
+	background: lighten(@sapUiObjectHeaderBackground, 10);
+}
+
+.sapFDynamicPageHeader.sapFDynamicPageHeaderTransparent {
+	background: transparent;
+}
+/* END "DynamicPageHeader.less" */
+
+/* START "DynamicPageTitle.less" */
+/* ================================== */
+/* CSS for control sap.f/DynamicPageTitle  */
+/* Belize theme                       */
+/* ================================== */
+
+
+.sapFDynamicPageTitle.sapFDynamicPageTitleTranslucent {
+	background: lighten(@sapUiObjectHeaderBackground, 10);
+}
+
+.sapFDynamicPageTitle.sapFDynamicPageTitleTransparent {
+	background: transparent;
+}
+/* END "DynamicPageTitle.less" */
 
 /* START "FlexibleColumnLayout.less" */
 /* =========================================== */

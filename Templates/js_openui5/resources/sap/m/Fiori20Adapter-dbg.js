@@ -5,8 +5,15 @@
  */
 
 // Provides class sap.m.Fiori20Adapter
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/base/EventProvider', 'sap/ui/base/ManagedObjectObserver', 'sap/ui/Device'],
-	function(jQuery, Object, EventProvider, ManagedObjectObserver, Device) {
+sap.ui.define([
+	'sap/ui/base/Object',
+	'sap/ui/base/EventProvider',
+	'sap/ui/base/ManagedObjectObserver',
+	'sap/ui/Device',
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+	function(Object, EventProvider, ManagedObjectObserver, Device, Log, jQuery) {
 	"use strict";
 
 	var oEventProvider = new EventProvider(),
@@ -19,7 +26,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/base/EventProv
 	 *
 	 *
 	 * @class text
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @private
 	 * @since 1.38
 	 * @alias HeaderAdapter
@@ -29,7 +36,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/base/EventProv
 		constructor : function(oHeader, oAdaptOptions) {
 
 			if (!oHeader || !oAdaptOptions) {
-				jQuery.sap.log.error("Cannot initialize: Invalid arguments.");
+				Log.error("Cannot initialize: Invalid arguments.");
 				return;
 			}
 
@@ -219,7 +226,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/base/EventProv
 	 * Constructor for an sap.m.Fiori20Adapter.
 	 *
 	 * @class text
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @private
 	 * @since 1.38
 	 * @alias sap.m.Fiori20Adapter

@@ -4,16 +4,14 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([
-	'sap/ui/fl/changeHandler/JsControlTreeModifier'
-], function(JsControlTreeModifier) {
+sap.ui.define(['sap/ui/fl/changeHandler/JsControlTreeModifier', "sap/base/Log"], function(JsControlTreeModifier, Log) {
 	"use strict";
 
 	/**
 	 * Change handler for hiding of a control.
 	 * @alias sap.ui.fl.changeHandler.HideControl
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @experimental Since 1.27.0
 	 */
 	var HideForm = { };
@@ -56,7 +54,7 @@ sap.ui.define([
 			var oRemovedElement = oModifier.bySelector(oChangeDefinition.content.elementSelector || oChangeDefinition.content.sHideId, oAppComponent, oView);
 			var aContent = oModifier.getAggregation(oControl, "content");
 			var iStart = -1;
-			var mState = this._getState(oControl, oModifier);
+			var mState = this._getState(oControl, oModifier, oAppComponent);
 			oChange.setRevertData(mState);
 
 			// this is needed to trigger a refresh of a simpleform! Otherwise simpleForm content and visualization are not in sync
@@ -121,7 +119,7 @@ sap.ui.define([
 			return true;
 		} catch (oError) {
 			oChange.resetRevertData();
-			jQuery.sap.log.error(oError.message || oError.name);
+			Log.error(oError.message || oError.name);
 		}
 	};
 
@@ -160,12 +158,12 @@ sap.ui.define([
 		}
 	};
 
-	HideForm._getState = function (oControl, oModifier) {
+	HideForm._getState = function (oControl, oModifier, oAppComponent) {
 		var aContent = oModifier.getAggregation(oControl, "content");
 		return {
 			content : aContent.map(function(oElement) {
 				return {
-					element : oElement,
+					elementSelector : oModifier.getSelector(oModifier.getId(oElement), oAppComponent),
 					visible : oElement.getVisible ? oElement.getVisible() : undefined,
 					index : aContent.indexOf(oElement)
 				};
@@ -175,12 +173,13 @@ sap.ui.define([
 
 	HideForm.revertChange = function (oChange, oControl, mPropertyBag) {
 		var mState = oChange.getRevertData();
-		oControl.removeAllContent();
+		var oAppComponent = mPropertyBag.appComponent;
+		var oModifier = mPropertyBag.modifier;
+		oModifier.removeAllAggregation(oControl, "content");
 		mState.content.forEach(function(oElementState) {
-			oControl.insertContent(oElementState.element, oElementState.index);
-			if (oElementState.element.setVisible){
-				oElementState.element.setVisible(oElementState.visible);
-			}
+			var oElement = oModifier.bySelector(oElementState.elementSelector, oAppComponent);
+			oModifier.insertAggregation(oControl, "content", oElement, oElementState.index, mPropertyBag.view);
+			oModifier.setProperty(oElement, "visible", oElementState.visible);
 		});
 		oChange.resetRevertData();
 		return true;

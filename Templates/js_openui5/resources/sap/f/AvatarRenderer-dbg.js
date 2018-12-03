@@ -5,8 +5,8 @@
  */
 
 // Provides default renderer for control sap.f.Avatar
-sap.ui.define(["sap/f/library", "jquery.sap.global"],
-	function (library, jQuery) {
+sap.ui.define(["sap/f/library", "sap/base/security/encodeXML"],
+	function (library, encodeXML) {
 		"use strict";
 
 		// shortcut for sap.f.AvatarSize
@@ -38,7 +38,10 @@ sap.ui.define(["sap/f/library", "jquery.sap.global"],
 				sCustomFontSize = oAvatar.getCustomFontSize(),
 				sSrc = oAvatar._getEscapedSrc(),
 				sAvatarClass = "sapFAvatar",
-				sTooltip = oAvatar.getTooltip_AsString();
+				sTooltip = oAvatar.getTooltip_AsString(),
+				sDefaultTooltip = oAvatar._getDefaultTooltip(),
+				aLabelledBy = oAvatar.getAriaLabelledBy(),
+				aDescribedBy = oAvatar.getAriaDescribedBy();
 
 			oRm.write("<span");
 			oRm.writeControlData(oAvatar);
@@ -49,14 +52,14 @@ sap.ui.define(["sap/f/library", "jquery.sap.global"],
 			if (oAvatar.hasListeners("press")) {
 				oRm.addClass("sapMPointer");
 				oRm.addClass("sapFAvatarFocusable");
-				oRm.writeAccessibilityState(oAvatar, {
-					"role": "button"
-				});
+				oRm.writeAttribute("role", "button");
 				oRm.writeAttribute("tabIndex", 0);
+			} else {
+				oRm.writeAttribute("role", "img");
 			}
 			if (sActualDisplayType === AvatarType.Image) {
 				oRm.addClass(sAvatarClass + sActualDisplayType + sImageFitType);
-				oRm.addStyle("background-image", "url('" + jQuery.sap.encodeHTML(sSrc) + "')");
+				oRm.addStyle("background-image", "url('" + encodeXML(sSrc) + "')");
 			}
 			if (sDisplaySize === AvatarSize.Custom) {
 				oRm.addStyle("width", sCustomDisplaySize);
@@ -65,6 +68,17 @@ sap.ui.define(["sap/f/library", "jquery.sap.global"],
 			}
 			if (sTooltip) {
 				oRm.writeAttributeEscaped("title", sTooltip);
+				oRm.writeAttributeEscaped("aria-label", sTooltip);
+			} else {
+				oRm.writeAttributeEscaped("aria-label", sDefaultTooltip);
+			}
+			// aria-labelledby references
+			if (aLabelledBy && aLabelledBy.length > 0) {
+				oRm.writeAttributeEscaped("aria-labelledby", aLabelledBy.join(" "));
+			}
+			// aria-describedby references
+			if (aDescribedBy && aDescribedBy.length > 0) {
+				oRm.writeAttributeEscaped("aria-describedby", aDescribedBy.join(" "));
 			}
 			oRm.writeClasses();
 			oRm.writeStyles();

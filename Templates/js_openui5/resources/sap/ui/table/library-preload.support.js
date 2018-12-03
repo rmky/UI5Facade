@@ -6,14 +6,22 @@
 /**
  * Adds support rules of the sap.ui.table library to the support infrastructure.
  */
-sap.ui.predefine('sap/ui/table/library.support',["jquery.sap.global", "sap/ui/support/library", "sap/ui/support/supportRules/RuleSet", "./rules/TableHelper.support", 'sap/ui/Device'],
-	function(jQuery, SupportLib, Ruleset, SupportHelper, Device) {
+sap.ui.predefine('sap/ui/table/library.support',[
+	"sap/ui/support/library",
+	"sap/ui/support/supportRules/RuleSet",
+	"./rules/TableHelper.support",
+	"sap/ui/Device",
+	"sap/ui/table/library",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+], function(SupportLib, Ruleset, SupportHelper, Device, TableLib, Log, jQuery) {
 	"use strict";
 
 	// shortcuts
 	var Categories = SupportLib.Categories, // Accessibility, Performance, Memory, ...
-		Severity = SupportLib.Severity;	// Hint, Warning, Error
+		Severity = SupportLib.Severity,	// Hint, Warning, Error
 		//Audiences = SupportLib.Audiences; // Control, Internal, Application
+		VisibleRowCountMode = TableLib.VisibleRowCountMode;
 
 	var oLib = {
 		name: "sap.ui.table",
@@ -40,16 +48,16 @@ sap.ui.predefine('sap/ui/table/library.support',["jquery.sap.global", "sap/ui/su
 	 *
 	 * @param {function} fnDoCheck Callback
 	 * @param {object} oScope The scope as given in the rule check function.
-	 * @param {string} [sType] If given an additional type check is performed. Module syntax required!
+	 * @param {string} [sType] If given an additional type check is performed.
 	 */
 	function checkColumnTemplate(fnDoCheck, oScope, sType) {
-		var aTables = SupportHelper.find(oScope, true, "sap/ui/table/Table");
+		var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
 		var aColumns, oTemplate;
 		for (var i = 0; i < aTables.length; i++) {
 			aColumns = aTables[i].getColumns();
 			for (var k = 0; k < aColumns.length; k++) {
 				oTemplate = aColumns[k].getTemplate();
-				if (oTemplate && (!sType || SupportHelper.isInstanceOf(oTemplate, sType))) {
+				if (oTemplate && oTemplate.isA(sType)) {
 					fnDoCheck(aTables[i], aColumns[k], oTemplate);
 				}
 			}
@@ -99,8 +107,16 @@ sap.ui.predefine('sap/ui/table/library.support',["jquery.sap.global", "sap/ui/su
 			if ($Condensed.length > 0) {
 				var bFound = checkDensity($Condensed, ".sapUiSizeCompact");
 				if (!bFound) {
-					SupportHelper.reportIssue(oIssueManager, "'Condensed' content density must be used in combination with 'Compact'.", Severity.High);
+					SupportHelper.reportIssue(oIssueManager, "'Condensed' content density must be used in combination with 'Compact'.",
+											  Severity.High);
 				}
+			}
+
+			if (sap.ui.getCore().getLoadedLibraries()["sap.m"] && $Cozy.length === 0 && $Compact.length === 0 && $Condensed.length === 0) {
+				SupportHelper.reportIssue(oIssueManager,
+										  "If the sap.ui.table and the sap.m libraries are used together, a content density must be specified.",
+										  Severity.High
+				);
 			}
 		}
 	});
@@ -116,7 +132,7 @@ sap.ui.predefine('sap/ui/table/library.support',["jquery.sap.global", "sap/ui/su
 		description : "Checks whether 'sap.ui.table.Table' controls have an accessible label.",
 		resolution : "Use the 'title' aggregation or the 'ariaLabelledBy' association of the 'sap.ui.table.Table' control to define a proper accessible labeling.",
 		check : function(oIssueManager, oCoreFacade, oScope) {
-			var aTables = SupportHelper.find(oScope, true, "sap/ui/table/Table");
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
 			for (var i = 0; i < aTables.length; i++) {
 				if (!aTables[i].getTitle() && aTables[i].getAriaLabelledBy().length == 0) {
 					SupportHelper.reportIssue(oIssueManager, "Table '" + aTables[i].getId() + "' does not have an accessible label.", Severity.High, aTables[i].getId());
@@ -141,7 +157,7 @@ sap.ui.predefine('sap/ui/table/library.support',["jquery.sap.global", "sap/ui/su
 					var sId = oColumn.getId();
 					SupportHelper.reportIssue(oIssueManager, "Column '" + sId + "' of table '" + oTable.getId() + "' uses decorative 'sap.ui.core.Icon' control.", Severity.High, sId);
 				}
-			}, oScope, "sap/ui/core/Icon");
+			}, oScope, "sap.ui.core.Icon");
 		}
 	});
 
@@ -165,7 +181,7 @@ sap.ui.predefine('sap/ui/table/library.support',["jquery.sap.global", "sap/ui/su
 					var sColumnId = oColumn.getId();
 					SupportHelper.reportIssue(oIssueManager, "Column '" + sColumnId + "' of table '" + oTable.getId() + "' uses an 'sap.m.Text' control with renderWhitespace enabled.", Severity.High, sColumnId);
 				}
-			}, oScope, "sap/m/Text");
+			}, oScope, "sap.m.Text");
 		}
 	});
 
@@ -185,7 +201,7 @@ sap.ui.predefine('sap/ui/table/library.support',["jquery.sap.global", "sap/ui/su
 					var sColumnId = oColumn.getId();
 					SupportHelper.reportIssue(oIssueManager, "Column '" + sColumnId + "' of table '" + oTable.getId() + "' uses an 'sap.m.Link' control with wrapping enabled.", Severity.High, sColumnId);
 				}
-			}, oScope, "sap/m/Link");
+			}, oScope, "sap.m.Link");
 		}
 	});
 
@@ -200,13 +216,13 @@ sap.ui.predefine('sap/ui/table/library.support',["jquery.sap.global", "sap/ui/su
 		description : "The analytical service returns duplicate IDs. This could also lead to many requests, but the analytical service expects to receive just one record",
 		resolution : "Adjust the service implementation.",
 		check : function(oIssueManager, oCoreFacade, oScope) {
-			var aTables = SupportHelper.find(oScope, true, "sap/ui/table/AnalyticalTable");
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.AnalyticalTable");
 			var sAnalyticalErrorId = "NO_DEVIATING_UNITS";
 			var oIssues = {};
 
 			SupportHelper.checkLogEntries(function(oLogEntry) {
 				// Filter out totally irrelevant issues
-				if (oLogEntry.level != jQuery.sap.log.Level.ERROR && oLogEntry.level != jQuery.sap.log.Level.FATAL) {
+				if (oLogEntry.level != Log.Level.ERROR && oLogEntry.level != Log.Level.FATAL) {
 					return false;
 				}
 				var oInfo = oLogEntry.supportInfo;
@@ -248,7 +264,7 @@ sap.ui.predefine('sap/ui/table/library.support',["jquery.sap.global", "sap/ui/su
 			{text: "SAP Fiori Design Guidelines: Grid Table", href: "https://experience.sap.com/fiori-design-web/grid-table/"}
 		],
 		check: function(oIssueManager, oCoreFacade, oScope) {
-			var aTables = SupportHelper.find(oScope, true, "sap/ui/table/Table");
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
 			var aVisibleRows;
 			var fActualRowHeight;
 			var iExpectedRowHeight;
@@ -290,6 +306,50 @@ sap.ui.predefine('sap/ui/table/library.support',["jquery.sap.global", "sap/ui/su
 		}
 	});
 
+	/*
+	 * Checks the configuration of the sap.f.DynamicPage. If the DynamicPage contains a table with <code>visibleRowCountMode=Auto</code>, the
+	 * <code>fitContent</code> property of the DynamicPage should be set to true, otherwise false.
+	 */
+	createRule({
+		id: "DynamicPageConfiguration",
+		categories: [Categories.Usage],
+		title: "Table environment validation - 'sap.f.DynamicPage'",
+		description: "Verifies that the DynamicPage is configured correctly from the table's perspective.",
+		resolution: "If a table with visibleRowCountMode=Auto is placed inside a sap.f.DynamicPage, the fitContent property of the DynamicPage"
+					+ " should be set to true, otherwise false.",
+		resolutionurls: [
+			SupportHelper.createDocuRef("API Reference: sap.f.DynamicPage#getFitContent", "#/api/sap.f.DynamicPage/methods/getFitContent")
+		],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
+
+			function checkAllParentDynamicPages(oControl, fnCheck) {
+				if (oControl) {
+					if (oControl.isA("sap.f.DynamicPage")) {
+						fnCheck(oControl);
+					}
+					checkAllParentDynamicPages(oControl.getParent(), fnCheck);
+				}
+			}
+
+			function checkConfiguration(oTable, oDynamicPage) {
+				if (oTable.getVisibleRowCountMode() === VisibleRowCountMode.Auto && !oDynamicPage.getFitContent()) {
+					SupportHelper.reportIssue(oIssueManager,
+						"A table with visibleRowCountMode=\"Auto\" is placed inside a sap.f.DynamicPage with fitContent=\"false\"",
+						Severity.High, oTable.getId());
+				} else if (oTable.getVisibleRowCountMode() !== VisibleRowCountMode.Auto && oDynamicPage.getFitContent()) {
+					SupportHelper.reportIssue(oIssueManager,
+						"A table with visibleRowCountMode=\"Fixed|Interactive\" is placed inside a sap.f.DynamicPage with fitContent=\"true\"",
+						Severity.Low, oTable.getId());
+				}
+			}
+
+			for (var i = 0; i < aTables.length; i++) {
+				checkAllParentDynamicPages(aTables[i], checkConfiguration.bind(null, aTables[i]));
+			}
+		}
+	});
+
 	return {lib: oLib, ruleset: oRuleset};
 
 }, true);
@@ -301,8 +361,8 @@ sap.ui.predefine('sap/ui/table/library.support',["jquery.sap.global", "sap/ui/su
 /**
  * Helper functionality for table, list and tree controls for the Support Tool infrastructure.
  */
-sap.ui.predefine('sap/ui/table/rules/TableHelper.support',["jquery.sap.global", "sap/ui/support/library"],
-	function(jQuery, SupportLib) {
+sap.ui.predefine('sap/ui/table/rules/TableHelper.support',["sap/ui/support/library", "sap/base/Log"],
+	function(SupportLib, Log) {
 	"use strict";
 
 	// shortcuts
@@ -313,7 +373,7 @@ sap.ui.predefine('sap/ui/table/rules/TableHelper.support',["jquery.sap.global", 
 
 	var TableSupportHelper = {
 
-		DOCU_REF : "https://sapui5.hana.ondemand.com/",
+		DOCU_REF : "https://ui5.sap.com/",
 
 		DEFAULT_RULE_DEF : {
 			audiences: [Audiences.Application],
@@ -344,8 +404,8 @@ sap.ui.predefine('sap/ui/table/rules/TableHelper.support',["jquery.sap.global", 
 		 * 		resolutionurls: [{text: "Text to be displayed", href: "URL to public(!) docu"}] - list of useful URLs, Default []
 		 * 		check:			function(oIssueManager, oCoreFacade, oScope) { ... } - Check function code, MANDATORY
 		 *
-		 * @param {object} The rule definition
-		 * @returns The normalized rule definition
+		 * @param {object} oRuleDef The rule definition
+		 * @returns {object} The normalized rule definition
 		 */
 		normalizeRule : function(oRuleDef) {
 			return jQuery.extend({}, TableSupportHelper.DEFAULT_RULE_DEF, oRuleDef);
@@ -356,14 +416,14 @@ sap.ui.predefine('sap/ui/table/rules/TableHelper.support',["jquery.sap.global", 
 		 *
 		 * @see #normalizeRule
 		 *
-		 * @param {object} The rule definition
-		 * @param {sap.ui.support.supportRules.RuleSet} The ruleset
+		 * @param {object} oRuleDef The rule definition
+		 * @param {sap.ui.support.supportRules.RuleSet} oRuleset The ruleset
 		 */
 		addRuleToRuleset : function(oRuleDef, oRuleset) {
 			oRuleDef = TableSupportHelper.normalizeRule(oRuleDef);
 			var sResult = oRuleset.addRule(oRuleDef);
 			if (sResult != "success") {
-				jQuery.sap.log.warning("Support Rule '" + oRuleDef.id + "' for library sap.ui.table not applied: " + sResult);
+				Log.warning("Support Rule '" + oRuleDef.id + "' for library sap.ui.table not applied: " + sResult);
 			}
 		},
 
@@ -371,7 +431,7 @@ sap.ui.predefine('sap/ui/table/rules/TableHelper.support',["jquery.sap.global", 
 		 * Creates a documentation link description in the format as requested by the parameter resolutionurls of a rule.
 		 * @param {string} sText 		The text of the docu link.
 		 * @param {string} sRefSuffix 	The url suffix. It gets automatically prefixed by TableSupportHelper.DOCU_REF.
-		 * @returns Documentation link description
+		 * @returns {object} Documentation link description
 		 */
 		createDocuRef : function(sText, sRefSuffix) {
 			return {
@@ -396,34 +456,19 @@ sap.ui.predefine('sap/ui/table/rules/TableHelper.support',["jquery.sap.global", 
 		},
 
 		/**
-		 * Checks whether the given object is of the given type (given in AMD module syntax)
-		 * without the need of loading the types module.
-		 * @param {sap.ui.base.ManagedObject} oObject The object to check
-		 * @param {string} sType The type given in AMD module syntax
-		 * @returns {boolean}
-		 */
-		isInstanceOf : function(oObject, sType) {
-			if (!oObject || !sType) {
-				return false;
-			}
-			var oType = sap.ui.require(sType);
-			return !!(oType && (oObject instanceof oType));
-		},
-
-		/**
 		 * Return all existing control instances of the given type.
 		 * @param {object} oScope The scope as given in the rule check function.
-		 * @param {boolean} bVisisbleOnly Whether all existing controls or only the ones which currently have a DOM reference should be returned.
-		 * @param {string} sType The type given in AMD module syntax
-		 * @returns All existing control instances
+		 * @param {boolean} bVisibleOnly Whether all existing controls or only the ones which currently have a DOM reference should be returned.
+		 * @param {string} sType The type
+		 * @returns {sap.ui.core.Element[]} All existing control instances
 		 */
-		find: function(oScope, bVisisbleOnly, sType) {
+		find: function(oScope, bVisibleOnly, sType) {
 			var mElements = oScope.getElements();
 			var aResult = [];
 			for (var n in mElements) {
 				var oElement = mElements[n];
-				if (TableSupportHelper.isInstanceOf(oElement, sType)) {
-					if (bVisisbleOnly && oElement.getDomRef() || !bVisisbleOnly) {
+				if (oElement.isA(sType)) {
+					if (bVisibleOnly && oElement.getDomRef() || !bVisibleOnly) {
 						aResult.push(oElement);
 					}
 				}
@@ -451,7 +496,7 @@ sap.ui.predefine('sap/ui/table/rules/TableHelper.support',["jquery.sap.global", 
 		 *                         otherwise the next entry is passed for checking.
 		 */
 		checkLogEntries : function(fnFilter, fnCheck) {
-			var aLog = jQuery.sap.log.getLogEntries(); //oScope.getLoggedObjects(); /*getLoggedObjects returns only log entries with supportinfo*/
+			var aLog = Log.getLogEntries(); //oScope.getLoggedObjects(); /*getLoggedObjects returns only log entries with supportinfo*/
 			var oLogEntry;
 			for (var i = 0; i < aLog.length; i++) {
 				oLogEntry = aLog[i];

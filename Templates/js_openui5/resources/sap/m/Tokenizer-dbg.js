@@ -6,7 +6,6 @@
 
 // Provides control sap.m.Tokenizer.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/delegate/ScrollEnablement',
@@ -14,17 +13,25 @@ sap.ui.define([
 	'sap/ui/core/InvisibleText',
 	'sap/ui/core/ResizeHandler',
 	'./TokenizerRenderer',
-	'jquery.sap.keycodes'
+	"sap/ui/dom/containsOrEquals",
+	"sap/ui/events/KeyCodes",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery",
+	// jQuery Plugin "control"
+	"sap/ui/dom/jquery/control"
 ],
 	function(
-	jQuery,
-	library,
-	Control,
-	ScrollEnablement,
-	Device,
-	InvisibleText,
-	ResizeHandler,
-	TokenizerRenderer
+		library,
+		Control,
+		ScrollEnablement,
+		Device,
+		InvisibleText,
+		ResizeHandler,
+		TokenizerRenderer,
+		containsOrEquals,
+		KeyCodes,
+		Log,
+		jQuery
 	) {
 	"use strict";
 
@@ -50,7 +57,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -71,7 +78,11 @@ sap.ui.define([
 			/**
 			 * Defines the width of the Tokenizer.
 			 */
-			width : {type : "sap.ui.core.CSSSize", group : "Dimension", defaultValue : null}
+			width : {type : "sap.ui.core.CSSSize", group : "Dimension", defaultValue : null},
+			/**
+			 * Defines the maximum width of the Tokenizer.
+			 */
+			maxWidth : {type: "sap.ui.core.CSSSize", group: "Dimension", defaultValue : "100%"}
 		},
 		defaultAggregation : "tokens",
 		aggregations : {
@@ -175,6 +186,9 @@ sap.ui.define([
 
 	Tokenizer.prototype.init = function() {
 		this.bAllowTextSelection = false;
+		this._oTokensWidthMap = {};
+		this._oIndicator = null;
+		this._bAdjustable = false;
 
 		this._aTokenValidators = [];
 
@@ -191,6 +205,127 @@ sap.ui.define([
 
 			this.setAggregation("_tokensInfo", sAriaTokenizerContainToken);
 		}
+	};
+
+	/**
+	 * Function determines the callback to be executed on N-more label press
+	 *
+	 * @param {function} fCallback The callback
+	 * @private
+	 */
+	Tokenizer.prototype._handleNMoreIndicatorPress = function(fCallback) {
+		this._fnOnNMorePress = fCallback;
+	};
+
+	/**
+	 * Function determines if the N-more state is active
+	 *
+	 * @private
+	 */
+	Tokenizer.prototype._hasMoreIndicator = function () {
+		var domRef = this.$();
+
+		return !!domRef.length && this.$().find(".sapMHiddenToken").length > 0;
+	};
+
+	/**
+	 * Function determines which tokens should be displayed and adds N-more label
+	 *
+	 * @private
+	 */
+	Tokenizer.prototype._adjustTokensVisibility = function() {
+		if (!this.getDomRef()) {
+			return;
+		}
+
+		var iTokenizerWidth = parseInt(this.getMaxWidth(), 10),
+			aTokens = this.getTokens().reverse(),
+			iTokensCount = aTokens.length,
+			iLabelWidth, iFreeSpace,
+			iCounter, iFirstTokenToHide = -1;
+
+		// find the index of the first overflowing token
+		aTokens.some(function (oToken, iIndex) {
+			iTokenizerWidth = iTokenizerWidth - this._oTokensWidthMap[oToken.getId()];
+			if (iTokenizerWidth <= 0) {
+				iFirstTokenToHide = iIndex;
+				return true;
+			} else {
+				iFreeSpace = iTokenizerWidth;
+			}
+		}.bind(this));
+
+		// adjust the visibility of the tokens
+		if (iFirstTokenToHide > -1) {
+
+			for (iCounter = 0; iCounter < iTokensCount; iCounter++) {
+				if (iCounter >= iFirstTokenToHide) {
+					aTokens[iCounter].addStyleClass("sapMHiddenToken");
+				} else {
+					aTokens[iCounter].removeStyleClass("sapMHiddenToken");
+				}
+			}
+
+			this._handleNMoreIndicator(iTokensCount - iFirstTokenToHide);
+			iLabelWidth = this._oIndicator.width();
+
+			// if there is not enough space after getting the actual indicator width, hide the last visible token
+			// and update the n-more indicator
+			if (iLabelWidth >= iFreeSpace) {
+				iFirstTokenToHide = iFirstTokenToHide - 1;
+
+				this._handleNMoreIndicator(iTokensCount - iFirstTokenToHide);
+				aTokens[iFirstTokenToHide].addStyleClass("sapMHiddenToken");
+			}
+		} else {
+			// if no token needs to be hidden, show all
+			this._showAllTokens();
+		}
+	};
+
+	/**
+	 * Renders the N-more label
+	 * @private
+	 *
+	 * @param {number} iHiddenTokensCount The number of hidden tokens
+	 * @returns {sap.m.Tokenizer} this instance for method chaining
+	 */
+	Tokenizer.prototype._handleNMoreIndicator = function (iHiddenTokensCount) {
+		if (!this.getDomRef()) {
+			return this;
+		}
+
+		if (iHiddenTokensCount) {
+			var sLabelKey = "MULTIINPUT_SHOW_MORE_TOKENS";
+
+			if (iHiddenTokensCount === this.getTokens().length) {
+				if (iHiddenTokensCount === 1) {
+					sLabelKey = "TOKENIZER_SHOW_ALL_ITEM";
+				} else {
+					sLabelKey = "TOKENIZER_SHOW_ALL_ITEMS";
+				}
+			}
+
+			this._oIndicator.removeClass("sapUiHidden");
+			this._oIndicator.html(oRb.getText(sLabelKey, iHiddenTokensCount));
+		} else {
+			this._oIndicator.addClass("sapUiHidden");
+		}
+
+		return this;
+	};
+
+	/**
+	 * Function makes all tokens visible, used for collapsed=false
+	 *
+	 * @private
+	 */
+	Tokenizer.prototype._showAllTokens = function() {
+		this._handleNMoreIndicator(0);
+
+		this.getTokens().forEach(function(oToken) {
+			oToken.removeStyleClass("sapMHiddenToken");
+		});
 	};
 
 	/**
@@ -235,6 +370,53 @@ sap.ui.define([
 	};
 
 	/**
+	 * Function sets the maximum width of the Tokenizer.
+	 *
+	 * @public
+	 * @param {number} nWidth The new maximal width
+	 */
+	Tokenizer.prototype.setMaxWidth = function(sWidth) {
+		this.setProperty("maxWidth", sWidth, true);
+		this.$().css("max-width", this.getMaxWidth());
+
+		if (this.getDomRef() && this._getAdjustable()) {
+			this._adjustTokensVisibility();
+		}
+
+		return this;
+	};
+
+	/**
+	 * Function returns whether the n-more indicator is visible
+	 *
+	 * @protected
+	 * @param {boolean} If true the indicator is visible
+	 */
+	Tokenizer.prototype._getIndicatorVisibility = function() {
+		return this._oIndicator && !this._oIndicator.hasClass("sapUiHidden");
+	};
+
+	/**
+	 * Function sets whether the tokens visibility should be adjusted
+	 *
+	 * @protected
+	 * @param {boolean} If true the the tokenizer should adjust the tokens visibility
+	 */
+	Tokenizer.prototype._setAdjustable = function(bAdjust) {
+		this._bAdjustable = bAdjust;
+	};
+
+	/**
+	 * Function gets whether the tokens visibility should be adjusted
+	 *
+	 * @protected
+	 * @returns {boolean} If true the the tokenizer should adjust the tokens visibility
+	 */
+	Tokenizer.prototype._getAdjustable = function() {
+		return this._bAdjustable;
+	};
+
+	/**
 	 * Function sets the tokenizer's width in pixels
 	 *
 	 * @public
@@ -242,7 +424,7 @@ sap.ui.define([
 	 */
 	Tokenizer.prototype.setPixelWidth = function(nWidth) {
 		if (typeof nWidth !== "number") {
-			jQuery.sap.log.warning("Tokenizer.setPixelWidth called with invalid parameter. Expected parameter of type number.");
+			Log.warning("Tokenizer.setPixelWidth called with invalid parameter. Expected parameter of type number.");
 			return;
 		}
 
@@ -308,6 +490,42 @@ sap.ui.define([
 				that.scrollToEnd();
 			});
 		}
+
+		this._oIndicator = this.$().find(".sapMTokenizerIndicator");
+	};
+
+	/**
+	 * Called after a new theme is applied.
+	 *
+	 * @private
+	 */
+	Tokenizer.prototype.onThemeChanged = function() {
+
+		if (!this._getAdjustable()) {
+			return;
+		}
+
+		this.getTokens().forEach(function(oToken){
+			if (oToken.getDomRef()  && !oToken.$().hasClass("sapMHiddenToken")) {
+				this._oTokensWidthMap[oToken.getId()] = oToken.getDomRef().offsetWidth;
+			}
+		}.bind(this));
+
+		this._adjustTokensVisibility();
+	};
+
+		/**
+		 * Handles the setting of collapsed state
+		 *
+		 * @param {boolean} If true collapses the tokenizer's content
+		 * @private
+		 */
+	Tokenizer.prototype._useCollapsedMode = function(bCollapse) {
+		if (bCollapse) {
+			this._adjustTokensVisibility();
+		} else {
+			this._showAllTokens();
+		}
 	};
 
 	Tokenizer.prototype.invalidate = function(oOrigin) {
@@ -355,12 +573,12 @@ sap.ui.define([
 	 */
 	Tokenizer.prototype.onkeydown = function(oEvent) {
 
-		if (oEvent.which === jQuery.sap.KeyCodes.TAB) {
+		if (oEvent.which === KeyCodes.TAB) {
 			this._changeAllTokensSelection(false);
 		}
 
 		// ctrl/meta + c OR ctrl/meta + A
-		if ((oEvent.ctrlKey || oEvent.metaKey) && oEvent.which === jQuery.sap.KeyCodes.A) {
+		if ((oEvent.ctrlKey || oEvent.metaKey) && oEvent.which === KeyCodes.A) {
 
 			//to check how many tokens are selected before Ctrl + A in Tokenizer
 			this._iSelectedToken = this.getSelectedTokens().length;
@@ -373,12 +591,12 @@ sap.ui.define([
 		}
 
 		// ctrl/meta + c OR ctrl/meta + Insert
-		if ((oEvent.ctrlKey || oEvent.metaKey) && (oEvent.which === jQuery.sap.KeyCodes.C || oEvent.which === jQuery.sap.KeyCodes.INSERT)) {
+		if ((oEvent.ctrlKey || oEvent.metaKey) && (oEvent.which === KeyCodes.C || oEvent.which === KeyCodes.INSERT)) {
 			this._copy();
 		}
 
 		// ctr/meta + x OR Shift + Delete
-		if (((oEvent.ctrlKey || oEvent.metaKey) && oEvent.which === jQuery.sap.KeyCodes.X) || (oEvent.shiftKey && oEvent.which === jQuery.sap.KeyCodes.DELETE)) {
+		if (((oEvent.ctrlKey || oEvent.metaKey) && oEvent.which === KeyCodes.X) || (oEvent.shiftKey && oEvent.which === KeyCodes.DELETE)) {
 			if (this.getEditable()) {
 				this._cut();
 			} else {
@@ -416,6 +634,7 @@ sap.ui.define([
 		}
 
 		if (Device.browser.msie && window.clipboardData) {
+			/* TODO remove after 1.62 version */
 			window.clipboardData.setData("text", selectedText);
 		} else {
 			document.addEventListener('copy', copyToClipboard);
@@ -467,6 +686,7 @@ sap.ui.define([
 		}
 
 		if (Device.browser.msie && window.clipboardData) {
+			/* TODO remove after 1.62 version */
 			window.clipboardData.setData("text", selectedText);
 		} else {
 			document.addEventListener('cut', cutToClipboard);
@@ -541,7 +761,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Tokenizer.prototype.onsapprevious = function(oEvent) {
-		if (oEvent.which === jQuery.sap.KeyCodes.ARROW_UP) {
+		if (oEvent.which === KeyCodes.ARROW_UP) {
 			return;
 		}
 
@@ -591,7 +811,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Tokenizer.prototype.onsapnext = function(oEvent) {
-		if (oEvent.which === jQuery.sap.KeyCodes.ARROW_DOWN) {
+		if (oEvent.which === KeyCodes.ARROW_DOWN) {
 			return;
 		}
 
@@ -859,7 +1079,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Tokenizer.prototype._checkFocus = function() {
-		return this.getDomRef() && jQuery.sap.containsOrEquals(this.getDomRef(), document.activeElement);
+		return this.getDomRef() && containsOrEquals(this.getDomRef(), document.activeElement);
 	};
 
 
@@ -911,6 +1131,13 @@ sap.ui.define([
 			type : Tokenizer.TokenChangeType.Added
 		});
 
+		oToken.addEventDelegate({
+			onAfterRendering: function () {
+				if (sap.ui.getCore().isThemeApplied() && oToken.getDomRef() && !oToken.$().hasClass("sapMHiddenToken")) {
+					this._oTokensWidthMap[oToken.getId()] = oToken.getDomRef().offsetWidth;
+				}
+			}.bind(this)
+		});
 		return this;
 	};
 
@@ -951,7 +1178,7 @@ sap.ui.define([
 		var aRemoved = this.removeAllAggregation("tokens");
 
 		if (typeof (bFireEvent) === "boolean" && !bFireEvent) {
-			return;
+			return aRemoved;
 		}
 
 		this.fireTokenChange({
@@ -1123,6 +1350,7 @@ sap.ui.define([
 				return;
 			}
 
+			delete this._oTokensWidthMap[token.getId()];
 			token.destroy();
 
 			this.fireTokenChange({
@@ -1227,6 +1455,22 @@ sap.ui.define([
 	};
 
 	/**
+	 * Handle the focus event on the control
+	 *
+	 * @param {jQuery.Event} oEvent The occuring event
+	 * @protected
+	 */
+	Tokenizer.prototype.onclick = function(oEvent) {
+		var bFireIndicatorHandler;
+
+			bFireIndicatorHandler = jQuery(oEvent.target).hasClass("sapMTokenizerIndicator") || (oEvent.target === this.getFocusDomRef());
+
+		if (bFireIndicatorHandler) {
+			this._fnOnNMorePress && this._fnOnNMorePress(oEvent);
+		}
+	};
+
+	/**
 	 * Handles the touch start event on the control.
 	 *
 	 * @param {jQuery.Event} oEvent The event object.
@@ -1307,8 +1551,8 @@ sap.ui.define([
 				oRange.selectNodeContents(this.getDomRef("clip"));
 				oSelection.addRange(oRange);
 			}
-			if (window.clipboardData && document.activeElement.id == this.getId() + "-clip") {
-				jQuery.sap.focus(oFocusRef.id == this.getId() + "-clip" ? this.getDomRef() : oFocusRef);
+			if (window.clipboardData && oFocusRef.id == this.getId() + "-clip" && this.getDomRef()) {
+				this.getDomRef().focus();
 			}
 		}
 	};

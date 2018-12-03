@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core'],
-		function(jQuery, Core) {
+sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
+		function(Core, ObjectPath, Log) {
 	"use strict";
 
 	/**
@@ -53,7 +53,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core'],
 	 * @namespace
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @public
 	 * @since 1.48.0
@@ -155,8 +155,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core'],
 			"sap.ui.core.mvc.HTMLView",
 			"sap.ui.core.mvc.TemplateView",
 			"sap.ui.mdc.FilterBar", //The control only runs in views with XML pre-processor. The test can't provide this environment
-			"sap.ui.mdc.Table", //The control only runs in views with XML pre-processor. The test can't provide this environment
-			"sap.ui.mdc.Field", //The control only runs in views with XML pre-processor. The test can't provide this environment
 			"sap.ui.mdc.XMLComposite", //The control only runs in views with XML pre-processor. The test can't provide this environment
 			"sap.ui.mdc.ValueHelpDialog", //The control only runs in views with XML pre-processor. The test can't provide this environment
 			"sap.ui.mdc.FilterField", //The control only runs in views with XML pre-processor. The test can't provide this environment
@@ -167,7 +165,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core'],
 			return false;
 		}
 
-		var oControlClass = jQuery.sap.getObject(sControlName);
+		var oControlClass = ObjectPath.get(sControlName);
 		if (!oControlClass) {
 			return false;
 		}
@@ -215,7 +213,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core'],
 		for (i = 0; i < oInfo.libraries.length; i++) {
 			sInfoLibName = oInfo.libraries[i].name;
 			if (jQuery.inArray(sInfoLibName, aExcludedLibraries) === -1 && !mLibraries[sInfoLibName]) {
-				jQuery.sap.log.info("Libary '" + sInfoLibName + "' is not loaded!");
+				Log.info("Libary '" + sInfoLibName + "' is not loaded!");
 				try {
 					sap.ui.getCore().loadLibrary(sInfoLibName);
 					bNewLibrary = true;
@@ -369,7 +367,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core'],
 
 			if (shouldTestControl(sControlName, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable)) {
 				bCountThisControl = true;
-				var oControlClass = jQuery.sap.getObject(sControlName);
+				var oControlClass = ObjectPath.get(sControlName || "");
 
 				fnCallback(sControlName, oControlClass, {
 					canInstantiate: ControlIterator.controlCanBeInstantiated(sControlName),

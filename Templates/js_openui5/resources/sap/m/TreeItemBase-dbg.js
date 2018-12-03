@@ -6,15 +6,14 @@
 
 // Provides control sap.m.StandardListItem.
 sap.ui.define([
-	'jquery.sap.global',
 	'./ListItemBase',
 	'./library',
 	'sap/ui/core/IconPool',
 	'sap/ui/core/Icon',
 	'./TreeItemBaseRenderer',
-	'sap/base/events/KeyCodes'
+	'sap/ui/events/KeyCodes'
 ],
-	function(jQuery, ListItemBase, library, IconPool, Icon, TreeItemBaseRenderer, KeyCodes) {
+	function(ListItemBase, library, IconPool, Icon, TreeItemBaseRenderer, KeyCodes) {
 	"use strict";
 
 	// shortcut for sap.m.ListMode
@@ -31,7 +30,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -207,9 +206,9 @@ sap.ui.define([
 	 * @since 1.42.0
 	 */
 	TreeItemBase.prototype._getExpanderControl = function() {
-		var sSrc = "";
-		if (!this.isLeaf()) {
-			sSrc = this.getExpanded() ? this.ExpandedIconURI : this.CollapsedIconURI;
+		var sSrc = this.CollapsedIconURI;
+		if (this.getExpanded()) {
+			sSrc = this.ExpandedIconURI;
 		}
 
 		if (this._oExpanderControl) {
@@ -237,12 +236,17 @@ sap.ui.define([
 	 */
 	TreeItemBase.prototype._updateExpander = function() {
 		if (this._oExpanderControl) {
-			var sSrc = "";
-			if (!this.isLeaf()) {
-				sSrc = this.getExpanded() ? this.ExpandedIconURI : this.CollapsedIconURI;
+			var sSrc = this.CollapsedIconURI;
+			if (this.getExpanded()) {
+				sSrc = this.ExpandedIconURI;
 			}
 			this._oExpanderControl.setSrc(sSrc);
 			this.$().attr("aria-expanded", this.getExpanded());
+
+			// make the expander visible
+			if (!this.isLeaf()) {
+				this.$().removeClass("sapMTreeItemBaseLeaf");
+			}
 
 			// update the indentation again
 			var iIndentation = this._getPadding(),
@@ -255,7 +259,6 @@ sap.ui.define([
 	TreeItemBase.prototype.setBindingContext = function() {
 		ListItemBase.prototype.setBindingContext.apply(this, arguments);
 		this._updateExpander();
-
 		return this;
 	};
 
@@ -272,8 +275,15 @@ sap.ui.define([
 		iIndentation = 0,
 		iDeepestLevel;
 
+		// use number count from hierarchy binding
 		if (oTree) {
 			iDeepestLevel = oTree.getDeepestLevel();
+		}
+
+		// for add node
+		if (iDeepestLevel < iNodeLevel) {
+			oTree._iDeepestLevel = iNodeLevel;
+			iDeepestLevel = oTree._iDeepestLevel;
 		}
 
 		if (iDeepestLevel < 2) {

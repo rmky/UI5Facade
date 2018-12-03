@@ -5,8 +5,12 @@
  */
 
 // Provides class sap.ui.unified.calendar.CalendarDate
-sap.ui.define(['sap/ui/base/Object', 'sap/ui/core/date/UniversalDate'],
-	function (BaseObject, UniversalDate) {
+sap.ui.define([
+	'sap/ui/base/Object',
+	'sap/ui/core/date/UniversalDate',
+	"sap/ui/thirdparty/jquery"
+],
+	function(BaseObject, UniversalDate, jQuery) {
 		"use strict";
 
 		/*
@@ -345,4 +349,3 @@ sap.ui.define(['sap/ui/base/Object', 'sap/ui/core/date/UniversalDate'],
 		return CalendarDate;
 
 });
-

@@ -6,13 +6,13 @@
 
 // Provides control sap.f.Avatar.
 sap.ui.define([
-    "jquery.sap.global",
     "./library",
     "sap/ui/core/Control",
     "sap/ui/core/IconPool",
     "./AvatarRenderer",
-    "jquery.sap.keycodes"
-], function(jQuery, library, Control, IconPool, AvatarRenderer) {
+    "sap/ui/events/KeyCodes",
+    "sap/base/Log"
+], function(library, Control, IconPool, AvatarRenderer, KeyCodes, Log) {
 	"use strict";
 
 	// shortcut for sap.f.AvatarType
@@ -66,7 +66,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -121,6 +121,17 @@ sap.ui.define([
 				 * @public
 				 */
 				detailBox: {type: 'sap.m.LightBox', multiple: false, bindable: "bindable"}
+			},
+			associations : {
+				/**
+				 * Association to controls / ids which describe this control (see WAI-ARIA attribute aria-describedby).
+				 */
+				ariaDescribedBy : {type : "sap.ui.core.Control", multiple : true, singularName : "ariaDescribedBy"},
+
+				/**
+				 * Association to controls / ids which label this control (see WAI-ARIA attribute aria-labelledBy).
+				 */
+				ariaLabelledBy: {type : "sap.ui.core.Control", multiple : true, singularName : "ariaLabelledBy"}
 			},
 			events : {
 				/**
@@ -236,7 +247,7 @@ sap.ui.define([
 
 		if (!this.hasListeners("press")) {
 			this.$().removeAttr("tabindex");
-			this.$().removeAttr("role");
+			this.$().attr("role", "img");
 		}
 
 		return this;
@@ -258,7 +269,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Avatar.prototype.onkeyup = function (oEvent) {
-		if (oEvent.which === jQuery.sap.KeyCodes.SPACE || oEvent.which === jQuery.sap.KeyCodes.ENTER) {
+		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
 			this.firePress({/* no parameters */});
 
 			//stop the propagation, it is handled by the control
@@ -277,7 +288,7 @@ sap.ui.define([
 	Avatar.prototype._areInitialsValid = function (sInitials) {
 		var validInitials = /^[a-zA-Z]{1,2}$/;
 		if (!validInitials.test(sInitials)) {
-			jQuery.sap.log.warning("Initials should consist of only 1 or 2 latin letters", this);
+			Log.warning("Initials should consist of only 1 or 2 latin letters", this);
 			this._sActualType = AvatarType.Icon;
 			this._bIsDefaultIcon = true;
 			return false;
@@ -319,7 +330,7 @@ sap.ui.define([
 		} else if (sInitials && this._areInitialsValid(sInitials)) {
 			this._sActualType = AvatarType.Initials;
 		} else {
-			jQuery.sap.log.warning("No src and initials were provided", this);
+			Log.warning("No src and initials were provided", this);
 			this._sActualType = AvatarType.Icon;
 			this._bIsDefaultIcon = true;
 		}
@@ -384,23 +395,8 @@ sap.ui.define([
 		return sSrc.replace(/'/g, "\\'");
 	};
 
-	/**
-	 * @see sap.ui.core.Control#getAccessibilityInfo
-	 * @protected
-	 * @returns {Object} The <code>sap.f.Avatar</code> accessibility information
-	 */
-	Avatar.prototype.getAccessibilityInfo = function() {
-		var bHasPressListeners = this.hasListeners("press");
-
-		if (!bHasPressListeners) {
-			return null;
-		}
-
-		return {
-			role: bHasPressListeners ? "button" : "img",
-			type: sap.ui.getCore().getLibraryResourceBundle("sap.f").getText(bHasPressListeners ? "ACC_CTR_TYPE_BUTTON" : "ACC_CTR_TYPE_IMAGE"),
-			focusable: bHasPressListeners
-		};
+	Avatar.prototype._getDefaultTooltip = function() {
+		return sap.ui.getCore().getLibraryResourceBundle("sap.f").getText("AVATAR_TOOLTIP");
 	};
 
 	return Avatar;

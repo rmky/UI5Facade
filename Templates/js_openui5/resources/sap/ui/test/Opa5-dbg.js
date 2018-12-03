@@ -5,27 +5,27 @@
  */
 
 sap.ui.define([
-		'jquery.sap.global',
-		'./Opa',
-		'./OpaPlugin',
-		'./PageObjectFactory',
+		'sap/ui/test/Opa',
+		'sap/ui/test/OpaPlugin',
+		'sap/ui/test/PageObjectFactory',
 		'sap/ui/base/Object',
-		'./launchers/iFrameLauncher',
-		'./launchers/componentLauncher',
+		'sap/ui/test/launchers/iFrameLauncher',
+		'sap/ui/test/launchers/componentLauncher',
 		'sap/ui/core/routing/HashChanger',
-		'./matchers/Matcher',
-		'./matchers/AggregationFilled',
-		'./matchers/PropertyStrictEquals',
-		'./pipelines/ActionPipeline',
-		'./_ParameterValidator',
-		'./_OpaLogger',
+		'sap/ui/test/matchers/Matcher',
+		'sap/ui/test/matchers/AggregationFilled',
+		'sap/ui/test/matchers/PropertyStrictEquals',
+		'sap/ui/test/pipelines/ActionPipeline',
+		'sap/ui/test/_ParameterValidator',
+		'sap/ui/test/_OpaLogger',
 		'sap/ui/thirdparty/URI',
 		'sap/ui/base/EventProvider',
 		'sap/ui/qunit/QUnitUtils',
-		'./autowaiter/_autoWaiter'
+		'sap/ui/test/autowaiter/_autoWaiter',
+		"sap/ui/dom/includeStylesheet",
+		"sap/ui/thirdparty/jquery"
 	],
-	function($,
-			 Opa,
+	function(Opa,
 			 OpaPlugin,
 			 PageObjectFactory,
 			 Ui5Object,
@@ -41,7 +41,9 @@ sap.ui.define([
 			 URI,
 			 EventProvider,
 			 QUnitUtils,
-			 _autoWaiter) {
+			 _autoWaiter,
+			 includeStylesheet,
+	         jQueryDOM) {
 		"use strict";
 
 		var oLogger = _OpaLogger.getLogger("sap.ui.test.Opa5"),
@@ -120,7 +122,7 @@ sap.ui.define([
 		 * @since 1.22
 		 */
 		var Opa5 = Ui5Object.extend("sap.ui.test.Opa5",
-			$.extend({},
+			jQueryDOM.extend({},
 				Opa.prototype,
 				{
 					constructor : function() {
@@ -132,23 +134,34 @@ sap.ui.define([
 
 		function iStartMyAppInAFrame () {
 			var that = this;
+			var oOptions = {};
+			var aOptions = ["source", "timeout", "autoWait", "width", "height"];
 			// allow separate arguments for backwards compatibility
-			var oOptions = arguments.length === 1 && $.isPlainObject(arguments[0])
-				? arguments[0]
-				: {source: arguments[0], timeout: arguments[1], autoWait: arguments[2]};
+			if (arguments.length === 1 && jQueryDOM.isPlainObject(arguments[0])) {
+				oOptions = arguments[0];
+			} else {
+				var aValues = arguments;
+				aOptions.forEach(function (sOption, index) {
+					oOptions[sOption] = aValues[index];
+				});
+			}
 
 			// merge appParams over sSource search params
 			if (oOptions.source && typeof oOptions.source !== "string") {
 				oOptions.source = oOptions.source.toString();
 			}
 			var uri = new URI(oOptions.source ? oOptions.source : '');
-			uri.search($.extend(
+			uri.search(jQueryDOM.extend(
 				uri.search(true),Opa.config.appParams));
 
 			// kick starting the frame
 			var oCreateFrameOptions = createWaitForObjectWithoutDefaults();
 			oCreateFrameOptions.success = function() {
-				addFrame(uri.toString());
+				addFrame({
+					source: uri.toString(),
+					width: oOptions.width || Opa.config.frameWidth,
+					height: oOptions.height || Opa.config.frameHeight
+				});
 			};
 			this.waitFor(oCreateFrameOptions);
 
@@ -200,7 +213,7 @@ sap.ui.define([
 			var oParamsWaitForOptions = createWaitForObjectWithoutDefaults();
 			oParamsWaitForOptions.success = function() {
 				var uri = new URI();
-				uri.search($.extend(
+				uri.search(jQueryDOM.extend(
 					uri.search(true),Opa.config.appParams));
 				window.history.replaceState({},"",uri.toString());
 			};
@@ -210,8 +223,8 @@ sap.ui.define([
 			var oStartComponentOptions = createWaitForObjectWithoutDefaults();
 			oStartComponentOptions.success = function () {
 				// include stylesheet
-				var sComponentStyleLocation = $.sap.getModulePath("sap.ui.test.OpaCss",".css");
-				$.sap.includeStyleSheet(sComponentStyleLocation);
+				var sComponentStyleLocation = sap.ui.require.toUrl("sap/ui/test/OpaCss") + ".css";
+				includeStylesheet(sComponentStyleLocation);
 
 				HashChanger.getInstance().setHash(oOptions.hash || "");
 
@@ -276,7 +289,7 @@ sap.ui.define([
 				window.history.replaceState({},"",uri.toString());
 			};
 
-			return $.when(this.waitFor(oOptions), this.waitFor(oParamsWaitForOptions));
+			return jQueryDOM.when(this.waitFor(oOptions), this.waitFor(oParamsWaitForOptions));
 		};
 
 		/**
@@ -313,7 +326,7 @@ sap.ui.define([
 				}
 			}.bind(this);
 
-			return $.when(this.waitFor(oExtensionOptions), this.waitFor(oOptions));
+			return jQueryDOM.when(this.waitFor(oExtensionOptions), this.waitFor(oOptions));
 		};
 
 		/**
@@ -327,8 +340,12 @@ sap.ui.define([
 		 * @param {boolean} [autoWait=false] Since 1.53, activates autoWait while the application is starting up.
 		 * This allows more time for application startup and stabilizes tests for slow-loading applications.
 		 * This parameter is false by default, regardless of the global autoWait value, to prevent issues in existing tests.
+		 * @param {string|number} width Since 1.57, sets a fixed width for the iFrame.
+		 * @param {string|number} height Since 1.57, sets a fixed height for the iFrame.
+		 * Setting width and/or height is useful when testing responsive applications on screens of varying sizes.
+		 * By default, the iFrame dimensions are 60% of the outer window dimensions.
 		 * @param {object} [oOptions] Since 1.53, you can provide a startup configuration object as an only parameter.
-		 * oOptions is expected to have the keys: source, timeout and autoWait.
+		 * oOptions is expected to have keys among: source, timeout, autoWait, width, height.
 		 * @returns {jQuery.promise} A promise that gets resolved on success
 		 * @public
 		 * @function
@@ -346,8 +363,12 @@ sap.ui.define([
 		 * @param {boolean} [autoWait=false] Since 1.53, activates autoWait while the application is starting up.
 		 * This allows more time for application startup and stabilizes tests for slow-loading applications.
 		 * This parameter is false by default, regardless of the global autoWait value, to prevent issues in existing tests.
+		 * @param {string|number} width Since 1.57, sets a fixed width for the iFrame.
+		 * @param {string|number} height Since 1.57, sets a fixed height for the iFrame.
+		 * Setting width and/or height is useful when testing responsive applications on screens of varying sizes.
+		 * By default, the iFrame dimensions are 60% of the outer window dimensions.
 		 * @param {object} [oOptions] Since 1.53, you can provide a startup configuration object as an only parameter.
-		 * oOptions is expected to have the keys: source, timeout and autoWait.
+		 * oOptions is expected to have keys among: source, timeout, autoWait, width, height.
 		 * @returns {jQuery.promise} A promise that gets resolved on success
 		 * @public
 		 * @function
@@ -640,7 +661,7 @@ sap.ui.define([
 				// only take the allowed properties from the config
 				oOptionsPassedToOpa;
 
-			options = $.extend({},
+			options = jQueryDOM.extend({},
 					oFilteredConfig,
 					options);
 			options.actions = vActions;
@@ -670,7 +691,7 @@ sap.ui.define([
 
 				// Create a new options object for the plugin to keep the original one as is
 				var oPlugin = Opa5.getPlugin();
-				var oPluginOptions = $.extend({}, options, {
+				var oPluginOptions = jQueryDOM.extend({}, options, {
 					// ensure Interactable matcher is applied if autoWait is true or actions are specified
 					interactable: bInteractable
 				});
@@ -678,7 +699,7 @@ sap.ui.define([
 				// even if we have no control the matchers may provide a value for vControl
 				vResult = oPlugin._getFilteredControls(oPluginOptions, vControl);
 
-				if (iFrameLauncher.hasLaunched() && $.isArray(vResult)) {
+				if (iFrameLauncher.hasLaunched() && jQueryDOM.isArray(vResult)) {
 					// People are using instanceof Array in their check so i need to make sure the Array
 					// comes from the current document. I cannot use slice(0) or map because the original array is kept
 					// so i need to use the slowest way to create a swallow copy of the array
@@ -736,8 +757,8 @@ sap.ui.define([
 				// So waitFors added by an action will block the current execution of success
 				var oWaitForObject = createWaitForObjectWithoutDefaults();
 				// preserve the autoWait value
-				if ($.isPlainObject(options.autoWait)) {
-					oWaitForObject.autoWait = $.extend({}, options.autoWait);
+				if (jQueryDOM.isPlainObject(options.autoWait)) {
+					oWaitForObject.autoWait = jQueryDOM.extend({}, options.autoWait);
 				} else {
 					oWaitForObject.autoWait = options.autoWait;
 				}
@@ -771,7 +792,7 @@ sap.ui.define([
 		 * @public
 		 */
 		Opa5.getJQuery = function () {
-			return iFrameLauncher.getJQuery() || $;
+			return iFrameLauncher.getJQuery() || jQueryDOM;
 		};
 
 		/**
@@ -1098,22 +1119,41 @@ sap.ui.define([
 			return bResult;
 		};
 
+		/**
+		 * Schedule a promise on the OPA5 queue.The promise will be executed in order with all waitFors -
+		 * any subsequent waitFor will be executed after the promise is done.
+		 * The promise is not directly chained, but instead its result is awaited in a new waitFor statement.
+		 * This means that any "thenable" should be acceptable.
+		 * @public
+		 * @param {jQuery.promise|oPromise} oPromise promise to schedule on the OPA5 queue
+		 * @returns {jQuery.promise} promise which is the result of a {@link sap.ui.test.Opa5.waitFor}
+		 */
+		Opa5.prototype.iWaitForPromise = function (oPromise) {
+			var oOptions = {
+				// make sure no controls are searched by the defaults
+				viewName: null,
+				controlType: null,
+				id: null,
+				searchOpenDialogs: false,
+				autoWait: false
+			};
+			return Opa.prototype._schedulePromiseOnFlow.call(this, oPromise, oOptions);
+		};
+
 		/*
 		 * Apply defaults
 		 */
 		Opa5.resetConfig();
 
-		function addFrame (sSource) {
+		function addFrame (oOptions) {
 			// include styles
-			var sIFrameStyleLocation = $.sap.getModulePath("sap.ui.test.OpaCss",".css");
-			$.sap.includeStyleSheet(sIFrameStyleLocation);
-
-			return iFrameLauncher.launch({
+			var sIFrameStyleLocation = sap.ui.require.toUrl("sap/ui/test/OpaCss") + ".css";
+			includeStylesheet(sIFrameStyleLocation);
+			var oFrameLaunchOptions = jQueryDOM.extend({}, oOptions, {
 				frameId: sFrameId,
-				source: sSource,
 				opaLogLevel: Opa.config.logLevel
 			});
-
+			return iFrameLauncher.launch(oFrameLaunchOptions);
 		}
 
 		function createWaitForObjectWithoutDefaults () {
@@ -1127,16 +1167,16 @@ sap.ui.define([
 			};
 		}
 
-		$(function () {
-			if ($("#" + sFrameId).length) {
+		jQueryDOM(function () {
+			if (jQueryDOM("#" + sFrameId).length) {
 				addFrame();
 			}
 
-			$("body").addClass("sapUiBody");
-			$("html").height("100%");
+			jQueryDOM("body").addClass("sapUiBody");
+			jQueryDOM("html").height("100%");
 		});
 
-		Opa5._validationInfo = $.extend({
+		Opa5._validationInfo = jQueryDOM.extend({
 			_stack: "string",
 			viewName: "string",
 			viewNamespace: "string",
@@ -1162,9 +1202,9 @@ sap.ui.define([
 				Opa.config.extensions ? Opa.config.extensions : [];
 
 			// load all required extensions in the app frame
-			var oExtensionsPromise = $.when($.map(aExtensionNames,function(sExtensionName) {
+			var oExtensionsPromise = jQueryDOM.when(jQueryDOM.map(aExtensionNames,function(sExtensionName) {
 				var oExtension;
-				var oExtensionDeferred = $.Deferred();
+				var oExtensionDeferred = jQueryDOM.Deferred();
 
 				oAppWindow.sap.ui.require([
 					sExtensionName
@@ -1196,14 +1236,14 @@ sap.ui.define([
 
 			// schedule the extension loading promise on flow so waitFor's are synchronized
 			// return waitFor-like promise to comply with the caller return
-			return this._schedulePromiseOnFlow(oExtensionsPromise);
+			return this.iWaitForPromise(oExtensionsPromise);
 		};
 
 		Opa5.prototype._unloadExtensions = function(oAppWindow) {
 			var that = this;
 
-			var oExtensionsPromise = $.when($.map(this._getExtensions(),function(oExtension) {
-				var oExtensionDeferred = $.Deferred();
+			var oExtensionsPromise = jQueryDOM.when(jQueryDOM.map(this._getExtensions(),function(oExtension) {
+				var oExtensionDeferred = jQueryDOM.Deferred();
 
 				Opa5._getEventProvider().fireEvent('onExtensionBeforeExit',{
 					extension: oExtension
@@ -1222,7 +1262,7 @@ sap.ui.define([
 			}));
 
 			// schedule the extension uploading promise on flow so waitFor's are synchronized
-			this._schedulePromiseOnFlow(oExtensionsPromise);
+			this.iWaitForPromise(oExtensionsPromise);
 		};
 
 		Opa5.prototype._addExtension = function(oExtension) {
@@ -1234,7 +1274,7 @@ sap.ui.define([
 		};
 
 		Opa5.prototype._executeExtensionOnAfterInit = function(oExtension,oAppWindow) {
-			var oDeferred = $.Deferred();
+			var oDeferred = jQueryDOM.Deferred();
 
 			var fnOnAfterInit = oExtension.onAfterInit;
 			if (fnOnAfterInit) {
@@ -1253,7 +1293,7 @@ sap.ui.define([
 		};
 
 		Opa5.prototype._executeExtensionOnBeforeExit = function(oExtension,oAppWindow) {
-			var oDeferred = $.Deferred();
+			var oDeferred = jQueryDOM.Deferred();
 
 			var fnOnBeforeExit = oExtension.onBeforeExit;
 			if (fnOnBeforeExit) {

@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/m/library", "jquery.sap.global"],
-	function(library, jQuery) {
+sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS"],
+	function(library, encodeCSS) {
 	"use strict";
 
 	// shortcut for sap.m.GenericTileMode
@@ -33,12 +33,13 @@ sap.ui.define(["sap/m/library", "jquery.sap.global"],
 		// Write the HTML into the render manager.
 		var sTooltipText = oControl._getTooltipText();
 		var sAriaText = oControl._getAriaText();
+        sAriaText = "GenericTile" + "\n" + sAriaText;
 		var sHeaderImage = oControl.getHeaderImage();
 		var bHasPress = oControl.hasListeners("press");
 		var sState = oControl.getState();
 		var sScope = oControl.getScope();
-		var sStateClass = jQuery.sap.encodeCSS("sapMGTState" + sState);
-		var sScopeClass = jQuery.sap.encodeCSS("sapMGTScope" + sScope);
+		var sStateClass = encodeCSS("sapMGTState" + sState);
+		var sScopeClass = encodeCSS("sapMGTScope" + sScope);
 
 		oRm.write("<div");
 		oRm.writeControlData(oControl);

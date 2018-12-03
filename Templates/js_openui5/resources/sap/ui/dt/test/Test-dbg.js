@@ -6,10 +6,9 @@
 
 // Provides class sap.ui.dt.test.Test.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/base/ManagedObject'
 ],
-function(jQuery, ManagedObject) {
+function(ManagedObject) {
 	"use strict";
 
 	/**
@@ -24,7 +23,7 @@ function(jQuery, ManagedObject) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private

@@ -8,18 +8,13 @@
  * Initialization Code and shared classes of library sap.uxap.
  */
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/core/Core",
 	"sap/ui/base/DataType",
 	"sap/ui/Device",
-	"sap/m/library",
-	"sap/ui/layout/library"
-], function(
-	jQuery,
-	Core,
-	DataType,
-	Device
-) {
+	"sap/ui/core/library", // library dependency
+	"sap/m/library", // library dependency
+	"sap/ui/layout/library" // library dependency
+], function(Core, DataType, Device) {
 	"use strict";
 
 	/**
@@ -66,7 +61,7 @@ sap.ui.define([
 			"sap.uxap.ModelMapping",
 			"sap.uxap.ObjectPageHeaderLayoutData"
 		],
-		version: "1.56.6",
+		version: "1.60.1",
 		extensions: {
 			flChangeHandlers: {
 				"sap.uxap.ObjectPageHeader": "sap/uxap/flexibility/ObjectPageHeader",
@@ -74,8 +69,15 @@ sap.ui.define([
 				"sap.uxap.ObjectPageSection": "sap/uxap/flexibility/ObjectPageSection",
 				"sap.uxap.ObjectPageSubSection": "sap/uxap/flexibility/ObjectPageSubSection",
 				"sap.uxap.ObjectPageDynamicHeaderTitle": "sap/uxap/flexibility/ObjectPageDynamicHeaderTitle",
+				"sap.uxap.ObjectPageHeaderActionButton": "sap/uxap/flexibility/ObjectPageHeaderActionButton",
 				"sap.ui.core._StashedControl": {
 					"unstashControl": {
+						"changeHandler": "default",
+						"layers": {
+							"USER": true
+						}
+					},
+					"stashControl": {
 						"changeHandler": "default",
 						"layers": {
 							"USER": true
@@ -281,12 +283,6 @@ sap.ui.define([
 		 */
 		High: "High"
 	};
-
-	sap.uxap.i18nModel = (function () {
-		return new sap.ui.model.resource.ResourceModel({
-			bundleUrl: jQuery.sap.getModulePath("sap.uxap.i18n.i18n", ".properties")
-		});
-	}());
 
 	/**
 	 *

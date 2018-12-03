@@ -5,8 +5,34 @@
  */
 
 // Provides class sap.m.MessageBox
-sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './FormattedText', './Link', './VBox', 'sap/ui/core/IconPool', 'sap/ui/core/ElementMetadata', 'sap/ui/core/library', 'sap/ui/core/Control', 'sap/m/library'],
-		function(jQuery, Button, Dialog, Text, FormattedText, Link, VBox, IconPool, ElementMetadata, coreLibrary, Control, library) {
+sap.ui.define([
+	'./Button',
+	'./Dialog',
+	'./Text',
+	'./FormattedText',
+	'./Link',
+	'./VBox',
+	'sap/ui/core/IconPool',
+	'sap/ui/core/ElementMetadata',
+	'sap/ui/core/library',
+	'sap/ui/core/Control',
+	'sap/m/library',
+	"sap/ui/thirdparty/jquery"
+],
+		function(
+			Button,
+			Dialog,
+			Text,
+			FormattedText,
+			Link,
+			VBox,
+			IconPool,
+			ElementMetadata,
+			coreLibrary,
+			Control,
+			library,
+			jQuery
+		) {
 			"use strict";
 
 			// shortcut for sap.m.DialogType
@@ -19,7 +45,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 			 * Provides easier methods to create sap.m.Dialog with type sap.m.DialogType.Message, such as standard alerts,
 			 * confirmation dialogs, or arbitrary message dialogs.
              *
-			 * As <code>MessageBox</code> is a static class, a <code>jQuery.sap.require("sap.m.MessageBox");</code> statement
+			 * As <code>MessageBox</code> is a static class, a <code>sap.ui.require("sap/m/MessageBox");</code> statement
 			 * must be explicitly executed before the class can be used.
 			 * MessageBox provides several functions.
 			 * <ul>
@@ -30,15 +56,17 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 			 * <b>NOTE:</b> All options of show() are available for the other template functions as well, but it is recommended to use show() only in more specific scenarios.
 			 * Example:
 			 * <pre>
-			 *   jQuery.sap.require("sap.m.MessageBox");
-			 *   sap.m.MessageBox.show(
-			 *       "This message should appear in the message box.", {
-			 *           icon: sap.m.MessageBox.Icon.INFORMATION,
-			 *           title: "My message box title",
-			 *           actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
-			 *           onClose: function(oAction) { / * do something * / }
-			 *       }
-			 *     );
+			 *	sap.ui.define(["sap/m/MessageBox"], function(MessageBox) {
+			 *		MessageBox.show(
+			 *			"This message should appear in the message box.", {
+			 *				icon: MessageBox.Icon.INFORMATION,
+			 *				title: "My message box title",
+			 *				actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+			 *				onClose: function(oAction) { / * do something * / }
+			 *			}
+			 *		);
+			 *	});
+
 			 * </pre>
 			 *
 			 * @namespace
@@ -279,7 +307,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 
 					// normalize the vActions array
-					if (typeof mOptions.actions !== "undefined" && !jQuery.isArray(mOptions.actions)) {
+					if (typeof mOptions.actions !== "undefined" && !Array.isArray(mOptions.actions)) {
 						mOptions.actions = [mOptions.actions];
 					}
 					if (!mOptions.actions || mOptions.actions.length === 0) {
@@ -312,16 +340,27 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 
 					function getInformationLayout(mOptions, oMessageText) {
 						//Generate MessageBox Layout
+						var oFT, oShowLink,
+							oVBox = new VBox({
+								items: [
+									oMessageText
+								]
+							});
+
+						if (!mOptions.details) {
+							return oVBox;
+						}
+
 						if (typeof mOptions.details == 'object') {
 							//covers JSON case
 							//Using stringify() with "tab" as space argument and escaping the JSON to prevent binding
 							mOptions.details = "<pre>" + JSON.stringify(mOptions.details, null, '\t')
-								.replace(/{/gi, "\\{") + "</pre>";
+							.replace(/{/gi, "\\{") + "</pre>";
 						}
 						// html text is set by purpose with setter. If is set in the constructor there are issues with binding
-						var oFT = new FormattedText().setVisible(false).setHtmlText(mOptions.details);
+						oFT = new FormattedText().setVisible(false).setHtmlText(mOptions.details);
 
-						var oShowLink = new Link({
+						oShowLink = new Link({
 							text: MessageBox._rb.getText("MSGBOX_LINK_TITLE"),
 							press: function () {
 								var oInitialFocus = oDialog.getInitialFocus();
@@ -343,13 +382,10 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './Text', './Formatt
 						oShowLink.addStyleClass("sapMMessageBoxLinkText");
 						oFT.addStyleClass("sapMMessageBoxDetails");
 
-						return new VBox({
-							items: [
-								oMessageText,
-								oShowLink,
-								oFT
-							]
-						});
+						oVBox.addItem(oShowLink);
+						oVBox.addItem(oFT);
+
+						return oVBox;
 					}
 
 					function onclose() {

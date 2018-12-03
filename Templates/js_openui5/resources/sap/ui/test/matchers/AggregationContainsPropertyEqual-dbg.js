@@ -5,9 +5,10 @@
  */
 
 sap.ui.define([
-		'jquery.sap.global',
-		'./Matcher'
-	], function ($, Matcher) {
+	"sap/ui/test/matchers/Matcher",
+	"sap/base/strings/capitalize",
+	"sap/ui/thirdparty/jquery"
+], function(Matcher, capitalize, jQueryDOM) {
 	"use strict";
 
 	/**
@@ -58,7 +59,7 @@ sap.ui.define([
 			var sAggregationName = this.getAggregationName(),
 				sPropertyName = this.getPropertyName(),
 				vPropertyValue = this.getPropertyValue(),
-				fnAggregation = oControl["get" + $.sap.charToUpperCase(sAggregationName, 0)];
+				fnAggregation = oControl["get" + capitalize(sAggregationName, 0)];
 
 			if (!fnAggregation) {
 				this._oLogger.error("Control '" + oControl + "' does not have an aggregation called '" + sAggregationName + "'");
@@ -66,10 +67,10 @@ sap.ui.define([
 			}
 
 			var vAggregation = fnAggregation.call(oControl);
-			var aAggregation = $.isArray(vAggregation) ? vAggregation : [vAggregation];
+			var aAggregation = jQueryDOM.isArray(vAggregation) ? vAggregation : [vAggregation];
 
 			var bMatches = aAggregation.some(function (vAggregationItem) {
-				var fnPropertyGetter = vAggregationItem["get" + $.sap.charToUpperCase(sPropertyName, 0)];
+				var fnPropertyGetter = vAggregationItem["get" + capitalize(sPropertyName, 0)];
 
 				//aggregation item does not have such a property
 				if (!fnPropertyGetter) {

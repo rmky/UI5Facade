@@ -5,15 +5,34 @@
  */
 
 // Provides control sap.ui.table.AnalyticalColumn.
-sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Element',
-		'sap/ui/model/type/Boolean', 'sap/ui/model/type/DateTime', 'sap/ui/model/type/Float',
-		'sap/ui/model/type/Integer', 'sap/ui/model/type/Time', './TableUtils', './AnalyticalColumnMenu'
-	],
-	function(jQuery, Column, library, Element, BooleanType, DateTime, Float, Integer, Time, TableUtils, AnalyticalColumnMenu) {
+sap.ui.define([
+	'./Column',
+	'./library',
+	'sap/ui/core/Element',
+	'sap/ui/model/type/Boolean',
+	'sap/ui/model/type/DateTime',
+	'sap/ui/model/type/Float',
+	'sap/ui/model/type/Integer',
+	'sap/ui/model/type/Time',
+	'./TableUtils',
+	'./AnalyticalColumnMenu'
+],
+	function(
+		Column,
+		library,
+		Element,
+		BooleanType,
+		DateTime,
+		Float,
+		Integer,
+		Time,
+		TableUtils,
+		AnalyticalColumnMenu
+	) {
 	"use strict";
 
 	function isInstanceOfAnalyticalTable(oControl) {
-		return TableUtils.isInstanceOf(oControl, "sap/ui/table/AnalyticalTable");
+		return TableUtils.isA(oControl, "sap.ui.table.AnalyticalTable");
 	}
 
 	/**
@@ -27,7 +46,7 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 	 * @extends sap.ui.table.Column
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -158,7 +177,7 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 			if (isInstanceOfAnalyticalTable(oParent)) {
 				var oBinding = oParent.getBinding("rows");
 				var sLeadingProperty = this.getLeadingProperty();
-				if (oBinding && jQuery.inArray(sLeadingProperty, oBinding.getFilterablePropertyNames()) > -1) {
+				if (oBinding && oBinding.getFilterablePropertyNames().indexOf(sLeadingProperty) > -1) {
 					sProperty = sLeadingProperty;
 				}
 			}
@@ -176,7 +195,7 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 			if (isInstanceOfAnalyticalTable(oParent)) {
 				var oBinding = oParent.getBinding("rows");
 				var sLeadingProperty = this.getLeadingProperty();
-				if (oBinding && jQuery.inArray(sLeadingProperty, oBinding.getSortablePropertyNames()) > -1) {
+				if (oBinding && oBinding.getSortablePropertyNames().indexOf(sLeadingProperty) > -1) {
 					sProperty = sLeadingProperty;
 				}
 			}
@@ -313,7 +332,7 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 				// Although the generic OData providers (BW, SADL) do not support filtering measures, there may be specialized implementations that do support it.
 				// Conclusion for a fix therefore is to make sure that the AnalyticalTable solely checks sap:filterable=”false” for providing the filter function.
 				// Check for measure is hence removed. For more details, see BCP: 1770355530
-				if (jQuery.inArray(sFilterProperty, oBinding.getFilterablePropertyNames()) > -1 &&
+				if (oBinding.getFilterablePropertyNames().indexOf(sFilterProperty) > -1 &&
 					oBinding.getProperty(sFilterProperty)) {
 					return true;
 				}
@@ -344,8 +363,8 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 			if (oBinding) {
 				var oResultSet = oBinding.getAnalyticalQueryResult();
 				if (oResultSet && oResultSet.findDimensionByPropertyName(this.getLeadingProperty())
-					&& jQuery.inArray(this.getLeadingProperty(), oBinding.getSortablePropertyNames()) > -1
-					&& jQuery.inArray(this.getLeadingProperty(), oBinding.getFilterablePropertyNames()) > -1) {
+					&& oBinding.getSortablePropertyNames().indexOf(this.getLeadingProperty()) > -1
+					&& oBinding.getFilterablePropertyNames().indexOf(this.getLeadingProperty()) > -1) {
 					return true;
 				}
 			}

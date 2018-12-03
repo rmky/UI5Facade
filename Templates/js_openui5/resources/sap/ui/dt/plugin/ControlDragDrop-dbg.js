@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @class The ControlDragDrop enables D&D functionality for the overlays based on aggregation types
 	 * @extends sap.ui.dt.plugin.DragDrop
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -88,7 +88,6 @@ sap.ui.define([
 	 * @override
 	 */
 	ControlDragDrop.prototype.registerElementOverlay = function(oOverlay) {
-		DragDrop.prototype.registerElementOverlay.apply(this, arguments);
 		var oElement = oOverlay.getElement();
 		if (
 			this.getElementMover().isMovableType(oElement)
@@ -101,6 +100,8 @@ sap.ui.define([
 		if (this.oDraggedElement) {
 			this.getElementMover().activateTargetZonesFor(oOverlay, sDROP_ZONE_STYLE);
 		}
+
+		DragDrop.prototype.registerElementOverlay.apply(this, arguments);
 	};
 
 	/**

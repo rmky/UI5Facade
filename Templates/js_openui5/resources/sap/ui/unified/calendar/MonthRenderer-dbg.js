@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/CalendarLegend',
-	'sap/ui/unified/CalendarLegendRenderer', 'sap/ui/core/library', 'sap/ui/unified/library'],
-	function(jQuery, CalendarUtils, CalendarDate, CalendarLegend, CalendarLegendRenderer, coreLibrary, library) {
+sap.ui.define(['sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/CalendarLegend', 'sap/ui/unified/CalendarLegendRenderer',
+	'sap/ui/core/library', 'sap/ui/unified/library', "sap/base/Log"],
+	function(CalendarUtils, CalendarDate, CalendarLegend, CalendarLegendRenderer, coreLibrary, library, Log) {
 	"use strict";
 
 
@@ -302,7 +302,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sa
 				}
 				oHelper.oLegend = oLegend;
 			} else {
-				jQuery.sap.log.warning("CalendarLegend " + sLegendId + " does not exist!", oMonth);
+				Log.warning("CalendarLegend " + sLegendId + " does not exist!", oMonth);
 			}
 		}
 
@@ -325,7 +325,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/calendar/CalendarUtils', 'sa
 		CalendarUtils._checkCalendarDate(oDay);
 		var oSecondaryDay = new CalendarDate(oDay, oHelper.sSecondaryCalendarType),
 			mAccProps = {
-				role: "gridcell",
+				role: oMonth._getAriaRole(),
 				selected: false,
 				label: "",
 				describedby: ""

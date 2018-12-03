@@ -6,15 +6,20 @@
 
 // Provides control sap.m.Table.
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/Device",
 	"./library",
 	"./ListBase",
 	"./ListItemBase",
 	"./CheckBox",
-	"./TableRenderer"
+	"./TableRenderer",
+	"sap/base/Log",
+	"sap/ui/core/ResizeHandler",
+	"sap/ui/core/util/PasteHelper",
+	"sap/ui/thirdparty/jquery",
+	// jQuery custom selectors ":sapTabbable"
+	"sap/ui/dom/jquery/Selectors"
 ],
-	function(jQuery, Device, library, ListBase, ListItemBase, CheckBox, TableRenderer) {
+	function(Device, library, ListBase, ListItemBase, CheckBox, TableRenderer, Log, ResizeHandler, PasteHelper, jQuery) {
 	"use strict";
 
 
@@ -30,9 +35,8 @@ sap.ui.define([
 	// shortcut for sap.m.PopinLayout
 	var PopinLayout = library.PopinLayout;
 
-	// shortcut for sap.m.Sticky
-	var Sticky = library.Sticky;
-
+	// shortcut for sap.m.Screensize
+	var ScreenSizes = library.ScreenSizes;
 
 	/**
 	 * Constructor for a new Table.
@@ -42,7 +46,7 @@ sap.ui.define([
 	 *
 	 * @class
 	 * <code>sap.m.Table</code> control provides a set of sophisticated and convenience functions for responsive table design.
-	 * To render the <code>sap.m.Table</code> properly, the order of the <code>columns</code> aggregation should match with the order of the items <code>cells</code> aggregation. Also <code>sap.m.Table</code> requires at least one visible <code>sap.m.Column</code> in <code>columns</code> aggregation.
+	 * To render the <code>sap.m.Table</code> properly, the order of the <code>columns</code> aggregation should match with the order of the items <code>cells</code> aggregation (<code>sap.m.ColumnListItem</code>). Also <code>sap.m.Table</code> requires at least one visible <code>sap.m.Column</code> in <code>columns</code> aggregation.
 	 * For mobile devices, the recommended limit of table rows is 100 (based on 4 columns) to assure proper performance. To improve initial rendering on large tables, use the <code>growing</code> feature.
 	 *
 	 * See section "{@link topic:5eb6f63e0cc547d0bdc934d3652fdc9b Creating Tables}" and "{@link topic:38855e06486f4910bfa6f4485f7c2bac Configuring Responsive Behavior of a Table}"
@@ -52,7 +56,7 @@ sap.ui.define([
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -103,25 +107,16 @@ sap.ui.define([
 			popinLayout : {type : "sap.m.PopinLayout", group : "Appearance", defaultValue : PopinLayout.Block},
 
 			/**
-			 * Defines the section of the <code>sap.m.Table</code> control that remains fixed at the top of the page during vertical scrolling as long as the table is in the viewport.
+			 * Defines the contextual width for the <code>sap.m.Table</code> control. By defining this property the table adapts the pop-in behavior based on the container in which the table is placed or the configured contextual width.
+			 * By default, <code>sap.m.Table</code> renders in pop-in behavior only depending on the window size or device.
 			 *
-			 * <b>Note:</b> There is limited browser support.
-			 * Browsers that do not support this feature are listed below:
-			 * <ul>
-			 * <li>IE</li>
-			 * <li>Edge lower than version 41 (EdgeHTML 16)</li>
-			 * <li>Firefox lower than version 59</li>
-			 * </ul>
-			 *
-			 * There are also some known limitations with respect to the scrolling behavior. A few are given below:
-			 * <ul>
-			 * <li>If the table is placed in certain layout containers, for example, the <code>sap.ui.layout.Grid</code> control,
-			 * the column headers are not fixed at the top of the viewport. The table behaves in a similar way when placed within the <code>sap.m.ObjectPage</code> control.</li>
-			 * <li>If the sticky column headers are enabled in the table, setting focus on the column headers will let the table scroll to the top.</li>
-			 * </ul>
-			 * @since 1.54
+			 * For example, by setting the <code>contextualWidth</code> property to 600px or Tablet, the table can be placed in a container with 600px width, where the pop-in is used.
+			 * You can use specific CSS sizes (for example, 600px or 600), you can also use the <code>sap.m.ScreenSize</code> enumeration (for example, Phone, Tablet, Desktop, Small, Medium, Large, ....).
+			 * If this property is set to <code>Auto</code>, the <code>ResizeHandler</code> will manage the contextual width of the table.
+			 * <b>Note:</b> Only "Inherit", "Auto", and pixel-based CSS sizes (for example, 200, 200px) can be applied to the <code>contextualWidth</code> property. Due to the rendering cost, we recommend to use the valid value mentioned before except for "Auto".
+			 * @since 1.60
 			 */
-			sticky : {type : "sap.m.Sticky[]", group : "Appearance"}
+			contextualWidth : {type: "string", group: "Behavior", defaultValue: "Inherit"}
 		},
 		aggregations : {
 
@@ -149,6 +144,21 @@ sap.ui.define([
 					 */
 					column : {type : "sap.m.Column"}
 				}
+			},
+			/**
+			 * This event gets fired when the user performs paste from clipboard on the table.
+			 * Paste action can be performed from the context menu or with CTRL-V keyboard key combination.
+			 * @since 1.60
+			 */
+			paste : {
+				allowPreventDefault: true,
+				parameters : {
+					/**
+					 * 2D-Array of strings with data from the clipboard. The first dimension represents the rows and the
+					 * second dimension represents the cells of the tabular data.
+					 */
+					data : {type : "string[][]"}
+				}
 			}
 		},
 		designtime: "sap/m/designtime/Table.designtime"
@@ -162,8 +172,116 @@ sap.ui.define([
 		ListBase.prototype.init.call(this);
 	};
 
+	Table.prototype.setContextualWidth = function (sWidth) {
+		var sOldWidth = this.getContextualWidth();
+		// check if setting the old value
+		if (sWidth == sOldWidth) {
+			return this;
+		}
+
+		if (typeof sWidth === "number"){
+			this._sContextualWidth = sWidth + "px";
+			this._sContextualWidth = this._sContextualWidth.toLowerCase();
+		} else {
+			// to convert the capital screen width
+			var width = sWidth.toLowerCase(),
+				iWidth = ScreenSizes[width];
+			if (iWidth) {
+				// screen size
+				this._sContextualWidth = iWidth + "px";
+			} else {
+				//auto or inherit
+				this._sContextualWidth = sWidth;
+			}
+		}
+
+		// validate the value
+		var bWidthValidated = this._validateContextualWidth(this._sContextualWidth);
+
+		this._iLastContextualWidth = sOldWidth;
+
+		if (bWidthValidated) {
+			// set property, suppressInvalidate
+			this.setProperty("contextualWidth", sWidth);
+		} else {
+			return this;
+		}
+
+		// if the old value is auto, remove resizeHandler
+		if (this._iLastContextualWidth.toLowerCase() === "auto" ) {
+			this._deregisterResizeHandler();
+		}
+
+		if (this._sContextualWidth.toLowerCase() === "auto") {
+			//if auto, register resizeHandler
+			this._registerResizeHandler();
+		} else {
+			//if px value, apply contextualWidth
+			this._applyContextualWidth(this._sContextualWidth);
+		}
+
+		return this;
+	};
+
+	Table.prototype._validateContextualWidth = function(sWidth) {
+
+		if (!sWidth) {
+			return;
+		}
+		if ( typeof sWidth != "string") {
+			throw new Error('expected string for property "contextualWidth" of ' + this);
+		}
+		if (sWidth.toLowerCase() === "auto" || sWidth.toLowerCase() === "inherit") {
+			return true;
+		}
+		if (!/^\d+(\.\d+)?(px)$/i.test(sWidth)) {
+			throw new Error('invalid CSS size("px", "Auto", "auto", Inherit", "inherit" required) or sap.m.ScreenSize enumeration for property "contextualWidth" of ' + this);
+		}
+
+		return true;
+	};
+
+	Table.prototype._applyContextualWidth = function(iWidth) {
+		iWidth = parseFloat(iWidth) || 0;
+		if (iWidth) {
+			this._applyContextualSettings({
+				contextualWidth : iWidth
+			});
+		}
+
+	};
+
+	Table.prototype._onResize = function(mParams) {
+		this._applyContextualWidth(mParams.size.width);
+	};
+
+	Table.prototype._registerResizeHandler = function () {
+		if (!this._iResizeHandlerId) {
+			var that = this;
+			window.requestAnimationFrame(function() {
+				that._iResizeHandlerId = ResizeHandler.register(that, that._onResize.bind(that));
+			});
+		}
+	};
+
+	/**
+	 * Deregisters resize handler
+	 *
+	 * @private
+	 */
+	Table.prototype._deregisterResizeHandler = function () {
+		if (this._iResizeHandlerId) {
+			ResizeHandler.deregister(this._iResizeHandlerId);
+			this._iResizeHandlerId = null;
+		}
+	};
+
 	Table.prototype.onBeforeRendering = function() {
 		ListBase.prototype.onBeforeRendering.call(this);
+
+		// for initial contextualWidth setting
+		this._applyContextualWidth(this._sContextualWidth);
+
 		this._ensureColumnsMedia();
 		this._notifyColumns("ItemsRemoved");
 	};
@@ -270,7 +388,7 @@ sap.ui.define([
 		});
 
 		if (!bHasVisibleColumns) {
-			jQuery.sap.log.warning("No visible columns found in " + this);
+			Log.warning("No visible columns found in " + this);
 		}
 
 		return bHasVisibleColumns;
@@ -291,9 +409,9 @@ sap.ui.define([
 	// this gets called when selected property of the item is changed
 	Table.prototype.onItemSelectedChange = function(oItem, bSelect) {
 		ListBase.prototype.onItemSelectedChange.apply(this, arguments);
-		jQuery.sap.delayedCall(0, this, function() {
+		setTimeout(function() {
 			this.updateSelectAllCheckbox();
-		});
+		}.bind(this), 0);
 	};
 
 	/*
@@ -355,6 +473,12 @@ sap.ui.define([
 		});
 	};
 
+	Table.prototype.onColumnPress = function(oColumn) {
+		this.bActiveHeaders && this.fireEvent("columnPress", {
+			column: oColumn
+		});
+	};
+
 	/*
 	 * This method is called asynchronously if resize event comes from column
 	 * @protected
@@ -380,14 +504,14 @@ sap.ui.define([
 			this.rerender();
 
 			// do not re-render if resize event comes so frequently
-			jQuery.sap.delayedCall(200, this, function() {
+			setTimeout(function() {
 				// but check if any event come during the wait-time
 				if (this._dirty != clean) {
 					this._dirty = 0;
 					this.rerender();
 				}
 				this._mutex = false;
-			});
+			}.bind(this), 200);
 		}
 	};
 
@@ -669,92 +793,6 @@ sap.ui.define([
 		}
 	};
 
-	// check if browser supports css sticky
-	Table.getStickyBrowserSupport = function() {
-		var oBrowser = Device.browser;
-		return (oBrowser.safari || oBrowser.chrome
-				|| (oBrowser.firefox && oBrowser.version >= 59)
-				|| (oBrowser.edge && oBrowser.version >= 16));
-	};
-
-	// Returns the sticky value to be added to the sticky table container.
-	// sapMSticky7 is the result of sticky headerToolbar, infoToolbar and column headers.
-	// sapMSticky6 is the result of sticky infoToolbar and column headers.
-	// sapMSticky5 is the result of sticky headerToolbar and column headers.
-	// sapMSticky4 is the result of sticky column headers only.
-	// sapMSticky3 is the result of sticky headerToolbar and infoToolbar.
-	// sapMSticky2 is the result of sticky infoToolbar.
-	// sapMSticky1 is the result of sticky headerToolbar.
-	Table.prototype.getStickyStyleValue = function() {
-		var aSticky = this.getSticky();
-		if (!aSticky || !aSticky.length || !Table.getStickyBrowserSupport()) {
-			return (this._iStickyValue = 0);
-		}
-
-		var iStickyValue = 0,
-			sHeaderText = this.getHeaderText(),
-			oHeaderToolbar = this.getHeaderToolbar(),
-			bHeaderToolbarVisible = sHeaderText || (oHeaderToolbar && oHeaderToolbar.getVisible()),
-			oInfoToolbar = this.getInfoToolbar(),
-			bInfoToolbar = oInfoToolbar && oInfoToolbar.getVisible(),
-			bColumnHeadersVisible = this.getColumns().some(function(oColumn) {
-				return oColumn.getVisible() && oColumn.getHeader();
-			});
-
-		aSticky.forEach(function(sSticky) {
-			if (sSticky === Sticky.HeaderToolbar && bHeaderToolbarVisible) {
-				iStickyValue += 1;
-			} else if (sSticky === Sticky.InfoToolbar && bInfoToolbar) {
-				iStickyValue += 2;
-			} else if (sSticky === Sticky.ColumnHeaders && bColumnHeadersVisible) {
-				iStickyValue += 4;
-			}
-		});
-
-		return (this._iStickyValue = iStickyValue);
-	};
-
-	Table.prototype.setHeaderToolbar = function(oHeaderToolbar) {
-		return this._setToolbar("headerToolbar", oHeaderToolbar);
-	};
-
-	Table.prototype.setInfoToolbar = function(oInfoToolbar) {
-		return this._setToolbar("infoToolbar", oInfoToolbar);
-	};
-
-	Table.prototype._setToolbar = function(sAggregationName, oToolbar) {
-		var oOldToolbar = this.getAggregation(sAggregationName);
-		if (oOldToolbar) {
-			oOldToolbar.detachEvent("_change", this._onToolbarPropertyChanged, this);
-		}
-
-		this.setAggregation(sAggregationName, oToolbar);
-		if (oToolbar) {
-			oToolbar.attachEvent("_change", this._onToolbarPropertyChanged, this);
-		}
-		return this;
-	};
-
-	Table.prototype._onToolbarPropertyChanged = function(oEvent) {
-		if (oEvent.getParameter("name") !== "visible") {
-			return;
-		}
-
-		// update the sticky style class
-		var iOldStickyValue = this._iStickyValue,
-			iNewStickyValue = this.getStickyStyleValue();
-
-		if (iOldStickyValue !== iNewStickyValue) {
-			var oTableDomRef = this.getDomRef();
-			if (oTableDomRef) {
-				var aClassList = oTableDomRef.classList;
-				aClassList.toggle("sapMSticky", !!iNewStickyValue);
-				aClassList.remove("sapMSticky" + iOldStickyValue);
-				aClassList.toggle("sapMSticky" + iNewStickyValue, !!iNewStickyValue);
-			}
-		}
-	};
-
 	Table.prototype.onfocusin = function(oEvent) {
 		var oTarget = oEvent.target;
 		if (oTarget.id === this.getId("tblHeader")) {
@@ -772,64 +810,8 @@ sap.ui.define([
 		ListBase.prototype.onfocusin.call(this, oEvent);
 	};
 
-	// gets the sticky header position and scrolls the page so that the item is completely visible when focused
-	Table.prototype._handleStickyItemFocus = function(oItemDomRef) {
-		// when an item is focused and later focus is lost from the table and then table is scrolled and new item is focused,
-		// this resulted in unnecessary scroll jumping
-		if (!this._iStickyValue || this._sLastFocusedStickyItemId === oItemDomRef.id) {
-			return;
-		}
-
-		var oScrollDelegate = library.getScrollDelegate(this, true);
-		if (!oScrollDelegate) {
-			return;
-		}
-
-		// check the all the sticky element and get their height
-		var iTHRectHeight = 0,
-			iTHRectBottom = 0,
-			iInfoTBarContainerRectHeight = 0,
-			iInfoTBarContainerRectBottom = 0,
-			iHeaderToolbarRectHeight = 0,
-			iHeaderToolbarRectBottom = 0;
-
-		if (this._iStickyValue & 4 /* ColumnHeaders */) {
-			var oTblHeaderDomRef = this.getDomRef("tblHeader").firstChild;
-			var oTblHeaderRect = oTblHeaderDomRef.getBoundingClientRect();
-			iTHRectBottom = parseInt(oTblHeaderRect.bottom, 10);
-			iTHRectHeight = parseInt(oTblHeaderRect.height, 10);
-		}
-
-		if (this._iStickyValue & 2 /* InfoToolbar */) {
-			// additional padding is applied in HCW and HCB theme, hence infoToolbarContainer height is required
-			var oInfoToolbarContainer = this.getInfoToolbar().$().parent()[0];
-			var oInfoToolbarContainerRect = oInfoToolbarContainer.getBoundingClientRect();
-			iInfoTBarContainerRectBottom = parseInt(oInfoToolbarContainerRect.bottom, 10);
-			iInfoTBarContainerRectHeight = parseInt(oInfoToolbarContainerRect.height, 10);
-		}
-
-		if (this._iStickyValue & 1 /* HeaderToolbar */) {
-			var oHeaderToolbarDomRef = this.getDomRef().querySelector(".sapMListHdr");
-			var oHeaderToolbarRect = oHeaderToolbarDomRef.getBoundingClientRect();
-			iHeaderToolbarRectBottom = parseInt(oHeaderToolbarRect.bottom, 10);
-			iHeaderToolbarRectHeight = parseInt(oHeaderToolbarRect.height, 10);
-		}
-
-		var iItemTop = Math.round(oItemDomRef.getBoundingClientRect().top);
-
-		if (iTHRectBottom > iItemTop || iInfoTBarContainerRectBottom > iItemTop || iHeaderToolbarRectBottom > iItemTop) {
-			window.requestAnimationFrame(function () {
-				oScrollDelegate.scrollToElement(oItemDomRef, 0, [0, -iTHRectHeight - iInfoTBarContainerRectHeight - iHeaderToolbarRectHeight]);
-			});
-		}
-
-		this._sLastFocusedStickyItemId = oItemDomRef.id;
-	};
-
 	// function gets called when the focus is on the item or its content
 	Table.prototype.onItemFocusIn = function(oItem) {
-		this._handleStickyItemFocus(oItem.getDomRef());
-
 		ListBase.prototype.onItemFocusIn.apply(this, arguments);
 	};
 
@@ -851,6 +833,28 @@ sap.ui.define([
 
 		return "sapMListTblAlternateRowColors";
 	};
+
+		/**
+		 * Handles paste event and fires Paste event of the Table , so that it can be used in the application
+		 * @private
+		 * @param oEvent -browser paste event that occurs when a user pastes the data from the clipboard into the table
+		 */
+		Table.prototype.onpaste = function(oEvent) {
+
+			// Check whether the paste event is already handled by input enabled control and avoid pasting into this input-enabled control when focus is in there.
+			if (oEvent.isMarked() || (/^(input|textarea)$/i.test(oEvent.target.tagName))) {
+				return;
+			}
+
+			// Get the data from the PasteHelper utility in format of 2D Array
+			var aData = PasteHelper.getPastedDataAs2DArray(oEvent.originalEvent);
+			if (!aData || aData.length === 0 /* no rows pasted */ || aData[0].length === 0 /* no columns pasted */) {
+				return; // no pasted data
+			}
+
+			//var oRow = sap.ui.getCore().byId(jQuery(oEvent.target).closest(".sapMLIB").attr("id"));
+			this.firePaste({data: aData});
+		};
 
 	return Table;
 

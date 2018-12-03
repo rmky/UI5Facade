@@ -6,13 +6,14 @@
 
 // Provides control sap.ui.core.tmpl.DOMElement.
 sap.ui.define([
-    'jquery.sap.global',
-    'sap/ui/core/Control',
-    'sap/ui/core/library',
-    './DOMAttribute',
-    "./DOMElementRenderer"
+	'sap/ui/core/Control',
+	'sap/ui/core/library',
+	'./DOMAttribute',
+	"./DOMElementRenderer",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
 ],
-	function(jQuery, Control, library, DOMAttribute, DOMElementRenderer) {
+	function(Control, library, DOMAttribute, DOMElementRenderer, Log, jQuery) {
 	"use strict";
 
 
@@ -26,7 +27,7 @@ sap.ui.define([
 	 * @class
 	 * Represents a DOM element. It allows to use databinding for the properties and nested DOM attributes.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @public
 	 * @since 1.15
@@ -91,7 +92,7 @@ sap.ui.define([
 					}
 				});
 			} else {
-				jQuery.sap.log.warning("DOMElement#" + this.getId() + ": custom attributes in settings will be ignored since attributes are provided!");
+				Log.warning("DOMElement#" + this.getId() + ": custom attributes in settings will be ignored since attributes are provided!");
 			}
 		}
 
@@ -240,6 +241,7 @@ sap.ui.define([
 				$this.text(this.getProperty("text"));
 			}
 		}
+		return this;
 	};
 
 

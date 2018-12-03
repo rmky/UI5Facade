@@ -221,6 +221,11 @@
 			"theme": "sap_belize_hcw"
 		},
 		{
+			"name": "PlanningCalendar.less",
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
 			"name": "Popover.less",
 			"designtime": true,
 			"theme": "sap_belize_hcw"
@@ -312,6 +317,11 @@
 		},
 		{
 			"name": "StandardListItem.less",
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
+			"name": "StepInput.less",
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},

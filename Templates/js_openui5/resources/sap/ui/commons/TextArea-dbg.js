@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', './TextField', './library', "./TextAreaRende
 	 * @class
 	 * Control to enter or display multible row text.
 	 * @extends sap.ui.commons.TextField
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public

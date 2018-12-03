@@ -35,7 +35,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -175,10 +175,8 @@ sap.ui.define([
 
 	StandardListItem.prototype.getContentAnnouncement = function(oBundle) {
 		var sAnnouncement = "",
-			sInfoState = this.getInfoState(),
-			oIconInfo = IconPool.getIconInfo(this.getIcon()) || {};
+			sInfoState = this.getInfoState();
 
-		sAnnouncement += (oIconInfo.text || oIconInfo.name || "") + " ";
 		sAnnouncement += this.getTitle() + " " + this.getDescription() + " " + this.getInfo() + " ";
 
 		if (sInfoState != "None" && sInfoState != this.getHighlight()) {

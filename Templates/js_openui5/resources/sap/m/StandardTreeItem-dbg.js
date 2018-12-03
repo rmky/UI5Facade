@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @extends sap.m.TreeItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -75,13 +75,7 @@ sap.ui.define([
 	};
 
 	StandardTreeItem.prototype.getContentAnnouncement = function() {
-		var sAnnouncement = "",
-		oIconInfo = IconPool.getIconInfo(this.getIcon()) || {};
-
-		sAnnouncement += (oIconInfo.text || oIconInfo.name || "") + " ";
-		sAnnouncement += this.getTitle() + " ";
-
-		return sAnnouncement;
+		return " "; // Labeling is done via aria-labelledby (see StandardTreeItemRenderer.getAriaLabelledBy)
 	};
 
 	StandardTreeItem.prototype.exit = function() {

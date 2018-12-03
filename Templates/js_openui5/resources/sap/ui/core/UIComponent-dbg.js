@@ -5,8 +5,26 @@
  */
 
 // Provides base class sap.ui.core.Component for all components
-sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Component', './library', './UIComponentMetadata', './mvc/Controller', './mvc/View'],
-	function(jQuery, ManagedObject, Component, library, UIComponentMetadata, Controller, View) {
+sap.ui.define([
+	'../base/ManagedObject',
+	'./Component',
+	'./library',
+	'./UIComponentMetadata',
+	'./mvc/Controller',
+	'./mvc/View',
+	"sap/base/util/ObjectPath",
+	"sap/base/Log"
+],
+	function(
+		ManagedObject,
+		Component,
+		library,
+		UIComponentMetadata,
+		Controller,
+		View,
+		ObjectPath,
+		Log
+	) {
 	"use strict";
 
 	// shortcut for enum(s)
@@ -37,7 +55,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Component', './l
 	 * @extends sap.ui.core.Component
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @alias sap.ui.core.UIComponent
 	 * @since 1.9.2
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
@@ -309,9 +327,9 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Component', './l
 	function getConstructorFunctionFor (vRoutingObjectConstructor) {
 		var fnConstructor;
 		if (typeof vRoutingObjectConstructor === "string") {
-			fnConstructor = jQuery.sap.getObject(vRoutingObjectConstructor);
+			fnConstructor = ObjectPath.get(vRoutingObjectConstructor);
 			if (!fnConstructor) {
-				jQuery.sap.log.error("The specified class for router or targets '" + vRoutingObjectConstructor + "' is undefined.", this);
+				Log.error("The specified class for router or targets '" + vRoutingObjectConstructor + "' is undefined.", this);
 			}
 		} else {
 			fnConstructor = vRoutingObjectConstructor;
@@ -505,7 +523,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Component', './l
 			// to convert the string into a configuration object for the view factory in
 			// case of the manifest first approach.
 			// !This should be kept in sync with the UIComponentMetadata functionality!
-			return sap.ui.view({
+			return View._legacyCreate({
 				viewName: oRootView,
 				type: ViewType.XML
 			});
@@ -514,7 +532,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject', './Component', './l
 			if (oRootView.id) {
 				oRootView.id = this.createId(oRootView.id);
 			}
-			return sap.ui.view(oRootView);
+			return View._legacyCreate(oRootView);
 		} else if (oRootView) {
 			throw new Error("Configuration option 'rootView' of component '" + this.getMetadata().getName() + "' is invalid! 'rootView' must be type of string or object!");
 		}

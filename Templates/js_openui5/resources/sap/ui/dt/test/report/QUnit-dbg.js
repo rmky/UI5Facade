@@ -4,14 +4,14 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-/* global QUnit, assert */
+/* global QUnit */
 
-// Provides class sap.ui.dt.test.qunit.QUnit.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/base/ManagedObject'
 ],
-function(jQuery, ManagedObject) {
+function(
+	ManagedObject
+) {
 	"use strict";
 
 
@@ -26,7 +26,7 @@ function(jQuery, ManagedObject) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -92,9 +92,9 @@ function(jQuery, ManagedObject) {
 		 * @private
 		 */
 		_createTest : function(oGroup) {
-			QUnit.test(oGroup.name + ": " + oGroup.message, function(assert) {
+			QUnit.test(oGroup.name + ": " + oGroup.message, function (assert) {
 				oGroup.children.forEach(function(oGroup) {
-					this._createAssertion(oGroup);
+					this._createAssertion(assert, oGroup);
 				}, this);
 			}.bind(this));
 		},
@@ -103,7 +103,7 @@ function(jQuery, ManagedObject) {
 		/**
 		 * @private
 		 */
-		_createAssertion : function(oGroup) {
+		_createAssertion : function(assert, oGroup) {
 			if (oGroup.children.length > 0) {
 				oGroup.children.forEach(function(oTest) {
 					assert.ok(oTest.result, oGroup.name + ": " + oTest.message);

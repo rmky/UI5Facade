@@ -6,16 +6,21 @@
 
 // Provides control sap.m.IconTabBarSelectList.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/delegate/ItemNavigation',
 	'./IconTabBarDragAndDropUtil',
 	'./IconTabBarSelectListRenderer',
-	'sap/ui/core/dnd/DragInfo',
-	'sap/ui/core/dnd/DropInfo'
+	"sap/ui/thirdparty/jquery"
 ],
-	function(jQuery, library, Control, ItemNavigation, IconTabBarDragAndDropUtil, IconTabBarSelectListRenderer, DragInfo, DropInfo) {
+	function(
+		library,
+		Control,
+		ItemNavigation,
+		IconTabBarDragAndDropUtil,
+		IconTabBarSelectListRenderer,
+		jQuery
+	) {
 		"use strict";
 
 		/**
@@ -29,7 +34,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @private
@@ -107,7 +112,7 @@ sap.ui.define([
 				//Destroying Drag&Drop aggregation
 				this.destroyDragDropConfig();
 			} else if (this._iconTabHeader.getEnableTabReordering() && !this.getDragDropConfig().length) {
-				IconTabBarDragAndDropUtil.setDragDropAggregations(this, DragInfo, DropInfo, "Vertical");
+				IconTabBarDragAndDropUtil.setDragDropAggregations(this, "Vertical");
 			}
 		};
 

@@ -3,9 +3,7 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define([
-	"jquery.sap.global", "sap/ui/core/XMLComposite", "./library", "sap/ui/core/Item"
-], function(jQuery, XMLComposite, library, Item) {
+sap.ui.define(["sap/ui/core/XMLComposite", "./library", "sap/ui/core/Item"], function(XMLComposite, library, Item) {
 	"use strict";
 
 	/**
@@ -19,7 +17,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @public
 	 * @experimental since 1.52
 	 * @since 1.52.0
@@ -120,18 +118,29 @@ sap.ui.define([
 			MultiEditField.prototype._oRb = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 		}
 
-		this._getKeepAll = jQuery.sap.getter(new Item({
-			key: "keep",
-			text: "< " + this._oRb.getText("MULTI_EDIT_KEEP_TEXT") + " >"
-		}));
-		this._getBlank = jQuery.sap.getter(new Item({
-			key: "blank",
-			text: "< " + this._oRb.getText("MULTI_EDIT_BLANK_TEXT") + " >"
-		}));
-		this._getValueHelp = jQuery.sap.getter(new Item({
-			key: "new",
-			text: "< " + this._oRb.getText("MULTI_EDIT_NEW_TEXT") + " >"
-		}));
+		var oKeepItem = new Item({
+				key: "keep",
+				text: "< " + this._oRb.getText("MULTI_EDIT_KEEP_TEXT") + " >"
+			}),
+			oBlankItem = new Item({
+				key: "blank",
+				text: "< " + this._oRb.getText("MULTI_EDIT_BLANK_TEXT") + " >"
+			}),
+			oNewItem = new Item({
+				key: "new",
+				text: "< " + this._oRb.getText("MULTI_EDIT_NEW_TEXT") + " >"
+			});
+
+
+		this._getKeepAll =  function() {
+			return oKeepItem;
+		};
+		this._getBlank = function() {
+			return oBlankItem;
+		};
+		this._getValueHelp = function() {
+			return oNewItem;
+		};
 
 		// This enables FormElements to correctly write aria attributes to the internal Select control
 		this.byId("select").getParent = this.getParent.bind(this);

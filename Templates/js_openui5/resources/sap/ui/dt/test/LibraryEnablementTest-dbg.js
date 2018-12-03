@@ -6,7 +6,7 @@
 
 // Provides class sap.ui.dt.test.LibraryEnablementTest.
 sap.ui.define([
-	'jquery.sap.global',
+	"sap/ui/thirdparty/jquery",
 	'sap/ui/dt/test/Test',
 	'sap/ui/dt/test/ElementEnablementTest'
 ],
@@ -26,7 +26,7 @@ function(jQuery, Test, ElementEnablementTest) {
 	 * @extends sap.ui.dt.test.Test
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -75,7 +75,7 @@ function(jQuery, Test, ElementEnablementTest) {
 
 					var oElementTestDataWithoutCreate = null;
 					if (oElementTestData.create) {
-						oElementTestDataWithoutCreate = jQuery.extend({}, oElementTestData);
+						oElementTestDataWithoutCreate = Object.assign({}, oElementTestData);
 						delete oElementTestDataWithoutCreate.create;
 						oElementTestData.groupPostfix = "with create method";
 					}

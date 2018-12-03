@@ -6,9 +6,11 @@
 
 // Provides object sap.ui.dt.DOMUtil.
 sap.ui.define([
-	'jquery.sap.global',
+	"sap/ui/thirdparty/jquery",
 	'sap/ui/Device',
-	'sap/ui/dt/Util'
+	'sap/ui/dt/Util',
+	// jQuery Plugin "zIndex"
+	"sap/ui/dom/jquery/zIndex"
 ],
 function(
 	jQuery,
@@ -24,7 +26,7 @@ function(
 	 * Utility functionality for DOM
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @private
 	 * @static
@@ -288,8 +290,7 @@ function(
 	 *
 	 */
 	DOMUtil.isVisible = function(oDomRef) {
-		// mimic the jQuery 1.11.1 impl of the ':visible' selector as the jQuery 2.2.0 selector no longer reports empty SPANs etc. as 'hidden'
-		return oDomRef ? oDomRef.offsetWidth > 0 || oDomRef.offsetHeight > 0 : false;
+		return oDomRef ? oDomRef.offsetWidth > 0 && oDomRef.offsetHeight > 0 : false;
 	};
 
 	/**
@@ -427,9 +428,10 @@ function(
 
 	/**
 	 * Inserts <style/> tag width specified styles into #overlay-container
-	 * @param {string} sStyles - string with plain CSS to be rendered into the page
+	 * @param {string} sStyles - Plain CSS as a string to be added into the page
+	 * @param {HTMLElement} oTarget - Target DOM Node where to add <style> tag with CSS
 	 */
-	DOMUtil.insertStyles = function (sStyles) {
+	DOMUtil.insertStyles = function (sStyles, oTarget) {
 		var oStyle = document.createElement('style');
 		oStyle.type = 'text/css';
 
@@ -439,8 +441,7 @@ function(
 			oStyle.appendChild(document.createTextNode(sStyles));
 		}
 
-		// FIXME: we can't use Overlay module because of the cycled dependency
-		jQuery('#overlay-container').prepend(oStyle);
+		jQuery(oTarget).prepend(oStyle);
 	};
 
 	DOMUtil.contains = function (sId, oTargetNode) {

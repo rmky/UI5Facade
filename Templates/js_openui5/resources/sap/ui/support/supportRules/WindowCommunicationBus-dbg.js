@@ -21,7 +21,7 @@ function (jQuery) {
 	 * @name sap.ui.support.WindowCommunicationBus
 	 * @memberof sap.ui.support
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @private
 	 */
 	var CommunicationBus = {
@@ -106,10 +106,10 @@ function (jQuery) {
 	 * @private
 	 * @static
 	 * @method
-	 * @name sap.ui.support.WindowCommunicationBus.destroyChanels
+	 * @name sap.ui.support.WindowCommunicationBus.destroyChannels
 	 * @memberof sap.ui.support.WindowCommunicationBus
 	 */
-	CommunicationBus.destroyChanels = function () {
+	CommunicationBus.destroyChannels = function () {
 		CommunicationBus.channels = {};
 	};
 

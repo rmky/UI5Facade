@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.56.6"
+      "version": "1.60.1"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -22,13 +22,13 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.56",
+      "minUI5Version": "1.60",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.56.6"
+          "minVersion": "1.60.1"
         },
         "sap.ui.unified": {
-          "minVersion": "1.56.6",
+          "minVersion": "1.60.1",
           "lazy": true
         }
       }
@@ -118,6 +118,9 @@
           "sap.m.ObjectMarker",
           "sap.m.ObjectNumber",
           "sap.m.ObjectStatus",
+          "sap.m.OnePersonCalendar",
+          "sap.m.OnePersonGrid",
+          "sap.m.OnePersonHeader",
           "sap.m.OverflowToolbar",
           "sap.m.OverflowToolbarButton",
           "sap.m.OverflowToolbarToggleButton",
@@ -197,12 +200,14 @@
           "sap.m.WizardStep"
         ],
         "elements": [
+          "sap.m.CalendarAppointment",
           "sap.m.Column",
           "sap.m.FlexItemData",
           "sap.m.FeedListItemAction",
           "sap.m.IconTabFilter",
           "sap.m.IconTabSeparator",
           "sap.m.LightBoxItem",
+          "sap.m.OnePersonView",
           "sap.m.OverflowToolbarLayoutData",
           "sap.m.MaskInputRule",
           "sap.m.MenuItem",
@@ -264,7 +269,7 @@
           "sap.m.BackgroundDesign",
           "sap.m.BarDesign",
           "sap.m.ButtonType",
-          "sap.m.CarouselArrowsAlign",
+          "sap.m.CarouselArrowsPlacement",
           "sap.m.DateTimeInputType",
           "sap.m.DialogType",
           "sap.m.DeviationIndicator",
@@ -302,6 +307,7 @@
           "sap.m.P13nPanelType",
           "sap.m.PageBackgroundDesign",
           "sap.m.PanelAccessibleRole",
+          "sap.m.PDFViewerDisplayType",
           "sap.m.PlacementType",
           "sap.m.PopinDisplay",
           "sap.m.PopinLayout",
@@ -317,7 +323,7 @@
           "sap.m.SwipeDirection",
           "sap.m.SwitchType",
           "sap.m.TimePickerMaskMode",
-          "sap.m.TileSizeBehaviour",
+          "sap.m.TileSizeBehavior",
           "sap.m.ToolbarDesign",
           "sap.m.VerticalPlacementType",
           "sap.m.semantic.SemanticRuleSetType"
@@ -331,7 +337,8 @@
           "sap.m.semantic.IFilter",
           "sap.m.semantic.ISort",
           "sap.m.ObjectHeaderContainer",
-          "sap.m.IOverflowToolbarContent"
+          "sap.m.IOverflowToolbarContent",
+          "sap.m.IHyphenation"
         ]
       }
     }

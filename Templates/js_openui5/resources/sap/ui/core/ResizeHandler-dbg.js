@@ -5,12 +5,17 @@
  */
 
 // Provides class sap.ui.core.ResizeHandler
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'jquery.sap.act', 'jquery.sap.script'],
-	function(jQuery, BaseObject/* , jQuerySap1, jQuerySap */) {
+sap.ui.define([
+	'sap/ui/base/Object',
+	"sap/base/Log",
+	"sap/ui/util/ActivityDetection",
+	"sap/ui/thirdparty/jquery"
+],
+	function(BaseObject, Log, ActivityDetection, jQuery) {
 	"use strict";
 
 	// local logger, by default only logging errors
-	var log = jQuery.sap.log.getLogger("sap.ui.core.ResizeHandler", jQuery.sap.log.Level.ERROR);
+	var log = Log.getLogger("sap.ui.core.ResizeHandler", Log.Level.ERROR);
 
 	/**
 	 * Reference to the Core (implementation view, not facade)
@@ -26,7 +31,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'jquery.sap.act', 'jqu
 	 * @alias sap.ui.core.ResizeHandler
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @public
 	 */
 
@@ -47,7 +52,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'jquery.sap.act', 'jqu
 
 			jQuery(window).bind("unload", this.fDestroyHandler);
 
-			jQuery.sap.act.attachActivate(initListener, this);
+			ActivityDetection.attachActivate(initListener, this);
 		}
 
 	});
@@ -74,7 +79,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'jquery.sap.act', 'jqu
 	 * @private
 	 */
 	ResizeHandler.prototype.destroy = function(oEvent) {
-		jQuery.sap.act.detachActivate(initListener, this);
+		ActivityDetection.detachActivate(initListener, this);
 		jQuery(window).unbind("unload", this.fDestroyHandler);
 		oCoreRef = null;
 		this.aResizeListeners = [];
@@ -185,7 +190,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'jquery.sap.act', 'jqu
 			ResizeHandler._keepActive = false;
 		}
 
-		if (!jQuery.sap.act.isActive() && !ResizeHandler._keepActive) {
+		if (!ActivityDetection.isActive() && !ResizeHandler._keepActive) {
 			clearListener.call(this);
 		}
 	};

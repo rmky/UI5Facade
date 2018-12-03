@@ -5,8 +5,12 @@
  */
 
 // Provides class sap.ui.core.support.plugins.Performance
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
-	function (jQuery, Plugin) {
+sap.ui.define([
+	'sap/ui/core/support/Plugin',
+	"sap/ui/performance/Measurement",
+	"sap/base/security/encodeXML"
+],
+	function(Plugin, Measurement, encodeXML) {
 		"use strict";
 
 		var _rawdata = [];
@@ -51,7 +55,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
 		 * With this plugIn the performance measurements are displayed
 		 *
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @private
 		 * @alias sap.ui.core.support.plugins.Performance
 		 */
@@ -112,7 +116,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
 
 		function getPerformanceData(oSupportStub) {
 			//var bActive = jQuery.sap.measure.getActive();
-			var aMeasurements = jQuery.sap.measure.getAllMeasurements(true);
+			var aMeasurements = Measurement.getAllMeasurements(true);
 
 			this._oStub.sendEvent(this.getId() + "SetMeasurements", {"measurements": aMeasurements});
 		}
@@ -147,7 +151,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
 		 * @private
 		 */
 		Performance.prototype.onsapUiSupportPerfClear = function (oEvent) {
-			jQuery.sap.measure.clear();
+			Measurement.clear();
 			this._oStub.sendEvent(this.getId() + "SetMeasurements", {"measurements": []});
 		};
 
@@ -158,7 +162,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
 		 * @private
 		 */
 		Performance.prototype.onsapUiSupportPerfStart = function (oEvent) {
-			jQuery.sap.measure.start(this.getId() + "-perf", "Measurement by support tool");
+			Measurement.start(this.getId() + "-perf", "Measurement by support tool");
 		};
 
 		/**
@@ -168,7 +172,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
 		 * @private
 		 */
 		Performance.prototype.onsapUiSupportPerfEnd = function (oEvent) {
-			jQuery.sap.measure.end(this.getId() + "-perf");
+			Measurement.end(this.getId() + "-perf");
 			getPerformanceData.call(this);
 		};
 
@@ -179,7 +183,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
 		 * @private
 		 */
 		Performance.prototype.onsapUiSupportPerfActivate = function (oEvent) {
-			jQuery.sap.measure.setActive(true);
+			Measurement.setActive(true);
 		};
 
 		/* =============================================================================================================
@@ -575,7 +579,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
 		}
 
 		function _getBarTitle(bar) {
-			return jQuery.sap.escapeHTML(bar.info + '\nduration: ' + bar.duration.toFixed(2) + ' ms. \ntime: ' + bar.time.toFixed(2) + ' ms. \nstart: ' + bar.start.toFixed(2) + ' ms.\nend: ' + bar.end.toFixed(2) + ' ms.');
+			return encodeXML(bar.info + '\nduration: ' + bar.duration.toFixed(2) + ' ms. \ntime: ' + bar.time.toFixed(2) + ' ms. \nstart: ' + bar.start.toFixed(2) + ' ms.\nend: ' + bar.end.toFixed(2) + ' ms.');
 		}
 
 		function _formatInfo(bar) {
@@ -585,7 +589,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
 			barInfo = barInfo.substring(barInfo.lastIndexOf('sap.m.'), barInfo.length);
 			barInfo = barInfo.replace('Rendering of ', '');
 
-			return jQuery.sap.escapeHTML(barInfo);
+			return encodeXML(barInfo);
 		}
 
 		function _getBarClassType(category) {
@@ -602,7 +606,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
 			}
 
 			//escaping is not needed
-			return jQuery.sap.escapeHTML(className);
+			return encodeXML(className);
 		}
 
 		function _getBarColor(time) {
@@ -809,7 +813,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/support/Plugin'],
 			var allCategories = _getBarCategories(_rawdata);
 
 			allCategories.forEach(function (category) {
-				category = jQuery.sap.escapeHTML(category);
+				category = encodeXML(category);
 				categoriesHTML += '<label title="' + category + '"><input class="' + _getBarClassType(category) + '" checked type="checkbox" name="' + category + '" />' + category + '</label>';
 			});
 

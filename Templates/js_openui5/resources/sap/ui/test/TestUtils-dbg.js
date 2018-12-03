@@ -5,12 +5,12 @@
  */
 
 sap.ui.define([
-		"jquery.sap.global",
-		"sap/ui/core/Core",
-		"sap/ui/thirdparty/URI",
-		"jquery.sap.script",
-		"jquery.sap.sjax"
-], function(jQuery, Core, URI/*, jQuerySapScript, jQuerySapSjax */) {
+	"jquery.sap.sjax",
+	"sap/base/Log",
+	"sap/base/util/UriParameters",
+	"sap/ui/core/Core",
+	"sap/ui/thirdparty/URI"
+], function (jQuery, Log, UriParameters, Core, URI) {
 	"use strict";
 	/*global QUnit, sinon */
 	// Note: The dependency to Sinon.JS has been omitted deliberately. Most test files load it via
@@ -21,14 +21,20 @@ sap.ui.define([
 		mMessageForPath = {}, // a cache for files, see useFakeServer
 		sMimeHeaders = "\r\nContent-Type: application/http\r\n"
 			+ "Content-Transfer-Encoding: binary\r\n\r\nHTTP/1.1 ",
-		sRealOData = jQuery.sap.getUriParameters().get("realOData"),
+		oUriParameters = new UriParameters(window.location.href),
+		sAutoRespondAfter = oUriParameters.get("autoRespondAfter"),
+		sRealOData = oUriParameters.get("realOData"),
+		rRequestKey = /^(\S+) (\S+)$/,
 		rRequestLine = /^(GET|DELETE|PATCH|POST) (\S+) HTTP\/1\.1$/,
 		mData = {},
 		bProxy = sRealOData === "true" || sRealOData === "proxy",
 		bRealOData = bProxy || sRealOData === "direct",
+		bSupportAssistant = oUriParameters.get("supportAssistant") === "true",
 		TestUtils,
 		sV2VersionKey = "DataServiceVersion",
-		sV4VersionKey = "OData-Version";
+		sV2VersionKeyLower = sV2VersionKey.toLowerCase(),
+		sV4VersionKey = "OData-Version",
+		sV4VersionKeyLower = sV4VersionKey.toLowerCase();
 
 	if (bRealOData) {
 		document.title = document.title + " (real OData)";
@@ -40,9 +46,9 @@ sap.ui.define([
 	 *
 	 * @param {object} oActual
 	 *   the actual value to be tested
-	 * @param {object} oExpected
+	 * @param {object|RegExp} oExpected
 	 *   the expected value which needs to be contained structurally (as a subset) within the
-	 *   actual value
+	 *   actual value, or a regular expression which must match the actual string(!) value
 	 * @param {string} sPath
 	 *   path to the values under investigation
 	 * @throws {Error}
@@ -53,6 +59,14 @@ sap.ui.define([
 		var sActualType = QUnit.objectType(oActual),
 			sExpectedType = QUnit.objectType(oExpected),
 			sName;
+
+		if (sActualType === "string" && sExpectedType === "regexp") {
+			if (!oExpected.test(oActual)) {
+				throw new Error(sPath + ": actual value " + oActual
+					+ " does not match expected reg.exp. " + oExpected);
+			}
+			return;
+		}
 
 		if (sActualType !== sExpectedType) {
 			throw new Error(sPath + ": actual type " + sActualType
@@ -119,6 +133,29 @@ sap.ui.define([
 	 */
 	TestUtils = /** @lends sap.ui.test.TestUtils */ {
 		/**
+		 * If the UI5 core is dirty, the function returns a promise that waits until the rendering
+		 * is finished.
+		 *
+		 * @returns {Promise|undefined}
+		 *   An optional promise that is resolved when the UI5 core is no longer dirty
+		 */
+		awaitRendering : function () {
+			if (sap.ui.getCore().getUIDirty()) {
+				return new Promise(function (resolve) {
+					function check() {
+						if (sap.ui.getCore().getUIDirty()) {
+							setTimeout(check, 1);
+						} else {
+							resolve();
+						}
+					}
+
+					check();
+				});
+			}
+		},
+
+		/**
 		 * Companion to <code>QUnit.deepEqual</code> which only tests for the existence of expected
 		 * properties, not the absence of others.
 		 *
@@ -153,7 +190,7 @@ sap.ui.define([
 
 		/**
 		 * Activates a sinon fake server in the given sandbox. The fake server responds to those
-		 * GET requests given in the fixture, and to all DELETE, PATCH and POST requests regardless
+		 * requests given in the fixture, and to all DELETE, PATCH and POST requests regardless
 		 * of the path. It is automatically restored when the sandbox is restored.
 		 *
 		 * The function uses <a href="http://sinonjs.org/docs/">Sinon.js</a> and expects that it
@@ -162,15 +199,17 @@ sap.ui.define([
 		 * POST requests ending on "/$batch" are handled automatically. They are expected to be
 		 * multipart-mime requests where each part is a DELETE, GET, PATCH or POST request.
 		 * The response has a multipart-mime message containing responses to these inner requests.
-		 * If an inner request is not a DELETE, PATCH or POST with any URL,
-		 * a GET and its URL is not found in the fixture, or its message is not JSON, it is
-		 * responded with an error code. The batch itself is always responded with code 200.
+		 * If an inner request is not a DELETE, a PATCH or a POST and it is not found in the
+		 * fixture, or its message is not JSON, it is responded with an error code.
+		 * The batch itself is always responded with code 200.
 		 *
-		 * All other POST requests are responded with code 200, the body is simply echoed.
+		 * All other POST requests with no response in the fixture are responded with code 200, the
+		 * body is simply echoed.
 		 *
-		 * DELETE requests are always responded with code 204 ("No Data").
+		 * DELETE requests with no response in the fixture are responded with code 204 ("No Data").
 		 *
-		 * PATCH requests are always responded with 200, the body is simply echoed.
+		 * PATCH requests with no response in the fixture are responded with code 200, the body is
+		 * simply echoed.
 		 *
 		 * Note: $batch with multiple changesets are not supported
 		 *
@@ -181,8 +220,9 @@ sap.ui.define([
 		 *   project's test folder, typically it should start with "sap".
 		 *   Example: <code>"sap/ui/core/qunit/model"</code>
 		 * @param {map} mFixture
-		 *   The fixture. Each key represents a URL to respond to. The value is an object that may
-		 *   have the following properties:
+		 *   The fixture. Each key represents a method and a URL to respond to, in the form
+		 *   "METHOD URL". The method "GET" may be omitted. The value is an object that may have the
+		 *   following properties:
 		 *   <ul>
 		 *   <li>{number} <code>code</code>: The response code (<code>200</code> if not given)
 		 *   <li>{map} <code>headers</code>: A list of headers to set in the response
@@ -201,8 +241,8 @@ sap.ui.define([
 			 * @param {string} sServiceBase
 			 *   the service base URL
 			 * @param {map} mUrls
-			 *   a map from path (incl. service URL) to response data (an array with response code,
-			 *   headers, message)
+			 *   a map from "method path" (incl. service URL) to response data (an array with
+			 *   response code, headers, message)
 			 * @param {object} oRequest
 			 *   the Sinon request object
 			 */
@@ -222,38 +262,47 @@ sap.ui.define([
 					sRequestPart = sRequestPart.slice(sRequestPart.indexOf("\r\n\r\n") + 4);
 					sRequestLine = firstLine(sRequestPart);
 					aMatches = rRequestLine.exec(sRequestLine);
-					if (!aMatches) {
-						sResponse = notFound(sRequestLine);
-					} else if (aMatches[1] === "DELETE") {
-						sResponse = "204\r\n"
-							+ "Content-Length: 0\r\n"
-							+ convertToString(getVersionHeader(oRequestHeaders))
-							+ "\r\n\r\n";
-					} else if (aMatches[1] === "POST" || aMatches[1] === "PATCH") {
-						sResponse = "200\r\nContent-Type: " + sJson + "\r\n"
-							+ convertToString(getVersionHeader(oRequestHeaders))
-							+ "\r\n"
-							+ message(sRequestPart);
-					} else {
-						aResponse = mUrls[sServiceBase + aMatches[2]];
+					if (aMatches) {
+						aResponse = mUrls[aMatches[1] + " " + sServiceBase + aMatches[2]];
 						if (aResponse) {
 							try {
-								sResponse = "200\r\nContent-Type: " + sJson + "\r\n"
-									// set headers for single request within $batch
-									+ convertToString(getVersionHeader(oRequestHeaders,
+								sResponse = "200\r\nContent-Type: " + sJson + "\r\n";
+								Object.keys(aResponse[1]).forEach(function (sHeader) {
+									var sHeaderLower = sHeader.toLowerCase();
+
+									if (sHeaderLower === sV2VersionKeyLower
+											|| sHeaderLower === sV4VersionKeyLower) {
+										return; // version headers are handled below
+									}
+									sResponse += sHeader + ": " + aResponse[1][sHeader]
+										+ "\r\n";
+								});
+								// set headers for single request within $batch
+								sResponse += convertToString(getVersionHeader(oRequestHeaders,
 										aResponse[1]))
 									+ "\r\n"
 									+ JSON.stringify(JSON.parse(aResponse[2]))
 									+ "\r\n";
-								jQuery.sap.log.info(sRequestLine, null, "sap.ui.test.TestUtils");
+								Log.info(sRequestLine,
+									// log what's mocked?
+									sRealOData === "logMock" ? sResponse : null,
+									"sap.ui.test.TestUtils");
 							} catch (e) {
 								sResponse = error(sRequestLine, 500, "Invalid JSON");
 							}
-						} else {
-							sResponse = notFound(sRequestLine);
+						} else if (aMatches[1] === "PATCH" || aMatches[1] === "POST") {
+							sResponse = "200\r\nContent-Type: " + sJson + "\r\n"
+								+ convertToString(getVersionHeader(oRequestHeaders))
+								+ "\r\n"
+								+ message(sRequestPart);
+						} else if (aMatches[1] === "DELETE") {
+							sResponse = "204\r\n"
+								+ "Content-Length: 0\r\n"
+								+ convertToString(getVersionHeader(oRequestHeaders))
+								+ "\r\n\r\n";
 						}
 					}
-					aResponseParts.push(sMimeHeaders + sResponse);
+					aResponseParts.push(sMimeHeaders + (sResponse || notFound(sRequestLine)));
 				});
 				aResponseParts.push("--\r\n");
 				// take data service version also for complete batch from request headers
@@ -262,7 +311,7 @@ sap.ui.define([
 			}
 
 			function error(sRequestLine, iCode, sMessage) {
-				jQuery.sap.log.error(sRequestLine, sMessage, "sap.ui.test.TestUtils");
+				Log.error(sRequestLine, sMessage, "sap.ui.test.TestUtils");
 				return iCode + "\r\nContent-Type: text/plain\r\n\r\n" + sMessage + "\r\n";
 			}
 
@@ -273,12 +322,14 @@ sap.ui.define([
 				var oHeaders,
 					sMessage,
 					oResponse,
+					oResponseHeaders,
 					sUrl,
 					mUrls = {};
 
 				for (sUrl in mFixture) {
 					oResponse = mFixture[sUrl];
 					oHeaders = oResponse.headers || {};
+					oResponseHeaders = oResponse.responseHeaders || {};
 					if (oResponse.source) {
 						sMessage = readMessage(sBase + oResponse.source);
 						oHeaders["Content-Type"] = oHeaders["Content-Type"]
@@ -286,7 +337,10 @@ sap.ui.define([
 					} else {
 						sMessage = oResponse.message || "";
 					}
-					mUrls[sUrl] = [oResponse.code || 200, oHeaders, sMessage];
+					if (!sUrl.includes(" ")) {
+						sUrl = "GET " + sUrl;
+					}
+					mUrls[sUrl] = [oResponse.code || 200, oHeaders, sMessage, oResponseHeaders];
 				}
 				return mUrls;
 			}
@@ -332,7 +386,7 @@ sap.ui.define([
 			/*
 			 * Get the header for the OData service version from the given request and response
 			 * headers. First checks the given response headers and then the given request headers
-			 * if either "OData-Version" or "ODataServiceVersion" header is contained
+			 * if either "OData-Version" or "DataServiceVersion" header is contained
 			 * (case-insensitive) and returns the found header key and header value as an array.
 			 *
 			 * @param {object} oRequestHeaders The request headers
@@ -422,11 +476,16 @@ sap.ui.define([
 					}
 
 				}
+				Log.info(oRequest.url,
+					// log what's mocked?
+					sRealOData === "logMock" ? aResponseData[2] : null,
+					"sap.ui.test.TestUtils");
 				oRequest.respond(aResponseData[0], oResponseHeaders, aResponseData[2]);
 			}
 
 			function setupServer() {
-				var fnRestore,
+				var aParts,
+					fnRestore,
 					oServer,
 					mUrls = buildResponses(),
 					sUrl;
@@ -435,9 +494,13 @@ sap.ui.define([
 				oServer = sinon.fakeServer.create();
 				oSandbox.add(oServer);
 				oServer.autoRespond = true;
+				if (sAutoRespondAfter) {
+					oServer.autoRespondAfter = parseInt(sAutoRespondAfter, 10);
+				}
 
 				for (sUrl in mUrls) {
-					oServer.respondWith("GET", sUrl, respond.bind(null, mUrls[sUrl]));
+					aParts = sUrl.split(" ");
+					oServer.respondWith(aParts[0], aParts[1], respond.bind(null, mUrls[sUrl]));
 				}
 				oServer.respondWith("DELETE", /.*/, respond.bind(null, [204, {}, ""]));
 				// Empty response for HEAD request to retrieve security token
@@ -462,12 +525,12 @@ sap.ui.define([
 				sinon.FakeXMLHttpRequest.addFilter(function (sMethod, sUrl) {
 					// must return true if the request is NOT processed by the fake server
 					return sMethod !== "DELETE" && sMethod !== "HEAD" && sMethod !== "PATCH"
-						&& sMethod !== "POST" && !(sMethod === "GET" && sUrl in mUrls);
+						&& sMethod !== "POST" && !(sMethod + " " + sUrl in mUrls);
 				});
 			}
 
 			// ensure to always search the fake data in test-resources, remove cache buster token
-			sBase = jQuery.sap.getResourcePath(sBase)
+			sBase = sap.ui.require.toUrl(sBase)
 				.replace(/(^|\/)resources\/(~[-a-zA-Z0-9_.]*~\/)?/, "$1test-resources/") + "/";
 			setupServer();
 
@@ -555,6 +618,14 @@ sap.ui.define([
 		},
 
 		/**
+		 * @returns {boolean}
+		 *   <code>true</code> if the support assistant shall be used.
+		 */
+		isSupportAssistant : function () {
+			return bSupportAssistant;
+		},
+
+		/**
 		 * Returns the realOData query parameter so that it can be forwarded to an embedded test
 		 *
 		 * @returns {string}
@@ -595,7 +666,7 @@ sap.ui.define([
 			if (!bProxy) {
 				return sAbsolutePath;
 			}
-			sProxyUrl = jQuery.sap.getResourcePath("sap/ui").replace("resources/sap/ui", "proxy");
+			sProxyUrl = sap.ui.require.toUrl("sap/ui").replace("resources/sap/ui", "proxy");
 			return new URI(sProxyUrl + sAbsolutePath, TestUtils.getBaseUri()).pathname().toString();
 		},
 
@@ -667,9 +738,22 @@ sap.ui.define([
 			} else if (sFilterBase.slice(-1) !== "/") {
 				sFilterBase += "/";
 			}
-			Object.keys(mFixture).forEach(function (sUrl) {
-				var sAbsoluteUrl = sUrl[0] === "/" ? sUrl : sFilterBase + sUrl;
-				mResultingFixture[sAbsoluteUrl] = mFixture[sUrl];
+			Object.keys(mFixture).forEach(function (sRequest) {
+				var aMatches = rRequestKey.exec(sRequest),
+					sMethod,
+					sUrl;
+
+				if (aMatches) {
+					sMethod = aMatches[1] || "GET";
+					sUrl = aMatches[2];
+				} else {
+					sMethod = "GET";
+					sUrl = sRequest;
+				}
+				if (!sUrl.startsWith("/")) {
+					sUrl = sFilterBase + sUrl;
+				}
+				mResultingFixture[sMethod + " " + sUrl] = mFixture[sRequest];
 			});
 			TestUtils.useFakeServer(oSandbox, sSourceBase || "sap/ui/core/qunit/odata/v4/data",
 				mResultingFixture);

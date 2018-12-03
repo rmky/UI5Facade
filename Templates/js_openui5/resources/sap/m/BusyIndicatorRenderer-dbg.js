@@ -33,13 +33,7 @@ sap.ui.define([],
 	};
 
 	BusyIndicatorRenderer.startBusyIndicator = function (oRm, oBusyInd) {
-		var mAccState = {
-			role: "progressbar",
-			valuemin: "0",
-			valuemax: "100"
-		};
-
-		oRm.write("<div tabindex='0' ");
+		oRm.write("<div ");
 		oRm.writeControlData(oBusyInd);
 
 		oRm.addClass("sapMBusyIndicator");
@@ -48,7 +42,7 @@ sap.ui.define([],
 		oRm.addStyle("font-size", oBusyInd.getSize());
 		oRm.writeStyles();
 
-		oRm.writeAccessibilityState(oBusyInd, mAccState);
+		oRm.writeAccessibilityState(oBusyInd);
 		this.renderTooltip(oRm, oBusyInd.getTooltip_AsString());
 
 		oRm.write(">");

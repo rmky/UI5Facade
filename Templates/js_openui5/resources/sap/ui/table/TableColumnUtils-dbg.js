@@ -5,8 +5,8 @@
  */
 
 // Provides helper sap.ui.table.TableUtils.
-sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
-	function(jQuery, Device, library) {
+sap.ui.define(['sap/ui/Device', './library', "sap/base/Log"],
+	function(Device, library, Log) {
 		"use strict";
 
 		/**
@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Column...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @namespace
 		 * @alias sap.ui.table.TableColumnUtils
 		 * @private
@@ -161,7 +161,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 				TableColumnUtils.initColumnUtils(oTable);
 				var oSourceColumnMapItem = oTable._oColumnInfo.columnMap[sColumnId];
 				if (!oSourceColumnMapItem) {
-					jQuery.sap.log.error("Column with ID '" + sColumnId + "' not found", oTable);
+					Log.error("Column with ID '" + sColumnId + "' not found", oTable);
 				} else {
 					return oSourceColumnMapItem;
 				}
@@ -507,8 +507,20 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 				}
 
 				oTable._bReorderInProcess = true;
-				oTable.removeColumn(oColumn);
+
+				/* The AnalyticalBinding does not support calls like:
+				 * oBinding.updateAnalyticalInfo(...);
+				 * oBinding.getContexts(...);
+				 * oBinding.updateAnalyticalInfo(...);
+				 * oBinding.getContexts(...);
+				 * A call chain like above can lead to some problems:
+				 * - A request according to the analytical info passed in line 1 would be sent, but not for the info in line 3.
+				 * - After the change event (updateRows) the binding returns an incorrect length of 0.
+				 * The solution is to only trigger a request at the end of a process.
+				 */
+				oTable.removeColumn(oColumn, true);
 				oTable.insertColumn(oColumn, iNewIndex);
+
 				oTable._bReorderInProcess = false;
 
 				return true;

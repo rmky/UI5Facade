@@ -14,7 +14,7 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.core",
-		version: "1.56.6",
+		version: "1.60.1",
 		designtime: "sap/ui/core/designtime/library.designtime",
 		types: [
 
@@ -146,7 +146,7 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 	 * @namespace
 	 * @alias sap.ui.core
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @public
 	 */
 	var thisLib = sap.ui.core;
@@ -600,7 +600,7 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 
 	/**
 	 * Defines the accessible landmark roles for ARIA support. This enumeration is used with the AccessibleRole control property.
-	 * For more information, goto "Roles for Accessible Rich Internet Applications (WAI-ARIA Roles)" at the www.w3.org homepage.
+	 * For more information, go to "Roles for Accessible Rich Internet Applications (WAI-ARIA Roles)" at the www.w3.org homepage.
 	 *
 	 * @enum {string}
 	 * @public
@@ -670,7 +670,25 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 		 *
 		 * @public
 		 */
-		Complementary : "Complementary"
+		Complementary : "Complementary",
+
+		/**
+		 * Represents the ARIA role <code>form</code>.
+		 *
+		 * A region that contains a collection of items and objects that, as a whole, combine to create a form.
+		 *
+		 * @public
+		 */
+		Form : "Form",
+
+		/**
+		 * Represents the ARIA role <code>contentinfo</code>.
+		 *
+		 * A region that contains information about the content on the page.
+		 *
+		 * @public
+		 */
+		ContentInfo : "ContentInfo"
 
 	};
 
@@ -773,7 +791,13 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 		 * The Persian Jalali calendar
 		 * @public
 		 */
-		Persian: "Persian"
+		Persian: "Persian",
+
+		/**
+		 * The Thai buddhist calendar
+		 * @public
+		 */
+		Buddhist: "Buddhist"
 	};
 
 	/**
@@ -1070,7 +1094,13 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 		 * Neutral color.
 		 * @public
 		 */
-		Neutral : "Neutral"
+		Neutral : "Neutral",
+
+		/**
+		 * Contrast color.
+		 * @public
+		 */
+		Contrast : "Contrast"
 
 	};
 
@@ -1634,6 +1664,12 @@ sap.ui.define(['sap/ui/base/DataType', './Core'],
 		 * @public
 		 */
 		Success : "Success",
+
+		/**
+		 * State is informative.
+		 * @public
+		 */
+		Information : "Information",
 
 		/**
 		 * State is not specified.

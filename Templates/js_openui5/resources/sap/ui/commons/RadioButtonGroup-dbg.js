@@ -30,7 +30,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -581,6 +581,8 @@ sap.ui.define([
 				this.aRBs[i].setEditable(bEditable);
 			}
 		}
+
+		return this;
 	};
 
 	/*
@@ -597,6 +599,7 @@ sap.ui.define([
 			}
 		}
 
+		return this;
 	};
 
 	/*
@@ -612,6 +615,8 @@ sap.ui.define([
 				this.aRBs[i].setValueState(sValueState);
 			}
 		}
+
+		return this;
 	};
 
 	/*

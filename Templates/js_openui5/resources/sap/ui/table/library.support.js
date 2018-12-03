@@ -6,14 +6,22 @@
 /**
  * Adds support rules of the sap.ui.table library to the support infrastructure.
  */
-sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "sap/ui/support/supportRules/RuleSet", "./rules/TableHelper.support", 'sap/ui/Device'],
-	function(jQuery, SupportLib, Ruleset, SupportHelper, Device) {
+sap.ui.define([
+	"sap/ui/support/library",
+	"sap/ui/support/supportRules/RuleSet",
+	"./rules/TableHelper.support",
+	"sap/ui/Device",
+	"sap/ui/table/library",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+], function(SupportLib, Ruleset, SupportHelper, Device, TableLib, Log, jQuery) {
 	"use strict";
 
 	// shortcuts
 	var Categories = SupportLib.Categories, // Accessibility, Performance, Memory, ...
-		Severity = SupportLib.Severity;	// Hint, Warning, Error
+		Severity = SupportLib.Severity,	// Hint, Warning, Error
 		//Audiences = SupportLib.Audiences; // Control, Internal, Application
+		VisibleRowCountMode = TableLib.VisibleRowCountMode;
 
 	var oLib = {
 		name: "sap.ui.table",
@@ -40,16 +48,16 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "sap/ui/support/su
 	 *
 	 * @param {function} fnDoCheck Callback
 	 * @param {object} oScope The scope as given in the rule check function.
-	 * @param {string} [sType] If given an additional type check is performed. Module syntax required!
+	 * @param {string} [sType] If given an additional type check is performed.
 	 */
 	function checkColumnTemplate(fnDoCheck, oScope, sType) {
-		var aTables = SupportHelper.find(oScope, true, "sap/ui/table/Table");
+		var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
 		var aColumns, oTemplate;
 		for (var i = 0; i < aTables.length; i++) {
 			aColumns = aTables[i].getColumns();
 			for (var k = 0; k < aColumns.length; k++) {
 				oTemplate = aColumns[k].getTemplate();
-				if (oTemplate && (!sType || SupportHelper.isInstanceOf(oTemplate, sType))) {
+				if (oTemplate && oTemplate.isA(sType)) {
 					fnDoCheck(aTables[i], aColumns[k], oTemplate);
 				}
 			}
@@ -99,8 +107,16 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "sap/ui/support/su
 			if ($Condensed.length > 0) {
 				var bFound = checkDensity($Condensed, ".sapUiSizeCompact");
 				if (!bFound) {
-					SupportHelper.reportIssue(oIssueManager, "'Condensed' content density must be used in combination with 'Compact'.", Severity.High);
+					SupportHelper.reportIssue(oIssueManager, "'Condensed' content density must be used in combination with 'Compact'.",
+											  Severity.High);
 				}
+			}
+
+			if (sap.ui.getCore().getLoadedLibraries()["sap.m"] && $Cozy.length === 0 && $Compact.length === 0 && $Condensed.length === 0) {
+				SupportHelper.reportIssue(oIssueManager,
+										  "If the sap.ui.table and the sap.m libraries are used together, a content density must be specified.",
+										  Severity.High
+				);
 			}
 		}
 	});
@@ -116,7 +132,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "sap/ui/support/su
 		description : "Checks whether 'sap.ui.table.Table' controls have an accessible label.",
 		resolution : "Use the 'title' aggregation or the 'ariaLabelledBy' association of the 'sap.ui.table.Table' control to define a proper accessible labeling.",
 		check : function(oIssueManager, oCoreFacade, oScope) {
-			var aTables = SupportHelper.find(oScope, true, "sap/ui/table/Table");
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
 			for (var i = 0; i < aTables.length; i++) {
 				if (!aTables[i].getTitle() && aTables[i].getAriaLabelledBy().length == 0) {
 					SupportHelper.reportIssue(oIssueManager, "Table '" + aTables[i].getId() + "' does not have an accessible label.", Severity.High, aTables[i].getId());
@@ -141,7 +157,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "sap/ui/support/su
 					var sId = oColumn.getId();
 					SupportHelper.reportIssue(oIssueManager, "Column '" + sId + "' of table '" + oTable.getId() + "' uses decorative 'sap.ui.core.Icon' control.", Severity.High, sId);
 				}
-			}, oScope, "sap/ui/core/Icon");
+			}, oScope, "sap.ui.core.Icon");
 		}
 	});
 
@@ -165,7 +181,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "sap/ui/support/su
 					var sColumnId = oColumn.getId();
 					SupportHelper.reportIssue(oIssueManager, "Column '" + sColumnId + "' of table '" + oTable.getId() + "' uses an 'sap.m.Text' control with renderWhitespace enabled.", Severity.High, sColumnId);
 				}
-			}, oScope, "sap/m/Text");
+			}, oScope, "sap.m.Text");
 		}
 	});
 
@@ -185,7 +201,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "sap/ui/support/su
 					var sColumnId = oColumn.getId();
 					SupportHelper.reportIssue(oIssueManager, "Column '" + sColumnId + "' of table '" + oTable.getId() + "' uses an 'sap.m.Link' control with wrapping enabled.", Severity.High, sColumnId);
 				}
-			}, oScope, "sap/m/Link");
+			}, oScope, "sap.m.Link");
 		}
 	});
 
@@ -200,13 +216,13 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "sap/ui/support/su
 		description : "The analytical service returns duplicate IDs. This could also lead to many requests, but the analytical service expects to receive just one record",
 		resolution : "Adjust the service implementation.",
 		check : function(oIssueManager, oCoreFacade, oScope) {
-			var aTables = SupportHelper.find(oScope, true, "sap/ui/table/AnalyticalTable");
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.AnalyticalTable");
 			var sAnalyticalErrorId = "NO_DEVIATING_UNITS";
 			var oIssues = {};
 
 			SupportHelper.checkLogEntries(function(oLogEntry) {
 				// Filter out totally irrelevant issues
-				if (oLogEntry.level != jQuery.sap.log.Level.ERROR && oLogEntry.level != jQuery.sap.log.Level.FATAL) {
+				if (oLogEntry.level != Log.Level.ERROR && oLogEntry.level != Log.Level.FATAL) {
 					return false;
 				}
 				var oInfo = oLogEntry.supportInfo;
@@ -248,7 +264,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "sap/ui/support/su
 			{text: "SAP Fiori Design Guidelines: Grid Table", href: "https://experience.sap.com/fiori-design-web/grid-table/"}
 		],
 		check: function(oIssueManager, oCoreFacade, oScope) {
-			var aTables = SupportHelper.find(oScope, true, "sap/ui/table/Table");
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
 			var aVisibleRows;
 			var fActualRowHeight;
 			var iExpectedRowHeight;
@@ -286,6 +302,50 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library", "sap/ui/support/su
 						}
 					}
 				}
+			}
+		}
+	});
+
+	/*
+	 * Checks the configuration of the sap.f.DynamicPage. If the DynamicPage contains a table with <code>visibleRowCountMode=Auto</code>, the
+	 * <code>fitContent</code> property of the DynamicPage should be set to true, otherwise false.
+	 */
+	createRule({
+		id: "DynamicPageConfiguration",
+		categories: [Categories.Usage],
+		title: "Table environment validation - 'sap.f.DynamicPage'",
+		description: "Verifies that the DynamicPage is configured correctly from the table's perspective.",
+		resolution: "If a table with visibleRowCountMode=Auto is placed inside a sap.f.DynamicPage, the fitContent property of the DynamicPage"
+					+ " should be set to true, otherwise false.",
+		resolutionurls: [
+			SupportHelper.createDocuRef("API Reference: sap.f.DynamicPage#getFitContent", "#/api/sap.f.DynamicPage/methods/getFitContent")
+		],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
+
+			function checkAllParentDynamicPages(oControl, fnCheck) {
+				if (oControl) {
+					if (oControl.isA("sap.f.DynamicPage")) {
+						fnCheck(oControl);
+					}
+					checkAllParentDynamicPages(oControl.getParent(), fnCheck);
+				}
+			}
+
+			function checkConfiguration(oTable, oDynamicPage) {
+				if (oTable.getVisibleRowCountMode() === VisibleRowCountMode.Auto && !oDynamicPage.getFitContent()) {
+					SupportHelper.reportIssue(oIssueManager,
+						"A table with visibleRowCountMode=\"Auto\" is placed inside a sap.f.DynamicPage with fitContent=\"false\"",
+						Severity.High, oTable.getId());
+				} else if (oTable.getVisibleRowCountMode() !== VisibleRowCountMode.Auto && oDynamicPage.getFitContent()) {
+					SupportHelper.reportIssue(oIssueManager,
+						"A table with visibleRowCountMode=\"Fixed|Interactive\" is placed inside a sap.f.DynamicPage with fitContent=\"true\"",
+						Severity.Low, oTable.getId());
+				}
+			}
+
+			for (var i = 0; i < aTables.length; i++) {
+				checkAllParentDynamicPages(aTables[i], checkConfiguration.bind(null, aTables[i]));
 			}
 		}
 	});

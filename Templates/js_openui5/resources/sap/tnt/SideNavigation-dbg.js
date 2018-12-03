@@ -6,16 +6,14 @@
 
 // Provides control sap.t.SideNavigation.
 sap.ui.define([
-    'jquery.sap.global',
-    './library',
-    'sap/ui/core/Control',
-    'sap/ui/core/ResizeHandler',
-    'sap/ui/core/Icon',
-    'sap/ui/core/delegate/ScrollEnablement',
-    "./SideNavigationRenderer"
+	'./library',
+	'sap/ui/core/Control',
+	'sap/ui/core/ResizeHandler',
+	'sap/ui/core/Icon',
+	'sap/ui/core/delegate/ScrollEnablement',
+	"./SideNavigationRenderer"
 ],
 	function(
-	    jQuery,
 		library,
 		Control,
 		ResizeHandler,
@@ -42,7 +40,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -164,6 +162,9 @@ sap.ui.define([
 				if (that.getAggregation('fixedItem')) {
 					that.getAggregation('fixedItem').setExpanded(isExpanded);
 				}
+			} else {
+				// hide scroller during collapsing animation
+				this._scroller.setVertical(false);
 			}
 
 			that._hasActiveAnimation = true;
@@ -203,12 +204,16 @@ sap.ui.define([
 				if (this.getAggregation('fixedItem')) {
 					this.getAggregation('fixedItem').setExpanded(isExpanded);
 				}
+
+				// enable back the scroller after collapsing animation
+				this._scroller.setVertical(true);
 			}
 
 			this.$().css('width', '');
 			this._hasActiveAnimation = false;
 
-			this._toggleArrows();
+			// wait for any re-rendering after the animation, before calling toggle arrows
+			setTimeout(this._toggleArrows.bind(this), 0);
 		};
 
 		/**

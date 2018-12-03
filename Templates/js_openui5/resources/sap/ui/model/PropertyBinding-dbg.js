@@ -5,8 +5,14 @@
  */
 
 // Provides an abstract property binding.
-sap.ui.define(['jquery.sap.global', './Binding', './SimpleType','./DataState'],
-	function(jQuery, Binding, SimpleType, DataState) {
+sap.ui.define([
+	'./Binding',
+	'./SimpleType',
+	'./DataState',
+	"sap/base/Log",
+	"sap/base/assert"
+],
+	function(Binding, SimpleType, DataState, Log, assert) {
 	"use strict";
 
 
@@ -112,7 +118,7 @@ sap.ui.define(['jquery.sap.global', './Binding', './SimpleType','./DataState'],
 	PropertyBinding.prototype.setExternalValue = function(oValue) {
 		// formatter doesn't support two way binding
 		if (this.fnFormatter) {
-			jQuery.sap.log.warning("Tried to use twoway binding, but a formatter function is used");
+			Log.warning("Tried to use twoway binding, but a formatter function is used");
 			return;
 		}
 
@@ -150,7 +156,7 @@ sap.ui.define(['jquery.sap.global', './Binding', './SimpleType','./DataState'],
 		if (this.oType && oValue !== null && oValue !== undefined) {
 			oFormat = this.oType.getModelFormat();
 
-			jQuery.sap.assert(oFormat && typeof oFormat.parse === "function", "The input format of " + this.oType + " should be an object with the 'parse' method");
+			assert(oFormat && typeof oFormat.parse === "function", "The input format of " + this.oType + " should be an object with the 'parse' method");
 			return oFormat.parse(oValue);
 		}
 
@@ -170,7 +176,7 @@ sap.ui.define(['jquery.sap.global', './Binding', './SimpleType','./DataState'],
 		var oFormat;
 		// formatter doesn't support two way binding
 		if (this.fnFormatter) {
-			jQuery.sap.log.warning("Tried to use twoway binding, but a formatter function is used");
+			Log.warning("Tried to use twoway binding, but a formatter function is used");
 			return;
 		}
 
@@ -179,7 +185,7 @@ sap.ui.define(['jquery.sap.global', './Binding', './SimpleType','./DataState'],
 			if (this.oType && oValue !== null && oValue !== undefined) {
 				oFormat = this.oType.getModelFormat();
 
-				jQuery.sap.assert(oFormat && typeof oFormat.format === "function", "The model format of " + this.oType + " should be an object with the 'format' method");
+				assert(oFormat && typeof oFormat.format === "function", "The model format of " + this.oType + " should be an object with the 'format' method");
 				oValue = oFormat.format(oValue);
 
 				this.oType.validateValue(oValue);

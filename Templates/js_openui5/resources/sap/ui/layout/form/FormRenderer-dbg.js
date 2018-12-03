@@ -4,8 +4,10 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/layout/library'],
-	function(jQuery, library) {
+sap.ui.define([
+	'sap/ui/layout/library',
+	"sap/base/Log"
+	], function(library, Log) {
 	"use strict";
 
 
@@ -71,6 +73,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/library'],
 				sId = oTitle.getId();
 			}
 			mAriaProps["labelledby"] = {value: sId, append: true};
+		} else if (oForm._sSuggestedTitleId) {
+			mAriaProps["labelledby"] = {value: oForm._sSuggestedTitleId, append: true};
 		}
 
 		rm.writeAccessibilityState(oForm, mAriaProps);
@@ -81,7 +85,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/library'],
 			// render the layout with the content of this form control
 			rm.renderControl(oLayout);
 		} else {
-			jQuery.sap.log.warning("Form \"" + oForm.getId() + "\" - Layout missing!", "Renderer", "Form");
+			Log.warning("Form \"" + oForm.getId() + "\" - Layout missing!", "Renderer", "Form");
 		}
 
 		rm.write("</div>");

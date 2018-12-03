@@ -5,9 +5,9 @@
  */
 sap.ui.define([
 	'sap/ui/rta/command/BaseCommand',
-	'sap/ui/fl/changeHandler/BaseTreeModifier',
+	'sap/ui/core/util/reflection/JsControlTreeModifier',
 	'sap/ui/fl/Utils'
-], function(BaseCommand, BaseTreeModifier, flUtils) {
+], function(BaseCommand, JsControlTreeModifier, flUtils) {
 	"use strict";
 
 	/**
@@ -16,7 +16,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.BaseCommand
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @since 1.52
@@ -59,7 +59,8 @@ sap.ui.define([
 	};
 
 	/**
-	 * @public Triggers the duplication of a variant
+	 * Triggers the duplication of a variant.
+	 * @public
 	 * @returns {Promise} Returns resolve after execution
 	 */
 	ControlVariantDuplicate.prototype.execute = function() {
@@ -73,7 +74,7 @@ sap.ui.define([
 			this.setNewVariantReference(sNewVariantReference);
 		}
 
-		this.sVariantManagementReference = BaseTreeModifier.getSelector(oVariantManagementControl, this.oAppComponent).id;
+		this.sVariantManagementReference = JsControlTreeModifier.getSelector(oVariantManagementControl, this.oAppComponent).id;
 		this.oModel = this.oAppComponent.getModel(this.MODEL_NAME);
 
 		var mPropertyBag = {
@@ -93,12 +94,19 @@ sap.ui.define([
 	};
 
 	/**
-	 * @public Undo logic for the execution
+	 * Undo logic for the execution.
+	 * @public
 	 * @returns {Promise} Returns resolve after undo
 	 */
 	ControlVariantDuplicate.prototype.undo = function() {
 		if (this._oVariantChange) {
-			return this.oModel.removeVariant(this._oVariantChange, this.getSourceVariantReference(), this.sVariantManagementReference)
+			var mPropertyBag = {
+				variant: this._oVariantChange,
+				sourceVariantReference: this.getSourceVariantReference(),
+				variantManagementReference: this.sVariantManagementReference,
+				component: this.oAppComponent
+			};
+			return this.oModel.removeVariant(mPropertyBag)
 				.then(function() {
 					this._oVariantChange = null;
 					this._aPreparedChanges = null;

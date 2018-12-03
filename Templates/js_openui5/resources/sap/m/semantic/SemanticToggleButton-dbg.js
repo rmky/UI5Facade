@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/m/semantic/SemanticButton', 'sap/m/library', 'jquery.sap.keycodes'], function(SemanticButton, library, jQuery) {
+sap.ui.define(['sap/m/semantic/SemanticButton', 'sap/m/library', "sap/ui/events/KeyCodes"], function(SemanticButton, library, KeyCodes) {
 	"use strict";
 
 	// shortcut for sap.m.ButtonType
@@ -22,7 +22,7 @@ sap.ui.define(['sap/m/semantic/SemanticButton', 'sap/m/library', 'jquery.sap.key
 	 * @abstract
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -69,7 +69,7 @@ sap.ui.define(['sap/m/semantic/SemanticButton', 'sap/m/library', 'jquery.sap.key
 	 */
 	SemanticToggleButton.prototype._onKeydown = function(oEvent) {
 
-		if (oEvent.which === jQuery.sap.KeyCodes.SPACE || oEvent.which === jQuery.sap.KeyCodes.ENTER) {
+		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
 			this._onTap(oEvent);
 		}
 	};

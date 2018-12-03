@@ -3,11 +3,7 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define([
-	"jquery.sap.global",
-	"sap/ui/core/Renderer",
-	"sap/m/ListItemBaseRenderer"
-], function(jQuery, Renderer, ListItemBaseRenderer) {
+sap.ui.define(["sap/ui/core/Renderer", "sap/m/ListItemBaseRenderer"], function(Renderer, ListItemBaseRenderer) {
 	"use strict";
 
 	var TAG_WHITELIST = {

@@ -31,7 +31,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/library', 'sap/ui/core/ElementM
 		 *
 		 * @namespace
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @public
 		 * @since 0.8.8
 		 * @deprecated Since version 1.38. Instead, use the <code>sap.m.MessageBox</code> control.
@@ -46,6 +46,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/library', 'sap/ui/core/ElementM
 		 * specifying the set of allowed actions as well as reporting back the user choice.
 		 * @enum
 		 * @public
+		 * @deprecated as of version 1.38
 		 */
 		MessageBox.Action = {
 
@@ -102,6 +103,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/library', 'sap/ui/core/ElementM
 		 * Enumeration of the pre-defined icons that can be used in a MessageBox.
 		 * @enum
 		 * @public
+		 * @deprecated as of version 1.38
 		 */
 		MessageBox.Icon = {
 

@@ -25,6 +25,7 @@
 		"arc": "阿拉米语",
 		"arn": "马普切语",
 		"arp": "阿拉帕霍语",
+		"ars": "纳吉迪阿拉伯语",
 		"arw": "阿拉瓦克语",
 		"as": "阿萨姆语",
 		"asa": "帕雷语",
@@ -72,6 +73,7 @@
 		"car": "加勒比语",
 		"cay": "卡尤加语",
 		"cch": "阿灿语",
+		"ccp": "ccp",
 		"ce": "车臣语",
 		"ceb": "宿务语",
 		"cgg": "奇加语",
@@ -112,7 +114,7 @@
 		"dsb": "下索布语",
 		"dua": "都阿拉语",
 		"dum": "中古荷兰语",
-		"dv": "迪维西语",
+		"dv": "迪维希语",
 		"dyo": "朱拉语",
 		"dyu": "迪尤拉语",
 		"dz": "宗卡语",
@@ -287,7 +289,7 @@
 		"lua": "卢巴-卢拉语",
 		"lui": "卢伊塞诺语",
 		"lun": "隆达语",
-		"luo": "卢欧语",
+		"luo": "卢奥语",
 		"lus": "米佐语",
 		"luy": "卢雅语",
 		"lv": "拉脱维亚语",
@@ -571,6 +573,7 @@
 		"Cyrl": "西里尔文",
 		"Cyrs": "西里尔文字（古教会斯拉夫文的变体）",
 		"Deva": "天城文",
+		"Dogr": "Dogr",
 		"Dsrt": "德塞莱特文",
 		"Dupl": "杜普洛伊速记",
 		"Egyd": "后期埃及文",
@@ -581,6 +584,7 @@
 		"Geok": "格鲁吉亚文（教堂体）",
 		"Geor": "格鲁吉亚文",
 		"Glag": "格拉哥里文",
+		"Gong": "Gong",
 		"Gonm": "马萨拉姆冈德文",
 		"Goth": "哥特文",
 		"Gran": "格兰塔文",
@@ -631,10 +635,12 @@
 		"Lyci": "利西亚文",
 		"Lydi": "吕底亚文",
 		"Mahj": "Mahj",
+		"Maka": "Maka",
 		"Mand": "阿拉米文",
 		"Mani": "摩尼教文",
 		"Marc": "大玛尔文",
 		"Maya": "玛雅圣符文",
+		"Medf": "Medf",
 		"Mend": "门迪文",
 		"Merc": "麦罗埃草书",
 		"Mero": "麦若提克文",
@@ -668,7 +674,9 @@
 		"Phnx": "腓尼基文",
 		"Plrd": "波拉德音标文字",
 		"Prti": "帕提亚文碑铭体",
+		"Qaag": "Qaag",
 		"Rjng": "拉让文",
+		"Rohg": "Rohg",
 		"Roro": "朗格朗格文",
 		"Runr": "古代北欧文",
 		"Samr": "撒马利亚文",
@@ -681,6 +689,8 @@
 		"Sidd": "悉昙",
 		"Sind": "信德文",
 		"Sinh": "僧伽罗文",
+		"Sogd": "Sogd",
+		"Sogo": "Sogo",
 		"Sora": "索朗桑朋文",
 		"Soyo": "索永布文",
 		"Sund": "巽他文",
@@ -729,7 +739,7 @@
 		"151": "东欧",
 		"154": "北欧",
 		"155": "西欧",
-		"202": "202",
+		"202": "撒哈拉以南非洲",
 		"419": "拉丁美洲",
 		"001": "世界",
 		"002": "非洲",
@@ -1020,6 +1030,8 @@
 		"VU": "瓦努阿图",
 		"WF": "瓦利斯和富图纳",
 		"WS": "萨摩亚",
+		"XA": "XA",
+		"XB": "XB",
 		"XK": "科索沃",
 		"YE": "也门",
 		"YT": "马约特",
@@ -1115,6 +1127,44 @@
 				"intervalFormatFallback": "{0}至{1}",
 				"d": {
 					"d": "d日至d日"
+				},
+				"Gy": {
+					"G": "G y – G y",
+					"y": "G y–y"
+				},
+				"GyM": {
+					"G": "GGGGG y-MM – GGGGG y-MM",
+					"M": "GGGGG y-MM – y-MM",
+					"y": "GGGGG y-MM – y-MM"
+				},
+				"GyMd": {
+					"d": "GGGGG y-MM-dd – y-MM-dd",
+					"G": "GGGGG y-MM-dd – GGGGG y-MM-dd",
+					"M": "GGGGG y-MM-dd – y-MM-dd",
+					"y": "GGGGG y-MM-dd – y-MM-dd"
+				},
+				"GyMEd": {
+					"d": "GGGGG y-MM-dd, E – y-MM-dd, E",
+					"G": "GGGGG y-MM-dd, E – GGGGG y-MM-dd, E",
+					"M": "GGGGG y-MM-dd, E – y-MM-dd, E",
+					"y": "GGGGG y-MM-dd, E – y-MM-dd, E"
+				},
+				"GyMMM": {
+					"G": "G y MMM – G y MMM",
+					"M": "G y MMM–MMM",
+					"y": "G y MMM – y MMM"
+				},
+				"GyMMMd": {
+					"d": "G y MMM d–d",
+					"G": "G y MMM d – G y MMM d",
+					"M": "G y MMM d – MMM d",
+					"y": "G y MMM d – y MMM d"
+				},
+				"GyMMMEd": {
+					"d": "G y MMM d, E – MMM d, E",
+					"G": "G y MMM d, E – G y MMM d, E",
+					"M": "G y MMM d, E – MMM d, E",
+					"y": "G y MMM d, E – y MMM d, E"
 				},
 				"h": {
 					"a": "ah时至ah时",
@@ -1541,6 +1591,44 @@
 				"d": {
 					"d": "d至d日"
 				},
+				"Gy": {
+					"G": "G y – G y",
+					"y": "G y–y"
+				},
+				"GyM": {
+					"G": "GGGGG y-MM – GGGGG y-MM",
+					"M": "GGGGG y-MM – y-MM",
+					"y": "GGGGG y-MM – y-MM"
+				},
+				"GyMd": {
+					"d": "GGGGG y-MM-dd – y-MM-dd",
+					"G": "GGGGG y-MM-dd – GGGGG y-MM-dd",
+					"M": "GGGGG y-MM-dd – y-MM-dd",
+					"y": "GGGGG y-MM-dd – y-MM-dd"
+				},
+				"GyMEd": {
+					"d": "GGGGG y-MM-dd, E – y-MM-dd, E",
+					"G": "GGGGG y-MM-dd, E – GGGGG y-MM-dd, E",
+					"M": "GGGGG y-MM-dd, E – y-MM-dd, E",
+					"y": "GGGGG y-MM-dd, E – y-MM-dd, E"
+				},
+				"GyMMM": {
+					"G": "G y MMM – G y MMM",
+					"M": "G y MMM–MMM",
+					"y": "G y MMM – y MMM"
+				},
+				"GyMMMd": {
+					"d": "G y MMM d–d",
+					"G": "G y MMM d – G y MMM d",
+					"M": "G y MMM d – MMM d",
+					"y": "G y MMM d – y MMM d"
+				},
+				"GyMMMEd": {
+					"d": "G y MMM d, E – MMM d, E",
+					"G": "G y MMM d, E – G y MMM d, E",
+					"M": "G y MMM d, E – MMM d, E",
+					"y": "G y MMM d, E – y MMM d, E"
+				},
 				"h": {
 					"a": "ah时至ah时",
 					"h": "ah时至h时"
@@ -1962,6 +2050,44 @@
 				"intervalFormatFallback": "{0}至{1}",
 				"d": {
 					"d": "d至d日"
+				},
+				"Gy": {
+					"G": "G y – G y",
+					"y": "G y–y"
+				},
+				"GyM": {
+					"G": "GGGGG y-MM – GGGGG y-MM",
+					"M": "GGGGG y-MM – y-MM",
+					"y": "GGGGG y-MM – y-MM"
+				},
+				"GyMd": {
+					"d": "GGGGG y-MM-dd – y-MM-dd",
+					"G": "GGGGG y-MM-dd – GGGGG y-MM-dd",
+					"M": "GGGGG y-MM-dd – y-MM-dd",
+					"y": "GGGGG y-MM-dd – y-MM-dd"
+				},
+				"GyMEd": {
+					"d": "GGGGG y-MM-dd, E – y-MM-dd, E",
+					"G": "GGGGG y-MM-dd, E – GGGGG y-MM-dd, E",
+					"M": "GGGGG y-MM-dd, E – y-MM-dd, E",
+					"y": "GGGGG y-MM-dd, E – y-MM-dd, E"
+				},
+				"GyMMM": {
+					"G": "G y MMM – G y MMM",
+					"M": "G y MMM–MMM",
+					"y": "G y MMM – y MMM"
+				},
+				"GyMMMd": {
+					"d": "G y MMM d–d",
+					"G": "G y MMM d – G y MMM d",
+					"M": "G y MMM d – MMM d",
+					"y": "G y MMM d – y MMM d"
+				},
+				"GyMMMEd": {
+					"d": "G y MMM d, E – MMM d, E",
+					"G": "G y MMM d, E – G y MMM d, E",
+					"M": "G y MMM d, E – MMM d, E",
+					"y": "G y MMM d, E – y MMM d, E"
 				},
 				"h": {
 					"a": "ah时至ah时",
@@ -2394,6 +2520,44 @@
 				"d": {
 					"d": "d至d日"
 				},
+				"Gy": {
+					"G": "G y – G y",
+					"y": "G y–y"
+				},
+				"GyM": {
+					"G": "GGGGG y-MM – GGGGG y-MM",
+					"M": "GGGGG y-MM – y-MM",
+					"y": "GGGGG y-MM – y-MM"
+				},
+				"GyMd": {
+					"d": "GGGGG y-MM-dd – y-MM-dd",
+					"G": "GGGGG y-MM-dd – GGGGG y-MM-dd",
+					"M": "GGGGG y-MM-dd – y-MM-dd",
+					"y": "GGGGG y-MM-dd – y-MM-dd"
+				},
+				"GyMEd": {
+					"d": "GGGGG y-MM-dd, E – y-MM-dd, E",
+					"G": "GGGGG y-MM-dd, E – GGGGG y-MM-dd, E",
+					"M": "GGGGG y-MM-dd, E – y-MM-dd, E",
+					"y": "GGGGG y-MM-dd, E – y-MM-dd, E"
+				},
+				"GyMMM": {
+					"G": "G y MMM – G y MMM",
+					"M": "G y MMM–MMM",
+					"y": "G y MMM – y MMM"
+				},
+				"GyMMMd": {
+					"d": "G y MMM d–d",
+					"G": "G y MMM d – G y MMM d",
+					"M": "G y MMM d – MMM d",
+					"y": "G y MMM d – y MMM d"
+				},
+				"GyMMMEd": {
+					"d": "G y MMM d, E – MMM d, E",
+					"G": "G y MMM d, E – G y MMM d, E",
+					"M": "G y MMM d, E – MMM d, E",
+					"y": "G y MMM d, E – y MMM d, E"
+				},
 				"h": {
 					"a": "ah时至ah时",
 					"h": "ah时至h时"
@@ -2733,6 +2897,466 @@
 		},
 		"era-narrow": {
 			"0": "波斯历"
+		}
+	},
+	"ca-buddhist": {
+		"dateFormats": {
+			"full": "Gy年M月d日EEEE",
+			"long": "Gy年M月d日",
+			"medium": "Gy年M月d日",
+			"short": "Gd/M/yy"
+		},
+		"timeFormats": {
+			"full": "zzzz ah:mm:ss",
+			"long": "z ah:mm:ss",
+			"medium": "ah:mm:ss",
+			"short": "ah:mm"
+		},
+		"dateTimeFormats": {
+			"full": "{1} {0}",
+			"long": "{1} {0}",
+			"medium": "{1} {0}",
+			"short": "{1} {0}",
+			"availableFormats": {
+				"Bh": "Bh时",
+				"Bhm": "Bh:mm",
+				"Bhms": "Bh:mm:ss",
+				"d": "d日",
+				"E": "ccc",
+				"EBhm": "EB h:mm",
+				"EBhms": "EB h:mm:ss",
+				"Ed": "d日E",
+				"Ehm": "Ea h:mm",
+				"EHm": "E HH:mm",
+				"Ehms": "Ea h:mm:ss",
+				"EHms": "E HH:mm:ss",
+				"Gy": "Gy年",
+				"GyMMM": "Gy年MM月",
+				"GyMMMd": "Gy年MM月d日",
+				"GyMMMEd": "Gy年MM月d日E",
+				"h": "ah时",
+				"H": "H时",
+				"hm": "ah:mm",
+				"Hm": "HH:mm",
+				"hms": "ah:mm:ss",
+				"Hms": "HH:mm:ss",
+				"M": "M月",
+				"Md": "M-d",
+				"MEd": "M-dE",
+				"MMdd": "MM-dd",
+				"MMM": "LLL",
+				"MMMd": "M月d日",
+				"MMMEd": "M月d日E",
+				"MMMMd": "M月d日",
+				"MMMMdd": "M月d日",
+				"ms": "mm:ss",
+				"y": "Gy年",
+				"yyyy": "Gy年",
+				"yyyyM": "Gy-M",
+				"yyyyMd": "Gy-M-d",
+				"yyyyMEd": "Gy-M-d（E）",
+				"yyyyMMM": "Gy年M月",
+				"yyyyMMMd": "Gy年M月d日",
+				"yyyyMMMEd": "Gy年M月d日E",
+				"yyyyMMMM": "Gy年M月",
+				"yyyyQQQ": "Gy年第Q季度",
+				"yyyyQQQQ": "Gy年QQQQ"
+			},
+			"appendItems": {
+				"Day": "{0} ({2}: {1})",
+				"Day-Of-Week": "{0} {1}",
+				"Era": "{1} {0}",
+				"Hour": "{0} ({2}: {1})",
+				"Minute": "{0} ({2}: {1})",
+				"Month": "{0} ({2}: {1})",
+				"Quarter": "{0} ({2}: {1})",
+				"Second": "{0} ({2}: {1})",
+				"Timezone": "{0} {1}",
+				"Week": "{0} ({2}: {1})",
+				"Year": "{1} {0}"
+			},
+			"intervalFormats": {
+				"intervalFormatFallback": "{0} – {1}",
+				"d": {
+					"d": "d至d日"
+				},
+				"Gy": {
+					"G": "G y – G y",
+					"y": "G y–y"
+				},
+				"GyM": {
+					"G": "GGGGG y-MM – GGGGG y-MM",
+					"M": "GGGGG y-MM – y-MM",
+					"y": "GGGGG y-MM – y-MM"
+				},
+				"GyMd": {
+					"d": "GGGGG y-MM-dd – y-MM-dd",
+					"G": "GGGGG y-MM-dd – GGGGG y-MM-dd",
+					"M": "GGGGG y-MM-dd – y-MM-dd",
+					"y": "GGGGG y-MM-dd – y-MM-dd"
+				},
+				"GyMEd": {
+					"d": "GGGGG y-MM-dd, E – y-MM-dd, E",
+					"G": "GGGGG y-MM-dd, E – GGGGG y-MM-dd, E",
+					"M": "GGGGG y-MM-dd, E – y-MM-dd, E",
+					"y": "GGGGG y-MM-dd, E – y-MM-dd, E"
+				},
+				"GyMMM": {
+					"G": "G y MMM – G y MMM",
+					"M": "G y MMM–MMM",
+					"y": "G y MMM – y MMM"
+				},
+				"GyMMMd": {
+					"d": "G y MMM d–d",
+					"G": "G y MMM d – G y MMM d",
+					"M": "G y MMM d – MMM d",
+					"y": "G y MMM d – y MMM d"
+				},
+				"GyMMMEd": {
+					"d": "G y MMM d, E – MMM d, E",
+					"G": "G y MMM d, E – G y MMM d, E",
+					"M": "G y MMM d, E – MMM d, E",
+					"y": "G y MMM d, E – y MMM d, E"
+				},
+				"h": {
+					"a": "ah时至ah时",
+					"h": "ah时至h时"
+				},
+				"H": {
+					"H": "HH–HH"
+				},
+				"hm": {
+					"a": "ah:mm至ah:mm",
+					"h": "ah:mm至h:mm",
+					"m": "ah:mm至h:mm"
+				},
+				"Hm": {
+					"H": "HH:mm–HH:mm",
+					"m": "HH:mm–HH:mm"
+				},
+				"hmv": {
+					"a": "vah:mm至ah:mm",
+					"h": "vah:mm至h:mm",
+					"m": "vah:mm至h:mm"
+				},
+				"Hmv": {
+					"H": "v HH:mm – HH:mm",
+					"m": "v HH:mm – HH:mm"
+				},
+				"hv": {
+					"a": "vah时至ah时",
+					"h": "vah时至h时"
+				},
+				"Hv": {
+					"H": "HH–HH v"
+				},
+				"M": {
+					"M": "M–M月"
+				},
+				"Md": {
+					"d": "M/d – M/d",
+					"M": "M/d – M/d"
+				},
+				"MEd": {
+					"d": "M/dE至M/dE",
+					"M": "M/dE至M/dE"
+				},
+				"MMM": {
+					"M": "MMM – MMM"
+				},
+				"MMMd": {
+					"d": "M月d日至d日",
+					"M": "M月d日至M月d日"
+				},
+				"MMMEd": {
+					"d": "M月d日E至d日E",
+					"M": "M月d日E至M月d日E"
+				},
+				"y": {
+					"y": "Gy–y年"
+				},
+				"yM": {
+					"M": "Gy年M月至M月",
+					"y": "Gy年M月至y年M月"
+				},
+				"yMd": {
+					"d": "Gy/M/d – y/M/d",
+					"M": "Gy/M/d – y/M/d",
+					"y": "Gy/M/d – y/M/d"
+				},
+				"yMEd": {
+					"d": "Gy/M/dE至y/M/dE",
+					"M": "Gy/M/dE至y/M/dE",
+					"y": "Gy/M/dE至y/M/dE"
+				},
+				"yMMM": {
+					"M": "Gy年M月至M月",
+					"y": "Gy年M月至y年M月"
+				},
+				"yMMMd": {
+					"d": "Gy年M月d日至d日",
+					"M": "Gy年M月d日至M月d日",
+					"y": "Gy年M月d日至y年M月d日"
+				},
+				"yMMMEd": {
+					"d": "Gy年M月d日E至d日E",
+					"M": "Gy年M月d日E至M月d日E",
+					"y": "Gy年M月d日E至y年M月d日E"
+				},
+				"yMMMM": {
+					"M": "Gy年M月至M月",
+					"y": "Gy年M月至y年M月"
+				}
+			}
+		},
+		"months": {
+			"format": {
+				"abbreviated": [
+					"1月",
+					"2月",
+					"3月",
+					"4月",
+					"5月",
+					"6月",
+					"7月",
+					"8月",
+					"9月",
+					"10月",
+					"11月",
+					"12月"
+				],
+				"narrow": [
+					"1",
+					"2",
+					"3",
+					"4",
+					"5",
+					"6",
+					"7",
+					"8",
+					"9",
+					"10",
+					"11",
+					"12"
+				],
+				"wide": [
+					"一月",
+					"二月",
+					"三月",
+					"四月",
+					"五月",
+					"六月",
+					"七月",
+					"八月",
+					"九月",
+					"十月",
+					"十一月",
+					"十二月"
+				]
+			},
+			"stand-alone": {
+				"abbreviated": [
+					"1月",
+					"2月",
+					"3月",
+					"4月",
+					"5月",
+					"6月",
+					"7月",
+					"8月",
+					"9月",
+					"10月",
+					"11月",
+					"12月"
+				],
+				"narrow": [
+					"1",
+					"2",
+					"3",
+					"4",
+					"5",
+					"6",
+					"7",
+					"8",
+					"9",
+					"10",
+					"11",
+					"12"
+				],
+				"wide": [
+					"一月",
+					"二月",
+					"三月",
+					"四月",
+					"五月",
+					"六月",
+					"七月",
+					"八月",
+					"九月",
+					"十月",
+					"十一月",
+					"十二月"
+				]
+			}
+		},
+		"days": {
+			"format": {
+				"abbreviated": [
+					"周日",
+					"周一",
+					"周二",
+					"周三",
+					"周四",
+					"周五",
+					"周六"
+				],
+				"narrow": [
+					"日",
+					"一",
+					"二",
+					"三",
+					"四",
+					"五",
+					"六"
+				],
+				"short": [
+					"周日",
+					"周一",
+					"周二",
+					"周三",
+					"周四",
+					"周五",
+					"周六"
+				],
+				"wide": [
+					"星期日",
+					"星期一",
+					"星期二",
+					"星期三",
+					"星期四",
+					"星期五",
+					"星期六"
+				]
+			},
+			"stand-alone": {
+				"abbreviated": [
+					"周日",
+					"周一",
+					"周二",
+					"周三",
+					"周四",
+					"周五",
+					"周六"
+				],
+				"narrow": [
+					"日",
+					"一",
+					"二",
+					"三",
+					"四",
+					"五",
+					"六"
+				],
+				"short": [
+					"周日",
+					"周一",
+					"周二",
+					"周三",
+					"周四",
+					"周五",
+					"周六"
+				],
+				"wide": [
+					"星期日",
+					"星期一",
+					"星期二",
+					"星期三",
+					"星期四",
+					"星期五",
+					"星期六"
+				]
+			}
+		},
+		"quarters": {
+			"format": {
+				"abbreviated": [
+					"1季度",
+					"2季度",
+					"3季度",
+					"4季度"
+				],
+				"narrow": [
+					"1",
+					"2",
+					"3",
+					"4"
+				],
+				"wide": [
+					"第一季度",
+					"第二季度",
+					"第三季度",
+					"第四季度"
+				]
+			},
+			"stand-alone": {
+				"abbreviated": [
+					"1季度",
+					"2季度",
+					"3季度",
+					"4季度"
+				],
+				"narrow": [
+					"1",
+					"2",
+					"3",
+					"4"
+				],
+				"wide": [
+					"第一季度",
+					"第二季度",
+					"第三季度",
+					"第四季度"
+				]
+			}
+		},
+		"dayPeriods": {
+			"format": {
+				"abbreviated": [
+					"上午",
+					"下午"
+				],
+				"narrow": [
+					"上午",
+					"下午"
+				],
+				"wide": [
+					"上午",
+					"下午"
+				]
+			},
+			"stand-alone": {
+				"abbreviated": [
+					"上午",
+					"下午"
+				],
+				"narrow": [
+					"上午",
+					"下午"
+				],
+				"wide": [
+					"上午",
+					"下午"
+				]
+			}
+		},
+		"era-wide": {
+			"0": "佛历"
+		},
+		"era-abbreviated": {
+			"0": "佛历"
+		},
+		"era-narrow": {
+			"0": "佛历"
 		}
 	},
 	"dateFields": {
@@ -3243,6 +3867,14 @@
 				"displayName": "ppm",
 				"unitPattern-count-other": "{0}ppm"
 			},
+			"concentr-percent": {
+				"displayName": "%",
+				"unitPattern-count-other": "{0}%"
+			},
+			"concentr-permille": {
+				"displayName": "‰",
+				"unitPattern-count-other": "{0}‰"
+			},
 			"consumption-liter-per-kilometer": {
 				"displayName": "升/公里",
 				"unitPattern-count-other": "{0}升/公里"
@@ -3258,6 +3890,10 @@
 			"consumption-mile-per-gallon-imperial": {
 				"displayName": "英里/英制加仑",
 				"unitPattern-count-other": "{0}英里/英制加仑"
+			},
+			"digital-petabyte": {
+				"displayName": "PB",
+				"unitPattern-count-other": "{0} PB"
 			},
 			"digital-terabyte": {
 				"displayName": "太字节",
@@ -3587,6 +4223,10 @@
 				"displayName": "毫巴",
 				"unitPattern-count-other": "{0}毫巴"
 			},
+			"pressure-atmosphere": {
+				"displayName": "大气压",
+				"unitPattern-count-other": "{0}个大气压"
+			},
 			"speed-kilometer-per-hour": {
 				"displayName": "公里/小时",
 				"unitPattern-count-other": "每小时{0}公里"
@@ -3725,6 +4365,7 @@
 				"unitPattern-count-other": "{0}茶匙"
 			},
 			"coordinateUnit": {
+				"displayName": "方向",
 				"east": "东经{0}",
 				"north": "北纬{0}",
 				"south": "南纬{0}",
@@ -3736,20 +4377,16 @@
 		"ADP": 0,
 		"AFN": 0,
 		"ALL": 0,
-		"AMD": 0,
 		"BHD": 3,
 		"BIF": 0,
 		"BYR": 0,
 		"CLF": 4,
 		"CLP": 0,
-		"COP": 0,
 		"DEFAULT": 2,
 		"DJF": 0,
 		"ESP": 0,
 		"GNF": 0,
-		"GYD": 0,
 		"HUF": 0,
-		"IDR": 0,
 		"IQD": 0,
 		"IRR": 0,
 		"ISK": 0,
@@ -3767,11 +4404,8 @@
 		"MGA": 0,
 		"MGF": 0,
 		"MMK": 0,
-		"MNT": 0,
 		"MRO": 0,
-		"MUR": 0,
 		"OMR": 3,
-		"PKR": 0,
 		"PYG": 0,
 		"RSD": 0,
 		"RWF": 0,
@@ -3783,10 +4417,9 @@
 		"TND": 3,
 		"TRL": 0,
 		"TWD": 0,
-		"TZS": 0,
 		"UGX": 0,
 		"UYI": 0,
-		"UZS": 0,
+		"UYW": 4,
 		"VND": 0,
 		"VUV": 0,
 		"XAF": 0,
@@ -3821,6 +4454,11 @@
 	"eras-persian": {
 		"0": {
 			"_start": "622-01-01"
+		}
+	},
+	"eras-buddhist": {
+		"0": {
+			"_start": "-542-01-01"
 		}
 	},
 	"eras-japanese": {

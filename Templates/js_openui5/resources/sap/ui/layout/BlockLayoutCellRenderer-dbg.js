@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/library'],
-	function(jQuery, library, coreLibrary) {
+sap.ui.define(['./library', 'sap/ui/core/library', "sap/base/Log"],
+	function(library, coreLibrary, Log) {
 		"use strict";
 
 		// shortcut for sap.ui.core.TitleLevel
@@ -40,7 +40,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/library'],
 			if (!sColorSet && !sColorIndex) {
 				return "";
 			} else if (( sColorSet && !sColorIndex ) || ( !sColorSet && sColorIndex )) { // XOR check. Both values need to be either defined or not defined.
-				jQuery.sap.log.warning("Both, backgroundColorSet and backgroundColorShade should be defined. ColoSet is not applied to " + oBlockLayoutCell.getId() + ".");
+				Log.warning("Both, backgroundColorSet and backgroundColorShade should be defined. ColoSet is not applied to " + oBlockLayoutCell.getId() + ".");
 				return "";
 			}
 

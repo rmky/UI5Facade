@@ -5,16 +5,20 @@
  */
 sap.ui.define([
 	"sap/ui/rta/command/BaseCommand",
-	"sap/ui/fl/FlexControllerFactory",
 	"sap/ui/rta/ControlTreeModifier",
+	"sap/ui/core/util/reflection/JsControlTreeModifier",
+	"sap/ui/fl/FlexControllerFactory",
 	"sap/ui/fl/Utils",
-	"sap/ui/core/util/reflection/JsControlTreeModifier"
+	"sap/base/Log",
+	"sap/base/util/merge"
 ], function(
 	BaseCommand,
-	FlexControllerFactory,
 	RtaControlTreeModifier,
-	Utils,
-	JsControlTreeModifier
+	JsControlTreeModifier,
+	FlexControllerFactory,
+	FlUtils,
+	Log,
+	merge
 ) {
 	"use strict";
 
@@ -25,7 +29,7 @@ sap.ui.define([
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -77,11 +81,8 @@ sap.ui.define([
 	 * @private
 	 */
 	FlexCommand.prototype.getAppComponent = function() {
-		if (!this._oControlAppComponent) {
-			var oElement = this.getElement();
-			this._oControlAppComponent = oElement ? Utils.getAppComponentForControl(oElement) : this.getSelector().appComponent;
-		}
-		return this._oControlAppComponent;
+		var oElement = this.getElement();
+		return oElement ? FlUtils.getAppComponentForControl(oElement) : this.getSelector().appComponent;
 	};
 
 	/**
@@ -90,21 +91,25 @@ sap.ui.define([
 	 * @override
 	 */
 	FlexCommand.prototype.prepare = function(mFlexSettings, sVariantManagementReference) {
-		if (
-			!this.getSelector()
-			&& this.getElement()
-		) {
+		if (!this.getSelector() && mFlexSettings && mFlexSettings.templateSelector) {
+			var oSelector = {
+				id: mFlexSettings.templateSelector,
+				appComponent: this.getAppComponent(),
+				controlType: FlUtils.getControlType(sap.ui.getCore().byId(mFlexSettings.templateSelector))
+			};
+			this.setSelector(oSelector);
+		} else if (!this.getSelector() && this.getElement()) {
 			var oSelector = {
 				id: this.getElement().getId(),
 				appComponent: this.getAppComponent(),
-				controlType: Utils.getControlType(this.getElement())
+				controlType: FlUtils.getControlType(this.getElement())
 			};
 			this.setSelector(oSelector);
 		}
 		try {
 			this._oPreparedChange = this._createChange(mFlexSettings, sVariantManagementReference);
 		} catch (oError) {
-			jQuery.sap.log.error(oError.message || oError.name);
+			Log.error(oError.message || oError.name);
 			return false;
 		}
 		return true;
@@ -169,7 +174,7 @@ sap.ui.define([
 	 */
 	FlexCommand.prototype._createChangeFromData = function(mChangeSpecificData, mFlexSettings, sVariantManagementReference) {
 		if (mFlexSettings) {
-			jQuery.extend(mChangeSpecificData, mFlexSettings);
+			mChangeSpecificData = merge({}, mChangeSpecificData, mFlexSettings);
 		}
 		mChangeSpecificData.jsOnly = this.getJsOnly();
 		var oModel = this.getAppComponent().getModel("$FlexVariants");
@@ -183,9 +188,15 @@ sap.ui.define([
 			"variantReference": sVariantReference
 		};
 		if (sVariantReference) {
-			jQuery.extend(mChangeSpecificData, mVariantObj);
+			mChangeSpecificData = Object.assign({}, mChangeSpecificData, mVariantObj);
 		}
-		return oFlexController.createChange(mChangeSpecificData, this.getElement() || this.getSelector());
+		var oChange = oFlexController.createChange(mChangeSpecificData, this._validateControlForChange(mFlexSettings));
+		if (mFlexSettings && mFlexSettings.originalSelector) {
+			oChange.addDependentControl(mFlexSettings.originalSelector, "originalSelector", {modifier: JsControlTreeModifier, appComponent: this.getAppComponent()});
+			oChange.getDefinition().selector = JsControlTreeModifier.getSelector(this.getSelector().id, this.getSelector().appComponent);
+			oChange.setContent(Object.assign({}, oChange.getContent(), mFlexSettings.content));
+		}
+		return oChange;
 	};
 
 	/**
@@ -201,15 +212,14 @@ sap.ui.define([
 					var oFlexController = FlexControllerFactory.createForControl(this.getAppComponent());
 					var bRevertible = oFlexController.isChangeHandlerRevertible(oChange, oControl);
 					if (!bRevertible) {
-						jQuery.sap.log.error("No revert change function available to handle revert data for " + oControl);
+						Log.error("No revert change function available to handle revert data for " + oControl);
 						return;
 					}
-					var oAppComponent = this.getAppComponent();
-					return oFlexController.revertChangesOnControl([oChange], oAppComponent);
+					return oFlexController.revertChangesOnControl([oChange], this.getAppComponent(true));
 				} else if (this._aRecordedUndo) {
 					RtaControlTreeModifier.performUndo(this._aRecordedUndo);
 				} else {
-					jQuery.sap.log.warning("Undo is not available for " + oControl);
+					Log.warning("Undo is not available for " + oControl);
 				}
 			}.bind(this));
 	};
@@ -227,18 +237,31 @@ sap.ui.define([
 		var oAppComponent = this.getAppComponent();
 		var oSelectorElement = RtaControlTreeModifier.bySelector(oChange.getSelector(), oAppComponent);
 		var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
-		var bRevertible = oFlexController.isChangeHandlerRevertible(oChange, oSelectorElement);
+		var mControl = oFlexController._getControlIfTemplateAffected(oChange, oSelectorElement, oSelectorElement.getMetadata().getName(), {
+			modifier: JsControlTreeModifier,
+			appComponent: oAppComponent
+		});
+		var bRevertible = oFlexController.isChangeHandlerRevertible(oChange, mControl.control);
 		var mPropertyBag = {
 			modifier: bRevertible ? JsControlTreeModifier : RtaControlTreeModifier,
 			appComponent: oAppComponent,
-			view: Utils.getViewForControl(oSelectorElement)
+			view: FlUtils.getViewForControl(oSelectorElement)
 		};
 
 		if (!bRevertible) {
 			RtaControlTreeModifier.startRecordingUndo();
 		}
 
-		return Promise.resolve(oFlexController.checkTargetAndApplyChange(oChange, oSelectorElement, mPropertyBag))
+		return Promise.resolve()
+		.then(function() {
+			if (oFlexController.checkForOpenDependenciesForControl(oChange.getSelector(), mPropertyBag.modifier, oAppComponent)) {
+				throw Error("The following Change cannot be applied because of a dependency: " + oChange.getId());
+			}
+		})
+
+		.then(function() {
+			return oFlexController.checkTargetAndApplyChange(oChange, oSelectorElement, mPropertyBag);
+		})
 
 		.then(function(oResult) {
 			if (oResult.success) {
@@ -262,6 +285,18 @@ sap.ui.define([
 				return Promise.reject(oResult.error);
 			}
 		}.bind(this));
+	};
+
+	FlexCommand.prototype._validateControlForChange = function(mFlexSettings) {
+		if (mFlexSettings && mFlexSettings.originalSelector && mFlexSettings.content && mFlexSettings.content.boundAggregation) {
+			return {
+				id: mFlexSettings.originalSelector,
+				appComponent: this.getAppComponent(),
+				controlType: FlUtils.getControlType(sap.ui.getCore().byId(mFlexSettings.originalSelector))
+			};
+		} else {
+			return this.getElement() || this.getSelector();
+		}
 	};
 
 	return FlexCommand;

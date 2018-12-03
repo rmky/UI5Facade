@@ -5,8 +5,8 @@
  */
 
 // Provides class sap.ui.base.EventProvider
-sap.ui.define(['jquery.sap.global', './Event', './Object', './ObjectPool'],
-	function(jQuery, Event, BaseObject, ObjectPool) {
+sap.ui.define(['./Event', './Object', './ObjectPool', "sap/base/assert"],
+	function(Event, BaseObject, ObjectPool, assert) {
 	"use strict";
 
 
@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', './Event', './Object', './ObjectPool'],
 	 * @abstract
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @public
 	 * @alias sap.ui.base.EventProvider
 	 */
@@ -73,7 +73,7 @@ sap.ui.define(['jquery.sap.global', './Event', './Object', './ObjectPool'],
 	 */
 	EventProvider.prototype.attachEvent = function(sEventId, oData, fnFunction, oListener) {
 		var mEventRegistry = this.mEventRegistry;
-		jQuery.sap.assert(typeof (sEventId) === "string" && sEventId, "EventProvider.attachEvent: sEventId must be a non-empty string");
+		assert(typeof (sEventId) === "string" && sEventId, "EventProvider.attachEvent: sEventId must be a non-empty string");
 		if (typeof (oData) === "function") {
 		//one could also increase the check in the line above
 		//if(typeof(oData) === "function" && oListener === undefined) {
@@ -81,8 +81,8 @@ sap.ui.define(['jquery.sap.global', './Event', './Object', './ObjectPool'],
 			fnFunction = oData;
 			oData = undefined;
 		}
-		jQuery.sap.assert(typeof (fnFunction) === "function", "EventProvider.attachEvent: fnFunction must be a function");
-		jQuery.sap.assert(!oListener || typeof (oListener) === "object", "EventProvider.attachEvent: oListener must be empty or an object");
+		assert(typeof (fnFunction) === "function", "EventProvider.attachEvent: fnFunction must be a function");
+		assert(!oListener || typeof (oListener) === "object", "EventProvider.attachEvent: oListener must be empty or an object");
 
 		var aEventListeners = mEventRegistry[sEventId];
 		if ( !Array.isArray(aEventListeners) ) {
@@ -125,7 +125,7 @@ sap.ui.define(['jquery.sap.global', './Event', './Object', './ObjectPool'],
 			fnFunction = oData;
 			oData = undefined;
 		}
-		jQuery.sap.assert(typeof (fnFunction) === "function", "EventProvider.attachEventOnce: fnFunction must be a function");
+		assert(typeof (fnFunction) === "function", "EventProvider.attachEventOnce: fnFunction must be a function");
 		function fnOnce() {
 			this.detachEvent(sEventId, fnOnce);  // ‘this’ is always the control, due to the context ‘undefined’ in the attach call below
 			fnFunction.apply(oListener || this, arguments);  // needs to do the same resolution as in fireEvent
@@ -150,9 +150,9 @@ sap.ui.define(['jquery.sap.global', './Event', './Object', './ObjectPool'],
 	 */
 	EventProvider.prototype.detachEvent = function(sEventId, fnFunction, oListener) {
 		var mEventRegistry = this.mEventRegistry;
-		jQuery.sap.assert(typeof (sEventId) === "string" && sEventId, "EventProvider.detachEvent: sEventId must be a non-empty string" );
-		jQuery.sap.assert(typeof (fnFunction) === "function", "EventProvider.detachEvent: fnFunction must be a function");
-		jQuery.sap.assert(!oListener || typeof (oListener) === "object", "EventProvider.detachEvent: oListener must be empty or an object");
+		assert(typeof (sEventId) === "string" && sEventId, "EventProvider.detachEvent: sEventId must be a non-empty string" );
+		assert(typeof (fnFunction) === "function", "EventProvider.detachEvent: fnFunction must be a function");
+		assert(!oListener || typeof (oListener) === "object", "EventProvider.detachEvent: oListener must be empty or an object");
 
 		var aEventListeners = mEventRegistry[sEventId];
 		if ( !Array.isArray(aEventListeners) ) {
@@ -293,9 +293,9 @@ sap.ui.define(['jquery.sap.global', './Event', './Object', './ObjectPool'],
 	 * @ui5-restricted sap.ui.base, sap.ui.core
 	 */
 	EventProvider.hasListener = function (oEventProvider, sEventId, fnFunction, oListener) {
-		jQuery.sap.assert(typeof (sEventId) === "string" && sEventId, "EventProvider.hasListener: sEventId must be a non-empty string" );
-		jQuery.sap.assert(typeof (fnFunction) === "function", "EventProvider.hasListener: fnFunction must be a function");
-		jQuery.sap.assert(!oListener || typeof (oListener) === "object", "EventProvider.hasListener: oListener must be empty or an object");
+		assert(typeof (sEventId) === "string" && sEventId, "EventProvider.hasListener: sEventId must be a non-empty string" );
+		assert(typeof (fnFunction) === "function", "EventProvider.hasListener: fnFunction must be a function");
+		assert(!oListener || typeof (oListener) === "object", "EventProvider.hasListener: oListener must be empty or an object");
 
 		var aEventListeners = oEventProvider && oEventProvider.mEventRegistry[sEventId];
 		if ( aEventListeners ) {

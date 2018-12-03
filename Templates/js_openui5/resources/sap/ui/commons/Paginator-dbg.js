@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @class
 	 * Provides navigation between pages within a list of numbered pages.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -112,6 +112,7 @@ sap.ui.define([
 		if (this.getDomRef()) {
 			sap.ui.commons.PaginatorRenderer.updateBackAndForward(this);
 		}
+		return this;
 	};
 
 	/**

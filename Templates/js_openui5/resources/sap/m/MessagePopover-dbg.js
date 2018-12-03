@@ -6,7 +6,6 @@
 
 // Provides control sap.m.MessagePopover.
 sap.ui.define([
-	"jquery.sap.global",
 	"./ResponsivePopover",
 	"./Button",
 	"./Toolbar",
@@ -17,10 +16,11 @@ sap.ui.define([
 	"./Popover",
 	"./MessageView",
 	"sap/ui/Device",
-	"./MessagePopoverRenderer"
+	"./MessagePopoverRenderer",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
 ],
 function(
-	jQuery,
 	ResponsivePopover,
 	Button,
 	Toolbar,
@@ -31,8 +31,10 @@ function(
 	Popover,
 	MessageView,
 	Device,
-	MessagePopoverRenderer
-	) {
+	MessagePopoverRenderer,
+	Log,
+	jQuery
+) {
 		"use strict";
 
 		/**
@@ -45,7 +47,7 @@ function(
 		 * A summarized list of different types of messages.
 		 * <h3>Overview</h3>
 		 * A message popover is used to display a summarized list of different types of messages (errors, warnings, success and information).
-		 * It provides a handy and systemized way to navigate and explore details for every message.
+		 * It provides a handy and systemized way to navigate and explore details for every message. It also exposes an event {@link sap.m.MessagePopover#activeTitlePress}, which can be used for navigation from a message to the source of the issue.
 		 * <h4>Notes:</h4>
 		 * <ul>
 		 * <li> Messages can have descriptions pre-formatted with HTML markup. In this case, the <code>markupDescription</code> has to be set to <code>true</code>.</li>
@@ -60,11 +62,15 @@ function(
 		 * <li> type - The type of message </li>
 		 * <li> title/subtitle - The title and subtitle of the message</li>
 		 * <li> description - The long text description of the message</li>
+		 * <li> activeTitle - Determines whether the title of the item is interactive</li>
 		 * </ul>
 		 * <h3>Usage</h3>
 		 * With the message concept, MessagePopover provides a way to centrally manage messages and show them to the user without additional work for the developer.
 		 * The message popover is triggered from a messaging button in the footer toolbar. If an error has occurred at any validation point,
 		 * the total number of messages should be incremented, but the user's work shouldn't be interrupted.
+		 * Navigation between the message item and the source of the error can be created, if needed by the application.
+		 * This can be done by setting the <code>activeTitle</code> property to true and providing a handler for the <code>activeTitlePress</code> event.
+		 * In addition, you can achieve the same functionality inside a different container using the sap.m.MessageView control.
 		 * <h3>Responsive Behavior</h3>
 		 * On mobile phones, the message popover is automatically shown in full screen mode.<br>
 		 * On desktop and tablet, the message popover opens in a popover.<br>
@@ -72,7 +78,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -219,7 +225,20 @@ function(
 					/**
 					 * This event will be fired when a validation of a URL from long text description is ready
 					 */
-					urlValidated: {}
+					urlValidated: {},
+
+					/**
+					 * This event will be fired when an active title of a MessageItem is clicked
+					 * @since 1.58
+					 */
+					activeTitlePress: {
+						parameters: {
+							/**
+							 * Refers to the message item that contains the active Title
+							 */
+							item: { type: "sap.m.MessageItem" }
+						}
+					}
 				}
 			}
 		});
@@ -256,7 +275,7 @@ function(
 							},
 							error: function() {
 								var sError = "A request has failed for long text data. URL: " + sLongTextUrl;
-								jQuery.sap.log.error(sError);
+								Log.error(sError);
 								config.promise.reject(sError);
 							}
 						});
@@ -295,6 +314,7 @@ function(
 		MessagePopover.prototype.init = function () {
 			var that = this;
 			var oPopupControl;
+			this._oOpenByControl = null;
 
 			this._oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
@@ -410,6 +430,13 @@ function(
 			}
 
 			this._setInitialFocus();
+
+			// If for some reason the control that opened the popover
+			// is destroyed or no longer visible in the DOM
+			// we should close the popover as its position cannot be determined anymore
+			if (this._oOpenByControl && !this._oOpenByControl.getVisible()) {
+				this._oPopover.close();
+			}
 		};
 
 		/**
@@ -435,6 +462,7 @@ function(
 		 */
 		MessagePopover.prototype.exit = function () {
 			this._oResourceBundle = null;
+			this._oOpenByControl = null;
 
 			if (this._oMessageView) {
 				this._oMessageView.destroy();
@@ -462,9 +490,15 @@ function(
 			var oResponsivePopoverControl = this._oPopover.getAggregation("_popup"),
 				oParent = oControl.getParent();
 
+			this._oOpenByControl = oControl;
+
 			// If MessagePopover is opened from an instance of sap.m.Toolbar and is instance of sap.m.Popover remove the Arrow
 			if (oResponsivePopoverControl instanceof Popover) {
 				if ((oParent instanceof Toolbar || oParent instanceof Bar || oParent instanceof SemanticPage)) {
+					oResponsivePopoverControl._minDimensions = {
+						width: 400,
+						height: 128
+					};
 					oResponsivePopoverControl.setShowArrow(false);
 					oResponsivePopoverControl.setResizable(true);
 				} else {
@@ -560,6 +594,13 @@ function(
 				oMessageView;
 
 			oMessageView = new MessageView(this.getId() + "-messageView", {
+				activeTitlePress: function (oEvent) {
+					//close the Popover on mobile before navigating because it is on fullscreen
+					if (sap.ui.Device.system.phone) {
+						that.close();
+					}
+					that.fireActiveTitlePress({ item: oEvent.getParameter("item")});
+				},
 				listSelect: function(oEvent) {
 					that.fireListSelect({messageTypeFilter: oEvent.getParameter('messageTypeFilter')});
 				},
@@ -658,31 +699,6 @@ function(
 				// if current page is the list page - set initial focus to the list.
 				// otherwise use default functionality built-in the popover
 				this._oPopover.setInitialFocus(this._oMessageView._oLists[this._sCurrentList || 'all']);
-			}
-		};
-
-		/**
-		 * Handles navigate event of the NavContainer
-		 *
-		 * @private
-		 */
-		MessagePopover.prototype._afterNavigate = function () {
-			// Just wait for the next tick to apply the focus
-			jQuery.sap.delayedCall(0, this, "_restoreFocus");
-		};
-
-		/**
-		 * Restores the focus after navigation
-		 *
-		 * @private
-		 */
-		MessagePopover.prototype._restoreFocus = function () {
-			if (this._oMessageView._isListPage()) {
-				var oRestoreFocus = this._oRestoreFocus && this._oRestoreFocus.control(0);
-
-				oRestoreFocus && oRestoreFocus.focus();
-			} else {
-				this._oMessageView._oBackButton.focus();
 			}
 		};
 

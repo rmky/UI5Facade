@@ -5,8 +5,14 @@
  */
 
 // Provides helper sap.ui.table.TableUtils.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter', 'sap/ui/Device', './library'],
-	function(jQuery, Element, Sorter, Device, library) {
+sap.ui.define([
+	'sap/ui/core/Element',
+	'sap/ui/model/Sorter',
+	'sap/ui/Device',
+	'./library',
+	"sap/ui/thirdparty/jquery"
+],
+	function(Element, Sorter, Device, library, jQuery) {
 	"use strict";
 
 	/**
@@ -15,7 +21,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Grouping...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @namespace
 	 * @alias sap.ui.table.TableGrouping
 	 * @private
@@ -80,10 +86,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 		 * @private
 		 */
 		getModeCssClass : function(oTable) {
-			if (oTable._mode) {
-				return "sapUiTable" + oTable._mode + "Mode";
+			switch (oTable._mode) {
+				case "Group":
+					return "sapUiTableGroupMode";
+				case "Tree":
+					return "sapUiTableTreeMode";
+				default:
+					return null;
 			}
-			return null;
 		},
 
 		/*
@@ -100,7 +110,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 				return oTable._bShowGroupMenuButton;
 			}
 
-			if (!Device.system.desktop && TableGrouping.TableUtils.isInstanceOf(oTable, "sap/ui/table/AnalyticalTable")) {
+			if (!Device.system.desktop && oTable.isA("sap.ui.table.AnalyticalTable")) {
 				oTable._bShowGroupMenuButton = true;
 			} else {
 				oTable._bShowGroupMenuButton = false;
@@ -296,13 +306,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 		 * @private
 		 */
 		_calcGroupIndent : function(oTable, iLevel, bChildren, bSum) {
-			if (TableGrouping.TableUtils.isInstanceOf(oTable, "sap/ui/table/TreeTable")) {
+			if (oTable.isA("sap.ui.table.TreeTable")) {
 				var iIndent = 0;
 				for (var i = 0; i < iLevel; i++) {
 					iIndent = iIndent + (i < 2 ? 12 : 8);
 				}
 				return iIndent;
-			} else if (TableGrouping.TableUtils.isInstanceOf(oTable, "sap/ui/table/AnalyticalTable")) {
+			} else if (oTable.isA("sap.ui.table.AnalyticalTable")) {
 				var iIndent = 0;
 				iLevel = iLevel - 1;
 				iLevel = !bChildren && !bSum ? iLevel - 1 : iLevel;
@@ -383,7 +393,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 					.toggleClass("sapUiTableGroupHeader", bChildren)
 					.toggleClass("sapUiTableRowHidden", bChildren && bHidden || oRow._bHidden);
 
-				jQuery.sap.byId(oRow.getId() + "-groupHeader")
+				jQuery(document.getElementById(oRow.getId() + "-groupHeader"))
 					.toggleClass("sapUiTableGroupIconOpen", bChildren && bExpanded)
 					.toggleClass("sapUiTableGroupIconClosed", bChildren && !bExpanded)
 					.attr("title", oTable._getShowStandardTooltips() && sGroupHeaderText ? sGroupHeaderText : null)
@@ -557,8 +567,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 
 			// check for grouping being supported or not (only for client ListBindings!!)
 			var oGroupBy = sap.ui.getCore().byId(oTable.getGroupBy());
-			var bIsSupported = oGroupBy && oGroupBy.getGrouped() &&
-				oBinding && TableGrouping.TableUtils.isInstanceOf(oBinding, "sap/ui/model/ClientListBinding");
+			var bIsSupported = oGroupBy && oGroupBy.getGrouped() && TableGrouping.TableUtils.isA(oBinding, "sap.ui.model.ClientListBinding");
 
 			// only enhance the binding if it has not been done yet and supported!
 			if (!bIsSupported || oBinding._modified) {

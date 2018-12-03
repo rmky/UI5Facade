@@ -6,13 +6,14 @@
 
 // Provides control sap.m.SplitApp.
 sap.ui.define([
-	'jquery.sap.global',
 	'./SplitContainer',
 	'./library',
 	'sap/ui/Device',
-	'./SplitAppRenderer'
+	'./SplitAppRenderer',
+	"sap/ui/util/Mobile",
+	"sap/ui/thirdparty/jquery"
 ],
-	function(jQuery, SplitContainer, library, Device, SplitAppRenderer) {
+	function(SplitContainer, library, Device, SplitAppRenderer, Mobile, jQuery) {
 	"use strict";
 
 	/**
@@ -49,7 +50,7 @@ sap.ui.define([
 	 * @extends sap.m.SplitContainer
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -86,7 +87,7 @@ sap.ui.define([
 			 *
 			 * On Android, these icons may or may not be used by the device. Chances can be improved by adding glare effect, rounded corners, setting the file name to end with "-precomposed.png", and setting the homeIconPrecomposed property to true.
 			 */
-			homeIcon : {type : "any", group : "Misc", defaultValue : null}
+			homeIcon : {type : "any", group : "Misc", defaultValue : null} // TODO remove after 1.62 version
 		},
 		events : {
 
@@ -121,7 +122,7 @@ sap.ui.define([
 			SplitContainer.prototype.init.apply(this, arguments);
 		}
 		this.addStyleClass("sapMSplitApp");
-		jQuery.sap.initMobile({
+		Mobile.init({
 			viewport: !this._debugZoomAndScroll,
 			statusBar: "default",
 			hideBrowser: true,
@@ -139,7 +140,7 @@ sap.ui.define([
 		if (SplitContainer.prototype.onBeforeRendering) {
 			SplitContainer.prototype.onBeforeRendering.apply(this, arguments);
 		}
-		jQuery.sap.initMobile({
+		Mobile.init({
 			homeIcon: this.getHomeIcon()
 		});
 	};

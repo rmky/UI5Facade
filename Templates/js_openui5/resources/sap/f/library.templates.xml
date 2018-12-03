@@ -21,6 +21,8 @@
 	dependents: [], // sap.ui.core.Element, since 1.19
 	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	detailBox: undefined, // sap.m.LightBox, since 1.48
+	ariaDescribedBy: [], // sap.ui.core.Control
+	ariaLabelledBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this],
@@ -44,6 +46,8 @@
 	customDisplaySize="3rem"
 	customFontSize="1.125rem"
 	imageFitType="Cover"
+	ariaDescribedBy=""
+	ariaLabelledBy=""
 	validateFieldGroup=""
 	press="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
@@ -114,6 +118,7 @@
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	pinnable: true, // boolean
+	backgroundDesign: undefined, // sap.m.BackgroundDesign, since 1.58
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -133,6 +138,7 @@
 	visible="true"
 	fieldGroupIds=""
 	pinnable="true"
+	backgroundDesign=""
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
@@ -152,6 +158,7 @@
 	fieldGroupIds: [], // string[], since 1.31
 	primaryArea: sap.f.DynamicPageTitleArea.Begin, // sap.f.DynamicPageTitleArea, since 1.50
 	areaShrinkRatio: "1:1.6:1.6", // sap.f.DynamicPageTitleShrinkRatio, since 1.54
+	backgroundDesign: undefined, // sap.m.BackgroundDesign, since 1.58
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -183,6 +190,7 @@
 	fieldGroupIds=""
 	primaryArea="Begin"
 	areaShrinkRatio="1:1.6:1.6"
+	backgroundDesign=""
 	validateFieldGroup=""
 	stateChange="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
@@ -754,11 +762,14 @@
 	toggleHeaderOnTitleClick: true, // boolean
 	showFooter: false, // boolean
 	titlePrimaryArea: sap.f.DynamicPageTitleArea.Begin, // sap.f.DynamicPageTitleArea, since 1.52
+	titleAreaShrinkRatio: "1:1.6:1.6", // sap.f.DynamicPageTitleShrinkRatio, since 1.58
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
 	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	titleHeading: undefined, // sap.ui.core.Control
+	titleExpandedHeading: undefined, // sap.ui.core.Control, since 1.58
+	titleSnappedHeading: undefined, // sap.ui.core.Control, since 1.58
 	titleBreadcrumbs: undefined, // sap.m.IBreadcrumbs, since 1.52
 	titleSnappedContent: [], // sap.ui.core.Control
 	titleExpandedContent: [], // sap.ui.core.Control
@@ -809,11 +820,14 @@
 	toggleHeaderOnTitleClick="true"
 	showFooter="false"
 	titlePrimaryArea="Begin"
+	titleAreaShrinkRatio="1:1.6:1.6"
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<titleHeading></titleHeading> <!-- sap.ui.core.Control -->
+		<titleExpandedHeading></titleExpandedHeading> <!-- sap.ui.core.Control, since 1.58 -->
+		<titleSnappedHeading></titleSnappedHeading> <!-- sap.ui.core.Control, since 1.58 -->
 		<titleBreadcrumbs></titleBreadcrumbs> <!-- sap.m.IBreadcrumbs, since 1.52 -->
 		<titleSnappedContent></titleSnappedContent> <!-- sap.ui.core.Control -->
 		<titleExpandedContent></titleExpandedContent> <!-- sap.ui.core.Control -->

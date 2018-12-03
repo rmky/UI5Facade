@@ -40,7 +40,7 @@ sap.ui.define([
 	 * @extends sap.m.Tile
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -120,6 +120,14 @@ sap.ui.define([
 			this._oImageControl.destroy();
 			this._oImageControl = null;
 		}
+	};
+
+	StandardTile.prototype.ontap = function() {
+		// on IE when you click the focus is not applied so we have to set it explicitly
+		if (Device.browser.msie) {
+			this.focus();
+		}
+		Tile.prototype.ontap.apply(this, arguments);
 	};
 
 	/**

@@ -6,19 +6,19 @@
 
 // Provides control sap.f.FlexibleColumnLayout.
 sap.ui.define([
-    "jquery.sap.global",
-    "./library",
-    "sap/ui/Device",
-    "sap/ui/core/ResizeHandler",
-    "sap/ui/core/Control",
-    "sap/m/library",
-    "sap/m/Button",
-    "sap/m/NavContainer",
-    "sap/ui/core/Configuration",
-    "./FlexibleColumnLayoutRenderer",
-    "jquery.sap.events"
+	"sap/ui/thirdparty/jquery",
+	"./library",
+	"sap/ui/Device",
+	"sap/ui/core/ResizeHandler",
+	"sap/ui/core/Control",
+	"sap/m/library",
+	"sap/m/Button",
+	"sap/m/NavContainer",
+	"sap/ui/core/Configuration",
+	"./FlexibleColumnLayoutRenderer",
+	"sap/base/assert"
 ], function(
-    jQuery,
+	jQuery,
 	library,
 	Device,
 	ResizeHandler,
@@ -27,7 +27,8 @@ sap.ui.define([
 	Button,
 	NavContainer,
 	Configuration,
-	FlexibleColumnLayoutRenderer
+	FlexibleColumnLayoutRenderer,
+	assert
 ) {
 	"use strict";
 
@@ -81,7 +82,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -589,6 +590,7 @@ sap.ui.define([
 	});
 
 	FlexibleColumnLayout.COLUMN_RESIZING_ANIMATION_DURATION = 560; // ms
+	FlexibleColumnLayout.PINNED_COLUMN_CLASS_NAME = "sapFFCLPinnedColumn";
 
 	FlexibleColumnLayout.prototype.init = function () {
 
@@ -600,6 +602,26 @@ sap.ui.define([
 
 		// Holds an object, responsible for saving and searching the layout history
 		this._oLayoutHistory = new LayoutHistory();
+
+		// Indicates if there are rendered pages inside columns
+		this._oRenderedColumnPagesBoolMap = {};
+	};
+
+	/**
+	 * Called on after rendering of the internal <code>NavContainer</code> instances to check their rendered pages
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._onNavContainerRendered = function (oEvent) {
+
+		var oColumnNavContainer = oEvent.srcControl,
+			bHasPages = oColumnNavContainer.getPages().length > 0,
+			bHadAnyColumnPagesRendered = this._hasAnyColumnPagesRendered();
+
+		this._setColumnPagesRendered(oColumnNavContainer.getId(), bHasPages);
+
+		if (this._hasAnyColumnPagesRendered() !== bHadAnyColumnPagesRendered) {
+			this._hideShowArrows();
+		}
 	};
 
 	/**
@@ -610,8 +632,7 @@ sap.ui.define([
 	 */
 	FlexibleColumnLayout.prototype._createNavContainer = function (sColumn) {
 		var sColumnCap = sColumn.charAt(0).toUpperCase() + sColumn.slice(1);
-
-		return new NavContainer(this.getId() + "-" + sColumn + "ColumnNav", {
+		var oNavContainer = new NavContainer(this.getId() + "-" + sColumn + "ColumnNav", {
 			navigate: function(oEvent){
 				this._handleNavigationEvent(oEvent, false, sColumn);
 			}.bind(this),
@@ -620,6 +641,10 @@ sap.ui.define([
 			}.bind(this),
 			defaultTransitionName: this["getDefaultTransitionName" + sColumnCap + "Column"]()
 		});
+
+		oNavContainer.addDelegate({"onAfterRendering": this._onNavContainerRendered}, this);
+
+		return oNavContainer;
 	};
 
 	/**
@@ -750,12 +775,13 @@ sap.ui.define([
 	};
 
 	FlexibleColumnLayout.prototype.exit = function () {
+		this._oRenderedColumnPagesBoolMap = null;
 		this._deregisterResizeHandler();
 		this._handleEvent(jQuery.Event("Destroy"));
 	};
 
 	FlexibleColumnLayout.prototype._registerResizeHandler = function () {
-		jQuery.sap.assert(!this._iResizeHandlerId, "Resize handler already registered");
+		assert(!this._iResizeHandlerId, "Resize handler already registered");
 		this._iResizeHandlerId = ResizeHandler.register(this, this._onResize.bind(this));
 	};
 
@@ -864,7 +890,10 @@ sap.ui.define([
 			aColumns = ["begin", "mid", "end"],
 			bRtl = sap.ui.getCore().getConfiguration().getRTL(),
 			aActiveColumns,
-			iVisibleColumnsCount;
+			iVisibleColumnsCount,
+			iDefaultVisibleColumnsCount,
+			sLayout,
+			sLastVisibleColumn;
 
 		// Stop here if the control isn't rendered yet
 		if (!this.isActive()) {
@@ -875,6 +904,12 @@ sap.ui.define([
 		if (iVisibleColumnsCount === 0) {
 			return;
 		}
+
+		sLayout = this.getLayout();
+		// the default number of columns is the number at maximum control width
+		iDefaultVisibleColumnsCount = this._getMaxColumnsCountForLayout(sLayout, FlexibleColumnLayout.DESKTOP_BREAKPOINT);
+
+		sLastVisibleColumn = aColumns[iDefaultVisibleColumnsCount - 1];
 
 		// Calculate the total margin between columns (f.e. for 3 columns - 2 * 8px)
 		iTotalMargin = (iVisibleColumnsCount - 1) * FlexibleColumnLayout.COLUMN_MARGIN;
@@ -911,6 +946,11 @@ sap.ui.define([
 
 				var oColumnDomRef = oColumn.get(0);
 
+				// If the column count increases (but not due to closing a fullscreen layout), then prevent
+				// the new column from being animated.
+				oColumn.toggleClass(FlexibleColumnLayout.PINNED_COLUMN_CLASS_NAME,
+					this._shouldPinColumn(iDefaultVisibleColumnsCount, sColumn === sLastVisibleColumn));
+
 				// Suspending ResizeHandler temporarily
 				ResizeHandler.suspend(oColumnDomRef);
 
@@ -923,6 +963,9 @@ sap.ui.define([
 				oColumn._iResumeResizeHandlerTimeout = setTimeout(function() {
 					ResizeHandler.resume(oColumnDomRef);
 					oColumn._iResumeResizeHandlerTimeout = null;
+
+					// Clear pinning after transitions are finished
+					oColumn.toggleClass(FlexibleColumnLayout.PINNED_COLUMN_CLASS_NAME, false);
 				}, FlexibleColumnLayout.COLUMN_RESIZING_ANIMATION_DURATION);
 			}
 
@@ -957,6 +1000,33 @@ sap.ui.define([
 			this._$columns[aActiveColumns[0]].addClass("sapFFCLColumnFirstActive");
 			this._$columns[aActiveColumns[aActiveColumns.length - 1]].addClass("sapFFCLColumnLastActive");
 		}
+
+		this._storePreviousResizingInfo(iDefaultVisibleColumnsCount);
+	};
+
+	/**
+	 * Stores information from the last columns' resizing.
+	 *
+	 * @param iVisibleColumnsCount
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._storePreviousResizingInfo = function (iVisibleColumnsCount) {
+		var oCurrentLayout = this.getLayout();
+
+		this._iPreviousVisibleColumnsCount = iVisibleColumnsCount;
+		this._bWasFullScreen = oCurrentLayout === LT.MidColumnFullScreen || oCurrentLayout === LT.EndColumnFullScreen;
+	};
+
+	/**
+	 * Decides whether or not a given column should be pinned (not animated).
+	 *
+	 * @param iVisibleColumnsCount
+	 * @param bIsLastColumn
+	 * @returns {boolean|*}
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._shouldPinColumn = function (iVisibleColumnsCount, bIsLastColumn) {
+		return (iVisibleColumnsCount > this._iPreviousVisibleColumnsCount) && !this._bWasFullScreen && bIsLastColumn;
 	};
 
 	/**
@@ -1054,6 +1124,37 @@ sap.ui.define([
 		return 0;
 	};
 
+	/**
+	 * Returns the maximum number of columns that can be displayed for given layout and control width.
+	 * @param {string} sLayout the layout
+	 * @param {int} iWidth
+	 * @returns {number}
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._getMaxColumnsCountForLayout = function (sLayout, iWidth) {
+		var iColumnCount = this._getMaxColumnsCountForWidth(iWidth),
+			sColumnWidthDistribution = this._getColumnWidthDistributionForLayout(sLayout, false, iColumnCount),
+			aSizes = sColumnWidthDistribution.split("/"),
+			aMap = {
+				begin: 0,
+				mid: 1,
+				end: 2
+			},
+			sSize,
+			iSize,
+			iCount = 0;
+
+		Object.keys(aMap).forEach(function(sColumn) {
+			sSize = aSizes[aMap[sColumn]];
+			iSize = parseInt(sSize, 10);
+			if (iSize) {
+				iCount++;
+			}
+		});
+
+		return iCount;
+	};
+
 	FlexibleColumnLayout.prototype._onResize = function (oEvent) {
 		var iOldWidth = oEvent.oldSize.width,
 			iNewWidth = oEvent.size.width,
@@ -1079,6 +1180,27 @@ sap.ui.define([
 	};
 
 	/**
+	 * Sets a flag if the given <code>NavContainers</code> has pages rendered in DOM
+	 * @param sId the container Id
+	 * @param {boolean} bHasPages flag
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._setColumnPagesRendered = function (sId, bHasPages) {
+		this._oRenderedColumnPagesBoolMap[sId] = bHasPages;
+	};
+
+	/**
+	 * Checks if any of the internal <code>NavContainer</code> instances has pages rendered in DOM
+	 * @returns {boolean}
+	 * @private
+	 */
+	FlexibleColumnLayout.prototype._hasAnyColumnPagesRendered = function () {
+		return Object.keys(this._oRenderedColumnPagesBoolMap).some(function(sKey) {
+			return this._oRenderedColumnPagesBoolMap[sKey];
+		}, this);
+	};
+
+	/**
 	 * Called when the layout arrows were clicked.
 	 * @param {string} sShiftDirection - left/right (direction of the arrow)
 	 * @private
@@ -1088,7 +1210,7 @@ sap.ui.define([
 			bIsLayoutValid = typeof FlexibleColumnLayout.SHIFT_TARGETS[sCurrentLayout] !== "undefined" && typeof FlexibleColumnLayout.SHIFT_TARGETS[sCurrentLayout][sShiftDirection] !== "undefined",
 			sNewLayout;
 
-		jQuery.sap.assert(bIsLayoutValid, "An invalid layout was used for determining arrow behavior");
+		assert(bIsLayoutValid, "An invalid layout was used for determining arrow behavior");
 		sNewLayout = bIsLayoutValid ? FlexibleColumnLayout.SHIFT_TARGETS[sCurrentLayout][sShiftDirection] : LT.OneColumn;
 
 		this.setLayout(sNewLayout);
@@ -1110,7 +1232,8 @@ sap.ui.define([
 		var sLayout = this.getLayout(),
 			oMap = {},
 			aNeededArrows = [],
-			iMaxColumnsCount;
+			iMaxColumnsCount,
+			bIsNavContainersContentRendered;
 
 		// Stop here if the control isn't rendered yet or in phone mode, where arrows aren't necessary
 		if (!this.isActive() || Device.system.phone) {
@@ -1133,10 +1256,11 @@ sap.ui.define([
 			}
 		}
 
-		this._toggleButton("beginBack", aNeededArrows.indexOf("beginBack") !== -1);
-		this._toggleButton("midForward", aNeededArrows.indexOf("midForward") !== -1);
-		this._toggleButton("midBack", aNeededArrows.indexOf("midBack") !== -1);
-		this._toggleButton("endForward", aNeededArrows.indexOf("endForward") !== -1);
+		bIsNavContainersContentRendered = this._hasAnyColumnPagesRendered();
+
+		Object.keys(this._$columnButtons).forEach(function (key) {
+			this._toggleButton(key, bIsNavContainersContentRendered && aNeededArrows.indexOf(key) !== -1);
+		}, this);
 	};
 
 	/**
@@ -1570,10 +1694,11 @@ sap.ui.define([
 	 * @sap-restricted sap.f.FlexibleColumnLayoutSemanticHelper
 	 * @private
 	 */
-	FlexibleColumnLayout.prototype._getColumnWidthDistributionForLayout = function (sLayout, bAsArray) {
-		var iMaxColumnsCount = this.getMaxColumnsCount(),
-			oMap = {},
+	FlexibleColumnLayout.prototype._getColumnWidthDistributionForLayout = function (sLayout, bAsArray, iMaxColumnsCount) {
+		var oMap = {},
 			vResult;
+
+		iMaxColumnsCount || (iMaxColumnsCount = this.getMaxColumnsCount());
 
 		if (iMaxColumnsCount === 0) {
 

@@ -5,8 +5,16 @@
  */
 
 // Provides control sap.m.App.
-sap.ui.define(['jquery.sap.global', './NavContainer', './library', './AppRenderer'],
-	function(jQuery, NavContainer, library, AppRenderer) {
+sap.ui.define([
+	'./NavContainer',
+	'./library',
+	'./AppRenderer',
+	"sap/ui/util/Mobile",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+	function(NavContainer, library, AppRenderer, Mobile, Log, jQuery) {
+
 	"use strict";
 
 
@@ -38,7 +46,7 @@ sap.ui.define(['jquery.sap.global', './NavContainer', './library', './AppRendere
 	 * @extends sap.m.NavContainer
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -103,7 +111,25 @@ sap.ui.define(['jquery.sap.global', './NavContainer', './library', './AppRendere
 			 * This can be used to make the application content better readable by making the background image partly transparent.
 			 * @since 1.11.2
 			 */
-			backgroundOpacity : {type : "float", group : "Appearance", defaultValue : 1}
+			backgroundOpacity : {type : "float", group : "Appearance", defaultValue : 1},
+
+			/**
+			 * Determines whether the <code>App</code> is displayed without address bar when
+			 * opened from an exported home screen icon on a mobile device.
+			 *
+			 * Keep in mind that if enabled, there is no back button provided by the browser and the app
+			 * must provide own navigation on all displayed pages to avoid dead ends.
+			 *
+			 * <b>Note</b>
+			 * The property can be toggled, but it doesn't take effect in real time.
+			 * It takes the set value at the moment when the home screen icon is exported by the user.
+			 * For example, if the icon is exported while the property is set to <code>true</code>,
+			 * the <code>App</code> will have no address bar when opened from that same icon regardless
+			 * of a changed property value to <code>false</code> at a later time.
+			 *
+			 * @since 1.58.0
+			 */
+			mobileWebAppCapable : {type : "boolean", group : "Appearance", defaultValue : true}
 		},
 		events : {
 
@@ -128,7 +154,7 @@ sap.ui.define(['jquery.sap.global', './NavContainer', './library', './AppRendere
 		NavContainer.prototype.init.apply(this, arguments);
 
 		this.addStyleClass("sapMApp");
-		jQuery.sap.initMobile({
+		Mobile.init({
 			viewport: !this._debugZoomAndScroll,
 			statusBar: "default",
 			hideBrowser: true,
@@ -143,8 +169,9 @@ sap.ui.define(['jquery.sap.global', './NavContainer', './library', './AppRendere
 		if (NavContainer.prototype.onBeforeRendering) {
 			NavContainer.prototype.onBeforeRendering.apply(this, arguments);
 		}
-		jQuery.sap.initMobile({
-			homeIcon: this.getHomeIcon()
+		Mobile.init({
+			homeIcon: this.getHomeIcon(),
+			mobileWebAppCapable: this.getMobileWebAppCapable()
 		});
 	};
 
@@ -175,7 +202,7 @@ sap.ui.define(['jquery.sap.global', './NavContainer', './library', './AppRendere
 		jQuery(window).unbind("resize", this._handleOrientationChange);
 
 		if (this._sInitTimer) {
-			jQuery.sap.clearDelayedCall(this._sInitTimer);
+			clearTimeout(this._sInitTimer);
 		}
 	};
 
@@ -195,7 +222,7 @@ sap.ui.define(['jquery.sap.global', './NavContainer', './library', './AppRendere
 
 	App.prototype.setBackgroundOpacity = function(fOpacity) {
 		if (fOpacity > 1 || fOpacity < 0) {
-			jQuery.sap.log.warning("Invalid value " + fOpacity + " for App.setBackgroundOpacity() ignored. Valid values are: floats between 0 and 1.");
+			Log.warning("Invalid value " + fOpacity + " for App.setBackgroundOpacity() ignored. Valid values are: floats between 0 and 1.");
 			return this;
 		}
 		this.$("BG").css("opacity", fOpacity);

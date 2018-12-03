@@ -692,6 +692,7 @@
 
 							// Get next entry
 							var sUrl = resolveURL(oXhr.url);
+							sUrl = new URI(sUrl).resource();
 							sUrl = _private.replaceEntriesUrlByRegex(sUrl);
 							var sUrlGroup = oXhr.method + sUrl;
 

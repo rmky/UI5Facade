@@ -41,11 +41,13 @@ sap.ui.define(['sap/ui/Device', 'sap/ui/core/InvisibleText'],
 		if (!aTokens.length) {
 			oRm.addClass("sapMTokenizerEmpty");
 		}
+
+		oRm.addStyle("max-width", oControl.getMaxWidth());
 		var sPixelWdth = oControl.getWidth();
 		if (sPixelWdth) {
 			oRm.addStyle("width", sPixelWdth);
-			oRm.writeStyles();
 		}
+		oRm.writeStyles();
 
 		oRm.writeClasses();
 
@@ -69,6 +71,7 @@ sap.ui.define(['sap/ui/Device', 'sap/ui/core/InvisibleText'],
 		if ((Device.system.desktop || Device.system.combi) && aTokens.length) {
 			oRm.write("<div id='" + oControl.getId() + "-clip' class='sapMTokenizerClip'");
 			if (window.clipboardData) { //IE
+				/* TODO remove after 1.62 version */
 				oRm.writeAttribute("contenteditable", "true");
 				oRm.writeAttribute("tabindex", "-1");
 			}
@@ -85,6 +88,7 @@ sap.ui.define(['sap/ui/Device', 'sap/ui/core/InvisibleText'],
 		TokenizerRenderer._renderTokens(oRm, oControl);
 
 		oRm.write("</div>");
+		TokenizerRenderer._renderIndicator(oRm, oControl);
 		oRm.write("</div>");
 	};
 
@@ -108,6 +112,21 @@ sap.ui.define(['sap/ui/Device', 'sap/ui/core/InvisibleText'],
 				oRm.renderControl(tokens[i]);
 			}
 		}
+	};
+
+	/**
+	 * Renders the N-more indicator
+	 *
+	 * @param {sap.ui.core.RenderManager} oRm the RenderManager that can be used for writing to the render output buffer
+	 * @param {sap.ui.core.Control} oControl an object representation of the control that should be rendered
+	 */
+	TokenizerRenderer._renderIndicator = function(oRm, oControl){
+		oRm.write("<span");
+		oRm.addClass("sapMTokenizerIndicator");
+		oRm.addClass("sapUiHidden");
+		oRm.writeClasses();
+		oRm.write(">");
+		oRm.write("</span>");
 	};
 
 	return TokenizerRenderer;

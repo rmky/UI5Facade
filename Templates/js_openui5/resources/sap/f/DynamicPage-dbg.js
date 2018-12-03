@@ -6,17 +6,17 @@
 
 // Provides control sap.f.DynamicPage.
 sap.ui.define([
-	"jquery.sap.global",
 	"./library",
 	"sap/ui/core/Control",
-	"sap/ui/core/ScrollBar",
+	"sap/m/ScrollBar",
 	"sap/ui/core/ResizeHandler",
 	"sap/ui/core/delegate/ScrollEnablement",
 	"sap/ui/Device",
 	"sap/f/DynamicPageTitle",
-	"./DynamicPageRenderer"
+	"./DynamicPageRenderer",
+	"sap/base/Log",
+	"sap/ui/dom/getScrollbarSize"
 ], function(
-	jQuery,
 	library,
 	Control,
 	ScrollBar,
@@ -24,7 +24,9 @@ sap.ui.define([
 	ScrollEnablement,
 	Device,
 	DynamicPageTitle,
-	DynamicPageRenderer
+	DynamicPageRenderer,
+	Log,
+	getScrollbarSize
 ) {
 	"use strict";
 
@@ -84,12 +86,14 @@ sap.ui.define([
 	 * <h3>Responsive Behavior</h3>
 	 *
 	 * The responsive behavior of the <code>DynamicPage</code> depends on the behavior of
-	 * the content that is displayed.
+	 * the content that is displayed. To adjust the <code>DynamicPage</code> content
+	 * padding, the <code>sapUiContentPadding</code>, <code>sapUiNoContentPadding</code>,
+	 * and <code>sapUiResponsiveContentPadding</code> CSS classes can be used.
 	 *
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -131,6 +135,8 @@ sap.ui.define([
 				 * If set to <code>false</code>, the <code>DynamicPageTitle</code> is not clickable,
 				 * the visual indicators are not available and the application
 				 * must provide other means for expanding/collapsing the <code>DynamicPageHeader</code>, if necessary.
+				 *
+				 * <b>Note: </b> This property is taken into account only if a non-empty <code>header</code> aggregation is provided.
 				 */
 				toggleHeaderOnTitleClick: {type: "boolean", group: "Behavior", defaultValue: true},
 
@@ -163,14 +169,23 @@ sap.ui.define([
 				/**
 				 * <code>DynamicPage</code> content.
 				 *
+				 * <b>Note: </b> You can change the default paddings by adding the following CSS classes:
+				 * <ul>
+				 * <li><code>sapUiContentPadding</code></li>
+				 * <li><code>sapUiNoContentPadding</code></li>
+				 * <li><code>sapUiResponsiveContentPadding</code></li>
+				 * </ul>
+				 * For more information, see
+				 * {@link topic:c71f6df62dae47ca8284310a6f5fc80a Using Container Content Padding CSS Classes}.
+				 *
 				 * <b>Note:</b> The SAP Fiori Design guidelines require that the
 				 * <code>DynamicPageHeader</code>'s content and the <code>DynamicPage</code>'s content
 				 * are aligned vertically. When using {@link sap.ui.layout.form.Form},
 				 * {@link sap.m.Panel}, {@link sap.m.Table} and {@link sap.m.List} in the content area of
-				 * <code>DynamicPage</code>, you need to adjust their left text offset to achieve the
-				 * vertical alignment. To do this, apply the <code>sapFDynamicPageAlignContent</code>
-				 * CSS class to them and set their <code>width</code> property to <code>auto</code>
-				 * (if not set by default).
+				 * <code>DynamicPage</code>, if the content is not already aligned, you need to adjust
+				 * their left text offset to achieve the vertical alignment. To do this, apply the
+				 * <code>sapFDynamicPageAlignContent</code> CSS class to them and set their <code>width</code>
+				 * property to <code>auto</code> (if not set by default).
 				 *
 				 * Example:
 				 *
@@ -178,9 +193,14 @@ sap.ui.define([
 				 * <code> &lt;Panel class=“sapFDynamicPageAlignContent” width=“auto”&gt;&lt;/Panel&gt; </code>
 				 * </pre>
 				 *
-				 * Please keep in mind that the alignment is not possible when the controls are placed in
-				 * a {@link sap.ui.layout.Grid} or in other layout controls that use
-				 * <code>overflow:hidden</code> CSS property.
+				 * Please keep in mind that the alignment is not possible in the following cases:
+				 * <ul>
+				 * <li> When the controls are placed in an {@link sap.ui.layout.Grid} or other layout
+				 * controls that use <code>overflow:hidden</code> CSS property</li>
+				 * <li> In case any of the following CSS classes is applied to
+				 * <code>DynamicPage</code>: <code>sapUiContentPadding</code>,
+				 * <code>sapUiNoContentPadding</code> or <code>sapUiResponsiveContentPadding</code></li>
+				 * </ul>
 				 *
 				 */
 				content: {type: "sap.ui.core.Control", multiple: false},
@@ -193,7 +213,7 @@ sap.ui.define([
 				/**
 				 * <code>DynamicPage</code> custom <code>ScrollBar</code>.
 				 */
-				_scrollBar: {type: "sap.ui.core.ScrollBar", multiple: false, visibility: "hidden"}
+				_scrollBar: {type: "sap.ui.core.Control", multiple: false, visibility: "hidden"}
 			},
 			designtime: "sap/f/designtime/DynamicPage.designtime"
 		}
@@ -279,6 +299,7 @@ sap.ui.define([
 		this._bExpandingWithAClick = false;
 		this._bSuppressToggleHeaderOnce = false;
 		this._headerBiggerThanAllowedHeight = false;
+		/* TODO remove after 1.62 version */
 		this._bMSBrowser = Device.browser.internet_explorer || Device.browser.edge || false;
 		this._oScrollHelper = new ScrollEnablement(this, this.getId() + "-content", {
 			horizontal: false,
@@ -287,14 +308,8 @@ sap.ui.define([
 	};
 
 	DynamicPage.prototype.onBeforeRendering = function () {
-		var oDynamicPageTitle = this.getTitle();
-
 		if (!this._preserveHeaderStateOnScroll()) {
 			this._attachPinPressHandler();
-		}
-
-		if (exists(oDynamicPageTitle)) {
-			oDynamicPageTitle._toggleFocusableState(this.getToggleHeaderOnTitleClick());
 		}
 
 		this._attachTitlePressHandler();
@@ -310,7 +325,7 @@ sap.ui.define([
 
 		if (this._preserveHeaderStateOnScroll()) {
 			// Ensure that in this tick DP and it's aggregations are rendered
-			jQuery.sap.delayedCall(0, this, this._overridePreserveHeaderStateOnScroll);
+			setTimeout(this._overridePreserveHeaderStateOnScroll.bind(this), 0);
 		}
 
 		this._bPinned = false;
@@ -337,6 +352,7 @@ sap.ui.define([
 		}
 
 		this._updateToggleHeaderVisualIndicators();
+		this._updateTitleVisualState();
 	};
 
 	DynamicPage.prototype.exit = function () {
@@ -373,18 +389,13 @@ sap.ui.define([
 	};
 
 	DynamicPage.prototype.setToggleHeaderOnTitleClick = function (bToggleHeaderOnTitleClick) {
-		var oDynamicPageTitle = this.getTitle(),
-			bHeaderExpanded = this.getHeaderExpanded(),
+		var bHeaderExpanded = this.getHeaderExpanded(),
 			vResult = this.setProperty("toggleHeaderOnTitleClick", bToggleHeaderOnTitleClick, true);
 
 		bToggleHeaderOnTitleClick = this.getProperty("toggleHeaderOnTitleClick");
-		this.$().toggleClass("sapFDynamicPageTitleClickEnabled", bToggleHeaderOnTitleClick);
+		this._updateTitleVisualState();
 		this._updateToggleHeaderVisualIndicators();
 		this._updateARIAStates(bHeaderExpanded);
-
-		if (exists(oDynamicPageTitle)) {
-			oDynamicPageTitle._toggleFocusableState(bToggleHeaderOnTitleClick);
-		}
 
 		return vResult;
 	};
@@ -462,22 +473,22 @@ sap.ui.define([
 		if (bUseAnimations) {
 
 			if (!bShow) {
-				this._iFooterAnimationTimeout = jQuery.sap.delayedCall(DynamicPage.FOOTER_ANIMATION_DURATION, this, function () {
+				this._iFooterAnimationTimeout = setTimeout(function () {
 					this.$footerWrapper.toggleClass("sapUiHidden", !this.getShowFooter());
-				});
+				}.bind(this), DynamicPage.FOOTER_ANIMATION_DURATION);
 			} else {
 
 				if (this._iFooterAnimationTimeout) {
-					jQuery.sap.clearDelayedCall(this._iFooterAnimationTimeout);
+					clearTimeout(this._iFooterAnimationTimeout);
 					this._iFooterAnimationTimeout = null;
 				}
 
 				this.$footerWrapper.toggleClass("sapUiHidden", !this.getShowFooter());
 			}
 
-			jQuery.sap.delayedCall(DynamicPage.FOOTER_ANIMATION_DURATION, this, function () {
+			setTimeout(function () {
 				oFooter.removeStyleClass("sapFDynamicPageActualFooterControlShow");
-			});
+			}, DynamicPage.FOOTER_ANIMATION_DURATION);
 		}
 
 		this._updateScrollBar();
@@ -528,11 +539,11 @@ sap.ui.define([
 		var oDynamicPageTitle = this.getTitle();
 
 		if (this._bPinned && !bUserInteraction) {
-		   jQuery.sap.log.debug("DynamicPage :: aborted snapping, header is pinned", this);
+		   Log.debug("DynamicPage :: aborted snapping, header is pinned", this);
 		   return;
 		}
 
-		jQuery.sap.log.debug("DynamicPage :: snapped header", this);
+		Log.debug("DynamicPage :: snapped header", this);
 
 		if (this._bPinned && bUserInteraction) {
 			this._unPin();
@@ -549,7 +560,7 @@ sap.ui.define([
 		}
 
 		if (!exists(this.$titleArea)) {
-			jQuery.sap.log.warning("DynamicPage :: couldn't snap header. There's no title.", this);
+			Log.warning("DynamicPage :: couldn't snap header. There's no title.", this);
 			return;
 		}
 
@@ -573,7 +584,7 @@ sap.ui.define([
 	DynamicPage.prototype._expandHeader = function (bAppendHeaderToTitle, bUserInteraction) {
 		var oDynamicPageTitle = this.getTitle();
 
-		jQuery.sap.log.debug("DynamicPage :: expand header", this);
+		Log.debug("DynamicPage :: expand header", this);
 
 		if (exists(oDynamicPageTitle)) {
 
@@ -585,7 +596,7 @@ sap.ui.define([
 		}
 
 		if (!exists(this.$titleArea)) {
-			jQuery.sap.log.warning("DynamicPage :: couldn't expand header. There's no title.", this);
+			Log.warning("DynamicPage :: couldn't expand header. There's no title.", this);
 			return;
 		}
 
@@ -614,7 +625,7 @@ sap.ui.define([
 			oDynamicPageHeader = this.getHeader();
 
 		if (this._bPinned && !bUserInteraction) {
-			jQuery.sap.log.debug("DynamicPage :: header toggle aborted, header is pinned", this);
+			Log.debug("DynamicPage :: header toggle aborted, header is pinned", this);
 			return;
 		}
 
@@ -626,8 +637,6 @@ sap.ui.define([
 			oDynamicPageHeader.$().toggleClass("sapFDynamicPageHeaderHidden", !bShow);
 			this._updateScrollBar();
 		}
-
-		this._toggleHeaderInTabChain(bShow);
 	};
 
 	/**
@@ -836,23 +845,25 @@ sap.ui.define([
 	};
 
 	/**
-	 * Determines if the header should collapse (snap).
+	 * Determines if the header should collapse (snap) on scroll.
 	 * @returns {boolean}
 	 * @private
 	 */
-	DynamicPage.prototype._shouldSnap = function () {
+	DynamicPage.prototype._shouldSnapOnScroll = function () {
 		return !this._preserveHeaderStateOnScroll() && this._getScrollPosition() >= this._getSnappingHeight()
 			&& this.getHeaderExpanded() && !this._bPinned;
 	};
 
 	/**
-	 * Determines if the header should expand.
+	 * Determines if the header should expand on scroll.
 	 * @returns {boolean}
 	 * @private
 	 */
-	DynamicPage.prototype._shouldExpand = function () {
+	DynamicPage.prototype._shouldExpandOnScroll = function () {
+		var bIsScrollable = this._needsVerticalScrollBar();
+
 		return !this._preserveHeaderStateOnScroll() && this._getScrollPosition() < this._getSnappingHeight()
-			&& !this.getHeaderExpanded() && !this._bPinned;
+			&& !this.getHeaderExpanded() && !this._bPinned && bIsScrollable;
 	};
 
 	/**
@@ -1022,13 +1033,13 @@ sap.ui.define([
 
 		if (this._preserveHeaderStateOnScroll() || this._bPinned || (!bSnapped && this._bHeaderInTitleArea)) {
 			iHeight = this._getTitleAreaHeight();
-			jQuery.sap.log.debug("DynamicPage :: preserveHeaderState is enabled or header pinned :: title area height" + iHeight, this);
+			Log.debug("DynamicPage :: preserveHeaderState is enabled or header pinned :: title area height" + iHeight, this);
 			return iHeight;
 		}
 
 		if (bSnapped || !exists(this.getTitle()) || !this._canSnapHeaderOnScroll()) {
 			iHeight = this._getTitleHeight();
-			jQuery.sap.log.debug("DynamicPage :: header snapped :: title height " + iHeight, this);
+			Log.debug("DynamicPage :: header snapped :: title height " + iHeight, this);
 			return iHeight;
 		}
 
@@ -1040,7 +1051,7 @@ sap.ui.define([
 			this._expandHeader(bHeaderInTitle); // restore header position
 		}
 
-		jQuery.sap.log.debug("DynamicPage :: snapped mode :: title height " + iHeight, this);
+		Log.debug("DynamicPage :: snapped mode :: title height " + iHeight, this);
 		return iHeight;
 	};
 
@@ -1053,7 +1064,7 @@ sap.ui.define([
 			bScrollBarNeeded,
 			bNeedUpdate;
 
-		if (!Device.system.desktop || !exists(this.$wrapper)) {
+		if (!Device.system.desktop || !exists(this.$wrapper) || (this._getHeight(this) === 0)) {
 			return;
 		}
 
@@ -1067,9 +1078,8 @@ sap.ui.define([
 			this.toggleStyleClass("sapFDynamicPageWithScroll", bScrollBarNeeded);
 			this.bHasScrollbar = bScrollBarNeeded;
 		}
-		jQuery.sap.delayedCall(0, this, this._updateFitContainer);
-		jQuery.sap.delayedCall(0, this, this._updateScrollBarOffset);
-
+		setTimeout(this._updateFitContainer.bind(this), 0);
+		setTimeout(this._updateScrollBarOffset.bind(this), 0);
 	};
 
 	DynamicPage.prototype._updateFitContainer = function (bNeedsVerticalScrollBar) {
@@ -1088,7 +1098,7 @@ sap.ui.define([
 	 */
 	DynamicPage.prototype._updateScrollBarOffset = function () {
 		var sStyleAttribute = sap.ui.getCore().getConfiguration().getRTL() ? "left" : "right",
-			iOffsetWidth = this._needsVerticalScrollBar() ? jQuery.sap.scrollbarSize().width + "px" : 0,
+			iOffsetWidth = this._needsVerticalScrollBar() ? getScrollbarSize().width + "px" : 0,
 			oFooter = this.getFooter();
 
 		this.$titleArea.css("padding-" + sStyleAttribute, iOffsetWidth);
@@ -1111,11 +1121,10 @@ sap.ui.define([
 	};
 
 	DynamicPage.prototype._updateTitleARIAState = function (bExpanded) {
-		var oDynamicPageTitle = this.getTitle(),
-			bToggleHeaderOnTitleClick = this.getToggleHeaderOnTitleClick();
+		var oDynamicPageTitle = this.getTitle();
 
 		if (exists(oDynamicPageTitle)) {
-			oDynamicPageTitle._updateARIAState(bExpanded, bToggleHeaderOnTitleClick);
+			oDynamicPageTitle._updateARIAState(bExpanded);
 		}
 	};
 
@@ -1229,6 +1238,20 @@ sap.ui.define([
 	};
 
 	/**
+	 * Updates the focus visibility and active state of the <code>title</code>.
+	 * @private
+	 */
+	DynamicPage.prototype._updateTitleVisualState = function () {
+		var oTitle = this.getTitle(),
+			bTitleActive = this._hasVisibleTitleAndHeader() && this.getToggleHeaderOnTitleClick();
+
+		this.$().toggleClass("sapFDynamicPageTitleClickEnabled", bTitleActive);
+		if (exists(oTitle)) {
+			oTitle._toggleFocusableState(bTitleActive);
+		}
+	};
+
+	/**
 	 * Scrolls to bring the 'collapse' visual-indicator into view. (The collapse button is part of the scrollable content)
 	 * @private
 	 */
@@ -1332,14 +1355,12 @@ sap.ui.define([
 
 	/**
 	 * Lazily retrieves the "fake" <code>ScrollBar</code>.
-	 * @returns {sap.ui.core.ScrollBar} the "fake" <code>ScrollBar</code>
+	 * @returns {sap.m.ScrollBar} the "fake" <code>ScrollBar</code>
 	 * @private
 	 */
 	DynamicPage.prototype._getScrollBar = function () {
 		if (!exists(this.getAggregation("_scrollBar"))) {
 			var oVerticalScrollBar = new ScrollBar(this.getId() + "-vertSB", {
-				vertical: true,
-				size: "100%",
 				scrollPosition: 0,
 				scroll: this._onScrollBarScroll.bind(this)
 			});
@@ -1457,7 +1478,7 @@ sap.ui.define([
 			this._registerResizeHandler(DynamicPage.RESIZE_HANDLER_ID.TITLE, this.$title[0], this._onChildControlsHeightChange.bind(this));
 		}
 
-		jQuery.sap.delayedCall(0, this, this._updateScrollBar);
+		setTimeout(this._updateScrollBar.bind(this), 0);
 	};
 
 	/**
@@ -1557,10 +1578,10 @@ sap.ui.define([
 			return;
 		}
 
-		if (this._shouldSnap()) {
+		if (this._shouldSnapOnScroll()) {
 			this._snapHeader(true, true /* bUserInteraction */);
 
-		} else if (this._shouldExpand()) {
+		} else if (this._shouldExpandOnScroll()) {
 
 			this._expandHeader(false, true /* bUserInteraction */);
 			this._toggleHeaderVisibility(true);
@@ -1590,8 +1611,9 @@ sap.ui.define([
 	 * @private
 	 */
 	DynamicPage.prototype._onTitlePress = function () {
-		if (this.getToggleHeaderOnTitleClick()) {
+		if (this.getToggleHeaderOnTitleClick() && this._hasVisibleTitleAndHeader()) {
 			this._titleExpandCollapseWhenAllowed(true /* user interaction */);
+			this.getTitle()._focus();
 		}
 	};
 
@@ -1642,7 +1664,6 @@ sap.ui.define([
 			return this;
 		}
 
-		this._bSuppressToggleHeaderOnce = true;
 		// Header scrolling is not allowed or there is no enough content scroll bar to appear
 		if (this._preserveHeaderStateOnScroll() || !this._canSnapHeaderOnScroll() || !this.getHeader()) {
 			if (!this.getHeaderExpanded()) {
@@ -1673,10 +1694,6 @@ sap.ui.define([
 				this._setScrollPosition(this._getSnappingHeight());
 			}
 		}
-
-		jQuery.sap.delayedCall(0, this, function() {
-			this._bSuppressToggleHeaderOnce = false;
-		}.bind(this));
 	};
 
 	/**

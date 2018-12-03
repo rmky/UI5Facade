@@ -4,8 +4,13 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', './Delegate'],
-	function(jQuery, Delegate) {
+sap.ui.define([
+	'./Delegate',
+	"sap/base/util/deepEqual",
+	"sap/base/security/encodeXML",
+	"sap/ui/thirdparty/jquery"
+],
+	function(Delegate, deepEqual, encodeXML, jQuery) {
 	"use strict";
 
 
@@ -21,7 +26,7 @@ sap.ui.define(['jquery.sap.global', './Delegate'],
 	 * @class XML serializer delegate class.
 	 * @extends sap.ui.core.util.serializer.delegate.Delegate
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @alias sap.ui.core.util.serializer.delegate.XML
 	 * @private
 	 * @sap-restricted sap.watt com.sap.webide
@@ -112,7 +117,7 @@ sap.ui.define(['jquery.sap.global', './Delegate'],
 			var aCssClasses = [];
 			for (var i = 0; i < aCustomClasses.length; i++) {
 				var sCssClass = aCustomClasses[i];
-				if (!jQuery.sap.startsWith(sCssClass, "sapM") && !jQuery.sap.startsWith(sCssClass, "sapUi")) {
+				if (!sCssClass.startsWith("sapM") && !sCssClass.startsWith("sapUi")) {
 					aCssClasses.push(sCssClass);
 				}
 			}
@@ -154,7 +159,7 @@ sap.ui.define(['jquery.sap.global', './Delegate'],
 		var oDefaults = oControl.getMetadata().getPropertyDefaults();
 		this._createAttributes(aXml, oControl, oProperties, null, function (sName, oValue) {
 			// write property only if it has a value different from the default value
-			return !jQuery.sap.equal(oValue, oDefaults[sName]);
+			return !deepEqual(oValue, oDefaults[sName]);
 		});
 
 		// write aggregations
@@ -253,7 +258,7 @@ sap.ui.define(['jquery.sap.global', './Delegate'],
 	 * @private
 	 */
 	XML.prototype._createAttribute = function (sAttribute, oValue) {
-		var oEncoded = jQuery.type(oValue) === "string" ? jQuery.sap.encodeHTML(oValue) : oValue;
+		var oEncoded = jQuery.type(oValue) === "string" ? encodeXML(oValue) : oValue;
 		return ' ' + sAttribute + '="' + oEncoded + '"';
 	};
 

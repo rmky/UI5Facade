@@ -5,11 +5,11 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global",
-	"sap/ui/fl/changeHandler/ChangeHandlerMediator"
+	"sap/ui/fl/changeHandler/ChangeHandlerMediator",
+	"sap/base/Log"
 ], function(
-	jQuery,
-	ChangeHandlerMediator
+	ChangeHandlerMediator,
+	Log
 ) {
 	"use strict";
 
@@ -22,7 +22,7 @@ sap.ui.define([
 	 *
 	 * @author SAP SE
 	 *
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @experimental Since 1.51.0 This class is experimental and provides only limited functionality.
 	 * Also the API might be changed in future.
@@ -104,7 +104,7 @@ sap.ui.define([
 
 			return true;
 		} else {
-			jQuery.sap.log.error("Change does not contain sufficient information to be applied or ChangeHandlerMediator could not be retrieved: [" + oChangeDefinition.layer + "]"
+			Log.error("Change does not contain sufficient information to be applied or ChangeHandlerMediator could not be retrieved: [" + oChangeDefinition.layer + "]"
 				+ oChangeDefinition.namespace + "/"
 				+ oChangeDefinition.fileName + "."
 				+ oChangeDefinition.fileType);
@@ -178,8 +178,8 @@ sap.ui.define([
 		} else {
 			throw new Error("oSpecificChangeInfo.bindingPath attribute required");
 		}
-		if (oSpecificChangeInfo.entityType) {
-			oChangeDefinition.content.entityType = oSpecificChangeInfo.entityType;
+		if (oSpecificChangeInfo.oDataInformation.entityType) {
+			oChangeDefinition.content.entityType = oSpecificChangeInfo.oDataInformation.entityType;
 		} else {
 			throw new Error("oSpecificChangeInfo.entityType attribute required");
 		}

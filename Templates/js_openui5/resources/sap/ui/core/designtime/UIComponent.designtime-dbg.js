@@ -10,6 +10,11 @@ sap.ui.define([],
 		"use strict";
 
 		return {
+			domRef: function(oUIComponent) {
+				if (oUIComponent.oContainer) {
+					return oUIComponent.oContainer.getDomRef("uiarea");
+				}
+			},
 			aggregations: {
 				rootControl: {
 					ignore : false

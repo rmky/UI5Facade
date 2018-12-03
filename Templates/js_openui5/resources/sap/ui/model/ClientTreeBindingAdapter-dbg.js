@@ -5,8 +5,22 @@
  */
 
 // Provides class sap.ui.model.odata.ODataAnnotations
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/ClientTreeBinding', './TreeBindingAdapter', 'sap/ui/model/ChangeReason'],
-	function(jQuery, TreeBinding, ClientTreeBinding, TreeBindingAdapter, ChangeReason) {
+sap.ui.define([
+	'sap/ui/model/TreeBinding',
+	'sap/ui/model/ClientTreeBinding',
+	'./TreeBindingAdapter',
+	'sap/ui/model/ChangeReason',
+	"sap/base/assert",
+	"sap/base/Log"
+],
+	function(
+		TreeBinding,
+		ClientTreeBinding,
+		TreeBindingAdapter,
+		ChangeReason,
+		assert,
+		Log
+	) {
 		"use strict";
 
 		/**
@@ -62,7 +76,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/Cl
 		 * @returns {boolean} True if the node has children
 		 */
 		ClientTreeBindingAdapter.prototype.nodeHasChildren = function(oNode) {
-			jQuery.sap.assert(oNode, "TreeBindingAdapter.nodeHasChildren: No node given!");
+			assert(oNode, "TreeBindingAdapter.nodeHasChildren: No node given!");
 
 			//check if the node has children
 			if (!oNode) {
@@ -118,7 +132,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/Cl
 					if (aMatch != null && aMatch[1]) {
 						sGroupId = aMatch[1];
 					} else {
-						jQuery.sap.log.warning("CTBA: BindingPath/ContextPath matching problem!");
+						Log.warning("CTBA: BindingPath/ContextPath matching problem!");
 					}
 				}
 				if (!sGroupId) {
@@ -127,7 +141,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/TreeBinding', 'sap/ui/model/Cl
 
 				// slashes are used to separate levels. As in the data model not every path-part represents a level,
 				// the remaining slashes must be replaced by some other character. "_" is used
-				if (jQuery.sap.startsWith(sGroupId,"/")) {
+				if (sGroupId.startsWith("/")) {
 					sGroupId = sGroupId.substring(1, sGroupId.length);
 				}
 

@@ -4,13 +4,19 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([
-	'jquery.sap.global',
-	'sap/ui/base/Object'
-], function(jQuery, Ui5Object) {
+sap.ui.define(["jquery.sap.global",
+		'sap/ui/base/Object',
+		"sap/base/util/UriParameters",
+		"sap/ui/thirdparty/jquery",
+		"sap/ui/support/RuleAnalyzer"],
+	function(jQuery,
+			 BaseObject,
+			 UriParameters,
+			 jQueryDOM,
+			 RuleAnalyzer) {
 	"use strict";
 
-	var Extension = Ui5Object.extend("sap.ui.core.support.RuleEngineOpaExtension", {
+	var Extension = BaseObject.extend("sap.ui.core.support.RuleEngineOpaExtension", {
 		metadata : {
 			publicMethods : [
 				"getAssertions"
@@ -26,7 +32,7 @@ sap.ui.define([
 		 */
 		onAfterInit : function () {
 			var bLoaded = sap.ui.getCore().getLoadedLibraries()["sap.ui.support"],
-				deferred = jQuery.Deferred();
+				deferred = jQueryDOM.Deferred();
 
 			if (!bLoaded) {
 				sap.ui.require(["sap/ui/support/Bootstrap"], function (bootstrap) {
@@ -46,7 +52,7 @@ sap.ui.define([
 		getAssertions : function () {
 
 			var fnShouldSkipRulesIssues = function () {
-				return jQuery.sap.getUriParameters().get('sap-skip-rules-issues') == 'true';
+				return new UriParameters(window.location.href).get('sap-skip-rules-issues') == 'true';
 			};
 
 			return {
@@ -66,14 +72,17 @@ sap.ui.define([
 				 * @param {string|string[]} [executionScope.selectors] The ids of the components or the subtree.
 				*/
 				noRuleFailures: function(options) {
-					var ruleDeferred = jQuery.Deferred(),
-						failOnAnyRuleIssues = options[0] && options[0]["failOnAnyIssues"],
-						failOnHighRuleIssues = options[0] && options[0]["failOnHighIssues"],
-						rules = options[0] && options[0].rules,
-						executionScope = options[0] && options[0].executionScope;
+					var ruleDeferred = jQueryDOM.Deferred(),
+						options = options[0] || {},
+						failOnAnyRuleIssues = options["failOnAnyIssues"],
+						failOnHighRuleIssues = options["failOnHighIssues"],
+						rules = options.rules,
+						preset = options.preset,
+						executionScope = options.executionScope;
 
-					jQuery.sap.support.analyze(executionScope, rules).then(function () {
-						var analysisHistory = jQuery.sap.support.getAnalysisHistory(),
+					// private API provided by jquery.sap.global
+					RuleAnalyzer.analyze(executionScope, rules || preset).then(function () {
+						var analysisHistory = RuleAnalyzer.getAnalysisHistory(),
 							lastAnalysis = { issues: [] };
 
 						if (analysisHistory.length) {
@@ -117,9 +126,9 @@ sap.ui.define([
 				 * If "sap-skip-rules-issues=true" is set as an URI parameter, assertion result will be always positive.
 				 */
 				getFinalReport: function () {
-					var ruleDeferred = jQuery.Deferred(),
-						history = jQuery.sap.support.getFormattedAnalysisHistory(),
-						analysisHistory = jQuery.sap.support.getAnalysisHistory(),
+					var ruleDeferred = jQueryDOM.Deferred(),
+						history = RuleAnalyzer.getFormattedAnalysisHistory(),
+						analysisHistory = RuleAnalyzer.getAnalysisHistory(),
 						totalIssues = analysisHistory.reduce(function (total, analysis) {
 							return total + analysis.issues.length;
 						}, 0),

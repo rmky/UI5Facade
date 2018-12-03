@@ -6,7 +6,6 @@
 
 //Provides control sap.ui.unified.CalendarMonthInterval.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/core/Control',
 	'sap/ui/core/LocaleData',
 	'sap/ui/core/delegate/ItemNavigation',
@@ -16,9 +15,10 @@ sap.ui.define([
 	'sap/ui/core/format/DateFormat',
 	'sap/ui/core/library',
 	'sap/ui/core/Locale',
-	"./MonthsRowRenderer"
+	"./MonthsRowRenderer",
+	"sap/ui/dom/containsOrEquals",
+	"sap/ui/thirdparty/jquery"
 ], function(
-	jQuery,
 	Control,
 	LocaleData,
 	ItemNavigation,
@@ -28,8 +28,10 @@ sap.ui.define([
 	DateFormat,
 	coreLibrary,
 	Locale,
-	MonthsRowRenderer
-	) {
+	MonthsRowRenderer,
+	containsOrEquals,
+	jQuery
+) {
 	"use strict";
 
 	// shortcut for sap.ui.core.CalendarType
@@ -57,7 +59,7 @@ sap.ui.define([
 	 * The MontsRow works with JavaScript Date objects, but only the month and the year are used to display and interact.
 	 * As representation for a month, the 1st of the month will always be returned in the API.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -184,7 +186,7 @@ sap.ui.define([
 		}
 
 		if (this._sInvalidateMonths) {
-			jQuery.sap.clearDelayedCall(this._sInvalidateMonths);
+			clearTimeout(this._sInvalidateMonths);
 		}
 
 	};
@@ -200,7 +202,7 @@ sap.ui.define([
 
 	MonthsRow.prototype.onsapfocusleave = function(oEvent){
 
-		if (!oEvent.relatedControlId || !jQuery.sap.containsOrEquals(this.getDomRef(), sap.ui.getCore().byId(oEvent.relatedControlId).getFocusDomRef())) {
+		if (!oEvent.relatedControlId || !containsOrEquals(this.getDomRef(), sap.ui.getCore().byId(oEvent.relatedControlId).getFocusDomRef())) {
 			if (this._bMouseMove) {
 				_unbindMousemove.call(this, true);
 
@@ -230,7 +232,7 @@ sap.ui.define([
 			if (this._bInvalidateSync) { // set if calendar already invalidates in delayed call
 				_invalidateMonths.call(this);
 			} else {
-				this._sInvalidateMonths = jQuery.sap.delayedCall(0, this, _invalidateMonths);
+				this._sInvalidateMonths = setTimeout(_invalidateMonths.bind(this), 0);
 			}
 		}
 
@@ -531,6 +533,17 @@ sap.ui.define([
 			return this.getAssociation("ariaLabelledBy", []);
 		}
 
+	};
+
+	MonthsRow.prototype._setAriaRole = function(sRole){
+		this._ariaRole = sRole;
+
+		return this;
+	};
+
+	MonthsRow.prototype._getAriaRole = function(){
+
+		return this._ariaRole ? this._ariaRole : "gridcell";
 	};
 
 	/*

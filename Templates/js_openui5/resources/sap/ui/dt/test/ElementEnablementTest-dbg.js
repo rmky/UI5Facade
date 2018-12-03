@@ -4,14 +4,20 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-// Provides class sap.ui.dt.test.ElementEnablementTest.
 sap.ui.define([
-	'jquery.sap.global',
+	"sap/ui/thirdparty/jquery",
 	'sap/ui/dt/test/Test',
 	'sap/ui/dt/DesignTime',
-	'sap/ui/dt/test/Element'
+	'sap/ui/dt/test/Element',
+	"sap/base/util/ObjectPath"
 ],
-function(jQuery, Test, DesignTime, ElementTest) {
+function(
+	jQuery,
+	Test,
+	DesignTime,
+	ElementTest,
+	ObjectPath
+) {
 	"use strict";
 
 	// Wait until the theme is changed
@@ -45,7 +51,7 @@ function(jQuery, Test, DesignTime, ElementTest) {
 	 * @extends sap.ui.dt.test.Test
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -137,7 +143,7 @@ function(jQuery, Test, DesignTime, ElementTest) {
 	ElementEnablementTest.prototype._createElement = function() {
 		var sType = this.getType();
 		var fnCreate = this.getCreate();
-		var Element = jQuery.sap.getObject(sType);
+		var Element = ObjectPath.get(sType || "");
 
 		var oElement;
 

@@ -5,8 +5,8 @@
  */
 
 // Provides helper sap.ui.core.LabelEnablement
-sap.ui.define(['jquery.sap.global', '../base/ManagedObject'],
-	function(jQuery, ManagedObject) {
+sap.ui.define(['../base/ManagedObject', "sap/base/assert"],
+	function(ManagedObject, assert) {
 	"use strict";
 
 	// Mapping between controls and labels
@@ -14,7 +14,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject'],
 
 	// The controls which should not be referenced by a "for" attribute (Specified in the HTML standard).
 	// Extend when needed.
-	var NON_LABELABLE_CONTROLS = ["sap.m.Link", "sap.m.Label", "sap.m.Text"];
+	var NON_LABELABLE_CONTROLS = ["sap.ui.comp.navpopover.SmartLink", "sap.m.Link", "sap.m.Label", "sap.m.Text"];
 
 	// Returns the control for the given id (if available) and invalidates it if desired
 	function toControl(sId, bInvalidate) {
@@ -129,7 +129,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject'],
 	 * @see sap.ui.core.LabelEnablement#enrich
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @protected
 	 * @alias sap.ui.core.LabelEnablement
 	 * @namespace
@@ -270,7 +270,7 @@ sap.ui.define(['jquery.sap.global', '../base/ManagedObject'],
 			if (sId instanceof ManagedObject) {
 				sId = sId.getId();
 			} else if (sId != null && typeof sId !== "string") {
-				jQuery.sap.assert(false, "setAlternativeLabelFor(): sId must be a string, an instance of sap.ui.base.ManagedObject or null");
+				assert(false, "setAlternativeLabelFor(): sId must be a string, an instance of sap.ui.base.ManagedObject or null");
 				return this;
 			}
 

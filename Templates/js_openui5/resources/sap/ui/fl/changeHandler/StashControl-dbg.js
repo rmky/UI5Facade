@@ -5,9 +5,9 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global"
+	"sap/base/Log"
 ], function(
-	jQuery
+	Log
 ) {
 	"use strict";
 
@@ -15,7 +15,7 @@ sap.ui.define([
 	 * Change handler for stashing of a control.
 	 * @alias sap.ui.fl.changeHandler.StashControl
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @experimental Since 1.27.0
 	 */
 	var StashControl = {};
@@ -31,10 +31,7 @@ sap.ui.define([
 	 * @public
 	 */
 	StashControl.applyChange = function(oChange, oControl, mPropertyBag) {
-		oChange.setRevertData({
-			originalValue: mPropertyBag.modifier.getStashed(oControl)
-		});
-
+		this.setChangeRevertData(oChange, mPropertyBag.modifier.getStashed(oControl));
 		mPropertyBag.modifier.setStashed(oControl, true);
 		return true;
 	};
@@ -53,10 +50,10 @@ sap.ui.define([
 		var mRevertData = oChange.getRevertData();
 
 		if (mRevertData) {
-			mPropertyBag.modifier.setStashed(oControl, mRevertData.originalValue);
+			mPropertyBag.modifier.setStashed(oControl, mRevertData.originalValue, mPropertyBag.appComponent);
 			oChange.resetRevertData();
 		} else {
-			jQuery.sap.log.error("Attempt to revert an unapplied change.");
+			Log.error("Attempt to revert an unapplied change.");
 			return false;
 		}
 
@@ -71,7 +68,12 @@ sap.ui.define([
 	 * @public
 	 */
 	StashControl.completeChangeContent = function(oChange, oSpecificChangeInfo) {
+	};
 
+	StashControl.setChangeRevertData = function(oChange, bValue) {
+		oChange.setRevertData({
+			originalValue: bValue
+		});
 	};
 
 	return StashControl;

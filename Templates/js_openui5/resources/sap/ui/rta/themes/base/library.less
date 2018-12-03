@@ -11,26 +11,68 @@
 
 /* START "Toolbar.base.less" */
 /**
-	Toolbar
- */
-.sapUiRtaToolbar.sapMTB {
+	Base Toolbar
+*/
+
+.sapUiRtaToolbar {
 	position: absolute;
 	top: 0;
 	left: 0;
 	right: 0;
 	padding: 0 20px;
-
 	height: 46px; /* Overrider `.sapUiSizeCompact .sapMTB` */
-	border-bottom: none; /* Override `.sapMTB` */
-	}
-	.sapUiRtaToolbar.sapMTB > :last-child {
-		margin-right: 0; /* Override `.sapMIBar.sapMTB .sapMBarChild` */
-		}
-	.sapUiRtaToolbar.sapMTB > :first-child {
-		margin-left: 0; /* Override `.sapMIBar .sapMBarChild:first-child` */
-		}
 
+
+	.sapMBtn {
+		margin: 0 4px;
+
+	}
+}
 /* END "Toolbar.base.less" */
+
+/* START "Toolbar.adaptation.less" */
+.sapUiRtaToolbar.sapUiRtaToolbarAdaptation {
+	.sapMFlexBox {
+		margin-left: 0;
+		margin-right: 0;
+		height: inherit;
+	}
+
+	.sapMHBox.sapMFlexBox:first-child.sapMTBShrinkItem {
+		min-width: 0; /* Overrider '.sapMTBShrinkItem' */
+	}
+
+	.sapMHBox.sapMFlexBox:last-child {
+		.sapMFlexItem:first-child {
+			.sapMTB {
+				border-bottom: none;
+				height: 46px;
+			}
+
+			.sapMSegB {
+				margin-left: 0;
+			}
+		}
+	}
+
+	// Disable the right margin for Exit button
+	>.sapMFlexItem:last-child {
+		>.sapMFlexItem:last-child {
+			.sapMBtn:last-child {
+				margin-right: 0;
+			}
+		}
+	}
+}
+
+.sapUiMedia-sapUiRtaToolbar-sapUiRtaToolbarTablet, .sapUiMedia-sapUiRtaToolbar-sapUiRtaToolbarMobile {
+	.sapUiRtaToolbar.sapUiRtaToolbarAdaptation {
+		.sapMFlexBox:first-child {
+			display: none;
+		}
+	}
+}
+/* END "Toolbar.adaptation.less" */
 
 /* START "Toolbar.fiori.less" */
 /**
@@ -38,7 +80,7 @@
  */
 .sapUiRtaFioriHeaderInvisible {
 	visibility: hidden;
-	}
+}
 
 
 
@@ -46,27 +88,25 @@
 .sapUiRtaToolbar.type_fiori {
 	transition: opacity 0.25s ease-out;
 	opacity: 0;
-	}
-	.sapUiRtaToolbar.type_fiori.is_visible {
+
+	&.is_visible {
 		opacity: 1;
-		}
-
-/* color: default */
-.sapUiRtaToolbar.type_fiori.color_default {
 	}
 
-/* color: contrast */
-.sapUiRtaToolbar.type_fiori.color_contrast {
-	}
-	.sapUiRtaToolbar.type_fiori.color_contrast .sapMBtn .sapMBtnContent,
-	.sapUiRtaToolbar.type_fiori.color_contrast .sapMBtn .sapMBtnIcon {
-		text-shadow: none; /* Override shadow of `.sapMBtnInner` in sap.m */
-		color: #fff;
+	/* color: contrast */
+	&.color_contrast {
+
+		.sapMBtn .sapMBtnContent,
+		.sapMBtn .sapMBtnIcon {
+			text-shadow: none; /* Override shadow of `.sapMBtnInner` in sap.m */
+			color: #fff;
 		}
-		.sapUiRtaToolbar.type_fiori.color_contrast .sapMBtn.sapMBtnDisabled,
-		.sapUiRtaToolbar.type_fiori.color_contrast .sapMBtn.sapMBtnDisabled {
+
+		.sapMBtn.sapMBtnDisabled {
 			opacity: 0.3;
-			}
+		}
+	}
+}
 
 /* END "Toolbar.fiori.less" */
 
@@ -120,6 +160,13 @@
 			}
 		}
 	}
+
+	// Disable the right margin for Done button
+	>.sapMFlexItem:last-child {
+		.sapMBtn:last-child {
+			margin-right: 0;
+		}
+	}
 }
 /* END "Toolbar.personalization.less" */
 
@@ -135,7 +182,7 @@
 
 .sapUIRtaFieldRepositoryDialog .sapMDialogTitle {
 	font-size: 16px;
-	font-weight: bold;
+	font-weight: normal;
 }
 
 .sapUIRtaFieldRepositoryDialog .sapUiTable > div.sapUiTableCnt {
@@ -213,6 +260,14 @@
 	padding-top: 40px;
 }
 
+.sapUiSizeCozy .sapUiRtaRoot .sapUiRtaStretchPaddingTop {
+	padding-top: 32px;
+}
+
+.sapUiSizeCompact .sapUiRtaRoot .sapUiRtaStretchPaddingTop {
+	padding-top: 24px;
+}
+
 .sapUiRta {
 	&.sapUiRtaPersonalize {
 		.sapUiRtaPersDelete {
@@ -229,7 +284,7 @@
 							border-radius: 50%;
 							width: 1.5rem;
 							height: 1.5rem;
-							min-width: unset;
+							min-width: 0;
 							background-color: @_sap_ui_rta_Overlay_Border;
 							box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
 							cursor: pointer;
@@ -239,7 +294,7 @@
 								color: @sapUiWhite;
 								font-size: 0.69rem;
 								line-height: 1.25rem;
-								width: 1.35rem;
+								width: 20px;
 								text-shadow: none;
 								margin: 0;
 							}
@@ -261,6 +316,10 @@
 				width: 100%;
 				height: 40px;
 				cursor: default;
+
+				&:focus {
+					outline: none;
+				}
 
 				.sapMBtn {
 					color: @_sap_ui_rta_Overlay_Border;
@@ -314,7 +373,7 @@
 				top: 0;
 				left: 0;
 				bottom: 0;
-				// IE doesn't support width/height: 'initial'.
+				// IE doesn't support width/height: 'initial'.// TODO remove after 1.62 version
 				// With the property 'auto' the same effect is achieved.
 				// When initial is supported, auto is ignored.
 				width: auto;
@@ -332,7 +391,7 @@
 			right: 0;
 			top: 0;
 			left: 0;
-			// IE doesn't support width/height: 'initial'.
+			// IE doesn't support width/height: 'initial'.// TODO remove after 1.62 version
 			// With the property 'auto' the same effect is achieved.
 			// When initial is supported, auto is ignored.
 			width: auto;
@@ -356,7 +415,7 @@
 					left: 2px;
 					bottom: 2px;
 					right: 2px;
-					// IE doesn't support width/height: 'initial'.
+					// IE doesn't support width/height: 'initial'.// TODO remove after 1.62 version
 					// With the property 'auto' the same effect is achieved.
 					// When initial is supported, auto is ignored.
 					width: auto;

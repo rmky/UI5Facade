@@ -5,8 +5,14 @@
  */
 
 // Provides an abstraction for model bindings
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './ChangeReason', './DataState'],
-	function(jQuery, EventProvider, ChangeReason, DataState) {
+sap.ui.define([
+	'sap/ui/base/EventProvider',
+	'./ChangeReason',
+	'./DataState',
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+	function(EventProvider, ChangeReason, DataState, Log, jQuery) {
 	"use strict";
 
 
@@ -34,7 +40,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './ChangeReason
 			EventProvider.apply(this);
 
 			this.oModel = oModel;
-			this.bRelative = !jQuery.sap.startsWith(sPath,'/');
+			this.bRelative = !sPath.startsWith('/');
 			this.sPath = sPath;
 			this.oContext = oContext;
 			this.vMessages = undefined;
@@ -371,7 +377,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './ChangeReason
 	 * Refreshes the binding, check whether the model data has been changed and fire change event
 	 * if this is the case. For server side models this should refetch the data from the server.
 	 * To update a control, even if no data has been changed, e.g. to reset a control after failed
-	 * validation, please use the parameter bForceUpdate.
+	 * validation, please use the parameter <code>bForceUpdate</code>.
 	 *
 	 * @param {boolean} bForceUpdate Update the bound control even if no data has been changed
 	 *
@@ -450,7 +456,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './ChangeReason
 			if (that[sMethod]) {
 				that[sMethod](fnHandler);
 			} else {
-				jQuery.sap.log.warning(that.toString() + " has no handler for event '" + sEvent + "'");
+				Log.warning(that.toString() + " has no handler for event '" + sEvent + "'");
 			}
 		});
 		return this;
@@ -472,7 +478,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './ChangeReason
 			if (that[sMethod]) {
 				that[sMethod](fnHandler);
 			} else {
-				jQuery.sap.log.warning(that.toString() + " has no handler for event '" + sEvent + "'");
+				Log.warning(that.toString() + " has no handler for event '" + sEvent + "'");
 			}
 		});
 		return this;

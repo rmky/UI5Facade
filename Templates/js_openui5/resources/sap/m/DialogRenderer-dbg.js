@@ -26,6 +26,7 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/library"],
 		DialogRenderer._mStateClasses[ValueState.Success] = "sapMDialogSuccess";
 		DialogRenderer._mStateClasses[ValueState.Warning] = "sapMDialogWarning";
 		DialogRenderer._mStateClasses[ValueState.Error] = "sapMDialogError";
+		DialogRenderer._mStateClasses[ValueState.Information] = "sapMDialogInformation";
 
 		/**
 		 * Renders the HTML for the given control, using the provided {@link sap.ui.core.RenderManager}.

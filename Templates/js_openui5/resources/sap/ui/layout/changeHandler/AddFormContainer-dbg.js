@@ -5,26 +5,31 @@
  */
 
 sap.ui.define([
-		"sap/ui/fl/Utils", "jquery.sap.global", "sap/ui/fl/changeHandler/Base", "sap/ui/core/util/reflection/JsControlTreeModifier"
-	], function(FlexUtils, jQuery, Base, JsControlTreeModifier) {
+	"sap/ui/fl/Utils",
+	"sap/ui/fl/changeHandler/Base",
+	"sap/ui/core/util/reflection/JsControlTreeModifier",
+	"sap/ui/thirdparty/jquery"
+], function(FlexUtils, Base, JsControlTreeModifier, jQuery) {
 		"use strict";
 
 		/*
 		 * Change handler for adding a form group.
 		 * @alias sap.ui.layout.changeHandler.AddFormContainer
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @experimental Since 1.48.0
 		 */
 		var AddGroup = { };
 
 		/**
-		 * Adds a form group.
+		 * Adds a form group
 		 *
-		 * @param {sap.ui.fl.Change} oChange Change object with instructions to be applied on the control map
+		 * @param {sap.ui.fl.Change} oChange Change object with instructions to be applied to the control map
 		 * @param {sap.ui.layout.form.Form} oForm Form control that matches the change selector for applying the change
-		 * @param {object} mPropertyBag
+		 * @param {object} mPropertyBag Property bag containing the modifier, the appComponent and the view
 		 * @param {object} mPropertyBag.modifier Modifier for the controls
+		 * @param {object} mPropertyBag.appComponent Component in which the change should be applied
+		 * @param {object} mPropertyBag.view Application view
 		 * @public
 		 */
 		AddGroup.applyChange = function(oChange, oForm, mPropertyBag) {
@@ -40,6 +45,7 @@ sap.ui.define([
 					mNewTitleSelector = jQuery.extend({}, mNewGroupSelector);
 
 				mNewTitleSelector.id = mNewTitleSelector.id + "--title"; //same as FormRenderer does it
+				oChange.setRevertData({newGroupSelector: mNewGroupSelector});
 
 				var oTitle = oModifier.createControl("sap.ui.core.Title", oAppComponent, oView, mNewTitleSelector),
 					oGroup = oModifier.createControl("sap.ui.layout.form.FormContainer", oAppComponent, oView, mNewGroupSelector);
@@ -47,7 +53,6 @@ sap.ui.define([
 				oModifier.setProperty(oTitle, "text", sTitleText);
 				oModifier.insertAggregation(oGroup, "title", oTitle, 0, oView);
 				oModifier.insertAggregation(oForm, "formContainers", oGroup, iInsertIndex, oView);
-
 			} else {
 				FlexUtils.log.error("Change does not contain sufficient information to be applied: [" + oChangeDefinition.layer + "]" + oChangeDefinition.namespace + "/" + oChangeDefinition.fileName + "." + oChangeDefinition.fileType);
 				//however subsequent changes should be applied
@@ -59,8 +64,10 @@ sap.ui.define([
 		 *
 		 * @param {sap.ui.fl.Change} oChange Change wrapper object to be completed
 		 * @param {object} oSpecificChangeInfo with attributes "groupLabel", the group label to be included in the change and "newControlId", the control ID for the control to be added
-		 * @param {object} mPropertyBag
-		 * @param {sap.ui.core.UIComponent} mPropertyBag.appComponent Component in which the change should be applied
+		 * @param {object} mPropertyBag Property bag containing the modifier, the appComponent and the view
+		 * @param {object} mPropertyBag.modifier Modifier for the controls
+		 * @param {object} mPropertyBag.appComponent Component in which the change should be applied
+		 * @param {object} mPropertyBag.view Application view
 		 * @public
 		 */
 		AddGroup.completeChangeContent = function(oChange, oSpecificChangeInfo, mPropertyBag) {
@@ -90,6 +97,29 @@ sap.ui.define([
 			} else {
 				throw new Error("Cannot create a new group: oSpecificChangeInfo.newControlId attribute required");
 			}
+		};
+
+		/**
+		 * Reverts the applied change
+		 *
+		 * @param {sap.ui.fl.Change} oChange Change object with instructions to be applied to the control map
+		 * @param {sap.ui.layout.form.Form} oForm Form control that matches the change selector for applying the change
+		 * @param {object} mPropertyBag Property bag containing the modifier, the appComponent and the view
+		 * @param {object} mPropertyBag.modifier Modifier for the controls
+		 * @param {object} mPropertyBag.appComponent Component in which the change should be applied
+		 * @param {object} mPropertyBag.view Application view
+		 * @public
+		 */
+		AddGroup.revertChange = function (oChange, oForm, mPropertyBag) {
+			var oAppComponent = mPropertyBag.appComponent;
+			var oView = mPropertyBag.view;
+			var oModifier = mPropertyBag.modifier;
+			var mNewGroupSelector = oChange.getRevertData().newGroupSelector;
+
+			var oGroup = oModifier.bySelector(mNewGroupSelector, oAppComponent, oView);
+			oModifier.removeAggregation(oForm, "formContainers", oGroup);
+			oModifier.destroy(oGroup);
+			oChange.resetRevertData();
 		};
 
 		return AddGroup;

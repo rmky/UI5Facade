@@ -6,8 +6,8 @@
 /**
  * Helper functionality for table, list and tree controls for the Support Tool infrastructure.
  */
-sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
-	function(jQuery, SupportLib) {
+sap.ui.define(["sap/ui/support/library", "sap/base/Log"],
+	function(SupportLib, Log) {
 	"use strict";
 
 	// shortcuts
@@ -18,7 +18,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 
 	var TableSupportHelper = {
 
-		DOCU_REF : "https://sapui5.hana.ondemand.com/",
+		DOCU_REF : "https://ui5.sap.com/",
 
 		DEFAULT_RULE_DEF : {
 			audiences: [Audiences.Application],
@@ -49,8 +49,8 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 		 * 		resolutionurls: [{text: "Text to be displayed", href: "URL to public(!) docu"}] - list of useful URLs, Default []
 		 * 		check:			function(oIssueManager, oCoreFacade, oScope) { ... } - Check function code, MANDATORY
 		 *
-		 * @param {object} The rule definition
-		 * @returns The normalized rule definition
+		 * @param {object} oRuleDef The rule definition
+		 * @returns {object} The normalized rule definition
 		 */
 		normalizeRule : function(oRuleDef) {
 			return jQuery.extend({}, TableSupportHelper.DEFAULT_RULE_DEF, oRuleDef);
@@ -61,14 +61,14 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 		 *
 		 * @see #normalizeRule
 		 *
-		 * @param {object} The rule definition
-		 * @param {sap.ui.support.supportRules.RuleSet} The ruleset
+		 * @param {object} oRuleDef The rule definition
+		 * @param {sap.ui.support.supportRules.RuleSet} oRuleset The ruleset
 		 */
 		addRuleToRuleset : function(oRuleDef, oRuleset) {
 			oRuleDef = TableSupportHelper.normalizeRule(oRuleDef);
 			var sResult = oRuleset.addRule(oRuleDef);
 			if (sResult != "success") {
-				jQuery.sap.log.warning("Support Rule '" + oRuleDef.id + "' for library sap.ui.table not applied: " + sResult);
+				Log.warning("Support Rule '" + oRuleDef.id + "' for library sap.ui.table not applied: " + sResult);
 			}
 		},
 
@@ -76,7 +76,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 		 * Creates a documentation link description in the format as requested by the parameter resolutionurls of a rule.
 		 * @param {string} sText 		The text of the docu link.
 		 * @param {string} sRefSuffix 	The url suffix. It gets automatically prefixed by TableSupportHelper.DOCU_REF.
-		 * @returns Documentation link description
+		 * @returns {object} Documentation link description
 		 */
 		createDocuRef : function(sText, sRefSuffix) {
 			return {
@@ -101,34 +101,19 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 		},
 
 		/**
-		 * Checks whether the given object is of the given type (given in AMD module syntax)
-		 * without the need of loading the types module.
-		 * @param {sap.ui.base.ManagedObject} oObject The object to check
-		 * @param {string} sType The type given in AMD module syntax
-		 * @returns {boolean}
-		 */
-		isInstanceOf : function(oObject, sType) {
-			if (!oObject || !sType) {
-				return false;
-			}
-			var oType = sap.ui.require(sType);
-			return !!(oType && (oObject instanceof oType));
-		},
-
-		/**
 		 * Return all existing control instances of the given type.
 		 * @param {object} oScope The scope as given in the rule check function.
-		 * @param {boolean} bVisisbleOnly Whether all existing controls or only the ones which currently have a DOM reference should be returned.
-		 * @param {string} sType The type given in AMD module syntax
-		 * @returns All existing control instances
+		 * @param {boolean} bVisibleOnly Whether all existing controls or only the ones which currently have a DOM reference should be returned.
+		 * @param {string} sType The type
+		 * @returns {sap.ui.core.Element[]} All existing control instances
 		 */
-		find: function(oScope, bVisisbleOnly, sType) {
+		find: function(oScope, bVisibleOnly, sType) {
 			var mElements = oScope.getElements();
 			var aResult = [];
 			for (var n in mElements) {
 				var oElement = mElements[n];
-				if (TableSupportHelper.isInstanceOf(oElement, sType)) {
-					if (bVisisbleOnly && oElement.getDomRef() || !bVisisbleOnly) {
+				if (oElement.isA(sType)) {
+					if (bVisibleOnly && oElement.getDomRef() || !bVisibleOnly) {
 						aResult.push(oElement);
 					}
 				}
@@ -156,7 +141,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 		 *                         otherwise the next entry is passed for checking.
 		 */
 		checkLogEntries : function(fnFilter, fnCheck) {
-			var aLog = jQuery.sap.log.getLogEntries(); //oScope.getLoggedObjects(); /*getLoggedObjects returns only log entries with supportinfo*/
+			var aLog = Log.getLogEntries(); //oScope.getLoggedObjects(); /*getLoggedObjects returns only log entries with supportinfo*/
 			var oLogEntry;
 			for (var i = 0; i < aLog.length; i++) {
 				oLogEntry = aLog[i];

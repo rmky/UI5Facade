@@ -5,8 +5,34 @@
  */
 
 // Provides class sap.ui.core.DeclarativeSupport
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/ManagedObject', './Control', './CustomData', './HTML', './mvc/View', './mvc/EventHandlerResolver'],
-	function(jQuery, DataType, ManagedObject, Control, CustomData, HTML, View, EventHandlerResolver) {
+sap.ui.define([
+	'sap/ui/thirdparty/jquery',
+	'sap/ui/base/DataType',
+	'sap/ui/base/ManagedObject',
+	'./Control',
+	'./CustomData',
+	'./HTML',
+	'./mvc/View',
+	'./mvc/EventHandlerResolver',
+	'sap/base/Log',
+	'sap/base/util/ObjectPath',
+	'sap/base/assert',
+	'sap/base/strings/camelize'
+],
+	function(
+		jQuery,
+		DataType,
+		ManagedObject,
+		Control,
+		CustomData,
+		HTML,
+		View,
+		EventHandlerResolver,
+		Log,
+		ObjectPath,
+		assert,
+		camelize
+	) {
 	"use strict";
 
 
@@ -14,7 +40,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/Managed
 	 * @class Static class for enabling declarative UI support.
 	 *
 	 * @author Peter Muessig, Tino Butz
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 1.7.0
 	 * @public
 	 * @alias sap.ui.core.DeclarativeSupport
@@ -51,7 +77,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/Managed
 		"tooltip" : function(sValue, mSettings, fnClass) {
 			// TODO: Remove this key / value when deprecation is removed
 			mSettings["tooltip"] = sValue;
-			jQuery.sap.log.warning('[Deprecated] Control "' + mSettings.id + '": The attribute "tooltip" is not prefixed with "data-*". Future version of declarative support will only suppport attributes with "data-*" prefix.');
+			Log.warning('[Deprecated] Control "' + mSettings.id + '": The attribute "tooltip" is not prefixed with "data-*". Future version of declarative support will only suppport attributes with "data-*" prefix.');
 		},
 		"class":true,
 		"style" : true,
@@ -161,9 +187,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/Managed
 
 		var sType = $element.attr("data-sap-ui-type");
 		if (sType) {
-			jQuery.sap.require(sType); // make sure fnClass.getMatadata() is available
-			var fnClass = jQuery.sap.getObject(sType);
-			jQuery.sap.assert(typeof fnClass !== "undefined", "Class not found: " + sType);
+			var fnClass = sap.ui.requireSync(sType.replace(/\./g, "/")); // make sure fnClass.getMatadata() is available
+			fnClass = fnClass || ObjectPath.get(sType);
+			assert(typeof fnClass !== "undefined", "Class not found: " + sType);
 
 
 			var mSettings = {};
@@ -174,7 +200,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/Managed
 			var oControl;
 			if (View.prototype.isPrototypeOf(fnClass.prototype) && typeof fnClass._sType === "string") {
 				// for views having a factory function defined we use the factory function!
-				oControl = sap.ui.view(mSettings, undefined, fnClass._sType);
+				oControl = View._legacyCreate(mSettings, undefined, fnClass._sType);
 			} else {
 				oControl = new fnClass(mSettings);
 			}
@@ -287,7 +313,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/Managed
 							throw new Error('Control "' + mSettings.id + '": The function "' + sValue + '" for the event "' + sName + '" is not defined');
 						}
 					} else {
-						jQuery.sap.assert((sName === "id"), "DeclarativeSupport encountered unknown setting '" + sName + "' for class '" + fnClass.getMetadata().getName() + "' (value:'" + sValue + "')");
+						assert((sName === "id"), "DeclarativeSupport encountered unknown setting '" + sName + "' for class '" + fnClass.getMetadata().getName() + "' (value:'" + sValue + "')");
 					}
 				} else if (typeof oSpecialAttributes[sName] === "function") {
 					oSpecialAttributes[sName](sValue, mSettings, fnClass);
@@ -298,7 +324,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/Managed
 				// custom data handling:
 
 				// determine the key of the custom data entry
-				sName = jQuery.sap.camelCase(reCustomData.exec(sName)[1]);
+				sName = camelize(reCustomData.exec(sName)[1]);
 
 				// create a binding info object if necessary
 				var oBindingInfo = fnBindingParser(sValue, oView && oView.getController());
@@ -366,7 +392,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/Managed
 								mSettings[sAggregation] = [];
 							}
 							if ( typeof mSettings[sAggregation].path === "string" ) {
-								jQuery.sap.assert(!mSettings[sAggregation].template, "list bindings support only a single template object");
+								assert(!mSettings[sAggregation].template, "list bindings support only a single template object");
 								mSettings[sAggregation].template = oControl;
 							} else {
 								mSettings[sAggregation].push(oControl);
@@ -484,11 +510,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', 'sap/ui/base/Managed
 		if (sAttribute.indexOf("data-") === 0) {
 			sAttribute = sAttribute.substr(5);
 		} else if (bDeprecationWarning) {
-			jQuery.sap.log.warning('[Deprecated] Control "' + sId + '": The attribute "' + sAttribute + '" is not prefixed with "data-*". Future version of declarative support will only suppport attributes with "data-*" prefix.');
+			Log.warning('[Deprecated] Control "' + sId + '": The attribute "' + sAttribute + '" is not prefixed with "data-*". Future version of declarative support will only suppport attributes with "data-*" prefix.');
 		} else {
 			throw new Error('Control "' + sId + '": The attribute "' + sAttribute + '" is not prefixed with "data-*".');
 		}
-		return jQuery.sap.camelCase(sAttribute);
+		return camelize(sAttribute);
 	};
 
 

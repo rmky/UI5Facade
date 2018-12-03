@@ -160,6 +160,7 @@
 	}
 }
 
+/* TODO remove after 1.62 version */
 html[data-sap-ui-browser^="ie"] {
 	.sapFDynamicPageContent {
 		flex-shrink: 0;
@@ -185,7 +186,7 @@ html[data-sap-ui-browser^="ie"] {
 .sapFDynamicPageContent,
 .sapFDynamicPageContentFitContainer {
 	position: relative;
-	padding: 2rem 3rem 0 3rem;
+	padding: 1rem 3rem 0 3rem;
 }
 
 .sapFDynamicPageContent > .sapFDynamicPageContentFitContainer {
@@ -214,13 +215,54 @@ html[data-sap-ui-browser^="ie"] {
 	}
 }
 
+.sapUiContainerContentPadding(~".sapFDynamicPage", ~".sapFDynamicPageContent");
+.sapUiContainerContentPadding(~".sapFDynamicPage", ~".sapFDynamicPageContentFitContainer");
+
+.sapFDynamicPage.sapUiContentPadding,
+.sapFDynamicPage.sapUiNoContentPadding,
+.sapFDynamicPage.sapUiResponsiveContentPadding {
+	.sapFDynamicPageAlignContent {
+		margin: 0;
+	}
+}
+
+.sapFDynamicPage.sapUiContentPadding {
+	.sapFDynamicPage-Std-Phone {
+		.sapFDynamicPageAlignContent {
+			margin: 0 -1rem;
+		}
+	}
+}
+
+.sapFDynamicPage.sapUiResponsiveContentPadding {
+	&.sapFDynamicPage-Std-Phone {
+		.sapFDynamicPageContent,
+		.sapFDynamicPageContentFitContainer {
+			padding: 0;
+		}
+	}
+
+	&.sapFDynamicPage-Std-Tablet {
+		.sapFDynamicPageContent,
+		.sapFDynamicPageContentFitContainer {
+			padding: 1rem;
+		}
+	}
+
+	&.sapFDynamicPage-Std-Desktop {
+		.sapFDynamicPageContent,
+		.sapFDynamicPageContentFitContainer {
+			padding: 1rem 2rem;
+		}
+	}
+}
 
 .sapFDynamicPageContentWrapper {
 	width: 100%;
 	height: 100%;
 	position: relative;
 	will-change: transform;
-	-webkit-overflow-scrolling: touch;
+	-webkit-overflow-scrolling: auto;
 
 	display: -webkit-box;
 	display: -webkit-flex;
@@ -278,6 +320,13 @@ html[data-sap-ui-browser^="ie"] {
 	&.sapFDynamicPageTitleForceHovered .sapFDynamicPageTitle {
 		cursor: pointer;
 	}
+}
+
+.sapFDynamicPageTitleMainHeading,
+.sapFDynamicPageTitleMainContent,
+.sapFDynamicPageTitleMainActions {
+	// BCP: 1870261908 - CSS cursor reset is needed here to prevent showing pointer for not clickable control types
+	cursor: default;
 }
 
 .sapFDynamicPage {
@@ -482,9 +531,13 @@ html[data-sap-ui-animation='on'] .sapFDynamicPage {
 	box-sizing: border-box;
 	background: @sapUiObjectHeaderBackground;
 
-	&:focus {
+	&.sapFDynamicPageTitleFocus {
 		outline: 0.0625rem dotted @sapUiContentFocusColor;
 		outline-offset: -0.0625rem;
+	}
+
+	.sapFDynamicPageTitleFocusSpan {
+		outline: none;
 	}
 
 	.sapFDynamicPageTitleTop {
@@ -549,7 +602,7 @@ html[data-sap-ui-animation='on'] .sapFDynamicPage {
 	}
 }
 
-
+/* TODO remove after 1.62 version */
 html[data-sap-ui-browser^="ie"].sap-desktop,
 html[data-sap-ui-browser^="ed"].sap-desktop {
 	.sapFDynamicPageTitleMain {
@@ -558,13 +611,14 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 }
 
 /* IE and Edge ignores outline-offset. Use an overlay: */
+/* TODO remove after 1.62 version */
 html[data-sap-ui-browser^="ie"].sap-desktop,
 html[data-sap-ui-browser^="ed"].sap-desktop {
-	.sapFDynamicPageTitle:focus {
+	.sapFDynamicPageTitle.sapFDynamicPageTitleFocus {
 		outline: none;
 		position: relative;
 	}
-	.sapFDynamicPageTitle:focus:before {
+	.sapFDynamicPageTitle.sapFDynamicPageTitleFocus:before {
 		content: " ";
 		box-sizing: border-box;
 		width: 100%;
@@ -579,11 +633,11 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 
 /* Firefox fix due to focus cut out from top and left */
 html[data-sap-ui-browser^="ff"].sap-desktop {
-	.sapFDynamicPageTitle:focus {
+	.sapFDynamicPageTitle.sapFDynamicPageTitleFocus {
 		outline: none;
 		position: relative;
 	}
-	.sapFDynamicPageTitle:focus:before {
+	.sapFDynamicPageTitle.sapFDynamicPageTitleFocus:before {
 		content: " ";
 		box-sizing: border-box;
 		width: 100%;
@@ -795,6 +849,201 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 }
 /* END "DynamicPageHeader.less" */
 
+/* START "Card.less" */
+/* ================================== */
+/* CSS for control sap.f/Card  */
+/* Base theme          */
+/* ================================== */
+
+/* define the default raster for the card sizes for a certain theme */
+/* TODO: connect to the parameters for theme editor */
+/*       reuse the values also for the default raster of the cssgrid cells */
+/*       Is there also a js way to access this */ 
+.sapFCardDefaultRaster {
+	min-width: 5rem;
+    min-height: 5rem;
+    max-width: 5rem;
+    max-height: 5rem;
+}
+
+.sapFCard {
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 2.125rem 0 rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    font-family: "72";
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-stroke: 0.3px rgba(250, 250, 250, 0.2);
+    padding: 0;
+    vertical-align: top;
+    margin: 0.9rem 0 0 0.9rem; /*TODO: this should be controlled by the outer layout*/
+    border: 1px dotted transparent;
+}
+.sapUiLayoutCSSGrid>.sapFCard {
+    margin: 0; /*TODO: inside of a css grid the margin is actually controlled by the grid-gap property already (see TODO comment above), so removing margin here */
+}
+
+html.sap-desktop .sapFCard:focus {
+    border-color: #000000;
+    outline: none;
+}
+
+.sapFCardIcon {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    max-width: 2.5rem;
+    max-height: 2.5rem;
+    flex-grow: 0;
+    overflow: hidden;
+    border-radius: 50%;
+    margin: 0 0 0 1rem;
+    background-size: cover;
+}
+
+.sapFCard2x2.sapFCardNoContent .sapFCardIcon {
+    position: absolute;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    max-width: 2.5rem;
+    max-height: 2.5rem;
+    flex-grow: 0;
+    overflow: hidden;
+    border-radius: 50%;
+    margin: 0 0 0 1rem;
+    right: 1rem;
+    bottom: 1rem;
+}
+
+.sapFCard2x2.sapFCardNoContent>header>div {
+    overflow: visible;
+}
+.sapFCard2x2.sapFCardNoContent>header>div>h1 {
+    white-space: normal;
+    overflow: visible;
+}
+.sapFCard2x2.sapFCardNoContent>header>div>h2 {
+    white-space: normal;
+    overflow: hidden;
+}
+
+.sapFCardIcon.sapUiIcon {
+    line-height: 1.7;
+    font-size: 1.3rem;
+    background-color: #f0f0f0;
+}
+
+.sapFCardIcon:only-child {
+    margin: 0 auto;
+}
+.sapFCard>header:only-child {
+    margin: 1.3rem 0 0 0;
+}
+
+.sapFCard>header {
+    display: flex;
+    margin: 1rem 0;
+}
+.sapFCard>header>div {
+    flex-grow: 1;
+    margin: 0 1rem;
+    overflow:hidden;
+}
+
+.sapFCard>header>div>h1 {
+    margin:0.05rem 0 0 0;
+    font-weight:normal;
+    font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.sapFCard>header>div>h1:hover:before {
+    display: inline-block;
+    content: "";
+    margin-left: 0%;
+    width: 0%;
+    height: 1px;
+    animation: scroll 3s 0.8s ease-in-out;
+}
+.sapFCard>header>div>h2 {
+    margin:0.05rem 0 0 0;
+    font-weight:normal;
+    font-size: 0.875rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display:block;
+    width:100%;
+    white-space: nowrap;
+}
+.sapFCard .sapFCardTextScroll:hover:before {
+    display: inline-block;
+    content: "";
+    margin-left: 0%;
+    width: 0%;
+    height: 1px;
+    animation: scroll 3s 0.8s ease-in-out;
+}
+@keyframes scroll {
+  from {margin-left: 0%}
+  10% {margin-left: 0%}
+  35% {margin-left: -70%}
+  55% {margin-left: -70%}
+  90% {margin-left: 0%}
+  to {margin-left: 0%;}
+}
+
+.sapFCard>header>.sapFCardStatus {
+    margin:0;
+    font-weight:normal;
+    font-size: 0.875rem;
+    flex-grow: 0;
+    min-width: 3rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 1rem 0 0;
+}
+
+.sapFCard>.sapFCardSeparator {
+    height: 1px;
+    margin: -2px 0.5rem;
+    position: relative;
+    overflow: hidden;
+    background-color: #f0f0f0;
+}
+
+.sapFCard.sapFCardLoading>.sapFCardSeparator:before {
+  display: block;
+  position: absolute;
+  content: "";
+  left: -100%;
+  width: 30%;
+  height: 1px;
+  background-color: #ddd;
+  background-image: linear-gradient(to right, transparent,#6da3c5,transparent);
+  animation: loading 3s linear infinite;
+}
+@keyframes loading {
+  from {left: -200px; width: 30%;}
+    50% {width: 30%;}
+    70% {width: 80%;}
+    80% { left: 50%;}
+    95% {left: 120%;}
+    to {left: 100%;}
+}
+
+.sapFCard>section.sapFCardContent {
+    background-color: #fff;
+    position: absolute;
+    top: 4.5rem;
+    bottom:0;
+    width: 100%;
+    display: block;
+}
+
+/* END "Card.less" */
+
 /* START "FlexibleColumnLayout.less" */
 /* =========================================== */
 /* CSS for control sap.f/FlexibleColumnLayout  */
@@ -869,18 +1118,42 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 		.sapFFCLContainer {
 			height: 100%;
 		}
+
+		// In order to have reveal effect, columns should overlap each other
+		&.sapFFCLColumnBegin {
+			z-index: 300;
+		}
+
+		&.sapFFCLColumnMid {
+			z-index: 200;
+		}
+
+		&.sapFFCLColumnEnd {
+			z-index: 100;
+		}
+
+		&.sapFFCLPinnedColumn {
+			position: absolute;
+			right: 0;
+		}
 	}
 
 	.sapFFCLColumnContent {
 		height: 100%;
+	}
+
+	.sapUiLocalBusyIndicator {
+		z-index: 400;
 	}
 }
 
 html[data-sap-ui-animation='on'] {
 	.sapFFCL {
 		.sapFFCLColumn {
-			transition: width 560ms cubic-bezier(0.1, 0, 0.05, 1), visibility 560ms ease-in;
-			-webkit-transition: width 560ms cubic-bezier(0.1, 0, 0.05, 1), visibility 560ms ease-in;
+			&:not(.sapFFCLPinnedColumn) {
+				transition: width 560ms cubic-bezier(0.1, 0, 0.05, 1), visibility 560ms ease-in;
+				-webkit-transition: width 560ms cubic-bezier(0.1, 0, 0.05, 1), visibility 560ms ease-in;
+			}
 		}
 	}
 }
@@ -924,5 +1197,68 @@ html[data-sap-ui-animation='on'] {
 	height: 100%;
 	position: relative;
 	overflow: hidden;
+
+	.sapFDynamicPageContent {
+		.sapFSemanticPageAlignContent {
+			margin-left: -@sapUiMarginSmall;
+			margin-right: -@sapUiMarginSmall;
+		}
+	}
+
+	.sapFDynamicPage.sapUiContentPadding,
+	.sapFDynamicPage.sapUiNoContentPadding,
+	.sapFDynamicPage.sapUiResponsiveContentPadding {
+		.sapFSemanticPageAlignContent {
+			margin: 0;
+		}
+	}
+
+	.sapFDynamicPage.sapUiContentPadding {
+		.sapFDynamicPage-Std-Phone {
+			.sapFSemanticPageAlignContent {
+				margin: 0 -@sapUiMarginSmall;
+			}
+		}
+	}
 }
 /* END "SemanticPage.less" */
+
+/* START "GridList.less" */
+.sapFGridList {
+	/* List headers overrides */
+	& > .sapMListHdrText,
+	& > .sapMListHdrTBar {
+		margin-bottom: 0.5rem;
+	}
+}
+
+.sapFGridListDefault {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+	grid-auto-rows: 1fr;
+	grid-gap: 0.5rem 0.5rem;
+}
+
+/* List Group headers overrides. */
+.sapFGridListGroup {
+	& > .sapMLIB.sapMGHLI {
+		background: none;
+		border: none;
+		padding-top: 0.25rem;
+		grid-column: ~"1 / -1";
+
+		& .sapMGHLITitle {
+			font-size: 1.125rem;
+			color: @sapUiGroupTitleTextColor;
+		}
+	}
+}
+
+.sapFGridList .sapMLIB {
+	border: 1px solid @sapUiListBorderColor;
+
+	& > .sapMLIBContent {
+		height: 100%;
+	}
+}
+/* END "GridList.less" */

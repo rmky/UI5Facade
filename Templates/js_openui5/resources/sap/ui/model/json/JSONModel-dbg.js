@@ -13,8 +13,26 @@
  */
 
 // Provides the JSON object based model implementation
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Context', './JSONListBinding', './JSONPropertyBinding', './JSONTreeBinding'],
-	function(jQuery, ClientModel, Context, JSONListBinding, JSONPropertyBinding, JSONTreeBinding) {
+sap.ui.define([
+	'sap/ui/model/ClientModel',
+	'sap/ui/model/Context',
+	'./JSONListBinding',
+	'./JSONPropertyBinding',
+	'./JSONTreeBinding',
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery",
+	"sap/base/util/isPlainObject"
+],
+	function(
+		ClientModel,
+		Context,
+		JSONListBinding,
+		JSONPropertyBinding,
+		JSONTreeBinding,
+		Log,
+		jQuery,
+		isPlainObject
+	) {
 	"use strict";
 
 
@@ -34,7 +52,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @public
 	 * @alias sap.ui.model.json.JSONModel
 	 */
@@ -112,7 +130,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 				for (var i = 0; i < oObject.length; i++) {
 					observeRecursive(oObject[i], oObject, i);
 				}
-			} else if (jQuery.isPlainObject(oObject)) {
+			} else if (isPlainObject(oObject)) {
 				for (var i in oObject) {
 					observeRecursive(oObject[i], oObject, i);
 				}
@@ -138,7 +156,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 			oJSONData = jQuery.parseJSON(sJSON);
 			this.setData(oJSONData, bMerge);
 		} catch (e) {
-			jQuery.sap.log.fatal("The following problem occurred: JSON parse Error: " + e);
+			Log.fatal("The following problem occurred: JSON parse Error: " + e);
 			this.fireParseError({url : "", errorCode : -1,
 				reason : "", srcText : e, line : -1, linepos : -1, filepos : -1});
 		}
@@ -190,7 +208,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 
 		var fnSuccess = function(oData) {
 			if (!oData) {
-				jQuery.sap.log.fatal("The following problem occurred: No data was retrieved by service: " + sURL);
+				Log.fatal("The following problem occurred: No data was retrieved by service: " + sURL);
 			}
 			this.setData(oData, bMerge);
 			this.fireRequestCompleted({url : sURL, type : sType, async : bAsync, headers: mHeaders,
@@ -212,7 +230,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 				statusText : sStatusText,
 				responseText : sResponseText
 			};
-			jQuery.sap.log.fatal("The following problem occurred: " + sMessage, sResponseText + ","	+ iStatusCode + "," + sStatusText);
+			Log.fatal("The following problem occurred: " + sMessage, sResponseText + ","	+ iStatusCode + "," + sStatusText);
 
 			this.fireRequestCompleted({url : sURL, type : sType, async : bAsync, headers: mHeaders,
 				info : "cache=" + bCache + ";bMerge=" + bMerge, infoObject: {cache : bCache, merge : bMerge}, success: false, errorobject: oError});
@@ -244,7 +262,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 			this.pSequentialImportCompleted = this.pSequentialImportCompleted.then(function() {
 				//must always resolve
 				return pImportCompleted.then(fnSuccess, fnError).catch(function(oError) {
-					jQuery.sap.log.error("Loading of data failed: " + oError.stack);
+					Log.error("Loading of data failed: " + oError.stack);
 				});
 			});
 		} else {

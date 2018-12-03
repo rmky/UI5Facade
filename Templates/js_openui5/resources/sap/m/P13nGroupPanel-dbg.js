@@ -6,12 +6,19 @@
 
 // Provides control sap.m.P13nGroupPanel.
 sap.ui.define([
-	'jquery.sap.global', './P13nConditionPanel', './P13nPanel', './library'
-], function(jQuery, P13nConditionPanel, P13nPanel, library) {
+	'./library',
+	'./P13nConditionPanel',
+	'./P13nPanel',
+	'./P13nGroupItem',
+	"sap/ui/thirdparty/jquery"
+], function(library, P13nConditionPanel, P13nPanel, P13nGroupItem, jQuery) {
 	"use strict";
 
 	// shortcut for sap.m.P13nPanelType
 	var P13nPanelType = library.P13nPanelType;
+
+	// shortcut for sap.m.P13nConditionOperation TODO: use enum in library.js or official API
+	var P13nConditionOperation = library.P13nConditionOperation;
 
 	/**
 	 * Constructor for a new P13nGroupPanel.
@@ -20,7 +27,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The P13nGroupPanel control is used to define group-specific settings for table personalization.
 	 * @extends sap.m.P13nPanel
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -225,7 +232,7 @@ sap.ui.define([
 
 		if (!this._aOperations) {
 			this.setOperations([
-				sap.m.P13nConditionOperation.GroupAscending, sap.m.P13nConditionOperation.GroupDescending
+				P13nConditionOperation.GroupAscending, P13nConditionOperation.GroupDescending
 			]);
 		}
 
@@ -425,7 +432,7 @@ sap.ui.define([
 				that._notifyChange();
 			}
 			if (sOperation === "add") {
-				oGroupItem = new sap.m.P13nGroupItem({
+				oGroupItem = new P13nGroupItem({
 					key: sKey,
 					columnKey: oNewData.keyField,
 					operation: oNewData.operation,

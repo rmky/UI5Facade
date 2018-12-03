@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @class
 	 * DataSet
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -665,16 +665,19 @@ sap.ui.define([
 	DataSet.prototype.setShowToolbar = function(bShow) {
 		this.setProperty("showToolbar",bShow, true);
 		this._rerenderToolbar();
+		return this;
 	};
 
 	DataSet.prototype.setShowFilter = function(bShow) {
 		this.setProperty("showFilter",bShow, true);
 		this._rerenderFilter();
+		return this;
 	};
 
 	DataSet.prototype.setShowSearchField = function(bShow) {
 		this.setProperty("showSearchField",bShow, true);
 		this._rerenderToolbar();
+		return this;
 	};
 	/**
 	* @private

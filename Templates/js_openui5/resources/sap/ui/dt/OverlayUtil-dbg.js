@@ -6,12 +6,10 @@
 
 // Provides object sap.ui.dt.OverlayUtil.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/dt/OverlayRegistry',
 	'sap/ui/dt/ElementUtil'
 ],
 function(
-	jQuery,
 	OverlayRegistry,
 	ElementUtil
 ) {
@@ -22,7 +20,7 @@ function(
 	 *
 	 * @class Utility functionality to work with overlays
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @private
 	 * @static
 	 * @since 1.30
@@ -161,6 +159,33 @@ function(
 				return oChildOverlay;
 			}
 			var oDescendantOverlay = this.getFirstDescendantByCondition(oChildOverlay, fnCondition);
+			if (oDescendantOverlay) {
+				return oDescendantOverlay;
+			}
+		}
+		return undefined;
+	};
+
+	/**
+	 * Returns last descendant of given ElementOverlay which fulfills
+	 * the given condition. Recursive function.
+	 *
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay - Source overlay object
+	 * @param {function} fnCondition - condition to search
+	 * @returns {sap.ui.dt.ElementOverlay} Returns the overlay which fulfills the condition, otherwise it returns 'undefined'
+	 * @private
+	 */
+	OverlayUtil.getLastDescendantByCondition = function(oOverlay, fnCondition) {
+		if (!fnCondition) {
+			throw new Error("expected condition is 'undefined' or not a function");
+		}
+		var aChildrenOverlays = OverlayUtil.getAllChildOverlays(oOverlay);
+		for (var i = aChildrenOverlays.length - 1, n = -1; i > n; i--) {
+			var oChildOverlay = aChildrenOverlays[i];
+			if (fnCondition(oChildOverlay)) {
+				return oChildOverlay;
+			}
+			var oDescendantOverlay = this.getLastDescendantByCondition(oChildOverlay, fnCondition);
 			if (oDescendantOverlay) {
 				return oDescendantOverlay;
 			}
@@ -531,6 +556,75 @@ function(
 				this.isInAggregationBinding(
 					oElementOverlay.getParentElementOverlay(),
 					oElementOverlay.getElement().sParentAggregationName
+				)
+			);
+	};
+
+	/**
+	 * The AggregationBindingStack contains element id and aggregation name of the bound control together with a stack containing
+	 * information about the traversed elements for an Overlay which is part of an aggregation binding.
+	 * @typedef {Object} sap.ui.dt.OverlayUtil.AggregationBindingStack
+	 * @property {string} elementId - id of the bound control.
+	 * @property {string} aggregation - name of the bound aggregation.
+	 * @property {string} templateId - id of the binding template.
+	 * @property {Object[]} stack - array of objects containing element, element type, aggregation name and index of the element in
+	 *                              the aggregation for each traversed aggregation.
+	 * @property {string} stack.element - element id
+	 * @property {string} stack.type - element type
+	 * @property {string} stack.aggregation - aggregation name
+	 * @property {number} stack.index - index of the element in parent aggregation
+	 */
+
+	/**
+	 * Returns the element id and the aggregation name of the bound control for an Overlay which is part of an aggregation binding
+	 * The check is done recursively
+	 * @param  {sap.ui.dt.ElementOverlay} oElementOverlay Overlay being checked
+	 * @return {AggregationBindingStack}  Returns the {@link sap.ui.dt.OverlayUtil.AggregationBindingStack} object
+	 */
+	OverlayUtil.getAggregationInformation = function(oElementOverlay) {
+		var aStack = [];
+		return this._evaluateBinding(oElementOverlay, aStack);
+	};
+
+	OverlayUtil._evaluateBinding = function(oElementOverlay, aStack) {
+		var oElement = oElementOverlay.getElement();
+		var sAggregationName;
+		var iIndex;
+		var oParent;
+		if (oElementOverlay.getParentAggregationOverlay()) {
+			iIndex = oElementOverlay.getParentAggregationOverlay().getChildren().indexOf(oElementOverlay);
+			sAggregationName = oElementOverlay.getParentAggregationOverlay().getAggregationName();
+			oParent = oElementOverlay.getParentElementOverlay().getElement();
+		} else {
+			iIndex = -1;
+		}
+		aStack.push({
+			element: oElement.getId(),
+			type: oElement.getMetadata().getName(),
+			aggregation: sAggregationName,
+			index: iIndex
+		});
+		if (sAggregationName && oParent.getBinding(sAggregationName)) {
+			var oBinding = oParent.getBindingInfo(sAggregationName);
+			var oTemplate = oBinding && oBinding.template;
+			return {
+				elementId: oParent.getId(),
+				aggregation: sAggregationName,
+				templateId: oTemplate ? oTemplate.getId() : undefined,
+				stack: aStack
+			};
+		}
+		return oElementOverlay.isRoot()
+			? {
+					elementId: undefined,
+					aggregation: undefined,
+					templateId: undefined,
+					stack: aStack
+				}
+			: (
+				this._evaluateBinding(
+					oElementOverlay.getParentElementOverlay(),
+					aStack
 				)
 			);
 	};

@@ -78,8 +78,9 @@
  * @public
  */
 
-sap.ui.define(['sap/ui/model/SimpleType'],
-	function(SimpleType) {
+sap.ui.define([
+	"sap/ui/model/SimpleType"
+], function (SimpleType) {
 	"use strict";
 
 	/**
@@ -110,7 +111,7 @@ sap.ui.define(['sap/ui/model/SimpleType'],
 	 * @extends sap.ui.model.SimpleType
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @abstract
 	 * @alias sap.ui.model.odata.type.ODataType
@@ -137,7 +138,7 @@ sap.ui.define(['sap/ui/model/SimpleType'],
 	 * @returns {object} this
 	 * @public
 	 */
-	ODataType.prototype.getInterface = function() {
+	ODataType.prototype.getInterface = function () {
 		return this;
 	};
 
@@ -150,7 +151,7 @@ sap.ui.define(['sap/ui/model/SimpleType'],
 	 *   constraints, see {@link #constructor}.
 	 * @private
 	 */
-	ODataType.prototype.setConstraints = function(oConstraints) {
+	ODataType.prototype.setConstraints = function (oConstraints) {
 		// do nothing!
 	};
 
@@ -163,7 +164,7 @@ sap.ui.define(['sap/ui/model/SimpleType'],
 	 *   format options, see {@link #constructor}.
 	 * @private
 	 */
-	ODataType.prototype.setFormatOptions = function(oFormatOptions) {
+	ODataType.prototype.setFormatOptions = function (oFormatOptions) {
 		// do nothing!
 	};
 

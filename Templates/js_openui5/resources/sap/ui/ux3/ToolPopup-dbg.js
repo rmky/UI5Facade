@@ -45,7 +45,7 @@ sap.ui.define([
          *
          * @namespace
          * @author SAP SE
-         * @version 1.56.6
+         * @version 1.60.1
          *
          * @constructor
          * @public
@@ -550,7 +550,7 @@ sap.ui.define([
                     // Compare the initial focus id with the current focus that is
                     // stored in the FocusHandler in the core.
                     // If the initial focus was set properly already by the Popup
-                    // don't focus twice. Because Internet Explorer will be confused with
+                    // don't focus twice. Because Internet Explorer will be confused with// TODO remove after 1.62 version
                     // two focusin and focusout events
                     if (sInitFocusId !== sap.ui.getCore().getCurrentFocusedControlId()) {
                         var oControl = jQuery.sap.byId(sInitFocusId);
@@ -1418,6 +1418,7 @@ sap.ui.define([
             } else {
                 jQuery.sap.log.error("Only values in pixels are possible", "", "sap.ui.ux3.ToolPopup");
             }
+            return this;
         };
 
         return ToolPopup;

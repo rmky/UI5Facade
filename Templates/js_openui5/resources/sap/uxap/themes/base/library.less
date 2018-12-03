@@ -86,6 +86,38 @@ html .sapUiContainer-Wide .sapUxAPAnchorBarOverflow:not(.sapUxAPAnchorBarScrollR
 	margin-left: 0;
 }
 
+.sapUxAPAnchorBar .sapUxAPAnchorBarButton.sapMMenuBtn {
+	max-width: 100%;
+
+	.sapMSB {
+		padding-left: 1rem;
+		padding-right: 1.5rem;
+		width: auto !important;
+	}
+
+	.sapMSB .sapMSBText.sapMSBTextIE {
+		width: auto !important;
+	}
+
+	.sapMSB .sapMSBText.sapMSBTextIE,
+	.sapMSB .sapMSBText:not(.sapMSBTextIE) .sapMBtnInner {
+		margin-right: 1.25rem;
+	}
+
+	.sapMSBArrow {
+		padding-right: 0.25rem;
+	}
+
+	.sapMSBText:focus >  .sapMBtnInner {
+		outline: none;
+	}
+
+	.sapMSB:focus .sapMSBInner::after {
+		top: 0.125rem;
+		bottom: 0.125rem;
+	}
+}
+
 .sapUxAPAnchorBar .sapUxAPAnchorBarButton {
 	height: 3rem;
 	padding: 0;
@@ -101,6 +133,12 @@ html .sapUiContainer-Wide .sapUxAPAnchorBarOverflow:not(.sapUxAPAnchorBarScrollR
 			line-height: 3rem;
 		}
 	}
+
+	.sapMBtn,
+	.sapMSBText .sapMBtnInner,
+	.sapMSBArrow .sapMBtnInner {
+		padding: 0;
+	}
 }
 
 .sapUxAPAnchorBar .sapMBarChild {
@@ -111,14 +149,15 @@ html .sapUiContainer-Wide .sapUxAPAnchorBarOverflow:not(.sapUxAPAnchorBarScrollR
 .sapUxAPAnchorBar .sapUxAPAnchorBarButton .sapMBtnIcon {
 	font-size: 0.75rem;
 	width: 1.5rem;
-	right: 0.875rem;
+	right: 0;
 }
 
 .sapUxAPAnchorBar .sapUxAPAnchorBarButton > .sapMBtnIconLast > .sapMBtnContent {
 	padding-right: 1.375rem;
 }
 
-.sapUxAPAnchorBarUpperCase .sapUxAPAnchorBarButton {
+.sapUxAPAnchorBarUpperCase .sapUxAPAnchorBarButton,
+.sapUxAPAnchorBarUpperCase .sapUxAPAnchorBarButton .sapMBtn {
 	text-transform: uppercase;
 }
 
@@ -270,52 +309,18 @@ html .sapUiContainer-Medium .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchor
 /* END Scroll Arrows */
 /*********************/
 
-/* POPOVER */
-
-.sapMPopover.sapUxAPAnchorBarPopover > .sapMPopoverArr {
-	display: none;
-}
-
-.sapMPopover.sapUxAPAnchorBarPopover .sapMBtn.sapUxAPAnchorBarButton {
-	padding: 0;
-	display: block;
-	width: 100%;
-}
-
-.sapMPopover.sapUxAPAnchorBarPopover button.sapMBtn > .sapMBtnInner {
-	padding-right: 1.75rem;
-	padding-left: 1rem;
-}
-
-.sapMPopover.sapUxAPAnchorBarPopover button.sapMBtn > .sapMBtnInner > .sapMBtnContent {
-	text-shadow: none;
-	text-align: left;
-	overflow: visible;
-}
-
-html[dir=rtl] .sapMPopover.sapUxAPAnchorBarPopover button.sapMBtn > .sapMBtnInner > .sapMBtnContent {
-	text-align: right;
-}
-
-/**********************************
-COZY
-**********************************/
-.sapUxAPAnchorBarPopover .sapMBtn.sapUxAPAnchorBarButton {
-	height: 3rem;
-}
-
-.sapUxAPAnchorBarPopover.sapMPopover .sapMBtn.sapUxAPAnchorBarButton .sapMBtnInner {
-	height: 3rem;
-	border-radius: 0;
-}
-
-.sapUxAPAnchorBarPopover.sapMPopover .sapMBtn.sapUxAPAnchorBarButton .sapMBtnInner .sapMBtnContent {
-	line-height: 3rem;
-}
-
 /**********************************
 Compact
 **********************************/
+
+.sapUiSizeCompact {
+	.sapUxAPAnchorBar .sapUxAPAnchorBarButton.sapMMenuBtn {
+		.sapMSB .sapMSBText.sapMSBTextIE,
+		.sapMSB .sapMSBText:not(.sapMSBTextIE) .sapMBtnInner {
+			margin-right: 0.75rem;
+		}
+	}
+}
 
 .sapUiSizeCompact .sapUxAPAnchorBar,
 .sapUiSizeCompact .sapUxAPAnchorBar .sapUxAPAnchorBarButton {
@@ -371,16 +376,6 @@ Compact
 
 .sapUiSizeCompact .sapUxAPAnchorBarButton .sapMBtnContent {
 	line-height: 1.375rem;
-}
-
-.sapUiSizeCompact.sapUxAPAnchorBarPopover.sapMPopover .sapMBtn.sapUxAPAnchorBarButton,
-.sapUiSizeCompact.sapUxAPAnchorBarPopover.sapMPopover .sapMBtn.sapUxAPAnchorBarButton .sapMBtnInner {
-	height: 2rem;
-	border-radius: 0;
-}
-
-.sapUiSizeCompact.sapUxAPAnchorBarPopover.sapMPopover .sapMBtn.sapUxAPAnchorBarButton .sapMBtnInner {
-	padding-left: 0.5rem;
 }
 
 // Scroll button container
@@ -653,6 +648,7 @@ html .sapUiContainer-Wide .sapUxAPHierarchicalSelect.sapMSltIconOnly {
 }
 
 /* IE and Edge ignores outline-offset. Use an overlay: */
+/* TODO remove after 1.62 version */
 html[data-sap-ui-browser^="ie"].sap-desktop,
 html[data-sap-ui-browser^="ed"].sap-desktop {
 	.sapMSlt.sapUxAPHierarchicalSelect:focus  > .sapMSltArrow {
@@ -783,6 +779,11 @@ objectPageHeader Title
 		margin-right: 1rem;
 	}
 
+	.sapUxAPObjectPageHeaderObjectImageForce .sapUxAPObjectPageHeaderObjectImage-Square .sapUxAPObjectPageHeaderObjectImage,
+	.sapUxAPObjectPageHeaderStickied & .sapUxAPObjectPageHeaderObjectImage-Square .sapUxAPObjectPageHeaderObjectImage {
+		width: auto;
+	}
+
 	.sapUxAPObjectPageHeaderObjectImage {
 		width: 0;
 		height: 0;
@@ -797,8 +798,8 @@ objectPageHeader Title
 
 	.sapUxAPObjectPageHeaderIdentifierContainer {
 		display: inline-block;
-		line-height: normal;
-		vertical-align: middle;
+		line-height: 1.375rem;
+		vertical-align: bottom;
 		width: 60%; /* Breaking point TBD */
 		box-sizing: border-box;
 		padding-top: 1.5rem;
@@ -814,7 +815,7 @@ objectPageHeader Title
 		position: absolute;
 		top: 0;
 		padding-top: 0.25rem;
-		right: 1.25rem;
+		right: 2.25rem;
 		display: inline-block;
 		float: right;
 		vertical-align: top;
@@ -881,7 +882,7 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageHeaderIdentifier {
 .sapUxAPObjectPageHeaderIdentifier .sapUxAPObjectPageHeaderIdentifierDescription {
 	display: none;
 	word-break: break-word;
-	vertical-align: baseline;
+	vertical-align: bottom;
 	padding-top: 0.5rem;
 
 	.sapUxAPObjectPageHeaderStickied & {
@@ -900,8 +901,11 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageHeaderIdentifier {
 	font-size: 1.375rem;
 	padding-right: 1rem;
 	display: none;
-	vertical-align: baseline;
+	vertical-align: middle;
 	line-height: normal;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 100%;
 	.sapUxAPObjectPageHeaderStickied & {
 		display: inline-block;
 	}
@@ -915,6 +919,7 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageHeaderIdentifier {
 	padding-bottom: 0.5rem;
 }
 
+/* TODO remove after 1.62 version */
 html[data-sap-ui-browser^=ie] .sapUxAPObjectPageHeaderObjectImageContainerSub > img {
 	padding-top: 0;
 	padding-bottom: 0;
@@ -1101,7 +1106,7 @@ html[dir=rtl] .sapUxAPObjectPageHeaderMarks .sapMObjStatusMarker .sapUiIcon:firs
 
 /* Fiori 2.0 adaptation */
 .sapF2CollapsedHeader .sapUxAPObjectPageHeaderNavigation > .sapMBar {
-  height: 0;
+	display: none;
 }
 
 .sapF2Adapted .sapUxAPObjectPageHeaderNavigation > .sapMIBar {
@@ -1125,6 +1130,12 @@ html[dir=rtl] .sapUxAPObjectPageHeaderMarks .sapMObjStatusMarker .sapUiIcon:firs
 		margin-right: 2rem;
 		margin-bottom: 1rem;
 		line-height: 1.5rem;
+	}
+
+
+	.sapUxAPObjectPageHeaderContentItem.sapFAvatar .sapFAvatarMagnifyingGlass,
+	.sapUxAPObjectPageHeaderContentItem .sapFAvatar .sapFAvatarMagnifyingGlass {
+		line-height: 0.8125rem;
 	}
 
 	.sapUxAPObjectPageHeaderContentItem .sapMText {
@@ -1210,13 +1221,6 @@ html[dir=rtl] .sapUxAPObjectPageHeaderMarks .sapMObjStatusMarker .sapUiIcon:firs
 		.sapUxAPObjectPageHeaderContentItem.sapMObjectAttributeActive {
 			line-height:1rem;
 		}
-		.sapMObjectAttributeActive .sapMObjectAttributeTitle,
-		.sapMObjectAttributeActive .sapMObjectAttributeText {
-			display: inline;
-			position: relative;
-			white-space: pre-line;
-			word-wrap: break-word;
-		}
 
 		.sapUiVltCell > .sapMObjectAttributeDiv, .sapUiVltCell > .sapMObjStatus {
 			line-height: 1.5rem;
@@ -1276,6 +1280,7 @@ html[dir=rtl] .sapUxAPObjectPageHeaderMarks .sapMObjStatusMarker .sapUiIcon:firs
 	}
 }
 
+/* TODO remove after 1.62 version */
 html[data-sap-ui-browser^='ie'] .sapUxAPObjectPageHeaderContent div.sapUxAPObjectPageHeaderContentItem {
 	vertical-align: top;
 }
@@ -1454,6 +1459,17 @@ html .sapUiContainer-Medium {
 	isolation: isolate;
 	z-index: 0;
 	white-space: normal; // BCP: 1780382804
+
+	/* ObjectAttribute will not truncate inside ObjectPage but rather will go on more lines */
+	.sapUxAPObjectPageHeaderDetails {
+		.sapMObjectAttributeActive .sapMObjectAttributeTitle,
+		.sapMObjectAttributeActive .sapMObjectAttributeText {
+			display: inline;
+			position: relative;
+			white-space: pre-line;
+			word-wrap: break-word;
+		}
+	}
 }
 
 body > .sapUxAPObjectPageLayout,
@@ -1559,10 +1575,6 @@ body > .sapUxAPObjectPageLayout,
 	background: @sapUiObjectHeaderBorderColor;
 }
 
-.sapUxAPObjectPageNavigation {
-	background: @sapUiObjectHeaderBackground;
-}
-
 .sapUxAPObjectPageLayout.sapUxAPObjectPageLayoutTitleClickEnabled {
 	// title hover
 	.sapFDynamicPageTitle:hover,
@@ -1637,8 +1649,8 @@ body > .sapUxAPObjectPageLayout,
 		height: 2.5rem;
 
 		&.sapMBar-CTX {
-			// BCP: 1870106645 
-			// When sap.m.Bar is used as footer (in compact) setting 2.5rem height 
+			// BCP: 1870106645
+			// When sap.m.Bar is used as footer (in compact) setting 2.5rem height
 			// breaks the Bar`s content vertical alignment.
 			// Fixing this internally in the sap.m.Bar (in the context of flaoting footer)
 			// will require significant effort, so we set height of 2rem (the expected Bar height by the visual spec).
@@ -1704,6 +1716,7 @@ html[data-sap-ui-animation='on'] .sapUxAPObjectPageLayout {
  in the sapMShell and the one in the objectPageWrapper.
  Also the z-index causes the scroll bars of the table to show in the headerTitle.
  For more information see internal incident 1670194272. */
+ /* TODO remove after 1.62 version */
 html[data-sap-ui-browser^="ie"][data-sap-ui-os^="win8"] .sapMShell {
 
   .sapUxAPObjectPageWrapperTransform {
@@ -1809,9 +1822,13 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageSectionHeader {
 	line-height: 2rem;
 }
 
-/* IE and Edge ignores outline-offset. Use an overlay: */
-html[data-sap-ui-browser^="ie"].sap-desktop,
-html[data-sap-ui-browser^="ed"].sap-desktop {
+html[data-sap-ui-browser^="ed"].sap-desktop .sapUxAPObjectPageSection:focus {
+	outline-style: dashed;
+}
+
+/* IE ignores outline-offset. Use an overlay: */
+/* TODO remove after 1.62 version */
+html[data-sap-ui-browser^="ie"].sap-desktop {
 	.sapUxAPObjectPageSection:focus {
 		outline: none;
 		position: relative;
@@ -1848,13 +1865,14 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 	height: auto;
 	overflow: auto;
 	word-wrap: break-word;
-	padding: 1rem 0 0 3rem
+	padding: 1rem 2.25rem 0 3rem
 }
 
 .sapUiMedia-Std-Desktop .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageSubSectionHeader,
 .sapUiMedia-Std-Tablet .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageSubSectionHeader,
 html .sapUiContainer-Medium .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageSubSectionHeader {
 	padding-left: 2rem;
+	padding-right: 1.25rem;
 }
 
 .sapUxAPObjectPageSubSectionHeaderTitle {
@@ -1867,7 +1885,6 @@ html .sapUiContainer-Medium .sapMSplitContainer:not(.sapMSplitContainerHideMode)
 }
 
 .sapUxAPObjectPageSubSectionHeaderActions {
-	padding-right: 0.5rem;
 	float: right;
 	height: 3rem;
 }
@@ -1891,7 +1908,7 @@ html .sapUiContainer-Medium .sapMSplitContainer:not(.sapMSplitContainerHideMode)
 /* phone display */
 .sapUiMedia-Std-Phone .sapUxAPObjectPageSubSectionHeader,
 html .sapUiContainer-Narrow .sapUxAPObjectPageSubSectionHeader {
-	padding: 0 0 0 1rem;
+	padding: 0 0.5rem 0 1rem;
 }
 
 .sapUiMedia-Std-Phone .sapUxAPObjectPageSubSectionHeaderTitle,
@@ -1908,7 +1925,7 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageSubSectionHeaderTitle {
 
 .sapUiMedia-Std-Tablet .sapUxAPObjectPageSubSectionHeader,
 html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
-	padding: 1rem 0 0 2rem;
+	padding: 1rem 1.25rem 0 2rem;
 }
 
 .sapUxAPObjectPageSubSectionHeader.titleOnLeftLayout {
@@ -1969,6 +1986,13 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 	.sapUiFormResGrid>.sapUiFormTitle {
 		padding: 0;
 	}
+	.sapUiFormResGrid.sapUiFormToolbar >.sapMTB {
+		padding: 0;
+	}
+	.sapUxAPObjectPageSubSectionAlignContent {
+		margin-left: -@sapUiMarginSmall;
+		margin-right: -@sapUiMarginSmall;
+	}
 }
 
 .sapUxAPBlockContainerDesktop {
@@ -1993,6 +2017,9 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 	}
 	.sapUiRespGrid.sapUiRespGridHSpace1 > div {
 		margin: 0;
+	}
+	.sapUxAPObjectPageSubSectionAlignContent {
+		margin-right: -@sapUiMarginMedium;
 	}
 }
 
@@ -2030,9 +2057,13 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 	}
 }
 
-/* IE and Edge ignores outline-offset. Use an overlay: */
-html[data-sap-ui-browser^="ie"].sap-desktop,
-html[data-sap-ui-browser^="ed"].sap-desktop {
+html[data-sap-ui-browser^="ed"].sap-desktop .sapUxAPObjectPageSubSection:focus {
+	outline-style: dashed;
+}
+
+/* IE ignores outline-offset. Use an overlay: */
+/* TODO remove after 1.62 version */
+html[data-sap-ui-browser^="ie"].sap-desktop {
 	.sapUxAPObjectPageSubSection:focus {
 		outline: none;
 		position: relative;

@@ -6,34 +6,20 @@
 
 //Provides class sap.ui.model.odata.v4.lib._Requestor
 sap.ui.define([
-	"jquery.sap.global",
-	"sap/ui/base/SyncPromise",
 	"./_Batch",
 	"./_GroupLock",
 	"./_Helper",
-	"./_V2Requestor"
-], function (jQuery, SyncPromise, _Batch, _GroupLock, _Helper, asV2Requestor) {
+	"./_V2Requestor",
+	"sap/base/util/deepEqual",
+	"sap/ui/base/SyncPromise",
+	"sap/ui/thirdparty/jquery"
+], function (_Batch, _GroupLock, _Helper, asV2Requestor, deepEqual, SyncPromise, jQuery) {
 	"use strict";
 
 	var mBatchHeaders = { // headers for the $batch request
 			"Accept" : "multipart/mixed"
 		},
 		_Requestor;
-
-	/**
-	 * Deletes the queue for the given group ID if it contains only the empty change set, so that
-	 * no empty batch is sent.
-	 *
-	 * @param {Requestor} oRequestor The requestor
-	 * @param {string} sGroupId The group ID
-	 */
-	function deleteEmptyGroup(oRequestor, sGroupId) {
-		var aBatchQueue = oRequestor.mBatchQueue[sGroupId];
-
-		if (aBatchQueue[0].length === 0 && aBatchQueue.length === 1) {
-			delete oRequestor.mBatchQueue[sGroupId];
-		}
-	}
 
 	/**
 	 * The getResponseHeader() method imitates the jqXHR.getResponseHeader() method for a $batch
@@ -79,9 +65,16 @@ sap.ui.define([
 	 *   A function called with parameters <code>sGroupId</code> and <code>sPropertyName</code>
 	 *   returning the property value in question. Only 'submit' is supported for <code>
 	 *   sPropertyName</code>. Supported property values are: 'API', 'Auto' and 'Direct'.
+	 * @param {function} oModelInterface.fnReportBoundMessages
+	 *   A function for reporting bound messages; see {@link #reportBoundMessages} for the signature
+	 *   of this function
+	 * @param {function} oModelInterface.fnReportUnboundMessages
+	 *   A function called with parameters <code>sResourcePath</code> and <code>sMessages</code>
+	 *   reporting unbound OData messages to the {@link sap.ui.core.message.MessageManager}.
 	 * @param {function (string)} [oModelInterface.fnOnCreateGroup]
 	 *   A callback function that is called with the group name as parameter when the first
 	 *   request is added to a group
+	 *
 	 * @private
 	 */
 	function Requestor(sServiceUrl, mHeaders, mQueryParams, oModelInterface) {
@@ -91,6 +84,7 @@ sap.ui.define([
 		this.sQueryParams = _Helper.buildQuery(mQueryParams); // Used for $batch and CSRF token only
 		this.mRunningChangeRequests = {};
 		this.oSecurityTokenPromise = null; // be nice to Chrome v8
+		this.iSerialNumber = 0;
 		this.sServiceUrl = sServiceUrl;
 	}
 
@@ -119,12 +113,31 @@ sap.ui.define([
 	};
 
 	/**
+	 * Adds a change set to the batch queue for the given group. All modifying requests created
+	 * until the next call to this method are added to this new change set.
+	 *
+	 * @param {string} sGroupId The group ID
+	 *
+	 * @public
+	 */
+	Requestor.prototype.addChangeSet = function (sGroupId) {
+		var aChangeSet = [],
+			aRequests = this.getOrCreateBatchQueue(sGroupId);
+
+		aChangeSet.iSerialNumber = this.getSerialNumber();
+		aRequests.iChangeSet += 1;
+		aRequests.splice(aRequests.iChangeSet, 0, aChangeSet);
+	};
+
+	/**
 	 * Called when a batch request has been sent to count the number of running change requests.
 	 *
 	 * @param {string} sGroupId
 	 *   The group ID
 	 * @param {boolean} bHasChanges
 	 *   Whether the batch contains change requests; when <code>true</code> the number is increased
+	 *
+	 * @private
 	 */
 	Requestor.prototype.batchRequestSent = function (sGroupId, bHasChanges) {
 		if (bHasChanges) {
@@ -145,6 +158,8 @@ sap.ui.define([
 	 * @param {boolean} bHasChanges
 	 *   Whether the batch contained change requests; when <code>true</code> the number is
 	 *   decreased
+	 *
+	 * @private
 	 */
 	Requestor.prototype.batchResponseReceived = function (sGroupId, bHasChanges) {
 		if (bHasChanges) {
@@ -189,6 +204,8 @@ sap.ui.define([
 	 *		},
 	 *		"sap-client" : "003"
 	 *	}
+	 *
+	 * @public
 	 */
 	Requestor.prototype.buildQueryString = function (sMetaPath, mQueryOptions,
 			bDropSystemQueryOptions, bSortExpandSelect) {
@@ -208,7 +225,7 @@ sap.ui.define([
 	 * @throws {Error}
 	 *   If change requests for the given group ID are running
 	 *
-	 * @private
+	 * @public
 	 */
 	Requestor.prototype.cancelChanges = function (sGroupId) {
 		if (this.mRunningChangeRequests[sGroupId]) {
@@ -262,7 +279,6 @@ sap.ui.define([
 					bCanceled = true;
 				}
 			}
-			deleteEmptyGroup(that, sGroupId0);
 		}
 
 		if (sGroupId) {
@@ -278,6 +294,69 @@ sap.ui.define([
 	};
 
 	/**
+	 * Cleans up the change sets contained in the given requests by merging PATCHes, deleting
+	 * empty change sets and unwrapping change sets containing only one request in case change sets
+	 * are optional.
+	 *
+	 * @param {object[]} aRequests The requests
+	 * @returns {boolean} Whether there is a modifying request in aRequests
+	 *
+	 * @private
+	 * @see sap.ui.model.odata.v4.lib.Requestor#isChangeSetOptional
+	 */
+	Requestor.prototype.cleanUpChangeSets = function (aRequests) {
+		var aChangeSet,
+			bHasChanges = false,
+			i;
+
+		/*
+		 * Adds the given change request to the change set unless it merges with an existing PATCH.
+		 *
+		 * @param {object} oChange The current change
+		 */
+		function addToChangeSet(oChange) {
+			if (!mergePatch(oChange)) {
+				aChangeSet.push(oChange);
+			}
+		}
+
+		/*
+		 * Merges the given change into a "PATCH"-change contained in the change set if possible.
+		 *
+		 * @param {object} oChange The current change
+		 * @returns {boolean} Whether the current change is merged into a change in the change set
+		 */
+		function mergePatch(oChange) {
+			if (oChange.method !== "PATCH") {
+				return false;
+			}
+			return aChangeSet.some(function (oCandidate) {
+				if (oCandidate.method === "PATCH"
+						&& oCandidate.headers["If-Match"] === oChange.headers["If-Match"]) {
+					jQuery.extend(true, oCandidate.body, oChange.body);
+					oChange.$resolve(oCandidate.$promise);
+					return true;
+				}
+			});
+		}
+
+		for (i = aRequests.iChangeSet; i >= 0; i -= 1) {
+			aChangeSet = [];
+			aRequests[i].forEach(addToChangeSet);
+			if (aChangeSet.length === 0) {
+				aRequests.splice(i, 1); // delete empty change set
+			} else if (aChangeSet.length === 1 && this.isChangeSetOptional()) {
+				aRequests[i] = aChangeSet[0]; // unwrap change set
+			} else {
+				aRequests[i] = aChangeSet;
+			}
+			bHasChanges = bHasChanges || aChangeSet.length > 0;
+		}
+
+		return bHasChanges;
+	};
+
+	/**
 	 * Converts the value for a "$expand" in mQueryParams.
 	 *
 	 * @param {object} mExpandItems The expand items, a map from path to options
@@ -285,6 +364,8 @@ sap.ui.define([
 	 *   Whether the paths in $expand and $select shall be sorted in the query string
 	 * @returns {string} The resulting value for the query string
 	 * @throws {Error} If the expand items are not an object
+	 *
+	 * @private
 	 */
 	Requestor.prototype.convertExpand = function (mExpandItems, bSortExpandSelect) {
 		var aKeys,
@@ -323,6 +404,8 @@ sap.ui.define([
 	 *   Whether the paths in $expand and $select shall be sorted in the query string
 	 * @returns {string} The resulting string for the OData query in the form "path" (if no
 	 *   options) or "path($option1=foo;$option2=bar)"
+	 *
+	 * @private
 	 */
 	Requestor.prototype.convertExpandOptions = function (sExpandPath, vExpandOptions,
 			bSortExpandSelect) {
@@ -351,6 +434,8 @@ sap.ui.define([
 	 * @param {boolean} [bSortExpandSelect=false]
 	 *   Whether the paths in $expand and $select shall be sorted in the query string
 	 * @returns {object} The converted query options or undefined if there are no query options
+	 *
+	 * @private
 	 */
 	Requestor.prototype.convertQueryOptions = function (sMetaPath, mQueryOptions,
 			bDropSystemQueryOptions, bSortExpandSelect) {
@@ -371,6 +456,8 @@ sap.ui.define([
 	 *
 	 * @param {string} sResourcePath The V4 resource path
 	 * @returns {string} The resource path as required for the server
+	 *
+	 * @private
 	 */
 	Requestor.prototype.convertResourcePath = function (sResourcePath) {
 		return sResourcePath;
@@ -388,6 +475,8 @@ sap.ui.define([
 	 *   Indicates whether the OData service version is optional, which is the case for responses
 	 *   contained in a response for a $batch request
 	 * @throws {Error} If the "OData-Version" header is not "4.0"
+	 *
+	 * @private
 	 */
 	Requestor.prototype.doCheckVersionHeader = function (fnGetHeader, sResourcePath,
 			bVersionOptional) {
@@ -407,6 +496,26 @@ sap.ui.define([
 	};
 
 	/**
+	 * Converts an OData response payload if needed. For OData V4 payloads no conversion is done.
+	 * May be overwritten for other OData service versions. The resulting payload has to
+	 * be an OData V4 payload.
+	 *
+	 * @param {object} oResponsePayload
+	 *   The OData response payload
+	 * @param {string} [sMetaPath]
+	 *   The meta path corresponding to the resource path; needed in case V2 response does not
+	 *   contain <code>__metadata.type</code>, for example "2.2.7.2.4 RetrievePrimitiveProperty
+	 *   Request"
+	 * @returns {object}
+	 *   The OData V4 response payload
+	 *
+	 * @private
+	 */
+	Requestor.prototype.doConvertResponse = function (oResponsePayload, sMetaPath) {
+		return oResponsePayload;
+	};
+
+	/**
 	 * Converts the known OData system query options from map or array notation to a string. All
 	 * other parameters are simply passed through.
 	 * May be overwritten for other OData service versions.
@@ -414,12 +523,14 @@ sap.ui.define([
 	 * @param {string} sMetaPath
 	 *   The meta path corresponding to the resource path
 	 * @param {object} mQueryOptions The query options
-	 * @param {function(string,any)} fnResultHandler
+	 * @param {function (string,any)} fnResultHandler
 	 *   The function to process the converted options getting the name and the value
 	 * @param {boolean} [bDropSystemQueryOptions=false]
 	 *   Whether all system query options are dropped (useful for non-GET requests)
 	 * @param {boolean} [bSortExpandSelect=false]
 	 *   Whether the paths in $expand and $select shall be sorted in the query string
+	 *
+	 * @private
 	 */
 	Requestor.prototype.doConvertSystemQueryOptions = function (sMetaPath, mQueryOptions,
 			fnResultHandler, bDropSystemQueryOptions, bSortExpandSelect) {
@@ -449,21 +560,17 @@ sap.ui.define([
 	};
 
 	/**
-	 * Converts an OData response payload if needed. For OData V4 payloads no conversion is done.
-	 * May be overwritten for other OData service versions. The resulting payload has to
-	 * be an OData V4 payload.
+	 * Fetches the metadata instance for the given meta path.
 	 *
-	 * @param {object} oResponsePayload
-	 *   The OData response payload
-	 * @param {string} [sMetaPath]
-	 *   The meta path corresponding to the resource path; needed in case V2 response does not
-	 *   contain <code>__metadata.type</code>, for example "2.2.7.2.4 RetrievePrimitiveProperty
-	 *   Request"
-	 * @returns {object}
-	 *   The OData V4 response payload
+	 * @param {string} sMetaPath
+	 *   The meta path, for example "SalesOrderList/SO_2_BP"
+	 * @returns {sap.ui.base.SyncPromise}
+	 *   A promise that is resolved with the metadata instance for the given meta path
+	 *
+	 * @private
 	 */
-	Requestor.prototype.doConvertResponse = function (oResponsePayload, sMetaPath) {
-		return oResponsePayload;
+	Requestor.prototype.fetchMetadata = function (sMetaPath) {
+		return this.oModelInterface.fnFetchMetadata(sMetaPath);
 	};
 
 	/**
@@ -477,9 +584,11 @@ sap.ui.define([
 	 *   because there are no objects for primitive types like "Edm.Stream".
 	 * @returns {sap.ui.base.SyncPromise}
 	 *   A promise that is resolved with the type at the given path or its name.
+	 *
+	 * @private
 	 */
 	Requestor.prototype.fetchTypeForPath = function (sMetaPath, bAsName) {
-		return this.oModelInterface.fnFetchMetadata(sMetaPath + (bAsName ? "/$Type" : "/"));
+		return this.fetchMetadata(sMetaPath + (bAsName ? "/$Type" : "/"));
 	};
 
 	/**
@@ -494,6 +603,8 @@ sap.ui.define([
 	 *   "5.1.1.6.1 Primitive Literals"
 	 * @throws {Error}
 	 *   If the value is undefined or the type is not supported
+	 *
+	 * @private
 	 */
 	Requestor.prototype.formatPropertyAsLiteral = function (vValue, oProperty) {
 		return _Helper.formatLiteral(vValue, oProperty.$Type);
@@ -513,6 +624,41 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns the model interface as passed as parameter to {@link #create}.
+	 *
+	 * @returns {object} The model interface
+	 *
+	 * @private
+	 */
+	Requestor.prototype.getModelInterface = function () {
+		return this.oModelInterface;
+	};
+
+	/**
+	*  Get the batch queue for the given group or create it if it does not exist yet.
+	*
+	*  @param {string} sGroupId The group ID
+	*  @returns {object[]} The batch queue for the group
+	*
+	 * @private
+	 */
+	 Requestor.prototype.getOrCreateBatchQueue = function (sGroupId) {
+		var aChangeSet,
+			aRequests = this.mBatchQueue[sGroupId];
+
+		if (!aRequests) {
+			aChangeSet = [];
+			aChangeSet.iSerialNumber = 0;
+			aRequests = this.mBatchQueue[sGroupId] = [aChangeSet];
+			aRequests.iChangeSet = 0; // the index of the current change set in this queue
+			if (this.oModelInterface.fnOnCreateGroup) {
+				this.oModelInterface.fnOnCreateGroup(sGroupId);
+			}
+		}
+		return aRequests;
+	 };
+
+	 /**
 	 * Returns the resource path relative to the service URL, including function arguments.
 	 *
 	 * @param {string} sPath
@@ -528,7 +674,7 @@ sap.ui.define([
 	 * @throws {Error}
 	 *   If a collection-valued operation parameter is encountered
 	 *
-	 * @private
+	 * @public
 	 */
 	Requestor.prototype.getPathAndAddQueryOptions = function (sPath, oOperationMetadata,
 		mParameters) {
@@ -567,19 +713,61 @@ sap.ui.define([
 	};
 
 	/**
+	 * Gets the serial number for a request or change set.
+	 *
+	 * @returns {number}
+	 *   The serial number
+	 *
+	 * @public
+	 */
+	Requestor.prototype.getSerialNumber = function () {
+		// starts with 1 as first change set created in getOrCreateBatchQueue has serial number 0
+		this.iSerialNumber += 1;
+		return this.iSerialNumber;
+	};
+
+	/**
 	 * Returns this requestor's service URL.
 	 *
 	 * @returns {string}
 	 *   URL of the service document to request the CSRF token from
+	 *
+	 * @private
 	 */
 	Requestor.prototype.getServiceUrl = function () {
 		return this.sServiceUrl;
 	};
 
 	/**
+	 * Tells whether there are pending changes for the given group ID.
+	 *
+	 * @param {string} sGroupId
+	 *   The group ID
+	 * @param {object} oEntity
+	 *   The entity used to identify a request based on its "If-Match" header
+	 * @returns {boolean}
+	 *   Whether there are pending changes for the given group ID
+	 *
+	 * @public
+	 */
+	Requestor.prototype.hasChanges = function (sGroupId, oEntity) {
+		var aRequests = this.mBatchQueue[sGroupId];
+
+		if (aRequests) {
+			return aRequests[0].some(function (oRequest) {
+				return oRequest.headers["If-Match"] === oEntity;
+			});
+		}
+
+		return false;
+	};
+
+	/**
 	 * Returns <code>true</code> if there are pending changes.
 	 *
 	 * @returns {boolean} <code>true</code> if there are pending changes
+	 *
+	 * @public
 	 */
 	Requestor.prototype.hasPendingChanges = function () {
 		var sGroupId, bPending;
@@ -623,6 +811,8 @@ sap.ui.define([
 	 * requestor is ready immediately. Subclasses may behave differently.
 	 *
 	 * @returns {sap.ui.base.SyncPromise} A sync promise that is resolved immediately with no result
+	 *
+	 * @public
 	 */
 	Requestor.prototype.ready = function () {
 		return SyncPromise.resolve();
@@ -639,7 +829,7 @@ sap.ui.define([
 	 * @returns {Promise}
 	 *   A promise that will be resolved (with no result) once the CSRF token has been refreshed.
 	 *
-	 * @private
+	 * @public
 	 */
 	Requestor.prototype.refreshSecurityToken = function (sOldSecurityToken) {
 		var that = this;
@@ -668,6 +858,73 @@ sap.ui.define([
 		}
 
 		return this.oSecurityTokenPromise;
+	};
+
+	/**
+	 * Finds the request identified by the given group and body, removes it from that group and
+	 * triggers a new request with the new group ID, based on the found request.
+	 * The result of the new request is delegated to the found request.
+	 *
+	 * @param {string} sCurrentGroupId
+	 *   The ID of the group in which to search the request
+	 * @param {object} oBody
+	 *   The body of the request to be searched
+	 * @param {string} sNewGroupId
+	 *   The ID of the group for the new request
+	 * @throws {Error}
+	 *   If the request could not be found
+	 *
+	 * @private
+	 */
+	Requestor.prototype.relocate = function (sCurrentGroupId, oBody, sNewGroupId) {
+		var aRequests = this.mBatchQueue[sCurrentGroupId],
+			that = this,
+			bFound = aRequests && aRequests[0].some(function (oChange, i) {
+				if (oChange.body === oBody) {
+					that.request(oChange.method, oChange.url, new _GroupLock(sNewGroupId),
+							oChange.headers, oBody, oChange.$submit, oChange.$cancel)
+						.then(oChange.$resolve, oChange.$reject);
+					aRequests[0].splice(i, 1);
+					return true;
+				}
+			});
+
+		if (!bFound) {
+			throw new Error("Request not found in group '" + sCurrentGroupId + "'");
+		}
+	};
+
+	/**
+	 * Finds all requests identified by the given group and entity, removes them from that group
+	 * and triggers new requests with the new group ID, based on each found request.
+	 * The result of each new request is delegated to the corresponding found request.
+	 *
+	 * @param {string} sCurrentGroupId
+	 *   The ID of the group in which to search
+	 * @param {object} oEntity
+	 *   The entity used to identify a request based on its "If-Match" header
+	 * @param {string} sNewGroupId
+	 *   The ID of the group for the new requests
+	 *
+	 * @private
+	 */
+	Requestor.prototype.relocateAll = function (sCurrentGroupId, oEntity, sNewGroupId) {
+		var j = 0,
+			aRequests = this.mBatchQueue[sCurrentGroupId],
+			that = this;
+
+		if (aRequests) {
+			aRequests[0].slice().forEach(function (oChange) {
+				if (oChange.headers["If-Match"] === oEntity) {
+					aRequests[0].splice(j, 1);
+					that.request(oChange.method, oChange.url, new _GroupLock(sNewGroupId),
+							oChange.headers, oChange.body, oChange.$submit, oChange.$cancel)
+						.then(oChange.$resolve, oChange.$reject);
+				} else {
+					j += 1;
+				}
+			});
+		}
 	};
 
 	/**
@@ -703,6 +960,8 @@ sap.ui.define([
 	 *   The body of the request
 	 * @throws {Error}
 	 *   If the request is not in the queue, assuming that it has been submitted already
+	 *
+	 * @private
 	 */
 	Requestor.prototype.removePost = function (sGroupId, oBody) {
 		var bCanceled = this.cancelChangesByFilter(function (oChangeRequest) {
@@ -711,6 +970,52 @@ sap.ui.define([
 		if (!bCanceled) {
 			throw new Error("Cannot reset the changes, the batch request is running");
 		}
+	};
+
+	/**
+	 * Reports the given bound OData messages via the owning model's interface.
+	 *
+	 * @param {string} sResourcePath
+	 *   The resource path
+	 * @param {object} mPathToODataMessages
+	 *   Maps a resource path with key predicates to an array of messages belonging to this path.
+	 *   The path is relative to the given <code>sResourcePath</code>.
+	 *   The messages have at least the following properties:
+	 *   {string} code - The error code
+	 *   {string} longtextUrl - The URL for the message's long text relative to the resource path
+	 *      with key predicates
+	 *   {string} message - The message text
+	 *   {number} numericSeverity - The numeric message severity (1 for "success", 2 for "info",
+	 *      3 for "warning" and 4 for "error")
+	 *   {string} target - The target for the message relative to the resource path with key
+	 *      predicates
+	 *   {boolean} transition - Whether the message is reported as <code>persistent=true</code> and
+	 *      therefore needs to be managed by the application
+	 * @param {string[]} [aCachePaths]
+	 *    An array of cache-relative paths of the entities for which non-persistent messages have to
+	 *    be removed; if the array is not given, all non-persistent messages whose target start with
+	 *    the given resource path are removed
+	 *
+	 * @private
+	 */
+	Requestor.prototype.reportBoundMessages = function (sResourcePath, mPathToODataMessages,
+			aCachePaths) {
+		this.oModelInterface.fnReportBoundMessages(sResourcePath, mPathToODataMessages,
+			aCachePaths);
+	};
+
+	/**
+	 * Reports unbound OData messages.
+	 *
+	 * @param {string} sResourcePath
+	 *   The resource path of the request whose response contained the messages
+	 * @param {string} [sMessages]
+	 *   The messages in the serialized form as contained in the sap-messages response header
+	 *
+	 * @private
+	 */
+	Requestor.prototype.reportUnboundMessages = function (sResourcePath, sMessages) {
+		this.oModelInterface.fnReportUnboundMessages(sResourcePath, JSON.parse(sMessages || null));
 	};
 
 	/**
@@ -748,38 +1053,46 @@ sap.ui.define([
 	 *   The meta path corresponding to the resource path; needed in case V2 response does not
 	 *   contain <code>__metadata.type</code>, for example "2.2.7.2.4 RetrievePrimitiveProperty
 	 *   Request"
+	 * @param {string} [sOriginalResourcePath=sResourcePath]
+	 *   The path by which this resource has originally been requested and thus can be identified on
+	 *   the client. Only required for non-GET requests where <code>sResourcePath</code> is a
+	 *   different (canonical) path.
+	 * @param {boolean} [bAtFront=false]
+	 *   Whether the request is added at the front of the first change set (ignored for method
+	 *   "GET")
 	 * @returns {Promise}
 	 *   A promise on the outcome of the HTTP request
 	 * @throws {Error}
-	 *   If group ID is '$cached'
+	 *   If group ID is '$cached'. The error has a property <code>$cached = true</code>
 	 *
-	 * @private
+	 * @public
 	 */
 	Requestor.prototype.request = function (sMethod, sResourcePath, oGroupLock, mHeaders, oPayload,
-			fnSubmit, fnCancel, sMetaPath) {
-		var sGroupId = oGroupLock && oGroupLock.getGroupId() || "$direct",
+			fnSubmit, fnCancel, sMetaPath, sOriginalResourcePath, bAtFront) {
+		var iChangeSetNo,
+			oError,
+			sGroupId = oGroupLock && oGroupLock.getGroupId() || "$direct",
 			oPromise,
+			iRequestSerialNumber = Infinity,
 			oRequest,
 			that = this;
 
 		if (sGroupId === "$cached") {
-			throw new Error("Unexpected request: " + sMethod + " " + sResourcePath);
+			oError = new Error("Unexpected request: " + sMethod + " " + sResourcePath);
+			oError.$cached = true;
+			throw oError;
 		}
 
 		if (oGroupLock) {
 			oGroupLock.unlock();
+			iRequestSerialNumber = oGroupLock.getSerialNumber();
 		}
 		sResourcePath = this.convertResourcePath(sResourcePath);
+		sOriginalResourcePath = sOriginalResourcePath || sResourcePath;
 		if (this.getGroupSubmitMode(sGroupId) !== "Direct") {
 			oPromise = new Promise(function (fnResolve, fnReject) {
-				var aRequests = that.mBatchQueue[sGroupId];
+				var aRequests = that.getOrCreateBatchQueue(sGroupId);
 
-				if (!aRequests) {
-					aRequests = that.mBatchQueue[sGroupId] = [[/*empty change set*/]];
-					if (that.oModelInterface.fnOnCreateGroup) {
-						that.oModelInterface.fnOnCreateGroup(sGroupId);
-					}
-				}
 				oRequest = {
 					method : sMethod,
 					url : sResourcePath,
@@ -793,12 +1106,19 @@ sap.ui.define([
 					$metaPath : sMetaPath,
 					$reject : fnReject,
 					$resolve : fnResolve,
+					$resourcePath : sOriginalResourcePath,
 					$submit : fnSubmit
 				};
-				if (sMethod === "GET") { // push behind change set
+				if (sMethod === "GET") { // push behind last GET and all change sets
 					aRequests.push(oRequest);
-				} else { // push into change set
-					aRequests[0].push(oRequest);
+				} else if (bAtFront) { // add at front of first change set
+					aRequests[0].unshift(oRequest);
+				} else { // push into change set which was current when the request was triggered
+					iChangeSetNo = aRequests.iChangeSet;
+					while (aRequests[iChangeSetNo].iSerialNumber > iRequestSerialNumber) {
+						iChangeSetNo -= 1;
+					}
+					aRequests[iChangeSetNo].push(oRequest);
 				}
 			});
 			oRequest.$promise = oPromise;
@@ -810,43 +1130,11 @@ sap.ui.define([
 		}
 		return this.sendRequest(sMethod, sResourcePath,
 			jQuery.extend({}, mHeaders, this.mFinalHeaders),
-			JSON.stringify(_Requestor.cleanPayload(oPayload))
+			JSON.stringify(_Requestor.cleanPayload(oPayload)), sOriginalResourcePath
 		).then(function (oResponse) {
+			that.reportUnboundMessages(oResponse.resourcePath, oResponse.messages);
 			return that.doConvertResponse(oResponse.body, sMetaPath);
 		});
-	};
-
-	/**
-	 * Searches the request identified by the given group and body, removes it from that group and
-	 * triggers a new request with the new group ID, based on the found request.
-	 * The result of the new request is delegated to the found request.
-	 *
-	 * @param {string} sCurrentGroupId
-	 *   The ID of the group in which to search the request
-	 * @param {object} oBody
-	 *   The body of the request to be searched
-	 * @param {string} sNewGroupId
-	 *   The ID of the group for the new request
-	 * @throws {Error}
-	 *   If the request could not be found
-	 */
-	Requestor.prototype.relocate = function (sCurrentGroupId, oBody, sNewGroupId) {
-		var aRequests = this.mBatchQueue[sCurrentGroupId],
-			that = this,
-			bFound = aRequests && aRequests[0].some(function (oChange, i) {
-				if (oChange.body === oBody) {
-					that.request(oChange.method, oChange.url, new _GroupLock(sNewGroupId),
-							oChange.headers, oBody, oChange.$submit, oChange.$cancel)
-						.then(oChange.$resolve, oChange.$reject);
-					aRequests[0].splice(i, 1);
-					deleteEmptyGroup(that, sCurrentGroupId);
-					return true;
-				}
-			});
-
-		if (!bFound) {
-			throw new Error("Request not found in group '" + sCurrentGroupId + "'");
-		}
 	};
 
 	/**
@@ -854,6 +1142,8 @@ sap.ui.define([
 	 *
 	 * @param {object[]} aRequests The requests
 	 * @returns {Promise} A promise on the responses
+	 *
+	 * @private
 	 */
 	Requestor.prototype.sendBatch = function (aRequests) {
 		var oBatchRequest = _Batch.serializeBatchRequest(aRequests);
@@ -861,6 +1151,9 @@ sap.ui.define([
 		return this.sendRequest("POST", "$batch" + this.sQueryParams,
 			jQuery.extend(oBatchRequest.headers, mBatchHeaders), oBatchRequest.body
 		).then(function (oResponse) {
+			if (oResponse.messages !== null) {
+				throw new Error("Unexpected 'sap-messages' response header for batch request");
+			}
 			return _Batch.deserializeBatchResponse(oResponse.contentType, oResponse.body);
 		});
 	};
@@ -878,12 +1171,17 @@ sap.ui.define([
 	 *   default headers given to the factory.
 	 * @param {string} [sPayload]
 	 *   Data to be sent to the server
+	 * @param {string} [sOriginalResourcePath]
+	 *  The path by which the resource has originally been requested
 	 * @returns {Promise}
 	 *   A promise that is resolved with an object having the properties body and contentType. The
 	 *   body is already an object if the Content-Type is "application/json". The promise is
 	 *   rejected with an error if the request failed.
+	 *
+	 * @private
 	 */
-	Requestor.prototype.sendRequest = function (sMethod, sResourcePath, mHeaders, sPayload) {
+	Requestor.prototype.sendRequest = function (sMethod, sResourcePath, mHeaders, sPayload,
+			sOriginalResourcePath) {
 		var sRequestUrl = this.sServiceUrl + sResourcePath,
 			that = this;
 
@@ -897,7 +1195,7 @@ sap.ui.define([
 					headers : jQuery.extend({},
 						that.mPredefinedRequestHeaders,
 						that.mHeaders,
-						mHeaders),
+						_Helper.resolveIfMatchHeader(mHeaders)),
 					method : sMethod
 				}).then(function (oResponse, sTextStatus, jqXHR) {
 					try {
@@ -909,9 +1207,12 @@ sap.ui.define([
 					}
 					that.mHeaders["X-CSRF-Token"]
 						= jqXHR.getResponseHeader("X-CSRF-Token") || that.mHeaders["X-CSRF-Token"];
+
 					fnResolve({
 						body : oResponse,
-						contentType : jqXHR.getResponseHeader("Content-Type")
+						contentType : jqXHR.getResponseHeader("Content-Type"),
+						messages : jqXHR.getResponseHeader("sap-messages"),
+						resourcePath : sResourcePath
 					});
 				}, function (jqXHR, sTextStatus, sErrorMessage) {
 					var sCsrfToken = jqXHR.getResponseHeader("X-CSRF-Token");
@@ -923,13 +1224,13 @@ sap.ui.define([
 							send(true);
 						}, fnReject);
 					} else {
-						fnReject(_Helper.createError(jqXHR));
+						fnReject(_Helper.createError(jqXHR, sRequestUrl, sOriginalResourcePath));
 					}
 				});
 			}
 
 			if (that.oSecurityTokenPromise && sMethod !== "GET") {
-			    return that.oSecurityTokenPromise.then(send);
+				return that.oSecurityTokenPromise.then(send);
 			}
 			return send();
 		});
@@ -943,42 +1244,13 @@ sap.ui.define([
 	 * @returns {Promise}
 	 *   A promise on the outcome of the HTTP request resolving with <code>undefined</code>; it is
 	 *   rejected with an error if the batch request itself fails
+	 *
+	 * @public
 	 */
 	Requestor.prototype.submitBatch = function (sGroupId) {
-		var aChangeSet = [],
-			bHasChanges,
-			oPreviousChange,
-			aRequests = this.mBatchQueue[sGroupId],
+		var bHasChanges,
+			aRequests = this.mBatchQueue[sGroupId] || [],
 			that = this;
-
-		/*
-		 * Merges a change from a change set into the previous one if possible.
-		 *
-		 * @param {object} oPreviousChange The previous change, may be undefined
-		 * @param {object} oChange The current change
-		 * @returns {object} The merged body or undefined if no merge is possible
-		 */
-		function mergePatch(oPreviousChange, oChange) {
-			var oBody, oPreviousBody, sProperty;
-
-			if (oPreviousChange
-					&& oPreviousChange.method === "PATCH"
-					&& oChange.method === "PATCH"
-					&& oPreviousChange.url === oChange.url
-					&& jQuery.sap.equal(oPreviousChange.headers, oChange.headers)) {
-				oPreviousBody = oPreviousChange.body;
-				oBody = oChange.body;
-				for (sProperty in oPreviousBody) {
-					if (oPreviousBody[sProperty] === null
-							&& oBody[sProperty] && typeof oBody[sProperty] === "object") {
-						// previous PATCH sets complex property to null -> must not be merged
-						return undefined;
-					}
-				}
-				return jQuery.extend(true, oPreviousBody, oBody);
-			}
-			return undefined;
-		}
 
 		/*
 		 * Visits the given request/response pairs, rejecting or resolving the corresponding
@@ -1004,18 +1276,20 @@ sap.ui.define([
 					vRequest.$reject(oError);
 				} else if (vResponse.status >= 400) {
 					vResponse.getResponseHeader = getResponseHeader;
-					oCause = _Helper.createError(vResponse);
+					oCause = _Helper.createError(vResponse, vRequest.url, vRequest.$resourcePath);
 					reject(oCause, vRequest);
 				} else if (vResponse.responseText) {
 					oResponse = JSON.parse(vResponse.responseText);
 					try {
 						that.doCheckVersionHeader(getResponseHeader.bind(vResponse), vRequest.url,
 							true);
+						that.reportUnboundMessages(vRequest.url, vResponse.headers["sap-messages"]);
 						vRequest.$resolve(that.doConvertResponse(oResponse, vRequest.$metaPath));
 					} catch (oErr) {
 						vRequest.$reject(oErr);
 					}
 				} else {
+					that.reportUnboundMessages(vRequest.url, vResponse.headers["sap-messages"]);
 					vRequest.$resolve();
 				}
 			});
@@ -1048,37 +1322,14 @@ sap.ui.define([
 			}
 		}
 
-		if (!aRequests) {
+		delete this.mBatchQueue[sGroupId];
+		onSubmit(aRequests);
+		bHasChanges = this.cleanUpChangeSets(aRequests);
+		if (aRequests.length === 0) {
 			return Promise.resolve();
 		}
-		delete this.mBatchQueue[sGroupId];
 
-		onSubmit(aRequests);
-
-		// iterate over the change set and merge related PATCH requests
-		aRequests[0].forEach(function (oChange) {
-			var oMergedBody = mergePatch(oPreviousChange, oChange);
-
-			if (oMergedBody) {
-				oPreviousChange.body = oMergedBody;
-				oChange.$resolve(oPreviousChange.$promise);
-			} else { // push into change set
-				aChangeSet.push(oChange);
-				oPreviousChange = oChange;
-			}
-		});
-
-		if (aChangeSet.length === 0) {
-			aRequests.splice(0, 1); // delete empty change set
-		} else if (aChangeSet.length === 1 && this.isChangeSetOptional()) {
-			aRequests[0] = aChangeSet[0]; // unwrap change set
-		} else {
-			aRequests[0] = aChangeSet;
-		}
-
-		bHasChanges = aChangeSet.length > 0;
 		this.batchRequestSent(sGroupId, bHasChanges);
-
 		return this.sendBatch(_Requestor.cleanBatch(aRequests))
 			.then(function (aResponses) {
 				that.batchResponseReceived(sGroupId, bHasChanges);
@@ -1185,6 +1436,13 @@ sap.ui.define([
 		 * @param {function (string)} [oModelInterface.fnOnCreateGroup]
 		 *   A callback function that is called with the group name as parameter when the first
 		 *   request is added to a group
+		 * @param {function} oModelInterface.lockGroup
+		 *   A function to create or modify a lock for a group
+		 * @param {function} oModelInterface.fnReportBoundMessages
+		 *   A function to report bound OData messages
+		 * @param {function (object[])} oModelInterface.fnReportUnboundMessages
+		 *   A function to report unbound OData messages contained in the <code>sap-messages</code>
+		 *   response header
 		 * @param {object} [mHeaders={}]
 		 *   Map of default headers; may be overridden with request-specific headers; certain
 		 *   OData V4 headers are predefined, but may be overridden by the default or

@@ -366,6 +366,16 @@
 			"theme": "base"
 		},
 		{
+			"name": "OnePersonGrid.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "OnePersonHeader.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "OverflowToolbarAssociativePopover.less",
 			"designtime": true,
 			"theme": "base"
@@ -467,6 +477,11 @@
 		},
 		{
 			"name": "RatingIndicator.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "ScrollBar.less",
 			"designtime": true,
 			"theme": "base"
 		},

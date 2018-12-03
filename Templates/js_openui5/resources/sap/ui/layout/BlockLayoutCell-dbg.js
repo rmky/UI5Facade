@@ -4,8 +4,14 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/Control', './library', "./BlockLayoutCellRenderer"],
-	function(Control, library, BlockLayoutCellRenderer) {
+sap.ui.define([
+	'sap/ui/core/Control',
+	'./library',
+	"./BlockLayoutCellRenderer",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+	function(Control, library, BlockLayoutCellRenderer, Log, jQuery) {
 		"use strict";
 
 		/**
@@ -20,7 +26,7 @@ sap.ui.define(['sap/ui/core/Control', './library', "./BlockLayoutCellRenderer"],
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -115,7 +121,7 @@ sap.ui.define(['sap/ui/core/Control', './library', "./BlockLayoutCellRenderer"],
 
 		BlockLayoutCell.prototype.setTitleLink = function(oObject) {
 				if (oObject && oObject.getMetadata().getName() !== "sap.m.Link") {
-					jQuery.sap.log.warning("sap.ui.layout.BlockLayoutCell " + this.getId() + ": Can't add value for titleLink aggregation different than sap.m.Link.");
+					Log.warning("sap.ui.layout.BlockLayoutCell " + this.getId() + ": Can't add value for titleLink aggregation different than sap.m.Link.");
 					return;
 				}
 

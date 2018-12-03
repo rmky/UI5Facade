@@ -4,10 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/base/ManagedObject',
 	'sap/m/Label',
-	'sap/m/LabelDesign',
 	'sap/m/Dialog',
 	'sap/ui/model/json/JSONModel',
 	'sap/m/SearchField',
@@ -20,17 +18,15 @@ sap.ui.define([
 	'sap/ui/rta/command/CompositeCommand',
 	'sap/m/List',
 	'sap/m/CustomListItem',
-	'sap/m/ListType',
 	'sap/m/ScrollContainer',
 	'sap/ui/model/Sorter',
 	'sap/ui/dt/ElementUtil',
 	'sap/m/VBox',
-	'sap/ui/rta/Utils'
-], function (
-	jQuery,
+	'sap/ui/rta/Utils',
+	'sap/m/library'
+], function(
 	ManagedObject,
 	Label,
-	LabelDesign,
 	Dialog,
 	JSONModel,
 	SearchField,
@@ -43,14 +39,20 @@ sap.ui.define([
 	CompositeCommand,
 	List,
 	ListItem,
-	ListType,
 	ScrollContainer,
 	Sorter,
 	ElementUtil,
 	VBox,
-	Utils
+	Utils,
+	mobileLibrary
 ) {
 	"use strict";
+
+	// shortcut for sap.m.ListType
+	var ListType = mobileLibrary.ListType;
+
+	// shortcut for sap.m.LabelDesign
+	var LabelDesign = mobileLibrary.LabelDesign;
 
 	/**
 	 * Constructor for a new sap.ui.rta.plugin.additionalElements.AddElementsDialog control.
@@ -58,7 +60,7 @@ sap.ui.define([
 	 * @class Context - Dialog for available Fields in Runtime Authoring
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -151,7 +153,7 @@ sap.ui.define([
 
 		// Fields of the List
 		var oFieldName = new Label({
-			design: LabelDesign.Bold,
+			design: LabelDesign.Standard,
 			tooltip: "{tooltip}",
 			text: {
 				parts: [{path: "label"}, {path: "referencedComplexPropertyName"}, {path: "duplicateComplexName"}],

@@ -54,6 +54,17 @@ sap.ui.define([],
 		oRm.writeClasses();
 		oRm.write(">");
 
+		oRm.write("<div id='" + oOI.getId() + "-title'"); // Title begins
+		oRm.addClass("sapMObjectIdentifierTitle");
+
+		oRm.writeClasses();
+		oRm.write(">");
+		oRm.renderControl(oOI._getTitleControl());
+
+		//Render WAI ARIA hidden label for title
+		oRm.renderControl(oOI._oAriaCustomRole);
+		oRm.write("</div>"); // Title ends
+
 		oRm.write("<div"); // Icons begin
 		oRm.addClass("sapMObjectIdentifierIcons");
 		oRm.writeClasses();
@@ -86,18 +97,6 @@ sap.ui.define([],
 		}
 
 		oRm.write("</div>"); // Icons end
-
-		oRm.write("<div id='" + oOI.getId() + "-title'"); // Title begins
-		oRm.addClass("sapMObjectIdentifierTitle");
-
-		oRm.writeClasses();
-		oRm.write(">");
-		oRm.renderControl(oOI._getTitleControl());
-
-		//Render WAI ARIA hidden label for title
-		oRm.renderControl(oOI._oAriaCustomRole);
-
-		oRm.write("</div>"); // Title ends
 
 		oRm.write("</div>"); // Top row ends
 

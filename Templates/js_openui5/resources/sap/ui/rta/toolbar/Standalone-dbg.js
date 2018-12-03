@@ -20,7 +20,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Adaptation
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -29,7 +29,7 @@ function(
 	 * @experimental Since 1.48. This class is experimental. API might be changed in future.
 	 */
 	var Standalone = Adaptation.extend("sap.ui.rta.toolbar.Standalone", {
-		renderer: 'sap.ui.rta.toolbar.BaseRenderer',
+		renderer: 'sap.ui.rta.toolbar.AdaptationRenderer',
 		type: 'standalone'
 	});
 

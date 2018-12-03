@@ -6,10 +6,9 @@
 
 //Provides class sap.ui.model.odata.v4.lib._V4MetadataConverter
 sap.ui.define([
-	"jquery.sap.global",
 	"./_Helper",
 	"./_MetadataConverter"
-], function (jQuery, _Helper, _MetadataConverter) {
+], function (_Helper, _MetadataConverter) {
 	"use strict";
 
 	/**
@@ -516,6 +515,7 @@ sap.ui.define([
 	 * @param {object} $$ The prototype for V4MetadataConverter
 	 */
 	(function ($$) {
+		// Note: this function is executed at load time only!
 		var oActionOrFunctionConfig,
 			oEntitySetConfig,
 			oStructuredTypeConfig;

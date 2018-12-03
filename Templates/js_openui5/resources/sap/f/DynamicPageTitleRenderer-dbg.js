@@ -20,22 +20,27 @@ sap.ui.define([
 	 * @param {sap.ui.core.Control} oDynamicPageTitle An object representation of the control that should be rendered
 	 */
 	DynamicPageTitleRenderer.render = function (oRm, oDynamicPageTitle) {
-		var oDynamicPageTitleState = oDynamicPageTitle._getState();
+		var oDynamicPageTitleState = oDynamicPageTitle._getState(),
+			sSapFDynamicPageTitle = "sapFDynamicPageTitle",
+			sBackgroundDesign = oDynamicPageTitle.getBackgroundDesign();
 
 		// DynamicPageTitle Root DOM Element.
 		oRm.write("<div");
-		if (oDynamicPageTitleState.isFocusable) {
-			oRm.writeAttribute("tabindex", 0);
-		}
 		oRm.writeControlData(oDynamicPageTitle);
 		oRm.writeAccessibilityState({
 			role: "heading",
-			level: 2,
-			labelledBy: oDynamicPageTitleState.ariaLabelledByIDs
+			level: 2
 		});
-		oRm.addClass("sapFDynamicPageTitle");
+		oRm.addClass(sSapFDynamicPageTitle);
+
+		if (sBackgroundDesign) {
+			oRm.addClass(sSapFDynamicPageTitle + sBackgroundDesign);
+		}
+
 		oRm.writeClasses();
 		oRm.write(">");
+
+		oRm.renderControl(oDynamicPageTitleState.focusSpan);
 
 		this._renderTopArea(oRm, oDynamicPageTitleState);
 		this._renderMainArea(oRm, oDynamicPageTitleState);

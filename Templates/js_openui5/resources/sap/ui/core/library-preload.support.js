@@ -6,13 +6,14 @@
 /**
  * Adds support rules to the core
  */
-sap.ui.predefine('sap/ui/core/library.support',["jquery.sap.global",
-		"./rules/Misc.support",
-		"./rules/Config.support",
-		"./rules/Model.support",
-		"./rules/View.support",
-		"./rules/App.support"],
-	function(jQuery, MiscSupport, ConfigSupport, ModelSupport, ViewSupport, AppSupport) {
+sap.ui.predefine('sap/ui/core/library.support',[
+	"./rules/Misc.support",
+	"./rules/Config.support",
+	"./rules/Model.support",
+	"./rules/View.support",
+	"./rules/App.support"
+],
+	function(MiscSupport, ConfigSupport, ModelSupport, ViewSupport, AppSupport) {
 	"use strict";
 
 	return {
@@ -35,8 +36,7 @@ sap.ui.predefine('sap/ui/core/library.support',["jquery.sap.global",
 /**
  * Defines Application related support rules.
  */
-sap.ui.predefine('sap/ui/core/rules/App.support',["jquery.sap.global", "sap/ui/support/library"],
-	function(jQuery, SupportLib) {
+sap.ui.predefine('sap/ui/core/rules/App.support',["sap/ui/support/library"], function(SupportLib) {
 	"use strict";
 
 	// shortcuts
@@ -45,7 +45,9 @@ sap.ui.predefine('sap/ui/core/rules/App.support',["jquery.sap.global", "sap/ui/s
 	var Audiences = SupportLib.Audiences; // Control, Internal, Application
 
 	var aObsoleteFunctionNames = ["jQuery.sap.require", "$.sap.require", "sap.ui.requireSync", "jQuery.sap.sjax"];
-	if (jQuery && jQuery.sap && jQuery.sap.sjax) {
+
+	// avoid spoiling the globalAPIRule by using Object.getOwnPropertyDescriptor
+	if (jQuery && jQuery.sap && !!Object.getOwnPropertyDescriptor(jQuery.sap, "sjax").value) {
 		aObsoleteFunctionNames.push("jQuery.sap.syncHead",
 			"jQuery.sap.syncGet",
 			"jQuery.sap.syncPost",
@@ -96,7 +98,7 @@ sap.ui.predefine('sap/ui/core/rules/App.support',["jquery.sap.global", "sap/ui/s
 			var fnGatherInvalidControllerFunctions = function(oController, viewId, aInvalidContent, fnProcessInvalidFunction) {
 				var _aInvalidControllerFunctions = [];
 				Object.keys(oController).forEach(function(sProtoKey) {
-					var sFnContent = oController[sProtoKey].toString().replace(/(\r\n|\n|\r)/gm,"");
+					var sFnContent = oController[sProtoKey].toString().replace(/(\r\n|\n|\r)/gm, "");
 
 					aInvalidContent.forEach(function(sInvalidContent) {
 						if (sFnContent.indexOf(sInvalidContent) > 0) {
@@ -144,7 +146,9 @@ sap.ui.predefine('sap/ui/core/rules/App.support',["jquery.sap.global", "sap/ui/s
 				oIssueManager.addIssue({
 					severity: Severity.Medium,
 					details: aControllerFunctions.map(function(oController) {
-						return "\nSynchronous call " + oController.invalidContent + " found in " + oController.controllerName + "#" + oController.functionName;
+						return "Synchronous call " + oController.invalidContent + " found in " + oController.controllerName + "#" + oController.functionName;
+					}).reduce(function(sFullText, sCurrentText) {
+						return sFullText + "\n" + sCurrentText;
 					}),
 					context: {
 						id: sViewId
@@ -154,9 +158,126 @@ sap.ui.predefine('sap/ui/core/rules/App.support',["jquery.sap.global", "sap/ui/s
 			});
 
 		}
+
 	};
 
-	return oControllerSyncCodeCheckRule;
+	/**
+	 * Check for usage of stubbed global API, which leads to a sync request and should be avoided.
+	 *
+	 * e.g. <code>jQuery.sap.assert(bValue)</code>
+	 */
+	var oGlobalAPIRule = {
+		id: "globalApiUsage",
+		audiences: [Audiences.Internal],
+		categories: [Categories.Modularization],
+		enabled: true,
+		minversion: "1.58",
+		title: "Call of deprecated global API",
+		description: "Calls of deprecated global API without declaring the according dependency should be avoided.",
+		resolution: "Declare the dependency properly or even better: Migrate to the modern module API as documented.",
+		resolutionurls: [{
+			text: 'Documentation: Modularization',
+			// TODO: link to the modularization dev guide
+			href: 'https://openui5.hana.ondemand.com/#/api'
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			var oLoggedObjects = oScope.getLoggedObjects("jquery.sap.stubs");
+			oLoggedObjects.forEach(function(oLoggedObject) {
+				oIssueManager.addIssue({
+					severity: Severity.High,
+					details: oLoggedObject.message,
+					context: {
+						id: "WEBPAGE"
+					}
+				});
+			});
+		}
+	};
+
+	/**
+	 * Check for usage of jquery.sap modules and provide a hint on the alternatives.
+	 */
+	var oJquerySapRule = {
+		id: "jquerySapUsage",
+		audiences: [Audiences.Internal],
+		categories: [Categories.Modularization],
+		enabled: true,
+		minversion: "1.58",
+		async: true,
+		title: "Usage of deprecated jquery.sap module",
+		description: "Usage of deprecated jquery.sap API should be avoided and dependencies to jquery.sap are not needed any longer.",
+		resolution: "Migrate to the modern module API as documented.",
+		resolutionurls: [{
+			text: 'Documentation: Modularization',
+			// TODO: link to the modularization dev guide
+			href: 'https://openui5.hana.ondemand.com/#/api'
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope, fnResolve) {
+			sap.ui.require(["sap/base/util/LoaderExtensions"], function(LoaderExtensions) {
+				var sDetails = "Usage of deprecated jquery.sap modules detected: \n" +
+					LoaderExtensions.getAllRequiredModules().filter(function(sModuleName) {
+						return sModuleName.startsWith("jquery.sap");
+					}).reduce(function(sModuleList, sModuleName) {
+						return sModuleList + "\t- " + sModuleName + "\n";
+					}, "");
+
+				oIssueManager.addIssue({
+					severity: Severity.Medium,
+					details: sDetails,
+					context: {
+						id: "WEBPAGE"
+					}
+				});
+
+				fnResolve();
+			});
+		}
+	};
+
+	/**
+	 * Check if factories are loaded sync
+	 */
+	var oSyncFactoryLoadingRule = {
+		id: "syncFactoryLoading",
+		audiences: [Audiences.Internal],
+		categories: [Categories.Modularization],
+		enabled: true,
+		minversion: "1.58",
+		title: "Usage of deprecated sync factory loading",
+		description: "Usage of deprecated sync factory loading",
+		resolution: "Avoid using sync factory loading and use load() function instead. Migrate to the modern module API as documented.",
+		resolutionurls: [{
+			text: 'Documentation: Modularization',
+			href: 'https://openui5.hana.ondemand.com/#/api/sap.ui'
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			var aFragmentTypes = [
+				"sap.ui.fragment",
+				"sap.ui.xmlfragment",
+				"sap.ui.jsfragment",
+				"sap.ui.htmlfragment",
+				"sap.ui.controller",
+				"sap.ui.extensionpoint",
+				"sap.ui.component"
+			];
+
+			aFragmentTypes.forEach(function(sType) {
+				var oLoggedObjects = oScope.getLoggedObjects(sType);
+				oLoggedObjects.forEach(function(oLoggedObject) {
+					oIssueManager.addIssue({
+						severity: Severity.High,
+						details: oLoggedObject.message,
+						context: {
+							id: "WEBPAGE"
+						}
+					});
+				});
+			});
+		}
+
+	};
+
+	return [oControllerSyncCodeCheckRule, oGlobalAPIRule, oJquerySapRule, oSyncFactoryLoadingRule];
 }, true);
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
@@ -200,9 +321,10 @@ sap.ui.predefine('sap/ui/core/rules/Config.support',[
 		}],
 		check: function(oIssueManager, oCoreFacade) {
 			// Check for FLP scenario
-			var oUshellLib = sap.ui.getCore().getLoadedLibraries()["sap.ushell"];
+			var oUshellLib = sap.ui.getCore().getLoadedLibraries()["sap.ushell"],
+				bIsDebug = sap.ui.getCore().getConfiguration().getDebug();
 
-			if (sap.ui.getCore().getConfiguration().getPreload() !== "async" && !oUshellLib) {
+			if (!bIsDebug && sap.ui.getCore().getConfiguration().getPreload() !== "async" && !oUshellLib) {
 				oIssueManager.addIssue({
 					severity: Severity.High,
 					details: "Preloading libraries asynchronously improves the application performance massively.",
@@ -295,7 +417,16 @@ sap.ui.predefine('sap/ui/core/rules/Config.support',[
 
 			// 2. Ignore libraries with declared modules
 			// Alternative: More exact, but request-dependent solution would be loading and evaluating the resources.json file for each library
-			var aDeclaredModules = jQuery.sap.getAllDeclaredModules();
+
+			// support rules can get loaded within a ui5 version which does not have module "sap/base/util/LoaderExtensions" yet
+			// therefore load the jQuery.sap.getAllDeclaredModules fallback if not available
+			var LoaderExtensions = sap.ui.require("sap/base/util/LoaderExtensions");
+			var aDeclaredModules;
+			if (LoaderExtensions) {
+				aDeclaredModules = LoaderExtensions.getAllRequiredModules();
+			} else {
+				aDeclaredModules = jQuery.sap.getAllDeclaredModules();
+			}
 			Object.keys(mLibraries).forEach(function(sLibrary) {
 				var sLibraryWithDot = sLibrary + ".";
 				for (var i = 0; i < aDeclaredModules.length; i++) {
@@ -586,8 +717,8 @@ sap.ui.predefine('sap/ui/core/rules/Config.support',[
 /**
  * Helper for core functionality in Support Tool infrastructure.
  */
-sap.ui.predefine('sap/ui/core/rules/CoreHelper.support',["jquery.sap.global"],
-	function (jQuery) {
+sap.ui.predefine('sap/ui/core/rules/CoreHelper.support',["sap/ui/thirdparty/jquery"],
+	function(jQuery) {
 		"use strict";
 
 		var CoreHelper = {
@@ -670,9 +801,16 @@ sap.ui.predefine('sap/ui/core/rules/CoreHelper.support',["jquery.sap.global"],
 /**
  * Defines miscellaneous support rules.
  */
-sap.ui.predefine('sap/ui/core/rules/Misc.support',["jquery.sap.global", "sap/ui/support/library", "./CoreHelper.support" ],
-	function(jQuery, SupportLib, CoreHelper) {
+sap.ui.predefine('sap/ui/core/rules/Misc.support',["sap/ui/support/library", "./CoreHelper.support"],
+	function(SupportLib, CoreHelper) {
 	"use strict";
+
+	// support rules can get loaded within a ui5 version which does not have module "sap/base/Log" yet
+	// therefore load the jQuery.sap.log fallback if not available
+	var Log = sap.ui.require("sap/base/Log");
+	if (!Log) {
+		Log = jQuery.sap.log;
+	}
 
 	// shortcuts
 	var Categories = SupportLib.Categories; // Accessibility, Performance, Memory, ...
@@ -700,9 +838,9 @@ sap.ui.predefine('sap/ui/core/rules/Misc.support',["jquery.sap.global", "sap/ui/
 			var count = 0,
 				message = "";
 
-			var log = jQuery.sap.log.getLogEntries();
+			var log = Log.getLogEntries();
 			log.forEach(function(logEntry) {
-				if (logEntry.level === jQuery.sap.log.Level.ERROR) {
+				if (logEntry.level === Log.Level.ERROR) {
 					count++;
 					if (count <= 20) {
 						message += "- " + logEntry.message + "\n";
@@ -710,13 +848,15 @@ sap.ui.predefine('sap/ui/core/rules/Misc.support',["jquery.sap.global", "sap/ui/
 				}
 			});
 
-			oIssueManager.addIssue({
-				severity: Severity.Low,
-				details: "Total error logs: " + count + "\n" + message,
-				context: {
-					id: "WEBPAGE"
-				}
-			});
+			if (count > 0) {
+				oIssueManager.addIssue({
+					severity: Severity.Low,
+					details: "Total error logs: " + count + "\n" + message,
+					context: {
+						id: "WEBPAGE"
+					}
+				});
+			}
 		}
 	};
 
@@ -852,7 +992,7 @@ sap.ui.predefine('sap/ui/core/rules/Misc.support',["jquery.sap.global", "sap/ui/
 		resolutionurls: [],
 		check: function(oIssueManager, oCoreFacade) {
 
-			var aLogEntries = jQuery.sap.log.getLog();
+			var aLogEntries = Log.getLogEntries();
 			var aMessages = [];
 			aLogEntries.forEach(function(oLogEntry) {
 				if (oLogEntry.component === "sap.ui.core.EventBus") {
@@ -891,22 +1031,23 @@ sap.ui.predefine('sap/ui/core/rules/Misc.support',["jquery.sap.global", "sap/ui/
 /**
  * Defines support rules related to the model.
  */
-sap.ui.predefine('sap/ui/core/rules/Model.support',["jquery.sap.global",
-		"sap/ui/support/library",
-		"sap/ui/support/supportRules/util/StringAnalyzer",
-		"sap/ui/model/ListBinding",
-		"sap/ui/model/json/JSONModel",
-		"sap/ui/model/odata/ODataMetadata",
-		"sap/ui/model/CompositeBinding",
-		"sap/ui/model/PropertyBinding"],
+sap.ui.predefine('sap/ui/core/rules/Model.support',[
+	"sap/ui/support/library",
+	"sap/ui/support/supportRules/util/StringAnalyzer",
+	"sap/ui/model/ListBinding",
+	"sap/ui/model/json/JSONModel",
+	"sap/ui/model/odata/ODataMetadata",
+	"sap/ui/model/CompositeBinding",
+	"sap/ui/model/PropertyBinding"
+],
 	function(
-		jQuery,
 		SupportLib,
 		StringAnalyzer,
 		ListBinding,
 		JSONModel,
 		ODataMetadata,
-		CompositeBinding) {
+		CompositeBinding
+	) {
 	"use strict";
 
 	// shortcuts
@@ -1047,8 +1188,8 @@ sap.ui.predefine('sap/ui/core/rules/Model.support',["jquery.sap.global",
 /**
  * Defines support rules related to the view.
  */
-sap.ui.predefine('sap/ui/core/rules/View.support',["jquery.sap.global", "sap/ui/support/library"],
-	function(jQuery, SupportLib) {
+sap.ui.predefine('sap/ui/core/rules/View.support',["sap/ui/support/library"],
+	function(SupportLib) {
 	"use strict";
 
 	// shortcuts
@@ -1071,7 +1212,7 @@ sap.ui.predefine('sap/ui/core/rules/View.support',["jquery.sap.global", "sap/ui/
 		minversion: "-",
 		title: "XML View is not configured with namespace 'sap.ui.core.mvc'",
 		description: "For consistency and proper resource loading, the root node of an XML view must be configured with the namespace 'mvc'",
-		resolution: "Define the XML view as '<core:View ...>' and configure the XML namepspace as 'xmlns:mvc=\"sap.ui.core.mvc\"'",
+		resolution: "Define the XML view as '<mvc:View ...>' and configure the XML namepspace as 'xmlns:mvc=\"sap.ui.core.mvc\"'",
 		resolutionurls: [{
 			text: "Documentation: Namespaces in XML Views",
 			href: "https://sapui5.hana.ondemand.com/#docs/guide/2421a2c9fa574b2e937461b5313671f0.html"
@@ -1194,11 +1335,11 @@ sap.ui.predefine('sap/ui/core/rules/View.support',["jquery.sap.global", "sap/ui/
 	var oXMLViewUnusedNamespaces = {
 		id: "xmlViewUnusedNamespaces",
 		audiences: [Audiences.Control, Audiences.Application],
-		categories: [Categories.Performance],
+		categories: [Categories.Usability],
 		enabled: true,
 		minversion: "-",
 		title: "Unused namespaces in XML view",
-		description: "Namespaces that are declared but not used have a negative impact on performance (and may confuse readers of the code)",
+		description: "Namespaces that are declared but not used may confuse readers of the code",
 		resolution: "Remove the unused namespaces from the view definition",
 		resolutionurls: [{
 			text: "Documentation: Namespaces in XML Views",
@@ -1217,10 +1358,10 @@ sap.ui.predefine('sap/ui/core/rules/View.support',["jquery.sap.global", "sap/ui/
 					// and the mvc, because the use of mvc is checked in other rule
 					if (sName.match("xmlns:")
 						&& sLocalName !== "xmlns:support"
-						&& sLocalName !== "mvc") {
-						for (var j = 0; j < jQuery(oXMLView._xContent).children().length; j++) {
-							var oContent = jQuery(oXMLView._xContent).children()[j];
-							// get the xml code of the children as a string
+						&& sLocalName !== "mvc"
+						&& sFullName.indexOf("schemas.sap.com") < 0) {
+							var oContent = jQuery(oXMLView._xContent)[0];
+							// get the xml code of the view as a string
 							// The outerHTML doesn't work with IE, so we used
 							// the XMLSerializer instead
 							var sContent = new XMLSerializer().serializeToString(oContent);
@@ -1229,7 +1370,7 @@ sap.ui.predefine('sap/ui/core/rules/View.support',["jquery.sap.global", "sap/ui/
 							if (!sContent.match("<" + sLocalName + ":")) {
 								var sViewName = oXMLView.getViewName().split("\.").pop();
 								oIssueManager.addIssue({
-									severity: Severity.High,
+									severity: Severity.Medium,
 									details: "View '" + sViewName + "' (" + oXMLView.getId() + ") contains an unused XML namespace '" + sLocalName + "' referencing library '" + sFullName + "'",
 									context: {
 										id: oXMLView.getId()
@@ -1237,7 +1378,6 @@ sap.ui.predefine('sap/ui/core/rules/View.support',["jquery.sap.global", "sap/ui/
 								});
 							}
 						}
-					}
 				}
 			});
 		}

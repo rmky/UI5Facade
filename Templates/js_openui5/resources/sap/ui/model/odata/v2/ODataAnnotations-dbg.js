@@ -5,8 +5,15 @@
  */
 
 // Provides class sap.ui.model.odata.v2.ODataAnnotations
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/ui/Device', 'sap/ui/base/EventProvider', 'sap/ui/core/cache/CacheManager'],
-	function(jQuery, AnnotationParser, Device, EventProvider, CacheManager) {
+sap.ui.define([
+	'sap/ui/model/odata/AnnotationParser',
+	'sap/ui/Device',
+	'sap/ui/base/EventProvider',
+	'sap/ui/core/cache/CacheManager',
+	"sap/base/assert",
+	"sap/ui/thirdparty/jquery"
+],
+	function(AnnotationParser, Device, EventProvider, CacheManager, assert, jQuery) {
 	"use strict";
 
 	///////////////////////////////////////////////// Class Definition /////////////////////////////////////////////////
@@ -26,7 +33,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 	 *
 	 * @author SAP SE
 	 * @version
-	 * 1.56.6
+	 * 1.60.1
 	 *
 	 * @public
 	 * @since 1.37.0
@@ -72,7 +79,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 					data: oMetadata.loaded().then(function(mParams) {
 						return {
 							xml: mParams["metadataString"],
-							lastModified: mParams["lastModified"]
+							lastModified: mParams["lastModified"],
+							eTag: mParams["eTag"]
 						};
 					})
 				});
@@ -148,14 +156,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 	};
 
 	/**
-	 * Returns a map of the headers that are sent with every request to an annotation URL
-	 *
-	 * @returns {map} A map of all headers that are sent with requests to annotation source URLs
+	 * Returns a map of custom headers that are sent with every request to an annotation URL.
+	 * @public
+	 * @returns {map} A map of all custom headers.
 	 */
 	ODataAnnotations.prototype.getHeaders = function() {
-		return jQuery.extend({}, this._mCustomHeaders, {
-			"Accept-Language": sap.ui.getCore().getConfiguration().getLanguageTag() // Always overwrite
-		});
+		return jQuery.extend({}, this._mCustomHeaders);
 	};
 
 	/**
@@ -599,6 +605,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 				mSource.type = "xml";
 				mSource.xml = oData.xml;
 				mSource.lastModified = oData.lastModified;
+				mSource.eTag = oData.eTag;
 				return this._loadSource(mSource);
 			}.bind(this));
 		} else if (mSource.type === "xml") {
@@ -625,13 +632,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 	 * @private
 	 */
 	ODataAnnotations.prototype._loadUrl = function(mSource) {
-		jQuery.sap.assert(mSource.type === "url", "Source type must be \"url\" in order to be loaded");
+		assert(mSource.type === "url", "Source type must be \"url\" in order to be loaded");
 
 		return new Promise(function(fnResolve, fnReject) {
 			var mAjaxOptions = {
 				url: mSource.data,
 				async: true,
-				headers: this.getHeaders(),
+				headers: this._getHeaders(),
 				beforeSend: function(oXHR) {
 					// Force text/plain so the XML parser does not run twice
 					oXHR.overrideMimeType("text/plain");
@@ -643,6 +650,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 
 				if (oXHR.getResponseHeader("Last-Modified")) {
 					mSource.lastModified = new Date(oXHR.getResponseHeader("Last-Modified"));
+				}
+
+				if (oXHR.getResponseHeader("eTag")) {
+					mSource.eTag = oXHR.getResponseHeader("eTag");
 				}
 
 				fnResolve(mSource);
@@ -667,7 +678,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 	 * @private
 	 */
 	ODataAnnotations.prototype._parseSourceXML = function(mSource) {
-		jQuery.sap.assert(typeof mSource.xml === "string", "Source must contain XML string in order to be parsed");
+		assert(typeof mSource.xml === "string", "Source must contain XML string in order to be parsed");
 
 		return new Promise(function(fnResolve, fnReject) {
 			var oXMLDocument;
@@ -729,7 +740,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 	 */
 	ODataAnnotations.prototype._parseSource = function(mSource) {
 		// On IE we have a special format for the XML documents on every other browser it must be a "Document" object.
-		jQuery.sap.assert(mSource.document instanceof window.Document || Device.browser.msie, "Source must contain a parsed XML document converted to an annotation object");
+		assert(mSource.document instanceof window.Document || Device.browser.msie, "Source must contain a parsed XML document converted to an annotation object");
 
 		return this._oMetadata.loaded()
 			.then(function() {
@@ -750,11 +761,23 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/AnnotationParser', 'sap/
 	 * @private
 	 */
 	ODataAnnotations.prototype._mergeSource = function(mSource) {
-		jQuery.sap.assert(typeof mSource.annotations === "object", "Source must contain an annotation object to be merged");
+		assert(typeof mSource.annotations === "object", "Source must contain an annotation object to be merged");
 
 		AnnotationParser.merge(this._mAnnotations, mSource.annotations);
 
 		return mSource;
+	};
+
+	/**
+	 * Returns a map of the public and private headers headers that are sent with every request to an annotation URL.
+	 * @private
+	 * @returns {map} A map of all public and private headers.
+	 */
+	ODataAnnotations.prototype._getHeaders = function() {
+		//The 'sap-cancel-on-close' header marks the OData annotation request as cancelable. This helps to save resources at the back-end.
+		return jQuery.extend({"sap-cancel-on-close": true}, this.getHeaders(), {
+			"Accept-Language": sap.ui.getCore().getConfiguration().getLanguageTag() // Always overwrite
+		});
 	};
 
 	///////////////////////////////////////////////////// End Class ////////////////////////////////////////////////////

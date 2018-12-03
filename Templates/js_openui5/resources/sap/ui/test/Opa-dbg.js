@@ -6,14 +6,14 @@
 
 /*global Math */
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/Device',
-	'./_LogCollector',
-	'./_OpaLogger',
-	'./_ParameterValidator',
 	'sap/ui/thirdparty/URI',
+	"sap/ui/thirdparty/jquery",
+	'sap/ui/test/_LogCollector',
+	'sap/ui/test/_OpaLogger',
+	'sap/ui/test/_ParameterValidator',
 	'sap/ui/test/_UsageReport'
-], function ($, Device, _LogCollector, _OpaLogger, _ParameterValidator, URI, _UsageReport) {
+], function(Device, URI, $, _LogCollector, _OpaLogger, _ParameterValidator, _UsageReport) {
 	"use strict";
 
 	///////////////////////////////
@@ -31,6 +31,8 @@ sap.ui.define([
 		oValidator = new _ParameterValidator({
 			errorPrefix: "sap.ui.test.Opa#waitFor"
 		});
+
+	oLogCollector.start();
 
 	function internalWait (fnCallback, oOptions) {
 
@@ -209,8 +211,8 @@ sap.ui.define([
 	};
 
 	/**
-	 * the global configuration of Opa.
-	 * All of the global values can be overwritten in an individual waitFor call.
+	 * The global configuration of Opa.
+	 * All of the global values can be overwritten in an individual <code>waitFor</code> call.
 	 * The default values are:
 	 * <ul>
 	 * 		<li>arrangements: A new Opa instance</li>
@@ -221,20 +223,20 @@ sap.ui.define([
 	 *		<li>debugTimeout: 0 seconds, infinite timeout by default. This will be used instead of timeout if running in debug mode.</li>
 	 * 		<li>asyncPolling: false</li>
 	 * </ul>
-	 * You can either directly manipulate the config, or extend it using {@link sap.ui.test.Opa.extendConfig}
+	 * You can either directly manipulate the config, or extend it using {@link sap.ui.test.Opa.extendConfig}.
 	 * @public
 	 */
 	Opa.config = {};
 
 	/**
-	 * Extends and overwrites default values of the {@link sap.ui.test.Opa.config}.
+	 * Extends and overwrites default values of the {@link sap.ui.test.Opa sap.ui.test.Opa.config} field.
 	 * Sample usage:
 	 * <pre>
 	 *     <code>
 	 *         var oOpa = new Opa();
 	 *
-	 *         // this statement will  will time out after 15 seconds and poll every 400ms.
-	 *         // those two values come from the defaults of {@link sap.ui.test.Opa.config}.
+	 *         // this statement will time out after 15 seconds and poll every 400ms
+	 *         // those two values come from the defaults of sap.ui.test.Opa.config
 	 *         oOpa.waitFor({
 	 *         });
 	 *
@@ -290,27 +292,49 @@ sap.ui.define([
 	 * @param {object} options The values to be added to the existing config
 	 * @public
 	 */
-	Opa.extendConfig = function (options) {
-		// Opa extend to preserver properties on these three parameters
-		["actions", "assertions", "arrangements"].forEach(function (sArrangeActAssert) {
-			if (!options[sArrangeActAssert]) {
-				return;
+	Opa.extendConfig = function (oOptions) {
+		var aComponents = ["actions", "assertions", "arrangements"];
+
+		aComponents.filter(function (sArrangeActAssert) {
+			return !!oOptions[sArrangeActAssert];
+		}).forEach(function (sArrangeActAssert) {
+			// actions, assertions and arrangements are objects of a type that extends OPA
+			// this means that somewhere along the prototype chain, .__proto__ will be either OPA or OPA5
+			// this is necessary for chaining in test journeys (".and")
+			var oNewComponent = oOptions[sArrangeActAssert];
+			var oNewComponentProto = Object.getPrototypeOf(oOptions[sArrangeActAssert]);
+			var oCurrentConfig = Opa.config[sArrangeActAssert];
+			var oCurrentConfigProto = Object.getPrototypeOf(Opa.config[sArrangeActAssert]);
+
+			// in order to merge new and existing components and preserve the prototype of the new component,
+			// add existing component properties to the new component
+			for (var sKey in oCurrentConfig) {
+				if (!(sKey in oNewComponent)) {
+					oNewComponent[sKey] = oCurrentConfig[sKey];
+				}
 			}
 
-			Object.keys(Opa.config[sArrangeActAssert]).forEach(function (sKey) {
-				if (!options[sArrangeActAssert][sKey]) {
-					options[sArrangeActAssert][sKey] = Opa.config[sArrangeActAssert][sKey];
+			for (var sProtoKey in oCurrentConfigProto) {
+				if (!(sProtoKey in oNewComponent)) {
+					oNewComponentProto[sProtoKey] = oCurrentConfigProto[sProtoKey];
 				}
-			});
+			}
 		});
 
-		// URI params overwrite default
-		// deep extend is necessary so appParams object is not overwritten but merged
-		Opa.config = $.extend(true, Opa.config, options, opaUriParams);
+		// URI params overwrite other config params
+		// if any action, assertion or arrangement is already defined in OPA, it will be overwritten
+		// deep extend is necessary so plain object configs like appParams are properly merged
+		Opa.config = $.extend(true, Opa.config, oOptions, opaUriParams);
 		_OpaLogger.setLevel(Opa.config.logLevel);
 	};
 
 	Opa._parseParam = function(sParam) {
+		if (sParam && sParam.match(/^true$/i)) {
+			return true;
+		}
+		if (sParam && sParam.match(/^false$/i)) {
+			return false;
+		}
 		var iValue = parseInt(sParam,10);
 		return (typeof iValue === 'number' && isNaN(iValue)) ? sParam : iValue;
 	};
@@ -598,40 +622,49 @@ sap.ui.define([
 		 */
 		emptyQueue : Opa.emptyQueue,
 
+		/**
+		 * Schedule a promise on the OPA queue.The promise will be executed in order with all waitFors -
+		 * any subsequent waitFor will be executed after the promise is done.
+		 * The promise is not directly chained, but instead its result is awaited in a new waitFor statement.
+		 * This means that any "thenable" should be acceptable.
+		 * @public
+		 * @param {jQuery.promise|oPromise} oPromise promise to schedule on the OPA queue
+		 * @returns {jQuery.promise} promise which is the result of a {@link sap.ui.test.Opa.waitFor}
+		 */
+		iWaitForPromise: function (oPromise) {
+			return this._schedulePromiseOnFlow(oPromise);
+		},
+
+		_schedulePromiseOnFlow: function (oPromise, oOptions) {
+			// as the waitFor flow is driven by the polling, the only way to schedule
+			// a promise on it is to insert a waitFor that polls the result.
+			// an promised-based way will require a full rework of the flow management
+			oOptions = oOptions || {};
+			var mPromiseState = {};
+			oOptions.check = function() {
+				if (!mPromiseState.started) {
+					mPromiseState.started = true;
+					oPromise.then(function () {
+						mPromiseState.done = true;
+					}, function (error) {
+						mPromiseState.errorMessage = "Error while waiting for promise scheduled on flow" +
+							(error ? ", details: " + error : "");
+					});
+				}
+				if (mPromiseState.errorMessage) {
+					throw new Error(mPromiseState.errorMessage);
+				} else {
+					return !!mPromiseState.done;
+				}
+			};
+			return this.waitFor(oOptions);
+		},
+
 		_validateWaitFor: function (oParameters) {
 			oValidator.validate({
 				validationInfo: Opa._validationInfo,
 				inputToValidate: oParameters
 			});
-		},
-
-		_schedulePromiseOnFlow: function (oPromise) {
-			// as the waitFor flow is driven by the polling, the only way to schedule
-			// a promise on it is to insert a waitFor that polls the result.
-			// an promised-based way will require a full rework of the flow management
-			var bPromiseDone = false;
-			var oPromiseErrorMessage;
-			oPromise.done(function() {
-				bPromiseDone = true;
-			}).fail(function(error) {
-				oPromiseErrorMessage = "Error while waiting for promise scheduled on flow" +
-					(error ? ", details: " + error : "");
-			});
-			var oOptions = {
-					// make sure no controls are searched by the defaults
-					viewName: null,
-					controlType: null,
-					id: null,
-					searchOpenDialogs: false,
-					autoWait: false
-			};
-			oOptions.check = function() {
-				if (oPromiseErrorMessage) {
-					throw new Error(oPromiseErrorMessage);
-				}
-				return bPromiseDone;
-			};
-			return this.waitFor(oOptions);
 		}
 	};
 

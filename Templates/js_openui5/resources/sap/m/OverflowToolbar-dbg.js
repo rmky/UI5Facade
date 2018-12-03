@@ -6,7 +6,6 @@
 
 // Provides control sap.m.OverflowToolbar.
 sap.ui.define([
-	"jquery.sap.global",
 	"./library",
 	"sap/m/ToggleButton",
 	"sap/ui/core/InvisibleText",
@@ -17,9 +16,10 @@ sap.ui.define([
 	"sap/m/OverflowToolbarAssociativePopoverControls",
 	"sap/ui/core/IconPool",
 	"sap/ui/Device",
-	"./OverflowToolbarRenderer"
+	"./OverflowToolbarRenderer",
+	"sap/base/Log",
+	"sap/ui/dom/jquery/Focusable" // jQuery Plugin "lastFocusableDomRef"
 ], function(
-	jQuery,
 	library,
 	ToggleButton,
 	InvisibleText,
@@ -30,7 +30,8 @@ sap.ui.define([
 	OverflowToolbarAssociativePopoverControls,
 	IconPool,
 	Device,
-	OverflowToolbarRenderer
+	OverflowToolbarRenderer,
+	Log
 ) {
 	"use strict";
 
@@ -114,7 +115,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -161,14 +162,20 @@ sap.ui.define([
 		// When set to true, means that the overflow toolbar is in a popup
 		this._bNestedInAPopover = null;
 
-		// When set to true, changes to the controls in the toolbar will trigger a recalculation
+		// When set to true, changes to the properties of the controls in the toolbar will trigger a recalculation
 		this._bListenForControlPropertyChanges = false;
+
+		// When set to true, invalidation events will trigger a recalculation
+		this._bListenForInvalidationEvents = false;
 
 		// When set to true, controls widths, etc... will not be recalculated, because they are already cached
 		this._bControlsInfoCached = false;
 
 		// When set to true, the recalculation algorithm will bypass an optimization to determine if anything moved from/to the action sheet
 		this._bSkipOptimization = false;
+
+		// When set to true, the control is reset and rerendered on resize
+		this._bForceRerenderOnResize = false;
 
 		this._aControlSizes = {}; // A map of control id -> control *optimal* size in pixels; the optimal size is outerWidth for most controls and min-width for spacers
 	};
@@ -188,8 +195,12 @@ sap.ui.define([
 		this._getOverflowButton().$().attr("aria-haspopup", "true");
 
 		// Unlike toolbar, we don't set flexbox classes here, we rather set them on a later stage only if needed
-		this._doLayout();
+		this._doLayout(true);
 		this._applyFocus();
+	};
+
+	OverflowToolbar.prototype.onsapfocusleave = function() {
+		this._resetChildControlFocusInfo();
 	};
 
 	/*********************************************LAYOUT*******************************************************/
@@ -198,23 +209,35 @@ sap.ui.define([
 	/**
 	 * For the OverflowToolbar, we need to register resize listeners always, regardless of Flexbox support
 	 * @override
+	 * @param {boolean} bCalledFromOnAfterRendering - Whether or not "_doLayout" is called from "onAfterRendering" lifecycle
 	 * @private
 	 */
 
 
-	OverflowToolbar.prototype._doLayout = function () {
+	OverflowToolbar.prototype._doLayout = function (bCalledFromOnAfterRendering) {
+		// Check if we need to force reset and rerender on the control
+		// If so we omit the rest of the method to increase performance
+		if (this._bForceRerenderOnResize && !bCalledFromOnAfterRendering) {
+			this._resetToolbar();
+			this.rerender();
+			return;
+		}
+
 		var oCore = sap.ui.getCore();
 
 		// If the theme is not applied, control widths should not be measured and cached
 		if (!oCore.isThemeApplied()) {
-			jQuery.sap.log.debug("OverflowToolbar: theme not applied yet, skipping calculations", this);
+			Log.debug("OverflowToolbar: theme not applied yet, skipping calculations", this);
 			return;
 		}
 
 		var iWidth = this.$().width();
 
-		// Stop listening for control changes while calculating the layout to avoid an infinite loop scenario
+		// Stop listening for control property changes while calculating the layout to avoid an infinite loop scenario
 		this._bListenForControlPropertyChanges = false;
+
+		// Stop listening for invalidation events while calculating the layout to avoid an infinite loop scenario
+		this._bListenForInvalidationEvents = false;
 
 		// Deregister the resize handler to avoid multiple instances of the same code running at the same time
 		this._deregisterToolbarResize();
@@ -244,15 +267,19 @@ sap.ui.define([
 
 		// Start listening for property changes on the controls once again
 		this._bListenForControlPropertyChanges = true;
+
+		// Start listening for invalidation events once again
+		this._bListenForInvalidationEvents = true;
 	};
 
 	OverflowToolbar.prototype._applyFocus = function () {
-		var oFocusedChildControl = sap.ui.getCore().byId(this.sFocusedChildControlId),
+		var oFocusedChildControl,
 			$FocusedChildControl,
 			$LastFocusableChildControl = this.$().lastFocusableDomRef();
 
-		if (oFocusedChildControl) {
-			$FocusedChildControl = oFocusedChildControl.$();
+		if (this.sFocusedChildControlId) {
+			oFocusedChildControl = sap.ui.getCore().byId(this.sFocusedChildControlId);
+			$FocusedChildControl = oFocusedChildControl && oFocusedChildControl.$();
 		}
 
 		if ($FocusedChildControl && $FocusedChildControl.length){
@@ -284,8 +311,18 @@ sap.ui.define([
 			this.sFocusedChildControlId = sActiveElementId;
 		} else if (sActiveElementId === this._getOverflowButton().getId()) {
 			this._bOverflowButtonWasFocused = true;
-			this.sFocusedChildControlId = null;
+			this.sFocusedChildControlId = "";
 		}
+	};
+
+	/**
+	 * Resets focus info.
+	 * @private
+	 */
+	OverflowToolbar.prototype._resetChildControlFocusInfo = function () {
+		this._bControlWasFocused = false;
+		this._bOverflowButtonWasFocused = false;
+		this.sFocusedChildControlId = "";
 	};
 
 	/**
@@ -505,6 +542,8 @@ sap.ui.define([
 			}
 		}
 
+		this._markControlsWithShrinkableLayoutData();
+
 		// If all content fits - put the buttons from the previous step (if any) in the action sheet and stop here
 		if (iContentSize <= iToolbarSize) {
 			fnFlushButtonsToActionSheet.call(this, aButtonsToMoveToActionSheet);
@@ -536,6 +575,30 @@ sap.ui.define([
 		}
 
 		fnInvalidateIfHashChanged.call(this, sIdsHash);
+	};
+
+	/*
+	 * Checks if the given control has shrinkable <code>LayoutData</code> or not and marks it with shrinkable class.
+	 *
+	 * @private
+	 */
+	OverflowToolbar.prototype._markControlsWithShrinkableLayoutData = function() {
+		this.getContent().forEach(function(oControl) {
+			// remove old class
+			oControl.removeStyleClass(Toolbar.shrinkClass);
+
+			// ignore the controls that have fixed width
+			var sWidth = Toolbar.getOrigWidth(oControl.getId());
+			if (!Toolbar.isRelativeWidth(sWidth)) {
+				return;
+			}
+
+			// check shrinkable via layout data
+			var oLayout = oControl.getLayoutData();
+			if (oLayout && oLayout.isA("sap.m.ToolbarLayoutData") && oLayout.getShrinkable()) {
+				oControl.addStyleClass(Toolbar.shrinkClass);
+			}
+		});
 	};
 
 	/**
@@ -595,12 +658,6 @@ sap.ui.define([
 		}
 
 		this._resetToolbar();
-
-		for (var iControlSize in this._aControlSizes) {
-			if (this._aControlSizes.hasOwnProperty(iControlSize)) {
-				this._aControlSizes[iControlSize] = 0; // reset saved control sizes
-			}
-		}
 
 		this._bControlsInfoCached = false;
 		this._bNestedInAPopover = null;
@@ -770,14 +827,14 @@ sap.ui.define([
 		// On IE/sometimes other browsers, if you click the toggle button again to close the popover, onAfterClose is triggered first, which closes the popup, and then the click event on the toggle button reopens it
 		// To prevent this behaviour, disable the overflow button till the end of the current javascript engine's "tick"
 		this._getOverflowButton().setEnabled(false);
-		jQuery.sap.delayedCall(0, this, function () {
+		setTimeout(function () {
 			this._getOverflowButton().setEnabled(true);
 
 			// In order to restore focus, we must wait another tick here to let the renderer enable it first
-			jQuery.sap.delayedCall(0, this, function () {
+			setTimeout(function () {
 				this._getOverflowButton().$().focus();
-			});
-		});
+			}.bind(this), 0);
+		}.bind(this), 0);
 	};
 
 	/**
@@ -878,9 +935,9 @@ sap.ui.define([
 	OverflowToolbar.prototype.destroyContent = function () {
 		this._resetAndInvalidateToolbar(false);
 
-		jQuery.sap.delayedCall(0, this, function () {
+		setTimeout(function () {
 			this._resetAndInvalidateToolbar(false);
-		});
+		}.bind(this), 0);
 
 		return this._callToolbarMethod("destroyContent", arguments);
 	};
@@ -893,6 +950,18 @@ sap.ui.define([
 	OverflowToolbar.prototype._registerControlListener = function (oControl) {
 		if (oControl) {
 			oControl.attachEvent("_change", this._onContentPropertyChangedOverflowToolbar, this);
+
+			// Check if the control implements sap.m.IOverflowToolbarContent interface
+			if (oControl.getMetadata().getInterfaces().indexOf("sap.m.IOverflowToolbarContent") > -1) {
+				var aInvalidationEvents = oControl.getOverflowToolbarConfig().invalidationEvents;
+
+				if (aInvalidationEvents && Array.isArray(aInvalidationEvents)) {
+					// We start to listen for events listed in invalidationEvents array of the OverflowToolbarConfig
+					aInvalidationEvents.forEach(function (sEvent) {
+						oControl.attachEvent(sEvent, this._onInvalidationEventFired, this);
+					}, this);
+				}
+			}
 		}
 	};
 
@@ -904,6 +973,18 @@ sap.ui.define([
 	OverflowToolbar.prototype._deregisterControlListener = function (oControl) {
 		if (oControl) {
 			oControl.detachEvent("_change", this._onContentPropertyChangedOverflowToolbar, this);
+
+			// Check if the control implements sap.m.IOverflowToolbarContent interface
+			if (oControl.getMetadata().getInterfaces().indexOf("sap.m.IOverflowToolbarContent") > -1) {
+				var aInvalidationEvents = oControl.getOverflowToolbarConfig().invalidationEvents;
+
+				if (aInvalidationEvents && Array.isArray(aInvalidationEvents)) {
+					// We stop to listen for events listed in invalidationEvents array of the OverflowToolbarConfig
+					aInvalidationEvents.forEach(function (sEvent) {
+						oControl.detachEvent(sEvent, this._onInvalidationEventFired, this);
+					}, this);
+				}
+			}
 		}
 	};
 
@@ -927,6 +1008,21 @@ sap.ui.define([
 		// Do nothing if the changed property is in the blacklist above
 		if (typeof oControlConfig !== "undefined" &&
 			oControlConfig.noInvalidationProps.indexOf(sParameterName) !== -1) {
+			return;
+		}
+
+		// Trigger a recalculation
+		this._resetAndInvalidateToolbar(true);
+	};
+
+	/**
+	 * Triggered when invalidation event is fired. Resets and invalidates the OverflowToolbar.
+	 * @private
+	 */
+	OverflowToolbar.prototype._onInvalidationEventFired = function () {
+
+		// Listening for invalidation events is turned off during layout recalculation to avoid infinite loops
+		if (!this._bListenForInvalidationEvents) {
 			return;
 		}
 
@@ -998,12 +1094,18 @@ sap.ui.define([
 	 * @private
 	 */
 	OverflowToolbar._getOptimalControlWidth = function (oControl, iOldSize) {
-		var iOptimalWidth;
+		var iOptimalWidth,
+			oLayoutData = oControl.getLayoutData(),
+			bShrinkable = oLayoutData && oLayoutData.isA("sap.m.ToolbarLayoutData") ? oLayoutData.getShrinkable() : false,
+			iMinWidth = bShrinkable ? parseInt(oLayoutData.getMinWidth(), 10) : 0;
 
 		// For spacers, get the min-width + margins
 		if (oControl instanceof ToolbarSpacer) {
 			iOptimalWidth = parseInt(oControl.$().css('min-width'), 10) || 0 + oControl.$().outerWidth(true) - oControl.$().outerWidth();
-			// For other elements, get the outer width
+		// For elements with LayoutData get minWidth + margins
+		} else if (bShrinkable && iMinWidth > 0) {
+			iOptimalWidth = iMinWidth + oControl.$().outerWidth(true) - oControl.$().outerWidth();
+		// For other elements, get the outer width
 		} else {
 			iOptimalWidth = oControl.getVisible() ? oControl.$().outerWidth(true) : 0;
 		}
@@ -1101,6 +1203,12 @@ sap.ui.define([
 
 	OverflowToolbar.prototype.onThemeChanged = function () {
 		this._resetAndInvalidateToolbar();
+
+		for (var iControlSize in this._aControlSizes) {
+			if (this._aControlSizes.hasOwnProperty(iControlSize)) {
+				this._aControlSizes[iControlSize] = 0; // reset saved control sizes
+			}
+		}
 	};
 
 	/**

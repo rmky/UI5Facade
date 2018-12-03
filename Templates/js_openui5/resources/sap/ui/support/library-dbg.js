@@ -23,7 +23,7 @@ sap.ui.define(["sap/ui/core/library"],
 	 * @namespace
 	 * @name sap.ui.support
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @public
 	 */
@@ -41,7 +41,7 @@ sap.ui.define(["sap/ui/core/library"],
 		controls: [],
 		elements: [],
 		noLibraryCSS: true,
-		version: "1.56.6",
+		version: "1.60.1",
 		extensions: {
 			//Configuration used for rule loading of Support Assistant
 			"sap.ui.support": {
@@ -53,7 +53,7 @@ sap.ui.define(["sap/ui/core/library"],
 	/**
 	 * Defines severity types.
 	 * @enum {string}
-	 * @since 1.56.6
+	 * @since 1.60.1
 	 * @public
 	 */
 	sap.ui.support.Severity = {
@@ -77,7 +77,7 @@ sap.ui.define(["sap/ui/core/library"],
 	/**
 	 * Defines the Audiences.
 	 * @enum {string}
-	 * @since 1.56.6
+	 * @since 1.60.1
 	 * @public
 	 */
 	sap.ui.support.Audiences = {
@@ -101,7 +101,7 @@ sap.ui.define(["sap/ui/core/library"],
 	/**
 	 * Issue Categories.
 	 * @enum {string}
-	 * @since 1.56.6
+	 * @since 1.60.1
 	 * @public
 	 */
 	sap.ui.support.Categories = {
@@ -131,30 +131,99 @@ sap.ui.define(["sap/ui/core/library"],
 		 */
 		Consistency: "Consistency",
 		/**
+		 * Fiori Guidelines issue category.
+		 * @public
+		 */
+		FioriGuidelines : "FioriGuidelines",
+		/**
 		 * Functionality issue category.
 		 * @public
 		 */
-		Functionality : "Functionality",
+		Functionality: "Functionality",
 		/**
 		 * Usability issue category.
 		 * @public
 		 */
-		Usability : "Usability",
+		Usability: "Usability",
 		/**
 		 * DataModel issue category.
 		 * @public
 		 */
 		DataModel: "DataModel",
 		/**
+		 * Modularization issue category.
+		 * @public
+		 */
+		Modularization: "Modularization",
+		/**
 		 * Usage issue category.
 		 * @public
 		 */
 		Usage: "Usage",
 		/**
-		 * Accessibility issue category.
+		 * Other issue category.
 		 * @public
 		 */
 		Other: "Other"
+	};
+
+	/**
+	 * Analysis history formats.
+	 * @enum {string}
+	 * @since 1.60.1
+	 * @public
+	 */
+	sap.ui.support.HistoryFormats = {
+		/**
+		 * ABAP history format.
+		 * @public
+		 */
+		Abap: "Abap",
+		/**
+		 * String history format.
+		 * @public
+		 */
+		String: "String"
+	};
+
+	/**
+	 * Contains the available system presets.
+	 * @enum {object}
+	 * @since 1.60.1
+	 * @public
+	 */
+	sap.ui.support.SystemPresets = {
+		/**
+		 * The accessibility preset.
+		 *
+		 * @public
+		 */
+		Accessibility : {
+			id: "Accessibility",
+			title: "Accessibility",
+			description: "Accessibility related rules",
+			selections: [
+				// Grouped by library
+				// Public
+				{ruleId: "dialogAriaLabelledBy", libName: "sap.m"},
+				{ruleId: "onlyIconButtonNeedsTooltip", libName: "sap.m"},
+				{ruleId: "inputNeedsLabel", libName: "sap.m"},
+				{ruleId: "titleLevelProperty", libName: "sap.m"},
+				{ruleId: "formTitleOrAriaLabel", libName: "sap.ui.layout"},
+				{ruleId: "formTitleInToolbarAria", libName: "sap.ui.layout"},
+				{ruleId: "formMissingLabel", libName: "sap.ui.layout"},
+				{ruleId: "gridTableAccessibleLabel", libName: "sap.ui.table"},
+				{ruleId: "gridTableColumnTemplateIcon", libName: "sap.ui.table"},
+				{ruleId: "smartFormLabelOrAriaLabel", libName: "sap.ui.comp"},
+				// Internal
+				{ruleId: "icontabbarlabels", libName: "sap.m"},
+				{ruleId: "labeltooltip", libName: "sap.m"},
+				{ruleId: "labelfor", libName: "sap.m"},
+				{ruleId: "labelInDisplayMode", libName: "sap.m"},
+				{ruleId: "texttooltip", libName: "sap.m"},
+				{ruleId: "rbText", libName: "sap.m"}
+			]
+		}
 	};
 
 	return sap.ui.support;

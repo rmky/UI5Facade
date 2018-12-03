@@ -6,17 +6,17 @@
 
 // Provides class sap.ui.dt.plugin.ElementMover.
 sap.ui.define([
-	'sap/ui/base/Object',
-	'sap/ui/base/ManagedObject',
-	'sap/ui/dt/ElementUtil',
-	'sap/ui/dt/OverlayUtil',
-	'sap/ui/dt/OverlayRegistry'
-], function
-(	BaseObject,
+	"sap/ui/base/Object",
+	"sap/ui/base/ManagedObject",
+	"sap/ui/dt/ElementUtil",
+	"sap/ui/dt/DOMUtil",
+	"sap/ui/dt/OverlayUtil"
+], function(
+	BaseObject,
 	ManagedObject,
 	ElementUtil,
-	OverlayUtil,
-	OverlayRegistry
+	DOMUtil,
+	OverlayUtil
 ) {
 	"use strict";
 
@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @class The ElementMover enables movement of UI5 elements based on aggregation types, which can be used by drag and
 	 *        drop or cut and paste behavior.
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -138,9 +138,9 @@ sap.ui.define([
 		var oGeometry = oAggregationOverlay.getGeometry();
 		var bGeometryVisible = oGeometry && oGeometry.size.height > 0 && oGeometry.size.width > 0;
 
-		// this function can get called on overlay registration, when there are no overlays in dom yet. In this case, $().is(":visible") is always false.
+		// this function can get called on overlay registration, when there are no overlays in dom yet. In this case, DOMUtil.isVisible is always false.
 		if ((bOverlayNotInDom && !bGeometryVisible)
-			|| !bOverlayNotInDom && !oAggregationOverlay.$().is(":visible")
+			|| !bOverlayNotInDom && !DOMUtil.isVisible(oAggregationOverlay.getDomRef())
 			|| !(oAggregationOverlay.getElement().getVisible && oAggregationOverlay.getElement().getVisible())) {
 			return false;
 		}

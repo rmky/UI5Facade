@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.56.6"
+      "version": "1.60.1"
     },
     "title": "The SAPUI5 Core Runtime.",
     "description": "The SAPUI5 Core Runtime.\n\n  Contains the UI5 jQuery plugins (jQuery.sap.*), the Core and all its components,\n  base classes for Controls, Components and the Model View Controller classes.",
@@ -144,6 +144,11 @@
         "version": "0.0.0"
       },
       {
+        "name": "object-assign-polyfill",
+        "packagedWithMySelf": true,
+        "version": "0.0.0"
+      },
+      {
         "name": "unorm",
         "packagedWithMySelf": true,
         "version": "0.0.0"
@@ -192,6 +197,16 @@
         "name": "bignumber",
         "packagedWithMySelf": true,
         "version": "0.0.0"
+      },
+      {
+        "name": "lodash",
+        "packagedWithMySelf": true,
+        "version": "0.0.0"
+      },
+      {
+        "name": "hyphenopoly",
+        "packagedWithMySelf": true,
+        "version": "0.0.0"
       }
     ]
   },
@@ -204,7 +219,7 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.56",
+      "minUI5Version": "1.60",
       "libs": {}
     },
     "library": {

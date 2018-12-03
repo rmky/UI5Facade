@@ -5,13 +5,17 @@
  */
 
 // Provides default renderer for XMLView
-sap.ui.define(['jquery.sap.global', './ViewRenderer', '../RenderManager'],
-	function(jQuery, ViewRenderer, RenderManager) {
+sap.ui.define([
+	'./ViewRenderer',
+	'../RenderManager',
+	"sap/ui/thirdparty/jquery"
+], function(ViewRenderer, RenderManager, jQuery) {
 	"use strict";
 
 	// shortcut
 	var PREFIX_DUMMY = RenderManager.RenderPrefixes.Dummy,
-		PREFIX_INVISIBLE = RenderManager.RenderPrefixes.Invisible;
+		PREFIX_INVISIBLE = RenderManager.RenderPrefixes.Invisible,
+		PREFIX_TEMPORARY = RenderManager.RenderPrefixes.Temporary;
 
 	/**
 	 * Renderer for an XMLView.
@@ -74,7 +78,7 @@ sap.ui.define(['jquery.sap.global', './ViewRenderer', '../RenderManager'],
 		// write the HTML into the render manager
 		var $oldContent = oControl._$oldContent = RenderManager.findPreservedContent(oControl.getId());
 		if ( $oldContent.length === 0) {
-			// jQuery.sap.log.debug("rendering " + oControl + " anew");
+			// Log.debug("rendering " + oControl + " anew");
 			var bSubView = oControl.isSubView();
 			if (!bSubView) {
 				rm.write("<div");
@@ -121,8 +125,8 @@ sap.ui.define(['jquery.sap.global', './ViewRenderer', '../RenderManager'],
 			// render dummy control for early after rendering notification
 			rm.renderControl(oControl.oAfterRenderingNotifier);
 
-			// preserve mode: render a dummy root tag and all child controls
-			rm.write('<div id="' + PREFIX_DUMMY + oControl.getId() + '" class="sapUiHidden">');
+			// preserve mode: render a temporary element and all child controls
+			rm.write('<div id="' + PREFIX_TEMPORARY + oControl.getId() + '" class="sapUiHidden">');
 			for (var i = 0; i < oControl._aParsedContent.length; i++) {
 				var fragment = oControl._aParsedContent[i];
 				if ( typeof (fragment) !== "string") {
@@ -132,18 +136,19 @@ sap.ui.define(['jquery.sap.global', './ViewRenderer', '../RenderManager'],
 
 					// replace any old DOM (or invisible placeholder) for a child control with a dummy placeholder
 					var sFragmentId = fragment.getId(),
-						$fragment = jQuery.sap.byId(sFragmentId, $oldContent);
+						$fragment = jQuery(document.getElementById(sFragmentId));
 					if ($fragment.length == 0) {
-						$fragment = jQuery.sap.byId(PREFIX_INVISIBLE + sFragmentId, $oldContent);
+						$fragment = jQuery(document.getElementById(PREFIX_INVISIBLE + sFragmentId));
 					}
-					$fragment.replaceWith('<div id="' + PREFIX_DUMMY + sFragmentId + '" class="sapUiHidden"/>');
+					if ( !RenderManager.isPreservedContent($fragment[0]) ) {
+						$fragment.replaceWith('<div id="' + PREFIX_DUMMY + sFragmentId + '" class="sapUiHidden"/>');
+					}
 				}
 			}
 			rm.write('</div>');
 
 		}
 	};
-
 
 	return XMLViewRenderer;
 

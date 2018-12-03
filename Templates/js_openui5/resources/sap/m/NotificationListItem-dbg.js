@@ -46,7 +46,7 @@ function(
 	 * @extends sap.m.NotificationListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -231,16 +231,6 @@ function(
 		this._getAuthorImage().setSrc(authorPicture);
 
 		return result;
-	};
-
-	/**
-	 * Clones list item.
-	 *
-	 * @public
-	 * @returns {sap.m.NotificationListItem} NotificationListItem reference for chaining.
-	 */
-	NotificationListItem.prototype.clone = function () {
-		return NotificationListBase.prototype.clone.apply(this, arguments);
 	};
 
 	//================================================================================

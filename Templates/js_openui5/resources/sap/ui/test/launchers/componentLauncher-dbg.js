@@ -4,10 +4,11 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'jquery.sap.global',
-	'sap/ui/core/ComponentContainer',
-	'sap/ui/core/Component' // sap.ui.component
-], function ($, ComponentContainer/*, Component */) {
+	'sap/ui/core/ComponentContainer', // sap.ui.component
+	"sap/base/util/uid",
+	"sap/ui/thirdparty/jquery",
+	'sap/ui/core/Component'
+], function(ComponentContainer, uid, jQueryDOM/*, Component */) {
 	"use strict";
 
 	var _loadingStarted = false,
@@ -36,11 +37,11 @@ sap.ui.define([
 			_loadingStarted = true;
 
 			return oPromise.then(function (oComponent) {
-				var sId = $.sap.uid();
+				var sId = uid();
 
 				// create and add div to html
-				_$Component = $('<div id="' + sId + '" class="sapUiOpaComponent"></div>');
-				$("body").append(_$Component).addClass("sapUiOpaBodyComponent");
+				_$Component = jQueryDOM('<div id="' + sId + '" class="sapUiOpaComponent"></div>');
+				jQueryDOM("body").append(_$Component).addClass("sapUiOpaBodyComponent");
 
 				// create and place the component into html
 				_oComponentContainer = new ComponentContainer({component: oComponent});
@@ -62,7 +63,7 @@ sap.ui.define([
 			_oComponentContainer.destroy();
 			_$Component.remove();
 			_loadingStarted = false;
-			$("body").removeClass("sapUiOpaBodyComponent");
+			jQueryDOM("body").removeClass("sapUiOpaBodyComponent");
 		}
 	};
 

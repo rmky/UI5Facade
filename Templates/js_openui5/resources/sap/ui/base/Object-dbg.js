@@ -13,8 +13,8 @@
  */
 
 // Provides class sap.ui.base.Object
-sap.ui.define(['jquery.sap.global', './Interface', './Metadata'],
-	function(jQuery, Interface, Metadata) {
+sap.ui.define(['./Interface', './Metadata', "sap/base/Log"],
+	function(Interface, Metadata, Log) {
 	"use strict";
 
 
@@ -24,7 +24,7 @@ sap.ui.define(['jquery.sap.global', './Interface', './Metadata'],
 	 * @class Base class for all SAPUI5 Objects
 	 * @abstract
 	 * @author Malte Wedel
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @public
 	 * @alias sap.ui.base.Object
 	 */
@@ -61,7 +61,9 @@ sap.ui.define(['jquery.sap.global', './Interface', './Metadata'],
 		// Now this Object instance gets a new, private implementation of getInterface
 		// that returns the newly created oInterface. Future calls of getInterface on the
 		// same Object therefore will return the already created interface
-		this.getInterface = jQuery.sap.getter(oInterface);
+		this.getInterface = function() {
+			return oInterface;
+		};
 		// as the first caller doesn't benefit from the new method implementation we have to
 		// return the created interface as well.
 		return oInterface;
@@ -160,14 +162,16 @@ sap.ui.define(['jquery.sap.global', './Interface', './Metadata'],
 		// create Metadata object
 		var oMetadata = new (FNMetaImpl || Metadata)(sClassName, oStaticInfo);
 		var fnClass = oMetadata.getClass();
-		fnClass.getMetadata = fnClass.prototype.getMetadata = jQuery.sap.getter(oMetadata);
+		fnClass.getMetadata = fnClass.prototype.getMetadata = function() {
+			return oMetadata;
+		};
 		// enrich function
 		if ( !oMetadata.isFinal() ) {
 			fnClass.extend = function(sSCName, oSCClassInfo, fnSCMetaImpl) {
 				return Metadata.createClass(fnClass, sSCName, oSCClassInfo, fnSCMetaImpl || FNMetaImpl);
 			};
 		}
-		jQuery.sap.log.debug("defined class '" + sClassName + "'" + (oMetadata.getParent() ? " as subclass of " + oMetadata.getParent().getName() : "") );
+		Log.debug("defined class '" + sClassName + "'" + (oMetadata.getParent() ? " as subclass of " + oMetadata.getParent().getName() : "") );
 		return oMetadata;
 	};
 

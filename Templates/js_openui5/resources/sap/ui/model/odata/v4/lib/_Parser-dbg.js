@@ -5,8 +5,7 @@
  */
 
 //Provides class sap.ui.model.odata.v4.lib._Parser
-sap.ui.define([
-], function () {
+sap.ui.define([], function () {
 	"use strict";
 
 	var // The delimiters in a system query option, possibly %-encoded (their hex value listed in
@@ -171,6 +170,7 @@ sap.ui.define([
 	 * @param {number} iLbp The "left binding power"
 	 */
 	function addInfixOperator(sId, iLbp) {
+		// Note: this function is executed at load time only!
 		mFilterParserSymbols[sId] = {
 			lbp : iLbp,
 			led : function (oToken, oLeft) {
@@ -189,6 +189,7 @@ sap.ui.define([
 	 * @param {string} sId The token ID
 	 */
 	function addLeafSymbol(sId) {
+		// Note: this function is executed at load time only!
 		mFilterParserSymbols[sId] = {
 			lbp : 0,
 			nud : function (oToken) {

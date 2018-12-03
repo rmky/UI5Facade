@@ -6,22 +6,26 @@
 
 // Provides control sap.uxap.ObjectPageSubSection.
 sap.ui.define([
-    "jquery.sap.global",
-    "sap/ui/layout/Grid",
-    "sap/ui/layout/GridData",
-    "./ObjectPageSectionBase",
-    "./ObjectPageLazyLoader",
-    "./BlockBase",
-    "sap/m/Button",
-    "sap/ui/Device",
-    "sap/ui/core/StashedControlSupport",
-    "sap/ui/base/ManagedObjectObserver",
-    "./library",
-    "sap/m/library",
-    "./ObjectPageSubSectionRenderer",
-    "jquery.sap.keycodes"
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/layout/Grid",
+	"sap/ui/layout/GridData",
+	"./ObjectPageSectionBase",
+	"./ObjectPageLazyLoader",
+	"./BlockBase",
+	"sap/m/Button",
+	"sap/ui/Device",
+	"sap/ui/core/StashedControlSupport",
+	"sap/ui/base/ManagedObjectObserver",
+	"sap/m/TitlePropagationSupport",
+	"./library",
+	"sap/m/library",
+	"./ObjectPageSubSectionRenderer",
+	"sap/base/Log",
+	"sap/ui/events/KeyCodes",
+	// jQuery Plugin "firstFocusableDomRef"
+	"sap/ui/dom/jquery/Focusable"
 ], function(
-    jQuery,
+	jQuery,
 	Grid,
 	GridData,
 	ObjectPageSectionBase,
@@ -31,9 +35,12 @@ sap.ui.define([
 	Device,
 	StashedControlSupport,
 	ManagedObjectObserver,
+	TitlePropagationSupport,
 	library,
 	mobileLibrary,
-	ObjectPageSubSectionRenderer
+	ObjectPageSubSectionRenderer,
+	Log,
+	KeyCodes
 ) {
 	"use strict";
 
@@ -101,6 +108,23 @@ sap.ui.define([
 
 				/**
 				 * Controls to be displayed in the subsection
+				 *
+				 * <b>Note:</b> The SAP Fiori Design guidelines require that the
+				 * <code>ObjectPageHeader</code>'s content and the <code>ObjectPage</code>'s subsection content
+				 * are aligned vertically. When using {@link sap.ui.layout.form.Form},
+				 * {@link sap.m.Panel}, {@link sap.m.Table} and {@link sap.m.List} in the subsection
+				 * content area of <code>ObjectPage</code>, if the content is not already aligned, you need to adjust their left
+				 * text offset to achieve the vertical alignment.  To do this, apply the
+				 * <code>sapUxAPObjectPageSubSectionAlignContent</code>
+				 * CSS class to them and set their <code>width</code> property to <code>auto</code>
+				 * (if not set by default).
+				 *
+				 * Example:
+				 *
+				 * <pre>
+				 * <code> &lt;Panel class="sapUxAPObjectPageSubSectionAlignContent" width="auto"&gt;&lt;/Panel&gt; </code>
+				 * </pre>
+				 *
 				 */
 				blocks: {type: "sap.ui.core.Control", multiple: true, singularName: "block"},
 
@@ -118,6 +142,11 @@ sap.ui.define([
 		}
 	});
 
+	// Add Title Propagation Support
+	TitlePropagationSupport.call(ObjectPageSubSection.prototype, "blocks", function () {
+		return this._getTitleDomId();
+	});
+
 	ObjectPageSubSection.MEDIA_RANGE = Device.media.RANGESETS.SAP_STANDARD;
 
 	/**
@@ -127,7 +156,7 @@ sap.ui.define([
 	 * @returns {Object} the resource bundle object
 	 */
 	ObjectPageSubSection._getLibraryResourceBundle = function() {
-		return library.i18nModel.getResourceBundle();
+		return sap.ui.getCore().getLibraryResourceBundle("sap.uxap");
 	};
 
 	/**
@@ -154,6 +183,38 @@ sap.ui.define([
 
 		//switch logic for the default mode
 		this._switchSubSectionMode(this.getMode());
+
+		// Title Propagation Support
+		this._initTitlePropagationSupport();
+		this._sBorrowedTitleDomId = false;
+	};
+
+	/**
+	 * Returns Title DOM ID of the Title of this SubSection
+	 * @returns {string|boolean} DOM ID
+	 * @private
+	 */
+	ObjectPageSubSection.prototype._getTitleDomId = function () {
+		if (this._sBorrowedTitleDomId) {
+			return this._sBorrowedTitleDomId;
+		}
+		if (!this.getTitle().trim()) {
+			return false;
+		}
+		if (this._getInternalTitleVisible()) {
+			return this.getId() + "-headerTitle";
+		}
+		return false;
+	};
+
+	/**
+	 * Sets DOM ID of the Title borrowed from this SubSection
+	 * @param {string} sId the ID of the DOM Element
+	 * @private
+	 * @ui5-restricted sap.uxap.ObjectPageLayout
+	 */
+	ObjectPageSubSection.prototype._setBorrowedTitleDomId = function (sId) {
+		this._sBorrowedTitleDomId = sId;
 	};
 
 	ObjectPageSubSection.prototype._expandSection = function () {
@@ -339,7 +400,7 @@ sap.ui.define([
 			return;
 		}
 
-		this._$spacer = jQuery.sap.byId(oObjectPageLayout.getId() + "-spacer");
+		this._$spacer = jQuery(document.getElementById(oObjectPageLayout.getId() + "-spacer"));
 	};
 
 	ObjectPageSubSection.prototype.onBeforeRendering = function () {
@@ -386,7 +447,7 @@ sap.ui.define([
 				oGrid.addAggregation("content", oBlock, true); // this is always called onBeforeRendering so suppress invalidate
 			}, this);
 		} catch (sError) {
-			jQuery.sap.log.error("ObjectPageSubSection :: error while building layout " + sLayout + ": " + sError);
+			Log.error("ObjectPageSubSection :: error while building layout " + sLayout + ": " + sError);
 		}
 
 		return this;
@@ -468,7 +529,7 @@ sap.ui.define([
 
 	ObjectPageSubSection.prototype.onkeydown = function (oEvent) {
 		// Filter F7 key down
-		if (oEvent.keyCode === jQuery.sap.KeyCodes.F7) {
+		if (oEvent.keyCode === KeyCodes.F7) {
 			oEvent.stopPropagation();
 			var oTarget = sap.ui.getCore().byId(oEvent.target.id);
 
@@ -732,7 +793,7 @@ sap.ui.define([
 	* @public
 	*/
 	ObjectPageSubSection.prototype.insertBlock = function (oObject, iIndex) {
-		jQuery.sap.log.warning("ObjectPageSubSection :: usage of insertBlock is not supported - addBlock is performed instead.");
+		Log.warning("ObjectPageSubSection :: usage of insertBlock is not supported - addBlock is performed instead.");
 		return this.addAggregation("blocks", oObject);
 	};
 
@@ -748,7 +809,7 @@ sap.ui.define([
 	 * @public
 	 */
 	ObjectPageSubSection.prototype.insertMoreBlock = function (oObject, iIndex) {
-		jQuery.sap.log.warning("ObjectPageSubSection :: usage of insertMoreBlock is not supported - addMoreBlock is performed instead.");
+		Log.warning("ObjectPageSubSection :: usage of insertMoreBlock is not supported - addMoreBlock is performed instead.");
 		return this.addAggregation("moreBlocks", oObject);
 	};
 
@@ -905,7 +966,7 @@ sap.ui.define([
 		if (oBlock instanceof BlockBase) {
 			oBlock.setMode(sMode);
 		} else {
-			jQuery.sap.log.debug("ObjectPageSubSection :: cannot propagate mode " + sMode + " to " + oBlock.getMetadata().getName());
+			Log.debug("ObjectPageSubSection :: cannot propagate mode " + sMode + " to " + oBlock.getMetadata().getName());
 		}
 	};
 

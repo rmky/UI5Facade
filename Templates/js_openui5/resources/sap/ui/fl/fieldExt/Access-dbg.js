@@ -4,7 +4,11 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["jquery.sap.storage"], function(Storage) {
+sap.ui.define([
+	"sap/ui/util/Storage",
+	"sap/base/security/encodeURLParameters",
+	"sap/ui/thirdparty/jquery"
+], function(Storage, encodeURLParameters, jQuery) {
 	"use strict";
 
 	/**
@@ -12,7 +16,7 @@ sap.ui.define(["jquery.sap.storage"], function(Storage) {
 	 * @alias sap.ui.fl.fieldExt.Access
 	 * @experimental Since 1.25.0
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 */
 	var Access = {};
 
@@ -339,7 +343,7 @@ sap.ui.define(["jquery.sap.storage"], function(Storage) {
 			// Example call:
 			// sap/opu/odata/SAP/APS_CUSTOM_FIELD_MAINTENANCE_SRV/GetBusinessContextsByResourcePath?ResourcePath='/sap/opu/odata4/sap/aps_integration_test/sadl/sap/i_cfd_tsm_so_core/0001/'&EntitySetName=''&EntityTypeName='BusinessPartner'&$format=json
 			var sResourcePath = this._sODataV4ResourcePathPrefix + mServiceInfo.serviceName + "/" + mServiceInfo.serviceVersion;
-			sBusinessContextRetrievalUri += "GetBusinessContextsByResourcePath?" + jQuery.sap.encodeURLParameters({	"ResourcePath": "'" + sResourcePath + "'" });
+			sBusinessContextRetrievalUri += "GetBusinessContextsByResourcePath?" + encodeURLParameters({	"ResourcePath": "'" + sResourcePath + "'" });
 		} else {
 			// Example call:
 			// sap/opu/odata/SAP/APS_CUSTOM_FIELD_MAINTENANCE_SRV/GetBusinessContextsByEntityType?ServiceName='CFD_TSM_BUPA_MAINT_SRV'&ServiceVersion='0001'&EntitySetName=''&EntityTypeName='BusinessPartner'&&$format=json
@@ -486,7 +490,7 @@ sap.ui.define(["jquery.sap.storage"], function(Storage) {
 	 * @return {object} SapUI local storage object
 	 */
 	Access._getLocalStorage = function() {
-		return jQuery.sap.storage(jQuery.sap.storage.Type.local);
+		return new Storage(Storage.Type.local);
 	};
 
 	/**

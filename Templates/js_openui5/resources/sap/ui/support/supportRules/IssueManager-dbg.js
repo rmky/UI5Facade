@@ -18,12 +18,6 @@ sap.ui.define(["jquery.sap.global", "sap/ui/base/Object", "sap/ui/support/suppor
 		var _aIssues = [];
 
 		/**
-		 * @type {object[]} _aHistory Array of history objects which contain issues key that has an array of issues.
-		 * @private
-		 */
-		var _aHistory = [];
-
-		/**
 		 * Converts Issue Object to a ViewModel that can be used by the IssueManager.
 		 * @param {object} oIssue Issue Object that is to be converted
 		 * @returns {object} Converted Issue Object
@@ -106,54 +100,9 @@ sap.ui.define(["jquery.sap.global", "sap/ui/base/Object", "sap/ui/support/suppor
 				_aIssues = [];
 			},
 
-			/**
-			 * Saves a new history object with the current issues.
-			 * @public
-			 * @method
-			 * @name sap.ui.support.IssueManager.saveHistory
-			 * @returns {void}
-			 */
-			saveHistory: function () {
-				_aHistory.push({
-					issues: _aIssues.slice()
-				});
+			getIssues: function () {
+				return _aIssues.slice();
 			},
-
-			/**
-			 * Gets history objects with current issues. Each history object has an issues key that contains an array of issues.
-			 * @public
-			 * @method
-			 * @name sap.ui.support.IssueManager.getHistory
-			 * @returns {object[]} Current history in the IssueManager.
-			 */
-			getHistory: function () {
-				// Copy and return history
-				return _aHistory.slice();
-			},
-
-			/**
-			 * Gets grouped history containing <code>ViewModel</code>. Each history object has an issues key that contains the issues grouped by library and rule in ViewModel format.
-			 * @public
-			 * @method
-			 * @name sap.ui.support.IssueManager.getConvertedHistory
-			 * @returns {object[]} convertedHistory Grouped issue history object containing converted issues to ViewModel format.
-			 */
-			getConvertedHistory: function () {
-				var that = this,
-					issueHistory = that.getHistory(),
-					convertedHistory = [],
-					issues = null;
-
-				issueHistory.forEach(function (run) {
-					issues = that.groupIssues(
-						that.convertToViewModel(run.issues)
-					);
-					convertedHistory.push({ issues: issues });
-				});
-
-				return convertedHistory;
-			},
-
 			/**
 			 * Converts the issues inside the IssueManager.
 			 * @public
@@ -261,31 +210,36 @@ sap.ui.define(["jquery.sap.global", "sap/ui/base/Object", "sap/ui/support/suppor
 					innerIndex = 0,
 					treeTableModel = {},
 					rulesViewModel,
-					rule;
+					rule,
+					rules = [];
 
 				rulesViewModel = this.getRulesViewModel(oRules, [], []);
 				for (var libraryName in rulesViewModel) {
 					treeTableModel[index] = {
 						name: libraryName,
+						id: libraryName + " " + index,
+						selected: true,
 						type: "lib",
-						rules: []
+						nodes: rules
 					};
 
 					for (var ruleName in rulesViewModel[libraryName]) {
 						rule = rulesViewModel[libraryName][ruleName];
-						treeTableModel[index][innerIndex] = {
+						rules.push({
 							name: rule.title,
 							description: rule.description,
 							id: rule.id,
-							audiences: rule.audiences,
-							categories: rule.categories,
+							audiences: rule.audiences.toString(),
+							categories: rule.categories.toString(),
 							minversion: rule.minversion,
 							resolution: rule.resolution,
 							title:  rule.title,
-							libName: libraryName
-						};
+							libName: libraryName,
+							selected: true
+						});
 						innerIndex++;
 					}
+					rules = [];
 					index++;
 				}
 				return treeTableModel;
@@ -433,17 +387,6 @@ sap.ui.define(["jquery.sap.global", "sap/ui/base/Object", "sap/ui/support/suppor
 				});
 
 				return {high: iHighIssues, medium: iMediumIssues, low: iLowIssues};
-			},
-
-			/**
-			 * Clears the history object within the IssueManager.
-			 * @public
-			 * @method
-			 * @name sap.ui.support.IssueManager.clearHistory
-			 * @returns {void}
-			 */
-			clearHistory: function () {
-				_aHistory = [];
 			},
 
 			/**

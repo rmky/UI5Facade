@@ -5,15 +5,22 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/m/Image',
 	'sap/ui/core/IconPool',
 	'sap/ui/Device',
 	'./ImageContentRenderer',
-	'jquery.sap.keycodes'
-], function (jQuery, library, Control, Image, IconPool, Device, ImageContentRenderer) {
+	"sap/ui/events/KeyCodes"
+], function(
+	library,
+	Control,
+	Image,
+	IconPool,
+	Device,
+	ImageContentRenderer,
+	KeyCodes
+) {
 	"use strict";
 
 	/**
@@ -26,7 +33,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 1.38
 	 *
 	 * @public
@@ -124,7 +131,7 @@ sap.ui.define([
 	 * @param {sap.ui.base.Event} oEvent which was triggered
 	 */
 	ImageContent.prototype.onkeydown = function (oEvent) {
-		if (oEvent.which === jQuery.sap.KeyCodes.ENTER || oEvent.which === jQuery.sap.KeyCodes.SPACE) {
+		if (oEvent.which === KeyCodes.ENTER || oEvent.which === KeyCodes.SPACE) {
 			this.firePress();
 			oEvent.preventDefault();
 		}

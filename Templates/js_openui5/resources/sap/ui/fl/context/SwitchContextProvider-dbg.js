@@ -15,7 +15,7 @@ sap.ui.define(["sap/ui/fl/context/BaseContextProvider", "sap/ui/fl/Cache"], func
 	 * @extends sap.ui.fl.context.BaseContextProvider
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -32,7 +32,7 @@ sap.ui.define(["sap/ui/fl/context/BaseContextProvider", "sap/ui/fl/Cache"], func
 				},
 				description : {
 					type : "String",
-					defaultValue : "Returns the values of switches recieved in the flexibility response from the back end"
+					defaultValue : "Returns the values of switches received in the flexibility response from the back end"
 				}
 			}
 		}

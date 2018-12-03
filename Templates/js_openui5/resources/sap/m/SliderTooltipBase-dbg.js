@@ -4,18 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
-sap.ui.define([
-	'jquery.sap.global',
-	'sap/ui/core/Control',
-	'./library',
-	'./SliderTooltipBaseRenderer'
-],
-function(
-	jQuery,
-	Control,
-	Library,
-	SliderTooltipBaseRenderer
-	) {
+sap.ui.define(['sap/ui/core/Control', './library', './SliderTooltipBaseRenderer'],
+function(Control, Library, SliderTooltipBaseRenderer) {
 		"use strict";
 
 		/**
@@ -31,7 +21,7 @@ function(
 		 * @abstract
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public

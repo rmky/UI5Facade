@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.core.LayoutData.
-sap.ui.define(['jquery.sap.global', './Element', './library'],
-	function(jQuery, Element, library) {
+sap.ui.define(['./Element', './library', "sap/ui/thirdparty/jquery"],
+	function(Element, library, jQuery) {
 	"use strict";
 
 
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', './Element', './library'],
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @public
 	 * @alias sap.ui.core.LayoutData

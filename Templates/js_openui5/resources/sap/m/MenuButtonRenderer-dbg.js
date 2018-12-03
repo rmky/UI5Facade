@@ -33,9 +33,6 @@ sap.ui.define([],
 			oRm.write("<div");
 			oRm.writeControlData(oMenuButton);
 
-			//write aria attributes
-			this.writeAriaAttributes(oRm, oMenuButton);
-
 			//classes
 			oRm.addClass(MenuButtonRenderer.CSS_CLASS);
 			oRm.addClass(MenuButtonRenderer.CSS_CLASS + oMenuButton.getButtonMode());
@@ -49,13 +46,10 @@ sap.ui.define([],
 
 			oRm.write(">");
 
+			oMenuButton._ensureBackwardsReference();
 			oRm.renderControl(oMenuButton._getButtonControl());
 
 			oRm.write("</div>");
-		};
-
-		MenuButtonRenderer.writeAriaAttributes = function(oRm, oMenuButton) {
-			oRm.writeAttribute("aria-haspopup", "true");
 		};
 
 		return MenuButtonRenderer;

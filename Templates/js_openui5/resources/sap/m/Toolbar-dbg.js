@@ -6,7 +6,6 @@
 
 // Provides control sap.m.Toolbar.
 sap.ui.define([
-	'jquery.sap.global',
 	'./BarInPageEnabler',
 	'./ToolbarLayoutData',
 	'./ToolbarSpacer',
@@ -14,10 +13,10 @@ sap.ui.define([
 	'sap/ui/core/Control',
 	'sap/ui/core/EnabledPropagator',
 	'sap/ui/core/ResizeHandler',
-	'./ToolbarRenderer'
+	'./ToolbarRenderer',
+	"sap/ui/thirdparty/jquery"
 ],
 function(
-	jQuery,
 	BarInPageEnabler,
 	ToolbarLayoutData,
 	ToolbarSpacer,
@@ -25,7 +24,8 @@ function(
 	Control,
 	EnabledPropagator,
 	ResizeHandler,
-	ToolbarRenderer
+	ToolbarRenderer,
+	jQuery
 ) {
 	"use strict";
 
@@ -70,7 +70,7 @@ function(
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public

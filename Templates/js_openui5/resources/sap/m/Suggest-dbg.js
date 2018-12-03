@@ -39,6 +39,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Button', './SuggestionsList', '.
 
 		// 1. Conditional loading depending on the device type.
 		// 2. Resolve circular dependency Dialog -> OverflowToolbar -> SearchField:
+		//TODO: global jquery call found
 		jQuery.sap.require(bUseDialog ? "sap.m.Dialog" : "sap.m.Popover");
 
 		/* =========================================================== */
@@ -188,9 +189,10 @@ sap.ui.define(['jquery.sap.global', './Bar', './Button', './SuggestionsList', '.
 		/* =========================================================== */
 
 		this.setPopoverMinWidth = function() {
-			if (self._oPopover.isOpen()) {
+			var oPopoverDomRef = self._oPopover.getDomRef();
+			if (oPopoverDomRef) {
 				var w = (oInput.$().outerWidth() / parseFloat(library.BaseFontSize)) + "rem";
-				self._oPopover.getDomRef().style.minWidth = w;
+				oPopoverDomRef.style.minWidth = w;
 			}
 		};
 

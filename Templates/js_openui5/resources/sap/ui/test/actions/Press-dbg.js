@@ -5,10 +5,11 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/test/_OpaLogger",
-	"./Action"
-], function ($, _OpaLogger, Action) {
+	"sap/ui/test/actions/Action",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+], function (_OpaLogger, Action, Log, jQueryDOM) {
 	"use strict";
 
 	var oLogger = _OpaLogger.getLogger("sap.ui.test.actions.Press");
@@ -52,7 +53,7 @@ sap.ui.define([
 
 		init: function () {
 			Action.prototype.init.apply(this, arguments);
-			this.controlAdapters = $.extend(this.controlAdapters, Press.controlAdapters);
+			this.controlAdapters = jQueryDOM.extend(this.controlAdapters, Press.controlAdapters);
 		},
 
 		/**
@@ -69,7 +70,7 @@ sap.ui.define([
 
 			if ($ActionDomRef.length) {
 				oLogger.timestamp("opa.actions.press");
-				$.sap.log.debug("Pressed the control " + oControl, this._sLogPrefix);
+				Log.debug("Pressed the control " + oControl, this._sLogPrefix);
 
 				this._tryOrSimulateFocusin($ActionDomRef, oControl);
 

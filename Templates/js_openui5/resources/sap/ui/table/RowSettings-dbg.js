@@ -23,7 +23,7 @@ sap.ui.define([
 	 * The <code>RowSettings</code> control allows you to configure a row.
 	 * You can only use this control in the context of the <code>sap.ui.table.Table</code> control to define row settings.
 	 * @extends sap.ui.core.Element
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -113,6 +113,7 @@ sap.ui.define([
 			return "";
 		}
 
+		// TBL_ROW_STATE_INFORMATION, TBL_ROW_STATE_ERROR, TBL_ROW_STATE_WARNING, TBL_ROW_STATE_SUCCESS
 		return TableUtils.getResourceText("TBL_ROW_STATE_" + sHighlight.toUpperCase());
 	};
 
@@ -125,7 +126,7 @@ sap.ui.define([
 	RowSettings.prototype._getRow = function() {
 		var oRow = this.getParent();
 
-		if (TableUtils.isInstanceOf(oRow, "sap/ui/table/Row")) {
+		if (TableUtils.isA(oRow, "sap.ui.table.Row")) {
 			return oRow;
 		} else {
 			return null;

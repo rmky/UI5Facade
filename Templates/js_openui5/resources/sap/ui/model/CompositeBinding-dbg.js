@@ -5,8 +5,30 @@
  */
 
 // Provides an abstract property binding.
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './ChangeReason', './PropertyBinding', './CompositeType', './CompositeDataState'],
-	function(jQuery, DataType, BindingMode, ChangeReason, PropertyBinding, CompositeType, CompositeDataState) {
+sap.ui.define([
+	'sap/ui/base/DataType',
+	'./BindingMode',
+	'./ChangeReason',
+	'./PropertyBinding',
+	'./CompositeType',
+	'./CompositeDataState',
+	"sap/base/util/deepEqual",
+	"sap/base/assert",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+	function(
+		DataType,
+		BindingMode,
+		ChangeReason,
+		PropertyBinding,
+		CompositeType,
+		CompositeDataState,
+		deepEqual,
+		assert,
+		Log,
+		jQuery
+	) {
 	"use strict";
 
 
@@ -42,17 +64,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 	});
 
 	CompositeBinding.prototype.getPath = function() {
-		jQuery.sap.assert(null, "Composite Binding has no path!");
+		assert(null, "Composite Binding has no path!");
 		return null;
 	};
 
 	CompositeBinding.prototype.getModel = function() {
-		jQuery.sap.assert(null, "Composite Binding has no model!");
+		assert(null, "Composite Binding has no model!");
 		return null;
 	};
 
 	CompositeBinding.prototype.getContext = function() {
-		jQuery.sap.assert(null, "Composite Binding has no context!");
+		assert(null, "Composite Binding has no context!");
 		return null;
 	};
 
@@ -176,7 +198,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 
 		// No twoway binding when using formatters
 		if (this.fnFormatter) {
-			jQuery.sap.log.warning("Tried to use twoway binding, but a formatter function is used");
+			Log.warning("Tried to use twoway binding, but a formatter function is used");
 			return;
 		}
 
@@ -211,6 +233,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 		}
 
 		if (this.bRawValues) {
+			// When using raw values, also call validators of nested bindings
+			try {
+				this.aBindings.forEach(function(oBinding, i) {
+					if (oBinding.oType) {
+						oBinding.oType.validateValue(aValues[i]);
+					}
+				});
+			} catch (oException) {
+				oDataState.setInvalidValue(oValue);
+				this.checkDataState(); //data ui state is dirty inform the control
+				throw oException;
+			}
 			this.setValue(aValues);
 		} else {
 			jQuery.each(this.aBindings, function(i, oBinding) {
@@ -234,7 +268,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 	 *
 	 * @return {object} the current value of the bound target
 	 *
-	 *@throws sap.ui.model.FormatException
+	 * @throws {sap.ui.model.FormatException}
 	 *
 	 * @public
 	 */
@@ -256,7 +290,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 	 *
 	 * @param {any[]} aValues - An array of values that are formatted to one value
 	 * @returns {any} the current value of the bound target
-	 * @throws sap.ui.model.FormatException
+	 * @throws {sap.ui.model.FormatException}
 	 * @private
 	 */
 	CompositeBinding.prototype._toExternalValue = function(aValues) {
@@ -544,13 +578,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/DataType', './BindingMode', './
 		}
 		var oDataState = this.getDataState();
 		var aOriginalValues = this.getOriginalValue();
-		if (bForceUpdate || !jQuery.sap.equal(aOriginalValues, this.aOriginalValues)) {
+		if (bForceUpdate || !deepEqual(aOriginalValues, this.aOriginalValues)) {
 			this.aOriginalValues = aOriginalValues;
 			oDataState.setOriginalValue(aOriginalValues);
 			bChanged = true;
 		}
 		var aValues = this.getValue();
-		if (!jQuery.sap.equal(aValues, this.aValues) || bForceUpdate) {// optimize for not firing the events when unneeded
+		if (!deepEqual(aValues, this.aValues) || bForceUpdate) {// optimize for not firing the events when unneeded
 			this.aValues = aValues;
 			oDataState.setValue(aValues);
 			this._fireChange({reason: ChangeReason.Change});

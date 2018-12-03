@@ -6,7 +6,6 @@
 
 // Provides control sap.m.FacetFilter.
 sap.ui.define([
-	'jquery.sap.global',
 	'./NavContainer',
 	'./library',
 	'sap/ui/core/Control',
@@ -18,21 +17,35 @@ sap.ui.define([
 	'sap/ui/core/Icon',
 	'sap/ui/model/Filter',
 	'./FacetFilterRenderer',
-	'jquery.sap.keycodes'
+	"sap/ui/events/KeyCodes",
+	"sap/base/assert",
+	"sap/base/Log",
+	"sap/ui/events/jquery/EventSimulation",
+	"sap/ui/thirdparty/jquery",
+	// jQuery Plugin "scrollRightRTL"
+	"sap/ui/dom/jquery/scrollRightRTL",
+	// jQuery Plugin "scrollLeftRTL"
+	"sap/ui/dom/jquery/scrollLeftRTL",
+	// jQuery custom selectors ":sapTabbable"
+	"sap/ui/dom/jquery/Selectors"
 ],
 	function(
-	jQuery,
-	NavContainer,
-	library,
-	Control,
-	IconPool,
-	ItemNavigation,
-	InvisibleText,
-	Device,
-	ManagedObject,
-	Icon,
-	Filter,
-	FacetFilterRenderer
+		NavContainer,
+		library,
+		Control,
+		IconPool,
+		ItemNavigation,
+		InvisibleText,
+		Device,
+		ManagedObject,
+		Icon,
+		Filter,
+		FacetFilterRenderer,
+		KeyCodes,
+		assert,
+		Log,
+		EventSimulation,
+		jQuery
 	) {
 	"use strict";
 
@@ -125,12 +138,12 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IShrinkable
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.m.FacetFilter
-	 * @see {@link topic:c6c38217a4a64001a22ad76cdfa97fae/ Facet Filter}
+	 * @see {@link topic:c6c38217a4a64001a22ad76cdfa97fae Facet Filter}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var FacetFilter = Control.extend("sap.m.FacetFilter", /** @lends sap.m.FacetFilter.prototype */ { metadata : {
@@ -472,7 +485,7 @@ sap.ui.define([
 		this.setAggregation("resetButton", this._createResetButton());
 
 		// Enable touch support for the carousel
-		if (jQuery.sap.touchEventMode === "ON" && !Device.system.phone) {
+		if (EventSimulation.touchEventMode === "ON" && !Device.system.phone) {
 			this._enableTouchSupport();
 		}
 
@@ -659,6 +672,7 @@ sap.ui.define([
 			for ( var i = 0; i < this.$().find(":sapTabbable").length; i++) {
 				if (this.$().find(":sapTabbable")[i].parentNode.className == "sapMFFResetDiv") {
 					jQuery(this.$().find(":sapTabbable")[i]).focus();
+					this._invalidateFlag = false;
 					oEvent.preventDefault();
 					oEvent.setMarked();
 					return;
@@ -769,7 +783,7 @@ sap.ui.define([
 		}
 
 	// [CTRL]+[RIGHT] - keycode 39 - page down
-		if (oEvent.which == jQuery.sap.KeyCodes.ARROW_RIGHT) {
+		if (oEvent.which == KeyCodes.ARROW_RIGHT) {
 			this._previousTarget = oEvent.target;
 			var currentFocusIndex = this.oItemNavigation.getFocusedIndex() - 1;
 			var nextFocusIndex = currentFocusIndex + this._pageSize;
@@ -791,7 +805,7 @@ sap.ui.define([
 
 	// [CTRL]+[LEFT] - keycode 37 - page up
 		var currentFocusIndex = 0;
-		if (oEvent.which == jQuery.sap.KeyCodes.ARROW_LEFT) {
+		if (oEvent.which == KeyCodes.ARROW_LEFT) {
 			this._previousTarget = oEvent.target;
 			currentFocusIndex = this.oItemNavigation.getFocusedIndex() + 1;
 			var nextFocusIndex = currentFocusIndex - this._pageSize;
@@ -1004,17 +1018,7 @@ sap.ui.define([
 
 					that._addDelegateFlag = true;
 
-
-					// The facet button will not be removed when the remove icon is pressed if we don't delay hiding the icon in ie 9.
-					//
-					// CSS 0120061532 0004101226 2013 "sap.m.FacetFilterList - getActive inconsistent result"
-					//
-					// TODO: Remove when ie 9 is no longer supported
-					if (Device.browser.internet_explorer && Device.browser.version < 10) {
-						jQuery.sap.delayedCall(100, that, that._handlePopoverAfterClose);
-					} else {
-						that._handlePopoverAfterClose();
-					}
+					that._handlePopoverAfterClose();
 				},
 				horizontalScrolling: false
 			});
@@ -1022,12 +1026,6 @@ sap.ui.define([
 			// Suppress invalidate so that FacetFilter is not rerendered when the popover is opened (causing it to immediately close)
 			this.setAggregation("popover", oPopover, true);
 			oPopover.setContentWidth("30%");
-
-		//IE9
-			if (Device.browser.internet_explorer && Device.browser.version < 10) {
-
-				oPopover.setContentWidth("30%");
-			}
 
 
 			// Set the minimum width of the popover to insure that it is not too small to display it's content properly.
@@ -1103,10 +1101,10 @@ sap.ui.define([
 		// is the popover causing facet filer item checkbox selection to not display the check mark when the item is selected.
 		this.destroyAggregation("popover");
 		if (this._oOpenPopoverDeferred) {
-			jQuery.sap.delayedCall(0, this, function () {
+			setTimeout(function () {
 				this._oOpenPopoverDeferred.resolve();
 				this._oOpenPopoverDeferred = undefined;
-			});
+			}.bind(this), 0);
 		}
 	};
 
@@ -1131,7 +1129,7 @@ sap.ui.define([
 		if (!oPopover.isOpen()) {
 
 			var oList = sap.ui.getCore().byId(oControl.getAssociation("list"));
-			jQuery.sap.assert(oList, "The facet filter button should be associated with a list.");
+			assert(oList, "The facet filter button should be associated with a list.");
 
 			oList.fireListOpen({});
 			this._moveListToDisplayContainer(oList, oPopover);
@@ -1208,24 +1206,18 @@ sap.ui.define([
 					oList._preserveOriginalActiveState();
 				}
 
-				// TODO: Remove when ie 9 is no longer supported
-				if (Device.browser.internet_explorer && Device.browser.version < 10) {
-					// Opening popover is delayed so it is called after the previous popover is closed
-					jQuery.sap.delayedCall(100, this, fnOpenPopover);
+				var oPopover = that._getPopover();
+				if (oPopover.isOpen()) {
+					// create a deferred that will be triggered after the popover is closed
+					setTimeout(function() {
+						if (oPopover.isOpen()) {
+							return;
+						}
+						that._oOpenPopoverDeferred = jQuery.Deferred();
+						that._oOpenPopoverDeferred.promise().done(fnOpenPopover);
+					}, 100);
 				} else {
-					var oPopover = that._getPopover();
-					if (oPopover.isOpen()) {
-						// create a deferred that will be triggered after the popover is closed
-						jQuery.sap.delayedCall(100, this, function() {
-							if (oPopover.isOpen()) {
-								return;
-							}
-							that._oOpenPopoverDeferred = jQuery.Deferred();
-							that._oOpenPopoverDeferred.promise().done(fnOpenPopover);
-						});
-					} else {
-						jQuery.sap.delayedCall(100, this, fnOpenPopover);
-					}
+					setTimeout(fnOpenPopover.bind(this), 100);
 				}
 			}
 		});
@@ -1303,7 +1295,7 @@ sap.ui.define([
 					that._displayRemoveIcon(false, oList);
 					oIcon._bTouchStarted = false;
 					//Schedule actual processing so eventual "press" event is caught.
-					jQuery.sap.delayedCall(100, this,  fnProcessRemoveFacetAction);
+					setTimeout(fnProcessRemoveFacetAction.bind(this), 100);
 				}
 			}, true);
 
@@ -1390,9 +1382,7 @@ sap.ui.define([
 				// Destroy the search field bar
 				oFromPage.destroySubHeader();
 
-				oFacetPage.getContent()[0].getModel().setData({ items: that._getMapFacetLists() });
-
-				jQuery.sap.assert(that._displayedList === null, "Filter items list should have been placed back in the FacetFilter aggregation before page content is destroyed.");
+				assert(that._displayedList === null, "Filter items list should have been placed back in the FacetFilter aggregation before page content is destroyed.");
 				oFromPage.destroyContent(); // Destroy the select all checkbox bar
 
 				// TODO: Find out why the counter is not updated without forcing rendering of the facet list item
@@ -1400,7 +1390,7 @@ sap.ui.define([
 				that._selectedFacetItem.invalidate();
 				//keyboard acc - focus on the original 1st page item
 				oToPage.invalidate();
-				jQuery.sap.focus(that._selectedFacetItem);
+				that._selectedFacetItem.focus();
 				that._selectedFacetItem = null;
 			}
 		});
@@ -1573,7 +1563,8 @@ sap.ui.define([
 				}),
 				// limit the dialog height on desktop and tablet in case there are many filter items (don't
 				// want the dialog height growing according to the number of filter items)
-				contentHeight : "500px"
+				contentHeight : "500px",
+				ariaLabelledBy: [InvisibleText.getStaticId("sap.m", "FACETFILTER_AVAILABLE_FILTER_NAMES")]
 			});
 
 			oDialog.addStyleClass("sapMFFDialog");
@@ -1586,6 +1577,7 @@ sap.ui.define([
 			};
 			this.setAggregation("dialog", oDialog, true);
 		}
+
 		return oDialog;
 	};
 
@@ -1625,7 +1617,7 @@ sap.ui.define([
 	 */
 	FacetFilter.prototype._createFacetList = function() {
 
-		var oFacetList =  new sap.m.List({
+		var oFacetList = this._oFacetList = new sap.m.List({
 			mode: ListMode.None,
 			items: {
 				path: "/items",
@@ -1666,6 +1658,20 @@ sap.ui.define([
 
 		oFacetList.setModel(oModel);
 		return oFacetList;
+	};
+
+	/**
+	 * This method refreshes the internal model for thr FacetList. It should be called everytime when the model
+	 * of FacetFilter is changed and update to the FacetList is needed
+	 *
+	 * @protected
+	 * @sap-restricted hpa.cei.mkt.cal -> FacetFilter.controller -> OnDisplayRefreshed
+	 * @returns {sap.m.FacetFilter}
+	 */
+	FacetFilter.prototype.refreshFacetList = function () {
+		this._oFacetList.getModel().setData({ items: this._getMapFacetLists() });
+
+		return this;
 	};
 
 	FacetFilter.prototype._getMapFacetLists = function () {
@@ -1748,7 +1754,7 @@ sap.ui.define([
 
 		var oNavCont = this.getAggregation("dialog").getContent()[0];
 		var oCustomData = oFacetListItem.getCustomData();
-		jQuery.sap.assert(oCustomData.length === 1, "There should be exactly one custom data for the original facet list item index");
+		assert(oCustomData.length === 1, "There should be exactly one custom data for the original facet list item index");
 		var iIndex = oCustomData[0].getValue();
 		var oFacetFilterList = this.getLists()[iIndex];
 		this._listIndexAgg = this.indexOfAggregation("lists", oFacetFilterList);
@@ -1804,7 +1810,7 @@ sap.ui.define([
 	FacetFilter.prototype._moveListToDisplayContainer = function(oList, oContainer) {
 
 		this._listAggrIndex = this.indexOfAggregation("lists", oList);
-		jQuery.sap.assert(this._listAggrIndex > -1, "The lists index should be valid.");
+		assert(this._listAggrIndex > -1, "The lists index should be valid.");
 		// Suppress invalidate when removing the list from the FacetFilter since this will cause the Popover to close
 		ManagedObject.prototype.removeAggregation.call(this, "lists", oList, true);
 		oContainer.addAggregation("content", oList, false);
@@ -1937,7 +1943,10 @@ sap.ui.define([
 				for (var i = 0; i < aLists.length; i++) {
 					aLists[i]._searchValue = "";
 					aLists[i]._applySearch();
-					jQuery.sap.focus(aLists[i].getItems()[0]);
+					var oFirstItemInList = aLists[i].getItems()[0];
+					if (oFirstItemInList){
+						oFirstItemInList.focus();
+					}
 				}
 				// Make sure we update selection texts
 				that.invalidate();
@@ -2139,7 +2148,7 @@ sap.ui.define([
 				this.setAggregation("arrowRight", oArrowIcon);
 			}
 		} else {
-			jQuery.sap.log.error("Scrolling arrow name " + sName + " is not valid");
+			Log.error("Scrolling arrow name " + sName + " is not valid");
 		}
 		return oArrowIcon;
 	};

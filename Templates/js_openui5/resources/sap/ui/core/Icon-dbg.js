@@ -6,25 +6,26 @@
 
 // Provides control sap.ui.core.Icon.
 sap.ui.define([
-    'jquery.sap.global',
-    'sap/base/assert',
-    '../Device',
-    './Control',
-    './IconPool',
-    './InvisibleText',
-    './library',
-    "./IconRenderer",
-    'jquery.sap.keycodes'
+	'sap/base/assert',
+	'../Device',
+	'./Control',
+	'./IconPool',
+	'./InvisibleText',
+	'./library',
+	"./IconRenderer",
+	"sap/ui/events/KeyCodes",
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
-	    jQuery,
 		assert,
 		Device,
 		Control,
 		IconPool,
 		InvisibleText,
-		library /* ,jQuerySapKeycodes */,
-		IconRenderer
+		library,
+		IconRenderer,
+		KeyCodes,
+		jQuery
 	) {
 	"use strict";
 
@@ -45,7 +46,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @public
 	 * @since 1.11.1
@@ -71,16 +72,22 @@ sap.ui.define([
 
 			/**
 			 * The color of the Icon. If color is not defined here, the Icon inherits the color from its DOM parent.
+			 *
+			 * The property can be set with {@link sap.ui.core.CSSColor CSS Color} or {@link sap.ui.core.IconColor Semantic Icon Color}.
 			 */
 			color : {type : "string", group : "Appearance", defaultValue : null},
 
 			/**
 			 * This color is shown when icon is hovered. This property has no visual effect when run on mobile device.
+			 *
+			 * The property can be set with {@link sap.ui.core.CSSColor CSS Color} or {@link sap.ui.core.IconColor Semantic Icon Color}.
 			 */
 			hoverColor : {type : "string", group : "Appearance", defaultValue : null},
 
 			/**
 			 * This color is shown when icon is pressed/activated by the user.
+			 *
+			 * The property can be set with {@link sap.ui.core.CSSColor CSS Color} or {@link sap.ui.core.IconColor Semantic Icon Color}.
 			 */
 			activeColor : {type : "string", group : "Appearance", defaultValue : null},
 
@@ -96,16 +103,22 @@ sap.ui.define([
 
 			/**
 			 * Background color of the Icon in normal state.
+			 *
+			 * The property can be set with {@link sap.ui.core.CSSColor CSS Color} or {@link sap.ui.core.IconColor Semantic Icon Color}.
 			 */
 			backgroundColor : {type : "string", group : "Appearance", defaultValue : null},
 
 			/**
 			 * Background color for Icon in hover state. This property has no visual effect when run on mobile device.
+			 *
+			 * The property can be set with {@link sap.ui.core.CSSColor CSS Color} or {@link sap.ui.core.IconColor Semantic Icon Color}.
 			 */
 			hoverBackgroundColor : {type : "string", group : "Appearance", defaultValue : null},
 
 			/**
 			 * Background color for Icon in active state.
+			 *
+			 * The property can be set with {@link sap.ui.core.CSSColor CSS Color} or {@link sap.ui.core.IconColor Semantic Icon Color}.
 			 */
 			activeBackgroundColor : {type : "string", group : "Appearance", defaultValue : null},
 
@@ -208,7 +221,7 @@ sap.ui.define([
 		if (!oEvent.targetTouches || (oEvent.targetTouches && oEvent.targetTouches.length === 0)) {
 
 			this.$().removeClass("sapUiIconActive");
-			this._restoreColors();
+			this._restoreColors(Device.system.desktop ? "hover" : undefined);
 		}
 	};
 
@@ -266,7 +279,7 @@ sap.ui.define([
 	 */
 	Icon.prototype.onkeydown = function(oEvent) {
 
-		if (oEvent.which === jQuery.sap.KeyCodes.SPACE || oEvent.which === jQuery.sap.KeyCodes.ENTER) {
+		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
 
 			// note: prevent document scrolling
 			oEvent.preventDefault();
@@ -295,7 +308,7 @@ sap.ui.define([
 	 */
 	Icon.prototype.onkeyup = function(oEvent) {
 
-		if (oEvent.which === jQuery.sap.KeyCodes.SPACE || oEvent.which === jQuery.sap.KeyCodes.ENTER) {
+		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
 
 			this.$().removeClass("sapUiIconActive");
 			this._restoreColors();
@@ -307,9 +320,20 @@ sap.ui.define([
 	/* Private methods                                             */
 	/* =========================================================== */
 
-	Icon.prototype._restoreColors = function() {
-		this._addColorClass(this.getColor() || "", "color");
-		this._addColorClass(this.getBackgroundColor() || "", "background-color");
+	Icon.prototype._restoreColors = function(sMode) {
+		var sColor, sBackgroundColor;
+
+		if (sMode === "hover") {
+			sColor = this.getHoverColor();
+			sBackgroundColor = this.getHoverBackgroundColor();
+		}
+
+		// always fallback to the normal color if no hover color exists
+		sColor = sColor || this.getColor();
+		sBackgroundColor = sBackgroundColor || this.getBackgroundColor();
+
+		this._addColorClass(sColor || "", "color");
+		this._addColorClass(sBackgroundColor || "", "background-color");
 	};
 
 	/* =========================================================== */

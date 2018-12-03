@@ -6,11 +6,13 @@
 
 sap.ui.define([
 	'sap/ui/base/ManagedObject',
-	'sap/ui/dt/DOMUtil'
+	'sap/ui/dt/DOMUtil',
+	"sap/ui/thirdparty/jquery"
 ],
 function(
 	ManagedObject,
-	DOMUtil
+	DOMUtil,
+	jQuery
 ) {
 	"use strict";
 
@@ -22,7 +24,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -107,7 +109,7 @@ function(
 		aTargets.forEach(this._attachScrollEvent, this);
 		var aNextTargets = this.getTargets().concat(aTargets);
 		this.setProperty('targets', aNextTargets);
-		this._sync(aNextTargets[0]);
+		this.sync(aNextTargets[0]);
 	};
 
 	/**
@@ -136,12 +138,13 @@ function(
 	};
 
 	ScrollbarSynchronizer.prototype._scrollEventHandler = function (oEvent) {
-		this._sync(oEvent.target);
+		this.sync(oEvent.target);
 	};
 
-	ScrollbarSynchronizer.prototype._sync = function (oSourceDomNode) {
+	ScrollbarSynchronizer.prototype.sync = function (oSourceDomNode, bForce) {
 		if (
-			this.getScrollTop() !== oSourceDomNode.scrollTop
+			bForce
+			|| this.getScrollTop() !== oSourceDomNode.scrollTop
 			|| this.getScrollLeft() !== oSourceDomNode.scrollLeft
 		) {
 			this.setScrollTop(oSourceDomNode.scrollTop);

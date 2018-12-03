@@ -5,8 +5,16 @@
  */
 
 // Provides control sap.ui.layout.form.FormLayout.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/library', './FormLayoutRenderer'],
-	function(jQuery, Control, library, FormLayoutRenderer) {
+sap.ui.define([
+	'sap/ui/core/Control',
+	'sap/ui/layout/library',
+	'./FormLayoutRenderer',
+	"sap/ui/thirdparty/jquery",
+	// jQuery custom selectors ":sapFocusable"
+	'sap/ui/dom/jquery/Selectors',
+	// jQuery Plugin "control"
+	'sap/ui/dom/jquery/control'
+], function(Control, library, FormLayoutRenderer, jQuery) {
 	"use strict";
 
 	// shortcut for sap.ui.layout.BackgroundDesign
@@ -27,7 +35,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -161,7 +169,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 			}
 
 			if (oNewDomRef) {
-				jQuery.sap.focus(oNewDomRef);
+				oNewDomRef.focus();
 				oEvent.preventDefault(); // to avoid moving cursor in next field
 			}
 		}
@@ -187,7 +195,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 			}
 
 			if (oNewDomRef) {
-				jQuery.sap.focus(oNewDomRef);
+				oNewDomRef.focus();
 				oEvent.preventDefault(); // to avoid moving cursor in next field
 			}
 		}
@@ -210,7 +218,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 			oNewDomRef = this.findFirstFieldOfFirstElementInNextContainer(oForm, iCurrentIndex);
 
 			if (oNewDomRef) {
-				jQuery.sap.focus(oNewDomRef);
+				oNewDomRef.focus();
 				oEvent.preventDefault(); // to avoid moving cursor in next field
 			}
 		}
@@ -237,7 +245,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 			oNewDomRef = this.findFirstFieldOfForm(oForm);
 
 			if (oNewDomRef) {
-				jQuery.sap.focus(oNewDomRef);
+				oNewDomRef.focus();
 				oEvent.preventDefault(); // to avoid moving cursor in next field
 			}
 		}
@@ -259,7 +267,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 			oNewDomRef = this.findLastFieldOfLastElementInPrevContainer(oForm, iCurrentIndex);
 
 			if (oNewDomRef) {
-				jQuery.sap.focus(oNewDomRef);
+				oNewDomRef.focus();
 				oEvent.preventDefault(); // to avoid moving cursor in next field
 			}
 		}
@@ -289,7 +297,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 			oNewDomRef = this.findLastFieldOfLastElementInPrevContainer(oForm, iLength - 1);
 
 			if (oNewDomRef) {
-				jQuery.sap.focus(oNewDomRef);
+				oNewDomRef.focus();
 				oEvent.preventDefault(); // to avoid moving cursor in next field
 			}
 		}
@@ -356,7 +364,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 		oNewDomRef = this.findFirstFieldOfFirstElementInNextContainer(oForm, iCurrentIndex + 1);
 
 		if (oNewDomRef) {
-			jQuery.sap.focus(oNewDomRef);
+			oNewDomRef.focus();
 			oEvent.preventDefault(); // to avoid moving cursor in next field
 		}
 
@@ -390,8 +398,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 			iCurrentIndex = iCurrentIndex - 1;
 		}
 
-		if (oNewDomRef) {
-			jQuery.sap.focus(oNewDomRef);
+		if (oNewDomRef && oNewDomRef !== oControl.getFocusDomRef()) {
+			oNewDomRef.focus();
 			oEvent.preventDefault(); // to avoid moving cursor in next field
 		}
 
@@ -408,7 +416,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 		} else {
 			var oNewDomRef = oEvent.forward ? this.findFirstFieldOfForm(this.getParent()) : this.findFirstFieldOfLastContainerOfForm(this.getParent());
 			if (oNewDomRef) {
-				jQuery.sap.focus(oNewDomRef);
+				oNewDomRef.focus();
 				oEvent.preventDefault();
 			}
 		}
@@ -468,7 +476,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 		}
 
 		if (oNewDomRef) {
-			jQuery.sap.focus(oNewDomRef);
+			oNewDomRef.focus();
 			oEvent.preventDefault(); // to avoid moving cursor in next field
 		}
 
@@ -517,7 +525,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 		}
 
 		if (oNewDomRef) {
-			jQuery.sap.focus(oNewDomRef);
+			oNewDomRef.focus();
 			oEvent.preventDefault(); // to avoid moving cursor in next field
 		}
 
@@ -572,13 +580,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 	};
 
 	FormLayout.prototype.findFirstFieldOfForm = function(oForm){
-		var aContainers = oForm.getFormContainers();
-		var oNewDomRef;
-		var oContainer = aContainers[0];
-		if (!oContainer.getExpandable() || oContainer.getExpanded()) {
-			oNewDomRef = this.findFirstFieldOfNextElement(oContainer, 0);
-		}
 
+		var oNewDomRef = this.findFirstFieldOfFirstElementInNextContainer(oForm, 0);
 		return oNewDomRef;
 
 	};
@@ -588,7 +591,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 		var aContainers = oForm.getFormContainers();
 		var iCurrentIndex = aContainers.length;
 		// goto previous container
-		while (!oNewDomRef && iCurrentIndex >= 0) {
+		while (!oNewDomRef && iCurrentIndex > 0) {
 			var oPrevContainer = aContainers[iCurrentIndex - 1];
 			if (!oPrevContainer.getExpandable() || oPrevContainer.getExpanded()) {
 				oNewDomRef = this.findFirstFieldOfFirstElementInPrevContainer(oForm, iCurrentIndex - 1);
@@ -685,7 +688,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 		}
 
 		if (oNewDomRef) {
-			jQuery.sap.focus(oNewDomRef);
+			oNewDomRef.focus();
 			oEvent.preventDefault(); // to avoid moving cursor in next field
 		}
 
@@ -735,7 +738,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 		}
 
 		if (oNewDomRef) {
-			jQuery.sap.focus(oNewDomRef);
+			oNewDomRef.focus();
 			oEvent.preventDefault(); // to avoid moving cursor in next field
 		}
 
@@ -883,7 +886,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 	FormLayout.prototype.getContainerRenderedDomRef = function(oContainer) {
 
 		if (this.getDomRef()) {
-			return jQuery.sap.domById(oContainer.getId());
+			return (oContainer.getId() ? window.document.getElementById(oContainer.getId()) : null);
 		}else {
 			return null;
 		}
@@ -900,7 +903,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/layout/librar
 	FormLayout.prototype.getElementRenderedDomRef = function(oElement) {
 
 		if (this.getDomRef()) {
-			return jQuery.sap.domById(oElement.getId());
+			return (oElement.getId() ? window.document.getElementById(oElement.getId()) : null);
 		}else {
 			return null;
 		}

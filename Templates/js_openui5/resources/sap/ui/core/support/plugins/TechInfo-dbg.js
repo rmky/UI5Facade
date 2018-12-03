@@ -5,8 +5,13 @@
  */
 
 // Provides class sap.ui.core.support.plugins.TechInfo (TechInfo support plugin)
-sap.ui.define(['jquery.sap.global', '../Plugin', '../Support', '../ToolsAPI', 'jquery.sap.encoder', 'jquery.sap.script'],
-	function(jQuery, Plugin, Support, ToolsAPI/* , jQuerySap, jQuerySap1 */) {
+sap.ui.define([
+	'../Plugin',
+	'../Support',
+	'../ToolsAPI',
+	"sap/base/security/encodeXML"
+],
+	function(Plugin, Support, ToolsAPI, encodeXML) {
 	"use strict";
 
 
@@ -15,7 +20,7 @@ sap.ui.define(['jquery.sap.global', '../Plugin', '../Support', '../ToolsAPI', 'j
 		 * @class This class represents the technical info plugin for the support tool functionality of UI5. This class is internal and all its functions must not be used by an application.
 		 *
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @private
 		 * @alias sap.ui.core.support.plugins.TechInfo
 		 */
@@ -285,7 +290,7 @@ sap.ui.define(['jquery.sap.global', '../Plugin', '../Support', '../ToolsAPI', 'j
 
 
 		function encode(any) {
-			return any == null ? "" : jQuery.sap.encodeHTML(String(any));
+			return any == null ? "" : encodeXML(String(any));
 		}
 
 		function line(buffer, right, border, label, content){

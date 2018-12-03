@@ -18,7 +18,7 @@ sap.ui.define(['./library', 'sap/ui/core/Control', './TileContentRenderer'],
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 1.34.0
 	 *
 	 * @public

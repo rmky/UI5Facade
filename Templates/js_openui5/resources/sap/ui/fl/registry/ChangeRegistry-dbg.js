@@ -6,7 +6,7 @@
 
 sap.ui.define([
 	"sap/ui/fl/Utils",
-	"jquery.sap.global",
+	"sap/ui/thirdparty/jquery",
 	"sap/ui/fl/registry/ChangeRegistryItem",
 	"sap/ui/fl/registry/ChangeTypeMetadata",
 	"sap/ui/fl/registry/Settings",
@@ -34,7 +34,7 @@ sap.ui.define([
 	StashControl,
 	UnstashControl,
 	AddXML
-){
+) {
 	"use strict";
 
 	/**
@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.registry.ChangeRegistry
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @experimental Since 1.27.0
 	 *
 	 */
@@ -317,7 +317,7 @@ sap.ui.define([
 	ChangeRegistry.prototype._createChangeRegistryItemForSimpleChange = function(sControlType, oSimpleChange) {
 		var mParam, oChangeTypeMetadata, oChangeRegistryItem, mLayerPermissions;
 
-		mLayerPermissions = jQuery.extend({}, this._oSettings.getDefaultLayerPermissions());
+		mLayerPermissions = Object.assign({}, this._oSettings.getDefaultLayerPermissions());
 		var oLayers = oSimpleChange.layers;
 
 		if (oLayers) {
@@ -490,8 +490,7 @@ sap.ui.define([
 				var oChangeHandlerImplementation = oChangeHandlerMetadata.getChangeHandler();
 				if (typeof oChangeHandlerImplementation === "string") {
 					// load the module synchronously
-					jQuery.sap.require(oChangeHandlerImplementation);
-					oChangeHandlerImplementation = sap.ui.require(oChangeHandlerImplementation);
+					oChangeHandlerImplementation = sap.ui.requireSync(oChangeHandlerImplementation.replace(/\./g,"/"));
 					oChangeHandlerMetadata._changeHandler = oChangeHandlerImplementation;
 				}
 

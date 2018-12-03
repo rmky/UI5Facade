@@ -8,9 +8,8 @@ sap.ui.define([
 	"sap/ui/core/Control",
 	"sap/m/Label",
 	"sap/m/library",
-	"jquery.sap.global",
 	"./DraftIndicatorRenderer"
-], function(Control, Label, library, jQuery, DraftIndicatorRenderer) {
+], function(Control, Label, library, DraftIndicatorRenderer) {
 	"use strict";
 
 	// shortcut for sap.m.DraftIndicatorState
@@ -27,7 +26,7 @@ sap.ui.define([
 	 * @abstract
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -165,7 +164,7 @@ sap.ui.define([
 			this._proceed();
 			return;
 		}
-		this.iDelayedCallId = jQuery.sap.delayedCall(iTimeOut, this, this._proceed);
+		this.iDelayedCallId = setTimeout(this._proceed.bind(this), iTimeOut);
 	};
 
 	/**
@@ -193,7 +192,7 @@ sap.ui.define([
 	 * @private
 	 */
 	DraftIndicator.prototype._resetDraftTimer = function() {
-		jQuery.sap.clearDelayedCall(this.iDelayedCallId);
+		clearTimeout(this.iDelayedCallId);
 		this.iDelayedCallId = null;
 	};
 

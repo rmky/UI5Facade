@@ -39,7 +39,8 @@
 				labelledby: bShouldHaveOwnLabelledBy ? {value: oControl.getId(), append: true } : undefined
 			},
 			sHref = oControl.getHref(),
-			bIsValid = sHref && oControl._isHrefValid(sHref);
+			bIsValid = sHref && oControl._isHrefValid(sHref),
+			bEnabled = oControl.getEnabled();
 
 		// Link is rendered as a "<a>" element
 		oRm.write("<a");
@@ -68,15 +69,13 @@
 			}
 		}
 
-		if (!oControl.getEnabled()) {
+		if (!bEnabled) {
 			oRm.addClass("sapMLnkDsbl");
 			oRm.writeAttribute("disabled", "true");
-			oRm.writeAttribute("tabIndex", "-1"); // still focusable by mouse click, but not in the tab chain
-		} else if (oControl.getText()) {
-			oRm.writeAttribute("tabIndex", "0");
 		} else {
-			oRm.writeAttribute("tabIndex", "-1");
+			oRm.writeAttribute("tabIndex", oControl._getTabindex());
 		}
+
 		if (oControl.getWrapping()) {
 			oRm.addClass("sapMLnkWrapping");
 		}
@@ -86,7 +85,7 @@
 		}
 
 		/* set href only if link is enabled - BCP incident 1570020625 */
-		if (bIsValid && oControl.getEnabled()) {
+		if (bIsValid && bEnabled) {
 			oRm.writeAttributeEscaped("href", sHref);
 		}
 
@@ -132,7 +131,6 @@
 	LinkRenderer.renderText = function(oRm, oControl) {
 		oRm.writeEscaped(oControl.getText());
 	};
-
 
 	return LinkRenderer;
 

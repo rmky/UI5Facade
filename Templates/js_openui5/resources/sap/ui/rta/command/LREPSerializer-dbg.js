@@ -5,26 +5,26 @@
  */
 sap.ui.define([
 	'sap/ui/base/ManagedObject',
-	'sap/ui/rta/command/Stack',
 	'sap/ui/rta/command/FlexCommand',
-	'sap/ui/rta/command/BaseCommand',
 	'sap/ui/rta/command/AppDescriptorCommand',
 	'sap/ui/fl/FlexControllerFactory',
 	'sap/ui/fl/Utils',
 	'sap/ui/fl/Change',
 	'sap/ui/rta/ControlTreeModifier',
-	'sap/ui/fl/registry/Settings'
+	'sap/ui/fl/registry/Settings',
+	'sap/ui/dt/ElementUtil',
+	"sap/base/Log"
 ], function(
 	ManagedObject,
-	CommandStack,
 	FlexCommand,
-	BaseCommand,
 	AppDescriptorCommand,
 	FlexControllerFactory,
 	FlexUtils,
 	Change,
 	RtaControlTreeModifier,
-	Settings
+	Settings,
+	ElementUtil,
+	Log
 ) {
 	"use strict";
 	/**
@@ -33,7 +33,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @since 1.42
@@ -58,6 +58,10 @@ sap.ui.define([
 			aggregations : {}
 		}
 	});
+
+	function getRootControlInstance(vRootControl) {
+		return ElementUtil.getElementInstance(vRootControl);
+	}
 
 	/**
 	 * Promise to ensure that the event triggered methods are executed sequentionally.
@@ -118,7 +122,7 @@ sap.ui.define([
 							return;
 						}
 						if (oCommand instanceof FlexCommand){
-							var oAppComponent = oCommand.getAppComponent();
+							var oAppComponent = oCommand.getAppComponent(true);
 							if (oAppComponent) {
 								var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
 								var oPreparedChange = oCommand.getPreparedChange();
@@ -168,7 +172,7 @@ sap.ui.define([
 		this._lastPromise = this._lastPromise.catch(function() {
 			// _lastPromise chain must not be interrupted
 		}).then(function() {
-			var oRootControl = sap.ui.getCore().byId(this.getRootControl());
+			var oRootControl = getRootControlInstance(this.getRootControl());
 			if (!oRootControl) {
 				throw new Error("Can't save commands without root control instance!");
 			}
@@ -179,13 +183,13 @@ sap.ui.define([
 		// needed because the AppDescriptorChanges are stored with a different ComponentName (without ".Component" at the end)
 		// -> two different ChangePersistence
 		.then(function() {
-			var oRootControl = sap.ui.getCore().byId(this.getRootControl());
+			var oRootControl = getRootControlInstance(this.getRootControl());
 			var oFlexController = this._getAppDescriptorFlexController(oRootControl);
 			return oFlexController.saveAll();
 		}.bind(this))
 
 		.then(function() {
-			jQuery.sap.log.info("UI adaptation successfully transfered changes to layered repository");
+			Log.info("UI adaptation successfully transfered changes to layered repository");
 			this.getCommandStack().removeAllCommands();
 		}.bind(this));
 
@@ -196,6 +200,7 @@ sap.ui.define([
 	 * needed because the AppDescriptorChanges are stored with a different ComponentName (without ".Component" at the end)
 	 * -> two different ChangePersistence
 	 * @param {sap.ui.base.ManagedObject} oControl control or app component for which the flex controller should be instantiated
+	 * @returns {Promise} Returns AppDescriptorFlexController for given controls
 	 */
 	LREPSerializer.prototype._getAppDescriptorFlexController = function(oControl) {
 		var oAppComponent = FlexUtils.getAppComponentForControl(oControl);
@@ -269,9 +274,6 @@ sap.ui.define([
 	};
 
 	/**
-	 *
-	 * @param {string} sReferenceAppIdForChanges
-	 * @returns {Promise} returns a promise with true or false
 	 * @description Shall be used to persist the unsaved changes (in the current RTA session) for new app variant;
 	 * Once the unsaved changes has been saved for the app variant, the cache (See Cache#update) will not be updated for the current app
 	 * and the dirty changes will be spliced;
@@ -279,13 +281,15 @@ sap.ui.define([
 	 * Therefore if there shall be some UI changes present in command stack, we undo all the changes till the beginning. Before undoing we detach the 'commandExecuted' event
 	 * Since we detached the commandExecuted event, therefore LRepSerializer would not talk with FlexController and ChangePersistence.
 	 * In the last when user presses 'Save and Exit', there will be no change registered for the current app.
+	 * @param {string} sReferenceAppIdForChanges - ApplicationId
+	 * @returns {Promise} returns a promise with true or false
 	 */
 	LREPSerializer.prototype.saveAsCommands = function(sReferenceAppIdForChanges) {
 		if (!sReferenceAppIdForChanges) {
 			throw new Error("The id of the new app variant is required");
 		}
 
-		var oRootControl = sap.ui.getCore().byId(this.getRootControl());
+		var oRootControl = getRootControlInstance(this.getRootControl());
 
 		if (!oRootControl) {
 			throw new Error("Can't save commands without root control instance!");

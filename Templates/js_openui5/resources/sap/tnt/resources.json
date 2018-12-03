@@ -32,7 +32,6 @@
 			"module": "sap/tnt/BoxContainer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/tnt/BoxContainerList.js",
 				"sap/tnt/BoxContainerRenderer.js",
 				"sap/ui/core/Control.js"
@@ -42,7 +41,6 @@
 			"name": "BoxContainer.js",
 			"module": "sap/tnt/BoxContainer.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/tnt/BoxContainerList.js",
 				"sap/tnt/BoxContainerRenderer.js",
 				"sap/ui/core/Control.js"
@@ -57,7 +55,8 @@
 				"sap/m/library.js",
 				"sap/tnt/Box.js",
 				"sap/ui/Device.js",
-				"sap/ui/core/ResizeHandler.js"
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/thirdparty/jquery.js"
 			]
 		},
 		{
@@ -68,7 +67,8 @@
 				"sap/m/library.js",
 				"sap/tnt/Box.js",
 				"sap/ui/Device.js",
-				"sap/ui/core/ResizeHandler.js"
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/thirdparty/jquery.js"
 			]
 		},
 		{
@@ -127,6 +127,7 @@
 			"module": "sap/tnt/InfoLabel.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/Log.js",
 				"sap/tnt/InfoLabelRenderer.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Control.js",
@@ -141,6 +142,7 @@
 			"name": "InfoLabel.js",
 			"module": "sap/tnt/InfoLabel.js",
 			"required": [
+				"sap/base/Log.js",
 				"sap/tnt/InfoLabelRenderer.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Control.js",
@@ -152,7 +154,6 @@
 			"module": "sap/tnt/InfoLabelRenderer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/library.js"
@@ -162,7 +163,6 @@
 			"name": "InfoLabelRenderer.js",
 			"module": "sap/tnt/InfoLabelRenderer.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/library.js"
@@ -174,6 +174,7 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/base/Log.js",
 				"sap/m/Popover.js",
 				"sap/tnt/NavigationListRenderer.js",
 				"sap/tnt/library.js",
@@ -194,6 +195,7 @@
 			"module": "sap/tnt/NavigationList.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/base/Log.js",
 				"sap/m/Popover.js",
 				"sap/tnt/NavigationListRenderer.js",
 				"sap/tnt/library.js",
@@ -210,13 +212,13 @@
 			"module": "sap/tnt/NavigationListItem.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/tnt/NavigationList.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/Item.js",
-				"sap/ui/core/Renderer.js"
+				"sap/ui/core/Renderer.js",
+				"sap/ui/events/KeyCodes.js"
 			]
 		},
 		{
@@ -227,13 +229,13 @@
 			"name": "NavigationListItem.js",
 			"module": "sap/tnt/NavigationListItem.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/tnt/NavigationList.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/Item.js",
-				"sap/ui/core/Renderer.js"
+				"sap/ui/core/Renderer.js",
+				"sap/ui/events/KeyCodes.js"
 			]
 		},
 		{
@@ -241,7 +243,6 @@
 			"module": "sap/tnt/NavigationListRenderer.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Renderer.js"
 			]
 		},
@@ -249,7 +250,6 @@
 			"name": "NavigationListRenderer.js",
 			"module": "sap/tnt/NavigationListRenderer.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/ui/core/Renderer.js"
 			]
 		},
@@ -262,7 +262,6 @@
 			"module": "sap/tnt/SideNavigation.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/tnt/SideNavigationRenderer.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Control.js",
@@ -279,7 +278,6 @@
 			"name": "SideNavigation.js",
 			"module": "sap/tnt/SideNavigation.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/tnt/SideNavigationRenderer.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Control.js",
@@ -302,7 +300,6 @@
 			"module": "sap/tnt/ToolHeader.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarAssociativePopover.js",
 				"sap/tnt/ToolHeaderRenderer.js",
@@ -318,7 +315,6 @@
 			"name": "ToolHeader.js",
 			"module": "sap/tnt/ToolHeader.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarAssociativePopover.js",
 				"sap/tnt/ToolHeaderRenderer.js",
@@ -350,7 +346,6 @@
 			"module": "sap/tnt/ToolHeaderUtilitySeparator.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Control.js"
 			]
@@ -363,7 +358,6 @@
 			"name": "ToolHeaderUtilitySeparator.js",
 			"module": "sap/tnt/ToolHeaderUtilitySeparator.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Control.js"
 			]
@@ -409,7 +403,6 @@
 			"module": "sap/tnt/library.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js",
 				"sap/m/library.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/core/library.js"
@@ -422,6 +415,7 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/base/Log.js",
 				"sap/m/BarInPageEnabler.js",
 				"sap/m/CustomListItem.js",
 				"sap/m/CustomListItemRenderer.js",
@@ -442,7 +436,9 @@
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
-				"sap/ui/core/library.js"
+				"sap/ui/core/library.js",
+				"sap/ui/events/KeyCodes.js",
+				"sap/ui/thirdparty/jquery.js"
 			],
 			"included": [
 				"sap/tnt/library.js",
@@ -473,6 +469,7 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/base/Log.js",
 				"sap/m/BarInPageEnabler.js",
 				"sap/m/CustomListItem.js",
 				"sap/m/CustomListItemRenderer.js",
@@ -493,7 +490,9 @@
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
-				"sap/ui/core/library.js"
+				"sap/ui/core/library.js",
+				"sap/ui/events/KeyCodes.js",
+				"sap/ui/thirdparty/jquery.js"
 			],
 			"included": [
 				"sap/tnt/library.js",
@@ -528,6 +527,7 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/base/Log.js",
 				"sap/m/BarInPageEnabler.js",
 				"sap/m/CustomListItem.js",
 				"sap/m/CustomListItemRenderer.js",
@@ -548,7 +548,9 @@
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
-				"sap/ui/core/library.js"
+				"sap/ui/core/library.js",
+				"sap/ui/events/KeyCodes.js",
+				"sap/ui/thirdparty/jquery.js"
 			],
 			"included": [
 				"sap/tnt/Box.js",
@@ -583,6 +585,7 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/base/Log.js",
 				"sap/m/BarInPageEnabler.js",
 				"sap/m/CustomListItem.js",
 				"sap/m/CustomListItemRenderer.js",
@@ -605,7 +608,9 @@
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
 				"sap/ui/core/library-preload.json",
-				"sap/ui/core/library.js"
+				"sap/ui/core/library.js",
+				"sap/ui/events/KeyCodes.js",
+				"sap/ui/thirdparty/jquery.js"
 			],
 			"included": [
 				"sap/tnt/Box.js",
@@ -642,7 +647,6 @@
 			"name": "library.js",
 			"module": "sap/tnt/library.js",
 			"required": [
-				"jquery.sap.global.js",
 				"sap/m/library.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/core/library.js"

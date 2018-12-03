@@ -6,32 +6,38 @@
 
 // Provides control sap.ui.core.mvc.XMLView.
 sap.ui.define([
-    'jquery.sap.global',
-    './View',
-    "./XMLViewRenderer",
-	"sap/base/util/extend",
-    'sap/ui/base/ManagedObject',
-    'sap/ui/core/XMLTemplateProcessor',
-    'sap/ui/core/library',
-    'sap/ui/core/Control',
-    'sap/ui/core/RenderManager',
-    'sap/ui/core/cache/CacheManager',
-    'sap/ui/model/resource/ResourceModel',
-    'jquery.sap.xml',
-    'jquery.sap.script'
+	'sap/ui/thirdparty/jquery',
+	'./View',
+	"./XMLViewRenderer",
+	"sap/base/util/merge",
+	'sap/ui/base/ManagedObject',
+	'sap/ui/core/XMLTemplateProcessor',
+	'sap/ui/core/library',
+	'sap/ui/core/Control',
+	'sap/ui/core/RenderManager',
+	'sap/ui/core/cache/CacheManager',
+	'sap/ui/model/resource/ResourceModel',
+	'sap/ui/util/XMLHelper',
+	'sap/base/strings/hash',
+	'sap/base/Log',
+	'sap/base/util/LoaderExtensions'
 ],
 	function(
-	    jQuery,
+		jQuery,
 		View,
 		XMLViewRenderer,
-		extend,
+		merge,
 		ManagedObject,
 		XMLTemplateProcessor,
 		library,
 		Control,
 		RenderManager,
 		Cache,
-		ResourceModel /* , jQuerySap */
+		ResourceModel,
+		XMLHelper,
+		hash,
+		Log,
+		LoaderExtensions
 	) {
 	"use strict";
 
@@ -63,7 +69,7 @@ sap.ui.define([
 	 * control's dependents aggregation or add it by using {@link sap.ui.core.mvc.XMLView#addDependent}.
 	 *
 	 * @extends sap.ui.core.mvc.View
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.XMLView
@@ -107,30 +113,37 @@ sap.ui.define([
 		/**
 		 * Instantiates an XMLView of the given name and with the given ID.
 		 *
-		 * The <code>viewName</code> must either correspond to an XML module that can be loaded
-		 * via the module system (viewName + suffix ".view.xml") and which defines the view, or it must
-		 * be a configuration object for a view.
-		 * The configuration object can have a <code>viewName</code>, <code>viewContent</code> and a <code>controller
-		 * </code> property. The <code>viewName</code> behaves as described above. <code>viewContent</code> is optional
-		 * and can hold a view description as XML string or as already parsed XML Document. If not given, the view content
-		 *  definition is loaded by the module system.
+		 * The <code>vView</code> can either be the name of the module that contains the view definition
+		 * or it can be a configuration object with properties <code>viewName</code>, <code>viewContent</code>
+		 * and a <code>controller</code> property (more properties are described in the parameters section below).
 		 *
-		 * <strong>Note</strong>: if a <code>Document</code> is given, it might be modified during view construction.
+		 * If a <code>viewName</code> is given, it behaves the same as when <code>vView</code> is a string:
+		 * the named resource will be loaded and parsed as XML. Alternatively, an already loaded view definition
+		 * can be provided as <code>viewContent</code>, either as XML string or as an already parsed XML document.
+		 * Exactly one of <code>viewName</code> and <code>viewContent</code> must be given, if none or both are given,
+		 * an error will be reported. The <code>controller</code> property is optional and can hold a controller instance.
+		 * When given, it overrides the controller class defined in the view definition.
 		 *
-		 * <strong>Note:</strong><br>
-		 * On root level, you can only define content for the default aggregation, e.g. without adding the <code>&lt;content&gt;</code> tag. If
-		 * you want to specify content for another aggregation of a view like <code>dependents</code>, place it in a child
-		 * control's dependents aggregation or add it by using {@link sap.ui.core.mvc.XMLView#addDependent}.
+		 * When property <code>async</code> is set to true, the view definition and the controller class (and its
+		 * dependencies) will be loaded asynchronously. Any controls used in the view might be loaded sync or
+		 * async, this depends on the experimental runtime configuration option "xx-xml-processing". Even when
+		 * the view definition is provided as string or XML Document, controller or controls might be loaded
+		 * asynchronously. In any case a view instance will be returned synchronously by this factory API, but its
+		 * content (control tree) might appear only later. Also see {@link sap.ui.core.mvc.View#loaded}.
 		 *
-		 * <strong>Note</strong>: if you enable caching, you need to take care of the invalidation via keys. Automatic
+		 * <strong>Note</strong>: If an XML document is given, it might be modified during view construction.
+		 *
+		 * <strong>Note</strong>: On root level, you can only define content for the default aggregation, e.g.
+		 * without adding the <code>&lt;content&gt;</code> tag. If you want to specify content for another aggregation
+		 * of a view like <code>dependents</code>, place it in a child control's dependents aggregation or add it by
+		 * using {@link sap.ui.core.mvc.XMLView#addDependent}.
+		 *
+		 * <strong>Note</strong>: If you enable caching, you need to take care of the invalidation via keys. Automatic
 		 * invalidation takes only place if the UI5 version or the component descriptor (manifest.json) change. This is
 		 * still an experimental feature and may experience slight changes of the invalidation parameters or the cache
 		 * key format.
 		 *
-		 * The controller property can hold a controller instance. If a controller instance is given,
-		 * it overrides the controller defined in the view.
-		 *
-		 * Like with any other control, ID is optional and one will be created automatically.
+		 * Like with any other control, <code>sId</code> is optional and an ID will be created automatically.
 		 *
 		 * @param {string} [sId] ID of the newly created view
 		 * @param {string | object} vView Name of the view or a view configuration object as described above
@@ -145,7 +158,7 @@ sap.ui.define([
 		 * @param {sap.ui.core.mvc.Controller} [vView.controller] Controller instance to be used for this view
 		 * @public
 		 * @static
-		 * @deprecated since 1.56: Use sap.ui.core.mvc.XMLView.create instead
+		 * @deprecated since 1.56: Use {@link sap.ui.core.mvc.XMLView.create XMLView.create} instead
 		 * @return {sap.ui.core.mvc.XMLView} the created XMLView instance
 		 */
 		sap.ui.xmlview = function(sId, vView) {
@@ -153,37 +166,49 @@ sap.ui.define([
 		};
 
 		/**
-		 * Instantiates an XMLView of the given configuration object.
+		 * Instantiates an XMLView from the given configuration options.
 		 *
-		 * <strong>Note:</strong><br>
-		 * On root level, you can only define content for the default aggregation, e.g. without adding the <code>&lt;content&gt;</code> tag. If
-		 * you want to specify content for another aggregation of a view like <code>dependents</code>, place it in a child
-		 * control's dependents aggregation or add it by using {@link sap.ui.core.mvc.XMLView#addDependent}.
+		 * If a <code>viewName</code> is given, it must be a dot-separated name of an XML view resource (without
+		 * the mandatory suffix ".view.xml"). The resource will be loaded asynchronously via the module system
+		 * (preload caches might apply) and will be parsed as XML. Alternatively, an already loaded view <code>definition</code>
+		 * can be provided, either as XML string or as an already parsed XML document. Exactly one of <code>viewName</code>
+		 * or <code>definition</code> must be given, if none or both are given, an error will be reported.
 		 *
-		 * <strong>Note</strong>: if you enable caching, you need to take care of the invalidation via keys. Automatic
+		 * The <code>controller</code> property is optional and can hold a controller instance. When given, it overrides
+		 * the controller class defined in the view definition.
+		 *
+		 * <strong>Note</strong>: On root level, you can only define content for the default aggregation, e.g. without
+		 * adding the <code>&lt;content&gt;</code> tag. If you want to specify content for another aggregation of a view
+		 * like <code>dependents</code>, place it in a child control's <code>dependents</code> aggregation or add it
+		 * by using {@link sap.ui.core.mvc.XMLView#addDependent}.
+		 *
+		 * <strong>Note</strong>: If you enable caching, you need to take care of the invalidation via keys. Automatic
 		 * invalidation takes only place if the UI5 version or the component descriptor (manifest.json) change. This is
 		 * still an experimental feature and may experience slight changes of the invalidation parameters or the cache
 		 * key format.
 		 *
-		 * @param {map} mOptions A map containing the view configuration options.
-		 * @param {string} [mOptions.id] Specifies an ID for the View instance. If no ID is given, an ID will be generated.
-		 * @param {string} [mOptions.viewName] corresponds to an XML module that can be loaded via the module system (mOptions.viewName + suffix ".view.xml")
-		 * @param {sap.ui.core.mvc.Controller} [mOptions.controller] Controller instance to be used for this view. The given controller instance overrides
-		 * the controller defined in the view definition. Sharing a controller instance between multiple views is not supported.
-		 * @param {string|Document} [mOptions.definition] XML string or XML document that defines the view. If not given, the view content
-		 * definition is loaded by the module system.
-		 * @param {object} [mOptions.cache] Cache configuration; caching gets active when this object is provided
-		 * with vView.cache.keys array; keys are used to store data in the cache and for invalidation of the cache.
-		 * @param {Array.<(string|Promise)>} [mOptions.cache.keys] Array with strings or Promises resolving with strings
+		 * @param {object} mOptions - An object containing the view configuration options.
+		 * @param {string} [mOptions.id] - Specifies an ID for the View instance. If no ID is given, an ID will be generated.
+		 * @param {string} [mOptions.viewName] - Corresponds to an XML module that can be loaded via the module system
+		 *                     (mOptions.viewName + suffix ".view.xml")
+		 * @param {string|Document} [mOptions.definition] - XML string or XML document that defines the view.
+		 *                     Exactly one of <code>viewName</code> or <code>definition</code> must be given.
+		 * @param {sap.ui.core.mvc.Controller} [mOptions.controller] - Controller instance to be used for this view.
+		 *                     The given controller instance overrides the controller defined in the view definition.
+		 *                     Sharing one controller instance between multiple views is not possible.
+		 * @param {object} [mOptions.cache] - Cache configuration; caching gets active when this object is provided
+		 *                     with vView.cache.keys array; keys are used to store data in the cache and for invalidation
+		 *                     of the cache.
+		 * @param {Array.<(string|Promise)>} [mOptions.cache.keys] - Array with strings or Promises resolving with strings
 		 * @param {object} [mOptions.preprocessors] Preprocessors configuration, see {@link sap.ui.core.mvc.View}
-		 * <strong>Note</strong>: These preprocessors are only available to this instance. For global or
-		 * on-demand availability use {@link sap.ui.core.mvc.XMLView.registerPreprocessor}.
+		 *                     <strong>Note</strong>: These preprocessors are only available to this instance.
+		 *                     For global or on-demand availability use {@link sap.ui.core.mvc.XMLView.registerPreprocessor}.
 		 * @public
 		 * @static
-		 * @return {Promise} a Promise that resolves with the view instance and rejects with any thrown error.
+		 * @return {Promise<sap.ui.core.mvc.XMLView>} A Promise that resolves with the view instance or rejects with any thrown error.
 		 */
 		XMLView.create = function (mOptions) {
-			var mParameters = extend(true, {}, mOptions);
+			var mParameters = merge({}, mOptions);
 
 			// mapping renamed parameters
 			mParameters.viewContent = mParameters.definition;
@@ -254,19 +279,33 @@ sap.ui.define([
 			// keep the content as a pseudo property to make cloning work but without supporting mutation
 			// TODO model this as a property as soon as write-once-during-init properties become available
 			oView.mProperties["viewContent"] = mSettings.viewContent;
-			var xContent = jQuery.sap.parseXML(mSettings.viewContent);
+			var xContent = XMLHelper.parse(mSettings.viewContent);
 			validatexContent(xContent);
 			return xContent.documentElement;
 		}
 
+		/**
+		 *
+		 * @param oView
+		 * @param mSettings
+		 * @return {undefined|Promise} will return a Promise if ResourceModel is instantiated asynchronously, otherwise undefined
+		 */
 		function setResourceModel(oView, mSettings) {
 			if ((oView._resourceBundleName || oView._resourceBundleUrl) && (!mSettings.models || !mSettings.models[oView._resourceBundleAlias])) {
-				var model = new ResourceModel({
+				var oModel = new ResourceModel({
 					bundleName: oView._resourceBundleName,
 					bundleUrl: oView._resourceBundleUrl,
-					bundleLocale: oView._resourceBundleLocale
+					bundleLocale: oView._resourceBundleLocale,
+					async: mSettings.async
 				});
-				oView.setModel(model, oView._resourceBundleAlias);
+				var vBundle = oModel.getResourceBundle();
+				// if ResourceBundle was created with async flag vBundle will be a Promise
+				if (vBundle instanceof Promise) {
+					return vBundle.then(function() {
+						oView.setModel(oModel, mSettings.resourceBundleAlias);
+					});
+				}
+				oView.setModel(oModel, oView._resourceBundleAlias);
 			}
 		}
 
@@ -311,7 +350,7 @@ sap.ui.define([
 
 			return validateCacheKey(oView, aFutureKeyParts).then(function(sKey) {
 				return {
-					key: sKey +  "(" + jQuery.sap.hashCode(sManifest || "") + ")",
+					key: sKey +  "(" + hash(sManifest || "") + ")",
 					componentManifest: sManifest,
 					additionalData: mCacheSettings.additionalData
 				};
@@ -389,8 +428,8 @@ sap.ui.define([
 				return sTimestamp;
 			}).catch(function(error) {
 				// Do not populate the cache if the version info could not be retrieved.
-				jQuery.sap.log.warning("sap.ui.getVersionInfo could not be retrieved", "sap.ui.core.mvc.XMLView");
-				jQuery.sap.log.debug(error);
+				Log.warning("sap.ui.getVersionInfo could not be retrieved", "sap.ui.core.mvc.XMLView");
+				Log.debug(error);
 				return "";
 			});
 		}
@@ -399,7 +438,7 @@ sap.ui.define([
 			// we don't want to write the key into the cache
 			var sKey = mCacheInput.key;
 			delete mCacheInput.key;
-			mCacheInput.xml = jQuery.sap.serializeXML(xContent);
+			mCacheInput.xml = XMLHelper.serialize(xContent);
 			return Cache.set(sKey, mCacheInput);
 		}
 
@@ -407,7 +446,7 @@ sap.ui.define([
 			return Cache.get(mCacheInput.key).then(function(mCacheOutput) {
 				// double check manifest to eliminate issues with hash collisions
 				if (mCacheOutput && mCacheOutput.componentManifest == mCacheInput.componentManifest) {
-					mCacheOutput.xml = jQuery.sap.parseXML(mCacheOutput.xml, "application/xml").documentElement;
+					mCacheOutput.xml = XMLHelper.parse(mCacheOutput.xml, "application/xml").documentElement;
 					if (mCacheOutput.additionalData) {
 						// extend the additionalData which was passed into cache configuration dynamically
 						jQuery.extend(true, mCacheInput.additionalData, mCacheOutput.additionalData);
@@ -421,7 +460,7 @@ sap.ui.define([
  		* This function initialized the view settings.
  		*
  		* @param {object} mSettings with view settings
- 		* @return {Promise|null} [oMyPromise] will be returned if running in async mode
+ 		* @return {Promise|null} will be returned if running in async mode
  		*/
 		XMLView.prototype.initViewSettings = function(mSettings) {
 			var that = this, _xContent;
@@ -441,7 +480,7 @@ sap.ui.define([
 					XMLTemplateProcessor.parseViewAttributes(xContent, that, mSettingsFromXML);
 					if (!mSettings.async) {
 						// extend mSettings which get applied implicitly during view constructor
-						jQuery.sap.extend(mSettings, mSettingsFromXML);
+						Object.assign(mSettings, mSettingsFromXML);
 					} else {
 						// apply the settings from the loaded view source via an explicit call
 						that.applySettings(mSettingsFromXML);
@@ -450,7 +489,13 @@ sap.ui.define([
 					// when used as fragment: prevent connection to controller, only top level XMLView must connect
 					delete mSettings.controller;
 				}
-				setResourceModel(that, mSettings);
+				// vSetResourceModel is a promise if ResourceModel is created async
+				var vSetResourceModel = setResourceModel(that, mSettings);
+				if (vSetResourceModel instanceof Promise) {
+					return vSetResourceModel.then(function() {
+						setAfterRenderingNotifier(that);
+					});
+				}
 				setAfterRenderingNotifier(that);
 			}
 
@@ -471,7 +516,7 @@ sap.ui.define([
 			}
 
 			function loadResourceAsync(sResourceName) {
-				return jQuery.sap.loadResource(sResourceName, {async: true}).then(function(oData) {
+				return LoaderExtensions.loadResource(sResourceName, {async: true}).then(function(oData) {
 					return oData.documentElement; // result is the document node
 				});
 			}
@@ -497,8 +542,8 @@ sap.ui.define([
 				}).catch(function(error) {
 					if (error.name === sXMLViewCacheError) {
 						// no sufficient cache keys, processing can continue
-						jQuery.sap.log.debug(error.message, error.name, "sap.ui.core.mvc.XMLView");
-						jQuery.sap.log.debug("Processing the View without caching.", "sap.ui.core.mvc.XMLView");
+						Log.debug(error.message, error.name, "sap.ui.core.mvc.XMLView");
+						Log.debug("Processing the View without caching.", "sap.ui.core.mvc.XMLView");
 						return processResource(sResourceName);
 					} else {
 						// an unknown error occured and should be exposed
@@ -520,7 +565,7 @@ sap.ui.define([
 
 			// either template name or XML node is given
 			if (mSettings.viewName) {
-				var sResourceName = jQuery.sap.getResourceName(mSettings.viewName, ".view.xml");
+				var sResourceName = mSettings.viewName.replace(/\./g, "/") + ".view.xml";
 				if (mSettings.async) {
 					// in async mode we need to return here as processing takes place in Promise callbacks
 					if (mSettings.cache && XMLView._bUseCache) {
@@ -529,7 +574,7 @@ sap.ui.define([
 						return loadResourceAsync(sResourceName).then(runPreprocessorsAsync).then(processView);
 					}
 				} else {
-					_xContent = jQuery.sap.loadResource(sResourceName).documentElement;
+					_xContent = LoaderExtensions.loadResource(sResourceName).documentElement;
 				}
 			} else if (mSettings.viewContent) {
 				if (mSettings.viewContent.nodeType === window.Node.DOCUMENT_NODE) { // Check for XML Document
@@ -550,7 +595,7 @@ sap.ui.define([
 				_xContent = runViewxmlPreprocessor(_xContent, false);
 				// if the _xContent is a SyncPromise we have to extract the _xContent
 				// and make sure we throw any occurring errors further
-				if (_xContent && typeof _xContent.then === 'function') {
+				if (_xContent && typeof _xContent.getResult === 'function') {
 					if (_xContent.isRejected()) {
 						// sync promises store the error within the result if they are rejected
 						throw _xContent.getResult();
@@ -612,26 +657,30 @@ sap.ui.define([
 		XMLView.prototype.onAfterRenderingBeforeChildren = function() {
 
 			if ( this._$oldContent.length !== 0 ) {
-				// jQuery.sap.log.debug("after rendering for " + this);
+				// Log.debug("after rendering for " + this);
 
 				// move DOM of children into correct place in preserved DOM
 				var aChildren = this.getAggregation("content");
 				if ( aChildren ) {
 					for (var i = 0; i < aChildren.length; i++) {
 
-						// get DOM or invisible placeholder for child
-						var oChildDOM = aChildren[i].getDomRef() ||
-										jQuery.sap.domById(RenderPrefixes.Invisible + aChildren[i].getId());
+						// Get current DOM of the child or the invisible placeholder for it.
+						// For children that do DOM preservation on their own, use the temporary DOM,
+						// they'll move their old DOM themselves
+						var oNewChildDOM =
+								document.getElementById(RenderPrefixes.Temporary + aChildren[i].getId())
+								|| aChildren[i].getDomRef()
+								|| document.getElementById(RenderPrefixes.Invisible + aChildren[i].getId());
 
-						// if DOM exists, replace the preservation dummy with it
-						if ( oChildDOM ) {
-							jQuery.sap.byId(RenderPrefixes.Dummy + aChildren[i].getId(), this._$oldContent).replaceWith(oChildDOM);
+						// if such DOM exists, replace the placeholder in the view's DOM with it
+						if ( oNewChildDOM ) {
+							jQuery(document.getElementById(RenderPrefixes.Dummy + aChildren[i].getId())).replaceWith(oNewChildDOM);
 						} // otherwise keep the dummy placeholder
 					}
 				}
 				// move preserved DOM into place
-				// jQuery.sap.log.debug("moving preserved dom into place for " + this);
-				jQuery.sap.byId(RenderPrefixes.Dummy + this.getId()).replaceWith(this._$oldContent);
+				// Log.debug("moving preserved dom into place for " + this);
+				jQuery(document.getElementById(RenderPrefixes.Temporary + this.getId())).replaceWith(this._$oldContent);
 			}
 			this._$oldContent = undefined;
 		};
@@ -695,7 +744,7 @@ sap.ui.define([
 			if (XMLView.PreprocessorType[sType]) {
 				View.registerPreprocessor(XMLView.PreprocessorType[sType], vPreprocessor, this.getMetadata().getClass()._sType, bSyncSupport, bOnDemand, mSettings);
 			} else {
-				jQuery.sap.log.error("Preprocessor could not be registered due to unknown sType \"" + sType + "\"", this.getMetadata().getName());
+				Log.error("Preprocessor could not be registered due to unknown sType \"" + sType + "\"", this.getMetadata().getName());
 			}
 		};
 

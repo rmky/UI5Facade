@@ -4,8 +4,10 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/Renderer', './FormLayoutRenderer'],
-	function(Renderer, FormLayoutRenderer) {
+sap.ui.define([
+	'sap/ui/core/Renderer',
+	'./FormLayoutRenderer'
+	], function(Renderer, FormLayoutRenderer) {
 	"use strict";
 
 

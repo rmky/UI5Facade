@@ -5,8 +5,8 @@
  */
 
 // Provides the default renderer for control sap.m.Label
-sap.ui.define(['sap/ui/core/Renderer', 'sap/m/library', 'sap/ui/core/library'],
-	function(Renderer, library, coreLibrary) {
+sap.ui.define(['sap/ui/core/Renderer', 'sap/m/library', 'sap/ui/core/library', 'sap/m/HyphenationSupport'],
+	function(Renderer, library, coreLibrary, HyphenationSupport) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TextDirection
@@ -101,6 +101,8 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/m/library', 'sap/ui/core/library'],
 			rm.addStyle("vertical-align", sVerticalAlign.toLowerCase());
 		}
 
+		HyphenationSupport.writeHyphenationClass(rm, oLabel);
+
 		rm.writeStyles();
 		rm.writeClasses();
 
@@ -112,7 +114,9 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/m/library', 'sap/ui/core/library'],
 
 		// write the label text
 		rm.write("<bdi id=\"" + oLabel.getId() + "-bdi\" >");
+
 		if (sLabelText) {
+			sLabelText = HyphenationSupport.getTextForRender(oLabel, "main");
 			rm.writeEscaped(sLabelText);
 		}
 		rm.write("</bdi>");

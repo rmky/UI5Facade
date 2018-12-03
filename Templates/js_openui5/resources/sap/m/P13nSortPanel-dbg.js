@@ -6,12 +6,18 @@
 
 // Provides control sap.m.P13nSortPanel.
 sap.ui.define([
-	'./P13nConditionPanel', './P13nPanel', './library'
-], function(P13nConditionPanel, P13nPanel, library) {
+	'./library',
+	'./P13nConditionPanel',
+	'./P13nPanel',
+	'./P13nSortItem'
+], function(library, P13nConditionPanel, P13nPanel, P13nSortItem) {
 	"use strict";
 
 	// shortcut for sap.m.P13nPanelType
 	var P13nPanelType = library.P13nPanelType;
+
+	// shortcut for sap.m.P13nConditionOperation TODO: use enum in library.js or official API
+	var P13nConditionOperation = library.P13nConditionOperation;
 
 	/**
 	 * Constructor for a new P13nSortPanel.
@@ -20,7 +26,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The P13nSortPanel control is used to define settings for sorting in table personalization.
 	 * @extends sap.m.P13nPanel
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -220,7 +226,7 @@ sap.ui.define([
 
 		if (!this._aOperations) {
 			this.setOperations([
-				sap.m.P13nConditionOperation.Ascending, sap.m.P13nConditionOperation.Descending
+				P13nConditionOperation.Ascending, P13nConditionOperation.Descending
 			]);
 		}
 
@@ -416,7 +422,7 @@ sap.ui.define([
 				that._notifyChange();
 			}
 			if (sOperation === "add") {
-				oSortItem = new sap.m.P13nSortItem({
+				oSortItem = new P13nSortItem({
 					key: sKey,
 					columnKey: oNewData.keyField,
 					operation: oNewData.operation

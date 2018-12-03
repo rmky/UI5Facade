@@ -38,7 +38,7 @@ sap.ui.define([
 	 * @class
 	 * Allows to split the screen into two areas. Make sure that the container for the splitter has an absolute height or set an absolute height for the splitter using the height property. Otherwise the height of the splitter is calculated by the height of its contents.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -248,6 +248,7 @@ sap.ui.define([
 		} else {
 			this.setProperty("splitterPosition", sPos);
 		}
+		return this;
 	};
 
 	Splitter.prototype.setSplitterBarVisible = function(bVisible){
@@ -262,6 +263,7 @@ sap.ui.define([
 		} else {
 			this.setProperty("splitterBarVisible", bVisible);
 		}
+		return this;
 	};
 
 

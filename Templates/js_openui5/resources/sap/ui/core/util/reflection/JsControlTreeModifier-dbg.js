@@ -6,13 +6,17 @@
 
 sap.ui.define([
 	"./BaseTreeModifier",
-	"jquery.sap.global",
-	"sap/ui/core/Fragment", // needed to have sap.ui.xmlfragment
-	"jquery.sap.xml" // needed to have jQuery.sap.parseXML
+	"sap/base/util/ObjectPath",
+	"sap/ui/util/XMLHelper",
+	"sap/ui/core/Component",
+	"sap/base/util/merge",
+	"sap/ui/core/Fragment" // needed to have sap.ui.xmlfragment
 ], function (
 	BaseTreeModifier,
-	jQuery
-	/* other jQuery.sap dependencies */
+	ObjectPath,
+	XMLHelper,
+	Component,
+	merge
 ) {
 
 	"use strict";
@@ -46,15 +50,34 @@ sap.ui.define([
 			}
 		},
 
-		setStashed: function (oControl, bStashed) {
+		setStashed: function (oControl, bStashed, oAppComponent) {
+			bStashed = !!bStashed;
 			if (oControl.setStashed) {
-				if (oControl.setVisible) {
-					this.setVisible(oControl, !bStashed);
-				}
-				// check if the control is stashed and bStashed is false
+				var oUnstashedControl;
+
+				// check if the control is stashed and should be unstashed
 				if (oControl.getStashed() === true && bStashed === false) {
 					oControl.setStashed(bStashed);
+
+					// replace stashed control with original control
+					// some change handlers (e.g. StashControl) do not pass the component
+					if (oAppComponent instanceof Component) {
+						oUnstashedControl = this.bySelector(
+							this.getSelector(oControl, oAppComponent),  // returns a selector
+							oAppComponent
+						);
+					}
+
 				}
+
+				// ensure original control's visible property is set
+				// stashed controls do not have a setVisible()
+				if ((oUnstashedControl || oControl)["setVisible"]) {
+					this.setVisible(oUnstashedControl || oControl, !bStashed);
+				}
+
+				// can be undefined if app component is not passed or control is not found
+				return oUnstashedControl;
 			} else {
 				throw new Error("Provided control instance has no setStashed method");
 			}
@@ -119,13 +142,49 @@ sap.ui.define([
 
 		},
 
-		createControl: function (sClassName, oAppComponent, oView, oSelector, mSettings) {
+		/**
+		 * Creates the control.
+		 *
+		 * @param {string} sClassName - Class name for the control (for example, <code>sap.m.Button</code>), ensure that the class is loaded (no synchronous requests are called)
+		 * @param {sap.ui.core.UIComponent} [oAppComponent] - Needed to calculate the correct ID in case you provide an ID
+		 * @param {Element} [oView] - Empty in this case (XML node of the view, required for XML case to create nodes and to find elements)
+		 * @param {object} [oSelector] - Selector to calculate the ID for the control that is created
+		 * @param {string} [oSelector.id] - Control ID targeted by the change
+		 * @param {boolean} [oSelector.isLocalId] - True if the ID within the selector is a local ID or a global ID
+		 * @param {object} [mSettings] - Further settings or properties for the control that is created
+		 * @param {boolean} bAsync - Determines whether a synchronous (promise) or an asynchronous value should be returned
+		 * @returns {Element|Promise} Element or promise with element of the control that is created
+		 * @public
+		 */
+		createControl: function (sClassName, oAppComponent, oView, oSelector, mSettings, bAsync) {
+			var sErrorMessage;
 			if (this.bySelector(oSelector, oAppComponent)) {
-				throw new Error("Can't create a control with duplicated id " + oSelector);
+				sErrorMessage = "Can't create a control with duplicated id " + oSelector;
+				if (bAsync) {
+					return Promise.reject(sErrorMessage);
+				}
+				throw new Error(sErrorMessage);
 			}
 
-			jQuery.sap.require(sClassName); //ensure class is there
-			var ClassObject = jQuery.sap.getObject(sClassName);
+			if (bAsync) {
+				return new Promise(function(fnResolve, fnReject) {
+					sap.ui.require([sClassName.replace(/\./g,"/")],
+						function(ClassObject) {
+							var sId = this.getControlIdBySelector(oSelector, oAppComponent);
+							fnResolve(new ClassObject(sId, mSettings));
+						}.bind(this),
+						function() {
+							fnReject(new Error("Required control '" + sClassName + "' couldn't be created asynchronously"));
+						}
+					);
+				}.bind(this));
+			}
+
+			// in the synchronous case, object should already be preloaded
+			var ClassObject = ObjectPath.get(sClassName);
+			if (!ClassObject) {
+				throw new Error("Can't create a control because the matching class object has not yet been loaded. Please preload the '" + sClassName + "' module");
+			}
 			var sId = this.getControlIdBySelector(oSelector, oAppComponent);
 			return new ClassObject(sId, mSettings);
 		},
@@ -321,13 +380,13 @@ sap.ui.define([
 		 * Instantiates a fragment and turns the result into an array of controls. Also prefixes all the controls with a given namespace
 		 * Throws an Error if there is at least one control in the fragment without stable ID
 		 *
-		 * @param {string} sFragment path to the fragment
+		 * @param {string} sFragment xml fragment as string
 		 * @param {string} sNamespace namespace of the app
 		 * @param {sap.ui.core.mvc.View} oView view for the fragment
 		 * @returns {sap.ui.core.Control[]} Returns an array with the controls of the fragment
 		 */
 		instantiateFragment: function(sFragment, sNamespace, oView) {
-			var oFragment = jQuery.sap.parseXML(sFragment);
+			var oFragment = XMLHelper.parse(sFragment);
 			oFragment = this._checkAndPrefixIdsInFragment(oFragment, sNamespace);
 
 			var aNewControls;
@@ -344,6 +403,15 @@ sap.ui.define([
 			return aNewControls;
 		},
 
+		/**
+		 * Destroys a given control
+		 *
+		 * @param {sap.ui.core.Control} oControl Control which will be destroyed
+		 */
+		destroy: function(oControl) {
+			oControl.destroy();
+		},
+
 		getChangeHandlerModulePath: function(oControl) {
 			if (typeof oControl === "object" && typeof oControl.data === "function"
 					&& oControl.data("sap-ui-custom-settings") && oControl.data("sap-ui-custom-settings")["sap.ui.fl"]){
@@ -354,8 +422,7 @@ sap.ui.define([
 		}
 	};
 
-	return jQuery.sap.extend(
-		true /* deep extend */,
+	return merge(
 		{} /* target object, to avoid changing of original modifier */,
 		BaseTreeModifier,
 		JsControlTreeModifier

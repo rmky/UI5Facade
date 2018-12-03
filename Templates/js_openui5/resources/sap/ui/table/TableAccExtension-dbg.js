@@ -6,8 +6,13 @@
 
 // Provides helper sap.ui.table.TableAccExtension.
 sap.ui.define([
-	"jquery.sap.global", "sap/ui/core/Control", "./library", "./TableExtension", "./TableAccRenderExtension", "./TableUtils", "sap/ui/Device"
-], function(jQuery, Control, library, TableExtension, TableAccRenderExtension, TableUtils, Device) {
+	"sap/ui/core/Control",
+	"./library",
+	"./TableExtension",
+	"./TableAccRenderExtension",
+	"./TableUtils",
+	"sap/ui/Device"
+], function(Control, library, TableExtension, TableAccRenderExtension, TableUtils, Device) {
 	"use strict";
 
 	// shortcuts
@@ -56,7 +61,6 @@ sap.ui.define([
 			oInfo.role = oInfo.role || "";
 			oInfo.type = oInfo.type || "";
 			oInfo.description = oInfo.description || "";
-			oInfo.focusable = !!oInfo.focusable;
 			oInfo.enabled = (oInfo.enabled === true || oInfo.enabled === false) ? oInfo.enabled : null;
 			oInfo.editable = (oInfo.editable === true || oInfo.editable === false) ? oInfo.editable : null;
 			oInfo.children = oInfo.children || [];
@@ -77,7 +81,6 @@ sap.ui.define([
 				oTargetInfo._descriptions = [];
 			}
 
-			oTargetInfo.focusable = oTargetInfo.focusable || oSourceInfo.focusable;
 			oTargetInfo._descriptions.push(ACCInfoHelper._getFullDescription(oSourceInfo));
 
 			oSourceInfo.children.forEach(function(oChild) {
@@ -389,8 +392,7 @@ sap.ui.define([
 				// if (oInfo && oInfo.labelled) { aLabels.push(oInfo.labelled); }
 				// if (oInfo && oInfo.described) { aDescriptions.push(oInfo.described); }
 
-				if (((!oInfo || oInfo.focusable) && !this._readonly) || (bIsTreeColumnCell && oTableInstances.row
-																		 && oTableInstances.row._bHasChildren)) {
+				if (TableUtils.getInteractiveElements($Cell) !== null) {
 					aDescriptions.push(sTableId + "-toggleedit");
 				}
 
@@ -566,7 +568,7 @@ sap.ui.define([
 					if (oInfo) {
 						aLabels.push(sTableId + "-cellacc");
 						sText = oInfo.description;
-						if (oInfo.focusable) {
+						if (TableUtils.getInteractiveElements($Cell) !== null) {
 							aDescriptions.push(sTableId + "-toggleedit");
 						}
 					}
@@ -657,7 +659,7 @@ sap.ui.define([
 
 					if (mParams && mParams.headerId) {
 						var aHeaders = ExtensionHelper.getRelevantColumnHeaders(oTable, oColumn);
-						var iIdx = jQuery.inArray(mParams.headerId, aHeaders);
+						var iIdx = aHeaders.indexOf(mParams.headerId);
 						aLabels = iIdx > 0 ? aHeaders.slice(0, iIdx + 1) : [mParams.headerId];
 					}
 					for (var i = 0; i < aLabels.length; i++) {
@@ -864,7 +866,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension
@@ -877,7 +879,6 @@ sap.ui.define([
 		 */
 		_init: function(oTable, sTableType, mSettings) {
 			this._accMode = sap.ui.getCore().getConfiguration().getAccessibility();
-			this._readonly = sTableType === TableExtension.TABLETYPES.ANALYTICAL;
 			this._busyCells = [];
 
 			oTable.addEventDelegate(this);
@@ -904,8 +905,6 @@ sap.ui.define([
 		 */
 		destroy: function() {
 			this.getTable().removeEventDelegate(this);
-
-			this._readonly = false;
 			this._busyCells = [];
 
 			TableExtension.prototype.destroy.apply(this, arguments);
@@ -936,7 +935,7 @@ sap.ui.define([
 				return;
 			}
 			if (oTable._mTimeouts._cleanupACCExtension) {
-				jQuery.sap.clearDelayedCall(oTable._mTimeouts._cleanupACCExtension);
+				clearTimeout(oTable._mTimeouts._cleanupACCExtension);
 				oTable._mTimeouts._cleanupACCExtension = null;
 			}
 			this.updateAccForCurrentCell(true);
@@ -954,7 +953,7 @@ sap.ui.define([
 				return;
 			}
 			oTable.$("sapUiTableGridCnt").attr("role", ExtensionHelper.getAriaAttributesFor(this, "CONTENT", {}).role);
-			oTable._mTimeouts._cleanupACCExtension = jQuery.sap.delayedCall(100, this, function() {
+			oTable._mTimeouts._cleanupACCExtension = setTimeout(function() {
 				var oTable = this.getTable();
 				if (!oTable) {
 					return;
@@ -963,7 +962,7 @@ sap.ui.define([
 				this._iLastColumnNumber = null;
 				ExtensionHelper.cleanupCellModifications(this);
 				oTable._mTimeouts._cleanupACCExtension = null;
-			});
+			}.bind(this), 100);
 		}
 	});
 
@@ -1056,17 +1055,17 @@ sap.ui.define([
 			// to force screenreader announcements
 			if (oInfo.isOfType(CellType.DATACELL | CellType.ROWHEADER)) {
 				if (oTable._mTimeouts._cleanupACCCellBusy) {
-					jQuery.sap.clearDelayedCall(oTable._mTimeouts._cleanupACCCellBusy);
+					clearTimeout(oTable._mTimeouts._cleanupACCCellBusy);
 					oTable._mTimeouts._cleanupACCCellBusy = null;
 				}
-				oTable._mTimeouts._cleanupACCCellBusy = jQuery.sap.delayedCall(100, this, function() {
+				oTable._mTimeouts._cleanupACCCellBusy = setTimeout(function() {
 					for (var i = 0; i < this._busyCells.length; i++) {
 						this._busyCells[i].removeAttr("aria-hidden");
 						this._busyCells[i].removeAttr("aria-busy");
 					}
 					oTable._mTimeouts._cleanupACCCellBusy = null;
 					this._busyCells = [];
-				});
+				}.bind(this), 100);
 				if (Device.browser.chrome) {
 					oInfo.cell.attr("aria-hidden", "true"); //Seems to be needed for Chrome
 				}
@@ -1099,7 +1098,7 @@ sap.ui.define([
 
 		var aHeaders = ExtensionHelper.getRelevantColumnHeaders(this.getTable(), oColumn);
 		for (var i = 0; i < aHeaders.length; i++) {
-			var $Header = jQuery.sap.byId(aHeaders[i]);
+			var $Header = jQuery(document.getElementById(aHeaders[i]));
 			if (!$Header.attr("colspan")) {
 				$Header.attr({
 					"aria-sort": mAttributes["aria-sort"] || null
@@ -1276,14 +1275,13 @@ sap.ui.define([
 			mTooltipTexts.mouse.rowSelect = bShowTooltips ? TableUtils.getResourceText("TBL_ROW_SELECT_MULTI_TOGGLE") : "";
 			// text for de-select is the same like for single selection
 			mTooltipTexts.mouse.rowDeselect = bShowTooltips ? TableUtils.getResourceText("TBL_ROW_DESELECT") : "";
-			mTooltipTexts.keyboard.rowSelect = TableUtils.getResourceText("TBL_ROW_SELECT_MULTI_TOGGLE_KEY");
+			mTooltipTexts.keyboard.rowSelect = TableUtils.getResourceText("TBL_ROW_SELECT_KEY");
 			// text for de-select is the same like for single selection
 			mTooltipTexts.keyboard.rowDeselect = TableUtils.getResourceText("TBL_ROW_DESELECT_KEY");
 
 			if (bConsiderSelectionState === true && iSelectedIndicesCount === 0) {
 				// if there is no row selected yet, the selection is like in single selection case
 				mTooltipTexts.mouse.rowSelect = bShowTooltips ? TableUtils.getResourceText("TBL_ROW_SELECT") : "";
-				mTooltipTexts.keyboard.rowSelect = TableUtils.getResourceText("TBL_ROW_SELECT_KEY");
 			}
 		}
 
@@ -1323,7 +1321,7 @@ sap.ui.define([
 			}
 		}
 		var aLabels = oControl.getAriaLabelledBy();
-		if (sLabel && jQuery.inArray(sLabel, aLabels) < 0) {
+		if (sLabel && aLabels.indexOf(sLabel) < 0) {
 			oControl.addAriaLabelledBy(sLabel);
 		}
 	};

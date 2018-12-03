@@ -5,8 +5,8 @@
  */
 
 // Provides helper sap.m.BarInPageEnabler
-sap.ui.define(['sap/ui/base/Object', 'sap/m/library', 'jquery.sap.global'],
-	function(Object, library, jQuery) {
+sap.ui.define(['sap/ui/base/Object', 'sap/m/library', "sap/base/Log"],
+	function(Object, library, Log) {
 	"use strict";
 
 	// shortcut for sap.m.IBarHTMLTag
@@ -145,7 +145,7 @@ sap.ui.define(['sap/ui/base/Object', 'sap/m/library', 'jquery.sap.global'],
 			}
 
 			if (!this.isContextSensitive) {
-				jQuery.sap.log.error("The bar control you are using does not implement all the members of the IBar interface", this);
+				Log.error("The bar control you are using does not implement all the members of the IBar interface", this);
 				return this;
 			}
 
@@ -178,7 +178,7 @@ sap.ui.define(['sap/ui/base/Object', 'sap/m/library', 'jquery.sap.global'],
 			}
 
 			if (!this.setHTMLTag) {
-				jQuery.sap.log.error("The bar control you are using does not implement all the members of the IBar interface", this);
+				Log.error("The bar control you are using does not implement all the members of the IBar interface", this);
 				return this;
 			}
 
@@ -207,7 +207,7 @@ sap.ui.define(['sap/ui/base/Object', 'sap/m/library', 'jquery.sap.global'],
 			var oOptions = oContext[sContext];
 
 			if (!oOptions) {
-				jQuery.sap.log.error("The context " + sContext + " is not known", this);
+				Log.error("The context " + sContext + " is not known", this);
 
 				return null;
 			}

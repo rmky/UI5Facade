@@ -6,20 +6,49 @@
 
 // Provides control sap.ui.fl.variants.VariantManagement.
 sap.ui.define([
-	'jquery.sap.global', 'sap/ui/model/Context', 'sap/ui/model/PropertyBinding', 'sap/ui/model/json/JSONModel', 'sap/ui/model/Filter', 'sap/ui/Device', 'sap/ui/core/TextAlign', 'sap/ui/core/InvisibleText', 'sap/ui/core/Control', 'sap/ui/core/Icon', 'sap/ui/core/ValueState', 'sap/ui/layout/HorizontalLayout', 'sap/ui/layout/Grid', 'sap/m/SearchField', 'sap/m/RadioButton', 'sap/m/ScreenSize', 'sap/m/PopinDisplay', 'sap/m/ColumnListItem', 'sap/m/Column', 'sap/m/Text', 'sap/m/Bar', 'sap/m/Table', 'sap/m/Page', 'sap/m/PlacementType', 'sap/m/ButtonType', 'sap/m/Toolbar', 'sap/m/ToolbarSpacer', 'sap/m/Button', 'sap/m/CheckBox', 'sap/m/Dialog', 'sap/m/Input', 'sap/m/Label', 'sap/m/Title', 'sap/m/ResponsivePopover', 'sap/m/SelectList', 'sap/m/ObjectIdentifier', 'sap/m/OverflowToolbar', 'sap/m/OverflowToolbarPriority', 'sap/m/OverflowToolbarLayoutData', 'sap/m/VBox', 'sap/ui/fl/Utils', '../changeHandler/BaseTreeModifier'
-], function(jQuery, Context, PropertyBinding, JSONModel, Filter, Device, TextAlign, InvisibleText, Control, Icon, ValueState, HorizontalLayout, Grid, SearchField, RadioButton, ScreenSize, PopinDisplay, ColumnListItem, Column, Text, Bar, Table, Page, PlacementType, ButtonType, Toolbar, ToolbarSpacer, Button, CheckBox, Dialog, Input, Label, Title, ResponsivePopover, SelectList, ObjectIdentifier, OverflowToolbar, OverflowToolbarPriority, OverflowToolbarLayoutData, VBox, flUtils, BaseTreeModifier) {
+	'sap/ui/model/Context', 'sap/ui/model/PropertyBinding', 'sap/ui/model/json/JSONModel', 'sap/ui/model/Filter', 'sap/ui/Device', 'sap/ui/core/InvisibleText', 'sap/ui/core/Control', 'sap/ui/core/Icon', 'sap/ui/layout/HorizontalLayout', 'sap/ui/layout/Grid', 'sap/m/SearchField', 'sap/m/RadioButton', 'sap/m/ColumnListItem', 'sap/m/Column', 'sap/m/Text', 'sap/m/Bar', 'sap/m/Table', 'sap/m/Page', 'sap/m/Toolbar', 'sap/m/ToolbarSpacer', 'sap/m/Button', 'sap/m/CheckBox', 'sap/m/Dialog', 'sap/m/Input', 'sap/m/Label', 'sap/m/Title', 'sap/m/ResponsivePopover', 'sap/m/SelectList', 'sap/m/ObjectIdentifier', 'sap/m/OverflowToolbar', 'sap/m/OverflowToolbarLayoutData', 'sap/m/VBox', 'sap/ui/fl/Utils', 'sap/ui/core/util/reflection/JsControlTreeModifier', "sap/ui/events/KeyCodes", "sap/ui/core/library", "sap/m/library"
+], function(Context, PropertyBinding, JSONModel, Filter, Device, InvisibleText, Control, Icon, HorizontalLayout, Grid, SearchField, RadioButton, ColumnListItem, Column, Text, Bar, Table, Page, Toolbar, ToolbarSpacer, Button, CheckBox, Dialog, Input, Label, Title, ResponsivePopover, SelectList, ObjectIdentifier, OverflowToolbar, OverflowToolbarLayoutData, VBox, flUtils, JsControlTreeModifier, KeyCodes, coreLibrary, mobileLibrary) {
 	"use strict";
+
+	// shortcut for sap.m.OverflowToolbarPriority
+	var OverflowToolbarPriority = mobileLibrary.OverflowToolbarPriority;
+
+	// shortcut for sap.m.ButtonType
+	var ButtonType = mobileLibrary.ButtonType;
+
+	// shortcut for sap.m.PlacementType
+	var PlacementType = mobileLibrary.PlacementType;
+
+	// shortcut for sap.m.PopinDisplay
+	var PopinDisplay = mobileLibrary.PopinDisplay;
+
+	// shortcut for sap.m.ScreenSize
+	var ScreenSize = mobileLibrary.ScreenSize;
+
+	// shortcut for sap.ui.core.ValueState
+	var ValueState = coreLibrary.ValueState;
+
+	// shortcut for sap.ui.core.TextAlign
+	var TextAlign = coreLibrary.TextAlign;
 
 	/**
 	 * Constructor for a new VariantManagement.
 	 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
 	 * @param {object} [mSettings] Initial settings for the new control
-	 * @class The VariantManagement control can be used to manage variants, such as filter bar variants or table variants.
+	 *
+	 * @class
+	 * The <code>VariantManagement</code> control can be used to manage variants.
+	 *
+	 * <h3>Usage</h3>
+	 *
+	 * You can use this control in most controls that are enabled for <i>UI adaptation at runtime</i>.
+	 *
+	 * @see {@link topic:f1430c0337534d469da3a56307ff76af UI Adaptation at Runtime: Enable Your App}
+	 *
 	 * @extends sap.ui.core.Control
 	 * @constructor
 	 * @public
-	 * @since 1.50
-	 * @experimental Since 1.50. This class is experimental and provides only limited functionality. Also the API might be changed in future.
+	 * @since 1.56
 	 * @alias sap.ui.fl.variants.VariantManagement
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -549,6 +578,7 @@ sap.ui.define([
 
 		this._rebindControl();
 
+		return this;
 	};
 
 	VariantManagement.prototype._setBindingContext = function() {
@@ -584,7 +614,7 @@ sap.ui.define([
 			return this.getId();
 		}
 
-		return BaseTreeModifier.getSelector(this, flUtils.getComponentForControl(this)).id;
+		return JsControlTreeModifier.getSelector(this, flUtils.getAppComponentForControl(this)).id;
 	};
 
 	VariantManagement.prototype._setModel = function() {
@@ -630,7 +660,7 @@ sap.ui.define([
 	};
 
 	VariantManagement.prototype.onkeydown = function(oEvent) {
-		if (oEvent.which === jQuery.sap.KeyCodes.F4 || oEvent.which === jQuery.sap.KeyCodes.SPACE || oEvent.altKey === true && oEvent.which === jQuery.sap.KeyCodes.ARROW_UP || oEvent.altKey === true && oEvent.which === jQuery.sap.KeyCodes.ARROW_DOWN) {
+		if (oEvent.which === KeyCodes.F4 || oEvent.which === KeyCodes.SPACE || oEvent.altKey === true && oEvent.which === KeyCodes.ARROW_UP || oEvent.altKey === true && oEvent.which === KeyCodes.ARROW_DOWN) {
 			this._openVariantList();
 		}
 	};
@@ -1101,7 +1131,7 @@ sap.ui.define([
 		this.setModified(false);
 	};
 
-// MANAGE DIALOG
+	// MANAGE DIALOG
 
 	/**
 	 * Opens the manage dialog.
@@ -1532,7 +1562,7 @@ sap.ui.define([
 			oModel.checkUpdate();
 		}
 
-		// this.oManagementCancel.focus();
+		this.oManagementCancel.focus();
 	};
 
 	VariantManagement.prototype._handleManageExecuteOnSelectionChanged = function(oItem) {
@@ -1591,7 +1621,7 @@ sap.ui.define([
 		return bInError;
 	};
 
-// UTILS
+	// UTILS
 
 	VariantManagement.prototype._getFilters = function(oFilter) {
 		var aFilters = [];
@@ -1717,5 +1747,4 @@ sap.ui.define([
 	};
 
 	return VariantManagement;
-
 }, /* bExport= */true);

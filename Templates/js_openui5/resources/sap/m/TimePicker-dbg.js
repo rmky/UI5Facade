@@ -6,7 +6,6 @@
 
 // Provides control sap.m.TimePicker.
 sap.ui.define([
-	'jquery.sap.global',
 	'./InputBase',
 	'./DateTimeField',
 	'./MaskInputRule',
@@ -21,10 +20,12 @@ sap.ui.define([
 	'sap/m/library',
 	'sap/ui/core/LocaleData',
 	'./TimePickerRenderer',
-	'jquery.sap.keycodes'
+	"sap/ui/events/KeyCodes",
+	"sap/base/Log",
+	"sap/ui/core/InvisibleText",
+	"sap/ui/thirdparty/jquery"
 ],
 function(
-	jQuery,
 	InputBase,
 	DateTimeField,
 	MaskInputRule,
@@ -38,8 +39,12 @@ function(
 	Locale,
 	library,
 	LocaleData,
-	TimePickerRenderer
-	) {
+	TimePickerRenderer,
+	KeyCodes,
+	Log,
+	InvisibleText,
+	jQuery
+) {
 		"use strict";
 
 		// shortcut for sap.m.PlacementType
@@ -82,7 +87,10 @@ function(
 		 * <li>Use the <code>value</code> property if the date is provided as a string from
 		 * the backend or inside the app (for example, as ABAP type DATS field)</li>
 		 * <li>Use the <code>dateValue</code> property if the date is already provided as a
-		 * JavaScript Date object or you want to work with a JavaScript Date object</li></ul>
+		 * JavaScript Date object or you want to work with a JavaScript Date object.
+		 * Use <code>dateValue</code> as a helper property to easily obtain the hours, minutes and seconds
+		 * of the chosen time. Although possible to bind it, the recommendation is to not to do it.
+		 * When binding is needed, use <code>value</code> property instead</li></ul>
 		 *
 		 * <h3>Formatting</h3>
 		 *
@@ -117,7 +125,7 @@ function(
 		 * @extends sap.m.DateTimeField
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -279,6 +287,7 @@ function(
 		 * @public
 		 */
 		TimePicker.prototype.init = function() {
+			DateTimeField.prototype.init.apply(this, arguments);
 
 			MaskEnabler.init.apply(this, arguments);
 
@@ -303,6 +312,37 @@ function(
 
 			this._rPlaceholderRegEx = new RegExp(PLACEHOLDER_SYMBOL, 'g');
 			this._sLastChangeValue = null;
+
+			var oIcon = this.addEndIcon({
+				id: this.getId() + "-icon",
+				src: this.getIconSrc(),
+				noTabStop: true,
+				title: ""
+			});
+
+			// idicates whether the picker is still open
+			this._bShouldClosePicker = false;
+
+			oIcon.addEventDelegate({
+				onmousedown: function (oEvent) {
+					// as the popup closes automatically on blur - we need to remember its state
+					this._bShouldClosePicker = this.isOpen();
+				}
+			}, this);
+
+			oIcon.attachPress(function () {
+				this.toggleOpen(this._bShouldClosePicker);
+			}, this);
+		};
+
+		TimePicker.prototype.onBeforeRendering = function() {
+			DateTimeField.prototype.onBeforeRendering.apply(this, arguments);
+
+			var oValueHelpIcon = this._getValueHelpIcon();
+
+			if (oValueHelpIcon) {
+				oValueHelpIcon.setProperty("visible", this.getEnabled(), true);
+			}
 		};
 
 		/**
@@ -329,31 +369,16 @@ function(
 			this._sLastChangeValue = null;
 		};
 
-		/**
-		 * Handles tap inside the input.
-		 *
-		 * @param {jQuery.Event} oEvent Event object
-		 */
-		TimePicker.prototype.ontap = function(oEvent) {
-			var bIconClicked,
-				bPickerOpened;
+		TimePicker.prototype.getIconSrc = function () {
+			return IconPool.getIconURI("time-entry-request");
+		};
 
-			if (!(this.getEditable() && this.getEnabled())) {
-				return;
-			}
+		TimePicker.prototype.isOpen = function () {
+			return this._getPicker() && this._getPicker().isOpen();
+		};
 
-			bIconClicked = jQuery(oEvent.target).hasClass("sapUiIcon");
-			bPickerOpened = this._getPicker() && this._getPicker().isOpen();
-
-			if (!bPickerOpened && bIconClicked) {
-				this._openPicker();
-			} else if (bIconClicked && !Device.system.phone) {
-				//phone check: it wont be possible to click the icon while the dialog is opened
-				//but there is a bug that the event is triggered twice on Nokia Lumia 520 emulated in Chrome
-				//which closes the picker immediately after opening
-				//so check for phone just in case
-				this._closePicker();
-			}
+		TimePicker.prototype.toggleOpen = function (bOpened) {
+			this[bOpened ? "_closePicker" : "_openPicker"]();
 		};
 
 		/**
@@ -397,7 +422,7 @@ function(
 			oSliders.collapseAll();
 
 			/* Mark input as active */
-			this.$().addClass("sapMTPInputActive");
+			this.$().addClass(InputBase.ICON_PRESSED_CSS_CLASS);
 		};
 
 		/**
@@ -424,10 +449,16 @@ function(
 		 * @public
 		 */
 		TimePicker.prototype.onAfterClose = function() {
-			this.$().removeClass("sapMTPInputActive");
+			this.$().removeClass(InputBase.ICON_PRESSED_CSS_CLASS);
 
 			//WAI-ARIA region
 			this._handleAriaOnExpandCollapse();
+		};
+
+		TimePicker.prototype._getValueHelpIcon = function () {
+			var oValueHelpIcon = this.getAggregation("_endIcon");
+
+			return oValueHelpIcon && oValueHelpIcon[0];
 		};
 
 		/**
@@ -557,7 +588,7 @@ function(
 
 			if (!oDate) {
 				this._bValid = false;
-				jQuery.sap.log.warning("Value can not be converted to a valid date", this);
+				Log.warning("Value can not be converted to a valid date", this);
 			} else {
 				this._bValid = true;
 				this.setProperty("dateValue", oDate, true); // no rerendering
@@ -657,7 +688,7 @@ function(
 					TimePickerSliders._replace24HoursWithZero(sValue, iIndexOfHH, iIndexOfH) : sValue);
 				if (!oDate) {
 					this._bValid = false;
-						jQuery.sap.log.warning("Value can not be converted to a valid date", this);
+						Log.warning("Value can not be converted to a valid date", this);
 					}
 				}
 
@@ -914,7 +945,7 @@ function(
 		 * @private
 		 */
 		TimePicker.prototype.onkeydown = function(oEvent) {
-			var oKC = jQuery.sap.KeyCodes,
+			var oKC = KeyCodes,
 				iKC = oEvent.which || oEvent.keyCode,
 				bAlt = oEvent.altKey,
 				bPickerOpened;
@@ -981,7 +1012,7 @@ function(
 			oPicker.open();
 
 			oSliders = this._getSliders();
-			jQuery.sap.delayedCall(0, oSliders, oSliders._updateSlidersValues);
+			setTimeout(oSliders._updateSlidersValues.bind(oSliders), 0);
 
 			return oPicker;
 		};
@@ -998,7 +1029,7 @@ function(
 			if (oPicker) {
 				oPicker.close();
 			} else {
-				jQuery.sap.log.warning("There is no picker to close.");
+				Log.warning("There is no picker to close.");
 			}
 
 			return oPicker;
@@ -1021,7 +1052,8 @@ function(
 				sOKButtonText,
 				sCancelButtonText,
 				sTitle,
-			sLocaleId = this.getLocaleId();
+				oIcon = this.getAggregation("_endIcon")[0],
+				sLocaleId = this.getLocaleId();
 
 			oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 			sOKButtonText = oResourceBundle.getText("TIMEPICKER_SET");
@@ -1047,7 +1079,8 @@ function(
 						secondsStep: this.getSecondsStep()
 					})._setShouldOpenSliderAfterRendering(true)
 				],
-				contentHeight: TimePicker._PICKER_CONTENT_HEIGHT
+				contentHeight: TimePicker._PICKER_CONTENT_HEIGHT,
+				ariaLabelledBy: InvisibleText.getStaticId("sap.m", "TIMEPICKER_SET_TIME")
 			});
 
 			oPopover = oPicker.getAggregation("_popup");
@@ -1056,7 +1089,7 @@ function(
 				oPopover.setShowArrow(false);
 			}
 
-			oPopover.oPopup.setAutoCloseAreas([this.getDomRef("icon")]);
+			oPopover.oPopup.setAutoCloseAreas([oIcon]);
 
 			oPicker.addStyleClass(this.getRenderer().CSS_CLASS + "DropDown")
 				.attachBeforeOpen(this.onBeforeOpen, this)
@@ -1070,7 +1103,7 @@ function(
 			if (Device.system.desktop) {
 				this._oPopoverKeydownEventDelegate = {
 					onkeydown: function(oEvent) {
-						var oKC = jQuery.sap.KeyCodes,
+						var oKC = KeyCodes,
 							iKC = oEvent.which || oEvent.keyCode,
 							bAlt = oEvent.altKey;
 
@@ -1328,6 +1361,7 @@ function(
 			if (oTimePicker._checkStyle(sDisplayFormat)) {
 				sMask = LocaleData.getInstance(oLocale).getTimePattern(sDisplayFormat);
 			} else {
+				sDisplayFormat = sDisplayFormat.replace(/'/g, ""); // single quotes (like 'ч') are irrelevant for DateFormat, so they are for the mask
 				sMask = sDisplayFormat;
 			}
 
@@ -1615,6 +1649,43 @@ function(
 			return this._oTimeSemanticMaskHelper.replaceChar(sChar, iPlacePosition, sCurrentInputValue);
 		};
 
+		//BCP: 002075129500004097892018
+		/*
+		 * This method is called by MaskEnabler just after the user input has completed(focusout, <enter>).
+		 * MaskEnabler gives a chance to subclasses to early pre-alter the user-input value before the string is being
+		 * set to the InputBase <value> property.
+		 * At this point, MaskInput didn't propagate change to its subclasses (i.e. didn't call this.onChange)
+		 *
+		 * TimePicker uses it to workaround the issue with leading space or 0 at the beginning of the string & databinding,
+		 * wheres the scenario is :
+		 * - the user-input is about to be transmitted to InputBase#value including the leading space (e.g. " 8:00:00 AM",
+		 * or respectively "08:00:00 AM" when mask is off)
+		 *
+		 * - since a property is updated, this triggers model update
+		 *
+		 * - model update uses property' binding type to get the external value.
+		 *
+		 * - in case of type=sap.ui.model.odata.type.Time, the format could be "h:mm:ss a" (i.e. no leading space nor 0),
+		 *   so the external value would be "8:00:00 AM".
+		 *
+		 * - since the external value differs than the original ("8:00:00 AM" != " 8:00:00 AM", respectively
+		 * "8:00:00 AM" != "08:00:00 AM"), the model re-sets the value to the external one (see ManagedObject.prototype#updateModelProperty)
+		 *
+		 * - this breaks TimePicker logic for previous and new value, by making the TimePicker wrongly "remember" new
+		 * value (see this._oLastChangeValue).
+		 *
+		 * - The result is that TimePicker does not fire the change event.
+		 *
+		 * To solve it, the workaround here pre-formats the user-input value, so the value is the same as expected by used
+		 * TimePicker formatter logic(includes binding type formatters) and this does not re-set back any value.
+		 *
+		 * @override
+		 * @private
+		 * @param {string} sValue
+		 */
+		TimePicker.prototype._getAlteredUserInputValue = function (sValue) {
+			return sValue ? this._formatValue(this._parseValue(sValue), true) : sValue;
+		};
 
 		/**
 		 * @see sap.ui.core.Control#getAccessibilityInfo

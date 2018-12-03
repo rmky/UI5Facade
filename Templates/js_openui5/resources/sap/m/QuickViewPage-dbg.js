@@ -6,7 +6,6 @@
 
 // Provides control sap.m.QuickViewPage
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
@@ -29,10 +28,10 @@ sap.ui.define([
 	'sap/ui/layout/library',
 	'sap/ui/Device',
 	'sap/ui/layout/form/ResponsiveGridLayout',
-	'./QuickViewPageRenderer'
+	'./QuickViewPageRenderer',
+	"sap/base/security/encodeURL"
 ],
 	function(
-		jQuery,
 		library,
 		Control,
 		IconPool,
@@ -56,7 +55,8 @@ sap.ui.define([
 		layoutLibrary,
 		Device,
 		ResponsiveGridLayout,
-		QuickViewPageRenderer
+		QuickViewPageRenderer,
+		encodeURL
 		) {
 			"use strict";
 
@@ -88,7 +88,7 @@ sap.ui.define([
 			* @extends sap.ui.core.Control
 			*
 			* @author SAP SE
-			* @version 1.56.6
+			* @version 1.60.1
 			*
 			* @constructor
 			* @public
@@ -627,7 +627,7 @@ sap.ui.define([
 			 * @private
 			 */
 			QuickViewPage.prototype._mobilePress = function () {
-				var sms = "sms://" + jQuery.sap.encodeURL(this.getCustomData()[0].getValue());
+				var sms = "sms://" + encodeURL(this.getCustomData()[0].getValue());
 				window.location.replace(sms);
 			};
 

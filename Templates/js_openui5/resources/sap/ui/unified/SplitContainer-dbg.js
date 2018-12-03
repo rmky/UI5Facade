@@ -6,14 +6,13 @@
 
 // Provides control sap.ui.unified.SplitContainer.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/core/Control',
 	'sap/ui/core/theming/Parameters',
 	'./library',
 	'sap/ui/core/library',
 	'./SplitContainerRenderer',
-	'jquery.sap.script'
-], function(jQuery, Control, Parameters, library, coreLibrary, SplitContainerRenderer /*, jQueryScript*/ ) {
+	"sap/base/Log"
+], function(Control, Parameters, library, coreLibrary, SplitContainerRenderer, Log ) {
 	"use strict";
 
 
@@ -34,7 +33,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -117,7 +116,7 @@ sap.ui.define([
 		delete this._canvasRenderer;
 
 		if (this._closeContentDelayId) {
-			jQuery.sap.clearDelayedCall(this._closeContentDelayId);
+			clearTimeout(this._closeContentDelayId);
 			delete this._closeContentDelayId;
 		}
 		delete this._contentContainer;
@@ -204,7 +203,7 @@ sap.ui.define([
 			}
 
 			if (this._closeContentDelayId) {
-				jQuery.sap.clearDelayedCall(this._closeContentDelayId);
+				clearTimeout(this._closeContentDelayId);
 				delete this._closeContentDelayId;
 			}
 
@@ -230,9 +229,9 @@ sap.ui.define([
 				);
 				// Maybe we could also allow "s"-values and then multiply everything below 20 with 1000...?
 
-				this._closeContentDelayId = jQuery.sap.delayedCall(iHideDelay, this, function() {
+				this._closeContentDelayId = setTimeout(function() {
 					this._secondaryContentContainer.toggleClass("sapUiUfdSplitContSecondClosed", true);
-				});
+				}.bind(this), iHideDelay);
 			} else {
 				this._secondaryContentContainer.toggleClass("sapUiUfdSplitContSecondClosed", false);
 			}
@@ -286,7 +285,7 @@ sap.ui.define([
 	// Backwards compatibility with old property name
 
 	SplitContainer.prototype.getSecondaryContentWidth = function() {
-		jQuery.sap.log.warning(
+		Log.warning(
 			"SplitContainer: Use of deprecated property \"SecondaryContentWidth\", please use " +
 			"\"SecondaryContentSize\" instead."
 		);
@@ -294,7 +293,7 @@ sap.ui.define([
 	};
 
 	SplitContainer.prototype.setSecondaryContentWidth = function() {
-		jQuery.sap.log.warning(
+		Log.warning(
 			"SplitContainer: Use of deprecated property \"SecondaryContentWidth\", please use " +
 			"\"SecondaryContentSize\" instead."
 		);

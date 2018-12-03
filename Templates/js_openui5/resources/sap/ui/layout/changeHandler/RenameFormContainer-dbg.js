@@ -16,7 +16,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.layout.changeHandler.RenameFormContainer
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 1.48
 	 * @private
 	 * @experimental Since 1.48. This class is experimental and provides only limited functionality. Also the API might be changed in future.
@@ -48,8 +48,10 @@ sap.ui.define([
 			var sValue = oChangeDefinition.texts.formText.value;
 
 			if (typeof oTitle === "string") {
+				oChangeWrapper.setRevertData(oModifier.getProperty(oRenamedElement, "title"));
 				oModifier.setProperty(oRenamedElement, "title", sValue);
 			} else {
+				oChangeWrapper.setRevertData(oModifier.getProperty(oTitle, "text"));
 				oModifier.setProperty(oTitle, "text", sValue);
 			}
 
@@ -82,6 +84,34 @@ sap.ui.define([
 		oChangeWrapper.addDependentControl(oSpecificChangeInfo.renamedElement.id, _CONSTANTS.TARGET_ALIAS, mPropertyBag);
 		BaseChangeHandler.setTextInChange(oChangeDefinition, "formText", oSpecificChangeInfo.value, "XGRP");
 
+	};
+
+	/**
+	 * Reverts the applied change
+	 *
+	 * @param {sap.ui.fl.Change} oChangeWrapper Change wrapper object with instructions to be applied to the control map
+	 * @param {sap.ui.core.Control} oControl Control that matches the change selector for applying the change
+	 * @param {object} mPropertyBag Property bag containing the modifier, the appComponent and the view
+	 * @param {object} mPropertyBag.modifier Modifier for the controls
+	 * @param {object} mPropertyBag.appComponent Component in which the change should be applied
+	 * @param {object} mPropertyBag.view Application view
+	 * @returns {boolean} True if successful
+	 * @public
+	 */
+	RenameFormContainer.revertChange = function(oChangeWrapper, oControl, mPropertyBag) {
+		var sOldText = oChangeWrapper.getRevertData(),
+			oModifier = mPropertyBag.modifier,
+			oRenamedElement = oChangeWrapper.getDependentControl(_CONSTANTS.TARGET_ALIAS, mPropertyBag),
+			oTitle = oModifier.getAggregation(oRenamedElement, "title");
+
+		if (typeof oTitle === "string") {
+			oModifier.setProperty(oRenamedElement, "title", sOldText);
+		} else {
+			oModifier.setProperty(oTitle, "text", sOldText);
+		}
+		oChangeWrapper.resetRevertData();
+
+		return true;
 	};
 
 	RenameFormContainer._isProvided = function(sString){

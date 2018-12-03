@@ -5,8 +5,15 @@
  */
 
 // Provides class sap.ui.core.ThemeCheck
-sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/ui/thirdparty/URI', 'jquery.sap.script'],
-	function(jQuery, Device, BaseObject, URI/* , jQuerySapScript */) {
+sap.ui.define([
+	'sap/ui/Device',
+	'sap/ui/base/Object',
+	'sap/ui/thirdparty/URI',
+	"sap/base/Log",
+	"sap/ui/dom/includeStylesheet",
+	"sap/ui/thirdparty/jquery"
+],
+	function(Device, BaseObject, URI, Log, includeStylesheet, jQuery) {
 	"use strict";
 
 
@@ -100,14 +107,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 			var bResult = bNoLinkElement || bSheet || bInnerHtml || bLinkElementFinishedLoading;
 
 			if (bLog) {
-				jQuery.sap.log.debug("ThemeCheck: " + sId + ": " + bResult + " (noLinkElement: " + bNoLinkElement + ", sheet: " + bSheet + ", innerHtml: " + bInnerHtml + ", linkElementFinishedLoading: " + bLinkElementFinishedLoading + ")");
+				Log.debug("ThemeCheck: " + sId + ": " + bResult + " (noLinkElement: " + bNoLinkElement + ", sheet: " + bSheet + ", innerHtml: " + bInnerHtml + ", linkElementFinishedLoading: " + bLinkElementFinishedLoading + ")");
 			}
 
 			return bResult;
 
 		} catch (e) {
 			if (bLog) {
-				jQuery.sap.log.error("ThemeCheck: " + sId + ": Error during check styles '" + sId + "'", e);
+				Log.error("ThemeCheck: " + sId + ": Error during check styles '" + sId + "'", e);
 			}
 		}
 
@@ -117,7 +124,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 	function clear(oThemeCheck){
 		ThemeCheck.themeLoaded = false;
 		if (oThemeCheck._sThemeCheckId) {
-			jQuery.sap.clearDelayedCall(oThemeCheck._sThemeCheckId);
+			clearTimeout(oThemeCheck._sThemeCheckId);
 			oThemeCheck._sThemeCheckId = null;
 			oThemeCheck._iCount = 0;
 			oThemeCheck._sFallbackTheme = null;
@@ -156,7 +163,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 					for (var i = 0, l = aOldStyles.length; i < l; i++) {
 						aOldStyles[i].parentNode.removeChild(aOldStyles[i]);
 					}
-					jQuery.sap.log.debug("ThemeCheck: Old stylesheets removed for library: " + lib);
+					Log.debug("ThemeCheck: Old stylesheets removed for library: " + lib);
 				}
 
 			}
@@ -178,9 +185,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 							sCustomCssPath += sLibCssQueryParams;
 						}
 
-						jQuery.sap.includeStyleSheet(sCustomCssPath, oThemeCheck._CUSTOMID);
+						includeStylesheet(sCustomCssPath, oThemeCheck._CUSTOMID);
 						oThemeCheck._customCSSAdded = true;
-						jQuery.sap.log.warning("ThemeCheck: delivered custom CSS needs to be loaded, Theme not yet applied");
+						Log.warning("ThemeCheck: delivered custom CSS needs to be loaded, Theme not yet applied");
 						oThemeCheck._themeCheckedForCustom = sThemeName;
 						res = false;
 						return false;
@@ -190,7 +197,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 						var customCssLink = jQuery("LINK[id='" +  oThemeCheck._CUSTOMID + "']");
 						if (customCssLink.length > 0) {
 							customCssLink.remove();
-							jQuery.sap.log.debug("ThemeCheck: Custom CSS removed");
+							Log.debug("ThemeCheck: Custom CSS removed");
 						}
 						oThemeCheck._customCSSAdded = false;
 					}
@@ -239,7 +246,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 					var sStyleId = "sap-ui-theme-" + lib;
 					var oStyle = document.getElementById(sStyleId);
 
-					jQuery.sap.log.warning(
+					Log.warning(
 						"ThemeCheck: Custom theme '" + sThemeName + "' could not be loaded for library '" + lib + "'. " +
 						"Falling back to its base theme '" + oThemeCheck._sFallbackTheme + "'."
 					);
@@ -258,7 +265,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 		}
 
 		if (!res) {
-			jQuery.sap.log.warning("ThemeCheck: Theme not yet applied.");
+			Log.warning("ThemeCheck: Theme not yet applied.");
 		} else {
 			oThemeCheck._themeCheckedForCustom = sThemeName;
 		}
@@ -310,7 +317,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 	 */
 	function checkCustom (oThemeCheck, lib){
 
-		var cssFile = jQuery.sap.domById("sap-ui-theme-" + lib);
+		var cssFile = window.document.getElementById("sap-ui-theme-" + lib);
 
 		if (!cssFile) {
 			return false;
@@ -356,7 +363,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 
 			} catch (e) {
 				// parsing error
-				jQuery.sap.log.error("Custom check: Error parsing JSON string for custom.css indication.", e);
+				Log.error("Custom check: Error parsing JSON string for custom.css indication.", e);
 			}
 		}
 
@@ -371,7 +378,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 		var aRules = cssFile.sheet ? safeAccessSheetCssRules(cssFile.sheet) : null;
 
 		if (!aRules || aRules.length === 0) {
-			jQuery.sap.log.warning("Custom check: Failed retrieving a CSS rule from stylesheet " + lib);
+			Log.warning("Custom check: Failed retrieving a CSS rule from stylesheet " + lib);
 			return false;
 		}
 
@@ -401,13 +408,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 			} else {
 				iDelay = 1000; // 3. After another 10 cycles (about 5 seconds)
 			}
-			this._sThemeCheckId = jQuery.sap.delayedCall(iDelay, this, delayedCheckTheme);
+			this._sThemeCheckId = setTimeout(delayedCheckTheme.bind(this), iDelay);
 		} else if (!bFirst) {
 			clear(this);
 			ThemeCheck.themeLoaded = true;
 			this._oCore.fireThemeChanged({theme: this._oCore.getConfiguration().getTheme()});
 			if (bEmergencyExit) {
-				jQuery.sap.log.warning("ThemeCheck: max. check cycles reached.");
+				Log.warning("ThemeCheck: max. check cycles reached.");
 			}
 		} else {
 			ThemeCheck.themeLoaded = true;

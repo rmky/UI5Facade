@@ -6,20 +6,20 @@
 
 // Provides control sap.m.ProgressIndicator.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/ValueStateSupport',
 	'sap/ui/core/library',
-	'./ProgressIndicatorRenderer'
+	'./ProgressIndicatorRenderer',
+	"sap/base/Log"
 ],
 	function(
-	jQuery,
 	library,
 	Control,
 	ValueStateSupport,
 	coreLibrary,
-	ProgressIndicatorRenderer
+	ProgressIndicatorRenderer,
+	Log
 	) {
 	"use strict";
 
@@ -48,7 +48,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -67,7 +67,8 @@ sap.ui.define([
 			enabled : {type : "boolean", group : "Behavior", defaultValue : true},
 
 			/**
-			 * Specifies the state of the bar. Enumeration sap.ui.core.ValueState provides Error (red), Warning (yellow), Success (green), None (blue) (default value).
+			 * Specifies the state of the bar. Enumeration sap.ui.core.ValueState provides Error, Warning, Success, Information, None (default value).
+			 * The color for each state depends on the theme.
 			 */
 			state : {type : "sap.ui.core.ValueState", group : "Appearance", defaultValue : ValueState.None},
 
@@ -130,7 +131,7 @@ sap.ui.define([
 		if (!isValidPercentValue(fPercentValue)) {
 			fNotValidValue = fPercentValue;
 			fPercentValue = fPercentValue > 100 ? 100 : 0;
-			jQuery.sap.log.warning(this + ": percentValue (" + fNotValidValue + ") is not correct! Setting the percentValue to " + fPercentValue);
+			Log.warning(this + ": percentValue (" + fNotValidValue + ") is not correct! Setting the percentValue to " + fPercentValue);
 		}
 
 		if (this.getPercentValue() !== fPercentValue) {
@@ -242,11 +243,14 @@ sap.ui.define([
 	 * @returns {object} The <code>sap.m.ProgressIndicator</code> accessibility information
 	 */
 	ProgressIndicator.prototype.getAccessibilityInfo = function() {
-		var oBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
+		var oBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m"),
+			sDisplayValue = this.getDisplayValue(),
+			sDescription = sDisplayValue ? sDisplayValue : oBundle.getText("ACC_CTR_STATE_PROGRESS", [this.getPercentValue()]);
+
 		return {
 			role: "progressbar",
 			type: oBundle.getText("ACC_CTR_TYPE_PROGRESS"),
-			description: oBundle.getText("ACC_CTR_STATE_PROGRESS", [this.getPercentValue()]),
+			description: sDescription,
 			focusable: this.getEnabled(),
 			enabled: this.getEnabled()
 		};

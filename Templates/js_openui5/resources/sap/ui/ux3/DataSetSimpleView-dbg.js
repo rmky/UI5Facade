@@ -35,7 +35,7 @@ sap.ui.define([
 	 * DataSetSimpleView provides a simple view example for DataSet usage.
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.ux3.DataSetView
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -394,6 +394,7 @@ sap.ui.define([
 	DataSetSimpleView.prototype.setInitialItemCount = function(iValue) {
 		this.setProperty("initialItemCount", iValue);
 		this._bUsePagination = (iValue != 0);
+		return this;
 	};
 
 	/**
@@ -526,6 +527,7 @@ sap.ui.define([
 			jQuery.sap.log.error('You can only pass a string (ID of scroll area DOM) or a jQuery object as scrollarea');
 		}
 		this.setProperty('scrollArea', aScrollArea, bSupress);
+		return this;
 	};
 
 

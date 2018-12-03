@@ -22,1000 +22,1247 @@ if ( !('baseURI' in Node.prototype) ) {
 		configurable: true
 	});
 }
+/**
+ * Code copied from Mozilla Developer Network:
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Polyfill
+ */
+if (typeof Object.assign != 'function') {
+	// Must be writable: true, enumerable: false, configurable: true
+	Object.defineProperty(Object, "assign", {
+		value: function assign(target, varArgs) { // .length of function is 2
+			'use strict';
+			if (target == null) { // TypeError if undefined or null
+				throw new TypeError('Cannot convert undefined or null to object');
+			}
+
+			target = Object(target);
+
+			for (var index = 1; index < arguments.length; index++) {
+				var nextSource = arguments[index];
+
+				if (nextSource != null) { // Skip over if undefined or null
+					for (var nextKey in nextSource) {
+						// Avoid bugs when hasOwnProperty is shadowed
+						if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+							target[nextKey] = nextSource[nextKey];
+						}
+					}
+				}
+			}
+			return target;
+		},
+		writable: true,
+		configurable: true
+	});
+}
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
  * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
  * @license   Licensed under MIT license
- *            See https://raw.githubusercontent.com/jakearchibald/es6-promise/master/LICENSE
- * @version   2.3.0
- */
+ *            See https://raw.githubusercontent.com/stefanpenner/es6-promise/master/LICENSE
+ * @version   v4.2.4+314e4831
+  */
+// Note: despite its file name, this is the es6-promise-auto.js variant of es6-promise.
 
-(function() {
-    "use strict";
-    function lib$es6$promise$utils$$objectOrFunction(x) {
-      return typeof x === 'function' || (typeof x === 'object' && x !== null);
-    }
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	// ##### BEGIN: MODIFIED BY SAP
+	// provide an id during registration and always register to global
+	// Original lines:
+	// typeof define === 'function' && define.amd ? define(factory) :
+	// (global.ES6Promise = factory());
+	// Modified lines:
+	typeof define === 'function' && define.amd ? define('sap/ui/thirdparty/es6-promise', factory) : null;
+	global.ES6Promise = factory();
+	// ##### END: MODIFIED BY SAP
+}(this, (function () { 'use strict';
 
-    function lib$es6$promise$utils$$isFunction(x) {
-      return typeof x === 'function';
-    }
+function objectOrFunction(x) {
+  var type = typeof x;
+  return x !== null && (type === 'object' || type === 'function');
+}
 
-    function lib$es6$promise$utils$$isMaybeThenable(x) {
-      return typeof x === 'object' && x !== null;
-    }
+function isFunction(x) {
+  return typeof x === 'function';
+}
 
-    var lib$es6$promise$utils$$_isArray;
-    if (!Array.isArray) {
-      lib$es6$promise$utils$$_isArray = function (x) {
-        return Object.prototype.toString.call(x) === '[object Array]';
-      };
+
+
+var _isArray = void 0;
+if (Array.isArray) {
+  _isArray = Array.isArray;
+} else {
+  _isArray = function (x) {
+    return Object.prototype.toString.call(x) === '[object Array]';
+  };
+}
+
+var isArray = _isArray;
+
+var len = 0;
+var vertxNext = void 0;
+var customSchedulerFn = void 0;
+
+var asap = function asap(callback, arg) {
+  queue[len] = callback;
+  queue[len + 1] = arg;
+  len += 2;
+  if (len === 2) {
+    // If len is 2, that means that we need to schedule an async flush.
+    // If additional callbacks are queued before the queue is flushed, they
+    // will be processed by this flush that we are scheduling.
+    if (customSchedulerFn) {
+      customSchedulerFn(flush);
     } else {
-      lib$es6$promise$utils$$_isArray = Array.isArray;
+      scheduleFlush();
     }
-
-    var lib$es6$promise$utils$$isArray = lib$es6$promise$utils$$_isArray;
-    var lib$es6$promise$asap$$len = 0;
-    var lib$es6$promise$asap$$toString = {}.toString;
-    var lib$es6$promise$asap$$vertxNext;
-    var lib$es6$promise$asap$$customSchedulerFn;
-
-    var lib$es6$promise$asap$$asap = function asap(callback, arg) {
-      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len] = callback;
-      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len + 1] = arg;
-      lib$es6$promise$asap$$len += 2;
-      if (lib$es6$promise$asap$$len === 2) {
-        // If len is 2, that means that we need to schedule an async flush.
-        // If additional callbacks are queued before the queue is flushed, they
-        // will be processed by this flush that we are scheduling.
-        if (lib$es6$promise$asap$$customSchedulerFn) {
-          lib$es6$promise$asap$$customSchedulerFn(lib$es6$promise$asap$$flush);
-        } else {
-          lib$es6$promise$asap$$scheduleFlush();
-        }
-      }
-    }
-
-    function lib$es6$promise$asap$$setScheduler(scheduleFn) {
-      lib$es6$promise$asap$$customSchedulerFn = scheduleFn;
-    }
-
-    function lib$es6$promise$asap$$setAsap(asapFn) {
-      lib$es6$promise$asap$$asap = asapFn;
-    }
-
-    var lib$es6$promise$asap$$browserWindow = (typeof window !== 'undefined') ? window : undefined;
-    var lib$es6$promise$asap$$browserGlobal = lib$es6$promise$asap$$browserWindow || {};
-    var lib$es6$promise$asap$$BrowserMutationObserver = lib$es6$promise$asap$$browserGlobal.MutationObserver || lib$es6$promise$asap$$browserGlobal.WebKitMutationObserver;
-    var lib$es6$promise$asap$$isNode = typeof process !== 'undefined' && {}.toString.call(process) === '[object process]';
-
-    // test for web worker but not in IE10
-    var lib$es6$promise$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
-      typeof importScripts !== 'undefined' &&
-      typeof MessageChannel !== 'undefined';
-
-    // node
-    function lib$es6$promise$asap$$useNextTick() {
-      var nextTick = process.nextTick;
-      // node version 0.10.x displays a deprecation warning when nextTick is used recursively
-      // setImmediate should be used instead instead
-      var version = process.versions.node.match(/^(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)$/);
-      if (Array.isArray(version) && version[1] === '0' && version[2] === '10') {
-        nextTick = setImmediate;
-      }
-      return function() {
-        nextTick(lib$es6$promise$asap$$flush);
-      };
-    }
-
-    // vertx
-    function lib$es6$promise$asap$$useVertxTimer() {
-      return function() {
-        lib$es6$promise$asap$$vertxNext(lib$es6$promise$asap$$flush);
-      };
-    }
-
-    function lib$es6$promise$asap$$useMutationObserver() {
-      var iterations = 0;
-      var observer = new lib$es6$promise$asap$$BrowserMutationObserver(lib$es6$promise$asap$$flush);
-      var node = document.createTextNode('');
-      observer.observe(node, { characterData: true });
-
-      return function() {
-        node.data = (iterations = ++iterations % 2);
-      };
-    }
-
-    // web worker
-    function lib$es6$promise$asap$$useMessageChannel() {
-      var channel = new MessageChannel();
-      channel.port1.onmessage = lib$es6$promise$asap$$flush;
-      return function () {
-        channel.port2.postMessage(0);
-      };
-    }
-
-    function lib$es6$promise$asap$$useSetTimeout() {
-      return function() {
-        setTimeout(lib$es6$promise$asap$$flush, 1);
-      };
-    }
-
-    var lib$es6$promise$asap$$queue = new Array(1000);
-    function lib$es6$promise$asap$$flush() {
-      for (var i = 0; i < lib$es6$promise$asap$$len; i+=2) {
-        var callback = lib$es6$promise$asap$$queue[i];
-        var arg = lib$es6$promise$asap$$queue[i+1];
-
-        callback(arg);
-
-        lib$es6$promise$asap$$queue[i] = undefined;
-        lib$es6$promise$asap$$queue[i+1] = undefined;
-      }
-
-      lib$es6$promise$asap$$len = 0;
-    }
-
-    function lib$es6$promise$asap$$attemptVertex() {
-      try {
-        var r = require;
-        var vertx = r('vertx');
-        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
-        return lib$es6$promise$asap$$useVertxTimer();
-      } catch(e) {
-        return lib$es6$promise$asap$$useSetTimeout();
-      }
-    }
-
-    var lib$es6$promise$asap$$scheduleFlush;
-    // Decide what async method to use to triggering processing of queued callbacks:
-    if (lib$es6$promise$asap$$isNode) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useNextTick();
-    } else if (lib$es6$promise$asap$$BrowserMutationObserver) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMutationObserver();
-    } else if (lib$es6$promise$asap$$isWorker) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMessageChannel();
-    } else if (lib$es6$promise$asap$$browserWindow === undefined && typeof require === 'function') {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$attemptVertex();
-    } else {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useSetTimeout();
-    }
-
-    function lib$es6$promise$$internal$$noop() {}
-
-    var lib$es6$promise$$internal$$PENDING   = void 0;
-    var lib$es6$promise$$internal$$FULFILLED = 1;
-    var lib$es6$promise$$internal$$REJECTED  = 2;
-
-    var lib$es6$promise$$internal$$GET_THEN_ERROR = new lib$es6$promise$$internal$$ErrorObject();
-
-    function lib$es6$promise$$internal$$selfFullfillment() {
-      return new TypeError("You cannot resolve a promise with itself");
-    }
-
-    function lib$es6$promise$$internal$$cannotReturnOwn() {
-      return new TypeError('A promises callback cannot return that same promise.');
-    }
-
-    function lib$es6$promise$$internal$$getThen(promise) {
-      try {
-        return promise.then;
-      } catch(error) {
-        lib$es6$promise$$internal$$GET_THEN_ERROR.error = error;
-        return lib$es6$promise$$internal$$GET_THEN_ERROR;
-      }
-    }
-
-    function lib$es6$promise$$internal$$tryThen(then, value, fulfillmentHandler, rejectionHandler) {
-      try {
-        then.call(value, fulfillmentHandler, rejectionHandler);
-      } catch(e) {
-        return e;
-      }
-    }
-
-    function lib$es6$promise$$internal$$handleForeignThenable(promise, thenable, then) {
-       lib$es6$promise$asap$$asap(function(promise) {
-        var sealed = false;
-        var error = lib$es6$promise$$internal$$tryThen(then, thenable, function(value) {
-          if (sealed) { return; }
-          sealed = true;
-          if (thenable !== value) {
-            lib$es6$promise$$internal$$resolve(promise, value);
-          } else {
-            lib$es6$promise$$internal$$fulfill(promise, value);
-          }
-        }, function(reason) {
-          if (sealed) { return; }
-          sealed = true;
-
-          lib$es6$promise$$internal$$reject(promise, reason);
-        }, 'Settle: ' + (promise._label || ' unknown promise'));
-
-        if (!sealed && error) {
-          sealed = true;
-          lib$es6$promise$$internal$$reject(promise, error);
-        }
-      }, promise);
-    }
-
-    function lib$es6$promise$$internal$$handleOwnThenable(promise, thenable) {
-      if (thenable._state === lib$es6$promise$$internal$$FULFILLED) {
-        lib$es6$promise$$internal$$fulfill(promise, thenable._result);
-      } else if (thenable._state === lib$es6$promise$$internal$$REJECTED) {
-        lib$es6$promise$$internal$$reject(promise, thenable._result);
-      } else {
-        lib$es6$promise$$internal$$subscribe(thenable, undefined, function(value) {
-          lib$es6$promise$$internal$$resolve(promise, value);
-        }, function(reason) {
-          lib$es6$promise$$internal$$reject(promise, reason);
-        });
-      }
-    }
-
-    function lib$es6$promise$$internal$$handleMaybeThenable(promise, maybeThenable) {
-      if (maybeThenable.constructor === promise.constructor) {
-        lib$es6$promise$$internal$$handleOwnThenable(promise, maybeThenable);
-      } else {
-        var then = lib$es6$promise$$internal$$getThen(maybeThenable);
-
-        if (then === lib$es6$promise$$internal$$GET_THEN_ERROR) {
-          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$GET_THEN_ERROR.error);
-        } else if (then === undefined) {
-          lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
-        } else if (lib$es6$promise$utils$$isFunction(then)) {
-          lib$es6$promise$$internal$$handleForeignThenable(promise, maybeThenable, then);
-        } else {
-          lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
-        }
-      }
-    }
-
-    function lib$es6$promise$$internal$$resolve(promise, value) {
-      if (promise === value) {
-        lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$selfFullfillment());
-      } else if (lib$es6$promise$utils$$objectOrFunction(value)) {
-        lib$es6$promise$$internal$$handleMaybeThenable(promise, value);
-      } else {
-        lib$es6$promise$$internal$$fulfill(promise, value);
-      }
-    }
-
-    function lib$es6$promise$$internal$$publishRejection(promise) {
-      if (promise._onerror) {
-        promise._onerror(promise._result);
-      }
-
-      lib$es6$promise$$internal$$publish(promise);
-    }
-
-    function lib$es6$promise$$internal$$fulfill(promise, value) {
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
-
-      promise._result = value;
-      promise._state = lib$es6$promise$$internal$$FULFILLED;
-
-      if (promise._subscribers.length !== 0) {
-        lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, promise);
-      }
-    }
-
-    function lib$es6$promise$$internal$$reject(promise, reason) {
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
-      promise._state = lib$es6$promise$$internal$$REJECTED;
-      promise._result = reason;
-
-      lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publishRejection, promise);
-    }
-
-    function lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection) {
-      var subscribers = parent._subscribers;
-      var length = subscribers.length;
-
-      parent._onerror = null;
-
-      subscribers[length] = child;
-      subscribers[length + lib$es6$promise$$internal$$FULFILLED] = onFulfillment;
-      subscribers[length + lib$es6$promise$$internal$$REJECTED]  = onRejection;
-
-      if (length === 0 && parent._state) {
-        lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, parent);
-      }
-    }
-
-    function lib$es6$promise$$internal$$publish(promise) {
-      var subscribers = promise._subscribers;
-      var settled = promise._state;
-
-      if (subscribers.length === 0) { return; }
-
-      var child, callback, detail = promise._result;
-
-      for (var i = 0; i < subscribers.length; i += 3) {
-        child = subscribers[i];
-        callback = subscribers[i + settled];
-
-        if (child) {
-          lib$es6$promise$$internal$$invokeCallback(settled, child, callback, detail);
-        } else {
-          callback(detail);
-        }
-      }
-
-      promise._subscribers.length = 0;
-    }
-
-    function lib$es6$promise$$internal$$ErrorObject() {
-      this.error = null;
-    }
-
-    var lib$es6$promise$$internal$$TRY_CATCH_ERROR = new lib$es6$promise$$internal$$ErrorObject();
-
-    function lib$es6$promise$$internal$$tryCatch(callback, detail) {
-      try {
-        return callback(detail);
-      } catch(e) {
-        lib$es6$promise$$internal$$TRY_CATCH_ERROR.error = e;
-        return lib$es6$promise$$internal$$TRY_CATCH_ERROR;
-      }
-    }
-
-    function lib$es6$promise$$internal$$invokeCallback(settled, promise, callback, detail) {
-      var hasCallback = lib$es6$promise$utils$$isFunction(callback),
-          value, error, succeeded, failed;
-
-      if (hasCallback) {
-        value = lib$es6$promise$$internal$$tryCatch(callback, detail);
-
-        if (value === lib$es6$promise$$internal$$TRY_CATCH_ERROR) {
-          failed = true;
-          error = value.error;
-          value = null;
-        } else {
-          succeeded = true;
-        }
-
-        if (promise === value) {
-          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$cannotReturnOwn());
-          return;
-        }
-
-      } else {
-        value = detail;
-        succeeded = true;
-      }
-
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) {
-        // noop
-      } else if (hasCallback && succeeded) {
-        lib$es6$promise$$internal$$resolve(promise, value);
-      } else if (failed) {
-        lib$es6$promise$$internal$$reject(promise, error);
-      } else if (settled === lib$es6$promise$$internal$$FULFILLED) {
-        lib$es6$promise$$internal$$fulfill(promise, value);
-      } else if (settled === lib$es6$promise$$internal$$REJECTED) {
-        lib$es6$promise$$internal$$reject(promise, value);
-      }
-    }
-
-    function lib$es6$promise$$internal$$initializePromise(promise, resolver) {
-      try {
-        resolver(function resolvePromise(value){
-          lib$es6$promise$$internal$$resolve(promise, value);
-        }, function rejectPromise(reason) {
-          lib$es6$promise$$internal$$reject(promise, reason);
-        });
-      } catch(e) {
-        lib$es6$promise$$internal$$reject(promise, e);
-      }
-    }
-
-    function lib$es6$promise$enumerator$$Enumerator(Constructor, input) {
-      var enumerator = this;
-
-      enumerator._instanceConstructor = Constructor;
-      enumerator.promise = new Constructor(lib$es6$promise$$internal$$noop);
-
-      if (enumerator._validateInput(input)) {
-        enumerator._input     = input;
-        enumerator.length     = input.length;
-        enumerator._remaining = input.length;
-
-        enumerator._init();
-
-        if (enumerator.length === 0) {
-          lib$es6$promise$$internal$$fulfill(enumerator.promise, enumerator._result);
-        } else {
-          enumerator.length = enumerator.length || 0;
-          enumerator._enumerate();
-          if (enumerator._remaining === 0) {
-            lib$es6$promise$$internal$$fulfill(enumerator.promise, enumerator._result);
-          }
-        }
-      } else {
-        lib$es6$promise$$internal$$reject(enumerator.promise, enumerator._validationError());
-      }
-    }
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._validateInput = function(input) {
-      return lib$es6$promise$utils$$isArray(input);
+  }
+};
+
+function setScheduler(scheduleFn) {
+  customSchedulerFn = scheduleFn;
+}
+
+function setAsap(asapFn) {
+  asap = asapFn;
+}
+
+var browserWindow = typeof window !== 'undefined' ? window : undefined;
+var browserGlobal = browserWindow || {};
+var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
+var isNode = typeof self === 'undefined' && typeof process !== 'undefined' && {}.toString.call(process) === '[object process]';
+
+// test for web worker but not in IE10
+var isWorker = typeof Uint8ClampedArray !== 'undefined' && typeof importScripts !== 'undefined' && typeof MessageChannel !== 'undefined';
+
+// node
+function useNextTick() {
+  // node version 0.10.x displays a deprecation warning when nextTick is used recursively
+  // see https://github.com/cujojs/when/issues/410 for details
+  return function () {
+    return process.nextTick(flush);
+  };
+}
+
+// vertx
+function useVertxTimer() {
+  if (typeof vertxNext !== 'undefined') {
+    return function () {
+      vertxNext(flush);
     };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._validationError = function() {
-      return new Error('Array Methods must be provided an Array');
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._init = function() {
-      this._result = new Array(this.length);
-    };
-
-    var lib$es6$promise$enumerator$$default = lib$es6$promise$enumerator$$Enumerator;
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._enumerate = function() {
-      var enumerator = this;
-
-      var length  = enumerator.length;
-      var promise = enumerator.promise;
-      var input   = enumerator._input;
-
-      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
-        enumerator._eachEntry(input[i], i);
-      }
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._eachEntry = function(entry, i) {
-      var enumerator = this;
-      var c = enumerator._instanceConstructor;
-
-      if (lib$es6$promise$utils$$isMaybeThenable(entry)) {
-        if (entry.constructor === c && entry._state !== lib$es6$promise$$internal$$PENDING) {
-          entry._onerror = null;
-          enumerator._settledAt(entry._state, i, entry._result);
-        } else {
-          enumerator._willSettleAt(c.resolve(entry), i);
-        }
-      } else {
-        enumerator._remaining--;
-        enumerator._result[i] = entry;
-      }
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._settledAt = function(state, i, value) {
-      var enumerator = this;
-      var promise = enumerator.promise;
-
-      if (promise._state === lib$es6$promise$$internal$$PENDING) {
-        enumerator._remaining--;
-
-        if (state === lib$es6$promise$$internal$$REJECTED) {
-          lib$es6$promise$$internal$$reject(promise, value);
-        } else {
-          enumerator._result[i] = value;
-        }
-      }
-
-      if (enumerator._remaining === 0) {
-        lib$es6$promise$$internal$$fulfill(promise, enumerator._result);
-      }
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._willSettleAt = function(promise, i) {
-      var enumerator = this;
-
-      lib$es6$promise$$internal$$subscribe(promise, undefined, function(value) {
-        enumerator._settledAt(lib$es6$promise$$internal$$FULFILLED, i, value);
-      }, function(reason) {
-        enumerator._settledAt(lib$es6$promise$$internal$$REJECTED, i, reason);
-      });
-    };
-    function lib$es6$promise$promise$all$$all(entries) {
-      return new lib$es6$promise$enumerator$$default(this, entries).promise;
-    }
-    var lib$es6$promise$promise$all$$default = lib$es6$promise$promise$all$$all;
-    function lib$es6$promise$promise$race$$race(entries) {
-      /*jshint validthis:true */
-      var Constructor = this;
-
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-
-      if (!lib$es6$promise$utils$$isArray(entries)) {
-        lib$es6$promise$$internal$$reject(promise, new TypeError('You must pass an array to race.'));
-        return promise;
-      }
-
-      var length = entries.length;
-
-      function onFulfillment(value) {
-        lib$es6$promise$$internal$$resolve(promise, value);
-      }
-
-      function onRejection(reason) {
-        lib$es6$promise$$internal$$reject(promise, reason);
-      }
-
-      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
-        lib$es6$promise$$internal$$subscribe(Constructor.resolve(entries[i]), undefined, onFulfillment, onRejection);
-      }
-
-      return promise;
-    }
-    var lib$es6$promise$promise$race$$default = lib$es6$promise$promise$race$$race;
-    function lib$es6$promise$promise$resolve$$resolve(object) {
-      /*jshint validthis:true */
-      var Constructor = this;
-
-      if (object && typeof object === 'object' && object.constructor === Constructor) {
-        return object;
-      }
-
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-      lib$es6$promise$$internal$$resolve(promise, object);
-      return promise;
-    }
-    var lib$es6$promise$promise$resolve$$default = lib$es6$promise$promise$resolve$$resolve;
-    function lib$es6$promise$promise$reject$$reject(reason) {
-      /*jshint validthis:true */
-      var Constructor = this;
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-      lib$es6$promise$$internal$$reject(promise, reason);
-      return promise;
-    }
-    var lib$es6$promise$promise$reject$$default = lib$es6$promise$promise$reject$$reject;
-
-    var lib$es6$promise$promise$$counter = 0;
-
-    function lib$es6$promise$promise$$needsResolver() {
-      throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
-    }
-
-    function lib$es6$promise$promise$$needsNew() {
-      throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
-    }
-
-    var lib$es6$promise$promise$$default = lib$es6$promise$promise$$Promise;
-    /**
-      Promise objects represent the eventual result of an asynchronous operation. The
-      primary way of interacting with a promise is through its `then` method, which
-      registers callbacks to receive either a promise's eventual value or the reason
-      why the promise cannot be fulfilled.
-
-      Terminology
-      -----------
-
-      - `promise` is an object or function with a `then` method whose behavior conforms to this specification.
-      - `thenable` is an object or function that defines a `then` method.
-      - `value` is any legal JavaScript value (including undefined, a thenable, or a promise).
-      - `exception` is a value that is thrown using the throw statement.
-      - `reason` is a value that indicates why a promise was rejected.
-      - `settled` the final resting state of a promise, fulfilled or rejected.
-
-      A promise can be in one of three states: pending, fulfilled, or rejected.
-
-      Promises that are fulfilled have a fulfillment value and are in the fulfilled
-      state.  Promises that are rejected have a rejection reason and are in the
-      rejected state.  A fulfillment value is never a thenable.
-
-      Promises can also be said to *resolve* a value.  If this value is also a
-      promise, then the original promise's settled state will match the value's
-      settled state.  So a promise that *resolves* a promise that rejects will
-      itself reject, and a promise that *resolves* a promise that fulfills will
-      itself fulfill.
-
-
-      Basic Usage:
-      ------------
-
-      ```js
-      var promise = new Promise(function(resolve, reject) {
-        // on success
-        resolve(value);
-
-        // on failure
-        reject(reason);
-      });
-
-      promise.then(function(value) {
-        // on fulfillment
-      }, function(reason) {
-        // on rejection
-      });
-      ```
-
-      Advanced Usage:
-      ---------------
-
-      Promises shine when abstracting away asynchronous interactions such as
-      `XMLHttpRequest`s.
-
-      ```js
-      function getJSON(url) {
-        return new Promise(function(resolve, reject){
-          var xhr = new XMLHttpRequest();
-
-          xhr.open('GET', url);
-          xhr.onreadystatechange = handler;
-          xhr.responseType = 'json';
-          xhr.setRequestHeader('Accept', 'application/json');
-          xhr.send();
-
-          function handler() {
-            if (this.readyState === this.DONE) {
-              if (this.status === 200) {
-                resolve(this.response);
-              } else {
-                reject(new Error('getJSON: `' + url + '` failed with status: [' + this.status + ']'));
-              }
-            }
-          };
-        });
-      }
-
-      getJSON('/posts.json').then(function(json) {
-        // on fulfillment
-      }, function(reason) {
-        // on rejection
-      });
-      ```
-
-      Unlike callbacks, promises are great composable primitives.
-
-      ```js
-      Promise.all([
-        getJSON('/posts'),
-        getJSON('/comments')
-      ]).then(function(values){
-        values[0] // => postsJSON
-        values[1] // => commentsJSON
-
-        return values;
-      });
-      ```
-
-      @class Promise
-      @param {function} resolver
-      Useful for tooling.
-      @constructor
-    */
-    function lib$es6$promise$promise$$Promise(resolver) {
-      this._id = lib$es6$promise$promise$$counter++;
-      this._state = undefined;
-      this._result = undefined;
-      this._subscribers = [];
-
-      if (lib$es6$promise$$internal$$noop !== resolver) {
-        if (!lib$es6$promise$utils$$isFunction(resolver)) {
-          lib$es6$promise$promise$$needsResolver();
-        }
-
-        if (!(this instanceof lib$es6$promise$promise$$Promise)) {
-          lib$es6$promise$promise$$needsNew();
-        }
-
-        lib$es6$promise$$internal$$initializePromise(this, resolver);
-      }
-    }
-
-    lib$es6$promise$promise$$Promise.all = lib$es6$promise$promise$all$$default;
-    lib$es6$promise$promise$$Promise.race = lib$es6$promise$promise$race$$default;
-    lib$es6$promise$promise$$Promise.resolve = lib$es6$promise$promise$resolve$$default;
-    lib$es6$promise$promise$$Promise.reject = lib$es6$promise$promise$reject$$default;
-    lib$es6$promise$promise$$Promise._setScheduler = lib$es6$promise$asap$$setScheduler;
-    lib$es6$promise$promise$$Promise._setAsap = lib$es6$promise$asap$$setAsap;
-    lib$es6$promise$promise$$Promise._asap = lib$es6$promise$asap$$asap;
-
-    lib$es6$promise$promise$$Promise.prototype = {
-      constructor: lib$es6$promise$promise$$Promise,
-
-    /**
-      The primary way of interacting with a promise is through its `then` method,
-      which registers callbacks to receive either a promise's eventual value or the
-      reason why the promise cannot be fulfilled.
-
-      ```js
-      findUser().then(function(user){
-        // user is available
-      }, function(reason){
-        // user is unavailable, and you are given the reason why
-      });
-      ```
-
-      Chaining
-      --------
-
-      The return value of `then` is itself a promise.  This second, 'downstream'
-      promise is resolved with the return value of the first promise's fulfillment
-      or rejection handler, or rejected if the handler throws an exception.
-
-      ```js
-      findUser().then(function (user) {
-        return user.name;
-      }, function (reason) {
-        return 'default name';
-      }).then(function (userName) {
-        // If `findUser` fulfilled, `userName` will be the user's name, otherwise it
-        // will be `'default name'`
-      });
-
-      findUser().then(function (user) {
-        throw new Error('Found user, but still unhappy');
-      }, function (reason) {
-        throw new Error('`findUser` rejected and we're unhappy');
-      }).then(function (value) {
-        // never reached
-      }, function (reason) {
-        // if `findUser` fulfilled, `reason` will be 'Found user, but still unhappy'.
-        // If `findUser` rejected, `reason` will be '`findUser` rejected and we're unhappy'.
-      });
-      ```
-      If the downstream promise does not specify a rejection handler, rejection reasons will be propagated further downstream.
-
-      ```js
-      findUser().then(function (user) {
-        throw new PedagogicalException('Upstream error');
-      }).then(function (value) {
-        // never reached
-      }).then(function (value) {
-        // never reached
-      }, function (reason) {
-        // The `PedgagocialException` is propagated all the way down to here
-      });
-      ```
-
-      Assimilation
-      ------------
-
-      Sometimes the value you want to propagate to a downstream promise can only be
-      retrieved asynchronously. This can be achieved by returning a promise in the
-      fulfillment or rejection handler. The downstream promise will then be pending
-      until the returned promise is settled. This is called *assimilation*.
-
-      ```js
-      findUser().then(function (user) {
-        return findCommentsByAuthor(user);
-      }).then(function (comments) {
-        // The user's comments are now available
-      });
-      ```
-
-      If the assimliated promise rejects, then the downstream promise will also reject.
-
-      ```js
-      findUser().then(function (user) {
-        return findCommentsByAuthor(user);
-      }).then(function (comments) {
-        // If `findCommentsByAuthor` fulfills, we'll have the value here
-      }, function (reason) {
-        // If `findCommentsByAuthor` rejects, we'll have the reason here
-      });
-      ```
-
-      Simple Example
-      --------------
-
-      Synchronous Example
-
-      ```javascript
-      var result;
-
-      try {
-        result = findResult();
-        // success
-      } catch(reason) {
-        // failure
-      }
-      ```
-
-      Errback Example
-
-      ```js
-      findResult(function(result, err){
-        if (err) {
-          // failure
-        } else {
-          // success
-        }
-      });
-      ```
-
-      Promise Example;
-
-      ```javascript
-      findResult().then(function(result){
-        // success
-      }, function(reason){
-        // failure
-      });
-      ```
-
-      Advanced Example
-      --------------
-
-      Synchronous Example
-
-      ```javascript
-      var author, books;
-
-      try {
-        author = findAuthor();
-        books  = findBooksByAuthor(author);
-        // success
-      } catch(reason) {
-        // failure
-      }
-      ```
-
-      Errback Example
-
-      ```js
-
-      function foundBooks(books) {
-
-      }
-
-      function failure(reason) {
-
-      }
-
-      findAuthor(function(author, err){
-        if (err) {
-          failure(err);
-          // failure
-        } else {
-          try {
-            findBoooksByAuthor(author, function(books, err) {
-              if (err) {
-                failure(err);
-              } else {
-                try {
-                  foundBooks(books);
-                } catch(reason) {
-                  failure(reason);
-                }
-              }
-            });
-          } catch(error) {
-            failure(err);
-          }
-          // success
-        }
-      });
-      ```
-
-      Promise Example;
-
-      ```javascript
-      findAuthor().
-        then(findBooksByAuthor).
-        then(function(books){
-          // found books
-      }).catch(function(reason){
-        // something went wrong
-      });
-      ```
-
-      @method then
-      @param {Function} onFulfilled
-      @param {Function} onRejected
-      Useful for tooling.
-      @return {Promise}
-    */
-      then: function(onFulfillment, onRejection) {
-        var parent = this;
-        var state = parent._state;
-
-        if (state === lib$es6$promise$$internal$$FULFILLED && !onFulfillment || state === lib$es6$promise$$internal$$REJECTED && !onRejection) {
-          return this;
-        }
-
-        var child = new this.constructor(lib$es6$promise$$internal$$noop);
-        var result = parent._result;
-
-        if (state) {
-          var callback = arguments[state - 1];
-          lib$es6$promise$asap$$asap(function(){
-            lib$es6$promise$$internal$$invokeCallback(state, child, callback, result);
-          });
-        } else {
-          lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection);
-        }
-
-        return child;
-      },
-
-    /**
-      `catch` is simply sugar for `then(undefined, onRejection)` which makes it the same
-      as the catch block of a try/catch statement.
-
-      ```js
-      function findAuthor(){
-        throw new Error('couldn't find that author');
-      }
-
-      // synchronous
-      try {
-        findAuthor();
-      } catch(reason) {
-        // something went wrong
-      }
-
-      // async with promises
-      findAuthor().catch(function(reason){
-        // something went wrong
-      });
-      ```
-
-      @method catch
-      @param {Function} onRejection
-      Useful for tooling.
-      @return {Promise}
-    */
-      'catch': function(onRejection) {
-        return this.then(null, onRejection);
-      }
-    };
-    function lib$es6$promise$polyfill$$polyfill() {
-      var local;
-
-      if (typeof global !== 'undefined') {
-          local = global;
-      } else if (typeof self !== 'undefined') {
-          local = self;
-      } else {
-          try {
-              local = Function('return this')();
-          } catch (e) {
-              throw new Error('polyfill failed because global object is unavailable in this environment');
-          }
-      }
-
-      var P = local.Promise;
-
-      // ##### BEGIN: MODIFIED BY SAP
-      // Original line:
-      //    if (P && Object.prototype.toString.call(P.resolve()) === '[object Promise]' && !P.cast) {
-      // This lead to the polyfill replacing the native promise object in
-      // - Chrome, where "[object Object]" is returned instead of '[object Promise]'
-      // - Safari, where native promise contains a definition for Promise.cast
-      if (P && Object.prototype.toString.call(P.resolve()).indexOf('[object ') === 0) {
-      // ##### END: MODIFIED BY SAP
+  }
+
+  return useSetTimeout();
+}
+
+function useMutationObserver() {
+  var iterations = 0;
+  var observer = new BrowserMutationObserver(flush);
+  var node = document.createTextNode('');
+  observer.observe(node, { characterData: true });
+
+  return function () {
+    node.data = iterations = ++iterations % 2;
+  };
+}
+
+// web worker
+function useMessageChannel() {
+  var channel = new MessageChannel();
+  channel.port1.onmessage = flush;
+  return function () {
+    return channel.port2.postMessage(0);
+  };
+}
+
+function useSetTimeout() {
+  // Store setTimeout reference so es6-promise will be unaffected by
+  // other code modifying setTimeout (like sinon.useFakeTimers())
+  var globalSetTimeout = setTimeout;
+  return function () {
+    return globalSetTimeout(flush, 1);
+  };
+}
+
+var queue = new Array(1000);
+function flush() {
+  for (var i = 0; i < len; i += 2) {
+    var callback = queue[i];
+    var arg = queue[i + 1];
+
+    callback(arg);
+
+    queue[i] = undefined;
+    queue[i + 1] = undefined;
+  }
+
+  len = 0;
+}
+
+function attemptVertx() {
+  try {
+    var vertx = Function('return this')().require('vertx');
+    vertxNext = vertx.runOnLoop || vertx.runOnContext;
+    return useVertxTimer();
+  } catch (e) {
+    return useSetTimeout();
+  }
+}
+
+var scheduleFlush = void 0;
+// Decide what async method to use to triggering processing of queued callbacks:
+if (isNode) {
+  scheduleFlush = useNextTick();
+} else if (BrowserMutationObserver) {
+  scheduleFlush = useMutationObserver();
+} else if (isWorker) {
+  scheduleFlush = useMessageChannel();
+} else if (browserWindow === undefined && typeof require === 'function') {
+  scheduleFlush = attemptVertx();
+} else {
+  scheduleFlush = useSetTimeout();
+}
+
+function then(onFulfillment, onRejection) {
+  var parent = this;
+
+  var child = new this.constructor(noop);
+
+  if (child[PROMISE_ID] === undefined) {
+    makePromise(child);
+  }
+
+  var _state = parent._state;
+
+
+  if (_state) {
+    var callback = arguments[_state - 1];
+    asap(function () {
+      return invokeCallback(_state, child, callback, parent._result);
+    });
+  } else {
+    subscribe(parent, child, onFulfillment, onRejection);
+  }
+
+  return child;
+}
+
+/**
+  `Promise.resolve` returns a promise that will become resolved with the
+  passed `value`. It is shorthand for the following:
+
+  ```javascript
+  let promise = new Promise(function(resolve, reject){
+    resolve(1);
+  });
+
+  promise.then(function(value){
+    // value === 1
+  });
+  ```
+
+  Instead of writing the above, your code now simply becomes the following:
+
+  ```javascript
+  let promise = Promise.resolve(1);
+
+  promise.then(function(value){
+    // value === 1
+  });
+  ```
+
+  @method resolve
+  @static
+  @param {Any} value value that the returned promise will be resolved with
+  Useful for tooling.
+  @return {Promise} a promise that will become fulfilled with the given
+  `value`
+*/
+function resolve$1(object) {
+  /*jshint validthis:true */
+  var Constructor = this;
+
+  if (object && typeof object === 'object' && object.constructor === Constructor) {
+    return object;
+  }
+
+  var promise = new Constructor(noop);
+  resolve(promise, object);
+  return promise;
+}
+
+var PROMISE_ID = Math.random().toString(36).substring(2);
+
+function noop() {}
+
+var PENDING = void 0;
+var FULFILLED = 1;
+var REJECTED = 2;
+
+var TRY_CATCH_ERROR = { error: null };
+
+function selfFulfillment() {
+  return new TypeError("You cannot resolve a promise with itself");
+}
+
+function cannotReturnOwn() {
+  return new TypeError('A promises callback cannot return that same promise.');
+}
+
+function getThen(promise) {
+  try {
+    return promise.then;
+  } catch (error) {
+    TRY_CATCH_ERROR.error = error;
+    return TRY_CATCH_ERROR;
+  }
+}
+
+function tryThen(then$$1, value, fulfillmentHandler, rejectionHandler) {
+  try {
+    then$$1.call(value, fulfillmentHandler, rejectionHandler);
+  } catch (e) {
+    return e;
+  }
+}
+
+function handleForeignThenable(promise, thenable, then$$1) {
+  asap(function (promise) {
+    var sealed = false;
+    var error = tryThen(then$$1, thenable, function (value) {
+      if (sealed) {
         return;
       }
+      sealed = true;
+      if (thenable !== value) {
+        resolve(promise, value);
+      } else {
+        fulfill(promise, value);
+      }
+    }, function (reason) {
+      if (sealed) {
+        return;
+      }
+      sealed = true;
 
-      local.Promise = lib$es6$promise$promise$$default;
+      reject(promise, reason);
+    }, 'Settle: ' + (promise._label || ' unknown promise'));
+
+    if (!sealed && error) {
+      sealed = true;
+      reject(promise, error);
     }
-    var lib$es6$promise$polyfill$$default = lib$es6$promise$polyfill$$polyfill;
+  }, promise);
+}
 
-    var lib$es6$promise$umd$$ES6Promise = {
-      'Promise': lib$es6$promise$promise$$default,
-      'polyfill': lib$es6$promise$polyfill$$default
-    };
+function handleOwnThenable(promise, thenable) {
+  if (thenable._state === FULFILLED) {
+    fulfill(promise, thenable._result);
+  } else if (thenable._state === REJECTED) {
+    reject(promise, thenable._result);
+  } else {
+    subscribe(thenable, undefined, function (value) {
+      return resolve(promise, value);
+    }, function (reason) {
+      return reject(promise, reason);
+    });
+  }
+}
 
-    /* global define:true module:true window: true */
-    if (typeof define === 'function' && define['amd']) {
+function handleMaybeThenable(promise, maybeThenable, then$$1) {
+  if (maybeThenable.constructor === promise.constructor && then$$1 === then && maybeThenable.constructor.resolve === resolve$1) {
+    handleOwnThenable(promise, maybeThenable);
+  } else {
+    if (then$$1 === TRY_CATCH_ERROR) {
+      reject(promise, TRY_CATCH_ERROR.error);
+      TRY_CATCH_ERROR.error = null;
+    } else if (then$$1 === undefined) {
+      fulfill(promise, maybeThenable);
+    } else if (isFunction(then$$1)) {
+      handleForeignThenable(promise, maybeThenable, then$$1);
+    } else {
+      fulfill(promise, maybeThenable);
+    }
+  }
+}
+
+function resolve(promise, value) {
+  if (promise === value) {
+    reject(promise, selfFulfillment());
+  } else if (objectOrFunction(value)) {
+    handleMaybeThenable(promise, value, getThen(value));
+  } else {
+    fulfill(promise, value);
+  }
+}
+
+function publishRejection(promise) {
+  if (promise._onerror) {
+    promise._onerror(promise._result);
+  }
+
+  publish(promise);
+}
+
+function fulfill(promise, value) {
+  if (promise._state !== PENDING) {
+    return;
+  }
+
+  promise._result = value;
+  promise._state = FULFILLED;
+
+  if (promise._subscribers.length !== 0) {
+    asap(publish, promise);
+  }
+}
+
+function reject(promise, reason) {
+  if (promise._state !== PENDING) {
+    return;
+  }
+  promise._state = REJECTED;
+  promise._result = reason;
+
+  asap(publishRejection, promise);
+}
+
+function subscribe(parent, child, onFulfillment, onRejection) {
+  var _subscribers = parent._subscribers;
+  var length = _subscribers.length;
+
+
+  parent._onerror = null;
+
+  _subscribers[length] = child;
+  _subscribers[length + FULFILLED] = onFulfillment;
+  _subscribers[length + REJECTED] = onRejection;
+
+  if (length === 0 && parent._state) {
+    asap(publish, parent);
+  }
+}
+
+function publish(promise) {
+  var subscribers = promise._subscribers;
+  var settled = promise._state;
+
+  if (subscribers.length === 0) {
+    return;
+  }
+
+  var child = void 0,
+      callback = void 0,
+      detail = promise._result;
+
+  for (var i = 0; i < subscribers.length; i += 3) {
+    child = subscribers[i];
+    callback = subscribers[i + settled];
+
+    if (child) {
+      invokeCallback(settled, child, callback, detail);
+    } else {
+      callback(detail);
+    }
+  }
+
+  promise._subscribers.length = 0;
+}
+
+function tryCatch(callback, detail) {
+  try {
+    return callback(detail);
+  } catch (e) {
+    TRY_CATCH_ERROR.error = e;
+    return TRY_CATCH_ERROR;
+  }
+}
+
+function invokeCallback(settled, promise, callback, detail) {
+  var hasCallback = isFunction(callback),
+      value = void 0,
+      error = void 0,
+      succeeded = void 0,
+      failed = void 0;
+
+  if (hasCallback) {
+    value = tryCatch(callback, detail);
+
+    if (value === TRY_CATCH_ERROR) {
+      failed = true;
+      error = value.error;
+      value.error = null;
+    } else {
+      succeeded = true;
+    }
+
+    if (promise === value) {
+      reject(promise, cannotReturnOwn());
+      return;
+    }
+  } else {
+    value = detail;
+    succeeded = true;
+  }
+
+  if (promise._state !== PENDING) {
+    // noop
+  } else if (hasCallback && succeeded) {
+    resolve(promise, value);
+  } else if (failed) {
+    reject(promise, error);
+  } else if (settled === FULFILLED) {
+    fulfill(promise, value);
+  } else if (settled === REJECTED) {
+    reject(promise, value);
+  }
+}
+
+function initializePromise(promise, resolver) {
+  try {
+    resolver(function resolvePromise(value) {
+      resolve(promise, value);
+    }, function rejectPromise(reason) {
+      reject(promise, reason);
+    });
+  } catch (e) {
+    reject(promise, e);
+  }
+}
+
+var id = 0;
+function nextId() {
+  return id++;
+}
+
+function makePromise(promise) {
+  promise[PROMISE_ID] = id++;
+  promise._state = undefined;
+  promise._result = undefined;
+  promise._subscribers = [];
+}
+
+function validationError() {
+  return new Error('Array Methods must be provided an Array');
+}
+
+var Enumerator = function () {
+  function Enumerator(Constructor, input) {
+    this._instanceConstructor = Constructor;
+    this.promise = new Constructor(noop);
+
+    if (!this.promise[PROMISE_ID]) {
+      makePromise(this.promise);
+    }
+
+    if (isArray(input)) {
+      this.length = input.length;
+      this._remaining = input.length;
+
+      this._result = new Array(this.length);
+
+      if (this.length === 0) {
+        fulfill(this.promise, this._result);
+      } else {
+        this.length = this.length || 0;
+        this._enumerate(input);
+        if (this._remaining === 0) {
+          fulfill(this.promise, this._result);
+        }
+      }
+    } else {
+      reject(this.promise, validationError());
+    }
+  }
+
+  Enumerator.prototype._enumerate = function _enumerate(input) {
+    for (var i = 0; this._state === PENDING && i < input.length; i++) {
+      this._eachEntry(input[i], i);
+    }
+  };
+
+  Enumerator.prototype._eachEntry = function _eachEntry(entry, i) {
+    var c = this._instanceConstructor;
+    var resolve$$1 = c.resolve;
+
+
+    if (resolve$$1 === resolve$1) {
+      var _then = getThen(entry);
+
+      if (_then === then && entry._state !== PENDING) {
+        this._settledAt(entry._state, i, entry._result);
+      } else if (typeof _then !== 'function') {
+        this._remaining--;
+        this._result[i] = entry;
+      } else if (c === Promise$2) {
+        var promise = new c(noop);
+        handleMaybeThenable(promise, entry, _then);
+        this._willSettleAt(promise, i);
+      } else {
+        this._willSettleAt(new c(function (resolve$$1) {
+          return resolve$$1(entry);
+        }), i);
+      }
+    } else {
       // ##### BEGIN: MODIFIED BY SAP
-      // Original line:
-      // define(function() { return lib$es6$promise$umd$$ES6Promise; });
-      define('sap/ui/thirdparty/es6-promise', function() { return lib$es6$promise$umd$$ES6Promise; });
+      // Original Line:
+      // this._willSettleAt(resolve$$1(entry), i);
+      this._willSettleAt(c.resolve(entry), i);
       // ##### END: MODIFIED BY SAP
-    } else if (typeof module !== 'undefined' && module['exports']) {
-      module['exports'] = lib$es6$promise$umd$$ES6Promise;
-      // ##### BEGIN: MODIFIED BY SAP
-      // When require.js was loaded before the core, this will not set the global window.ES6Promise property and thus
-      // keep the rest of the framework from working in browsers that do not have native Promise support.
-      // Original line:
-      // } else if (typeof this !== 'undefined') {
     }
-    if (typeof this !== 'undefined') {
-      // ##### END: MODIFIED BY SAP
-      this['ES6Promise'] = lib$es6$promise$umd$$ES6Promise;
+  };
+
+  Enumerator.prototype._settledAt = function _settledAt(state, i, value) {
+    var promise = this.promise;
+
+
+    if (promise._state === PENDING) {
+      this._remaining--;
+
+      if (state === REJECTED) {
+        reject(promise, value);
+      } else {
+        this._result[i] = value;
+      }
     }
 
+    if (this._remaining === 0) {
+      fulfill(promise, this._result);
+    }
+  };
+
+  Enumerator.prototype._willSettleAt = function _willSettleAt(promise, i) {
+    var enumerator = this;
+
+    subscribe(promise, undefined, function (value) {
+      return enumerator._settledAt(FULFILLED, i, value);
+    }, function (reason) {
+      return enumerator._settledAt(REJECTED, i, reason);
+    });
+  };
+
+  return Enumerator;
+}();
+
+/**
+  `Promise.all` accepts an array of promises, and returns a new promise which
+  is fulfilled with an array of fulfillment values for the passed promises, or
+  rejected with the reason of the first passed promise to be rejected. It casts all
+  elements of the passed iterable to promises as it runs this algorithm.
+
+  Example:
+
+  ```javascript
+  let promise1 = resolve(1);
+  let promise2 = resolve(2);
+  let promise3 = resolve(3);
+  let promises = [ promise1, promise2, promise3 ];
+
+  Promise.all(promises).then(function(array){
+    // The array here would be [ 1, 2, 3 ];
+  });
+  ```
+
+  If any of the `promises` given to `all` are rejected, the first promise
+  that is rejected will be given as an argument to the returned promises's
+  rejection handler. For example:
+
+  Example:
+
+  ```javascript
+  let promise1 = resolve(1);
+  let promise2 = reject(new Error("2"));
+  let promise3 = reject(new Error("3"));
+  let promises = [ promise1, promise2, promise3 ];
+
+  Promise.all(promises).then(function(array){
+    // Code here never runs because there are rejected promises!
+  }, function(error) {
+    // error.message === "2"
+  });
+  ```
+
+  @method all
+  @static
+  @param {Array} entries array of promises
+  @param {String} label optional string for labeling the promise.
+  Useful for tooling.
+  @return {Promise} promise that is fulfilled when all `promises` have been
+  fulfilled, or rejected if any of them become rejected.
+  @static
+*/
+function all(entries) {
+  return new Enumerator(this, entries).promise;
+}
+
+/**
+  `Promise.race` returns a new promise which is settled in the same way as the
+  first passed promise to settle.
+
+  Example:
+
+  ```javascript
+  let promise1 = new Promise(function(resolve, reject){
+    setTimeout(function(){
+      resolve('promise 1');
+    }, 200);
+  });
+
+  let promise2 = new Promise(function(resolve, reject){
+    setTimeout(function(){
+      resolve('promise 2');
+    }, 100);
+  });
+
+  Promise.race([promise1, promise2]).then(function(result){
+    // result === 'promise 2' because it was resolved before promise1
+    // was resolved.
+  });
+  ```
+
+  `Promise.race` is deterministic in that only the state of the first
+  settled promise matters. For example, even if other promises given to the
+  `promises` array argument are resolved, but the first settled promise has
+  become rejected before the other promises became fulfilled, the returned
+  promise will become rejected:
+
+  ```javascript
+  let promise1 = new Promise(function(resolve, reject){
+    setTimeout(function(){
+      resolve('promise 1');
+    }, 200);
+  });
+
+  let promise2 = new Promise(function(resolve, reject){
+    setTimeout(function(){
+      reject(new Error('promise 2'));
+    }, 100);
+  });
+
+  Promise.race([promise1, promise2]).then(function(result){
+    // Code here never runs
+  }, function(reason){
+    // reason.message === 'promise 2' because promise 2 became rejected before
+    // promise 1 became fulfilled
+  });
+  ```
+
+  An example real-world use case is implementing timeouts:
+
+  ```javascript
+  Promise.race([ajax('foo.json'), timeout(5000)])
+  ```
+
+  @method race
+  @static
+  @param {Array} promises array of promises to observe
+  Useful for tooling.
+  @return {Promise} a promise which settles in the same way as the first passed
+  promise to settle.
+*/
+function race(entries) {
+  /*jshint validthis:true */
+  var Constructor = this;
+
+  if (!isArray(entries)) {
+    return new Constructor(function (_, reject) {
+      return reject(new TypeError('You must pass an array to race.'));
+    });
+  } else {
+    return new Constructor(function (resolve, reject) {
+      var length = entries.length;
+      for (var i = 0; i < length; i++) {
+        Constructor.resolve(entries[i]).then(resolve, reject);
+      }
+    });
+  }
+}
+
+/**
+  `Promise.reject` returns a promise rejected with the passed `reason`.
+  It is shorthand for the following:
+
+  ```javascript
+  let promise = new Promise(function(resolve, reject){
+    reject(new Error('WHOOPS'));
+  });
+
+  promise.then(function(value){
+    // Code here doesn't run because the promise is rejected!
+  }, function(reason){
+    // reason.message === 'WHOOPS'
+  });
+  ```
+
+  Instead of writing the above, your code now simply becomes the following:
+
+  ```javascript
+  let promise = Promise.reject(new Error('WHOOPS'));
+
+  promise.then(function(value){
+    // Code here doesn't run because the promise is rejected!
+  }, function(reason){
+    // reason.message === 'WHOOPS'
+  });
+  ```
+
+  @method reject
+  @static
+  @param {Any} reason value that the returned promise will be rejected with.
+  Useful for tooling.
+  @return {Promise} a promise rejected with the given `reason`.
+*/
+function reject$1(reason) {
+  /*jshint validthis:true */
+  var Constructor = this;
+  var promise = new Constructor(noop);
+  reject(promise, reason);
+  return promise;
+}
+
+function needsResolver() {
+  throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
+}
+
+function needsNew() {
+  throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
+}
+
+/**
+  Promise objects represent the eventual result of an asynchronous operation. The
+  primary way of interacting with a promise is through its `then` method, which
+  registers callbacks to receive either a promise's eventual value or the reason
+  why the promise cannot be fulfilled.
+
+  Terminology
+  -----------
+
+  - `promise` is an object or function with a `then` method whose behavior conforms to this specification.
+  - `thenable` is an object or function that defines a `then` method.
+  - `value` is any legal JavaScript value (including undefined, a thenable, or a promise).
+  - `exception` is a value that is thrown using the throw statement.
+  - `reason` is a value that indicates why a promise was rejected.
+  - `settled` the final resting state of a promise, fulfilled or rejected.
+
+  A promise can be in one of three states: pending, fulfilled, or rejected.
+
+  Promises that are fulfilled have a fulfillment value and are in the fulfilled
+  state.  Promises that are rejected have a rejection reason and are in the
+  rejected state.  A fulfillment value is never a thenable.
+
+  Promises can also be said to *resolve* a value.  If this value is also a
+  promise, then the original promise's settled state will match the value's
+  settled state.  So a promise that *resolves* a promise that rejects will
+  itself reject, and a promise that *resolves* a promise that fulfills will
+  itself fulfill.
+
+
+  Basic Usage:
+  ------------
+
+  ```js
+  let promise = new Promise(function(resolve, reject) {
+    // on success
+    resolve(value);
+
+    // on failure
+    reject(reason);
+  });
+
+  promise.then(function(value) {
+    // on fulfillment
+  }, function(reason) {
+    // on rejection
+  });
+  ```
+
+  Advanced Usage:
+  ---------------
+
+  Promises shine when abstracting away asynchronous interactions such as
+  `XMLHttpRequest`s.
+
+  ```js
+  function getJSON(url) {
+    return new Promise(function(resolve, reject){
+      let xhr = new XMLHttpRequest();
+
+      xhr.open('GET', url);
+      xhr.onreadystatechange = handler;
+      xhr.responseType = 'json';
+      xhr.setRequestHeader('Accept', 'application/json');
+      xhr.send();
+
+      function handler() {
+        if (this.readyState === this.DONE) {
+          if (this.status === 200) {
+            resolve(this.response);
+          } else {
+            reject(new Error('getJSON: `' + url + '` failed with status: [' + this.status + ']'));
+          }
+        }
+      };
+    });
+  }
+
+  getJSON('/posts.json').then(function(json) {
+    // on fulfillment
+  }, function(reason) {
+    // on rejection
+  });
+  ```
+
+  Unlike callbacks, promises are great composable primitives.
+
+  ```js
+  Promise.all([
+    getJSON('/posts'),
+    getJSON('/comments')
+  ]).then(function(values){
+    values[0] // => postsJSON
+    values[1] // => commentsJSON
+
+    return values;
+  });
+  ```
+
+  @class Promise
+  @param {Function} resolver
+  Useful for tooling.
+  @constructor
+*/
+
+var Promise$2 = function () {
+  function Promise(resolver) {
+    this[PROMISE_ID] = nextId();
+    this._result = this._state = undefined;
+    this._subscribers = [];
+
+    if (noop !== resolver) {
+      typeof resolver !== 'function' && needsResolver();
+      this instanceof Promise ? initializePromise(this, resolver) : needsNew();
+    }
+  }
+
+  /**
+  The primary way of interacting with a promise is through its `then` method,
+  which registers callbacks to receive either a promise's eventual value or the
+  reason why the promise cannot be fulfilled.
+   ```js
+  findUser().then(function(user){
+    // user is available
+  }, function(reason){
+    // user is unavailable, and you are given the reason why
+  });
+  ```
+   Chaining
+  --------
+   The return value of `then` is itself a promise.  This second, 'downstream'
+  promise is resolved with the return value of the first promise's fulfillment
+  or rejection handler, or rejected if the handler throws an exception.
+   ```js
+  findUser().then(function (user) {
+    return user.name;
+  }, function (reason) {
+    return 'default name';
+  }).then(function (userName) {
+    // If `findUser` fulfilled, `userName` will be the user's name, otherwise it
+    // will be `'default name'`
+  });
+   findUser().then(function (user) {
+    throw new Error('Found user, but still unhappy');
+  }, function (reason) {
+    throw new Error('`findUser` rejected and we're unhappy');
+  }).then(function (value) {
+    // never reached
+  }, function (reason) {
+    // if `findUser` fulfilled, `reason` will be 'Found user, but still unhappy'.
+    // If `findUser` rejected, `reason` will be '`findUser` rejected and we're unhappy'.
+  });
+  ```
+  If the downstream promise does not specify a rejection handler, rejection reasons will be propagated further downstream.
+   ```js
+  findUser().then(function (user) {
+    throw new PedagogicalException('Upstream error');
+  }).then(function (value) {
+    // never reached
+  }).then(function (value) {
+    // never reached
+  }, function (reason) {
+    // The `PedgagocialException` is propagated all the way down to here
+  });
+  ```
+   Assimilation
+  ------------
+   Sometimes the value you want to propagate to a downstream promise can only be
+  retrieved asynchronously. This can be achieved by returning a promise in the
+  fulfillment or rejection handler. The downstream promise will then be pending
+  until the returned promise is settled. This is called *assimilation*.
+   ```js
+  findUser().then(function (user) {
+    return findCommentsByAuthor(user);
+  }).then(function (comments) {
+    // The user's comments are now available
+  });
+  ```
+   If the assimliated promise rejects, then the downstream promise will also reject.
+   ```js
+  findUser().then(function (user) {
+    return findCommentsByAuthor(user);
+  }).then(function (comments) {
+    // If `findCommentsByAuthor` fulfills, we'll have the value here
+  }, function (reason) {
+    // If `findCommentsByAuthor` rejects, we'll have the reason here
+  });
+  ```
+   Simple Example
+  --------------
+   Synchronous Example
+   ```javascript
+  let result;
+   try {
+    result = findResult();
+    // success
+  } catch(reason) {
+    // failure
+  }
+  ```
+   Errback Example
+   ```js
+  findResult(function(result, err){
+    if (err) {
+      // failure
+    } else {
+      // success
+    }
+  });
+  ```
+   Promise Example;
+   ```javascript
+  findResult().then(function(result){
+    // success
+  }, function(reason){
+    // failure
+  });
+  ```
+   Advanced Example
+  --------------
+   Synchronous Example
+   ```javascript
+  let author, books;
+   try {
+    author = findAuthor();
+    books  = findBooksByAuthor(author);
+    // success
+  } catch(reason) {
+    // failure
+  }
+  ```
+   Errback Example
+   ```js
+   function foundBooks(books) {
+   }
+   function failure(reason) {
+   }
+   findAuthor(function(author, err){
+    if (err) {
+      failure(err);
+      // failure
+    } else {
+      try {
+        findBoooksByAuthor(author, function(books, err) {
+          if (err) {
+            failure(err);
+          } else {
+            try {
+              foundBooks(books);
+            } catch(reason) {
+              failure(reason);
+            }
+          }
+        });
+      } catch(error) {
+        failure(err);
+      }
+      // success
+    }
+  });
+  ```
+   Promise Example;
+   ```javascript
+  findAuthor().
+    then(findBooksByAuthor).
+    then(function(books){
+      // found books
+  }).catch(function(reason){
+    // something went wrong
+  });
+  ```
+   @method then
+  @param {Function} onFulfilled
+  @param {Function} onRejected
+  Useful for tooling.
+  @return {Promise}
+  */
+
+  /**
+  `catch` is simply sugar for `then(undefined, onRejection)` which makes it the same
+  as the catch block of a try/catch statement.
+  ```js
+  function findAuthor(){
+  throw new Error('couldn't find that author');
+  }
+  // synchronous
+  try {
+  findAuthor();
+  } catch(reason) {
+  // something went wrong
+  }
+  // async with promises
+  findAuthor().catch(function(reason){
+  // something went wrong
+  });
+  ```
+  @method catch
+  @param {Function} onRejection
+  Useful for tooling.
+  @return {Promise}
+  */
+
+
+  Promise.prototype.catch = function _catch(onRejection) {
+    return this.then(null, onRejection);
+  };
+
+  /**
+    `finally` will be invoked regardless of the promise's fate just as native
+    try/catch/finally behaves
+
+    Synchronous example:
+
+    ```js
+    findAuthor() {
+      if (Math.random() > 0.5) {
+        throw new Error();
+      }
+      return new Author();
+    }
+
+    try {
+      return findAuthor(); // succeed or fail
+    } catch(error) {
+      return findOtherAuther();
+    } finally {
+      // always runs
+      // doesn't affect the return value
+    }
+    ```
+
+    Asynchronous example:
+
+    ```js
+    findAuthor().catch(function(reason){
+      return findOtherAuther();
+    }).finally(function(){
+      // author was either found, or not
+    });
+    ```
+
+    @method finally
+    @param {Function} callback
+    @return {Promise}
+  */
+
+
+  Promise.prototype.finally = function _finally(callback) {
+    var promise = this;
+    var constructor = promise.constructor;
 
     // ##### BEGIN: MODIFIED BY SAP
-    // Original line:
-    //     lib$es6$promise$polyfill$$default();
-    // Do not automatically call the polyfill method as this will be called by UI5 only when needed.
+    // According to the spec, 'callback' is optional, it might not be callable
+    // see https://tc39.github.io/proposal-promise-finally/
+    if ( isFunction(callback) ) {
     // ##### END: MODIFIED BY SAP
-}).call(this);
+
+      return promise.then(function (value) {
+        return constructor.resolve(callback()).then(function () {
+          return value;
+        });
+      }, function (reason) {
+        return constructor.resolve(callback()).then(function () {
+          throw reason;
+        });
+      });
+
+    // ##### BEGIN: MODIFIED BY SAP
+    }
+
+	return promise.then(callback, callback);
+    // ##### END: MODIFIED BY SAP
+
+  };
+
+  return Promise;
+}();
+
+Promise$2.prototype.then = then;
+Promise$2.all = all;
+Promise$2.race = race;
+Promise$2.resolve = resolve$1;
+Promise$2.reject = reject$1;
+Promise$2._setScheduler = setScheduler;
+Promise$2._setAsap = setAsap;
+Promise$2._asap = asap;
+
+/*global self*/
+function polyfill() {
+  var local = void 0;
+
+  if (typeof global !== 'undefined') {
+    local = global;
+  } else if (typeof self !== 'undefined') {
+    local = self;
+  } else {
+    try {
+      local = Function('return this')();
+    } catch (e) {
+      throw new Error('polyfill failed because global object is unavailable in this environment');
+    }
+  }
+
+  var P = local.Promise;
+
+  if (P) {
+    var promiseToString = null;
+    try {
+      promiseToString = Object.prototype.toString.call(P.resolve());
+    } catch (e) {
+      // silently ignored
+    }
+
+    if (promiseToString === '[object Promise]' && !P.cast) {
+      // ##### BEGIN: MODIFIED BY SAP
+      // apply polyfill for finally when missing
+      if ( typeof P.prototype.finally !== "function" ) {
+        P.prototype.finally = Promise$2.prototype.finally;
+      }
+      // ##### END: MODIFIED BY SAP
+      return;
+    }
+  }
+
+  local.Promise = Promise$2;
+}
+
+// Strange compat..
+Promise$2.polyfill = polyfill;
+Promise$2.Promise = Promise$2;
+
+Promise$2.polyfill();
+
+return Promise$2;
+
+})));
 /**
  * This module contains String polyfills in order to establish unified language features across environments
  */
@@ -1267,36 +1514,29 @@ if (!String.prototype.padEnd) {
  * might break in future releases.
  */
 
-/*global sap:true, console, document, ES6Promise, Promise, XMLHttpRequest */
+/*global sap:true, console, document, Promise, XMLHttpRequest */
 
 (function(__global) {
 	"use strict";
 
-	// ---- polyfills -----------------------------------------------------------------------------
-
-	// The native Promise in MS Edge and Apple Safari is not fully compliant with the ES6 spec for promises.
-	// MS Edge executes callbacks as tasks, not as micro tasks (see https://connect.microsoft.com/IE/feedback/details/1658365).
-	// We therefore enforce the use of the es6-promise polyfill also in MS Edge and Safari, which works properly.
-	(function(ua) {
-		// @evo-todo this is only a rough copy of the sap/ui/Device browser recognition code
-		var match = /(edge)[ \/]([\w.]+)/.exec( ua ) || /(webkit)[ \/]([\w.]+)/ || [];
-		if ( match[1] === 'edge' ||
-			 match[1] === 'webkit' && ( /(Version|PhantomJS)\/(\d+\.\d+).*Safari/.test(ua) || /iPhone|iPad|iPod/.test(ua) ) ) {
-			__global.Promise = undefined; // if not unset, the polyfill assumes that the native Promise is fine
-		}
-		// Enable promise polyfill if native promise is not available
-		if (!__global.Promise) {
-			ES6Promise.polyfill();
-		}
-	}(navigator.userAgent.toLowerCase()));
+	/*
+	 * Helper function that removes any query and/or hash parts from the given URL.
+	 *
+	 * @param {string} href URL to remove query and hash from
+	 * @returns {string}
+	 */
+	function pathOnly(href) {
+		var p = href.search(/[?#]/);
+		return p < 0 ? href : href.slice(0, p);
+	}
 
 	/*
 	 * Helper function that returns the document base URL without search parameters and hash.
+	 *
+	 * @returns {string}
 	 */
 	function docBase() {
-		var href = document.baseURI,
-			p = href.search(/[?#]/);
-		return p < 0 ? href : href.slice(0, p);
+		return pathOnly(document.baseURI);
 	}
 
 	/**
@@ -1416,6 +1656,13 @@ if (!String.prototype.padEnd) {
 	 */
 	var translate;
 
+	/*
+	 * Activates strictest possible compliance with AMD spec
+	 * - no multiple executions of the same module
+	 * - at most one anonymous module definition per file, zero for adhoc definitions
+	 */
+	var strictModuleDefinitions = true;
+
 	/**
 	 * Whether asynchronous loading can be used at all.
 	 * When activated, require will load asynchronously, else synchronously.
@@ -1445,11 +1692,13 @@ if (!String.prototype.padEnd) {
 
 	/**
 	 * Default base URL for modules, used when no other configuration is provided.
+	 * In case the base url is removed via <code>registerResourcePath("", null)</code>
+	 * it will be reset to this URL instead.
 	 * @const
 	 * @type {string}
 	 * @private
 	 */
-	var DEFAULT_BASE_URL = 'resources/';
+	var DEFAULT_BASE_URL = "./";
 
 	/**
 	 * Temporarily saved reference to the original value of the global define variable.
@@ -1479,7 +1728,7 @@ if (!String.prototype.padEnd) {
 	var mUrlPrefixes = Object.create(null);
 	mUrlPrefixes[''] = {
 		url: DEFAULT_BASE_URL,
-		absoluteUrl: resolveURL(DEFAULT_BASE_URL)
+		absoluteUrl: resolveURL(DEFAULT_BASE_URL, document.baseURI)
 	};
 
 	/**
@@ -1734,6 +1983,12 @@ if (!String.prototype.padEnd) {
 		return aSegments.join('/');
 	}
 
+	/**
+	 * Adds a resource path to the resources map.
+	 *
+	 * @param {string} sResourceNamePrefix prefix is used as map key
+	 * @param {string} sUrlPrefix path to the resource
+	 */
 	function registerResourcePath(sResourceNamePrefix, sUrlPrefix) {
 		sResourceNamePrefix = String(sResourceNamePrefix || "");
 
@@ -1754,13 +2009,8 @@ if (!String.prototype.padEnd) {
 
 		}
 
-		sUrlPrefix = String(sUrlPrefix);
-
-		// remove query parameters and/or hash
-		var iQueryOrHashIndex = sUrlPrefix.search(/[?#]/);
-		if (iQueryOrHashIndex !== -1) {
-			sUrlPrefix = sUrlPrefix.slice(0, iQueryOrHashIndex);
-		}
+		// cast to string and remove query parameters and/or hash
+		sUrlPrefix = pathOnly(String(sUrlPrefix));
 
 		// ensure that the prefix ends with a '/'
 		if ( sUrlPrefix.slice(-1) !== '/' ) {
@@ -1774,7 +2024,14 @@ if (!String.prototype.padEnd) {
 		};
 	}
 
-	// find longest matching prefix for resource name
+	/**
+	 * Retrieves path to a given resource by finding the longest matching prefix for the resource name
+	 *
+	 * @param {string} sResourceName name of the resource stored in the resources map
+	 * @param {string} sSuffix url suffix
+	 *
+	 * @returns {string} resource path
+	 */
 	function getResourcePath(sResourceName, sSuffix) {
 
 		var sNamePrefix = sResourceName,
@@ -1800,18 +2057,23 @@ if (!String.prototype.padEnd) {
 
 	}
 
+	/**
+	 * Returns the reporting mode for synchronous calls
+	 *
+	 * @returns {int} sync call behavior
+	 */
+	function getSyncCallBehavior() {
+		return syncCallBehavior;
+	}
+
 	function guessResourceName(sURL) {
 		var sNamePrefix,
 			sUrlPrefix,
 			sResourceName;
 
-		// Make sure to have an absolute URL to check against absolute prefix URLs
-		sURL = resolveURL(sURL);
-		// remove url parameters
-		var pos = sURL.search(/[?#]/);
-		if (pos >= 0) {
-			sURL = sURL.slice(0, pos);
-		}
+		// Make sure to have an absolute URL without query parameters or hash
+		// to check against absolute prefix URLs
+		sURL = pathOnly(resolveURL(sURL));
 
 		for (sNamePrefix in mUrlPrefixes) {
 
@@ -1979,6 +2241,12 @@ if (!String.prototype.padEnd) {
 	function Module(name) {
 		this.name = name;
 		this.state = INITIAL;
+		/*
+		 * Whether processing of the module is complete.
+		 * This is very similar to, but not the same as state >= READY because declareModule() sets state=READY very early.
+		 * That state transition is 'legacy' from the library-all files; it needs to checked whether it can be removed.
+		 */
+		this.settled = false;
 		this.url =
 		this._deferred =
 		this.data =
@@ -2020,7 +2288,10 @@ if (!String.prototype.padEnd) {
 	 * @param {any} value Module value
 	 */
 	Module.prototype.ready = function(value) {
+		// should throw, but some tests and apps would fail
+		assert(!this.settled, "Module " + this.name + " is already settled");
 		this.state = READY;
+		this.settled = true;
 		if ( arguments.length > 0 ) {
 			// check arguments.length to allow a value of undefined
 			this.content = value;
@@ -2035,6 +2306,9 @@ if (!String.prototype.padEnd) {
 	};
 
 	Module.prototype.fail = function(err) {
+		// should throw, but some tests and apps would fail
+		assert(!this.settled, "Module " + this.name + " is already settled");
+		this.settled = true;
 		if ( this.state !== FAILED ) {
 			this.state = FAILED;
 			this.error = err;
@@ -2047,8 +2321,14 @@ if (!String.prototype.padEnd) {
 		}
 	};
 
+	Module.prototype.addPending = function(sDependency) {
+		(this.pending || (this.pending = [])).push(sDependency);
+	};
+
 	Module.prototype.addAlias = function(sAliasName) {
 		(this.aliases || (this.aliases = [])).push(sAliasName);
+		// add this module as pending dependency to the original
+		Module.get(sAliasName).addPending(this.name);
 	};
 
 	Module.prototype.preload = function(url, data, bundle) {
@@ -2095,29 +2375,30 @@ if (!String.prototype.padEnd) {
 	 * as 'pending' to the Module instance. This function checks if the oDependantModule is
 	 * reachable from this module when following the pending dependency information.
 	 *
+	 * Note: when module aliases are introduced (all module definitions in a file use an ID that differs
+	 * from the request module ID), then the alias module is also added as a "pending" dependency.
+	 *
 	 * @param {Module} oDependantModule Module which has a dependency to <code>oModule</code>
 	 * @returns {boolean} Whether this module depends on the given one.
 	 * @private
 	 */
 	Module.prototype.dependsOn = function(oDependantModule) {
-		var visited = Object.create(null);
+		var dependant = oDependantModule.name,
+			visited = Object.create(null);
+
+		// log.debug("checking for a cycle between", this.name, "and", dependant);
 		function visit(mod) {
-			if ( !visited[mod.name] ) {
-				visited[mod.name] = true;
-				if ( Array.isArray(mod.pending) ) {
-					if ( mod.pending.indexOf(oDependantModule.name) >= 0 ) {
-						return true;
-					}
-					for ( var i = 0; i < mod.pending.length; i++ ) {
-						if ( mModules[mod.pending[i]] && visit( mModules[mod.pending[i]] ) ) {
-							return true;
-						}
-					}
-				}
+			if ( !visited[mod] ) {
+				// log.debug("  ", mod);
+				visited[mod] = true;
+				var pending = mModules[mod] && mModules[mod].pending;
+				return Array.isArray(pending) &&
+					(pending.indexOf(dependant) >= 0 || pending.some(visit));
 			}
 			return false;
 		}
-		return this.name === oDependantModule.name || visit(this);
+
+		return this.name === dependant || visit(this.name);
 	};
 
 	/**
@@ -2194,7 +2475,18 @@ if (!String.prototype.padEnd) {
 	}
 
 	/**
-	 * Queue of modules for which sap.ui.define has been called but for which the name has not been determined yet
+	 * Define an already loaded module synchronously.
+	 * Finds or creates a module by its unified resource name and resolves it with the given value.
+	 *
+	 * @param {string} sResourceName Name of the module in URN syntax
+	 * @param {any} vValue Content of the module
+	 */
+	function defineModuleSync(sResourceName, vValue) {
+		Module.get(sResourceName).ready(vValue);
+	}
+
+	/**
+	 * Queue of modules for which sap.ui.define has been called (in async mode), but which have not been executed yet.
 	 * When loading modules via script tag, only the onload handler knows the relationship between executed sap.ui.define calls and
 	 * module name. It then resolves the pending modules in the queue. Only one entry can get the name of the module
 	 * if there are more entries, then this is an error
@@ -2205,7 +2497,9 @@ if (!String.prototype.padEnd) {
 			vTimer;
 
 		this.push = function(name, deps, factory, _export) {
-			log.debug("pushing define from " + (document.currentScript && document.currentScript.src) );
+			if ( log.isLoggable() ) {
+				log.debug("pushing define from " + (document.currentScript && document.currentScript.src) );
+			}
 			aQueue.push({
 				name: name,
 				deps: deps,
@@ -2213,7 +2507,8 @@ if (!String.prototype.padEnd) {
 				_export: _export,
 				guess: document.currentScript && document.currentScript.getAttribute('data-sap-ui-module')
 			});
-			// trigger queue processing via a timer in case the currently executing script was not created by us
+
+			// trigger queue processing via a timer in case the currently executing script is not managed by the loader
 			if ( !vTimer ) {
 				vTimer = setTimeout(this.process.bind(this, null));
 			}
@@ -2228,61 +2523,119 @@ if (!String.prototype.padEnd) {
 		};
 
 		/**
-		 * When called via timer, <code>oModule</code> will be undefined.
-		 * @param {Module} [oModule] Module for which the current script was loaded.
+		 * Process the queue of module definitions, assuming that the original request was for
+		 * <code>oRequestedModule</code>. If there is an unnamed module definition, it is assumed to be
+		 * the one for the requested module.
+		 *
+		 * When called via timer, <code>oRequestedModule</code> will be undefined.
+		 *
+		 * @param {Module} [oRequestedModule] Module for which the current script was loaded.
 		 */
-		this.process = function(oModule) {
-			var sModuleName, oEntry;
+		this.process = function(oRequestedModule) {
+			var bLoggable = log.isLoggable(),
+				iCurrentRun = iRun++,
+				aQueueCopy = aQueue,
+				sModuleName = null;
 
-			// if a module execution error was detected, stop processing the queue
-			if ( oModule && oModule.execError ) {
-				if ( log.isLoggable() ) {
-					log.debug("module execution error detected, ignoring queued define calls");
+			// clear the queue and timer early, we've already taken a copy of the queue
+			this.clear();
+
+
+			if ( oRequestedModule ) {
+
+				// if a module execution error was detected, stop processing the queue
+				if ( oRequestedModule.execError ) {
+					if ( bLoggable ) {
+						log.debug("module execution error detected, ignoring queued define calls (" + aQueueCopy.length + ")");
+					}
+					oRequestedModule.fail(oRequestedModule.execError);
+					return;
 				}
-				oModule.fail(oModule.execError);
-				this.clear();
-				return;
+
 			}
 
-			if ( aQueue.length === 0 ) {
-				log.debug("define queue empty");
-				if ( oModule ) {
-					// might be a module in 'global' format
-					oModule.data = undefined; // allow GC
-					oModule.ready();
-				}
-				return;
-			}
+			/*
+			 * Name of the requested module, null when unknown or already consumed.
+			 *
+			 *  - when no module request is known (e.g. script was embedded in the page as an unmanaged script tag),
+			 *    then no name is known and unnamed module definitions will be reported as an error
+			 *  - multiple unnamed module definitions also are reported as an error
+			 *  - when the name of a named module definition matches the name of requested module, the name is 'consumed'.
+			 *    Any later unnamed module definition will be reported as an error, too
+			 */
+			sModuleName = oRequestedModule && oRequestedModule.name;
 
-			iRun++;
-			log.debug("processing define queue " + iRun);
-			sModuleName = oModule && oModule.name;
-			while ( aQueue.length > 0 ) {
-				oEntry = aQueue.shift();
+			// check whether there's a module definition for the requested module
+			aQueueCopy.forEach(function(oEntry) {
 				if ( oEntry.name == null ) {
 					if ( sModuleName != null ) {
 						oEntry.name = sModuleName;
 						sModuleName = null;
 					} else {
 						// multiple modules have been queued, but only one module can inherit the name from the require call
-						throw new Error("module id missing in define call: " + oEntry.guess);
+						if ( strictModuleDefinitions ) {
+							var oError = new Error(
+								"Modules that use an anonymous define() call must be loaded with a require() call; " +
+								"they must not be executed via script tag or nested into other modules. ");
+							if ( oRequestedModule ) {
+								oRequestedModule.fail(oError);
+							} else {
+								throw oError;
+							}
+						}
+						// give anonymous modules a unique pseudo ID
+						oEntry.name = '~anonymous~' + (++iAnonymousModuleCount) + '.js';
+						log.error(
+							"Modules that use an anonymous define() call must be loaded with a require() call; " +
+							"they must not be executed via script tag or nested into other modules. " +
+							"All other usages will fail in future releases or when standard AMD loaders are used. " +
+							"Now using substitute name " + oEntry.name);
 					}
-				} else if ( sModuleName && oEntry.name !== sModuleName ) {
-					if ( log.isLoggable() ) {
-						log.debug("module names don't match: requested: " + sModuleName + ", defined: " + oEntry.name);
+				} else if ( oRequestedModule && oEntry.name === oRequestedModule.name ) {
+					if ( sModuleName == null && !strictModuleDefinitions ) {
+						// if 'strictModuleDefinitions' is active, double execution will be reported anyhow
+						log.error(
+							"Duplicate module definition: both, an unnamed module and a module with the expected name exist." +
+							"This use case will fail in future releases or when standard AMD loaders are used. ");
 					}
-					Module.get(oEntry.name).addAlias(sModuleName);
+					sModuleName = null;
 				}
-				// start to resolve the dependencies
-				defineModule(oEntry.name, oEntry.deps, oEntry.factory, oEntry._export, /* bAsync = */ true);
-				log.debug("define called for " + oEntry.name);
+			});
+
+			// if not, assign an alias if there's at least one queued module definition
+			if ( sModuleName && aQueueCopy.length > 0 ) {
+				if ( bLoggable ) {
+					log.debug(
+						"No queued module definition matches the ID of the request. " +
+						"Now assuming that the first definition '" + aQueueCopy[0].name + "' is an alias of '" + sModuleName + "'");
+				}
+				Module.get(aQueueCopy[0].name).addAlias(sModuleName);
+				sModuleName = null;
 			}
 
-			if ( vTimer ) {
-				clearTimeout(vTimer);
-				vTimer = null;
+			if ( bLoggable ) {
+				log.debug("processing define queue " + iCurrentRun + (oRequestedModule ? " for " + oRequestedModule.name : "") + " with " + aQueueCopy.map(function(entry) { return entry.name; }));
 			}
-			log.debug("processing define queue done " + iRun);
+			aQueueCopy.forEach(function(oEntry) {
+				// start to resolve the dependencies
+				executeModuleDefinition(oEntry.name, oEntry.deps, oEntry.factory, oEntry._export, /* bAsync = */ true);
+				if ( bLoggable ) {
+					log.debug("define called for " + oEntry.name);
+				}
+			});
+
+			if ( sModuleName != null && !oRequestedModule.settled ) {
+				// module name still not consumed, might be a non-UI5 module (e.g. in 'global' format)
+				if ( bLoggable ) {
+					log.debug("no queued module definition for the requested module found, assume the module to be ready");
+				}
+				oRequestedModule.data = undefined; // allow GC
+				oRequestedModule.ready(); // no export known, has to be retrieved via global name
+			}
+
+			if ( bLoggable ) {
+				log.debug("processing define queue done " + iCurrentRun);
+			}
 		};
 	}();
 
@@ -2347,7 +2700,7 @@ if (!String.prototype.padEnd) {
 		});
 	}
 
-	function loadScript(oModule, bRetryOnFailure) {
+	function loadScript(oModule, sAlternativeURL) {
 
 		var oScript;
 
@@ -2363,23 +2716,25 @@ if (!String.prototype.padEnd) {
 		function onerror(e) {
 			oScript.removeEventListener('load', onload);
 			oScript.removeEventListener('error', onerror);
-			if (bRetryOnFailure) {
+			if (sAlternativeURL) {
 				log.warning("retry loading Javascript resource: " + oModule.name);
 				if (oScript && oScript.parentNode) {
 					oScript.parentNode.removeChild(oScript);
 				}
-				loadScript(oModule, /* bRetryOnFailure= */ false);
+				oModule.url = sAlternativeURL;
+				loadScript(oModule, /* sAlternativeURL= */ null);
 				return;
 			}
 
 			log.error("failed to load Javascript resource: " + oModule.name);
-			oModule.fail(ensureStacktrace(new Error("script load error")));
+			oModule.fail(
+				ensureStacktrace(new Error("failed to load '" + oModule.name +  "' from " + oModule.url + ": script load error")));
 		}
 
 		oScript = document.createElement('SCRIPT');
 		oScript.src = oModule.url;
 		oScript.setAttribute("data-sap-ui-module", oModule.name);
-		if ( bRetryOnFailure !== undefined ) {
+		if ( sAlternativeURL !== undefined ) {
 			oScript.addEventListener('load', onload);
 			oScript.addEventListener('error', onerror);
 		}
@@ -2430,10 +2785,8 @@ if (!String.prototype.padEnd) {
 		}
 
 		// Module names should not start with a "/"
-		if ( bLoggable ) {
-			if (sModuleName[0] == "/") {
-				log.error("Module names that start with a slash should not be used, as they are reserved for future use.");
-			}
+		if (sModuleName[0] == "/") {
+			log.error("Module names that start with a slash should not be used, as they are reserved for future use.");
 		}
 
 		oModule = Module.get(sModuleName);
@@ -2463,6 +2816,7 @@ if (!String.prototype.padEnd) {
 		if ( oModule.state !== INITIAL ) {
 			if ( oModule.state === PRELOADED ) {
 				oModule.state = LOADED;
+				oModule.async = bAsync;
 				bExecutedNow = true;
 				measure && measure.start(sModuleName, "Require module " + sModuleName + " (preloaded)", ["require"]);
 				execModule(sModuleName, bAsync);
@@ -2474,6 +2828,7 @@ if (!String.prototype.padEnd) {
 					log.debug(sLogPrefix + "module '" + sModuleName + "' has already been loaded (skipped).");
 				}
 				// Note: this intentionally does not return oModule.promise() as the export might be temporary in case of cycles
+				// or it might have changed after repeated module execution
 				return bAsync ? Promise.resolve(oModule.value()) : oModule.value();
 			} else if ( oModule.state === FAILED ) {
 				if ( bAsync ) {
@@ -2484,13 +2839,14 @@ if (!String.prototype.padEnd) {
 						: makeNestedError("found in negative cache: '" + sModuleName + "' from " + oModule.url, oModule.error));
 				}
 			} else {
-				// currently loading
+				// currently loading or executing
 				if ( bAsync ) {
 					// break up cyclic dependencies
 					if ( oRequestingModule && oModule.dependsOn(oRequestingModule) ) {
 						if ( log.isLoggable() ) {
 							log.debug("cycle detected between '" + oRequestingModule.name + "' and '" + sModuleName + "', returning undefined for '" + sModuleName + "'");
 						}
+						// Note: this must be a separate promise as the fulfillment is not the final one
 						return Promise.resolve(undefined);
 					}
 					return oModule.deferred().promise;
@@ -2498,11 +2854,13 @@ if (!String.prototype.padEnd) {
 				if ( !bAsync && !oModule.async ) {
 					// sync pending, return undefined
 					if ( log.isLoggable() ) {
-						log.debug("cycle detected, returning undefined for '" + sModuleName + "'");
+						log.debug("cycle detected between '" + (oRequestingModule ? oRequestingModule.name : "unknown") + "' and '" + sModuleName + "', returning undefined for '" + sModuleName + "'");
 					}
 					return undefined;
 				}
 				// async pending, load sync again
+				log.warning("Sync request triggered for '" + sModuleName + "' while async request was already pending." +
+					" Loading a module twice might cause issues and should be avoided by fully migrating to async APIs.");
 			}
 		}
 
@@ -2562,11 +2920,12 @@ if (!String.prototype.padEnd) {
 
 		} else {
 
-			// @evo-todo support debug mode also in async mode
-			oModule.url = getResourcePath(oSplitName.baseID, oSplitName.subType);
-			// call notification hook
-			ui5Require.load({ completeLoad:noop, async: true }, oModule.url, oSplitName.baseID);
-			loadScript(oModule, /* bRetryOnFailure= */ true);
+			oModule.url = getResourcePath(oSplitName.baseID, aExtensions[0] + oSplitName.subType);
+			// in debug mode, fall back to the non-dbg source, otherwise try the same source again (for SSO re-connect)
+			var sAltUrl = bDebugSources ? getResourcePath(oSplitName.baseID, aExtensions[1] + oSplitName.subType) : oModule.url;
+			// call notification hook only once
+			ui5Require.load({ completeLoad:noop, async: true }, sAltUrl, oSplitName.baseID);
+			loadScript(oModule, /* sAlternativeURL= */ sAltUrl);
 
 			// process dep cache info
 			preloadDependencies(sModuleName);
@@ -2702,8 +3061,11 @@ if (!String.prototype.padEnd) {
 				aDependencies[i] = getMappedName(aDependencies[i] + '.js', sBaseName);
 			}
 			if ( oRequestingModule ) {
-				oRequestingModule.pending = aDependencies.filter(function(dep) {
-					return !/^(require|exports|module)\.js$/.test(dep);
+				// remember outgoing dependencies to be able to detect cycles, but ignore pseudo-dependencies
+				aDependencies.forEach(function(dep) {
+					if ( !/^(require|exports|module)\.js$/.test(dep) ) {
+						oRequestingModule.addPending(dep);
+					}
 				});
 			}
 
@@ -2753,82 +3115,7 @@ if (!String.prototype.padEnd) {
 		}
 	}
 
-	/**
-	 * The amdDefine() function is closer to the AMD spec, as opposed to sap.ui.define.
-	 * It's later assigned as the global define() if the loader is running in amd=true
-	 * mode (has to be configured explicitly).
-	 */
-	function amdDefine (sModuleName, aDependencies, vFactory) {
-		var oArgs = arguments;
-		var bExportIsSet = typeof oArgs[oArgs.length - 1] === "boolean";
-
-		// bExport parameter is proprietary and should not be used for an AMD compliant define()
-		if (bExportIsSet) {
-			oArgs = Array.prototype.slice.call(oArgs, 0, oArgs.length - 1);
-		}
-
-		ui5Define.apply(this, oArgs);
-	}
-
-	function ui5Define(sModuleName, aDependencies, vFactory, bExport) {
-		var sResourceName,
-			oCurrentExecInfo;
-
-		// optional id
-		if ( typeof sModuleName === 'string' ) {
-			sResourceName = sModuleName + '.js';
-		} else {
-			// shift parameters
-			bExport = vFactory;
-			vFactory = aDependencies;
-			aDependencies = sModuleName;
-			sResourceName = null;
-		}
-
-		// optional array of dependencies
-		if ( !Array.isArray(aDependencies) ) {
-			// shift parameters
-			bExport = vFactory;
-			vFactory = aDependencies;
-			if ( typeof vFactory === 'function' && vFactory.length > 0 ) {
-				aDependencies = ['require', 'exports', 'module'].slice(0, vFactory.length);
-			} else {
-				aDependencies = [];
-			}
-		}
-
-		if ( bForceSyncDefines === false || (bForceSyncDefines == null && bGlobalAsyncMode) ) {
-			queue.push(sResourceName, aDependencies, vFactory, bExport);
-			return;
-		}
-
-		oCurrentExecInfo = _execStack.length > 0 ? _execStack[_execStack.length - 1] : null;
-		if ( !sResourceName ) {
-
-			if ( oCurrentExecInfo && !oCurrentExecInfo.used ) {
-				sResourceName = oCurrentExecInfo.name;
-				oCurrentExecInfo.used = true;
-			} else {
-				// give anonymous modules a unique pseudo ID
-				sResourceName = '~anonymous~' + (++iAnonymousModuleCount) + '.js';
-				if ( oCurrentExecInfo ) {
-					sResourceName = oCurrentExecInfo.name.slice(0, oCurrentExecInfo.name.lastIndexOf('/') + 1) + sResourceName;
-				}
-				log.error(
-					"Modules that use an anonymous define() call must be loaded with a require() call; " +
-					"they must not be executed via script tag or nested into other modules. " +
-					"All other usages will fail in future releases or when standard AMD loaders are used " +
-					"or when ui5loader runs in async mode. Now using substitute name " + sResourceName);
-			}
-		} else if ( oCurrentExecInfo && !oCurrentExecInfo.used && sResourceName !== oCurrentExecInfo.name ) {
-			log.debug("module names don't match: requested: " + sModuleName + ", defined: ", oCurrentExecInfo.name);
-			Module.get(oCurrentExecInfo.name).addAlias(sModuleName);
-		}
-		defineModule(sResourceName, aDependencies, vFactory, bExport, /* bAsync = */ false);
-
-	}
-
-	function defineModule(sResourceName, aDependencies, vFactory, bExport, bAsync) {
+	function executeModuleDefinition(sResourceName, aDependencies, vFactory, bExport, bAsync) {
 		var bLoggable = log.isLoggable();
 		sResourceName = normalize(sResourceName);
 
@@ -2837,11 +3124,49 @@ if (!String.prototype.padEnd) {
 		}
 
 		var oModule = declareModule(sResourceName);
+
+		var repeatedExecutionReported = false;
+
+		function shouldSkipExecution() {
+			if ( oModule.settled ) {
+				// avoid double execution of the module, e.g. when async/sync conflict occurred before queue processing
+				if ( oModule.state >= READY && bAsync && oModule.async === false ) {
+					log.warning("Repeated module execution skipped after async/sync conflict for " + oModule.name);
+					return true;
+				}
+
+				// when an inline module definition is executed repeatedly, this is reported but not prevented
+				// Standard AMD loaders don't support this scenario, it needs to be fixed on caller side
+				if ( strictModuleDefinitions && bAsync ) {
+					log.warning("Module '" + oModule.name + "' has been defined more than once. " +
+							"All but the first definition will be ignored, don't try to define the same module again.");
+					return true;
+				}
+
+				if ( !repeatedExecutionReported ) {
+					log.error(
+						"Module '" + oModule.name + "' is executed more than once. " +
+						"This is an unsupported scenario and will fail in future versions of UI5 or " +
+						"when a standard AMD loader is used. Don't define the same module again.");
+					repeatedExecutionReported = true;
+				}
+			}
+		}
+
+		if ( shouldSkipExecution() ) {
+			return;
+		}
+
 		// avoid early evaluation of the module value
 		oModule.content = undefined;
 
 		// Note: dependencies will be resolved and converted from RJS to URN inside requireAll
 		requireAll(oModule, aDependencies, function(aModules) {
+
+			// avoid double execution of the module, e.g. when async/sync conflict occurred while waiting for dependencies
+			if ( shouldSkipExecution() ) {
+				return;
+			}
 
 			// factory
 			if ( bLoggable ) {
@@ -2882,7 +3207,7 @@ if (!String.prototype.padEnd) {
 			// HACK: global export
 			if ( bExport && syncCallBehavior !== 2 ) {
 				if ( oModule.content == null ) {
-					log.error("module '" + sResourceName + "' returned no content, but should be exported");
+					log.error("Module '" + sResourceName + "' returned no content, but should export to global?");
 				} else {
 					if ( bLoggable ) {
 						log.debug("exporting content of '" + sResourceName + "': as global object");
@@ -2904,6 +3229,91 @@ if (!String.prototype.padEnd) {
 		}, /* bAsync = */ bAsync);
 
 	}
+
+	function ui5Define(sModuleName, aDependencies, vFactory, bExport) {
+		var sResourceName,
+			oCurrentExecInfo;
+
+		// optional id
+		if ( typeof sModuleName === 'string' ) {
+			sResourceName = sModuleName + '.js';
+		} else {
+			// shift parameters
+			bExport = vFactory;
+			vFactory = aDependencies;
+			aDependencies = sModuleName;
+			sResourceName = null;
+		}
+
+		// optional array of dependencies
+		if ( !Array.isArray(aDependencies) ) {
+			// shift parameters
+			bExport = vFactory;
+			vFactory = aDependencies;
+			if ( typeof vFactory === 'function' && vFactory.length > 0 ) {
+				aDependencies = ['require', 'exports', 'module'].slice(0, vFactory.length);
+			} else {
+				aDependencies = [];
+			}
+		}
+
+		if ( bForceSyncDefines === false || (bForceSyncDefines == null && bGlobalAsyncMode) ) {
+			queue.push(sResourceName, aDependencies, vFactory, bExport);
+			if ( sResourceName != null ) {
+				var oModule = Module.get(sResourceName);
+				if ( oModule.state === INITIAL ) {
+					oModule.state = EXECUTING;
+					oModule.async = true;
+				}
+			}
+			return;
+		}
+
+		// immediate, synchronous execution
+		oCurrentExecInfo = _execStack.length > 0 ? _execStack[_execStack.length - 1] : null;
+		if ( !sResourceName ) {
+
+			if ( oCurrentExecInfo && !oCurrentExecInfo.used ) {
+				sResourceName = oCurrentExecInfo.name;
+				oCurrentExecInfo.used = true;
+			} else {
+				// give anonymous modules a unique pseudo ID
+				sResourceName = '~anonymous~' + (++iAnonymousModuleCount) + '.js';
+				if ( oCurrentExecInfo ) {
+					sResourceName = oCurrentExecInfo.name.slice(0, oCurrentExecInfo.name.lastIndexOf('/') + 1) + sResourceName;
+				}
+				log.error(
+					"Modules that use an anonymous define() call must be loaded with a require() call; " +
+					"they must not be executed via script tag or nested into other modules. " +
+					"All other usages will fail in future releases or when standard AMD loaders are used " +
+					"or when ui5loader runs in async mode. Now using substitute name " + sResourceName);
+			}
+		} else if ( oCurrentExecInfo && !oCurrentExecInfo.used && sResourceName !== oCurrentExecInfo.name ) {
+			log.debug("module names don't match: requested: " + sModuleName + ", defined: ", oCurrentExecInfo.name);
+			Module.get(oCurrentExecInfo.name).addAlias(sModuleName);
+		}
+		executeModuleDefinition(sResourceName, aDependencies, vFactory, bExport, /* bAsync = */ false);
+
+	}
+
+	/**
+	 * The amdDefine() function is closer to the AMD spec, as opposed to sap.ui.define.
+	 * It's later assigned as the global define() if the loader is running in amd=true
+	 * mode (has to be configured explicitly).
+	 */
+	function amdDefine(sModuleName, aDependencies, vFactory) {
+		var oArgs = arguments;
+		var bExportIsSet = typeof oArgs[oArgs.length - 1] === "boolean";
+
+		// bExport parameter is proprietary and should not be used for an AMD compliant define()
+		if (bExportIsSet) {
+			oArgs = Array.prototype.slice.call(oArgs, 0, oArgs.length - 1);
+		}
+
+		ui5Define.apply(this, oArgs);
+	}
+	amdDefine.amd = {}; // identify as AMD-spec compliant loader
+
 
 	/**
 	 * Create a require() function which acts in the context of the given resource.
@@ -2981,25 +3391,6 @@ if (!String.prototype.padEnd) {
 		return sName;
 	}
 
-	/**
-	 * Retrieves the url from the provided name.
-	 * Supports relative segments within the path such as <code>./</code> and <code>../</code>
-	 *
-	 * <pre>
-	 *      "sap/ui/test/../mypath/myFile"     -->   "sap/ui/mypath/myFile"
-	 *      "sap/ui/test/./mypath/myFile"      -->   "sap/ui/test/mypath/myFile"
-	 *      "sap/ui/test/mypath/myFile"        -->   "sap/ui/test/mypath/myFile"
-	 *      "sap/ui/test/mypath/.ext"          -->   "sap/ui/test/mypath/.ext"
-	 *      "sap/ui/test/mypath/myFile.ext"    -->   "sap/ui/test/mypath/myFile.ext"
-	 *      "sap/ui/test/mypath/               -->   "sap/ui/test/mypath/"
-	 *      "/sap/ui/test"                     -->   Error because first character is a slash
-	 * </pre>
-	 *
-	 * @param {string} sName name of the resource e.g. sap/ui/test/../mypath/myFile
-	 * @returns {string} the path to the resource, e.g. sap/ui/mypath/myFile
-	 * @see https://github.com/amdjs/amdjs-api/wiki/require#requiretourlstring-
-	 * @throws Error if the input name is absolute (starts with a slash character <code>'/'</code>)
-	 */
 	function toUrl(sName) {
 		if (sName.indexOf("/") === 0) {
 			throw new Error("The provided argument '" + sName + "' may not start with a slash");
@@ -3007,60 +3398,15 @@ if (!String.prototype.padEnd) {
 		return ensureTrailingSlash(getResourcePath(sName), sName);
 	}
 
-	/**
-	 * Resolves one or more module dependencies.
-	 *
-	 * <b>Synchronous Retrieval of a Single Module Value</b>
-	 *
-	 * When called with a single string, that string is assumed to be the name of an already loaded
-	 * module and the value of that module is returned. If the module has not been loaded yet,
-	 * or if it is a Non-UI5 module (e.g. third party module), <code>undefined</code> is returned.
-	 * This signature variant allows synchronous access to module values without initiating module loading.
-	 *
-	 * Sample:
-	 * <pre>
-	 *   var JSONModel = sap.ui.require("sap/ui/model/json/JSONModel");
-	 * </pre>
-	 *
-	 * For modules that are known to be UI5 modules, this signature variant can be used to check whether
-	 * the module has been loaded.
-	 *
-	 * <b>Asynchronous Loading of Multiple Modules</b>
-	 *
-	 * If an array of strings is given and (optionally) a callback function, then the strings
-	 * are interpreted as module names and the corresponding modules (and their transitive
-	 * dependencies) are loaded. Then the callback function will be called asynchronously.
-	 * The module values of the specified modules will be provided as parameters to the callback
-	 * function in the same order in which they appeared in the dependencies array.
-	 *
-	 * The return value for the asynchronous use case is <code>undefined</code>.
-	 *
-	 * <pre>
-	 *   sap.ui.require(['sap/ui/model/json/JSONModel', 'sap/ui/core/UIComponent'], function(JSONModel,UIComponent) {
-	 *
-	 *     var MyComponent = UIComponent.extend('MyComponent', {
-	 *       ...
-	 *     });
-	 *     ...
-	 *
-	 *   });
-	 * </pre>
-	 *
-	 * This method uses the same variation of the {@link jQuery.sap.getResourcePath unified resource name}
-	 * syntax that {@link sap.ui.define} uses: module names are specified without the implicit extension '.js'.
-	 * Relative module names are not supported.
-	 *
-	 * @param {string|string[]} vDependencies dependency (dependencies) to resolve
-	 * @param {function} [fnCallback] callback function to execute after resolving an array of dependencies
-	 * @returns {any|undefined} a single module value or undefined
-	 * @public
-	 * @experimental Since 1.27.0 - not all aspects of sap.ui.require are settled yet. E.g. the return value
-	 * of the asynchronous use case might change (currently it is undefined).
+	/*
+	 * UI5 version of require (sap.ui.require)
 	 */
 	var ui5Require = createContextualRequire(null, false);
 
-	/**
-	 * difference between require (sap.ui.require) and amdRequire (window.require):
+	/*
+	 * AMD version of require (window.require)
+	 *
+	 * Difference between require (sap.ui.require) and amdRequire (window.require):
 	 * - require("my/module"), returns undefined if the module was not loaded yet
 	 * - amdRequire("my/module"), throws an error if the module was not loaded yet
 	 */
@@ -3069,6 +3415,23 @@ if (!String.prototype.padEnd) {
 	function requireSync(sModuleName) {
 		sModuleName = getMappedName(sModuleName + '.js');
 		return requireModule(null, sModuleName, /* bAsync = */ false);
+	}
+
+	function predefine(sModuleName, aDependencies, vFactory, bExport) {
+		if ( typeof sModuleName !== 'string' ) {
+			throw new Error("predefine requires a module name");
+		}
+		sModuleName = normalize(sModuleName);
+		Module.get(sModuleName + '.js').preload("<unknown>/" + sModuleName, [sModuleName, aDependencies, vFactory, bExport], null);
+	}
+
+	function preload(modules, group, url) {
+		group = group || null;
+		url = url || "<unknown>";
+		for ( var name in modules ) {
+			name = normalize(name);
+			Module.get(name).preload(url + "/" + name, modules[name], group);
+		}
 	}
 
 	/**
@@ -3237,7 +3600,7 @@ if (!String.prototype.padEnd) {
 
 	// ---- config --------------------------------------------------------------------------------
 
-	var mConfigHandlers = {
+	var mUI5ConfigHandlers = {
 		baseUrl: function(url) {
 			registerResourcePath("", url);
 		},
@@ -3308,21 +3671,33 @@ if (!String.prototype.padEnd) {
 		},
 		noConflict: function(bValue) {
 			log.warning("Config option 'noConflict' has been deprecated, use option 'amd' instead, if still needed.");
-			mConfigHandlers.amd(!bValue);
+			mUI5ConfigHandlers.amd(!bValue);
 		}
 	};
 
-	function config(cfg) {
-		if ( cfg === undefined ) {
-			return {
-				amd: bExposeAsAMDLoader,
-				async: bGlobalAsyncMode,
-				noConflict: !bExposeAsAMDLoader // TODO needed?
-			};
-		}
+	/**
+	 * Config handlers used when amd mode is enabled.
+	 * References only methods defined in the AMD spec.
+	 */
+	var mAMDConfigHandlers = {
+		baseUrl: mUI5ConfigHandlers.baseUrl,
+		paths: function (module, url) {
+			registerResourcePath(module, resolveURL(url, getResourcePath("") + "/"));
+		},
+		map: mUI5ConfigHandlers.map,
+		shim: mUI5ConfigHandlers.shim
+	};
 
-		forEach(cfg, function(key, value) {
-			var handler = mConfigHandlers[key];
+	/**
+	 * Executes all available handlers which are defined in the config object
+	 *
+	 * @param {object} oCfg config to handle
+	 * @param {map} mHandlers all available handlers
+	 */
+	function handleConfigObject(oCfg, mHandlers) {
+
+		function processConfig(key, value) {
+			var handler = mHandlers[key];
 			if ( typeof handler === 'function' ) {
 				if ( handler.length === 1) {
 					handler(value);
@@ -3332,9 +3707,42 @@ if (!String.prototype.padEnd) {
 			} else {
 				log.warning("configuration option " + key + " not supported (ignored)");
 			}
+		}
+
+		// Make sure the 'baseUrl' handler is called first as
+		// other handlers (e.g. paths) depend on it
+		if (oCfg.baseUrl) {
+			processConfig("baseUrl", oCfg.baseUrl);
+		}
+
+		forEach(oCfg, function(key, value) {
+			// Ignore "baseUrl" here as it will be handled above
+			if (key !== "baseUrl") {
+				processConfig(key, value);
+			}
 		});
 	}
 
+	function ui5Config(cfg) {
+		if ( cfg === undefined ) {
+			return {
+				amd: bExposeAsAMDLoader,
+				async: bGlobalAsyncMode,
+				noConflict: !bExposeAsAMDLoader // TODO needed?
+			};
+		}
+		handleConfigObject(cfg, mUI5ConfigHandlers);
+	}
+
+	function amdConfig(cfg) {
+		if ( cfg === undefined ) {
+			return undefined;
+		}
+		handleConfigObject(cfg, mAMDConfigHandlers);
+	}
+
+	// expose preload function as property of sap.ui.require
+	ui5Require.preload = preload;
 
 	// @evo-todo really use this hook for loading. But how to differentiate between sync and async?
 	// for now, it is only a notification hook to attach load tests
@@ -3344,10 +3752,11 @@ if (!String.prototype.padEnd) {
 	var privateAPI = {
 		amdDefine: amdDefine,
 		amdRequire: amdRequire,
-		config: config,
+		config: ui5Config,
 		declareModule: function(sResourceName) {
 			/* void */ declareModule( normalize(sResourceName) );
 		},
+		defineModuleSync: defineModuleSync,
 		dump: dumpInternals,
 		getAllModules: getAllModules,
 		getModuleContent: getModuleContent,
@@ -3355,6 +3764,7 @@ if (!String.prototype.padEnd) {
 			return mModules[sResourceName] ? mModules[sResourceName].state : INITIAL;
 		},
 		getResourcePath: getResourcePath,
+		getSyncCallBehavior: getSyncCallBehavior,
 		getUrlPrefixes: getUrlPrefixes,
 		loadJSResourceAsync: loadJSResourceAsync,
 		resolveURL: resolveURL,
@@ -3393,33 +3803,10 @@ if (!String.prototype.padEnd) {
 			set: function(v) {
 				translate = v;
 			}
-
 		}
 	});
 
-	ui5Require.sync = requireSync;
-
-	ui5Require.predefine = function(sModuleName, aDependencies, vFactory, bExport) {
-		if ( typeof sModuleName !== 'string' ) {
-			throw new Error("predefine requires a module name");
-		}
-		sModuleName = normalize(sModuleName);
-		Module.get(sModuleName + '.js').preload("<unknown>/" + sModuleName, [sModuleName, aDependencies, vFactory, bExport], null);
-	};
-
-	ui5Require.preload = function(modules, group, url) {
-		group = group || null;
-		url = url || "<unknown>";
-		for ( var name in modules ) {
-			name = normalize(name);
-			Module.get(name).preload(url + "/" + name, modules[name], group);
-		}
-	};
-
-	if ( typeof ES6Promise !== 'undefined' ) {
-		Module.get('sap/ui/thirdparty/es6-promise.js').ready(ES6Promise);
-	}
-	Module.get('sap/ui/thirdparty/es6-string-methods.js').ready(null); // no module value
+	// establish APIs in the sap.ui namespace
 
 	__global.sap = __global.sap || {};
 	sap.ui = sap.ui || {};
@@ -3488,7 +3875,7 @@ if (!String.prototype.padEnd) {
 		 *   If <code>cfg</code> is omitted or <code>undefined</code>, a copy of the current configuration
 		 *   gets returned, containing at least the properties <code>amd</code> and <code>async</code>.
 		 *
-		 * @param {string} [cfg.baseUrl='resources/']
+		 * @param {string} [cfg.baseUrl='./']
 		 *   Default location to load modules from. If none of the configured <code>paths</code> prefixes
 		 *   matches a module ID, the module will be loaded from the concatenation of the <code>baseUrl</code>
 		 *   and the module ID.
@@ -3524,7 +3911,7 @@ if (!String.prototype.padEnd) {
 		 *
 		 *   Matches are always complete matches, a prefix 'a/b/c' does not match the module ID 'a/b/com'.
 		 *
-		 * @param {Object.<string, {amd:boolean, deps:string[], exports:(string|string[])}>} [cfg.shim]
+		 * @param {Object.<string, {amd: boolean, deps: string[], exports: (string|string[])}>} [cfg.shim]
 		 *   Defines additional metadata for modules for which the normal behavior of the AMD APIs is
 		 *   not sufficient.
 		 *
@@ -3540,14 +3927,14 @@ if (!String.prototype.padEnd) {
 		 *   check for an AMD loader and register with it instead of exporting to a global name. A future
 		 *   version of the ui5loader might ignore this flag when it acts as an AMD loader by itself.
 		 *
-		 *   <b>Note</b>: The ui5loader does not support the <code>init</code> option described by the
+		 *   <b>Note:</b> The ui5loader does not support the <code>init</code> option described by the
 		 *   "Common Config" section of the AMD spec.
 		 *
 		 * @param {boolean} [cfg.async=false]
 		 *   When set to true, <code>sap.ui.require</code> loads modules asynchronously via script tags and
 		 *   <code>sap.ui.define</code> executes asynchronously.
 		 *
-		 *   <b>Note</b>: Switching back from async to sync is not supported and trying to do so will throw
+		 *   <b>Note:</b> Switching back from async to sync is not supported and trying to do so will throw
 		 *   an <code>Error</code>
 		 *
 		 * @param {boolean} [cfg.amd=false]
@@ -3566,7 +3953,7 @@ if (!String.prototype.padEnd) {
 		 * @since 1.56.0
 		 * @function
 		 */
-		config: config,
+		config: ui5Config,
 
 		/**
 		 * Internal API of the UI5 loader.
@@ -3578,26 +3965,97 @@ if (!String.prototype.padEnd) {
 	};
 
 	/**
-	 * Defines a Javascript module with its name, its dependencies and a module value or factory.
+	 * Sets the configuration of the ui5loader. The configuration can be updated multiple times.
+	 * Later changes do not impact modules that have been loaded before.
+	 *
+	 * Setting the <code>amd</code> option of the sap.ui.loader.config to <code>true</code> is a
+	 * prerequisite to use the <code>require.config</code> function
+	 * (see {@link sap.ui.loader.config sap.ui.loader.config option amd}).
+	 *
+	 * The ui5loader acts more AMD compliant in relation to resolution of paths defined as
+	 * part of the <code>paths</code> configuration option.
+	 *
+	 * @param {object} cfg The provided configuration gets merged with the UI5 loader configuration in use.
+	 *
+	 * @param {string} [cfg.baseUrl='./']
+	 *   Default location to load modules from. If none of the configured <code>paths</code> prefixes
+	 *   matches a module ID, the module will be loaded from the concatenation of the <code>baseUrl</code>
+	 *   and the module ID.
+	 *
+	 *   If the <code>baseUrl</code> itself is a relative URL, it is evaluated relative to <code>document.baseURI</code>.
+	 *
+	 * @param {object} [cfg.paths]
+	 *   A map of resource locations keyed by a corresponding module ID prefix.
+	 *   When a module is to be loaded, the longest key in <code>paths</code> is searched that is a
+	 *   prefix of the module ID. The module will be loaded from the concatenation of the corresponding
+	 *   value in <code>paths</code> and the remainder of the module ID (after the prefix). If no entry
+	 *   in <code>paths</code> matches, then the module will be loaded from the <code>baseUrl</code>.
+	 *
+	 *   The prefixes (keys) must not contain relative segments (./ or ../), a trailing slash will be
+	 *   removed, and only full name segment matches are considered a match (prefix 'sap/m' does not
+	 *   match a module ID 'sap/main').
+	 *
+	 *   <b>Note</b>: In contrast to the {@link sap.ui.loader.config sap.ui.loader.config option paths},
+	 *   the paths (values in the map) are interpreted relative to <code>cfg.baseUrl</code>,
+	 *   not relative to <code>document.baseURI</code>. The behaviour is exactly as described in the "Common Config" draft
+	 *   of the AMD spec (https://github.com/amdjs/amdjs-api/blob/master/CommonConfig.md).
+	 *
+	 * @param {Object.<string, Object.<string, string>>} [cfg.map]
+	 *   A map of maps that defines how to map module IDs to other module IDs (inner maps)
+	 *   in the context of a specific set of modules (keys of outer map).
+	 *
+	 *   Each key of the outer map represents a module ID prefix that describes the context for which
+	 *   its value (inner map) has to be used. The special key <code>*</code> describes the default
+	 *   context which applies for any module. Only the most specific matching context will be taken
+	 *   into account.
+	 *
+	 *   Each inner map maps a module ID or module ID prefix to another module ID or module ID prefix.
+	 *   Again, only the most specific match is taken into account and only one mapping is evaluated
+	 *   (the evaluation of the mappings is not done recursively).
+	 *
+	 *   Matches are always complete matches, a prefix 'a/b/c' does not match the module ID 'a/b/com'.
+	 *
+	 * @param {Object.<string, {deps: string[], exports: (string|string[])}>} [cfg.shim]
+	 *   Defines additional metadata for modules for which the normal behavior of the AMD APIs is
+	 *   not sufficient.
+	 *
+	 *   A typical example are scripts that don't use <code>define</code> or <code>sap.ui.define</code>,
+	 *   but export to a global name. With the <code>exports</code> property, one or more export
+	 *   names can be specified, and the loader can retrieve the exported value after executing the
+	 *   corresponding module. If such a module has dependencies, they can be specified in the
+	 *   <code>deps</code> array and are loaded and executed before executing the module.
+	 *
+	 *   <b>Note:</b> The ui5loader does not support the <code>init</code> option described by the
+	 *   "Common Config" section of the AMD spec.
+	 *
+	 * @returns {undefined}
+	 * @public
+	 * @name require_config
+	 * @function
+	 */
+	amdRequire.config = amdConfig;
+
+	/**
+	 * Defines a JavaScript module with its ID, its dependencies and a module export value or factory.
 	 *
 	 * The typical and only suggested usage of this method is to have one single, top level call to
-	 * <code>sap.ui.define</code> in one Javascript resource (file). When a module is requested by its
-	 * name for the first time, the corresponding resource is determined from the name and the current
-	 * {@link jQuery.sap.registerResourcePath configuration}. The resource will be loaded and executed
+	 * <code>sap.ui.define</code> in one JavaScript resource (file). When a module is requested by its
+	 * module ID for the first time, the corresponding resource is determined from the ID and the current
+	 * {@link sap.ui.loader.config configuration}. The resource will be loaded and executed
 	 * which in turn will execute the top level <code>sap.ui.define</code> call.
 	 *
-	 * If the module name was omitted from that call, it will be substituted by the name that was used to
+	 * If the module ID was omitted from that call, it will be substituted by the ID that was used to
 	 * request the module. As a preparation step, the dependencies as well as their transitive dependencies,
-	 * will be loaded. Then, the module value will be determined: if a static value (object, literal) was
-	 * given as <code>vFactory</code>, that value will be the module value. If a function was given, that
-	 * function will be called (providing the module values of the declared dependencies as parameters
-	 * to the function) and its return value will be used as module value. The framework internally associates
-	 * the resulting value with the module name and provides it to the original requester of the module.
-	 * Whenever the module is requested again, the same value will be returned (modules are executed only once).
+	 * will be loaded. Then, the module value (its export) will be determined: if a static value (object, literal)
+	 * was given as <code>vFactory</code>, that value will be the module value. If a function was given, that
+	 * function will be called (providing the module exports of the declared dependencies as parameters
+	 * to the function) and its return value will be used as module export value. The framework internally
+	 * associates the resulting value with the module ID and provides it to the original requester of the module.
+	 * Whenever the module is requested again, the same export value will be returned (modules are executed only once).
 	 *
 	 * <i>Example:</i><br>
-	 * The following example defines a module "SomeClass", but doesn't hard code the module name.
-	 * If stored in a file 'sap/mylib/SomeClass.js', it can be requested as 'sap/mylib/SomeClass'.
+	 * The following example defines a module, but doesn't hard code the module ID.
+	 * If stored in a file 'sap/mylib/SomeClass.js', it can be requested with the ID 'sap/mylib/SomeClass'.
 	 * <pre>
 	 *   sap.ui.define(['./Helper', 'sap/m/Bar'], function(Helper,Bar) {
 	 *
@@ -3622,7 +4080,7 @@ if (!String.prototype.padEnd) {
 	 * </pre>
 	 *
 	 * In another module or in an application HTML page, the {@link sap.ui.require} API can be used
-	 * to load the Something module and to work with it:
+	 * to load the sap/mylib/Something module and to work with it:
 	 *
 	 * <pre>
 	 * sap.ui.require(['sap/mylib/Something'], function(Something) {
@@ -3653,34 +4111,35 @@ if (!String.prototype.padEnd) {
 	 * <h3>Dependency to Modules</h3>
 	 *
 	 * If a dependencies array is given, each entry represents the name of another module that
-	 * the currently defined module depends on. All dependency modules are loaded before the value
-	 * of the currently defined module is determined. The module value of each dependency module
+	 * the currently defined module depends on. All dependency modules are loaded before the export
+	 * of the currently defined module is determined. The module export of each dependency module
 	 * will be provided as a parameter to a factory function, the order of the parameters will match
 	 * the order of the modules in the dependencies array.
 	 *
-	 * <b>Note:</b> the order in which the dependency modules are <i>executed</i> is <b>not</b>
+	 * <b>Note:</b> The order in which the dependency modules are <i>executed</i> is <b>not</b>
 	 * defined by the order in the dependencies array! The execution order is affected by dependencies
 	 * <i>between</i> the dependency modules as well as by their current state (whether a module
 	 * already has been loaded or not). Neither module implementations nor dependents that require
 	 * a module set must make any assumption about the execution order (other than expressed by
-	 * their dependencies). There is, however, one exception with regard to third party libraries,
-	 * see the list of limitations further down below.
+	 * their dependencies).
 	 *
-	 * <b>Note:</b>a static module value (a literal provided to <code>sap.ui.define</code>) cannot
-	 * depend on the module values of the dependency modules. Instead, modules can use a factory function,
-	 * calculate the static value in that function, potentially based on the dependencies, and return
-	 * the result as module value. The same approach must be taken when the module value is supposed
-	 * to be a function.
+	 * <b>Note:</b> A static module export (a literal provided to <code>sap.ui.define</code>) cannot
+	 * depend on the module exports of the dependency modules as it has to be calculated before
+	 * the dependencies are resolved. As an alternative, modules can define a factory function,
+	 * calculate a static export value in that function, potentially based on the dependencies, and
+	 * return the result as module export value. The same approach must be taken when the module
+	 * export is supposed to be a function.
 	 *
 	 *
 	 * <h3>Asynchronous Contract</h3>
-	 * <code>sap.ui.define</code> is designed to support real Asynchronous Module Definitions (AMD)
-	 * in future, although it internally still uses the old synchronous module loading of UI5.
-	 * Callers of <code>sap.ui.define</code> therefore must not rely on any synchronous behavior
-	 * that they might observe with the current implementation.
 	 *
-	 * For example, callers of <code>sap.ui.define</code> must not use the module value immediately
-	 * after invoking <code>sap.ui.define</code>:
+	 * <code>sap.ui.define</code> is designed to support real Asynchronous Module Definitions (AMD)
+	 * in future, although it internally still might use synchronous module loading, depending on
+	 * configuration and context. However, callers of <code>sap.ui.define</code> must never rely on
+	 * any synchronous behavior that they might observe in a specific test scenario.
+	 *
+	 * For example, callers of <code>sap.ui.define</code> must not use the module export value
+	 * immediately after invoking <code>sap.ui.define</code>:
 	 *
 	 * <pre>
 	 *   // COUNTER EXAMPLE HOW __NOT__ TO DO IT
@@ -3694,30 +4153,31 @@ if (!String.prototype.padEnd) {
 	 *   // DON'T DO THAT!
 	 *   // accessing the class _synchronously_ after sap.ui.define was called
 	 *   new Something();
+	 *
 	 * </pre>
 	 *
 	 * Applications that need to ensure synchronous module definition or synchronous loading of dependencies
-	 * <b>MUST</b> use the old {@link jQuery.sap.declare} and {@link jQuery.sap.require} APIs.
+	 * <b>MUST</b> use the deprecated legacy APIs {@link jQuery.sap.declare} and {@link jQuery.sap.require}.
 	 *
 	 *
 	 * <h3>(No) Global References</h3>
 	 *
 	 * To be in line with AMD best practices, modules defined with <code>sap.ui.define</code>
 	 * should not make any use of global variables if those variables are also available as module
-	 * values. Instead, they should add dependencies to those modules and use the corresponding parameter
-	 * of the factory function to access the module value.
+	 * exports. Instead, they should add dependencies to those modules and use the corresponding parameter
+	 * of the factory function to access the module exports.
 	 *
 	 * As the current programming model and the documentation of UI5 heavily rely on global names,
 	 * there will be a transition phase where UI5 enables AMD modules and local references to module
-	 * values in parallel to the old global names. The fourth parameter of <code>sap.ui.define</code>
+	 * exports in parallel to the old global names. The fourth parameter of <code>sap.ui.define</code>
 	 * has been added to support that transition phase. When this parameter is set to true, the framework
 	 * provides two additional features
 	 *
 	 * <ol>
 	 * <li>Before the factory function is called, the existence of the global parent namespace for
 	 *     the current module is ensured</li>
-	 * <li>The module value will be automatically exported under a global name which is derived from
-	 *     the name of the module</li>
+	 * <li>The module export returned by the module's factory function will be automatically exported
+	 *     under the global name which is derived from the ID of the module</li>
 	 * </ol>
 	 *
 	 * The parameter lets the framework know whether any of those two operations is needed or not.
@@ -3726,27 +4186,36 @@ if (!String.prototype.padEnd) {
 	 *
 	 * <h3>Third Party Modules</h3>
 	 * Although third party modules don't use UI5 APIs, they still can be listed as dependencies in
-	 * a <code>sap.ui.define</code> call. They will be requested and executed like UI5 modules, but their
-	 * module value will be <code>undefined</code>.
-	 *
-	 * If the currently defined module needs to access the module value of such a third party module,
-	 * it can access the value via its global name (if the module supports such a usage).
+	 * a <code>sap.ui.define</code> call. They will be requested and executed like UI5 modules, but to
+	 * make their exports available, so called <em>shims</em> have to be defined.
 	 *
 	 * Note that UI5 temporarily deactivates an existing AMD loader while it executes third party modules
 	 * known to support AMD. This sounds contradictorily at a first glance as UI5 wants to support AMD,
 	 * but for now it is necessary to fully support UI5 applications that rely on global names for such modules.
 	 *
+	 * For third-party modules that UI5 delivers (e.g. those in namespace <code>sap/ui/thirdparty/</code>),
+	 * the necessary shims are defined by UI5 itself by executing the private module <code>ui5loader-autoconfig.js</code>
+	 * during bootstrap.
+	 *
 	 * Example:
 	 * <pre>
 	 *   // module 'Something' wants to use third party library 'URI.js'
 	 *   // It is packaged by UI5 as non-UI5-module 'sap/ui/thirdparty/URI'
+	 *   // the following shim helps UI5 to correctly load URI.js and to retrieve the module's export value
+	 *   // Apps don't have to define that shim, it is already applied by ui5loader-autconfig.js
+	 *   sap.ui.loader.config({
+	 *     shim: {
+	 *       'sap/ui/thirdparty/URI': {
+	 *          amd: true, // URI.js reacts on an AMD loader, this flag lets UI5 temp. disable such loaders
+	 *          exports: 'URI' // name of the global variable under which URI.js exports its module value
+	 *       }
+	 *     }
+	 *   });
 	 *
+	 *   // now the module can be retrieved like other modules
 	 *   sap.ui.define('Something', ['sap/ui/thirdparty/URI'], function(URIModuleValue) {
 	 *
-	 *     new URIModuleValue(); // fails as module value is undefined
-	 *
-	 *     //global URI // (optional) declare usage of global name so that static code checks don't complain
-	 *     new URI(); // access to global name 'URI' works
+	 *     new URIModuleValue(...); // same as the global 'URI' name: new URI(...)
 	 *
 	 *     ...
 	 *   });
@@ -3768,15 +4237,15 @@ if (!String.prototype.padEnd) {
 	 * to load 'real' AMD modules as they expect methods <code>define</code> and <code>require</code>
 	 * to be available. Modules that use Unified Module Definition (UMD) syntax, can be loaded,
 	 * but only when no AMD loader is present or when they expose their export also to the global
-	 * namespace, even when an AMD loader is present (as e.g. jQuery does)</li>
-	 * <li><code>sap.ui.define</code> currently loads modules with synchronous XHR calls. This is
-	 * basically a tribute to the synchronous history of UI5.
-	 * <b>BUT:</b> synchronous dependency loading and factory execution explicitly it not part of
-	 * contract of <code>sap.ui.define</code>. To the contrary, it is already clear and planned
-	 * that asynchronous loading will be implemented, at least as an alternative if not as the only
-	 * implementation. Also check section <b>Asynchronous Contract</b> above.<br>
-	 * Applications that need to ensure synchronous loading of dependencies <b>MUST</b> use the old
-	 * {@link jQuery.sap.require} API.</li>
+	 * namespace, even when an AMD loader is present (as e.g. jQuery does) or when a shim is
+	 * defined for them using the <code>amd:true</code> flag (see example above)</li>
+	 * <li>Depending on configuration and the current context, <code>sap.ui.define</code> loads
+	 * the dependencies of a module either synchronously using a sync XHR call + eval or asynchronously
+	 * via script tags. The sync loading is basically a tribute to the synchronous history of UI5.
+	 * There's no way for a module developer to enforce synchronous loading of the dependencies and
+	 * on the long run, sync loading will be faded out.
+	 * Applications that need to ensure synchronous loading of dependencies <b>MUST</b> use the
+	 * deprecated legacy APIs like {@link jQuery.sap.require}.</li>
 	 * <li><code>sap.ui.define</code> does not support plugins to use other file types, formats or
 	 * protocols. It is not planned to support this in future</li>
 	 * <li><code>sap.ui.define</code> does not support absolute URLs as module names (dependencies)
@@ -3802,36 +4271,37 @@ if (!String.prototype.padEnd) {
 	 * <li>A single file must not contain multiple calls to <code>sap.ui.define</code>. Multiple calls
 	 *     currently are only supported in the so called 'preload' files that the UI5 merge tooling produces.
 	 *     The exact details of how this works might be changed in future implementations and are not
-	 *     yet part of the API contract</li>
+	 *     part of the API contract</li>
 	 * </ul>
-	 * @param {string} [sModuleName] name of the module in simplified resource name syntax.
-	 *        When omitted, the loader determines the name from the request.
-	 * @param {string[]} [aDependencies] list of dependencies of the module
-	 * @param {function|any} vFactory the module value or a function that calculates the value
-	 * @param {boolean} [bExport] whether an export to global names is required - should be used by SAP-owned code only
+	 * @param {string} [sModuleName] ID of the module in simplified resource name syntax.
+	 *        When omitted, the loader determines the ID from the request.
+	 * @param {string[]} [aDependencies] List of dependencies of the module
+	 * @param {function|any} vFactory The module export value or a function that calculates that value
+	 * @param {boolean} [bExport] Whether an export to global names is required - should be used by SAP-owned code only
 	 * @since 1.27.0
 	 * @public
 	 * @see https://github.com/amdjs/amdjs-api
-	 * @experimental Since 1.27.0 - not all aspects of sap.ui.define are settled yet. If the documented
-	 *        constraints and limitations are obeyed, SAP-owned code might use it. If the fourth parameter
-	 *        is not used and if the asynchronous contract is respected, even Non-SAP code might use it.
+	 * @function
 	 */
 	sap.ui.define = ui5Define;
 
 	/**
 	 * @private
+	 * @function
 	 */
-	sap.ui.predefine = ui5Require.predefine;
+	sap.ui.predefine = predefine;
 
 	/**
 	 * Resolves one or more module dependencies.
 	 *
-	 * <b>Synchronous Retrieval of a Single Module Value</b>
+	 * <h3>Synchronous Retrieval of a Single Module Export Value (Probing)</h3>
 	 *
-	 * When called with a single string, that string is assumed to be the name of an already loaded
-	 * module and the value of that module is returned. If the module has not been loaded yet,
-	 * or if it is a Non-UI5 module (e.g. third party module), <code>undefined</code> is returned.
-	 * This signature variant allows synchronous access to module values without initiating module loading.
+	 * When called with a single string, that string is assumed to be the ID of an already loaded
+	 * module and the export of that module is returned. If the module has not been loaded yet,
+	 * or if it is a Non-UI5 module (e.g. third-party module) without a shim, <code>undefined</code>
+	 * is returned.
+	 *
+	 * This signature variant allows synchronous access to module exports without initiating module loading.
 	 *
 	 * Sample:
 	 * <pre>
@@ -3841,12 +4311,13 @@ if (!String.prototype.padEnd) {
 	 * For modules that are known to be UI5 modules, this signature variant can be used to check whether
 	 * the module has been loaded.
 	 *
-	 * <b>Asynchronous Loading of Multiple Modules</b>
+	 *
+	 * <h3>Asynchronous Loading of Multiple Modules</h3>
 	 *
 	 * If an array of strings is given and (optionally) a callback function, then the strings
-	 * are interpreted as module names and the corresponding modules (and their transitive
+	 * are interpreted as module IDs and the corresponding modules (and their transitive
 	 * dependencies) are loaded. Then the callback function will be called asynchronously.
-	 * The module values of the specified modules will be provided as parameters to the callback
+	 * The module exports of the specified modules will be provided as parameters to the callback
 	 * function in the same order in which they appeared in the dependencies array.
 	 *
 	 * The return value for the asynchronous use case is <code>undefined</code>.
@@ -3866,14 +4337,54 @@ if (!String.prototype.padEnd) {
 	 * syntax that {@link sap.ui.define} uses: module names are specified without the implicit extension '.js'.
 	 * Relative module names are not supported.
 	 *
-	 * @param {string|string[]} vDependencies dependency (dependencies) to resolve
-	 * @param {function} [fnCallback] callback function to execute after resolving an array of dependencies
-	 * @returns {any|undefined} a single module value or undefined
+	 * @param {string|string[]} vDependencies Dependency (dependencies) to resolve
+	 * @param {function} [fnCallback] Callback function to execute after resolving an array of dependencies
+	 * @param {function} [fnErrback] Callback function to execute if an error was detected while loading the
+	 *                      dependencies or executing the factory function. Note that due to browser limitations
+	 *                      not all errors will be reported via this callback. In general, module loading is
+	 *                      designed for the non-error case. Error handling is not complete.
+	 * @returns {any|undefined} A single module export value (sync probing variant) or undefined (async loading variant)
 	 * @public
-	 * @experimental Since 1.27.0 - not all aspects of sap.ui.require are settled yet. E.g. the return value
-	 * of the asynchronous use case might change (currently it is undefined).
+	 * @function
 	 */
 	sap.ui.require = ui5Require;
+
+	/**
+	 * Calculates a URL from the provided resource name.
+	 *
+	 * The calculation takes any configured ID mappings or resource paths into account
+	 * (see {@link sap.ui.loader.config config options map and paths}. It also supports relative
+	 * segments such as <code>./</code> and <code>../</code> within the path, but not at its beginning.
+	 * If relative navigation would cross the root namespace (e.g. <code>sap.ui.require.toUrl("../")</code>)
+	 * or when the resource name starts with a slash or with a relative segment, an error is thrown.
+	 *
+	 * <b>Note:</b> <code>toUrl</code> does not resolve the returned URL; whether it is an absolute
+	 * URL or a relative URL depends on the configured <code>baseUrl</code> and <code>paths</code>.
+	 *
+	 * @example
+	 *   sap.ui.loader.config({
+	 *     baseUrl: "/home"
+	 *   });
+	 *
+	 *   sap.ui.require.toUrl("app/data")              === "/home/app/data"
+	 *   sap.ui.require.toUrl("app/data.json")         === "/home/app/data.json"
+	 *   sap.ui.require.toUrl("app/data/")             === "/home/app/data/"
+	 *   sap.ui.require.toUrl("app/.config")           === "/home/app/.config"
+	 *   sap.ui.require.toUrl("app/test/../data.json") === "/home/data.json"
+	 *   sap.ui.require.toUrl("app/test/./data.json")  === "/home/test/data.json"
+	 *   sap.ui.require.toUrl("app/../../data")        throws Error because root namespace is left
+	 *   sap.ui.require.toUrl("/app")                  throws Error because first character is a slash
+	 *
+	 * @param {string} sName Name of a resource e.g. <code>'app/data.json'</code>
+	 * @returns {string} Path to the resource, e.g. <code>'/home/app/data.json'</code>
+	 * @see https://github.com/amdjs/amdjs-api/wiki/require#requiretourlstring-
+	 * @throws {Error} If the input name is absolute (starts with a slash character <code>'/'</code>),
+	 *   starts with a relative segment or if resolving relative segments would cross the root
+	 *   namespace
+	 * @public
+	 * @name sap.ui.require.toUrl
+	 * @function
+	 */
 
 	/**
 	 * Load a single module synchronously and return its module value.
@@ -3886,19 +4397,21 @@ if (!String.prototype.padEnd) {
 	 * already use (a simplified variation of the {@link jQuery.sap.getResourcePath unified resource name}:
 	 * slash separated names without the implicit extension '.js'). As for <code>sap.ui.require</code>,
 	 * relative names (using <code>./</code> or <code>../</code>) are not supported.
-	 * If not loaded yet, the named module will be loaded synchronously and the value of the module will be returned.
+	 * If not loaded yet, the named module will be loaded synchronously and the export value of the module will be returned.
 	 * While a module is executing, a value of <code>undefined</code> will be returned in case it is required again during
-	 * that period of time.
+	 * that period of time (e.g. in case of cyclic dependencies).
 	 *
-	 * <b>Note</b>: Applications are strongly encouraged to use this method only when synchronous loading is unavoidable.
+	 * <b>Note:</b> Applications are strongly encouraged to use this method only when synchronous loading is unavoidable.
 	 * Any code that uses this method won't benefit from future performance improvements that require asynchronous
-	 * module loading. And such code never can comply with stronger content security policies (CSPs) that forbid 'eval'.
+	 * module loading (e.g. HTTP/2). And such code never can comply with stronger content security policies (CSPs)
+	 * that forbid 'eval'.
 	 *
 	 * @param {string} sModuleName Module name in requireJS syntax
 	 * @returns {any} value of the loaded module or undefined
 	 * @private
+	 * @function
 	 */
-	sap.ui.requireSync = ui5Require.sync;
+	sap.ui.requireSync = requireSync;
 
 }(window));
 /*!
@@ -3922,7 +4435,7 @@ if (!String.prototype.padEnd) {
 	 *  - ui5loader-autoconfig.js
 	 */
 
-	/*global console, document, jQuery, sap, window */
+	/*global console, document, ES6Promise, jQuery, sap, window */
 	"use strict";
 
 	var ui5loader = window.sap && window.sap.ui && window.sap.ui.loader,
@@ -3957,7 +4470,7 @@ if (!String.prototype.padEnd) {
 	if ( !findBaseUrl(document.querySelector('SCRIPT[src][id=sap-ui-bootstrap]'), /^((?:.*\/)?resources\/)/ ) ) {
 
 		// only when there's no such script tag, check all script tags
-		rBootScripts = /^(.*\/)?(?:sap-ui-(?:core|custom|boot|merged)(?:-\w*)?|jquery.sap.global|ui5loader(?:-autoconfig)?)\.js(?:[?#]|$)/;
+		rBootScripts = /^(.*\/)?(?:sap-ui-(?:core|custom|boot|merged)(?:-[^?#/]*)?|jquery.sap.global|ui5loader(?:-autoconfig)?)\.js(?:[?#]|$)/;
 		aScripts = document.scripts;
 		for ( i = 0; i < aScripts.length; i++ ) {
 			if ( findBaseUrl(aScripts[i], rBootScripts) ) {
@@ -3976,6 +4489,38 @@ if (!String.prototype.padEnd) {
 	if (sBaseUrl == null) {
 		throw new Error("ui5loader-autoconfig.js: could not determine base URL. No known script tag and no configuration found!");
 	}
+
+	/**
+	 * Determine whether a bootstrap reboot URL is set to reboot UI5 from a different URL
+	 */
+	(function() {
+		var sRebootUrl;
+		try { // Necessary for FF when Cookies are disabled
+			sRebootUrl = window.localStorage.getItem("sap-ui-reboot-URL");
+		} catch (e) { /* no warning, as this will happen on every startup, depending on browser settings */ }
+
+		/*
+		* Determine whether sap-bootstrap-debug is set, run debugger statement
+		* to allow early debugging in browsers with broken dev tools
+		*/
+		if (/sap-bootstrap-debug=(true|x|X)/.test(location.search)) {
+			/*eslint-disable no-debugger */
+			debugger;
+			/*eslint-enable no-debugger */
+		}
+
+		if (sRebootUrl) {
+			var sDebugRebootPath = ensureSlash(sBaseUrl) + 'sap/ui/core/support/debugReboot.js';
+
+			// This won't work in case this script is loaded async (e.g. dynamic script tag)
+			document.write("<script src=\"" + sDebugRebootPath + "\"></script>");
+
+			var oRestart = new Error("This is not a real error. Aborting UI5 bootstrap and rebooting from: " + sRebootUrl);
+			oRestart.name = "Restart";
+			throw oRestart;
+		}
+
+	})();
 
 	/**
 	 * Determine whether to use debug sources depending on URL parameter, local storage
@@ -4105,6 +4650,10 @@ if (!String.prototype.padEnd) {
 		if ( Object.prototype.hasOwnProperty.call(oCfg, name) && (pattern == null || pattern.test(oCfg[name])) ) {
 			return oCfg[name];
 		}
+		// compat fallback
+		if ( name.slice(0,3) !== "xx-" ) {
+			return _getOption("xx-" + name, defaultValue, pattern);
+		}
 		// if no valid config value is found, fall back to a system default value
 		return defaultValue;
 	}
@@ -4113,7 +4662,7 @@ if (!String.prototype.padEnd) {
 		return /^(?:true|x|X)$/.test( _getOption(name, defaultValue, /^(?:true|x|X|false)$/) );
 	}
 
-	if ( _getBooleanOption("xx-async", false) ) {
+	if ( _getBooleanOption("async", false) ) {
 		ui5loader.config({
 			async: true
 		});
@@ -4150,6 +4699,10 @@ if (!String.prototype.padEnd) {
 		},
 
 		shim: {
+			'sap/ui/thirdparty/bignumber': {
+				amd: true,
+				exports: 'BigNumber'
+			},
 			'sap/ui/thirdparty/blanket': {
 				amd: true,
 				exports: 'blanket' // '_blanket', 'esprima', 'falafel', 'inBrowser', 'parseAndModify'
@@ -4204,14 +4757,49 @@ if (!String.prototype.padEnd) {
 				amd: true,
 				exports: 'jQuery'
 			},
+			'sap/ui/thirdparty/jqueryui/jquery-ui-datepicker': {
+				deps: ['sap/ui/thirdparty/jqueryui/jquery-ui-core'],
+				exports: 'jQuery'
+			},
+			'sap/ui/thirdparty/jqueryui/jquery-ui-draggable': {
+				deps: ['sap/ui/thirdparty/jqueryui/jquery-ui-mouse'],
+				exports: 'jQuery'
+			},
+			'sap/ui/thirdparty/jqueryui/jquery-ui-droppable': {
+				deps: ['sap/ui/thirdparty/jqueryui/jquery-ui-mouse', 'sap/ui/thirdparty/jqueryui/jquery-ui-draggable'],
+				exports: 'jQuery'
+			},
+			'sap/ui/thirdparty/jqueryui/jquery-ui-effect': {
+				deps: ['sap/ui/thirdparty/jquery'],
+				exports: 'jQuery'
+			},
+			'sap/ui/thirdparty/jqueryui/jquery-ui-mouse': {
+				deps: ['sap/ui/thirdparty/jqueryui/jquery-ui-core', 'sap/ui/thirdparty/jqueryui/jquery-ui-widget'],
+				exports: 'jQuery'
+			},
 			'sap/ui/thirdparty/jqueryui/jquery-ui-position': {
-				amd: true,
+				deps: ['sap/ui/thirdparty/jquery'],
+				exports: 'jQuery'
+			},
+			'sap/ui/thirdparty/jqueryui/jquery-ui-resizable': {
+				deps: ['sap/ui/thirdparty/jqueryui/jquery-ui-mouse'],
+				exports: 'jQuery'
+			},
+			'sap/ui/thirdparty/jqueryui/jquery-ui-selectable': {
+				deps: ['sap/ui/thirdparty/jqueryui/jquery-ui-mouse'],
+				exports: 'jQuery'
+			},
+			'sap/ui/thirdparty/jqueryui/jquery-ui-sortable': {
+				deps: ['sap/ui/thirdparty/jqueryui/jquery-ui-mouse'],
+				exports: 'jQuery'
+			},
+			'sap/ui/thirdparty/jqueryui/jquery-ui-widget': {
 				deps: ['sap/ui/thirdparty/jquery'],
 				exports: 'jQuery'
 			},
 			'sap/ui/thirdparty/jquery-mobile-custom': {
 				amd: true,
-				deps: ['sap/ui/thirdparty/jquery'],
+				deps: ['sap/ui/thirdparty/jquery', 'sap/ui/Device'],
 				exports: 'jQuery.mobile'
 			},
 			'sap/ui/thirdparty/jszip': {
@@ -4233,6 +4821,11 @@ if (!String.prototype.padEnd) {
 			'sap/ui/thirdparty/punycode': {
 				amd: true,
 				exports: 'punycode'
+			},
+			'sap/ui/thirdparty/RequestRecorder': {
+				amd: true,
+				exports: 'RequestRecorder',
+				deps: ['sap/ui/thirdparty/URI', 'sap/ui/thirdparty/sinon']
 			},
 			'sap/ui/thirdparty/require': {
 				exports: 'define' // 'require', 'requirejs'
@@ -4286,79 +4879,63 @@ if (!String.prototype.padEnd) {
 				amd: true,
 				exports: 'esprima'
 			},
-			'sap/ui/thirdparty/RequestRecorder': {
+			'sap/viz/libs/canvg': {
 				amd: true,
-				exports: 'RequestRecorder',
-				deps: ['sap/ui/thirdparty/URI', 'sap/ui/thirdparty/sinon.js']
+				deps: ['sap/viz/libs/rgbcolor']
+			},
+			'sap/viz/libs/rgbcolor': {
+				amd: true
 			},
 			'sap/viz/libs/sap-viz': {
-				amd: true
-			},
-			'sap/viz/libs/sap-viz-info-framework': {
-				amd: true
+				amd: true,
+				deps: ['sap/ui/thirdparty/jquery', 'sap/ui/thirdparty/d3', 'sap/viz/libs/canvg']
 			},
 			'sap/viz/libs/sap-viz-info-charts': {
-				amd: true
-			},
-			'sap/viz/container/libs/sap-viz-controls-vizcontainer': {
-				amd: true
-			},
-			'sap/viz/controls/libs/sap-viz-vizframe': {
-				amd: true
-			},
-			'sap/viz/controls/libs/sap-viz-vizservices': {
-				amd: true
-			},
-			'sap/ui/thirdparty/bignumber': {
 				amd: true,
-				exports: 'BigNumber'
+				deps: ['sap/viz/libs/sap-viz-info-framework']
+			},
+			'sap/viz/libs/sap-viz-info-framework': {
+				amd: true,
+				deps: ['sap/ui/thirdparty/jquery', 'sap/ui/thirdparty/d3']
+			},
+			'sap/viz/ui5/container/libs/sap-viz-controls-vizcontainer': {
+				amd: true,
+				deps: ['sap/viz/libs/sap-viz', 'sap/viz/ui5/container/libs/common/libs/rgbcolor/rgbcolor_static']
+			},
+			'sap/viz/ui5/controls/libs/sap-viz-vizframe': {
+				amd: true,
+				deps: ['sap/viz/libs/sap-viz-info-charts']
+			},
+			'sap/viz/ui5/controls/libs/sap-viz-vizservices': {
+				amd: true,
+				deps: ['sap/viz/libs/sap-viz-info-charts']
 			}
 		}
 	});
 
-	// hide sap.ui.define calls from dependency analyzers
-	var _define = sap['ui']['define'];
+	var defineModuleSync = ui5loader._.defineModuleSync;
+	defineModuleSync('sap/ui/thirdparty/baseuri.js', null);
+	if ( typeof ES6Promise !== 'undefined' ) {
+		defineModuleSync('sap/ui/thirdparty/es6-promise.js', ES6Promise);
+	}
+	defineModuleSync('sap/ui/thirdparty/es6-object-assign.js', null);
+	defineModuleSync('sap/ui/thirdparty/es6-string-methods.js', null);
 
-	// @evo-todo introduce an internal API for these registrations as the declarations should be synchronous
-	_define('ui5loader', function() {
-		return undefined;
-	});
-
-	_define('ui5loader-autoconfig', function() {
-		return undefined;
-	});
+	defineModuleSync('ui5loader.js', null);
+	defineModuleSync('ui5loader-autoconfig.js', null);
 
 	if (bNojQuery && typeof jQuery === 'function') {
 		// when we're executed in the context of the sap-ui-core-noJQuery file,
 		// we try to detect an existing jQuery / jQuery position plugin and register them as modules
-		_define('sap/ui/thirdparty/jquery', function() {
-			return jQuery;
-		});
-		if (jQuery.prototype.position) {
-			_define('sap/ui/thirdparty/jqueryui/jquery-ui-position', function() {
-				return jQuery;
-			});
+		defineModuleSync('sap/ui/thirdparty/jquery.js', jQuery);
+		if (jQuery.ui && jQuery.ui.position) {
+			defineModuleSync('sap/ui/thirdparty/jqueryui/jquery-ui-position.js', jQuery);
 		}
 	}
 
 	var sMainModule = oBootstrapScript && oBootstrapScript.getAttribute('data-sap-ui-main');
 	if ( sMainModule ) {
 		sap.ui.require(sMainModule.trim().split(/\s*,\s*/));
-	}
-
-	try {
-		if (window.localStorage.getItem("sap-ui-reboot-URL")) {
-			var sDebugRebootPath = ensureSlash(sBaseUrl) + 'sap/ui/bootstrap/Debug.js';
-			if (ui5loader.config().async) {
-				var oScript = document.createElement("script");
-				oScript.src = sDebugRebootPath;
-				document.head.appendChild(oScript);
-			} else {
-				document.write("<script src=\"" + sDebugRebootPath + "\"></script>");
-			}
-		}
-	} catch (e) {
-		// access to localStorage might be disallowed
 	}
 
 }());

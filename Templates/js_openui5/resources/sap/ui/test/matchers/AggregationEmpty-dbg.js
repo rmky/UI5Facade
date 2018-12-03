@@ -4,7 +4,10 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['./Matcher', './AggregationLengthEquals'], function(Matcher, AggregationLengthEquals) {
+sap.ui.define([
+	'sap/ui/test/matchers/Matcher',
+	'sap/ui/test/matchers/AggregationLengthEquals'
+], function(Matcher, AggregationLengthEquals) {
 	"use strict";
 
 	var oAggregationLengthMatcher = new AggregationLengthEquals({

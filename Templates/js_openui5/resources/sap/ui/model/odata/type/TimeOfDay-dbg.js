@@ -5,15 +5,15 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global",
-	"jquery.sap.strings",
+	"sap/base/Log",
 	"sap/ui/core/format/DateFormat",
 	"sap/ui/model/FormatException",
 	"sap/ui/model/ParseException",
 	"sap/ui/model/ValidateException",
-	"sap/ui/model/odata/type/ODataType"
-], function(jQuery, jQuerySapStrings, DateFormat, FormatException, ParseException,
-		ValidateException, ODataType) {
+	"sap/ui/model/odata/type/ODataType",
+	"sap/ui/thirdparty/jquery"
+], function (Log, DateFormat, FormatException, ParseException, ValidateException, ODataType,
+		jQuery) {
 	"use strict";
 
 	/*
@@ -26,7 +26,7 @@ sap.ui.define([
 	 */
 	function getErrorMessage(oType) {
 		return sap.ui.getCore().getLibraryResourceBundle().getText("EnterTime",
-			[oType.formatValue("13:47:26", "string")]);
+			[oType.formatValue("23:59:58", "string")]);
 	}
 
 	/*
@@ -44,7 +44,7 @@ sap.ui.define([
 		if (!oType.oModelFormat) {
 			iPrecision = oType.oConstraints && oType.oConstraints.precision;
 			if (iPrecision) {
-				sPattern += "." + jQuery.sap.padRight("", "S", iPrecision);
+				sPattern += "." + "".padEnd(iPrecision, "S");
 			}
 			oType.oModelFormat = DateFormat.getTimeInstance({pattern : sPattern,
 				strictParsing : true, UTC : true});
@@ -97,13 +97,13 @@ sap.ui.define([
 			if (vNullable === false) {
 				oType.oConstraints = {nullable : false};
 			} else if (vNullable !== undefined && vNullable !== true) {
-				jQuery.sap.log.warning("Illegal nullable: " + vNullable, null, oType.getName());
+				Log.warning("Illegal nullable: " + vNullable, null, oType.getName());
 			}
 			if (vPrecision === Math.floor(vPrecision) && vPrecision > 0 && vPrecision <= 12) {
 				oType.oConstraints = oType.oConstraints || {};
 				oType.oConstraints.precision = vPrecision;
 			} else if (vPrecision !== undefined && vPrecision !== 0) {
-				jQuery.sap.log.warning("Illegal precision: " + vPrecision, null, oType.getName());
+				Log.warning("Illegal precision: " + vPrecision, null, oType.getName());
 			}
 		}
 	}
@@ -132,7 +132,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 */
 	var TimeOfDay = ODataType.extend("sap.ui.model.odata.type.TimeOfDay", {
 			constructor : function (oFormatOptions, oConstraints) {
@@ -174,7 +174,7 @@ sap.ui.define([
 	 * @public
 	 * @since 1.37.0
 	 */
-	TimeOfDay.prototype.formatValue = function(sValue, sTargetType) {
+	TimeOfDay.prototype.formatValue = function (sValue, sTargetType) {
 		var oDate,
 			iIndex;
 
@@ -212,7 +212,7 @@ sap.ui.define([
 	 * @override
 	 * @protected
 	 */
-	TimeOfDay.prototype.getModelFormat = function() {
+	TimeOfDay.prototype.getModelFormat = function () {
 		return getModelFormat(this);
 	};
 
@@ -305,5 +305,3 @@ sap.ui.define([
 
 	return TimeOfDay;
 });
-
-

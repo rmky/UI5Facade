@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.TooltipBase
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -121,6 +121,7 @@ sap.ui.define([
 				this.setAggregation("individualStateText", oValueStateText);
 			}
 		}
+		return this;
 	};
 
 	/**
@@ -163,6 +164,7 @@ sap.ui.define([
 			this.setAggregation("formattedText", oText);
 			this.setProperty("text", sText, true);
 		}
+		return this;
 	};
 
 	/**

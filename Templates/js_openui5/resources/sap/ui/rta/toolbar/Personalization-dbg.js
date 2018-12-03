@@ -6,11 +6,11 @@
 
 sap.ui.define([
 	'./Base',
-	'sap/m/ToolbarSpacer'
+	'sap/m/Button'
 ],
 function(
 	Base,
-	ToolbarSpacer
+	Button
 ) {
 	"use strict";
 
@@ -22,7 +22,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Base
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -41,20 +41,23 @@ function(
 				"exit": {},
 				"restore": {}
 			}
+		},
+		constructor: function() {
+			Base.apply(this, arguments);
+			this.setJustifyContent("End");
 		}
 	});
 
 	Personalization.prototype.buildControls = function() {
 		var aControls = [
-			new ToolbarSpacer(),
-			new sap.m.Button({
+			new Button({
 				type: "Transparent",
 				text: this.getTextResources().getText("BTN_RESTORE"),
 				tooltip: this.getTextResources().getText("BTN_RESTORE"),
 				visible: true,
 				press: this.eventHandler.bind(this, 'Restore')
 			}).data('name', 'restore'),
-			new sap.m.Button({
+			new Button({
 				type:"Emphasized",
 				text: this.getTextResources().getText("BTN_DONE"),
 				tooltip: this.getTextResources().getText("BTN_DONE_TOOLTIP"),
@@ -76,5 +79,4 @@ function(
 	};
 
 	return Personalization;
-
 }, true);

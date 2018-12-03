@@ -91,11 +91,6 @@
 			"theme": "sap_belize_plus"
 		},
 		{
-			"name": "Popover.less",
-			"designtime": true,
-			"theme": "sap_belize_plus"
-		},
-		{
 			"name": "RadioButton.less",
 			"designtime": true,
 			"theme": "sap_belize_plus"
@@ -152,6 +147,11 @@
 		},
 		{
 			"name": "Toolbar.less",
+			"designtime": true,
+			"theme": "sap_belize_plus"
+		},
+		{
+			"name": "ValueStateMessage.less",
 			"designtime": true,
 			"theme": "sap_belize_plus"
 		},

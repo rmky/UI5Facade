@@ -5,8 +5,8 @@
  */
 
 //Provides the history handler sap.ui.core.History
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'jquery.sap.storage'],
-	function(jQuery, BaseObject) {
+sap.ui.define(['sap/ui/base/Object', "sap/ui/util/Storage"],
+	function(BaseObject, Storage) {
 	"use strict";
 
 	/**
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'jquery.sap.storage'],
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @alias sap.ui.core.History
 	 * @protected
 	 */
@@ -39,10 +39,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', 'jquery.sap.storage'],
 			this._iMaxHistory = mSettings.max ? mSettings.max : 100;
 			this._sHistoryId = sHistoryPrefix + sId;
 
-			this._oStorage = jQuery.sap.storage(jQuery.sap.storage.Type.local);
+			this._oStorage = new Storage(Storage.Type.local);
 
 			this._fFilter = mSettings.filter ? mSettings.filter : function(sHistoryValue, sValue) {
-				return sHistoryValue && (!sValue || (sValue && jQuery.sap.startsWithIgnoreCase(sHistoryValue, sValue)));
+				return sHistoryValue && (!sValue || (sValue && ((typeof sValue == "string" ? sHistoryValue.toLowerCase().startsWith(sValue.toLowerCase()) : false))));
 			};
 			this._fCheckHistory = mSettings.checkHistory ? mSettings.checkHistory : function(aHistory) {
 				return aHistory;

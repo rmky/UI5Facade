@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/base/ManagedObject'], function(ManagedObject) {
+sap.ui.define(['sap/ui/base/ManagedObject', "sap/base/Log"], function(ManagedObject, Log) {
 	"use strict";
 
 	/**
@@ -14,7 +14,7 @@ sap.ui.define(['sap/ui/base/ManagedObject'], function(ManagedObject) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -147,15 +147,22 @@ sap.ui.define(['sap/ui/base/ManagedObject'], function(ManagedObject) {
 
 			return new Promise(function(resolve, reject) {
 				try {
-					sap.ui.require([sActConfigPath], function(ProviderConstructor){
-						var oProvider = new ProviderConstructor();
-						resolve({
-							"domain" : sDomain,
-							"provider" : oProvider
-						});
-					});
+					sap.ui.require([sActConfigPath],
+						function(ProviderConstructor){
+							var oProvider = new ProviderConstructor();
+							resolve({
+								"domain" : sDomain,
+								"provider" : oProvider
+							});
+						},
+						function(oError) {
+							Log.error(oError);
+							resolve(); // recover from error, but deliver no information
+							return;
+						}
+					);
 				} catch (oError) {
-					jQuery.sap.log.error(oError);
+					Log.error(oError);
 					resolve(); // recover from error, but deliver no information
 					return;
 				}

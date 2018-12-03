@@ -6,7 +6,6 @@
 
 // Provides control sap.m.ViewSettingsDialog.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
@@ -19,10 +18,14 @@ sap.ui.define([
 	'sap/ui/base/EventProvider',
 	'sap/ui/Device',
 	'sap/ui/core/InvisibleText',
-	'./ViewSettingsDialogRenderer'
+	'./ViewSettingsDialogRenderer',
+	"sap/m/GroupHeaderListItem",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery",
+	// jQuery Plugin "firstFocusableDomRef"
+	"sap/ui/dom/jquery/Focusable"
 ],
 function(
-	jQuery,
 	library,
 	Control,
 	IconPool,
@@ -35,7 +38,10 @@ function(
 	EventProvider,
 	Device,
 	InvisibleText,
-	ViewSettingsDialogRenderer
+	ViewSettingsDialogRenderer,
+	GroupHeaderListItem,
+	Log,
+	jQuery
 ) {
 	"use strict";
 
@@ -101,7 +107,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -483,8 +489,11 @@ function(
 
 	ViewSettingsDialog.prototype._createList = function(sType) {
 		var sListId = this.getId() + "-" + sType + "list",
-			oList = new List(sListId, this.mToList[sType].listOptions);
+			oList = new List(sListId, this.mToList[sType].listOptions),
+			sTitleSortObject = this._rb.getText("VIEWSETTINGS_SORT_OBJECT"),
+			oGHI = new GroupHeaderListItem({title: sTitleSortObject});
 
+		oList.addItem(oGHI);
 		this[this.mToList[sType].listName] = oList;
 
 		return oList;
@@ -1083,8 +1092,7 @@ function(
 
 		// if there is a default tab and the user has been at filter details view on page2, go back to page1
 		if (sPageId && this._vContentPage === 3) {
-			jQuery.sap.delayedCall(0, this._getNavContainer(), "to", [
-				this._getPage1().getId(), "show" ]);
+			setTimeout(this._getNavContainer()["to"].bind(this._getNavContainer(), this._getPage1().getId(), "show"), 0);
 		}
 
 		// init the dialog content based on the aggregations
@@ -1354,7 +1362,7 @@ function(
 
 				// skip if we don't have an item with this key
 				if (oFilterItem === null) {
-					jQuery.sap.log.warning('Cannot set state for key "' + sKey
+					Log.warning('Cannot set state for key "' + sKey
 					+ '" because there is no filter with these keys');
 					continue;
 				}
@@ -1401,7 +1409,7 @@ function(
 			var oParentItem = fnGetSelectedItemFromFilterKey(aFilterItems, oSelectedFilterKeys, sParentKey);
 
 			if (!oParentItem) {
-				jQuery.sap.log.warning('No filter with key "' + sParentKey);
+				Log.warning('No filter with key "' + sParentKey);
 				continue;
 			}
 
@@ -1416,7 +1424,7 @@ function(
 					var oItem = fnGetSelectedItemFromFilterKey(aSubFilterItems, oSelectedSubFilterKeys, sKey);
 
 					if (!oItem) {
-						jQuery.sap.log.warning('No filter with key "' + sKey);
+						Log.warning('No filter with key "' + sKey);
 						continue;
 					}
 
@@ -1462,7 +1470,8 @@ function(
 				contentHeight       : this._sDialogHeight,
 				content             : this._getNavContainer(),
 				beginButton         : new sap.m.Button(this.getId() + "-acceptbutton", {
-					text : this._rb.getText("VIEWSETTINGS_ACCEPT")
+					text : this._rb.getText("VIEWSETTINGS_ACCEPT"),
+					type: sap.m.ButtonType.Emphasized
 				}).attachPress(this._onConfirm, this),
 				endButton           : new sap.m.Button(this.getId() + "-cancelbutton", {
 					text : this._rb.getText("VIEWSETTINGS_CANCEL")
@@ -1619,7 +1628,7 @@ function(
 							}
 						}
 					}
-					jQuery.sap.log.info('press event segmented: '
+					Log.info('press event segmented: '
 					+ oEvent.getParameter('id'));
 				}
 			}).addStyleClass("sapMVSDSeg");
@@ -1802,7 +1811,8 @@ function(
 			oListItem = new StandardListItem({
 				title : ManagedObject.escapeSettingsValue(aSubFilters[i].getText()),
 				type : ListType.Active,
-				selected : aSubFilters[i].getSelected()
+				selected : aSubFilters[i].getSelected(),
+				tooltip : aSubFilters[i].getTooltip()
 			}).data("item", aSubFilters[i]);
 			this._filterDetailList.addItem(oListItem);
 		}
@@ -1828,7 +1838,8 @@ function(
 	 * @private
 	 */
 	ViewSettingsDialog.prototype._initSortContent = function() {
-		var that = this;
+		var that = this,
+			sTitleSortBy = this._rb.getText("VIEWSETTINGS_SORT_BY");
 
 		if (this._sortContent) {
 			return;
@@ -1847,7 +1858,8 @@ function(
 				that.setProperty('sortDescending', oEvent.getParameter("listItem").data("item"), true);
 			},
 			ariaLabelledBy: this._ariaSortOrderInvisibleText
-		}).addStyleClass("sapMVSDUpperList");
+		});
+		this._sortOrderList.addItem(new GroupHeaderListItem({title: sTitleSortBy}));
 		this._sortOrderList.addItem(new StandardListItem({
 			title : this._rb.getText("VIEWSETTINGS_ASCENDING_ITEM")
 		}).data("item", false).setSelected(true));
@@ -1872,17 +1884,19 @@ function(
 	ViewSettingsDialog.prototype._initGroupItems = function () {
 		var oListItem,
 			bHasSelections,
-			aGroupItems = this.getGroupItems();
+			aGroupItems = this.getGroupItems(),
+			sTitleGroupObject = this._rb.getText("VIEWSETTINGS_GROUP_OBJECT");
 
 		this._groupList.destroyItems();
-
 		if (!!aGroupItems.length) {
+			this._groupList.addItem(new GroupHeaderListItem({title: sTitleGroupObject}));
 			aGroupItems.forEach(function (oItem) {
 				oListItem = new StandardListItem({
 					id: oItem.getId() + LIST_ITEM_SUFFIX,
 					title: ManagedObject.escapeSettingsValue(oItem.getText()),
 					type: ListType.Active,
-					selected: oItem.getSelected()
+					selected: oItem.getSelected(),
+					tooltip : oItem.getTooltip()
 				}).data("item", oItem);
 				this._groupList.addItem(oListItem);
 			}, this);
@@ -1921,7 +1935,8 @@ function(
 	 * @private
 	 */
 	ViewSettingsDialog.prototype._initGroupContent = function() {
-		var that = this;
+		var that = this,
+			sTitleGroupBy = this._rb.getText("VIEWSETTINGS_GROUP_BY");
 
 		if (this._groupContent) {
 			return;
@@ -1940,7 +1955,9 @@ function(
 				that.setProperty('groupDescending', oEvent.getParameter("listItem").data("item"), true);
 			},
 			ariaLabelledBy: this._ariaGroupOrderInvisibleText
-		}).addStyleClass("sapMVSDUpperList");
+		});
+
+		this._groupOrderList.addItem(new GroupHeaderListItem({title: sTitleGroupBy}));
 		this._groupOrderList.addItem(new StandardListItem({
 			title : this._rb.getText("VIEWSETTINGS_ASCENDING_ITEM")
 		}).data("item", false).setSelected(true));
@@ -1975,7 +1992,8 @@ function(
 		var aPresetFilterItems,
 			aFilterItems,
 			oListItem,
-			that = this;
+			that = this,
+			sTitleFilterBy = this._rb.getText("VIEWSETTINGS_FILTER_BY");
 
 		this._presetFilterList.destroyItems();
 		aPresetFilterItems = this.getPresetFilterItems();
@@ -1985,7 +2003,8 @@ function(
 					id: oItem.getId() + LIST_ITEM_SUFFIX,
 					title: ManagedObject.escapeSettingsValue(oItem.getText()),
 					type: ListType.Active,
-					selected: oItem.getSelected()
+					selected: oItem.getSelected(),
+					tooltip: oItem.getTooltip()
 				}).data("item", oItem);
 				this._presetFilterList.addItem(oListItem);
 			}, this);
@@ -2002,6 +2021,9 @@ function(
 
 		this._filterList.destroyItems();
 		aFilterItems = this.getFilterItems();
+
+		this._filterList.addItem(new GroupHeaderListItem({title: sTitleFilterBy}));
+
 		if (aFilterItems.length) {
 			aFilterItems.forEach(function(oItem) {
 				oListItem = new StandardListItem(
@@ -2009,13 +2031,14 @@ function(
 						id: oItem.getId() + LIST_ITEM_SUFFIX,
 						title : ManagedObject.escapeSettingsValue(oItem.getText()),
 						type : ListType.Active,
+						tooltip : oItem.getTooltip(),
 						press : (function(oItem) {
 							return function(oEvent) {
 								// navigate to details page
 								if (that._navContainer.getCurrentPage() .getId() !== that.getId() + '-page2') {
 									that._switchToPage(3, oItem);
 									that._prevSelectedFilterItem = this;
-									jQuery.sap.delayedCall(0, that._navContainer, "to", [ that.getId() + '-page2', "slide" ]);
+									setTimeout(that._navContainer["to"].bind(that._navContainer, that.getId() + '-page2', "slide"), 0);
 								}
 								if (Device.system.desktop && that._filterDetailList && that._filterDetailList.getItems()[0]) {
 									that._getNavContainer().attachEventOnce("afterNavigate", function() {
@@ -2055,7 +2078,7 @@ function(
 					that.setAssociation("selectedPresetFilterItem", item, true);
 					that._clearSelectedFilters();
 				}
-			}).addStyleClass("sapMVSDUpperList");
+			});
 
 		this._filterList = new List(this.getId() + "-filterlist", {});
 
@@ -2158,11 +2181,9 @@ function(
 			oSegmentedButton.addButton(this._getFilterButton());
 			if (!bPredefinedFilter) {
 				this._presetFilterList.setVisible(false);
-				this._presetFilterList.addStyleClass("sapMVSDUpperList");
 			}
 			if (!bFilter) {
 				this._filterList.setVisible(false);
-				this._presetFilterList.removeStyleClass("sapMVSDUpperList");
 			}
 		}
 		if (bGroup) {
@@ -2254,7 +2275,7 @@ function(
 			// use the first valid page as default page id
 			sDefaultPageId = aValidPageIds[0];
 		} else {
-			jQuery.sap.log.warning('No available pages to load - missing items.');
+			Log.warning('No available pages to load - missing items.');
 		}
 
 		// if no specific page id is wanted give a default one
@@ -2334,7 +2355,7 @@ function(
 	 */
 	ViewSettingsDialog.prototype._isValidPredefinedPageId = function (sName) {
 		if (!sName) {
-			jQuery.sap.log.warning('Missing mandatory parameter.');
+			Log.warning('Missing mandatory parameter.');
 			return false;
 		}
 
@@ -2364,7 +2385,7 @@ function(
 					that._prevSelectedFilterItem.focus();
 				}
 			});
-			jQuery.sap.delayedCall(0, this._getNavContainer(), 'back');
+			setTimeout(this._getNavContainer()['back'].bind(this._getNavContainer()), 0);
 			this._switchToPage(2);
 			this._segmentedButton.setSelectedButton(this._filterButton);
 		}
@@ -2712,7 +2733,9 @@ function(
 	 * @private
 	 */
 	ViewSettingsDialog.prototype._updateListSelection = function(oList, oItem) {
-		var items, i = 0;
+		var items,
+			i = 0,
+			bGroupHeaderItem;
 
 		if (!oList) {
 			return false;
@@ -2722,7 +2745,8 @@ function(
 
 		oList.removeSelections();
 		for (; i < items.length; i++) {
-			if (items[i].data("item") === oItem || items[i].data("item") === null) { // null
+			bGroupHeaderItem = items[i].isA("sap.m.GroupHeaderListItem"); //group header items should not be selected
+			if (!bGroupHeaderItem && (items[i].data("item") === oItem || items[i].data("item") === null)) { // null
 				// is
 				// "None"
 				// item
@@ -2895,7 +2919,7 @@ function(
 			oItem = getViewSettingsItemByKey(aViewSettingsItems, vItemOrKey);
 
 			if (!oItem) {
-				jQuery.sap.log.error(sErrorMessage);
+				Log.error(sErrorMessage);
 			}
 		} else {
 			oItem = vItemOrKey;
@@ -2984,8 +3008,7 @@ function(
 
 			// navigate to old page if necessary
 			if (that._navContainer.getCurrentPage() !== that._oPreviousState.navPage) {
-				jQuery.sap.delayedCall(0, that._navContainer, "to", [
-					that._oPreviousState.navPage.getId(), "show" ]);
+				setTimeout(that._navContainer["to"].bind(that._navContainer, that._oPreviousState.navPage.getId(), "show"), 0);
 			}
 
 			// navigate to old tab if necessary
@@ -3022,7 +3045,7 @@ function(
 
 		// page updates
 		if (this._vContentPage === 3) { // go to filter overview page if necessary
-			jQuery.sap.delayedCall(0, this._getNavContainer(), 'to', [this._getPage1().getId()]);
+			setTimeout(this._getNavContainer()['to'].bind(this._getNavContainer(), this._getPage1().getId()), 0);
 			this._switchToPage(2);
 			this._getSegmentedButton().setSelectedButton(this._getFilterButton());
 		}
@@ -3162,7 +3185,7 @@ function(
 				break;
 			default:
 				//warning when operator has been given but it doesn't match a value from sap.m.StringFilterOperator enum
-				jQuery.sap.log.warning("Unknown string compare operator. Use values from sap.m.StringFilterOperator. Default operator should be used.");
+				Log.warning("Unknown string compare operator. Use values from sap.m.StringFilterOperator. Default operator should be used.");
 				this.fnOperator = fnContains;
 				break;
 		}

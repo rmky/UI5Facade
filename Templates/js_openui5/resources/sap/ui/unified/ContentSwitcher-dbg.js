@@ -6,11 +6,11 @@
 
 // Provides control sap.ui.unified.ContentSwitcher.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/core/Control',
 	'./library',
-	"./ContentSwitcherRenderer"
-], function(jQuery, Control, library, ContentSwitcherRenderer) {
+	"./ContentSwitcherRenderer",
+	"sap/base/Log"
+], function(Control, library, ContentSwitcherRenderer, Log) {
 	"use strict";
 
 
@@ -31,7 +31,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -130,13 +130,13 @@ sap.ui.define([
 		if (isNaN(iNumber) || iNumber < 1) {
 			iNumber = 1;
 
-			jQuery.sap.log.warning(
+			Log.warning(
 				"setActiveContent argument must be either 1 or 2. Active content set to 1."
 			);
 		} else if (iNumber > 2) {
 			iNumber = 2;
 
-			jQuery.sap.log.warning(
+			Log.warning(
 				"setActiveContent argument must be either 1 or 2. Active content set to 2."
 			);
 		}
@@ -154,7 +154,7 @@ sap.ui.define([
 	ContentSwitcher.prototype.setAnimation = function(sAnimation, bSuppressInvalidate){
 		if (typeof (sAnimation) !== "string") {
 			sAnimation = ContentSwitcherAnimation.None;
-			jQuery.sap.log.warning(
+			Log.warning(
 				"setAnimation argument must be a string. Animation was set to \"" +
 				ContentSwitcherAnimation.None + "\"."
 			);

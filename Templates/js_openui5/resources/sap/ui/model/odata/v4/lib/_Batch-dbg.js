@@ -6,8 +6,10 @@
 
 //Provides class sap.ui.model.odata.v4.lib._Batch
 sap.ui.define([
-	"jquery.sap.global"
-], function (jQuery) {
+	"jquery.sap.script",
+	"./_Helper",
+	"sap/base/strings/escapeRegExp"
+], function (jQuery, _Helper, escapeRegExp) {
 	"use strict";
 
 	var mAllowedChangeSetMethods = {"POST" : true, "PUT" : true, "PATCH" : true, "DELETE" : true},
@@ -33,7 +35,7 @@ sap.ui.define([
 		}
 
 		// escape RegExp-related characters
-		sBatchBoundary = jQuery.sap.escapeRegExp(sBatchBoundary);
+		sBatchBoundary = escapeRegExp(sBatchBoundary);
 		return new RegExp('--' + sBatchBoundary + '(?:[ \t]*\r\n|--)');
 	}
 
@@ -215,7 +217,7 @@ sap.ui.define([
 	 *   A map of request headers
 	 * @returns {object[]} Array representing the serialized headers
 	 */
-	function serializeHeaders (mHeaders) {
+	function serializeHeaders(mHeaders) {
 		var sHeaderName,
 			aHeaders = [];
 
@@ -282,7 +284,7 @@ sap.ui.define([
 					sContentIdHeader,
 					"\r\n",
 					oRequest.method, " ", sUrl, " HTTP/1.1\r\n",
-					serializeHeaders(oRequest.headers),
+					serializeHeaders(_Helper.resolveIfMatchHeader(oRequest.headers)),
 					"\r\n",
 					JSON.stringify(oRequest.body) || "", "\r\n");
 			}
@@ -340,7 +342,8 @@ sap.ui.define([
 		 *   See example below.
 		 * @param {object} oRequest.headers
 		 *   Map of request headers. RFC-2047 encoding rules are not supported. Nevertheless non
-		 *   US-ASCII values can be used.
+		 *   US-ASCII values can be used. If the value of an "If-Match" header is an object, that
+		 *   object's ETag is used instead.
 		 * @param {object} oRequest.body
 		 *   Request body. If specified, oRequest.headers map must contain "Content-Type" header
 		 *   either without "charset" parameter or with "charset" parameter having value "UTF-8".
@@ -373,7 +376,8 @@ sap.ui.define([
 		 *           method : "POST",
 		 *           url : "$0/TEAM_2_Employees",
 		 *           headers : {
-		 *               "Content-Type" : "application/json"
+		 *               "Content-Type" : "application/json",
+		 *               "If-Match" : "etag0"
 		 *           },
 		 *           body : {"Name" : "John Smith"}
 		 *       }],
@@ -381,7 +385,10 @@ sap.ui.define([
 		 *           method : "PATCH",
 		 *           url : "/sap/opu/odata4/IWBEP/TEA/default/IWBEP/TEA_BUSI/0001/Employees('3')",
 		 *           headers : {
-		 *               "Content-Type" : "application/json"
+		 *               "Content-Type" : "application/json",
+		 *               "If-Match" : {
+		 *                   "@odata.etag" : "etag1"
+		 *               }
 		 *           },
 		 *           body : {"TEAM_ID" : "TEAM_01"}
 		 *       }

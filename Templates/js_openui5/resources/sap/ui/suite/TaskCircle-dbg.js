@@ -6,13 +6,12 @@
 
 // Provides control sap.ui.suite.TaskCircle.
 sap.ui.define([
- 'jquery.sap.global',
- 'sap/ui/core/Control',
- 'sap/ui/core/EnabledPropagator',
- './library',
- "./TaskCircleRenderer"
+	'sap/ui/core/Control',
+	'sap/ui/core/EnabledPropagator',
+	'./library',
+	"./TaskCircleRenderer"
 ],
-	function(jQuery, Control, EnabledPropagator, library, TaskCircleRenderer) {
+	function(Control, EnabledPropagator, library, TaskCircleRenderer) {
 	"use strict";
 
 	// shortcut
@@ -29,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author Svetozar Buzdumovic
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public

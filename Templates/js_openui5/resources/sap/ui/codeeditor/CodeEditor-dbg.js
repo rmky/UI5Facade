@@ -6,17 +6,38 @@
 
 /*global ace */
 
+sap.ui.loader.config({
+	shim: {
+		'sap/ui/codeeditor/js/ace/ace': {
+			exports: 'ace'
+		},
+		'sap/ui/codeeditor/js/ace/ext-language_tools': {
+			deps: ['sap/ui/codeeditor/js/ace/ace']
+		},
+		'sap/ui/codeeditor/js/ace/ext-beautify': {
+			deps: ['sap/ui/codeeditor/js/ace/ace']
+		},
+		'sap/ui/codeeditor/js/ace/mode-javascript': {
+			deps: ['sap/ui/codeeditor/js/ace/ace']
+		},
+		'sap/ui/codeeditor/js/ace/mode-json': {
+			deps: ['sap/ui/codeeditor/js/ace/ace']
+		}
+	}
+});
+
+
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/core/Control',
 	'sap/ui/codeeditor/js/ace/ace',
 	'sap/ui/codeeditor/js/ace/ext-language_tools',
 	'sap/ui/codeeditor/js/ace/ext-beautify',
 	'sap/ui/codeeditor/js/ace/mode-javascript',
 	'sap/ui/codeeditor/js/ace/mode-json'
-], function(jQuery, Control) {
+], function(Control) {
 	"use strict";
 
+	// TODO remove after 1.62 version
 	/**
 	 * Constructor for a new CodeEditor.
 	 *
@@ -33,7 +54,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -170,7 +191,7 @@ sap.ui.define([
 		});
 
 	//configure the source paths
-	var sPath = jQuery.sap.getModulePath("sap.ui.codeeditor.js.ace");
+	var sPath = sap.ui.require.toUrl("sap/ui/codeeditor/js/ace");
 	ace.config.set("basePath", sPath);
 
 	// require language tools

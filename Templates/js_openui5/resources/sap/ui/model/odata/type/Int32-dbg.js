@@ -4,8 +4,9 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/model/odata/type/Int'],
-	function(Int) {
+sap.ui.define([
+	"sap/ui/model/odata/type/Int"
+], function (Int) {
 	"use strict";
 
 	var oRange = {minimum : -2147483648, maximum : 2147483647};
@@ -23,7 +24,7 @@ sap.ui.define(['sap/ui/model/odata/type/Int'],
 	 * @extends sap.ui.model.odata.type.Int
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @alias sap.ui.model.odata.type.Int32
 	 * @param {object} [oFormatOptions]

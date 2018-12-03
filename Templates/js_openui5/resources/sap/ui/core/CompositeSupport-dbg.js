@@ -5,8 +5,15 @@
  */
 
 // Provides class sap.ui.core.CompositeSupport
-sap.ui.define(['jquery.sap.global', './Control', 'sap/ui/model/control/ControlModel', 'sap/ui/base/EventProvider'],
-	function(jQuery, Control, ControlModel, EventProvider) {
+sap.ui.define([
+	'./Control',
+	'sap/ui/model/control/ControlModel',
+	'sap/ui/base/EventProvider',
+	"sap/base/assert",
+	"sap/base/util/isPlainObject",
+	"sap/ui/thirdparty/jquery"
+],
+	function(Control, ControlModel, EventProvider, assert, isPlainObject, jQuery) {
 	"use strict";
 
 
@@ -49,9 +56,9 @@ sap.ui.define(['jquery.sap.global', './Control', 'sap/ui/model/control/ControlMo
 			oMethods = sFactoryName;
 			sFactoryName = "ComponentFactory";
 		}
-		jQuery.sap.assert(typeof fnClass === "function" && fnClass.prototype instanceof Control, "CompositeSupport.mixInto: fnClass must be a subclass of Control");
-		jQuery.sap.assert(typeof sFactoryName === "string" && sFactoryName, "CompositeSupport.mixInto: sFactoryName must be a non-empty string");
-		jQuery.sap.assert(typeof oMethods === "object", "oMethods must be an object");
+		assert(typeof fnClass === "function" && fnClass.prototype instanceof Control, "CompositeSupport.mixInto: fnClass must be a subclass of Control");
+		assert(typeof sFactoryName === "string" && sFactoryName, "CompositeSupport.mixInto: sFactoryName must be a non-empty string");
+		assert(typeof oMethods === "object", "oMethods must be an object");
 
 		function _getBaseFactory() {
 			var oMetadata = fnClass.getMetadata();
@@ -68,7 +75,9 @@ sap.ui.define(['jquery.sap.global', './Control', 'sap/ui/model/control/ControlMo
 		fnClass[sFactoryName] = (_getBaseFactory()).subclass(oMethods);
 
 		// add factory class info to metadata
-		fnClass.getMetadata().getComponentFactoryClass = jQuery.sap.getter(fnClass[sFactoryName]);
+		fnClass.getMetadata().getComponentFactoryClass = function() {
+			return fnClass[sFactoryName];
+		};
 
 		// initialization and getter for the component factory
 		if ( !fnClass.prototype._initCompositeSupport ) {
@@ -79,7 +88,7 @@ sap.ui.define(['jquery.sap.global', './Control', 'sap/ui/model/control/ControlMo
 				if ( mSettings.componentFactory ) {
 
 					// assert a pure object literal
-					jQuery.sap.assert(jQuery.isPlainObject(mSettings.componentFactory));
+					assert(isPlainObject(mSettings.componentFactory));
 
 					// customize the factory with it
 					oFactory.customize(mSettings.componentFactory);
@@ -89,7 +98,9 @@ sap.ui.define(['jquery.sap.global', './Control', 'sap/ui/model/control/ControlMo
 
 				}
 
-				this.getComponentFactory = jQuery.sap.getter(oFactory);
+				this.getComponentFactory = function() {
+					return oFactory;
+				};
 			};
 		}
 

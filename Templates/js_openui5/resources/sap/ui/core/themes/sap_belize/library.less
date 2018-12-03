@@ -145,6 +145,7 @@ html.sap-tablet:not(.sap-desktop) input, html.sap-tablet:not(.sap-desktop) texta
 .sapUiRootBackground,
 .sapMShellGlobalOuterBackground {
 	background: @sapUiShellBackgroundImage;
+	.sapGlobalBackgroundRepeatMixin;
 }
 
 .sapUshellShell .sapMShellGlobalOuterBackground {
@@ -293,7 +294,7 @@ html.sap-desktop ::-webkit-scrollbar-corner {
 /* Belize theme                            */
 /* ======================================= */
 
-.sapUiDP{
+.sapUiDP {
 	width: 190px;
 }
 
@@ -340,7 +341,7 @@ html[data-sap-ui-browser^="ed"] .sapUiIcon:focus::after {
 }
 
 .sapUiIconBGColorNeutral {
-	background-color: @sapUiPositiveElement;
+	background-color: @sapUiNeutralElement;
 }
 
 .sapUiIconBGColorCritical {
@@ -353,6 +354,10 @@ html[data-sap-ui-browser^="ed"] .sapUiIcon:focus::after {
 
 .sapUiIconBGColorNegative {
 	background-color: @sapUiNegativeElement;
+}
+
+.sapUiIconBGColorContrast {
+	background-color: darken(@sapUiHighlight, 10);
 }
 /* END "Icon.less" */
 

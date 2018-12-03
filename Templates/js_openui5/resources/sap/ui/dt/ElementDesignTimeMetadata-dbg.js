@@ -6,13 +6,11 @@
 
 // Provides class sap.ui.dt.ElementDesignTimeMetadata.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/dt/DesignTimeMetadata',
 	'sap/ui/dt/AggregationDesignTimeMetadata',
 	'sap/ui/dt/ElementUtil'
 ],
 function(
-	jQuery,
 	DesignTimeMetadata,
 	AggregationDesignTimeMetadata,
 	ElementUtil
@@ -30,7 +28,7 @@ function(
 	 * @extends sap.ui.dt.DesignTimeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -223,8 +221,16 @@ function(
 	 * @return {array} scrollContainers or empty array
 	 * @public
 	 */
-	ElementDesignTimeMetadata.prototype.getScrollContainers = function() {
-		return this.getData().scrollContainers || [];
+	ElementDesignTimeMetadata.prototype.getScrollContainers = function(oElement) {
+		var aScrollContainers = this.getData().scrollContainers || [];
+
+		aScrollContainers.forEach(function(oScrollContainer) {
+			if (typeof oScrollContainer.aggregations === "function") {
+				oScrollContainer.aggregations = oScrollContainer.aggregations.call(null, oElement);
+			}
+		});
+
+		return aScrollContainers;
 	};
 
 	/**

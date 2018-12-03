@@ -6,14 +6,14 @@
 
 // Provides control sap.m.FacetFilterList.
 sap.ui.define([
-	'jquery.sap.global',
 	'./List',
 	'./library',
 	'sap/ui/model/ChangeReason',
 	'sap/ui/model/Filter',
-	'./FacetFilterListRenderer'
+	'./FacetFilterListRenderer',
+	"sap/base/Log"
 ],
-	function(jQuery, List, library, ChangeReason, Filter, FacetFilterListRenderer) {
+	function(List, library, ChangeReason, Filter, FacetFilterListRenderer, Log) {
 	"use strict";
 
 
@@ -49,12 +49,12 @@ sap.ui.define([
 	 * be closed.
 	 *
 	 * @extends sap.m.List
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.m.FacetFilterList
-	 * @see {@link topic:395392f30f2a4c4d80d110d5f923da77/ Facet Filter List}
+	 * @see {@link topic:395392f30f2a4c4d80d110d5f923da77 Facet Filter List}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var FacetFilterList = List.extend("sap.m.FacetFilterList", /** @lends sap.m.FacetFilterList.prototype */ { metadata : {
@@ -586,7 +586,7 @@ sap.ui.define([
 				// possible
 				if (sSearchVal || numberOfsPath > 0) {
 					var path = this.getBindingInfo("items").template.getBindingInfo("text").parts[0].path;
-					if (path) {
+					if (path || path === "") { // path="" will be resolved relativelly to the parent, i.e. actual path will match the parent's one.
 						var oUserFilter = new Filter(path, sap.ui.model.FilterOperator.Contains, sSearchVal);
 						if (this.getEnableCaseInsensitiveSearch() && isODataModel(oBinding.getModel())){
 							//notice the single quotes wrapping the value from the UI control!
@@ -613,7 +613,7 @@ sap.ui.define([
 					oBinding.filter([], sap.ui.model.FilterType.Control);
 				}
 			} else {
-				jQuery.sap.log.warning("No filtering performed", "The list must be defined with a binding for search to work",
+				Log.warning("No filtering performed", "The list must be defined with a binding for search to work",
 					this);
 			}
 		}
@@ -660,7 +660,7 @@ sap.ui.define([
 	 */
 	FacetFilterList.prototype._addSelectedKey = function(sKey, sText){
 		if (!sKey && !sText) {
-			jQuery.sap.log.error("Both sKey and sText are not defined. At least one must be defined.");
+			Log.error("Both sKey and sText are not defined. At least one must be defined.");
 			return;
 		}
 		if (this.getMode() === ListMode.SingleSelectMaster) {
@@ -683,7 +683,7 @@ sap.ui.define([
 	FacetFilterList.prototype._removeSelectedKey = function(sKey, sText) {
 
 		if (!sKey && !sText) {
-			jQuery.sap.log.error("Both sKey and sText are not defined. At least one must be defined.");
+			Log.error("Both sKey and sText are not defined. At least one must be defined.");
 			return false;
 		}
 
@@ -759,7 +759,7 @@ sap.ui.define([
 			bActive = this._getOriginalActiveState() || bSelected;
 			this.setActive(bActive);
 		}
-		jQuery.sap.delayedCall(0, this, this._updateSelectAllCheckBox);
+		setTimeout(this._updateSelectAllCheckBox.bind(this), 0);
 	};
 
 	/**
@@ -802,7 +802,7 @@ sap.ui.define([
 
 		// Postpone the _updateSelectAllCheckBox, as the oItem(type ListItemBase) has not yet set it's 'selected' property
 		// See ListItemBase.prototype.setSelected
-		jQuery.sap.delayedCall(0, this, this._updateSelectAllCheckBox);
+		setTimeout(this._updateSelectAllCheckBox.bind(this), 0);
 	};
 
 	/**

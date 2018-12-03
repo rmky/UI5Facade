@@ -36,7 +36,7 @@ sap.ui.define([
 	 * @class
 	 * The InPlaceEdit is a functionality to have text in display mode that can be changed in place.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -473,7 +473,7 @@ sap.ui.define([
 			} else {
 				this.setProperty("valueState", oValueState);
 			}
-
+			return this;
 		};
 
 		InPlaceEdit.prototype.getValueState = function(){
@@ -553,6 +553,7 @@ sap.ui.define([
 			this.setProperty("design", sDesign);
 			this._iHeight = undefined;
 
+			return this;
 		};
 
 		InPlaceEdit.prototype.clone = function(){

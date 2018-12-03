@@ -5,16 +5,18 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
+	"sap/ui/thirdparty/jquery",
 	'sap/ui/base/ManagedObject',
 	'sap/ui/dt/ElementUtil',
-	'sap/ui/dt/DOMUtil'
+	'sap/ui/dt/DOMUtil',
+	'sap/base/util/merge'
 ],
 function(
 	jQuery,
 	ManagedObject,
 	ElementUtil,
-	DOMUtil
+	DOMUtil,
+	merge
 ) {
 	"use strict";
 
@@ -29,7 +31,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -59,7 +61,7 @@ function(
 	 * @protected
 	 */
 	DesignTimeMetadata.prototype.setData = function(oData) {
-		this.setProperty("data", jQuery.extend(true, {}, this.getDefaultData(), oData));
+		this.setProperty("data", merge({}, this.getDefaultData(), oData));
 		return this;
 	};
 
@@ -88,6 +90,17 @@ function(
 		} else {
 			return true;
 		}
+	};
+
+	/**
+	 * Returns 'not-adaptable' flag as boolean
+	 * @param {Object} oElement Element instance
+	 * @return {boolean} Returns 'true' if not adaptable
+	 * @public
+	 */
+	DesignTimeMetadata.prototype.markedAsNotAdaptable = function() {
+		var vActions = this.getData().actions;
+		return vActions === "not-adaptable";
 	};
 
 	/**
@@ -232,6 +245,10 @@ function(
 		return typeof vLabel === "function"
 			? vLabel.apply(this, arguments)
 			: undefined;
+	};
+
+	DesignTimeMetadata.prototype.getControllerExtensionTemplate = function() {
+		return this.getData().controllerExtensionTemplate;
 	};
 
 	return DesignTimeMetadata;

@@ -5,11 +5,9 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/fl/changeHandler/Base",
 	"sap/ui/fl/Utils"
 ], function(
-	jQuery,
 	Base,
 	FlexUtils
 ) {
@@ -20,7 +18,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.fl.changeHandler.MoveElements
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @experimental Since 1.34.0
 	 */
 	var MoveElements = { };

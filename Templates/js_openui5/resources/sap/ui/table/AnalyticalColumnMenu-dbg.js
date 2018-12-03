@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.table.AnalyticalColumnMenu.
-sap.ui.define(['jquery.sap.global', './ColumnMenu', './library'],
-	function(jQuery, ColumnMenu, library) {
+sap.ui.define(['./ColumnMenu', './library', "sap/ui/thirdparty/jquery"],
+	function(ColumnMenu, library, jQuery) {
 	"use strict";
 
 	// shortcut
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', './ColumnMenu', './library'],
 	 * @extends sap.ui.table.ColumnMenu
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public

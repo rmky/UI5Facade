@@ -211,6 +211,12 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 	 * @param {sap.ui.core.Control} oControl an object representation of the control that should be rendered
 	 */
 	ListBaseRenderer.renderContainerAttributes = function(rm, oControl) {
+		// add sticky style classes
+		var iStickyValue = oControl.getStickyStyleValue();
+		if (iStickyValue) {
+			rm.addClass("sapMSticky");
+			rm.addClass("sapMSticky" + iStickyValue);
+		}
 	};
 
 	/**

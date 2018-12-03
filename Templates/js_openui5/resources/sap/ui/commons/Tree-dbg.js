@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./TreeR
 	 * @class
 	 * Simple tree to display item in a hierarchical way
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -737,6 +737,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./TreeR
 			// Clear current selection, whenever the selectionmode changes
 			this._delSelection();
 		}
+		return this;
 	};
 
 	/** Returns the selected node in the tree. If not selection, returns null.

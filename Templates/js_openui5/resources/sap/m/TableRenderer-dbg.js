@@ -4,8 +4,20 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './ListBaseRenderer', './ColumnListItemRenderer', './ColumnHeader', 'sap/m/library'],
-	function(jQuery, Renderer, ListBaseRenderer, ColumnListItemRenderer, ColumnHeader, library) {
+sap.ui.define([
+	'sap/ui/core/Renderer',
+	'./ListBaseRenderer',
+	'./ColumnListItemRenderer',
+	'sap/m/library',
+	"sap/base/security/encodeXML"
+],
+	function(
+		Renderer,
+		ListBaseRenderer,
+		ColumnListItemRenderer,
+		library,
+		encodeXML
+	) {
 	"use strict";
 
 
@@ -41,6 +53,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './ListBaseRenderer'
 			cellTag = (type == "Head") ? "th" : "td",
 			groupTag = "t" + type.toLowerCase(),
 			aColumns = oTable.getColumns(),
+			bActiveHeaders = type == "Head" && oTable.bActiveHeaders,
 			isHeaderHidden = (type == "Head") && aColumns.every(function(oColumn) {
 				return	!oColumn.getHeader() ||
 						!oColumn.getHeader().getVisible() ||
@@ -126,13 +139,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './ListBaseRenderer'
 				align = oColumn.getCssAlign();
 
 			rm.write("<" + cellTag);
-			cls && rm.addClass(jQuery.sap.encodeHTML(cls));
+			cls && rm.addClass(encodeXML(cls));
 
-			if (type === "Head") {
+			if (type == "Head") {
 				rm.writeElementData(oColumn);
 				rm.addClass("sapMTableTH");
 				// adding ColumnHeader specific class in order to overwrite the padding of the cell
-				if (control instanceof ColumnHeader) {
+				if (bActiveHeaders || (control && control.isA("sap.m.ColumnHeader"))) {
 					rm.addClass(clsPrefix + "CellCH");
 				}
 			}
@@ -149,13 +162,24 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './ListBaseRenderer'
 			rm.writeClasses();
 			rm.writeStyles();
 			rm.write(">");
+
 			if (control) {
-				oColumn.applyAlignTo(control);
+				if (bActiveHeaders) {
+					rm.write("<div tabindex='0' role='button' aria-haspopup='dialog' class='sapMColumnHeader sapMColumnHeaderActive'>");
+					control.addStyleClass("sapMColumnHeaderContent");
+				}
+
 				rm.renderControl(control);
+
+				if (bActiveHeaders) {
+					rm.write("</div>");
+				}
 			}
+
 			if (type == "Head" && !hasFooter) {
 				hasFooter = !!oColumn.getFooter();
 			}
+
 			rm.write("</" + cellTag + ">");
 			oColumn.setIndex(index++);
 		});
@@ -181,13 +205,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './ListBaseRenderer'
 	 */
 	TableRenderer.renderContainerAttributes = function(rm, oControl) {
 		rm.addClass("sapMListTblCnt");
-
-		// add sticky style classes
-		var iStickyValue = oControl.getStickyStyleValue();
-		if (iStickyValue) {
-			rm.addClass("sapMSticky");
-			rm.addClass("sapMSticky" + iStickyValue);
-		}
+		ListBaseRenderer.renderContainerAttributes.apply(this, arguments);
 	};
 
 	/**

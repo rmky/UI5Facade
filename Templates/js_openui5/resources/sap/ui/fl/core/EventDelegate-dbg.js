@@ -5,7 +5,7 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global", "sap/ui/fl/Utils", "sap/ui/base/EventProvider", "sap/ui/fl/registry/ChangeRegistry", "sap/ui/fl/core/FlexVisualizer"
+	"sap/ui/thirdparty/jquery", "sap/ui/fl/Utils", "sap/ui/base/EventProvider", "sap/ui/fl/registry/ChangeRegistry", "sap/ui/fl/core/FlexVisualizer"
 ], function (jQuery, Utils, EventProvider, ChangeRegistry, FlexVisualizer) {
 	"use strict";
 
@@ -17,7 +17,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.core.EventDelegate
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @experimental Since 1.27.0
 	 * @private
 	 *
@@ -36,7 +36,7 @@ sap.ui.define([
 		this._oSupportedRegistryItems = oSupportedRegistryItems;
 	};
 
-	EventDelegate.prototype = jQuery.sap.newObject(EventProvider.prototype);
+	EventDelegate.prototype = Object.create(EventProvider.prototype || null);
 
 	/**
 	 * Register a control for using flexibility

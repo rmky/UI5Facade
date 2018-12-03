@@ -18,9 +18,14 @@ sap.ui.define([
 	'sap/ui/dt/MetadataPropagationUtil',
 	'sap/ui/dt/Util',
 	'sap/ui/dt/TaskManager',
-	'./library'
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery",
+	"sap/base/util/isPlainObject",
+	"sap/base/util/merge",
+	"sap/ui/dt/SelectionMode",
+	"sap/base/util/includes"
 ],
-function(
+function (
 	ManagedObject,
 	ElementOverlay,
 	AggregationOverlay,
@@ -33,7 +38,13 @@ function(
 	OverlayUtil,
 	MetadataPropagationUtil,
 	Util,
-	TaskManager
+	TaskManager,
+	Log,
+	jQuery,
+	isPlainObject,
+	merge,
+	SelectionMode,
+	includes
 ) {
 	"use strict";
 
@@ -49,7 +60,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -62,14 +73,6 @@ function(
 		metadata: {
 			library: "sap.ui.dt",
 			properties: {
-				/**
-				 * Selection mode which should be used for overlays selection
-				 */
-				selectionMode: {
-					type: "sap.ui.dt.SelectionMode",
-					defaultValue: sap.ui.dt.SelectionMode.Single
-				},
-
 				/**
 				 * DesignTime metadata for classes to use with overlays (will overwrite default DTMetadata fields)
 				 * should have a map structure { "sClassName" : oDesignTimeMetadata, ... }
@@ -159,13 +162,63 @@ function(
 				},
 
 				/**
-				 * Fires when an overlays selection is changed
+				 * Fires when element overlay is added to an aggregation
 				 */
-				selectionChange: {
+				elementOverlayAdded: {
 					parameters: {
-						selection: {
-							type: "sap.ui.dt.Overlay[]"
-						}
+						// id of the added overlay
+						id: {type: "string"},
+
+						// index of element overlay in the target aggregation overlay
+						targetIndex: {type: "integer"},
+
+						// id of target aggregation overlay
+						targetId: {type: "string"},
+
+						// aggregation where element overlay is inserted
+						targetAggregation: {type: "string"}
+					}
+				},
+
+				/**
+				 * Fires when element overlay is moved inside an aggregation
+				 */
+				elementOverlayMoved: {
+					parameters: {
+						// id of the moved overlay
+						id: {type: "string"},
+
+						// index of element overlay in the target aggregation overlay
+						targetIndex: {type: "integer"},
+
+						// id of target aggregation overlay
+						targetId: {type: "string"},
+
+						// aggregation where element overlay is inserted
+						targetAggregation: {type: "string"}
+					}
+				},
+
+				/**
+				 * Fires the "editable" property of an overlay changes
+				 */
+				elementOverlayEditableChanged : {
+					parameters: {
+						id: {type: "string"},
+						elementId: {type: "string"},
+						editable: {type: "boolean"}
+					}
+				},
+
+				/**
+				 * Fires when a property of an element with an overlay changes
+				 */
+				elementPropertyChanged : {
+					parameters : {
+						id: {type: "string"},
+						name: {type: "string"},
+						oldValue: {type: "any"},
+						value: {type: "any"}
 					}
 				},
 
@@ -202,6 +255,8 @@ function(
 				}.bind(this)
 			});
 
+			this._oSelectionManager = new SelectionManager();
+
 			this._onElementOverlayDestroyed = this._onElementOverlayDestroyed.bind(this);
 
 			ManagedObject.apply(this, arguments);
@@ -227,25 +282,14 @@ function(
 
 					// TODO: move to overlay
 					if (bValue) {
-						oRootElementOverlay.applyStyles();
+						oRootElementOverlay.applyStyles(/*bForceScrollbarSync = */true);
 					}
 				});
 			}, this);
+
+			this._collectOverlaysDuringSyncing();
 		}
 	});
-
-	/**
-	 * Called when the DesignTime is initialized
-	 * @protected
-	 */
-	DesignTime.prototype.init = function () {
-		this._oSelectionManager = this._createSelectionManager();
-		this._oSelectionManager.attachEvent("change", function (oEvent) {
-			this.fireSelectionChange({selection: oEvent.getParameter("selection")});
-		}, this);
-
-		this._collectOverlaysDuringSyncing();
-	};
 
 	DesignTime.prototype._collectOverlaysDuringSyncing = function () {
 		this._aOverlaysCreatedInLastBatch = [];
@@ -281,27 +325,22 @@ function(
 	 * @protected
 	 */
 	DesignTime.prototype.exit = function () {
+		this._bDestroyPending = true;
 		this.detachElementOverlayDestroyed(this._onOverlayDestroyedDuringSyncing, this);
-
-		this._oTaskManager.destroy();
 
 		// The plugins need to be destroyed before the overlays in order to go through the deregisterElementOverlay Methods
 		this.getPlugins().forEach(function (oPlugin) {
 			oPlugin.destroy();
 		});
 
-		this._destroyAllOverlays();
 		this._oSelectionManager.destroy();
-		delete this._aOverlaysCreatedInLastBatch;
-	};
+		this._oTaskManager.destroy();
 
-	/**
-	 * Creates an instance of a SelectionManager to handle the overlays selection inside of the DesignTime
-	 * @return {sap.ui.dt.SelectionManager} the instance of the Selection Manager
-	 * @private
-	 */
-	DesignTime.prototype._createSelectionManager = function () {
-		return new SelectionManager();
+
+		this._destroyAllOverlays();
+
+		delete this._aOverlaysCreatedInLastBatch;
+		delete this._bDestroyPending;
 	};
 
 	/**
@@ -320,18 +359,6 @@ function(
 	 */
 	DesignTime.prototype.getSelectionManager = function () {
 		return this._oSelectionManager;
-	};
-
-	/**
-	 * Sets selection mode to be used in the Selection inside of the DesignTime
-	 * @param {sap.ui.dt.SelectionMode} oMode a selection mode to be used with the Selection
-	 * @return {sap.ui.dt.DesignTime} this
-	 * @public
-	 */
-	DesignTime.prototype.setSelectionMode = function (oMode) {
-		this.setProperty("selectionMode", oMode);
-
-		return this;
 	};
 
 	/**
@@ -428,7 +455,7 @@ function(
 
 		if (typeof oElement === 'string') { // backwards compatibility, should be dropped in future releases (>rel-1.54)
 			sClassName = oElement;
-			jQuery.sap.log.error('sap.ui.dt.DesignTime#getDesignTimeMetadataFor / Function getDesignTimeMetadataFor() should be called with element instance');
+			Log.error('sap.ui.dt.DesignTime#getDesignTimeMetadataFor / Function getDesignTimeMetadataFor() should be called with element instance');
 		} else {
 			sClassName = oElement.getMetadata().getName();
 		}
@@ -473,9 +500,13 @@ function(
 					this._oTaskManager.complete(iTaskId);
 					return oElementOverlay;
 				}.bind(this),
-				function () {
-					jQuery.sap.log.error('sap.ui.dt: root element with id = "' + vRootElement.getId() + '" initialization is failed');
+				function (oError) {
+					var sErrorText = 'sap.ui.dt: root element with id = "{0}" initialization is failed';
+					sErrorText = oError
+						? Util.printf(sErrorText + ' due to: {1}', vRootElement.getId(), oError.message)
+						: Util.printf(sErrorText, vRootElement.getId());
 					this._oTaskManager.cancel(iTaskId);
+					throw Util.createError("DesignTime#createOverlay", sErrorText, "sap.ui.dt");
 				}.bind(this)
 			);
 	};
@@ -542,7 +573,7 @@ function(
 	 */
 	DesignTime.prototype.createOverlay = function (vArg) {
 		// Function can receive an element as the only argument or object with parameters
-		var mParams = jQuery.extend({}, jQuery.isPlainObject(vArg) ? vArg : { element: vArg });
+		var mParams = Object.assign({}, isPlainObject(vArg) ? vArg : { element: vArg });
 		var iTaskId = this._oTaskManager.add({
 			type: 'createOverlay'
 		});
@@ -664,7 +695,7 @@ function(
 					this.getDesignTimeMetadataFor(oElement) instanceof ElementDesignTimeMetadata
 					? this.getDesignTimeMetadataFor(oElement)
 					: Util.curry(function (mMetadataExtension, mParentMetadata, oElement, mMetadata) {
-						mMetadata = jQuery.sap.extend(true, {}, mMetadata, mMetadataExtension);
+						mMetadata = merge({}, mMetadata, mMetadataExtension);
 
 						this._mMetadataOriginal = mMetadata;
 
@@ -696,7 +727,8 @@ function(
 				destroyed: this._onElementOverlayDestroyed,
 				elementDestroyed: this._onElementDestroyed.bind(this),
 				selectionChange: this._onElementOverlaySelectionChange.bind(this),
-				elementModified: this._onElementModified.bind(this)
+				elementModified: this._onElementModified.bind(this),
+				editableChange: this._onEditableChanged.bind(this)
 			});
 		}.bind(this));
 	};
@@ -798,6 +830,11 @@ function(
 	 * @private
 	 */
 	DesignTime.prototype._onElementOverlayDestroyed = function (oEvent) {
+		// In case of DesignTime instance destroy process we should not react on overlay destroy event
+		if (this._bDestroyPending) {
+			return;
+		}
+
 		var oElementOverlay = oEvent.getSource();
 
 		// FIXME: workaround. Overlays should not kill themselves (see ElementOverlay@_onElementDestroyed).
@@ -811,7 +848,7 @@ function(
 			Overlay.removeOverlayContainer();
 		}
 
-		if (oElementOverlay.getSelected()) {
+		if (oElementOverlay.isSelected()) {
 			this.getSelectionManager().remove(oElementOverlay);
 		}
 
@@ -831,7 +868,7 @@ function(
 	 * @param {sap.ui.baseEvent} oEvent event object
 	 * @private
 	 */
-	DesignTime.prototype._onAggregationOverlayDestroyed = function (oEvent) {
+	DesignTime.prototype._onAggregationOverlayDestroyed = function () {
 		if (!OverlayRegistry.hasOverlays()) {
 			Overlay.removeOverlayContainer();
 		}
@@ -845,11 +882,15 @@ function(
 		var oElementOverlay = oEvent.getSource();
 		var bSelected = oEvent.getParameter("selected");
 
-		if (bSelected){
-			if (this.getSelectionMode() === sap.ui.dt.SelectionMode.Multi){
+		if (bSelected) {
+			if (this.getSelectionManager().getSelectionMode() === SelectionMode.Multi) {
 				this.getSelectionManager().add(oElementOverlay);
 			} else {
 				this.getSelectionManager().set(oElementOverlay);
+			}
+
+			if (!includes(this.getSelectionManager().get(), oElementOverlay)) {
+				oElementOverlay.setSelected(false);
 			}
 		} else {
 			this.getSelectionManager().remove(oElementOverlay);
@@ -861,18 +902,39 @@ function(
 	 * @private
 	 */
 	DesignTime.prototype._onElementModified = function(oEvent) {
-		var oParams = oEvent.getParameters();
-		if (oParams.type === "addOrSetAggregation" || oParams.type === "insertAggregation") {
-			this._onAddAggregation(oParams.value, oParams.target, oParams.name);
-		} else if (oParams.type === "setParent") {
-			// timeout is needed because UI5 controls & apps can temporary "dettach" controls from control tree
-			// and add them again later, so the check if the control is dettached from root element's tree is delayed
-			setTimeout(function() {
-				if (!this.bIsDestroyed) {
-					this._checkIfOverlayShouldBeDestroyed(oParams.target);
-				}
-			}.bind(this), 0);
+		var oParams = merge({}, oEvent.getParameters());
+		oParams.type = !oParams.type ? oEvent.getId() : oParams.type;
+		switch (oParams.type) {
+			case "addOrSetAggregation":
+			case "insertAggregation":
+				this._onAddAggregation(oParams.value, oParams.target, oParams.name);
+				break;
+			case "setParent":
+				// timeout is needed because UI5 controls & apps can temporary "detach" controls from control tree
+				// and add them again later, so the check if the control is detached from root element's tree is delayed
+				setTimeout(function () {
+					if (!this.bIsDestroyed) {
+						this._checkIfOverlayShouldBeDestroyed(oParams.target);
+					}
+				}.bind(this), 0);
+				break;
+			case "propertyChanged":
+				oParams.id = oEvent.getSource().getId();
+				delete oParams.type;
+				delete oParams.target;
+				this.fireElementPropertyChanged(oParams);
+				break;
 		}
+	};
+
+	/**
+	 * @param {sap.ui.baseEvent} oEvent event object
+	 * @private
+	 */
+	DesignTime.prototype._onEditableChanged = function(oEvent) {
+		var oParams = merge({}, oEvent.getParameters());
+		oParams.id = oEvent.getSource().getId();
+		this.fireElementOverlayEditableChanged(oParams);
 	};
 
 	/**
@@ -895,10 +957,19 @@ function(
 					element: oElement,
 					parentMetadata: oParentAggregationOverlay.getDesignTimeMetadata().getData()
 				})
-					.then(
-						function (oElementOverlay) {
+					.then(function (oElementOverlay) {
 							oParentAggregationOverlay.insertChild(null, oElementOverlay);
 							oElementOverlay.applyStyles(); // TODO: remove after Task Manager implementation
+
+							var iOverlayPosition = oParentAggregationOverlay.indexOfAggregation('children', oElementOverlay);
+
+							this.fireElementOverlayAdded({
+								id: oElementOverlay.getId(),
+								targetIndex: iOverlayPosition,
+								targetId: oParentAggregationOverlay.getId(),
+								targetAggregation: oParentAggregationOverlay.getAggregationName()
+							});
+
 							this._oTaskManager.complete(iTaskId);
 						}.bind(this),
 						function (vError) {
@@ -922,8 +993,8 @@ function(
 
 						// Omit error message if the element was destroyed during overlay initialisation
 						// (e.g. SimpleForm case when multi-removal takes place)
-						if (!oElement.bIsDestroyed){
-							jQuery.sap.log.error(Util.errorToString(oError));
+						if (!oElement.bIsDestroyed) {
+							Log.error(Util.errorToString(oError));
 						}
 					}.bind(this, oElement.getId(), oParentAggregationOverlay.getId()));
 			} else {
@@ -947,9 +1018,15 @@ function(
 						oElement
 					)
 				);
+
+				this.fireElementOverlayMoved({
+					id: oElementOverlay.getId(),
+					targetIndex: oParentAggregationOverlay.indexOfAggregation('children', oElementOverlay),
+					targetId: oParentAggregationOverlay.getId(),
+					targetAggregation: oParentAggregationOverlay.getAggregationName()
+				});
 			}
 		}
-
 	};
 
 	/**

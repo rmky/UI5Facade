@@ -5,9 +5,9 @@
  */
 sap.ui.define([
 	'sap/ui/rta/command/BaseCommand',
-	'sap/ui/fl/changeHandler/BaseTreeModifier',
+	'sap/ui/core/util/reflection/JsControlTreeModifier',
 	'sap/ui/fl/Utils'
-], function(BaseCommand, BaseTreeModifier, flUtils) {
+], function(BaseCommand, JsControlTreeModifier, flUtils) {
 	"use strict";
 
 	/**
@@ -16,7 +16,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.BaseCommand
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @since 1.52
@@ -56,14 +56,15 @@ sap.ui.define([
 	};
 
 	/**
-	 * @public Triggers the configuration of a variant
+	 * Triggers the configuration of a variant.
+	 * @public
 	 * @returns {Promise} Returns resolve after execution
 	 */
 	ControlVariantConfigure.prototype.execute = function() {
 		var oVariantManagementControl = this.getControl();
 		this.oAppComponent = flUtils.getAppComponentForControl(oVariantManagementControl);
 		this.oModel = this.oAppComponent.getModel(this.MODEL_NAME);
-		this.sVariantManagementReference = BaseTreeModifier.getSelector(oVariantManagementControl, this.oAppComponent).id;
+		this.sVariantManagementReference = JsControlTreeModifier.getSelector(oVariantManagementControl, this.oAppComponent).id;
 
 		this._aPreparedChanges = [];
 		this.getChanges().forEach(function(mChangeProperties) {
@@ -77,7 +78,8 @@ sap.ui.define([
 	};
 
 	/**
-	 * @public Undo logic for the execution
+	 * Undo logic for the execution.
+	 * @public
 	 * @returns {Promise} Returns resolve after undo
 	 */
 	ControlVariantConfigure.prototype.undo = function() {

@@ -36,8 +36,10 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 			bInteractive = bEnabled && !bDisplayOnly,
 			bDisplayOnlyApplied = bEnabled && bDisplayOnly,
 			oCbLabel = oCheckBox.getAggregation("_label"),
-			bInErrorState = ValueState.Error === oCheckBox.getValueState(),
-			bInWarningState = ValueState.Warning === oCheckBox.getValueState(),
+			sValueState = oCheckBox.getValueState(),
+			bInErrorState = ValueState.Error === sValueState,
+			bInWarningState = ValueState.Warning === sValueState,
+			bInInformationState = ValueState.Information === sValueState,
 			bUseEntireWidth = oCheckBox.getUseEntireWidth();
 
 		// CheckBox wrapper
@@ -60,6 +62,8 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 			oRm.addClass("sapMCbErr");
 		} else if (bInWarningState) {
 			oRm.addClass("sapMCbWarn");
+		} else if (bInInformationState) {
+			oRm.addClass("sapMCbInfo");
 		}
 
 		if (oCheckBox.getText()) {
@@ -91,7 +95,7 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 		oRm.writeAccessibilityState(oCheckBox, {
 			role: "checkbox",
 			selected: null,
-			checked: oCheckBox.getSelected(),
+			checked: oCheckBox._getAriaChecked(),
 			describedby: sTooltip ? sId + "-Descr" : undefined
 		});
 
@@ -121,6 +125,11 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 		if (oCheckBox.getSelected()) {
 			oRm.addClass("sapMCbMarkChecked");
 		}
+
+		if (oCheckBox.getPartiallySelected()) {
+			oRm.addClass("sapMCbMarkPartiallyChecked");
+		}
+
 		oRm.writeClasses();
 
 		oRm.write(">");		// DIV element

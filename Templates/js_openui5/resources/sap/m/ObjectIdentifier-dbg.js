@@ -43,7 +43,7 @@ function(
 	 * @class
 	 * The ObjectIdentifier is a display control that enables the user to easily identify a specific object. The ObjectIdentifier title is the key identifier of the object and additional text and icons can be used to further distinguish it from other objects.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -495,6 +495,24 @@ function(
 		return this._oAriaCustomRole;
 	};
 
+	/**
+	 * @see sap.ui.core.Control#getAccessibilityInfo
+	 * @returns {Object} Current accessibility state of the control
+	 * @protected
+	 */
+	ObjectIdentifier.prototype.getAccessibilityInfo = function() {
+		// first get accessibility info from the title control, which can be Text or Link
+		var oTitleInfo = this.getAggregation("_titleControl").getAccessibilityInfo(),
+			oType = (ObjectIdentifier.OI_ARIA_ROLE + " " + (oTitleInfo.type || "")).trim();
+
+		// add ObjectIdentifier type to the title type
+		oTitleInfo.type = oType;
+		// add ObjectIdentifier text to the description of the title
+		oTitleInfo.description = oTitleInfo.description + " " + this.getText();
+
+		// return the modified Object containing all needed information about the control
+		return oTitleInfo;
+	};
 
 	return ObjectIdentifier;
 

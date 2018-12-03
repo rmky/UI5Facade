@@ -6,7 +6,6 @@
 
 // Provides control sap.m.Page.
 sap.ui.define([
-	"jquery.sap.global",
 	"./library",
 	"sap/ui/core/Control",
 	"sap/ui/core/delegate/ScrollEnablement",
@@ -17,10 +16,11 @@ sap.ui.define([
 	"sap/ui/core/library",
 	"sap/ui/Device",
 	"sap/ui/core/Element",
-	"./PageRenderer"
+	"./TitlePropagationSupport",
+	"./PageRenderer",
+	"sap/ui/thirdparty/jquery"
 ],
 function(
-	jQuery,
 	library,
 	Control,
 	ScrollEnablement,
@@ -31,8 +31,10 @@ function(
 	coreLibrary,
 	Device,
 	Element,
-	PageRenderer
-	) {
+	TitlePropagationSupport,
+	PageRenderer,
+	jQuery
+) {
 		"use strict";
 
 
@@ -81,7 +83,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 * @mixes sap.ui.core.ContextMenuSupport
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @public
 		 * @alias sap.m.Page
@@ -251,13 +253,23 @@ function(
 					 */
 					navButtonPress: {}
 				},
+				dnd: { draggable: false, droppable: true },
 				designtime: "sap/m/designtime/Page.designtime"
 			}
 		});
 
 		ContextMenuSupport.apply(Page.prototype);
 
+		// Add title propagation support
+		TitlePropagationSupport.call(Page.prototype, "content", function () {
+			return this._headerTitle ? this._headerTitle.getId() : false;
+		});
+
 		Page.FOOTER_ANIMATION_DURATION = 350;
+
+		Page.prototype.init = function () {
+			this._initTitlePropagationSupport();
+		};
 
 		// Return true if scrolling is allowed
 		Page.prototype._hasScrolling = function () {
@@ -282,7 +294,7 @@ function(
 		};
 
 		Page.prototype.onAfterRendering = function () {
-			jQuery.sap.delayedCall(10, this, this._adjustFooterWidth);
+			setTimeout(this._adjustFooterWidth.bind(this), 10);
 		};
 
 		/**
@@ -402,9 +414,9 @@ function(
 			}
 
 			if (useAnimation) {
-				jQuery.sap.delayedCall(Page.FOOTER_ANIMATION_DURATION, this, function () {
+				setTimeout(function () {
 					$footer.toggleClass("sapUiHidden", !bShowFooter);
-				});
+				}, Page.FOOTER_ANIMATION_DURATION);
 			} else {
 				$footer.toggleClass("sapUiHidden", !bShowFooter);
 			}
@@ -447,6 +459,7 @@ function(
 		};
 
 		Page.prototype._adjustFooterWidth = function () {
+			var bDirection  = sap.ui.getCore().getConfiguration().getRTL() ? "left" : "right";
 			if (!this.getShowFooter() || !this.getFloatingFooter() || !this.getFooter()) {
 				return;
 			}
@@ -454,16 +467,16 @@ function(
 			var $footer = jQuery(this.getDomRef()).find(".sapMPageFooter").last();
 
 			if (this._contentHasScroll()) {
-				$footer.css("right", jQuery.position.scrollbarWidth() + "px");
+				$footer.css(bDirection, jQuery.position.scrollbarWidth() + "px");
 				$footer.css("width", "initial");
 			} else {
-				$footer.css("right", 0);
+				$footer.css(bDirection, 0);
 				$footer.css("width", "");
 			}
 		};
 
 		Page.prototype._contentHasScroll = function () {
-			var $section = jQuery.sap.byId(this.getId() + "-cont", this.getDomRef());
+			var $section = jQuery(document.getElementById(this.getId() + "-cont"));
 			return $section[0].scrollHeight > $section.innerHeight();
 		};
 
@@ -662,17 +675,18 @@ function(
 		 * Scrolls to an element(DOM or sap.ui.core.Element) within the page if the element is rendered.
 		 * @param {HTMLElement | sap.ui.core.Element} oElement The element to which should be scrolled.
 		 * @param {int} [iTime=0] The duration of animated scrolling. To scroll immediately without animation, give 0 as value or leave it default.
+		 * @param {Array} Specifies the offset left and top for the DOM Element.
 		 * @returns {sap.m.Page} <code>this</code> to facilitate method chaining.
 		 * @since 1.30
 		 * @public
 		 */
-		Page.prototype.scrollToElement = function (oElement, iTime) {
+		Page.prototype.scrollToElement = function (oElement, iTime, aOffset) {
 			if (oElement instanceof Element) {
 				oElement = oElement.getDomRef();
 			}
 
 			if (this._oScroller) {
-				this._oScroller.scrollToElement(oElement, iTime);
+				this._oScroller.scrollToElement(oElement, iTime, aOffset);
 			}
 			return this;
 		};
@@ -681,6 +695,14 @@ function(
 			this.setProperty("contentOnlyBusy", bContentOnly, true); // no re-rendering
 			this.$().toggleClass("sapMPageBusyCoversAll", !bContentOnly);
 			return this;
+		};
+
+		Page.prototype.setBusy = function () {
+			// If contentOnlyBusy property is set, then the busy indicator should cover only the content area
+			// Otherwise all clicks in the footer, header and subheader might be suppressed
+			this._sBusySection = this.getContentOnlyBusy() ? 'cont' : null;
+
+			return Control.prototype.setBusy.apply(this, arguments);
 		};
 
 		Page.prototype.setCustomHeader = function(oHeader) {

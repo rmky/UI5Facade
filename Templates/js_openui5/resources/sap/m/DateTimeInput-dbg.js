@@ -9,18 +9,24 @@ sap.ui.define([
 	'jquery.sap.global',
 	'sap/ui/core/Control',
 	'./library',
+	'./DatePicker',
+	'./DateTimePicker',
+	'./TimePicker',
 	'sap/ui/model/type/Date',
 	'sap/ui/model/type/Time',
 	'sap/ui/model/type/DateTime',
 	'sap/ui/model/odata/type/ODataType',
 	'sap/ui/core/library',
 	'sap/ui/Device',
-	'./DateTimeInputRenderer'
+	"./DateTimeInputRenderer"
 ],
 function(
 	jQuery,
 	Control,
 	library,
+	DatePicker,
+	DateTimePicker,
+	TimePicker,
 	Date1,
 	Time,
 	DateTime,
@@ -28,7 +34,7 @@ function(
 	coreLibrary,
 	Device,
 	DateTimeInputRenderer
-	) {
+) {
 	"use strict";
 
 	// shortcut for sap.m.DateTimeInputType
@@ -56,7 +62,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -209,7 +215,7 @@ function(
 
 		var oi18n = library.getLocaleData();
 
-		$.extend(oPrototype, {
+		jQuery.extend(oPrototype, {
 			_types : {
 				Date : {
 					valueFormat : oi18n.getDatePattern("short"),
@@ -274,19 +280,16 @@ function(
 
 		switch (type) {
 			case DateTimeInputType.DateTime:
-				jQuery.sap.require("sap.m.DateTimePicker");
-				oPicker = new sap.m.DateTimePicker(this.getId() + "-Picker");
+				oPicker = new DateTimePicker(this.getId() + "-Picker");
 				break;
 
 			case DateTimeInputType.Time:
-				jQuery.sap.require("sap.m.TimePicker");
-				oPicker = new sap.m.TimePicker(this.getId() + "-Picker",
+				oPicker = new TimePicker(this.getId() + "-Picker",
 					{localeId: sap.ui.getCore().getConfiguration().getFormatSettings().getFormatLocale().toString()});
 				break;
 
 			default: // default is date
-				jQuery.sap.require("sap.m.DatePicker");
-				oPicker = new sap.m.DatePicker(this.getId() + "-Picker");
+				oPicker = new DatePicker(this.getId() + "-Picker");
 				break;
 		}
 

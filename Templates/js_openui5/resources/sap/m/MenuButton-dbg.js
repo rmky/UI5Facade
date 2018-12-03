@@ -6,7 +6,6 @@
 
 // Provides control sap.m.MenuButton.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'./Button',
@@ -15,10 +14,10 @@ sap.ui.define([
 	'sap/ui/core/EnabledPropagator',
 	'sap/ui/core/library',
 	'sap/ui/core/Popup',
+	'sap/ui/core/LabelEnablement',
 	'sap/m/Menu',
 	"./MenuButtonRenderer"
 ], function(
-	jQuery,
 	library,
 	Control,
 	Button,
@@ -27,9 +26,10 @@ sap.ui.define([
 	EnabledPropagator,
 	coreLibrary,
 	Popup,
+	LabelEnablement,
 	Menu,
 	MenuButtonRenderer
-	) {
+) {
 		"use strict";
 
 		// shortcut for sap.m.MenuButtonMode
@@ -58,7 +58,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -155,6 +155,18 @@ sap.ui.define([
 				 */
 				_button: { type: "sap.ui.core.Control", multiple: false, visibility: "hidden" }
 			},
+			associations : {
+
+				/**
+				 * Association to controls / ids which describe this control (see WAI-ARIA attribute aria-describedby).
+				 */
+				ariaDescribedBy: {type: "sap.ui.core.Control", multiple: true, singularName: "ariaDescribedBy"},
+
+				/**
+				 * Association to controls / ids which label this control (see WAI-ARIA attribute aria-labelledby).
+				 */
+				ariaLabelledBy: {type: "sap.ui.core.Control", multiple: true, singularName: "ariaLabelledBy"}
+			},
 			events: {
 				/**
 				 * Fired when the <code>buttonMode</code> is set to <code>Split</code> and the user presses the main button
@@ -227,7 +239,7 @@ sap.ui.define([
 		};
 
 		MenuButton.prototype.onAfterRendering = function() {
-			if (this._needsWidth() && sap.ui.getCore().isThemeApplied() && this._getTextBtnContentDomRef()) {
+			if (this._needsWidth() && sap.ui.getCore().isThemeApplied() && this._getTextBtnContentDomRef() && this._getInitialTextBtnWidth() > 0) {
 				this._getTextBtnContentDomRef().style.width = this._getInitialTextBtnWidth() + 'px';
 			}
 
@@ -236,7 +248,7 @@ sap.ui.define([
 
 		MenuButton.prototype.onThemeChanged = function(oEvent) {
 			//remember the initial width of the text button and hardcode it in the dom
-			if (this._needsWidth() && this.getDomRef() && !this._iInitialTextBtnContentWidth) {
+			if (this._needsWidth() && this.getDomRef() && !this._iInitialTextBtnContentWidth && this._getTextBtnContentDomRef() && this._getInitialTextBtnWidth() > 0) {
 				this._getTextBtnContentDomRef().style.width = this._getInitialTextBtnWidth() + 'px';
 			}
 		};
@@ -311,7 +323,7 @@ sap.ui.define([
 		 * @private
 		 */
 		MenuButton.prototype._initButton = function() {
-			var oBtn = new Button({
+			var oBtn = new Button(this.getId() + "-internalBtn", {
 				width: "100%"
 			});
 			oBtn.attachPress(this._handleButtonPress, this);
@@ -324,7 +336,7 @@ sap.ui.define([
 		 * @private
 		 */
 		MenuButton.prototype._initSplitButton = function() {
-			var oBtn = new SplitButton({
+			var oBtn = new SplitButton(this.getId() + "-internalSplitBtn", {
 				width: "100%"
 			});
 			oBtn.attachPress(this._handleActionPress, this);
@@ -374,6 +386,11 @@ sap.ui.define([
 					plus2_left: "+2 0",
 					minus2_left: "-2 0"
 				};
+
+			if (this._bPopupOpen) {
+				this.getMenu().close();
+				return;
+			}
 
 			if (!oMenu) {
 				return;
@@ -461,6 +478,7 @@ sap.ui.define([
 			var oMenuItem = oEvent.getParameter("item");
 
 			this.fireEvent("_menuItemSelected", { item: oMenuItem }); // needed for controls that listen to interaction events from within the control (e.g. for sap.m.OverflowToolbar)
+			this._bPopupOpen = false;
 
 			if (
 				!this._isSplitButton() ||
@@ -606,6 +624,10 @@ sap.ui.define([
 			!!oEvent && oEvent.preventDefault();
 		};
 
+		MenuButton.prototype.ontouchstart = function() {
+			this._bPopupOpen = this.getMenu() && this.getMenu()._getMenu() && this.getMenu()._getMenu().getPopup().isOpen();
+		};
+
 		MenuButton.prototype.openMenuByKeyboard = function() {
 			if (!this._isSplitButton()) {
 				this._handleButtonPress(true);
@@ -616,6 +638,39 @@ sap.ui.define([
 			if (this.getMenu()) {
 				this.$().attr("aria-controls", this.getMenu().getDomRefId());
 			}
+		};
+
+		/**
+		 * Returns the DOMNode Id to be used for the "labelFor" attribute of the label.
+		 *
+		 * By default, this is the Id of the control itself.
+		 *
+		 * @return {string} Id to be used for the <code>labelFor</code>
+		 * @public
+		 */
+		MenuButton.prototype.getIdForLabel = function () {
+			return this.getId() + "-internalBtn";
+		};
+
+		/**
+		 * Ensures that MenuButton's internal button will have a reference back to the labels, by which
+		 * the MenuButton is labelled
+		 *
+		 * @returns {sap.m.MenuButton} For chaining
+		 * @private
+		 */
+		MenuButton.prototype._ensureBackwardsReference = function () {
+			var oInternalButton = this._getButtonControl(),
+				aInternalButtonAriaLabelledBy = oInternalButton.getAriaLabelledBy(),
+				aReferencingLabels = LabelEnablement.getReferencingLabels(this);
+
+			aReferencingLabels.forEach(function (sLabelId) {
+				if (aInternalButtonAriaLabelledBy && aInternalButtonAriaLabelledBy.indexOf(sLabelId) === -1) {
+					oInternalButton.addAriaLabelledBy(sLabelId);
+				}
+			});
+
+			return this;
 		};
 
 		return MenuButton;

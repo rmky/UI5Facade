@@ -10,7 +10,8 @@ sap.ui.define([
 	'sap/ui/dt/DOMUtil',
 	'sap/ui/dt/OverlayUtil',
 	'sap/ui/dt/ElementUtil',
-	'sap/ui/dt/OverlayRegistry'
+	'sap/ui/dt/OverlayRegistry',
+	"sap/ui/thirdparty/jquery"
 ],
 function(
 	BaseObject,
@@ -18,7 +19,8 @@ function(
 	DOMUtil,
 	OverlayUtil,
 	ElementUtil,
-	OverlayRegistry
+	OverlayRegistry,
+	jQuery
 ) {
 	"use strict";
 
@@ -35,7 +37,7 @@ function(
 	 * @extends sap.ui.dt.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private

@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Selecti
 	 * @class
 	 * Collection
 	 * @extends sap.ui.core.Element
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -108,6 +108,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Selecti
 	Collection.prototype.setEditable = function(bEditable) {
 		this.setProperty("editable",bEditable,true);
 		this.firePropertyChanged();
+		return this;
 	};
 
 	/*
@@ -119,6 +120,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Selecti
 	Collection.prototype.setTitle = function(sTitle) {
 		this.setProperty("title",sTitle);
 		this.fireEvent('_titleChanged', { newTitle: this.getProperty("title") });
+		return this;
 	};
 
 

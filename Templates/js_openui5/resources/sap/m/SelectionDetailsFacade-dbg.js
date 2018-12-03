@@ -10,7 +10,7 @@
  * @since 1.48.0
  * @public
  * @author SAP SE
- * @version 1.56.6
+ * @version 1.60.1
  * @borrows sap.ui.core.Element#addCustomData as addCustomData
  * @borrows sap.ui.core.Element#getCustomData as getCustomData
  * @borrows sap.ui.core.Element#indexOfCustomData as indexOfCustomData
@@ -35,6 +35,8 @@
  * @borrows sap.m.SelectionDetails#addActionGroup as addActionGroup
  * @borrows sap.m.SelectionDetails#removeActionGroup as removeActionGroup
  * @borrows sap.m.SelectionDetails#removeAllActionGroups as removeAllActionGroups
+ * @borrows sap.m.SelectionDetails#setWrapLabels as setWrapLabels
+ * @borrows sap.m.SelectionDetails#getWrapLabels as getWrapLabels
  */
 /**
  * Describes the public facade of the {@link sap.m.SelectionDetailsItem} element.
@@ -43,7 +45,7 @@
  * @since 1.48.0
  * @public
  * @author SAP SE
- * @version 1.56.6
+ * @version 1.60.1
  * @borrows sap.ui.core.Element#addCustomData as addCustomData
  * @borrows sap.ui.core.Element#getCustomData as getCustomData
  * @borrows sap.ui.core.Element#indexOfCustomData as indexOfCustomData
@@ -58,4 +60,6 @@
  * @borrows sap.m.SelectionDetailsItem#getEnableNav as getEnableNav
  * @borrows sap.m.SelectionDetailsItem#addAction as addAction
  * @borrows sap.m.SelectionDetailsItem#removeAction as removeAction
+ * @borrows sap.m.SelectionDetails#setWrapLabels as setWrapLabels
+ * @borrows sap.m.SelectionDetails#getWrapLabels as getWrapLabels
  */

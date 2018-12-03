@@ -4,10 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([
-  "jquery.sap.global",
-  "sap/ui/base/Object"
-], function ($, UI5Object) {
+sap.ui.define(["sap/ui/base/Object", "sap/ui/thirdparty/jquery"], function(BaseObject, jQueryDOM) {
   "use strict";
 
   /**
@@ -27,11 +24,11 @@ sap.ui.define([
    * @since 1.40
    * @public
    */
-	var StepDefinitions = UI5Object.extend("sap.ui.test.gherkin.StepDefinitions",
+	var StepDefinitions = BaseObject.extend("sap.ui.test.gherkin.StepDefinitions",
       /** @lends sap.ui.test.gherkin.StepDefinitions.prototype */ {
 
         constructor : function() {
-          UI5Object.apply(this, arguments);
+          BaseObject.apply(this, arguments);
 
           /**
            * {StepDefinition[]} An array of StepDefinition objects, one of which is added to the array every time
@@ -87,10 +84,10 @@ sap.ui.define([
          * @static
          */
         register : function(rRegex, fnFunc) {
-          if ($.type(rRegex) !== "regexp") {
+          if (jQueryDOM.type(rRegex) !== "regexp") {
             throw new Error("StepDefinitions.register: parameter 'rRegex' must be a valid RegExp object");
           }
-          if ($.type(fnFunc) !== "function") {
+          if (jQueryDOM.type(fnFunc) !== "function") {
             throw new Error("StepDefinitions.register: parameter 'fnFunc' must be a valid Function");
           }
 
@@ -106,7 +103,7 @@ sap.ui.define([
               var aMatch = oStep.text.match(rRegex);
               if (!aMatch) { return {isMatch: false}; }
               var aParams = aMatch.slice(1);
-              if (oStep.data) { aParams.push($.extend(true, [], oStep.data)); }
+              if (oStep.data) { aParams.push(jQueryDOM.extend(true, [], oStep.data)); }
               return {
                 isMatch: true,
                 text: oStep.text,

@@ -3,8 +3,11 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global', 'sap/ui/unified/library'],
-	function(jQuery, library) {
+sap.ui.define([
+	'sap/ui/unified/library',
+	"sap/base/security/encodeXML"
+],
+	function(library, encodeXML) {
 	"use strict";
 
 
@@ -39,7 +42,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/unified/library'],
 		oRm.write("<div");
 		oRm.writeControlData(oControl);
 		oRm.addClass("sapUiUfdCSwitcher");
-		oRm.addClass("sapUiUfdCSwitcherAnimation" + jQuery.sap.encodeHTML(sAnimation));
+		oRm.addClass("sapUiUfdCSwitcherAnimation" + encodeXML(sAnimation));
 		oRm.writeClasses();
 		oRm.write(">");
 

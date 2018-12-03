@@ -6,10 +6,8 @@
 /**
  * Adds support rules of the sap.ui.unified library to the support infrastructure.
  */
-sap.ui.predefine('sap/ui/unified/library.support',["jquery.sap.global", "sap/ui/support/library",
-			   "./rules/FileUploader.support"],
-	function(jQuery, SupportLib,
-			 FileUploaderSupport) {
+sap.ui.predefine('sap/ui/unified/library.support',["sap/ui/support/library", "./rules/FileUploader.support"],
+	function(SupportLib, FileUploaderSupport) {
 	"use strict";
 
 	return {
@@ -29,8 +27,8 @@ sap.ui.predefine('sap/ui/unified/library.support',["jquery.sap.global", "sap/ui/
 /**
  * Defines support rules for the FileUploader control of sap.ui.unified library.
  */
-sap.ui.predefine('sap/ui/unified/rules/FileUploader.support',["jquery.sap.global", "sap/ui/support/library"],
-	function(jQuery, SupportLib) {
+sap.ui.predefine('sap/ui/unified/rules/FileUploader.support',["sap/ui/support/library"],
+	function(SupportLib) {
 	"use strict";
 
 	// shortcuts

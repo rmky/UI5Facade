@@ -6,7 +6,6 @@
 
 // Provides control sap.m.CheckBox.
 sap.ui.define([
-	'jquery.sap.global',
 	'./Label',
 	'./library',
 	'sap/ui/Device',
@@ -14,18 +13,19 @@ sap.ui.define([
 	'sap/ui/core/IconPool',
 	'sap/ui/core/EnabledPropagator',
 	'sap/ui/core/library',
-	'./CheckBoxRenderer'
+	'./CheckBoxRenderer',
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
-	jQuery,
-	Label,
-	library,
-	Device,
-	Control,
-	IconPool,
-	EnabledPropagator,
-	coreLibrary,
-	CheckBoxRenderer
+		Label,
+		library,
+		Device,
+		Control,
+		IconPool,
+		EnabledPropagator,
+		coreLibrary,
+		CheckBoxRenderer,
+		jQuery
 	) {
 	"use strict";
 
@@ -54,8 +54,7 @@ sap.ui.define([
 	 *
 	 * To select/deselect the <code>CheckBox</code>, the user has to click or tap the square box or its label.
 	 * Clicking or tapping toggles the <code>CheckBox</code> between checked and unchecked state.
-	 * The <code>CheckBox</code> control only has 2 states - checked and unchecked. There is no third
-	 * state for partially selected.
+	 * The <code>CheckBox</code> control only has 3 states - checked, unchecked and partially selected.
 	 *
 	 * <h3>Usage</h3>
 	 *
@@ -85,7 +84,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -99,9 +98,32 @@ sap.ui.define([
 		properties : {
 
 			/**
-			 * Stores the state of the checkbox whether it is selected or not.
+			 * Determines whether the <code>CheckBox</code> is selected (checked).
+			 *
+			 * When this property is set to <code>true</code>, the control is displayed as selected,
+			 * unless the value of the <code>partiallySelected</code> property is also set to <code>true</code>.
+			 * In this case, the control is displayed as partially selected.
 			 */
 			selected : {type : "boolean", group : "Data", defaultValue : false},
+
+			/**
+			 * Determines whether the <code>CheckBox</code> is displayed as partially selected.
+			 *
+			 * <b>Note:</b> This property leads only to visual change of the checkbox and the
+			 * state cannot be achieved by user interaction. The visual state depends on
+			 * the value of the <code>selected</code> property:
+			 * <ul>
+			 * <li>If <code>selected</code> = <code>true</code> and <code>partiallySelected</code>
+			 * = <code>true</code>, the control is displayed as partially selected</li>
+			 * <li>If <code>selected</code> = <code>true</code> and <code>partiallySelected</code>
+			 * = <code>false</code>, the control is displayed as selected</li>
+			 * <li>If <code>selected</code> = <code>false</code>, the control is displayed as not
+			 * selected regardless of what is set for <code>partiallySelected</code></li>
+			 * </ul>
+			 *
+			 * @since 1.58
+			 */
+			partiallySelected : {type : "boolean", group : "Data", defaultValue : false},
 
 			/**
 			 * Disables the Checkbox. Disabled controls are not interactive and are rendered differently according to the theme.
@@ -155,7 +177,7 @@ sap.ui.define([
 			editable : {type : "boolean", group : "Behavior", defaultValue : true},
 
 			/**
-			 * Accepts the core enumeration ValueState.type that supports 'None', 'Error', 'Warning' and 'Success'.
+			 * Accepts the core enumeration ValueState.type that supports 'None', 'Error', 'Warning', 'Success' and 'Information'.
 			 * @since 1.38
 			 */
 			valueState : {type : "sap.ui.core.ValueState", group : "Data", defaultValue : ValueState.None},
@@ -235,17 +257,29 @@ sap.ui.define([
 	// Public Methods
 
 	CheckBox.prototype.setSelected = function(bSelected) {
-		bSelected = !!bSelected;
-		if (bSelected == this.getSelected()) {
+		if (bSelected === this.getSelected()) {
 			return this;
 		}
-		this.$("CbBg").toggleClass("sapMCbMarkChecked", bSelected);
-		this.$().attr("aria-checked", bSelected);
+
+		this.$("CbBg").toggleClass("sapMCbMarkChecked", !!bSelected);
 		var oCheckBox = this.getDomRef("CB");
 		if (oCheckBox) {
 			bSelected ? oCheckBox.setAttribute('checked', 'checked') : oCheckBox.removeAttribute('checked');
 		}
 		this.setProperty("selected", bSelected, true);
+		this.$().attr("aria-checked", this._getAriaChecked());
+
+		return this;
+	};
+
+	CheckBox.prototype.setPartiallySelected = function(bPartiallySelected) {
+		if (bPartiallySelected === this.getPartiallySelected()) {
+			return this;
+		}
+
+		this.setProperty("partiallySelected", bPartiallySelected, true);
+		this.$("CbBg").toggleClass("sapMCbMarkPartiallyChecked", bPartiallySelected);
+		this.$().attr("aria-checked", this._getAriaChecked());
 
 		return this;
 	};
@@ -336,10 +370,15 @@ sap.ui.define([
 	 * @param {jQuery.Event} oEvent The <code>tap</code> event object
 	 */
 	CheckBox.prototype.ontap = function(oEvent) {
+		var bSelected;
+
 		if (this.getEnabled() && this.getEditable() && !this.getDisplayOnly()) {
 			this.$().focus(); // In IE taping on the input doesn`t focus the wrapper div.
-			var bSelected = !this.getSelected();
+
+			bSelected = this._getSelectedState();
 			this.setSelected(bSelected);
+			this.setPartiallySelected(false);
+
 			this.fireSelect({selected:bSelected});
 
 			// mark the event that it is handled by the control
@@ -434,6 +473,33 @@ sap.ui.define([
 			oLabel.setWidth(sWidth);
 		}
 	};
+
+	/**
+	 * Determines whether the <code>selected</code> property should be set to true or false,
+	 * according the current state of the <code>selected</code> and <code>partiallySelected</code> properties.
+	 * @private
+	 */
+	CheckBox.prototype._getSelectedState =  function() {
+		var bSelected = this.getSelected(),
+			bPartiallySelected = this.getPartiallySelected();
+
+		return (bSelected === bPartiallySelected) || (!bSelected && bPartiallySelected);
+	};
+
+	/**
+	 * Returns <code>aria-checked</code> attribute value, according values of <code>selected</code> and <code>partiallySelected</code> properties.
+	 * @private
+	 */
+	CheckBox.prototype._getAriaChecked =  function() {
+		var bSelected = this.getSelected();
+
+		if (this.getPartiallySelected() && bSelected) {
+			return "mixed";
+		}
+
+		return bSelected;
+	};
+
 
 	/**
 	 * @see sap.ui.core.Control#getAccessibilityInfo

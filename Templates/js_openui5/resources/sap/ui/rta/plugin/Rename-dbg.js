@@ -4,25 +4,14 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-// Provides class sap.ui.rta.plugin.Rename.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/rta/plugin/Plugin',
 	'sap/ui/rta/plugin/RenameHandler',
-	'sap/ui/dt/Overlay',
-	'sap/ui/dt/ElementUtil',
-	'sap/ui/dt/OverlayUtil',
-	'sap/ui/dt/OverlayRegistry',
-	'sap/ui/rta/Utils'
+	"sap/base/Log"
 ], function(
-	jQuery,
 	Plugin,
 	RenameHandler,
-	Overlay,
-	ElementUtil,
-	OverlayUtil,
-	OverlayRegistry,
-	Utils
+	Log
 ) {
 	"use strict";
 
@@ -39,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.rta.plugin.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -101,8 +90,8 @@ sap.ui.define([
 		RenameHandler._stopEdit.call(this, bRestoreFocus, "plugin.Rename.stopEdit");
 	};
 
-	Rename.prototype.handler = function (aOverlays) {
-		this.startEdit(aOverlays[0]);
+	Rename.prototype.handler = function (aElementOverlays) {
+		this.startEdit(aElementOverlays[0]);
 	};
 
 	/**
@@ -116,18 +105,22 @@ sap.ui.define([
 		return this._isEditableByPlugin(oOverlay);
 	};
 
-	Rename.prototype.isRenameEnabled = function (oOverlay) {
-		return this.isEnabled(oOverlay);
+	Rename.prototype.isRenameEnabled = function (aOverlays) {
+		return this.isEnabled(aOverlays);
 	};
 
 	/**
 	 * Checks if rename is enabled for oOverlay
-	 *
-	 * @param {sap.ui.dt.Overlay} oOverlay overlay object
+	 * @param {sap.ui.dt.ElementOverlay[]} aElementOverlays - Target overlays
 	 * @returns {boolean} true if it's enabled
 	 * @public
 	 */
-	Rename.prototype.isEnabled = function(oOverlay) {
+	Rename.prototype.isEnabled = function (aElementOverlays) {
+		if (aElementOverlays.length > 1) {
+			return false;
+		}
+
+		var oOverlay = aElementOverlays[0];
 		var bIsEnabled = true;
 		var oAction = this.getAction(oOverlay);
 		if (!oAction) {
@@ -149,7 +142,7 @@ sap.ui.define([
 			}
 		}
 
-		return bIsEnabled && this.isMultiSelectionInactive.call(this, oOverlay);
+		return bIsEnabled;
 	};
 
 	/**
@@ -197,39 +190,48 @@ sap.ui.define([
 	};
 
 	/**
+	 * @returns {Promise} Empty promise
 	 * @private
 	 */
 	Rename.prototype._emitLabelChangeEvent = function() {
 		var sText = RenameHandler._getCurrentEditableFieldText.call(this);
 		if (this.getOldValue() !== sText) { //check for real change before creating a command
 			this._$oEditableControlDomRef.text(sText);
-			try {
-				var oRenameCommand;
-				var oRenamedElement = this._oEditedOverlay.getElement();
-				var oDesignTimeMetadata = this._oEditedOverlay.getDesignTimeMetadata();
-				var oRenameAction = this.getAction(this._oEditedOverlay);
-				var sVariantManagementReference = this.getVariantManagementReference(this._oEditedOverlay, oRenameAction);
 
-				oRenameCommand = this.getCommandFactory().getCommandFor(oRenamedElement, "rename", {
+			return Promise.resolve(this._oEditedOverlay)
+
+			.then(function(oEditedOverlay) {
+				var oRenamedElement = oEditedOverlay.getElement();
+				var oDesignTimeMetadata = oEditedOverlay.getDesignTimeMetadata();
+				var oRenameAction = this.getAction(oEditedOverlay);
+				var sVariantManagementReference = this.getVariantManagementReference(oEditedOverlay, oRenameAction);
+
+				return this.getCommandFactory().getCommandFor(oRenamedElement, "rename", {
 					renamedElement : oRenamedElement,
 					newValue : sText
 				}, oDesignTimeMetadata, sVariantManagementReference);
+			}.bind(this))
+
+			.then(function(oRenameCommand) {
 				this.fireElementModified({
 					"command" : oRenameCommand
 				});
-			} catch (oError) {
-				jQuery.sap.log.error("Error during rename : ", oError);
-			}
+			}.bind(this))
+
+			.catch(function(oError) {
+				Log.error("Error during rename : ", oError);
+			});
 		}
+		return Promise.resolve();
 	};
 
 	/**
 	 * Retrieve the context menu item for the action.
-	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
-	 * @return {object[]}          Returns array containing the items with required data
+	 * @param {sap.ui.dt.ElementOverlay|sap.ui.dt.ElementOverlay[]} vElementOverlays - Target overlay(s)
+	 * @return {object[]} - array of the items with required data
 	 */
-	Rename.prototype.getMenuItems = function(oOverlay){
-		return this._getMenuItems(oOverlay, {pluginId : "CTX_RENAME", rank : 10, icon: "sap-icon://edit"});
+	Rename.prototype.getMenuItems = function (vElementOverlays) {
+		return this._getMenuItems(vElementOverlays, { pluginId : "CTX_RENAME", rank : 10, icon: "sap-icon://edit" });
 	};
 
 	/**

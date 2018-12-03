@@ -48,10 +48,6 @@
 	background-color: @sapUiListBackground;
 }
 
-.sapUiCalItemText{
-	border-left: 0.0625rem solid @sapUiListBorderColor;
-}
-
 .sapUiCalWH{
 	background-color: @sapUiListBackground;
 	border-bottom-color: @sapUiListBorderColor;
@@ -120,19 +116,13 @@ html[data-sap-ui-browser^="ie"].sap-desktop .sapUiCalItem:focus {
 	border-style: dashed;
 }
 
-html.sap-desktop .sapUiCalItem:hover > .sapUiCalItemText,
-html.sap-desktop .sapUiCalItem:focus > .sapUiCalItemText{
-	line-height: 2.5rem;
-}
-
 html.sap-desktop .sapUiCalItemNow:hover > .sapUiCalItemText,
 html.sap-desktop .sapUiCalItemNow:focus > .sapUiCalItemText{
 	border: 0.125rem solid @sapUiContentForegroundBorderColor;
-	line-height: 2.5rem;
 }
 
-html.sap-desktop .sapUiCalMonthPicker .sapUiCalItemSel,
-html.sap-desktop .sapUiCalYearPicker .sapUiCalItemSel{
+html.sap-desktop .sapUiCalMonthPicker .sapUiCalItemSel:not(:focus),
+html.sap-desktop .sapUiCalYearPicker .sapUiCalItemSel:not(:focus) {
 	outline: 0.125rem solid @sapUiContentForegroundBorderColor;
 	outline-offset: -0.25rem;
 }
@@ -140,8 +130,8 @@ html.sap-desktop .sapUiCalYearPicker .sapUiCalItemSel{
 html[data-sap-ui-browser^="ie"].sap-desktop {
 	.sapUiCalHeadB:active {
 		position: relative;
-			top: -0.0625rem;
-			left: -0.0625rem;
+		top: -0.0625rem;
+		left: -0.0625rem;
 	}
 	.sapUiCalHeadPrev:active > span,
 	.sapUiCalHeadNext:active > span {
@@ -166,10 +156,9 @@ html[data-sap-ui-browser^="ie"].sap-desktop {
 	}
 }
 
-html.sap-desktop .sapUiCalItem:not(.sapUiCalItemNow):focus > .sapUiCalItemText,
-html.sap-desktop .sapUiCalItem:not(.sapUiCalItemNow):hover > .sapUiCalItemText {
+html.sap-desktop .sapUiCalItem:not(.sapUiCalItemNow):focus > .sapUiCalItemText:not(.sapUiCalWeekNum):hover,
+html.sap-desktop .sapUiCalItem:not(.sapUiCalItemNow):hover > .sapUiCalItemText:not(.sapUiCalWeekNum):hover {
 	border: 0 none;
-	border-left: 0.0625rem solid transparent;
 }
 
 html.sap-desktop .sapUiCalItemNow:focus > .sapUiCalItemText {
@@ -201,10 +190,6 @@ html.sap-desktop .sapUiCalItemSel:focus{
 /* define after weekend and selection focus to overrule it*/
 html.sap-desktop .sapUiCalItem:not(.sapUiCalItemSel) :not(.sapUiCalWeekNum):hover{
 	background-color: @sapUiHighlight;
-}
-
-html.sap-desktop .sapUiCalItemOtherMonth:hover > .sapUiCalItemText {
-	margin-left: -0.125rem;
 }
 
 /* Day names inside day */
@@ -265,7 +250,7 @@ html[data-sap-ui-browser^="ie"].sap-desktop .sapUiCalMonthSecType > .sapUiCalIte
 
 html.sap-desktop .sapUiSizeCompact .sapUiCalItem:hover > .sapUiCalItemText,
 html.sap-desktop .sapUiSizeCompact .sapUiCalItem:focus > .sapUiCalItemText{
-	line-height: 1.625rem;
+	line-height: 1.875rem;
 }
 
 .sapUiSizeCompact .sapUiCalItemNow > .sapUiCalItemText,
@@ -277,11 +262,6 @@ html.sap-desktop .sapUiSizeCompact .sapUiCalItemNow:focus > .sapUiCalItemText{
 /* Day names inside day */
 html.sap-desktop .sapUiSizeCompact .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem:focus > .sapUiCalItemText,
 html[data-sap-ui-browser^="ff"].sap-desktop .sapUiSizeCompact .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem:focus > .sapUiCalItemText{
-	line-height: inherit;
-}
-
-html.sap-desktop .sapUiSizeCompact .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem:focus > .sapUiCalDayName,
-html[data-sap-ui-browser^="ff"].sap-desktop .sapUiSizeCompact .sapUiCalNoNameLine > .sapUiCalItems > .sapUiCalItem:focus > .sapUiCalDayName{
 	line-height: inherit;
 }
 
@@ -462,8 +442,8 @@ html.sap-tablet .sapUiCalItem{
 	outline: 0 none;
 }
 
-html.sap-tablet .sapUiCalMonthPicker .sapUiCalItemSel,
-html.sap-tablet .sapUiCalYearPicker .sapUiCalItemSel {
+html.sap-tablet .sapUiCalMonthPicker .sapUiCalItemSel:not(:focus),
+html.sap-tablet .sapUiCalYearPicker .sapUiCalItemSel:not(:focus) {
 	border: 0 none;
 	outline: 0.125rem solid @sapUiContentForegroundBorderColor;
 	outline-offset: -0.25rem;
@@ -471,55 +451,29 @@ html.sap-tablet .sapUiCalYearPicker .sapUiCalItemSel {
 
 /* Special days */
 .dayColorMixIn(@class, @color) {
-  .@{class}.sapUiCalItemSel:not(.sapUiCalItemNow) > .sapUiCalItemText {
-	box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.25rem 0 @color, inset 0 -0.313rem 0 @sapUiListBackground;
-  }
+	.@{class}.sapUiCalItemSel:not(.sapUiCalItemNow) > .sapUiCalItemText {
+		box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.25rem 0 @color, inset 0 -0.313rem 0 @sapUiListBackground;
+	}
 
-  .@{class}:not(.sapUiCalItemSel):not(.sapUiCalItemNow) > .sapUiCalItemText {
-	box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.25rem 0 @color, inset 0 -0.313rem 0 @sapUiListBackground;
-  }
+	.@{class}:not(.sapUiCalItemSel):not(.sapUiCalItemNow) > .sapUiCalItemText {
+		box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.25rem 0 @color, inset 0 -0.313rem 0 @sapUiListBackground;
+	}
 
-  .@{class}.sapUiCalItemSel.sapUiCalItemNow > .sapUiCalItemText {
-	box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.1875rem 0 @color, inset 0 -0.25rem 0 @sapUiListBackground;
-  }
+	.@{class}.sapUiCalItemSel.sapUiCalItemNow > .sapUiCalItemText {
+		box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.1875rem 0 @color, inset 0 -0.25rem 0 @sapUiListBackground;
+	}
 
-  .@{class}:not(.sapUiCalItemSel).sapUiCalItemNow > .sapUiCalItemText {
-	box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.1875rem 0 @color, inset 0 -0.25rem 0 @sapUiListBackground;
-  }
+	.@{class}:not(.sapUiCalItemSel).sapUiCalItemNow > .sapUiCalItemText {
+		box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.1875rem 0 @color, inset 0 -0.25rem 0 @sapUiListBackground;
+	}
 
-  .@{class}.sapUiCalItemSel:not(.sapUiCalItemNow):hover {
-	box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.25rem 0 @color, inset 0 -0.313rem 0 @sapUiListBackground;
-  }
+	.@{class}.sapUiCalItemSel:not(.sapUiCalItemNow):hover {
+		box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.25rem 0 @color, inset 0 -0.313rem 0 @sapUiListBackground;
+	}
 
-  .@{class}.sapUiCalItemSel:not(.sapUiCalItemNow):hover  > .sapUiCalItemText {
-	box-shadow: none;
-  }
-
-  .@{class}:not(.sapUiCalItemSel):not(.sapUiCalItemNow):hover {
-	box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.25rem 0 @color, inset 0 -0.313rem 0 @sapUiListBackground;
-  }
-
-  .@{class}:not(.sapUiCalItemSel):not(.sapUiCalItemNow):hover  > .sapUiCalItemText {
-	box-shadow: none;
-  }
-
-  //not today, focused
-  .@{class}:not(.sapUiCalItemSel):not(.sapUiCalItemNow):focus {
-	box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.25rem 0 @color, inset 0 -0.313rem 0 @sapUiListBackground;
-  }
-
-  .@{class}:not(.sapUiCalItemSel):not(.sapUiCalItemNow):focus  > .sapUiCalItemText {
-	box-shadow: none;
-  }
-
-  .@{class}.sapUiCalItemSel:not(.sapUiCalItemNow):focus {
-	box-shadow: inset 0.0625rem 0.0625rem 0 0 @sapUiListBackground, inset -0.0625rem -0.0625rem 0 0 @sapUiListBackground, inset 0 -0.25rem 0 @color, inset 0 -0.313rem 0 @sapUiListBackground;
-  }
-
-  .@{class}.sapUiCalItemSel:not(.sapUiCalItemNow):focus  > .sapUiCalItemText {
-	box-shadow: none;
-  }
-  //end: not today, focused
+	.@{class}.sapUiCalItemSel:not(.sapUiCalItemNow):hover  > .sapUiCalItemText {
+		box-shadow: none;
+	}
 }
 
 .dayColorMixIn(sapUiCalItemType01, @sapUiAccent1);
@@ -773,6 +727,11 @@ html.sap-desktop .sapUiCalendarApp:hover:not(:active) > .sapUiCalendarAppCont{
 .sapUiColorPicker-ColorPickerMatrix.sapUnifiedColorPicker .sapUiColorPicker-ColorPickerCircle {
 	border-color: @sapUiBaseColor;
 }
+
+.sapUiColorPicker-ColorPickerMatrix.sapUnifiedColorPicker .sapMSliderHandle {
+	box-shadow: inset 0 0 0 0.125rem @sapUiContentForegroundColor;
+}
+
 /* END "ColorPicker.less" */
 
 /* START "Currency.less" */
@@ -818,6 +777,7 @@ html.sap-desktop .sapUiCalendarApp:hover:not(:active) > .sapUiCalendarAppCont{
 	outline: 2px dotted @sapUiContentFocusColor;
 }
 
+/* TODO remove after 1.62 version */
 html[data-sap-ui-browser*='ie'] {
 	.sapUiMnuItm:focus::before {
 		border: 2px dashed @sapUiContentFocusColor;

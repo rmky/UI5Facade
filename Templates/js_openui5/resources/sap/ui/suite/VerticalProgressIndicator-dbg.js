@@ -6,11 +6,11 @@
 
 // Provides control sap.ui.suite.VerticalProgressIndicator.
 sap.ui.define([
- 'jquery.sap.global',
- 'sap/ui/core/Control',
- 'sap/ui/core/EnabledPropagator',
- './library',
- "./VerticalProgressIndicatorRenderer"
+	"sap/ui/thirdparty/jquery",
+	'sap/ui/core/Control',
+	'sap/ui/core/EnabledPropagator',
+	'./library',
+	"./VerticalProgressIndicatorRenderer"
 ],
 	function(
 	 jQuery,
@@ -34,7 +34,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author Svetozar Buzdumovic
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -97,7 +97,7 @@ sap.ui.define([
 	  }
 
 	  // get the ProgressBar
-	  this.oBar  = jQuery.sap.domById(this.getId() + '-bar');
+	  this.oBar = window.document.getElementById(this.getId() + '-bar');
 
 	  // get the new Value and calculate Pixels
 	  VerticalPercent = iPercentage;
@@ -117,7 +117,7 @@ sap.ui.define([
 
 	  //set the ARIA property
 	  if (!this.oThis) {
-		this.oThis = jQuery.sap.byId(this.getId());
+		this.oThis = jQuery(document.getElementById(this.getId()));
 		}
 	  this.oThis.attr('aria-valuenow', iPercentage + '%');
 	  return this;

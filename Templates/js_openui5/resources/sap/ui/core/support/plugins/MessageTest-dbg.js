@@ -5,8 +5,12 @@
  */
 
 // Provides class sap.ui.core.support.plugins.MessageTest (Test  plugin for support tool communication)
-sap.ui.define(['jquery.sap.global', '../Plugin', '../Support'],
-	function(jQuery, Plugin, Support) {
+sap.ui.define([
+	'../Plugin',
+	'../Support',
+	"sap/base/security/encodeXML"
+],
+	function(Plugin, Support, encodeXML) {
 	"use strict";
 
 		/**
@@ -16,7 +20,7 @@ sap.ui.define(['jquery.sap.global', '../Plugin', '../Support'],
 		 * This class is only for testing purposes for support tool communication.
 		 *
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @private
 		 * @alias sap.ui.core.support.plugins.MessageTest
 		 */
@@ -81,7 +85,7 @@ sap.ui.define(['jquery.sap.global', '../Plugin', '../Support'],
 
 		function report(oPlugin, sMessageId, sMessage, bReceive){
 			jQuery(".sapUiSupportMessageCntnt", oPlugin.$()).append("<b style=\"color:" + (bReceive ? "green" : "blue") + ";\">Message '" + sMessageId + "' " + (bReceive ? "received" : "send") +
-					(sMessage ? ":</b> " + jQuery.sap.escapeHTML(sMessage) : "</b>") + "<br>");
+					(sMessage ? ":</b> " + encodeXML(sMessage) : "</b>") + "<br>");
 		}
 
 

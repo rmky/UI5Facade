@@ -4,7 +4,6 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/Device',
@@ -13,10 +12,19 @@ sap.ui.define([
 	'sap/ui/base/ManagedObject',
 	'sap/ui/core/Icon',
 	'./HeaderContainerRenderer',
-	'jquery.sap.events'
+	"sap/base/Log",
+	"sap/ui/events/PseudoEvents",
+	"sap/ui/thirdparty/jquery",
+	// jQuery Plugin "control"
+	"sap/ui/dom/jquery/control",
+	// jQuery Plugin "scrollLeftRTL"
+	"sap/ui/dom/jquery/scrollLeftRTL",
+	// jQuery Plugin "scrollRightRTL"
+	"sap/ui/dom/jquery/scrollRightRTL",
+	// jQuery custom selectors ":sapTabbable"
+	"sap/ui/dom/jquery/Selectors"
 ],
 function(
-	jQuery,
 	library,
 	Control,
 	Device,
@@ -24,8 +32,11 @@ function(
 	coreLibrary,
 	ManagedObject,
 	Icon,
-	HeaderContainerRenderer
-	) {
+	HeaderContainerRenderer,
+	Log,
+	PseudoEvents,
+	jQuery
+) {
 		"use strict";
 
 		// shortcut for sap.ui.core.Orientation
@@ -69,7 +80,7 @@ function(
 		 * @since 1.44.0
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @public
 		 * @alias sap.m.HeaderContainer
@@ -265,10 +276,10 @@ function(
 
 		HeaderContainer.prototype.onBeforeRendering = function () {
 			if (!this.getHeight()) {
-				jQuery.sap.log.warning("No height provided", this);
+				Log.warning("No height provided", this);
 			}
 			if (!this.getWidth()) {
-				jQuery.sap.log.warning("No width provided", this);
+				Log.warning("No width provided", this);
 			}
 			if (Device.system.desktop) {
 				this._oArrowPrev.setIcon(this.getOrientation() === Orientation.Horizontal ? "sap-icon://slim-arrow-left" : "sap-icon://slim-arrow-up");
@@ -397,7 +408,7 @@ function(
 
 		HeaderContainer.prototype._scroll = function (iDelta, iDuration) {
 			this._setScrollInProcess(true);
-			jQuery.sap.delayedCall(iDuration + 300, this, this._setScrollInProcess, [false]);
+			setTimeout(this._setScrollInProcess.bind(this, false), iDuration + 300);
 			if (this.getOrientation() === Orientation.Horizontal) {
 				this._hScroll(iDelta, iDuration);
 			} else {
@@ -794,8 +805,8 @@ function(
 			var oOriginalEvent = oEvt.getParameter("event");
 			if (jQuery(oOriginalEvent.target).hasClass("sapMHdrCntrItemCntr") ||
 				jQuery(oOriginalEvent.target).hasClass("sapMScrollContScroll") ||
-				jQuery.sap.PseudoEvents.sapprevious.fnCheck(oOriginalEvent) ||
-				jQuery.sap.PseudoEvents.sapnext.fnCheck(oOriginalEvent)) {
+				PseudoEvents.events.sapprevious.fnCheck(oOriginalEvent) ||
+				PseudoEvents.events.sapnext.fnCheck(oOriginalEvent)) {
 				this.$().find(".sapMHdrCntrItemCntr").css("border-color", "");
 			} else {
 				this.$().find(".sapMHdrCntrItemCntr").css("border-color", "transparent");
@@ -815,7 +826,7 @@ function(
 		HeaderContainer.prototype._unWrapHeaderContainerItemContainer = function (wrapped) {
 			if (wrapped instanceof HeaderContainerItemContainer) {
 				wrapped = wrapped.getItem();
-			} else if (jQuery.isArray(wrapped)) {
+			} else if (Array.isArray(wrapped)) {
 				for (var i = 0; i < wrapped.length; i++) {
 					if (wrapped[i] instanceof HeaderContainerItemContainer) {
 						wrapped[i] = wrapped[i].getItem();
@@ -833,9 +844,9 @@ function(
 				var oContent = args[2];
 				args[1] = "content";
 				if (oContent instanceof Control) {
-					if (jQuery.inArray(sFunctionName, HeaderContainer._AGGREGATION_FUNCTIONS) > -1 && oContent.getParent() instanceof HeaderContainerItemContainer) {
+					if (((HeaderContainer._AGGREGATION_FUNCTIONS ? Array.prototype.indexOf.call(HeaderContainer._AGGREGATION_FUNCTIONS, sFunctionName) : -1)) > -1 && oContent.getParent() instanceof HeaderContainerItemContainer) {
 						args[2] = oContent.getParent();
-					} else if (jQuery.inArray(sFunctionName, HeaderContainer._AGGREGATION_FUNCTIONS_FOR_INSERT) > -1) {
+					} else if (((HeaderContainer._AGGREGATION_FUNCTIONS_FOR_INSERT ? Array.prototype.indexOf.call(HeaderContainer._AGGREGATION_FUNCTIONS_FOR_INSERT, sFunctionName) : -1)) > -1) {
 						args[2] = new HeaderContainerItemContainer({
 							item: oContent
 						});

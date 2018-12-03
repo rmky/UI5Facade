@@ -7,8 +7,13 @@
 /*global Promise */
 
 // Provides class sap.ui.core.ElementMetadata
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui/core/Renderer'],
-	function(jQuery, ManagedObjectMetadata, Renderer) {
+sap.ui.define([
+	'sap/ui/thirdparty/jquery',
+	'sap/base/util/ObjectPath',
+	'sap/ui/base/ManagedObjectMetadata',
+	'sap/ui/core/Renderer'
+],
+	function(jQuery, ObjectPath, ManagedObjectMetadata, Renderer) {
 	"use strict";
 
 
@@ -20,7 +25,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 	 *
 	 * @class
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 0.8.6
 	 * @alias sap.ui.core.ElementMetadata
 	 */
@@ -70,15 +75,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 			return;
 		}
 
-		// check if renderer class exists already
-		var fnRendererClass = jQuery.sap.getObject(sRendererName);
+		// check if renderer class exists already, in case it was passed inplace,
+		// and written to the global namespace during applySettings().
+		var fnRendererClass = ObjectPath.get(sRendererName);
 		if (fnRendererClass) {
 			return fnRendererClass;
 		}
 
 		// if not, try to load a module with the same name
-		jQuery.sap.require(sRendererName);
-		return jQuery.sap.getObject(sRendererName);
+		var fnClass = sap.ui.requireSync(sRendererName.replace(/\./g, "/"));
+		return fnClass || ObjectPath.get(sRendererName);
 	};
 
 	ElementMetadata.prototype.applySettings = function(oClassInfo) {
@@ -86,7 +92,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 		var oStaticInfo = oClassInfo.metadata;
 
 		this._sVisibility = oStaticInfo.visibility || "public";
-		this.dnd = jQuery.extend({}, {draggable: true, droppable: true}, oStaticInfo.dnd);
 
 		// remove renderer stuff before calling super.
 		var vRenderer = oClassInfo.hasOwnProperty("renderer") ? (oClassInfo.renderer || "") : undefined;
@@ -94,7 +99,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 
 		ManagedObjectMetadata.prototype.applySettings.call(this, oClassInfo);
 
+		var oParent = this.getParent();
 		this._sRendererName = this.getName() + "Renderer";
+		this.dnd = Object.assign({
+			draggable: false,
+			droppable: false
+		}, oParent.dnd, (typeof oStaticInfo.dnd == "boolean") ? {
+			draggable: oStaticInfo.dnd,
+			droppable: oStaticInfo.dnd
+		} : oStaticInfo.dnd);
 
 		if ( typeof vRenderer !== "undefined" ) {
 
@@ -116,7 +129,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 			}
 			var oRenderer = Object.create(oBaseRenderer);
 			jQuery.extend(oRenderer, vRenderer);
-			jQuery.sap.setObject(this.getRendererName(), oRenderer);
+			ObjectPath.set(this.getRendererName(), oRenderer);
 		}
 	};
 
@@ -136,9 +149,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObjectMetadata', 'sap/ui
 
 	function Aggregation(oClass, name, info) {
 		fnMetaFactoryAggregation.apply(this, arguments);
-		this.dnd = jQuery.extend({
-			draggable: !this.multiple,
-			droppable: !this.multiple,
+		this.dnd = Object.assign({
+			draggable: false,
+			droppable: false,
 			layout: "Vertical"
 		}, (typeof info.dnd == "boolean") ? {
 			draggable: info.dnd,

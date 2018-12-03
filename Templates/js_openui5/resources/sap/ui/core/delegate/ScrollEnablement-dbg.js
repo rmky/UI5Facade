@@ -11,12 +11,24 @@
  */
 
 // Provides class sap.ui.core.delegate.ScrollEnablement
-sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/ui/core/ResizeHandler', 'jquery.sap.keycodes', 'jquery.sap.trace'],
-	function(jQuery, Device, BaseObject, ResizeHandler /* ,jQuerySapKeycodes, jQuerySapTrace */) {
+sap.ui.define([
+	'sap/ui/Device',
+	'sap/ui/base/Object',
+	'sap/ui/core/ResizeHandler',
+	"sap/ui/performance/trace/Interaction",
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/events/KeyCodes"
+],
+	function(
+		Device,
+		BaseObject,
+		ResizeHandler,
+		Interaction,
+		jQuery,
+		KeyCodes
+	) {
 	"use strict";
 
-
-	var $ = jQuery;
 
 		/**
 		 * Creates a ScrollEnablement delegate that can be attached to Controls requiring
@@ -44,7 +56,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 		 *
 		 * @protected
 		 * @alias sap.ui.core.delegate.ScrollEnablement
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @author SAP SE
 		 */
 		var ScrollEnablement = BaseObject.extend("sap.ui.core.delegate.ScrollEnablement", /** @lends sap.ui.core.delegate.ScrollEnablement.prototype */ {
@@ -183,7 +195,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 			 */
 			getChildPosition: function(vElement) {
 				// check if vElement is a DOM element and if yes convert it to jQuery object
-				var $Element = vElement instanceof jQuery ? vElement : $(vElement),
+				var $Element = vElement instanceof jQuery ? vElement : jQuery(vElement),
 					oElementPosition = $Element.position(),
 					$OffsetParent = $Element.offsetParent(),
 					oAddUpPosition;
@@ -216,7 +228,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 						return this;
 				}
 
-				var $Element = $(oElement),
+				var $Element = jQuery(oElement),
 					oScrollPosition = this.getChildPosition($Element),
 					iLeftScroll = this.getScrollLeft() + oScrollPosition.left + aOffset[0],
 					iTopScroll = this.getScrollTop() + oScrollPosition.top + aOffset[1];
@@ -273,11 +285,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 
 				if (oEvent.altKey && this.getHorizontal()) {
 					switch (oEvent.keyCode) {
-						case jQuery.sap.KeyCodes.PAGE_UP:
+						case KeyCodes.PAGE_UP:
 							// Navigate 1 page left
 							this._customScrollTo(this._scrollX - container.clientWidth, this._scrollY, oEvent);
 							break;
-						case jQuery.sap.KeyCodes.PAGE_DOWN:
+						case KeyCodes.PAGE_DOWN:
 							// Navigate 1 page right
 							this._customScrollTo(this._scrollX + container.clientWidth, this._scrollY, oEvent);
 							break;
@@ -286,31 +298,31 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 
 				if (oEvent.ctrlKey) {
 					switch (oEvent.keyCode) {
-						case jQuery.sap.KeyCodes.ARROW_UP:
+						case KeyCodes.ARROW_UP:
 							// [CTRL]+[UP] - 1 page up
 							if (this.getVertical()) {
 								this._customScrollTo(this._scrollX, this._scrollY - container.clientHeight * this._scrollCoef, oEvent);
 							}
 							break;
-						case jQuery.sap.KeyCodes.ARROW_DOWN:
+						case KeyCodes.ARROW_DOWN:
 							// [CTRL]+[DOWN] - 1 page down
 							if (this.getVertical()) {
 								this._customScrollTo(this._scrollX, this._scrollY + container.clientHeight * this._scrollCoef, oEvent);
 							}
 							break;
-						case jQuery.sap.KeyCodes.ARROW_LEFT:
+						case KeyCodes.ARROW_LEFT:
 							// [CTRL]+[LEFT] - 1 page left
 							if (this.getHorizontal()) {
 								this._customScrollTo(this._scrollX - container.clientWidth, this._scrollY, oEvent);
 							}
 							break;
-						case jQuery.sap.KeyCodes.ARROW_RIGHT:
+						case KeyCodes.ARROW_RIGHT:
 							// [CTRL]+[RIGHT] - 1 page right
 							if (this.getHorizontal()) {
 								this._customScrollTo(this._scrollX + container.clientWidth, this._scrollY, oEvent);
 							}
 							break;
-						case jQuery.sap.KeyCodes.HOME:
+						case KeyCodes.HOME:
 							if (this.getHorizontal()) {
 								this._customScrollTo(0, this._scrollY, oEvent);
 							}
@@ -319,7 +331,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 								this._customScrollTo(this._scrollX, 0, oEvent);
 							}
 							break;
-						case jQuery.sap.KeyCodes.END:
+						case KeyCodes.END:
 
 							var left = container.scrollWidth - container.clientWidth;
 							var top = container.scrollHeight - container.clientHeight;
@@ -435,7 +447,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 					fScrollTop = $Container.scrollTop(),
 					fVerticalMove = fScrollTop - this._scrollY;
 
-				jQuery.sap.interaction.notifyStepStart(this._oControl);
+				Interaction.notifyStepStart(this._oControl);
 
 				this._scrollX = $Container.scrollLeft(); // remember position
 				this._scrollY = fScrollTop;
@@ -536,7 +548,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 			},
 
 			_onEnd : function(oEvent){
-				jQuery.sap.interaction.notifyEventStart(oEvent);
+				Interaction.notifyEventStart(oEvent);
 
 				if (this._oPullDown && this._oPullDown._bTouchMode) {
 					this._oPullDown.doScrollEnd();
@@ -605,7 +617,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 			},
 
 			onAfterRendering: function() {
-				var $Container = this._$Container = this._sContainerId ? $.sap.byId(this._sContainerId) : $.sap.byId(this._sContentId).parent();
+				var $Container = this._$Container = this._sContainerId ? jQuery(document.getElementById(this._sContainerId)) : jQuery(document.getElementById(this._sContentId)).parent();
 				var _fnRefresh = jQuery.proxy(this._refresh, this);
 				var bElementVisible = $Container.is(":visible");
 
@@ -705,11 +717,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 			var oDelegateMembers = {
 				_init : function(oControl, sScrollContentDom, oConfig) {
 					// default scroll supression threshold of jQuery mobile is too small and prevent native scrolling
-					if ($.event && $.event.special && $.event.special.swipe && $.event.special.swipe.scrollSupressionThreshold < 120) {
-						$.event.special.swipe.scrollSupressionThreshold = 120;
+					if (jQuery.event && jQuery.event.special && jQuery.event.special.swipe && jQuery.event.special.swipe.scrollSupressionThreshold < 120) {
+						jQuery.event.special.swipe.scrollSupressionThreshold = 120;
 					}
 
-					$.extend(this, oNativeScrollDelegate);
+					jQuery.extend(this, oNativeScrollDelegate);
 
 					if (oConfig.nonTouchScrolling === true) {
 						this._bDragScroll = true; // optional drag instead of native scrolling
@@ -728,7 +740,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 				}
 			};
 			// Copy over members to prototype
-			$.extend(oScrollerInstance, oDelegateMembers);
+			jQuery.extend(oScrollerInstance, oDelegateMembers);
 		}
 
 	return ScrollEnablement;

@@ -6,23 +6,29 @@
 
 // Provides control sap.m.TileContainer.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
 	'sap/ui/Device',
 	'sap/ui/core/ResizeHandler',
-	'./TileContainerRenderer'
+	'./TileContainerRenderer',
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery",
+	// jQuery Plugin "control"
+	"sap/ui/dom/jquery/control",
+	// jQuery custom selectors ':sapTabbable'
+	"sap/ui/dom/jquery/Selectors"
 ],
 function(
-	jQuery,
 	library,
 	Control,
 	IconPool,
 	Device,
 	ResizeHandler,
-	TileContainerRenderer
-	) {
+	TileContainerRenderer,
+	Log,
+	jQuery
+) {
 	"use strict";
 
 
@@ -38,7 +44,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -787,7 +793,7 @@ function(
 		}
 
 		if (!vTile) {
-			jQuery.sap.log.info("No Tile to move");
+			Log.info("No Tile to move");
 			return this;
 		}
 
@@ -821,6 +827,9 @@ function(
 	TileContainer.prototype.insertTile = function(oTile, iIndex) {
 		var that = this,
 			aVisibleTiles;
+
+		oTile.isEditable(this.getEditable());
+
 		// keyboard support for desktop environments
 		if (Device.system.desktop || Device.system.combi) {
 			oTile.addEventDelegate({
@@ -1435,7 +1444,7 @@ function(
 		var iCurrentPage = Math.floor(iIndex / this._iMaxTiles || 0);
 		this._iCurrentTileStartIndex = iCurrentPage * (this._iMaxTiles || 0);
 
-		jQuery.sap.log.info("current index " + this._iCurrentTileStartIndex);
+		Log.info("current index " + this._iCurrentTileStartIndex);
 	};
 
 	/**

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.commons">
-  <module name="sap/ui/commons/Accordion.js" size="26565" compressedSize="8124">
+  <module name="sap/ui/commons/Accordion.js" size="26976" compressedSize="8447">
     <description>Provides control sap.ui.commons.Accordion.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -14,7 +14,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/AccordionRenderer.js" size="6610" compressedSize="4053">
+  <module name="sap/ui/commons/AccordionRenderer.js" size="6709" compressedSize="4053">
     <description>Provides default renderer for control sap.ui.commons.Accordion</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -225,7 +225,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/Dialog.js" size="34295" compressedSize="11983">
+  <module name="sap/ui/commons/Dialog.js" size="33318" compressedSize="11481">
     <description>Provides control sap.ui.commons.Dialog.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -244,7 +244,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/DropdownBox.js" size="56244" compressedSize="22529">
+  <module name="sap/ui/commons/DropdownBox.js" size="56258" compressedSize="22541">
     <description>Provides control sap.ui.commons.DropdownBox.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -292,7 +292,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/FormattedTextView.js" size="7371" compressedSize="2195">
+  <module name="sap/ui/commons/FormattedTextView.js" size="7387" compressedSize="2207">
     <description>Provides control sap.ui.commons.FormattedTextView.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -361,7 +361,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/InPlaceEdit.js" size="31283" compressedSize="13516">
+  <module name="sap/ui/commons/InPlaceEdit.js" size="31314" compressedSize="13540">
     <description>Provides control sap.ui.commons.InPlaceEdit.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -563,7 +563,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/MessageBox.js" size="11474" compressedSize="2397">
+  <module name="sap/ui/commons/MessageBox.js" size="11546" compressedSize="2397">
     <description>Provides class sap.ui.commons.MessageBox</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -623,7 +623,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/Paginator.js" size="14122" compressedSize="4793">
+  <module name="sap/ui/commons/Paginator.js" size="14137" compressedSize="4805">
     <description>Provides control sap.ui.commons.Paginator.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -641,7 +641,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/Panel.js" size="26404" compressedSize="9881">
+  <module name="sap/ui/commons/Panel.js" size="23401" compressedSize="8721">
     <description>Provides control sap.ui.commons.Panel.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -676,7 +676,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/ProgressIndicator.js" size="9259" compressedSize="4076">
+  <module name="sap/ui/commons/ProgressIndicator.js" size="9346" compressedSize="4129">
     <description>Provides control sap.ui.commons.ProgressIndicator.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -686,14 +686,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/ProgressIndicatorRenderer.js" size="4032" compressedSize="2266">
+  <module name="sap/ui/commons/ProgressIndicatorRenderer.js" size="3977" compressedSize="2217">
     <description>Provides default renderer for control sap.ui.commons.ProgressIndicator</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/RadioButton.js" size="10150" compressedSize="3587">
+  <module name="sap/ui/commons/RadioButton.js" size="10287" compressedSize="3587">
     <description>Provides control sap.ui.commons.RadioButton.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -703,7 +703,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/RadioButtonGroup.js" size="19227" compressedSize="8558">
+  <module name="sap/ui/commons/RadioButtonGroup.js" size="19274" compressedSize="8594">
     <description>Provides control sap.ui.commons.RadioButtonGroup.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -792,7 +792,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/RichTooltip.js" size="6513" compressedSize="2490">
+  <module name="sap/ui/commons/RichTooltip.js" size="6543" compressedSize="2514">
     <description>Provides control sap.ui.commons.RichTooltip.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -874,7 +874,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/SearchField.js" size="30119" compressedSize="15966">
+  <module name="sap/ui/commons/SearchField.js" size="30124" compressedSize="15971">
     <description>Provides control sap.ui.commons.SearchField.</description>
     <requires>
       <module name="jquery.sap.dom.js"/>
@@ -909,7 +909,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/SegmentedButton.js" size="8414" compressedSize="4481">
+  <module name="sap/ui/commons/SegmentedButton.js" size="8429" compressedSize="4493">
     <description>Provides control sap.ui.commons.SegmentedButton.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -945,7 +945,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/Splitter.js" size="23215" compressedSize="11231">
+  <module name="sap/ui/commons/Splitter.js" size="23245" compressedSize="11255">
     <description>Provides control sap.ui.commons.Splitter.</description>
     <requires>
       <module name="jquery.sap.events.js"/>
@@ -1036,7 +1036,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/TextView.js" size="4375" compressedSize="1815">
+  <module name="sap/ui/commons/TextView.js" size="4408" compressedSize="1815">
     <description>Provides control sap.ui.commons.TextView.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1109,7 +1109,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/Tree.js" size="32509" compressedSize="13124">
+  <module name="sap/ui/commons/Tree.js" size="32524" compressedSize="13136">
     <description>Provides control sap.ui.commons.Tree.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1119,7 +1119,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/TreeNode.js" size="17718" compressedSize="6165">
+  <module name="sap/ui/commons/TreeNode.js" size="18006" compressedSize="6260">
     <description>Provides control sap.ui.commons.TreeNode.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1154,7 +1154,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/ValueHelpField.js" size="6060" compressedSize="3021">
+  <module name="sap/ui/commons/ValueHelpField.js" size="6090" compressedSize="3045">
     <description>Provides control sap.ui.commons.ValueHelpField.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1410,7 +1410,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/layout/PositionContainer.js" size="12359" compressedSize="5184">
+  <module name="sap/ui/commons/layout/PositionContainer.js" size="12394" compressedSize="5184">
     <description>Provides control sap.ui.commons.layout.PositionContainer.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -1466,7 +1466,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/commons/library-h2-preload.js" size="36216">
+  <module name="sap/ui/commons/library-h2-preload.js" size="36447">
     <requires>
       <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.encoder.js"/>
@@ -1535,7 +1535,7 @@
       <module name="sap/ui/unified/MenuItemBase.js" conditional="true"/>
       <module name="sap/ui/unified/MenuRenderer.js"/>
       <module name="sap/ui/unified/MenuTextFieldItem.js"/>
-      <module name="sap/ui/unified/library.js" conditional="true"/>
+      <module name="sap/ui/unified/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
@@ -1697,7 +1697,7 @@
       <module name="sap/ui/commons/layout/VerticalLayoutRenderer.js"/>
     </includes>
   </module>
-  <module name="sap/ui/commons/library-preload.js" size="549016">
+  <module name="sap/ui/commons/library-preload.js" size="548379">
     <requires>
       <module name="jquery.sap.dom.js"/>
       <module name="jquery.sap.encoder.js"/>
@@ -1766,7 +1766,7 @@
       <module name="sap/ui/unified/MenuItemBase.js" conditional="true"/>
       <module name="sap/ui/unified/MenuRenderer.js"/>
       <module name="sap/ui/unified/MenuTextFieldItem.js"/>
-      <module name="sap/ui/unified/library.js" conditional="true"/>
+      <module name="sap/ui/unified/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
@@ -2000,7 +2000,7 @@
       <module name="sap/ui/unified/MenuRenderer.js"/>
       <module name="sap/ui/unified/MenuTextFieldItem.js"/>
       <module name="sap/ui/unified/library-preload.json"/>
-      <module name="sap/ui/unified/library.js" conditional="true"/>
+      <module name="sap/ui/unified/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
@@ -2162,7 +2162,7 @@
       <module name="sap/ui/commons/manifest.json"/>
     </includes>
   </module>
-  <module name="sap/ui/commons/library.js" size="27988" compressedSize="9598">
+  <module name="sap/ui/commons/library.js" size="29484" compressedSize="9801">
     <description>Initialization Code and shared classes of library sap.ui.commons.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -2170,6 +2170,7 @@
       <module name="sap/ui/commons/Button.js" conditional="true"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/layout/library.js"/>
+      <module name="sap/ui/unified/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>

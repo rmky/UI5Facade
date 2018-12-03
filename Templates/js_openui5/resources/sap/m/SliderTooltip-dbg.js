@@ -5,7 +5,6 @@
 */
 
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'./SliderUtilities',
 	'./SliderTooltipBase',
@@ -15,7 +14,6 @@ sap.ui.define([
 	'./SliderTooltipRenderer'
 ],
 function(
-	jQuery,
 	Library,
 	SliderUtilities,
 	SliderTooltipBase,
@@ -23,7 +21,7 @@ function(
 	coreLibrary,
 	ValueStateMessage,
 	SliderTooltipRenderer
-	) {
+) {
 		"use strict";
 
 		var ValueState = coreLibrary.ValueState;
@@ -37,10 +35,10 @@ function(
 		 * @class
 		 * A Control that visualizes <code>Slider</code> and <code>RangeSlider</code> tooltips.
 		 *
-		 * @extends sap.ui.core.Control
+		 * @extends sap.m.SliderTooltipBase
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @private

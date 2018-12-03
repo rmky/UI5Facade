@@ -4,7 +4,6 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/rta/appVariant/manageApps/webapp/model/models",
 	"sap/ui/rta/appVariant/Utils",
@@ -13,9 +12,9 @@ sap.ui.define([
 	"sap/ui/rta/appVariant/Feature",
 	"sap/ui/rta/RuntimeAuthoring",
 	"sap/ui/core/BusyIndicator",
-	"sap/ui/rta/appVariant/AppVariantUtils"
+	"sap/ui/rta/appVariant/AppVariantUtils",
+	"sap/base/i18n/ResourceBundle"
 ], function(
-	jQuery,
 	Controller,
 	Model,
 	AppVariantOverviewUtils,
@@ -24,7 +23,8 @@ sap.ui.define([
 	RtaAppVariantFeature,
 	RuntimeAuthoring,
 	BusyIndicator,
-	AppVariantUtils
+	AppVariantUtils,
+	ResourceBundle
 ) {
 	"use strict";
 
@@ -34,8 +34,8 @@ sap.ui.define([
 			_sIdRunningApp = this.getOwnerComponent().getIdRunningApp();
 			_bKeyUser = this.getOwnerComponent().getIsOverviewForKeyUser();
 
-			sModulePath = jQuery.sap.getModulePath( "sap.ui.rta.appVariant.manageApps.webapp" );
-			oI18n = jQuery.sap.resources({
+			sModulePath = sap.ui.require.toUrl("sap/ui/rta/appVariant/manageApps/") + "webapp";
+			oI18n = ResourceBundle.create({
 				url : sModulePath + "/i18n/i18n.properties"
 			});
 

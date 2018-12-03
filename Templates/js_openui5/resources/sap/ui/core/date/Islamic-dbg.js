@@ -5,8 +5,8 @@
  */
 
 // Provides class sap.ui.core.date.Islamic
-sap.ui.define(['jquery.sap.global', './UniversalDate'],
-	function(jQuery, UniversalDate) {
+sap.ui.define(['./UniversalDate', "sap/base/Log"],
+	function(UniversalDate, Log) {
 	"use strict";
 
 
@@ -214,12 +214,12 @@ sap.ui.define(['jquery.sap.global', './UniversalDate'],
 		oCustomizationJSON = oCustomizationJSON || [];
 
 		if (!sDateFormat && !oCustomizationJSON.length) {//working with no customization
-			jQuery.sap.log.info("No calendar customizations.");
+			Log.info("No calendar customizations.");
 			return;
 		}
 
 		if ((sDateFormat && !oCustomizationJSON.length) || (!sDateFormat && oCustomizationJSON.length)) {
-			jQuery.sap.log.warning("There is an inconsistency between customization data [" + JSON.stringify(oCustomizationJSON) +
+			Log.warning("There is an inconsistency between customization data [" + JSON.stringify(oCustomizationJSON) +
 			"] and the date format [" + sDateFormat + "]. Calendar customization won't be used.");
 			return;
 		}
@@ -237,7 +237,7 @@ sap.ui.define(['jquery.sap.global', './UniversalDate'],
 				oCustomizationMap[iIslamicMonths] = iIslamicMonthStartDays;
 			}
 		});
-		jQuery.sap.log.info("Working with date format: [" + sDateFormat + "] and customization: " + JSON.stringify(oCustomizationJSON));
+		Log.info("Working with date format: [" + sDateFormat + "] and customization: " + JSON.stringify(oCustomizationJSON));
 	}
 
 	function parseDate(sDate) {

@@ -6,23 +6,29 @@
 
 // Provides control sap.m.DateTimeField.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/model/type/Date',
 	'sap/ui/model/odata/type/ODataType',
 	'./InputBase',
 	'sap/ui/core/LocaleData',
 	'sap/ui/core/library',
 	'sap/ui/core/format/DateFormat',
-	'./DateTimeFieldRenderer'
+	'./DateTimeFieldRenderer',
+	"sap/base/util/deepEqual",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery",
+	// jQuery Plugin "cursorPos"
+	"sap/ui/dom/jquery/cursorPos"
 ], function(
-	jQuery,
 	SimpleDateType,
 	ODataType,
 	InputBase,
 	LocaleData,
 	coreLibrary,
 	DateFormat,
-	DateTimeFieldRenderer
+	DateTimeFieldRenderer,
+	deepEqual,
+	Log,
+	jQuery
 ) {
 	"use strict";
 
@@ -44,7 +50,7 @@ sap.ui.define([
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -73,6 +79,9 @@ sap.ui.define([
 				 * and <code>valueFormat</code> pair properties are supplied instead,
 				 * the <code>dateValue</code> will be instantiated according to the parsed
 				 * <code>value</code>.
+				 * Use <code>dateValue</code> as a helper property to easily obtain the day, month, year, hours, minutes
+				 * and seconds of the chosen date and time. Although possible to bind it, the recommendation is not to do it.
+				 * When binding is needed, use <code>value</code> property instead.
 				 */
 				dateValue: {type: "object", group: "Data", defaultValue: null},
 
@@ -115,7 +124,7 @@ sap.ui.define([
 			oDate = this._parseValue(sValue);
 			if (!oDate || oDate.getTime() < this._oMinDate.getTime() || oDate.getTime() > this._oMaxDate.getTime()) {
 				this._bValid = false;
-				jQuery.sap.log.warning("Value can not be converted to a valid date", this);
+				Log.warning("Value can not be converted to a valid date", this);
 			}
 		}
 
@@ -146,7 +155,7 @@ sap.ui.define([
 			throw new Error("Date must be a JavaScript date object; " + this);
 		}
 
-		if (jQuery.sap.equal(this.getDateValue(), oDate)) {
+		if (deepEqual(this.getDateValue(), oDate)) {
 			return this;
 		}
 
@@ -167,7 +176,6 @@ sap.ui.define([
 
 			if (this._$input.val() !== sOutputValue) {
 				this._$input.val(sOutputValue);
-				this._setLabelVisibility();
 				this._curpos = this._$input.cursorPos();
 			}
 		}
@@ -240,7 +248,6 @@ sap.ui.define([
 			sap.ui.getCore().getConfiguration().getFormatSettings().getFormatLocale()
 		).getDatePattern(sPlaceholder);
 	};
-
 
 	DateTimeField.prototype._parseValue = function (sValue, bDisplayFormat) {
 		return this._getFormatter(bDisplayFormat).parse(sValue);

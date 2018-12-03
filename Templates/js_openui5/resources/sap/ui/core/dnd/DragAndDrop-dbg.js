@@ -3,8 +3,14 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["jquery.sap.global", "sap/ui/Device", "../UIArea"],
-	function(jQuery, Device, UIArea) {
+sap.ui.define([
+	"sap/ui/Device",
+	"../UIArea",
+	"sap/ui/thirdparty/jquery",
+	// jQuery Plugin "control"
+	"sap/ui/dom/jquery/control"
+],
+function(Device, UIArea, jQuery) {
 	"use strict";
 
 	var DnD = {},

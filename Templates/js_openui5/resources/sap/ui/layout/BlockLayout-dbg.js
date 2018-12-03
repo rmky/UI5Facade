@@ -5,13 +5,12 @@
  */
 
 sap.ui.define([
-    'sap/ui/core/Control',
-    './library',
-    'jquery.sap.global',
-    'sap/ui/core/ResizeHandler',
-    "./BlockLayoutRenderer"
+	'sap/ui/core/Control',
+	'./library',
+	'sap/ui/core/ResizeHandler',
+	"./BlockLayoutRenderer"
 ],
-	function(Control, library, jQuery, ResizeHandler, BlockLayoutRenderer) {
+	function(Control, library, ResizeHandler, BlockLayoutRenderer) {
 		"use strict";
 
 		/**
@@ -64,7 +63,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public

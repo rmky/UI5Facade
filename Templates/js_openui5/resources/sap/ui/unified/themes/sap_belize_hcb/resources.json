@@ -51,6 +51,14 @@
 			"theme": "sap_belize_hcb"
 		},
 		{
+			"name": "img-RTL/PickingCursor-HCB.png",
+			"theme": "sap_belize_hcb"
+		},
+		{
+			"name": "img/PickingCursor-HCB.png",
+			"theme": "sap_belize_hcb"
+		},
+		{
 			"name": "library-RTL-dbg.css",
 			"isDebug": true,
 			"theme": "sap_belize_hcb"

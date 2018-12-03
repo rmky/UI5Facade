@@ -8,12 +8,14 @@ sap.ui.define([
 	'sap/ui/dt/Plugin',
 	'sap/ui/dt/plugin/ElementMover',
 	'sap/ui/dt/OverlayUtil',
-	'sap/ui/dt/OverlayRegistry'
+	'sap/ui/dt/OverlayRegistry',
+	"sap/ui/events/KeyCodes"
 ], function(
 	Plugin,
 	ElementMover,
 	OverlayUtil,
-	OverlayRegistry
+	OverlayRegistry,
+	KeyCodes
 ) {
 	"use strict";
 
@@ -25,7 +27,7 @@ sap.ui.define([
 	 * @class The CutPaste enables Cut & Paste functionality for the overlays based on aggregation types
 	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -116,17 +118,17 @@ sap.ui.define([
 		// on macintosh os cmd-key is used instead of ctrl-key
 		var bCtrlKey = sap.ui.Device.os.macintosh ? oEvent.metaKey : oEvent.ctrlKey;
 
-		if ((oEvent.keyCode === jQuery.sap.KeyCodes.X) && (oEvent.shiftKey === false) && (oEvent.altKey === false) && (bCtrlKey === true)) {
+		if ((oEvent.keyCode === KeyCodes.X) && (oEvent.shiftKey === false) && (oEvent.altKey === false) && (bCtrlKey === true)) {
 			// CTRL+X
 			this.cut(oOverlay);
 			oEvent.stopPropagation();
-		} else if ((oEvent.keyCode === jQuery.sap.KeyCodes.V) && (oEvent.shiftKey === false) && (oEvent.altKey === false) && (bCtrlKey === true)) {
+		} else if ((oEvent.keyCode === KeyCodes.V) && (oEvent.shiftKey === false) && (oEvent.altKey === false) && (bCtrlKey === true)) {
 			// CTRL+V
 			if (this.getElementMover().getMovedOverlay()) {
 				this.paste(oOverlay);
 			}
 			oEvent.stopPropagation();
-		} else if (oEvent.keyCode === jQuery.sap.KeyCodes.ESCAPE) {
+		} else if (oEvent.keyCode === KeyCodes.ESCAPE) {
 			// ESC
 			this.stopCutAndPaste();
 			oEvent.stopPropagation();

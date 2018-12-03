@@ -6,11 +6,11 @@
 
 // Provides control sap.ui.layout.DynamicSideContent.
 sap.ui.define([
-    'jquery.sap.global',
-    'sap/ui/core/Control',
-    'sap/ui/core/ResizeHandler',
-    'sap/ui/layout/library',
-    "./DynamicSideContentRenderer"
+	'sap/ui/thirdparty/jquery',
+	'sap/ui/core/Control',
+	'sap/ui/core/ResizeHandler',
+	'sap/ui/layout/library',
+	'./DynamicSideContentRenderer'
 ],
 	function(jQuery, Control, ResizeHandler, library, DynamicSideContentRenderer) {
 		"use strict";
@@ -89,7 +89,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -452,13 +452,13 @@ sap.ui.define([
 				sMainContentId = sControlId + "-" + MC_GRID_CELL_SELECTOR;
 
 			if (!this._oSCScroller && !this._oMCScroller) {
-				jQuery.sap.require("sap.ui.core.delegate.ScrollEnablement");
-				this._oSCScroller = new sap.ui.core.delegate.ScrollEnablement(this, null, {
+				var ScrollEnablement = sap.ui.requireSync("sap/ui/core/delegate/ScrollEnablement");
+				this._oSCScroller = new ScrollEnablement(this, null, {
 					scrollContainerId: sSideContentId,
 					horizontal: false,
 					vertical: true
 				});
-				this._oMCScroller = new sap.ui.core.delegate.ScrollEnablement(this, null, {
+				this._oMCScroller = new ScrollEnablement(this, null, {
 					scrollContainerId: sMainContentId,
 					horizontal: false,
 					vertical: true

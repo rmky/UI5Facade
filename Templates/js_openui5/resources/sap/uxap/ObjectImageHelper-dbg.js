@@ -5,10 +5,11 @@
  */
 
 sap.ui.define([
+	"sap/ui/base/ManagedObject",
 	"sap/ui/core/Icon",
 	"sap/ui/core/IconPool",
 	"sap/m/Image"
-], function (Icon, IconPool, Image) {
+], function (ManagedObject, Icon, IconPool, Image) {
 	"use strict";
 
 	var ObjectImageHelper = function() {
@@ -24,7 +25,7 @@ sap.ui.define([
 		} else {
 			oObjectImage = new Image({
 				densityAware: oHeader.getObjectImageDensityAware(),
-				alt: oHeader.getObjectImageAlt(),
+				alt: ManagedObject.escapeSettingsValue(oHeader.getObjectImageAlt()),
 				decorative: false
 			});
 

@@ -29,7 +29,6 @@ sap.ui.define(['sap/ui/Device'],
 			oRm.writeControlData(oColorPalette);
 			oRm.addClass("sapMColorPalette");
 			oRm.writeClasses();
-			oRm.writeAttribute("tabIndex", "0");
 			oRm.write(">");
 
 			//render default button
@@ -61,7 +60,7 @@ sap.ui.define(['sap/ui/Device'],
 		ColorPaletteRenderer.renderSwatches = function (oRm, oColorPalette) {
 			var sColors = oColorPalette.getColors();
 
-			oRm.write("<div");
+			oRm.write("<div id='" + oColorPalette.getId() + "-swatchCont'");
 			oRm.addClass("sapMColorPaletteContent");
 			oRm.writeClasses();
 			oRm.writeAccessibilityState(oColorPalette, {
@@ -86,8 +85,8 @@ sap.ui.define(['sap/ui/Device'],
 		 */
 		ColorPaletteRenderer.renderSquare = function (oRm, oColorPalette, sColor, iIndex) {
 			var sNamedColor = oColorPalette._ColorsHelper.getNamedColor(sColor),
-				sColorNameAria = oLibraryResourceBundle.getText("COLOR_PALETTE_PREDEFINED_COLOR", [iIndex + 1,
-					sNamedColor || oLibraryResourceBundle.getText("COLOR_PALETTE_PREDEFINED_COLOR_CUSTOM")]);
+				sCustomOrPredefinedColor = (sNamedColor === undefined) ? oLibraryResourceBundle.getText("COLOR_PALETTE_PREDEFINED_COLOR_CUSTOM") : oLibraryResourceBundle.getText("COLOR_PALETTE_PREDEFINED_COLOR_" + sNamedColor.toUpperCase()),
+				sColorNameAria = oLibraryResourceBundle.getText("COLOR_PALETTE_PREDEFINED_COLOR", [iIndex + 1, sCustomOrPredefinedColor]);
 
 			oRm.write("<div");
 			oRm.addClass("sapMColorPaletteSquare");

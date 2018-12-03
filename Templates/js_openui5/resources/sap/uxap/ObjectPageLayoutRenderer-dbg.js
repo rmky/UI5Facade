@@ -5,7 +5,7 @@
  */
 
 sap.ui.define(["sap/ui/Device"],
-	function (Device) {
+	function(Device) {
 		"use strict";
 
 		/**
@@ -23,7 +23,8 @@ sap.ui.define(["sap/ui/Device"],
 				bRenderHeaderContent = bIsHeaderContentVisible || bIsTitleInHeaderContent,
 				bUseIconTabBar = oControl.getUseIconTabBar(),
 				bTitleClickable = oControl.getToggleHeaderOnTitleClick() && oControl.getHeaderTitle() && oControl.getHeaderTitle().supportsToggleHeaderOnTitleClick(),
-				sRootAriaLabelText = oControl._getRootAriaLabelText();
+				sRootAriaLabelText = oControl._getRootAriaLabelText(),
+				sBackgroundDesign = oControl.getBackgroundDesignAnchorBar();
 
 			if (oControl.getShowAnchorBar() && oControl._getInternalAnchorBarVisible()) {
 				oAnchorBar = oControl.getAggregation("_anchorBar");
@@ -40,6 +41,7 @@ sap.ui.define(["sap/ui/Device"],
 			if (oAnchorBar) {
 				oRm.addClass("sapUxAPObjectPageLayoutWithNavigation");
 			}
+
 			oRm.writeClasses();
 			oRm.addStyle("height", oControl.getHeight());
 			oRm.writeStyles();
@@ -71,6 +73,11 @@ sap.ui.define(["sap/ui/Device"],
 			oRm.writeAttributeEscaped("id", oControl.getId() + "-stickyAnchorBar");
 			oRm.addClass("sapUxAPObjectPageStickyAnchorBar");
 			oRm.addClass("sapUxAPObjectPageNavigation");
+
+			if (sBackgroundDesign) {
+				oRm.addClass("sapUxAPObjectPageNavigation" + sBackgroundDesign);
+			}
+
 			oRm.writeClasses();
 			oRm.write(">");
 
@@ -107,6 +114,11 @@ sap.ui.define(["sap/ui/Device"],
 			oRm.writeAttribute("role", "navigation");
 			oRm.addClass("sapUxAPObjectPageNavigation");
 			oRm.addClass("sapContrastPlus");
+
+			if (sBackgroundDesign) {
+				oRm.addClass("sapUxAPObjectPageNavigation" + sBackgroundDesign);
+			}
+
 			oRm.writeClasses();
 			oRm.write(">");
 
@@ -125,8 +137,8 @@ sap.ui.define(["sap/ui/Device"],
 			oRm.writeClasses();
 			oRm.write(">");
 			aSections = oControl._getSectionsToRender();
-			if (jQuery.isArray(aSections)) {
-				jQuery.each(aSections, function (iIndex, oSection) {
+			if (Array.isArray(aSections)) {
+				aSections.forEach(function (oSection) {
 					oRm.renderControl(oSection);
 					if (bUseIconTabBar) {
 						oControl._oCurrentTabSection = oSection;
@@ -164,7 +176,7 @@ sap.ui.define(["sap/ui/Device"],
 				if (oControl.getIsChildPage() && oHeaderContent && oHeaderContent.supportsChildPageDesign()) {
 					oRm.write("<div ");
 					oRm.writeAttributeEscaped("id", oControl.getId() + "-childPageBar");
-					if (jQuery.isArray(aSections) && aSections.length > 1) {
+					if (Array.isArray(aSections) && aSections.length > 1) {
 						oRm.addClass('sapUxAPObjectChildPage');
 					}
 					oRm.writeClasses();

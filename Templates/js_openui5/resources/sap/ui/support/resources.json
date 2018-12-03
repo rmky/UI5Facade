@@ -18,6 +18,7 @@
 				"jquery.sap.global.js"
 			],
 			"condRequired": [
+				"sap/ui/support/jQuery.sap.support.js",
 				"sap/ui/support/supportRules/Main.js"
 			]
 		},
@@ -28,7 +29,36 @@
 				"jquery.sap.global.js"
 			],
 			"condRequired": [
+				"sap/ui/support/jQuery.sap.support.js",
 				"sap/ui/support/supportRules/Main.js"
+			]
+		},
+		{
+			"name": "RuleAnalyzer-dbg.js",
+			"module": "sap/ui/support/RuleAnalyzer.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/support/Bootstrap.js",
+				"sap/ui/support/supportRules/Main.js",
+				"sap/ui/support/supportRules/RuleSetLoader.js"
+			]
+		},
+		{
+			"name": "RuleAnalyzer.js",
+			"module": "sap/ui/support/RuleAnalyzer.js",
+			"required": [
+				"sap/ui/support/Bootstrap.js",
+				"sap/ui/support/supportRules/Main.js",
+				"sap/ui/support/supportRules/RuleSetLoader.js"
+			]
+		},
+		{
+			"name": "jQuery.sap.support.js",
+			"module": "sap/ui/support/jQuery.sap.support.js",
+			"support": true,
+			"required": [
+				"sap/ui/support/supportRules/Main.js",
+				"sap/ui/support/supportRules/RuleSetLoader.js"
 			]
 		},
 		{
@@ -49,10 +79,12 @@
 				"sap/m/Bar.js",
 				"sap/m/Button.js",
 				"sap/m/CheckBox.js",
+				"sap/m/CustomListItem.js",
 				"sap/m/Dialog.js",
 				"sap/m/FlexBox.js",
 				"sap/m/FlexItemData.js",
 				"sap/m/FormattedText.js",
+				"sap/m/GroupHeaderListItem.js",
 				"sap/m/HBox.js",
 				"sap/m/IconTabFilter.js",
 				"sap/m/IconTabHeader.js",
@@ -66,6 +98,8 @@
 				"sap/m/Menu.js",
 				"sap/m/MenuButton.js",
 				"sap/m/MenuItem.js",
+				"sap/m/MessageBox.js",
+				"sap/m/MessageStrip.js",
 				"sap/m/MessageToast.js",
 				"sap/m/MultiComboBox.js",
 				"sap/m/NavContainer.js",
@@ -76,18 +110,23 @@
 				"sap/m/Popover.js",
 				"sap/m/ProgressIndicator.js",
 				"sap/m/RadioButton.js",
+				"sap/m/ResponsivePopover.js",
+				"sap/m/ScrollContainer.js",
 				"sap/m/Select.js",
 				"sap/m/StandardListItem.js",
 				"sap/m/Text.js",
 				"sap/m/TextArea.js",
 				"sap/m/Title.js",
 				"sap/m/Toolbar.js",
+				"sap/m/ToolbarLayoutData.js",
 				"sap/m/ToolbarSpacer.js",
 				"sap/m/VBox.js",
 				"sap/m/library.js",
+				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/codeeditor/CodeEditor.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/HTML.js",
@@ -105,9 +144,11 @@
 				"sap/ui/layout/SplitterLayoutData.js",
 				"sap/ui/layout/VerticalLayout.js",
 				"sap/ui/layout/form/SimpleForm.js",
+				"sap/ui/model/SelectionModel.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/handlebars.js",
+				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/thirdparty/jszip.js",
 				"sap/ui/unified/FileUploader.js"
 			],
@@ -115,10 +156,13 @@
 				"sap/ui/support/library.js",
 				"sap/ui/support/manifest.json",
 				"sap/ui/support/Bootstrap.js",
+				"sap/ui/support/RuleAnalyzer.js",
+				"sap/ui/support/jQuery.sap.support.js",
 				"sap/ui/support/supportRules/Analyzer.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/CoreFacade.js",
 				"sap/ui/support/supportRules/ExecutionScope.js",
+				"sap/ui/support/supportRules/History.js",
 				"sap/ui/support/supportRules/IssueManager.js",
 				"sap/ui/support/supportRules/Main.js",
 				"sap/ui/support/supportRules/RuleSerializer.js",
@@ -127,20 +171,27 @@
 				"sap/ui/support/supportRules/Storage.js",
 				"sap/ui/support/supportRules/WCBChannels.js",
 				"sap/ui/support/supportRules/WindowCommunicationBus.js",
-				"sap/ui/support/supportRules/report/AnalysisHistoryFormatter.js",
+				"sap/ui/support/supportRules/report/AbapHistoryFormatter.js",
 				"sap/ui/support/supportRules/report/Archiver.js",
 				"sap/ui/support/supportRules/report/DataCollector.js",
 				"sap/ui/support/supportRules/report/IssueRenderer.js",
 				"sap/ui/support/supportRules/report/ReportProvider.js",
+				"sap/ui/support/supportRules/report/StringHistoryFormatter.js",
 				"sap/ui/support/supportRules/report/resources/collapseExpand.js",
 				"sap/ui/support/supportRules/report/resources/filter.js",
 				"sap/ui/support/supportRules/ui/IFrameController.js",
+				"sap/ui/support/supportRules/ui/Overlay.js",
 				"sap/ui/support/supportRules/ui/controllers/Analysis.controller.js",
 				"sap/ui/support/supportRules/ui/controllers/BaseController.js",
 				"sap/ui/support/supportRules/ui/controllers/Issues.controller.js",
 				"sap/ui/support/supportRules/ui/controllers/Main.controller.js",
+				"sap/ui/support/supportRules/ui/controllers/PresetsController.js",
 				"sap/ui/support/supportRules/ui/external/ElementTree.js",
 				"sap/ui/support/supportRules/ui/external/Highlighter.js",
+				"sap/ui/support/supportRules/ui/models/CustomJSONListSelection.js",
+				"sap/ui/support/supportRules/ui/models/CustomListSelection.js",
+				"sap/ui/support/supportRules/ui/models/Documentation.js",
+				"sap/ui/support/supportRules/ui/models/PresetsUtils.js",
 				"sap/ui/support/supportRules/ui/models/SelectionUtils.js",
 				"sap/ui/support/supportRules/ui/models/SharedModel.js",
 				"sap/ui/support/supportRules/ui/models/formatter.js",
@@ -148,6 +199,9 @@
 				"sap/ui/support/supportRules/ui/views/AnalyzeSettings.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/Issues.view.xml",
 				"sap/ui/support/supportRules/ui/views/Main.view.xml",
+				"sap/ui/support/supportRules/ui/views/PresetExport.fragment.xml",
+				"sap/ui/support/supportRules/ui/views/PresetImport.fragment.xml",
+				"sap/ui/support/supportRules/ui/views/Presets.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/RuleDetails.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/RuleUpdate.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/StorageSettings.fragment.xml",
@@ -165,10 +219,12 @@
 				"sap/m/Bar.js",
 				"sap/m/Button.js",
 				"sap/m/CheckBox.js",
+				"sap/m/CustomListItem.js",
 				"sap/m/Dialog.js",
 				"sap/m/FlexBox.js",
 				"sap/m/FlexItemData.js",
 				"sap/m/FormattedText.js",
+				"sap/m/GroupHeaderListItem.js",
 				"sap/m/HBox.js",
 				"sap/m/IconTabFilter.js",
 				"sap/m/IconTabHeader.js",
@@ -182,6 +238,8 @@
 				"sap/m/Menu.js",
 				"sap/m/MenuButton.js",
 				"sap/m/MenuItem.js",
+				"sap/m/MessageBox.js",
+				"sap/m/MessageStrip.js",
 				"sap/m/MessageToast.js",
 				"sap/m/MultiComboBox.js",
 				"sap/m/NavContainer.js",
@@ -192,18 +250,23 @@
 				"sap/m/Popover.js",
 				"sap/m/ProgressIndicator.js",
 				"sap/m/RadioButton.js",
+				"sap/m/ResponsivePopover.js",
+				"sap/m/ScrollContainer.js",
 				"sap/m/Select.js",
 				"sap/m/StandardListItem.js",
 				"sap/m/Text.js",
 				"sap/m/TextArea.js",
 				"sap/m/Title.js",
 				"sap/m/Toolbar.js",
+				"sap/m/ToolbarLayoutData.js",
 				"sap/m/ToolbarSpacer.js",
 				"sap/m/VBox.js",
 				"sap/m/library.js",
+				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/codeeditor/CodeEditor.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/HTML.js",
@@ -221,9 +284,11 @@
 				"sap/ui/layout/SplitterLayoutData.js",
 				"sap/ui/layout/VerticalLayout.js",
 				"sap/ui/layout/form/SimpleForm.js",
+				"sap/ui/model/SelectionModel.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/handlebars.js",
+				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/thirdparty/jszip.js",
 				"sap/ui/unified/FileUploader.js"
 			],
@@ -231,10 +296,13 @@
 				"sap/ui/support/library.js",
 				"sap/ui/support/manifest.json",
 				"sap/ui/support/Bootstrap.js",
+				"sap/ui/support/RuleAnalyzer.js",
+				"sap/ui/support/jQuery.sap.support.js",
 				"sap/ui/support/supportRules/Analyzer.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/CoreFacade.js",
 				"sap/ui/support/supportRules/ExecutionScope.js",
+				"sap/ui/support/supportRules/History.js",
 				"sap/ui/support/supportRules/IssueManager.js",
 				"sap/ui/support/supportRules/Main.js",
 				"sap/ui/support/supportRules/RuleSerializer.js",
@@ -243,20 +311,27 @@
 				"sap/ui/support/supportRules/Storage.js",
 				"sap/ui/support/supportRules/WCBChannels.js",
 				"sap/ui/support/supportRules/WindowCommunicationBus.js",
-				"sap/ui/support/supportRules/report/AnalysisHistoryFormatter.js",
+				"sap/ui/support/supportRules/report/AbapHistoryFormatter.js",
 				"sap/ui/support/supportRules/report/Archiver.js",
 				"sap/ui/support/supportRules/report/DataCollector.js",
 				"sap/ui/support/supportRules/report/IssueRenderer.js",
 				"sap/ui/support/supportRules/report/ReportProvider.js",
+				"sap/ui/support/supportRules/report/StringHistoryFormatter.js",
 				"sap/ui/support/supportRules/report/resources/collapseExpand.js",
 				"sap/ui/support/supportRules/report/resources/filter.js",
 				"sap/ui/support/supportRules/ui/IFrameController.js",
+				"sap/ui/support/supportRules/ui/Overlay.js",
 				"sap/ui/support/supportRules/ui/controllers/Analysis.controller.js",
 				"sap/ui/support/supportRules/ui/controllers/BaseController.js",
 				"sap/ui/support/supportRules/ui/controllers/Issues.controller.js",
 				"sap/ui/support/supportRules/ui/controllers/Main.controller.js",
+				"sap/ui/support/supportRules/ui/controllers/PresetsController.js",
 				"sap/ui/support/supportRules/ui/external/ElementTree.js",
 				"sap/ui/support/supportRules/ui/external/Highlighter.js",
+				"sap/ui/support/supportRules/ui/models/CustomJSONListSelection.js",
+				"sap/ui/support/supportRules/ui/models/CustomListSelection.js",
+				"sap/ui/support/supportRules/ui/models/Documentation.js",
+				"sap/ui/support/supportRules/ui/models/PresetsUtils.js",
 				"sap/ui/support/supportRules/ui/models/SelectionUtils.js",
 				"sap/ui/support/supportRules/ui/models/SharedModel.js",
 				"sap/ui/support/supportRules/ui/models/formatter.js",
@@ -264,6 +339,9 @@
 				"sap/ui/support/supportRules/ui/views/AnalyzeSettings.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/Issues.view.xml",
 				"sap/ui/support/supportRules/ui/views/Main.view.xml",
+				"sap/ui/support/supportRules/ui/views/PresetExport.fragment.xml",
+				"sap/ui/support/supportRules/ui/views/PresetImport.fragment.xml",
+				"sap/ui/support/supportRules/ui/views/Presets.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/RuleDetails.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/RuleUpdate.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/StorageSettings.fragment.xml",
@@ -285,10 +363,12 @@
 				"sap/m/Bar.js",
 				"sap/m/Button.js",
 				"sap/m/CheckBox.js",
+				"sap/m/CustomListItem.js",
 				"sap/m/Dialog.js",
 				"sap/m/FlexBox.js",
 				"sap/m/FlexItemData.js",
 				"sap/m/FormattedText.js",
+				"sap/m/GroupHeaderListItem.js",
 				"sap/m/HBox.js",
 				"sap/m/IconTabFilter.js",
 				"sap/m/IconTabHeader.js",
@@ -302,6 +382,8 @@
 				"sap/m/Menu.js",
 				"sap/m/MenuButton.js",
 				"sap/m/MenuItem.js",
+				"sap/m/MessageBox.js",
+				"sap/m/MessageStrip.js",
 				"sap/m/MessageToast.js",
 				"sap/m/MultiComboBox.js",
 				"sap/m/NavContainer.js",
@@ -312,18 +394,23 @@
 				"sap/m/Popover.js",
 				"sap/m/ProgressIndicator.js",
 				"sap/m/RadioButton.js",
+				"sap/m/ResponsivePopover.js",
+				"sap/m/ScrollContainer.js",
 				"sap/m/Select.js",
 				"sap/m/StandardListItem.js",
 				"sap/m/Text.js",
 				"sap/m/TextArea.js",
 				"sap/m/Title.js",
 				"sap/m/Toolbar.js",
+				"sap/m/ToolbarLayoutData.js",
 				"sap/m/ToolbarSpacer.js",
 				"sap/m/VBox.js",
 				"sap/m/library.js",
+				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/codeeditor/CodeEditor.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/HTML.js",
@@ -341,20 +428,27 @@
 				"sap/ui/layout/SplitterLayoutData.js",
 				"sap/ui/layout/VerticalLayout.js",
 				"sap/ui/layout/form/SimpleForm.js",
+				"sap/ui/model/SelectionModel.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/handlebars.js",
+				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/thirdparty/jszip.js",
 				"sap/ui/unified/FileUploader.js"
 			],
+			"condRequired": [
+				"sap/ui/support/jQuery.sap.support.js"
+			],
 			"included": [
 				"sap/ui/support/Bootstrap.js",
+				"sap/ui/support/RuleAnalyzer.js",
 				"sap/ui/support/library.js",
 				"sap/ui/support/manifest.json",
 				"sap/ui/support/supportRules/Analyzer.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/CoreFacade.js",
 				"sap/ui/support/supportRules/ExecutionScope.js",
+				"sap/ui/support/supportRules/History.js",
 				"sap/ui/support/supportRules/IssueManager.js",
 				"sap/ui/support/supportRules/Main.js",
 				"sap/ui/support/supportRules/RuleSerializer.js",
@@ -363,20 +457,27 @@
 				"sap/ui/support/supportRules/Storage.js",
 				"sap/ui/support/supportRules/WCBChannels.js",
 				"sap/ui/support/supportRules/WindowCommunicationBus.js",
-				"sap/ui/support/supportRules/report/AnalysisHistoryFormatter.js",
+				"sap/ui/support/supportRules/report/AbapHistoryFormatter.js",
 				"sap/ui/support/supportRules/report/Archiver.js",
 				"sap/ui/support/supportRules/report/DataCollector.js",
 				"sap/ui/support/supportRules/report/IssueRenderer.js",
 				"sap/ui/support/supportRules/report/ReportProvider.js",
+				"sap/ui/support/supportRules/report/StringHistoryFormatter.js",
 				"sap/ui/support/supportRules/report/resources/collapseExpand.js",
 				"sap/ui/support/supportRules/report/resources/filter.js",
 				"sap/ui/support/supportRules/ui/IFrameController.js",
+				"sap/ui/support/supportRules/ui/Overlay.js",
 				"sap/ui/support/supportRules/ui/controllers/Analysis.controller.js",
 				"sap/ui/support/supportRules/ui/controllers/BaseController.js",
 				"sap/ui/support/supportRules/ui/controllers/Issues.controller.js",
 				"sap/ui/support/supportRules/ui/controllers/Main.controller.js",
+				"sap/ui/support/supportRules/ui/controllers/PresetsController.js",
 				"sap/ui/support/supportRules/ui/external/ElementTree.js",
 				"sap/ui/support/supportRules/ui/external/Highlighter.js",
+				"sap/ui/support/supportRules/ui/models/CustomJSONListSelection.js",
+				"sap/ui/support/supportRules/ui/models/CustomListSelection.js",
+				"sap/ui/support/supportRules/ui/models/Documentation.js",
+				"sap/ui/support/supportRules/ui/models/PresetsUtils.js",
 				"sap/ui/support/supportRules/ui/models/SelectionUtils.js",
 				"sap/ui/support/supportRules/ui/models/SharedModel.js",
 				"sap/ui/support/supportRules/ui/models/formatter.js",
@@ -384,6 +485,9 @@
 				"sap/ui/support/supportRules/ui/views/AnalyzeSettings.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/Issues.view.xml",
 				"sap/ui/support/supportRules/ui/views/Main.view.xml",
+				"sap/ui/support/supportRules/ui/views/PresetExport.fragment.xml",
+				"sap/ui/support/supportRules/ui/views/PresetImport.fragment.xml",
+				"sap/ui/support/supportRules/ui/views/Presets.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/RuleDetails.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/RuleUpdate.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/StorageSettings.fragment.xml",
@@ -405,10 +509,12 @@
 				"sap/m/Bar.js",
 				"sap/m/Button.js",
 				"sap/m/CheckBox.js",
+				"sap/m/CustomListItem.js",
 				"sap/m/Dialog.js",
 				"sap/m/FlexBox.js",
 				"sap/m/FlexItemData.js",
 				"sap/m/FormattedText.js",
+				"sap/m/GroupHeaderListItem.js",
 				"sap/m/HBox.js",
 				"sap/m/IconTabFilter.js",
 				"sap/m/IconTabHeader.js",
@@ -422,6 +528,8 @@
 				"sap/m/Menu.js",
 				"sap/m/MenuButton.js",
 				"sap/m/MenuItem.js",
+				"sap/m/MessageBox.js",
+				"sap/m/MessageStrip.js",
 				"sap/m/MessageToast.js",
 				"sap/m/MultiComboBox.js",
 				"sap/m/NavContainer.js",
@@ -432,18 +540,23 @@
 				"sap/m/Popover.js",
 				"sap/m/ProgressIndicator.js",
 				"sap/m/RadioButton.js",
+				"sap/m/ResponsivePopover.js",
+				"sap/m/ScrollContainer.js",
 				"sap/m/Select.js",
 				"sap/m/StandardListItem.js",
 				"sap/m/Text.js",
 				"sap/m/TextArea.js",
 				"sap/m/Title.js",
 				"sap/m/Toolbar.js",
+				"sap/m/ToolbarLayoutData.js",
 				"sap/m/ToolbarSpacer.js",
 				"sap/m/VBox.js",
 				"sap/m/library.js",
+				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/codeeditor/CodeEditor.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/HTML.js",
@@ -462,20 +575,27 @@
 				"sap/ui/layout/SplitterLayoutData.js",
 				"sap/ui/layout/VerticalLayout.js",
 				"sap/ui/layout/form/SimpleForm.js",
+				"sap/ui/model/SelectionModel.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/handlebars.js",
+				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/thirdparty/jszip.js",
 				"sap/ui/unified/FileUploader.js"
 			],
+			"condRequired": [
+				"sap/ui/support/jQuery.sap.support.js"
+			],
 			"included": [
 				"sap/ui/support/Bootstrap.js",
+				"sap/ui/support/RuleAnalyzer.js",
 				"sap/ui/support/library.js",
 				"sap/ui/support/manifest.json",
 				"sap/ui/support/supportRules/Analyzer.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/CoreFacade.js",
 				"sap/ui/support/supportRules/ExecutionScope.js",
+				"sap/ui/support/supportRules/History.js",
 				"sap/ui/support/supportRules/IssueManager.js",
 				"sap/ui/support/supportRules/Main.js",
 				"sap/ui/support/supportRules/RuleSerializer.js",
@@ -484,20 +604,27 @@
 				"sap/ui/support/supportRules/Storage.js",
 				"sap/ui/support/supportRules/WCBChannels.js",
 				"sap/ui/support/supportRules/WindowCommunicationBus.js",
-				"sap/ui/support/supportRules/report/AnalysisHistoryFormatter.js",
+				"sap/ui/support/supportRules/report/AbapHistoryFormatter.js",
 				"sap/ui/support/supportRules/report/Archiver.js",
 				"sap/ui/support/supportRules/report/DataCollector.js",
 				"sap/ui/support/supportRules/report/IssueRenderer.js",
 				"sap/ui/support/supportRules/report/ReportProvider.js",
+				"sap/ui/support/supportRules/report/StringHistoryFormatter.js",
 				"sap/ui/support/supportRules/report/resources/collapseExpand.js",
 				"sap/ui/support/supportRules/report/resources/filter.js",
 				"sap/ui/support/supportRules/ui/IFrameController.js",
+				"sap/ui/support/supportRules/ui/Overlay.js",
 				"sap/ui/support/supportRules/ui/controllers/Analysis.controller.js",
 				"sap/ui/support/supportRules/ui/controllers/BaseController.js",
 				"sap/ui/support/supportRules/ui/controllers/Issues.controller.js",
 				"sap/ui/support/supportRules/ui/controllers/Main.controller.js",
+				"sap/ui/support/supportRules/ui/controllers/PresetsController.js",
 				"sap/ui/support/supportRules/ui/external/ElementTree.js",
 				"sap/ui/support/supportRules/ui/external/Highlighter.js",
+				"sap/ui/support/supportRules/ui/models/CustomJSONListSelection.js",
+				"sap/ui/support/supportRules/ui/models/CustomListSelection.js",
+				"sap/ui/support/supportRules/ui/models/Documentation.js",
+				"sap/ui/support/supportRules/ui/models/PresetsUtils.js",
 				"sap/ui/support/supportRules/ui/models/SelectionUtils.js",
 				"sap/ui/support/supportRules/ui/models/SharedModel.js",
 				"sap/ui/support/supportRules/ui/models/formatter.js",
@@ -505,6 +632,9 @@
 				"sap/ui/support/supportRules/ui/views/AnalyzeSettings.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/Issues.view.xml",
 				"sap/ui/support/supportRules/ui/views/Main.view.xml",
+				"sap/ui/support/supportRules/ui/views/PresetExport.fragment.xml",
+				"sap/ui/support/supportRules/ui/views/PresetImport.fragment.xml",
+				"sap/ui/support/supportRules/ui/views/Presets.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/RuleDetails.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/RuleUpdate.fragment.xml",
 				"sap/ui/support/supportRules/ui/views/StorageSettings.fragment.xml",
@@ -512,6 +642,23 @@
 				"sap/ui/support/supportRules/util/StringAnalyzer.js",
 				"sap/ui/support/supportRules/util/Utils.js"
 			]
+		},
+		{
+			"name": "library-preload.support.js",
+			"module": "sap/ui/support/library-preload.support.js",
+			"merged": true,
+			"support": true,
+			"required": [
+				"sap/ui/support/supportRules/Main.js",
+				"sap/ui/support/supportRules/RuleSetLoader.js"
+			],
+			"included": [
+				"sap/ui/support/jQuery.sap.support.js"
+			]
+		},
+		{
+			"name": "library-preload.support.js.map",
+			"isDebug": true
 		},
 		{
 			"name": "library.dependencies.json",
@@ -592,6 +739,29 @@
 			]
 		},
 		{
+			"name": "supportRules/History-dbg.js",
+			"module": "sap/ui/support/supportRules/History.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/support/library.js",
+				"sap/ui/support/supportRules/IssueManager.js",
+				"sap/ui/support/supportRules/RuleSetLoader.js",
+				"sap/ui/support/supportRules/report/AbapHistoryFormatter.js",
+				"sap/ui/support/supportRules/report/StringHistoryFormatter.js"
+			]
+		},
+		{
+			"name": "supportRules/History.js",
+			"module": "sap/ui/support/supportRules/History.js",
+			"required": [
+				"sap/ui/support/library.js",
+				"sap/ui/support/supportRules/IssueManager.js",
+				"sap/ui/support/supportRules/RuleSetLoader.js",
+				"sap/ui/support/supportRules/report/AbapHistoryFormatter.js",
+				"sap/ui/support/supportRules/report/StringHistoryFormatter.js"
+			]
+		},
+		{
 			"name": "supportRules/IssueManager-dbg.js",
 			"module": "sap/ui/support/supportRules/IssueManager.js",
 			"isDebug": true,
@@ -617,18 +787,17 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/base/ManagedObject.js",
-				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/support/library.js",
 				"sap/ui/support/supportRules/Analyzer.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/CoreFacade.js",
 				"sap/ui/support/supportRules/ExecutionScope.js",
+				"sap/ui/support/supportRules/History.js",
 				"sap/ui/support/supportRules/IssueManager.js",
 				"sap/ui/support/supportRules/RuleSerializer.js",
-				"sap/ui/support/supportRules/RuleSet.js",
 				"sap/ui/support/supportRules/RuleSetLoader.js",
 				"sap/ui/support/supportRules/WCBChannels.js",
 				"sap/ui/support/supportRules/WindowCommunicationBus.js",
-				"sap/ui/support/supportRules/report/AnalysisHistoryFormatter.js",
 				"sap/ui/support/supportRules/report/DataCollector.js",
 				"sap/ui/support/supportRules/ui/external/Highlighter.js"
 			]
@@ -639,18 +808,17 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/base/ManagedObject.js",
-				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/support/library.js",
 				"sap/ui/support/supportRules/Analyzer.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/CoreFacade.js",
 				"sap/ui/support/supportRules/ExecutionScope.js",
+				"sap/ui/support/supportRules/History.js",
 				"sap/ui/support/supportRules/IssueManager.js",
 				"sap/ui/support/supportRules/RuleSerializer.js",
-				"sap/ui/support/supportRules/RuleSet.js",
 				"sap/ui/support/supportRules/RuleSetLoader.js",
 				"sap/ui/support/supportRules/WCBChannels.js",
 				"sap/ui/support/supportRules/WindowCommunicationBus.js",
-				"sap/ui/support/supportRules/report/AnalysisHistoryFormatter.js",
 				"sap/ui/support/supportRules/report/DataCollector.js",
 				"sap/ui/support/supportRules/ui/external/Highlighter.js"
 			]
@@ -752,13 +920,13 @@
 			]
 		},
 		{
-			"name": "supportRules/report/AnalysisHistoryFormatter-dbg.js",
-			"module": "sap/ui/support/supportRules/report/AnalysisHistoryFormatter.js",
+			"name": "supportRules/report/AbapHistoryFormatter-dbg.js",
+			"module": "sap/ui/support/supportRules/report/AbapHistoryFormatter.js",
 			"isDebug": true
 		},
 		{
-			"name": "supportRules/report/AnalysisHistoryFormatter.js",
-			"module": "sap/ui/support/supportRules/report/AnalysisHistoryFormatter.js"
+			"name": "supportRules/report/AbapHistoryFormatter.js",
+			"module": "sap/ui/support/supportRules/report/AbapHistoryFormatter.js"
 		},
 		{
 			"name": "supportRules/report/Archiver-dbg.js",
@@ -835,6 +1003,15 @@
 			]
 		},
 		{
+			"name": "supportRules/report/StringHistoryFormatter-dbg.js",
+			"module": "sap/ui/support/supportRules/report/StringHistoryFormatter.js",
+			"isDebug": true
+		},
+		{
+			"name": "supportRules/report/StringHistoryFormatter.js",
+			"module": "sap/ui/support/supportRules/report/StringHistoryFormatter.js"
+		},
+		{
 			"name": "supportRules/report/resources/ReportTemplate.html"
 		},
 		{
@@ -888,13 +1065,31 @@
 			]
 		},
 		{
+			"name": "supportRules/ui/Overlay-dbg.js",
+			"module": "sap/ui/support/supportRules/ui/Overlay.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/Page.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/mvc/XMLView.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/Overlay.js",
+			"module": "sap/ui/support/supportRules/ui/Overlay.js",
+			"required": [
+				"sap/m/Page.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/mvc/XMLView.js"
+			]
+		},
+		{
 			"name": "supportRules/ui/controllers/Analysis-dbg.controller.js",
 			"module": "sap/ui/support/supportRules/ui/controllers/Analysis.controller.js",
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
 				"sap/m/Button.js",
-				"sap/m/Dialog.js",
 				"sap/m/InputListItem.js",
 				"sap/m/Label.js",
 				"sap/m/List.js",
@@ -907,14 +1102,15 @@
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/RuleSerializer.js",
-				"sap/ui/support/supportRules/RuleSet.js",
 				"sap/ui/support/supportRules/Storage.js",
 				"sap/ui/support/supportRules/WCBChannels.js",
 				"sap/ui/support/supportRules/WindowCommunicationBus.js",
 				"sap/ui/support/supportRules/ui/controllers/BaseController.js",
+				"sap/ui/support/supportRules/ui/controllers/PresetsController.js",
+				"sap/ui/support/supportRules/ui/models/CustomJSONListSelection.js",
+				"sap/ui/support/supportRules/ui/models/PresetsUtils.js",
 				"sap/ui/support/supportRules/ui/models/SelectionUtils.js",
-				"sap/ui/support/supportRules/ui/models/SharedModel.js",
-				"sap/ui/unified/FileUploader.js"
+				"sap/ui/support/supportRules/ui/models/SharedModel.js"
 			]
 		},
 		{
@@ -923,7 +1119,6 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/m/Button.js",
-				"sap/m/Dialog.js",
 				"sap/m/InputListItem.js",
 				"sap/m/Label.js",
 				"sap/m/List.js",
@@ -936,14 +1131,15 @@
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/RuleSerializer.js",
-				"sap/ui/support/supportRules/RuleSet.js",
 				"sap/ui/support/supportRules/Storage.js",
 				"sap/ui/support/supportRules/WCBChannels.js",
 				"sap/ui/support/supportRules/WindowCommunicationBus.js",
 				"sap/ui/support/supportRules/ui/controllers/BaseController.js",
+				"sap/ui/support/supportRules/ui/controllers/PresetsController.js",
+				"sap/ui/support/supportRules/ui/models/CustomJSONListSelection.js",
+				"sap/ui/support/supportRules/ui/models/PresetsUtils.js",
 				"sap/ui/support/supportRules/ui/models/SelectionUtils.js",
-				"sap/ui/support/supportRules/ui/models/SharedModel.js",
-				"sap/ui/unified/FileUploader.js"
+				"sap/ui/support/supportRules/ui/models/SharedModel.js"
 			]
 		},
 		{
@@ -954,6 +1150,7 @@
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/Storage.js",
+				"sap/ui/support/supportRules/ui/models/PresetsUtils.js",
 				"sap/ui/support/supportRules/ui/models/SelectionUtils.js"
 			]
 		},
@@ -964,6 +1161,7 @@
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/Storage.js",
+				"sap/ui/support/supportRules/ui/models/PresetsUtils.js",
 				"sap/ui/support/supportRules/ui/models/SelectionUtils.js"
 			]
 		},
@@ -1007,13 +1205,13 @@
 			"module": "sap/ui/support/supportRules/ui/controllers/Main.controller.js",
 			"isDebug": true,
 			"required": [
-				"sap/m/library.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/Storage.js",
 				"sap/ui/support/supportRules/WCBChannels.js",
 				"sap/ui/support/supportRules/WindowCommunicationBus.js",
 				"sap/ui/support/supportRules/ui/controllers/BaseController.js",
+				"sap/ui/support/supportRules/ui/models/Documentation.js",
 				"sap/ui/support/supportRules/ui/models/SharedModel.js",
 				"sap/ui/thirdparty/URI.js"
 			]
@@ -1022,15 +1220,52 @@
 			"name": "supportRules/ui/controllers/Main.controller.js",
 			"module": "sap/ui/support/supportRules/ui/controllers/Main.controller.js",
 			"required": [
-				"sap/m/library.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/Storage.js",
 				"sap/ui/support/supportRules/WCBChannels.js",
 				"sap/ui/support/supportRules/WindowCommunicationBus.js",
 				"sap/ui/support/supportRules/ui/controllers/BaseController.js",
+				"sap/ui/support/supportRules/ui/models/Documentation.js",
 				"sap/ui/support/supportRules/ui/models/SharedModel.js",
 				"sap/ui/thirdparty/URI.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/controllers/PresetsController-dbg.js",
+			"module": "sap/ui/support/supportRules/ui/controllers/PresetsController.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/GroupHeaderListItem.js",
+				"sap/m/MessageBox.js",
+				"sap/m/MessageToast.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/core/library.js",
+				"sap/ui/support/library.js",
+				"sap/ui/support/supportRules/ui/controllers/BaseController.js",
+				"sap/ui/support/supportRules/ui/models/Documentation.js",
+				"sap/ui/support/supportRules/ui/models/PresetsUtils.js",
+				"sap/ui/support/supportRules/ui/models/SelectionUtils.js",
+				"sap/ui/support/supportRules/util/Utils.js",
+				"sap/ui/thirdparty/jquery.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/controllers/PresetsController.js",
+			"module": "sap/ui/support/supportRules/ui/controllers/PresetsController.js",
+			"required": [
+				"sap/m/GroupHeaderListItem.js",
+				"sap/m/MessageBox.js",
+				"sap/m/MessageToast.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/core/library.js",
+				"sap/ui/support/library.js",
+				"sap/ui/support/supportRules/ui/controllers/BaseController.js",
+				"sap/ui/support/supportRules/ui/models/Documentation.js",
+				"sap/ui/support/supportRules/ui/models/PresetsUtils.js",
+				"sap/ui/support/supportRules/ui/models/SelectionUtils.js",
+				"sap/ui/support/supportRules/util/Utils.js",
+				"sap/ui/thirdparty/jquery.js"
 			]
 		},
 		{
@@ -1079,11 +1314,95 @@
 			"name": "supportRules/ui/images/arrows/arrow-right.png"
 		},
 		{
+			"name": "supportRules/ui/models/CustomJSONListSelection-dbg.js",
+			"module": "sap/ui/support/supportRules/ui/models/CustomJSONListSelection.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/support/supportRules/Constants.js",
+				"sap/ui/support/supportRules/Storage.js",
+				"sap/ui/support/supportRules/ui/models/CustomListSelection.js",
+				"sap/ui/support/supportRules/ui/models/SelectionUtils.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/models/CustomJSONListSelection.js",
+			"module": "sap/ui/support/supportRules/ui/models/CustomJSONListSelection.js",
+			"required": [
+				"sap/ui/support/supportRules/Constants.js",
+				"sap/ui/support/supportRules/Storage.js",
+				"sap/ui/support/supportRules/ui/models/CustomListSelection.js",
+				"sap/ui/support/supportRules/ui/models/SelectionUtils.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/models/CustomListSelection-dbg.js",
+			"module": "sap/ui/support/supportRules/ui/models/CustomListSelection.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/base/EventProvider.js",
+				"sap/ui/model/SelectionModel.js",
+				"sap/ui/support/supportRules/ui/models/SharedModel.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/models/CustomListSelection.js",
+			"module": "sap/ui/support/supportRules/ui/models/CustomListSelection.js",
+			"required": [
+				"sap/ui/base/EventProvider.js",
+				"sap/ui/model/SelectionModel.js",
+				"sap/ui/support/supportRules/ui/models/SharedModel.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/models/Documentation-dbg.js",
+			"module": "sap/ui/support/supportRules/ui/models/Documentation.js",
+			"isDebug": true,
+			"required": [
+				"jquery.sap.global.js",
+				"sap/m/library.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/models/Documentation.js",
+			"module": "sap/ui/support/supportRules/ui/models/Documentation.js",
+			"required": [
+				"jquery.sap.global.js",
+				"sap/m/library.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/models/PresetsUtils-dbg.js",
+			"module": "sap/ui/support/supportRules/ui/models/PresetsUtils.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/util/File.js",
+				"sap/ui/support/library.js",
+				"sap/ui/support/supportRules/Constants.js",
+				"sap/ui/support/supportRules/Storage.js",
+				"sap/ui/support/supportRules/ui/models/SelectionUtils.js",
+				"sap/ui/support/supportRules/ui/models/SharedModel.js",
+				"sap/ui/thirdparty/jquery.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/models/PresetsUtils.js",
+			"module": "sap/ui/support/supportRules/ui/models/PresetsUtils.js",
+			"required": [
+				"sap/ui/core/util/File.js",
+				"sap/ui/support/library.js",
+				"sap/ui/support/supportRules/Constants.js",
+				"sap/ui/support/supportRules/Storage.js",
+				"sap/ui/support/supportRules/ui/models/SelectionUtils.js",
+				"sap/ui/support/supportRules/ui/models/SharedModel.js",
+				"sap/ui/thirdparty/jquery.js"
+			]
+		},
+		{
 			"name": "supportRules/ui/models/SelectionUtils-dbg.js",
 			"module": "sap/ui/support/supportRules/ui/models/SelectionUtils.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/core/util/File.js",
+				"jquery.sap.global.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/Storage.js",
 				"sap/ui/support/supportRules/ui/models/SharedModel.js"
@@ -1093,7 +1412,7 @@
 			"name": "supportRules/ui/models/SelectionUtils.js",
 			"module": "sap/ui/support/supportRules/ui/models/SelectionUtils.js",
 			"required": [
-				"sap/ui/core/util/File.js",
+				"jquery.sap.global.js",
 				"sap/ui/support/supportRules/Constants.js",
 				"sap/ui/support/supportRules/Storage.js",
 				"sap/ui/support/supportRules/ui/models/SharedModel.js"
@@ -1146,6 +1465,7 @@
 			"required": [
 				"sap/m/Bar.js",
 				"sap/m/Button.js",
+				"sap/m/FormattedText.js",
 				"sap/m/IconTabFilter.js",
 				"sap/m/IconTabHeader.js",
 				"sap/m/Label.js",
@@ -1155,6 +1475,8 @@
 				"sap/m/Page.js",
 				"sap/m/StandardListItem.js",
 				"sap/m/Text.js",
+				"sap/m/Toolbar.js",
+				"sap/m/ToolbarLayoutData.js",
 				"sap/ui/core/mvc/XMLView.js",
 				"sap/ui/layout/Splitter.js",
 				"sap/ui/layout/VerticalLayout.js",
@@ -1230,6 +1552,56 @@
 			]
 		},
 		{
+			"name": "supportRules/ui/views/PresetExport.fragment.xml",
+			"module": "sap/ui/support/supportRules/ui/views/PresetExport.fragment.xml",
+			"required": [
+				"sap/m/Button.js",
+				"sap/m/Dialog.js",
+				"sap/m/Input.js",
+				"sap/m/Label.js",
+				"sap/m/Text.js",
+				"sap/m/TextArea.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/layout/form/SimpleForm.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/views/PresetImport.fragment.xml",
+			"module": "sap/ui/support/supportRules/ui/views/PresetImport.fragment.xml",
+			"required": [
+				"sap/m/Button.js",
+				"sap/m/Dialog.js",
+				"sap/m/HBox.js",
+				"sap/m/Label.js",
+				"sap/m/MessageStrip.js",
+				"sap/m/ScrollContainer.js",
+				"sap/m/Text.js",
+				"sap/m/VBox.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/layout/form/SimpleForm.js",
+				"sap/ui/unified/FileUploader.js"
+			]
+		},
+		{
+			"name": "supportRules/ui/views/Presets.fragment.xml",
+			"module": "sap/ui/support/supportRules/ui/views/Presets.fragment.xml",
+			"required": [
+				"sap/m/Bar.js",
+				"sap/m/Button.js",
+				"sap/m/CustomListItem.js",
+				"sap/m/FormattedText.js",
+				"sap/m/HBox.js",
+				"sap/m/List.js",
+				"sap/m/Page.js",
+				"sap/m/ResponsivePopover.js",
+				"sap/m/Title.js",
+				"sap/m/Toolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/core/Icon.js"
+			]
+		},
+		{
 			"name": "supportRules/ui/views/RuleDetails.fragment.xml",
 			"module": "sap/ui/support/supportRules/ui/views/RuleDetails.fragment.xml",
 			"required": [
@@ -1285,10 +1657,10 @@
 				"sap/m/Button.js",
 				"sap/m/CheckBox.js",
 				"sap/m/FlexBox.js",
-				"sap/m/Link.js",
 				"sap/m/Popover.js",
 				"sap/m/Text.js",
 				"sap/ui/core/Fragment.js",
+				"sap/ui/core/Icon.js",
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/layout/VerticalLayout.js"
 			]

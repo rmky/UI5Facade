@@ -5,7 +5,7 @@
  */
 
 // Provides control sap.m.MaskInputRule.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'], function(jQuery, Element) {
+sap.ui.define(['sap/ui/core/Element', "sap/base/Log"], function(Element, Log) {
 	"use strict";
 
 	/**
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'], function(jQuery, Ele
 	 *
 	 * @author SAP SE
 	 * @extends sap.ui.core.Element
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @public
 	 * @constructor
 	 * @since 1.34.0
@@ -97,7 +97,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'], function(jQuery, Ele
 		if (/^.$/i.test(sNewSymbol)) {
 			return true;
 		}
-		jQuery.sap.log.error("The mask format symbol '" + sNewSymbol + "' is not valid");
+		Log.error("The mask format symbol '" + sNewSymbol + "' is not valid");
 		return false;
 	}
 
@@ -111,7 +111,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'], function(jQuery, Ele
 		if (/.+/i.test(sRegex)) {
 			return true;
 		}
-		jQuery.sap.log.error("The regex value '" + sRegex + "' is not valid");
+		Log.error("The regex value '" + sRegex + "' is not valid");
 		return false;
 	}
 

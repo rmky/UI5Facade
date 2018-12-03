@@ -5,8 +5,8 @@
  */
 
 //Provides the locale object sap.ui.core.Locale
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object'],
-	function(jQuery, BaseObject) {
+sap.ui.define(['sap/ui/base/Object', "sap/base/assert"],
+	function(BaseObject, assert) {
 	"use strict";
 
 
@@ -38,7 +38,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object'],
 		 *
 		 * @extends sap.ui.base.Object
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 * @public
 		 * @alias sap.ui.core.Locale
 		 */
@@ -193,7 +193,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object'],
 			},
 
 			hasPrivateUseSubtag : function(sSubtag) {
-				jQuery.sap.assert(sSubtag && sSubtag.match(/^[0-9A-Z]{1,8}$/i), "subtag must be a valid BCP47 private use tag");
+				assert(sSubtag && sSubtag.match(/^[0-9A-Z]{1,8}$/i), "subtag must be a valid BCP47 private use tag");
 				return this.getPrivateUseSubtags().indexOf(sSubtag) >= 0;
 			},
 

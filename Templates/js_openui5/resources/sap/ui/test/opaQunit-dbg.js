@@ -5,11 +5,11 @@
  */
 /*global QUnit */
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/thirdparty/URI',
-	'./Opa',
-	'./Opa5'
-], function ($, URI, Opa, Opa5) {
+	'sap/ui/test/Opa',
+	'sap/ui/test/Opa5',
+	"sap/ui/thirdparty/jquery"
+], function(URI, Opa, Opa5, jQueryDOM) {
 	"use strict";
 
 	QUnit.begin(function (oDetails) {
@@ -174,7 +174,7 @@ sap.ui.define([
 		var oParams = oEvent.getParameters();
 		if (oParams.extension.getAssertions) {
 			var oAssertions = oParams.extension.getAssertions();
-			$.each(oAssertions,function(sName,fnAssertion) {
+			jQueryDOM.each(oAssertions,function(sName,fnAssertion) {
 				QUnit.assert[sName] = function() {
 					var qunitThis = this;
 					// call the assertion in the app window
@@ -198,4 +198,3 @@ sap.ui.define([
 
 	return opaTest;
 });
-

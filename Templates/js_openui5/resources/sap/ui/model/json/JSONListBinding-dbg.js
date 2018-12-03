@@ -5,8 +5,15 @@
  */
 
 // Provides the JSON model implementation of a list binding
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/ChangeReason', 'sap/ui/model/ClientListBinding'],
-	function(jQuery, ChangeReason, ClientListBinding) {
+sap.ui.define([
+	'sap/ui/model/ChangeReason',
+	'sap/ui/model/ClientListBinding',
+	"sap/base/util/array/diff",
+	"sap/base/util/deepEqual",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+	function(ChangeReason, ClientListBinding, diff, deepEqual, Log, jQuery) {
 	"use strict";
 
 
@@ -67,7 +74,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ChangeReason', 'sap/ui/model/C
 
 				//Check diff
 				if (this.aLastContextData && iStartIndex < this.iLastEndIndex) {
-					aContexts.diff = jQuery.sap.arraySymbolDiff(this.aLastContextData, aContextData);
+					aContexts.diff = diff(this.aLastContextData, aContextData);
 				}
 
 				this.iLastEndIndex = iStartIndex + iLength;
@@ -75,7 +82,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ChangeReason', 'sap/ui/model/C
 				this.aLastContextData = aContextData.slice(0);
 			} catch (oError) {
 				this.bUseExtendedChangeDetection = false;
-				jQuery.sap.log.warning("JSONListBinding: Extended change detection has been disabled as JSON data could not be serialized.");
+				Log.warning("JSONListBinding: Extended change detection has been disabled as JSON data could not be serialized.");
 			}
 		}
 
@@ -150,7 +157,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ChangeReason', 'sap/ui/model/C
 
 		if (!this.bUseExtendedChangeDetection) {
 			var oList = this.oModel._getObject(this.sPath, this.oContext) || [];
-			if (!jQuery.sap.equal(this.oList, oList) || bForceupdate) {
+			if (!deepEqual(this.oList, oList) || bForceupdate) {
 				this.update();
 				this._fireChange({reason: ChangeReason.Change});
 			}
@@ -163,7 +170,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ChangeReason', 'sap/ui/model/C
 			if (this.oList.length != oList.length) {
 				bChangeDetected = true;
 			}
-			if (!jQuery.sap.equal(this.oList, oList)) {
+			if (!deepEqual(this.oList, oList)) {
 				this.update();
 			}
 

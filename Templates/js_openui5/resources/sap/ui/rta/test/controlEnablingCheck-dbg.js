@@ -1,4 +1,4 @@
-/* global QUnit, sinon*/
+/* global QUnit */
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
@@ -19,7 +19,9 @@ sap.ui.define([
 	'sap/ui/fl/FlexControllerFactory',
 	'sap/ui/fl/registry/Settings',
 	'sap/ui/rta/ControlTreeModifier',
-	"sap/ui/fl/library", //we have to ensure to load fl, so that change handler gets registered,
+	"sap/ui/thirdparty/jquery",
+	//we have to ensure to load fl, so that change handler gets registered,
+	"sap/ui/fl/library",
 	'sap/ui/thirdparty/sinon',
 	'sap/ui/thirdparty/sinon-qunit'
 ],
@@ -36,8 +38,11 @@ function(
 	Model,
 	FlexControllerFactory,
 	Settings,
-	ControlTreeModifier
-){
+	ControlTreeModifier,
+	jQuery,
+	library,
+	sinon
+) {
 
 	"use strict";
 
@@ -53,7 +58,7 @@ function(
 	 * E.g. <code>controlEnablingCheck.only("Remove");<\code>
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @static
 	 * @since 1.42
@@ -112,6 +117,11 @@ function(
 					"sap.app": {
 						"id": UI_COMPONENT_NAME,
 						"type": "application"
+					},
+					"getEntry": function () {
+						return {
+							type: "application"
+						};
 					}
 				}
 			},
@@ -195,10 +205,15 @@ function(
 							var oAggregationOverlay = this.oControlOverlay.getAggregationOverlay(aAddODataPropertyActions[0].aggregation);
 							oElementDesignTimeMetadata = oAggregationOverlay.getDesignTimeMetadata();
 						}
-						this.oCommand = oCommandFactory.getCommandFor(this.oControl, mOptions.action.name, mParameter, oElementDesignTimeMetadata);
-
-						assert.ok(this.oCommand, "then the registration for action to change type, the registration for change and control type to change handler is available and " + mOptions.action.name + " is a valid action");
-						resolve();
+						oCommandFactory.getCommandFor(this.oControl, mOptions.action.name, mParameter, oElementDesignTimeMetadata)
+						.then(function(oCommand) {
+							this.oCommand = oCommand;
+							assert.ok(oCommand, "then the registration for action to change type, the registration for change and control type to change handler is available and " + mOptions.action.name + " is a valid action");
+							resolve();
+						}.bind(this))
+						.catch(function(oMessage) {
+							throw new Error(oMessage);
+						});
 					}.bind(this));
 				}.bind(this));
 			}.bind(this));

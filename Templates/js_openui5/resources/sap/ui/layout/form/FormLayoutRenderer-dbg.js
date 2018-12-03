@@ -4,8 +4,12 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/layout/library", "sap/ui/core/library", "sap/ui/core/theming/Parameters", "sap/ui/layout/form/Form"],
-	function(library, coreLibrary, themingParameters, Form) {
+sap.ui.define([
+	'sap/ui/core/library',
+	'sap/ui/core/theming/Parameters',
+	'sap/ui/layout/library',
+	'sap/ui/layout/form/Form'
+	], function(coreLibrary, themingParameters, library, Form) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TitleLevel

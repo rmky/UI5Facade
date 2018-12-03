@@ -7,13 +7,8 @@
 /**
  * Initialization Code and shared classes of library sap.tnt.
  */
-sap.ui.define([
-		"jquery.sap.global",
-		"sap/ui/base/DataType",
-		"sap/ui/core/library",
-		"sap/m/library"
-	],
-	function (jQuery, DataType) {
+sap.ui.define(["sap/ui/base/DataType", "sap/ui/core/library", "sap/m/library"],
+	function(DataType) {
 	"use strict";
 
 	/**
@@ -22,14 +17,14 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.tnt
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.tnt",
-		version: "1.56.6",
+		version: "1.60.1",
 		dependencies : ["sap.ui.core", "sap.m"],
 		types: [
 			"sap.tnt.RenderMode",

@@ -7,13 +7,15 @@
 sap.ui.define([
 	"sap/ui/base/ManagedObject",
 	"sap/ui/base/ManagedObjectMetadata",
-	"jquery.sap.global",
-	"jquery.sap.xml" // needed to have jQuery.sap.getParseError
+	"sap/base/util/ObjectPath",
+	"sap/ui/util/XMLHelper",
+	"sap/base/Log"
 ], function(
 	ManagedObject,
 	ManagedObjectMetadata,
-	jQuery
-	/* other jQuery.sap dependencies */
+	ObjectPath,
+	XMLHelper,
+	Log
 ) {
 
 	"use strict";
@@ -38,7 +40,7 @@ sap.ui.define([
 		/** Function determining the control targeted by the change.
 		* The function differs between local IDs generated starting with 1.40 and the global IDs generated in previous versions.
 		*
-		* @param {object} oSelector Target of a flexiblity change
+		* @param {object} oSelector Target of a flexibility change
 		* @param {string} oSelector.id ID of the control targeted by the change
 		* @param {boolean} oSelector.isLocalId true if the ID within the selector is a local ID or a global ID
 		* @param {sap.ui.core.UIComponent} oAppComponent asd
@@ -48,8 +50,8 @@ sap.ui.define([
 		* @public
 		*/
 		bySelector: function (oSelector, oAppComponent, oView) {
-		   var sControlId = this.getControlIdBySelector(oSelector, oAppComponent);
-		   return this._byId(sControlId, oView);
+			var sControlId = this.getControlIdBySelector(oSelector, oAppComponent);
+			return this._byId(sControlId, oView);
 		},
 
 		/** Function determining the control ID from selector.
@@ -67,35 +69,35 @@ sap.ui.define([
 				return undefined;
 			}
 
-		   if (typeof oSelector === "string") {
-		      oSelector = {
-		         id: oSelector
-		      };
-		   }
+			if (typeof oSelector === "string") {
+				oSelector = {
+					id: oSelector
+				};
+			}
 
-		   var sControlId = oSelector.id;
+			var sControlId = oSelector.id;
 
-		   if (oSelector.idIsLocal) {
-		      if (oAppComponent) {
-		         sControlId = oAppComponent.createId(sControlId);
-		      } else {
-		         throw new Error("App Component instance needed to get a control's ID from selector");
-		      }
-		   } else {
-		      // does nothing except in the case of a FLP prefix
-		      var pattern = /^application-[^-]*-[^-]*-component---/igm;
-		      var bHasFlpPrefix = !!pattern.exec(oSelector.id);
-		      if (bHasFlpPrefix) {
-		         sControlId = sControlId.replace(/^application-[^-]*-[^-]*-component---/g, "");
-		         if (oAppComponent) {
-		            sControlId = oAppComponent.createId(sControlId);
-		         } else {
-		            throw new Error("App Component instance needed to get a control's ID from selector");
-		         }
-		      }
-		   }
+			if (oSelector.idIsLocal) {
+				if (oAppComponent) {
+					sControlId = oAppComponent.createId(sControlId);
+				} else {
+					throw new Error("App Component instance needed to get a control's ID from selector");
+				}
+			} else {
+				// does nothing except in the case of a FLP prefix
+				var pattern = /^application-[^-]*-[^-]*-component---/igm;
+				var bHasFlpPrefix = !!pattern.exec(oSelector.id);
+				if (bHasFlpPrefix) {
+					sControlId = sControlId.replace(/^application-[^-]*-[^-]*-component---/g, "");
+					if (oAppComponent) {
+					sControlId = oAppComponent.createId(sControlId);
+					} else {
+					throw new Error("App Component instance needed to get a control's ID from selector");
+					}
+				}
+			}
 
-		   return sControlId;
+			return sControlId;
 		},
 
 
@@ -103,7 +105,7 @@ sap.ui.define([
 		 * The function differs between local IDs generated starting with 1.40 and the global IDs generated in previous versions.
 		 *
 		 * @param {sap.ui.base.ManagedObject | Element | string} vControl control or ID string for which the selector should be determined
-		 * @param {sap.ui.core.Component} oAppComponent (optional) oAppComponent application component, needed only if vControl is a string or XML Node
+		 * @param {sap.ui.core.Component} oAppComponent oAppComponent application component, needed only if vControl is a string or XML Node
 		 * @param {object} mAdditionalSelectorInformation additional mapped data which is added to the selector
 		 * @returns {object} oSelector
 		 * @returns {string} oSelector.id ID used for determination of the flexibility target
@@ -114,8 +116,8 @@ sap.ui.define([
 		 */
 		getSelector: function (vControl, oAppComponent, mAdditionalSelectorInformation) {
 			var sControlId = vControl;
-			if (vControl instanceof ManagedObject) {
-				sControlId = vControl.getId();
+			if (typeof sControlId !== "string") {
+				sControlId = (vControl) ? this.getId(vControl) : undefined;
 			} else if (!oAppComponent) {
 				throw new Error("App Component instance needed to get a selector from string ID");
 			}
@@ -125,19 +127,18 @@ sap.ui.define([
 					"but core properties were overwritten by the additionally passed information.");
 			}
 
-			var bValidId = this.checkControlId(vControl, oAppComponent);
+			var bValidId = this.checkControlId(sControlId, oAppComponent);
 
 			if (!bValidId) {
 				throw new Error("Generated ID attribute found - to offer flexibility a stable control ID is needed to assign the changes to, but for this control the ID was generated by SAPUI5 " + sControlId);
 			}
 
-			var oSelector = jQuery.extend(mAdditionalSelectorInformation || {}, {
+			var oSelector = Object.assign({}, mAdditionalSelectorInformation, {
 				id: "",
 				idIsLocal: false
-			}, true);
+			});
 
-
-			if (this.hasLocalIdSuffix(vControl, oAppComponent)) {
+			if (this.hasLocalIdSuffix(sControlId, oAppComponent)) {
 				// get local Id for control at root component and use it as selector ID
 				var sLocalId = oAppComponent.getLocalId(sControlId);
 				oSelector.id = sLocalId;
@@ -167,10 +168,9 @@ sap.ui.define([
 				return true;
 			} else {
 
-
 				var sHasConcatenatedId = sControlId.indexOf("--") !== -1;
-				if (!bSuppressLogging && !sHasConcatenatedId && this._fnCheckElementIsNoClone(vControl)) {
-					jQuery.sap.log.warning("Generated id attribute found, to offer flexibility a stable control id is needed " +
+				if (!bSuppressLogging && !sHasConcatenatedId) {
+					Log.warning("Generated id attribute found, to offer flexibility a stable control id is needed " +
 						"to assign the changes to, but for this control the id was generated by SAPUI5", sControlId);
 				}
 				return false;
@@ -182,7 +182,7 @@ sap.ui.define([
 		 * If this prefix exists the suffix after the component Id is called the local id.
 		 *
 		 * @param {sap.ui.core.Control | string} vControl ui5 control or id to be checked if it is wihtin the generic application
-		 * @param {sap.ui.core.Component} oAppComponent application component, needed only if vControl is string (id)
+		 * @param {sap.ui.core.UIComponent} oAppComponent application component, needed only if vControl is string (id)
 		 * @returns {boolean} control has a local id
 		 * @protected
 		 */
@@ -190,25 +190,13 @@ sap.ui.define([
 			var sControlId = (vControl instanceof ManagedObject) ? vControl.getId() : vControl;
 
 			if (!oAppComponent) {
-				jQuery.sap.log.error("determination of a local id suffix failed due to missing app component for " + sControlId);
+				Log.error("determination of a local id suffix failed due to missing app component for " + sControlId);
 				return false;
 			}
 
 			return !!oAppComponent.getLocalId(sControlId);
 		},
 
-
-		_fnCheckElementIsNoClone: function (oElement) {
-			var bElementIsNoClone = true;
-
-			if (oElement.getBindingContext && oElement.getBindingContext()) {
-				var aBindingHierarchy = oElement.getBindingContext().getPath().split("/");
-				var sLowestBindingHierarchy = aBindingHierarchy[aBindingHierarchy.length - 1];
-				bElementIsNoClone = isNaN(sLowestBindingHierarchy);
-			}
-
-			return bElementIsNoClone;
-		},
 		/**
 		 * This function takes the fragment, goes through all the children and adds a prefix to the control's ID.
 		 * Can also handle 'FragmentDefinition' as root node, then all the children's IDs are prefixed.
@@ -221,7 +209,7 @@ sap.ui.define([
 		 * @returns {Element} Returns the original fragment in XML with updated IDs.
 		 */
 		_checkAndPrefixIdsInFragment: function(oFragment, sIdPrefix) {
-			var oParseError = jQuery.sap.getParseError(oFragment);
+			var oParseError = XMLHelper.getParseError(oFragment);
 			if (oParseError.errorCode !== 0) {
 				throw new Error(oFragment.parseError.reason);
 			}
@@ -281,7 +269,7 @@ sap.ui.define([
 		 * @returns {boolean} Returns true if the element is an instance of the type
 		 */
 		_isInstanceOf: function(oElement, sType) {
-			var oInstance = jQuery.sap.getObject(sType);
+			var oInstance = ObjectPath.get(sType);
 			if (typeof oInstance === "function") {
 				return oElement instanceof oInstance;
 			} else {
@@ -310,7 +298,7 @@ sap.ui.define([
 		_getControlMetadataInXml: function(oControl) {
 			var sControlType = this._getControlTypeInXml(oControl);
 			jQuery.sap.require(sControlType);
-			var ControlType = jQuery.sap.getObject(sControlType);
+			var ControlType = ObjectPath.get(sControlType);
 			return ControlType.getMetadata();
 		},
 
@@ -468,18 +456,28 @@ sap.ui.define([
 		/**
 		 * Creates the control in the corresponding representation
 		 *
-		 * @param {string} sClassName Class name for the control (for example, <code>sap.m.Button</code>), ensure the class is loaded to avoid sync requests
-		 * @param {sap.ui.core.UIComponent} [oAppComponent] - Needed to calculate the correct ID in case you provide an id
-		 * @param {Element} [oView] XML node of the view, required for XML case to create nodes and to find elements
-		 * @param {object} [oSelector] - Selector to calculate the ID for the control that is being created
+		 * @param {string} sClassName - Class name for the control (for example, <code>sap.m.Button</code>), ensure the class is loaded (no synchronous requests are called)
+		 * @param {sap.ui.core.UIComponent} [oAppComponent] - Needed to calculate the correct ID in case you provide an ID
+		 * @param {Element} [oView] - XML node of the view, required for XML case to create nodes and to find elements
+		 * @param {object} [oSelector] - Selector to calculate the ID for the control that is created
 		 * @param {string} [oSelector.id] - Control ID targeted by the change
 		 * @param {boolean} [oSelector.isLocalId] - True if the ID within the selector is a local ID or a global ID
-		 * @param {object} [mSettings] Further settings or properties for the control that is being created
+		 * @param {object} [mSettings] - Further settings or properties for the control that is created
+		 * @param {boolean} bAsync - Determines whether a synchronous (promise) or an asynchronous value should be returned
+		 * @returns {Element|Promise} Element or promise with element of the control that is created
+		 * @public
+		 */
+		createControl: function (sClassName, oAppComponent, oView, oSelector, mSettings, bAsync) {},
+
+		/**
+		 * See {@link sap.ui.base.ManagedObject#applySettings} method
+		 *
+		 * @param {sap.ui.base.ManagedObject | Element} vControl - control representation
+		 * @param {object} mSettings Further settings or properties for the control
 		 * @returns {Element} XML node of the control being created
 		 * @public
 		 */
-		createControl: function (sClassName, oAppComponent, oView, oSelector, mSettings) {},
-
+		applySettings: function(vControl, mSettings) {},
 
 		/**
 		 * See {@link sap.ui.base.ManagedObject#getId} method
@@ -642,6 +640,20 @@ sap.ui.define([
 		instantiateFragment: function(sFragment, sNamespace, oView) {},
 
 		/**
+		 * See {@link sap.ui.base.ManagedObject#destroy} method
+		 * Cleans up the resources associated with this object and all its aggregated children.
+		 *
+		 * After an object has been destroyed, it can no longer be used!
+		 *
+		 * Applications should call this method if they don't need the object any longer.
+		 *
+		 * @param {sap.ui.base.ManagedObject | Element}
+		 *          vControl - Control representation
+		 * @public
+		 */
+		destroy: function(vControl) {},
+
+		/**
 		 * Returns the module path of an instance specific change handler
 		 *
 		 * @param {sap.ui.base.ManagedObject | Element} vControl control representation
@@ -652,4 +664,3 @@ sap.ui.define([
 
 	};
 });
-

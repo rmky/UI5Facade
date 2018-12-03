@@ -274,16 +274,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/thirdparty/handlebars', 'sap/ui/supp
 				}
 
 				var groupIssueCountElement = groups[group].selected ? ' (' + groups[group].issueCount + ' issues)' : '';
-				var checkedGroup = '<span class="checked" style="' + (groups[group].selected ? '' : 'visibility: hidden;') + '"> &#10004; </span>';
+				var checkedGroup = '<span class="' + (groups[group].selected ? 'checked' : 'unchecked') + '"></span>';
 				content += '<tbody><tr><td colspan="100" ';
 				content += 'class="expandable-control ' + expandedClass + '" data-expandableElement="section-selected-rules-group' + groupNumber + '">' + checkedGroup;
-				content += '<span class="sapUiSupportLabel expandable-title"> ' + group + groupIssueCountElement + '</span>';
+				content += '<span class="sapUiSupportLabel expandable-title">' + group + groupIssueCountElement + '</span>';
 				content += '</td></tr></tbody>';
 				var rulesTable = '';
 
 				for (var rule in rules) {
 					var issueCountElement = rules[rule].selected ? ' (' + rules[rule].issueCount + ' issues)' : '';
-					var checked = '<span class="checked" style="' + (rules[rule].selected ? '' : 'visibility: hidden;') + '"> &#10004; </span>';
+					var checked = '<span class="' + (rules[rule].selected ? 'checked' : 'unchecked') + '"></span>';
 					rulesTable += '<tr>';
 					rulesTable += '<td>' + checked + rules[rule].title + issueCountElement + '</td>';
 					rulesTable += '<td>' + rules[rule].description + '</td>';
@@ -375,12 +375,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/thirdparty/handlebars', 'sap/ui/supp
 				issues: oData.issues,
 				appInfo: oData.application,
 				rules: oData.rules,
+				rulePreset: oData.rulePreset,
 				metadata: {
 					title: oData.name + ' Analysis Results',
 					title_TechnicalInfo: 'Technical Information',
 					title_Issues: 'Issues',
 					title_AppInfo: 'Application Information',
-					title_SelectedRules: 'Available and (<span class="checked">&#10004;</span>) Executed Rules',
+					title_SelectedRules: 'Available and (<span class="checked"></span>) Selected Rules',
 					timestamp: new Date(),
 					scope: oData.scope,
 					analysisDuration: oData.analysisDuration,
@@ -409,6 +410,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/thirdparty/handlebars', 'sap/ui/supp
 			archiver.add('issues.json', issues, 'json');
 			archiver.add('appInfos.json', appInfos, 'json');
 			archiver.add('report.html', report);
+			archiver.add('abap.json', oData.abap, 'json');
 			archiver.download("SupportAssistantReport");
 			archiver.clear();
 		});

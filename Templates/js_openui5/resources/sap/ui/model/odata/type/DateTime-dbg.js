@@ -4,8 +4,10 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/type/DateTimeBase'],
-	function(jQuery, DateTimeBase) {
+sap.ui.define([
+	"sap/base/Log",
+	"sap/ui/model/odata/type/DateTimeBase"
+], function (Log, DateTimeBase) {
 	"use strict";
 
 	/**
@@ -29,7 +31,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/type/DateTimeBase'],
 			case undefined:
 				break;
 			default:
-				jQuery.sap.log.warning("Illegal displayFormat: " + oConstraints.displayFormat,
+				Log.warning("Illegal displayFormat: " + oConstraints.displayFormat,
 					null, oType.getName());
 			}
 			oAdjustedConstraints.nullable = oConstraints.nullable;
@@ -57,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/odata/type/DateTimeBase'],
 	 * @extends sap.ui.model.odata.type.DateTimeBase
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @alias sap.ui.model.odata.type.DateTime
 	 * @param {object} [oFormatOptions]

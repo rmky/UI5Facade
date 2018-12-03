@@ -577,6 +577,7 @@
 	fieldGroupIds: [], // string[], since 1.31
 	colorString: undefined, // string, since 1.48.0
 	mode: sap.ui.unified.ColorPickerMode.HSV, // sap.ui.unified.ColorPickerMode, since 1.48.0
+	displayMode: sap.ui.unified.ColorPickerDisplayMode.Default, // sap.ui.unified.ColorPickerDisplayMode, since 1.58
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -602,6 +603,7 @@
 	fieldGroupIds=""
 	colorString=""
 	mode="HSV"
+	displayMode="Default"
 	validateFieldGroup=""
 	change=""
 	liveChange="">
@@ -1675,6 +1677,7 @@
 	dependents: [], // sap.ui.core.Element, since 1.19
 	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	submenu: undefined, // sap.ui.unified.Menu
+	ariaLabelledBy: [], // sap.ui.core.Control
 	select: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -1687,6 +1690,7 @@
 	startsSection="false"
 	text=""
 	icon=""
+	ariaLabelledBy=""
 	select="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->

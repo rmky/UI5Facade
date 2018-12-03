@@ -4,9 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([
-	"jquery.sap.global"
-], function (jQuery) {
+sap.ui.define(["sap/base/Log", "sap/ui/thirdparty/jquery"], function(Log, jQuery) {
 	"use strict";
 
 	/**
@@ -14,7 +12,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.m.changeHandler.MoveTableColumns
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @experimental Since 1.48
 	 */
 	var MoveTableColumns = {};
@@ -51,12 +49,12 @@ sap.ui.define([
 
 				// ColumnListItem and GroupHeaderListItem are only allowed for the tables items aggregation.
 				if (!aCells) {
-					jQuery.sap.log.warning("Aggregation cells to move not found");
+					Log.warning("Aggregation cells to move not found");
 					return;
 				}
 
 				if (iSourceIndex < 0 || iSourceIndex >= aCells.length) {
-					jQuery.sap.log.warning("Move cells in table item called with invalid index: " + iSourceIndex);
+					Log.warning("Move cells in table item called with invalid index: " + iSourceIndex);
 					return;
 				}
 
@@ -76,7 +74,7 @@ sap.ui.define([
 			};
 
 		if (oTargetSource !== oTable) {
-			jQuery.sap.log.warning("Moving columns between different tables is not yet supported.");
+			Log.warning("Moving columns between different tables is not yet supported.");
 			return false;
 		}
 
@@ -87,7 +85,7 @@ sap.ui.define([
 
 			if (!oMovedElement) {
 				sMovedElementId = mMovedElement.selector && mMovedElement.selector.id;
-				jQuery.sap.log.warning("The table column with id: '" + sMovedElementId + "' stored in the change is not found and the move operation cannot be applied");
+				Log.warning("The table column with id: '" + sMovedElementId + "' stored in the change is not found and the move operation cannot be applied");
 				return;
 			}
 

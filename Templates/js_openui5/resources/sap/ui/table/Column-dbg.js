@@ -5,10 +5,42 @@
  */
 
 // Provides control sap.ui.table.Column.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/library', 'sap/ui/core/Popup',
-		'sap/ui/model/Filter', 'sap/ui/model/FilterOperator', 'sap/ui/model/FilterType', 'sap/ui/model/Sorter', 'sap/ui/model/Type',
-		'sap/ui/model/type/String', './TableUtils', './library', './ColumnMenu'],
-function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType, Sorter, Type, StringType, TableUtils, library, ColumnMenu) {
+sap.ui.define([
+	'sap/ui/core/Element',
+	'sap/ui/core/library',
+	'sap/ui/core/Popup',
+	'sap/ui/model/Filter',
+	'sap/ui/model/FilterOperator',
+	'sap/ui/model/FilterType',
+	'sap/ui/model/Sorter',
+	'sap/ui/model/Type',
+	'sap/ui/model/type/String',
+	'./TableUtils',
+	'./library',
+	'./ColumnMenu',
+	'sap/base/util/ObjectPath',
+	"sap/base/util/JSTokenizer",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+function(
+	Element,
+	coreLibrary,
+	Popup,
+	Filter,
+	FilterOperator,
+	FilterType,
+	Sorter,
+	Type,
+	StringType,
+	TableUtils,
+	library,
+	ColumnMenu,
+	ObjectPath,
+	JSTokenizer,
+	Log,
+	jQuery
+) {
 	"use strict";
 
 	// shortcuts
@@ -25,7 +57,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	 * @class
 	 * The column allows you to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -66,7 +98,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 			 * @deprecated As of version 1.44 this property has no effect. Use the property <code>minWidth</code> in combination with the property
 			 * <code>width="auto"</code> instead.
 			 */
-			flexible : {type : "boolean", group : "Behavior", defaultValue : true},
+			flexible : {type : "boolean", group : "Behavior", defaultValue : true, deprecated: true},
 
 			/**
 			 * If set to true, the column can be resized either using the resize bar (by mouse) or using
@@ -301,12 +333,13 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	 * called when the column's parent is set
 	 */
 	Column.prototype.setParent = function(oParent, sAggregationName, bSuppressRerendering) {
-		Element.prototype.setParent.apply(this, arguments);
+		var vReturn = Element.prototype.setParent.apply(this, arguments);
 		var oMenu = this.getAggregation("menu");
 		if (oMenu && typeof oMenu._updateReferences === "function") {
 			//if menu is set update menus internal references
 			oMenu._updateReferences(this);
 		}
+		return vReturn;
 	};
 
 	/*
@@ -315,7 +348,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	Column.prototype.invalidate = function(oOrigin) {
 		// prevent changes in the template (especially the databinding ones)
 		//  - what about exchanging the template? => implemented in setTemplate
-		//  - what about modifiying properties? => developer must call invalidate!
+		//  - what about modifying properties? => developer must call invalidate!
 		// The problem is that we just need to prevent databinding changes. The
 		// problem here is that the databinding bindings are created ones the template
 		// is created and has its own model. If now changes are done in the model
@@ -326,7 +359,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 		 * connection to its data (also for the template of the column!) and this
 		 * finally invalidates the Table which triggers the re-rendering. One
 		 * option is to complete decouple the template from the Table by
-		 * supressing the invalidate. But this finally also decouples the Table
+		 * suppressing the invalidate. But this finally also decouples the Table
 		 * from any changes on the template after the template has been applied
 		 * to the Column. But when re-rendering it would update the column cells.
 		 * To notify the Table on proper changes one has to call the method
@@ -337,7 +370,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 		 * rerendered. This is a popup and we use the instance check because of the
 		 * menu behind the getMenu function is lazy created when first accessed.
 		 */
-		if (oOrigin !== this.getTemplate() && !TableUtils.isInstanceOf(oOrigin, "sap/ui/table/ColumnMenu")) {
+		if (oOrigin !== this.getTemplate() && !TableUtils.isA(oOrigin, "sap.ui.table.ColumnMenu")) {
 			// changes on the template require to call invalidate on the column or table
 			Element.prototype.invalidate.apply(this, arguments);
 		}
@@ -473,7 +506,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	 */
 	Column.prototype.setMenu = function(oMenu) {
 		this.setAggregation("menu", oMenu, true);
-		this._bMenuIsColumnMenu = TableUtils.isInstanceOf(oMenu, "sap/ui/table/ColumnMenu");
+		this._bMenuIsColumnMenu = TableUtils.isA(oMenu, "sap.ui.table.ColumnMenu");
 		return this;
 	};
 
@@ -615,7 +648,6 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	/**
 	 * Toggles the sort order of the column.
 	 *
-	 * @type sap.ui.table.Column
 	 * @public
 	 * @deprecated Since version 1.5.1.
 	 * Please use the function "sap.ui.Table.prototype.sort".
@@ -628,14 +660,12 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 
 
 	/**
-	 * sorts the current column ascending or descending
+	 * Sorts the current column ascending or descending.
 	 *
-	 * @param {boolean} bDescending
-	 *         sort order of the column (if undefined the default will be ascending)
-	 * @type sap.ui.table.Column
+	 * @param {boolean} bDescending Sort order of the column (if undefined the default will be ascending)
+	 * @returns {sap.ui.table.Column} Reference to <code>this</code> in order to allow method chaining
 	 * @public
-	 * @deprecated Since version 1.5.1.
-	 * Please use the function "sap.ui.Table.prototype.sort".
+	 * @deprecated Since version 1.5.1. Please use the function "sap.ui.Table.prototype.sort".
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	Column.prototype.sort = function(bDescending, bAdd) {
@@ -659,7 +689,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 
 				// reset the sorting status of all columns which are not sorted anymore
 				for (var i = 0, l = aColumns.length; i < l; i++) {
-					if (jQuery.inArray(aColumns[i], aSortedCols) < 0) {
+					if (aSortedCols.indexOf(aColumns[i]) < 0) {
 						// column is not sorted anymore -> reset default and remove sorter
 						aColumns[i].setProperty("sorted", false, true);
 						aColumns[i].setProperty("sortOrder", SortOrder.Ascending, true);
@@ -694,7 +724,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 					oBinding.sort(aSorters);
 
 				} else {
-					jQuery.sap.log.warning("Sorting not performed because no binding present", this);
+					Log.warning("Sorting not performed because no binding present", this);
 				}
 			}
 		}
@@ -712,15 +742,16 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 
 		this.$()
 			.parents(".sapUiTableCHT")
-			.find('td[data-sap-ui-colindex="' + this.getIndex() + '"]') // all td cells in this column header
-			.filter(":not([colspan]):visible") // only visible without a colspan
-			.first()
-			.find(".sapUiTableColCell")
+			.find('td[data-sap-ui-colindex="' + this.getIndex() + '"]:not([colspan]):not(.sapUiTableColInvisible):first .sapUiTableColCell')
 			.toggleClass("sapUiTableColSF", bSorted || bFiltered)
 			.toggleClass("sapUiTableColFiltered", bFiltered)
 			.toggleClass("sapUiTableColSorted", bSorted)
 			.toggleClass("sapUiTableColSortedD", bSorted && this.getSortOrder() === SortOrder.Descending);
+
 		oTable._getAccExtension().updateAriaStateOfColumn(this);
+
+		oTable._resetColumnHeaderHeights();
+		oTable._updateRowHeights(oTable._collectRowHeights(true), true);
 	};
 
 	Column.prototype._renderSortIcon = function() {
@@ -923,18 +954,18 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 		if (typeof (vType) === "string") {
 			try {
 				// similar to BindingParser allow to specify formatOptions and constraints for types
-				var mConfig = jQuery.sap.parseJS(vType);
+				var mConfig = JSTokenizer.parseJS(vType);
 				if (typeof (mConfig.type) === "string") {
-					var fnType = jQuery.sap.getObject(mConfig.type);
+					var fnType = ObjectPath.get(mConfig.type);
 					oType = fnType && new fnType(mConfig.formatOptions, mConfig.constraints);
 				}
 			} catch (ex) {
-				var fnType = jQuery.sap.getObject(vType);
+				var fnType = ObjectPath.get(vType);
 				oType = fnType && new fnType();
 			}
 			// check for a valid type
 			if (!(oType instanceof Type)) {
-				jQuery.sap.log.error("The filter type is not an instance of sap.ui.model.Type! Ignoring the filter type!");
+				Log.error("The filter type is not an instance of sap.ui.model.Type! Ignoring the filter type!");
 				oType = undefined;
 			}
 		}

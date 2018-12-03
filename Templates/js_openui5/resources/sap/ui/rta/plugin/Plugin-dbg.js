@@ -35,11 +35,11 @@ function(
 	 *
 	 * @class
 	 * The Plugin allows to handle the overlays and aggregation overlays from the DesignTime
-	 * The Plugin should be overriden by the real plugin implementations, which define some actions through events attached to an overlays
+	 * The Plugin should be overridden by the real plugin implementations, which define some actions through events attached to an overlays
 	 * @extends sap.ui.dt.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -140,7 +140,8 @@ function(
 
 	function _isInAggregationBinding(aElements) {
 		return aElements.some(function(oStableElement) {
-			return oStableElement && OverlayUtil.isInAggregationBinding(OverlayRegistry.getOverlay(oStableElement), oStableElement.sParentAggregationName);
+			var oStableElementOverlay = OverlayRegistry.getOverlay(oStableElement);
+			return oStableElementOverlay && OverlayUtil.isInAggregationBinding(oStableElementOverlay, oStableElement.sParentAggregationName);
 		});
 	}
 
@@ -176,7 +177,13 @@ function(
 				// when a control gets destroyed it gets deregistered before it gets removed from the parent aggregation.
 				// this means that getElementInstance is undefined when we get here via removeAggregation mutation
 				// when an overlay is not registered yet, we should not evaluate editable. In this case getDesignTimeMetadata returns null.
-				vEditable = oOverlay.getElement() && oOverlay.getDesignTimeMetadata() && this._isEditable(oOverlay, mPropertyBag);
+				// in case a control is marked as not adaptable by designTimeMetadata, it should not be possible to evaluate editable
+				// for this control due to parent aggregation action definitions
+				vEditable =
+					oOverlay.getElement() &&
+					oOverlay.getDesignTimeMetadata() &&
+					!oOverlay.getDesignTimeMetadata().markedAsNotAdaptable() &&
+					this._isEditable(oOverlay, mPropertyBag);
 			}
 			// for the createContainer and additionalElements plugin the isEditable function returns an object with 2 properties, asChild and asSibling.
 			// for every other plugin isEditable should be a boolean.
@@ -207,7 +214,7 @@ function(
 		return sName;
 	};
 
-	BasePlugin.prototype._isEditableByPlugin = function(oOverlay, bSibling) {
+	BasePlugin.prototype._isEditableByPlugin = function (oOverlay, bSibling) {
 		var sPluginName = this._retrievePluginName(bSibling);
 		var aPluginList = oOverlay.getEditableByPlugins();
 		return aPluginList.indexOf(sPluginName) > -1;
@@ -246,13 +253,23 @@ function(
 			var bUnstable = aStableElements.length > 0 ? aStableElements.some(function(vStableElement) {
 				var oControl = vStableElement.id || vStableElement;
 				if (!FlexUtils.checkControlId(oControl, vStableElement.appComponent)) {
-					return true;
+					return _checkAggregationBindingTemplateID(oOverlay, vStableElement);
 				}
 			}) : true;
 			oOverlay.setElementHasStableId(!bUnstable);
 		}
 		return oOverlay.hasElementStableId();
 	};
+
+	//Check if related binding template has stable id
+	function _checkAggregationBindingTemplateID(oOverlay, vStableElement){
+		var mAggregationInfo = OverlayUtil.getAggregationInformation(oOverlay, oOverlay.getElement().sParentAggregationName);
+		if (!mAggregationInfo.templateId) {
+			return true;
+		} else {
+			return !FlexUtils.checkControlId(mAggregationInfo.templateId, vStableElement.appComponent);
+		}
+	}
 
 	BasePlugin.prototype.getVariantManagementReference = function (oOverlay, oAction, bForceRelevantContainer, oStashedElement) {
 		var oElement;
@@ -285,15 +302,23 @@ function(
 	 * Checks the Aggregations on the Overlay for a specific Action
 	 * @param {sap.ui.dt.ElementOverlay} oOverlay overlay to be checked for action
 	 * @param {string} sAction action to be checked
+	 * @param {string} [sParentAggregationName] the aggregation in the parent where the element is
 	 * @return {boolean} whether the Aggregation has a valid Action
 	 * @protected
 	 */
-	BasePlugin.prototype.checkAggregationsOnSelf = function (oOverlay, sAction) {
+	BasePlugin.prototype.checkAggregationsOnSelf = function (oOverlay, sAction, sParentAggregationName) {
 		var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
 		var oElement = oOverlay.getElement();
 		var bIsEditable = false;
 
-		var oAction = oDesignTimeMetadata.getActionDataFromAggregations(sAction, oOverlay.getElement())[0];
+		var aActionData = oDesignTimeMetadata.getActionDataFromAggregations(sAction, oOverlay.getElement());
+		var oAction = aActionData.filter(function(oActionData){
+			if (oActionData && sParentAggregationName){
+				return oActionData.aggregation === sParentAggregationName;
+			} else {
+				return true;
+			}
+		})[0];
 		var sChangeType = oAction ? oAction.changeType : null;
 		var bChangeOnRelevantContainer = oAction && oAction.changeOnRelevantContainer;
 		if (bChangeOnRelevantContainer) {
@@ -338,6 +363,10 @@ function(
 		}
 		var sLayer = this.getCommandFactory().getFlexSettings().layer;
 		return ChangeRegistry.getInstance().getChangeHandler(sChangeType, sControlType, oElement, JsControlTreeModifier, sLayer);
+	};
+
+	BasePlugin.prototype.isAvailable = function () {
+		return Plugin.prototype.isAvailable.apply(this, arguments);
 	};
 
 	BasePlugin.prototype._checkRelevantContainerStableID = function(oAction, oElementOverlay){

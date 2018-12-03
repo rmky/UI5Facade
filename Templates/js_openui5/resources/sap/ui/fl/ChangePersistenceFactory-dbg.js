@@ -5,8 +5,17 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global", "sap/ui/core/Component", "sap/ui/fl/ChangePersistence", "sap/ui/fl/Utils"
-], function(jQuery, Component, ChangePersistence, Utils) {
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/core/Component",
+	"sap/ui/fl/ChangePersistence",
+	"sap/ui/fl/Utils"
+],
+function(
+	jQuery,
+	Component,
+	ChangePersistence,
+	Utils
+) {
 	"use strict";
 
 	/**
@@ -15,7 +24,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.ChangePersistenceFactory
 	 * @experimental Since 1.27.0
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 */
 	var ChangePersistenceFactory = {};
 
@@ -116,7 +125,6 @@ sap.ui.define([
 					var oFlAsyncHint = this._findFlAsyncHint(aAsyncHints.requests, sComponentName);
 					if (oFlAsyncHint) {
 						oChangePersistenceWrapper.oRequestOptions.cacheKey = oFlAsyncHint.cachebusterToken || "<NO CHANGES>";
-						oChangePersistenceWrapper.oRequestOptions.url = oFlAsyncHint.url;
 					}
 				}
 			}
@@ -156,7 +164,7 @@ sap.ui.define([
 
 		var oChangePersistenceWrapper = this._doLoadComponent(oConfig, oManifest);
 		oChangePersistenceWrapper.oRequestOptions.componentData = {};
-		jQuery.extend(oChangePersistenceWrapper.oRequestOptions.componentData, oConfig.componentData);
+		Object.assign(oChangePersistenceWrapper.oRequestOptions.componentData, oConfig.componentData);
 
 		oChangePersistenceWrapper.oChangePersistence.getChangesForComponent(oChangePersistenceWrapper.oRequestOptions);
 	};

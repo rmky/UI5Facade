@@ -5,7 +5,7 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global",
+	"sap/ui/thirdparty/jquery",
 	"sap/ui/base/ManagedObject",
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/registry/Settings"
@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @class Change class.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @alias sap.ui.fl.Change
 	 * @experimental Since 1.25.0
 	 */
@@ -45,10 +45,14 @@ sap.ui.define([
 			this._vRevertData = null;
 			this._aUndoOperations = null;
 			this.setState(Change.states.NEW);
+			this.setModuleName(oFile.moduleName);
 		},
 		metadata : {
 			properties : {
 				state : {
+					type: "string"
+				},
+				moduleName: {
 					type: "string"
 				}
 			}
@@ -625,8 +629,8 @@ sap.ui.define([
 			this._oDefinition.dependentSelector[sAlias] = oModifier.getSelector(vControl, oAppComponent, mAdditionalSelectorInformation);
 		}
 
-		//remove dependency list so that it will be created again in method getDependentIdList
-		delete this._aDependentIdList;
+		//remove dependency list so that it will be created again in method getDependentSelectorList
+		delete this._aDependentSelectorList;
 	};
 
 	/**
@@ -671,69 +675,54 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns all dependent global IDs, including the ID from the selector of the change.
+	 * Returns all dependent selectors, including the selector from the selector of the change.
 	 *
-	 * @param {sap.ui.core.Component} oAppComponent - Application component, needed to translate the local ID into a global ID
-	 *
-	 * @returns {array} dependent global ID list
-	 *
+	 * @returns {array} dependent selector list
 	 * @public
 	 */
-	Change.prototype.getDependentIdList = function (oAppComponent) {
+	Change.prototype.getDependentSelectorList = function () {
 		var that = this;
-		var sId;
 		var aDependentSelectors = [this.getSelector()];
-		var aDependentIds = [];
 
-		if (!this._aDependentIdList) {
+		if (!this._aDependentSelectorList) {
 			if (this._oDefinition.dependentSelector){
-				aDependentSelectors = Object.keys(this._oDefinition.dependentSelector).reduce(function(aDependentSelectors, sAlias){
-					return aDependentSelectors.concat(that._oDefinition.dependentSelector[sAlias]);
-				}, aDependentSelectors);
+				Object.keys(this._oDefinition.dependentSelector).forEach(function(sAlias){
+					var aCurrentSelector = that._oDefinition.dependentSelector[sAlias];
+					if (!Array.isArray(aCurrentSelector)) {
+						aCurrentSelector = [aCurrentSelector];
+					}
+
+					aCurrentSelector.forEach(function(oCurrentSelector) {
+						if (oCurrentSelector && Utils.indexOfObject(aDependentSelectors, oCurrentSelector) === -1) {
+							aDependentSelectors.push(oCurrentSelector);
+						}
+					});
+				});
 			}
-
-			aDependentSelectors.forEach(function (oDependentSelector) {
-				sId = oDependentSelector.id;
-				if (oDependentSelector.idIsLocal) {
-					sId = oAppComponent.createId(oDependentSelector.id);
-				}
-				if (sId && aDependentIds.indexOf(sId) === -1) {
-					aDependentIds.push(sId);
-				}
-			});
-
-			this._aDependentIdList = aDependentIds;
+			this._aDependentSelectorList = aDependentSelectors;
 		}
 
-		return this._aDependentIdList;
+		return this._aDependentSelectorList;
 	};
 
 	/**
-	 * Returns list of IDs of controls which the change depends on, excluding the ID from the selector of the change.
+	 * Returns list of selectors of controls which the change depends on, excluding the selector of the change.
 	 *
-	 * @param {sap.ui.core.Component} oAppComponent - Application component, needed to create a global ID from the local ID
-	 *
-	 * @returns {array} List of control IDs which the change depends on
-	 *
+	 * @returns {array} List of selectors which the change depends on
 	 * @public
 	 */
-	Change.prototype.getDependentControlIdList = function (oAppComponent) {
-		var sId;
-		var aDependentIds = this.getDependentIdList().concat();
+	Change.prototype.getDependentControlSelectorList = function () {
+		var aDependentSelectors = this.getDependentSelectorList().concat();
 
-		if (aDependentIds.length > 0) {
+		if (aDependentSelectors.length > 0) {
 			var oSelector = this.getSelector();
-			sId = oSelector.id;
-			if (oSelector.idIsLocal) {
-				sId = oAppComponent.createId(oSelector.id);
-			}
-			var iIndex = aDependentIds.indexOf(sId);
+			var iIndex = Utils.indexOfObject(aDependentSelectors, oSelector);
 			if (iIndex > -1) {
-				aDependentIds.splice(iIndex, 1);
+				aDependentSelectors.splice(iIndex, 1);
 			}
 		}
 
-		return aDependentIds;
+		return aDependentSelectors;
 	};
 
 	/**
@@ -813,8 +802,16 @@ sap.ui.define([
 	 * @param {String}  [oPropertyBag.reference] Application component name
 	 * @param {String}  [oPropertyBag.namespace] The namespace of the change file
 	 * @param {String}  [oPropertyBag.projectId] The project id of the change file
+	 * @param {String}  [oPropertyBag.moduleName] The name of the module which this changes refers to (i.e. xml / js)
 	 * @param {String}  [oPropertyBag.generator] The tool which is used to generate the change file
 	 * @param {Boolean}  [oPropertyBag.jsOnly] The change can only be applied with the JS modifier
+	 * @param {Object}  [oPropertyBag.oDataInformation] Object with information about the oData service
+	 * @param {String}  [oPropertyBag.oDataInformation.propertyName] The name of the OData Property
+	 * @param {String}  [oPropertyBag.oDataInformation.entityType] The name of the OData entity type that the property belongs to
+	 * @param {String}  [oPropertyBag.oDataInformation.oDataServiceUri] The uri of the OData service
+	 * @param {String}  [oPropertyBag.variantReference] The variant reference of a change belonging to a variant
+	 * @param {String}  [oPropertyBag.support.sourceChangeFileName] The file name of the source change in case of a copied change
+	 * @param {String}  [oPropertyBag.support.compositeCommand] The unique id defining which changes belong together in a composite command
 	 *
 	 * @returns {Object} The content of the change file
 	 *
@@ -833,12 +830,11 @@ sap.ui.define([
 			sFileType = oPropertyBag.isVariant ? "variant" : "change";
 		}
 
-		var sBaseId = oPropertyBag.reference && oPropertyBag.reference.replace(".Component", "") ||  "";
-
 		var oNewFile = {
 			fileName: oPropertyBag.id || Utils.createDefaultFileName(oPropertyBag.changeType),
 			fileType: sFileType,
 			changeType: oPropertyBag.changeType || "",
+			moduleName: oPropertyBag.moduleName || "",
 			reference: oPropertyBag.reference || "",
 			packageName: oPropertyBag.packageName || "",
 			content: oPropertyBag.content || {},
@@ -847,7 +843,7 @@ sap.ui.define([
 			layer: oPropertyBag.layer || Utils.getCurrentLayer(oPropertyBag.isUserDependent),
 			texts: oPropertyBag.texts || {},
 			namespace: oPropertyBag.namespace || Utils.createNamespace(oPropertyBag, "changes"), //TODO: we need to think of a better way to create namespaces from Adaptation projects.
-			projectId: oPropertyBag.projectId || sBaseId,
+			projectId: oPropertyBag.projectId || (oPropertyBag.reference && oPropertyBag.reference.replace(".Component", "")) || "",
 			creation: "",
 			originalLanguage: Utils.getCurrentLanguage(),
 			conditions: {},
@@ -857,11 +853,14 @@ sap.ui.define([
 				service: oPropertyBag.service || "",
 				user: "",
 				sapui5Version: sap.ui.version,
-				compositeCommand: ""
+				sourceChangeFileName: oPropertyBag.support && oPropertyBag.support.sourceChangeFileName || "",
+				compositeCommand: oPropertyBag.support && oPropertyBag.support.compositeCommand || ""
 			},
+			oDataInformation: oPropertyBag.oDataInformation || {},
 			dependentSelector: oPropertyBag.dependentSelector || {},
 			validAppVersions: oPropertyBag.validAppVersions || {},
-			jsOnly: oPropertyBag.jsOnly || false
+			jsOnly: oPropertyBag.jsOnly || false,
+			variantReference: oPropertyBag.variantReference || ""
 		};
 
 		return oNewFile;

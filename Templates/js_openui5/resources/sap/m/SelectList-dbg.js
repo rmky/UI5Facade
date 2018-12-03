@@ -6,14 +6,16 @@
 
 // Provides control sap.m.SelectList.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/delegate/ItemNavigation',
 	'sap/ui/core/Item',
-	'./SelectListRenderer'
+	'./SelectListRenderer',
+	"sap/ui/thirdparty/jquery",
+	// jQuery Plugin "control"
+	"sap/ui/dom/jquery/control"
 ],
-	function(jQuery, library, Control, ItemNavigation, Item, SelectListRenderer) {
+	function(library, Control, ItemNavigation, Item, SelectListRenderer, jQuery) {
 		"use strict";
 
 		// shortcut for sap.m.touch
@@ -33,7 +35,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -952,7 +954,7 @@ sap.ui.define([
 			return this;
 		};
 
-		SelectList.prototype.setNoDataText = jQuery.noop;
+		SelectList.prototype.setNoDataText = function() {};
 
 		return SelectList;
 	});

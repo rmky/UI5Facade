@@ -6,18 +6,14 @@
 
 sap.ui.define([
 	"sap/ui/core/EventBus",
-	"sap/base/util/equal",
 	"sap/base/util/includes",
 	"sap/base/util/isPlainObject",
-	"sap/base/util/isWindow",
 	"sap/base/Log"
 ],
 function (
 	EventBus,
-	equal,
 	includes,
 	isPlainObject,
-	isWindow,
 	Log
 ) {
 	"use strict";
@@ -42,7 +38,7 @@ function (
 	 * @alias sap.ui.core.postmessage.Bus
 	 * @author SAP SE
 	 * @since 1.56.0
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @private
 	 * @ui5-restricted sap.ui.core.support, sap.ui.support, sap.ui.rta
 	 */
@@ -133,7 +129,7 @@ function (
 
 		// Validation
 		if (
-			!isWindow(oTarget)
+			(typeof window === "undefined") || !(oTarget != null && oTarget === oTarget.window)
 			|| oTarget === window // avoid self-messaging
 		) {
 			throw TypeError("Target must be a window object and has to differ from current window");
@@ -221,7 +217,8 @@ function (
 	 * @private
 	 */
 	PostMessageBus.prototype._getText = function (sKey, aParameters) {
-		return sap.ui.getCore().getLibraryResourceBundle().getText(sKey, aParameters);
+		return sap.ui.getCore().getLibraryResourceBundle(true)
+		.then(function(oLibraryResourceBundle) { return oLibraryResourceBundle.getText(sKey, aParameters); });
 	};
 
 	/**
@@ -285,9 +282,10 @@ function (
 					} else {
 						// Show dialog
 						sap.ui.require(["sap/ui/core/postmessage/confirmationDialog"], function (confirmationDialog) {
-							confirmationDialog(
-								this._getText('PostMessage.Message', [mData.data, sOrigin])
-							)
+							this._getText('PostMessage.Message', [mData.data, sOrigin])
+							.then(function(sText) {
+								return confirmationDialog(sText);
+							})
 							.then(
 								function () {
 									this.addAcceptedOrigin(sOrigin);

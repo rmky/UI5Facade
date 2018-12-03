@@ -6,9 +6,9 @@
 
 // Provides control sap.m.StepInput.
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/core/Icon",
 	"./Input",
+	"./InputBase",
 	"./InputRenderer",
 	"sap/ui/core/Control",
 	"sap/ui/core/IconPool",
@@ -17,12 +17,13 @@ sap.ui.define([
 	"sap/ui/core/Renderer",
 	"sap/m/library",
 	"./StepInputRenderer",
-	"jquery.sap.keycodes"
+	"sap/ui/events/KeyCodes",
+	"sap/base/Log"
 ],
 function(
-	jQuery,
 	Icon,
 	Input,
+	InputBase,
 	InputRenderer,
 	Control,
 	IconPool,
@@ -30,8 +31,10 @@ function(
 	coreLibrary,
 	Renderer,
 	library,
-	StepInputRenderer
-	) {
+	StepInputRenderer,
+	KeyCodes,
+	Log
+) {
 		"use strict";
 
 		// shortcut for sap.m.InputType
@@ -100,7 +103,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -226,14 +229,6 @@ function(
 				},
 				aggregations: {
 					/**
-					 * Internal aggregation that contains the <code>Button</code> for incrementation.
-					 */
-					_incrementButton: {type: "sap.ui.core.Icon", multiple: false, visibility: "hidden"},
-					/**
-					 * Internal aggregation that contains the <code>Button</code> for decrementation.
-					 */
-					_decrementButton: {type: "sap.ui.core.Icon", multiple: false, visibility: "hidden"},
-					/**
 					 * Internal aggregation that contains the <code>Input</code>.
 					 */
 					_input: {type: "sap.ui.core.Control", multiple: false, visibility: "hidden"}
@@ -315,45 +310,6 @@ function(
 
 		var NumericInputRenderer = Renderer.extend(InputRenderer);
 
-		// use the InputBaseRenderer hook which opens the input tag to render before it decrement button
-		NumericInputRenderer.openInputTag = function (oRm, oNumericInput) {
-			var oStepInput = oNumericInput.getParent(),
-				oDecrementButton = oStepInput._getDecrementButton(),
-				bEditable = oStepInput.getEditable();
-
-			if (bEditable && oDecrementButton) {
-				this.renderButton(oRm, oNumericInput, oDecrementButton, ["sapMStepInputBtnDecrease"]);
-			}
-
-			InputRenderer.openInputTag.apply(this, arguments);
-		};
-
-		// use the InputBaseRenderer hook which opens the input tag to render after it increase button
-		NumericInputRenderer.closeInputTag = function(oRm, oNumericInput) {
-			var oStepInput = oNumericInput.getParent(),
-				oIncrementButton = oStepInput._getIncrementButton(),
-				bEditable = oStepInput.getEditable();
-
-			InputRenderer.closeInputTag.apply(this, arguments);
-
-			if (bEditable && oIncrementButton) {
-				this.renderButton(oRm, oNumericInput, oIncrementButton, ["sapMStepInputBtnIncrease"]);
-			}
-		};
-
-		NumericInputRenderer.renderButton = function (oRm, oNumericInput, oButton, aWrapperClasses) {
-			var bDisableButton = oNumericInput.getParent()._getIsDisabledButton(aWrapperClasses[0]);
-
-			oButton.addStyleClass("sapMStepInputBtn");
-
-			aWrapperClasses.forEach(function (sClass) {
-				oButton.addStyleClass(sClass);
-			});
-
-			bDisableButton ? oButton.addStyleClass("sapMStepInputIconDisabled") : oButton.removeStyleClass("sapMStepInputIconDisabled");
-			oRm.renderControl(oButton);
-		};
-
 		NumericInputRenderer.writeInnerAttributes = function(oRm, oControl) {
 			// inside the Input this function also sets explicitly textAlign to "End" if the type
 			// of the Input is Numeric (our case)
@@ -363,14 +319,13 @@ function(
 			if (sap.ui.getCore().getConfiguration().getRTL()) {
 				oRm.writeAttribute("dir", "ltr");
 			}
-
 		};
 
 		//Accessibility behavior of the Input needs to be extended
 		/**
 		 * Overwrites the accessibility state using the <code>getAccessibilityState</code> method of the <code>InputBaseRenderer</code>.
 		 *
-		 * @param {NumericInput} oNumericInput
+		 * @param {NumericInput} oNumericInput The numeric input instance
 		 * @returns {Array} mAccAttributes
 		 */
 		NumericInputRenderer.getAccessibilityState = function(oNumericInput) {
@@ -404,37 +359,18 @@ function(
 			return mAccAttributes;
 		};
 
-		/**
-		 * Writes the ID of the inner input.
-		 *
-		 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
-		 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
-		 */
-		NumericInputRenderer.writeInnerId = function(oRm, oControl) {
-			oRm.writeAttribute("id", oControl.getId() + "-" + NumericInputRenderer.getInnerSuffix(oControl));
-		};
-
-		/**
-		 * Defines own inner ID suffix.
-		 * @returns {string} The own inner ID suffix
-		 */
-		NumericInputRenderer.getInnerSuffix = function() {
-			return "inner";
-		};
-
-		NumericInputRenderer._getDescriptionSuffix = function () {
-			// this is the suffix used inside the Input
-			// in case it is changed there it should be changed also here
-			// it's used currently only inside qunit tests to get the description dom elelemnt
-			return "-Descr";
-		};
-
 		var NumericInput = Input.extend("sap.m.internal.NumericInput", {
 			constructor: function(sId, mSettings) {
 				return Input.apply(this, arguments);
 			},
 			renderer: NumericInputRenderer
 		});
+
+		NumericInput.prototype.onBeforeRendering = function() {
+			InputBase.prototype.onBeforeRendering.call(this);
+
+			this._deregisterEvents();
+		};
 
 		/**
 		 * Initializes the control.
@@ -443,6 +379,8 @@ function(
 			this._iRealPrecision = 0;
 			this._attachChange();
 			this._bPaste = false; //needed to indicate when a paste is made
+
+			this._onmousewheel = this._onmousewheel.bind(this);
 		};
 
 		/**
@@ -464,7 +402,16 @@ function(
 				this.setValue(fMax);
 			}
 			this._disableButtons(vValue, fMax, fMin);
+		};
 
+		StepInput.prototype.onAfterRendering = function () {
+			var $domRef = this.$();
+			$domRef.unbind(Device.browser.firefox ? "DOMMouseScroll" : "mousewheel", this._onmousewheel);
+			$domRef.bind(Device.browser.firefox ? "DOMMouseScroll" : "mousewheel", this._onmousewheel);
+		};
+
+		StepInput.prototype.exit = function () {
+			this.$().unbind(Device.browser.firefox ? "DOMMouseScroll" : "mousewheel", this._onmousewheel);
 		};
 
 		StepInput.prototype.setProperty = function (sPropertyName, oValue, bSuppressInvalidate) {
@@ -564,7 +511,7 @@ function(
 				return true;
 			}
 
-			jQuery.sap.log.error("The value of property '" + name + "' must be a number");
+			Log.error("The value of property '" + name + "' must be a number");
 			return false;
 		};
 
@@ -583,7 +530,7 @@ function(
 				vValuePrecision = parseInt(number, 10);
 			} else {
 				vValuePrecision = 0;
-				jQuery.sap.log.warning(this + ": ValuePrecision (" + number + ") is not correct. It should be a number between 0 and 20! Setting the default ValuePrecision:0.");
+				Log.warning(this + ": ValuePrecision (" + number + ") is not correct. It should be a number between 0 and 20! Setting the default ValuePrecision:0.");
 			}
 
 			return this.setProperty("displayValuePrecision", vValuePrecision, bSuppressInvalidate);
@@ -605,7 +552,8 @@ function(
 		 * @private
 		 */
 		StepInput.prototype._getIncrementButton = function () {
-			return this.getAggregation("_incrementButton");
+			var endIcons = this._getInput().getAggregation("_endIcon");
+			return endIcons ? endIcons[0] : null; //value state icon comes from sap.m.Input constructor and is at index 0
 		};
 
 		/**
@@ -614,7 +562,8 @@ function(
 		 * @private
 		 */
 		StepInput.prototype._getDecrementButton = function () {
-			return this.getAggregation("_decrementButton");
+			var beginIcons = this._getInput().getAggregation("_beginIcon");
+			return beginIcons ? beginIcons[0] : null;
 		};
 
 		/**
@@ -623,9 +572,8 @@ function(
 		 * @private
 		 */
 		StepInput.prototype._createIncrementButton = function () {
-			var oIcon,
-				that = this,
-				oIncrButton = new Icon({
+			var that = this;
+			var oIcon = this._getInput().addEndIcon({
 					src: IconPool.getIconURI("add"),
 					id: this.getId() + "-incrementBtn",
 					noTabStop: true,
@@ -633,15 +581,16 @@ function(
 					tooltip: StepInput.STEP_INPUT_INCREASE_BTN_TOOLTIP
 				});
 
-			this.setAggregation("_incrementButton", oIncrButton);
+			oIcon.getEnabled = function() {
+				return this.getEnabled() && (this.getValue() < this.getMax());
+			}.bind(this);
 
-			oIcon = this.getAggregation("_incrementButton");
 			oIcon.addEventDelegate({
 				onAfterRendering: function () {
 					// Set it to -1 so it still won't be part of the tabchain but can be document.activeElement
 					// see _change method, _isButtonFocused call
 					oIcon.$().attr("tabindex", "-1");
-					that._attachEvents(oIncrButton, true);
+					that._attachEvents(oIcon, true);
 				}
 			});
 
@@ -654,9 +603,8 @@ function(
 		 * @private
 		 */
 		StepInput.prototype._createDecrementButton = function() {
-			var oIcon,
-				that = this,
-				oDecrButton = new Icon({
+			var that = this;
+			var oIcon = this._getInput().addBeginIcon({
 					src: IconPool.getIconURI("less"),
 					id: this.getId() + "-decrementBtn",
 					noTabStop: true,
@@ -664,38 +612,20 @@ function(
 					tooltip: StepInput.STEP_INPUT_DECREASE_BTN_TOOLTIP
 				});
 
-			this.setAggregation("_decrementButton", oDecrButton);
+			oIcon.getEnabled = function() {
+				return this.getEnabled() && (this.getValue() > this.getMin());
+			}.bind(this);
 
-			oIcon = this.getAggregation("_decrementButton");
 			oIcon.addEventDelegate({
 				onAfterRendering: function () {
 					// Set it to -1 so it still won't be part of the tabchain but can be document.activeElement
 					// see _change method, _isButtonFocused call
 					oIcon.$().attr("tabindex", "-1");
-					that._attachEvents(oDecrButton, false);
+					that._attachEvents(oIcon, false);
 				}
 			});
 
 			return oIcon;
-		};
-
-
-		StepInput.prototype._getIsDisabledButton = function (sType) {
-			var bEnabled = this.getEnabled(),
-				fMin = this.getMin(),
-				fMax = this.getMax(),
-				fValue = this.getValue(),
-				bDisableButton = false;
-
-			switch (sType) {
-				case "sapMStepInputBtnIncrease":
-					bDisableButton = !bEnabled || (fValue >= fMax);
-					break;
-				case "sapMStepInputBtnDecrease":
-					bDisableButton = !bEnabled || (fValue <= fMin);
-					break;
-			}
-			return bDisableButton;
 		};
 
 		/**
@@ -738,7 +668,6 @@ function(
 			this._btndown = undefined;
 			this._disableButtons(oNewValue.displayValue, fMax, fMin);
 			this.setValue(oNewValue.value);
-			this._verifyValue();
 
 			if (this._sOldValue !== this.getValue()) {
 				this.fireChange({value: this.getValue()});
@@ -760,29 +689,22 @@ function(
 		 */
 		StepInput.prototype._disableButtons = function (value, max, min) {
 
-			if (!this.getDomRef() || !this._isNumericLike(value)){
+			if (!this._isNumericLike(value)) {
 				return;
 			}
 
 			var bMaxIsNumber = this._isNumericLike(max),
-				bMinIsNumber = this._isNumericLike(min);
+				bMinIsNumber = this._isNumericLike(min),
+				oIncrementButton = this._getIncrementButton(),
+				oDecrementButton = this._getDecrementButton(),
+				bEnabled = this.getEnabled(),
+				bReachedMin = bMinIsNumber && min >= value, //min is set and it's bigger or equal to the value
+				bReachedMax = bMaxIsNumber && max <= value, //max is set and it's lower or equal to the value
+				bShouldDisableDecrement = bEnabled ? bReachedMin : true, //if enabled - set the value according to the min value, if not - set disable flag to true
+				bShouldDisableIncrement = bEnabled ? bReachedMax : true; //if enabled - set the value according to the max value, if not - set disable flag to true;
 
-			if (this._getDecrementButton()) {
-				if (bMinIsNumber && min < value && this.getEnabled()) {
-					this._getDecrementButton().$().removeClass("sapMStepInputIconDisabled");
-				}
-				if (bMinIsNumber && value <= min) {
-					this._getDecrementButton().$().addClass("sapMStepInputIconDisabled");
-				}
-			}
-			if (this._getIncrementButton()) {
-				if (bMaxIsNumber && value < max && this.getEnabled()) {
-					this._getIncrementButton().$().removeClass("sapMStepInputIconDisabled");
-				}
-				if (bMaxIsNumber && value >= max) {
-					this._getIncrementButton().$().addClass("sapMStepInputIconDisabled");
-				}
-			}
+			oDecrementButton && oDecrementButton.toggleStyleClass("sapMStepInputIconDisabled", bShouldDisableDecrement);
+			oIncrementButton && oIncrementButton.toggleStyleClass("sapMStepInputIconDisabled", bShouldDisableIncrement);
 
 			return this;
 		};
@@ -839,6 +761,7 @@ function(
 			}
 
 			this._getInput().setValue(this._getFormatedValue(oValue));
+			this._verifyValue();
 
 			this._disableButtons(oValue, this.getMax(), this.getMin());
 
@@ -974,6 +897,15 @@ function(
 			this._verifyValue();
 		};
 
+		StepInput.prototype._onmousewheel = function (oEvent) {
+			oEvent.preventDefault();
+			var oOriginalEvent = oEvent.originalEvent,
+				bDirectionPositive = oOriginalEvent.detail ? (-oOriginalEvent.detail > 0) : (oOriginalEvent.wheelDelta > 0);
+
+			this._applyValue(this._calculateNewValue(1, bDirectionPositive).displayValue);
+			this._verifyValue();
+		};
+
 		/**
 		 * Handles the Ctrl + Shift + Up/Down and Shift + Up/Down key combinations and sets the value to maximum/minimum
 		 * or increases/decreases the value with the larger step.
@@ -983,26 +915,46 @@ function(
 		StepInput.prototype.onkeydown = function (oEvent) {
 			var bVerifyValue = false;
 
-			this._bPaste = (oEvent.ctrlKey || oEvent.metaKey) && (oEvent.which === jQuery.sap.KeyCodes.V);
+			this._bPaste = (oEvent.ctrlKey || oEvent.metaKey) && (oEvent.which === KeyCodes.V);
 
-			if (oEvent.which === jQuery.sap.KeyCodes.ARROW_UP && !oEvent.altKey && oEvent.shiftKey &&
+			if (oEvent.which === KeyCodes.ARROW_UP && !oEvent.altKey && oEvent.shiftKey &&
 				(oEvent.ctrlKey || oEvent.metaKey)) { //ctrl+shift+up
 				this._applyValue(this.getMax());
 				bVerifyValue = true;
 			}
-			if (oEvent.which === jQuery.sap.KeyCodes.ARROW_DOWN && !oEvent.altKey && oEvent.shiftKey &&
+			if (oEvent.which === KeyCodes.ARROW_DOWN && !oEvent.altKey && oEvent.shiftKey &&
 				(oEvent.ctrlKey || oEvent.metaKey)) { //ctrl+shift+down
 				this._applyValue(this.getMin());
 				bVerifyValue = true;
 			}
-			if (oEvent.which === jQuery.sap.KeyCodes.ARROW_UP && !(oEvent.ctrlKey || oEvent.metaKey || oEvent.altKey) && oEvent.shiftKey) { //shift+up
+			if (oEvent.which === KeyCodes.ARROW_UP && !(oEvent.ctrlKey || oEvent.metaKey || oEvent.altKey) && oEvent.shiftKey) { //shift+up
 				oEvent.preventDefault(); //preventing to be added both the minimum step (1) and the larger step
 				this._applyValue(this._calculateNewValue(this.getLargerStep(), true).displayValue);
 				bVerifyValue = true;
 			}
-			if (oEvent.which === jQuery.sap.KeyCodes.ARROW_DOWN && !(oEvent.ctrlKey || oEvent.metaKey || oEvent.altKey) && oEvent.shiftKey) { //shift+down
+			if (oEvent.which === KeyCodes.ARROW_DOWN && !(oEvent.ctrlKey || oEvent.metaKey || oEvent.altKey) && oEvent.shiftKey) { //shift+down
 				oEvent.preventDefault(); //preventing to be subtracted  both the minimum step (1) and the larger step
 				this._applyValue(this._calculateNewValue(this.getLargerStep(), false).displayValue);
+				bVerifyValue = true;
+			}
+			if (oEvent.which === KeyCodes.ARROW_UP && (oEvent.ctrlKey || oEvent.metaKey)) { // ctrl + up
+				oEvent.preventDefault();
+				this._applyValue(this._calculateNewValue(1, true).displayValue);
+				bVerifyValue = true;
+			}
+			if (oEvent.which === KeyCodes.ARROW_DOWN && (oEvent.ctrlKey || oEvent.metaKey)) { // ctrl + down
+				oEvent.preventDefault();
+				this._applyValue(this._calculateNewValue(1, false).displayValue);
+				bVerifyValue = true;
+			}
+			if (oEvent.which === KeyCodes.ARROW_UP && oEvent.altKey) { // alt + up
+				oEvent.preventDefault();
+				this._applyValue(this._calculateNewValue(1, true).displayValue);
+				bVerifyValue = true;
+			}
+			if (oEvent.which === KeyCodes.ARROW_DOWN && oEvent.altKey) { // alt + down
+				oEvent.preventDefault();
+				this._applyValue(this._calculateNewValue(1, false).displayValue);
 				bVerifyValue = true;
 			}
 			if (bVerifyValue) {
@@ -1052,7 +1004,6 @@ function(
 		StepInput.prototype._change = function (oEvent) {
 			this._sOldValue = this.getValue();
 
-			this._verifyValue();
 			this.setValue(this._getDefaultValue(this._getInput().getValue(), this.getMax(), this.getMin()));
 
 
@@ -1174,9 +1125,9 @@ function(
 			}
 			this._getInput().setValueState(valueState);
 
-			jQuery.sap.delayedCall(0, this, function () {
+			setTimeout(function () {
 				this.$().toggleClass("sapMStepInputError", bError).toggleClass("sapMStepInputWarning", bWarning);
-			});
+			}.bind(this), 0);
 
 			this.setProperty("valueState", valueState, true);
 
@@ -1191,37 +1142,31 @@ function(
 		 */
 		StepInput.prototype.setEditable = function (editable) {
 			var oResult = StepInput.prototype.setProperty.call(this, "editable", editable);
-			editable = this.getEditable();
 
-			if (this.getEditable()) {
-				this._getOrCreateDecrementButton().setVisible(true);
-				this._getOrCreateIncrementButton().setVisible(true);
-			} else {
-				this._getDecrementButton() && this._getDecrementButton().setVisible(false);
-				this._getIncrementButton() && this._getIncrementButton().setVisible(false);
-			}
+			this._getOrCreateDecrementButton().setVisible(editable);
+			this._getOrCreateIncrementButton().setVisible(editable);
 
 			return oResult;
 		};
 
 		/**
-		 * Checks whether there is an existing instance of a <code>_decrementButton</code> or it has to be created one.
+		 * Checks whether there is an existing instance of a decrement button or it has to be created.
 		 *
 		 * @returns {sap.ui.core.Icon} the icon that serves as (lightweight) button
 		 * @private
 		 */
 		StepInput.prototype._getOrCreateDecrementButton = function(){
-			return this.getAggregation("_decrementButton") ? this._getDecrementButton() : this._createDecrementButton();
+			return this._getDecrementButton() || this._createDecrementButton();
 		};
 
 		/**
-		 * Checks whether there is an existing instance of a <code>_incrementButton</code> or it has to be created one.
+		 * Checks whether there is an existing instance of an increment button or it has to be created.
 		 *
 		 * @returns {sap.ui.core.Icon} the icon that serves as (lightweight) button
 		 * @private
 		 */
 		StepInput.prototype._getOrCreateIncrementButton = function(){
-			return this.getAggregation("_incrementButton") ? this._getIncrementButton() : this._createIncrementButton();
+			return this._getIncrementButton() || this._createIncrementButton();
 		};
 
 		/**
@@ -1288,7 +1233,7 @@ function(
 			}
 
 			this.setValueState(ValueState.Error);
-			jQuery.sap.delayedCall(1000, this, "setValueState", [sOldValueState]);
+			setTimeout(this["setValueState"].bind(this, sOldValueState), 1000);
 		};
 
 		/**
@@ -1337,7 +1282,7 @@ function(
 		};
 
 		StepInput.prototype._writeAccessibilityState = function (sProp, sValue) {
-			var $input = this._getInput().getDomRef(NumericInputRenderer.getInnerSuffix());
+			var $input = this._getInput().getDomRef("inner");
 
 			if (!$input){
 				return;
@@ -1349,8 +1294,8 @@ function(
 		};
 
 		StepInput.prototype._isButtonFocused = function () {
-			return document.activeElement === this.getAggregation("_incrementButton").getDomRef() ||
-				document.activeElement === this.getAggregation("_decrementButton").getDomRef();
+			return document.activeElement === this._getIncrementButton().getDomRef() ||
+				document.activeElement === this._getDecrementButton().getDomRef();
 		};
 
 		/*
@@ -1365,10 +1310,16 @@ function(
 		 * @private
 		 */
 		StepInput.prototype._sumValues = function(fValue1, fValue2, iSign, iPrecision) {
-			var iPrecisionMultiplier = Math.pow(10, iPrecision);
+			var iPrecisionMultiplier = Math.pow(10, iPrecision),
+			//For most of the cases fValue1 * iPrecisionMultiplier  will produce the integer (ex. 0.11 * 100 = 11),
+			//so toFixed won't change anything.
+			//For some cases fValue1 * iPrecisionMultiplier will produce a floating point number(ex. 0.29 * 100 = 28.999999999999996),
+			//but we still can call toFixed as this floating point number is always as closest as
+			//possible(i.e. no rounding errors could appear) to the real integer we expect.
+				iValue1 = parseInt((fValue1 * iPrecisionMultiplier).toFixed(10), 10),
+				iValue2 = parseInt((fValue2 * iPrecisionMultiplier).toFixed(10), 10);
 
-			return (parseInt(fValue1 * iPrecisionMultiplier, 10) +
-				(iSign * parseInt(fValue2 * iPrecisionMultiplier, 10))) / iPrecisionMultiplier;
+			return (iValue1 + (iSign * iValue2)) / iPrecisionMultiplier;
 		};
 
 
@@ -1403,7 +1354,7 @@ function(
 			} while (fResult % step !== 0 && iLoopCount);
 
 			if (fResult % step !== 0) {
-				jQuery.sap.log.error("Wrong next/previous value " + fResult + " for " + fValue + ", step: " + step +
+				Log.error("Wrong next/previous value " + fResult + " for " + fValue + ", step: " + step +
 					" and sign: " + iSign, this);
 			}
 
@@ -1445,7 +1396,7 @@ function(
 
 						that.setValue(oNewValue.value);
 
-						if (that._getIsDisabledButton("sapMStepInputBtnIncrease") || that._getIsDisabledButton("sapMStepInputBtnDecrease")) {
+						if (!that._getIncrementButton().getEnabled() || !that._getDecrementButton().getEnabled()) {
 							_resetSpinValues.call(that);
 							// fire change event when the buttons get disabled since then no mouseup event is fired
 							that.fireChange({value: that.getValue()});

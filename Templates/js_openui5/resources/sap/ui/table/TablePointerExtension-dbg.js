@@ -6,8 +6,18 @@
 
 // Provides helper sap.ui.table.TablePointerExtension.
 sap.ui.define([
-"./library", "jquery.sap.global", "./TableExtension", "./TableUtils", "sap/ui/Device", "sap/ui/core/Popup"
-], function(library, jQuery, TableExtension, TableUtils, Device, Popup) {
+	"./library",
+	"./TableExtension",
+	"./TableUtils",
+	"sap/ui/Device",
+	"sap/ui/core/Popup",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery",
+	// jQuery Plugin "scrollLeftRTL"
+	"sap/ui/dom/jquery/scrollLeftRTL",
+	// jQuery Plugin "control"
+	"sap/ui/dom/jquery/control"
+], function(library, TableExtension, TableUtils, Device, Popup, Log, jQuery) {
 	"use strict";
 
 	// shortcuts
@@ -88,7 +98,7 @@ sap.ui.define([
 			}
 
 			if (bHasSelection) {
-				jQuery.sap.log.debug("DOM Selection detected -> Click event on table skipped, Target: " + oEvent.target);
+				Log.debug("DOM Selection detected -> Click event on table skipped, Target: " + oEvent.target);
 				return true;
 			}
 
@@ -254,27 +264,19 @@ sap.ui.define([
 		 * Cleans up the state which is created while resize a column via drag&drop and recalculates the new column width.
 		 */
 		_resizeColumn: function(oTable, iColIndex) {
-			var aVisibleColumns = oTable._getVisibleColumns(),
-				oColumn,
-				bResized = false;
+			var aVisibleColumns = oTable._getVisibleColumns();
+			var oColumn;
 
 			if (iColIndex >= 0 && iColIndex < aVisibleColumns.length) {
 				oColumn = aVisibleColumns[iColIndex];
 				if (oColumn._iNewWidth) {
 					TableUtils.Column.resizeColumn(oTable, oTable.indexOfColumn(oColumn), oColumn._iNewWidth);
 					delete oColumn._iNewWidth;
-					bResized = true;
 				}
 			}
 
 			ColumnResizeHelper._cleanupColumResizing(oTable);
-
 			oColumn.focus();
-
-			// rerender if size of the column was changed
-			if (bResized) {
-				oTable.invalidate();
-			}
 		},
 
 		/*
@@ -425,8 +427,8 @@ sap.ui.define([
 			var iNewHeight = iLocationY - $This.find(".sapUiTableCCnt").offset().top - $Ghost.height() - $This.find(".sapUiTableFtr").height();
 
 			// TBD: Move this to the table code
-			this._setRowContentHeight(iNewHeight);
 			this._updateRows(this._calculateRowsToDisplay(iNewHeight), TableUtils.RowsUpdateReason.Resize);
+			this._setRowContentHeight(iNewHeight);
 
 			$Ghost.remove();
 			this.$("rzoverlay").remove();
@@ -538,7 +540,7 @@ sap.ui.define([
 
 			// do scroll if needed
 			var iScrollTriggerAreaWidth = 40,
-				oScrollArea = this.getDomRef("sapUiTableCtrlScr"),
+				oScrollArea = this.getDomRef("sapUiTableColHdrScr"),
 				$ScrollArea = jQuery(oScrollArea),
 				oScrollAreaRect = oScrollArea.getBoundingClientRect(),
 				iScrollAreaWidth = $ScrollArea.outerWidth(),
@@ -623,11 +625,6 @@ sap.ui.define([
 				TableUtils.focusItem(that, 0, oEvent);
 				TableUtils.focusItem(that, iOldFocusedIndex, oEvent);
 			}, 0);
-
-			// For AnalyticalTable only
-			if (this.updateAnalyticalInfo) {
-				this.updateAnalyticalInfo(true, true);
-			}
 		},
 
 		/*
@@ -676,8 +673,8 @@ sap.ui.define([
 				if (oTable._bRtlMode) {
 					iStep = (-1) * iStep;
 				}
-				oTable._mTimeouts.horizontalReorderScrollTimerId = jQuery.sap.delayedCall(60, oTable, ReorderHelper.doScroll, [oTable, bForward]);
-				var $Scr = oTable.$("sapUiTableCtrlScr");
+				oTable._mTimeouts.horizontalReorderScrollTimerId = setTimeout(ReorderHelper.doScroll.bind(oTable, oTable, bForward), 60);
+				var $Scr = oTable.$("sapUiTableColHdrScr");
 				var ScrollLeft = oTable._bRtlMode ? "scrollLeftRTL" : "scrollLeft";
 				$Scr[ScrollLeft]($Scr[ScrollLeft]() + iStep);
 			}
@@ -717,29 +714,26 @@ sap.ui.define([
 		initRowHovering: function(oTable) {
 			var $Table = oTable.$();
 			for (var i = 0; i < RowHoverHandler.ROWAREAS.length; i++) {
-				RowHoverHandler._initRowHoveringForArea($Table, RowHoverHandler.ROWAREAS[i]);
+				RowHoverHandler._initRowHoveringForArea(oTable, $Table, RowHoverHandler.ROWAREAS[i]);
 			}
 		},
 
-		_initRowHoveringForArea: function($Table, sArea) {
+		_initRowHoveringForArea: function(oTable, $Table, sArea) {
 			$Table.find(sArea).hover(function() {
-				RowHoverHandler._onHover(this, $Table, sArea);
+				RowHoverHandler._onHover(oTable, $Table, sArea, this);
 			}, function() {
-				RowHoverHandler._onUnhover(this, $Table);
+				RowHoverHandler._onUnhover(oTable, $Table, sArea, this);
 			});
 		},
 
-		_onHover: function(oElem, $Table, sArea) {
+		_onHover: function(oTable, $Table, sArea, oElem) {
 			var iIndex = $Table.find(sArea).index(oElem);
-			for (var i = 0; i < RowHoverHandler.ROWAREAS.length; i++) {
-				$Table.find(RowHoverHandler.ROWAREAS[i]).filter(":eq(" + (iIndex) + ")").addClass("sapUiTableRowHvr");
-			}
+			oTable.getRows()[iIndex]._setHovered(true);
 		},
 
-		_onUnhover: function(oElem, $Table) {
-			for (var i = 0; i < RowHoverHandler.ROWAREAS.length; i++) {
-				$Table.find(RowHoverHandler.ROWAREAS[i]).removeClass("sapUiTableRowHvr");
-			}
+		_onUnhover: function(oTable, $Table, sArea, oElem) {
+			var iIndex = $Table.find(sArea).index(oElem);
+			oTable.getRows()[iIndex]._setHovered(false);
 		}
 
 	};
@@ -767,6 +761,8 @@ sap.ui.define([
 					InteractiveResizeHelper.initInteractiveResizing(this, oEvent);
 
 				} else if (oEvent.target === this.getDomRef("rsz")) { // mousedown on column resize bar
+					oEvent.preventDefault();
+					oEvent.stopPropagation();
 					ColumnResizeHelper.initColumnResizing(this, oEvent);
 
 				} else if ($Target.hasClass("sapUiTableColResizer")) { // mousedown on mobile column resize button
@@ -782,9 +778,9 @@ sap.ui.define([
 					if (!bMenuOpen) {
 						// A long click starts column reordering, so it should not also open the menu in the onclick event handler.
 						oPointerExtension._bShowMenu = true;
-						this._mTimeouts.delayedMenuTimerId = jQuery.sap.delayedCall(200, this, function() {
+						this._mTimeouts.delayedMenuTimerId = setTimeout(function() {
 							delete oPointerExtension._bShowMenu;
-						});
+						}, 200);
 					}
 
 					if (this.getEnableColumnReordering()
@@ -843,7 +839,7 @@ sap.ui.define([
 
 		onmouseup: function(oEvent) {
 			// clean up the timer
-			jQuery.sap.clearDelayedCall(this._mTimeouts.delayedColumnReorderTimerId);
+			clearTimeout(this._mTimeouts.delayedColumnReorderTimerId);
 		},
 
 		ondblclick: function(oEvent) {
@@ -855,7 +851,7 @@ sap.ui.define([
 
 		onclick: function(oEvent) {
 			// clean up the timer
-			jQuery.sap.clearDelayedCall(this._mTimeouts.delayedColumnReorderTimerId);
+			clearTimeout(this._mTimeouts.delayedColumnReorderTimerId);
 
 			if (oEvent.isMarked()) {
 				// the event was already handled by some other handler, do nothing.
@@ -936,7 +932,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles mouse and touch related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension
@@ -1029,9 +1025,9 @@ sap.ui.define([
 			var oTable = this.getTable();
 			if (oTable && TableUtils.Column.isColumnMovable(oTable.getColumns()[iColIndex])) {
 				// Starting column drag & drop. We wait 200ms to make sure it is no click on the column to open the menu.
-				oTable._mTimeouts.delayedColumnReorderTimerId = jQuery.sap.delayedCall(200, oTable, function() {
+				oTable._mTimeouts.delayedColumnReorderTimerId = setTimeout(function() {
 					ReorderHelper.initReordering(this, iColIndex, oEvent);
-				});
+				}.bind(oTable), 200);
 			}
 		},
 

@@ -4,9 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([
-	"jquery.sap.global"
-], function (jQuery) {
+sap.ui.define([], function () {
 	"use strict";
 
 	/*
@@ -248,6 +246,34 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns a {@link sap.ui.base.SyncPromise} and calls the given handler, like
+	 * <code>Promise.prototype.finally</code>.
+	 *
+	 * @param {function} [fnOnFinally]
+	 *   Callback function if this {@link sap.ui.base.SyncPromise} is settled
+	 * @returns {sap.ui.base.SyncPromise}
+	 *   A new {@link sap.ui.base.SyncPromise}, or <code>this</code> in case it is settled and no
+	 *   callback function is given
+	 *
+	 * @see #then
+	 */
+	SyncPromise.prototype.finally = function (fnOnFinally) {
+		if (typeof fnOnFinally === "function") {
+			return this.then(function (vResult) {
+				return SyncPromise.resolve(fnOnFinally()).then(function () {
+					return vResult;
+				});
+			}, function (vReason) {
+				return SyncPromise.resolve(fnOnFinally()).then(function () {
+					throw vReason;
+				});
+			});
+		}
+
+		return this.then(fnOnFinally, fnOnFinally);
+	};
+
+	/**
 	 * Returns a {@link sap.ui.base.SyncPromise} and calls the given handler as applicable, like
 	 * <code>Promise.prototype.then</code>. This {@link sap.ui.base.SyncPromise} is marked as
 	 * {@link #caught} unless <code>this</code> is returned. Note that a new
@@ -294,6 +320,27 @@ sap.ui.define([
 			return "SyncPromise: pending";
 		}
 		return String(this.getResult());
+	};
+
+	/**
+	 * Unwraps this {@link sap.ui.base.SyncPromise} by returning the current result if this promise
+	 * is already fulfilled, returning the wrapped thenable if this promise is still pending, or
+	 * throwing the reason if this promise is already rejected.
+	 *
+	 * @returns {any|Promise}
+	 *   The result in case this {@link sap.ui.base.SyncPromise} is already fulfilled, or the
+	 *   wrapped thenable if this promise is still pending
+	 * @throws {any}
+	 *   The reason if this promise is already rejected
+	 *
+	 * @see #getResult
+	 */
+	SyncPromise.prototype.unwrap = function () {
+		if (this.isRejected()) {
+			this.caught();
+			throw this.getResult();
+		}
+		return this.getResult();
 	};
 
 	/**

@@ -17,6 +17,7 @@
 	style: sap.m.ToolbarStyle.Standard, // sap.m.ToolbarStyle, since 1.54
 	showPopover: true, // boolean
 	upperCase: false, // boolean
+	backgroundDesign: undefined, // sap.m.BackgroundDesign, since 1.58
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -48,6 +49,7 @@
 	style="Standard"
 	showPopover="true"
 	upperCase="false"
+	backgroundDesign=""
 	ariaLabelledBy=""
 	selectedButton=""
 	validateFieldGroup=""
@@ -253,6 +255,7 @@
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	pinnable: true, // boolean
+	backgroundDesign: undefined, // sap.m.BackgroundDesign, since 1.58
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -272,6 +275,7 @@
 	visible="true"
 	fieldGroupIds=""
 	pinnable="true"
+	backgroundDesign=""
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
@@ -291,6 +295,7 @@
 	fieldGroupIds: [], // string[], since 1.31
 	primaryArea: sap.f.DynamicPageTitleArea.Begin, // sap.f.DynamicPageTitleArea, since 1.50
 	areaShrinkRatio: "1:1.6:1.6", // sap.f.DynamicPageTitleShrinkRatio, since 1.54
+	backgroundDesign: undefined, // sap.m.BackgroundDesign, since 1.58
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -322,6 +327,7 @@
 	fieldGroupIds=""
 	primaryArea="Begin"
 	areaShrinkRatio="1:1.6:1.6"
+	backgroundDesign=""
 	validateFieldGroup=""
 	stateChange="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
@@ -579,6 +585,7 @@
 	showAnchorBar: true, // boolean
 	showAnchorBarPopover: true, // boolean
 	upperCaseAnchorBar: true, // boolean
+	backgroundDesignAnchorBar: undefined, // sap.m.BackgroundDesign, since 1.58
 	height: "100%", // sap.ui.core.CSSSize
 	enableLazyLoading: false, // boolean
 	subSectionLayout: sap.uxap.ObjectPageSubSectionLayout.TitleOnTop, // sap.uxap.ObjectPageSubSectionLayout
@@ -630,6 +637,7 @@
 	showAnchorBar="true"
 	showAnchorBarPopover="true"
 	upperCaseAnchorBar="true"
+	backgroundDesignAnchorBar=""
 	height="100%"
 	enableLazyLoading="false"
 	subSectionLayout="TitleOnTop"

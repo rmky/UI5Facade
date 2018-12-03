@@ -9,13 +9,13 @@
   * @typedef {Object} sap.ui.layout.BlockLayoutRow
   */
 sap.ui.define([
-    'jquery.sap.global',
     'sap/ui/core/Control',
     './library',
     'sap/ui/layout/BlockLayoutCellData',
-    "./BlockLayoutRowRenderer"
+    "./BlockLayoutRowRenderer",
+    "sap/base/Log"
 ],
-	function(jQuery, Control, library, BlockLayoutCellData, BlockLayoutRowRenderer) {
+	function(Control, library, BlockLayoutCellData, BlockLayoutRowRenderer, Log) {
 		"use strict";
 
 		// shortcut for sap.ui.layout.BlockBackgroundType
@@ -36,7 +36,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -184,7 +184,7 @@ sap.ui.define([
 			}
 
 			if ([oBackgrounds.Accent, oBackgrounds.Mixed].indexOf(sLayoutBackground) === -1) {
-				jQuery.sap.log.warning(sId + " was not se as accent cell. Accent cells could be set only for 'Accent' and 'Mixed' layout backgrounds.");
+				Log.warning(sId + " was not se as accent cell. Accent cells could be set only for 'Accent' and 'Mixed' layout backgrounds.");
 				return this;
 			}
 
@@ -341,7 +341,7 @@ sap.ui.define([
 
 					this.removeAssociation("accentCells", oCell);
 
-					jQuery.sap.log.warning(sId + " was removed as accent cell. Only one cell at a time could be accented for Mixed layout background");
+					Log.warning(sId + " was removed as accent cell. Only one cell at a time could be accented for Mixed layout background");
 				}
 			}, this);
 

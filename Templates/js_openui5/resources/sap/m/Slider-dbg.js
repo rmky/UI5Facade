@@ -5,7 +5,6 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/core/Control',
 	'sap/ui/core/EnabledPropagator',
 	'sap/ui/core/InvisibleText',
@@ -17,10 +16,10 @@ sap.ui.define([
 	'./SliderTooltip',
 	'./SliderUtilities',
 	'./SliderRenderer',
-	'./ResponsiveScale'
+	'./ResponsiveScale',
+	"sap/ui/thirdparty/jquery"
 ],
 function(
-	jQuery,
 	Control,
 	EnabledPropagator,
 	InvisibleText,
@@ -32,8 +31,9 @@ function(
 	SliderTooltip,
 	SliderUtilities,
 	SliderRenderer,
-	ResponsiveScale
-	) {
+	ResponsiveScale,
+	jQuery
+) {
 		"use strict";
 
 		// shortcut for sap.m.touch
@@ -91,7 +91,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -956,13 +956,13 @@ function(
 			}
 
 			if (!this._parentResizeHandler) {
-				jQuery.sap.delayedCall(0, this, function () {
+				setTimeout(function () {
 					this._parentResizeHandler = ResizeHandler.register(this, this._handleSliderResize.bind(this));
-				});
+				}.bind(this), 0);
 			} else {
-				jQuery.sap.delayedCall(0, this, function () {
+				setTimeout(function () {
 					this._handleSliderResize({control: this});
-				});
+				}.bind(this), 0);
 			}
 		};
 
@@ -1019,7 +1019,7 @@ function(
 			if (oTouch.target !== oNearestHandleDomRef) {
 
 				// set the focus to the nearest slider handle
-				jQuery.sap.delayedCall(0, oNearestHandleDomRef, "focus");
+				setTimeout(oNearestHandleDomRef["focus"].bind(oNearestHandleDomRef), 0);
 			}
 
 			// recalculate some styles,

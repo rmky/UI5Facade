@@ -6,7 +6,6 @@
 
 //Provides control sap.ui.unified.CalendarOneMonthInterval.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/unified/calendar/CalendarUtils',
 	'sap/ui/unified/calendar/CalendarDate',
 	'./library',
@@ -16,9 +15,9 @@ sap.ui.define([
 	'sap/ui/core/Renderer',
 	'sap/ui/unified/Calendar',
 	'sap/ui/unified/CalendarRenderer',
-	"./CalendarOneMonthIntervalRenderer"
+	"./CalendarOneMonthIntervalRenderer",
+	"sap/ui/dom/containsOrEquals"
 ], function(
-	jQuery,
 	CalendarUtils,
 	CalendarDate,
 	library,
@@ -28,8 +27,9 @@ sap.ui.define([
 	Renderer,
 	Calendar,
 	CalendarRenderer,
-	CalendarOneMonthIntervalRenderer
-	) {
+	CalendarOneMonthIntervalRenderer,
+	containsOrEquals
+) {
 		"use strict";
 
 		/*
@@ -61,7 +61,7 @@ sap.ui.define([
 		 * Navigation via year picker switches to the corresponding year and the same month as before the navigation.
 		 *
 		 * @extends sap.ui.unified.CalendarDateInterval
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @private
@@ -102,8 +102,10 @@ sap.ui.define([
 					this._oFocusDateOneMonth = oCalPickerFocusedDate;
 					// true means do not focus, as we set the this._oFocusDateOneMonth and focus will happen in .focusDateExtend
 					this._focusDate(oCalPickerFocusedDate, true);
-
-					jQuery.sap.focus(this.getAggregation("header").getDomRef("B1"));
+					var oDomRefB1 = this.getAggregation("header").getDomRef("B1");
+					if (oDomRefB1) {
+						oDomRefB1.focus();
+					}
 				}, this);
 				this.setAggregation("calendarPicker", oCalPicker);
 			}
@@ -293,7 +295,7 @@ sap.ui.define([
 		};
 
 		CustomMonthPicker.prototype._shouldFocusB2OnTabNext = function(oEvent) {
-			return jQuery.sap.containsOrEquals(this.getDomRef("content"), oEvent.target);
+			return containsOrEquals(this.getDomRef("content"), oEvent.target);
 		};
 
 		CustomMonthPicker.prototype.onAfterRendering = function () {

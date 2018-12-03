@@ -5,25 +5,18 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/transport/Transports",
 	"sap/ui/fl/transport/TransportDialog",
 	"sap/ui/fl/registry/Settings"
-], function(
-	jQuery,
-	Utils,
-	Transports,
-	TransportDialog,
-	FlexSettings
-) {
+], function(Utils, Transports, TransportDialog, FlexSettings) {
 	"use strict";
 	/**
 	 * @public
 	 * @alias sap.ui.fl.transport.TransportSelection
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 1.38.0
 	 * Helper object to select an ABAP transport for an LREP object. This is not a generic utility to select a transport request, but part
 	 *        of the SmartVariant control.

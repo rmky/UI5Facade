@@ -9,8 +9,18 @@ sap.ui.define([
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/LrepConnector",
 	"sap/ui/fl/descriptorRelated/internal/Utils",
-	"sap/ui/fl/registry/Settings"
-], function(DescriptorInlineChangeFactory, FlexUtils, LrepConnector, Utils, Settings) {
+	"sap/ui/fl/registry/Settings",
+	"sap/ui/thirdparty/jquery",
+	"sap/base/util/merge"
+], function(
+	DescriptorInlineChangeFactory,
+	FlexUtils,
+	LrepConnector,
+	Utils,
+	Settings,
+	jQuery,
+	fnBaseMerge
+) {
 	"use strict";
 
 	/**
@@ -28,7 +38,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorVariant
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @private
 	 * @sap-restricted
 	 */
@@ -45,18 +55,18 @@ sap.ui.define([
 			this._id = mParameters.id;
 			this._reference = mParameters.reference;
 			this._layer = mParameters.layer;
-			if ( typeof mParameters.isAppVariantRoot != undefined){
+			if ( typeof mParameters.isAppVariantRoot != "undefined"){
 				this._isAppVariantRoot = mParameters.isAppVariantRoot;
 			}
-			if ( typeof mParameters.referenceVersion != undefined){
+			if ( typeof mParameters.referenceVersion != "undefined"){
 				this._referenceVersion = mParameters.referenceVersion;
 			}
 			this._mode = 'NEW';
+			this._skipIam = mParameters.skipIam;
 
 		} else if (mFileContent) {
 			this._mMap = mFileContent;
 			this._mode = 'FROM_EXISTING';
-
 		}
 
 		this._oSettings = oSettings;
@@ -180,6 +190,10 @@ sap.ui.define([
 		} else if ( this._oSettings.isAtoEnabled() && FlexUtils.isCustomerDependentLayer(mMap.layer) ) {
 			sRoute += '?changelist=ATO_NOTIFICATION';
 		}
+		if (this._skipIam) {
+			sRoute += ( sRoute.indexOf('?') < 0 ) ? '?' : '&';
+				sRoute += 'skipIam=' + this._skipIam;
+		}
 
 		var oLREPConnector = LrepConnector.createConnector();
 
@@ -226,7 +240,7 @@ sap.ui.define([
 	 * @sap-restricted
 	 */
 	DescriptorVariant.prototype.getJson = function() {
-		return jQuery.extend(true, {}, this._getMap());
+		return fnBaseMerge({}, this._getMap());
 	};
 
 	DescriptorVariant.prototype._getMap = function() {
@@ -244,13 +258,13 @@ sap.ui.define([
 
 					"content": this._content
 				};
-				if ( typeof this._isAppVariantRoot != undefined ) {
+				if ( typeof this._isAppVariantRoot != "undefined" ) {
 					mResult.isAppVariantRoot = this._isAppVariantRoot;
 				}
 				if (mResult.isAppVariantRoot != undefined && !mResult.isAppVariantRoot) {
 					mResult.fileType = "cdmapp_config";
 				}
-				if ( typeof this._referenceVersion != undefined ) {
+				if ( typeof this._referenceVersion != "undefined" ) {
 					mResult.referenceVersion = this._referenceVersion;
 				}
 				return mResult;
@@ -273,7 +287,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorVariantFactory
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @private
 	 * @sap-restricted
 	 */
@@ -293,7 +307,8 @@ sap.ui.define([
 	 * @param {string} mParameters.id the id for the app variant/CDM app config id
 	 * @param {string} [mParameters.layer='CUSTOMER'] the proposed layer for the app variant/CDM app config (might be overwritten by the backend)
 	 * @param {boolean} [mParameters.isAppVariantRoot=true] indicator whether this is an app variant, default is true
-	 *
+	 * @param {boolean} [mParameters.skipIam=false] indicator whether the default IAM item creation and registration is skipped
+
 	 * @return {Promise} resolving the new DescriptorVariant instance
 	 *
 	 * @private
@@ -319,6 +334,10 @@ sap.ui.define([
 		if (mParameters.isAppVariantRoot){
 			Utils.checkParameterAndType(mParameters, "isAppVariantRoot", "boolean");
 		}
+		if (mParameters.skipIam){
+			Utils.checkParameterAndType(mParameters, "skipIam", "boolean");
+		}
+
 		return Settings.getInstance().then(function(oSettings) {
 			return Promise.resolve( new DescriptorVariant(mParameters,null,false,oSettings) );
 		});

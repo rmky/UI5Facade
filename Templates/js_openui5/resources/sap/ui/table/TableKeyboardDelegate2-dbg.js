@@ -6,7 +6,13 @@
 
 // Provides helper sap.ui.table.TableKeyboardDelegate2.
 sap.ui.define([
-"jquery.sap.global", "sap/ui/base/Object", "sap/ui/Device", "./library", "./TableUtils", "jquery.sap.keycodes"], function(jQuery, BaseObject, Device, library, TableUtils) {
+	"sap/ui/base/Object",
+	"sap/ui/Device",
+	"./library",
+	"./TableUtils",
+	"sap/ui/events/KeyCodes",
+	"sap/ui/thirdparty/jquery"
+], function(BaseObject, Device, library, TableUtils, KeyCodes, jQuery) {
 	"use strict";
 
 	// Shortcuts
@@ -40,15 +46,6 @@ sap.ui.define([
 		DOWN: "Down"
 	};
 
-	/**
-	 * The selectors which define whether an element is interactive. Due to the usage of pseudo selectors this can only be used in jQuery.
-	 *
-	 * @type {string}
-	 * @static
-	 * @constant
-	 */
-	var INTERACTIVE_ELEMENT_SELECTORS = ":sapTabbable, .sapUiTableTreeIcon:not(.sapUiTableTreeIconLeaf)";
-
 	// Workaround until (if ever) these values can be set by applications.
 	var HORIZONTAL_SCROLLING_PAGE_SIZE = 5;
 	var COLUMN_RESIZE_STEP_CSS_SIZE = "1em";
@@ -70,7 +67,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate2
@@ -162,9 +159,9 @@ sap.ui.define([
 		var eventKey = typeof vKey === "string" ? String.fromCharCode(oEvent.charCode) : oEvent.keyCode;
 		var eventModifierKeyMask = 0;
 
-		eventModifierKeyMask |= (Device.os.macintosh ? oEvent.metaKey : oEvent.ctrlKey) && vKey !== jQuery.sap.KeyCodes.CONTROL ? ModKey.CTRL : 0;
-		eventModifierKeyMask |= oEvent.shiftKey && vKey !== jQuery.sap.KeyCodes.SHIFT ? ModKey.SHIFT : 0;
-		eventModifierKeyMask |= oEvent.altKey && vKey !== jQuery.sap.KeyCodes.ALT ? ModKey.ALT : 0;
+		eventModifierKeyMask |= (Device.os.macintosh ? oEvent.metaKey : oEvent.ctrlKey) && vKey !== KeyCodes.CONTROL ? ModKey.CTRL : 0;
+		eventModifierKeyMask |= oEvent.shiftKey && vKey !== KeyCodes.SHIFT ? ModKey.SHIFT : 0;
+		eventModifierKeyMask |= oEvent.altKey && vKey !== KeyCodes.ALT ? ModKey.ALT : 0;
 
 		var bValidKey = vKey == null || eventKey === vKey;
 		var bValidModifierKeys = modifierKeyMask === eventModifierKeyMask;
@@ -212,7 +209,7 @@ sap.ui.define([
 			}
 
 			if (bEnterActionMode) {
-				var $InteractiveElements = TableKeyboardDelegate._getInteractiveElements(oEvent.target);
+				var $InteractiveElements = TableUtils.getInteractiveElements(oEvent.target);
 				if ($InteractiveElements) {
 					oTable._getKeyboardExtension().setActionMode(true);
 				}
@@ -364,7 +361,7 @@ sap.ui.define([
 		}
 
 		if (bFirstInteractiveElement) {
-			var $InteractiveElements = TableKeyboardDelegate._getInteractiveElements(oCell);
+			var $InteractiveElements = TableUtils.getInteractiveElements(oCell);
 
 			if ($InteractiveElements) {
 				TableKeyboardDelegate._focusElement(oTable, $InteractiveElements[0]);
@@ -524,32 +521,7 @@ sap.ui.define([
 			return false;
 		}
 
-		return jQuery(oElement).is(INTERACTIVE_ELEMENT_SELECTORS);
-	};
-
-	/**
-	 * Returns all interactive elements in a data cell.
-	 * @param {jQuery|HTMLElement} oCell The data cell from which to get the interactive elements.
-	 * @returns {jQuery|null} Returns <code>null</code>, if the passed cell is not a cell or does not contain any interactive elements.
-	 * @private
-	 * @static
-	 */
-	TableKeyboardDelegate._getInteractiveElements = function(oCell) {
-		if (!oCell) {
-			return null;
-		}
-
-		var $Cell = jQuery(oCell);
-		var oCellInfo = TableUtils.getCellInfo($Cell);
-
-		if (oCellInfo.isOfType(CellType.DATACELL | CellType.ROWACTION)) {
-			var $InteractiveElements = $Cell.find(INTERACTIVE_ELEMENT_SELECTORS);
-			if ($InteractiveElements.length > 0) {
-				return $InteractiveElements;
-			}
-		}
-
-		return null;
+		return jQuery(oElement).is(TableUtils.INTERACTIVE_ELEMENT_SELECTORS);
 	};
 
 	/**
@@ -576,7 +548,7 @@ sap.ui.define([
 
 		for (var i = 0; i < aCells.length; i++) {
 			$Cell = TableUtils.getParentCell(oTable, aCells[i].getDomRef());
-			$InteractiveElements = this._getInteractiveElements($Cell);
+			$InteractiveElements = TableUtils.getInteractiveElements($Cell);
 
 			if ($InteractiveElements) {
 				return $InteractiveElements.first();
@@ -610,7 +582,7 @@ sap.ui.define([
 
 		for (var i = aCells.length - 1; i >= 0; i--) {
 			$Cell = TableUtils.getParentCell(oTable, aCells[i].getDomRef());
-			$InteractiveElements = this._getInteractiveElements($Cell);
+			$InteractiveElements = TableUtils.getInteractiveElements($Cell);
 
 			if ($InteractiveElements) {
 				return $InteractiveElements.last();
@@ -650,7 +622,7 @@ sap.ui.define([
 		var iColumnIndexToStartSearch;
 
 		// Search for the previous interactive element in the current cell.
-		$InteractiveElements = this._getInteractiveElements($Cell);
+		$InteractiveElements = TableUtils.getInteractiveElements($Cell);
 		if ($InteractiveElements[0] !== $Element[0]) {
 			return $InteractiveElements.eq($InteractiveElements.index(oElement) - 1);
 		}
@@ -672,7 +644,7 @@ sap.ui.define([
 		for (var i = iColumnIndexToStartSearch; i >= 0; i--) {
 			oCellContent = aCells[i].getDomRef();
 			$Cell = TableUtils.getParentCell(oTable, oCellContent);
-			$InteractiveElements = this._getInteractiveElements($Cell);
+			$InteractiveElements = TableUtils.getInteractiveElements($Cell);
 
 			if ($InteractiveElements) {
 				return $InteractiveElements.last();
@@ -712,7 +684,7 @@ sap.ui.define([
 		var iColumnIndexInCellsAggregation;
 
 		// Search for the next interactive element in the current cell.
-		$InteractiveElements = this._getInteractiveElements($Cell);
+		$InteractiveElements = TableUtils.getInteractiveElements($Cell);
 		if ($InteractiveElements.get(-1) !== $Element[0]) {
 			return $InteractiveElements.eq($InteractiveElements.index(oElement) + 1);
 		}
@@ -733,7 +705,7 @@ sap.ui.define([
 		for (var i = iColumnIndexInCellsAggregation + 1; i < aCells.length; i++) {
 			oCellContent = aCells[i].getDomRef();
 			$Cell = TableUtils.getParentCell(oTable, oCellContent);
-			$InteractiveElements = this._getInteractiveElements($Cell);
+			$InteractiveElements = TableUtils.getInteractiveElements($Cell);
 
 			if ($InteractiveElements) {
 				return $InteractiveElements.first();
@@ -743,7 +715,7 @@ sap.ui.define([
 		// Search in the row action cell.
 		if (TableUtils.hasRowActions(oTable)) {
 			$Cell = TableUtils.getParentCell(oTable, oRow.getAggregation("_rowAction").getDomRef());
-			$InteractiveElements = this._getInteractiveElements($Cell);
+			$InteractiveElements = TableUtils.getInteractiveElements($Cell);
 
 			if ($InteractiveElements.get(-1) !== $Element[0]) {
 				return $InteractiveElements.eq($InteractiveElements.index(oElement) + 1);
@@ -764,7 +736,7 @@ sap.ui.define([
 	TableKeyboardDelegate.prototype.enterActionMode = function() {
 		var oKeyboardExtension = this._getKeyboardExtension();
 		var oActiveElement = document.activeElement;
-		var $InteractiveElements = TableKeyboardDelegate._getInteractiveElements(oActiveElement);
+		var $InteractiveElements = TableUtils.getInteractiveElements(oActiveElement);
 		var $Cell = TableUtils.getParentCell(this, oActiveElement);
 
 		if ($InteractiveElements) {
@@ -871,7 +843,7 @@ sap.ui.define([
 		var oKeyboardExtension = this._getKeyboardExtension();
 
 		// Toggle the action mode by changing the focus between a data cell and its interactive controls.
-		if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.F2)) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.F2)) {
 			var bIsInActionMode = oKeyboardExtension.isInActionMode();
 			var $ParentCell = TableUtils.getParentCell(this, oEvent.target);
 
@@ -884,7 +856,7 @@ sap.ui.define([
 			return;
 
 		// Expand/Collapse group.
-		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.F4) &&
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.F4) &&
 				   TableKeyboardDelegate._isElementGroupToggler(this, oEvent.target)) {
 			TableUtils.Grouping.toggleGroupHeaderByRef(this, oEvent.target);
 			return;
@@ -894,7 +866,7 @@ sap.ui.define([
 			return;
 		}
 
-		if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.SPACE) &&
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.SPACE) &&
 			TableUtils.getCellInfo(oEvent.target).type) {
 			oEvent.preventDefault(); // Prevent scrolling the page.
 		}
@@ -904,7 +876,7 @@ sap.ui.define([
 		var sSelectionMode = this.getSelectionMode();
 
 		// Shift: Start the range selection mode.
-		if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.SHIFT) &&
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.SHIFT) &&
 			sSelectionMode === SelectionMode.MultiToggle &&
 			(oCellInfo.isOfType(CellType.ROWHEADER) && TableUtils.isRowSelectorSelectionAllowed(this) ||
 			 (oCellInfo.isOfType(CellType.DATACELL | CellType.ROWACTION)) && TableUtils.isRowSelectionAllowed(this))) {
@@ -926,7 +898,7 @@ sap.ui.define([
 			};
 
 		// Ctrl+A: Select/Deselect all.
-		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.A, ModKey.CTRL)) {
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.A, ModKey.CTRL)) {
 			oEvent.preventDefault(); // Prevent full page text selection.
 
 			if (oCellInfo.isOfType(CellType.ANYCONTENTCELL | CellType.COLUMNROWHEADER) && sSelectionMode === SelectionMode.MultiToggle) {
@@ -934,19 +906,19 @@ sap.ui.define([
 			}
 
 		// Ctrl+Shift+A: Deselect all.
-		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.A, ModKey.CTRL + ModKey.SHIFT)) {
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.A, ModKey.CTRL + ModKey.SHIFT)) {
 			if (oCellInfo.isOfType(CellType.ANYCONTENTCELL | CellType.COLUMNROWHEADER)) {
 				this.clearSelection();
 			}
 
 		// F4: Enter the action mode.
-		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.F4)) {
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.F4)) {
 			if (oCellInfo.isOfType(CellType.DATACELL)) {
 				oKeyboardExtension.setActionMode(true);
 			}
 
 		// Shift+F10: Open the context menu.
-		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.F10, ModKey.SHIFT)) {
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.F10, ModKey.SHIFT)) {
 			oEvent.preventDefault(); // Prevent opening the default browser context menu.
 			TableUtils.Menu.openContextMenu(this, oEvent.target, true, null, oEvent);
 		}
@@ -1012,11 +984,11 @@ sap.ui.define([
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target);
 
 		// End the range selection mode.
-		if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.SHIFT)) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.SHIFT)) {
 			delete this._oRangeSelection;
 		}
 
-		if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.SPACE)) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.SPACE)) {
 			// Open the column menu.
 			if (oCellInfo.isOfType(CellType.COLUMNHEADER)) {
 				TableUtils.Menu.openContextMenu(this, oEvent.target, true);
@@ -1025,7 +997,7 @@ sap.ui.define([
 			}
 		}
 
-		if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.ENTER)) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.ENTER)) {
 			// Open the column menu.
 			if (oCellInfo.isOfType(CellType.COLUMNHEADER)) {
 				TableUtils.Menu.openContextMenu(this, oEvent.target, true);

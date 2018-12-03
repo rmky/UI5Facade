@@ -48,7 +48,7 @@ sap.ui.define([
 	 * @implements sap.ui.commons.ToolbarItem
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -373,7 +373,7 @@ sap.ui.define([
 
 	SearchField.prototype.setEnableListSuggest = function(bEnableListSuggest) {
 		if ((this.getEnableListSuggest() && bEnableListSuggest) || (!this.getEnableListSuggest() && !bEnableListSuggest)) {
-			return;
+			return this;
 		}
 		_initChildControls(this, bEnableListSuggest);
 		this.setProperty("enableListSuggest", bEnableListSuggest);

@@ -6,8 +6,8 @@
 
 // Provides control sap.m.P13nDialog.
 sap.ui.define([
-	'jquery.sap.global', './Dialog', './library', 'sap/ui/core/EnabledPropagator', './DialogRenderer', 'sap/ui/core/library', 'sap/ui/Device', './Bar', './Button', './Title', 'sap/m/OverflowToolbarLayoutData', 'sap/ui/base/ManagedObjectObserver'
-], function(jQuery, Dialog, library, EnabledPropagator, DialogRenderer, coreLibrary, Device, Bar, Button, Title, OverflowToolbarLayoutData, ManagedObjectObserver) {
+	'./Dialog', './library', 'sap/ui/core/EnabledPropagator', './DialogRenderer', 'sap/ui/core/library', 'sap/ui/Device', './Bar', './Button', './Title', 'sap/m/OverflowToolbarLayoutData', 'sap/ui/base/ManagedObjectObserver', "sap/ui/thirdparty/jquery", "sap/base/Log"
+], function(Dialog, library, EnabledPropagator, DialogRenderer, coreLibrary, Device, Bar, Button, Title, OverflowToolbarLayoutData, ManagedObjectObserver, jQuery, Log) {
 	"use strict";
 
 	// shortcut for sap.m.OverflowToolbarPriority
@@ -41,7 +41,7 @@ sap.ui.define([
 	 *        tables.
 	 * @extends sap.m.Dialog
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -251,7 +251,7 @@ sap.ui.define([
 						icon: MessageBox.Icon.WARNING,
 						title: sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("P13NDIALOG_VALIDATION_TITLE"),
 						actions: [
-							sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("P13NDIALOG_VALIDATION_FIX"), sap.m.MessageBox.Action.IGNORE
+							sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("P13NDIALOG_VALIDATION_FIX"), MessageBox.Action.IGNORE
 						],
 						onClose: function(oAction) {
 							// Fix: Stay on the current panel. There is incorrect entry and user decided to correct this.
@@ -295,7 +295,7 @@ sap.ui.define([
 					});
 					break;
 				default:
-					jQuery.sap.log.error("Panel type '" + sPanelType + "' is not supported jet.");
+					Log.error("Panel type '" + sPanelType + "' is not supported jet.");
 			}
 		});
 
@@ -442,7 +442,7 @@ sap.ui.define([
 		var sId = this._getVisiblePanelID();
 		if (sId && oContent) {
 			// move panel div into dialog content div.
-			var $Panel = jQuery.sap.byId(sId);
+			var $Panel = jQuery(document.getElementById(sId));
 			$Panel.appendTo(jQuery(oContent));
 		}
 	};
@@ -453,37 +453,37 @@ sap.ui.define([
 	 * @private
 	 */
 	P13nDialog.prototype._updateDialogTitle = function() {
-        var oPanelVisible = this.getVisiblePanel();
-        var sTitle = this._oResourceBundle.getText("P13NDIALOG_VIEW_SETTINGS");
+		var oPanelVisible = this.getVisiblePanel();
+		var sTitle = this._oResourceBundle.getText("P13NDIALOG_VIEW_SETTINGS");
 
-        // Only if one visible panel (i.e. NavigationControl) exists we set specific title
-        if (!this._isNavigationControlExpected() && oPanelVisible) {
-            switch (oPanelVisible.getType()) {
-                case P13nPanelType.filter:
-                    sTitle = this._oResourceBundle.getText("P13NDIALOG_TITLE_FILTER");
-                    break;
-                case P13nPanelType.sort:
-                    sTitle = this._oResourceBundle.getText("P13NDIALOG_TITLE_SORT");
-                    break;
-                case P13nPanelType.group:
-                    sTitle = this._oResourceBundle.getText("P13NDIALOG_TITLE_GROUP");
-                    break;
-                case P13nPanelType.columns:
-                    sTitle = this._oResourceBundle.getText("P13NDIALOG_TITLE_COLUMNS");
-                    break;
-                case P13nPanelType.dimeasure:
-                    sTitle = this._oResourceBundle.getText("P13NDIALOG_TITLE_DIMEASURE");
-                    break;
-                default:
-                    sTitle = oPanelVisible.getTitleLarge() || this._oResourceBundle.getText("P13NDIALOG_VIEW_SETTINGS");
-            }
-        }
+		// Only if one visible panel (i.e. NavigationControl) exists we set specific title
+		if (!this._isNavigationControlExpected() && oPanelVisible) {
+			switch (oPanelVisible.getType()) {
+				case P13nPanelType.filter:
+					sTitle = this._oResourceBundle.getText("P13NDIALOG_TITLE_FILTER");
+					break;
+				case P13nPanelType.sort:
+					sTitle = this._oResourceBundle.getText("P13NDIALOG_TITLE_SORT");
+					break;
+				case P13nPanelType.group:
+					sTitle = this._oResourceBundle.getText("P13NDIALOG_TITLE_GROUP");
+					break;
+				case P13nPanelType.columns:
+					sTitle = this._oResourceBundle.getText("P13NDIALOG_TITLE_COLUMNS");
+					break;
+				case P13nPanelType.dimeasure:
+					sTitle = this._oResourceBundle.getText("P13NDIALOG_TITLE_DIMEASURE");
+					break;
+				default:
+					sTitle = oPanelVisible.getTitleLarge() || this._oResourceBundle.getText("P13NDIALOG_VIEW_SETTINGS");
+			}
+		}
 
-        if (Device.system.phone) {
-            this.getCustomHeader().getContentMiddle()[0].setText(sTitle);
-        } else {
-            this.setTitle(sTitle);
-        }
+		if (Device.system.phone) {
+			this.getCustomHeader().getContentMiddle()[0].setText(sTitle);
+		} else {
+			this.setTitle(sTitle);
+		}
 	};
 
 	/**
@@ -520,15 +520,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * @private
-	 */
-	P13nDialog.prototype._callChangeNotifier = function(oPanel) {
-		if (this.getShowReset()) {
-			this.setShowResetEnabled(true);
-		}
-	};
-
-	/**
 	 * In case that validation has detected an issue belonging to some panels this issue is duplicated for them.
 	 *
 	 * @param {object} aResult
@@ -559,6 +550,7 @@ sap.ui.define([
 	P13nDialog.prototype._createOKButton = function() {
 		var that = this;
 		return new Button(this.getId() + "-ok", {
+			type: ButtonType.Emphasized,
 			text: this._oResourceBundle.getText("P13NDIALOG_OK"),
 			layoutData: new OverflowToolbarLayoutData({
 				priority: OverflowToolbarPriority.NeverOverflow
@@ -711,17 +703,15 @@ sap.ui.define([
 								});
 								oPanel.setValidationExecutor(jQuery.proxy(this._callValidationExecutor, this));
 								oPanel.setValidationListener(jQuery.proxy(this._registerValidationListener, this));
-								oPanel.setChangeNotifier(jQuery.proxy(this._callChangeNotifier, this));
 								break;
 							case "remove":
 								delete this._mVisibleNavigationItems[oPanel.getType()];
 								this._oObserver.unobserve(oPanel);
 								oPanel.setValidationExecutor();
 								oPanel.setValidationListener();
-								oPanel.setChangeNotifier();
 								break;
 							default:
-								jQuery.sap.log.error("Mutation '" + oChanges.mutation + "' is not supported jet.");
+								Log.error("Mutation '" + oChanges.mutation + "' is not supported jet.");
 						}
 					}, this);
 
@@ -748,7 +738,7 @@ sap.ui.define([
 					}
 					break;
 				default:
-					jQuery.sap.log.error("The property or aggregation '" + oChanges.name + "' has not been registered.");
+					Log.error("The property or aggregation '" + oChanges.name + "' has not been registered.");
 			}
 		} else if (this._isInstanceOf(oChanges.object, "sap/m/P13nPanel")) {
 			if (oChanges.name === "title") {

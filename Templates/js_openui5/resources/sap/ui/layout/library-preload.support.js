@@ -27,8 +27,8 @@ sap.ui.predefine('sap/ui/layout/library.support',["./rules/Form.support"],
 /**
  * Defines support rules of the Form controls of sap.ui.layout library.
  */
-sap.ui.predefine('sap/ui/layout/rules/Form.support',["jquery.sap.global", "sap/ui/support/library"],
-	function(jQuery, SupportLib) {
+sap.ui.predefine('sap/ui/layout/rules/Form.support',["sap/ui/support/library"],
+	function(SupportLib) {
 	"use strict";
 
 	// shortcuts
@@ -557,6 +557,7 @@ sap.ui.predefine('sap/ui/layout/rules/Form.support',["jquery.sap.global", "sap/u
 									oField.isA("sap.m.RadioButtonGroup") ||
 									(oField.isA("sap.m.Button") && oFormElement.getLabel()) || //allow buttons only without label
 									oField.isA("sap.m.Slider") ||
+									oField.isA("sap.m.Switch") ||
 									(oMetadata.hasProperty("displayOnly") && !oField.getDisplayOnly())) {
 								bEditableField = true;
 								if (!bEditable) {

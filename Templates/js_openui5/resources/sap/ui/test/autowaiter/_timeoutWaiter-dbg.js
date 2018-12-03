@@ -5,11 +5,11 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/test/_OpaLogger",
 	"sap/ui/test/_ParameterValidator",
-	"sap/ui/test/autowaiter/_utils"
-], function ($, _OpaLogger, _ParameterValidator, _utils) {
+	"sap/ui/test/autowaiter/_utils",
+	"sap/ui/thirdparty/jquery"
+], function(_OpaLogger, _ParameterValidator, _utils, jQueryDOM) {
 	"use strict";
 
 	var oLogger = _OpaLogger.getLogger("sap.ui.test.autowaiter._timeoutWaiter");
@@ -47,7 +47,17 @@ sap.ui.define([
 			return;
 		}
 		var fnOriginalClear = window[sClearName];
-		window[sSetName] = function wrappedSetTimeout(fnCallback, iDelay) {
+		window[sSetName] = function wrappedSetTimeout(fnCallback, iDelay, tracking) {
+			// some timeouts do not need to be tracked, like the timeout for long-running promises
+			if (tracking && tracking === 'TIMEOUT_WAITER_IGNORE') {
+				iID = fnOriginal.call(this, fnCallback, iDelay);
+				oLogger.trace("Timeout with ID " + iID + " should not be tracked. " +
+					" Delay: " + iDelay +
+					" Initiator: " + iInitiatorId);
+
+				return iID;
+			}
+
 			var fnWrappedCallback = function wrappedCallback() {
 				// workaround for FF: the mTimeouts[iID] is sometimes cleaned by GC before it is released
 				var oCurrentTimeout = mTimeouts[iID];
@@ -96,7 +106,7 @@ sap.ui.define([
 
 			var oCurrentTimeout = mTimeouts[iID];
 			if (!oCurrentTimeout) {
-				oLogger.trace("Timeout data for timeout with ID " + iID + " disapered unexpectedly");
+				oLogger.trace("Timeout data for timeout with ID " + iID + " disapered unexpectedly or timeout was not tracked intentionally");
 				oCurrentTimeout = {};
 			}
 
@@ -203,7 +213,7 @@ sap.ui.define([
 					minDelay: "numeric"
 				}
 			});
-			$.extend(config, oConfig);
+			jQueryDOM.extend(config, oConfig);
 		}
 	};
 }, true);

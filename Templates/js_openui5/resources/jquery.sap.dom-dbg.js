@@ -6,17 +6,17 @@
 
 // Provides functionality related to DOM analysis and manipulation which is not provided by jQuery itself.
 sap.ui.define([
-	'jquery.sap.global', 'sap/ui/dom/focus', 'sap/ui/dom/containsOrEquals',
-	'sap/ui/dom/replaceNode', 'sap/ui/dom/syncStyleClass', 'sap/ui/dom/ownerWindow', 'sap/ui/dom/scrollbarSize',
+	'jquery.sap.global', 'sap/ui/dom/containsOrEquals',
+	'sap/ui/dom/patch', 'sap/ui/core/syncStyleClass', 'sap/ui/dom/getOwnerWindow', 'sap/ui/dom/getScrollbarSize',
 	'sap/ui/dom/denormalizeScrollLeftRTL', 'sap/ui/dom/denormalizeScrollBeginRTL',
-	'sap/ui/dom/units/Rem', 'sap/ui/dom/jquery/byId', 'sap/ui/dom/jquery/Aria',
+	'sap/ui/dom/units/Rem', 'sap/ui/dom/jquery/Aria',
 	'sap/ui/dom/jquery/Selection', 'sap/ui/dom/jquery/zIndex', 'sap/ui/dom/jquery/parentByAttribute',
 	'sap/ui/dom/jquery/cursorPos', 'sap/ui/dom/jquery/selectText', 'sap/ui/dom/jquery/getSelectedText',
-	'sap/ui/dom/jquery/outerHTML', 'sap/ui/dom/jquery/rect', 'sap/ui/dom/jquery/rectContains', 'sap/ui/dom/jquery/Focusable',
+	'sap/ui/dom/jquery/rect', 'sap/ui/dom/jquery/rectContains', 'sap/ui/dom/jquery/Focusable',
 	'sap/ui/dom/jquery/hasTabIndex', 'sap/ui/dom/jquery/scrollLeftRTL', 'sap/ui/dom/jquery/scrollRightRTL', 'sap/ui/dom/jquery/Selectors'
-], function(jQuery, domFocus, domContainsOrEquals, domReplaceNode, domSyncStyleClass, domOwnerWindow,
-	domScrollbarSize, domDenormalizeScrollLeftRTL, domDenormalizeScrollBeginRTL, domUnitsRem,
-	jqueryById/*,
+], function(jQuery, domContainsOrEquals, domPatch, fnSyncStyleClass, domGetOwnerWindow,
+	domGetScrollbarSize, domDenormalizeScrollLeftRTL, domDenormalizeScrollBeginRTL, domUnitsRem
+	/*
 	jqueryAria,
 	jquerySelection,
 	jqueryzIndex,
@@ -24,7 +24,6 @@ sap.ui.define([
 	jqueryCursorPos,
 	jquerySelectText,
 	jqueryGetSelectedText,
-	jqueryOuterHTML,
 	jqueryRect,
 	jqueryRectContains,
 	jqueryFocusable,
@@ -43,6 +42,7 @@ sap.ui.define([
 	 * @return {Element} The DOMNode identified by the given sId
 	 * @public
 	 * @since 0.9.0
+	 * @deprecated since 1.58 use <code>document.getElementById</code> instead
 	 */
 	jQuery.sap.domById = function domById(sId, oWindow) {
 		return sId ? (oWindow || window).document.getElementById(sId) : null;
@@ -62,9 +62,20 @@ sap.ui.define([
 	 * @public
 	 * @since 0.9.1
 	 * @function
+	 * @deprecated since 1.58 use <code>jQuery(document.getElementById(sId))</code> instead
 	 */
-	jQuery.sap.byId = jqueryById;
-
+	jQuery.sap.byId = function byId(sId, oContext) {
+		var escapedId = "";
+		if (sId) {
+			// Note: This does not escape all relevant characters according to jQuery's documentation
+			// (see http://api.jquery.com/category/selectors/)
+			// As the behavior hasn't been changed for a long time it is not advisable to change it in
+			// future as users might be already escaping characters on their own or relying on the fact
+			// selector like byId("my-id > div") can be used.
+			escapedId = "#" + sId.replace(/(:|\.)/g,'\\$1');
+		}
+		return jQuery(escapedId, oContext);
+	};
 
 	/**
 	 * Calls focus() on the given DOM element.
@@ -74,8 +85,15 @@ sap.ui.define([
 	 * @public
 	 * @since 1.1.2
 	 * @function
+	 * @deprecated since 1.58 use <code>oDomRef.focus()</code> instead
 	 */
-	jQuery.sap.focus = domFocus;
+	jQuery.sap.focus = function focus(oDomRef) {
+		if (!oDomRef) {
+			return;
+		}
+		oDomRef.focus();
+		return true;
+	};
 
 	/*
 	 * Convert <code>px</code> values to <code>rem</code>.
@@ -84,6 +102,7 @@ sap.ui.define([
 	 * @returns {float} The converted value in <code>rem</code> units. E.g.: <code>1</code>
 	 * @protected
 	 * @since 1.48
+	 * @deprecated since 1.58 use {@link module:sap/ui/dom/units/Rem.fromPx} instead
 	 */
 	jQuery.sap.pxToRem = domUnitsRem.fromPx;
 
@@ -94,48 +113,9 @@ sap.ui.define([
 	 * @returns {float} The converted value in <code>px</code> units. E.g.: <code>16</code>
 	 * @protected
 	 * @since 1.48
+	 * @deprecated since 1.58 use {@link module:sap/ui/dom/units/Rem.toPx} instead
 	 */
 	jQuery.sap.remToPx = domUnitsRem.toPx;
-
-	/**
-	 * Sets or gets the position of the cursor in an element that supports cursor positioning.
-	 *
-	 * @param {int} iPos The cursor position to set (or no parameter to retrieve the cursor position)
-	 * @return {int | jQuery} The cursor position (or the jQuery collection if the position has been set)
-	 * @public
-	 * @name jQuery#cursorPos
-	 * @author SAP SE
-	 * @since 0.9.0
-	 * @function
-	 */
-
-	/**
-	 * Sets the text selection in the first element of the collection.
-	 *
-	 * <b>Note</b>: This feature is only supported for input element’s type of text, search, url, tel and password.
-	 *
-	 * @param {int} iStart Start position of the selection (inclusive)
-	 * @param {int} iEnd End position of the selection (exclusive)
-	 * @return {jQuery} The jQuery collection
-	 * @public
-	 * @name jQuery#selectText
-	 * @author SAP SE
-	 * @since 0.9.0
-	 * @function
-	 */
-
-	/**
-	 * Retrieve the selected text in the first element of the collection.
-	 *
-	 * <b>Note</b>: This feature is only supported for input element’s type of text, search, url, tel and password.
-	 *
-	 * @return {string} The selected text.
-	 * @public
-	 * @name jQuery#getSelectedText
-	 * @author SAP SE
-	 * @since 1.26.0
-	 * @function
-	 */
 
 	/**
 	 * Returns the outer HTML of the given HTML element.
@@ -146,7 +126,21 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @since 0.9.0
 	 * @function
+	 * @deprecated since 1.58 use native <code>Element#outerHTML</code> instead
 	 */
+	jQuery.fn.outerHTML = function() {
+		var oDomRef = this.get(0);
+
+		if (oDomRef && oDomRef.outerHTML) {
+			return jQuery.trim(oDomRef.outerHTML);
+		} else {
+			var doc = this[0] ? this[0].ownerDocument : document;
+
+			var oDummy = doc.createElement("div");
+			oDummy.appendChild(oDomRef.cloneNode(true));
+			return oDummy.innerHTML;
+		}
+	};
 
 	/**
 	 * Returns whether <code>oDomRefChild</code> is contained in or equal to <code>oDomRefContainer</code>.
@@ -165,103 +159,9 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @since 0.9.0
 	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/ui/dom/containsOrEquals} instead
 	 */
 	jQuery.sap.containsOrEquals = domContainsOrEquals;
-
-	/**
-	 * Returns a rectangle describing the current visual positioning of the first DOM object in the collection
-	 * (or <code>null</code> if no element was given).
-	 *
-	 * @return {object} An object with left, top, width and height
-	 * @public
-	 * @name jQuery#rect
-	 * @author SAP SE
-	 * @since 0.9.0
-	 * @function
-	 */
-
-	/**
-	 * Returns whether a point described by X and Y is inside this Rectangle's boundaries.
-	 *
-	 * @param {int} iPosX The X coordinate
-	 * @param {int} iPosY The Y coordinate
-	 * @return {boolean} Whether X and Y are inside this Rectangle's boundaries
-	 * @public
-	 * @name jQuery#rectContains
-	 * @author SAP SE
-	 * @since 0.18.0
-	 * @function
-	 */
-
-	/**
-	 * Returns <code>true</code> if the first element has a set tabindex.
-	 *
-	 * @return {boolean} If the first element has a set tabindex
-	 * @public
-	 * @name jQuery#hasTabIndex
-	 * @author SAP SE
-	 * @since 0.9.0
-	 * @function
-	 */
-
-	/**
-	 * Returns the first focusable domRef in a given container (the first element of the collection)
-	 *
-	 * @return {Element} The domRef
-	 * @public
-	 * @author SAP SE
-	 * @since 0.9.0
-	 * @function
-	 * @name jQuery#firstFocusableDomRef
-	 */
-
-	/**
-	 * Returns the last focusable domRef in a given container
-	 *
-	 * @return {Element} The last domRef
-	 * @public
-	 * @name jQuery#lastFocusableDomRef
-	 * @author SAP SE
-	 * @since 0.9.0
-	 * @function
-	 */
-
-	/**
-	 * Sets or returns the scrollLeft value of the first element in the given jQuery collection in right-to-left mode.
-	 * Precondition: The element is rendered in RTL mode.
-	 *
-	 * Reason for this method is that the major browsers use three different values for the same scroll position when in RTL mode.
-	 * This method hides those differences and returns/applies the same value that would be returned in LTR mode: The distance in px
-	 * how far the given container is scrolled away from the leftmost scroll position.
-	 *
-	 * Returns "undefined" if no element and no iPos is given.
-	 *
-	 * @param {int} iPos The desired scroll position
-	 * @return {jQuery | int} The jQuery collection if iPos is given, otherwise the scroll position, counted from the leftmost position
-	 * @public
-	 * @name jQuery#scrollLeftRTL
-	 * @author SAP SE
-	 * @since 0.20.0
-	 * @function
-	 */
-
-	/**
-	 * Returns the MIRRORED scrollLeft value of the first element in the given jQuery collection in right-to-left mode.
-	 * Precondition: The element is rendered in RTL mode.
-	 *
-	 * Reason for this method is that the major browsers return three different values for the same scroll position when in RTL mode.
-	 * This method hides those differences and returns the value that would be returned in LTR mode if the UI would be mirrored horizontally:
-	 * The distance in px how far the given container is scrolled away from the rightmost scroll position.
-	 *
-	 * Returns "undefined" if no element is given.
-	 *
-	 * @return {int} The scroll position, counted from the rightmost position
-	 * @public
-	 * @name jQuery#scrollRightRTL
-	 * @author SAP SE
-	 * @since 0.20.0
-	 * @function
-	 */
 
 	/**
 	 * For the given scrollLeft value this method returns the scrollLeft value as understood by the current browser in RTL mode.
@@ -280,9 +180,9 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @since 0.20.0
 	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/ui/dom/denormalizeScrollLeftRTL} instead
 	 */
 	jQuery.sap.denormalizeScrollLeftRTL = domDenormalizeScrollLeftRTL;
-
 
 	/**
 	 * For the given scroll position measured from the "beginning" of a container (the right edge in RTL mode)
@@ -305,9 +205,9 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @since 1.26.1
 	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/ui/dom/denormalizeScrollBeginRTL} instead
 	 */
 	jQuery.sap.denormalizeScrollBeginRTL = domDenormalizeScrollBeginRTL;
-
 
 	/*
 	 * The following methods are taken from jQuery UI core but modified.
@@ -327,51 +227,9 @@ sap.ui.define([
 	 *
 	 * @private
 	 * @type {boolean}
+	 * @deprecated since 1.58
 	 */
 	jQuery.support.selectstart = "onselectstart" in document.createElement("div");
-
-	/**
-	 * Disable HTML elements selection.
-	 *
-	 * @return {jQuery} <code>this</code> to allow method chaining.
-	 * @protected
-	 * @since 1.24.0
-	 * @name jQuery#disableSelection
-	 * @function
-	 */
-
-	/**
-	 * Enable HTML elements to get selected.
-	 *
-	 * @return {jQuery} <code>this</code> to allow method chaining.
-	 * @protected
-	 * @since 1.24.0
-	 * @name jQuery#enableSelection
-	 * @function
-	 */
-
-	/**
-	 * Get the z-index for an element.
-	 *
-	 * @param {int} zIndex The z-index to set
-	 * @returns {number} The z-index
-	 * @public
-	 * @name jQuery#zIndex
-	 * @function
-	 */
-
-	/**
-	 * Gets the next parent DOM element with a given attribute and attribute value starting above the first given element
-	 *
-	 * @param {string} sAttribute Name of the attribute
-	 * @param {string} sValue Value of the attribute (optional)
-	 * @return {Element} null or the DOM reference
-	 * @public
-	 * @name jQuery#parentByAttribute
-	 * @author SAP SE
-	 * @since 0.9.0
-	 * @function
-	 */
 
 	/**
 	 * Returns the window reference for a DomRef.
@@ -381,8 +239,9 @@ sap.ui.define([
 	 * @public
 	 * @since 0.9.0
 	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/ui/dom/getOwnerWindow} instead
 	 */
-	jQuery.sap.ownerWindow = domOwnerWindow;
+	jQuery.sap.ownerWindow = domGetOwnerWindow;
 
 	/**
 	 * Returns the size (width of the vertical / height of the horizontal) native browser scrollbars.
@@ -395,8 +254,9 @@ sap.ui.define([
 	 * @public
 	 * @since 1.4.0
 	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/ui/dom/getScrollbarSize} instead
 	 */
-	jQuery.sap.scrollbarSize = domScrollbarSize;
+	jQuery.sap.scrollbarSize = domGetScrollbarSize;
 
 	/**
 	 * Search ancestors of the given source DOM element for the specified CSS class name.
@@ -410,58 +270,9 @@ sap.ui.define([
 	 * @public
 	 * @since 1.22
 	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/ui/core/syncStyleClass} instead
 	 */
-	jQuery.sap.syncStyleClass = domSyncStyleClass;
-
-	/**
-	 * Adds the given ID reference to the the aria-labelledby attribute.
-	 *
-	 * @param {string} sId The ID reference of an element
-	 * @param {boolean} [bPrepend=false] Whether prepend or not
-	 * @return {jQuery} <code>this</code> to allow method chaining.
-	 * @name jQuery#addAriaLabelledBy
-	 * @public
-	 * @author SAP SE
-	 * @since 1.30.0
-	 * @function
-	 */
-
-	/**
-	 * Removes the given ID reference from the aria-labelledby attribute.
-	 *
-	 * @param {string} sId The ID reference of an element
-	 * @return {jQuery} <code>this</code> to allow method chaining.
-	 * @name jQuery#removeAriaLabelledBy
-	 * @public
-	 * @author SAP SE
-	 * @since 1.30.0
-	 * @function
-	 */
-
-	/**
-	 * Adds the given ID reference to the aria-describedby attribute.
-	 *
-	 * @param {string} sId The ID reference of an element
-	 * @param {boolean} [bPrepend=false] whether prepend or not
-	 * @return {jQuery} <code>this</code> to allow method chaining.
-	 * @name jQuery#addAriaDescribedBy
-	 * @public
-	 * @author SAP SE
-	 * @since 1.30.0
-	 * @function
-	 */
-
-	/**
-	 * Removes the given ID reference from the aria-describedby attribute.
-	 *
-	 * @param {string} sId The ID reference of an element
-	 * @return {jQuery} <code>this</code> to allow method chaining.
-	 * @name jQuery#removeAriaDescribedBy
-	 * @public
-	 * @author SAP SE
-	 * @since 1.30.0
-	 * @function
-	 */
+	jQuery.sap.syncStyleClass = fnSyncStyleClass;
 
 	/**
 	 * This method try to replace two HTML elements according to changed attributes.
@@ -474,9 +285,23 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @since 1.30.0
 	 * @private
-	 * @function
+	 * @deprecated since 1.58 use {@link module:sap/ui/dom/patch} instead
 	 */
-	jQuery.sap.replaceDOM = domReplaceNode;
+	jQuery.sap.replaceDOM = function(oOldDom, vNewDom, bCleanData) {
+		var oNewDom;
+		if (typeof vNewDom === "string") {
+			oNewDom = jQuery.parseHTML(vNewDom)[0];
+		} else {
+			oNewDom = vNewDom;
+		}
+
+		if (bCleanData) {
+			jQuery.cleanData([oOldDom]);
+			jQuery.cleanData(oOldDom.getElementsByTagName("*"));
+		}
+
+		return domPatch(oOldDom, oNewDom);
+	};
 
 	return jQuery;
 

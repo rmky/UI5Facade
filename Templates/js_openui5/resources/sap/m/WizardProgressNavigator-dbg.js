@@ -10,9 +10,9 @@ sap.ui.define([
 	"sap/ui/core/ResizeHandler",
 	"sap/ui/core/delegate/ItemNavigation",
 	"sap/ui/Device",
-	"jquery.sap.global",
 	"sap/m/ActionSheet",
-	"./WizardProgressNavigatorRenderer"
+	"./WizardProgressNavigatorRenderer",
+	"sap/ui/thirdparty/jquery"
 ],
 function(
 	library,
@@ -20,9 +20,9 @@ function(
 	ResizeHandler,
 	ItemNavigation,
 	Device,
-	jQuery,
 	ActionSheet,
-	WizardProgressNavigatorRenderer
+	WizardProgressNavigatorRenderer,
+	jQuery
 ) {
 	"use strict";
 
@@ -39,7 +39,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -158,7 +158,7 @@ function(
 		// Moving to flexbox is not suitable as we should ensure backwards compatibility with IE9
 		if (Device.os.name === Device.os.OS.IOS) {
 			$ProgressNavStep = this.$().find(".sapMWizardProgressNavStep").css("display", "block");
-			jQuery.sap.delayedCall(0, $ProgressNavStep, "css", ["display", ""]);
+			setTimeout($ProgressNavStep["css"].bind($ProgressNavStep, "display", ""), 0);
 		}
 	};
 

@@ -6,16 +6,23 @@
 
 // Provides control sap.m.Token.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'./Tokenizer',
 	'sap/ui/core/library',
 	'sap/ui/core/Icon',
 	'./TokenRenderer',
-	'jquery.sap.keycodes'
+	"sap/ui/events/KeyCodes"
 ],
-	function(jQuery, library, Control, Tokenizer, coreLibrary, Icon, TokenRenderer) {
+	function(
+		library,
+		Control,
+		Tokenizer,
+		coreLibrary,
+		Icon,
+		TokenRenderer,
+		KeyCodes
+	) {
 	"use strict";
 
 
@@ -45,7 +52,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -361,7 +368,7 @@ sap.ui.define([
 	 */
 	Token.prototype.onkeydown = function(oEvent) {
 
-		if ((oEvent.ctrlKey || oEvent.metaKey) && oEvent.which === jQuery.sap.KeyCodes.SPACE) {
+		if ((oEvent.ctrlKey || oEvent.metaKey) && oEvent.which === KeyCodes.SPACE) {
 			//metaKey for MAC command
 			this.onsapspace(oEvent);
 			oEvent.preventDefault();

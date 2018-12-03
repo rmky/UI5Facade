@@ -6,11 +6,12 @@
 
 // Provides helper sap.ui.table.TableDragAndDropExtension.
 sap.ui.define([
-	"./TableExtension", "sap/ui/table/TableUtils", "sap/ui/core/dnd/DropPosition"
-], function(TableExtension, TableUtils, DropPosition) {
+	"./TableExtension", "sap/ui/table/TableUtils", "sap/ui/core/library"
+], function(TableExtension, TableUtils, CoreLibrary) {
 	"use strict";
 
 	var SESSION_DATA_KEY_NAMESPACE = "sap.ui.table";
+	var DropPosition = CoreLibrary.dnd.DropPosition;
 
 	var ExtensionHelper = {
 		/**
@@ -69,7 +70,7 @@ sap.ui.define([
 			var oDraggedControl = oDragSession.getDragControl();
 			var oSessionData = {};
 
-			if (TableUtils.isInstanceOf(oDraggedControl, "sap/ui/table/Row")) {
+			if (oDraggedControl.isA("sap.ui.table.Row")) {
 				/*
 				 * Rows which must not be draggable:
 				 * - Empty rows (rows without context)
@@ -110,7 +111,7 @@ sap.ui.define([
 				oSessionData = {};
 			}
 
-			if (TableUtils.isInstanceOf(oDropControl, "sap/ui/table/Row")) {
+			if (oDropControl.isA("sap.ui.table.Row")) {
 				/*
 				 * Rows which must not be droppable:
 				 * - Itself // TODO: Should this be possible, e.g. for copying a row/node next to or into itself?
@@ -140,7 +141,7 @@ sap.ui.define([
 					// always need to be updated. The only exception is when all rows are empty. In this case a "drop in aggregation" will be
 					// performed, for which no indicator adjustment is necessary.
 					if (oDragSession.getDropControl() !== this) {
-						var bVerticalScrollbarVisible = this._getScrollExtension().isVerticalScrollbarVisible();
+						var bVerticalScrollbarVisible = this.getDomRef().classList.contains("sapUiTableVScr");
 						var mTableCntRect = this.getDomRef("sapUiTableCnt").getBoundingClientRect();
 						oDragSession.setIndicatorConfig({
 							width: mTableCntRect.width - (bVerticalScrollbarVisible ? 16 : 0),
@@ -251,7 +252,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableDragAndDropExtension

@@ -14,6 +14,5 @@ sap.ui.define(['sap/ui/thirdparty/jquery'],function(q){"use strict";function g(t
 		 * http://jquery.org/license
 		 *
 		 * http://api.jqueryui.com/category/ui-core/
-		 * @deprecated since 1.48 use {@link sap/ui/dom/jquery/zIndex} instead
 		 */
 q.fn.zIndex=f;}return q;});

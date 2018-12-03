@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["jquery.sap.global", "./DragDropBase"],
-	function(jQuery, DragDropBase) {
+sap.ui.define(["./DragDropBase"],
+	function(DragDropBase, Log) {
 	"use strict";
 
 	/**
@@ -21,7 +21,7 @@ sap.ui.define(["jquery.sap.global", "./DragDropBase"],
 	 * @extends sap.ui.core.dnd.DragDropBase
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @public
 	 * @since 1.56
@@ -88,11 +88,9 @@ sap.ui.define(["jquery.sap.global", "./DragDropBase"],
 			return false;
 		}
 
-		// draggable by default
+		// metadata restrictions
 		var sSourceAggregation = this.getSourceAggregation();
-		var oMetadata = oDragSource.getMetadata().getDragDropInfo(sSourceAggregation);
-		if (!oMetadata.draggable) {
-			jQuery.sap.log.warning((sSourceAggregation ? sSourceAggregation + " aggregation of " : "") + oDragSource + " is not configured to be draggable");
+		if (!DragDropBase.checkMetadata(oDragSource, sSourceAggregation, "draggable")) {
 			return false;
 		}
 

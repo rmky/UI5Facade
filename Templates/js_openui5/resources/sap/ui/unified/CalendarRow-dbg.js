@@ -6,7 +6,6 @@
 
 //Provides control sap.ui.unified.Calendar.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/core/Control',
 	'sap/ui/Device',
 	'sap/ui/core/LocaleData',
@@ -17,9 +16,10 @@ sap.ui.define([
 	'sap/ui/core/format/DateFormat',
 	'sap/ui/core/ResizeHandler',
 	'sap/ui/core/Locale',
-	"./CalendarRowRenderer"
+	"./CalendarRowRenderer",
+	"sap/ui/dom/containsOrEquals",
+	"sap/ui/thirdparty/jquery"
 ], function(
-	jQuery,
 	Control,
 	Device,
 	LocaleData,
@@ -30,7 +30,9 @@ sap.ui.define([
 	DateFormat,
 	ResizeHandler,
 	Locale,
-	CalendarRowRenderer
+	CalendarRowRenderer,
+	containsOrEquals,
+	jQuery
 ) {
 	"use strict";
 
@@ -64,7 +66,7 @@ sap.ui.define([
 	 * @class
 	 * A calendar row with a header and appointments. The Appointments will be placed in the defined interval.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -339,7 +341,7 @@ sap.ui.define([
 		}
 
 		if (this._sUpdateCurrentTime) {
-			jQuery.sap.clearDelayedCall(this._sUpdateCurrentTime);
+			clearTimeout(this._sUpdateCurrentTime);
 			this._sUpdateCurrentTime = undefined;
 		}
 
@@ -353,7 +355,7 @@ sap.ui.define([
 		_determineVisibleIntervalHeaders.call(this);
 
 		if (this._sUpdateCurrentTime) {
-			jQuery.sap.clearDelayedCall(this._sUpdateCurrentTime);
+			clearTimeout(this._sUpdateCurrentTime);
 			this._sUpdateCurrentTime = undefined;
 		}
 
@@ -488,7 +490,7 @@ sap.ui.define([
 
 			for (var i = 0; i < aVisibleAppointments.length; i++) {
 				oAppointment = aVisibleAppointments[i].appointment;
-				if (jQuery.sap.containsOrEquals(oAppointment.getDomRef(), oEvent.target)) {
+				if (containsOrEquals(oAppointment.getDomRef(), oEvent.target)) {
 					bFound = true;
 					oAppointment.focus();
 					break;
@@ -575,7 +577,7 @@ sap.ui.define([
 
 		for (var i = 0; i < aVisibleAppointments.length; i++) {
 			var oAppointment = aVisibleAppointments[i].appointment;
-			if (jQuery.sap.containsOrEquals(oAppointment.getDomRef(), oEvent.target)) {
+			if (containsOrEquals(oAppointment.getDomRef(), oEvent.target)) {
 				_selectAppointment.call(this, oAppointment, !oEvent.ctrlKey);
 				break;
 			}
@@ -596,7 +598,7 @@ sap.ui.define([
 		// check if part of an Interval
 		for (iIndex = 0; iIndex < aIntervals.length; iIndex++) {
 			var oInterval = aIntervals[iIndex];
-			if (!this._isOneMonthIntervalOnSmallSizes() && jQuery.sap.containsOrEquals(oInterval, oEvent.target)) {
+			if (!this._isOneMonthIntervalOnSmallSizes() && containsOrEquals(oInterval, oEvent.target)) {
 				bInterval = true;
 				break;
 			}
@@ -703,7 +705,7 @@ sap.ui.define([
 				}
 
 				if (iTime > 0) {
-					this._sUpdateCurrentTime = jQuery.sap.delayedCall(iTime, this, this.updateCurrentTimeVisualization);
+					this._sUpdateCurrentTime = setTimeout(this.updateCurrentTimeVisualization.bind(this), iTime);
 				}
 			}
 		}else {
@@ -845,7 +847,7 @@ sap.ui.define([
 					aNonWorkingDays.push(i);
 				}
 			}
-		}else if (!jQuery.isArray(aNonWorkingDays)) {
+		}else if (!Array.isArray(aNonWorkingDays)) {
 			aNonWorkingDays = [];
 		}
 
@@ -883,6 +885,68 @@ sap.ui.define([
 		this._fnCustomSortedAppointments = fnSorter;
 		this.invalidate();
 	};
+
+	/*
+	* Returns a javascript object with two floating point numbers,
+	* which represent the difference in time units, depending on the view type,
+	* between calendar appointment start date and calendar row start date and
+	* calendar appointment end date and calendar row end date
+	* @private
+	*/
+	CalendarRow.prototype._calculateAppoitnmentVisualCue = function(oAppointment) {
+
+		if (_isGroupAppoitment(this, oAppointment)) {
+			return {
+				appTimeUnitsDifRowStart: 0,
+				appTimeUnitsDifRowEnd: 0
+			};
+		}
+
+		var oAppStartDate = oAppointment.getStartDate(),
+			oAppEndDate = oAppointment.getEndDate(),
+			oUniversalAppStartDate = new UniversalDate(oAppStartDate.getFullYear(), oAppStartDate.getMonth(), oAppStartDate.getDate(), oAppStartDate.getHours(), oAppStartDate.getMinutes()),
+			oUniversalAppEndDate = new UniversalDate(oAppEndDate.getFullYear(), oAppEndDate.getMonth(), oAppEndDate.getDate(), oAppEndDate.getHours(), oAppEndDate.getMinutes()),
+			sIntervalType = this.getIntervalType(),
+			oTableStartDate = this.getStartDate(),
+			oUniversalTableStart = sIntervalType === "Hour" ?
+				new UniversalDate(oTableStartDate.getFullYear(), oTableStartDate.getMonth(), oTableStartDate.getDate(), oTableStartDate.getHours()) :
+				new UniversalDate(oTableStartDate.getFullYear(), oTableStartDate.getMonth(), oTableStartDate.getDate()),
+			iColumns = this.getIntervals(),
+			oUniversalTableEnd;
+
+		switch (sIntervalType) {
+			case "Hour":
+				oUniversalTableEnd = new UniversalDate(oTableStartDate.getFullYear(), oTableStartDate.getMonth(), oTableStartDate.getDate(), oTableStartDate.getHours() + iColumns);
+				break;
+			case "Day":
+			case "Week":
+			case "One Month":
+				oUniversalTableEnd = new UniversalDate(oTableStartDate.getFullYear(), oTableStartDate.getMonth(), oTableStartDate.getDate() + iColumns);
+				break;
+			case "Month":
+				oUniversalTableEnd = new UniversalDate(oTableStartDate.getFullYear(), oTableStartDate.getMonth() + iColumns, oTableStartDate.getDate());
+				break;
+			default:
+				break;
+		}
+
+		return {
+			appTimeUnitsDifRowStart: oUniversalTableStart.getTime() - oUniversalAppStartDate.getTime(),
+			appTimeUnitsDifRowEnd: oUniversalAppEndDate.getTime() - oUniversalTableEnd.getTime()
+		};
+	};
+
+	function _isGroupAppoitment(oRow, oAppointment) {
+		var oGroupAppointments = oRow.getAggregation("groupAppointments", []);
+
+		var i;
+		for (i = 0; i < oGroupAppointments.length; ++i) {
+			if (oAppointment === oGroupAppointments[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	function _getLocale(){
 
@@ -1715,11 +1779,11 @@ sap.ui.define([
 					this._sFocusedAppointmentId = oAppointment.getId();
 					var oUTCStartDate = _calculateStartDate.call(this, oAppointment.getStartDate());
 					this.setStartDate(CalendarUtils._createLocalDate(oUTCStartDate, true));
-					if (!jQuery.sap.containsOrEquals(this.getDomRef(), document.activeElement)) {
+					if (!containsOrEquals(this.getDomRef(), document.activeElement)) {
 						// focus is outside control -> set focus after rerendering
-						jQuery.sap.delayedCall(0, this, function(){
+						setTimeout(function(){
 							this.getFocusedAppointment().focus();
-						});
+						}.bind(this), 0);
 					}
 					this.fireStartDateChange();
 				}

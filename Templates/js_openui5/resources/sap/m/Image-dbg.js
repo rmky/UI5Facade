@@ -6,13 +6,13 @@
 
 // Provides control sap.m.Image.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'./ImageRenderer',
-	'jquery.sap.keycodes'
+	"sap/ui/events/KeyCodes",
+	"sap/ui/thirdparty/jquery"
 ],
-	function(jQuery, library, Control, ImageRenderer) {
+	function(library, Control, ImageRenderer, KeyCodes, jQuery) {
 	"use strict";
 
 
@@ -44,7 +44,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -93,13 +93,19 @@ sap.ui.define([
 			useMap : {type : "string", group : "Misc", defaultValue : null},
 
 			/**
-			 * If this is set to false, the src image will be loaded directly without attempting to fetch the density perfect image for high density device.
+			 * If this is set to <code>true</code>, one or more network requests will be made
+			 * that try to obtain the density perfect version of the image.
 			 *
-			 * By default, this is set to true but then one or more requests are sent trying to get the density perfect version of image if this version of image doesn't exist on the server.
+			 * By default, this is set to <code>false</code>, so the src image is loaded directly
+			 * without attempting to fetch the density perfect image for high-density devices.
 			 *
-			 * If bandwidth is the key for the application, set this value to false.
+			 * <b>Note:</b> Before 1.60, the default value was set to <code>true</code>, which
+			 * brought redundant network requests for apps that used the default but did not
+			 * provide density perfect image versions on server-side.
+			 * You should set this property to <code>true</code> only if you also provide the
+			 * corresponding image versions for high-density devices.
 			 */
-			densityAware : {type : "boolean", group : "Misc", defaultValue : true},
+			densityAware : {type : "boolean", group : "Misc", defaultValue : false},
 
 			/**
 			 * The source property which is used when the image is pressed.
@@ -270,8 +276,11 @@ sap.ui.define([
 
 		// if src is empty or there's no image existing, just stop
 		if (!sSrc || this._iLoadImageDensity === 1) {
-			// remove the "sapMNoImg" in order to show the alt text
-			$DomNode.removeClass("sapMNoImg");
+			// BCP: 1880526262
+			if (this.getAlt() && !this.getDecorative()) {
+				// remove the "sapMNoImg" in order to show the alt text
+				$DomNode.removeClass("sapMNoImg");
+			}
 			this.fireError();
 			return;
 		}
@@ -513,7 +522,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Image.prototype.onkeyup = function(oEvent) {
-		if (oEvent.which === jQuery.sap.KeyCodes.SPACE || oEvent.which === jQuery.sap.KeyCodes.ENTER) {
+		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
 			this.firePress({/* no parameters */});
 
 			// stop the propagation it is handled by the control

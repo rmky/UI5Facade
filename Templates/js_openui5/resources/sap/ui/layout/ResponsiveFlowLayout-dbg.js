@@ -6,22 +6,23 @@
 
 // Provides control sap.ui.layout.ResponsiveFlowLayout.
 sap.ui.define([
-    'jquery.sap.global',
-    'sap/ui/core/Control',
-    './ResponsiveFlowLayoutData',
-    './library',
-    'sap/ui/core/ResizeHandler',
-    'sap/ui/Device',
-    "./ResponsiveFlowLayoutRenderer"
+	'sap/ui/core/Control',
+	'./ResponsiveFlowLayoutData',
+	'./library',
+	'sap/ui/core/ResizeHandler',
+	'sap/ui/Device',
+	'./ResponsiveFlowLayoutRenderer',
+	"sap/ui/thirdparty/jquery",
+	'sap/ui/dom/jquery/rect' // jQuery Plugin "rect"
 ],
 	function(
-	    jQuery,
 		Control,
 		ResponsiveFlowLayoutData,
 		library,
 		ResizeHandler,
 		Device,
-		ResponsiveFlowLayoutRenderer
+		ResponsiveFlowLayoutRenderer,
+		jQuery
 	) {
 	"use strict";
 
@@ -38,7 +39,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -88,7 +89,7 @@ sap.ui.define([
 			delete this._rows;
 
 			if (this._IntervalCall) {
-				jQuery.sap.clearDelayedCall(this._IntervalCall);
+				clearTimeout(this._IntervalCall);
 				this._IntervalCall = undefined;
 			}
 
@@ -194,7 +195,7 @@ sap.ui.define([
 			var currentRow = -1;
 
 			var fnCurrentWrapping = function(j) {
-				var $cont = jQuery.sap.byId(oRow.cont[j].id);
+				var $cont = jQuery(document.getElementById(oRow.cont[j].id));
 				if ($cont.length > 0) {
 					var offset = $cont[0].offsetLeft;
 					if (lastOffsetLeft >= offset) {
@@ -554,7 +555,7 @@ sap.ui.define([
 						this._getRenderManager().flush(this._oDomRef);
 
 						for (var i = 0; i < this._rows.length; i++) {
-							var oTmpRect = this._getElementRect(jQuery.sap.byId(sId + "-row" + i));
+							var oTmpRect = this._getElementRect(jQuery(document.getElementById(sId + "-row" + i)));
 							this._rows[i].oRect = oTmpRect;
 						}
 					}
@@ -655,7 +656,7 @@ sap.ui.define([
 		 */
 		ResponsiveFlowLayout.prototype.addContent = function(oContent) {
 			if (oContent && this._IntervalCall) {
-				jQuery.sap.clearDelayedCall(this._IntervalCall);
+				clearTimeout(this._IntervalCall);
 				this._IntervalCall = undefined;
 			}
 			this.addAggregation("content", oContent);
@@ -674,7 +675,7 @@ sap.ui.define([
 		 */
 		ResponsiveFlowLayout.prototype.insertContent = function(oContent, iIndex) {
 			if (oContent && this._IntervalCall) {
-				jQuery.sap.clearDelayedCall(this._IntervalCall);
+				clearTimeout(this._IntervalCall);
 				this._IntervalCall = undefined;
 			}
 			this.insertAggregation("content", oContent, iIndex);
@@ -690,7 +691,7 @@ sap.ui.define([
 		 */
 		ResponsiveFlowLayout.prototype.removeContent = function(oContent) {
 			if (oContent && this._IntervalCall) {
-				jQuery.sap.clearDelayedCall(this._IntervalCall);
+				clearTimeout(this._IntervalCall);
 				this._IntervalCall = undefined;
 			}
 			this.removeAggregation("content", oContent);

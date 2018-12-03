@@ -4,19 +4,16 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'jquery.sap.global', '../json/JSONModel', '../json/JSONPropertyBinding', '../json/JSONListBinding', 'sap/ui/base/ManagedObject', 'sap/ui/base/ManagedObjectObserver', '../Context', '../ChangeReason'
-], function(jQuery, JSONModel, JSONPropertyBinding, JSONListBinding, ManagedObject, ManagedObjectObserver, Context, ChangeReason) {
+	'../json/JSONModel', '../json/JSONPropertyBinding', '../json/JSONListBinding', 'sap/ui/base/ManagedObject', 'sap/ui/base/ManagedObjectObserver', '../Context', '../ChangeReason', "sap/base/util/uid", "sap/base/Log", "sap/base/util/isPlainObject"
+], function(JSONModel, JSONPropertyBinding, JSONListBinding, ManagedObject, ManagedObjectObserver, Context, ChangeReason, uid, Log, isPlainObject) {
 	"use strict";
 
-	var ManagedObjectModelAggregationBinding = JSONListBinding.extend("sap.ui.model.base.ManagedObjectModelAggregationBinding"),
-		ManagedObjectModelPropertyBinding = JSONPropertyBinding.extend("sap.ui.model.base.ManagedObjectModelPropertyBinding"),
-		CUSTOMDATAKEY = "@custom",
-		ID_DELIMITER = "--";
+	var ManagedObjectModelAggregationBinding = JSONListBinding.extend("sap.ui.model.base.ManagedObjectModelAggregationBinding"), ManagedObjectModelPropertyBinding = JSONPropertyBinding.extend("sap.ui.model.base.ManagedObjectModelPropertyBinding"), CUSTOMDATAKEY = "@custom", ID_DELIMITER = "--";
 
 	/**
-	 * Managed Object model that allows to bind to properties and aggregations of objects.
+	 * The ManagedObjectModel class allows you to bind to properties and aggregations of managed objects.
 	 *
-	 * @class Managed Object model that allows to bind to properties and aggregations of objects.
+	 * @class The ManagedObjectModel class can be used for data binding of properties and aggregations for managed objects.
 	 *
 	 * Provides model access to a given {@link sap.ui.base.ManagedObject}. Such access allows to bind to properties and aggregations of
 	 * this object.
@@ -25,7 +22,8 @@ sap.ui.define([
 	 * @param {object} oData an object for custom data
 	 * @alias sap.ui.model.base.ManagedObjectModel
 	 * @extends sap.ui.model.json.JSONModel
-	 * @private
+	 * @public
+	 * @experimental since 1.58
 	 */
 	var ManagedObjectModel = JSONModel.extend("sap.ui.model.base.ManagedObjectModel", /** @lends sap.ui.mdc.model.base.ManagedObjectModel.prototype */
 	{
@@ -40,32 +38,73 @@ sap.ui.define([
 				aggregations: {}
 			};
 			this.mListBinding = {};
-			JSONModel.apply(this, [oData]);
+			JSONModel.apply(this, [
+				oData
+			]);
 
 			this._oObserver = new ManagedObjectObserver(this.observerChanges.bind(this));
 		}
 	});
 
+	/**
+	 * The purpose of the getProperty is to retrieve properties or aggregations from the root managed object.
+	 *
+	 * Depending on the requesting path the result could be one of the following:
+	 * <ul>
+	 * <li> The value of a property, for example,  <code>oTextModel.getProperty("/text")</code>
+	 * <li> A managed object as a result from a non-multiple aggregation, for example, <code>oColumn.getProperty("/label")</code>
+	 * <li> A list of managed objects for multiple aggregations, for example, <code>oTable.getProperty("/columns")</code>.
+	 * </ul>
+	 *
+	 * In addition a deep dive into the aggregations is also possible.
+	 *
+	 * To retrieve special settings or custom data from the managed object model, there is a special syntax for the selector parts:
+	 * <ul>
+	 * <li> A part starting with <code>@</code> can be used to access special settings like for example, the <code>id</code>
+	 * <li> A path starting with <code>/@custom</code> is used to access the user-defined custom data.
+	 * <li> A part containing <code>#</code> can be used to access controls by their <code>id</code>. This is currently used for the managed object model of the view.
+	 * </ul>
+	 * @param {string} sPath The path or name of a property of the root managed object
+	 * @param {object} [oContext=null] The context with which the path can be resolved
+	 * @returns {any} The value of the property, an array, or a managed object
+	 * @public
+	 * @name ManagedObjectModel.prototype.getProperty
+	 */
+
+	/**
+	 * Convenience functionality to distinguish the goal of the access to the managed object.
+	 *
+	 * For example, it is more intuitive to say <code>oTableModel.getAggregation("/columns")</code>
+	 * than <code>oTableModel.getProperty("/columns")</code> as the columns are an aggregation and not a property.
+	 *
+	 * @see ManagedObjectModel.prototype#getProperty
+	 * @param {string} sPath The path or name of a property of the root managed object
+	 * @param {object} [oContext=null] The context with which the path can be resolved
+	 * @returns {any} The value of the property, an array, or a managed object
+	 * @private
+	 */
 	ManagedObjectModel.prototype.getAggregation = JSONModel.prototype.getProperty;
 
 	/**
-	 * Sets the JSON encoded custom data to the model.
+	 * Inserts the user-defined custom data into the model.
 	 *
-	 * @param {object} oData the data to set on the model
-	 * @param {boolean} [bMerge=false] whether to merge the data instead of replacing it
-	 * @private
+	 * @param {object} oData The data as JSON object to be set on the model
+	 * @param {boolean} [bMerge=false] If set to <code>true</code>, the data is merged instead of replaced
+	 * @public
 	 */
 	ManagedObjectModel.prototype.setData = function(oData, bMerge) {
 		var _oData = {};
 		_oData[CUSTOMDATAKEY] = oData;
 
-		JSONModel.prototype.setData.apply(this, [_oData, bMerge]);
+		JSONModel.prototype.setData.apply(this, [
+			_oData, bMerge
+		]);
 	};
 
 	/**
 	 * Serializes the current custom JSON data of the model into a string.
 	 *
-	 * @return {string} sJSON the JSON data serialized as string
+	 * @return {string} sJSON The JSON data serialized as string
 	 * @private
 	 */
 	ManagedObjectModel.prototype.getJSON = function() {
@@ -73,17 +112,18 @@ sap.ui.define([
 	};
 
 	/**
-	 * Sets a property of a control for a given path and context
+	 * Modifies the property of a child control for a given path and context.
 	 *
-	 * @param {string} sPath the path of the
-	 * @returns {boolean} true if the property was set, else false
+	 * Example:
+	 * <code>oTableModel.setProperty("/columns/0/visible", false)</code> hides the first column of the table
+	 *
+	 * @param {string} sPath The path to the property of the corresponding managed object, for example, <code>/text</code> for the text property of the root object
+	 * @returns {boolean} <code>true</code> if the property was set, <code>false</code> otherwise
 	 * @private
+	 * @experimental This is only restricted to properties not to aggregations. This means it is not possible to add an aggregation within the managed object model.
 	 */
 	ManagedObjectModel.prototype.setProperty = function(sPath, oValue, oContext, bAsyncUpdate) {
-		var sResolvedPath = this.resolve(sPath, oContext),
-			iLastSlash,
-			sObjectPath,
-			sProperty;
+		var sResolvedPath = this.resolve(sPath, oContext), iLastSlash, sObjectPath, sProperty;
 
 		// return if path / context is invalid
 		if (!sResolvedPath) {
@@ -103,15 +143,15 @@ sap.ui.define([
 		var oObject = this._getObject(sObjectPath);
 		if (oObject) {
 			if (oObject instanceof ManagedObject) {
-				var oProperty = oObject.getMetadata().getProperty(sProperty);
+				var oProperty = oObject.getMetadata().getManagedProperty(sProperty);
 				if (oProperty) {
-					var sSetter = oProperty._sMutator,
-						sGetter = oProperty._sGetter;
-					if (oObject[sGetter]() !== oValue) {
-						oObject[sSetter](oValue);
+					if (oProperty.get(oObject) !== oValue) {
+						oProperty.set(oObject, oValue);
 						this.checkUpdate(false, bAsyncUpdate);
 						return true;
 					}
+				} else {
+					Log.warning("The setProperty method only supports properties, the path " + sResolvedPath + " does not point to a property", null, "sap.ui.model.base.ManagedObjectModel");
 				}
 			} else if (oObject[sProperty] !== oValue) {
 				// get get an update of a property that was bound on a target
@@ -130,7 +170,7 @@ sap.ui.define([
 	ManagedObjectModel.prototype.addBinding = function(oBinding) {
 		JSONModel.prototype.addBinding.apply(this, arguments);
 		if (oBinding instanceof ManagedObjectModelAggregationBinding) {
-			var sAggregationName = oBinding.sPath.replace("/","");
+			var sAggregationName = oBinding.sPath.replace("/", "");
 			this.mListBinding[sAggregationName] = oBinding;
 		}
 		oBinding.checkUpdate(false);
@@ -139,7 +179,7 @@ sap.ui.define([
 	ManagedObjectModel.prototype.removeBinding = function(oBinding) {
 		JSONModel.prototype.removeBinding.apply(this, arguments);
 		if (oBinding instanceof ManagedObjectModelAggregationBinding) {
-			var sAggregationName = oBinding.sPath.replace("/","");
+			var sAggregationName = oBinding.sPath.replace("/", "");
 			delete this.mListBinding[sAggregationName];
 		}
 		this._observeBeforeEvaluating(oBinding, false);
@@ -186,6 +226,7 @@ sap.ui.define([
 	/**
 	 * Returns the object for a given path and/or context, if exists.
 	 *
+	 * @type sap.ui.base.ManagedObject
 	 * @param {string} sPath the path
 	 * @param {string} [oContext] the context
 	 * @returns The object for a given path and/or context, if exists, <code>null</code> otherwise.
@@ -203,6 +244,13 @@ sap.ui.define([
 		return null;
 	};
 
+	/**
+	 * Returns the managed object that is the basis for this model.
+	 *
+	 * @type sap.ui.base.ManagedObject
+	 * @returns The managed object that is basis for the model
+	 * @private
+	 */
 	ManagedObjectModel.prototype.getRootObject = function() {
 		return this._oObject;
 	};
@@ -345,7 +393,7 @@ sap.ui.define([
 		}
 
 		if (!sId) {
-			return oObject.getId() + ID_DELIMITER + jQuery.sap.uid();
+			return oObject.getId() + ID_DELIMITER + uid();
 		}
 
 		if (sId.indexOf(oObject.getId() + ID_DELIMITER) != 0) { // ID not already prefixed
@@ -378,7 +426,7 @@ sap.ui.define([
 			return oParentNode.isBound(sParentPart);
 		} else if (sSpecial === "bindingInfo" && oParentNode && sParentPart) {
 			return oParentNode.getBindingInfo(sParentPart);
-		} else if (jQuery.isArray(oNode)) {
+		} else if (Array.isArray(oNode)) {
 			if (sSpecial === "length") {
 				return oNode.length;
 			} else if (sSpecial.indexOf("id=") === 0) {
@@ -401,9 +449,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ManagedObjectModel.prototype._getObject = function(sPath, oContext) {
-		var oNode = this._oObject,
-			sResolvedPath = "",
-			that = this;
+		var oNode = this._oObject, sResolvedPath = "", that = this;
 
 		this.aBindings.forEach(function(oBinding) {
 			if (!oBinding._bAttached) {
@@ -425,7 +471,9 @@ sap.ui.define([
 			}
 			// handling custom data stored in the original this.oData object of the JSONModel
 			if (sResolvedPath.indexOf("/" + CUSTOMDATAKEY) === 0) {
-				return JSONModel.prototype._getObject.apply(this, [sPath, oContext]);
+				return JSONModel.prototype._getObject.apply(this, [
+					sPath, oContext
+				]);
 			}
 		} else {
 			oNode = oContext;
@@ -436,18 +484,19 @@ sap.ui.define([
 			return null;
 		}
 
-		var aParts = sResolvedPath.split("/"),
-			iIndex = 0;
+		var aParts = sResolvedPath.split("/"), iIndex = 0;
 
 		if (!aParts[0]) {
 			// absolute path starting with slash
 			iIndex++;
 		}
-		var oParentNode = null,
-			sParentPart = null,
-			sPart;
+		var oParentNode = null, sParentPart = null, sPart;
 		while (oNode !== null && aParts[iIndex]) {
 			sPart = aParts[iIndex];
+			if (sPart == "id") {
+				//Managed Object Model should accept also /id as path to be used for templating
+				sPart = "@id";
+			}
 
 			if (sPart.indexOf("@") === 0) {
 				// special properties
@@ -461,13 +510,13 @@ sap.ui.define([
 				} else {
 					oParentNode = oNode;
 					sParentPart = sPart;
-					var oProperty = oNodeMetadata.getProperty(sPart);
+					var oProperty = oNodeMetadata.getManagedProperty(sPart);
 					if (oProperty) {
-						oNode = oNode[oProperty._sGetter]();
+						oNode = oProperty.get(oNode);
 					} else {
-						var oAggregation = oNodeMetadata.getAggregation(sPart) || oNodeMetadata.getAllPrivateAggregations()[sPart];
+						var oAggregation = oNodeMetadata.getManagedAggregation(sPart);
 						if (oAggregation) {
-							oNode = oNode[oAggregation._sGetter] ? oNode[oAggregation._sGetter]() : oNode.getAggregation(sPart);
+							oNode = oAggregation.get(oNode);
 						} else {
 							if (oNode && oNode[sPart] && typeof oNode[sPart] === "function") {
 								oNode = oNode[sPart]();
@@ -477,7 +526,7 @@ sap.ui.define([
 						}
 					}
 				}
-			} else if (jQuery.isArray(oNode) || jQuery.isPlainObject(oNode)) {
+			} else if (Array.isArray(oNode) || isPlainObject(oNode)) {
 				oNode = oNode[sPart];
 			} else {
 				if (oNode && oNode[sPart] && typeof oNode[sPart] === "function") {
@@ -545,7 +594,7 @@ sap.ui.define([
 			sPart = aParts[1];
 		}
 		if (oNode instanceof ManagedObject) {
-			var oNodeMetadata = oNode.getMetadata(), oProperty = oNodeMetadata.getProperty(sPart);
+			var oNodeMetadata = oNode.getMetadata(), oProperty = oNodeMetadata.getManagedProperty(sPart);
 			if (oProperty) {
 				if (bObserve === true) {
 					this._observePropertyChange(oNode, oProperty);
@@ -570,30 +619,63 @@ sap.ui.define([
 	ManagedObjectModel.prototype.observerChanges = function(oChange) {
 		if (oChange.type == "aggregation") {
 			if (oChange.mutation == "insert") {
-				// listen to inner changes
-				this._oObserver.observe(oChange.child, {
-					properties: true,
-					aggegations: true
-				});
+				// listen to inner changes only in case there is no alternative type used
+				if (oChange.child instanceof ManagedObject) {
+					this._oObserver.observe(oChange.child, {
+						properties: true,
+						aggegations: true
+					});
+				}
+
+				if (this.mListBinding[oChange.name]) {
+					var oListBinding = this._oObject.getBinding(oChange.name);
+					var oAggregation = this._oObject.getAggregation(oChange.name);
+
+					if (oListBinding && oListBinding.getLength() != oAggregation.length) {
+						return;
+					}
+				}
 			} else {
 				// stop listening inner changes
-				this._oObserver.unobserve(oChange.child, {
-					properties: true,
-					aggegations: true
-				});
-			}
-
-			if (this.mListBinding[oChange.name]) {
-				var oListBinding = this._oObject.getBinding(oChange.name);
-				var oAggregation = this._oObject.getAggregation(oChange.name);
-
-				if (oListBinding && oListBinding.getLength() != oAggregation.length) {
-					return;
+				if (oChange.child instanceof ManagedObject) {
+					this._oObserver.unobserve(oChange.child, {
+						properties: true,
+						aggegations: true
+					});
 				}
 			}
 		}
 
 		this.checkUpdate();
+	};
+
+	/**
+	 * Private method iterating the registered bindings of this model instance and initiating their check for update
+	 * @param {boolean} bForceUpdate
+	 * @param {boolean} bAsync
+	 * @param {function} fnFilter an optional test function to filter the binding
+	 * @protected
+	 */
+	ManagedObjectModel.prototype.checkUpdate = function(bForceUpdate, bAsync, fnFilter) {
+		if (bAsync) {
+			if (!this.sUpdateTimer) {
+				this.sUpdateTimer = setTimeout(function() {
+					this.checkUpdate(bForceUpdate, true, fnFilter);
+				}.bind(this), 0);
+			}
+			return;
+		}
+
+		if (this.sUpdateTimer) {
+			clearTimeout(this.sUpdateTimer);
+			this.sUpdateTimer = null;
+		}
+		var aBindings = this.aBindings.slice(0);
+		jQuery.each(aBindings, function(iIndex, oBinding) {
+			if (!fnFilter || fnFilter(oBinding)) {
+				oBinding.checkUpdate(bForceUpdate);
+			}
+		});
 	};
 
 	return ManagedObjectModel;

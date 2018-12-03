@@ -3,7 +3,7 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['sap/ui/core/util/MockServer', 'sap/ui/model/odata/ODataModel', 'jquery.sap.xml'],
+sap.ui.define(['sap/ui/core/util/MockServer', 'sap/ui/model/odata/ODataModel'],
 	function(MockServer, ODataModel) {
 		"use strict";
 		return {

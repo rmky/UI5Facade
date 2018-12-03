@@ -7,44 +7,75 @@
 sap.ui.define([
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/registry/ChangeRegistry",
+	"sap/ui/fl/FlexControllerFactory",
 	"sap/ui/core/util/reflection/JsControlTreeModifier",
 	"sap/ui/core/Element",
+	"sap/ui/base/ManagedObject",
 	"sap/ui/fl/variants/VariantManagement",
-	"sap/ui/core/Component"
+	"sap/ui/core/Component",
+	"sap/ui/thirdparty/jquery"
 ], function(
 	Utils,
 	ChangeRegistry,
+	FlexControllerFactory,
 	JsControlTreeModifier,
 	Element,
+	ManagedObject,
 	VariantManagement,
-	Component
+	Component,
+	jQuery
 ) {
 	"use strict";
+
+	/**
+	 * Provides an API to handle specific functionality for personalized changes.
+	 *
+	 * @namespace
+	 * @name sap.ui.fl.ControlPersonalizationAPI
+	 * @author SAP SE
+	 * @experimental Since 1.56
+	 * @since 1.56
+	 * @version 1.60.1
+	 * @private
+	 * @ui5-restricted
+	 */
+
+	/**
+	 * Object containing attributes of a change, along with the control to which this change should be applied.
+	 *
+	 * @typedef {object} sap.ui.fl.ControlPersonalizationAPI.PersonalizationChange
+	 * @since 1.56
+	 * @private
+	 * @ui5-restricted
+	 * @property {sap.ui.core.Element} selectorControl The control object to be used as selector for the change
+	 * @property {object} changeSpecificData The map of change-specific data to perform a flex change
+	 * @property {string} changeSpecificData.changeType The change type for which a change handler is registered
+	 */
 
 	var VARIANT_TECHNICAL_PARAMETER_NAME = "sap-ui-fl-control-variant-id";
 
 	var ControlPersonalizationAPI = {
 
 		/**
-		 * Returns a map of parameters used in public functions
+		 * Returns a map of parameters used in public functions.
 		 *
 		 * @param {sap.ui.core.Element} oControl - The control for which a variant management control has to be evaluated
-		 * @returns {Object} mParams Returns a map with needed parameters
+		 * @returns {object} Returns a map with needed parameters
 		 * @private
-		 * @restricted sap.ui.fl
 		 */
 		_determineParameters : function(oControl) {
 			var oAppComponent = Utils.getAppComponentForControl(oControl);
+			var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
 			var oRootControl = oAppComponent.getRootControl();
 			var oView = Utils.getViewForControl(oControl);
 			var oVariantModel = oAppComponent.getModel("$FlexVariants");
 
 			var mParams = {
-				appComponent : oAppComponent,
 				rootControl : oRootControl,
 				view : oView,
 				variantModel : oVariantModel,
-				variantManagement : {}
+				variantManagement : {},
+				flexController: oFlexController
 			};
 			var oVMControl;
 			var aForControlTypes;
@@ -54,7 +85,7 @@ sap.ui.define([
 				if (oVMControl.getMetadata().getName() === "sap.ui.fl.variants.VariantManagement") {
 					aForControlTypes = oVMControl.getFor();
 					aForControlTypes.forEach(function(sControlType) {
-						mParams.variantManagement[sControlType] = mParams.variantModel._getLocalId(oVariantManagementNode.id, mParams.appComponent);
+						mParams.variantManagement[sControlType] = mParams.variantModel._getLocalId(oVariantManagementNode.id, oAppComponent);
 					});
 				}
 			});
@@ -63,15 +94,14 @@ sap.ui.define([
 		},
 
 		/**
-		 * Returns the local id of the encompassing variant management control
+		 * Returns the local ID of the encompassing variant management control.
 		 *
 		 * @param {sap.ui.core.Element} oControl - The control for which a variant management control has to be evaluated
-		 * @returns {Object} mParams Returns a map with needed parameters
+		 * @returns {object} Returns a map with needed parameters
 		 * @private
-		 * @restricted sap.ui.fl
 		 */
-		_getVariantManagement : function(oControl) {
-			var mParams = this._determineParameters(oControl);
+		_getVariantManagement : function(oControl, mParams) {
+			mParams = mParams || this._determineParameters(oControl);
 			var fnCheckForControl = function (oControl) {
 				if (!mParams.variantManagement[oControl.getId()] && oControl.getParent() && oControl.getId() !== mParams.rootControl.getId()) {
 					return fnCheckForControl(oControl.getParent());
@@ -86,9 +116,13 @@ sap.ui.define([
 		},
 
 		/**
+		 *
 		 * Clears URL technical parameter 'sap-ui-fl-control-variant-id' for control variants.
-		 * If a variant management control is given as parameter, only that control specific parameters are cleared.
-		 * @param {sap.ui.core.Element} [oVariantManagementControl] The variant management control for which URL technical parameter has to be cleared
+		 * If a variant management control is given as parameter, only parameters specific to that control are cleared.
+		 *
+		 * @param {sap.ui.base.ManagedObject} [oVariantManagementControl] - The variant management control for which the URL technical parameter has to be cleared
+		 *
+		 * @method sap.ui.fl.ControlPersonalizationAPI.clearVariantParameterInURL
 		 * @public
 		 */
 		clearVariantParameterInURL : function (oControl) {
@@ -98,7 +132,7 @@ sap.ui.define([
 			if (!oVariantModel) {
 				//technical parameters are not updated, only URL hash is updated
 				Utils.setTechnicalURLParameterValues(undefined, VARIANT_TECHNICAL_PARAMETER_NAME, aUrlParameters);
-				return Utils.log.error("Variant model could not be found on the provided control");
+				return Utils.log.warning("Variant model could not be found on the provided control");
 			}
 
 			//check if variant for the passed variant management control is present
@@ -118,189 +152,181 @@ sap.ui.define([
 				updateURL: true,
 				component: oAppComponent
 			});
-
 		},
 
 		/**
-		 * Activates the passed variant applicable on the passed control/component
-		 * @param {sap.ui.base.ManagedObject|String} vElement The component or control (instance or id) on which the variantModel is set
-		 * @param {String} sVariantReference The variant reference which needs to be activated
+		 *
+		 * Activates the passed variant applicable to the passed control/component.
+		 *
+		 * @param {sap.ui.base.ManagedObject|string} vElement - The component or control (instance or ID) on which the variantModel is set
+		 * @param {string} sVariantReference - The variant reference which needs to be activated
+		 *
 		 * @returns {Promise} Returns Promise that resolves after the variant is updated or rejects when an error occurs
+		 *
+		 * @method sap.ui.fl.ControlPersonalizationAPI.activateVariant
 		 * @public
 		 */
-		activateVariant : function (vElement, sVariantReference) {
+		activateVariant : function(vElement, sVariantReference) {
 			var oElement;
 			return Promise.resolve()
-				.then( function () {
-						if (typeof vElement === 'string' || vElement instanceof String) {
-							oElement = sap.ui.getCore().getComponent(vElement);
+			.then(function () {
+					if (typeof vElement === 'string' || vElement instanceof String) {
+						oElement = Component.get(vElement);
 
-							if (!(oElement instanceof Component)) {
-								oElement = sap.ui.getCore().byId(vElement);
+						if (!(oElement instanceof Component)) {
+							oElement = sap.ui.getCore().byId(vElement);
 
-								if (!(oElement instanceof Element)) {
-									throw new Error("A valid component or control cannot be found for the provided Id");
-								}
+							if (!(oElement instanceof Element)) {
+								throw new Error("No valid component or control found for the provided ID");
 							}
-						} else if (vElement instanceof Component || vElement instanceof Element) {
-							oElement = vElement;
 						}
+					} else if (vElement instanceof Component || vElement instanceof Element) {
+						oElement = vElement;
+					}
 
-						var oAppComponent = Utils.getAppComponentForControl(oElement);
-						if (!oAppComponent) {
-							throw new Error("A valid variant management control or component (instance or id) should be passed as parameter");
-						}
+					var oAppComponent = Utils.getAppComponentForControl(oElement);
+					if (!oAppComponent) {
+						throw new Error("A valid variant management control or component (instance or ID) should be passed as parameter");
+					}
 
-						var oVariantModel = oAppComponent.getModel("$FlexVariants");
-						if (!oVariantModel) {
-							throw new Error("No variant management model found for the passed control or component");
-						}
-						var sVariantManagementReference = oVariantModel.getVariantManagementReference(sVariantReference).variantManagementReference;
-						if (!sVariantManagementReference) {
-							throw new Error("A valid control or component, and variant id combination is required");
-						}
+					var oVariantModel = oAppComponent.getModel("$FlexVariants");
+					if (!oVariantModel) {
+						throw new Error("No variant management model found for the passed control or application component");
+					}
+					var sVariantManagementReference = oVariantModel.getVariantManagementReference(sVariantReference).variantManagementReference;
+					if (!sVariantManagementReference) {
+						throw new Error("A valid control or component, and a valid variant/ID combination are required");
+					}
 
-					return oVariantModel.updateCurrentVariant(sVariantManagementReference, sVariantReference);
-				})
-				["catch"](function (oError) {
-							Utils.log.error(oError);
-							return Promise.reject(oError);
-						});
+				return oVariantModel.updateCurrentVariant(sVariantManagementReference, sVariantReference, oAppComponent);
+			})
+			["catch"](function (oError) {
+						Utils.log.error(oError);
+						return Promise.reject(oError);
+					});
+		},
+
+		_checkChangeSpecificData: function(oChange, sLayer) {
+			if (!oChange.changeSpecificData) {
+				return "No changeSpecificData available";
+			}
+			if (!oChange.changeSpecificData.changeType) {
+				return "No valid changeType";
+			}
+
+			if (!(oChange.selectorControl instanceof Element)) {
+				return "No valid selectorControl";
+			}
+
+			var sControlType = oChange.selectorControl.getMetadata().getName();
+			var oChangeHandler = ChangeRegistry.getInstance().getChangeHandler(oChange.changeSpecificData.changeType, sControlType, oChange.selectorControl, JsControlTreeModifier, sLayer);
+			if (!oChangeHandler) {
+				return "No valid ChangeHandler";
+			}
+			if (!oChangeHandler.revertChange) {
+				return "ChangeHandler has no revertChange function";
+			}
 		},
 
 		/**
-		 * Creates personalization changes, adds them to the flex persistence (not yet saved) and applies them to the control
-		 * @param {Object[]} aControlChanges - Array of control changes [oControlChange]
-		 * @param {Object} oControlChange.selectorControl - The control object to be used as selector for the change
-		 * @param {Object} oControlChange.changeSpecificData - The map of change-specific data
-		 * @param {string} oControlChange.changeSpecificData.changeType - The change type for which a change handler is registered
-		 * @returns {Promise} - Returns Promise that resolves after the changes have been written to the map of dirty changes and applied to the control
+		 * Creates personalization changes, adds them to the flex persistence (not yet saved) and applies them to the control.
+		 *
+		 * @param {object} mPropertyBag - Changes along with other settings that need to be added
+		 * @param {array} mPropertyBag.controlChanges - Array of control changes of type {@link sap.ui.fl.ControlPersonalizationAPI.PersonalizationChange}
+		 * @param {boolean} [mPropertyBag.ignoreVariantManagement=false] - If flag is set to true then variant management will be ignored
+		 *
+		 * @returns {Promise} Returns Promise resolving to an array of successfully applied changes,
+		 * after the changes have been written to the map of dirty changes and applied to the control
+		 *
+		 * @method sap.ui.fl.ControlPersonalizationAPI.addPersonalizationChanges
 		 * @public
 		 */
-		addPersonalizationChanges : function(aControlChanges) {
-			var oChangeHandler;
-			var sVariantManagementReference;
-			var sCurrentVariantReference;
-			var oSelectorControl;
-			var mChange;
-			var mChangeSpecificData;
-			var mControlChangeSpecificData;
-			var mPropertyBag;
-			var mParams;
-			var oError;
-			var oChange;
-			var aPromises = [];
+		addPersonalizationChanges: function(mPropertyBag) {
+			var aSuccessfulChanges = [];
 			var sLayer = Utils.getCurrentLayer(true);
+			var aPromises = [];
 
-			var fnGetChangeHandler = function(sChangeType, oElement) {
-				var sControlType = oElement.getMetadata().getName();
-				return ChangeRegistry.getInstance().getChangeHandler(sChangeType, sControlType, oElement, JsControlTreeModifier, sLayer);
-			};
-
-			var fnCheckChangeSpecificData = function(mChange) {
-				var oError;
-				if (!mChange.selectorControl || !mChange.selectorControl.getMetadata) {
-					oError = {
-						change : mChange,
-						message : "No valid selectorControl"
-					};
-				} else {
-					if (!mChange.changeSpecificData) {
-						oError = {
-							change : mChange,
-							message : "No changeSpecificData available"
-						};
-					} else if (!mChange.changeSpecificData.changeType) {
-						oError = {
-							change : mChange,
-							message : "No valid changeType"
-						};
-					} else {
-						oChangeHandler = fnGetChangeHandler(mChange.changeSpecificData.changeType, mChange.selectorControl);
-						if (!oChangeHandler) {
-							oError = {
-								change : mChange,
-								message : "No valid ChangeHandler"
-							};
-						} else if (!oChangeHandler.revertChange) {
-							oError = {
-								change : mChange,
-								message : "ChangeHandler has no revertChange function"
-							};
-						}
-					}
-				}
-				return oError;
-			};
-
-			var fnAddAndApplyChanges = function(oChange, oSelectorControl, mPropertyBag) {
-				mParams.variantModel.oFlexController.addPreparedChange(oChange, mParams.appComponent);
-				return mParams.variantModel.oFlexController.checkTargetAndApplyChange(oChange, oSelectorControl, mPropertyBag);
-			};
-
-			var fnAddPromiseReject = function(oError) {
-				return Promise.reject(oError);
-			};
-
-			for (var i = 0; i < aControlChanges.length; i++) {
-				mChange = aControlChanges[i];
-				mChangeSpecificData = {};
-				jQuery.extend(mChangeSpecificData, {
+			mPropertyBag.controlChanges.forEach(function(oChange) {
+				var mChangeSpecificData = {};
+				Object.assign(mChangeSpecificData, {
 					developerMode: false,
 					layer: sLayer
 				});
 
-				oError = fnCheckChangeSpecificData(mChange);
-				if (oError) {
-					aPromises.push(fnAddPromiseReject.bind(this, oError));
-				} else {
-					mControlChangeSpecificData = mChange.changeSpecificData;
-					oSelectorControl = mChange.selectorControl;
-					if (!mParams) {
-						mParams = this._determineParameters(oSelectorControl);
-					}
-					sVariantManagementReference = this._getVariantManagement(oSelectorControl);
-					sCurrentVariantReference = undefined;
-
-					if (!sVariantManagementReference) {
-						oError = {
-							change : mChange,
-							message : "No Variant Management Control available for change"
-						};
-						aPromises.push(fnAddPromiseReject.bind(this, oError));
-					} else {
-						sCurrentVariantReference = mParams.variantModel.oData[sVariantManagementReference].currentVariant;
-
-						oChange = mParams.variantModel.oFlexController.createChange(
-							jQuery.extend(mChangeSpecificData, mControlChangeSpecificData),
-							oSelectorControl,
-							mParams.appComponent
-						);
-						oChange.setVariantReference(sCurrentVariantReference);
-
-						mPropertyBag = {
-							appComponent : mParams.appComponent,
-							view : mParams.view,
-							modifier : JsControlTreeModifier
-						};
-
-						aPromises.push(fnAddAndApplyChanges.bind(this, oChange, oSelectorControl, mPropertyBag));
-					}
+				var sCheckResult = this._checkChangeSpecificData(oChange, sLayer);
+				if (sCheckResult) {
+					aPromises.push(function() {
+						return Promise.reject({
+							change: oChange,
+							message: sCheckResult
+						});
+					});
+					return;
 				}
-			}
-			return Utils.execPromiseQueueSequentially(aPromises);
+
+				var mParams = this._determineParameters(oChange.selectorControl);
+				if (!mPropertyBag.ignoreVariantManagement) {
+					// check for preset variantReference
+					if (!oChange.changeSpecificData.variantReference) {
+						var sVariantManagementReference = this._getVariantManagement(oChange.selectorControl, mParams);
+						if (sVariantManagementReference) {
+							var sCurrentVariantReference = mParams.variantModel.oData[sVariantManagementReference].currentVariant;
+							oChange.changeSpecificData.variantReference = sCurrentVariantReference;
+						}
+					}
+				} else {
+					// delete preset variantReference
+					delete oChange.changeSpecificData.variantReference;
+				}
+				aPromises.push(
+					function() {
+						return mParams.flexController.createAndApplyChange(Object.assign(mChangeSpecificData, oChange.changeSpecificData), oChange.selectorControl)
+							.then(function (oAppliedChange) {
+								// FlexController.createAndApplyChanges will only resolve for successfully applied changes
+								aSuccessfulChanges.push(oAppliedChange);
+							});
+					}
+				);
+			}.bind(this));
+
+			return Utils.execPromiseQueueSequentially(aPromises)
+				.then(function() {
+					return aSuccessfulChanges;
+				});
 		},
 
 		/**
-		 * Determines the availability of an encompassing variant management control
-		 * @param {Object} oControl - The control which should be tested for an encompassing variant management control
-		 * @returns {boolean} - Returns true if a variant management control is encompassing the given control, else false
+		 * Saves unsaved changes added to {@link sap.ui.fl.ChangePersistence}.
+		 *
+		 * @param {array} aChanges - Array of changes to be saved
+		 * @param {sap.ui.base.ManagedObject} oManagedObject - A managed object instance which has an application component responsible, on which changes need to be saved
+		 *
+		 * @returns {Promise} Returns Promise which is resolved when the passed array of changes have been saved
+		 *
+		 * @method sap.ui.fl.ControlPersonalizationAPI.saveChanges
+		 * @public
+		 */
+		saveChanges: function(aChanges, oManagedObject) {
+			if (!(oManagedObject instanceof ManagedObject)) {
+				Utils.log.error("A valid sap.ui.base.ManagedObject instance is required as a parameter");
+				return;
+			}
+			return FlexControllerFactory.createForControl(oManagedObject)._oChangePersistence.saveSequenceOfDirtyChanges(aChanges);
+		},
+
+		/**
+		 * Determines the availability of an encompassing variant management control.
+		 *
+		 * @param {sap.ui.base.ManagedObject} oControl - The control which should be tested for an encompassing variant management control
+		 *
+		 * @returns {boolean} Returns true if a variant management control is encompassing the given control, else false
+		 *
+		 * @method sap.ui.fl.ControlPersonalizationAPI.hasVariantManagement
 		 * @public
 		 */
 		hasVariantManagement : function(oControl) {
 			return !!this._getVariantManagement(oControl);
 		}
-
 	};
 	return ControlPersonalizationAPI;
 }, true);

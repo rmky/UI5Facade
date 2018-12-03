@@ -6,25 +6,29 @@
 
 // Provides control sap.m.Link.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/InvisibleText',
 	'sap/ui/core/EnabledPropagator',
 	'sap/ui/core/library',
 	'sap/ui/Device',
-	'./LinkRenderer'
+	'./LinkRenderer',
+	"sap/ui/events/KeyCodes",
+	"sap/base/Log",
+		"sap/base/security/URLWhitelist"
 ],
 function(
-	jQuery,
 	library,
 	Control,
 	InvisibleText,
 	EnabledPropagator,
 	coreLibrary,
 	Device,
-	LinkRenderer
-	) {
+	LinkRenderer,
+	KeyCodes,
+	Log,
+	URLWhitelist
+) {
 	"use strict";
 
 
@@ -73,7 +77,7 @@ function(
 	 * @implements sap.ui.core.IShrinkable, sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -128,7 +132,7 @@ function(
 			 * If validation fails, the value of the <code>href</code> property will still be set, but will not be applied to the DOM.
 			 *
 			 * <b>Note:</b> Additional whitelisting of URLs is allowed through
-			 * {@link jQuery.sap.addUrlWhitelist}.
+			 * {@link sap.base.security.URLWhiteList}.
 			 *
 			 * @since 1.54.0
 			 */
@@ -180,7 +184,25 @@ function(
 			/**
 			 * Event is fired when the user triggers the link control.
 			 */
-			press : {allowPreventDefault : true}
+			press : {
+				allowPreventDefault : true,
+				parameters: {
+					/**
+					 * Indicates whether the CTRL key was pressed when the link was selected.
+					 * @since 1.58
+					 */
+					ctrlKey: { type: "boolean" },
+					/**
+					 * Indicates whether the "meta" key was pressed when the link was selected.
+					 *
+					 * On Macintosh keyboards, this is the command key (⌘).
+					 * On Windows keyboards, this is the windows key (⊞).
+					 *
+					 * @since 1.58
+					 */
+					metaKey: { type: "boolean" }
+				}
+			}
 		}
 	}});
 
@@ -209,7 +231,7 @@ function(
 	};
 
 	Link.prototype.onkeyup = function (oEvent) {
-		if (oEvent.which === jQuery.sap.KeyCodes.SPACE) {
+		if (oEvent.which === KeyCodes.SPACE) {
 			this._handlePress(oEvent);
 
 			if (this.getHref() && !oEvent.isDefaultPrevented()) {
@@ -241,7 +263,7 @@ function(
 			// mark the event for components that needs to know if the event was handled by the link
 			oEvent.setMarked();
 
-			if (!this.firePress() || !this.getHref()) { // fire event and check return value whether default action should be prevented
+			if (!this.firePress({ctrlKey: !!oEvent.ctrlKey, metaKey: !!oEvent.metaKey}) || !this.getHref()) { // fire event and check return value whether default action should be prevented
 				oEvent.preventDefault();
 			}
 		} else { // disabled
@@ -302,7 +324,7 @@ function(
 
 		if (!bIsValid) {
 			this.$().removeAttr("href");
-			jQuery.sap.log.warning(this + ": The href tag of the link was not set since it's not valid.");
+			Log.warning(this + ": The href tag of the link was not set since it's not valid.");
 			return this;
 		}
 
@@ -386,7 +408,6 @@ function(
 				}
 			} else {
 				$this.attr("disabled", true);
-				$this.attr("tabindex", "-1");
 				$this.attr("aria-disabled", true);
 				$this.removeAttr("href");
 			}
@@ -421,7 +442,7 @@ function(
 	 * @private
 	 */
 	Link.prototype._isHrefValid = function (sUri) {
-		return this.getValidateUrl() ? jQuery.sap.validateUrl(sUri) : true;
+		return this.getValidateUrl() ? URLWhitelist.validate(sUri) : true;
 	};
 
 	/**
@@ -482,6 +503,14 @@ function(
 	 */
 	Link.prototype.getFormDoNotAdjustWidth = function() {
 		return true;
+	};
+
+	/*
+	 * Provides hook for overriding the tabindex in case the link is used in a composite control
+	 * for example inside ObjectAttribute
+	 */
+	Link.prototype._getTabindex = function() {
+		return this.getText() ? "0" : "-1";
 	};
 
 	return Link;

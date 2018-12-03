@@ -303,6 +303,8 @@ link[id^="sap-ui-theme-"]::after,
 	position: absolute !important;
 	clip: rect(1px, 1px, 1px, 1px);
 	user-select: none;
+	left: 0;
+	top: 0;
 }
 
 /* CSS classes for bridging two buttons in the technical info dialog */
@@ -527,6 +529,10 @@ html[dir=rtl] .sapUiIconMirrorInRTL:not(.sapUiIconSuppressMirrorInRTL) {
 .sapUiIconColorDefault {
 	color: @sapUiContentIconColor;
 }
+
+.sapUiIconColorContrast {
+	color: @sapUiContentContrastIconColor;
+}
 /* END "Icon.less" */
 
 /* START "LocalBusyIndicator.less" */
@@ -558,6 +564,13 @@ html[dir=rtl] .sapUiIconMirrorInRTL:not(.sapUiIconSuppressMirrorInRTL) {
 	opacity: 0;
 	transition: opacity 0.3s ease-in;
 	-webkit-transition: opacity 0.3s ease-in;
+
+	&:focus {
+		outline: 1px dotted @sapUiContentFocusColor;
+		html[data-sap-ui-browser^="ie"] & {
+			outline-style: dashed;
+		}
+	}
 }
 
 .sapUiBlockLayer:not(:last-child) {

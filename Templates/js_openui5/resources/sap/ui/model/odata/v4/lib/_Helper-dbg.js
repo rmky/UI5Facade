@@ -6,24 +6,12 @@
 
 //Provides class sap.ui.model.odata.v4.lib._Helper
 sap.ui.define([
-	"jquery.sap.global",
+	"sap/base/Log",
 	"sap/ui/thirdparty/URI"
-], function (jQuery, URI) {
+], function (Log, URI) {
 	"use strict";
 
-	var mAllowedAggregateDetails2Type =  {
-			"max" : "boolean",
-			"min" : "boolean",
-			"name" : "string",
-			"subtotals" : "boolean",
-			"with" : "string"
-		},
-		mAllowedAggregationKeys2Type = {
-			aggregate : "object",
-			group : "object",
-			groupLevels : "array"
-		},
-		rAmpersand = /&/g,
+	var rAmpersand = /&/g,
 		rEquals = /\=/g,
 		rEscapedCloseBracket = /%29/g,
 		rEscapedOpenBracket = /%28/g,
@@ -36,195 +24,7 @@ sap.ui.define([
 		rSingleQuote = /'/g,
 		Helper;
 
-	/*
-	 * Checks that the given details object has only allowed keys.
-	 *
-	 * @param {object} oDetails
-	 *   The details object
-	 * @param {string[]} [mAllowedKeys2Type]
-	 *   Maps keys which are allowed for the details objects to the expected type name
-	 * @param {string} [sName]
-	 *   The name of the property to which the details object belongs
-	 * @throws {Error}
-	 *   In case an unsupported key is found
-	 */
-	function checkKeys(oDetails, mAllowedKeys2Type, sName) {
-		var sKey;
-
-		function error(sMessage) {
-			if (sName) {
-				sMessage += " at property: " + sName;
-			}
-			throw new Error(sMessage);
-		}
-
-		function typeOf(vValue) {
-			return Array.isArray(vValue) ? "array" : typeof vValue;
-		}
-
-		for (sKey in oDetails) {
-			if (!(mAllowedKeys2Type && sKey in mAllowedKeys2Type)) {
-				error("Unsupported '" + sKey + "'");
-			} else if (typeOf(oDetails[sKey]) !== mAllowedKeys2Type[sKey]) {
-				error("Not a " + mAllowedKeys2Type[sKey] + " value for '" + sKey + "'");
-			}
-		}
-	}
-
-	/*
-	 * Checks that all details objects in the given map have only allowed keys.
-	 *
-	 * @param {object} mMap
-	 *   Map from name to details object (for a groupable or aggregatable property)
-	 * @param {string[]} [mAllowedKeys2Type]
-	 *   Maps keys which are allowed for the details objects to the expected type name
-	 * @throws {Error}
-	 *   In case an unsupported key is found
-	 */
-	function checkKeys4AllDetails(mMap, mAllowedKeys2Type) {
-		var sName;
-
-		for (sName in mMap) {
-			checkKeys(mMap[sName], mAllowedKeys2Type, sName);
-		}
-	}
-
 	Helper = {
-		/**
-		 * Builds the value for a "$apply" system query option based on the given data aggregation
-		 * information. The value is "groupby((&lt;groupable_1,...,groupable_N),aggregate(
-		 * &lt;aggregatable> with &lt;method> as &lt;alias>,...))" where the "aggregate" part is
-		 * only present if aggregatable properties are given and both "with" and "as" are optional.
-		 * If at least one aggregatable property requesting minimum or maximum values is contained,
-		 * the resulting $apply is extended: ".../concat(aggregate(&lt;alias> with min as
-		 * UI5min__&lt;alias>,&lt;alias> with max as UI5max__&lt;alias>,...),identity)".
-		 *
-		 * @param {object} oAggregation
-		 *   An object holding the information needed for data aggregation; see also
-		 *   <a href="http://docs.oasis-open.org/odata/odata-data-aggregation-ext/v4.0/">OData
-		 *   Extension for Data Aggregation Version 4.0</a>; must be a clone which is normalized as
-		 *   a side effect to contain all optional maps/lists
-		 * @param {object} [oAggregation.aggregate]
-		 *   A map from aggregatable property names or aliases to objects containing the following
-		 *   details:
-		 *   <ul>
-		 *   <li><code>min</code>: An optional boolean that tells whether the minimum value
-		 *     (ignoring currencies or units of measure) for this aggregatable property is needed
-		 *   <li><code>max</code>: An optional boolean that tells whether the maximum value
-		 *     (ignoring currencies or units of measure) for this aggregatable property is needed
-		 *   <li><code>subtotals</code>: An optional boolean that tells whether subtotals for this
-		 *     aggregatable property are needed
-		 *   <li><code>with</code>: An optional string that provides the name of the method (for
-		 *     example "sum") used for aggregation of this aggregatable property; see
-		 *     "3.1.2 Keyword with"
-		 *   <li><code>name</code>: An optional string that provides the original aggregatable
-		 *     property name in case a different alias is chosen as the name of the dynamic property
-		 *     used for aggregation of this aggregatable property; see "3.1.1 Keyword as"
-		 *   </ul>
-		 * @param {object} [oAggregation.group]
-		 *   A map from groupable property names to empty objects
-		 * @param {string[]} [oAggregation.groupLevels]
-		 *   A list of groupable property names (which may, but don't need to be repeated in
-		 *   <code>oAggregation.group</code>) used to determine group levels; only a single group
-		 *   level is supported
-		 * @param {object} [mAlias2MeasureAndMethod]
-		 *   An optional map which is filled in case an aggregatable property requests minimum or
-		 *   maximum values; the alias (for example "UI5min__&lt;alias>") for that value becomes the
-		 *   key; an object with "measure" and "method" becomes the corresponding value. Note that
-		 *   "measure" holds the aggregatable property's alias in case "3.1.1 Keyword as" is used.
-		 * @returns {string}
-		 *   The value for a "$apply" system query option
-		 * @throws {Error}
-		 *   If the given data aggregation object is unsupported
-		 */
-		buildApply : function (oAggregation, mAlias2MeasureAndMethod) {
-			var aAggregate,
-				sApply = "",
-				aGroupBy,
-				aMinMax = [];
-
-			/*
-			 * Returns the corresponding part of the "aggregate" term for an aggregatable property,
-			 * for example "AggregatableProperty with method as Alias". Processes min/max as a side
-			 * effect.
-			 *
-			 * @param {string} sAlias - An aggregatable property name
-			 * @returns {string} - Part of the "aggregate" term
-			 */
-			function aggregate(sAlias) {
-				var oDetails = oAggregation.aggregate[sAlias],
-					sAggregate = oDetails.name || sAlias;
-
-				if (oDetails.with) {
-					sAggregate += " with " + oDetails.with + " as " + sAlias;
-				} else if (oDetails.name) {
-					sAggregate += " as " + sAlias;
-				}
-				if (oDetails.min) {
-					processMinOrMax(sAlias, "min");
-				}
-				if (oDetails.max) {
-					processMinOrMax(sAlias, "max");
-				}
-				return sAggregate;
-			}
-
-			/*
-			 * Tells whether the given groupable property is not a group level.
-			 *
-			 * @param {string} sGroupable - A groupable property name
-			 * @returns {boolean} - Whether it is not a group level
-			 */
-			function notGroupLevel(sGroupable) {
-				return oAggregation.groupLevels.indexOf(sGroupable) < 0;
-			}
-
-			/*
-			 * Builds the min/max expression for the "concat" term (for example
-			 * "AggregatableProperty with min as UI5min__AggregatableProperty") and adds a
-			 * corresponding entry to the optional alias map.
-			 *
-			 * @param {string} sName - An aggregatable property name
-			 * @param {string} sMinOrMax - Either "min" or "max"
-			 */
-			function processMinOrMax(sName, sMinOrMax) {
-				var sAlias = "UI5" + sMinOrMax + "__" + sName;
-
-				aMinMax.push(sName + " with " + sMinOrMax + " as " + sAlias);
-				if (mAlias2MeasureAndMethod) {
-					mAlias2MeasureAndMethod[sAlias] = {
-						measure : sName,
-						method : sMinOrMax
-					};
-				}
-			}
-
-			checkKeys(oAggregation, mAllowedAggregationKeys2Type);
-			oAggregation.groupLevels = oAggregation.groupLevels || [];
-			if (oAggregation.groupLevels.length > 1) {
-				throw new Error("More than one group level: " + oAggregation.groupLevels);
-			}
-
-			oAggregation.group = oAggregation.group || {};
-			checkKeys4AllDetails(oAggregation.group);
-			aGroupBy = oAggregation.groupLevels.concat(
-				Object.keys(oAggregation.group).sort().filter(notGroupLevel));
-
-			oAggregation.aggregate = oAggregation.aggregate || {};
-			checkKeys4AllDetails(oAggregation.aggregate, mAllowedAggregateDetails2Type);
-			aAggregate = Object.keys(oAggregation.aggregate).sort().map(aggregate);
-
-			if (aAggregate.length) {
-				sApply = "aggregate(" + aAggregate.join(",") + ")";
-			}
-			if (aGroupBy.length) {
-				sApply = "groupby((" + aGroupBy.join(",") + (sApply ? ")," + sApply + ")" : "))");
-			}
-
-			return sApply
-				+ (aMinMax.length ? "/concat(aggregate(" + aMinMax.join(",") + "),identity)" : "");
-		},
-
 		/**
 		 * Builds a relative path from the given arguments. Iterates over the arguments and appends
 		 * them to the path if defined and non-empty. The arguments are expected to be strings or
@@ -238,21 +38,25 @@ sap.ui.define([
 		 * buildPath("base", undefined, "relative") --> "base/relative"
 		 * buildPath("base", 42, "relative") --> "base/42/relative"
 		 * buildPath("base", 0, "relative") --> "base/0/relative"
+		 * buildPath("base", "('predicate')") --> "base('predicate')"
 		 *
 		 * @returns {string} a composite path built from all arguments
 		 */
 		buildPath : function () {
 			var i,
-				aPath = [],
+				sPath = "",
 				sSegment;
 
 			for (i = 0; i < arguments.length; i++) {
 				sSegment = arguments[i];
 				if (sSegment || sSegment === 0) {
-					aPath.push(sSegment === "/" ? "" : sSegment); //avoid duplicated '/'
+					if (sPath && sPath !== "/" && sSegment[0] !== "(") {
+						sPath += "/";
+					}
+					sPath += sSegment;
 				}
 			}
-			return aPath.join("/");
+			return sPath;
 		},
 
 		/**
@@ -332,6 +136,10 @@ sap.ui.define([
 		 *   HTTP status code
 		 * @param {string} jqXHR.statusText
 		 *   HTTP status text
+		 * @param {string} [sRequestUrl]
+		 *   The request URL
+		 * @param {string} [sResourcePath]
+		 *   The path by which this resource has originally been requested
 		 * @returns {Error}
 		 *   An <code>Error</code> instance with the following properties:
 		 *   <ul>
@@ -340,6 +148,9 @@ sap.ui.define([
 		 *     <li><code>isConcurrentModification</code>: <code>true</code> In case of a
 		 *     concurrent modification detected via ETags (i.e. HTTP status code 412)
 		 *     <li><code>message</code>: Error message
+		 *     <li><code>requestUrl</code>: The request URL
+		 *     <li><code>resourcePath</code>: The path by which this resource has originally been
+		 *     requested
 		 *     <li><code>status</code>: HTTP status code
 		 *     <li><code>statusText</code>: (optional) HTTP status text
 		 *   </ul>
@@ -347,13 +158,15 @@ sap.ui.define([
 		 * "http://docs.oasis-open.org/odata/odata-json-format/v4.0/os/odata-json-format-v4.0-os.html"
 		 * >"19 Error Response"</a>
 		 */
-		createError : function (jqXHR) {
+		createError : function (jqXHR, sRequestUrl, sResourcePath) {
 			var sBody = jqXHR.responseText,
 				sContentType = jqXHR.getResponseHeader("Content-Type"),
 				oResult = new Error(jqXHR.status + " " + jqXHR.statusText);
 
 			oResult.status = jqXHR.status;
 			oResult.statusText = jqXHR.statusText;
+			oResult.requestUrl = sRequestUrl;
+			oResult.resourcePath = sResourcePath;
 			if (jqXHR.status === 0) {
 				oResult.message = "Network error";
 				return oResult;
@@ -376,8 +189,7 @@ sap.ui.define([
 						oResult.message = oResult.error.message.value;
 					}
 				} catch (e) {
-					jQuery.sap.log.warning(e.toString(), sBody,
-						"sap.ui.model.odata.v4.lib._Helper");
+					Log.warning(e.toString(), sBody, "sap.ui.model.odata.v4.lib._Helper");
 				}
 			} else if (sContentType === "text/plain") {
 				oResult.message = sBody;
@@ -392,7 +204,10 @@ sap.ui.define([
 		 * @param {string} sFetch
 		 *   A "fetch*" method's name
 		 * @param {boolean} [bThrow=false]
-		 *   Whether the "get*" method throws if the promise is not fulfilled
+		 *   Whether the "get*" method throws if the promise is not (yet) fulfilled instead of just
+		 *   returning <code>undefined</code> (Note:
+		 *   {@link sap.ui.model.odata.v4.ODataMetaModel#getObject} intentionally never throws
+		 *   because it is used for data binding)
 		 * @returns {function}
 		 *   A "get*" method returning the "fetch*" method's result or
 		 *   <code>undefined</code> in case the promise is not (yet) fulfilled
@@ -744,24 +559,6 @@ sap.ui.define([
 		},
 
 		/**
-		 * Tells whether minimum or maximum values are needed for at least one aggregatable
-		 * property.
-		 *
-		 * @param {object} [mAggregate]
-		 *   A map from aggregatable property names or aliases to details objects
-		 * @returns {boolean}
-		 *   Whether minimum or maximum values are needed for at least one aggregatable
-		 *   property.
-		 */
-		hasMinOrMax : function (mAggregate) {
-			return !!mAggregate && Object.keys(mAggregate).some(function (sAlias) {
-				var oDetails = mAggregate[sAlias];
-
-				return oDetails.min || oDetails.max;
-			});
-		},
-
-		/**
 		 * Tells whether the given object has a private client-side instance annotation with the
 		 * given unqualified name (no matter what the value is).
 		 *
@@ -905,6 +702,32 @@ sap.ui.define([
 		},
 
 		/**
+		 * Resolves the "If-Match" header in the given map of request-specific headers.
+		 * For lazy determination of the ETag, the "If-Match" header may contain an object
+		 * containing the current ETag. If needed create a copy of the given map and replace the
+		 * value of the "If-Match" header by the current ETag.
+		 *
+		 * @param {object} [mHeaders]
+		 *   Map of request-specific headers.
+		 * @returns {object}
+		 *   The map of request-specific headers with the resolved If-Match header.
+		 */
+		resolveIfMatchHeader : function (mHeaders) {
+			var vIfMatchValue = mHeaders && mHeaders["If-Match"];
+
+			if (vIfMatchValue && typeof vIfMatchValue === "object") {
+				vIfMatchValue = vIfMatchValue["@odata.etag"];
+				mHeaders = jQuery.extend({}, mHeaders);
+				if (vIfMatchValue === undefined) {
+					delete mHeaders["If-Match"];
+				} else {
+					mHeaders["If-Match"] = vIfMatchValue;
+				}
+			}
+			return mHeaders;
+		},
+
+		/**
 		 * Sets the new value of the private client-side instance annotation with the given
 		 * unqualified name at the given object.
 		 *
@@ -946,48 +769,52 @@ sap.ui.define([
 		},
 
 		/**
-		 * Updates the cache with the object sent to the PATCH request or the object returned by the
-		 * PATCH response. Fires change events for all changed properties. The function recursively
+		 * Updates the old object with the new object. Only existing properties of the old object
+		 * are updated. Fires change events for all changed properties. The function recursively
 		 * handles modified, added or removed structural properties and fires change events for all
-		 * modified/added/removed primitive properties therein.
+		 * modified/added/removed primitive properties therein. Collection-valued properties are
+		 * only updated in oOldValue; there are no change events for properties therein.
 		 *
 		 * @param {object} mChangeListeners A map of change listeners by path
-		 * @param {string} sPath The path of the cache value in the cache
-		 * @param {object} oCacheValue The object in the cache
-		 * @param {object} [oPatchValue] The value of the PATCH request/response
+		 * @param {string} sPath The path of oOldValue in mChangeListeners
+		 * @param {object} oOldValue The old value
+		 * @param {object} [oNewValue] The new value
 		 */
-		updateCache : function (mChangeListeners, sPath, oCacheValue, oPatchValue) {
-			// empty PATCH value from 204 response: Nothing to do
-			if (!oPatchValue) {
+		updateExisting : function (mChangeListeners, sPath, oOldValue, oNewValue) {
+			if (!oNewValue) {
 				return;
 			}
 
-			// iterate over all properties in the cache
-			Object.keys(oCacheValue).forEach(function (sProperty) {
+			// iterate over all properties in the old value
+			Object.keys(oOldValue).forEach(function (sProperty) {
 				var sPropertyPath = Helper.buildPath(sPath, sProperty),
-					vOldValue = oCacheValue[sProperty],
+					vOldValue = oOldValue[sProperty],
 					vNewValue;
 
-				if (sProperty in oPatchValue) {
+				if (sProperty in oNewValue) {
 					// the property was patched
-					vNewValue = oPatchValue[sProperty];
+					vNewValue = oNewValue[sProperty];
 					if (vNewValue && typeof vNewValue === "object") {
-						if (vOldValue) {
+						if (Array.isArray(vNewValue)) {
+							// copy complete collection; no change events as long as
+							// collection-valued properties are not supported
+							oOldValue[sProperty] = vNewValue;
+						} else if (vOldValue) {
 							// a structural property in cache and patch -> recursion
-							Helper.updateCache(mChangeListeners, sPropertyPath, vOldValue,
+							Helper.updateExisting(mChangeListeners, sPropertyPath, vOldValue,
 								vNewValue);
 						} else {
 							// a structural property was added
-							oCacheValue[sProperty] = vNewValue;
+							oOldValue[sProperty] = vNewValue;
 							Helper.fireChanges(mChangeListeners, sPropertyPath, vNewValue, false);
 						}
 					} else if (vOldValue && typeof vOldValue === "object") {
 						// a structural property was removed
-						oCacheValue[sProperty] = vNewValue;
+						oOldValue[sProperty] = vNewValue;
 						Helper.fireChanges(mChangeListeners, sPropertyPath, vOldValue, true);
 					} else {
 						// a primitive property
-						oCacheValue[sProperty] = vNewValue;
+						oOldValue[sProperty] = vNewValue;
 						if (vOldValue !== vNewValue) {
 							Helper.fireChange(mChangeListeners, sPropertyPath, vNewValue);
 						}
@@ -997,56 +824,55 @@ sap.ui.define([
 		},
 
 		/**
-		 * Updates the cache with the given values for the selected properties (see
-		 * {@link #updateCache}). If no selected properties are given or if "*" is contained in the
-		 * selected properties, then all properties are selected. <code>@odata.etag</code> is always
-		 * selected. Fires change events for all changed properties.
+		 * Updates the old value with the given new value for the selected properties (see
+		 * {@link #updateExisting}). If no selected properties are given or if "*" is contained in
+		 * the selected properties, then all properties are selected. <code>@odata.etag</code> is
+		 * always selected. Fires change events for all changed properties.
 		 *
 		 * @param {object} mChangeListeners
 		 *   A map of change listeners by path
 		 * @param {string} sPath
-		 *   The path of the cache value in the cache
-		 * @param {object} oCacheValue
-		 *   The object in the cache
-		 * @param {object} oPostValue
-		 *   The value of the POST response
+		 *   The path of oOldValue in mChangeListeners
+		 * @param {object} oOldValue
+		 *   The old value
+		 * @param {object} oNewValue
+		 *   The new value
 		 * @param {string[]} [aSelect]
-		 *   The properties to be updated in the cache; default is all properties from the response
+		 *   The properties to be updated in oOldValue; default is all properties from oNewValue
 		 */
-		updateCacheAfterPost : function (mChangeListeners, sPath, oCacheValue, oPostValue,
-			aSelect) {
+		updateSelected : function (mChangeListeners, sPath, oOldValue, oNewValue, aSelect) {
 
 			/*
 			 * Take over the property value from source to target and fires an event if the property
 			 * is changed
-			 * @param {string} sPath The path of the cache value in the cache
+			 * @param {string} sPath The path of oOldValue in mChangeListeners
 			 * @param {string} sProperty The property
-			 * @param {object} oCacheValue The object in the cache
-			 * @param {object} oPostValue The value of the response
+			 * @param {object} oOldValue The old value
+			 * @param {object} oNewValue The new value
 			 */
-			function copyPathValue(sPath, sProperty, oCacheValue , oPostValue) {
+			function copyPathValue(sPath, sProperty, oOldValue , oNewValue) {
 				var aSegments = sProperty.split("/");
 
-				aSegments.every(function(sSegment, iIndex) {
-					if (oPostValue[sSegment] === null) {
-						oCacheValue[sSegment] = null;
+				aSegments.every(function (sSegment, iIndex) {
+					if (oNewValue[sSegment] === null) {
+						oOldValue[sSegment] = null;
 						if (iIndex < aSegments.length - 1) {
 							return false;
 						}
 						Helper.fireChange(mChangeListeners, Helper.buildPath(sPath, sProperty),
-							oCacheValue[sSegment]);
-					} else if (typeof oPostValue[sSegment] === "object") {
-						oCacheValue[sSegment] = oCacheValue[sSegment] || {};
+							oOldValue[sSegment]);
+					} else if (typeof oNewValue[sSegment] === "object") {
+						oOldValue[sSegment] = oOldValue[sSegment] || {};
 					} else {
-						if (oCacheValue[sSegment] !== oPostValue[sSegment]) {
-							oCacheValue[sSegment] = oPostValue[sSegment];
+						if (oOldValue[sSegment] !== oNewValue[sSegment]) {
+							oOldValue[sSegment] = oNewValue[sSegment];
 							Helper.fireChange(mChangeListeners, Helper.buildPath(sPath, sProperty),
-								oCacheValue[sSegment]);
+								oOldValue[sSegment]);
 						}
 						return false;
 					}
-					oCacheValue = oCacheValue[sSegment];
-					oPostValue = oPostValue[sSegment];
+					oOldValue = oOldValue[sSegment];
+					oNewValue = oNewValue[sSegment];
 					return true;
 				});
 			}
@@ -1070,18 +896,49 @@ sap.ui.define([
 			}
 
 			if (!aSelect || aSelect.indexOf("*") >= 0) {
-				// no individual properties selected, fetch all properties of the result
+				// no individual properties selected, fetch all properties of the new value
 				aSelect = [];
-				buildPropertyPaths(oPostValue);
+				buildPropertyPaths(oNewValue);
 			} else {
-				// fetch the selected properties plus the ETag
-				aSelect = aSelect.concat("@odata.etag");
+				// fetch the selected properties plus the ETag and the key predicate;
+				// _Cache#visitResponse is called with the response data before updateSelected
+				// copies the selected values to the cache. visitResponse computes
+				// - $count values for collections, which are not relevant for POST (deep create is
+				//   not yet supported);
+				// - key predicates, which are relevant only for the top level element as no deep
+				//   create is supported
+				// and reports bound messages. Messages need to be copied only if they are selected.
+				aSelect = aSelect.concat("@odata.etag", "@$ui5._/predicate");
 			}
 
-			// take over properties from server response and fire change events
+			// take over properties from the new value and fire change events
 			aSelect.forEach(function (sProperty) {
-				copyPathValue(sPath, sProperty, oCacheValue, oPostValue);
+				copyPathValue(sPath, sProperty, oOldValue, oNewValue);
 			});
+		},
+
+		/**
+		 * Updates certain transient paths from the given map, replacing the "-1" segment with the
+		 * given key predicate.
+		 *
+		 * @param {object} mMap
+		 *   A map from path to anything
+		 * @param {string} sPathInCache
+		 *   A path inside the cache where the "-1" segment should be replaced
+		 * @param {string} sPredicate
+		 *   The key predicate
+		 */
+		updateTransientPaths : function (mMap, sPathInCache, sPredicate) {
+			var sPath,
+				sPathToMinus1 = Helper.buildPath(sPathInCache, "-1");
+
+			for (sPath in mMap) {
+				if (sPath.startsWith(sPathToMinus1)) {
+					mMap[sPathInCache + sPredicate + sPath.slice(sPathToMinus1.length)]
+						= mMap[sPath];
+					delete mMap[sPath];
+				}
+			}
 		}
 	};
 

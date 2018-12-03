@@ -229,7 +229,14 @@
 			"raw": "i18n/i18n.properties"
 		},
 		{
+			"name": "index-dbg.js",
+			"isDebug": true
+		},
+		{
 			"name": "index.html"
+		},
+		{
+			"name": "index.js"
 		},
 		{
 			"name": "manifest.json"

@@ -5,11 +5,15 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
-	'sap/ui/Device'
+	"sap/ui/thirdparty/jquery",
+	'sap/ui/Device',
+	'sap/base/util/includes',
+	'sap/base/util/isPlainObject'
 ], function(
 	jQuery,
-	Device
+	Device,
+	includes,
+	isPlainObject
 ) {
 	"use strict";
 
@@ -20,7 +24,7 @@ sap.ui.define([
 	 * Utilities for sap.ui.dt library
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @private
 	 * @static
@@ -123,8 +127,9 @@ sap.ui.define([
 		// Adding payload only if it wasn't added before explicitly.
 		if (Util.isForeignError(oError, sLibraryName)) {
 			var sLocationFull = (sLibraryName || S_LIBRARY_NAME) + '.' + sLocation;
+			var sOriginalMessage = (oError.name || '') + oError.message;
 			oError.name = 'Error in ' + sLocationFull;
-			oError.message = Util.printf('{0}. Original error: {1}', sMessage, oError.message || '¯\\_(ツ)_/¯');
+			oError.message = Util.printf('{0}. Original error: {1}', sMessage, sOriginalMessage || '¯\\_(ツ)_/¯');
 		}
 
 		return oError;
@@ -256,6 +261,38 @@ sap.ui.define([
 	 */
 	Util.isWebkit = function(){
 		return Device.browser.webkit && (Device.browser.safari || Device.browser.chrome && Device.browser.mobile);
+	};
+
+	/**
+	 * Creates an object composed of the picked object properties.
+	 *
+	 * @param {object} mSource - Source object
+	 * @param {string|string[]} vProperties - Property or property list to pick
+	 * @return {object} - new object of the picked object properties.
+	 */
+	Util.pick = function (mSource, vProperties) {
+		mSource = isPlainObject(mSource) ? mSource : {};
+		var aProperties = (
+			Array.isArray(vProperties) // eslint-disable-line no-nested-ternary
+			? vProperties
+			: (
+				arguments.length > 1
+				? [vProperties]
+				: []
+			)
+		);
+
+		aProperties = aProperties.map(function (vValue) {
+			return String(vValue);
+		});
+
+		return Object.keys(mSource).reduce(function (mResult, sPropertyName) {
+			if (includes(aProperties, sPropertyName)) {
+				mResult[sPropertyName] = mSource[sPropertyName];
+			}
+
+			return mResult;
+		}, {});
 	};
 
 	return Util;

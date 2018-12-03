@@ -6,15 +6,13 @@
 
 // Provides control sap.tnt.ToolHeader
 sap.ui.define([
-    'jquery.sap.global',
-    './library',
-    'sap/ui/core/Control',
-    'sap/m/OverflowToolbar',
-    'sap/m/OverflowToolbarAssociativePopover',
-    "./ToolHeaderRenderer"
+	'./library',
+	'sap/ui/core/Control',
+	'sap/m/OverflowToolbar',
+	'sap/m/OverflowToolbarAssociativePopover',
+	"./ToolHeaderRenderer"
 ],
 	function(
-	    jQuery,
 		library,
 		Control,
 		OverflowToolbar,
@@ -44,7 +42,7 @@ sap.ui.define([
 		 * @extends sap.m.OverflowToolbar
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public

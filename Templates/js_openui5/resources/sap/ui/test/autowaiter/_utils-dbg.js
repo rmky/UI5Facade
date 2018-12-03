@@ -4,10 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([
-	"jquery.sap.global",
-	'sap/ui/thirdparty/URI'
-], function ($, URI) {
+sap.ui.define(['sap/ui/thirdparty/URI', "sap/ui/thirdparty/jquery"], function(URI, jQueryDOM) {
 	"use strict";
 
 	var oUriParams = new URI().search(true);
@@ -44,14 +41,14 @@ sap.ui.define([
 			return "'" + oArgs + "'";
 		}
 		function argToString(arg) {
-			if ($.isFunction(arg)) {
+			if (jQueryDOM.isFunction(arg)) {
 				return "'" + functionToString(arg) + "'";
 			}
-			if ($.isArray(arg)) {
+			if (jQueryDOM.isArray(arg)) {
 				var aValues = Array.prototype.map.call(arg, argToString);
 				return "[" + aValues.join(", ") + "]";
 			}
-			if ($.isPlainObject(arg)) {
+			if (jQueryDOM.isPlainObject(arg)) {
 				return JSON.stringify(arg);
 			}
 			return "'" + arg.toString() + "'";

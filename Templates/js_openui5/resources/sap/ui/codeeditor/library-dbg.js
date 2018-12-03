@@ -7,7 +7,7 @@
 /**
  * Initialization Code and shared classes of library sap.ui.codeeditor.
  */
-sap.ui.define(['sap/ui/core/Core'],
+sap.ui.define(['sap/ui/core/Core', 'sap/ui/core/library'],
 	function(Core) {
 	"use strict";
 
@@ -33,7 +33,7 @@ sap.ui.define(['sap/ui/core/Core'],
 		],
 		elements: [],
 		noLibraryCSS: false,
-		version: "1.56.6"
+		version: "1.60.1"
 	});
 
 

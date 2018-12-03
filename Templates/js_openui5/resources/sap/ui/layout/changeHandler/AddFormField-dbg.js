@@ -5,9 +5,10 @@
  */
 
 sap.ui.define([
-		"sap/ui/fl/Utils",
-		"sap/ui/fl/changeHandler/ChangeHandlerMediator"
-	], function(Utils, ChangeHandlerMediator) {
+	"sap/ui/fl/Utils",
+	"sap/ui/fl/changeHandler/ChangeHandlerMediator",
+	"sap/ui/thirdparty/jquery"
+], function(Utils, ChangeHandlerMediator, jQuery) {
 		"use strict";
 
 		/**
@@ -19,7 +20,7 @@ sap.ui.define([
 		 *
 		 * @author SAP SE
 		 *
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @experimental Since 1.50.0 This class is experimental and provides only limited functionality. Also the API might be
 		 *               changed in future.
@@ -29,10 +30,11 @@ sap.ui.define([
 		/**
 		 * Adds a smart field
 		 *
-		 * @param {sap.ui.fl.Change} oChange Change wrapper object with instructions to be applied on the control map
+		 * @param {sap.ui.fl.Change} oChange Change wrapper object with instructions to be applied to the control map
 		 * @param {sap.ui.layout.form.FormContainer} oFormContainer FormContainer that matches the change selector for applying the change
-		 * @param {object} mPropertyBag Property bag containing the modifier and the view
+		 * @param {object} mPropertyBag Property bag containing the modifier, the appComponent and the view
 		 * @param {object} mPropertyBag.modifier Modifier for the controls
+		 * @param {object} mPropertyBag.appComponent Component in which the change should be applied
 		 * @param {object} mPropertyBag.view Application view
 		 * @return {boolean} True if successful
 		 * @public
@@ -74,6 +76,7 @@ sap.ui.define([
 				var mSmartFieldSelector = jQuery.extend({}, oChangeContent.newFieldSelector);
 				mSmartFieldSelector.id = mSmartFieldSelector.id + "-field";
 				var sBindingPath = oChangeContent.bindingPath;
+				oChange.setRevertData({newFieldSelector: mFieldSelector});
 
 				var mCreateProperties = {
 					"appComponent" : mPropertyBag.appComponent,
@@ -154,6 +157,32 @@ sap.ui.define([
 			} else {
 				oChangeDefinition.content.oDataServiceVersion = oSpecificChangeInfo.oDataServiceVersion;
 			}
+		};
+
+		/**
+		 * Reverts the applied change
+		 *
+		 * @param {sap.ui.fl.Change} oChange Change wrapper object with instructions to be applied to the control map
+		 * @param {sap.ui.layout.form.FormContainer} oFormContainer FormContainer that matches the change selector for applying the change
+		 * @param {object} mPropertyBag Property bag containing the modifier, the appComponent and the view
+		 * @param {object} mPropertyBag.modifier Modifier for the controls
+		 * @param {object} mPropertyBag.appComponent Component in which the change should be applied
+		 * @param {object} mPropertyBag.view Application view
+		 * @return {boolean} True if successful
+		 * @public
+		 */
+		AddFormField.revertChange = function (oChange, oFormContainer, mPropertyBag) {
+			var oAppComponent = mPropertyBag.appComponent;
+			var oView = mPropertyBag.view;
+			var oModifier = mPropertyBag.modifier;
+			var mFieldSelector = oChange.getRevertData().newFieldSelector;
+
+			var oFormElement = oModifier.bySelector(mFieldSelector, oAppComponent, oView);
+			oModifier.removeAggregation(oFormContainer, "formElements", oFormElement);
+			oModifier.destroy(oFormElement);
+			oChange.resetRevertData();
+
+			return true;
 		};
 
 		return AddFormField;

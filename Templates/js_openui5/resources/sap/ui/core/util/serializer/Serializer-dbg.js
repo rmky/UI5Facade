@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider'],
-	function(jQuery, EventProvider) {
+sap.ui.define(['sap/ui/base/EventProvider', "sap/base/assert"],
+	function(EventProvider, assert) {
 	"use strict";
 
 
@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider'],
 	 * @class Serializer class.
 	 * @extends sap.ui.base.EventProvider
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @alias sap.ui.core.util.serializer.Serializer
 	 * @private
 	 * @sap-restricted sap.watt com.sap.webide
@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider'],
 	 */
 	Serializer.prototype._serializeRecursive = function (oControl, iLevel, sAggregationName, isDefaultAggregation) {
 
-		jQuery.sap.assert(typeof oControl !== "undefined", "The control must not be undefined");
+		assert(typeof oControl !== "undefined", "The control must not be undefined");
 
 		var aCode = [];
 

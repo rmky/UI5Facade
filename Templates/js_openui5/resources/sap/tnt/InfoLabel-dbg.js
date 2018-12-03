@@ -5,8 +5,14 @@
  */
 
 // Provides control sap.tnt.InfoLabel
-sap.ui.define(["./library", "sap/ui/core/Control", "sap/ui/core/library", "./InfoLabelRenderer"],
-	function (library, Control, CoreLibrary, InfoLabelRenderer) {
+sap.ui.define([
+	"./library",
+	"sap/ui/core/Control",
+	"sap/ui/core/library",
+	"./InfoLabelRenderer",
+	"sap/base/Log"
+],
+	function(library, Control, CoreLibrary, InfoLabelRenderer, Log) {
 		"use strict";
 
 		// shortcut for library.RenderMode
@@ -31,7 +37,7 @@ sap.ui.define(["./library", "sap/ui/core/Control", "sap/ui/core/library", "./Inf
 		 * The control is designed to be vertically aligned with UI5 Input and Button control families.
 		 * When using <code>InfoLabel</code> in non-editable <code>Forms</code>, <code>Tables</code>, etc., set <code>displayOnly=true</code> for best visual results.
 		 *
-		 * <h3>Limitations</h3>
+		 * <h3>Usage Guidelines</h3>
 		 * <ul>
 		 * <li>If the text is longer than the width of the control, it doesn’t wrap. Instead, it’s represented as ellipsis. </li>
 		 * <li>When truncated, the full text in the control is not visible. Therefore, it’s recommended to make more space for longer items to be fully displayed.</li>
@@ -42,7 +48,7 @@ sap.ui.define(["./library", "sap/ui/core/Control", "sap/ui/core/library", "./Inf
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -141,7 +147,7 @@ sap.ui.define(["./library", "sap/ui/core/Control", "sap/ui/core/library", "./Inf
 						$Control.addClass("backgroundColor" + iColorScheme);
 					}
 				} else {
-					jQuery.sap.log.warning("colorScheme value was not set. It should be between 1 and 9");
+					Log.warning("colorScheme value was not set. It should be between 1 and 9");
 				}
 			}
 

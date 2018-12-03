@@ -4,16 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([
-	"jquery.sap.global",
-	"./Base",
-	"sap/ui/fl/Utils"
-],
-function(
-	jQuery,
-	Base,
-	FlexUtils
-) {
+sap.ui.define(["./Base", "sap/ui/fl/Utils"],
+function(Base, FlexUtils) {
 	"use strict";
 
 	/**
@@ -21,7 +13,7 @@ function(
 	 *
 	 * @alias sap.ui.fl.changeHandler.MoveControls
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @experimental Since 1.46
 	 */
 	var MoveControls = { };
@@ -190,7 +182,7 @@ function(
 				aRevertData.unshift({
 					index: iIndex,
 					aggregation: sSourceAggregation,
-					sourceParent: oSourceParent
+					sourceParentId: oModifier.getId(oSourceParent)
 				});
 			}
 
@@ -243,9 +235,11 @@ function(
 
 			var iInsertIndex = mMovedElement.sourceIndex;
 			if (aRevertData) {
-				oSourceParent = aRevertData[iElementIndex].sourceParent;
-				sSourceAggregation = aRevertData[iElementIndex].aggregation;
-				iInsertIndex = aRevertData[iElementIndex].index;
+				var mRevertData = aRevertData[iElementIndex];
+				sSourceAggregation = mRevertData.aggregation;
+				iInsertIndex = mRevertData.index;
+				//TODO: If revert needs to be done on XML, this has to be adjusted
+				oSourceParent = oModifier.byId(mRevertData.sourceParentId, oView);
 			}
 
 			oModifier.removeAggregation(oTargetParent, sTargetAggregation, oMovedElement);

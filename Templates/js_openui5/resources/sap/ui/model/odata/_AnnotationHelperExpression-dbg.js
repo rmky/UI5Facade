@@ -7,9 +7,14 @@
 // This module provides internal functions for dynamic expressions in OData V4 annotations. It is a
 // helper module for sap.ui.model.odata.AnnotationHelper.
 sap.ui.define([
-	'jquery.sap.global', './_AnnotationHelperBasics', 'sap/ui/base/BindingParser',
-	'sap/ui/base/ManagedObject', 'sap/ui/core/format/DateFormat', 'sap/ui/model/odata/ODataUtils'
-], function(jQuery, Basics, BindingParser, ManagedObject, DateFormat, ODataUtils) {
+	"./_AnnotationHelperBasics",
+	"sap/base/Log",
+	"sap/ui/base/BindingParser",
+	"sap/ui/base/ManagedObject",
+	"sap/ui/core/format/DateFormat",
+	"sap/ui/model/odata/ODataUtils",
+	"sap/ui/performance/Measurement"
+], function (Basics, Log, BindingParser, ManagedObject, DateFormat, ODataUtils, Measurement) {
 	'use strict';
 
 	// see http://docs.oasis-open.org/odata/odata/v4.0/errata02/os/complete/abnf/odata-abnf-construction-rules.txt
@@ -466,12 +471,11 @@ sap.ui.define([
 				return undefined;
 			}
 
-			jQuery.sap.measure.average(sPerformanceGetExpression, "", aPerformanceCategories);
+			Measurement.average(sPerformanceGetExpression, "", aPerformanceCategories);
 
 			if ( !Expression.simpleParserWarningLogged &&
 					ManagedObject.bindingParser === BindingParser.simpleParser) {
-				jQuery.sap.log.warning("Complex binding syntax not active", null,
-					sAnnotationHelper);
+				Log.warning("Complex binding syntax not active", null, sAnnotationHelper);
 				Expression.simpleParserWarningLogged = true;
 			}
 
@@ -482,10 +486,10 @@ sap.ui.define([
 					value : oRawValue,
 					withType : bWithType
 				});
-				jQuery.sap.measure.end(sPerformanceGetExpression);
+				Measurement.end(sPerformanceGetExpression);
 				return Basics.resultToString(oResult, false, bWithType);
 			} catch (e) {
-				jQuery.sap.measure.end(sPerformanceGetExpression);
+				Measurement.end(sPerformanceGetExpression);
 				if (e instanceof SyntaxError) {
 					return "Unsupported: "
 						+ BindingParser.complexParser.escape(Basics.toErrorString(oRawValue));
@@ -774,8 +778,8 @@ sap.ui.define([
 				}
 				oResult.constraints = oConstraints;
 			} else {
-				jQuery.sap.log.warning("Could not find property '" + sBindingPath
-					+ "' starting from '" + oPathValue.path + "'", null, sAnnotationHelper);
+				Log.warning("Could not find property '" + sBindingPath + "' starting from '"
+					+ oPathValue.path + "'", null, sAnnotationHelper);
 			}
 
 			return oResult;

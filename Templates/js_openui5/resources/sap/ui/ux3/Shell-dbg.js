@@ -28,7 +28,7 @@ sap.ui.define([
 	 * The Ux3 GoldReflection Shell, which is an application frame with navigation capabilities.
 	 * It is supposed to be added to a direct child of the BODY tag of a page and there should be no other parts of the page consuming space outside the Shell.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -2468,12 +2468,14 @@ sap.ui.define([
 		this.setProperty("applyContentPadding", bApplyContentPadding, true); // no re-rendering
 		this.$().toggleClass("sapUiUx3ShellNoContentPadding", !bApplyContentPadding);
 		this._adaptContentHeight();
+		return this;
 	};
 
 	Shell.prototype.setFullHeightContent = function(bFullHeightContent) {
 		this.setProperty("fullHeightContent", bFullHeightContent, true); // no re-rendering
 		this.$().toggleClass("sapUiUx3ShellFullHeightContent", bFullHeightContent);
 		this._adaptContentHeight();
+		return this;
 	};
 
 	Shell.prototype._calcFacetBarHeight = function($FacetBar){

@@ -24,7 +24,7 @@ sap.ui.define([
 		 * @class
 		 * The FormattedTextView control allows the usage of a limited set of HTML tags for display.
 		 * @extends sap.ui.core.Control
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -218,6 +218,7 @@ sap.ui.define([
 			});
 
 			this.setProperty("htmlText", sSanitizedText);
+			return this;
 		};
 
 		/**

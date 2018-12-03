@@ -5,8 +5,32 @@
  */
 
 // Provides control sap.ui.fl.transport.TransportDialog.
-sap.ui.define(['jquery.sap.global', "sap/m/List", "sap/m/InputListItem", 'sap/m/Button', 'sap/m/ComboBox', 'sap/m/Dialog', 'sap/m/DialogRenderer', 'sap/m/Input', 'sap/m/Label', 'sap/m/MessageToast', 'sap/ui/core/ListItem', 'sap/ui/fl/transport/Transports'],
-	function(jQuery, List, InputListItem, Button, ComboBox, Dialog, DialogRenderer, Input, Label, MessageToast, ListItem, Transports) {
+sap.ui.define([
+	"sap/m/List",
+	"sap/m/InputListItem",
+	'sap/m/Button',
+	'sap/m/ComboBox',
+	'sap/m/Dialog',
+	'sap/m/DialogRenderer',
+	'sap/m/Input',
+	'sap/m/Label',
+	'sap/m/MessageToast',
+	'sap/ui/core/ListItem',
+	'sap/ui/fl/transport/Transports'
+],
+function(
+	List,
+	InputListItem,
+	Button,
+	ComboBox,
+	Dialog,
+	DialogRenderer,
+	Input,
+	Label,
+	MessageToast,
+	ListItem,
+	Transports
+) {
 	"use strict";
 
 
@@ -446,6 +470,8 @@ sap.ui.define(['jquery.sap.global', "sap/m/List", "sap/m/InputListItem", 'sap/m/
 			//disable local object button, as package has been set from outside and therefore should not be changed.
 			this.getButtons()[0].setVisible(false);
 		}
+
+		return this;
 	};
 
 	/**
@@ -483,6 +509,8 @@ sap.ui.define(['jquery.sap.global', "sap/m/List", "sap/m/InputListItem", 'sap/m/
 				this._oTransport.setEnabled(true);
 			}
 		}
+
+		return this;
 	};
 
 	/**
@@ -498,6 +526,8 @@ sap.ui.define(['jquery.sap.global', "sap/m/List", "sap/m/InputListItem", 'sap/m/
 		if (oObject && !this.getProperty("lrepObject")) {
 			this.setProperty("lrepObject", oObject);
 		}
+
+		return this;
 	};
 
 	/**
@@ -523,6 +553,8 @@ sap.ui.define(['jquery.sap.global', "sap/m/List", "sap/m/InputListItem", 'sap/m/
 			//correct the title.
 			this.setTitle(this._oResources.getText("TRANSPORT_DIALOG_TITLE_SIMPLE"));
 		}
+
+		return this;
 	};
 
 	return TransportDialog;

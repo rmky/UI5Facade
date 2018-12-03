@@ -4,8 +4,14 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
- sap.ui.define(['jquery.sap.global', 'sap/ui/core/library', 'sap/m/library', 'sap/ui/Device'],
-	function(jQuery, coreLibrary, library, Device) {
+sap.ui.define([
+	'jquery.sap.global',
+	'sap/ui/core/library',
+	'sap/m/library',
+	'sap/ui/Device',
+	"sap/base/security/encodeXML"
+],
+function(jQuery, coreLibrary, library, Device, encodeXML) {
 	"use strict";
 
 
@@ -89,7 +95,7 @@
 		if (!oControl.getHeaderRightText()) {
 			rm.writeAttribute("style", "display:none;");
 		}
-		rm.write("class='sapMShellHeaderRightText'>" + jQuery.sap.encodeHTML(oControl.getHeaderRightText()) + "</span>");
+		rm.write("class='sapMShellHeaderRightText'>" + encodeXML(oControl.getHeaderRightText()) + "</span>");
 
 
 		// logout button
@@ -111,6 +117,7 @@
 	ShellRenderer.getLogoImageHtml = function(oControl) {
 		var sImage = oControl.getLogo(); // configured logo
 		if (!sImage) {
+			//TODO: global jquery call found
 			jQuery.sap.require("sap.ui.core.theming.Parameters");
 			sImage = sap.ui.core.theming.Parameters._getThemeImage(); // theme logo
 		}
@@ -123,7 +130,7 @@
 				result += "<span class='sapMShellLogoImgAligner'></span>";
 			}
 			result += "<img id='" + oControl.getId() + "-logo' class='sapMShellLogoImg' src='";
-			result += jQuery.sap.encodeHTML(sImage);
+			result += encodeXML(sImage);
 			result += "' alt='";
 			result += oRb.getText("SHELL_ARIA_LOGO");
 			result += "' /></div>";
@@ -133,4 +140,4 @@
 
 	return ShellRenderer;
 
- }, /* bExport= */ true);
+}, /* bExport= */ true);

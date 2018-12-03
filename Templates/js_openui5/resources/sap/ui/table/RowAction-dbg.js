@@ -6,17 +6,27 @@
 
 // Provides control sap.ui.table.RowAction
 sap.ui.define([
-    'jquery.sap.global',
-    'sap/ui/core/Control',
-    "sap/ui/table/TableUtils",
-    './library',
-    'sap/ui/core/Icon',
-    'sap/ui/unified/Menu',
-    'sap/ui/core/Popup',
-    "./RowActionRenderer",
-    'jquery.sap.keycodes'
+	'sap/ui/core/Control',
+	"sap/ui/table/TableUtils",
+	'./library',
+	'sap/ui/core/Icon',
+	'sap/ui/unified/Menu',
+	'sap/ui/core/Popup',
+	"./RowActionRenderer",
+	"sap/ui/events/KeyCodes",
+	"sap/ui/thirdparty/jquery"
 ],
-function(jQuery, Control, TableUtils, library, Icon, Menu, Popup, RowActionRenderer) {
+function(
+	Control,
+	TableUtils,
+	library,
+	Icon,
+	Menu,
+	Popup,
+	RowActionRenderer,
+	KeyCodes,
+	jQuery
+) {
 	"use strict";
 
 	/**
@@ -30,7 +40,7 @@ function(jQuery, Control, TableUtils, library, Icon, Menu, Popup, RowActionRende
 	 * If more action items are available as the available space allows to display an overflow mechanism is provided.
 	 * This control must only be used in the context of the <code>sap.ui.table.Table</code> control to define row actions.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -77,7 +87,7 @@ function(jQuery, Control, TableUtils, library, Icon, Menu, Popup, RowActionRende
 		};
 
 		var fnOnKeyUp = function(oEvent) {
-			this._bKeyboard = oEvent.which === jQuery.sap.KeyCodes.SPACE || oEvent.which === jQuery.sap.KeyCodes.ENTER;
+			this._bKeyboard = oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER;
 			Icon.prototype.onkeyup.apply(this, arguments);
 		};
 

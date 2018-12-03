@@ -53,7 +53,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -68,8 +68,19 @@ sap.ui.define([
 					/**
 					 * Determines whether the header is pinnable.
 					 */
-					pinnable: {type: "boolean", group: "Appearance", defaultValue: true}
+					pinnable: {type: "boolean", group: "Appearance", defaultValue: true},
+
+					/**
+					 * Determines the background color of the <code>DynamicPageHeader</code>.
+					 *
+					 * <b>Note:</b> The default value of <code>backgroundDesign</code> property is null.
+					 * If the property is not set, the color of the background is <code>@sapUiObjectHeaderBackground</code>,
+					 * which depends on the specific theme.
+					 * @since 1.58
+					*/
+					backgroundDesign : {type: "sap.m.BackgroundDesign", group: "Appearance"}
 				},
+				defaultAggregation: "content",
 				aggregations: {
 
 					/**
@@ -122,6 +133,35 @@ sap.ui.define([
 		DynamicPageHeader.prototype.onAfterRendering = function () {
 			this._initARIAState();
 			this._initPinButtonARIAState();
+		};
+
+		/*************************************** Public members ******************************************/
+
+		/**
+		 * Sets the value of the <code>backgroundDesign</code> property.
+		 *
+		 * @param {sap.m.BackgroundDesign} sBackgroundDesign - new value of the <code>backgroundDesign</code>
+		 * @return {sap.f.DynamicPageHeader} <code>this</code> to allow method chaining
+		 * @public
+		 * @since 1.58
+		 */
+		DynamicPageHeader.prototype.setBackgroundDesign = function (sBackgroundDesign) {
+			var sCurrentBackgroundDesign = this.getBackgroundDesign(),
+				$domRef = this.$(),
+				sCssClassPrefix = "sapFDynamicPageHeader";
+
+			if (sCurrentBackgroundDesign === sBackgroundDesign) {
+				return this;
+			}
+
+			this.setProperty("backgroundDesign", sBackgroundDesign, true);
+
+			if ($domRef.length) {
+				$domRef.removeClass(sCssClassPrefix + sCurrentBackgroundDesign);
+				$domRef.addClass(sCssClassPrefix + sBackgroundDesign);
+			}
+
+			return this;
 		};
 
 		/*************************************** Private members ******************************************/

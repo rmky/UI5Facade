@@ -5,21 +5,21 @@
 */
 
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'./SliderUtilities',
 	'sap/ui/core/Control',
 	'sap/ui/core/Popup',
-	'./SliderTooltipContainerRenderer'
+	'./SliderTooltipContainerRenderer',
+	"sap/ui/thirdparty/jquery"
 ],
 function(
-	jQuery,
 	Library,
 	SliderUtilities,
 	Control,
 	Popup,
-	SliderTooltipContainerRenderer
-	) {
+	SliderTooltipContainerRenderer,
+	jQuery
+) {
 		"use strict";
 
 		/**
@@ -35,7 +35,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @private
@@ -130,8 +130,8 @@ function(
 		 */
 		SliderTooltipContainer.prototype._getScrollListener = function () {
 			return function () {
-				jQuery.sap.clearDelayedCall(this._scrollDebounce);
-				this._scrollDebounce = jQuery.sap.delayedCall(0, this, this.repositionTooltips);
+				clearTimeout(this._scrollDebounce);
+				this._scrollDebounce = setTimeout(this.repositionTooltips.bind(this), 0);
 			}.bind(this);
 		};
 

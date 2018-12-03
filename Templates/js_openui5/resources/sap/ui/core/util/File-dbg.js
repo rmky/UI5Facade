@@ -5,7 +5,7 @@
  */
 
 // Provides class sap.ui.core.util.File
-sap.ui.define(['jquery.sap.global'],
+sap.ui.define(["sap/ui/thirdparty/jquery"],
 	function(jQuery) {
 	'use strict';
 
@@ -13,7 +13,7 @@ sap.ui.define(['jquery.sap.global'],
 	 * Utility class to handle files.
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @namespace
 	 *
 	 * @public

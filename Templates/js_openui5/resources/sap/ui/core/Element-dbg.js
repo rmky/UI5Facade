@@ -5,13 +5,48 @@
  */
 
 // Provides the base class for all controls and UI elements.
-sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', './ElementMetadata', '../Device', 'jquery.sap.strings', 'jquery.sap.trace'],
-	function(jQuery, BaseObject, ManagedObject, ElementMetadata, Device/* , jQuerySap */) {
+sap.ui.define([
+	'../base/Object',
+	'../base/ManagedObject',
+	'./ElementMetadata',
+	'../Device',
+	"sap/ui/performance/trace/Interaction",
+	"sap/base/Log",
+	"sap/base/assert",
+	"sap/ui/thirdparty/jquery"
+],
+	function(
+		BaseObject,
+		ManagedObject,
+		ElementMetadata,
+		Device,
+		Interaction,
+		Log,
+		assert,
+		jQuery
+	) {
 	"use strict";
 
 	/**
 	 * Constructs and initializes a UI Element with the given <code>sId</code> and settings.
 	 *
+	 *
+	 * <h3>Uniqueness of IDs</h3>
+	 *
+	 * Each <code>Element</code> must have an ID. If no <code>sId</code> or <code>mSettings.id</code> is
+	 * given at construction time, a new ID will be created automatically. The IDs of all elements that exist
+	 * at the same time in the same window must be different. Providing an ID which is already used by another
+	 * element throws an error.
+	 *
+	 * When an element is created from a declarative source (e.g. XMLView), then an ID defined in that
+	 * declarative source needs to be unique only within the declarative source. Declarative views will
+	 * prefix that ID with their own ID (and some separator) before constructing the element.
+	 * Programmatically created views (JSViews) can do the same with the {@link sap.ui.core.mvc.View#createId} API.
+	 * Similarly, UIComponents can prefix the IDs of elements created in their context with their own ID.
+	 * Also see {@link sap.ui.core.UIComponent#getAutoPrefixId UIComponent#getAutoPrefixId}.
+	 *
+	 *
+	 * <h3>Settings</h3>
 	 * If the optional <code>mSettings</code> are given, they must be a JSON-like object (object literal)
 	 * that defines values for properties, aggregations, associations or events keyed by their name.
 	 *
@@ -55,7 +90,7 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 	 * @class Base Class for Elements.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @public
 	 * @alias sap.ui.core.Element
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
@@ -96,11 +131,8 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 
 				/**
 				 * Defines the drag-and-drop configuration.
+				 * <b>Note:</b> This configuration might be ignored due to control {@link sap.ui.core.Element.extend metadata} restrictions.
 				 *
-				 * This aggregation is provided exclusively to test drag-and-drop functionality of all controls.
-				 * It might be removed or the functionality might be limited due to control {@link sap.ui.core.Element.extend metadata} restrictions.
-				 *
-				 * @experimental As of 1.56
 				 * @since 1.56
 				 */
 				dragDropConfig : {name : "dragDropConfig", type : "sap.ui.core.dnd.DragDropBase", multiple : true, singularName : "dragDropConfig"}
@@ -158,7 +190,7 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 	 *     dnd : { draggable: true, droppable: false },
 	 *     aggregations : {
 	 *       items : { type: 'sap.ui.core.Control', multiple : true, dnd : {draggable: false, dropppable: true, layout: "Horizontal" } },
-	 *       header : {type : "sap.ui.core.Control", multiple : false, dnd : false },
+	 *       header : {type : "sap.ui.core.Control", multiple : false, dnd : true },
 	 *     }
 	 *   }
 	 * });
@@ -170,8 +202,8 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 	 * Defines draggable and droppable configuration of the element.
 	 * The following keys can be provided via <code>dnd</code> object literal to configure drag-and-drop behavior of the element:
 	 * <ul>
-	 *  <li><code>[draggable=true]: <i>boolean</i></code>Defines whether the element is draggable or not.</li>
-	 *  <li><code>[droppable=true]: <i>boolean</i></code>Defines whether the element is droppable (it allows being dropped on by a draggable element) or not.</li>
+	 *  <li><code>[draggable=false]: <i>boolean</i></code> Defines whether the element is draggable or not. The default value is <code>false</code>.</li>
+	 *  <li><code>[droppable=false]: <i>boolean</i></code> Defines whether the element is droppable (it allows being dropped on by a draggable element) or not. The default value is <code>false</code>.</li>
 	 * </ul>
 	 * If <code>dnd</code> property is of type Boolean, then the <code>draggable</code> and <code>droppable</code> configuration are set to this Boolean value.
 	 *
@@ -179,13 +211,9 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 	 *
 	 * <b>dnd</b>: <i>object|boolean</i><br>
 	 * In addition to draggable and droppable configuration, the layout of the aggregation can be defined as a hint at the drop position indicator.
-	 * Default behavior of draggable and droppable depends on the multiplicity of the aggregation:
 	 * <ul>
-	 *  <li><code>[draggable]: <i>boolean</i></code>Defines whether this aggregation is draggable or not. The default value is <code>false</code> for the aggregation with multiplicity 0..n (<code>multiple: true</code>), otherwise <code>true<code>.</li>
-	 *  <li><code>[droppable]: <i>boolean</i></code>Defines whether dropping is allowed on and/or between the aggregation. The default value is <code>false</code> for the aggregation with multiplicity 0..n (<code>multiple: true</code>), otherwise <code>true<code>.</li>
-	 *  <li><code>[layout="Vertical"]: <i>boolean</i></code>The arrangement of the items in this aggregation. This setting is recommended for the aggregation with multiplicity 0..n (<code>multiple: true</code>). Possible values are <code>Vertical</code>(e.g. rows in a table) and <code>Horizontal</code>(e.g. buttons in a toolbar). It is recommended to use <code>Horizontal</code> layout if the arrangement is multidimensional.</li>
+	 *  <li><code>[layout="Vertical"]: </code> The arrangement of the items in this aggregation. This setting is recommended for the aggregation with multiplicity 0..n (<code>multiple: true</code>). Possible values are <code>Vertical</code> (e.g. rows in a table) and <code>Horizontal</code> (e.g. columns in a table). It is recommended to use <code>Horizontal</code> layout if the arrangement is multidimensional.</li>
 	 * </ul>
-	 * If <code>dnd</code> property is of type Boolean, then the <code>draggable</code> and <code>droppable</code> configuration are set to this Boolean value.
 	 *
 	 * @param {string} sClassName fully qualified name of the class that is described by this metadata object
 	 * @param {object} oStaticInfo static info to construct the metadata from
@@ -338,7 +366,7 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 	 * @protected
 	 */
 	Element.prototype.getDomRef = function(sSuffix) {
-		return jQuery.sap.domById(sSuffix ? this.getId() + "-" + sSuffix : this.getId());
+		return (((sSuffix ? this.getId() + "-" + sSuffix : this.getId())) ? window.document.getElementById(sSuffix ? this.getId() + "-" + sSuffix : this.getId()) : null);
 	};
 
 	/**
@@ -472,23 +500,18 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 			this.getMetadata().isInstanceOf("sap.ui.core.PopupInterface")) {
 			this.$().remove();
 		} else {
-			jQuery.sap.log.debug("DOM is not removed on destroy of " + this);
+			Log.debug("DOM is not removed on destroy of " + this);
 		}
 	};
 
 
-	/**
-	 * Fires the given event and notifies all listeners. Listeners must not change
-	 * the content of the event.
-	 *
-	 * @param {string} sEventId the event id
-	 * @param {object} mParameters the parameter map
-	 * @return {sap.ui.core.Element} Returns <code>this</code> to allow method chaining
-	 * @protected
+	/*
+	 * Class <code>sap.ui.core.Element</code> intercepts fireEvent calls to enforce an 'id' property
+	 * and to notify others like interaction detection etc.
 	 */
 	Element.prototype.fireEvent = function(sEventId, mParameters, bAllowPreventDefault, bEnableEventBubbling) {
 		if (this.hasListeners(sEventId)) {
-			jQuery.sap.interaction.notifyStepStart(this);
+			Interaction.notifyStepStart(this);
 		}
 
 		// get optional parameters right
@@ -501,9 +524,26 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 		mParameters = mParameters || {};
 		mParameters.id = mParameters.id || this.getId();
 
+		if (Element._trackEvent) {
+			Element._trackEvent(sEventId, this);
+		}
+
 		return ManagedObject.prototype.fireEvent.call(this, sEventId, mParameters, bAllowPreventDefault, bEnableEventBubbling);
 	};
 
+	/**
+	 * Tracks event. This method is meant for private usages. Apps are not supposed to used it.
+	 * It is created for an experimental purpose.
+	 * Implementation should be injected by outside(i.e. sap.ui.core.delegate.UsageAnalytics).
+	 *
+	 * @param {string} sEventId the name of the event
+	 * @param {sap.ui.core.Element} oElement the element itself
+	 * @function
+	 * @private
+	 * @experimental Since 1.58
+	 * @ui5-restricted
+	 */
+	Element._trackEvent = undefined;
 
 	/**
 	 * Adds a delegate that listens to the events of this element.
@@ -522,7 +562,7 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 	 * @private
 	 */
 	Element.prototype.addDelegate = function (oDelegate, bCallBefore, oThis, bClone) {
-		jQuery.sap.assert(oDelegate, "oDelegate must be not null or undefined");
+		assert(oDelegate, "oDelegate must be not null or undefined");
 
 		if (!oDelegate) {
 			return this;
@@ -627,12 +667,70 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 		return this.getDomRef() || null;
 	};
 
+	function getAncestorScrollPositions(oDomRef) {
+		var oParentDomRef,
+			aScrollHierarchy = [];
+
+		oParentDomRef = oDomRef.parentNode;
+		while (oParentDomRef) {
+			aScrollHierarchy.push({
+				node: oParentDomRef,
+				scrollLeft: oParentDomRef.scrollLeft,
+				scrollTop: oParentDomRef.scrollTop
+			});
+			oParentDomRef = oParentDomRef.parentNode;
+		}
+
+		return aScrollHierarchy;
+	}
+
+	function restoreScrollPositions(aScrollHierarchy) {
+		aScrollHierarchy.forEach(function(oScrollInfo) {
+			var oDomRef = oScrollInfo.node;
+
+			if (oDomRef.scrollLeft !== oScrollInfo.scrollLeft) {
+				oDomRef.scrollLeft = oScrollInfo.scrollLeft;
+			}
+
+			if (oDomRef.scrollTop !== oScrollInfo.scrollTop) {
+				oDomRef.scrollTop = oScrollInfo.scrollTop;
+			}
+		});
+	}
+
 	/**
 	 * Sets the focus to the stored focus DOM reference
+	 *
+	 * @param {object} oFocusInfo
+	 * @param {boolean} [oFocusInfo.preventScroll=false] @since 1.60 if it's set to true, the focused
+	 *   element won't be shifted into the viewport if it's not completely visible before the focus is set
 	 * @public
 	 */
-	Element.prototype.focus = function () {
-		jQuery.sap.focus(this.getFocusDomRef());
+	Element.prototype.focus = function (oFocusInfo) {
+		var oFocusDomRef = this.getFocusDomRef(),
+			aScrollHierarchy;
+
+		oFocusInfo = oFocusInfo || {};
+
+		if (oFocusDomRef) {
+			// save the scroll position of all ancestor DOM elements
+			// before the focus is set
+			if (oFocusInfo.preventScroll === true) {
+				aScrollHierarchy = getAncestorScrollPositions(oFocusDomRef);
+			}
+
+			oFocusDomRef.focus();
+
+			if (aScrollHierarchy && aScrollHierarchy.length > 0) {
+				// restore the scroll position if it's changed after setting focus
+				if (Device.browser.safari || Device.browser.msie || Device.browser.edge) {
+					// Safari, IE11 and Edge need a little delay to get the scroll position updated
+					setTimeout(restoreScrollPositions.bind(null, aScrollHierarchy), 0);
+				} else {
+					restoreScrollPositions(aScrollHierarchy);
+				}
+			}
+		}
 	};
 
 	/**
@@ -652,10 +750,12 @@ sap.ui.define(['jquery.sap.global', '../base/Object', '../base/ManagedObject', '
 	 * To be overwritten by the specific control method.
 	 *
 	 * @param {object} oFocusInfo
+	 * @param {boolean} [oFocusInfo.preventScroll=false] @since 1.60 if it's set to true, the focused
+	 *   element won't be shifted into the viewport if it's not completely visible before the focus is set
 	 * @protected
 	 */
 	Element.prototype.applyFocusInfo = function (oFocusInfo) {
-		this.focus();
+		this.focus(oFocusInfo);
 		return this;
 	};
 

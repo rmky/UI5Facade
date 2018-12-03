@@ -13,8 +13,8 @@
  */
 
 // Provides the Message based model implementation
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/ClientModel', 'sap/ui/model/Context', './MessageListBinding', './MessagePropertyBinding'],
-	function(jQuery, BindingMode, ClientModel, Context, MessageListBinding, MessagePropertyBinding) {
+sap.ui.define(['sap/ui/model/BindingMode', 'sap/ui/model/ClientModel', 'sap/ui/model/Context', './MessageListBinding', './MessagePropertyBinding', "sap/base/Log"],
+	function(BindingMode, ClientModel, Context, MessageListBinding, MessagePropertyBinding, Log) {
 	"use strict";
 
 
@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Cl
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @param {sap.ui.core.message.MessageManager} oMessageManager The MessageManager instance
 	 * @public
@@ -95,7 +95,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/BindingMode', 'sap/ui/model/Cl
 	 */
 	MessageModel.prototype.setProperty = function(sPath, oValue, oContext) {
 		//not implemented: Only 'OneWay' binding mode supported
-		jQuery.sap.log.error(this + "not implemented: Only 'OneWay' binding mode supported");
+		Log.error(this + "not implemented: Only 'OneWay' binding mode supported");
 	};
 
 	/**

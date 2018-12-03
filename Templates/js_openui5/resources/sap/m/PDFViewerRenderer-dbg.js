@@ -11,7 +11,7 @@ sap.ui.define(['sap/ui/Device'],
 		"use strict";
 
 		function shouldShowToolbar(oControl) {
-			return (!!oControl.getTitle() || oControl.getShowDownloadButton()) && !oControl._bIsPopupOpen;
+			return (!!oControl.getTitle() || oControl._isDisplayDownloadButton()) && !oControl._bIsPopupOpen;
 		}
 
 		var aAllowedMimeTypes = Object.freeze([
@@ -92,7 +92,7 @@ sap.ui.define(['sap/ui/Device'],
 				oRm.renderControl(oControl._objectsRegister.getOverflowToolbarControl());
 			}
 
-			if (oControl._isSourceValidToDisplay() && oControl._isEmbeddedModeAllowed() && PDFViewerRenderer._isPdfPluginEnabled()) {
+			if (oControl._isEmbeddedModeAllowed()) {
 				this.renderPdfContent(oRm, oControl);
 			}
 
@@ -117,6 +117,10 @@ sap.ui.define(['sap/ui/Device'],
 				oRm.write("</iframe>");
 			} else {
 				this.renderErrorContent(oRm, oControl);
+				if (!PDFViewerRenderer._isPdfPluginEnabled()) {
+					jQuery.sap.log.warning("The PDF plug-in is not available on this device.");
+					oControl.fireEvent("error", {}, true);
+				}
 			}
 		};
 

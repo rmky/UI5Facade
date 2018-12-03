@@ -18,8 +18,8 @@ sap.ui.define(["sap/ui/base/DataType",
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.f",
-		version: "1.56.6",
-		dependencies : ["sap.ui.core", "sap.m"],
+		version: "1.60.1",
+		dependencies : ["sap.ui.core", "sap.m", "sap.ui.layout"],
 		designtime: "sap/f/designtime/library.designtime",
 		types: [
 			"sap.f.LayoutType",
@@ -28,11 +28,13 @@ sap.ui.define(["sap/ui/base/DataType",
 		],
 		controls: [
 			"sap.f.Avatar",
+			"sap.f.Card",
 			"sap.f.DynamicPage",
 			"sap.f.DynamicPageHeader",
 			"sap.f.DynamicPageTitle",
 			"sap.f.FlexibleColumnLayout",
-			"sap.f.semantic.SemanticPage"
+			"sap.f.semantic.SemanticPage",
+			"sap.f.GridList"
 		],
 		elements: [
 			"sap.f.semantic.AddAction",
@@ -72,6 +74,7 @@ sap.ui.define(["sap/ui/base/DataType",
 			},
 			//Configuration used for rule loading of Support Assistant
 			"sap.ui.support": {
+				publicRules: true,
 				internalRules:true
 			}
 		}
@@ -83,7 +86,7 @@ sap.ui.define(["sap/ui/base/DataType",
 	 * @namespace
 	 * @alias sap.f
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @public
 	 */
 	var thisLib = sap.f;

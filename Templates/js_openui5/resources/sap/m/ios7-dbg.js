@@ -5,7 +5,7 @@
  */
 /*global window, document *///declare unusual global vars for JSLint/SAPUI5 validation
 
-sap.ui.define(['jquery.sap.global'],
+sap.ui.define(["sap/ui/thirdparty/jquery"],
 	function(jQuery) {
 	"use strict";
 

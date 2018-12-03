@@ -5,15 +5,16 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
-	'sap/ui/core/format/NumberFormat',
-	'sap/ui/model/FormatException',
+	"sap/base/Log",
+	"sap/ui/core/format/NumberFormat",
+	"sap/ui/model/FormatException",
+	"sap/ui/model/ParseException",
+	"sap/ui/model/ValidateException",
 	"sap/ui/model/odata/ODataUtils",
-	'sap/ui/model/odata/type/ODataType',
-	'sap/ui/model/ParseException',
-	'sap/ui/model/ValidateException'
-], function(jQuery, NumberFormat, FormatException, BaseODataUtils, ODataType, ParseException,
-		ValidateException) {
+	"sap/ui/model/odata/type/ODataType",
+	"sap/ui/thirdparty/jquery"
+], function (Log, NumberFormat, FormatException, ParseException, ValidateException, BaseODataUtils,
+		ODataType, jQuery) {
 	"use strict";
 
 	var rDecimal = /^[-+]?(\d+)(?:\.(\d+))?$/;
@@ -82,7 +83,7 @@ sap.ui.define([
 		var vNullable, iPrecision, vPrecision, iScale, vScale;
 
 		function logWarning(vValue, sName) {
-			jQuery.sap.log.warning("Illegal " + sName + ": " + vValue, null, oType.getName());
+			Log.warning("Illegal " + sName + ": " + vValue, null, oType.getName());
 		}
 
 		function validateInt(vValue, iDefault, iMinimum, sName) {
@@ -142,7 +143,7 @@ sap.ui.define([
 			iScale = vScale === "variable" ? Infinity : validateInt(vScale, 0, 0, "scale");
 			iPrecision = validateInt(vPrecision, Infinity, 1, "precision");
 			if (iScale !== Infinity && iPrecision <= iScale) {
-				jQuery.sap.log.warning("Illegal scale: must be less than precision (precision="
+				Log.warning("Illegal scale: must be less than precision (precision="
 					+ vPrecision + ", scale=" + vScale + ")", null, oType.getName());
 				iScale = Infinity; // "variable"
 			}
@@ -177,7 +178,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @alias sap.ui.model.odata.type.Decimal
 	 * @param {object} [oFormatOptions]
@@ -240,7 +241,7 @@ sap.ui.define([
 	 *   if <code>sTargetType</code> is unsupported
 	 * @public
 	 */
-	Decimal.prototype.formatValue = function(sValue, sTargetType) {
+	Decimal.prototype.formatValue = function (sValue, sTargetType) {
 		if (sValue === null || sValue === undefined) {
 			return null;
 		}
@@ -278,7 +279,7 @@ sap.ui.define([
 	 *   Decimal
 	 * @public
 	 */
-	Decimal.prototype.parseValue = function(vValue, sSourceType) {
+	Decimal.prototype.parseValue = function (vValue, sSourceType) {
 		var sResult;
 
 		if (vValue === null || vValue === "") {

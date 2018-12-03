@@ -15,15 +15,18 @@
 	position: relative;
 	display: flex;
 	flex-wrap: wrap;
-	list-style: none;
 	margin: 0;
 	padding: 0;
+}
+
+.sapUiAFLayoutItem,
+.sapUiAFLayoutEnd {
+	overflow: hidden;
 }
 
 .sapUiAFLayoutItem {
 	flex-grow: 1;
 	flex-shrink: 0;
-	overflow: hidden;
 	/* text-align: center;  TODO: ? good for galleries, maybe not good for other usages... maybe a property? */
 }
 
@@ -34,6 +37,7 @@
 /* the dummy elements for the last line */
 .sapUiAFLayoutSpacer {
 	height: 0;
+	margin-top: 0 !important; /* override custom CSS added to the sapUiAFLayoutItem class */
 	visibility: hidden;
 }
 
@@ -53,13 +57,14 @@
 	display: none;
 }
 
-.sapUiAFLayoutOneLine > li:last-child {
+.sapUiAFLayoutOneLine > div:last-child {
 	flex-basis: auto !important; /* needs to override inline style */
 	flex-grow: 0;
 }
 
 /* mixin call for creating container content padding classes (arguments: rootContainer, contentSelector) */
 .sapUiContainerContentPadding(~".sapUiAFLayout");
+
 /* END "AlignedFlowLayout.less" */
 
 /* START "ColumnLayout.less" */
@@ -74,6 +79,10 @@
 @_sap_ui_layout_ColumnLayout_formColumnMaxS: 1;
 @_sap_ui_layout_ColumnLayout_formColumnElementCols: 12;
 @_sap_ui_layout_ColumnLayout_formColumnElementOneCol: 100% / @_sap_ui_layout_ColumnLayout_formColumnElementCols;
+
+.sapUiFormCL{
+	white-space: initial; /* eg, if in Splitter where whit-space is set to nowrap */
+}
 
 /* Title */
 .sapUiFormCL > .sapUiFormTitle{
@@ -536,21 +545,6 @@ html.sap-phone .sapUiForm:not(.sapUiFormEdit) .sapUiFormCLSmallColumns .sapUiFor
 	}
 }
 
-/* Legacy browser support
-   ========================================================================== */
-
-.sapUiFixFlexRow {
-	&.sapUiFixFlex-Legacy {
-		position: relative;
-
-		& > .sapUiFixFlexFixed,
-		& > .sapUiFixFlexFlexible {
-			position: relative;
-			float: left;
-		}
-	}
-}
-
 /* Styles for scrolling
    ========================================================================== */
 .sapUiFixFlexInnerScrolling {
@@ -736,8 +730,11 @@ html.sap-desktop .sapUiFioriObjectPage > section > .sapUiForm {
 
 div[class*="sapUiRespGrid"] > div[class*="sapUiRespGridSpan"] {
     float: left;
-    overflow: hidden;
 	min-height: 1px; // BCP: 1770523047
+}
+
+div.sapUiRespGridOverflowHidden[class*="sapUiRespGrid"] > div[class*="sapUiRespGridSpan"] {
+	overflow: hidden;
 }
 
 /* CLEAR FIX */
@@ -810,10 +807,16 @@ div[class*="sapUiRespGrid"]:after {
 
 .sapUiRespGridBreak { clear: both; }
 
-.sapUiRespGridWriteSpanClass(@classFor, @hspace, @span, @screenSize) when (@classFor = Span) {
+.sapUiRespGridWriteSpanClass(@classFor, @hspace, @span, @screenSize, @useRounding) when (@classFor = Span) {
     @a:  @_sap_ui_layout_Grid_RespGridOneCol * @span;
-    width: @a - 100% * @_sap_ui_layout_Grid_RespGridPxInRem * @hspace / @screenSize;
-    .sapUiRespGrid-getCalcFuncSpan(@a, @hspace);
+    @width_percentage_value: @a - 100% * @_sap_ui_layout_Grid_RespGridPxInRem * @hspace / @screenSize;
+    & when (@useRounding) {
+        width: floor(@width_percentage_value);
+    }
+    & when not (@useRounding) {
+        width: @width_percentage_value;
+        .sapUiRespGrid-getCalcFuncSpan(@a, @hspace);
+    }
 }
 
 .sapUiRespGridWriteIndentClass(@classFor, @hspace, @span, @screenSize) when (@classFor = Indent) {
@@ -851,9 +854,17 @@ div[class*="sapUiRespGrid"]:after {
 //Write Span and Indent classes
 .sapUiRespGridWriteClasses(@counter, @media, @classFor, @name, @classHSpace, @hspace, @screenSize) when (@counter > 0) {
   .sapUiRespGridWriteClasses((@counter - 1), @media, @classFor, @name, @classHSpace, @hspace, @screenSize);
+
   .@{media}.sapUiRespGridHSpace@{classHSpace} > .sapUiRespGrid@{classFor}@{name}@{counter} {
-      .sapUiRespGridWriteSpanClass(@classFor, @hspace, @counter,  @screenSize);
+      .sapUiRespGridWriteSpanClass(@classFor, @hspace, @counter,  @screenSize, false);
       .sapUiRespGridWriteIndentClass(@classFor, @hspace, @counter,  @screenSize);
+    }
+
+    html[data-sap-ui-browser*='ie'],
+    html[data-sap-ui-browser*='ed'] {
+      .@{media}.sapUiRespGridHSpace@{classHSpace} > .sapUiRespGrid@{classFor}@{name}@{counter} {
+        .sapUiRespGridWriteSpanClass(@classFor, @hspace, @counter,  @screenSize, true);
+      }
     }
 }
 
@@ -1004,6 +1015,7 @@ L  0.390625% =  4px / 1024px
 
 /* Internet Explorer / Edge  does not support "text-align: start"!
 Therefore the title needs to be positioned separately for RTL and LTR mode */
+/* TODO remove after 1.62 version */
 html[data-sap-ui-browser^=ie] .sapUiGrid th > .sapUiFormTitle,
 html[data-sap-ui-browser^=ie] .sapUiGrid td > .sapUiFormTitle,
 html[data-sap-ui-browser^=ed] .sapUiGrid th > .sapUiFormTitle,
@@ -1209,6 +1221,7 @@ html[data-sap-ui-browser^="ff"] .sapUiSizeCompact {
 
 .sapUiHLayout {
 	display: inline-block;
+	white-space: normal;
 }
 
 .sapUiHLayoutNoWrap {
@@ -1993,7 +2006,7 @@ html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage .sapUiLo
 	width: 0.25rem !important;
 }
 
-html[data-sap-ui-browser^=ie].sap-desktop .sapUiResponsiveSplitter {
+html[data-sap-ui-browser^=ie].sap-desktop .sapUiResponsiveSplitter {// TODO remove after 1.62 version
 	.sapUiLoSplitterH > .sapUiLoSplitterBar:focus::after {
 		width: 2px;
 		z-index: 1;
@@ -2245,7 +2258,7 @@ html.sap-phone .sapUiLoSplitterV .sapUiLoSplitterBarIcon {
 }
 
 
-/*********************************** IE Focus outline workaround **********************************/
+/*********************************** IE Focus outline workaround **********************************/// TODO remove after 1.62 version
 
 .sapUiLoSplitter > .sapUiLoSplitterBar:focus::after {
 	content: "";

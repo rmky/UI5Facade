@@ -6,7 +6,6 @@
 
 //Provides control sap.ui.unified.CalendarTimeInterval.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/core/Control',
 	'sap/ui/core/LocaleData',
 	'sap/ui/core/delegate/ItemNavigation',
@@ -16,9 +15,11 @@ sap.ui.define([
 	'sap/ui/core/format/DateFormat',
 	'sap/ui/core/library',
 	'sap/ui/core/Locale',
-	"./TimesRowRenderer"
+	"./TimesRowRenderer",
+	"sap/ui/dom/containsOrEquals",
+	"sap/base/util/deepEqual",
+	"sap/ui/thirdparty/jquery"
 ], function(
-	jQuery,
 	Control,
 	LocaleData,
 	ItemNavigation,
@@ -28,7 +29,10 @@ sap.ui.define([
 	DateFormat,
 	coreLibrary,
 	Locale,
-	TimesRowRenderer
+	TimesRowRenderer,
+	containsOrEquals,
+	deepEqual,
+	jQuery
 ) {
 	"use strict";
 
@@ -56,7 +60,7 @@ sap.ui.define([
 	 *
 	 * The TimesRow works with JavaScript Date objects.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -189,7 +193,7 @@ sap.ui.define([
 		}
 
 		if (this._sInvalidateTimes) {
-			jQuery.sap.clearDelayedCall(this._sInvalidateTimes);
+			clearTimeout(this._sInvalidateTimes);
 		}
 
 	};
@@ -202,7 +206,7 @@ sap.ui.define([
 
 	TimesRow.prototype.onsapfocusleave = function(oEvent){
 
-		if (!oEvent.relatedControlId || !jQuery.sap.containsOrEquals(this.getDomRef(), sap.ui.getCore().byId(oEvent.relatedControlId).getFocusDomRef())) {
+		if (!oEvent.relatedControlId || !containsOrEquals(this.getDomRef(), sap.ui.getCore().byId(oEvent.relatedControlId).getFocusDomRef())) {
 			if (this._bMouseMove) {
 				_unbindMousemove.call(this, true);
 
@@ -232,7 +236,7 @@ sap.ui.define([
 			if (this._bInvalidateSync) { // set if calendar already invalidates in delayed call
 				_invalidateTimes.call(this);
 			} else {
-				this._sInvalidateTimes = jQuery.sap.delayedCall(0, this, _invalidateTimes);
+				this._sInvalidateTimes = setTimeout(_invalidateTimes.bind(this), 0);
 			}
 		}
 
@@ -943,6 +947,17 @@ sap.ui.define([
 
 	};
 
+	TimesRow.prototype._setAriaRole = function(sRole){
+		this._ariaRole = sRole;
+
+		return this;
+	};
+
+	TimesRow.prototype._getAriaRole = function(){
+
+		return this._ariaRole ? this._ariaRole : "gridcell";
+	};
+
 	function _initItemNavigation(){
 
 		var oDate = this._getDate();
@@ -1103,7 +1118,7 @@ sap.ui.define([
 		CalendarUtils._checkYearInValidRange(iYear);
 
 		var bFocusable = true; // if date not changed it is still focusable
-		if (!jQuery.sap.equal(this.getDate(), oDate)) {
+		if (!deepEqual(this.getDate(), oDate)) {
 			var oUTCDate = CalendarUtils._createUniversalUTCDate(oDate, undefined, true);
 			oUTCDate = this._getIntervalStart(oUTCDate);
 			bFocusable = this.checkDateFocusable(oDate);

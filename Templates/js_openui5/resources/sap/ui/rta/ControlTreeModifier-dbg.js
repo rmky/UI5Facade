@@ -4,7 +4,10 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/core/util/reflection/JsControlTreeModifier"], function (JsControlTreeModifier) {
+sap.ui.define([
+	"sap/ui/core/util/reflection/JsControlTreeModifier",
+	"sap/base/util/merge"
+], function(JsControlTreeModifier, merge) {
 
 	"use strict";
 
@@ -204,16 +207,25 @@ sap.ui.define(["sap/ui/core/util/reflection/JsControlTreeModifier"], function (J
 		 * Record destroy as undo operation
 		 * @override
 		 */
-		createControl: function (sClassName, oAppComponent, oView, oSelector) {
+		createControl: function (sClassName, oAppComponent, oView, oSelector, mSettings, bAsync) {
 			var oExistingControl = this.bySelector(oSelector, oAppComponent);
+			var fnCreateUndoOperation = function() {
+				if (!oExistingControl) {
+					var oCreatedControl = this.bySelector(oSelector, oAppComponent);
+					RtaControlTreeModifier._saveUndoOperation("destroy", [oCreatedControl]);
+				}
+			}.bind(this);
 
 			var vReturnValue = JsControlTreeModifier.createControl.apply(this, arguments);
 
-			if (!oExistingControl) {
-				var oCreatedControl = this.bySelector(oSelector, oAppComponent);
-				this._saveUndoOperation("destroy", [oCreatedControl]);
+			if (bAsync) {
+				return vReturnValue.then(function(oReturnedControl) {
+					fnCreateUndoOperation();
+					return oReturnedControl;
+				});
 			}
 
+			fnCreateUndoOperation();
 			return vReturnValue;
 		},
 
@@ -327,8 +339,7 @@ sap.ui.define(["sap/ui/core/util/reflection/JsControlTreeModifier"], function (J
 		}
 	};
 
-	return jQuery.sap.extend(
-		true /* deep extend */,
+	return merge(
 		{} /* target object, to avoid changing of original modifier */,
 		JsControlTreeModifier,
 		RtaControlTreeModifier

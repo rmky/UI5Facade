@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './HTMLViewSerializer', './XMLViewSerializer'],
-	function(jQuery, EventProvider, HTMLViewSerializer, XMLViewSerializer) {
+sap.ui.define(['sap/ui/base/EventProvider', './HTMLViewSerializer', './XMLViewSerializer', "sap/base/assert"],
+	function(EventProvider, HTMLViewSerializer, XMLViewSerializer, assert) {
 	"use strict";
 
 
@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './HTMLViewSeri
 	 * @class ViewSerializer class.
 	 * @extends sap.ui.base.EventProvider
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @alias sap.ui.core.util.serializer.ViewSerializer
 	 * @private
 	 * @sap-restricted sap.watt com.sap.webide
@@ -89,7 +89,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/EventProvider', './HTMLViewSeri
 	 */
 	ViewSerializer.prototype._serializeRecursive = function (oControl) {
 
-		jQuery.sap.assert(typeof oControl !== "undefined", "The control must not be undefined");
+		assert(typeof oControl !== "undefined", "The control must not be undefined");
 		// serialize view
 		if (oControl instanceof this._oWindow.sap.ui.core.mvc.View) {
 			var oViewSerializer = this._getViewSerializer(oControl, this._getViewType(oControl));

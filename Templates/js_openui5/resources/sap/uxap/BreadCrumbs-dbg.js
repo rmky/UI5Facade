@@ -16,9 +16,10 @@ sap.ui.define([
     "sap/ui/Device",
     "./library",
     "sap/ui/core/InvisibleText",
-    "./BreadCrumbsRenderer"
+    "./BreadCrumbsRenderer",
+    "sap/ui/thirdparty/jquery"
 ], function(
-    Link,
+	Link,
 	Select,
 	Control,
 	ResizeHandler,
@@ -28,7 +29,8 @@ sap.ui.define([
 	Device,
 	library,
 	InvisibleText,
-	BreadCrumbsRenderer
+	BreadCrumbsRenderer,
+	jQuery
 ) {
 	"use strict";
 
@@ -397,7 +399,7 @@ sap.ui.define([
 	BreadCrumbs.prototype._getAriaLabelledBy = function () {
 		if (!this._oAriaLabelledBy) {
 			BreadCrumbs.prototype._oAriaLabelledBy = new InvisibleText({
-				text: library.i18nModel.getResourceBundle().getText("BREADCRUMB_TRAIL_LABEL")
+				text: sap.ui.getCore().getLibraryResourceBundle("sap.uxap").getText("BREADCRUMB_TRAIL_LABEL")
 			}).toStatic();
 		}
 

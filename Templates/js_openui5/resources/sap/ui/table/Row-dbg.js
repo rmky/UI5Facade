@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.table.Row.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils'],
-	function(jQuery, Element, Context, TableUtils) {
+sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "sap/ui/thirdparty/jquery"],
+	function(Element, Context, TableUtils, jQuery) {
 	"use strict";
 
 
@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 	 * @class
 	 * The row.
 	 * @extends sap.ui.core.Element
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -82,14 +82,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 	 * @private
 	 */
 	Row.prototype.addStyleClass = function(sStyleClass) {
-		jQuery(this.getDomRefs(false, true)).addClass(sStyleClass);
+		this.getDomRefs(true).row.addClass(sStyleClass);
 	};
 
 	/**
 	 * @private
 	 */
 	Row.prototype.removeStyleClass = function(sStyleClass) {
-		jQuery(this.getDomRefs(false, true)).removeClass(sStyleClass);
+		this.getDomRefs(true).row.removeClass(sStyleClass);
 	};
 
 	/**
@@ -152,9 +152,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 	 * @private
 	 */
 	Row.prototype.getDomRefs = function (bJQuery, bCollection) {
-		var sKey = (bJQuery === true) ? "jQuery" : "dom",
-			fnAccess = (bJQuery === true) ? jQuery.sap.byId : jQuery.sap.domById,
-			mDomRefs = this._mDomRefs;
+		var byId = function(sId) {
+			return jQuery(document.getElementById(sId));
+		};
+		var domById = function(sId) {
+			return (sId ? window.document.getElementById(sId) : null);
+		};
+		var sKey = (bJQuery === true) ? "jQuery" : "dom", fnAccess = (bJQuery === true) ? byId : domById, mDomRefs = this._mDomRefs;
 
 		if (!mDomRefs[sKey]) {
 			mDomRefs[sKey] = {};
@@ -259,8 +263,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 		}
 
 		if ($DomRefs.row) {
-			// update visual selection state
-			$DomRefs.row.toggleClass("sapUiTableRowSel", bIsSelected);
+			this._setSelected(bIsSelected);
 			oTable._getAccExtension().updateAriaStateOfRow(this, $DomRefs, bIsSelected);
 		}
 	};
@@ -361,6 +364,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 		// aggregation. The column will take care to destroy all cell controls when the column is destroyed
 		this.removeAllCells();
 		return Element.prototype.destroy.apply(this, arguments);
+	};
+
+	Row.prototype.invalidate = function() {
+		return this;
 	};
 
 	/**
@@ -467,6 +474,50 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 		removeForbiddenAttributes(oGhostElement);
 
 		return oGhostElement;
+	};
+
+	/**
+	 * Sets the visual selected state of the row.
+	 *
+	 * @param {boolean} bSelected Whether the row should be selected.
+	 * @private
+	 */
+	Row.prototype._setSelected = function(bSelected) {
+		var oTable = this.getParent();
+
+		if (bSelected) {
+			this.addStyleClass("sapUiTableRowSel");
+		} else {
+			this.removeStyleClass("sapUiTableRowSel");
+		}
+
+		if (oTable) {
+			TableUtils.dynamicCall(oTable._getSyncExtension, function(oSyncExtension) {
+				oSyncExtension.syncRowSelection(oTable.indexOfRow(this), bSelected);
+			}, this);
+		}
+	};
+
+	/**
+	 * Sets the visual hovered state of the row.
+	 *
+	 * @param {boolean} bHovered Whether the row should be hovered.
+	 * @private
+	 */
+	Row.prototype._setHovered = function(bHovered) {
+		var oTable = this.getParent();
+
+		if (bHovered) {
+			this.addStyleClass("sapUiTableRowHvr");
+		} else {
+			this.removeStyleClass("sapUiTableRowHvr");
+		}
+
+		if (oTable) {
+			TableUtils.dynamicCall(oTable._getSyncExtension, function(oSyncExtension) {
+				oSyncExtension.syncRowHover(oTable.indexOfRow(this), bHovered);
+			}, this);
+		}
 	};
 
 	return Row;

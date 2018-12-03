@@ -11,11 +11,12 @@
 			"theme": "base"
 		},
 		{
-			"name": "InPageStyles.css",
+			"name": "Overlay.less",
+			"designtime": true,
 			"theme": "base"
 		},
 		{
-			"name": "Overlay.less",
+			"name": "Toolbar.adaptation.less",
 			"designtime": true,
 			"theme": "base"
 		},

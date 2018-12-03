@@ -5,8 +5,8 @@
  */
 
 // Provides inactive support for controls
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'],
-	function(jQuery, Element) {
+sap.ui.define(['sap/ui/core/Element', "sap/base/Log", "sap/base/assert"],
+	function(Element, Log, assert) {
 		"use strict";
 
 		/**
@@ -46,7 +46,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'],
 					Element.apply(this, arguments);
 					// stashed is always true for instances of StashedControl
 					mSettings.stashed = true;
-					jQuery.sap.extend(this, mSettings);
+					Object.assign(this, mSettings);
 					this._stash(mSettings.sParentId, mSettings.sParentAggregationName);
 					return this;
 				},
@@ -78,7 +78,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'],
 		 * @private
 		 */
 		StashedControl.prototype.setParent = function() {
-			jQuery.sap.log.error("Cannot set parent on a StashedControl", this.getId());
+			Log.error("Cannot set parent on a StashedControl", this.getId());
 		};
 
 		/**
@@ -88,9 +88,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'],
 		 * @private
 		 */
 		StashedControl.prototype.clone = function() {
-			var c = Element.prototype.clone.apply(this, arguments);
-			stashedControls[c.getId()] = c;
-			return c;
+			Log.error("Cannot clone a StashedControl", this.getId());
 		};
 
 		/**
@@ -116,8 +114,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'],
 		 * @private
 		 */
 		StashedControlSupport.mixInto = function(fnClass, bDefaultValue /*=true*/) {
-			jQuery.sap.assert(!fnClass.getMetadata().hasProperty("stashed"), "StashedControlSupport: fnClass already has property 'stashed', sideeffects possible", fnClass.getMetadata().getName());
-			jQuery.sap.assert(!fnClass.prototype.setStashed, "StashedControlSupport: fnClass already has method 'setStashed', sideeffects possible", fnClass.getMetadata().getName());
+			assert(!fnClass.getMetadata().hasProperty("stashed"), "StashedControlSupport: fnClass already has property 'stashed', sideeffects possible", fnClass.getMetadata().getName());
+			assert(!fnClass.prototype.setStashed, "StashedControlSupport: fnClass already has method 'setStashed', sideeffects possible", fnClass.getMetadata().getName());
 			mixInto(fnClass, bDefaultValue);
 		};
 
@@ -136,7 +134,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'],
 						return;
 					}
 				} else if (bStashed) {
-					jQuery.sap.log.warning("Cannot re-stash a control", this.getId());
+					Log.warning("Cannot re-stash a control", this.getId());
 				}
 			};
 
@@ -236,7 +234,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element'],
 		 * @private
 		 */
 		StashedControlSupport.createStashedControl = function(sId, mSettings) {
-			return new StashedControl(sId, mSettings);
+			if (!mSettings.sParentId) {
+				Log.error("Cannot create a StashedControl without a parent with stable ID.", "sap.ui.core.StashedControlSupport");
+			} else {
+				return new StashedControl(sId, mSettings);
+			}
 		};
 
 		return StashedControlSupport;

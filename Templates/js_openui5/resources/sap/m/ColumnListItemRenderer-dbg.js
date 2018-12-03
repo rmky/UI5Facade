@@ -5,15 +5,16 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/core/Renderer",
 	"sap/ui/core/library",
 	"sap/ui/Device",
 	"./library",
 	"./ListItemBaseRenderer",
-	"./Label"
+	"./Label",
+	"sap/base/Log",
+	"sap/base/security/encodeXML"
 ],
-	function(jQuery, Renderer, coreLibrary, Device, library, ListItemBaseRenderer, Label) {
+	function(Renderer, coreLibrary, Device, library, ListItemBaseRenderer, Label, Log, encodeXML) {
 	"use strict";
 
 	// shortcut for sap.m.PopinDisplay
@@ -151,7 +152,7 @@ sap.ui.define([
 			// check column properties
 			if (oColumn) {
 				cls = oColumn.getStyleClass(true);
-				cls && rm.addClass(jQuery.sap.encodeHTML(cls));
+				cls && rm.addClass(encodeXML(cls));
 
 				// aria for virtual keyboard mode
 				oHeader = oColumn.getHeader();
@@ -167,7 +168,7 @@ sap.ui.define([
 						sFuncName = aFuncWithParam[0];
 
 					if (typeof oCell[sFuncName] != "function") {
-						jQuery.sap.log.warning("mergeFunctionName property is defined on " + oColumn + " but this is not function of " + oCell);
+						Log.warning("mergeFunctionName property is defined on " + oColumn + " but this is not function of " + oCell);
 					} else if (oTable._bRendering || !oCell.bOutput) {
 						var lastColumnValue = oColumn.getLastValue(),
 							cellValue = oCell[sFuncName](sFuncParam);
@@ -199,7 +200,7 @@ sap.ui.define([
 
 			if (bRenderCell) {
 				this.applyAriaLabelledBy(oHeader, oCell);
-				rm.renderControl(oColumn.applyAlignTo(oCell));
+				rm.renderControl(oCell);
 			}
 
 			rm.write("</td>");
@@ -207,19 +208,18 @@ sap.ui.define([
 	};
 
 	ColumnListItemRenderer.applyAriaLabelledBy = function(oHeader, oCell) {
-		if (oCell) {
-			oCell.removeAssociation("ariaLabelledBy", oCell.data("ariaLabelledBy") || undefined, true);
+		if (oCell && oCell.removeAriaLabelledBy) {
+			oCell.removeAriaLabelledBy(oCell.data("ariaLabelledBy") || undefined);
 		}
 
 		/* add the header as an aria-labelled by association for the cells */
 		/* only set the header text to the aria-labelled association if the header is a textual control and is visible */
 		if (oHeader &&
 			oHeader.getText &&
-			oCell.getAriaLabelledBy &&
+			oCell.addAriaLabelledBy &&
 			oHeader.getVisible()) {
 
-			// suppress the invalidation during the rendering
-			oCell.addAssociation("ariaLabelledBy", oHeader, true);
+			oCell.addAriaLabelledBy(oHeader);
 			oCell.data("ariaLabelledBy", oHeader.getId());
 		}
 	};
@@ -289,7 +289,7 @@ sap.ui.define([
 			/* row start */
 			rm.write("<div");
 			rm.addClass("sapMListTblSubCntRow");
-			sStyleClass && rm.addClass(jQuery.sap.encodeHTML(sStyleClass));
+			sStyleClass && rm.addClass(encodeXML(sStyleClass));
 			rm.writeClasses();
 			rm.write(">");
 
@@ -310,7 +310,6 @@ sap.ui.define([
 
 				oColumn.addDependent(oHeader);
 				oLI._addClonedHeader(oHeader);
-				oColumn.applyAlignTo(oHeader, "Begin");
 				rm.renderControl(oHeader);
 				rm.write("</div>");
 
@@ -325,7 +324,6 @@ sap.ui.define([
 				rm.addClass("sapMListTblSubCntVal" + sPopinDisplay);
 				rm.writeClasses();
 				rm.write(">");
-				oColumn.applyAlignTo(oCell, "Begin");
 				this.applyAriaLabelledBy(oHeader, oCell);
 				rm.renderControl(oCell);
 				rm.write("</div>");

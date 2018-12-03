@@ -6,18 +6,20 @@
 
 // Provides object sap.ui.dt.ElementUtil.
 sap.ui.define([
-	'jquery.sap.global',
-	'sap/ui/base/Object',
-	'sap/ui/base/ManagedObject',
-	'sap/ui/core/Element',
-	'sap/ui/dt/Util'
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/base/Object",
+	"sap/ui/base/ManagedObject",
+	"sap/ui/dt/Util",
+	"sap/base/Log",
+	"sap/ui/core/Component"
 ],
 function(
 	jQuery,
 	BaseObject,
 	ManagedObject,
-	Element,
-	Util
+	Util,
+	Log,
+	Component
 ) {
 	"use strict";
 
@@ -27,7 +29,7 @@ function(
 	 * @class Utility functionality to work with elements, e.g. iterate through aggregations, find parents, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @private
 	 * @static
@@ -60,7 +62,7 @@ function(
 	ElementUtil.getElementInstance = function(vElement) {
 		if (typeof vElement === "string") {
 			var oElement = sap.ui.getCore().byId(vElement);
-			return oElement || sap.ui.getCore().getComponent(vElement);
+			return oElement || Component.get(vElement);
 		} else {
 			return vElement;
 		}
@@ -71,14 +73,19 @@ function(
 	 */
 	ElementUtil.hasAncestor = function(oElement, oAncestor) {
 		oAncestor = this.fixComponentContainerElement(oAncestor);
+		var oFixedParent;
 
-		var oParent = this.fixComponentParent(oElement);
-		while (oParent && oParent !== oAncestor) {
-			oParent = oParent.getParent();
-			oParent = this.fixComponentParent(oParent);
+		while (oElement && oElement !== oAncestor) {
+			oFixedParent = this.fixComponentParent(oElement);
+			// fixComponentParent already returns the parent
+			if (oElement === oFixedParent) {
+				oElement = oElement.getParent();
+			} else {
+				oElement = oFixedParent;
+			}
 		}
 
-		return !!oParent;
+		return !!oElement;
 	};
 
 	/**
@@ -345,7 +352,7 @@ function(
 	ElementUtil.isElementValid = function (oElement, sElementType, sAggregationName) {
 		var bIsManagedObject = oElement instanceof ManagedObject && !oElement.bIsDestroyed;
 		if (!bIsManagedObject && sElementType && sAggregationName) {
-			jQuery.sap.log.error([
+			Log.error([
 				"sap.ui.dt.DesignTime: child element in aggregation " + sAggregationName + " of '" + sElementType,
 				"' should be a descendant of 'sap.ui.base.ManagedObject' and it is a '" + typeof oElement + "'. ",
 				"Please ignore the aggregation '" + sAggregationName + "' in the .designtime configuration"
@@ -395,6 +402,35 @@ function(
 			};
 			var vCalculatedLabel = fnCalculateLabel(oElement);
 			return typeof vCalculatedLabel !== "string" ? oElement.getId() : vCalculatedLabel;
+		}
+	};
+
+	/**
+	 * Returns for a given element the corresponding element id of the element inside of a binding template
+	 * This function uses the information gathered in the output of OverlayUtil.getAggregationInformation
+	 * The check is done recursively
+	 * @param  {sap.ui.dt.OverlayUtil.AggregationBindingStack}  mBoundControl {@link sap.ui.dt.OverlayUtil.AggregationBindingStack}
+	 * @return {string}                                         Returns the element id of the corresponding element inside of a template
+	 */
+	ElementUtil.extractTemplateId = function(mBoundControl) {
+		if (mBoundControl.templateId) {
+			if (mBoundControl.stack.length > 1) {
+				var oResultControl;
+				var oAggregatedControl = sap.ui.getCore().byId(mBoundControl.templateId);
+				var sAggregation;
+				var iIndex;
+				for (var i = mBoundControl.stack.length - 2; i >= 0; i--) {
+					sAggregation = mBoundControl.stack[i].aggregation;
+					iIndex = mBoundControl.stack[i].index;
+					oResultControl = ElementUtil.getAggregation(oAggregatedControl, sAggregation)[iIndex];
+					oAggregatedControl = oResultControl;
+				}
+				return oAggregatedControl.getId();
+			} else if (mBoundControl.stack.length === 1) {
+				return mBoundControl.templateId;
+			}
+		} else {
+			return undefined;
 		}
 	};
 

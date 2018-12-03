@@ -24,7 +24,7 @@ sap.ui.define([
 	 * @class
 	 * Dialog implementation based on the Overlay. If used in a Shell it leaves the Tool-Palette, Pane-Bar and Header-Items accessible.
 	 * @extends sap.ui.ux3.Overlay
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -99,7 +99,7 @@ sap.ui.define([
 	 */
 	OverlayDialog.prototype.setOpenButtonVisible = function(bVisible) {
 		jQuery.sap.log.warning("OverlayDialog does not support an openButton.");
-		return undefined;
+		return this;
 	};
 
 	/**

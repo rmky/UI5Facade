@@ -6,18 +6,20 @@
 
 // Provides class sap.ui.dt.AggregationOverlay.
 sap.ui.define([
-	'jquery.sap.global',
+	"sap/ui/thirdparty/jquery",
 	'sap/ui/dt/Overlay',
 	'sap/ui/dt/OverlayRegistry',
 	'sap/ui/dt/ElementUtil',
-	'sap/ui/dt/Util'
+	'sap/ui/dt/Util',
+	'sap/base/util/merge'
 ],
 function(
 	jQuery,
 	Overlay,
 	OverlayRegistry,
 	ElementUtil,
-	Util
+	Util,
+	merge
 ) {
 	"use strict";
 
@@ -33,7 +35,7 @@ function(
 	 * @extends sap.ui.dt.Overlay
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -79,8 +81,7 @@ function(
 	 * @override
 	 */
 	AggregationOverlay.prototype._getAttributes = function () {
-		return jQuery.extend(
-			true,
+		return merge(
 			{},
 			Overlay.prototype._getAttributes.apply(this, arguments),
 			{
@@ -143,7 +144,8 @@ function(
 
 			if (this.isRendered()) {
 				var iPositionInDom = this._getChildIndex(oChild);
-				var $Child = oChild.isRendered() ? oChild.$() : oChild.render(true);
+				var bChildRendered = oChild.isRendered();
+				var $Child = bChildRendered ? oChild.$() : oChild.render(true);
 				var $Children = jQuery(this.getChildrenDomRef());
 				var iCurrentPosition = $Children.find('>').index($Child);
 				var iInsertIndex;
@@ -158,9 +160,11 @@ function(
 					}
 				}
 
-				oChild.fireAfterRendering({
-					domRef: $Child.get(0)
-				});
+				if (!bChildRendered) {
+					oChild.fireAfterRendering({
+						domRef: $Child.get(0)
+					});
+				}
 			}
 
 			this.fireChildAdded();
@@ -196,6 +200,18 @@ function(
 			return this.getParent().getScrollContainerById(this.getScrollContainerId());
 		} else {
 			return Overlay.prototype._getRenderingParent.apply(this, arguments);
+		}
+	};
+
+	/**
+	 * @override
+	 */
+	AggregationOverlay.prototype._setPosition = function ($Target, oGeometry, $Parent, bForceScrollbarSync) {
+		// Apply Overlay position first, then extra logic based on this new position
+		Overlay.prototype._setPosition.apply(this, arguments);
+
+		if (oGeometry.domRef && !Util.isInteger(this.getScrollContainerId())) {
+			this._handleOverflowScroll(oGeometry, this.$(), this.getParent(), bForceScrollbarSync);
 		}
 	};
 

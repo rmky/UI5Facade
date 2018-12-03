@@ -18,7 +18,7 @@
 			 * @constructor
 			 * @alias sap.uxap.changeHandler.RenameObjectPageSection
 			 * @author SAP SE
-			 * @version 1.56.6
+			 * @version 1.60.1
 			 * @experimental Since 1.50
 			 */
 

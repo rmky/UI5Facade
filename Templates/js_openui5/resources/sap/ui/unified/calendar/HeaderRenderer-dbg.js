@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global'],
-	function(jQuery) {
+sap.ui.define(["sap/base/security/encodeXML"],
+	function(encodeXML) {
 	"use strict";
 
 
@@ -119,7 +119,7 @@ sap.ui.define(['jquery.sap.global'],
 			oRm.writeAttribute('tabindex', "-1");
 			oRm.writeClasses();
 			if (this.getAriaLabelButton(oHead, i)) {
-				mAccProps["label"] = jQuery.sap.encodeHTML(this.getAriaLabelButton(oHead, i));
+				mAccProps["label"] = encodeXML(this.getAriaLabelButton(oHead, i));
 			}
 			oRm.writeAccessibilityState(null, mAccProps);
 			mAccProps = {};

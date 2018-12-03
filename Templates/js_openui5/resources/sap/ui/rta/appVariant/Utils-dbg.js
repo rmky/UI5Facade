@@ -4,16 +4,16 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	"jquery.sap.global",
 	"sap/ui/fl/LrepConnector",
-	"sap/ui/rta/appVariant/AppVariantUtils"],
-	function(jQuery, LrepConnector, AppVariantUtils) {
+	"sap/ui/rta/appVariant/AppVariantUtils",
+	"sap/base/i18n/ResourceBundle"],
+	function(LrepConnector, AppVariantUtils, ResourceBundle) {
 		"use strict";
 
 		var Utils = {};
 
-		var sModulePath = jQuery.sap.getModulePath( "sap.ui.rta.appVariant.manageApps.webapp" );
-		var oI18n = jQuery.sap.resources({
+		var sModulePath = sap.ui.require.toUrl("sap/ui/rta/appVariant/manageApps/") + "webapp";
+		var oI18n = ResourceBundle.create({
 			url : sModulePath + "/i18n/i18n.properties"
 		});
 
@@ -77,12 +77,19 @@ sap.ui.define([
 				}
 			};
 
+			// Adding the tooltip to every icon which is shown on the App Variant Overview Dialog
+			var sIconUrl = oAppVariantInfo.iconUrl;
+			if (sIconUrl && sap.ui.core.IconPool.isIconURI(sIconUrl)) {
+				oAppVariantInfo.iconText = sIconUrl.split('//')[1];
+			}
+
 			oAppVariantAttributes = {
 				appId : oAppVariantInfo.appId,
 				title : oAppVariantInfo.title || '',
 				subTitle : oAppVariantInfo.subTitle || '',
 				description : oAppVariantInfo.description || '',
 				icon : oAppVariantInfo.iconUrl || '',
+				iconText : oAppVariantInfo.iconText,
 				isOriginal : oAppVariantInfo.isOriginal,
 				typeOfApp : fnCheckAppType(),
 				descriptorUrl : oAppVariantInfo.descriptorUrl,

@@ -5,13 +5,13 @@
  */
 
 sap.ui.define([
-	"jquery.sap.global",
+	"sap/ui/thirdparty/jquery",
 	"sap/ui/core/Component",
 	"sap/ui/fl/Utils",
 	"sap/ui/core/routing/History",
 	"sap/ui/core/routing/HashChanger",
 	"sap/base/Log",
-	"sap/base/util/equal"
+	"sap/base/util/deepEqual"
 ], function(
 	jQuery,
 	Component,
@@ -19,7 +19,7 @@ sap.ui.define([
 	History,
 	HashChanger,
 	Log,
-	equal
+	deepEqual
 ) {
 	"use strict";
 
@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.fl.variants.util.VariantUtil
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @experimental Since 1.56.0
 	 */
 	var sVariantParameterName = "sap-ui-fl-control-variant-id";
@@ -145,7 +145,9 @@ sap.ui.define([
 				if (sDirection === "NewEntry" || sDirection === "Unknown") {
 					// get URL hash parameters
 					var mHashParameters = flUtils.getParsedURLHash() && flUtils.getParsedURLHash().params;
-					aVariantParamValues = ( mHashParameters && mHashParameters[sVariantParameterName] ) || [];
+					aVariantParamValues = (
+						mHashParameters && mHashParameters[sVariantParameterName]
+					) || [];
 
 					// check if variant management control for previously existing register entry exists
 					// if yes, reset to default variant
@@ -158,7 +160,9 @@ sap.ui.define([
 
 					// do not update URL parameters if new entry/unknown
 					mPropertyBag = {
-						parameters: aVariantParamValues
+						parameters: aVariantParamValues.map( function(sParameterValue) {
+							return decodeURIComponent(sParameterValue);
+						} )
 					};
 				} else {
 					aVariantParamValues = this._oHashRegister.hashParams[this._oHashRegister.currentIndex];
@@ -195,14 +199,19 @@ sap.ui.define([
 			var oOldParsed = oURLParsing.parseShellHash(sOldHash);
 			var oNewParsed = oURLParsing.parseShellHash(sNewHash);
 
-			// params should exists on both parsed urls
-			// check 1 for navigation - suppress should only work when variant parameters have changed
+			// checkpoint 1:
+			// - suppress only when parameters exist
+			// - variant parameter should exist on either of the parsed hashes
+			// - undefined parameters will be equal and return false
 			var bSuppressDefaultNavigation = oOldParsed
 				&& oNewParsed
-				&& !equal(oOldParsed.params[sVariantParameterName], oNewParsed.params[sVariantParameterName]);
+				&& (oOldParsed.params.hasOwnProperty(sVariantParameterName) || oNewParsed.params.hasOwnProperty(sVariantParameterName))
+				&& !deepEqual(oOldParsed.params[sVariantParameterName], oNewParsed.params[sVariantParameterName]);
 
+			// checkpoint 2:
+			// - other keys except 'appSpecificRoute' and 'params' should match
 			if (bSuppressDefaultNavigation) {
-				// Verify if others parsed url properties are same
+				// Verify if other parsed url properties are the same
 				for (var sKey in oOldParsed) {
 					if (
 						sKey !== "params"
@@ -215,23 +224,19 @@ sap.ui.define([
 				}
 			}
 
+			// checkpoint 3:
+			// - variant parameter should be the only parameter existing
 			if (bSuppressDefaultNavigation) {
-				bSuppressDefaultNavigation = false;
-				[oOldParsed, oNewParsed].forEach(
-					function (oParsedHash) {
-						// Parameter should exists on either of the parsed hashes
-						// If parameter exists but it's not the only one, it's invalid
-						// If parameter doesn't exist but other parameters exist, it's invalid
-						if (oParsedHash.params.hasOwnProperty(sVariantParameterName)) {
-							bSuppressDefaultNavigation = true;
-							if (Object.keys(oParsedHash.params).length !== 1) {
-								bSuppressDefaultNavigation = false;
+				bSuppressDefaultNavigation =
+					// true returned from some() if other parameters exist, which is then negated
+					!( [oOldParsed, oNewParsed].some(function (oParsedHash) {
+							if (oParsedHash.params.hasOwnProperty(sVariantParameterName)) {
+								// If parameter exists but it's not the only one, it's invalid
+								return Object.keys(oParsedHash.params).length > 1;
 							}
-						} else if (Object.keys(oParsedHash.params).length !== 0) {
-							bSuppressDefaultNavigation = false;
+							return Object.keys(oParsedHash.params).length > 0;
 						}
-					}
-				);
+					) );
 			}
 
 			if (bSuppressDefaultNavigation) {
@@ -247,8 +252,12 @@ sap.ui.define([
 		},
 
 		getCurrentHashParamsFromRegister: function () {
-			if (jQuery.isNumeric(this._oHashRegister.currentIndex)) {
-				return this._oHashRegister.hashParams[this._oHashRegister.currentIndex];
+			if (
+				jQuery.isNumeric(this._oHashRegister.currentIndex)
+				&& this._oHashRegister.currentIndex >= 0
+			) {
+				// return clone
+				return Array.prototype.slice.call(this._oHashRegister.hashParams[this._oHashRegister.currentIndex]);
 			}
 		}
 

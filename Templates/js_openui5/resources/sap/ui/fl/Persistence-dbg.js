@@ -5,8 +5,12 @@
  */
 
 sap.ui.define([
-	"sap/ui/fl/Change", "sap/ui/fl/DefaultVariant",  "sap/ui/fl/StandardVariant", "sap/ui/fl/Utils", "jquery.sap.global", "sap/ui/fl/ChangePersistenceFactory"
-], function(Change, defaultVariant, standardVariant, Utils, $, ChangePersistenceFactory) {
+	"sap/ui/fl/Change",
+	"sap/ui/fl/DefaultVariant",
+	"sap/ui/fl/StandardVariant",
+	"sap/ui/fl/Utils",
+	"sap/ui/fl/ChangePersistenceFactory"
+], function(Change, defaultVariant, standardVariant, Utils, ChangePersistenceFactory) {
 
 	"use strict";
 	/**
@@ -17,7 +21,7 @@ sap.ui.define([
 	 * @param {string} [sStableIdPropertyName='id'] the stable id
 	 * @alias sap.ui.fl.Persistence
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @experimental Since 1.25.0
 	 */
 	var Persistence = function(oControl, sStableIdPropertyName) {
@@ -225,7 +229,11 @@ sap.ui.define([
 		mParameters = {
 			defaultVariantId: sDefaultVariantId,
 			reference: this._sComponentName,
-			selector: selector
+			selector: selector,
+			validAppVersions: {
+				creation: this._oChangePersistence._mComponent.appVersion,
+				from: this._oChangePersistence._mComponent.appVersion
+			}
 		};
 
 		oChange = defaultVariant.updateDefaultVariantId(this._oChanges, sDefaultVariantId);

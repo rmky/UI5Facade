@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.core.Message.
-sap.ui.define(['jquery.sap.global', './Element', './library'],
-	function(jQuery, Element, library) {
+sap.ui.define(['./Element', './library', "sap/base/Log"],
+	function(Element, library, Log) {
 	"use strict";
 
 	// shortcut
@@ -26,7 +26,7 @@ sap.ui.define(['jquery.sap.global', './Element', './library'],
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @public
 	 * @alias sap.ui.core.Message
@@ -81,7 +81,7 @@ sap.ui.define(['jquery.sap.global', './Element', './library'],
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	Message.prototype.getDefaultIcon = function(sSize) {
-		var sModulePath = jQuery.sap.getModulePath("sap.ui.core.themes." + sap.ui.getCore().getConfiguration().getTheme());
+		var sModulePath = sap.ui.require.toUrl("sap/ui/core/themes/" + sap.ui.getCore().getConfiguration().getTheme());
 
 		var sImagesPath = sModulePath + "/img/message/";
 		if (sSize && sSize == "32x32") {
@@ -186,7 +186,7 @@ sap.ui.define(['jquery.sap.global', './Element', './library'],
 			return -1;
 
 		default:
-			jQuery.sap.log.error("Comparison error", this);
+			Log.error("Comparison error", this);
 			return 0;
 		}
 	};

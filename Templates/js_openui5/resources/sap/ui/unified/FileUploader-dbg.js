@@ -6,22 +6,31 @@
 
 // Provides control sap.ui.unified.FileUploader.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/core/Control',
 	'./library',
 	'sap/ui/core/LabelEnablement',
 	'sap/ui/core/library',
 	'sap/ui/Device',
-	"./FileUploaderRenderer",
-	'jquery.sap.keycodes'
+	'./FileUploaderRenderer',
+	'sap/ui/dom/containsOrEquals',
+	'sap/ui/events/KeyCodes',
+	'sap/base/Log',
+	'sap/base/security/encodeXML',
+	"sap/ui/thirdparty/jquery",
+	// jQuery Plugin "addAriaDescribedBy"
+	'sap/ui/dom/jquery/Aria'
 ], function(
-	jQuery,
 	Control,
 	library,
 	LabelEnablement,
 	coreLibrary,
 	Device,
-	FileUploaderRenderer
+	FileUploaderRenderer,
+	containsOrEquals,
+	KeyCodes,
+	Log,
+	encodeXML,
+	jQuery
 ) {
 	"use strict";
 
@@ -44,13 +53,13 @@ sap.ui.define([
 	 * a file has been selected), file uploads with explicit calls, adjustable control sizes,
 	 * text display after uploads, or tooltips containing complete file paths.
 	 *
-	 * @see {@link https://experience.sap.com/fiori-design-web/upload-collection/ Upload Collection}
+	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/upload-collection/ Upload Collection}
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent, sap.ui.unified.IProcessableBlobs
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -450,9 +459,15 @@ sap.ui.define([
 	 * @private
 	 */
 	FileUploader.prototype.init = function(){
-
+		var that = this;
 		// load the respective UI-Elements from the FileUploaderHelper
-		this.oFilePath = library.FileUploaderHelper.createTextField(this.getId() + "-fu_input");
+		this.oFilePath = library.FileUploaderHelper.createTextField(this.getId() + "-fu_input").addEventDelegate({
+			onAfterRendering: function () {
+				if (that.getWidth()) {
+					that._resizeDomElements();
+				}
+			}
+		});
 		this.oBrowse = library.FileUploaderHelper.createButton();
 		this.oFilePath.setParent(this);
 		this.oBrowse.setParent(this);
@@ -663,7 +678,7 @@ sap.ui.define([
 			this.oBrowse.$().attr("aria-required", "true");
 		}
 
-		jQuery.sap.delayedCall(0, this, this._recalculateWidth);
+		setTimeout(this._recalculateWidth.bind(this), 0);
 
 		this.oFilePath.$().find('input').removeAttr("role").attr("aria-live", "polite");
 
@@ -689,7 +704,7 @@ sap.ui.define([
 
 	FileUploader.prototype.onsapfocusleave = function(oEvent) {
 
-		if (!oEvent.relatedControlId || !jQuery.sap.containsOrEquals(this.getDomRef(), sap.ui.getCore().byId(oEvent.relatedControlId).getFocusDomRef())) {
+		if (!oEvent.relatedControlId || !containsOrEquals(this.getDomRef(), sap.ui.getCore().byId(oEvent.relatedControlId).getFocusDomRef())) {
 			this.closeValueStateMessage();
 		}
 
@@ -744,7 +759,7 @@ sap.ui.define([
 				var _newWidth = $fp.outerWidth() - _buttonWidth;
 				if (_newWidth < 0) {
 					this.oFilePath.getDomRef().style.width = "0px";
-					if (!Device.browser.internet_explorer) {
+					if (this.oFileUpload && !Device.browser.internet_explorer) {
 						this.oFileUpload.style.width = $b.outerWidth(true);
 					}
 				} else {
@@ -781,7 +796,7 @@ sap.ui.define([
 		if (this.oFilePath.setValueState) {
 			this.oFilePath.setValueState(sValueState);
 		} else {
-			jQuery.sap.log.warning("Setting the valueState property with the combination of libraries used is not supported.", this);
+			Log.warning("Setting the valueState property with the combination of libraries used is not supported.", this);
 		}
 
 		if (this.oBrowse.getDomRef()) {
@@ -792,7 +807,7 @@ sap.ui.define([
 			}
 		}
 
-		if (jQuery.sap.containsOrEquals(this.getDomRef(), document.activeElement)) {
+		if (containsOrEquals(this.getDomRef(), document.activeElement)) {
 			switch (sValueState) {
 				case ValueState.Error:
 				case ValueState.Warning:
@@ -812,7 +827,7 @@ sap.ui.define([
 		if (this.oFilePath.setValueStateText) {
 			this.oFilePath.setValueStateText(sValueStateText);
 		} else {
-			jQuery.sap.log.warning("Setting the valueStateText property with the combination of libraries used is not supported.", this);
+			Log.warning("Setting the valueStateText property with the combination of libraries used is not supported.", this);
 		}
 
 		return this.setProperty("valueStateText", sValueStateText, true);
@@ -866,7 +881,7 @@ sap.ui.define([
 			if (this.oFilePath) {
 				this.oFilePath.setValue(sValue);
 				//refocus the Button, except bSupressFocus is set
-				if (this.oBrowse.getDomRef() && !bSupressFocus && jQuery.sap.containsOrEquals(this.getDomRef(), document.activeElement)) {
+				if (this.oBrowse.getDomRef() && !bSupressFocus && containsOrEquals(this.getDomRef(), document.activeElement)) {
 					this.oBrowse.focus();
 				}
 			}
@@ -1091,7 +1106,7 @@ sap.ui.define([
 				this._resetValueAfterUploadStart();
 			}
 		} catch (oException) {
-			jQuery.sap.log.error("File upload failed:\n" + oException.message);
+			Log.error("File upload failed:\n" + oException.message);
 		}
 	};
 
@@ -1129,7 +1144,7 @@ sap.ui.define([
 							});
 							// Remove aborted entry from internal array.
 							this._aXhr.splice(i, 1);
-							jQuery.sap.log.info("File upload aborted.");
+							Log.info("File upload aborted.");
 							break;
 						}
 					}
@@ -1141,7 +1156,7 @@ sap.ui.define([
 					});
 					// Remove aborted entry from internal array.
 					this._aXhr.splice(i, 1);
-					jQuery.sap.log.info("File upload aborted.");
+					Log.info("File upload aborted.");
 				}
 			}
 		} else if (this._uploadXHR && this._uploadXHR.abort) {
@@ -1151,7 +1166,7 @@ sap.ui.define([
 				"fileName": null,
 				"requestHeaders": null
 			});
-			jQuery.sap.log.info("File upload aborted.");
+			Log.info("File upload aborted.");
 		}
 	};
 
@@ -1164,7 +1179,7 @@ sap.ui.define([
 			this.setValue("", true);
 		}
 		//refocus the Button, except bSupressFocus is set
-		if (this.oBrowse.getDomRef() && jQuery.sap.containsOrEquals(this.getDomRef(), document.activeElement)) {
+		if (this.oBrowse.getDomRef() && containsOrEquals(this.getDomRef(), document.activeElement)) {
 			this.oBrowse.focus();
 		}
 	};
@@ -1180,7 +1195,7 @@ sap.ui.define([
 			this.setValue("", true);
 		}
 		var iKeyCode = oEvent.keyCode,
-			eKC = jQuery.sap.KeyCodes;
+			eKC = KeyCodes;
 		if (iKeyCode == eKC.DELETE || iKeyCode == eKC.BACKSPACE) {
 			if (this.oFileUpload) {
 				this.setValue("", true);
@@ -1199,8 +1214,8 @@ sap.ui.define([
 					iKeyCode != eKC.F6 &&
 					iKeyCode != eKC.PAGE_UP &&
 					iKeyCode != eKC.PAGE_DOWN &&
-					iKeyCode != eKC.END &&
 					iKeyCode != eKC.ESCAPE &&
+					iKeyCode != eKC.END &&
 					iKeyCode != eKC.HOME &&
 					iKeyCode != eKC.ARROW_LEFT &&
 					iKeyCode != eKC.ARROW_UP &&
@@ -1221,7 +1236,7 @@ sap.ui.define([
 	FileUploader.prototype._isFilenameTooLong = function (sFilename) {
 		var iMaxFilenameLength = this.getMaximumFilenameLength();
 		if (iMaxFilenameLength !== 0 && sFilename.length > iMaxFilenameLength) {
-			jQuery.sap.log.info("The filename of " + sFilename + " (" + sFilename.length + " characters)  is longer than the maximum of " + iMaxFilenameLength + " characters.");
+			Log.info("The filename of " + sFilename + " (" + sFilename.length + " characters)  is longer than the maximum of " + iMaxFilenameLength + " characters.");
 			return true;
 		}
 
@@ -1260,7 +1275,7 @@ sap.ui.define([
 					}
 				}
 				if (bWrongType) {
-					jQuery.sap.log.info("File: " + sName + " is of type " + sFileEnding + ". Allowed types are: "  + aFileTypes + ".");
+					Log.info("File: " + sName + " is of type " + sFileEnding + ". Allowed types are: "  + aFileTypes + ".");
 					this.fireTypeMissmatch({
 						fileName:sName,
 						fileType:sFileEnding
@@ -1436,7 +1451,7 @@ sap.ui.define([
 		this.getProcessedBlobsFromArray(aFiles).then(function(aBlobs){
 			this._sendFilesWithXHR(aBlobs);
 		}.bind(this)).catch(function(oResult){
-			jQuery.sap.log.error("File upload failed: " + oResult && oResult.message ? oResult.message : "no details available");
+			Log.error("File upload failed: " + oResult && oResult.message ? oResult.message : "no details available");
 		});
 		return this;
 	};
@@ -1462,7 +1477,7 @@ sap.ui.define([
 			}
 			var fSize = ((aFiles[i].size / 1024) / 1024);
 			if (fMaxSize && (fSize > fMaxSize)) {
-				jQuery.sap.log.info("File: " + sName + " is of size " + fSize + " MB which exceeds the file size limit of " + fMaxSize + " MB.");
+				Log.info("File: " + sName + " is of size " + fSize + " MB which exceeds the file size limit of " + fMaxSize + " MB.");
 				this.fireFileSizeExceed({
 					fileName:sName,
 					fileSize:fSize
@@ -1487,7 +1502,7 @@ sap.ui.define([
 					}
 				}
 				if (bWrongMime) {
-					jQuery.sap.log.info("File: " + sName + " is of type " + sType + ". Allowed types are: "  + aMimeTypes + ".");
+					Log.info("File: " + sName + " is of type " + sType + ". Allowed types are: "  + aMimeTypes + ".");
 					this.fireTypeMissmatch({
 						fileName:sName,
 						mimeType:sType
@@ -1507,7 +1522,7 @@ sap.ui.define([
 					}
 				}
 				if (bWrongType) {
-					jQuery.sap.log.info("File: " + sName + " is of type " + sFileEnding + ". Allowed types are: "  + aFileTypes + ".");
+					Log.info("File: " + sName + " is of type " + sFileEnding + ". Allowed types are: "  + aFileTypes + ".");
 					this.fireTypeMissmatch({
 						fileName:sName,
 						fileType:sFileEnding
@@ -1617,12 +1632,12 @@ sap.ui.define([
 			}
 			aFileUpload.push('size="1" ');
 			if (this.getTooltip_AsString() ) {
-				aFileUpload.push('title="' + jQuery.sap.encodeHTML(this.getTooltip_AsString()) + '" ');
+				aFileUpload.push('title="' + encodeXML(this.getTooltip_AsString()) + '" ');
 			//} else if (this.getTooltip() ) {
 				// object tooltip, do nothing - tooltip will be displayed
 			} else if (this.getValue() !== "") {
 				// only if there is no tooltip, then set value as fallback
-				aFileUpload.push('title="' + jQuery.sap.encodeHTML(this.getValue()) + '" ');
+				aFileUpload.push('title="' + encodeXML(this.getValue()) + '" ');
 			}
 			if (!this.getEnabled()) {
 				aFileUpload.push('disabled="disabled" ');
@@ -1665,7 +1680,7 @@ sap.ui.define([
 			this._bUploading = false; // flag for uploading
 			jQuery(oIFrameRef).load(function(oEvent) {
 				if (that._bUploading) {
-					jQuery.sap.log.info("File uploaded to " + that.getUploadUrl());
+					Log.info("File uploaded to " + that.getUploadUrl());
 					var sResponse;
 					try {
 						sResponse = that.oIFrameRef.contentWindow.document.body.innerHTML;
@@ -1703,7 +1718,7 @@ sap.ui.define([
 	};
 
 	FileUploader.prototype._resetValueAfterUploadStart = function () {
-		jQuery.sap.log.info("File uploading to " + this.getUploadUrl());
+		Log.info("File uploading to " + this.getUploadUrl());
 		if (this.getSameFilenameAllowed() && this.getUploadOnChange() && this.getUseMultipart()) {
 			this.setValue("", true);
 		}

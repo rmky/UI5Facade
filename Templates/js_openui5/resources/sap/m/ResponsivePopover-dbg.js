@@ -6,7 +6,6 @@
 
 // Provides control sap.m.ResponsivePopover.
 sap.ui.define([
-	'jquery.sap.global',
 	'./Dialog',
 	'./Popover',
 	'./library',
@@ -14,10 +13,10 @@ sap.ui.define([
 	'sap/ui/core/IconPool',
 	'sap/ui/base/ManagedObject',
 	'sap/ui/Device',
-	'./ResponsivePopoverRenderer'
+	'./ResponsivePopoverRenderer',
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
-		jQuery,
 		Dialog,
 		Popover,
 		library,
@@ -25,7 +24,8 @@ sap.ui.define([
 		IconPool,
 		ManagedObject,
 		Device,
-		ResponsivePopoverRenderer
+		ResponsivePopoverRenderer,
+		jQuery
 	) {
 	"use strict";
 
@@ -58,7 +58,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -568,7 +568,7 @@ sap.ui.define([
 	ResponsivePopover.prototype.setProperty = function(sPropertyName, oValue, bSuppressInvalidate){
 		this._oldSetProperty(sPropertyName, oValue, true);
 		var sSetterName = "set" + this._firstLetterUpperCase(sPropertyName);
-		if (jQuery.inArray(sPropertyName, this._aNotSupportedProperties) === -1 &&
+		if (this._aNotSupportedProperties.indexOf(sPropertyName) === -1 &&
 			sSetterName in this._oControl) {
 			this._oControl[sSetterName](oValue);
 		}
@@ -735,7 +735,15 @@ sap.ui.define([
 		"getDomRef", "setBusy", "getBusy", "setBusyIndicatorDelay", "getBusyIndicatorDelay", "addEventDelegate"].forEach(function(sName){
 			ResponsivePopover.prototype[sName] = function() {
 				if (this._oControl && this._oControl[sName]) {
-					var res = this._oControl[sName].apply(this._oControl ,arguments);
+
+					// standard invalidate logic bubbles invalidates up the parent chain when the whole control tree is not in a UI area
+					// which in this case - the parent of the popover is the ResponsivePopover which leads to infinite loop
+					// to prevent that, use standard invalidation logic when the origin is the child control
+					if (sName === "invalidate" && arguments[0] === this._oControl) {
+						return Control.prototype.invalidate.apply(this, arguments);
+					}
+
+					var res = this._oControl[sName].apply(this._oControl, arguments);
 					return res === this._oControl ? this : res;
 				}
 			};

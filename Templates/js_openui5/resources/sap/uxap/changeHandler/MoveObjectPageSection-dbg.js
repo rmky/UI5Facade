@@ -4,11 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 	*/
 
-sap.ui.define([
-	"sap/ui/fl/changeHandler/MoveControls"
-], function (
-	MoveControls
-) {
+sap.ui.define(["sap/ui/fl/changeHandler/MoveControls", "sap/ui/thirdparty/jquery"], function(MoveControls, jQuery) {
 	"use strict";
 
 	/**
@@ -17,7 +13,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.uxap.changeHandler.MoveObjectPageSection
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @experimental Since 1.54
 	 */
 

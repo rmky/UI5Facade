@@ -5,7 +5,6 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/Popup',
@@ -18,10 +17,10 @@ sap.ui.define([
 	'./InstanceManager',
 	'sap/ui/core/InvisibleText',
 	'sap/ui/core/library',
-	'./LightBoxRenderer'
+	'./LightBoxRenderer',
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
-		jQuery,
 		library,
 		Control,
 		Popup,
@@ -34,7 +33,8 @@ sap.ui.define([
 		InstanceManager,
 		InvisibleText,
 		coreLibrary,
-		LightBoxRenderer
+		LightBoxRenderer,
+		jQuery
 	) {
 
 		'use strict';
@@ -92,7 +92,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -590,14 +590,18 @@ sap.ui.define([
 		 */
 		LightBox.prototype._calculateAndSetLightBoxSize = function (image) {
 			var imageHeight,
+				imageWidth,
 				lightBoxMinWidth = (20 /*rem*/ * 16 /*px*/),
 				lightBoxMinHeight = (18 /*rem*/ * 16 /*px*/),
 				iFooterHeightPx = this._calculateFooterHeightInPx();
 
 			imageHeight = this._pxToNumber(image.getHeight());
+			imageWidth = this._pxToNumber(image.getWidth());
 
-			this._width = Math.max(lightBoxMinWidth, this._pxToNumber(image.getWidth()));
+			this._width = Math.max(lightBoxMinWidth, imageWidth);
 			this._height = Math.max(lightBoxMinHeight, imageHeight + iFooterHeightPx);
+
+			this._isLightBoxBiggerThanMinDimensions = (imageWidth >= lightBoxMinWidth) && (imageHeight >= (lightBoxMinHeight - iFooterHeightPx));
 		};
 
 		/**

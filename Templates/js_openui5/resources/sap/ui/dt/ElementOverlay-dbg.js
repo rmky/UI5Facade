@@ -4,30 +4,33 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-// Provides class sap.ui.dt.ElementOverlay.
 sap.ui.define([
 	'sap/ui/dt/Overlay',
 	'sap/ui/dt/ControlObserver',
 	'sap/ui/dt/ManagedObjectObserver',
 	'sap/ui/dt/ElementDesignTimeMetadata',
-	'sap/ui/dt/OverlayRegistry',
 	'sap/ui/dt/ElementUtil',
-	'sap/ui/dt/OverlayUtil',
 	'sap/ui/dt/DOMUtil',
 	'sap/ui/dt/Util',
-	'sap/ui/core/Control'
+	'sap/ui/core/Control',
+	"sap/ui/thirdparty/jquery",
+	"sap/base/Log",
+	"sap/base/util/isPlainObject",
+	"sap/base/util/merge"
 ],
-function(
+function (
 	Overlay,
 	ControlObserver,
 	ManagedObjectObserver,
 	ElementDesignTimeMetadata,
-	OverlayRegistry,
 	ElementUtil,
-	OverlayUtil,
 	DOMUtil,
 	Util,
-	Control
+	Control,
+	jQuery,
+	Log,
+	isPlainObject,
+	merge
 ) {
 	"use strict";
 
@@ -45,7 +48,7 @@ function(
 	 * @extends sap.ui.dt.Overlay
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -177,7 +180,6 @@ function(
 			this._initMutationObserver();
 			this._initControlObserver();
 		}.bind(this));
-
 	};
 
 	ElementOverlay.prototype._initMutationObserver = function () {
@@ -196,14 +198,24 @@ function(
 
 	ElementOverlay.prototype._subscribeToMutationObserver = function () {
 		var oMutationObserver = Overlay.getMutationObserver();
-		oMutationObserver.addToWhiteList(this.getElement().getId());
-		oMutationObserver.attachDomChanged(this._onDomChanged, this);
+		var $DomRef = this.getAssociatedDomRef();
+		this._sObservableNodeId = $DomRef && $DomRef.get(0).id;
+
+		if (this._sObservableNodeId) {
+			oMutationObserver.addToWhiteList(this._sObservableNodeId);
+			oMutationObserver.attachDomChanged(this._onDomChanged, this);
+		} else {
+			Log.error('sap.ui.dt.ElementOverlay#_subscribeToMutationObserver: please provide a root control with proper domRef and id to ensure that RTA is working properly');
+		}
 	};
 
 	ElementOverlay.prototype._unsubscribeFromMutationObserver = function () {
-		var oMutationObserver = Overlay.getMutationObserver();
-		oMutationObserver.removeFromWhiteList(this.getAssociation('element'));
-		oMutationObserver.detachDomChanged(this._onDomChanged, this);
+		if (this._sObservableNodeId) {
+			var oMutationObserver = Overlay.getMutationObserver();
+			oMutationObserver.removeFromWhiteList(this._sObservableNodeId);
+			oMutationObserver.detachDomChanged(this._onDomChanged, this);
+			delete this._sObservableNodeId;
+		}
 	};
 
 	/**
@@ -234,8 +246,7 @@ function(
 	};
 
 	ElementOverlay.prototype._getAttributes = function () {
-		return jQuery.extend(
-			true,
+		return merge(
 			{},
 			Overlay.prototype._getAttributes.apply(this, arguments),
 			{
@@ -272,7 +283,9 @@ function(
 	 * @protected
 	 */
 	ElementOverlay.prototype.exit = function () {
-		this._unsubscribeFromMutationObserver();
+		if (this.isRoot()) {
+			this._unsubscribeFromMutationObserver();
+		}
 		this._destroyControlObserver();
 
 		if (this._iApplyStylesRequest) {
@@ -318,7 +331,7 @@ function(
 	/**
 	 * @override
 	 */
-	ElementOverlay.prototype._setPosition = function() {
+	ElementOverlay.prototype._setPosition = function($Target, oGeometry, $Parent, bForceScrollbarSync) {
 		// Apply Overlay position first, then extra logic based on this new position
 		Overlay.prototype._setPosition.apply(this, arguments);
 
@@ -329,12 +342,11 @@ function(
 
 			if ($ScrollContainerDomRef.length) {
 				var oScrollContainerDomRef = $ScrollContainerDomRef.get(0);
-				this._setSize($ScrollContainerOverlayDomRef, DOMUtil.getGeometry(oScrollContainerDomRef));
-				Overlay.prototype._setPosition.call(this, $ScrollContainerOverlayDomRef, DOMUtil.getGeometry(oScrollContainerDomRef), this.$());
-				this._handleOverflowScroll(DOMUtil.getGeometry(oScrollContainerDomRef), $ScrollContainerOverlayDomRef, this);
-			} else {
-				this._deleteDummyContainer($ScrollContainerOverlayDomRef);
-				$ScrollContainerOverlayDomRef.css("display", "none");
+				var mScrollContainerGeometry = DOMUtil.getGeometry(oScrollContainerDomRef);
+				this._setSize($ScrollContainerOverlayDomRef, mScrollContainerGeometry);
+				Overlay.prototype._setPosition.call(this, $ScrollContainerOverlayDomRef, mScrollContainerGeometry, this.$());
+				this._handleOverflowScroll(mScrollContainerGeometry, $ScrollContainerOverlayDomRef, this, bForceScrollbarSync);
+				this._setZIndex(mScrollContainerGeometry, $ScrollContainerOverlayDomRef);
 			}
 		}, this);
 	};
@@ -471,13 +483,13 @@ function(
 					Overlay.getOverlayContainer().append(this.render());
 					this.applyStyles();
 				} else {
-					jQuery.sap.log.error('sap.ui.dt.ElementOverlay: overlay is already rendered and can\'t be placed in overlay container. Isn\'t it already there?');
+					Log.error('sap.ui.dt.ElementOverlay: overlay is already rendered and can\'t be placed in overlay container. Isn\'t it already there?');
 				}
 			} else {
-				jQuery.sap.log.error('sap.ui.dt.ElementOverlay: it\'s not possible to place overlay inside overlay container while it\'s part of some hierarchy');
+				Log.error('sap.ui.dt.ElementOverlay: it\'s not possible to place overlay inside overlay container while it\'s part of some hierarchy');
 			}
 		} else {
-			jQuery.sap.log.error('sap.ui.dt.ElementOverlay: overlay is not ready yet. Please wait until "init" event happens');
+			Log.error('sap.ui.dt.ElementOverlay: overlay is not ready yet. Please wait until "init" event happens');
 		}
 	};
 
@@ -497,14 +509,14 @@ function(
 			} else {
 				oDesignTimeMetadata.setData(
 					vDesignTimeMetadata(
-						jQuery.sap.extend(true, {}, oDesignTimeMetadata.getData())
+						merge({}, oDesignTimeMetadata.getData())
 					)
 				);
 				return;
 			}
 		} else if (vDesignTimeMetadata instanceof ElementDesignTimeMetadata) {
 			oDesignTimeMetadata = vDesignTimeMetadata;
-		} else if (jQuery.isPlainObject(vDesignTimeMetadata)) {
+		} else if (isPlainObject(vDesignTimeMetadata)) {
 			mDesignTimeMetadata = vDesignTimeMetadata;
 
 			// enhance metadata by custom functions
@@ -528,7 +540,7 @@ function(
 	 * @returns {object[]} - returns an array with scroll containers description
 	 */
 	ElementOverlay.prototype.getScrollContainers = function () {
-		return this.getDesignTimeMetadata().getScrollContainers();
+		return this.getDesignTimeMetadata().getScrollContainers(this.getElement());
 	};
 
 	/**
@@ -579,16 +591,11 @@ function(
 	 * @public
 	 */
 	ElementOverlay.prototype.getAssociatedDomRef = function() {
-		var oDomRef = ElementUtil.getDomRef(this.getElement());
+		var oDesignTimeMetadata = this.getDesignTimeMetadata();
+		var vDomRef = oDesignTimeMetadata.getDomRef();
+		var oDomRef = oDesignTimeMetadata.getAssociatedDomRef(this.getElement(), vDomRef);
 		if (!oDomRef) {
-			var oDesignTimeMetadata = this.getDesignTimeMetadata();
-			if (!oDesignTimeMetadata) {
-				return undefined;
-			}
-			var fnGetDomRef = oDesignTimeMetadata.getDomRef();
-			if (typeof fnGetDomRef === "function") {
-				oDomRef = fnGetDomRef(this.getElement());
-			}
+			oDomRef = ElementUtil.getDomRef(this.getElement());
 		}
 
 		if (oDomRef) {
@@ -622,21 +629,18 @@ function(
 	/**
 	 * Sets whether the ElementOverlay is selected and toggles corresponding css class
 	 * @param {boolean} bSelected if the ElementOverlay is selected
-	 * @param {boolean} bSuppressEvent (internal use only) suppress firing "selectionChange" event
 	 * @returns {sap.ui.dt.ElementOverlay} returns this
 	 * @public
 	 */
-	ElementOverlay.prototype.setSelected = function(bSelected, bSuppressEvent) {
+	ElementOverlay.prototype.setSelected = function (bSelected) {
 		bSelected = !!bSelected;
 		if (this.isSelectable() && bSelected !== this.isSelected()) {
 			this.setProperty("selected", bSelected);
 			this.toggleStyleClass("sapUiDtOverlaySelected", bSelected);
 
-			if (!bSuppressEvent) {
-				this.fireSelectionChange({
-					selected : bSelected
-				});
-			}
+			this.fireSelectionChange({
+				selected : bSelected
+			});
 		}
 
 		return this;
@@ -674,7 +678,9 @@ function(
 			this.toggleStyleClass("sapUiDtOverlayEditable", bEditable);
 
 			this.setProperty("editable", bEditable);
-			this.fireEditableChange({editable : bEditable});
+			this.fireEditableChange({
+				editable : bEditable
+			});
 		}
 
 		return this;
@@ -736,8 +742,10 @@ function(
 		var oParams = oEvent.getParameters();
 		var sName = oParams.name;
 
-		if (oParams.type === "propertyChanged" && sName === "visible") {
-			this.setRelevantOverlays([]);
+		if (oParams.type === "propertyChanged") {
+			if (sName === "visible") {
+				this.setRelevantOverlays([]);
+			}
 			this.fireElementModified(oParams);
 		} else if (sName) {
 			var oAggregationOverlay = this.getAggregationOverlay(sName);
@@ -754,7 +762,7 @@ function(
 	 * @param {sap.ui.baseEvent} oEvent event object
 	 * @private
 	 */
-	ElementOverlay.prototype._onDomChanged = function(oEvent) {
+	ElementOverlay.prototype._onDomChanged = function () {
 		// FIXME: instead of checking isReady subscribe on DOM changes when overlay is ready
 		if (this.isReady() && this.isRoot()) {
 			if (this._iApplyStylesRequest) {
@@ -878,7 +886,7 @@ function(
 
 	/**
 	 * Checks if the associated Element is visible or not. For controls it returns the result of .getVisible,
-	 * otherwise it gets the domRef from DesigntimeMetadata and checks $().is(":visible").
+	 * otherwise it gets the domRef from DesigntimeMetadata and checks visibility in the DOM.
 	 *
 	 * @returns {boolean|undefined} Returns the visibility of the associated Element or undefined, if it is not a control and has no domRef
 	 */

@@ -6,13 +6,12 @@
 
 // Provides control sap.m.TabContainer.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
 	'./TabContainerRenderer'
 ],
-	function(jQuery, library, Control, IconPool, TabContainerRenderer) {
+	function(library, Control, IconPool, TabContainerRenderer) {
 		"use strict";
 
 		// shortcut for sap.m.ButtonType
@@ -55,7 +54,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -338,7 +337,19 @@ sap.ui.define([
 				this.fireItemSelect({item: oNextItem});
 			}
 			// Focus (force to wait until invalidated)
-			jQuery.sap.delayedCall(0, this, fnFocusCallback);
+			setTimeout(fnFocusCallback.bind(this), 0);
+		};
+
+		TabContainer.prototype._attachItemPropertyChanged = function (oTabContainerItem) {
+			oTabContainerItem.attachItemPropertyChanged(function (oEvent) {
+				var sPropertyKey = oEvent['mParameters'].propertyKey;
+
+				if (mTCItemToTSItemProperties[sPropertyKey]) {//forward only if such property exists in TabStripItem
+					sPropertyKey = mTCItemToTSItemProperties[sPropertyKey];
+					var oTabStripItem = this._toTabStripItem(oEvent.getSource());
+					oTabStripItem && oTabStripItem.setProperty(sPropertyKey, oEvent['mParameters'].propertyValue, false);
+				}
+			}.bind(this));
 		};
 
 		/**
@@ -375,21 +386,28 @@ sap.ui.define([
 		 * @returns {object} This instance for chaining
 		 */
 		TabContainer.prototype.addAggregation = function(sAggregationName, oObject, bSuppressInvalidate) {
-			var oTabStripItem,
-				sPropertyKey;
-
 			if (sAggregationName === 'items') {
-				oObject.attachItemPropertyChanged(function (oEvent) {
-					sPropertyKey = oEvent['mParameters'].propertyKey;
-
-					if (mTCItemToTSItemProperties[sPropertyKey]) {//forward only if such property exists in TabStripItem
-						sPropertyKey = mTCItemToTSItemProperties[sPropertyKey];
-						oTabStripItem = this._toTabStripItem(oEvent.getSource());
-						oTabStripItem && oTabStripItem.setProperty(sPropertyKey, oEvent['mParameters'].propertyValue, false);
-					}
-				}.bind(this));
+				this._attachItemPropertyChanged(oObject);
 			}
+
 			return Control.prototype.addAggregation.call(this, sAggregationName, oObject, bSuppressInvalidate);
+		};
+
+		/**
+		 * Overrides the method in order to handle propagation of item property changes to the <code>_tabStrip</code> instance copies.
+		 *
+		 * @param {string} sAggregationName Name of the added aggregation
+		 * @param {object} oObject Instance that is going to be added
+		 * @param {int} iIndex Index to insert the item
+		 * @param {boolean} bSuppressInvalidate Flag indicating whether invalidation should be suppressed
+		 * @returns {object} This instance for chaining
+		 */
+		TabContainer.prototype.insertAggregation = function(sAggregationName, oObject, iIndex, bSuppressInvalidate) {
+			if (sAggregationName === 'items') {
+				this._attachItemPropertyChanged(oObject);
+			}
+
+			return Control.prototype.insertAggregation.call(this, sAggregationName, oObject, iIndex, bSuppressInvalidate);
 		};
 
 		/*

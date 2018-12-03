@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/unified/CalendarAppointment',
-		'sap/ui/unified/CalendarLegendRenderer', 'sap/ui/Device', 'sap/ui/unified/library', 'sap/ui/core/InvisibleText'],
-	function (jQuery, UniversalDate, CalendarAppointment, CalendarLegendRenderer, Device, library, InvisibleText) {
+sap.ui.define(['sap/ui/core/date/UniversalDate', 'sap/ui/unified/CalendarAppointment', 'sap/ui/unified/CalendarLegendRenderer',
+		'sap/ui/Device', 'sap/ui/unified/library', 'sap/ui/core/InvisibleText', "sap/base/Log"],
+	function (UniversalDate, CalendarAppointment, CalendarLegendRenderer, Device, library, InvisibleText, Log) {
 		"use strict";
 
 
@@ -343,14 +343,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 					iRightPercent = iWidth * (iIntervals - oIH.last - 1);
 				}
 
-				this.renderIntervalHeader(oRm, oIH, oRow._bRTL, iLeftPercent, iRightPercent);
+				this.renderIntervalHeader(oRm, oRow, oIH, oRow._bRTL, iLeftPercent, iRightPercent);
 			}
 		}
 
 	};
 
-	CalendarRowRenderer.renderIntervalHeader = function(oRm, oIntervalHeader, bRtl, left, right) {
+	CalendarRowRenderer.renderIntervalHeader = function(oRm, oRow, oIntervalHeader, bRtl, left, right) {
 		var sId = oIntervalHeader.appointment.getId();
+
+		var oArrowValues = oRow._calculateAppoitnmentVisualCue(oIntervalHeader.appointment);
 
 		oRm.write("<div");
 		oRm.addClass("sapUiCalendarRowAppsIntHead");
@@ -407,6 +409,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 		}
 		oRm.write(">");
 
+		if (oArrowValues.appTimeUnitsDifRowStart > 0) {
+			oRm.writeIcon("sap-icon://arrow-left", ["sapUiCalendarAppArrowIconLeft"], { title: null });
+		}
+
 		var sIcon = oIntervalHeader.appointment.getIcon();
 		if (sIcon) {
 			var aClasses = ["sapUiCalendarRowAppsIntHeadIcon"];
@@ -439,6 +445,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 			oRm.write("</span>");
 		}
 
+		if (oArrowValues.appTimeUnitsDifRowEnd > 0) {
+			oRm.writeIcon("sap-icon://arrow-right",["sapUiCalendarAppArrowIconRight"], { title: null });
+		}
+
 		oRm.write("</div>");
 		oRm.write("</div>");
 	};
@@ -455,6 +465,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 		var sId = oAppointment.getId();
 		var mAccProps = {labelledby: {value: InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT") + " " + sId + "-Descr", append: true}};
 		var aAriaLabels = oRow.getAriaLabelledBy();
+
+		var oArrowValues = oRow._calculateAppoitnmentVisualCue(oAppointment);
 
 		if (aAriaLabels.length > 0) {
 			mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + aAriaLabels.join(" ");
@@ -544,6 +556,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 		oRm.writeClasses();
 		oRm.write(">"); // div element
 
+		if (oArrowValues.appTimeUnitsDifRowStart > 0) {
+			oRm.writeIcon("sap-icon://arrow-left", ["sapUiCalendarAppArrowIconLeft"], { title: null });
+		}
+
 		if (sIcon) {
 			var aClasses = ["sapUiCalendarAppIcon"];
 			var mAttributes = {};
@@ -552,6 +568,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 			mAttributes["title"] = null;
 			oRm.writeIcon(sIcon, aClasses, mAttributes);
 		}
+
+		oRm.write("<div");
+		oRm.addClass("sapUiCalendarAppTitleWrapper");
+		oRm.writeClasses();
+		oRm.write(">");
 
 		if (sTitle) {
 			oRm.write("<span");
@@ -571,6 +592,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 			oRm.write(">"); // span element
 			oRm.writeEscaped(sText, true);
 			oRm.write("</span>");
+		}
+
+		oRm.write("</div>");
+
+		if (oArrowValues.appTimeUnitsDifRowEnd > 0) {
+			oRm.writeIcon("sap-icon://arrow-right", ["sapUiCalendarAppArrowIconRight"], { title: null });
 		}
 
 		// ARIA information about start and end
@@ -604,12 +631,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 			iMonth = oRowStartDate.getMonth(),
 			iDaysLength = new Date(oRowStartDate.getFullYear(), iMonth + 1, 0).getDate(),
 			sNoAppointments,
+			// gets a concatenated array with appointments + interval headers, which intersect the visible interval
+			// then sorts the array using our custom comparer
 			aSortedAppInfos = aAppointments.concat(oRow.getIntervalHeaders().filter(function(oIntHeadApp) {
 				var iAppStart = oIntHeadApp.getStartDate().getTime(),
-					iAppEnd = oIntHeadApp.getStartDate().getTime(),
+					iAppEnd = oIntHeadApp.getEndDate().getTime(),
 					iRowStart = oRowStartDate.getTime(),
 					iRowEnd = iRowStart + 1000 * 60 * 60 * 24;
-				return (iAppStart >= iRowStart && iAppStart < iRowEnd) || (iAppEnd >= iRowStart && iAppEnd < iRowEnd);
+				return !(iAppStart >= iRowEnd || iAppEnd <= iRowStart);
 			}).map(function(oIntHeadApp) {
 				return {appointment: oIntHeadApp, isHeader: true};
 			})).sort(CalendarAppointment._getComparer(oRowStartDate)),
@@ -664,7 +693,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 				oRm.write("</div>");
 				oRm.write("<div class=\"sapUiCalendarAppContainerRight\">");
 					if (oAppointmentInfo.isHeader) {
-						this.renderIntervalHeader(oRm, oAppointmentInfo);
+						this.renderIntervalHeader(oRm, oRow, oAppointmentInfo);
 					} else {
 						this.renderAppointment(oRm, oRow, oAppointmentInfo, aTypes, true);
 					}
@@ -751,7 +780,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/date/UniversalDate', 'sap/ui/un
 			if (oLegend) {
 				aResult = oLegend.getItems();
 			} else {
-				jQuery.sap.log.error("CalendarLegend with id '" + sLegendId + "' does not exist!", oCalRow);
+				Log.error("CalendarLegend with id '" + sLegendId + "' does not exist!", oCalRow);
 			}
 		}
 		return aResult;

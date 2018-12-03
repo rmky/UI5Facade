@@ -7,27 +7,22 @@
 /**
  * Initialization Code and shared classes of library sap.ui.unified.
  */
-sap.ui.define([
-	'jquery.sap.global',
-	'sap/ui/core/Core',
-	'sap/ui/base/Object',
-	'jquery.sap.dom',
-	'jquery.sap.script'
-], function(jQuery, Core, BaseObject/* jQuerySapDom,jQuerySapScript*/) {
+sap.ui.define(['sap/ui/core/Core', 'sap/ui/base/Object', 'sap/ui/core/library'], function(Core, BaseObject) {
 
 	"use strict";
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.unified",
-		version: "1.56.6",
+		version: "1.60.1",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/ui/unified/designtime/library.designtime",
 		types: [
 			"sap.ui.unified.CalendarDayType",
 			"sap.ui.unified.GroupAppointmentsMode",
 			"sap.ui.unified.ContentSwitcherAnimation",
-			"sap.ui.unified.ColorPickerMode"
+			"sap.ui.unified.ColorPickerMode",
+			"sap.ui.unified.ColorPickerDisplayMode"
 		],
 		interfaces: [
 			"sap.ui.unified.IProcessableBlobs"
@@ -49,6 +44,7 @@ sap.ui.define([
 			"sap.ui.unified.CalendarRow",
 			"sap.ui.unified.ContentSwitcher",
 			"sap.ui.unified.ColorPicker",
+			"sap.ui.unified.ColorPickerPopover",
 			"sap.ui.unified.Currency",
 			"sap.ui.unified.FileUploader",
 			"sap.ui.unified.Menu",
@@ -84,7 +80,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.unified
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @public
 	 */
 	var thisLib = sap.ui.unified;
@@ -452,6 +448,36 @@ sap.ui.define([
 	};
 
 	/**
+	 * Types of a color picker display mode
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.58.0
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.ColorPickerDisplayMode = {
+
+		/**
+		 * Default display mode.
+		 * @public
+		 */
+		Default : "Default",
+
+		/**
+		 * Large display mode.
+		 * @public
+		 */
+		Large : "Large",
+
+		/**
+		 * Simplified display mode.
+		 * @public
+		 */
+		Simplified : "Simplified"
+
+	};
+
+	/**
 	 * Marker interface for controls that process instances of <code>window.Blob</code>, such as <code>window.File</code>.
 	 * The implementation of this Interface should implement the following Interface methods:
 	 * <ul>
@@ -495,7 +521,7 @@ sap.ui.define([
 			delete this._cb;
 			delete this._ctrl;
 			if (this._rerenderTimer) {
-				jQuery.sap.clearDelayedCall(this._rerenderTimer);
+				clearTimeout(this._rerenderTimer);
 				delete this._rerenderTimer;
 			}
 			BaseObject.prototype.destroy.apply(this, arguments);
@@ -507,14 +533,13 @@ sap.ui.define([
 			}
 
 			if (this._rerenderTimer) {
-				jQuery.sap.clearDelayedCall(this._rerenderTimer);
+				clearTimeout(this._rerenderTimer);
 			}
 
-			this._rerenderTimer = jQuery.sap.delayedCall(0, this, function(){
-				var $content = jQuery.sap.byId(this._id);
-				var doRender = $content.length > 0;
+			this._rerenderTimer = setTimeout(function(){
+				var oContent = document.getElementById(this._id);
 
-				if (doRender) {
+				if (oContent) {
 					if (typeof (this._cntnt) === "string") {
 						var aContent = this._ctrl.getAggregation(this._cntnt, []);
 						for (var i = 0; i < aContent.length; i++) {
@@ -523,11 +548,11 @@ sap.ui.define([
 					} else {
 						this._cntnt(this._rm);
 					}
-					this._rm.flush($content[0]);
+					this._rm.flush(oContent);
 				}
 
-				this._cb(doRender);
-			});
+				this._cb(!!oContent);
+			}.bind(this), 0);
 		}
 	});
 

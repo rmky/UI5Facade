@@ -6,23 +6,23 @@
 
 // Provides control sap.uxap.ObjectPageDynamicHeaderTitle.
 sap.ui.define([
-    'jquery.sap.global',
-    './library',
-    'sap/uxap/ObjectPageDynamicHeaderContent',
-    "./ObjectPageDynamicHeaderTitleRenderer"
+	'./library',
+	'sap/uxap/ObjectPageDynamicHeaderContent',
+	"./ObjectPageDynamicHeaderTitleRenderer",
+	"sap/base/Log"
 ],
 	function(
-	    jQuery,
 		library,
 		ObjectPageDynamicHeaderContent,
-		ObjectPageDynamicHeaderTitleRenderer
+		ObjectPageDynamicHeaderTitleRenderer,
+		Log
 	) {
 		"use strict";
 
 		try {
 			sap.ui.getCore().loadLibrary("sap.f");
 		} catch (e) {
-			jQuery.sap.log.error("The control 'sap.uxap.ObjectPageDynamicHeaderTitle' needs library 'sap.f'.");
+			Log.error("The control 'sap.uxap.ObjectPageDynamicHeaderTitle' needs library 'sap.f'.");
 			throw (e);
 		}
 
@@ -49,7 +49,7 @@ sap.ui.define([
 		 * @implements sap.uxap.IHeaderTitle
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -106,6 +106,14 @@ sap.ui.define([
 			return false;
 		};
 
+		/**
+		 * Required by the {@link sap.uxap.IHeaderTitle} interface.
+		 * @returns {boolean}
+		 */
+		ObjectPageDynamicHeaderTitle.prototype.supportsBackgroundDesign = function () {
+			return true;
+		};
+
 		ObjectPageDynamicHeaderTitle.KNOWN_HEADING_CONTROL_CLASS_NAMES = ["sap.m.Title", "sap.m.Text", "sap.m.FormattedText", "sap.m.Label"];
 
 		/**
@@ -134,6 +142,7 @@ sap.ui.define([
 		 */
 		ObjectPageDynamicHeaderTitle.prototype.snap = function (bUserInteraction) {
 			this._toggleState(false, bUserInteraction);
+			this._updateARIAState(false);
 		};
 
 		/**
@@ -141,6 +150,7 @@ sap.ui.define([
 		 */
 		ObjectPageDynamicHeaderTitle.prototype.unSnap = function (bUserInteraction) {
 			this._toggleState(true, bUserInteraction);
+			this._updateARIAState(true);
 		};
 
 		/**

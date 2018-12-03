@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/CustomStyleClassSu
 	 * @class
 	 * Tree node element
 	 * @extends sap.ui.core.Element
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -110,6 +110,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/CustomStyleClassSu
 		}
 	}});
 
+	// FIXME: added for compatibility with existing code (internal).
+	// selectedForNodes is a hidden association and therefore doesn't have generated accessor / mutator methods
+	TreeNode.prototype.getSelectedForNodes = function() {
+		return this.getAssociation("selectedForNodes", []);
+	};
 
 	TreeNode.ANIMATION_DURATION	 = 600;
 

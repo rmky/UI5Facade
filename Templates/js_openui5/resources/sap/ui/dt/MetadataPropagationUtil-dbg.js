@@ -6,12 +6,14 @@
 
 // Provides object sap.ui.dt.MetadataPropagationUtil.
 sap.ui.define([
-	'jquery.sap.global',
-	'sap/ui/dt/Util'
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/dt/Util",
+	"sap/base/util/merge"
 ],
 function(
 	jQuery,
-	Util
+	Util,
+	merge
 ) {
 	"use strict";
 
@@ -20,7 +22,7 @@ function(
 	 *
 	 * @class Functionality to propagate DesignTime and RelevantContainer
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @private
 	 * @static
 	 * @since 1.54
@@ -34,7 +36,7 @@ function(
 			!mAggregationMetadata["propagationInfos"]) {
 			return false;
 		}
-		return jQuery.extend([], mAggregationMetadata["propagationInfos"]);
+		return Object.assign([], mAggregationMetadata["propagationInfos"]);
 	};
 
 	MetadataPropagationUtil._getCurrentRelevantContainerPropagation = function(mElementDtMetadataForAggregation, oElement) {
@@ -103,7 +105,7 @@ function(
 	 */
 	MetadataPropagationUtil.propagateMetadataToAggregationOverlay = function(mOriginalMetadata, oElement, mParentAggregationMetadata) {
 		var mNewPropagationInfo, mMetadataFunctionPropagation, mRelevantContainerPropagation,
-			mMetadata = jQuery.extend({}, mOriginalMetadata);
+			mMetadata = Object.assign({}, mOriginalMetadata);
 
 		var aPropagatedRelevantContainersFromParent = MetadataPropagationUtil._getParentPropagationInfo(mParentAggregationMetadata);
 
@@ -113,7 +115,7 @@ function(
 		}
 
 		if (aPropagatedRelevantContainersFromParent || !jQuery.isEmptyObject(mRelevantContainerPropagation) || !jQuery.isEmptyObject(mMetadataFunctionPropagation)) {
-			mNewPropagationInfo = jQuery.extend(mRelevantContainerPropagation, mMetadataFunctionPropagation);
+			mNewPropagationInfo = Object.assign({}, mRelevantContainerPropagation, mMetadataFunctionPropagation);
 			return MetadataPropagationUtil._setPropagationInfo(mMetadata, mNewPropagationInfo, aPropagatedRelevantContainersFromParent);
 		} else {
 			return mMetadata;
@@ -168,7 +170,7 @@ function(
 		vReturnMetadata = aRevertedPropagationInfos.reduce(function(vReturnMetadata, oPropagatedInfo){
 			if (oPropagatedInfo.metadataFunction) {
 				var oCurrentMetadata = oPropagatedInfo.metadataFunction(oElement, oPropagatedInfo.relevantContainerElement);
-				return jQuery.extend(true, vReturnMetadata, oCurrentMetadata);
+				return merge(vReturnMetadata, oCurrentMetadata);
 			} else {
 				return vReturnMetadata;
 			}
@@ -193,7 +195,7 @@ function(
 			return mTargetMetadata;
 		}
 
-		var mResultMetadata = jQuery.extend(true, {}, mTargetMetadata);
+		var mResultMetadata = merge({}, mTargetMetadata);
 
 		if (vPropagatedRelevantContainer) {
 			mResultMetadata.relevantContainer = vPropagatedRelevantContainer;
@@ -201,7 +203,7 @@ function(
 
 		if (vPropagatedMetadata){
 
-			if (vPropagatedMetadata.actions === null) {
+			if (vPropagatedMetadata.actions === null || vPropagatedMetadata.actions === "not-adaptable") {
 				var mAggregations = oElement.getMetadata().getAllAggregations();
 				var aAggregationNames = Object.keys(mAggregations);
 
@@ -217,11 +219,11 @@ function(
 
 				aAggregationNames.forEach(function(sAggregationName) {
 					if (mResultMetadata.aggregations[sAggregationName] && mResultMetadata.aggregations[sAggregationName].actions) {
-						mResultMetadata.aggregations[sAggregationName].actions = null;
+						mResultMetadata.aggregations[sAggregationName].actions = vPropagatedMetadata.actions;
 					}
 				});
 			}
-			return jQuery.extend(true, mResultMetadata, vPropagatedMetadata);
+			return merge(mResultMetadata, vPropagatedMetadata);
 		}
 		return mResultMetadata;
 	};

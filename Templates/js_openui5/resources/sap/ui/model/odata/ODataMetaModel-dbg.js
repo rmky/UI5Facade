@@ -5,15 +5,38 @@
  */
 
 sap.ui.define([
-   'jquery.sap.global',
-   'sap/ui/model/BindingMode', 'sap/ui/base/BindingParser', 'sap/ui/model/Context',
-   'sap/ui/base/ManagedObject', 'sap/ui/model/ClientContextBinding',
-   'sap/ui/model/FilterProcessor', 'sap/ui/model/json/JSONModel',
-   'sap/ui/model/json/JSONListBinding', 'sap/ui/model/json/JSONPropertyBinding',
-   'sap/ui/model/json/JSONTreeBinding', 'sap/ui/model/MetaModel', './_ODataMetaModelUtils'
-], function (jQuery, BindingMode, BindingParser, Context, ManagedObject, ClientContextBinding,
-		FilterProcessor, JSONModel, JSONListBinding, JSONPropertyBinding, JSONTreeBinding,
-		MetaModel, Utils) {
+	'sap/ui/model/BindingMode',
+	'sap/ui/base/BindingParser',
+	'sap/ui/model/Context',
+	'sap/ui/base/ManagedObject',
+	'sap/ui/model/ClientContextBinding',
+	'sap/ui/model/FilterProcessor',
+	'sap/ui/model/json/JSONModel',
+	'sap/ui/model/json/JSONListBinding',
+	'sap/ui/model/json/JSONPropertyBinding',
+	'sap/ui/model/json/JSONTreeBinding',
+	'sap/ui/model/MetaModel',
+	'./_ODataMetaModelUtils',
+	"sap/ui/performance/Measurement",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+], function (
+	BindingMode,
+	BindingParser,
+	Context,
+	ManagedObject,
+	ClientContextBinding,
+	FilterProcessor,
+	JSONModel,
+	JSONListBinding,
+	JSONPropertyBinding,
+	JSONTreeBinding,
+	MetaModel,
+	Utils,
+	Measurement,
+	Log,
+	jQuery
+) {
 	"use strict";
 
 	var sODataMetaModel = "sap.ui.model.odata.ODataMetaModel",
@@ -45,10 +68,10 @@ sap.ui.define([
 		});
 
 	ODataMetaListBinding.prototype.applyFilter = function () {
-		var that = this;
+		var that = this,
+			oCombinedFilter = FilterProcessor.combineFilters(this.aFilters, this.aApplicationFilters);
 
-		this.aIndices = FilterProcessor.apply(this.aIndices,
-			this.aFilters.concat(this.aApplicationFilters), function (vRef, sPath) {
+		this.aIndices = FilterProcessor.apply(this.aIndices, oCombinedFilter, function (vRef, sPath) {
 			return sPath === "@sapui.name"
 				? vRef
 				: that.oModel.getProperty(sPath, that.oList[vRef]);
@@ -180,7 +203,7 @@ sap.ui.define([
 	 * {@link #loaded loaded} has been resolved!
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @alias sap.ui.model.odata.ODataMetaModel
 	 * @extends sap.ui.model.MetaModel
 	 * @public
@@ -196,12 +219,12 @@ sap.ui.define([
 					if (that.bDestroyed) {
 						throw new Error("Meta model already destroyed");
 					}
-					jQuery.sap.measure.average(sPerformanceLoad, "", aPerformanceCategories);
+					Measurement.average(sPerformanceLoad, "", aPerformanceCategories);
 					oData = JSON.parse(JSON.stringify(oMetadata.getServiceMetadata()));
 					that.oModel = new JSONModel(oData);
 					that.oModel.setDefaultBindingMode(that.sDefaultBindingMode);
 					Utils.merge(oAnnotations ? oAnnotations.getAnnotationsData() : {}, oData, that);
-					jQuery.sap.measure.end(sPerformanceLoad);
+					Measurement.end(sPerformanceLoad);
 				}
 
 				oODataModelInterface = oODataModelInterface || {};
@@ -257,7 +280,7 @@ sap.ui.define([
 		if (!oContext || oContext instanceof Context) {
 			sResolvedPath = this.resolve(sPath || "", oContext);
 			if (!sResolvedPath) {
-				jQuery.sap.log.error("Invalid relative path w/o context", sPath,
+				Log.error("Invalid relative path w/o context", sPath,
 					sODataMetaModel);
 				return null;
 			}
@@ -302,8 +325,8 @@ sap.ui.define([
 				}
 			}
 			if (!oNode) {
-				if (jQuery.sap.log.isLoggable(jQuery.sap.log.Level.WARNING, sODataMetaModel)) {
-					jQuery.sap.log.warning("Invalid part: " + vPart,
+				if (Log.isLoggable(Log.Level.WARNING, sODataMetaModel)) {
+					Log.warning("Invalid part: " + vPart,
 						"path: " + sPath + ", context: "
 							+ (oContext instanceof Context ? oContext.getPath() : oContext),
 						sODataMetaModel);
@@ -312,13 +335,13 @@ sap.ui.define([
 			}
 			if (oBinding) {
 				if (oBaseNode === oContext) {
-					jQuery.sap.log.error(
+					Log.error(
 						"A query is not allowed when an object context has been given", sPath,
 						sODataMetaModel);
 					return null;
 				}
 				if (!Array.isArray(oNode)) {
-					jQuery.sap.log.error(
+					Log.error(
 						"Invalid query: '" + sProcessedPath + "' does not point to an array",
 						sPath, sODataMetaModel);
 					return null;
@@ -474,8 +497,8 @@ sap.ui.define([
 	 * @since 1.55.0
 	 */
 	// @override
-	ODataMetaModel.prototype.getAdapterFactoryModulePath = function() {
-		return "sap/ui/model/odata/v2/meta/ODataAdapterFactory";
+	ODataMetaModel.prototype.getAdapterFactoryModulePath = function () {
+		return "sap/ui/mdc/experimental/adapter/odata/v2/ODataAdapterFactory";
 	};
 
 	/**

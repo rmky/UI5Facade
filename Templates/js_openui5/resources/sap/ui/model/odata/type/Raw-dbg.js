@@ -6,10 +6,10 @@
 
 sap.ui.define([
 	"sap/ui/model/FormatException",
-	"sap/ui/model/odata/type/ODataType",
 	"sap/ui/model/ParseException",
-	"sap/ui/model/ValidateException"
-], function (FormatException, ODataType, ParseException, ValidateException) {
+	"sap/ui/model/ValidateException",
+	"sap/ui/model/odata/type/ODataType"
+], function (FormatException, ParseException, ValidateException, ODataType) {
 	"use strict";
 
 	/**
@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 */
 	var Raw = ODataType.extend("sap.ui.model.odata.type.Raw", {
 			constructor : function (oFormatOptions, oConstraints) {

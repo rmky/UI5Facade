@@ -3,7 +3,7 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global'], function(jQuery) {
+sap.ui.define(["sap/base/Log"], function(Log) {
 	"use strict";
 
 	/**
@@ -70,7 +70,7 @@ sap.ui.define(['jquery.sap.global'], function(jQuery) {
 				return oTarget._display(vData, oSequencePromise);
 			} else {
 				var sErrorMessage = "The target with the name \"" + sName + "\" does not exist!";
-				jQuery.sap.log.error(sErrorMessage, this);
+				Log.error(sErrorMessage, this);
 				return Promise.resolve({
 					name: sName,
 					error: sErrorMessage

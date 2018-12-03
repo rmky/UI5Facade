@@ -4,22 +4,19 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-// Provides class sap.ui.rta.plugin.DragDrop.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/dt/plugin/ControlDragDrop',
+	'sap/ui/dt/Util',
 	'sap/ui/rta/plugin/RTAElementMover',
 	'sap/ui/rta/plugin/Plugin',
-	'sap/ui/rta/Utils',
-	'sap/ui/dt/OverlayRegistry'
+	'sap/ui/rta/Utils'
 ],
 function(
-	jQuery,
 	ControlDragDrop,
+	DtUtil,
 	RTAElementMover,
 	Plugin,
-	Utils,
-    OverlayRegistry
+	Utils
 ) {
 	"use strict";
 
@@ -34,7 +31,7 @@ function(
 	 * @extends sap.ui.dt.plugin.ControlDragDrop
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -134,15 +131,27 @@ function(
 	 * @override
 	 */
 	DragDrop.prototype.onDragEnd = function(oOverlay) {
-		this.fireElementModified({
-			"command" : this.getElementMover().buildMoveCommand()
+		this.getElementMover().buildMoveCommand()
+
+		.then(function(oCommand) {
+			this.fireElementModified({
+				"command" : oCommand
+			});
+
+			oOverlay.$().removeClass("sapUiRtaOverlayPlaceholder");
+			oOverlay.setSelected(true);
+			oOverlay.focus();
+
+			ControlDragDrop.prototype.onDragEnd.apply(this, arguments);
+		}.bind(this))
+
+		.catch(function(vError) {
+			throw DtUtil.propagateError(
+				vError,
+				"DragDrop#onDragEnd",
+				"Error accured during onDragEnd execution",
+				"sap.ui.rta.plugin");
 		});
-
-		oOverlay.$().removeClass("sapUiRtaOverlayPlaceholder");
-		oOverlay.setSelected(true);
-		oOverlay.focus();
-
-		ControlDragDrop.prototype.onDragEnd.apply(this, arguments);
 	};
 
 	/**

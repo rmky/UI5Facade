@@ -6,9 +6,32 @@
 
 // Provides helper sap.ui.table.TableUtils.
 sap.ui.define([
-	"jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/ResizeHandler", "sap/ui/core/library", "sap/ui/model/ChangeReason",
-	"./TableGrouping", "./TableColumnUtils", "./TableMenuUtils", "./TableBindingUtils", "./library"
-], function(jQuery, Control, ResizeHandler, coreLibrary, ChangeReason, TableGrouping, TableColumnUtils, TableMenuUtils, TableBindingUtils, library) {
+	"sap/ui/base/Object",
+	"sap/ui/core/Control",
+	"sap/ui/core/ResizeHandler",
+	"sap/ui/core/library",
+	"sap/ui/model/ChangeReason",
+	"./TableGrouping",
+	"./TableColumnUtils",
+	"./TableMenuUtils",
+	"./TableBindingUtils",
+	"./library",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+], function(
+	BaseObject,
+	Control,
+	ResizeHandler,
+	coreLibrary,
+	ChangeReason,
+	TableGrouping,
+	TableColumnUtils,
+	TableMenuUtils,
+	TableBindingUtils,
+	library,
+	Log,
+	jQuery
+) {
 	"use strict";
 
 	// Shortcuts
@@ -138,10 +161,19 @@ sap.ui.define([
 	}
 
 	/**
+	 * The selectors which define whether an element is interactive. Due to the usage of pseudo selectors this can only be used in jQuery.
+	 *
+	 * @type {string}
+	 * @static
+	 * @constant
+	 */
+	var INTERACTIVE_ELEMENT_SELECTORS = ":sapTabbable, .sapUiTableTreeIcon:not(.sapUiTableTreeIconLeaf)";
+
+	/**
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @namespace
 	 * @alias sap.ui.table.TableUtils
 	 * @private
@@ -157,6 +189,7 @@ sap.ui.define([
 		ROW_HORIZONTAL_FRAME_SIZE: ROW_HORIZONTAL_FRAME_SIZE,
 		DEFAULT_ROW_HEIGHT: DEFAULT_ROW_HEIGHT,
 		RowsUpdateReason: ROWS_UPDATE_REASON,
+		INTERACTIVE_ELEMENT_SELECTORS: INTERACTIVE_ELEMENT_SELECTORS,
 
 		/**
 		 * Returns whether the table has a row header or not
@@ -291,13 +324,13 @@ sap.ui.define([
 		 * @private
 		 */
 		hasData : function(oTable) {
-			var oBinding = oTable.getBinding("rows"),
-			iBindingLength = oTable._getTotalRowCount(),
-			bHasData = oBinding ? !!iBindingLength : false;
+			var oBinding = oTable.getBinding("rows");
+			var iTotalRowCount = oTable._getTotalRowCount();
+			var bHasData = iTotalRowCount > 0;
 
 			if (oBinding && oBinding.providesGrandTotal) { // Analytical Binding
 				var bHasTotal = oBinding.providesGrandTotal() && oBinding.hasTotaledMeasures();
-				bHasData = (bHasTotal && iBindingLength < 2) || (!bHasTotal && iBindingLength === 0) ? false : true;
+				bHasData = (bHasTotal && iTotalRowCount > 1) || (!bHasTotal && iTotalRowCount > 0);
 			}
 
 			return bHasData;
@@ -360,9 +393,9 @@ sap.ui.define([
 		canUsePendingRequestsCounter: function(oTable) {
 			var oBinding = oTable ? oTable.getBinding("rows") : null;
 
-			if (TableUtils.isInstanceOf(oBinding, "sap/ui/model/analytics/AnalyticalBinding")) {
+			if (TableUtils.isA(oBinding, "sap.ui.model.analytics.AnalyticalBinding")) {
 				return oBinding.bUseBatchRequests;
-			} else if (TableUtils.isInstanceOf(oBinding, "sap/ui/model/TreeBinding")) {
+			} else if (TableUtils.isA(oBinding, "sap.ui.model.TreeBinding")) {
 				return false;
 			}
 
@@ -370,19 +403,17 @@ sap.ui.define([
 		},
 
 		/**
-		 * Checks whether the given object is of the given type (given in AMD module syntax)
-		 * without the need of loading the types module.
-		 * @param {sap.ui.base.ManagedObject} oObject The object to check
-		 * @param {string} sType The type given in AMD module syntax
-		 * @returns {boolean}
+		 * Checks whether an object is of the given type(s).
+		 * Wrapper for {@link sap.ui.base.Object.isA}
+		 *
+		 * @param {object} oObject Object which will be checked whether it is an instance of the given type
+		 * @param {string|string[]} vTypeName Type or types to check for
+		 * @see sap.ui.base.Object.isA
+		 * @returns {boolean} Whether this object is an instance of the given type or of any of the given types
 		 * @private
 		 */
-		isInstanceOf : function(oObject, sType) {
-			if (!oObject || !sType) {
-				return false;
-			}
-			var oType = sap.ui.require(sType);
-			return !!(oType && (oObject instanceof oType));
+		isA: function(oObject, vTypeName) {
+			return BaseObject.isA(oObject, vTypeName);
 		},
 
 		/**
@@ -897,12 +928,12 @@ sap.ui.define([
 			if (typeof sIdSuffix == "string") {
 				oDomRef = oTable.getDomRef(sIdSuffix);
 			} else {
-				jQuery.sap.log.error("sIdSuffix must be a string", oTable);
+				Log.error("sIdSuffix must be a string", oTable);
 				return;
 			}
 
 			if (typeof fnHandler !== "function") {
-				jQuery.sap.log.error("fnHandler must be a function", oTable);
+				Log.error("fnHandler must be a function", oTable);
 				return;
 			}
 
@@ -947,7 +978,7 @@ sap.ui.define([
 						aIdSuffix.push(sKey);
 					}
 				}
-			} else if (jQuery.isArray(vIdSuffix)) {
+			} else if (Array.isArray(vIdSuffix)) {
 				aIdSuffix = vIdSuffix;
 			}
 
@@ -1007,7 +1038,7 @@ sap.ui.define([
 		 */
 		getContentDensity : function(oControl) {
 			var sContentDensity;
-			var aContentDensityStyleClasses = ["sapUiSizeCompact", "sapUiSizeCondensed", "sapUiSizeCozy"];
+			var aContentDensityStyleClasses = ["sapUiSizeCondensed", "sapUiSizeCompact", "sapUiSizeCozy"];
 
 			var fnGetContentDensity = function (sFnName, oObject) {
 				if (!oObject[sFnName]) {
@@ -1088,7 +1119,7 @@ sap.ui.define([
 		sanitizeSelectionMode: function(oTable, sSelectionMode) {
 			if (sSelectionMode === SelectionMode.Multi) {
 				sSelectionMode = SelectionMode.MultiToggle;
-				jQuery.sap.log.warning("The selection mode 'Multi' is deprecated and must not be used anymore. Your setting was defaulted to selection mode 'MultiToggle'");
+				Log.warning("The selection mode 'Multi' is deprecated and must not be used anymore. Your setting was defaulted to selection mode 'MultiToggle'");
 			}
 			return sSelectionMode;
 		},
@@ -1176,6 +1207,263 @@ sap.ui.define([
 		 */
 		getResourceText: function(sKey, aValues) {
 			return oResourceBundle ? oResourceBundle.getText(sKey, aValues) : "";
+		},
+
+		/**
+		 * Facilitates dynamic calling.
+		 *
+		 * @param {function():T | T} vObject The object, or a function returning the object, on which methods will be called.
+		 * @param {function(this:U, T) | Object<string, Array.<*>>} vCall Called if <code>vObject</code> is, or returns an object.
+		 * @param {U} [oThis] Context in the function calls, or in the callback if <code>vCall</code>is a function. Default is <code>vObject</code>.
+		 * @returns {undefined | Array.<*>} If <code>vCall</code> is a map, the return values of the calls are returned. In case of multiple calls, an
+		 *                                  array of return values is returned.
+		 * @template T, U
+		 */
+		dynamicCall: function(vObject, vCall, oThis) {
+			var oObject = vObject instanceof Function ? vObject() : vObject;
+
+			if (!oObject || !vCall) {
+				return undefined;
+			}
+
+			oThis = oThis || oObject;
+
+			if (vCall instanceof Function) {
+				vCall.call(oThis, oObject);
+				return undefined;
+			} else {
+				var aParameters;
+				var aReturnValues = [];
+				for (var sFunctionName in vCall) {
+					if (oObject[sFunctionName] instanceof Function) {
+						aParameters = vCall[sFunctionName];
+						aReturnValues.push(oObject[sFunctionName].apply(oThis, aParameters));
+					} else {
+						aReturnValues.push(undefined);
+					}
+				}
+				if (aReturnValues.length === 1) {
+					return aReturnValues[0];
+				} else {
+					return aReturnValues;
+				}
+			}
+		},
+
+		/**
+		 * Invokes a method in a certain interval, regardless of how many times it was called.
+		 *
+		 * @param {Function} fn The method to throttle.
+		 * @param {Object} [mOptions] The options that influence when the throttled method will be invoked.
+		 * @param {int} [mOptions.wait=0] The amount of milliseconds to wait until actually invoking the method.
+		 * @param {boolean} [mOptions.leading=true] Whether the method should be invoked on the first call.
+		 * @param {boolean} [mOptions.asyncLeading=false] Whether the leading invocation should be asynchronous.
+		 * @returns {Function} Returns the throttled method.
+		 */
+		throttle: function(fn, mOptions) {
+			// Functionality taken from lodash open source library and adapted as needed
+
+			mOptions = Object.assign({
+				wait: 0,
+				leading: true
+			}, mOptions);
+			mOptions.maxWait = mOptions.wait;
+			mOptions.trailing = true;
+			mOptions.requestAnimationFrame = false;
+
+			return TableUtils.debounce(fn, mOptions);
+		},
+
+		/**
+		 * Invokes a method if a certain time has passed since the last call, regardless of how many times it was called.
+		 *
+		 * @param {Function} fn The method to debounce.
+		 * @param {Object} [mOptions] The options that influence when the debounced method will be invoked.
+		 * @param {int} [mOptions.wait=0] The amount of milliseconds since the last call to wait before actually invoking the method. Has no
+		 *                                effect, if <code>mOptions.requestAnimationFrame</code> is set to <code>true</code>.
+		 * @param {int|null} [mOptions.maxWait=null] The maximum amount of milliseconds to wait for an invocation. Has no effect, if
+		 *                                           <code>mOptions.requestAnimationFrame</code> is set to <code>true</code>.
+		 * @param {boolean} [mOptions.leading=false] Whether the method should be invoked on the first call.
+		 * @param {boolean} [mOptions.asyncLeading=false] Whether the leading invocation should be asynchronous.
+		 * @param {boolean} [mOptions.trailing=true] Whether the method should be invoked after a certain time has passed. If
+		 *                                           <code>mOptions.leading</code> is set to <code>true</code>, the method needs to be called more
+		 *                                           than once for an invocation at the end of the waiting time.
+		 * @param {boolean} [mOptions.requestAnimationFrame=false] Whether <code>requestAnimationFrame</code> should be used to debounce the
+		 *                                                         method. If set to <code>true</code>, <code>mOptions.wait</code> and
+		 *                                                         <code>mOptions.maxWait</code> have no effect.
+		 * @returns {Function} Returns the debounced method.
+		 */
+		debounce: function(fn, mOptions) {
+			// Functionality taken from lodash open source library and adapted as needed
+
+			mOptions = Object.assign({
+				wait: 0,
+				maxWait: null,
+				leading: false,
+				asyncLeading: false,
+				trailing: true,
+				requestAnimationFrame: false
+			}, mOptions);
+
+			var iLastInvocationTime = null;
+			var iTimerId = null;
+			var oCancelablePromise = null;
+			var bMaxWait = mOptions.maxWait != null;
+
+			mOptions.wait = Math.max(0, mOptions.wait);
+			mOptions.maxWait = bMaxWait ? Math.max(mOptions.maxWait, mOptions.wait) : mOptions.maxWait;
+
+			/**
+			 * Calls the method. Only calls the method if an arguments object is provided.
+			 *
+			 * @param {any} [vContext] The context of the call.
+			 * @param {Object} [vArguments] The arguments object.
+			 * @param {boolean} [bAsync=false] Whether the method should be called in a promise.
+			 */
+			function invoke(vContext, vArguments, bAsync) {
+				bAsync = bAsync === true;
+				iLastInvocationTime = Date.now();
+
+				if (vArguments == null) {
+					return;
+				}
+
+				if (bAsync) {
+					var oPromise = Promise.resolve().then(function() {
+						if (oPromise.canceled) {
+							return;
+						}
+						oCancelablePromise = null;
+						fn.apply(vContext, vArguments);
+					});
+					oPromise.cancel = function() {
+						oPromise.canceled = true;
+					};
+					oCancelablePromise = oPromise;
+				} else {
+					fn.apply(vContext, vArguments);
+				}
+			}
+
+			/**
+			 * Calls the method debounced. Multiple calls within a certain time will be reduced to one call.
+			 *
+			 * @param {any} [vContext] The context of the call.
+			 * @param {Object} [vArguments] The arguments object.
+			 */
+			function invokeDebounced(vContext, vArguments) {
+				cancelTimer();
+
+				function _invoke(bCancel) {
+					bCancel = bCancel !== false;
+					if (mOptions.trailing) {
+						invoke(vContext, vArguments);
+					}
+					if (bCancel) {
+						cancel();
+					}
+				}
+
+				if (mOptions.requestAnimationFrame) {
+					iTimerId = window.requestAnimationFrame(function() {
+						_invoke();
+					});
+				} else {
+					var iNow = Date.now();
+					var iTimeSinceLastInvocation = iLastInvocationTime == null ? 0 : iNow - iLastInvocationTime;
+					var iRemainingWaitTime = Math.max(0, bMaxWait ?
+														 Math.min(mOptions.maxWait - iTimeSinceLastInvocation, mOptions.wait) :
+														 mOptions.wait);
+					var bMaxWaitInvocation = iRemainingWaitTime < mOptions.wait;
+
+					iTimerId = setTimeout(function() {
+						if (bMaxWaitInvocation) {
+							var iTimerOvertime = Math.max(0, (Date.now() - iNow) - iRemainingWaitTime);
+							var iCancelWaitTime = mOptions.wait - iRemainingWaitTime;
+							if (iTimerOvertime > iCancelWaitTime) {
+								// The timer took longer, maybe because of a long-running synchronous execution. No need to wait more.
+								_invoke();
+							} else {
+								// Because there is some time left, the timer is restarted for cleanup. This is necessary for correct scheduling if
+								// the debounced method is called again during this time.
+								iTimerId = setTimeout(cancel, iCancelWaitTime - iTimerOvertime);
+								_invoke(false);
+							}
+						} else {
+							_invoke();
+						}
+					}, iRemainingWaitTime);
+				}
+			}
+
+			function cancelTimer() {
+				if (mOptions.requestAnimationFrame) {
+					window.cancelAnimationFrame(iTimerId);
+				} else {
+					clearTimeout(iTimerId);
+				}
+				iTimerId = null;
+			}
+
+			function cancelPromise() {
+				if (oCancelablePromise) {
+					oCancelablePromise.cancel();
+					oCancelablePromise = null;
+				}
+			}
+
+			function cancel() {
+				cancelTimer();
+				cancelPromise();
+				iLastInvocationTime = null;
+			}
+
+			function pending() {
+				return iTimerId != null;
+			}
+
+			var debounced = function() {
+				if (!pending() && !mOptions.leading) {
+					invoke(); // Fake a leading invocation. Required for maxWait invocations.
+				}
+				if (pending() || !mOptions.leading) {
+					invokeDebounced(this, arguments);
+				} else if (mOptions.asyncLeading) {
+					invoke(this, arguments, true);
+					invokeDebounced();
+				} else { // mOptions.leading
+					invokeDebounced(); // Schedule delayed invocation before leading invocation. Function execution might take some time.
+					invoke(this, arguments);
+				}
+			};
+			debounced.cancel = cancel;
+			debounced.pending = pending;
+
+			return debounced;
+		},
+
+		/**
+		 * Returns all interactive elements in a data cell.
+		 *
+		 * @param {jQuery|HTMLElement} oCell The data cell from which to get the interactive elements.
+		 * @returns {jQuery|null} Returns <code>null</code>, if the passed cell is not a cell or does not contain any interactive elements.
+		 */
+		getInteractiveElements: function(oCell) {
+			if (!oCell) {
+				return null;
+			}
+
+			var $Cell = jQuery(oCell);
+			var oCellInfo = TableUtils.getCellInfo($Cell);
+
+			if (oCellInfo.isOfType(CELLTYPE.DATACELL | CELLTYPE.ROWACTION)) {
+				var $InteractiveElements = $Cell.find(INTERACTIVE_ELEMENT_SELECTORS);
+				if ($InteractiveElements.length > 0) {
+					return $InteractiveElements;
+				}
+			}
+
+			return null;
 		}
 	};
 

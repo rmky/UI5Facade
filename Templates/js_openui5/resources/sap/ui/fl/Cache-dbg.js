@@ -4,7 +4,14 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConnector, Utils) {
+sap.ui.define([
+	"sap/ui/fl/LrepConnector",
+	"sap/ui/fl/Utils",
+	"sap/base/strings/formatMessage",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery",
+	"sap/base/util/LoaderExtensions"
+], function(LrepConnector, Utils, formatMessage, Log, jQuery, LoaderExtensions) {
 	"use strict";
 
 	/**
@@ -15,7 +22,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 	 * @alias sap.ui.fl.Cache
 	 * @experimental Since 1.25.0
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 */
 	var Cache = function () {
 	};
@@ -173,21 +180,18 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 	 * @param {object} [mPropertyBag.appDescriptor] - Manifest that belongs to actual component
 	 * @param {string} [mPropertyBag.siteId] - <code>sideId</code> that belongs to actual component
 	 * @param {string} [mPropertyBag.cacheKey] - key to validate the client side stored cache entry
-	 * @param {string} [mPropertyBag.url] - address to which the request for change should be sent in case the data is not cached
 	 * @param {string} [mPropertyBag.appName] - name where bundled changes from the application development are stored
+	 * @param {boolean} bInvalidateCache - should the cache be invalidated
 	 * @returns {Promise} resolves with the change file for the given component, either from cache or back end
 	 *
 	 * @public
 	 */
-	Cache.getChangesFillingCache = function (oLrepConnector, mComponent, mPropertyBag) {
-		if (!this.isActive()) {
-			return oLrepConnector.loadChanges(mComponent, mPropertyBag);
-		}
+	Cache.getChangesFillingCache = function (oLrepConnector, mComponent, mPropertyBag, bInvalidateCache) {
 		var sComponentName = mComponent.name;
 		var sAppVersion = mComponent.appVersion || Utils.DEFAULT_APP_VERSION;
 		var oCacheEntry = Cache.getEntry(sComponentName, sAppVersion);
 
-		if (oCacheEntry.promise) {
+		if (oCacheEntry.promise && !bInvalidateCache) {
 			return oCacheEntry.promise;
 		}
 
@@ -215,10 +219,14 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 		var oChangesLoadingPromise = oFlexDataPromise.then(function (oResult) {
 			return oResult;
 		}, function (oError) {
+			var sMessageText = "";
+			if (oError.messages && oError.messages.length != 0 && oError.messages[0].text) {
+				sMessageText = oError.messages[0].text;
+			}
+			var sErrorMessage = formatMessage("Loading changes for {0} failed!\nError code: {1}\nMessage: {2}", mComponent.name, oError.code, sMessageText);
 			// if the back end is not reachable we still cache the results in a valid way because the url request is
 			// cached by the browser in its negative cache anyway.
-			var sErrorMessage = jQuery.sap.formatMessage("flexibility service is not available:\nError message: {0}", oError.status);
-			jQuery.sap.log.error(sErrorMessage);
+			Log.error(sErrorMessage);
 			return Promise.resolve({
 				changes: {
 					changes: [],
@@ -273,10 +281,10 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 			return Promise.resolve([]);
 		}
 
-		var sResourcePath = jQuery.sap.getResourceName(mPropertyBag.appName, "/changes/changes-bundle.json");
-		var bChangesBundleLoaded = jQuery.sap.isResourceLoaded(sResourcePath);
+		var sResourcePath = mPropertyBag.appName.replace(/\./g, "/") + "/changes/changes-bundle.json";
+		var bChangesBundleLoaded = !!sap.ui.loader._.getModuleState(sResourcePath);
 		if (bChangesBundleLoaded) {
-			return Promise.resolve(jQuery.sap.loadResource(sResourcePath));
+			return Promise.resolve(LoaderExtensions.loadResource(sResourcePath));
 		} else {
 			if (!sap.ui.getCore().getConfiguration().getDebug()) {
 				return Promise.resolve([]);
@@ -284,9 +292,9 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 
 			// try to load the source in case a debugging takes place and the component could have no Component-preload
 			try {
-				return Promise.resolve(jQuery.sap.loadResource(sResourcePath));
+				return Promise.resolve(LoaderExtensions.loadResource(sResourcePath));
 			} catch (e) {
-				jQuery.sap.log.warning("flexibility did not find a changesBundle.json  for the application");
+				Log.warning("flexibility did not find a changesBundle.json  for the application");
 				return Promise.resolve([]);
 			}
 		}
@@ -309,7 +317,7 @@ sap.ui.define(["sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"], function (LrepConn
 	 */
 	Cache.getCacheKey = function (mComponent) {
 		if (!mComponent || !mComponent.name || !mComponent.appVersion) {
-			jQuery.sap.log.warning("Not all parameters were passed to determine a flexibility cache key.");
+			Log.warning("Not all parameters were passed to determine a flexibility cache key.");
 			return Promise.resolve(Cache.NOTAG);
 		}
 		return this.getChangesFillingCache(LrepConnector.createConnector(), mComponent).then(function (oWrappedChangeFileContent) {

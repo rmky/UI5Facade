@@ -6,7 +6,6 @@
 
 //Provides control sap.ui.unified.Calendar.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/Device',
 	'sap/ui/core/Control',
 	'sap/ui/core/Locale',
@@ -20,9 +19,13 @@ sap.ui.define([
 	'./calendar/CalendarDate',
 	'./Calendar',
 	'./CalendarRenderer',
-	"./CalendarMonthIntervalRenderer"
+	"./CalendarMonthIntervalRenderer",
+	"sap/ui/dom/containsOrEquals",
+	"sap/base/util/deepEqual",
+	"sap/ui/core/Popup",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
 ], function(
-	jQuery,
 	Device,
 	Control,
 	Locale,
@@ -36,7 +39,12 @@ sap.ui.define([
 	CalendarDate,
 	Calendar,
 	CalendarRenderer,
-	CalendarMonthIntervalRenderer
+	CalendarMonthIntervalRenderer,
+	containsOrEquals,
+	deepEqual,
+	Popup,
+	Log,
+	jQuery
 ) {
 		"use strict";
 
@@ -57,7 +65,7 @@ sap.ui.define([
 	 * <b>Note:</b> JavaScript Date objects are used to set and return the months, mark them as selected or as a special type.
 	 * But the date part of the Date object is not used. If a Date object is returned the date will be set to the 1st of the corresponding month.
 	 * @extends sap.ui.core.Control
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -219,7 +227,7 @@ sap.ui.define([
 	CalendarMonthInterval.prototype.exit = function(){
 
 		if (this._sInvalidateContent) {
-			jQuery.sap.clearDelayedCall(this._sInvalidateContent);
+			clearTimeout(this._sInvalidateContent);
 		}
 
 	};
@@ -234,6 +242,15 @@ sap.ui.define([
 		//Do not focus the date. If this is needed after the control rendering, the MonthsRow.applyFocusInto will focus it.
 		oMonthsRow.displayDate(oDate.toLocalJSDate());
 
+	};
+
+	CalendarMonthInterval.prototype._setAriaRole = function(sRole){
+		var oMonthsRow = this.getAggregation("monthsRow");
+
+		oMonthsRow._setAriaRole(sRole);
+		oMonthsRow.invalidate();
+
+		return this;
 	};
 
 	CalendarMonthInterval.prototype._initializeHeader = function() {
@@ -287,8 +304,10 @@ sap.ui.define([
 			oCalPicker.attachEvent("select", _handleCalendarDateSelect, this);
 			oCalPicker.attachEvent("cancel", function (oEvent) {
 				this._oPopup.close();
-
-				jQuery.sap.focus(this.getAggregation("header").getDomRef("B2"));
+				var oDomRefB2 = this.getAggregation("header").getDomRef("B2");
+				if (oDomRefB2) {
+					oDomRefB2.focus();
+				}
 			}, this);
 			this.setAggregation("calendarPicker", oCalPicker);
 		}
@@ -304,7 +323,7 @@ sap.ui.define([
 
 		CalendarUtils._checkJSDateObject(oStartDate);
 
-		if (jQuery.sap.equal(this.getStartDate(), oStartDate)) {
+		if (deepEqual(this.getStartDate(), oStartDate)) {
 			return this;
 		}
 
@@ -339,7 +358,7 @@ sap.ui.define([
 		} else if (this.getDomRef() && this._iMode == 0 && !this._sInvalidateContent) {
 			// DateRange changed -> only rerender days
 			// do this only once if more DateRanges / Special days are changed
-			this._sInvalidateContent = jQuery.sap.delayedCall(0, this, _invalidateMonthsRow);
+			this._sInvalidateContent = setTimeout(_invalidateMonthsRow.bind(this), 0);
 		}
 
 	};
@@ -580,7 +599,7 @@ sap.ui.define([
 	 */
 	CalendarMonthInterval.prototype.setMinDate = function(oDate){
 
-		if (jQuery.sap.equal(oDate, this.getMinDate())) {
+		if (deepEqual(oDate, this.getMinDate())) {
 			return this;
 		}
 
@@ -597,7 +616,7 @@ sap.ui.define([
 			CalendarUtils._checkYearInValidRange(iYear);
 
 			if (this._oMaxDate.isBefore(this._oMinDate)) {
-				jQuery.sap.log.warning("minDate > maxDate -> maxDate set to end of the month", this);
+				Log.warning("minDate > maxDate -> maxDate set to end of the month", this);
 				this._oMaxDate = CalendarDate.fromLocalJSDate(oDate);
 				this._oMaxDate.setDate(CalendarUtils._daysInMonth(this._oMaxDate));
 				this.setProperty("maxDate", this._oMaxDate.toLocalJSDate(), true);
@@ -606,13 +625,13 @@ sap.ui.define([
 			if (this._oFocusedDate) {
 				// check if still in valid range
 				if (this._oFocusedDate.isBefore(this._oMinDate)) {
-					jQuery.sap.log.warning("focused date < minDate -> minDate focused", this);
+					Log.warning("focused date < minDate -> minDate focused", this);
 					this.focusDate(oDate);
 				}
 			}
 
 			if (this._oStartDate && this._oStartDate.isBefore(this._oMinDate)) {
-				jQuery.sap.log.warning("start date < minDate -> minDate set as start date", this);
+				Log.warning("start date < minDate -> minDate set as start date", this);
 				_setStartDate.call(this, new CalendarDate(this._oMinDate), true, true);
 			}
 
@@ -639,7 +658,7 @@ sap.ui.define([
 	 */
 	CalendarMonthInterval.prototype.setMaxDate = function(oDate){
 
-		if (jQuery.sap.equal(oDate, this.getMaxDate())) {
+		if (deepEqual(oDate, this.getMaxDate())) {
 			return this;
 		}
 
@@ -656,7 +675,7 @@ sap.ui.define([
 			CalendarUtils._checkYearInValidRange(iYear);
 
 			if (this._oMinDate.isAfter(this._oMaxDate)) {
-				jQuery.sap.log.warning("maxDate < minDate -> minDate set to begin of the month", this);
+				Log.warning("maxDate < minDate -> minDate set to begin of the month", this);
 				this._oMinDate = CalendarDate.fromLocalJSDate(oDate);
 				this._oMinDate.setDate(1);
 				this.setProperty("minDate", this._oMinDate.toLocalJSDate(), true);
@@ -665,7 +684,7 @@ sap.ui.define([
 			if (this._oFocusedDate) {
 				// check if still in valid range
 				if (this._oFocusedDate.isAfter(this._oMaxDate)) {
-					jQuery.sap.log.warning("focused date > maxDate -> maxDate focused", this);
+					Log.warning("focused date > maxDate -> maxDate focused", this);
 					this.focusDate(oDate);
 				}
 			}
@@ -681,7 +700,7 @@ sap.ui.define([
 					oStartDate.setMonth(oStartDate.getMonth() - this._getMonths() + 1);
 					if (oStartDate.isSameOrAfter(this._oMinDate)) {
 						// minDate wins if range is too short
-						jQuery.sap.log.warning("end date > maxDate -> maxDate set as end date", this);
+						Log.warning("end date > maxDate -> maxDate set as end date", this);
 						_setStartDate.call(this, oStartDate, true, true);
 					}
 				}
@@ -745,8 +764,10 @@ sap.ui.define([
 		var oHeader = this.getAggregation("header"),
 			oYearPicker, oMonthsRow;
 
-		if (jQuery.sap.containsOrEquals(this.getDomRef("content"), oEvent.target)) {
-			jQuery.sap.focus(oHeader.getDomRef("B2"));
+		if (containsOrEquals(this.getDomRef("content"), oEvent.target)) {
+			if (oHeader.getDomRef("B2")){
+				oHeader.getDomRef("B2").focus();
+			}
 
 			if (!this._bPoupupMode) {
 				// remove Tabindex from day, month, year - to break cycle
@@ -771,11 +792,13 @@ sap.ui.define([
 		var oHeader = this.getAggregation("header"),
 			oMonthsRow, oYearPicker;
 
-		if (jQuery.sap.containsOrEquals(this.getDomRef("content"), oEvent.target)) {
+		if (containsOrEquals(this.getDomRef("content"), oEvent.target)) {
 			// tab from day or year -> go to header
 
 			if (this._bPoupupMode) {
-				jQuery.sap.focus(oHeader.getDomRef("B2"));
+				if (oHeader.getDomRef("B2")){
+					oHeader.getDomRef("B2").focus();
+				}
 				oEvent.preventDefault();
 			}
 		} else if (oEvent.target.id == oHeader.getId() + "-B2") {
@@ -804,8 +827,9 @@ sap.ui.define([
 			// focus via tab+shift (otherwise not possible to go to this element)
 			var oHeader = this.getAggregation("header"),
 				oMonthsRow, oYearPicker;
-
-			jQuery.sap.focus(oHeader.getDomRef("B2"));
+			if (oHeader.getDomRef("B2")){
+				oHeader.getDomRef("B2").focus();
+			}
 
 			if (!this._bPoupupMode) {
 				oMonthsRow = this.getAggregation("monthsRow");
@@ -831,7 +855,7 @@ sap.ui.define([
 		var oMonthsRow,
 			oYearPicker;
 
-		if (!oEvent.relatedControlId || !jQuery.sap.containsOrEquals(this.getDomRef(), sap.ui.getCore().byId(oEvent.relatedControlId).getFocusDomRef())) {
+		if (!oEvent.relatedControlId || !containsOrEquals(this.getDomRef(), sap.ui.getCore().byId(oEvent.relatedControlId).getFocusDomRef())) {
 			// put dummy element back to tab-chain
 			this.$("end").attr("tabindex", "0");
 
@@ -1365,8 +1389,7 @@ sap.ui.define([
 	function _openPickerPopup(oPicker){
 
 		if (!this._oPopup) {
-			jQuery.sap.require("sap.ui.core.Popup");
-			this._oPopup = new sap.ui.core.Popup();
+			this._oPopup = new Popup();
 			this._oPopup.setAutoClose(true);
 			this._oPopup.setAutoCloseAreas([this.getDomRef()]);
 			this._oPopup.setDurations(0, 0); // no animations
@@ -1380,7 +1403,7 @@ sap.ui.define([
 		this._oPopup.setContent(oPicker);
 
 		var oHeader = this.getAggregation("header");
-		var eDock = sap.ui.core.Popup.Dock;
+		var eDock = Popup.Dock;
 		this._oPopup.open(0, eDock.CenterTop, eDock.CenterTop, oHeader, null, "flipfit", true);
 
 	}

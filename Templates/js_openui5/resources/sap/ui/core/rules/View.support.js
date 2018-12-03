@@ -6,8 +6,8 @@
 /**
  * Defines support rules related to the view.
  */
-sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
-	function(jQuery, SupportLib) {
+sap.ui.define(["sap/ui/support/library"],
+	function(SupportLib) {
 	"use strict";
 
 	// shortcuts
@@ -30,7 +30,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 		minversion: "-",
 		title: "XML View is not configured with namespace 'sap.ui.core.mvc'",
 		description: "For consistency and proper resource loading, the root node of an XML view must be configured with the namespace 'mvc'",
-		resolution: "Define the XML view as '<core:View ...>' and configure the XML namepspace as 'xmlns:mvc=\"sap.ui.core.mvc\"'",
+		resolution: "Define the XML view as '<mvc:View ...>' and configure the XML namepspace as 'xmlns:mvc=\"sap.ui.core.mvc\"'",
 		resolutionurls: [{
 			text: "Documentation: Namespaces in XML Views",
 			href: "https://sapui5.hana.ondemand.com/#docs/guide/2421a2c9fa574b2e937461b5313671f0.html"
@@ -153,11 +153,11 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 	var oXMLViewUnusedNamespaces = {
 		id: "xmlViewUnusedNamespaces",
 		audiences: [Audiences.Control, Audiences.Application],
-		categories: [Categories.Performance],
+		categories: [Categories.Usability],
 		enabled: true,
 		minversion: "-",
 		title: "Unused namespaces in XML view",
-		description: "Namespaces that are declared but not used have a negative impact on performance (and may confuse readers of the code)",
+		description: "Namespaces that are declared but not used may confuse readers of the code",
 		resolution: "Remove the unused namespaces from the view definition",
 		resolutionurls: [{
 			text: "Documentation: Namespaces in XML Views",
@@ -176,10 +176,10 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 					// and the mvc, because the use of mvc is checked in other rule
 					if (sName.match("xmlns:")
 						&& sLocalName !== "xmlns:support"
-						&& sLocalName !== "mvc") {
-						for (var j = 0; j < jQuery(oXMLView._xContent).children().length; j++) {
-							var oContent = jQuery(oXMLView._xContent).children()[j];
-							// get the xml code of the children as a string
+						&& sLocalName !== "mvc"
+						&& sFullName.indexOf("schemas.sap.com") < 0) {
+							var oContent = jQuery(oXMLView._xContent)[0];
+							// get the xml code of the view as a string
 							// The outerHTML doesn't work with IE, so we used
 							// the XMLSerializer instead
 							var sContent = new XMLSerializer().serializeToString(oContent);
@@ -188,7 +188,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 							if (!sContent.match("<" + sLocalName + ":")) {
 								var sViewName = oXMLView.getViewName().split("\.").pop();
 								oIssueManager.addIssue({
-									severity: Severity.High,
+									severity: Severity.Medium,
 									details: "View '" + sViewName + "' (" + oXMLView.getId() + ") contains an unused XML namespace '" + sLocalName + "' referencing library '" + sFullName + "'",
 									context: {
 										id: oXMLView.getId()
@@ -196,7 +196,6 @@ sap.ui.define(["jquery.sap.global", "sap/ui/support/library"],
 								});
 							}
 						}
-					}
 				}
 			});
 		}

@@ -5,15 +5,14 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/m/Text',
 	'sap/ui/Device',
 	'./FeedContentRenderer',
-	'jquery.sap.keycodes'
+	"sap/ui/events/KeyCodes"
 ],
-	function(jQuery, library, Control, Text, Device, FeedContentRenderer) {
+	function(library, Control, Text, Device, FeedContentRenderer, KeyCodes) {
 	"use strict";
 
 	// shortcut for sap.m.Size
@@ -29,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 1.34
 	 *
 	 * @public
@@ -198,7 +197,7 @@ sap.ui.define([
 	 * @param {jQuery.Event} oEvent which was triggered
 	 */
 	FeedContent.prototype.onkeydown = function(oEvent) {
-		if (oEvent.which === jQuery.sap.KeyCodes.ENTER || oEvent.which === jQuery.sap.KeyCodes.SPACE) {
+		if (oEvent.which === KeyCodes.ENTER || oEvent.which === KeyCodes.SPACE) {
 			this.firePress();
 			oEvent.preventDefault();
 		}

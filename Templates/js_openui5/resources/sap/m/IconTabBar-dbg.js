@@ -6,13 +6,13 @@
 
 // Provides control sap.m.IconTabBar.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/base/ManagedObject',
-	'./IconTabBarRenderer'
+	'./IconTabBarRenderer',
+	"sap/ui/thirdparty/jquery"
 ],
-	function(jQuery, library, Control, ManagedObject, IconTabBarRenderer) {
+	function(library, Control, ManagedObject, IconTabBarRenderer, jQuery) {
 	"use strict";
 
 
@@ -89,7 +89,7 @@ sap.ui.define([
 	 * @implements sap.m.ObjectHeaderContainer
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @public
 	 * @alias sap.m.IconTabBar
@@ -291,23 +291,6 @@ sap.ui.define([
 		},
 		designtime: "sap/m/designtime/IconTabBar.designtime"
 	}});
-
-
-	/**
-	 * Clones the IconTabBar.
-	 *
-	 * @public
-	 * @returns {sap.m.IconTabBar} The cloned IconTabBar.
-	 */
-	IconTabBar.prototype.clone = function () {
-		var oClone = Control.prototype.clone.apply(this, arguments);
-
-		// "_header" aggregation is hidden and it is not cloned by default
-		var oIconTabHeader = this._getIconTabHeader();
-		oClone.setAggregation("_header", oIconTabHeader.clone(), true);
-
-		return oClone;
-	};
 
 	/**
 	 * Sets the tab content as expanded.

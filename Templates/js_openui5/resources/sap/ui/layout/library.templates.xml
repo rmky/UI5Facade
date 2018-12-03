@@ -537,6 +537,35 @@
 </VerticalLayout>
 ]]></xmlTemplate>
 </Template>
+<Template name="sap.ui.layout.cssgrid.GridItemLayoutData" alias="GridItemLayoutData,Data">
+	<jsTemplate><![CDATA[new sap.ui.layout.cssgrid.GridItemLayoutData({
+	id: "${id}", // sap.ui.core.ID
+	gridColumnStart: "", // sap.ui.layout.cssgrid.CSSGridLine
+	gridColumnEnd: "", // sap.ui.layout.cssgrid.CSSGridLine
+	gridRowStart: "", // sap.ui.layout.cssgrid.CSSGridLine
+	gridRowEnd: "", // sap.ui.layout.cssgrid.CSSGridLine
+	gridColumn: "", // sap.ui.layout.cssgrid.CSSGridLine
+	gridRow: "", // sap.ui.layout.cssgrid.CSSGridLine
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [] // sap.ui.core.dnd.DragDropBase, since 1.56
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<cssgrid/GridItemLayoutData xmlns="sap.ui.layout"
+	id="${id}"
+	gridColumnStart=""
+	gridColumnEnd=""
+	gridRowStart=""
+	gridRowEnd=""
+	gridColumn=""
+	gridRow="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</cssgrid/GridItemLayoutData>
+]]></xmlTemplate>
+</Template>
 <Template name="sap.ui.layout.form.ColumnContainerData" alias="ColumnContainerData,Data">
 	<jsTemplate><![CDATA[new sap.ui.layout.form.ColumnContainerData({
 	id: "${id}", // sap.ui.core.ID

@@ -5,7 +5,7 @@
  */
 
 // Provides enumeration sap.ui.model.odata.v4.SubmitMode
-sap.ui.define(function() {
+sap.ui.define(function () {
 	"use strict";
 
 	/**

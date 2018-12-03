@@ -6,17 +6,17 @@
 
 // Provides control sap.uxap.ObjectPageDynamicHeaderContent.
 sap.ui.define([
-    'jquery.sap.global',
-    './library',
-    "./ObjectPageDynamicHeaderContentRenderer"
+	'./library',
+	"./ObjectPageDynamicHeaderContentRenderer",
+	"sap/base/Log"
 ],
-	function(jQuery, library, ObjectPageDynamicHeaderContentRenderer) {
+	function(library, ObjectPageDynamicHeaderContentRenderer, Log) {
 		"use strict";
 
 		try {
 			sap.ui.getCore().loadLibrary("sap.f");
 		} catch (e) {
-			jQuery.sap.log.error("The control 'sap.uxap.ObjectPageDynamicHeaderContent' needs library 'sap.f'.");
+			Log.error("The control 'sap.uxap.ObjectPageDynamicHeaderContent' needs library 'sap.f'.");
 			throw (e);
 		}
 
@@ -49,7 +49,7 @@ sap.ui.define([
 		 * @implements sap.uxap.IHeaderContent
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -69,12 +69,14 @@ sap.ui.define([
 		 * @param bVisible
 		 * @param sContentDesign
 		 * @param bPinnable
+		 * @param sStableId
 		 */
-		ObjectPageDynamicHeaderContent.createInstance = function (aContent, bVisible, sContentDesign, bPinnable) {
+		ObjectPageDynamicHeaderContent.createInstance = function (aContent, bVisible, sContentDesign, bPinnable, sStableId) {
 			return new ObjectPageDynamicHeaderContent({
 				content: aContent,
 				visible: bVisible,
-				pinnable: bPinnable
+				pinnable: bPinnable,
+				id: sStableId
 			});
 		};
 

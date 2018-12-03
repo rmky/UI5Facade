@@ -6,23 +6,15 @@
 
 // Provides control sap.m.Bar.
 sap.ui.define([
-	'jquery.sap.global',
 	'./BarInPageEnabler',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/ResizeHandler',
 	'sap/ui/Device',
-	'./BarRenderer'
+	'./BarRenderer',
+	"sap/ui/thirdparty/jquery"
 ],
-	function(
-	jQuery,
-	BarInPageEnabler,
-	library,
-	Control,
-	ResizeHandler,
-	Device,
-	BarRenderer
-	) {
+	function(BarInPageEnabler, library, Control, ResizeHandler, Device, BarRenderer, jQuery) {
 	"use strict";
 
 
@@ -63,7 +55,7 @@ sap.ui.define([
 	 * @implements sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public

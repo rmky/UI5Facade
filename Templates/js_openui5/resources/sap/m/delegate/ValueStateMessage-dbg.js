@@ -4,8 +4,23 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/ui/core/ValueStateSupport', 'sap/ui/core/Popup', 'sap/ui/core/library'],
-	function(jQuery, Device, BaseObject, ValueStateSupport, Popup, coreLibrary) {
+sap.ui.define([
+	'sap/ui/Device',
+	'sap/ui/base/Object',
+	'sap/ui/core/ValueStateSupport',
+	'sap/ui/core/Popup',
+	'sap/ui/core/library',
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/dom/jquery/Aria" // jQuery Plugin "addAriaDescribedBy", "removeAriaDescribedBy"
+],
+	function(
+		Device,
+		BaseObject,
+		ValueStateSupport,
+		Popup,
+		coreLibrary,
+		jQuery
+	) {
 		"use strict";
 
 		// shortcut for sap.ui.core.ValueState
@@ -164,7 +179,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 
 			this._oPopup = new Popup(document.createElement("span"), false, false, false);
 			this._oPopup.attachClosed(function() {
-				jQuery.sap.byId(sID).remove();
+				jQuery(document.getElementById(sID)).remove();
 			});
 
 			return this._oPopup;
@@ -225,7 +240,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/base/Object', 'sap/
 
 			var oTextDomRef = document.createElement("span");
 			oTextDomRef.id = sID + "-text";
-			oTextDomRef.setAttribute("aria-hidden", "true");
+
+			if (!oControl.isA('sap.m.Select')) {
+				oTextDomRef.setAttribute("aria-hidden", "true");
+			}
+
 			oTextDomRef.appendChild(document.createTextNode(sText));
 
 			oMessageDomRef.appendChild(oAccDomRef);

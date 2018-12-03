@@ -6,24 +6,26 @@
 
 // Provides control sap.ui.core.mvc.HTMLView.
 sap.ui.define([
-    'jquery.sap.global',
-    './View',
-    './HTMLViewRenderer',
-	'sap/base/util/extend',
-    'sap/ui/base/ManagedObject',
-    'sap/ui/core/DeclarativeSupport',
-    'sap/ui/core/library',
-    'sap/ui/model/resource/ResourceModel'
+	'sap/ui/thirdparty/jquery',
+	'./View',
+	'./HTMLViewRenderer',
+	'sap/base/util/merge',
+	'sap/ui/base/ManagedObject',
+	'sap/ui/core/DeclarativeSupport',
+	'sap/ui/core/library',
+	'sap/ui/model/resource/ResourceModel',
+	'sap/base/util/LoaderExtensions'
 ],
 	function(
-	    jQuery,
+		jQuery,
 		View,
 		HTMLViewRenderer,
-		extend,
+		merge,
 		ManagedObject,
 		DeclarativeSupport,
 		library,
-		ResourceModel
+		ResourceModel,
+		LoaderExtensions
 	) {
 	"use strict";
 
@@ -41,7 +43,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.mvc.View
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @public
 	 * @since 1.9.2
@@ -58,7 +60,7 @@ sap.ui.define([
 	/**
 	 * Creates an instance of a declarative HTML view.
 	 *
-	 * @param {map} mOptions A map containig the view configuration options.
+	 * @param {map} mOptions A map containing the view configuration options.
 	 * @param {string} [mOptions.id] Specifies an ID for the View instance. If no ID is given, an ID will be generated.
 	 * @param {string} [mOptions.viewName] Name of the view resource in module name notation (without suffix)
 	 * @param {string} [mOptions.definition] The view definition.
@@ -71,7 +73,7 @@ sap.ui.define([
 	 * @return {Promise} A Promise which resolves with the created HTMLView instance
 	 */
 	HTMLView.create = function(mOptions) {
-		var mParameters = extend(true, {}, mOptions);
+		var mParameters = merge({}, mOptions);
 		mParameters.type = ViewType.HTML;
 		return View.create(mParameters);
 	};
@@ -96,7 +98,7 @@ sap.ui.define([
 	 * @param {boolean} [vView.async] defines how the view source is loaded and rendered later on
 	 * @public
 	 * @static
-	 * @deprecated since 1.56: Use HTMLView.create instead
+	 * @deprecated since 1.56: Use {@link sap.ui.core.mvc.HTMLView.create HTMLView.create} instead
 	 * @return {sap.ui.core.mvc.HTMLView | undefined} the created HTMLView instance in the creation case, otherwise undefined
 	 */
 	sap.ui.htmlview = function(sId, vView) {
@@ -148,6 +150,7 @@ sap.ui.define([
 	 * Loads and returns a template for the given template name. Templates are only loaded once {@link sap.ui.core.mvc.HTMLView._mTemplates}.
 	 *
 	 * @param {string} sTemplateName The name of the template
+	 * @param {object} mOptions configuration options
 	 * @param {boolean} [mOptions.async=false] whether the action should be performed asynchronously
 	 * @return {string|Promise} the template data, or a Promise resolving with it when async
 	 * @private
@@ -193,21 +196,22 @@ sap.ui.define([
 	 * @static
 	 */
 	HTMLView._getViewUrl = function(sTemplateName) {
-		return jQuery.sap.getModulePath(sTemplateName, ".view.html");
+		return sap.ui.require.toUrl(sTemplateName.replace(/\./g, "/")) + ".view.html";
 	};
 
 	/**
 	 * Loads and returns the template from a given URL.
 	 *
 	 * @param {string} sTemplateName The name of the template
+	 * @param {object} [mOptions] configuration options
 	 * @param {boolean} [mOptions.async=false] whether the action should be performed asynchronously
 	 * @return {string|Promise} the template data, or a Promise resolving with it when async
 	 * @private
 	 * @static
 	 */
 	HTMLView._loadTemplate = function(sTemplateName, mOptions) {
-		var sResourceName = jQuery.sap.getResourceName(sTemplateName, ".view.html");
-		return jQuery.sap.loadResource(sResourceName, mOptions);
+		var sResourceName = sTemplateName.replace(/\./g, "/") + ".view.html";
+		return LoaderExtensions.loadResource(sResourceName, mOptions);
 	};
 
 	/**
@@ -276,8 +280,20 @@ sap.ui.define([
 				that._controllerName = mSettings.controllerName;
 			}
 			if ((mSettings.resourceBundleName || mSettings.resourceBundleUrl) && (!mSettings.models || !mSettings.models[mSettings.resourceBundleAlias])) {
-				var model = new ResourceModel({bundleName:mSettings.resourceBundleName, bundleUrl:mSettings.resourceBundleUrl, bundleLocale:mSettings.resourceBundleLocale});
-				that.setModel(model, mSettings.resourceBundleAlias);
+				var oModel = new ResourceModel({
+					bundleName: mSettings.resourceBundleName,
+					bundleUrl: mSettings.resourceBundleUrl,
+					bundleLocale: mSettings.resourceBundleLocale,
+					async: mSettings.async
+				});
+				var vBundle = oModel.getResourceBundle();
+				// if ResourceBundle was created with async flag vBundle will be a Promise
+				if (vBundle instanceof Promise) {
+					return vBundle.then(function() {
+						that.setModel(oModel, mSettings.resourceBundleAlias);
+					});
+				}
+				that.setModel(oModel, mSettings.resourceBundleAlias);
 			}
 		}
 
@@ -291,9 +307,9 @@ sap.ui.define([
 		if (mSettings.async) {
 			// return the promise
 			return vHTML.then(function(_vHTML) {
-					vHTML = _vHTML;
-					fnInitViewSettings();
-				});
+				vHTML = _vHTML;
+				return fnInitViewSettings();
+			});
 		}
 
 		fnInitViewSettings();

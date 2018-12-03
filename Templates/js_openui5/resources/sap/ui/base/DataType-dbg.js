@@ -5,8 +5,13 @@
  */
 
 // Provides class sap.ui.base.DataType
-sap.ui.define(['jquery.sap.global'],
-	function(jQuery) {
+sap.ui.define([
+	'sap/base/util/ObjectPath',
+	"sap/base/assert",
+	"sap/base/Log",
+	"sap/base/util/isPlainObject"
+],
+	function(ObjectPath, assert, Log, isPlainObject) {
 	"use strict";
 
 
@@ -175,7 +180,7 @@ sap.ui.define(['jquery.sap.global'],
 	 * @public
 	 */
 	DataType.prototype.setNormalizer = function(fnNormalizer) {
-		jQuery.sap.assert(typeof fnNormalizer === "function", "DataType.setNormalizer: fnNormalizer must be a function");
+		assert(typeof fnNormalizer === "function", "DataType.setNormalizer: fnNormalizer must be a function");
 		this._fnNormalizer = typeof fnNormalizer === "function" ? fnNormalizer : undefined;
 	};
 
@@ -245,7 +250,7 @@ sap.ui.define(['jquery.sap.global'],
 	});
 
 	function createArrayType(componentType) {
-		jQuery.sap.assert(componentType instanceof DataType, "DataType.<createArrayType>: componentType must be a DataType");
+		assert(componentType instanceof DataType, "DataType.<createArrayType>: componentType must be a DataType");
 
 		// create a new type object with the base type as prototype
 		var oType = Object.create(DataType.prototype);
@@ -451,13 +456,13 @@ sap.ui.define(['jquery.sap.global'],
 
 					if ( sValue[0] === '.' ) {
 						// starts with a dot, must be a controller local function
-						// usage of jQuery.sap.getObject to allow addressing functions in properties
+						// usage of ObjectPath.get to allow addressing functions in properties
 						if ( contextObj ) {
-							fnResult = jQuery.sap.getObject(sValue.slice(1), undefined, contextObj);
+							fnResult = ObjectPath.get(sValue.slice(1), contextObj);
 							bLocal = true;
 						}
 					} else {
-						fnResult = jQuery.sap.getObject(sValue);
+						fnResult = ObjectPath.get(sValue);
 					}
 
 					if ( fnResult && this.isValid(fnResult) ) {
@@ -514,7 +519,7 @@ sap.ui.define(['jquery.sap.global'],
 	 * @public
 	 */
 	DataType.getType = function(sTypeName) {
-		jQuery.sap.assert( sTypeName && typeof sTypeName === 'string', "sTypeName must be a non-empty string");
+		assert( sTypeName && typeof sTypeName === 'string', "sTypeName must be a non-empty string");
 
 		var oType = mTypes[sTypeName];
 		if ( !(oType instanceof DataType) ) {
@@ -527,17 +532,17 @@ sap.ui.define(['jquery.sap.global'],
 					mTypes[sTypeName] = oType;
 				}
 			} else if ( sTypeName !== 'array') {
-				oType = jQuery.sap.getObject(sTypeName);
+				oType = ObjectPath.get(sTypeName);
 				if ( oType instanceof DataType ) {
 					mTypes[sTypeName] = oType;
-				} else if ( jQuery.isPlainObject(oType) ) {
+				} else if ( isPlainObject(oType) ) {
 					oType = mTypes[sTypeName] = createEnumType(sTypeName, oType);
 				} else {
 					if ( oType ) {
-						jQuery.sap.log.warning("'" + sTypeName + "' is not a valid data type. Falling back to type 'any'.");
+						Log.warning("'" + sTypeName + "' is not a valid data type. Falling back to type 'any'.");
 						oType = mTypes.any;
 					} else {
-						jQuery.sap.log.error("data type '" + sTypeName + "' could not be found.");
+						Log.error("data type '" + sTypeName + "' could not be found.");
 						oType = undefined;
 					}
 				}
@@ -592,11 +597,11 @@ sap.ui.define(['jquery.sap.global'],
 	 * @public
 	 */
 	DataType.createType = function(sName, mSettings, oBase) {
-		jQuery.sap.assert(typeof sName === "string" && sName, "DataType.createType: type name must be a non-empty string");
-		jQuery.sap.assert(oBase == null || oBase instanceof DataType || typeof oBase === "string" && oBase,
+		assert(typeof sName === "string" && sName, "DataType.createType: type name must be a non-empty string");
+		assert(oBase == null || oBase instanceof DataType || typeof oBase === "string" && oBase,
 				"DataType.createType: base type must be empty or a DataType or a non-empty string");
 		if ( /[\[\]]/.test(sName) ) {
-			jQuery.sap.log.error(
+			Log.error(
 				"DataType.createType: array types ('something[]') must not be created with createType, " +
 				"they're created on-the-fly by DataType.getType");
 		}
@@ -605,13 +610,13 @@ sap.ui.define(['jquery.sap.global'],
 		}
 		oBase = oBase || mTypes.any;
 		if ( oBase.isArrayType() || oBase.isEnumType() ) {
-			jQuery.sap.log.error("DataType.createType: base type must not be an array- or enum-type");
+			Log.error("DataType.createType: base type must not be an array- or enum-type");
 		}
 		if ( sName === 'array' || mTypes[sName] instanceof DataType ) {
 			if ( sName === 'array' || mTypes[sName].getBaseType() == null ) {
 				throw new Error("DataType.createType: primitive or hidden type " + sName + " can't be re-defined");
 			}
-			jQuery.sap.log.warning("DataTypes.createType: type " + sName + " is redefined. " +
+			Log.warning("DataTypes.createType: type " + sName + " is redefined. " +
 				"This is an unsupported usage of DataType and might cause issues." );
 		}
 		var oType = mTypes[sName] = createType(sName, mSettings, oBase);
@@ -632,7 +637,7 @@ sap.ui.define(['jquery.sap.global'],
 	 */
 	DataType.registerInterfaceTypes = function(aTypes) {
 		for (var i = 0; i < aTypes.length; i++) {
-			jQuery.sap.setObject(aTypes[i], mInterfaces[aTypes[i]] = new String(aTypes[i]));
+			ObjectPath.set(aTypes[i], mInterfaces[aTypes[i]] = new String(aTypes[i]));
 		}
 	};
 
@@ -643,7 +648,7 @@ sap.ui.define(['jquery.sap.global'],
 	 * @sap-restricted sap.ui.base,sap.ui.core.Core
 	 */
 	DataType.isInterfaceType = function(sType) {
-		return mInterfaces.hasOwnProperty(sType) && jQuery.sap.getObject(sType) === mInterfaces[sType];
+		return mInterfaces.hasOwnProperty(sType) && ObjectPath.get(sType) === mInterfaces[sType];
 	};
 
 	return DataType;

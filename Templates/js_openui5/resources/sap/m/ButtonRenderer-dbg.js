@@ -4,9 +4,16 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/library', 'sap/ui/core/IconPool', 'sap/m/library', 'sap/ui/core/InvisibleText'],
+sap.ui.define([
+	'sap/ui/Device',
+	'sap/ui/core/library',
+	'sap/ui/core/IconPool',
+	'sap/m/library',
+	'sap/ui/core/InvisibleText',
+	"sap/base/security/encodeXML"
+],
 
-	function(jQuery, Device, coreLibrary, IconPool, library, InvisibleText) {
+	function(Device, coreLibrary, IconPool, library, InvisibleText, encodeXML) {
 	"use strict";
 
 	// shortcut for sap.m.ButtonType
@@ -164,7 +171,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/library', 'sap
 		// set button specific styles
 		if (!oButton._isUnstyled() && sType !== "") {
 			// set button specific styles
-			oRm.addClass("sapMBtn" + jQuery.sap.encodeHTML(sType));
+			oRm.addClass("sapMBtn" + encodeXML(sType));
 		}
 
 		// add all classes to inner button tag
@@ -199,7 +206,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/core/library', 'sap
 			oRm.write(">");
 
 			if (bRenderBDI) {
-				oRm.write("<bdi>");
+				oRm.write("<bdi");
+				oRm.writeAttribute("id", oButton.getId() + "-BDI-content");
+				oRm.write(">");
 			}
 			oRm.writeEscaped(sText);
 			if (bRenderBDI) {

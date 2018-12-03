@@ -5,7 +5,7 @@
  */
 
  sap.ui.define([
-	'jquery.sap.global',
+	"sap/ui/thirdparty/jquery",
 	'sap/ui/core/StashedControlSupport',
 	'sap/ui/dt/ElementUtil',
 	'sap/ui/rta/Utils',
@@ -116,17 +116,28 @@
 		return sPath.indexOf("/") === 0;
 	}
 
-	var _getBindingContext = function(oElement, bAbsoluteAggregationBinding, sAggregationName) {
-		return bAbsoluteAggregationBinding ? oElement.getBindingInfo(sAggregationName) : oElement.getBindingContext();
-	};
+	function _getDefaultModelBindingData(oElement, bAbsoluteAggregationBinding, sAggregationName) {
+		var vBinding;
+		if (bAbsoluteAggregationBinding) {
+			vBinding = oElement.getBindingInfo(sAggregationName);
+			//check to be default model binding otherwise return undefined
+			if (typeof vBinding.model === "string" && vBinding.model !== ""){
+				vBinding = undefined;
+			}
+		} else {
+			//here we explicitly request the default models binding context
+			vBinding = oElement.getBindingContext();
+		}
+		return vBinding;
+	}
 
-	var _getBindingPath = function(oElement, sAggregationName) {
+	function _getBindingPath(oElement, sAggregationName) {
 		var bAbsoluteAggregationBinding = _checkForAbsoluteAggregationBinding(oElement, sAggregationName);
-		var vBinding = _getBindingContext(oElement, bAbsoluteAggregationBinding, sAggregationName);
+		var vBinding = _getDefaultModelBindingData(oElement, bAbsoluteAggregationBinding, sAggregationName);
 		if (vBinding) {
 			return bAbsoluteAggregationBinding ? vBinding.path : vBinding.getPath();
 		}
-	};
+	}
 
 	/**
 	 * Fetching all available properties of the Element's Model
@@ -473,29 +484,29 @@
 					var aAllElementData = [];
 					var aInvisibleElements = mRevealData.elements || [];
 
-					aInvisibleElements.forEach(function(oInvisibleElement) {
-						var sType = oInvisibleElement.getMetadata().getName();
-						var mAction = mRevealData.types[sType].action;
+					aInvisibleElements.forEach(function(mInvisibleElement) {
+						var oInvisibleElement = mInvisibleElement.element;
+						var mAction = mInvisibleElement.action;
 						var bIncludeElement = true;
 
-						if (_getBindingPath(oElement, sAggregationName) === _getBindingPath(oInvisibleElement, sAggregationName)) {
-							//TODO fix with stashed type support
-							oInvisibleElement = _collectBindingPaths(oInvisibleElement, oModel);
-							oInvisibleElement.fieldLabel = ElementUtil.getLabelForElement(oInvisibleElement, mAction.getLabel);
-							oInvisibleElement.duplicateComplexName = _checkForDuplicateLabels(oInvisibleElement, aODataProperties);
+						// BCP: 1880498671
+						if (mAddODataProperty) {
+							if (_getBindingPath(oElement, sAggregationName) === _getBindingPath(oInvisibleElement, sAggregationName)) {
+								//TODO fix with stashed type support
+								oInvisibleElement = _collectBindingPaths(oInvisibleElement, oModel);
+								oInvisibleElement.fieldLabel = ElementUtil.getLabelForElement(oInvisibleElement, mAction.getLabel);
+								oInvisibleElement.duplicateComplexName = _checkForDuplicateLabels(oInvisibleElement, aODataProperties);
 
-							//Add information from the oDataProperty to the InvisibleProperty if available;
-							//if oData is available and the element is not present in it, do not include it
-							//Example use case: custom field which was hidden and then removed from system
-							//should not be available for adding after the removal
-							if (mAddODataProperty && aODataProperties.length > 0){
-								bIncludeElement = _checkAndEnhanceODataProperty(oInvisibleElement, aODataProperties, aODataNavigationProperties, aODataNavigationEntityNames);
+								//Add information from the oDataProperty to the InvisibleProperty if available;
+								//if oData is available and the element is not present in it, do not include it
+								//Example use case: custom field which was hidden and then removed from system
+								//should not be available for adding after the removal
+								if (aODataProperties.length > 0){
+									bIncludeElement = _checkAndEnhanceODataProperty(oInvisibleElement, aODataProperties, aODataNavigationProperties, aODataNavigationEntityNames);
+								}
+							} else if (BindingsExtractor.getBindings(oInvisibleElement, oModel).length > 0) {
+								bIncludeElement = false;
 							}
-						} else if (
-							oInvisibleElement.getParent()
-							&& BindingsExtractor.getBindings(oInvisibleElement, oModel).length > 0
-						) {
-							bIncludeElement = false;
 						}
 
 						if (bIncludeElement) {

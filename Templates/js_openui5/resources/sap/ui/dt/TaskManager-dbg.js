@@ -5,10 +5,14 @@
  */
 
 sap.ui.define([
-	'sap/ui/base/ManagedObject'
+	'sap/ui/base/ManagedObject',
+	"sap/ui/thirdparty/jquery",
+	"sap/base/util/isPlainObject"
 ],
 function(
-	ManagedObject
+	ManagedObject,
+	jQuery,
+	isPlainObject
 ) {
 	"use strict";
 
@@ -21,7 +25,7 @@ function(
 	 * The TaskManager keeps list of task and allows to manage them via simple API.
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private
@@ -71,13 +75,13 @@ function(
 	 * @return {number} - returns task ID
 	 */
 	TaskManager.prototype.add = function (mTask) {
-		if (!jQuery.isPlainObject(mTask) || !mTask.type) {
+		if (!isPlainObject(mTask) || !mTask.type) {
 			throw new Error('Invalid task specified');
 		}
 
 		var iTaskId = this._iNextId++;
 
-		this._aList.push(jQuery.extend({}, mTask, {
+		this._aList.push(Object.assign({}, mTask, {
 			id: iTaskId
 		}));
 

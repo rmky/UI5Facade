@@ -3,8 +3,14 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
-	function (jQuery, core, URI) {
+sap.ui.define([
+	'./Core',
+	'sap/ui/thirdparty/URI',
+	"sap/base/i18n/ResourceBundle",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+	function(core, URI, ResourceBundle, Log, jQuery) {
 		"use strict";
 
 		/**
@@ -210,12 +216,20 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 				'browse-folder': 0xe277, 'primary-key': 0xe278, 'two-keys': 0xe279,
 				'strikethrough': 0xe27a, 'text': 0xe27b, 'responsive': 0xe27c, 'desktop-mobile': 0xe27d,
 				'table-row': 0xe27e, 'table-column': 0xe27f, 'validate': 0x1e280, 'keyboard-and-mouse': 0xe281,
-				'touch': 0xe282, 'expand-all': 0xe283, 'collapse-all': 0xe284
+				'touch': 0xe282, 'expand-all': 0xe283, 'collapse-all': 0xe284, 'combine': 0xe285, 'split': 0xe286
 			}
 
 		};
 
-		var oCoreResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.core");
+		var oCoreResourceBundle;
+
+		// Lazy load core resource bundle
+		function getCoreResourceBundle() {
+			if (!oCoreResourceBundle) {
+				oCoreResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.core");
+			}
+			return oCoreResourceBundle;
+		}
 
 		// lazy dependency, to avoid cycle
 		var Icon;
@@ -321,10 +335,10 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 
 			if (icon) {
 				if (collectionName === undefined) {
-					jQuery.sap.log.warning("Icon with name '" + iconName + "' in built-in collection already exists and can not be overwritten.", "sap.ui.core.IconPool");
+					Log.warning("Icon with name '" + iconName + "' in built-in collection already exists and can not be overwritten.", "sap.ui.core.IconPool");
 					return;
 				} else if (!iconInfo.overWrite) {
-					jQuery.sap.log.warning("Icon with name '" + iconName + "' in collection '" + collectionName + "' already exists. Specify 'iconInfo.overWrite' in order to overwrite.", "sap.ui.core.IconPool");
+					Log.warning("Icon with name '" + iconName + "' in collection '" + collectionName + "' already exists. Specify 'iconInfo.overWrite' in order to overwrite.", "sap.ui.core.IconPool");
 					return;
 				}
 			}
@@ -341,7 +355,7 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 				sContent = makeChar(iconInfo.content);
 			}
 
-			if (jQuery.sap.resources.isBundle(iconInfo.resourceBundle)) {
+			if (iconInfo.resourceBundle instanceof ResourceBundle) {
 				sKey = "Icon." + iconName;
 				if (iconInfo.resourceBundle.hasText(sKey)) {
 					sText = iconInfo.resourceBundle.getText(sKey);
@@ -437,7 +451,7 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 						fontFamily: mFontRegistry[collectionName].config.fontFamily,
 						content: info & 0xFFFF,
 						suppressMirroring: !!(info & 0x10000),
-						resourceBundle: oCoreResourceBundle
+						resourceBundle: getCoreResourceBundle()
 					});
 				}
 
@@ -488,7 +502,7 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 					return oLoaded.then(function () {
 						info = getInfo();
 						if (!info) {
-							jQuery.sap.log.warning("Icon info for icon '" + iconName + "' in collection '" + collectionName + "' could not be fetched");
+							Log.warning("Icon info for icon '" + iconName + "' in collection '" + collectionName + "' could not be fetched");
 						}
 						return info;
 					});
@@ -506,7 +520,7 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 
 			// show a warning when the icon could not be found
 			if (!info) {
-				jQuery.sap.log.warning("Icon info for icon '" + iconName + "' in collection '" + collectionName + "' could not be fetched");
+				Log.warning("Icon info for icon '" + iconName + "' in collection '" + collectionName + "' could not be fetched");
 			}
 			return info;
 		};
@@ -597,26 +611,26 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 
 			// check if the font has not been registered yet
 			if (!mFontRegistry[sCollectionName]) {
-				jQuery.sap.log.error("Icon font '" + sCollectionName + "' has not been registered yet.");
+				Log.error("Icon font '" + sCollectionName + "' has not been registered yet.");
 				return;
 			}
 			// check if font face has already been inserted
 			if (mFontRegistry[sCollectionName].inserted) {
 				if (sCollectionName === undefined) {
-					jQuery.sap.log.info("The font face style of standard icon font was already inserted.");
+					Log.info("The font face style of standard icon font was already inserted.");
 				} else {
-					jQuery.sap.log.info("The font face style of icon font '" + sCollectionName + "' was already inserted.");
+					Log.info("The font face style of icon font '" + sCollectionName + "' was already inserted.");
 				}
 				return;
 			}
 			// do nothing if the default font is about to be overwritten
 			if (sFontFace === SAP_ICON_FONT_FAMILY && sCollectionName !== undefined) {
-				jQuery.sap.log.error("Must not overwrite the standard icon set with '" + sCollectionName + "'.");
+				Log.error("Must not overwrite the standard icon set with '" + sCollectionName + "'.");
 				return;
 			}
 
 			// use default font path or the one passed in by argument
-			var sFontPath = sPath || jQuery.sap.getModulePath("sap.ui.core.themes.base", "/fonts/");
+			var sFontPath = sPath || sap.ui.require.toUrl("sap/ui/core/themes/base/fonts/");
 
 			// load the font asynchronously via CSS
 			var sFontFaceCSS = "@font-face {" +
@@ -653,13 +667,13 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 
 			// check for mandatory fontURI parameter
 			if (!oConfig.fontURI) {
-				jQuery.sap.log.error("The configuration parameter fontURI is missing, cannot register the font '" + oConfig.collectionName + "'!");
+				Log.error("The configuration parameter fontURI is missing, cannot register the font '" + oConfig.collectionName + "'!");
 				return;
 			}
 
 			// protect the default font family
 			if (oConfig.fontFamily === SAP_ICON_FONT_FAMILY) {
-				jQuery.sap.log.error("The font family" + SAP_ICON_FONT_FAMILY + " is already registered");
+				Log.error("The font family" + SAP_ICON_FONT_FAMILY + " is already registered");
 				return;
 			}
 
@@ -675,7 +689,7 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 					inserted: false
 				};
 			} else {
-				jQuery.sap.log.warning("The font '" + oConfig.collectionName + "' is already registered");
+				Log.warning("The font '" + oConfig.collectionName + "' is already registered");
 			}
 
 			// load font metadata immediately
@@ -710,7 +724,7 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 			} else {
 				// only display an error when the collection has not been manually registered by calling addIcon
 				if (!mRegistry[collectionName]) {
-					jQuery.sap.log.error("The font configuration for collection '" + collectionName + "' is not registered");
+					Log.error("The font configuration for collection '" + collectionName + "' is not registered");
 				}
 				// register an entry indicating the font loading failed
 				mFontRegistry[collectionName] = {
@@ -754,7 +768,7 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 								},
 								error: function (jqXHR, sStatus) {
 									if (sStatus !== "abort") { // log an error if it isn't aborted
-										jQuery.sap.log.error("An error occurred loading the font metadata for collection '" + collectionName + "'");
+										Log.error("An error occurred loading the font metadata for collection '" + collectionName + "'");
 										mFontRegistry[collectionName].metadataLoaded = false;
 										fnResolve();
 									}
@@ -790,7 +804,7 @@ sap.ui.define(['jquery.sap.global', './Core', 'sap/ui/thirdparty/URI'],
 									mFontRegistry[collectionName].metadataLoadedResolve();
 									delete mFontRegistry[collectionName].metadataLoadedResolve;
 								}
-								jQuery.sap.log.error("An error occurred loading the font metadata for collection '" + collectionName + "'");
+								Log.error("An error occurred loading the font metadata for collection '" + collectionName + "'");
 								mFontRegistry[collectionName].metadataLoaded = false;
 							}
 						});

@@ -5,8 +5,42 @@
  */
 
 // Provides TablePersoDialog
-sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', './List', './Toolbar', 'sap/ui/base/ManagedObject', 'sap/m/library', 'sap/ui/Device', 'sap/ui/model/Sorter', 'sap/ui/model/Filter', 'sap/ui/model/json/JSONModel', 'sap/m/CheckBox', 'sap/m/SearchField', 'sap/m/ScrollContainer'],
-	function(jQuery, Button, Dialog, InputListItem, List, Toolbar, ManagedObject, library, Device, Sorter, Filter, JSONModel, CheckBox, SearchField, ScrollContainer) {
+sap.ui.define([
+	'./Button',
+	'./Dialog',
+	'./InputListItem',
+	'./List',
+	'./Toolbar',
+	'sap/ui/base/ManagedObject',
+	'sap/m/library',
+	'sap/ui/Device',
+	'sap/ui/model/Sorter',
+	'sap/ui/model/Filter',
+	'sap/ui/model/FilterOperator',
+	'sap/ui/model/json/JSONModel',
+	'sap/m/CheckBox',
+	'sap/m/SearchField',
+	'sap/m/ScrollContainer',
+	"sap/ui/thirdparty/jquery"
+],
+	function(
+		Button,
+		Dialog,
+		InputListItem,
+		List,
+		Toolbar,
+		ManagedObject,
+		library,
+		Device,
+		Sorter,
+		Filter,
+		FilterOperator,
+		JSONModel,
+		CheckBox,
+		SearchField,
+		ScrollContainer,
+		jQuery
+	) {
 	"use strict";
 
 
@@ -38,7 +72,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', '
 	 * @class Table Personalization Dialog
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @alias sap.m.TablePersoDialog
 	 */
 	var TablePersoDialog = ManagedObject.extend("sap.m.TablePersoDialog", /** @lends sap.m.TablePersoDialog */
@@ -204,15 +238,15 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', '
 				if (that._oList.getItems()[0].getSelected()) {
 					// First item selected: disable button "arrow top" and focus button "arrow bottom"
 					bButtonUpEnabled = false;
-					if (bUpdateFocus) {
-						jQuery.sap.focus(that._oButtonDown.getDomRef());
+					if (bUpdateFocus && that._oButtonDown.getDomRef()) {
+						that._oButtonDown.getDomRef().focus();
 					}
 				}
 				if (that._oList.getItems()[iItemCount - 1].getSelected()) {
 					// Last item selected: disable button "arrow bottom" and focus button "arrow top"
 					bButtonDownEnabled = false;
-					if (bUpdateFocus) {
-						jQuery.sap.focus(that._oButtonUp.getDomRef());
+					if (bUpdateFocus && that._oButtonUp.getDomRef()) {
+						that._oButtonUp.getDomRef().focus();
 					}
 				}
 			}
@@ -680,7 +714,7 @@ sap.ui.define(['jquery.sap.global', './Button', './Dialog', './InputListItem', '
 	 */
 	TablePersoDialog.prototype._executeSearch = function () {
 		var sValue = this._oSearchField.getValue(),
-			oFilter = new Filter("text", sap.ui.model.FilterOperator.Contains, sValue),
+			oFilter = new Filter("text", FilterOperator.Contains, sValue),
 			oBinding = this._oList.getBinding("items");
 
 		this._oSelectAllToolbar.setVisible(!sValue && this.getShowSelectAll());

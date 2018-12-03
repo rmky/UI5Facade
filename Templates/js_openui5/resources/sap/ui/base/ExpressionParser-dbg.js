@@ -5,10 +5,13 @@
  */
 
 sap.ui.define([
-	'jquery.sap.global',
-	'sap/ui/thirdparty/URI',
-	'jquery.sap.strings'
-], function (jQuery, URI/*, jQuerySap1 */) {
+	"sap/base/Log",
+	"sap/base/strings/escapeRegExp",
+	"sap/base/util/deepEqual",
+	"sap/base/util/JSTokenizer",
+	"sap/ui/performance/Measurement",
+	"sap/ui/thirdparty/URI"
+], function (Log, escapeRegExp, deepEqual, JSTokenizer, Measurement, URI) {
 	"use strict";
 
 	//SAP's Independent Implementation of "Top Down Operator Precedence" by Vaughan R. Pratt,
@@ -44,11 +47,11 @@ sap.ui.define([
 					ODataUtils = sap.ui.requireSync("sap/ui/model/odata/v4/ODataUtils");
 					return ODataUtils.compare.apply(ODataUtils, arguments);
 				},
-				"fillUriTemplate": function () {
+				"fillUriTemplate": function (sExpression, mData) {
 					if (!URI.expand) {
-						/* URI = */ sap.ui.requireSync("sap/ui/thirdparty/URITemplate");
+						/* URITemplate = */ sap.ui.requireSync("sap/ui/thirdparty/URITemplate");
 					}
-					return URI.expand.apply(URI, arguments).toString();
+					return URI.expand(sExpression.trim(), mData).toString();
 				},
 				"uriEncode": function () {
 					var ODataUtils;
@@ -89,7 +92,7 @@ sap.ui.define([
 				led: unexpected, // Note: cannot happen due to lbp: 0
 				nud: function (oToken, oParser) {
 					if (!(oToken.value in oParser.globals)) {
-						jQuery.sap.log.warning("Unsupported global identifier '" + oToken.value
+						Log.warning("Unsupported global identifier '" + oToken.value
 								+ "' in expression parser input '" + oParser.input + "'",
 							undefined,
 							sExpressionParser);
@@ -243,7 +246,8 @@ sap.ui.define([
 		rTokens;
 
 	aTokens.forEach(function (sToken, i) {
-		aTokens[i] = jQuery.sap.escapeRegExp(sToken);
+		// Note: this function is executed at load time only!
+		aTokens[i] = escapeRegExp(sToken);
 	});
 	rTokens = new RegExp(aTokens.join("|"), "g");
 
@@ -456,6 +460,7 @@ sap.ui.define([
 	 * @return {object} the newly created symbol for the infix operator
 	 */
 	function addInfix(sId, iBindingPower, fnOperator, bLazy) {
+		// Note: this function is executed at load time only!
 		mSymbols[sId] = {
 			lbp: iBindingPower,
 			led: function (oToken, oParser, fnLeft) {
@@ -491,7 +496,7 @@ sap.ui.define([
 		if (iAt !== undefined) {
 			sMessage += " at position " + iAt;
 		}
-		jQuery.sap.log.error(sMessage, sInput, sExpressionParser);
+		Log.error(sMessage, sInput, sExpressionParser);
 		throw oError;
 	}
 
@@ -520,7 +525,7 @@ sap.ui.define([
 		var aParts = [], // the resulting parts (corresponds to aPrimitiveValueBindings)
 			aPrimitiveValueBindings = [], // the bindings with primitive values only
 			aTokens = [],
-			oTokenizer = jQuery.sap._createJSTokenizer();
+			oTokenizer = new JSTokenizer();
 
 		/**
 		 * Saves the binding as a part. Reuses an existing part if the binding is identical.
@@ -572,7 +577,7 @@ sap.ui.define([
 			if (bHasNonPrimitiveValue) {
 				// the binding must be a complex binding; property "type" (and poss. others) are
 				// newly created objects and thus incomparable -> parse again to have the names
-				oPrimitiveValueBinding = jQuery.sap.parseJS(sInput, iStart).result;
+				oPrimitiveValueBinding = JSTokenizer.parseJS(sInput, iStart).result;
 				setTargetType(oPrimitiveValueBinding);
 			} else {
 				// only primitive values; easily comparable
@@ -580,7 +585,7 @@ sap.ui.define([
 			}
 			for (i = 0; i < aParts.length; i += 1) {
 				// Note: order of top-level properties must not matter for equality!
-				if (jQuery.sap.equal(aPrimitiveValueBindings[i], oPrimitiveValueBinding)) {
+				if (deepEqual(aPrimitiveValueBindings[i], oPrimitiveValueBinding)) {
 					return i;
 				}
 			}
@@ -689,7 +694,7 @@ sap.ui.define([
 			try {
 				return fnFormatter.apply(this, arguments);
 			} catch (ex) {
-				jQuery.sap.log.warning(String(ex), sInput, sExpressionParser);
+				Log.warning(String(ex), sInput, sExpressionParser);
 			}
 		};
 	}
@@ -846,10 +851,10 @@ sap.ui.define([
 		parse: function (fnResolveBinding, sInput, iStart, mGlobals) {
 			var oResult, oTokens;
 
-			jQuery.sap.measure.average(sPerformanceParse, "", aPerformanceCategories);
+			Measurement.average(sPerformanceParse, "", aPerformanceCategories);
 			oTokens = tokenize(fnResolveBinding, sInput, iStart);
 			oResult = parse(oTokens.tokens, sInput, mGlobals || mDefaultGlobals);
-			jQuery.sap.measure.end(sPerformanceParse);
+			Measurement.end(sPerformanceParse);
 			if (!oTokens.parts.length) {
 				return {
 					constant: oResult.formatter(),

@@ -5,11 +5,28 @@
  */
 
 // Provides control sap.ui.layout.form.ResponsiveLayout.
-sap.ui.define(['jquery.sap.global', 'sap/ui/layout/ResponsiveFlowLayout', 'sap/ui/layout/ResponsiveFlowLayoutData',
-               './Form', './FormContainer', './FormElement', './FormLayout',
-               'sap/ui/layout/library', 'sap/ui/core/Control', './ResponsiveLayoutRenderer'],
-	function(jQuery, ResponsiveFlowLayout, ResponsiveFlowLayoutData,
-	         Form, FormContainer, FormElement, FormLayout, library, Control, ResponsiveLayoutRenderer) {
+sap.ui.define([
+	'sap/ui/core/Control',
+	'sap/ui/layout/library',
+	'sap/ui/layout/ResponsiveFlowLayout',
+	'sap/ui/layout/ResponsiveFlowLayoutData',
+	'./Form',
+	'./FormContainer',
+	'./FormElement',
+	'./FormLayout',
+	'./ResponsiveLayoutRenderer'
+],
+	function(
+		Control,
+		library,
+		ResponsiveFlowLayout,
+		ResponsiveFlowLayoutData,
+		Form,
+		FormContainer,
+		FormElement,
+		FormLayout,
+		ResponsiveLayoutRenderer
+	) {
 	"use strict";
 
 	/**
@@ -33,7 +50,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/ResponsiveFlowLayout', 'sap/u
 	 * @extends sap.ui.layout.form.FormLayout
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -428,9 +445,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/layout/ResponsiveFlowLayout', 'sap/u
 	 */
 	function _deletePanel( oPanel ) {
 
-		oPanel.setContent("");
-		oPanel.setLayout("");
-		oPanel.setContainer("");
+		oPanel.setContent(null);
+		oPanel.setLayout(null);
+		oPanel.setContainer(null);
 		oPanel.destroy();
 
 	}

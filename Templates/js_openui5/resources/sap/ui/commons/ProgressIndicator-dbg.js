@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -87,6 +87,12 @@ sap.ui.define([
 		this.focus();
 
 	};
+
+	ProgressIndicator.prototype.onselectstart = function(oEvent) {
+
+		return false;
+	};
+
 
 	/**
 	 * Function is called when the value of the ProgressIndicator goes beyond 100 and

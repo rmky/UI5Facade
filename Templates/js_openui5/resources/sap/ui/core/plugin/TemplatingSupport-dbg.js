@@ -5,8 +5,8 @@
  */
 
 // Provides class sap.ui.core.plugin.TemplatingSupport
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/core/tmpl/Template'],
-	function(jQuery, Core, Template) {
+sap.ui.define(['sap/ui/core/Core', 'sap/ui/core/tmpl/Template', "sap/base/Log"],
+	function(Core, Template, Log) {
 	"use strict";
 
 
@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/core/tmpl/Templa
 	 * @author Peter Muessig
 	 * @public
 	 * @since 1.15.0
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @alias sap.ui.core.plugin.TemplatingSupport
 	 */
 	var TemplatingSupport = function() {
@@ -33,7 +33,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/core/tmpl/Templa
 	 * @public
 	 */
 	TemplatingSupport.prototype.startPlugin = function(oCore, bOnInit) {
-		jQuery.sap.log.info("Starting TemplatingSupport plugin.");
+		Log.info("Starting TemplatingSupport plugin.");
 		this.oCore = oCore;
 		sap.ui.template();
 	};
@@ -43,7 +43,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core', 'sap/ui/core/tmpl/Templa
 	 * @public
 	 */
 	TemplatingSupport.prototype.stopPlugin = function() {
-		jQuery.sap.log.info("Stopping TemplatingSupport plugin.");
+		Log.info("Stopping TemplatingSupport plugin.");
 		this.oCore = null;
 	};
 

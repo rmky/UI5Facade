@@ -6,7 +6,6 @@
 
 // Provides control sap.ui.dt.test.report.Statistic.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/core/Control',
 	'sap/ui/model/json/JSONModel',
 	'sap/ui/layout/form/SimpleForm',
@@ -15,7 +14,6 @@ sap.ui.define([
 	"./StatisticRenderer"
 ],
 function(
-	jQuery,
 	Control,
 	JSONModel,
 	SimpleForm,
@@ -38,7 +36,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @private

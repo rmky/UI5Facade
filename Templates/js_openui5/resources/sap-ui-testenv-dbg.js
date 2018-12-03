@@ -3,17 +3,18 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.predefine('jquery.sap.strings',['jquery.sap.global','sap/base/strings/endsWithIgnoreCase','sap/base/strings/startsWithIgnoreCase','sap/base/strings/charToUpperCase','sap/base/strings/camelCase','sap/base/strings/hyphen','sap/base/strings/escapeRegExp','sap/base/strings/formatMessage'],function(q,e,s,c,a,h,b,f){"use strict";
-q.sap.endsWith=function(S,E){if(typeof(E)!="string"||E==""){return false;}return S.endsWith(E);};
-q.sap.endsWithIgnoreCase=e;
-q.sap.startsWith=function(S,d){if(typeof(d)!="string"||d==""){return false;}return S.startsWith(d);};
-q.sap.startsWithIgnoreCase=s;q.sap.charToUpperCase=c;
-q.sap.padLeft=function(S,p,l){if(!S){S="";}if(p&&p.length===1){return S.padStart(l,p);}while(S.length<l){S=p+S;}return S;};
-q.sap.padRight=function(S,p,l){if(!S){S="";}if(p&&p.length===1){return S.padEnd(l,p);}while(S.length<l){S=S+p;}return S;};
-q.sap.camelCase=a;q.sap.hyphen=h;q.sap.escapeRegExp=b;q.sap.formatMessage=f;return q;});
-sap.ui.predefine('sap/ui/debug/Highlighter',['jquery.sap.global','jquery.sap.dom','jquery.sap.script'],function(q){"use strict";var H=function(i,f,c,b){this.sId=i||q.sap.uid();this.bFilled=(f==true);this.sColor=c||'blue';if(isNaN(b)){this.iBorderWidth=2;}else if(b<=0){this.iBorderWidth=0;}else{this.iBorderWidth=b;}};
-H.prototype.highlight=function(d){if(!d||!d.parentNode){return;}var h=q.sap.domById(this.sId);if(!h){h=d.ownerDocument.createElement("DIV");h.setAttribute("id",this.sId);h.style.position="absolute";h.style.border=this.iBorderWidth+"px solid "+this.sColor;h.style.display="none";h.style.margin="0px";h.style.padding="0px";if(this.bFilled){h.innerHTML="<div style='background-color:"+this.sColor+";opacity:0.2;filter:progid:DXImageTransform.Microsoft.Alpha(opacity=20);height:100%;width:100%'>&nbsp;</div>";}d.ownerDocument.body.appendChild(h);}var r=q(d).rect();h.style.top=(r.top-this.iBorderWidth)+"px";h.style.left=(r.left-this.iBorderWidth)+"px";h.style.width=(r.width)+"px";h.style.height=(r.height)+"px";h.style.display="block";};
-H.prototype.hide=function(){var h=q.sap.domById(this.sId);if(!h){return;}h.style.display="none";};
+sap.ui.predefine('jquery.sap.strings',['jquery.sap.global','sap/base/strings/capitalize','sap/base/strings/camelize','sap/base/strings/hyphenate','sap/base/strings/escapeRegExp','sap/base/strings/formatMessage'],function(q,c,a,h,e,f){"use strict";
+q.sap.endsWith=function(s,E){if(typeof(E)!="string"||E==""){return false;}return s.endsWith(E);};
+q.sap.endsWithIgnoreCase=function(s,E){if(typeof(E)!="string"||E==""){return false;}s=s.toUpperCase();E=E.toUpperCase();return s.endsWith(E);};
+q.sap.startsWith=function(s,S){if(typeof(S)!="string"||S==""){return false;}return s.startsWith(S);};
+q.sap.startsWithIgnoreCase=function(s,S){if(typeof(S)!="string"||S==""){return false;}s=s.toUpperCase();S=S.toUpperCase();return s.startsWith(S);};
+q.sap.charToUpperCase=function(s,p){if(!s){return s;}if(!p||isNaN(p)||p<=0||p>=s.length){return c(s);}var C=s.charAt(p).toUpperCase();if(p>0){return s.substring(0,p)+C+s.substring(p+1);}return C+s.substring(p+1);};
+q.sap.padLeft=function(s,p,l){if(!s){s="";}if(p&&p.length===1){return s.padStart(l,p);}while(s.length<l){s=p+s;}return s;};
+q.sap.padRight=function(s,p,l){if(!s){s="";}if(p&&p.length===1){return s.padEnd(l,p);}while(s.length<l){s=s+p;}return s;};
+q.sap.camelCase=a;q.sap.hyphen=h;q.sap.escapeRegExp=e;q.sap.formatMessage=f;return q;});
+sap.ui.predefine('sap/ui/debug/Highlighter',["sap/ui/thirdparty/jquery","sap/base/util/uid","sap/ui/dom/jquery/rect"],function(q,u){"use strict";var H=function(i,f,c,b){this.sId=i||u();this.bFilled=(f==true);this.sColor=c||'blue';if(isNaN(b)){this.iBorderWidth=2;}else if(b<=0){this.iBorderWidth=0;}else{this.iBorderWidth=b;}};
+H.prototype.highlight=function(d){if(!d||!d.parentNode){return;}var h=(this.sId?window.document.getElementById(this.sId):null);if(!h){h=d.ownerDocument.createElement("DIV");h.setAttribute("id",this.sId);h.style.position="absolute";h.style.border=this.iBorderWidth+"px solid "+this.sColor;h.style.display="none";h.style.margin="0px";h.style.padding="0px";if(this.bFilled){h.innerHTML="<div style='background-color:"+this.sColor+";opacity:0.2;filter:progid:DXImageTransform.Microsoft.Alpha(opacity=20);height:100%;width:100%'>&nbsp;</div>";}d.ownerDocument.body.appendChild(h);}var r=q(d).rect();h.style.top=(r.top-this.iBorderWidth)+"px";h.style.left=(r.left-this.iBorderWidth)+"px";h.style.width=(r.width)+"px";h.style.height=(r.height)+"px";h.style.display="block";};
+H.prototype.hide=function(){var h=(this.sId?window.document.getElementById(this.sId):null);if(!h){return;}h.style.display="none";};
 return H;},true);
 sap.ui.predefine('sap/ui/test/ControlTree',['jquery.sap.global','sap/ui/core/Element','jquery.sap.strings'],function(q,E){"use strict";var C=function(c,w){this.oWindow=w;this.oCore=c;this.oCore.attachUIUpdated(this.renderDelayed,this);this.renderDelayed();};
 C.prototype.renderDelayed=function(){if(this.oTimer){this.oWindow.jQuery.sap.clearDelayedCall(this.oTimer);}this.oTimer=this.oWindow.jQuery.sap.delayedCall(500,this,"initDT");restoreLockState(this);supplySelectedTheme(this.oCore.getConfiguration().getTheme());};

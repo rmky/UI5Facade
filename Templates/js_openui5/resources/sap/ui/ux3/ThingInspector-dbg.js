@@ -27,7 +27,7 @@ sap.ui.define([
 	 * @class
 	 * Thing Inspector
 	 * @extends sap.ui.ux3.Overlay
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -700,6 +700,7 @@ sap.ui.define([
 		//Implementation of API method
 		ThingInspector.prototype.setFirstTitle = function(sTitle) {
 			this._oThingViewer.setTitle(sTitle);
+			return this;
 		};
 
 		//Implementation of API method
@@ -710,6 +711,7 @@ sap.ui.define([
 		//Implementation of API method
 		ThingInspector.prototype.setSecondTitle = function(sTitle) {
 			this._oThingViewer.setSubtitle(sTitle);
+			return this;
 		};
 
 		//Implementation of API method

@@ -13,8 +13,26 @@
  */
 
 // Provides the XML object based model implementation
-sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Context', './XMLListBinding', './XMLPropertyBinding', './XMLTreeBinding', 'jquery.sap.xml'],
-	function(jQuery, ClientModel, Context, XMLListBinding, XMLPropertyBinding, XMLTreeBinding/* , jQuerySap */) {
+sap.ui.define([
+	'sap/ui/model/ClientModel',
+	'sap/ui/model/Context',
+	'./XMLListBinding',
+	'./XMLPropertyBinding',
+	'./XMLTreeBinding',
+	"sap/ui/util/XMLHelper",
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+	function(
+		ClientModel,
+		Context,
+		XMLListBinding,
+		XMLPropertyBinding,
+		XMLTreeBinding,
+		XMLHelper,
+		Log,
+		jQuery
+	) {
 	"use strict";
 
 
@@ -27,7 +45,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @param {object} oData either the URL where to load the XML from or an XML
 	 * @public
@@ -57,11 +75,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 	 * @public
 	 */
 	XMLModel.prototype.setXML = function(sXMLText){
-		var oXMLDocument = jQuery.sap.parseXML(sXMLText);
+		var oXMLDocument = XMLHelper.parse(sXMLText);
 
 		if (oXMLDocument.parseError.errorCode != 0) {
 			var oParseError = oXMLDocument.parseError;
-			jQuery.sap.log.fatal("The following problem occurred: XML parse Error for " + oParseError.url + " code: " + oParseError.errorCode + " reason: " +
+			Log.fatal("The following problem occurred: XML parse Error for " + oParseError.url + " code: " + oParseError.errorCode + " reason: " +
 					oParseError.reason +  " src: " + oParseError.srcText + " line: " +  oParseError.line +  " linepos: " + oParseError.linepos +  " filepos: " + oParseError.filepos);
 			this.fireParseError({url : oParseError.url, errorCode : oParseError.errorCode,
 				reason : oParseError.reason, srcText : oParseError.srcText, line : oParseError.line, linepos : oParseError.linepos,
@@ -77,7 +95,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 	 * @public
 	 */
 	XMLModel.prototype.getXML = function(){
-		return jQuery.sap.serializeXML(this.oData);
+		return XMLHelper.serialize(this.oData);
 	};
 
 	/**
@@ -124,7 +142,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 		  type: sType,
 		  success: function(oData) {
 			if (!oData) {
-				jQuery.sap.log.fatal("The following problem occurred: No data was retrieved by service: " + sURL);
+				Log.fatal("The following problem occurred: No data was retrieved by service: " + sURL);
 			}
 			that.setData(oData);
 			that.fireRequestCompleted({url : sURL, type : sType, async : bAsync, headers: mHeaders,
@@ -132,7 +150,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 		  },
 		  error: function(XMLHttpRequest, textStatus, errorThrown){
 			var oError = { message : textStatus, statusCode : XMLHttpRequest.status, statusText : XMLHttpRequest.statusText, responseText : XMLHttpRequest.responseText};
-			jQuery.sap.log.fatal("The following problem occurred: " + textStatus, XMLHttpRequest.responseText + ","
+			Log.fatal("The following problem occurred: " + textStatus, XMLHttpRequest.responseText + ","
 						+ XMLHttpRequest.status + "," + XMLHttpRequest.statusText);
 			that.fireRequestCompleted({url : sURL, type : sType, async : bAsync, headers: mHeaders,
 				info : "cache=" + bCache, infoObject: {cache: bCache}, success: false, errorobject: oError});
@@ -203,7 +221,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 		}
 
 		if (!this.oData.documentElement) {
-			jQuery.sap.log.warning("Trying to set property " + sPath + ", but no document exists.");
+			Log.warning("Trying to set property " + sPath + ", but no document exists.");
 			return false;
 		}
 		var oObject;
@@ -413,7 +431,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/ClientModel', 'sap/ui/model/Co
 	 * Resolve the path relative to the given context
 	 */
 	XMLModel.prototype._resolve = function(sPath, oContext) {
-		var bIsRelative = !jQuery.sap.startsWith(sPath, "/"),
+		var bIsRelative = !sPath.startsWith("/"),
 			sResolvedPath = sPath;
 		if (bIsRelative) {
 			if (oContext) {

@@ -5,8 +5,13 @@
  */
 
 // Provides a filter for list bindings
-sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './FilterOperator'],
-	function(jQuery, BaseObject, FilterOperator) {
+sap.ui.define([
+	'sap/ui/base/Object',
+	'./FilterOperator',
+	"sap/base/Log",
+	"sap/ui/thirdparty/jquery"
+],
+	function(BaseObject, FilterOperator, Log, jQuery) {
 	"use strict";
 
 	/**
@@ -175,12 +180,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './FilterOperator'],
 				if (Array.isArray(this.aFilters) && !this.sPath && !this.sOperator && !this.oValue1 && !this.oValue2) {
 					this._bMultiFilter = true;
 					if ( !this.aFilters.every(isFilter) ) {
-						jQuery.sap.log.error("Filter in Aggregation of Multi filter has to be instance of sap.ui.model.Filter");
+						Log.error("Filter in Aggregation of Multi filter has to be instance of sap.ui.model.Filter");
 					}
 				} else if (!this.aFilters && this.sPath !== undefined && ((this.sOperator && this.oValue1 !== undefined) || this.fnTest)) {
 					this._bMultiFilter = false;
 				} else {
-					jQuery.sap.log.error("Wrong parameters defined for filter.");
+					Log.error("Wrong parameters defined for filter.");
 				}
 			}
 		}
@@ -202,6 +207,180 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './FilterOperator'],
 	function isFilter(v) {
 		return v instanceof Filter;
 	}
+
+	var Type = {
+		Logical: "Logical",
+		Binary: "Binary",
+		Unary: "Unary",
+		Lambda: "Lambda",
+		Reference: "Reference",
+		Literal: "Literal",
+		Variable: "Variable",
+		Call: "Call",
+		Custom: "Custom"
+	};
+
+	var Op = {
+		Equal: "==",
+		NotEqual: "!=",
+		LessThan: "<",
+		GreaterThan: ">",
+		LessThanOrEqual: "<=",
+		GreaterThanOrEqual: ">=",
+		And: "&&",
+		Or: "||",
+		Not: "!"
+	};
+
+	var Func = {
+		Contains: "contains",
+		StartsWith: "startswith",
+		EndsWith: "endswith"
+	};
+
+	/**
+	 * Returns an AST for the filter
+	 * @private
+	 */
+	Filter.prototype.getAST = function (bIncludeOrigin) {
+		var oResult, sOp, sOrigOp, oRef, oValue, oFromValue, oToValue, oVariable, oCondition;
+		function logical(sOp, oLeft, oRight) {
+			return {
+				type: Type.Logical,
+				op: sOp,
+				left: oLeft,
+				right: oRight
+			};
+		}
+		function binary(sOp, oLeft, oRight) {
+			return {
+				type: Type.Binary,
+				op: sOp,
+				left: oLeft,
+				right: oRight
+			};
+		}
+		function unary(sOp, oArg) {
+			return {
+				type: Type.Unary,
+				op: sOp,
+				arg: oArg
+			};
+		}
+		function lambda(sOp, oRef, oVariable, oCondition) {
+			return {
+				type: Type.Lambda,
+				op: sOp,
+				ref: oRef,
+				variable: oVariable,
+				condition: oCondition
+			};
+		}
+		function reference(sPath) {
+			return {
+				type: Type.Reference,
+				path: sPath
+			};
+		}
+		function literal(vValue) {
+			return {
+				type: Type.Literal,
+				value: vValue
+			};
+		}
+		function variable(sName) {
+			return {
+				type: Type.Variable,
+				name: sName
+			};
+		}
+		function call(sName, aArguments) {
+			return {
+				type: Type.Call,
+				name: sName,
+				args: aArguments
+			};
+		}
+		if (this.aFilters) { // multi filters
+			sOp = this.bAnd ? Op.And : Op.Or;
+			sOrigOp = this.bAnd ? "AND" : "OR";
+			oResult = this.aFilters[this.aFilters.length - 1].getAST(bIncludeOrigin);
+			for (var i = this.aFilters.length - 2; i >= 0 ; i--) {
+				oResult = logical(sOp, this.aFilters[i].getAST(bIncludeOrigin), oResult);
+			}
+		} else { // other filter
+			sOp = this.sOperator;
+			sOrigOp = this.sOperator;
+			oRef = reference(this.sPath);
+			oValue = literal(this.oValue1);
+			switch (sOp) {
+				case FilterOperator.EQ:
+					oResult = binary(Op.Equal, oRef, oValue);
+					break;
+				case FilterOperator.NE:
+					oResult = binary(Op.NotEqual, oRef, oValue);
+					break;
+				case FilterOperator.LT:
+					oResult = binary(Op.LessThan, oRef, oValue);
+					break;
+				case FilterOperator.GT:
+					oResult = binary(Op.GreaterThan, oRef, oValue);
+					break;
+				case FilterOperator.LE:
+					oResult = binary(Op.LessThanOrEqual, oRef, oValue);
+					break;
+				case FilterOperator.GE:
+					oResult = binary(Op.GreaterThanOrEqual, oRef, oValue);
+					break;
+				case FilterOperator.Contains:
+					oResult = call(Func.Contains, [oRef, oValue]);
+					break;
+				case FilterOperator.StartsWith:
+					oResult = call(Func.StartsWith, [oRef, oValue]);
+					break;
+				case FilterOperator.EndsWith:
+					oResult = call(Func.EndsWith, [oRef, oValue]);
+					break;
+				case FilterOperator.NotContains:
+					oResult = unary(Op.Not, call(Func.Contains, [oRef, oValue]));
+					break;
+				case FilterOperator.NotStartsWith:
+					oResult = unary(Op.Not, call(Func.StartsWith, [oRef, oValue]));
+					break;
+				case FilterOperator.NotEndsWith:
+					oResult = unary(Op.Not, call(Func.EndsWith, [oRef, oValue]));
+					break;
+				case FilterOperator.BT:
+					oFromValue = oValue;
+					oToValue = literal(this.oValue2);
+					oResult = logical(Op.And,
+						binary(Op.GreaterThanOrEqual, oRef, oFromValue),
+						binary(Op.LessThanOrEqual, oRef, oToValue)
+					);
+					break;
+				case FilterOperator.NB:
+					oFromValue = oValue;
+					oToValue = literal(this.oValue2);
+					oResult = logical(Op.Or,
+						binary(Op.LessThan, oRef, oFromValue),
+						binary(Op.GreaterThan, oRef, oToValue)
+					);
+					break;
+				case FilterOperator.Any:
+				case FilterOperator.All:
+					oVariable = variable(this.sVariable);
+					oCondition = this.oCondition.getAST(bIncludeOrigin);
+					oResult = lambda(sOp, oRef, oVariable, oCondition);
+					break;
+				default:
+					throw new Error("Unknown operator: " + sOp);
+			}
+		}
+		if (bIncludeOrigin && !oResult.origin) {
+			oResult.origin = sOrigOp;
+		}
+		return oResult;
+};
 
 	/**
 	 * Compares two values

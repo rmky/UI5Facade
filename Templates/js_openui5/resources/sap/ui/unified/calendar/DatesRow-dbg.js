@@ -6,13 +6,13 @@
 
 //Provides control sap.ui.unified.Calendar.
 sap.ui.define([
-	'jquery.sap.global',
 	'sap/ui/unified/calendar/CalendarUtils',
 	'sap/ui/unified/calendar/CalendarDate',
 	'sap/ui/unified/calendar/Month',
 	'sap/ui/unified/library',
-	"./DatesRowRenderer"
-], function(jQuery, CalendarUtils, CalendarDate, Month, library, DatesRowRenderer) {
+	"./DatesRowRenderer",
+	"sap/ui/thirdparty/jquery"
+], function(CalendarUtils, CalendarDate, Month, library, DatesRowRenderer, jQuery) {
 	"use strict";
 
 	/*
@@ -32,7 +32,7 @@ sap.ui.define([
 	 * If used inside the calendar the properties and aggregation are directly taken from the parent
 	 * (To not duplicate and sync DateRanges and so on...)
 	 * @extends sap.ui.unified.calendar.Month
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -78,6 +78,17 @@ sap.ui.define([
 		//example: [{ len: 3, number: 12 }, { len: 7, number: 13 }, ...]
 		this._aWeekNumbers = [];
 
+	};
+
+	DatesRow.prototype._setAriaRole = function(sRole){
+		this._ariaRole = sRole;
+
+		return this;
+	};
+
+	DatesRow.prototype._getAriaRole = function(){
+
+		return this._ariaRole ? this._ariaRole : "gridcell";
 	};
 
 	/*

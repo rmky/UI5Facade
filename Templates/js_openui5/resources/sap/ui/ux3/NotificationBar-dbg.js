@@ -40,7 +40,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 *
 	 * @constructor
 	 * @public
@@ -1309,6 +1309,7 @@ sap.ui.define([
 					status : toStatus
 				});
 			}
+			return this;
 		};
 
 		/**
@@ -1332,6 +1333,7 @@ sap.ui.define([
 			} else {
 				$toggler.css("display", "none");
 			}
+			return this;
 		};
 	}());
 

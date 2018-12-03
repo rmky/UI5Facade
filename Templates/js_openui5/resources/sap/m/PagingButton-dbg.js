@@ -6,13 +6,13 @@
 
 // Provides control sap.m.PagingButton.
 sap.ui.define([
-	'jquery.sap.global',
 	'./Button',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
-	'./PagingButtonRenderer'
+	'./PagingButtonRenderer',
+	"sap/base/Log"
 ],
-	function(jQuery, Button, Control, IconPool, PagingButtonRenderer) {
+	function(Button, Control, IconPool, PagingButtonRenderer, Log) {
 		"use strict";
 
 		/**
@@ -26,7 +26,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.56.6
+		 * @version 1.60.1
 		 *
 		 * @constructor
 		 * @public
@@ -202,7 +202,7 @@ sap.ui.define([
 		 */
 		PagingButton.prototype._validateProperty = function (sProperty, iValue) {
 			if (iValue < 1) {
-				jQuery.sap.log.warning("Property '" + sProperty + "' must be greater or equal to 1", this);
+				Log.warning("Property '" + sProperty + "' must be greater or equal to 1", this);
 				return this;
 			}
 
@@ -219,7 +219,7 @@ sap.ui.define([
 			var iCount = this.getCount();
 
 			if (iPosition > iCount) {
-				jQuery.sap.log.warning("Property position must be less or equal to the total count");
+				Log.warning("Property position must be less or equal to the total count");
 				this.setPosition(iCount);
 			}
 

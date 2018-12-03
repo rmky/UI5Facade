@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
-sap.ui.define(["sap/ui/fl/registry/ChangeRegistry"], function(ChangeRegistry) {
+sap.ui.define(["sap/ui/fl/registry/ChangeRegistry", "sap/ui/thirdparty/jquery"], function(ChangeRegistry, jQuery) {
 	"use strict";
 
 	var ChangeHandlerRegistration = {

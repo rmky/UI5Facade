@@ -9,9 +9,17 @@
  */
 sap.ui.define([
 	'jquery.sap.global',
-	'sap/base/storage'
-], function(jQuery, storage) {
+	'sap/base/assert',
+	'sap/ui/util/Storage'
+], function(jQuery, assert, Storage) {
 	"use strict";
+
+	/**
+	 * Map containing instances of different 'standard' storages.
+	 * The map is used to limit the number of created storage objects.
+	 * @private
+	 */
+	var mStorages = {};
 
 	/**
 	 * Returns a {@link jQuery.sap.storage.Storage Storage} object for a given HTML5 storage (type) and,
@@ -29,7 +37,7 @@ sap.ui.define([
 	 * @param {string} [sIdPrefix] Prefix used for the Ids. If not set a default prefix is used.
 	 * @returns {jQuery.sap.storage.Storage}
 	 *
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 0.11.0
 	 * @namespace
 	 * @public
@@ -42,7 +50,25 @@ sap.ui.define([
 	 * @borrows jQuery.sap.storage.Storage#removeAll as removeAll
 	 * @borrows jQuery.sap.storage.Storage#isSupported as isSupported
 	 */
-	jQuery.sap.storage = storage(window).getInstance;
+	jQuery.sap.storage = function(oStorage, sIdPrefix) {
+		// if nothing or the default was passed in, simply return ourself
+		if (!oStorage) {
+			oStorage = Storage.Type.session;
+		}
+
+		if (typeof (oStorage) === "string" && Storage.Type[oStorage]) {
+			var sKey = oStorage;
+			if (sIdPrefix && sIdPrefix != "state.key_") {
+				sKey = oStorage + "_" + sIdPrefix;
+			}
+
+			return mStorages[sKey] || (mStorages[sKey] = new Storage(oStorage, sIdPrefix));
+		}
+
+		// OK, tough but probably good for issue identification. As something was passed in, let's at least ensure our used API is fulfilled.
+		assert(oStorage instanceof Object && oStorage.clear && oStorage.setItem && oStorage.getItem && oStorage.removeItem, "storage: duck typing the storage");
+		return new Storage(oStorage, sIdPrefix);
+	};
 
 	/**
 	 * @interface A Storage API for JavaScript.
@@ -68,11 +94,12 @@ sap.ui.define([
 	 * should be deleted the method {@link #removeAll} should be used.
 	 *
 	 * @author SAP SE
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 0.11.0
 	 * @public
 	 * @name jQuery.sap.storage.Storage
 	 */
+	jQuery.sap.storage.Storage = Storage;
 
 	/**
 	 * Returns whether the given storage is suppported.
@@ -171,10 +198,10 @@ sap.ui.define([
 	 * Enumeration of the storage types supported by {@link jQuery.sap.storage.Storage}
 	 * @enum {string}
 	 * @public
-	 * @version 1.56.6
+	 * @version 1.60.1
 	 * @since 0.11.0
 	 */
-	jQuery.sap.storage.Type = storage.Type;
+	jQuery.sap.storage.Type = Storage.Type;
 
 	/**
 	 * Indicates usage of the browser's localStorage feature
@@ -190,13 +217,7 @@ sap.ui.define([
 	 * @name jQuery.sap.storage.Type.session
 	 */
 
-	/**
-	 * Indicates usage of the browser's globalStorage feature
-	 * @type {string}
-	 * @public
-	 * @name jQuery.sap.storage.Type.global
-	 */
-
+	Object.assign(jQuery.sap.storage, Storage);
 
 	return jQuery;
 

@@ -9,6 +9,7 @@ use exface\Core\Interfaces\Widgets\iContainOtherWidgets;
 use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
 use exface\Core\Widgets\InputSelect;
 use exface\Core\Widgets\InputHidden;
+use exface\Core\Interfaces\Widgets\iDisplayValue;
 
 /**
  * Generates OpenUI5 inputs
@@ -52,6 +53,8 @@ class ui5DialogHeader extends ui5Container
         foreach ($widget->getWidgets() as $w) {
             if ($w instanceof WidgetGrid) {
                 $content .= $this->buildJsVerticalLayout($w) . ',';
+            } elseif ($w instanceof iDisplayValue) {
+                $content .= $this->getTemplate()->getElement($w)->buildJsConstructor('oController') . ',';
             } elseif ($w instanceof iHaveValue) {
                 $content .= $this->buildJsObjectStatus($w) . ',';
             }

@@ -33,7 +33,7 @@ class ui5Tile extends ui5Button
         } else {
             $subtitle = $widget->getSubtitle();
             $icon = $widget->getIcon();
-            if ($subtitle && ! $icon) {
+            if ($subtitle /*&& ! $icon*/) {
                 $tileContentConstructor = <<<JS
     
                     new sap.m.FeedContent({
@@ -42,8 +42,8 @@ class ui5Tile extends ui5Button
     
 JS;
             } elseif ($icon) {
-                $subheader = 'subheader: "' . $subtitle . '",';
-                $tileContentConstructor = ''; //$this->buildJsIconContent();
+                /*$subheader = 'subheader: "' . $subtitle . '",';
+                $tileContentConstructor = $this->buildJsIconContent();*/
             }
         } 
         

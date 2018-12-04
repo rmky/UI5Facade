@@ -24,7 +24,7 @@ JS;
     {
         $widget = $this->getWidget();
         $content = $content ?? $this->buildJsChildrenConstructors();
-        if ($widget->countWidgetsVisible() === 1 && ($widget->getWidget(0) instanceof iFillEntireContainer)) {
+        if ($widget->countWidgetsVisible() === 1 && ($widget->getWidgetFirst() instanceof iFillEntireContainer)) {
             return $content;
         } elseif ($use_form) {
             return $this->buildJsLayoutForm($content);
@@ -41,9 +41,9 @@ JS;
     public function buildJsChildrenConstructors() : string
     {
         $js = '';
-        foreach ($this->getWidget()->getWidgets() as $widget) {
+        foreach ($this->getWidget()->getWidgets() as $idx => $widget) {
             // Larger widgets need a Title before them to make SimpleForm generate a new FormContainer
-            if (($widget instanceof iFillEntireContainer) || $widget->getWidth()->isMax()) {
+            if ($idx > 0 && (($widget instanceof iFillEntireContainer) || $widget->getWidth()->isMax())) {
                 $js .= ($js ? ",\n" : '') . 'new sap.ui.core.Title()';                
             } 
             $js .= ($js ? ",\n" : '') . $this->getTemplate()->getElement($widget)->buildJsConstructor();
@@ -60,7 +60,7 @@ JS;
                 width: "100%",
                 {$this->buildJsPropertyEditable()}
                 layout: "ResponsiveGridLayout",
-                labelSpanXL: 4,
+                labelSpanXL: 5,
     			labelSpanL: 4,
     			labelSpanM: 4,
     			labelSpanS: 5,
@@ -69,7 +69,7 @@ JS;
     			emptySpanL: 0,
     			emptySpanM: 0,
     			emptySpanS: 0,
-    			columnsXL: 3,
+    			columnsXL: 2,
     			columnsL: 2,
     			columnsM: 2,
                 singleContainerFullSize: true,

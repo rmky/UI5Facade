@@ -22,4 +22,3 @@ class ui5Tab extends ui5Panel
 JS;
     }
 }
-?>

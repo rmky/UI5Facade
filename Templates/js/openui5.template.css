@@ -43,3 +43,6 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 
 /* Flot */
 .exf-flot-wrapper .error {display: none;}
+
+/* Temp. fixes for UI5 issues */
+.sapMImageContentImageIcon.sapUiIcon {position: absolute; display: block;}

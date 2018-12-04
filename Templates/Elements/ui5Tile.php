@@ -29,32 +29,23 @@ class ui5Tile extends ui5Button
         
         if ($widget->hasDisplayWidget()) {
             $subheader = $widget->getSubtitle() ? 'subheader: "' . $widget->getSubtitle() . '",' : '';
-            
             $tileContentConstructor = $this->getTemplate()->getElement($widget->getDisplayWidget())->buildJsConstructor();
-            $tileContent = <<<JS
-
-    tileContent: [
-        new sap.m.TileContent({
-            content: [
-                {$tileContentConstructor}
-            ]
-        })
-    ]
+        } else {
+            $subtitle = $widget->getSubtitle();
+            $icon = $widget->getIcon();
+            if ($subtitle && ! $icon) {
+                $tileContentConstructor = <<<JS
+    
+                    new sap.m.FeedContent({
+    					contentText: "{$subtitle}"
+    				}),
+    
 JS;
-        } elseif ($subtitle = $widget->getSubtitle()) {
-            $tileContent = <<<JS
-
-    tileContent: [
-        new sap.m.TileContent({
-			content: [
-				new sap.m.FeedContent({
-					contentText: "{$subtitle}"
-				})
-			]
-		})
-    ]
-JS;
-        }
+            } elseif ($icon) {
+                $subheader = 'subheader: "' . $subtitle . '",';
+                $tileContentConstructor = ''; //$this->buildJsIconContent();
+            }
+        } 
         
         return <<<JS
 
@@ -62,8 +53,28 @@ new sap.m.GenericTile("{$this->getId()}", {
     {$header}
     {$subheader}
     {$press}
-    {$tileContent}
+    tileContent: [
+        new sap.m.TileContent({
+            content: [
+                {$tileContentConstructor}
+            ]
+        })
+    ]
 }).addStyleClass("sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout")
 JS;
+    }
+    
+    protected function buildJsIconContent() : string
+    {
+        if ($icon = $this->getWidget()->getIcon()) {
+            return <<<JS
+        
+                new sap.m.ImageContent({
+            		src: "{$this->getIconSrc($icon)}"
+            	})
+
+JS;
+        }
+        return '';
     }
 }

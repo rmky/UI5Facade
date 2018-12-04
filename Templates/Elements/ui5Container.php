@@ -22,7 +22,28 @@ class ui5Container extends ui5AbstractElement
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        if ($this->isPanel()) {
+            return $this->buildJsPanelWrapper($this->buildJsChildrenConstructors());
+        }
+        
         return $this->buildJsChildrenConstructors();
+    }
+    
+    protected function buildJsPanelWrapper(string $contentJs) : string
+    {
+        if ($caption = $this->getCaption()) {
+            $heading = "headerText: '{$caption}',";
+        }
+        return <<<JS
+
+        new sap.m.Panel("{$this->getId()}", {
+            {$heading}
+            content: [
+                {$contentJs}
+            ]
+        }).addStyleClass("sapUiNoMargin").addStyleClass("sapUiNoContentPadding")
+
+JS;
     }
     
     /**
@@ -37,6 +58,11 @@ class ui5Container extends ui5AbstractElement
         }
         
         return $js;
+    }
+    
+    protected function isPanel() : bool
+    {
+        return $this->getWidget()->hasParent() === false || $this->getCaption();
     }
 }
 ?>

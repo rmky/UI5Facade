@@ -131,6 +131,7 @@ class ui5DataTable extends ui5AbstractElement
                 })
                 .setModel(new sap.ui.model.json.JSONModel())
                 .attachItemPress(function(event){
+                    {$this->buildJsRowDetailsForMTable('event')}
                     {$this->getOnChangeScript()}
                 })
                 {$this->buildJsClickListeners('oController')}
@@ -725,7 +726,7 @@ JS;
 				]
 			})
 JS;
-                			return $toolbar;
+		return $toolbar;
     }
     
     /**
@@ -1121,6 +1122,93 @@ JS;
         }
         
         return '';
+    }
+    
+    /**
+     * 
+     * @param string $oPressEvent
+     * @return string
+     */
+    protected function buildJsRowDetailsForMTable(string $oPressEvent = 'oEvent') : string
+    {
+        $widget = $this->getWidget();
+        
+        if ($widget->hasRowDetails() === false) {
+            return '';
+        }
+        
+        
+        
+        // Note, that the promise resolves _before_ the content of the view is rendered,
+        // so opening the dialog right away will make it appear blank. Instead, we use
+        // setTimeout() to wait for the view to render completely.
+        
+        // Also make sure, the view model receives route parameters despite the fact, that
+        // it was not actually handled by a router. This is importat as all kinds of on-show
+        // handler will use route parameters (e.g. data, prefill, etc.) for their own needs.
+        return <<<JS
+
+                    var oTable = {$oPressEvent}.getSource();
+                    var oListItem = {$oPressEvent}.getParameters().listItem;
+                    var iRowIdx = oTable.indexOfItem(oListItem);
+                    var oRowData = oListItem.getBindingContext().getObject();
+
+                    if ($('#' + oListItem.sId).next().hasClass('row-details')) {
+                        sap.ui.getCore().byId("exfRowDetailsPanel" + iRowIdx).destroy();
+                        $('#' + oListItem.sId).next().remove();
+                    } else {
+
+                        var sViewName = this.getViewName('{$widget->getPage()->getAliasWithNamespace()}', '{$widget->getRowDetailsContainer()->getId()}'); 
+                        var sViewId = this.getViewId(sViewName);
+                        var oComponent = this.getOwnerComponent();
+                        
+                        var jqXHR = this._loadView(sViewName, function(){ 
+                            var oView = sap.ui.getCore().byId(sViewId);
+                            if (oView === undefined) {
+                                oComponent.runAsOwner(function(){
+                                    return sap.ui.core.mvc.JSView.create({
+                                        id: sViewId,
+                                        viewName: "{$this->getTemplate()->getViewName($widget, $this->getController()->getWebapp()->getRootPage())}"
+                                    }).then(function(oView){
+                                        oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
+                                        setTimeout(function() {
+                                            
+                                        });
+                                    });
+                                });
+                            } else {
+                                oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
+                                oView.getContent()[0].open();
+                            }
+                        }, {
+							data: {
+								prefill: {
+            						oId:"{$widget->getMetaObject()->getId()}",
+            						rows:[
+            							{ {$widget->getMetaObject()->getUidAttributeAlias()}: oRowData["{$widget->getMetaObject()->getUidAttributeAlias()}"] }
+            						],
+            						filters: []
+            					}
+							},
+                            success: function(data, textStatus, jqXHR) {
+                                
+                            },
+                            complete: function() {
+                                {$this->buildJsBusyIconHide()}
+                            }
+						});
+                        
+                        var oDetailItem = new sap.m.Panel("exfRowDetailsPanel" + iRowIdx, {
+                            content: [
+                                new sap.m.Text({text: 'asdf!!!'})
+                            ]
+                        })
+                        var tr = $('<tr colspan="8" class="row-details" style=""></tr>');
+                        $('#' + oListItem.sId).after(tr);
+                        oDetailItem.placeAt(tr);
+                    }
+
+JS;
     }
 }
 ?>

@@ -68,7 +68,7 @@ JS;
             ok: {$controller->buildJsViewEventHandler('onOk', $this, $okScript)},
             cancel: {$controller->buildJsViewEventHandler('onCancel', $this, $cancelScript)},
             showReset: true,
-            reset: "handleReset",
+            /*reset: "handleReset",*/
             panels: [
                 {$this->buildJsTabFilters()}
                 {$this->buildJsTabSorters()}
@@ -200,7 +200,7 @@ JS;
                 new sap.m.P13nColumnsPanel({
                     title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.COLUMNS')}",
                     visible: true,
-                    addColumnsItem: "onAddColumnsItem",
+                    /*addColumnsItem: "onAddColumnsItem",*/
                     type: "columns",
                     items: {
                         path: '{$this->getModelNameForConfig()}>/columns',

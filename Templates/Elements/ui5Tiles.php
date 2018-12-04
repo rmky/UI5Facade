@@ -11,7 +11,7 @@ use exface\Core\Widgets\NavTiles;
  * @author Andrej Kabachnik
  *
  */
-class ui5NavTiles extends ui5Container
+class ui5Tiles extends ui5Container
 {
     
     public function buildJsConstructor($oControllerJs = 'oController') : string
@@ -25,5 +25,22 @@ class ui5NavTiles extends ui5Container
                     {$this->buildJsProperties()}
                 })
 JS;
+    }
+                    
+    public function buildJsProperties()
+    {
+        return parent::buildJsProperties() . $this->buildJsPropertyHeaderText();
+    }
+                    
+    protected function buildJsPropertyHeaderText() : string
+    {
+        if ($caption = $this->getCaption()) {
+            return <<<JS
+
+                    headerText: "{$caption}",
+
+JS;
+        }
+        return '';
     }
 }

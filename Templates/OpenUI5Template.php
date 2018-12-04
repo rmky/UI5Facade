@@ -29,6 +29,8 @@ use exface\OpenUI5Template\WebappController;
 use exface\Core\Exceptions\LogicException;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 use exface\OpenUI5Template\WebappView;
+use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsEnumFormatter;
+use exface\Core\DataTypes\NumberDataType;
 
 /**
  * 
@@ -222,6 +224,10 @@ JS;*/
                     return new ui5DateFormatter($formatter);
                 }
                 break;
+            case $formatter instanceof JsEnumFormatter:
+                /*if ($dataType instanceof NumberDataType) {
+                    return new ui5NumberFormatter(new JsNumberFormatter($dataType));
+                }*/
         }
         
         return new ui5TransparentFormatter($formatter);

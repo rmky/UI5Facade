@@ -23,13 +23,33 @@ class ui5Tile extends ui5Button
     {
         $widget = $this->getWidget();
         
-        $header = $widget->getTitle() ? 'header: "' . $widget->getTitle() . '",' : '';
+        $header = $this->getCaption() ? 'header: "' . $widget->getTitle() . '",' : '';
         $handler = $this->buildJsClickViewEventHandlerCall();
         $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
         
         if ($widget->hasDisplayWidget()) {
-            $subheader = $widget->getSubtitle() ? 'subheader: "' . $widget->getSubtitle() . '",' : '';
-            $tileContentConstructor = $this->getTemplate()->getElement($widget->getDisplayWidget())->buildJsConstructor();
+            $elem = $this->getTemplate()->getElement($widget->getDisplayWidget());
+            if (($elem instanceof ui5Icon) && ($icon = $elem->buildJsConstructorForIcon())) {
+                $tileContentConstructor = <<<JS
+            
+                    new sap.m.VBox({
+                        width: "100%",
+                        alignItems: "Center",
+                        items: [
+                            {$icon},
+                            new sap.m.Title({
+                                text: "{$widget->getCaption()}"
+                            }).addStyleClass("sapUiSmallMargin")
+                        ]
+                    })
+    
+JS;
+                $header = '';
+                $tileClass = "exf-icon-tile";
+            } else {
+                $subheader = $widget->getSubtitle() ? 'subheader: "' . $widget->getSubtitle() . '",' : '';
+                $tileContentConstructor = $elem->buildJsConstructor();
+            }
         } else {
             $subtitle = $widget->getSubtitle();
             $icon = $widget->getIcon();
@@ -60,7 +80,7 @@ new sap.m.GenericTile("{$this->getId()}", {
             ]
         })
     ]
-}).addStyleClass("sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout")
+}).addStyleClass("sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout {$tileClass}")
 JS;
     }
     

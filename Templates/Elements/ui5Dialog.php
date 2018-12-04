@@ -230,8 +230,7 @@ JS;
         return <<<JS
 
         new sap.m.Dialog("{$this->getId()}", {
-			modal : true,
-            {$icon}
+			{$icon}
             stretch: jQuery.device.is.phone,
             title: "{$this->getCaption()}",
 			buttons : [ {$this->buildJsDialogButtons()} ],

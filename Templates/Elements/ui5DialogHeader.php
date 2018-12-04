@@ -48,7 +48,7 @@ class ui5DialogHeader extends ui5Container
             return '';
         }
         
-        $title = $this->getCaption() ? 'title: "' . $this->getCaption() . '",' : '';
+        $title = $widget->getCaption() ? 'new sap.m.Title({text: "' . $widget->getCaption() . '"}),' : '';
         foreach ($widget->getWidgets() as $w) {
             if ($w instanceof WidgetGrid) {
                 $content .= $this->buildJsVerticalLayout($w) . ',';
@@ -59,8 +59,8 @@ class ui5DialogHeader extends ui5Container
         return <<<JS
         
             new sap.ui.layout.VerticalLayout({
-                {$title}
                 content: [
+                    {$title}
                     {$content}
                 ]
             }),

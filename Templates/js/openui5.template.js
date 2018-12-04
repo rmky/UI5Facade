@@ -29,17 +29,21 @@ const exfLauncher = {};
 		                    	_oShell.setShowPane(! _oShell.getShowPane());
 		            		}
 		                }),
-		                new sap.m.Image({
+		                /*new sap.m.Image({
 							src: "exface/vendor/exface/OpenUI5Template/Templates/images/sap_50x26.png",
 							height: "26px",
 							width: "50px",
 							densityAware: false,
 							//visible: ! sap.ui.Device.system.phone
+		                }),*/
+		                new sap.m.Button({
+		                	icon: "sap-icon://home"
 		                }),
 		                new sap.m.ToolbarSpacer(),
-		                new sap.m.Label("exf_pagetitle", {
+		                new sap.m.Button("exf_pagetitle", {
 		                    text: "",
-		                    design: "Bold",
+		                    icon: "sap-icon://navigation-down-arrow",
+		                    iconFirst: false,
 		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
 		                }),
 		                new sap.m.ToolbarSpacer(),

@@ -22,11 +22,7 @@ class ui5Container extends ui5AbstractElement
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        if ($this->isPanel()) {
-            return $this->buildJsPanelWrapper($this->buildJsChildrenConstructors());
-        }
-        
-        return $this->buildJsChildrenConstructors();
+        return $this->buildJsPanelWrapper($this->buildJsChildrenConstructors());
     }
     
     protected function buildJsPanelWrapper(string $contentJs) : string
@@ -60,9 +56,4 @@ JS;
         return $js;
     }
     
-    protected function isPanel() : bool
-    {
-        return $this->getWidget()->hasParent() === false || $this->getCaption();
-    }
 }
-?>

@@ -157,7 +157,7 @@ JS;
     
     protected function buildJsConstructorForMTableFooter(string $oControllerJs = 'oController') : string
     {
-        $visible = $this->getWidget()->isPaged() === true || $this->getWidget()->getHideFooter() !== true ? 'true' : 'false';
+        $visible = $this->getWidget()->isPaged() === false || $this->getWidget()->getHideFooter() === true ? 'false' : 'true';
         return <<<JS
                 new sap.m.OverflowToolbar({
                     design: "Info",

@@ -24,6 +24,9 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 /* sap.m.List */
 .sapMLIB.sapMSLIIcon {padding-left: 0;}
 
+/* sap.m.GridList */
+.sapFGridListDefault {padding: 0 0.5rem}
+
 /* sap.f.DynamicPage */
 .exf-page-heading-btn {margin-top: -5px; margin-left: -11px;}
 

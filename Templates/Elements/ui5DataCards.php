@@ -10,11 +10,13 @@ class ui5DataCards extends ui5DataTable
      */
     protected function buildJsConstructorForTable(string $oControllerJs = 'oController') : string
     {
+        $mode = $this->getWidget()->getMultiSelect() ? 'sap.m.ListMode.MultiSelect' : 'sap.m.ListMode.SingleSelectMaster';
         return <<<JS
 
         new sap.m.VBox({
             items: [
                 new sap.f.GridList("{$this->getId()}", {
+                    mode: {$mode},
                     headerToolbar: [
                         {$this->buildJsToolbar()}
             		],

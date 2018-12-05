@@ -10,6 +10,7 @@ const exfLauncher = {};
 (function() {
 	
 	var _oShell = {};
+	var _oAppMenu;
 	var _oLauncher = this;
 	
 	this.getShell = function() {
@@ -36,7 +37,7 @@ const exfLauncher = {};
 							densityAware: false,
 							//visible: ! sap.ui.Device.system.phone
 		                }),*/
-		                new sap.m.Button({
+		                new sap.m.Button("exf_home", {
 		                	icon: "sap-icon://home"
 		                }),
 		                new sap.m.ToolbarSpacer(),
@@ -44,7 +45,14 @@ const exfLauncher = {};
 		                    text: "",
 		                    icon: "sap-icon://navigation-down-arrow",
 		                    iconFirst: false,
-		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
+		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
+		                    press: function(oEvent) {
+		                		if (_oAppMenu !== undefined) {
+		                			var oButton = oEvent.getSource();
+			                		var eDock = sap.ui.core.Popup.Dock;
+			                		_oAppMenu.open(this._bKeyboard, oButton, eDock.BeginTop, eDock.BeginBottom, oButton);
+		                		}
+		                	}
 		                }),
 		                new sap.m.ToolbarSpacer(),
 		                new sap.m.Button("exf-network-indicator", {
@@ -246,6 +254,10 @@ const exfLauncher = {};
 		}));
 		
 		return _oShell;
+	};
+	
+	this.setAppMenu = function (oControl) {
+		_oAppMenu = oControl;
 	};
 
 	this.showDialog = function (title, content, state, onCloseCallback, responsive) {

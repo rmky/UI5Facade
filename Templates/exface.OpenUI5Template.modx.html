@@ -112,7 +112,27 @@
 				
 				oShell.addPaneContent(oNavMenu);
 				
+				var oAppMenu = new sap.ui.unified.Menu("exf_shell_app_menu", {
+					itemSelect: function(){alert('Click!')},
+					items:[
+						[!Wayfinder? &startId=`[*id*]` &level=`1` &hideSubMenus=`1`
+						 &outerTpl=`@CODE: [+wf.wrapper+]`
+						 &innerTpl=`@CODE: [+wf.wrapper+]`
+						 &rowTpl=`@CODE: 
+							 new sap.ui.unified.MenuItem({
+								 text: "[+wf.linktext+]", 
+								 select: function(){
+									 sap.ui.core.BusyIndicator.show(0); 
+									 var alias = 'TODO';
+								 } 
+							 }),`
+					 	!]
+					]
+				});
+				exfLauncher.setAppMenu(oAppMenu);
+				
 				sap.ui.getCore().byId('exf_pagetitle').setText('[*pagetitle*]');
+				sap.ui.getCore().byId('exf_home').attachPress(function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[(site_url)]'});
 				sap.ui.getCore().byId('exf_avatar').setSrc('[!UserManagerInfo? &field=`photo`!]');
 			}
 			

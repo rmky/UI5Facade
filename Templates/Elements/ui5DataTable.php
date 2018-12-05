@@ -69,11 +69,7 @@ class ui5DataTable extends ui5AbstractElement
             $controller->addOnDefineScript("exfPreloader.addPreload('{$this->getMetaObject()->getAliasWithNamespace()}', {$preloadDataCols}, {$preloadImgCols}, '{$widget->getPage()->getId()}', '{$widget->getId()}');");
         }
         
-        if ($this->isMTable()) {
-            $js = $this->buildJsConstructorForMTable($oControllerJs);
-        } else {
-            $js = $this->buildJsConstructorForUiTable($oControllerJs);
-        }
+        $js = $this->buildJsConstructorForTable();
         
         $initConfigModel = ".setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForConfigurator()}')";
         
@@ -82,6 +78,22 @@ class ui5DataTable extends ui5AbstractElement
         } else {
             return $js . $initConfigModel;
         }
+    }
+    
+    /**
+     * 
+     * @param string $oControllerJs
+     * @return string
+     */
+    protected function buildJsConstructorForTable(string $oControllerJs = 'oController') : string
+    {
+        if ($this->isMTable()) {
+            $js = $this->buildJsConstructorForMTable($oControllerJs);
+        } else {
+            $js = $this->buildJsConstructorForUiTable($oControllerJs);
+        }
+        
+        return $js;
     }
     
     protected function isMTable()
@@ -145,7 +157,7 @@ JS;
     
     protected function buildJsConstructorForMTableFooter(string $oControllerJs = 'oController') : string
     {
-        $visible = $this->getWidget()->isPaged() ? 'true' : 'false';
+        $visible = $this->getWidget()->isPaged() === true || $this->getWidget()->getHideFooter() !== true ? 'true' : 'false';
         return <<<JS
                 new sap.m.OverflowToolbar({
                     design: "Info",
@@ -411,7 +423,6 @@ JS;
 					element: "{$widget->getId()}",
 					object: "{$widget->getMetaObject()->getId()}"
 				};
-        		var cols = oTable.getColumns();
         		var oModel = oTable.getModel();
                 var oData = oModel.getData();
                 var oController = this;
@@ -608,7 +619,7 @@ JS;
     
     protected function buildJsDataSourceColumnActions($oControlEventJsVar = 'oControlEvent', string $oParamsJs = 'params')
     {
-        if ($this->isMTable()) {
+        if ($this->isUiTable() === false) {
             return '';
         }
         

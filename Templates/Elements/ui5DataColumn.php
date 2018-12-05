@@ -60,20 +60,21 @@ JS;
      * 
      * @return string
      */
-    public function buildJsConstructorForCell(string $modelName = null)
+    public function buildJsConstructorForCell(string $modelName = null, bool $hideCaptions = true)
     {
-        $tpl = $this->getTemplate()->getElement($this->getWidget()->getCellWidget());
+        $widget = $this->getWidget();
+        $tpl = $this->getTemplate()->getElement($widget->getCellWidget());
         // Disable using widget id as control id because this is a template for multiple controls
         $tpl->setUseWidgetId(false);
         
         $modelPrefix = $modelName ? $modelName . '>' : '';
         if ($tpl instanceof ui5Display) {
-            $tpl->setValueBindingPath($modelPrefix . $this->getWidget()->getDataColumnName());
+            $tpl->setValueBindingPath($modelPrefix . $widget->getDataColumnName());
             $tpl->setAlignment($this->buildJsAlignment());
         } elseif ($tpl instanceof ui5Input) {
-            $tpl->setValueBindingPath($modelPrefix . $this->getWidget()->getDataColumnName());
+            $tpl->setValueBindingPath($modelPrefix . $widget->getDataColumnName());
         }
-        if ($tpl instanceof ui5CompoundControlInterface) {
+        if (($tpl instanceof ui5CompoundControlInterface) && ($hideCaptions === true || $widget->getHideCaption() === true)) {
             return $tpl->buildJsConstructorForMainControl();
         } else {
             return $tpl->buildJsConstructor();

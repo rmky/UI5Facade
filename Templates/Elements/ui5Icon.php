@@ -21,8 +21,37 @@ class ui5Icon extends ui5Display
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $icon = $this->buildJsConstructorForIcon();
-        if ($icon) {
-            return <<<JS
+        if (! $icon) {
+            return $this->buildJsConstructorForMainControl($oControllerJs);
+        }
+        
+        switch ($this->getWidget()->getIconPosition()) {
+            case EXF_ALIGN_RIGHT: return <<<JS
+            
+        new sap.m.HBox({
+            justifyContent: "SpaceAround",
+            alignItems: "Center",
+            items: [
+                {$this->buildJsConstructorForMainControl($oControllerJs)},
+                {$icon}
+                
+            ]
+        })
+        
+JS;
+            case EXF_ALIGN_CENTER: return <<<JS
+            
+        new sap.m.VBox({
+            width: "100%",
+            alignItems: "Center",
+            items: [
+                {$icon}.addStyleClass("sapUiSmallMargin"),
+                {$this->buildJsConstructorForMainControl($oControllerJs)}
+            ]
+        })
+        
+JS;
+            default: return <<<JS
 
         new sap.m.HBox({
             justifyContent: "SpaceAround",
@@ -35,8 +64,6 @@ class ui5Icon extends ui5Display
 
 JS;
         }
-            
-        return $this->buildJsConstructorForMainControl($oControllerJs);
     }
     
     public function buildJsConstructorForIcon() : string
@@ -47,7 +74,7 @@ JS;
             return '';
         }
         
-        switch (strtolower($widget->getSize())) {
+        switch (strtolower($widget->getIconSize())) {
             case EXF_TEXT_SIZE_BIG: $size = 'size: "36px",'; break;
             case EXF_TEXT_SIZE_SMALL: $size = 'size: "12px",'; break;
             case EXF_TEXT_SIZE_NORMAL: 

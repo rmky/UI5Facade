@@ -26,6 +26,20 @@ class ui5Tile extends ui5Button
         $header = $this->getCaption() ? 'header: "' . $widget->getTitle() . '",' : '';
         $handler = $this->buildJsClickViewEventHandlerCall();
         $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
+        $tileClass = '';
+        
+        if ($widget->getWidth()->isUndefined() === false) {
+            $container = $this->getTemplate()->getElement($widget->getParent());
+            if (($container instanceof ui5Tiles) && $container->isStretched() === true) {
+                $tileClass .= ' exf-stretched';
+                switch ($widget->getWidth()->getValue()) {
+                    case '25%': $tileClass .= ' exf-col-3'; break;
+                    case '33%': $tileClass .= ' exf-col-4'; break;
+                    case '50%': $tileClass .= ' exf-col-6'; break;
+                    case '100%': $tileClass .= ' exf-col-12'; break;
+                }
+            }
+        }
         
         if ($widget->hasDisplayWidget()) {
             $elem = $this->getTemplate()->getElement($widget->getDisplayWidget());
@@ -36,16 +50,16 @@ class ui5Tile extends ui5Button
                         width: "100%",
                         alignItems: "Center",
                         items: [
-                            {$icon},
+                            {$icon}.addStyleClass("sapUiSmallMargin"),
                             new sap.m.Title({
                                 text: "{$widget->getCaption()}"
-                            }).addStyleClass("sapUiSmallMargin")
+                            })
                         ]
                     })
     
 JS;
                 $header = '';
-                $tileClass = "exf-icon-tile";
+                $tileClass .= " exf-icon-tile";
             } else {
                 $subheader = $widget->getSubtitle() ? 'subheader: "' . $widget->getSubtitle() . '",' : '';
                 $tileContentConstructor = $elem->buildJsConstructor();

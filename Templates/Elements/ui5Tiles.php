@@ -1,12 +1,12 @@
 <?php
 namespace exface\OpenUI5Template\Templates\Elements;
 
-use exface\Core\Widgets\NavTiles;
+use exface\Core\Widgets\Tiles;
 
 /**
  * Generates a sap.m.Panel intended to contain tiles (see. ui5Tile)
  * 
- * @method NavTiles getWiget()
+ * @method Tiles getWiget()
  * 
  * @author Andrej Kabachnik
  *
@@ -30,6 +30,21 @@ JS;
     public function buildJsProperties()
     {
         return parent::buildJsProperties() . $this->buildJsPropertyHeaderText();
+    }
+    
+    public function isStretched() : bool
+    {
+        $lastWidth = null;
+        foreach ($this->getWidget()->getTiles() as $tile) {
+            $w = $tile->getWidth();
+            if ($w->isUndefined() === true || $w->isPercentual() === false || ($lastWidth !== null && $lastWidth !== $w->getValue())) {
+                return false;
+            } else {
+                $lastWidth = $w->getValue();
+            }
+        }
+        
+        return true;
     }
                     
     protected function buildJsPropertyHeaderText() : string

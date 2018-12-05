@@ -30,8 +30,12 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 /* Tiles */
 .sapMTileCntContent .sapMFC.sapMTcInnerMarker {width: inherit !important;}
 .sapMTileCntContent .sapMFCCTxt {overflow: visible !important;}
-
-.exf-icon-tile .sapMGTContent {margin-top: -20px}
+.sapMGT.exf-stretched .sapMTileCnt.sapMFrameTypeAuto {max-width: none;}
+.sapMGT.exf-col-3 {width: calc(25% - 0.5rem)}
+.sapMGT.exf-col-4 {width: calc(33% - 0.5rem)}
+.sapMGT.exf-col-6 {width: calc(50% - 0.5rem)}
+.sapMGT.exf-col-12 {width: 100%}
+.exf-icon-tile .sapMGTContent {margin-top: -40px}
 
 /* Forms */
 .sapUiFormTitle:empty {display: none;}

@@ -7,7 +7,7 @@ use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Interfaces\DataTypes\DataTypeInterface;
 use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsDateFormatter;
 use exface\OpenUI5Template\Templates\Formatters\ui5DateFormatter;
-use exface\OpenUI5Template\Templates\Formatters\ui5TransparentFormatter;
+use exface\OpenUI5Template\Templates\Formatters\ui5DefaultFormatter;
 use exface\Core\DataTypes\TimestampDataType;
 use exface\OpenUI5Template\Templates\Formatters\ui5DateTimeFormatter;
 use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsBooleanFormatter;
@@ -31,6 +31,7 @@ use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 use exface\OpenUI5Template\WebappView;
 use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsEnumFormatter;
 use exface\Core\DataTypes\NumberDataType;
+use exface\OpenUI5Template\Templates\Formatters\ui5EnumFormatter;
 
 /**
  * 
@@ -225,12 +226,10 @@ JS;*/
                 }
                 break;
             case $formatter instanceof JsEnumFormatter:
-                /*if ($dataType instanceof NumberDataType) {
-                    return new ui5NumberFormatter(new JsNumberFormatter($dataType));
-                }*/
+                return new ui5EnumFormatter($formatter);
         }
         
-        return new ui5TransparentFormatter($formatter);
+        return new ui5DefaultFormatter($formatter);
     }
     
     /**

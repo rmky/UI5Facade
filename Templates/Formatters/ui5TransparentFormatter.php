@@ -1,8 +1,12 @@
 <?php
 namespace exface\OpenUI5Template\Templates\Formatters;
 
+use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsEnumFormatter;
+use exface\Core\Interfaces\DataTypes\EnumDataTypeInterface;
+
 /**
- * 
+ * The transparent formatter simply passes the value to it's JS counterpart. 
+ *  
  * @author Andrej Kabachnik
  *
  */
@@ -15,6 +19,12 @@ class ui5TransparentFormatter extends AbstractUi5BindingFormatter
      */
     public function buildJsBindingProperties()
     {
-        return '';
+        return <<<JS
+
+                formatter: function(value) {
+                    return {$this->getJsFormatter()->buildJsFormatter('value')}
+                },
+
+JS;
     }
 }

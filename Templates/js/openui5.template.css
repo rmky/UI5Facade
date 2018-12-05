@@ -2,6 +2,9 @@
 .pull-right {float: right;}
 .pull-left {float: left;}
 
+/* Visibility classes */
+.exf-promoted {font-weight: bold;}
+
 /* Symfony Debugger */
 .exception .container {width: auto !important;} 
 pre.sf-dump {background: none !important; border: none !important;}

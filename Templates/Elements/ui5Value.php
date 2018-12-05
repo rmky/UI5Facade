@@ -56,12 +56,16 @@ class ui5Value extends ui5AbstractElement implements ui5ValueBindingInterface, u
             $this->addOnBindingChangeScript('text', $onChange);  
         }
         
+        if ($this->getWidget()->getVisibility() === EXF_WIDGET_VISIBILITY_PROMOTED) {
+            $this->addElementCssClass('exf-promoted');
+        }
+        
         return <<<JS
 
         new sap.m.Text("{$this->getId()}", {
             {$this->buildJsProperties()}
             {$this->buildJsPropertyValue()}
-        })
+        }).addStyleClass("{$this->buildCssElementClass()}")
 
 JS;
     }

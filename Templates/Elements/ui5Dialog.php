@@ -245,7 +245,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::getCaption()
      */
-    protected function getCaption()
+    protected function getCaption() : string
     {
         $caption = parent::getCaption();
         $objectName = $this->getWidget()->getMetaObject()->getName();

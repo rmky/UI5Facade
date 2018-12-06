@@ -13,7 +13,7 @@ class ui5SplitVertical extends ui5Container
 {
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        return <<<JS
+        $splitter = <<<JS
 
     new sap.ui.layout.Splitter("{$this->getId()}", {
         height: "100%",
@@ -24,6 +24,11 @@ class ui5SplitVertical extends ui5Container
         ]
     })
 JS;
+        if ($this->hasPageWrapper() === true) {
+            return $this->buildJsPageWrapper($splitter);
+        }
+        
+        return $splitter;
     }
         
     protected function getOrientation()

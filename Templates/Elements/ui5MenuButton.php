@@ -36,7 +36,7 @@ class ui5MenuButton extends ui5AbstractElement
 JS;
     }
         
-    protected function getCaption()
+    protected function getCaption() : string
     {
         $caption = parent::getCaption();
         if ($caption == '') {

@@ -5,6 +5,7 @@ use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryContainerTrait;
 use exface\Core\Widgets\Container;
 
 /**
+ * Renders a sap.m.Panel with no margins or paddings for a simple Container widget.
  * 
  * @method Container getWidget()
  * 
@@ -22,7 +23,13 @@ class ui5Container extends ui5AbstractElement
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        return $this->buildJsPanelWrapper($this->buildJsChildrenConstructors());
+        $js = $this->buildJsPanelWrapper($this->buildJsChildrenConstructors());
+        
+        if ($this->hasPageWrapper() === true) {
+            return $this->buildJsPageWrapper($js);
+        }
+        
+        return $js;
     }
     
     /**
@@ -33,7 +40,8 @@ class ui5Container extends ui5AbstractElement
      */
     protected function buildJsPanelWrapper(string $contentJs) : string
     {
-        if ($caption = $this->getCaption()) {
+        $caption = $this->getCaption();
+        if ($caption && $this->hasPageWrapper() === false) {
             $heading = "headerText: '{$caption}',";
         }
         return <<<JS
@@ -45,6 +53,34 @@ class ui5Container extends ui5AbstractElement
             ]
         }).addStyleClass("sapUiNoMargin sapUiNoContentPadding")
 
+JS;
+    }
+                
+    protected function hasPageWrapper() : bool
+    {
+        return $this->getWidget()->hasParent() === false && $this->getView()->isWebAppRoot() === false;
+    }
+                
+    protected function buildJsPageWrapper(string $contentJs) : string
+    {
+        $showNavButton = $this->getView()->isWebAppRoot() ? 'false' : 'true';
+        
+        $caption = $this->getCaption();
+        if ($caption === '' && $this->getWidget()->hasParent() === false) {
+            $caption = $this->getWidget()->getPage()->getName();
+        }
+        
+        return <<<JS
+        
+        new sap.m.Page({
+            title: "{$caption}",
+            showNavButton: {$showNavButton},
+            navButtonPress: [oController.onNavBack, oController],
+            content: [
+                {$contentJs}
+            ]
+        })
+        
 JS;
     }
     
@@ -61,5 +97,4 @@ JS;
         
         return $js;
     }
-    
 }

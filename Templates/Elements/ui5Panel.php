@@ -9,7 +9,8 @@ class ui5Panel extends ui5Container
     
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        return  <<<JS
+        $panel = <<<JS
+
                 new sap.m.Panel("{$this->getId()}", {
                     height: "100%",
                     content: [
@@ -17,7 +18,13 @@ class ui5Panel extends ui5Container
                     ],
                     {$this->buildJsProperties()}
                 }).addStyleClass("sapUiNoContentPadding")
+
 JS;
+        if ($this->hasPageWrapper() === true) {
+            return $this->buildJsPageWrapper($panel);
+        }
+        
+        return $panel;
     }
                     
     public function buildJsLayoutConstructor(string $content = null, bool $use_form = true) : string

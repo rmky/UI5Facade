@@ -50,4 +50,11 @@ interface ui5ViewInterface {
      */
     public function getModel(string $name = '') : ui5ModelInterface; 
     
+    /**
+     * Returns TRUE if this view is the root view for the it's webap
+     * 
+     * @return bool
+     */
+    public function isWebAppRoot() : bool;
+    
 }

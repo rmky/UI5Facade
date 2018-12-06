@@ -159,6 +159,11 @@ JS;
         return $this->model;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::isWebAppRoot()
+     */
     public function isWebAppRoot() : bool
     {
         $rootWidget = $this->getRootElement()->getWidget();

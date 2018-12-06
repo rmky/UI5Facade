@@ -25,6 +25,12 @@ class ui5Container extends ui5AbstractElement
         return $this->buildJsPanelWrapper($this->buildJsChildrenConstructors());
     }
     
+    /**
+     * Wraps any JS content in an sap.m.Panel with no margins/padding.
+     * 
+     * @param string $contentJs
+     * @return string
+     */
     protected function buildJsPanelWrapper(string $contentJs) : string
     {
         if ($caption = $this->getCaption()) {

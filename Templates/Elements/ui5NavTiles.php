@@ -2,18 +2,23 @@
 namespace exface\OpenUI5Template\Templates\Elements;
 
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryContainerTrait;
-use exface\Core\Widgets\Container;
+use exface\Core\Widgets\NavTiles;
 
 /**
- * Renders a sap.m.Panel with no margins or paddings for a simple Container widget.
+ * Renders a default container for NavTiles.
  * 
- * @method Container getWidget()
+ * @method NavTiles getWidget()
  * 
  * @author Andrej Kabachnik
  *
  */
 class ui5NavTiles extends ui5Container
 {
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Container::buildJsConstructor()
+     */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         // If the NavTiles is the root widget of a view, it will have a header with the caption

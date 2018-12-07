@@ -19,7 +19,7 @@ class ui5Tiles extends ui5Container
         $panel = <<<JS
 
                 new sap.m.Panel("{$this->getId()}", {
-                    height: "100%",
+                    {$this->buildJsPropertyHeight()}
                     content: [
                         {$this->buildJsChildrenConstructors()}
                     ],

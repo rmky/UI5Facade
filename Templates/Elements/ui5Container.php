@@ -48,12 +48,26 @@ class ui5Container extends ui5AbstractElement
 
         new sap.m.Panel("{$this->getId()}", {
             {$heading}
+            {$this->buildJsPropertyHeight()}
             content: [
                 {$contentJs}
             ]
         }).addStyleClass("sapUiNoMargin sapUiNoContentPadding")
 
 JS;
+    }
+    
+    /**
+     * Returns height: "xxx" if required by the container control
+     * 
+     * @return string
+     */
+    protected function buildJsPropertyHeight() : string
+    {
+        if ($this->getWidget()->hasParent() === false) {
+            return 'height: "100%",';
+        }
+        return '';
     }
                 
     protected function hasPageWrapper() : bool

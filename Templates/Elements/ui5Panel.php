@@ -48,11 +48,16 @@ JS;
     public function buildJsChildrenConstructors() : string
     {
         $js = '';
-        foreach ($this->getWidget()->getWidgets() as $idx => $widget) {
-            // Larger widgets need a Title before them to make SimpleForm generate a new FormContainer
-            if ($idx > 0 && (($widget instanceof iFillEntireContainer) || $widget->getWidth()->isMax())) {
-                $js .= ($js ? ",\n" : '') . 'new sap.ui.core.Title()';                
-            } 
+        $firstVisibleWidget = null;
+        foreach ($this->getWidget()->getWidgets() as $widget) {
+             
+            if ($widget->isHidden() === false) {
+                // Larger widgets need a Title before them to make SimpleForm generate a new FormContainer
+                if ($firstVisibleWidget !== null && (($widget instanceof iFillEntireContainer) || $widget->getWidth()->isMax())) {
+                    $js .= ($js ? ",\n" : '') . 'new sap.ui.core.Title()';
+                }
+                $firstVisibleWidget = $widget;
+            }
             $js .= ($js ? ",\n" : '') . $this->getTemplate()->getElement($widget)->buildJsConstructor();
         }
         

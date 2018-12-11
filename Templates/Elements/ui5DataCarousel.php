@@ -28,7 +28,7 @@ class ui5DataCarousel extends ui5SplitHorizontal
     {
         $dataIsEditable = $this->getDataElement()->isEditable();
         foreach ($this->getWidget()->getDetailsWidget()->getChildrenRecursive() as $child) {
-            if (! ($child instanceof iShowSingleAttribute) || ! $child->hasAttributeReference()) {
+            if (! ($child instanceof iShowSingleAttribute) || ! $child->isBoundToAttribute()) {
                 continue;
             }
             if (! $dataIsEditable) {

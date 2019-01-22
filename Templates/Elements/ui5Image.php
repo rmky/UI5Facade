@@ -34,18 +34,26 @@ JS;
             
     public function buildJsValueBindingOptions()
     {
+        $base = $this->getWidget()->getBaseUrl();
         if ($this->getWidget()->getUseProxy()) {
+            $proxyFormatter = <<<JS
+
+            var proxyUrl = "{$this->getWidget()->buildProxyUrl('xxurixx')}";
+            url = proxyUrl.replace("xxurixx", url);
+
+JS;
+        }
         
             return <<<JS
 
         formatter: function(value) {
-            var url = encodeURI(value);
-            var proxyUrl = "{$this->getWidget()->buildProxyUrl('xxurixx')}";
-            return proxyUrl.replace("xxurixx", url);
+            var url = encodeURI('{$base}' + value);
+            {$proxyFormatter}
+            return url;
         },
 
 JS;
-        }
+        
             
         return parent::buildJsValueBindingOptions();
     }

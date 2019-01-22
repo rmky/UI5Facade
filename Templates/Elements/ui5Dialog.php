@@ -437,17 +437,33 @@ JS;
         $widget = $this->getWidget();
         $js = '';
         $non_tab_children_constructors = '';
+        $non_tab_hidden_constructors = '';
         
-        foreach ($widget->getWidgets() as $content) {
-            if ($content instanceof Tabs) {
-                foreach ($content->getTabs() as $tab) {
+        foreach ($widget->getWidgets() as $child) {
+            // Tabs are transformed to PageSections and all other widgets are collected and put into a separate page section
+            // lager on.
+            if ($child instanceof Tabs) {
+                foreach ($child->getTabs() as $tab) {
                     $js .= $this->buildJsObjectPageSectionFromTab($tab);
                 }
             } else {
-                $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->getTemplate()->getElement($content)->buildJsConstructor();
+                // Most dialogs will have hidden system fields at top level. They need to be placed at the very end - otherwise
+                // they break the SimpleForm generated for the non-tab PageSection. If they come first, the SimpleForm will allocate
+                // space for them (even though not visible) and put the actual content way in the back.
+                if ($child->isHidden() === true) {
+                    $non_tab_hidden_constructors .= ($non_tab_hidden_constructors ? ',' : '') . $this->getTemplate()->getElement($child)->buildJsConstructor();
+                } else {
+                    $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->getTemplate()->getElement($child)->buildJsConstructor();
+                }
             }
         }
         
+        // Append hidden non-tab elements after the visible ones
+        if ($non_tab_hidden_constructors) {
+            $non_tab_children_constructors .= ',' . $non_tab_hidden_constructors;
+        }
+        
+        // Build an ObjectPageSection for the non-tab elements
         if ($non_tab_children_constructors) {
             $js .= $this->buildJsObjectPageSection($this->buildJsLayoutConstructor($non_tab_children_constructors), 'sapUiTinyMarginTop');
         }

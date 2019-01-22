@@ -460,7 +460,7 @@ JS;
         
         // Append hidden non-tab elements after the visible ones
         if ($non_tab_hidden_constructors) {
-            $non_tab_children_constructors .= ',' . $non_tab_hidden_constructors;
+            $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $non_tab_hidden_constructors;
         }
         
         // Build an ObjectPageSection for the non-tab elements

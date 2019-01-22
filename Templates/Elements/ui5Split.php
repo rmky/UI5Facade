@@ -33,6 +33,6 @@ JS;
         
     protected function getOrientation()
     {
-        return $this->getWidget()->getOrientation() === Split::ORIENTATION_VERTICAL ? 'Vertical' : 'Horizontal';
+        return $this->getWidget()->isSideBySide() === true  ? 'Horizontal' : 'Vertical';
     }
 }

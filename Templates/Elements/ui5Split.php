@@ -1,15 +1,15 @@
 <?php
 namespace exface\OpenUI5Template\Templates\Elements;
 
-use exface\Core\Widgets\SplitVertical;
+use exface\Core\Widgets\Split;
 
 /**
- * @method SplitVertical getWidget()
+ * @method Split getWidget()
  * 
  * @author Andrej Kabachnik
  *
  */
-class ui5SplitVertical extends ui5Container
+class ui5Split extends ui5Container
 {
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -33,6 +33,6 @@ JS;
         
     protected function getOrientation()
     {
-        return 'Vertical';
+        return $this->getWidget()->getOrientation() === Split::ORIENTATION_VERTICAL ? 'Vertical' : 'Horizontal';
     }
 }

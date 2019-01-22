@@ -14,7 +14,7 @@ use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDataCarouselTrait;
  * @method DataCarousel getWidget()
  *        
  */
-class ui5DataCarousel extends ui5SplitHorizontal
+class ui5DataCarousel extends ui5Split
 {
     use JqueryDataCarouselTrait;
     

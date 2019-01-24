@@ -35,9 +35,6 @@
 			}
 		</style>
 		
-		<link rel="stylesheet" type="text/css" id="sap-ui-theme-sap.m" href="exface/vendor/exface/OpenUI5Template/Templates/js_openui5/resources/sap/m/themes/sap_belize/library.css" />
-		<link rel="stylesheet" type="text/css" id="sap-ui-theme-sap.ui.unified" href="exface/vendor/exface/OpenUI5Template/Templates/js_openui5/resources/sap/ui/unified/themes/sap_belize/library.css" />
-		
 		<script>
 			// Check that service workers are registered
 			if ('serviceWorker' in navigator) {				
@@ -138,8 +135,12 @@
 							}
 						})
 				    );
-					oShell.placeAt("[*id*]");
+					
 					initMainMenu(oShell);
+					
+					setTimeout(function(){
+						oShell.placeAt("[*id*]");
+					}, 1000);
 				});
 			});
 		</script>

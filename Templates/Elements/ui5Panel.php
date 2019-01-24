@@ -3,7 +3,15 @@ namespace exface\OpenUI5Template\Templates\Elements;
 
 use exface\Core\Interfaces\Widgets\iFillEntireContainer;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ControlWithToolbarInterface;
+use exface\Core\Widgets\Panel;
 
+/**
+ * 
+ * @author Andrej Kabachnik
+ * 
+ * @method Panel getWidget()
+ *
+ */
 class ui5Panel extends ui5Container
 {
     
@@ -66,25 +74,54 @@ JS;
     
     protected function buildJsLayoutForm($content)
     {
+        $cols = $this->getNumberOfColumns();
+        
+        switch ($cols) {
+            case $cols > 3:
+                $properties = <<<JS
+
+                columnsXL: {$cols},
+    			columnsL: 3,
+    			columnsM: 2,  
+
+JS;
+            break;
+            case 3:
+                $properties = <<<JS
+                
+                columnsXL: {$cols},
+    			columnsL: {$cols},
+    			columnsM: 2,
+    			
+JS;
+                break;
+            default:
+                $properties = <<<JS
+                
+                columnsXL: {$cols},
+    			columnsL: {$cols},
+    			columnsM: {$cols},
+    			
+JS;
+        }
+        
         return <<<JS
         
             new sap.ui.layout.form.SimpleForm({
                 width: "100%",
                 {$this->buildJsPropertyEditable()}
                 layout: "ResponsiveGridLayout",
-                labelSpanXL: 5,
+                adjustLabelSpan: false,
+    			labelSpanXL: 5,
     			labelSpanL: 4,
     			labelSpanM: 4,
     			labelSpanS: 5,
-    			adjustLabelSpan: false,
     			emptySpanXL: 0,
     			emptySpanL: 0,
     			emptySpanM: 0,
     			emptySpanS: 0,
-    			columnsXL: 2,
-    			columnsL: 2,
-    			columnsM: 2,
-                singleContainerFullSize: true,
+                {$properties}
+    			singleContainerFullSize: true,
                 content: [
                     {$content}
                 ]
@@ -128,5 +165,25 @@ JS;
 
 JS;
     }
+                    
+    /**
+     * Returns the default number of columns to layout this widget.
+     *
+     * @return integer
+     */
+    public function getDefaultColumnNumber()
+    {
+        return $this->getTemplate()->getConfig()->getOption("WIDGET.PANEL.COLUMNS_BY_DEFAULT");
+    }
+    
+    /**
+     * Returns if the the number of columns of this widget depends on the number of columns
+     * of the parent layout widget.
+     *
+     * @return boolean
+     */
+    public function inheritsColumnNumber()
+    {
+        return true;
+    }
 }
-?>

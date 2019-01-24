@@ -11,6 +11,7 @@ use exface\Core\Widgets\ButtonGroup;
 use exface\Core\Widgets\MenuButton;
 use exface\Core\Widgets\DataTableResponsive;
 use exface\Core\Interfaces\Widgets\iShowImage;
+use exface\OpenUI5Template\Templates\Elements\Traits\ui5DataElementTrait;
 
 /**
  *
@@ -22,6 +23,7 @@ use exface\Core\Interfaces\Widgets\iShowImage;
 class ui5DataTable extends ui5AbstractElement
 {
     use JqueryDataTableTrait;
+    use ui5DataElementTrait;
     
     /**
      *
@@ -52,7 +54,7 @@ class ui5DataTable extends ui5AbstractElement
         
         $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
         $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos, growing', $this->buildJsDataLoader());
-        $controller->addDependentControl('oConfigurator', $this, $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget()));
+        $this->initConfiguratorControl($controller);
         $controller->addOnShowViewScript($this->buildJsRefresh());
         
         if ($widget->isPreloadDataEnabled()) {
@@ -165,15 +167,7 @@ JS;
     				content: [
                         {$this->getPaginatorElement()->buildJsConstructor($oControllerJs)},
                         new sap.m.ToolbarSpacer(),
-                        new sap.m.OverflowToolbarButton({
-                            type: sap.m.ButtonType.Transparent,
-                            icon: "sap-icon://drop-down-list",
-                            text: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
-                            tooltip: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
-                            press: function() {
-                    			{$this->getController()->buildJsDependentControlSelector('oConfigurator', $this, $oControllerJs)}.open();
-                    		}
-                        })
+                        {$this->buildJsConfiguratorButtonConstructor($oControllerJs, 'Transparent')}
                     ]
                 })
                 
@@ -688,75 +682,12 @@ JS;
     }
     
     /**
-     * Returns the constructor for the table's main toolbar (OverflowToolbar).
-     *
-     * The toolbar contains the paginator, all the action buttons, the quick search
-     * and the button for the personalization dialog as well as the P13nDialog itself.
-     *
-     * The P13nDialog is appended to the toolbar wrapped in an invisible container in
-     * order not to affect the overflow behavior. The dialog must be included in the
-     * toolbar to ensure it is destroyed with the toolbar and does not become an
-     * orphan (e.g. when the view containing the table is destroyed).
-     *
-     * @return string
-     */
-    protected function buildJsToolbar($oControllerJsVar = 'oController', string $leftExtras = null, string $rightExtras = null)
-    {
-        $controller = $this->getController();
-        $heading = $this->buildTextTableHeading() . ($this->getWidget()->isPaged() ? ': ' : '');
-        $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $heading . '"}),';
-        
-        $leftExtras = $leftExtras === null ? '' : rtrim($leftExtras, ", ") . ',';
-        $rightExtras = $rightExtras === null ? '' : rtrim($leftExtras, ", ") . ',';
-        
-        $toolbar = <<<JS
-			new sap.m.OverflowToolbar({
-                design: "Transparent",
-				content: [
-					{$heading}
-                    {$leftExtras}
-			        new sap.m.ToolbarSpacer(),
-                    {$this->buildJsButtonsConstructors()}
-                    {$rightExtras}
-					new sap.m.SearchField("{$this->getId()}_quickSearch", {
-                        width: "200px",
-                        search: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
-                        placeholder: "{$this->getQuickSearchPlaceholder(false)}",
-                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
-                    }),
-                    new sap.m.OverflowToolbarButton({
-                        icon: "sap-icon://drop-down-list",
-                        text: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
-                        tooltip: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
-                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),
-                        press: function() {
-                			{$controller->buildJsDependentControlSelector('oConfigurator', $this, $oControllerJsVar)}.open();
-                		}
-                    })
-				]
-			})
-JS;
-                			return $toolbar;
-    }
-    
-    /**
      *
      * @return ui5DataPaginator
      */
     protected function getPaginatorElement() : ui5DataPaginator
     {
         return $this->getTemplate()->getElement($this->getWidget()->getPaginator());
-    }
-    
-    /**
-     * Returns the text to be shown a table title
-     *
-     * @return string
-     */
-    protected function buildTextTableHeading()
-    {
-        $widget = $this->getWidget();
-        return $widget->getCaption() ? $widget->getCaption() : $widget->getMetaObject()->getName();
     }
     
     /**
@@ -784,34 +715,6 @@ JS;
     }
     
     /**
-     * Returns a ready-to-use comma separated list of javascript constructors for all buttons of the table.
-     *
-     * @return string
-     */
-    protected function buildJsButtonsConstructors()
-    {
-        $widget = $this->getWidget();
-        $buttons = '';
-        foreach ($widget->getToolbars() as $toolbar) {
-            if ($toolbar->getIncludeSearchActions()){
-                $search_button_group = $toolbar->getButtonGroupForSearchActions();
-            } else {
-                $search_button_group = null;
-            }
-            foreach ($widget->getToolbarMain()->getButtonGroups() as $btn_group) {
-                if ($btn_group === $search_button_group){
-                    continue;
-                }
-                $buttons .= ($buttons && $btn_group->getVisibility() > EXF_WIDGET_VISIBILITY_OPTIONAL ? ",\n new sap.m.ToolbarSeparator()" : '');
-                foreach ($btn_group->getButtons() as $btn) {
-                    $buttons .= $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n";
-                }
-            }
-        }
-        return $buttons;
-    }
-    
-    /**
      * Wraps the given content in a constructor for the sap.f.DynamicPage used to create the Fiori list report floorplan.
      *
      * @param string $content
@@ -832,7 +735,7 @@ JS;
             $title = <<<JS
             
                             new sap.m.Title({
-                                text: "{$this->buildTextTableHeading()}"
+                                text: "{$this->getCaption()}"
                             })
                             
 JS;
@@ -847,7 +750,7 @@ JS;
                                         type: sap.m.ButtonType.Transparent
                                     }).addStyleClass('exf-page-heading-btn'),
                                     new sap.m.Title({
-                                        text: "{$this->buildTextTableHeading()}"
+                                        text: "{$this->getCaption()}"
                                     })
                                 ]
                             })
@@ -1132,6 +1035,24 @@ JS;
         }
         
         return '';
+    }
+    
+    protected function buildJsQuickSearchConstructor() : string
+    {
+        if ($this->hasQuickSearch() === false) {
+            return '';
+        }
+        
+        return <<<JS
+        
+                    new sap.m.SearchField("{$this->getId()}_quickSearch", {
+                        width: "200px",
+                        search: {$this->getController()->buildJsMethodCallFromView('onLoadData', $this)},
+                        placeholder: "{$this->getWidget()->getQuickSearchPlaceholder()}",
+                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
+                    }),
+                    
+JS;
     }
 }
 ?>

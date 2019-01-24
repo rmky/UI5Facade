@@ -4,6 +4,7 @@ namespace exface\OpenUI5Template\Templates\Elements;
 use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryFlotTrait;
 use exface\Core\Widgets\Chart;
 use exface\Core\DataTypes\StringDataType;
+use exface\OpenUI5Template\Templates\Elements\Traits\ui5DataElementTrait;
 
 /**
  * 
@@ -15,6 +16,7 @@ use exface\Core\DataTypes\StringDataType;
 class ui5Chart extends ui5AbstractElement
 {
     use JqueryFlotTrait;
+    use ui5DataElementTrait;
     
     /**
      * 
@@ -31,35 +33,18 @@ class ui5Chart extends ui5AbstractElement
             $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path, null, $path);
         }
         
-        return <<<JS
-        new sap.m.Panel({
-            height: "100%",
-            headerToolbar: [
-                new sap.m.OverflowToolbar({
-                    design: "Transparent",
-    				content: [
-    					new sap.m.Label({
-                            text: "{$this->getCaption()}"
-                        }),
-    			        new sap.m.ToolbarSpacer(),
-                        new sap.m.OverflowToolbarButton({
-                            icon: "sap-icon://drop-down-list",
-                            enabled: false
-                        })
-                    ]
-                }).addStyleClass("sapMTBHeader-CTX")
-            ],
-            content: [
+        $chart = <<<JS
+
                 new sap.ui.core.HTML("{$this->getId()}", {
                     content: "<div class=\"exf-flot-wrapper\" style=\"height: 100%; overflow: hidden; position: relative;\"></div>",
                     afterRendering: function() { 
                         {$this->buildJsRefresh()} 
                     }
                 })
-            ]
-        })
 
 JS;
+                        
+        return $this->buildJsPanelWrapper($chart, $oControllerJs, $this->getCaption());
     }
         
     protected function getJsIncludes() : array
@@ -145,6 +130,22 @@ JS;
         }
         
         return $output;
-    }    
+    }
+    
+    protected function hasActionButtons() : bool
+    {
+        return false;
+    }
+    
+    protected function buildJsConfiguratorButtonConstructor(string $oControllerJs = 'oController') : string
+    {
+        return <<<JS
+        
+                    new sap.m.OverflowToolbarButton({
+                        icon: "sap-icon://drop-down-list",
+                        enabled: false
+                    }),
+                        
+JS;
+    }
 }
-?>

@@ -382,7 +382,7 @@ JS;
         return <<<JS
         
                 try {
-        			var data = {$this->getTemplate()->encodeData($this->prepareData($data, false))};
+        			var data = {$this->getTemplate()->encodeData($this->getTemplate()->buildResponseData($data, $widget))};
         		} catch (err){
                     console.error('Cannot load data into widget {$this->getId()}!');
                     return;

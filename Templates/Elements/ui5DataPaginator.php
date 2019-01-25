@@ -80,7 +80,18 @@ JS;
     
     public function buildJsSetTotal(string $valueJs, string $oControllerJs = 'oController') : string
     {
-        return "{$this->buildJsGetPaginator($oControllerJs)}.total = {$valueJs}";
+        return <<<JS
+
+                    var oPaginator = {$this->buildJsGetPaginator($oControllerJs)}; 
+                    if ({$valueJs} !== null) { 
+                        oPaginator.total = {$valueJs}; 
+                        oPaginator.hasMoreRows = false; 
+                    } else { 
+                        oPaginator.total = oPaginator.start + oPaginator.pageSize + 1; 
+                        oPaginator.hasMoreRows = true; 
+                    }
+
+JS;
     }
 
     /**
@@ -97,12 +108,12 @@ JS;
                 	} else {
                         sap.ui.getCore().byId("{$this->getId()}_prev").setEnabled(true);
                 	}
-                	if (oPaginator.end() === (oPaginator.total - 1)) {
+                	if (oPaginator.hasMoreRows === false && oPaginator.end() === (oPaginator.total - 1)) {
                         sap.ui.getCore().byId("{$this->getId()}_next").setEnabled(false);
                 	} else {
                 		sap.ui.getCore().byId("{$this->getId()}_next").setEnabled(true);
                 	}
-                    sap.ui.getCore().byId("{$this->getId()}_pager").setText((oPaginator.start + 1) + ' - ' + (oPaginator.end() + 1) + ' / ' + oPaginator.total);
+                    sap.ui.getCore().byId("{$this->getId()}_pager").setText((oPaginator.start + 1) + ' - ' + (oPaginator.end() + 1) + ' / ' + (oPaginator.hasMoreRows === true ? '?' : oPaginator.total));
                     
 JS;
     }
@@ -137,6 +148,7 @@ JS;
                     start: 0,
                     pageSize: {$defaultPageSize},
                     total: 0,
+                    hasMoreRows: false,
                     end: function() {
                         return (this.active ? Math.min(this.start + this.pageSize - 1, this.total - 1) : (this.total-1));
                     },
@@ -164,6 +176,7 @@ JS;
                         this.start = 0;
                         this.pageSize = {$defaultPageSize};
                         this.total = 0;
+                        this.hasMoreRows = false;
                     },
                     growingLoadStart: function() {
                         return this.start + this.pageSize - {$defaultPageSize};

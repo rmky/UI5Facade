@@ -122,7 +122,6 @@ JS;
 
                 new exface.openui5.P13nLayoutPanel({
                     title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.FILTERS')}",
-                    layoutMode: "Desktop",
                     content: [
                         new sap.ui.layout.Grid({
                             defaultSpan: "L6 S12",
@@ -367,6 +366,7 @@ JS;
     public function buildJsDataGetter(ActionInterface $action = null)
     {
         return <<<JS
+
 function(){
     var oData = {$this->buildJsDataGetterViaTrait($action)};
     var aFilters = sap.ui.getCore().byId('{$this->getId()}_QuickSearchPanel').getFilterItems();

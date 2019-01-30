@@ -25,10 +25,10 @@ use Psr\Http\Message\ServerRequestInterface;
 use exface\Core\Factories\UiPageFactory;
 use exface\Core\Exceptions\RuntimeException;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
-use exface\OpenUI5Template\WebappController;
+use exface\OpenUI5Template\ui5Controller;
 use exface\Core\Exceptions\LogicException;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
-use exface\OpenUI5Template\WebappView;
+use exface\OpenUI5Template\ui5View;
 use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsEnumFormatter;
 use exface\Core\DataTypes\NumberDataType;
 use exface\OpenUI5Template\Templates\Formatters\ui5EnumFormatter;
@@ -304,7 +304,7 @@ JS;
         if ($controllerName === null) {
             $controllerName = $this->getControllerName($element->getWidget(), $this->getWebapp()->getRootPage());
         }
-        $controller = new WebappController($this->getWebapp(), $controllerName, $this->createView($element));
+        $controller = new ui5Controller($this->getWebapp(), $controllerName, $this->createView($element));
         $element->setController($controller);
         
         $controller->addExternalCss($this->buildUrlToSource('LIBS.TEMPLATE.CSS'));
@@ -328,7 +328,7 @@ JS;
         if ($viewName === null) {
             $viewName = $this->getViewName($widget, $this->getWebapp()->getRootPage());
         }
-        return new WebappView($this->getWebapp(), $viewName, $element);
+        return new ui5View($this->getWebapp(), $viewName, $element);
     }
     
     public function getUI5LibrariesUsed() : array

@@ -8,7 +8,7 @@ use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
 use exface\Core\DataTypes\StringDataType;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ModelInterface;
 
-class WebappView implements ui5ViewInterface
+class ui5View implements ui5ViewInterface
 {
     private $isBuilt = false;
     

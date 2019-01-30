@@ -10,7 +10,7 @@ use exface\Core\Exceptions\OutOfBoundsException;
 use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\Core\Interfaces\WidgetInterface;
 
-class WebappController implements ui5ControllerInterface
+class ui5Controller implements ui5ControllerInterface
 {
     private $isBuilt = false;
     

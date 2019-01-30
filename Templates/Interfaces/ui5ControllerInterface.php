@@ -113,12 +113,21 @@ interface ui5ControllerInterface {
     public function addOnHideViewScript(string $js, bool $onBeforeHide = true) : ui5ControllerInterface;
     
     /**
+     * Executes the provided script once a route to the view of this controller is matched
      * 
      * @param string $js
      * @param string $id
      * @return ui5ControllerInterface
      */
     public function addOnRouteMatchedScript(string $js, string $id) : ui5ControllerInterface;
+    
+    /**
+     * Executes a script before the controller is initialized: before it's define()
+     * 
+     * @param string $js
+     * @return ui5ControllerInterface
+     */
+    public function addOnDefineScript(string $js) : ui5ControllerInterface;
     
     /**
      * 

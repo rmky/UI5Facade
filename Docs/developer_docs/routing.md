@@ -86,22 +86,22 @@ The following routing configuration (in <code>manifest.json</code>) shows some e
 
 ```
 "routing": {
-	"config": {...},
+	"config": {},
 	"routes": [
 		{
-		"pattern": "",
-		"name": "rootVendor.rootApp.rootPageAlias",
-		"target": "rootVendor.rootApp.rootPageAlias"
+			"pattern": "",
+			"name": "rootVendor.rootApp.rootPageAlias",
+			"target": "rootVendor.rootApp.rootPageAlias"
 		},
 		{
-		"pattern": "pageVendor.pageApp.Page1Alias/:params:",
-		"name": "pageVendor.pageApp.Page1Alias",
-		"target": "pageVendor.pageApp.PageAlias"
+			"pattern": "pageVendor.pageApp.Page1Alias/:params:",
+			"name": "pageVendor.pageApp.Page1Alias",
+			"target": "pageVendor.pageApp.PageAlias"
 		},
 		{
-		"pattern": "pageVendor.pageApp.Page1Alias.Widget_Id/:params:",
-		"name": "pageVendor.pageApp.Page1Alias.Widget_Id",
-		"target": "pageVendor.pageApp.Page1Alias.Widget_Id"
+			"pattern": "pageVendor.pageApp.Page1Alias.Widget_Id/:params:",
+			"name": "pageVendor.pageApp.Page1Alias.Widget_Id",
+			"target": "pageVendor.pageApp.Page1Alias.Widget_Id"
 		}
 	],
 	"targets": {

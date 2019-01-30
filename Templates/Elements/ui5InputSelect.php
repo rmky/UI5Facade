@@ -100,9 +100,9 @@ JS;
     public function buildJsValueSetterMethod($value)
     {
         if ($this->getWidget()->getMultiSelect()) {
-            return "setSelectedKeys((" . $value . ").split('" . $this->getWidget()->getMultiSelectValueDelimiter() . "'))";
+            return "setSelectedKeys().fireSelectionChange()";
         } else {
-            return "setSelectedKey(" . $value . ")";
+            return "setSelectedKey({$value}).fireChange({value: {$value}})";
         }
     }
     

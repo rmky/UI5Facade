@@ -449,5 +449,17 @@ JS;
         $this->getController()->addOnInitScript($handler);
         return $this;
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::addOnChangeScript()
+     */
+    public function addOnChangeScript($string)
+    {
+        parent::addOnChangeScript($string);
+        $this->getController()->addOnEventScript($this, 'change', $string);
+        return $this;
+    }
 }
 ?>

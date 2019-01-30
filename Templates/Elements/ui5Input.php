@@ -104,16 +104,7 @@ JS;
      */
     protected function buildJsPropertyChange()
     {
-        if (! $this->getOnChangeScript()) {
-            return '';
-        }
-        return <<<JS
-
-            change: function(event) {
-                {$this->getOnChangeScript()}
-                
-            },
-JS;
+        return 'change: ' . $this->getController()->buildJsEventHandler($this, 'change') . ',';
     }
     
     /**
@@ -207,6 +198,16 @@ JS;
     public function buildJsValueBindingPropertyName() : string
     {
         return 'value';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsValueSetter()
+     */
+    public function buildJsValueSetterMethod($valueJs)
+    {
+        return parent::buildJsValueSetterMethod($valueJs) . '.fireChange({value: ' . $valueJs . '})';
     }
 }
 ?>

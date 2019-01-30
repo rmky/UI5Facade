@@ -28,6 +28,8 @@ class WebappController implements ui5ControllerInterface
     
     private $onDefineScripts = [];
     
+    private $onEventScripts = [];
+    
     private $externalModules = [];
     
     private $externalCss = [];
@@ -108,14 +110,65 @@ class WebappController implements ui5ControllerInterface
     }
     
     /**
+     * Adds controller methods to handle all registered events.
      * 
-     * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsViewEventHandler()
+     * All event scripts (registered via addOnEventScript()) for this event are concatennated
+     * and put into a controller method.
+     * 
+     * @return ui5ControllerInterface
      */
-    public function buildJsViewEventHandler(string $methodName, ui5AbstractElement $callerElement, string $jsFunction) : string
+    protected function createEventHandlerMethods() : ui5ControllerInterface
     {
-        $this->addProperty($this->buildJsMethodName($methodName, $callerElement), $jsFunction);
-        return $this->buildJsMethodCallFromView($methodName, $callerElement);
+        foreach ($this->onEventScripts as $methodName => $scripts) {
+            if (empty($scripts) === false) {
+                $js = implode("\n", array_unique($scripts));
+            } else {
+                $js = '';
+            }
+            
+            $js = <<<JS
+    
+function(oEvent) {
+                    {$js}
+                }
+JS;
+            
+            $this->addProperty($methodName, $js);
+        }
+        return $this;
+    }
+    
+    public function buildJsEventHandlerMethodName(string $eventName) : string
+    {
+        return 'on' . ucfirst($eventName);
+    }
+
+    /**
+     *
+     * @param ui5AbstractElement $triggerElement
+     * @param string $eventName
+     * @return string
+     */
+    public function buildJsEventHandler(ui5AbstractElement $triggerElement, string $eventName) : string
+    {
+        $methodName = $this->buildJsEventHandlerMethodName($eventName);
+        
+        // Make sure, there is allways an event-handler method
+        // If we don't do that, there will be errors when generating event-handler calls in views
+        // if no real handlers were registered for the event.
+        $propertyName = $this->buildJsMethodName($methodName, $triggerElement);
+        if ($this->onEventScripts[$propertyName] === null) {
+            $this->addOnEventScript($triggerElement, $eventName, '');
+        }
+        
+        return $this->buildJsMethodCallFromView($methodName, $triggerElement);
+    }
+    
+    protected function hasEventHandler(ui5AbstractElement $triggerElement, string $eventName) : bool
+    {
+        $methodName = $this->buildJsEventHandlerMethodName($eventName);
+        $propertyName = $this->buildJsMethodName($methodName, $triggerElement);
+        
     }
     
     /**
@@ -331,6 +384,8 @@ JS;
      */
     protected function buildJsProperties() : string
     {
+        $this->createEventHandlerMethods();
+        
         $this->isBuilt = true;
         $js = '';
         
@@ -561,7 +616,7 @@ JS;
      */
     public function hasProperty(string $name) : bool
     {
-        return ! empty($this->properties[$name]);
+        return ! empty($this->properties[$name]) || ! empty($this->onEventScripts[$name]);
     }
     
     /**
@@ -571,7 +626,8 @@ JS;
      */
     public function hasMethod(string $name, ui5AbstractElement $ownerElement) : bool
     {
-        return $this->hasProperty($this->buildJsMethodName($name, $ownerElement));
+        $propertyName = $this->buildJsMethodName($name, $ownerElement);
+        return $this->hasProperty($propertyName);
     }
     
     /**
@@ -626,5 +682,19 @@ JS;
     protected function buildJsOnDefineScript() : string
     {
         return implode("\n", array_unique($this->onDefineScripts));
+    }
+    
+    /**
+     * 
+     * @param ui5AbstractElement $triggerWidget
+     * @param string $eventName
+     * @param string $js
+     * @return ui5ControllerInterface
+     */
+    public function addOnEventScript(ui5AbstractElement $triggerElement, string $eventName, string $js) : ui5ControllerInterface
+    {
+        $controllerMethodName = $this->buildJsMethodName($this->buildJsEventHandlerMethodName($eventName), $triggerElement);
+        $this->onEventScripts[$controllerMethodName][] = $js;
+        return $this;
     }
 }

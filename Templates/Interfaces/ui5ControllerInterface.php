@@ -14,12 +14,39 @@ use exface\Core\Exceptions\OutOfBoundsException;
 interface ui5ControllerInterface {
     
     /**
-     *
-     * @param string $methodName
-     * @param string $jsFunction
+     * Returns the name of the controller method, that will handle the given event.
+     * 
+     * E.g. `onPress` for the event `press`.
+     * 
+     * @param string $eventName
      * @return string
      */
-    public function buildJsViewEventHandler(string $methodName, ui5AbstractElement $callerElement, string $jsFunction) : string;
+    public function buildJsEventHandlerMethodName(string $eventName) : string;
+    
+    /**
+     * Returns the handler for the given event, that is usable within a view.
+     * 
+     * Use this method to obtain the values for constructor properties like `press`.
+     * 
+     * @param ui5AbstractElement $triggerElement
+     * @param string $eventName
+     * 
+     * @return string
+     */
+    public function buildJsEventHandler(ui5AbstractElement $triggerElement, string $eventName) : string;
+    
+    /**
+     * Adds a JS script to be performed on the given event.
+     * 
+     * The event object will be made available in the $js via `oEvent`.
+     * 
+     * @param ui5AbstractElement $triggerElement
+     * @param string $eventName
+     * @param string $js
+     * 
+     * @return ui5ControllerInterface
+     */
+    public function addOnEventScript(ui5AbstractElement $triggerElement, string $eventName, string $js) : ui5ControllerInterface;
     
     /**
      *

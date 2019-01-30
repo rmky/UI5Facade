@@ -223,4 +223,28 @@ JS;
     {
         return '';
     }
+    
+    /**
+     * Returns a JS snippet, that performs the given $onFailJs if required filters are missing.
+     * 
+     * @param string $onFailJs
+     * @return string
+     */
+    protected function buildJsCheckRequiredFilters(string $onFailJs) : string
+    {
+        $configurator_element = $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget());
+        return <<<JS
+
+                try {
+                    if (! {$configurator_element->buildJsValidator()}) {
+                        {$onFailJs};
+                    }
+                } catch (e) {
+                    console.warn('Could not check filter validity - ', e);
+                }      
+                
+JS;
+    }
+                        
+    abstract protected function buildJsDataResetter() : string;
 }

@@ -17,6 +17,8 @@ class ui5DataCards extends ui5DataTable
             items: [
                 new sap.f.GridList("{$this->getId()}", {
                     mode: {$mode},
+                    noDataText: "{$this->translate('WIDGET.DATATABLE.NO_DATA_HINT')}",
+            		itemPress: {$this->getController()->buildJsEventHandler($this, 'change')},
                     headerToolbar: [
                         {$this->buildJsToolbar()}
             		],
@@ -32,9 +34,6 @@ class ui5DataCards extends ui5DataTable
             		}
                 })
                 .setModel(new sap.ui.model.json.JSONModel())
-                .attachItemPress(function(event){
-                    {$this->getOnChangeScript()}
-                })
                 {$this->buildJsClickListeners('oController')}
                 {$this->buildJsPseudoEventHandlers()}
                 ,

@@ -28,11 +28,11 @@ class ui5InputComboTable extends ui5Input
         if (! $this->getWidget()->getAllowNewValues()) {
             $onChange = <<<JS
     
-                        oInput = event.getSource();
+                        var oInput = oEvent.getSource();
                         if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
                             oInput.fireSuggest({suggestValue: {q: oInput.getValue()}});
-                            event.cancelBubble();
-                            event.preventDefault();
+                            oEvent.cancelBubble();
+                            oEvent.preventDefault();
                             return false;
                         }
                         if (oInput.getValue() === '' && oInput.getSelectedKey() === ''){
@@ -41,23 +41,11 @@ class ui5InputComboTable extends ui5Input
 JS;
             $this->addOnChangeScript($onChange);
             
-            /*$onAfterRendering = <<<JS
-                        oInput = oEvent.srcControl;
-                        console.log(oInput.getValue() !== '' && oInput.getSelectedKey() === '');
-                        if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
-                            oInput.fireSuggest({suggestValue: {q: oInput.getValue()}})
-                            oEvent.stopPropagation();
-                            oEvent.preventDefault();
-                            return false;
-                        }
-JS;
-            $this->addPseudoEventHandler('onAfterRendering', $onAfterRendering);*/
-            
             // TODO explicitly prevent propagation of enter-events to stop data widgets
             // from autoreloading if enter was pressed to soon.
             $onEnter = <<<JS
                 
-                        oInput = oEvent.srcControl;
+                        var oInput = oEvent.srcControl;
                         if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
                             oEvent.stopPropagation();
                             oEvent.preventDefault();
@@ -433,7 +421,7 @@ JS;
         // we can directly tell it to use our input as a value column filter instead of a regular
         // suggest string.
         $valueFilterParam = UrlDataType::urlEncode($this->getTemplate()->getUrlFilterPrefix() . $this->getWidget()->getValueColumn()->getAttributeAlias());
-        return "setSelectedKey({$valueJs}).fireSuggest({suggestValue: {'{$valueFilterParam}': {$valueJs}}})";
+        return "setSelectedKey({$valueJs}).fireSuggest({suggestValue: {'{$valueFilterParam}': {$valueJs}}}).fireChange({value: {$valueJs}})";
     }
     
     /**

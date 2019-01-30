@@ -48,9 +48,9 @@ JS;
         
         $bindingScript = <<<JS
         
-        var oCtxt = event.getSource().getBindingContext();
-        var sPath = event.getParameters().srcControl.getBindingContext().sPath;
-        var oModel = event.getSource().getModel();
+        var oCtxt = oEvent.getSource().getBindingContext();
+        var sPath = oEvent.getParameters().srcControl.getBindingContext().sPath;
+        var oModel = oEvent.getSource().getModel();
         var oControl, oBindingInfo;
         {$bindings}
         

@@ -125,7 +125,8 @@ class ui5DataTable extends ui5AbstractElement
             		fixedLayout: false,
                     alternateRowColors: {$striped},
                     noDataText: "{$this->translate('WIDGET.DATATABLE.NO_DATA_HINT')}",
-            		mode: {$mode},
+            		itemPress: {$this->getController()->buildJsEventHandler($this, 'change')},
+                    mode: {$mode},
                     headerToolbar: [
                         {$this->buildJsToolbar()}
             		],
@@ -144,9 +145,6 @@ class ui5DataTable extends ui5AbstractElement
             		}
                 })
                 .setModel(new sap.ui.model.json.JSONModel())
-                .attachItemPress(function(event){
-                    {$this->getOnChangeScript()}
-                })
                 {$this->buildJsClickListeners('oController')}
                 {$this->buildJsPseudoEventHandlers()}
                 ,
@@ -221,6 +219,7 @@ JS;
                 enableColumnFreeze: true,
         		filter: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
         		sort: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
+                rowSelectionChange: {$controller->buildJsEventHandler($this, 'change')},
         		toolbar: [
         			{$this->buildJsToolbar($oControllerJs, $this->getPaginatorElement()->buildJsConstructor($oControllerJs))}
         		],
@@ -420,6 +419,8 @@ JS;
         		var oModel = oTable.getModel();
                 var oData = oModel.getData();
                 var oController = this;
+
+                {$this->buildJsCheckRequiredFilters("oModel.setData({}); return;")}
                 
                 {$this->buildJsBusyIconShow()}
         		
@@ -841,6 +842,31 @@ JS;
 JS;
     }
     
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsValueGetter()
+     */
+    public function buildJsValueGetter($column = null, $rowNr = null)
+    {
+        if ($this->isUiTable()) {
+            $row = "(oTable.getSelectedIndex() > -1 ? oTable.getModel().getData().data[oTable.getSelectedIndex()] : [])";
+        } else {
+            $row = "(oTable.getSelectedItem() ? oTable.getSelectedItem().getBindingContext().getObject() : [])";
+        }
+        
+        $col = $column !== null ? '["' . $column . '"]' : '';
+        
+        return <<<JS
+        
+function(){
+    var oTable = sap.ui.getCore().byId('{$this->getId()}');
+    return {$row}{$col};
+}()
+
+JS;
+    }
+    
     protected function buildJsClickListeners($oControllerJsVar = 'oController')
     {
         $widget = $this->getWidget();
@@ -1054,5 +1080,14 @@ JS;
                     
 JS;
     }
+        
+    /**
+     * Empties the table by replacing it's model by an empty object.
+     * 
+     * @return string
+     */
+    protected function buildJsDataResetter() : string
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').getModel().setData({})";   
+    }
 }
-?>

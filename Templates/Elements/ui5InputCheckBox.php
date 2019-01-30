@@ -67,53 +67,66 @@ JS;
      */
     protected function buildJsPropertyChange()
     {
-        $script = $this->getOnChangeScript();
         // If data binding is used, it won't work together with the boolean formatter for some
         // reason. The value in the model simply never changes. This hack manually changes the
         // model every time the checkbox is checked or unchecked.
         // TODO restrict this to only two-way-binding somehow
         if ($this->isValueBoundToModel()) {
             if ($this->getWidget()->isInTable()) {
-                $script .= <<<JS
+                $script = <<<JS
 
-            var oCtxt = event.getSource().getBindingContext();
+            var oCtxt = oEvent.getSource().getBindingContext();
             var path = oCtxt.sPath;
             var row = oCtxt.getModel().getProperty(path);
-            row["{$this->getValueBindingPath()}"] = event.getParameters().selected ? 1 : 0;
+            row["{$this->getValueBindingPath()}"] = oEvent.getParameters().selected ? 1 : 0;
             oCtxt.getModel().setProperty(path, row);
             
 JS;
             } else {
-                $script .= <<<JS
+                $script = <<<JS
                 
-            var oCtxt = event.getSource().getBindingContext();
+            var oCtxt = oEvent.getSource().getBindingContext();
             var path = oCtxt.sPath;
-            oCtxt.getModel().setProperty(path, event.getParameters().selected ? 1 : 0);
+            oCtxt.getModel().setProperty(path, oEvent.getParameters().selected ? 1 : 0);
             
 JS;
             }
+                
+            $this->getController()->addOnEventScript($this, 'change', $script);
         }
         
-        if (empty($script)) {
-            return '';
-        } else {
-            return <<<JS
-        
-            select: function(event) {
-                {$script}
-            },
-JS;
-        }
+        return 'select: ' . $this->getController()->buildJsEventHandler($this, 'change') . ',';
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsValueSetterMethod()
+     */
     public function buildJsValueSetterMethod($value)
     {
-        return "setSelected({$value} ? true : false)";
+        return "setSelected({$value} ? true : false).fireSelect({selected: (){$value} ? true : false)})";
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsValueBindingPropertyName()
+     */
     public function buildJsValueBindingPropertyName() : string
     {
         return 'selected';
+    }
+    
+    /**
+     * Checkboxes cannot be required in UI5!
+     * 
+     * {@inheritDoc}
+     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsPropertyRequired()
+     */
+    protected function buildJsPropertyRequired()
+    {
+        return '';
     }
 }
 ?>

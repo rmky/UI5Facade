@@ -51,22 +51,23 @@ class ui5DataConfigurator extends ui5Tabs
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        $controller = $this->getController();
+        
         $okScript = <<<JS
-                function(oEvent) {
+                
                     oEvent.getSource().close();
                     {$this->getTemplate()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh()};
-                }
+
 
 JS;
-        $cancelScript = 'function(oEvent) {oEvent.getSource().close();}';
-                    
-        $controller = $this->getController();
+        $controller->addOnEventScript($this, 'ok', $okScript);
+        $controller->addOnEventScript($this, 'cancel', 'oEvent.getSource().close();');           
         
         return <<<JS
 
         new sap.m.P13nDialog("{$this->getId()}", {
-            ok: {$controller->buildJsViewEventHandler('onOk', $this, $okScript)},
-            cancel: {$controller->buildJsViewEventHandler('onCancel', $this, $cancelScript)},
+            ok: {$controller->buildJsEventHandler($this, 'ok')},
+            cancel: {$controller->buildJsEventHandler($this, 'cancel')},
             showReset: true,
             /*reset: "handleReset",*/
             panels: [

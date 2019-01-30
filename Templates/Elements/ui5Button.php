@@ -64,7 +64,7 @@ JS;
     }
     
     /**
-     * Returns the JS to call the press event handler from the view or $default if there is no handler.
+     * Returns the JS to call the press event handler from the view.
      * 
      * Typical output would be `[oController.onPressXXX, oController]`.
      * 
@@ -80,8 +80,10 @@ JS;
      */
     public function buildJsClickViewEventHandlerCall(string $default = '') : string
     {
+        $controller = $this->getController();
         $clickJs = $this->buildJsClickFunction();
-        return $clickJs ? $this->getController()->buildJsViewEventHandler('press', $this, "function(oEvent){ {$clickJs}; }") : $default;        
+        $controller->addOnEventScript($this, 'press', ($clickJs ? $clickJs : $default));
+        return $this->getController()->buildJsEventHandler($this, 'press');        
     }
     
     /**
@@ -90,12 +92,13 @@ JS;
      * @param string $default
      * @return string
      */
-    public function buildJsClickEventHandlerCall(string $oControllerJsVar = null, string $default = '') : string
+    public function buildJsClickEventHandlerCall(string $oControllerJsVar = null) : string
     {
+        $methodName = $this->getController()->buildJsEventHandlerMethodName('press');
         if ($oControllerJsVar === null) {
-            return $this->getController()->buildJsMethodCallFromController('press', $this);
+            return $this->getController()->buildJsMethodCallFromController($methodName, $this);
         } else {
-            return $this->getController()->buildJsMethodCallFromController('press', $this, '', $oControllerJsVar);
+            return $this->getController()->buildJsMethodCallFromController($methodName, $this, '', $oControllerJsVar);
         }
         
     }
@@ -106,7 +109,8 @@ JS;
      */
     public function buildJsClickFunctionName()
     {
-        return $this->getController()->buildJsMethodName('press', $this);
+        $controller = $this->getController();
+        return $controller->buildJsMethodName($controller->buildJsEventHandlerMethodName('press'), $this);
     }
 
     protected function buildJsClickShowDialog(ActionInterface $action, AbstractJqueryElement $input_element)

@@ -6,6 +6,7 @@ use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Interfaces\DataTypes\DataTypeInterface;
 use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsDateFormatter;
+use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsTimeFormatter;
 use exface\OpenUI5Template\Templates\Formatters\ui5DateFormatter;
 use exface\OpenUI5Template\Templates\Formatters\ui5DefaultFormatter;
 use exface\Core\DataTypes\TimestampDataType;
@@ -33,6 +34,7 @@ use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsEnumFormatter;
 use exface\Core\DataTypes\NumberDataType;
 use exface\OpenUI5Template\Templates\Formatters\ui5EnumFormatter;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
+use exface\OpenUI5Template\Templates\Formatters\ui5TimeFormatter;
 
 /**
  * 
@@ -186,6 +188,9 @@ JS;
                 break;
             case ($formatter instanceof JsNumberFormatter) && $formatter->getDataType()->getBase() === 10:
                 return new ui5NumberFormatter($formatter);
+                break;
+            case ($formatter instanceof JsTimeFormatter):
+                return new ui5TimeFormatter($formatter);
                 break;
             case $formatter instanceof JsDateFormatter:
                 if ($formatter->getDataType() instanceof TimestampDataType) {

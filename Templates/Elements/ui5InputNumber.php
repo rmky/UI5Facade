@@ -171,7 +171,7 @@ JS;
     protected function isStepInput()
     {
         $dataType = $this->getWidget()->getValueDataType();
-        return (! ($dataType instanceof NumberDataType) || $dataType->getBase() === 10 && ! $dataType->is('exface.Core.NumericId'));
+        return (! ($dataType instanceof NumberDataType) || ($dataType->getBase() === 10 && ! $dataType->is('exface.Core.NumericId')));
     }
 }
 ?>

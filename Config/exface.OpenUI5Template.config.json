@@ -70,6 +70,8 @@
 	"LIBS.FONT_AWESOME.CSS": "bower-asset/font-awesome/css/font-awesome.min.css",
     "LIBS.FONT_AWESOME.PLUGIN": "bower-asset/font-awesome-openui5/dist/font-awesome-openui5.min",
     
+    "LIBS.QRCODE.JS": "bower-asset/ui5-qrcode/control/",
+    
     "PWA.ENABLED": true,
     "PWA.DEFAULT_STYLE.THEME_COLOR": "#3367D6",
     "PWA.DEFAULT_STYLE.BACKGROUND_COLOR": "#3367D6",

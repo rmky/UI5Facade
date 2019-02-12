@@ -4,6 +4,7 @@ namespace exface\OpenUI5Template\Templates\Elements;
 use exface\Core\Interfaces\Widgets\iFillEntireContainer;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ControlWithToolbarInterface;
 use exface\Core\Widgets\Panel;
+use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryLayoutTrait;
 
 /**
  * 
@@ -14,6 +15,7 @@ use exface\Core\Widgets\Panel;
  */
 class ui5Panel extends ui5Container
 {
+    use JqueryLayoutTrait;
     
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -22,7 +24,7 @@ class ui5Panel extends ui5Container
                 new sap.m.Panel("{$this->getId()}", {
                     height: "100%",
                     content: [
-                        {$this->buildJsChildrenConstructors()}
+                        {$this->buildJsChildrenConstructors(false)}
                     ],
                     {$this->buildJsProperties()}
                 }).addStyleClass("sapUiNoContentPadding")
@@ -35,13 +37,13 @@ JS;
         return $panel;
     }
                     
-    public function buildJsLayoutConstructor(string $content = null, bool $use_form = true) : string
+    public function buildJsLayoutConstructor(string $content = null, bool $useFormLayout = true) : string
     {
         $widget = $this->getWidget();
-        $content = $content ?? $this->buildJsChildrenConstructors();
+        $content = $content ?? $this->buildJsChildrenConstructors($useFormLayout);
         if ($widget->countWidgetsVisible() === 1 && ($widget->getWidgetFirst() instanceof iFillEntireContainer)) {
             return $content;
-        } elseif ($use_form) {
+        } elseif ($useFormLayout) {
             return $this->buildJsLayoutForm($content);
         } else {
             return $this->buildJsLayoutGrid($content);
@@ -53,7 +55,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5Container::buildJsChildrenConstructors()
      */
-    public function buildJsChildrenConstructors() : string
+    public function buildJsChildrenConstructors(bool $useFormLayout = true) : string
     {
         $js = '';
         $firstVisibleWidget = null;
@@ -61,8 +63,8 @@ JS;
              
             if ($widget->isHidden() === false) {
                 // Larger widgets need a Title before them to make SimpleForm generate a new FormContainer
-                if ($firstVisibleWidget !== null && (($widget instanceof iFillEntireContainer) || $widget->getWidth()->isMax())) {
-                    $js .= ($js ? ",\n" : '') . 'new sap.ui.core.Title()';
+                if ($firstVisibleWidget !== null && $useFormLayout === true && (($widget instanceof iFillEntireContainer) || $widget->getWidth()->isMax())) {
+                    $js .= ($js ? ",\n" : '') . $this->buildJsFormRowDelimiter();
                 }
                 $firstVisibleWidget = $widget;
             }
@@ -70,6 +72,11 @@ JS;
         }
         
         return $js;
+    }
+    
+    protected function buildJsFormRowDelimiter() : string
+    {
+        return 'new sap.ui.core.Title()';
     }
     
     protected function buildJsLayoutForm($content)
@@ -171,7 +178,7 @@ JS;
      *
      * @return integer
      */
-    public function getDefaultColumnNumber()
+    public function getNumberOfColumnsByDefault() : int
     {
         return $this->getTemplate()->getConfig()->getOption("WIDGET.PANEL.COLUMNS_BY_DEFAULT");
     }
@@ -182,8 +189,18 @@ JS;
      *
      * @return boolean
      */
-    public function inheritsColumnNumber()
+    public function inheritsNumberOfColumns() : bool
     {
         return true;
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryLayoutTrait::buildJsLayouter()
+     */
+    public function buildJsLayouter() : string
+    {
+        return '';
     }
 }

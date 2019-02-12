@@ -14,6 +14,7 @@ use exface\Core\Interfaces\Model\MetaAttributeInterface;
 use exface\Core\Factories\WidgetFactory;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Interfaces\WidgetInterface;
+use exface\Core\Interfaces\Widgets\iFillEntireContainer;
 
 /**
  * In OpenUI5 dialog widgets are either rendered as an object page layout (if the dialog is maximized) or
@@ -206,9 +207,9 @@ JS;
         
         // The content of the dialog is either a single widget or a layout with multiple widgets
         if ($widget->countWidgetsVisible() === 1) {
-            $content = $this->buildJsChildrenConstructors();
+            $content = $this->buildJsChildrenConstructors(false);
         } else {
-            $content = $this->buildJsLayoutForm($this->buildJsChildrenConstructors()); 
+            $content = $this->buildJsLayoutForm($this->buildJsChildrenConstructors(true)); 
         }
         
         // If the dialog requires a prefill, we need to load the data once the dialog is opened.
@@ -453,6 +454,9 @@ JS;
                 if ($child->isHidden() === true) {
                     $non_tab_hidden_constructors .= ($non_tab_hidden_constructors ? ',' : '') . $this->getTemplate()->getElement($child)->buildJsConstructor();
                 } else {
+                    if (($child instanceof iFillEntireContainer) || $child->getWidth()->isMax()) {
+                        $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->buildJsFormRowDelimiter();
+                    }
                     $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->getTemplate()->getElement($child)->buildJsConstructor();
                 }
             }

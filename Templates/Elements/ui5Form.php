@@ -17,7 +17,7 @@ class ui5Form extends ui5Panel
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        return  $this->buildJsLayoutForm($this->buildJsChildrenConstructors());
+        return  $this->buildJsLayoutForm($this->buildJsChildrenConstructors(true));
     }
     
 }

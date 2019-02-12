@@ -148,4 +148,10 @@ JS;
                         
 JS;
     }
+        
+    protected function buildJsDataResetter() : string
+    {
+        // TODO
+        return '';
+    }
 }

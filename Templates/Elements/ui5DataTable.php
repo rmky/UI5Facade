@@ -725,7 +725,7 @@ JS;
     {
         foreach ($this->getWidget()->getToolbarMain()->getButtonGroupForSearchActions()->getButtons() as $btn) {
             if ($btn->getAction()->isExactly('exface.Core.RefreshWidget')){
-                $btn->setHideButtonIcon(true);
+                $btn->setShowIcon(false);
                 $btn->setHint($btn->getCaption());
                 $btn->setCaption($this->translate('WIDGET.DATATABLE.GO_BUTTON_TEXT'));
             }

@@ -66,8 +66,8 @@ JS;
             }
         } else {
             $subtitle = $widget->getSubtitle();
-            $icon = $widget->getIcon();
-            if ($subtitle /*&& ! $icon*/) {
+            $icon = $widget->getShowIcon(false) ? $widget->getIcon() : null;
+            if ($subtitle && ! $icon) {
                 $tileContentConstructor = <<<JS
     
                     new sap.m.FeedContent({
@@ -76,8 +76,8 @@ JS;
     
 JS;
             } elseif ($icon) {
-                /*$subheader = 'subheader: "' . $subtitle . '",';
-                $tileContentConstructor = $this->buildJsIconContent();*/
+                $subheader = 'subheader: "' . $subtitle . '",';
+                $tileContentConstructor = $this->buildJsIconContent();
             }
         } 
         

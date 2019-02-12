@@ -1,17 +1,17 @@
 <?php
 namespace exface\OpenUI5Template\Templates\Elements;
 
-use exface\Core\Widgets\InputDate;
+use exface\Core\Widgets\InputDateTime;
 
 /**
- * Generates sap.m.DatePicker for InputDate widgets
+ * Generates sap.m.DateTimePicker for InputDateTime widgets
  * 
- * @method InputDate getWidget()
+ * @method InputDateTime getWidget()
  * 
  * @author Andrej Kabachnik
  *
  */
-class ui5InputDate extends ui5Input
+class ui5InputDateTime extends ui5InputDate
 {
     
     /**
@@ -23,27 +23,11 @@ class ui5InputDate extends ui5Input
     {
         return <<<JS
 
-        new sap.m.DatePicker("{$this->getId()}", {
+        new sap.m.DateTimePicker("{$this->getId()}", {
             {$this->buildJsProperties()}
 		}){$this->buildJsPseudoEventHandlers()}
 
 JS;
-    }
-          
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsProperties()
-     */
-    public function buildJsProperties()
-    {
-        $options = parent::buildJsProperties() . <<<JS
-            
-			valueFormat: {$this->buildJsValueFormat()},
-            displayFormat: {$this->buildJsDisplayFormat()},
-
-JS;
-            return $options;
     }
          
     /**

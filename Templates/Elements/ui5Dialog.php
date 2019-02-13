@@ -34,7 +34,14 @@ class ui5Dialog extends ui5Form
         // widget with lazy loading (like tables), that should postpone loading until the prefill data
         // is there.
         if ($this->needsPrefill()) {
-            $this->getController()->addOnInitScript('this.getView().getModel("view").setProperty("/_prefill/pending", true);');            
+            $this->getController()
+            // Tell the view, the prefill is on the way
+            ->addOnInitScript('this.getView().getModel("view").setProperty("/_prefill/pending", true);')
+            // Make sure, the view data is reset when the user closes the dialog. This way, the
+            // next time, the dialog is opened, it will appear empty and won't have previous values.
+            // TODO this does not work with non-maximized dialogs. Need to trigger view-hide manually,
+            // I guess.
+            ->addOnHideViewScript($this->getView()->buildJsViewGetter($this) . '.getModel().setData({});');
         }
         
         if ($this->isMaximized() === false) {
@@ -348,7 +355,6 @@ JS;
                         });
                         if (aData.length === 1) {
                             var response = $.extend({}, preload.response, {data: aData});
-                            console.log(response);
                             {$this->buildJsPrefillLoaderSuccess('response', $oViewJs, $oViewModelJs)}
                         } else {
                             failed = true;
@@ -412,13 +418,19 @@ JS;
                         
     protected function buildJsPrefillLoaderSuccess(string $responseJs = 'response', string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
     {
+        // IMPORTANT: We must ensure, ther is no model data before replacing it with the prefill! 
+        // Otherwise the model will not fire binding changes properly: InputComboTables will loose 
+        // their values! But only reset the model if it has data, because the reset will trigger
+        // an update of all bindings.
         return <<<JS
 
                     {$oViewModelJs}.setProperty('/_prefill/pending', false);
+                    var oDataModel = {$oViewJs}.getModel();
+                    if (Object.keys(oDataModel.getData()).length !== 0) {
+                        oDataModel.setData({});
+                    }
                     if ({$responseJs}.data && {$responseJs}.data && {$responseJs}.data.length === 1) {
-                        {$oViewJs}.getModel().setData({$responseJs}.data[0]);
-                    } else {
-                        {$oViewJs}.getModel().setData({});
+                        oDataModel.setData({$responseJs}.data[0]);
                     }
                     {$this->buildJsBusyIconHide()}
 

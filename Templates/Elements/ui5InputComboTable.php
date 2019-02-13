@@ -205,8 +205,7 @@ JS;
 			},
 			suggestionColumns: [
 				{$columns}
-            ],
-			{$this->buildJsProperties()}
+            ]
         })
         .setModel(new sap.ui.model.json.JSONModel(), "{$this->getModelNameForAutosuggest()}")
         {$value_init_js}
@@ -393,7 +392,9 @@ JS;
             $valueBinding = ' value: "{' . $model->getBindingPath($widget, 'value_text') . '}",';
         }
         if ($this->isValueBoundToModel()) {
-            return 'selectedKey: ' . $this->buildJsValueBinding() . ',' . $valueBinding;
+            // NOTE: for some reason putting the value binding _BEFORE_ the key binding is important!
+            // Otherwise the key is not set sometimes...
+            return $valueBinding . 'selectedKey: ' . $this->buildJsValueBinding() . ',';
         }
         return '';
     }

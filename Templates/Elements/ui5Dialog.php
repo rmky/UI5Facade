@@ -34,14 +34,7 @@ class ui5Dialog extends ui5Form
         // widget with lazy loading (like tables), that should postpone loading until the prefill data
         // is there.
         if ($this->needsPrefill()) {
-            $this->getController()
-            // Tell the view, the prefill is on the way
-            ->addOnInitScript('this.getView().getModel("view").setProperty("/_prefill/pending", true);')
-            // Make sure, the view data is reset when the user closes the dialog. This way, the
-            // next time, the dialog is opened, it will appear empty and won't have previous values.
-            // TODO this does not work with non-maximized dialogs. Need to trigger view-hide manually,
-            // I guess.
-            ->addOnHideViewScript($this->getView()->buildJsViewGetter($this) . '.getModel().setData({});');
+            $this->getController()->addOnInitScript('this.getView().getModel("view").setProperty("/_prefill/pending", true);');
         }
         
         if ($this->isMaximized() === false) {
@@ -332,6 +325,7 @@ JS;
         return <<<JS
         
             {$this->buildJsBusyIconShow()}
+            {$oViewJs}.getModel().setData({});
             var oViewModel = {$oViewJs}.getModel('view');
             oViewModel.setProperty('/_prefill/pending', true);
             {$loadPrefillData}

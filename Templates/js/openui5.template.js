@@ -249,17 +249,31 @@ const exfLauncher = {};
 										title: "{i18n>WEBAPP.SHELL.USER.TITLE}",
 										placement: "Bottom",
 										content: [
-							                new sap.f.Avatar({
-							                	src: "{/_user/avatar}",
-												displaySize: "M"
-							                })
+											new sap.m.HBox({
+												items: [
+									                new sap.f.Avatar({
+									                	src: "{/_user/avatar}",
+														displaySize: "M"
+									                }),
+									                new sap.m.VBox({
+														items: [
+											                new sap.m.Text({
+											                	text: "{/_user/name}"
+											                }),
+											                new sap.m.Text({
+											                	text: "({/_user/username})"
+											                }),
+										                ]
+													}).addStyleClass('sapUiContentPadding')
+								                ]
+											})
 						                ],
 						                footer: [
 											new sap.m.Toolbar({
 												content: [
 													new sap.m.ToolbarSpacer(),
 													new sap.m.Button({
-														text: "Logout",
+														icon: "sap-icon://log",
 														press: function(){
 															window.location.href = 'login.html';
 														}

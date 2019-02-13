@@ -37,12 +37,18 @@ const exfLauncher = {};
 							densityAware: false,
 							//visible: ! sap.ui.Device.system.phone
 		                }),*/
-		                new sap.m.Button("exf_home", {
-		                	icon: "sap-icon://home"
+		                new sap.m.OverflowToolbarButton("exf-home", {
+		                	text: "{i18n>WEBAPP.SHELL.HOME.TITLE}",
+							icon: "sap-icon://home",
+		                	press: function(oEvent){
+		                		oBtn = oEvent.getSource();
+		                		sap.ui.core.BusyIndicator.show(0); 
+		                		window.location.href = oBtn.getModel().getProperty('/_app/home_url');
+                			}
 		                }),
 		                new sap.m.ToolbarSpacer(),
-		                new sap.m.Button("exf_pagetitle", {
-		                    text: "",
+		                new sap.m.Button("exf-pagetitle", {
+		                    text: "{/_app/home_title}",
 		                    icon: "sap-icon://navigation-down-arrow",
 		                    iconFirst: false,
 		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
@@ -232,12 +238,46 @@ const exfLauncher = {};
 								});
 							}
 		                }),
-		                new sap.f.Avatar("exf_avatar", {
-							displaySize: "XS",
-							press: function(){
-								window.location.href = 'login.html';
-							}
-		                })
+		                new sap.m.OverflowToolbarButton("exf-user-icon", {
+		                	text: "{i18n>WEBAPP.SHELL.USER.TITLE}",
+		                    icon: "sap-icon://customer",
+		                    press: function(oEvent){
+								var oButton = oEvent.getSource();
+								var oPopover = sap.ui.getCore().byId('exf-user-menu');
+								if (oPopover === undefined) {
+									oPopover = new sap.m.Popover("exf-user-menu", {
+										title: "{i18n>WEBAPP.SHELL.USER.TITLE}",
+										placement: "Bottom",
+										content: [
+							                new sap.f.Avatar({
+							                	src: "{/_user/avatar}",
+												displaySize: "M"
+							                })
+						                ],
+						                footer: [
+											new sap.m.Toolbar({
+												content: [
+													new sap.m.ToolbarSpacer(),
+													new sap.m.Button({
+														text: "Logout",
+														press: function(){
+															window.location.href = 'login.html';
+														}
+													})
+												]
+											})
+										]
+									})
+									.setModel(oButton.getModel())
+									.setModel(oButton.getModel('i18n'), 'i18n')
+									.addStyleClass('sapUiContentPadding');
+								}
+								
+								jQuery.sap.delayedCall(0, this, function () {
+									oPopover.openBy(oButton);
+								});
+		                    }
+		                }),
 					]
 				})
 			],
@@ -368,7 +408,7 @@ const exfLauncher = {};
 				
 				for (var i=0; i<aItemsOld.length; i++) {
 					oControl = aItemsOld[i];
-					if (i < iItemsIndex || oControl.getId() == 'exf-network-indicator' || oControl.getId() == 'exf_pagetitle' || oControl.getId() == 'exf_avatar') {
+					if (i < iItemsIndex || oControl.getId() == 'exf-network-indicator' || oControl.getId() == 'exf-pagetitle' || oControl.getId() == 'exf-user-icon') {
 						oToolbar.addContent(oControl);
 					} else {
 						oControl.destroy();

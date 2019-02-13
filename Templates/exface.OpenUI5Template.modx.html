@@ -127,10 +127,6 @@
 					]
 				});
 				exfLauncher.setAppMenu(oAppMenu);
-				
-				sap.ui.getCore().byId('exf_pagetitle').setText('[*pagetitle*]');
-				sap.ui.getCore().byId('exf_home').attachPress(function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[(site_url)]'});
-				sap.ui.getCore().byId('exf_avatar').setSrc('[!UserManagerInfo? &field=`photo`!]');
 			}
 			
 			sap.ui.getCore().attachInit(function () {
@@ -159,6 +155,14 @@
 					initMainMenu(oShell);
 					
 					setTimeout(function(){
+						oShell.getModel().setProperty('/_app', {
+							home_title: '[*pagetitle*]',
+							home_url: '[(site_url)]'
+						});
+						oShell.getModel().setProperty('/_user', {
+							avatar: '[!UserManagerInfo? &field=`photo`!]'
+						});
+						
 						oShell.placeAt("[*id*]");
 					}, 1000);
 				});

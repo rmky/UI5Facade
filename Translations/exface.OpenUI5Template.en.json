@@ -17,6 +17,7 @@
 	"WEBAPP.ROUTING.OFFLINE.TEXT": "This function is not available offline!",
 	"WEBAPP.ROUTING.OFFLINE.DESCRIPTION": "Connect to the network and try again.",
 	
+	"WEBAPP.SHELL.HOME.TITLE": "Home",
 	"WEBAPP.SHELL.NETWORK.ONLINE": "Currently ONLINE",
 	"WEBAPP.SHELL.NETWORK.OFFLINE": "Currently OFFLINE",
 	"WEBAPP.SHELL.NETWORK.SYNC_MENU": "Offline Actions",
@@ -27,6 +28,7 @@
 	"WEBAPP.SHELL.PRELOAD.MENU_SYNC_TOOLTIP": "Synchronize all offline data for this client",
 	"WEBAPP.SHELL.PRELOAD.MENU_RESET": "Clear",
 	"WEBAPP.SHELL.PRELOAD.MENU_RESET_TOOLTIP": "Remove all offline data from this client",
+	"WEBAPP.SHELL.USER.TITLE": "Current User",
 	
 	"WIDGET.DATATPAGINATOR.SHOWING": "Showing %from% - %to% of %total%",
 	

@@ -656,9 +656,6 @@ JS;
     {
         $filter_checks = '';
         foreach ($this->getWidget()->getFilters() as $fltr) {
-            if ($fltr->isHidden()) {
-                continue;
-            }
             $elem = $this->getTemplate()->getElement($fltr);
             $filter_checks .= 'if(' . $elem->buildJsValueGetter() . ") {filtersCount++; filtersList += (filtersList == '' ? '' : ', ') + '{$elem->getCaption()}';} \n";
         }

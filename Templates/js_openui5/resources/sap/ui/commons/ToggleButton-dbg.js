@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.commons.ToggleButton.
-sap.ui.define(['jquery.sap.global', './Button', "./ToggleButtonRenderer"],
-	function(jQuery, Button, ToggleButtonRenderer) {
+sap.ui.define(['./Button', './ToggleButtonRenderer'],
+	function(Button, ToggleButtonRenderer) {
 	"use strict";
 
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', './Button', "./ToggleButtonRenderer"],
 	 * @extends sap.ui.commons.Button
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -103,4 +103,4 @@ sap.ui.define(['jquery.sap.global', './Button', "./ToggleButtonRenderer"],
 
 	return ToggleButton;
 
-}, /* bExport= */ true);
+});

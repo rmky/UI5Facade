@@ -6,15 +6,31 @@
 
 // Provides control sap.ui.commons.Dialog.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
+    'sap/base/Log',
+    'sap/ui/dom/containsOrEquals',
     './library',
     'sap/ui/core/Control',
     'sap/ui/core/Popup',
     'sap/ui/core/RenderManager',
-    "./DialogRenderer"
+    './DialogRenderer',
+    'sap/ui/core/library',
+    'sap/ui/core/ResizeHandler',
+    'sap/ui/dom/jquery/control', // jQuery.fn.control
+    'sap/ui/dom/jquery/Selectors' // sapTabbable
 ],
-	function(jQuery, library, Control, Popup, RenderManager, DialogRenderer) {
+	function(jQuery, Log, containsOrEquals, library, Control, Popup, RenderManager, DialogRenderer, coreLibrary, ResizeHandler) {
 		"use strict";
+
+
+		// shortcut for sap.ui.core.OpenState
+		var OpenState = coreLibrary.OpenState;
+
+		// shortcut for sap.ui.core.AccessibleRole
+		var AccessibleRole = coreLibrary.AccessibleRole;
+
+		// shortcut for sap.ui.commons.enums.BorderDesign
+		var BorderDesign = library.enums.BorderDesign;
 
 
 		/**
@@ -30,7 +46,7 @@ sap.ui.define([
 		 *
 		 * @namespace
 		 * @author SAP SE
-		 * @version 1.60.1
+		 * @version 1.61.2
 		 *
 		 * @constructor
 		 * @public
@@ -161,7 +177,7 @@ sap.ui.define([
 					contentBorderDesign: {
 						type: "sap.ui.commons.enums.BorderDesign",
 						group: "Appearance",
-						defaultValue: sap.ui.commons.enums.BorderDesign.None
+						defaultValue: BorderDesign.None
 					},
 
 					/**
@@ -179,7 +195,7 @@ sap.ui.define([
 					accessibleRole: {
 						type: "sap.ui.core.AccessibleRole",
 						group: "Accessibility",
-						defaultValue: sap.ui.core.AccessibleRole.Dialog
+						defaultValue: AccessibleRole.Dialog
 					},
 
 					/**
@@ -382,7 +398,7 @@ sap.ui.define([
 		 */
 		Dialog.prototype.open = function () {
 			if (!this.oPopup) {
-				jQuery.sap.log.fatal("This dialog instance has been destroyed already");
+				Log.fatal("This dialog instance has been destroyed already");
 			} else if (!this._bOpen) {
 				// Save current focused element to restore the focus after closing the dialog
 				this._oPreviousFocus = Popup.getCurrentFocusInfo();
@@ -438,8 +454,10 @@ sap.ui.define([
 			} else {
 				// if there is something in the content but isn't tabbable then
 				// use the first fake element to focus
-				var oFakeDomRef = jQuery.sap.domById(this._mParameters.firstFocusable);
-				jQuery.sap.focus(oFakeDomRef);
+				var oFakeDomRef = document.getElementById(this._mParameters.firstFocusable);
+				if ( oFakeDomRef ) {
+					oFakeDomRef.focus();
+				}
 			}
 		};
 
@@ -474,10 +492,12 @@ sap.ui.define([
 			}
 
 			// do this delayed or it possibly won't work because of popup closing animations
-			jQuery.sap.delayedCall(400, this, "restorePreviousFocus");
+			setTimeout(function() {
+				this.restorePreviousFocus();
+			}.bind(this), 400);
 
 			jQuery.each(oRect, function (key, val) {
-				oRect[key] = parseInt(val, 10);
+				oRect[key] = parseInt(val);
 			});
 
 			this._oRect = oRect;
@@ -550,7 +570,7 @@ sap.ui.define([
 			}
 
 			this.oPopup = null;
-			jQuery.sap.clearDelayedCall(this._sDelayedCall);
+			clearTimeout(this._sDelayedCall);
 			this._sDelayedCall = null;
 			delete this._mParameters;
 			this._fnOnResizeRecenter = null;
@@ -647,7 +667,7 @@ sap.ui.define([
 		 * @private
 		 */
 		Dialog.prototype.onselectstart = function (oEvent) {
-			if (!jQuery.sap.containsOrEquals(this.getDomRef("cont"), oEvent.target)) {
+			if (!containsOrEquals(this.getDomRef("cont"), oEvent.target)) {
 				oEvent.preventDefault();
 				oEvent.stopPropagation();
 			}
@@ -662,9 +682,9 @@ sap.ui.define([
 		Dialog.prototype.getMinSize = function () {
 
 			var ADDITIONAL_HEIGHT_IF_NO_FOOTER = 36;
-			var $oDialog = jQuery.sap.byId(this.sId);
-			var	$oTitle = jQuery.sap.byId(this.sId + "-hdr");
-			var $oFooter = jQuery.sap.byId(this.sId + "-footer");
+			var $oDialog = this.$();
+			var	$oTitle = this.$("hdr");
+			var $oFooter = this.$("footer");
 			var oFooterBtns = $oFooter.children("DIV").get(0);
 			var widthFooter = oFooterBtns ? oFooterBtns.offsetWidth : 0;
 			var bFooterIsVisible = $oFooter.css('display') !== 'none';
@@ -766,7 +786,7 @@ sap.ui.define([
 			// TODO the check for state OPENING is a compromise. Without that, the content of the dialog will render
 			// in disabled state but will be enabled. As an alternative, the dialog could render again after OPEN is reached
 			// and after switching to CLOSING (to properly reflect the changed enabled state in the descendants)
-			return eState === sap.ui.core.OpenState.OPENING || eState === sap.ui.core.OpenState.OPEN;
+			return eState === OpenState.OPENING || eState === OpenState.OPEN;
 		};
 
 		// **************************************************
@@ -800,7 +820,7 @@ sap.ui.define([
 
 			this._bRtlMode = sap.ui.getCore().getConfiguration().getRTL(); // remember the RTL mode for the starting resize operation
 			var oDomRef = this.getDomRef();
-			if (jQuery.sap.containsOrEquals(this.getDomRef("hdr"), oSource)) {
+			if (containsOrEquals(this.getDomRef("hdr"), oSource)) {
 				if (oSource.id != (sId + "-close")) {
 					this.sDragMode = "move";
 					this._RootWidth = oDomRef.offsetWidth;
@@ -827,7 +847,7 @@ sap.ui.define([
 			// save current focused control for restoring later in restore focus
 			var oActElement = document.activeElement;
 			if (oActElement && oActElement.id) {
-				var oCtrl = jQuery.sap.byId(oActElement.id).control(0);
+				var oCtrl = jQuery(oActElement).control(0);
 				if (oCtrl) {
 					this.oRestoreFocusInfo = {
 						sFocusId: oCtrl.getId(),
@@ -1006,7 +1026,7 @@ sap.ui.define([
 		*/
 		Dialog.prototype._deregisterContentResizeHandler = function () {
 			if (this._sContentResizeListenerId) {
-				sap.ui.core.ResizeHandler.deregister(this._sContentResizeListenerId);
+				ResizeHandler.deregister(this._sContentResizeListenerId);
 				this._sContentResizeListenerId = null;
 			}
 		};
@@ -1017,7 +1037,7 @@ sap.ui.define([
 		 */
 		Dialog.prototype._registerContentResizeHandler = function() {
 			if (!this._sContentResizeListenerId) {
-				this._sContentResizeListenerId = sap.ui.core.ResizeHandler.register(this.getDomRef("cont"), this._fnOnResizeRecenter);
+				this._sContentResizeListenerId = ResizeHandler.register(this.getDomRef("cont"), this._fnOnResizeRecenter);
 			}
 		};
 
@@ -1030,4 +1050,4 @@ sap.ui.define([
 
 		return Dialog;
 
-	}, /* bExport= */ true);
+	});

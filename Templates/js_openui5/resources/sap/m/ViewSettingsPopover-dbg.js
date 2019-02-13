@@ -83,7 +83,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.60.1
+		 * @version 1.61.2
 		 *
 		 * @constructor
 		 * @private
@@ -729,7 +729,7 @@ sap.ui.define([
 			}
 
 			iButtonWidth = aSegmentedButtonAggregations[0].$().width();
-			iButtonMargin = parseInt(aSegmentedButtonAggregations[0].$().css('margin-right'), 10);
+			iButtonMargin = parseInt(aSegmentedButtonAggregations[0].$().css('margin-right'));
 			iButtonsLen = aSegmentedButtonAggregations.length;
 
 			if (library._bSizeCompact || !!document.querySelector('.sapUiSizeCompact')) {

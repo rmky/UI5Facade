@@ -6,13 +6,19 @@
 
 // Provides control sap.ui.commons.layout.BorderLayout.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/base/assert',
     'sap/ui/commons/library',
     'sap/ui/core/Control',
-    "./BorderLayoutRenderer"
+    './BorderLayoutRenderer',
+    './BorderLayoutArea'
 ],
-	function(jQuery, library, Control, BorderLayoutRenderer) {
+	function(assert, library, Control, BorderLayoutRenderer, BorderLayoutArea) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.commons.layout.BorderLayoutAreaTypes
+	var BorderLayoutAreaTypes = library.layout.BorderLayoutAreaTypes;
 
 
 
@@ -28,7 +34,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -89,7 +95,7 @@ sap.ui.define([
 
 	BorderLayout.prototype._getOrCreateArea = function(sAreaId, aContent) {
 
-		var Types = sap.ui.commons.layout.BorderLayoutAreaTypes,
+		var Types = BorderLayoutAreaTypes,
 			that = this,
 			oArea;
 
@@ -97,7 +103,7 @@ sap.ui.define([
 			var oCreateArea;
 
 			if ( aContent ) {
-				oCreateArea = new sap.ui.commons.layout.BorderLayoutArea({
+				oCreateArea = new BorderLayoutArea({
 					id : that.getId() + "--" + sAreaId,
 					areaId : sAreaId,
 					content : aContent
@@ -131,7 +137,7 @@ sap.ui.define([
 				oArea = this.getBottom() || create("setBottom");
 				break;
 			default:
-				jQuery.sap.assert(false, "default case must not be reached");
+				assert(false, "default case must not be reached");
 				break;
 		}
 
@@ -372,4 +378,4 @@ sap.ui.define([
 
 	return BorderLayout;
 
-}, /* bExport= */ true);
+});

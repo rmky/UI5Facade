@@ -55,7 +55,7 @@ sap.ui.define([
 	 * @implements sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -320,7 +320,7 @@ sap.ui.define([
 
 		if (this.getEnableFlexBox()) {
 
-			iMidBarPlaceholderWidth = iBarWidth - iLeftBarWidth - iRightBarWidth - parseInt(this._$MidBarPlaceHolder.css('margin-left'), 10) - parseInt(this._$MidBarPlaceHolder.css('margin-right'), 10);
+			iMidBarPlaceholderWidth = iBarWidth - iLeftBarWidth - iRightBarWidth - parseInt(this._$MidBarPlaceHolder.css('margin-left')) - parseInt(this._$MidBarPlaceHolder.css('margin-right'));
 
 			oMidBarCss.position = "absolute";
 			oMidBarCss.width = iMidBarPlaceholderWidth + "px";

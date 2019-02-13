@@ -35,6 +35,14 @@ sap.ui.define([], function() {
 		variantRenameDomRef: function(oVariantManagement) {
 			return oVariantManagement.getTitle().getDomRef("inner");
 		},
-		customData: {}
+		customData: {},
+		editor: {
+			start: function(oVariantManagement) {
+				// debugger
+			},
+			stop: function(oVariantManagement) {
+				// debugger
+			}
+		}
 	};
 }, /* bExport= */false);

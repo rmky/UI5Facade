@@ -55,6 +55,9 @@ sap.ui.define([
 	// shortcut for sap.ui.core.TitleLevel
 	var TitleLevel = coreLibrary.TitleLevel;
 
+	// shortcut for sap.ui.core.AccessibleLandmarkRole
+	var AccessibleLandmarkRole = coreLibrary.AccessibleLandmarkRole;
+
 	// shortcut for sap.uxap.ObjectPageSubSectionLayout
 	var ObjectPageSubSectionLayout = library.ObjectPageSubSectionLayout;
 
@@ -344,6 +347,15 @@ sap.ui.define([
 				footer: {type: "sap.m.IBar", multiple: false},
 
 				/**
+				 * Accessible landmark settings to be applied on the containers of the <code>sap.uxap.ObjectPageLayout</code> control.
+				 *
+				 * If not set, no landmarks will be written.
+				 *
+				 * @since 1.61
+				 */
+				landmarkInfo : {type : "sap.uxap.ObjectPageAccessibleLandmarkInfo", multiple : false},
+
+				/**
 				 * Internal aggregation to hold the reference to the AnchorBar.
 				 */
 				_anchorBar: {type: "sap.uxap.AnchorBar", multiple: false, visibility: "hidden"},
@@ -399,6 +411,7 @@ sap.ui.define([
 					}
 				}
 			},
+			dnd: { draggable: false, droppable: true },
 			designtime: "sap/uxap/designtime/ObjectPageLayout.designtime"
 		}
 	});
@@ -429,11 +442,21 @@ sap.ui.define([
 		PHONE: 600
 	};
 
+	ObjectPageLayout.MEDIA = {
+		PHONE: "sapUxAPObjectPageLayout-Std-Phone",
+		TABLET: "sapUxAPObjectPageLayout-Std-Tablet",
+		DESKTOP: "sapUxAPObjectPageLayout-Std-Desktop"
+	};
+
 	ObjectPageLayout.DYNAMIC_HEADERS_MEDIA = {
 		PHONE: "sapFDynamicPage-Std-Phone",
 		TABLET: "sapFDynamicPage-Std-Tablet",
 		DESKTOP: "sapFDynamicPage-Std-Desktop"
 	};
+
+	ObjectPageLayout.DIV = "div";
+	ObjectPageLayout.HEADER = "header";
+	ObjectPageLayout.FOOTER = "footer";
 
 	/**
 	 * Retrieves thе next entry starting from the given one within the <code>sap.ui.core.TitleLevel</code> enumeration.
@@ -510,8 +533,8 @@ sap.ui.define([
 		this.iAnchorBarHeight = 0;                  // original height of the anchorBar
 		this.iTotalHeaderSize = 0;                  // total size of headerTitle + headerContent
 
-		this._iREMSize = parseInt(jQuery("body").css("font-size"), 10);
-		this._iOffset = parseInt(0.25 * this._iREMSize, 10);
+		this._iREMSize = parseInt(jQuery("body").css("font-size"));
+		this._iOffset = parseInt(0.25 * this._iREMSize);
 
 		this._iResizeId = ResizeHandler.register(this, this._onUpdateScreenSize.bind(this));
 		this._iAfterRenderingDomReadyTimeout = null;
@@ -532,6 +555,8 @@ sap.ui.define([
 
 		// The lazy loading helper needs media information, hence instantiated on onBeforeRendering, where contextual width is available
 		this._oLazyLoading = new LazyLoading(this);
+
+		this._deregisterCustomEvents();
 
 		if (!this.getVisible()) {
 			return;
@@ -871,13 +896,19 @@ sap.ui.define([
 	 ************************************************************************************/
 
 	ObjectPageLayout.prototype.onAfterRendering = function () {
-		var oHeaderContent = this._getHeaderContent();
+		var oHeaderContent = this._getHeaderContent(),
+			iWidth = this._getWidth(this);
 
 		this._ensureCorrectParentHeight();
 
 		this._cacheDomElements();
 
-		this._$opWrapper.on("scroll", this._onScroll.bind(this));
+		if (iWidth > 0) {
+			this._updateMedia(iWidth, ObjectPageLayout.MEDIA);
+			this._bInitializedMedia = true;
+		}
+
+		this._$opWrapper.on("scroll.OPL", this._onScroll.bind(this));
 
 		//the dom is already ready (re-rendering case), thus we compute the header immediately
 		//in order to avoid flickering (see Incident 1570011343)
@@ -927,7 +958,7 @@ sap.ui.define([
 		}
 
 		if (Device.system.desktop) {
-			this._$opWrapper.on("scroll", this.onWrapperScroll.bind(this));
+			this._$opWrapper.on("scroll.OPL", this.onWrapperScroll.bind(this));
 		}
 
 		this._registerOnContentResize();
@@ -950,8 +981,12 @@ sap.ui.define([
 
 		this.oCore.getEventBus().publish("sap.ui", "ControlForPersonalizationRendered", this);
 
+		if (!this._bInitializedMedia) {
+			this._updateMedia(this._getWidth(this), ObjectPageLayout.MEDIA);
+		}
+
 		if (this._hasDynamicTitle()) {
-			this._updateMedia(this._getWidth(this));
+			this._updateMedia(this._getWidth(this), ObjectPageLayout.DYNAMIC_HEADERS_MEDIA);
 		}
 
 		this._updateToggleHeaderVisualIndicators();
@@ -1023,6 +1058,8 @@ sap.ui.define([
 			this._oObserver.disconnect();
 			this._oObserver = null;
 		}
+
+		this._deregisterCustomEvents();
 
 		// setting these to null is necessary because
 		// some late callbacks may still have access to the page
@@ -1763,7 +1800,7 @@ sap.ui.define([
 	};
 
 	ObjectPageLayout.prototype._computeScrollDuration = function (iAppSpecifiedDuration, oTargetSection) {
-		var iDuration = parseInt(iAppSpecifiedDuration, 10);
+		var iDuration = parseInt(iAppSpecifiedDuration);
 		iDuration = iDuration >= 0 ? iDuration : this._iScrollToSectionDuration;
 
 		if (this.getUseIconTabBar()
@@ -1915,29 +1952,29 @@ sap.ui.define([
 	* <b>Note:</b>
 	* The method is called, when the <code>ObjectPageDynamicPageHeaderTitle</code> is being used.
 	* @param {Number} iWidth - the actual width of the control
+	* @param {Object} oMedia - object containing CSS classes for the respective media (Phone, Tablet, etc.)
 	* @private
 	*/
-	ObjectPageLayout.prototype._updateMedia = function (iWidth) {
-		// Applies the provided CSS Media (DYNAMIC_HEADERS_MEDIA) class and removes the rest.
+	ObjectPageLayout.prototype._updateMedia = function (iWidth, oMedia) {
+		// Applies the provided CSS Media (oMedia) class and removes the rest.
 		// Example: If the <code>sapFDynamicPage-Std-Phone</code> class should be applied,
 		// the <code>sapFDynamicPage-Std-Tablet</code> and <code>sapFDynamicPage-Std-Desktop</code> classes will be removed.
 		var fnUpdateMediaStyleClass = function (sMediaClass) {
-			Object.keys(ObjectPageLayout.DYNAMIC_HEADERS_MEDIA).forEach(function (sMedia) {
-				var sCurrentMediaClass = ObjectPageLayout.DYNAMIC_HEADERS_MEDIA[sMedia],
+			Object.keys(oMedia).forEach(function (sMedia) {
+				var sCurrentMediaClass = oMedia[sMedia],
 					bEnable = sMediaClass === sCurrentMediaClass;
 
 				this.toggleStyleClass(sCurrentMediaClass, bEnable);
 			}, this);
 		}.bind(this),
-		mMedia = ObjectPageLayout.DYNAMIC_HEADERS_MEDIA,
 		mBreakpoints = ObjectPageLayout.BREAK_POINTS;
 
 		if (iWidth <= mBreakpoints.PHONE) {
-			fnUpdateMediaStyleClass(mMedia.PHONE);
+			fnUpdateMediaStyleClass(oMedia.PHONE);
 		} else if (iWidth <= mBreakpoints.TABLET) {
-			fnUpdateMediaStyleClass(mMedia.TABLET);
+			fnUpdateMediaStyleClass(oMedia.TABLET);
 		} else {
-			fnUpdateMediaStyleClass(mMedia.DESKTOP);
+			fnUpdateMediaStyleClass(oMedia.DESKTOP);
 		}
 	};
 
@@ -1953,7 +1990,11 @@ sap.ui.define([
 			sPreviousSectionId,
 			bAllowScrollSectionToTop,
 			bStickyTitleMode = !this._bHeaderExpanded,
-			oDomRef = this.getDomRef();
+			bIsFirstVisibleSubSection,
+			bParentIsFirstVisibleSection,
+			bIsFullscreenSection,
+			oDomRef = this.getDomRef(),
+			bUseIconTabBar = this.getUseIconTabBar();
 
 		if (!oDomRef || !this._bDomReady) { //calculate the layout only if the object page is full ready
 			return false; // return success flag
@@ -1966,7 +2007,7 @@ sap.ui.define([
 		if (this.iScreenHeight === 0) {
 			return; // element is hidden or not in DOM => the resulting calculations would be invalid
 		}
-		var iSubSectionsCount = 0;
+		var iSubSectionIndex = -1;
 
 		this._aSectionBases.forEach(function (oSectionBase) {
 			var oInfo = this._oSectionInfo[oSectionBase.getId()],
@@ -1979,7 +2020,7 @@ sap.ui.define([
 			}
 
 			if (!oInfo.isSection) {
-				iSubSectionsCount++;
+				iSubSectionIndex++;
 			}
 
 			oInfo.$dom = $this;
@@ -2053,6 +2094,15 @@ sap.ui.define([
 				}
 			}
 
+			if (!oInfo.isSection) {
+
+				bParentIsFirstVisibleSection = bUseIconTabBar /* there is only single section per tab */ || (oSectionBase.getParent() === this._oFirstVisibleSection);
+				bIsFirstVisibleSubSection = bParentIsFirstVisibleSection && (iSubSectionIndex === 0); /* index of *visible* subSections is first */
+				bIsFullscreenSection = oSectionBase.hasStyleClass(ObjectPageSubSection.FIT_CONTAINER_CLASS);
+
+				oSectionBase._setHeight(this._computeSubSectionHeight(bIsFirstVisibleSubSection, bIsFullscreenSection));
+			}
+
 		}, this);
 
 		//calculate the bottom spacer height and update the last section/subSection bottom (with our algorithm of having section tops based on the next section, we need to have a special handling for the very last subSection)
@@ -2076,7 +2126,7 @@ sap.ui.define([
 
 			// checks whether to ensure extra bottom space that allows scrolling the section up to the top of the page (right bellow the anchorBar)
 			bAllowScrollSectionToTop = this._bStickyAnchorBar /* if already in sticky mode, then preserve it, even if the section does not require scroll for its [entire content] display */
-			|| (iSubSectionsCount > 1) /* bringing any section (other than the first) bellow the anchorBar requires snap */
+			|| (iSubSectionIndex > 0) /* bringing any section (other than the first) bellow the anchorBar requires snap */
 			|| this._checkContentBottomRequiresSnap(oLastVisibleSubSection); /* check snap is needed in order to display the full section content in the viewport */
 
 			if (bAllowScrollSectionToTop && !this._shouldPreserveHeaderInTitleArea()) {
@@ -2094,6 +2144,27 @@ sap.ui.define([
 		this._setSectionInfoIsDirty(false);
 
 		return true; // return success flag
+	};
+
+	ObjectPageLayout.prototype._computeSubSectionHeight = function(bFirstVisibleSubSection, bFullscreenSection) {
+
+		var iSectionsContainerHeight;
+
+		if (!bFullscreenSection) {
+			return ""; // default height
+		}
+
+		// size the section to have the full height of its container
+		if (bFirstVisibleSubSection) {
+			// first visible is initially displayed in container with *expanded* header
+			// => obtain container height when *expanded* header
+			iSectionsContainerHeight = this._getSectionsContainerHeight(false /* expanded header */);
+		} else {
+			// non-first visible is displayed in container with *snapped* header
+			// => obtain container height when *snapped* header
+			iSectionsContainerHeight = this._getSectionsContainerHeight(true /*snapped header */);
+		}
+		return iSectionsContainerHeight + "px";
 	};
 
 	ObjectPageLayout.prototype._updateCustomScrollerHeight = function(bRequiresSnap) {
@@ -2159,6 +2230,18 @@ sap.ui.define([
 	* */
 	ObjectPageLayout.prototype._getScrollableViewportHeight = function(bIsStickyMode) {
 		return this.getDomRef().getBoundingClientRect().height - this._getStickyAreaHeight(bIsStickyMode);
+	};
+
+	ObjectPageLayout.prototype._getSectionsContainerHeight = function(bIsStickyMode) {
+
+		var iScrollContainerHeight = this._getScrollableViewportHeight(bIsStickyMode);
+		if (!bIsStickyMode) {
+			// for expanded mode, subtract the heights of headerContent and anchorBar
+			// as they are also part of the scrollable content when *expanded* header,
+			// but we need the height of the *sections area bellow* them
+			iScrollContainerHeight -= (this.iHeaderContentHeight + this.iAnchorBarHeight);
+		}
+		return iScrollContainerHeight;
 	};
 
 	ObjectPageLayout.prototype._getSectionPositionTop = function(oSectionBase, bShouldStick) {
@@ -2446,8 +2529,10 @@ sap.ui.define([
 			// Let the dynamic header know size changed first, because this might lead to header dimensions changes
 			if (oTitle && oTitle.isDynamic()) {
 				oTitle._onResize(iCurrentWidth);
-				this._updateMedia(iCurrentWidth); // Update media classes when ObjectPageDynamicHeaderTitle is used.
+				this._updateMedia(iCurrentWidth, ObjectPageLayout.DYNAMIC_HEADERS_MEDIA); // Update media classes when ObjectPageDynamicHeaderTitle is used.
 			}
+
+			this._updateMedia(iCurrentWidth, ObjectPageLayout.MEDIA);
 
 			this._adjustHeaderHeights();
 
@@ -2524,6 +2609,16 @@ sap.ui.define([
 		return iReachableScrollTop >= oRequiredScrollTop;
 	};
 
+	/**
+	 * removes all the events which are not using event delegation and bound with jQuery#on
+	 * these custom events are bound with "OPL" namespace
+	 * @private
+	 */
+	ObjectPageLayout.prototype._deregisterCustomEvents = function () {
+		if (this._$opWrapper.length) {
+			this._$opWrapper.off(".OPL");
+		}
+	};
 
 	/**
 	 * called when the user scrolls on the page
@@ -3449,14 +3544,21 @@ sap.ui.define([
 	 */
 	ObjectPageLayout.prototype.clone = function () {
 		var oClone,
-			oHeaderContent;
+			oHeaderContent,
+			oCloneHeaderContent;
 
 		Object.keys(this.mAggregations).forEach(this._cloneProxiedAggregations, this);
 
 		oClone = Control.prototype.clone.apply(this, arguments);
 		oHeaderContent = this._getHeaderContent();
 
-		// "_headerContent" aggregation is hidden and it is not cloned by default
+		oCloneHeaderContent = oClone._getHeaderContent();
+
+		if (oCloneHeaderContent) { // a shallow (i.e. not deep) headerContent clone may be internally created by the objectPage if the original object had a headerTitle
+			oCloneHeaderContent.destroy();
+		}
+
+		// "_headerContent" aggregation is hidden and it is not cloned by default => explicitly create a deep clone
 		if (oHeaderContent) {
 			oClone.setAggregation("_headerContent", oHeaderContent.clone(), true);
 		}
@@ -3911,6 +4013,62 @@ sap.ui.define([
 		if (sNewText !== sCurrentText) {
 			this.$().attr("aria-label", sNewText);
 		}
+	};
+
+	/**
+	 * Formats <code>ObjectPageAccessibleLandmarkInfo</code> role and label of the provided <code>ObjectPageLayout</code> part.
+	 *
+	 * @param {sap.uxap.ObjectPageAccessibleLandmarkInfo} oLandmarkInfo ObjectPageLayout LandmarkInfo
+	 * @param {string} sPartName part of the page
+	 * @returns {sap.f.ObjectPageAccessibleLandmarkInfo} The formatted landmark info
+	 * @private
+	 */
+	ObjectPageLayout.prototype._formatLandmarkInfo = function (oLandmarkInfo, sPartName) {
+		if (oLandmarkInfo) {
+			var sRole = oLandmarkInfo["get" + sPartName + "Role"]() || "",
+				sLabel = oLandmarkInfo["get" + sPartName + "Label"]() || "";
+
+			if (sRole === AccessibleLandmarkRole.None) {
+				sRole = '';
+			}
+
+			return {
+				role: sRole.toLowerCase(),
+				label: sLabel
+			};
+		}
+
+		return {};
+	};
+
+	/**
+	 * Returns HTML tag of the page header.
+	 *
+	 * @param {sap.uxap.ObjectPageAccessibleLandmarkInfo} oLandmarkInfo ObjectPageLayout LandmarkInfo
+	 * @returns {string} The HTML tag of the page header.
+	 * @private
+	 */
+	ObjectPageLayout.prototype._getHeaderTag = function (oLandmarkInfo) {
+		if (oLandmarkInfo && oLandmarkInfo.getHeaderRole() !== AccessibleLandmarkRole.None) {
+			return ObjectPageLayout.DIV;
+		}
+
+		return ObjectPageLayout.HEADER;
+	};
+
+	/**
+	 * Returns HTML tag of the page footer.
+	 *
+	 * @param {sap.uxap.ObjectPageAccessibleLandmarkInfo} oLandmarkInfo ObjectPageLayout LandmarkInfo
+	 * @returns {string} The HTML tag of the page footer.
+	 * @private
+	 */
+	ObjectPageLayout.prototype._getFooterTag = function (oLandmarkInfo) {
+		if (oLandmarkInfo && oLandmarkInfo.getFooterRole() !== AccessibleLandmarkRole.None) {
+			return ObjectPageLayout.DIV;
+		}
+
+		return ObjectPageLayout.FOOTER;
 	};
 
 	function exists(vObject) {

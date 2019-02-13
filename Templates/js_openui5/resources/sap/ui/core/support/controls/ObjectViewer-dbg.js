@@ -192,7 +192,7 @@ function(ManagedObject, encodeXML) {
 		}
 	};
 	ObjectViewer.prototype._keyInfoPress = function(sSection, sKey, iInfo) {
-		iInfo = parseInt(iInfo, 10);
+		iInfo = parseInt(iInfo);
 		this.fnInfoPress(sSection, sKey, iInfo);
 		return true;
 	};

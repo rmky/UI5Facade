@@ -96,7 +96,7 @@ sap.ui.define([
 	 * </ul>
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -397,7 +397,7 @@ sap.ui.define([
 
 		// internally set top and bottom margin of the dialog to 8rem respectively
 		// CSN# 333642/2014: in base theme the parameter sapUiFontSize is "medium", implement a fallback
-		this._oDialog._iVMargin = 8 * (parseInt(Parameters.get("sapUiFontSize"), 10) || 16); //128
+		this._oDialog._iVMargin = 8 * (parseInt(Parameters.get("sapUiFontSize")) || 16); //128
 
 		// helper variables for search update behaviour
 		this._sSearchFieldValue = "";

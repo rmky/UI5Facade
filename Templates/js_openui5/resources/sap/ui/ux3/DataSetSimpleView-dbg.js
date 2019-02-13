@@ -6,12 +6,12 @@
 
 // Provides control sap.ui.ux3.DataSetSimpleView.
 sap.ui.define([
-	'jquery.sap.global',
+	'sap/ui/thirdparty/jquery',
 	'sap/ui/core/Control',
 	'sap/ui/core/ResizeHandler',
 	'./library',
-	"./DataSetSimpleViewRenderer",
-	'jquery.sap.script'
+	'./DataSetSimpleViewRenderer',
+	'sap/base/Log'
 ],
 	function(
 		jQuery,
@@ -19,7 +19,8 @@ sap.ui.define([
 		ResizeHandler,
 		library,
 		DataSetSimpleViewRenderer
-		/* jQuerySap */
+		/* jQuerySap */,
+		Log
 	) {
 	"use strict";
 
@@ -35,7 +36,7 @@ sap.ui.define([
 	 * DataSetSimpleView provides a simple view example for DataSet usage.
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.ux3.DataSetView
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -199,7 +200,7 @@ sap.ui.define([
 	 * @protected
 	 */
 	DataSetSimpleView.prototype.isItemSelected = function(oItem) {
-		var iIndex = jQuery.inArray(oItem,this.items);
+		var iIndex = this.items.indexOf(oItem);
 		if (iIndex == -1) {
 			return false;
 		}
@@ -305,7 +306,7 @@ sap.ui.define([
 			that.getParent().updateItems(sap.ui.model.ChangeReason.Change);
 		};
 		if (typeof $scrollArea === 'string') {
-			$scrollArea = jQuery.sap.byId($scrollArea);
+			$scrollArea = jQuery(document.getElementById($scrollArea));
 		}
 		if (!$scrollArea) {
 			$scrollArea = this.$();
@@ -341,7 +342,7 @@ sap.ui.define([
 			return iAppendItems;
 		}
 		if (typeof $scrollArea === 'string') {
-			$scrollArea = jQuery.sap.byId($scrollArea);
+			$scrollArea = jQuery(document.getElementById($scrollArea));
 		}
 		if (!$scrollArea) {
 			$scrollArea = this.$();
@@ -524,7 +525,7 @@ sap.ui.define([
 	 */
 	DataSetSimpleView.prototype.setScrollArea = function(aScrollArea, bSupress) {
 		if (typeof aScrollArea !== 'string' && !(aScrollArea instanceof jQuery)) {
-			jQuery.sap.log.error('You can only pass a string (ID of scroll area DOM) or a jQuery object as scrollarea');
+			Log.error('You can only pass a string (ID of scroll area DOM) or a jQuery object as scrollarea');
 		}
 		this.setProperty('scrollArea', aScrollArea, bSupress);
 		return this;

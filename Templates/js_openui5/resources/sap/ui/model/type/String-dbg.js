@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.SimpleType
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @public
 	 * @param {object} [oFormatOptions] formatting options. String doesn't support any formatting options
@@ -62,7 +62,7 @@ sap.ui.define([
 			case "any":
 				return sValue;
 			case "int":
-				var iResult = parseInt(sValue, 10);
+				var iResult = parseInt(sValue);
 				if (isNaN(iResult)) {
 					throw new FormatException(sValue + " is not a valid int value");
 				}

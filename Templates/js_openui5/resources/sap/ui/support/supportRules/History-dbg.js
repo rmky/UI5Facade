@@ -34,6 +34,7 @@ function (library, IssueManager, RuleSetLoader, StringHistoryFormatter, AbapHist
 				executionScope: oRun.scope.executionScope,
 				rulePreset: oRulePreset
 			},
+			analysisMetadata: oRun.analysisMetadata,
 			applicationInfo: oRun.application,
 			technicalInfo: oRun.technical,
 			totalIssuesCount: 0,
@@ -150,7 +151,8 @@ function (library, IssueManager, RuleSetLoader, StringHistoryFormatter, AbapHist
 						selectors: oContext._oExecutionScope._getContext().parentId || oContext._oExecutionScope._getContext().components
 					}
 				},
-				analysisDuration: oContext._oAnalyzer.getElapsedTimeString()
+				analysisDuration: oContext._oAnalyzer.getElapsedTimeString(),
+				analysisMetadata: oContext._oAnalysisMetadata || null
 			});
 		},
 

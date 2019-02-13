@@ -21,7 +21,7 @@ sap.ui.define(["./DragInfo", "./DropInfo", "sap/base/Log"],
 	 * @extends sap.ui.core.dnd.DropInfo
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @public
 	 * @since 1.52

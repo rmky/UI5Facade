@@ -66,6 +66,10 @@ sap.ui.define([],
 		};
 
 		ToolPageRenderer.renderAsideContent = function (rm, control) {
+			if (!control.getSideContent()) {
+				return;
+			}
+
 			var isDesktop = sap.ui.Device.system.desktop;
 			var sideContentAggregation = control.getAggregation('sideContent');
 			var isSideExpanded = control.getSideExpanded();
@@ -99,7 +103,7 @@ sap.ui.define([],
 
 				rm.write('<div class="sapTntToolPageMainContent">');
 				rm.write('<div class="sapTntToolPageMainContentWrapper">');
-				mainContentAggregations.forEach(rm.renderControl);
+				mainContentAggregations.forEach(rm.renderControl, rm);
 				rm.renderControl();
 				rm.write('</div>');
 				rm.write('</div>');

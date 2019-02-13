@@ -75,7 +75,7 @@ sap.ui.define(function () {
 		oRm.writeStyles();
 		oRm.write(">");
 
-		oControl.getSubSections().forEach(oRm.renderControl);
+		oControl.getSubSections().forEach(oRm.renderControl, oRm);
 
 		oRm.write("</div>");
 

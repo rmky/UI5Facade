@@ -6,13 +6,12 @@
 
 // Provides control sap.ui.commons.ResponsiveContainer.
 sap.ui.define([
-    'jquery.sap.global',
     './library',
     'sap/ui/core/Control',
     'sap/ui/core/ResizeHandler',
-    "./ResponsiveContainerRenderer"
+    './ResponsiveContainerRenderer'
 ],
-	function(jQuery, library, Control, ResizeHandler, ResponsiveContainerRenderer) {
+	function(library, Control, ResizeHandler, ResponsiveContainerRenderer) {
 	"use strict";
 
 
@@ -28,7 +27,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -127,7 +126,7 @@ sap.ui.define([
 	 * After rendering
 	 */
 	ResponsiveContainer.prototype.onAfterRendering = function() {
-		var fnResizeHandler = jQuery.proxy(this.onresize, this);
+		var fnResizeHandler = this.onresize.bind(this);
 		this.sResizeListenerId = ResizeHandler.register(this.getDomRef(), fnResizeHandler);
 		this.refreshRangeDimensions();
 		if (!this.oCurrentRange) {
@@ -165,7 +164,7 @@ sap.ui.define([
 		var aRanges = this.getRanges(),
 			aRangeDimensions = [],
 			$Range;
-		jQuery.each(aRanges, function(i, oRange) {
+		aRanges.forEach(function(oRange) {
 			$Range = oRange.$();
 			aRangeDimensions.push({
 				range: oRange,
@@ -188,7 +187,7 @@ sap.ui.define([
 			iRangeWidth, iRangeHeight,
 			aRangeDimensions = this.aRangeDimensions,
 			oMatch = null;
-		jQuery.each(aRangeDimensions, function(i, oRangeDim) {
+		aRangeDimensions.forEach(function(oRangeDim) {
 			iRangeWidth = oRangeDim.width || iWidth;
 			iRangeHeight = oRangeDim.height || iHeight;
 			if (iRangeWidth <= iWidth && iRangeHeight <= iHeight) {
@@ -205,4 +204,4 @@ sap.ui.define([
 
 	return ResponsiveContainer;
 
-}, /* bExport= */ true);
+});

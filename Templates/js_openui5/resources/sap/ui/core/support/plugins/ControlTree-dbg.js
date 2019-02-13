@@ -50,7 +50,7 @@ sap.ui.define([
 		 * @class This class represents the ControlTree plugin for the support tool functionality of UI5. This class is internal and all its functions must not be used by an application.
 		 *
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.60.1
+		 * @version 1.61.2
 		 * @private
 		 * @alias sap.ui.core.support.plugins.ControlTree
 		 */
@@ -1512,11 +1512,17 @@ sap.ui.define([
 							if (oModel) {
 								sAbsolutePath = oModel.resolve(sPath, oBinding.getContext());
 
-								if (oModel.getProperty(sAbsolutePath) !== undefined) {
-									mData.invalidPath = false;
-								} else if (oModel.getProperty(sPath) !== undefined) {
-									mData.invalidPath = false;
-									sAbsolutePath = sPath;
+								if (oModel.isA("sap.ui.model.odata.v4.ODataModel")) { // ODataModel v4 throws an exception on getProperty() - check the context for data
+									if (oBinding.getContext() && oBinding.getContext().getProperty(sPath)) {
+										mData.invalidPath = false;
+									}
+								} else {
+									if (oModel.getProperty(sAbsolutePath) !== undefined) {
+										mData.invalidPath = false;
+									} else if (oModel.getProperty(sPath) !== undefined) {
+										mData.invalidPath = false;
+										sAbsolutePath = sPath;
+									}
 								}
 							}
 

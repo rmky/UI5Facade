@@ -33,7 +33,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.CompositeType
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @public
 	 * @param {object} [oFormatOptions] Formatting options. For a list of all available options, see {@link sap.ui.core.format.DateFormat.getDateInstance DateFormat}.
@@ -96,7 +96,7 @@ sap.ui.define([
 								if (isNaN(oValue)) {
 									throw new FormatException("Cannot format date: " + oValue + " is not a valid Timestamp");
 								} else {
-									oValue = parseInt(oValue, 10);
+									oValue = parseInt(oValue);
 								}
 							}
 							oValue = new Date(oValue);

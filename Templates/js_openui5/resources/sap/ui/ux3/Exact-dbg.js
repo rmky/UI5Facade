@@ -6,7 +6,6 @@
 
 // Provides control sap.ui.ux3.Exact.
 sap.ui.define([
-    'jquery.sap.global',
     'sap/ui/commons/Button',
     'sap/ui/commons/Menu',
     'sap/ui/commons/SearchField',
@@ -16,10 +15,10 @@ sap.ui.define([
     './ExactAttribute',
     './ExactBrowser',
     './library',
-    "./ExactRenderer"
+    './ExactRenderer',
+    'sap/ui/commons/library'
 ],
 	function(
-	    jQuery,
 		Button,
 		Menu,
 		SearchField,
@@ -29,9 +28,15 @@ sap.ui.define([
 		ExactAttribute,
 		ExactBrowser,
 		library,
-		ExactRenderer
+		ExactRenderer,
+		commonsLibrary
 	) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.commons.TextViewDesign
+	var TextViewDesign = commonsLibrary.TextViewDesign;
 
 
 
@@ -47,7 +52,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -127,14 +132,6 @@ sap.ui.define([
 
 
 
-
-
-
-
-
-
-	(function() {
-
 	/**
 	 * Does the setup when the Exact is created.
 	 * @private
@@ -167,7 +164,7 @@ sap.ui.define([
 		this._resultArea = new ExactArea(this.getId() + "-resultArea");
 		this.addAggregation("controls", this._resultArea);
 
-		this._resultText = new TextView(this.getId() + "-resultAreaTitle", {design: sap.ui.commons.TextViewDesign.Bold});
+		this._resultText = new TextView(this.getId() + "-resultAreaTitle", {design: TextViewDesign.Bold});
 		this._resultText.addStyleClass("sapUiUx3ExactViewTitle");
 		this.addAggregation("controls", this._resultText);
 
@@ -240,8 +237,6 @@ sap.ui.define([
 	};
 
 
-	}());
-
 	return Exact;
 
-}, /* bExport= */ true);
+});

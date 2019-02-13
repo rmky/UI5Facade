@@ -21,6 +21,7 @@ sap.ui.define([
 	'sap/m/ScrollContainer',
 	'sap/ui/model/Sorter',
 	'sap/ui/dt/ElementUtil',
+	'sap/base/Log',
 	'sap/m/VBox',
 	'sap/ui/rta/Utils',
 	'sap/m/library'
@@ -42,6 +43,7 @@ sap.ui.define([
 	ScrollContainer,
 	Sorter,
 	ElementUtil,
+	Log,
 	VBox,
 	Utils,
 	mobileLibrary
@@ -60,7 +62,7 @@ sap.ui.define([
 	 * @class Context - Dialog for available Fields in Runtime Authoring
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -114,6 +116,10 @@ sap.ui.define([
 			this._oDialog.addButton(oButton);
 		}, this);
 		this._oDialog.setInitialFocus(this._oInput);
+	};
+
+	AddElementsDialog.prototype.exit = function() {
+		this._oDialog.destroy();
 	};
 
 	/**
@@ -207,7 +213,21 @@ sap.ui.define([
 			content : [oVBox]
 		});
 
-		this._oList.bindItems({path:"/elements", template: oListItem, sorter : oSorter});
+		this._oList.bindItems({
+			path:"/elements",
+			template: oListItem,
+			sorter: oSorter,
+			key: function (oContext) {
+				switch (oContext.getProperty("type")) {
+					case "invisible":
+						return oContext.getProperty("elementId");
+					case "odata":
+						return oContext.getProperty("name");
+					default:
+						Log.error("sap.ui.rta.plugin.additionalElements.AddElementsDialog#_createContent: unsupported data type");
+				}
+			}
+		});
 
 		// Scrollcontainer containing the List
 		// Needed for scrolling the List
@@ -278,11 +298,11 @@ sap.ui.define([
 	 * @returns {Promise} empty promise
 	 * @public
 	 */
-	AddElementsDialog.prototype.open = function(oControl) {
+	AddElementsDialog.prototype.open = function () {
 		return new Promise(function (resolve, reject) {
 			this._fnResolve = resolve;
 			this._fnReject = reject;
-			this._oDialog.oPopup.attachOpened(function (){
+			this._oDialog.attachAfterOpen(function (){
 				this.fireOpened();
 			}.bind(this));
 			// Makes sure the modal div element does not change the size of our application (which would result in
@@ -297,7 +317,7 @@ sap.ui.define([
 	 * @param {sap.ui.base.Event} oEvent event object
 	 * @private
 	 */
-	AddElementsDialog.prototype._resortList = function(oEvent) {
+	AddElementsDialog.prototype._resortList = function () {
 		this._bAscendingSortOrder = !this._bAscendingSortOrder;
 		var oBinding = this._oList.getBinding("items");
 		var aSorter = [];
@@ -333,7 +353,7 @@ sap.ui.define([
 	 * @param {sap.ui.base.Event} oEvent event object
 	 * @private
 	 */
-	AddElementsDialog.prototype._redirectToCustomFieldCreation = function(oEvent) {
+	AddElementsDialog.prototype._redirectToCustomFieldCreation = function () {
 		this.fireOpenCustomField();
 		this._oDialog.close();
 	};
@@ -350,8 +370,16 @@ sap.ui.define([
 	 * @public
 	 */
 	AddElementsDialog.prototype.setCustomFieldEnabled = function(bCustomFieldEnabled) {
-		ManagedObject.prototype.setProperty.call(this, "customFieldEnabled", bCustomFieldEnabled, true);
-		this._oCustomFieldButton.setEnabled(bCustomFieldEnabled);
+		this.setProperty("customFieldEnabled", bCustomFieldEnabled, true);
+		this._oCustomFieldButton.setEnabled(this.getProperty("customFieldEnabled"));
+	};
+
+	/**
+	 * Returns list control
+	 * @returns {sap.m.List}
+	 */
+	AddElementsDialog.prototype.getList = function () {
+		return this._oList;
 	};
 
 	return AddElementsDialog;

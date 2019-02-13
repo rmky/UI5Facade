@@ -66,7 +66,7 @@ sap.ui.define([
 	 * @class
 	 * A calendar row with a header and appointments. The Appointments will be placed in the defined interval.
 	 * @extends sap.ui.core.Control
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -386,7 +386,6 @@ sap.ui.define([
 	};
 
 	CalendarRow.prototype.invalidate = function(oOrigin) {
-
 		if (oOrigin && oOrigin instanceof sap.ui.unified.CalendarAppointment) {
 			// as position could change -> delete visible appointments to recalculate positions
 			var bFound = false;
@@ -400,6 +399,8 @@ sap.ui.define([
 			if (bFound) {
 				this._aVisibleAppointments = [];
 			}
+			// removes or adds the selected appointments from this.aSelectedAppointments
+			this._updateSelectedAppointmentsArray(oOrigin);
 		}
 
 		Control.prototype.invalidate.apply(this, arguments);
@@ -934,6 +935,23 @@ sap.ui.define([
 			appTimeUnitsDifRowStart: oUniversalTableStart.getTime() - oUniversalAppStartDate.getTime(),
 			appTimeUnitsDifRowEnd: oUniversalAppEndDate.getTime() - oUniversalTableEnd.getTime()
 		};
+	};
+
+	/**
+	 * Removes or adds the given appointment id from this.aSelectedAppointments
+	 * @param {sap.ui.unified.CalendarAppointment} oAppointment the appointment whose id should be added or remove=
+	 * @private
+	 */
+	CalendarRow.prototype._updateSelectedAppointmentsArray = function(oAppointment) {
+		if (oAppointment.getSelected()) {
+			if (this.aSelectedAppointments.indexOf(oAppointment.getId()) === -1) {
+				this.aSelectedAppointments.push(oAppointment.getId());
+			}
+		} else {
+			this.aSelectedAppointments = this.aSelectedAppointments.filter(function(oApp) {
+				return oApp !== oAppointment.getId();
+			});
+		}
 	};
 
 	function _isGroupAppoitment(oRow, oAppointment) {
@@ -1633,20 +1651,14 @@ sap.ui.define([
 		if (oAppointment.getSelected()){
 			oAppointment.setProperty("selected", false, true); // do not invalidate CalendarRow
 			oAppointment.$().removeClass("sapUiCalendarAppSel");
-			//remove the deselected appointment from the array
-			this.aSelectedAppointments = this.aSelectedAppointments.filter(function(oApp) {
-				return oApp !== oAppointment.getId();
-			});
 			_removeAllAppointmentSelections(this, bRemoveOldSelection);
-
 		} else {
 			oAppointment.setProperty("selected", true, true); // do not invalidate CalendarRow
 			oAppointment.$().addClass("sapUiCalendarAppSel");
-			//add the selected appointment in the array
 			_removeAllAppointmentSelections(this, bRemoveOldSelection);
-
-			this.aSelectedAppointments.push(oAppointment.getId());
 		}
+		// removes or adds the selected appointments from this.aSelectedAppointments
+		this._updateSelectedAppointmentsArray(oAppointment);
 
 		sAriaLabelSelected = oAppointment.$().attr("aria-labelledby") + " " + sSelectedTextId;
 		oAppointment.$().attr("aria-labelledby", sAriaLabelSelected);

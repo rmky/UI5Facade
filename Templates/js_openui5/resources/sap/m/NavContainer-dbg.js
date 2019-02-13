@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -59,7 +59,7 @@ sap.ui.define([
 				/**
 				 * Determines whether the initial focus is set automatically on first rendering and after navigating to a new page.
 				 * This is useful when on touch devices the keyboard pops out due to the focus being automatically set on an input field.
-				 * If necessary the "afterShow" event can be used to focus another element.
+				 * If necessary, the <code>afterShow</code> event can be used to focus another element, only if <code>autoFocus</code> is set to <code>false</code>.
 				 *
 				 * <b>Note:</b>  The following scenarios are possible, depending on where the focus
 				 * was before navigation to a new page:
@@ -1734,10 +1734,12 @@ sap.ui.define([
 		oPage.addStyleClass("sapMNavItem");
 		var iPreviousPageCount = aPages.length;
 
-		if (iPreviousPageCount === 0 && /* get the NEW pages count */ this.getPages().length === 1 && this.getDomRef()) { // the added page is the first and only page and has been newly added
-			this._ensurePageStackInitialized();
-			this.rerender();
+		if (iPreviousPageCount === 0 && /* get the NEW pages count */ this.getPages().length === 1) { // the added page is the first and only page and has been newly added
 			this._fireAdaptableContentChange(oPage);
+			if (this.getDomRef()) {
+				this._ensurePageStackInitialized();
+				this.rerender();
+			}
 		}
 
 		return this;
@@ -1752,10 +1754,12 @@ sap.ui.define([
 		// to a removePage-call where the class is removed again.
 		oPage.addStyleClass("sapMNavItem");
 
-		if (iPreviousPageCount === 0 && this.getPages().length === 1 && this.getDomRef()) { // the added page is the first and only page and has been newly added
-			this._ensurePageStackInitialized();
-			this.rerender();
+		if (iPreviousPageCount === 0 && this.getPages().length === 1) { // the added page is the first and only page and has been newly added
 			this._fireAdaptableContentChange(oPage);
+			if (this.getDomRef()) {
+				this._ensurePageStackInitialized();
+				this.rerender();
+			}
 		}
 
 		return this;

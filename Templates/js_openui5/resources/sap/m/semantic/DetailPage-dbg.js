@@ -46,7 +46,7 @@ sap.ui.define(["sap/m/semantic/ShareMenuPage", "sap/m/semantic/SemanticConfigura
 	 * @extends sap.m.semantic.ShareMenuPage
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -206,6 +206,7 @@ sap.ui.define(["sap/m/semantic/ShareMenuPage", "sap/m/semantic/SemanticConfigura
 					multiple: false
 				}
 			},
+			dnd: { draggable: false, droppable: true },
 			designtime: "sap/m/designtime/semantic/DetailPage.designtime"
 		},
 		renderer: SemanticPageRenderer.render

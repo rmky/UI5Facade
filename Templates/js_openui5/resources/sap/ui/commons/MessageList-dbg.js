@@ -6,11 +6,11 @@
 
 // Provides control sap.ui.commons.MessageList.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
     './library',
     'sap/ui/core/Control',
     'sap/ui/core/Popup',
-    "./MessageListRenderer"
+    './MessageListRenderer'
 ],
 	function(jQuery, library, Control, Popup, MessageListRenderer) {
 	"use strict";
@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @class
 	 * Instantiated by the "MessageBar" Control if the user requests to generate the corresponding "MessageList".
 	 * @extends sap.ui.core.Control
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -141,7 +141,7 @@ sap.ui.define([
 		var anchor = null;
 		var anchorId = this.getAnchorId();
 		if (anchorId) {
-			anchor = jQuery.sap.domById(anchorId);
+			anchor = document.getElementById(anchorId);
 		}
 		if (!anchor) {
 			anchor = document.body;
@@ -214,4 +214,4 @@ sap.ui.define([
 
 	return MessageList;
 
-}, /* bExport= */ true);
+});

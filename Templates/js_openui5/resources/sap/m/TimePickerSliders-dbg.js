@@ -50,7 +50,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.60.1
+		 * @version 1.61.2
 		 *
 		 * @constructor
 		 * @public
@@ -407,7 +407,7 @@ sap.ui.define([
 				oDateValue = new Date();
 
 			if (oHoursSlider) {
-				iHours = parseInt(oHoursSlider.getSelectedValue(), 10);
+				iHours = parseInt(oHoursSlider.getSelectedValue());
 			}
 
 			if (oFormatSlider) {

@@ -171,7 +171,7 @@
 			"theme": "sap_belize_hcw"
 		},
 		{
-			"name": "NotificationListGroup.less",
+			"name": "NotificationListBase.less",
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},
@@ -287,6 +287,11 @@
 		},
 		{
 			"name": "Shell.less",
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
+			"name": "SinglePlanningCalendarGrid.less",
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},

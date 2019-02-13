@@ -66,7 +66,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -237,7 +237,7 @@ sap.ui.define([
 		var iOldFocusedIndex = this._oItemNavigation.getFocusedIndex();
 		if (jQuery(oEvent.target).hasClass("sapUiResponsiveSplitterPaginatorButton")) {
 			jQuery(oEvent.target).attr("tabindex", 0);
-			var iPageIndex = parseInt(jQuery(oEvent.target).attr("page-index"), 10);
+			var iPageIndex = parseInt(jQuery(oEvent.target).attr("page-index"));
 			this.getAggregation("_pages").forEach(function (page) {
 				page.setVisible(false);
 			});
@@ -248,7 +248,7 @@ sap.ui.define([
 				iPageIndex = this._currentInterval.aPages.indexOf(aDemandPanes[iPageIndex - 1]);
 			}
 
-			this._activatePage(iPageIndex, parseInt(jQuery(oEvent.target).attr("page-index"), 10));
+			this._activatePage(iPageIndex, parseInt(jQuery(oEvent.target).attr("page-index")));
 		}
 
 		if (jQuery(oEvent.target).hasClass("sapUiResponsiveSplitterPaginatorNavButton")) {

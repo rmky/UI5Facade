@@ -5,8 +5,8 @@
  */
 
 // Provides default renderer for the sap.ui.ux3.OverlayContainer
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './OverlayRenderer'],
-	function(jQuery, Renderer, OverlayRenderer) {
+sap.ui.define(['sap/ui/core/Renderer', './OverlayRenderer'],
+	function(Renderer, OverlayRenderer) {
 	"use strict";
 
 /**
@@ -19,14 +19,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './OverlayRenderer']
 	 * Renders the Overlay content
 	 *
 	 * @param {sap.ui.core.RenderManager}
-	 *            oRenderManager the RenderManager that can be used for writing to
+	 *            rm the RenderManager that can be used for writing to
 	 *            the Render-Output-Buffer
 	 * @param {sap.ui.core.Control}
 	 *            oControl an object representation of the control that should be
 	 *            rendered
 	 */
-	OverlayContainerRenderer.renderContent = function(oRenderManager, oControl) {
-		var rm = oRenderManager;
+	OverlayContainerRenderer.renderContent = function(rm, oControl) {
 		rm.write("<div role='Main' class='sapUiUx3OCContent' id='" + oControl.getId() + "-content'>");
 		var content = oControl.getContent();
 		for (var i = 0; i < content.length; i++) {
@@ -40,14 +39,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './OverlayRenderer']
 	 * Add root class to Overlay
 	 *
 	 * @param {sap.ui.core.RenderManager}
-	 *            oRenderManager the RenderManager that can be used for writing to
+	 *            rm the RenderManager that can be used for writing to
 	 *            the Render-Output-Buffer
 	 * @param {sap.ui.core.Control}
 	 *            oControl an object representation of the control that should be
 	 *            rendered
 	 */
-	OverlayContainerRenderer.addRootClasses = function(oRenderManager, oControl) {
-		var rm = oRenderManager;
+	OverlayContainerRenderer.addRootClasses = function(rm, oControl) {
 		rm.addClass("sapUiUx3OC");
 	};
 
@@ -55,14 +53,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './OverlayRenderer']
 	 * Add class to Overlay
 	 *
 	 * @param {sap.ui.core.RenderManager}
-	 *            oRenderManager the RenderManager that can be used for writing to
+	 *            rm the RenderManager that can be used for writing to
 	 *            the Render-Output-Buffer
 	 * @param {sap.ui.core.Control}
 	 *            oControl an object representation of the control that should be
 	 *            rendered
 	 */
-	OverlayContainerRenderer.addOverlayClasses = function(oRenderManager, oControl) {
-		var rm = oRenderManager;
+	OverlayContainerRenderer.addOverlayClasses = function(rm, oControl) {
 		rm.addClass("sapUiUx3OCOverlay");
 	};
 

@@ -19,7 +19,11 @@ sap.ui
 			"use strict";
 
 			if (Device.browser.msie) {
-				sap.ui.requireSync("sap/ui/thirdparty/sinon-ie");
+
+				if (window.sinon.log) { // sinon has no version property, but 'log' was removed with 2.x)
+					sap.ui.requireSync("sap/ui/thirdparty/sinon-ie");
+				}
+
 				// sinon internally checks the transported data to be an instance
 				// of FormData and this fails in case of IE9! - therefore we
 				// add a dummy function to enable instanceof check
@@ -41,7 +45,7 @@ sap.ui
 			 * @extends sap.ui.base.ManagedObject
 			 * @abstract
 			 * @author SAP SE
-			 * @version 1.60.1
+			 * @version 1.61.2
 			 * @public
 			 * @alias sap.ui.core.util.MockServer
 			 */
@@ -183,7 +187,8 @@ sap.ui
 					INVALID_KEY_NAME: "Invalid key name in key predicate. Expected name is ##",
 					INVALID_KEY_PREDICATE_QUANTITY: "Invalid key predicate. The quantity of provided keys does not match the expected value",
 					INVALID_KEY_TYPE: "Invalid key predicate. The key literal for key property ## does not match its type."
-				}
+				},
+				_oRandomSeed: {}
 
 			});
 
@@ -199,15 +204,24 @@ sap.ui
 			 * @return (number) pseudo-random number
 			 */
 			MockServer.prototype._getPseudoRandomNumber = function (sType) {
-				if (!this._iRandomSeed) {
-					this._iRandomSeed = {};
+				if (!this._oRandomSeed) {
+					this._oRandomSeed = {};
 				}
-				if (!this._iRandomSeed.hasOwnProperty(sType)) {
-					this._iRandomSeed[sType] = 0;
+				if (!this._oRandomSeed.hasOwnProperty(sType)) {
+					this._oRandomSeed[sType] = 0;
 				}
-				this._iRandomSeed[sType] = (this._iRandomSeed[sType] + 11 ) * 25214903917 % 281474976710655;
-				return this._iRandomSeed[sType] / 281474976710655;
+				this._oRandomSeed[sType] = (this._oRandomSeed[sType] + 11 ) * 25214903917 % 281474976710655;
+				return this._oRandomSeed[sType] / 281474976710655;
 			};
+
+			/**
+			 * reset seed of pseudo-random number generator
+			 * @private
+			 */
+			MockServer.prototype._resetPseudoRandomNumberGenerator = function () {
+					this._oRandomSeed = {};
+			};
+
 
 			/**
 			 * Starts the server.
@@ -1959,6 +1973,7 @@ sap.ui
 					var DraftEnabledMockServer = sap.ui.requireSync("sap/ui/core/util/DraftEnabledMockServer");
 					DraftEnabledMockServer.handleDraft(oAnnotations, this);
 				}
+				this._resetPseudoRandomNumberGenerator();
 				this._refreshData();
 
 				// helper to handle xsrf token
@@ -2516,7 +2531,7 @@ sap.ui
 											oXhr.respond(e.error.code, mHeaders, JSON.stringify(e));
 										} else {
 											Log.error("MockServer: request failed due to invalid system query options value!");
-											oXhr.respond(parseInt(e.message || e.number, 10));
+											oXhr.respond(parseInt(e.message || e.number));
 										}
 									}
 									return true;
@@ -2587,8 +2602,8 @@ sap.ui
 											if (e.error) {
 												oXhr.respond(e.error.code, mHeaders, JSON.stringify(e));
 											} else {
-												Log.debug("MockServer: response sent with: " + parseInt(e.message || e.number, 10));
-												oXhr.respond(parseInt(e.message || e.number, 10));
+												Log.debug("MockServer: response sent with: " + parseInt(e.message || e.number));
+												oXhr.respond(parseInt(e.message || e.number));
 											}
 										}
 										return true;
@@ -2659,8 +2674,8 @@ sap.ui
 											if (e.error) {
 												oXhr.respond(e.error.code, mHeaders, JSON.stringify(e));
 											} else {
-												Log.debug("MockServer: response sent with: " + parseInt(e.message || e.number, 10));
-												oXhr.respond(parseInt(e.message || e.number, 10));
+												Log.debug("MockServer: response sent with: " + parseInt(e.message || e.number));
+												oXhr.respond(parseInt(e.message || e.number));
 											}
 										}
 										return true;
@@ -2774,8 +2789,8 @@ sap.ui
 													if (e.error) {
 														oXhr.respond(e.error.code, mHeaders, JSON.stringify(e));
 													} else {
-														Log.debug("MockServer: response sent with: " + parseInt(e.message || e.number, 10));
-														oXhr.respond(parseInt(e.message || e.number, 10));
+														Log.debug("MockServer: response sent with: " + parseInt(e.message || e.number));
+														oXhr.respond(parseInt(e.message || e.number));
 													}
 												}
 												return true;
@@ -2889,10 +2904,9 @@ sap.ui
 														if (e.error) {
 															oXhr.respond(e.error.code, mHeaders, JSON.stringify(e));
 														} else {
-															oXhr.respond(parseInt(e.message || e.number, 10));
+															oXhr.respond(parseInt(e.message || e.number));
 															Log
-																.debug("MockServer: response sent with: " + parseInt(e.message || e.number,
-																	10));
+																.debug("MockServer: response sent with: " + parseInt(e.message || e.number));
 														}
 													}
 													return true;
@@ -2980,10 +2994,9 @@ sap.ui
 											};
 											oXhr.respond(e.error.code, mHeaders, JSON.stringify(e));
 										} else {
-											oXhr.respond(parseInt(e.message || e.number, 10));
+											oXhr.respond(parseInt(e.message || e.number));
 											Log
-												.debug("MockServer: response sent with: " + parseInt(e.message || e.number,
-													10));
+												.debug("MockServer: response sent with: " + parseInt(e.message || e.number));
 										}
 
 									}
@@ -3048,10 +3061,9 @@ sap.ui
 											};
 											oXhr.respond(e.error.code, mHeaders, JSON.stringify(e));
 										} else {
-											oXhr.respond(parseInt(e.message || e.number, 10));
+											oXhr.respond(parseInt(e.message || e.number));
 											Log
-												.debug("MockServer: response sent with: " + parseInt(e.message || e.number,
-													10));
+												.debug("MockServer: response sent with: " + parseInt(e.message || e.number));
 										}
 									}
 									return true;
@@ -3114,8 +3126,8 @@ sap.ui
 											};
 											oXhr.respond(e.error.code, mHeaders, JSON.stringify(e));
 										} else {
-											oXhr.respond(parseInt(e.message || e.number, 10));
-											Log.debug("MockServer: response sent with: " + parseInt(e.message || e.number, 10));
+											oXhr.respond(parseInt(e.message || e.number));
+											Log.debug("MockServer: response sent with: " + parseInt(e.message || e.number));
 										}
 									}
 									return true;
@@ -3179,9 +3191,9 @@ sap.ui
 											};
 											oXhr.respond(e.error.code, mHeaders, JSON.stringify(e));
 										} else {
-											oXhr.respond(parseInt(e.message || e.number, 10));
+											oXhr.respond(parseInt(e.message || e.number));
 											Log
-												.debug("MockServer: response sent with: " + parseInt(e.message || e.number, 10));
+												.debug("MockServer: response sent with: " + parseInt(e.message || e.number));
 										}
 									}
 									return true;
@@ -3227,8 +3239,8 @@ sap.ui
 
 											oXhr.respond(e.error.code, mHeaders, JSON.stringify(e));
 										} else {
-											oXhr.respond(parseInt(e.message || e.number, 10));
-											Log.debug("MockServer: response sent with: " + parseInt(e.message || e.number, 10));
+											oXhr.respond(parseInt(e.message || e.number));
+											Log.debug("MockServer: response sent with: " + parseInt(e.message || e.number));
 										}
 									}
 									return true;
@@ -3479,12 +3491,12 @@ sap.ui
 				}
 				var fnNoOffset = function(s) {
 					var day = jQuery.map(s.slice(0, -5).split(/\D/), function(itm) {
-						return parseInt(itm, 10) || 0;
+						return parseInt(itm) || 0;
 					});
 					day[1] -= 1;
 					day = new Date(Date.UTC.apply(Date, day));
 					var offsetString = s.slice(-5);
-					var offset = parseInt(offsetString, 10) / 100;
+					var offset = parseInt(offsetString) / 100;
 					if (offsetString.slice(0, 1) === "+") {
 						offset *= -1;
 					}

@@ -245,6 +245,43 @@
 </ModelMapping>
 ]]></xmlTemplate>
 </Template>
+<Template name="sap.uxap.ObjectPageAccessibleLandmarkInfo" alias="ObjectPageAccessibleLandmarkInfo,Info">
+	<jsTemplate><![CDATA[new sap.uxap.ObjectPageAccessibleLandmarkInfo({
+	id: "${id}", // sap.ui.core.ID
+	rootRole: sap.ui.core.AccessibleLandmarkRole.Region, // sap.ui.core.AccessibleLandmarkRole
+	rootLabel: undefined, // string
+	contentRole: sap.ui.core.AccessibleLandmarkRole.None, // sap.ui.core.AccessibleLandmarkRole
+	contentLabel: undefined, // string
+	navigationRole: sap.ui.core.AccessibleLandmarkRole.Navigation, // sap.ui.core.AccessibleLandmarkRole
+	navigationLabel: undefined, // string
+	headerRole: sap.ui.core.AccessibleLandmarkRole.Banner, // sap.ui.core.AccessibleLandmarkRole
+	headerLabel: undefined, // string
+	footerRole: sap.ui.core.AccessibleLandmarkRole.None, // sap.ui.core.AccessibleLandmarkRole
+	footerLabel: undefined, // string
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [] // sap.ui.core.dnd.DragDropBase, since 1.56
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<ObjectPageAccessibleLandmarkInfo xmlns="sap.uxap"
+	id="${id}"
+	rootRole="Region"
+	rootLabel=""
+	contentRole="None"
+	contentLabel=""
+	navigationRole="Navigation"
+	navigationLabel=""
+	headerRole="Banner"
+	headerLabel=""
+	footerRole="None"
+	footerLabel="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</ObjectPageAccessibleLandmarkInfo>
+]]></xmlTemplate>
+</Template>
 <Template name="sap.uxap.ObjectPageDynamicHeaderContent" alias="ObjectPageDynamicHeaderContent,Content">
 	<jsTemplate><![CDATA[new sap.uxap.ObjectPageDynamicHeaderContent({
 	id: "${id}", // sap.ui.core.ID
@@ -611,6 +648,7 @@
 	headerTitle: undefined, // sap.uxap.IHeaderTitle
 	headerContent: [], // sap.ui.core.Control
 	footer: undefined, // sap.m.IBar, since 1.40
+	landmarkInfo: undefined, // sap.uxap.ObjectPageAccessibleLandmarkInfo, since 1.61
 	selectedSection: undefined, // sap.uxap.ObjectPageSection, since 1.44.0
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -667,6 +705,7 @@
 		<headerTitle></headerTitle> <!-- sap.uxap.IHeaderTitle -->
 		<headerContent></headerContent> <!-- sap.ui.core.Control -->
 		<footer></footer> <!-- sap.m.IBar, since 1.40 -->
+		<landmarkInfo></landmarkInfo> <!-- sap.uxap.ObjectPageAccessibleLandmarkInfo, since 1.61 -->
 </ObjectPageLayout>
 ]]></xmlTemplate>
 </Template>

@@ -70,7 +70,7 @@ sap.ui.define([
 		// Note: @odata.count is of type Edm.Int64, represented as a string in OData responses;
 		// $count should be a number and the loss of precision is acceptable
 		if (typeof vCount === "string") {
-			vCount = parseInt(vCount, 10);
+			vCount = parseInt(vCount);
 		}
 		// Note: this relies on $count being present as an own property of aCollection
 		_Helper.updateExisting(mChangeListeners, sPath, aCollection, {$count : vCount});
@@ -90,19 +90,26 @@ sap.ui.define([
 	 * @param {object} [mQueryOptions]
 	 *   A map of key-value pairs representing the query string
 	 * @param {boolean} [bSortExpandSelect=false]
-	 *   Whether the paths in $expand and $select shall be sorted in the cache's query string
+	 *   Whether the paths in $expand and $select shall be sorted in the cache's query string;
+	 *   note that this flag can safely be ignored for all "new" features (after 1.47) which
+	 *   should just sort always
+	 * @param {function} [fnGetOriginalResourcePath]
+	 *   A function that returns the cache's original resource path to be used to build the target
+	 *   path for bound messages; if unset, sResourcePath is used
 	 *
 	 * @private
 	 */
-	function Cache(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect) {
+	function Cache(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect,
+			fnGetOriginalResourcePath) {
 		this.bActive = true;
 		this.mChangeListeners = {}; // map from path to an array of change listeners
+		this.fnGetOriginalResourcePath = fnGetOriginalResourcePath;
 		this.sMetaPath = _Helper.getMetaPath("/" + sResourcePath);
 		this.mPatchRequests = {}; // map from path to an array of (PATCH) promises
 		this.mPostRequests = {}; // map from path to an array of entity data (POST bodies)
 		this.oRequestor = oRequestor;
-		this.bSortExpandSelect = bSortExpandSelect;
 		this.sResourcePath = sResourcePath;
+		this.bSortExpandSelect = bSortExpandSelect;
 		this.bSentReadRequest = false;
 		this.oTypePromise = undefined;
 		this.setQueryOptions(mQueryOptions);
@@ -201,28 +208,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Adds an item to the given map by path.
-	 *
-	 * @param {object} mMap
-	 *   A map from path to a list of items
-	 * @param {string} sPath
-	 *   The path
-	 * @param {object} [oItem]
-	 *   The item; if it is <code>undefined</code>, nothing happens
-	 *
-	 * @private
-	 */
-	Cache.prototype.addByPath = function (mMap, sPath, oItem) {
-		if (oItem) {
-			if (!mMap[sPath]) {
-				mMap[sPath] = [oItem];
-			} else if (mMap[sPath].indexOf(oItem) < 0) {
-				mMap[sPath].push(oItem);
-			}
-		}
-	};
-
-	/**
 	 * Calculates and returns the key predicate for the given entity and stores it as private
 	 * annotation at the given entity. If at least one key property is <code>undefined</code>, no
 	 * private annotation for the key predicate is created.
@@ -237,6 +222,7 @@ sap.ui.define([
 	 *   The key predicate or <code>undefined</code>, if key predicate cannot be determined
 	 * @private
 	 */
+	// Note: overridden by _AggregationCache.calculateKeyPredicate
 	Cache.prototype.calculateKeyPredicate = function (oInstance, mTypeForMetaPath, sMetaPath) {
 		var sPredicate,
 			oType = mTypeForMetaPath[sMetaPath];
@@ -274,8 +260,8 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
 	 *   A lock for the group ID
-	 * @param {string|sap.ui.base.SyncPromise} vPostPath
-	 *   The path for the POST request or a SyncPromise that resolves with that path
+	 * @param {sap.ui.base.SyncPromise} oPostPathPromise
+	 *   A SyncPromise resolving with the resource path for the POST request
 	 * @param {string} sPath
 	 *   The collection's path within the cache
 	 * @param {string} [oEntityData={}]
@@ -290,7 +276,7 @@ sap.ui.define([
 	 *
 	 * @public
 	 */
-	Cache.prototype.create = function (oGroupLock, vPostPath, sPath, oEntityData,
+	Cache.prototype.create = function (oGroupLock, oPostPathPromise, sPath, oEntityData,
 			fnCancelCallback, fnErrorCallback) {
 		var aCollection,
 			bKeepTransientPath = oEntityData && oEntityData["@$ui5.keepTransientPath"],
@@ -298,7 +284,7 @@ sap.ui.define([
 
 		// Clean-up when the create has been canceled.
 		function cleanUp() {
-			that.removeByPath(that.mPostRequests, sPath, oEntityData);
+			_Helper.removeByPath(that.mPostRequests, sPath, oEntityData);
 			delete aCollection[-1];
 			fnCancelCallback();
 		}
@@ -313,7 +299,7 @@ sap.ui.define([
 
 			// mark as transient (again)
 			_Helper.setPrivateAnnotation(oEntityData, "transient", sPostGroupId);
-			that.addByPath(that.mPostRequests, sPath, oEntityData);
+			_Helper.addByPath(that.mPostRequests, sPath, oEntityData);
 			return SyncPromise.all([
 				that.oRequestor.request("POST", sPostPath, oPostGroupLock, null, oEntityData,
 					setCreatePending, cleanUp, undefined,
@@ -326,8 +312,8 @@ sap.ui.define([
 				_Helper.deletePrivateAnnotation(oEntityData, "transient");
 				// now the server has one more element
 				addToCount(that.mChangeListeners, sPath, aCollection, 1);
-				that.removeByPath(that.mPostRequests, sPath, oEntityData);
-				that.visitResponse(oCreatedEntity, aResult[1], false,
+				_Helper.removeByPath(that.mPostRequests, sPath, oEntityData);
+				that.visitResponse(oCreatedEntity, aResult[1],
 					_Helper.getMetaPath(_Helper.buildPath(that.sMetaPath, sPath)), sPath + "/-1",
 					bKeepTransientPath);
 				if (!bKeepTransientPath) {
@@ -367,7 +353,7 @@ sap.ui.define([
 		}
 		aCollection[-1] = oEntityData;
 
-		return SyncPromise.resolve(vPostPath).then(function (sPostPath) {
+		return oPostPathPromise.then(function (sPostPath) {
 			sPostPath += that.oRequestor.buildQueryString(that.sMetaPath, that.mQueryOptions, true);
 			return request(sPostPath, oGroupLock);
 		});
@@ -384,7 +370,7 @@ sap.ui.define([
 	 * @public
 	 */
 	Cache.prototype.deregisterChange = function (sPath, oListener) {
-		this.removeByPath(this.mChangeListeners, sPath, oListener);
+		_Helper.removeByPath(this.mChangeListeners, sPath, oListener);
 	};
 
 	/**
@@ -602,14 +588,18 @@ sap.ui.define([
 	 *
 	 * @param {string} sPath The path
 	 * @param {object} oData The data to patch with
+	 * @returns {sap.ui.base.SyncPromise}
+	 *   A promise to be resolved with the patched data
 	 *
 	 * @private
 	 */
 	Cache.prototype.patch = function (sPath, oData) {
 		var that = this;
 
-		this.fetchValue(_GroupLock.$cached, sPath).then(function (oCacheValue) {
+		return this.fetchValue(_GroupLock.$cached, sPath).then(function (oCacheValue) {
 			_Helper.updateExisting(that.mChangeListeners, sPath, oCacheValue, oData);
+
+			return oCacheValue;
 		});
 	};
 
@@ -622,35 +612,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Cache.prototype.registerChange = function (sPath, oListener) {
-		this.addByPath(this.mChangeListeners, sPath, oListener);
-	};
-
-	/**
-	 * Removes an item from the given map by path.
-	 *
-	 * @param {object} mMap
-	 *   A map from path to a list of items
-	 * @param {string} sPath
-	 *   The path
-	 * @param {object} oItem
-	 *   The item
-	 *
-	 * @private
-	 */
-	Cache.prototype.removeByPath = function (mMap, sPath, oItem) {
-		var aItems = mMap[sPath],
-			iIndex;
-
-		if (aItems) {
-			iIndex = aItems.indexOf(oItem);
-			if (iIndex >= 0) {
-				if (aItems.length === 1) {
-					delete mMap[sPath];
-				} else {
-					aItems.splice(iIndex, 1);
-				}
-			}
-		}
+		_Helper.addByPath(this.mChangeListeners, sPath, oListener);
 	};
 
 	/**
@@ -791,7 +753,7 @@ sap.ui.define([
 			 * resetChangesForPath has been called on the binding or model.
 			 */
 			function onCancel() {
-				that.removeByPath(that.mPatchRequests, sFullPath, oPatchPromise);
+				_Helper.removeByPath(that.mPatchRequests, sFullPath, oPatchPromise);
 				// write the previous value into the cache
 				_Helper.updateExisting(that.mChangeListeners, sEntityPath, oEntity,
 					Cache.makeUpdateData(aPropertyPath, vOldValue));
@@ -816,17 +778,17 @@ sap.ui.define([
 				oPatchPromise = that.oRequestor.request("PATCH", sEditUrl, oPatchGroupLock,
 					{"If-Match" : oEntity}, oUpdateData, onSubmit, onCancel, /*sMetaPath*/undefined,
 					_Helper.buildPath(that.sResourcePath, sEntityPath), bAtFront);
-				that.addByPath(that.mPatchRequests, sFullPath, oPatchPromise);
+				_Helper.addByPath(that.mPatchRequests, sFullPath, oPatchPromise);
 				return SyncPromise.all([
 					oPatchPromise,
 					that.fetchTypes()
 				]).then(function (aResult) {
 					var oPatchResult = aResult[0];
 
-					that.removeByPath(that.mPatchRequests, sFullPath, oPatchPromise);
+					_Helper.removeByPath(that.mPatchRequests, sFullPath, oPatchPromise);
 					if (!bPatchWithoutSideEffects) {
 						// visit response to report the messages
-						that.visitResponse(oPatchResult, aResult[1], false,
+						that.visitResponse(oPatchResult, aResult[1],
 							_Helper.getMetaPath(_Helper.buildPath(that.sMetaPath, sEntityPath)),
 							sEntityPath
 						);
@@ -839,7 +801,7 @@ sap.ui.define([
 				}, function (oError) {
 					var sRetryGroupId = sGroupId;
 
-					that.removeByPath(that.mPatchRequests, sFullPath, oPatchPromise);
+					_Helper.removeByPath(that.mPatchRequests, sFullPath, oPatchPromise);
 					if (oError.canceled) {
 						throw oError;
 					}
@@ -938,20 +900,22 @@ sap.ui.define([
 	 *   property "value"
 	 * @param {object} mTypeForMetaPath A map from meta path to the entity type (as delivered by
 	 *   {@link #fetchTypes})
-	 * @param {boolean} [bWrapped] Whether the result is wrapped into an object as property "value"
 	 * @param {string} [sRootMetaPath=this.sMetaPath] The meta path for <code>oRoot</code>
 	 * @param {string} [sRootPath=""] Path to <code>oRoot</code>, relative to the cache; used to
 	 *   compute the target property of messages; for operations with return context the
 	 *   <code>sRootMetaPath</code> cannot be derived automatically via <code>sRootPath</code>
 	 * @param {boolean} [bKeepTransientPath] Whether the transient path shall be used to report
 	 *   messages
+	 * @param {number} [iStart]
+	 *    The index in the collection where "oRoot.value" needs to be inserted or undefined if
+	 *    "oRoot" references a single entity
 	 *
 	 * @private
 	 */
-	Cache.prototype.visitResponse = function (oRoot, mTypeForMetaPath, bWrapped, sRootMetaPath,
-			sRootPath, bKeepTransientPath) {
-		var bHasMessages = false,
-			aKeyPredicates,
+	Cache.prototype.visitResponse = function (oRoot, mTypeForMetaPath, sRootMetaPath, sRootPath,
+			bKeepTransientPath, iStart) {
+		var aCachePaths,
+			bHasMessages = false,
 			mPathToODataMessages = {},
 			sRequestUrl = this.oRequestor.getServiceUrl() + this.sResourcePath,
 			that = this;
@@ -997,17 +961,19 @@ sap.ui.define([
 		 * @param {string} sContextUrl The context URL for message longtexts
 		 */
 		function visitArray(aInstances, sMetaPath, sCollectionPath, sContextUrl) {
-			var mByPredicate = {}, i, vInstance, sPredicate;
+			var mByPredicate = {}, i, iIndex, vInstance, sPredicate;
 
 			for (i = 0; i < aInstances.length; i++) {
 				vInstance = aInstances[i];
+				iIndex = sCollectionPath === "" ? iStart + i : i;
+
 				if (vInstance && typeof vInstance === "object") {
-					visitInstance(vInstance, sMetaPath, sCollectionPath, sContextUrl, true);
+					visitInstance(vInstance, sMetaPath, sCollectionPath, sContextUrl, iIndex);
 					sPredicate = _Helper.getPrivateAnnotation(vInstance, "predicate");
 					if (!sCollectionPath) {
-						// remember the key predicates of the root entries to remove all messages
-						// for entities that have been read
-						aKeyPredicates.push(sPredicate);
+						// remember the key predicates / indices of the root entries to remove all
+						// messages for entities that have been read
+						aCachePaths.push(sPredicate || iIndex.toString());
 					}
 					if (sPredicate) {
 						mByPredicate[sPredicate] = vInstance;
@@ -1025,11 +991,10 @@ sap.ui.define([
 		 * @param {string} sMetaPath The meta path of the instance in mTypeForMetaPath
 		 * @param {string} sInstancePath The path of the instance in the cache
 		 * @param {string} sContextUrl The context URL for message longtexts
-		 * @param {boolean} [bCollection=false]
-		 *    Whether the instance is part of a collection and the predicate must be added to the
-		 *    instance path
+		 * @param {number} [iIndex]
+		 *    The index in the collection if the instance is part of a collection
 		 */
-		function visitInstance(oInstance, sMetaPath, sInstancePath, sContextUrl, bCollection) {
+		function visitInstance(oInstance, sMetaPath, sInstancePath, sContextUrl, iIndex) {
 			var sPredicate,
 				oType = mTypeForMetaPath[sMetaPath],
 				sMessageProperty = oType && oType[sMessagesAnnotation]
@@ -1038,10 +1003,14 @@ sap.ui.define([
 
 			sContextUrl = buildContextUrl(sContextUrl, oInstance["@odata.context"]);
 			sPredicate = that.calculateKeyPredicate(oInstance, mTypeForMetaPath, sMetaPath);
-			if (bCollection) {
-				sInstancePath += sPredicate;
+			if (iIndex !== undefined) {
+				sInstancePath = _Helper.buildPath(sInstancePath, sPredicate || iIndex);
 			} else if (!bKeepTransientPath && sPredicate && sInstancePath.endsWith("/-1")) {
 				sInstancePath = sInstancePath.slice(0, -3) + sPredicate;
+			}
+			if (sRootPath && !aCachePaths) {
+				// remove messages only for the part of the cache that is updated
+				aCachePaths = [sInstancePath];
 			}
 			if (sMessageProperty) {
 				aMessages = _Helper.drillDown(oInstance, sMessageProperty.split("/"));
@@ -1082,16 +1051,19 @@ sap.ui.define([
 			});
 		}
 
-		if (bWrapped) {
-			aKeyPredicates = [];
+		if (iStart !== undefined) {
+			aCachePaths = [];
 			visitArray(oRoot.value, sRootMetaPath || this.sMetaPath, "",
 				buildContextUrl(sRequestUrl, oRoot["@odata.context"]));
 		} else if (oRoot && typeof oRoot === "object") {
 			visitInstance(oRoot, sRootMetaPath || this.sMetaPath, sRootPath || "", sRequestUrl);
 		}
 		if (bHasMessages) {
-			this.oRequestor.reportBoundMessages(this.sResourcePath, mPathToODataMessages,
-				aKeyPredicates);
+			this.oRequestor.reportBoundMessages(
+				this.fnGetOriginalResourcePath
+					? this.fnGetOriginalResourcePath(oRoot)
+					: this.sResourcePath,
+				mPathToODataMessages, aCachePaths);
 		}
 	};
 
@@ -1305,10 +1277,10 @@ sap.ui.define([
 		this.sContext = oResult["@odata.context"];
 		sCount = oResult["@odata.count"];
 		if (sCount) {
-			this.iLimit = parseInt(sCount, 10);
+			this.iLimit = parseInt(sCount);
 			setCount(this.mChangeListeners, "", this.aElements, this.iLimit);
 		}
-		this.visitResponse(oResult, mTypeForMetaPath, true);
+		this.visitResponse(oResult, mTypeForMetaPath, undefined, undefined, undefined, iStart);
 		for (i = 0; i < iResultLength; i++) {
 			oElement = oResult.value[i];
 			this.aElements[iStart + i] = oElement;
@@ -1509,7 +1481,7 @@ sap.ui.define([
 			var oElement = aResult[0];
 			// _Helper.updateExisting cannot be used because navigation properties cannot be handled
 			that.aElements[iIndex] = that.aElements.$byPredicate[sPredicate] = oElement;
-			that.visitResponse(oElement, aResult[1], false, that.sMetapath, sPredicate);
+			that.visitResponse(oElement, aResult[1], that.sMetapath, sPredicate);
 			return oElement;
 		});
 
@@ -1588,8 +1560,7 @@ sap.ui.define([
 						// _Helper.updateExisting cannot be used because navigation properties
 						// cannot be handled
 						that.aElements[iIndex] = that.aElements.$byPredicate[sPredicate] = oResult;
-						that.visitResponse(oResult, mTypeForMetaPath, false, that.sMetapath,
-							sPredicate);
+						that.visitResponse(oResult, mTypeForMetaPath, that.sMetapath, sPredicate);
 					}
 				});
 		});
@@ -1646,7 +1617,7 @@ sap.ui.define([
 	 * Returns a promise to be resolved with an OData object for the requested data.
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
-	 *   A lock for the ID of the group to associate the request with;
+	 *   A lock for the ID of the group that is associated with the request;
 	 *   see {sap.ui.model.odata.v4.lib._Requestor#request} for details
 	 * @param {string} [sPath]
 	 *   ignored for property caches, should be empty
@@ -1709,6 +1680,9 @@ sap.ui.define([
 	 *   A map of key-value pairs representing the query string
 	 * @param {boolean} [bSortExpandSelect=false]
 	 *   Whether the paths in $expand and $select shall be sorted in the cache's query string
+	 * @param {string} [fnGetOriginalResourcePath]
+	 *   A function that returns the cache's original resource path to be used to build the target
+	 *   path for bound messages; if unset, sResourcePath is used
 	 * @param {boolean} [bPost]
 	 *   Whether the cache uses POST requests. If <code>true</code>, only {@link #post} may lead to
 	 *   a request, {@link #read} may only read from the cache; otherwise {@link #post} throws an
@@ -1721,8 +1695,8 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	function SingleCache(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect, bPost,
-			sMetaPath, bFetchOperationReturnType) {
+	function SingleCache(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect,
+			fnGetOriginalResourcePath, bPost, sMetaPath, bFetchOperationReturnType) {
 		Cache.apply(this, arguments);
 
 		this.bFetchOperationReturnType = bFetchOperationReturnType;
@@ -1740,7 +1714,7 @@ sap.ui.define([
 	 * the key predicates for all entities in the result before the promise is resolved.
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
-	 *   A lock for the ID of the group to associate the request with;
+	 *   A lock for the ID of the group that is associated with the request;
 	 *   see {sap.ui.model.odata.v4.lib._Requestor#request} for details
 	 * @param {string} [sPath]
 	 *   Relative path to drill-down into
@@ -1777,7 +1751,7 @@ sap.ui.define([
 					fnDataRequested, undefined, this.sMetaPath),
 				this.fetchTypes()
 			]).then(function (aResult) {
-				that.visitResponse(aResult[0], aResult[1], false,
+				that.visitResponse(aResult[0], aResult[1],
 					that.bFetchOperationReturnType ? that.sMetaPath + "/$Type" : undefined);
 				return aResult[0];
 			});
@@ -1797,7 +1771,7 @@ sap.ui.define([
 	 * Calculates the key predicates for all entities in the result before the promise is resolved.
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
-	 *   A lock for the ID of the group to associate the request with;
+	 *   A lock for the ID of the group that is associated with the request;
 	 *   see {sap.ui.model.odata.v4.lib._Requestor#request} for details
 	 * @param {object} [oData]
 	 *   A copy of the data to be sent with the POST request; may be used to tunnel a different
@@ -1814,7 +1788,6 @@ sap.ui.define([
 	SingleCache.prototype.post = function (oGroupLock, oData, oEntity) {
 		var sGroupId = oGroupLock.getGroupId(),
 			sHttpMethod = "POST",
-			aPromises,
 			that = this;
 
 		if (!this.bPost) {
@@ -1837,18 +1810,15 @@ sap.ui.define([
 				oData = undefined;
 			}
 		}
-		aPromises = [
+		this.oPromise = SyncPromise.all([
 			this.oRequestor.request(sHttpMethod, this.sResourcePath + this.sQueryString, oGroupLock,
-				{"If-Match" : oEntity}, oData)
-		];
-		if (this.bFetchOperationReturnType) {
-			aPromises.push(this.fetchTypes());
-		}
-		this.oPromise = SyncPromise.all(aPromises).then(function (aResult) {
+				{"If-Match" : oEntity}, oData),
+			this.fetchTypes()
+		]).then(function (aResult) {
 			that.bPosting = false;
-			if (that.bFetchOperationReturnType) {
-				that.visitResponse(aResult[0], aResult[1], false, that.sMetaPath + "/$Type");
-			}
+			that.visitResponse(aResult[0], aResult[1],
+				that.bFetchOperationReturnType ? that.sMetaPath + "/$Type" : undefined);
+
 			return aResult[0];
 		}, function (oError) {
 			that.bPosting = false;
@@ -1857,6 +1827,49 @@ sap.ui.define([
 		this.bPosting = true;
 
 		return this.oPromise;
+	};
+
+	/**
+	 * Returns a promise to be resolved with the updated data when the side effects have been
+	 * loaded from the given resource path.
+	 *
+	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
+	 *   A lock for the ID of the group that is associated with the request;
+	 *   see {sap.ui.model.odata.v4.lib._Requestor#request} for details
+	 * @param {string[]} aPaths The "14.5.11 Expression edm:NavigationPropertyPath" or
+	 *   "14.5.13 Expression edm:PropertyPath" strings describing which properties need to be loaded
+	 *   because they may have changed due to side effects of a previous update
+	 * @param {string} [sResourcePath=this.sResourcePath]
+	 *   A resource path relative to the service URL; it must not contain a query string
+	 * @returns {Promise}
+	 *   A promise resolving with the updated data
+	 * @throws {Error} If the side effects require a $expand
+	 *
+	 * @public
+	 */
+	SingleCache.prototype.requestSideEffects = function (oGroupLock, aPaths, sResourcePath) {
+		var mQueryOptions = _Helper.intersectQueryOptions(this.mQueryOptions, aPaths,
+				this.oRequestor.getModelInterface().fnFetchMetadata,
+				this.sMetaPath + "/$Type"), // add $Type because of return value context
+			that = this;
+
+		if (mQueryOptions === null) {
+			return this.fetchValue(_GroupLock.$cached, "");
+		}
+
+		return Promise.all([
+			this.oRequestor.request("GET", (sResourcePath || this.sResourcePath)
+					+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, true),
+				oGroupLock),
+			this.fetchTypes()
+		]).then(function (aResult) {
+			var oNewValue = aResult[0];
+
+			// visit response to report the messages
+			that.visitResponse(oNewValue, aResult[1], that.sMetaPath);
+
+			return that.patch("", oNewValue);
+		});
 	};
 
 	//*********************************************************************************************
@@ -1931,6 +1944,9 @@ sap.ui.define([
 	 *   {foo : ["bar", "baz"]} results in the query string "foo=bar&foo=baz"
 	 * @param {boolean} [bSortExpandSelect=false]
 	 *   Whether the paths in $expand and $select shall be sorted in the cache's query string
+	 * @param {string} [fnGetOriginalResourcePath]
+	 *   A function that returns the cache's original resource path to be used to build the target
+	 *   path for bound messages; if unset, sResourcePath is used
 	 * @param {boolean} [bPost]
 	 *   Whether the cache uses POST requests. If <code>true</code>, only {@link #post} may
 	 *   lead to a request, {@link #read} may only read from the cache; otherwise {@link #post}
@@ -1946,9 +1962,9 @@ sap.ui.define([
 	 * @public
 	 */
 	Cache.createSingle = function (oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect,
-			bPost, sMetaPath, bFetchOperationReturnType) {
-		return new SingleCache(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect, bPost,
-			sMetaPath, bFetchOperationReturnType);
+			fnGetOriginalResourcePath, bPost, sMetaPath, bFetchOperationReturnType) {
+		return new SingleCache(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect,
+			fnGetOriginalResourcePath, bPost, sMetaPath, bFetchOperationReturnType);
 	};
 
 	/**

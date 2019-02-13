@@ -6,14 +6,13 @@
 
 // Provides control sap.ui.commons.ValueHelpField.
 sap.ui.define([
-    'jquery.sap.global',
     './TextField',
     './library',
     'sap/ui/core/IconPool',
     'sap/ui/core/theming/Parameters',
-    "./ValueHelpFieldRenderer"
+    './ValueHelpFieldRenderer'
 ],
-	function(jQuery, TextField, library, IconPool, Parameters, ValueHelpFieldRenderer) {
+	function(TextField, library, IconPool, Parameters, ValueHelpFieldRenderer) {
 	"use strict";
 
 
@@ -29,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.commons.TextField
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -86,15 +85,13 @@ sap.ui.define([
 			} else {
 				this.sIconHoverUrl = "sap-icon://value-help";
 			}
-			var oIcon = jQuery.sap.byId(oEvent.target.id);
-			oIcon.attr( 'src', this.sIconHoverUrl );
+			oEvent.target.setAttribute( 'src', this.sIconHoverUrl );
 		}
 	};
 
 	ValueHelpField.prototype.onmouseout = function (oEvent) {
 		if (oEvent.target.id == this.getId() + '-icon' && this.getEnabled() && this.getEditable() && !this.bIsIconURI) {
-			var oIcon = jQuery.sap.byId(oEvent.target.id);
-			oIcon.attr( 'src', this.sIconRegularUrl );
+			oEvent.target.setAttribute( 'src', this.sIconRegularUrl );
 		}
 	};
 
@@ -188,4 +185,4 @@ sap.ui.define([
 
 	return ValueHelpField;
 
-}, /* bExport= */ true);
+});

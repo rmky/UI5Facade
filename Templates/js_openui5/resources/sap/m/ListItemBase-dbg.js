@@ -65,7 +65,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -641,11 +641,10 @@ function(
 	 * @private
 	 */
 	ListItemBase.prototype.isActionable = function() {
-		return this.getListProperty("includeItemInSelection") ||
-				this.getMode() == ListMode.SingleSelectMaster || (
-					this.getType() != ListItemType.Inactive &&
-					this.getType() != ListItemType.Detail
-				);
+		return this.isIncludedIntoSelection() || (
+			this.getType() != ListItemType.Inactive &&
+			this.getType() != ListItemType.Detail
+		);
 	};
 
 	ListItemBase.prototype.exit = function() {
@@ -758,13 +757,18 @@ function(
 	 * @return {Boolean}
 	 */
 	ListItemBase.prototype.isIncludedIntoSelection = function() {
+		if (!this.isSelectable()) {
+			return false;
+		}
+
 		var sMode = this.getMode();
-		return (sMode == ListMode.SingleSelectMaster || (
-				 this.getListProperty("includeItemInSelection") && (
-					sMode == ListMode.SingleSelectLeft ||
-					sMode == ListMode.SingleSelect ||
-					sMode == ListMode.MultiSelect)
-				));
+		return sMode == ListMode.SingleSelectMaster || (
+			this.getListProperty("includeItemInSelection") && (
+				sMode == ListMode.SingleSelectLeft ||
+				sMode == ListMode.SingleSelect ||
+				sMode == ListMode.MultiSelect
+			)
+		);
 	};
 
 	// informs the list when item's highlight is changed
@@ -817,6 +821,20 @@ function(
 		this.informList("ActiveChange", bActive);
 	};
 
+	/**
+	 * Detect text selection.
+	 *
+	 * @param {object} oDomRef DOM element of the control
+	 * @returns {boolean} true if text selection is done within the control else false
+	 * @private
+	 */
+	ListItemBase.detectTextSelection = function(oDomRef) {
+		var oSelection = window.getSelection(),
+			sTextSelection = oSelection.toString().replace("\n", "");
+
+		return sTextSelection && jQuery.contains(oDomRef, oSelection.focusNode);
+	};
+
 	ListItemBase.prototype.ontap = function(oEvent) {
 
 		// do not handle already handled events
@@ -824,9 +842,8 @@ function(
 			return oEvent.setMarked();
 		}
 
-		// do not handle in case of text selection
-		var sTextSelection = window.getSelection().toString().replace("\n", "");
-		if (sTextSelection) {
+		// do not handle in case of text selection within the list item
+		if (ListItemBase.detectTextSelection(this.getDomRef())) {
 			return;
 		}
 

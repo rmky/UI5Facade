@@ -32,7 +32,7 @@ sap.ui.define([
 	 * @class The ContextMenu registers event handler to open the context menu. Menu entries can dynamically be added
 	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @constructor
 	 * @private
 	 * @since 1.53
@@ -80,7 +80,6 @@ sap.ui.define([
 		this._aMenuItems = [];
 		this._aGroupedItems = [];
 		this._aSubMenus = [];
-		this._aPluginsWithBusyFunction = [];
 	};
 
 	ContextMenu.prototype.exit = function () {
@@ -157,18 +156,9 @@ sap.ui.define([
 	 * @param {boolean} bIsSubMenu whether the new ContextMenu is a SubMenu opened by a button inside another ContextMenu
 	 */
 	ContextMenu.prototype.open = function (mPosition, oOverlay, bContextMenu, bIsSubMenu) {
-
 		this._bContextMenu = !!bContextMenu;
 
-		this._aPluginsWithBusyFunction = [];
 		this.setContextElement(oOverlay.getElement());
-
-		var aPlugins = this.getDesignTime().getPlugins();
-		aPlugins.forEach(function (oPlugin) {
-			if (oPlugin.isBusy) {
-				this._aPluginsWithBusyFunction.push(oPlugin);
-			}
-		}.bind(this));
 
 		this.getDesignTime().getSelectionManager().attachChange(this._onSelectionChanged, this);
 
@@ -187,12 +177,10 @@ sap.ui.define([
 		});
 
 		if (!bIsSubMenu) {
-
 			this._aGroupedItems = [];
-
 			this._aSubMenus = [];
 
-			aPlugins.forEach(function (oPlugin) {
+			this.getDesignTime().getPlugins().forEach(function (oPlugin) {
 				var aPluginMenuItems = oPlugin.getMenuItems(aSelectedOverlays) || [];
 				aPluginMenuItems.forEach(function (mMenuItem) {
 					if (mMenuItem.group != undefined && !bContextMenu) {
@@ -213,13 +201,9 @@ sap.ui.define([
 		});
 
 		if (aMenuItems.length > 0) {
-
 			this.oContextMenuControl._bUseExpPop = !!bContextMenu;
-
 			aMenuItems = this._sortMenuItems(aMenuItems);
-
 			this.oContextMenuControl.setButtons(aMenuItems, this._onItemSelected.bind(this), aSelectedOverlays);
-
 			this.oContextMenuControl.setStyleClass(this.getStyleClass());
 			if (bIsSubMenu) {
 				this.oContextMenuControl.setOpenNew(true);
@@ -337,7 +321,6 @@ sap.ui.define([
 	 * @private
 	 */
 	ContextMenu.prototype._startOpening = function (oEvent, bLockOpening) {
-
 		clearTimeout(this.hoverTimeout);
 		this._bOpenedByHover = false;
 
@@ -351,7 +334,6 @@ sap.ui.define([
 		var sTargetClasses = oEvent.target.className;
 
 		if (oOverlay && oOverlay.isSelectable() && sTargetClasses.indexOf("sapUiDtOverlay") > -1 && (!this.isMenuOpeningLocked())) {
-
 			oEvent.stopPropagation();
 
 			if (this._shouldContextMenuOpen(oEvent)) {
@@ -587,15 +569,12 @@ sap.ui.define([
 	 */
 
 	ContextMenu.prototype._checkForPluginLock = function () {
-
 		//As long as Selection doesn't work correctly on ios we need to ensure that the ContextMenu opens even if a plugin mistakenly locks it
 		if (Device.os.ios) {
 			return false;
 		}
 
-		if (this._aPluginsWithBusyFunction.some(function (oPlugin) {
-				return (typeof oPlugin.isBusy === "function" && oPlugin.isBusy());
-			})) {
+		if (this.getDesignTime().getBusyPlugins().length) {
 			return true;
 		}
 
@@ -608,7 +587,6 @@ sap.ui.define([
 	 * @param {object} mMenuItem The menu item to add to a group
 	 */
 	ContextMenu.prototype._addMenuItemToGroup = function (mMenuItem) {
-
 		var bGroupExists = this._aGroupedItems.some(function (_oGroupedItem) {
 
 			if (_oGroupedItem.sGroupName === mMenuItem.group) {
@@ -632,7 +610,6 @@ sap.ui.define([
 	 * @param {sap.ui.dt.Overlay} oOverlay The Overlay on which the ContextMenu was opened
 	 */
 	ContextMenu.prototype._addSubMenu = function (mMenuItem, mPosition, oOverlay) {
-
 		mMenuItem.submenu.forEach(function (oSubMenuItem) {
 			oSubMenuItem.handler = mMenuItem.handler;
 		});
@@ -675,14 +652,11 @@ sap.ui.define([
 	 */
 	ContextMenu.prototype._addItemGroupsToMenu = function (mPosition, oOverlay) {
 		this._aGroupedItems.forEach(function (oGroupedItem, iIndex) {
-
 			//If there is only one button that belongs to a group we don't need that group
 			if (oGroupedItem.aGroupedItems.length === 1) {
 				this.addMenuItem(oGroupedItem.aGroupedItems[0], true, false);
 			} else {
-
 				var fHandlerForGroupedButton = function (iIndex, mPosition, oOverlay) {
-
 					this._aGroupedItems[iIndex].aGroupedItems.forEach(function (mMenuItem) {
 						this.addMenuItem(mMenuItem, true, true);
 					}.bind(this));

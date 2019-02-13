@@ -7,8 +7,8 @@
 /**
  * Initialization Code and shared classes of library sap.tnt.
  */
-sap.ui.define(["sap/ui/base/DataType", "sap/ui/core/library", "sap/m/library"],
-	function(DataType) {
+sap.ui.define(["sap/ui/core/library", "sap/m/library"],
+	function() {
 	"use strict";
 
 	/**
@@ -17,18 +17,17 @@ sap.ui.define(["sap/ui/base/DataType", "sap/ui/core/library", "sap/m/library"],
 	 * @namespace
 	 * @name sap.tnt
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.tnt",
-		version: "1.60.1",
+		version: "1.61.2",
 		dependencies : ["sap.ui.core", "sap.m"],
 		types: [
-			"sap.tnt.RenderMode",
-			"sap.tnt.BoxContainerLayoutConfiguration"
+			"sap.tnt.RenderMode"
 		],
 		interfaces: [],
 		controls: [
@@ -37,9 +36,7 @@ sap.ui.define(["sap/ui/base/DataType", "sap/ui/core/library", "sap/m/library"],
 			"sap.tnt.ToolHeader",
 			"sap.tnt.SideNavigation",
 			"sap.tnt.ToolPage",
-			"sap.tnt.InfoLabel",
-			"sap.tnt.BoxContainer",
-			"sap.tnt.Box"
+			"sap.tnt.InfoLabel"
 		],
 		elements: [
 			"sap.tnt.NavigationListItem"
@@ -66,14 +63,6 @@ sap.ui.define(["sap/ui/base/DataType", "sap/ui/core/library", "sap/m/library"],
 		 */
 		Loose: "Loose"
 	};
-
-	sap.tnt.BoxesPerRowConfig = DataType.createType("sap.tnt.BoxesPerRowConfig", {
-			isValid : function(vValue) {
-				return /^(([Xx][Ll](?:[1-9]|1[0-2]))? ?([Ll](?:[1-9]|1[0-2]))? ?([Mm](?:[1-9]|1[0-2]))? ?([Ss](?:[1-9]|1[0-2]))?)$/.test(vValue);
-			}
-		},
-		DataType.getType("string")
-	);
 
 	return sap.tnt;
 

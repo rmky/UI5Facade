@@ -3,4 +3,4 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['jquery.sap.global','sap/ui/core/Renderer','sap/ui/layout/form/SimpleFormRenderer'],function(q,R,S){"use strict";var a=R.extend(S);return a;},true);
+sap.ui.define(['sap/ui/core/Renderer','sap/ui/layout/form/SimpleFormRenderer'],function(R,L){"use strict";var S=R.extend(L);return S;},true);

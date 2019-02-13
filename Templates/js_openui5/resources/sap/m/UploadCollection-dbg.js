@@ -83,7 +83,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -96,11 +96,15 @@ sap.ui.define([
 		constructor: function(sId, mSettings) {
 			// Delete 'instantUpload' before calling the super constructor to avoid unwanted error logs
 			var bInstantUpload;
-			if (mSettings && mSettings.instantUpload === false) {
-				bInstantUpload = mSettings.instantUpload;
+			if (mSettings && mSettings.instantUpload !== undefined ) {
+			    if (mSettings.instantUpload === false){
+                    bInstantUpload = mSettings.instantUpload;
+                }
 				delete mSettings.instantUpload;
-			} else if (sId && sId.instantUpload === false) {
-				bInstantUpload = sId.instantUpload;
+			} else if (sId && sId.instantUpload !== undefined ) {
+                if (sId.instantUpload === false){
+                    bInstantUpload = sId.instantUpload;
+                }
 				delete sId.instantUpload;
 			}
 			if (mSettings && mSettings.mode === Library.ListMode.MultiSelect && bInstantUpload === false) {

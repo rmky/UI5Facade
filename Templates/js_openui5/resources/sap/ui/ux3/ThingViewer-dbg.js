@@ -6,13 +6,20 @@
 
 // Provides control sap.ui.ux3.ThingViewer.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
     'sap/ui/core/Control',
-    "./ThingViewerRenderer",
-    './library'
+    './ThingViewerRenderer',
+    './library',
+    './NavigationBar',
+    'sap/ui/core/ResizeHandler'
 ],
-	function(jQuery, Control, ThingViewerRenderer) {
+	function(jQuery, Control, ThingViewerRenderer, library, NavigationBar, ResizeHandler) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.ux3.ThingViewerHeaderType
+	var ThingViewerHeaderType = library.ThingViewerHeaderType;
 
 
 
@@ -26,7 +33,7 @@ sap.ui.define([
 	 * ThingViewer: Same as ThingInspector but decoupled from the Overlay and the ActionBar.
 	 * The control can be added to a Parent container that has a defined width. The ThingViewer fill the whole container. If the parent container has no width defined the control will not work properly.
 	 * @extends sap.ui.core.Control
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -74,7 +81,7 @@ sap.ui.define([
 			 * Defines which header type should be used.
 			 * @since 1.16.3
 			 */
-			headerType : {type : "sap.ui.ux3.ThingViewerHeaderType", group : "Misc", defaultValue : sap.ui.ux3.ThingViewerHeaderType.Standard}
+			headerType : {type : "sap.ui.ux3.ThingViewerHeaderType", group : "Misc", defaultValue : ThingViewerHeaderType.Standard}
 		},
 		aggregations : {
 
@@ -137,7 +144,7 @@ sap.ui.define([
 		}
 	}});
 
-	(function() {
+
 		/**
 		 * Initialization hook for the ThingViewer. It creates the instance of the
 		 * Popup helper service and does some basic configuration for it.
@@ -146,7 +153,7 @@ sap.ui.define([
 		 */
 		ThingViewer.prototype.init = function() {
 			var that = this;
-			this._oNavBar = new sap.ui.ux3.NavigationBar();
+			this._oNavBar = new NavigationBar();
 			this.setAggregation("navBar",this._oNavBar);
 			// attach NavBar selection
 			this._oNavBar.attachSelect(function(oControlEvent) {
@@ -172,7 +179,7 @@ sap.ui.define([
 			if (this.$().find(".sapUiUx3TVFacetContent").length <= 0) {
 				return;
 			}
-			this._resizeListenerId = sap.ui.core.ResizeHandler.register(this.$().find(".sapUiUx3TVFacetContent")[0], jQuery.proxy(this._onresize, this));
+			this._resizeListenerId = ResizeHandler.register(this.$().find(".sapUiUx3TVFacetContent")[0], jQuery.proxy(this._onresize, this));
 
 			// initial resize handling
 			this._setTriggerValue();
@@ -182,13 +189,13 @@ sap.ui.define([
 
 		ThingViewer.prototype.onBeforeRendering = function() {
 			if (this._resizeListenerId) {
-				sap.ui.core.ResizeHandler.deregister(this._resizeListenerId);
+				ResizeHandler.deregister(this._resizeListenerId);
 				this._resizeListenerId = null;
 			}
 		};
 
 		ThingViewer.prototype._setHeaderPosition = function() {
-			if (this.getHeaderType() === sap.ui.ux3.ThingViewerHeaderType.Standard) {
+			if (this.getHeaderType() === ThingViewerHeaderType.Standard) {
 				var $typeContainer = this.$().find(".sapUiUx3TVHeaderContainerIdentifier"),
 				    $scrollContainer = this.$().find(".sapUiUx3TVHeaderGroupScrollContainer");
 				$scrollContainer.css("top", $typeContainer.outerHeight());
@@ -248,7 +255,7 @@ sap.ui.define([
 		ThingViewer.prototype.exit = function() {
 			this._oNavBar.destroy();
 			if (this._resizeListenerId) {
-				sap.ui.core.ResizeHandler.deregister(this._resizeListenerId);
+				ResizeHandler.deregister(this._resizeListenerId);
 				this._resizeListenerId = null;
 			}
 		};
@@ -306,7 +313,7 @@ sap.ui.define([
 			var $content = this.$("header");
 			if ($content.length > 0) {
 				var rm = sap.ui.getCore().createRenderManager();
-				sap.ui.ux3.ThingViewerRenderer.renderHeader(rm, this);
+				ThingViewerRenderer.renderHeader(rm, this);
 				rm.flush($content[0]);
 				rm.destroy();
 			}
@@ -321,7 +328,7 @@ sap.ui.define([
 			var $content = this.$("headerContent");
 			if ($content.length > 0) {
 				var rm = sap.ui.getCore().createRenderManager();
-				sap.ui.ux3.ThingViewerRenderer.renderHeaderContent(rm, this);
+				ThingViewerRenderer.renderHeaderContent(rm, this);
 				rm.flush($content[0]);
 				rm.destroy();
 			}
@@ -336,7 +343,7 @@ sap.ui.define([
 			var $content = this.$("toolbar");
 			if ($content.length > 0) {
 				var rm = sap.ui.getCore().createRenderManager();
-				sap.ui.ux3.ThingViewerRenderer.renderToolbar(rm, this);
+				ThingViewerRenderer.renderToolbar(rm, this);
 				rm.flush($content[0]);
 				rm.destroy();
 			}
@@ -351,7 +358,7 @@ sap.ui.define([
 			var $content = this.$("facetContent");
 			if ($content.length > 0) {
 				var rm = sap.ui.getCore().createRenderManager();
-				sap.ui.ux3.ThingViewerRenderer.renderFacetContent(rm, this);
+				ThingViewerRenderer.renderFacetContent(rm, this);
 				rm.flush($content[0]);
 				rm.destroy();
 				this._resize = false;
@@ -375,7 +382,7 @@ sap.ui.define([
 				facetGroups = this.$().find(".sapUiUx3TVFacetThingGroup");
 				minWidth = jQuery(facetGroups[0]).css("min-width");
 				if (minWidth) {
-					this._triggerValue = parseInt(minWidth, 10) * 2;
+					this._triggerValue = parseInt(minWidth) * 2;
 				}
 			}
 		};
@@ -529,8 +536,7 @@ sap.ui.define([
 				$facets.removeClass("sapUiUx3TVNoActionBar");
 			}
 		};
-	}());
 
 	return ThingViewer;
 
-}, /* bExport= */ true);
+});

@@ -54,7 +54,7 @@ function(
 	 * @extends sap.m.NotificationListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -374,11 +374,15 @@ function(
 		}
 
 		var notificationGroup = targetControl.getParent();
-		var groupIndex = notificationGroup.indexOfItem(targetControl);
+		var visibleItems = notificationGroup.getItems().filter(function (item) {
+			return item.getVisible();
+		});
+
+		var groupIndex = visibleItems.indexOf(targetControl);
 		var targetDomRef = targetControl.getDomRef();
 
 		targetDomRef.setAttribute('aria-posinset', groupIndex + 1);
-		targetDomRef.setAttribute('aria-setsize', notificationGroup.getItems().length);
+		targetDomRef.setAttribute('aria-setsize', visibleItems.length);
 	};
 
 	/**

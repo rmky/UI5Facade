@@ -21,6 +21,7 @@ sap.ui.define([
 	"sap/m/library",
 	"./ObjectPageSubSectionRenderer",
 	"sap/base/Log",
+	"sap/ui/base/DataType",
 	"sap/ui/events/KeyCodes",
 	// jQuery Plugin "firstFocusableDomRef"
 	"sap/ui/dom/jquery/Focusable"
@@ -40,6 +41,7 @@ sap.ui.define([
 	mobileLibrary,
 	ObjectPageSubSectionRenderer,
 	Log,
+	DataType,
 	KeyCodes
 ) {
 	"use strict";
@@ -147,7 +149,8 @@ sap.ui.define([
 		return this._getTitleDomId();
 	});
 
-	ObjectPageSubSection.MEDIA_RANGE = Device.media.RANGESETS.SAP_STANDARD;
+
+	ObjectPageSubSection.FIT_CONTAINER_CLASS = "sapUxAPObjectPageSubSectionFitContainer";
 
 	/**
 	 * Retrieves the resource bundle for the <code>sap.uxap</code> library.
@@ -179,7 +182,6 @@ sap.ui.define([
 				"actions"
 			]
 		});
-		this._attachMediaContainerWidthChange(this._synchronizeBlockLayouts, this);
 
 		//switch logic for the default mode
 		this._switchSubSectionMode(this.getMode());
@@ -187,6 +189,33 @@ sap.ui.define([
 		// Title Propagation Support
 		this._initTitlePropagationSupport();
 		this._sBorrowedTitleDomId = false;
+		this._height = ""; // css height property
+	};
+
+	ObjectPageSubSection.prototype._getHeight = function () {
+		return this._height;
+	};
+
+	ObjectPageSubSection.prototype._setHeight = function (oValue) {
+
+		var oType, oDom;
+
+		if (this._height === oValue) {
+			return;
+		}
+
+		oType = DataType.getType("sap.ui.core.CSSSize");
+
+		if (!oType.isValid(oValue)) {
+			throw new Error("\"" + oValue + "\" is of type " + typeof oValue + ", expected " +
+				oType.getName() + " for property \"_height\" of " + this);
+		}
+		this._height = oValue;
+
+		oDom = this.getDomRef();
+		if (oDom) {
+			oDom.style.height = oValue;
+		}
 	};
 
 	/**
@@ -302,6 +331,15 @@ sap.ui.define([
 		});
 	};
 
+	["addStyleClass", "toggleStyleClass", "removeStyleClass"].forEach(function(sMethodName) {
+		ObjectPageSubSection.prototype[sMethodName] = function(sStyleClass, bSuppressRerendering) {
+			if (sStyleClass === ObjectPageSubSection.FIT_CONTAINER_CLASS) {
+				this._notifyObjectPageLayout();
+			}
+			return ObjectPageSectionBase.prototype[sMethodName].apply(this, arguments);
+		};
+	});
+
 	ObjectPageSubSection.prototype._unStashControls = function () {
 		StashedControlSupport.getStashedControls(this.getId()).forEach(function (oControl) {
 			oControl.setStashed(false);
@@ -379,8 +417,6 @@ sap.ui.define([
 			this._oSeeMoreButton.destroy();
 			this._oSeeMoreButton = null;
 		}
-
-		this._detachMediaContainerWidthChange(this._synchronizeBlockLayouts, this);
 
 		this._cleanProxiedAggregations();
 
@@ -640,7 +676,7 @@ sap.ui.define([
 		var iCalc, iForewordBlocksToCheck = iMax, indexOffset;
 
 		if (!this._hasAutoLayout(oBlock)) {
-			return Math.min(iMax, parseInt(oBlock.getColumnLayout(), 10));
+			return Math.min(iMax, parseInt(oBlock.getColumnLayout()));
 		}
 
 		for (indexOffset = 1; indexOffset <= iForewordBlocksToCheck; indexOffset++) {
@@ -661,7 +697,7 @@ sap.ui.define([
 		if (!oBlock) {
 			iLayoutCols = 0;
 		} else if (oBlock instanceof BlockBase && oBlock.getColumnLayout() != "auto") {
-			iLayoutCols = parseInt(oBlock.getColumnLayout(), 10);
+			iLayoutCols = parseInt(oBlock.getColumnLayout());
 		}
 
 		return iLayoutCols;
@@ -670,52 +706,6 @@ sap.ui.define([
 	ObjectPageSubSection.prototype._hasAutoLayout = function (oBlock) {
 		return !(oBlock instanceof BlockBase) || oBlock.getColumnLayout() == "auto";
 	};
-
-
-	/*************************************************************************************
-	 * TitleOnLeft layout
-	 ************************************************************************************/
-
-	ObjectPageSubSection.prototype._onDesktopMediaRange = function (oCurrentMedia) {
-		return this._onMediaRange(oCurrentMedia, ["LargeDesktop", "Desktop"]);
-	};
-
-	ObjectPageSubSection.prototype._onTabletMediaRange = function (oCurrentMedia) {
-		return this._onMediaRange(oCurrentMedia, ["Tablet"]);
-	};
-
-	ObjectPageSubSection.prototype._onPhoneMediaRange = function (oCurrentMedia) {
-		return this._onMediaRange(oCurrentMedia, ["Phone"]);
-	};
-
-	ObjectPageSubSection.prototype._onMediaRange = function (oCurrentMedia, aCompareWithMedia) {
-		var oMedia = oCurrentMedia || this._getCurrentMediaContainerRange();
-		return aCompareWithMedia.indexOf(oMedia.name) > -1;
-	};
-
-	ObjectPageSubSection.prototype._synchronizeBlockLayouts = function (oCurrentMedia) {
-		if (this._getUseTitleOnTheLeft()) {
-			this.$("header").toggleClass("titleOnLeftLayout", this._onDesktopMediaRange(oCurrentMedia));
-		}
-		this._toggleBlockLayoutResponsiveStyles(oCurrentMedia);
-	};
-
-	ObjectPageSubSection.prototype._toggleBlockLayoutResponsiveStyles = function (oCurrentMedia) {
-		this.$().find(".sapUxAPBlockContainer").toggleClass("sapUxAPBlockContainerDesktop", this._onDesktopMediaRange(oCurrentMedia));
-		this.$().find(".sapUxAPBlockContainer").toggleClass("sapUxAPBlockContainerTablet", this._onTabletMediaRange(oCurrentMedia));
-		this.$().find(".sapUxAPBlockContainer").toggleClass("sapUxAPBlockContainerPhone", this._onPhoneMediaRange(oCurrentMedia));
-	};
-
-	ObjectPageSubSection.prototype._getMediaString = function (oCurrentMedia) {
-		if (this._onPhoneMediaRange(oCurrentMedia)) {
-			return "Phone";
-		}
-		if (this._onTabletMediaRange(oCurrentMedia)) {
-			return "Tablet";
-		}
-		return "Desktop";
-	};
-
 
 	/*************************************************************************************
 	 *  blocks & moreBlocks aggregation proxy

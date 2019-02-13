@@ -7,13 +7,23 @@
 
 // Provides control sap.ui.commons.CalloutBase.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
     './library',
     'sap/ui/core/TooltipBase',
-    "./CalloutBaseRenderer"
+    './CalloutBaseRenderer',
+    'sap/ui/core/Popup',
+    'sap/ui/events/ControlEvents',
+    'sap/ui/events/KeyCodes',
+    'sap/ui/dom/jquery/control', // jQuery.fn.control
+    'sap/ui/dom/jquery/Focusable' // jQuery.fn.firstFocusableDomRef, jQuery.fn.lastFocusableDomRef,
 ],
-	function(jQuery, library, TooltipBase, CalloutBaseRenderer) {
+	function(jQuery, library, TooltipBase, CalloutBaseRenderer, Popup, ControlEvents, KeyCodes) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.core.Popup.Dock
+	var Dock = Popup.Dock;
 
 
 
@@ -28,7 +38,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.TooltipBase
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -88,14 +98,14 @@ sap.ui.define([
 	 * @private
 	 */
 	CalloutBase.prototype.init = function() {
-		this.oPopup = new sap.ui.core.Popup();
+		this.oPopup = new Popup();
 		this.oPopup.setShadow(true);
 
 		// resource bundle
 		this.oRb = sap.ui.getCore().getLibraryResourceBundle("sap.ui.commons");
 
 		// override the default position and offset of TooltipBase:
-		this.setPosition(sap.ui.core.Popup.Dock.BeginBottom, sap.ui.core.Popup.Dock.BeginTop);
+		this.setPosition(Dock.BeginBottom, Dock.BeginTop);
 
 		// listen to global events outside of the callout to close it when needed
 		this.fAnyEventHandlerProxy = jQuery.proxy(this.onAnyEvent, this);
@@ -103,12 +113,12 @@ sap.ui.define([
 		// make this.oPopup call this.setTip each time after its position is changed
 		var that = this;
 		this.oPopup._applyPosition = function(oPosition){
-			sap.ui.core.Popup.prototype._applyPosition.call(this, oPosition);
+			Popup.prototype._applyPosition.call(this, oPosition);
 			that.setTip();
 		};
 
 		// close the Callout if its opener moves away (due to scrolling e.g.)
-		this.oPopup.setFollowOf(sap.ui.core.Popup.CLOSE_ON_SCROLL);
+		this.oPopup.setFollowOf(Popup.CLOSE_ON_SCROLL);
 	};
 
 	/**
@@ -122,7 +132,7 @@ sap.ui.define([
 		this.oPopup.destroy();
 		delete this.oPopup;
 		delete this.oRb;
-		jQuery.sap.unbindAnyEvent(this.fAnyEventHandlerProxy);
+		ControlEvents.unbindAnyEvent(this.fAnyEventHandlerProxy);
 	};
 
 	/**
@@ -159,9 +169,9 @@ sap.ui.define([
 
 		var oStatic = sap.ui.getCore().getStaticAreaRef();
 		// if oDOMNode belongs to a static area child, get z-index of this child:
-		var thatZ = parseInt(jQuery(oDOMNode).closest(jQuery(oStatic).children()).css("z-index"), 10);
+		var thatZ = parseInt(jQuery(oDOMNode).closest(jQuery(oStatic).children()).css("z-index"));
 		// z-index of this:
-		var thisZ = parseInt(this.$().css("z-index"), 10);
+		var thisZ = parseInt(this.$().css("z-index"));
 
 		// true if the element has the z-index inside of static area that is higher as the z-index of my control
 		return thatZ && thisZ && thatZ >= thisZ;
@@ -321,7 +331,7 @@ sap.ui.define([
 			// Empty callout should be focused too because the contents may appear at a later time point
 			// and we need input focus to react to the ESC key.
 			var $Content = this.$("cont");
-			jQuery.sap.focus($Content.firstFocusableDomRef() || $Content.get(0));
+			focus($Content.firstFocusableDomRef() || $Content.get(0));
 		}
 	};
 
@@ -339,7 +349,7 @@ sap.ui.define([
 		}
 
 		if (TooltipBase.sOpenTimeout) {
-			jQuery.sap.clearDelayedCall(TooltipBase.sOpenTimeout);
+			clearTimeout(TooltipBase.sOpenTimeout);
 			TooltipBase.sOpenTimeout = undefined;
 		}
 
@@ -348,7 +358,9 @@ sap.ui.define([
 		if (!this.fireEvent("beforeOpen", {parent:this._currentControl}, true, false)) {
 			if (!this.sCloseNowTimeout) {
 				// postpone opening for 200ms
-				TooltipBase.sOpenTimeout = jQuery.sap.delayedCall(200, this, "openPopup", [this._currentControl]);
+				TooltipBase.sOpenTimeout = setTimeout(function() {
+					this.openPopup(this._currentControl);
+				}.bind(this), 200);
 			}
 			return;
 		}
@@ -376,7 +388,7 @@ sap.ui.define([
 	CalloutBase.prototype.close = function() {
 		if (this.oPopup && this.oPopup.isOpen() && !this.sCloseNowTimeout) {
 			if (TooltipBase.sOpenTimeout) {
-				jQuery.sap.clearDelayedCall(TooltipBase.sOpenTimeout);
+				clearTimeout(TooltipBase.sOpenTimeout);
 				TooltipBase.sOpenTimeout = undefined;
 			}
 			this.closePopup();
@@ -392,7 +404,7 @@ sap.ui.define([
 		var bWasOpen = this.oPopup !== undefined && this.oPopup.isOpen();
 
 		if (this.fAnyEventHandlerProxy) {
-			jQuery.sap.unbindAnyEvent(this.onAnyEvent);
+			ControlEvents.unbindAnyEvent(this.onAnyEvent);
 		}
 
 		// This also attaches the handleClosed function to the closed-event
@@ -432,8 +444,8 @@ sap.ui.define([
 	 */
 	CalloutBase.prototype.onkeydown = function(oEvent) {
 
-		var bCtrlI = oEvent.ctrlKey && oEvent.which == jQuery.sap.KeyCodes.I;
-		var bEsc = oEvent.which == jQuery.sap.KeyCodes.ESCAPE;
+		var bCtrlI = oEvent.ctrlKey && oEvent.which == KeyCodes.I;
+		var bEsc = oEvent.which == KeyCodes.ESCAPE;
 
 		if (!bCtrlI && !bEsc) {
 			if (jQuery(oEvent.target).control(0) === this._currentControl) {
@@ -481,7 +493,7 @@ sap.ui.define([
 
 		// - listen to mouse over events outside
 		//   do always because the Callout can lose focus to child popup controls
-		jQuery.sap.bindAnyEvent(this.fAnyEventHandlerProxy);
+		ControlEvents.bindAnyEvent(this.fAnyEventHandlerProxy);
 	};
 
 	/**
@@ -503,10 +515,10 @@ sap.ui.define([
 		// The same logic as in the Dialog.control:
 		if (oSourceDomRef.id === this.getId() + "-fhfe") {
 			// the FocusHandlingFirstElement was focused and thus the focus should move to the last element.
-			jQuery.sap.focus(this.$("cont").lastFocusableDomRef());
+			focus(this.$("cont").lastFocusableDomRef());
 		} else if (oSourceDomRef.id === this.getId() + "-fhee") {
 			// the FocusHandlingEndElement was focused and thus the focus should move to the first element.
-			jQuery.sap.focus(this.$("cont").firstFocusableDomRef());
+			focus(this.$("cont").firstFocusableDomRef());
 		}
 	};
 
@@ -529,7 +541,7 @@ sap.ui.define([
 		// do not close my pop-up if it was opened already
 		if (this.oPopup && (this.oPopup.isOpen() && this.oPopup.getContent() == this)) {
 			if (this.sCloseNowTimeout) {
-				jQuery.sap.clearDelayedCall(this.sCloseNowTimeout);
+				clearTimeout(this.sCloseNowTimeout);
 				this.sCloseNowTimeout = null;
 			}
 			return;
@@ -581,11 +593,13 @@ sap.ui.define([
 		var bDoNotClose = this.isPopupElement(oEvent.target) || jQuery(oEvent.target).control(0) === this._currentControl;
 		if (!bDoNotClose && !this.sCloseNowTimeout && !TooltipBase.sOpenTimeout) {
 			// schedule close if mouse moved outside of the Popup
-			this.sCloseNowTimeout = jQuery.sap.delayedCall(400, this, "closePopup");
+			this.sCloseNowTimeout = setTimeout(function() {
+				this.closePopup();
+			}.bind(this), 400);
 		}
 		if (bDoNotClose && this.sCloseNowTimeout) {
 			// do not close when inside
-			jQuery.sap.clearDelayedCall(this.sCloseNowTimeout);
+			clearTimeout(this.sCloseNowTimeout);
 			this.sCloseNowTimeout = null;
 		}
 	};
@@ -602,8 +616,8 @@ sap.ui.define([
 	 */
 	CalloutBase.prototype.setPosition = function(myPosition, atPosition){
 
-		var myPos = myPosition || sap.ui.core.Popup.Dock.BeginBottom;
-		var atPos = atPosition || sap.ui.core.Popup.Dock.BeginTop;
+		var myPos = myPosition || Dock.BeginBottom;
+		var atPos = atPosition || Dock.BeginTop;
 
 		var myX = 0, myY = 0, atX = 0, atY = 0, gap = 5;
 
@@ -640,6 +654,12 @@ sap.ui.define([
 		return this;
 	};
 
+	function focus(elem) {
+		if ( elem ) {
+			elem.focus();
+		}
+	}
+
 	return CalloutBase;
 
-}, /* bExport= */ true);
+});

@@ -186,8 +186,19 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 
 			// write the text of the selected item only if it has not been removed or destroyed
 			// and when the Select isn't in IconOnly mode - BCP 1780431688
-			oRm.writeEscaped((oSelectedItem && oSelectedItem.getParent() && oSelect.getType() !== SelectType.IconOnly) ? oSelectedItem.getText() : "");
 
+			if (oSelect.getType() !== SelectType.IconOnly) {
+				oRm.renderControl(oSelect._getValueIcon());
+				oRm.write("<span");
+				oRm.addClass("sapMSelectListItemText");
+				oRm.writeAttribute("id", oSelect.getId() + "-labelText");
+				oRm.writeClasses();
+				oRm.write(">");
+
+				oSelectedItem && oSelectedItem.getParent() ? oRm.writeEscaped(oSelectedItem.getText()) : "";
+
+				oRm.write("</span>");
+			}
 			oRm.write("</label>");
 		};
 
@@ -351,10 +362,20 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 		 * @param {sap.ui.core.Control} oSelect An object representation of the control that should be rendered.
 		 */
 		SelectRenderer.writeAccessibilityState = function(oRm, oSelect) {
-			var sValueState = this._getValueStateString(oSelect);
+			var sValueState = this._getValueStateString(oSelect),
+				oSelectedItem = oSelect.getSelectedItem();
 
 			if (sValueState) {
 				sValueState = " " + sValueState;
+			}
+
+			var sDesc;
+
+			if (oSelectedItem && !oSelectedItem.getText() && oSelectedItem.getIcon && oSelectedItem.getIcon()) {
+				var oIconInfo = IconPool.getIconInfo(oSelectedItem.getIcon());
+				if (oIconInfo) {
+					sDesc = oIconInfo.text || oIconInfo.name;
+				}
 			}
 
 			oRm.writeAccessibilityState(oSelect, {
@@ -363,7 +384,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 				expanded: oSelect.isOpen(),
 				invalid: (oSelect.getValueState() === ValueState.Error) ? true : undefined,
 				labelledby: {
-					value: oSelect.getId() + "-label" + sValueState,
+					value: sDesc ? oSelect._getValueIcon().getId() : oSelect.getId() + "-label" + sValueState,
 					append: true
 				},
 				haspopup: (oSelect.getType() === SelectType.IconOnly) ? true : undefined

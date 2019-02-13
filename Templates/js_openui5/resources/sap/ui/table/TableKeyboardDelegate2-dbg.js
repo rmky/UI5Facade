@@ -67,7 +67,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate2
@@ -396,6 +396,7 @@ sap.ui.define([
 			var bCtrlKeyPressed = TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.CTRL);
 			var bActionModeNavigation = bCtrlKeyPressed || bActionMode;
 			var $ParentCell = TableUtils.getParentCell(oTable, oEvent.target);
+			var bAllowSapFocusLeave = bActionMode && oCellInfo.isOfType(CellType.DATACELL);
 
 			// If only the up or down key was pressed in text input elements, navigation should not be performed.
 			if (!bCtrlKeyPressed && (oEvent.target instanceof window.HTMLInputElement || oEvent.target instanceof window.HTMLTextAreaElement)) {
@@ -411,12 +412,25 @@ sap.ui.define([
 
 			preventItemNavigation(oEvent);
 
+			// The FocusHandler triggers the "sapfocusleave" event in a timeout of 0ms after a blur event. To give the control in the cell
+			// enough time to react to the "sapfocusleave" event (e.g. sap.m.Input - changes its value), scrolling is performed
+			// asynchronously.
 			if (sDirection === NavigationDirection.UP) {
 				if (TableUtils.isFirstScrollableRow(oTable, oCellInfo.cell)) {
-					bScrolled = oTable._getScrollExtension().scrollVertically(false, false, true); // Scroll one row up.
+					// Scroll one row up.
+					bScrolled = oTable._getScrollExtension().scrollVertically(false, false, true, bAllowSapFocusLeave, function() {
+						if (bAllowSapFocusLeave) {
+							document.activeElement.blur();
+						}
+					});
 				}
 			} else if (TableUtils.isLastScrollableRow(oTable, oCellInfo.cell)) {
-				bScrolled = oTable._getScrollExtension().scrollVertically(true, false, true); // Scroll one row down.
+				// Scroll one row down.
+				bScrolled = oTable._getScrollExtension().scrollVertically(true, false, true, bAllowSapFocusLeave, function() {
+					if (bAllowSapFocusLeave) {
+						document.activeElement.blur();
+					}
+				});
 			}
 
 			if (bScrolled) {
@@ -1031,7 +1045,15 @@ sap.ui.define([
 				var bScrolled = false;
 
 				if (!bIsAbsoluteLastRow && bIsLastScrollableRow) {
-					bScrolled = this._getScrollExtension().scrollVertically(true, null, true);
+					// The FocusHandler triggers the "sapfocusleave" event in a timeout of 0ms after a blur event. To give the control in the cell
+					// enough time to react to the "sapfocusleave" event (e.g. sap.m.Input - changes its value), scrolling is performed
+					// asynchronously.
+					var bAllowSapFocusLeave = oCellInfo.isOfType(CellType.DATACELL);
+					bScrolled = this._getScrollExtension().scrollVertically(true, false, true, bAllowSapFocusLeave, function() {
+						if (bAllowSapFocusLeave) {
+							document.activeElement.blur();
+						}
+					});
 				}
 
 				if (bIsAbsoluteLastRow) {
@@ -1138,7 +1160,15 @@ sap.ui.define([
 				var bScrolled = false;
 
 				if (!bIsAbsoluteFirstRow && bIsFirstScrollableRow) {
-					bScrolled = this._getScrollExtension().scrollVertically(false, null, true);
+					// The FocusHandler triggers the "sapfocusleave" event in a timeout of 0ms after a blur event. To give the control in the cell
+					// enough time to react to the "sapfocusleave" event (e.g. sap.m.Input - changes its value), scrolling is performed
+					// asynchronously.
+					var bAllowSapFocusLeave = oCellInfo.isOfType(CellType.DATACELL);
+					bScrolled = this._getScrollExtension().scrollVertically(false, false, true, bAllowSapFocusLeave, function() {
+						if (bAllowSapFocusLeave) {
+							document.activeElement.blur();
+						}
+					});
 				}
 
 				if (bIsAbsoluteFirstRow) {
@@ -1583,7 +1613,7 @@ sap.ui.define([
 			// the selected cell index is the index of the first cell in the span.
 			// Treat this case like there is no span and the last cell of the fixed area is selected.
 			if (oCellInfo.isOfType(CellType.COLUMNHEADER) && TableUtils.hasFixedColumns(this)) {
-				var iColSpan = parseInt(oCellInfo.cell.attr("colspan") || 1, 10);
+				var iColSpan = parseInt(oCellInfo.cell.attr("colspan") || 1);
 				if (iColSpan > 1 && iFocusedCellInRow + iColSpan - iRowHeaderOffset === iFixedColumnCount) {
 					bIsColSpanAtFixedAreaEnd = true;
 				}
@@ -1948,7 +1978,7 @@ sap.ui.define([
 				var bHasRowHeader = TableUtils.hasRowHeader(this);
 				var iRowHeaderOffset = bHasRowHeader ? 1 : 0;
 				var iVisibleColumnCount = TableUtils.getVisibleColumnCount(this);
-				var iColSpan = parseInt(oCellInfo.cell.attr("colspan") || 1, 10);
+				var iColSpan = parseInt(oCellInfo.cell.attr("colspan") || 1);
 
 				preventItemNavigation(oEvent);
 

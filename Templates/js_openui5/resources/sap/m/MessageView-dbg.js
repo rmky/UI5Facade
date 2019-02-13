@@ -109,7 +109,7 @@ sap.ui.define([
 	 * It also exposes an event {@link sap.m.MessageView#activeTitlePress}, which can be used for navigation from a message to the source of the issue.
 	 * <br><br>
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @extends sap.ui.core.Control
 	 * @constructor
@@ -927,7 +927,7 @@ sap.ui.define([
 		if (oMessageItem.getMarkupDescription()) {
 			// description is sanitized in MessageItem.setDescription()
 			this._oMessageDescriptionText = new HTML(this.getId() + "MarkupDescription", {
-				content: "<div class='sapMMsgViewDescriptionText'>" + oMessageItem.getDescription() + "</div>"
+				content: "<div class='sapMMsgViewDescriptionText'>" + ManagedObject.escapeSettingsValue(oMessageItem.getDescription()) + "</div>"
 			});
 		} else {
 			this._oMessageDescriptionText = new Text(this.getId() + "MessageDescriptionText", {

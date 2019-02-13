@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.suite">
-  <module name="sap/ui/suite/QuickViewUtils.js" size="6331" compressedSize="3930">
+  <module name="sap/ui/suite/QuickViewUtils.js" size="6323" compressedSize="3924">
     <description>Provides</description>
     <requires>
       <module name="sap/ui/core/Control.js"/>
@@ -19,7 +19,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/suite/TaskCircleRenderer.js" size="3599" compressedSize="1706">
+  <module name="sap/ui/suite/TaskCircleRenderer.js" size="3591" compressedSize="1700">
     <description>provides default renderer for sap.ui.suite.TaskCircle</description>
     <requires>
       <module name="sap/ui/core/Core.js"/>
@@ -64,7 +64,7 @@
       <module name="sap/ui/suite/VerticalProgressIndicatorRenderer.js"/>
     </includes>
   </module>
-  <module name="sap/ui/suite/library-preload.js" size="10023">
+  <module name="sap/ui/suite/library-preload.js" size="10011">
     <requires>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Core.js"/>

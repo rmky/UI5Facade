@@ -112,7 +112,7 @@ function(
 	* @extends sap.m.Input
 	*
 	* @author SAP SE
-	* @version 1.60.1
+	* @version 1.61.2
 	*
 	* @constructor
 	* @public
@@ -280,6 +280,11 @@ function(
 		if (this._oSelectedItemPicker) {
 			this._oSelectedItemPicker.destroy();
 			this._oSelectedItemPicker = null;
+		}
+
+		if (this._oSelectedItemsList) {
+			this._oSelectedItemsList.destroy();
+			this._oSelectedItemsList = null;
 		}
 
 		if (this._getReadOnlyPopover()) {
@@ -480,8 +485,8 @@ function(
 	MultiInput.prototype._calculateSpaceForTokenizer = function () {
 		if (this.getDomRef()) {
 			var iWidth = this.getDomRef().offsetWidth,
-				iValueHelpButtonWidth = this.getDomRef("vhi") ? parseInt(this.getDomRef("vhi").offsetWidth, 10) : 0,
-				iInputWidth = parseInt(this.$().find(".sapMInputBaseInner").css("min-width"), 10) || 0;
+				iValueHelpButtonWidth = this.getDomRef("vhi") ? parseInt(this.getDomRef("vhi").offsetWidth) : 0,
+				iInputWidth = parseInt(this.$().find(".sapMInputBaseInner").css("min-width")) || 0;
 
 			return iWidth - (iValueHelpButtonWidth + iInputWidth) + "px";
 		} else {

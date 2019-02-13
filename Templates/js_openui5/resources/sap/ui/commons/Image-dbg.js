@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.commons.Image.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./ImageRenderer"],
-	function(jQuery, library, Control, ImageRenderer) {
+sap.ui.define(['./library', 'sap/ui/core/Control', './ImageRenderer'],
+	function(library, Control, ImageRenderer) {
 	"use strict";
 
 
@@ -24,7 +24,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Image
 	 * @implements sap.ui.commons.ToolbarItem,sap.ui.commons.FormattedTextViewControl, sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -109,4 +109,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Image
 
 	return Image;
 
-}, /* bExport= */ true);
+});

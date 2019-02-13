@@ -6,14 +6,22 @@
 
 // Provides control sap.ui.ux3.Overlay.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
     'sap/ui/core/Control',
     'sap/ui/core/Popup',
     './library',
-    "./OverlayRenderer"
+    './OverlayRenderer',
+    'sap/ui/core/library',
+    // jQuery Plugin 'control'
+	'sap/ui/dom/jquery/control',
+    // jQuery Plugin 'firstFocusableDomRef'
+	'sap/ui/dom/jquery/Focusable'
 ],
-	function(jQuery, Control, Popup, library, OverlayRenderer) {
+	function(jQuery, Control, Popup, library, OverlayRenderer, coreLibrary) {
 	"use strict";
+
+	// shortcut for sap.ui.core.OpenState
+	var OpenState = coreLibrary.OpenState;
 
 	/**
 	 * Constructor for a new Overlay.
@@ -27,7 +35,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.PopupInterface
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -113,19 +121,21 @@ sap.ui.define([
 		var that = this;
 		this._oPopup = new Popup(this, false, true);
 		this._oPopup.attachOpened(function(oEvent){
-			var domRef = jQuery.sap.byId(that._initialFocusId)[0];
+			var domRef = jQuery(document.getElementById(that._initialFocusId))[0];
 			if (!domRef && that._getShell() && that.getOpenButtonVisible()) {
-				domRef = jQuery.sap.domById(that._getOpenButtonId());
+				domRef = document.getElementById(that._getOpenButtonId());
 			} else if (!domRef && that._getShell() && that.getCloseButtonVisible()) {
-				domRef = jQuery.sap.domById(that._getCloseButtonId());
+				domRef = document.getElementById(that._getCloseButtonId());
 			} else if (!domRef) {
+				// jQuery Plugin "firstFocusableDomRef"
 				domRef = that.$("content").firstFocusableDomRef();
 			}
 			if (!domRef) {
+				// jQuery Plugin "firstFocusableDomRef"
 				domRef = that.$().firstFocusableDomRef();
 			}
 			if (domRef) {
-				jQuery.sap.focus(domRef);
+				domRef.focus();
 			}
 		});
 		this._oPopup.attachClosed(function(oEvent){
@@ -152,6 +162,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Overlay.prototype._getShell = function() {
+		// jQuery Plugin "control"
 		var oShell = jQuery(".sapUiUx3Shell").control();
 
 		if (oShell.length > 0 && !this._oShell) {
@@ -191,6 +202,7 @@ sap.ui.define([
 	 */
 	Overlay.prototype._initDom = function(fnFocusFirst, fnFocusLast, fnApplyChanges) {
 		//Override the popup theming and init the focus handling
+		// jQuery Plugin "control"
 		var oShell = jQuery(".sapUiUx3Shell").control();
 		this._oShell = oShell.length ? oShell[0] : null;
 		oShell = this._oShell;
@@ -228,7 +240,7 @@ sap.ui.define([
 	 */
 	Overlay.prototype.onAfterRendering = function() {
 	    var oPopupState = this._oPopup.getOpenState();
-	    if (oPopupState === sap.ui.core.OpenState.OPEN || oPopupState === sap.ui.core.OpenState.OPENING) {
+	    if (oPopupState === OpenState.OPEN || oPopupState === OpenState.OPENING) {
 	          this._initDom(jQuery.proxy(this._setFocusFirst, this), jQuery.proxy(this._setFocusLast, this), jQuery.proxy(this._applyChanges, this));
 	    }
 	};
@@ -287,7 +299,7 @@ sap.ui.define([
 			return;
 		}
 		this._oPopup.close(400);
-		jQuery.sap.delayedCall(400, this, 'restorePreviousFocus');
+		setTimeout(this.restorePreviousFocus.bind(this), 400);
 		this._cleanupDom();
 	};
 
@@ -361,7 +373,10 @@ sap.ui.define([
 	 * @private
 	 */
 	Overlay.prototype._setFocusFirst = function() {
-		jQuery.sap.focus(jQuery.sap.domById(this._getOpenButtonId()));
+		var oElem = document.getElementById(this._getOpenButtonId());
+		if (oElem) {
+			oElem.focus();
+		}
 	};
 
 	/**
@@ -373,7 +388,10 @@ sap.ui.define([
 	 * @private
 	 */
 	Overlay.prototype._setFocusLast = function() {
-		jQuery.sap.focus(jQuery.sap.domById(this._getCloseButtonId()));
+		var oElem = document.getElementById(this._getCloseButtonId());
+	    if (oElem) {
+		    oElem.focus();
+		}
 	};
 
 	/**
@@ -407,4 +425,4 @@ sap.ui.define([
 	};
 
 	return Overlay;
-}, /* bExport= */ true);
+});

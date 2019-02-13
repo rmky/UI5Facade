@@ -13,7 +13,6 @@ sap.ui.define([
 	'sap/ui/core/util/PasteHelper',
 	'sap/ui/model/ChangeReason',
 	'sap/ui/model/Filter',
-	'sap/ui/model/SelectionModel',
 	'sap/ui/model/Sorter',
 	'sap/ui/model/BindingMode',
 	'./Column',
@@ -27,6 +26,7 @@ sap.ui.define([
 	'./TableScrollExtension',
 	'./TableDragAndDropExtension',
 	"./TableRenderer",
+	"./SelectionModelAdapter",
 	"sap/ui/thirdparty/jquery",
 	"sap/base/Log"
 ],
@@ -38,7 +38,6 @@ sap.ui.define([
 		PasteHelper,
 		ChangeReason,
 		Filter,
-		SelectionModel,
 		Sorter,
 		BindingMode,
 		Column,
@@ -52,6 +51,7 @@ sap.ui.define([
 		TableScrollExtension,
 		TableDragAndDropExtension,
 		TableRenderer,
+		SelectionModelAdapter,
 		jQuery,
 		Log
 	) {
@@ -89,7 +89,7 @@ sap.ui.define([
 	 *     the data model and binding being used.
 	 * </p>
 	 * @extends sap.ui.core.Control
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -815,6 +815,7 @@ sap.ui.define([
 		this._bIsFlexItem = false;
 
 		this._attachExtensions();
+		this._initSelectionAdapter();
 
 		this._bLazyRowCreationEnabled = jQuery.sap.getUriParameters().get('sap-ui-xx-table-lazyrowcreation') !== "false"; // default true
 		this._bRowsBeingBound = false;
@@ -844,9 +845,8 @@ sap.ui.define([
 				return;
 			}
 
+			this._getAccExtension().updateAccForCurrentCell(sReason);
 			this._updateTableContent();
-
-			this._getAccExtension().updateAccForCurrentCell(false);
 			this._updateSelection();
 
 			this._aRowHeights = this._collectRowHeights(false);
@@ -860,9 +860,6 @@ sap.ui.define([
 
 			this._fireRowsUpdated(sReason);
 		}, {wait: 50, asyncLeading: true});
-
-		// basic selection model (by default the table uses multi selection)
-		this._initSelectionModel(SelectionModel.MULTI_SELECTION);
 
 		this._aTableHeaders = [];
 
@@ -885,6 +882,10 @@ sap.ui.define([
 		this._bInvalid = true;
 	};
 
+	Table.prototype._initSelectionAdapter = function() {
+		this._oSelectionAdapter = new SelectionModelAdapter();
+		this._oSelectionAdapter.attachEvent("selectionChange", this._onSelectionChanged, this);
+	};
 
 	/**
 	 * Attach table extensions
@@ -910,15 +911,6 @@ sap.ui.define([
 	Table.prototype.exit = function() {
 		this.invalidateRowsAggregation();
 
-		// Rows that are not in the aggregation must be destroyed manually.
-		for (var i = 0; i < this._aRowClones.length; i++) {
-			var oRowClone = this._aRowClones[i];
-			if (oRowClone.getIndex() === -1) {
-				oRowClone.destroy();
-			}
-		}
-		this._aRowClones = [];
-
 		// destroy helpers
 		this._detachExtensions();
 
@@ -931,9 +923,9 @@ sap.ui.define([
 		this._detachEvents();
 
 		// selection model
-		if (this._oSelection) {
-			this._oSelection.destroy(); // deregisters all the handler(s)
-			//Note: _oSelection is not nulled to avoid checks everywhere (in case table functions are called after the table destroy, see 1670448195)
+		if (this._oSelectionAdapter) {
+			this._oSelectionAdapter.destroy(); // deregisters all the handler(s)
+			//Note: _oSelectionAdapter is not nulled to avoid checks everywhere (in case table functions are called after the table destroy, see 1670448195)
 		}
 		delete this._aTableHeaders;
 	};
@@ -1154,7 +1146,7 @@ sap.ui.define([
 					mDefaultScrollbarHeight[Device.browser.BROWSER.CHROME] = 16;
 					mDefaultScrollbarHeight[Device.browser.BROWSER.FIREFOX] = 16;
 					mDefaultScrollbarHeight[Device.browser.BROWSER.INTERNET_EXPLORER] = 18;
-					mDefaultScrollbarHeight[Device.browser.BROWSER.EDGE] = 12;
+					mDefaultScrollbarHeight[Device.browser.BROWSER.EDGE] = 16;
 					mDefaultScrollbarHeight[Device.browser.BROWSER.SAFARI] = 16;
 					mDefaultScrollbarHeight[Device.browser.BROWSER.ANDROID] = 8;
 					iUsedHeight += mDefaultScrollbarHeight[Device.browser.name];
@@ -1239,7 +1231,7 @@ sap.ui.define([
 			var aHeaderElements = oDomRef.querySelectorAll(".sapUiTableCtrlFirstCol:not(.sapUiTableCHTHR) > th");
 
 			for (var i = 0; i < aHeaderElements.length; i++) {
-				var iColIndex = parseInt(aHeaderElements[i].getAttribute("data-sap-ui-headcolindex"), 10);
+				var iColIndex = parseInt(aHeaderElements[i].getAttribute("data-sap-ui-headcolindex"));
 
 				if (!isNaN(iColIndex) && (iColIndex < iFixedColumnCount)) {
 					var oColumn = aColumns[iColIndex];
@@ -1301,7 +1293,7 @@ sap.ui.define([
 			return;
 		}
 
-		function updateRow (row, index) {
+		function updateRow(row, index) {
 			var rowHeight = aRowItemHeights[index];
 			if (rowHeight) {
 				row.style.height = rowHeight + "px";
@@ -1549,7 +1541,7 @@ sap.ui.define([
 
 			function adaptColWidth(oColInfo) {
 				if (oColInfo) {
-					Array.prototype.forEach.call(oColInfo.headers, function (header) {
+					Array.prototype.forEach.call(oColInfo.headers, function(header) {
 							header.style.width = oColInfo.newWidth;
 					});
 				}
@@ -1565,7 +1557,7 @@ sap.ui.define([
 				for (var i = 0; i < aNotFixedVariableColumns.length; i++) {
 					iDomWidth = aNotFixedVariableColumns[i].header && aNotFixedVariableColumns[i].header.offsetWidth;
 					aNotFixedVariableColumns[i].newWidth = calcNewWidth(iDomWidth, aNotFixedVariableColumns[i].minWidth);
-					if (parseInt(aNotFixedVariableColumns[i].newWidth, 10) >= 0) {
+					if (parseInt(aNotFixedVariableColumns[i].newWidth) >= 0) {
 						adaptColWidth(aNotFixedVariableColumns[i]);
 					}
 				}
@@ -1758,17 +1750,10 @@ sap.ui.define([
 	 * @public
 	 */
 	Table.prototype.setSelectionMode = function(sSelectionMode) {
-		this.clearSelection();
-		if (sSelectionMode === SelectionMode.Single) {
-			this._oSelection.setSelectionMode(SelectionModel.SINGLE_SELECTION);
-		} else {
-			this._oSelection.setSelectionMode(SelectionModel.MULTI_SELECTION);
-		}
-
 		// Check for valid selection modes (e.g. change deprecated mode "Multi" to "MultiToggle")
 		sSelectionMode = TableUtils.sanitizeSelectionMode(this, sSelectionMode);
-
 		this.setProperty("selectionMode", sSelectionMode);
+		this._oSelectionAdapter.setSelectionMode(sSelectionMode);
 		return this;
 	};
 
@@ -1776,7 +1761,7 @@ sap.ui.define([
 	 * @see JSDoc generated by SAPUI5 control API generator
 	 */
 	Table.prototype.setFirstVisibleRow = function(iRowIndex, bOnScroll, bSuppressEvent) {
-		if (parseInt(iRowIndex, 10) < 0) {
+		if (parseInt(iRowIndex) < 0) {
 			Log.error("The index of the first visible row must be greater than or equal to 0." +
 								 " The value has been set to 0.", this);
 			iRowIndex = 0;
@@ -1868,9 +1853,6 @@ sap.ui.define([
 			Table._addBindingListener(oBindingInfo, "change", this._onBindingChange.bind(this));
 			Table._addBindingListener(oBindingInfo, "dataRequested", this._onBindingDataRequested.bind(this));
 			Table._addBindingListener(oBindingInfo, "dataReceived", this._onBindingDataReceived.bind(this));
-
-			// Re-initialize the selection model. Might be necessary in case the rows are rebound.
-			this._initSelectionModel(SelectionModel.MULTI_SELECTION);
 		}
 
 		// Create the binding.
@@ -1880,6 +1862,8 @@ sap.ui.define([
 			var oBinding = this.getBinding("rows");
 			var oModel = oBinding ? oBinding.getModel() : null;
 
+			this._oSelectionAdapter._setBinding(oBinding);
+
 			if (oModel && oModel.getDefaultBindingMode() === BindingMode.OneTime) {
 				Log.error("The binding mode of the model is set to \"OneTime\"."
 						  + " This binding mode is not supported for the \"rows\" aggregation!"
@@ -1888,6 +1872,20 @@ sap.ui.define([
 
 			this._bRowsBeingBound = false;
 		}
+	};
+
+	Table.prototype.destroyAggregation = function(sAggregationName, bSuppressInvalidate) {
+		var vReturn = Control.prototype.destroyAggregation.apply(this, arguments);
+
+		if (sAggregationName === "rows") {
+			// Rows that are not in the aggregation must be destroyed manually.
+			this._aRowClones.forEach(function(oRowClone) {
+				oRowClone.destroy();
+			});
+			this._aRowClones = [];
+		}
+
+		return vReturn;
 	};
 
 	/**
@@ -1951,25 +1949,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Initialises a new selection model for the Table instance.
-	 * @param {sap.ui.model.SelectionModel.MULTI_SELECTION|sap.ui.model.SelectionModel.SINGLE_SELECTION} sSelectionMode the selection mode of the
-	 *     selection model
-	 * @returns {sap.ui.table.Table} the table instance for chaining
-	 * @private
-	 */
-	Table.prototype._initSelectionModel = function (sSelectionMode) {
-		// detach old selection model event handler
-		if (this._oSelection) {
-			this._oSelection.detachSelectionChanged(this._onSelectionChanged, this);
-		}
-		//new selection model with the currently set selection mode
-		this._oSelection = new SelectionModel(sSelectionMode);
-		this._oSelection.attachSelectionChanged(this._onSelectionChanged, this);
-
-		return this;
-	};
-
-	/**
 	 * Handler for change events of the binding.
 	 * @param {sap.ui.base.Event} oEvent change event
 	 * @private
@@ -1977,7 +1956,6 @@ sap.ui.define([
 	Table.prototype._onBindingChange = function(oEvent) {
 		var sReason = typeof (oEvent) === "object" ? oEvent.getParameter("reason") : oEvent;
 		if (sReason === "sort" || sReason === "filter") {
-			this.clearSelection();
 			this.setFirstVisibleRow(0);
 		}
 	};
@@ -2001,6 +1979,7 @@ sap.ui.define([
 
 			if (!this._bRowsBeingBound) {
 				// Real unbind of rows.
+				this._oSelectionAdapter._setBinding(null);
 				this._updateTotalRowCount(true);
 				if (this._bLazyRowCreationEnabled) {
 					this._updateRows(this.getVisibleRowCount(), TableUtils.RowsUpdateReason.Unbind);
@@ -2047,7 +2026,7 @@ sap.ui.define([
 	};
 
 	Table.prototype.setMinAutoRowCount = function(iMinAutoRowCount) {
-		if (parseInt(iMinAutoRowCount, 10) < 1) {
+		if (parseInt(iMinAutoRowCount) < 1) {
 			Log.error("The minAutoRowCount property must be greater than 0. The value has been set to 1.", this);
 			iMinAutoRowCount = 1;
 		}
@@ -2092,7 +2071,7 @@ sap.ui.define([
 	 * @returns {sap.ui.model.Context[]} Array of fixed bottom row context
 	 * @private
 	 */
-	Table.prototype._getFixedBottomRowContexts = function (iFixedBottomRowCount, iBindingLength) {
+	Table.prototype._getFixedBottomRowContexts = function(iFixedBottomRowCount, iBindingLength) {
 		var oBinding = this.getBinding("rows");
 		var aContexts = [];
 		if (!oBinding) {
@@ -2151,7 +2130,7 @@ sap.ui.define([
 	 * @returns {Object[]} Array of row contexts returned from the binding.
 	 * @private
 	 */
-	Table.prototype._getRowContexts = function (iVisibleRows, bSuppressUpdate, bSecondCall) {
+	Table.prototype._getRowContexts = function(iVisibleRows, bSuppressUpdate, bSecondCall) {
 		var oBinding = this.getBinding("rows");
 		var iVisibleRowCount = iVisibleRows == null ? this.getRows().length : iVisibleRows;
 
@@ -2183,7 +2162,7 @@ sap.ui.define([
 		// data can be requested with a single getContexts call if the fixed rows and the scrollable rows overlap.
 		var iStartIndex = iFirstVisibleRow;
 
-		var fnMergeArrays = function (aTarget, aSource, iStartIndex) {
+		var fnMergeArrays = function(aTarget, aSource, iStartIndex) {
 			for (var i = 0; i < aSource.length; i++) {
 				aTarget[iStartIndex + i] = aSource[i];
 			}
@@ -2302,8 +2281,9 @@ sap.ui.define([
 		var bAutoModeAndRendered = bAutoMode && this.bOutput;
 		if (!bAutoMode || bAutoModeAndRendered) {
 			// the correct number of records to be requested can only be determined when the table row content height is known or if the
-			// visible row count mode is not Auto
-			if (this.bOutput) {
+			// visible row count mode is not Auto.
+			// If rows are already present - do not try to create/refresh them.
+			if (this.bOutput && this.getRows().length === 0) {
 				oBinding.attachEventOnce("dataRequested", function() {
 					// doing it in a timeout will allow the data request to be sent before the rows get created
 					if (that._mTimeouts.refreshRowsAdjustRows) {
@@ -2532,7 +2512,7 @@ sap.ui.define([
 	/*
 	 * @see JSDoc generated by SAPUI5 control API generator
 	 */
-	Table.prototype.removeColumn = function (oColumn, bSuppressInvalidate) {
+	Table.prototype.removeColumn = function(oColumn, bSuppressInvalidate) {
 		var oResult = this.removeAggregation('columns', oColumn, bSuppressInvalidate);
 
 		if (typeof oColumn === "number" && oColumn > -1) {
@@ -2571,7 +2551,7 @@ sap.ui.define([
 	/*
 	 * @see JSDoc generated by SAPUI5 control API generator
 	 */
-	Table.prototype.addColumn = function (oColumn, bSuppressInvalidate) {
+	Table.prototype.addColumn = function(oColumn, bSuppressInvalidate) {
 		this.addAggregation('columns', oColumn, bSuppressInvalidate);
 		this.invalidateRowsAggregation();
 		return this;
@@ -2580,7 +2560,7 @@ sap.ui.define([
 	/*
 	 * @see JSDoc generated by SAPUI5 control API generator
 	 */
-	Table.prototype.insertColumn = function (oColumn, iIndex, bSuppressInvalidate) {
+	Table.prototype.insertColumn = function(oColumn, iIndex, bSuppressInvalidate) {
 		this.insertAggregation('columns', oColumn, iIndex, bSuppressInvalidate);
 		this.invalidateRowsAggregation();
 		return this;
@@ -2714,7 +2694,7 @@ sap.ui.define([
 
 		if (sCSSSize) {
 			if (sCSSSize.endsWith("px")) {
-				sPixelValue = parseInt(sCSSSize, 10);
+				sPixelValue = parseInt(sCSSSize);
 			} else if (sCSSSize.endsWith("em") || sCSSSize.endsWith("rem")) {
 				sPixelValue = Math.ceil(parseFloat(sCSSSize) * this._getBaseFontSize());
 			}
@@ -2723,7 +2703,7 @@ sap.ui.define([
 		if (bReturnWithUnit) {
 			return sPixelValue + "px";
 		} else {
-			return parseInt(sPixelValue, 10);
+			return parseInt(sPixelValue);
 		}
 	};
 
@@ -2758,7 +2738,7 @@ sap.ui.define([
 	 * disables text selection on the document (disabled fro Dnd)
 	 * @private
 	 */
-	Table.prototype._disableTextSelection = function (oElement) {
+	Table.prototype._disableTextSelection = function(oElement) {
 		// prevent text selection
 		jQuery(oElement || document.body).
 			attr("unselectable", "on").
@@ -2777,7 +2757,7 @@ sap.ui.define([
 	 * enables text selection on the document (disabled fro Dnd)
 	 * @private
 	 */
-	Table.prototype._enableTextSelection = function (oElement) {
+	Table.prototype._enableTextSelection = function(oElement) {
 		jQuery(oElement || document.body).
 			attr("unselectable", "off").
 			css({
@@ -2792,7 +2772,7 @@ sap.ui.define([
 	 * clears the text selection on the document (disabled fro Dnd)
 	 * @private
 	 */
-	Table.prototype._clearTextSelection = function () {
+	Table.prototype._clearTextSelection = function() {
 		if (window.getSelection) {
 		  if (window.getSelection().empty) {  // Chrome
 			window.getSelection().empty();
@@ -2885,7 +2865,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Table.prototype._isRowSelectable = function(iRowIndex) {
-		return iRowIndex >= 0 && iRowIndex < this._getTotalRowCount();
+		return this._oSelectionAdapter.isIndexSelectable(iRowIndex);
 	};
 
 	// =============================================================================
@@ -3065,25 +3045,14 @@ sap.ui.define([
 	 * @see JSDoc generated by SAPUI5 control API generator
 	 */
 	Table.prototype.getSelectedIndex = function() {
-		return this._oSelection.getLeadSelectedIndex();
+		return this._oSelectionAdapter.getSelectedIndex();
 	};
 
 	/*
 	 * @see JSDoc generated by SAPUI5 control API generator
 	 */
 	Table.prototype.setSelectedIndex = function(iIndex) {
-		if (this.getSelectionMode() === SelectionMode.None) {
-			return this;
-		}
-
-		if (iIndex === -1) {
-			//If Index eq -1 no item is selected, therefore clear selection is called
-			//SelectionModel doesn't know that -1 means no selection
-			this.clearSelection();
-		} else {
-			this._oSelection.setSelectionInterval(iIndex, iIndex);
-		}
-		return this;
+		return this._oSelectionAdapter.setSelectedIndex(iIndex);
 	};
 
 	/**
@@ -3094,7 +3063,7 @@ sap.ui.define([
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	Table.prototype.clearSelection = function() {
-		this._oSelection.clearSelection();
+		this._oSelectionAdapter.clearSelection();
 		return this;
 	};
 
@@ -3112,12 +3081,7 @@ sap.ui.define([
 		if (!TableUtils.hasSelectAll(this)) {
 			return this;
 		}
-
-		var oBinding = this.getBinding("rows");
-		if (oBinding) {
-			this._oSelection.selectAll(this._getTotalRowCount() - 1);
-		}
-
+		this._oSelectionAdapter.selectAll();
 		return this;
 	};
 
@@ -3129,7 +3093,7 @@ sap.ui.define([
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	Table.prototype.getSelectedIndices = function() {
-		return this._oSelection.getSelectedIndices();
+		return this._oSelectionAdapter.getSelectedIndices();
 	};
 
 	/**
@@ -3142,11 +3106,7 @@ sap.ui.define([
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	Table.prototype.addSelectionInterval = function(iIndexFrom, iIndexTo) {
-		if (this.getSelectionMode() === SelectionMode.None) {
-			return this;
-		}
-
-		this._oSelection.addSelectionInterval(iIndexFrom, iIndexTo);
+		this._oSelectionAdapter.addSelectionInterval(iIndexFrom, iIndexTo);
 		return this;
 	};
 
@@ -3160,11 +3120,7 @@ sap.ui.define([
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	Table.prototype.setSelectionInterval = function(iIndexFrom, iIndexTo) {
-		if (this.getSelectionMode() === SelectionMode.None) {
-			return this;
-		}
-
-		this._oSelection.setSelectionInterval(iIndexFrom, iIndexTo);
+		this._oSelectionAdapter.setSelectionInterval(iIndexFrom, iIndexTo);
 		return this;
 	};
 
@@ -3178,7 +3134,7 @@ sap.ui.define([
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	Table.prototype.removeSelectionInterval = function(iIndexFrom, iIndexTo) {
-		this._oSelection.removeSelectionInterval(iIndexFrom, iIndexTo);
+		this._oSelectionAdapter.removeSelectionInterval(iIndexFrom, iIndexTo);
 		return this;
 	};
 
@@ -3191,7 +3147,7 @@ sap.ui.define([
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	Table.prototype.isIndexSelected = function(iIndex) {
-		return this._oSelection.isSelectedIndex(iIndex);
+		return this._oSelectionAdapter.isIndexSelected(iIndex);
 	};
 
 	// =============================================================================
@@ -3364,7 +3320,7 @@ sap.ui.define([
 	 * @see JSDoc generated by SAPUI5 control API generator
 	 */
 	Table.prototype.setFixedRowCount = function(iFixedRowCount) {
-		if (!(parseInt(iFixedRowCount, 10) >= 0)) {
+		if (!(parseInt(iFixedRowCount) >= 0)) {
 			Log.error("Number of fixed rows must be greater or equal 0", this);
 			return this;
 		}
@@ -3382,7 +3338,7 @@ sap.ui.define([
 	 * @see JSDoc generated by SAPUI5 control API generator
 	 */
 	Table.prototype.setFixedBottomRowCount = function(iFixedRowCount) {
-		if (!(parseInt(iFixedRowCount, 10) >= 0)) {
+		if (!(parseInt(iFixedRowCount) >= 0)) {
 			Log.error("Number of fixed bottom rows must be greater or equal 0", this);
 			return this;
 		}
@@ -3403,7 +3359,7 @@ sap.ui.define([
 	 * @returns {sap.ui.table.Table} Reference to <code>this</code> in order to allow method chaining
 	 * @public
 	 */
-	Table.prototype.setThreshold = function (iThreshold) {
+	Table.prototype.setThreshold = function(iThreshold) {
 		this.setProperty("threshold", iThreshold, true);
 		return this;
 	};
@@ -3517,7 +3473,7 @@ sap.ui.define([
 			oSyncExtension.syncRowCount(iNumberOfRows);
 		}, this);
 
-		if (this._bRowAggregationInvalid && aRows.length > 0) {
+		if (this._bRowAggregationInvalid) {
 			this.destroyAggregation("rows", true);
 			aRows = [];
 		}
@@ -3905,14 +3861,14 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	Table.prototype._restoreAppDefaultsColumnHeaderSortFilter = function () {
+	Table.prototype._restoreAppDefaultsColumnHeaderSortFilter = function() {
 		var aColumns = this.getColumns();
 		jQuery.each(aColumns, function(iIndex, oColumn){
 			oColumn._restoreAppDefaults();
 		});
 	};
 
-	Table.prototype.setBusy = function (bBusy, sBusySection) {
+	Table.prototype.setBusy = function(bBusy, sBusySection) {
 		var bBusyChanged = this.getBusy() != bBusy;
 
 		sBusySection = "sapUiTableCnt";
@@ -3928,7 +3884,7 @@ sap.ui.define([
 	 * Avoids the request delays.
 	 * @see JSDoc generated by SAPUI5 control API generator
 	 */
-	Table.prototype.setEnableBusyIndicator = function (bValue) {
+	Table.prototype.setEnableBusyIndicator = function(bValue) {
 		this.setProperty("enableBusyIndicator", bValue, true);
 		if (!bValue) {
 			this.setBusy(false);
@@ -3940,7 +3896,7 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	Table.prototype._onBindingDataRequested = function (oEvent) {
+	Table.prototype._onBindingDataRequested = function(oEvent) {
 		if (oEvent.getSource() != this.getBinding("rows") || oEvent.getParameter("__simulateAsyncAnalyticalBinding")) {
 			return;
 		}
@@ -3966,13 +3922,18 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	Table.prototype._onBindingDataReceived = function (oEvent) {
+	Table.prototype._onBindingDataReceived = function(oEvent) {
 		if (oEvent.getSource() != this.getBinding("rows") || oEvent.getParameter("__simulateAsyncAnalyticalBinding")) {
 			return;
 		}
 
 		this._iPendingRequests--;
 		this._bPendingRequest = false;
+
+		// clear any lazy row creation timeout as rows will anyway be created due to binding events
+		if (this._mTimeouts.refreshRowsAdjustRows) {
+			window.clearTimeout(this._mTimeouts.refreshRowsAdjustRows);
+		}
 
 		// The AnalyticalBinding updates the length after it fires dataReceived, therefore the total row count will not change here. Later,
 		// when the contexts are retrieved in Table#_getRowContexts, the AnalyticalBinding updates the length and Table#_updateTotalRowCount
@@ -4008,7 +3969,7 @@ sap.ui.define([
 	 * Retrieves the number of selected entries.
 	 * @private
 	 */
-	Table.prototype._getSelectedIndicesCount = function () {
+	Table.prototype._getSelectedIndicesCount = function() {
 		return this.getSelectedIndices().length;
 	};
 

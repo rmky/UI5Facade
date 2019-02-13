@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @class The EasyAdd Plugin adds an Icon to an Overlay, which allows to trigger add operations directly
 	 * @extends sap.ui.rta.plugin.additionalElements.AdditionalElementsPlugin
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @constructor
 	 * @private
 	 * @since 1.48

@@ -1001,6 +1001,8 @@
 	parameters: [], // sap.ui.unified.FileUploaderParameter, since 1.12.2
 	headerParameters: [], // sap.ui.unified.FileUploaderParameter
 	xhrSettings: undefined, // sap.ui.unified.FileUploaderXHRSettings, since 1.52
+	ariaDescribedBy: [], // sap.ui.core.Control
+	ariaLabelledBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this],
@@ -1067,6 +1069,8 @@
 	iconSelected=""
 	iconFirst="true"
 	iconOnly="false"
+	ariaDescribedBy=""
+	ariaLabelledBy=""
 	validateFieldGroup=""
 	change=""
 	uploadComplete=""

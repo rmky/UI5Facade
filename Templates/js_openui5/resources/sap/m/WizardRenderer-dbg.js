@@ -44,7 +44,7 @@ sap.ui.define([], function () {
 		oRm.write(">");
 
 		var aRenderingOrder = this._getStepsRenderingOrder(oWizard);
-		aRenderingOrder.forEach(oRm.renderControl);
+		aRenderingOrder.forEach(oRm.renderControl, oRm);
 
 		oRm.write("</section>");
 	};

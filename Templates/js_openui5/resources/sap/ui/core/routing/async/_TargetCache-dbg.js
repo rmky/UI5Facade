@@ -22,7 +22,9 @@ sap.ui.define([
 		_getObjectWithGlobalId : function (oOptions, sType, bNoPromise) {
 			var that = this,
 				vPromiseOrObject,
-				sName;
+				sName,
+				oInstanceCache,
+				aWrittenIds = [];
 
 			function fnCreateObjectAsync() {
 				switch (sType) {
@@ -45,7 +47,10 @@ sap.ui.define([
 
 			function afterLoaded(oObject) {
 				if (that._oCache) { // the TargetCache may already be destroyed
-					that._oCache[sType.toLowerCase()][sName] = oObject;
+					aWrittenIds.forEach(function(sId) {
+						oInstanceCache[sId] = oObject;
+					});
+
 					that.fireCreated({
 						object: oObject,
 						type: sType,
@@ -56,14 +61,15 @@ sap.ui.define([
 				return oObject;
 			}
 
-
 			if (oOptions.async === undefined) {
 				oOptions.async = true;
 			}
+
 			sName = oOptions.name;
 			this._checkName(sName, sType);
-			vPromiseOrObject = this._oCache[sType.toLowerCase()][sName];
 
+			oInstanceCache = this._oCache[sType.toLowerCase()][sName];
+			vPromiseOrObject = oInstanceCache && oInstanceCache[oOptions.id];
 
 			if (vPromiseOrObject) {
 				return vPromiseOrObject;
@@ -81,7 +87,17 @@ sap.ui.define([
 				vPromiseOrObject.loaded().then(afterLoaded);
 			}
 
-			this._oCache[sType.toLowerCase()][sName] = vPromiseOrObject;
+			if (!oInstanceCache) {
+				oInstanceCache = this._oCache[sType.toLowerCase()][sName] = {};
+				// save the object also to the undefined key if this is the first object created for its class
+				oInstanceCache[undefined] = vPromiseOrObject;
+				aWrittenIds.push(undefined);
+			}
+
+			if (oOptions.id !== undefined) {
+				oInstanceCache[oOptions.id] = vPromiseOrObject;
+				aWrittenIds.push(oOptions.id);
+			}
 
 			return vPromiseOrObject;
 		},

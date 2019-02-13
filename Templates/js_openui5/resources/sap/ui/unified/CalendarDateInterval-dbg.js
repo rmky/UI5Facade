@@ -50,7 +50,7 @@ sap.ui.define([
 	 * @class
 	 * Calendar with dates displayed in one line.
 	 * @extends sap.ui.unified.Calendar
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -255,9 +255,7 @@ sap.ui.define([
 				sAriaLabel = sAriaLabel + " " + sEndYear;
 			}
 			oHeader.setTextButton1(sText, true);
-			if (oTexts.bShort) {
-				oHeader.setAriaLabelButton1(sAriaLabel);
-			}
+			oHeader.setAriaLabelButton1(sAriaLabel);
 		}
 	};
 

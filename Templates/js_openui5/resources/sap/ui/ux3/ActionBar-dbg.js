@@ -6,14 +6,56 @@
 
 // Provides control sap.ui.ux3.ActionBar.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
     'sap/ui/core/Control',
     'sap/ui/core/delegate/ItemNavigation',
     './library',
-    "./ActionBarRenderer"
+    './ActionBarRenderer',
+    'sap/ui/core/ResizeHandler',
+    'sap/ui/ux3/ThingAction',
+    'sap/ui/ux3/ToolPopup',
+    'sap/ui/ux3/Feeder',
+    'sap/ui/core/Popup',
+    'sap/ui/commons/MenuItem',
+    'sap/ui/commons/Menu',
+    'sap/ui/commons/MenuButton',
+    'sap/ui/commons/Button',
+    'sap/ui/Device',
+    'sap/base/Log'
 ],
-	function(jQuery, Control, ItemNavigation, library, ActionBarRenderer) {
+	function(
+	    jQuery,
+		Control,
+		ItemNavigation,
+		library,
+		ActionBarRenderer,
+		ResizeHandler,
+		ThingAction,
+		ToolPopup,
+		Feeder,
+		Popup,
+		MenuItem,
+		Menu,
+		MenuButton,
+		Button,
+		Device,
+		Log
+	) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.core.Popup.Dock
+	var Dock = Popup.Dock;
+
+	// shortcut for sap.ui.ux3.FeederType
+	var FeederType = library.FeederType;
+
+	// shortcut for sap.ui.ux3.ActionBarSocialActions
+	var ActionBarSocialActions = library.ActionBarSocialActions;
+
+	// shortcut for sap.ui.ux3.FollowActionState
+	var FollowActionState = library.FollowActionState;
 
 
 
@@ -30,7 +72,7 @@ sap.ui.define([
 	 *
 	 * When using this control, please be aware that it fulfills rather specific requirements: it has been designed for and is used within composite controls QuickView and ThingInspector.
 	 * @extends sap.ui.core.Control
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -49,7 +91,7 @@ sap.ui.define([
 			 * - FollowActionState.Follow
 			 * - FollowActionState.Hold
 			 */
-			followState : {type : "sap.ui.ux3.FollowActionState", group : "Misc", defaultValue : sap.ui.ux3.FollowActionState.Default},
+			followState : {type : "sap.ui.ux3.FollowActionState", group : "Misc", defaultValue : FollowActionState.Default},
 
 			/**
 			 * Indicates whether “Mark for Follow Up” is active
@@ -182,7 +224,7 @@ sap.ui.define([
 		//Initialize map which will contain the actually used ThingActions
 		this.mActionMap = {};
 		//Provide convenient access to the static array of action identifiers for "mActionMap"
-		this.mActionKeys = sap.ui.ux3.ActionBarSocialActions;
+		this.mActionKeys = ActionBarSocialActions;
 
 		this.oRb = sap.ui.getCore().getLibraryResourceBundle("sap.ui.ux3");
 
@@ -238,11 +280,10 @@ sap.ui.define([
 		}
 		// cleanup the resize handler
 		if (this._sResizeListenerId) {
-			sap.ui.core.ResizeHandler.deregister(this._sResizeListenerId);
+			ResizeHandler.deregister(this._sResizeListenerId);
 			this._sResizeListenerId = null;
 		}
 
-		this.mActionKeys = null;
 		this.mActionKeys = null;
 		this.oRb = null;
 
@@ -311,7 +352,7 @@ sap.ui.define([
 		var oResult = this.mActionMap[sActionId];
 		if (!oResult) {
 			//no instance of the social action created for this action bar instance so far
-			oResult = new sap.ui.ux3.ThingAction({id : this.getId() + "-" + sActionId});
+			oResult = new ThingAction({id : this.getId() + "-" + sActionId});
 			switch (sActionId) {
 				case this.mActionKeys.Update:
 					oResult.name = this.mActionKeys.Update;
@@ -319,14 +360,14 @@ sap.ui.define([
 					oResult.cssClass = "sapUiUx3ActionBarUpdateAction";
 					//prepares the feeder popup
 					oResult.fnInit = function ( oActionBar ) {
-						oActionBar._oUpdatePopup = new sap.ui.ux3.ToolPopup({
+						oActionBar._oUpdatePopup = new ToolPopup({
 						id : oActionBar.getId() + "-UpdateActionPopup"
 						}).addStyleClass("sapUiUx3ActionBarUpdatePopup");
 						oActionBar._oUpdatePopup._ensurePopup().setAutoClose(true);
 
-						oActionBar._feeder = new sap.ui.ux3.Feeder({
+						oActionBar._feeder = new Feeder({
 							id: oActionBar.getId() + "-Feeder",
-							type: sap.ui.ux3.FeederType.Comment,
+							type: FeederType.Comment,
 							thumbnailSrc : oActionBar.getThingIconURI(),
 							text: "",
 							submit : jQuery.proxy(
@@ -349,15 +390,17 @@ sap.ui.define([
 						} else {
 							var oDomRef, iTIHeight, iContentHeight;
 
-							oActionBar._oUpdatePopup.setPosition(sap.ui.core.Popup.Dock.BeginBottom, sap.ui.core.Popup.Dock.BeginTop, oEvent.getSource().getDomRef(), "-8 -13", "none");
+							oActionBar._oUpdatePopup.setPosition(Dock.BeginBottom, Dock.BeginTop, oEvent.getSource().getDomRef(), "-8 -13", "none");
 							oActionBar._oUpdatePopup.open();
 							oDomRef = jQuery(oActionBar._oUpdatePopup.getDomRef());
 							iTIHeight = jQuery(window).height();
 							iContentHeight = jQuery(oActionBar.getDomRef()).offset().top;
 							oDomRef.css("top", "auto").css("bottom",(iTIHeight - iContentHeight + 7) + "px");
-							jQuery.sap.delayedCall(1000, this, function() {
-								jQuery.sap.focus(oActionBar._feeder.getFocusDomRef());
-							});
+							setTimeout(function() {
+								if (oActionBar._feeder.getFocusDomRef()) {
+									oActionBar._feeder.getFocusDomRef().focus();
+								}
+							}, 1000);
 
 						}
 						oActionBar._updateSocialActionDomRef(oResult);
@@ -382,12 +425,12 @@ sap.ui.define([
 				oResult.tooltipKey = "ACTIONBAR_FOLLOW_ACTION_TOOLTIP_FOLLOW";
 				oResult.cssClass = "sapUiUx3ActionBarFollowAction";
 				oResult.isMenu = function(oActionBar) {
-					return oActionBar.getFollowState() != sap.ui.ux3.FollowActionState.Default;
+					return oActionBar.getFollowState() != FollowActionState.Default;
 				};
 				oResult.fnActionSelected = function (oEvent, oActionBar) {
-					if (oActionBar.getFollowState() == sap.ui.ux3.FollowActionState.Default) {
+					if (oActionBar.getFollowState() == FollowActionState.Default) {
 							//set new follow state BEFORE firing the corresponding event
-							oActionBar._setFollowState(sap.ui.ux3.FollowActionState.Follow);
+							oActionBar._setFollowState(FollowActionState.Follow);
 							oActionBar.fireActionSelected({
 								id : followAction.name,
 								state : "followState",
@@ -398,8 +441,7 @@ sap.ui.define([
 							this._fnPrepareFollowMenu(oEvent, oActionBar);
 
 						} else {
-							var eDock = sap.ui.core.Popup.Dock;
-							oActionBar._oMenu.open(false, followAction.getFocusDomRef(), eDock.BeginBottom, eDock.BeginTop, followAction.getDomRef());
+							oActionBar._oMenu.open(false, followAction.getFocusDomRef(), Dock.BeginBottom, Dock.BeginTop, followAction.getDomRef());
 						}
 					};
 				oResult.fnCalculateState = function ( oActionBar ) {
@@ -410,28 +452,28 @@ sap.ui.define([
 					var imagePath = sap.ui.resource("sap.ui.ux3", "themes/" + sap.ui.getCore().getConfiguration().getTheme());
 					if (oActionBar.mActionMap[oActionBar.mActionKeys.Follow]) {
 						if (!oActionBar._oUnFollowItem) {
-							oActionBar._oUnFollowItem = new sap.ui.commons.MenuItem({
+							oActionBar._oUnFollowItem = new MenuItem({
 								id : oActionBar.getId() + "-unfollowState",
 								text : oActionBar._getLocalizedText("TI_FOLLOW_ACTION_MENU_TXT_UNFOLLOW"),
 								icon : imagePath + "/img/menu_unlisten.png"
 							});
 						}
 						if (!oActionBar._oHoldItem) {
-							oActionBar._oHoldItem = new sap.ui.commons.MenuItem({
+							oActionBar._oHoldItem = new MenuItem({
 								id : oActionBar.getId() + "-holdState",
 								text : oActionBar._getLocalizedText("TI_FOLLOW_ACTION_MENU_TXT_HOLD"),
 								icon : imagePath + "/img/menu_hold.png"
 							});
 						}
 						if (!oActionBar._oUnHoldItem) {
-							oActionBar._oUnHoldItem = new sap.ui.commons.MenuItem({
+							oActionBar._oUnHoldItem = new MenuItem({
 								id : oActionBar.getId() + "-unholdState",
 								text : oActionBar._getLocalizedText("TI_FOLLOW_ACTION_MENU_TXT_UNHOLD"),
 								icon : imagePath + "/img/menu_follow.png"
 							});
 						}
 						if (!oActionBar._oMenu) {
-							oActionBar._oMenu = new sap.ui.commons.Menu({
+							oActionBar._oMenu = new Menu({
 								id : oActionBar.getId() + "-followActionMenu"
 							});
 
@@ -442,17 +484,17 @@ sap.ui.define([
 							oActionBar._oMenu.addItem(oActionBar._oUnHoldItem);
 							oActionBar._oMenu.addItem(oActionBar._oUnFollowItem);
 						}
-						if (oActionBar.getFollowState() == sap.ui.ux3.FollowActionState.Default) {
+						if (oActionBar.getFollowState() == FollowActionState.Default) {
 							oActionBar.mActionMap[oActionBar.mActionKeys.Follow].setTooltip(oActionBar._getLocalizedText("TI_FOLLOW_ACTION_TOOLTIP_FOLLOW"));
 							oActionBar._oHoldItem.setVisible(false);
 							oActionBar._oUnFollowItem.setVisible(false);
 							oActionBar._oUnHoldItem.setVisible(false);
-						} else if (oActionBar.getFollowState() == sap.ui.ux3.FollowActionState.Follow) {
+						} else if (oActionBar.getFollowState() == FollowActionState.Follow) {
 							oActionBar.mActionMap[oActionBar.mActionKeys.Follow].setTooltip(oActionBar._getLocalizedText("TI_FOLLOW_ACTION_TOOLTIP_STOPPAUSE_FOLLOW"));
 							oActionBar._oHoldItem.setVisible(true);
 							oActionBar._oUnFollowItem.setVisible(true);
 							oActionBar._oUnHoldItem.setVisible(false);
-						} else if (oActionBar.getFollowState() == sap.ui.ux3.FollowActionState.Hold) {
+						} else if (oActionBar.getFollowState() == FollowActionState.Hold) {
 							oActionBar.mActionMap[oActionBar.mActionKeys.Follow].setTooltip(oActionBar._getLocalizedText("TI_FOLLOW_ACTION_TOOLTIP_STOPCONTINUE_FOLLOW"));
 							oActionBar._oHoldItem.setVisible(false);
 							oActionBar._oUnFollowItem.setVisible(true);
@@ -467,13 +509,13 @@ sap.ui.define([
 						var sId = oEvent.getParameters().item.getId();
 						//set new follow state BEFORE firing the corresponding event
 						if (sId == oActionBar.getId() + "-followState") {
-							oActionBar._setFollowState(sap.ui.ux3.FollowActionState.Follow);
+							oActionBar._setFollowState(FollowActionState.Follow);
 						} else if (sId == oActionBar.getId() + "-unfollowState") {
-							oActionBar._setFollowState(sap.ui.ux3.FollowActionState.Default);
+							oActionBar._setFollowState(FollowActionState.Default);
 						} else if (sId == oActionBar.getId() + "-holdState") {
-							oActionBar._setFollowState(sap.ui.ux3.FollowActionState.Hold);
+							oActionBar._setFollowState(FollowActionState.Hold);
 						} else if (sId + "-unholdState") {
-							oActionBar._setFollowState(sap.ui.ux3.FollowActionState.Follow);
+							oActionBar._setFollowState(FollowActionState.Follow);
 						}
 
 						oActionBar.fireActionSelected({
@@ -542,7 +584,7 @@ sap.ui.define([
 				oResult.cssClass = "sapUiUx3ActionBarOpenThingAction";
 				break;
 			default:
-				jQuery.sap.log.warning("Function \"sap.ui.ux3.ActionBar.prototype._getSocialAction\" was called with unknown action key \"" + sActionId +
+				Log.warning("Function \"sap.ui.ux3.ActionBar.prototype._getSocialAction\" was called with unknown action key \"" + sActionId +
 					"\".\n\tNo action will not be rendered.");
 				return undefined;
 			}
@@ -596,7 +638,7 @@ sap.ui.define([
 		var content = this.$("socialActions");
 		if (content.length > 0) {
 			var rm = sap.ui.getCore().createRenderManager();
-			sap.ui.ux3.ActionBarRenderer.renderSocialActions(rm, this);
+			ActionBarRenderer.renderSocialActions(rm, this);
 			rm.flush(content[0]);
 			rm.destroy();
 		}
@@ -630,7 +672,7 @@ sap.ui.define([
 			var content = this.$("businessActions");
 			if (content && content.length > 0) {
 				var rm = sap.ui.getCore().createRenderManager();
-				sap.ui.ux3.ActionBarRenderer.renderBusinessActionButtons(rm, this);
+				ActionBarRenderer.renderBusinessActionButtons(rm, this);
 				rm.flush(content[0]);
 				rm.destroy();
 			}
@@ -783,7 +825,7 @@ sap.ui.define([
 		if (oUpdateAction && this._feeder) {
 			this._feeder.setThumbnailSrc(oIcon);
 		} else {
-			jQuery.sap.log.warning("Function \"sap.ui.ux3.ActionBar.setThingIconURI\": failed to set new icon \"" + oIcon +
+			Log.warning("Function \"sap.ui.ux3.ActionBar.setThingIconURI\": failed to set new icon \"" + oIcon +
 				"\".\n\tReason: either updateAction " + oUpdateAction + " or feeder " + this._feeder + " is not defined."  );
 		}
 		return this;
@@ -1190,19 +1232,18 @@ sap.ui.define([
 		// Prepare the 'Other Actions' toolbar button and add business actions as menu items to the
 		// 'Other Actions' toolbar button
 		if (!this._oMoreMenuButton) {
-			this._oMoreMenuButton = new sap.ui.commons.MenuButton(this.getId() + "-MoreMenuButton");
+			this._oMoreMenuButton = new MenuButton(this.getId() + "-MoreMenuButton");
 			this._oMoreMenuButton.setText(this._getLocalizedText("ACTIONBAR_BUTTON_MORE_TEXT"));
 			this._oMoreMenuButton.setTooltip(this._getLocalizedText("ACTIONBAR_BUTTON_MORE_TOOLTIP"));
-			var eDock = sap.ui.core.Popup.Dock;
 
 			//make sure menu is displayed OVER the more button and towards the inside of the containing
 			//control
-			this._oMoreMenuButton.setDockButton(eDock.EndTop);
-			this._oMoreMenuButton.setDockMenu(eDock.EndBottom);
+			this._oMoreMenuButton.setDockButton(Dock.EndTop);
+			this._oMoreMenuButton.setDockMenu(Dock.EndBottom);
 
 			this._styleMoreMenuButton();
 
-			this._oMoreMenu = new sap.ui.commons.Menu(this.getId() + "-MoreMenu", {
+			this._oMoreMenu = new Menu(this.getId() + "-MoreMenu", {
 				ariaDescription: this._getLocalizedText("ACTIONBAR_BUTTON_MORE_TOOLTIP")
 			});
 
@@ -1219,7 +1260,7 @@ sap.ui.define([
 			this._oMoreMenuButton.setMenu(this._oMoreMenu);
 		}
 		var sMenuItemID = this._oMoreMenu.getId() + "-MenuItem-" + oBusinessAction.getId();
-		var oMenuItem = new sap.ui.commons.MenuItem( sMenuItemID, {text: oBusinessAction.getText(), enabled: oBusinessAction.getEnabled()});
+		var oMenuItem = new MenuItem( sMenuItemID, {text: oBusinessAction.getText(), enabled: oBusinessAction.getEnabled()});
 		oMenuItem.action = oBusinessAction;
 		oMenuItem.attachSelect(jQuery.proxy(function (oControlEvent) {
 			this.fireActionSelected({
@@ -1308,7 +1349,7 @@ sap.ui.define([
 						if (oIthButtonDomRef.length > 0) {
 							oIthButtonDomRef.css('display', '');
 							//due to problems in ie8
-							if (!!sap.ui.Device.browser.internet_explorer) {
+							if (Device.browser.msie) {
 								this._rerenderBusinessAction(actionButtons[iIndex]);
 							}
 							if (actionButtons[iIndex].oMenuItem) {
@@ -1341,7 +1382,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ActionBar.prototype.onBeforeRendering = function() {
-		sap.ui.core.ResizeHandler.deregister(this._sResizeListenerId);
+		ResizeHandler.deregister(this._sResizeListenerId);
 		this._sResizeListenerId = null;
 	};
 
@@ -1351,7 +1392,7 @@ sap.ui.define([
 	 */
 	ActionBar.prototype.onAfterRendering = function() {
 		// listen to resize events of the browser (or surrounding DOM elements)
-		this._sResizeListenerId = sap.ui.core.ResizeHandler.register(this.getDomRef(), jQuery.proxy(this._onresize, this));
+		this._sResizeListenerId = ResizeHandler.register(this.getDomRef(), jQuery.proxy(this._onresize, this));
 		if (this._bCallOnresize) {
 			this._onresize();
 		}
@@ -1372,7 +1413,7 @@ sap.ui.define([
 
 		if (!this._iSocActListWidth) {
 			if (this.getDividerWidth()) {
-				this._iSocActListWidth = parseInt(this.getDividerWidth(), 10);
+				this._iSocActListWidth = parseInt(this.getDividerWidth());
 			} else {
 				// min width of the social actions part is determined by the number of
 				// actually displayed social actions
@@ -1436,7 +1477,7 @@ sap.ui.define([
 	ActionBar.prototype._createButtonForAction = function(oBusinessAction, oMenuItem, iIndex) {
 		if (!this.getAlwaysShowMoreMenu() && !oBusinessAction.showInMoreMenu) {
 			// Add business actions as individual buttons
-			var oButton = new sap.ui.commons.Button({
+			var oButton = new Button({
 				id : this.getId() + "-" + oBusinessAction.getId() + "Button",
 				text : oBusinessAction.getText(),
 				tooltip : oBusinessAction.getTooltip(),
@@ -1519,7 +1560,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ActionBar.prototype.invalidate = function(oControl) {
-		if (oControl instanceof sap.ui.ux3.ThingAction) {
+		if (oControl instanceof ThingAction) {
 			var oBusinessActionButton = sap.ui.getCore().byId(this.getId() + "-" + oControl.getId() + "Button");
 			var oBusinessMenuItem = this._oMoreMenu && this._oMoreMenu._getMenuItemForAction(oControl);
 			if (oBusinessActionButton) {
@@ -1542,4 +1583,4 @@ sap.ui.define([
 
 	return ActionBar;
 
-}, /* bExport= */ true);
+});

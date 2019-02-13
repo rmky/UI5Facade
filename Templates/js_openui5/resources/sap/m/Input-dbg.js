@@ -18,6 +18,7 @@ sap.ui.define([
 	'./SuggestionsPopover',
 	"sap/ui/dom/containsOrEquals",
 	"sap/base/assert",
+	"./InputRenderer",
 	"sap/ui/thirdparty/jquery",
 	// jQuery Plugin "selectText"
 	"sap/ui/dom/jquery/selectText"
@@ -35,6 +36,7 @@ function(
 	SuggestionsPopover,
 	containsOrEquals,
 	assert,
+	InputRenderer,
 	jQuery
 ) {
 	"use strict";
@@ -101,7 +103,7 @@ function(
 	 *
 	 * @extends sap.m.InputBase
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -228,7 +230,14 @@ function(
 			 * Specifies whether the suggestions highlighting is enabled.
 			 * @since 1.46
 			 */
-			enableSuggestionsHighlighting: {type: "boolean", group: "Behavior", defaultValue: true}
+			enableSuggestionsHighlighting: {type: "boolean", group: "Behavior", defaultValue: true},
+
+			/**
+			 * Specifies whether autocomplete is enabled.
+			 * Works only if "showSuggestion" property is set to true.
+			 * @since 1.61
+			 */
+			autocomplete: {type: "boolean", group: "Behavior", defaultValue: true}
 		},
 		defaultAggregation : "suggestionItems",
 		aggregations : {
@@ -632,10 +641,6 @@ function(
 			this._closeSuggestionPopup();
 		}
 
-		if (!Device.support.touch) {
-			this._doSelect();
-		}
-
 		this._bSelectingItem = false;
 	};
 
@@ -787,10 +792,6 @@ function(
 
 		if (!(this._bUseDialog && this instanceof sap.m.MultiInput && this._isMultiLineMode)) {
 			this._closeSuggestionPopup();
-		}
-
-		if (!Device.support.touch) {
-			this._doSelect();
 		}
 
 		this._bSelectingItem = false;

@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.commons.RangeSlider.
-sap.ui.define(['jquery.sap.global', './Slider', './library', "./RangeSliderRenderer"],
-	function(jQuery, Slider, library, RangeSliderRenderer) {
+sap.ui.define(['./Slider', './library', './RangeSliderRenderer'],
+	function(Slider, library, RangeSliderRenderer) {
 	"use strict";
 
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', './Slider', './library', "./RangeSliderRende
 	 * @extends sap.ui.commons.Slider
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -651,4 +651,4 @@ sap.ui.define(['jquery.sap.global', './Slider', './library', "./RangeSliderRende
 
 	return RangeSlider;
 
-}, /* bExport= */ true);
+});

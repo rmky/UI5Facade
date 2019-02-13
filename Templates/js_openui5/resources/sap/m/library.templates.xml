@@ -765,6 +765,7 @@
 	popinDisplay: sap.m.PopinDisplay.Block, // sap.m.PopinDisplay, since 1.13.2
 	mergeDuplicates: false, // boolean, since 1.16
 	mergeFunctionName: "getText", // string, since 1.16
+	sortIndicator: sap.ui.core.SortOrder.None, // sap.ui.core.SortOrder, since 1.61
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -785,7 +786,8 @@
 	popinHAlign="Begin"
 	popinDisplay="Block"
 	mergeDuplicates="false"
-	mergeFunctionName="getText">
+	mergeFunctionName="getText"
+	sortIndicator="None">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
@@ -3285,6 +3287,7 @@
 	textFormatter: , // any, since 1.44
 	suggestionRowValidator: , // any, since 1.44
 	enableSuggestionsHighlighting: true, // boolean, since 1.46
+	autocomplete: true, // boolean, since 1.61
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -3356,6 +3359,7 @@
 	textFormatter=""
 	suggestionRowValidator=""
 	enableSuggestionsHighlighting="true"
+	autocomplete="true"
 	ariaLabelledBy=""
 	selectedItem=""
 	selectedRow=""
@@ -4735,6 +4739,7 @@
 	textFormatter: , // any, since 1.44
 	suggestionRowValidator: , // any, since 1.44
 	enableSuggestionsHighlighting: true, // boolean, since 1.46
+	autocomplete: true, // boolean, since 1.61
 	enableMultiLineMode: false, // boolean, since 1.28
 	maxTokens: undefined, // int, since 1.36
 	tooltip: undefined, // sap.ui.core.TooltipBase
@@ -4815,6 +4820,7 @@
 	textFormatter=""
 	suggestionRowValidator=""
 	enableSuggestionsHighlighting="true"
+	autocomplete="true"
 	enableMultiLineMode="false"
 	maxTokens=""
 	ariaLabelledBy=""
@@ -5340,6 +5346,7 @@
 	iconAlt: undefined, // string
 	iconTooltip: undefined, // string
 	iconDensityAware: true, // boolean
+	imageShape: sap.m.ObjectHeaderPictureShape.Square, // sap.m.ObjectHeaderPictureShape, since 1.61
 	markFavorite: false, // boolean, since 1.16.0
 	markFlagged: false, // boolean, since 1.16.0
 	showMarkers: false, // boolean, since 1.16.0
@@ -5407,6 +5414,7 @@
 	iconAlt=""
 	iconTooltip=""
 	iconDensityAware="true"
+	imageShape="Square"
 	markFavorite="false"
 	markFlagged="false"
 	showMarkers="false"
@@ -7776,6 +7784,9 @@
 	editable: true, // boolean, since 1.25
 	valueState: sap.ui.core.ValueState.None, // sap.ui.core.ValueState, since 1.25
 	textAlign: sap.ui.core.TextAlign.Begin, // sap.ui.core.TextAlign, since 1.28
+	editableParent: true, // boolean, since 1.61
+	posinset: "", // string, since 1.61
+	setsize: "", // string, since 1.61
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -7809,6 +7820,9 @@
 	editable="true"
 	valueState="None"
 	textAlign="Begin"
+	editableParent="true"
+	posinset=""
+	setsize=""
 	ariaDescribedBy=""
 	ariaLabelledBy=""
 	validateFieldGroup=""

@@ -33,7 +33,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.SimpleType
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @public
 	 * @param {object} [oFormatOptions] Formatting options. For a list of all available options, see {@link sap.ui.core.format.DateFormat.getDateInstance DateFormat}.
@@ -111,6 +111,7 @@ sap.ui.define([
 				aViolatedConstraints = [],
 				aMessages = [],
 				oInputFormat = this.oInputFormat,
+				sContent,
 				that = this;
 
 			// convert date into date object to compare
@@ -122,18 +123,21 @@ sap.ui.define([
 				if (oInputFormat) {
 					oContent = oInputFormat.parse(oContent);
 				}
+				sContent = that.oOutputFormat.format(oContent);
+
 				switch (sName) {
 					case "minimum":
 						if (oValue < oContent) {
 							aViolatedConstraints.push("minimum");
-							aMessages.push(oBundle.getText(that.sName + ".Minimum", [oContent]));
+							aMessages.push(oBundle.getText(that.sName + ".Minimum", [sContent]));
 						}
 						break;
 					case "maximum":
 						if (oValue > oContent) {
 							aViolatedConstraints.push("maximum");
-							aMessages.push(oBundle.getText(that.sName + ".Maximum", [oContent]));
+							aMessages.push(oBundle.getText(that.sName + ".Maximum", [sContent]));
 						}
+						break;
 				}
 			});
 			if (aViolatedConstraints.length > 0) {
@@ -154,7 +158,7 @@ sap.ui.define([
 				if (isNaN(oValue)) {
 					throw new FormatException("Cannot format date: " + oValue + " is not a valid Timestamp");
 				} else {
-					oValue = parseInt(oValue, 10);
+					oValue = parseInt(oValue);
 				}
 			}
 			oValue = new Date(oValue);

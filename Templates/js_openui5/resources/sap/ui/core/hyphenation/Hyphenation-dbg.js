@@ -83,7 +83,36 @@ function (jQuery, ManagedObject, Log, Locale, LocaleData) {
 	 * @type {map}
 	 * @private
 	 */
-	var mLanguageNamesInEnglish = (new LocaleData(new Locale("en"))).getLanguages();
+	var mLanguageNamesInEnglish = {
+		"bg": "Bulgarian",
+		"ca": "Catalan",
+		"hr": "Croatian",
+		"cs": "Czech",
+		"da": "Danish",
+		"nl": "Dutch",
+		"en": "English",
+		"et": "Estonian",
+		"fi": "Finnish",
+		"fr": "French",
+		"de": "German",
+		"el": "Greek",
+		"hi": "Hindi",
+		"hu": "Hungarian",
+		"it": "Italian",
+		"lt": "Lithuanian",
+		"nb": "Norwegian Bokmål",
+		"no": "Norwegian",
+		"pl": "Polish",
+		"pt": "Portuguese",
+		"ru": "Russian",
+		"sr": "Serbian",
+		"sl": "Slovenian",
+		"es": "Spanish",
+		"sv": "Swedish",
+		"th": "Thai",
+		"tr": "Turkish",
+		"uk": "Ukrainian"
+	  };
 
 	var oBrowserSupportCSS = {};
 	var oSupportCheck = {};
@@ -435,7 +464,7 @@ function (jQuery, ManagedObject, Log, Locale, LocaleData) {
 	 * @see {@link topic:6322164936f047de941ec522b95d7b70 Hyphenation for Text Controls}
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @hideconstructor
 	 * @public
 	 * @since 1.60

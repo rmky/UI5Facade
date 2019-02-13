@@ -20,14 +20,14 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.layout
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.layout",
-		version: "1.60.1",
+		version: "1.61.2",
 		dependencies: ["sap.ui.core"],
 		designtime: "sap/ui/layout/designtime/library.designtime",
 		types: [
@@ -779,6 +779,9 @@ sap.ui.define([
 	 * @see {@link https://developer.mozilla.org/en-US/docs/Glossary/Grid_tracks}
 	 * @since 1.60.0
 	 * @public
+	 * @namespace
+	 * @final
+	 * @ui5-metamodel This simple type will also be described in the UI5 (legacy) designtime metamodel
 	 */
 	sap.ui.layout.cssgrid.CSSGridTrack = DataType.createType("sap.ui.layout.cssgrid.CSSGridTrack", {
 			isValid: function (sValue) {
@@ -809,6 +812,9 @@ sap.ui.define([
 	 *
 	 * @since 1.60.0
 	 * @public
+	 * @namespace
+	 * @final
+	 * @ui5-metamodel This simple type will also be described in the UI5 (legacy) designtime metamodel
 	 */
 	sap.ui.layout.cssgrid.CSSGridGapShortHand = DataType.createType("sap.ui.layout.cssgrid.CSSGridGapShortHand", {
 			isValid: function (vValue) {
@@ -847,7 +853,9 @@ sap.ui.define([
 	 * @see {@link https://developer.mozilla.org/en-US/docs/Glossary/Grid_lines}
 	 * @since 1.60.0
 	 * @public
-	 * @ui5-metamodel This simple type also will be described in the UI5 (legacy) designtime metamodel
+	 * @namespace
+	 * @final
+	 * @ui5-metamodel This simple type will also be described in the UI5 (legacy) designtime metamodel
 	 */
 	sap.ui.layout.cssgrid.CSSGridLine = DataType.createType("sap.ui.layout.cssgrid.CSSGridLine", {
 			isValid: function (sValue) {
@@ -865,6 +873,7 @@ sap.ui.define([
 	 * @enum {string}
 	 * @since 1.60.0
 	 * @public
+	 * @ui5-metamodel This simple type will also be described in the UI5 (legacy) designtime metamodel
 	 */
 	sap.ui.layout.cssgrid.CSSGridAutoFlow = {
 
@@ -892,6 +901,27 @@ sap.ui.define([
 		 */
 		ColumnDense: "ColumnDense"
 	};
+
+	/**
+	 * @classdesc A string type that represents how many boxes per row should be displayed for each screen size. The breakpoints are for extra large (XL), large (L), medium (M) and small (S) screen sizes.
+	 *
+	 * <b>Note:</b> The parameters must be provided in the order <XL L M S>.
+	 *
+	 * @example <code>XL7 L6 M4 S2</code>
+	 * @example <code>XL12 L12 M12 S1</code>
+	 * @since 1.61.0
+	 * @public
+	 * @namespace
+	 * @final
+	 * @ui5-metamodel This simple type will also be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.ui.layout.BoxesPerRowConfig = DataType.createType("sap.ui.layout.BoxesPerRowConfig", {
+			isValid : function(vValue) {
+				return /^(([Xx][Ll](?:[1-9]|1[0-2]))? ?([Ll](?:[1-9]|1[0-2]))? ?([Mm](?:[1-9]|1[0-2]))? ?([Ss](?:[1-9]|1[0-2]))?)$/.test(vValue);
+			}
+		},
+		DataType.getType("string")
+	);
 
 	return sap.ui.layout;
 

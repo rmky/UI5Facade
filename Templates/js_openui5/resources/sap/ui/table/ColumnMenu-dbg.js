@@ -10,12 +10,13 @@ sap.ui.define([
 	'sap/ui/unified/Menu',
 	'sap/ui/unified/MenuItem',
 	'sap/ui/unified/MenuTextFieldItem',
+	"sap/ui/unified/MenuRenderer",
 	'sap/ui/Device',
 	'./TableUtils',
 	"sap/base/assert",
 	"sap/ui/thirdparty/jquery"
 ],
-	function(library, Menu, MenuItem, MenuTextFieldItem, Device, TableUtils, assert, jQuery) {
+	function(library, Menu, MenuItem, MenuTextFieldItem, MenuRenderer, Device, TableUtils, assert, jQuery) {
 	"use strict";
 
 	/**
@@ -32,7 +33,7 @@ sap.ui.define([
 	 * @class
 	 * The column menu provides all common actions that can be performed on a column.
 	 * @extends sap.ui.unified.Menu
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -232,7 +233,7 @@ sap.ui.define([
 				sDir,
 					"TBL_SORT_" + sDir.toUpperCase(),
 				sIcon,
-				function (oEvent) {
+				function(oEvent) {
 					oColumn.sort(bDesc, oEvent.getParameter("ctrlKey") === true);
 				}
 			));

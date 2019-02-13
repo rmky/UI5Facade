@@ -15,7 +15,8 @@ sap.ui.define([
 	"sap/f/DynamicPageTitle",
 	"./DynamicPageRenderer",
 	"sap/base/Log",
-	"sap/ui/dom/getScrollbarSize"
+	"sap/ui/dom/getScrollbarSize",
+	"sap/ui/core/library"
 ], function(
 	library,
 	Control,
@@ -26,7 +27,8 @@ sap.ui.define([
 	DynamicPageTitle,
 	DynamicPageRenderer,
 	Log,
-	getScrollbarSize
+	getScrollbarSize,
+	coreLibrary
 ) {
 	"use strict";
 
@@ -93,7 +95,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -211,10 +213,20 @@ sap.ui.define([
 				footer: {type: "sap.m.IBar", multiple: false},
 
 				/**
+				 * Accessible landmark settings to be applied on the containers of the <code>sap.f.DynamicPage</code> control.
+				 *
+				 * If not set, no landmarks will be written.
+				 *
+				 * @since 1.61
+				 */
+				landmarkInfo : {type : "sap.f.DynamicPageAccessibleLandmarkInfo", multiple : false},
+
+				/**
 				 * <code>DynamicPage</code> custom <code>ScrollBar</code>.
 				 */
 				_scrollBar: {type: "sap.ui.core.Control", multiple: false, visibility: "hidden"}
 			},
+			dnd: { draggable: false, droppable: true },
 			designtime: "sap/f/designtime/DynamicPage.designtime"
 		}
 	});
@@ -249,6 +261,9 @@ sap.ui.define([
 	}
 
 	var bUseAnimations = sap.ui.getCore().getConfiguration().getAnimation();
+
+	// shortcut for sap.ui.core.AccessibleLandmarkRole
+	var AccessibleLandmarkRole = coreLibrary.AccessibleLandmarkRole;
 
 	/**
 	 * STATIC MEMBERS
@@ -290,6 +305,10 @@ sap.ui.define([
 		CONTENT: "_sContentResizeHandlerId"
 	};
 
+	DynamicPage.DIV = "div";
+	DynamicPage.HEADER = "header";
+	DynamicPage.FOOTER = "footer";
+
 	/**
 	 * LIFECYCLE METHODS
 	 */
@@ -321,7 +340,8 @@ sap.ui.define([
 
 	DynamicPage.prototype.onAfterRendering = function () {
 
-		var bShouldSnapWithScroll;
+		var bShouldSnapWithScroll,
+			iCurrentScrollPosition;
 
 		if (this._preserveHeaderStateOnScroll()) {
 			// Ensure that in this tick DP and it's aggregations are rendered
@@ -344,7 +364,8 @@ sap.ui.define([
 			bShouldSnapWithScroll = this.getHeader() && !this.getPreserveHeaderStateOnScroll() && this._canSnapHeaderOnScroll();
 
 			if (bShouldSnapWithScroll) {
-				this._setScrollPosition(this._getSnappingHeight());
+				iCurrentScrollPosition = this._getScrollBar().getScrollPosition();
+				this._setScrollPosition(iCurrentScrollPosition ? iCurrentScrollPosition : this._getSnappingHeight());
 			} else {
 				this._toggleHeaderVisibility(false);
 				this._moveHeaderToTitleArea();
@@ -683,15 +704,22 @@ sap.ui.define([
 
 		var iOffset = Math.ceil(this._getHeaderHeight()),
 			iCurrentScrollPosition = this._getScrollPosition(),
+			iCurrentScrollBarPosition = this._getScrollBar().getScrollPosition(),
 			iNewScrollPosition;
 
 		if (!iOffset) {
 			return;
 		}
 
-		iNewScrollPosition = this._bHeaderInTitleArea ?
+		// if the user has left the page and iCurrentScrollPosition is 0, we restore the previously scrolled position (if any),
+		// using the already saved scroll position of the ScrollBar
+		if (!iCurrentScrollPosition && iCurrentScrollBarPosition) {
+			iNewScrollPosition = this._getScrollBar().getScrollPosition();
+		} else {
+			iNewScrollPosition = this._bHeaderInTitleArea ?
 			iCurrentScrollPosition - iOffset :
 			iCurrentScrollPosition + iOffset;
+		}
 
 		iNewScrollPosition = Math.max(iNewScrollPosition, 0);
 
@@ -985,7 +1013,7 @@ sap.ui.define([
 	 * @private
 	 */
 	DynamicPage.prototype._headerBiggerThanAllowedToPin = function (iControlHeight) {
-		if (!(typeof iControlHeight === "number" && !isNaN(parseInt(iControlHeight, 10)))) {
+		if (!(typeof iControlHeight === "number" && !isNaN(parseInt(iControlHeight)))) {
 			iControlHeight = this._getOwnHeight();
 		}
 
@@ -1889,6 +1917,62 @@ sap.ui.define([
 			this.$wrapper.off("scroll", this._onWrapperScrollReference);
 			this.$wrapper.off("scroll", this._toggleHeaderOnScrollReference);
 		}
+	};
+
+	/**
+	 * Formats <code>DynamicPageAccessibleLandmarkInfo</code> role and label of the provided <code>DynamicPage</code> part.
+	 *
+	 * @param {sap.f.DynamicPageAccessibleLandmarkInfo} oLandmarkInfo DynamicPage LandmarkInfo
+	 * @param {string} sPartName part of the page
+	 * @returns {sap.f.DynamicPageAccessibleLandmarkInfo} The formatted landmark info
+	 * @private
+	 */
+	DynamicPage.prototype._formatLandmarkInfo = function (oLandmarkInfo, sPartName) {
+		if (oLandmarkInfo) {
+			var sRole = oLandmarkInfo["get" + sPartName + "Role"]() || "",
+				sLabel = oLandmarkInfo["get" + sPartName + "Label"]() || "";
+
+			if (sRole === AccessibleLandmarkRole.None) {
+				sRole = '';
+			}
+
+			return {
+				role: sRole.toLowerCase(),
+				label: sLabel
+			};
+		}
+
+		return {};
+	};
+
+	/**
+	 * Returns HTML tag of the page header.
+	 *
+	 * @param {sap.f.DynamicPageAccessibleLandmarkInfo} oLandmarkInfo DynamicPage LandmarkInfo
+	 * @returns {string} The HTML tag of the page header.
+	 * @private
+	 */
+	DynamicPage.prototype._getHeaderTag = function (oLandmarkInfo) {
+		if (oLandmarkInfo && oLandmarkInfo.getHeaderRole() !== AccessibleLandmarkRole.None) {
+			return DynamicPage.DIV;
+		}
+
+		return DynamicPage.HEADER;
+	};
+
+	/**
+	 * Returns HTML tag of the page footer.
+	 *
+	 * @param {sap.f.DynamicPageAccessibleLandmarkInfo} oLandmarkInfo DynamicPage LandmarkInfo
+	 * @returns {string} The HTML tag of the page footer.
+	 * @private
+	 */
+	DynamicPage.prototype._getFooterTag = function (oLandmarkInfo) {
+		if (oLandmarkInfo && oLandmarkInfo.getFooterRole() !== AccessibleLandmarkRole.None) {
+			return DynamicPage.DIV;
+		}
+
+		return DynamicPage.FOOTER;
 	};
 
 	return DynamicPage;

@@ -39,7 +39,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @private
@@ -702,7 +702,7 @@ function(
 						.closest("." + WizardProgressNavigatorRenderer.CLASSES.STEP)
 						.attr(WizardProgressNavigatorRenderer.ATTRIBUTES.STEP);
 
-		return parseInt(stepNumber, 10);
+		return parseInt(stepNumber);
 	};
 
 	return WizardProgressNavigator;

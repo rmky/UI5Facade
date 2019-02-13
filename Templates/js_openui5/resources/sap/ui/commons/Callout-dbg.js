@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.commons.Callout.
-sap.ui.define(['jquery.sap.global', './CalloutBase', './library', "./CalloutRenderer"],
-	function(jQuery, CalloutBase, library, CalloutRenderer) {
+sap.ui.define(['./CalloutBase', './library', './CalloutRenderer'],
+	function(CalloutBase, library, CalloutRenderer) {
 	"use strict";
 
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', './CalloutBase', './library', "./CalloutRend
 	 * @extends sap.ui.commons.CalloutBase
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -42,10 +42,6 @@ sap.ui.define(['jquery.sap.global', './CalloutBase', './library', "./CalloutRend
 		}
 	}});
 
-	///**
-	// * This file defines behavior for the Callout control
-	// */
-
 	return Callout;
 
-}, /* bExport= */ true);
+});

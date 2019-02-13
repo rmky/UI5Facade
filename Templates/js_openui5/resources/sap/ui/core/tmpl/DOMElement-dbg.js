@@ -27,7 +27,7 @@ sap.ui.define([
 	 * @class
 	 * Represents a DOM element. It allows to use databinding for the properties and nested DOM attributes.
 	 * @extends sap.ui.core.Control
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @public
 	 * @since 1.15

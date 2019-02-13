@@ -6,13 +6,13 @@
 
 // Provides control sap.ui.ux3.ExactArea.
 sap.ui.define([
- 'jquery.sap.global',
  'sap/ui/commons/Toolbar',
  'sap/ui/core/Control',
  './library',
- "./ExactAreaRenderer"
+ './ExactAreaRenderer',
+ 'sap/ui/core/Element'
 ],
-	function(jQuery, Toolbar, Control, library, ExactAreaRenderer) {
+	function(Toolbar, Control, library, ExactAreaRenderer, Element) {
 	"use strict";
 
 
@@ -29,7 +29,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -65,13 +65,12 @@ sap.ui.define([
 	}});
 
 
-	(function() {
 
 	//*************************************************************
 	//Define a private element to enable titles tin the toolbar
 	//*************************************************************
 
-	sap.ui.core.Element.extend("sap.ui.ux3.ExactAreaToolbarTitle", {
+	Element.extend("sap.ui.ux3.ExactAreaToolbarTitle", {
 
 	  metadata: {
 	    interfaces : ["sap.ui.commons.ToolbarItem"],
@@ -84,8 +83,7 @@ sap.ui.define([
 
 	//*************************************************************
 
-	}());
 
 	return ExactArea;
 
-}, /* bExport= */ true);
+});

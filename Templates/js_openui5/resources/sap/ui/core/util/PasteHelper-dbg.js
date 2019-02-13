@@ -12,7 +12,7 @@ sap.ui.define([], function () {
 	 *
 	 * @class Class to parse data pasted from the clipboard on "paste" event. Used for importing from Spreadsheets to UI5 Tables.
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @private
 	 * @sap-restricted sap.ui.table.Table, sap.m.Table
 	 * @alias sap.ui.core.util.PasteHelper

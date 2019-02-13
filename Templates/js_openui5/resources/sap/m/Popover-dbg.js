@@ -107,7 +107,7 @@ sap.ui.define([
 		* @extends sap.ui.core.Control
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.60.1
+		* @version 1.61.2
 		*
 		* @public
 		* @alias sap.m.Popover
@@ -1239,7 +1239,7 @@ sap.ui.define([
 				iOffsetY = this._getOffsetY();
 
 			var aParts = sOffset.split(" ");
-			var sOffset = (parseInt(aParts[0], 10) + iOffsetX) + " " + (parseInt(aParts[1], 10) + iOffsetY);
+			var sOffset = (parseInt(aParts[0]) + iOffsetX) + " " + (parseInt(aParts[1]) + iOffsetY);
 			return sOffset;
 		};
 

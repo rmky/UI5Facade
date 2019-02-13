@@ -2216,11 +2216,6 @@ html[data-sap-ui-browser^=ff] .sapMCbBg > input {
 /* CSS for control sap.m/ColumnHeader  */
 /* Base theme                          */
 /* =================================== */
-.sapMColumnHeader {
-	display: flex;
-	flex: 1 1 auto;
-	padding: .875rem .5rem 1rem;
-}
 
 .sapMColumnHeaderText {
 	width: 100%;
@@ -2231,70 +2226,12 @@ html[data-sap-ui-browser^=ff] .sapMCbBg > input {
 	font-size: @sapMFontMediumSize;
 }
 
-.sapMColumnHeaderActive:hover {
-	background-color: contrast(@sapUiListHeaderBackground, darken(@sapUiListHeaderBackground, 6), lighten(@sapUiListHeaderBackground, 6));
-}
-
-.sapMColumnHeaderActive:focus {
-	outline: 1px dotted @sapUiContentFocusColor;
-	outline-offset: -2px;
-}
-
-.sapMColumnHeaderActive:active {
-	color: @sapUiListActiveTextColor;
-	background-color: @sapUiListActiveBackground;
-	outline-color: @sapUiContentContrastFocusColor;
-}
-
-.sapMColumnHeaderActive:active > .sapMColumnHeaderContent {
-	color: @sapUiListActiveTextColor;
-}
-
-.sapMColumnHeaderActive > .sapMColumnHeaderContent {
-	cursor: default;
-	width: 100%;
-}
-
 .sapMColumnHeaderIcons {
 	white-space: nowrap;
 }
 
 .sapMColumnHeaderIcons > .sapUiIcon {
 	padding-left: 0.375rem;
-}
-
-/* padding for sap.m.ColumnHeader */
-.sapMListTblHighlightCol + .sapMListTblCell.sapMListTblCellCH {
-	padding-left: .5rem;
-}
-
-.sapMListTblCellCH.sapMListTblCell:nth-last-child(2) {
-	padding-right: .5rem;
-}
-
-.sapMListTblCell.sapMListTblCellCH {
-	padding: 0;
-}
-
-/* =================================== */
-/*           Compact Design            */
-/* =================================== */
-.sapUiSizeCompact .sapMColumnHeader {
-	padding-top: .5rem;
-	padding-bottom: .5rem;
-}
-
-/* padding for sap.m.ColumnHeader */
-.sapUiSizeCompact .sapMListTblCell.sapMListTblCellCH {
-	padding: 0;
-}
-
-.sapUiSizeCompact .sapMListTblHighlightCol + .sapMListTblCell.sapMListTblCellCH {
-	padding-left: .5rem;
-}
-
-.sapUiSizeCompact .sapMListTblCellCH.sapMListTblCell:nth-last-child(2) {
-	padding-right: .5rem;
 }
 
 /* END "ColumnHeader.less" */
@@ -2973,6 +2910,7 @@ html.sap-phone .sapMDateTimePopupCont {
 @_sap_m_Dialog_BarHeight: 3rem;
 @_sap_m_Dialog_BarCompactHeight: 2.5rem;
 @_sap_m_Dialog_Padding: 1rem;
+@_sap_m_Dialog_InfoDesignBarHeight : 2rem;
 
 .sapMDialog,
 .sapMMessageDialog .sapMDialogScrollCont,
@@ -3433,14 +3371,20 @@ html.sap-tablet:not(.sap-combi) .sapMDialog {
 	&.sapMDialogWithSubHeader {
 		padding-top: @_sap_m_Dialog_BarHeight + @_sap_m_Dialog_BarHeight;
 
+		&.sapMDialogSubHeaderInfoBar {
+			padding-top: @_sap_m_Dialog_BarHeight + @_sap_m_Dialog_InfoDesignBarHeight;
+		}
+
 		&.sapMDialog-NoHeader {
 			padding-top: @_sap_m_Dialog_BarHeight;
 
 			& > .sapMDialogSubHeader {
 				top: 0;
+
 			}
 		}
 	}
+
 
 	& > .sapMDialogTitle {
 		height: @_sap_m_Dialog_BarHeight;
@@ -4659,6 +4603,10 @@ html.sap-phone .sapMFeedListItemTimestamp {
 	line-height: 1.4;
 }
 
+.sapMFeedListItem .sapMFeedListItem-Unread {
+
+}
+
 .sapMFeedListItemActionButton {
 	float: right;
 	position: relative;
@@ -5012,6 +4960,7 @@ html.sap-phone .sapMFeedListItem .sapMFeedListItemActionButton {
 	font-size: @sapMFontHeader5Size;
 }
 
+.sapMGTSubHdrTxt > .sapMText,
 .sapMGTSubHdrTxt {
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -5568,8 +5517,8 @@ html[dir=rtl] .sapMGenericTileFtrFldTxt {
 	vertical-align: bottom;
 }
 
-.sapMGT.sapMGTBackgroundImage {
-	border: none;
+.sapMST .sapMGT.sapMGTBackgroundImage {
+    border: none;
 }
 
 /* the following is needed for non-webkit browsers that don't support line-clamping */
@@ -5602,6 +5551,9 @@ html[data-sap-ui-browser*='ie'], html[data-sap-ui-browser*='ed'], html[data-sap-
 		line-height: 1.1875rem;
 	}
 
+	&.sapMGT:not(.sapMGTLineMode) .sapMGTSubHdrTxt > .sapMText {
+		line-height: 1.1875rem;
+	}
 	&.sapMGT:not(.sapMGTLineMode) .sapMGTSubHdrTxt {
 		line-height: 1.1875rem;
 	}
@@ -5656,8 +5608,8 @@ html[data-sap-ui-browser*='ie'], html[data-sap-ui-browser*='ed'], html[data-sap-
 	.sapMGTHdrTxt > .sapMText {
 		font-size: @sapMFontHeader6Size;
 	}
-
-	.sapMGTSubHdrTxt {
+	.sapMGTSubHdrTxt,
+	.sapMGTSubHdrTxt > .sapMText {
 		font-size: @sapMFontSmallSize;
 	}
 }
@@ -6638,6 +6590,42 @@ html.sap-desktop .sapMHrdrCntrInner:focus {
 		background: @sapUiDragAndDropActiveBackground;
 		border: 0.125rem solid @sapUiDragAndDropActiveBorderColor;
 	}
+
+	.sapMITBArrowScrollLeft {
+		left: 0.25rem;
+		padding: 1rem 0.4rem;
+	}
+
+	.sapMITBArrowScrollRight {
+		padding: 1rem 0.4rem;
+		right: 0.25rem;
+	}
+
+	.sapMITBScrollContainer {
+		margin: 0 1.75rem;
+	}
+
+	.sapMITHOverflowList .sapMITBScrollContainer {
+		margin: 0 4.25rem 0 1.75rem;
+	}
+
+	.sapMITHOverflowList .sapMITBArrowScrollRight {
+		right: 2.75rem;
+	}
+
+	.sapMITBArrowScrollLeftTextOnly {
+		left: 0.25rem;
+		padding: 1.0625rem 0.4rem;
+	}
+
+	.sapMITBArrowScrollRightTextOnly {
+		padding: 1.0625rem 0.4rem;
+		right: 0.25rem;
+	}
+
+	.sapMITHOverflowList .sapMITBArrowScrollRightTextOnly {
+		right: 2.75rem;
+	}
 }
 
 .sapMITBScrollable.sapMITH .sapMBtn {
@@ -7019,7 +7007,31 @@ html.sap-phone  {
 			top: 1.125rem;
 		}
 	}
-
+	///-----------------------------------
+	//.sapMITBScrollContainer {
+	//	margin: 0 2.75rem;
+	//}
+	//.sapMITHOverflowList .sapMITBScrollContainer {
+	//	margin: 0 4.25rem 0 2.75rem;
+	//}
+	//
+	//.sapMITHOverflowList .sapMITBArrowScrollRightTextOnly {
+	//	right: 2.75rem;
+	//}
+	//.sapMITHOverflowList .sapMITBArrowScrollRight {
+	//	right: 3.25rem;
+	//}
+	//
+	//.sapMITBArrowScrollLeft {
+	//	left: 1.25rem;
+	//	padding: 1rem 0;
+	//}
+	//
+	//.sapMITBArrowScrollRight {
+	//	padding: 1rem 0;
+	//	right: 1.25rem;
+	//}
+	///-----------------------------------
 
 }
 
@@ -7435,8 +7447,12 @@ span.sapMImg {
 	position: relative;
 	display: inline-block;
 
-	& .sapMImg {
+	.sapMImg {
 		display: block;
+	}
+
+	.sapMLightBoxMagnifyingGlass {
+		line-height: normal;
 	}
 }
 
@@ -7503,10 +7519,6 @@ html.sap-desktop .sapMImageContent:focus:not([tabindex]) {
 /* Base theme                   */
 /* ============================ */
 
-.sapMInputBase.sapMInput {
-	display: inline-flex;
-}
-
 .sapMInputDescriptionText {
 	padding-left: 0.5rem;
 	font-size: @sapMFontMediumSize;
@@ -7515,6 +7527,12 @@ html.sap-desktop .sapMImageContent:focus:not([tabindex]) {
 	font-family: @sapUiFontFamily;
 	font-style: normal;
 	font-weight: normal;
+	white-space: nowrap;
+}
+
+.sapMInput.sapMInputWithDescription {
+	overflow: hidden;
+	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
@@ -7604,7 +7622,21 @@ html.sap-desktop .sapMImageContent:focus:not([tabindex]) {
 	height: 100%;
 	width: auto;
 	outline: none;
-};
+}
+
+.sapMInputBaseDynamicContent {
+	height: 100%;
+	display: flex;
+	flex: 1;
+}
+
+html[data-sap-ui-browser^="ie"].sap-desktop .sapMInputBaseDynamicContent {
+	flex: 1 1 auto;
+}
+
+.sapMInputBaseNoWidth .sapMInputBaseDynamicContent {
+	flex: auto;
+}
 
 .sapMInputBaseHasBeginIcons .sapMInputBaseInner {
 	padding-left: 0.25rem;
@@ -10203,10 +10235,6 @@ html[data-sap-ui-animation='on'] {
 	flex: none;
 }
 
-.sapMMultiComboBox .sapMInputBaseInner {
-	min-width: 3rem;
-}
-
 li.sapMMultiComboBoxItem .sapMCbBg {
 	top: 0;
 	bottom: 0;
@@ -10296,11 +10324,13 @@ html.sap-desktop li.sapMMultiComboBoxItemRangeSelection {
 }
 
 .sapMMultiInput .sapMTokenizer {
+	z-index: 1;
 	flex: none;
 }
 
-.sapMMultiInput .sapMInputBaseInner {
-	min-width: 3rem;
+/* Workaround for missing disabled state of sap.m.Tokenizer */
+.sapMMultiInput.sapMInputBaseDisabled  {
+	pointer-events: none;
 }
 
 /* Keep placeholder invisible, when at least one token is chosen */
@@ -10777,6 +10807,9 @@ html[data-sap-ui-animation='on'] {
 @_sap_m_NotificationListBase_CloseButtonCozyPosition: 0.25rem;
 @_sap_m_NotificationListBase_CloseButtonCompactPosition: 0.5rem;
 
+@_sap_m_NotificationListBase_ItemBackground: @sapUiListBackground;
+@_sap_m_NotificationListBase_ItemGroupedBackground: @sapUiListBackground;
+
 /* ==========================================================================
    Notification List Base
   ========================================================================== */
@@ -10957,6 +10990,31 @@ html[data-sap-ui-animation='on'] {
 	}
 }
 
+// Focus Styles ========================================================================================================
+
+html.sap-desktop .sapMNLB:focus {
+	outline: none;
+}
+
+.sapMNLB:focus::before {
+	content: " ";
+	border: 1px dotted @sapUiContentFocusColor;
+	position: absolute;
+	top: 1px;
+	right: 1px;
+	bottom: 1px;
+	left: 1px;
+	z-index: 2;
+	pointer-events: none;
+}
+
+html[data-sap-ui-browser^="ie"].sap-desktop,
+html[data-sap-ui-browser^="ed"].sap-desktop {
+	.sapMNLB:focus::before {
+		border-style: dashed;
+	}
+}
+
 /* END "NotificationListBase.less" */
 
 /* START "NotificationListGroup.less" */
@@ -10970,15 +11028,19 @@ html[data-sap-ui-animation='on'] {
 @_sap_m_NotificationListGroup_BorderRadius: 0.25rem;
 
 .sapMNLG {
+	background: transparent;
 	margin-bottom: @_sap_m_NotificationListGroup_BottomMargin;
 	padding-right: 0.5rem;
 	position: relative;
-	background: @sapUiListBackground;
 	box-shadow: @sapUiShadowLevel0;
 	.sapMNLI {
 		border-left: none;
 		border-right: none;
 	}
+}
+
+.sapMNLG-GroupHeader {
+	background: @_sap_m_NotificationListBase_ItemBackground;
 }
 
 .sapMNLG.sapMLIB {
@@ -11083,6 +11145,7 @@ html[data-sap-ui-browser*='ie'] .sapMNLG-SubHeader .sapMBtnInner {
 	padding-left: 0;
 	padding-right: 0;
 	.sapMNLI {
+		background: @_sap_m_NotificationListBase_ItemGroupedBackground;
 		margin: 0;
 		box-shadow: none;
 		border-bottom: none;
@@ -11159,25 +11222,12 @@ html[data-sap-ui-browser*='ie'] .sapMNLG-SubHeader .sapMBtnInner {
 	}
 }
 
-.sapMNLG.sapMNLG-Collapsed {
-	.sapMNLG-Header, .sapMNLG-SubHeader {
-		background-color: @sapUiListBackground;
-	}
-}
-
-.sapMNLG {
-	.sapMNLG-Header, .sapMNLG-SubHeader {
-		background: @sapUiListBackground;
-	}
-}
-
 .sapMNLG-Body {
 	.sapMNLG-MaxNotifications {
 		font-family: @sapUiFontFamily;
 		font-size: @sapMFontMediumSize;
 		color: @sapUiContentLabelColor;
 		border-top: 1px solid @sapUiListBorderColor;
-		background: @sapUiListBackground;
 		span {
 			font-family: @sapUiFontFamily;
 			font-size: @sapMFontLargeSize;
@@ -11186,34 +11236,6 @@ html[data-sap-ui-browser*='ie'] .sapMNLG-SubHeader .sapMBtnInner {
 		}
 	}
 }
-
-/* Focus Styles
-  ========================================================================== */
-
-html.sap-desktop .sapMNLG:focus::before {
-	border: 1px dotted @sapUiContentFocusColor;
-	position: absolute;
-	content: " ";
-	top: 1px;
-	right: 1px;
-	bottom: 1px;
-	left: 1px;
-	z-index: 2;
-	pointer-events: none;
-}
-
-html.sap-desktop .sapMLIB.sapMNLG:focus {
-	outline: none;
-}
-
-html[data-sap-ui-browser^="ie"].sap-desktop,// TODO remove after 1.62 version
-html[data-sap-ui-browser^="ed"].sap-desktop {
-	.sapMNLG:focus::before {
-		border: 1px dashed @sapUiContentFocusColor;
-
-	}
-}
-
 /* END "NotificationListGroup.less" */
 
 /* START "NotificationListItem.less" */
@@ -11233,7 +11255,7 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 	padding: @_sap_m_NotificationListItem_ContainerPadding;
 	position: relative;
 	cursor: pointer;
-	background: @sapUiListBackground;
+	background: @_sap_m_NotificationListBase_ItemBackground;
 	box-shadow: @sapUiShadowLevel0;
 	.sapMText {
 		cursor: pointer;
@@ -11459,13 +11481,6 @@ html[data-sap-ui-browser*='ie'] .sapMNLI-Footer .sapMBtnInner {
 .sapMNLI-Details .sapMNLI-Datetime {
 	font-size: @sapMFontMediumSize;
 	color: @sapUiContentLabelColor;
-}
-
-/* Focus Styles
-  ========================================================================== */
-
-html.sap-desktop .sapMLIB.sapMNLI:focus {
-	outline: none;
 }
 
 /* END "NotificationListItem.less" */
@@ -11726,8 +11741,11 @@ html[dir=rtl] .sapMNCValueScr {
 	color: @sapUiContentLabelColor;
 }
 
-.sapMObjectAttributeActive .sapMObjectAttributeColon {
-	vertical-align: middle;
+.sapMObjectAttributeActive {
+	pointer-events: none;
+	.sapMObjectAttributeColon {
+		vertical-align: middle;
+	}
 }
 
 .sapMListTbl .sapMObjectAttributeActive .sapMText,
@@ -12031,6 +12049,10 @@ html.sap-phone .sapMOHTitleDiv.sapMOHNumberWrap {
 .sapMOHIcon {
 	position: absolute;
 	margin-top: 0.375rem;
+}
+
+.sapMOHIconCircle .sapMImg {
+	border-radius: 100%;
 }
 
 .sapMOHIcon .sapMImg {
@@ -12403,6 +12425,10 @@ html.sap-desktop .sapMOHRStatesOneOrThree .sapMOHRTitleNumberDiv {
 	margin-right: 1rem;
 	background-size: cover;
 	display: block;
+}
+
+.sapMOHRIconCircle .sapMImg {
+	border-radius: 100%;
 }
 
 .sapMOHRIcon .sapMImg {
@@ -13292,7 +13318,7 @@ html .sapUiContainer-Narrow .sapMText.sapMObjLTitle {
 	min-width: 50%;
 	flex: 1;
 	text-align: left;
-	vertical-align: top;	
+	vertical-align: top;
 }
 
 html[dir=rtl] .sapMObjLAttrDiv {
@@ -13750,252 +13776,6 @@ html[data-sap-ui-browser ^= "ie"], html[data-sap-ui-browser^="ed"] {
 }
 /* END "ObjectStatus.less" */
 
-/* START "OnePersonGrid.less" */
-@_sap_m_OnePersonGrid_RowHeadersWidth: 4rem;
-@_sap_m_OnePersonGrid_RowHeight: 4rem;
-@_sap_m_OnePersonGrid_CompactRowHeight: 3rem;
-
-/*****************
-	COLUMN HEADERS
-*****************/
-.sapMOnePersonColumnHeader {
-	padding-left: @_sap_m_OnePersonGrid_RowHeadersWidth;
-
-	.sapUiCalItems {
-		display: block;
-		overflow: hidden;
-
-		// TODO: Consider refactoring of the CSS of PlanningCalendar DatesRow CSS and fix the styles in one place
-		// for sapUiCalItems
-		.sapUiCalItem:focus {
-			outline: 0.0625rem dotted;
-			outline-offset: -3px;
-
-			.sapUiCalItemText {
-				outline: none;
-			}
-		}
-	}
-
-	.sapUiCalItem.sapUiCalItemNow {
-		border: 0.125rem solid;
-
-		&.sapUiCalItemSel:not(:focus) {
-			outline: 0.0625rem solid;
-			outline-offset: -3px;
-		}
-
-		.sapUiCalItemText,
-		.sapUiCalItemSel.sapUiItemText {
-			border: none;
-			box-shadow: none;
-		}
-	}
-}
-
-
-/*****************
-	GRID CONTENT
-*****************/
-/* ROW HEADERS */
-.sapMOnePersonGridContent {
-	display: flex;
-	position: relative;
-}
-
-.sapMOnePersonRowHeaders {
-	display: flex;
-	flex-direction: column;
-	font-size: 0.75rem;
-}
-
-.sapMOnePersonRowHeader {
-	flex: 1;
-	transform: translateY(-0.5rem);
-}
-
-.sapMOnePersonRowHeaderHidden {
-	visibility: hidden;
-}
-
-.sapMOnePersonRowHeaderAMPM,
-.sapMOnePersonNowMarkerAMPM {
-	font-size: 0.625rem;
-}
-
-/* GRID COLUMNS */
-.sapMOnePersonColumns,
-.sapMOnePersonBlockersColumns {
-	flex: 1;
-	display: flex;
-}
-
-.sapMOnePersonBlockersColumns {
-	margin-left: @_sap_m_OnePersonGrid_RowHeadersWidth;
-	min-height: 1.75rem;
-	position: relative;
-}
-
-.sapMOnePersonColumn,
-.sapMOnePersonBlockersColumn {
-	position: relative;
-	flex: 1;
-}
-
-.sapMOnePersonRow,
-.sapMOnePersonBlockersColumn {
-	box-sizing: border-box;
-	border: 0.0625rem solid;
-	border-top-width: 0;
-	height: @_sap_m_OnePersonGrid_RowHeight;
-	position: relative;
-}
-
-.sapMOnePersonBlockersColumn {
-	border-top-width: 0.0625rem;
-	border-bottom-width: 0.125rem;
-	height: auto;
-}
-
-/* NOW MARKER */
-.sapMOnePersonNowMarker {
-	display: flex;
-	align-items: center;
-	font-size: 0.75rem;
-	margin-top: -0.5rem;
-	position: absolute;
-	z-index: 1;
-	right: 0;
-	left: 0;
-}
-
-.sapMOnePersonNowMarkerHidden {
-	display: none;
-}
-
-.sapMOnePersonRowHeader,
-.sapMOnePersonNowMarkerText {
-	box-sizing: border-box;
-	display: block;
-	padding-right: 0.5rem;
-	text-align: end;
-	width: @_sap_m_OnePersonGrid_RowHeadersWidth;
-}
-
-.sapMOnePersonNowMarker::after {
-	content: "";
-	border-top: 0.125rem solid;
-	flex: 1;
-}
-
-.sapMOnePersonColumnToday .sapMOnePersonRow::before {
-	content: "";
-	box-sizing: border-box;
-	border: 0.125rem solid;
-	border-bottom: none;
-	border-top: none;
-	position: absolute;
-	height: calc(~"100% + 0.0625rem");
-	width: 100%;
-}
-
-/* APPOINTMENTS */
-.sapMOnePersonAppointments,
-.sapMOnePersonBlockers {
-	position: absolute;
-	z-index: 2;
-	top: 0;
-	right: 0.125rem;
-	left: 0.125rem;
-	bottom: 0;
-}
-
-.sapMOnePersonAppointmentWrap.sapUiCalendarRowApps {
-	// TODO: this styles will be removed when Appointments refactoring occured
-	box-sizing: border-box;
-	padding: 0.0625rem;
-	position: absolute;
-
-	.sapUiCalendarApp {
-		border-radius: 0.125rem;
-		position: relative;
-		min-width: auto;
-		width: 100%;
-		height: calc(~"100% - 0.0625rem");
-
-		& > .sapUiCalendarAppCont,
-		&:active > .sapUiCalendarAppCont,
-		&.sapUiCalendarAppSel > .sapUiCalendarAppCont {
-			border-left: none;
-		}
-
-		.sapUiCalendarAppTitle {
-			padding-top: 0.2rem;
-		}
-	}
-}
-
-.sapMOnePersonBlockersColumns .sapMOnePersonAppointmentWrap.sapUiCalendarRowApps .sapUiCalendarApp {
-	height: 1.625rem;
-
-	.sapUiCalendarAppTitle {
-		padding-top: 0;
-	}
-}
-
-.sapMOnePersonBlockersColumns .sapUiCalendarAppCont {
-	display: flex;
-	align-items: center;
-	padding: 0 0.25rem;
-}
-
-.sapMOnePersonGrid .sapUiCalendarRowApps {
-	// TODO: this styles will be removed when Appointments refactoring occured
-	position: absolute;
-	min-height: auto;
-	height: auto;
-	overflow: visible;
-}
-
-.sapUiCalendarRowVisFilled .sapMOnePersonAppointmentWrap {
-	// TODO: this styles will be removed when Appointments refactoring occured
-	.sapUiCalendarApp,
-	.sapUiCalendarApp:hover:not(:active) {
-		background-color: transparent;
-	}
-}
-
-.sapUiSizeCompact {
-	// TODO: Consider refactoring of the CSS of PlanningCalendar DatesRow CSS and fix the styles in one place
-	// for sapUiCalItems
-	.sapMOnePersonColumnHeader .sapUiCalItems {
-		.sapUiCalItem {
-			display: flex;
-			flex-direction: row-reverse;
-			align-items: center;
-			text-align: start;
-
-			.sapUiCalItemText,
-			.sapUiCalDayName {
-				padding: 0;
-				line-height: 2rem;
-				height: auto;
-				position: static;
-			}
-
-			.sapUiCalDayName {
-				text-align: end;
-				padding-right: 0.5rem;
-			}
-		}
-	}
-
-	.sapMOnePersonRow {
-		height: @_sap_m_OnePersonGrid_CompactRowHeight;
-	}
-}
-/* END "OnePersonGrid.less" */
-
 /* START "OverflowToolbarAssociativePopover.less" */
 /* ======================================================== */
 /* CSS for control sap.m/OverflowToolbarAssociativePopover  */
@@ -14118,38 +13898,6 @@ html.sap-phone {
 	}
 }
 /* END "OverflowToolbarAssociativePopover.less" */
-
-/* START "OnePersonHeader.less" */
-/* ======================================= */
-/* CSS for control sap.m/OnePersonHeader   */
-/* Base theme                              */
-/* ======================================= */
-
-.sapMOnePerHead .sapMOnePerHeadActionsToolbar,
-.sapMOnePerHead .sapMOnePerHeadNavToolbar{
-	padding-left: 1rem;
-}
-
-.sapMOnePerHead .sapMOnePerHeadNavToolbar {
-	border-bottom: none;
-	flex-wrap: wrap;
-	white-space: normal;
-	min-height: 3rem;
-
-	&.sapMIBar {
-		height: auto;
-	}
-}
-
-.sapUiSizeCompact {
-	.sapMOnePerHead .sapMOnePerHeadActionsToolbar {
-		min-height: 3rem;
-	}
-	.sapMOnePerHead .sapMOnePerHeadNavToolbar {
-		min-height: 2rem;
-	}
-}
-/* END "OnePersonHeader.less" */
 
 /* START "P13nColumnsPanel.less" */
 /* ======================================= */
@@ -15131,6 +14879,36 @@ html[data-sap-ui-browser^="ie"].sap-desktop .sapMPlanCal .sapUiCalRow:not(.sapUi
 	display: none !important;
 }
 /* END "PlanningCalendar.less" */
+
+/* START "PlanningCalendarHeader.less" */
+@_sap_m_PlanningCalendarHeader_Background: @sapUiListBackground;
+
+.sapMPCHead .sapMPCHeadActionsToolbar,
+.sapMPCHead .sapMPCHeadNavToolbar{
+	padding-left: 1rem;
+	background-color: @_sap_m_PlanningCalendarHeader_Background;
+}
+
+.sapMPCHead .sapMPCHeadNavToolbar {
+	border-bottom: none;
+	flex-wrap: wrap;
+	white-space: normal;
+	min-height: 3rem;
+
+	&.sapMIBar {
+		height: auto;
+	}
+}
+
+.sapUiSizeCompact .sapMPCHead {
+	.sapMPCHeadActionsToolbar {
+		min-height: 3rem;
+	}
+	.sapMPCHeadNavToolbar {
+		min-height: 2rem;
+	}
+}
+/* END "PlanningCalendarHeader.less" */
 
 /* START "PlanningCalendarLegend.less" */
 /* ============================================= */
@@ -17862,8 +17640,8 @@ div.sapMSltPicker .sapMDialogScrollCont {
 /* Base theme                        */
 /* ================================= */
 
-@_sap_m_SelectListItem_Height: 2.5rem;
-@_sap_m_SelectListItem_CompactHeight: 2rem;
+@_sap_m_SelectList_ItemHeight: 2.5rem;
+@_sap_m_SelectList_ItemCompactHeight: 2rem;
 
 /* ------------------------------ */
 /* commons styles                 */
@@ -17910,7 +17688,7 @@ div.sapMSltPicker .sapMDialogScrollCont {
 	user-select: none;
 	color: @sapUiListTextColor;
 	font-size: @sapMFontMediumSize;
-	height: @_sap_m_SelectListItem_Height;
+	height: @_sap_m_SelectList_ItemHeight;
 	cursor: pointer;
 }
 
@@ -17919,7 +17697,11 @@ div.sapMSltPicker .sapMDialogScrollCont {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	padding: 0 1rem 0 1rem;
-	line-height: @_sap_m_SelectListItem_Height;
+	line-height: @_sap_m_SelectList_ItemHeight;
+}
+
+.sapMSelectListItemIcon {
+	padding-right: 0.4375rem;
 }
 
 li.sapMSelectListItemBaseInvisible {
@@ -18042,11 +17824,11 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 /* ------------------------------ */
 
 .sapUiSizeCompact .sapMSelectListItemBase {
-	height: @_sap_m_SelectListItem_CompactHeight;
+	height: @_sap_m_SelectList_ItemCompactHeight;
 }
 
 .sapUiSizeCompact .sapMSelectListItem {
-	line-height: @_sap_m_SelectListItem_CompactHeight;
+	line-height: @_sap_m_SelectList_ItemCompactHeight;
 }
 /* END "SelectList.less" */
 
@@ -18456,6 +18238,296 @@ html.sap-desktop .sapMShellHeaderText {
 	color: @sapUiShellTextColor;
 }
 /* END "Shell.less" */
+
+/* START "SinglePlanningCalendarGrid.less" */
+@_sap_m_SinglePlanningCalendarGrid_RowHeadersWidth: 4rem;
+@_sap_m_SinglePlanningCalendarGrid_RowHeight: 4rem;
+@_sap_m_SinglePlanningCalendarGrid_CompactRowHeight: 3rem;
+
+/*****************
+	COLUMN HEADERS
+*****************/
+.sapMSinglePCColumnHeader {
+	padding-left: @_sap_m_SinglePlanningCalendarGrid_RowHeadersWidth;
+
+	.sapUiCalItems {
+		display: block;
+		overflow: hidden;
+
+		// TODO: Consider refactoring of the CSS of PlanningCalendar DatesRow CSS and fix the styles in one place
+		// for sapUiCalItems
+		.sapUiCalItem:focus {
+			outline: 0.0625rem dotted;
+			outline-offset: -3px;
+
+			.sapUiCalItemText {
+				outline: none;
+			}
+		}
+	}
+
+	.sapUiCalItem.sapUiCalItemNow {
+		border: 0.125rem solid;
+
+		&.sapUiCalItemSel:not(:focus) {
+			outline: 0.0625rem solid;
+			outline-offset: -3px;
+		}
+
+		.sapUiCalItemText,
+		.sapUiCalItemSel.sapUiItemText {
+			border: none;
+			box-shadow: none;
+		}
+	}
+}
+
+
+/*****************
+	GRID CONTENT
+*****************/
+/* ROW HEADERS */
+.sapMSinglePCGridContent {
+	display: flex;
+	position: relative;
+}
+
+.sapMSinglePCRowHeaders {
+	display: flex;
+	flex-direction: column;
+	font-size: 0.875rem;
+}
+
+.sapMSinglePCRowHeader {
+	flex: 1;
+	transform: translateY(-0.5rem);
+}
+
+.sapMSinglePCRowHeaderHidden {
+	visibility: hidden;
+}
+
+.sapMSinglePCRowHeaderAMPM,
+.sapMSinglePCNowMarkerAMPM {
+	font-size: 0.625rem;
+}
+
+.sapMSinglePCRowHeaderAMPM {
+	top: -3px;
+	position: relative;
+}
+
+/* GRID COLUMNS */
+.sapMSinglePCColumns,
+.sapMSinglePCBlockersColumns {
+	flex: 1;
+	display: flex;
+}
+
+.sapMSinglePCBlockersColumns {
+	margin-left: @_sap_m_SinglePlanningCalendarGrid_RowHeadersWidth;
+	min-height: 1.75rem;
+	position: relative;
+}
+
+.sapMSinglePCColumn,
+.sapMSinglePCBlockersColumn {
+	position: relative;
+	flex: 1;
+}
+
+.sapMSinglePCRow,
+.sapMSinglePCBlockersColumn {
+	box-sizing: border-box;
+	border: 0.0625rem solid;
+	border-top-width: 0;
+	height: @_sap_m_SinglePlanningCalendarGrid_RowHeight;
+	position: relative;
+}
+
+.sapMSinglePCBlockersColumn {
+	border-top-width: 0.0625rem;
+	border-bottom-width: 0.125rem;
+	height: auto;
+}
+
+/* NOW MARKER */
+.sapMSinglePCNowMarker {
+	display: flex;
+	align-items: center;
+	font-size: 0.75rem;
+	margin-top: -0.5rem;
+	position: absolute;
+	z-index: 1;
+	right: 0;
+	left: 0;
+}
+
+.sapMSinglePCNowMarkerHidden {
+	display: none;
+}
+
+.sapMSinglePCRowHeader,
+.sapMSinglePCNowMarkerText {
+	box-sizing: border-box;
+	display: block;
+	padding-right: 0.5rem;
+	text-align: end;
+	width: @_sap_m_SinglePlanningCalendarGrid_RowHeadersWidth;
+}
+
+.sapMSinglePCNowMarker::after {
+	content: "";
+	border-top: 0.125rem solid;
+	flex: 1;
+}
+
+.sapMSinglePCColumnToday .sapMSinglePCRow::before {
+	content: "";
+	box-sizing: border-box;
+	border: 0.125rem solid;
+	border-bottom: none;
+	border-top: none;
+	position: absolute;
+	height: calc(~"100% + 0.0625rem");
+	width: 100%;
+}
+
+/* APPOINTMENTS */
+.sapMSinglePCAppointments,
+.sapMSinglePCBlockers {
+	position: absolute;
+	z-index: 2;
+	top: 0;
+	right: 0.125rem;
+	left: 0.125rem;
+	bottom: 0;
+}
+
+.sapMSinglePCAppointmentWrap.sapUiCalendarRowApps {
+	// TODO: this styles will be removed when Appointments refactoring occured
+	box-sizing: border-box;
+	padding: 0.0625rem;
+	position: absolute;
+
+	&:focus {
+		outline: none;
+
+		.sapUiCalendarAppCont:after {
+			position: absolute;
+			top: 1px;
+			left: 1px;
+			right: 1px;
+			bottom: 1px;
+			content: "";
+			border: 0.0625rem dotted @sapUiContentFocusColor;
+			pointer-events: none;
+		}
+	}
+
+	.sapUiCalendarApp {
+		border-radius: 0.125rem;
+		position: relative;
+		min-width: auto;
+		width: 100%;
+		height: calc(~"100% - 0.0625rem");
+
+		& > .sapUiCalendarAppCont,
+		&:active > .sapUiCalendarAppCont,
+		&.sapUiCalendarAppSel > .sapUiCalendarAppCont {
+			border-left: none;
+			pointer-events: none;
+		}
+
+		.sapUiCalendarAppTitle {
+			padding-top: 0.2rem;
+		}
+	}
+}
+
+.sapMSinglePCBlockersColumns .sapMSinglePCAppointmentWrap.sapUiCalendarRowApps .sapUiCalendarApp {
+	height: 1.438rem;
+
+	.sapUiCalendarAppTitle {
+		padding-top: 0;
+	}
+}
+
+.sapMSinglePCBlockersColumns .sapUiCalendarAppCont {
+	display: flex;
+	align-items: center;
+	padding: 0 0.25rem;
+}
+
+.sapUiCalendarAppCont .sapUiIcon .sapUiCalendarAppArrowIcon {
+	font-size: 0.75rem;
+	color: @sapUiContentLabelColor;
+}
+
+.sapUiCalendarAppArrowIcon.sapUiCalendarAppArrowIconLeft,
+.sapUiCalendarAppArrowIcon.sapUiCalendarAppArrowIconRight {
+	top: 0;
+}
+
+.sapUiCalendarAppArrowIcon.sapUiCalendarAppArrowIconLeft {
+	left: 0;
+}
+
+.sapUiCalendarAppArrowIcon.sapUiCalendarAppArrowIconRight {
+	right: 0;
+}
+
+.sapMSinglePCGrid .sapUiCalendarRowApps {
+	// TODO: this styles will be removed when Appointments refactoring occured
+	position: absolute;
+	min-height: auto;
+	height: auto;
+	overflow: visible;
+}
+
+.sapUiCalendarRowVisFilled .sapMSinglePCAppointmentWrap {
+	// TODO: this styles will be removed when Appointments refactoring occured
+	.sapUiCalendarApp,
+	.sapUiCalendarApp:hover:not(:active) {
+		background-color: transparent;
+	}
+}
+
+.sapUiSizeCompact {
+	// TODO: Consider refactoring of the CSS of PlanningCalendar DatesRow CSS and fix the styles in one place
+	// for sapUiCalItems
+	.sapMSinglePCColumnHeader .sapUiCalItems {
+		.sapUiCalItem {
+			display: flex;
+			flex-direction: row-reverse;
+			align-items: center;
+			text-align: start;
+
+			.sapUiCalItemText,
+			.sapUiCalDayName {
+				padding: 0;
+				line-height: 2rem;
+				height: auto;
+				position: static;
+			}
+
+			.sapUiCalDayName {
+				text-align: end;
+				padding-right: 0.5rem;
+			}
+		}
+	}
+
+	.sapMSinglePCRow {
+		height: @_sap_m_SinglePlanningCalendarGrid_CompactRowHeight;
+	}
+}
+
+.sapMSinglePCGrid .sapUiCalendarAppIcon {
+	position: absolute;
+	top: 0.2rem;
+}
+/* END "SinglePlanningCalendarGrid.less" */
 
 /* START "Slider.less" */
 /* ============================= */
@@ -20292,11 +20364,11 @@ tr.sapMListTblHeaderNone > .sapMTableTH {
 
 /* inherit the alignment from the column */
 .sapMListTblCell .sapMObjectNumber {
-	display: inline-block; 
+	display: inline-block;
 }
-.sapMColumnHeaderContent,
+
 .sapMListTblCell .sapMSltLabel {
-	text-align: inherit !important; 
+	text-align: inherit !important;
 }
 
 .sapMListTblNone {
@@ -20594,6 +20666,71 @@ html[data-sap-ui-browser='ie11'] .sapMListTblHighlightCell > .sapMLIBHighlight {
 	vertical-align: middle;
 }
 
+/* Column header and column header content */
+.sapMListTblCell.sapMListTblHeaderCell {
+	padding: 0;
+}
+
+.sapMColumnHeader {
+	display: flex;
+	flex: 1 1 auto;
+	padding: .875rem .5rem 1rem;
+}
+
+.sapMListTblHighlightCol + .sapMListTblCell.sapMListTblHeaderCell {
+	padding-left: .5rem;
+}
+
+.sapMListTblHeaderCell:nth-last-child(2) {
+	padding-right: .5rem;
+}
+
+.sapMListTblHasNav .sapMListTblHeaderCell:nth-last-child(2) > .sapMColumnHeader {
+	padding-right: 0;
+}
+
+.sapMColumnHeaderActive:hover {
+	background-color: contrast(@sapUiListHeaderBackground, darken(@sapUiListHeaderBackground, 6), lighten(@sapUiListHeaderBackground, 6));
+}
+
+.sapMColumnHeaderActive:focus {
+	outline: 1px dotted @sapUiContentFocusColor;
+	outline-offset: -2px;
+}
+
+.sapMColumnHeaderActive:active {
+	color: @sapUiListActiveTextColor;
+	background-color: @sapUiListActiveBackground;
+	outline-color: @sapUiContentContrastFocusColor;
+}
+
+.sapMColumnHeaderActive:active > .sapMColumnHeaderContent {
+	color: @sapUiListActiveTextColor;
+}
+
+.sapMColumnHeaderActive > .sapMColumnHeaderContent {
+	cursor: default;
+}
+
+/* sort icons */
+[aria-sort=ascending] > .sapMColumnHeader::after,
+[aria-sort=descending] > .sapMColumnHeader::after {
+	font-family: "SAP-Icons";
+	font-size: @sapMFontMediumSize;
+	font-weight: normal;
+	align-self: center;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+[aria-sort=ascending] > .sapMColumnHeader::after {
+	content: "\e1fd";
+}
+
+[aria-sort=descending] > .sapMColumnHeader::after {
+	content: "\e1fc";
+}
+
 /********** COMPACT DESIGN ************/
 
 /* overwite cell style */
@@ -20660,6 +20797,24 @@ html[data-sap-ui-browser='ie11'] .sapMListTblHighlightCell > .sapMLIBHighlight {
 	padding-top: 0;
 	padding-bottom: 0;
 }
+
+/* Column header and column header content */
+.sapUiSizeCompact .sapMColumnHeader {
+	padding-top: .5rem;
+	padding-bottom: .5rem;
+}
+
+.sapUiSizeCompact .sapMListTblCell.sapMListTblHeaderCell {
+	padding: 0;
+}
+
+.sapUiSizeCompact .sapMListTblHighlightCol + .sapMListTblCell.sapMListTblHeaderCell {
+	padding-left: .5rem;
+}
+
+.sapUiSizeCompact .sapMListTblHeaderCell:nth-last-child(2) {
+	padding-right: .5rem;
+}
 /* END "Table.less" */
 
 /* START "TablePersoDialog.less" */
@@ -20717,6 +20872,11 @@ html[data-sap-ui-browser='ie11'] .sapMListTblHighlightCell > .sapMLIBHighlight {
 
 .sapMPersoDialogLIHeader{
 	border-bottom: 0;
+}
+
+
+html.sap-tablet:not(.sap-combi) .sapMPersoDialog{
+	min-width: 20rem;
 }
 /* END "TablePersoDialog.less" */
 
@@ -22966,32 +23126,6 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 .sapMTBNewFlex > .sapMTBShrinkItem {
 	-webkit-flex-shrink: 1;
 	flex-shrink: 1;
-}
-
-/* OldFlex */
-.sapMTBOldFlex {
-	display: -webkit-box;
-}
-
-.sapMTBOldFlex > .sapMTBShrinkItem:not(.sapMFlexBox) {
-	/* old flex spec does not honour percentual width for non-block level elements */
-	/* @TODO: can we set the display of unknown item */
-	display: block;
-}
-
-.sapMTBOldFlex.sapMTBOverflow > .sapMTBShrinkItem {
-	/* shrinking hack for the old flex spec */
-	-webkit-box-flex: 1;
-}
-
-.sapMTB.sapMTBOldFlex > * {
-	/* old align-items: center does not respect margins and vertical align values */
-	vertical-align: middle;
-	margin-bottom: 0;
-	margin-top: 0;
-
-	/* float has no effect on a flexible item */
-	float: none;
 }
 
 /*** Toolbar inside of Form as Form- and Container- header ***/

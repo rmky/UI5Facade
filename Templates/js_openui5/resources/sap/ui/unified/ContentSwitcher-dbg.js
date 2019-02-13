@@ -31,7 +31,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -125,7 +125,7 @@ sap.ui.define([
 		///////////////////////////////// Property "activeContent" /////////////////////////////////
 
 	ContentSwitcher.prototype.setActiveContent = function(iNumber) {
-		iNumber = parseInt(iNumber, 10);
+		iNumber = parseInt(iNumber);
 
 		if (isNaN(iNumber) || iNumber < 1) {
 			iNumber = 1;

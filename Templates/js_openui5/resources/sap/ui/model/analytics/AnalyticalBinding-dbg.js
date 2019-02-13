@@ -3291,7 +3291,7 @@ sap.ui.define([
 			var bNewLengthSet = false;
 
 			if (oData.__count) {
-				this.mServiceLength[sGroupId] = parseInt(oData.__count, 10);
+				this.mServiceLength[sGroupId] = parseInt(oData.__count);
 				this.mLength[sGroupId] = this.mServiceLength[sGroupId] - iDiscardedEntriesCount;
 				this.mFinalLength[sGroupId] = true;
 

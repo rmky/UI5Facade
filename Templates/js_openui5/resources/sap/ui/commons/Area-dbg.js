@@ -5,7 +5,7 @@
  */
 
 // Provides control sap.ui.commons.Area.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element'],
+sap.ui.define(['sap/ui/thirdparty/jquery', './library', 'sap/ui/core/Element', 'sap/ui/dom/jquery/control'  /* jQuery Plugin "control" */],
 	function(jQuery, library, Element) {
 	"use strict";
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element'],
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -73,6 +73,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element'],
 	Area.prototype.onclick = function(oEvent) {
 
 		// The Element or Control that initiated the event. For example the id of the area if image map is defined for the current image.
+		// jQuery Plugin "control"
 		var oEventSource = jQuery(oEvent.target).control(0);
 
 	    // Fire event on Image Map
@@ -81,4 +82,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element'],
 
 	return Area;
 
-}, /* bExport= */ true);
+});

@@ -5,8 +5,8 @@
  */
 
 // Provides class sap.ui.core.date.Buddhist
-sap.ui.define(['./UniversalDate'],
-	function(UniversalDate) {
+sap.ui.define(['./UniversalDate', '../CalendarType'],
+	function(UniversalDate, CalendarType) {
 	"use strict";
 
 
@@ -28,7 +28,7 @@ sap.ui.define(['./UniversalDate'],
 				aArgs = toGregorianArguments(aArgs);
 			}
 			this.oDate = this.createDate(Date, aArgs);
-			this.sCalendarType = sap.ui.core.CalendarType.Buddhist;
+			this.sCalendarType = CalendarType.Buddhist;
 		}
 	});
 
@@ -48,7 +48,7 @@ sap.ui.define(['./UniversalDate'],
 	 * @return {object}
 	 */
 	function toBuddhist(oGregorian) {
-		var iEraStartYear = UniversalDate.getEraStartDate(sap.ui.core.CalendarType.Buddhist, 0).year,
+		var iEraStartYear = UniversalDate.getEraStartDate(CalendarType.Buddhist, 0).year,
 			iYear = oGregorian.year - iEraStartYear + 1;
 		// Before 1941 new year started on 1st of April
 		if (oGregorian.year < 1941 && oGregorian.month < 3) {
@@ -71,7 +71,7 @@ sap.ui.define(['./UniversalDate'],
 	 * @return {int}
 	 */
 	function toGregorian(oBuddhist) {
-		var iEraStartYear = UniversalDate.getEraStartDate(sap.ui.core.CalendarType.Buddhist, 0).year,
+		var iEraStartYear = UniversalDate.getEraStartDate(CalendarType.Buddhist, 0).year,
 			iYear = oBuddhist.year + iEraStartYear - 1;
 		// Before 1941 new year started on 1st of April
 		if (iYear < 1941 && oBuddhist.month < 3) {

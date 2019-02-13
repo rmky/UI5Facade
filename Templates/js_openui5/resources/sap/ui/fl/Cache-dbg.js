@@ -7,11 +7,12 @@
 sap.ui.define([
 	"sap/ui/fl/LrepConnector",
 	"sap/ui/fl/Utils",
+	"sap/ui/fl/variants/util/VariantUtil",
 	"sap/base/strings/formatMessage",
 	"sap/base/Log",
 	"sap/ui/thirdparty/jquery",
 	"sap/base/util/LoaderExtensions"
-], function(LrepConnector, Utils, formatMessage, Log, jQuery, LoaderExtensions) {
+], function(LrepConnector, Utils, VariantUtil, formatMessage, Log, jQuery, LoaderExtensions) {
 	"use strict";
 
 	/**
@@ -22,7 +23,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.Cache
 	 * @experimental Since 1.25.0
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 */
 	var Cache = function () {
 	};
@@ -286,17 +287,17 @@ sap.ui.define([
 		if (bChangesBundleLoaded) {
 			return Promise.resolve(LoaderExtensions.loadResource(sResourcePath));
 		} else {
-			if (!sap.ui.getCore().getConfiguration().getDebug()) {
-				return Promise.resolve([]);
+			var oConfiguration = sap.ui.getCore().getConfiguration();
+			if (oConfiguration.getDebug() || oConfiguration.isFlexBundleRequestForced()) {
+				// try to load the source in case a debugging takes place and the component could have no Component-preload
+				try {
+					return Promise.resolve(LoaderExtensions.loadResource(sResourcePath));
+				} catch (e) {
+					Log.warning("flexibility did not find a changesBundle.json  for the application");
+				}
 			}
 
-			// try to load the source in case a debugging takes place and the component could have no Component-preload
-			try {
-				return Promise.resolve(LoaderExtensions.loadResource(sResourcePath));
-			} catch (e) {
-				Log.warning("flexibility did not find a changesBundle.json  for the application");
-				return Promise.resolve([]);
-			}
+			return Promise.resolve([]);
 		}
 	};
 
@@ -320,13 +321,19 @@ sap.ui.define([
 			Log.warning("Not all parameters were passed to determine a flexibility cache key.");
 			return Promise.resolve(Cache.NOTAG);
 		}
-		return this.getChangesFillingCache(LrepConnector.createConnector(), mComponent).then(function (oWrappedChangeFileContent) {
-			if (oWrappedChangeFileContent && oWrappedChangeFileContent.etag) {
-				return oWrappedChangeFileContent.etag;
-			} else {
-				return Cache.NOTAG;
-			}
-		});
+		return this.getChangesFillingCache(LrepConnector.createConnector(), mComponent)
+			.then(function (oWrappedChangeFileContent) {
+				if (oWrappedChangeFileContent && oWrappedChangeFileContent.etag) {
+					return oWrappedChangeFileContent.etag;
+				} else {
+					return Cache.NOTAG;
+				}
+			})
+			.then(function(sCacheKey) {
+				// concat current control variant id to cachekey if available
+				var sCurrentControlVariantId = VariantUtil.getCurrentControlVariantId(mComponent);
+				return sCurrentControlVariantId ? sCacheKey.concat(sCurrentControlVariantId) : sCacheKey;
+			});
 	};
 
 	/**
@@ -413,7 +420,7 @@ sap.ui.define([
 
 
 	/**
-	 * Retrievea a personalization object stored for an application under a given container ID and item name;
+	 * Retrieve a personalization object stored for an application under a given container ID and item name;
 	 * in case no itemName is given all items for the given container key are returned.
 	 *
 	 * @param {string} sReference The reference of the application for which the personalization should be retrieved

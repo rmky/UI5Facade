@@ -45,7 +45,7 @@ sap.ui.define([
 		if (oConstraints) {
 			vMaxLength = oConstraints.maxLength;
 			if (typeof vMaxLength === "string") {
-				vMaxLength = parseInt(vMaxLength, 10);
+				vMaxLength = parseInt(vMaxLength);
 			}
 			if (typeof vMaxLength === "number" && !isNaN(vMaxLength) && vMaxLength > 0) {
 				oType.oConstraints = {maxLength : vMaxLength };
@@ -84,7 +84,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @alias sap.ui.model.odata.type.String
 	 * @param {object} [oFormatOptions]

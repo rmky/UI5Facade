@@ -3,13 +3,13 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.predefine('sap/ui/fl/library',["sap/ui/fl/RegistrationDelegator","sap/ui/core/library","sap/m/library"],function(R){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.fl",version:"1.60.1",controls:["sap.ui.fl.variants.VariantManagement"],dependencies:["sap.ui.core","sap.m"],designtime:"sap/ui/fl/designtime/library.designtime",extensions:{"sap.ui.support":{diagnosticPlugins:["sap/ui/fl/support/Flexibility"],publicRules:true}}});sap.ui.fl.Scenario={AppVariant:"APP_VARIANT",AdaptationProject:"ADAPTATION_PROJECT",FioriElementsFromScratch:"FE_FROM_SCRATCH",UiAdaptation:"UI_ADAPTATION"};R.registerAll();return sap.ui.fl;});
+sap.ui.predefine('sap/ui/fl/library',["sap/ui/fl/RegistrationDelegator","sap/ui/core/library","sap/m/library"],function(R){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.fl",version:"1.61.2",controls:["sap.ui.fl.variants.VariantManagement"],dependencies:["sap.ui.core","sap.m"],designtime:"sap/ui/fl/designtime/library.designtime",extensions:{"sap.ui.support":{diagnosticPlugins:["sap/ui/fl/support/Flexibility"],publicRules:true}}});sap.ui.fl.Scenario={AppVariant:"APP_VARIANT",AdaptationProject:"ADAPTATION_PROJECT",FioriElementsFromScratch:"FE_FROM_SCRATCH",UiAdaptation:"UI_ADAPTATION"};R.registerAll();return sap.ui.fl;});
 sap.ui.require.preload({
-	"sap/ui/fl/manifest.json":'{"_version":"1.9.0","sap.app":{"id":"sap.ui.fl","type":"library","embeds":["support/apps/contentbrowser","support/apps/uiFlexibilityDiagnostics"],"applicationVersion":{"version":"1.60.1"},"title":"SAPUI5 library with sap.ui.fl controls.","description":"SAPUI5 library with sap.ui.fl controls.","ach":"CA-UI5-FL","resources":"resources.json","offline":true},"sap.ui":{"technology":"UI5","supportedThemes":["base"]},"sap.ui5":{"dependencies":{"minUI5Version":"1.60","libs":{"sap.ui.core":{"minVersion":"1.60.1"},"sap.m":{"minVersion":"1.60.1"}}},"library":{"i18n":"messagebundle.properties","content":{"controls":["sap.ui.fl.variants.VariantManagement"]}}}}'
+	"sap/ui/fl/manifest.json":'{"_version":"1.9.0","sap.app":{"id":"sap.ui.fl","type":"library","embeds":["support/apps/contentbrowser","support/apps/uiFlexibilityDiagnostics"],"applicationVersion":{"version":"1.61.2"},"title":"SAPUI5 library with sap.ui.fl controls.","description":"SAPUI5 library with sap.ui.fl controls.","ach":"CA-UI5-FL","resources":"resources.json","offline":true},"sap.ui":{"technology":"UI5","supportedThemes":["base"]},"sap.ui5":{"dependencies":{"minUI5Version":"1.61","libs":{"sap.ui.core":{"minVersion":"1.61.2"},"sap.m":{"minVersion":"1.61.2"}}},"library":{"i18n":"messagebundle.properties","content":{"controls":["sap.ui.fl.variants.VariantManagement"]}}}}'
 },"sap/ui/fl/library-h2-preload"
 );
 sap.ui.loader.config({depCacheUI5:{
-"sap/ui/fl/Cache.js":["sap/base/Log.js","sap/base/strings/formatMessage.js","sap/base/util/LoaderExtensions.js","sap/ui/fl/LrepConnector.js","sap/ui/fl/Utils.js","sap/ui/thirdparty/jquery.js"],
+"sap/ui/fl/Cache.js":["sap/base/Log.js","sap/base/strings/formatMessage.js","sap/base/util/LoaderExtensions.js","sap/ui/fl/LrepConnector.js","sap/ui/fl/Utils.js","sap/ui/fl/variants/util/VariantUtil.js","sap/ui/thirdparty/jquery.js"],
 "sap/ui/fl/Change.js":["sap/ui/base/ManagedObject.js","sap/ui/fl/Utils.js","sap/ui/fl/registry/Settings.js","sap/ui/thirdparty/jquery.js"],
 "sap/ui/fl/ChangePersistence.js":["sap/base/util/merge.js","sap/m/MessageBox.js","sap/ui/core/BusyIndicator.js","sap/ui/core/Component.js","sap/ui/fl/Cache.js","sap/ui/fl/Change.js","sap/ui/fl/LrepConnector.js","sap/ui/fl/Utils.js","sap/ui/fl/Variant.js","sap/ui/fl/context/ContextManager.js","sap/ui/fl/registry/Settings.js","sap/ui/fl/transport/TransportSelection.js","sap/ui/fl/variants/VariantController.js","sap/ui/model/json/JSONModel.js","sap/ui/thirdparty/jquery.js"],
 "sap/ui/fl/ChangePersistenceFactory.js":["sap/ui/core/Component.js","sap/ui/fl/ChangePersistence.js","sap/ui/fl/Utils.js","sap/ui/thirdparty/jquery.js"],
@@ -21,9 +21,10 @@ sap.ui.loader.config({depCacheUI5:{
 "sap/ui/fl/FakeLrepConnectorStorage.js":["sap/ui/fl/Cache.js","sap/ui/fl/ChangePersistenceFactory.js","sap/ui/fl/FakeLrepConnector.js","sap/ui/fl/LrepConnector.js","sap/ui/fl/Utils.js"],
 "sap/ui/fl/FakeLrepLocalStorage.js":["sap/ui/fl/FakeLrepStorage.js"],
 "sap/ui/fl/FakeLrepSessionStorage.js":["sap/ui/fl/FakeLrepStorage.js"],
-"sap/ui/fl/FlexController.js":["sap/ui/core/Component.js","sap/ui/core/CustomData.js","sap/ui/core/Element.js","sap/ui/core/util/reflection/JsControlTreeModifier.js","sap/ui/core/util/reflection/XmlTreeModifier.js","sap/ui/fl/Change.js","sap/ui/fl/ChangePersistenceFactory.js","sap/ui/fl/Utils.js","sap/ui/fl/Variant.js","sap/ui/fl/context/ContextManager.js","sap/ui/fl/registry/ChangeRegistry.js","sap/ui/fl/registry/Settings.js"],
+"sap/ui/fl/FlexController.js":["sap/ui/core/Component.js","sap/ui/core/Element.js","sap/ui/core/util/reflection/JsControlTreeModifier.js","sap/ui/core/util/reflection/XmlTreeModifier.js","sap/ui/fl/Change.js","sap/ui/fl/ChangePersistenceFactory.js","sap/ui/fl/FlexCustomData.js","sap/ui/fl/Utils.js","sap/ui/fl/Variant.js","sap/ui/fl/context/ContextManager.js","sap/ui/fl/registry/ChangeRegistry.js","sap/ui/fl/registry/Settings.js"],
 "sap/ui/fl/FlexControllerFactory.js":["sap/ui/fl/ChangePersistenceFactory.js","sap/ui/fl/FlexController.js","sap/ui/fl/Utils.js","sap/ui/fl/variants/VariantModel.js"],
-"sap/ui/fl/LrepConnector.js":["sap/base/util/merge.js","sap/ui/fl/Utils.js","sap/ui/thirdparty/URI.js","sap/ui/thirdparty/jquery.js"],
+"sap/ui/fl/FlexCustomData.js":["sap/ui/core/CustomData.js"],
+"sap/ui/fl/LrepConnector.js":["sap/base/util/merge.js","sap/ui/dom/includeScript.js","sap/ui/fl/Utils.js","sap/ui/thirdparty/URI.js","sap/ui/thirdparty/jquery.js"],
 "sap/ui/fl/Persistence.js":["sap/ui/fl/Change.js","sap/ui/fl/ChangePersistenceFactory.js","sap/ui/fl/DefaultVariant.js","sap/ui/fl/StandardVariant.js","sap/ui/fl/Utils.js"],
 "sap/ui/fl/Preprocessor.js":["sap/ui/base/Object.js"],
 "sap/ui/fl/PreprocessorImpl.js":["sap/base/Log.js","sap/ui/core/Component.js","sap/ui/fl/ChangePersistenceFactory.js","sap/ui/fl/Utils.js"],
@@ -55,7 +56,8 @@ sap.ui.loader.config({depCacheUI5:{
 "sap/ui/fl/core/EventDelegate.js":["sap/ui/base/EventProvider.js","sap/ui/fl/Utils.js","sap/ui/fl/core/FlexVisualizer.js","sap/ui/fl/registry/ChangeRegistry.js","sap/ui/thirdparty/jquery.js"],
 "sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js":["sap/base/util/merge.js","sap/ui/fl/Change.js","sap/ui/fl/ChangePersistence.js","sap/ui/fl/ChangePersistenceFactory.js","sap/ui/fl/Utils.js","sap/ui/fl/descriptorRelated/internal/Utils.js","sap/ui/fl/registry/Settings.js","sap/ui/thirdparty/jquery.js"],
 "sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js":["sap/ui/fl/descriptorRelated/internal/Utils.js"],
-"sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js":["sap/base/util/merge.js","sap/ui/fl/LrepConnector.js","sap/ui/fl/Utils.js","sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js","sap/ui/fl/descriptorRelated/internal/Utils.js","sap/ui/fl/registry/Settings.js","sap/ui/thirdparty/jquery.js"],
+"sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js":["sap/base/util/merge.js","sap/ui/fl/Utils.js","sap/ui/fl/descriptorRelated/internal/Utils.js","sap/ui/fl/registry/Settings.js","sap/ui/thirdparty/jquery.js"],
+"sap/ui/fl/descriptorRelated/internal/Utils.js":["sap/ui/fl/LrepConnector.js"],
 "sap/ui/fl/fieldExt/Access.js":["sap/base/security/encodeURLParameters.js","sap/ui/thirdparty/jquery.js","sap/ui/util/Storage.js"],
 "sap/ui/fl/library.js":["sap/m/library.js","sap/ui/core/library.js","sap/ui/fl/RegistrationDelegator.js"],
 "sap/ui/fl/library.support.js":["sap/ui/core/Component.js","sap/ui/dt/DesignTime.js","sap/ui/fl/Utils.js","sap/ui/support/library.js"],

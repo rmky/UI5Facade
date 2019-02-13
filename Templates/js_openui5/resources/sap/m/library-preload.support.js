@@ -11,11 +11,15 @@ sap.ui.predefine('sap/m/library.support',[
 	"./rules/Breadcrumbs.support",
 	"./rules/Button.support",
 	"./rules/CheckBox.support",
+	"./rules/DatePicker.support",
+	"./rules/DateRangeSelection.support",
 	"./rules/Dialog.support",
+	"./rules/FacetFilter.support",
 	"./rules/IconTabBar.support",
 	"./rules/Image.support",
 	"./rules/Input.support",
 	"./rules/Link.support",
+	"./rules/MaskInput.support",
 	"./rules/MessagePage.support",
 	"./rules/ObjectHeader.support",
 	"./rules/ObjectListItem.support",
@@ -24,20 +28,26 @@ sap.ui.predefine('sap/m/library.support',[
 	"./rules/Panel.support",
 	"./rules/Select.support",
 	"./rules/SelectDialog.support",
+	"./rules/StepInput.support",
 	"./rules/Table.support",
 	"./rules/Title.support",
-	"./rules/Tokenizer.support"
+	"./rules/Tokenizer.support",
+	"./rules/ViewSettingsDialog.support"
 ],
 	function(
 		SupportLib,
 		BreadcrumbsSupport,
 		ButtonSupport,
 		CheckBoxSupport,
+		DatePickerSupport,
+		DateRangeSelectionSupport,
 		DialogSupport,
+		FacetFilterSupport,
 		IconTabBarSupport,
 		ImageSupport,
 		InputSupport,
 		LinkSupport,
+		MaskInputSupport,
 		MessagePageSupport,
 		ObjectHeaderSupport,
 		ObjectListItemSupport,
@@ -46,9 +56,11 @@ sap.ui.predefine('sap/m/library.support',[
 		PanelSupport,
 		SelectSupport,
 		SelectDialogSupport,
+		StepInputSupport,
 		TableSupport,
 		TitleSupport,
-		TokenizerSupport
+		TokenizerSupport,
+		ViewSettingsDialogSupport
 	) {
 	"use strict";
 
@@ -59,11 +71,15 @@ sap.ui.predefine('sap/m/library.support',[
 			BreadcrumbsSupport,
 			ButtonSupport,
 			CheckBoxSupport,
+			DatePickerSupport,
+			DateRangeSelectionSupport,
 			DialogSupport,
+			FacetFilterSupport,
 			IconTabBarSupport,
 			ImageSupport,
 			InputSupport,
 			LinkSupport,
+			MaskInputSupport,
 			MessagePageSupport,
 			ObjectHeaderSupport,
 			ObjectListItemSupport,
@@ -72,9 +88,11 @@ sap.ui.predefine('sap/m/library.support',[
 			PanelSupport,
 			SelectSupport,
 			SelectDialogSupport,
+			StepInputSupport,
 			TableSupport,
 			TitleSupport,
-			TokenizerSupport
+			TokenizerSupport,
+			ViewSettingsDialogSupport
 		]
 	};
 
@@ -166,7 +184,7 @@ sap.ui.predefine('sap/m/rules/Button.support',["sap/ui/support/library"],
 	var oButtonRule = {
 		id : "onlyIconButtonNeedsTooltip",
 		audiences: [Audiences.Control],
-		categories: [Categories.Usability],
+		categories: [Categories.Accessibility],
 		enabled: true,
 		minversion: "1.28",
 		title: "Button: Consists of only an icon, needs a tooltip",
@@ -268,6 +286,283 @@ sap.ui.predefine('sap/m/rules/CheckBox.support',["sap/ui/support/library"],
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
+ * Defines support rules of the DatePicker control of sap.m library.
+ */
+sap.ui.predefine('sap/m/rules/DatePicker.support',["sap/ui/support/library"], function(SupportLib) {
+	"use strict";
+
+	// shortcuts
+	var Categories = SupportLib.Categories, // Accessibility, Performance, Memory, Bindings, Consistency, FioriGuidelines, Functionality, Usability, DataModel, Modularization, Usage, Other
+		Severity = SupportLib.Severity,	// Hint, Warning, Error
+		Audiences = SupportLib.Audiences; // Control, Internal, Application
+
+	//**********************************************************
+	// Rule Definitions
+	//**********************************************************
+
+	/**
+	 * Checks, if a only one of the value or dateValue properties is bound.
+	 */
+	var oExclusiveValueDateValueBindingRule = {
+		id: "exclusiveValueDateValueBindingRule",
+		audiences: [Audiences.Control],
+		categories: [Categories.Bindings],
+		enabled: true,
+		minversion: "1.28",
+		title: "DatePicker: Only one of the value or dateValue properties can be bound",
+		description: "Only one of the value or dateValue properties can be bound",
+		resolution: "Choose and bind one of the properties value or dateValue. They both serve the same purpose",
+		resolutionurls: [{
+			text: "SAP Fiori Design Guidelines: DatePicker",
+			href: "https://experience.sap.com/fiori-design-web/date-picker/"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName("sap.m.DatePicker")
+				.forEach(function(oElement) {
+					if (oElement.getBinding("value") && oElement.getBinding("dateValue")) {
+						var sElementId = oElement.getId(),
+							sElementName = oElement.getMetadata().getElementName();
+
+						oIssueManager.addIssue({
+							severity: Severity.High,
+							details: "DatePicker '" + sElementName + "' (" + sElementId + ") has both value and dataValue properties bound.",
+							context: {
+								id: sElementId
+							}
+						});
+					}
+				});
+		}
+	};
+
+	/**
+	 * Checks, if there is a constraint for the displayFormat, when type sap.ui.model.odata.type.DateTime is used for value binding.
+	 */
+	var oDateTimeBindingConstraintRule = {
+		id: "dateTimeBindingConstraintRule",
+		audiences: [Audiences.Control],
+		categories: [Categories.Bindings],
+		enabled: true,
+		minversion: "1.28",
+		title: "DatePicker: sap.ui.model.odata.type.DateTime value binding should use displayFormat:'Date' constraint",
+		description: "sap.ui.model.odata.type.DateTime value binding should use displayFormat:'Date' constraint",
+		resolution: "If you are using binding type sap.ui.model.odata.type.DateTime you also need to specify binding constraint like this:\n" +
+			"value: {path : 'path_to_value', type : 'sap.ui.model.odata.type.DateTime', constraints : {displayFormat : 'Date'}}",
+		resolutionurls: [{
+			text: "SAP Fiori Design Guidelines: DatePicker",
+			href: "https://experience.sap.com/fiori-design-web/date-picker/"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName("sap.m.DatePicker")
+				.forEach(function(oElement) {
+					var oValueBinding = oElement.getBinding("value");
+					if (oValueBinding && oValueBinding.getType() instanceof sap.ui.model.odata.type.DateTime
+						&& (!oValueBinding.getType().oConstraints || !oValueBinding.getType().oConstraints.isDateOnly)) {
+						var sElementId = oElement.getId(),
+							sElementName = oElement.getMetadata().getElementName();
+
+						oIssueManager.addIssue({
+							severity: Severity.High,
+							details: "DatePicker '" + sElementName + "' (" + sElementId
+								+ ") is bound to a model of type sap.ui.model.odata.type.DateTime and the displayFormat is not 'Date'",
+							context: {
+								id: sElementId
+							}
+						});
+					}
+				}
+				);
+		}
+	};
+
+	/**
+	 * Checks, if value binding type is correct for JSON binding.
+	 */
+	var oJSONValueBindingIsCorrect = {
+		id: "jsonValueBindingIsCorrect",
+		audiences: [Audiences.Control],
+		categories: [Categories.Bindings],
+		enabled: true,
+		minversion: "1.28",
+		title: "DatePicker: Binding type sap.ui.model.odata.type.Date is not correct for JSON binding",
+		description: "sap.ui.model.odata.type.Date is not correct for JSON binding. The correct type is sap.ui.model.type.Date",
+		resolution: "Use binding type sap.ui.model.type.Date for JSON binding",
+		resolutionurls: [{
+			text: "SAP Fiori Design Guidelines: DatePicker",
+			href: "https://experience.sap.com/fiori-design-web/date-picker/"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName("sap.m.DatePicker")
+				.forEach(function(oElement) {
+					var oValueBinding = oElement.getBinding("value");
+					if (oValueBinding
+						&& oElement.getModel() instanceof sap.ui.model.json.JSONModel
+						&& oValueBinding.getType() instanceof sap.ui.model.odata.type.Date) {
+						var sElementId = oElement.getId(),
+							sElementName = oElement.getMetadata().getElementName();
+
+						oIssueManager.addIssue({
+							severity: Severity.Medium,
+							details: "DatePicker '" + sElementName + "' (" + sElementId
+								+ ") is bound to a model of type sap.ui.model.odata.type.Date but it should be sap.ui.model.type.Date",
+							context: {
+								id: sElementId
+							}
+						});
+					}
+				}
+				);
+		}
+	};
+
+	/**
+	 *  Checks if a dateValue contains JS Date object with hours, minutes and seconds different than 0, 0, 0, local time - warхing.
+	 */
+	var oDateValueHasHoursMinutesSeconds = {
+		id: "dateValueHasHoursMinutesSeconds",
+		audiences: [Audiences.Control],
+		categories: [Categories.Usage],
+		enabled: true,
+		minversion: "1.28",
+		title: "DatePicker: dateValue has hours, minutes or seconds",
+		description: "The dateValue contains JS Date object with hours, minutes and seconds different than 0, 0, 0, local time - warхing.",
+		resolution: "Do not set hours, minutes and seconds, when you set dateValue",
+		resolutionurls: [{
+			text: "SAP Fiori Design Guidelines: DatePicker",
+			href: "https://experience.sap.com/fiori-design-web/date-picker/"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName("sap.m.DatePicker")
+				.forEach(function(oElement) {
+					var dateValue = oElement.getDateValue();
+					if (dateValue && (dateValue.getHours() || dateValue.getMinutes() || dateValue.getSeconds())) {
+						var sElementId = oElement.getId(),
+							sElementName = oElement.getMetadata().getElementName();
+
+						oIssueManager.addIssue({
+							severity: Severity.Medium,
+							details: "DatePicker '" + sElementName + "' (" + sElementId
+								+ ")'s dateValue has hours, minutes or seconds set",
+							context: {
+								id: sElementId
+							}
+						});
+					}
+				}
+				);
+		}
+	};
+
+	return [
+		oExclusiveValueDateValueBindingRule,
+		oDateTimeBindingConstraintRule,
+		oJSONValueBindingIsCorrect,
+		oDateValueHasHoursMinutesSeconds
+	];
+
+}, true);
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+/**
+ * Defines support rules of the DateRangeSelection control of sap.m library.
+ */
+sap.ui.predefine('sap/m/rules/DateRangeSelection.support',["sap/ui/support/library"], function(SupportLib) {
+	"use strict";
+
+	// shortcuts
+	var Categories = SupportLib.Categories, // Accessibility, Performance, Memory, Bindings, Consistency, FioriGuidelines, Functionality, Usability, DataModel, Modularization, Usage, Other
+		Severity = SupportLib.Severity,	// Hint, Warning, Error
+		Audiences = SupportLib.Audiences; // Control, Internal, Application
+
+	//**********************************************************
+	// Rule Definitions
+	//**********************************************************
+
+	/**
+	 * Checks, if a either value or dateValue/secondDateValue properties are bound.
+	 */
+	var oExclusiveValueDateValueBindingRule = {
+		id: "drsBindingRule",
+		audiences: [Audiences.Control],
+		categories: [Categories.Bindings],
+		enabled: true,
+		minversion: "1.28",
+		title: "DateRangeSelection: Either value or dateValue/secondDateValue properties can be bound",
+		description: "Either value or dateValue/secondDateValue properties can be bound",
+		resolution: "Choose one option for binding - either value or dateValue/secondDateValue. They serve the same purpose",
+		resolutionurls: [{
+			text: "SAP Fiori Design Guidelines: DateRangeSelection",
+			href: "https://experience.sap.com/fiori-design-web/date-range-selection/"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName("sap.m.DateRangeSelection")
+				.forEach(function(oElement) {
+					if (oElement.getBinding("value") && (oElement.getBinding("dateValue") || oElement.getBinding("secondDateValue"))) {
+						var sElementId = oElement.getId(),
+							sElementName = oElement.getMetadata().getElementName();
+
+						oIssueManager.addIssue({
+							severity: Severity.High,
+							details: "DateRangeSelection '" + sElementName + "' (" + sElementId + ") has value and dataValue/secondDateValue properties bound",
+							context: {
+								id: sElementId
+							}
+						});
+					}
+				});
+		}
+	};
+
+	/**
+	 * Checks, if valueFormat property is set.
+	 */
+	var oDoNotSupportValueFormatRule = {
+		id: "drsValueFormatRule",
+		audiences: [Audiences.Control],
+		categories: [Categories.Functionality],
+		enabled: true,
+		minversion: "1.28",
+		title: "DateRangeSelection: valueFormat property is not supported",
+		description: "valueFormat property is not supported.",
+		resolution: "Do not use the valueFormat property.",
+		resolutionurls: [{
+			text: "SAP Fiori Design Guidelines: DateRangeSelection",
+			href: "https://experience.sap.com/fiori-design-web/date-range-selection/"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName("sap.m.DateRangeSelection")
+				.forEach(function(oElement) {
+					if (oElement.getValueFormat()) {
+						var sElementId = oElement.getId(),
+							sElementName = oElement.getMetadata().getElementName();
+
+						oIssueManager.addIssue({
+							severity: Severity.High,
+							details: "DateRangeSelection '" + sElementName + "' (" + sElementId + ") has valueFormat property set.",
+							context: {
+								id: sElementId
+							}
+						});
+					}
+				});
+		}
+	};
+
+	return [
+		oExclusiveValueDateValueBindingRule,
+		oDoNotSupportValueFormatRule
+	];
+
+}, true);
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+/**
  * Defines support rules of the Dialog control of sap.m library.
  */
 sap.ui.predefine('sap/m/rules/Dialog.support',["sap/ui/support/library"],
@@ -316,6 +611,70 @@ sap.ui.predefine('sap/m/rules/Dialog.support',["sap/ui/support/library"],
 	};
 
 	return [oDialogRuleForJaws];
+
+}, true);
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+/**
+ * Defines support rules of the FacetFilter control of sap.m library.
+ */
+sap.ui.predefine('sap/m/rules/FacetFilter.support',["sap/ui/support/library"], function(SupportLib) {
+	"use strict";
+
+	// shortcuts
+	var Categories = SupportLib.Categories, // Accessibility, Performance, Memory, Bindings, Consistency, FioriGuidelines, Functionality, Usability, DataModel, Modularization, Usage, Other
+		Severity = SupportLib.Severity,	// Hint, Warning, Error
+		Audiences = SupportLib.Audiences; // Control, Internal, Application
+
+	//**********************************************************
+	// Rule Definitions
+	//**********************************************************
+
+	/**
+	 *  Checks if growing is set along with one-way binding
+	 */
+	var oFacetFilterGrowingOneWayBinding = {
+		id: "facetFilterGrowingOneWayBinding",
+		audiences: [Audiences.Control],
+		categories: [Categories.Usage],
+		enabled: true,
+		minversion: "1.28",
+		title: "FacetFilter: growing is set along with two-way binding",
+		description: "Growing works only with one-way binding",
+		resolution: "Growing works only with one-way binding",
+		resolutionurls: [{
+			text: "SAP Fiori Design Guidelines: FacetFilter",
+			href: "https://experience.sap.com/fiori-design-web/facet-filter/"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName("sap.m.FacetFilterList")
+				.forEach(function(oElement) {
+					if (oElement.getGrowing()
+						&& oElement.getModel()
+						&& oElement.getModel().getDefaultBindingMode() === sap.ui.model.BindingMode.TwoWay) {
+						var sElementId = oElement.getId(),
+							sElementName = oElement.getMetadata().getElementName();
+
+						oIssueManager.addIssue({
+							severity: Severity.High,
+							details: "FacetFilter '" + sElementName + "' (" + sElementId
+								+ ") growing property is set to true, when binding mode is two-way",
+							context: {
+								id: sElementId
+							}
+						});
+					}
+				}
+				);
+		}
+	};
+
+	return [
+		oFacetFilterGrowingOneWayBinding
+	];
 
 }, true);
 /*!
@@ -642,7 +1001,7 @@ sap.ui.predefine('sap/m/rules/Input.support',["sap/ui/support/library"],
 	var oInputNeedsLabelRule = {
 		id: "inputNeedsLabel",
 		audiences: [Audiences.Control],
-		categories: [Categories.Usability],
+		categories: [Categories.Accessibility],
 		enabled: true,
 		minversion: "1.28",
 		title: "Input field: Missing label",
@@ -744,6 +1103,69 @@ sap.ui.predefine('sap/m/rules/Link.support',["sap/ui/support/library"],
 	};
 
 	return [oLinkRule];
+
+}, true);
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+/**
+ * Defines support rules of the MaskInput control of sap.m library.
+ */
+sap.ui.predefine('sap/m/rules/MaskInput.support',["sap/ui/support/library"], function(SupportLib) {
+	"use strict";
+
+	// shortcuts
+	var Categories = SupportLib.Categories, // Accessibility, Performance, Memory, Bindings, Consistency, FioriGuidelines, Functionality, Usability, DataModel, Modularization, Usage, Other
+		Severity = SupportLib.Severity,	// Hint, Warning, Error
+		Audiences = SupportLib.Audiences; // Control, Internal, Application
+
+	//**********************************************************
+	// Rule Definitions
+	//**********************************************************
+
+	/**
+	 *  Checks if the rules are valid
+	 */
+	var oMaskUsesValidRules = {
+		id: "maskUsesValidRules",
+		audiences: [Audiences.Control],
+		categories: [Categories.Usage],
+		enabled: true,
+		minversion: "1.34",
+		title: "MaskInput: Check the rules",
+		description: "Checks if the rules are valid",
+		resolution: "Define valid rules",
+		resolutionurls: [{
+			text: "SAP Fiori Design Guidelines: MaskInput",
+			href: "https://experience.sap.com/fiori-design-web/generic-mask-input/"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName("sap.m.MaskInput")
+				.forEach(function(oElement) {
+					var sValidationErrorMsg = oElement._validateDependencies();
+
+					if (sValidationErrorMsg) {
+						var sElementId = oElement.getId(),
+							sElementName = oElement.getMetadata().getElementName();
+
+						oIssueManager.addIssue({
+							severity: Severity.Medium,
+							details: "MaskInput '" + sElementName + "' (" + sElementId + "): " + sValidationErrorMsg,
+							context: {
+								id: sElementId
+							}
+						});
+					}
+				}
+				);
+		}
+	};
+
+	return [
+		oMaskUsesValidRules
+	];
 
 }, true);
 /*!
@@ -1494,6 +1916,103 @@ sap.ui.predefine('sap/m/rules/SelectDialog.support',["sap/ui/support/library"],
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
+ * Defines support rules of the StepInput control of sap.m library.
+ */
+sap.ui.predefine('sap/m/rules/StepInput.support',["sap/ui/support/library"], function(SupportLib) {
+	"use strict";
+
+	// shortcuts
+	var Categories = SupportLib.Categories, // Accessibility, Performance, Memory, Bindings, Consistency, FioriGuidelines, Functionality, Usability, DataModel, Modularization, Usage, Other
+		Severity = SupportLib.Severity,	// Hint, Warning, Error
+		Audiences = SupportLib.Audiences; // Control, Internal, Application
+
+	//**********************************************************
+	// Rule Definitions
+	//**********************************************************
+
+	/**
+	 * Checks, if the value of the step property
+	 * does not contain more digigs after the decimal point
+	 * that the value of the displayValuePrecision
+	 */
+	var oStepInputStepProperty = {
+		id: "stepInputStepProperty",
+		audiences: [Audiences.Control],
+		categories: [Categories.Consistency],
+		enabled: true,
+		minversion: "1.46",
+		title: "StepInput: Step property precision is not greater than displayValuePrecision",
+		description: "The value of the step property should not contain more digits after the decimal point than what is set to the displayValuePrecision property, as it may lead to an increase/decrease that is not visible",
+		resolution: "Set step property to a value with less precision than the displayValuePrecision",
+		resolutionurls: [{
+			text: "SAP Fiori Design Guidelines: StepInput",
+			href: "https://experience.sap.com/fiori-design-web/step-input/"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName("sap.m.StepInput")
+				.forEach(function(oElement) {
+					var sStep = oElement.getStep().toString();
+					var iPrecision = sStep.indexOf(".") >= 0 ? sStep.split(".")[1].length : 0;
+					if (iPrecision > oElement.getDisplayValuePrecision()) {
+						var sElementId = oElement.getId(),
+							sElementName = oElement.getMetadata().getElementName();
+
+						oIssueManager.addIssue({
+							severity: Severity.High,
+							details: "StepInput '" + sElementName + "' (" + sElementId + ")'s step precision is greater than displayValuePrecision",
+							context: {
+								id: sElementId
+							}
+						});
+					}
+				});
+		}
+	};
+
+	var oStepInputFieldWidth = {
+		id: "stepInputFieldWidth",
+		audiences: [Audiences.Control],
+		categories: [Categories.Consistency],
+		enabled: true,
+		minversion: "1.46",
+		title: "StepInput: The fieldWidth property takes effect only if the description property is also set.",
+		description: "This property takes effect only if the description property is also set.",
+		resolution: "Set fieldWidth when you want to control the availbale width for the description",
+		resolutionurls: [{
+			text: "SAP Fiori Design Guidelines: StepInput",
+			href: "https://experience.sap.com/fiori-design-web/step-input/"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName("sap.m.StepInput")
+				.forEach(function(oElement) {
+					if (oElement.getFieldWidth() !== oElement.getMetadata().getAllProperties().fieldWidth.defaultValue && !oElement.getDescription()) {
+						var sElementId = oElement.getId(),
+							sElementName = oElement.getMetadata().getElementName();
+
+						oIssueManager.addIssue({
+							severity: Severity.Medium,
+							details: "StepInput '" + sElementName + "' (" + sElementId + ") fieldWidth property is set and description is not",
+							context: {
+								id: sElementId
+							}
+						});
+					}
+				});
+		}
+	};
+
+	return [
+		oStepInputStepProperty,
+		oStepInputFieldWidth
+	];
+
+}, true);
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+/**
  * Defines support rules of the Link control of sap.m Table.
  */
 sap.ui.predefine('sap/m/rules/Table.support',["sap/ui/support/library"],
@@ -1667,5 +2186,73 @@ function(SupportLib) {
 		};
 
 	return [oTokenizerParentRule];
+}, true);
+/*!
+ * UI development toolkit for HTML5 (OpenUI5)
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+/**
+ * Defines support rules of the ViewSettingsDialog control of sap.m library.
+ */
+sap.ui.predefine('sap/m/rules/ViewSettingsDialog.support',["sap/ui/support/library"], function(SupportLib) {
+	"use strict";
+
+	// shortcuts
+	var Categories = SupportLib.Categories, // Accessibility, Performance, Memory, Bindings, Consistency, FioriGuidelines, Functionality, Usability, DataModel, Modularization, Usage, Other
+		Severity = SupportLib.Severity,	// Hint, Warning, Error
+		Audiences = SupportLib.Audiences; // Control, Internal, Application
+
+	//**********************************************************
+	// Rule Definitions
+	//**********************************************************
+
+	/**
+	 *  Checks if every item has a key
+	 */
+	var oVSDItemsHasKeys = {
+		id: "vsdItemsHaveKeys",
+		audiences: [Audiences.Control],
+		categories: [Categories.Usage],
+		enabled: true,
+		minversion: "1.28",
+		title: "ViewSettingsDialog: not all items have keys",
+		description: "All items should have keys",
+		resolution: "Provide keys for all items",
+		resolutionurls: [{
+			text: "SAP Fiori Design Guidelines: DatePicker",
+			href: "https://experience.sap.com/fiori-design-web/date-picker/"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			oScope.getElementsByClassName("sap.m.ViewSettingsDialog")
+				.forEach(function(oElement) {
+					var aFilterItems = oElement.getFilterItems();
+					var aSortItems = oElement.getSortItems();
+					var aGroupItems = oElement.getGroupItems();
+					var fnFilterNoKeyItems = function(f) { return !f.getKey(); };
+					if (aFilterItems.filter(fnFilterNoKeyItems).length
+						|| aSortItems.filter(fnFilterNoKeyItems).length
+						|| aGroupItems.filter(fnFilterNoKeyItems).length) {
+						var sElementId = oElement.getId(),
+							sElementName = oElement.getMetadata().getElementName();
+
+						oIssueManager.addIssue({
+							severity: Severity.High,
+							details: "ViewSettingsDialog '" + sElementName + "' (" + sElementId
+								+ ")'s items do not have keys",
+							context: {
+								id: sElementId
+							}
+						});
+					}
+				}
+				);
+		}
+	};
+
+	return [
+		oVSDItemsHasKeys
+	];
+
 }, true);
 //# sourceMappingURL=library-preload.support.js.map

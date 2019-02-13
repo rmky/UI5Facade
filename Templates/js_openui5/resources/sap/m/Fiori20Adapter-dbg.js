@@ -26,7 +26,7 @@ sap.ui.define([
 	 *
 	 *
 	 * @class text
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @private
 	 * @since 1.38
 	 * @alias HeaderAdapter
@@ -226,7 +226,7 @@ sap.ui.define([
 	 * Constructor for an sap.m.Fiori20Adapter.
 	 *
 	 * @class text
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @private
 	 * @since 1.38
 	 * @alias sap.m.Fiori20Adapter
@@ -337,7 +337,7 @@ sap.ui.define([
 
 		this._attachNavigablePageChange(oControl, oAdaptOptions);
 
-		if (isInstanceOf(oControl, "sap/m/Page")) {
+		if (isInstanceOf(oControl, "sap/m/Page") || isInstanceOf(oControl, "sap/ui/core/mvc/XMLView")) {
 			this._attachModifyAggregation(oControl, "content", oAdaptOptions);
 		}
 

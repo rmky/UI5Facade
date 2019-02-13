@@ -397,6 +397,12 @@ sap.ui.define([
 			destroy : function () {
 				EventProvider.prototype.destroy.apply(this);
 
+				// destroy the view cache
+				if (this._oViews) {
+					this._oViews.destroy();
+					this._oViews = null;
+				}
+
 				if (!this._bIsInitialized) {
 					Log.info("Router is not initialized, but got destroyed.", this);
 				}
@@ -529,7 +535,8 @@ sap.ui.define([
 			},
 
 			/**
-			 * Adds or overwrites a view in the viewcache of the router, the viewname serves as a key
+			 * Adds or overwrites a view in the viewcache of the router which will be cached under the given sViewName
+			 * and the "undefined" key
 			 *
 			 * @deprecated Since 1.28 use {@link #getViews} instead.
 			 * @param {string} sViewName Name of the view

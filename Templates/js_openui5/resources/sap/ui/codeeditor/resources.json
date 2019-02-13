@@ -15,24 +15,28 @@
 			"module": "sap/ui/codeeditor/CodeEditor.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/Device.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
 				"sap/ui/codeeditor/js/ace/mode-javascript.js",
 				"sap/ui/codeeditor/js/ace/mode-json.js",
-				"sap/ui/core/Control.js"
+				"sap/ui/core/Control.js",
+				"sap/ui/core/ResizeHandler.js"
 			]
 		},
 		{
 			"name": "CodeEditor.js",
 			"module": "sap/ui/codeeditor/CodeEditor.js",
 			"required": [
+				"sap/ui/Device.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
 				"sap/ui/codeeditor/js/ace/mode-javascript.js",
 				"sap/ui/codeeditor/js/ace/mode-json.js",
-				"sap/ui/core/Control.js"
+				"sap/ui/core/Control.js",
+				"sap/ui/core/ResizeHandler.js"
 			]
 		},
 		{
@@ -2573,6 +2577,7 @@
 			"isDebug": true,
 			"merged": true,
 			"required": [
+				"sap/ui/Device.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
@@ -2580,6 +2585,7 @@
 				"sap/ui/codeeditor/js/ace/mode-json.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
+				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/library.js"
 			],
 			"included": [
@@ -2593,6 +2599,7 @@
 			"module": "sap/ui/codeeditor/library-h2-preload.js",
 			"merged": true,
 			"required": [
+				"sap/ui/Device.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
@@ -2600,6 +2607,7 @@
 				"sap/ui/codeeditor/js/ace/mode-json.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
+				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/library.js"
 			],
 			"included": [
@@ -2617,6 +2625,7 @@
 			"module": "sap/ui/codeeditor/library-preload.js",
 			"merged": true,
 			"required": [
+				"sap/ui/Device.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
@@ -2624,6 +2633,7 @@
 				"sap/ui/codeeditor/js/ace/mode-json.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
+				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/library.js"
 			],
 			"included": [
@@ -2641,6 +2651,7 @@
 			"module": "sap/ui/codeeditor/library-preload.json",
 			"merged": true,
 			"required": [
+				"sap/ui/Device.js",
 				"sap/ui/codeeditor/js/ace/ace.js",
 				"sap/ui/codeeditor/js/ace/ext-beautify.js",
 				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
@@ -2648,6 +2659,7 @@
 				"sap/ui/codeeditor/js/ace/mode-json.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
+				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/library-preload.json",
 				"sap/ui/core/library.js"
 			],

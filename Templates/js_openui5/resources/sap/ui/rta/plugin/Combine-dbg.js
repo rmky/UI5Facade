@@ -23,7 +23,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -51,7 +51,7 @@ sap.ui.define([
 	 */
 	Combine.prototype._isEditable = function (oOverlay) {
 		var oCombineAction = this.getAction(oOverlay);
-		if (oCombineAction && oCombineAction.changeType && oCombineAction.changeOnRelevantContainer) {
+		if (!oOverlay.isRoot() && oCombineAction && oCombineAction.changeType && oCombineAction.changeOnRelevantContainer) {
 			var oRelevantContainer = oOverlay.getRelevantContainer();
 			return this.hasChangeHandler(oCombineAction.changeType, oRelevantContainer) &&
 				this.hasStableId(oOverlay) &&

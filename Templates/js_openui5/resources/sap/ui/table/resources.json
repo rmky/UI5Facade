@@ -54,7 +54,8 @@
 			"required": [
 				"sap/ui/table/ColumnMenu.js",
 				"sap/ui/table/library.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/unified/MenuRenderer.js"
 			]
 		},
 		{
@@ -67,7 +68,8 @@
 			"required": [
 				"sap/ui/table/ColumnMenu.js",
 				"sap/ui/table/library.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/unified/MenuRenderer.js"
 			]
 		},
 		{
@@ -97,7 +99,9 @@
 				"sap/ui/model/Sorter.js",
 				"sap/ui/model/analytics/ODataModelAdapter.js",
 				"sap/ui/table/AnalyticalColumn.js",
+				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Table.js",
+				"sap/ui/table/TableRenderer.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/TreeTable.js",
 				"sap/ui/table/library.js",
@@ -121,7 +125,9 @@
 				"sap/ui/model/Sorter.js",
 				"sap/ui/model/analytics/ODataModelAdapter.js",
 				"sap/ui/table/AnalyticalColumn.js",
+				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Table.js",
+				"sap/ui/table/TableRenderer.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/TreeTable.js",
 				"sap/ui/table/library.js",
@@ -143,6 +149,23 @@
 			"module": "sap/ui/table/AnalyticalTableRenderer.js",
 			"required": [
 				"sap/ui/table/AnalyticalTable.js"
+			]
+		},
+		{
+			"name": "BindingSelectionAdapter-dbg.js",
+			"module": "sap/ui/table/BindingSelectionAdapter.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/table/SelectionAdapter.js",
+				"sap/ui/table/library.js"
+			]
+		},
+		{
+			"name": "BindingSelectionAdapter.js",
+			"module": "sap/ui/table/BindingSelectionAdapter.js",
+			"required": [
+				"sap/ui/table/SelectionAdapter.js",
+				"sap/ui/table/library.js"
 			]
 		},
 		{
@@ -206,6 +229,7 @@
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js",
+				"sap/ui/unified/MenuRenderer.js",
 				"sap/ui/unified/MenuTextFieldItem.js"
 			]
 		},
@@ -224,6 +248,7 @@
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js",
+				"sap/ui/unified/MenuRenderer.js",
 				"sap/ui/unified/MenuTextFieldItem.js"
 			]
 		},
@@ -376,12 +401,48 @@
 			]
 		},
 		{
+			"name": "SelectionAdapter-dbg.js",
+			"module": "sap/ui/table/SelectionAdapter.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/table/library.js"
+			]
+		},
+		{
+			"name": "SelectionAdapter.js",
+			"module": "sap/ui/table/SelectionAdapter.js",
+			"required": [
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/table/library.js"
+			]
+		},
+		{
 			"name": "SelectionBehavior.type",
 			"designtime": true
 		},
 		{
 			"name": "SelectionMode.type",
 			"designtime": true
+		},
+		{
+			"name": "SelectionModelAdapter-dbg.js",
+			"module": "sap/ui/table/SelectionModelAdapter.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/model/SelectionModel.js",
+				"sap/ui/table/SelectionAdapter.js",
+				"sap/ui/table/library.js"
+			]
+		},
+		{
+			"name": "SelectionModelAdapter.js",
+			"module": "sap/ui/table/SelectionModelAdapter.js",
+			"required": [
+				"sap/ui/model/SelectionModel.js",
+				"sap/ui/table/SelectionAdapter.js",
+				"sap/ui/table/library.js"
+			]
 		},
 		{
 			"name": "SortOrder.type",
@@ -401,10 +462,10 @@
 				"sap/ui/model/BindingMode.js",
 				"sap/ui/model/ChangeReason.js",
 				"sap/ui/model/Filter.js",
-				"sap/ui/model/SelectionModel.js",
 				"sap/ui/model/Sorter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/Row.js",
+				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableDragAndDropExtension.js",
 				"sap/ui/table/TableExtension.js",
@@ -438,10 +499,10 @@
 				"sap/ui/model/BindingMode.js",
 				"sap/ui/model/ChangeReason.js",
 				"sap/ui/model/Filter.js",
-				"sap/ui/model/SelectionModel.js",
 				"sap/ui/model/Sorter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/Row.js",
+				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableDragAndDropExtension.js",
 				"sap/ui/table/TableExtension.js",
@@ -468,7 +529,8 @@
 				"sap/ui/table/TableAccRenderExtension.js",
 				"sap/ui/table/TableExtension.js",
 				"sap/ui/table/TableUtils.js",
-				"sap/ui/table/library.js"
+				"sap/ui/table/library.js",
+				"sap/ui/thirdparty/jquery.js"
 			]
 		},
 		{
@@ -480,7 +542,8 @@
 				"sap/ui/table/TableAccRenderExtension.js",
 				"sap/ui/table/TableExtension.js",
 				"sap/ui/table/TableUtils.js",
-				"sap/ui/table/library.js"
+				"sap/ui/table/library.js",
+				"sap/ui/thirdparty/jquery.js"
 			]
 		},
 		{
@@ -859,7 +922,9 @@
 				"sap/ui/core/Element.js",
 				"sap/ui/model/ClientTreeBindingAdapter.js",
 				"sap/ui/model/TreeBindingCompatibilityAdapter.js",
+				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Table.js",
+				"sap/ui/table/TableRenderer.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js"
 			]
@@ -877,7 +942,9 @@
 				"sap/ui/core/Element.js",
 				"sap/ui/model/ClientTreeBindingAdapter.js",
 				"sap/ui/model/TreeBindingCompatibilityAdapter.js",
+				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Table.js",
+				"sap/ui/table/TableRenderer.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js"
 			]
@@ -1030,6 +1097,7 @@
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js",
+				"sap/ui/unified/MenuRenderer.js",
 				"sap/ui/unified/MenuTextFieldItem.js",
 				"sap/ui/unified/library.js"
 			],
@@ -1045,6 +1113,7 @@
 				"sap/ui/table/AnalyticalColumnMenuRenderer.js",
 				"sap/ui/table/AnalyticalTable.js",
 				"sap/ui/table/AnalyticalTableRenderer.js",
+				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/ColumnMenu.js",
 				"sap/ui/table/ColumnMenuRenderer.js",
@@ -1053,6 +1122,8 @@
 				"sap/ui/table/RowActionItem.js",
 				"sap/ui/table/RowActionRenderer.js",
 				"sap/ui/table/RowSettings.js",
+				"sap/ui/table/SelectionAdapter.js",
+				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableAccRenderExtension.js",
@@ -1134,6 +1205,7 @@
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js",
+				"sap/ui/unified/MenuRenderer.js",
 				"sap/ui/unified/MenuTextFieldItem.js",
 				"sap/ui/unified/library.js"
 			],
@@ -1149,6 +1221,7 @@
 				"sap/ui/table/AnalyticalColumnMenuRenderer.js",
 				"sap/ui/table/AnalyticalTable.js",
 				"sap/ui/table/AnalyticalTableRenderer.js",
+				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/ColumnMenu.js",
 				"sap/ui/table/ColumnMenuRenderer.js",
@@ -1157,6 +1230,8 @@
 				"sap/ui/table/RowActionItem.js",
 				"sap/ui/table/RowActionRenderer.js",
 				"sap/ui/table/RowSettings.js",
+				"sap/ui/table/SelectionAdapter.js",
+				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableAccRenderExtension.js",
@@ -1240,6 +1315,7 @@
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js",
+				"sap/ui/unified/MenuRenderer.js",
 				"sap/ui/unified/MenuTextFieldItem.js",
 				"sap/ui/unified/library.js"
 			],
@@ -1253,6 +1329,7 @@
 				"sap/ui/table/AnalyticalColumnMenuRenderer.js",
 				"sap/ui/table/AnalyticalTable.js",
 				"sap/ui/table/AnalyticalTableRenderer.js",
+				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/ColumnMenu.js",
 				"sap/ui/table/ColumnMenuRenderer.js",
@@ -1261,6 +1338,8 @@
 				"sap/ui/table/RowActionItem.js",
 				"sap/ui/table/RowActionRenderer.js",
 				"sap/ui/table/RowSettings.js",
+				"sap/ui/table/SelectionAdapter.js",
+				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableAccRenderExtension.js",
@@ -1342,6 +1421,7 @@
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js",
+				"sap/ui/unified/MenuRenderer.js",
 				"sap/ui/unified/MenuTextFieldItem.js",
 				"sap/ui/unified/library-preload.json",
 				"sap/ui/unified/library.js"
@@ -1356,6 +1436,7 @@
 				"sap/ui/table/AnalyticalColumnMenuRenderer.js",
 				"sap/ui/table/AnalyticalTable.js",
 				"sap/ui/table/AnalyticalTableRenderer.js",
+				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/ColumnMenu.js",
 				"sap/ui/table/ColumnMenuRenderer.js",
@@ -1364,6 +1445,8 @@
 				"sap/ui/table/RowActionItem.js",
 				"sap/ui/table/RowActionRenderer.js",
 				"sap/ui/table/RowSettings.js",
+				"sap/ui/table/SelectionAdapter.js",
+				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableAccRenderExtension.js",

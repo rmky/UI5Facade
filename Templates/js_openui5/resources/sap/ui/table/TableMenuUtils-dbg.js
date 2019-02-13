@@ -24,7 +24,7 @@ sap.ui.define([
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Menu...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.60.1
+		 * @version 1.61.2
 		 * @namespace
 		 * @alias sap.ui.table.TableMenuUtils
 		 * @private
@@ -274,7 +274,7 @@ sap.ui.define([
 							text: MenuUtils.TableUtils.getResourceText("TBL_FILTER")
 						});
 
-						oCellContextMenuItem._onSelect = function (oColumn, iRowIndex) {
+						oCellContextMenuItem._onSelect = function(oColumn, iRowIndex) {
 							// "this" is the table instance.
 							var oRowContext = this.getContextByIndex(iRowIndex);
 							var sFilterProperty = oColumn.getFilterProperty();

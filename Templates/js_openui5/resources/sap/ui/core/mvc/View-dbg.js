@@ -56,7 +56,7 @@ sap.ui.define([
 	 * Also see {@link topic:91f28be26f4d1014b6dd926db0e91070 "Support for Unique IDs"} in the documentation.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.View
@@ -364,7 +364,11 @@ sap.ui.define([
 						defaultController = typeof sControllerReplacement === "string" ? sControllerReplacement : sControllerReplacement.controllerName;
 					}
 					// create controller
-					oController = sap.ui.controller(defaultController, true /* oControllerImpl = true: do not extend controller inside factory; happens below (potentially async)! */, bAsync);
+					if (bAsync) {
+						oController = Controller.create({name: defaultController});
+					} else {
+						oController = sap.ui.controller(defaultController, true /* oControllerImpl = true: do not extend controller inside factory; happens below (potentially async)! */);
+					}
 				}
 			} else if (oController) {
 				// if passed controller is not extended yet we need to do it.
@@ -867,6 +871,16 @@ sap.ui.define([
 	/**
 	 * Creates a view of the given type, name and with the given id.
 	 *
+	 * If the option <code>viewName</code> is given, the corresponding view module is loaded if needed.
+	 *
+	 * See also the API references for the specific view factories:
+	 * <ul>
+	 * <li>{@link sap.ui.core.mvc.XMLView.create}</li>
+	 * <li>{@link sap.ui.core.mvc.JSView.create}</li>
+	 * <li>{@link sap.ui.core.mvc.JSONView.create}</li>
+	 * <li>{@link sap.ui.core.mvc.HMTLView.create}</li>
+	 * </ul>
+	 *
 	 * @param {object} mOptions A parameter map for the view instantiation. Specialized view types could bring in additional parameter.
 	 * @param {string} [mOptions.id] Specifies an ID for the View instance. If no ID is given, an ID will be generated.
 	 * @param {string} [mOptions.viewName] Name of the view resource in module name notation (without suffix)
@@ -874,6 +888,8 @@ sap.ui.define([
 	 * view types are listed in the enumeration  {@link sap.ui.core.mvc.ViewType}.
 	 * @param {any} [mOptions.viewData] The view data can hold user specific data. This data is available
 	 * during the whole lifecycle of the view and the controller
+	 * @param {any} [mOptions.definition] The view definition. Only supported for XML and HTML views.
+	 * See also {@link sap.ui.core.mvc.XMLView#create} and {@link sap.ui.core.mvc.HTMLView#create} for more information.
 	 * @param {object} [mOptions.preprocessors] Can hold a map from the specified preprocessor type (e.g. "xml") to an array of
 	 * preprocessor configurations; each configuration consists of a <code>preprocessor</code> property (optional when
 	 * registered as on-demand preprocessor) and may contain further preprocessor-specific settings. The preprocessor can
@@ -982,10 +998,32 @@ sap.ui.define([
 	 * @return {sap.ui.core.mvc.View} the created View instance
 	 */
 	sap.ui.view = function(sId, vView, sType /* used by factory functions */) {
+		var fnLogDeprecation = function(sMethod) {
+			// get the viewname for logging
+			var sName = "";
+			if (typeof sId == "object") {
+				sName = sId.viewName;
+			}
+			sName = sName || (vView && vView.name);
+
+			Log[sMethod](
+				"Do not use deprecated view factory functions (" + sName + ")." +
+				"Use the static create function on the view module instead: [XML|JS|HTML|JSON|]View.create().",
+				"sap.ui.view",
+				null,
+				function () {
+					return {
+						type: "sap.ui.view",
+						name: sName
+					};
+				}
+			);
+		};
+
 		if (vView && vView.async) {
-			Log.info("Do not use deprecated factory function 'sap.ui.view'. Use 'sap.ui.mvc.View.create' instead");
+			fnLogDeprecation("info");
 		} else {
-			Log.warning("Do not use synchronous view creation! Use the new asynchronous factory 'sap.ui.mvc.View.create' instead");
+			fnLogDeprecation("warning");
 		}
 		return viewFactory(sId, vView, sType);
 	};

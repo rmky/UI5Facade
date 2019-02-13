@@ -18,7 +18,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorInlineChange
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @private
 	 * @sap-restricted
 	 */
@@ -49,7 +49,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @namespace
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorInlineChangeFactory
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @private
 	 * @sap-restricted
 	 */
@@ -66,7 +66,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 		        "appdescr_app_setDestination", "appdescr_app_setKeywords", "appdescr_app_setAch", "appdescr_flp_setConfig",
 		        "appdescr_ui5_addNewModel", "appdescr_ui5_addNewModelEnhanceWith", "appdescr_ui5_removeModel", "appdescr_ui5_replaceComponentUsage",
 		        "appdescr_smb_addNamespace", "appdescr_smb_changeNamespace", "appdescr_ui_generic_app_setMainPage", "appdescr_ui_setIcon", "appdescr_ui_setDeviceTypes",
-		        "appdescr_ui5_addLibraries", "appdescr_url_setUri"];
+		        "appdescr_ui5_addLibraries", "appdescr_url_setUri", "appdescr_fiori_setRegistrationIds"];
 	};
 
 	DescriptorInlineChangeFactory.createNew = function(sChangeType,mParameters,mTexts) {
@@ -332,6 +332,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 *
 	 * @param {object} mParameters parameters of the change type
 	 * @param {string} mParameters.dataSourceId the id of the data source to be removed
+	 * @param {boolean} [mParameters.removeUnusedODataAnnotation] option to remove also no longer referenced dataSources of type ODataAnnotion
 	 *
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
@@ -842,6 +843,22 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	DescriptorInlineChangeFactory.create_url_setUri = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "uri", "string");
 		return this._createDescriptorInlineChange('appdescr_url_setUri', mParameters);
+	};
+
+	/**
+	 * Creates an inline change of change type appdescr_fiori_setRegistrationIds
+	 *
+	 * @param {object} mParameters parameters of the change type
+	 * @param {object} mParameters.registrationIds the array of registrationId strings
+	 *
+	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
+	 *
+	 * @private
+	 * @sap-restricted
+	 */
+	DescriptorInlineChangeFactory.create_fiori_setRegistrationIds = function(mParameters) {
+		Utils.checkParameterAndType(mParameters, "registrationIds", "array");
+		return this._createDescriptorInlineChange('appdescr_fiori_setRegistrationIds', mParameters);
 	};
 
 	return DescriptorInlineChangeFactory;

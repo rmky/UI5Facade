@@ -60,7 +60,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
-	 * Enables the users to select a localized date.
+	 * Enables the users to select a localized date between 0001-01-01 and 9999-12-31.
 	 *
 	 * <h3>Overview</h3>
 	 *
@@ -130,7 +130,7 @@ sap.ui.define([
 	 * the close event), or select Cancel.
 	 *
 	 * @extends sap.m.DateTimeField
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.unified">
-  <module name="sap/ui/unified/Calendar.js" size="72992" compressedSize="35022">
+  <module name="sap/ui/unified/Calendar.js" size="72974" compressedSize="35005">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -35,7 +35,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/CalendarDateInterval.js" size="32231" compressedSize="15099">
+  <module name="sap/ui/unified/CalendarDateInterval.js" size="32201" compressedSize="15085">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -82,7 +82,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/CalendarLegendRenderer.js" size="7802" compressedSize="2543">
+  <module name="sap/ui/unified/CalendarLegendRenderer.js" size="7798" compressedSize="2540">
     <description>UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/InvisibleText.js"/>
@@ -151,7 +151,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/CalendarRow.js" size="65747" compressedSize="26043">
+  <module name="sap/ui/unified/CalendarRow.js" size="66340" compressedSize="26267">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -226,7 +226,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/ColorPicker.js" size="79947" compressedSize="40430">
+  <module name="sap/ui/unified/ColorPicker.js" size="74413" compressedSize="36923">
     <description>Provides control sap.ui.unified.ColorPicker.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -262,13 +262,15 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/ColorPickerRenderer.js" size="1111" compressedSize="478">
+  <module name="sap/ui/unified/ColorPickerRenderer.js" size="9541" compressedSize="5948">
     <description>Provides default renderer for control sap.ui.unified.ColorPicker</description>
     <requires>
+      <module name="sap/ui/Device.js"/>
+      <module name="sap/ui/unified/ColorPickerDisplayMode.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/ContentSwitcher.js" size="6027" compressedSize="1997">
+  <module name="sap/ui/unified/ContentSwitcher.js" size="6023" compressedSize="1994">
     <description>Provides control sap.ui.unified.ContentSwitcher.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -319,7 +321,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/FileUploader.js" size="57613" compressedSize="22998">
+  <module name="sap/ui/unified/FileUploader.js" size="58779" compressedSize="23406">
     <description>Provides control sap.ui.unified.FileUploader.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -345,7 +347,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/FileUploaderRenderer.js" size="4362" compressedSize="2522">
+  <module name="sap/ui/unified/FileUploaderRenderer.js" size="4407" compressedSize="2552">
     <description>Provides default renderer for control sap.ui.unified.FileUploader</description>
     <requires>
       <module name="sap/ui/thirdparty/jquery.js"/>
@@ -361,7 +363,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/Menu.js" size="43241" compressedSize="19291">
+  <module name="sap/ui/unified/Menu.js" size="43457" compressedSize="19278">
     <description>Provides control sap.ui.unified.Menu.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -461,7 +463,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/ShellLayout.js" size="17440" compressedSize="10740">
+  <module name="sap/ui/unified/ShellLayout.js" size="17436" compressedSize="10737">
     <description>Provides control sap.ui.unified.ShellLayout.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -484,7 +486,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/ShellOverlay.js" size="10681" compressedSize="6441">
+  <module name="sap/ui/unified/ShellOverlay.js" size="10677" compressedSize="6438">
     <description>Provides control sap.ui.unified.ShellOverlay.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -513,7 +515,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/SplitContainer.js" size="12031" compressedSize="5310">
+  <module name="sap/ui/unified/SplitContainer.js" size="12017" compressedSize="5307">
     <description>Provides control sap.ui.unified.SplitContainer.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -541,7 +543,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/calendar/CalendarUtils.js" size="22364" compressedSize="5509">
+  <module name="sap/ui/unified/calendar/CalendarUtils.js" size="23721" compressedSize="5779">
     <description>Provides class sap.ui.unified.calendar.CalendarUtils</description>
     <requires>
       <module name="sap/ui/core/Locale.js"/>
@@ -583,14 +585,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/calendar/HeaderRenderer.js" size="5843" compressedSize="3501">
+  <module name="sap/ui/unified/calendar/HeaderRenderer.js" size="5832" compressedSize="3498">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/security/encodeXML.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/calendar/Month.js" size="72297" compressedSize="30189">
+  <module name="sap/ui/unified/calendar/Month.js" size="73859" compressedSize="30826">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -611,7 +613,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/unified/calendar/MonthPicker.js" size="17371" compressedSize="8187">
+  <module name="sap/ui/unified/calendar/MonthPicker.js" size="17355" compressedSize="8175">
     <description>Provides control sap.ui.unified.Calendar.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -901,7 +903,7 @@
   </module>
   <module name="sap/ui/unified/designtime/messagebundle_zh_TW.properties" size="691">
   </module>
-  <module name="sap/ui/unified/library-h2-preload.js" size="21397">
+  <module name="sap/ui/unified/library-h2-preload.js" size="21502">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/security/encodeXML.js"/>
@@ -949,6 +951,7 @@
       <module name="sap/ui/layout/VerticalLayout.js"/>
       <module name="sap/ui/support/library.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="sap/ui/unified/ColorPickerDisplayMode.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
@@ -1031,7 +1034,7 @@
       <module name="sap/ui/unified/rules/FileUploader.support.js"/>
     </includes>
   </module>
-  <module name="sap/ui/unified/library-preload.js" size="449813">
+  <module name="sap/ui/unified/library-preload.js" size="453287">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/security/encodeXML.js"/>
@@ -1077,6 +1080,7 @@
       <module name="sap/ui/layout/HorizontalLayout.js"/>
       <module name="sap/ui/layout/VerticalLayout.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="sap/ui/unified/ColorPickerDisplayMode.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
@@ -1195,6 +1199,7 @@
       <module name="sap/ui/layout/HorizontalLayout.js"/>
       <module name="sap/ui/layout/VerticalLayout.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="sap/ui/unified/ColorPickerDisplayMode.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
@@ -1295,89 +1300,89 @@
   </module>
   <module name="sap/ui/unified/manifest.json" size="2735">
   </module>
-  <module name="sap/ui/unified/messagebundle.properties" size="3506">
+  <module name="sap/ui/unified/messagebundle.properties" size="3626">
   </module>
-  <module name="sap/ui/unified/messagebundle_ar.properties" size="5138">
+  <module name="sap/ui/unified/messagebundle_ar.properties" size="5833">
   </module>
-  <module name="sap/ui/unified/messagebundle_bg.properties" size="5562">
+  <module name="sap/ui/unified/messagebundle_bg.properties" size="6497">
   </module>
-  <module name="sap/ui/unified/messagebundle_ca.properties" size="3408">
+  <module name="sap/ui/unified/messagebundle_ca.properties" size="3895">
   </module>
-  <module name="sap/ui/unified/messagebundle_cs.properties" size="3676">
+  <module name="sap/ui/unified/messagebundle_cs.properties" size="4223">
   </module>
-  <module name="sap/ui/unified/messagebundle_da.properties" size="3336">
+  <module name="sap/ui/unified/messagebundle_da.properties" size="3837">
   </module>
-  <module name="sap/ui/unified/messagebundle_de.properties" size="3407">
+  <module name="sap/ui/unified/messagebundle_de.properties" size="3933">
   </module>
-  <module name="sap/ui/unified/messagebundle_el.properties" size="5609">
+  <module name="sap/ui/unified/messagebundle_el.properties" size="6666">
   </module>
-  <module name="sap/ui/unified/messagebundle_en.properties" size="3321">
+  <module name="sap/ui/unified/messagebundle_en.properties" size="3786">
   </module>
-  <module name="sap/ui/unified/messagebundle_en_US_sappsd.properties" size="6891">
+  <module name="sap/ui/unified/messagebundle_en_US_sappsd.properties" size="8007">
   </module>
-  <module name="sap/ui/unified/messagebundle_en_US_saptrc.properties" size="4287">
+  <module name="sap/ui/unified/messagebundle_en_US_saptrc.properties" size="4868">
   </module>
-  <module name="sap/ui/unified/messagebundle_es.properties" size="3415">
+  <module name="sap/ui/unified/messagebundle_es.properties" size="3902">
   </module>
-  <module name="sap/ui/unified/messagebundle_et.properties" size="3446">
+  <module name="sap/ui/unified/messagebundle_et.properties" size="3966">
   </module>
-  <module name="sap/ui/unified/messagebundle_fi.properties" size="3526">
+  <module name="sap/ui/unified/messagebundle_fi.properties" size="3999">
   </module>
-  <module name="sap/ui/unified/messagebundle_fr.properties" size="3502">
+  <module name="sap/ui/unified/messagebundle_fr.properties" size="4028">
   </module>
-  <module name="sap/ui/unified/messagebundle_hi.properties" size="5329">
+  <module name="sap/ui/unified/messagebundle_hi.properties" size="6145">
   </module>
-  <module name="sap/ui/unified/messagebundle_hr.properties" size="3453">
+  <module name="sap/ui/unified/messagebundle_hr.properties" size="3918">
   </module>
-  <module name="sap/ui/unified/messagebundle_hu.properties" size="3694">
+  <module name="sap/ui/unified/messagebundle_hu.properties" size="4304">
   </module>
-  <module name="sap/ui/unified/messagebundle_it.properties" size="3438">
+  <module name="sap/ui/unified/messagebundle_it.properties" size="3942">
   </module>
-  <module name="sap/ui/unified/messagebundle_iw.properties" size="4746">
+  <module name="sap/ui/unified/messagebundle_iw.properties" size="5418">
   </module>
-  <module name="sap/ui/unified/messagebundle_ja.properties" size="3841">
+  <module name="sap/ui/unified/messagebundle_ja.properties" size="4432">
   </module>
-  <module name="sap/ui/unified/messagebundle_kk.properties" size="5411">
+  <module name="sap/ui/unified/messagebundle_kk.properties" size="6336">
   </module>
-  <module name="sap/ui/unified/messagebundle_ko.properties" size="3741">
+  <module name="sap/ui/unified/messagebundle_ko.properties" size="4316">
   </module>
-  <module name="sap/ui/unified/messagebundle_lt.properties" size="3576">
+  <module name="sap/ui/unified/messagebundle_lt.properties" size="4118">
   </module>
-  <module name="sap/ui/unified/messagebundle_lv.properties" size="3670">
+  <module name="sap/ui/unified/messagebundle_lv.properties" size="4216">
   </module>
-  <module name="sap/ui/unified/messagebundle_ms.properties" size="3355">
+  <module name="sap/ui/unified/messagebundle_ms.properties" size="3805">
   </module>
-  <module name="sap/ui/unified/messagebundle_nl.properties" size="3357">
+  <module name="sap/ui/unified/messagebundle_nl.properties" size="3849">
   </module>
-  <module name="sap/ui/unified/messagebundle_no.properties" size="3333">
+  <module name="sap/ui/unified/messagebundle_no.properties" size="3822">
   </module>
-  <module name="sap/ui/unified/messagebundle_pl.properties" size="3567">
+  <module name="sap/ui/unified/messagebundle_pl.properties" size="4110">
   </module>
-  <module name="sap/ui/unified/messagebundle_pt.properties" size="3427">
+  <module name="sap/ui/unified/messagebundle_pt.properties" size="3918">
   </module>
-  <module name="sap/ui/unified/messagebundle_ro.properties" size="3684">
+  <module name="sap/ui/unified/messagebundle_ro.properties" size="4159">
   </module>
-  <module name="sap/ui/unified/messagebundle_ru.properties" size="5544">
+  <module name="sap/ui/unified/messagebundle_ru.properties" size="6531">
   </module>
-  <module name="sap/ui/unified/messagebundle_sh.properties" size="3433">
+  <module name="sap/ui/unified/messagebundle_sh.properties" size="3910">
   </module>
-  <module name="sap/ui/unified/messagebundle_sk.properties" size="3681">
+  <module name="sap/ui/unified/messagebundle_sk.properties" size="4177">
   </module>
-  <module name="sap/ui/unified/messagebundle_sl.properties" size="3417">
+  <module name="sap/ui/unified/messagebundle_sl.properties" size="3885">
   </module>
-  <module name="sap/ui/unified/messagebundle_sv.properties" size="3372">
+  <module name="sap/ui/unified/messagebundle_sv.properties" size="3892">
   </module>
-  <module name="sap/ui/unified/messagebundle_th.properties" size="5293">
+  <module name="sap/ui/unified/messagebundle_th.properties" size="5983">
   </module>
-  <module name="sap/ui/unified/messagebundle_tr.properties" size="3614">
+  <module name="sap/ui/unified/messagebundle_tr.properties" size="4109">
   </module>
-  <module name="sap/ui/unified/messagebundle_uk.properties" size="5708">
+  <module name="sap/ui/unified/messagebundle_uk.properties" size="6598">
   </module>
-  <module name="sap/ui/unified/messagebundle_vi.properties" size="4180">
+  <module name="sap/ui/unified/messagebundle_vi.properties" size="4786">
   </module>
-  <module name="sap/ui/unified/messagebundle_zh_CN.properties" size="3679">
+  <module name="sap/ui/unified/messagebundle_zh_CN.properties" size="4194">
   </module>
-  <module name="sap/ui/unified/messagebundle_zh_TW.properties" size="3703">
+  <module name="sap/ui/unified/messagebundle_zh_TW.properties" size="4218">
   </module>
   <module name="sap/ui/unified/rules/FileUploader.support.js" size="5011" compressedSize="3063">
     <description>Defines support rules for the FileUploader control of sap.ui.unified library.</description>

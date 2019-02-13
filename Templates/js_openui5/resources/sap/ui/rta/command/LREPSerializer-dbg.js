@@ -33,7 +33,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @constructor
 	 * @private
 	 * @since 1.42
@@ -122,7 +122,7 @@ sap.ui.define([
 							return;
 						}
 						if (oCommand instanceof FlexCommand){
-							var oAppComponent = oCommand.getAppComponent(true);
+							var oAppComponent = oCommand.getAppComponent();
 							if (oAppComponent) {
 								var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
 								var oPreparedChange = oCommand.getPreparedChange();

@@ -828,7 +828,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Adapts the layout of the tiven headerTitle domElement
+	 * Adapts the layout of the given headerTitle domElement
 	 *
 	 * @param {object} $headerDomRef The reference to the header dom element
 	 * @param {object} oEvent The event of child-element that brought the need to adapt the headerTitle layout
@@ -836,8 +836,14 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectPageHeader.prototype._adaptLayoutForDomElement = function ($headerDomRef, oEvent) {
+		var $domElement;
 
-		var $domElement = $headerDomRef ? $headerDomRef : this.getDomRef();
+		if ($headerDomRef) {
+			$domElement = $headerDomRef.length ? $headerDomRef[0] : $headerDomRef;
+		} else {
+			$domElement = this.getDomRef();
+		}
+
 		if (isDomElementHidden($domElement)) {
 			return;
 		}
@@ -897,6 +903,7 @@ sap.ui.define([
 			$identifierLineContainer = this._findById($domRef, "identifierLineContainer"),
 			iSubtitleBottom,
 			iTitleBottom,
+			sOriginalHeight = null,
 			$actions = this._findById($domRef, "actions"),
 			$imageContainer = $domRef ? $domRef.find(".sapUxAPObjectPageHeaderObjectImageContainer") : this.$().find(".sapUxAPObjectPageHeaderObjectImageContainer"),
 			iActionsAndImageWidth = $actions.width() + $imageContainer.width(),
@@ -904,6 +911,14 @@ sap.ui.define([
 
 		if ($subtitle.length) {
 			if ($subtitle.hasClass("sapOPHSubtitleBlock")) {
+
+				// save the original height and
+				// set the height of the wrapping div to a constant value before temporarily changing its inner state
+				// to avoid flickering (as the temporary inner change will affect its height as well)
+				sOriginalHeight = $identifierLine.get(0).style.height;
+				$identifierLine.css("height", $identifierLine.height());
+
+				// temporarily toggle the default subtitle display
 				$subtitle.removeClass("sapOPHSubtitleBlock");
 			}
 
@@ -912,6 +927,10 @@ sap.ui.define([
 			// check if subtitle is below the title and add it a display block class
 			if (Math.abs(iSubtitleBottom - iTitleBottom) > iPixelTolerance) {
 				$subtitle.addClass("sapOPHSubtitleBlock");
+			}
+
+			if (sOriginalHeight !== null) { // restore the original height
+				$identifierLine.get(0).style.height = sOriginalHeight;
 			}
 		}
 

@@ -433,7 +433,7 @@ sap.ui.define([
 				if (oElementData) {
 					sColspan = oElementData.getHCells();
 					if (sColspan != "auto" && sColspan != "full") {
-						iLabelCells = parseInt(sColspan, 10);
+						iLabelCells = parseInt(sColspan);
 					}
 				}
 			}
@@ -457,7 +457,7 @@ sap.ui.define([
 				oField = aFields[i];
 				oElementData = this.getElementData(oLayout, oField);
 				if (oElementData && oElementData.getHCells() != "auto") {
-					iAutoCells = iAutoCells - parseInt(oElementData.getHCells(), 10);
+					iAutoCells = iAutoCells - parseInt(oElementData.getHCells());
 					iAutoFields = iAutoFields - 1;
 				}
 			}
@@ -490,7 +490,7 @@ sap.ui.define([
 						iColspan = 1;
 					}
 				} else {
-					iColspan = parseInt(sColspan, 10);
+					iColspan = parseInt(sColspan);
 				}
 				iCellsUsed = iCellsUsed + iColspan;
 				if (iCellsUsed > iCells) {

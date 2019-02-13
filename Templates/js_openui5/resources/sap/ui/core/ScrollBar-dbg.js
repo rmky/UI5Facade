@@ -44,7 +44,7 @@ sap.ui.define([
 	 * The ScrollBar control can be used for virtual scrolling of a certain area.
 	 * This means: to simulate a very large scrollable area when technically the area is small and the control takes care of displaying the respective part only. E.g. a Table control can take care of only rendering the currently visible rows and use this ScrollBar control to make the user think he actually scrolls through a long list.
 	 * @extends sap.ui.core.Control
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @public
 	 * @deprecated as of version 1.56
@@ -205,7 +205,7 @@ sap.ui.define([
 				if (stepSize.endsWith("px")) {
 					stepSize = stepSize.substr(0, stepSize.length - 2);
 				}
-				stepSize = parseInt(stepSize, 10);
+				stepSize = parseInt(stepSize);
 			}
 		}
 		$ffsize.remove();
@@ -277,7 +277,7 @@ sap.ui.define([
 					width:0,
 					height:0
 			};
-			oContent[this.getVertical() ? "height" : "width"] = this._bStepMode ? (this.getSteps() * this._iTouchStepTreshold) : parseInt(this.getContentSize(), 10);
+			oContent[this.getVertical() ? "height" : "width"] = this._bStepMode ? (this.getSteps() * this._iTouchStepTreshold) : parseInt(this.getContentSize());
 
 			this._oTouchScroller.setDimensions(0, 0, oContent.width, oContent.height);
 

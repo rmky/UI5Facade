@@ -31,7 +31,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.60.1
+		 * @version 1.61.2
 		 *
 		 * @constructor
 		 * @public
@@ -90,6 +90,8 @@ sap.ui.define([
 			if (sideContentAggregation) {
 				var newState = Device.system.phone ? true :  isSideExpanded;
 				sideContentAggregation.setExpanded(newState);
+			} else {
+				return this;
 			}
 
 			if (!domRef) {

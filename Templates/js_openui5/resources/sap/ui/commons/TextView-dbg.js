@@ -6,13 +6,26 @@
 
 // Provides control sap.ui.commons.TextView.
 sap.ui.define([
- 'jquery.sap.global',
  './library',
  'sap/ui/core/Control',
- "./TextViewRenderer"
+ './TextViewRenderer',
+ 'sap/ui/core/library',
+ 'sap/base/security/encodeXML'
 ],
-	function(jQuery, library, Control, TextViewRenderer) {
+	function(library, Control, TextViewRenderer, coreLibrary, encodeXML) {
 	"use strict";
+
+	// shortcut for sap.ui.core.TextAlign
+	var TextAlign = coreLibrary.TextAlign;
+
+	// shortcut for sap.ui.commons.TextViewColor
+	var TextViewColor = library.TextViewColor;
+
+	// shortcut for sap.ui.commons.TextViewDesign
+	var TextViewDesign = library.TextViewDesign;
+
+	// shortcut for sap.ui.core.TextDirection
+	var TextDirection = coreLibrary.TextDirection;
 
 	/**
 	 * Constructor for a new TextView.
@@ -26,7 +39,7 @@ sap.ui.define([
 	 * @implements sap.ui.commons.ToolbarItem, sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -51,7 +64,7 @@ sap.ui.define([
 			/**
 			 * Determines the text directionality. Available options are LTR and RTL. Alternatively, the control can inherit the text direction from its parent control.
 			 */
-			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : sap.ui.core.TextDirection.Inherit},
+			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit},
 
 			/**
 			 * Switches the enabled state of the control. When the control is disabled, it is greyed out and no longer focusable.
@@ -71,7 +84,7 @@ sap.ui.define([
 			/**
 			 * Defines the visual appearance of the control.
 			 */
-			design : {type : "sap.ui.commons.TextViewDesign", group : "Data", defaultValue : sap.ui.commons.TextViewDesign.Standard},
+			design : {type : "sap.ui.commons.TextViewDesign", group : "Data", defaultValue : TextViewDesign.Standard},
 
 			/**
 			 * Disabled automatic wrapping of the text.
@@ -81,12 +94,12 @@ sap.ui.define([
 			/**
 			 * Semantic color of the text View
 			 */
-			semanticColor : {type : "sap.ui.commons.TextViewColor", group : "Appearance", defaultValue : sap.ui.commons.TextViewColor.Default},
+			semanticColor : {type : "sap.ui.commons.TextViewColor", group : "Appearance", defaultValue : TextViewColor.Default},
 
 			/**
 			 * Sets the horizontal alignment of the text.
 			 */
-			textAlign : {type : "sap.ui.core.TextAlign", group : "Appearance", defaultValue : sap.ui.core.TextAlign.Begin},
+			textAlign : {type : "sap.ui.core.TextAlign", group : "Appearance", defaultValue : TextAlign.Begin},
 
 			/**
 			 * Width of the TextView
@@ -118,7 +131,7 @@ sap.ui.define([
 		if (oDomRef) {
 			// in case of
 			sText = this.getText(); // the default value '' ensures valid text string
-			oDomRef.innerHTML = jQuery.sap.encodeHTML(sText).replace(/&#xa;/g, "<br>");
+			oDomRef.innerHTML = encodeXML(sText).replace(/&#xa;/g, "<br>");
 			// when no tooltip is applied use the text as tooltip
 			if (!this.getTooltip_AsString()) {
 				oDomRef.title = sText; // IE8 doesn't like HTML encoded attribute values// TODO remove after 1.62 version
@@ -138,4 +151,4 @@ sap.ui.define([
 
 	return TextView;
 
-}, /* bExport= */ true);
+});

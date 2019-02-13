@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.commons.form.FormContainer.
-sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/layout/form/FormContainer'],
-	function(jQuery, library, FormContainer1) {
+sap.ui.define(['sap/ui/commons/library', 'sap/ui/layout/form/FormContainer'],
+	function(library, LayoutFormContainer) {
 	"use strict";
 
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/layout/for
 	 * @extends sap.ui.layout.form.FormContainer
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -32,15 +32,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/layout/for
 	 * @alias sap.ui.commons.form.FormContainer
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	var FormContainer = FormContainer1.extend("sap.ui.commons.form.FormContainer", /** @lends sap.ui.commons.form.FormContainer.prototype */ { metadata : {
+	var FormContainer = LayoutFormContainer.extend("sap.ui.commons.form.FormContainer", /** @lends sap.ui.commons.form.FormContainer.prototype */ { metadata : {
 
 		deprecated : true,
 		library : "sap.ui.commons"
 	}});
-
-	/**
-	 * This file defines behavior for the control,
-	 */
 
 	/* Overwrite to have right "since" in there */
 
@@ -72,4 +68,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/layout/for
 
 	return FormContainer;
 
-}, /* bExport= */ true);
+});

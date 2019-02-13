@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.commons.RowRepeaterSorter.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element'],
-	function(jQuery, library, Element) {
+sap.ui.define(['./library', 'sap/ui/core/Element'],
+	function(library, Element) {
 	"use strict";
 
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element'],
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -52,13 +52,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Element'],
 		}
 	}});
 
-	///**
-	// * This file defines behavior for the control,
-	// */
-	//sap.ui.commons.RowRepeaterSorter.prototype.init = function(){
-	//   // do something for initialization...
-	//};
 
 	return RowRepeaterSorter;
 
-}, /* bExport= */ true);
+});

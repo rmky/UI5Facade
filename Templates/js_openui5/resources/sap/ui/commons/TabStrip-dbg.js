@@ -6,24 +6,37 @@
 
 // Provides control sap.ui.commons.TabStrip.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
+    'sap/base/Log',
     './library',
     'sap/ui/core/Control',
     'sap/ui/core/delegate/ItemNavigation',
     'sap/ui/core/Icon',
     'sap/ui/core/delegate/ScrollEnablement',
     'sap/ui/Device',
-    "./TabStripRenderer"
+    './TabStripRenderer',
+    'sap/ui/core/ResizeHandler',
+    'sap/ui/core/Title',
+    './Tab',
+    'sap/ui/events/KeyCodes',
+    'sap/ui/dom/jquery/parentByAttribute', // jQuery.fn.parentByAttribute
+    'sap/ui/dom/jquery/zIndex', // jQuery.fn.zIndex
+    'sap/ui/thirdparty/jqueryui/jquery-ui-position' // jQuery.fn.position
 ],
 	function(
 	    jQuery,
+	    Log,
 		library,
 		Control,
 		ItemNavigation,
 		Icon,
 		ScrollEnablement,
 		Device,
-		TabStripRenderer
+		TabStripRenderer,
+		ResizeHandler,
+		Title,
+		Tab,
+		KeyCodes
 	) {
 	"use strict";
 
@@ -42,7 +55,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -169,7 +182,7 @@ sap.ui.define([
 	 */
 	TabStrip.prototype.onBeforeRendering = function () {
 		if (this._sResizeListenerId) {
-			sap.ui.core.ResizeHandler.deregister(this._sResizeListenerId);
+			ResizeHandler.deregister(this._sResizeListenerId);
 			this._sResizeListenerId = null;
 		}
 	};
@@ -184,7 +197,7 @@ sap.ui.define([
 
 		this._updateScrollingAppearance();
 
-		this._sResizeListenerId = sap.ui.core.ResizeHandler.register(this.getDomRef(),  jQuery.proxy(this._updateScrollingAppearance, this));
+		this._sResizeListenerId = ResizeHandler.register(this.getDomRef(),  jQuery.proxy(this._updateScrollingAppearance, this));
 
 		var aTabs = this.getTabs();
 		var iSelectedIndex = this.getSelectedIndex();
@@ -218,8 +231,8 @@ sap.ui.define([
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	TabStrip.prototype.createTab = function(sText,oContent) {
-		var oTitle = new sap.ui.core.Title({text:sText}),
-			oTab = new sap.ui.commons.Tab();
+		var oTitle = new Title({text:sText}),
+			oTab = new Tab();
 
 		oTab.setTitle(oTitle);
 		oTab.addContent(oContent);
@@ -303,7 +316,7 @@ sap.ui.define([
 		}
 
 		if (this._sResizeListenerId) {
-			sap.ui.core.ResizeHandler.deregister(this._sResizeListenerId);
+			ResizeHandler.deregister(this._sResizeListenerId);
 			this._sResizeListenerId = null;
 		}
 
@@ -468,7 +481,7 @@ sap.ui.define([
 
 		// get focused index and visible index of tab
 		var iFocusedIndex = this.oItemNavigation.getFocusedIndex();
-		var iVisibleIndex = parseInt(oTab.$().attr("aria-posinset"), 10) - 1;
+		var iVisibleIndex = parseInt(oTab.$().attr("aria-posinset")) - 1;
 		var sFocusedControlId = sap.ui.getCore().getCurrentFocusedControlId();
 
 		// delete only tab from DOM ->no rerendering of other tabs necessary
@@ -564,7 +577,7 @@ sap.ui.define([
 		var oOldTab = aTabs[iOldIndex];
 
 		// ensure that events from the controls in the panel are fired
-		jQuery.sap.delayedCall(0, this, function () {
+		setTimeout(function () {
 
 			if (!this._bInitialized) {
 				return;
@@ -600,7 +613,7 @@ sap.ui.define([
 			if (fireSelect) {
 				this.fireSelect({index: iNewIndex});
 			}
-		});
+		}.bind(this), 0);
 
 		if (oTab) {
 			this.toggleTabClasses(iOldIndex, iNewIndex);
@@ -681,12 +694,12 @@ sap.ui.define([
 		} else if (!oTab.getVisible()) {
 			sDetails = "Tab not visible";
 		}
-		jQuery.sap.log.warning("SelectedIndex " + iSelectedIndex + " can not be set", sDetails, "sap.ui.commons.TabStrip");
+		Log.warning("SelectedIndex " + iSelectedIndex + " can not be set", sDetails, "sap.ui.commons.TabStrip");
 
 	};
 
 	TabStrip.prototype.onkeydown = function(oEvent) {
-		if (oEvent.which === jQuery.sap.KeyCodes.ESCAPE) {
+		if (oEvent.which === KeyCodes.ESCAPE) {
 			this._stopMoving();
 		}
 	};
@@ -1250,4 +1263,4 @@ sap.ui.define([
 
 	return TabStrip;
 
-}, /* bExport= */ true);
+});

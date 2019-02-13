@@ -1,58 +1,5 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.tnt">
-  <module name="sap/tnt/Box.js" size="1342" compressedSize="432">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/m/CustomListItem.js"/>
-      <module name="sap/tnt/BoxRenderer.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/tnt/BoxContainer.js" size="5284" compressedSize="2183">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/tnt/BoxContainerList.js"/>
-      <module name="sap/tnt/BoxContainerRenderer.js"/>
-      <module name="sap/ui/core/Control.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/tnt/BoxContainerList.js" size="7605" compressedSize="3153">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/m/ListBase.js"/>
-      <module name="sap/m/library.js"/>
-      <module name="sap/tnt/Box.js"/>
-      <module name="sap/ui/Device.js"/>
-      <module name="sap/ui/core/ResizeHandler.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/tnt/BoxContainerListRenderer.js" size="9904" compressedSize="4988">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/m/library.js"/>
-      <module name="sap/ui/Device.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/tnt/BoxContainerRenderer.js" size="1100" compressedSize="507">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/ui/Device.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/tnt/BoxRenderer.js" size="1013" compressedSize="659">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/m/CustomListItemRenderer.js"/>
-      <module name="sap/ui/Device.js"/>
-      <module name="sap/ui/core/Renderer.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
   <module name="sap/tnt/InfoLabel.js" size="6728" compressedSize="2029">
     <description>Provides control sap.tnt.InfoLabel</description>
     <requires>
@@ -154,7 +101,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/ToolPage.js" size="5579" compressedSize="2476">
+  <module name="sap/tnt/ToolPage.js" size="5608" compressedSize="2494">
     <description>Provides control sap.t.ToolPage.</description>
     <requires>
       <module name="sap/tnt/ToolPageRenderer.js"/>
@@ -165,27 +112,23 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/ToolPageRenderer.js" size="3114" compressedSize="1700">
+  <module name="sap/tnt/ToolPageRenderer.js" size="3172" compressedSize="1734">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/library-h2-preload.js" size="4295">
+  <module name="sap/tnt/library-h2-preload.js" size="3252">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
       <module name="sap/m/BarInPageEnabler.js"/>
-      <module name="sap/m/CustomListItem.js"/>
-      <module name="sap/m/CustomListItemRenderer.js"/>
-      <module name="sap/m/ListBase.js"/>
       <module name="sap/m/OverflowToolbar.js"/>
       <module name="sap/m/OverflowToolbarAssociativePopover.js"/>
       <module name="sap/m/OverflowToolbarRenderer.js"/>
       <module name="sap/m/Popover.js"/>
       <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
-      <module name="sap/ui/base/DataType.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Icon.js"/>
       <module name="sap/ui/core/IconPool.js"/>
@@ -197,18 +140,11 @@
       <module name="sap/ui/core/delegate/ScrollEnablement.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/events/KeyCodes.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
       <module name="sap/tnt/library.js"/>
       <module name="sap/tnt/manifest.json"/>
-      <module name="sap/tnt/Box.js"/>
-      <module name="sap/tnt/BoxContainer.js"/>
-      <module name="sap/tnt/BoxContainerList.js"/>
-      <module name="sap/tnt/BoxContainerListRenderer.js"/>
-      <module name="sap/tnt/BoxContainerRenderer.js"/>
-      <module name="sap/tnt/BoxRenderer.js"/>
       <module name="sap/tnt/InfoLabel.js"/>
       <module name="sap/tnt/InfoLabelRenderer.js"/>
       <module name="sap/tnt/NavigationList.js"/>
@@ -223,21 +159,17 @@
       <module name="sap/tnt/ToolPageRenderer.js"/>
     </includes>
   </module>
-  <module name="sap/tnt/library-preload.js" size="44250">
+  <module name="sap/tnt/library-preload.js" size="32868">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
       <module name="sap/m/BarInPageEnabler.js"/>
-      <module name="sap/m/CustomListItem.js"/>
-      <module name="sap/m/CustomListItemRenderer.js"/>
-      <module name="sap/m/ListBase.js"/>
       <module name="sap/m/OverflowToolbar.js"/>
       <module name="sap/m/OverflowToolbarAssociativePopover.js"/>
       <module name="sap/m/OverflowToolbarRenderer.js"/>
       <module name="sap/m/Popover.js"/>
       <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
-      <module name="sap/ui/base/DataType.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Icon.js"/>
       <module name="sap/ui/core/IconPool.js"/>
@@ -249,16 +181,9 @@
       <module name="sap/ui/core/delegate/ScrollEnablement.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/events/KeyCodes.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
-      <module name="sap/tnt/Box.js"/>
-      <module name="sap/tnt/BoxContainer.js"/>
-      <module name="sap/tnt/BoxContainerList.js"/>
-      <module name="sap/tnt/BoxContainerListRenderer.js"/>
-      <module name="sap/tnt/BoxContainerRenderer.js"/>
-      <module name="sap/tnt/BoxRenderer.js"/>
       <module name="sap/tnt/InfoLabel.js"/>
       <module name="sap/tnt/InfoLabelRenderer.js"/>
       <module name="sap/tnt/NavigationList.js"/>
@@ -280,9 +205,6 @@
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
       <module name="sap/m/BarInPageEnabler.js"/>
-      <module name="sap/m/CustomListItem.js"/>
-      <module name="sap/m/CustomListItemRenderer.js"/>
-      <module name="sap/m/ListBase.js"/>
       <module name="sap/m/OverflowToolbar.js"/>
       <module name="sap/m/OverflowToolbarAssociativePopover.js"/>
       <module name="sap/m/OverflowToolbarRenderer.js"/>
@@ -290,7 +212,6 @@
       <module name="sap/m/library-preload.json"/>
       <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
-      <module name="sap/ui/base/DataType.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Icon.js"/>
       <module name="sap/ui/core/IconPool.js"/>
@@ -303,16 +224,9 @@
       <module name="sap/ui/core/library-preload.json"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/events/KeyCodes.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
-      <module name="sap/tnt/Box.js"/>
-      <module name="sap/tnt/BoxContainer.js"/>
-      <module name="sap/tnt/BoxContainerList.js"/>
-      <module name="sap/tnt/BoxContainerListRenderer.js"/>
-      <module name="sap/tnt/BoxContainerRenderer.js"/>
-      <module name="sap/tnt/BoxRenderer.js"/>
       <module name="sap/tnt/InfoLabel.js"/>
       <module name="sap/tnt/InfoLabelRenderer.js"/>
       <module name="sap/tnt/NavigationList.js"/>
@@ -329,16 +243,15 @@
       <module name="sap/tnt/manifest.json"/>
     </includes>
   </module>
-  <module name="sap/tnt/library.js" size="1915" compressedSize="1014">
+  <module name="sap/tnt/library.js" size="1502" compressedSize="676">
     <description>Initialization Code and shared classes of library sap.tnt.</description>
     <requires>
       <module name="sap/m/library.js"/>
-      <module name="sap/ui/base/DataType.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/manifest.json" size="1315">
+  <module name="sap/tnt/manifest.json" size="1203">
   </module>
   <module name="sap/tnt/messagebundle.properties" size="288">
   </module>

@@ -6,13 +6,14 @@
 
 // Provides control sap.ui.commons.layout.MatrixLayout.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
     './MatrixLayoutCell',
     './MatrixLayoutRow',
     'sap/ui/commons/library',
     'sap/ui/core/Control',
     'sap/ui/core/EnabledPropagator',
-    "./MatrixLayoutRenderer"
+    './MatrixLayoutRenderer',
+    'sap/ui/commons/TextView'
 ],
 	function(
 	    jQuery,
@@ -21,7 +22,8 @@ sap.ui.define([
 		library,
 		Control,
 		EnabledPropagator,
-		MatrixLayoutRenderer
+		MatrixLayoutRenderer,
+		TextView
 	) {
 	"use strict";
 
@@ -55,7 +57,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -141,7 +143,7 @@ sap.ui.define([
 				// any string(?) given, display it
 				var sText = oContent ? oContent.toString() : "";
 				oCell = new MatrixLayoutCell({
-					content : new sap.ui.commons.TextView({text : sText})});
+					content : new TextView({text : sText})});
 			}
 			oRow.addCell(oCell);
 		}
@@ -161,7 +163,7 @@ sap.ui.define([
 
 		var aSetWidths;
 
-		if (!jQuery.isArray(aWidths)) {
+		if (!Array.isArray(aWidths)) {
 			// a list of values is used instead of an array -> use this as array
 			aSetWidths = jQuery.makeArray(arguments);
 		} else {
@@ -183,4 +185,4 @@ sap.ui.define([
 
 	return MatrixLayout;
 
-}, /* bExport= */ true);
+});

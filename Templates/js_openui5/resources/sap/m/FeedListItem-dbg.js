@@ -53,7 +53,7 @@ function(
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -701,16 +701,5 @@ function(
 		return this;
 	};
 
-	/**
-	 * Redefinition of sap.m.ListItemBase.setUnread: Unread is not supported for FeedListItem
-	 * @public
-	 * @param {boolean} value new value for property unread is ignored
-	 * @returns {sap.m.FeedListItem} this allows method chaining
-	 */
-	FeedListItem.prototype.setUnread = function(value) {
-		return this.setProperty("unread", false, true);
-	};
-
 	return FeedListItem;
-
 });

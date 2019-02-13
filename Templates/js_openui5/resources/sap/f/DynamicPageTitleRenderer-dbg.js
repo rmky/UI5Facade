@@ -176,7 +176,7 @@ sap.ui.define([
 		}
 		oRm.writeStyles();
 		oRm.write(">");
-		oDynamicPageTitleState.content.forEach(oRm.renderControl);
+		oDynamicPageTitleState.content.forEach(oRm.renderControl, oRm);
 		oRm.write("</div>");
 	};
 
@@ -243,7 +243,7 @@ sap.ui.define([
 		oRm.writeAttributeEscaped("id", oDynamicPageTitleState.id + "-expand-wrapper");
 		oRm.writeClasses();
 		oRm.write(">");
-		oDynamicPageTitleState.expandedContent.forEach(oRm.renderControl);
+		oDynamicPageTitleState.expandedContent.forEach(oRm.renderControl, oRm);
 		oRm.write("</div>");
 	};
 
@@ -256,7 +256,7 @@ sap.ui.define([
 		oRm.addClass("sapFDynamicPageTitleSnapped");
 		oRm.writeClasses();
 		oRm.write(">");
-		oDynamicPageTitleState.snappedContent.forEach(oRm.renderControl);
+		oDynamicPageTitleState.snappedContent.forEach(oRm.renderControl, oRm);
 		oRm.write("</div>");
 	};
 

@@ -37,7 +37,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
-	 * A single-field input control that enables the users to enter a localized date range.
+	 * A single-field input control that enables the users to enter a localized date range (between 0001-01-01 and 9999-12-31).
 	 *
 	 * <h3>Overview</h3>
 	 *
@@ -115,8 +115,8 @@ sap.ui.define([
 	 * compact mode and provides a touch-friendly size in cozy mode.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.60.1
-	 * @version 1.60.1
+	 * @version 1.61.2
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public

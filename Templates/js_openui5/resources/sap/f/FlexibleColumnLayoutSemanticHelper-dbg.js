@@ -49,7 +49,7 @@ sap.ui.define([
 	 *
 	 * For more information, see {@link sap.f.FlexibleColumnLayoutSemanticHelper#getCurrentUIState} and {@link sap.f.FlexibleColumnLayoutSemanticHelper#getNextUIState}
 	 *
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @param {sap.f.FlexibleColumnLayout} oFlexibleColumnLayout
 	 * The <code>sap.f.FlexibleColumnLayout</code> object whose state will be manipulated.
 	 *
@@ -120,7 +120,7 @@ sap.ui.define([
 		if (["Normal", "MasterDetail", "SingleColumn"].indexOf(oSettings.mode) !== -1 && !oSettings.maxColumnsCount) {
 			iMax = oModeToMaxColumnsCountMapping[oSettings.mode];
 		} else {
-			iMax = oSettings.maxColumnsCount ? parseInt(oSettings.maxColumnsCount, 10) : 3;
+			iMax = oSettings.maxColumnsCount ? parseInt(oSettings.maxColumnsCount) : 3;
 			if (iMax < 1 || iMax > 3) {
 				iMax = 3;
 			}
@@ -128,7 +128,7 @@ sap.ui.define([
 		this._maxColumnsCount = iMax;
 
 		// Initial number of columns (1 by default, can be set to 2 for MasterDetail or Normal modes only)
-		iInitial = oSettings.initialColumnsCount ? parseInt(oSettings.initialColumnsCount, 10) : 1;
+		iInitial = oSettings.initialColumnsCount ? parseInt(oSettings.initialColumnsCount) : 1;
 		if (iInitial < 1 || iInitial > 2 || this._maxColumnsCount === 1) {
 			iInitial = 1;
 		}

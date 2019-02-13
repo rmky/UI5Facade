@@ -67,7 +67,7 @@ sap.ui.define([], function () {
 			oRm.addClass("sapFDynamicPageHeaderContent");
 			oRm.writeClasses();
 			oRm.write(">");
-			oDynamicPageHeaderState.content.forEach(oRm.renderControl);
+			oDynamicPageHeaderState.content.forEach(oRm.renderControl, oRm);
 			oRm.write("</div>");
 		}
 	};

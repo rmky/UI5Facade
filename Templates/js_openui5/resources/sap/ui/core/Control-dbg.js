@@ -73,7 +73,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Element
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @alias sap.ui.core.Control
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -88,7 +88,7 @@ sap.ui.define([
 				/**
 				 * Whether the control is currently in blocked state.
 				 */
-				"blocked" : {type: "boolean", defaultValue: false},
+				"blocked" : {type: "boolean", defaultValue: false, hidden: true},
 				/**
 				 * Whether the control is currently in busy state.
 				 */
@@ -822,10 +822,21 @@ sap.ui.define([
 	}
 
 	/**
+	 * Get the controls block state.
+	 *
+	 * @return {boolean} <code>true</code> when blocked
+	 * @private
+	 * @ui5-restricted sap.ui.core, sap.m, sap.viz
+	 * @name sap.ui.core.Control#getBlocked
+	 */
+
+	/**
 	 * Set the controls block state.
 	 *
 	 * @param {boolean} bBlocked The new blocked state to be set
 	 * @return {sap.ui.core.Control} <code>this</code> to allow method chaining
+	 * @private
+	 * @ui5-restricted sap.ui.core, sap.m, sap.viz
 	 */
 	Control.prototype.setBlocked = function(bBlocked, sBlockedSection /* this is an internal parameter to apply partial blocking for a specific section of the control */) {
 		//If the new state is already set, we don't need to do anything

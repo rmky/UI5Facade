@@ -23,7 +23,8 @@ sap.ui.define([
 	"sap/ui/dom/containsOrEquals",
 	"sap/ui/events/KeyCodes",
 	"sap/ui/thirdparty/jquery",
-	"sap/base/security/encodeXML"
+	"sap/base/security/encodeXML",
+	"sap/base/strings/escapeRegExp"
 ],
 	function(
 		Dialog,
@@ -44,7 +45,8 @@ sap.ui.define([
 		containsOrEquals,
 		KeyCodes,
 		jQuery,
-		encodeXML
+		encodeXML,
+		escapeRegExp
 	) {
 		"use strict";
 
@@ -66,7 +68,7 @@ sap.ui.define([
 		 * @abstract
 		 *
 		 * @author SAP SE
-		 * @version 1.60.1
+		 * @version 1.61.2
 		 *
 		 * @constructor
 		 * @public
@@ -153,7 +155,7 @@ sap.ui.define([
 
 			sLowerCaseText = oItem[sPropertyGetter]().toLowerCase();
 			sInputLowerCaseValue = sInputValue.toLowerCase();
-			oMatchingTextRegex = new RegExp("(\\b" + sInputLowerCaseValue + ").*", "gi");
+			oMatchingTextRegex = new RegExp("(\\b" + escapeRegExp(sInputLowerCaseValue) + ").*", "gi");
 
 			return oMatchingTextRegex.test(sLowerCaseText);
 

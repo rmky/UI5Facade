@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.commons.layout.PositionContainer.
-sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/core/Element'],
-	function(jQuery, library, Element) {
+sap.ui.define(['sap/base/Log', 'sap/ui/commons/library', 'sap/ui/core/Element', 'sap/ui/core/ResizeHandler'],
+	function(Log, library, Element, ResizeHandler) {
 	"use strict";
 
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/core/Eleme
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -79,8 +79,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/core/Eleme
 
 
 
-
-	(function() {
 
 	//**** Overridden API Functions ****
 
@@ -271,6 +269,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/core/Eleme
 		return oPosition;
 	};
 
+	/**
+	 * Dummy implementation, real implementation will be injected by AbsoluteLayout.
+	 * @param {sap.ui.core.Control} oControl
+	 * @see sap.ui.commons.layout.AbsoluteLayout#cleanUpControl
+	 * @private
+	 */
+	PositionContainer.cleanUpControl = function(oControl) {};
 
 	/**
 	 * Cleans up and optionally reinitalizes the event handler registrations of the element.
@@ -279,13 +284,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/core/Eleme
 	 */
 	PositionContainer.prototype.reinitializeEventHandlers = function(bCleanupOnly) {
 		if (this._sResizeListenerId) {
-			sap.ui.core.ResizeHandler.deregister(this._sResizeListenerId);
+			ResizeHandler.deregister(this._sResizeListenerId);
 			this._sResizeListenerId = null;
 		}
 		if (!bCleanupOnly && this.getDomRef() && (this.getCenterHorizontally() || this.getCenterVertically())) {
 			var that = this;
 			var onResize = function(){
-				var jRef = jQuery(that.getDomRef());
+				var jRef = that.$();
 				if (that.getCenterHorizontally()) {
 					jRef.css("margin-left", "-" + jRef.children().outerWidth() / 2 + "px");
 				}
@@ -293,7 +298,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/core/Eleme
 					jRef.css("margin-top", "-" + jRef.children().outerHeight() / 2 + "px");
 				}
 			};
-			this._sResizeListenerId = sap.ui.core.ResizeHandler.register(this.getDomRef(), onResize);
+			this._sResizeListenerId = ResizeHandler.register(this.getDomRef(), onResize);
 			onResize();
 		}
 	};
@@ -359,7 +364,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/core/Eleme
 	var cleanup = function(oThis) {
 		var oControl = oThis.getControl();
 		if (oControl) {
-			sap.ui.commons.layout.AbsoluteLayout.cleanUpControl(oControl);
+			PositionContainer.cleanUpControl(oControl);
 			oControl.detachEvent("_change", onPropertyChanges, oThis);
 		}
 	};
@@ -377,13 +382,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/core/Eleme
 			if (oProp) {
 				var val = oControl[oProp._sGetter]();
 				if (!(!val || val == "" || val == "auto" || val == "inherit")) {
-					jQuery.sap.log.warning("Position " + sPos2 + "=" + sVal2 + " ignored, because child control " + oControl.getId() + " has fixed " + sProp + " (" + val + ").",
+					Log.warning("Position " + sPos2 + "=" + sVal2 + " ignored, because child control " + oControl.getId() + " has fixed " + sProp + " (" + val + ").",
 							"", "AbsoluteLayout '" + (oLayout ? oLayout.getId() : "_undefined") + "'");
 					return false;
 				}
 			} else {
 				if ((sProp === "width" && !oPositionContainer._disableWidthCheck) || (sProp === "height" && !oPositionContainer._disableHeightCheck)) {
-					jQuery.sap.log.warning("Position " + sPos2 + "=" + sVal2 + " ignored, because child control " + oControl.getId() + " not resizable.",
+					Log.warning("Position " + sPos2 + "=" + sVal2 + " ignored, because child control " + oControl.getId() + " not resizable.",
 							"", "AbsoluteLayout '" + (oLayout ? oLayout.getId() : "_undefined") + "'");
 					return false;
 				}
@@ -418,7 +423,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/core/Eleme
 		var oProp = getPropertyInfo(oControl, sDim);
 		if (oProp) {
 			var val = oControl[oProp._sGetter]();
-			if (val && jQuery.sap.endsWith(val, "%")) {
+			if (val && val.endsWith("%")) {
 				return val;
 			}
 		}
@@ -440,8 +445,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/commons/library', 'sap/ui/core/Eleme
 		}
 	};
 
-	}());
+
 
 	return PositionContainer;
 
-}, /* bExport= */ true);
+});

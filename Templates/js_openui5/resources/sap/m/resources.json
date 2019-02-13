@@ -234,7 +234,8 @@
 				"sap/base/Log.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarRenderer.js",
-				"sap/m/Toolbar.js"
+				"sap/m/Toolbar.js",
+				"sap/ui/Device.js"
 			]
 		},
 		{
@@ -244,7 +245,8 @@
 				"sap/base/Log.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarRenderer.js",
-				"sap/m/Toolbar.js"
+				"sap/m/Toolbar.js",
+				"sap/ui/Device.js"
 			]
 		},
 		{
@@ -894,6 +896,7 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/base/security/encodeXML.js",
+				"sap/base/strings/escapeRegExp.js",
 				"sap/m/Bar.js",
 				"sap/m/Button.js",
 				"sap/m/ComboBoxBaseRenderer.js",
@@ -923,6 +926,7 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/base/security/encodeXML.js",
+				"sap/base/strings/escapeRegExp.js",
 				"sap/m/Bar.js",
 				"sap/m/Button.js",
 				"sap/m/ComboBoxBaseRenderer.js",
@@ -1469,7 +1473,9 @@
 				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/Popup.js",
@@ -1500,7 +1506,9 @@
 				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/Popup.js",
@@ -2705,14 +2713,16 @@
 			"module": "sap/m/IconTabHeaderRenderer.js",
 			"isDebug": true,
 			"required": [
-				"sap/m/library.js"
+				"sap/m/library.js",
+				"sap/ui/Device.js"
 			]
 		},
 		{
 			"name": "IconTabHeaderRenderer.js",
 			"module": "sap/m/IconTabHeaderRenderer.js",
 			"required": [
-				"sap/m/library.js"
+				"sap/m/library.js",
+				"sap/ui/Device.js"
 			]
 		},
 		{
@@ -2834,6 +2844,7 @@
 				"sap/base/assert.js",
 				"sap/m/ColumnListItem.js",
 				"sap/m/InputBase.js",
+				"sap/m/InputRenderer.js",
 				"sap/m/Popover.js",
 				"sap/m/SuggestionsPopover.js",
 				"sap/m/Table.js",
@@ -2858,6 +2869,7 @@
 				"sap/base/assert.js",
 				"sap/m/ColumnListItem.js",
 				"sap/m/InputBase.js",
+				"sap/m/InputRenderer.js",
 				"sap/m/Popover.js",
 				"sap/m/SuggestionsPopover.js",
 				"sap/m/Table.js",
@@ -4626,6 +4638,10 @@
 			"designtime": true
 		},
 		{
+			"name": "ObjectHeaderPictureShape.type",
+			"designtime": true
+		},
+		{
 			"name": "ObjectHeaderRenderer-dbg.js",
 			"module": "sap/m/ObjectHeaderRenderer.js",
 			"isDebug": true,
@@ -4887,165 +4903,6 @@
 			]
 		},
 		{
-			"name": "OnePersonCalendar-dbg.js",
-			"module": "sap/m/OnePersonCalendar.js",
-			"isDebug": true,
-			"required": [
-				"sap/m/OnePersonCalendarRenderer.js",
-				"sap/m/OnePersonGrid.js",
-				"sap/m/OnePersonHeader.js",
-				"sap/m/SegmentedButtonItem.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/Locale.js",
-				"sap/ui/core/LocaleData.js",
-				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/core/format/DateFormat.js",
-				"sap/ui/unified/DateRange.js"
-			]
-		},
-		{
-			"name": "OnePersonCalendar.js",
-			"module": "sap/m/OnePersonCalendar.js",
-			"required": [
-				"sap/m/OnePersonCalendarRenderer.js",
-				"sap/m/OnePersonGrid.js",
-				"sap/m/OnePersonHeader.js",
-				"sap/m/SegmentedButtonItem.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/Locale.js",
-				"sap/ui/core/LocaleData.js",
-				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/core/format/DateFormat.js",
-				"sap/ui/unified/DateRange.js"
-			]
-		},
-		{
-			"name": "OnePersonCalendarRenderer-dbg.js",
-			"module": "sap/m/OnePersonCalendarRenderer.js",
-			"isDebug": true
-		},
-		{
-			"name": "OnePersonCalendarRenderer.js",
-			"module": "sap/m/OnePersonCalendarRenderer.js"
-		},
-		{
-			"name": "OnePersonGrid-dbg.js",
-			"module": "sap/m/OnePersonGrid.js",
-			"isDebug": true,
-			"required": [
-				"sap/m/OnePersonGridRenderer.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/Locale.js",
-				"sap/ui/core/LocaleData.js",
-				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/core/format/DateFormat.js",
-				"sap/ui/unified/calendar/DatesRow.js",
-				"sap/ui/unified/library.js"
-			]
-		},
-		{
-			"name": "OnePersonGrid.js",
-			"module": "sap/m/OnePersonGrid.js",
-			"required": [
-				"sap/m/OnePersonGridRenderer.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/Locale.js",
-				"sap/ui/core/LocaleData.js",
-				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/core/format/DateFormat.js",
-				"sap/ui/unified/calendar/DatesRow.js",
-				"sap/ui/unified/library.js"
-			]
-		},
-		{
-			"name": "OnePersonGridRenderer-dbg.js",
-			"module": "sap/m/OnePersonGridRenderer.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/core/InvisibleText.js",
-				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/unified/library.js"
-			]
-		},
-		{
-			"name": "OnePersonGridRenderer.js",
-			"module": "sap/m/OnePersonGridRenderer.js",
-			"required": [
-				"sap/ui/core/InvisibleText.js",
-				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/unified/library.js"
-			]
-		},
-		{
-			"name": "OnePersonHeader-dbg.js",
-			"module": "sap/m/OnePersonHeader.js",
-			"isDebug": true,
-			"required": [
-				"sap/m/AssociativeOverflowToolbar.js",
-				"sap/m/Button.js",
-				"sap/m/OnePersonHeaderRenderer.js",
-				"sap/m/SegmentedButton.js",
-				"sap/m/Title.js",
-				"sap/m/Toolbar.js",
-				"sap/m/ToolbarSpacer.js",
-				"sap/m/library.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/IconPool.js",
-				"sap/ui/core/LocaleData.js",
-				"sap/ui/core/Popup.js",
-				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/core/format/DateFormat.js",
-				"sap/ui/unified/Calendar.js"
-			]
-		},
-		{
-			"name": "OnePersonHeader.js",
-			"module": "sap/m/OnePersonHeader.js",
-			"required": [
-				"sap/m/AssociativeOverflowToolbar.js",
-				"sap/m/Button.js",
-				"sap/m/OnePersonHeaderRenderer.js",
-				"sap/m/SegmentedButton.js",
-				"sap/m/Title.js",
-				"sap/m/Toolbar.js",
-				"sap/m/ToolbarSpacer.js",
-				"sap/m/library.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/IconPool.js",
-				"sap/ui/core/LocaleData.js",
-				"sap/ui/core/Popup.js",
-				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/core/format/DateFormat.js",
-				"sap/ui/unified/Calendar.js"
-			]
-		},
-		{
-			"name": "OnePersonHeaderRenderer-dbg.js",
-			"module": "sap/m/OnePersonHeaderRenderer.js",
-			"isDebug": true
-		},
-		{
-			"name": "OnePersonHeaderRenderer.js",
-			"module": "sap/m/OnePersonHeaderRenderer.js"
-		},
-		{
-			"name": "OnePersonView-dbg.js",
-			"module": "sap/m/OnePersonView.js",
-			"isDebug": true,
-			"required": [
-				"sap/m/library.js",
-				"sap/ui/core/Element.js"
-			]
-		},
-		{
-			"name": "OnePersonView.js",
-			"module": "sap/m/OnePersonView.js",
-			"required": [
-				"sap/m/library.js",
-				"sap/ui/core/Element.js"
-			]
-		},
-		{
 			"name": "OverflowToolbar-dbg.js",
 			"module": "sap/m/OverflowToolbar.js",
 			"isDebug": true,
@@ -5062,6 +4919,7 @@
 				"sap/ui/Device.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/dom/jquery/Focusable.js"
 			]
 		},
@@ -5085,6 +4943,7 @@
 				"sap/ui/Device.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/dom/jquery/Focusable.js"
 			]
 		},
@@ -6066,6 +5925,7 @@
 				"sap/m/Column.js",
 				"sap/m/ColumnListItem.js",
 				"sap/m/ColumnListItemRenderer.js",
+				"sap/m/OverflowToolbar.js",
 				"sap/m/PlanningCalendarRenderer.js",
 				"sap/m/PlanningCalendarRow.js",
 				"sap/m/Select.js",
@@ -6075,6 +5935,7 @@
 				"sap/m/Toolbar.js",
 				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Element.js",
@@ -6112,6 +5973,7 @@
 				"sap/m/Column.js",
 				"sap/m/ColumnListItem.js",
 				"sap/m/ColumnListItemRenderer.js",
+				"sap/m/OverflowToolbar.js",
 				"sap/m/PlanningCalendarRenderer.js",
 				"sap/m/PlanningCalendarRow.js",
 				"sap/m/Select.js",
@@ -6121,6 +5983,7 @@
 				"sap/m/Toolbar.js",
 				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Element.js",
@@ -6147,6 +6010,60 @@
 		{
 			"name": "PlanningCalendarBuiltInView.type",
 			"designtime": true
+		},
+		{
+			"name": "PlanningCalendarHeader-dbg.js",
+			"module": "sap/m/PlanningCalendarHeader.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/AccButton.js",
+				"sap/m/AssociativeOverflowToolbar.js",
+				"sap/m/Button.js",
+				"sap/m/PlanningCalendarHeaderRenderer.js",
+				"sap/m/SegmentedButton.js",
+				"sap/m/Title.js",
+				"sap/m/Toolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/m/library.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Popup.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/unified/Calendar.js",
+				"sap/ui/unified/calendar/CalendarDate.js"
+			]
+		},
+		{
+			"name": "PlanningCalendarHeader.js",
+			"module": "sap/m/PlanningCalendarHeader.js",
+			"required": [
+				"sap/m/AccButton.js",
+				"sap/m/AssociativeOverflowToolbar.js",
+				"sap/m/Button.js",
+				"sap/m/PlanningCalendarHeaderRenderer.js",
+				"sap/m/SegmentedButton.js",
+				"sap/m/Title.js",
+				"sap/m/Toolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/m/library.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Popup.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/unified/Calendar.js",
+				"sap/ui/unified/calendar/CalendarDate.js"
+			]
+		},
+		{
+			"name": "PlanningCalendarHeaderRenderer-dbg.js",
+			"module": "sap/m/PlanningCalendarHeaderRenderer.js",
+			"isDebug": true
+		},
+		{
+			"name": "PlanningCalendarHeaderRenderer.js",
+			"module": "sap/m/PlanningCalendarHeaderRenderer.js"
 		},
 		{
 			"name": "PlanningCalendarLegend-dbg.js",
@@ -6663,6 +6580,7 @@
 			"module": "sap/m/RadioButton.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/strings/capitalize.js",
 				"sap/m/RadioButtonGroup.js",
 				"sap/m/RadioButtonRenderer.js",
 				"sap/m/library.js",
@@ -6679,6 +6597,7 @@
 			"name": "RadioButton.js",
 			"module": "sap/m/RadioButton.js",
 			"required": [
+				"sap/base/strings/capitalize.js",
 				"sap/m/RadioButtonGroup.js",
 				"sap/m/RadioButtonRenderer.js",
 				"sap/m/library.js",
@@ -7057,7 +6976,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/EnabledPropagator.js",
 				"sap/ui/core/IconPool.js",
-				"sap/ui/core/Item.js",
+				"sap/ui/core/ListItem.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ItemNavigation.js"
 			]
@@ -7075,7 +6994,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/EnabledPropagator.js",
 				"sap/ui/core/IconPool.js",
-				"sap/ui/core/Item.js",
+				"sap/ui/core/ListItem.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ItemNavigation.js"
 			]
@@ -7137,6 +7056,7 @@
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/EnabledPropagator.js",
+				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/Item.js",
@@ -7166,6 +7086,7 @@
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/EnabledPropagator.js",
+				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/Item.js",
@@ -7272,7 +7193,9 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/Device.js",
-				"sap/ui/core/Element.js"
+				"sap/ui/core/Element.js",
+				"sap/ui/core/Icon.js",
+				"sap/ui/core/IconPool.js"
 			]
 		},
 		{
@@ -7280,7 +7203,9 @@
 			"module": "sap/m/SelectListRenderer.js",
 			"required": [
 				"sap/ui/Device.js",
-				"sap/ui/core/Element.js"
+				"sap/ui/core/Element.js",
+				"sap/ui/core/Icon.js",
+				"sap/ui/core/IconPool.js"
 			]
 		},
 		{
@@ -7518,6 +7443,209 @@
 			],
 			"condRequired": [
 				"sap/ui/core/theming/Parameters.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendar-dbg.js",
+			"module": "sap/m/SinglePlanningCalendar.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/m/PlanningCalendarHeader.js",
+				"sap/m/SegmentedButtonItem.js",
+				"sap/m/SinglePlanningCalendarGrid.js",
+				"sap/m/SinglePlanningCalendarRenderer.js",
+				"sap/m/SinglePlanningCalendarWeekView.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Locale.js",
+				"sap/ui/core/LocaleData.js",
+				"sap/ui/core/date/UniversalDate.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/unified/DateRange.js",
+				"sap/ui/unified/calendar/CalendarDate.js",
+				"sap/ui/unified/calendar/CalendarUtils.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendar.js",
+			"module": "sap/m/SinglePlanningCalendar.js",
+			"required": [
+				"sap/base/Log.js",
+				"sap/m/PlanningCalendarHeader.js",
+				"sap/m/SegmentedButtonItem.js",
+				"sap/m/SinglePlanningCalendarGrid.js",
+				"sap/m/SinglePlanningCalendarRenderer.js",
+				"sap/m/SinglePlanningCalendarWeekView.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Locale.js",
+				"sap/ui/core/LocaleData.js",
+				"sap/ui/core/date/UniversalDate.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/unified/DateRange.js",
+				"sap/ui/unified/calendar/CalendarDate.js",
+				"sap/ui/unified/calendar/CalendarUtils.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarDayView-dbg.js",
+			"module": "sap/m/SinglePlanningCalendarDayView.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/SinglePlanningCalendarView.js",
+				"sap/m/library.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarDayView.js",
+			"module": "sap/m/SinglePlanningCalendarDayView.js",
+			"required": [
+				"sap/m/SinglePlanningCalendarView.js",
+				"sap/m/library.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarGrid-dbg.js",
+			"module": "sap/m/SinglePlanningCalendarGrid.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/SinglePlanningCalendarGridRenderer.js",
+				"sap/m/SinglePlanningCalendarUtilities.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Locale.js",
+				"sap/ui/core/LocaleData.js",
+				"sap/ui/core/date/UniversalDate.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/events/KeyCodes.js",
+				"sap/ui/unified/calendar/CalendarDate.js",
+				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/DatesRow.js",
+				"sap/ui/unified/library.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarGrid.js",
+			"module": "sap/m/SinglePlanningCalendarGrid.js",
+			"required": [
+				"sap/m/SinglePlanningCalendarGridRenderer.js",
+				"sap/m/SinglePlanningCalendarUtilities.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Locale.js",
+				"sap/ui/core/LocaleData.js",
+				"sap/ui/core/date/UniversalDate.js",
+				"sap/ui/core/format/DateFormat.js",
+				"sap/ui/events/KeyCodes.js",
+				"sap/ui/unified/calendar/CalendarDate.js",
+				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/DatesRow.js",
+				"sap/ui/unified/library.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarGridRenderer-dbg.js",
+			"module": "sap/m/SinglePlanningCalendarGridRenderer.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/date/UniversalDate.js",
+				"sap/ui/unified/calendar/CalendarDate.js",
+				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/library.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarGridRenderer.js",
+			"module": "sap/m/SinglePlanningCalendarGridRenderer.js",
+			"required": [
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/date/UniversalDate.js",
+				"sap/ui/unified/calendar/CalendarDate.js",
+				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/library.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarRenderer-dbg.js",
+			"module": "sap/m/SinglePlanningCalendarRenderer.js",
+			"isDebug": true
+		},
+		{
+			"name": "SinglePlanningCalendarRenderer.js",
+			"module": "sap/m/SinglePlanningCalendarRenderer.js"
+		},
+		{
+			"name": "SinglePlanningCalendarUtilities-dbg.js",
+			"module": "sap/m/SinglePlanningCalendarUtilities.js",
+			"isDebug": true
+		},
+		{
+			"name": "SinglePlanningCalendarUtilities.js",
+			"module": "sap/m/SinglePlanningCalendarUtilities.js"
+		},
+		{
+			"name": "SinglePlanningCalendarView-dbg.js",
+			"module": "sap/m/SinglePlanningCalendarView.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/m/library.js",
+				"sap/ui/core/Element.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarView.js",
+			"module": "sap/m/SinglePlanningCalendarView.js",
+			"required": [
+				"sap/base/Log.js",
+				"sap/m/library.js",
+				"sap/ui/core/Element.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarWeekView-dbg.js",
+			"module": "sap/m/SinglePlanningCalendarWeekView.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/SinglePlanningCalendarView.js",
+				"sap/m/library.js",
+				"sap/ui/unified/calendar/CalendarDate.js",
+				"sap/ui/unified/calendar/CalendarUtils.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarWeekView.js",
+			"module": "sap/m/SinglePlanningCalendarWeekView.js",
+			"required": [
+				"sap/m/SinglePlanningCalendarView.js",
+				"sap/m/library.js",
+				"sap/ui/unified/calendar/CalendarDate.js",
+				"sap/ui/unified/calendar/CalendarUtils.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarWorkWeekView-dbg.js",
+			"module": "sap/m/SinglePlanningCalendarWorkWeekView.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/SinglePlanningCalendarView.js",
+				"sap/m/library.js",
+				"sap/ui/core/LocaleData.js",
+				"sap/ui/unified/calendar/CalendarDate.js",
+				"sap/ui/unified/calendar/CalendarUtils.js"
+			]
+		},
+		{
+			"name": "SinglePlanningCalendarWorkWeekView.js",
+			"module": "sap/m/SinglePlanningCalendarWorkWeekView.js",
+			"required": [
+				"sap/m/SinglePlanningCalendarView.js",
+				"sap/m/library.js",
+				"sap/ui/core/LocaleData.js",
+				"sap/ui/unified/calendar/CalendarDate.js",
+				"sap/ui/unified/calendar/CalendarUtils.js"
 			]
 		},
 		{
@@ -8238,7 +8366,8 @@
 				"sap/ui/base/Object.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/ListItem.js",
-				"sap/ui/core/ResizeHandler.js"
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/events/KeyCodes.js"
 			]
 		},
 		{
@@ -8262,7 +8391,8 @@
 				"sap/ui/base/Object.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/ListItem.js",
-				"sap/ui/core/ResizeHandler.js"
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/events/KeyCodes.js"
 			]
 		},
 		{
@@ -9318,7 +9448,6 @@
 				"sap/m/library.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/EnabledPropagator.js",
-				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -9337,7 +9466,6 @@
 				"sap/m/library.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/EnabledPropagator.js",
-				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -12679,6 +12807,7 @@
 				"sap/base/security/sanitizeHTML.js",
 				"sap/base/strings/camelize.js",
 				"sap/base/strings/capitalize.js",
+				"sap/base/strings/escapeRegExp.js",
 				"sap/base/util/ObjectPath.js",
 				"sap/base/util/UriParameters.js",
 				"sap/base/util/deepEqual.js",
@@ -12694,8 +12823,10 @@
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Metadata.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/ContextMenuSupport.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
 				"sap/ui/core/CustomStyleClassSupport.js",
 				"sap/ui/core/Element.js",
@@ -13006,13 +13137,6 @@
 				"sap/m/ObjectNumberRenderer.js",
 				"sap/m/ObjectStatus.js",
 				"sap/m/ObjectStatusRenderer.js",
-				"sap/m/OnePersonCalendar.js",
-				"sap/m/OnePersonCalendarRenderer.js",
-				"sap/m/OnePersonGrid.js",
-				"sap/m/OnePersonGridRenderer.js",
-				"sap/m/OnePersonHeader.js",
-				"sap/m/OnePersonHeaderRenderer.js",
-				"sap/m/OnePersonView.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarAssociativePopover.js",
 				"sap/m/OverflowToolbarAssociativePopoverControls.js",
@@ -13048,6 +13172,8 @@
 				"sap/m/Panel.js",
 				"sap/m/PanelRenderer.js",
 				"sap/m/PlanningCalendar.js",
+				"sap/m/PlanningCalendarHeader.js",
+				"sap/m/PlanningCalendarHeaderRenderer.js",
 				"sap/m/PlanningCalendarLegend.js",
 				"sap/m/PlanningCalendarLegendRenderer.js",
 				"sap/m/PlanningCalendarRenderer.js",
@@ -13102,6 +13228,15 @@
 				"sap/m/SelectionDetailsRenderer.js",
 				"sap/m/Shell.js",
 				"sap/m/ShellRenderer.js",
+				"sap/m/SinglePlanningCalendar.js",
+				"sap/m/SinglePlanningCalendarDayView.js",
+				"sap/m/SinglePlanningCalendarGrid.js",
+				"sap/m/SinglePlanningCalendarGridRenderer.js",
+				"sap/m/SinglePlanningCalendarRenderer.js",
+				"sap/m/SinglePlanningCalendarUtilities.js",
+				"sap/m/SinglePlanningCalendarView.js",
+				"sap/m/SinglePlanningCalendarWeekView.js",
+				"sap/m/SinglePlanningCalendarWorkWeekView.js",
 				"sap/m/SlideTile.js",
 				"sap/m/SlideTileRenderer.js",
 				"sap/m/Slider.js",
@@ -13378,11 +13513,15 @@
 				"sap/m/rules/Breadcrumbs.support.js",
 				"sap/m/rules/Button.support.js",
 				"sap/m/rules/CheckBox.support.js",
+				"sap/m/rules/DatePicker.support.js",
+				"sap/m/rules/DateRangeSelection.support.js",
 				"sap/m/rules/Dialog.support.js",
+				"sap/m/rules/FacetFilter.support.js",
 				"sap/m/rules/IconTabBar.support.js",
 				"sap/m/rules/Image.support.js",
 				"sap/m/rules/Input.support.js",
 				"sap/m/rules/Link.support.js",
+				"sap/m/rules/MaskInput.support.js",
 				"sap/m/rules/MessagePage.support.js",
 				"sap/m/rules/ObjectHeader.support.js",
 				"sap/m/rules/ObjectListItem.support.js",
@@ -13391,9 +13530,11 @@
 				"sap/m/rules/Panel.support.js",
 				"sap/m/rules/Select.support.js",
 				"sap/m/rules/SelectDialog.support.js",
+				"sap/m/rules/StepInput.support.js",
 				"sap/m/rules/Table.support.js",
 				"sap/m/rules/Title.support.js",
 				"sap/m/rules/Tokenizer.support.js",
+				"sap/m/rules/ViewSettingsDialog.support.js",
 				"sap/m/semantic/AddAction.js",
 				"sap/m/semantic/CancelAction.js",
 				"sap/m/semantic/DeleteAction.js",
@@ -13451,6 +13592,7 @@
 				"sap/base/security/sanitizeHTML.js",
 				"sap/base/strings/camelize.js",
 				"sap/base/strings/capitalize.js",
+				"sap/base/strings/escapeRegExp.js",
 				"sap/base/util/ObjectPath.js",
 				"sap/base/util/UriParameters.js",
 				"sap/base/util/deepEqual.js",
@@ -13466,8 +13608,10 @@
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Metadata.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/ContextMenuSupport.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
 				"sap/ui/core/CustomStyleClassSupport.js",
 				"sap/ui/core/Element.js",
@@ -13778,13 +13922,6 @@
 				"sap/m/ObjectNumberRenderer.js",
 				"sap/m/ObjectStatus.js",
 				"sap/m/ObjectStatusRenderer.js",
-				"sap/m/OnePersonCalendar.js",
-				"sap/m/OnePersonCalendarRenderer.js",
-				"sap/m/OnePersonGrid.js",
-				"sap/m/OnePersonGridRenderer.js",
-				"sap/m/OnePersonHeader.js",
-				"sap/m/OnePersonHeaderRenderer.js",
-				"sap/m/OnePersonView.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarAssociativePopover.js",
 				"sap/m/OverflowToolbarAssociativePopoverControls.js",
@@ -13820,6 +13957,8 @@
 				"sap/m/Panel.js",
 				"sap/m/PanelRenderer.js",
 				"sap/m/PlanningCalendar.js",
+				"sap/m/PlanningCalendarHeader.js",
+				"sap/m/PlanningCalendarHeaderRenderer.js",
 				"sap/m/PlanningCalendarLegend.js",
 				"sap/m/PlanningCalendarLegendRenderer.js",
 				"sap/m/PlanningCalendarRenderer.js",
@@ -13874,6 +14013,15 @@
 				"sap/m/SelectionDetailsRenderer.js",
 				"sap/m/Shell.js",
 				"sap/m/ShellRenderer.js",
+				"sap/m/SinglePlanningCalendar.js",
+				"sap/m/SinglePlanningCalendarDayView.js",
+				"sap/m/SinglePlanningCalendarGrid.js",
+				"sap/m/SinglePlanningCalendarGridRenderer.js",
+				"sap/m/SinglePlanningCalendarRenderer.js",
+				"sap/m/SinglePlanningCalendarUtilities.js",
+				"sap/m/SinglePlanningCalendarView.js",
+				"sap/m/SinglePlanningCalendarWeekView.js",
+				"sap/m/SinglePlanningCalendarWorkWeekView.js",
 				"sap/m/SlideTile.js",
 				"sap/m/SlideTileRenderer.js",
 				"sap/m/Slider.js",
@@ -14150,11 +14298,15 @@
 				"sap/m/rules/Breadcrumbs.support.js",
 				"sap/m/rules/Button.support.js",
 				"sap/m/rules/CheckBox.support.js",
+				"sap/m/rules/DatePicker.support.js",
+				"sap/m/rules/DateRangeSelection.support.js",
 				"sap/m/rules/Dialog.support.js",
+				"sap/m/rules/FacetFilter.support.js",
 				"sap/m/rules/IconTabBar.support.js",
 				"sap/m/rules/Image.support.js",
 				"sap/m/rules/Input.support.js",
 				"sap/m/rules/Link.support.js",
+				"sap/m/rules/MaskInput.support.js",
 				"sap/m/rules/MessagePage.support.js",
 				"sap/m/rules/ObjectHeader.support.js",
 				"sap/m/rules/ObjectListItem.support.js",
@@ -14163,9 +14315,11 @@
 				"sap/m/rules/Panel.support.js",
 				"sap/m/rules/Select.support.js",
 				"sap/m/rules/SelectDialog.support.js",
+				"sap/m/rules/StepInput.support.js",
 				"sap/m/rules/Table.support.js",
 				"sap/m/rules/Title.support.js",
 				"sap/m/rules/Tokenizer.support.js",
+				"sap/m/rules/ViewSettingsDialog.support.js",
 				"sap/m/semantic/AddAction.js",
 				"sap/m/semantic/CancelAction.js",
 				"sap/m/semantic/DeleteAction.js",
@@ -14227,6 +14381,7 @@
 				"sap/base/security/sanitizeHTML.js",
 				"sap/base/strings/camelize.js",
 				"sap/base/strings/capitalize.js",
+				"sap/base/strings/escapeRegExp.js",
 				"sap/base/util/ObjectPath.js",
 				"sap/base/util/UriParameters.js",
 				"sap/base/util/deepEqual.js",
@@ -14242,8 +14397,10 @@
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Metadata.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/ContextMenuSupport.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
 				"sap/ui/core/CustomStyleClassSupport.js",
 				"sap/ui/core/Element.js",
@@ -14548,13 +14705,6 @@
 				"sap/m/ObjectNumberRenderer.js",
 				"sap/m/ObjectStatus.js",
 				"sap/m/ObjectStatusRenderer.js",
-				"sap/m/OnePersonCalendar.js",
-				"sap/m/OnePersonCalendarRenderer.js",
-				"sap/m/OnePersonGrid.js",
-				"sap/m/OnePersonGridRenderer.js",
-				"sap/m/OnePersonHeader.js",
-				"sap/m/OnePersonHeaderRenderer.js",
-				"sap/m/OnePersonView.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarAssociativePopover.js",
 				"sap/m/OverflowToolbarAssociativePopoverControls.js",
@@ -14590,6 +14740,8 @@
 				"sap/m/Panel.js",
 				"sap/m/PanelRenderer.js",
 				"sap/m/PlanningCalendar.js",
+				"sap/m/PlanningCalendarHeader.js",
+				"sap/m/PlanningCalendarHeaderRenderer.js",
 				"sap/m/PlanningCalendarLegend.js",
 				"sap/m/PlanningCalendarLegendRenderer.js",
 				"sap/m/PlanningCalendarRenderer.js",
@@ -14644,6 +14796,15 @@
 				"sap/m/SelectionDetailsRenderer.js",
 				"sap/m/Shell.js",
 				"sap/m/ShellRenderer.js",
+				"sap/m/SinglePlanningCalendar.js",
+				"sap/m/SinglePlanningCalendarDayView.js",
+				"sap/m/SinglePlanningCalendarGrid.js",
+				"sap/m/SinglePlanningCalendarGridRenderer.js",
+				"sap/m/SinglePlanningCalendarRenderer.js",
+				"sap/m/SinglePlanningCalendarUtilities.js",
+				"sap/m/SinglePlanningCalendarView.js",
+				"sap/m/SinglePlanningCalendarWeekView.js",
+				"sap/m/SinglePlanningCalendarWorkWeekView.js",
 				"sap/m/SlideTile.js",
 				"sap/m/SlideTileRenderer.js",
 				"sap/m/Slider.js",
@@ -14843,6 +15004,7 @@
 				"sap/base/security/sanitizeHTML.js",
 				"sap/base/strings/camelize.js",
 				"sap/base/strings/capitalize.js",
+				"sap/base/strings/escapeRegExp.js",
 				"sap/base/util/ObjectPath.js",
 				"sap/base/util/UriParameters.js",
 				"sap/base/util/deepEqual.js",
@@ -14858,8 +15020,10 @@
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Metadata.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/Configuration.js",
 				"sap/ui/core/ContextMenuSupport.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
 				"sap/ui/core/CustomStyleClassSupport.js",
 				"sap/ui/core/Element.js",
@@ -15165,13 +15329,6 @@
 				"sap/m/ObjectNumberRenderer.js",
 				"sap/m/ObjectStatus.js",
 				"sap/m/ObjectStatusRenderer.js",
-				"sap/m/OnePersonCalendar.js",
-				"sap/m/OnePersonCalendarRenderer.js",
-				"sap/m/OnePersonGrid.js",
-				"sap/m/OnePersonGridRenderer.js",
-				"sap/m/OnePersonHeader.js",
-				"sap/m/OnePersonHeaderRenderer.js",
-				"sap/m/OnePersonView.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarAssociativePopover.js",
 				"sap/m/OverflowToolbarAssociativePopoverControls.js",
@@ -15207,6 +15364,8 @@
 				"sap/m/Panel.js",
 				"sap/m/PanelRenderer.js",
 				"sap/m/PlanningCalendar.js",
+				"sap/m/PlanningCalendarHeader.js",
+				"sap/m/PlanningCalendarHeaderRenderer.js",
 				"sap/m/PlanningCalendarLegend.js",
 				"sap/m/PlanningCalendarLegendRenderer.js",
 				"sap/m/PlanningCalendarRenderer.js",
@@ -15261,6 +15420,15 @@
 				"sap/m/SelectionDetailsRenderer.js",
 				"sap/m/Shell.js",
 				"sap/m/ShellRenderer.js",
+				"sap/m/SinglePlanningCalendar.js",
+				"sap/m/SinglePlanningCalendarDayView.js",
+				"sap/m/SinglePlanningCalendarGrid.js",
+				"sap/m/SinglePlanningCalendarGridRenderer.js",
+				"sap/m/SinglePlanningCalendarRenderer.js",
+				"sap/m/SinglePlanningCalendarUtilities.js",
+				"sap/m/SinglePlanningCalendarView.js",
+				"sap/m/SinglePlanningCalendarWeekView.js",
+				"sap/m/SinglePlanningCalendarWorkWeekView.js",
 				"sap/m/SlideTile.js",
 				"sap/m/SlideTileRenderer.js",
 				"sap/m/Slider.js",
@@ -15454,11 +15622,15 @@
 				"sap/m/rules/Breadcrumbs.support.js",
 				"sap/m/rules/Button.support.js",
 				"sap/m/rules/CheckBox.support.js",
+				"sap/m/rules/DatePicker.support.js",
+				"sap/m/rules/DateRangeSelection.support.js",
 				"sap/m/rules/Dialog.support.js",
+				"sap/m/rules/FacetFilter.support.js",
 				"sap/m/rules/IconTabBar.support.js",
 				"sap/m/rules/Image.support.js",
 				"sap/m/rules/Input.support.js",
 				"sap/m/rules/Link.support.js",
+				"sap/m/rules/MaskInput.support.js",
 				"sap/m/rules/MessagePage.support.js",
 				"sap/m/rules/ObjectHeader.support.js",
 				"sap/m/rules/ObjectListItem.support.js",
@@ -15467,9 +15639,11 @@
 				"sap/m/rules/Panel.support.js",
 				"sap/m/rules/Select.support.js",
 				"sap/m/rules/SelectDialog.support.js",
+				"sap/m/rules/StepInput.support.js",
 				"sap/m/rules/Table.support.js",
 				"sap/m/rules/Title.support.js",
-				"sap/m/rules/Tokenizer.support.js"
+				"sap/m/rules/Tokenizer.support.js",
+				"sap/m/rules/ViewSettingsDialog.support.js"
 			]
 		},
 		{
@@ -15515,11 +15689,15 @@
 				"sap/m/rules/Breadcrumbs.support.js",
 				"sap/m/rules/Button.support.js",
 				"sap/m/rules/CheckBox.support.js",
+				"sap/m/rules/DatePicker.support.js",
+				"sap/m/rules/DateRangeSelection.support.js",
 				"sap/m/rules/Dialog.support.js",
+				"sap/m/rules/FacetFilter.support.js",
 				"sap/m/rules/IconTabBar.support.js",
 				"sap/m/rules/Image.support.js",
 				"sap/m/rules/Input.support.js",
 				"sap/m/rules/Link.support.js",
+				"sap/m/rules/MaskInput.support.js",
 				"sap/m/rules/MessagePage.support.js",
 				"sap/m/rules/ObjectHeader.support.js",
 				"sap/m/rules/ObjectListItem.support.js",
@@ -15528,9 +15706,11 @@
 				"sap/m/rules/Panel.support.js",
 				"sap/m/rules/Select.support.js",
 				"sap/m/rules/SelectDialog.support.js",
+				"sap/m/rules/StepInput.support.js",
 				"sap/m/rules/Table.support.js",
 				"sap/m/rules/Title.support.js",
 				"sap/m/rules/Tokenizer.support.js",
+				"sap/m/rules/ViewSettingsDialog.support.js",
 				"sap/ui/support/library.js"
 			]
 		},
@@ -15975,8 +16155,32 @@
 			]
 		},
 		{
+			"name": "rules/DatePicker.support.js",
+			"module": "sap/m/rules/DatePicker.support.js",
+			"support": true,
+			"required": [
+				"sap/ui/support/library.js"
+			]
+		},
+		{
+			"name": "rules/DateRangeSelection.support.js",
+			"module": "sap/m/rules/DateRangeSelection.support.js",
+			"support": true,
+			"required": [
+				"sap/ui/support/library.js"
+			]
+		},
+		{
 			"name": "rules/Dialog.support.js",
 			"module": "sap/m/rules/Dialog.support.js",
+			"support": true,
+			"required": [
+				"sap/ui/support/library.js"
+			]
+		},
+		{
+			"name": "rules/FacetFilter.support.js",
+			"module": "sap/m/rules/FacetFilter.support.js",
 			"support": true,
 			"required": [
 				"sap/ui/support/library.js"
@@ -16009,6 +16213,14 @@
 		{
 			"name": "rules/Link.support.js",
 			"module": "sap/m/rules/Link.support.js",
+			"support": true,
+			"required": [
+				"sap/ui/support/library.js"
+			]
+		},
+		{
+			"name": "rules/MaskInput.support.js",
+			"module": "sap/m/rules/MaskInput.support.js",
 			"support": true,
 			"required": [
 				"sap/ui/support/library.js"
@@ -16079,6 +16291,14 @@
 			]
 		},
 		{
+			"name": "rules/StepInput.support.js",
+			"module": "sap/m/rules/StepInput.support.js",
+			"support": true,
+			"required": [
+				"sap/ui/support/library.js"
+			]
+		},
+		{
 			"name": "rules/Table.support.js",
 			"module": "sap/m/rules/Table.support.js",
 			"support": true,
@@ -16097,6 +16317,14 @@
 		{
 			"name": "rules/Tokenizer.support.js",
 			"module": "sap/m/rules/Tokenizer.support.js",
+			"support": true,
+			"required": [
+				"sap/ui/support/library.js"
+			]
+		},
+		{
+			"name": "rules/ViewSettingsDialog.support.js",
+			"module": "sap/m/rules/ViewSettingsDialog.support.js",
 			"support": true,
 			"required": [
 				"sap/ui/support/library.js"
@@ -17321,16 +17549,6 @@
 			"theme": "base"
 		},
 		{
-			"name": "themes/base/OnePersonGrid.less",
-			"designtime": true,
-			"theme": "base"
-		},
-		{
-			"name": "themes/base/OnePersonHeader.less",
-			"designtime": true,
-			"theme": "base"
-		},
-		{
 			"name": "themes/base/OverflowToolbarAssociativePopover.less",
 			"designtime": true,
 			"theme": "base"
@@ -17387,6 +17605,11 @@
 		},
 		{
 			"name": "themes/base/PlanningCalendar.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/PlanningCalendarHeader.less",
 			"designtime": true,
 			"theme": "base"
 		},
@@ -17487,6 +17710,11 @@
 		},
 		{
 			"name": "themes/base/Shell.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/SinglePlanningCalendarGrid.less",
 			"designtime": true,
 			"theme": "base"
 		},

@@ -11,7 +11,7 @@ sap.ui.define([
 	'sap/ui/core/EnabledPropagator',
 	'sap/ui/core/delegate/ItemNavigation',
 	'sap/ui/core/ResizeHandler',
-	'sap/ui/core/Item',
+	'sap/ui/core/ListItem',
 	'sap/ui/core/IconPool',
 	'./SegmentedButtonRenderer'
 ],
@@ -21,7 +21,7 @@ function(
 	EnabledPropagator,
 	ItemNavigation,
 	ResizeHandler,
-	Item,
+	ListItem,
 	IconPool,
 	SegmentedButtonRenderer
 	) {
@@ -48,7 +48,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -311,10 +311,10 @@ function(
 				if (sWidth) {
 					if (sWidth.indexOf("%") !== -1) {
 						// Width in Percent
-						iSumPercents += parseInt(sWidth.slice(0, -1), 10);
+						iSumPercents += parseInt(sWidth.slice(0, -1));
 					} else {
 						// Width in Pixels
-						iSumPixels += parseInt(sWidth.slice(0, -2), 10);
+						iSumPixels += parseInt(sWidth.slice(0, -2));
 					}
 				} else {
 					iNoWidths++;
@@ -767,7 +767,7 @@ function(
 	 *    An sap.m.Button instance which becomes the new target of this <code>selectedButton</code> association.
 	 *    Alternatively, the ID of an sap.m.Button instance may be given as a string.
 	 *    If the value of null, undefined, or an empty string is provided the first item will be selected.
-	 * @returns {sap.m.SegmentedButton} <code>this</code> this pointer for chaining
+	 * @returns {sap.m.SegmentedButton} <code>this</code> pointer for chaining
 	 * @public
 	 */
 	SegmentedButton.prototype.setSelectedButton = function (vButton) {
@@ -874,7 +874,7 @@ function(
 	 */
 	SegmentedButton.prototype._selectChangeHandler = function(oEvent) {
 		var oSelectedItem = oEvent.getParameter("selectedItem"),
-			sNewKey = parseInt(oSelectedItem.getKey(), 10),
+			sNewKey = parseInt(oSelectedItem.getKey()),
 			oButton = this.getButtons()[sNewKey],
 			sButtonId = oButton.getId();
 
@@ -894,6 +894,7 @@ function(
 		var iKey = 0,
 			iSelectedKey = 0,
 			sButtonText,
+			sButtonIcon,
 			oSelect = this.getAggregation("_select");
 
 
@@ -904,8 +905,10 @@ function(
 		oSelect.destroyItems();
 		this._getVisibleButtons().forEach(function (oButton) {
 			sButtonText = oButton.getText();
-			oSelect.addItem(new Item({
+			sButtonIcon = oButton.getIcon();
+			oSelect.addItem(new ListItem({
 				key: iKey.toString(),
+				icon: sButtonIcon ? sButtonIcon : "",
 				text: sButtonText ? sButtonText : oButton.getTooltip_AsString(),
 				enabled: oButton.getEnabled()
 			}));

@@ -7,8 +7,9 @@
 //Provides class sap.ui.model.odata.v4.lib._Helper
 sap.ui.define([
 	"sap/base/Log",
+	"sap/base/util/isEmptyObject",
 	"sap/ui/thirdparty/URI"
-], function (Log, URI) {
+], function (Log, isEmptyObject, URI) {
 	"use strict";
 
 	var rAmpersand = /&/g,
@@ -17,14 +18,68 @@ sap.ui.define([
 		rEscapedOpenBracket = /%28/g,
 		rEscapedTick = /%27/g,
 		rHash = /#/g,
+		_Helper,
 		// matches the rest of a segment after '(' and any segment that consists only of a number
 		rNotMetaContext = /\([^/]*|\/-?\d+/g,
 		rNumber = /^-?\d+$/,
 		rPlus = /\+/g,
-		rSingleQuote = /'/g,
-		Helper;
+		rSingleQuote = /'/g;
 
-	Helper = {
+	_Helper = {
+		/**
+		 * Adds an item to the given map by path.
+		 *
+		 * @param {object} mMap
+		 *   A map from path to a list of items
+		 * @param {string} sPath
+		 *   The path
+		 * @param {object} [oItem]
+		 *   The item; if it is <code>undefined</code>, nothing happens
+		 */
+		addByPath : function (mMap, sPath, oItem) {
+			if (oItem) {
+				if (!mMap[sPath]) {
+					mMap[sPath] = [oItem];
+				} else if (mMap[sPath].indexOf(oItem) < 0) {
+					mMap[sPath].push(oItem);
+				}
+			}
+		},
+
+		/**
+		 * Adds all given children to the given hash set which either appear in the given list or
+		 * have some ancestor in it.
+		 *
+		 * Note: "a/b/c" is deemed a child of the ancestors "a/b" and "a", but not "b" or "a/b/c/d".
+		 *
+		 * @param {string[]} aChildren - List of non-empty child paths (unmodified)
+		 * @param {string[]} aAncestors - List of ancestor paths (unmodified)
+		 * @param {object} mChildren - Hash set of child paths, maps string to <code>true</code>;
+		 *   is modified
+		 */
+		addChildrenWithAncestor : function (aChildren, aAncestors, mChildren) {
+			if (aAncestors.length) {
+				aChildren.forEach(function (sPath) {
+					var aSegments;
+
+					if (aAncestors.indexOf(sPath) >= 0) {
+						mChildren[sPath] = true;
+						return;
+					}
+
+					aSegments = sPath.split("/");
+					aSegments.pop();
+					while (aSegments.length) {
+						if (aAncestors.indexOf(aSegments.join("/")) >= 0) {
+							mChildren[sPath] = true;
+							break;
+						}
+						aSegments.pop();
+					}
+				});
+			}
+		},
+
 		/**
 		 * Builds a relative path from the given arguments. Iterates over the arguments and appends
 		 * them to the path if defined and non-empty. The arguments are expected to be strings or
@@ -96,10 +151,10 @@ sap.ui.define([
 
 				if (Array.isArray(vValue)) {
 					vValue.forEach(function (sItem) {
-						aQuery.push(Helper.encodePair(sKey, sItem));
+						aQuery.push(_Helper.encodePair(sKey, sItem));
 					});
 				} else {
-					aQuery.push(Helper.encodePair(sKey, vValue));
+					aQuery.push(_Helper.encodePair(sKey, vValue));
 				}
 			});
 
@@ -311,7 +366,7 @@ sap.ui.define([
 		 *   The encoded key-value pair in the form "key=value"
 		 */
 		encodePair : function (sKey, sValue) {
-			return Helper.encode(sKey, true) + "=" + Helper.encode(sValue, false);
+			return _Helper.encode(sKey, true) + "=" + _Helper.encode(sValue, false);
 		},
 
 		/**
@@ -344,13 +399,13 @@ sap.ui.define([
 		 */
 		fireChanges : function (mChangeListeners, sPath, oValue, bRemoved) {
 			Object.keys(oValue).forEach(function (sProperty) {
-				var sPropertyPath = Helper.buildPath(sPath, sProperty),
+				var sPropertyPath = _Helper.buildPath(sPath, sProperty),
 					vValue = oValue[sProperty];
 
 				if (vValue && typeof vValue === "object") {
-					Helper.fireChanges(mChangeListeners, sPropertyPath, vValue, bRemoved);
+					_Helper.fireChanges(mChangeListeners, sPropertyPath, vValue, bRemoved);
 				} else {
-					Helper.fireChange(mChangeListeners, sPropertyPath,
+					_Helper.fireChange(mChangeListeners, sPropertyPath,
 						bRemoved ? undefined : vValue);
 				}
 			});
@@ -427,7 +482,7 @@ sap.ui.define([
 		 */
 		getKeyPredicate : function (oInstance, sMetaPath, mTypeForMetaPath) {
 			var aKeyProperties = [],
-				mKey2Value = Helper.getKeyProperties(oInstance, sMetaPath, mTypeForMetaPath, true);
+				mKey2Value = _Helper.getKeyProperties(oInstance, sMetaPath, mTypeForMetaPath, true);
 
 			if (!mKey2Value) {
 				return undefined;
@@ -482,7 +537,7 @@ sap.ui.define([
 				}
 				aPath = sKeyPath.split("/");
 
-				vValue = Helper.drillDown(oInstance, aPath);
+				vValue = _Helper.drillDown(oInstance, aPath);
 				if (vValue === undefined) {
 					return true;
 				}
@@ -490,8 +545,8 @@ sap.ui.define([
 				// the last path segment is the name of the simple property
 				sPropertyName = aPath.pop();
 				// find the type containing the simple property
-				oType = mTypeForMetaPath[Helper.buildPath(sMetaPath, aPath.join("/"))];
-				vValue = Helper.formatLiteral(vValue, oType[sPropertyName].$Type);
+				oType = mTypeForMetaPath[_Helper.buildPath(sMetaPath, aPath.join("/"))];
+				vValue = _Helper.formatLiteral(vValue, oType[sPropertyName].$Type);
 				mKey2Value[sKey] = vValue;
 			});
 
@@ -574,6 +629,138 @@ sap.ui.define([
 			var oPrivateNamespace = oObject["@$ui5._"];
 
 			return oPrivateNamespace ? sAnnotation in oPrivateNamespace : false;
+		},
+
+		/**
+		 * Returns a copy of given query options where "$select" is replaced by the intersection
+		 * with the given property paths. "$expand" is removed.
+		 *
+		 * @param {object} mCacheQueryOptions
+		 *   A map of query options as returned by
+		 *   {@link sap.ui.model.odata.v4.ODataModel#buildQueryOptions}
+		 * @param {string[]} aPaths
+		 *   The "14.5.11 Expression edm:NavigationPropertyPath" or
+		 *   "14.5.13 Expression edm:PropertyPath" strings describing which properties need to be
+		 *   loaded because they may have changed due to side effects of a previous update; must not
+		 *   be empty
+		 * @param {function} fnFetchMetadata
+		 *   Function which fetches metadata for a given meta path
+		 * @param {string} sRootMetaPath
+		 *   The meta path for the cache root's type, for example "/SalesOrderList/SO_2_BP" or
+		 *   "/Artists/foo.EditAction/@$ui5.overload/0/$ReturnType/$Type", such that an OData simple
+		 *   identifier may be appended
+		 * @returns {object}
+		 *   The updated query options or <code>null</code> if no request is needed
+		 * @throws {Error}
+		 *   If a path string is empty or the intersection requires a $expand of a collection-valued
+		 *   navigation property
+		 */
+		intersectQueryOptions : function (mCacheQueryOptions, aPaths, fnFetchMetadata,
+				sRootMetaPath) {
+			var aExpands = [],
+				mExpands = {},
+				mResult,
+				aSelects,
+				mSelects = {};
+
+			/*
+			 * Throws an error if the given meta path points to a collection-valued navigation
+			 * property.
+			 *
+			 * @param {string} sMetaPath
+			 *   An absolute meta path
+			 * @throws {Error}
+			 *   If the given meta path points to a collection-valued navigation property
+			 */
+			function checkCollection(sMetaPath) {
+				if (fnFetchMetadata(sMetaPath).getResult().$isCollection) {
+					throw new Error("Unsupported collection-valued navigation property "
+						+ sMetaPath);
+				}
+			}
+
+			/*
+			 * Filter where only structural properties pass through.
+			 *
+			 * @param {boolean} bSkipFirstSegment
+			 *   Whether first segment of the path is known to be a structural property
+			 * @param {string} sMetaPath
+			 *   A meta path relative to the cache's root
+			 * @returns {boolean}
+			 *   Whether the given meta path contains only structural properties
+			 */
+			function filterStructural(bSkipFirstSegment, sMetaPath) {
+				var aSegments = sMetaPath.split("/");
+
+				return aSegments.every(function (sSegment, i) {
+					return i === 0 && bSkipFirstSegment
+						|| fnFetchMetadata(
+								sRootMetaPath + "/" + aSegments.slice(0, i + 1).join("/")
+							).getResult().$kind === "Property";
+				});
+			}
+
+			if (aPaths.indexOf("") >= 0) {
+				throw new Error("Unsupported empty navigation property path");
+			}
+
+			if (mCacheQueryOptions.$select && mCacheQueryOptions.$select.indexOf("*") < 0) {
+				_Helper.addChildrenWithAncestor(aPaths, mCacheQueryOptions.$select, mSelects);
+				_Helper.addChildrenWithAncestor(mCacheQueryOptions.$select, aPaths, mSelects);
+				aSelects = Object.keys(mSelects).filter(filterStructural.bind(null, true));
+			} else {
+				aSelects = aPaths.filter(filterStructural.bind(null, false));
+			}
+
+			if (mCacheQueryOptions.$expand) {
+				aExpands = Object.keys(mCacheQueryOptions.$expand);
+				aExpands.forEach(function (sNavigationPropertyPath) {
+					var mChildQueryOptions,
+						sMetaPath = sRootMetaPath + "/" + sNavigationPropertyPath,
+						mSet = {},
+						aStrippedPaths;
+
+					_Helper.addChildrenWithAncestor([sNavigationPropertyPath], aPaths, mSet);
+					if (!isEmptyObject(mSet)) {
+						checkCollection(sMetaPath);
+						// complete navigation property may change, same expand as initially
+						mExpands[sNavigationPropertyPath]
+							= mCacheQueryOptions.$expand[sNavigationPropertyPath];
+						return;
+					}
+
+					aStrippedPaths = _Helper.stripPathPrefix(sNavigationPropertyPath, aPaths);
+					if (aStrippedPaths.length) {
+						checkCollection(sMetaPath);
+						// details of the navigation property may change, compute intersection
+						// recursively
+						mChildQueryOptions = _Helper.intersectQueryOptions(
+							mCacheQueryOptions.$expand[sNavigationPropertyPath] || {},
+							aStrippedPaths, fnFetchMetadata,
+							sRootMetaPath + "/" + sNavigationPropertyPath);
+						if (mChildQueryOptions) {
+							mExpands[sNavigationPropertyPath] = mChildQueryOptions;
+						}
+					}
+				});
+			}
+
+			if (!aSelects.length && isEmptyObject(mExpands)) {
+				return null;
+			}
+
+			if (!aSelects.length) { // avoid $select= in URL, use any navigation property
+				aSelects = Object.keys(mExpands).slice(0, 1);
+			}
+
+			mResult = Object.assign({}, mCacheQueryOptions, {$select : aSelects});
+			if (isEmptyObject(mExpands)) {
+				delete mResult.$expand;
+			} else {
+				mResult.$expand = mExpands;
+			}
+
+			return mResult;
 		},
 
 		/**
@@ -664,7 +851,7 @@ sap.ui.define([
 			case "Edm.Int16":
 			case "Edm.Int32":
 			case "Edm.SByte":
-				return checkNaN(parseInt(sLiteral, 10));
+				return checkNaN(parseInt(sLiteral));
 			case "Edm.Date":
 			case "Edm.DateTimeOffset":
 			case "Edm.Decimal":
@@ -693,12 +880,38 @@ sap.ui.define([
 		 * @see sap.ui.model.odata.v4.lib._Helper.clone
 		 */
 		publicClone : function (vValue) {
-			var vClone = Helper.clone(vValue);
+			var vClone = _Helper.clone(vValue);
 
 			if (vClone) {
 				delete vClone["@$ui5._"];
 			}
 			return vClone;
+		},
+
+		/**
+		 * Removes an item from the given map by path.
+		 *
+		 * @param {object} mMap
+		 *   A map from path to a list of items
+		 * @param {string} sPath
+		 *   The path
+		 * @param {object} oItem
+		 *   The item
+		 */
+		removeByPath : function (mMap, sPath, oItem) {
+			var aItems = mMap[sPath],
+				iIndex;
+
+			if (aItems) {
+				iIndex = aItems.indexOf(oItem);
+				if (iIndex >= 0) {
+					if (aItems.length === 1) {
+						delete mMap[sPath];
+					} else {
+						aItems.splice(iIndex, 1);
+					}
+				}
+			}
 		},
 
 		/**
@@ -717,7 +930,7 @@ sap.ui.define([
 
 			if (vIfMatchValue && typeof vIfMatchValue === "object") {
 				vIfMatchValue = vIfMatchValue["@odata.etag"];
-				mHeaders = jQuery.extend({}, mHeaders);
+				mHeaders = Object.assign({}, mHeaders);
 				if (vIfMatchValue === undefined) {
 					delete mHeaders["If-Match"];
 				} else {
@@ -746,6 +959,28 @@ sap.ui.define([
 				oPrivateNamespace = oObject["@$ui5._"] = {};
 			}
 			oPrivateNamespace[sAnnotation] = vValue;
+		},
+
+		/**
+		 * Strips the given prefix from all given paths. If a path does not start with the prefix,
+		 * it is ignored (note that "A" is not a path prefix of "AA", but of "A/A").
+		 * A remainder never starts with a slash and may well be empty.
+		 *
+		 * @param {string} sPrefix
+		 *   A prefix (which must not end with a slash)
+		 * @param {string[]} aPaths
+		 *   A list of paths
+		 * @returns {string[]}
+		 *   The list of remainders for all paths which start with the given prefix
+		 */
+		stripPathPrefix : function (sPrefix, aPaths) {
+			var sPathPrefix = sPrefix + "/";
+
+			return aPaths.filter(function (sPath) {
+				return sPath === sPrefix || sPath.startsWith(sPathPrefix);
+			}).map(function (sPath) {
+				return sPath.slice(sPathPrefix.length);
+			});
 		},
 
 		/**
@@ -787,7 +1022,7 @@ sap.ui.define([
 
 			// iterate over all properties in the old value
 			Object.keys(oOldValue).forEach(function (sProperty) {
-				var sPropertyPath = Helper.buildPath(sPath, sProperty),
+				var sPropertyPath = _Helper.buildPath(sPath, sProperty),
 					vOldValue = oOldValue[sProperty],
 					vNewValue;
 
@@ -801,22 +1036,22 @@ sap.ui.define([
 							oOldValue[sProperty] = vNewValue;
 						} else if (vOldValue) {
 							// a structural property in cache and patch -> recursion
-							Helper.updateExisting(mChangeListeners, sPropertyPath, vOldValue,
+							_Helper.updateExisting(mChangeListeners, sPropertyPath, vOldValue,
 								vNewValue);
 						} else {
 							// a structural property was added
 							oOldValue[sProperty] = vNewValue;
-							Helper.fireChanges(mChangeListeners, sPropertyPath, vNewValue, false);
+							_Helper.fireChanges(mChangeListeners, sPropertyPath, vNewValue, false);
 						}
 					} else if (vOldValue && typeof vOldValue === "object") {
 						// a structural property was removed
 						oOldValue[sProperty] = vNewValue;
-						Helper.fireChanges(mChangeListeners, sPropertyPath, vOldValue, true);
+						_Helper.fireChanges(mChangeListeners, sPropertyPath, vOldValue, true);
 					} else {
 						// a primitive property
 						oOldValue[sProperty] = vNewValue;
 						if (vOldValue !== vNewValue) {
-							Helper.fireChange(mChangeListeners, sPropertyPath, vNewValue);
+							_Helper.fireChange(mChangeListeners, sPropertyPath, vNewValue);
 						}
 					}
 				}
@@ -859,15 +1094,15 @@ sap.ui.define([
 						if (iIndex < aSegments.length - 1) {
 							return false;
 						}
-						Helper.fireChange(mChangeListeners, Helper.buildPath(sPath, sProperty),
+						_Helper.fireChange(mChangeListeners, _Helper.buildPath(sPath, sProperty),
 							oOldValue[sSegment]);
 					} else if (typeof oNewValue[sSegment] === "object") {
 						oOldValue[sSegment] = oOldValue[sSegment] || {};
 					} else {
 						if (oOldValue[sSegment] !== oNewValue[sSegment]) {
 							oOldValue[sSegment] = oNewValue[sSegment];
-							Helper.fireChange(mChangeListeners, Helper.buildPath(sPath, sProperty),
-								oOldValue[sSegment]);
+							_Helper.fireChange(mChangeListeners,
+								_Helper.buildPath(sPath, sProperty), oOldValue[sSegment]);
 						}
 						return false;
 					}
@@ -884,7 +1119,7 @@ sap.ui.define([
 			 */
 			function buildPropertyPaths(oObject, sObjectName) {
 				Object.keys(oObject).forEach(function (sProperty) {
-					var sPropertyPath = sObjectName ? sObjectName + "/" + sProperty : sProperty,
+					var sPropertyPath = _Helper.buildPath(sObjectName, sProperty),
 						vPropertyValue = oObject[sProperty];
 
 					if (vPropertyValue !== null && typeof vPropertyValue === "object") {
@@ -930,7 +1165,7 @@ sap.ui.define([
 		 */
 		updateTransientPaths : function (mMap, sPathInCache, sPredicate) {
 			var sPath,
-				sPathToMinus1 = Helper.buildPath(sPathInCache, "-1");
+				sPathToMinus1 = _Helper.buildPath(sPathInCache, "-1");
 
 			for (sPath in mMap) {
 				if (sPath.startsWith(sPathToMinus1)) {
@@ -942,5 +1177,5 @@ sap.ui.define([
 		}
 	};
 
-	return Helper;
+	return _Helper;
 }, /* bExport= */false);

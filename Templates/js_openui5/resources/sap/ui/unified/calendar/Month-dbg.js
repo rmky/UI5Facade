@@ -63,7 +63,7 @@ sap.ui.define([
 	 * If used inside the calendar the properties and aggregation are directly taken from the parent
 	 * (To not duplicate and sync DateRanges and so on...)
 	 * @extends sap.ui.core.Control
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -287,17 +287,11 @@ sap.ui.define([
 
 	Month.prototype.onmouseover = function(oEvent) {
 		var $Target = jQuery(oEvent.target),
-			oSelectedDateRange,
+			oSelectedDateRange = this.getSelectedDates()[0],
 			iDate1,
 			iDate2;
 
-		if (!this.getIntervalSelection()) {
-			return;
-		}
-
-		oSelectedDateRange = this.getSelectedDates()[0];
-
-		if (!oSelectedDateRange || !oSelectedDateRange.getStartDate() || oSelectedDateRange.getEndDate()) {
+		if (!this._isMarkingUnfinishedRangeAllowed()) {
 			return;
 		}
 
@@ -309,15 +303,8 @@ sap.ui.define([
 			$Target = $Target.parent();
 		}
 
-		iDate1 = parseInt(this._oFormatYyyymmdd.format(oSelectedDateRange.getStartDate()), 10);
+		iDate1 = parseInt(this._oFormatYyyymmdd.format(oSelectedDateRange.getStartDate()));
 		iDate2 = $Target.data("sapDay");
-
-		//swap if necessary
-		if (iDate1 > iDate2) {
-			iDate1 = iDate1 + iDate2;
-			iDate2 = iDate1 - iDate2;
-			iDate1 = iDate1 - iDate2;
-		}
 
 		if (this.hasListeners("datehovered")) {
 			this.fireEvent("datehovered", { date1: iDate1, date2: iDate2 });
@@ -333,6 +320,13 @@ sap.ui.define([
 			i;
 
 		aDomRefs = this.$().find(".sapUiCalItem");
+
+		//swap if necessary
+		if (iDate1 > iDate2) {
+			iDate1 = iDate1 + iDate2;
+			iDate2 = iDate1 - iDate2;
+			iDate1 = iDate1 - iDate2;
+		}
 
 		for (i = 0; i < aDomRefs.length; i++) {
 			$CheckRef = jQuery(aDomRefs[i]);
@@ -1303,6 +1297,16 @@ sap.ui.define([
 
 			this.fireFocus({date: oFocusedDate.toLocalJSDate(), otherMonth: true});
 
+			// If the user is in single interval selection mode and he/she has selected interval's startingDate,
+			// but no end date yet, then any date between startingDate and the currently focused date must be marked
+			// as part of the new interval.
+			if (this._isMarkingUnfinishedRangeAllowed()) {
+				var oIntervalStart = this.getSelectedDates()[0],
+					iParsedStartDate = parseInt(this._oFormatYyyymmdd.format(oIntervalStart.getStartDate())),
+					iParsedEndDate = parseInt(this._oFormatYyyymmdd.format(oFocusedDate.toLocalJSDate()));
+
+				this._markDatesBetweenStartAndHoveredDate(iParsedStartDate, iParsedEndDate);
+			}
 		}
 
 	};
@@ -1581,6 +1585,20 @@ sap.ui.define([
 			bIntervalSelection = this.getIntervalSelection();
 
 		return !bSingleSelection && !bIntervalSelection;
+	};
+
+	/**
+	 * Determines if indication for unfinished interval selection should be displayed.
+	 * @returns {boolean}
+	 * @private
+	 */
+	Month.prototype._isMarkingUnfinishedRangeAllowed = function () {
+		// Method should return 'true' only when 'intervalSelection' is set to 'true', the user has selected
+		// the range's startDate, but hasn't selected its endDate yet
+		var oSelectedRange = this.getSelectedDates()[0],
+			bValidRangeForMarking = !!(oSelectedRange && oSelectedRange.getStartDate() && !oSelectedRange.getEndDate());
+
+		return (this.getIntervalSelection() && bValidRangeForMarking);
 	};
 
 	/**
@@ -1994,6 +2012,20 @@ sap.ui.define([
 			this._handleMousedown(oEvent, oFocusedDate, iIndex);
 		}
 
+		if (oEvent.type === "sapnext" || oEvent.type === "sapprevious") {
+			var oSelectedDateRange = this.getSelectedDates()[0],
+				iIntervalStartDate,
+				iIntervalEndDate;
+
+			if (!this._isMarkingUnfinishedRangeAllowed()) {
+				return;
+			}
+
+			iIntervalStartDate = parseInt(this._oFormatYyyymmdd.format(oSelectedDateRange.getStartDate()));
+			iIntervalEndDate = $DomRef.data("sapDay");
+
+			this._markDatesBetweenStartAndHoveredDate(iIntervalStartDate, iIntervalEndDate);
+		}
 	}
 
 	function _handleFocusAgain(oControlEvent){

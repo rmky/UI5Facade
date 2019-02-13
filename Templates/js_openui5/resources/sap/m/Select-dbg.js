@@ -11,6 +11,7 @@ sap.ui.define([
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/EnabledPropagator',
+	'sap/ui/core/Icon',
 	'sap/ui/core/IconPool',
 	'./Button',
 	'./Bar',
@@ -32,6 +33,7 @@ function(
 	library,
 	Control,
 	EnabledPropagator,
+	Icon,
 	IconPool,
 	Button,
 	Bar,
@@ -81,7 +83,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.60.1
+		 * @version 1.61.2
 		 *
 		 * @constructor
 		 * @public
@@ -277,6 +279,14 @@ function(
 
 					/**
 					 * Defines the items contained within this control.
+					 *
+					 * <b>Note:</b> For items with icons you can use {@link sap.ui.core.ListItem}.
+					 *
+					 * Example:
+					 *
+					 * <pre>
+					 * <code> &lt;ListItem text="Paper plane" icon="sap-icon://paper-plane"&gt;&lt;/ListItem&gt; </code>
+					 * </pre>
 					 */
 					items: {
 						type: "sap.ui.core.Item",
@@ -294,6 +304,15 @@ function(
 					 */
 					picker: {
 						type: "sap.ui.core.PopupInterface",
+						multiple: false,
+						visibility: "hidden"
+					},
+
+					/**
+					 * Icon, displayed in the left most area of the <code>Select</code> input.
+					 */
+					_valueIcon: {
+						type: "sap.ui.core.Icon",
 						multiple: false,
 						visibility: "hidden"
 					},
@@ -580,7 +599,38 @@ function(
 		 * @private
 		 */
 		Select.prototype.setValue = function(sValue) {
-			this.$("label").text(sValue);
+			var oDomRef = this.getDomRef(),
+				oTextPlaceholder = oDomRef && oDomRef.querySelector(".sapMSelectListItemText");
+
+			if (oTextPlaceholder) {
+				oTextPlaceholder.textContent = sValue;
+			}
+
+			this._getValueIcon();
+		};
+
+
+		Select.prototype._getValueIcon = function() {
+			var oValueIcon = this.getAggregation("_valueIcon"),
+				oSelectedItem = this.getSelectedItem(),
+				bHaveIcon = !!(oSelectedItem && oSelectedItem.getIcon && oSelectedItem.getIcon()),
+				sIconSrc = bHaveIcon ? oSelectedItem.getIcon() : "sap-icon://pull-down";
+
+			if (!oValueIcon) {
+				oValueIcon = new Icon(this.getId() + "-labelIcon", {src: sIconSrc, visible: false});
+				this.setAggregation("_valueIcon", oValueIcon, true);
+			}
+
+			if (oValueIcon.getVisible() !== bHaveIcon) {
+				oValueIcon.setVisible(bHaveIcon);
+				oValueIcon.toggleStyleClass("sapMSelectListItemIcon", bHaveIcon);
+			}
+
+			if (bHaveIcon && oSelectedItem.getIcon() !== oValueIcon.getSrc()) {
+				oValueIcon.setSrc(sIconSrc);
+			}
+
+			return oValueIcon;
 		};
 
 		/**
@@ -1102,6 +1152,7 @@ function(
 			this.close();
 			this.setSelection(oItem);
 			this.fireChange({ selectedItem: oItem });
+			// check and update icon
 			this.setValue(this._getSelectedItemText());
 		};
 
@@ -1449,6 +1500,7 @@ function(
 
 			if (this.isOpen()) {
 				this.close();
+				this._checkSelectionChange();
 			}
 		};
 

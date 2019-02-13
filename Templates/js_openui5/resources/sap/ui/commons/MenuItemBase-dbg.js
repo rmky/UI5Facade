@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global'],
-	function(jQuery) {
+sap.ui.define(['sap/base/Log', 'sap/ui/core/Core'],
+	function(Log, Core) {
 	"use strict";
 
 	/**
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global'],
 	 * @extends sap.ui.unified.MenuItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @since 1.0.0
 	 *
 	 * @deprecated as of version 1.21.0, replaced by {@link sap.ui.unified.MenuItemBase}
@@ -33,7 +33,7 @@ sap.ui.define(['jquery.sap.global'],
 	try {
 		sap.ui.getCore().loadLibrary("sap.ui.unified");
 	} catch (e) {
-		jQuery.sap.log.error("The controls/elements 'sap.ui.commons.Menu*' needs library 'sap.ui.unified'.");
+		Log.error("The controls/elements 'sap.ui.commons.Menu*' needs library 'sap.ui.unified'.");
 		throw (e);
 	}
 

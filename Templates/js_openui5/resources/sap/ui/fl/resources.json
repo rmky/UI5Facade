@@ -20,6 +20,7 @@
 				"sap/base/util/LoaderExtensions.js",
 				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/variants/util/VariantUtil.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -32,6 +33,7 @@
 				"sap/base/util/LoaderExtensions.js",
 				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/variants/util/VariantUtil.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -302,12 +304,12 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/core/Component.js",
-				"sap/ui/core/CustomData.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/core/util/reflection/XmlTreeModifier.js",
 				"sap/ui/fl/Change.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
+				"sap/ui/fl/FlexCustomData.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/context/ContextManager.js",
@@ -320,12 +322,12 @@
 			"module": "sap/ui/fl/FlexController.js",
 			"required": [
 				"sap/ui/core/Component.js",
-				"sap/ui/core/CustomData.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/core/util/reflection/XmlTreeModifier.js",
 				"sap/ui/fl/Change.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
+				"sap/ui/fl/FlexCustomData.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/context/ContextManager.js",
@@ -355,11 +357,27 @@
 			]
 		},
 		{
+			"name": "FlexCustomData-dbg.js",
+			"module": "sap/ui/fl/FlexCustomData.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/CustomData.js"
+			]
+		},
+		{
+			"name": "FlexCustomData.js",
+			"module": "sap/ui/fl/FlexCustomData.js",
+			"required": [
+				"sap/ui/core/CustomData.js"
+			]
+		},
+		{
 			"name": "LrepConnector-dbg.js",
 			"module": "sap/ui/fl/LrepConnector.js",
 			"isDebug": true,
 			"required": [
 				"sap/base/util/merge.js",
+				"sap/ui/dom/includeScript.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -370,6 +388,7 @@
 			"module": "sap/ui/fl/LrepConnector.js",
 			"required": [
 				"sap/base/util/merge.js",
+				"sap/ui/dom/includeScript.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -982,9 +1001,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/base/util/merge.js",
-				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Utils.js",
-				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
 				"sap/ui/fl/descriptorRelated/internal/Utils.js",
 				"sap/ui/fl/registry/Settings.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -995,9 +1012,7 @@
 			"module": "sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js",
 			"required": [
 				"sap/base/util/merge.js",
-				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Utils.js",
-				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
 				"sap/ui/fl/descriptorRelated/internal/Utils.js",
 				"sap/ui/fl/registry/Settings.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -1006,11 +1021,17 @@
 		{
 			"name": "descriptorRelated/internal/Utils-dbg.js",
 			"module": "sap/ui/fl/descriptorRelated/internal/Utils.js",
-			"isDebug": true
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/LrepConnector.js"
+			]
 		},
 		{
 			"name": "descriptorRelated/internal/Utils.js",
-			"module": "sap/ui/fl/descriptorRelated/internal/Utils.js"
+			"module": "sap/ui/fl/descriptorRelated/internal/Utils.js",
+			"required": [
+				"sap/ui/fl/LrepConnector.js"
+			]
 		},
 		{
 			"name": "designtime/library-preload.designtime.js",
@@ -1165,6 +1186,7 @@
 				"sap/ui/core/util/reflection/BaseTreeModifier.js",
 				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/core/util/reflection/XmlTreeModifier.js",
+				"sap/ui/dom/includeScript.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/events/KeyCodes.js",
 				"sap/ui/layout/Grid.js",
@@ -1202,6 +1224,7 @@
 				"sap/ui/fl/FakeLrepStorage.js",
 				"sap/ui/fl/FlexController.js",
 				"sap/ui/fl/FlexControllerFactory.js",
+				"sap/ui/fl/FlexCustomData.js",
 				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Persistence.js",
 				"sap/ui/fl/Preprocessor.js",
@@ -1362,6 +1385,7 @@
 				"sap/ui/core/util/reflection/BaseTreeModifier.js",
 				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/core/util/reflection/XmlTreeModifier.js",
+				"sap/ui/dom/includeScript.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/events/KeyCodes.js",
 				"sap/ui/layout/Grid.js",
@@ -1399,6 +1423,7 @@
 				"sap/ui/fl/FakeLrepStorage.js",
 				"sap/ui/fl/FlexController.js",
 				"sap/ui/fl/FlexControllerFactory.js",
+				"sap/ui/fl/FlexCustomData.js",
 				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Persistence.js",
 				"sap/ui/fl/Preprocessor.js",
@@ -1545,6 +1570,7 @@
 				"sap/ui/core/util/reflection/BaseTreeModifier.js",
 				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/core/util/reflection/XmlTreeModifier.js",
+				"sap/ui/dom/includeScript.js",
 				"sap/ui/events/KeyCodes.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/HorizontalLayout.js",
@@ -1574,6 +1600,7 @@
 				"sap/ui/fl/FakeLrepStorage.js",
 				"sap/ui/fl/FlexController.js",
 				"sap/ui/fl/FlexControllerFactory.js",
+				"sap/ui/fl/FlexCustomData.js",
 				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Persistence.js",
 				"sap/ui/fl/Preprocessor.js",
@@ -1698,6 +1725,7 @@
 				"sap/ui/core/util/reflection/BaseTreeModifier.js",
 				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/core/util/reflection/XmlTreeModifier.js",
+				"sap/ui/dom/includeScript.js",
 				"sap/ui/events/KeyCodes.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/HorizontalLayout.js",
@@ -1727,6 +1755,7 @@
 				"sap/ui/fl/FakeLrepStorage.js",
 				"sap/ui/fl/FlexController.js",
 				"sap/ui/fl/FlexControllerFactory.js",
+				"sap/ui/fl/FlexCustomData.js",
 				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Persistence.js",
 				"sap/ui/fl/Preprocessor.js",

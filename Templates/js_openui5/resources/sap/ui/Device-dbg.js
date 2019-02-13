@@ -11,7 +11,7 @@
  * This API is independent from any other part of the UI5 framework. This allows it to be loaded beforehand, if it is needed, to create the UI5 bootstrap
  * dynamically depending on the capabilities of the browser or device.
  *
- * @version 1.60.1
+ * @version 1.61.2
  * @namespace
  * @name sap.ui.Device
  * @public
@@ -32,7 +32,7 @@ if (typeof window.sap.ui !== "object") {
 
 	//Skip initialization if API is already available
 	if (typeof window.sap.ui.Device === "object" || typeof window.sap.ui.Device === "function") {
-		var apiVersion = "1.60.1";
+		var apiVersion = "1.61.2";
 		window.sap.ui.Device._checkAPIVersion(apiVersion);
 		return;
 	}
@@ -105,7 +105,7 @@ if (typeof window.sap.ui !== "object") {
 
 	//Only used internal to make clear when Device API is loaded in wrong version
 	Device._checkAPIVersion = function(sVersion) {
-		var v = "1.60.1";
+		var v = "1.61.2";
 		if (v != sVersion) {
 			oLogger.log(WARNING, "Device API version differs: " + v + " <-> " + sVersion);
 		}
@@ -959,6 +959,7 @@ if (typeof window.sap.ui !== "object") {
 	//        enabled browser. Therfore we manually override that in jQuery.support!
 	//        This has been tested with PhantomJS 1.9.7 and 2.0.0!
 	if (Device.browser.phantomJS) {
+		oLogger.log(ERROR, "PhantomJS is not supported! UI5 might break on PhantomJS in future releases. Please use Chrome Headless instead.");
 		Device.support.touch = false;
 	}
 

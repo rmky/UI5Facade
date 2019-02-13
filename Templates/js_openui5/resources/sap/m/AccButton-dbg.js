@@ -21,7 +21,7 @@ sap.ui.define(['./Button','./AccButtonRenderer'],
 	 * @extends sap.m.Button
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @private
@@ -33,7 +33,8 @@ sap.ui.define(['./Button','./AccButtonRenderer'],
 			library : "sap.m",
 			properties : {
 				"tabIndex": {type : "string", defaultValue : null, bindable : "bindable"},
-				"ariaHidden": {type : "string", defaultValue : null, bindable : "bindable"}
+				"ariaHidden": {type : "string", defaultValue : null, bindable : "bindable"},
+				"ariaHaspopup": {type : "string", defaultValue : null, bindable : "bindable"}
 			}
 		}
 	});

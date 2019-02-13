@@ -12,7 +12,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/AvatarRenderer.js" size="3664" compressedSize="1744">
+  <module name="sap/f/AvatarRenderer.js" size="3864" compressedSize="1775">
     <description>Provides default renderer for control sap.f.Avatar</description>
     <requires>
       <module name="sap/base/security/encodeXML.js"/>
@@ -20,28 +20,42 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/Card.js" size="10594" compressedSize="2850">
-    <description>Provides control sap.f.Card.</description>
+  <module name="sap/f/Card.js" size="10928" compressedSize="5453">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
+      <module name="sap/f/Avatar.js"/>
+      <module name="sap/f/CardManifest.js"/>
       <module name="sap/f/CardRenderer.js"/>
-      <module name="sap/f/cards/CardComponent.js"/>
+      <module name="sap/f/cards/content/List.js" conditional="true"/>
+      <module name="sap/f/cards/content/Table.js" conditional="true"/>
+      <module name="sap/f/cards/header/Kpi.js" conditional="true"/>
       <module name="sap/f/library.js"/>
+      <module name="sap/m/Text.js"/>
+      <module name="sap/ui/Device.js"/>
       <module name="sap/ui/core/ComponentContainer.js"/>
       <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/core/Manifest.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/CardRenderer.js" size="8677" compressedSize="3471">
+  <module name="sap/f/CardManifest.js" size="2445" compressedSize="1053">
+    <description>@class CardManifest  UI5 independent implementation of a CardManifest reader.  Usage Sample with translation  1. Load the Manifest Json 2. Create Instance var myCardManifest = new CardManifest(oManifestJson); 3. Create and Register a Translator myCardManifest.get("sap.card/i18n"); //load the resource bundle in the given language and create a translator object //   the object only needs to implement getText(sKey) which returns the value. myCardManifest.registerTranslator(oTranslator); 4. Get the title myCardManifest.get("sap.card/title")</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/f/CardRenderer.js" size="6203" compressedSize="2662">
     <description>Provides default renderer for control sap.f.Card</description>
     <requires>
+      <module name="sap/base/security/encodeCSS.js"/>
       <module name="sap/base/security/encodeXML.js"/>
       <module name="sap/f/library.js"/>
       <module name="sap/ui/core/IconPool.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPage.js" size="61854" compressedSize="25358">
+  <module name="sap/f/DynamicPage.js" size="64635" compressedSize="26111">
     <description>Provides control sap.f.DynamicPage.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -53,7 +67,16 @@
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/ResizeHandler.js"/>
       <module name="sap/ui/core/delegate/ScrollEnablement.js"/>
+      <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/dom/getScrollbarSize.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/f/DynamicPageAccessibleLandmarkInfo.js" size="4058" compressedSize="858">
+    <description>Provides control sap.f.DynamicPageAccessibleLandmarkInfo.</description>
+    <requires>
+      <module name="sap/f/library.js"/>
+      <module name="sap/ui/core/Element.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
@@ -69,20 +92,20 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPageHeaderRenderer.js" size="2259" compressedSize="1011">
+  <module name="sap/f/DynamicPageHeaderRenderer.js" size="2264" compressedSize="1013">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPageRenderer.js" size="4549" compressedSize="2381">
+  <module name="sap/f/DynamicPageRenderer.js" size="5226" compressedSize="2694">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPageTitle.js" size="47402" compressedSize="18505">
+  <module name="sap/f/DynamicPageTitle.js" size="47398" compressedSize="18502">
     <description>Provides control sap.f.DynamicPageTitle.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -100,14 +123,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/DynamicPageTitleRenderer.js" size="9016" compressedSize="4995">
+  <module name="sap/f/DynamicPageTitleRenderer.js" size="9031" compressedSize="5001">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/f/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/FlexibleColumnLayout.js" size="73274" compressedSize="20337">
+  <module name="sap/f/FlexibleColumnLayout.js" size="73262" compressedSize="20328">
     <description>Provides control sap.f.FlexibleColumnLayout.</description>
     <requires>
       <module name="sap/base/assert.js"/>
@@ -133,7 +156,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/FlexibleColumnLayoutSemanticHelper.js" size="19450" compressedSize="4958">
+  <module name="sap/f/FlexibleColumnLayoutSemanticHelper.js" size="19442" compressedSize="4952">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/assert.js"/>
@@ -142,7 +165,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/GridList.js" size="3660" compressedSize="1990">
+  <module name="sap/f/GridList.js" size="6586" compressedSize="1990">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/f/GridListRenderer.js"/>
@@ -153,7 +176,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/GridListRenderer.js" size="1199" compressedSize="779">
+  <module name="sap/f/GridListRenderer.js" size="1544" compressedSize="777">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/ListBaseRenderer.js"/>
@@ -162,11 +185,85 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/cards/CardComponent.js" size="1765" compressedSize="751">
-    <description>Base Class for all typed cards</description>
+  <module name="sap/f/cards/CardComponent.js" size="1669" compressedSize="685">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/ui/core/UIComponent.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/f/cards/CardManifest.js" size="2355" compressedSize="982">
+    <description>@class CardManifest  UI5 independent implementation of a CardManifest reader.  Usage Sample with translation  1. Load the Manifest Json 2. Create Instance var myCardManifest = new CardManifest(oManifestJson); 3. Create and Register a Translator myCardManifest.get("sap.card/i18n"); //load the resource bundle in the given language and create a translator object //   the object only needs to implement getText(sKey) which returns the value. myCardManifest.registerTranslator(oTranslator); 4. Get the title myCardManifest.get("sap.card/title")  @experimental</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/f/cards/Data.js" size="1568" compressedSize="937">
+    <description>Card request handler @experimental</description>
+    <requires>
+      <module name="jquery.sap.global.js"/>
+      <module name="sap/base/Log.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/f/cards/content/Analytical.js" size="4272" compressedSize="2143">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/f/cards/Data.js"/>
+      <module name="sap/m/FlexBox.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="sap/viz/ui5/controls/VizFrame.js"/>
+      <module name="sap/viz/ui5/controls/common/feeds/FeedItem.js"/>
+      <module name="sap/viz/ui5/data/DimensionDefinition.js"/>
+      <module name="sap/viz/ui5/data/FlattenedDataset.js"/>
+      <module name="sap/viz/ui5/data/MeasureDefinition.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/f/cards/content/List.js" size="5532" compressedSize="2372">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="jquery.sap.global.js"/>
+      <module name="sap/f/cards/Data.js"/>
+      <module name="sap/m/List.js"/>
+      <module name="sap/m/StandardListItem.js"/>
+      <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/f/cards/content/Table.js" size="3426" compressedSize="1922">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/f/cards/Data.js"/>
+      <module name="sap/m/Table.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/f/cards/header/Kpi.js" size="5642" compressedSize="2961">
+    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/f/cards/Data.js"/>
+      <module name="sap/f/cards/header/KpiRenderer.js"/>
+      <module name="sap/m/Label.js"/>
+      <module name="sap/m/NumericContent.js"/>
+      <module name="sap/m/ObjectNumber.js"/>
+      <module name="sap/m/Text.js"/>
+      <module name="sap/m/VBox.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/core/library.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/f/cards/header/KpiRenderer.js" size="3424" compressedSize="1585">
+    <description>Provides default renderer for control sap.f.Avatar</description>
+    <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
@@ -202,7 +299,7 @@
       <module name="sap/ui/core/Fragment.js"/>
     </requires>
   </module>
-  <module name="sap/f/designtime/DynamicPage.designtime.js" size="961" compressedSize="706">
+  <module name="sap/f/designtime/DynamicPage.designtime.js" size="1003" compressedSize="733">
     <description>Provides the Design Time Metadata for the sap.f.DynamicPage control</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
@@ -231,13 +328,13 @@
       <module name="sap/ui/core/Fragment.js"/>
     </requires>
   </module>
-  <module name="sap/f/designtime/SemanticPage.designtime.js" size="10026" compressedSize="5576">
+  <module name="sap/f/designtime/SemanticPage.designtime.js" size="10071" compressedSize="5603">
     <description>Provides the Design Time Metadata for the sap.f.semantic.SemanticPage control</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/designtime/library-preload.designtime.js" size="8082">
+  <module name="sap/f/designtime/library-preload.designtime.js" size="8136">
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
@@ -349,28 +446,37 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/library-h2-preload.js" size="11906">
+  <module name="sap/f/library-h2-preload.js" size="13149">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>
+      <module name="sap/base/security/encodeCSS.js"/>
       <module name="sap/base/security/encodeXML.js"/>
       <module name="sap/m/ActionSheet.js"/>
       <module name="sap/m/Button.js"/>
+      <module name="sap/m/FlexBox.js"/>
       <module name="sap/m/InstanceManager.js"/>
+      <module name="sap/m/Label.js"/>
+      <module name="sap/m/List.js"/>
       <module name="sap/m/ListBase.js"/>
       <module name="sap/m/ListBaseRenderer.js"/>
       <module name="sap/m/NavContainer.js"/>
+      <module name="sap/m/NumericContent.js"/>
+      <module name="sap/m/ObjectNumber.js"/>
       <module name="sap/m/OverflowToolbar.js"/>
       <module name="sap/m/OverflowToolbarButton.js"/>
       <module name="sap/m/OverflowToolbarLayoutData.js"/>
       <module name="sap/m/ScrollBar.js"/>
+      <module name="sap/m/StandardListItem.js"/>
+      <module name="sap/m/Table.js"/>
       <module name="sap/m/Text.js"/>
       <module name="sap/m/Title.js"/>
       <module name="sap/m/ToggleButton.js"/>
       <module name="sap/m/Toolbar.js"/>
       <module name="sap/m/ToolbarSeparator.js"/>
       <module name="sap/m/ToolbarSpacer.js"/>
+      <module name="sap/m/VBox.js"/>
       <module name="sap/m/changeHandler/CombineButtons.js"/>
       <module name="sap/m/changeHandler/SplitMenuButton.js"/>
       <module name="sap/m/library.js"/>
@@ -390,6 +496,7 @@
       <module name="sap/ui/core/HTML.js"/>
       <module name="sap/ui/core/IconPool.js"/>
       <module name="sap/ui/core/InvisibleText.js"/>
+      <module name="sap/ui/core/Manifest.js"/>
       <module name="sap/ui/core/Renderer.js"/>
       <module name="sap/ui/core/ResizeHandler.js"/>
       <module name="sap/ui/core/UIComponent.js"/>
@@ -405,9 +512,15 @@
       <module name="sap/ui/layout/cssgrid/GridItemLayoutData.js"/>
       <module name="sap/ui/layout/cssgrid/GridLayoutBase.js"/>
       <module name="sap/ui/layout/cssgrid/GridLayoutDelegate.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
       <module name="sap/ui/support/library.js"/>
       <module name="sap/ui/table/library.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="sap/viz/ui5/controls/VizFrame.js"/>
+      <module name="sap/viz/ui5/controls/common/feeds/FeedItem.js"/>
+      <module name="sap/viz/ui5/data/DimensionDefinition.js"/>
+      <module name="sap/viz/ui5/data/FlattenedDataset.js"/>
+      <module name="sap/viz/ui5/data/MeasureDefinition.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
@@ -416,8 +529,10 @@
       <module name="sap/f/Avatar.js"/>
       <module name="sap/f/AvatarRenderer.js"/>
       <module name="sap/f/Card.js"/>
+      <module name="sap/f/CardManifest.js"/>
       <module name="sap/f/CardRenderer.js"/>
       <module name="sap/f/DynamicPage.js"/>
+      <module name="sap/f/DynamicPageAccessibleLandmarkInfo.js"/>
       <module name="sap/f/DynamicPageHeader.js"/>
       <module name="sap/f/DynamicPageHeaderRenderer.js"/>
       <module name="sap/f/DynamicPageRenderer.js"/>
@@ -429,6 +544,13 @@
       <module name="sap/f/GridList.js"/>
       <module name="sap/f/GridListRenderer.js"/>
       <module name="sap/f/cards/CardComponent.js"/>
+      <module name="sap/f/cards/CardManifest.js"/>
+      <module name="sap/f/cards/Data.js"/>
+      <module name="sap/f/cards/content/Analytical.js"/>
+      <module name="sap/f/cards/content/List.js"/>
+      <module name="sap/f/cards/content/Table.js"/>
+      <module name="sap/f/cards/header/Kpi.js"/>
+      <module name="sap/f/cards/header/KpiRenderer.js"/>
       <module name="sap/f/changeHandler/MoveDynamicPageTitleActions.js"/>
       <module name="sap/f/designtime/Avatar.create.fragment.xml"/>
       <module name="sap/f/designtime/Avatar.designtime.js"/>
@@ -481,26 +603,36 @@
       <module name="sap/f/semantic/TitleMainAction.js"/>
     </includes>
   </module>
-  <module name="sap/f/library-preload.js" size="155467">
+  <module name="sap/f/library-preload.js" size="172040">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>
+      <module name="sap/base/security/encodeCSS.js"/>
       <module name="sap/base/security/encodeXML.js"/>
       <module name="sap/m/ActionSheet.js"/>
       <module name="sap/m/Button.js"/>
+      <module name="sap/m/FlexBox.js"/>
       <module name="sap/m/InstanceManager.js"/>
+      <module name="sap/m/Label.js"/>
+      <module name="sap/m/List.js"/>
       <module name="sap/m/ListBase.js"/>
       <module name="sap/m/ListBaseRenderer.js"/>
       <module name="sap/m/NavContainer.js"/>
+      <module name="sap/m/NumericContent.js"/>
+      <module name="sap/m/ObjectNumber.js"/>
       <module name="sap/m/OverflowToolbar.js"/>
       <module name="sap/m/OverflowToolbarButton.js"/>
       <module name="sap/m/OverflowToolbarLayoutData.js"/>
       <module name="sap/m/ScrollBar.js"/>
+      <module name="sap/m/StandardListItem.js"/>
+      <module name="sap/m/Table.js"/>
+      <module name="sap/m/Text.js"/>
       <module name="sap/m/ToggleButton.js"/>
       <module name="sap/m/Toolbar.js"/>
       <module name="sap/m/ToolbarSeparator.js"/>
       <module name="sap/m/ToolbarSpacer.js"/>
+      <module name="sap/m/VBox.js"/>
       <module name="sap/m/changeHandler/CombineButtons.js"/>
       <module name="sap/m/changeHandler/SplitMenuButton.js"/>
       <module name="sap/m/library.js"/>
@@ -519,6 +651,7 @@
       <module name="sap/ui/core/HTML.js"/>
       <module name="sap/ui/core/IconPool.js"/>
       <module name="sap/ui/core/InvisibleText.js"/>
+      <module name="sap/ui/core/Manifest.js"/>
       <module name="sap/ui/core/Renderer.js"/>
       <module name="sap/ui/core/ResizeHandler.js"/>
       <module name="sap/ui/core/UIComponent.js"/>
@@ -534,15 +667,23 @@
       <module name="sap/ui/layout/cssgrid/GridItemLayoutData.js"/>
       <module name="sap/ui/layout/cssgrid/GridLayoutBase.js"/>
       <module name="sap/ui/layout/cssgrid/GridLayoutDelegate.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="sap/viz/ui5/controls/VizFrame.js"/>
+      <module name="sap/viz/ui5/controls/common/feeds/FeedItem.js"/>
+      <module name="sap/viz/ui5/data/DimensionDefinition.js"/>
+      <module name="sap/viz/ui5/data/FlattenedDataset.js"/>
+      <module name="sap/viz/ui5/data/MeasureDefinition.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
       <module name="sap/f/Avatar.js"/>
       <module name="sap/f/AvatarRenderer.js"/>
       <module name="sap/f/Card.js"/>
+      <module name="sap/f/CardManifest.js"/>
       <module name="sap/f/CardRenderer.js"/>
       <module name="sap/f/DynamicPage.js"/>
+      <module name="sap/f/DynamicPageAccessibleLandmarkInfo.js"/>
       <module name="sap/f/DynamicPageHeader.js"/>
       <module name="sap/f/DynamicPageHeaderRenderer.js"/>
       <module name="sap/f/DynamicPageRenderer.js"/>
@@ -554,6 +695,13 @@
       <module name="sap/f/GridList.js"/>
       <module name="sap/f/GridListRenderer.js"/>
       <module name="sap/f/cards/CardComponent.js"/>
+      <module name="sap/f/cards/CardManifest.js"/>
+      <module name="sap/f/cards/Data.js"/>
+      <module name="sap/f/cards/content/Analytical.js"/>
+      <module name="sap/f/cards/content/List.js"/>
+      <module name="sap/f/cards/content/Table.js"/>
+      <module name="sap/f/cards/header/Kpi.js"/>
+      <module name="sap/f/cards/header/KpiRenderer.js"/>
       <module name="sap/f/changeHandler/MoveDynamicPageTitleActions.js"/>
       <module name="sap/f/flexibility/DynamicPageTitle.flexibility.js"/>
       <module name="sap/f/library.js"/>
@@ -601,21 +749,31 @@
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>
+      <module name="sap/base/security/encodeCSS.js"/>
       <module name="sap/base/security/encodeXML.js"/>
       <module name="sap/m/ActionSheet.js"/>
       <module name="sap/m/Button.js"/>
+      <module name="sap/m/FlexBox.js"/>
       <module name="sap/m/InstanceManager.js"/>
+      <module name="sap/m/Label.js"/>
+      <module name="sap/m/List.js"/>
       <module name="sap/m/ListBase.js"/>
       <module name="sap/m/ListBaseRenderer.js"/>
       <module name="sap/m/NavContainer.js"/>
+      <module name="sap/m/NumericContent.js"/>
+      <module name="sap/m/ObjectNumber.js"/>
       <module name="sap/m/OverflowToolbar.js"/>
       <module name="sap/m/OverflowToolbarButton.js"/>
       <module name="sap/m/OverflowToolbarLayoutData.js"/>
       <module name="sap/m/ScrollBar.js"/>
+      <module name="sap/m/StandardListItem.js"/>
+      <module name="sap/m/Table.js"/>
+      <module name="sap/m/Text.js"/>
       <module name="sap/m/ToggleButton.js"/>
       <module name="sap/m/Toolbar.js"/>
       <module name="sap/m/ToolbarSeparator.js"/>
       <module name="sap/m/ToolbarSpacer.js"/>
+      <module name="sap/m/VBox.js"/>
       <module name="sap/m/changeHandler/CombineButtons.js"/>
       <module name="sap/m/changeHandler/SplitMenuButton.js"/>
       <module name="sap/m/library-preload.json"/>
@@ -635,6 +793,7 @@
       <module name="sap/ui/core/HTML.js"/>
       <module name="sap/ui/core/IconPool.js"/>
       <module name="sap/ui/core/InvisibleText.js"/>
+      <module name="sap/ui/core/Manifest.js"/>
       <module name="sap/ui/core/Renderer.js"/>
       <module name="sap/ui/core/ResizeHandler.js"/>
       <module name="sap/ui/core/UIComponent.js"/>
@@ -651,15 +810,23 @@
       <module name="sap/ui/layout/cssgrid/GridItemLayoutData.js"/>
       <module name="sap/ui/layout/cssgrid/GridLayoutBase.js"/>
       <module name="sap/ui/layout/cssgrid/GridLayoutDelegate.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="sap/viz/ui5/controls/VizFrame.js"/>
+      <module name="sap/viz/ui5/controls/common/feeds/FeedItem.js"/>
+      <module name="sap/viz/ui5/data/DimensionDefinition.js"/>
+      <module name="sap/viz/ui5/data/FlattenedDataset.js"/>
+      <module name="sap/viz/ui5/data/MeasureDefinition.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
       <module name="sap/f/Avatar.js"/>
       <module name="sap/f/AvatarRenderer.js"/>
       <module name="sap/f/Card.js"/>
+      <module name="sap/f/CardManifest.js"/>
       <module name="sap/f/CardRenderer.js"/>
       <module name="sap/f/DynamicPage.js"/>
+      <module name="sap/f/DynamicPageAccessibleLandmarkInfo.js"/>
       <module name="sap/f/DynamicPageHeader.js"/>
       <module name="sap/f/DynamicPageHeaderRenderer.js"/>
       <module name="sap/f/DynamicPageRenderer.js"/>
@@ -671,6 +838,13 @@
       <module name="sap/f/GridList.js"/>
       <module name="sap/f/GridListRenderer.js"/>
       <module name="sap/f/cards/CardComponent.js"/>
+      <module name="sap/f/cards/CardManifest.js"/>
+      <module name="sap/f/cards/Data.js"/>
+      <module name="sap/f/cards/content/Analytical.js"/>
+      <module name="sap/f/cards/content/List.js"/>
+      <module name="sap/f/cards/content/Table.js"/>
+      <module name="sap/f/cards/header/Kpi.js"/>
+      <module name="sap/f/cards/header/KpiRenderer.js"/>
       <module name="sap/f/changeHandler/MoveDynamicPageTitleActions.js"/>
       <module name="sap/f/flexibility/DynamicPageTitle.flexibility.js"/>
       <module name="sap/f/library.js"/>
@@ -775,7 +949,7 @@
   </module>
   <module name="sap/f/messagebundle_fi.properties" size="3852">
   </module>
-  <module name="sap/f/messagebundle_fr.properties" size="3874">
+  <module name="sap/f/messagebundle_fr.properties" size="3875">
   </module>
   <module name="sap/f/messagebundle_hi.properties" size="6031">
   </module>
@@ -1057,7 +1231,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/f/semantic/SemanticPage.js" size="37480" compressedSize="12394">
+  <module name="sap/f/semantic/SemanticPage.js" size="38077" compressedSize="12662">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/f/DynamicPage.js"/>

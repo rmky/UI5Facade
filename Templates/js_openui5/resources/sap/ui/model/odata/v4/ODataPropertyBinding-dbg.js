@@ -11,13 +11,14 @@ sap.ui.define([
 	"sap/base/Log",
 	"sap/ui/base/SyncPromise",
 	"sap/ui/model/ChangeReason",
+	"sap/ui/model/odata/v4/Context",
 	"sap/ui/model/PropertyBinding"
-], function (asODataBinding, _Cache, Log, SyncPromise, ChangeReason, PropertyBinding) {
+], function (asODataBinding, _Cache, Log, SyncPromise, ChangeReason, Context, PropertyBinding) {
 	"use strict";
 	/*eslint max-nested-callbacks: 0 */
 
 	var sClassName = "sap.ui.model.odata.v4.ODataPropertyBinding",
-		oDoFetchQueryOptionsPromise = SyncPromise.resolve({}),
+		oEmptyQueryOptionsPromise = SyncPromise.resolve({}),
 		mSupportedEvents = {
 			AggregatedDataStateChange : true,
 			change : true,
@@ -52,7 +53,7 @@ sap.ui.define([
 	 * @mixes sap.ui.model.odata.v4.ODataBinding
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#hasPendingChanges as #hasPendingChanges
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#isInitial as #isInitial
@@ -239,7 +240,8 @@ sap.ui.define([
 					// binding is unresolved or context was reset by another call to checkUpdate
 					return undefined;
 				}
-				if (that.oContext.getIndex() === -2) { // virtual parent context: no change event
+				if (that.oContext.getIndex() === Context.VIRTUAL) {
+					// virtual parent context: no change event
 					oCallToken.forceUpdate = false;
 				}
 				return that.oContext.fetchValue(that.sPath, that);
@@ -345,7 +347,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataPropertyBinding.prototype.doFetchQueryOptions = function () {
-		return oDoFetchQueryOptionsPromise;
+		return this.isRoot() ? SyncPromise.resolve(this.mQueryOptions) : oEmptyQueryOptionsPromise;
 	};
 
 	/**
@@ -403,6 +405,17 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns whether the binding is absolute or quasi-absolute.
+	 *
+	 * @returns {boolean} - Whether the binding is absolute or quasi-absolute
+	 *
+	 * @private
+	 */
+	ODataPropertyBinding.prototype.isRoot = function () {
+		return !this.bRelative || this.oContext && !this.oContext.getBinding;
+	};
+
+	/**
 	 * Change handler for the cache. The cache calls this method when the value is changed.
 	 *
 	 * @param {any} vValue
@@ -420,9 +433,9 @@ sap.ui.define([
 	 */
 	ODataPropertyBinding.prototype.refreshInternal = function (sGroupId, bCheckUpdate) {
 		this.fetchCache(this.oContext);
-		if (bCheckUpdate) {
-			this.checkUpdate(true, ChangeReason.Refresh, sGroupId);
-		}
+		return bCheckUpdate
+			? this.checkUpdate(true, ChangeReason.Refresh, sGroupId)
+			: SyncPromise.resolve();
 	};
 
 	/**

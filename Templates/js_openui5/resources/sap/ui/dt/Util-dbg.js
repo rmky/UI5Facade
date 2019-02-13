@@ -24,7 +24,7 @@ sap.ui.define([
 	 * Utilities for sap.ui.dt library
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @private
 	 * @static
@@ -127,7 +127,10 @@ sap.ui.define([
 		// Adding payload only if it wasn't added before explicitly.
 		if (Util.isForeignError(oError, sLibraryName)) {
 			var sLocationFull = (sLibraryName || S_LIBRARY_NAME) + '.' + sLocation;
-			var sOriginalMessage = (oError.name || '') + oError.message;
+			var sOriginalMessage = [
+				oError.name,
+				oError.message
+			].join(" - ");
 			oError.name = 'Error in ' + sLocationFull;
 			oError.message = Util.printf('{0}. Original error: {1}', sMessage, sOriginalMessage || '¯\\_(ツ)_/¯');
 		}
@@ -293,6 +296,25 @@ sap.ui.define([
 
 			return mResult;
 		}, {});
+	};
+
+	/**
+	 * Returns a function that will be called as soon as it's not being invoked for a specified amount of time
+	 *
+	 * @param {function} fn function that should be called
+	 * @param {number} iWait number of milliseconds the function waits
+	 * @returns {function} Returns the function
+	 */
+	Util.debounce = function(fn, iWait) {
+		iWait = iWait || 0;
+
+		var iTimerId;
+		return function () {
+			if (iTimerId) {
+				clearTimeout(iTimerId);
+			}
+			iTimerId = setTimeout(fn, iWait);
+		};
 	};
 
 	return Util;

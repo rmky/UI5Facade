@@ -604,11 +604,19 @@
 		{
 			"name": "ColorPickerRenderer-dbg.js",
 			"module": "sap/ui/unified/ColorPickerRenderer.js",
-			"isDebug": true
+			"isDebug": true,
+			"required": [
+				"sap/ui/Device.js",
+				"sap/ui/unified/ColorPickerDisplayMode.js"
+			]
 		},
 		{
 			"name": "ColorPickerRenderer.js",
-			"module": "sap/ui/unified/ColorPickerRenderer.js"
+			"module": "sap/ui/unified/ColorPickerRenderer.js",
+			"required": [
+				"sap/ui/Device.js",
+				"sap/ui/unified/ColorPickerDisplayMode.js"
+			]
 		},
 		{
 			"name": "ContentSwitcher-dbg.js",
@@ -2195,7 +2203,8 @@
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/layout/VerticalLayout.js",
 				"sap/ui/support/library.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/unified/ColorPickerDisplayMode.js"
 			],
 			"included": [
 				"sap/ui/unified/library.js",
@@ -2327,7 +2336,8 @@
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/layout/VerticalLayout.js",
 				"sap/ui/support/library.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/unified/ColorPickerDisplayMode.js"
 			],
 			"included": [
 				"sap/ui/unified/library.js",
@@ -2461,7 +2471,8 @@
 				"sap/ui/layout/GridData.js",
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/layout/VerticalLayout.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/unified/ColorPickerDisplayMode.js"
 			],
 			"included": [
 				"sap/ui/unified/Calendar.js",
@@ -2585,7 +2596,8 @@
 				"sap/ui/layout/GridData.js",
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/layout/VerticalLayout.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/unified/ColorPickerDisplayMode.js"
 			],
 			"included": [
 				"sap/ui/unified/Calendar.js",

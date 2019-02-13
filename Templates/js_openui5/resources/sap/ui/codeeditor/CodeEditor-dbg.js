@@ -29,12 +29,14 @@ sap.ui.loader.config({
 
 sap.ui.define([
 	'sap/ui/core/Control',
+	'sap/ui/Device',
+	'sap/ui/core/ResizeHandler',
 	'sap/ui/codeeditor/js/ace/ace',
 	'sap/ui/codeeditor/js/ace/ext-language_tools',
 	'sap/ui/codeeditor/js/ace/ext-beautify',
 	'sap/ui/codeeditor/js/ace/mode-javascript',
 	'sap/ui/codeeditor/js/ace/mode-json'
-], function(Control) {
+], function(Control, Device, ResizeHandler) {
 	"use strict";
 
 	// TODO remove after 1.62 version
@@ -54,7 +56,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -252,6 +254,22 @@ sap.ui.define([
 				});
 			}
 		});
+
+		// if editor is in dialog with transform applied, the tooltip position has to be adjusted
+		this._oEditor.addEventListener("showGutterTooltip", function(tooltip) {
+			if (Device.browser.internet_explorer) {
+				// the transform property does not effect the position of tooltip in IE
+				return;
+			}
+
+			var $tooltip = jQuery(tooltip.$element),
+				$dialog = $tooltip.parents(".sapMDialog");
+
+			if ($dialog && $dialog.css("transform")) {
+				var mDialogPosition = $dialog.position();
+				$tooltip.css("transform", "translate(-" + mDialogPosition.left + "px, -" + mDialogPosition.top + "px)");
+			}
+		});
 	};
 
 	/**
@@ -279,6 +297,9 @@ sap.ui.define([
 			//hide the cursor
 			this._oEditor.renderer.$cursorLayer.element.style.display = "none";
 		}
+
+		// Make the whole editor read only
+		this._oEditor.setReadOnly(!bValue);
 
 		// This is required for BCP:1880235178
 		this._oEditor.textInput.setReadOnly(!bValue);
@@ -384,6 +405,20 @@ sap.ui.define([
 	/**
 	 * @private
 	 */
+	CodeEditor.prototype.onBeforeRendering = function() {
+		this._deregisterResizeListener();
+	};
+
+	/**
+	 * @private
+	 */
+	CodeEditor.prototype.exit = function() {
+		this._deregisterResizeListener();
+	};
+
+	/**
+	 * @private
+	 */
 	CodeEditor.prototype.onAfterRendering = function() {
 		var oDomRef = this.getDomRef(),
 			oPropertyDefaults = this.getMetadata().getPropertyDefaults();
@@ -399,6 +434,8 @@ sap.ui.define([
 
 		// force text update
 		this._oEditor.renderer.updateText();
+
+		this._registerResizeListener();
 	};
 
 	/**
@@ -481,6 +518,27 @@ sap.ui.define([
 			document.activeElement.blur(); // prevent virtual keyboard from opening when control is not editable
 		}
 		this._oEditor.getSession().setUseWorker(true);
+	};
+
+	/**
+	 * @private
+	 */
+	CodeEditor.prototype._registerResizeListener = function() {
+		// listen once for resize of the _oEditorDomRef, in some ui5 containers (sap.m.App for example) this can happen very late and ace editor does not handle it
+		this._iResizeListenerId = ResizeHandler.register(this._oEditorDomRef, function() {
+			this._oEditor.resize(); // force the ace editor to recalculate height
+			ResizeHandler.deregister(this._iResizeListenerId);
+		}.bind(this));
+	};
+
+	/**
+	 * @private
+	 */
+	CodeEditor.prototype._deregisterResizeListener = function() {
+		// Unregister the resize listener used for fixing initial resize, to prevent double registering.
+		if (this._iResizeListenerId) {
+			ResizeHandler.deregister(this._iResizeListenerId);
+		}
 	};
 
 	return CodeEditor;

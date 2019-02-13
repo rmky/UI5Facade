@@ -78,11 +78,20 @@
 			"isDebug": true,
 			"required": [
 				"sap/base/Log.js",
+				"sap/f/Avatar.js",
+				"sap/f/CardManifest.js",
 				"sap/f/CardRenderer.js",
-				"sap/f/cards/CardComponent.js",
 				"sap/f/library.js",
+				"sap/m/Text.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/ComponentContainer.js",
-				"sap/ui/core/Control.js"
+				"sap/ui/core/Control.js",
+				"sap/ui/core/Manifest.js"
+			],
+			"condRequired": [
+				"sap/f/cards/content/List.js",
+				"sap/f/cards/content/Table.js",
+				"sap/f/cards/header/Kpi.js"
 			]
 		},
 		{
@@ -90,18 +99,37 @@
 			"module": "sap/f/Card.js",
 			"required": [
 				"sap/base/Log.js",
+				"sap/f/Avatar.js",
+				"sap/f/CardManifest.js",
 				"sap/f/CardRenderer.js",
-				"sap/f/cards/CardComponent.js",
 				"sap/f/library.js",
+				"sap/m/Text.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/ComponentContainer.js",
-				"sap/ui/core/Control.js"
+				"sap/ui/core/Control.js",
+				"sap/ui/core/Manifest.js"
+			],
+			"condRequired": [
+				"sap/f/cards/content/List.js",
+				"sap/f/cards/content/Table.js",
+				"sap/f/cards/header/Kpi.js"
 			]
+		},
+		{
+			"name": "CardManifest-dbg.js",
+			"module": "sap/f/CardManifest.js",
+			"isDebug": true
+		},
+		{
+			"name": "CardManifest.js",
+			"module": "sap/f/CardManifest.js"
 		},
 		{
 			"name": "CardRenderer-dbg.js",
 			"module": "sap/f/CardRenderer.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/security/encodeCSS.js",
 				"sap/base/security/encodeXML.js",
 				"sap/f/library.js",
 				"sap/ui/core/IconPool.js"
@@ -111,6 +139,7 @@
 			"name": "CardRenderer.js",
 			"module": "sap/f/CardRenderer.js",
 			"required": [
+				"sap/base/security/encodeCSS.js",
 				"sap/base/security/encodeXML.js",
 				"sap/f/library.js",
 				"sap/ui/core/IconPool.js"
@@ -130,6 +159,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/library.js",
 				"sap/ui/dom/getScrollbarSize.js"
 			]
 		},
@@ -150,7 +180,29 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/library.js",
 				"sap/ui/dom/getScrollbarSize.js"
+			]
+		},
+		{
+			"name": "DynamicPageAccessibleLandmarkInfo-dbg.js",
+			"module": "sap/f/DynamicPageAccessibleLandmarkInfo.js",
+			"isDebug": true,
+			"required": [
+				"sap/f/library.js",
+				"sap/ui/core/Element.js"
+			]
+		},
+		{
+			"name": "DynamicPageAccessibleLandmarkInfo.control",
+			"designtime": true
+		},
+		{
+			"name": "DynamicPageAccessibleLandmarkInfo.js",
+			"module": "sap/f/DynamicPageAccessibleLandmarkInfo.js",
+			"required": [
+				"sap/f/library.js",
+				"sap/ui/core/Element.js"
 			]
 		},
 		{
@@ -360,6 +412,10 @@
 			]
 		},
 		{
+			"name": "GridList.control",
+			"designtime": true
+		},
+		{
 			"name": "GridList.js",
 			"module": "sap/f/GridList.js",
 			"required": [
@@ -409,6 +465,153 @@
 				"jquery.sap.global.js",
 				"sap/ui/core/UIComponent.js"
 			]
+		},
+		{
+			"name": "cards/CardManifest-dbg.js",
+			"module": "sap/f/cards/CardManifest.js",
+			"isDebug": true
+		},
+		{
+			"name": "cards/CardManifest.js",
+			"module": "sap/f/cards/CardManifest.js"
+		},
+		{
+			"name": "cards/Data-dbg.js",
+			"module": "sap/f/cards/Data.js",
+			"isDebug": true,
+			"required": [
+				"jquery.sap.global.js",
+				"sap/base/Log.js"
+			]
+		},
+		{
+			"name": "cards/Data.js",
+			"module": "sap/f/cards/Data.js",
+			"required": [
+				"jquery.sap.global.js",
+				"sap/base/Log.js"
+			]
+		},
+		{
+			"name": "cards/content/Analytical-dbg.js",
+			"module": "sap/f/cards/content/Analytical.js",
+			"isDebug": true,
+			"required": [
+				"sap/f/cards/Data.js",
+				"sap/m/FlexBox.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/model/json/JSONModel.js",
+				"sap/viz/ui5/controls/VizFrame.js",
+				"sap/viz/ui5/controls/common/feeds/FeedItem.js",
+				"sap/viz/ui5/data/DimensionDefinition.js",
+				"sap/viz/ui5/data/FlattenedDataset.js",
+				"sap/viz/ui5/data/MeasureDefinition.js"
+			]
+		},
+		{
+			"name": "cards/content/Analytical.js",
+			"module": "sap/f/cards/content/Analytical.js",
+			"required": [
+				"sap/f/cards/Data.js",
+				"sap/m/FlexBox.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/model/json/JSONModel.js",
+				"sap/viz/ui5/controls/VizFrame.js",
+				"sap/viz/ui5/controls/common/feeds/FeedItem.js",
+				"sap/viz/ui5/data/DimensionDefinition.js",
+				"sap/viz/ui5/data/FlattenedDataset.js",
+				"sap/viz/ui5/data/MeasureDefinition.js"
+			]
+		},
+		{
+			"name": "cards/content/List-dbg.js",
+			"module": "sap/f/cards/content/List.js",
+			"isDebug": true,
+			"required": [
+				"jquery.sap.global.js",
+				"sap/f/cards/Data.js",
+				"sap/m/List.js",
+				"sap/m/StandardListItem.js",
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "cards/content/List.js",
+			"module": "sap/f/cards/content/List.js",
+			"required": [
+				"jquery.sap.global.js",
+				"sap/f/cards/Data.js",
+				"sap/m/List.js",
+				"sap/m/StandardListItem.js",
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "cards/content/Table-dbg.js",
+			"module": "sap/f/cards/content/Table.js",
+			"isDebug": true,
+			"required": [
+				"sap/f/cards/Data.js",
+				"sap/m/Table.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "cards/content/Table.js",
+			"module": "sap/f/cards/content/Table.js",
+			"required": [
+				"sap/f/cards/Data.js",
+				"sap/m/Table.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "cards/header/Kpi-dbg.js",
+			"module": "sap/f/cards/header/Kpi.js",
+			"isDebug": true,
+			"required": [
+				"sap/f/cards/Data.js",
+				"sap/f/cards/header/KpiRenderer.js",
+				"sap/m/Label.js",
+				"sap/m/NumericContent.js",
+				"sap/m/ObjectNumber.js",
+				"sap/m/Text.js",
+				"sap/m/VBox.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/library.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "cards/header/Kpi.js",
+			"module": "sap/f/cards/header/Kpi.js",
+			"required": [
+				"sap/f/cards/Data.js",
+				"sap/f/cards/header/KpiRenderer.js",
+				"sap/m/Label.js",
+				"sap/m/NumericContent.js",
+				"sap/m/ObjectNumber.js",
+				"sap/m/Text.js",
+				"sap/m/VBox.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/library.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "cards/header/KpiRenderer-dbg.js",
+			"module": "sap/f/cards/header/KpiRenderer.js",
+			"isDebug": true
+		},
+		{
+			"name": "cards/header/KpiRenderer.js",
+			"module": "sap/f/cards/header/KpiRenderer.js"
 		},
 		{
 			"name": "changeHandler/MoveDynamicPageTitleActions-dbg.js",
@@ -882,23 +1085,32 @@
 				"jquery.sap.global.js",
 				"sap/base/Log.js",
 				"sap/base/assert.js",
+				"sap/base/security/encodeCSS.js",
 				"sap/base/security/encodeXML.js",
 				"sap/m/ActionSheet.js",
 				"sap/m/Button.js",
+				"sap/m/FlexBox.js",
 				"sap/m/InstanceManager.js",
+				"sap/m/Label.js",
+				"sap/m/List.js",
 				"sap/m/ListBase.js",
 				"sap/m/ListBaseRenderer.js",
 				"sap/m/NavContainer.js",
+				"sap/m/NumericContent.js",
+				"sap/m/ObjectNumber.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarButton.js",
 				"sap/m/OverflowToolbarLayoutData.js",
 				"sap/m/ScrollBar.js",
+				"sap/m/StandardListItem.js",
+				"sap/m/Table.js",
 				"sap/m/Text.js",
 				"sap/m/Title.js",
 				"sap/m/ToggleButton.js",
 				"sap/m/Toolbar.js",
 				"sap/m/ToolbarSeparator.js",
 				"sap/m/ToolbarSpacer.js",
+				"sap/m/VBox.js",
 				"sap/m/changeHandler/CombineButtons.js",
 				"sap/m/changeHandler/SplitMenuButton.js",
 				"sap/m/library.js",
@@ -918,6 +1130,7 @@
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Manifest.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/UIComponent.js",
@@ -933,9 +1146,15 @@
 				"sap/ui/layout/cssgrid/GridItemLayoutData.js",
 				"sap/ui/layout/cssgrid/GridLayoutBase.js",
 				"sap/ui/layout/cssgrid/GridLayoutDelegate.js",
+				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/support/library.js",
 				"sap/ui/table/library.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/thirdparty/jquery.js",
+				"sap/viz/ui5/controls/VizFrame.js",
+				"sap/viz/ui5/controls/common/feeds/FeedItem.js",
+				"sap/viz/ui5/data/DimensionDefinition.js",
+				"sap/viz/ui5/data/FlattenedDataset.js",
+				"sap/viz/ui5/data/MeasureDefinition.js"
 			],
 			"included": [
 				"sap/f/library.js",
@@ -943,8 +1162,10 @@
 				"sap/f/Avatar.js",
 				"sap/f/AvatarRenderer.js",
 				"sap/f/Card.js",
+				"sap/f/CardManifest.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/DynamicPage.js",
+				"sap/f/DynamicPageAccessibleLandmarkInfo.js",
 				"sap/f/DynamicPageHeader.js",
 				"sap/f/DynamicPageHeaderRenderer.js",
 				"sap/f/DynamicPageRenderer.js",
@@ -956,6 +1177,13 @@
 				"sap/f/GridList.js",
 				"sap/f/GridListRenderer.js",
 				"sap/f/cards/CardComponent.js",
+				"sap/f/cards/CardManifest.js",
+				"sap/f/cards/Data.js",
+				"sap/f/cards/content/Analytical.js",
+				"sap/f/cards/content/List.js",
+				"sap/f/cards/content/Table.js",
+				"sap/f/cards/header/Kpi.js",
+				"sap/f/cards/header/KpiRenderer.js",
 				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
 				"sap/f/designtime/Avatar.create.fragment.xml",
 				"sap/f/designtime/Avatar.designtime.js",
@@ -1016,23 +1244,32 @@
 				"jquery.sap.global.js",
 				"sap/base/Log.js",
 				"sap/base/assert.js",
+				"sap/base/security/encodeCSS.js",
 				"sap/base/security/encodeXML.js",
 				"sap/m/ActionSheet.js",
 				"sap/m/Button.js",
+				"sap/m/FlexBox.js",
 				"sap/m/InstanceManager.js",
+				"sap/m/Label.js",
+				"sap/m/List.js",
 				"sap/m/ListBase.js",
 				"sap/m/ListBaseRenderer.js",
 				"sap/m/NavContainer.js",
+				"sap/m/NumericContent.js",
+				"sap/m/ObjectNumber.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarButton.js",
 				"sap/m/OverflowToolbarLayoutData.js",
 				"sap/m/ScrollBar.js",
+				"sap/m/StandardListItem.js",
+				"sap/m/Table.js",
 				"sap/m/Text.js",
 				"sap/m/Title.js",
 				"sap/m/ToggleButton.js",
 				"sap/m/Toolbar.js",
 				"sap/m/ToolbarSeparator.js",
 				"sap/m/ToolbarSpacer.js",
+				"sap/m/VBox.js",
 				"sap/m/changeHandler/CombineButtons.js",
 				"sap/m/changeHandler/SplitMenuButton.js",
 				"sap/m/library.js",
@@ -1052,6 +1289,7 @@
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Manifest.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/UIComponent.js",
@@ -1067,9 +1305,15 @@
 				"sap/ui/layout/cssgrid/GridItemLayoutData.js",
 				"sap/ui/layout/cssgrid/GridLayoutBase.js",
 				"sap/ui/layout/cssgrid/GridLayoutDelegate.js",
+				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/support/library.js",
 				"sap/ui/table/library.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/thirdparty/jquery.js",
+				"sap/viz/ui5/controls/VizFrame.js",
+				"sap/viz/ui5/controls/common/feeds/FeedItem.js",
+				"sap/viz/ui5/data/DimensionDefinition.js",
+				"sap/viz/ui5/data/FlattenedDataset.js",
+				"sap/viz/ui5/data/MeasureDefinition.js"
 			],
 			"included": [
 				"sap/f/library.js",
@@ -1077,8 +1321,10 @@
 				"sap/f/Avatar.js",
 				"sap/f/AvatarRenderer.js",
 				"sap/f/Card.js",
+				"sap/f/CardManifest.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/DynamicPage.js",
+				"sap/f/DynamicPageAccessibleLandmarkInfo.js",
 				"sap/f/DynamicPageHeader.js",
 				"sap/f/DynamicPageHeaderRenderer.js",
 				"sap/f/DynamicPageRenderer.js",
@@ -1090,6 +1336,13 @@
 				"sap/f/GridList.js",
 				"sap/f/GridListRenderer.js",
 				"sap/f/cards/CardComponent.js",
+				"sap/f/cards/CardManifest.js",
+				"sap/f/cards/Data.js",
+				"sap/f/cards/content/Analytical.js",
+				"sap/f/cards/content/List.js",
+				"sap/f/cards/content/Table.js",
+				"sap/f/cards/header/Kpi.js",
+				"sap/f/cards/header/KpiRenderer.js",
 				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
 				"sap/f/designtime/Avatar.create.fragment.xml",
 				"sap/f/designtime/Avatar.designtime.js",
@@ -1154,21 +1407,31 @@
 				"jquery.sap.global.js",
 				"sap/base/Log.js",
 				"sap/base/assert.js",
+				"sap/base/security/encodeCSS.js",
 				"sap/base/security/encodeXML.js",
 				"sap/m/ActionSheet.js",
 				"sap/m/Button.js",
+				"sap/m/FlexBox.js",
 				"sap/m/InstanceManager.js",
+				"sap/m/Label.js",
+				"sap/m/List.js",
 				"sap/m/ListBase.js",
 				"sap/m/ListBaseRenderer.js",
 				"sap/m/NavContainer.js",
+				"sap/m/NumericContent.js",
+				"sap/m/ObjectNumber.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarButton.js",
 				"sap/m/OverflowToolbarLayoutData.js",
 				"sap/m/ScrollBar.js",
+				"sap/m/StandardListItem.js",
+				"sap/m/Table.js",
+				"sap/m/Text.js",
 				"sap/m/ToggleButton.js",
 				"sap/m/Toolbar.js",
 				"sap/m/ToolbarSeparator.js",
 				"sap/m/ToolbarSpacer.js",
+				"sap/m/VBox.js",
 				"sap/m/changeHandler/CombineButtons.js",
 				"sap/m/changeHandler/SplitMenuButton.js",
 				"sap/m/library.js",
@@ -1187,6 +1450,7 @@
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Manifest.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/UIComponent.js",
@@ -1202,14 +1466,22 @@
 				"sap/ui/layout/cssgrid/GridItemLayoutData.js",
 				"sap/ui/layout/cssgrid/GridLayoutBase.js",
 				"sap/ui/layout/cssgrid/GridLayoutDelegate.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/thirdparty/jquery.js",
+				"sap/viz/ui5/controls/VizFrame.js",
+				"sap/viz/ui5/controls/common/feeds/FeedItem.js",
+				"sap/viz/ui5/data/DimensionDefinition.js",
+				"sap/viz/ui5/data/FlattenedDataset.js",
+				"sap/viz/ui5/data/MeasureDefinition.js"
 			],
 			"included": [
 				"sap/f/Avatar.js",
 				"sap/f/AvatarRenderer.js",
 				"sap/f/Card.js",
+				"sap/f/CardManifest.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/DynamicPage.js",
+				"sap/f/DynamicPageAccessibleLandmarkInfo.js",
 				"sap/f/DynamicPageHeader.js",
 				"sap/f/DynamicPageHeaderRenderer.js",
 				"sap/f/DynamicPageRenderer.js",
@@ -1221,6 +1493,13 @@
 				"sap/f/GridList.js",
 				"sap/f/GridListRenderer.js",
 				"sap/f/cards/CardComponent.js",
+				"sap/f/cards/CardManifest.js",
+				"sap/f/cards/Data.js",
+				"sap/f/cards/content/Analytical.js",
+				"sap/f/cards/content/List.js",
+				"sap/f/cards/content/Table.js",
+				"sap/f/cards/header/Kpi.js",
+				"sap/f/cards/header/KpiRenderer.js",
 				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
 				"sap/f/flexibility/DynamicPageTitle.flexibility.js",
 				"sap/f/library.js",
@@ -1275,21 +1554,31 @@
 				"jquery.sap.global.js",
 				"sap/base/Log.js",
 				"sap/base/assert.js",
+				"sap/base/security/encodeCSS.js",
 				"sap/base/security/encodeXML.js",
 				"sap/m/ActionSheet.js",
 				"sap/m/Button.js",
+				"sap/m/FlexBox.js",
 				"sap/m/InstanceManager.js",
+				"sap/m/Label.js",
+				"sap/m/List.js",
 				"sap/m/ListBase.js",
 				"sap/m/ListBaseRenderer.js",
 				"sap/m/NavContainer.js",
+				"sap/m/NumericContent.js",
+				"sap/m/ObjectNumber.js",
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarButton.js",
 				"sap/m/OverflowToolbarLayoutData.js",
 				"sap/m/ScrollBar.js",
+				"sap/m/StandardListItem.js",
+				"sap/m/Table.js",
+				"sap/m/Text.js",
 				"sap/m/ToggleButton.js",
 				"sap/m/Toolbar.js",
 				"sap/m/ToolbarSeparator.js",
 				"sap/m/ToolbarSpacer.js",
+				"sap/m/VBox.js",
 				"sap/m/changeHandler/CombineButtons.js",
 				"sap/m/changeHandler/SplitMenuButton.js",
 				"sap/m/library-preload.json",
@@ -1309,6 +1598,7 @@
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Manifest.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/UIComponent.js",
@@ -1325,14 +1615,22 @@
 				"sap/ui/layout/cssgrid/GridItemLayoutData.js",
 				"sap/ui/layout/cssgrid/GridLayoutBase.js",
 				"sap/ui/layout/cssgrid/GridLayoutDelegate.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/thirdparty/jquery.js",
+				"sap/viz/ui5/controls/VizFrame.js",
+				"sap/viz/ui5/controls/common/feeds/FeedItem.js",
+				"sap/viz/ui5/data/DimensionDefinition.js",
+				"sap/viz/ui5/data/FlattenedDataset.js",
+				"sap/viz/ui5/data/MeasureDefinition.js"
 			],
 			"included": [
 				"sap/f/Avatar.js",
 				"sap/f/AvatarRenderer.js",
 				"sap/f/Card.js",
+				"sap/f/CardManifest.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/DynamicPage.js",
+				"sap/f/DynamicPageAccessibleLandmarkInfo.js",
 				"sap/f/DynamicPageHeader.js",
 				"sap/f/DynamicPageHeaderRenderer.js",
 				"sap/f/DynamicPageRenderer.js",
@@ -1344,6 +1642,13 @@
 				"sap/f/GridList.js",
 				"sap/f/GridListRenderer.js",
 				"sap/f/cards/CardComponent.js",
+				"sap/f/cards/CardManifest.js",
+				"sap/f/cards/Data.js",
+				"sap/f/cards/content/Analytical.js",
+				"sap/f/cards/content/List.js",
+				"sap/f/cards/content/Table.js",
+				"sap/f/cards/header/Kpi.js",
+				"sap/f/cards/header/KpiRenderer.js",
 				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
 				"sap/f/flexibility/DynamicPageTitle.flexibility.js",
 				"sap/f/library.js",
@@ -2497,11 +2802,6 @@
 		},
 		{
 			"name": "themes/sap_hcb/.theming",
-			"theme": "sap_hcb"
-		},
-		{
-			"name": "themes/sap_hcb/Card.less",
-			"designtime": true,
 			"theme": "sap_hcb"
 		},
 		{

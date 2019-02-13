@@ -7,10 +7,10 @@
 /**
  * Initialization Code and shared classes of library sap.ui.ux3.
  */
-sap.ui.define(['jquery.sap.global',
+sap.ui.define([
 	'sap/ui/core/library', // library dependency
 	'sap/ui/commons/library'], // library dependency
-	function(jQuery) {
+	function() {
 
 	"use strict";
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global',
 	 * @namespace
 	 * @name sap.ui.ux3
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @public
 	 * @deprecated Since 1.38
 	 */
@@ -28,7 +28,7 @@ sap.ui.define(['jquery.sap.global',
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.ux3",
-		version: "1.60.1",
+		version: "1.61.2",
 		dependencies : ["sap.ui.core","sap.ui.commons"],
 		types: [
 			"sap.ui.ux3.ActionBarSocialActions",

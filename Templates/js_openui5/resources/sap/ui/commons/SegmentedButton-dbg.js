@@ -6,10 +6,10 @@
 
 // Provides control sap.ui.commons.SegmentedButton.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
     'sap/ui/core/Control',
     'sap/ui/core/delegate/ItemNavigation',
-    "./SegmentedButtonRenderer"
+    './SegmentedButtonRenderer'
 ],
 	function(jQuery, Control, ItemNavigation, SegmentedButtonRenderer) {
 	"use strict";
@@ -26,7 +26,7 @@ sap.ui.define([
 	 * The SegmentedButton provides a group of multiple buttons. Only one button can be active. The behaviour is more ore less like a radio button group.
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.commons.ToolbarItem, sap.ui.core.IFormContent
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -194,7 +194,7 @@ sap.ui.define([
 		var $content = this.$();
 		if ($content.length > 0) {
 			var rm = sap.ui.getCore().createRenderManager();
-			sap.ui.commons.SegmentedButtonRenderer.renderButtons(rm, this);
+			SegmentedButtonRenderer.renderButtons(rm, this);
 			rm.flush($content[0]);
 			rm.destroy();
 		}
@@ -290,7 +290,7 @@ sap.ui.define([
 			oButton.detachPress(this._buttonSelected, this);
 		}
 
-		var oClone = sap.ui.core.Element.prototype.clone.apply(this, arguments);
+		var oClone = Control.prototype.clone.apply(this, arguments);
 
 		for (i = 0; i < aButtons.length; i++) {
 			oButton = aButtons[i];
@@ -308,4 +308,4 @@ sap.ui.define([
 
 	return SegmentedButton;
 
-}, /* bExport= */ true);
+});

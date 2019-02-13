@@ -217,7 +217,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.ManagedObject
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @alias sap.ui.core.Component
 	 * @since 1.9.2
 	 */
@@ -456,7 +456,10 @@ sap.ui.define([
 
 	/**
 	 * Returns true, if the Component instance is a variant.
-	 * @TODO more details
+	 *
+	 * A Component is a variant if the property sap.ui5/componentName
+	 * is present in the manifest and if this property and the sap.app/id
+	 * differs.
 	 *
 	 * @return {boolean} true, if the Component instance is a variant
 	 * @private
@@ -464,10 +467,10 @@ sap.ui.define([
 	 */
 	Component.prototype._isVariant = function() {
 		if (this._oManifest) {
-			// read the "/sap.app/id" from static manifest/metadata
-			var sMetadataId = this._oMetadataProxy._oMetadata.getManifestEntry("/sap.app/id");
-			// a variant differs in the "/sap.app/id"
-			return sMetadataId !== this.getManifestEntry("/sap.app/id");
+			// read the "/sap.ui5/componentName" which should be present for variants
+			var sComponentName = this.getManifestEntry("/sap.ui5/componentName");
+			// a variant differs in the "/sap.app/id" and "/sap.ui5/componentName"
+			return sComponentName && sComponentName !== this.getManifestEntry("/sap.app/id");
 		} else {
 			return false;
 		}
@@ -595,12 +598,18 @@ sap.ui.define([
 		// make user specific data available during component instantiation
 		this.oComponentData = mSettings && mSettings.componentData;
 
-		// static initialization (loading dependencies, includes, ... / register customzing)
+		// static initialization (loading dependencies, includes, ... / register customizing)
 		//   => either init the static or the instance manifest
 		if (!this._isVariant()) {
 			this.getMetadata().init();
 		} else {
 			this._oManifest.init(this);
+			// in case of variants we ensure to register the module path for the variant
+			// to allow module loading of code extensibility relative to the manifest
+			var sAppId = this._oManifest.getEntry("/sap.app/id");
+			if (sAppId) {
+				registerModulePath(sAppId, this._oManifest.resolveUri("./", "manifest"));
+			}
 		}
 
 		// init the component models
@@ -706,6 +715,13 @@ sap.ui.define([
 	 */
 	Component.prototype.getEventBus = function() {
 		if (!this._oEventBus) {
+			var sClassName = this.getMetadata().getName();
+			Log.warning("Synchronous loading of EventBus, due to #getEventBus() call on Component '" + sClassName + "'.", "SyncXHR", null, function() {
+				return {
+					type: "SyncXHR",
+					name: sClassName
+				};
+			});
 			var EventBus = sap.ui.requireSync("sap/ui/core/EventBus");
 			this._oEventBus = new EventBus();
 		}
@@ -1950,6 +1966,9 @@ sap.ui.define([
 	 *     if declared in the Component metadata.
 	 *     A non-empty string value will be interpreted as the URL to load the manifest from.
 	 *     A non-null object value will be interpreted as manifest content.
+	 * @param {string} [mOptions.altManifestUrl] @since 1.61.0 Alternative URL for the manifest.json. If <code>mOptions.manifest</code>
+	 *     is set to an object value, this URL specifies the location to which the manifest object should resolve the relative
+	 *     URLs to.
 	 * @param {string} [mOptions.handleValidation=false] If set to <code>true</code> validation of the component is handled by the <code>MessageManager</code>
 	 * @param {object} [mOptions.asyncHints] Hints for asynchronous loading
 	 * @param {string[]|object[]} [mOptions.asyncHints.components] a list of components needed by the current component and its subcomponents
@@ -2074,7 +2093,7 @@ sap.ui.define([
 		};
 
 		if (typeof vConfig === 'string') {
-			Log.warning("Do not use deprecated function 'sap.ui.component' for Component instance lookup. " +
+			Log.warning("Do not use deprecated function 'sap.ui.component' (" + vConfig + ") + for Component instance lookup. " +
 				"Use 'Component.get' instead", "sap.ui.component", null, fnLogProperties.bind(null, vConfig));
 			// when only a string is given then this function behaves like a
 			// getter and returns an existing component instance
@@ -2082,10 +2101,10 @@ sap.ui.define([
 		}
 
 		if (vConfig.async) {
-			Log.info("Do not use deprecated factory function 'sap.ui.component'. " +
+			Log.info("Do not use deprecated factory function 'sap.ui.component' (" + vConfig["name"] + "). " +
 				"Use 'Component.create' instead", "sap.ui.component", null, fnLogProperties.bind(null, vConfig["name"]));
 		} else {
-			Log.warning("Do not use synchronous component creation! " +
+			Log.warning("Do not use synchronous component creation (" + vConfig["name"] + ")! " +
 				"Use the new asynchronous factory 'Component.create' instead", "sap.ui.component", null, fnLogProperties.bind(null, vConfig["name"]));
 		}
 		return componentFactory(vConfig);
@@ -2202,6 +2221,9 @@ sap.ui.define([
 	 *     if declared in the Component metadata.
 	 *     A non-empty string value will be interpreted as the URL to load the manifest from.
 	 *     A non-null object value will be interpreted as manifest content.
+	 * @param {string} [mOptions.altManifestUrl] @since 1.61.0 Alternative URL for the manifest.json. If <code>mOptions.manifest</code>
+	 *     is set to an object value, this URL specifies the location to which the manifest object should resolve the relative
+	 *     URLs to.
 	 * @param {object} [mOptions.asyncHints] Hints for asynchronous loading
 	 * @param {string[]|object[]} [mOptions.asyncHints.components] a list of components needed by the current component and its subcomponents
 	 *     The framework will try to preload these components (their Component-preload.js) asynchronously, errors will be ignored.
@@ -2355,8 +2377,8 @@ sap.ui.define([
 			mModelConfigs,
 			fnCallLoadComponentCallback;
 
-		function createSanitizedManifest( oRawManifestJSON ) {
-			var oManifest = new Manifest( JSON.parse(JSON.stringify(oRawManifestJSON)) );
+		function createSanitizedManifest( oRawManifestJSON, mOptions ) {
+			var oManifest = new Manifest( JSON.parse(JSON.stringify(oRawManifestJSON)), mOptions );
 			return oConfig.async ? Promise.resolve(oManifest) : oManifest;
 		}
 
@@ -2384,7 +2406,7 @@ sap.ui.define([
 			// determine the semantic of the manifest property
 			bManifestFirst = !!vManifest;
 			sManifestUrl = vManifest && typeof vManifest === 'string' ? vManifest : undefined;
-			oManifest = vManifest && typeof vManifest === 'object' ? createSanitizedManifest(vManifest) : undefined;
+			oManifest = vManifest && typeof vManifest === 'object' ? createSanitizedManifest(vManifest, {url: oConfig && oConfig.altManifestUrl}) : undefined;
 		}
 
 		// if we find a manifest URL in the configuration

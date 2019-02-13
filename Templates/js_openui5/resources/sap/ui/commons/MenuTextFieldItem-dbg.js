@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.commons.MenuTextFieldItem.
-sap.ui.define(['jquery.sap.global', './MenuItemBase', './library', 'sap/ui/unified/MenuTextFieldItem'],
-	function(jQuery, MenuItemBase, library, MenuTextFieldItem1) {
+sap.ui.define(['./MenuItemBase', './library', 'sap/ui/unified/MenuTextFieldItem'],
+	function(MenuItemBase, library, UnifiedMenuTextFieldItem) {
 	"use strict";
 
 
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', './MenuItemBase', './library', 'sap/ui/unifi
 	 * @extends sap.ui.unified.MenuTextFieldItem
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -32,7 +32,7 @@ sap.ui.define(['jquery.sap.global', './MenuItemBase', './library', 'sap/ui/unifi
 	 * @alias sap.ui.commons.MenuTextFieldItem
 	 * @ui5-metamodel This control/element will also be described in the UI5 (legacy) design time meta model
 	 */
-	var MenuTextFieldItem = MenuTextFieldItem1.extend("sap.ui.commons.MenuTextFieldItem", /** @lends sap.ui.commons.MenuTextFieldItem.prototype */ { metadata : {
+	var MenuTextFieldItem = UnifiedMenuTextFieldItem.extend("sap.ui.commons.MenuTextFieldItem", /** @lends sap.ui.commons.MenuTextFieldItem.prototype */ { metadata : {
 
 		deprecated : true,
 		library : "sap.ui.commons"
@@ -42,4 +42,4 @@ sap.ui.define(['jquery.sap.global', './MenuItemBase', './library', 'sap/ui/unifi
 
 	return MenuTextFieldItem;
 
-}, /* bExport= */ true);
+});

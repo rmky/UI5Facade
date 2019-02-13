@@ -45,7 +45,7 @@ sap.ui.define([
 	 * @class The ControlVariant allows propagation of variantManagement key
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @constructor
 	 * @private
 	 * @since 1.50
@@ -96,8 +96,9 @@ sap.ui.define([
 		if (oControl instanceof VariantManagement) {
 			var vAssociationElement = oControl.getFor(),
 				aVariantManagementTargetElements;
-
-			sVariantManagementReference = JsControlTreeModifier.getSelector(oControl, flUtils.getAppComponentForControl(oControl)).id;
+			var oAppComponent = flUtils.getAppComponentForControl(oControl);
+			var sControlId = oControl.getId();
+			sVariantManagementReference = oAppComponent.getLocalId(sControlId) || sControlId;
 
 			if (!vAssociationElement ||
 				(Array.isArray(vAssociationElement) && vAssociationElement.length === 0)) {
@@ -203,7 +204,7 @@ sap.ui.define([
 		if (this._isPersonalizationMode()) {
 			return false;
 		}
-		return this._isVariantManagementControl(oOverlay);
+		return this._isVariantManagementControl(oOverlay) && this.hasStableId(oOverlay);
 	};
 
 	ControlVariant.prototype._isVariantManagementControl = function (oOverlay) {
@@ -594,12 +595,12 @@ sap.ui.define([
 				if (
 					aRegexExecOnVariantTitle.length === 3
 					&& sTitleTrimmed === aRegexExecOnVariantTitle[iIndexForTrimmedTitle]
-					&& iTitleCounter <= parseInt(aRegexExecOnVariantTitle[iIndexForCounter], 10)
+					&& iTitleCounter <= parseInt(aRegexExecOnVariantTitle[iIndexForCounter])
 				) {
 					// Extract integer part & increment counter
 					iTitleCounter =
 						aRegexExecOnVariantTitle[iIndexForCounter]
-							? (parseInt(aRegexExecOnVariantTitle[iIndexForCounter], 10) + 1)
+							? (parseInt(aRegexExecOnVariantTitle[iIndexForCounter]) + 1)
 							: iTitleCounter;
 
 				} else if (aRegexExecOnVariantTitle.length === 2

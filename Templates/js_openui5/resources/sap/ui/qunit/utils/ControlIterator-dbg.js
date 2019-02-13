@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
-		function(Core, ObjectPath, Log) {
+sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log", "sap/ui/VersionInfo"],
+		function(Core, ObjectPath, Log, VersionInfo) {
 	"use strict";
 
 	/**
@@ -53,7 +53,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 	 * @namespace
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @public
 	 * @since 1.48.0
@@ -158,6 +158,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 			"sap.ui.mdc.XMLComposite", //The control only runs in views with XML pre-processor. The test can't provide this environment
 			"sap.ui.mdc.ValueHelpDialog", //The control only runs in views with XML pre-processor. The test can't provide this environment
 			"sap.ui.mdc.FilterField", //The control only runs in views with XML pre-processor. The test can't provide this environment
+            "sap.ui.mdc.odata.v4.microchart.MicroChart", //The control only runs in views with XML pre-processor. The test can't provide this environment
 			"sap.makit.Chart",
 			"sap.ui.rta.AddElementsDialog",
 			"sap.ui.rta.ContextMenu"
@@ -185,13 +186,48 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 		   "sap.ui.richtexteditor","sap.ui.rta","sap.ui.suite","sap.ui.table",
 		   "sap.ui.unified","sap.ui.ux3","sap.uxap","sap.viz"];
 
-	var isKnownRuntimeLayerLibrary = function(sLibName) {
-		if (aKnownRuntimeLayerLibraries.indexOf(sLibName) > -1) {
-			return true;
-		} else {
-			return false;
-		}
+	ControlIterator.isKnownRuntimeLayerLibrary = function(sLibName) {
+		return aKnownRuntimeLayerLibraries.indexOf(sLibName) > -1;
 	};
+
+	function getAllLibrariesPromise(fnFilter) {
+
+		// discover what is available in order to also test other libraries than those loaded in bootstrap
+		return VersionInfo.load().then(function(oInfo) {
+			var mLibraries = sap.ui.getCore().getLoadedLibraries(),
+				sInfoLibName,
+				i ,aPromises = [], bNewLibrary;
+
+			var fnSetNewLibrary = function() {
+				bNewLibrary = true;
+			};
+			var fnEmptyLibrary = function() {
+			};
+			for (i = 0; i < oInfo.libraries.length; i++) {
+				sInfoLibName = oInfo.libraries[i].name;
+				if (!mLibraries[sInfoLibName] && (!fnFilter || fnFilter(sInfoLibName))) {
+					Log.info("Libary '" + sInfoLibName + "' is not loaded!");
+					try {
+						aPromises.push(sap.ui.getCore().loadLibrary(sInfoLibName, true).then(fnSetNewLibrary)).catch(fnEmptyLibrary);
+					} catch (e) {
+						// not a control lib? This happens for e.g. "themelib_sap_bluecrystal"...
+					}
+				}
+			}
+			return Promise.all(aPromises).then(function() {
+				// Renew the libraries object if new libraries are added
+				if (bNewLibrary) {
+					mLibraries = sap.ui.getCore().getLoadedLibraries();
+				}
+				for (var sLibName in mLibraries) {
+					if (fnFilter && !fnFilter(sLibName)) {
+						delete mLibraries[sLibName];
+					}
+				}
+				return mLibraries;
+			});
+		});
+	}
 
 
 	/**
@@ -236,7 +272,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 		// ignore dist-layer libraries if requested
 		if (!bIncludeDistLayer) {
 			for (var sLibName in mLibraries) {
-				if (!isKnownRuntimeLayerLibrary(sLibName)) {
+				if (!ControlIterator.isKnownRuntimeLayerLibrary(sLibName)) {
 					mLibraries[sLibName] = undefined;
 				}
 			}
@@ -315,12 +351,16 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 	/**
 	 * Returns true if the control is not among the explicitly excluded controls and is not excluded due to its rendering/instantiation capabilities.
 	 */
-	var shouldTestControl = function(sControlName, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable) {
+	var shouldTestControl = function(sControlName, aControlsToTest, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable) {
 		if (!sControlName) {
 			return false;
 		}
 
-		if (aExcludedControls.indexOf(sControlName) > -1) {
+		if (aControlsToTest.length) { // only test specific controls
+			if (aControlsToTest.indexOf(sControlName) === -1) { // not one of the chosen ones
+				return false;
+			}
+		} else if (aExcludedControls.indexOf(sControlName) > -1) {
 			return false;
 		}
 
@@ -338,7 +378,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 	/**
 	 * Calls the callback function for all controls in the given array, unless they are explicitly excluded
 	 */
-	var loopControlsInLibrary = function(aControls, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback) {
+	var loopControlsInLibrary = function(aControls, aControlsToTest, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback) {
 		return new Promise(function(resolve, reject){
 			var iControlCountInLib = 0;
 
@@ -346,7 +386,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 				if (i < aControls.length) {
 
 					var sControlName = aControls[i];
-					handleControl(sControlName, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback).then(function(bCountThisControl){
+					handleControl(sControlName, aControlsToTest, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback).then(function(bCountThisControl){
 						if (bCountThisControl) {
 							iControlCountInLib++;
 						}
@@ -361,11 +401,11 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 		});
 	};
 
-	function handleControl(sControlName, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback) {
+	function handleControl(sControlName, aControlsToTest, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback) {
 		return new Promise(function(resolve){
 			var bCountThisControl = false;
 
-			if (shouldTestControl(sControlName, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable)) {
+			if (shouldTestControl(sControlName, aControlsToTest, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable)) {
 				bCountThisControl = true;
 				var oControlClass = ObjectPath.get(sControlName || "");
 
@@ -391,6 +431,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 	 * @param {object} [mOptions] optional settings for the test run
 	 * @param {object.string[]} [mOptions.librariesToTest] which control libraries to test, e.g. <code>["sap.ui.core"]</code>. When set, exactly these libraries will be tested and the options excludedLibraries and includeDistLayer will be ignored. Otherwise, the module will try to discover all available libraries.
 	 * @param {object.string[]} [mOptions.excludedLibraries=undefined] which control libraries to exclude from testing, e.g. <code>["sap.ui.core"]</code>. Only used when librariesToTest is not set.
+	 * @param {object.string[]} [mOptions.controlsToTest=undefined] which controls to test, e.g. <code>["sap.m.Button"]</code>. When set, exactly these controls will be tested (IF they are found in the available/tested libraries) and the option excludedControls will be ignored. Otherwise, the module will try to discover all available controls.
 	 * @param {object.string[]} [mOptions.excludedControls=undefined] which controls to exclude from testing, e.g. <code>["sap.m.Button"]</code>.
 	 * @param {object.boolean} [mOptions.includeDistLayer=false] whether to include dist-layer libraries in the test. Only used when librariesToTest is not set.
 	 * @param {object.boolean} [mOptions.includeElements=false] whether to include all entities inheriting from sap.ui.core.Element in the test. Otherwise only those inheriting from sap.ui.core.Controls are tested.
@@ -408,6 +449,30 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 		}, 1);
 	};
 
+	/**
+	 * @param {function} [fnFilterLibraries] filter function, by default all libraries are taken
+	 * Retrieves all control names of all libraries, including dist layer
+	 * @return {Promise<Array>} of all control names, e.g. ["sap.m.Button", "sap.m.Text"]
+	 */
+	ControlIterator.getAllControlNames = function(fnFilterLibraries) {
+
+		return getAllLibrariesPromise(fnFilterLibraries).then(function(mLibraries) {
+
+			var aAllControls = [];
+			Object.keys(mLibraries).forEach(function(sLibraryName) {
+				var oLibrary = mLibraries[sLibraryName];
+				if (oLibrary.controls) {
+					aAllControls = aAllControls.concat(oLibrary.controls);
+				}
+				if (oLibrary.elements) {
+					aAllControls = aAllControls.concat(oLibrary.elements);
+				}
+			});
+			return aAllControls;
+		});
+
+	};
+
 
 	/**
 	 * Called by run() with a 1:1 parameter forwarding
@@ -420,6 +485,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 		var fnDone = mOptions.done || function(){};
 		var aLibrariesToTest = mOptions.librariesToTest || undefined;
 		var aExcludedLibraries = mOptions.excludedLibraries || [];
+		var aControlsToTest = mOptions.controlsToTest || [];
 		var aExcludedControls = mOptions.excludedControls || [];
 		var bIncludeDistLayer = (mOptions.includeDistLayer !== undefined) ? mOptions.includeDistLayer : false;
 		var bIncludeElements = (mOptions.includeElements !== undefined) ? mOptions.includeElements : false;
@@ -465,7 +531,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 		// get the libraries we are interested in
 		var mLibraries = getLibraries(aLibrariesToTest, aExcludedLibraries, bIncludeDistLayer, QUnit);
 
-		loopLibraries(mLibraries, bIncludeElements, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback).then(function(aResults){
+		loopLibraries(mLibraries, bIncludeElements, aControlsToTest, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback).then(function(aResults){
 			fnDone({
 				testedControlCount: aResults[0],
 				testedLibraryCount: aResults[1]
@@ -473,7 +539,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 		});
 	}
 
-	function loopLibraries(mLibraries, bIncludeElements, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback) {
+	function loopLibraries(mLibraries, bIncludeElements, aControlsToTest, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback) {
 		return new Promise(function(resolve) {
 			// loop over all libs and controls and call the callback for each
 			var iControlCount = 0,
@@ -488,7 +554,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 				if (i < aLibraryNames.length) {
 					var sLibName = aLibraryNames[i];
 
-					handleLibrary(mLibraries, sLibName, bIncludeElements, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback).then(function(aResult){
+					handleLibrary(mLibraries, sLibName, bIncludeElements, aControlsToTest, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback).then(function(aResult){
 						iControlCount += aResult[0];
 						if (aResult[1]) {
 							iLibCount++;
@@ -504,7 +570,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 		});
 	}
 
-	function handleLibrary(mLibraries, sLibName, bIncludeElements, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback) {
+	function handleLibrary(mLibraries, sLibName, bIncludeElements, aControlsToTest, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback) {
 		return new Promise(function(resolve) {
 			var oLibrary = mLibraries[sLibName];
 			if (!oLibrary) { // in case removed from the map
@@ -518,7 +584,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log"],
 				aControls = aControls.concat(oLibrary.elements.slice());
 			}
 
-			loopControlsInLibrary(aControls, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback).then(function(iAnalyzedControls){
+			loopControlsInLibrary(aControls, aControlsToTest, aExcludedControls, bIncludeNonRenderable, bIncludeNonInstantiable, fnCallback).then(function(iAnalyzedControls){
 				resolve([iAnalyzedControls, true]);
 			});
 		});

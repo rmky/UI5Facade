@@ -22,6 +22,9 @@ sap.ui.define([],
 			},
 			footer : {
 				domRef : ":sap-domref .sapFDynamicPageActualFooterControl"
+			},
+			landmarkInfo: {
+				ignore: true
 			}
 		},
 		scrollContainers : [{

@@ -27,7 +27,7 @@ sap.ui.define([
 	 * @class
 	 * A View defined/constructed by JavaScript code.
 	 * @extends sap.ui.core.mvc.View
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.JSView
@@ -139,10 +139,25 @@ sap.ui.define([
 	 * @return {sap.ui.core.mvc.JSView | undefined} the created JSView instance in the creation case, otherwise undefined
 	 */
 	sap.ui.jsview = function(sId, vView, bAsync) {
+		var fnLogDeprecation = function(sMethod) {
+			Log[sMethod](
+				"Do not use deprecated view factory functions." +
+				"Use the static create function on the specific view module instead: [XML|JS|HTML|JSON]View.create().",
+				"sap.ui.view",
+				null,
+				function () {
+					return {
+						type: "sap.ui.view",
+						name: sId || (vView && vView.name)
+					};
+				}
+			);
+		};
+
 		if (vView && vView.async) {
-			Log.info("Do not use deprecated factory function 'sap.ui.jsview' for view instance creation. Use 'JSView.create' instead.");
+			fnLogDeprecation("info");
 		} else {
-			Log.warning("Do not use synchronous view creation! Use the new asynchronous factory 'JSView.create' for view instance creation instead.");
+			fnLogDeprecation("warning");
 		}
 		return viewFactory.apply(this, arguments);
 	};

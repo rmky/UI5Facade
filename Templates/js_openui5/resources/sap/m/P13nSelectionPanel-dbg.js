@@ -6,48 +6,8 @@
 
 // Provides control sap.m.P13nSelectionPanel.
 sap.ui.define([
-	'./library',
-	'./ColumnListItem',
-	'./P13nPanel',
-	'./SearchField',
-	'./Text',
-	'./Table',
-	'./Column',
-	'./ScrollContainer',
-	'./P13nSelectionItem',
-	'./VBox',
-	'./Link',
-	'./OverflowToolbar',
-	'./OverflowToolbarLayoutData',
-	'./ToolbarSpacer',
-	'sap/ui/core/library',
-	'sap/ui/model/ChangeReason',
-	'sap/ui/model/json/JSONModel',
-	'sap/ui/model/BindingMode',
-	'sap/ui/core/ResizeHandler',
-	"sap/ui/thirdparty/jquery"
-], function(
-	library,
-	ColumnListItem,
-	P13nPanel,
-	SearchField,
-	Text,
-	Table,
-	Column,
-	ScrollContainer,
-	P13nSelectionItem /* kept for compatibility*/,
-	VBox,
-	Link,
-	OverflowToolbar,
-	OverflowToolbarLayoutData,
-	ToolbarSpacer,
-	CoreLibrary,
-	ChangeReason,
-	JSONModel,
-	BindingMode,
-	ResizeHandler,
-	jQuery
-) {
+	'./library', './ColumnListItem', './P13nPanel', './SearchField', './Text', './Table', './Column', './ScrollContainer', './P13nSelectionItem', './VBox', './Link', './OverflowToolbar', './OverflowToolbarLayoutData', './ToolbarSpacer', 'sap/ui/core/library', 'sap/ui/model/ChangeReason', 'sap/ui/model/json/JSONModel', 'sap/ui/model/BindingMode', 'sap/ui/core/ResizeHandler', "sap/ui/thirdparty/jquery"
+], function(library, ColumnListItem, P13nPanel, SearchField, Text, Table, Column, ScrollContainer, P13nSelectionItem /* kept for compatibility*/, VBox, Link, OverflowToolbar, OverflowToolbarLayoutData, ToolbarSpacer, CoreLibrary, ChangeReason, JSONModel, BindingMode, ResizeHandler, jQuery) {
 	"use strict";
 
 	// shortcut for sap.m.ToolbarDesign
@@ -70,7 +30,7 @@ sap.ui.define([
 	 * @class The P13nSelectionPanel control is used to define selection settings like the visibility or the order of items.
 	 * @extends sap.m.P13nPanel
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @constructor
 	 * @private
 	 * @since 1.46.0
@@ -151,7 +111,6 @@ sap.ui.define([
 		this._bOnAfterRenderingFirstTimeExecuted = false;
 
 		var oModel = new JSONModel({
-			linkPressMap: {},
 			items: [],
 			countOfSelectedItems: 0,
 			countOfItems: 0
@@ -377,7 +336,7 @@ sap.ui.define([
 			selectionChange: jQuery.proxy(this._onSelectionChange, this),
 			columns: [
 				new Column({
-                    vAlign: CoreLibrary.VerticalAlign.Middle,
+					vAlign: CoreLibrary.VerticalAlign.Middle,
 					header: new Text({
 						text: {
 							parts: [
@@ -416,10 +375,15 @@ sap.ui.define([
 									}
 								},
 								press: function(oEvent) {
-									var fOnLinkPress = that._getInternalModel().getProperty("/linkPressMap")[this.getText() + "---" + this.getHref()];
-									if (fOnLinkPress) {
-										fOnLinkPress(oEvent);
+									var sHref = oEvent.getSource().getHref();
+									var oItems = that.getItems().filter(function(oItem) {
+										return oItem.getHref() === sHref && !!oItem.getPress();
+									});
+									if (!oItems.length) {
+										return;
 									}
+									var fnPress = oItems[0].getPress();
+									fnPress(oEvent);
 								}
 							}), new Text({
 								visible: {

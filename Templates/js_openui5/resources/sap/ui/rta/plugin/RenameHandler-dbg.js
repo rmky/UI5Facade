@@ -32,7 +32,7 @@ sap.ui.define([
 	 * Provides Rename handling functionality
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @private
@@ -89,11 +89,11 @@ sap.ui.define([
 				oOverlayForWrapper = this._oEditedOverlay;
 				var _$ControlForWrapperDomRef = jQuery(ElementUtil.getDomRef(oElement)); /* Main Control */
 				var _$oEditableControlParentDomRef = this._$oEditableControlDomRef.parent(); /* Text Control parent */
-				var iControlForWrapperWidth = parseInt(_$ControlForWrapperDomRef.outerWidth(), 10); /* Main Control Width */
+				var iControlForWrapperWidth = parseInt(_$ControlForWrapperDomRef.outerWidth()); /* Main Control Width */
 
 				if (!isNaN(iControlForWrapperWidth)) {
-					var iEditableControlWidth = parseInt(this._$oEditableControlDomRef.outerWidth(), 10);
-					var iEditableControlParentWidth = parseInt(_$oEditableControlParentDomRef.outerWidth(), 10);
+					var iEditableControlWidth = parseInt(this._$oEditableControlDomRef.outerWidth());
+					var iEditableControlParentWidth = parseInt(_$oEditableControlParentDomRef.outerWidth());
 
 					iWidthDifference = iControlForWrapperWidth - iEditableControlWidth;
 

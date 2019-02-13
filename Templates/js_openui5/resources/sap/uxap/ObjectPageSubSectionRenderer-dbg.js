@@ -23,13 +23,17 @@ sap.ui.define(function () {
 
 		aActions = oControl.getActions() || [];
 		bHasActions = aActions.length > 0;
-		bHasTitle = (oControl._getInternalTitleVisible() && (oControl.getTitle() !== ""));
+		bHasTitle = (oControl._getInternalTitleVisible() && (oControl.getTitle().trim() !== ""));
 		bHasTitleLine = bHasTitle || bHasActions;
 		bHasVisibleActions = oControl._hasVisibleActions();
 
 		oRm.write("<div ");
 		oRm.writeAttribute("role", "region");
 		oRm.writeControlData(oControl);
+
+		if (oControl._getHeight()) {
+		    oRm.writeAttribute("style", "height:" + oControl._getHeight() + ";");
+		}
 		oRm.addClass("sapUxAPObjectPageSubSection");
 		oRm.addClass("ui-helper-clearfix");
 		oRm.writeClasses(oControl);
@@ -54,7 +58,7 @@ sap.ui.define(function () {
 			}
 
 			bUseTitleOnTheLeft = oControl._getUseTitleOnTheLeft();
-			if (bUseTitleOnTheLeft && oControl._onDesktopMediaRange()) {
+			if (bUseTitleOnTheLeft) {
 				oRm.addClass("titleOnLeftLayout");
 			}
 			oRm.writeAttributeEscaped("id", oControl.getId() + "-header");
@@ -85,7 +89,7 @@ sap.ui.define(function () {
 				oRm.writeClasses();
 				oRm.writeAttribute("data-sap-ui-customfastnavgroup", true);
 				oRm.write(">");
-				aActions.forEach(oRm.renderControl);
+				aActions.forEach(oRm.renderControl, oRm);
 				oRm.write("</div>");
 			}
 
@@ -95,7 +99,6 @@ sap.ui.define(function () {
 		oRm.write("<div");
 		oRm.addClass("ui-helper-clearfix");
 		oRm.addClass("sapUxAPBlockContainer");
-		oRm.addClass("sapUxAPBlockContainer" + oControl._getMediaString());
 		oRm.writeClasses();
 		if (oControl._isHidden){
 			oRm.addStyle("display", "none");

@@ -446,10 +446,17 @@
    */
 		function instantiateWasmEngine(lang) {
 			var baseData = calculateBaseData(H.binaries[lang]);
-			var wasmMemory = new WebAssembly.Memory({
-				"initial": baseData.heapSize / 65536,
-				"maximum": 256
-			});
+
+			var wasmMemory;
+			if (H.specMems[lang] && H.specMems[lang].buffer.byteLength >= baseData.heapSize) {
+				wasmMemory = H.specMems[lang];
+			} else {
+				wasmMemory = new WebAssembly.Memory({
+					"initial": baseData.heapSize / 65536,
+					"maximum": 256
+				});
+			}
+
 			var ui32wasmMemory = new Uint32Array(wasmMemory.buffer);
 			ui32wasmMemory.set(new Uint32Array(H.binaries[lang]),
 			// eslint-disable-next-line no-bitwise
@@ -497,7 +504,7 @@
 			}, createImportObject(baseData), baseData.heapBuffer);
 			theHyphenEngine.convert();
 
-			setTimeout(function() {
+			setTimeout(function () {
 				prepareLanguagesObj(lang, encloseHyphenateFunction(baseData, theHyphenEngine.hyphenate), decode(new Uint16Array(heapBuffer).subarray(384, 640)), baseData.leftmin, baseData.rightmin);
 			}, 0);
 		}

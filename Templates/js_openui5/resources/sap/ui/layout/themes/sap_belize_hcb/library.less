@@ -114,6 +114,16 @@
 .sapUiLoSplitter > .sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar {
 	background-color: @sapUiHcStandardForeground;
 }
+
+/*********************************** Focus outline**********************************/
+
+.sapUiLoSplitter > .sapUiLoSplitterBar:focus::before {
+	border-width: 2px;
+	top: -1px;
+	bottom: -1px;
+	left: -1px;
+	right: -1px;
+}
 /* END "Splitter.less" */
 
 /* START "ResponsiveSplitter.less" */

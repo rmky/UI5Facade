@@ -137,7 +137,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @alias sap.ui.model.odata.type.Int64
 	 * @param {object} [oFormatOptions]
@@ -192,7 +192,7 @@ sap.ui.define([
 			if (sErrorText) {
 				throw new FormatException(sErrorText);
 			}
-			return parseInt(sValue, 10);
+			return parseInt(sValue);
 		case "string":
 			return getFormatter(this).format(sValue);
 		default:

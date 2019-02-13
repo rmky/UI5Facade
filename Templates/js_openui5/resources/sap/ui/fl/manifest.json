@@ -8,7 +8,7 @@
       "support/apps/uiFlexibilityDiagnostics"
     ],
     "applicationVersion": {
-      "version": "1.60.1"
+      "version": "1.61.2"
     },
     "title": "SAPUI5 library with sap.ui.fl controls.",
     "description": "SAPUI5 library with sap.ui.fl controls.",
@@ -24,13 +24,13 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.60",
+      "minUI5Version": "1.61",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.60.1"
+          "minVersion": "1.61.2"
         },
         "sap.m": {
-          "minVersion": "1.60.1"
+          "minVersion": "1.61.2"
         }
       }
     },

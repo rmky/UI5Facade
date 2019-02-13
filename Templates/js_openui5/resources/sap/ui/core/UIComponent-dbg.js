@@ -55,7 +55,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Component
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @alias sap.ui.core.UIComponent
 	 * @since 1.9.2
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
@@ -354,21 +354,24 @@ sap.ui.define([
 	};
 
 	UIComponent.prototype._destroyCreatedInstances = function () {
-		// destroy the router
-		if (this._oRouter) {
+		if (this._oRouter) { // destroy the router
+			// the _oTargets and _oViews will be destroyed
+			// internally in the _oRouter
 			this._oRouter.destroy();
 			delete this._oRouter;
+		} else { // if _oTargets and _oViews are created without
+			// a Router, they need to be destroyed here
+			if (this._oTargets) {
+				this._oTargets.destroy();
+				this._oTargets = null;
+			}
+
+			if (this._oViews) {
+				this._oViews.destroy();
+				this._oViews = null;
+			}
 		}
 
-		if (this._oTargets) {
-			this._oTargets.destroy();
-			this._oTargets = null;
-		}
-
-		if (this._oViews) {
-			this._oViews.destroy();
-			this._oViews = null;
-		}
 	};
 
 	/**

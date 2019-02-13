@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.60.1"
+      "version": "1.61.2"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -22,13 +22,13 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.60",
+      "minUI5Version": "1.61",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.60.1"
+          "minVersion": "1.61.2"
         },
         "sap.ui.unified": {
-          "minVersion": "1.60.1",
+          "minVersion": "1.61.2",
           "lazy": true
         }
       }
@@ -118,9 +118,6 @@
           "sap.m.ObjectMarker",
           "sap.m.ObjectNumber",
           "sap.m.ObjectStatus",
-          "sap.m.OnePersonCalendar",
-          "sap.m.OnePersonGrid",
-          "sap.m.OnePersonHeader",
           "sap.m.OverflowToolbar",
           "sap.m.OverflowToolbarButton",
           "sap.m.OverflowToolbarToggleButton",
@@ -136,6 +133,7 @@
           "sap.m.Panel",
           "sap.m.PDFViewer",
           "sap.m.PlanningCalendar",
+          "sap.m.PlanningCalendarHeader",
           "sap.m.Popover",
           "sap.m.ProgressIndicator",
           "sap.m.PullToRefresh",
@@ -155,6 +153,8 @@
           "sap.m.SelectList",
           "sap.m.SelectionDetails",
           "sap.m.Shell",
+          "sap.m.SinglePlanningCalendar",
+          "sap.m.SinglePlanningCalendarGrid",
           "sap.m.Slider",
           "sap.m.SliderTooltip",
           "sap.m.SliderTooltipContainer",
@@ -207,7 +207,6 @@
           "sap.m.IconTabFilter",
           "sap.m.IconTabSeparator",
           "sap.m.LightBoxItem",
-          "sap.m.OnePersonView",
           "sap.m.OverflowToolbarLayoutData",
           "sap.m.MaskInputRule",
           "sap.m.MenuItem",
@@ -227,6 +226,10 @@
           "sap.m.SegmentedButtonItem",
           "sap.m.SelectionDetailsItem",
           "sap.m.SelectionDetailsItemLine",
+          "sap.m.SinglePlanningCalendarDayView",
+          "sap.m.SinglePlanningCalendarWeekView",
+          "sap.m.SinglePlanningCalendarWorkWeekView",
+          "sap.m.SinglePlanningCalendarView",
           "sap.m.SuggestionItem",
           "sap.m.TabContainerItem",
           "sap.m.TabStripItem",
@@ -303,6 +306,7 @@
           "sap.m.ListType",
           "sap.m.LoadState",
           "sap.m.MenuButtonMode",
+          "sap.m.ObjectHeaderPictureShape",
           "sap.m.OverflowToolbarPriority",
           "sap.m.P13nPanelType",
           "sap.m.PageBackgroundDesign",

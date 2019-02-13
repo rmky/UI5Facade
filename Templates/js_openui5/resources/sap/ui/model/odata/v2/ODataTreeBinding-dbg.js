@@ -444,7 +444,7 @@ sap.ui.define([
 			// previously only the Hierarchy-ID-property from the data was used as key but not the actual OData-Key
 			// now the actual key of the odata entry is used
 			sNodeId = this.oModel.getKey(oContext);
-			mRequestParameters.level = parseInt(oContext.getProperty(this.oTreeProperties["hierarchy-level-for"]), 10) + 1;
+			mRequestParameters.level = parseInt(oContext.getProperty(this.oTreeProperties["hierarchy-level-for"])) + 1;
 		} else {
 			var sNavPath = this._getNavPath(oContext.getPath());
 
@@ -791,7 +791,7 @@ sap.ui.define([
 		function _handleSuccess(oData) {
 
 			// $inlinecount is in oData.__count, the $count is just oData
-			var iCount = oData.__count ? parseInt(oData.__count, 10) : parseInt(oData, 10);
+			var iCount = oData.__count ? parseInt(oData.__count) : parseInt(oData);
 
 			this.iTotalCollectionCount = iCount;
 
@@ -877,7 +877,7 @@ sap.ui.define([
 
 		function _handleSuccess(oData) {
 			that.oFinalLengths[sNodeId] = true;
-			that.oLengths[sNodeId] = parseInt(oData, 10);
+			that.oLengths[sNodeId] = parseInt(oData);
 		}
 
 		function _handleError(oError) {
@@ -977,7 +977,7 @@ sap.ui.define([
 				var sParentNodeID = aData[i][this.oTreeProperties["hierarchy-parent-node-for"]],
 					sParentKey = mParentsKeys[sParentNodeID];
 
-				if (parseInt(aData[i][this.oTreeProperties["hierarchy-level-for"]], 10) === this.iRootLevel) {
+				if (parseInt(aData[i][this.oTreeProperties["hierarchy-level-for"]]) === this.iRootLevel) {
 					sParentKey = "null";
 				}
 
@@ -1025,7 +1025,7 @@ sap.ui.define([
 	ODataTreeBinding.prototype._updateNodeKey = function (oNode, sNewKey) {
 		var sOldKey = this.oModel.getKey(oNode.context),
 			sParentKey, nIndex;
-		if (parseInt(oNode.context.getProperty(this.oTreeProperties["hierarchy-level-for"]), 10) === this.iRootLevel) {
+		if (parseInt(oNode.context.getProperty(this.oTreeProperties["hierarchy-level-for"])) === this.iRootLevel) {
 			sParentKey = "null";
 		} else {
 			sParentKey = this.oModel.getKey(oNode.parent.context);
@@ -1165,7 +1165,7 @@ sap.ui.define([
 
 				// evaluate the count
 				if (bInlineCountRequested && oData.__count >= 0) {
-					that.oLengths[sNodeId] = parseInt(oData.__count, 10);
+					that.oLengths[sNodeId] = parseInt(oData.__count);
 					that.oFinalLengths[sNodeId] = true;
 				}
 			}
@@ -1311,7 +1311,7 @@ sap.ui.define([
 					var sParentKey = mParentIds[sParentNodeId]; //oDataObj[that.oTreeProperties["hierarchy-parent-node-for"]];
 
 					// the parentNodeID for root nodes (node level == iRootLevel) is "null"
-					if (parseInt(oDataObj[that.oTreeProperties["hierarchy-level-for"]], 10) === that.iRootLevel) {
+					if (parseInt(oDataObj[that.oTreeProperties["hierarchy-level-for"]]) === that.iRootLevel) {
 						sParentKey = "null";
 					}
 
@@ -2357,7 +2357,7 @@ sap.ui.define([
 	 * @public
 	 */
 	ODataTreeBinding.prototype.setRootLevel = function(iRootLevel) {
-		iRootLevel = parseInt(iRootLevel || 0, 10);
+		iRootLevel = parseInt(iRootLevel || 0);
 		if (iRootLevel < 0) {
 			Log.warning("ODataTreeBinding: rootLevels was set to 0. Negative values are prohibited.");
 			iRootLevel = 0;
@@ -2374,7 +2374,7 @@ sap.ui.define([
 	 * @public
 	 */
 	ODataTreeBinding.prototype.getRootLevel = function() {
-		return parseInt(this.iRootLevel, 10);
+		return parseInt(this.iRootLevel);
 	};
 
 	/**
@@ -2428,6 +2428,7 @@ sap.ui.define([
 	 *
 	 * @function
 	 * @name sap.ui.model.odata.v2.ODataTreeBinding.prototype.expandNodeToLevel
+	 * @since 1.58
 	 * @public
 	 */
 

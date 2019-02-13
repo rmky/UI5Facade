@@ -42,8 +42,10 @@ function(
 	 *
 	 * @class
 	 * The ObjectIdentifier is a display control that enables the user to easily identify a specific object. The ObjectIdentifier title is the key identifier of the object and additional text and icons can be used to further distinguish it from other objects.
+	 *
+         * <b>Note:</b> This control should not be used with {@link sap.m.Label} or in Forms along with {@link sap.m.Label}.
 	 * @extends sap.ui.core.Control
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -258,20 +260,22 @@ function(
 	 * @private
 	 */
 	ObjectIdentifier.prototype._getTitleControl = function() {
-		var oTitleControl = this.getAggregation("_titleControl");
+		var oTitleControl = this.getAggregation("_titleControl"),
+			sId = this.getId();
 
 		if (!oTitleControl) {
 			// Lazy initialization
 			if (this.getProperty("titleActive")) {
 				oTitleControl = new sap.m.Link({
-					id : this.getId() + "-link",
+					id : sId + "-link",
 					text: ManagedObject.escapeSettingsValue(this.getProperty("title")),
 					//Add a custom hidden role "ObjectIdentifier" with hidden text
 					ariaLabelledBy: this._oAriaCustomRole
 				});
+				oTitleControl.addAssociation("ariaLabelledBy", sId + "-text", true);
 			} else {
 				oTitleControl = new sap.m.Text({
-					id : this.getId() + "-txt",
+					id : sId + "-txt",
 					text: ManagedObject.escapeSettingsValue(this.getProperty("title"))
 				});
 			}
@@ -291,21 +295,23 @@ function(
 	 */
 	ObjectIdentifier.prototype._updateTitleControl = function(bIsTitleActive) {
 		var oRm,
-			oTitleControl = this._getTitleControl();
+			oTitleControl = this._getTitleControl(),
+			sId = this.getId();
 
 		if (bIsTitleActive && oTitleControl instanceof sap.m.Text) {
 			this.destroyAggregation("_titleControl", true);
 			oTitleControl = new sap.m.Link({
-				id : this.getId() + "-link",
+				id : sId + "-link",
 				text: ManagedObject.escapeSettingsValue(this.getProperty("title")),
 				//Add a custom hidden role "ObjectIdentifier" with hidden text
 				ariaLabelledBy: this._oAriaCustomRole
 			});
+			oTitleControl.addAssociation("ariaLabelledBy", sId + "-text", true);
 			this.setAggregation("_titleControl", oTitleControl, true);
 		} else if (!bIsTitleActive && oTitleControl instanceof sap.m.Link) {
 			this.destroyAggregation("_titleControl", true);
 			oTitleControl = new sap.m.Text({
-				id : this.getId() + "-txt",
+				id : sId + "-txt",
 				text: ManagedObject.escapeSettingsValue(this.getProperty("title"))
 			});
 			this.setAggregation("_titleControl", oTitleControl, true);

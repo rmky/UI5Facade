@@ -366,16 +366,6 @@
 			"theme": "base"
 		},
 		{
-			"name": "OnePersonGrid.less",
-			"designtime": true,
-			"theme": "base"
-		},
-		{
-			"name": "OnePersonHeader.less",
-			"designtime": true,
-			"theme": "base"
-		},
-		{
 			"name": "OverflowToolbarAssociativePopover.less",
 			"designtime": true,
 			"theme": "base"
@@ -432,6 +422,11 @@
 		},
 		{
 			"name": "PlanningCalendar.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "PlanningCalendarHeader.less",
 			"designtime": true,
 			"theme": "base"
 		},
@@ -532,6 +527,11 @@
 		},
 		{
 			"name": "Shell.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "SinglePlanningCalendarGrid.less",
 			"designtime": true,
 			"theme": "base"
 		},

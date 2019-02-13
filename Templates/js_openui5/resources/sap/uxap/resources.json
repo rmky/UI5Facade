@@ -94,7 +94,7 @@
 				"sap/ui/core/Component.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/CustomData.js",
-				"sap/ui/layout/form/ResponsiveGridLayout.js",
+				"sap/ui/layout/form/ColumnLayout.js",
 				"sap/ui/layout/library.js",
 				"sap/ui/model/Context.js",
 				"sap/ui/thirdparty/jquery.js",
@@ -115,7 +115,7 @@
 				"sap/ui/core/Component.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/CustomData.js",
-				"sap/ui/layout/form/ResponsiveGridLayout.js",
+				"sap/ui/layout/form/ColumnLayout.js",
 				"sap/ui/layout/library.js",
 				"sap/ui/model/Context.js",
 				"sap/ui/thirdparty/jquery.js",
@@ -332,6 +332,27 @@
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js"
+			]
+		},
+		{
+			"name": "ObjectPageAccessibleLandmarkInfo-dbg.js",
+			"module": "sap/uxap/ObjectPageAccessibleLandmarkInfo.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/Element.js",
+				"sap/uxap/library.js"
+			]
+		},
+		{
+			"name": "ObjectPageAccessibleLandmarkInfo.control",
+			"designtime": true
+		},
+		{
+			"name": "ObjectPageAccessibleLandmarkInfo.js",
+			"module": "sap/uxap/ObjectPageAccessibleLandmarkInfo.js",
+			"required": [
+				"sap/ui/core/Element.js",
+				"sap/uxap/library.js"
 			]
 		},
 		{
@@ -826,6 +847,7 @@
 				"sap/m/TitlePropagationSupport.js",
 				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/DataType.js",
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/StashedControlSupport.js",
 				"sap/ui/dom/jquery/Focusable.js",
@@ -853,6 +875,7 @@
 				"sap/m/TitlePropagationSupport.js",
 				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/DataType.js",
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/StashedControlSupport.js",
 				"sap/ui/dom/jquery/Focusable.js",
@@ -1338,7 +1361,7 @@
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
 				"sap/ui/layout/HorizontalLayout.js",
-				"sap/ui/layout/form/ResponsiveGridLayout.js",
+				"sap/ui/layout/form/ColumnLayout.js",
 				"sap/ui/layout/library.js",
 				"sap/ui/model/BindingMode.js",
 				"sap/ui/model/Context.js",
@@ -1365,6 +1388,7 @@
 				"sap/uxap/LazyLoading.js",
 				"sap/uxap/ModelMapping.js",
 				"sap/uxap/ObjectImageHelper.js",
+				"sap/uxap/ObjectPageAccessibleLandmarkInfo.js",
 				"sap/uxap/ObjectPageDynamicHeaderContent.js",
 				"sap/uxap/ObjectPageDynamicHeaderContentRenderer.js",
 				"sap/uxap/ObjectPageDynamicHeaderTitle.js",
@@ -1480,7 +1504,7 @@
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
 				"sap/ui/layout/HorizontalLayout.js",
-				"sap/ui/layout/form/ResponsiveGridLayout.js",
+				"sap/ui/layout/form/ColumnLayout.js",
 				"sap/ui/layout/library.js",
 				"sap/ui/model/BindingMode.js",
 				"sap/ui/model/Context.js",
@@ -1507,6 +1531,7 @@
 				"sap/uxap/LazyLoading.js",
 				"sap/uxap/ModelMapping.js",
 				"sap/uxap/ObjectImageHelper.js",
+				"sap/uxap/ObjectPageAccessibleLandmarkInfo.js",
 				"sap/uxap/ObjectPageDynamicHeaderContent.js",
 				"sap/uxap/ObjectPageDynamicHeaderContentRenderer.js",
 				"sap/uxap/ObjectPageDynamicHeaderTitle.js",
@@ -1624,7 +1649,7 @@
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
 				"sap/ui/layout/HorizontalLayout.js",
-				"sap/ui/layout/form/ResponsiveGridLayout.js",
+				"sap/ui/layout/form/ColumnLayout.js",
 				"sap/ui/layout/library.js",
 				"sap/ui/model/BindingMode.js",
 				"sap/ui/model/Context.js",
@@ -1648,6 +1673,7 @@
 				"sap/uxap/LazyLoading.js",
 				"sap/uxap/ModelMapping.js",
 				"sap/uxap/ObjectImageHelper.js",
+				"sap/uxap/ObjectPageAccessibleLandmarkInfo.js",
 				"sap/uxap/ObjectPageDynamicHeaderContent.js",
 				"sap/uxap/ObjectPageDynamicHeaderContentRenderer.js",
 				"sap/uxap/ObjectPageDynamicHeaderTitle.js",
@@ -1759,7 +1785,7 @@
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/GridData.js",
 				"sap/ui/layout/HorizontalLayout.js",
-				"sap/ui/layout/form/ResponsiveGridLayout.js",
+				"sap/ui/layout/form/ColumnLayout.js",
 				"sap/ui/layout/library-preload.json",
 				"sap/ui/layout/library.js",
 				"sap/ui/model/BindingMode.js",
@@ -1784,6 +1810,7 @@
 				"sap/uxap/LazyLoading.js",
 				"sap/uxap/ModelMapping.js",
 				"sap/uxap/ObjectImageHelper.js",
+				"sap/uxap/ObjectPageAccessibleLandmarkInfo.js",
 				"sap/uxap/ObjectPageDynamicHeaderContent.js",
 				"sap/uxap/ObjectPageDynamicHeaderContentRenderer.js",
 				"sap/uxap/ObjectPageDynamicHeaderTitle.js",

@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.60.1"
+      "version": "1.61.2"
     },
     "title": "SAPUI5 library with responsive controls.",
     "description": "SAPUI5 library with responsive controls.",
@@ -22,13 +22,13 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.60",
+      "minUI5Version": "1.61",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.60.1"
+          "minVersion": "1.61.2"
         },
         "sap.m": {
-          "minVersion": "1.60.1"
+          "minVersion": "1.61.2"
         }
       }
     },
@@ -41,16 +41,13 @@
           "sap.tnt.ToolHeader",
           "sap.tnt.SideNavigation",
           "sap.tnt.ToolPage",
-          "sap.tnt.InfoLabel",
-          "sap.tnt.BoxContainer",
-          "sap.tnt.Box"
+          "sap.tnt.InfoLabel"
         ],
         "elements": [
           "sap.tnt.NavigationListItem"
         ],
         "types": [
-          "sap.tnt.RenderMode",
-          "sap.tnt.BoxContainerLayoutConfiguration"
+          "sap.tnt.RenderMode"
         ],
         "interfaces": []
       }

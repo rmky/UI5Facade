@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.commons.SearchProvider.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/search/OpenSearchProvider'],
-	function(jQuery, library, OpenSearchProvider) {
+sap.ui.define(['./library', 'sap/ui/core/search/OpenSearchProvider'],
+	function(library, OpenSearchProvider) {
 	"use strict";
 
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/search/OpenSearchP
 	 * @class
 	 * A SearchProvider which can be attached to a Search Field.
 	 * @extends sap.ui.core.search.OpenSearchProvider
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -52,4 +52,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/search/OpenSearchP
 
 	return SearchProvider;
 
-}, /* bExport= */ true);
+});

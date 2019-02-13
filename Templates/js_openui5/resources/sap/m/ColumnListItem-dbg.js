@@ -42,7 +42,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -78,8 +78,9 @@ sap.ui.define([
 	 */
 	var TablePopin = Element.extend("sap.m.TablePopin", {
 		ontap: function(oEvent) {
-			if (oEvent.isMarked()) {
-				return;
+			// prevent the tap event if selection is done within the popin control and mark the event
+			if (oEvent.isMarked() || ListItemBase.detectTextSelection(this.getDomRef())) {
+				return oEvent.stopImmediatePropagation(true);
 			}
 
 			// focus to the main row if there is nothing to focus in the popin
@@ -237,6 +238,15 @@ sap.ui.define([
 		if (this.hasPopin()) {
 			this.$Popin().attr("aria-selected", bSelected);
 		}
+	};
+
+	ColumnListItem.prototype.onfocusin = function(oEvent) {
+		if (oEvent.isMarked() || oEvent.srcControl !== this) {
+			return;
+		}
+
+		this.$().children(".sapMListTblCellDup").find(":sapTabbable").attr("tabindex", -1);
+		ListItemBase.prototype.onfocusin.apply(this, arguments);
 	};
 
 	// informs the table when item's type column requirement is changed

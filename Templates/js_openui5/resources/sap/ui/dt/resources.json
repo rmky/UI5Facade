@@ -598,6 +598,7 @@
 				"sap/ui/dt/plugin/ElementMover.js",
 				"sap/ui/dt/plugin/MouseSelection.js",
 				"sap/ui/dt/plugin/TabHandling.js",
+				"sap/ui/dt/plugin/ToolHooks.js",
 				"sap/ui/dt/test/Element.js",
 				"sap/ui/dt/test/ElementEnablementTest.js",
 				"sap/ui/dt/test/ElementEnablementTest2.js",
@@ -692,6 +693,7 @@
 				"sap/ui/dt/plugin/ElementMover.js",
 				"sap/ui/dt/plugin/MouseSelection.js",
 				"sap/ui/dt/plugin/TabHandling.js",
+				"sap/ui/dt/plugin/ToolHooks.js",
 				"sap/ui/dt/test/Element.js",
 				"sap/ui/dt/test/ElementEnablementTest.js",
 				"sap/ui/dt/test/ElementEnablementTest2.js",
@@ -790,6 +792,7 @@
 				"sap/ui/dt/plugin/ElementMover.js",
 				"sap/ui/dt/plugin/MouseSelection.js",
 				"sap/ui/dt/plugin/TabHandling.js",
+				"sap/ui/dt/plugin/ToolHooks.js",
 				"sap/ui/dt/test/Element.js",
 				"sap/ui/dt/test/ElementEnablementTest.js",
 				"sap/ui/dt/test/ElementEnablementTest2.js",
@@ -889,6 +892,7 @@
 				"sap/ui/dt/plugin/ElementMover.js",
 				"sap/ui/dt/plugin/MouseSelection.js",
 				"sap/ui/dt/plugin/TabHandling.js",
+				"sap/ui/dt/plugin/ToolHooks.js",
 				"sap/ui/dt/test/Element.js",
 				"sap/ui/dt/test/ElementEnablementTest.js",
 				"sap/ui/dt/test/ElementEnablementTest2.js",
@@ -1087,6 +1091,21 @@
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/Plugin.js",
 				"sap/ui/thirdparty/jquery.js"
+			]
+		},
+		{
+			"name": "plugin/ToolHooks-dbg.js",
+			"module": "sap/ui/dt/plugin/ToolHooks.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/dt/Plugin.js"
+			]
+		},
+		{
+			"name": "plugin/ToolHooks.js",
+			"module": "sap/ui/dt/plugin/ToolHooks.js",
+			"required": [
+				"sap/ui/dt/Plugin.js"
 			]
 		},
 		{

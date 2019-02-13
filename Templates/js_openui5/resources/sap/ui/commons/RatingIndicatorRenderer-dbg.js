@@ -5,8 +5,8 @@
  */
 
 // Provides default renderer for control sap.ui.commons.RatingIndicator
-sap.ui.define(['jquery.sap.global'],
-	function(jQuery) {
+sap.ui.define(['sap/ui/core/theming/Parameters'],
+	function(Parameters) {
 	"use strict";
 
 
@@ -21,12 +21,11 @@ sap.ui.define(['jquery.sap.global'],
 	 * Renders the HTML for the given control, using the provided {@link sap.ui.core.RenderManager}.
 	 *
 	 * @param {sap.ui.core.RenderManager}
-	 *          oRenderManager the RenderManager that can be used for writing to the Render-Output-Buffer
+	 *          rm the RenderManager that can be used for writing to the Render-Output-Buffer
 	 * @param {sap.ui.core.Control}
 	 *          oRating an object representation of the control that should be rendered
 	 */
-	RatingIndicatorRenderer.render = function(oRenderManager, oRating) {
-		var rm = oRenderManager;
+	RatingIndicatorRenderer.render = function(rm, oRating) {
 		var iNumberOfSymbols = oRating.getMaxValue();
 
 		rm.write("<div");
@@ -178,7 +177,7 @@ sap.ui.define(['jquery.sap.global'],
 		}
 
 		if (!sIcon) {
-			sIcon = sap.ui.core.theming.Parameters._getThemeImage(sParam);
+			sIcon = Parameters._getThemeImage(sParam);
 		}
 
 		return sIcon;

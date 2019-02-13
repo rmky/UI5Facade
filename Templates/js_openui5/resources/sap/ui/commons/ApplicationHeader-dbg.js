@@ -6,24 +6,29 @@
 
 // Provides control sap.ui.commons.ApplicationHeader.
 sap.ui.define([
-    'jquery.sap.global',
     './library',
     'sap/ui/core/Control',
     './Image',
     './TextView',
     './Button',
-    "./ApplicationHeaderRenderer"
+    './ApplicationHeaderRenderer',
+    'sap/ui/core/library'
 ],
 	function(
-	    jQuery,
 		library,
 		Control,
 		Image,
 		TextView,
 		Button,
-		ApplicationHeaderRenderer
+		ApplicationHeaderRenderer,
+		coreLibrary
 	) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.core.AccessibleRole
+	var AccessibleRole = coreLibrary.AccessibleRole;
 
 
 
@@ -36,7 +41,7 @@ sap.ui.define([
 	 * @class
 	 * The application header control stands on the top of any application page. It consists of 4 areas: Logo area, Function area provided by application, Search area, Logout area.
 	 * @extends sap.ui.core.Control
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -125,7 +130,7 @@ sap.ui.define([
 		this.oLogo.setParent(this);
 		this.oLogoText && this.oLogoText.destroy();
 		this.oLogoText = new TextView(appHeaderId + "-logoText");
-		this.oLogoText.setAccessibleRole(sap.ui.core.AccessibleRole.Heading);
+		this.oLogoText.setAccessibleRole(AccessibleRole.Heading);
 		this.oLogoText.setParent(this);
 
 		//Log off button
@@ -184,4 +189,4 @@ sap.ui.define([
 
 	return ApplicationHeader;
 
-}, /* bExport= */ true);
+});

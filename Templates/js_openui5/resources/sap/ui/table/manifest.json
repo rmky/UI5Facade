@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.60.1"
+      "version": "1.61.2"
     },
     "title": "Table-like controls, mainly for desktop scenarios.",
     "description": "Table-like controls, mainly for desktop scenarios.",
@@ -22,13 +22,13 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.60",
+      "minUI5Version": "1.61",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.60.1"
+          "minVersion": "1.61.2"
         },
         "sap.ui.unified": {
-          "minVersion": "1.60.1"
+          "minVersion": "1.61.2"
         }
       }
     },

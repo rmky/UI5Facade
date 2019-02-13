@@ -30,11 +30,12 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.fl.variants.util.VariantUtil
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @experimental Since 1.56.0
 	 */
-	var sVariantParameterName = "sap-ui-fl-control-variant-id";
+
 	var VariantUtil = {
+		variantTechnicalParameterName: "sap-ui-fl-control-variant-id",
 
 		initializeHashRegister: function () {
 			this._oHashRegister = {
@@ -58,8 +59,8 @@ sap.ui.define([
 				oHashChanger.attachEvent("hashChanged", VariantUtil._navigationHandler, this);
 
 				// de-register method to process hash changes
-				var fnOriginalDestroy = this.oComponent.destroy;
-				this.oComponent.destroy = function () {
+				var fnOriginalDestroy = this.oAppComponent.destroy;
+				this.oAppComponent.destroy = function () {
 					// deregister navigation filter if ushell is available
 					VariantUtil._setOrUnsetCustomNavigationForParameter.call(this, false);
 					// detach handler to check if hash was replaced
@@ -70,7 +71,7 @@ sap.ui.define([
 					this.oVariantController.resetMap();
 					// destroy VariantModel
 					this.destroy();
-					fnOriginalDestroy.apply(this.oComponent, arguments);
+					fnOriginalDestroy.apply(this.oAppComponent, arguments);
 				}.bind(this);
 
 				VariantUtil._navigationHandler.call(this);
@@ -89,14 +90,28 @@ sap.ui.define([
 			}
 			if (mPropertyBag.updateURL) {
 				flUtils.setTechnicalURLParameterValues(
-					mPropertyBag.component || this.oComponent,
-					sVariantParameterName,
+					mPropertyBag.component || this.oAppComponent,
+					VariantUtil.variantTechnicalParameterName,
 					mPropertyBag.parameters
 				);
 			}
 			if (!mPropertyBag.ignoreRegisterUpdate) {
 				this._oHashRegister.hashParams[this._oHashRegister.currentIndex] = mPropertyBag.parameters;
 			}
+		},
+
+		/**
+		 * Returns control variant technical parameter for the passed component.
+		 *
+		 * @param  {object} oComponent - Component instance used to get the technical parameters
+		 * @returns {string|undefined} Returns the control variant technical parameter
+		 */
+		getCurrentControlVariantId: function(oComponent) {
+			var aTechnicalParameters = flUtils.getTechnicalParametersForComponent(oComponent);
+			return aTechnicalParameters
+				&& aTechnicalParameters[VariantUtil.variantTechnicalParameterName]
+				&& Array.isArray(aTechnicalParameters[VariantUtil.variantTechnicalParameterName])
+				&& aTechnicalParameters[VariantUtil.variantTechnicalParameterName][0];
 		},
 
 		_handleHashReplaced: function (oEvent) {
@@ -146,7 +161,7 @@ sap.ui.define([
 					// get URL hash parameters
 					var mHashParameters = flUtils.getParsedURLHash() && flUtils.getParsedURLHash().params;
 					aVariantParamValues = (
-						mHashParameters && mHashParameters[sVariantParameterName]
+						mHashParameters && mHashParameters[VariantUtil.variantTechnicalParameterName]
 					) || [];
 
 					// check if variant management control for previously existing register entry exists
@@ -205,8 +220,8 @@ sap.ui.define([
 			// - undefined parameters will be equal and return false
 			var bSuppressDefaultNavigation = oOldParsed
 				&& oNewParsed
-				&& (oOldParsed.params.hasOwnProperty(sVariantParameterName) || oNewParsed.params.hasOwnProperty(sVariantParameterName))
-				&& !deepEqual(oOldParsed.params[sVariantParameterName], oNewParsed.params[sVariantParameterName]);
+				&& (oOldParsed.params.hasOwnProperty(VariantUtil.variantTechnicalParameterName) || oNewParsed.params.hasOwnProperty(VariantUtil.variantTechnicalParameterName))
+				&& !deepEqual(oOldParsed.params[VariantUtil.variantTechnicalParameterName], oNewParsed.params[VariantUtil.variantTechnicalParameterName]);
 
 			// checkpoint 2:
 			// - other keys except 'appSpecificRoute' and 'params' should match
@@ -230,7 +245,7 @@ sap.ui.define([
 				bSuppressDefaultNavigation =
 					// true returned from some() if other parameters exist, which is then negated
 					!( [oOldParsed, oNewParsed].some(function (oParsedHash) {
-							if (oParsedHash.params.hasOwnProperty(sVariantParameterName)) {
+							if (oParsedHash.params.hasOwnProperty(VariantUtil.variantTechnicalParameterName)) {
 								// If parameter exists but it's not the only one, it's invalid
 								return Object.keys(oParsedHash.params).length > 1;
 							}

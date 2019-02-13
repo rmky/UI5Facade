@@ -96,6 +96,7 @@ function (jQuery, ManagedObject, Analyzer, CoreFacade,
 		sap.ui.getCore().registerPlugin({
 			startPlugin: function (oCore) {
 				that._supportModeConfig = aSupportModeConfig = aSupportModeConfig || oCore.getConfiguration().getSupportMode();
+				CommunicationBus.bSilentMode = aSupportModeConfig.indexOf("silent") > -1;
 				that._setCommunicationSubscriptions();
 
 				// If the current page is inside of an iframe don't start the Support tool.
@@ -195,69 +196,65 @@ function (jQuery, ManagedObject, Analyzer, CoreFacade,
 	 * @private
 	 */
 	Main.prototype._setCommunicationSubscriptions = function () {
-		// If configuration contains 'silent' there must be no subscription
-		// for temporary rules
-		if (this._supportModeConfig.indexOf("silent") < 0) {
 
-			CommunicationBus.subscribe(channelNames.VERIFY_CREATE_RULE, function (tempRuleSerialized) {
-				var oTempRule = RuleSerializer.deserialize(tempRuleSerialized),
-					oTempRuleSet = RuleSetLoader.getRuleSet(constants.TEMP_RULESETS_NAME).ruleset,
-					sResult = oTempRuleSet.addRule(oTempRule);
+		CommunicationBus.subscribe(channelNames.VERIFY_CREATE_RULE, function (tempRuleSerialized) {
+			var oTempRule = RuleSerializer.deserialize(tempRuleSerialized),
+				oTempRuleSet = RuleSetLoader.getRuleSet(constants.TEMP_RULESETS_NAME).ruleset,
+				sResult = oTempRuleSet.addRule(oTempRule);
 
-				CommunicationBus.publish(channelNames.VERIFY_RULE_CREATE_RESULT, {
-					result: sResult,
-					newRule: RuleSerializer.serialize(oTempRule)
-				});
+			CommunicationBus.publish(channelNames.VERIFY_RULE_CREATE_RESULT, {
+				result: sResult,
+				newRule: RuleSerializer.serialize(oTempRule)
+			});
 
-			}, this);
+		}, this);
 
-			CommunicationBus.subscribe(channelNames.VERIFY_UPDATE_RULE, function (data) {
-				var oTempRule = RuleSerializer.deserialize(data.updateObj),
-					oTempRuleSet = RuleSetLoader.getRuleSet(constants.TEMP_RULESETS_NAME).ruleset,
-					sResult = oTempRuleSet.updateRule(data.oldId, oTempRule);
+		CommunicationBus.subscribe(channelNames.VERIFY_UPDATE_RULE, function (data) {
+			var oTempRule = RuleSerializer.deserialize(data.updateObj),
+				oTempRuleSet = RuleSetLoader.getRuleSet(constants.TEMP_RULESETS_NAME).ruleset,
+				sResult = oTempRuleSet.updateRule(data.oldId, oTempRule);
 
-				CommunicationBus.publish(channelNames.VERIFY_RULE_UPDATE_RESULT, {
-					result: sResult,
-					updateRule: RuleSerializer.serialize(oTempRule)
-				});
-			}, this);
+			CommunicationBus.publish(channelNames.VERIFY_RULE_UPDATE_RESULT, {
+				result: sResult,
+				updateRule: RuleSerializer.serialize(oTempRule)
+			});
+		}, this);
 
-			CommunicationBus.subscribe(channelNames.DELETE_RULE,function (data) {
-				var oTempRule = RuleSerializer.deserialize(data),
-					oTempRuleSet = RuleSetLoader.getRuleSet(constants.TEMP_RULESETS_NAME).ruleset;
+		CommunicationBus.subscribe(channelNames.DELETE_RULE,function (data) {
+			var oTempRule = RuleSerializer.deserialize(data),
+				oTempRuleSet = RuleSetLoader.getRuleSet(constants.TEMP_RULESETS_NAME).ruleset;
 
-				oTempRuleSet.removeRule(oTempRule);
-			}, this);
+			oTempRuleSet.removeRule(oTempRule);
+		}, this);
 
-			CommunicationBus.subscribe(channelNames.OPEN_URL, function (url) {
-				var win = window.open(url, "_blank");
-				win.focus();
-			}, this);
+		CommunicationBus.subscribe(channelNames.OPEN_URL, function (url) {
+			var win = window.open(url, "_blank");
+			win.focus();
+		}, this);
 
-			CommunicationBus.subscribe(channelNames.ON_DOWNLOAD_REPORT_REQUEST, function (reportConstants) {
-				var data = this._getReportData(reportConstants);
-				sap.ui.require(["sap/ui/support/supportRules/report/ReportProvider"], function (ReportProvider) {
-					ReportProvider.downloadReportZip(data);
-				});
-			}, this);
+		CommunicationBus.subscribe(channelNames.ON_DOWNLOAD_REPORT_REQUEST, function (reportConstants) {
+			var data = this._getReportData(reportConstants);
+			sap.ui.require(["sap/ui/support/supportRules/report/ReportProvider"], function (ReportProvider) {
+				ReportProvider.downloadReportZip(data);
+			});
+		}, this);
 
-			CommunicationBus.subscribe(channelNames.HIGHLIGHT_ELEMENT, function (id) {
-				var $domElem = sap.ui.getCore().byId(id).$();
-				$domElem.css("background-color", "red");
-			}, this);
+		CommunicationBus.subscribe(channelNames.HIGHLIGHT_ELEMENT, function (id) {
+			var $domElem = sap.ui.getCore().byId(id).$();
+			$domElem.css("background-color", "red");
+		}, this);
 
-			CommunicationBus.subscribe(channelNames.TREE_ELEMENT_MOUSE_ENTER, function (elementId) {
-				Highlighter.highlight(elementId);
-			}, this);
+		CommunicationBus.subscribe(channelNames.TREE_ELEMENT_MOUSE_ENTER, function (elementId) {
+			Highlighter.highlight(elementId);
+		}, this);
 
-			CommunicationBus.subscribe(channelNames.TREE_ELEMENT_MOUSE_OUT, function () {
-				Highlighter.hideHighLighter();
-			}, this);
+		CommunicationBus.subscribe(channelNames.TREE_ELEMENT_MOUSE_OUT, function () {
+			Highlighter.hideHighLighter();
+		}, this);
 
-			CommunicationBus.subscribe(channelNames.TOGGLE_FRAME_HIDDEN, function (hidden) {
-				IFrameController.toggleHide(hidden);
-			}, this);
-		}
+		CommunicationBus.subscribe(channelNames.TOGGLE_FRAME_HIDDEN, function (hidden) {
+			IFrameController.toggleHide(hidden);
+		}, this);
 
 		CommunicationBus.subscribe(channelNames.POST_UI_INFORMATION, function (data) {
 			this._oDataCollector.setSupportAssistantLocation(data.location);
@@ -316,14 +313,15 @@ function (jQuery, ManagedObject, Analyzer, CoreFacade,
 	};
 
 	 /**
-	 *Analyzes all rules in the given execution scope.
+	 * Analyzes all rules in the given execution scope.
 	 *
 	 * @private
 	 * @param {object} oExecutionScope The scope of the analysis
-	  * @param {object|string|object[]} [vPresetOrRules=All rules] The preset or system preset ID or rules against which the analysis will be run
+	 * @param {object|string|object[]} [vPresetOrRules=All rules] The preset or system preset ID or rules against which the analysis will be run
+	 * @param {object} [oMetadata] Metadata in custom format. Its only purpose is to be included in the analysis report.
 	 * @returns {Promise} Notifies the finished state by starting the Analyzer
 	 */
-	Main.prototype.analyze = function (oExecutionScope, vPresetOrRules) {
+	Main.prototype.analyze = function (oExecutionScope, vPresetOrRules, oMetadata) {
 		var that = this;
 
 		if (this._oAnalyzer && this._oAnalyzer.running()) {
@@ -342,6 +340,14 @@ function (jQuery, ManagedObject, Analyzer, CoreFacade,
 
 		// Set default values
 		oExecutionScope = oExecutionScope || {type: "global"};
+
+		// Include custom metadata in reports
+		if (oMetadata) {
+			// sanitize the metadata, so that there is no way to pass malicious functions
+			this._oAnalysisMetadata = JSON.parse(JSON.stringify(oMetadata));
+		} else {
+			this._oAnalysisMetadata = null;
+		}
 
 		var vRuleDescriptors;
 		if (vPresetOrRules && vPresetOrRules.selections) {

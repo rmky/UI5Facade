@@ -32,10 +32,10 @@ sap.ui.define([
 	 * @class Variant Model implementation for JSON format
 	 * @extends sap.ui.model.json.JSONModel
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @param {object} oData either the URL where to load the JSON from or a JS object
 	 * @param {object} oFlexController the FlexController instance for the component which uses the variant model
-	 * @param {object} oComponent Component instance that is currently loading
+	 * @param {object} oAppComponent Application component instance that is currently loading
 	 * @param {boolean} bObserve whether to observe the JSON data for property changes (experimental)
 	 * @constructor
 	 * @private
@@ -47,13 +47,13 @@ sap.ui.define([
 
 	var VariantModel = JSONModel.extend("sap.ui.fl.variants.VariantModel", /** @lends sap.ui.fl.variants.VariantModel.prototype */
 	{
-		constructor: function(oData, oFlexController, oComponent, bObserve) {
+		constructor: function(oData, oFlexController, oAppComponent, bObserve) {
 			this.pSequentialImportCompleted = Promise.resolve();
 			JSONModel.apply(this, arguments);
 
 			this.bObserve = bObserve;
 			this.oFlexController = oFlexController;
-			this.oComponent = oComponent;
+			this.oAppComponent = oAppComponent;
 			this.oVariantController = undefined;
 			this._oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.fl");
 
@@ -87,7 +87,7 @@ sap.ui.define([
 	 * Updates the storage of the current variant for a given variant management control
 	 * @param {String} sVariantManagementReference - Variant management reference
 	 * @param {String} sNewVariantReference - Newly selected variant reference
-	 * @param {sap.ui.core.Component} [oAppComponent] - App Component responsible for the variant management reference
+	 * @param {sap.ui.core.Component} [oAppComponent] - Application component responsible for the variant management reference
 	 *
 	 * @returns {Promise} Returns Promise that resolves after the variant is updated
 	 * @private
@@ -102,27 +102,20 @@ sap.ui.define([
 		// Triggered from _handleCurrentVariantChange
 		if (this.oData[sVariantManagementReference].modified) {
 			aVariantControlChanges = this.oVariantController.getVariantChanges(sVariantManagementReference, sCurrentVariantReference, true);
-			this._removeDirtyChanges(aVariantControlChanges, sVariantManagementReference, sCurrentVariantReference, oAppComponent);
+			this._removeDirtyChanges(aVariantControlChanges, sVariantManagementReference, sCurrentVariantReference, oAppComponent || this.oAppComponent);
 			this.oData[sVariantManagementReference].modified = false;
 		}
 
 		var mPropertyBag = {
 			variantManagementReference: sVariantManagementReference,
 			currentVariantReference: sCurrentVariantReference,
-			newVariantReference: sNewVariantReference,
-			// either an array of embedded and application components OR only the the application component
-			component: oAppComponent
-			|| (
-				Array.isArray(this._oEmbeddedComponents)
-					? this._oEmbeddedComponents.concat([this.oComponent]) // embedded components with application component
-					: this.oComponent // application component
-			)
+			newVariantReference: sNewVariantReference
 		};
 		mChangesToBeSwitched = this.oFlexController._oChangePersistence.loadSwitchChangesMapForComponent(mPropertyBag);
 
 		return Promise.resolve()
-			.then(this.oFlexController.revertChangesOnControl.bind(this.oFlexController, mChangesToBeSwitched.aRevert, mChangesToBeSwitched.component))
-			.then(this.oFlexController.applyVariantChanges.bind(this.oFlexController, mChangesToBeSwitched.aNew, mChangesToBeSwitched.component))
+			.then(this.oFlexController.revertChangesOnControl.bind(this.oFlexController, mChangesToBeSwitched.changesToBeReverted, oAppComponent || this.oAppComponent))
+			.then(this.oFlexController.applyVariantChanges.bind(this.oFlexController, mChangesToBeSwitched.changesToBeApplied, oAppComponent || this.oAppComponent))
 			.then(function() {
 				this.oData[sVariantManagementReference].originalCurrentVariant = sNewVariantReference;
 				this.oData[sVariantManagementReference].currentVariant = sNewVariantReference;
@@ -555,13 +548,13 @@ sap.ui.define([
 
 			if (mPropertyBag.changeType === "setDefault") {
 				mNewChangeData.fileType = "ctrl_variant_management_change";
-				mNewChangeData.selector = {id : sVariantManagementReference};
+				mNewChangeData.selector = JsControlTreeModifier.getSelector(sVariantManagementReference, mPropertyBag.appComponent);
 			} else {
 				if (mPropertyBag.changeType === "setTitle") {
 					BaseChangeHandler.setTextInChange(mNewChangeData, "title", mPropertyBag.title, "XFLD");
 				}
 				mNewChangeData.fileType = "ctrl_variant_change";
-				mNewChangeData.selector = {id : mPropertyBag.variantReference};
+				mNewChangeData.selector = JsControlTreeModifier.getSelector(mPropertyBag.variantReference,  mPropertyBag.appComponent);
 			}
 
 			oChange = this.oFlexController.createBaseChange(mNewChangeData, mPropertyBag.appComponent);
@@ -727,7 +720,7 @@ sap.ui.define([
 			}
 			var aConfigurationChanges = this.collectModelChanges(oData.variantManagementReference, Utils.getCurrentLayer(true));
 			aConfigurationChanges.forEach(function(oChangeProperties) {
-				oChangeProperties.appComponent = this.oComponent;
+				oChangeProperties.appComponent = this.oAppComponent;
 				this._setVariantProperties(oData.variantManagementReference, oChangeProperties, true);
 			}.bind(this));
 			this.oFlexController._oChangePersistence.saveDirtyChanges();
@@ -747,7 +740,7 @@ sap.ui.define([
 		var oVariantManagementControl = oEvent.getSource();
 		var bSetDefault = oEvent.getParameter("def");
 		var oAppComponent = Utils.getAppComponentForControl(oVariantManagementControl);
-		var sVariantManagementReference = this._getLocalId(oVariantManagementControl.getId(), oAppComponent);
+		var sVariantManagementReference = this.getLocalId(oVariantManagementControl.getId(), oAppComponent);
 		var sSourceVariantReference = this.getCurrentVariantReference(sVariantManagementReference);
 		var aVariantChanges = this.oVariantController.getVariantChanges(sVariantManagementReference, sSourceVariantReference, true);
 
@@ -803,8 +796,14 @@ sap.ui.define([
 		}
 	};
 
-	VariantModel.prototype._getLocalId = function(sId, oAppComponent) {
+	VariantModel.prototype.getLocalId = function(sId, oAppComponent) {
 		return JsControlTreeModifier.getSelector(sId, oAppComponent).id;
+	};
+
+	VariantModel.prototype.getVariantManagementReferenceForControl = function(oVariantManagementControl) {
+		var sControlId = oVariantManagementControl.getId();
+		var oAppComponent = Utils.getAppComponentForControl(oVariantManagementControl);
+		return (oAppComponent && oAppComponent.getLocalId(sControlId)) || sControlId;
 	};
 
 	VariantModel.prototype.switchToDefaultForVariantManagement = function (sVariantManagementReference) {
@@ -826,9 +825,7 @@ sap.ui.define([
 	};
 
 	VariantModel.prototype.registerToModel = function(oVariantManagementControl) {
-		var sVariantManagementReference =
-			this._getLocalId(oVariantManagementControl, Utils.getAppComponentForControl(oVariantManagementControl));
-
+		var sVariantManagementReference = this.getVariantManagementReferenceForControl(oVariantManagementControl);
 		this._ensureStandardVariantExists(sVariantManagementReference);
 
 		if (oVariantManagementControl) {
@@ -848,13 +845,6 @@ sap.ui.define([
 				VariantUtil.attachHashHandlers.call(this, sVariantManagementReference);
 			}
 		}
-	};
-
-	VariantModel.prototype.addEmbeddedComponent = function (oComponent) {
-		if (!Array.isArray(this._oEmbeddedComponents)) {
-			this._oEmbeddedComponents = [];
-		}
-		this._oEmbeddedComponents.push(oComponent);
 	};
 
 	return VariantModel;

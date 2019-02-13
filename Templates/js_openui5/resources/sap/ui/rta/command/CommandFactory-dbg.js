@@ -313,9 +313,8 @@ function(
 			var bIsUiElement = vElement instanceof ManagedObject;
 
 			if (sCommand !== "appDescriptor" && sCommand !== "composite"){
-				mSettings = Object.assign({}, mSettings, {
-					selector : bIsUiElement ? null : vElement
-				});
+				// sap.ui.rta.command.BaseCommand do not require a selector property
+				mSettings = Object.assign({}, mSettings, !bIsUiElement && {selector : vElement});
 			}
 
 			mSettings = Object.assign({}, mSettings, {
@@ -373,7 +372,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @private

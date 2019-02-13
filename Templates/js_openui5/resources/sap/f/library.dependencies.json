@@ -11,33 +11,49 @@
     {
       "name" : "sap/f/AvatarRenderer.js",
       "description" : "Provides default renderer for control sap.f.Avatar",
-      "size" : 3664,
-      "compressedSize" : 1744,
+      "size" : 3864,
+      "compressedSize" : 1775,
       "required" : ["sap/base/security/encodeXML.js", "sap/f/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/f/Card.js",
-      "description" : "Provides control sap.f.Card.",
-      "size" : 10594,
-      "compressedSize" : 2850,
-      "required" : ["sap/base/Log.js", "sap/f/CardRenderer.js", "sap/f/cards/CardComponent.js", "sap/f/library.js", "sap/ui/core/ComponentContainer.js", "sap/ui/core/Control.js", "ui5loader-autoconfig.js"],
+      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 10928,
+      "compressedSize" : 5453,
+      "required" : ["sap/base/Log.js", "sap/f/Avatar.js", "sap/f/CardManifest.js", "sap/f/CardRenderer.js", "sap/f/cards/content/List.js", "sap/f/cards/content/Table.js", "sap/f/cards/header/Kpi.js", "sap/f/library.js", "sap/m/Text.js", "sap/ui/Device.js", "sap/ui/core/ComponentContainer.js", "sap/ui/core/Control.js", "sap/ui/core/Manifest.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/f/CardManifest.js",
+      "description" : "@class CardManifest  UI5 independent implementation of a CardManifest reader.  Usage Sample with translation  1. Load the Manifest Json 2. Create Instance var myCardManifest = new CardManifest(oManifestJson); 3. Create and Register a Translator myCardManifest.get(\"sap.card/i18n\"); //load the resource bundle in the given language and create a translator object //   the object only needs to implement getText(sKey) which returns the value. myCardManifest.registerTranslator(oTranslator); 4. Get the title myCardManifest.get(\"sap.card/title\")",
+      "size" : 2445,
+      "compressedSize" : 1053,
+      "required" : ["ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/f/CardRenderer.js",
       "description" : "Provides default renderer for control sap.f.Card",
-      "size" : 8677,
-      "compressedSize" : 3471,
-      "required" : ["sap/base/security/encodeXML.js", "sap/f/library.js", "sap/ui/core/IconPool.js", "ui5loader-autoconfig.js"],
+      "size" : 6203,
+      "compressedSize" : 2662,
+      "required" : ["sap/base/security/encodeCSS.js", "sap/base/security/encodeXML.js", "sap/f/library.js", "sap/ui/core/IconPool.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/f/DynamicPage.js",
       "description" : "Provides control sap.f.DynamicPage.",
-      "size" : 61854,
-      "compressedSize" : 25358,
-      "required" : ["sap/base/Log.js", "sap/f/DynamicPageRenderer.js", "sap/f/DynamicPageTitle.js", "sap/f/library.js", "sap/m/ScrollBar.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/delegate/ScrollEnablement.js", "sap/ui/dom/getScrollbarSize.js", "ui5loader-autoconfig.js"],
+      "size" : 64635,
+      "compressedSize" : 26111,
+      "required" : ["sap/base/Log.js", "sap/f/DynamicPageRenderer.js", "sap/f/DynamicPageTitle.js", "sap/f/library.js", "sap/m/ScrollBar.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/delegate/ScrollEnablement.js", "sap/ui/core/library.js", "sap/ui/dom/getScrollbarSize.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/f/DynamicPageAccessibleLandmarkInfo.js",
+      "description" : "Provides control sap.f.DynamicPageAccessibleLandmarkInfo.",
+      "size" : 4058,
+      "compressedSize" : 858,
+      "required" : ["sap/f/library.js", "sap/ui/core/Element.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
@@ -51,40 +67,40 @@
     {
       "name" : "sap/f/DynamicPageHeaderRenderer.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 2259,
-      "compressedSize" : 1011,
+      "size" : 2264,
+      "compressedSize" : 1013,
       "required" : ["ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/f/DynamicPageRenderer.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 4549,
-      "compressedSize" : 2381,
+      "size" : 5226,
+      "compressedSize" : 2694,
       "required" : ["sap/ui/Device.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/f/DynamicPageTitle.js",
       "description" : "Provides control sap.f.DynamicPageTitle.",
-      "size" : 47402,
-      "compressedSize" : 18505,
+      "size" : 47398,
+      "compressedSize" : 18502,
       "required" : ["sap/base/Log.js", "sap/f/DynamicPageTitleRenderer.js", "sap/f/library.js", "sap/m/Button.js", "sap/m/OverflowToolbar.js", "sap/m/Toolbar.js", "sap/m/ToolbarSeparator.js", "sap/m/library.js", "sap/ui/base/ManagedObjectObserver.js", "sap/ui/core/Control.js", "sap/ui/core/HTML.js", "sap/ui/core/InvisibleText.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/f/DynamicPageTitleRenderer.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 9016,
-      "compressedSize" : 4995,
+      "size" : 9031,
+      "compressedSize" : 5001,
       "required" : ["sap/f/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/f/FlexibleColumnLayout.js",
       "description" : "Provides control sap.f.FlexibleColumnLayout.",
-      "size" : 73274,
-      "compressedSize" : 20337,
+      "size" : 73262,
+      "compressedSize" : 20328,
       "required" : ["sap/base/assert.js", "sap/f/FlexibleColumnLayoutRenderer.js", "sap/f/library.js", "sap/m/Button.js", "sap/m/NavContainer.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Configuration.js", "sap/ui/core/Control.js", "sap/ui/core/ResizeHandler.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -99,15 +115,15 @@
     {
       "name" : "sap/f/FlexibleColumnLayoutSemanticHelper.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 19450,
-      "compressedSize" : 4958,
+      "size" : 19442,
+      "compressedSize" : 4952,
       "required" : ["sap/base/assert.js", "sap/f/FlexibleColumnLayout.js", "sap/f/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/f/GridList.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 3660,
+      "size" : 6586,
       "compressedSize" : 1990,
       "required" : ["sap/f/GridListRenderer.js", "sap/m/ListBase.js", "sap/ui/base/ManagedObjectObserver.js", "sap/ui/layout/cssgrid/GridItemLayoutData.js", "sap/ui/layout/cssgrid/GridLayoutDelegate.js", "ui5loader-autoconfig.js"],
       "includes" : []
@@ -115,17 +131,73 @@
     {
       "name" : "sap/f/GridListRenderer.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 1199,
-      "compressedSize" : 779,
+      "size" : 1544,
+      "compressedSize" : 777,
       "required" : ["sap/m/ListBaseRenderer.js", "sap/ui/core/Renderer.js", "sap/ui/layout/cssgrid/GridLayoutBase.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/f/cards/CardComponent.js",
-      "description" : "Base Class for all typed cards",
-      "size" : 1765,
-      "compressedSize" : 751,
+      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 1669,
+      "compressedSize" : 685,
       "required" : ["jquery.sap.global.js", "sap/ui/core/UIComponent.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/f/cards/CardManifest.js",
+      "description" : "@class CardManifest  UI5 independent implementation of a CardManifest reader.  Usage Sample with translation  1. Load the Manifest Json 2. Create Instance var myCardManifest = new CardManifest(oManifestJson); 3. Create and Register a Translator myCardManifest.get(\"sap.card/i18n\"); //load the resource bundle in the given language and create a translator object //   the object only needs to implement getText(sKey) which returns the value. myCardManifest.registerTranslator(oTranslator); 4. Get the title myCardManifest.get(\"sap.card/title\")  @experimental",
+      "size" : 2355,
+      "compressedSize" : 982,
+      "required" : ["ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/f/cards/Data.js",
+      "description" : "Card request handler @experimental",
+      "size" : 1568,
+      "compressedSize" : 937,
+      "required" : ["jquery.sap.global.js", "sap/base/Log.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/f/cards/content/Analytical.js",
+      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 4272,
+      "compressedSize" : 2143,
+      "required" : ["sap/f/cards/Data.js", "sap/m/FlexBox.js", "sap/ui/core/Control.js", "sap/ui/model/json/JSONModel.js", "sap/viz/ui5/controls/VizFrame.js", "sap/viz/ui5/controls/common/feeds/FeedItem.js", "sap/viz/ui5/data/DimensionDefinition.js", "sap/viz/ui5/data/FlattenedDataset.js", "sap/viz/ui5/data/MeasureDefinition.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/f/cards/content/List.js",
+      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 5532,
+      "compressedSize" : 2372,
+      "required" : ["jquery.sap.global.js", "sap/f/cards/Data.js", "sap/m/List.js", "sap/m/StandardListItem.js", "sap/ui/base/ManagedObject.js", "sap/ui/core/Control.js", "sap/ui/model/json/JSONModel.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/f/cards/content/Table.js",
+      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 3426,
+      "compressedSize" : 1922,
+      "required" : ["sap/f/cards/Data.js", "sap/m/Table.js", "sap/ui/core/Control.js", "sap/ui/model/json/JSONModel.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/f/cards/header/Kpi.js",
+      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 5642,
+      "compressedSize" : 2961,
+      "required" : ["sap/f/cards/Data.js", "sap/f/cards/header/KpiRenderer.js", "sap/m/Label.js", "sap/m/NumericContent.js", "sap/m/ObjectNumber.js", "sap/m/Text.js", "sap/m/VBox.js", "sap/ui/core/Control.js", "sap/ui/core/library.js", "sap/ui/model/json/JSONModel.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/f/cards/header/KpiRenderer.js",
+      "description" : "Provides default renderer for control sap.f.Avatar",
+      "size" : 3424,
+      "compressedSize" : 1585,
+      "required" : ["ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
@@ -159,8 +231,8 @@
     {
       "name" : "sap/f/designtime/DynamicPage.designtime.js",
       "description" : "Provides the Design Time Metadata for the sap.f.DynamicPage control",
-      "size" : 961,
-      "compressedSize" : 706,
+      "size" : 1003,
+      "compressedSize" : 733,
       "required" : ["ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -189,14 +261,14 @@
     {
       "name" : "sap/f/designtime/SemanticPage.designtime.js",
       "description" : "Provides the Design Time Metadata for the sap.f.semantic.SemanticPage control",
-      "size" : 10026,
-      "compressedSize" : 5576,
+      "size" : 10071,
+      "compressedSize" : 5603,
       "required" : ["ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/f/designtime/library-preload.designtime.js",
-      "size" : 8082,
+      "size" : 8136,
       "required" : ["ui5loader-autoconfig.js"],
       "includes" : ["sap/f/designtime/Avatar.designtime.js", "sap/f/designtime/DynamicPage.designtime.js", "sap/f/designtime/DynamicPageHeader.designtime.js", "sap/f/designtime/DynamicPageTitle.designtime.js", "sap/f/designtime/SemanticPage.designtime.js", "sap/f/designtime/library.designtime.js"]
     },
@@ -470,21 +542,21 @@
     },
     {
       "name" : "sap/f/library-h2-preload.js",
-      "size" : 11906,
-      "required" : ["jquery.sap.global.js", "sap/base/Log.js", "sap/base/assert.js", "sap/base/security/encodeXML.js", "sap/m/ActionSheet.js", "sap/m/Button.js", "sap/m/InstanceManager.js", "sap/m/ListBase.js", "sap/m/ListBaseRenderer.js", "sap/m/NavContainer.js", "sap/m/OverflowToolbar.js", "sap/m/OverflowToolbarButton.js", "sap/m/OverflowToolbarLayoutData.js", "sap/m/ScrollBar.js", "sap/m/Text.js", "sap/m/Title.js", "sap/m/ToggleButton.js", "sap/m/Toolbar.js", "sap/m/ToolbarSeparator.js", "sap/m/ToolbarSpacer.js", "sap/m/changeHandler/CombineButtons.js", "sap/m/changeHandler/SplitMenuButton.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/Global.js", "sap/ui/base/DataType.js", "sap/ui/base/EventProvider.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/ManagedObjectObserver.js", "sap/ui/base/Metadata.js", "sap/ui/base/Object.js", "sap/ui/core/ComponentContainer.js", "sap/ui/core/Configuration.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/Fragment.js", "sap/ui/core/HTML.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Renderer.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/UIComponent.js", "sap/ui/core/delegate/ScrollEnablement.js", "sap/ui/core/library.js", "sap/ui/core/routing/History.js", "sap/ui/core/routing/Router.js", "sap/ui/core/routing/Target.js", "sap/ui/core/routing/Targets.js", "sap/ui/dom/getScrollbarSize.js", "sap/ui/events/KeyCodes.js", "sap/ui/fl/Utils.js", "sap/ui/layout/cssgrid/GridItemLayoutData.js", "sap/ui/layout/cssgrid/GridLayoutBase.js", "sap/ui/layout/cssgrid/GridLayoutDelegate.js", "sap/ui/support/library.js", "sap/ui/table/library.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
-      "includes" : ["sap/f/library.js", "sap/f/manifest.json", "sap/f/Avatar.js", "sap/f/AvatarRenderer.js", "sap/f/Card.js", "sap/f/CardRenderer.js", "sap/f/DynamicPage.js", "sap/f/DynamicPageHeader.js", "sap/f/DynamicPageHeaderRenderer.js", "sap/f/DynamicPageRenderer.js", "sap/f/DynamicPageTitle.js", "sap/f/DynamicPageTitleRenderer.js", "sap/f/FlexibleColumnLayout.js", "sap/f/FlexibleColumnLayoutRenderer.js", "sap/f/FlexibleColumnLayoutSemanticHelper.js", "sap/f/GridList.js", "sap/f/GridListRenderer.js", "sap/f/cards/CardComponent.js", "sap/f/changeHandler/MoveDynamicPageTitleActions.js", "sap/f/designtime/Avatar.create.fragment.xml", "sap/f/designtime/Avatar.designtime.js", "sap/f/designtime/DynamicPage.create.fragment.xml", "sap/f/designtime/DynamicPage.designtime.js", "sap/f/designtime/DynamicPageHeader.designtime.js", "sap/f/designtime/DynamicPageTitle.designtime.js", "sap/f/designtime/SemanticPage.create.fragment.xml", "sap/f/designtime/SemanticPage.designtime.js", "sap/f/designtime/library.designtime.js", "sap/f/flexibility/DynamicPageTitle.flexibility.js", "sap/f/library.support.js", "sap/f/routing/Router.js", "sap/f/routing/Target.js", "sap/f/routing/TargetHandler.js", "sap/f/routing/Targets.js", "sap/f/routing/async/Target.js", "sap/f/routing/async/Targets.js", "sap/f/rules/Avatar.support.js", "sap/f/rules/DynamicPage.support.js", "sap/f/semantic/AddAction.js", "sap/f/semantic/CloseAction.js", "sap/f/semantic/CopyAction.js", "sap/f/semantic/DeleteAction.js", "sap/f/semantic/DiscussInJamAction.js", "sap/f/semantic/EditAction.js", "sap/f/semantic/ExitFullScreenAction.js", "sap/f/semantic/FavoriteAction.js", "sap/f/semantic/FlagAction.js", "sap/f/semantic/FooterMainAction.js", "sap/f/semantic/FullScreenAction.js", "sap/f/semantic/MainAction.js", "sap/f/semantic/MessagesIndicator.js", "sap/f/semantic/NegativeAction.js", "sap/f/semantic/PositiveAction.js", "sap/f/semantic/PrintAction.js", "sap/f/semantic/SemanticButton.js", "sap/f/semantic/SemanticConfiguration.js", "sap/f/semantic/SemanticContainer.js", "sap/f/semantic/SemanticControl.js", "sap/f/semantic/SemanticFooter.js", "sap/f/semantic/SemanticPage.js", "sap/f/semantic/SemanticPageRenderer.js", "sap/f/semantic/SemanticShareMenu.js", "sap/f/semantic/SemanticTitle.js", "sap/f/semantic/SemanticToggleButton.js", "sap/f/semantic/SendEmailAction.js", "sap/f/semantic/SendMessageAction.js", "sap/f/semantic/ShareInJamAction.js", "sap/f/semantic/TitleMainAction.js"]
+      "size" : 13149,
+      "required" : ["jquery.sap.global.js", "sap/base/Log.js", "sap/base/assert.js", "sap/base/security/encodeCSS.js", "sap/base/security/encodeXML.js", "sap/m/ActionSheet.js", "sap/m/Button.js", "sap/m/FlexBox.js", "sap/m/InstanceManager.js", "sap/m/Label.js", "sap/m/List.js", "sap/m/ListBase.js", "sap/m/ListBaseRenderer.js", "sap/m/NavContainer.js", "sap/m/NumericContent.js", "sap/m/ObjectNumber.js", "sap/m/OverflowToolbar.js", "sap/m/OverflowToolbarButton.js", "sap/m/OverflowToolbarLayoutData.js", "sap/m/ScrollBar.js", "sap/m/StandardListItem.js", "sap/m/Table.js", "sap/m/Text.js", "sap/m/Title.js", "sap/m/ToggleButton.js", "sap/m/Toolbar.js", "sap/m/ToolbarSeparator.js", "sap/m/ToolbarSpacer.js", "sap/m/VBox.js", "sap/m/changeHandler/CombineButtons.js", "sap/m/changeHandler/SplitMenuButton.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/Global.js", "sap/ui/base/DataType.js", "sap/ui/base/EventProvider.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/ManagedObjectObserver.js", "sap/ui/base/Metadata.js", "sap/ui/base/Object.js", "sap/ui/core/ComponentContainer.js", "sap/ui/core/Configuration.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/Fragment.js", "sap/ui/core/HTML.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Manifest.js", "sap/ui/core/Renderer.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/UIComponent.js", "sap/ui/core/delegate/ScrollEnablement.js", "sap/ui/core/library.js", "sap/ui/core/routing/History.js", "sap/ui/core/routing/Router.js", "sap/ui/core/routing/Target.js", "sap/ui/core/routing/Targets.js", "sap/ui/dom/getScrollbarSize.js", "sap/ui/events/KeyCodes.js", "sap/ui/fl/Utils.js", "sap/ui/layout/cssgrid/GridItemLayoutData.js", "sap/ui/layout/cssgrid/GridLayoutBase.js", "sap/ui/layout/cssgrid/GridLayoutDelegate.js", "sap/ui/model/json/JSONModel.js", "sap/ui/support/library.js", "sap/ui/table/library.js", "sap/ui/thirdparty/jquery.js", "sap/viz/ui5/controls/VizFrame.js", "sap/viz/ui5/controls/common/feeds/FeedItem.js", "sap/viz/ui5/data/DimensionDefinition.js", "sap/viz/ui5/data/FlattenedDataset.js", "sap/viz/ui5/data/MeasureDefinition.js", "ui5loader-autoconfig.js"],
+      "includes" : ["sap/f/library.js", "sap/f/manifest.json", "sap/f/Avatar.js", "sap/f/AvatarRenderer.js", "sap/f/Card.js", "sap/f/CardManifest.js", "sap/f/CardRenderer.js", "sap/f/DynamicPage.js", "sap/f/DynamicPageAccessibleLandmarkInfo.js", "sap/f/DynamicPageHeader.js", "sap/f/DynamicPageHeaderRenderer.js", "sap/f/DynamicPageRenderer.js", "sap/f/DynamicPageTitle.js", "sap/f/DynamicPageTitleRenderer.js", "sap/f/FlexibleColumnLayout.js", "sap/f/FlexibleColumnLayoutRenderer.js", "sap/f/FlexibleColumnLayoutSemanticHelper.js", "sap/f/GridList.js", "sap/f/GridListRenderer.js", "sap/f/cards/CardComponent.js", "sap/f/cards/CardManifest.js", "sap/f/cards/Data.js", "sap/f/cards/content/Analytical.js", "sap/f/cards/content/List.js", "sap/f/cards/content/Table.js", "sap/f/cards/header/Kpi.js", "sap/f/cards/header/KpiRenderer.js", "sap/f/changeHandler/MoveDynamicPageTitleActions.js", "sap/f/designtime/Avatar.create.fragment.xml", "sap/f/designtime/Avatar.designtime.js", "sap/f/designtime/DynamicPage.create.fragment.xml", "sap/f/designtime/DynamicPage.designtime.js", "sap/f/designtime/DynamicPageHeader.designtime.js", "sap/f/designtime/DynamicPageTitle.designtime.js", "sap/f/designtime/SemanticPage.create.fragment.xml", "sap/f/designtime/SemanticPage.designtime.js", "sap/f/designtime/library.designtime.js", "sap/f/flexibility/DynamicPageTitle.flexibility.js", "sap/f/library.support.js", "sap/f/routing/Router.js", "sap/f/routing/Target.js", "sap/f/routing/TargetHandler.js", "sap/f/routing/Targets.js", "sap/f/routing/async/Target.js", "sap/f/routing/async/Targets.js", "sap/f/rules/Avatar.support.js", "sap/f/rules/DynamicPage.support.js", "sap/f/semantic/AddAction.js", "sap/f/semantic/CloseAction.js", "sap/f/semantic/CopyAction.js", "sap/f/semantic/DeleteAction.js", "sap/f/semantic/DiscussInJamAction.js", "sap/f/semantic/EditAction.js", "sap/f/semantic/ExitFullScreenAction.js", "sap/f/semantic/FavoriteAction.js", "sap/f/semantic/FlagAction.js", "sap/f/semantic/FooterMainAction.js", "sap/f/semantic/FullScreenAction.js", "sap/f/semantic/MainAction.js", "sap/f/semantic/MessagesIndicator.js", "sap/f/semantic/NegativeAction.js", "sap/f/semantic/PositiveAction.js", "sap/f/semantic/PrintAction.js", "sap/f/semantic/SemanticButton.js", "sap/f/semantic/SemanticConfiguration.js", "sap/f/semantic/SemanticContainer.js", "sap/f/semantic/SemanticControl.js", "sap/f/semantic/SemanticFooter.js", "sap/f/semantic/SemanticPage.js", "sap/f/semantic/SemanticPageRenderer.js", "sap/f/semantic/SemanticShareMenu.js", "sap/f/semantic/SemanticTitle.js", "sap/f/semantic/SemanticToggleButton.js", "sap/f/semantic/SendEmailAction.js", "sap/f/semantic/SendMessageAction.js", "sap/f/semantic/ShareInJamAction.js", "sap/f/semantic/TitleMainAction.js"]
     },
     {
       "name" : "sap/f/library-preload.js",
-      "size" : 155467,
-      "required" : ["jquery.sap.global.js", "sap/base/Log.js", "sap/base/assert.js", "sap/base/security/encodeXML.js", "sap/m/ActionSheet.js", "sap/m/Button.js", "sap/m/InstanceManager.js", "sap/m/ListBase.js", "sap/m/ListBaseRenderer.js", "sap/m/NavContainer.js", "sap/m/OverflowToolbar.js", "sap/m/OverflowToolbarButton.js", "sap/m/OverflowToolbarLayoutData.js", "sap/m/ScrollBar.js", "sap/m/ToggleButton.js", "sap/m/Toolbar.js", "sap/m/ToolbarSeparator.js", "sap/m/ToolbarSpacer.js", "sap/m/changeHandler/CombineButtons.js", "sap/m/changeHandler/SplitMenuButton.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/Global.js", "sap/ui/base/DataType.js", "sap/ui/base/EventProvider.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/ManagedObjectObserver.js", "sap/ui/base/Metadata.js", "sap/ui/base/Object.js", "sap/ui/core/ComponentContainer.js", "sap/ui/core/Configuration.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/HTML.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Renderer.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/UIComponent.js", "sap/ui/core/delegate/ScrollEnablement.js", "sap/ui/core/library.js", "sap/ui/core/routing/History.js", "sap/ui/core/routing/Router.js", "sap/ui/core/routing/Target.js", "sap/ui/core/routing/Targets.js", "sap/ui/dom/getScrollbarSize.js", "sap/ui/events/KeyCodes.js", "sap/ui/fl/Utils.js", "sap/ui/layout/cssgrid/GridItemLayoutData.js", "sap/ui/layout/cssgrid/GridLayoutBase.js", "sap/ui/layout/cssgrid/GridLayoutDelegate.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
-      "includes" : ["sap/f/Avatar.js", "sap/f/AvatarRenderer.js", "sap/f/Card.js", "sap/f/CardRenderer.js", "sap/f/DynamicPage.js", "sap/f/DynamicPageHeader.js", "sap/f/DynamicPageHeaderRenderer.js", "sap/f/DynamicPageRenderer.js", "sap/f/DynamicPageTitle.js", "sap/f/DynamicPageTitleRenderer.js", "sap/f/FlexibleColumnLayout.js", "sap/f/FlexibleColumnLayoutRenderer.js", "sap/f/FlexibleColumnLayoutSemanticHelper.js", "sap/f/GridList.js", "sap/f/GridListRenderer.js", "sap/f/cards/CardComponent.js", "sap/f/changeHandler/MoveDynamicPageTitleActions.js", "sap/f/flexibility/DynamicPageTitle.flexibility.js", "sap/f/library.js", "sap/f/manifest.json", "sap/f/routing/Router.js", "sap/f/routing/Target.js", "sap/f/routing/TargetHandler.js", "sap/f/routing/Targets.js", "sap/f/routing/async/Target.js", "sap/f/routing/async/Targets.js", "sap/f/semantic/AddAction.js", "sap/f/semantic/CloseAction.js", "sap/f/semantic/CopyAction.js", "sap/f/semantic/DeleteAction.js", "sap/f/semantic/DiscussInJamAction.js", "sap/f/semantic/EditAction.js", "sap/f/semantic/ExitFullScreenAction.js", "sap/f/semantic/FavoriteAction.js", "sap/f/semantic/FlagAction.js", "sap/f/semantic/FooterMainAction.js", "sap/f/semantic/FullScreenAction.js", "sap/f/semantic/MainAction.js", "sap/f/semantic/MessagesIndicator.js", "sap/f/semantic/NegativeAction.js", "sap/f/semantic/PositiveAction.js", "sap/f/semantic/PrintAction.js", "sap/f/semantic/SemanticButton.js", "sap/f/semantic/SemanticConfiguration.js", "sap/f/semantic/SemanticContainer.js", "sap/f/semantic/SemanticControl.js", "sap/f/semantic/SemanticFooter.js", "sap/f/semantic/SemanticPage.js", "sap/f/semantic/SemanticPageRenderer.js", "sap/f/semantic/SemanticShareMenu.js", "sap/f/semantic/SemanticTitle.js", "sap/f/semantic/SemanticToggleButton.js", "sap/f/semantic/SendEmailAction.js", "sap/f/semantic/SendMessageAction.js", "sap/f/semantic/ShareInJamAction.js", "sap/f/semantic/TitleMainAction.js"]
+      "size" : 172040,
+      "required" : ["jquery.sap.global.js", "sap/base/Log.js", "sap/base/assert.js", "sap/base/security/encodeCSS.js", "sap/base/security/encodeXML.js", "sap/m/ActionSheet.js", "sap/m/Button.js", "sap/m/FlexBox.js", "sap/m/InstanceManager.js", "sap/m/Label.js", "sap/m/List.js", "sap/m/ListBase.js", "sap/m/ListBaseRenderer.js", "sap/m/NavContainer.js", "sap/m/NumericContent.js", "sap/m/ObjectNumber.js", "sap/m/OverflowToolbar.js", "sap/m/OverflowToolbarButton.js", "sap/m/OverflowToolbarLayoutData.js", "sap/m/ScrollBar.js", "sap/m/StandardListItem.js", "sap/m/Table.js", "sap/m/Text.js", "sap/m/ToggleButton.js", "sap/m/Toolbar.js", "sap/m/ToolbarSeparator.js", "sap/m/ToolbarSpacer.js", "sap/m/VBox.js", "sap/m/changeHandler/CombineButtons.js", "sap/m/changeHandler/SplitMenuButton.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/Global.js", "sap/ui/base/DataType.js", "sap/ui/base/EventProvider.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/ManagedObjectObserver.js", "sap/ui/base/Metadata.js", "sap/ui/base/Object.js", "sap/ui/core/ComponentContainer.js", "sap/ui/core/Configuration.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/HTML.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Manifest.js", "sap/ui/core/Renderer.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/UIComponent.js", "sap/ui/core/delegate/ScrollEnablement.js", "sap/ui/core/library.js", "sap/ui/core/routing/History.js", "sap/ui/core/routing/Router.js", "sap/ui/core/routing/Target.js", "sap/ui/core/routing/Targets.js", "sap/ui/dom/getScrollbarSize.js", "sap/ui/events/KeyCodes.js", "sap/ui/fl/Utils.js", "sap/ui/layout/cssgrid/GridItemLayoutData.js", "sap/ui/layout/cssgrid/GridLayoutBase.js", "sap/ui/layout/cssgrid/GridLayoutDelegate.js", "sap/ui/model/json/JSONModel.js", "sap/ui/thirdparty/jquery.js", "sap/viz/ui5/controls/VizFrame.js", "sap/viz/ui5/controls/common/feeds/FeedItem.js", "sap/viz/ui5/data/DimensionDefinition.js", "sap/viz/ui5/data/FlattenedDataset.js", "sap/viz/ui5/data/MeasureDefinition.js", "ui5loader-autoconfig.js"],
+      "includes" : ["sap/f/Avatar.js", "sap/f/AvatarRenderer.js", "sap/f/Card.js", "sap/f/CardManifest.js", "sap/f/CardRenderer.js", "sap/f/DynamicPage.js", "sap/f/DynamicPageAccessibleLandmarkInfo.js", "sap/f/DynamicPageHeader.js", "sap/f/DynamicPageHeaderRenderer.js", "sap/f/DynamicPageRenderer.js", "sap/f/DynamicPageTitle.js", "sap/f/DynamicPageTitleRenderer.js", "sap/f/FlexibleColumnLayout.js", "sap/f/FlexibleColumnLayoutRenderer.js", "sap/f/FlexibleColumnLayoutSemanticHelper.js", "sap/f/GridList.js", "sap/f/GridListRenderer.js", "sap/f/cards/CardComponent.js", "sap/f/cards/CardManifest.js", "sap/f/cards/Data.js", "sap/f/cards/content/Analytical.js", "sap/f/cards/content/List.js", "sap/f/cards/content/Table.js", "sap/f/cards/header/Kpi.js", "sap/f/cards/header/KpiRenderer.js", "sap/f/changeHandler/MoveDynamicPageTitleActions.js", "sap/f/flexibility/DynamicPageTitle.flexibility.js", "sap/f/library.js", "sap/f/manifest.json", "sap/f/routing/Router.js", "sap/f/routing/Target.js", "sap/f/routing/TargetHandler.js", "sap/f/routing/Targets.js", "sap/f/routing/async/Target.js", "sap/f/routing/async/Targets.js", "sap/f/semantic/AddAction.js", "sap/f/semantic/CloseAction.js", "sap/f/semantic/CopyAction.js", "sap/f/semantic/DeleteAction.js", "sap/f/semantic/DiscussInJamAction.js", "sap/f/semantic/EditAction.js", "sap/f/semantic/ExitFullScreenAction.js", "sap/f/semantic/FavoriteAction.js", "sap/f/semantic/FlagAction.js", "sap/f/semantic/FooterMainAction.js", "sap/f/semantic/FullScreenAction.js", "sap/f/semantic/MainAction.js", "sap/f/semantic/MessagesIndicator.js", "sap/f/semantic/NegativeAction.js", "sap/f/semantic/PositiveAction.js", "sap/f/semantic/PrintAction.js", "sap/f/semantic/SemanticButton.js", "sap/f/semantic/SemanticConfiguration.js", "sap/f/semantic/SemanticContainer.js", "sap/f/semantic/SemanticControl.js", "sap/f/semantic/SemanticFooter.js", "sap/f/semantic/SemanticPage.js", "sap/f/semantic/SemanticPageRenderer.js", "sap/f/semantic/SemanticShareMenu.js", "sap/f/semantic/SemanticTitle.js", "sap/f/semantic/SemanticToggleButton.js", "sap/f/semantic/SendEmailAction.js", "sap/f/semantic/SendMessageAction.js", "sap/f/semantic/ShareInJamAction.js", "sap/f/semantic/TitleMainAction.js"]
     },
     {
       "name" : "sap/f/library-preload.json",
       "size" : 0,
-      "required" : ["jquery.sap.global.js", "sap/base/Log.js", "sap/base/assert.js", "sap/base/security/encodeXML.js", "sap/m/ActionSheet.js", "sap/m/Button.js", "sap/m/InstanceManager.js", "sap/m/ListBase.js", "sap/m/ListBaseRenderer.js", "sap/m/NavContainer.js", "sap/m/OverflowToolbar.js", "sap/m/OverflowToolbarButton.js", "sap/m/OverflowToolbarLayoutData.js", "sap/m/ScrollBar.js", "sap/m/ToggleButton.js", "sap/m/Toolbar.js", "sap/m/ToolbarSeparator.js", "sap/m/ToolbarSpacer.js", "sap/m/changeHandler/CombineButtons.js", "sap/m/changeHandler/SplitMenuButton.js", "sap/m/library-preload.json", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/Global.js", "sap/ui/base/DataType.js", "sap/ui/base/EventProvider.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/ManagedObjectObserver.js", "sap/ui/base/Metadata.js", "sap/ui/base/Object.js", "sap/ui/core/ComponentContainer.js", "sap/ui/core/Configuration.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/HTML.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Renderer.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/UIComponent.js", "sap/ui/core/delegate/ScrollEnablement.js", "sap/ui/core/library-preload.json", "sap/ui/core/library.js", "sap/ui/core/routing/History.js", "sap/ui/core/routing/Router.js", "sap/ui/core/routing/Target.js", "sap/ui/core/routing/Targets.js", "sap/ui/dom/getScrollbarSize.js", "sap/ui/events/KeyCodes.js", "sap/ui/fl/Utils.js", "sap/ui/layout/cssgrid/GridItemLayoutData.js", "sap/ui/layout/cssgrid/GridLayoutBase.js", "sap/ui/layout/cssgrid/GridLayoutDelegate.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
-      "includes" : ["sap/f/Avatar.js", "sap/f/AvatarRenderer.js", "sap/f/Card.js", "sap/f/CardRenderer.js", "sap/f/DynamicPage.js", "sap/f/DynamicPageHeader.js", "sap/f/DynamicPageHeaderRenderer.js", "sap/f/DynamicPageRenderer.js", "sap/f/DynamicPageTitle.js", "sap/f/DynamicPageTitleRenderer.js", "sap/f/FlexibleColumnLayout.js", "sap/f/FlexibleColumnLayoutRenderer.js", "sap/f/FlexibleColumnLayoutSemanticHelper.js", "sap/f/GridList.js", "sap/f/GridListRenderer.js", "sap/f/cards/CardComponent.js", "sap/f/changeHandler/MoveDynamicPageTitleActions.js", "sap/f/flexibility/DynamicPageTitle.flexibility.js", "sap/f/library.js", "sap/f/manifest.json", "sap/f/routing/Router.js", "sap/f/routing/Target.js", "sap/f/routing/TargetHandler.js", "sap/f/routing/Targets.js", "sap/f/routing/async/Target.js", "sap/f/routing/async/Targets.js", "sap/f/semantic/AddAction.js", "sap/f/semantic/CloseAction.js", "sap/f/semantic/CopyAction.js", "sap/f/semantic/DeleteAction.js", "sap/f/semantic/DiscussInJamAction.js", "sap/f/semantic/EditAction.js", "sap/f/semantic/ExitFullScreenAction.js", "sap/f/semantic/FavoriteAction.js", "sap/f/semantic/FlagAction.js", "sap/f/semantic/FooterMainAction.js", "sap/f/semantic/FullScreenAction.js", "sap/f/semantic/MainAction.js", "sap/f/semantic/MessagesIndicator.js", "sap/f/semantic/NegativeAction.js", "sap/f/semantic/PositiveAction.js", "sap/f/semantic/PrintAction.js", "sap/f/semantic/SemanticButton.js", "sap/f/semantic/SemanticConfiguration.js", "sap/f/semantic/SemanticContainer.js", "sap/f/semantic/SemanticControl.js", "sap/f/semantic/SemanticFooter.js", "sap/f/semantic/SemanticPage.js", "sap/f/semantic/SemanticPageRenderer.js", "sap/f/semantic/SemanticShareMenu.js", "sap/f/semantic/SemanticTitle.js", "sap/f/semantic/SemanticToggleButton.js", "sap/f/semantic/SendEmailAction.js", "sap/f/semantic/SendMessageAction.js", "sap/f/semantic/ShareInJamAction.js", "sap/f/semantic/TitleMainAction.js"]
+      "required" : ["jquery.sap.global.js", "sap/base/Log.js", "sap/base/assert.js", "sap/base/security/encodeCSS.js", "sap/base/security/encodeXML.js", "sap/m/ActionSheet.js", "sap/m/Button.js", "sap/m/FlexBox.js", "sap/m/InstanceManager.js", "sap/m/Label.js", "sap/m/List.js", "sap/m/ListBase.js", "sap/m/ListBaseRenderer.js", "sap/m/NavContainer.js", "sap/m/NumericContent.js", "sap/m/ObjectNumber.js", "sap/m/OverflowToolbar.js", "sap/m/OverflowToolbarButton.js", "sap/m/OverflowToolbarLayoutData.js", "sap/m/ScrollBar.js", "sap/m/StandardListItem.js", "sap/m/Table.js", "sap/m/Text.js", "sap/m/ToggleButton.js", "sap/m/Toolbar.js", "sap/m/ToolbarSeparator.js", "sap/m/ToolbarSpacer.js", "sap/m/VBox.js", "sap/m/changeHandler/CombineButtons.js", "sap/m/changeHandler/SplitMenuButton.js", "sap/m/library-preload.json", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/Global.js", "sap/ui/base/DataType.js", "sap/ui/base/EventProvider.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/ManagedObjectObserver.js", "sap/ui/base/Metadata.js", "sap/ui/base/Object.js", "sap/ui/core/ComponentContainer.js", "sap/ui/core/Configuration.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/HTML.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Manifest.js", "sap/ui/core/Renderer.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/UIComponent.js", "sap/ui/core/delegate/ScrollEnablement.js", "sap/ui/core/library-preload.json", "sap/ui/core/library.js", "sap/ui/core/routing/History.js", "sap/ui/core/routing/Router.js", "sap/ui/core/routing/Target.js", "sap/ui/core/routing/Targets.js", "sap/ui/dom/getScrollbarSize.js", "sap/ui/events/KeyCodes.js", "sap/ui/fl/Utils.js", "sap/ui/layout/cssgrid/GridItemLayoutData.js", "sap/ui/layout/cssgrid/GridLayoutBase.js", "sap/ui/layout/cssgrid/GridLayoutDelegate.js", "sap/ui/model/json/JSONModel.js", "sap/ui/thirdparty/jquery.js", "sap/viz/ui5/controls/VizFrame.js", "sap/viz/ui5/controls/common/feeds/FeedItem.js", "sap/viz/ui5/data/DimensionDefinition.js", "sap/viz/ui5/data/FlattenedDataset.js", "sap/viz/ui5/data/MeasureDefinition.js", "ui5loader-autoconfig.js"],
+      "includes" : ["sap/f/Avatar.js", "sap/f/AvatarRenderer.js", "sap/f/Card.js", "sap/f/CardManifest.js", "sap/f/CardRenderer.js", "sap/f/DynamicPage.js", "sap/f/DynamicPageAccessibleLandmarkInfo.js", "sap/f/DynamicPageHeader.js", "sap/f/DynamicPageHeaderRenderer.js", "sap/f/DynamicPageRenderer.js", "sap/f/DynamicPageTitle.js", "sap/f/DynamicPageTitleRenderer.js", "sap/f/FlexibleColumnLayout.js", "sap/f/FlexibleColumnLayoutRenderer.js", "sap/f/FlexibleColumnLayoutSemanticHelper.js", "sap/f/GridList.js", "sap/f/GridListRenderer.js", "sap/f/cards/CardComponent.js", "sap/f/cards/CardManifest.js", "sap/f/cards/Data.js", "sap/f/cards/content/Analytical.js", "sap/f/cards/content/List.js", "sap/f/cards/content/Table.js", "sap/f/cards/header/Kpi.js", "sap/f/cards/header/KpiRenderer.js", "sap/f/changeHandler/MoveDynamicPageTitleActions.js", "sap/f/flexibility/DynamicPageTitle.flexibility.js", "sap/f/library.js", "sap/f/manifest.json", "sap/f/routing/Router.js", "sap/f/routing/Target.js", "sap/f/routing/TargetHandler.js", "sap/f/routing/Targets.js", "sap/f/routing/async/Target.js", "sap/f/routing/async/Targets.js", "sap/f/semantic/AddAction.js", "sap/f/semantic/CloseAction.js", "sap/f/semantic/CopyAction.js", "sap/f/semantic/DeleteAction.js", "sap/f/semantic/DiscussInJamAction.js", "sap/f/semantic/EditAction.js", "sap/f/semantic/ExitFullScreenAction.js", "sap/f/semantic/FavoriteAction.js", "sap/f/semantic/FlagAction.js", "sap/f/semantic/FooterMainAction.js", "sap/f/semantic/FullScreenAction.js", "sap/f/semantic/MainAction.js", "sap/f/semantic/MessagesIndicator.js", "sap/f/semantic/NegativeAction.js", "sap/f/semantic/PositiveAction.js", "sap/f/semantic/PrintAction.js", "sap/f/semantic/SemanticButton.js", "sap/f/semantic/SemanticConfiguration.js", "sap/f/semantic/SemanticContainer.js", "sap/f/semantic/SemanticControl.js", "sap/f/semantic/SemanticFooter.js", "sap/f/semantic/SemanticPage.js", "sap/f/semantic/SemanticPageRenderer.js", "sap/f/semantic/SemanticShareMenu.js", "sap/f/semantic/SemanticTitle.js", "sap/f/semantic/SemanticToggleButton.js", "sap/f/semantic/SendEmailAction.js", "sap/f/semantic/SendMessageAction.js", "sap/f/semantic/ShareInJamAction.js", "sap/f/semantic/TitleMainAction.js"]
     },
     {
       "name" : "sap/f/library-preload.support.js",
@@ -600,7 +672,7 @@
     },
     {
       "name" : "sap/f/messagebundle_fr.properties",
-      "size" : 3874,
+      "size" : 3875,
       "required" : [],
       "includes" : []
     },
@@ -1001,8 +1073,8 @@
     {
       "name" : "sap/f/semantic/SemanticPage.js",
       "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 37480,
-      "compressedSize" : 12394,
+      "size" : 38077,
+      "compressedSize" : 12662,
       "required" : ["sap/f/DynamicPage.js", "sap/f/DynamicPageHeader.js", "sap/f/DynamicPageTitle.js", "sap/f/library.js", "sap/f/semantic/SemanticConfiguration.js", "sap/f/semantic/SemanticFooter.js", "sap/f/semantic/SemanticPageRenderer.js", "sap/f/semantic/SemanticShareMenu.js", "sap/f/semantic/SemanticTitle.js", "sap/m/ActionSheet.js", "sap/m/OverflowToolbar.js", "sap/ui/base/ManagedObject.js", "sap/ui/core/Control.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },

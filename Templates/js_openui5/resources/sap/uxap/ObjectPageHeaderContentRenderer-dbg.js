@@ -127,7 +127,7 @@ sap.ui.define([
 			oRm.write(">");
 
 			if (bHasSeparatorBefore) {
-				oRm.write("<span class=\"sapUxAPObjectPageHeaderSeparatorBefore\"/>");
+				oRm.write("<span class=\"sapUxAPObjectPageHeaderSeparatorBefore\"></span>");
 			}
 
 			if (bIsFirstControl && bRenderTitle) { // render title inside the first contentItem
@@ -145,7 +145,7 @@ sap.ui.define([
 		oRm.renderControl(oHeaderContentItem);
 
 		if (bHasSeparatorAfter) {
-			oRm.write("<span class=\"sapUxAPObjectPageHeaderSeparatorAfter\"/>");
+			oRm.write("<span class=\"sapUxAPObjectPageHeaderSeparatorAfter\"></span>");
 		}
 
 		if (oLayoutData || (bIsFirstControl && bRenderTitle)) {

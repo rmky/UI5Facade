@@ -53,16 +53,20 @@ function(
 				}
 			},
 			renderer: function (oRM, oControl) {
+				var oInnerControl = oControl.getAggregation("item");
+				if (!oInnerControl || !oInnerControl.getVisible()) {
+					return;
+				}
+
 				oRM.write("<div");
 				oRM.writeControlData(oControl);
 				oRM.addClass("sapMHdrCntrItemCntr");
 				oRM.addClass("sapMHrdrCntrInner");
 				oRM.writeClasses();
 				oRM.write(">");
-				oRM.renderControl(oControl.getAggregation("item"));
+				oRM.renderControl(oInnerControl);
 				oRM.write("</div>");
 			}
-
 		});
 
 		/**
@@ -80,7 +84,7 @@ function(
 		 * @since 1.44.0
 		 *
 		 * @author SAP SE
-		 * @version 1.60.1
+		 * @version 1.61.2
 		 *
 		 * @public
 		 * @alias sap.m.HeaderContainer
@@ -479,7 +483,7 @@ function(
 
 		HeaderContainer.prototype._collectItemSize = function () {
 			var iSize = 0,
-				aItems = this.getContent(),
+				aItems = this._filterVisibleItems(),
 				sFnName = this.getOrientation() === Orientation.Horizontal ? "outerWidth" : "outerHeight";
 
 			this._aItemEnd = [];
@@ -499,7 +503,8 @@ function(
 				$prevButton = this.$("prev-button-container"),
 				$nextButton = this.$("next-button-container"),
 				iScroll = bHorizontal ? $scrollContainer[0].scrollLeft : $scrollContainer[0].scrollTop,
-				aItems = this.getContent(), iTarget = 0, iSize = 0, iScrollSize;
+				iTarget = 0, iSize = 0, iScrollSize,
+				aItems = this._filterVisibleItems();
 
 			var fnGetItemPosition = function (iIndex) {
 				var iSize = 0,
@@ -605,8 +610,15 @@ function(
 			}
 		};
 
+		HeaderContainer.prototype._filterVisibleItems = function() {
+			return this.getContent().filter(function(oItem) {
+				return oItem.getVisible();
+			});
+		};
+
 		HeaderContainer.prototype._getFirstItemOffset = function (sType) {
-			var $firstItem = this.getContent()[0] && this.getContent()[0].$(),
+			var oFirstItem = this._filterVisibleItems()[0],
+				$firstItem = oFirstItem && oFirstItem.$(),
 				$parent = $firstItem && $firstItem.parent(),
 				iFirst = $parent && $parent[0] && $parent[0][sType];
 
@@ -748,7 +760,7 @@ function(
 					/*eslint-enable no-nested-ternary */
 					sFnName = bHorizontal ? "width" : "height",
 					iSize = this._getSize(bScrollForward),
-					aItems = this.getContent();
+					aItems = this._filterVisibleItems();
 
 				this._collectItemSize();
 
@@ -792,7 +804,7 @@ function(
 			var iIndex = oEvt.getParameter("index");
 			if (iIndex === 0) {
 				this._scroll(this._getScrollValue(false), this.getScrollTime());
-			} else if (iIndex === this.getContent().length - 1) {
+			} else if (iIndex === this._filterVisibleItems().length - 1) {
 				this._scroll(this._getScrollValue(true), this.getScrollTime());
 			}
 		};

@@ -45,7 +45,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.message.MessageProcessor
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @public
 	 * @alias sap.ui.model.Model
@@ -731,11 +731,9 @@ sap.ui.define([
 	 * @param {sap.ui.model.Binding} oBinding the binding to be removed
 	 */
 	Model.prototype.removeBinding = function(oBinding) {
-		for (var i = 0; i < this.aBindings.length; i++) {
-			if (this.aBindings[i] == oBinding) {
-				this.aBindings.splice(i, 1);
-				break;
-			}
+		var i = this.aBindings.indexOf(oBinding);
+		if (i !== -1) {
+			this.aBindings.splice(i, 1);
 		}
 	};
 

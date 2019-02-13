@@ -3932,7 +3932,8 @@ if (!String.prototype.padEnd) {
 		 *
 		 * @param {boolean} [cfg.async=false]
 		 *   When set to true, <code>sap.ui.require</code> loads modules asynchronously via script tags and
-		 *   <code>sap.ui.define</code> executes asynchronously.
+		 *   <code>sap.ui.define</code> executes asynchronously. To enable this feature, it is recommended to
+		 *   set the attribute <code>data-sap-ui-async="true"</code> on the application bootstrap tag.
 		 *
 		 *   <b>Note:</b> Switching back from async to sync is not supported and trying to do so will throw
 		 *   an <code>Error</code>
@@ -4563,8 +4564,8 @@ if (!String.prototype.padEnd) {
 		if ( window["sap-ui-optimized"] && vDebugInfo ) {
 			// if current sources are optimized and any debug sources should be used, enable the "-dbg" suffix
 			window['sap-ui-loaddbg'] = true;
-			// if debug sources should be used in general, restart with debug URL
-			if ( vDebugInfo === true ) {
+			// if debug sources should be used in general, restart with debug URL (if not disabled, e.g. by test runner)
+			if ( vDebugInfo === true && !window["sap-ui-debug-no-reboot"] ) {
 				var sDebugUrl;
 				if ( sBootstrapUrl != null ) {
 					sDebugUrl = sBootstrapUrl.replace(/\/(?:sap-ui-cachebuster\/)?([^\/]+)\.js/, "/$1-dbg.js");
@@ -4694,7 +4695,7 @@ if (!String.prototype.padEnd) {
 				'signals': 'sap/ui/thirdparty/signals',
 				'URI': 'sap/ui/thirdparty/URI',
 				'URITemplate': 'sap/ui/thirdparty/URITemplate',
-				'esprima': 'sap/ui/demokit/js/esprima'
+				'esprima': 'sap/ui/documentation/sdk/thirdparty/esprima'
 			}
 		},
 
@@ -4876,6 +4877,10 @@ if (!String.prototype.padEnd) {
 				exports: 'Scroller' // 'requestAnimationFrame', 'cancelRequestAnimationFrame', 'core'
 			},
 			'sap/ui/demokit/js/esprima': {
+				amd: true,
+				exports: 'esprima'
+			},
+			'sap/ui/documentation/sdk/thirdparty/esprima': {
 				amd: true,
 				exports: 'esprima'
 			},

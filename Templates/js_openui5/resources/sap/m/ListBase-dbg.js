@@ -86,7 +86,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -240,8 +240,8 @@ function(
 			 *
 			 * There are also some known limitations with respect to the scrolling behavior. A few are given below:
 			 * <ul>
-			 * <li>If the control is placed in certain layout containers, for example, the <code>sap.ui.layout.Grid</code> control,
-			 * the sticky elements of the control are not fixed at the top of the viewport. The control behaves in a similar way when placed within the <code>sap.m.ObjectPage</code> control.</li>
+			 * <li>If the control is placed in layout containers that have the <code>overflow: hidden</code> or <code>overflow: auto</code> style definition, this can
+			 * prevent the sticky elements of the control from becoming fixed at the top of the viewport.</li>
 			 * <li>If sticky column headers are enabled in the <code>sap.m.Table</code> control, setting focus on the column headers will let the table scroll to the top.</li>
 			 * </ul>
 			 * @since 1.58
@@ -2247,8 +2247,8 @@ function(
 		if (this._iStickyValue & 4 /* ColumnHeaders */) {
 			var oTblHeaderDomRef = this.getDomRef("tblHeader").firstChild;
 			var oTblHeaderRect = oTblHeaderDomRef.getBoundingClientRect();
-			iTHRectBottom = parseInt(oTblHeaderRect.bottom, 10);
-			iTHRectHeight = parseInt(oTblHeaderRect.height, 10);
+			iTHRectBottom = parseInt(oTblHeaderRect.bottom);
+			iTHRectHeight = parseInt(oTblHeaderRect.height);
 		}
 
 		if (this._iStickyValue & 2 /* InfoToolbar */) {
@@ -2256,8 +2256,8 @@ function(
 			var oInfoToolbarContainer = this.getDomRef().querySelector(".sapMListInfoTBarContainer");
 			if (oInfoToolbarContainer) {
 				var oInfoToolbarContainerRect = oInfoToolbarContainer.getBoundingClientRect();
-				iInfoTBarContainerRectBottom = parseInt(oInfoToolbarContainerRect.bottom, 10);
-				iInfoTBarContainerRectHeight = parseInt(oInfoToolbarContainerRect.height, 10);
+				iInfoTBarContainerRectBottom = parseInt(oInfoToolbarContainerRect.bottom);
+				iInfoTBarContainerRectHeight = parseInt(oInfoToolbarContainerRect.height);
 			}
 		}
 
@@ -2265,8 +2265,8 @@ function(
 			var oHeaderToolbarDomRef = this.getDomRef().querySelector(".sapMListHdr");
 			if (oHeaderToolbarDomRef) {
 				var oHeaderToolbarRect = oHeaderToolbarDomRef.getBoundingClientRect();
-				iHeaderToolbarRectBottom = parseInt(oHeaderToolbarRect.bottom, 10);
-				iHeaderToolbarRectHeight = parseInt(oHeaderToolbarRect.height, 10);
+				iHeaderToolbarRectBottom = parseInt(oHeaderToolbarRect.bottom);
+				iHeaderToolbarRectHeight = parseInt(oHeaderToolbarRect.height);
 			}
 		}
 

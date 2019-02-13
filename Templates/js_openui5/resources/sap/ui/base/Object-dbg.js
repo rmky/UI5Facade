@@ -24,7 +24,7 @@ sap.ui.define(['./Interface', './Metadata', "sap/base/Log"],
 	 * @class Base class for all SAPUI5 Objects
 	 * @abstract
 	 * @author Malte Wedel
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @public
 	 * @alias sap.ui.base.Object
 	 */

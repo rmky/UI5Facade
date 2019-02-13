@@ -228,7 +228,10 @@ sap.ui.define([
 		parseAsString: false,
 		roundingMode: NumberFormat.RoundingMode.HALF_AWAY_FROM_ZERO,
 		emptyString: NaN,
-		showScale: true
+		showScale: true,
+		// The 'precision' format option is ignored because the number of decimals shouldn't
+		// depend on the number of integer part of a number
+		ignorePrecision: true
 	};
 
 	/*
@@ -287,7 +290,7 @@ sap.ui.define([
 	 * @param {int} [oFormatOptions.minFractionDigits=0] defines minimal number of decimal digits
 	 * @param {int} [oFormatOptions.maxFractionDigits=99] defines maximum number of decimal digits
 	 * @param {int} [oFormatOptions.decimals] defines the number of decimal digits
-	 * @param {int} [oFormatOptions.shortDecimals] defines the number of decimal in the shortified format string. If this isn't specified, the 'decimals' options is used
+	 * @param {int} [oFormatOptions.shortDecimals] defines the number of decimal in the shortened format string. If this isn't specified, the 'decimals' options is used
 	 * @param {int} [oFormatOptions.shortLimit] only use short number formatting for values above this limit
 	 * @param {int} [oFormatOptions.shortRefNumber] @since 1.40 specifies a number from which the scale factor for 'short' or 'long' style format is generated. The generated scale factor is
 	 *  used for all numbers which are formatted with this format instance. This option has effect only when the option 'style' is set to 'short' or 'long'. This option is by default set
@@ -342,7 +345,7 @@ sap.ui.define([
 	 * @param {int} [oFormatOptions.minFractionDigits=0] defines minimal number of decimal digits
 	 * @param {int} [oFormatOptions.maxFractionDigits=0] defines maximum number of decimal digits
 	 * @param {int} [oFormatOptions.decimals] defines the number of decimal digits
-	 * @param {int} [oFormatOptions.shortDecimals] defines the number of decimal in the shortified format string. If this isn't specified, the 'decimals' options is used
+	 * @param {int} [oFormatOptions.shortDecimals] defines the number of decimal in the shortened format string. If this isn't specified, the 'decimals' options is used
 	 * @param {int} [oFormatOptions.shortLimit] only use short number formatting for values above this limit
 	 * @param {int} [oFormatOptions.shortRefNumber] @since 1.40 specifies a number from which the scale factor for 'short' or 'long' style format is generated. The generated scale factor is
 	 *  used for all numbers which are formatted with this format instance. This option has effect only when the option 'style' is set to 'short' or 'long'. This option is by default set
@@ -397,13 +400,12 @@ sap.ui.define([
 	 * @param {int} [oFormatOptions.minFractionDigits] defines minimal number of decimal digits
 	 * @param {int} [oFormatOptions.maxFractionDigits] defines maximum number of decimal digits
 	 * @param {int} [oFormatOptions.decimals] defines the number of decimal digits
-	 * @param {int} [oFormatOptions.shortDecimals] defines the number of decimal in the shortified format string. If this isn't specified, the 'decimals' options is used
+	 * @param {int} [oFormatOptions.shortDecimals] defines the number of decimal in the shortened format string. If this isn't specified, the 'decimals' options is used
 	 * @param {int} [oFormatOptions.shortLimit] only use short number formatting for values above this limit
 	 * @param {int} [oFormatOptions.shortRefNumber] @since 1.40 specifies a number from which the scale factor for 'short' or 'long' style format is generated. The generated scale factor is
 	 *  used for all numbers which are formatted with this format instance. This option has effect only when the option 'style' is set to 'short' or 'long'. This option is by default set
 	 *  with undefined which means the scale factor is selected automatically for each number being formatted.
 	 * @param {boolean} [oFormatOptions.showScale=true] @since 1.40 specifies whether the scale factor is shown in the formatted number. This option takes effect only when the 'style' options is set to either 'short' or 'long'.
-	 * @param {int} [oFormatOptions.precision] defines the number precision, number of decimals is calculated dependent on the integer digits
 	 * @param {string} [oFormatOptions.pattern] CLDR number pattern which is used to format the number
 	 * @param {boolean} [oFormatOptions.groupingEnabled=true] defines whether grouping is enabled (show the grouping separators)
 	 * @param {string} [oFormatOptions.groupingSeparator] defines the used grouping separator
@@ -457,7 +459,7 @@ sap.ui.define([
 	 * @param {int} [oFormatOptions.minFractionDigits] defines minimal number of decimal digits
 	 * @param {int} [oFormatOptions.maxFractionDigits] defines maximum number of decimal digits
 	 * @param {int} [oFormatOptions.decimals] defines the number of decimal digits
-	 * @param {int} [oFormatOptions.shortDecimals] defines the number of decimal in the shortified format string. If this isn't specified, the 'decimals' options is used
+	 * @param {int} [oFormatOptions.shortDecimals] defines the number of decimal in the shortened format string. If this isn't specified, the 'decimals' options is used
 	 * @param {int} [oFormatOptions.shortLimit] only use short number formatting for values above this limit
 	 * @param {int} [oFormatOptions.shortRefNumber] @since 1.40 specifies a number from which the scale factor for 'short' or 'long' style format is generated. The generated scale factor is
 	 *  used for all numbers which are formatted with this format instance. This option has effect only when the option 'style' is set to 'short' or 'long'. This option is by default set
@@ -470,7 +472,7 @@ sap.ui.define([
 	 * @param {int} [oFormatOptions.groupingSize=3] defines the grouping size in digits, the default is three
 	 * @param {int} [oFormatOptions.groupingBaseSize=3] defines the grouping base size in digits, in case it is different from the grouping size (e.g. indian grouping)
 	 * @param {string} [oFormatOptions.decimalSeparator] defines the used decimal separator
-	 * @param {string} [oFormatOptions.customUnits] defines a set of custom units, e.g. {"electric-inductance": {
+	 * @param {map} [oFormatOptions.customUnits] defines a set of custom units, e.g. {"electric-inductance": {
 				"displayName": "henry",
 				"unitPattern-count-one": "{0} H",
 				"unitPattern-count-other": "{0} H",
@@ -522,7 +524,7 @@ sap.ui.define([
 	 * @param {int} [oFormatOptions.minFractionDigits=0] defines minimal number of decimal digits
 	 * @param {int} [oFormatOptions.maxFractionDigits=99] defines maximum number of decimal digits
 	 * @param {int} [oFormatOptions.decimals] defines the number of decimal digits
-	 * @param {int} [oFormatOptions.shortDecimals] defines the number of decimal in the shortified format string. If this isn't specified, the 'decimals' options is used
+	 * @param {int} [oFormatOptions.shortDecimals] defines the number of decimal in the shortened format string. If this isn't specified, the 'decimals' options is used
 	 * @param {int} [oFormatOptions.shortLimit] only use short number formatting for values above this limit
 	 * @param {int} [oFormatOptions.shortRefNumber] @since 1.40 specifies a number from which the scale factor for 'short' or 'long' style format is generated. The generated scale factor is
 	 *  used for all numbers which are formatted with this format instance. This option has effect only when the option 'style' is set to 'short' or 'long'. This option is by default set
@@ -537,7 +539,7 @@ sap.ui.define([
 	 * @param {string} [oFormatOptions.decimalSeparator] defines the used decimal separator
 	 * @param {string} [oFormatOptions.plusSign] defines the used plus symbol
 	 * @param {string} [oFormatOptions.minusSign] defines the used minus symbol
-	 * @param {string{ [oFormatOptions.percentSign] defines the used percent symbol
+	 * @param {string} [oFormatOptions.percentSign] defines the used percent symbol
 	 * @param {boolean} [oFormatOptions.parseAsString=false] @since 1.28.2 defines whether to output string from parse function in order to keep the precision for big numbers. Numbers in scientific notation are parsed
 	 *  back to the standard notation. For example ".5e-3" is parsed to "0.0005".
 	 * @param {string} [oFormatOptions.style=standard] defines the style of format. Valid values are 'short, 'long' or 'standard' (based on CLDR decimalFormat). Numbers are formatted into compact forms when it's set to
@@ -813,6 +815,9 @@ sap.ui.define([
 						&& oOrigOptions.pattern === undefined) {
 						// if none of the options which can affect the decimal digits is set, the default precision is set to 2
 						oOptions.precision = 2;
+						// set the default min/maxFractionDigits after setting the default precision
+						oOptions.minFractionDigits = 0;
+						oOptions.maxFractionDigits = 99;
 					}
 
 					if (oOrigOptions.maxFractionDigits === undefined && oOrigOptions.decimals === undefined) {
@@ -828,7 +833,9 @@ sap.ui.define([
 		}
 
 		// Must be done after calculating the short value, as it depends on the value
-		if (oOptions.precision !== undefined) {
+		// If short format is enabled or the precision isn't ignored, take the precision
+		// option into consideration
+		if ((oShortFormat || !oOptions.ignorePrecision) && oOptions.precision !== undefined) {
 			// the number of decimal digits is calculated using (precision - number of integer digits)
 			// the maxFractionDigits is adapted if the calculated value is smaller than the maxFractionDigits
 			oOptions.maxFractionDigits = Math.min(oOptions.maxFractionDigits, getDecimals(vValue, oOptions.precision));
@@ -905,7 +912,7 @@ sap.ui.define([
 		iLength = sIntegerPart.length;
 
 		if (oOptions.groupingEnabled) {
-			// Speical grouping for lakh crore/crore crore in India
+			// Special grouping for lakh crore/crore crore in India
 			if (bIndianCurrency) {
 				var aGroups = [3, 2, 2], iCurGroupSize, iIndex = 0;
 				iPosition = sIntegerPart.length;
@@ -974,7 +981,7 @@ sap.ui.define([
 				sPattern = sPattern.replace(/'.'/g, ".");
 			}
 
-			// The currency pattern is definde in some locale, for example in "ko", as: ¤#,##0.00;(¤#,##0.00)
+			// The currency pattern is defined in some locale, for example in "ko", as: ¤#,##0.00;(¤#,##0.00)
 			// where the pattern after ';' should be used for negative numbers.
 			// Therefore it's needed to check whether the pattern contains ';' and use the later part for
 			// negative values
@@ -1121,7 +1128,7 @@ sap.ui.define([
 			oDecimalRegExp = new RegExp(sDecimalSeparator, "g"),
 			sPercentSign = this.oLocaleData.getNumberSymbol("percentSign"),
 			bIndianCurrency = oOptions.type === mNumberType.CURRENCY && this.oLocale.getLanguage() === "en" && this.oLocale.getRegion() === "IN",
-			oRegExp, bPercent, sRegExpCurrency, sRegExpCurrencyMeasure, aParsed, sMeasure, sPercentPattern,
+			oRegExp, bPercent, sMeasure, sPercentPattern,
 			vResult = 0,
 			oShort, vEmptyParseValue;
 
@@ -1186,6 +1193,20 @@ sap.ui.define([
 			sValue = oPatternAndResult.numberValue || sValue;
 		}
 
+		if (oOptions.type === mNumberType.CURRENCY) {
+			var mCurrencySymbols = this.oLocaleData.getCurrencySymbols(),
+				oResult = parseNumberAndCurrency(mCurrencySymbols, sValue),
+				sMeasure;
+			if (!oResult) {
+				return null;
+			}
+			sValue = oResult.numberValue;
+			sMeasure = oResult.currencyCode;
+			if (!oOptions.showMeasure && sMeasure) {
+				return null;
+			}
+		}
+
 		if (typeof sValue === "string" || sValue instanceof String) {
 			// remove the RTL special characters before the string is matched with the regex
 			sValue = sValue.replace(/[\u202a\u200e\u202c\u202b\u200f]/g, "");
@@ -1203,36 +1224,11 @@ sap.ui.define([
 		// Check for valid syntax
 		if (oOptions.isInteger && !oShort) {
 			oRegExp = new RegExp(sRegExpInt);
-		} else if (oOptions.type === mNumberType.CURRENCY) {
-			sRegExpCurrencyMeasure = "[^\\d\\s+-]*";
-			sRegExpCurrency = "(?:^(" + sRegExpCurrencyMeasure + ")" + sRegExpFloat.substring(1, sRegExpFloat.length - 1) + "$)|(?:^" + sRegExpFloat.substring(1, sRegExpFloat.length - 1) + "(" + sRegExpCurrencyMeasure + ")\\s*$)";
-			oRegExp = new RegExp(sRegExpCurrency);
 		} else {
 			oRegExp = new RegExp(sRegExpFloat);
 		}
 		if (!oRegExp.test(sValue)) {
 			return oOptions.type === mNumberType.CURRENCY || oOptions.type === mNumberType.UNIT ? null : NaN;
-		}
-
-		if (oOptions.type === mNumberType.CURRENCY) {
-			aParsed = oRegExp.exec(sValue);
-			// checks whether the currency code (symbol) is at the beginning or end of the string
-			if (aParsed[2]) {
-				// currency code is at the beginning
-				sValue = aParsed[2];
-				sMeasure = aParsed[1] || undefined;
-			} else {
-				// currency code is at the end
-				sValue = aParsed[3];
-				sMeasure = aParsed[4] || undefined;
-			}
-			if (sMeasure && !oOptions.showMeasure) {
-				return null;
-			}
-
-			if (sMeasure) {
-				sMeasure = this.oLocaleData.getCurrencyCodeBySymbol(sMeasure) || sMeasure;
-			}
 		}
 
 		// Remove grouping separator and replace locale dependant decimal separator,
@@ -1251,7 +1247,7 @@ sap.ui.define([
 		}
 
 		if (oOptions.isInteger) {
-			vResult = oOptions.parseAsString ? sValue : parseInt(sValue, 10);
+			vResult = oOptions.parseAsString ? sValue : parseInt(sValue);
 		} else {
 			sValue = sValue.replace(oDecimalRegExp, ".");
 			if (sValue.indexOf(sPercentSign) !== -1) {
@@ -1295,7 +1291,7 @@ sap.ui.define([
 		sBase = aResult[2].replace(/\./g,"");
 		iDecimalLength = aResult[3] ? aResult[3].length : 0;
 		iFractionLength = aResult[4] ? aResult[4].length : 0;
-		iExponent = parseInt(aResult[5], 10);
+		iExponent = parseInt(aResult[5]);
 
 		if (iExponent > 0) {
 			if (iExponent < iFractionLength) {
@@ -1459,7 +1455,7 @@ sap.ui.define([
 		}
 
 		if (!sCldrFormat || sCldrFormat == "0") {
-			//no format or special "0" format => number doesn't need to be shortified
+			//no format or special "0" format => number doesn't need to be shortened
 			return undefined;
 		} else {
 			oShortFormat = {};
@@ -1483,7 +1479,7 @@ sap.ui.define([
 				}
 			} else {
 				//value pattern has not be recognized
-				//we cannot shortify
+				//we cannot shorten
 				return undefined;
 			}
 		}
@@ -1628,7 +1624,7 @@ sap.ui.define([
 		}
 
 		sRoundingMode = sRoundingMode || NumberFormat.RoundingMode.HALF_AWAY_FROM_ZERO;
-		iMaxFractionDigits = parseInt(iMaxFractionDigits, 10);
+		iMaxFractionDigits = parseInt(iMaxFractionDigits);
 
 		if (typeof sRoundingMode === "function") {
 			// Support custom function for rounding the number
@@ -1748,6 +1744,47 @@ sap.ui.define([
 		}
 
 		return oBestMatch;
+	}
+
+	/**
+	 * Parses number and currency
+	 *
+	 * Sarch for the currency symbol first, looking for the longest match. In case no currency
+	 * symbol is found, search for a three letter currency code.
+	 *
+	 * @param {object} mCurrencyCodes
+	 * @param {string} sValue
+	 *
+	 * @return {object} return object containing numberValue and currencyCode or null
+	 */
+	function parseNumberAndCurrency(mCurrencyCodes, sValue) {
+		var rMatchExp = /(^[A-Z]{3}|[A-Z]{3}$)/,
+			sSymbol = "", sCode, sCurCode, sCurSymbol, aResult;
+
+		// Search for known symbols (longest match)
+		for (sCurCode in mCurrencyCodes) {
+			sCurSymbol = mCurrencyCodes[sCurCode];
+			if (sValue.indexOf(sCurSymbol) >= 0 && sSymbol.length < sCurSymbol.length) {
+				sSymbol = sCurSymbol;
+				sCode = sCurCode;
+			}
+		}
+
+		// Search for three letter currency code
+		if (!sCode) {
+			aResult = sValue.match(rMatchExp);
+			sCode = aResult && aResult[0];
+		}
+
+		// Remove symbol/code from value
+		if (sCode) {
+			sValue = sValue.replace(sSymbol || sCode, "");
+		}
+
+		return {
+			numberValue: sValue,
+			currencyCode: sCode || undefined
+		};
 	}
 
 

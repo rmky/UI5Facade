@@ -40,7 +40,7 @@ sap.ui.define([
 	 * Provides methods to show or hide a waiting animation covering the whole
 	 * page and blocking user interaction.
 	 * @namespace
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @public
 	 * @alias sap.ui.core.BusyIndicator
 	 */
@@ -206,8 +206,8 @@ sap.ui.define([
 		}
 
 		if ((iDelay === undefined)
-				|| ((iDelay != 0) && (parseInt(iDelay, 10) == 0))
-				|| (parseInt(iDelay, 10) < 0)) {
+				|| ((iDelay != 0) && (parseInt(iDelay) == 0))
+				|| (parseInt(iDelay) < 0)) {
 			iDelay = this.iDEFAULT_DELAY_MS;
 		}
 		if (FESR.getActive()) {

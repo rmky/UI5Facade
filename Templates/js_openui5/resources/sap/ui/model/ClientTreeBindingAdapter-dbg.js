@@ -63,7 +63,7 @@ sap.ui.define([
 		};
 
 		ClientTreeBindingAdapter.prototype.setNumberOfExpandedLevels = function (iNumberOfExpandedLevels) {
-			this._iNumberOfExpandedLevels = parseInt(iNumberOfExpandedLevels, 10);
+			this._iNumberOfExpandedLevels = parseInt(iNumberOfExpandedLevels);
 		};
 
 		ClientTreeBindingAdapter.prototype.getNumberOfExpandedLevels = function () {

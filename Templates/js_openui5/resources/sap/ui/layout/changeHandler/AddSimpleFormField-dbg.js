@@ -6,8 +6,13 @@
 
 sap.ui.define([
 	"sap/ui/fl/Utils",
-	"sap/ui/fl/changeHandler/ChangeHandlerMediator"
-], function(Utils, ChangeHandlerMediator) {
+	"sap/ui/fl/changeHandler/ChangeHandlerMediator",
+	"sap/ui/fl/changeHandler/Base"
+], function(
+	Utils,
+	ChangeHandlerMediator,
+	Base
+) {
 	"use strict";
 
 	/**
@@ -19,7 +24,7 @@ sap.ui.define([
 	 *
 	 * @author SAP SE
 	 *
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @experimental Since 1.49.0 This class is experimental and provides only limited functionality. Also the API might be
 	 *               changed in future.
@@ -70,7 +75,8 @@ sap.ui.define([
 			return  bContentPresent && bMandatoryContentPresent;
 		};
 
-		var oModifier = mPropertyBag.modifier;
+		var oModifier = mPropertyBag.modifier,
+			oAppComponent = mPropertyBag.appComponent;
 
 		if (fnCheckChangeDefinition(oChangeDefinition)) {
 			var oChangeContent = oChangeDefinition.content;
@@ -85,6 +91,7 @@ sap.ui.define([
 			var iIndexOfHeader = aContent.indexOf(oTargetContainerHeader);
 			var iNewIndex = 0;
 			var iFormElementIndex = 0;
+			var oCreatedControls;
 
 			// This logic is for insertIndex being a desired index of a form element inside a container
 			// However we cannot allow that new fields are added inside other FormElements, therefore
@@ -118,18 +125,23 @@ sap.ui.define([
 			}
 
 			var mCreateProperties = {
-				"appComponent" : mPropertyBag.appComponent,
+				"appComponent" : oAppComponent,
 				"view" : mPropertyBag.view,
 				"fieldSelector" : oFieldSelector,
 				"bindingPath" : sBindingPath
 			};
 
-			var oCreatedControls = fnChangeHandlerCreateFunction(oModifier, mCreateProperties);
+			// Check if the change is applicable
+			if	(oModifier.bySelector(oFieldSelector, oAppComponent)) {
+				return Base.markAsNotApplicable("Control to be created already exists:" + oFieldSelector);
+			}
+			oCreatedControls = fnChangeHandlerCreateFunction(oModifier, mCreateProperties);
+
 			var mCreatedControlSelectors = {};
 			if (oCreatedControls.label && oCreatedControls.control) {
-				mCreatedControlSelectors.label = oModifier.getSelector(oCreatedControls.label, mPropertyBag.appComponent);
+				mCreatedControlSelectors.label = oModifier.getSelector(oCreatedControls.label, oAppComponent);
 			}
-			mCreatedControlSelectors.control = oModifier.getSelector(oCreatedControls.control, mPropertyBag.appComponent);
+			mCreatedControlSelectors.control = oModifier.getSelector(oCreatedControls.control, oAppComponent);
 			oChange.setRevertData(mCreatedControlSelectors);
 
 			aContentClone.splice(iNewIndex, 0, oCreatedControls.label, oCreatedControls.control);

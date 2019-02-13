@@ -598,6 +598,7 @@ sap.ui.define([
 		if (oOH._hasIcon()) {
 			oRM.write("<div"); // Start icon container
 			oRM.addClass("sapMOHIcon");
+			oRM.addClass('sapMOHIcon' + oOH.getImageShape());
 			if (oOH.getIconActive()) {
 				oRM.writeAttribute("tabindex", "0");
 				oRM.addClass("sapMPointer");
@@ -890,6 +891,7 @@ sap.ui.define([
 			oRM.write("<div");
 			oRM.writeAttribute("id", oControl.getId() + "-titleIcon");
 			oRM.addClass("sapMOHRIcon");
+			oRM.addClass('sapMOHRIcon' + oControl.getImageShape());
 			if ((Device.system.phone && Device.orientation.portrait)) {
 				oRM.addClass("sapMOHRHideIcon");
 			}

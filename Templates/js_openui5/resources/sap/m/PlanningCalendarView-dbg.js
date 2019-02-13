@@ -24,7 +24,7 @@ sap.ui.define(['sap/ui/core/Element', './library', 'sap/ui/unified/library'],
 	 * The <code>PlanningCalendarView</code> defines the type of the intervals (hours, days, months)
 	 * and how many intervals are displayed.
 	 * @extends sap.ui.core.Element
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public

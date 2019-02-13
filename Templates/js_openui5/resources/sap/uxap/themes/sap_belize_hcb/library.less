@@ -27,8 +27,7 @@
 }
 
 /* L fullscreen paddings */
-html.sapUiMedia-Std-Desktop .sapUxAPAnchorBar.sapMTB,
-html.sapUiMedia-Std-Desktop .sapMSplitContainer.sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapMTB /* overriding selector for desktop in split-container */
+html .sapUxAPObjectPageLayout-Std-Desktop .sapUxAPAnchorBar.sapMTB
 {
 	padding-left: 2rem;
 }
@@ -167,8 +166,8 @@ html[data-sap-ui-browser^="ed"] {
 }
 
 /* TODO remove after 1.62 version */
-html[data-sap-ui-browser^="ie"].sapUiMedia-Std-Tablet .sapUiSizeCompact,
-html[data-sap-ui-browser^="ed"].sapUiMedia-Std-Tablet .sapUiSizeCompact {
+html[data-sap-ui-browser^="ie"] .sapUiSizeCompact .sapUxAPObjectPageLayout-Std-Tablet,
+html[data-sap-ui-browser^="ed"] .sapUiSizeCompact .sapUxAPObjectPageLayout-Std-Tablet{
 	.sapUxAPAnchorBar.sapUxAPAnchorBarOverflow .sapUxAPHierarchicalSelect.sapMSltIconOnly:not(.sapMSltPressed):focus .sapMSltIcon,
 	.sapUxAPAnchorBar.sapUxAPAnchorBarOverflow .sapUxAPHierarchicalSelect.sapMSltIconOnly:not(.sapMSltExpanded):active .sapMSltIcon,
 	.sapUxAPAnchorBar.sapUxAPAnchorBarOverflow .sapUxAPHierarchicalSelect.sapMSltIconOnly.sapMSltPressed:not(.sapMSltExpanded) .sapMSltIcon {
@@ -270,12 +269,12 @@ html.sap-desktop .sapUxAPHierarchicalSelect {
 	color: @sapUiListTextColor;
 }
 
-.sapUiMedia-Std-Phone .sapUxAPHierarchicalSelect .sapMSltArrow,
-.sapUiMedia-Std-Phone .sapUiSizeCompact .sapUxAPHierarchicalSelect .sapMSltArrow {
+.sapUxAPObjectPageLayout-Std-Phone .sapUxAPHierarchicalSelect .sapMSltArrow,
+.sapUiSizeCompact .sapUxAPObjectPageLayout-Std-Phone .sapUxAPHierarchicalSelect .sapMSltArrow {
 	width: 3rem;
 }
 
-.sapUiMedia-Std-Phone .sapUxAPHierarchicalSelect.sapMSltHoverable > .sapMSltArrow,
+.sapUxAPObjectPageLayout-Std-Phone .sapUxAPHierarchicalSelect.sapMSltHoverable > .sapMSltArrow,
 html .sapUiContainer-Narrow .sapUxAPHierarchicalSelect.sapMSltHoverable > .sapMSltArrow {
 	border-left: none;
 }
@@ -314,7 +313,7 @@ html .sapUiContainer-Narrow .sapUxAPHierarchicalSelect.sapMSltHoverable > .sapMS
 }
 
 /* styling needed to achieve underline of the select label on phone */
-html.sapUiMedia-Std-Phone, html.sap-phone, html .sapUiContainer-Narrow {
+html .sapUxAPObjectPageLayout-Std-Phone, html.sap-phone, html .sapUiContainer-Narrow {
 	.sapMSltPressed > .sapMSltArrow {
 		background: @sapUiFieldActiveBackground;
 	}
@@ -338,7 +337,7 @@ html.sapUiMedia-Std-Phone, html.sap-phone, html .sapUiContainer-Narrow {
 
 /* styling needed to achieve underline of the select label on phone on Android 4.4.2
 (this is specific for webview (Fiori client) and Chrome browser) */
-html[data-sap-ui-browser^="cr4"].sapUiMedia-Std-Phone,
+html[data-sap-ui-browser^="cr4"] .sapUxAPObjectPageLayout-Std-Phone,
 html[data-sap-ui-browser^="cr4"].sap-phone {
 	.sapUxAPHierarchicalSelect .sapMSltLabel {
 		box-shadow: inset 0 -0.125rem @sapUiObjectHeaderBorderColor;
@@ -389,8 +388,8 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 	font-size: @sapMFontMediumSize;
 }
 
-.sapUiMedia-Std-Phone .sapUiSizeCompact.sapUxAPObjectPageHeaderLockBtn .sapMBtn,
-.sapUiMedia-Std-Phone .sapUiSizeCompact.sapUxAPObjectPageHeaderChangesBtn .sapMBtn {
+.sapUxAPObjectPageLayout-Std-Phone .sapUiSizeCompact.sapUxAPObjectPageHeaderLockBtn .sapMBtn,
+.sapUxAPObjectPageLayout-Std-Phone .sapUiSizeCompact.sapUxAPObjectPageHeaderChangesBtn .sapMBtn {
 	margin-top: -0.3rem;
 }
 
@@ -405,8 +404,7 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 	padding-bottom: 1rem;
 }
 
-html.sapUiMedia-StdExt-LargeDesktop .sapUiSizeCompact .sapUxAPObjectPageHeaderIdentifier, /* Fullscreen, Large Desktop - specific padding */
-html .sapUiSizeCompact .sapUiContainer-ExtraWide .sapUxAPObjectPageHeaderIdentifier {
+html .sapUiSizeCompact .sapUiContainer-ExtraWide .sapUxAPObjectPageHeaderIdentifier { /* Fullscreen, Large Desktop - specific padding */
 	.sapUxAPObjectPageHeaderIdentifierActions {
 		&.sapUxAPObjectPageHeaderIdentifierActionsForce, .sapUxAPObjectPageHeaderStickied & {
 			right: 2.25rem;
@@ -439,7 +437,7 @@ html .sapUiSizeCompact .sapUiContainer-ExtraWide .sapUxAPObjectPageHeaderIdentif
 	padding: 0;
 }
 
-html.sapUiMedia-Std-Desktop, html.sapUiMedia-Std-Tablet {
+html .sapUxAPObjectPageLayout-Std-Desktop, html .sapUxAPObjectPageLayout-Std-Tablet {
 	.sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderObjectImage-Circle .sapUxAPObjectPageHeaderObjectImage {
 		border-width: 0.188rem;
 		margin-right: 2rem;
@@ -458,13 +456,13 @@ html.sapUiMedia-Std-Desktop, html.sapUiMedia-Std-Tablet {
 	font-size: 3rem;
 }
 
-.sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUiIcon,
-.sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUxAPObjectPageHeaderPlaceholder.sapUxAPObjectPageHeaderObjectImage .sapUiIcon {
+.sapUxAPObjectPageLayout-Std-Tablet .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUiIcon,
+.sapUxAPObjectPageLayout-Std-Tablet .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUxAPObjectPageHeaderPlaceholder.sapUxAPObjectPageHeaderObjectImage .sapUiIcon {
 	font-size: 3rem;
 }
 
-.sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUiIcon,
-.sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUxAPObjectPageHeaderPlaceholder.sapUxAPObjectPageHeaderObjectImage .sapUiIcon {
+.sapUxAPObjectPageLayout-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUiIcon,
+.sapUxAPObjectPageLayout-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUxAPObjectPageHeaderPlaceholder.sapUxAPObjectPageHeaderObjectImage .sapUiIcon {
 	font-size: 1.5rem;
 }
 /* END "ObjectPageHeaderContent.less" */

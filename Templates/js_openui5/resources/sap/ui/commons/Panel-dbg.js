@@ -5,9 +5,17 @@
  */
 
 // Provides control sap.ui.commons.Panel.
-sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./PanelRenderer"],
-	function(jQuery, library, Control, PanelRenderer) {
+sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/base/assert', './library', 'sap/ui/core/Control', './PanelRenderer', 'sap/ui/core/ResizeHandler', 'sap/ui/core/Title'],
+	function(jQuery, assert, library, Control, PanelRenderer, ResizeHandler, Title) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.commons.enums.BorderDesign
+	var BorderDesign = library.enums.BorderDesign;
+
+	// shortcut for sap.ui.commons.enums.AreaDesign
+	var AreaDesign = library.enums.AreaDesign;
 
 
 
@@ -23,7 +31,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -80,13 +88,13 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 			 * Determines the background color.
 			 * Note that color settings are theme-dependent.
 			 */
-			areaDesign : {type : "sap.ui.commons.enums.AreaDesign", group : "Appearance", defaultValue : sap.ui.commons.enums.AreaDesign.Fill},
+			areaDesign : {type : "sap.ui.commons.enums.AreaDesign", group : "Appearance", defaultValue : AreaDesign.Fill},
 
 			/**
 			 * Determines if the Panel can have a box as border.
 			 * Note that displaying borders is theme-dependent.
 			 */
-			borderDesign : {type : "sap.ui.commons.enums.BorderDesign", group : "Appearance", defaultValue : sap.ui.commons.enums.BorderDesign.Box},
+			borderDesign : {type : "sap.ui.commons.enums.BorderDesign", group : "Appearance", defaultValue : BorderDesign.Box},
 
 			/**
 			 * Determines whether the Panel will have an icon for collapsing/expanding, or not.
@@ -173,7 +181,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 	Panel.prototype.onBeforeRendering = function() {
 		// Deregister resize event before re-rendering
 		if (this.sResizeListenerId) {
-			sap.ui.core.ResizeHandler.deregister(this.sResizeListenerId);
+			ResizeHandler.deregister(this.sResizeListenerId);
 			this.sResizeListenerId = null;
 		}
 	};
@@ -184,23 +192,22 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 	 * @private
 	 */
 	Panel.prototype.onAfterRendering = function () {
-		var id = this.getId();
-		this._oScrollDomRef = jQuery.sap.domById(id + "-cont");
+		this._oScrollDomRef = this.getDomRef("cont");
 		if (!this._oScrollDomRef) {
 			return;
 		} // BugFix for TwoGo where the DomRefs were not there after rendering
-		this._oHeaderDomRef = jQuery.sap.domById(id + "-hdr");
-		this._oTitleDomRef = jQuery.sap.domById(id + "-title");
-		this._oToolbarDomRef = jQuery.sap.domById(id + "-tb");
+		this._oHeaderDomRef = this.getDomRef("hdr");
+		this._oTitleDomRef = this.getDomRef("title");
+		this._oToolbarDomRef = this.getDomRef("tb");
 
 		// restore focus if required
 		if (this._bFocusCollapseIcon) {
 			this._bFocusCollapseIcon = false;
-			var $collArrow = jQuery.sap.byId(id + "-collArrow");
+			var $collArrow = this.$("collArrow");
 			if ($collArrow.is(":visible") && ($collArrow.css("visibility") == "visible" || $collArrow.css("visibility") == "inherit")) {
 				$collArrow.focus();
 			} else {
-				var $collIco = jQuery.sap.byId(id + "-collIco");
+				var $collIco = this.$("collIco");
 				if ($collIco.is(":visible") && ($collIco.css("visibility") == "visible" || $collIco.css("visibility") == "inherit")) {
 					$collIco.focus();
 				}
@@ -212,7 +219,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 		// in browsers not supporting the FlexBoxLayout we need to listen to resizing
 		if (Panel._isSizeSet(this.getHeight()) && (this._hasIcon() || (this.getButtons().length > 0))) {
 			this._handleResizeNow();
-			this.sResizeListenerId = sap.ui.core.ResizeHandler.register(this.getDomRef(), jQuery.proxy(this._handleResizeSoon, this));
+			this.sResizeListenerId = ResizeHandler.register(this.getDomRef(), jQuery.proxy(this._handleResizeSoon, this));
 		}
 	};
 
@@ -227,11 +234,11 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 
 		// if collapse icon needs to be focused, find out which one - if any - is currently visible
 		if (this._bFocusCollapseIcon) {
-			var $collArrow = jQuery.sap.byId(id + "-collArrow");
+			var $collArrow = this.$("collArrow");
 			if ($collArrow.is(":visible") && ($collArrow.css("visibility") == "visible" || $collArrow.css("visibility") == "inherit")) {
 				collId = $collArrow[0].id;
 			} else {
-				var $collIco = jQuery.sap.byId(id + "-collIco");
+				var $collIco = this.$("collIco");
 				if ($collIco.is(":visible") && ($collIco.css("visibility") == "visible" || $collIco.css("visibility") == "inherit")) {
 					collId = $collIco[0].id;
 				}
@@ -250,7 +257,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 	 */
 	Panel.prototype.applyFocusInfo = function (oFocusInfo) {
 		var $DomRef;
-		if (oFocusInfo && oFocusInfo.id && ($DomRef = jQuery.sap.byId(oFocusInfo.id)) && ($DomRef.length > 0)) {
+		if (oFocusInfo && oFocusInfo.id && ($DomRef = jQuery(document.getElementById(oFocusInfo.id))) && ($DomRef.length > 0)) {
 			$DomRef.focus();
 		} else {
 			this.focus();
@@ -357,13 +364,13 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 	 */
 	Panel.prototype._handleResizeSoon = function() {
 		if (this._resizeDelayTimer) {
-			jQuery.sap.clearDelayedCall(this._resizeDelayTimer);
+			clearTimeout(this._resizeDelayTimer);
 		}
 
-		this._resizeDelayTimer = jQuery.sap.delayedCall(200, this, function() {
+		this._resizeDelayTimer = setTimeout(function() {
 			this._handleResizeNow();
 			this._resizeDelayTimer = null;
-		});
+		}.bind(this), 200);
 	};
 
 
@@ -528,7 +535,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 	 */
 	Panel.prototype.setText = function(sText) {
 		if (!this.getTitle()) {
-			this.setTitle(new sap.ui.core.Title(this.getId() + "-tit",{text:sText}));
+			this.setTitle(new Title(this.getId() + "-tit",{text:sText}));
 		} else {
 			this.getTitle().setText(sText);
 		}
@@ -567,7 +574,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 			} else {
 				scrollLeft = jQuery(this._oScrollDomRef).scrollLeft();
 			}
-			jQuery.sap.assert(typeof scrollLeft == "number", "scrollLeft read from DOM should be a number");
+			assert(typeof scrollLeft == "number", "scrollLeft read from DOM should be a number");
 			this.setProperty("scrollLeft", scrollLeft, true);
 		}
 
@@ -641,7 +648,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 	 * @public
 	 */
 	Panel.prototype.setDimensions = function (sWidth, sHeight) {
-		jQuery.sap.assert(typeof sWidth == "string" && typeof sHeight == "string", "sWidth and sHeight must be strings");
+		assert(typeof sWidth == "string" && typeof sHeight == "string", "sWidth and sHeight must be strings");
 		this.setWidth(sWidth); // does not rerender
 		this.setHeight(sHeight);
 		return this;
@@ -728,4 +735,4 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/core/Control', "./Panel
 
 	return Panel;
 
-}, /* bExport= */ true);
+});

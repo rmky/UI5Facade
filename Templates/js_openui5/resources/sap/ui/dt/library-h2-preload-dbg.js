@@ -3,9 +3,9 @@
  * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.predefine('sap/ui/dt/library',["sap/ui/dt/SelectionMode",'sap/ui/core/library'],function(){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.dt",version:"1.60.1",dependencies:["sap.ui.core"],types:["sap.ui.dt.SelectionMode"],interfaces:[],controls:[],elements:[]});return sap.ui.dt;},true);
+sap.ui.predefine('sap/ui/dt/library',["sap/ui/dt/SelectionMode",'sap/ui/core/library'],function(){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.dt",version:"1.61.2",dependencies:["sap.ui.core"],types:["sap.ui.dt.SelectionMode"],interfaces:[],controls:[],elements:[]});return sap.ui.dt;},true);
 sap.ui.require.preload({
-	"sap/ui/dt/manifest.json":'{"_version":"1.9.0","sap.app":{"id":"sap.ui.dt","type":"library","embeds":[],"applicationVersion":{"version":"1.60.1"},"title":"SAP UI library: sap.ui.dt (by SAP, Author)","description":"SAP UI library: sap.ui.dt (by SAP, Author)","ach":"CA-UI5-FL-RTA","resources":"resources.json","offline":true},"sap.ui":{"technology":"UI5","supportedThemes":["base","sap_hcb"]},"sap.ui5":{"dependencies":{"minUI5Version":"1.60","libs":{"sap.ui.core":{"minVersion":"1.60.1"}}},"library":{"i18n":false,"content":{"controls":[],"elements":[],"types":["sap.ui.dt.SelectionMode"],"interfaces":[]}}}}'
+	"sap/ui/dt/manifest.json":'{"_version":"1.9.0","sap.app":{"id":"sap.ui.dt","type":"library","embeds":[],"applicationVersion":{"version":"1.61.2"},"title":"SAP UI library: sap.ui.dt (by SAP, Author)","description":"SAP UI library: sap.ui.dt (by SAP, Author)","ach":"CA-UI5-FL-RTA","resources":"resources.json","offline":true},"sap.ui":{"technology":"UI5","supportedThemes":["base","sap_hcb"]},"sap.ui5":{"dependencies":{"minUI5Version":"1.61","libs":{"sap.ui.core":{"minVersion":"1.61.2"}}},"library":{"i18n":false,"content":{"controls":[],"elements":[],"types":["sap.ui.dt.SelectionMode"],"interfaces":[]}}}}'
 },"sap/ui/dt/library-h2-preload"
 );
 sap.ui.loader.config({depCacheUI5:{
@@ -38,6 +38,7 @@ sap.ui.loader.config({depCacheUI5:{
 "sap/ui/dt/plugin/ElementMover.js":["sap/ui/base/ManagedObject.js","sap/ui/base/Object.js","sap/ui/dt/DOMUtil.js","sap/ui/dt/ElementUtil.js","sap/ui/dt/OverlayUtil.js"],
 "sap/ui/dt/plugin/MouseSelection.js":["sap/ui/dt/Plugin.js"],
 "sap/ui/dt/plugin/TabHandling.js":["sap/ui/dom/jquery/Selectors.js","sap/ui/dt/Overlay.js","sap/ui/dt/OverlayRegistry.js","sap/ui/dt/Plugin.js","sap/ui/thirdparty/jquery.js"],
+"sap/ui/dt/plugin/ToolHooks.js":["sap/ui/dt/Plugin.js"],
 "sap/ui/dt/test/Element.js":["sap/ui/dt/DOMUtil.js","sap/ui/dt/ElementUtil.js","sap/ui/dt/OverlayRegistry.js","sap/ui/thirdparty/jquery.js"],
 "sap/ui/dt/test/ElementEnablementTest.js":["sap/base/util/ObjectPath.js","sap/ui/dt/DesignTime.js","sap/ui/dt/test/Element.js","sap/ui/dt/test/Test.js","sap/ui/thirdparty/jquery.js"],
 "sap/ui/dt/test/ElementEnablementTest2.js":["sap/base/util/ObjectPath.js","sap/ui/base/ManagedObject.js","sap/ui/dt/test/Element.js","sap/ui/fl/registry/ChangeRegistry.js"],

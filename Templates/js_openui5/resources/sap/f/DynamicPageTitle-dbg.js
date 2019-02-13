@@ -79,7 +79,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -1234,7 +1234,7 @@ sap.ui.define([
 		var sFlexBasis,
 			sFlexBasisCachedValue;
 
-		iContentSize = parseInt(iContentSize, 10);
+		iContentSize = parseInt(iContentSize);
 		sFlexBasis = iContentSize ? iContentSize + "px" : "auto";
 
 		sFlexBasisCachedValue = sFlexBasis !== "auto" ? sFlexBasis : undefined;

@@ -44,7 +44,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -379,7 +379,8 @@ sap.ui.define([
 	 * @private
 	 */
 	Image.prototype.onAfterRendering = function() {
-		var $DomNode = this.$(),
+		// BCP 1870456103. Error should be thrown when we have invalid src and DetailBox present.
+		var $DomNode = this.getDetailBox() ? this.$().find(".sapMImg") : this.$(),
 			sMode = this.getMode(),
 			oDomImageRef;
 

@@ -438,8 +438,8 @@ sap.ui.define([
 		getContexts : function (iStartIndex, iLength) {
 			// extended change detection is ignored
 			this.iCurrentStart = iStartIndex || 0;
-			this.iCurrentLength =
-				Math.min(iLength || Infinity, this.iLength, this.oModel.iSizeLimit);
+			this.iCurrentLength = Math.min(iLength || Infinity, this.iLength - this.iCurrentStart,
+				this.oModel.iSizeLimit);
 			return this.getCurrentContexts();
 		},
 
@@ -598,7 +598,7 @@ sap.ui.define([
 	 * @hideconstructor
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 */
 	var ODataMetaModel = MetaModel.extend("sap.ui.model.odata.v4.ODataMetaModel", {
 		/*

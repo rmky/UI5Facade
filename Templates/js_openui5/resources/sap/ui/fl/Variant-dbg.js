@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @class Variant class.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @alias sap.ui.fl.Variant
 	 * @experimental Since 1.52.0
 	 */

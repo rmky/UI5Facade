@@ -111,11 +111,6 @@
 			"theme": "sap_belize"
 		},
 		{
-			"name": "Label.less",
-			"designtime": true,
-			"theme": "sap_belize"
-		},
-		{
 			"name": "LightBox.less",
 			"designtime": true,
 			"theme": "sap_belize"
@@ -171,11 +166,6 @@
 			"theme": "sap_belize"
 		},
 		{
-			"name": "NotificationListGroup.less",
-			"designtime": true,
-			"theme": "sap_belize"
-		},
-		{
 			"name": "NotificationListItem.less",
 			"designtime": true,
 			"theme": "sap_belize"
@@ -202,11 +192,6 @@
 		},
 		{
 			"name": "ObjectStatus.less",
-			"designtime": true,
-			"theme": "sap_belize"
-		},
-		{
-			"name": "OnePersonGrid.less",
 			"designtime": true,
 			"theme": "sap_belize"
 		},
@@ -292,6 +277,11 @@
 		},
 		{
 			"name": "Shell.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "SinglePlanningCalendarGrid.less",
 			"designtime": true,
 			"theme": "sap_belize"
 		},

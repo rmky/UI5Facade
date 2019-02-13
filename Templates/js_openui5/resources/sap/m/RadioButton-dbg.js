@@ -11,6 +11,7 @@ sap.ui.define([
 	'sap/ui/core/EnabledPropagator',
 	'./RadioButtonGroup',
 	'sap/ui/core/library',
+	'sap/base/strings/capitalize',
 	'./RadioButtonRenderer'
 ],
 function(
@@ -19,6 +20,7 @@ function(
 	EnabledPropagator,
 	RadioButtonGroup,
 	coreLibrary,
+	capitalize,
 	RadioButtonRenderer
 	) {
 	"use strict";
@@ -78,7 +80,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -155,7 +157,28 @@ function(
 			 * Specifies the alignment of the radio button. Available alignment settings are "Begin", "Center", "End", "Left", and "Right".
 			 * @since 1.28
 			 */
-			textAlign : {type : "sap.ui.core.TextAlign", group : "Appearance", defaultValue : TextAlign.Begin}
+			textAlign : {type : "sap.ui.core.TextAlign", group : "Appearance", defaultValue : TextAlign.Begin},
+
+			/**
+			 * Specifies if the RadioButton should be editable. This property meant to be used by parent controls (e.g. RadioButtoGroup).
+			 * @since 1.61
+			 * @private
+			 */
+			editableParent: { type: "boolean", group: "Behavior", defaultValue: true, visibility: "hidden"},
+
+			/**
+			 * Specifies the aria-posinset of the RadioButton.
+			 * @since 1.61
+			 * @private
+			 */
+			posinset: {type: "string", group: "Data", defaultValue: "", visibility: "hidden"},
+
+			/**
+			 * Specifies the aria-setsize of the RadioButton.
+			 * @since 1.61
+			 * @private
+			 */
+			setsize: {type: "string", group: "Data", defaultValue: "", visibility: "hidden"}
 		},
 		events : {
 
@@ -697,6 +720,14 @@ function(
 			}
 		});
 	};
+
+	// Private properties setter generation
+	["editableParent", "posinset", "setsize"].forEach(function(privatePropName) {
+		RadioButton.prototype["_set" + capitalize(privatePropName)] = function (vValue) {
+			// prevent invalidation as the parent will rerender its children
+			return this.setProperty(privatePropName, vValue, true);
+		};
+	});
 
 	return RadioButton;
 

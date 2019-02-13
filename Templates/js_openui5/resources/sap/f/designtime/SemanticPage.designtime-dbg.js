@@ -307,6 +307,9 @@ sap.ui.define([],
 						// in this case we can reuse the function here
 						return fnShouldIgnoreSingleAggregation(oControl, "_getActionSheet");
 					}
+				},
+				landmarkInfo: {
+					ignore: true
 				}
 			},
 			scrollContainers : [{

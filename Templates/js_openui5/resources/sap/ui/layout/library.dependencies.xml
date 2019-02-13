@@ -18,7 +18,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/AssociativeSplitter.js" size="18917" compressedSize="8526">
+  <module name="sap/ui/layout/AssociativeSplitter.js" size="18873" compressedSize="8493">
     <description>Provides control sap.ui.layout.AssociativeSplitter.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -57,7 +57,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/BlockLayoutCellRenderer.js" size="3985" compressedSize="2017">
+  <module name="sap/ui/layout/BlockLayoutCellRenderer.js" size="3989" compressedSize="2019">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -84,7 +84,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/BlockLayoutRowRenderer.js" size="3239" compressedSize="1601">
+  <module name="sap/ui/layout/BlockLayoutRowRenderer.js" size="3244" compressedSize="1603">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/layout/library.js"/>
@@ -111,7 +111,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/FixFlex.js" size="11545" compressedSize="4719">
+  <module name="sap/ui/layout/FixFlex.js" size="11541" compressedSize="4716">
     <description>Provides control sap.ui.layout.FixFlex.</description>
     <requires>
       <module name="sap/ui/core/Control.js"/>
@@ -143,7 +143,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/GridData.js" size="16436" compressedSize="6597">
+  <module name="sap/ui/layout/GridData.js" size="16420" compressedSize="6585">
     <description>Provides control sap.ui.layout.GridData.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -214,7 +214,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/ResponsiveSplitter.js" size="23472" compressedSize="11078">
+  <module name="sap/ui/layout/ResponsiveSplitter.js" size="23464" compressedSize="11072">
     <description>Provides control sap.ui.layout.ResponsiveSplitter.</description>
     <requires>
       <module name="sap/ui/core/Control.js"/>
@@ -238,7 +238,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/ResponsiveSplitterRenderer.js" size="2785" compressedSize="2101">
+  <module name="sap/ui/layout/ResponsiveSplitterRenderer.js" size="2790" compressedSize="2103">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/IconPool.js"/>
@@ -259,7 +259,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/Splitter.js" size="40847" compressedSize="14344">
+  <module name="sap/ui/layout/Splitter.js" size="40811" compressedSize="14317">
     <description>Provides control sap.ui.layout.Splitter.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -304,7 +304,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/changeHandler/AddFormContainer.js" size="5852" compressedSize="2039">
+  <module name="sap/ui/layout/changeHandler/AddFormContainer.js" size="6148" compressedSize="2234">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
@@ -314,24 +314,26 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/changeHandler/AddFormField.js" size="7937" compressedSize="2663">
+  <module name="sap/ui/layout/changeHandler/AddFormField.js" size="8104" compressedSize="2803">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/changeHandler/Base.js"/>
       <module name="sap/ui/fl/changeHandler/ChangeHandlerMediator.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/changeHandler/AddSimpleFormField.js" size="9867" compressedSize="3202">
+  <module name="sap/ui/layout/changeHandler/AddSimpleFormField.js" size="10145" compressedSize="3310">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/changeHandler/Base.js"/>
       <module name="sap/ui/fl/changeHandler/ChangeHandlerMediator.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/changeHandler/AddSimpleFormGroup.js" size="7803" compressedSize="2666">
+  <module name="sap/ui/layout/changeHandler/AddSimpleFormGroup.js" size="7831" compressedSize="2759">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/Utils.js"/>
@@ -382,7 +384,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/cssgrid/CSSGrid.js" size="7026" compressedSize="3190">
+  <module name="sap/ui/layout/cssgrid/CSSGrid.js" size="12685" compressedSize="3316">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/ManagedObjectObserver.js"/>
@@ -395,14 +397,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/cssgrid/CSSGridRenderer.js" size="1204" compressedSize="596">
+  <module name="sap/ui/layout/cssgrid/CSSGridRenderer.js" size="1459" compressedSize="769">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/layout/cssgrid/GridLayoutBase.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/cssgrid/GridBasicLayout.js" size="3663" compressedSize="1390">
+  <module name="sap/ui/layout/cssgrid/GridBasicLayout.js" size="4330" compressedSize="1390">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/layout/cssgrid/GridLayoutBase.js"/>
@@ -411,15 +413,16 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/cssgrid/GridBoxLayout.js" size="2134" compressedSize="916">
+  <module name="sap/ui/layout/cssgrid/GridBoxLayout.js" size="10408" compressedSize="3988">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/ui/Device.js"/>
       <module name="sap/ui/layout/cssgrid/GridLayoutBase.js"/>
       <module name="sap/ui/layout/cssgrid/GridSettings.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/cssgrid/GridItemLayoutData.js" size="5349" compressedSize="1833">
+  <module name="sap/ui/layout/cssgrid/GridItemLayoutData.js" size="5792" compressedSize="2008">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/LayoutData.js"/>
@@ -427,14 +430,15 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/cssgrid/GridLayoutBase.js" size="5442" compressedSize="1958">
+  <module name="sap/ui/layout/cssgrid/GridLayoutBase.js" size="6218" compressedSize="2198">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/ui/Device.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/cssgrid/GridLayoutDelegate.js" size="2741" compressedSize="1097">
+  <module name="sap/ui/layout/cssgrid/GridLayoutDelegate.js" size="2934" compressedSize="1097">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/Object.js"/>
@@ -442,7 +446,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/cssgrid/GridResponsiveLayout.js" size="5704" compressedSize="2035">
+  <module name="sap/ui/layout/cssgrid/GridResponsiveLayout.js" size="5803" compressedSize="2035">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -450,7 +454,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/cssgrid/GridSettings.js" size="2996" compressedSize="970">
+  <module name="sap/ui/layout/cssgrid/GridSettings.js" size="3583" compressedSize="970">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
@@ -758,7 +762,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/form/FormElement.js" size="13221" compressedSize="5287">
+  <module name="sap/ui/layout/form/FormElement.js" size="13246" compressedSize="5309">
     <description>Provides control sap.ui.layout.form.FormElement.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -824,7 +828,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/form/GridLayoutRenderer.js" size="18125" compressedSize="7509">
+  <module name="sap/ui/layout/form/GridLayoutRenderer.js" size="18113" compressedSize="7500">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -912,7 +916,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/library-h2-preload.js" size="22487">
+  <module name="sap/ui/layout/library-h2-preload.js" size="22840">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/util/uid.js"/>
@@ -1044,7 +1048,7 @@
       <module name="sap/ui/layout/rules/Form.support.js"/>
     </includes>
   </module>
-  <module name="sap/ui/layout/library-preload.js" size="262399">
+  <module name="sap/ui/layout/library-preload.js" size="266921">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/util/uid.js"/>
@@ -1285,7 +1289,7 @@
       <module name="sap/ui/layout/rules/Form.support.js"/>
     </includes>
   </module>
-  <module name="sap/ui/layout/library.js" size="24821" compressedSize="8367">
+  <module name="sap/ui/layout/library.js" size="26032" compressedSize="8614">
     <description>Initialization Code and shared classes of library sap.ui.layout.</description>
     <requires>
       <module name="sap/ui/base/DataType.js"/>

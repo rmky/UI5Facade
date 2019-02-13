@@ -157,7 +157,7 @@ sap.ui.define([
 	 * @class The Manifest class.
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @alias sap.ui.core.Manifest
 	 * @since 1.33.0
 	 */
@@ -781,6 +781,14 @@ sap.ui.define([
 		sManifestUrl = oManifestUrl.toString();
 
 		Log.info("Loading manifest via URL: " + sManifestUrl);
+		if (!bAsync) {
+			Log.warning("Synchronous loading of manifest, due to Manifest.load() call for '" + sManifestUrl + "'. Use parameter 'async' true to avoid this.", "SyncXHR", null, function() {
+				return {
+					type: "SyncXHR",
+					name: "Manifest"
+				};
+			});
+		}
 		var oManifestJSON = LoaderExtensions.loadResource({
 			url: sManifestUrl,
 			dataType: "json",

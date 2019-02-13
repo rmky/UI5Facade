@@ -62,7 +62,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -581,6 +581,7 @@ sap.ui.define([
 
 	var CustomText = Text.extend("sap.m.internal.ObjectMarkerCustomText", {
 		metadata: {
+			library: "sap.m",
 			properties: {
 				icon: {type : "sap.ui.core.URI", group : "Data", defaultValue : null}
 			},
@@ -633,6 +634,7 @@ sap.ui.define([
 
 	var CustomLink = Link.extend("sap.m.internal.ObjectMarkerCustomLink", {
 		metadata: {
+			library: "sap.m",
 			properties: {
 				icon: {type : "sap.ui.core.URI", group : "Data", defaultValue : null}
 			},

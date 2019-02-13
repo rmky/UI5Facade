@@ -419,7 +419,7 @@ sap.ui.define([
 	/**
 	 * Root Namespace for the jQuery plug-in provided by SAP SE.
 	 *
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @namespace
 	 * @public
 	 * @static
@@ -1018,7 +1018,7 @@ sap.ui.define([
 		return m && m[1];
 	}()) || oCfgData.loglevel;
 	if ( oCfgData.loglevel ) {
-		Log.setLevel(Log.Level[oCfgData.loglevel.toUpperCase()] || parseInt(oCfgData.loglevel,10));
+		Log.setLevel(Log.Level[oCfgData.loglevel.toUpperCase()] || parseInt(oCfgData.loglevel));
 	}
 
 	Log.info("SAP Logger started.");

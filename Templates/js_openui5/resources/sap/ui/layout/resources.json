@@ -239,6 +239,10 @@
 			"designtime": true
 		},
 		{
+			"name": "BoxesPerRowConfig.type",
+			"designtime": true
+		},
+		{
 			"name": "DynamicSideContent-dbg.js",
 			"module": "sap/ui/layout/DynamicSideContent.js",
 			"isDebug": true,
@@ -758,6 +762,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
@@ -767,6 +772,7 @@
 			"module": "sap/ui/layout/changeHandler/AddFormField.js",
 			"required": [
 				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
@@ -777,6 +783,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
 			]
 		},
@@ -785,6 +792,7 @@
 			"module": "sap/ui/layout/changeHandler/AddSimpleFormField.js",
 			"required": [
 				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
 			]
 		},
@@ -911,6 +919,10 @@
 			]
 		},
 		{
+			"name": "cssgrid/CSSGrid.control",
+			"designtime": true
+		},
+		{
 			"name": "cssgrid/CSSGrid.js",
 			"module": "sap/ui/layout/cssgrid/CSSGrid.js",
 			"required": [
@@ -922,6 +934,14 @@
 				"sap/ui/layout/cssgrid/GridLayoutDelegate.js",
 				"sap/ui/layout/library.js"
 			]
+		},
+		{
+			"name": "cssgrid/CSSGridAutoFlow.type",
+			"designtime": true
+		},
+		{
+			"name": "cssgrid/CSSGridGapShortHand.type",
+			"designtime": true
 		},
 		{
 			"name": "cssgrid/CSSGridLine.type",
@@ -941,6 +961,10 @@
 			"required": [
 				"sap/ui/layout/cssgrid/GridLayoutBase.js"
 			]
+		},
+		{
+			"name": "cssgrid/CSSGridTrack.type",
+			"designtime": true
 		},
 		{
 			"name": "cssgrid/GridBasicLayout-dbg.js",
@@ -966,14 +990,20 @@
 			"module": "sap/ui/layout/cssgrid/GridBoxLayout.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/Device.js",
 				"sap/ui/layout/cssgrid/GridLayoutBase.js",
 				"sap/ui/layout/cssgrid/GridSettings.js"
 			]
 		},
 		{
+			"name": "cssgrid/GridBoxLayout.control",
+			"designtime": true
+		},
+		{
 			"name": "cssgrid/GridBoxLayout.js",
 			"module": "sap/ui/layout/cssgrid/GridBoxLayout.js",
 			"required": [
+				"sap/ui/Device.js",
 				"sap/ui/layout/cssgrid/GridLayoutBase.js",
 				"sap/ui/layout/cssgrid/GridSettings.js"
 			]
@@ -1004,13 +1034,19 @@
 			"module": "sap/ui/layout/cssgrid/GridLayoutBase.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js"
 			]
+		},
+		{
+			"name": "cssgrid/GridLayoutBase.control",
+			"designtime": true
 		},
 		{
 			"name": "cssgrid/GridLayoutBase.js",
 			"module": "sap/ui/layout/cssgrid/GridLayoutBase.js",
 			"required": [
+				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js"
 			]
 		},
@@ -1041,6 +1077,10 @@
 			]
 		},
 		{
+			"name": "cssgrid/GridResponsiveLayout.control",
+			"designtime": true
+		},
+		{
 			"name": "cssgrid/GridResponsiveLayout.js",
 			"module": "sap/ui/layout/cssgrid/GridResponsiveLayout.js",
 			"required": [
@@ -1056,6 +1096,10 @@
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/layout/library.js"
 			]
+		},
+		{
+			"name": "cssgrid/GridSettings.control",
+			"designtime": true
 		},
 		{
 			"name": "cssgrid/GridSettings.js",
@@ -3068,6 +3112,11 @@
 		},
 		{
 			"name": "themes/base/BlockLayoutRow.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/CSSGrid.less",
 			"designtime": true,
 			"theme": "base"
 		},

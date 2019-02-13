@@ -133,7 +133,7 @@ function(
 	 * </ul>
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @extends sap.m.ComboBoxBase
@@ -395,6 +395,10 @@ function(
 				}
 			}
 		} else {
+			// validate if an item is already selected
+			if (this.isPickerDialog()) {
+				this._showAlreadySelectedVisualEffect();
+			}
 			this._bPreventValueRemove = true;
 			this._showWrongValueVisualEffect();
 		}
@@ -413,9 +417,9 @@ function(
 	MultiComboBox.prototype._calculateSpaceForTokenizer = function () {
 		if (this.getDomRef()) {
 			var iWidth = this.getDomRef().offsetWidth,
-				iArrowButtonWidth = parseInt(this.getDomRef("arrow").offsetWidth, 10),
-				iInputWidth = parseInt(this.$().find(".sapMInputBaseInner").css("min-width"), 10) || 0,
-				iInputPadding = parseInt(this.$().find(".sapMInputBaseInner").css("padding-right"), 10) || 0;
+				iArrowButtonWidth = parseInt(this.getDomRef("arrow").offsetWidth),
+				iInputWidth = parseInt(this.$().find(".sapMInputBaseInner").css("min-width")) || 0,
+				iInputPadding = parseInt(this.$().find(".sapMInputBaseInner").css("padding-right")) || 0;
 
 			return iWidth - (iArrowButtonWidth + iInputWidth + iInputPadding) + "px";
 		} else {
@@ -430,6 +434,9 @@ function(
 	 */
 	MultiComboBox.prototype.onsapenter = function(oEvent) {
 		InputBase.prototype.onsapenter.apply(this, arguments);
+
+		// validate if an item is already selected
+		this._showAlreadySelectedVisualEffect();
 
 		if (this.getValue()) {
 			this._selectItemByKey(oEvent);
@@ -684,7 +691,13 @@ function(
 	 */
 	MultiComboBox.prototype.oninput = function(oEvent) {
 		ComboBoxBase.prototype.oninput.apply(this, arguments);
-		var oInput = oEvent.srcControl;
+		var oInput = oEvent.srcControl,
+			oPickerTextField = this.getPickerTextField();
+
+		// reset the value state
+		if (this.isPickerDialog() && oPickerTextField.getValueState() === ValueState.Error) {
+			oPickerTextField.setValueState(ValueState.None);
+		}
 
 		if (!this.getEnabled() || !this.getEditable()) {
 			return;
@@ -781,18 +794,52 @@ function(
 	 * @private
 	 */
 	MultiComboBox.prototype._showWrongValueVisualEffect = function() {
-		var sOldValueState = this.getValueState();
+		var oPickerTextField = this.getPickerTextField(),
+			sOldValueState = this.isPickerDialog() ? oPickerTextField.getValueState() : this.getValueState(),
+			sInvalidEntry = this._oRbC.getText("VALUE_STATE_ERROR");
 
 		if (sOldValueState === ValueState.Error) {
 			return;
 		}
 
 		if (this.isPickerDialog()) {
-			this.getPickerTextField().setValueState(ValueState.Error);
-			setTimeout(this.getPickerTextField()["setValueState"].bind(this.getPickerTextField(), sOldValueState), 1000);
+			oPickerTextField.setValueState(ValueState.Error);
+			oPickerTextField.setValueStateText(sInvalidEntry);
+			setTimeout(oPickerTextField["setValueState"].bind(oPickerTextField, sOldValueState), 1000);
 		} else {
 			this.setValueState(ValueState.Error);
+			this.setValueStateText(sInvalidEntry);
 			setTimeout(this["setValueState"].bind(this, sOldValueState), 1000);
+		}
+	};
+
+	/**
+	 * Triggers the value state "Error" when the item is already selected and enter is pressed.
+	 *
+	 * @private
+	 */
+	MultiComboBox.prototype._showAlreadySelectedVisualEffect = function() {
+		var bIsPickerDialog = this.isPickerDialog(),
+			oPickerTextField = this.getPickerTextField(),
+			sValueState = bIsPickerDialog ? oPickerTextField.getValueState() : this.getValueState(),
+			sValue = this.getValue().toLowerCase(),
+			aText = this.getSelectedItems().map(function(oItem) {
+				return oItem.getText().toLowerCase();
+			}),
+			sAlreadySelected = this._oRbM.getText("VALUE_STATE_ERROR_ALREADY_SELECTED");
+
+		if (aText.indexOf(sValue) > -1 && sValueState !== ValueState.Error) {
+			if (bIsPickerDialog) {
+				oPickerTextField.setValueState(ValueState.Error);
+				oPickerTextField.setValueStateText(sAlreadySelected);
+				oPickerTextField.selectText(0, this.getValue().length);
+			} else {
+				this.setValueState(ValueState.Error);
+				this.setValueStateText(sAlreadySelected);
+				this.selectText(0, this.getValue().length);
+			}
+		} else {
+			bIsPickerDialog ? oPickerTextField.setValueState(ValueState.None) : this.setValueState(ValueState.None);
 		}
 	};
 
@@ -1035,6 +1082,8 @@ function(
 		this._sOldValue = "";
 
 		if (this.isPickerDialog()) {
+			// reset the value state after the dialog is closed
+			this._showAlreadySelectedVisualEffect();
 			this.getPickerTextField().setValue("");
 			this._getFilterSelectedButton() && this._getFilterSelectedButton().setPressed(false);
 		}
@@ -1044,6 +1093,12 @@ function(
 		});
 
 		this._oTokenizer._useCollapsedMode(bUseCollapsed);
+
+		// show value state message when focus is in the input field
+		if (this.getValueState() == ValueState.Error && document.activeElement === this.getFocusDomRef()) {
+			this.selectText(0, this.getValue().length);
+			this.openValueStateMessage();
+		}
 	};
 
 	/**
@@ -1954,6 +2009,11 @@ function(
 		this.isOpen() && this._handleInputFocusOut();
 		this.removeStyleClass("sapMFocus");
 
+		// reset the value state
+		if (this.getValueState() === ValueState.Error) {
+			this.setValueState(ValueState.None);
+		}
+
 		ComboBoxBase.prototype.onfocusout.apply(this, arguments);
 	};
 
@@ -2007,6 +2067,9 @@ function(
 	 */
 	MultiComboBox.prototype.onsapbackspace = function(oEvent) {
 
+		// validate the input value
+		this._showAlreadySelectedVisualEffect();
+
 		if (!this.getEnabled() || !this.getEditable()) {
 
 			// Prevent the backspace key from navigating back
@@ -2032,6 +2095,9 @@ function(
 	 * @param {jQuery.Event} oEvent The event object
 	 */
 	MultiComboBox.prototype.onsapdelete = function(oEvent) {
+
+		// validate the input value
+		this._showAlreadySelectedVisualEffect();
 
 		if (!this.getEnabled() || !this.getEditable()) {
 			return;
@@ -2991,6 +3057,9 @@ function(
 			this._bCompositionEnd = false;
 			this._sComposition = oEvent.target.value;
 		}, this);
+
+		this._oRbM = sap.ui.getCore().getLibraryResourceBundle("sap.m");
+		this._oRbC = sap.ui.getCore().getLibraryResourceBundle("sap.ui.core");
 	};
 
 	/**

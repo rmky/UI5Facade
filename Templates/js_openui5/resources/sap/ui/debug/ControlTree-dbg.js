@@ -34,7 +34,7 @@ sap.ui.define('sap/ui/debug/ControlTree', [
 	 * @class Control Tree used for the Debug Environment
 	 * @extends sap.ui.base.EventProvider
 	 * @author Martin Schaus, Frank Weigel
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @alias sap.ui.debug.ControlTree
 	 * @private
 	 */
@@ -225,13 +225,13 @@ sap.ui.define('sap/ui/debug/ControlTree', [
 		var oSource = oEvent.target;
 		if (oSource.tagName == "IMG") {
 			var oParent = oSource.parentNode,
-				iLevel = parseInt(oParent.getAttribute("sap-level"), 10),
+				iLevel = parseInt(oParent.getAttribute("sap-level")),
 				oNextNode = oParent.nextSibling,
 				bExpanded = oParent.getAttribute("sap-expanded") == "true";
 			// propagate expanded state to all children
 			oSource = oParent.firstChild;
 			if (oNextNode) {
-				var iNextLevel = parseInt(oNextNode.getAttribute("sap-level"), 10);
+				var iNextLevel = parseInt(oNextNode.getAttribute("sap-level"));
 				while (oNextNode && iNextLevel > iLevel) {
 					var oExpandImage = oNextNode.getElementsByTagName("IMG")[0];
 					if (bExpanded) {
@@ -249,7 +249,7 @@ sap.ui.define('sap/ui/debug/ControlTree', [
 					}
 					oNextNode = oNextNode.nextSibling;
 					if (oNextNode) {
-						iNextLevel = parseInt(oNextNode.getAttribute("sap-level"), 10);
+						iNextLevel = parseInt(oNextNode.getAttribute("sap-level"));
 					}
 				}
 			}

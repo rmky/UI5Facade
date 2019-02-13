@@ -181,7 +181,7 @@ sap.ui.define([
 	 * @class The plugin allows to add additional elements that exist either hidden in the UI or in the OData service
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -268,9 +268,13 @@ sap.ui.define([
 
 			var aParents = [mParents.parentOverlay];
 			if (mParents.relevantContainer !== mParents.parent){
-				aParents = ElementUtil.findAllSiblingsInContainer(mParents.parent, mParents.relevantContainer).map(function(oParent){
-					return OverlayRegistry.getOverlay(oParent);
-				});
+				aParents = ElementUtil.findAllSiblingsInContainer(mParents.parent, mParents.relevantContainer)
+					.map(function(oParent){
+						return OverlayRegistry.getOverlay(oParent);
+					})
+					.filter(function (oOverlay) {
+						return oOverlay;
+					});
 			}
 			var aAggregationNames;
 			if (bSibling){

@@ -6,12 +6,14 @@
 
 // Provides control sap.ui.commons.RoadMap.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
     './library',
     'sap/ui/core/Control',
-    "./RoadMapRenderer"
+    './RoadMapRenderer',
+    'sap/ui/core/ResizeHandler',
+    'sap/ui/Device'
 ],
-	function(jQuery, library, Control, RoadMapRenderer) {
+	function(jQuery, library, Control, RoadMapRenderer, ResizeHandler, Device) {
 	"use strict";
 
 
@@ -27,7 +29,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -117,7 +119,7 @@ sap.ui.define([
 	RoadMap.prototype.exit = function (){
 		// Cleanup resize event registration
 		if (this.sResizeListenerId) {
-			sap.ui.core.ResizeHandler.deregister(this.sResizeListenerId);
+			ResizeHandler.deregister(this.sResizeListenerId);
 			this.sResizeListenerId = null;
 		}
 	};
@@ -128,7 +130,7 @@ sap.ui.define([
 		var bIsRendered = this.getDomRef() ? true : false;
 		this.setProperty("numberOfVisibleSteps", iNumberOfVisibleSteps, bIsRendered);
 		if (bIsRendered) {
-			sap.ui.commons.RoadMapRenderer.updateScrollArea(this, true);
+			RoadMapRenderer.updateScrollArea(this, true);
 		}
 		return this;
 	};
@@ -142,11 +144,11 @@ sap.ui.define([
 				var oStep = sap.ui.getCore().byId(sFirstVisibleStep);
 				if (oStep && oStep.getParent() && (oStep.getParent() === this || oStep.getParent().getParent() === this) && oStep.getVisible()) {
 					this.setProperty("firstVisibleStep", sFirstVisibleStep, true);
-					sap.ui.commons.RoadMapRenderer.updateScrollArea(this);
+					RoadMapRenderer.updateScrollArea(this);
 				}
 			} else {
 				this.setProperty("firstVisibleStep", "", true);
-				sap.ui.commons.RoadMapRenderer.updateScrollArea(this);
+				RoadMapRenderer.updateScrollArea(this);
 			}
 		} else {
 			this.setProperty("firstVisibleStep", sFirstVisibleStep);
@@ -160,8 +162,8 @@ sap.ui.define([
 		var bIsRendered = this.getDomRef() ? true : false;
 		this.setProperty("width", sWidth, bIsRendered);
 		if (bIsRendered) {
-			sap.ui.commons.RoadMapRenderer.setRoadMapWidth(this, sWidth);
-			sap.ui.commons.RoadMapRenderer.updateScrollArea(this, true);
+			RoadMapRenderer.setRoadMapWidth(this, sWidth);
+			RoadMapRenderer.updateScrollArea(this, true);
 		}
 		return this;
 	};
@@ -175,11 +177,11 @@ sap.ui.define([
 				var oStep = sap.ui.getCore().byId(sSelectedStep);
 				if (oStep && oStep.getParent() && (oStep.getParent() === this || oStep.getParent().getParent() === this)
 					&& oStep.getEnabled() && oStep.getVisible()) {
-					sap.ui.commons.RoadMapRenderer.selectStepWithId(this, sSelectedStep);
+					RoadMapRenderer.selectStepWithId(this, sSelectedStep);
 					this.setProperty("selectedStep", sSelectedStep, true);
 				}
 			} else {
-				sap.ui.commons.RoadMapRenderer.selectStepWithId(this, "");
+				RoadMapRenderer.selectStepWithId(this, "");
 				this.setProperty("selectedStep", "", true);
 			}
 		} else {
@@ -255,7 +257,7 @@ sap.ui.define([
 
 		// Cleanup resize event registration before re-rendering
 		if (this.sResizeListenerId) {
-			sap.ui.core.ResizeHandler.deregister(this.sResizeListenerId);
+			ResizeHandler.deregister(this.sResizeListenerId);
 			this.sResizeListenerId = null;
 		}
 	};
@@ -278,18 +280,18 @@ sap.ui.define([
 		//Adapt the step labels if needed
 		for (var i = 0; i < aSteps.length; i++) {
 			var oStep = aSteps[i];
-			sap.ui.commons.RoadMapRenderer.addEllipses(oStep);
+			RoadMapRenderer.addEllipses(oStep);
 			var aSubSteps = oStep.getSubSteps();
 			for (var j = 0; j < aSubSteps.length; j++) {
-				sap.ui.commons.RoadMapRenderer.addEllipses(aSubSteps[j]);
+				RoadMapRenderer.addEllipses(aSubSteps[j]);
 			}
 		}
 
 		//Adapt the size of the scroll area
-		sap.ui.commons.RoadMapRenderer.updateScrollArea(this);
+		RoadMapRenderer.updateScrollArea(this);
 
 		// Listen to resizing
-		this.sResizeListenerId = sap.ui.core.ResizeHandler.register(this.getDomRef(), jQuery.proxy(this.onresize, this));
+		this.sResizeListenerId = ResizeHandler.register(this.getDomRef(), jQuery.proxy(this.onresize, this));
 	};
 
 
@@ -301,17 +303,17 @@ sap.ui.define([
 		var fDoOnResize = function() {
 			if (this.getDomRef()) {
 				//Adapt the size of the scroll area
-				sap.ui.commons.RoadMapRenderer.updateScrollArea(this, true);
+				RoadMapRenderer.updateScrollArea(this, true);
 				refreshFocus(this, "prev");
 				this.sResizeInProgress = null;
 			}
-		};
+		}.bind(this);
 
-		if (!!sap.ui.Device.browser.firefox) {
-			fDoOnResize.apply(this, []);
+		if (Device.browser.firefox) {
+			fDoOnResize();
 		} else {
 			if (!this.sResizeInProgress) {
-				this.sResizeInProgress = jQuery.sap.delayedCall(300, this, fDoOnResize);
+				this.sResizeInProgress = setTimeout(fDoOnResize, 300);
 			}
 		}
 	};
@@ -347,15 +349,15 @@ sap.ui.define([
 	 */
 	RoadMap.prototype.onfocusin = function(oEvent){
 		var jTarget = jQuery(oEvent.target);
-		var jTargetId = jTarget.attr("id");
+		var sTargetId = jTarget.attr("id");
 		/*eslint-disable no-empty */
 		//TODO Rethink if empty block is needed
-		if (jTargetId && jQuery.sap.endsWith(jTargetId, "-box")) {
-			this.sCurrentFocusedStepRefId = jTargetId.substring(0, jTargetId.length - 4);
-		} else if (jTargetId && (jQuery.sap.endsWith(jTargetId, "-Start") || jQuery.sap.endsWith(jTargetId, "-End"))) {
+		if (sTargetId && sTargetId.endsWith("-box")) {
+			this.sCurrentFocusedStepRefId = sTargetId.slice(0, -4);
+		} else if (sTargetId && (sTargetId.endsWith("-Start") || sTargetId.endsWith("-End"))) {
 			//Keep the current focus
 		} else {
-			this.sCurrentFocusedStepRefId = sap.ui.commons.RoadMapRenderer.getFirstVisibleRef(this).attr("id");
+			this.sCurrentFocusedStepRefId = RoadMapRenderer.getFirstVisibleRef(this).attr("id");
 			refreshFocus(this);
 		}
 		/*eslint-enable no-empty */
@@ -465,7 +467,7 @@ sap.ui.define([
 	//Helper function to scroll to following step (optionally with updating the focus (see focusStep)).
 	//Allowed directions are: next, prev, first, last.
 	var scrollToNextStep = function(oThis, sDir, bUpdateFocus){
-		sap.ui.commons.RoadMapRenderer.scrollToNextStep(oThis, sDir, function(sFirstVisibleNodeId){
+		RoadMapRenderer.scrollToNextStep(oThis, sDir, function(sFirstVisibleNodeId){
 			var iIdx = sFirstVisibleNodeId.lastIndexOf("-expandend");
 			if (iIdx != -1) {
 				sFirstVisibleNodeId = sFirstVisibleNodeId.substring(0, iIdx);
@@ -500,15 +502,15 @@ sap.ui.define([
 			bIsJumpToDelimiter = true;
 		}
 
-		var jCurrentFocusStep = jQuery.sap.byId(oThis.sCurrentFocusedStepRefId);
+		var jCurrentFocusStep = jQuery(document.getElementById(oThis.sCurrentFocusedStepRefId));
 		var jFollowingSteps = jCurrentFocusStep[sFoo](":visible");
 		var sFollowingFocusStepId = jQuery(jFollowingSteps.get(bIsJumpToDelimiter ? jFollowingSteps.length - 1 : 0)).attr("id");
 		if (sFollowingFocusStepId) {
-			if (!sap.ui.commons.RoadMapRenderer.isVisibleRef(oThis, sFollowingFocusStepId)) {
+			if (!RoadMapRenderer.isVisibleRef(oThis, sFollowingFocusStepId)) {
 				scrollToNextStep(oThis, sDir);
 			}
 
-			jQuery.sap.byId(sFollowingFocusStepId + "-box").get(0).focus();
+			document.getElementById(sFollowingFocusStepId + "-box").focus();
 		}
 	};
 
@@ -520,10 +522,10 @@ sap.ui.define([
 			return;
 		}
 
-		if (sDir && !sap.ui.commons.RoadMapRenderer.isVisibleRef(oThis, oThis.sCurrentFocusedStepRefId)) {
+		if (sDir && !RoadMapRenderer.isVisibleRef(oThis, oThis.sCurrentFocusedStepRefId)) {
 			focusStep(null, oThis, sDir);
 		} else {
-			jQuery.sap.byId(oThis.sCurrentFocusedStepRefId + "-box").get(0).focus();
+			document.getElementById(oThis.sCurrentFocusedStepRefId + "-box").focus();
 		}
 	};
 
@@ -531,4 +533,4 @@ sap.ui.define([
 
 	return RoadMap;
 
-}, /* bExport= */ true);
+});

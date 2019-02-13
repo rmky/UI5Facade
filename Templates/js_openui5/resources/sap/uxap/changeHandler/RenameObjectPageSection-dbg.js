@@ -18,7 +18,7 @@
 			 * @constructor
 			 * @alias sap.uxap.changeHandler.RenameObjectPageSection
 			 * @author SAP SE
-			 * @version 1.60.1
+			 * @version 1.61.2
 			 * @experimental Since 1.50
 			 */
 
@@ -58,6 +58,11 @@
 				var sText = oChangeDefinition.texts[mRenameSettings.changePropertyName];
 				var sValue = sText.value;
 				var oControlToBeRenamed = RenameObjectPageSection._getControlForRename(oControl, oModifier);
+
+				if (typeof sValue === "string" && sValue.trim() === "") {
+					throw new Error("Change cannot be applied as ObjectPageSubSection's title cannot be empty: ["
+						+ oChangeDefinition.layer + "]" + oChangeDefinition.namespace + "/" + oChangeDefinition.fileName + "." + oChangeDefinition.fileType);
+				}
 
 				if (oChangeDefinition.texts && sText && typeof (sValue) === "string") {
 					oChange.setRevertData(oModifier.getProperty(oControlToBeRenamed, sPropertyName));

@@ -18,7 +18,7 @@
  * sap.ui.lazyRequire("sap.ui.core.Control");
  * sap.ui.lazyRequire("sap.ui.commons.Button");
  *
- * @version 1.60.1
+ * @version 1.61.2
  * @author  Martin Schaus, Daniel Brinkmann
  * @public
  */
@@ -45,7 +45,7 @@ sap.ui.define([
 	 * The <code>sap</code> namespace is automatically registered with the
 	 * OpenAjax hub if it exists.
 	 *
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @namespace
 	 * @public
 	 * @name sap
@@ -58,7 +58,7 @@ sap.ui.define([
 	 * The <code>sap.ui</code> namespace is the central OpenAjax compliant entry
 	 * point for UI related JavaScript functionality provided by SAP.
 	 *
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @namespace
 	 * @name sap.ui
 	 * @public
@@ -72,8 +72,8 @@ sap.ui.define([
 		 * The version of the SAP UI Library
 		 * @type string
 		 */
-		version: "1.60.1",
-		buildinfo : { lastchange : "", buildtime : "20181112-1638" }
+		version: "1.61.2",
+		buildinfo : { lastchange : "", buildtime : "20190108-1402" }
 	});
 
 	var oCfgData = window["sap-ui-config"] || {};
@@ -107,9 +107,16 @@ sap.ui.define([
 	 */
 	sap.ui.getVersionInfo = function(mOptions) {
 		if (mOptions && mOptions.async) {
-			Log.info("Do not use deprecated function 'sap.ui.getVersionInfo'. Use 'sap.ui.VersionInfo.load' instead");
+			Log.info("Do not use deprecated function 'sap.ui.getVersionInfo'. Use" +
+				" 'sap/ui/VersionInfo' module's asynchronous .load function instead");
 		} else {
-			Log.warning("Do not use deprecated function 'sap.ui.getVersionInfo' synchronously! Use asynchronous 'sap.ui.VersionInfo.load' instead");
+			Log.warning("Do not use deprecated function 'sap.ui.getVersionInfo' synchronously! Use" +
+				" 'sap/ui/VersionInfo' module's asynchronous .load function instead", "Deprecation", null, function() {
+				return {
+					type: "sap.ui.getVersionInfo",
+					name: "Global"
+				};
+			});
 		}
 
 		return VersionInfo._load(mOptions); // .load() is async only!

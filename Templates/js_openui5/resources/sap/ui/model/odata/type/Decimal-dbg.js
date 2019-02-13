@@ -87,7 +87,7 @@ sap.ui.define([
 		}
 
 		function validateInt(vValue, iDefault, iMinimum, sName) {
-			var iValue = typeof vValue === "string" ? parseInt(vValue, 10) : vValue;
+			var iValue = typeof vValue === "string" ? parseInt(vValue) : vValue;
 
 			if (iValue === undefined) {
 				return iDefault;
@@ -178,7 +178,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @alias sap.ui.model.odata.type.Decimal
 	 * @param {object} [oFormatOptions]

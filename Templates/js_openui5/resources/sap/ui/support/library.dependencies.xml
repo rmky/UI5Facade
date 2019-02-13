@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.support">
-  <module name="sap/ui/support/Bootstrap.js" size="1299" compressedSize="688">
+  <module name="sap/ui/support/Bootstrap.js" size="1300" compressedSize="688">
     <description>Provides control sap.ui.support.Bootstrap.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -9,7 +9,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/support/RuleAnalyzer.js" size="5051" compressedSize="871">
+  <module name="sap/ui/support/RuleAnalyzer.js" size="5204" compressedSize="877">
     <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/support/Bootstrap.js"/>
@@ -164,7 +164,7 @@
       <module name="sap/ui/support/supportRules/util/Utils.js"/>
     </includes>
   </module>
-  <module name="sap/ui/support/library-preload.js" size="175060">
+  <module name="sap/ui/support/library-preload.js" size="175515">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/m/Bar.js"/>
@@ -488,7 +488,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/support/supportRules/History.js" size="6327" compressedSize="2596">
+  <module name="sap/ui/support/supportRules/History.js" size="6430" compressedSize="2676">
     <description>UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/support/library.js"/>
@@ -508,7 +508,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/support/supportRules/Main.js" size="23509" compressedSize="10910">
+  <module name="sap/ui/support/supportRules/Main.js" size="23775" compressedSize="10996">
     <description>@typedef {object} Event Certain event that's fired by the user action in the browser</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -571,14 +571,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/support/supportRules/WindowCommunicationBus.js" size="5366" compressedSize="1745">
+  <module name="sap/ui/support/supportRules/WindowCommunicationBus.js" size="5452" compressedSize="1803">
     <description>@typedef {object} EventListener</description>
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/support/supportRules/report/AbapHistoryFormatter.js" size="2658" compressedSize="1434">
+  <module name="sap/ui/support/supportRules/report/AbapHistoryFormatter.js" size="3032" compressedSize="1652">
     <description>Formats the history in ABAP friendly JSON.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
@@ -1015,7 +1015,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/support/supportRules/util/Utils.js" size="2028" compressedSize="837">
+  <module name="sap/ui/support/supportRules/util/Utils.js" size="2035" compressedSize="844">
     <description>Contains functionality that may be used trough the whole Support Assistant</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>

@@ -10,10 +10,11 @@ sap.ui.define([
 	"./_GroupLock",
 	"./_Helper",
 	"./_V2Requestor",
+	"sap/base/Log",
 	"sap/base/util/deepEqual",
 	"sap/ui/base/SyncPromise",
 	"sap/ui/thirdparty/jquery"
-], function (_Batch, _GroupLock, _Helper, asV2Requestor, deepEqual, SyncPromise, jQuery) {
+], function (_Batch, _GroupLock, _Helper, asV2Requestor, Log, deepEqual, SyncPromise, jQuery) {
 	"use strict";
 
 	var mBatchHeaders = { // headers for the $batch request
@@ -84,6 +85,7 @@ sap.ui.define([
 		this.sQueryParams = _Helper.buildQuery(mQueryParams); // Used for $batch and CSRF token only
 		this.mRunningChangeRequests = {};
 		this.oSecurityTokenPromise = null; // be nice to Chrome v8
+		this.iSessionTimer = 0;
 		this.iSerialNumber = 0;
 		this.sServiceUrl = sServiceUrl;
 	}
@@ -357,6 +359,19 @@ sap.ui.define([
 	};
 
 	/**
+	 * Clears the session context and its keep-alive timer.
+	 *
+	 * @private
+	 */
+	Requestor.prototype.clearSessionContext = function () {
+		delete this.mHeaders["SAP-ContextId"];
+		if (this.iSessionTimer) {
+			clearInterval(this.iSessionTimer);
+			this.iSessionTimer = 0;
+		}
+	};
+
+	/**
 	 * Converts the value for a "$expand" in mQueryParams.
 	 *
 	 * @param {object} mExpandItems The expand items, a map from path to options
@@ -464,6 +479,15 @@ sap.ui.define([
 	};
 
 	/**
+	 * Destroys this requestor.
+	 *
+	 * @private
+	 */
+	Requestor.prototype.destroy = function () {
+		this.clearSessionContext();
+	};
+
+	/**
 	 * Checks whether the "OData-Version" header is set to "4.0" otherwise an error is thrown.
 	 *
 	 * @param {function} fnGetHeader
@@ -563,7 +587,7 @@ sap.ui.define([
 	 * Fetches the metadata instance for the given meta path.
 	 *
 	 * @param {string} sMetaPath
-	 *   The meta path, for example "SalesOrderList/SO_2_BP"
+	 *   The meta path, for example "/SalesOrderList/SO_2_BP"
 	 * @returns {sap.ui.base.SyncPromise}
 	 *   A promise that is resolved with the metadata instance for the given meta path
 	 *
@@ -577,7 +601,7 @@ sap.ui.define([
 	 * Fetches the type of the given meta path from the metadata.
 	 *
 	 * @param {string} sMetaPath
-	 *   The meta path, e.g. SalesOrderList/SO_2_BP
+	 *   The meta path, e.g. "/SalesOrderList/SO_2_BP"
 	 * @param {boolean} [bAsName]
 	 *   If <code>true</code>, the name of the type is delivered instead of the type itself. This
 	 *   must be used when asking for a property type to avoid that the function logs an error
@@ -694,7 +718,7 @@ sap.ui.define([
 			for (sName in mParameters) {
 				oParameter = mName2Parameter[sName];
 				if (oParameter) {
-					if (oParameter.$IsCollection) {
+					if (oParameter.$isCollection) {
 						throw new Error("Unsupported collection-valued parameter: " + sName);
 					}
 					aArguments.push(encodeURIComponent(sName) + "=" + encodeURIComponent(
@@ -1207,6 +1231,8 @@ sap.ui.define([
 					}
 					that.mHeaders["X-CSRF-Token"]
 						= jqXHR.getResponseHeader("X-CSRF-Token") || that.mHeaders["X-CSRF-Token"];
+					that.setSessionContext(jqXHR.getResponseHeader("SAP-ContextId"),
+						jqXHR.getResponseHeader("Keep-Alive"));
 
 					fnResolve({
 						body : oResponse,
@@ -1215,7 +1241,8 @@ sap.ui.define([
 						resourcePath : sResourcePath
 					});
 				}, function (jqXHR, sTextStatus, sErrorMessage) {
-					var sCsrfToken = jqXHR.getResponseHeader("X-CSRF-Token");
+					var sContextId = jqXHR.getResponseHeader("SAP-ContextId"),
+						sCsrfToken = jqXHR.getResponseHeader("X-CSRF-Token");
 
 					if (!bIsFreshToken && jqXHR.status === 403
 							&& sCsrfToken && sCsrfToken.toLowerCase() === "required") {
@@ -1224,6 +1251,15 @@ sap.ui.define([
 							send(true);
 						}, fnReject);
 					} else {
+						if (sContextId) {
+							// an error response within the session (e.g. a failed save) refreshes
+							// the session
+							that.setSessionContext(sContextId,
+								jqXHR.getResponseHeader("Keep-Alive"));
+						} else if (jqXHR.getResponseHeader("SAP-Err-Id") === "ICMENOSESSION") {
+							// The server could not find the context ID ("ICM Error NO SESSION")
+							that.clearSessionContext();
+						} // else keep the session untouched
 						fnReject(_Helper.createError(jqXHR, sRequestUrl, sOriginalResourcePath));
 					}
 				});
@@ -1234,6 +1270,54 @@ sap.ui.define([
 			}
 			return send();
 		});
+	};
+
+	/**
+	 * Sets the session context. Starts a keep-alive timer in case there is a session context and
+	 * a keep-alive timeout of 60 seconds or more is indicated. This timer runs for at most 15
+	 * minutes.
+	 *
+	 * @param {string} [sContextId] The value of the header 'SAP-ContextId'
+	 * @param {string} [sKeepAlive] The value of the header 'Keep-Alive', a comma-separated list of
+	 *   parameters, each consisting of an identifier and a value separated by the equal sign ('=');
+	 *   only the parameter "timeout" is used
+	 *
+	 * @private
+	 */
+	Requestor.prototype.setSessionContext = function (sContextId, sKeepAlive) {
+		var aMatches = /\btimeout=(\d+)/.exec(sKeepAlive),
+			iKeepAliveSeconds = aMatches && parseInt(aMatches[1]),
+			iSessionTimeout = Date.now() + 15 * 60 * 1000, // 15 min
+			that = this;
+
+		this.clearSessionContext(); // stop the current session and its timer
+		if (sContextId) {
+			// start a new session and a new timer with the current header values (should be the
+			// same as before)
+			that.mHeaders["SAP-ContextId"] = sContextId;
+			if (iKeepAliveSeconds >= 60) {
+				this.iSessionTimer = setInterval(function () {
+					if (Date.now() >= iSessionTimeout) { // 15 min have passed
+						that.clearSessionContext(); // give up
+					} else {
+						jQuery.ajax(that.sServiceUrl + that.sQueryParams, {
+							method : "HEAD",
+							headers : {
+								"SAP-ContextId" : that.mHeaders["SAP-ContextId"]
+							}
+						}).fail(function (jqXHR) {
+							if (jqXHR.getResponseHeader("SAP-Err-Id") === "ICMENOSESSION") {
+								// The server could not find the context ID ("ICM Error NO SESSION")
+								that.clearSessionContext();
+							} // else keep the timer running
+						});
+					}
+				}, (iKeepAliveSeconds - 5) * 1000);
+			} else if (sKeepAlive) {
+				Log.warning("Unsupported Keep-Alive header", sKeepAlive,
+					"sap.ui.model.odata.v4.lib._Requestor");
+			}
+		}
 	};
 
 	/**
@@ -1283,13 +1367,15 @@ sap.ui.define([
 					try {
 						that.doCheckVersionHeader(getResponseHeader.bind(vResponse), vRequest.url,
 							true);
-						that.reportUnboundMessages(vRequest.url, vResponse.headers["sap-messages"]);
+						that.reportUnboundMessages(vRequest.url,
+							getResponseHeader.call(vResponse, "sap-messages"));
 						vRequest.$resolve(that.doConvertResponse(oResponse, vRequest.$metaPath));
 					} catch (oErr) {
 						vRequest.$reject(oErr);
 					}
 				} else {
-					that.reportUnboundMessages(vRequest.url, vResponse.headers["sap-messages"]);
+					that.reportUnboundMessages(vRequest.url,
+						getResponseHeader.call(vResponse, "sap-messages"));
 					vRequest.$resolve();
 				}
 			});

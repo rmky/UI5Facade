@@ -6,14 +6,13 @@
 
 // Provides control sap.ui.commons.Link.
 sap.ui.define([
-	'jquery.sap.global',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/EnabledPropagator',
 	'sap/ui/core/LabelEnablement',
-	"./LinkRenderer"
+	'./LinkRenderer'
 ],
-	function(jQuery, library, Control, EnabledPropagator, LabelEnablement, LinkRenderer) {
+	function(library, Control, EnabledPropagator, LabelEnablement, LinkRenderer) {
 	"use strict";
 
 
@@ -32,7 +31,7 @@ sap.ui.define([
 	 * @implements sap.ui.commons.ToolbarItem,sap.ui.commons.FormattedTextViewControl, sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -184,4 +183,4 @@ sap.ui.define([
 
 	return Link;
 
-}, /* bExport= */ true);
+});

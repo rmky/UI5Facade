@@ -103,7 +103,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.60.1
+		 * @version 1.61.2
 		 *
 		 * @constructor
 		 * @public
@@ -360,6 +360,9 @@ function(
 		};
 
 		var NumericInput = Input.extend("sap.m.internal.NumericInput", {
+			metadata: {
+				library: "sap.m"
+			},
 			constructor: function(sId, mSettings) {
 				return Input.apply(this, arguments);
 			},
@@ -527,7 +530,7 @@ function(
 				bSuppressInvalidate = (vValue !== 0 && !vValue);
 
 			if (isValidPrecisionValue(number)) {
-				vValuePrecision = parseInt(number, 10);
+				vValuePrecision = parseInt(number);
 			} else {
 				vValuePrecision = 0;
 				Log.warning(this + ": ValuePrecision (" + number + ") is not correct. It should be a number between 0 and 20! Setting the default ValuePrecision:0.");
@@ -1278,7 +1281,7 @@ function(
 		 * @private
 		 */
 		StepInput.prototype._isInteger = function(val) {
-			return val === parseInt(val, 10);
+			return val === parseInt(val);
 		};
 
 		StepInput.prototype._writeAccessibilityState = function (sProp, sValue) {
@@ -1316,8 +1319,8 @@ function(
 			//For some cases fValue1 * iPrecisionMultiplier will produce a floating point number(ex. 0.29 * 100 = 28.999999999999996),
 			//but we still can call toFixed as this floating point number is always as closest as
 			//possible(i.e. no rounding errors could appear) to the real integer we expect.
-				iValue1 = parseInt((fValue1 * iPrecisionMultiplier).toFixed(10), 10),
-				iValue2 = parseInt((fValue2 * iPrecisionMultiplier).toFixed(10), 10);
+				iValue1 = parseInt((fValue1 * iPrecisionMultiplier).toFixed(10)),
+				iValue2 = parseInt((fValue2 * iPrecisionMultiplier).toFixed(10));
 
 			return (iValue1 + (iSign * iValue2)) / iPrecisionMultiplier;
 		};

@@ -6,13 +6,19 @@
 
 // Provides control sap.ui.commons.FormattedTextView.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/base/Log',
     './library',
     'sap/ui/core/Control',
-    "./FormattedTextViewRenderer"
+    './FormattedTextViewRenderer',
+    'sap/ui/core/library',
+    'sap/base/security/sanitizeHTML'
 ],
-	function(jQuery, library, Control, FormattedTextViewRenderer) {
+	function(Log, library, Control, FormattedTextViewRenderer, coreLibrary, sanitizeHTML) {
 		"use strict";
+
+
+		// shortcut for sap.ui.core.AccessibleRole
+		var AccessibleRole = coreLibrary.AccessibleRole;
 
 
 		/**
@@ -24,7 +30,7 @@ sap.ui.define([
 		 * @class
 		 * The FormattedTextView control allows the usage of a limited set of HTML tags for display.
 		 * @extends sap.ui.core.Control
-		 * @version 1.60.1
+		 * @version 1.61.2
 		 *
 		 * @constructor
 		 * @public
@@ -44,7 +50,7 @@ sap.ui.define([
 					accessibleRole: {
 						type: "sap.ui.core.AccessibleRole",
 						group: "Accessibility",
-						defaultValue: sap.ui.core.AccessibleRole.Document
+						defaultValue: AccessibleRole.Document
 					},
 
 					/**
@@ -170,7 +176,7 @@ sap.ui.define([
 					}
 				} else {
 					var sWarning = '<' + tagName + '> with attribute [' + attribs[i] + '="' + attribs[i + 1] + '"] is not allowed and cut';
-					jQuery.sap.log.warning(sWarning, this);
+					Log.warning(sWarning, this);
 
 					// to remove this attribute by the sanitizer the value has to be
 					// set to null
@@ -193,11 +199,10 @@ sap.ui.define([
 		 */
 		var fnPolicy = function (tagName, attribs) {
 			if (this._renderingRules.ELEMENTS[tagName]) {
-				var proxiedSanatizedAttribs = jQuery.proxy(fnSanitizeAttribs, this);
-				return proxiedSanatizedAttribs(tagName, attribs);
+				return fnSanitizeAttribs.call(this, tagName, attribs);
 			} else {
 				var sWarning = '<' + tagName + '> is not allowed';
-				jQuery.sap.log.warning(sWarning, this);
+				Log.warning(sWarning, this);
 			}
 		};
 
@@ -207,14 +212,9 @@ sap.ui.define([
 		 * @public
 		 */
 		FormattedTextView.prototype.setHtmlText = function (sText) {
-			var sSanitizedText = "";
-
-			// use a proxy for policy to access the control's private variables
-			var fnProxiedPolicy = jQuery.proxy(fnPolicy, this);
-
 			// using the sanitizer that is already set to the encoder
-			sSanitizedText = jQuery.sap._sanitizeHTML(sText, {
-				tagPolicy: fnProxiedPolicy
+			var sSanitizedText = sanitizeHTML(sText, {
+				tagPolicy: fnPolicy.bind(this) // allow access to the control's private variables
 			});
 
 			this.setProperty("htmlText", sSanitizedText);
@@ -231,7 +231,7 @@ sap.ui.define([
 				this.removeAllAggregation("controls");
 			}
 
-			var bIsArray = jQuery.isArray(aControls);
+			var bIsArray = Array.isArray(aControls);
 			if (bIsArray && aControls.length > 0) {
 				// iterate through the given array but suppress invalidate
 				for (var i = 0; i < aControls.length; i++) {
@@ -261,4 +261,4 @@ sap.ui.define([
 
 		return FormattedTextView;
 
-	}, /* bExport= */ true);
+	});

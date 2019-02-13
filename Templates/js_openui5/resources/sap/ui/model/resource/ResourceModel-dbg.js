@@ -49,7 +49,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.Model
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @param {object} oData
 	 *                     Parameters used to initialize the <code>ResourceModel</code>; at least one of <code>bundle</code>,

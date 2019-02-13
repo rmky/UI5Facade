@@ -8,11 +8,13 @@ sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/thirdparty/URI",
 	"sap/ui/fl/Utils",
-	"sap/base/util/merge"
+	"sap/base/util/merge",
+	"sap/ui/dom/includeScript"
 ], function(jQuery,
 			uri,
 			FlexUtils,
-			fnBaseMerge
+			fnBaseMerge,
+			fnIncludeScript
 ) {
 	"use strict";
 
@@ -27,7 +29,7 @@ sap.ui.define([
 	 * @private
 	 * @sap-restricted
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 */
 	var LrepConnector = function(mParameters) {
 		this._initClientParam();
@@ -148,7 +150,7 @@ sap.ui.define([
 	 * Resolves the complete URL of a request using the back-end URL and the relative URL from the request
 	 *
 	 * @param {String} sRelativeUrl - relative URL of the current request
-	 * @returns {sap.ui.core.URI} returns the complete uri for this request
+	 * @returns {String} returns the complete uri for this request
 	 * @private
 	 */
 	LrepConnector.prototype._resolveUrl = function(sRelativeUrl) {
@@ -509,18 +511,26 @@ sap.ui.define([
 			return mFlexData;
 		}
 
-		var mOptions = {
-			"async": true,
-			"contentType": "application/javascript",
-			"processData": true,
-			"type": "GET"
-		};
 
-
-		return this.send(sFlexModulesUri, undefined, undefined, mOptions).then(function () {
+		return this._loadModules(sFlexModulesUri).then(function () {
 			/* the modules within the server response are preloaded by the browser processing the request.
 			 * The promise chain only needs to return the response of the first server request. */
 			return mFlexData;
+		});
+	};
+
+	/**
+	 * Loads the modules in a CSP-compliant way via the UI5 core scripting mechanism.
+	 * This function has been extracted from the function <code>_onChangeResponseReceived</code>.
+	 * The purpose of this is to have a function that can be stubbed for testing.
+	 *
+	 * @param sFlexModulesUri
+	 * @returns {Promise} Returns a Promise resolved empty after the script was included
+	 * @private
+	 */
+	LrepConnector.prototype._loadModules = function (sFlexModulesUri) {
+		return new Promise(function(resolve, reject) {
+			fnIncludeScript(sFlexModulesUri, undefined, resolve, reject);
 		});
 	};
 

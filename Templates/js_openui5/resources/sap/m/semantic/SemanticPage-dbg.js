@@ -109,7 +109,7 @@ function(
 	 * @abstract
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -275,6 +275,7 @@ function(
 				 */
 				navButtonPress: {}
 			},
+			dnd: { draggable: false, droppable: true },
 			designtime: "sap/m/designtime/semantic/SemanticPage.designtime"
 		}
 	});

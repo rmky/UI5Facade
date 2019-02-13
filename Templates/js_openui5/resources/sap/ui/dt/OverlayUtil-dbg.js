@@ -20,7 +20,7 @@ function(
 	 *
 	 * @class Utility functionality to work with overlays
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @private
 	 * @static
 	 * @since 1.30
@@ -440,6 +440,11 @@ function(
 		var oRelevantContainer = oOverlay.getRelevantContainer() || oOverlay.getElement();
 		var oRelevantContainerOverlay = OverlayRegistry.getOverlay(oRelevantContainer);
 		var aRelevantOverlays = [];
+
+		// Overlay might be destroyed in the meantime
+		if (!oRelevantContainerOverlay) {
+			return aRelevantOverlays;
+		}
 
 		// Get all the siblings and parents of the overlay
 		var mRelevantOverlays = OverlayUtil._findAllSiblingsAndParents(oOverlay, oRelevantContainerOverlay, 0);

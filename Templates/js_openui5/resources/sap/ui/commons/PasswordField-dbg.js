@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.commons.PasswordField.
-sap.ui.define(['jquery.sap.global', './TextField', './library', "./PasswordFieldRenderer"],
-	function(jQuery, TextField, library, PasswordFieldRenderer) {
+sap.ui.define(['sap/ui/thirdparty/jquery', './TextField', './library', './PasswordFieldRenderer', 'sap/ui/Device'],
+	function(jQuery, TextField, library, PasswordFieldRenderer, Device) {
 	"use strict";
 
 
@@ -22,7 +22,7 @@ sap.ui.define(['jquery.sap.global', './TextField', './library', "./PasswordField
 	 * @extends sap.ui.commons.TextField
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -39,7 +39,7 @@ sap.ui.define(['jquery.sap.global', './TextField', './library', "./PasswordField
 
 		TextField.prototype.onfocusin.apply(this, arguments);
 
-		if (!sap.ui.Device.support.input.placeholder && this.getPlaceholder()) {
+		if (!Device.support.input.placeholder && this.getPlaceholder()) {
 			// if browser not supports placeholder on input tag, set the password type if focused
 			jQuery(this.getInputDomRef()).attr("type", "password");
 		}
@@ -48,7 +48,7 @@ sap.ui.define(['jquery.sap.global', './TextField', './library', "./PasswordField
 
 	PasswordField.prototype.onsapfocusleave = function(oEvent) {
 
-		if (!sap.ui.Device.support.input.placeholder && this.getPlaceholder()) {
+		if (!Device.support.input.placeholder && this.getPlaceholder()) {
 			// if browser not supports placeholder on input tag, remove the password type if placeholder is there and not focused
 			var $Input = jQuery(this.getInputDomRef());
 			if (!$Input.val()) {
@@ -62,4 +62,4 @@ sap.ui.define(['jquery.sap.global', './TextField', './library', "./PasswordField
 
 	return PasswordField;
 
-}, /* bExport= */ true);
+});

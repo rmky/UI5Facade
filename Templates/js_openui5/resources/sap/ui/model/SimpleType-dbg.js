@@ -28,7 +28,7 @@ sap.ui.define(['sap/ui/base/DataType', './Type', './FormatException', './ParseEx
 	 * @extends sap.ui.model.Type
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @param {object} [oFormatOptions] options as provided by concrete subclasses
 	 * @param {object} [oConstraints] constraints as supported by concrete subclasses
@@ -113,6 +113,9 @@ sap.ui.define(['sap/ui/base/DataType', './Type', './FormatException', './ParseEx
 	 * @protected
 	 */
 	SimpleType.prototype.getModelFormat = function() {
+		if (this.oInputFormat) {
+			return this.oInputFormat;
+		}
 		return oModelFormat;
 	};
 

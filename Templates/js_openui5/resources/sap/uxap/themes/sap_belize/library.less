@@ -35,8 +35,7 @@ Common compact/cozy
 }
 
 /* L fullscreen paddings */
-html.sapUiMedia-Std-Desktop .sapUxAPAnchorBar.sapMTB,
-html.sapUiMedia-Std-Desktop .sapMSplitContainer.sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapMTB /* overriding selector for desktop in split-container */
+html .sapUxAPObjectPageLayout-Std-Desktop .sapUxAPAnchorBar.sapMTB
 {
 	padding-left: 2rem;
 }
@@ -106,7 +105,7 @@ html.sapUiMedia-Std-Desktop .sapMSplitContainer.sapMSplitContainerHideMode .sapM
 
 // By design the arrows are not focusable
 .sapUxAPAnchorBar .anchorBarArrow .sapMBtn:focus > .sapMFocusable,
-html.sap-desktop .sapUxAPAnchorBarButton.sapMBtn:focus > .sapMBtnActive.sapMFocusable {
+html .sap-desktop .sapUxAPAnchorBarButton.sapMBtn:focus > .sapMBtnActive.sapMFocusable {
 	outline: none;
 }
 
@@ -135,14 +134,14 @@ html[dir=rtl] .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
 
 html[data-sap-ui-animation="on"] {
 	// Scroll buttons are invisible at first
-	&.sapUiMedia-Std-Desktop .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrow .sapMBtn,
-	&.sapUiMedia-Std-Desktop .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrow .sapMBtn {
+	&.sapUxAPObjectPageLayout-Std-Desktop .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrow .sapMBtn,
+	&.sapUxAPObjectPageLayout-Std-Desktop .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrow .sapMBtn {
 		opacity: 0;
 	}
 
 	// Fade-in animation on hover
-	&.sapUiMedia-Std-Desktop .sapUxAPAnchorBar:hover.sapUxAPAnchorBarScrollLeft .anchorBarArrow .sapMBtn,
-	&.sapUiMedia-Std-Desktop .sapUxAPAnchorBar:hover.sapUxAPAnchorBarScrollRight .anchorBarArrow .sapMBtn {
+	&.sapUxAPObjectPageLayout-Std-Desktop .sapUxAPAnchorBar:hover.sapUxAPAnchorBarScrollLeft .anchorBarArrow .sapMBtn,
+	&.sapUxAPObjectPageLayout-Std-Desktop .sapUxAPAnchorBar:hover.sapUxAPAnchorBarScrollRight .anchorBarArrow .sapMBtn {
 		opacity: 1;
 		-webkit-transition-property: opacity;
 		transition-property: opacity;
@@ -152,8 +151,8 @@ html[data-sap-ui-animation="on"] {
 }
 
 html[data-sap-ui-animation="off"] {
-	&.sapUiMedia-Std-Desktop .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrow .sapMBtn,
-	&.sapUiMedia-Std-Desktop .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrow .sapMBtn {
+	&.sapUxAPObjectPageLayout-Std-Desktop .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrow .sapMBtn,
+	&.sapUxAPObjectPageLayout-Std-Desktop .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrow .sapMBtn {
 		opacity: 1;
 	}
 }
@@ -284,7 +283,7 @@ html.sap-desktop .sapUxAPHierarchicalSelect {
 }
 
 /* styling needed to achieve underline of the select label on phone */
-html.sapUiMedia-Std-Phone, html.sap-phone {
+html .sapUxAPObjectPageLayout-Std-Phone, html .sap-phone {
 	.sapMSltPressed > .sapMSltArrow {
 		background: @sapUiFieldActiveBackground;
 	}
@@ -309,7 +308,7 @@ html.sapUiMedia-Std-Phone, html.sap-phone {
 
 /* styling needed to achieve underline of the select label on phone on Android 4.4.2
 (this is specific for webview (Fiori client) and Chrome browser) */
-html[data-sap-ui-browser^="cr4"].sapUiMedia-Std-Phone,
+html[data-sap-ui-browser^="cr4"] .sapUxAPObjectPageLayout-Std-Phone,
 html[data-sap-ui-browser^="cr4"].sap-phone {
 	.sapUxAPHierarchicalSelect .sapMSltLabel {
 		box-shadow: inset 0 -0.125rem @sapUiSelected;
@@ -386,7 +385,6 @@ html[data-sap-ui-browser^="cr4"].sap-phone {
 	line-height:  1.25rem;
 }
 
-html.sapUiMedia-StdExt-LargeDesktop .sapUxAPObjectPageHeaderIdentifier,
 html .sapUiSizeCompact .sapUiContainer-ExtraWide .sapUxAPObjectPageHeaderIdentifier {
 	.sapUxAPObjectPageHeaderIdentifierActions {
 		&.sapUxAPObjectPageHeaderIdentifierActionsForce, .sapUxAPObjectPageHeaderStickied & {
@@ -395,7 +393,7 @@ html .sapUiSizeCompact .sapUiContainer-ExtraWide .sapUxAPObjectPageHeaderIdentif
 	}
 }
 
-html.sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderIdentifier,
+html .sapUxAPObjectPageLayout-Std-Tablet .sapUxAPObjectPageHeaderIdentifier,
 html .sapUiContainer-Medium .sapUxAPObjectPageHeaderIdentifier {
 	.sapUxAPObjectPageHeaderIdentifierActions {
 		&.sapUxAPObjectPageHeaderIdentifierActionsForce, .sapUxAPObjectPageHeaderStickied & {
@@ -404,7 +402,7 @@ html .sapUiContainer-Medium .sapUxAPObjectPageHeaderIdentifier {
 	}
 }
 
-html.sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderIdentifier,
+html .sapUxAPObjectPageLayout-Std-Phone .sapUxAPObjectPageHeaderIdentifier,
 html .sapUiContainer-Narrow .sapUxAPObjectPageHeaderIdentifier {
 	.sapUxAPObjectPageHeaderIdentifierActions {
 		&.sapUxAPObjectPageHeaderIdentifierActionsForce, .sapUxAPObjectPageHeaderStickied & {
@@ -413,8 +411,8 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageHeaderIdentifier {
 	}
 }
 
-html.sapUiMedia-Std-Phone .sapUiSizeCompact.sapUxAPObjectPageHeaderChangesBtn .sapMBtn,
-html.sapUiMedia-Std-Phone .sapUiSizeCompact.sapUxAPObjectPageHeaderLockBtn .sapMBtn,
+html .sapUxAPObjectPageLayout-Std-Phone .sapUiSizeCompact.sapUxAPObjectPageHeaderChangesBtn .sapMBtn,
+html .sapUxAPObjectPageLayout-Std-Phone .sapUiSizeCompact.sapUxAPObjectPageHeaderLockBtn .sapMBtn,
 html .sapUiContainer-Narrow .sapUiSizeCompact.sapUxAPObjectPageHeaderChangesBtn .sapMBtn,
 html .sapUiContainer-Narrow .sapUiSizeCompact.sapUxAPObjectPageHeaderLockBtn .sapMBtn {
 	margin-top: -0.5rem;
@@ -462,7 +460,7 @@ html .sapUiContainer-Narrow .sapUiSizeCompact.sapUxAPObjectPageHeaderLockBtn .sa
 	padding: 0;
 }
 
-html.sapUiMedia-Std-Desktop, html.sapUiMedia-Std-Tablet {
+html .sapUxAPObjectPageLayout-Std-Desktop, html .sapUxAPObjectPageLayout-Std-Tablet {
 	.sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderObjectImage-Circle .sapUxAPObjectPageHeaderObjectImage {
 		border-width: 0.188rem;
 		margin-right: 2rem;
@@ -481,13 +479,13 @@ html.sapUiMedia-Std-Desktop, html.sapUiMedia-Std-Tablet {
 	font-size: 3rem;
 }
 
-.sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUiIcon,
-.sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUxAPObjectPageHeaderPlaceholder.sapUxAPObjectPageHeaderObjectImage .sapUiIcon {
+.sapUxAPObjectPageLayout-Std-Tablet .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUiIcon,
+.sapUxAPObjectPageLayout-Std-Tablet .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUxAPObjectPageHeaderPlaceholder.sapUxAPObjectPageHeaderObjectImage .sapUiIcon {
 	font-size: 3rem;
 }
 
-.sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUiIcon,
-.sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUxAPObjectPageHeaderPlaceholder.sapUxAPObjectPageHeaderObjectImage .sapUiIcon {
+.sapUxAPObjectPageLayout-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUiIcon,
+.sapUxAPObjectPageLayout-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUxAPObjectPageHeaderPlaceholder.sapUxAPObjectPageHeaderObjectImage .sapUiIcon {
 	font-size: 1.5rem;
 }
 

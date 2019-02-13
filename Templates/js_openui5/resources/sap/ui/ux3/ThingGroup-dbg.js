@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.ux3.ThingGroup.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
-	function(jQuery, Element) {
+sap.ui.define(['sap/ui/core/Element', './library'],
+	function(Element) {
 	"use strict";
 
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 	 * @class
 	 * Thing Group Area
 	 * @extends sap.ui.core.Element
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -60,4 +60,4 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 
 	return ThingGroup;
 
-}, /* bExport= */ true);
+});

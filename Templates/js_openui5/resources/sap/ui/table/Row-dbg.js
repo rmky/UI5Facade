@@ -19,7 +19,7 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 	 * @class
 	 * The row.
 	 * @extends sap.ui.core.Element
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -151,7 +151,7 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 	 * @see sap.ui.table.Row#initDomRefs
 	 * @private
 	 */
-	Row.prototype.getDomRefs = function (bJQuery, bCollection) {
+	Row.prototype.getDomRefs = function(bJQuery, bCollection) {
 		var byId = function(sId) {
 			return jQuery(document.getElementById(sId));
 		};
@@ -206,7 +206,7 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 
 		var mKeyDomRefs = mDomRefs[sKey];
 		if (bCollection) {
-			return Object.keys(mKeyDomRefs).map(function (sKey) {
+			return Object.keys(mKeyDomRefs).map(function(sKey) {
 				return mKeyDomRefs[sKey];
 			}).filter(Boolean);
 		}

@@ -49,7 +49,7 @@ function(
 	 * @namespace
 	 * @alias sap.ui.fl.Utils
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @experimental Since 1.25.0
 	 */
 	var Utils = {
@@ -486,7 +486,10 @@ function(
 			var sComponentId = Utils._getOwnerIdForControl(oControl);
 			if (!sComponentId) {
 				if (oControl && typeof oControl.getParent === "function") {
-					return Utils._getComponentIdForControl(oControl.getParent());
+					var oParent = oControl.getParent();
+					if (oParent) {
+						return Utils._getComponentIdForControl(oParent);
+					}
 				}
 			}
 			return sComponentId || "";
@@ -851,10 +854,10 @@ function(
 		},
 
 		/**
-		 * Returns technical parameters for the passed component.
+		 * Returns a map of technical parameters for the passed component.
 		 *
-		 * @param  {object} oComponent Component instance used to get the technical parameters
-		 * @returns {object|undefined} Returns the technical parameters object or undefined if unavailable
+		 * @param  {object} oComponent - Component instance used to get the technical parameters
+		 * @returns {object|undefined} Returns the requested technical parameter object or undefined if unavailable
 		 */
 		getTechnicalParametersForComponent : function(oComponent){
 			return oComponent
@@ -1013,7 +1016,7 @@ function(
 
 		/**
 		 * Returns the reference of a component, according to the following logic:
-		 * First appVariantId, if not, componentName + ".Component", if not appId + ".Component".
+		 * First appVariantId, if not, componentName + ".Component", if not appId + ".Component" (unless they already have ".Component" at the end).
 		 *
 		 * @param {object} oManifest - Manifest of the component
 		 * @returns {string} flex reference
@@ -1026,15 +1029,22 @@ function(
 						return oManifest.getEntry("sap.ui5").appVariantId;
 					}
 					if (oManifest.getEntry("sap.ui5").componentName) {
-						return oManifest.getEntry("sap.ui5").componentName + ".Component";
+					    var sComponentName = oManifest.getEntry("sap.ui5").componentName;
+					    if (sComponentName.length > 0 && sComponentName.indexOf(".Component") < 0) {
+						sComponentName += ".Component";
+					    }
+					    return sComponentName;
 					}
 				}
 				if (oManifest.getEntry("sap.app") && oManifest.getEntry("sap.app").id) {
 					var sAppId = oManifest.getEntry("sap.app").id;
 					if (sAppId === Utils.APP_ID_AT_DESIGN_TIME && oManifest.getComponentName) {
-						sAppId = oManifest.getComponentName();
+					    sAppId = oManifest.getComponentName();
 					}
-					return sAppId + ".Component";
+					if (sAppId.length > 0 && sAppId.indexOf(".Component") < 0) {
+					    sAppId += ".Component";
+					}
+					return sAppId;
 				}
 			}
 			this.log.warning("No Manifest received.");

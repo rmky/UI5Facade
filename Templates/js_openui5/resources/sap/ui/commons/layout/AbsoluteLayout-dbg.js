@@ -6,14 +6,20 @@
 
 // Provides control sap.ui.commons.layout.AbsoluteLayout.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
     './PositionContainer',
     'sap/ui/commons/library',
     'sap/ui/core/Control',
-    "./AbsoluteLayoutRenderer"
+    './AbsoluteLayoutRenderer',
+    'sap/ui/core/library'
 ],
-	function(jQuery, PositionContainer, library, Control, AbsoluteLayoutRenderer) {
+	function(jQuery, PositionContainer, library, Control, AbsoluteLayoutRenderer, coreLibrary) {
 	"use strict";
+
+
+
+	// shortcut for sap.ui.core.Scrolling
+	var Scrolling = coreLibrary.Scrolling;
 
 
 
@@ -29,7 +35,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -54,12 +60,12 @@ sap.ui.define([
 			/**
 			 * 'Auto', 'Scroll', 'Hidden', and 'None' are the available values for setting the vertical scrolling mode.
 			 */
-			verticalScrolling : {type : "sap.ui.core.Scrolling", group : "Behavior", defaultValue : sap.ui.core.Scrolling.Hidden},
+			verticalScrolling : {type : "sap.ui.core.Scrolling", group : "Behavior", defaultValue : Scrolling.Hidden},
 
 			/**
 			 * 'Auto', 'Scroll', 'Hidden', and 'None' are the available values for setting the vertical scrolling mode.
 			 */
-			horizontalScrolling : {type : "sap.ui.core.Scrolling", group : "Behavior", defaultValue : sap.ui.core.Scrolling.Hidden}
+			horizontalScrolling : {type : "sap.ui.core.Scrolling", group : "Behavior", defaultValue : Scrolling.Hidden}
 		},
 		defaultAggregation : "positions",
 		aggregations : {
@@ -71,8 +77,6 @@ sap.ui.define([
 		}
 	}});
 
-
-	(function() {
 
 	//**** Overridden API Functions ****
 
@@ -467,21 +471,21 @@ sap.ui.define([
 	AbsoluteLayout.prototype.contentChanged = function(oPosition, sChangeType) {
 		switch (sChangeType) {
 			case "CTRL_POS":
-				sap.ui.commons.layout.AbsoluteLayoutRenderer.updatePositionStyles(oPosition);
+				AbsoluteLayoutRenderer.updatePositionStyles(oPosition);
 				adaptChildControl(oPosition);
 				oPosition.reinitializeEventHandlers();
 				break;
 			case "CTRL_CHANGE":
 				adaptChildControl(oPosition, true);
-				sap.ui.commons.layout.AbsoluteLayoutRenderer.updatePositionedControl(oPosition);
+				AbsoluteLayoutRenderer.updatePositionedControl(oPosition);
 				oPosition.reinitializeEventHandlers();
 				break;
 			case "CTRL_REMOVE":
-				sap.ui.commons.layout.AbsoluteLayoutRenderer.removePosition(oPosition);
+				AbsoluteLayoutRenderer.removePosition(oPosition);
 				oPosition.reinitializeEventHandlers(true);
 				break;
 			case "CTRL_REMOVE_ALL":
-				sap.ui.commons.layout.AbsoluteLayoutRenderer.removeAllPositions(this);
+				AbsoluteLayoutRenderer.removeAllPositions(this);
 				var aPositions = oPosition;
 				if (aPositions) {
 					for (var index = 0; index < aPositions.length; index++) {
@@ -491,14 +495,14 @@ sap.ui.define([
 				break;
 			case "CTRL_ADD":
 				adaptChildControl(oPosition, true);
-				sap.ui.commons.layout.AbsoluteLayoutRenderer.insertPosition(this, oPosition);
+				AbsoluteLayoutRenderer.insertPosition(this, oPosition);
 				oPosition.reinitializeEventHandlers();
 				break;
 			case "LYT_SCROLL":
-				sap.ui.commons.layout.AbsoluteLayoutRenderer.updateLayoutScolling(this);
+				AbsoluteLayoutRenderer.updateLayoutScolling(this);
 				break;
 			case "LYT_SIZE":
-				sap.ui.commons.layout.AbsoluteLayoutRenderer.updateLayoutSize(this);
+				AbsoluteLayoutRenderer.updateLayoutSize(this);
 				break;
 		}
 	};
@@ -572,7 +576,7 @@ sap.ui.define([
 				bAdapted = true;
 			}
 			if (bAdapted) {
-				sap.ui.commons.layout.AbsoluteLayoutRenderer.updatePositionStyles(oControl.getParent());
+				AbsoluteLayoutRenderer.updatePositionStyles(oControl.getParent());
 			}
 		}
 		return bAdapted;
@@ -595,8 +599,9 @@ sap.ui.define([
 	};
 
 
-	}());
+	// inject cleanUpControl into PositionContainer
+	PositionContainer.cleanUpControl = AbsoluteLayout.cleanUpControl;
 
 	return AbsoluteLayout;
 
-}, /* bExport= */ true);
+});

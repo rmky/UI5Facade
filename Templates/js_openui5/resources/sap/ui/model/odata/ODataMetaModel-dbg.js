@@ -172,6 +172,22 @@ sap.ui.define([
 			}
 		}
 	 * </pre>
+	 * <b>Note:</b> Annotation terms are not merged, but replaced as a whole ("PUT" semantics). That
+	 * means, if you have, for example, an OData V2 annotation <code>sap:sortable=false</code> at a
+	 * property <code>PropA</code>, the corresponding OData V4 annotation is added to each entity
+	 * set to which this property belongs:
+	 * <pre>
+		"Org.OData.Capabilities.V1.SortRestrictions": {
+			"NonSortableProperties" : [
+				{"PropertyPath" : "BusinessPartnerID"}
+			]
+		}
+	 * </pre>
+	 * If the same term <code>"Org.OData.Capabilities.V1.SortRestrictions"</code> targeting one of
+	 * these entity sets is also contained in an annotation file, the complete OData V4 annotation
+	 * converted from the OData V2 annotation is replaced by the one contained in the annotation
+	 * file for the specified target. Converted annotations never use a qualifier and are only
+	 * overwritten by the same annotation term without a qualifier.
 	 *
 	 * This model is read-only and thus only supports
 	 * {@link sap.ui.model.BindingMode.OneTime OneTime} binding mode. No events
@@ -203,7 +219,7 @@ sap.ui.define([
 	 * {@link #loaded loaded} has been resolved!
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @alias sap.ui.model.odata.ODataMetaModel
 	 * @extends sap.ui.model.MetaModel
 	 * @public

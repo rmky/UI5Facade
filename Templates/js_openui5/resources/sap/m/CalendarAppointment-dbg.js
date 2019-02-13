@@ -16,19 +16,22 @@ sap.ui.define(['sap/ui/unified/CalendarAppointment'],
 		 * @param {object} [mSettings] Initial settings for the new control
 		 *
 		 * @class
+		 *
+		 * <h3>Overview</h3>
 		 * An appointment for use in a <code>SinglePlanningCalendar</code> or similar.
-		 * (Because there are different visualizations possible.)
-		 * Disclaimer: this control is in beta state - incompatible API changes may be done before its official public release. Use at your own discretion.
 		 *
 		 * Applications could inherit from this element to add own fields.
+		 *
+		 * <b>Disclaimer</b>: this control is in a beta state - incompatible API changes may be done before its official public release. Use at your own discretion.
+		 *
 		 * @extends sap.ui.unified.CalendarAppointment
-		 * @version 1.60.1
+		 * @version 1.61.2
+		 *
 		 *
 		 * @constructor
-		 * @private
-		 * @since 1.58.0
+		 * @public
+		 * @since 1.61
 		 * @alias sap.m.CalendarAppointment
-		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		var CalendarAppointment = UnifiedCalendarAppointment.extend("sap.m.CalendarAppointment", /** @lends sap.m.CalendarAppointment.prototype */ { metadata : {
 
@@ -36,7 +39,9 @@ sap.ui.define(['sap/ui/unified/CalendarAppointment'],
 				properties : {
 
 					/**
-					 * Title of the appointment.
+					 * If set to true, the appointment is considered as a blocker.
+					 * @experimental
+					 * since 1.61 Disclaimer: this property is in a beta state - incompatible API changes may be done before its official public release. Use at your own discretion.
 					 */
 					fullDay : {type : "boolean", group : "Data", defaultValue: false}
 				}

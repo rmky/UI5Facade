@@ -682,6 +682,7 @@
 				"sap/base/util/array/uniqueSort.js",
 				"sap/base/util/deepEqual.js",
 				"sap/base/util/defineLazyProperty.js",
+				"sap/base/util/each.js",
 				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/now.js",
 				"sap/base/util/uid.js",
@@ -701,6 +702,7 @@
 				"sap/ui/base/syncXHRFix.js",
 				"sap/ui/core/BlockLayerUtils.js",
 				"sap/ui/core/BusyIndicatorUtils.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/ComponentMetadata.js",
 				"sap/ui/core/Configuration.js",
@@ -766,6 +768,7 @@
 				"sap/ui/model/SimpleType.js",
 				"sap/ui/model/Sorter.js",
 				"sap/ui/model/SorterProcessor.js",
+				"sap/ui/model/StaticBinding.js",
 				"sap/ui/model/TreeBinding.js",
 				"sap/ui/model/Type.js",
 				"sap/ui/model/ValidateException.js",
@@ -815,6 +818,7 @@
 				"sap/base/util/array/uniqueSort.js",
 				"sap/base/util/deepEqual.js",
 				"sap/base/util/defineLazyProperty.js",
+				"sap/base/util/each.js",
 				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/now.js",
 				"sap/base/util/uid.js",
@@ -834,6 +838,7 @@
 				"sap/ui/base/syncXHRFix.js",
 				"sap/ui/core/BlockLayerUtils.js",
 				"sap/ui/core/BusyIndicatorUtils.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/ComponentMetadata.js",
 				"sap/ui/core/Configuration.js",
@@ -899,6 +904,7 @@
 				"sap/ui/model/SimpleType.js",
 				"sap/ui/model/Sorter.js",
 				"sap/ui/model/SorterProcessor.js",
+				"sap/ui/model/StaticBinding.js",
 				"sap/ui/model/TreeBinding.js",
 				"sap/ui/model/Type.js",
 				"sap/ui/model/ValidateException.js",
@@ -1283,6 +1289,7 @@
 				"sap/ui/model/Context.js",
 				"sap/ui/model/FormatException.js",
 				"sap/ui/model/ParseException.js",
+				"sap/ui/model/StaticBinding.js",
 				"sap/ui/model/Type.js",
 				"sap/ui/model/ValidateException.js",
 				"sap/ui/thirdparty/jquery.js",
@@ -1308,6 +1315,7 @@
 				"sap/ui/model/Context.js",
 				"sap/ui/model/FormatException.js",
 				"sap/ui/model/ParseException.js",
+				"sap/ui/model/StaticBinding.js",
 				"sap/ui/model/Type.js",
 				"sap/ui/model/ValidateException.js",
 				"sap/ui/thirdparty/jquery.js",
@@ -2667,6 +2675,27 @@
 			]
 		},
 		{
+			"name": "../model/StaticBinding-dbg.js",
+			"module": "sap/ui/model/StaticBinding.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/base/assert.js",
+				"sap/ui/model/ChangeReason.js",
+				"sap/ui/model/PropertyBinding.js"
+			]
+		},
+		{
+			"name": "../model/StaticBinding.js",
+			"module": "sap/ui/model/StaticBinding.js",
+			"required": [
+				"sap/base/Log.js",
+				"sap/base/assert.js",
+				"sap/ui/model/ChangeReason.js",
+				"sap/ui/model/PropertyBinding.js"
+			]
+		},
+		{
 			"name": "../model/TreeAutoExpandMode-dbg.js",
 			"module": "sap/ui/model/TreeAutoExpandMode.js",
 			"isDebug": true
@@ -3665,8 +3694,8 @@
 				"sap/base/Log.js",
 				"sap/base/assert.js",
 				"sap/base/security/encodeURL.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/format/DateFormat.js",
-				"sap/ui/core/library.js",
 				"sap/ui/model/FilterProcessor.js",
 				"sap/ui/model/Sorter.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -3679,8 +3708,8 @@
 				"sap/base/Log.js",
 				"sap/base/assert.js",
 				"sap/base/security/encodeURL.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/format/DateFormat.js",
-				"sap/ui/core/library.js",
 				"sap/ui/model/FilterProcessor.js",
 				"sap/ui/model/Sorter.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -4502,6 +4531,7 @@
 				"sap/base/Log.js",
 				"sap/ui/base/SyncPromise.js",
 				"sap/ui/model/Context.js",
+				"sap/ui/model/odata/v4/lib/_GroupLock.js",
 				"sap/ui/model/odata/v4/lib/_Helper.js"
 			]
 		},
@@ -4512,6 +4542,7 @@
 				"sap/base/Log.js",
 				"sap/ui/base/SyncPromise.js",
 				"sap/ui/model/Context.js",
+				"sap/ui/model/odata/v4/lib/_GroupLock.js",
 				"sap/ui/model/odata/v4/lib/_Helper.js"
 			]
 		},
@@ -4522,6 +4553,7 @@
 			"required": [
 				"sap/ui/base/SyncPromise.js",
 				"sap/ui/model/odata/OperationMode.js",
+				"sap/ui/model/odata/v4/Context.js",
 				"sap/ui/model/odata/v4/lib/_Helper.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
@@ -4532,6 +4564,7 @@
 			"required": [
 				"sap/ui/base/SyncPromise.js",
 				"sap/ui/model/odata/OperationMode.js",
+				"sap/ui/model/odata/v4/Context.js",
 				"sap/ui/model/odata/v4/lib/_Helper.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
@@ -4756,6 +4789,7 @@
 				"sap/ui/base/SyncPromise.js",
 				"sap/ui/model/ChangeReason.js",
 				"sap/ui/model/PropertyBinding.js",
+				"sap/ui/model/odata/v4/Context.js",
 				"sap/ui/model/odata/v4/ODataBinding.js",
 				"sap/ui/model/odata/v4/lib/_Cache.js"
 			]
@@ -4768,6 +4802,7 @@
 				"sap/ui/base/SyncPromise.js",
 				"sap/ui/model/ChangeReason.js",
 				"sap/ui/model/PropertyBinding.js",
+				"sap/ui/model/odata/v4/Context.js",
 				"sap/ui/model/odata/v4/ODataBinding.js",
 				"sap/ui/model/odata/v4/lib/_Cache.js"
 			]
@@ -4933,6 +4968,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/base/Log.js",
+				"sap/base/util/isEmptyObject.js",
 				"sap/ui/thirdparty/URI.js"
 			]
 		},
@@ -4941,6 +4977,7 @@
 			"module": "sap/ui/model/odata/v4/lib/_Helper.js",
 			"required": [
 				"sap/base/Log.js",
+				"sap/base/util/isEmptyObject.js",
 				"sap/ui/thirdparty/URI.js"
 			]
 		},
@@ -4998,6 +5035,7 @@
 			"module": "sap/ui/model/odata/v4/lib/_Requestor.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/Log.js",
 				"sap/base/util/deepEqual.js",
 				"sap/ui/base/SyncPromise.js",
 				"sap/ui/model/odata/v4/lib/_Batch.js",
@@ -5011,6 +5049,7 @@
 			"name": "../model/odata/v4/lib/_Requestor.js",
 			"module": "sap/ui/model/odata/v4/lib/_Requestor.js",
 			"required": [
+				"sap/base/Log.js",
 				"sap/base/util/deepEqual.js",
 				"sap/ui/base/SyncPromise.js",
 				"sap/ui/model/odata/v4/lib/_Batch.js",
@@ -5731,6 +5770,7 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/base/util/ObjectPath.js",
+				"sap/ui/VersionInfo.js",
 				"sap/ui/core/Core.js"
 			]
 		},
@@ -5740,6 +5780,7 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/base/util/ObjectPath.js",
+				"sap/ui/VersionInfo.js",
 				"sap/ui/core/Core.js"
 			]
 		},
@@ -5784,6 +5825,15 @@
 		{
 			"name": "../qunit/utils/createAndAppendDiv.js",
 			"module": "sap/ui/qunit/utils/createAndAppendDiv.js"
+		},
+		{
+			"name": "../qunit/utils/waitForThemeApplied-dbg.js",
+			"module": "sap/ui/qunit/utils/waitForThemeApplied.js",
+			"isDebug": true
+		},
+		{
+			"name": "../qunit/utils/waitForThemeApplied.js",
+			"module": "sap/ui/qunit/utils/waitForThemeApplied.js"
 		},
 		{
 			"name": "../security/FrameOptions-dbg.js",
@@ -8321,7 +8371,7 @@
 			"name": "../thirdparty/licenses/klayjs-ECLIPSE-LICENSE.txt"
 		},
 		{
-			"name": "../thirdparty/licenses/lodash-MIT-LICENCE.txt"
+			"name": "../thirdparty/licenses/lodash-MIT-LICENSE.txt"
 		},
 		{
 			"name": "../thirdparty/licenses/mobify-MIT-LICENSE.txt"
@@ -8478,9 +8528,6 @@
 		{
 			"name": "../thirdparty/qunit.js",
 			"module": "sap/ui/thirdparty/qunit.js"
-		},
-		{
-			"name": "../thirdparty/readme.html"
 		},
 		{
 			"name": "../thirdparty/require-dbg.js",
@@ -8814,6 +8861,15 @@
 			"designtime": true
 		},
 		{
+			"name": "CalendarType-dbg.js",
+			"module": "sap/ui/core/CalendarType.js",
+			"isDebug": true
+		},
+		{
+			"name": "CalendarType.js",
+			"module": "sap/ui/core/CalendarType.js"
+		},
+		{
 			"name": "CalendarType.type",
 			"designtime": true
 		},
@@ -9006,6 +9062,7 @@
 				"sap/ui/Device.js",
 				"sap/ui/Global.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Locale.js",
 				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -9023,6 +9080,7 @@
 				"sap/ui/Device.js",
 				"sap/ui/Global.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Locale.js",
 				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -9091,6 +9149,7 @@
 				"sap/base/util/ObjectPath.js",
 				"sap/base/util/Version.js",
 				"sap/base/util/array/uniqueSort.js",
+				"sap/base/util/each.js",
 				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/uid.js",
 				"sap/ui/Device.js",
@@ -9139,6 +9198,7 @@
 				"sap/base/util/ObjectPath.js",
 				"sap/base/util/Version.js",
 				"sap/base/util/array/uniqueSort.js",
+				"sap/base/util/each.js",
 				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/uid.js",
 				"sap/ui/Device.js",
@@ -9333,6 +9393,7 @@
 			"module": "sap/ui/core/ElementMetadata.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/Log.js",
 				"sap/base/util/ObjectPath.js",
 				"sap/ui/base/ManagedObjectMetadata.js",
 				"sap/ui/core/Renderer.js",
@@ -9343,6 +9404,7 @@
 			"name": "ElementMetadata.js",
 			"module": "sap/ui/core/ElementMetadata.js",
 			"required": [
+				"sap/base/Log.js",
 				"sap/base/util/ObjectPath.js",
 				"sap/ui/base/ManagedObjectMetadata.js",
 				"sap/ui/core/Renderer.js",
@@ -9844,6 +9906,7 @@
 				"sap/base/assert.js",
 				"sap/base/util/LoaderExtensions.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Locale.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
@@ -9855,6 +9918,7 @@
 				"sap/base/assert.js",
 				"sap/base/util/LoaderExtensions.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Locale.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
@@ -10170,6 +10234,10 @@
 				"sap/ui/core/Item.js",
 				"sap/ui/core/library.js"
 			]
+		},
+		{
+			"name": "SortOrder.type",
+			"designtime": true
 		},
 		{
 			"name": "StashedControlSupport-dbg.js",
@@ -10898,6 +10966,7 @@
 			"module": "sap/ui/core/date/Buddhist.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/date/UniversalDate.js"
 			]
 		},
@@ -10905,6 +10974,7 @@
 			"name": "date/Buddhist.js",
 			"module": "sap/ui/core/date/Buddhist.js",
 			"required": [
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/date/UniversalDate.js"
 			]
 		},
@@ -10913,6 +10983,7 @@
 			"module": "sap/ui/core/date/Gregorian.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/date/UniversalDate.js"
 			]
 		},
@@ -10920,6 +10991,7 @@
 			"name": "date/Gregorian.js",
 			"module": "sap/ui/core/date/Gregorian.js",
 			"required": [
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/date/UniversalDate.js"
 			]
 		},
@@ -10929,6 +11001,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/base/Log.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/date/UniversalDate.js"
 			]
 		},
@@ -10937,6 +11010,7 @@
 			"module": "sap/ui/core/date/Islamic.js",
 			"required": [
 				"sap/base/Log.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/date/UniversalDate.js"
 			]
 		},
@@ -10945,6 +11019,7 @@
 			"module": "sap/ui/core/date/Japanese.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/date/UniversalDate.js"
 			]
 		},
@@ -10952,6 +11027,7 @@
 			"name": "date/Japanese.js",
 			"module": "sap/ui/core/date/Japanese.js",
 			"required": [
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/date/UniversalDate.js"
 			]
 		},
@@ -10960,6 +11036,7 @@
 			"module": "sap/ui/core/date/Persian.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/date/UniversalDate.js"
 			]
 		},
@@ -10967,6 +11044,7 @@
 			"name": "date/Persian.js",
 			"module": "sap/ui/core/date/Persian.js",
 			"required": [
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/date/UniversalDate.js"
 			]
 		},
@@ -11296,10 +11374,10 @@
 				"sap/base/Log.js",
 				"sap/base/strings/formatMessage.js",
 				"sap/base/util/deepEqual.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/core/library.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -11310,10 +11388,10 @@
 				"sap/base/Log.js",
 				"sap/base/strings/formatMessage.js",
 				"sap/base/util/deepEqual.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Locale.js",
 				"sap/ui/core/LocaleData.js",
 				"sap/ui/core/date/UniversalDate.js",
-				"sap/ui/core/library.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -11421,6 +11499,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/base/DataType.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Core.js"
 			]
 		},
@@ -11448,6 +11527,8 @@
 				"sap/base/util/array/diff.js",
 				"sap/base/util/array/uniqueSort.js",
 				"sap/base/util/deepEqual.js",
+				"sap/base/util/each.js",
+				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/isPlainObject.js",
 				"sap/base/util/merge.js",
 				"sap/base/util/now.js",
@@ -11464,6 +11545,7 @@
 				"sap/m/Text.js",
 				"sap/m/library.js",
 				"sap/ui/Global.js",
+				"sap/ui/VersionInfo.js",
 				"sap/ui/base/BindingParser.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/base/EventProvider.js",
@@ -11474,6 +11556,7 @@
 				"sap/ui/base/Object.js",
 				"sap/ui/base/ObjectPool.js",
 				"sap/ui/core/BusyIndicatorUtils.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/ComponentMetadata.js",
 				"sap/ui/core/Control.js",
@@ -11574,7 +11657,6 @@
 				"sap/base/strings/capitalize.js",
 				"sap/base/strings/hyphenate.js",
 				"sap/base/util/defineCoupledProperty.js",
-				"sap/base/util/each.js",
 				"sap/base/util/includes.js",
 				"sap/base/util/values.js",
 				"sap/ui/Device.js",
@@ -11927,6 +12009,7 @@
 				"sap/ui/qunit/utils/ControlIterator.js",
 				"sap/ui/qunit/utils/MemoryLeakCheck.js",
 				"sap/ui/qunit/utils/createAndAppendDiv.js",
+				"sap/ui/qunit/utils/waitForThemeApplied.js",
 				"sap/ui/test/BlanketReporter.js",
 				"sap/ui/test/BlanketReporterUI.view.xml",
 				"sap/ui/test/BranchTracking.js",
@@ -12112,6 +12195,8 @@
 				"sap/base/util/array/diff.js",
 				"sap/base/util/array/uniqueSort.js",
 				"sap/base/util/deepEqual.js",
+				"sap/base/util/each.js",
+				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/isPlainObject.js",
 				"sap/base/util/merge.js",
 				"sap/base/util/now.js",
@@ -12128,6 +12213,7 @@
 				"sap/m/Text.js",
 				"sap/m/library.js",
 				"sap/ui/Global.js",
+				"sap/ui/VersionInfo.js",
 				"sap/ui/base/BindingParser.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/base/EventProvider.js",
@@ -12138,6 +12224,7 @@
 				"sap/ui/base/Object.js",
 				"sap/ui/base/ObjectPool.js",
 				"sap/ui/core/BusyIndicatorUtils.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/ComponentMetadata.js",
 				"sap/ui/core/Control.js",
@@ -12238,7 +12325,6 @@
 				"sap/base/strings/capitalize.js",
 				"sap/base/strings/hyphenate.js",
 				"sap/base/util/defineCoupledProperty.js",
-				"sap/base/util/each.js",
 				"sap/base/util/includes.js",
 				"sap/base/util/values.js",
 				"sap/ui/Device.js",
@@ -12591,6 +12677,7 @@
 				"sap/ui/qunit/utils/ControlIterator.js",
 				"sap/ui/qunit/utils/MemoryLeakCheck.js",
 				"sap/ui/qunit/utils/createAndAppendDiv.js",
+				"sap/ui/qunit/utils/waitForThemeApplied.js",
 				"sap/ui/test/BlanketReporter.js",
 				"sap/ui/test/BlanketReporterUI.view.xml",
 				"sap/ui/test/BranchTracking.js",
@@ -12780,6 +12867,8 @@
 				"sap/base/util/array/diff.js",
 				"sap/base/util/array/uniqueSort.js",
 				"sap/base/util/deepEqual.js",
+				"sap/base/util/each.js",
+				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/isPlainObject.js",
 				"sap/base/util/merge.js",
 				"sap/base/util/now.js",
@@ -12794,6 +12883,7 @@
 				"sap/ui/base/Object.js",
 				"sap/ui/base/ObjectPool.js",
 				"sap/ui/core/BusyIndicatorUtils.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/ComponentMetadata.js",
 				"sap/ui/core/Control.js",
@@ -12891,7 +12981,6 @@
 				"sap/base/strings/capitalize.js",
 				"sap/base/strings/hyphenate.js",
 				"sap/base/util/defineCoupledProperty.js",
-				"sap/base/util/each.js",
 				"sap/base/util/includes.js",
 				"sap/base/util/values.js",
 				"sap/ui/Device.js",
@@ -13230,6 +13319,8 @@
 				"sap/base/util/array/diff.js",
 				"sap/base/util/array/uniqueSort.js",
 				"sap/base/util/deepEqual.js",
+				"sap/base/util/each.js",
+				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/isPlainObject.js",
 				"sap/base/util/merge.js",
 				"sap/base/util/now.js",
@@ -13244,6 +13335,7 @@
 				"sap/ui/base/Object.js",
 				"sap/ui/base/ObjectPool.js",
 				"sap/ui/core/BusyIndicatorUtils.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/ComponentMetadata.js",
 				"sap/ui/core/Control.js",
@@ -13341,7 +13433,6 @@
 				"sap/base/strings/capitalize.js",
 				"sap/base/strings/hyphenate.js",
 				"sap/base/util/defineCoupledProperty.js",
-				"sap/base/util/each.js",
 				"sap/base/util/includes.js",
 				"sap/base/util/values.js",
 				"sap/ui/Device.js",
@@ -13699,6 +13790,7 @@
 			"module": "sap/ui/core/library.js",
 			"required": [
 				"sap/ui/base/DataType.js",
+				"sap/ui/core/CalendarType.js",
 				"sap/ui/core/Core.js"
 			]
 		},
@@ -15206,6 +15298,7 @@
 				"sap/base/util/UriParameters.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/support/RuleAnalyzer.js",
+				"sap/ui/support/library.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -15217,6 +15310,7 @@
 				"sap/base/util/UriParameters.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/support/RuleAnalyzer.js",
+				"sap/ui/support/library.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},

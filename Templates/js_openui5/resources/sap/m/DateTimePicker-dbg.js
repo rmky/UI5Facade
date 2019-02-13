@@ -50,7 +50,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
-	 * Enables the users to select date and time values in a combined input.
+	 * Enables the users to select date (between 0001-01-01 and 9999-12-31) and time values in a combined input.
 	 *
 	 * <h3>Overview</h3>
 	 *
@@ -125,7 +125,7 @@ sap.ui.define([
 	 * mobile devices, it opens in full screen.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -164,6 +164,7 @@ sap.ui.define([
 	var PopupContent = Control.extend("sap.m.internal.DateTimePickerPopup", {
 
 		metadata: {
+			library : "sap.m",
 			aggregations: {
 				_switcher  : {type: "sap.ui.core.Control", multiple: false, visibility: "hidden"},
 				calendar   : {type: "sap.ui.core.Control", multiple: false},
@@ -613,7 +614,7 @@ sap.ui.define([
 			oDate = new Date(oDate.getTime());
 		} else {
 			oDate = this._getInitialFocusedDateValue();
-			var iMaxTimeMillis = this._oMaxDate.getTime() + 86400000 /* one day in milliseconds */;
+			var iMaxTimeMillis = this._oMaxDate.getTime();
 
 			if (oDate.getTime() < this._oMinDate.getTime() || oDate.getTime() > iMaxTimeMillis) {
 				oDate = this._oMinDate;

@@ -28,7 +28,7 @@ sap.ui.define([
 	 *
 	 * @author SAP SE
 	 * @version
-	 * 1.60.1
+	 * 1.61.2
 	 *
 	 * @public
 	 * @alias sap.ui.model.odata.ODataAnnotations

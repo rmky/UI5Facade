@@ -57,7 +57,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -238,7 +238,7 @@ sap.ui.define([
 			return;
 		}
 
-		var iTokenizerWidth = parseInt(this.getMaxWidth(), 10),
+		var iTokenizerWidth = parseInt(this.getMaxWidth()),
 			aTokens = this.getTokens().reverse(),
 			iTokensCount = aTokens.length,
 			iLabelWidth, iFreeSpace,
@@ -299,6 +299,7 @@ sap.ui.define([
 			var sLabelKey = "MULTIINPUT_SHOW_MORE_TOKENS";
 
 			if (iHiddenTokensCount === this.getTokens().length) {
+				this.$().css("overflow", "visible");
 				if (iHiddenTokensCount === 1) {
 					sLabelKey = "TOKENIZER_SHOW_ALL_ITEM";
 				} else {
@@ -309,6 +310,7 @@ sap.ui.define([
 			this._oIndicator.removeClass("sapUiHidden");
 			this._oIndicator.html(oRb.getText(sLabelKey, iHiddenTokensCount));
 		} else {
+			this.$().css("overflow", "hidden");
 			this._oIndicator.addClass("sapUiHidden");
 		}
 

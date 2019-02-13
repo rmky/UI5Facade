@@ -242,6 +242,7 @@ sap.ui.define([
 	});
 
 	return {
+		defaultConfig: DEFAULT_CONFIG,
 		addStylesheet: addStylesheet,
 		encode: encode,
 		getAttribute: getAttribute,

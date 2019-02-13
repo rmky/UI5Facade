@@ -45,7 +45,7 @@ sap.ui.define([
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.m",
-		version: "1.60.1",
+		version: "1.61.2",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		types: [
@@ -86,6 +86,7 @@ sap.ui.define([
 			"sap.m.ListType",
 			"sap.m.LoadState",
 			"sap.m.MenuButtonMode",
+			"sap.m.ObjectHeaderPictureShape",
 			"sap.m.OverflowToolbarPriority",
 			"sap.m.P13nPanelType",
 			"sap.m.PageBackgroundDesign",
@@ -205,9 +206,6 @@ sap.ui.define([
 			"sap.m.ObjectMarker",
 			"sap.m.ObjectNumber",
 			"sap.m.ObjectStatus",
-			"sap.m.OnePersonCalendar",
-			"sap.m.OnePersonGrid",
-			"sap.m.OnePersonHeader",
 			"sap.m.OverflowToolbar",
 			"sap.m.OverflowToolbarButton",
 			"sap.m.OverflowToolbarToggleButton",
@@ -223,6 +221,7 @@ sap.ui.define([
 			"sap.m.Panel",
 			"sap.m.PDFViewer",
 			"sap.m.PlanningCalendar",
+			"sap.m.PlanningCalendarHeader",
 			"sap.m.Popover",
 			"sap.m.ProgressIndicator",
 			"sap.m.PullToRefresh",
@@ -242,6 +241,8 @@ sap.ui.define([
 			"sap.m.SelectList",
 			"sap.m.SelectionDetails",
 			"sap.m.Shell",
+			"sap.m.SinglePlanningCalendar",
+			"sap.m.SinglePlanningCalendarGrid",
 			"sap.m.Slider",
 			"sap.m.SliderTooltip",
 			"sap.m.SliderTooltipContainer",
@@ -294,7 +295,6 @@ sap.ui.define([
 			"sap.m.IconTabFilter",
 			"sap.m.IconTabSeparator",
 			"sap.m.LightBoxItem",
-			"sap.m.OnePersonView",
 			"sap.m.OverflowToolbarLayoutData",
 			"sap.m.MaskInputRule",
 			"sap.m.MenuItem",
@@ -314,6 +314,10 @@ sap.ui.define([
 			"sap.m.SegmentedButtonItem",
 			"sap.m.SelectionDetailsItem",
 			"sap.m.SelectionDetailsItemLine",
+			"sap.m.SinglePlanningCalendarDayView",
+			"sap.m.SinglePlanningCalendarWeekView",
+			"sap.m.SinglePlanningCalendarWorkWeekView",
+			"sap.m.SinglePlanningCalendarView",
 			"sap.m.SuggestionItem",
 			"sap.m.TabContainerItem",
 			"sap.m.TabStripItem",
@@ -481,7 +485,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @public
 	 */
 	var thisLib = sap.m;
@@ -681,39 +685,6 @@ sap.ui.define([
 		 * @public
 		 */
 		OneMonth : "One Month"
-
-	};
-
-	/**
-	 * A list of the default built-in views in a {@link sap.m.OnePersonCalendar}, described by their keys.
-	 * Disclaimer: this control is in beta state - incompatible API changes may be done before its official public release. Use at your own discretion.
-	 *
-	 * @enum {string}
-	 * @private
-	 * @since 1.58.0
-	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
-	 */
-	thisLib.OnePersonCalendarView = {
-
-		/**
-		 * Represents the key of the built-in view, in which the intervals have the size of one day.
-		 * @private
-		 */
-		Day : "Day",
-
-		/**
-		 * Represents the key of the built-in view, in which the intervals have the size of one day
-		 * where 5 days are displayed, starting with the first working day of the week.
-		 * @private
-		 */
-		WorkWeek : "Work Week",
-
-		/**
-		 * Represents the key of the built-in view, in which the intervals have the size of one day
-		 * where 7 days are displayed, starting with the first day of the week.
-		 * @private
-		 */
-		Week : "Week"
 
 	};
 
@@ -2364,40 +2335,40 @@ sap.ui.define([
 	thisLib.OverflowToolbarPriority = {
 
 		/**
-		 * NeverOverflow priority forces OverflowToolbar items to remain always in the toolbar
+		 * Forces <code>OverflowToolbar</code> items to remain always in the toolbar.
 		 * @public
 		 */
 		NeverOverflow : "NeverOverflow",
 
 		/**
-		 * Deprecated - Use <code>sap.m.OverflowToolbarPriority.NeverOverflow</code> instead
+		 * Deprecated - Use <code>sap.m.OverflowToolbarPriority.NeverOverflow</code> instead.
 		 * @deprecated Since version 1.48
 		 * @public
 		 */
 		Never : "Never",
 
 		/**
-		 * High priority OverflowToolbar items overflow after the items with lower priority
+		 * Items with priority <code>High</code> overflow after the items with lower priority.
 		 * @public
 		 */
 		High : "High",
 
 		/**
-		 * Low priority  OverflowToolbar items overflow before the items with higher priority such as High priority items
+		 * Items with priority <code>Low</code> overflow before the items with higher priority,
+		 * such as <code>High</code> priority items.
 		 * @public
 		 */
 		Low : "Low",
 
 		/**
-		 * Disappear priority  OverflowToolbar items overflow before the items with higher priority
-		 * such as Low and High priority items and remain hidden in the overflow area.
-		 *
+		 * Items with priority <code>Disappear</code> overflow before the items with higher priority,
+		 * such as <code>Low</code> and <code>High</code>, and remain hidden in the overflow area.
 		 * @public
 		 */
 		Disappear : "Disappear",
 
 		/**
-		 * AlwaysOverflow priority forces OverflowToolbar items to remain always in the overflow area
+		 * Forces <code>OverflowToolbar</code> items to remain always in the overflow area.
 		 * @public
 		 */
 		AlwaysOverflow : "AlwaysOverflow",
@@ -2420,6 +2391,30 @@ sap.ui.define([
 	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
 	 */
 
+	/**
+	 * Used by the <code>ObjectHeader</code> control to define which shape to use for the image.
+	 *
+	 * @author SAP SE
+	 * @enum {string}
+	 * @public
+	 * @ui5-metamodel This enumeration will also be described in the UI5 (legacy) designtime metamodel
+	 * @since 1.61
+	 */
+	thisLib.ObjectHeaderPictureShape = {
+
+		/**
+		 * Circle shape for the images in the <code>ObjectHeader</code>.
+		 * @public
+		 */
+		Circle: "Circle",
+
+		/**
+		 * Square shape for the images in the <code>ObjectHeader</code>.
+		 * @public
+		 */
+		Square: "Square"
+
+	};
 
 	/**
 	 * Type of panels used in the personalization dialog.
@@ -4493,8 +4488,8 @@ sap.ui.define([
 	// implement Form helper factory with m controls
 	// possible is set before layout lib is loaded.
 	ObjectPath.set("sap.ui.layout.form.FormHelper", {
-		createLabel: function(sText){
-			return new sap.m.Label({text: sText});
+		createLabel: function(sText, sId){
+			return new sap.m.Label(sId, {text: sText});
 		},
 		createButton: function(sId, fnPressFunction, fnCallback){
 			var that = this;
@@ -4570,6 +4565,9 @@ sap.ui.define([
 			},
 			createRadioButtonItem: function (mConfig) {
 				return new sap.m.RadioButton(mConfig);
+			},
+			createButton: function (sId, mConfig) {
+				return new sap.m.Button(sId, mConfig);
 			}
 		},
 		bFinal: true

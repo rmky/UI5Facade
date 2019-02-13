@@ -20,7 +20,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.Object
 	 *
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @alias sap.ui.layout.cssgrid.GridLayoutDelegate
 	 * @public
 	 */
@@ -49,6 +49,9 @@ sap.ui.define([
 	GridLayoutDelegate.prototype.exit = function () {
 		GridLayoutDelegate.deregisterResizeListener(this);
 	};
+	/**
+	 * ===================== END of handling IGridConfigurable lifecycle events  =====================
+	 */
 
 	/**
 	 * ===================== START of helper functions =====================
@@ -92,6 +95,10 @@ sap.ui.define([
 		oGridLayout.onGridResize(oEvent);
 		oGridLayout.applyGridLayout(this.getGridDomRefs());
 	};
+
+	/**
+	 * ===================== END of helper functions =====================
+	 */
 
 	return GridLayoutDelegate;
 });

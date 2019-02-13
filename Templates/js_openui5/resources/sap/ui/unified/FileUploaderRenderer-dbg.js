@@ -70,6 +70,7 @@ sap.ui.define(['sap/ui/unified/library', "sap/ui/thirdparty/jquery"],
 		}
 		oRm.renderControl(oFileUploader.oFilePath);
 		oRm.write('</div><div>');  //-> per style margin
+		oFileUploader._ensureBackwardsReference();
 		oRm.renderControl(oFileUploader.oBrowse);
 
 		var sAriaText;

@@ -79,6 +79,7 @@
 	header: undefined, // sap.f.DynamicPageHeader
 	content: undefined, // sap.ui.core.Control
 	footer: undefined, // sap.m.IBar
+	landmarkInfo: undefined, // sap.f.DynamicPageAccessibleLandmarkInfo, since 1.61
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -105,7 +106,41 @@
 		<header></header> <!-- sap.f.DynamicPageHeader -->
 		<content></content> <!-- sap.ui.core.Control -->
 		<footer></footer> <!-- sap.m.IBar -->
+		<landmarkInfo></landmarkInfo> <!-- sap.f.DynamicPageAccessibleLandmarkInfo, since 1.61 -->
 </DynamicPage>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.DynamicPageAccessibleLandmarkInfo" alias="DynamicPageAccessibleLandmarkInfo,Info">
+	<jsTemplate><![CDATA[new sap.f.DynamicPageAccessibleLandmarkInfo({
+	id: "${id}", // sap.ui.core.ID
+	rootRole: sap.ui.core.AccessibleLandmarkRole.None, // sap.ui.core.AccessibleLandmarkRole
+	rootLabel: undefined, // string
+	contentRole: sap.ui.core.AccessibleLandmarkRole.None, // sap.ui.core.AccessibleLandmarkRole
+	contentLabel: undefined, // string
+	headerRole: sap.ui.core.AccessibleLandmarkRole.None, // sap.ui.core.AccessibleLandmarkRole
+	headerLabel: undefined, // string
+	footerRole: sap.ui.core.AccessibleLandmarkRole.None, // sap.ui.core.AccessibleLandmarkRole
+	footerLabel: undefined, // string
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [] // sap.ui.core.dnd.DragDropBase, since 1.56
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<DynamicPageAccessibleLandmarkInfo xmlns="sap.f"
+	id="${id}"
+	rootRole="None"
+	rootLabel=""
+	contentRole="None"
+	contentLabel=""
+	headerRole="None"
+	headerLabel=""
+	footerRole="None"
+	footerLabel="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</DynamicPageAccessibleLandmarkInfo>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.f.DynamicPageHeader" alias="DynamicPageHeader,Header">
@@ -289,6 +324,137 @@
 		<midColumnPages></midColumnPages> <!-- sap.ui.core.Control -->
 		<endColumnPages></endColumnPages> <!-- sap.ui.core.Control -->
 </FlexibleColumnLayout>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.GridList" alias="GridList,List">
+	<jsTemplate><![CDATA[new sap.f.GridList({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	inset: false, // boolean
+	headerText: undefined, // string
+	headerDesign: sap.m.ListHeaderDesign.Standard, // sap.m.ListHeaderDesign, since 1.14
+	footerText: undefined, // string
+	mode: sap.m.ListMode.None, // sap.m.ListMode
+	width: "100%", // sap.ui.core.CSSSize
+	includeItemInSelection: false, // boolean
+	showUnread: false, // boolean
+	noDataText: undefined, // string
+	showNoData: true, // boolean
+	enableBusyIndicator: true, // boolean, since 1.20.2
+	modeAnimationOn: true, // boolean
+	showSeparators: sap.m.ListSeparators.All, // sap.m.ListSeparators
+	swipeDirection: sap.m.SwipeDirection.Both, // sap.m.SwipeDirection
+	growing: false, // boolean, since 1.16.0
+	growingThreshold: 20, // int, since 1.16.0
+	growingTriggerText: undefined, // string, since 1.16.0
+	growingScrollToLoad: false, // boolean, since 1.16.0
+	growingDirection: sap.m.ListGrowingDirection.Downwards, // sap.m.ListGrowingDirection, since 1.40.0
+	rememberSelections: true, // boolean, since 1.16.6
+	keyboardMode: sap.m.ListKeyboardMode.Navigation, // sap.m.ListKeyboardMode, since 1.38.0
+	sticky: undefined, // sap.m.Sticky[], since 1.58
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	items: [], // sap.m.ListItemBase
+	swipeContent: undefined, // sap.ui.core.Control
+	headerToolbar: undefined, // sap.m.Toolbar, since 1.16
+	infoToolbar: undefined, // sap.m.Toolbar, since 1.16
+	contextMenu: undefined, // sap.ui.core.IContextMenu, since 1.54
+	customLayout: undefined, // sap.ui.layout.cssgrid.GridLayoutBase
+	ariaLabelledBy: [], // sap.ui.core.Control, since 1.28.0
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	select: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	selectionChange: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this], // since 1.16
+	"delete": [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	swipe: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	growingStarted: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this], // since 1.16
+	growingFinished: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this], // since 1.16
+	updateStarted: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this], // since 1.16.3
+	updateFinished: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this], // since 1.16.3
+	itemPress: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this], // since 1.20
+	beforeOpenContextMenu: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this] // since 1.54
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<GridList xmlns="sap.f"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	inset="false"
+	headerText=""
+	headerDesign="Standard"
+	footerText=""
+	mode="None"
+	width="100%"
+	includeItemInSelection="false"
+	showUnread="false"
+	noDataText=""
+	showNoData="true"
+	enableBusyIndicator="true"
+	modeAnimationOn="true"
+	showSeparators="All"
+	swipeDirection="Both"
+	growing="false"
+	growingThreshold="20"
+	growingTriggerText=""
+	growingScrollToLoad="false"
+	growingDirection="Downwards"
+	rememberSelections="true"
+	keyboardMode="Navigation"
+	sticky=""
+	ariaLabelledBy=""
+	validateFieldGroup=""
+	select=""
+	selectionChange=""
+	"delete"=""
+	swipe=""
+	growingStarted=""
+	growingFinished=""
+	updateStarted=""
+	updateFinished=""
+	itemPress=""
+	beforeOpenContextMenu="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+		<items></items> <!-- sap.m.ListItemBase -->
+		<swipeContent></swipeContent> <!-- sap.ui.core.Control -->
+		<headerToolbar></headerToolbar> <!-- sap.m.Toolbar, since 1.16 -->
+		<infoToolbar></infoToolbar> <!-- sap.m.Toolbar, since 1.16 -->
+		<contextMenu></contextMenu> <!-- sap.ui.core.IContextMenu, since 1.54 -->
+		<customLayout></customLayout> <!-- sap.ui.layout.cssgrid.GridLayoutBase -->
+</GridList>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.f.semantic.AddAction" alias="AddAction,Action">
@@ -801,6 +967,7 @@
 	sendEmailAction: undefined, // sap.f.semantic.SendEmailAction
 	printAction: undefined, // sap.f.semantic.PrintAction
 	customShareActions: [], // sap.m.Button
+	landmarkInfo: undefined, // sap.f.DynamicPageAccessibleLandmarkInfo, since 1.61
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -859,6 +1026,7 @@
 		<sendEmailAction></sendEmailAction> <!-- sap.f.semantic.SendEmailAction -->
 		<printAction></printAction> <!-- sap.f.semantic.PrintAction -->
 		<customShareActions></customShareActions> <!-- sap.m.Button -->
+		<landmarkInfo></landmarkInfo> <!-- sap.f.DynamicPageAccessibleLandmarkInfo, since 1.61 -->
 </semantic/SemanticPage>
 ]]></xmlTemplate>
 </Template>

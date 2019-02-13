@@ -5,8 +5,8 @@
  */
 
 //Provides the locale object sap.ui.core.LocaleData
-sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './Locale', 'sap/base/assert', 'sap/base/util/LoaderExtensions'],
-	function(jQuery, BaseObject, Locale, assert, LoaderExtensions) {
+sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType', './Locale', 'sap/base/assert', 'sap/base/util/LoaderExtensions'],
+	function(jQuery, BaseObject, CalendarType, Locale, assert, LoaderExtensions) {
 	"use strict";
 
 	/**
@@ -18,7 +18,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './Locale', 'sa
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @public
 	 * @alias sap.ui.core.LocaleData
 	 */
@@ -967,6 +967,17 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './Locale', 'sa
 		},
 
 		/**
+		 * Returns the currency symbols available for this locale
+		 *
+		 * @returns {object} the map of all currency symbols available in this locale
+		 * @public
+		 * @since 1.60
+		 */
+		getCurrencySymbols: function() {
+			return this._get("currencySymbols");
+		},
+
+		/**
 		 * Retrieves the localized display name of a unit by sUnit, e.g. "duration-hour".
 		 * @param {string} sUnit the unit key, e.g. "duration-hour"
 		 * @return {string} The localized display name for the requested unit, e.g. <code>"Hour"</code>. Return empty string <code>""</code> if not found
@@ -1022,7 +1033,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './Locale', 'sa
 				oScale = this._get("dateFields", sScale + "-" + sStyle);
 				for (var sEntry in oScale) {
 					if (sEntry.indexOf("relative-type-") === 0) {
-						iValue = parseInt(sEntry.substr(14), 10);
+						iValue = parseInt(sEntry.substr(14));
 						aPatterns.push({
 							scale: sScale,
 							value: iValue,
@@ -1389,7 +1400,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './Locale', 'sa
 			var oEras = this._get(getCLDRCalendarName(sCalendarType), "era-" + sWidth),
 				aEras = [];
 			for (var i in oEras) {
-				aEras[parseInt(i, 10)] = oEras[i];
+				aEras[parseInt(i)] = oEras[i];
 			}
 			return aEras;
 		},
@@ -1407,7 +1418,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './Locale', 'sa
 			var oEraDates = this._get("eras-" + sCalendarType.toLowerCase()),
 				aEraDates = [];
 			for (var i in oEraDates) {
-				aEraDates[parseInt(i, 10)] = oEraDates[i];
+				aEraDates[parseInt(i)] = oEraDates[i];
 			}
 			return aEraDates;
 		},
@@ -1442,10 +1453,6 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './Locale', 'sa
 			var sCalendarPreference = this._get("calendarPreference"),
 				aCalendars = sCalendarPreference ? sCalendarPreference.split(" ") : [],
 				sCalendarName, sType, i;
-
-			// lazy load of sap.ui.core library to avoid cyclic dependencies
-			sap.ui.getCore().loadLibrary('sap.ui.core');
-			var CalendarType = sap.ui.require("sap/ui/core/library").CalendarType;
 
 			for ( i = 0 ; i < aCalendars.length ; i++ ) {
 				// No support for calendar subtypes (islamic) yet, so ignore part after -
@@ -1602,7 +1609,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './Locale', 'sa
 				var fnOperand;
 				fnOperand = operand();
 				if (accept(OP_MOD)) {
-					var iDivisor = parseInt(consume(), 10);
+					var iDivisor = parseInt(consume());
 					return function(o) {
 						return fnOperand(o) % iDivisor;
 					};
@@ -1648,10 +1655,10 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './Locale', 'sa
 				aParts.forEach(function(sPart) {
 					aRange = sPart.split(RANGE);
 					if (aRange.length === 1) {
-						aValues.push(parseInt(sPart, 10));
+						aValues.push(parseInt(sPart));
 					} else {
-						iFrom = parseInt(aRange[0], 10);
-						iTo = parseInt(aRange[1], 10);
+						iFrom = parseInt(aRange[0]);
+						iTo = parseInt(aRange[1]);
 						for (var i = iFrom; i <= iTo; i++) {
 							aValues.push(i);
 						}
@@ -1682,11 +1689,11 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './Locale', 'sa
 
 				o = {
 					n: parseFloat(sValue),
-					i: parseInt(sDecimal, 10),
+					i: parseInt(sDecimal),
 					v: sFraction.length,
 					w: sFractionNoZeros.length,
-					f: parseInt(sFraction, 10),
-					t: parseInt(sFractionNoZeros, 10)
+					f: parseInt(sFraction),
+					t: parseInt(sFractionNoZeros)
 				};
 				return fnOr(o);
 			};

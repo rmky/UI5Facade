@@ -31,6 +31,7 @@ sap.ui.define([
 	"sap/ui/rta/plugin/Settings",
 	"sap/ui/rta/plugin/Stretch",
 	"sap/ui/rta/plugin/ControlVariant",
+	"sap/ui/dt/plugin/ToolHooks",
 	"sap/ui/dt/plugin/ContextMenu",
 	"sap/ui/dt/plugin/TabHandling",
 	"sap/ui/fl/FlexControllerFactory",
@@ -82,6 +83,7 @@ function(
 	SettingsPlugin,
 	StretchPlugin,
 	ControlVariantPlugin,
+	ToolHooksPlugin,
 	ContextMenuPlugin,
 	TabHandlingPlugin,
 	FlexControllerFactory,
@@ -124,7 +126,7 @@ function(
 	 * @class The runtime authoring allows to adapt the fields of a running application.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -377,11 +379,13 @@ function(
 			this._mDefaultPlugins["controlVariant"] = new ControlVariantPlugin({
 				commandFactory : oCommandFactory
 			});
+
+			//ToolHooks
+			this._mDefaultPlugins["toolHooks"] = new ToolHooksPlugin();
 		}
 
 		return jQuery.extend({}, this._mDefaultPlugins);
 	};
-
 
 	RuntimeAuthoring.prototype.addDependent = function (oObject, sName, bCreateGetter) {
 		bCreateGetter = typeof bCreateGetter === 'undefined' ? true : !!bCreateGetter;
@@ -1206,7 +1210,7 @@ function(
 			this.getPlugins()["rename"].startEdit(oContainerElementOverlay);
 		};
 
-		var fnGeometryChangedCallback = function(oEvent) {
+		var fnGeometryChangedCallback = function (oEvent) {
 			var oElementOverlay = oEvent.getSource();
 			if (oElementOverlay.getGeometry() && oElementOverlay.getGeometry().visible) {
 				fnStartEdit.call(this, oElementOverlay);
@@ -1214,16 +1218,14 @@ function(
 			}
 		};
 
-		var fnOverlayRenderedCallback = function(oEvent){
-			var oNewOverlay = oEvent.getSource();
+		var fnGeometryCheck = function (oElementOverlay) {
 			// the control can be set to visible, but still have no size when we do the check
 			// that's why we also attach to 'geometryChanged' and check if the overlay has a size
-			if (!oNewOverlay.getGeometry() || !oNewOverlay.getGeometry().visible) {
-				oNewOverlay.attachEvent('geometryChanged', fnGeometryChangedCallback, this);
+			if (!oElementOverlay.getGeometry() || !oElementOverlay.getGeometry().visible) {
+				oElementOverlay.attachEvent('geometryChanged', fnGeometryChangedCallback, this);
 			} else {
-				fnStartEdit.call(this, oNewOverlay);
+				fnStartEdit.call(this, oElementOverlay);
 			}
-			oNewOverlay.detachEvent('afterRendering', fnOverlayRenderedCallback, this);
 		};
 
 		var fnElementOverlayCreatedCallback = function(oEvent){
@@ -1231,7 +1233,13 @@ function(
 			if (oNewOverlay.getElement().getId() === sNewControlID) {
 				this._oDesignTime.detachEvent("elementOverlayCreated", fnElementOverlayCreatedCallback, this);
 				// the overlay needs to be rendered before we can trigger the rename on it
-				oNewOverlay.attachEvent('afterRendering', fnOverlayRenderedCallback, this);
+				if (oNewOverlay.isRendered()) {
+					fnGeometryCheck.call(this, oNewOverlay);
+				} else {
+					oNewOverlay.attachEventOnce('afterRendering', function (oEvent) {
+						fnGeometryCheck.call(this, oEvent.getSource());
+					}, this);
+				}
 			}
 		};
 

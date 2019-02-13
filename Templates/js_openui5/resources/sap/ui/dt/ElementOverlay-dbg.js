@@ -48,7 +48,7 @@ function (
 	 * @extends sap.ui.dt.Overlay
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @private
@@ -205,7 +205,10 @@ function (
 			oMutationObserver.addToWhiteList(this._sObservableNodeId);
 			oMutationObserver.attachDomChanged(this._onDomChanged, this);
 		} else {
-			Log.error('sap.ui.dt.ElementOverlay#_subscribeToMutationObserver: please provide a root control with proper domRef and id to ensure that RTA is working properly');
+			throw Util.createError(
+				'ElementOverlay#_subscribeToMutationObserver',
+				'Please provide a root control with proper domRef and id to ensure that DesignTime is working properly'
+			);
 		}
 	};
 
@@ -219,7 +222,7 @@ function (
 	};
 
 	/**
-	 * Starts monotoring element with ControlObserser
+	 * Starts monotoring element with ControlObserver
 	 * @private
 	 */
 	ElementOverlay.prototype._initControlObserver = function() {
@@ -302,29 +305,25 @@ function (
 
 				// if element is destroyed during designtime metadata loading
 				if (!oElement || oElement.bIsDestroyed) {
-					new Error("sap.ui.dt.ElementOverlay#loadDesignTimeMetadata / Can't set metadata to overlay which element has been destroyed already");
+					throw Util.createError(
+						"ElementOverlay#loadDesignTimeMetadata",
+						"Can't set metadata to overlay which element has been destroyed already"
+					);
 				}
 
 				this.setDesignTimeMetadata(mDesignTimeMetadata);
 			}.bind(this))
 			.catch(function (vError) {
-				var oError = Util.wrapError(vError);
-
-				// adding payload for external errors
-				if (Util.isForeignError(oError)) {
-					var sLocation = 'sap.ui.dt.ElementOverlay#loadDesignTimeMetadata';
-					oError.name = 'Error in ' + sLocation;
-					oError.message = Util.printf(
-						"{0} / Can't load designtime metadata data for overlay with id='{1}', element id='{2}' ({3}): {4}",
-						sLocation,
+				throw Util.propagateError(
+					vError,
+					"ElementOverlay#loadDesignTimeMetadata",
+					Util.printf(
+						"Can't load designtime metadata data for overlay with id='{1}', element id='{2}': {3}",
 						this.getId(),
-						this.getElement().getId(),
-						this.getElement().getMetadata().getName(),
-						oError.message
-					);
-				}
-
-				throw oError;
+						this.getAssociation('element'), // Can't use this.getElement(), because the element might be destroyed already
+						Util.wrapError(vError).message
+					)
+				);
 			}.bind(this));
 	};
 
@@ -347,6 +346,8 @@ function (
 				Overlay.prototype._setPosition.call(this, $ScrollContainerOverlayDomRef, mScrollContainerGeometry, this.$());
 				this._handleOverflowScroll(mScrollContainerGeometry, $ScrollContainerOverlayDomRef, this, bForceScrollbarSync);
 				this._setZIndex(mScrollContainerGeometry, $ScrollContainerOverlayDomRef);
+			} else {
+				$ScrollContainerOverlayDomRef.css("display", "none");
 			}
 		}, this);
 	};
@@ -368,14 +369,17 @@ function (
 		Promise.all(aPromises).then(function () {
 			this._sortChildren(this.getChildrenDomRef());
 
-			this.getScrollContainers().forEach(function(mScrollContainer, iIndex) {
-				var $ScrollContainerDomRef = this.getDesignTimeMetadata().getAssociatedDomRef(this.getElement(), mScrollContainer.domRef) || jQuery();
-				var $ScrollContainerOverlayDomRef = this.getScrollContainerById(iIndex);
+			// TODO: re-think async flow of applyStyles as part of Managing Updates BLI
+			if (!this.bIsDestroyed) {
+				this.getScrollContainers().forEach(function(mScrollContainer, iIndex) {
+					var $ScrollContainerDomRef = this.getDesignTimeMetadata().getAssociatedDomRef(this.getElement(), mScrollContainer.domRef) || jQuery();
+					var $ScrollContainerOverlayDomRef = this.getScrollContainerById(iIndex);
 
-				if ($ScrollContainerDomRef.length) {
-					this._sortChildren($ScrollContainerOverlayDomRef.get(0));
-				}
-			}, this);
+					if ($ScrollContainerDomRef.length) {
+						this._sortChildren($ScrollContainerOverlayDomRef.get(0));
+					}
+				}, this);
+			}
 		}.bind(this));
 	};
 

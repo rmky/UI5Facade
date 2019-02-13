@@ -4,24 +4,13 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-// properly declare dependencies of jquery-ui modules
-sap.ui.loader.config({
-	shim: {
-		'sap/ui/thirdparty/jqueryui/jquery-ui-mouse': {
-			deps: ['sap/ui/thirdparty/jqueryui/jquery-ui-widget']
-		},
-		'sap/ui/thirdparty/jqueryui/jquery-ui-sortable': {
-			deps: ['sap/ui/thirdparty/jqueryui/jquery-ui-core', 'sap/ui/thirdparty/jqueryui/jquery-ui-mouse', 'sap/ui/thirdparty/jqueryui/jquery-ui-widget']
-		}
-	}
-});
-
 // Provides control sap.ui.commons.Accordion.
 sap.ui.define([
-    'jquery.sap.global',
+    'sap/ui/thirdparty/jquery',
     './library',
     'sap/ui/core/Control',
-    "./AccordionRenderer",
+    './AccordionRenderer',
+    'sap/ui/dom/jquery/control', // implements jQuery.fn.control'
     'sap/ui/thirdparty/jqueryui/jquery-ui-core',
     'sap/ui/thirdparty/jqueryui/jquery-ui-widget',
     'sap/ui/thirdparty/jqueryui/jquery-ui-mouse',
@@ -43,7 +32,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.60.1
+	 * @version 1.61.2
 	 *
 	 * @constructor
 	 * @public
@@ -919,4 +908,4 @@ sap.ui.define([
 
 	return Accordion;
 
-}, /* bExport= */ true);
+});

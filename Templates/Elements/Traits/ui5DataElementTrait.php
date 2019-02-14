@@ -121,27 +121,43 @@ JS;
      */
     protected function buildJsToolbar($oControllerJsVar = 'oController', string $leftExtras = null, string $rightExtras = null)
     {
+        return <<<JS
+
+			new sap.m.OverflowToolbar({
+                design: "Transparent",
+				content: [
+					{$this->buildJsToolbarContent($oControllerJsVar, $leftExtras, $rightExtras)}
+				]
+			})
+
+JS;
+    }
+    
+    /**
+     * 
+     * @param string $oControllerJsVar
+     * @param string $leftExtras
+     * @param string $rightExtras
+     * @return string
+     */
+    protected function buildJsToolbarContent($oControllerJsVar = 'oController', string $leftExtras = null, string $rightExtras = null) : string
+    {
         $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $this->getCaption() . '"}),';
         
         $leftExtras = $leftExtras === null ? '' : rtrim($leftExtras, ", ") . ',';
         $rightExtras = $rightExtras === null ? '' : rtrim($leftExtras, ", ") . ',';
         
-        $toolbar = <<<JS
-			new sap.m.OverflowToolbar({
-                design: "Transparent",
-				content: [
-					{$heading}
+        return <<<JS
+
+                    {$heading}
                     {$leftExtras}
 			        new sap.m.ToolbarSpacer(),
                     {$this->buildJsButtonsConstructors()}
                     {$rightExtras}
                     {$this->buildJsQuickSearchConstructor()}
 					{$this->buildJsConfiguratorButtonConstructor()}
-				]
-			})
+
 JS;
-         
-	   return $toolbar;
     }
     
     /**

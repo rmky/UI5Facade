@@ -5,6 +5,7 @@ use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryFlotTrait;
 use exface\Core\Widgets\Chart;
 use exface\Core\DataTypes\StringDataType;
 use exface\OpenUI5Template\Templates\Elements\Traits\ui5DataElementTrait;
+use exface\Core\Widgets\Data;
 
 /**
  * 
@@ -23,11 +24,10 @@ class ui5Chart extends ui5AbstractElement
      * {@inheritDoc}
      * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
      */
-    public function buildJsConstructor($oControllerJs = 'oController') : string
+    public function buildJsConstructorForControl($oControllerJs = 'oController') : string
     {
         $controller = $this->getController();
         $controller->addMethod('onPlot', $this, 'data', $this->buildJsPlotter());
-        $controller->addMethod('onLoadData', $this, '', $this->buildJsDataLoader());
         
         foreach ($this->getJsIncludes() as $path) {
             $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path, null, $path);
@@ -44,7 +44,7 @@ class ui5Chart extends ui5AbstractElement
 
 JS;
                         
-        return $this->buildJsPanelWrapper($chart, $oControllerJs, $this->getCaption());
+        return $this->buildJsPanelWrapper($chart, $oControllerJs);
     }
         
     protected function getJsIncludes() : array
@@ -153,5 +153,19 @@ JS;
     {
         // TODO
         return '';
+    }
+    
+    protected function buildJsQuickSearchConstructor() : string
+    {
+        return '';
+    }
+    
+    /**
+     * 
+     * @see ui5DataElementTrait
+     */
+    protected function getDataWidget() : Data
+    {
+        return $this->getWidget()->getData();
     }
 }

@@ -45,7 +45,15 @@ trait ui5DataElementTrait {
         $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
         $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos', $this->buildJsDataLoader());
         $this->initConfiguratorControl($controller);
-        $controller->addOnShowViewScript($this->buildJsRefresh());
+        
+        // Reload the data every time the view is shown. This is important, because otherwise 
+        // old rows may still be visible if a dialog is open, closed and then reopened for another 
+        // instance.
+        // The data resetter will empty the table as soon as the view is opened, then the refresher
+        // is run after all the view loading logic finished - that's what the setTimeout() is for -
+        // otherwise the refresh would run before the view finished initializing, before the prefill
+        // is started and will probably be empty.
+        $controller->addOnShowViewScript("{$this->buildJsDataResetter()}; setTimeout(function(){ {$this->buildJsRefresh()} }, 0);");
         
         if ($widget->isPreloadDataEnabled()) {
             $dataCols = [];
@@ -72,6 +80,12 @@ trait ui5DataElementTrait {
         }
     }
     
+    /**
+     * Returns the constructor for the inner data control (e.g. table, chart, etc.)
+     * 
+     * @param string $oControllerJs
+     * @return string
+     */
     abstract protected function buildJsConstructorForControl($oControllerJs = 'oController') : string;
     
     /**
@@ -306,8 +320,10 @@ JS;
                 var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
                 var sPendingPropery = "/_prefill/pending";
                 if (oViewModel.getProperty(sPendingPropery) === true) {
+                    console.log('pending', oViewModel.getProperty(sPendingPropery));
                     var oPrefillBinding = new sap.ui.model.Binding(oViewModel, sPendingPropery, oViewModel.getContext(sPendingPropery));
                     var fnPrefillHandler = function(oEvent) {
+                        console.log('retry');
                         oPrefillBinding.detachChange(fnPrefillHandler);
                         setTimeout(function() {
                             {$this->buildJsRefresh()};
@@ -316,8 +332,9 @@ JS;
                     oPrefillBinding.attachChange(fnPrefillHandler);
                     return;
                 }
+
                 {$this->buildJsDataLoaderPrepare()}
-                
+
 JS;
                 
                 if (! $this->isLazyLoading()) {
@@ -510,7 +527,7 @@ JS;
         return <<<JS
         
             oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$this->getController()->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
-            
+            console.log(oTable.getModel().getData());
             {$dynamicPageFixes}
 			
 JS;

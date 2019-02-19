@@ -27,33 +27,55 @@ class ui5Scheduler extends ui5AbstractElement
      */
     public function buildJsConstructorForControl($oControllerJs = 'oController') : string
     {
-        $widget = $this->getWidget();
-        $calItem = $widget->getItemsConfig();
-        
         $controller = $this->getController();
         $this->initConfiguratorControl($controller);
         
-        $subtitleBinding = $calItem->hasSubtitle() ? $this->buildJsValueBindingForWidget($calItem->getSubtitleColumn()->getCellWidget()) : '""';
+        $showRowHeaders = $this->getWidget()->hasResources() ? 'true' : 'false';
         
         return <<<JS
 
 new sap.m.PlanningCalendar("{$this->getId()}", {
 	startDate: "{/_scheduler/startDate}",
-	rows: "{path: '/people'}",
 	appointmentsVisualization: "Filled",
 	//appointmentSelect: "handleAppointmentSelect",
-	showEmptyIntervalHeaders: false,
+	showRowHeaders: {$showRowHeaders},
+    showEmptyIntervalHeaders: false,
 	//showWeekNumbers: true,
+	//appointmentSelect: "handleAppointmentSelect",
 	toolbarContent: [
 		{$this->buildJsToolbarContent($oControllerJs)}
 	],
-	rows: [
-		new sap.m.PlanningCalendarRow({
-			//icon: "{pic}",
-			//title: "{name}",
-			//text: "{role}",
+	rows: {
+		path: '/_scheduler/rows',
+        template: {$this->buildJsRowsConstructors()}
+	}
+})
+
+JS;
+    }
+		
+    protected function buildJsRowsConstructors() : string
+    {
+        $widget = $this->getWidget();
+        
+        $calItem = $widget->getItemsConfig();
+        $subtitleBinding = $calItem->hasSubtitle() ? $this->buildJsValueBindingForWidget($calItem->getSubtitleColumn()->getCellWidget()) : '""';
+        
+        $rowProps = '';
+        if ($widget->hasResources() === true) {
+            $resource = $widget->getResourcesConfig();
+            $rowProps .= 'title: ' . $this->buildJsValueBindingForWidget($resource->getTitleColumn()->getCellWidget()) . ',';
+            if ($resource->hasSubtitle()) {
+                $rowProps .= 'text: ' . $this->buildJsValueBindingForWidget($resource->getSubtitleColumn()->getCellWidget()) . ',';
+            }
+        } 
+        
+        return <<<JS
+
+        new sap.m.PlanningCalendarRow({
+			{$rowProps}
 			appointments: {
-                path: '/_scheduler/items', 
+                path: 'items', 
                 templateShareable: true,
                 template: new sap.ui.unified.CalendarAppointment({
 					startDate: "{_start}",
@@ -65,20 +87,19 @@ new sap.m.PlanningCalendar("{$this->getId()}", {
 					tentative: "{tentative}",
 				})
             },
-			/*intervalHeaders: {
+			intervalHeaders: {
                 path: '_scheduler/headers', 
                 templateShareable: true,
                 template: new sap.ui.unified.CalendarAppointment({
 					startDate: "{start}",
 					endDate: "{end}",
 					icon: "{pic}",
-					title: "{title}",
+					title: {$this->buildJsValueBindingForWidget($calItem->getTitleColumn()->getCellWidget())},
+					text: {$subtitleBinding},
 					type: "{type}",
 				})
-            },*/
+            },
 		})
-	]
-})
 
 JS;
     }
@@ -99,8 +120,8 @@ JS;
         $widget = $this->getWidget();
         $calItem = $widget->getItemsConfig();
         
-        $endTime = $calItem->hasEndTime() ? "oRow['{$calItem->getEndTimeColumn()->getDataColumnName()}']" : "''";
-        $subtitle = $calItem->hasSubtitle() ? "{$calItem->getSubtitleColumn()->getDataColumnName()}: oRow['{$calItem->getSubtitleColumn()->getDataColumnName()}']," : '';
+        $endTime = $calItem->hasEndTime() ? "oDataRow['{$calItem->getEndTimeColumn()->getDataColumnName()}']" : "''";
+        $subtitle = $calItem->hasSubtitle() ? "{$calItem->getSubtitleColumn()->getDataColumnName()}: oDataRow['{$calItem->getSubtitleColumn()->getDataColumnName()}']," : '';
         
         if ($workdayStart = $widget->getTimelineConfig()->getWorkdayStartTime()){
             $workdayStartSplit = explode(':', $workdayStart);
@@ -108,15 +129,40 @@ JS;
             $workdayStartJs = 'dMin.setHours(' . implode(', ', $workdayStartSplit) . ');';
         }
         
+        if ($widget->hasResources()) {
+            $rConf = $widget->getResourcesConfig();
+            $rowKeyGetter = "oDataRow['{$rConf->getTitleColumn()->getDataColumnName()}']";
+            if ($rConf->hasSubtitle()) {
+                $rSubtitle = "{$rConf->getSubtitleColumn()->getDataColumnName()}: oDataRow['{$rConf->getSubtitleColumn()->getDataColumnName()}'],";
+            }
+            $rowProps = <<<JS
+
+                        {$rConf->getTitleColumn()->getDataColumnName()}: oDataRow['{$rConf->getTitleColumn()->getDataColumnName()}'],
+                        {$rSubtitle}
+
+JS;
+        } else {
+            $rowKeyGetter = "''";
+        }
+        
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . <<<JS
         
             var aData = {$oModelJs}.getProperty('/data');
-            var aItems = [];
-            var aHeaders = [];
-            var dMin, dStart, dEnd, sEnd, oRow;
+            var oRows = [];
+            var dMin, dStart, dEnd, sEnd, oDataRow, sRowKey;
             for (var i in aData) {
-                oRow = aData[i];
-                dStart = new Date(oRow["{$calItem->getStartTimeColumn()->getDataColumnName()}"]);
+                oDataRow = aData[i];
+
+                sRowKey = {$rowKeyGetter};
+                if (oRows[sRowKey] === undefined) {
+                    oRows[sRowKey] = {
+                        {$rowProps}
+                        items: [],
+                        headers: []
+                    };
+                }
+
+                dStart = new Date(oDataRow["{$calItem->getStartTimeColumn()->getDataColumnName()}"]);
                 if (dMin === undefined) {
                     dMin = new Date(dStart.getTime());
                     {$workdayStartJs}
@@ -128,17 +174,16 @@ JS;
                     dEnd = new Date(dStart.getTime());
                     dEnd.setHours(dEnd.getHours() + {$calItem->getDefaultDurationHours(1)});
                 }
-                aItems.push({
+                oRows[sRowKey].items.push({
                     _start: dStart,
                     _end: dEnd,
-                    {$calItem->getTitleColumn()->getDataColumnName()}: oRow["{$calItem->getTitleColumn()->getDataColumnName()}"],
+                    {$calItem->getTitleColumn()->getDataColumnName()}: oDataRow["{$calItem->getTitleColumn()->getDataColumnName()}"],
                     {$subtitle}
                 });
             }
             {$oModelJs}.setProperty('/_scheduler', {
                 startDate: dMin,
-                items: aItems,
-                headers: aHeaders
+                rows: Object.values(oRows),
             });
 			console.log({$oModelJs}.getData());
 			

@@ -320,10 +320,8 @@ JS;
                 var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
                 var sPendingPropery = "/_prefill/pending";
                 if (oViewModel.getProperty(sPendingPropery) === true) {
-                    console.log('pending', oViewModel.getProperty(sPendingPropery));
                     var oPrefillBinding = new sap.ui.model.Binding(oViewModel, sPendingPropery, oViewModel.getContext(sPendingPropery));
                     var fnPrefillHandler = function(oEvent) {
-                        console.log('retry');
                         oPrefillBinding.detachChange(fnPrefillHandler);
                         setTimeout(function() {
                             {$this->buildJsRefresh()};
@@ -527,7 +525,7 @@ JS;
         return <<<JS
         
             oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$this->getController()->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
-            console.log(oTable.getModel().getData());
+            
             {$dynamicPageFixes}
 			
 JS;

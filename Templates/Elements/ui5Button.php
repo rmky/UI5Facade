@@ -120,8 +120,8 @@ JS;
         /* @var $prefill_link \exface\Core\CommonLogic\WidgetLink */
         $prefill = '';
         if ($prefill_link = $this->getAction()->getPrefillWithDataFromWidgetLink()) {
-            if ($prefill_link->getPage()->is($widget->getPage())) {
-                $prefill = ", prefill: " . $this->getTemplate()->getElement($prefill_link->getWidget())->buildJsDataGetter($this->getAction());
+            if ($prefill_link->getTargetPageAlias() === null || $prefill_link->getPage()->is($widget->getPage())) {
+                $prefill = ", prefill: " . $this->getTemplate()->getElement($prefill_link->getTargetWidget())->buildJsDataGetter($this->getAction());
             }
         }
         

@@ -26,7 +26,7 @@ class ui5Tabs extends ui5Container
     new sap.m.IconTabBar("{$this->getId()}", {
         expanded: "{device>/isNoPhone}",
         showOverflowSelectList: true,
-        /*stretchContentHeight: true,*/ // makes header of ObjectPage inivsible if set
+        stretchContentHeight: true, // FIXME makes header of ObjectPage sometimes inivsible if set
         items: [
             {$this->buildJsChildrenConstructors()}
         ]

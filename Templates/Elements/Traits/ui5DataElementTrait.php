@@ -7,6 +7,7 @@ use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
 use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
 use exface\OpenUI5Template\Templates\Elements\ui5DataConfigurator;
 use exface\Core\Interfaces\Widgets\iShowImage;
+use exface\Core\Interfaces\Widgets\iHaveContextualHelp;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -170,6 +171,7 @@ JS;
                     {$rightExtras}
                     {$this->buildJsQuickSearchConstructor()}
 					{$this->buildJsConfiguratorButtonConstructor()}
+                    {$this->buildJsHelpButtonConstructor()}
 
 JS;
     }
@@ -252,6 +254,27 @@ JS;
                     }),
                     
 JS;
+    }
+                			
+    protected function buildJsHelpButtonConstructor(string $oControllerJs = 'oController', string $buttonType = 'Default') : string
+    {
+        $widget = $this->getWidget();
+        if (($widget instanceof iHaveContextualHelp) && false === $widget->getHideHelpButton()) {
+            $helpBtnEl = $this->getTemplate()->getElement($widget->getHelpButton());
+            return <<<JS
+            
+                    new sap.m.OverflowToolbarButton({
+                        type: sap.m.ButtonType.{$buttonType},
+                        icon: "sap-icon://sys-help",
+                        text: "{$helpBtnEl->getCaption()}",
+                        tooltip: "{$helpBtnEl->getCaption()}",
+                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: sap.m.OverflowToolbarPriority.AlwaysOverflow}),
+                        press: {$helpBtnEl->buildJsClickViewEventHandlerCall()}
+                    }),
+                    
+JS;
+        }
+        return '';
     }
     
     /**

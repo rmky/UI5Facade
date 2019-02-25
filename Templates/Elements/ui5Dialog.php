@@ -460,7 +460,7 @@ JS;
                 if ($child->isHidden() === true) {
                     $non_tab_hidden_constructors .= ($non_tab_hidden_constructors ? ',' : '') . $this->getTemplate()->getElement($child)->buildJsConstructor();
                 } else {
-                    if (($child instanceof iFillEntireContainer) || $child->getWidth()->isMax()) {
+                    if ((($child instanceof iFillEntireContainer) || $child->getWidth()->isMax()) && $widget->countWidgetsVisible() !== 1) {
                         $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->buildJsFormRowDelimiter();
                     }
                     $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->getTemplate()->getElement($child)->buildJsConstructor();

@@ -7,10 +7,6 @@ use exface\OpenUI5Template\Templates\Interfaces\ui5BindingFormatterInterface;
 use exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface;
 use exface\OpenUI5Template\Templates\Interfaces\ui5CompoundControlInterface;
 use exface\Core\Formulas\NumberValue;
-use exface\Core\DataTypes\IntegerDataType;
-use exface\Core\DataTypes\TimestampDataType;
-use exface\Core\DataTypes\DateDataType;
-use exface\Core\DataTypes\NumberDataType;
 
 /**
  *

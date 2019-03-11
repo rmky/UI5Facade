@@ -7,7 +7,8 @@
 	- Object-Editors
 	- Object-Viewers
 	- Splits
-	- [Tile-menus](navigation.md#navtiles)
+	- [Tile-menus / Launchpads](navigation.md#navtiles)
+	- [Value help](Value-Help.md)
 - [Examples for typical Fiori UI elements](fiori_elements/index.md)
 - [Navigation: pages, side-menu, launchpads, tiles](navigation.md)
 - [Building exportable apps](../exporting_fiori_apps/index.md)

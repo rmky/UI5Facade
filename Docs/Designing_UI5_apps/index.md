@@ -3,14 +3,13 @@
 **Quick links**
 
 - Quick-Start Recipes:
-	- Data tables
-	- Object-Editors
-	- Object-Viewers
-	- Splits
+	- [List Reports](fiori_elements/floorplan_list_report.md) (data tables with filters)
+	- [Object Pages](fiori_elements/floorplan_object_page.md)
+	- Split-screen
 	- [Tile-menus / Launchpads](navigation.md#navtiles)
-	- [Value help](Value-Help.md)
 - [Examples for typical Fiori UI elements](fiori_elements/index.md)
 - [Navigation: pages, side-menu, launchpads, tiles](navigation.md)
+- [Value-Help](Value-Help.md)
 - [Building exportable apps](../exporting_fiori_apps/index.md)
 
 UI5 apps are as easy to create as any other UI: just configure the widgets on every page you need and start using them! The generated UIs follow the Fiori 2.0 design guidelines as close as possible. Here are some [UXON snippets for typical Fiori UI elements](fiori_elements/index.md) - this is a good starting point for a new app. 

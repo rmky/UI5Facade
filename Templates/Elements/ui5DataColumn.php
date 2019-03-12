@@ -95,6 +95,7 @@ JS;
 						demandPopin: true,
 						{$this->buildJsPropertyMinScreenWidth()}
 						{$this->buildJsPropertyTooltip()}
+						{$this->buildJsPropertyWidth()}
 						header: [
                             new sap.m.Label({
                                 text: "{$col->getCaption()}"

@@ -6,6 +6,7 @@ use exface\Core\DataTypes\StringDataType;
 use exface\OpenUI5Template\Templates\Elements\Traits\ui5DataElementTrait;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\OpenUI5Template\Templates\Interfaces\ui5CompoundControlInterface;
+use exface\Core\Interfaces\Actions\ActionInterface;
 
 /**
  * 
@@ -37,7 +38,6 @@ class ui5Scheduler extends ui5AbstractElement
 new sap.m.PlanningCalendar("{$this->getId()}", {
 	startDate: "{/_scheduler/startDate}",
 	appointmentsVisualization: "Filled",
-	//appointmentSelect: "handleAppointmentSelect",
 	showRowHeaders: {$showRowHeaders},
     showEmptyIntervalHeaders: false,
 	//showWeekNumbers: true,
@@ -50,6 +50,7 @@ new sap.m.PlanningCalendar("{$this->getId()}", {
         template: {$this->buildJsRowsConstructors()}
 	}
 })
+{$this->buildJsClickListeners($oControllerJs)}
 
 JS;
     }
@@ -83,6 +84,7 @@ JS;
 					icon: "{pic}",
 					title: {$this->buildJsValueBindingForWidget($calItem->getTitleColumn()->getCellWidget())},
 					text: {$subtitleBinding},
+					key: "{{$this->getMetaObject()->getUidAttributeAlias()}}",
 					type: "{type}",
 					tentative: "{tentative}",
 				})
@@ -177,6 +179,7 @@ JS;
                 oRows[sRowKey].items.push({
                     _start: dStart,
                     _end: dEnd,
+                    {$widget->getMetaObject()->getUidAttributeAlias()}: oDataRow["{$widget->getMetaObject()->getUidAttributeAlias()}"],
                     {$calItem->getTitleColumn()->getDataColumnName()}: oDataRow["{$calItem->getTitleColumn()->getDataColumnName()}"],
                     {$subtitle}
                 });
@@ -185,7 +188,6 @@ JS;
                 startDate: dMin,
                 rows: Object.values(oRows),
             });
-			console.log({$oModelJs}.getData());
 			
 JS;
     }
@@ -213,5 +215,92 @@ JS;
         }
         
         return $tpl->buildJsValueBinding();
+    }
+    
+    public function buildJsDataGetter(ActionInterface $action)
+    {
+        if ($action === null) {
+            $getRows = "var rows = sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data;";
+        } elseif ($action instanceof iReadData) {
+            // If we are reading, than we need the special data from the configurator
+            // widget: filters, sorters, etc.
+            return $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsDataGetter($action);
+        } else {
+            $getRows = <<<JS
+
+        var aApts = oCal.getSelectedAppointments(),
+            sUid,
+            rows = [],
+            data = sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data;
+
+        for (var i in aApts) {
+            var sUid = sap.ui.getCore().byId(aApts[i]).getKey();
+            for (var j in data) {
+                if (data[j]['{$this->getWidget()->getMetaObject()->getUidAttributeAlias()}'] == sUid) {
+                    rows.push(data[j]);
+                }
+            }
+        }
+
+JS;
+        }
+        return <<<JS
+    function() {
+        var oCal = sap.ui.getCore().byId('{$this->getId()}');
+        {$getRows}
+        return {
+            oId: '{$this->getWidget()->getMetaObject()->getId()}',
+            rows: (rows === undefined ? [] : rows)
+        };
+    }()
+JS;
+    }
+        
+    protected function buildJsClickListeners($oControllerJsVar = 'oController')
+    {
+        $widget = $this->getWidget();
+        
+        $js = '';
+        $rightclick_script = '';
+        
+        // Double click. Currently only supports one double click action - the first one in the list of buttons
+        if ($dblclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[0]) {
+            $js .= <<<JS
+            
+            .attachBrowserEvent("dblclick", function(oEvent) {
+        		{$this->getTemplate()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+            })
+JS;
+        }
+        
+        // Right click. Currently only supports one double click action - the first one in the list of buttons
+        if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
+            $rightclick_script = $this->getTemplate()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar);
+        } else {
+            //$rightclick_script = $this->buildJsContextMenuTrigger();
+        }
+        
+        if ($rightclick_script) {
+            $js .= <<<JS
+            
+            .attachBrowserEvent("contextmenu", function(oEvent) {
+                oEvent.preventDefault();
+                {$rightclick_script}
+        	})
+        	
+JS;
+        }
+        
+        // Single click. Currently only supports one click action - the first one in the list of buttons
+        if ($leftclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
+            $js .= <<<JS
+                
+            .attachAppointmentSelect(function(oEvent) {
+                {$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+            })
+JS;
+        }
+        
+        return $js;
     }
 }

@@ -40,8 +40,7 @@ new sap.m.PlanningCalendar("{$this->getId()}", {
 	appointmentsVisualization: "Filled",
 	showRowHeaders: {$showRowHeaders},
     showEmptyIntervalHeaders: false,
-	//showWeekNumbers: true,
-	//appointmentSelect: "handleAppointmentSelect",
+	showWeekNumbers: true,
 	toolbarContent: [
 		{$this->buildJsToolbarContent($oControllerJs)}
 	],

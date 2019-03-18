@@ -17,7 +17,12 @@ class ui5SplitPanel extends ui5Panel
     {
         $widget = $this->getWidget();
         $sizeDimension = $widget->getParent() instanceof SplitHorizontal ? $widget->getWidth() : $widget->getHeight();
-        $size = $sizeDimension->isUndefined() ? 'auto' : $sizeDimension->getValue();
+        switch (true) {
+            case $sizeDimension->isTemplateSpecific() === true:
+                $size = $sizeDimension->getValue();
+            default:
+                $size = 'auto';
+        }
         return parent::buildJsProperties() . '
                     layoutData: new sap.ui.layout.SplitterLayoutData({
                         size: "' . $size . '"

@@ -195,47 +195,6 @@ JS;
 JS;
         }
         
-        /*
-        $viewId = $this->getTemplate()->getViewName($widget->getAction()->getWidget(), $widget->getPage());
-        $viewName = $viewId;
-        $output .= <<<JS
-						{$this->buildJsBusyIconShow()}
-						$.ajax({
-							type: 'POST',
-							url: '{$this->getAjaxUrl()}',
-							dataType: 'html',
-							data: {
-								action: '{$widget->getActionAlias()}',
-								resource: '{$widget->getPage()->getAliasWithNamespace()}',
-								element: '{$widget->getId()}',
-								data: requestData
-								{$prefill}
-							},
-							success: function(data, textStatus, jqXHR) {
-								{$this->buildJsCloseDialog($widget, $input_element)}
-								{$this->buildJsBusyIconHide()}
-		                       	
-                                $('body').append(data);
-                                oDialogStack.push({
-                                    content: oShell.getContent(),
-                                    dialog: sap.ui.view("{$viewId}", {
-                                        type:sap.ui.core.mvc.ViewType.JS, 
-                                        height: "100%", 
-                                        viewName:"{$viewName}"
-                                    }),
-                                    onClose: function(){
-								        {$this->buildJsInputRefresh($widget, $input_element)}
-                                    }
-                                });
-                                {$this->buildJsDialogLoader()}
-							},
-							error: function(jqXHR, textStatus, errorThrown){
-								{$this->buildJsShowError('jqXHR.responseText', 'jqXHR.status + " " + jqXHR.statusText')}
-								{$this->buildJsBusyIconHide()}
-							}
-						});
-JS;*/
-        
         return $output;
     }
     
@@ -247,8 +206,25 @@ JS;*/
     protected function buildJsNavigateToPage(string $pageSelector, string $urlParams = '', AbstractJqueryElement $inputElement) : string
     {
         return <<<JS
-						
+						var sUrlParams = '{$urlParams}';
+                        var oUrlParams = {};
+                        var vars = sUrlParams.split('&');
+                    	for (var i = 0; i < vars.length; i++) {
+                    		var pair = vars[i].split('=');
+                            if (pair[0]) {
+                                var val = decodeURIComponent(pair[1]);
+                                if (val.substring(0, 1) === '{') {
+                                    try {
+                                        val = JSON.parse(val);
+                                    } catch (error) {
+                                        // Do nothing, val will remain a string
+                                    }
+                                }
+            		            oUrlParams[pair[0]] = val;
+                            }
+                    	} 
                         this.navTo("{$pageSelector}", '', {
+                            data: oUrlParams,
                             success: function(){ 
                                 {$inputElement->buildJsBusyIconHide()} 
                             },
@@ -305,15 +281,6 @@ JS;
         return "";
     }
     
-    protected function buildJsDialogLoader()
-    {        
-        if ($this->opensDialogPage()) {
-            return $this->buildJsOpenPage();
-        } else {
-            return $this->buildJsOpenDialog();
-        }
-    }
-    
     protected function opensDialogPage()
     {
         $action = $this->getAction();
@@ -323,31 +290,6 @@ JS;
         } 
         
         return false;
-    }
-    
-    protected function buildJsOpenDialog()
-    {
-        $dialog = $this->getAction()->getWidget();
-        return <<<JS
-
-                                oShell.addContent(
-                                    oDialogStack[oDialogStack.length-1].dialog
-                                );
-                                sap.ui.getCore().byId("{$dialog->getId()}").open();
-
-JS;
-    }
-    
-    protected function buildJsOpenPage()
-    {
-        return <<<JS
-
-                                oShell.removeAllContent()
-                                oShell.addContent(
-                                    oDialogStack[oDialogStack.length-1].dialog
-                                );
-
-JS;
     }
    
     /**

@@ -9,6 +9,10 @@ use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
 use exface\Core\Exceptions\OutOfBoundsException;
 use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\Core\Interfaces\WidgetInterface;
+use exface\Core\Interfaces\Widgets\iTriggerAction;
+use exface\Core\Interfaces\Widgets\iCanPreloadData;
+use exface\Core\Interfaces\Actions\iShowWidget;
+use exface\OpenUI5Template\Templates\Elements\ui5Dialog;
 
 class ui5Controller implements ui5ControllerInterface
 {
@@ -269,6 +273,12 @@ JS;
      */
     public function buildJsController() : string
     {
+        // See if the view requires a prefill request
+        // FIXME ui5Dialog has it's own prefill logic - need to unify both approaches!
+        if ($this->needsPrefill() && ! ($this->getView()->getRootElement() instanceof ui5Dialog)) {
+            $this->addOnRouteMatchedScript($this->buildJsPrefillLoader('oView'), 'loadPrefill');
+        }
+        
         // Build the view first to ensure, all view elements have contributed to the controller!
         $this->getView()->buildJsView();
         
@@ -696,5 +706,160 @@ JS;
         $controllerMethodName = $this->buildJsMethodName($this->buildJsEventHandlerMethodName($eventName), $triggerElement);
         $this->onEventScripts[$controllerMethodName][] = $js;
         return $this;
+    }
+    
+    /**
+     * Returns the JS code to load prefill data for the dialog.
+     *
+     * TODO will this work with with explicit prefill data too?
+     *
+     * @param string $oViewJs
+     * @return string
+     */
+    protected function buildJsPrefillLoader(string $oViewJs = 'oView') : string
+    {
+        $rootElement = $this->getView()->getRootElement();
+        $widget = $rootElement->getWidget();
+        $triggerWidget = $widget->getParent() instanceof iTriggerAction ? $widget->getParent() : $widget;
+        
+        // FIXME #DataPreloader this will force the form to use any preload - regardless of the columns.
+        if ($widget instanceof iCanPreloadData && $widget->isPreloadDataEnabled() === true) {
+            $this->addOnDefineScript("exfPreloader.addPreload('{$widget->getMetaObject()->getAliasWithNamespace()}');");
+            $loadPrefillData = $this->buildJsPrefillLoaderFromPreload($triggerWidget, $oViewJs, 'oViewModel');
+        } else {
+            $loadPrefillData = $this->buildJsPrefillLoaderFromServer($triggerWidget, $oViewJs, 'oViewModel');
+        }
+        
+        return <<<JS
+        
+            {$oViewJs}.getModel().setData({});
+            var oViewModel = {$oViewJs}.getModel('view');
+            {$loadPrefillData}
+            
+JS;
+    }
+    
+    protected function buildJsPrefillLoaderFromPreload(WidgetInterface $triggerWidget, string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
+    {
+        $rootElement = $this->getView()->getRootElement();
+        $widget = $rootElement->getWidget();
+        return <<<JS
+        
+                {$rootElement->buildJsBusyIconShow()}
+                oViewModel.setProperty('/_prefill/pending', true);
+                exfPreloader
+                .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
+                .then(preload => {
+                    var failed = false;
+                    if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
+                        var uid = {$oViewModelJs}.getProperty('/_route').params.data.rows[0]['{$widget->getMetaObject()->getUidAttributeAlias()}'];
+                        var aData = preload.response.data.filter(oRow => {
+                            return oRow['{$widget->getMetaObject()->getUidAttributeAlias()}'] == uid;
+                        });
+                        if (aData.length === 1) {
+                            var response = $.extend({}, preload.response, {data: aData});
+                            {$this->buildJsPrefillLoaderSuccess('response', $oViewJs, $oViewModelJs)}
+                        } else {
+                            failed = true;
+                        }
+                    } else {
+                        failed = true;
+                    }
+                    
+                    if (failed == true) {
+                        console.warn('Failed to prefill dialog from preload data: falling back to server request');
+                        {$this->buildJsPrefillLoaderFromServer($triggerWidget, $oViewJs, $oViewModelJs)}
+                    }
+                });
+                
+JS;
+    }
+    
+    protected function buildJsPrefillLoaderFromServer(WidgetInterface $triggerWidget, string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
+    {
+        $rootElement = $this->getView()->getRootElement();
+        $widget = $rootElement->getWidget();
+        
+        return <<<JS
+        
+            var oRouteParams = {$oViewModelJs}.getProperty('/_route').params;
+            if (! (Object.keys(oRouteParams).length === 0 && oRouteParams.constructor === Object)) {
+                {$rootElement->buildJsBusyIconShow()}
+                oViewModel.setProperty('/_prefill/pending', true);
+                var data = $.extend({}, {
+                    action: "exface.Core.ReadPrefill",
+    				resource: "{$widget->getPage()->getAliasWithNamespace()}",
+    				element: "{$triggerWidget->getId()}",
+                }, oRouteParams);
+    			$.ajax({
+                    url: "{$rootElement->getAjaxUrl()}",
+                    type: "POST",
+    				data: data,
+                    success: function(response, textStatus, jqXHR) {
+                        {$oViewModelJs}.setProperty('/_prefill/pending', false);
+                        {$this->buildJsPrefillLoaderSuccess('response', $oViewJs)}
+                        {$rootElement->buildJsBusyIconHide()}
+                    },
+                    error: function(jqXHR, textStatus, errorThrown){
+                        oViewModel.setProperty('/_prefill/pending', false);
+                        {$rootElement->buildJsBusyIconHide()}
+                        {$this->buildJsPrefillLoaderError('jqXHR', $oViewJs)}
+                    }
+    			})
+            }
+JS;
+    }
+    
+    protected function buildJsPrefillLoaderError(string $jqXHR = 'jqXHR', string $oViewJs = 'oView')
+    {
+        return <<<JS
+        
+                    if (navigator.onLine === false) {
+                        {$oViewJs}.getController().getRouter().getTargets().display("offline");
+                    } else {
+                        {$this->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText)
+                    }
+                    
+JS;
+    }
+    
+    protected function buildJsPrefillLoaderSuccess(string $responseJs = 'response', string $oViewJs = 'oView') : string
+    {
+        // IMPORTANT: We must ensure, ther is no model data before replacing it with the prefill!
+        // Otherwise the model will not fire binding changes properly: InputComboTables will loose
+        // their values! But only reset the model if it has data, because the reset will trigger
+        // an update of all bindings.
+        return <<<JS
+        
+                    var oDataModel = {$oViewJs}.getModel();
+                    if (Object.keys(oDataModel.getData()).length !== 0) {
+                        oDataModel.setData({});
+                    }
+                    if ({$responseJs}.data && {$responseJs}.data && {$responseJs}.data.length === 1) {
+                        oDataModel.setData({$responseJs}.data[0]);
+                    }
+                    
+JS;
+    }
+    
+    /**
+     * Returns TRUE if the dialog needs to be prefilled and FALSE otherwise.
+     *
+     * @return bool
+     */
+    protected function needsPrefill() : bool
+    {
+        $rootElement = $this->getView()->getRootElement();
+        $widget = $rootElement->getWidget();
+        if ($widget->getParent() instanceof iTriggerAction) {
+            $action = $widget->getParent()->getAction();
+            if (($action instanceof iShowWidget) && ($action->getPrefillWithInputData() || $action->getPrefillWithPrefillData())) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        return true;
     }
 }

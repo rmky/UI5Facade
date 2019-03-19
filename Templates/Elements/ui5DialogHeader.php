@@ -53,7 +53,7 @@ class ui5DialogHeader extends ui5Container
         foreach ($widget->getWidgets() as $w) {
             if ($w instanceof WidgetGrid) {
                 $content .= $this->buildJsVerticalLayout($w) . ',';
-            } elseif ($w instanceof iDisplayValue) {
+            } elseif ($w->getWidgetType() !== 'Display' && $w instanceof iDisplayValue) {
                 $content .= $this->getTemplate()->getElement($w)->buildJsConstructor('oController') . ',';
             } elseif ($w instanceof iHaveValue) {
                 $content .= $this->buildJsObjectStatus($w) . ',';

@@ -28,6 +28,8 @@ class ui5Chart extends ui5AbstractElement
      */
     public function buildJsConstructorForControl($oControllerJs = 'oController') : string
     {
+        // TODO #chart-configurator Since there is no extra chart configurator yet, we use the configurator
+        // of the data widget and make it refresh this chart when it's apply-on-change-filters change. 
         $this->getTemplate()->getElement($this->getWidget()->getData()->getConfiguratorWidget())->registerFiltersWithApplyOnChange($this);
         
         $controller = $this->getController();        

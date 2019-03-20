@@ -95,10 +95,13 @@ JS;
             
             // send sort information
             if (count($widget->getData()->getSorters()) > 0) {
-                $post_data .= 'data.order = [];' . "\n";
                 foreach ($widget->getData()->getSorters() as $sorter) {
-                    $post_data .= 'data.order.push({attribute_alias: "' . $sorter->getProperty('attribute_alias') . '", dir: "' . $sorter->getProperty('direction') . '"});';
+                    $sort .= ',' . urlencode($sorter->getProperty('attribute_alias'));
+                    $order .= ',' . urldecode($sorter->getProperty('direction'));
                 }
+                $post_data .= '
+                            data.sort = "' . substr($sort, 1) . '";
+                            data.order = "' . substr($order, 1) . '";';
             }
             
             // send pagination/limit information. Charts currently do not support real pagination, but just a TOP-X display.
@@ -142,6 +145,9 @@ JS;
         return <<<JS
         
                     new sap.m.OverflowToolbarButton({
+                        icon: "sap-icon://refresh",
+                        press: {$this->getController()->buildJsMethodCallFromView('onLoadData', $this)}
+                    }),new sap.m.OverflowToolbarButton({
                         icon: "sap-icon://drop-down-list",
                         enabled: false
                     }),

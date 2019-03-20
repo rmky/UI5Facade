@@ -17,7 +17,9 @@ use exface\Core\Widgets\Data;
 class ui5Chart extends ui5AbstractElement
 {
     use JqueryFlotTrait;
-    use ui5DataElementTrait;
+    use ui5DataElementTrait {
+        buildJsConfiguratorButtonConstructor as buildJsConfiguratorButtonConstructorViaTrait;
+    }
     
     /**
      * 
@@ -26,7 +28,9 @@ class ui5Chart extends ui5AbstractElement
      */
     public function buildJsConstructorForControl($oControllerJs = 'oController') : string
     {
-        $controller = $this->getController();
+        $this->getTemplate()->getElement($this->getWidget()->getData()->getConfiguratorWidget())->registerFiltersWithApplyOnChange($this);
+        
+        $controller = $this->getController();        
         $controller->addMethod('onPlot', $this, 'data', $this->buildJsPlotter());
         
         foreach ($this->getJsIncludes() as $path) {
@@ -115,7 +119,7 @@ JS;
 					' . $this->buildJsBusyIconShow() . '
 					var data = { };
 					' . $post_data . '
-                    /*data.data = ' . $this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter() . ';*/
+                    data.data = ' . $this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter() . ';
 					$.ajax({
 						url: "' . $this->getAjaxUrl() . '",
                         method: "POST",
@@ -147,10 +151,8 @@ JS;
                     new sap.m.OverflowToolbarButton({
                         icon: "sap-icon://refresh",
                         press: {$this->getController()->buildJsMethodCallFromView('onLoadData', $this)}
-                    }),new sap.m.OverflowToolbarButton({
-                        icon: "sap-icon://drop-down-list",
-                        enabled: false
                     }),
+                    {$this->buildJsConfiguratorButtonConstructorViaTrait($oControllerJs)}
                         
 JS;
     }

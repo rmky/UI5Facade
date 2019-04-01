@@ -1,14 +1,14 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Middleware;
+namespace exface\UI5Facade\Facades\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use exface\Core\Interfaces\WorkbenchInterface;
-use exface\Core\Interfaces\Templates\HttpTemplateInterface;
-use exface\Core\Templates\AbstractHttpTemplate\Middleware\Traits\TaskRequestTrait;
-use exface\Core\Templates\AbstractHttpTemplate\Middleware\Traits\DataEnricherTrait;
+use exface\Core\Interfaces\Facades\HttpFacadeInterface;
+use exface\Core\Facades\AbstractHttpFacade\Middleware\Traits\TaskRequestTrait;
+use exface\Core\Facades\AbstractHttpFacade\Middleware\Traits\DataEnricherTrait;
 use exface\Core\Interfaces\Tasks\TaskInterface;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 
@@ -24,7 +24,7 @@ class ui5TableUrlParamsReader implements MiddlewareInterface
     use TaskRequestTrait;
     use DataEnricherTrait;
     
-    private $template = null;
+    private $facade = null;
     
     private $taskAttributeName = null;
     
@@ -34,14 +34,14 @@ class ui5TableUrlParamsReader implements MiddlewareInterface
     
     /**
      * 
-     * @param HttpTemplateInterface $template
+     * @param HttpFacadeInterface $facade
      * @param string $dataGetterMethod
      * @param string $dataSetterMethod
      * @param string $taskAttributeName
      */
-    public function __construct(HttpTemplateInterface $template, string $dataGetterMethod, string $dataSetterMethod, $taskAttributeName = 'task')
+    public function __construct(HttpFacadeInterface $facade, string $dataGetterMethod, string $dataSetterMethod, $taskAttributeName = 'task')
     {
-        $this->template = $template;
+        $this->facade = $facade;
         $this->taskAttributeName = $taskAttributeName;
         $this->getterMethodName = $dataGetterMethod;
         $this->setterMethodName = $dataSetterMethod;
@@ -54,7 +54,7 @@ class ui5TableUrlParamsReader implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $task = $this->getTask($request, $this->taskAttributeName, $this->template);
+        $task = $this->getTask($request, $this->taskAttributeName, $this->facade);
         
         $requestParams = $request->getQueryParams();
         if (is_array($request->getParsedBody()) || $request->getParsedBody()) {

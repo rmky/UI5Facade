@@ -1,10 +1,10 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\DialogButton;
 use exface\Core\Interfaces\Actions\ActionInterface;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryButtonTrait;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryButtonTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
 use exface\Core\Widgets\Button;
 use exface\Core\Interfaces\Actions\iShowDialog;
 
@@ -26,7 +26,7 @@ class ui5Button extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -121,7 +121,7 @@ JS;
         $prefill = '';
         if ($prefill_link = $this->getAction()->getPrefillWithDataFromWidgetLink()) {
             if ($prefill_link->getTargetPageAlias() === null || $prefill_link->getPage()->is($widget->getPage())) {
-                $prefill = ", prefill: " . $this->getTemplate()->getElement($prefill_link->getTargetWidget())->buildJsDataGetter($this->getAction());
+                $prefill = ", prefill: " . $this->getFacade()->getElement($prefill_link->getTargetWidget())->buildJsDataGetter($this->getAction());
             }
         }
         
@@ -174,7 +174,7 @@ JS;
                                 oComponent.runAsOwner(function(){
                                     return sap.ui.core.mvc.JSView.create({
                                         id: sViewId,
-                                        viewName: "{$this->getTemplate()->getViewName($targetWidget, $this->getController()->getWebapp()->getRootPage())}"
+                                        viewName: "{$this->getFacade()->getViewName($targetWidget, $this->getController()->getWebapp()->getRootPage())}"
                                     }).then(function(oView){
                                         oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
                                         setTimeout(function() {
@@ -201,7 +201,7 @@ JS;
     /**
      * 
      * {@inheritdoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryButtonTrait::buildJsNavigateToPage
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryButtonTrait::buildJsNavigateToPage
      */
     protected function buildJsNavigateToPage(string $pageSelector, string $urlParams = '', AbstractJqueryElement $inputElement) : string
     {
@@ -271,7 +271,7 @@ JS;
     protected function buildJsCloseDialog($widget, $input_element)
     {
         if ($widget->getWidgetType() == 'DialogButton' && $widget->getCloseDialogAfterActionSucceeds()) {
-            $dialogElement = $this->getTemplate()->getElement($widget->getDialog());
+            $dialogElement = $this->getFacade()->getElement($widget->getDialog());
             if ($dialogElement->isMaximized()) {
                 return $this->getController()->buildJsControllerGetter($this) . '.onNavBack();';
             } else {
@@ -286,7 +286,7 @@ JS;
         $action = $this->getAction();
         
         if ($action instanceof iShowDialog) {
-            return $this->getTemplate()->getElement($action->getDialogWidget())->isMaximized();
+            return $this->getFacade()->getElement($action->getDialogWidget())->isMaximized();
         } 
         
         return false;
@@ -295,7 +295,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsBusyIconShow()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsBusyIconShow()
      */
     public function buildJsBusyIconShow($global = false)
     {
@@ -305,7 +305,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsBusyIconHide()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsBusyIconHide()
      */
     public function buildJsBusyIconHide($global = false)
     {

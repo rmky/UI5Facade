@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Interfaces;
+namespace exface\UI5Facade\Facades\Interfaces;
 
-use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
+use exface\UI5Facade\Facades\Elements\ui5AbstractElement;
 
 /**
  * 

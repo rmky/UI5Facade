@@ -1,6 +1,6 @@
 {
-	"name" : "exface/OpenUI5Template",
-	"description" : "UI-Template for the ExFace business web-app plattform based on the SAP OpenUI5 library",
+	"name" : "exface/UI5Facade",
+	"description" : "UI-Facade for the ExFace business web-app plattform based on the SAP OpenUI5 library",
 	"type" : "library",
 	"license" : "GPL-3.0+",
 	"authors" : [{
@@ -10,9 +10,9 @@
 		}
 	],
 	"support" : {
-		"source" : "https://github.com/exface/OpenUI5Template",
-		"docs" : "https://github.com/exface/OpenUI5Template/blob/master/Docs",
-		"issues" : "https://github.com/exface/OpenUI5Template/issues"
+		"source" : "https://github.com/exface/UI5Facade",
+		"docs" : "https://github.com/exface/UI5Facade/blob/master/Docs",
+		"issues" : "https://github.com/exface/UI5Facade/issues"
 	},
 	"require" : {
 		"exface/core" : "~0.1",
@@ -24,7 +24,7 @@
 	},
 	"autoload" : {
 		"psr-4" : {
-			"exface\\OpenUI5Template\\" : ""
+			"exface\\UI5Facade\\" : ""
 		},
 		"exclude-from-classmap" : [
 			"/Config/",
@@ -35,7 +35,7 @@
 	"extra" : {
 		"app" : {
 			"app_uid" : "0x11e837e87a640bfd91380205857feb80",
-			"app_alias" : "exface.OpenUI5Template",
+			"app_alias" : "exface.UI5Facade",
 			"model_md5" : "e1e2204e2d93bdf6a06b8a12f0c506b5",
 			"model_timestamp" : "2018-09-27 10:16:49"
 		}

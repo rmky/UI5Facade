@@ -1,6 +1,6 @@
 # Installing an UI5 progressive web app
 
-Every page produced by the UI5 template can be installed as a Progressive Web App (PWA) on a mobile device - as long, as the mobile browser supports PWAs:
+Every page produced by the UI5 facade can be installed as a Progressive Web App (PWA) on a mobile device - as long, as the mobile browser supports PWAs:
 
 1. Open the URL of the start page of the future app in the browser of your mobile device
 2. Add the page to the home screen

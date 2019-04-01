@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 /**
  * Generates OpenUI5 inputs
@@ -13,7 +13,7 @@ class ui5InputText extends ui5Input
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Text::buildJsConstructorForMainControl()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Text::buildJsConstructorForMainControl()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
@@ -27,7 +27,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::getHeight()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::getHeight()
      */
     public function getHeight()
     {

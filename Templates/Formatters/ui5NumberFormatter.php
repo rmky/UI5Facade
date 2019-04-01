@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Formatters;
+namespace exface\UI5Facade\Facades\Formatters;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsNumberFormatter;
+use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsNumberFormatter;
 use exface\Core\DataTypes\NumberDataType;
 
 /**
@@ -17,7 +17,7 @@ class ui5NumberFormatter extends AbstractUi5BindingFormatter
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5BindingFormatterInterface::buildJsBindingProperties()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5BindingFormatterInterface::buildJsBindingProperties()
      */
     public function buildJsBindingProperties()
     {

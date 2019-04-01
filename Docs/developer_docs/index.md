@@ -1,4 +1,4 @@
-# Developer's documentation for the OpenUI5 template
+# Developer's documentation for the OpenUI5 facade
 
 ## Overview
 

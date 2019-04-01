@@ -1,9 +1,9 @@
 <?php
-namespace exface\OpenUI5Template;
+namespace exface\UI5Facade;
 
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\DataSheets\DataPointerInterface;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ModelInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5ModelInterface;
 
 class ui5Model implements ui5ModelInterface
 {    

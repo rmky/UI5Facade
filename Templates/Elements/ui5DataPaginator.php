@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\DataPaginator;
 
@@ -16,7 +16,7 @@ class ui5DataPaginator extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -64,7 +64,7 @@ JS;
      */
     protected function buildJsDataRefresh($keep_page_pos = false, $growing = false, string $oControllerJsVar = 'oController') : string
     {
-        return $this->getTemplate()->getElement($this->getWidget()->getDataWidget())->buildJsRefresh($keep_page_pos, $growing, $oControllerJsVar);
+        return $this->getFacade()->getElement($this->getWidget()->getDataWidget())->buildJsRefresh($keep_page_pos, $growing, $oControllerJsVar);
     }
     
     /**
@@ -138,7 +138,7 @@ JS;
      */
     protected function buildJsPaginatorObject()
     {
-        $defaultPageSize = $this->getWidget()->getPageSize($this->getTemplate()->getConfig()->getOption('WIDGET.DATATABLE.PAGE_SIZE'));
+        $defaultPageSize = $this->getWidget()->getPageSize($this->getFacade()->getConfig()->getOption('WIDGET.DATATABLE.PAGE_SIZE'));
         $enabled = $this->getWidget()->getDataWidget()->isPaged() ? 'true' : 'false';
         
         return <<<JS

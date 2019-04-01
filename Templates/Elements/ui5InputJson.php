@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\InputJson;
 
@@ -15,12 +15,12 @@ class ui5InputJson extends ui5Input
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsConstructorForMainControl()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsConstructorForMainControl()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
-        $this->getController()->addExternalCss($this->getTemplate()->buildUrlToSource('LIBS.JSONEDITOR.CSS'));
-        $this->getController()->addExternalModule('exface.openui5.jsoneditor', $this->getTemplate()->buildUrlToSource('LIBS.JSONEDITOR.JS'), 'JSONEditor');
+        $this->getController()->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JSONEDITOR.CSS'));
+        $this->getController()->addExternalModule('exface.openui5.jsoneditor', $this->getFacade()->buildUrlToSource('LIBS.JSONEDITOR.JS'), 'JSONEditor');
         
         // TODO create own control instead of using the HTML control in order to be able to destroy the JSONeditor
         // properly. The way the whole thing works now, the JS variable {$this->getId()}_JSONeditor lives even
@@ -83,7 +83,7 @@ JS;
     /**
      *
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsValueGetter()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsValueGetter()
      */
     public function buildJsValueGetter()
     {
@@ -99,7 +99,7 @@ JS;
      *
      * {@inheritdoc}
      *
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsValidator()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsValidator()
      */
     function buildJsValidator()
     {
@@ -109,7 +109,7 @@ JS;
     /**
      *
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildCssHeightDefaultValue()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildCssHeightDefaultValue()
      */
     protected function buildCssHeightDefaultValue()
     {

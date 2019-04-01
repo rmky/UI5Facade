@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Icon;
 
@@ -16,7 +16,7 @@ class ui5Icon extends ui5Display
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Display::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Display::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {

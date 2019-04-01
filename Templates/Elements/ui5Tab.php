@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 class ui5Tab extends ui5Panel
 {
@@ -7,7 +7,7 @@ class ui5Tab extends ui5Panel
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Panel::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Panel::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {

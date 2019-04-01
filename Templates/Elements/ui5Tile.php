@@ -1,10 +1,10 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Tile;
 
 /**
- * Tile widget for OpenUI5-Template.
+ * Tile widget for OpenUI5-Facade.
  * 
  * @method Tile getWidget()
  * 
@@ -17,7 +17,7 @@ class ui5Tile extends ui5Button
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Button::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Button::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -29,7 +29,7 @@ class ui5Tile extends ui5Button
         $tileClass = '';
         
         if ($widget->getWidth()->isUndefined() === false) {
-            $container = $this->getTemplate()->getElement($widget->getParent());
+            $container = $this->getFacade()->getElement($widget->getParent());
             if (($container instanceof ui5Tiles) && $container->isStretched() === true) {
                 $tileClass .= ' exf-stretched';
                 switch ($widget->getWidth()->getValue()) {
@@ -42,7 +42,7 @@ class ui5Tile extends ui5Button
         }
         
         if ($widget->hasDisplayWidget()) {
-            $elem = $this->getTemplate()->getElement($widget->getDisplayWidget());
+            $elem = $this->getFacade()->getElement($widget->getDisplayWidget());
             if (($elem instanceof ui5Icon) && ($icon = $elem->buildJsConstructorForIcon())) {
                 $tileContentConstructor = <<<JS
             

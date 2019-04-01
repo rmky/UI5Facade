@@ -1,10 +1,10 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Value;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface;
-use exface\OpenUI5Template\Templates\Interfaces\ui5CompoundControlInterface;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryLiveReferenceTrait;
+use exface\UI5Facade\Facades\Interfaces\ui5ValueBindingInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5CompoundControlInterface;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLiveReferenceTrait;
 
 /**
  * Generates sap.m.Text controls for Value widgets
@@ -23,7 +23,7 @@ class ui5Value extends ui5AbstractElement implements ui5ValueBindingInterface, u
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::init()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::init()
      */
     protected function init()
     {
@@ -38,7 +38,7 @@ class ui5Value extends ui5AbstractElement implements ui5ValueBindingInterface, u
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -149,7 +149,7 @@ JS;
     /**
      *
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface::buildJsValueBindingOptions()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ValueBindingInterface::buildJsValueBindingOptions()
      */
     public function buildJsValueBindingOptions()
     {
@@ -159,7 +159,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface::buildJsValueBinding()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ValueBindingInterface::buildJsValueBinding()
      */
     public function buildJsValueBinding($customOptions = '')
     {
@@ -176,7 +176,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface::setValueBindingPath()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ValueBindingInterface::setValueBindingPath()
      */
     public function setValueBindingPath($string)
     {
@@ -187,7 +187,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface::getValueBindingPath()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ValueBindingInterface::getValueBindingPath()
      */
     public function getValueBindingPath() : string
     {
@@ -205,7 +205,7 @@ JS;
     protected function buildJsPropertyWidth()
     {
         $dim = $this->getWidget()->getWidth();
-        if ($dim->isTemplateSpecific() || $dim->isPercentual()) {
+        if ($dim->isFacadeSpecific() || $dim->isPercentual()) {
             $val = $dim->getValue();
         } else {
             // TODO add support for relative units
@@ -226,7 +226,7 @@ JS;
     protected function buildJsPropertyHeight()
     {
         $dim = $this->getWidget()->getHeight();
-        if ($dim->isTemplateSpecific() || $dim->isPercentual()) {
+        if ($dim->isFacadeSpecific() || $dim->isPercentual()) {
             $val = $dim->getValue();
         } else {
             // TODO add support for relative units
@@ -247,7 +247,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface::buildJsValueBindingPropertyName()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ValueBindingInterface::buildJsValueBindingPropertyName()
      */
     public function buildJsValueBindingPropertyName() : string
     {

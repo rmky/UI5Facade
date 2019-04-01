@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Html;
 use exface\Core\Widgets\Image;
@@ -17,7 +17,7 @@ class ui5Image extends ui5Display
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {        
@@ -61,7 +61,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildCssHeightDefaultValue()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildCssHeightDefaultValue()
      */
     protected function buildCssHeightDefaultValue()
     {
@@ -71,7 +71,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildCssWidthDefaultValue()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildCssWidthDefaultValue()
      */
     protected function buildCssWidthDefaultValue()
     {
@@ -81,7 +81,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsValueBindingPropertyName()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildJsValueBindingPropertyName()
      */
     public function buildJsValueBindingPropertyName() : string
     {
@@ -91,7 +91,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Display::buildJsPropertyAlignment()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Display::buildJsPropertyAlignment()
      */
     protected function buildJsPropertyAlignment()
     {
@@ -101,7 +101,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Display::buildJsPropertyWrapping()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Display::buildJsPropertyWrapping()
      */
     protected function buildJsPropertyWrapping()
     {

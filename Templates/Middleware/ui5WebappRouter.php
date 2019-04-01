@@ -1,17 +1,17 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Middleware;
+namespace exface\UI5Facade\Facades\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use exface\Core\Interfaces\Templates\HttpTemplateInterface;
+use exface\Core\Interfaces\Facades\HttpFacadeInterface;
 use GuzzleHttp\Psr7\Response;
 use exface\Core\DataTypes\StringDataType;
-use exface\OpenUI5Template\Exceptions\Ui5RouteInvalidException;
-use exface\OpenUI5Template\Templates\OpenUI5Template;
+use exface\UI5Facade\Exceptions\Ui5RouteInvalidException;
+use exface\UI5Facade\Facades\UI5Facade;
 use exface\Core\Interfaces\Tasks\HttpTaskInterface;
-use exface\Core\Templates\AbstractHttpTemplate\Middleware\Traits\TaskRequestTrait;
+use exface\Core\Facades\AbstractHttpFacade\Middleware\Traits\TaskRequestTrait;
 
 /**
  * This PSR-15 middleware routes requests to components of a UI5 webapp.
@@ -23,7 +23,7 @@ class ui5WebappRouter implements MiddlewareInterface
 {
     use TaskRequestTrait;
     
-    private $template = null;
+    private $facade = null;
     
     private $taskAttributeName = null;
     
@@ -33,11 +33,11 @@ class ui5WebappRouter implements MiddlewareInterface
     
     /**
      * 
-     * @param HttpTemplateInterface $template
+     * @param HttpFacadeInterface $facade
      */
-    public function __construct(OpenUI5Template $template, string $webappRoot = '/webapps/', string $taskAttributeName = 'task')
+    public function __construct(UI5Facade $facade, string $webappRoot = '/webapps/', string $taskAttributeName = 'task')
     {
-        $this->template = $template;
+        $this->facade = $facade;
         $this->taskAttributeName = $taskAttributeName;
         $this->webappRoot = $webappRoot;
     }
@@ -51,7 +51,7 @@ class ui5WebappRouter implements MiddlewareInterface
     {
         $path = $request->getUri()->getPath();
         if (($webappRoute = StringDataType::substringAfter($path, $this->webappRoot)) !== false) {
-            return $this->resolve($webappRoute, $this->getTask($request, $this->taskAttributeName, $this->template));
+            return $this->resolve($webappRoute, $this->getTask($request, $this->taskAttributeName, $this->facade));
         }
         return $handler->handle($request);
     }
@@ -61,7 +61,7 @@ class ui5WebappRouter implements MiddlewareInterface
         $target = StringDataType::substringAfter($route, '/');
         $appId = StringDataType::substringBefore($route, '/');
         
-        $webapp = $this->template->initWebapp($appId);
+        $webapp = $this->facade->initWebapp($appId);
         try {
             $body = $webapp->get($target, $task);
         } catch (Ui5RouteInvalidException $e) {
@@ -81,7 +81,7 @@ class ui5WebappRouter implements MiddlewareInterface
     
     protected function getManifest() : ResponseInterface
     {
-        $json = file_get_contents($this->template->getWebappTemplateFolder() . DIRECTORY_SEPARATOR . 'manifest.json');
+        $json = file_get_contents($this->facade->getWebappFacadeFolder() . DIRECTORY_SEPARATOR . 'manifest.json');
         return $this->createResponseJson($json);
     }
     

@@ -1,8 +1,8 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\ContextBar;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryContextBarAjaxTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryContextBarAjaxTrait;
 
 /**
  * Generates AJAX data for OpenUI5 context bar

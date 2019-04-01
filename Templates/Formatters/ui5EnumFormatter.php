@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Formatters;
+namespace exface\UI5Facade\Facades\Formatters;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsEnumFormatter;
+use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsEnumFormatter;
 use exface\Core\Interfaces\DataTypes\EnumDataTypeInterface;
 
 /**

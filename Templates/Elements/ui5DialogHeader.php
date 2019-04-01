@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\WidgetGrid;
 use exface\Core\Interfaces\WidgetInterface;
@@ -38,7 +38,7 @@ class ui5DialogHeader extends ui5Container
             return '';
         }
         
-        $element = new ui5ObjectStatus($widget, $this->getTemplate());
+        $element = new ui5ObjectStatus($widget, $this->getFacade());
         
         return $element->buildJsConstructor();
     }
@@ -54,7 +54,7 @@ class ui5DialogHeader extends ui5Container
             if ($w instanceof WidgetGrid) {
                 $content .= $this->buildJsVerticalLayout($w) . ',';
             } elseif ($w->getWidgetType() !== 'Display' && $w instanceof iDisplayValue) {
-                $content .= $this->getTemplate()->getElement($w)->buildJsConstructor('oController') . ',';
+                $content .= $this->getFacade()->getElement($w)->buildJsConstructor('oController') . ',';
             } elseif ($w instanceof iHaveValue) {
                 $content .= $this->buildJsObjectStatus($w) . ',';
             }

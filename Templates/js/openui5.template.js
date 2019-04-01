@@ -31,7 +31,7 @@ const exfLauncher = {};
 		            		}
 		                }),
 		                /*new sap.m.Image({
-							src: "exface/vendor/exface/OpenUI5Template/Templates/images/sap_50x26.png",
+							src: "exface/vendor/exface/UI5Facade/Facades/images/sap_50x26.png",
 							height: "26px",
 							width: "50px",
 							densityAware: false,

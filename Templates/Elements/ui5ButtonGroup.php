@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryButtonGroupTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryButtonGroupTrait;
 
 /**
  * The AdminLTE implementation of the ButtonGroup widget

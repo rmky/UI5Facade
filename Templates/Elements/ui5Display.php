@@ -1,8 +1,8 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Display;
-use exface\OpenUI5Template\Templates\Interfaces\ui5BindingFormatterInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5BindingFormatterInterface;
 use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\Widgets\DataColumn;
 
@@ -21,7 +21,7 @@ class ui5Display extends ui5Value
     /**
      *
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -31,7 +31,7 @@ class ui5Display extends ui5Value
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsConstructorForMainControl()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildJsConstructorForMainControl()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
@@ -86,7 +86,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface::buildJsValueBindingOptions()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ValueBindingInterface::buildJsValueBindingOptions()
      */
     public function buildJsValueBindingOptions()
     {
@@ -99,7 +99,7 @@ JS;
      */
     protected function getValueBindingFormatter()
     {
-        return $this->getTemplate()->getDataTypeFormatter($this->getWidget()->getValueDataType());
+        return $this->getFacade()->getDataTypeFormatter($this->getWidget()->getValueDataType());
     }
     
     /**
@@ -126,7 +126,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsProperties()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsProperties()
      */
     public function buildJsProperties()
     {
@@ -156,7 +156,7 @@ JS;
      * cut off long values on smaller screens. On the other hande, the description 
      * is already there in the column header.
      * 
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsPropertyTooltip()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsPropertyTooltip()
      */
     protected function buildJsPropertyTooltip()
     {

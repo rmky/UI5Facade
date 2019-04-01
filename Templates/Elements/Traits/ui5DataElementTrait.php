@@ -1,11 +1,11 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements\Traits;
+namespace exface\UI5Facade\Facades\Elements\Traits;
 
 use exface\Core\Widgets\Data;
 use exface\Core\Widgets\DataTable;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
-use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
-use exface\OpenUI5Template\Templates\Elements\ui5DataConfigurator;
+use exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface;
+use exface\UI5Facade\Facades\Elements\ui5AbstractElement;
+use exface\UI5Facade\Facades\Elements\ui5DataConfigurator;
 use exface\Core\Interfaces\Widgets\iShowImage;
 use exface\Core\Interfaces\Widgets\iHaveContextualHelp;
 
@@ -21,12 +21,12 @@ trait ui5DataElementTrait {
     /**
      *
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::init()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::init()
      */
     protected function init()
     {
         parent::init();
-        $configuratorElement = $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget());
+        $configuratorElement = $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget());
         $configuratorElement->setModelNameForConfig($this->getModelNameForConfigurator());
         if ($this->isWrappedInDynamicPage()) {
             $configuratorElement->setIncludeFilterTab(false);
@@ -36,7 +36,7 @@ trait ui5DataElementTrait {
     /**
      *
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -223,7 +223,7 @@ JS;
                 }
                 $buttons .= ($buttons && $btn_group->getVisibility() > EXF_WIDGET_VISIBILITY_OPTIONAL ? ",\n new sap.m.ToolbarSeparator()" : '');
                 foreach ($btn_group->getButtons() as $btn) {
-                    $buttons .= $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n";
+                    $buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n";
                 }
             }
         }
@@ -260,7 +260,7 @@ JS;
     {
         $widget = $this->getWidget();
         if (($widget instanceof iHaveContextualHelp) && false === $widget->getHideHelpButton()) {
-            $helpBtnEl = $this->getTemplate()->getElement($widget->getHelpButton());
+            $helpBtnEl = $this->getFacade()->getElement($widget->getHelpButton());
             return <<<JS
             
                     new sap.m.OverflowToolbarButton({
@@ -288,7 +288,7 @@ JS;
      */
     protected function initConfiguratorControl(ui5ControllerInterface $controller) : ui5AbstractElement
     {
-        $controller->addDependentControl('oConfigurator', $this, $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget()));
+        $controller->addDependentControl('oConfigurator', $this, $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget()));
         return $this;
     }
     
@@ -309,7 +309,7 @@ JS;
      */
     protected function buildJsCheckRequiredFilters(string $onFailJs) : string
     {
-        $configurator_element = $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget());
+        $configurator_element = $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget());
         return <<<JS
 
                 try {
@@ -565,7 +565,7 @@ JS;
      */
     protected function getP13nElement()
     {
-        return $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget());
+        return $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget());
     }
     
     protected function getIdOfDynamicPage() : string
@@ -617,7 +617,7 @@ JS;
                 $btn->setHint($btn->getCaption());
                 $btn->setCaption($this->translate('WIDGET.DATATABLE.GO_BUTTON_TEXT'));
             }
-            $top_buttons .= $this->getTemplate()->getElement($btn)->buildJsConstructor() . ',';
+            $top_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ',';
         }
         
         if ($this->getView()->isWebAppRoot() === true) {
@@ -678,7 +678,7 @@ JS;
                     new sap.ui.layout.Grid({
                         defaultSpan: "XL2 L3 M4 S12",
                         content: [
-							{$this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsFilters()}
+							{$this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsFilters()}
 						]
                     })
 				]
@@ -699,7 +699,7 @@ JS;
     {
         $filter_checks = '';
         foreach ($this->getDataWidget()->getFilters() as $fltr) {
-            $elem = $this->getTemplate()->getElement($fltr);
+            $elem = $this->getFacade()->getElement($fltr);
             $filter_checks .= 'if(' . $elem->buildJsValueGetter() . ") {filtersCount++; filtersList += (filtersList == '' ? '' : ', ') + '{$elem->getCaption()}';} \n";
         }
         return <<<JS

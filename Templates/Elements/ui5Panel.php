@@ -1,10 +1,10 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Interfaces\Widgets\iFillEntireContainer;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ControlWithToolbarInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5ControlWithToolbarInterface;
 use exface\Core\Widgets\Panel;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryLayoutTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLayoutTrait;
 
 /**
  * 
@@ -53,7 +53,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Container::buildJsChildrenConstructors()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Container::buildJsChildrenConstructors()
      */
     public function buildJsChildrenConstructors(bool $useFormLayout = true) : string
     {
@@ -68,7 +68,7 @@ JS;
                 }
                 $firstVisibleWidget = $widget;
             }
-            $js .= ($js ? ",\n" : '') . $this->getTemplate()->getElement($widget)->buildJsConstructor();
+            $js .= ($js ? ",\n" : '') . $this->getFacade()->getElement($widget)->buildJsConstructor();
         }
         
         return $js;
@@ -180,7 +180,7 @@ JS;
      */
     public function getNumberOfColumnsByDefault() : int
     {
-        return $this->getTemplate()->getConfig()->getOption("WIDGET.PANEL.COLUMNS_BY_DEFAULT");
+        return $this->getFacade()->getConfig()->getOption("WIDGET.PANEL.COLUMNS_BY_DEFAULT");
     }
     
     /**
@@ -197,7 +197,7 @@ JS;
     /**
      *
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryLayoutTrait::buildJsLayouter()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLayoutTrait::buildJsLayouter()
      */
     public function buildJsLayouter() : string
     {

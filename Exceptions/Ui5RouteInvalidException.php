@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Exceptions;
+namespace exface\UI5Facade\Exceptions;
 
 use exface\Core\Exceptions\UnexpectedValueException;
 

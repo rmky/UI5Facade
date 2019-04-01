@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 /**
  * Generates sap.m.ObjectStatus for any value widget.
@@ -7,7 +7,7 @@ namespace exface\OpenUI5Template\Templates\Elements;
  * In contrast to a regular element, ObjectStatus does not have a widget prototype. Any
  * value widget can be rendered as ObjectStatus by instantiating it manually:
  * ```
- * $element = new ui5ObjectStatus($widget, $this->getTemplate());
+ * $element = new ui5ObjectStatus($widget, $this->getFacade());
  * ```
  *
  * @author Andrej Kabachnik
@@ -18,7 +18,7 @@ class ui5ObjectStatus extends ui5Value
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsConstructorForMainControl()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildJsConstructorForMainControl()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {

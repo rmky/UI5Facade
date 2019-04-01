@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Interfaces;
+namespace exface\UI5Facade\Facades\Interfaces;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Interfaces\JsDataTypeFormatterInterface;
+use exface\Core\Facades\AbstractAjaxFacade\Interfaces\JsDataTypeFormatterInterface;
 
 /**
  * 

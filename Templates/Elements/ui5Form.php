@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 /**
  * Generates OpenUI5 inputs
@@ -13,7 +13,7 @@ class ui5Form extends ui5Panel
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Panel::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Panel::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {

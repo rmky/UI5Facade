@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Html;
 use exface\Core\Widgets\Image;
@@ -17,12 +17,12 @@ class ui5QrCode extends ui5Display
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {        
-        $this->getController()->addExternalModule('com.penninkhof.controls.QRCode', $this->getTemplate()->buildUrlToSource('LIBS.QRCODE.JS') . 'QRCode');
-        $this->getController()->addExternalModule('com.penninkhof.controls.3rdparty.qrcode', $this->getTemplate()->buildUrlToSource('LIBS.QRCODE.JS') . '3rdparty/qrcode');
+        $this->getController()->addExternalModule('com.penninkhof.controls.QRCode', $this->getFacade()->buildUrlToSource('LIBS.QRCODE.JS') . 'QRCode');
+        $this->getController()->addExternalModule('com.penninkhof.controls.3rdparty.qrcode', $this->getFacade()->buildUrlToSource('LIBS.QRCODE.JS') . '3rdparty/qrcode');
         
         return <<<JS
 
@@ -38,7 +38,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Display::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Display::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -48,7 +48,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildCssHeightDefaultValue()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildCssHeightDefaultValue()
      */
     protected function buildCssHeightDefaultValue()
     {
@@ -58,7 +58,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildCssWidthDefaultValue()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildCssWidthDefaultValue()
      */
     protected function buildCssWidthDefaultValue()
     {
@@ -68,7 +68,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsValueBindingPropertyName()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildJsValueBindingPropertyName()
      */
     public function buildJsValueBindingPropertyName() : string
     {

@@ -1,9 +1,9 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Interfaces;
+namespace exface\UI5Facade\Facades\Interfaces;
 
-use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
-use exface\OpenUI5Template\Webapp;
-use exface\Core\Exceptions\Templates\TemplateLogicError;
+use exface\UI5Facade\Facades\Elements\ui5AbstractElement;
+use exface\UI5Facade\Webapp;
+use exface\Core\Exceptions\Facades\FacadeLogicError;
 use exface\Core\Exceptions\OutOfBoundsException;
 
 /**
@@ -51,7 +51,7 @@ interface ui5ControllerInterface {
     /**
      *
      * @param string $js
-     * @throws TemplateLogicError
+     * @throws FacadeLogicError
      * @return ui5AbstractElement
      */
     public function addProperty(string $name, string $js) : ui5ControllerInterface;

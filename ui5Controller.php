@@ -1,18 +1,18 @@
 <?php
-namespace exface\OpenUI5Template;
+namespace exface\UI5Facade;
 
-use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface;
 use exface\Core\DataTypes\StringDataType;
-use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
-use exface\Core\Exceptions\Templates\TemplateLogicError;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
+use exface\UI5Facade\Facades\Elements\ui5AbstractElement;
+use exface\Core\Exceptions\Facades\FacadeLogicError;
+use exface\UI5Facade\Facades\Interfaces\ui5ViewInterface;
 use exface\Core\Exceptions\OutOfBoundsException;
 use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\Widgets\iCanPreloadData;
 use exface\Core\Interfaces\Actions\iShowWidget;
-use exface\OpenUI5Template\Templates\Elements\ui5Dialog;
+use exface\UI5Facade\Facades\Elements\ui5Dialog;
 
 class ui5Controller implements ui5ControllerInterface
 {
@@ -50,7 +50,7 @@ class ui5Controller implements ui5ControllerInterface
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsMethodName()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::buildJsMethodName()
      */
     public function buildJsMethodName(string $methodName, ui5AbstractElement $ownerElement) : string
     {
@@ -90,13 +90,13 @@ class ui5Controller implements ui5ControllerInterface
             return "{$oControllerJsVar}.{$propertyName}({$paramsJs})";
         }
         
-        throw new TemplateLogicError('Calling a controller method from another controller not implemented yet!');
+        throw new FacadeLogicError('Calling a controller method from another controller not implemented yet!');
     }
     
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsControllerGetter()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::buildJsControllerGetter()
      */
     public function buildJsControllerGetter(ui5AbstractElement $fromElement) : string
     {
@@ -106,7 +106,7 @@ class ui5Controller implements ui5ControllerInterface
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsComponentGetter()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::buildJsComponentGetter()
      */
     public function buildJsComponentGetter() : string
     {
@@ -178,12 +178,12 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addProperty()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::addProperty()
      */
     public final function addProperty(string $name, string $js) : ui5ControllerInterface
     {
         if ($this->isBuilt === true) {
-            throw new TemplateLogicError('Cannot add controller property "' . $name . '" after the controller "' . $this->getName() . '" had been built!');
+            throw new FacadeLogicError('Cannot add controller property "' . $name . '" after the controller "' . $this->getName() . '" had been built!');
         }
         $this->properties[$name] = $js;
         return $this;
@@ -192,7 +192,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addDependentObject()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::addDependentObject()
      */
     public function addDependentObject(string $objectName, ui5AbstractElement $ownerElement, string $initJs) : ui5ControllerInterface
     {
@@ -218,7 +218,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addMethod()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::addMethod()
      */
     public final function addMethod(string $methodName, ui5AbstractElement $methodOwner, string $params, string $body, $comment = '') : ui5ControllerInterface
     {
@@ -242,7 +242,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addDependentControl()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::addDependentControl()
      */
     public function addDependentControl(string $name, ui5AbstractElement $ownerElement, ui5AbstractElement $dependentElement) : ui5ControllerInterface
     {
@@ -269,7 +269,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsController()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::buildJsController()
      */
     public function buildJsController() : string
     {
@@ -361,7 +361,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getName()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::getName()
      */
     public function getName() : string
     {
@@ -371,7 +371,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getPath()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::getPath()
      */
     public function getPath() : string
     {
@@ -381,7 +381,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getId()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::getId()
      */
     public function getId() : string
     {
@@ -413,7 +413,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getWebapp()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::getWebapp()
      */
     public function getWebapp() : Webapp
     {
@@ -469,7 +469,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addOnInitScript()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::addOnInitScript()
      */
     public function addOnInitScript(string $js) : ui5ControllerInterface
     {
@@ -480,7 +480,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addOnShowViewScript()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::addOnShowViewScript()
      */
     public function addOnShowViewScript(string $js, bool $onBeforeShow = true) : ui5ControllerInterface
     {
@@ -491,7 +491,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addOnHideViewScript()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::addOnHideViewScript()
      */
     public function addOnHideViewScript(string $js, bool $onBeforeHide = true) : ui5ControllerInterface
     {
@@ -502,7 +502,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addOnRouteMatchedScript()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::addOnRouteMatchedScript()
      */
     public function addOnRouteMatchedScript(string $js, string $id) : ui5ControllerInterface
     {
@@ -522,7 +522,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addExternalModule()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::addExternalModule()
      */
     public function addExternalModule(string $name, string $urlRelativeToAppRoot, string $var = null) : ui5ControllerInterface
     {
@@ -533,7 +533,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getExternalModules()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::getExternalModules()
      */
     public function getExternalModulePaths() : array
     {
@@ -547,7 +547,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::addExternalCss()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::addExternalCss()
      */
     public function addExternalCss(string $path, string $id = null) : ui5ControllerInterface
     {
@@ -612,7 +612,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::getView()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::getView()
      */
     public function getView() : ui5ViewInterface
     {
@@ -622,7 +622,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::hasProperty()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::hasProperty()
      */
     public function hasProperty(string $name) : bool
     {
@@ -632,7 +632,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::hasMethod()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::hasMethod()
      */
     public function hasMethod(string $name, ui5AbstractElement $ownerElement) : bool
     {
@@ -643,7 +643,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::hasDependent()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::hasDependent()
      */
     public function hasDependent(string $name, ui5AbstractElement $ownerElement) : bool
     {
@@ -653,7 +653,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface::buildJsDependentControlSelector()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface::buildJsDependentControlSelector()
      */
     public function buildJsDependentControlSelector(string $controlName, ui5AbstractElement $ownerElement, string $oControllerJsVar = null) : string
     {

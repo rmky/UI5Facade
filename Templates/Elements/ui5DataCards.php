@@ -1,12 +1,12 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 class ui5DataCards extends ui5DataTable
 {
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5DataTable::buildJsConstructorForTable()
+     * @see \exface\UI5Facade\Facades\Elements\ui5DataTable::buildJsConstructorForTable()
      */
     protected function buildJsConstructorForControl(string $oControllerJs = 'oController') : string
     {
@@ -64,7 +64,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5DataTable::buildJsCellsForMTable()
+     * @see \exface\UI5Facade\Facades\Elements\ui5DataTable::buildJsCellsForMTable()
      */
     protected function buildJsCellsForMTable()
     {
@@ -74,7 +74,7 @@ JS;
             if ($column->getVisibility() === EXF_WIDGET_VISIBILITY_PROMOTED) {
                 $class .= ' exf-promoted';
             }
-            $cells .= ($cells ? ", " : '') . $this->getTemplate()->getElement($column)->buildJsConstructorForCell(null, false) . ($class !== '' ? '.addStyleClass("' . $class . '")' : '');
+            $cells .= ($cells ? ", " : '') . $this->getFacade()->getElement($column)->buildJsConstructorForCell(null, false) . ($class !== '' ? '.addStyleClass("' . $class . '")' : '');
         }
         
         return $cells;

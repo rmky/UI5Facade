@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\InputSelect;
 
@@ -17,7 +17,7 @@ class ui5InputSelect extends ui5Input
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsConstructorForMainControl()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsConstructorForMainControl()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
@@ -36,7 +36,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsProperties()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsProperties()
      */
     public function buildJsProperties()
     {
@@ -66,7 +66,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsPropertyValue()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsPropertyValue()
      */
     protected function buildJsPropertyValue()
     {
@@ -81,7 +81,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsValueGetterMethod()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsValueGetterMethod()
      */
     public function buildJsValueGetterMethod()
     {
@@ -95,7 +95,7 @@ JS;
     /**
      *
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsValueGetterMethod()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsValueGetterMethod()
      */
     public function buildJsValueSetterMethod($value)
     {
@@ -109,7 +109,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsValueBindingPropertyName()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsValueBindingPropertyName()
      */
     public function buildJsValueBindingPropertyName() : string
     {

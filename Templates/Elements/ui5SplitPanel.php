@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\SplitPanel;
 use exface\Core\Widgets\SplitHorizontal;
@@ -18,7 +18,7 @@ class ui5SplitPanel extends ui5Panel
         $widget = $this->getWidget();
         $sizeDimension = $widget->getParent() instanceof SplitHorizontal ? $widget->getWidth() : $widget->getHeight();
         switch (true) {
-            case $sizeDimension->isTemplateSpecific() === true:
+            case $sizeDimension->isFacadeSpecific() === true:
                 $size = $sizeDimension->getValue();
             default:
                 $size = 'auto';

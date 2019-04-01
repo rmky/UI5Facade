@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryToolbarTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryToolbarTrait;
 use exface\Core\Widgets\Toolbar;
 
 /**
@@ -24,10 +24,10 @@ class ui5Toolbar extends ui5AbstractElement
             switch ($btn->getAlign()) {
                 case EXF_ALIGN_OPPOSITE:
                 case EXF_ALIGN_RIGHT:
-                    $right_buttons = $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n" . $right_buttons;
+                    $right_buttons = $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n" . $right_buttons;
                     break;
                 default:
-                    $left_buttons .= $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n";
+                    $left_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n";
             }
         }
         
@@ -52,7 +52,7 @@ JS;
         foreach ($widget->getButtonGroups() as $btn_group) {
             $buttons .= ($buttons && $btn_group->getVisibility() > EXF_WIDGET_VISIBILITY_OPTIONAL ? ",\n new sap.m.ToolbarSeparator()" : '');
             foreach ($btn_group->getButtons() as $btn) {
-                $buttons .= ($buttons ? ", \n" : '') . $this->getTemplate()->getElement($btn)->buildJsConstructor();
+                $buttons .= ($buttons ? ", \n" : '') . $this->getFacade()->getElement($btn)->buildJsConstructor();
             }
         }
         return $buttons;

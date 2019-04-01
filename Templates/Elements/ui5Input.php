@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDisableConditionTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
 
 /**
  * Generates OpenUI5 inputs
@@ -16,7 +16,7 @@ class ui5Input extends ui5Value
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::init()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::init()
      */
     protected function init()
     {
@@ -29,7 +29,7 @@ class ui5Input extends ui5Value
     /**
      *
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -39,7 +39,7 @@ class ui5Input extends ui5Value
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsConstructorForMainControl()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildJsConstructorForMainControl()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
@@ -55,7 +55,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsProperties()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsProperties()
      */
     public function buildJsProperties()
     {
@@ -122,7 +122,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::getHeight()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::getHeight()
      */
     public function getHeight()
     {
@@ -148,7 +148,7 @@ JS;
      * problems should be when moving values to the model.
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsPropertyValue()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildJsPropertyValue()
      */
     protected function buildJsPropertyValue()
     {
@@ -193,7 +193,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsValueBindingPropertyName()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildJsValueBindingPropertyName()
      */
     public function buildJsValueBindingPropertyName() : string
     {
@@ -203,7 +203,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsValueSetter()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsValueSetter()
      */
     public function buildJsValueSetterMethod($valueJs)
     {

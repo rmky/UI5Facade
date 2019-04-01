@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Text;
 
@@ -16,7 +16,7 @@ class ui5Text extends ui5Display
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Display::buildJsPropertyWrapping()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Display::buildJsPropertyWrapping()
      */
     protected function buildJsPropertyWrapping()
     {

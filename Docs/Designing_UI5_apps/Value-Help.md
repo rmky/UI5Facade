@@ -1,6 +1,6 @@
 # Value-help for input widgets
 
-The value-help feature of Fiori is easy to implement in the UI5 template. In fact, in many cases, the value-help is added automatically. Here are the most common scenarios:
+The value-help feature of Fiori is easy to implement in the UI5 facade. In fact, in many cases, the value-help is added automatically. Here are the most common scenarios:
 
 ## Value-help for relations
 

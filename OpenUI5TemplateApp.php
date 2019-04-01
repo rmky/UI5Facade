@@ -1,22 +1,22 @@
 <?php
-namespace exface\OpenUI5Template;
+namespace exface\UI5Facade;
 
 use exface\Core\Interfaces\InstallerInterface;
-use exface\Core\Templates\AbstractHttpTemplate\HttpTemplateInstaller;
+use exface\Core\Facades\AbstractHttpFacade\HttpFacadeInstaller;
 use exface\Core\CommonLogic\Model\App;
-use exface\Core\Factories\TemplateFactory;
+use exface\Core\Factories\FacadeFactory;
 use exface\Core\CommonLogic\AppInstallers\SqlSchemaInstaller;
-use exface\Core\Templates\AbstractPWATemplate\ServiceWorkerInstaller;
+use exface\Core\Facades\AbstractPWAFacade\ServiceWorkerInstaller;
 use exface\Core\CommonLogic\Filemanager;
 
-class OpenUI5TemplateApp extends App
+class UI5FacadeApp extends App
 {
     private $exportPath = null;
     
     /**
      * {@inheritdoc}
      * 
-     * An additional installer is included to condigure the routing for the HTTP templates.
+     * An additional installer is included to condigure the routing for the HTTP facades.
      * 
      * @see App::getInstaller($injected_installer)
      */
@@ -24,8 +24,8 @@ class OpenUI5TemplateApp extends App
     {
         $installer = parent::getInstaller($injected_installer);
         
-        $tplInstaller = new HttpTemplateInstaller($this->getSelector());
-        $tplInstaller->setTemplate(TemplateFactory::createFromString('exface.OpenUI5Template.OpenUI5Template', $this->getWorkbench()));
+        $tplInstaller = new HttpFacadeInstaller($this->getSelector());
+        $tplInstaller->setFacade(FacadeFactory::createFromString('exface.UI5Facade.UI5Facade', $this->getWorkbench()));
         $installer->addInstaller($tplInstaller);
         
         // Install routes

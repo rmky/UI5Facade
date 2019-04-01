@@ -1,10 +1,10 @@
 <?php
-namespace exface\OpenUI5Template;
+namespace exface\UI5Facade;
 
 use exface\Core\Interfaces\WorkbenchDependantInterface;
 use exface\Core\CommonLogic\Workbench;
-use exface\OpenUI5Template\Templates\OpenUI5Template;
-use exface\OpenUI5Template\Exceptions\Ui5RouteInvalidException;
+use exface\UI5Facade\Facades\UI5Facade;
+use exface\UI5Facade\Exceptions\Ui5RouteInvalidException;
 use exface\Core\DataTypes\StringDataType;
 use exface\Core\Exceptions\LogicException;
 use exface\Core\Factories\UiPageFactory;
@@ -12,9 +12,9 @@ use exface\Core\Interfaces\Selectors\AliasSelectorInterface;
 use exface\Core\Exceptions\FileNotFoundError;
 use exface\Core\Exceptions\RuntimeException;
 use exface\Core\Interfaces\Model\UiPageInterface;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface;
 use exface\Core\Interfaces\WidgetInterface;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5ViewInterface;
 use GuzzleHttp\Psr7\Uri;
 use exface\Core\Interfaces\Log\LoggerInterface;
 use exface\Core\Interfaces\Tasks\HttpTaskInterface;
@@ -27,13 +27,13 @@ class Webapp implements WorkbenchDependantInterface
 {
     private $workbench = null;
     
-    private $template = null;
+    private $facade = null;
     
     private $appId = null;
     
     private $rootPage = null;
     
-    private $templateFolder = null;
+    private $facadeFolder = null;
     
     private $config = [];
     
@@ -41,12 +41,12 @@ class Webapp implements WorkbenchDependantInterface
     
     private $models = [];
     
-    public function __construct(OpenUI5Template $template, string $ui5AppId, string $templateFolder, array $config)
+    public function __construct(UI5Facade $facade, string $ui5AppId, string $facadeFolder, array $config)
     {
-        $this->workbench = $template->getWorkbench();
-        $this->template = $template;
+        $this->workbench = $facade->getWorkbench();
+        $this->facade = $facade;
         $this->appId = $ui5AppId;
-        $this->templateFolder = $templateFolder;
+        $this->facadeFolder = $facadeFolder;
         $this->config = $config;
     }
     
@@ -99,7 +99,7 @@ class Webapp implements WorkbenchDependantInterface
                 }
                 
                 // Listen to OnPrefillChangePropertyEvent and generate model bindings from it
-                $model = $this->createViewModel($this->template->getViewName($widget, $this->getRootPage()));
+                $model = $this->createViewModel($this->facade->getViewName($widget, $this->getRootPage()));
                 $eventHandler = function($event) use ($model) {
                     $model->setBindingPointer($event->getWidget(), $event->getPropertyName(), $event->getPrefillValuePointer());
                 };
@@ -128,13 +128,13 @@ class Webapp implements WorkbenchDependantInterface
         switch (true) {
             case $route === 'manifest.json':
                 return $this->getManifestJson();
-            case $route === 'Component-preload.js' && $this->template->getConfig()->getOption('UI5.USE_COMPONENT_PRELOAD'):
+            case $route === 'Component-preload.js' && $this->facade->getConfig()->getOption('UI5.USE_COMPONENT_PRELOAD'):
                 return $this->getComponentPreload();
             case StringDataType::startsWith($route, 'i18n/'):
                 $lang = explode('_', pathinfo($route, PATHINFO_FILENAME))[1];
                 return $this->getTranslation($lang);
-            case file_exists($this->getTemplatesFolder() . $route):
-                return $this->getFromFileTemplate($route);
+            case file_exists($this->getFacadesFolder() . $route):
+                return $this->getFromFileFacade($route);
             case StringDataType::startsWith($route, 'view/'):
                 $path = StringDataType::substringAfter($route, 'view/');
                 if (StringDataType::endsWith($path, '.view.js')) {
@@ -188,7 +188,7 @@ class Webapp implements WorkbenchDependantInterface
     protected function getManifestJson() : string
     {
         $placeholders = $this->config;
-        $tpl = file_get_contents($this->getTemplatesFolder() . 'manifest.json');
+        $tpl = file_get_contents($this->getFacadesFolder() . 'manifest.json');
         $tpl = str_replace('[#app_id#]', $placeholders['app_id'], $tpl);
         $json = json_decode($tpl, true);
         $json['_version'] = $this->getManifestVersion($placeholders['ui5_min_version']);
@@ -219,22 +219,22 @@ class Webapp implements WorkbenchDependantInterface
      *
      * @return string
      */
-    public function getTemplatesFolder() : string
+    public function getFacadesFolder() : string
     {
-        return $this->templateFolder;
+        return $this->facadeFolder;
     }
     
-    protected function getFromFileTemplate(string $pathRelativeToTemplatesFolder, array $placeholders = null) : string
+    protected function getFromFileFacade(string $pathRelativeToFacadesFolder, array $placeholders = null) : string
     {
-        $path = $this->getTemplatesFolder() . $pathRelativeToTemplatesFolder;
+        $path = $this->getFacadesFolder() . $pathRelativeToFacadesFolder;
         if (! file_exists($path)) {
-            throw new FileNotFoundError('Cannot load template file "' . $pathRelativeToTemplatesFolder . '": file does not exist!');
+            throw new FileNotFoundError('Cannot load facade file "' . $pathRelativeToFacadesFolder . '": file does not exist!');
         }
         
         $tpl = file_get_contents($path);
         
         if ($tpl === false) {
-            throw new RuntimeException('Cannot read template file "' . $pathRelativeToTemplatesFolder . '"!');
+            throw new RuntimeException('Cannot read facade file "' . $pathRelativeToFacadesFolder . '"!');
         }
         
         $phs = $placeholders === null ? $this->config : $placeholders;
@@ -281,7 +281,7 @@ class Webapp implements WorkbenchDependantInterface
             }
         }
         
-        $tplTranslator = $this->template->getApp()->getTranslator();
+        $tplTranslator = $this->facade->getApp()->getTranslator();
         $dict = $tplTranslator->getDictionary($locale);
         
         if ($app) {
@@ -358,7 +358,7 @@ class Webapp implements WorkbenchDependantInterface
     
     public function getComponentUrl() : string
     {
-        return 'exface' . $this->template->getConfig()->getOption('DEFAULT_AJAX_URL') . '/webapps/' . $this->getComponentName() . '/';
+        return 'exface' . $this->facade->getConfig()->getOption('DEFAULT_AJAX_URL') . '/webapps/' . $this->getComponentName() . '/';
     }
     
     public function getComponentPreload() : string
@@ -427,7 +427,7 @@ class Webapp implements WorkbenchDependantInterface
     {
         $resources = [];
         foreach ($locales as $loc) {
-            $cldrPath = $this->template->getUI5LibrariesPath() . 'resources/sap/ui/core/cldr/' . $loc . '.json';
+            $cldrPath = $this->facade->getUI5LibrariesPath() . 'resources/sap/ui/core/cldr/' . $loc . '.json';
             if (file_exists($cldrPath)) {
                 $resources['sap/ui/core/cldr/' . $loc . '.json'] = file_get_contents($cldrPath);
             }
@@ -475,7 +475,7 @@ class Webapp implements WorkbenchDependantInterface
     
     public function getControllerForWidget(WidgetInterface $widget) : ui5ControllerInterface
     {
-        return $this->template->createController($this->template->getElement($widget));
+        return $this->facade->createController($this->facade->getElement($widget));
     }
     
     public function isPWA() : bool

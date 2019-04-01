@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 /**
  * Generates OpenUI5 inputs
@@ -13,7 +13,7 @@ class ui5InputCheckBox extends ui5Input
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Text::buildJsConstructorForMainControl()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Text::buildJsConstructorForMainControl()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
@@ -44,7 +44,7 @@ JS;
     /**
      *
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface::buildJsValueBindingOptions()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ValueBindingInterface::buildJsValueBindingOptions()
      */
     public function buildJsValueBindingOptions()
     {
@@ -57,13 +57,13 @@ JS;
      */
     protected function getValueBindingFormatter()
     {
-        return $this->getTemplate()->getDataTypeFormatter($this->getWidget()->getValueDataType());
+        return $this->getFacade()->getDataTypeFormatter($this->getWidget()->getValueDataType());
     }
     
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsPropertyChange()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsPropertyChange()
      */
     protected function buildJsPropertyChange()
     {
@@ -101,7 +101,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsValueSetterMethod()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsValueSetterMethod()
      */
     public function buildJsValueSetterMethod($value)
     {
@@ -111,7 +111,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsValueBindingPropertyName()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsValueBindingPropertyName()
      */
     public function buildJsValueBindingPropertyName() : string
     {
@@ -122,7 +122,7 @@ JS;
      * Checkboxes cannot be required in UI5!
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsPropertyRequired()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsPropertyRequired()
      */
     protected function buildJsPropertyRequired()
     {

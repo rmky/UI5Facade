@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Formatters;
+namespace exface\UI5Facade\Facades\Formatters;
 
 /**
  * 
@@ -11,7 +11,7 @@ class ui5DefaultFormatter extends AbstractUi5BindingFormatter
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5BindingFormatterInterface::buildJsBindingProperties()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5BindingFormatterInterface::buildJsBindingProperties()
      */
     public function buildJsBindingProperties()
     {

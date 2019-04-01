@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\DataTypes\NumberDataType;
 use exface\Core\Widgets\InputNumber;
@@ -132,7 +132,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsPropertyType()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsPropertyType()
      */
     protected function buildJsPropertyType()
     {

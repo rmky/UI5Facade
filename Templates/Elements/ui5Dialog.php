@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Dialog;
 use exface\Core\Factories\DataSheetFactory;
@@ -55,7 +55,7 @@ class ui5Dialog extends ui5Form
         if (is_null($widget_setting)) {
             if ($widget->hasParent() && $widget->getParent() instanceof iTriggerAction) {
                 $action = $widget->getParent()->getAction();
-                $action_setting = $this->getTemplate()->getConfigMaximizeDialogByDefault($action);
+                $action_setting = $this->getFacade()->getConfigMaximizeDialogByDefault($action);
                 return $action_setting;
             }
             return false;
@@ -90,7 +90,7 @@ JS;
         if ($widget->hasHeader()) {
             foreach ($widget->getHeader()->getChildren() as $child) {
                 if ($child instanceof Image) {
-                    $imageElement = $this->getTemplate()->getElement($child);
+                    $imageElement = $this->getFacade()->getElement($child);
                     $image = <<<JS
 
                     objectImageURI: {$imageElement->buildJsValue()},
@@ -102,7 +102,7 @@ JS;
             }
             
             
-            $header_content = $this->getTemplate()->getElement($widget->getHeader())->buildJsConstructor();
+            $header_content = $this->getFacade()->getElement($widget->getHeader())->buildJsConstructor();
         }
         
         return <<<JS
@@ -161,13 +161,13 @@ JS;
         
         // Once a title attribute is found, create an invisible display widget and
         // let it's element produce a binding.
-        /* @var $titleElement \exface\OpenUI5Template\Templates\Elements\ui5Display */
+        /* @var $titleElement \exface\UI5Facade\Facades\Elements\ui5Display */
         $titleWidget = WidgetFactory::createFromUxon($widget->getPage(), new UxonObject([
             'widget_type' => 'Display',
             'hidden' => true,
             'attribute_alias' => $title_attr->getAliasWithRelationPath()
         ]), $widget);
-        $titleElement = $this->getTemplate()->getElement($titleWidget);
+        $titleElement = $this->getFacade()->getElement($titleWidget);
         
         // If there is a caption binding in the view model, use it in the title element
         if ($header !== null) {
@@ -244,7 +244,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::getCaption()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::getCaption()
      */
     protected function getCaption() : string
     {
@@ -458,12 +458,12 @@ JS;
                 // they break the SimpleForm generated for the non-tab PageSection. If they come first, the SimpleForm will allocate
                 // space for them (even though not visible) and put the actual content way in the back.
                 if ($child->isHidden() === true) {
-                    $non_tab_hidden_constructors .= ($non_tab_hidden_constructors ? ',' : '') . $this->getTemplate()->getElement($child)->buildJsConstructor();
+                    $non_tab_hidden_constructors .= ($non_tab_hidden_constructors ? ',' : '') . $this->getFacade()->getElement($child)->buildJsConstructor();
                 } else {
                     if ((($child instanceof iFillEntireContainer) || $child->getWidth()->isMax()) && $widget->countWidgetsVisible() !== 1) {
                         $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->buildJsFormRowDelimiter();
                     }
-                    $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->getTemplate()->getElement($child)->buildJsConstructor();
+                    $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->getFacade()->getElement($child)->buildJsConstructor();
                 }
             }
         }
@@ -516,7 +516,7 @@ JS;
      */
     protected function buildJsObjectPageSectionFromTab(Tab $tab) 
     {
-        $tabElement = $this->getTemplate()->getElement($tab);
+        $tabElement = $this->getFacade()->getElement($tab);
         return <<<JS
 
                 // BOF ObjectPageSection
@@ -541,7 +541,7 @@ JS;
      */
     protected function buildJsFloatingToolbar()
     {
-        return $this->getTemplate()->getElement($this->getWidget()->getToolbarMain())->buildJsConstructor();
+        return $this->getFacade()->getElement($this->getWidget()->getToolbarMain())->buildJsConstructor();
     }
     
     /**
@@ -556,11 +556,11 @@ JS;
         foreach ($buttons as $btn) {
             if ($btn instanceof MenuButton) {
                 foreach ($btn->getButtons() as $subbtn) {
-                    $js = $this->getTemplate()->getElement($subbtn)->buildJsConstructor() . ",\n" . $js;
+                    $js = $this->getFacade()->getElement($subbtn)->buildJsConstructor() . ",\n" . $js;
                 }
                 continue;
             }
-            $js = $this->getTemplate()->getElement($btn)->buildJsConstructor() . ",\n" . $js;
+            $js = $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n" . $js;
         }
         return $js;
     }

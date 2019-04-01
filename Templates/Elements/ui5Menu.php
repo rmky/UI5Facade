@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Menu;
 use exface\Core\Widgets\Button;
@@ -17,7 +17,7 @@ class ui5Menu extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -71,8 +71,8 @@ JS;
      */
     protected function buildJsButtonListItem(Button $button) : string
     {
-        /* @var $btn_element \exface\OpenUI5Template\Templates\Elements\ui5Button */
-        $btn_element = $this->getTemplate()->getElement($button);
+        /* @var $btn_element \exface\UI5Facade\Facades\Elements\ui5Button */
+        $btn_element = $this->getFacade()->getElement($button);
         
         if ($button->getIcon()) {
             $icon = 'icon: "' . $btn_element->buildCssIconClass($button->getIcon()) . '",';

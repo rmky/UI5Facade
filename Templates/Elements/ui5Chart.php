@@ -1,10 +1,10 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryFlotTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryFlotTrait;
 use exface\Core\Widgets\Chart;
 use exface\Core\DataTypes\StringDataType;
-use exface\OpenUI5Template\Templates\Elements\Traits\ui5DataElementTrait;
+use exface\UI5Facade\Facades\Elements\Traits\ui5DataElementTrait;
 use exface\Core\Widgets\Data;
 
 /**
@@ -24,13 +24,13 @@ class ui5Chart extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructorForControl($oControllerJs = 'oController') : string
     {
         // TODO #chart-configurator Since there is no extra chart configurator yet, we use the configurator
         // of the data widget and make it refresh this chart when it's apply-on-change-filters change. 
-        $this->getTemplate()->getElement($this->getWidget()->getData()->getConfiguratorWidget())->registerFiltersWithApplyOnChange($this);
+        $this->getFacade()->getElement($this->getWidget()->getData()->getConfiguratorWidget())->registerFiltersWithApplyOnChange($this);
         
         $controller = $this->getController();        
         $controller->addMethod('onPlot', $this, 'data', $this->buildJsPlotter());
@@ -113,7 +113,7 @@ JS;
             // send pagination/limit information. Charts currently do not support real pagination, but just a TOP-X display.
             if ($widget->getData()->isPaged()) {
                 $post_data .= 'data.start = 0;';
-                $post_data .= 'data.length = ' . $widget->getData()->getPaginator()->getPageSize($this->getTemplate()->getConfig()->getOption('WIDGET.CHART.PAGE_SIZE')) . ';';
+                $post_data .= 'data.length = ' . $widget->getData()->getPaginator()->getPageSize($this->getFacade()->getConfig()->getOption('WIDGET.CHART.PAGE_SIZE')) . ';';
             }
             
             // Loader function
@@ -121,7 +121,7 @@ JS;
 					' . $this->buildJsBusyIconShow() . '
 					var data = { };
 					' . $post_data . '
-                    data.data = ' . $this->getTemplate()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter() . ';
+                    data.data = ' . $this->getFacade()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter() . ';
 					$.ajax({
 						url: "' . $this->getAjaxUrl() . '",
                         method: "POST",

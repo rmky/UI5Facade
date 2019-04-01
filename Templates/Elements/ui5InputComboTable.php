@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\InputComboTable;
 use exface\Core\Widgets\DataColumn;
@@ -60,7 +60,7 @@ JS;
     /**
      *
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsConstructorForMainControl()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsConstructorForMainControl()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
@@ -154,8 +154,8 @@ JS;
         $columns = '';
         $cells = '';
         foreach ($widget->getTable()->getColumns() as $idx => $col) {
-            /* @var $element \exface\OpenUI5Template\Templates\Elements\ui5DataColumn */
-            $element = $this->getTemplate()->getElement($col);
+            /* @var $element \exface\UI5Facade\Facades\Elements\ui5DataColumn */
+            $element = $this->getFacade()->getElement($col);
             $columns .= ($columns ? ",\n" : '') . $element->buildJsConstructorForMColumn();
             $cells .= ($cells ? ",\n" : '') . $element->buildJsConstructorForCell($this->getModelNameForAutosuggest());
             if ($col->getId() === $widget->getValueColumn()->getId()) {
@@ -382,7 +382,7 @@ JS;
      * a model is bound, so we set initial value programmatically at the end of the constructor.
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsPropertyValue()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsPropertyValue()
      */
     protected function buildJsPropertyValue()
     {
@@ -402,7 +402,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsValueGetterMethod()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsValueGetterMethod()
      */
     public function buildJsValueGetterMethod()
     {
@@ -412,7 +412,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsValueSetter()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsValueSetter()
      */
     public function buildJsValueSetterMethod($valueJs)
     {
@@ -421,14 +421,14 @@ JS;
         // above will recognize this and use merge this object with the request parameters, so
         // we can directly tell it to use our input as a value column filter instead of a regular
         // suggest string.
-        $valueFilterParam = UrlDataType::urlEncode($this->getTemplate()->getUrlFilterPrefix() . $this->getWidget()->getValueColumn()->getAttributeAlias());
+        $valueFilterParam = UrlDataType::urlEncode($this->getFacade()->getUrlFilterPrefix() . $this->getWidget()->getValueColumn()->getAttributeAlias());
         return "setSelectedKey({$valueJs}).fireSuggest({suggestValue: {'{$valueFilterParam}': {$valueJs}}}).fireChange({value: {$valueJs}})";
     }
     
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsValueBindingPropertyName()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsValueBindingPropertyName()
      */
     public function buildJsValueBindingPropertyName() : string
     {

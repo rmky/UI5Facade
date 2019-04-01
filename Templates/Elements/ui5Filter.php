@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryFilterTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryFilterTrait;
 use exface\Core\Widgets\InputHidden;
 
 /**
@@ -25,7 +25,7 @@ class ui5Filter extends ui5AbstractElement
      * A filter is considered not visible if it is hidden or it's input widget is an InputHidden
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::isVisible()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::isVisible()
      */
     public function isVisible()
     {
@@ -38,7 +38,7 @@ class ui5Filter extends ui5AbstractElement
     
     public function addPseudoEventHandler($event, $code)
     {
-        $this->getTemplate()->getElement($this->getWidget()->getInputWidget())->addPseudoEventHandler($event, $code);
+        $this->getFacade()->getElement($this->getWidget()->getInputWidget())->addPseudoEventHandler($event, $code);
         return $this;
     }
 }

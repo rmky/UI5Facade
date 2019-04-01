@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Formatters;
+namespace exface\UI5Facade\Facades\Formatters;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsEnumFormatter;
+use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsEnumFormatter;
 use exface\Core\Interfaces\DataTypes\EnumDataTypeInterface;
 
 /**
@@ -15,7 +15,7 @@ class ui5TransparentFormatter extends AbstractUi5BindingFormatter
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5BindingFormatterInterface::buildJsBindingProperties()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5BindingFormatterInterface::buildJsBindingProperties()
      */
     public function buildJsBindingProperties()
     {

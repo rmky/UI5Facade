@@ -54,15 +54,15 @@
     },
     "INSTALLER.SERVICEWORKER.IMPORTS": [
     	"npm-asset/dexie/dist/dexie.min.js",
-    	"exface/Core/Templates/AbstractPWATemplate/sw_tools.js"
+    	"exface/Core/Facades/AbstractPWAFacade/sw_tools.js"
     ],
 	
-	"LIBS.TEMPLATE.CSS": "exface/OpenUI5Template/Templates/js/openui5.template.css",
-	"LIBS.TEMPLATE.CUSTOM_CONTROLS": "exface/OpenUI5Template/Templates/js/openui5.controls.js",
+	"LIBS.FACADE.CSS": "exface/UI5Facade/Facades/js/openui5.template.css",
+	"LIBS.FACADE.CUSTOM_CONTROLS": "exface/UI5Facade/Facades/js/openui5.controls.js",
 	
 	"LIBS.FLOT.CORE_FOLDER": "npm-asset/flot-charts/",
-	"LIBS.FLOT.PLUGINS.ORDERBARS": "exface/OpenUI5Template/Templates/js/flot/plugins/jquery.flot.orderBars.js",
-	"LIBS.FLOT.PLUGINS.AXISLABELS": "exface/OpenUI5Template/Templates/js/flot/plugins/jquery.flot.orderBars.js",
+	"LIBS.FLOT.PLUGINS.ORDERBARS": "exface/UI5Facade/Facades/js/flot/plugins/jquery.flot.orderBars.js",
+	"LIBS.FLOT.PLUGINS.AXISLABELS": "exface/UI5Facade/Facades/js/flot/plugins/jquery.flot.orderBars.js",
 	
 	"LIBS.JSONEDITOR.CSS": "bower-asset/jsoneditor/dist/jsoneditor.min.css",
 	"LIBS.JSONEDITOR.JS": "bower-asset/jsoneditor/dist/jsoneditor.min.js",

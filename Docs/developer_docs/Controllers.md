@@ -1,10 +1,10 @@
 # Controllers
 
-Each template element has a method called `getController()`, that returns a helper-class to manage the contents of the generated  JavaScript controller. It is defined by the `ui5ControllerInterface`. Here is an overview, of how it works, and what it is good for.
+Each facade element has a method called `getController()`, that returns a helper-class to manage the contents of the generated  JavaScript controller. It is defined by the `ui5ControllerInterface`. Here is an overview, of how it works, and what it is good for.
 
 ## Adding and calling controller methods
 
-The controller is supposed to contain all the UI logic in UI5. In general, developers should not write JS code in views, but only call controller methods. The UI5 Template attempts to do the same. However, it is not so easy to call controller methods as the actual code to do this largely depends on where you call it from. 
+The controller is supposed to contain all the UI logic in UI5. In general, developers should not write JS code in views, but only call controller methods. The UI5 Facade attempts to do the same. However, it is not so easy to call controller methods as the actual code to do this largely depends on where you call it from. 
 
 The `ui5Controller` class provides methods to generate controller methods and call them.
 

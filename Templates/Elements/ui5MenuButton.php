@@ -1,8 +1,8 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Button;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryButtonTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryButtonTrait;
 use exface\Core\Widgets\MenuButton;
 
 /**
@@ -70,8 +70,8 @@ JS;
                     $properties .= 'startsSection: true,';
                 }
                 
-                /* @var $btnElement \exface\OpenUI5Template\Templates\Elements\ui5Button */
-                $btnElement = $this->getTemplate()->getElement($b);
+                /* @var $btnElement \exface\UI5Facade\Facades\Elements\ui5Button */
+                $btnElement = $this->getFacade()->getElement($b);
                 $handler = $btnElement->buildJsClickViewEventHandlerCall();
                 $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
                 

@@ -1,10 +1,10 @@
-# Routing in the OpenUI5 template
+# Routing in the OpenUI5 facade
 
 ## Generic Webapp
 
 As long as the app runs on the plattform (is not exported), any landing page acts as a UI5 web app. 
 
-This means, that the first time you load a page, a shell and an app are created and loaded into the browser. All subsequent navivgation just loads views via the plattform API unless the user actually presses a link to another page forcing the browser to reload everything - when and how this happens depends on the CMS template used. However, in most cases, all children of a page will automatically become views, that will be loaded asynchronously.
+This means, that the first time you load a page, a shell and an app are created and loaded into the browser. All subsequent navivgation just loads views via the plattform API unless the user actually presses a link to another page forcing the browser to reload everything - when and how this happens depends on the CMS facade used. However, in most cases, all children of a page will automatically become views, that will be loaded asynchronously.
 
 The root page (i.e. the entry point of the user) becomes part of the URL and remains there even if other pages are loaded as views. So, if the URL is copied or bookmarked, it will allways lead to exactly the same app.
 
@@ -14,7 +14,7 @@ The root page (i.e. the entry point of the user) becomes part of the URL and rem
 
 ## Views
 
-Once the app is loaded, the regular UI5 router is used to pull in the actual content. Since the internal routing in UI5 works via view names, these are gereated in such a way, that view requests result in an API call to the UI5 template. 
+Once the app is loaded, the regular UI5 router is used to pull in the actual content. Since the internal routing in UI5 works via view names, these are gereated in such a way, that view requests result in an API call to the UI5 facade. 
 
 ### Page views
 
@@ -62,7 +62,7 @@ Controllers are generated for each view and use the same routing patterns but un
 
 ## Combined ViewControllers
 
-In addition to regular views and controllers, the template API can also supplie both combined into a single JS document:
+In addition to regular views and controllers, the facade API can also supplie both combined into a single JS document:
 
 ```
 api/ui5/webapp/entry.point.alias/viewcontroller/pageVendor/pageApp/PageAlias.viewcontroller.js

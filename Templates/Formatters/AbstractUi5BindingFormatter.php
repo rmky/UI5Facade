@@ -1,8 +1,8 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Formatters;
+namespace exface\UI5Facade\Facades\Formatters;
 
-use exface\OpenUI5Template\Templates\Interfaces\ui5BindingFormatterInterface;
-use exface\Core\Templates\AbstractAjaxTemplate\Interfaces\JsDataTypeFormatterInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5BindingFormatterInterface;
+use exface\Core\Facades\AbstractAjaxFacade\Interfaces\JsDataTypeFormatterInterface;
 
 abstract class AbstractUi5BindingFormatter implements ui5BindingFormatterInterface
 {
@@ -16,7 +16,7 @@ abstract class AbstractUi5BindingFormatter implements ui5BindingFormatterInterfa
     /**
      * 
      * @param JsDataTypeFormatterInterface $jsFormatter
-     * @return \exface\OpenUI5Template\Templates\Formatters\ui5DateFormatter
+     * @return \exface\UI5Facade\Facades\Formatters\ui5DateFormatter
      */
     protected function setJsFormmater(JsDataTypeFormatterInterface $jsFormatter)
     {
@@ -27,7 +27,7 @@ abstract class AbstractUi5BindingFormatter implements ui5BindingFormatterInterfa
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5BindingFormatterInterface::getJsFormatter()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5BindingFormatterInterface::getJsFormatter()
      */
     public function getJsFormatter()
     {
@@ -37,7 +37,7 @@ abstract class AbstractUi5BindingFormatter implements ui5BindingFormatterInterfa
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Formatters\JsDateFormatter::getDataType()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Formatters\JsDateFormatter::getDataType()
      */
     public function getDataType()
     {

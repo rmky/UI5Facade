@@ -1,15 +1,15 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Interfaces\Actions\iReadData;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDataTableTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDataTableTrait;
 use exface\Core\Widgets\Button;
 use exface\Core\Widgets\ButtonGroup;
 use exface\Core\Widgets\Data;
 use exface\Core\Widgets\DataTableResponsive;
 use exface\Core\Widgets\MenuButton;
-use exface\OpenUI5Template\Templates\Elements\Traits\ui5DataElementTrait;
+use exface\UI5Facade\Facades\Elements\Traits\ui5DataElementTrait;
 
 /**
  *
@@ -31,7 +31,7 @@ class ui5DataTable extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -214,7 +214,7 @@ JS;
         // Columns
         $column_defs = '';
         foreach ($this->getWidget()->getColumns() as $column) {
-            $column_defs .= ($column_defs ? ", " : '') . $this->getTemplate()->getElement($column)->buildJsConstructorForUiColumn();
+            $column_defs .= ($column_defs ? ", " : '') . $this->getFacade()->getElement($column)->buildJsConstructorForUiColumn();
         }
         
         return $column_defs;
@@ -224,7 +224,7 @@ JS;
     {
         $cells = '';
         foreach ($this->getWidget()->getColumns() as $column) {
-            $cells .= ($cells ? ", " : '') . $this->getTemplate()->getElement($column)->buildJsConstructorForCell();
+            $cells .= ($cells ? ", " : '') . $this->getFacade()->getElement($column)->buildJsConstructorForCell();
         }
         
         return $cells;
@@ -259,7 +259,7 @@ JS;
         
         $column_defs = '';
         foreach ($this->getWidget()->getColumns() as $column) {
-            $column_defs .= ($column_defs ? ", " : '') . $this->getTemplate()->getElement($column)->buildJsConstructorForMColumn();
+            $column_defs .= ($column_defs ? ", " : '') . $this->getFacade()->getElement($column)->buildJsConstructorForMColumn();
         }
         
         return $column_defs;
@@ -282,7 +282,7 @@ JS;
         return <<<JS
         
                 try {
-        			var data = {$this->getTemplate()->encodeData($this->getTemplate()->buildResponseData($data, $widget))};
+        			var data = {$this->getFacade()->encodeData($this->getFacade()->buildResponseData($data, $widget))};
         		} catch (err){
                     console.error('Cannot load data into widget {$this->getId()}!');
                     return;
@@ -334,7 +334,7 @@ JS;
 		for (var i=0; i<oTable.getColumns().length; i++){
 			var oColumn = oTable.getColumns()[i];
 			if (oColumn.getFiltered()){
-				{$oParamsJs}['{$this->getTemplate()->getUrlFilterPrefix()}' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
+				{$oParamsJs}['{$this->getFacade()->getUrlFilterPrefix()}' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
 			}
 		}
 		
@@ -352,7 +352,7 @@ JS;
 		
 		// If filtering just now, make sure the filter from the event is set too (eventually overwriting the previous one)
 		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'filter'){
-			{$oParamsJs}['{$this->getTemplate()->getUrlFilterPrefix()}' + {$oControlEventJsVar}.getParameters().column.getFilterProperty()] = {$oControlEventJsVar}.getParameters().value;
+			{$oParamsJs}['{$this->getFacade()->getUrlFilterPrefix()}' + {$oControlEventJsVar}.getParameters().column.getFilterProperty()] = {$oControlEventJsVar}.getParameters().value;
 		}
 		
 JS;
@@ -364,7 +364,7 @@ JS;
      * If the code snippet is to be used somewhere, where the controller is directly accessible, you can pass the
      * name of the controller variable to $oControllerJsVar to increase performance.
      *
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsRefresh()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsRefresh()
      *
      * @param bool $keep_page_pos
      * @param bool $growing
@@ -389,7 +389,7 @@ JS;
         } elseif ($action instanceof iReadData) {
             // If we are reading, than we need the special data from the configurator
             // widget: filters, sorters, etc.
-            return $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsDataGetter($action);
+            return $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsDataGetter($action);
         } elseif ($this->isEditable() && $action->implementsInterface('iModifyData')) {
             $rows = "oTable.getModel().getData().data";
         } else {
@@ -414,7 +414,7 @@ JS;
     /**
      *
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsValueGetter()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsValueGetter()
      */
     public function buildJsValueGetter($column = null, $rowNr = null)
     {
@@ -448,14 +448,14 @@ JS;
             $js .= <<<JS
             
             .attachBrowserEvent("dblclick", function(oEvent) {
-        		{$this->getTemplate()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+        		{$this->getFacade()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
             })
 JS;
         }
         
         // Right click. Currently only supports one double click action - the first one in the list of buttons
         if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
-            $rightclick_script = $this->getTemplate()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar);
+            $rightclick_script = $this->getFacade()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar);
         } else {
             $rightclick_script = $this->buildJsContextMenuTrigger();
         }
@@ -477,14 +477,14 @@ JS;
                 $js .= <<<JS
                 
             .attachBrowserEvent("click", function(oEvent) {
-        		{$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+        		{$this->getFacade()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
             })
 JS;
             } else {
                 $js .= <<<JS
                 
             .attachItemPress(function(oEvent) {
-                {$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+                {$this->getFacade()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
             })
 JS;
             }
@@ -561,11 +561,11 @@ JS;
         
         $startsSectionProperty = $startSection ? 'startsSection: true,' : '';
         
-        /* @var $btn_element \exface\OpenUI5template\Templates\Elements\ui5Button */
-        $btn_element = $this->getTemplate()->getElement($button);
+        /* @var $btn_element \exface\UI5Facade\Facades\Elements\ui5Button */
+        $btn_element = $this->getFacade()->getElement($button);
         
         if ($button instanceof MenuButton){
-            if ($button->getParent() instanceof ButtonGroup && $button === $this->getTemplate()->getElement($button->getParent())->getMoreButtonsMenu()){
+            if ($button->getParent() instanceof ButtonGroup && $button === $this->getFacade()->getElement($button->getParent())->getMoreButtonsMenu()){
                 $caption = $button->getCaption() ? $button->getCaption() : '...';
             } else {
                 $caption = $button->getCaption();
@@ -661,7 +661,7 @@ JS;
      */
     protected function getPaginatorElement() : ui5DataPaginator
     {
-        return $this->getTemplate()->getElement($this->getWidget()->getPaginator());
+        return $this->getFacade()->getElement($this->getWidget()->getPaginator());
     }
     
     /**

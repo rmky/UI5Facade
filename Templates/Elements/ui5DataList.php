@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\DataList;
 
@@ -15,7 +15,7 @@ class ui5DataList extends ui5DataTable
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5DataTable::isUiTable()
+     * @see \exface\UI5Facade\Facades\Elements\ui5DataTable::isUiTable()
      */
     protected function isUiTable()
     {
@@ -25,7 +25,7 @@ class ui5DataList extends ui5DataTable
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5DataTable::isMTable()
+     * @see \exface\UI5Facade\Facades\Elements\ui5DataTable::isMTable()
      */
     protected function isMTable()
     {

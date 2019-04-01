@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Formatters;
+namespace exface\UI5Facade\Facades\Formatters;
 
 /**
  * 
@@ -11,7 +11,7 @@ class ui5DateTimeFormatter extends ui5DateFormatter
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Formatters\ui5DateFormatter::buildPatternSource()
+     * @see \exface\UI5Facade\Facades\Formatters\ui5DateFormatter::buildPatternSource()
      */
     protected function buildPatternSource()
     {
@@ -21,7 +21,7 @@ class ui5DateTimeFormatter extends ui5DateFormatter
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Formatters\ui5DateFormatter::getSapDataType()
+     * @see \exface\UI5Facade\Facades\Formatters\ui5DateFormatter::getSapDataType()
      */
     protected function getSapDataType()
     {

@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\InputTime;
 
@@ -28,7 +28,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5InputDate::buildJsValueFormat()
+     * @see \exface\UI5Facade\Facades\Elements\ui5InputDate::buildJsValueFormat()
      */
     protected function buildJsValueFormat() : string
     {
@@ -38,7 +38,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5InputDate::buildJsDisplayFormat()
+     * @see \exface\UI5Facade\Facades\Elements\ui5InputDate::buildJsDisplayFormat()
      */
     protected function buildJsDisplayFormat() : string
     {

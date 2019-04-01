@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDataConfiguratorTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDataConfiguratorTrait;
 use exface\Core\Widgets\DataConfigurator;
 use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\DataTypes\SortingDirectionsDataType;
@@ -27,7 +27,7 @@ class ui5DataConfigurator extends ui5Tabs
     /**
      * 
      * @param boolean $true_or_false
-     * @return \exface\OpenUI5Template\Templates\Elements\ui5DataConfigurator
+     * @return \exface\UI5Facade\Facades\Elements\ui5DataConfigurator
      */
     public function setIncludeFilterTab($true_or_false)
     {
@@ -47,7 +47,7 @@ class ui5DataConfigurator extends ui5Tabs
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Tabs::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Tabs::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -56,7 +56,7 @@ class ui5DataConfigurator extends ui5Tabs
         $okScript = <<<JS
                 
                     oEvent.getSource().close();
-                    {$this->getTemplate()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh()};
+                    {$this->getFacade()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh()};
 
 
 JS;
@@ -320,7 +320,7 @@ JS;
         $filters = '';
         $filters_hidden = '';
         foreach ($this->getWidget()->getFilters() as $filter) {
-            $filter_element = $this->getTemplate()->getElement($filter);
+            $filter_element = $this->getFacade()->getElement($filter);
             if (! $filter_element->isVisible()) {
                 $filters_hidden .= $this->buildJsFilter($filter_element);
             } else {
@@ -341,7 +341,7 @@ JS;
      */
     protected function buildJsFilter(ui5Filter $element) : string
     {
-        $element->addPseudoEventHandler('onsapenter', $this->getTemplate()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh());
+        $element->addPseudoEventHandler('onsapenter', $this->getFacade()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh());
         return <<<JS
         
                         new sap.ui.layout.VerticalLayout({

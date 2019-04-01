@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryContainerTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryContainerTrait;
 use exface\Core\Widgets\Container;
 
 /**
@@ -19,7 +19,7 @@ class ui5Container extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
@@ -106,7 +106,7 @@ JS;
     {
         $js = '';
         foreach ($this->getWidget()->getWidgets() as $widget) {
-            $js .= ($js ? ",\n" : '') . $this->getTemplate()->getElement($widget)->buildJsConstructor();
+            $js .= ($js ? ",\n" : '') . $this->getFacade()->getElement($widget)->buildJsConstructor();
         }
         
         return $js;

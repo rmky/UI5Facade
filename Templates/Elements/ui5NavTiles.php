@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryContainerTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryContainerTrait;
 use exface\Core\Widgets\NavTiles;
 
 /**
@@ -17,7 +17,7 @@ class ui5NavTiles extends ui5Container
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Container::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Container::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {

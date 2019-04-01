@@ -1,19 +1,19 @@
 <?php
-namespace exface\OpenUI5Template\Actions;
+namespace exface\UI5Facade\Actions;
 
 use exface\Core\Actions\DownloadZippedFolder;
 use exface\Core\Interfaces\Tasks\TaskInterface;
 use exface\Core\CommonLogic\ArchiveManager;
-use exface\OpenUI5Template\OpenUI5TemplateApp;
+use exface\UI5Facade\UI5FacadeApp;
 use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\Core\Factories\UiPageFactory;
 use exface\Core\CommonLogic\Filemanager;
 use exface\Core\Interfaces\AppInterface;
 use exface\Core\DataTypes\StringDataType;
-use exface\OpenUI5Template\Webapp;
-use exface\OpenUI5Template\Templates\OpenUI5Template;
-use exface\Core\CommonLogic\Selectors\TemplateSelector;
-use exface\Core\Factories\TemplateFactory;
+use exface\UI5Facade\Webapp;
+use exface\UI5Facade\Facades\UI5Facade;
+use exface\Core\CommonLogic\Selectors\FacadeSelector;
+use exface\Core\Factories\FacadeFactory;
 use exface\Core\Interfaces\Selectors\AliasSelectorInterface;
 use exface\Core\Exceptions\RuntimeException;
 
@@ -21,12 +21,12 @@ use exface\Core\Exceptions\RuntimeException;
  * 
  * @author Andrej Kabachnik
  * 
- * @method OpenUI5TemplateApp getApp()
+ * @method UI5FacadeApp getApp()
  *
  */
 class ExportFioriWebapp extends DownloadZippedFolder
 {
-    private $templateSelectorString = 'exface\\OpenUI5Template\\Templates\\OpenUI5Template';
+    private $facadeSelectorString = 'exface\\UI5Facade\\Facades\\UI5Facade';
     
     protected function init()
     {
@@ -63,8 +63,8 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $row['assets_path'] = './';
         $rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $row['root_page_alias']);
         
-        $template = TemplateFactory::createFromString($this->templateSelectorString, $this->getWorkbench());
-        $webappFolder = $this->exportWebapp($rootPage, $template, $row);
+        $facade = FacadeFactory::createFromString($this->facadeSelectorString, $this->getWorkbench());
+        $webappFolder = $this->exportWebapp($rootPage, $facade, $row);
         
         // Create ZIP for download
         $defaultPath = $this->getZipPathAbsolute();
@@ -77,7 +77,7 @@ class ExportFioriWebapp extends DownloadZippedFolder
         return $zip;
     }
     
-    protected function exportWebapp(UiPageInterface $rootPage, OpenUI5Template $template, array $appDataRow) : string
+    protected function exportWebapp(UiPageInterface $rootPage, UI5Facade $facade, array $appDataRow) : string
     {
         $appPath = $this->getApp()->getExportFolderAbsolutePath() . DIRECTORY_SEPARATOR . $rootPage->getAliasWithNamespace();
         $exportPath =  $appPath . DIRECTORY_SEPARATOR . 'WebContent';
@@ -88,8 +88,8 @@ class ExportFioriWebapp extends DownloadZippedFolder
         }
         
         $exportPath = $exportPath . DIRECTORY_SEPARATOR;
-        /* @var $webapp \exface\OpenUI5Template\Webapp */ 
-        $webapp = $template->initWebapp($appDataRow['app_id'], $appDataRow);
+        /* @var $webapp \exface\UI5Facade\Webapp */ 
+        $webapp = $facade->initWebapp($appDataRow['app_id'], $appDataRow);
         
         if (! file_exists($exportPath . 'view')) {
             Filemanager::pathConstruct($exportPath . 'view');
@@ -205,7 +205,7 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $folder = $pathParts[0] . DIRECTORY_SEPARATOR . $pathParts[1];
         if (! file_exists($libsFolder . DIRECTORY_SEPARATOR . $folder)) {
             if (strcasecmp($folder, $this->getApp()->getDirectory()) === 0) {
-                $jsFolder = '/Templates/js';
+                $jsFolder = '/Facades/js';
                 $filemanager->copyDir($filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $folder . $jsFolder, $libsFolder . DIRECTORY_SEPARATOR . $folder);
             } else {
                 $filemanager->copyDir($filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $folder, $libsFolder . DIRECTORY_SEPARATOR . $folder);
@@ -213,7 +213,7 @@ class ExportFioriWebapp extends DownloadZippedFolder
         }
         
         if (strcasecmp($folder, $this->getApp()->getDirectory()) === 0) {
-            $pathInVendorFolder = str_replace('/Templates/js', '', $pathInVendorFolder);
+            $pathInVendorFolder = str_replace('/Facades/js', '', $pathInVendorFolder);
         }
         
         return pathinfo($libsFolder, PATHINFO_BASENAME) . '/' . $pathInVendorFolder;

@@ -1,12 +1,12 @@
 <?php
-namespace exface\OpenUI5Template;
+namespace exface\UI5Facade;
 
-use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5ViewInterface;
 use exface\Core\Interfaces\WidgetInterface;
-use exface\OpenUI5Template\Templates\Elements\ui5AbstractElement;
+use exface\UI5Facade\Facades\Elements\ui5AbstractElement;
 use exface\Core\DataTypes\StringDataType;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ModelInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5ModelInterface;
 
 class ui5View implements ui5ViewInterface
 {
@@ -20,7 +20,7 @@ class ui5View implements ui5ViewInterface
     
     private $rootElement = null;
     
-    private $template = null;
+    private $facade = null;
     
     private $controller = null;
     
@@ -46,7 +46,7 @@ class ui5View implements ui5ViewInterface
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::isBuilt()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ViewInterface::isBuilt()
      */
     public function isBuilt(): bool
     {
@@ -56,7 +56,7 @@ class ui5View implements ui5ViewInterface
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::getName()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ViewInterface::getName()
      */
     public function getName(): string
     {
@@ -71,7 +71,7 @@ class ui5View implements ui5ViewInterface
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::getPath()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ViewInterface::getPath()
      */
     public function getPath() : string
     {
@@ -81,7 +81,7 @@ class ui5View implements ui5ViewInterface
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::getRootElement()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ViewInterface::getRootElement()
      */
     public function getRootElement(): ui5AbstractElement
     {
@@ -118,7 +118,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::getController()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ViewInterface::getController()
      */
     public function getController(): ?ui5ControllerInterface
     {
@@ -128,7 +128,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::setController()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ViewInterface::setController()
      */
     public function setController(ui5ControllerInterface $controller): ui5ViewInterface
     {
@@ -139,7 +139,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::buildJsViewGetter()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ViewInterface::buildJsViewGetter()
      */
     public function buildJsViewGetter(ui5AbstractElement $fromElement) : string
     {
@@ -149,7 +149,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::getModel()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ViewInterface::getModel()
      */
     public function getModel(string $name = '') : ui5ModelInterface
     {
@@ -162,7 +162,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface::isWebAppRoot()
+     * @see \exface\UI5Facade\Facades\Interfaces\ui5ViewInterface::isWebAppRoot()
      */
     public function isWebAppRoot() : bool
     {

@@ -1,19 +1,19 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
-use exface\OpenUI5Template\Templates\OpenUI5Template;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
+use exface\UI5Facade\Facades\UI5Facade;
 use exface\Core\CommonLogic\Constants\Icons;
 use exface\Core\Interfaces\Widgets\iHaveValue;
 use exface\Core\Factories\UiPageFactory;
 use exface\Core\DataTypes\StringDataType;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ControllerInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface;
 use exface\Core\Exceptions\LogicException;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ViewInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5ViewInterface;
 
 /**
  *
- * @method OpenUI5Template getTemplate()
+ * @method UI5Facade getFacade()
  *        
  * @author Andrej Kabachnik
  *        
@@ -104,7 +104,7 @@ JS;
      *
      * {@inheritdoc}
      *
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsShowMessageError()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsShowMessageError()
      */
     public function buildJsShowMessageError($message_body_js, $title = null)
     {
@@ -136,7 +136,7 @@ JS;
      *
      * {@inheritdoc}
      *
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsShowError()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsShowError()
      */
     public function buildJsShowError($message_body_js, $title_js = null)
     {
@@ -148,7 +148,7 @@ JS;
      *
      * {@inheritdoc}
      *
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsShowMessageSuccess()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsShowMessageSuccess()
      */
     public function buildJsShowMessageSuccess($message_body_js, $title = null)
     {
@@ -211,7 +211,7 @@ JS;
     /**
      *
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsValueGetter()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsValueGetter()
      */
     public function buildJsValueGetter()
     {
@@ -226,7 +226,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsValueGetterMethod()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsValueGetterMethod()
      */
     public function buildJsValueGetterMethod()
     {
@@ -236,7 +236,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsValueSetter()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsValueSetter()
      */
     public function buildJsValueSetter($valueJs)
     {
@@ -251,7 +251,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJsValueSetterMethod()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsValueSetterMethod()
      */
     public function buildJsValueSetterMethod($valueJs)
     {
@@ -335,7 +335,7 @@ JS;
      * 
      * @param string $event_name
      * @param string $js
-     * @return \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement
+     * @return \exface\UI5Facade\Facades\Elements\ui5AbstractElement
      */
     public function addPseudoEventHandler($event_name, $js)
     {
@@ -366,7 +366,7 @@ JS;
      * Since pages are loaded asynchronously in UI5, we need to make sure, the element ids include
      * page ids to avoid conflicts.
      * 
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::getId()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::getId()
      */
     public function getId()
     {
@@ -385,7 +385,7 @@ JS;
      * Making this method final makes sure, no element makes use of it unintentionally (e.g.
      * via trait).
      * 
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildJs()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJs()
      */
     public final function buildJs()
     {
@@ -398,7 +398,7 @@ JS;
      * Making this method final makes sure, no element makes use of it unintentionally (e.g.
      * via trait). 
      * 
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::buildHtml()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildHtml()
      */
     public final function buildHtml()
     {
@@ -409,7 +409,7 @@ JS;
     {
         if ($this->controller === null) {
             if ($this->getWidget()->hasParent()) {
-                return $this->getTemplate()->getElement($this->getWidget()->getParent())->getController();
+                return $this->getFacade()->getElement($this->getWidget()->getParent())->getController();
             } else {
                 throw new LogicException('No controller was initialized for page "' . $this->getWidget()->getPage()->getAliasWithNamespace() . '"!');
             }
@@ -453,7 +453,7 @@ JS;
     /**
      *
      * {@inheritDoc}
-     * @see \exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement::addOnChangeScript()
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::addOnChangeScript()
      */
     public function addOnChangeScript($string)
     {

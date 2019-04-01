@@ -46,7 +46,7 @@
 		</script>
 		
 		<!-- Load SAPUI5, select theme and control library -->
-		<script src="exface/vendor/exface/OpenUI5Template/Templates/js_openui5/resources/sap-ui-core.js"
+		<script src="exface/vendor/exface/UI5Facade/Facades/js_openui5/resources/sap-ui-core.js"
 				id="sap-ui-bootstrap"
 				data-sap-ui-libs="sap.m,sap.tnt,sap.ui.unified,sap.ui.commons,sap.ui.table,sap.f,sap.uxap"
 				data-sap-ui-theme="sap_belize"
@@ -56,17 +56,17 @@
 				data-sap-ui-resourceroots='{
 					"[*alias*]": "exface/api/ui5/webapps/[*alias*]/"
 				}'
-				data-sap-ui-language="[[Exface? &action=`exface.ModxCmsConnector.GetLanguageCode` &template=`exface.OpenUI5Template.OpenUI5Template`]]">
+				data-sap-ui-language="[[Exface? &action=`exface.ModxCmsConnector.GetLanguageCode` &facade=`exface.UI5Facade.UI5Facade`]]">
 		</script>
 		
 		<script type="text/javascript" src="exface/vendor/npm-asset/dexie/dist/dexie.min.js"></script>
-		<script type="text/javascript" src="exface/vendor/exface/OpenUI5Template/Templates/js/openui5.template.js"></script>
+		<script type="text/javascript" src="exface/vendor/exface/UI5Facade/Facades/js/openui5.facade.js"></script>
 		
-		[[Exface? &action=`exface.Core.ShowWidget` &template=`exface.OpenUI5Template.OpenUI5Template` &fallback_field=`content`]]
+		[[Exface? &action=`exface.Core.ShowWidget` &facade=`exface.UI5Facade.UI5Facade` &fallback_field=`content`]]
 		
 		<script type="text/javascript">
 			sap.ui.getCore().attachInit(function () {
-				[[Exface? &action=`exface.Core.ShowWidget` &template=`exface.OpenUI5Template.OpenUI5Template` &fallback_field=`content`]]
+				[[Exface? &action=`exface.Core.ShowWidget` &facade=`exface.UI5Facade.UI5Facade` &fallback_field=`content`]]
 			});
 		</script>
 		

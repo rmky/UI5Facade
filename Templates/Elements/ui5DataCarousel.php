@@ -1,10 +1,10 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\DataCarousel;
 use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryDataCarouselTrait;
+use exface\UI5Facade\Facades\Interfaces\ui5ValueBindingInterface;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDataCarouselTrait;
 
 /**
  * Generates OpenUI5 data carousels
@@ -34,7 +34,7 @@ class ui5DataCarousel extends ui5Split
             if (! $dataIsEditable) {
                 $this->getDataElement()->setEditable(true);
             }
-            $childElement = $this->getTemplate()->getElement($child);
+            $childElement = $this->getFacade()->getElement($child);
             if ($childElement instanceof ui5ValueBindingInterface) {
                 $bindings .= <<<JS
             oControl = sap.ui.getCore().byId("{$childElement->getId()}");

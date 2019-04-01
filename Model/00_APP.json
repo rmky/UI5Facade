@@ -45,10 +45,10 @@
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e837e87a640bfd91380205857feb80",
-            "PACKAGE": "exface\/OpenUI5Template",
+            "PACKAGE": "exface\/UI5Facade",
             "DEFAULT_LANGUAGE_CODE": "en",
-            "ALIAS": "exface.OpenUI5Template",
-            "NAME": "ExFace Template for OpenUI5"
+            "ALIAS": "exface.UI5Facade",
+            "NAME": "ExFace Facade for OpenUI5"
         }
     ],
     "totals_rows": [],

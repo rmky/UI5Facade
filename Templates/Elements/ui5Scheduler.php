@@ -1,11 +1,11 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Scheduler;
 use exface\Core\DataTypes\StringDataType;
-use exface\OpenUI5Template\Templates\Elements\Traits\ui5DataElementTrait;
+use exface\UI5Facade\Facades\Elements\Traits\ui5DataElementTrait;
 use exface\Core\Interfaces\WidgetInterface;
-use exface\OpenUI5Template\Templates\Interfaces\ui5CompoundControlInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5CompoundControlInterface;
 use exface\Core\Interfaces\Actions\ActionInterface;
 
 /**
@@ -24,7 +24,7 @@ class ui5Scheduler extends ui5AbstractElement
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsConstructor()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructorForControl($oControllerJs = 'oController') : string
     {
@@ -202,7 +202,7 @@ JS;
     
     protected function buildJsValueBindingForWidget(WidgetInterface $tplWidget, string $modelName = null) : string
     {
-        $tpl = $this->getTemplate()->getElement($tplWidget);
+        $tpl = $this->getFacade()->getElement($tplWidget);
         // Disable using widget id as control id because this is a template for multiple controls
         $tpl->setUseWidgetId(false);
         
@@ -223,7 +223,7 @@ JS;
         } elseif ($action instanceof iReadData) {
             // If we are reading, than we need the special data from the configurator
             // widget: filters, sorters, etc.
-            return $this->getTemplate()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsDataGetter($action);
+            return $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsDataGetter($action);
         } else {
             $getRows = <<<JS
 
@@ -267,14 +267,14 @@ JS;
             $js .= <<<JS
             
             .attachBrowserEvent("dblclick", function(oEvent) {
-        		{$this->getTemplate()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+        		{$this->getFacade()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
             })
 JS;
         }
         
         // Right click. Currently only supports one double click action - the first one in the list of buttons
         if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
-            $rightclick_script = $this->getTemplate()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar);
+            $rightclick_script = $this->getFacade()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar);
         } else {
             //$rightclick_script = $this->buildJsContextMenuTrigger();
         }
@@ -295,7 +295,7 @@ JS;
             $js .= <<<JS
                 
             .attachAppointmentSelect(function(oEvent) {
-                {$this->getTemplate()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+                {$this->getFacade()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
             })
 JS;
         }

@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Interfaces;
+namespace exface\UI5Facade\Facades\Interfaces;
 
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\DataSheets\DataPointerInterface;

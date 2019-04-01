@@ -1,11 +1,11 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\DataColumn;
 use exface\Core\Widgets\DataTable;
-use exface\OpenUI5Template\Templates\Interfaces\ui5BindingFormatterInterface;
-use exface\OpenUI5Template\Templates\Interfaces\ui5ValueBindingInterface;
-use exface\OpenUI5Template\Templates\Interfaces\ui5CompoundControlInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5BindingFormatterInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5ValueBindingInterface;
+use exface\UI5Facade\Facades\Interfaces\ui5CompoundControlInterface;
 use exface\Core\Formulas\NumberValue;
 
 /**
@@ -19,7 +19,7 @@ class ui5DataColumn extends ui5AbstractElement
 {
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        $parentElement = $this->getTemplate()->getElement($this->getWidget()->getParent());
+        $parentElement = $this->getFacade()->getElement($this->getWidget()->getParent());
         if (($parentElement instanceof ui5DataTable) && $parentElement->isMTable()) {
             return $this->buildJsConstructorForMColumn();
         }
@@ -59,7 +59,7 @@ JS;
     public function buildJsConstructorForCell(string $modelName = null, bool $hideCaptions = true)
     {
         $widget = $this->getWidget();
-        $tpl = $this->getTemplate()->getElement($widget->getCellWidget());
+        $tpl = $this->getFacade()->getElement($widget->getCellWidget());
         // Disable using widget id as control id because this is a template for multiple controls
         $tpl->setUseWidgetId(false);
         
@@ -133,7 +133,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::buildJsPropertyTooltip()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::buildJsPropertyTooltip()
      */
     protected function buildJsPropertyTooltip()
     {
@@ -175,7 +175,7 @@ JS;
     {
         $dim = $this->getWidget()->getWidth();
         
-        if ($dim->isTemplateSpecific()) {
+        if ($dim->isFacadeSpecific()) {
             return 'width: "' . $dim->getValue() . '",';
         }   
         

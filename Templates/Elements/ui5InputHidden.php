@@ -1,7 +1,7 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\JqueryInputTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryInputTrait;
 
 /**
  * Generates OpenUI5 inputs
@@ -16,7 +16,7 @@ class ui5InputHidden extends ui5Input
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5AbstractElement::isVisible()
+     * @see \exface\UI5Facade\Facades\Elements\ui5AbstractElement::isVisible()
      */
     protected function isVisible()
     {
@@ -26,7 +26,7 @@ class ui5InputHidden extends ui5Input
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Value::buildJsLabelWrapper()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Value::buildJsLabelWrapper()
      */
     protected function buildJsLabelWrapper($element_constructor)
     {

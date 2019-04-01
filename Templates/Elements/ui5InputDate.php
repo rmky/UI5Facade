@@ -1,5 +1,5 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Elements;
+namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\InputDate;
 
@@ -17,7 +17,7 @@ class ui5InputDate extends ui5Input
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsConstructorForMainControl()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsConstructorForMainControl()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
@@ -33,7 +33,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\OpenUI5Template\Templates\Elements\ui5Input::buildJsProperties()
+     * @see \exface\UI5Facade\Facades\Elements\ui5Input::buildJsProperties()
      */
     public function buildJsProperties()
     {

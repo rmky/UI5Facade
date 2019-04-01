@@ -1,8 +1,8 @@
 <?php
-namespace exface\OpenUI5Template\Templates\Interfaces;
+namespace exface\UI5Facade\Facades\Interfaces;
 
 /**
- * Describes OpenUI5 template elements, that support model binding for their value.
+ * Describes OpenUI5 facade elements, that support model binding for their value.
  * 
  * @author Andrej Kabachnik
  *

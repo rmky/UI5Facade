@@ -45,7 +45,8 @@ trait ui5DataElementTrait {
             if ($qsWidget instanceof Input) {
                 $this->quickSearchElement = new UI5SearchField($qsWidget, $this->getFacade());
                 $this->getFacade()->registerElement($this->quickSearchElement);
-                $this->quickSearchElement->setPlaceholder($this->getWidget()->getQuickSearchPlaceholder());
+                $this->quickSearchElement
+                    ->setPlaceholder($this->getWidget()->getQuickSearchPlaceholder());
             } else {
                 $this->quickSearchElement = $this->getFacade()->getElement($this->getWidget()->getQuickSearchWidget());
             }
@@ -754,7 +755,11 @@ JS;
             return '';
         }
         
-        return $this->getQuickSearchElement()->buildJsConstructorForMainControl($oControllerJs);
+        $qsElement = $this->getQuickSearchElement();
+        if ($qsElement instanceof UI5SearchField) {
+            $qsElement->setSearchCallbackJs($this->getController()->buildJsMethodCallFromView('onLoadData', $this));
+        }
+        return $qsElement->buildJsConstructorForMainControl($oControllerJs);
     }
         
     /**

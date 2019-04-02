@@ -18,6 +18,8 @@ class UI5SearchField extends UI5Value
 {    
     private $placeholder = null;
     
+    private $searchCallbackJs = '';
+    
     /**
      * 
      * {@inheritDoc}
@@ -30,6 +32,7 @@ class UI5SearchField extends UI5Value
         new sap.m.SearchField("{$this->getId()}", {
             width: "200px",
             placeholder: "{$this->getPlaceholder()}",
+            search: {$this->getSearchCallbackJs()},
             layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
         }),
         
@@ -55,5 +58,16 @@ JS;
     public function buildJsValueSetterMethod($valueJs)
     {
         return parent::buildJsValueSetterMethod($valueJs) . '.fireSearch({query: ' . $valueJs . '})';
+    }
+    
+    public function setSearchCallbackJs(string $js) : UI5SearchField
+    {
+        $this->searchCallbackJs = $js;
+        return $this;
+    }
+    
+    protected function getSearchCallbackJs() : string
+    {
+        return $this->searchCallbackJs;
     }
 }

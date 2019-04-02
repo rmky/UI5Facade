@@ -8,6 +8,8 @@ use exface\UI5Facade\Facades\Elements\UI5AbstractElement;
 use exface\UI5Facade\Facades\Elements\UI5DataConfigurator;
 use exface\Core\Interfaces\Widgets\iShowImage;
 use exface\Core\Interfaces\Widgets\iHaveContextualHelp;
+use exface\UI5Facade\Facades\Elements\UI5SearchField;
+use exface\Core\Widgets\Input;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -17,6 +19,8 @@ use exface\Core\Interfaces\Widgets\iHaveContextualHelp;
  *
  */
 trait ui5DataElementTrait {
+    
+    private $quickSearchElement = null;
     
     /**
      *
@@ -28,8 +32,23 @@ trait ui5DataElementTrait {
         parent::init();
         $configuratorElement = $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget());
         $configuratorElement->setModelNameForConfig($this->getModelNameForConfigurator());
+        
         if ($this->isWrappedInDynamicPage()) {
             $configuratorElement->setIncludeFilterTab(false);
+        }
+        
+        // Manually create an element for the quick search input, because we need a sap.m.SearchField
+        // instead of regular input elements.
+        if ($this->hasQuickSearch()) {
+            $qsWidget = $this->getWidget()->getQuickSearchWidget();
+            // TODO need to add support for autosuggest. How can we use InputCombo or InputComboTable widget here?
+            if ($qsWidget instanceof Input) {
+                $this->quickSearchElement = new UI5SearchField($qsWidget, $this->getFacade());
+                $this->getFacade()->registerElement($this->quickSearchElement);
+                $this->quickSearchElement->setPlaceholder($this->getWidget()->getQuickSearchPlaceholder());
+            } else {
+                $this->quickSearchElement = $this->getFacade()->getElement($this->getWidget()->getQuickSearchWidget());
+            }
         }
     }
     
@@ -384,7 +403,7 @@ JS;
         }
         
         if ($this->hasQuickSearch()) {
-            $quickSearchParam = "params.q = sap.ui.getCore().byId('{$this->getId()}_quickSearch').getValue();";
+            $quickSearchParam = "params.q = {$this->getQuickSearchElement()->buildJsValueGetter()};";
         }
         
         return <<<JS
@@ -729,22 +748,13 @@ JS;
      *
      * @return string
      */
-    protected function buildJsQuickSearchConstructor() : string
+    protected function buildJsQuickSearchConstructor($oControllerJs = 'oController') : string
     {
         if ($this->hasQuickSearch() === false) {
             return '';
         }
         
-        return <<<JS
-        
-                    new sap.m.SearchField("{$this->getId()}_quickSearch", {
-                        width: "200px",
-                        search: {$this->getController()->buildJsMethodCallFromView('onLoadData', $this)},
-                        placeholder: "{$this->getWidget()->getQuickSearchPlaceholder()}",
-                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
-                    }),
-                    
-JS;
+        return $this->getQuickSearchElement()->buildJsConstructorForMainControl($oControllerJs);
     }
         
     /**
@@ -759,5 +769,19 @@ JS;
     protected function getDataWidget() : Data
     {
         return $this->getWidget();
+    }
+    
+    /**
+     * 
+     * @return UI5AbstractElement|NULL
+     */
+    protected function getQuickSearchElement() : ?UI5AbstractElement
+    {
+        if ($this->hasQuickSearch()) {
+            // The quick search element is instantiated in the init() method above, because we need
+            // to make sure, it is created before anyone can attempt to get it via $facade->getElement()
+            return $this->quickSearchElement;
+        }
+        return null;
     }
 }

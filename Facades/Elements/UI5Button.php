@@ -7,6 +7,8 @@ use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryButtonTrait;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
 use exface\Core\Widgets\Button;
 use exface\Core\Interfaces\Actions\iShowDialog;
+use exface\Core\Interfaces\Actions\iRunFacadeScript;
+use exface\Core\DataTypes\StringDataType;
 
 /**
  * Generates jQuery Mobile buttons for ExFace
@@ -30,6 +32,25 @@ class UI5Button extends UI5AbstractElement
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        // Get the java script required for the action itself
+        $action = $this->getAction();
+        if ($action) {
+            // Actions with facade scripts may contain some helper functions or global variables.
+            // Print the here first.
+            if ($action && $action instanceof iRunFacadeScript) {
+                $this->getController()->addOnInitScript($action->buildScriptHelperFunctions($this->getFacade()));
+                foreach ($action->getIncludes($this->getFacade()) as $includePath) {
+                    if (mb_stripos($includePath, '.css') !== false) {
+                        $this->getController()->addExternalCss($includePath);                        
+                    } else {
+                        $moduleName = str_replace('/', '.', $includePath);
+                        $varName = StringDataType::convertCaseUnderscoreToPascal(str_replace(['/', '.'], '_', $includePath));
+                        $this->getController()->addExternalModule($moduleName, $includePath, $varName);
+                    }
+                }
+            }
+        }
+        
         return <<<JS
 new sap.m.Button("{$this->getId()}", { 
     {$this->buildJsProperties()}

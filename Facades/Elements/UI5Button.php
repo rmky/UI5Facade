@@ -75,12 +75,16 @@ JS;
         $press = $handler !== '' ? 'press: ' . $handler . ',' : '';
         $icon = $widget->getIcon() && $widget->getShowIcon(true) ? 'icon: "' . $this->getIconSrc($widget->getIcon()) . '",' : '';
         
-        $options = '
-                    text: "' . $this->getCaption() . '",
-                    ' . $icon . '
-                    ' . $visibility . '
-                    ' . $press . '
-                    ' . $this->buildJsPropertyTooltip();
+        $options = <<<JS
+
+    text: "{$this->getCaption()}",
+    {$icon}
+    {$visibility}
+    {$press}
+    {$this->buildJsPropertyTooltip()}
+    {$this->buildJsPropertyVisibile()}
+
+JS;
         return $options;
     }
     

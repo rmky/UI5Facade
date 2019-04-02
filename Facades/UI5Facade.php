@@ -184,26 +184,26 @@ JS;
         
         switch (true) {
             case $formatter instanceof JsBooleanFormatter:
-                return new ui5BooleanFormatter($formatter);
+                return new UI5BooleanFormatter($formatter);
                 break;
             case ($formatter instanceof JsNumberFormatter) && $formatter->getDataType()->getBase() === 10:
-                return new ui5NumberFormatter($formatter);
+                return new UI5NumberFormatter($formatter);
                 break;
             case ($formatter instanceof JsTimeFormatter):
-                return new ui5TimeFormatter($formatter);
+                return new UI5TimeFormatter($formatter);
                 break;
             case $formatter instanceof JsDateFormatter:
                 if ($formatter->getDataType() instanceof TimestampDataType) {
-                    return new ui5DateTimeFormatter($formatter);
+                    return new UI5DateTimeFormatter($formatter);
                 } else {
-                    return new ui5DateFormatter($formatter);
+                    return new UI5DateFormatter($formatter);
                 }
                 break;
             case $formatter instanceof JsEnumFormatter:
-                return new ui5EnumFormatter($formatter);
+                return new UI5EnumFormatter($formatter);
         }
         
-        return new ui5DefaultFormatter($formatter);
+        return new UI5DefaultFormatter($formatter);
     }
     
     /**
@@ -227,8 +227,8 @@ JS;
     protected function getMiddleware() : array
     {
         $middleware = parent::getMiddleware();
-        $middleware[] = new ui5TableUrlParamsReader($this, 'getInputData', 'setInputData');
-        $middleware[] = new ui5WebappRouter($this);
+        $middleware[] = new UI5TableUrlParamsReader($this, 'getInputData', 'setInputData');
+        $middleware[] = new UI5WebappRouter($this);
         
         return $middleware;
     }
@@ -309,7 +309,7 @@ JS;
         if ($controllerName === null) {
             $controllerName = $this->getControllerName($element->getWidget(), $this->getWebapp()->getRootPage());
         }
-        $controller = new ui5Controller($this->getWebapp(), $controllerName, $this->createView($element));
+        $controller = new UI5Controller($this->getWebapp(), $controllerName, $this->createView($element));
         $element->setController($controller);
         
         $controller->addExternalCss($this->buildUrlToSource('LIBS.FACADE.CSS'));
@@ -333,7 +333,7 @@ JS;
         if ($viewName === null) {
             $viewName = $this->getViewName($widget, $this->getWebapp()->getRootPage());
         }
-        return new ui5View($this->getWebapp(), $viewName, $element);
+        return new UI5View($this->getWebapp(), $viewName, $element);
     }
     
     public function getUI5LibrariesUsed() : array

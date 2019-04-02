@@ -171,7 +171,7 @@ class Webapp implements WorkbenchDependantInterface
                     return '';
                 }
             default:
-                throw new Ui5RouteInvalidException('Cannot match route "' . $route . '"!');
+                throw new UI5RouteInvalidException('Cannot match route "' . $route . '"!');
         }
     }
     
@@ -325,7 +325,7 @@ class Webapp implements WorkbenchDependantInterface
             // - appRoot/view/vendor/app/page/widget_id
             $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];
         } else {
-            throw new Ui5RouteInvalidException('Route "' . $path . '" not found!');
+            throw new UI5RouteInvalidException('Route "' . $path . '" not found!');
         }
         
         $page = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $pageAlias);
@@ -508,7 +508,7 @@ class Webapp implements WorkbenchDependantInterface
     
     public function createViewModel(string $viewName, string $modelName = '') : ui5Model
     {
-        $model = new ui5Model($this, $viewName, $modelName);
+        $model = new UI5Model($this, $viewName, $modelName);
         $this->models[$viewName . ':' . $modelName] = $model;
         return $model;
     }

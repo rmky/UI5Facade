@@ -38,7 +38,7 @@ class UI5DialogHeader extends UI5Container
             return '';
         }
         
-        $element = new ui5ObjectStatus($widget, $this->getFacade());
+        $element = new UI5ObjectStatus($widget, $this->getFacade());
         
         return $element->buildJsConstructor();
     }

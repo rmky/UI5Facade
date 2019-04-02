@@ -7,7 +7,6 @@ use exface\UI5Facade\Facades\Elements\UI5AbstractElement;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
 use exface\UI5Facade\Facades\Interfaces\UI5ViewInterface;
 use exface\Core\Exceptions\OutOfBoundsException;
-use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\Widgets\iCanPreloadData;
@@ -166,13 +165,6 @@ JS;
         }
         
         return $this->buildJsMethodCallFromView($methodName, $triggerElement);
-    }
-    
-    protected function hasEventHandler(ui5AbstractElement $triggerElement, string $eventName) : bool
-    {
-        $methodName = $this->buildJsEventHandlerMethodName($eventName);
-        $propertyName = $this->buildJsMethodName($methodName, $triggerElement);
-        
     }
     
     /**

@@ -10,6 +10,7 @@ use exface\Core\Widgets\Data;
 use exface\Core\Widgets\DataTableResponsive;
 use exface\Core\Widgets\MenuButton;
 use exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait;
+use exface\Core\Widgets\DataColumn;
 
 /**
  *
@@ -416,7 +417,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsValueGetter()
      */
-    public function buildJsValueGetter($column = null, $rowNr = null)
+    public function buildJsValueGetter($dataColumnName = null, $rowNr = null)
     {
         if ($this->isUiTable()) {
             $row = "(oTable.getSelectedIndex() > -1 ? oTable.getModel().getData().data[oTable.getSelectedIndex()] : [])";
@@ -424,13 +425,51 @@ JS;
             $row = "(oTable.getSelectedItem() ? oTable.getSelectedItem().getBindingContext().getObject() : [])";
         }
         
-        $col = $column !== null ? '["' . $column . '"]' : '';
+        $col = $dataColumnName !== null ? '["' . $dataColumnName . '"]' : '';
         
         return <<<JS
         
 function(){
     var oTable = sap.ui.getCore().byId('{$this->getId()}');
     return {$row}{$col};
+}()
+
+JS;
+    }
+        
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsValueGetter()
+     */
+    public function buildJsValueSetter($value, $dataColumnName = null, $rowNr = null)
+    {
+        if ($rowNr === null) {
+            if ($this->isUiTable()) {
+                $rowNr = "oTable.getSelectedIndex()";
+            } else {
+                $rowNr = "oTable.indexOfItem(oTable.getSelectedItem())";
+            }
+        }
+        
+        if ($dataColumnName === null) {
+            $dataColumnName = $this->getWidget()->getUidColumn()->getDataColumnName();
+        }
+        
+        return <<<JS
+        
+function(){
+    var oTable = sap.ui.getCore().byId('{$this->getId()}');
+    var oModel = oTable.getModel();
+    var iRowIdx = {$rowNr};
+    
+    if (iRowIdx !== undefined && iRowIdx >= 0) {
+        var aData = oModel.getData().data;
+        aData[iRowIdx]["{$dataColumnName}"] = $value;
+        oModel.setProperty("/data", aData);
+        // TODO why does the code below not work????
+        // oModel.setProperty("/data(" + iRowIdx + ")/{$dataColumnName}", {$value});
+    }
 }()
 
 JS;
@@ -684,5 +723,62 @@ JS;
             $caption .= ($this->hasPaginator() ? ': ' : '');
         }
         return $caption;
+    }
+    
+    /**
+     * Returns JS code to select the first row in a table, that has the given value in the specified column.
+     *
+     * The generated code will search the current values of the $column for an exact match
+     * for the value of $valueJs JS variable, mark the first matching row as selected and
+     * scroll to it to ensure it is visible to the user.
+     *
+     * The row index (starting with 0) is saved to the JS variable specified in $rowIdxJs.
+     *
+     * If the $valueJs is not found, $onNotFoundJs will be executed and $rowIdxJs will be
+     * set to -1.
+     *
+     * @param DataColumn $column
+     * @param string $valueJs
+     * @param string $onNotFoundJs
+     * @param string $rowIdxJs
+     * @return string
+     */
+    public function buildJsSelectRowByValue(DataColumn $column, string $valueJs, string $onNotFoundJs = '', string $rowIdxJs = 'rowIdx') : string
+    {
+        if ($this->isMTable()) {
+            $selectItemJs = <<<JS
+
+        var oItem = oTable.getItems()[iRowIdx];
+        oTable.setSelectedItem(oItem);
+        oItem.focus();
+
+JS;
+        } else {
+            // TODO implement item selection for table.Table
+            $selectItemJs = '';
+        }
+        
+        return <<<JS
+        
+var {$rowIdxJs} = function() {
+    var oTable = sap.ui.getCore().byId("{$this->getId()}");
+    var aData = oTable.getModel().getData().data;
+    var iRowIdx = -1;
+    for (var i in aData) {
+        if (aData[i]['{$column->getDataColumnName()}'] == $valueJs) {
+            iRowIdx = i;
+        }
+    }
+
+    if (iRowIdx == -1){
+		{$onNotFoundJs};
+	} else {
+        {$selectItemJs}
+	}
+
+    return iRowIdx;
+}();
+
+JS;
     }
 }

@@ -15,7 +15,8 @@ sap.ui.jsview("[#app_id#].view.App", {
 	createContent : function(oController) {
 	    
 	    return new [#ui5_app_control#]("[#app_id#].app", { // use sap.m.NavContainer instead of App to get rid of the title bar
-			pages: [
+			autoFocus: false,
+	    	pages: [
 				new sap.m.Page({
 					content: [
 						

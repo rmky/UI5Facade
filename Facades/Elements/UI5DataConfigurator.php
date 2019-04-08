@@ -218,7 +218,7 @@ JS;
     {
         return <<<JS
                 function() {
-                    var oPanel = new sap.m.P13nFilterPanel("{$this->getId()}_QuickSearchPanel", {
+                    var oPanel = new sap.m.P13nFilterPanel("{$this->getId()}_AdvancedSearchPanel", {
                         title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.ADVANCED_SEARCH')}",
                         visible: true,
                         /*containerQuery: true, */
@@ -370,7 +370,7 @@ JS;
 
 function(){
     var oData = {$this->buildJsDataGetterViaTrait($action)};
-    var aFilters = sap.ui.getCore().byId('{$this->getId()}_QuickSearchPanel').getFilterItems();
+    var aFilters = sap.ui.getCore().byId('{$this->getId()}_AdvancedSearchPanel').getFilterItems();
     var i = 0;
     if (aFilters.length > 0) {
         var includeGroup = {operator: "AND", conditions: []};

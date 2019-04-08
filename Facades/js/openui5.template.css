@@ -29,6 +29,7 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 
 /* sap.f.DynamicPage */
 .exf-page-heading-btn {margin-top: -5px; margin-left: -11px;}
+body:not(.sapUiSizeCompact) .sapFDynamicPageTitleMainHeadingInner .sapMTitle > span {line-height: 2.375rem}
 
 /* sap.m.P13nDialog */
 .sapMP13nDialog > .sapMDialogResizeHandler {position: inherit}

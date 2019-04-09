@@ -657,17 +657,17 @@ JS;
         // Add single-result action to onLoadSuccess
         if ($singleResultButton = $this->getWidget()->getButtons(function($btn) {return ($btn instanceof DataButton) && $btn->isBoundToSingleResult() === true;})[0]) {
             $singleResultJs = <<<JS
-                        if ({$oModelJs}.getData().data.length === 1) {
-                            var curRow = {$oModelJs}.getData().data[0];
-                            var lastRow = oTable._singleResultActionPerformedFor;
-                            if (lastRow === undefined || {$this->buildJsRowCompare('curRow', 'lastRow')} === false){
-                                var oItem = oTable.getItems()[0];
-                                oTable.setSelectedItem(oItem);
-                                oItem.focus();
-                                oTable._singleResultActionPerformedFor = curRow;
-                                {$this->getFacade()->getElement($singleResultButton)->buildJsClickEventHandlerCall('oController')};
-                            }
-                        }
+            if ({$oModelJs}.getData().data.length === 1) {
+                var curRow = {$oModelJs}.getData().data[0];
+                var lastRow = oTable._singleResultActionPerformedFor;
+                if (lastRow === undefined || {$this->buildJsRowCompare('curRow', 'lastRow')} === false){
+                    {$this->buildJsSelectRowByIndex('oTable', '0')}
+                    oTable._singleResultActionPerformedFor = curRow;
+                    {$this->getFacade()->getElement($singleResultButton)->buildJsClickEventHandlerCall('oController')};
+                } else {
+                    oTable._singleResultActionPerformedFor = {};
+                }
+            }
                         
 JS;
         }
@@ -747,6 +747,33 @@ JS;
     }
     
     /**
+     * Returns the JS code to select the row with the zero-based index $iRowIdxJs and scroll it into view.
+     * 
+     * @param string $oTableJs
+     * @param string $iRowIdxJs
+     * @return string
+     */
+    protected function buildJsSelectRowByIndex(string $oTableJs = 'oTable', string $iRowIdxJs = 'iRowIdx') : string
+    {
+        if ($this->isMTable() === true) {
+            return <<<JS
+
+                var oItem = {$oTableJs}.getItems()[{$iRowIdxJs}];
+                {$oTableJs}.setSelectedItem(oItem);
+                oItem.focus();
+
+JS;
+        } else {
+            return <<<JS
+
+                oTable.setFirstVisibleRow({$iRowIdxJs});
+                oTable.setSelectedIndex({$iRowIdxJs});
+
+JS;
+        }
+    }
+    
+    /**
      * Returns JS code to select the first row in a table, that has the given value in the specified column.
      *
      * The generated code will search the current values of the $column for an exact match
@@ -766,19 +793,6 @@ JS;
      */
     public function buildJsSelectRowByValue(DataColumn $column, string $valueJs, string $onNotFoundJs = '', string $rowIdxJs = 'rowIdx') : string
     {
-        if ($this->isMTable()) {
-            $selectItemJs = <<<JS
-
-        var oItem = oTable.getItems()[iRowIdx];
-        oTable.setSelectedItem(oItem);
-        oItem.focus();
-
-JS;
-        } else {
-            // TODO implement item selection for table.Table
-            $selectItemJs = '';
-        }
-        
         return <<<JS
         
 var {$rowIdxJs} = function() {
@@ -794,7 +808,7 @@ var {$rowIdxJs} = function() {
     if (iRowIdx == -1){
 		{$onNotFoundJs};
 	} else {
-        {$selectItemJs}
+        {$this->buildJsSelectRowByIndex('oTable', 'iRowIdx')}
 	}
 
     return iRowIdx;

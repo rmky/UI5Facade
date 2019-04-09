@@ -11,6 +11,7 @@ use exface\Core\Widgets\DataTableResponsive;
 use exface\Core\Widgets\MenuButton;
 use exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait;
 use exface\Core\Widgets\DataColumn;
+use exface\Core\Widgets\DataButton;
 
 /**
  *
@@ -653,6 +654,24 @@ JS;
     {
         $paginator = $this->getPaginatorElement();
         
+        // Add single-result action to onLoadSuccess
+        if ($singleResultButton = $this->getWidget()->getButtons(function($btn) {return ($btn instanceof DataButton) && $btn->isBoundToSingleResult() === true;})[0]) {
+            $singleResultJs = <<<JS
+                        if ({$oModelJs}.getData().data.length === 1) {
+                            var curRow = {$oModelJs}.getData().data[0];
+                            var lastRow = oTable._singleResultActionPerformedFor;
+                            if (lastRow === undefined || {$this->buildJsRowCompare('curRow', 'lastRow')} === false){
+                                var oItem = oTable.getItems()[0];
+                                oTable.setSelectedItem(oItem);
+                                oItem.focus();
+                                oTable._singleResultActionPerformedFor = curRow;
+                                {$this->getFacade()->getElement($singleResultButton)->buildJsClickEventHandlerCall('oController')};
+                            }
+                        }
+                        
+JS;
+        }
+        
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . <<<JS
 
 			var footerRows = {$oModelJs}.getProperty("/footerRows");
@@ -661,7 +680,9 @@ JS;
 			}
 
             {$paginator->buildJsSetTotal($oModelJs . '.getProperty("/recordsFiltered")', 'oController')};
-            {$paginator->buildJsRefresh('oController')};            
+            {$paginator->buildJsRefresh('oController')};  
+
+            {$singleResultJs}          
             
 JS;
     }

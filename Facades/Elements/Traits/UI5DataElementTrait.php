@@ -568,7 +568,7 @@ JS;
         return <<<JS
         
             oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$this->getController()->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
-            
+            {$singleResultJs}
             {$dynamicPageFixes}
 			
 JS;
@@ -788,5 +788,30 @@ JS;
             return $this->quickSearchElement;
         }
         return null;
+    }
+    
+    /**
+     * Returns an inline JS snippet to compare two data rows represented by JS objects.
+     *
+     * If this widget has a UID column, only the values of this column will be compared,
+     * unless $trustUid is FALSE. This is handy if you need to compare if the rows represent
+     * the same object (e.g. when selecting based on a row).
+     *
+     * If this widget has no UID column or $trustUid is FALSE, the JSON-representations of
+     * the rows will be compared.
+     *
+     * @param string $leftRowJs
+     * @param string $rightRowJs
+     * @param bool $trustUid
+     * @return string
+     */
+    protected function buildJsRowCompare(string $leftRowJs, string $rightRowJs, bool $trustUid = true) : string
+    {
+        if ($trustUid === true && $this->getWidget()->hasUidColumn()) {
+            $uid = $this->getWidget()->getUidColumn()->getDataColumnName();
+            return "{$leftRowJs}['{$uid}'] == {$rightRowJs}['{$uid}']";
+        } else {
+            return "(JSON.stringify({$leftRowJs}) == JSON.stringify({$rightRowJs}))";
+        }
     }
 }

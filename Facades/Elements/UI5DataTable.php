@@ -297,8 +297,8 @@ JS;
     protected function buildJsQuickSearch(string $sQueryJs = 'sQuery', string $oRowJs = 'oRow') : string
     {
         $filters = [];
-        foreach ($this->getWidget()->getAttributesForQuickSearch() as $alias) {
-            $filters[] = "(oRow['{$alias}'].toString().toLowerCase().indexOf({$sQueryJs}) !== -1)";
+        foreach ($this->getWidget()->getAttributesForQuickSearch() as $attr) {
+            $filters[] = "(oRow['{$attr->getAliasWithRelationPath()}'].toString().toLowerCase().indexOf({$sQueryJs}) !== -1)";
         }
         
         if (! empty($filters)) {

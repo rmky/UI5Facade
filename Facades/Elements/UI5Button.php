@@ -114,14 +114,13 @@ JS;
     /**
      * 
      * @param string $oControllerJsVar
-     * @param string $default
      * @return string
      */
     public function buildJsClickEventHandlerCall(string $oControllerJsVar = null) : string
     {
         $methodName = $this->getController()->buildJsEventHandlerMethodName('press');
         if ($oControllerJsVar === null) {
-            return $this->getController()->buildJsMethodCallFromController($methodName, $this);
+            return $this->getController()->buildJsMethodCallFromController($methodName, $this, '');
         } else {
             return $this->getController()->buildJsMethodCallFromController($methodName, $this, '', $oControllerJsVar);
         }

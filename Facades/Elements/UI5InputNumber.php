@@ -65,7 +65,7 @@ JS;
             // make sure the + and - buttons do not loose their functionality.
             $onChange = <<<JS
 
-                    if (event.getSource().data('_rawValue') !== '' || event.getParameters().value !== 0) {
+                    if (event.getSource && (event.getSource().data('_rawValue') !== '' || event.getParameters().value !== 0)) {
                         event.getSource().data('_rawValue', event.getParameters().value);
                     }
 

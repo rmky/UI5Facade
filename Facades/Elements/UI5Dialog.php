@@ -535,16 +535,6 @@ JS;
     }
     
     /**
-     * Returns the constructor for an OverflowToolbar representing the main toolbar of the dialog.
-     * 
-     * @return string
-     */
-    protected function buildJsFloatingToolbar()
-    {
-        return $this->getFacade()->getElement($this->getWidget()->getToolbarMain())->buildJsConstructor();
-    }
-    
-    /**
      * Returns the button constructors for the dialog buttons.
      * 
      * @return string

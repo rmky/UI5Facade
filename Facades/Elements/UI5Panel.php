@@ -79,7 +79,7 @@ JS;
         return 'new sap.ui.core.Title()';
     }
     
-    protected function buildJsLayoutForm($content)
+    protected function buildJsLayoutForm($content, string $toolbarConstructor = null)
     {
         $cols = $this->getNumberOfColumns();
         
@@ -112,6 +112,10 @@ JS;
 JS;
         }
         
+        if ($toolbarConstructor !== null) {
+            $toolbar = 'toolbar: ' . $this->getFacade()->getElement($this->getWidget()->getToolbarMain())->buildJsConstructor();
+        }
+        
         return <<<JS
         
             new sap.ui.layout.form.SimpleForm({
@@ -131,7 +135,8 @@ JS;
     			singleContainerFullSize: true,
                 content: [
                     {$content}
-                ]
+                ],
+                {$toolbar}
             })
             
 JS;

@@ -156,10 +156,12 @@ JS;
      */
     protected function buildJsToolbar($oControllerJsVar = 'oController', string $leftExtras = null, string $rightExtras = null)
     {
+        $visible = $this->getWidget()->getHideHeader() === true ? 'false' : 'true';
         return <<<JS
 
 			new sap.m.OverflowToolbar({
                 design: "Transparent",
+                visible: {$visible},
 				content: [
 					{$this->buildJsToolbarContent($oControllerJsVar, $leftExtras, $rightExtras)}
 				]
@@ -176,7 +178,7 @@ JS;
      * @return string
      */
     protected function buildJsToolbarContent($oControllerJsVar = 'oController', string $leftExtras = null, string $rightExtras = null) : string
-    {
+    {        
         $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $this->getCaption() . '"}),';
         
         $leftExtras = $leftExtras === null ? '' : rtrim($leftExtras, ", ") . ',';
@@ -318,7 +320,7 @@ JS;
      */
     protected function hasQuickSearch() : bool
     {
-        return $this->getWidget() instanceof DataTable;
+        return $this->getWidget() instanceof DataTable && $this->getWidget()->getQuickSearchEnabled();
     }
     
     /**

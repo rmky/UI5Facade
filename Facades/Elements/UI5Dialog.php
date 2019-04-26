@@ -206,7 +206,7 @@ JS;
         $icon = $widget->getIcon() ? 'icon: "' . $this->getIconSrc($widget->getIcon()) . '",' : '';
         
         // The content of the dialog is either a single widget or a layout with multiple widgets
-        if ($widget->countWidgetsVisible() === 1) {
+        if ($widget->countWidgetsVisible() === 1 && $widget->getWidgetFirst(function(WidgetInterface $widget){return $widget->isHidden() === false;}) instanceof iFillEntireContainer) {
             $content = $this->buildJsChildrenConstructors(false);
         } else {
             $content = $this->buildJsLayoutForm($this->buildJsChildrenConstructors(true)); 

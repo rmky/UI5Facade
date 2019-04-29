@@ -199,8 +199,16 @@ JS;
      */
     protected function getIconSrc($icon_name)
     {
-        $path = Icons::isDefined($icon_name) ? 'font-awesome/' : '';
-        return 'sap-icon://' . $path . $icon_name;
+        if (Icons::isDefined($icon_name) === true) {
+            $path = 'sap-icon://font-awesome/';
+        } else {
+            if (StringDataType::startsWith($icon_name, 'sap-icon://', false) === false) {
+                $path = 'sap-icon://';
+            } else {
+                $path = '';
+            }
+        }
+        return $path . $icon_name;
     }
     
     public function buildCssIconClass($icon)

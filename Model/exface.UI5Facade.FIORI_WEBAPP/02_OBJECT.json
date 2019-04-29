@@ -38,6 +38,14 @@
             "attribute_alias": "DOCS"
         },
         {
+            "name": "NAME",
+            "attribute_alias": "NAME"
+        },
+        {
+            "name": "INHERIT_DATA_SOURCE_BASE_OBJECT",
+            "attribute_alias": "INHERIT_DATA_SOURCE_BASE_OBJECT"
+        },
+        {
             "name": "DATA_SOURCE",
             "attribute_alias": "DATA_SOURCE"
         },
@@ -62,10 +70,6 @@
             "attribute_alias": "DEFAULT_EDITOR_UXON"
         },
         {
-            "name": "LABEL",
-            "attribute_alias": "LABEL"
-        },
-        {
             "name": "ALIAS",
             "attribute_alias": "ALIAS"
         },
@@ -85,13 +89,14 @@
             "WRITABLE_FLAG": "1",
             "COMMENTS": "",
             "DOCS": "",
+            "NAME": "Fiori Webapp",
+            "INHERIT_DATA_SOURCE_BASE_OBJECT": "1",
             "DATA_SOURCE": "0x32000000000000000000000000000000",
             "APP": "0x11e837e87a640bfd91380205857feb80",
             "SHORT_DESCRIPTION": "",
             "PARENT_OBJECT": "0x32370000000000000000000000000000",
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_EDITOR_UXON": "{\"widget_type\":\"Form\",\"widgets\":[{\"widget_type\":\"WidgetGroup\",\"caption\":\"Project\",\"widgets\":[{\"attribute_alias\":\"name\"},{\"attribute_alias\":\"root_page_alias\",\"id\":\"root_page_alias\"},{\"attribute_alias\":\"current_version\"},{\"attribute_alias\":\"current_version_date\"},{\"attribute_alias\":\"ui5_min_version\"},{\"attribute_alias\":\"ui5_source\"},{\"attribute_alias\":\"ui5_theme\"},{\"attribute_alias\":\"ui5_app_control\"}]},{\"widget_type\":\"WidgetGroup\",\"caption\":\"UI5 Manifest\",\"widgets\":[{\"attribute_alias\":\"app_id\",\"disabled\":true,\"value\":\"=root_page_alias!root_page_alias\"},{\"attribute_alias\":\"app_title\"},{\"attribute_alias\":\"app_subTitle\"},{\"attribute_alias\":\"app_shortTitle\"},{\"attribute_alias\":\"app_info\"},{\"attribute_alias\":\"app_description\"}]},{\"widget_type\":\"WidgetGroup\",\"caption\":\"PWA Manifest\",\"widgets\":[{\"attribute_alias\":\"pwa_flag\"},{\"attribute_alias\":\"root_url\"},{\"attribute_alias\":\"pwa_theme_color\"},{\"attribute_alias\":\"pwa_background_color\"}]}]}",
-            "LABEL": "Fiori Webapp",
             "ALIAS": "FIORI_WEBAPP",
             "DATA_ADDRESS": "fiori_webapp"
         }

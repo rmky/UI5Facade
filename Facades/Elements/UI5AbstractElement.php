@@ -141,7 +141,7 @@ JS;
     public function buildJsShowError($message_body_js, $title_js = null)
     {
         $title_js = $title_js ? $title_js : '"' . $this->translate('MESSAGE.ERROR_TITLE') . '"';
-        return $this->getController()->buildJsComponentGetter() . ".showAjaxErrorDialog({$message_body_js}, {$title_js});";
+        return $this->getController()->buildJsComponentGetter() . ".showErrorDialog({$message_body_js}, {$title_js});";
     }
 
     /**

@@ -35,6 +35,8 @@ use exface\Core\DataTypes\NumberDataType;
 use exface\UI5Facade\Facades\Formatters\UI5EnumFormatter;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\UI5Facade\Facades\Formatters\UI5TimeFormatter;
+use Psr\Http\Message\RequestInterface;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * 
@@ -374,6 +376,11 @@ JS;
         return $tags;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::buildResponseData()
+     */   
     public function buildResponseData(DataSheetInterface $data_sheet, WidgetInterface $widget = null)
     {
         $data = array();
@@ -387,6 +394,26 @@ JS;
         
         $data['footerRows'] = count($data_sheet->getTotalsRows());
         return $data;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::createResponseFromError()
+     */
+    public function createResponseFromError(ServerRequestInterface $request, \Throwable $exception, UiPageInterface $page = null) : ResponseInterface
+    {
+        return parent::createResponseFromError($request, $exception, $page);
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::isShowingErrorDetails()
+     */
+    protected function isShowingErrorDetails() : bool
+    {
+        return false;
     }
 }
 ?>

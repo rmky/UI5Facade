@@ -809,7 +809,7 @@ JS;
                     if (navigator.onLine === false) {
                         {$oViewJs}.getController().getRouter().getTargets().display("offline");
                     } else {
-                        {$this->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText)
+                        {$this->buildJsComponentGetter()}.showErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText)
                     }
                     
 JS;

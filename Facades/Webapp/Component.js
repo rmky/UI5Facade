@@ -71,7 +71,7 @@ sap.ui.define([
 		 * 
 		 * @return void
 		 */
-		showAjaxErrorDialog : function(sBody, sTitle) {
+		showErrorDialog : function(sBody, sTitle) {
 			var view = '';
 		    var errorBody = sBody ? sBody : '';
 		    var viewMatch = errorBody.match(/sap.ui.jsview\("(.*)"/i);
@@ -88,6 +88,67 @@ sap.ui.define([
 		},
 		
 		/**
+		 * Shows an error dialog for an AJAX error with either HTML, JSON or a UI5 JSView in the response body.
+		 * 
+		 * @param String sBody
+		 * @param String sTitle
+		 * 
+		 * @return void
+		 */
+		showAjaxErrorDialog : function (jqXHR, sMessage) {
+			var sContentType = jqXHR.getResponseHeader('Content-Type');
+			
+			// 
+			if (sContentType.match(/json/i)) {
+				try {
+					var oData = JSON.parse(jqXHR.responseText);
+					if (oData.error) {
+						var oError = oData.error;
+					} else {
+						throw {};
+					}
+				} catch (e) {
+					var oError = {
+						message: jqXHR.responseText
+					};
+				}
+				sMessage = sMessage ? sMessage : oError.message;
+				var sTitle = oError.code ? oError.type + ' ' + oError.code + ': ' + oError.title : jqXHR.status + " " + jqXHR.statusText;
+				var oDialogContent = new sap.m.VBox({
+					items: [
+						new sap.m.Text({
+							text: sMessage
+						})
+					]
+				}).addStyleClass('sapUiResponsiveMargin');
+				if (oError.logid) {
+					oDialogContent.addItem(
+						new sap.m.MessageStrip({
+							text: "Log-ID " + oError.logid + ": Please use the it in all support requests!",
+							type: "Information",
+							showIcon: true
+						}).addStyleClass('sapUiSmallMarginTop')
+					);
+				}
+				exfLauncher.showDialog(sTitle, oDialogContent, 'Error');
+			} else {
+				var view = '';
+			    var errorBody = sBody ? sBody : '';
+			    var viewMatch = errorBody.match(/sap.ui.jsview\("(.*)"/i);
+			    if (viewMatch !== null) {
+			        view = viewMatch[1];
+			        var randomizer = window.performance.now().toString();
+			        errorBody = errorBody.replace(view, view+randomizer);
+			        view = view+randomizer;
+			        $('body').append(errorBody);
+			        exfLauncher.showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}), 'Error');
+			    } else {
+			    	exfLauncher.showHtmlInDialog(sTitle, errorBody, 'Error');
+			    }
+			}
+		},
+		
+		/**
 		 * Convenience method to create and open a dialog.
 		 * 
 		 * The dialog is automatically destroyed when closed.
@@ -95,7 +156,7 @@ sap.ui.define([
 		 * @param string|sap.ui.core.Control content
 		 * @param string sTitle
 		 * @param string sState
-		 * @param bResponsive
+		 * @param string bResponsive
 		 * 
 		 * @return sap.m.Dialog
 		 */

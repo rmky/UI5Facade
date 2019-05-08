@@ -403,7 +403,7 @@ JS;
                     if (navigator.onLine === false) {
                         {$offlineError}
                     } else {
-                        {$this->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR.responseText, jqXHR.status + " " + jqXHR.statusText)
+                        {$this->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR)
                     }
                 }
 			})

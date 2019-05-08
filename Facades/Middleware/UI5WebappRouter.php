@@ -51,7 +51,11 @@ class UI5WebappRouter implements MiddlewareInterface
     {
         $path = $request->getUri()->getPath();
         if (($webappRoute = StringDataType::substringAfter($path, $this->webappRoot)) !== false) {
-            return $this->resolve($webappRoute, $this->getTask($request, $this->taskAttributeName, $this->facade));
+            try {
+                return $this->resolve($webappRoute, $this->getTask($request, $this->taskAttributeName, $this->facade));
+            } catch (\Throwable $e) {
+                return $this->facade->createResponseFromError($request, $e);
+            }
         }
         return $handler->handle($request);
     }

@@ -174,7 +174,7 @@ const exfLauncher = {};
 																}
 															}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
 															
-															_oLauncher.showDialog('Sync-Puffer', oTable, undefined, undefined, true);
+															_oLauncher.contextBar.getComponent().showDialog('Sync-Puffer', oTable, undefined, undefined, true);
 														},
 													}),
 													new sap.m.StandardListItem({
@@ -218,10 +218,10 @@ const exfLauncher = {};
 															.reset()
 															.then(() => {
 																oButton.setBusy(false);
-																_oLauncher.showDialog('Offline Storage', 'All preload data cleared!', 'Success');
+																_oLauncher.contextBar.getComponent().showDialog('Offline Storage', 'All preload data cleared!', 'Success');
 															}).catch(() => {
 																oButton.setBusy(false);
-																_oLauncher.showDialog('Error!', 'Failed to clear preload data!', 'Error');
+																_oLauncher.contextBar.getComponent().showDialog('Error!', 'Failed to clear preload data!', 'Error');
 															})
 														},
 													})
@@ -312,47 +312,6 @@ const exfLauncher = {};
 	
 	this.setAppMenu = function (oControl) {
 		_oAppMenu = oControl;
-	};
-
-	this.showDialog = function (title, content, state, onCloseCallback, responsive) {
-		var stretch = responsive ? jQuery.device.is.phone : false;
-		var type = sap.m.DialogType.Standard;
-		if (typeof content === 'string' || content instanceof String) {
-			content = new sap.m.Text({
-				text: content
-			});
-			type = sap.m.DialogType.Message;
-		}
-		var dialog = new sap.m.Dialog({
-			title: title,
-			state: state,
-			type: type,
-			stretch: stretch,
-			content: content,
-			endButton: new sap.m.Button({
-				text: 'OK',
-				type: sap.m.ButtonType.Emphasized,
-				press: function () {
-					dialog.close();
-				}
-			}),
-			afterClose: function() {
-				if (onCloseCallback) {
-					onCloseCallback();
-				}
-				dialog.destroy();
-			}
-		});
-	
-		dialog.open();
-		return dialog;
-	};
-
-	this.showHtmlInDialog = function (title, html, state) {
-		var content = new sap.ui.core.HTML({
-			content: html
-		});
-		_oLauncher.showDialog(title, content, state);
 	};
 	
 	this.contextBar = function(){
@@ -499,7 +458,7 @@ const exfLauncher = {};
 			                var view = viewMatch[1];
 			                //$('body').append(data);
 			            } else {
-			            	_oLauncher.showHtmlInDialog(text.Status, data);
+			            	_oComponent.showAjaxErrorDialog(jqXHR);
 			            }
 			            
 			            var oPopoverPage = oPopover.getContent()[0].getPages()[0];
@@ -514,7 +473,7 @@ const exfLauncher = {};
 					},
 					error: function(jqXHR, textStatus, errorThrown){
 						oButton.setBusy(false);
-						_oLauncher.showHtmlInDialog(textStatus, jqXHR.responseText, "error");
+						_oComponent.showAjaxErrorDialog(jqXHR);
 					}
 				});
 			}
@@ -622,7 +581,7 @@ const exfPreloader = {};
 				return Promise.all(promises);
 			},
 			function(jqXHR, textStatus, errorThrown){
-				exfLauncher.showHtmlInDialog(textStatus, jqXHR.responseText, "error");
+				exfLauncher.contextBar.getComponent().showAjaxErrorDialog(jqXHR);
 				return textStatus;
 			}
 		);

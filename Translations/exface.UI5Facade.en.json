@@ -1,6 +1,9 @@
 {
 	"ACTION.EXPORTFIORIWEBAPP.NAME": "Export",
 	
+	"ERROR.DETAILS": "Details",
+	"ERROR.LOG_ID_HINT": "Please use it in all support requests!",
+	
 	"MESSAGE.SELECT_EXACTLY_X_ROWS": "Please select exactly %number% row!|Please select exactly %number% rows!",
 	"MESSAGE.SELECT_AT_MOST_X_ROWS": "Please select at most %number% row!|Please select at most %number% rows!",
 	"MESSAGE.SELECT_AT_LEAST_X_ROWS": "Please select at least %number% row!|Please select at least %number% rows!",

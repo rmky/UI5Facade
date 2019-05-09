@@ -62,61 +62,130 @@ sap.ui.define([
 				throw 'UI5 Condintion operation "'+operation+'" cannot be mapped to a condition group operator!';
 			}
         },
+        
+        /**
+		 * Convenience method to create and open a dialog.
+		 * 
+		 * The dialog is automatically destroyed when closed.
+		 * 
+		 * @param string|sap.ui.core.Control mContent
+		 * @param string sTitle
+		 * @param string sState
+		 * @param string bResponsive
+		 * 
+		 * @return sap.m.Dialog
+		 */
+        showDialog : function (sTitle, mContent, sState, onCloseCallback, bResponsive) {
+    		var bStretch = bResponsive ? jQuery.device.is.phone : false;
+    		var sType = sap.m.DialogType.Standard;
+    		var oContent;
+    		if (typeof mContent === 'string' || mContent instanceof String) {
+    			oContent = new sap.m.Text({
+    				text: mContent
+    			});
+    			sType = sap.m.DialogType.Message;
+    		} else {
+    			oContent = mContent;
+    		}
+    		var oDialog = new sap.m.Dialog({
+    			title: sTitle,
+    			state: sState,
+    			type: sType,
+    			stretch: bStretch,
+    			content: oContent,
+    			endButton: new sap.m.Button({
+    				text: 'OK',
+    				type: sap.m.ButtonType.Emphasized,
+    				press: function () {
+    					oDialog.close();
+    				}
+    			}),
+    			afterClose: function() {
+    				if (onCloseCallback) {
+    					onCloseCallback();
+    				}
+    				oDialog.destroy();
+    			}
+    		}).setModel(this.getModel('i18n'), 'i18n');;
+    	
+    		oDialog.open();
+    		return oDialog;
+    	},
+
+    	/**
+    	 * Creates and opens a dialog with the given HTML as content
+    	 * 
+    	 * @param String sTitle
+    	 * @param String sHtml
+    	 * @param String sState
+    	 * 
+    	 * @return sap.m.Dialog
+    	 */
+    	showHtmlInDialog : function (sTitle, sHtml, sState) {
+    		var oContent = new sap.ui.core.HTML({
+    			content: sHtml
+    		});
+    		return this.showDialog(sTitle, oContent, sState);
+    	},
 		
 		/**
 		 * Shows an error dialog for an AJAX error with either HTML or a UI5 JSView in the response body.
 		 * 
 		 * @param String sBody
 		 * @param String sTitle
+		 * @param String sContentType string|html|view|json
 		 * 
-		 * @return void
+		 * @return sap.m.Dialog
 		 */
-		showErrorDialog : function(sBody, sTitle) {
-			var view = '';
-		    var errorBody = sBody ? sBody : '';
-		    var viewMatch = errorBody.match(/sap.ui.jsview\("(.*)"/i);
-		    if (viewMatch !== null) {
-		        view = viewMatch[1];
-		        var randomizer = window.performance.now().toString();
-		        errorBody = errorBody.replace(view, view+randomizer);
-		        view = view+randomizer;
-		        $('body').append(errorBody);
-		        exfLauncher.showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}), 'Error');
-		    } else {
-		    	exfLauncher.showHtmlInDialog(sTitle, errorBody, 'Error');
-		    }
-		},
-		
-		/**
-		 * Shows an error dialog for an AJAX error with either HTML, JSON or a UI5 JSView in the response body.
-		 * 
-		 * @param String sBody
-		 * @param String sTitle
-		 * 
-		 * @return void
-		 */
-		showAjaxErrorDialog : function (jqXHR, sMessage) {
-			var sContentType = jqXHR.getResponseHeader('Content-Type');
+		showErrorDialog : function(sBody, sTitle, sContentType) {
+			var sViewName, oBody;
 			
-			// 
-			if (sContentType.match(/json/i)) {
-				var sTitle, sDetails, oDetailsControl;
-				
-				try {
-					var oData = JSON.parse(jqXHR.responseText);
-					if (oData.error) {
-						var oError = oData.error;
-					} else {
-						throw {};
+			sBody = sBody ? sBody.trim() : '';
+			
+			if (! sContentType) {
+				if (sBody.startsWith('{') && sBody.endsWith('}')) {
+					try {
+						oBody = JSON.parse(sBody);
+						sContentType = 'json';
+					} catch (e) {
+						sContentType = 'string';
 					}
-				} catch (e) {
-					var oError = {
-						message: jqXHR.responseText
-					};
+				} else if (sBody.startsWith('<') && sBody.endsWith('>')) {
+					sContentType = 'html';
+				} else if (sViewName = this._findViewInString(sBody)) {
+					sContentType = 'view';
+				} else {
+					sContentType = 'string';
 				}
-				
-				// Message & title
-				if (! sMessage) {
+			}
+			
+			switch (sContentType) {
+				case 'view':
+					if (! sViewName) {
+						sViewName = this._findViewInString(sBody);
+					}
+					var randomizer = window.performance.now().toString();
+					var sViewNameUnique = sViewName+randomizer;
+			        sBody = sBody.replace(sViewName, sViewNameUnique);
+			        $('body').append(errorBody);
+			        return this.showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:sViewNameUnique}), 'Error');
+				case 'json':
+					var sMessage, sDetails, oDetailsControl;
+					
+					try {
+						oBody = oBody ? oBody : JSON.parse(sBody);
+						if (oBody.error) {
+							var oError = oBody.error;
+						} else {
+							throw {};
+						}
+					} catch (e) {
+						var oError = {
+							message: sBody
+						};
+					}
+					
+					// Message
 					if (oError.code) {
 						sMessage = oError.type + ' ' + oError.code + ': ';
 						if (oError.title) {
@@ -128,116 +197,98 @@ sap.ui.define([
 					} else {
 						sMessage = oError.message;
 					}
-				}
-				sTitle = jqXHR.status + " " + jqXHR.statusText;
-				
-				// Dialog content - just showing the message text
-				var oDialogContent = new sap.m.VBox({
-					items: [
-						new sap.m.Text({
-							text: sMessage
-						})
-					]
-				}).addStyleClass('sapUiResponsiveMargin');
-				
-				// Add details if applicable
-				if (sDetails) {
-					oDetailsControl = new sap.m.Text({
-							text: sDetails,
-							visible: false
-						}).addStyleClass('sapUiSmallMarginTop');
-					oDialogContent.addItem(oDetailsControl);
-				}
-				
-				// Add Log-ID reminder
-				if (oError.logid) {
-					oDialogContent.addItem(
-						new sap.m.MessageStrip({
-							text: "Log-ID " + oError.logid + ": Please use the it in all support requests!",
-							type: "Information",
-							showIcon: true
-						}).addStyleClass('sapUiSmallMarginTop')
-					);
-				}
-				
-				// Show the dialog
-				var oDialog = exfLauncher.showDialog(sTitle, oDialogContent, 'Error');
-				if (oDetailsControl) {
-					oDialog.setBeginButton(
-						new sap.m.Button({
-							text: "Details",
-							icon: "sap-icon://slim-arrow-down",
-							press: function(oEvent) {
-								var oBtn = oEvent.getSource();
-								if (oDetailsControl.getVisible() === true) {
-									oDetailsControl.setVisible(false);
-									oBtn.setIcon("sap-icon://slim-arrow-down");
-								} else {
-									oDetailsControl.setVisible(true);
-									oBtn.setIcon("sap-icon://slim-arrow-up");
+					
+					// Title
+					sTitle = sTitle ? sTitle : '';
+					
+					// Dialog content - just showing the message text
+					var oDialogContent = new sap.m.VBox({
+						items: [
+							new sap.m.Text({
+								text: sMessage
+							})
+						]
+					}).addStyleClass('sapUiSmallMargin');
+					
+					// Add details if applicable
+					if (sDetails) {
+						oDetailsControl = new sap.m.Text({
+								text: sDetails,
+								visible: false
+							}).addStyleClass('sapUiSmallMarginTop');
+						oDialogContent.addItem(oDetailsControl);
+					}
+					
+					// Add Log-ID reminder
+					if (oError.logid) {
+						oDialogContent.addItem(
+							new sap.m.MessageStrip({
+								text: "Log-ID " + oError.logid + ": {i18n>ERROR.LOG_ID_HINT}",
+								type: "Information",
+								showIcon: true
+							}).addStyleClass('sapUiSmallMarginTop')
+						);
+					}
+					
+					// Show the dialog
+					var oDialog = this.showDialog(sTitle, oDialogContent, 'Error');
+					if (oDetailsControl) {
+						oDialog.setBeginButton(
+							new sap.m.Button({
+								text: "{i18n>ERROR.DETAILS}",
+								icon: "sap-icon://slim-arrow-down",
+								press: function(oEvent) {
+									var oBtn = oEvent.getSource();
+									if (oDetailsControl.getVisible() === true) {
+										oDetailsControl.setVisible(false);
+										oBtn.setIcon("sap-icon://slim-arrow-down");
+									} else {
+										oDetailsControl.setVisible(true);
+										oBtn.setIcon("sap-icon://slim-arrow-up");
+									}
 								}
-							}
-						})
-					);
-				}
-			} else {
-				var view = '';
-			    var errorBody = sBody ? sBody : '';
-			    var viewMatch = errorBody.match(/sap.ui.jsview\("(.*)"/i);
-			    if (viewMatch !== null) {
-			        view = viewMatch[1];
-			        var randomizer = window.performance.now().toString();
-			        errorBody = errorBody.replace(view, view+randomizer);
-			        view = view+randomizer;
-			        $('body').append(errorBody);
-			        exfLauncher.showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:view}), 'Error');
-			    } else {
-			    	exfLauncher.showHtmlInDialog(sTitle, errorBody, 'Error');
-			    }
+							})
+						);
+					}
+					return oDialog;
+					
+				default:
+					return this.showHtmlInDialog(sTitle, sBody, 'Error');
 			}
 		},
 		
 		/**
-		 * Convenience method to create and open a dialog.
 		 * 
-		 * The dialog is automatically destroyed when closed.
+		 * @private
+		 * @param String sString
+		 * @return String|Boolean
+		 */
+		_findViewInString : function (sString) {
+			var viewMatch = sBody.match(/sap.ui.jsview\("(.*)"/i);
+		    if (viewMatch !== null) {
+		        return viewMatch[1];
+		    }
+		    return false;
+		},
+		
+		/**
+		 * Shows an error dialog for an AJAX error with either HTML, JSON or a UI5 JSView in the response body.
 		 * 
-		 * @param string|sap.ui.core.Control content
-		 * @param string sTitle
-		 * @param string sState
-		 * @param string bResponsive
+		 * @param jqXHR jqXHR
+		 * @param String sMessage
 		 * 
 		 * @return sap.m.Dialog
 		 */
-		showDialog : function (content, sTitle, sState, bResponsive) {
-			var stretch = bResponsive ? jQuery.device.is.phone : false;
-			var type = sap.m.DialogType.Standard;
-			if (typeof content === 'string' || content instanceof String) {
-				content = new sap.m.Text({
-					text: content
-				});
-				type = sap.m.DialogType.Message;
-			} 
-			var dialog = new sap.m.Dialog({
-				title: sTitle,
-				state: sState,
-				type: type,
-				stretch: stretch,
-				content: content,
-				beginButton: new sap.m.Button({
-					text: 'OK',
-					press: function () {
-						dialog.close();
-					}
-				}),
-				afterClose: function() {
-					dialog.destroy();
-				}
-			});
-		
-			dialog.open();
+		showAjaxErrorDialog : function (jqXHR, sMessage) {
+			var sContentType = jqXHR.getResponseHeader('Content-Type');
+			var sBodyType;
 			
-			return dialog;
+			if (sContentType.match(/json/i)) {
+				sBodyType = 'json';
+			} else if (sContentType.match(/html/i)) {
+				sBodyType = 'html';
+			}
+			return this.showErrorDialog(jqXHR.responseText, (sMessage ? sMessage : jqXHR.status + " " + jqXHR.statusText), sBodyType);
 		}
 
 	});

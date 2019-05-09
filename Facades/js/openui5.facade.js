@@ -329,8 +329,9 @@ const exfLauncher = {};
 			type: type,
 			stretch: stretch,
 			content: content,
-			beginButton: new sap.m.Button({
+			endButton: new sap.m.Button({
 				text: 'OK',
+				type: sap.m.ButtonType.Emphasized,
 				press: function () {
 					dialog.close();
 				}
@@ -344,6 +345,7 @@ const exfLauncher = {};
 		});
 	
 		dialog.open();
+		return dialog;
 	};
 
 	this.showHtmlInDialog = function (title, html, state) {

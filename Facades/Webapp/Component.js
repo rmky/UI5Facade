@@ -100,6 +100,8 @@ sap.ui.define([
 			
 			// 
 			if (sContentType.match(/json/i)) {
+				var sTitle, sDetails, oDetailsControl;
+				
 				try {
 					var oData = JSON.parse(jqXHR.responseText);
 					if (oData.error) {
@@ -112,8 +114,24 @@ sap.ui.define([
 						message: jqXHR.responseText
 					};
 				}
-				sMessage = sMessage ? sMessage : oError.message;
-				var sTitle = oError.code ? oError.type + ' ' + oError.code + ': ' + oError.title : jqXHR.status + " " + jqXHR.statusText;
+				
+				// Message & title
+				if (! sMessage) {
+					if (oError.code) {
+						sMessage = oError.type + ' ' + oError.code + ': ';
+						if (oError.title) {
+							sMessage += oError.title;
+							sDetails = oError.message;
+						} else {
+							sMessage += oError.message;
+						}
+					} else {
+						sMessage = oError.message;
+					}
+				}
+				sTitle = jqXHR.status + " " + jqXHR.statusText;
+				
+				// Dialog content - just showing the message text
 				var oDialogContent = new sap.m.VBox({
 					items: [
 						new sap.m.Text({
@@ -121,6 +139,17 @@ sap.ui.define([
 						})
 					]
 				}).addStyleClass('sapUiResponsiveMargin');
+				
+				// Add details if applicable
+				if (sDetails) {
+					oDetailsControl = new sap.m.Text({
+							text: sDetails,
+							visible: false
+						}).addStyleClass('sapUiSmallMarginTop');
+					oDialogContent.addItem(oDetailsControl);
+				}
+				
+				// Add Log-ID reminder
 				if (oError.logid) {
 					oDialogContent.addItem(
 						new sap.m.MessageStrip({
@@ -130,7 +159,27 @@ sap.ui.define([
 						}).addStyleClass('sapUiSmallMarginTop')
 					);
 				}
-				exfLauncher.showDialog(sTitle, oDialogContent, 'Error');
+				
+				// Show the dialog
+				var oDialog = exfLauncher.showDialog(sTitle, oDialogContent, 'Error');
+				if (oDetailsControl) {
+					oDialog.setBeginButton(
+						new sap.m.Button({
+							text: "Details",
+							icon: "sap-icon://slim-arrow-down",
+							press: function(oEvent) {
+								var oBtn = oEvent.getSource();
+								if (oDetailsControl.getVisible() === true) {
+									oDetailsControl.setVisible(false);
+									oBtn.setIcon("sap-icon://slim-arrow-down");
+								} else {
+									oDetailsControl.setVisible(true);
+									oBtn.setIcon("sap-icon://slim-arrow-up");
+								}
+							}
+						})
+					);
+				}
 			} else {
 				var view = '';
 			    var errorBody = sBody ? sBody : '';

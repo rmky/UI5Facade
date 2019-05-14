@@ -759,7 +759,8 @@ JS;
                     }
                     
                     if (failed == true) {
-                        console.warn('Failed to prefill dialog from preload data: falling back to server request');
+                        console.info('Controller: Failed to prefill view from preload data: falling back to server request');
+                        oViewModel.setProperty('/_prefill/pending', false);
                         {$this->buildJsPrefillLoaderFromServer($triggerWidget, $oViewJs, $oViewModelJs)}
                     }
                 });

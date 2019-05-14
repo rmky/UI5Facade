@@ -320,7 +320,7 @@ JS;
      */
     protected function hasQuickSearch() : bool
     {
-        return $this->getWidget() instanceof DataTable && $this->getWidget()->getQuickSearchEnabled();
+        return $this->getWidget() instanceof DataTable && $this->getWidget()->getQuickSearchEnabled() !== false;
     }
     
     /**

@@ -17,6 +17,11 @@ class UI5Panel extends UI5Container
 {
     use JqueryLayoutTrait;
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Container::buildJsConstructor()
+     */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $panel = <<<JS
@@ -36,7 +41,44 @@ JS;
         
         return $panel;
     }
-                    
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsProperties()
+     */
+    public function buildJsProperties()
+    {
+        return parent::buildJsProperties() . $this->buildjsPropertyHeaderText();
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsPropertyHeaderText() : string
+    {
+        if ($this->hasHeaderToolbar() === false && $caption = $this->getCaption()) {
+            return 'headerText: "' . $caption . '",';
+        }
+        return '';
+    }
+    
+    /**
+     * 
+     * @return bool
+     */
+    protected function hasHeaderToolbar() : bool
+    {
+        return false;
+    }
+                
+    /**
+     * 
+     * @param string $content
+     * @param bool $useFormLayout
+     * @return string
+     */
     public function buildJsLayoutConstructor(string $content = null, bool $useFormLayout = true) : string
     {
         $widget = $this->getWidget();
@@ -74,11 +116,21 @@ JS;
         return $js;
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsFormRowDelimiter() : string
     {
         return 'new sap.ui.core.Title()';
     }
     
+    /**
+     * 
+     * @param unknown $content
+     * @param string $toolbarConstructor
+     * @return string
+     */
     protected function buildJsLayoutForm($content, string $toolbarConstructor = null)
     {
         $cols = $this->getNumberOfColumns();
@@ -163,6 +215,11 @@ JS;
         return 'editable: ' . $editable . ',';
     }
     
+    /**
+     * 
+     * @param unknown $content
+     * @return string
+     */
     protected function buildJsLayoutGrid($content)
     {
         return <<<JS

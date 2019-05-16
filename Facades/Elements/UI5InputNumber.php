@@ -56,7 +56,7 @@ class UI5InputNumber extends UI5Input
                                 }
                             }
                         });
-                    oStepInput.data('_rawValue', '');
+                    oStepInput.data('_rawValue', {$this->buildJsInitialValue()});
 
 JS;
             $this->addPseudoEventHandler('onAfterRendering', $onAfterRendering);
@@ -65,8 +65,8 @@ JS;
             // make sure the + and - buttons do not loose their functionality.
             $onChange = <<<JS
 
-                    if (event.getSource && (event.getSource().data('_rawValue') !== '' || event.getParameters().value !== 0)) {
-                        event.getSource().data('_rawValue', event.getParameters().value);
+                    if (oEvent.getSource && (oEvent.getSource().data('_rawValue') !== '' || oEvent.getParameters().value !== 0)) {
+                        oEvent.getSource().data('_rawValue', oEvent.getParameters().value);
                     }
 
 JS;
@@ -162,6 +162,12 @@ function(){
 JS;
     }
         
+    /**
+     * Returns the initial value defined in UXON as number or an quoted empty string
+     * if not initial value was set.
+     * 
+     * @return string|NULL
+     */
     protected function buildJsInitialValue()
     {
         $val = $this->getWidget()->getValueWithDefaults();

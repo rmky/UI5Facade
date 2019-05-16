@@ -70,6 +70,8 @@ JS;
                 
     protected function escapeJsTextValue($text)
     {
+        // IDEA maybe use json_encode() if the others don't work? Helped in other cases...
+        // $text = json_encode($text)
         $text = parent::escapeJsTextValue($text);
         $text = str_replace(['{', '}'], ['&#123;', '&#125;'], $text);
         return $text;

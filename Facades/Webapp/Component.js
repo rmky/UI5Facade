@@ -167,7 +167,7 @@ sap.ui.define([
 					var randomizer = window.performance.now().toString();
 					var sViewNameUnique = sViewName+randomizer;
 			        sBody = sBody.replace(sViewName, sViewNameUnique);
-			        $('body').append(errorBody);
+			        $('body').append(sBody);
 			        return this.showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:sViewNameUnique}), 'Error');
 				case 'json':
 					var sMessage, sDetails, oDetailsControl;

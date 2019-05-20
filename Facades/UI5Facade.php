@@ -37,6 +37,7 @@ use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\UI5Facade\Facades\Formatters\UI5TimeFormatter;
 use Psr\Http\Message\RequestInterface;
 use GuzzleHttp\Psr7\Response;
+use exface\Core\DataTypes\DateTimeDataType;
 
 /**
  * 
@@ -195,7 +196,7 @@ JS;
                 return new UI5TimeFormatter($formatter);
                 break;
             case $formatter instanceof JsDateFormatter:
-                if ($formatter->getDataType() instanceof TimestampDataType) {
+                if ($formatter->getDataType() instanceof DateTimeDataType || $formatter->getDataType() instanceof TimestampDataType) {
                     return new UI5DateTimeFormatter($formatter);
                 } else {
                     return new UI5DateFormatter($formatter);

@@ -2,17 +2,12 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\WidgetGrid;
-use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Widgets\iHaveValue;
-use exface\Core\Interfaces\Widgets\iLayoutWidgets;
 use exface\Core\Interfaces\Widgets\iContainOtherWidgets;
-use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
-use exface\Core\Widgets\InputSelect;
-use exface\Core\Widgets\InputHidden;
 use exface\Core\Interfaces\Widgets\iDisplayValue;
 
 /**
- * Generates OpenUI5 inputs
+ * Generates the controls inside a sap.uxap.ObjectPageHeader.
  *
  * @author Andrej Kabachnik
  *        

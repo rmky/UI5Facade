@@ -143,7 +143,7 @@ JS;
         }
         
         // Otherwise assume model binding unless the widget has an explicit value
-        return $widget->hasValue() ? false : true;
+        return $widget->hasValue() === true && $widget->getValueExpression()->isStatic() === true ? false : true;
     }
     
     /**

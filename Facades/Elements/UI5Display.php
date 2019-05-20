@@ -78,11 +78,6 @@ JS;
         return $js;
     }
     
-    protected function isValueBoundToModel()
-    {
-        return true;
-    }
-    
     /**
      * 
      * {@inheritDoc}

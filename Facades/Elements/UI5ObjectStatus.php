@@ -13,7 +13,7 @@ namespace exface\UI5Facade\Facades\Elements;
  * @author Andrej Kabachnik
  *        
  */
-class UI5ObjectStatus extends UI5Value
+class UI5ObjectStatus extends UI5Display
 {    
     /**
      * 

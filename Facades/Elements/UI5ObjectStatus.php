@@ -18,6 +18,16 @@ class UI5ObjectStatus extends UI5Display
     /**
      * 
      * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Display::buildJsConstructor()
+     */
+    public function buildJsConstructor($oControllerJs = 'oController') : string
+    {
+        return $this->buildJsConstructorForMainControl($oControllerJs);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5Value::buildJsConstructorForMainControl()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')

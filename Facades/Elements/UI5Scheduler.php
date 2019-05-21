@@ -2,11 +2,10 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Scheduler;
-use exface\Core\DataTypes\StringDataType;
 use exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait;
 use exface\Core\Interfaces\WidgetInterface;
-use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
 use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 
 /**
  * 
@@ -208,9 +207,9 @@ JS;
         
         $modelPrefix = $modelName ? $modelName . '>' : '';
         if ($tpl instanceof ui5Display) {
-            $tpl->setValueBindingPath($modelPrefix . $tplWidget->getDataColumnName());
-        } elseif ($tpl instanceof ui5Input) {
-            $tpl->setValueBindingPath($modelPrefix . $tplWidget->getDataColumnName());
+            $tpl->setValueBindingPrefix($modelPrefix);
+        } elseif ($tpl instanceof UI5ValueBindingInterface) {
+            $tpl->setValueBindingPrefix($modelPrefix);
         }
         
         return $tpl->buildJsValueBinding();

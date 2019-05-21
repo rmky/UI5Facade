@@ -2,11 +2,9 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\DataColumn;
-use exface\Core\Widgets\DataTable;
 use exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
-use exface\Core\Formulas\NumberValue;
 
 /**
  *
@@ -20,7 +18,7 @@ class UI5DataColumn extends UI5AbstractElement
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $parentElement = $this->getFacade()->getElement($this->getWidget()->getParent());
-        if (($parentElement instanceof ui5DataTable) && $parentElement->isMTable()) {
+        if (($parentElement instanceof UI5DataTable) && $parentElement->isMTable()) {
             return $this->buildJsConstructorForMColumn();
         }
         return $this->buildJsConstructorForUiColumn();
@@ -65,10 +63,10 @@ JS;
         
         $modelPrefix = $modelName ? $modelName . '>' : '';
         if ($tpl instanceof ui5Display) {
-            $tpl->setValueBindingPath($modelPrefix . $widget->getDataColumnName());
+            $tpl->setValueBindingPrefix($modelPrefix);
             $tpl->setAlignment($this->buildJsAlignment());
-        } elseif ($tpl instanceof ui5Input) {
-            $tpl->setValueBindingPath($modelPrefix . $widget->getDataColumnName());
+        } elseif ($tpl instanceof UI5ValueBindingInterface) {
+            $tpl->setValueBindingPrefix($modelPrefix);
         }
         if (($tpl instanceof ui5CompoundControlInterface) && ($hideCaptions === true || $widget->getHideCaption() === true)) {
             return $tpl->buildJsConstructorForMainControl();

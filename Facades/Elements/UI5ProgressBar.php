@@ -13,6 +13,8 @@ use exface\Core\Facades\AbstractAjaxFacade\Elements\HtmlProgressBarTrait;
  */
 class UI5ProgressBar extends UI5Display
 {
+    private $textBindingPath = null;
+    
     /**
      *
      * {@inheritDoc}
@@ -26,11 +28,51 @@ class UI5ProgressBar extends UI5Display
             showValue: true,
             state: "None",
     		percentValue: {$this->buildJsValuePercent()},
-            displayValue: {$this->buildJsValue()},
+            displayValue: {$this->buildJsDisplayValue()},
             {$this->buildJsProperties()}
     	})
     	
 JS;
+    }
+            
+    public function buildJsDisplayValue() : string
+    {
+        $widget = $this->getWidget();
+        
+        if ($widget->isTextBoundToAttribute() === false) {
+            return $this->buildJsValue();
+        }
+        
+        if (! $this->isValueBoundToModel()) {
+            $value = $widget->getText($widget->getValue());
+        } else {
+            $textAttribute = $widget->getTextAttribute();
+            $value = <<<JS
+            {
+                path: "{$this->getTextBindingPath()}",
+                {$this->getFacade()->getDataTypeFormatter($textAttribute->getDataType())->buildJsBindingProperties()}
+            }
+JS;
+        }
+        return $value;
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::getValueBindingPath()
+     */
+    public function getTextBindingPath() : string
+    {
+        if ($this->textBindingPath === null) {
+            $widget = $this->getWidget();
+            $model = $this->getView()->getModel();
+            if ($model->hasBinding($widget, 'text')) {
+                return $model->getBindingPath($widget, 'text');
+            }
+            return $this->getValueBindingPrefix() . $this->getWidget()->getTextDataColumnName();
+        }
+        return $this->textBindingPath;
     }
             
     public function buildJsValuePercent() : string

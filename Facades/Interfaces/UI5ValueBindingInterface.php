@@ -7,7 +7,7 @@ namespace exface\UI5Facade\Facades\Interfaces;
  * @author Andrej Kabachnik
  *
  */
-interface ui5ValueBindingInterface {
+interface UI5ValueBindingInterface {
     
     /**
      * Sets the path to be used in the value model binding.
@@ -43,4 +43,23 @@ interface ui5ValueBindingInterface {
      * @return string
      */
     public function buildJsValueBindingPropertyName() : string;
+    
+    
+    
+    /**
+     * Returns the model binding prefix: "/" by default.
+     * 
+     * @return string
+     */
+    public function getValueBindingPrefix() : string;
+    
+    /**
+     * Changes the model binding prefix for this element.
+     * 
+     * For example, set to 'otherModel>/' to switch to another model.
+     * 
+     * @param string $value
+     * @return ui5ValueBindingInterface
+     */
+    public function setValueBindingPrefix(string $value) : ui5ValueBindingInterface;
 }

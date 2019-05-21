@@ -14,11 +14,13 @@ use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLiveReferenceTrait;
  * @author Andrej Kabachnik
  *        
  */
-class UI5Value extends UI5AbstractElement implements ui5ValueBindingInterface, ui5CompoundControlInterface
+class UI5Value extends UI5AbstractElement implements UI5ValueBindingInterface, ui5CompoundControlInterface
 {
     use JqueryLiveReferenceTrait;
     
     private $valueBindingPath = null;
+    
+    private $valueBindingPrefix = '/';
     
     /**
      * 
@@ -197,9 +199,30 @@ JS;
             if ($model->hasBinding($widget, $this->getValueBindingWidgetPropertyName())) {
                 return $model->getBindingPath($widget, $this->getValueBindingWidgetPropertyName());
             }
-            return '/' . $this->getWidget()->getDataColumnName();
+            return $this->getValueBindingPrefix() . $this->getWidget()->getDataColumnName();
         }
         return $this->valueBindingPath;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::getValueBindingPrefix()
+     */
+    public function getValueBindingPrefix() : string
+    {
+        return $this->valueBindingPrefix;
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::setValueBindingPrefix()
+     */
+    public function setValueBindingPrefix(string $value) : UI5ValueBindingInterface
+    {
+        $this->valueBindingPrefix = $value;
+        return $this;
     }
     
     protected function buildJsPropertyWidth()

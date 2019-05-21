@@ -19,14 +19,27 @@ class UI5Image extends UI5Display
      * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
-    {        
+    {      
+        $alignment = $this->getWidget()->getAlign();
+        $classes = '';
+        switch ($alignment) {
+            case EXF_ALIGN_DEFAULT: 
+                break;
+            case EXF_ALIGN_CENTER:
+                $classes .= ' pull-center';
+                break;
+            case EXF_ALIGN_RIGHT:
+                $classes .= ' pull-right';
+                break;
+        }
+        $addStyleClass = $classes !== '' ? '.addStyleClass("' . $classes . '")' : '';
         return <<<JS
 
         new sap.m.Image("{$this->getid()}", {
     		densityAware: false,
             src: {$this->buildJsValue()},
             {$this->buildJsProperties()}
-    	})
+    	}){$addStyleClass}
 
 JS;
     }

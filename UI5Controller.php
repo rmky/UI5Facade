@@ -744,13 +744,18 @@ JS;
                 .then(preload => {
                     var failed = false;
                     if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
-                        var uid = {$oViewModelJs}.getProperty('/_route').params.data.rows[0]['{$widget->getMetaObject()->getUidAttributeAlias()}'];
-                        var aData = preload.response.data.filter(oRow => {
-                            return oRow['{$widget->getMetaObject()->getUidAttributeAlias()}'] == uid;
-                        });
-                        if (aData.length === 1) {
-                            var response = $.extend({}, preload.response, {data: aData});
-                            {$this->buildJsPrefillLoaderSuccess('response', $oViewJs, $oViewModelJs)}
+                        var oRouteData = {$oViewModelJs}.getProperty('/_route').params.data;
+                        if (oRouteData !== undefined) {
+                            var uid = oRouteData.rows[0]['{$widget->getMetaObject()->getUidAttributeAlias()}'];
+                            var aData = preload.response.data.filter(oRow => {
+                                return oRow['{$widget->getMetaObject()->getUidAttributeAlias()}'] == uid;
+                            });
+                            if (aData.length === 1) {
+                                var response = $.extend({}, preload.response, {data: aData});
+                                {$this->buildJsPrefillLoaderSuccess('response', $oViewJs, $oViewModelJs)}
+                            } else {
+                                failed = true;
+                            }
                         } else {
                             failed = true;
                         }

@@ -515,6 +515,7 @@ JS;
                         {$this->buildJsDataLoaderOnLoaded($oModelJs, $growingJsVar)}
                         {$this->buildJsBusyIconHide()}
                     } else {
+                        console.log('No preloaded data found: falling back to server request');
                         {$this->buildJsDataLoaderFromServerRemote($oModelJs, 'params', $growingJsVar)}
                     }
                 });

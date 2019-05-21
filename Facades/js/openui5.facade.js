@@ -510,18 +510,20 @@ const exfPreloader = {};
 	
 	var _preloadTable = _db.table('preloads');
 	
-	this.addPreload = function(sAlias, aDataCols, aImageCols, sPageAlias, sWidgetId){
+	this.addPreload = function(sAlias, aDataCols, aImageCols, sPageAlias, sWidgetId){		
 		_preloadTable
 		.get(sAlias)
 		.then(item => {
 			var data = {
 				id: sAlias,
-				object: sAlias,
-				page: sPageAlias,
-				widget: sWidgetId,
-				dataCols: aDataCols,
-				imageCols: aImageCols
+				object: sAlias
 			};
+			
+			if (aDataCols) { data.dataCols = aDataCols; }
+			if (aImageCols) { data.imageCols = aImageCols; }
+			if (sPageAlias) { data.page = sPageAlias; }
+			if (sWidgetId) { data.widget = sWidgetId; }
+			
 			if (item === undefined) {
 				_preloadTable.put(data);
 			} else {
@@ -541,11 +543,15 @@ const exfPreloader = {};
 		.then(data => {
 			$.each(data, function(idx, item){
 				deferreds.push(
-			    	_preloader.sync(item.object, item.page, item.widget, item.imageCols)
+			    	_preloader
+			    	.sync(item.object, item.page, item.widget, item.imageCols)
 			    );
 			});
 			// Can't pass a literal array, so use apply.
 			return $.when.apply($, deferreds)
+		})
+		.catch(error => {
+			exfLauncher.contextBar.getComponent().showErrorDialog('See console for details.', 'Preload sync failed!');
 		});
 	};
 	
@@ -553,6 +559,10 @@ const exfPreloader = {};
 	 * @return jqXHR
 	 */
 	this.sync = function(sObjectAlias, sPageAlias, sWidgetId, aImageCols) {
+		console.log('Syncing preload for object "' + sObjectAlias + '", widget "' + sWidgetId + '" on page "' + sPageAlias + '"');
+		if (! sPageAlias || ! sWidgetId) {
+			throw {"message": "Cannot sync preload for object " + sObjectAlias + ": incomplete preload configuration!"};
+		}
 		return $.ajax({
 			type: 'POST',
 			url: 'exface/api/ui5',

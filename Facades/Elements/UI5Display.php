@@ -172,5 +172,52 @@ JS;
     {
         return "setText({$value})";
     }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsPropertyVisibile()
+     */
+    protected function buildJsPropertyVisibile()
+    {
+        if (! $this->isVisible()) {
+            return 'visible: false, ';
+        }
+        
+        if ($this->getWidget()->getHideIfEmpty() === true) {
+            if ($this->isValueBoundToModel() === true) {
+                // If the value is bound to model, attach a change handler to the binding and
+                // check if the element has a value on every change in the model.
+                $hideOnChangeJs = <<<JS
+
+                    var oModel = sap.ui.getCore().byId('{$this->getId()}').getModel();
+                    var oBindingContext = new sap.ui.model.Binding(oModel, '{$this->getValueBindingPath()}', oModel.getContext('{$this->getValueBindingPath()}'));
+                    oBindingContext.attachChange(function(oEvent){
+                        if ({$this->buildJsValueGetter()}) {
+                            sap.ui.getCore().byId('{$this->getId()}').setVisible(true);
+                        } else {
+                            sap.ui.getCore().byId('{$this->getId()}').setVisible(false);
+                        }
+                    });
+
+JS;
+                $this->getController()->addOnInitScript($hideOnChangeJs);
+            } elseif ($this->getWidget()->hasValue() === false) {
+                return 'visible: false, ';
+            }
+        }
+        
+        return '';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsValueGetterMethod()
+     */
+    public function buildJsValueGetterMethod()
+    {
+        return "getText()";
+    }
 }
 ?>

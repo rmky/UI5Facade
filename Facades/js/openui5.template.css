@@ -66,3 +66,5 @@ img.sapMImg {display: block; max-width: 100%}
 
 /* Temp. fixes for UI5 issues */
 .sapMImageContentImageIcon.sapUiIcon {position: absolute; display: block;}
+/* sap.m.Table group header rows barely different from striped rows */
+.sapMGHLICell {padding: 0 1rem; border-top: 2px solid #ccc !important; font-weight: bold;}

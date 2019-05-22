@@ -42,5 +42,25 @@ class UI5ObjectStatus extends UI5Display
         
 JS;
     }
+        
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Value::buildJsPropertyWidth()
+     */
+    protected function buildJsPropertyWidth()
+    {
+        return '';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Display::buildJsPropertyWrapping()
+     */
+    protected function buildJsPropertyWrapping()
+    {
+        return '';
+    }
 }
 ?>

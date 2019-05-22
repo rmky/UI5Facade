@@ -28,7 +28,8 @@ class UI5Form extends UI5Panel
         if ($widget->hasParent() === true) {
             return $this->buildJsLayoutForm($this->buildJsChildrenConstructors(true), $toolbar);
         } else {
-            return $this->buildJsPageWrapper($this->buildJsLayoutForm($this->buildJsChildrenConstructors(true)), $toolbar);
+            $headerContent = $widget->getHideHelpButton() === false ? $this->buildJsHelpButtonConstructor($oControllerJs) : '';
+            return $this->buildJsPageWrapper($this->buildJsLayoutForm($this->buildJsChildrenConstructors(true)), $toolbar, $headerContent);
         }
     }
     

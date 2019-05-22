@@ -15,6 +15,7 @@ use exface\Core\Factories\WidgetFactory;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Widgets\iFillEntireContainer;
+use exface\UI5Facade\Facades\Elements\Traits\UI5HelpButtonTrait;
 
 /**
  * In OpenUI5 dialog widgets are either rendered as an object page layout (if the dialog is maximized) or
@@ -27,6 +28,11 @@ use exface\Core\Interfaces\Widgets\iFillEntireContainer;
  */
 class UI5Dialog extends UI5Form
 {
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Form::buildJsConstructor()
+     */   
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         // If we need a prefill, we need to let the view model know this, so all the wigdget built
@@ -40,7 +46,7 @@ class UI5Dialog extends UI5Form
         if ($this->isMaximized() === false) {
             return $this->buildJsDialog();
         } else {
-            return $this->buildJsPage($this->buildJsObjectPageLayout());
+            return $this->buildJsPage($this->buildJsObjectPageLayout($oControllerJs), $oControllerJs);
         }
     }
     
@@ -63,7 +69,7 @@ class UI5Dialog extends UI5Form
         return $widget_setting;
     }
     
-    protected function buildJsObjectPageLayout()
+    protected function buildJsObjectPageLayout(string $oControllerJs = 'oController')
     {
         // useIconTabBar: true did not work for some reason as tables were not shown when
         // entering a tab for the first time - just at the second time. There was also no
@@ -74,16 +80,21 @@ class UI5Dialog extends UI5Form
             useIconTabBar: false,
             upperCaseAnchorBar: false,
             enableLazyLoading: false,
-			{$this->buildJsHeader()},
+			{$this->buildJsHeader($oControllerJs)},
 			sections: [
-				{$this->buildJsObjectPageSections()}
+				{$this->buildJsObjectPageSections($oControllerJs)}
 			]
 		})
 
 JS;
     }
+				
+    protected function buildJsPageHeaderContent(string $oControllerJs = 'oController') : string
+    {
+        return $this->buildJsHelpButtonConstructor($oControllerJs);
+    }
         
-    protected function buildJsHeader()
+    protected function buildJsHeader(string $oControllerJs = 'oController')
     {
         $widget = $this->getWidget();
         
@@ -263,7 +274,7 @@ JS;
      * @param string $content_js
      * @return string
      */
-    protected function buildJsPage($content_js)
+    protected function buildJsPage($content_js, string $oControllerJs = 'oController')
     {
         if ($this->needsPrefill()) {
             $this->getController()->addOnRouteMatchedScript($this->buildJsPrefillLoader('oView'), 'loadPrefill');
@@ -277,6 +288,9 @@ JS;
             navButtonPress: [oController.onNavBack, oController],
             content: [
                 {$content_js}
+            ],
+            headerContent: [
+                {$this->buildJsPageHeaderContent($oControllerJs)}
             ],
             footer: {$this->buildJsFloatingToolbar()}
         })
@@ -439,7 +453,7 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsObjectPageSections()
+    protected function buildJsObjectPageSections(string $oControllerJs = 'oController')
     {
         $widget = $this->getWidget();
         $js = '';

@@ -5,6 +5,7 @@ use exface\Core\Interfaces\Widgets\iFillEntireContainer;
 use exface\UI5Facade\Facades\Interfaces\UI5ControlWithToolbarInterface;
 use exface\Core\Widgets\Panel;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLayoutTrait;
+use exface\UI5Facade\Facades\Elements\Traits\UI5HelpButtonTrait;
 
 /**
  * 
@@ -16,6 +17,7 @@ use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLayoutTrait;
 class UI5Panel extends UI5Container
 {
     use JqueryLayoutTrait;
+    use UI5HelpButtonTrait;
     
     /**
      * 
@@ -36,7 +38,8 @@ class UI5Panel extends UI5Container
 
 JS;
         if ($this->hasPageWrapper() === true) {
-            return $this->buildJsPageWrapper($panel);
+            $headerContent = $this->getWidget()->getHideHelpButton() === false ? $this->buildJsHelpButtonConstructor($oControllerJs) : '';
+            return $this->buildJsPageWrapper($panel, '', $headerContent);
         }
         
         return $panel;

@@ -7,7 +7,6 @@ use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 use exface\UI5Facade\Facades\Elements\UI5AbstractElement;
 use exface\UI5Facade\Facades\Elements\UI5DataConfigurator;
 use exface\Core\Interfaces\Widgets\iShowImage;
-use exface\Core\Interfaces\Widgets\iHaveContextualHelp;
 use exface\UI5Facade\Facades\Elements\UI5SearchField;
 use exface\Core\Widgets\Input;
 
@@ -18,7 +17,9 @@ use exface\Core\Widgets\Input;
  * @author Andrej Kabachnik
  *
  */
-trait ui5DataElementTrait {
+trait UI5DataElementTrait {
+    
+    use UI5HelpButtonTrait;
     
     private $quickSearchElement = null;
     
@@ -179,7 +180,7 @@ JS;
      */
     protected function buildJsToolbarContent($oControllerJsVar = 'oController', string $leftExtras = null, string $rightExtras = null) : string
     {        
-        $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: "' . $this->getCaption() . '"}),';
+        $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: ' . json_encode($this->getCaption()) . '}),';
         
         $leftExtras = $leftExtras === null ? '' : rtrim($leftExtras, ", ") . ',';
         $rightExtras = $rightExtras === null ? '' : rtrim($leftExtras, ", ") . ',';
@@ -276,27 +277,6 @@ JS;
                     }),
                     
 JS;
-    }
-                			
-    protected function buildJsHelpButtonConstructor(string $oControllerJs = 'oController', string $buttonType = 'Default') : string
-    {
-        $widget = $this->getWidget();
-        if (($widget instanceof iHaveContextualHelp) && false === $widget->getHideHelpButton()) {
-            $helpBtnEl = $this->getFacade()->getElement($widget->getHelpButton());
-            return <<<JS
-            
-                    new sap.m.OverflowToolbarButton({
-                        type: sap.m.ButtonType.{$buttonType},
-                        icon: "sap-icon://sys-help",
-                        text: "{$helpBtnEl->getCaption()}",
-                        tooltip: "{$helpBtnEl->getCaption()}",
-                        layoutData: new sap.m.OverflowToolbarLayoutData({priority: sap.m.OverflowToolbarPriority.AlwaysOverflow}),
-                        press: {$helpBtnEl->buildJsClickViewEventHandlerCall()}
-                    }),
-                    
-JS;
-        }
-        return '';
     }
     
     /**

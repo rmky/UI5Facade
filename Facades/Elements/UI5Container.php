@@ -75,7 +75,7 @@ JS;
         return $this->getWidget()->hasParent() === false && $this->getView()->isWebAppRoot() === false;
     }
                 
-    protected function buildJsPageWrapper(string $contentJs, string $footerConstructor = '') : string
+    protected function buildJsPageWrapper(string $contentJs, string $footerConstructor = '', string $headerContentJs = '') : string
     {
         $showNavButton = $this->getView()->isWebAppRoot() ? 'false' : 'true';
         
@@ -95,6 +95,9 @@ JS;
             ],
             footer: [
                 {$footerConstructor}
+            ],
+            headerContent: [
+                {$headerContentJs}
             ]
         })
         

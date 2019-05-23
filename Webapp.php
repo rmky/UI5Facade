@@ -22,6 +22,7 @@ use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\Tasks\ResultWidgetInterface;
 use exface\Core\Interfaces\Actions\iShowWidget;
 use exface\Core\Events\Widget\OnPrefillChangePropertyEvent;
+use exface\Core\Exceptions\Facades\FacadeLogicError;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -90,12 +91,16 @@ class Webapp implements WorkbenchDependantInterface
                 // the default data for the input widget. Since we are just interested in model bindings, id does not matter, what
                 // data we use as prefill - only it's structure matters!
                 if (! $task->hasInputData()) {
-                    $inputData = $button->getInputWidget()->prepareDataSheetToRead();
-                    if ($inputData->getMetaObject()->isReadable() === true) {
-                        $inputData->setRowsLimit(1);
-                        $inputData->dataRead();
+                    try {
+                        $inputData = $button->getInputWidget()->prepareDataSheetToRead();
+                        if ($inputData->getMetaObject()->isReadable() === true) {
+                            $inputData->setRowsLimit(1);
+                            $inputData->dataRead();
+                        }
+                        $task->setInputData($inputData);
+                    } catch (\Throwable $e) {
+                        throw new FacadeLogicError('Cannot load prefill data for UI5 view. ' . $e->getMessage(), null, $e);
                     }
-                    $task->setInputData($inputData);
                 }
                 
                 // Listen to OnPrefillChangePropertyEvent and generate model bindings from it

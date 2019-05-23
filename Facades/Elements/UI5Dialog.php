@@ -15,12 +15,27 @@ use exface\Core\Factories\WidgetFactory;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Widgets\iFillEntireContainer;
-use exface\UI5Facade\Facades\Elements\Traits\UI5HelpButtonTrait;
 
 /**
- * In OpenUI5 dialog widgets are either rendered as an object page layout (if the dialog is maximized) or
- * as a popover dialog.
- *
+ * In OpenUI5 dialog widgets are either rendered as sap.m.Page (if maximized) or as sap.m.Dialog.
+ * 
+ * A non-maximized `Dialog` widget will be rendered as a sap.m.Dialog. If the widget includes
+ * tabs, they will be rendered normally (sap.m.IconTabBar)
+ * 
+ * A maximized `Dialog` will be rendered as a sap.m.Page with the following content:
+ * - if the `Dialog` contains the `Tabs` widget, the `sap.uxap.ObjectPageLayout` will be used with a
+ * `sap.uxap.ObjectPageSection` and a single `sap.uxap.ObjectPageSubsection` for every `Tab` widget.
+ * - if the `Dialog` contains multiple widgets, they will all be placed in a single section and 
+ * subsection of a `sap.uxap.ObjectPageLayout`.
+ * - if the `Dialog` contains a single visible widget with `iFillEntireContainer` and
+ *  - if the `Dialog` has no header, the child widget will be placed directly into int `sap.m.Page`
+ *  without the ObjectPageLayout. This is important, because most of these widget will have their
+ *  own layouts. Also, the ObjectPageLayout canno stretch it's content to full height and filling
+ *  widgets must be stretched.
+ *  - if the `Dialog` has a header, the child widget will be placed into a single section and
+ *  subsection of the `sap.uxap.ObjectPageLayout` - this might look strange, but it seems the only
+ *  way, to make the header look similar to multi-widget dialogs.
+ * 
  * @method Dialog getWidget()
  *        
  * @author Andrej Kabachnik
@@ -35,6 +50,7 @@ class UI5Dialog extends UI5Form
      */   
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        $widget = $this->getWidget();
         // If we need a prefill, we need to let the view model know this, so all the wigdget built
         // for this dialog can see, that a prefill will be done. This is especially important for
         // widget with lazy loading (like tables), that should postpone loading until the prefill data
@@ -46,7 +62,14 @@ class UI5Dialog extends UI5Form
         if ($this->isMaximized() === false) {
             return $this->buildJsDialog();
         } else {
-            return $this->buildJsPage($this->buildJsObjectPageLayout($oControllerJs), $oControllerJs);
+            $visibleChildren = $widget->getWidgets(function(WidgetInterface $widget){
+                return $widget->isHidden() === false;
+            });
+            if ($widget->hasHeader() === false && count($visibleChildren) === 1 && $visibleChildren[0] instanceof iFillEntireContainer && ! $visibleChildren[0] instanceof Tabs) {
+                return $this->buildJsPage($this->buildJsChildrenConstructors(false));
+            } else {
+                return $this->buildJsPage($this->buildJsObjectPageLayout($oControllerJs), $oControllerJs);
+            }
         }
     }
     
@@ -217,7 +240,10 @@ JS;
         $icon = $widget->getIcon() ? 'icon: "' . $this->getIconSrc($widget->getIcon()) . '",' : '';
         
         // The content of the dialog is either a single widget or a layout with multiple widgets
-        if ($widget->countWidgetsVisible() === 1 && $widget->getWidgetFirst(function(WidgetInterface $widget){return $widget->isHidden() === false;}) instanceof iFillEntireContainer) {
+        $visibleChildren = $widget->getWidgets(function(WidgetInterface $widget){
+            return $widget->isHidden() === false;
+        });
+        if (count($visibleChildren) === 1 && $visibleChildren[0] instanceof iFillEntireContainer) {
             $content = $this->buildJsChildrenConstructors(false);
         } else {
             $content = $this->buildJsLayoutForm($this->buildJsChildrenConstructors(true)); 

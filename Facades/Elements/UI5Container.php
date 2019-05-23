@@ -70,11 +70,25 @@ JS;
         return '';
     }
                 
+    /**
+     * Returns TRUE if this widget requires a page wrapper.
+     * 
+     * @return bool
+     */
     protected function hasPageWrapper() : bool
     {
         return $this->getWidget()->hasParent() === false && $this->getView()->isWebAppRoot() === false;
     }
-                
+    
+    /**
+     * Wraps the given content in a sap.m.Page with back-button and a title.
+     *
+     * @param string $contentJs
+     * @param string $footerConstructor
+     * @param string $headerContentJs
+     *
+     * @return string
+     */
     protected function buildJsPageWrapper(string $contentJs, string $footerConstructor = '', string $headerContentJs = '') : string
     {
         $showNavButton = $this->getView()->isWebAppRoot() ? 'false' : 'true';

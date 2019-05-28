@@ -72,6 +72,8 @@
     
     "LIBS.QRCODE.JS": "bower-asset/ui5-qrcode/control/",
     
+    "LIBS.ECHARTS.ECHARTS_JS": "npm-asset/echarts/dist/echarts-en.common.min.js",
+    
     "PWA.ENABLED": true,
     "PWA.DEFAULT_STYLE.THEME_COLOR": "#3367D6",
     "PWA.DEFAULT_STYLE.BACKGROUND_COLOR": "#3367D6",

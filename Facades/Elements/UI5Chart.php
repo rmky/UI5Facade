@@ -75,10 +75,6 @@ JS;
     protected function getJsIncludes() : array
     {
         $htmlTagsArray = $this->buildHtmlHeadDefaultIncludes();
-        foreach ($this->getWidget()->getData()->getColumns() as $col) {
-            $formatter = $this->getFacade()->getDataTypeFormatter($col->getDataType());
-            $htmlTagsArray = array_merge($htmlTagsArray, $formatter->buildHtmlBodyIncludes());
-        }
         $tags = implode('', $htmlTagsArray);
         $jsTags = [];
         preg_match_all('#<script[^>]*src="([^"]*)"[^>]*></script>#is', $tags, $jsTags);

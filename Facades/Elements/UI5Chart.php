@@ -35,10 +35,8 @@ class UI5Chart extends UI5AbstractElement
         
         $controller = $this->getController();        
         $controller->addMethod($this->buildJsDataLoadFunctionName(), $this, '', $this->buildJsDataLoadFunctionBody());
-        $controller->addMethod($this->buildJsRedrawFunctionName(), $this, '', $this->buildJsRedrawFunctionBody());
-        $controller->addMethod($this->buildJsSelectFunctionName(), $this, '', $this->buildJsSelectFunctionBody());
-        
-        $controller->addOnInitScript($this->buildJsOnClickHandlers());
+        $controller->addMethod($this->buildJsRedrawFunctionName(), $this, 'oData', $this->buildJsRedrawFunctionBody('oData'));
+        $controller->addMethod($this->buildJsSelectFunctionName(), $this, 'oSelection', $this->buildJsSelectFunctionBody('oSelection'));
         
         foreach ($this->getJsIncludes() as $path) {
             $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path, null, $path);
@@ -47,9 +45,10 @@ class UI5Chart extends UI5AbstractElement
         $chart = <<<JS
 
                 new sap.ui.core.HTML("{$this->getId()}", {
-                    content: "<div class=\"exf-flot-wrapper\" style=\"height: 100%; overflow: hidden; position: relative;\" onresize="{$this->buildJsEChartsResize()}"></div>",
-                    afterRendering: function() { 
-                        {buildJsEChartsInit()()} 
+                    content: "<div id=\"{$this->getId()}_echarts\" style=\"height:100%; min-height: 100px; overflow: hidden;\"></div>",
+                    afterRendering: function(oEvent) { 
+                        {$this->buildJsEChartsInit()}
+                        {$this->buildJsOnClickHandlers()}
                     }
                 })
 
@@ -57,10 +56,30 @@ JS;
                         
         return $this->buildJsPanelWrapper($chart, $oControllerJs);
     }
+    
+    public function buildJsEChartsInit() : string
+    {
+        return <<<JS
+        
+    echarts.init(document.getElementById('{$this->getId()}_echarts'));
+    
+JS;
+    }
+    
+    protected function buildJsEChartsVar() : string
+    {
+        //return $this->getController()->buildJsDependentControlSelector('chart', $this);
+        return "echarts.getInstanceByDom(document.getElementById('{$this->getId()}_echarts'))";
+    }
         
     protected function getJsIncludes() : array
     {
-        $tags = implode('', $this->buildHtmlHeadDefaultIncludes());
+        $htmlTagsArray = $this->buildHtmlHeadDefaultIncludes();
+        foreach ($this->getWidget()->getData()->getColumns() as $col) {
+            $formatter = $this->getFacade()->getDataTypeFormatter($col->getDataType());
+            $htmlTagsArray = array_merge($htmlTagsArray, $formatter->buildHtmlBodyIncludes());
+        }
+        $tags = implode('', $htmlTagsArray);
         $jsTags = [];
         preg_match_all('#<script[^>]*src="([^"]*)"[^>]*></script>#is', $tags, $jsTags);
         return $jsTags[1];
@@ -76,7 +95,7 @@ JS;
         return $this->getController()->buildJsMethodCallFromController($this->buildJsRedrawFunctionName(), $this, $dataJs);
     }
     
-    protected function buildJsSelect(string $oRowJs) : string
+    protected function buildJsSelect(string $oRowJs = '') : string
     {
         return $this->getController()->buildJsMethodCallFromController($this->buildJsSelectFunctionName(), $this, $oRowJs);
     }
@@ -147,7 +166,11 @@ JS;
                         method: "POST",
 						data: data,
 						success: function(data){
-							' . $this->buildJsRedraw('data') . ';
+                            if (! data.data) {
+                                console.warn("No data received from server!", data);
+                            }
+                            ' . $this->buildJsEChartsResize() . '
+							' . $this->buildJsRedraw('data.data') . ';
 							' . $this->buildJsBusyIconHide() . ';
 						},
 						error: function(jqXHR, textStatus, errorThrown){
@@ -191,5 +214,33 @@ JS;
     protected function getDataWidget() : Data
     {
         return $this->getWidget()->getData();
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsBusyIconShow()
+     */
+    public function buildJsBusyIconShow($global = false)
+    {
+        if ($global) {
+            return parent::buildJsBusyIconShow($global);
+        } else {
+            return 'sap.ui.getCore().byId("' . $this->getId() . '").getParent().setBusyIndicatorDelay(0).setBusy(true);';
+        }
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsBusyIconHide()
+     */
+    public function buildJsBusyIconHide($global = false)
+    {
+        if ($global) {
+            return parent::buildJsBusyIconShow($global);
+        } else {
+            return 'sap.ui.getCore().byId("' . $this->getId() . '").getParent().setBusy(false);';
+        }
     }
 }

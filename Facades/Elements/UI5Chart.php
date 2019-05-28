@@ -1,7 +1,7 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryFlotTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\EChartsTrait;
 use exface\Core\Widgets\Chart;
 use exface\Core\DataTypes\StringDataType;
 use exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait;
@@ -16,9 +16,10 @@ use exface\Core\Widgets\Data;
  */
 class UI5Chart extends UI5AbstractElement
 {
-    use JqueryFlotTrait;
+    use EChartsTrait;
     use ui5DataElementTrait {
         buildJsConfiguratorButtonConstructor as buildJsConfiguratorButtonConstructorViaTrait;
+        ui5DataElementTrait::buildJsRowCompare insteadof EChartsTrait; 
     }
     
     /**
@@ -33,7 +34,11 @@ class UI5Chart extends UI5AbstractElement
         $this->getFacade()->getElement($this->getWidget()->getData()->getConfiguratorWidget())->registerFiltersWithApplyOnChange($this);
         
         $controller = $this->getController();        
-        $controller->addMethod('onPlot', $this, 'data', $this->buildJsPlotter());
+        $controller->addMethod($this->buildJsDataLoadFunctionName(), $this, '', $this->buildJsDataLoadFunctionBody());
+        $controller->addMethod($this->buildJsRedrawFunctionName(), $this, '', $this->buildJsRedrawFunctionBody());
+        $controller->addMethod($this->buildJsSelectFunctionName(), $this, '', $this->buildJsSelectFunctionBody());
+        
+        $controller->addOnInitScript($this->buildJsOnClickHandlers());
         
         foreach ($this->getJsIncludes() as $path) {
             $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path, null, $path);
@@ -42,9 +47,9 @@ class UI5Chart extends UI5AbstractElement
         $chart = <<<JS
 
                 new sap.ui.core.HTML("{$this->getId()}", {
-                    content: "<div class=\"exf-flot-wrapper\" style=\"height: 100%; overflow: hidden; position: relative;\"></div>",
+                    content: "<div class=\"exf-flot-wrapper\" style=\"height: 100%; overflow: hidden; position: relative;\" onresize="{$this->buildJsEChartsResize()}"></div>",
                     afterRendering: function() { 
-                        {$this->buildJsRefresh()} 
+                        {buildJsEChartsInit()()} 
                     }
                 })
 
@@ -63,12 +68,17 @@ JS;
         
     public function buildJsRefresh()
     {
-        return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, '');
+        return $this->getController()->buildJsMethodCallFromController($this->buildJsDataLoadFunctionName(), $this, '');
     }
     
     protected function buildJsRedraw(string $dataJs) : string
     {
-        return $this->getController()->buildJsMethodCallFromController('onPlot', $this, $dataJs);
+        return $this->getController()->buildJsMethodCallFromController($this->buildJsRedrawFunctionName(), $this, $dataJs);
+    }
+    
+    protected function buildJsSelect(string $oRowJs) : string
+    {
+        return $this->getController()->buildJsMethodCallFromController($this->buildJsSelectFunctionName(), $this, $oRowJs);
     }
     
     /**
@@ -79,12 +89,22 @@ JS;
     {
         return '.data';
     }
+    
+    /**
+     * 
+     * {@inheritdoc}
+     * @see EChartsTrait::buildJsDataLoadFunctionBody()
+     */
+    protected function buildJsDataLoadFunctionBody() : string
+    {
+        return $this->buildJsDataLoader();
+    }
 
     /**
      * Returns the definition of the function elementId_load(urlParams) which is used to fethc the data via AJAX
      * if the chart is not bound to another data widget (in that case, the data should be provided by that widget).
      *
-     * @return string
+     * @return UI5DataElementTrait::buildJsDataLoader()
      */
     protected function buildJsDataLoader()
     {
@@ -157,12 +177,6 @@ JS;
                     {$this->buildJsConfiguratorButtonConstructorViaTrait($oControllerJs)}
                         
 JS;
-    }
-        
-    protected function buildJsDataResetter() : string
-    {
-        // TODO
-        return '';
     }
     
     protected function buildJsQuickSearchConstructor() : string

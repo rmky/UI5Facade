@@ -77,7 +77,7 @@ class UI5Controller implements ui5ControllerInterface
         return "[{$oController}.{$propertyName}, {$oController}]";
     }
     
-    public function buildJsMethodCallFromController(string $methodName, ui5AbstractElement $methodOwner, string $paramsJs, string $oControllerJsVar = null) : string
+    public function buildJsMethodCallFromController(string $methodName, ui5AbstractElement $methodOwner, string $paramsJs = '', string $oControllerJsVar = null) : string
     {
         if ($oControllerJsVar === null) {
             $oControllerJsVar = "{$this->buildJsComponentGetter()}.findViewOfControl(sap.ui.getCore().byId('{$methodOwner->getId()}')).getController()";
@@ -152,7 +152,7 @@ JS;
      * @param string $eventName
      * @return string
      */
-    public function buildJsEventHandler(ui5AbstractElement $triggerElement, string $eventName) : string
+    public function buildJsEventHandler(ui5AbstractElement $triggerElement, string $eventName, bool $callFromView = true) : string
     {
         $methodName = $this->buildJsEventHandlerMethodName($eventName);
         
@@ -164,7 +164,11 @@ JS;
             $this->addOnEventScript($triggerElement, $eventName, '');
         }
         
-        return $this->buildJsMethodCallFromView($methodName, $triggerElement);
+        if ($callFromView === true) {
+            return $this->buildJsMethodCallFromView($methodName, $triggerElement);
+        } else {
+            return $this->buildJsMethodCallFromController($methodName, $triggerElement);
+        }
     }
     
     /**

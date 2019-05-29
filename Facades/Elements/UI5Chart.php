@@ -1,7 +1,7 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryFlotTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\EChartsTrait;
 use exface\Core\Widgets\Chart;
 use exface\Core\DataTypes\StringDataType;
 use exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait;
@@ -16,9 +16,11 @@ use exface\Core\Widgets\Data;
  */
 class UI5Chart extends UI5AbstractElement
 {
-    use JqueryFlotTrait;
+    use EChartsTrait;
     use ui5DataElementTrait {
         buildJsConfiguratorButtonConstructor as buildJsConfiguratorButtonConstructorViaTrait;
+        buildJsDataLoaderOnLoaded as buildJsDataLoaderOnLoadedViaTrait;
+        ui5DataElementTrait::buildJsRowCompare insteadof EChartsTrait; 
     }
     
     /**
@@ -33,7 +35,9 @@ class UI5Chart extends UI5AbstractElement
         $this->getFacade()->getElement($this->getWidget()->getData()->getConfiguratorWidget())->registerFiltersWithApplyOnChange($this);
         
         $controller = $this->getController();        
-        $controller->addMethod('onPlot', $this, 'data', $this->buildJsPlotter());
+        $controller->addMethod($this->buildJsDataLoadFunctionName(), $this, '', $this->buildJsDataLoadFunctionBody());
+        $controller->addMethod($this->buildJsRedrawFunctionName(), $this, 'oData', $this->buildJsRedrawFunctionBody('oData'));
+        $controller->addMethod($this->buildJsSelectFunctionName(), $this, 'oSelection', $this->buildJsSelectFunctionBody('oSelection') . $this->getController()->buildJsEventHandler($this, 'change', false));
         
         foreach ($this->getJsIncludes() as $path) {
             $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path, null, $path);
@@ -42,9 +46,14 @@ class UI5Chart extends UI5AbstractElement
         $chart = <<<JS
 
                 new sap.ui.core.HTML("{$this->getId()}", {
-                    content: "<div class=\"exf-flot-wrapper\" style=\"height: 100%; overflow: hidden; position: relative;\"></div>",
-                    afterRendering: function() { 
-                        {$this->buildJsRefresh()} 
+                    content: "<div id=\"{$this->getId()}_echarts\" style=\"height:100%; min-height: 100px; overflow: hidden;\"></div>",
+                    afterRendering: function(oEvent) { 
+                        {$this->buildJsEChartsInit()}
+                        {$this->buildJsOnClickHandlers()}
+
+                        sap.ui.core.ResizeHandler.register(sap.ui.getCore().byId('{$this->getId()}').getParent(), function(){
+                            {$this->buildJsEChartsResize()}
+                        });
                     }
                 })
 
@@ -52,10 +61,26 @@ JS;
                         
         return $this->buildJsPanelWrapper($chart, $oControllerJs);
     }
+    
+    public function buildJsEChartsInit() : string
+    {
+        return <<<JS
+        
+    echarts.init(document.getElementById('{$this->getId()}_echarts'));
+    
+JS;
+    }
+    
+    protected function buildJsEChartsVar() : string
+    {
+        //return $this->getController()->buildJsDependentControlSelector('chart', $this);
+        return "echarts.getInstanceByDom(document.getElementById('{$this->getId()}_echarts'))";
+    }
         
     protected function getJsIncludes() : array
     {
-        $tags = implode('', $this->buildHtmlHeadDefaultIncludes());
+        $htmlTagsArray = $this->buildHtmlHeadDefaultIncludes();
+        $tags = implode('', $htmlTagsArray);
         $jsTags = [];
         preg_match_all('#<script[^>]*src="([^"]*)"[^>]*></script>#is', $tags, $jsTags);
         return $jsTags[1];
@@ -63,12 +88,17 @@ JS;
         
     public function buildJsRefresh()
     {
-        return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, '');
+        return $this->getController()->buildJsMethodCallFromController($this->buildJsDataLoadFunctionName(), $this, '');
     }
     
     protected function buildJsRedraw(string $dataJs) : string
     {
-        return $this->getController()->buildJsMethodCallFromController('onPlot', $this, $dataJs);
+        return $this->getController()->buildJsMethodCallFromController($this->buildJsRedrawFunctionName(), $this, $dataJs);
+    }
+    
+    protected function buildJsSelect(string $oRowJs = '') : string
+    {
+        return $this->getController()->buildJsMethodCallFromController($this->buildJsSelectFunctionName(), $this, $oRowJs);
     }
     
     /**
@@ -79,66 +109,26 @@ JS;
     {
         return '.data';
     }
+    
+    /**
+     * 
+     * {@inheritdoc}
+     * @see EChartsTrait::buildJsDataLoadFunctionBody()
+     */
+    protected function buildJsDataLoadFunctionBody() : string
+    {
+        // Use the data loader of the UI5DataElementTrait
+        return $this->buildJsDataLoader();
+    }
 
     /**
-     * Returns the definition of the function elementId_load(urlParams) which is used to fethc the data via AJAX
-     * if the chart is not bound to another data widget (in that case, the data should be provided by that widget).
-     *
-     * @return string
+     * 
+     * {@inheritdoc}
+     * @see UI5DataElementTrait::buildJsDataLoaderOnLoaded()
      */
-    protected function buildJsDataLoader()
+    protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {
-        $widget = $this->getWidget();
-        $output = '';
-        if (! $widget->getDataWidgetLink()) {
-            
-            $post_data = '
-                            data.resource = "' . $widget->getPage()->getAliasWithNamespace() . '";
-                            data.element = "' . $widget->getData()->getId() . '";
-                            data.object = "' . $widget->getMetaObject()->getId() . '";
-                            data.action = "' . $widget->getLazyLoadingActionAlias() . '";
-            ';
-            
-            // send sort information
-            if (count($widget->getData()->getSorters()) > 0) {
-                foreach ($widget->getData()->getSorters() as $sorter) {
-                    $sort .= ',' . urlencode($sorter->getProperty('attribute_alias'));
-                    $order .= ',' . urldecode($sorter->getProperty('direction'));
-                }
-                $post_data .= '
-                            data.sort = "' . substr($sort, 1) . '";
-                            data.order = "' . substr($order, 1) . '";';
-            }
-            
-            // send pagination/limit information. Charts currently do not support real pagination, but just a TOP-X display.
-            if ($widget->getData()->isPaged()) {
-                $post_data .= 'data.start = 0;';
-                $post_data .= 'data.length = ' . $widget->getData()->getPaginator()->getPageSize($this->getFacade()->getConfig()->getOption('WIDGET.CHART.PAGE_SIZE')) . ';';
-            }
-            
-            // Loader function
-            $output .= '
-					' . $this->buildJsBusyIconShow() . '
-					var data = { };
-					' . $post_data . '
-                    data.data = ' . $this->getFacade()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter() . ';
-					$.ajax({
-						url: "' . $this->getAjaxUrl() . '",
-                        method: "POST",
-						data: data,
-						success: function(data){
-							' . $this->buildJsRedraw('data') . ';
-							' . $this->buildJsBusyIconHide() . ';
-						},
-						error: function(jqXHR, textStatus, errorThrown){
-							' . $this->buildJsShowError('jqXHR.responseText', 'jqXHR.status + " " + jqXHR.statusText') . '
-							' . $this->buildJsBusyIconHide() . '
-						}
-					});
-				';
-        }
-        
-        return $output;
+        return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . $this->buildJsRedraw($oModelJs . '.getData().data');
     }
     
     protected function hasActionButtons() : bool
@@ -158,12 +148,6 @@ JS;
                         
 JS;
     }
-        
-    protected function buildJsDataResetter() : string
-    {
-        // TODO
-        return '';
-    }
     
     protected function buildJsQuickSearchConstructor() : string
     {
@@ -177,5 +161,33 @@ JS;
     protected function getDataWidget() : Data
     {
         return $this->getWidget()->getData();
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsBusyIconShow()
+     */
+    public function buildJsBusyIconShow($global = false)
+    {
+        if ($global) {
+            return parent::buildJsBusyIconShow($global);
+        } else {
+            return 'sap.ui.getCore().byId("' . $this->getId() . '").getParent().setBusyIndicatorDelay(0).setBusy(true);';
+        }
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsBusyIconHide()
+     */
+    public function buildJsBusyIconHide($global = false)
+    {
+        if ($global) {
+            return parent::buildJsBusyIconShow($global);
+        } else {
+            return 'sap.ui.getCore().byId("' . $this->getId() . '").getParent().setBusy(false);';
+        }
     }
 }

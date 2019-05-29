@@ -38,6 +38,7 @@ use exface\UI5Facade\Facades\Formatters\UI5TimeFormatter;
 use Psr\Http\Message\RequestInterface;
 use GuzzleHttp\Psr7\Response;
 use exface\Core\DataTypes\DateTimeDataType;
+use exface\Core\Facades\AbstractAjaxFacade\Interfaces\JsDataTypeFormatterInterface;
 
 /**
  * 
@@ -176,14 +177,19 @@ JS;
         return false;
     }
     
+    public function getDataTypeFormatter(DataTypeInterface $dataType)
+    {
+        return parent::getDataTypeFormatter($dataType);
+    }
+    
     /**
      * 
      * {@inheritDoc}
      * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::getDataTypeFormatter()
      */
-    public function getDataTypeFormatter(DataTypeInterface $dataType)
+    public function getDataTypeFormatterForUI5Bindings(DataTypeInterface $dataType)
     {
-        $formatter = parent::getDataTypeFormatter($dataType);
+        $formatter = $this->getDataTypeFormatter($dataType);
         
         switch (true) {
             case $formatter instanceof JsBooleanFormatter:

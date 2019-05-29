@@ -94,7 +94,7 @@ JS;
      */
     protected function getValueBindingFormatter()
     {
-        return $this->getFacade()->getDataTypeFormatter($this->getWidget()->getValueDataType());
+        return $this->getFacade()->getDataTypeFormatterForUI5Bindings($this->getWidget()->getValueDataType());
     }
     
     /**

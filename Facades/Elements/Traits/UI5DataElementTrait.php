@@ -9,6 +9,8 @@ use exface\UI5Facade\Facades\Elements\UI5DataConfigurator;
 use exface\Core\Interfaces\Widgets\iShowImage;
 use exface\UI5Facade\Facades\Elements\UI5SearchField;
 use exface\Core\Widgets\Input;
+use exface\Core\Interfaces\Widgets\iHaveColumns;
+use exface\Core\Interfaces\Widgets\iCanPreloadData;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -75,7 +77,7 @@ trait UI5DataElementTrait {
         // is run after all the view loading logic finished - that's what the setTimeout() is for -
         // otherwise the refresh would run before the view finished initializing, before the prefill
         // is started and will probably be empty.
-        $controller->addOnShowViewScript("{$this->buildJsDataResetter()}; setTimeout(function(){ {$this->buildJsRefresh()} }, 0);");
+        $controller->addOnShowViewScript("try { {$this->buildJsDataResetter()} } catch (e) {} setTimeout(function(){ {$this->buildJsRefresh()} }, 0);");
         
         if ($widget->isPreloadDataEnabled()) {
             $dataCols = [];
@@ -379,7 +381,7 @@ JS;
     {
         $widget = $this->getWidget();
         
-        if ($widget->isPreloadDataEnabled()) {
+        if ($widget instanceof iCanPreloadData && $widget->isPreloadDataEnabled()) {
             $doLoad = $this->buildJsDataLoaderFromServerPreload('oModel', 'params');
         } else {
             $doLoad = $this->buildJsDataLoaderFromServerRemote('oModel', 'params');
@@ -551,7 +553,6 @@ JS;
         return <<<JS
         
             oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$this->getController()->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
-            {$singleResultJs}
             {$dynamicPageFixes}
 			
 JS;
@@ -790,8 +791,9 @@ JS;
      */
     protected function buildJsRowCompare(string $leftRowJs, string $rightRowJs, bool $trustUid = true) : string
     {
-        if ($trustUid === true && $this->getWidget()->hasUidColumn()) {
-            $uid = $this->getWidget()->getUidColumn()->getDataColumnName();
+        $widget = $this->getWidget();
+        if ($trustUid === true && $widget instanceof iHaveColumns && $widget->hasUidColumn()) {
+            $uid = $widget->getUidColumn()->getDataColumnName();
             return "{$leftRowJs}['{$uid}'] == {$rightRowJs}['{$uid}']";
         } else {
             return "(JSON.stringify({$leftRowJs}) == JSON.stringify({$rightRowJs}))";

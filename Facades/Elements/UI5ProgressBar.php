@@ -50,7 +50,7 @@ JS;
             $value = <<<JS
             {
                 path: "{$this->getTextBindingPath()}",
-                {$this->getFacade()->getDataTypeFormatter($textAttribute->getDataType())->buildJsBindingProperties()}
+                {$this->getFacade()->getDataTypeFormatterForUI5Bindings($textAttribute->getDataType())->buildJsBindingProperties()}
             }
 JS;
         }

@@ -10,6 +10,7 @@ use exface\Core\Interfaces\Widgets\iShowImage;
 use exface\UI5Facade\Facades\Elements\UI5SearchField;
 use exface\Core\Widgets\Input;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
+use exface\Core\Interfaces\Widgets\iCanPreloadData;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -380,7 +381,7 @@ JS;
     {
         $widget = $this->getWidget();
         
-        if ($widget->isPreloadDataEnabled()) {
+        if ($widget instanceof iCanPreloadData && $widget->isPreloadDataEnabled()) {
             $doLoad = $this->buildJsDataLoaderFromServerPreload('oModel', 'params');
         } else {
             $doLoad = $this->buildJsDataLoaderFromServerRemote('oModel', 'params');
@@ -552,7 +553,6 @@ JS;
         return <<<JS
         
             oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$this->getController()->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
-            {$singleResultJs}
             {$dynamicPageFixes}
 			
 JS;

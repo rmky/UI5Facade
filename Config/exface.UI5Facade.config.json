@@ -60,10 +60,6 @@
 	"LIBS.FACADE.CSS": "exface/UI5Facade/Facades/js/openui5.template.css",
 	"LIBS.FACADE.CUSTOM_CONTROLS": "exface/UI5Facade/Facades/js/openui5.controls.js",
 	
-	"LIBS.FLOT.CORE_FOLDER": "npm-asset/flot-charts/",
-	"LIBS.FLOT.PLUGINS.ORDERBARS": "exface/UI5Facade/Facades/js/flot/plugins/jquery.flot.orderBars.js",
-	"LIBS.FLOT.PLUGINS.AXISLABELS": "exface/UI5Facade/Facades/js/flot/plugins/jquery.flot.orderBars.js",
-	
 	"LIBS.JSONEDITOR.CSS": "bower-asset/jsoneditor/dist/jsoneditor.min.css",
 	"LIBS.JSONEDITOR.JS": "bower-asset/jsoneditor/dist/jsoneditor.min.js",
 	

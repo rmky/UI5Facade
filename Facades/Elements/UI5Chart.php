@@ -19,6 +19,7 @@ class UI5Chart extends UI5AbstractElement
     use EChartsTrait;
     use ui5DataElementTrait {
         buildJsConfiguratorButtonConstructor as buildJsConfiguratorButtonConstructorViaTrait;
+        buildJsDataLoaderOnLoaded as buildJsDataLoaderOnLoadedViaTrait;
         ui5DataElementTrait::buildJsRowCompare insteadof EChartsTrait; 
     }
     
@@ -36,7 +37,7 @@ class UI5Chart extends UI5AbstractElement
         $controller = $this->getController();        
         $controller->addMethod($this->buildJsDataLoadFunctionName(), $this, '', $this->buildJsDataLoadFunctionBody());
         $controller->addMethod($this->buildJsRedrawFunctionName(), $this, 'oData', $this->buildJsRedrawFunctionBody('oData'));
-        $controller->addMethod($this->buildJsSelectFunctionName(), $this, 'oSelection', $this->buildJsSelectFunctionBody('oSelection'));
+        $controller->addMethod($this->buildJsSelectFunctionName(), $this, 'oSelection', $this->buildJsSelectFunctionBody('oSelection') . $this->getController()->buildJsEventHandler($this, 'change', false));
         
         foreach ($this->getJsIncludes() as $path) {
             $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path, null, $path);
@@ -49,6 +50,10 @@ class UI5Chart extends UI5AbstractElement
                     afterRendering: function(oEvent) { 
                         {$this->buildJsEChartsInit()}
                         {$this->buildJsOnClickHandlers()}
+
+                        sap.ui.core.ResizeHandler.register(sap.ui.getCore().byId('{$this->getId()}').getParent(), function(){
+                            {$this->buildJsEChartsResize()}
+                        });
                     }
                 })
 
@@ -112,72 +117,18 @@ JS;
      */
     protected function buildJsDataLoadFunctionBody() : string
     {
+        // Use the data loader of the UI5DataElementTrait
         return $this->buildJsDataLoader();
     }
 
     /**
-     * Returns the definition of the function elementId_load(urlParams) which is used to fethc the data via AJAX
-     * if the chart is not bound to another data widget (in that case, the data should be provided by that widget).
-     *
-     * @return UI5DataElementTrait::buildJsDataLoader()
+     * 
+     * {@inheritdoc}
+     * @see UI5DataElementTrait::buildJsDataLoaderOnLoaded()
      */
-    protected function buildJsDataLoader()
+    protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {
-        $widget = $this->getWidget();
-        $output = '';
-        if (! $widget->getDataWidgetLink()) {
-            
-            $post_data = '
-                            data.resource = "' . $widget->getPage()->getAliasWithNamespace() . '";
-                            data.element = "' . $widget->getData()->getId() . '";
-                            data.object = "' . $widget->getMetaObject()->getId() . '";
-                            data.action = "' . $widget->getLazyLoadingActionAlias() . '";
-            ';
-            
-            // send sort information
-            if (count($widget->getData()->getSorters()) > 0) {
-                foreach ($widget->getData()->getSorters() as $sorter) {
-                    $sort .= ',' . urlencode($sorter->getProperty('attribute_alias'));
-                    $order .= ',' . urldecode($sorter->getProperty('direction'));
-                }
-                $post_data .= '
-                            data.sort = "' . substr($sort, 1) . '";
-                            data.order = "' . substr($order, 1) . '";';
-            }
-            
-            // send pagination/limit information. Charts currently do not support real pagination, but just a TOP-X display.
-            if ($widget->getData()->isPaged()) {
-                $post_data .= 'data.start = 0;';
-                $post_data .= 'data.length = ' . $widget->getData()->getPaginator()->getPageSize($this->getFacade()->getConfig()->getOption('WIDGET.CHART.PAGE_SIZE')) . ';';
-            }
-            
-            // Loader function
-            $output .= '
-					' . $this->buildJsBusyIconShow() . '
-					var data = { };
-					' . $post_data . '
-                    data.data = ' . $this->getFacade()->getElement($widget->getConfiguratorWidget())->buildJsDataGetter() . ';
-					$.ajax({
-						url: "' . $this->getAjaxUrl() . '",
-                        method: "POST",
-						data: data,
-						success: function(data){
-                            if (! data.data) {
-                                console.warn("No data received from server!", data);
-                            }
-                            ' . $this->buildJsEChartsResize() . '
-							' . $this->buildJsRedraw('data.data') . ';
-							' . $this->buildJsBusyIconHide() . ';
-						},
-						error: function(jqXHR, textStatus, errorThrown){
-							' . $this->buildJsShowError('jqXHR.responseText', 'jqXHR.status + " " + jqXHR.statusText') . '
-							' . $this->buildJsBusyIconHide() . '
-						}
-					});
-				';
-        }
-        
-        return $output;
+        return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . $this->buildJsRedraw($oModelJs . '.getData().data');
     }
     
     protected function hasActionButtons() : bool

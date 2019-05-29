@@ -2,6 +2,7 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
+use exface\Core\Interfaces\Widgets\iHaveValue;
 
 /**
  * Generates OpenUI5 inputs
@@ -152,15 +153,25 @@ JS;
      */
     protected function buildJsPropertyValue()
     {
+        $value = null;
         $widget = $this->getWidget();
+        
         if ($widget->getValueWidgetLink()) {
-            $value = $this->escapeJsTextValue($widget->getValueWidgetLink()->getTargetWidget()->getValueWithDefaults());
-            $value = '"' . str_replace("\n", '', $value) . '"';
-        } elseif ($this->isValueBoundToModel()) {
-            $value = $this->buildJsValueBinding();
-        } else {
-            $value = '"' . $this->escapeJsTextValue($this->getWidget()->getValueWithDefaults()) . '"';
+            $targetWidget = $widget->getValueWidgetLink()->getTargetWidget();
+            if ($targetWidget instanceof iHaveValue) {
+                $value = $this->escapeJsTextValue($targetWidget->getValueWithDefaults());
+                $value = '"' . str_replace("\n", '', $value) . '"';
+            }
+        } 
+        
+        if ($value === null) {
+            if ($this->isValueBoundToModel()) {
+                $value = $this->buildJsValueBinding();
+            } else {
+                $value = '"' . $this->escapeJsTextValue($this->getWidget()->getValueWithDefaults()) . '"';
+            }
         }
+        
         return ($value ? 'value: ' . $value . ',' : '');
     }
     

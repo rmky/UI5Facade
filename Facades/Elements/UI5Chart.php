@@ -48,7 +48,7 @@ class UI5Chart extends UI5AbstractElement
                 new sap.ui.core.HTML("{$this->getId()}", {
                     content: "<div id=\"{$this->getId()}_echarts\" style=\"height:100%; min-height: 100px; overflow: hidden;\"></div>",
                     afterRendering: function(oEvent) { 
-                        {$this->buildJsEChartsInit()}
+                        {$this->buildJsEChartsInit('ui5theme')}
                         {$this->buildJsOnClickHandlers()}
 
                         sap.ui.core.ResizeHandler.register(sap.ui.getCore().byId('{$this->getId()}').getParent(), function(){
@@ -62,11 +62,11 @@ JS;
         return $this->buildJsPanelWrapper($chart, $oControllerJs);
     }
     
-    public function buildJsEChartsInit() : string
+    public function buildJsEChartsInit(string $theme) : string
     {
         return <<<JS
         
-    echarts.init(document.getElementById('{$this->getId()}_echarts'));
+    echarts.init(document.getElementById('{$this->getId()}_echarts'), '{$theme}');
     
 JS;
     }
@@ -80,6 +80,7 @@ JS;
     protected function getJsIncludes() : array
     {
         $htmlTagsArray = $this->buildHtmlHeadDefaultIncludes();
+        $htmlTagsArray[] = '<script type="text/javascript" src="exface/vendor/npm-asset/echarts/theme/ui5theme.js"></script>';
         $tags = implode('', $htmlTagsArray);
         $jsTags = [];
         preg_match_all('#<script[^>]*src="([^"]*)"[^>]*></script>#is', $tags, $jsTags);

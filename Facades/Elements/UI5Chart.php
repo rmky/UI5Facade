@@ -49,7 +49,7 @@ class UI5Chart extends UI5AbstractElement
                     content: "<div id=\"{$this->getId()}_echarts\" style=\"height:100%; min-height: 100px; overflow: hidden;\"></div>",
                     afterRendering: function(oEvent) { 
                         {$this->buildJsEChartsInit('ui5theme')}
-                        {$this->buildJsOnClickHandlers()}
+                        {$this->buildJsEventHandlers()}
 
                         sap.ui.core.ResizeHandler.register(sap.ui.getCore().byId('{$this->getId()}').getParent(), function(){
                             {$this->buildJsEChartsResize()}

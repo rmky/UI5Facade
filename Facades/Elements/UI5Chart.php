@@ -78,7 +78,6 @@ JS;
         return <<<JS
         
     echarts.init(document.getElementById('{$this->getId()}_echarts'), '{$theme}');
-    console.log('Chart initialisiert');
     
 JS;
     }

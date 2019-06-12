@@ -68,6 +68,11 @@ JS;
         return $this->buildJsPanelWrapper($chart, $oControllerJs);
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see exface\Core\Facades\AbstractAjaxFacade\Elements\EChartsTrait::buildJsEChartsInit()
+     */
     public function buildJsEChartsInit(string $theme) : string
     {
         return <<<JS
@@ -78,6 +83,11 @@ JS;
 JS;
     }
     
+    /**
+     *
+     * {@inheritDoc}
+     * @see exface\Core\Facades\AbstractAjaxFacade\Elements\EChartsTrait::buildJsEChartsVar()
+     */
     protected function buildJsEChartsVar() : string
     {
         
@@ -85,6 +95,10 @@ JS;
         //return "document.getElementById('{$this->getId()}_echarts')._echarts_instance_";
     }
         
+    /**
+     * 
+     * @return array
+     */
     protected function getJsIncludes() : array
     {
         $htmlTagsArray = $this->buildHtmlHeadDefaultIncludes();
@@ -95,31 +109,62 @@ JS;
         return $jsTags[1];
     }
         
-    public function buildJsRefresh()
+    /**
+     *
+     * {@inheritDoc}
+     * @see exface\Core\Facades\AbstractAjaxFacade\Elements\EChartsTrait::buildJsRefresh()
+     */
+    public function buildJsRefresh() : string
     {
         return $this->getController()->buildJsMethodCallFromController($this->buildJsDataLoadFunctionName(), $this, '');
     }
     
+    /**
+     *
+     * {@inheritDoc}
+     * @see exface\Core\Facades\AbstractAjaxFacade\Elements\EChartsTrait::buildJsRedraw()
+     */
     protected function buildJsRedraw(string $oDataJs) : string
     {
         return $this->getController()->buildJsMethodCallFromController($this->buildJsRedrawFunctionName(), $this, $oDataJs);
     }
     
+    /**
+     *
+     * {@inheritDoc}
+     * @see exface\Core\Facades\AbstractAjaxFacade\Elements\EChartsTrait::buildJsSelect()
+     */
     protected function buildJsSelect(string $oRowJs = '') : string
     {
         return $this->getController()->buildJsMethodCallFromController($this->buildJsSelectFunctionName(), $this, $oRowJs);
     }
     
+    /**
+     *
+     * {@inheritDoc}
+     * @see exface\Core\Facades\AbstractAjaxFacade\Elements\EChartsTrait::buildJsClicks()
+     */
     protected function buildJsClicks(string $oParams = '') : string
     {
         return $this->getController()->buildJsMethodCallFromController($this->buildJsClicksFunctionName(), $this, $oParams);
     }
     
+    /**
+     *
+     * {@inheritDoc}
+     * @see exface\Core\Facades\AbstractAjaxFacade\Elements\EChartsTrait::buildJsSingleClick()
+     */
     protected function buildJsSingleClick(string $oParams = '') : string
     {
         return $this->getController()->buildJsMethodCallFromController($this->buildJsSingleClickFunctionName(), $this, $oParams);
     }
     
+    /**
+     * function to handle a double click on a chart, when a button is bound to double click
+     * 
+     * @param string $oControllerJsVar
+     * @return string
+     */
     protected function buildJsOnDoubleClickHandler($oControllerJsVar = 'oController') : string
     {
         $widget = $this->getWidget();        
@@ -169,12 +214,12 @@ JS;
     {
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . $this->buildJsRedraw($oModelJs . '.getData().data');
     }
-    
-    /*protected function hasActionButtons() : bool
-    {
-        return false;
-    }*/
-    
+
+    /**
+     * 
+     * @param string $oControllerJs
+     * @return string
+     */
     protected function buildJsConfiguratorButtonConstructor(string $oControllerJs = 'oController') : string
     {
         return <<<JS
@@ -188,6 +233,10 @@ JS;
 JS;
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsQuickSearchConstructor() : string
     {
         return '';

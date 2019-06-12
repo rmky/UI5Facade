@@ -6,6 +6,10 @@ use exface\Core\Widgets\Chart;
 use exface\Core\DataTypes\StringDataType;
 use exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait;
 use exface\Core\Widgets\Data;
+use exface\Core\Widgets\DataButton;
+use exface\Core\Widgets\Button;
+use exface\Core\Widgets\ButtonGroup;
+use exface\Core\Widgets\MenuButton;
 
 /**
  * 
@@ -38,6 +42,8 @@ class UI5Chart extends UI5AbstractElement
         $controller->addMethod($this->buildJsDataLoadFunctionName(), $this, '', $this->buildJsDataLoadFunctionBody());
         $controller->addMethod($this->buildJsRedrawFunctionName(), $this, 'oData', $this->buildJsRedrawFunctionBody('oData'));
         $controller->addMethod($this->buildJsSelectFunctionName(), $this, 'oSelection', $this->buildJsSelectFunctionBody('oSelection') . $this->getController()->buildJsEventHandler($this, 'change', false));
+        $controller->addMethod($this->buildJsClicksFunctionName(), $this, 'oParams', $this->buildJsClicksFunctionBody('oParams'));
+        $controller->addMethod($this->buildJsSingleClickFunctionName(), $this, 'oParams', $this->buildJsSingleClickFunctionBody('oParams') . $this->getController()->buildJsEventHandler($this, 'change', false));
         
         foreach ($this->getJsIncludes() as $path) {
             $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path, null, $path);
@@ -67,14 +73,16 @@ JS;
         return <<<JS
         
     echarts.init(document.getElementById('{$this->getId()}_echarts'), '{$theme}');
+    console.log('Chart initialisiert');
     
 JS;
     }
     
     protected function buildJsEChartsVar() : string
     {
-        //return $this->getController()->buildJsDependentControlSelector('chart', $this);
+        
         return "echarts.getInstanceByDom(document.getElementById('{$this->getId()}_echarts'))";
+        //return "document.getElementById('{$this->getId()}_echarts')._echarts_instance_";
     }
         
     protected function getJsIncludes() : array
@@ -92,15 +100,45 @@ JS;
         return $this->getController()->buildJsMethodCallFromController($this->buildJsDataLoadFunctionName(), $this, '');
     }
     
-    protected function buildJsRedraw(string $dataJs) : string
+    protected function buildJsRedraw(string $oDataJs) : string
     {
-        return $this->getController()->buildJsMethodCallFromController($this->buildJsRedrawFunctionName(), $this, $dataJs);
+        return $this->getController()->buildJsMethodCallFromController($this->buildJsRedrawFunctionName(), $this, $oDataJs);
     }
     
     protected function buildJsSelect(string $oRowJs = '') : string
     {
         return $this->getController()->buildJsMethodCallFromController($this->buildJsSelectFunctionName(), $this, $oRowJs);
     }
+    
+    protected function buildJsClicks(string $oParams = '') : string
+    {
+        return $this->getController()->buildJsMethodCallFromController($this->buildJsClicksFunctionName(), $this, $oParams);
+    }
+    
+    protected function buildJsSingleClick(string $oParams = '') : string
+    {
+        return $this->getController()->buildJsMethodCallFromController($this->buildJsSingleClickFunctionName(), $this, $oParams);
+    }
+    
+    protected function buildJsOnDoubleClickHandler($oControllerJsVar = 'oController') : string
+    {
+        $widget = $this->getWidget();        
+        $js = '';        
+        // Double click. Currently only supports one double click action - the first one in the list of buttons
+        if ($dblclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[0]) {
+            $js .= <<<JS
+            
+            {$this->buildJsEChartsVar()}.on('dblclick', function(params){
+                {$this->buildJsEChartsVar()}._oldSelection =  params.data
+                {$this->getFacade()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+            })
+
+JS;
+        }        
+        return $js;
+    }
+    
+    
     
     /**
      * 
@@ -132,10 +170,10 @@ JS;
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . $this->buildJsRedraw($oModelJs . '.getData().data');
     }
     
-    protected function hasActionButtons() : bool
+    /*protected function hasActionButtons() : bool
     {
         return false;
-    }
+    }*/
     
     protected function buildJsConfiguratorButtonConstructor(string $oControllerJs = 'oController') : string
     {

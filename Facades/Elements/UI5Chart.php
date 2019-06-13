@@ -101,6 +101,7 @@ JS;
     protected function getJsIncludes() : array
     {
         $htmlTagsArray = $this->buildHtmlHeadDefaultIncludes();
+        //TODO ui5theme nicht im Paket enthalten, Datei wurde manuell erzeugt und in lokalem Ordner abgelegt!
         $htmlTagsArray[] = '<script type="text/javascript" src="exface/vendor/npm-asset/echarts/theme/ui5theme.js"></script>';
         $tags = implode('', $htmlTagsArray);
         $jsTags = [];
@@ -188,7 +189,7 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsDataRowsSelector()
+    protected function buildJsDataRowsSelector() : string
     {
         return '.data';
     }
@@ -255,7 +256,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsBusyIconShow()
      */
-    public function buildJsBusyIconShow($global = false)
+    public function buildJsBusyIconShow($global = false) : string
     {
         if ($global) {
             return parent::buildJsBusyIconShow($global);
@@ -269,7 +270,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsBusyIconHide()
      */
-    public function buildJsBusyIconHide($global = false)
+    public function buildJsBusyIconHide($global = false) : string
     {
         if ($global) {
             return parent::buildJsBusyIconShow($global);

@@ -165,7 +165,7 @@ JS;
      * @param string $oControllerJsVar
      * @return string
      */
-    protected function buildJsOnDoubleClickHandler($oControllerJsVar = 'oController') : string
+    protected function buildJsBindToClickHandler($oControllerJsVar = 'oController') : string
     {
         $widget = $this->getWidget();        
         $js = '';        

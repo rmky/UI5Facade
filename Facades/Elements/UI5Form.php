@@ -22,9 +22,13 @@ class UI5Form extends UI5Panel
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $widget = $this->getWidget();
+        
         if ($widget->hasButtons() === true) {
             $toolbar = $this->buildJsFloatingToolbar();
+        } else {
+            $toolbar = '';
         }
+        
         if ($widget->hasParent() === true) {
             return $this->buildJsLayoutForm($this->buildJsChildrenConstructors(true), $toolbar);
         } else {

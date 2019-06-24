@@ -68,7 +68,8 @@
     
     "LIBS.QRCODE.JS": "bower-asset/ui5-qrcode/control/",
     
-    "LIBS.ECHARTS.ECHARTS_JS": "npm-asset/echarts/dist/echarts-en.common.min.js",
+    "LIBS.ECHARTS.ECHARTS_JS": "exface/Core/Facades/AbstractAjaxFacade/js/echarts/echarts.custom.min.js",    
+    "LIBS.ECHARTS.ECHARTS_UI5THEME": "exface/UI5Facade/Facades/js/echarts/ui5theme.js",
     
     "PWA.ENABLED": true,
     "PWA.DEFAULT_STYLE.THEME_COLOR": "#3367D6",

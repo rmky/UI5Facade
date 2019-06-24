@@ -102,7 +102,7 @@ JS;
     {
         $htmlTagsArray = $this->buildHtmlHeadDefaultIncludes();
         //TODO ui5theme nicht im Paket enthalten, Datei wurde manuell erzeugt und in lokalem Ordner abgelegt!
-        $htmlTagsArray[] = '<script type="text/javascript" src="exface/vendor/npm-asset/echarts/theme/ui5theme.js"></script>';
+        $htmlTagsArray[] = '<script type="text/javascript" src="' . $this->getFacade()->buildUrlToSource('LIBS.ECHARTS.ECHARTS_UI5THEME') . '"></script>';
         $tags = implode('', $htmlTagsArray);
         $jsTags = [];
         preg_match_all('#<script[^>]*src="([^"]*)"[^>]*></script>#is', $tags, $jsTags);

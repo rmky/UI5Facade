@@ -173,7 +173,7 @@ JS;
         
         return <<<JS
         
-            new sap.ui.layout.form.SimpleForm({
+            new sap.ui.layout.form.SimpleForm("{$this->getId()}", {
                 width: "100%",
                 {$this->buildJsPropertyEditable()}
                 layout: "ResponsiveGridLayout",

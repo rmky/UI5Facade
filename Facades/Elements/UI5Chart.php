@@ -54,7 +54,7 @@ class UI5Chart extends UI5AbstractElement
                 new sap.ui.core.HTML("{$this->getId()}", {
                     content: "<div id=\"{$this->getId()}_echarts\" style=\"height:100%; min-height: 100px; overflow: hidden;\"></div>",
                     afterRendering: function(oEvent) { 
-                        {$this->buildJsEChartsInit('ui5theme')}
+                        {$this->buildJsEChartsInit($this->getFacade()->buildUrlToSource('LIBS.ECHARTS.THEME_NAME'))}
                         {$this->buildJsEventHandlers()}
 
                         sap.ui.core.ResizeHandler.register(sap.ui.getCore().byId('{$this->getId()}').getParent(), function(){
@@ -102,7 +102,7 @@ JS;
     {
         $htmlTagsArray = $this->buildHtmlHeadDefaultIncludes();
         //TODO ui5theme nicht im Paket enthalten, Datei wurde manuell erzeugt und in lokalem Ordner abgelegt!
-        $htmlTagsArray[] = '<script type="text/javascript" src="' . $this->getFacade()->buildUrlToSource('LIBS.ECHARTS.ECHARTS_UI5THEME') . '"></script>';
+        $htmlTagsArray[] = '<script type="text/javascript" src="' . $this->getFacade()->buildUrlToSource('LIBS.ECHARTS.THEME_JS') . '"></script>';
         $tags = implode('', $htmlTagsArray);
         $jsTags = [];
         preg_match_all('#<script[^>]*src="([^"]*)"[^>]*></script>#is', $tags, $jsTags);

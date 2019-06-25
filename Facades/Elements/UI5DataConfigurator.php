@@ -6,6 +6,7 @@ use exface\Core\Widgets\DataConfigurator;
 use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\DataTypes\SortingDirectionsDataType;
 use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\Core\Interfaces\Widgets\iHaveColumns;
 
 /**
  * 
@@ -42,6 +43,11 @@ class UI5DataConfigurator extends UI5Tabs
     public function getIncludeFilterTab() : bool
     {
         return $this->include_filter_tab;
+    }
+    
+    protected function hasTabFilters() : bool
+    {
+        return $this->getIncludeFilterTab();
     }
     
     /**
@@ -100,7 +106,7 @@ JS;
     {
         $js = '';
         $operations = [SortingDirectionsDataType::ASC => 'Ascending', SortingDirectionsDataType::DESC => 'Descending'];
-        foreach ($this->getWidget()->getWidgetConfigured()->getSorters() as $sorter) {
+        foreach ($this->getWidget()->getDataWidget()->getSorters() as $sorter) {
             $js .= <<<JS
 
                     {attribute_alias: "{$sorter->getProperty('attribute_alias')}", direction: "{$operations[strtoupper($sorter->getProperty('direction'))]}"},
@@ -195,6 +201,9 @@ JS;
      */
     protected function buildJsTabColumns() : string
     {
+        if ($this->hasTabColumns() === false) {
+            return '';
+        }
         return <<<JS
 
                 new sap.m.P13nColumnsPanel({
@@ -265,16 +274,18 @@ JS;
     protected function buildJsonColumnData() : string
     {
         $data = [];
-        foreach ($this->getWidget()->getWidgetConfigured()->getColumns() as $col) {
-            if (! $col->isBoundToAttribute()) {
-                continue;
+        if ($this->hasTabColumns() === true) {
+            foreach ($this->getWidget()->getDataWidget()->getColumns() as $col) {
+                if (! $col->isBoundToAttribute()) {
+                    continue;
+                }
+                $data[] = [
+                    "attribute_alias" => $col->getAttributeAlias(),
+                    "column_name" => $col->getDataColumnName(),
+                    "caption" => $col->getCaption(),
+                    "visible" => $col->isHidden() ? false : true
+                ];
             }
-            $data[] = [
-                "attribute_alias" => $col->getAttributeAlias(),
-                "column_name" => $col->getDataColumnName(),
-                "caption" => $col->getCaption(),
-                "visible" => $col->isHidden() ? false : true
-            ];
         }
         return json_encode($data);
     }
@@ -287,7 +298,7 @@ JS;
     {
         $data = [];
         $sorters = [];
-        $table = $this->getWidget()->getWidgetConfigured();
+        $table = $this->getWidget()->getDataWidget();
         foreach ($table->getSorters() as $sorter) {
             $sorters[] = $sorter->getProperty('attribute_alias');
             $data[] = [
@@ -418,5 +429,9 @@ JS;
         $this->modelNameForConfig = $name;
         return $this;
     }
+    
+    protected function hasTabColumns() : bool
+    {
+        return $this->getWidget()->getWidgetConfigured() instanceof iHaveColumns;
+    }
 }
-?>

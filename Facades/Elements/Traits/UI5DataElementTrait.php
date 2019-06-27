@@ -159,7 +159,7 @@ JS;
      */
     protected function buildJsToolbar($oControllerJsVar = 'oController', string $leftExtras = null, string $rightExtras = null)
     {
-        $visible = $this->getWidget()->getHideHeader() === true ? 'false' : 'true';
+        $visible = $this->getWidget()->getHideHeader() === true && $this->getWidget()->getHideCaption() ? 'false' : 'true';
         return <<<JS
 
 			new sap.m.OverflowToolbar({

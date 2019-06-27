@@ -30,13 +30,33 @@ class UI5SearchField extends UI5Value
         return <<<JS
         
         new sap.m.SearchField("{$this->getId()}", {
-            width: "200px",
+            width: {$this->buildJsPropertyWidthCollapsed()},
             placeholder: "{$this->getPlaceholder()}",
             search: {$this->getSearchCallbackJs()},
             layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"})
+        }).addEventDelegate({
+            onfocusin : function(oEvent) {
+                oEvent.srcControl.setWidth({$this->buildJsPropertyWidthExpanded()});
+            },
+            onsapfocusleave : function(oEvent) {
+                var oInput = oEvent.srcControl;
+                if (oInput.getValue() === undefined || oInput.getValue().length < 4) {
+                    oEvent.srcControl.setWidth({$this->buildJsPropertyWidthCollapsed()});
+                }
+            }
         }),
         
 JS;
+    }
+        
+    protected function buildJsPropertyWidthCollapsed() : string
+    {
+        return '"0px"';
+    }
+    
+    protected function buildJsPropertyWidthExpanded() : string
+    {
+        return '"200px"';
     }
         
     public function setPlaceholder(string $string) : UI5SearchField

@@ -62,7 +62,7 @@ body:not(.sapUiSizeCompact) .sapFDynamicPageTitleMainHeadingInner .sapMTitle > s
 .qrcode > img {margin: 0 auto 10px auto;}
 
 /* Image */
-img.sapMImg {display: block; max-width: 100%}
+img.sapMImg:not(.sapUxAPObjectPageHeaderObjectImage) {display: block; max-width: 100%}
 
 /* Temp. fixes for UI5 issues */
 .sapMImageContentImageIcon.sapUiIcon {position: absolute; display: block;}

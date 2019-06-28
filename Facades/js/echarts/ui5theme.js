@@ -194,7 +194,7 @@
                 }
             },
             "symbolSize": 4,
-            "symbol": "emptyCircle",
+            "symbol": "circle",
             "smooth": false,
             "color": [
                 "#5899da",

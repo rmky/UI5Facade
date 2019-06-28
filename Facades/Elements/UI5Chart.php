@@ -54,7 +54,7 @@ class UI5Chart extends UI5AbstractElement
                 new sap.ui.core.HTML("{$this->getId()}", {
                     content: "<div id=\"{$this->getId()}_echarts\" style=\"height:100%; min-height: 100px; overflow: hidden;\"></div>",
                     afterRendering: function(oEvent) { 
-                        {$this->buildJsEChartsInit($this->getFacade()->buildUrlToSource('LIBS.ECHARTS.THEME_NAME'))}
+                        {$this->buildJsEChartsInit($this->getFacade()->getConfig()->getOption('LIBS.ECHARTS.THEME_NAME'))}
                         {$this->buildJsEventHandlers()}
 
                         sap.ui.core.ResizeHandler.register(sap.ui.getCore().byId('{$this->getId()}').getParent(), function(){
@@ -166,21 +166,107 @@ JS;
      * @return string
      */
     protected function buildJsBindToClickHandler($oControllerJsVar = 'oController') : string
-    {
-        $widget = $this->getWidget();        
-        $js = '';        
-        // Double click. Currently only supports one double click action - the first one in the list of buttons
-        if ($dblclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[0]) {
-            $js .= <<<JS
-            
+    {        
+        $widget = $this->getWidget();
+        $output = '';
+        
+        if ($this->isGraphChart() === true) {
+            // click actions for graph charts
+            // for now you can only call an action when clicking on a node
+            if ($dblclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[0]) {
+                $output .= <<<JS
+                
             {$this->buildJsEChartsVar()}.on('dblclick', function(params){
-                {$this->buildJsEChartsVar()}._oldSelection =  params.data
-                {$this->getFacade()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
-            })
-
+                if (params.dataType === 'node') {
+                    {$this->buildJsEChartsVar()}._oldSelection = {$this->buildJsGetSelectedRowFunction('params.data')};
+                    {$this->getFacade()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)}
+                }
+            });
+            
 JS;
-        }        
-        return $js;
+                    
+            }
+            /*if ($dblclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[1]) {
+             $output .= <<<JS
+             
+             {$this->buildJsEChartsVar()}.on('dblclick', {dataType: 'edge'}, function(params){
+             {$this->buildJsEChartsVar()}._oldSelection = params.data
+             {$this->getFacade()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)}
+             });
+             
+             JS;
+             
+             }*/
+            
+            if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
+                $output .= <<<JS
+                
+            {$this->buildJsEChartsVar()}.on('contextmenu', function(params){
+                if (params.dataType === 'node') {
+                    {$this->buildJsEChartsVar()}._oldSelection = {$this->buildJsGetSelectedRowFunction('params.data')};
+                    {$this->getFacade()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)}
+                    params.event.event.preventDefault();
+                }
+            });
+            
+JS;
+            }
+            
+            if ($leftclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
+                $output .= <<<JS
+                
+            {$this->buildJsEChartsVar()}.on('click', function(params){
+                if (params.dataType === 'node') {
+                    {$this->buildJsEChartsVar()}._oldSelection = {$this->buildJsGetSelectedRowFunction('params.data')};
+                    {$this->getFacade()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)}
+                }
+            });
+            
+JS;
+            }
+            
+        } else {
+            
+            // Double click actions for not graph charts
+            // Currently only supports one double click action - the first one in the list of buttons
+            if ($dblclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[0]) {
+                $output .= <<<JS
+                
+                {$this->buildJsEChartsVar()}.on('dblclick', function(params){
+                    {$this->buildJsEChartsVar()}._oldSelection = {$this->buildJsGetSelectedRowFunction('params.data')};
+                    {$this->getFacade()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)}
+                });
+                
+JS;
+                    
+            }
+            
+            if ($leftclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
+                $output .= <<<JS
+                
+                {$this->buildJsEChartsVar()}.on('click', function(params){
+                    {$this->buildJsEChartsVar()}._oldSelection = {$this->buildJsGetSelectedRowFunction('params.data')};
+                    {$this->getFacade()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)}
+                });
+                
+JS;
+                    
+            }
+            
+            if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
+                $output .= <<<JS
+                
+                {$this->buildJsEChartsVar()}.on('contextmenu', function(params){
+                    {$this->buildJsEChartsVar()}._oldSelection = {$this->buildJsGetSelectedRowFunction('params.data')};
+                    {$this->getFacade()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)}
+                    params.event.event.preventDefault();
+                });
+                
+JS;
+                    
+            }
+        }
+        return $output;    
     }
     
     

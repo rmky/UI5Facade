@@ -130,13 +130,15 @@ JS;
     
     /**
      * 
-     * @param unknown $content
+     * @param string $content
      * @param string $toolbarConstructor
+     * @param string $id
      * @return string
      */
-    protected function buildJsLayoutForm($content, string $toolbarConstructor = null)
+    protected function buildJsLayoutForm($content, string $toolbarConstructor = null, string $id = null)
     {
         $cols = $this->getNumberOfColumns();
+        $id = $id === null ? '' : $id . ',';
         
         switch ($cols) {
             case $cols > 3:
@@ -173,7 +175,7 @@ JS;
         
         return <<<JS
         
-            new sap.ui.layout.form.SimpleForm("{$this->getId()}", {
+            new sap.ui.layout.form.SimpleForm({$id} {
                 width: "100%",
                 {$this->buildJsPropertyEditable()}
                 layout: "ResponsiveGridLayout",

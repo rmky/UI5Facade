@@ -4,7 +4,7 @@ namespace exface\UI5Facade\Facades\Elements;
 use exface\Core\Widgets\Tiles;
 
 /**
- * Generates a sap.m.Panel intended to contain tiles (see. ui5Tile)
+ * Generates a sap.m.Panel intended to contain tiles (see. UI5Tile).
  * 
  * @method Tiles getWiget()
  * 
@@ -16,12 +16,17 @@ class UI5Tiles extends UI5Container
     
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        $tiles = $this->buildJsChildrenConstructors();
+        if ($this->getWidget()->getCenterContent(false) === true) {
+            $tiles = $this->buildJsCenterWrapper($tiles);
+        }
+        
         $panel = <<<JS
 
                 new sap.m.Panel("{$this->getId()}", {
                     {$this->buildJsPropertyHeight()}
                     content: [
-                        {$this->buildJsChildrenConstructors()}
+                        {$tiles}
                     ],
                     {$this->buildJsProperties()}
                 })
@@ -33,6 +38,28 @@ JS;
         }
         
         return $panel;
+    }
+    
+    protected function buildJsCenterWrapper(string $content) : string
+    {
+        return <<<JS
+        
+                        new sap.m.VBox({
+                            height: "100%",
+                            justifyContent: "Center",
+                            items: [
+                                new sap.m.HBox({
+                                    justifyContent: "Center",
+                                    width: "100%",
+                                    wrap: "Wrap",
+                                    items: [
+                                        {$content}
+                                    ]
+                                })
+                            ]
+                        })
+                        
+JS;
     }
                     
     public function buildJsProperties()

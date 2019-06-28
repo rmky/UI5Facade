@@ -52,7 +52,7 @@ class UI5Chart extends UI5AbstractElement
         $chart = <<<JS
 
                 new sap.ui.core.HTML("{$this->getId()}", {
-                    content: "<div id=\"{$this->buildJsEChartsDivVar()}\" style=\"height:100%; min-height: 100px; overflow: hidden;\"></div>",
+                    content: "<div id=\"{$this->getId()}_echarts\" style=\"height:100%; min-height: 100px; overflow: hidden;\"></div>",
                     afterRendering: function(oEvent) { 
                         {$this->buildJsEChartsInit($this->getFacade()->getConfig()->getOption('LIBS.ECHARTS.THEME_NAME'))}
                         {$this->buildJsEventHandlers()}
@@ -75,10 +75,9 @@ JS;
      */
     public function buildJsEChartsInit(string $theme) : string
     {
-        $test = $theme;
         return <<<JS
         
-    echarts.init(document.getElementById('{$this->buildJsEChartsDivVar()}'), '{$theme}');
+    echarts.init(document.getElementById('{$this->getId()}_echarts'), '{$theme}');
     
 JS;
     }
@@ -91,7 +90,7 @@ JS;
     protected function buildJsEChartsVar() : string
     {
         
-        return "echarts.getInstanceByDom(document.getElementById('{$this->buildJsEChartsDivVar()}'))";
+        return "echarts.getInstanceByDom(document.getElementById('{$this->getId()}_echarts'))";
         //return "document.getElementById('{$this->getId()}_echarts')._echarts_instance_";
     }
         

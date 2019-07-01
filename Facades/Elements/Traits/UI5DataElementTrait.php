@@ -404,7 +404,7 @@ JS;
                 var oData = oModel.getData();
                 var oController = this;
                 
-                {$this->buildJsCheckRequiredFilters("oModel.setData({}); return;")}
+                {$this->buildJsCheckRequiredFilters($this->buildJsNoDataHint() . "; return;")}
                 
                 {$this->buildJsBusyIconShow()}
                 
@@ -426,6 +426,17 @@ JS;
                 {$doLoad}
                 
 JS;
+    }
+              
+    /**
+     * Returns a JS snippet to show a message instead of data: e.g. "Please set filters first"
+     * or the autoload_disabled_hint of the data widget.
+     * 
+     * @return string
+     */
+    protected function buildJsNoDataHint() : string
+    {
+        return $this->buildJsDataResetter();
     }
                 
     protected function buildJsDataLoaderParams(string $oControlEventJsVar = 'oControlEvent', string $oParamsJs = 'params') : string

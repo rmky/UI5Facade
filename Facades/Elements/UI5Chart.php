@@ -362,4 +362,13 @@ JS;
             return 'sap.ui.getCore().byId("' . $this->getId() . '").getParent().setBusy(false);';
         }
     }
+    
+    /**
+     * {@inheritdoc}
+     * @see \exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait::buildJsNoDataHint()
+     */
+    protected function buildJsNoDataHint() : string
+    {
+        return $this->buildJsDataResetter() . ';' . $this->buildJsMessageOverlayShow($this->getWidget()->getData()->getAutoloadDisabledHint());
+    }
 }

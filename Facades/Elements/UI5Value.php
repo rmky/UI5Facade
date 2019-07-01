@@ -282,4 +282,3 @@ JS;
         return 'value';
     }
 }
-?>

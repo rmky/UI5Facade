@@ -2,6 +2,7 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryInputValidationTrait;
 use exface\Core\Interfaces\Widgets\iHaveValue;
 
 /**
@@ -13,6 +14,7 @@ use exface\Core\Interfaces\Widgets\iHaveValue;
 class UI5Input extends UI5Value
 {
     use JqueryDisableConditionTrait;
+    use JqueryInputValidationTrait;
     
     /**
      * 

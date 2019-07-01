@@ -1,8 +1,6 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryInputTrait;
-
 /**
  * Generates OpenUI5 inputs
  *
@@ -11,8 +9,6 @@ use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryInputTrait;
  */
 class UI5InputHidden extends UI5Input
 {    
-    use JqueryInputTrait;
-    
     /**
      * 
      * {@inheritDoc}

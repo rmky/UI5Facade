@@ -4,10 +4,6 @@
 	"ERROR.DETAILS": "Details",
 	"ERROR.LOG_ID_HINT": "Bei Support-Anfragen bitte angeben!",
 	
-	"MESSAGE.SELECT_EXACTLY_X_ROWS": "Bitte genau %number% Zeile auswählen!|Bitte genau %number% Zeilen auswählen!",
-	"MESSAGE.SELECT_AT_MOST_X_ROWS": "Bitte maximal %number% Zeile auswählen!|Bitte maximal %number% Zeilen auswählen!",
-	"MESSAGE.SELECT_AT_LEAST_X_ROWS": "Bitte mindestens %number% Zeile auswählen!|Bitte mindestens %number% Zeilen auswählen!",
-	"MESSAGE.SELECT_X_TO_Y_ROWS": "Bitte %min% bis %max% Zeilen auswählen!",
 	"MESSAGE.ERROR_TITLE": "Fehler",
 	"MESSAGE.SUCCESS_TITLE": "",
 	"MESSAGE.FILL_REQUIRED_ATTRIBUTES": "Bitte füllen Sie die benötigten Felder aus: ",

@@ -5,6 +5,8 @@ use exface\Core\Widgets\Display;
 use exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface;
 use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\Widgets\DataColumn;
+use exface\Core\CommonLogic\Constants\Colors;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JsValueScaleTrait;
 
 /**
  * Generates sap.m.Text controls for Display widgets.
@@ -16,6 +18,8 @@ use exface\Core\Widgets\DataColumn;
  */
 class UI5Display extends UI5Value
 {
+    use JsValueScaleTrait;
+    
     private $alignmentProperty = null;
     
     /**
@@ -25,6 +29,7 @@ class UI5Display extends UI5Value
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        $this->registerColorResolver($oControllerJs);
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     
@@ -218,6 +223,52 @@ JS;
     public function buildJsValueGetterMethod()
     {
         return "getText()";
+    }
+    
+    protected function registerColorResolver(string $oControllerJs = 'oController') : UI5Display
+    {
+        $controller = $this->getController();
+        
+        // Create a controller method to compute the color for the current value and set it for the control
+        $controller->addMethod('resolveColor', $this, '', $this->buildJsColorScaleResolver());
+        // Make sure, the color resolver is called when the control is initially rendered
+        $this->addPseudoEventHandler('onAfterRendering', $oControllerJs . '.' . $controller->buildJsMethodName('resolveColor', $this) . '()');
+        
+        return $this;
+    }
+    
+    protected function buildJsColorScaleResolver() : string
+    {
+        $widget = $this->getWidget();
+        if ($widget->hasColorScale() === false) {
+            return '';
+        }
+        
+        $semCols = [];
+        foreach (Colors::getSemanticColors() as $semCol) {
+            switch ($semCol) {
+                case Colors::SEMANTIC_ERROR: $ui5Color = 'Critical'; break;
+                case Colors::SEMANTIC_WARNING: $ui5Color = 'Error'; break;
+                case Colors::SEMANTIC_OK: $ui5Color = 'Good'; break;
+                case Colors::SEMANTIC_INFO: $ui5Color = 'Neutral'; break;
+            }
+            $semCols[$semCol] = $ui5Color;
+        }
+        $semColsJs = json_encode($semCols);
+        
+        return <<<JS
+        
+    var sColor = {$this->buildJsScaleResolverForNumbers($this->buildJsValueGetter(), $widget->getColorScale())};
+    var sValueColor;
+    if (sColor.startsWith('~')) {
+        var oColorScale = {$semColsJs};
+        sValueColor = oColorScale[sColor];
+    } else {
+        sValueColor = '';
+    }
+    sap.ui.getCore().byId('{$this->getId()}').setValueColor(sValueColor);
+    
+JS;
     }
 }
 ?>

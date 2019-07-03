@@ -22,6 +22,7 @@ class UI5ObjectStatus extends UI5Display
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        $this->registerColorResolver($oControllerJs);
         return $this->buildJsConstructorForMainControl($oControllerJs);
     }
     
@@ -39,6 +40,7 @@ class UI5ObjectStatus extends UI5Display
             {$this->buildJsProperties()}
             {$this->buildJsPropertyValue()}
         })
+        {$this->buildJsPseudoEventHandlers()}
         
 JS;
     }

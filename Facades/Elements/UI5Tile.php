@@ -4,6 +4,7 @@ namespace exface\UI5Facade\Facades\Elements;
 use exface\Core\Widgets\Tile;
 use exface\Core\Widgets\Display;
 use exface\Core\DataTypes\NumberDataType;
+use exface\Core\CommonLogic\Constants\Colors;
 
 /**
  * Tile widget for OpenUI5-Facade.
@@ -119,17 +120,11 @@ JS;
                     
 JS;
             case $element->getWidget() instanceof Display && $element->getWidget()->getValueDataType() instanceof NumberDataType:
+                $contentElem = new UI5TileNumericContent($element->getWidget(), $this->getFacade());
                 if ($widget->getShowIcon(false) && $widget->getIcon()) {
-                    $icon = 'icon: "' . $this->getIconSrc($widget->getIcon()) . '", ';
+                    $contentElem->setIcon($widget->getIcon());
                 }
-                return <<<JS
-
-                new sap.m.NumericContent({
-                    {$icon}
-                    value: {$element->buildJsValue()},
-                })
-
-JS;
+                return $contentElem->buildJsConstructor($oControllerJs);
         }
         return $element->buildJsConstructorForMainControl($oControllerJs);
     }

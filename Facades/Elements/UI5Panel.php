@@ -138,7 +138,7 @@ JS;
     protected function buildJsLayoutForm($content, string $toolbarConstructor = null, string $id = null)
     {
         $cols = $this->getNumberOfColumns();
-        $id = $id === null ? '' : $id . ',';
+        $id = $id === null ? '' : "'{$id}',";
         
         switch ($cols) {
             case $cols > 3:

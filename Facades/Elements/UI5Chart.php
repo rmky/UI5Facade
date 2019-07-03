@@ -10,10 +10,12 @@ use exface\Core\Widgets\DataButton;
 use exface\Core\Widgets\Button;
 use exface\Core\Widgets\ButtonGroup;
 use exface\Core\Widgets\MenuButton;
+use exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface;
 
 /**
  * 
  * @method Chart getWidget()
+ * @method ui5ControllerInterface getController()
  * 
  * @author Andrej Kabachnik
  *

@@ -16,6 +16,34 @@ use exface\Core\Interfaces\Widgets\iCanPreloadData;
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
  * UI5 panels with standard toolbars, a configurator dialog, etc. 
  * 
+ * How it works:
+ * 
+ * The method buildJsConstructor() is pre-implemented and takes care of creating the report floorplan,
+ * toolbars, the P13n-Dialog, etc. The control to be placed with the report floorplan is provided by the
+ * method buildJsConstructorForControl(), which nees to be implemented in every class using the trait.
+ * 
+ * The trait also provides a default data loader implementation via buildJsDataLoader(), which supports
+ * lazy loading and data preload out of the box. The data loaded is automatically placed in the main
+ * model of the control (use `sap.ui.getCore().byId({$this->getId()}).getModel()` to access it). However,
+ * you can still customize the data loading logic by implementing 
+ * 
+ * - buildJsDataLoaderPrepare() - called right before the default loading starts.
+ * - buildJsDataLoaderParams() - called after the default request parameters were computed and allowing
+ * to customize them
+ * - buildJsDataLoaderOnLoaded() - called right after the data was placed in the model, but before
+ * the busy-state is dismissed. This is the place, where you would add all sorts of postprocessing or
+ * the logic to load the data into a non-UI5 control.
+ * 
+ * NOTE: The main model of the control and it's page wrapper (if the report floorplan is used) is 
+ * NOT the view model - it's a separate one. It contains the data set loaded. There is also a secondary
+ * model for the configurator (i.e. filter values, sorting options, etc.) - it's name can be obtained
+ * from `getModelNameForConfigurator()`.
+ * 
+ * You can also customize the toolbars by overriding
+ * - buildJsToolbar() - returns the constructor of the top toolbar (sap.m.OverflowToolbar by default)
+ * - buildJsToolbarContent() - returns the toolbar content (i.e. title, buttons, etc.)
+ * - buildJsQuickSearchConstructor()
+ * 
  * @author Andrej Kabachnik
  *
  */
@@ -95,12 +123,12 @@ trait UI5DataElementTrait {
         
         $js = $this->buildJsConstructorForControl();
         
-        $initConfigModel = ".setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForConfigurator()}')";
+        $initModels = ".setModel(new sap.ui.model.json.JSONModel()).setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForConfigurator()}')";
         
         if ($this->isWrappedInDynamicPage()){
-            return $this->buildJsPage($js) . $initConfigModel;
+            return $this->buildJsPage($js) . $initModels;
         } else {
-            return $js . $initConfigModel;
+            return $js . $initModels;
         }
     }
     

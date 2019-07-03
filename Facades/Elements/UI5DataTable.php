@@ -98,7 +98,6 @@ class UI5DataTable extends UI5AbstractElement
                         }),
             		}
                 })
-                .setModel(new sap.ui.model.json.JSONModel())
                 {$this->buildJsClickListeners('oController')}
                 {$this->buildJsPseudoEventHandlers()}
                 ,
@@ -182,7 +181,6 @@ JS;
         		],
                 rows: "{/data}"
         	})
-            .setModel(new sap.ui.model.json.JSONModel())
             {$this->buildJsScrollHandlerForUiTable()}
             {$this->buildJsClickListeners('oController')}
 JS;

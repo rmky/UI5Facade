@@ -263,10 +263,10 @@ JS;
     if (sColor.startsWith('~')) {
         var oColorScale = {$semColsJs};
         sValueColor = oColorScale[sColor];
+        sap.ui.getCore().byId('{$this->getId()}').setValueColor(sValueColor);
     } else {
-        sValueColor = '';
+        // TODO
     }
-    sap.ui.getCore().byId('{$this->getId()}').setValueColor(sValueColor);
     
 JS;
     }

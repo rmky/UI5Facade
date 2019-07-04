@@ -120,7 +120,8 @@ JS;
                     
 JS;
             case $element->getWidget() instanceof Display && $element->getWidget()->getValueDataType() instanceof NumberDataType:
-                $contentElem = new UI5TileNumericContent($element->getWidget(), $this->getFacade());
+                $contentElem = new UI5KPI($element->getWidget(), $this->getFacade());
+                $contentElem->getWidget()->setHideCaption(true);
                 if ($widget->getShowIcon(false) && $widget->getIcon()) {
                     $contentElem->setIcon($widget->getIcon());
                 }

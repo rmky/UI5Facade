@@ -252,6 +252,8 @@ JS;
     protected function buildJsDataLoderFromServer(string $oEventJs = 'oEvent') : string
     {
         $widget = $this->getWidget();
+        $configuratorElement = $this->getFacade()->getElement($widget->getTable()->getConfiguratorWidget());
+        
         return <<<JS
 
                 var oInput = {$oEventJs}.getSource();
@@ -271,7 +273,8 @@ JS;
                     element: "{$widget->getTable()->getId()}",
                     object: "{$widget->getTable()->getMetaObject()->getId()}",
                     length: "{$widget->getMaxSuggestions()}",
-				    start: 0
+				    start: 0,
+                    data: {$configuratorElement->buildJsDataGetter($widget->getTable()->getLazyLoadingAction(), true)}
                 };
                 $.extend(params, qParams);
         		

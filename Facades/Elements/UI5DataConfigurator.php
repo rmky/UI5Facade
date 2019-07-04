@@ -375,8 +375,17 @@ JS;
         return $this->getId() . '_SortPanel';
     }
     
-    public function buildJsDataGetter(ActionInterface $action = null)
+    /**
+     * 
+     * {@inheritDoc}
+     * @see JqueryDataConfiguratorTrait::buildJsDataGetter()
+     */
+    public function buildJsDataGetter(ActionInterface $action = null, bool $unrendered = false)
     {
+        if ($unrendered = true) {
+            return $this->buildJsDataGetterViaTrait($action, $unrendered);
+        }
+        
         return <<<JS
 
 function(){

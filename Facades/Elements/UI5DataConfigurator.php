@@ -382,7 +382,7 @@ JS;
      */
     public function buildJsDataGetter(ActionInterface $action = null, bool $unrendered = false)
     {
-        if ($unrendered = true) {
+        if ($unrendered === true) {
             return $this->buildJsDataGetterViaTrait($action, $unrendered);
         }
         

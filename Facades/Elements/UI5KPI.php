@@ -131,6 +131,7 @@ JS;
     
     protected function buildJsDataLoderFromServer(string $oEventJs = 'oEvent') : string
     {
+        $widget = $this->getWidget();
         $dataWidget = $this->getDataWidget();
         $configuratorElement = $this->getFacade()->getElement($this->getDataWidget()->getConfiguratorWidget());
         
@@ -138,12 +139,12 @@ JS;
         
                 {$this->buildJsBusyIconShow()}
                 var oControl = sap.ui.getCore().byId("{$this->getId()}");
-console.log('loading');
+
                 var oParams = {
                     action: "{$dataWidget->getLazyLoadingActionAlias()}",
                     resource: "{$this->getPageId()}",
-                    element: "{$dataWidget->getId()}",
-                    object: "{$dataWidget->getMetaObject()->getId()}",
+                    element: "{$widget->getId()}",
+                    object: "{$widget->getMetaObject()->getId()}",
                     data: {$configuratorElement->buildJsDataGetter($dataWidget->getLazyLoadingAction(), true)}
                 };
                 

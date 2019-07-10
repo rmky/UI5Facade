@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -45,6 +45,10 @@ sap.ui.define([
 				aggregations : {
 					child : {multiple : false, type : "sap.ui.core.util._with"}
 				}
+			},
+			updateProperty : function () {
+				// Avoid Promise processing in ManagedObject and set Promise as value directly
+				this.setAny(this.mBindingInfos.any.binding.getExternalValue());
 			}
 		}),
 		/**
@@ -1187,7 +1191,7 @@ sap.ui.define([
 					sCurrentName = sPreviousName;
 					oWithControl.$mFragmentContexts[sFragmentName] = false;
 					debugFinished(oElement);
-					iNestingLevel--;
+					iNestingLevel -= 1;
 				});
 			}
 
@@ -1512,7 +1516,7 @@ sap.ui.define([
 					).then(function () {
 						oIfElement.parentNode.removeChild(oIfElement);
 						debugFinished(oIfElement);
-						iNestingLevel--;
+						iNestingLevel -= 1;
 					});
 				});
 			}
@@ -1600,7 +1604,7 @@ sap.ui.define([
 						return liftChildNodes(oSourceNode, oNewWithControl, oElement);
 					}).then(function () {
 						debugFinished(oElement);
-						iNestingLevel--;
+						iNestingLevel -= 1;
 						oElement.parentNode.removeChild(oElement);
 					});
 				});
@@ -1704,7 +1708,7 @@ sap.ui.define([
 					return liftChildNodes(oElement, oNewWithControl).then(function () {
 						oElement.parentNode.removeChild(oElement);
 						debugFinished(oElement);
-						iNestingLevel--;
+						iNestingLevel -= 1;
 					});
 				});
 			}
@@ -1862,7 +1866,7 @@ sap.ui.define([
 									error("Unexpected return value from visitor for ", oNode);
 								}
 								debugFinished(oNode);
-								iNestingLevel--;
+								iNestingLevel -= 1;
 							});
 					}
 				}

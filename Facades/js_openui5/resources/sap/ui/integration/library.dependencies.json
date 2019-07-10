@@ -1,0 +1,381 @@
+{
+  "modules" : [
+    {
+      "name" : "sap-ui-integration.js",
+      "size" : 4808,
+      "compressedSize" : 2053,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/host/HostConfiguration.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 4023,
+      "compressedSize" : 1734,
+      "required" : ["sap/ui/core/Control.js", "sap/ui/integration/host/HostConfigurationCompiler.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/host/HostConfigurationCompiler.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 3771,
+      "compressedSize" : 1596,
+      "required" : ["sap/base/Log.js", "sap/ui/thirdparty/less.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/library-bootstrap.js",
+      "size" : 2033,
+      "compressedSize" : 974,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/library-h2-preload.js",
+      "size" : 3253,
+      "required" : ["sap/base/Log.js", "sap/f/CardRenderer.js", "sap/f/cards/BaseContent.js", "sap/f/cards/DataProviderFactory.js", "sap/f/cards/Header.js", "sap/f/cards/NumericHeader.js", "sap/f/library.js", "sap/m/HBox.js", "sap/m/Text.js", "sap/m/VBox.js", "sap/ui/Global.js", "sap/ui/base/DataType.js", "sap/ui/base/EventProvider.js", "sap/ui/base/Object.js", "sap/ui/core/Control.js", "sap/ui/core/Core.js", "sap/ui/core/Icon.js", "sap/ui/core/Manifest.js", "sap/ui/core/library.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/thirdparty/jquery.js", "sap/ui/thirdparty/less.js", "ui5loader-autoconfig.js"],
+      "includes" : ["sap/ui/integration/library.js", "sap/ui/integration/manifest.json", "sap-ui-integration.js", "sap/ui/integration/host/HostConfiguration.js", "sap/ui/integration/host/HostConfigurationCompiler.js", "sap/ui/integration/library-bootstrap.js", "sap/ui/integration/sap-ui-integration-config.js", "sap/ui/integration/services/Data.js", "sap/ui/integration/services/Navigation.js", "sap/ui/integration/services/Service.js", "sap/ui/integration/util/CardManifest.js", "sap/ui/integration/util/CustomElements.js", "sap/ui/integration/util/ServiceManager.js", "sap/ui/integration/widgets/Card.js"]
+    },
+    {
+      "name" : "sap/ui/integration/library-preload.js",
+      "size" : 29591,
+      "required" : ["sap/base/Log.js", "sap/f/CardRenderer.js", "sap/f/cards/BaseContent.js", "sap/f/cards/DataProviderFactory.js", "sap/f/cards/Header.js", "sap/f/cards/NumericHeader.js", "sap/f/library.js", "sap/m/HBox.js", "sap/m/Text.js", "sap/m/VBox.js", "sap/ui/Global.js", "sap/ui/base/DataType.js", "sap/ui/base/EventProvider.js", "sap/ui/base/Object.js", "sap/ui/core/Control.js", "sap/ui/core/Core.js", "sap/ui/core/Icon.js", "sap/ui/core/Manifest.js", "sap/ui/core/library.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/thirdparty/jquery.js", "sap/ui/thirdparty/less.js", "ui5loader-autoconfig.js"],
+      "includes" : ["sap-ui-integration.js", "sap/ui/integration/host/HostConfiguration.js", "sap/ui/integration/host/HostConfigurationCompiler.js", "sap/ui/integration/library-bootstrap.js", "sap/ui/integration/library.js", "sap/ui/integration/manifest.json", "sap/ui/integration/sap-ui-integration-config.js", "sap/ui/integration/services/Data.js", "sap/ui/integration/services/Navigation.js", "sap/ui/integration/services/Service.js", "sap/ui/integration/util/CardManifest.js", "sap/ui/integration/util/CustomElements.js", "sap/ui/integration/util/ServiceManager.js", "sap/ui/integration/widgets/Card.js"]
+    },
+    {
+      "name" : "sap/ui/integration/library-preload.json",
+      "size" : 0,
+      "required" : ["sap/base/Log.js", "sap/f/CardRenderer.js", "sap/f/cards/BaseContent.js", "sap/f/cards/DataProviderFactory.js", "sap/f/cards/Header.js", "sap/f/cards/NumericHeader.js", "sap/f/library-preload.json", "sap/f/library.js", "sap/m/HBox.js", "sap/m/Text.js", "sap/m/VBox.js", "sap/ui/Global.js", "sap/ui/base/DataType.js", "sap/ui/base/EventProvider.js", "sap/ui/base/Object.js", "sap/ui/core/Control.js", "sap/ui/core/Core.js", "sap/ui/core/Icon.js", "sap/ui/core/Manifest.js", "sap/ui/core/library-preload.json", "sap/ui/core/library.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/thirdparty/jquery.js", "sap/ui/thirdparty/less.js", "ui5loader-autoconfig.js"],
+      "includes" : ["sap-ui-integration.js", "sap/ui/integration/host/HostConfiguration.js", "sap/ui/integration/host/HostConfigurationCompiler.js", "sap/ui/integration/library-bootstrap.js", "sap/ui/integration/library.js", "sap/ui/integration/manifest.json", "sap/ui/integration/sap-ui-integration-config.js", "sap/ui/integration/services/Data.js", "sap/ui/integration/services/Navigation.js", "sap/ui/integration/services/Service.js", "sap/ui/integration/util/CardManifest.js", "sap/ui/integration/util/CustomElements.js", "sap/ui/integration/util/ServiceManager.js", "sap/ui/integration/widgets/Card.js"]
+    },
+    {
+      "name" : "sap/ui/integration/library.js",
+      "description" : "Initialization Code and shared classes of library sap.f.",
+      "size" : 2126,
+      "compressedSize" : 853,
+      "required" : ["sap/f/library.js", "sap/ui/Global.js", "sap/ui/base/DataType.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/manifest.json",
+      "size" : 1090,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle.properties",
+      "size" : 189,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_ar.properties",
+      "size" : 140,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_bg.properties",
+      "size" : 140,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_ca.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_cs.properties",
+      "size" : 129,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_da.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_de.properties",
+      "size" : 131,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_el.properties",
+      "size" : 146,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_en.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_en_US_sappsd.properties",
+      "size" : 146,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_en_US_saptrc.properties",
+      "size" : 153,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_es.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_et.properties",
+      "size" : 129,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_fi.properties",
+      "size" : 129,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_fr.properties",
+      "size" : 127,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_hi.properties",
+      "size" : 159,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_hr.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_hu.properties",
+      "size" : 129,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_it.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_iw.properties",
+      "size" : 152,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_ja.properties",
+      "size" : 129,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_kk.properties",
+      "size" : 129,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_ko.properties",
+      "size" : 127,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_lt.properties",
+      "size" : 135,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_lv.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_ms.properties",
+      "size" : 136,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_nl.properties",
+      "size" : 131,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_no.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_pl.properties",
+      "size" : 129,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_pt.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_ro.properties",
+      "size" : 131,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_ru.properties",
+      "size" : 140,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_sh.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_sk.properties",
+      "size" : 129,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_sl.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_sv.properties",
+      "size" : 130,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_th.properties",
+      "size" : 146,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_tr.properties",
+      "size" : 129,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_uk.properties",
+      "size" : 134,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_vi.properties",
+      "size" : 137,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_zh_CN.properties",
+      "size" : 160,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/messagebundle_zh_TW.properties",
+      "size" : 127,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/sap-ui-integration-config.js",
+      "size" : 379,
+      "compressedSize" : 240,
+      "required" : [],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/services/Data.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 1866,
+      "compressedSize" : 388,
+      "required" : ["sap/ui/integration/services/Service.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/services/Navigation.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 1248,
+      "compressedSize" : 333,
+      "required" : ["sap/ui/integration/services/Service.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/services/Service.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 1280,
+      "compressedSize" : 461,
+      "required" : ["ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/util/CardManifest.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 10676,
+      "compressedSize" : 3232,
+      "required" : ["sap/base/Log.js", "sap/ui/base/Object.js", "sap/ui/core/Manifest.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/util/CustomElements.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 10319,
+      "compressedSize" : 5752,
+      "required" : ["sap/base/Log.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/util/ServiceManager.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 5522,
+      "compressedSize" : 2114,
+      "required" : ["sap/base/Log.js", "sap/ui/base/EventProvider.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/widgets/Card.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 37997,
+      "compressedSize" : 10028,
+      "required" : ["sap/base/Log.js", "sap/f/CardRenderer.js", "sap/f/cards/BaseContent.js", "sap/f/cards/DataProviderFactory.js", "sap/f/cards/Header.js", "sap/f/cards/NumericHeader.js", "sap/f/library.js", "sap/m/HBox.js", "sap/m/Text.js", "sap/m/VBox.js", "sap/ui/core/Control.js", "sap/ui/core/Core.js", "sap/ui/core/Icon.js", "sap/ui/integration/library.js", "sap/ui/integration/util/CardManifest.js", "sap/ui/integration/util/ServiceManager.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    }
+  ]
+}

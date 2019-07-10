@@ -1,6 +1,7 @@
+//@ui5-bundle sap/m/designtime/library-preload.designtime.js
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.predefine('sap/m/designtime/ActionSheet.designtime',[],function(){"use strict";return{aggregations:{buttons:{domRef:":sap-domref",actions:{move:"moveControls"}}}};},false);
@@ -69,7 +70,7 @@ sap.ui.predefine('sap/m/designtime/Select.designtime',[],function(){"use strict"
 sap.ui.predefine('sap/m/designtime/Slider.designtime',[],function(){"use strict";return{name:{singular:"SLIDER_NAME",plural:"SLIDER_NAME_PLURAL"},palette:{group:"INPUT",icons:{svg:"sap/m/designtime/Slider.icon.svg"}},actions:{remove:{changeType:"hideControl"},reveal:{changeType:"unhideControl"}},aggregations:{scale:{domRef:":sap-domref > .sapMSliderTickmarks"},customTooltips:{ignore:true}},templates:{create:"sap/m/designtime/Slider.create.fragment.xml"}};},true);
 sap.ui.predefine('sap/m/designtime/SplitApp.designtime',[],function(){"use strict";return{name:{singular:"SPLIT_APP_NAME",plural:"SPLIT_APP_NAME_PLURAL"},palette:{group:"CONTAINER"}};},false);
 sap.ui.predefine('sap/m/designtime/SplitContainer.designtime',[],function(){"use strict";return{name:{singular:"SPLIT_CONTAINER_NAME",plural:"SPLIT_CONTAINER_NAME_PLURAL"},palette:{group:"CONTAINER"},aggregations:{masterPages:{domRef:":sap-domref > .sapMSplitContainerMaster, :sap-domref > .sapMSplitContainerMobile"},detailPages:{domRef:":sap-domref > .sapMSplitContainerDetail"}}};},false);
-sap.ui.predefine('sap/m/designtime/StandardListItem.designtime',[],function(){"use strict";return{actions:{rename:{changeType:"rename",domRef:function(c){return c.$().find(".sapMLIBContent > .sapMSLITitleDiv > .sapMSLITitleOnly")[0]||c.$().find(".sapMLIBContent > .sapMSLIDiv > .sapMSLITitleDiv > .sapMSLITitle")[0];}}}};},false);
+sap.ui.predefine('sap/m/designtime/StandardListItem.designtime',[],function(){"use strict";return{actions:{rename:{changeType:"rename",domRef:function(c){return c.$().find(".sapMLIBContent > .sapMSLIDiv > .sapMSLITitleOnly")[0]||c.$().find(".sapMLIBContent > .sapMSLIDiv > .sapMSLITitle")[0];}}}};},false);
 sap.ui.predefine('sap/m/designtime/StepInput.designtime',[],function(){"use strict";return{palette:{group:"INPUT",icons:{svg:"sap/m/designtime/StepInput.icon.svg"}},templates:{create:"sap/m/designtime/StepInput.create.fragment.xml"}};},false);
 sap.ui.predefine('sap/m/designtime/Switch.designtime',[],function(){"use strict";return{palette:{group:"ACTION",icons:{svg:"sap/m/designtime/Switch.icon.svg"}},templates:{create:"sap/m/designtime/Switch.create.fragment.xml"}};},false);
 sap.ui.predefine('sap/m/designtime/TabContainer.designtime',[],function(){"use strict";return{name:{singular:"TABCONTAINER_NAME",plural:"TABCONTAINER_NAME_PLURAL"},palette:{group:"CONTAINER"},templates:{create:"sap/m/designtime/TabContainer.create.fragment.xml"}};},false);

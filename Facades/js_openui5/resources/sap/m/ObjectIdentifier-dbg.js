@@ -1,12 +1,14 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.ObjectIdentifier.
 sap.ui.define([
 	'./library',
+	'./Link',
+	'./Text',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
 	'sap/ui/core/InvisibleText',
@@ -17,6 +19,8 @@ sap.ui.define([
 ],
 function(
 	library,
+	Link,
+	Text,
 	Control,
 	IconPool,
 	InvisibleText,
@@ -45,7 +49,7 @@ function(
 	 *
          * <b>Note:</b> This control should not be used with {@link sap.m.Label} or in Forms along with {@link sap.m.Label}.
 	 * @extends sap.ui.core.Control
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -142,7 +146,8 @@ function(
 			 * Association to controls / IDs, which label this control (see WAI-ARIA attribute aria-labelledby).
 			 */
 			ariaLabelledBy: {type: "sap.ui.core.Control", multiple: true, singularName: "ariaLabelledBy"}
-		}
+		},
+		dnd: { draggable: true, droppable: false }
 	}});
 
 
@@ -266,7 +271,7 @@ function(
 		if (!oTitleControl) {
 			// Lazy initialization
 			if (this.getProperty("titleActive")) {
-				oTitleControl = new sap.m.Link({
+				oTitleControl = new Link({
 					id : sId + "-link",
 					text: ManagedObject.escapeSettingsValue(this.getProperty("title")),
 					//Add a custom hidden role "ObjectIdentifier" with hidden text
@@ -274,7 +279,7 @@ function(
 				});
 				oTitleControl.addAssociation("ariaLabelledBy", sId + "-text", true);
 			} else {
-				oTitleControl = new sap.m.Text({
+				oTitleControl = new Text({
 					id : sId + "-txt",
 					text: ManagedObject.escapeSettingsValue(this.getProperty("title"))
 				});
@@ -300,7 +305,7 @@ function(
 
 		if (bIsTitleActive && oTitleControl instanceof sap.m.Text) {
 			this.destroyAggregation("_titleControl", true);
-			oTitleControl = new sap.m.Link({
+			oTitleControl = new Link({
 				id : sId + "-link",
 				text: ManagedObject.escapeSettingsValue(this.getProperty("title")),
 				//Add a custom hidden role "ObjectIdentifier" with hidden text
@@ -310,7 +315,7 @@ function(
 			this.setAggregation("_titleControl", oTitleControl, true);
 		} else if (!bIsTitleActive && oTitleControl instanceof sap.m.Link) {
 			this.destroyAggregation("_titleControl", true);
-			oTitleControl = new sap.m.Text({
+			oTitleControl = new Text({
 				id : sId + "-txt",
 				text: ManagedObject.escapeSettingsValue(this.getProperty("title"))
 			});
@@ -340,7 +345,7 @@ function(
 		var oTextControl = this.getAggregation("_textControl");
 
 		if (!oTextControl) {
-			oTextControl = new sap.m.Text({
+			oTextControl = new Text({
 				text: ManagedObject.escapeSettingsValue(this.getProperty("text"))
 			});
 			this.setAggregation("_textControl", oTextControl, true);
@@ -363,10 +368,18 @@ function(
 	ObjectIdentifier.prototype.setTitle = function (sTitle) {
 		//always suppress rerendering because title div is rendered
 		//if text is empty or not
-		var oTitleControl = this._getTitleControl();
+		var oTitleControl = this._getTitleControl(),
+			$TitleContainerRow;
 		oTitleControl.setProperty("text", sTitle, false);
 		oTitleControl.setVisible(!!oTitleControl.getText());
 		this.setProperty("title", sTitle, true);
+
+		$TitleContainerRow = this.$().find(".sapMObjectIdentifierTopRow");
+		if (this._hasTopRow()) {
+			$TitleContainerRow.attr('style', null);
+		} else {
+			$TitleContainerRow.css("display", "none");
+		}
 		this.$("text").toggleClass("sapMObjectIdentifierTextBellow",
 				!!this.getProperty("text") && !!this.getProperty("title"));
 
@@ -518,6 +531,10 @@ function(
 
 		// return the modified Object containing all needed information about the control
 		return oTitleInfo;
+	};
+
+	ObjectIdentifier.prototype._hasTopRow = function() {
+		return this.getTitle() || this.getBadgeNotes() || this.getBadgePeople() || this.getBadgeAttachments();
 	};
 
 	return ObjectIdentifier;

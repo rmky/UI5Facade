@@ -1,6 +1,6 @@
 /*
- * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * ! OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,6 +11,7 @@ sap.ui.define([
 	"sap/ui/core/util/reflection/JsControlTreeModifier",
 	"sap/ui/core/Element",
 	"sap/ui/base/ManagedObject",
+	"sap/base/util/includes",
 	"sap/ui/fl/variants/VariantManagement",
 	"sap/ui/core/Component",
 	"sap/ui/thirdparty/jquery"
@@ -21,6 +22,7 @@ sap.ui.define([
 	JsControlTreeModifier,
 	Element,
 	ManagedObject,
+	includes,
 	VariantManagement,
 	Component,
 	jQuery
@@ -35,7 +37,7 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @experimental Since 1.56
 	 * @since 1.56
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
 	 * @ui5-restricted
 	 */
@@ -68,7 +70,7 @@ sap.ui.define([
 			var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
 			var oRootControl = oAppComponent.getRootControl();
 			var oView = Utils.getViewForControl(oControl);
-			var oVariantModel = oAppComponent.getModel("$FlexVariants");
+			var oVariantModel = oAppComponent.getModel(Utils.VARIANT_MODEL_NAME);
 
 			var mParams = {
 				rootControl : oRootControl,
@@ -107,9 +109,8 @@ sap.ui.define([
 					return fnCheckForControl(oControl.getParent());
 				} else if (!oControl.getParent() || oControl.getId() === mParams.rootControl.getId()) {
 					return mParams.variantManagement[oControl.getId()] || "";
-				} else {
-					return mParams.variantManagement[oControl.getId()];
 				}
+				return mParams.variantManagement[oControl.getId()];
 			};
 
 			return fnCheckForControl(oControl);
@@ -128,7 +129,7 @@ sap.ui.define([
 		clearVariantParameterInURL : function (oControl) {
 			var aUrlParameters = [];
 			var oAppComponent = Utils.getAppComponentForControl(oControl);
-			var oVariantModel = oAppComponent instanceof Component ? oAppComponent.getModel("$FlexVariants") : undefined;
+			var oVariantModel = oAppComponent instanceof Component ? oAppComponent.getModel(Utils.VARIANT_MODEL_NAME) : undefined;
 			if (!oVariantModel) {
 				//technical parameters are not updated, only URL hash is updated
 				Utils.setTechnicalURLParameterValues(undefined, VARIANT_TECHNICAL_PARAMETER_NAME, aUrlParameters);
@@ -170,40 +171,40 @@ sap.ui.define([
 			var oElement;
 			return Promise.resolve()
 			.then(function () {
-					if (typeof vElement === 'string' || vElement instanceof String) {
-						oElement = Component.get(vElement);
+				if (typeof vElement === 'string' || vElement instanceof String) {
+					oElement = Component.get(vElement);
 
-						if (!(oElement instanceof Component)) {
-							oElement = sap.ui.getCore().byId(vElement);
+					if (!(oElement instanceof Component)) {
+						oElement = sap.ui.getCore().byId(vElement);
 
-							if (!(oElement instanceof Element)) {
-								throw new Error("No valid component or control found for the provided ID");
-							}
+						if (!(oElement instanceof Element)) {
+							throw new Error("No valid component or control found for the provided ID");
 						}
-					} else if (vElement instanceof Component || vElement instanceof Element) {
-						oElement = vElement;
 					}
+				} else if (vElement instanceof Component || vElement instanceof Element) {
+					oElement = vElement;
+				}
 
-					var oAppComponent = Utils.getAppComponentForControl(oElement);
-					if (!oAppComponent) {
-						throw new Error("A valid variant management control or component (instance or ID) should be passed as parameter");
-					}
+				var oAppComponent = Utils.getAppComponentForControl(oElement);
+				if (!oAppComponent) {
+					throw new Error("A valid variant management control or component (instance or ID) should be passed as parameter");
+				}
 
-					var oVariantModel = oAppComponent.getModel("$FlexVariants");
-					if (!oVariantModel) {
-						throw new Error("No variant management model found for the passed control or application component");
-					}
-					var sVariantManagementReference = oVariantModel.getVariantManagementReference(sVariantReference).variantManagementReference;
-					if (!sVariantManagementReference) {
-						throw new Error("A valid control or component, and a valid variant/ID combination are required");
-					}
+				var oVariantModel = oAppComponent.getModel(Utils.VARIANT_MODEL_NAME);
+				if (!oVariantModel) {
+					throw new Error("No variant management model found for the passed control or application component");
+				}
+				var sVariantManagementReference = oVariantModel.getVariantManagementReference(sVariantReference).variantManagementReference;
+				if (!sVariantManagementReference) {
+					throw new Error("A valid control or component, and a valid variant/ID combination are required");
+				}
 
 				return oVariantModel.updateCurrentVariant(sVariantManagementReference, sVariantReference, oAppComponent);
 			})
 			["catch"](function (oError) {
-						Utils.log.error(oError);
-						return Promise.reject(oError);
-					});
+				Utils.log.error(oError);
+				return Promise.reject(oError);
+			});
 		},
 
 		_checkChangeSpecificData: function(oChange, sLayer) {
@@ -301,6 +302,98 @@ sap.ui.define([
 		},
 
 		/**
+		 * Checks if personalization changes exists for control.
+		 *
+		 * @param {sap.ui.core.Element[] | map[]} aControls - an array of instances of controls, a map with control IDs including a app component or a mixture for which personalization exists
+		 * @param {array} [aChangeTypes] - Types of changes that have existing personalization.
+		 * @param {sap.ui.core.Component} aControls.appComponent - Application component of the controls at runtime in case a map has been used
+		 * @param {string} aControls.id - ID of the control in case a map has been used to specify the control
+		 *
+		 * @returns {Promise} Promise resolving with true if personalization changes exists, otherwise false.
+		 *
+		 * @method sap.ui.fl.ControlPersonalizationAPI.isPersonalized
+		 * @public
+		 */
+		isPersonalized: function(aControls, aChangeTypes) {
+			if (!aControls || aControls.length === 0) {
+				return this._reject("At least one control ID has to be provided as a parameter");
+			}
+
+			var oAppComponent = aControls[0].appComponent || Utils.getAppComponentForControl(aControls[0]);
+
+			if (!oAppComponent) {
+				return this._reject("App Component could not be determined");
+			}
+
+			var aIdsOfPassedControls = aControls.map(function (oControl) {
+				return oControl.id || oControl.getId();
+			});
+
+			var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
+			return oFlexController.getComponentChanges({currentLayer: "USER", includeCtrlVariants: true})
+			.then(function (aChanges) {
+				return aChanges
+					.filter(this._filterBySelectors.bind(this, oAppComponent, aIdsOfPassedControls))
+					.filter(this._filterByChangeType.bind(this, aChangeTypes))
+					.some(this._ifValidFileType);
+			}.bind(this));
+		},
+
+		_reject: function (sMessage) {
+			Utils.log.error(sMessage);
+			return Promise.reject(sMessage);
+		},
+
+		_filterBySelectors: function (oAppComponent, aIdsOfPassedControls, oChange) {
+			var oSelector = oChange.getSelector();
+			var sControlId = JsControlTreeModifier.getControlIdBySelector(oSelector, oAppComponent);
+			return includes(aIdsOfPassedControls, sControlId);
+		},
+
+		_filterByChangeType: function (aChangeTypes, oChange) {
+			return (Array.isArray(aChangeTypes) && aChangeTypes.length > 0)
+				? includes(aChangeTypes, oChange.getChangeType())
+				: true;
+		},
+
+		_ifValidFileType: function (oChange) {
+			return oChange.getFileType() === "change";
+		},
+
+		/**
+		 * Deletes changes recorded for control. Changes to be deleted can be filtered by specification of change type(s).
+		 *
+		 * @param {sap.ui.core.Element[] | map[]} aControls - an array of instances of controls, a map with control IDs including a app component or a mixture for which the reset shall take place
+		 * @param {sap.ui.core.Component} aControls.appComponent - Application component of the controls at runtime in case a map has been used
+		 * @param {string} aControls.id - ID of the control in case a map has been used to specify the control
+		 * @param {String[]} [aChangeTypes] - Types of changes that shall be deleted
+		 *
+		 * @returns {Promise} Promise that resolves after the deletion took place and changes are reverted
+		 *
+		 * @method sap.ui.fl.ControlPersonalizationAPI.resetChanges
+		 * @public
+		 */
+		resetChanges: function(aControls, aChangeTypes) {
+			if (!aControls || aControls.length === 0) {
+				return this._reject("At least one control ID has to be provided as a parameter");
+			}
+
+			var oAppComponent = aControls[0].appComponent || Utils.getAppComponentForControl(aControls[0]);
+
+			if (!oAppComponent) {
+				return this._reject("App Component could not be determined");
+			}
+
+			var aSelectorIds = aControls.map(function (vControl) {
+				var sControlId = vControl.id || vControl.getId();
+				var sLocalId = oAppComponent.getLocalId(sControlId);
+				return sLocalId || sControlId;
+			});
+			var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
+			return oFlexController.resetChanges("USER", undefined, oAppComponent, aSelectorIds, aChangeTypes);
+		},
+
+		/**
 		 * Saves unsaved changes added to {@link sap.ui.fl.ChangePersistence}.
 		 *
 		 * @param {array} aChanges - Array of changes to be saved
@@ -313,16 +406,25 @@ sap.ui.define([
 		 */
 		saveChanges: function(aChanges, oManagedObject) {
 			if (!(oManagedObject instanceof ManagedObject)) {
-				Utils.log.error("A valid sap.ui.base.ManagedObject instance is required as a parameter");
-				return;
+				var sErrorMessage = "A valid sap.ui.base.ManagedObject instance is required as a parameter";
+				Utils.log.error(sErrorMessage);
+				return Promise.reject(sErrorMessage);
 			}
-			return FlexControllerFactory.createForControl(oManagedObject)._oChangePersistence.saveSequenceOfDirtyChanges(aChanges);
+			var mParameters = ControlPersonalizationAPI._determineParameters(oManagedObject);
+			var aVariantManagementReferences = Object.keys(mParameters.variantManagement).reduce(function (aReferences, sVariantForAssociationId) {
+				return aReferences.concat([mParameters.variantManagement[sVariantForAssociationId]]);
+			}, []);
+			return mParameters.flexController.saveSequenceOfDirtyChanges(aChanges)
+				.then(function(oResponse) {
+					mParameters.variantModel.checkDirtyStateForControlModels(aVariantManagementReferences);
+					return oResponse;
+				});
 		},
 
 		/**
 		 * Determines the availability of an encompassing variant management control.
 		 *
-		 * @param {sap.ui.base.ManagedObject} oControl - The control which should be tested for an encompassing variant management control
+		 * @param {sap.ui.core.Element} oControl - The control which should be tested for an encompassing variant management control
 		 *
 		 * @returns {boolean} Returns true if a variant management control is encompassing the given control, else false
 		 *

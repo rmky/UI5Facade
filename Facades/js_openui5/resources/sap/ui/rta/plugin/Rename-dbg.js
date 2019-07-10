@@ -1,12 +1,12 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	'sap/ui/rta/plugin/Plugin',
-	'sap/ui/rta/plugin/RenameHandler',
+	"sap/ui/rta/plugin/Plugin",
+	"sap/ui/rta/plugin/RenameHandler",
 	"sap/base/Log"
 ], function(
 	Plugin,
@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.rta.plugin.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -37,23 +37,23 @@ sap.ui.define([
 	 * @experimental Since 1.30. This class is experimental and provides only limited functionality. Also the API might be
 	 *               changed in future.
 	 */
-	var Rename = Plugin.extend("sap.ui.rta.plugin.Rename", /** @lends sap.ui.rta.plugin.Rename.prototype */
-	{
+	var Rename = Plugin.extend("sap.ui.rta.plugin.Rename", /** @lends sap.ui.rta.plugin.Rename.prototype */ {
 		metadata : {
-			// ---- object ----
-
-			// ---- control specific ----
 			library : "sap.ui.rta",
 			properties : {
 				oldValue : "string"
 			},
 			associations : {},
 			events : {
-				/** Fired when renaming is possible */
-				"editable" : {},
+				/*
+				 * Fired when renaming is possible
+				*/
+				editable : {},
 
-				/** Fired when renaming is switched off */
-				"nonEditable" : {}
+				/**
+				 * Fired when renaming is switched off
+				 */
+				nonEditable : {}
 			}
 		}
 	});
@@ -64,7 +64,7 @@ sap.ui.define([
 	Rename.prototype.exit = function() {
 		Plugin.prototype.exit.apply(this, arguments);
 
-		this._bPreventMenu = false;
+		this.setBusy(false);
 		RenameHandler._exit.call(this);
 	};
 
@@ -214,7 +214,7 @@ sap.ui.define([
 
 			.then(function(oRenameCommand) {
 				this.fireElementModified({
-					"command" : oRenameCommand
+					command : oRenameCommand
 				});
 			}.bind(this))
 
@@ -238,16 +238,8 @@ sap.ui.define([
 	 * Get the name of the action related to this plugin.
 	 * @return {string} Returns the action name
 	 */
-	Rename.prototype.getActionName = function(){
+	Rename.prototype.getActionName = function() {
 		return "rename";
-	};
-
-	/**
-	 * Indicates whether the Plugin is busy
-	 * @return {boolean} true if Plugin is busy
-	 */
-	Rename.prototype.isBusy = function(){
-		return this._bPreventMenu;
 	};
 
 	return Rename;

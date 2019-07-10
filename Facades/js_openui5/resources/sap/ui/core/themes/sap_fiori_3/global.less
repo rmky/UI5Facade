@@ -17,8 +17,24 @@
 @sapUiBaseBG: @sapBackgroundColor;						// #fafafa
 @sapUiGlobalBackgroundColor: @sapBackgroundColor;
 
+@sapUiFontFamily: @sapFontFamily;
+@sapUiFontHeaderFamily: @sapFontHeaderFamily;
+@sapUiFontSize: 16px; // @sapFontSize;
+@sapMFontSmallSize: @sapFontSmallSize;
+@sapMFontLargeSize: @sapFontLargeSize;
+@sapMFontHeader1Size: @sapFontHeader1Size;
+@sapMFontHeader2Size: @sapFontHeader2Size;
+@sapMFontHeader3Size: @sapFontHeader3Size;
+@sapMFontHeader4Size: @sapFontHeader4Size;
+@sapMFontHeader5Size: @sapFontHeader5Size;
+@sapMFontHeader6Size: @sapFontHeader6Size;
+
 @sapUiBaseText: @sapTextColor;							// #333333
 @sapUiLink: @sapLinkColor;								// #0070b1
+@sapUiLinkHoverColor: @sapLink_Hover_Color;
+@sapUiLinkActiveColor: @sapLink_Active_Color;
+@sapUiLinkVisitedColor: @sapLink_Visited_Color;
+@sapUiLinkInvertedColor: @sapLink_InvertedColor;
 
 @sapUiGlobalLogo: @sapCompanyLogo;
 @sapUiGlobalBackgroundImage: @sapBackgroundImage;
@@ -38,6 +54,14 @@
 @sapUiHighlightTextColor: @sapHighlightTextColor;
 @sapUiTextTitle: @sapTitleColor;			// was "Quick" default #333333
 
+@sapUiElementLineHeight: @sapElement_LineHeight;
+@sapUiElementHeight: @sapElement_Height;
+@sapUiElementBorderWidth: @sapElement_BorderWidth;
+
+@sapUiContentLineHeight: @sapContent_LineHeight; // 1.3;
+@sapUiContentElementHeight: @sapContent_ElementHeight; // 1.37em;
+@sapUiContentElementHeightPX: @sapContent_ElementHeight_PX; // 22px;
+@sapUiContentIconHeight: @sapContent_IconHeight; // 16px;
 @sapUiContentIconColor: @sapContent_IconColor;
 @sapUiContentContrastIconColor: @sapContent_ContrastIconColor;
 @sapUiContentNonInteractiveIconColor: @sapContent_NonInteractiveIconColor;
@@ -45,6 +69,8 @@
 @sapUiContentMarkerTextColor: @sapContent_MarkerTextColor;
 @sapUiContentImagePlaceholderBackground: @sapContent_ImagePlaceholderBackground;
 @sapUiContentImagePlaceholderForegroundColor: @sapContent_ImagePlaceholderForegroundColor;
+@sapUiContentRatedColor: @sapContent_RatedColor;
+@sapUiContentUnratedColor: @sapContent_UnratedColor;
 @sapUiContentFocusColor: @sapContent_FocusColor;
 @sapUiContentContrastFocusColor: @sapContent_ContrastFocusColor;
 @sapUiContentShadowColor: @sapContent_ShadowColor;
@@ -59,6 +85,8 @@
 @sapUiContentForegroundColor: @sapContent_ForegroundColor;
 @sapUiContentForegroundBorderColor: @sapContent_ForegroundBorderColor;
 @sapUiContentForegroundTextColor: @sapContent_ForegroundTextColor;
+@sapUiContentBadgeBackground: @sapContent_BadgeBackground;
+@sapUiContentDragAndDropActiveColor: @sapContent_DragAndDropActiveColor;
 
 @sapUiShellBackground: @sapShell_Background;
 @sapUiShellBackgroundImage: @sapShell_BackgroundImage;
@@ -68,27 +96,75 @@
 @sapUiShellBackgroundGradient: @sapShell_BackgroundGradient;
 @sapUiShellBorderColor: @sapShell_BorderColor;
 @sapUiShellTextColor: @sapShell_TextColor;
+@sapUiShellInteractiveTextColor: @sapShell_InteractiveTextColor;
+@sapUiShellInteractiveBorderColor: @sapShell_InteractiveBorderColor;
+@sapUiShellGroupTitleTextColor: @sapShell_GroupTitleTextColor;
+@sapUiShellHoverBackground: @sapShell_Hover_Background;
+@sapUiShellActiveBackground: @sapShell_Active_Background;
+@sapUiShellActiveTextColor: @sapShell_Active_TextColor;
+@sapUiShellSelectedBackground: @sapShell_Selected_Background;
+@sapUiShellSelectedTextColor: @sapShell_Selected_TextColor;
+@sapUiShellSelectedHoverBackground: @sapShell_Selected_Hover_Background;
 @sapUiShellFavicon: @sapShell_Favicon;
 
+@sapUiButtonBorderWidth: @sapButton_BorderWidth;
+@sapUiButtonBorderCornerRadius: @sapButton_BorderCornerRadius; // 2px;
 @sapUiButtonBackground: @sapButton_Background;
 @sapUiButtonBorderColor: @sapButton_BorderColor;
 @sapUiButtonTextColor: @sapButton_TextColor;
 @sapUiButtonHoverBackground: @sapButton_Hover_Background;
 @sapUiButtonHoverBorderColor: @sapButton_Hover_BorderColor;
 @sapUiButtonHoverTextColor: @sapButton_Hover_TextColor;
+@sapUiButtonIconColor: @sapButton_IconColor;
+@sapUiButtonActiveBackground: @sapButton_Active_Background;
+@sapUiButtonActiveBorderColor: @sapButton_Active_BorderColor;
+@sapUiButtonActiveTextColor: @sapButton_Active_TextColor;
 @sapUiButtonEmphasizedBackground: @sapButton_Emphasized_Background;
 @sapUiButtonEmphasizedBorderColor: @sapButton_Emphasized_BorderColor;
 @sapUiButtonEmphasizedTextColor: @sapButton_Emphasized_TextColor;
+@sapUiButtonEmphasizedHoverBackground: @sapButton_Emphasized_Hover_Background;
+@sapUiButtonEmphasizedHoverBorderColor: @sapButton_Emphasized_Hover_BorderColor;
+@sapUiButtonEmphasizedActiveBackground: @sapButton_Emphasized_Active_Background;
+@sapUiButtonEmphasizedActiveBorderColor: @sapButton_Emphasized_Active_BorderColor;
+@sapUiButtonEmphasizedTextShadow: @sapButton_Emphasized_TextShadow;
 @sapUiButtonRejectBackground: @sapButton_Reject_Background;
+@sapUiButtonRejectBorderColor: @sapButton_Reject_BorderColor;
+@sapUiButtonRejectHoverBackground: @sapButton_Reject_Hover_Background;
+@sapUiButtonRejectHoverBorderColor: @sapButton_Reject_Hover_BorderColor;
+@sapUiButtonRejectActiveBackground: @sapButton_Reject_Active_Background;
+@sapUiButtonRejectActiveBorderColor: @sapButton_Reject_Active_BorderColor;
+@sapUiButtonRejectTextColor: @sapButton_Reject_TextColor;
 @sapUiButtonAcceptBackground: @sapButton_Accept_Background;
+@sapUiButtonAcceptBorderColor: @sapButton_Accept_BorderColor;
+@sapUiButtonAcceptHoverBackground: @sapButton_Accept_Hover_Background;
+@sapUiButtonAcceptHoverBorderColor: @sapButton_Accept_Hover_BorderColor;
+@sapUiButtonAcceptActiveBackground: @sapButton_Accept_Active_Background;
+@sapUiButtonAcceptActiveBorderColor: @sapButton_Accept_Active_BorderColor;
+@sapUiButtonAcceptTextColor: @sapButton_Accept_TextColor;
+@sapUiButtonLiteBackground: @sapButton_Lite_Background;
+@sapUiButtonLiteBorderColor: @sapButton_Lite_BorderColor;
+@sapUiButtonLiteTextColor: @sapButton_Lite_TextColor;
+@sapUiButtonLiteHoverBackground: @sapButton_Lite_Hover_Background;
+@sapUiButtonLiteHoverBorderColor: @sapButton_Lite_Hover_BorderColor;
+@sapUiButtonLiteActiveBackground: @sapButton_Lite_Active_Background;
+@sapUiButtonLiteActiveBorderColor: @sapButton_Lite_Active_BorderColor;
+@sapUiButtonSelectedBackground: @sapButton_Selected_Background;
+@sapUiButtonSelectedBorderColor: @sapButton_Selected_BorderColor;
+@sapUiButtonSelectedTextColor: @sapButton_Selected_TextColor;
+@sapUiButtonSelectedHoverBackground: @sapButton_Selected_Hover_Background;
+@sapUiButtonSelectedHoverBorderColor: @sapButton_Selected_Hover_BorderColor;
 
 @sapUiFieldBackground: @sapField_Background;
 @sapUiFieldBorderColor: @sapField_BorderColor;
 @sapUiFieldTextColor: @sapField_TextColor;
+@sapUiFieldPlaceholderTextColor: @sapField_PlaceholderTextColor;
 @sapUiFieldHelpBackground: @sapField_HelpBackground;
+@sapUiFieldBorderWidth: @sapField_BorderWidth;
+@sapUiFieldBorderCornerRadius: @sapField_BorderCornerRadius;
 @sapUiFieldHoverBackground: @sapField_Hover_Background;
 @sapUiFieldHoverBorderColor: @sapField_Hover_BorderColor;
 @sapUiFieldHoverHelpBackground: @sapField_Hover_HelpBackground;
+@sapUiFieldActiveBorderColor: @sapField_Active_BorderColor;
 @sapUiFieldFocusBackground: @sapField_Focus_Background;
 @sapUiFieldFocusBorderColor: @sapField_Focus_BorderColor;
 @sapUiFieldFocusHelpBackground: @sapField_Focus_HelpBackground;
@@ -102,12 +178,15 @@
 @sapUiFieldWarningBackground: @sapField_WarningBackground;
 @sapUiFieldSuccessColor: @sapField_SuccessColor;
 @sapUiFieldSuccessBackground: @sapField_SuccessBackground;
+@sapUiFieldInformationColor: @sapField_InformationColor;
+@sapUiFieldInformationBackground: @sapField_InformationBackground;
 
 @sapUiGroupTitleBackground: @sapGroup_TitleBackground;
 @sapUiGroupTitleBorderColor: @sapGroup_TitleBorderColor;
 @sapUiGroupTitleTextColor: @sapGroup_TitleTextColor;
 @sapUiGroupContentBackground: @sapGroup_ContentBackground;
 @sapUiGroupContentBorderColor: @sapGroup_ContentBorderColor;
+@sapUiGroupBorderWidth: @sapGroup_BorderWidth;
 @sapUiGroupFooterBackground: @sapGroup_FooterBackground;
 
 @sapUiToolbarBackground: @sapToolbar_Background;
@@ -117,30 +196,52 @@
 @sapUiListHeaderBorderColor: @sapList_HeaderBorderColor;
 @sapUiListHeaderTextColor: @sapList_HeaderTextColor;
 @sapUiListBorderColor: @sapList_BorderColor;
+@sapUiListBorderWidth: @sapList_BorderWidth;
+@sapUiListTextColor: @sapList_TextColor;
+@sapUiListActiveBackground: @sapList_Active_Background;
+@sapUiListActiveTextColor: @sapList_Active_TextColor;
 @sapUiListHighlightColor: @sapList_HighlightColor;
 @sapUiListSelectionBackgroundColor: @sapList_SelectionBackgroundColor;
+@sapUiListHoverSelectionBackground: @sapList_Hover_SelectionBackground;
 @sapUiListBackground: @sapList_Background;
 @sapUiListHoverBackground: @sapList_Hover_Background;
+@sapUiListGroupHeaderBackground: @sapList_GroupHeaderBackground;
+@sapUiListGroupHeaderBorderColor: @sapList_GroupHeaderBorderColor;
+@sapUiListGroupHeaderTextColor: @sapList_GroupHeaderTextColor;
+@sapUiListFooterBackground: @sapList_FooterBackground;
+@sapUiListFooterTextColor: @sapList_FooterTextColor;
+@sapUiListTableGroupHeaderBackground: @sapList_TableGroupHeaderBackground;
+@sapUiListTableGroupHeaderBorderColor: @sapList_TableGroupHeaderBorderColor;
+@sapUiListTableGroupHeaderTextColor: @sapList_TableGroupHeaderTextColor;
+@sapUiListTableFooterBorder: @sapList_TableFooterBorder;
+@sapUiListTableFixedBorderColor: @sapList_TableFixedBorderColor;
 
 @sapUiScrollBarFaceColor: @sapScrollBar_FaceColor;
 @sapUiScrollBarTrackColor: @sapScrollBar_TrackColor;
 @sapUiScrollBarBorderColor: @sapScrollBar_BorderColor;
 @sapUiScrollBarSymbolColor: @sapScrollBar_SymbolColor;
+@sapUiScrollBarDimension: @sapScrollBar_Dimension;
 @sapUiScrollBarHoverFaceColor: @sapScrollBar_Hover_FaceColor;
 
 @sapUiPageHeaderBackground: @sapPageHeader_Background;
 @sapUiPageHeaderBorderColor: @sapPageHeader_BorderColor;
 @sapUiPageHeaderTextColor: @sapPageHeader_TextColor;
 @sapUiPageFooterBackground: @sapPageFooter_Background;
+@sapUiPageFooterBorderColor: @sapPageFooter_BorderColor;
 @sapUiPageFooterTextColor: @sapPageFooter_TextColor;
 
 @sapUiInfobarBackground: @sapInfobar_Background;
+@sapUiInfobarHoverBackground: @sapInfobar_Hover_Background;
+@sapUiInfobarActiveBackground: @sapInfobar_Active_Background;
 
 @sapUiObjectHeaderBackground: @sapObjectHeader_Background;
+@sapUiObjectHeaderBorderColor: @sapObjectHeader_BorderColor;
 
 @sapUiBlockLayerBackground: @sapBlockLayer_Background;
 
 @sapUiTileBackground: @sapTile_Background;
+@sapUiTileHoverBackground: @sapTile_Hover_Background;
+@sapUiTileActiveBackground: @sapTile_Active_Background;
 @sapUiTileBorderColor: @sapTile_BorderColor;
 @sapUiTileTitleTextColor: @sapTile_TitleTextColor;
 @sapUiTileTextColor: @sapTile_TextColor;
@@ -208,6 +309,27 @@
 @sapUiAccent9: @sapAccentColor9;
 @sapUiAccent10: @sapAccentColor10;
 
+@sapUiLegend1: @sapLegendColor1; // #d58215;
+@sapUiLegend2: @sapLegendColor2; // #d76060;
+@sapUiLegend3: @sapLegendColor3; // #db1f77;
+@sapUiLegend4: @sapLegendColor4; // #9b3b3b;
+@sapUiLegend5: @sapLegendColor5; // #cf5db3;
+@sapUiLegend6: @sapLegendColor6; // #478fd6;
+@sapUiLegend7: @sapLegendColor7; // #1193a2;
+@sapUiLegend8: @sapLegendColor8; // #8b9668;
+@sapUiLegend9: @sapLegendColor9; // #6C8B99;
+@sapUiLegend10: @sapLegendColor10; // #892971;
+@sapUiLegend11: @sapLegendColor11; // #725a3a;
+@sapUiLegend12: @sapLegendColor12; // #bb2f2f;
+@sapUiLegend13: @sapLegendColor13; // #d51f1f;
+@sapUiLegend14: @sapLegendColor14; // #8b714f;
+@sapUiLegend15: @sapLegendColor15; // #606190;
+@sapUiLegend16: @sapLegendColor16; // #597da1;
+@sapUiLegend17: @sapLegendColor17; // #49797e;
+@sapUiLegend18: @sapLegendColor18; // #687a33;
+@sapUiLegend19: @sapLegendColor19; // #295989;
+@sapUiLegend20: @sapLegendColor20; // #5154bd;
+
 
 // =====================================
 // Semantic Colors
@@ -218,7 +340,7 @@
 @sapUiErrorBG: @sapErrorBackground;     // #fbdfdf
 @sapUiWarningBG: @sapWarningBackground; // #fffcb5
 @sapUiSuccessBG: @sapSuccessBackground; // #e0f1e7
-@sapUiInformationBG: sapInformationBackground;
+@sapUiInformationBG: @sapInformationBackground;
 @sapUiNeutralBG: @sapNeutralBackground; // #e6f2f9
 
 
@@ -245,7 +367,7 @@
 @sapUiNegativeText: @sapNegativeTextColor; // #bb0000
 @sapUiCriticalText: @sapCriticalTextColor; // #e78c07
 @sapUiPositiveText: @sapPositiveTextColor; // #2b7c2b
-@sapUiInformativeText: sapInformativeTextColor;
+@sapUiInformativeText: @sapInformativeTextColor;
 @sapUiNeutralText: @sapNeutralTextColor;   // #5e696e
 
 
@@ -276,29 +398,11 @@
 // Font
 // =====================================
 
-@sapUiFontFamily: @sapFontFamily;
-@sapUiFontSize: 16px;
-
 @sapUiFontCondensedFamily: "72 Condensed", 'Arial Narrow', HelveticaNeue-CondensedBold, Arial, sans-serif;
-
-@sapUiFontHeaderFamily: @sapUiFontFamily;
 
 @sapUiFontHeaderWeight: normal;
 
-
-// use these "sapM"-prefixed parameters for sap.m controls
-@sapMFontHeader1Size: 2.25rem;   //  36px
-@sapMFontHeader2Size: 1.5rem;    //  24px
-@sapMFontHeader3Size: 1.250rem;  //  20px
-@sapMFontHeader4Size: 1.125rem;  //  18px
-@sapMFontHeader5Size: 1rem;      //  16px
-@sapMFontHeader6Size: 0.875rem;  //  14px
-
-
-@sapMFontSmallSize: 0.75rem;   // 12px
 @sapMFontMediumSize: 0.875rem; // 14px
-@sapMFontLargeSize: 1rem;      // 16px
-
 
 @sapUiTranslucentBGOpacity: 0;
 
@@ -568,13 +672,9 @@
 
 
 // Shell
-@sapUiShellHoverBackground: darken(@sapUiBrand, 10);
-@sapUiShellActiveBackground: darken(@sapUiBrand, 17);
-@sapUiShellActiveTextColor: lighten(@sapUiBrand, 55);
-@sapUiShellHoverToggleBackground: darken(@sapUiBrand, 32);
-@sapUiShellContainerBackground: lighten(@sapUiShellBackground, 16);
-@sapUiShellAltContainerBackground: darken(saturate(@sapUiShellBackground, 6), 28);
-@sapUiShellGroupTextColor: darken(desaturate(@sapUiShellTextColor, 100), 16.5);
+@sapUiShellContainerBackground: @sapUiGroupContentBackground;
+@sapUiShellAltContainerBackground: @sapUiShellContainerBackground;
+@sapUiShellGroupTextColor: @sapUiTextTitle;
 
 @sapUiUx3ShellHeaderColor: @sapShellColor;			// "Quick"
 @sapUiUx3ShellBackgroundColor: @sapUiPrimary3;
@@ -591,10 +691,10 @@
 @sapUiUx3ExactLstContentTop: 25px;
 
 // Link
-@sapUiLinkActive:     @sapUiLink;
-@sapUiLinkVisited:    @sapUiAccent9;
-@sapUiLinkHover:      darken(@sapUiLink, 10);
-@sapUiLinkInverted:   lighten(@sapUiLink, 40);
+@sapUiLinkActive: @sapUiLink;
+@sapUiLinkVisited: @sapUiLink;
+@sapUiLinkHover: darken(@sapUiLink, 10);
+@sapUiLinkInverted: lighten(@sapUiLink, 48);
 
 // Notification Bar
 @sapUiNotificationBarBG: fade(@sapUiPrimary7, 98);
@@ -610,34 +710,6 @@
 // Callout
 @sapUiCalloutShadow: 0px 6px 12px 0px fade(@sapUiContentShadowColor, 30);
 
-@sapUiButtonIconColor: contrast(@sapUiButtonBackground, @sapUiContentIconColor, @sapUiContentContrastIconColor, @sapUiContentContrastTextThreshold);
-@sapUiButtonActiveBackground: @sapUiActive;
-@sapUiButtonActiveBorderColor: @sapUiButtonActiveBackground;
-@sapUiButtonActiveTextColor: contrast(@sapUiButtonActiveBackground, @sapUiButtonTextColor, @sapUiContentContrastTextColor, @sapUiContentContrastTextThreshold);
-@sapUiButtonEmphasizedHoverBackground: darken(@sapUiButtonEmphasizedBackground, 7);
-@sapUiButtonEmphasizedHoverBorderColor: @sapUiButtonEmphasizedHoverBackground;
-@sapUiButtonEmphasizedActiveBackground: darken(@sapUiButtonEmphasizedBackground, 10);
-@sapUiButtonEmphasizedActiveBorderColor: @sapUiButtonEmphasizedActiveBackground;
-@sapUiButtonEmphasizedTextShadow: transparent;
-@sapUiButtonAcceptBorderColor: @sapUiPositiveElement;
-@sapUiButtonAcceptHoverBackground: darken(@sapUiButtonAcceptBackground, 2);
-@sapUiButtonAcceptHoverBorderColor: @sapUiButtonAcceptBorderColor;
-@sapUiButtonAcceptActiveBackground: darken(@sapUiPositiveElement, 5);
-@sapUiButtonAcceptActiveBorderColor: @sapUiButtonAcceptActiveBackground;
-@sapUiButtonAcceptTextColor: contrast(@sapUiButtonAcceptBackground, @sapUiPositiveText, @sapUiContentContrastTextColor, @sapUiContentContrastTextThreshold);
-@sapUiButtonRejectBorderColor: @sapUiNegativeElement;
-@sapUiButtonRejectHoverBackground: darken(@sapUiButtonRejectBackground, 2);
-@sapUiButtonRejectHoverBorderColor: @sapUiButtonRejectBorderColor;
-@sapUiButtonRejectActiveBackground: darken(@sapUiNegativeElement, 5);
-@sapUiButtonRejectActiveBorderColor: @sapUiButtonRejectActiveBackground;
-@sapUiButtonRejectTextColor: contrast(@sapUiButtonRejectBackground, @sapUiNegativeText, @sapUiContentContrastTextColor, @sapUiContentContrastTextThreshold);
-@sapUiButtonLiteBackground: transparent;
-@sapUiButtonLiteBorderColor: transparent;
-@sapUiButtonLiteTextColor: @sapUiButtonTextColor;
-@sapUiButtonLiteHoverBackground: fade(darken(@sapUiButtonHoverBackground, 10), 50);
-@sapUiButtonLiteHoverBorderColor: @sapUiButtonLiteHoverBackground;
-@sapUiButtonLiteActiveBackground: @sapUiButtonActiveBackground;
-@sapUiButtonLiteActiveBorderColor: @sapUiButtonLiteActiveBackground;
 @sapUiButtonHeaderTextColor: @sapUiButtonTextColor;
 @sapUiButtonHeaderDisabledTextColor: @sapUiButtonHeaderTextColor;
 @sapUiButtonFooterTextColor: contrast(@sapUiPageFooterBackground, @sapUiButtonTextColor, @sapUiContentContrastTextColor, @sapUiContentContrastTextThreshold);
@@ -645,7 +717,7 @@
 @sapUiButtonActionSelectBackground: @sapUiListBackground;
 @sapUiButtonActionSelectBorderColor: @sapUiListBorderColor;
 @sapUiButtonLiteActionSelectHoverBackground: @sapUiListHoverBackground;
-@sapUiToggleButtonPressedBackground: darken(@sapUiSelected, 10);
+@sapUiToggleButtonPressedBackground: @sapUiSelected;
 @sapUiToggleButtonPressedBorderColor: @sapUiToggleButtonPressedBackground;
 @sapUiToggleButtonPressedTextColor: contrast(@sapUiToggleButtonPressedBackground, @sapUiButtonTextColor, @sapUiContentContrastTextColor, @sapUiContentContrastTextThreshold);
 @sapUiToggleButtonPressedHoverBackground: lighten(@sapUiToggleButtonPressedBackground, 3);
@@ -667,48 +739,28 @@
 @sapUiSegmentedButtonFooterHoverBackground: @sapUiSegmentedButtonHoverBackground;
 
 @sapUiFieldActiveBackground: @sapUiActive;
-@sapUiFieldActiveBorderColor: @sapUiActive;
 @sapUiFieldActiveTextColor: @sapUiContentContrastTextColor;
-@sapUiFieldPlaceholderTextColor: lighten(@sapUiContentLabelColor, 4);
 
-@sapUiListTextColor: @sapUiBaseText;
 @sapUiListVerticalBorderColor: @sapUiListBorderColor;
-@sapUiListActiveBackground: @sapUiListHighlightColor;
-@sapUiListActiveTextColor: contrast(@sapUiListActiveBackground, @sapUiListTextColor, @sapUiContentContrastTextColor, @sapUiContentContrastTextThreshold);
 @sapUiListSelectionHoverBackground: contrast(@sapUiListSelectionBackgroundColor, darken(@sapUiListSelectionBackgroundColor, 3), lighten(@sapUiListSelectionBackgroundColor, 3));
-@sapUiListFooterBackground: darken(@sapUiListBackground, 2);
-@sapUiListFooterTextColor: @sapUiListTextColor;
-@sapUiListGroupHeaderBackground: @sapUiListBackground;
-@sapUiListTableGroupHeaderBackground: darken(@sapUiListBackground, 3);
-@sapUiListTableGroupHeaderBorderColor: @sapUiListBorderColor;
-@sapUiListTableGroupHeaderTextColor: contrast(@sapUiListTableGroupHeaderBackground, @sapUiListTextColor, @sapUiContentContrastTextColor, @sapUiContentContrastTextThreshold);
-@sapUiListTableFooterBorder: @sapUiListBorderColor;
-@sapUiListTableFixedBorder: darken(@sapUiListBorderColor, 8);
 @sapUiListTableTextSize: 0.875rem;
 @sapUiListTableIconSize: 1rem;
-
-@sapUiPageFooterBorderColor: contrast(@sapUiPageFooterBackground, darken(@sapUiPageFooterBackground, 8), lighten(@sapUiPageFooterBackground, 12));
-
-@sapUiInfobarHoverBackground: darken(@sapUiInfobarBackground, 3);
-@sapUiInfobarActiveBackground: @sapUiListActiveBackground;
-
-@sapUiObjectHeaderBorderColor: darken(@sapUiObjectHeaderBackground, 41);
 
 @sapUiCalendarColorToday: @sapUiAccent4;
 
 @sapUiDragAndDropColor: @sapUiContentNonInteractiveIconColor;
 @sapUiDragAndDropBackground: @sapUiGroupContentBackground;
 @sapUiDragAndDropBorderColor: @sapUiContentForegroundBorderColor;
-@sapUiDragAndDropActiveColor: @sapUiLink;
-@sapUiDragAndDropActiveBackground: fade(@sapUiLink, 5);
-@sapUiDragAndDropActiveBorderColor: @sapUiLink;
+@sapUiDragAndDropActiveColor: @sapUiActive;
+@sapUiDragAndDropActiveBackground: fade(@sapUiDragAndDropActiveColor, 5);
+@sapUiDragAndDropActiveBorderColor: @sapUiDragAndDropActiveColor;
 
-@sapUiShadowLevel0: 0 0 0 1px fade(@sapUiContentShadowColor, 15);
-@sapUiShadowLevel1: 0 0.125rem 0.5rem 0 fade(@sapUiContentShadowColor, 15), @sapUiShadowLevel0;
-@sapUiShadowLevel2: 0 0.625rem 1.875rem 0 fade(@sapUiContentShadowColor, 15), @sapUiShadowLevel0;
-@sapUiShadowLevel3: 0 1.25rem 5rem 0 fade(@sapUiContentShadowColor, 15), @sapUiShadowLevel0;
+@sapUiShadowLevel0: 0 0 0.0625rem fade(@sapUiContentShadowColor, 10), 0 0.125rem 0.5rem 0 fade(@sapUiContentShadowColor, 10);
+@sapUiShadowLevel1: 0 0 0.0625rem fade(@sapUiContentShadowColor, 15), 0 0.125rem 0.5rem 0 fade(@sapUiContentShadowColor, 30);
+@sapUiShadowLevel2: 0 0 0.0625rem fade(@sapUiContentShadowColor, 15), 0 0.625rem 1.875rem 0 fade(@sapUiContentShadowColor, 30);
+@sapUiShadowLevel3: 0 0 0.0625rem fade(@sapUiContentShadowColor, 15), 0 1.25rem 5rem 0 fade(@sapUiContentShadowColor, 30);
 @sapUiShadowText: 0 0 0.125rem @sapUiContentContrastShadowColor;
-@sapUiShadowHeader: 0 0.125rem 0 0 @sapUiObjectHeaderBackground, inset 0 -0.125rem 0 0 @sapUiObjectHeaderBorderColor;
+@sapUiShadowHeader: 0 0 0.25rem 0 fade(@sapUiContentShadowColor, 15), inset 0 -0.0625rem 0 0 @sapUiObjectHeaderBorderColor;
 
 //images for shell
 @sapUiUx3ShellHeaderImageURL: ~"";

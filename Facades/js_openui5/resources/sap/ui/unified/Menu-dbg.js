@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -59,7 +59,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IContextMenu
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -368,10 +368,10 @@ sap.ui.define([
 	 * See {@link sap.ui.core.Popup#open Popup#open} for further details about popup positioning.
 	 *
 	 * @param {boolean} bWithKeyboard Indicates whether or not the first item shall be highlighted when the menu is opened (keyboard case)
-	 * @param {sap.ui.core.Element|DOMRef} oOpenerRef The element which will get the focus back again after the menu was closed
+	 * @param {sap.ui.core.Element|Element} oOpenerRef The element which will get the focus back again after the menu was closed
 	 * @param {sap.ui.core.Dock} my The reference docking location of the menu for positioning the menu on the screen
 	 * @param {sap.ui.core.Dock} at The 'of' element's reference docking location for positioning the menu on the screen
-	 * @param {sap.ui.core.Element|DOMRef} of The menu is positioned relatively to this element based on the given dock locations
+	 * @param {sap.ui.core.Element|Element} of The menu is positioned relatively to this element based on the given dock locations
 	 * @param {string} [offset] The offset relative to the docking point, specified as a string with space-separated pixel values (e.g. "10 0" to move the popup 10 pixels to the right)
 	 * @param {sap.ui.core.Collision} [collision] The collision defines how the position of the menu should be adjusted in case it overflows the window in some direction
 	 *
@@ -391,7 +391,17 @@ sap.ui.define([
 		this.bIgnoreOpenerDOMRef = false;
 
 		// Open the sap.ui.core.Popup
-		this.getPopup().open(0, my, at, of, offset || "0 0", collision || "_sapUiCommonsMenuFlip _sapUiCommonsMenuFlip", true);
+		this.getPopup().open(0, my, at, of, offset || "0 0", collision || "flipfit flipfit", function(oPopupPosition) {
+			var oOfDom = this.getPopup()._getOfDom(of);
+			if (!oOfDom || !jQuery(oOfDom).is(":visible") || !_isElementInViewport(oOfDom)) {
+				// close the menu if the opener is not visible or not in the viewport anymore
+				this.close();
+			} else {
+				// else the Menu should follow the opener
+				// for example in ObjectPage, where we have scrolling, but the opener button is sticked
+				this.getPopup()._applyPosition(oPopupPosition.lastPosition);
+			}
+		}.bind(this));
 		this.bOpen = true;
 
 		Device.resize.attachHandler(this._handleResizeChange, this);
@@ -400,7 +410,7 @@ sap.ui.define([
 
 		// Set the tab index of the menu and focus
 		var oDomRef = this.getDomRef();
-		jQuery(oDomRef).attr("tabIndex", 0).focus();
+		jQuery(oDomRef).attr("tabindex", 0).focus();
 
 		// Mark the first item when using the keyboard
 		if (bWithKeyboard) {
@@ -423,6 +433,7 @@ sap.ui.define([
 	 * @param {jQuery.Event | object} oEvent The event object or an object containing offsetX, offsetY
 	 * values and left, top values of the element's position
 	 * @param {sap.ui.core.Element|HTMLElement} oOpenerRef - Might be UI5 Element or DOM Element
+	 * @public
 	 */
 	Menu.prototype.openAsContextMenu = function(oEvent, oOpenerRef) {
 			var iOffsetX, iOffsetY, bRTL, eDock, oOpenerRefOffset;
@@ -532,7 +543,7 @@ sap.ui.define([
 		this.setHoveredItem();
 
 		// Reset the tab index of the menu and focus the opener (if there is any)
-		jQuery(this.getDomRef()).attr("tabIndex", -1);
+		jQuery(this.getDomRef()).attr("tabindex", -1);
 
 		// Close the sap.ui.core.Popup
 		this.getPopup().close(0);
@@ -596,6 +607,8 @@ sap.ui.define([
 		oEvent.stopPropagation();
 	};
 
+	Menu.prototype.onsapnextmodifiers = Menu.prototype.onsapnext;
+
 	Menu.prototype.onsapprevious = function(oEvent){
 		//left or up (RTL: right or up)
 		if (oEvent.keyCode != KeyCodes.ARROW_UP) {
@@ -615,6 +628,8 @@ sap.ui.define([
 		oEvent.preventDefault();
 		oEvent.stopPropagation();
 	};
+
+	Menu.prototype.onsappreviousmodifiers = Menu.prototype.onsapprevious;
 
 	Menu.prototype.onsaphome = function(oEvent){
 		//Go to the first selectable item
@@ -678,7 +693,7 @@ sap.ui.define([
 		// focus menuItems
 		if (this.oHoveredItem && (jQuery(oEvent.target).prop("tagName") != "INPUT")) {
 			var oDomRef = this.oHoveredItem.getDomRef();
-			jQuery(oDomRef).attr("tabIndex", 0).focus();
+			jQuery(oDomRef).attr("tabindex", 0).focus();
 		}
 
 		//like sapselect but on keyup:
@@ -721,7 +736,7 @@ sap.ui.define([
 			return;
 		}
 		var oItem = this.getItemByDomRef(oEvent.target);
-		if (!this.bOpen || !oItem || oItem == this.oHoveredItem) {
+		if (!this.bOpen || !oItem) {
 			return;
 		}
 
@@ -805,7 +820,9 @@ sap.ui.define([
 		var isInMenuHierarchy = false,
 		// before we were relaying on Popup.touchEnabled, but the logic in the Popup was changed
 		// and touchEnabled wasn't valid anymore for Combi devices, which caused the Menu to close automatically right after it was opened
-			touchEnabled = Device.support.touch;
+		// check for if the device is combi was added because of change in the Chrome70 browser version where the touch events are "disabled" by default
+		// e.g. document.ontouchstart returns false
+		touchEnabled = Device.support.touch || Device.system.combi;
 
 		this.bIgnoreOpenerDOMRef = false;
 
@@ -1190,227 +1207,26 @@ sap.ui.define([
 		}
 	}
 
-	//**********************************************
+	function _isElementInViewport(oDomElement) {
+		var mRect;
 
-	/*!
-	 * The following code is taken from
-	 * jQuery UI 1.10.3 - 2013-11-18
-	 * jquery.ui.position.js
-	 *
-	 * http://jqueryui.com
-	 * Copyright 2013 jQuery Foundation and other contributors; Licensed MIT
-	 */
+		if (!oDomElement) {
+			return false;
+		}
 
-	//TODO: Get rid of this coding when jQuery UI 1.8 is no longer supported and the framework was switched to jQuery UI 1.9 ff.
+		if (oDomElement instanceof jQuery) {
+			oDomElement = oDomElement.get(0);
+		}
 
-	function _migrateDataTojQueryUI110(data){
-		var withinElement = jQuery(window);
-		data.within = {
-			element: withinElement,
-			isWindow: true,
-			offset: withinElement.offset() || { left: 0, top: 0 },
-			scrollLeft: withinElement.scrollLeft(),
-			scrollTop: withinElement.scrollTop(),
-			width: withinElement.width(),
-			height: withinElement.height()
-		};
-		data.collisionPosition = {
-			marginLeft: 0,
-			marginTop: 0
-		};
-		return data;
+		mRect = oDomElement.getBoundingClientRect();
+
+		return (
+			mRect.top >= 0 &&
+			mRect.left >= 0 &&
+			mRect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+			mRect.right <= (window.innerWidth || document.documentElement.clientWidth)
+		);
 	}
-
-	var _pos_jQueryUI110 = {
-		fit: {
-			left: function( position, data ) {
-				var within = data.within,
-					withinOffset = within.isWindow ? within.scrollLeft : within.offset.left,
-					outerWidth = within.width,
-					collisionPosLeft = position.left - data.collisionPosition.marginLeft,
-					overLeft = withinOffset - collisionPosLeft,
-					overRight = collisionPosLeft + data.collisionWidth - outerWidth - withinOffset,
-					newOverRight;
-
-				// element is wider than within
-				if ( data.collisionWidth > outerWidth ) {
-					// element is initially over the left side of within
-					if ( overLeft > 0 && overRight <= 0 ) {
-						newOverRight = position.left + overLeft + data.collisionWidth - outerWidth - withinOffset;
-						position.left += overLeft - newOverRight;
-					// element is initially over right side of within
-					} else if ( overRight > 0 && overLeft <= 0 ) {
-						position.left = withinOffset;
-					// element is initially over both left and right sides of within
-					} else {
-						if ( overLeft > overRight ) {
-							position.left = withinOffset + outerWidth - data.collisionWidth;
-						} else {
-							position.left = withinOffset;
-						}
-					}
-				// too far left -> align with left edge
-				} else if ( overLeft > 0 ) {
-					position.left += overLeft;
-				// too far right -> align with right edge
-				} else if ( overRight > 0 ) {
-					position.left -= overRight;
-				// adjust based on position and margin
-				} else {
-					position.left = Math.max( position.left - collisionPosLeft, position.left );
-				}
-			},
-			top: function( position, data ) {
-				var within = data.within,
-					withinOffset = within.isWindow ? within.scrollTop : within.offset.top,
-					outerHeight = data.within.height,
-					collisionPosTop = position.top - data.collisionPosition.marginTop,
-					overTop = withinOffset - collisionPosTop,
-					overBottom = collisionPosTop + data.collisionHeight - outerHeight - withinOffset,
-					newOverBottom;
-
-				// element is taller than within
-				if ( data.collisionHeight > outerHeight ) {
-					// element is initially over the top of within
-					if ( overTop > 0 && overBottom <= 0 ) {
-						newOverBottom = position.top + overTop + data.collisionHeight - outerHeight - withinOffset;
-						position.top += overTop - newOverBottom;
-					// element is initially over bottom of within
-					} else if ( overBottom > 0 && overTop <= 0 ) {
-						position.top = withinOffset;
-					// element is initially over both top and bottom of within
-					} else {
-						if ( overTop > overBottom ) {
-							position.top = withinOffset + outerHeight - data.collisionHeight;
-						} else {
-							position.top = withinOffset;
-						}
-					}
-				// too far up -> align with top
-				} else if ( overTop > 0 ) {
-					position.top += overTop;
-				// too far down -> align with bottom edge
-				} else if ( overBottom > 0 ) {
-					position.top -= overBottom;
-				// adjust based on position and margin
-				} else {
-					position.top = Math.max( position.top - collisionPosTop, position.top );
-				}
-			}
-		},
-		flip: {
-			left: function( position, data ) {
-				var within = data.within,
-					withinOffset = within.offset.left + within.scrollLeft,
-					outerWidth = within.width,
-					offsetLeft = within.isWindow ? within.scrollLeft : within.offset.left,
-					collisionPosLeft = position.left - data.collisionPosition.marginLeft,
-					overLeft = collisionPosLeft - offsetLeft,
-					overRight = collisionPosLeft + data.collisionWidth - outerWidth - offsetLeft,
-					/*eslint-disable no-nested-ternary */
-					myOffset = data.my[ 0 ] === "left" ?
-						-data.elemWidth :
-						data.my[ 0 ] === "right" ?
-							data.elemWidth :
-							0,
-					atOffset = data.at[ 0 ] === "left" ?
-						data.targetWidth :
-						data.at[ 0 ] === "right" ?
-							-data.targetWidth :
-							0,
-					/*eslint-enable no-nested-ternary */
-					offset = -2 * data.offset[ 0 ],
-					newOverRight,
-					newOverLeft;
-
-				if ( overLeft < 0 ) {
-					newOverRight = position.left + myOffset + atOffset + offset + data.collisionWidth - outerWidth - withinOffset;
-					if ( newOverRight < 0 || newOverRight < Math.abs( overLeft ) ) {
-						position.left += myOffset + atOffset + offset;
-					}
-				} else if ( overRight > 0 ) {
-					newOverLeft = position.left - data.collisionPosition.marginLeft + myOffset + atOffset + offset - offsetLeft;
-					if ( newOverLeft > 0 || Math.abs( newOverLeft ) < overRight ) {
-						position.left += myOffset + atOffset + offset;
-					}
-				}
-			},
-			top: function( position, data ) {
-				var within = data.within,
-					withinOffset = within.offset.top + within.scrollTop,
-					outerHeight = within.height,
-					offsetTop = within.isWindow ? within.scrollTop : within.offset.top,
-					collisionPosTop = position.top - data.collisionPosition.marginTop,
-					overTop = collisionPosTop - offsetTop,
-					overBottom = collisionPosTop + data.collisionHeight - outerHeight - offsetTop,
-					top = data.my[ 1 ] === "top",
-					/*eslint-disable no-nested-ternary */
-					myOffset = top ?
-						-data.elemHeight :
-						data.my[ 1 ] === "bottom" ?
-							data.elemHeight :
-							0,
-					atOffset = data.at[ 1 ] === "top" ?
-						data.targetHeight :
-						data.at[ 1 ] === "bottom" ?
-							-data.targetHeight :
-							0,
-					/*eslint-enable no-nested-ternary */
-					offset = -2 * data.offset[ 1 ],
-					newOverTop,
-					newOverBottom;
-				if ( overTop < 0 ) {
-					newOverBottom = position.top + myOffset + atOffset + offset + data.collisionHeight - outerHeight - withinOffset;
-					if ( ( position.top + myOffset + atOffset + offset) > overTop && ( newOverBottom < 0 || newOverBottom < Math.abs( overTop ) ) ) {
-						position.top += myOffset + atOffset + offset;
-					}
-				} else if ( overBottom > 0 ) {
-					newOverTop = position.top -  data.collisionPosition.marginTop + myOffset + atOffset + offset - offsetTop;
-					if ( ( position.top + myOffset + atOffset + offset) > overBottom && ( newOverTop > 0 || Math.abs( newOverTop ) < overBottom ) ) {
-						position.top += myOffset + atOffset + offset;
-					}
-				}
-			}
-		},
-		flipfit: {
-			left: function() {
-				_pos_jQueryUI110.flip.left.apply( this, arguments );
-				_pos_jQueryUI110.fit.left.apply( this, arguments );
-			},
-			top: function() {
-				_pos_jQueryUI110.flip.top.apply( this, arguments );
-				_pos_jQueryUI110.fit.top.apply( this, arguments );
-			}
-		}
-	};
-
-	jQuery.ui.position._sapUiCommonsMenuFlip = {
-		left: function(position, data){
-
-			if (jQuery.ui.position.flipfit) { //jQuery UI 1.9 ff.
-				jQuery.ui.position.flipfit.left.apply(this, arguments);
-				return;
-			}
-
-			//jQuery UI 1.8
-			data = _migrateDataTojQueryUI110(data);
-			_pos_jQueryUI110.flipfit.left.apply(this, arguments);
-		},
-		top: function(position, data){
-
-			if (jQuery.ui.position.flipfit) { //jQuery UI 1.9 ff.
-				jQuery.ui.position.flipfit.top.apply(this, arguments);
-				return;
-			}
-
-			//jQuery UI 1.8
-			data = _migrateDataTojQueryUI110(data);
-			_pos_jQueryUI110.flipfit.top.apply(this, arguments);
-		}
-	};
-
-	//******************** jQuery UI 1.10.3 End **************************
-
 
 	})(window);
 

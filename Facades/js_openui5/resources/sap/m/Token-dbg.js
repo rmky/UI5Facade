@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,7 +12,10 @@ sap.ui.define([
 	'sap/ui/core/library',
 	'sap/ui/core/Icon',
 	'./TokenRenderer',
-	"sap/ui/events/KeyCodes"
+	'sap/ui/core/InvisibleText',
+	'sap/ui/events/KeyCodes',
+	'sap/ui/core/theming/Parameters',
+	'sap/ui/core/Core'
 ],
 	function(
 		library,
@@ -21,7 +24,10 @@ sap.ui.define([
 		coreLibrary,
 		Icon,
 		TokenRenderer,
-		KeyCodes
+		InvisibleText,
+		KeyCodes,
+		Parameters,
+		Core
 	) {
 	"use strict";
 
@@ -29,8 +35,6 @@ sap.ui.define([
 
 	// shortcut for sap.ui.core.TextDirection
 	var TextDirection = coreLibrary.TextDirection;
-
-
 
 	/**
 	 * Constructor for a new Token.
@@ -52,7 +56,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -138,10 +142,13 @@ sap.ui.define([
 	 * This file defines behavior for the control,
 	 */
 	Token.prototype.init = function() {
-		var that = this;
+		var that = this,
+			bSysCancelIconUsed = Parameters.get("_sap_m_Token_Sys_Cancel_Icon") === "true",
+			sSrcIcon = bSysCancelIconUsed ? "sap-icon://sys-cancel" : "sap-icon://decline";
+
 		this._deleteIcon = new Icon({
 			id : that.getId() + "-icon",
-			src : "sap-icon://sys-cancel",
+			src : sSrcIcon,
 			noTabStop: true,
 			press : function(oEvent) {
 				var oParent = that.getParent();
@@ -186,6 +193,7 @@ sap.ui.define([
 	 * @public
 	 */
 	Token.prototype.setSelected = function(bSelected) {
+		var sId, aDescribedBy, iDescribedByIndex;
 
 		if (this.getSelected() === bSelected) {
 			return this;
@@ -193,9 +201,20 @@ sap.ui.define([
 
 		var $this = this.$();
 
-		if ($this) {
+		if ($this && this.getDomRef()) {
 			$this.toggleClass("sapMTokenSelected", bSelected);
-			$this.attr('aria-selected', bSelected);
+
+			sId = InvisibleText.getStaticId("sap.m", "TOKEN_ARIA_SELECTED");
+			aDescribedBy = $this.attr("aria-describedby").split(" ");
+			iDescribedByIndex = aDescribedBy.indexOf(sId);
+
+			if (bSelected && iDescribedByIndex === -1) {
+				aDescribedBy.push(sId);
+			} else {
+				aDescribedBy.splice(iDescribedByIndex, 1);
+			}
+
+			$this.attr("aria-describedby", aDescribedBy.join(" "));
 		}
 
 		this.setProperty("selected", bSelected, true);
@@ -222,6 +241,22 @@ sap.ui.define([
 		}
 
 		return this;
+	};
+
+	/**
+	 * Helper function for synchronizing the tooltip of the token
+	 * @private
+	 * @param {boolean} bEditable The editable value
+	 */
+	Token.prototype._getTooltip = function (oControl, bEditable) {
+		var sTooltip = oControl.getTooltip_AsString(),
+			sDeletableTooltip = Core.getLibraryResourceBundle("sap.m").getText("TOKEN_ARIA_DELETABLE");
+
+		if (bEditable && !sTooltip) {
+			return sDeletableTooltip;
+		}
+
+		return sTooltip;
 	};
 
 	/**

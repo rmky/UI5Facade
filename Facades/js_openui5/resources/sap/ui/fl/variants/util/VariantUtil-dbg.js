@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,7 +11,8 @@ sap.ui.define([
 	"sap/ui/core/routing/History",
 	"sap/ui/core/routing/HashChanger",
 	"sap/base/Log",
-	"sap/base/util/deepEqual"
+	"sap/base/util/deepEqual",
+	"sap/ui/base/ManagedObjectObserver"
 ], function(
 	jQuery,
 	Component,
@@ -19,18 +20,19 @@ sap.ui.define([
 	History,
 	HashChanger,
 	Log,
-	deepEqual
+	deepEqual,
+	ManagedObjectObserver
 ) {
 	"use strict";
 
 	/**
-	 * Provides utility functions for sap.ui.fl.variants.VariantModel
-	 * The functions should be called with an instance of sap.ui.fl.variants.VariantModel
+	 * Provides utility functions for <code>sap.ui.fl.variants.VariantModel</code>.
+	 * The functions should be called with an instance of <code>sap.ui.fl.variants.VariantModel</code>.
 	 *
 	 * @namespace
 	 * @alias sap.ui.fl.variants.util.VariantUtil
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @experimental Since 1.56.0
 	 */
 
@@ -48,38 +50,53 @@ sap.ui.define([
 			VariantUtil._setOrUnsetCustomNavigationForParameter.call(this, true);
 		},
 
-		attachHashHandlers: function (sVariantManagementReference) {
+		attachHashHandlers: function (sVariantManagementReference, sUpdateURL) {
 			// only for first variant management control with 'updateVariantInURL' property set to true
 			if (this._oHashRegister.currentIndex === null) {
 				var oHashChanger = HashChanger.getInstance();
 
-				// attach handler to check if hash was replaced
-				oHashChanger.attachEvent("hashReplaced", VariantUtil._handleHashReplaced, this);
-				// attach handler to process hash changes
-				oHashChanger.attachEvent("hashChanged", VariantUtil._navigationHandler, this);
-
 				// de-register method to process hash changes
-				var fnOriginalDestroy = this.oAppComponent.destroy;
-				this.oAppComponent.destroy = function () {
-					// deregister navigation filter if ushell is available
-					VariantUtil._setOrUnsetCustomNavigationForParameter.call(this, false);
-					// detach handler to check if hash was replaced
-					oHashChanger.detachEvent("hashReplaced", VariantUtil._handleHashReplaced, this);
-					// detach navigation handler
-					oHashChanger.detachEvent("hashChanged", VariantUtil._navigationHandler, this);
-					// clear variant controller map
-					this.oVariantController.resetMap();
-					// destroy VariantModel
-					this.destroy();
-					fnOriginalDestroy.apply(this.oAppComponent, arguments);
-				}.bind(this);
+				var fnObserverHandler = function () {
+					// variant switch promise needs to be checked, since there might be a pending on-going variants switch
+					// which might result in unnecessary data being stored
+					return this._oVariantSwitchPromise.then(function() {
+						// deregister navigation filter if ushell is available
+						VariantUtil._setOrUnsetCustomNavigationForParameter.call(this, false);
+						// detach handler to check if hash was replaced
+						oHashChanger.detachEvent("hashReplaced", VariantUtil._handleHashReplaced, this);
+						// detach navigation handler
+						oHashChanger.detachEvent("hashChanged", VariantUtil._navigationHandler, this);
+						// clear variant controller map
+						this.oChangePersistence.resetVariantMap();
+						// destroy VariantModel
+						this.destroy();
+						// destroy oAppComponent.destroy() observer
+						this.oComponentDestroyObserver.unobserve(this.oAppComponent, { destroy: true });
+						this.oComponentDestroyObserver.destroy();
+					}.bind(this));
+				};
 
-				VariantUtil._navigationHandler.call(this);
+				if (!this.oComponentDestroyObserver && this.oAppComponent instanceof Component) {
+					// observer for oAppComponent.destroy()
+					this.oComponentDestroyObserver = new ManagedObjectObserver(fnObserverHandler.bind(this));
+					this.oComponentDestroyObserver.observe(this.oAppComponent, {destroy: true});
+				}
+
+				if (sUpdateURL) {
+					// attach handler to check if hash was replaced
+					oHashChanger.attachEvent("hashReplaced", VariantUtil._handleHashReplaced, this);
+					// attach handler to process hash changes
+					oHashChanger.attachEvent("hashChanged", VariantUtil._navigationHandler, this);
+					// first explicit call
+					VariantUtil._navigationHandler.call(this);
+				}
 			}
-			if (Array.isArray(this._oHashRegister.variantControlIds[this._oHashRegister.variantControlIds])) {
-				this._oHashRegister.variantControlIds[this._oHashRegister.currentIndex].push(sVariantManagementReference);
-			} else {
-				this._oHashRegister.variantControlIds[this._oHashRegister.currentIndex] = [sVariantManagementReference];
+			if (sUpdateURL) {
+				if (Array.isArray(this._oHashRegister.variantControlIds[this._oHashRegister.variantControlIds])) {
+					this._oHashRegister.variantControlIds[this._oHashRegister.currentIndex].push(sVariantManagementReference);
+				} else {
+					this._oHashRegister.variantControlIds[this._oHashRegister.currentIndex] = [sVariantManagementReference];
+				}
 			}
 		},
 
@@ -98,20 +115,6 @@ sap.ui.define([
 			if (!mPropertyBag.ignoreRegisterUpdate) {
 				this._oHashRegister.hashParams[this._oHashRegister.currentIndex] = mPropertyBag.parameters;
 			}
-		},
-
-		/**
-		 * Returns control variant technical parameter for the passed component.
-		 *
-		 * @param  {object} oComponent - Component instance used to get the technical parameters
-		 * @returns {string|undefined} Returns the control variant technical parameter
-		 */
-		getCurrentControlVariantId: function(oComponent) {
-			var aTechnicalParameters = flUtils.getTechnicalParametersForComponent(oComponent);
-			return aTechnicalParameters
-				&& aTechnicalParameters[VariantUtil.variantTechnicalParameterName]
-				&& Array.isArray(aTechnicalParameters[VariantUtil.variantTechnicalParameterName])
-				&& aTechnicalParameters[VariantUtil.variantTechnicalParameterName][0];
 		},
 
 		_handleHashReplaced: function (oEvent) {
@@ -154,7 +157,6 @@ sap.ui.define([
 			}
 
 			if (this._oHashRegister.currentIndex >= 0) {
-
 				var aVariantParamValues;
 				var mPropertyBag = {};
 				if (sDirection === "NewEntry" || sDirection === "Unknown") {
@@ -164,20 +166,25 @@ sap.ui.define([
 						mHashParameters && mHashParameters[VariantUtil.variantTechnicalParameterName]
 					) || [];
 
+					var bURLUpdateRequired = VariantUtil._adjustForDuplicateParameters.call(this, aVariantParamValues);
+
+					aVariantParamValues = aVariantParamValues.map(function(sParameterValue) {
+						return decodeURIComponent(sParameterValue);
+					});
+
 					// check if variant management control for previously existing register entry exists
 					// if yes, reset to default variant
 					var aExisitingParams = this._oHashRegister.variantControlIds[this._oHashRegister.currentIndex];
-					if (Array.isArray(aExisitingParams)){
-						aExisitingParams.forEach(function(sParam){
+					if (Array.isArray(aExisitingParams)) {
+						aExisitingParams.forEach(function(sParam) {
 							this.switchToDefaultForVariantManagement(sParam);
 						}.bind(this));
 					}
 
 					// do not update URL parameters if new entry/unknown
 					mPropertyBag = {
-						parameters: aVariantParamValues.map( function(sParameterValue) {
-							return decodeURIComponent(sParameterValue);
-						} )
+						parameters: aVariantParamValues,
+						updateURL: !!bURLUpdateRequired
 					};
 				} else {
 					aVariantParamValues = this._oHashRegister.hashParams[this._oHashRegister.currentIndex];
@@ -196,6 +203,27 @@ sap.ui.define([
 				};
 			}
 			this.updateHasherEntry(mPropertyBag);
+		},
+
+		_adjustForDuplicateParameters: function(aVariantParamValues) {
+			// calculate if duplicate / higher level variant parameter exists
+			if (aVariantParamValues.length > 1) {
+				return Object.keys(this.oData).reduce(
+					function(bURLUpdateRequired, sVariantManagementReference) {
+						var sCurrentVariant = this.oData[sVariantManagementReference].currentVariant;
+						this.oData[sVariantManagementReference].variants.forEach(function (oVariant) {
+							var iVariantIndex = aVariantParamValues.indexOf(oVariant.key);
+							// if variantReference exists in this sVariantManagementReference
+							// and it's not the current variant
+							if (iVariantIndex > -1 && oVariant.key !== sCurrentVariant) {
+								aVariantParamValues.splice(iVariantIndex, 1);
+								bURLUpdateRequired = true;
+							}
+						});
+						return bURLUpdateRequired;
+					}.bind(this), false
+				);
+			}
 		},
 
 		_setOrUnsetCustomNavigationForParameter: function(bSet) {
@@ -244,14 +272,14 @@ sap.ui.define([
 			if (bSuppressDefaultNavigation) {
 				bSuppressDefaultNavigation =
 					// true returned from some() if other parameters exist, which is then negated
-					!( [oOldParsed, oNewParsed].some(function (oParsedHash) {
-							if (oParsedHash.params.hasOwnProperty(VariantUtil.variantTechnicalParameterName)) {
+					!([oOldParsed, oNewParsed].some(function (oParsedHash) {
+						if (oParsedHash.params.hasOwnProperty(VariantUtil.variantTechnicalParameterName)) {
 								// If parameter exists but it's not the only one, it's invalid
-								return Object.keys(oParsedHash.params).length > 1;
-							}
-							return Object.keys(oParsedHash.params).length > 0;
+							return Object.keys(oParsedHash.params).length > 1;
 						}
-					) );
+						return Object.keys(oParsedHash.params).length > 0;
+					}
+					));
 			}
 
 			if (bSuppressDefaultNavigation) {
@@ -275,7 +303,6 @@ sap.ui.define([
 				return Array.prototype.slice.call(this._oHashRegister.hashParams[this._oHashRegister.currentIndex]);
 			}
 		}
-
 	};
 	return VariantUtil;
 }, true);

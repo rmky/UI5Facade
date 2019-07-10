@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -12,6 +12,15 @@ sap.ui.define([
 ],
 function(Device, UIArea, jQuery) {
 	"use strict";
+
+	/**
+	 * Contains classes and helpers related to drag & drop functionality.
+	 *
+	 * @name sap.ui.core.dnd
+	 * @namespace
+	 * @public
+	 * @since 1.52
+	 */
 
 	var DnD = {},
 		oDragControl = null,		// the control being dragged
@@ -104,7 +113,6 @@ function(Device, UIArea, jQuery) {
 		 * @namespace
 		 * @name sap.ui.core.dnd.DragSession
 		 * @static
-		 * @abstract
 		 * @public
 		 */
 		return /** @lends sap.ui.core.dnd.DragSession */ {
@@ -340,6 +348,9 @@ function(Device, UIArea, jQuery) {
 					sRelativePosition = "On";
 				}
 			}
+			if (sRelativePosition != "On" && sap.ui.getCore().getConfiguration().getRTL()) {
+				sRelativePosition = (sRelativePosition == "After") ? "Before" : "After";
+			}
 		} else {
 			var iCursorY = oEvent.pageY - mDropRect.top;
 			mStyle.width = mDropRect.width;
@@ -488,6 +499,7 @@ function(Device, UIArea, jQuery) {
 
 		// the text inside input fields should still be selectable
 		if (/^(input|textarea)$/i.test(document.activeElement.tagName)) {
+			oEvent.target.getAttribute("data-sap-ui-draggable") && oEvent.preventDefault();
 			return;
 		}
 

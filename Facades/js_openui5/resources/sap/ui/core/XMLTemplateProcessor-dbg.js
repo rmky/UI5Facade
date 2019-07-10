@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -264,7 +264,12 @@ function(
 	 * @param {boolean} bEnrichFullIds Flag for running in a mode which only resolves the ids and writes them back
 	 *     to the xml source.
 	 * @param {boolean} bAsync Whether or not to perform the template processing asynchronously.
-	 *     Will only be active in conjunction with <code>sap.ui.getCore().getConfiguration().getXMLProcessingMode()</code> being <code>sequential</code>
+	 *     The async processing will only be active in conjunction with the internal XML processing mode set to <code>sequential</code>.
+	 *     The processing mode "sequential" is implicitly activated for the following type of async views:
+	 *      a) root views in the manifest
+	 *      b) XMLViews created with the (XML)View.create factory
+	 *      c) XMLViews used via routing
+	 *     Additionally all declarative nested subviews (and in future: fragments) are also processed asynchronously.
 	 * @param {object} oParseConfig parse configuration options, e.g. settings pre-processor
 	 *
 	 * @return {Promise} with an array containing Controls and/or plain HTML element strings
@@ -274,10 +279,9 @@ function(
 		// the output of the template parsing, containing strings and promises which resolve to control or control arrays
 		// later this intermediate state with promises gets resolved to a flat array containing only strings and controls
 		var aResult = [],
-			pResultChain = SyncPromise.resolve(),
-			sProcessingMode = oView._sProcessingMode || sap.ui.getCore().getConfiguration().getXMLProcessingMode();
+			pResultChain = SyncPromise.resolve();
 
-		bAsync = bAsync && sProcessingMode === "sequential";
+		bAsync = bAsync && oView._sProcessingMode === "sequential";
 		Log.debug("XML processing mode is " + (bAsync ? "sequential" : "default"), "", "XMLTemplateProcessor");
 
 		var bDesignMode = sap.ui.getCore().getConfiguration().getDesignMode();
@@ -530,8 +534,9 @@ function(
 					var fnCreateView = function (oViewClass) {
 						var mViewParameters = {
 							id: id ? getId(oView, node, id) : undefined,
-							xmlNode:node,
-							containingView:oView._oContainingView
+							xmlNode: node,
+							containingView: oView._oContainingView,
+							processingMode: oView._sProcessingMode // add processing mode, so it can be propagated to subviews inside the HTML block
 						};
 						// running with owner component
 						if (oView.fnScopedRunWithOwner) {
@@ -586,7 +591,7 @@ function(
 					// @evo-todo: The factory call needs to be refactored into a proper async/sync switch.
 					// @evo-todo: The ExtensionPoint module is actually the sap.ui.extensionpoint function.
 					//            We still call _factory for skipping the deprecation warning for now.
-					return SyncPromise.resolve(ExtensionPoint._factory(oContainer, node.getAttribute("name"), function() {
+					var fnExtensionPointFactory = ExtensionPoint._factory.bind(null, oContainer, node.getAttribute("name"), function() {
 						// create extensionpoint with callback function for defaultContent - will only be executed if there is no customizing configured or if customizing is disabled
 						var pChild = SyncPromise.resolve();
 						var aChildControlPromises = [];
@@ -608,7 +613,9 @@ function(
 							});
 							return aDefaultContent;
 						});
-					}));
+					});
+
+					return SyncPromise.resolve(oView.fnScopedRunWithOwner ? oView.fnScopedRunWithOwner(fnExtensionPointFactory) : fnExtensionPointFactory());
 				}
 
 			} else {
@@ -706,6 +713,8 @@ function(
 							}));
 						} else if (attr.namespaceURI === "http://schemas.sap.com/sapui5/extension/sap.ui.core.support.Support.info/1") {
 							sSupportData = sValue;
+						} else if (attr.namespaceURI && attr.namespaceURI.indexOf("http://schemas.sap.com/sapui5/preprocessorextension/") === 0) {
+							Log.debug(oView + ": XMLView parser ignored preprocessor attribute '" + sName + "' (value: '" + sValue + "')");
 						} else if (sName.indexOf("xmlns:") !== 0 ) { // other, unknown namespace and not an xml namespace alias definition
 							if (!mCustomSettings) {
 								mCustomSettings = {};
@@ -746,11 +755,19 @@ function(
 
 					} else if (oInfo && oInfo._iKind === 5 /* EVENT */ ) {
 						// EVENT
-						var vEventHandler = EventHandlerResolver.resolveEventHandler(sValue, oView._oContainingView.oController); // TODO: can this be made async? (to avoid the hard resolver dependency)
-						if ( vEventHandler ) {
-							mSettings[sName] = vEventHandler;
-						} else {
-							Log.warning(oView + ": event handler function \"" + sValue + "\" is not a function or does not exist in the controller.");
+						var aEventHandlers = [];
+
+						EventHandlerResolver.parse(sValue).forEach(function (sEventHandler) { // eslint-disable-line no-loop-func
+							var vEventHandler = EventHandlerResolver.resolveEventHandler(sEventHandler, oView._oContainingView.oController); // TODO: can this be made async? (to avoid the hard resolver dependency)
+							if (vEventHandler) {
+								aEventHandlers.push(vEventHandler);
+							} else  {
+								Log.warning(oView + ": event handler function \"" + sEventHandler + "\" is not a function or does not exist in the controller.");
+							}
+						});
+
+						if (aEventHandlers.length) {
+							mSettings[sName] = aEventHandlers;
 						}
 					} else if (oInfo && oInfo._iKind === -1) {
 						// SPECIAL SETTING - currently only allowed for View's async setting
@@ -890,8 +907,11 @@ function(
 				} else if (!bEnrichFullIds) {
 
 					if (View.prototype.isPrototypeOf(oClass.prototype) && typeof oClass._sType === "string") {
-
 						var fnCreateViewInstance = function () {
+							// Pass processingMode to nested XMLViews
+							if (oClass.getMetadata().isA("sap.ui.core.mvc.XMLView") && oView._sProcessingMode === "sequential") {
+								mSettings.processingMode = "sequential";
+							}
 							return View._legacyCreate(mSettings, undefined, oClass._sType);
 						};
 
@@ -907,6 +927,10 @@ function(
 					} else {
 						// call the control constructor with the according owner in scope
 						var fnCreateInstance = function() {
+							// Pass processingMode to Fragments only
+							if (oClass.getMetadata().isA("sap.ui.core.Fragment") && node.getAttribute("type") !== "JS" && oView._sProcessingMode === "sequential") {
+								mSettings.processingMode = "sequential";
+							}
 							if (oView.fnScopedRunWithOwner) {
 								return oView.fnScopedRunWithOwner(function() {
 									return new oClass(mSettings);
@@ -915,7 +939,6 @@ function(
 								return new oClass(mSettings);
 							}
 						};
-
 
 						if (oParseConfig && oParseConfig.fnRunWithPreprocessor) {
 							vNewControlInstance = oParseConfig.fnRunWithPreprocessor(fnCreateInstance);

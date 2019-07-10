@@ -1,27 +1,26 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
- sap.ui.define([
+sap.ui.define([
 	"sap/ui/thirdparty/jquery",
-	'sap/ui/core/StashedControlSupport',
-	'sap/ui/dt/ElementUtil',
-	'sap/ui/rta/Utils',
-	'sap/ui/rta/util/BindingsExtractor'
-	],
-	function (
-		jQuery,
-		StashedControlSupport,
-		ElementUtil,
-		RtaUtils,
-		BindingsExtractor
-	) {
+	"sap/ui/dt/ElementUtil",
+	"sap/ui/rta/Utils",
+	"sap/base/Log",
+	"sap/ui/rta/util/BindingsExtractor"
+], function (
+	jQuery,
+	ElementUtil,
+	RtaUtils,
+	Log,
+	BindingsExtractor
+) {
 	"use strict";
 
-	function _enrichProperty(mProperty, mEntity){
-		var mProp = jQuery.extend({},mProperty);
+	function _enrichProperty(mProperty, mEntity) {
+		var mProp = jQuery.extend({}, mProperty);
 		mProp.entityName = mEntity.name;
 
 		var mLabelAnnotation = mProperty["com.sap.vocabularies.Common.v1.Label"];
@@ -34,10 +33,10 @@
 		var mHiddenAnnotation = mProperty["com.sap.vocabularies.UI.v1.Hidden"];
 		mProp.hidden = mHiddenAnnotation && mHiddenAnnotation.Bool === "true";
 
-		if (!mProp.hidden){
+		if (!mProp.hidden) {
 			// Old hidden annotation
 			var mFieldControlAnnotation = mProperty["com.sap.vocabularies.Common.v1.FieldControl"];
-			if (mFieldControlAnnotation){
+			if (mFieldControlAnnotation) {
 				mProp.hidden = mFieldControlAnnotation.EnumMember === "com.sap.vocabularies.Common.v1.FieldControlType/Hidden";
 			}
 		}
@@ -59,13 +58,13 @@
 		return false;
 	}
 
-	function _expandComplexProperties(aODataProperties, oMetaModel, mEntity){
-		return aODataProperties.reduce(function(aExpandedProperties, mProperty){
+	function _expandComplexProperties(aODataProperties, oMetaModel, mEntity) {
+		return aODataProperties.reduce(function(aExpandedProperties, mProperty) {
 			var vProps = _enrichProperty(mProperty, mEntity);
 			if (_isComplexType(vProps)) {
 				var mComplexType = oMetaModel.getODataComplexType(vProps.type);
 				if (mComplexType) {
-					vProps = mComplexType.property.map(function(oComplexProperty){
+					vProps = mComplexType.property.map(function(oComplexProperty) {
 						oComplexProperty = _enrichProperty(oComplexProperty, mEntity);
 						oComplexProperty.bindingPath = vProps.name + "/" + oComplexProperty.name;
 						oComplexProperty.referencedComplexPropertyName = vProps.fieldLabel || vProps.name;
@@ -81,14 +80,14 @@
 	}
 
 	function _filterInvisibleProperties(aODataProperties, oElement, sAggregationName) {
-		return aODataProperties.filter(function(mProperty){
+		return aODataProperties.filter(function(mProperty) {
 			//see _enrichProperty
 			return !mProperty.hidden;
-		}).filter(function(mProperty){
+		}).filter(function(mProperty) {
 			//@runtime hidden by field control value = 0
 			var mFieldControlAnnotation = mProperty["com.sap.vocabularies.Common.v1.FieldControl"];
 			var sFieldControlPath = mFieldControlAnnotation && mFieldControlAnnotation.Path;
-			if (sFieldControlPath){
+			if (sFieldControlPath) {
 				// if the binding is a listbinding, we skip the check for field control
 				var bListBinding = oElement.getBinding(sAggregationName) instanceof sap.ui.model.ListBinding;
 				if (bListBinding) {
@@ -121,7 +120,7 @@
 		if (bAbsoluteAggregationBinding) {
 			vBinding = oElement.getBindingInfo(sAggregationName);
 			//check to be default model binding otherwise return undefined
-			if (typeof vBinding.model === "string" && vBinding.model !== ""){
+			if (typeof vBinding.model === "string" && vBinding.model !== "") {
 				vBinding = undefined;
 			}
 		} else {
@@ -137,6 +136,15 @@
 		if (vBinding) {
 			return bAbsoluteAggregationBinding ? vBinding.path : vBinding.getPath();
 		}
+	}
+
+	function _assignCustomItemIds(sParentId, oCustomItem) {
+		oCustomItem.type = "custom";
+		if (oCustomItem.id) {
+			oCustomItem.itemId = sParentId + "--" + oCustomItem.id;
+			oCustomItem.key = oCustomItem.itemId;
+		}
+		return oCustomItem;
 	}
 
 	/**
@@ -158,7 +166,7 @@
 			var sModelName = oModel.getMetadata().getName();
 			if (sModelName === "sap.ui.model.odata.ODataModel" || sModelName === "sap.ui.model.odata.v2.ODataModel") {
 				var oMetaModel = oModel.getMetaModel();
-				return oMetaModel.loaded().then(function(){
+				return oMetaModel.loaded().then(function() {
 					var sBindingContextPath = _getBindingPath(oElement, sAggregationName);
 					if (sBindingContextPath) {
 						var oMetaModelContext = oMetaModel.getMetaContext(sBindingContextPath);
@@ -184,16 +192,16 @@
 						mData.property = _expandComplexProperties(mData.property, oMetaModel, mODataEntity);
 						mData.property = _filterInvisibleProperties(mData.property, oElement, sAggregationName);
 
-						if (mODataEntity.navigationProperty){
+						if (mODataEntity.navigationProperty) {
 							mData.navigationProperty = mODataEntity.navigationProperty;
-							mODataEntity.navigationProperty.forEach(function(oNavProp){
+							mODataEntity.navigationProperty.forEach(function(oNavProp) {
 								var sFullyQualifiedEntityName = (
 									oMetaModel.getODataAssociationEnd(mODataEntity, oNavProp.name)
 									&& oMetaModel.getODataAssociationEnd(mODataEntity, oNavProp.name).type
 								);
 								var oEntityType = oMetaModel.getODataEntityType(sFullyQualifiedEntityName);
-								if (oEntityType && oEntityType.name){
-									if (mData.navigationEntityNames.indexOf(oEntityType.name) === -1){
+								if (oEntityType && oEntityType.name) {
+									if (mData.navigationEntityNames.indexOf(oEntityType.name) === -1) {
 										mData.navigationEntityNames.push(oEntityType.name);
 									}
 								}
@@ -208,7 +216,7 @@
 		return Promise.resolve(mData);
 	}
 
-	function _oDataPropertyToAdditionalElementInfo (oODataProperty){
+	function _oDataPropertyToAdditionalElementInfo (oODataProperty) {
 		return {
 			selected : false,
 			label : oODataProperty.fieldLabel || oODataProperty.name,
@@ -224,17 +232,18 @@
 		};
 	}
 
-	function _elementToAdditionalElementInfo (mData){
+	function _elementToAdditionalElementInfo (mData) {
 		var oElement = mData.element;
 		var mAction = mData.action;
+		var mBindingPathCollection = mData.bindingPathCollection;
 		return {
 			selected : false,
-			label : ElementUtil.getLabelForElement(oElement, mAction.getLabel),
-			tooltip : oElement.quickInfoFromOData || oElement.name || ElementUtil.getLabelForElement(oElement, mAction.getLabel),
+			label : oElement.fieldLabel || ElementUtil.getLabelForElement(oElement, mAction.getLabel),
+			tooltip : oElement.quickInfo || oElement.name || ElementUtil.getLabelForElement(oElement, mAction.getLabel),
 			referencedComplexPropertyName: oElement.referencedComplexPropertyName ? oElement.referencedComplexPropertyName : "",
 			duplicateComplexName: oElement.duplicateComplexName ? oElement.duplicateComplexName : false,
-			bindingPaths: oElement.bindingPaths,
-			originalLabel: oElement.renamedLabel && oElement.fieldLabel !== oElement.labelFromOData ? oElement.labelFromOData : "",
+			bindingPaths: mBindingPathCollection.bindingPaths,
+			originalLabel: oElement.renamedLabel && oElement.fieldLabel !== oElement.originalLabel ? oElement.originalLabel : "",
 			//command relevant data
 			type : "invisible",
 			elementId : oElement.getId()
@@ -269,9 +278,8 @@
 					}
 					return false;
 				});
-		} else {
-			return [oElement];
 		}
+		return [oElement];
 	}
 
 	function _checkForComplexDuplicates(aODataProperties) {
@@ -293,55 +301,6 @@
 		return aODataProperties.some(function(oDataProperty) {
 			return oDataProperty.fieldLabel === oInvisibleElement.fieldLabel;
 		});
-	}
-
-	// Get all relevant bindings for the element (from all properties)
-	function _collectBindingPaths(oInvisibleElement, oModel){
-		oInvisibleElement.bindingPaths = [];
-		oInvisibleElement.bindingContextPaths = [];
-		var sAggregationName = oInvisibleElement.sParentAggregationName;
-		var oParent = oInvisibleElement.getParent();
-		var aBindings = BindingsExtractor.getBindings(oInvisibleElement, oModel);
-
-		if (oParent) {
-			var oDefaultAggregation = oParent.getMetadata().getAggregation();
-
-			if (oDefaultAggregation) {
-				var iPositionOfInvisibleElement = ElementUtil.getAggregation(oParent, sAggregationName).indexOf(oInvisibleElement);
-				var sParentDefaultAggregationName = oDefaultAggregation.name;
-				var oBinding = oParent.getBindingInfo(sParentDefaultAggregationName);
-				var oTemplate = oBinding && oBinding.template;
-
-				if (oTemplate) {
-					var oTemplateDefaultAggregation = oTemplate.getMetadata().getAggregation();
-
-					if (oTemplateDefaultAggregation) {
-						var sTemplateDefaultAggregationName = oTemplateDefaultAggregation.name;
-						var oTemplateElement = ElementUtil.getAggregation(oTemplate, sTemplateDefaultAggregationName)[iPositionOfInvisibleElement];
-						aBindings = aBindings.concat(BindingsExtractor.getBindings(oTemplateElement, null, true));
-					}
-				}
-			}
-		}
-
-		for (var i = 0, l = aBindings.length; i < l; i++) {
-			if (aBindings[i].getPath && aBindings[i].getPath()){
-				if (oInvisibleElement.bindingPaths.indexOf(aBindings[i].getPath()) === -1){
-					oInvisibleElement.bindingPaths.push(aBindings[i].getPath());
-				}
-			}
-			if (aBindings[i].getContext && aBindings[i].getContext()){
-				if (oInvisibleElement.bindingContextPaths.indexOf(aBindings[i].getContext().getPath()) === -1){
-					oInvisibleElement.bindingContextPaths.push(aBindings[i].getContext().getPath());
-				}
-			}
-			if (jQuery.isPlainObject(aBindings[i])){
-				if (oInvisibleElement.bindingPaths.indexOf(aBindings[i].parts[0].path) === -1){
-					oInvisibleElement.bindingPaths.push(aBindings[i].parts[0].path);
-				}
-			}
-		}
-		return oInvisibleElement;
 	}
 
 	/**
@@ -375,7 +334,7 @@
 
 		// BindingContextPath : "/SEPMRA_C_PD_Supplier('100000001')"
 		// NavigationEntityName : "SEPMRA_C_PD_Supplier"
-		var bNavigationInEntity = aBindingContextPaths.some(function(sContextPath){
+		var bNavigationInEntity = aBindingContextPaths.some(function(sContextPath) {
 			sContextPath = sContextPath.match(/^\/?([A-Za-z0-9_]+)/)[0];
 			return (aNavigationEntityNames.indexOf(sContextPath) >= 0);
 		});
@@ -407,15 +366,22 @@
 	 *
 	 * @private
 	 */
-	function _enhanceInvisibleElement(oInvisibleElement, mODataProperty) {
-		oInvisibleElement.labelFromOData = mODataProperty.fieldLabel;
-		oInvisibleElement.quickInfoFromOData = mODataProperty.quickInfo;
-		oInvisibleElement.name = mODataProperty.name;
-		if (oInvisibleElement.fieldLabel !== oInvisibleElement.labelFromOData) {
+	function _enhanceInvisibleElement(oInvisibleElement, mODataOrCustomItem) {
+		// mODataOrCustomItem.fieldLabel - oData, mODataOrCustomItem.label - custom
+		oInvisibleElement.originalLabel = mODataOrCustomItem.fieldLabel || mODataOrCustomItem.label;
+
+		// mODataOrCustomItem.quickInfo - oData, mODataOrCustomItem.tooltip - custom
+		oInvisibleElement.quickInfo = mODataOrCustomItem.quickInfo || mODataOrCustomItem.tooltip;
+
+		// mODataOrCustomItem.name - oData
+		oInvisibleElement.name = mODataOrCustomItem.name;
+
+		// oInvisibleElement.fieldLabel has the current label
+		if (oInvisibleElement.fieldLabel !== oInvisibleElement.originalLabel) {
 			oInvisibleElement.renamedLabel = true;
 		}
-		if (mODataProperty.referencedComplexPropertyName) {
-			oInvisibleElement.referencedComplexPropertyName = mODataProperty.referencedComplexPropertyName;
+		if (mODataOrCustomItem.referencedComplexPropertyName) {
+			oInvisibleElement.referencedComplexPropertyName = mODataOrCustomItem.referencedComplexPropertyName;
 		}
 	}
 
@@ -427,14 +393,15 @@
 	 * @param {Array.<Object>} aODataProperties - Array of Fields
 	 * @param {Array.<Object>} aNavigationProperties - Array of Navigation Properties
 	 * @param {Array.<Object>} aNavigationEntityNames - Array of Navigation Entity names
+	 * @param {Object} mBindingPaths - Map of all binding paths and binding context paths of the passed invisible element
 	 *
 	 * @return {Boolean} - whether this field is
 	 *
 	 * @private
 	 */
-	function _checkAndEnhanceODataProperty(oInvisibleElement, aODataProperties, aNavigationProperties, aNavigationEntityNames) {
-		var aBindingPaths = oInvisibleElement.bindingPaths,
-			aBindingContextPaths = oInvisibleElement.bindingContextPaths,
+	function _checkAndEnhanceODataProperty(oInvisibleElement, aODataProperties, aNavigationProperties, aNavigationEntityNames, mBindingPaths) {
+		var aBindingPaths = mBindingPaths.bindingPaths,
+			aBindingContextPaths = mBindingPaths.bindingContextPaths,
 			mODataProperty;
 
 		return (
@@ -446,7 +413,7 @@
 			// with extra data from it
 			|| (
 				(mODataProperty = _findODataProperty(aBindingPaths, aODataProperties))
-				&&  (_enhanceInvisibleElement(oInvisibleElement, mODataProperty) || true)
+				&& (_enhanceInvisibleElement(oInvisibleElement, mODataProperty) || true)
 			)
 		);
 	}
@@ -461,10 +428,11 @@
 		 *
 		 * @return {Promise} - returns a Promise which resolves with a list of hidden controls are available to display
 		 */
-		enhanceInvisibleElements : function(oElement, mActions){
+		enhanceInvisibleElements : function(oElement, mActions) {
 			var oModel = oElement.getModel();
 			var mRevealData = mActions.reveal;
 			var mAddODataProperty = mActions.addODataProperty;
+			var mCustom = mActions.custom;
 			var oDefaultAggregation = oElement.getMetadata().getAggregation();
 			var sAggregationName = oDefaultAggregation ? oDefaultAggregation.name : mActions.aggregation;
 
@@ -488,31 +456,47 @@
 						var oInvisibleElement = mInvisibleElement.element;
 						var mAction = mInvisibleElement.action;
 						var bIncludeElement = true;
+						var mBindingPathCollection = {};
+						oInvisibleElement.fieldLabel = ElementUtil.getLabelForElement(oInvisibleElement, mAction.getLabel);
 
 						// BCP: 1880498671
 						if (mAddODataProperty) {
 							if (_getBindingPath(oElement, sAggregationName) === _getBindingPath(oInvisibleElement, sAggregationName)) {
 								//TODO fix with stashed type support
-								oInvisibleElement = _collectBindingPaths(oInvisibleElement, oModel);
-								oInvisibleElement.fieldLabel = ElementUtil.getLabelForElement(oInvisibleElement, mAction.getLabel);
+								mBindingPathCollection = BindingsExtractor.collectBindingPaths(oInvisibleElement, oModel);
 								oInvisibleElement.duplicateComplexName = _checkForDuplicateLabels(oInvisibleElement, aODataProperties);
 
 								//Add information from the oDataProperty to the InvisibleProperty if available;
 								//if oData is available and the element is not present in it, do not include it
 								//Example use case: custom field which was hidden and then removed from system
 								//should not be available for adding after the removal
-								if (aODataProperties.length > 0){
-									bIncludeElement = _checkAndEnhanceODataProperty(oInvisibleElement, aODataProperties, aODataNavigationProperties, aODataNavigationEntityNames);
+								if (aODataProperties.length > 0) {
+									bIncludeElement = _checkAndEnhanceODataProperty(
+										oInvisibleElement,
+										aODataProperties,
+										aODataNavigationProperties,
+										aODataNavigationEntityNames,
+										mBindingPathCollection);
 								}
 							} else if (BindingsExtractor.getBindings(oInvisibleElement, oModel).length > 0) {
 								bIncludeElement = false;
 							}
 						}
 
+						if (mCustom && bIncludeElement) {
+							mCustom.items.forEach(function(oCustomItem) {
+								_assignCustomItemIds(oElement.getParent().getId(), oCustomItem);
+								if (oCustomItem.itemId === oInvisibleElement.getId()) {
+									_enhanceInvisibleElement(oInvisibleElement, oCustomItem);
+								}
+							});
+						}
+
 						if (bIncludeElement) {
 							aAllElementData.push({
 								element : oInvisibleElement,
-								action : mAction
+								action : mAction,
+								bindingPathCollection: mBindingPathCollection
 							});
 						}
 					});
@@ -545,7 +529,7 @@
 					var aRelevantElements = _getRelevantElements(oElement, mAction.relevantContainer, sAggregationName);
 					var aBindings = [];
 
-					aRelevantElements.forEach(function(oElement){
+					aRelevantElements.forEach(function(oElement) {
 						aBindings = aBindings.concat(BindingsExtractor.getBindings(oElement, oModel));
 					});
 
@@ -553,7 +537,7 @@
 
 					aODataProperties = aODataProperties.filter(function(oDataProperty) {
 						var bHasBindingPath = false;
-						if (aBindings){
+						if (aBindings) {
 							bHasBindingPath = aBindings.some(function(vBinding) {
 								return (
 									jQuery.isPlainObject(vBinding)
@@ -572,6 +556,48 @@
 				.then(function(aUnboundODataProperties) {
 					return aUnboundODataProperties.map(_oDataPropertyToAdditionalElementInfo);
 				});
+		},
+
+		getCustomAddItems: function(oElement, mAction) {
+			return new Promise(function(fnResolve) {
+				if (Array.isArray(mAction.items)) {
+					// remove items already rendered
+					fnResolve(
+						mAction.items
+							.map(_assignCustomItemIds.bind(null, oElement.getParent().getId()))
+							.filter(function(oCustomItem) {
+								if (!oCustomItem.id) {
+									Log.error("CustomAdd item with label " + oCustomItem.label + " does not contain an 'id' property", "sap.ui.rta.plugin.AdditionalElementsAnalyzer#showAvailableElements");
+									return false;
+								}
+								return !ElementUtil.getElementInstance(oCustomItem.itemId);
+							})
+					);
+				} else {
+					fnResolve();
+				}
+			});
+		},
+
+		getFilteredItemsList: function(aAnalyzerValues) {
+			// promise index 0: invisible, 1: addOData, 2: custom
+			var iCustomItemsIndex = 2;
+			if (aAnalyzerValues[iCustomItemsIndex]) {
+				var aInvisibleElementIds = aAnalyzerValues[0].map(
+					function (oInvisibleItem) {
+						return oInvisibleItem.elementId;
+					}
+				);
+				// filter for hidden custom items
+				aAnalyzerValues[iCustomItemsIndex] = aAnalyzerValues[iCustomItemsIndex]
+					.filter(function(oCustomItem) {
+						return !oCustomItem.itemId || aInvisibleElementIds.indexOf(oCustomItem.itemId) === -1;
+					});
+			}
+			return aAnalyzerValues
+				.reduce(function (aAllElements, aAnalyzerValue) {
+					return aAllElements.concat(aAnalyzerValue);
+				}, []);
 		}
 	};
 	return oAnalyzer;

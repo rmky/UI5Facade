@@ -1,11 +1,13 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'sap/ui/rta/command/FlexCommand'
-], function(FlexCommand) {
+	"sap/ui/rta/command/FlexCommand"
+], function(
+	FlexCommand
+) {
 	"use strict";
 
 	/**
@@ -14,7 +16,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -29,7 +31,7 @@ sap.ui.define([
 				source : {
 					type : "any"
 				},
-				combineFields : {
+				combineElements : {
 					type : "any[]"
 				}
 			},
@@ -43,17 +45,16 @@ sap.ui.define([
 	 */
 	Combine.prototype._getChangeSpecificData = function() {
 		var aFieldIds = [];
-		this.getCombineFields().forEach(function(oField) {
+		this.getCombineElements().forEach(function(oField) {
 			aFieldIds.push(oField.getId());
 		});
 		var mSpecificInfo = {
-				changeType : this.getChangeType(),
-				sourceControlId : this.getSource().getId(),
-				combineFieldIds : aFieldIds
+			changeType : this.getChangeType(),
+			sourceControlId : this.getSource().getId(),
+			combineElementIds : aFieldIds
 		};
 		return mSpecificInfo;
 	};
 
 	return Combine;
-
 }, /* bExport= */true);

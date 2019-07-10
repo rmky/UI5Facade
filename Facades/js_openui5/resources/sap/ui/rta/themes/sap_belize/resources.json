@@ -6,7 +6,32 @@
 			"theme": "sap_belize"
 		},
 		{
+			"name": "ContextMenu.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
 			"name": "Overlay.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "Toolbar.adaptation.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "Toolbar.base.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "Toolbar.personalization.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "Toolbar.standalone.less",
 			"designtime": true,
 			"theme": "sap_belize"
 		},

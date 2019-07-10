@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,6 +10,7 @@ sap.ui.define([
 	'sap/ui/core/Control',
 	'sap/ui/core/EnabledPropagator',
 	'./RadioButtonGroup',
+	'./Label',
 	'sap/ui/core/library',
 	'sap/base/strings/capitalize',
 	'./RadioButtonRenderer'
@@ -19,6 +20,7 @@ function(
 	Control,
 	EnabledPropagator,
 	RadioButtonGroup,
+	Label,
 	coreLibrary,
 	capitalize,
 	RadioButtonRenderer
@@ -80,7 +82,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -148,7 +150,7 @@ function(
 
 			/**
 			 *
-			 * Enumeration sap.ui.core.ValueState provides state values Error, Success, Warning, None
+			 * Enumeration sap.ui.core.ValueState provides state values Error, Success, Warning, Information, None
 			 * @since 1.25
 			 */
 			valueState : {type : "sap.ui.core.ValueState", group : "Data", defaultValue : ValueState.None},
@@ -207,6 +209,7 @@ function(
 			 */
 			ariaLabelledBy : {type : "sap.ui.core.Control", multiple : true, singularName : "ariaLabelledBy"}
 		},
+		dnd: { draggable: true, droppable: false },
 		designtime: "sap/m/designtime/RadioButton.designtime"
 	}});
 
@@ -624,7 +627,7 @@ function(
 	 * @private
 	 */
 	RadioButton.prototype._createLabel = function(prop, value) {
-		this._oLabel = new sap.m.Label(this.getId() + "-label").addStyleClass("sapMRbBLabel").setParent(this, null, true);
+		this._oLabel = new Label(this.getId() + "-label").addStyleClass("sapMRbBLabel").setParent(this, null, true);
 		this._oLabel.setProperty(prop, value, false);
 	};
 

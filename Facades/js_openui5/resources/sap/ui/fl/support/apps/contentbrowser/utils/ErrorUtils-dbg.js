@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,7 +16,7 @@ sap.ui.define([
 		 * @constructor
 		 * @alias sap.ui.fl.support.apps.contentbrowser.utils.ErrorUtils
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 * @experimental Since 1.45
 		 */
 		var ErrorUtils = {};
@@ -70,9 +70,9 @@ sap.ui.define([
 			if (ErrorUtils._messagesModel) {
 				var sMessages = ErrorUtils._messagesModel.getData();
 				sMessages.push({
-					"type": sType || "Information",
-					"title": sTitle || "",
-					"description": sDescription || ""
+					type: sType || "Information",
+					title: sTitle || "",
+					description: sDescription || ""
 				});
 				ErrorUtils._messagesModel.setData(sMessages);
 				// force update bindings
@@ -82,4 +82,4 @@ sap.ui.define([
 		};
 
 		return ErrorUtils;
-});
+	});

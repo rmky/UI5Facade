@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -60,6 +60,28 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 			oRm.addClass("sapMInputBaseReadonly");
 		}
 
+		if (sValueState !== ValueState.None) {
+			oRm.addClass("sapMInputBaseState");
+		}
+
+		if (aBeginIcons.length) {
+
+			aVisibleBeginIcons = aBeginIcons.filter(function (oIcon) {
+				return oIcon.getVisible();
+			});
+
+			aVisibleBeginIcons.length && oRm.addClass("sapMInputBaseHasBeginIcons");
+		}
+
+		if (aEndIcons.length) {
+
+			aVisibleEndIcons = aEndIcons.filter(function (oIcon) {
+				return oIcon.getVisible();
+			});
+
+			aVisibleEndIcons.length && oRm.addClass("sapMInputBaseHasEndIcons");
+		}
+
 		oRm.writeClasses();
 
 		// outer attributes
@@ -88,26 +110,9 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 			this.addValueStateClasses(oRm, oControl);
 		}
 
-		if (aBeginIcons.length) {
-
-			aVisibleBeginIcons = aBeginIcons.filter(function (oIcon) {
-				return oIcon.getVisible();
-			});
-
-			aVisibleBeginIcons.length && oRm.addClass("sapMInputBaseHasBeginIcons");
-		}
-
-		if (aEndIcons.length) {
-
-			aVisibleEndIcons = aEndIcons.filter(function (oIcon) {
-				return oIcon.getVisible();
-			});
-
-			aVisibleEndIcons.length && oRm.addClass("sapMInputBaseHasEndIcons");
-		}
-
 		oRm.writeClasses();
-
+		// some controls need to have accessibility attributes applied one level up than the input
+		this.writeAccAttributes(oRm, oControl);
 		this.addWrapperStyles(oRm, oControl);
 
 		oRm.writeStyles();
@@ -116,12 +121,6 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 		if (aBeginIcons.length) {
 			this.writeIcons(oRm, aBeginIcons);
 		}
-
-		// wraps elements with a dynamic size e.g. input and tokenizer
-		oRm.write("<div");
-		oRm.addClass("sapMInputBaseDynamicContent");
-		oRm.writeClasses();
-		oRm.write(">");
 
 		this.prependInnerContent(oRm, oControl);
 
@@ -196,8 +195,6 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 		this.writeInnerContent(oRm, oControl);
 		this.closeInputTag(oRm, oControl);
 
-		// close dynamic content div
-		oRm.write("</div>");
 
 
 		// write the end icons after the inner part
@@ -253,7 +250,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 * @returns {String}
 	 */
 	InputBaseRenderer.getLabelledByAnnouncement = function(oControl) {
-		return oControl._getPlaceholder() || "";
+		return "";
 	};
 
 	/**
@@ -298,7 +295,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 * @returns {String}
 	 */
 	InputBaseRenderer.getDescribedByAnnouncement = function(oControl) {
-		return oControl.getTooltip_AsString() || "";
+		return "";
 	};
 
 	/**
@@ -425,12 +422,15 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
 	 */
 	InputBaseRenderer.addControlWidth = function(oRm, oControl) {
-		if (oControl.getWidth()) {
-			oRm.addStyle("width", oControl.getWidth());
-		} else {
+		if (!oControl.getProperty('width')) {
 			oRm.addClass("sapMInputBaseNoWidth");
 		}
+
+		if (oControl.getWidth()) {
+			oRm.addStyle("width", oControl.getWidth());
+		}
 	};
+
 	/**
 	 * This method is reserved for derived classes to add extra classes for input container.
 	 *
@@ -446,6 +446,14 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
 	 */
 	InputBaseRenderer.writeOuterAttributes = function(oRm, oControl) {};
+
+	/**
+	 * This method is reserved for derived class to add extra attributes for the container one level upper of input.
+	 *
+	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
+	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
+	 */
+	InputBaseRenderer.writeAccAttributes = function(oRm, oControl) {};
 
 	/**
 	 * This method is reserved for derived classes to add extra styles for input element.

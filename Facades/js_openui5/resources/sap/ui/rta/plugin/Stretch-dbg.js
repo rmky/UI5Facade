@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,7 +10,6 @@ sap.ui.define([
 	"sap/ui/dt/OverlayRegistry",
 	"sap/ui/dt/OverlayUtil",
 	"sap/ui/dt/Util",
-	"sap/ui/core/Control",
 	"sap/base/util/includes"
 ],
 function (
@@ -18,7 +17,6 @@ function (
 	OverlayRegistry,
 	OverlayUtil,
 	DtUtil,
-	Control,
 	includes
 ) {
 	"use strict";
@@ -31,10 +29,10 @@ function (
 	 *
 	 * @class
 	 * The Stretch plugin adds functionality/styling required for RTA.
-	 * @extends sap.ui.rta.plugin.Stretch
+	 * @extends sap.ui.rta.plugin.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -44,9 +42,6 @@ function (
 	 */
 	var Stretch = Plugin.extend("sap.ui.rta.plugin.Stretch", /** @lends sap.ui.rta.plugin.Stretch.prototype */ {
 		metadata: {
-			// ---- object ----
-
-			// ---- control specific ----
 			library: "sap.ui.rta",
 			properties: {},
 			associations: {
@@ -88,15 +83,16 @@ function (
 		}
 	};
 
-	Stretch.prototype.addStretchCandidate = function (oElement) {
+	Stretch.prototype.addStretchCandidate = function (oOverlay) {
+		var oElement = oOverlay.getElement();
 		if (!includes(this.getStretchCandidates(), oElement.getId())) {
 			this.addAssociation("stretchCandidates", oElement);
 		}
 	};
 
-	Stretch.prototype.removeStretchCandidate = function (oElement) {
-		this.removeAssociation("stretchCandidates", oElement);
-		this._toggleStyleClass(oElement, false);
+	Stretch.prototype.removeStretchCandidate = function (oOverlay) {
+		this.removeAssociation("stretchCandidates", oOverlay.getElement());
+		this._toggleStyleClass(oOverlay, false);
 	};
 
 	/**
@@ -104,6 +100,8 @@ function (
 	 */
 	Stretch.prototype.registerElementOverlay = function (oOverlay) {
 		this._checkParentAndAddToStretchCandidates(oOverlay);
+
+		oOverlay.attachElementModified(this._onElementModified, this);
 
 		Plugin.prototype.registerElementOverlay.apply(this, arguments);
 	};
@@ -114,7 +112,7 @@ function (
 	 * @override
 	 */
 	Stretch.prototype.deregisterElementOverlay = function (oOverlay) {
-		this._toggleStyleClass(oOverlay.getElement(), false);
+		this._toggleStyleClass(oOverlay, false);
 	};
 
 	/**
@@ -133,6 +131,34 @@ function (
 		this.getDesignTime().attachEvent("elementPropertyChanged", this._onElementPropertyChanged, this);
 		this.getDesignTime().attachEvent("elementOverlayEditableChanged", this._onElementOverlayEditableChanged, this);
 		this.getDesignTime().attachEvent("elementOverlayDestroyed", this._onElementOverlayDestroyed, this);
+	};
+
+	Stretch.prototype._onElementModified = function(oEvent) {
+		if (this.getDesignTime().getBusyPlugins().length) {
+			return;
+		}
+
+		var oParams = oEvent.getParameters();
+		var oOverlay = oEvent.getSource();
+		if (oParams.type === "afterRendering") {
+			if (!this.fnDebounced) {
+				// the timeout should be changed to 0 as soon as DT refactoring is done
+				this.fnDebounced = DtUtil.debounce(function() {
+					this._setStyleClassForAllStretchCandidates(this._getNewStretchCandidates(this._aOverlaysCollected));
+					this._aOverlaysCollected = [];
+					this.fnDebounced = undefined;
+				}.bind(this), 16);
+			}
+
+			if (!this._aOverlaysCollected) {
+				this._aOverlaysCollected = [];
+			}
+
+			if (!includes(this._aOverlaysCollected, oOverlay)) {
+				this._aOverlaysCollected.push(oOverlay);
+				this.fnDebounced();
+			}
+		}
 	};
 
 	Stretch.prototype._onElementOverlayDestroyed = function (oEvent) {
@@ -159,21 +185,20 @@ function (
 	 * @param {sap.ui.base.Event} oEvent event object
 	 */
 	Stretch.prototype._onElementOverlayEditableChanged = function (oEvent) {
-		if (this.getDesignTime().getBusyPlugins().length) {
+		var oOverlay = OverlayRegistry.getOverlay(oEvent.getParameters().id);
+		if (this.getDesignTime().getBusyPlugins().length || !oOverlay) {
 			return;
 		}
 
-		var oOverlay = sap.ui.getCore().byId(oEvent.getParameters().id);
 		var aOverlaysToReevaluate = this._getRelevantOverlaysOnEditableChange(oOverlay);
 		this._setStyleClassForAllStretchCandidates(aOverlaysToReevaluate);
 	};
 
 	Stretch.prototype._onElementPropertyChanged = function (oEvent) {
-		if (this.getDesignTime().getBusyPlugins().length) {
+		var oOverlay = OverlayRegistry.getOverlay(oEvent.getParameters().id);
+		if (this.getDesignTime().getBusyPlugins().length || !oOverlay) {
 			return;
 		}
-
-		var oOverlay = OverlayRegistry.getOverlay(oEvent.getParameters().id);
 		var aRelevantOverlays = this._getRelevantOverlays(oOverlay);
 		var fnDebounced = DtUtil.debounce(function () {
 			if (!this.bIsDestroyed && !oOverlay.bIsDestroyed) {
@@ -191,13 +216,14 @@ function (
 	};
 
 	Stretch.prototype._onElementOverlayChanged = function (oEvent) {
-		if (this.getDesignTime().getBusyPlugins().length) {
+		// overlay might be destroyed until this event listener is called - BCP: 1980286428
+		var oOverlay = OverlayRegistry.getOverlay(oEvent.getParameters().id);
+		if (this.getDesignTime().getBusyPlugins().length || !oOverlay) {
 			return;
 		}
 
-		var aRelevantOverlays = this._getRelevantOverlays(sap.ui.getCore().byId(oEvent.getParameters().id));
+		var aRelevantOverlays = this._getRelevantOverlays(oOverlay);
 		var aNewStretchCandidates = this._getNewStretchCandidates(aRelevantOverlays);
-
 		this._setStyleClassForAllStretchCandidates(aNewStretchCandidates);
 	};
 
@@ -252,26 +278,28 @@ function (
 	};
 
 	Stretch.prototype._reevaluateStretching = function (oOverlay) {
-		var oElement = oOverlay.getElement();
-		if (oElement instanceof Control) {
-			var bIsStretched = oElement.hasStyleClass(Stretch.STRETCHSTYLECLASS);
-			var bShouldBeStretched = this._childrenAreSameSize(oOverlay, undefined, bIsStretched);
-			if (bIsStretched && !bShouldBeStretched) {
-				this.removeStretchCandidate(oElement);
-			} else if (!bIsStretched && bShouldBeStretched) {
-				this.addStretchCandidate(oElement);
-				return true;
+		if (!oOverlay.bIsDestroyed) {
+			var $Element = oOverlay.getAssociatedDomRef();
+			if ($Element) {
+				var bIsStretched = $Element.hasClass(Stretch.STRETCHSTYLECLASS);
+				var bShouldBeStretched = this._childrenAreSameSize(oOverlay, undefined, bIsStretched);
+				if (bIsStretched && !bShouldBeStretched) {
+					this.removeStretchCandidate(oOverlay);
+				} else if (!bIsStretched && bShouldBeStretched) {
+					this.addStretchCandidate(oOverlay);
+					return true;
+				}
 			}
 		}
 	};
 
 	Stretch.prototype._checkParentAndAddToStretchCandidates = function (oOverlay) {
 		var oParentOverlay = oOverlay.getParentElementOverlay();
-		var oParentElement = oParentOverlay && oParentOverlay.getElement();
-		if (oParentElement instanceof Control) {
+		var $ParentElement = oParentOverlay && oParentOverlay.getAssociatedDomRef();
+		if ($ParentElement) {
 			if (this._startAtSamePosition(oParentOverlay, oOverlay)) {
 				if (this._childrenAreSameSize(oParentOverlay)) {
-					this.addStretchCandidate(oParentElement);
+					this.addStretchCandidate(oParentOverlay);
 				}
 			}
 		}
@@ -309,9 +337,9 @@ function (
 		// remove padding if it is already stretched
 		var iHeight = oParentGeometry.size.height;
 		if (bIsAlreadyStretched) {
-			iHeight -= oReferenceOverlay.getElement().$().css("padding-top");
+			iHeight -= parseInt(oReferenceOverlay.getElement().$().css("padding-top"));
 		}
-		var iParentSize = oParentGeometry.size.width * iHeight;
+		var iParentSize = Math.round(oParentGeometry.size.width) * Math.round(iHeight);
 		aChildOverlays = aChildOverlays || OverlayUtil.getAllChildOverlays(oReferenceOverlay);
 
 		var aChildrenGeometry = aChildOverlays.map(function (oChildOverlay) {
@@ -324,7 +352,7 @@ function (
 			return false;
 		}
 
-		var iChildrenSize = oChildrenGeometry.size.width * oChildrenGeometry.size.height;
+		var iChildrenSize = Math.round(oChildrenGeometry.size.width) * Math.round(oChildrenGeometry.size.height);
 		return iChildrenSize === iParentSize;
 	};
 
@@ -343,18 +371,18 @@ function (
 
 		if (bAtLeastOneChildEditable) {
 			return true;
-		} else {
-			var aChildrensChildrenOverlays = [];
-			aChildOverlays.forEach(function (oChildOverlay) {
-				aChildrensChildrenOverlays = aChildrensChildrenOverlays.concat(OverlayUtil.getAllChildOverlays(oChildOverlay));
-			});
+		}
 
-			if (!aChildrensChildrenOverlays.length > 0) {
-				return false;
-			}
-			if (this._childrenAreSameSize(oReferenceOverlay, aChildrensChildrenOverlays)) {
-				return this._atLeastOneDescendantEditable(oReferenceOverlay, aChildrensChildrenOverlays);
-			}
+		var aChildrensChildrenOverlays = [];
+		aChildOverlays.forEach(function (oChildOverlay) {
+			aChildrensChildrenOverlays = aChildrensChildrenOverlays.concat(OverlayUtil.getAllChildOverlays(oChildOverlay));
+		});
+
+		if (!aChildrensChildrenOverlays.length > 0) {
+			return false;
+		}
+		if (this._childrenAreSameSize(oReferenceOverlay, aChildrensChildrenOverlays)) {
+			return this._atLeastOneDescendantEditable(oReferenceOverlay, aChildrensChildrenOverlays);
 		}
 	};
 
@@ -376,15 +404,18 @@ function (
 			var bAtLeastOneChildEditable = this._atLeastOneDescendantEditable(oOverlay, aChildOverlays);
 			var bAddClass = oOverlay.getEditable() && bAtLeastOneChildEditable;
 
-			this._toggleStyleClass(oOverlay.getElement(), bAddClass);
+			this._toggleStyleClass(oOverlay, bAddClass);
 		}, this);
 	};
 
-	Stretch.prototype._toggleStyleClass = function (oElement, bAddClass) {
-		if (bAddClass && oElement.addStyleClass) {
-			oElement.addStyleClass(Stretch.STRETCHSTYLECLASS);
-		} else if (!bAddClass && oElement.removeStyleClass) {
-			oElement.removeStyleClass(Stretch.STRETCHSTYLECLASS);
+	Stretch.prototype._toggleStyleClass = function (oOverlay, bAddClass) {
+		var $Element = oOverlay.getAssociatedDomRef();
+		if ($Element) {
+			if (bAddClass) {
+				$Element.addClass(Stretch.STRETCHSTYLECLASS);
+			} else {
+				$Element.removeClass(Stretch.STRETCHSTYLECLASS);
+			}
 		}
 	};
 

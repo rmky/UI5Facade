@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.ux3">
-  <module name="sap/ui/ux3/ActionBar.js" size="53390" compressedSize="21142">
+  <module name="sap/ui/ux3/ActionBar.js" size="53355" compressedSize="21107">
     <description>Provides control sap.ui.ux3.ActionBar.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -22,14 +22,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ActionBarRenderer.js" size="7644" compressedSize="2926">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/ux3/ActionBarRenderer.js" size="7609" compressedSize="2891">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/ux3/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/Collection.js" size="5565" compressedSize="2525">
+  <module name="sap/ui/ux3/Collection.js" size="5530" compressedSize="2490">
     <description>Provides control sap.ui.ux3.Collection.</description>
     <requires>
       <module name="sap/ui/core/Element.js"/>
@@ -38,7 +38,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/CollectionInspector.js" size="19034" compressedSize="8878">
+  <module name="sap/ui/ux3/CollectionInspector.js" size="19123" compressedSize="8921">
     <description>Provides control sap.ui.ux3.CollectionInspector.</description>
     <requires>
       <module name="sap/ui/commons/Button.js"/>
@@ -52,13 +52,13 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/CollectionInspectorRenderer.js" size="5596" compressedSize="2578">
+  <module name="sap/ui/ux3/CollectionInspectorRenderer.js" size="5561" compressedSize="2543">
     <description>Provides default renderer for the sap.ui.ux3.Collection</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/DataSet.js" size="21009" compressedSize="11347">
+  <module name="sap/ui/ux3/DataSet.js" size="20995" compressedSize="11330">
     <description>Provides control sap.ui.ux3.DataSet.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -75,7 +75,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/DataSetItem.js" size="2373" compressedSize="960">
+  <module name="sap/ui/ux3/DataSetItem.js" size="2338" compressedSize="925">
     <description>Provides control sap.ui.ux3.DataSetItem.</description>
     <requires>
       <module name="sap/ui/core/Element.js"/>
@@ -83,14 +83,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/DataSetRenderer.js" size="2920" compressedSize="1273">
+  <module name="sap/ui/ux3/DataSetRenderer.js" size="2885" compressedSize="1238">
     <description>Provides default renderer for the sap.ui.ux3.DataSet</description>
     <requires>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/DataSetSimpleView.js" size="15228" compressedSize="7132">
+  <module name="sap/ui/ux3/DataSetSimpleView.js" size="15208" compressedSize="7109">
     <description>Provides control sap.ui.ux3.DataSetSimpleView.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -102,13 +102,13 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/DataSetSimpleViewRenderer.js" size="2127" compressedSize="1133">
+  <module name="sap/ui/ux3/DataSetSimpleViewRenderer.js" size="2092" compressedSize="1098">
     <description>Provides default renderer for the sap.ui.ux3.DataSetSimpleView</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/Exact.js" size="6279" compressedSize="2825">
+  <module name="sap/ui/ux3/Exact.js" size="6244" compressedSize="2790">
     <description>Provides control sap.ui.ux3.Exact.</description>
     <requires>
       <module name="sap/ui/commons/Button.js"/>
@@ -125,7 +125,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ExactArea.js" size="2508" compressedSize="895">
+  <module name="sap/ui/ux3/ExactArea.js" size="2473" compressedSize="860">
     <description>Provides control sap.ui.ux3.ExactArea.</description>
     <requires>
       <module name="sap/ui/commons/Toolbar.js"/>
@@ -136,7 +136,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ExactAreaRenderer.js" size="2098" compressedSize="1157">
+  <module name="sap/ui/ux3/ExactAreaRenderer.js" size="2063" compressedSize="1122">
     <description>Provides default renderer for the sap.ui.ux3.ExactArea</description>
     <requires>
       <module name="sap/base/security/encodeXML.js"/>
@@ -144,7 +144,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ExactAttribute.js" size="12039" compressedSize="5548">
+  <module name="sap/ui/ux3/ExactAttribute.js" size="12004" compressedSize="5513">
     <description>Provides control sap.ui.ux3.ExactAttribute.</description>
     <requires>
       <module name="sap/ui/core/Element.js"/>
@@ -152,7 +152,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ExactBrowser.js" size="11132" compressedSize="4379">
+  <module name="sap/ui/ux3/ExactBrowser.js" size="11097" compressedSize="4344">
     <description>Provides control sap.ui.ux3.ExactBrowser.</description>
     <requires>
       <module name="sap/ui/commons/Button.js"/>
@@ -166,14 +166,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ExactBrowserRenderer.js" size="1911" compressedSize="1071">
+  <module name="sap/ui/ux3/ExactBrowserRenderer.js" size="1876" compressedSize="1036">
     <description>Provides default renderer for the sap.ui.ux3.ExactBrowser</description>
     <requires>
       <module name="sap/base/security/encodeXML.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ExactList.js" size="46115" compressedSize="20246">
+  <module name="sap/ui/ux3/ExactList.js" size="46080" compressedSize="20211">
     <description>Provides control sap.ui.ux3.ExactList.</description>
     <requires>
       <module name="sap/base/security/encodeXML.js"/>
@@ -195,19 +195,19 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ExactListRenderer.js" size="6435" compressedSize="3795">
+  <module name="sap/ui/ux3/ExactListRenderer.js" size="6400" compressedSize="3760">
     <description>Provides default renderer for the sap.ui.ux3.ExactListRenderer</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ExactRenderer.js" size="1272" compressedSize="610">
+  <module name="sap/ui/ux3/ExactRenderer.js" size="1237" compressedSize="575">
     <description>Provides default renderer for the sap.ui.ux3.Exact</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/FacetFilter.js" size="1939" compressedSize="687">
+  <module name="sap/ui/ux3/FacetFilter.js" size="1904" compressedSize="652">
     <description>Provides control sap.ui.ux3.FacetFilter.</description>
     <requires>
       <module name="sap/ui/core/Control.js"/>
@@ -216,7 +216,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/FacetFilterList.js" size="9291" compressedSize="4880">
+  <module name="sap/ui/ux3/FacetFilterList.js" size="9333" compressedSize="4896">
     <description>Provides control sap.ui.ux3.FacetFilterList.</description>
     <requires>
       <module name="sap/ui/commons/ListBox.js"/>
@@ -228,20 +228,20 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/FacetFilterListRenderer.js" size="1604" compressedSize="803">
+  <module name="sap/ui/ux3/FacetFilterListRenderer.js" size="1569" compressedSize="768">
     <description>Provides default renderer for the sap.ui.ux3.FacetFilterListRenderer</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/FacetFilterRenderer.js" size="1509" compressedSize="657">
+  <module name="sap/ui/ux3/FacetFilterRenderer.js" size="1474" compressedSize="622">
     <description>Provides default renderer for the sap.ui.ux3.FacetFilter</description>
     <requires>
       <module name="sap/ui/ux3/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/Feed.js" size="11951" compressedSize="6004">
+  <module name="sap/ui/ux3/Feed.js" size="11916" compressedSize="5969">
     <description>Provides control sap.ui.ux3.Feed.</description>
     <requires>
       <module name="sap/ui/commons/DropdownBox.js"/>
@@ -258,7 +258,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/FeedChunk.js" size="19613" compressedSize="9208">
+  <module name="sap/ui/ux3/FeedChunk.js" size="19578" compressedSize="9173">
     <description>Provides control sap.ui.ux3.FeedChunk.</description>
     <requires>
       <module name="sap/ui/commons/Menu.js"/>
@@ -273,7 +273,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/FeedChunkRenderer.js" size="7772" compressedSize="4732">
+  <module name="sap/ui/ux3/FeedChunkRenderer.js" size="7737" compressedSize="4697">
     <description>Provides default renderer for the sap.ui.ux3.FeedChunk</description>
     <requires>
       <module name="sap/base/security/URLWhitelist.js"/>
@@ -282,13 +282,13 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/FeedRenderer.js" size="1830" compressedSize="910">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/ux3/FeedRenderer.js" size="1795" compressedSize="875">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/Feeder.js" size="8986" compressedSize="3449">
+  <module name="sap/ui/ux3/Feeder.js" size="8951" compressedSize="3414">
     <description>Provides control sap.ui.ux3.Feeder.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -302,7 +302,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/FeederRenderer.js" size="2437" compressedSize="1255">
+  <module name="sap/ui/ux3/FeederRenderer.js" size="2402" compressedSize="1220">
     <description>Provides default renderer for the sap.ui.ux3.Feeder</description>
     <requires>
       <module name="sap/base/security/encodeXML.js"/>
@@ -311,7 +311,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/NavigationBar.js" size="29101" compressedSize="12015">
+  <module name="sap/ui/ux3/NavigationBar.js" size="29081" compressedSize="11992">
     <description>Provides control sap.ui.ux3.NavigationBar.</description>
     <requires>
       <module name="sap/base/assert.js"/>
@@ -332,14 +332,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/NavigationBarRenderer.js" size="4473" compressedSize="2240">
+  <module name="sap/ui/ux3/NavigationBarRenderer.js" size="4438" compressedSize="2205">
     <description>Provides default renderer for the sap.ui.ux3.NavigationBar</description>
     <requires>
       <module name="sap/base/security/encodeXML.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/NavigationItem.js" size="2505" compressedSize="617">
+  <module name="sap/ui/ux3/NavigationItem.js" size="2470" compressedSize="582">
     <description>Provides control sap.ui.ux3.NavigationItem.</description>
     <requires>
       <module name="sap/ui/core/Item.js"/>
@@ -347,7 +347,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/NotificationBar.js" size="38247" compressedSize="15454">
+  <module name="sap/ui/ux3/NotificationBar.js" size="38212" compressedSize="15419">
     <description>Provides control sap.ui.ux3.NotificationBar.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -363,8 +363,8 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/NotificationBarRenderer.js" size="14040" compressedSize="6422">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/ux3/NotificationBarRenderer.js" size="14005" compressedSize="6387">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/Icon.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
@@ -372,7 +372,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/Notifier.js" size="8635" compressedSize="3578">
+  <module name="sap/ui/ux3/Notifier.js" size="8617" compressedSize="3555">
     <description>Provides control sap.ui.ux3.Notifier.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -385,7 +385,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/Overlay.js" size="11028" compressedSize="4737">
+  <module name="sap/ui/ux3/Overlay.js" size="10993" compressedSize="4702">
     <description>Provides control sap.ui.ux3.Overlay.</description>
     <requires>
       <module name="sap/ui/core/Control.js"/>
@@ -399,7 +399,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/OverlayContainer.js" size="2367" compressedSize="1100">
+  <module name="sap/ui/ux3/OverlayContainer.js" size="2332" compressedSize="1065">
     <description>Provides control sap.ui.ux3.OverlayContainer.</description>
     <requires>
       <module name="sap/ui/dom/jquery/Focusable.js"/>
@@ -409,7 +409,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/OverlayContainerRenderer.js" size="2081" compressedSize="646">
+  <module name="sap/ui/ux3/OverlayContainerRenderer.js" size="2046" compressedSize="611">
     <description>Provides default renderer for the sap.ui.ux3.OverlayContainer</description>
     <requires>
       <module name="sap/ui/core/Renderer.js"/>
@@ -417,7 +417,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/OverlayDialog.js" size="6832" compressedSize="3456">
+  <module name="sap/ui/ux3/OverlayDialog.js" size="6797" compressedSize="3421">
     <description>Provides control sap.ui.ux3.OverlayDialog.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -429,7 +429,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/OverlayDialogRenderer.js" size="2061" compressedSize="646">
+  <module name="sap/ui/ux3/OverlayDialogRenderer.js" size="2026" compressedSize="611">
     <description>Provides default renderer for the sap.ui.ux3.OverlayDialog</description>
     <requires>
       <module name="sap/ui/core/Renderer.js"/>
@@ -437,13 +437,13 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/OverlayRenderer.js" size="2343" compressedSize="1467">
+  <module name="sap/ui/ux3/OverlayRenderer.js" size="2308" compressedSize="1432">
     <description>Provides default renderer for the sap.ui.ux3.Overlay</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/QuickView.js" size="14180" compressedSize="6395">
+  <module name="sap/ui/ux3/QuickView.js" size="14145" compressedSize="6360">
     <description>Provides control sap.ui.ux3.QuickView.</description>
     <requires>
       <module name="sap/ui/commons/CalloutBase.js"/>
@@ -456,8 +456,8 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/QuickViewRenderer.js" size="4879" compressedSize="2373">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/ux3/QuickViewRenderer.js" size="4844" compressedSize="2338">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/commons/CalloutBaseRenderer.js"/>
       <module name="sap/ui/core/IconPool.js"/>
@@ -465,7 +465,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/Shell.js" size="94383" compressedSize="44242">
+  <module name="sap/ui/ux3/Shell.js" size="94348" compressedSize="44207">
     <description>Provides control sap.ui.ux3.Shell.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -495,7 +495,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ShellColorPicker.js" size="10805" compressedSize="6210">
+  <module name="sap/ui/ux3/ShellColorPicker.js" size="10770" compressedSize="6175">
     <description>Provides the class sap.ui.ux3.ShellColorPicker</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -507,7 +507,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ShellPersonalization.js" size="25348" compressedSize="16049">
+  <module name="sap/ui/ux3/ShellPersonalization.js" size="25313" compressedSize="16014">
     <description>Provides the class sap.ui.ux3.ShellPersonalization</description>
     <requires>
       <module name="sap/base/security/encodeXML.js"/>
@@ -526,7 +526,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ShellRenderer.js" size="15202" compressedSize="9238">
+  <module name="sap/ui/ux3/ShellRenderer.js" size="15167" compressedSize="9203">
     <description>Provides default renderer for the sap.ui.ux3.Shell</description>
     <requires>
       <module name="sap/base/security/encodeXML.js"/>
@@ -535,7 +535,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ThingAction.js" size="1843" compressedSize="725">
+  <module name="sap/ui/ux3/ThingAction.js" size="1808" compressedSize="690">
     <description>Provides control sap.ui.ux3.ThingAction.</description>
     <requires>
       <module name="sap/ui/core/Element.js"/>
@@ -543,7 +543,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ThingGroup.js" size="1630" compressedSize="664">
+  <module name="sap/ui/ux3/ThingGroup.js" size="1595" compressedSize="629">
     <description>Provides control sap.ui.ux3.ThingGroup.</description>
     <requires>
       <module name="sap/ui/core/Element.js"/>
@@ -551,7 +551,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ThingInspector.js" size="21669" compressedSize="10922">
+  <module name="sap/ui/ux3/ThingInspector.js" size="21666" compressedSize="10911">
     <description>Provides control sap.ui.ux3.ThingInspector.</description>
     <requires>
       <module name="sap/ui/dom/jquery/Focusable.js"/>
@@ -565,7 +565,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ThingInspectorRenderer.js" size="1986" compressedSize="599">
+  <module name="sap/ui/ux3/ThingInspectorRenderer.js" size="1951" compressedSize="564">
     <description>Provides default renderer for the sap.ui.ux3.ThingInspector</description>
     <requires>
       <module name="sap/ui/core/Renderer.js"/>
@@ -573,7 +573,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ThingViewer.js" size="15762" compressedSize="7905">
+  <module name="sap/ui/ux3/ThingViewer.js" size="15743" compressedSize="7882">
     <description>Provides control sap.ui.ux3.ThingViewer.</description>
     <requires>
       <module name="sap/ui/core/Control.js"/>
@@ -585,14 +585,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ThingViewerRenderer.js" size="9173" compressedSize="4636">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/ux3/ThingViewerRenderer.js" size="9138" compressedSize="4601">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/ux3/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ToolPopup.js" size="64857" compressedSize="16051">
+  <module name="sap/ui/ux3/ToolPopup.js" size="64824" compressedSize="16016">
     <description>Provides control sap.ui.ux3.ToolPopup.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -613,13 +613,13 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/ToolPopupRenderer.js" size="4132" compressedSize="2394">
+  <module name="sap/ui/ux3/ToolPopupRenderer.js" size="4097" compressedSize="2359">
     <description>Provides default renderer for the sap.ui.ux3.ToolPopup</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/library-h2-preload.js" size="14036">
+  <module name="sap/ui/ux3/library-h2-preload.js" size="14101">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>
@@ -742,7 +742,7 @@
       <module name="sap/ui/ux3/ToolPopupRenderer.js"/>
     </includes>
   </module>
-  <module name="sap/ui/ux3/library-preload.js" size="310326">
+  <module name="sap/ui/ux3/library-preload.js" size="310607">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>
@@ -990,7 +990,7 @@
       <module name="sap/ui/ux3/manifest.json"/>
     </includes>
   </module>
-  <module name="sap/ui/ux3/library.js" size="8464" compressedSize="2246">
+  <module name="sap/ui/ux3/library.js" size="8429" compressedSize="2211">
     <description>Initialization Code and shared classes of library sap.ui.ux3.</description>
     <requires>
       <module name="sap/ui/commons/library.js"/>
@@ -998,7 +998,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/manifest.json" size="2476">
+  <module name="sap/ui/ux3/manifest.json" size="2572">
   </module>
   <module name="sap/ui/ux3/messagebundle.properties" size="10578">
   </module>

@@ -1,26 +1,24 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.rta.plugin.RenameHandler.
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
-	'sap/ui/rta/plugin/Plugin',
-	'sap/ui/dt/Overlay',
-	'sap/ui/dt/ElementUtil',
-	'sap/ui/dt/OverlayUtil',
-	'sap/ui/dt/OverlayRegistry',
-	'sap/ui/rta/Utils',
-	'sap/ui/dt/DOMUtil',
+	"sap/ui/rta/plugin/Plugin",
+	"sap/ui/dt/Overlay",
+	"sap/ui/dt/ElementUtil",
+	"sap/ui/dt/OverlayRegistry",
+	"sap/ui/rta/Utils",
+	"sap/ui/dt/DOMUtil",
 	"sap/ui/events/KeyCodes"
 ], function(
 	jQuery,
 	Plugin,
 	Overlay,
 	ElementUtil,
-	OverlayUtil,
 	OverlayRegistry,
 	Utils,
 	DOMUtil,
@@ -32,7 +30,7 @@ sap.ui.define([
 	 * Provides Rename handling functionality
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -59,7 +57,7 @@ sap.ui.define([
 		 * @public
 		 */
 		startEdit : function (mPropertyBag) {
-			this._bPreventMenu = true;
+			this.setBusy(true);
 			this._oEditedOverlay = mPropertyBag.overlay;
 
 			var oElement = mPropertyBag.overlay.getElement();
@@ -113,8 +111,8 @@ sap.ui.define([
 			var _$oWrapper = jQuery("<div class='sapUiRtaEditableField'></div>")
 				.css({
 					"white-space": "nowrap",
-					"overflow":"hidden",
-					"width": "calc(100% - (" + iWidthDifference + "px))"
+					overflow:"hidden",
+					width: "calc(100% - (" + iWidthDifference + "px))"
 				}).appendTo(oOverlayForWrapper.$());
 			this._$editableField = jQuery("<div contentEditable='true'></div>").appendTo(_$oWrapper);
 
@@ -142,8 +140,10 @@ sap.ui.define([
 			});
 
 			//only for renaming variants in edge browser [SPECIAL CASE]
-			if (sap.ui.Device.browser.name == "ed" &&
-				  oElement.getMetadata().getName() == "sap.ui.fl.variants.VariantManagement"){
+			if (
+				sap.ui.Device.browser.name === "ed"
+				&& oElement.getMetadata().getName() === "sap.ui.fl.variants.VariantManagement"
+			) {
 				this._$editableField.css({
 					"line-height": "normal"
 				});
@@ -247,7 +247,7 @@ sap.ui.define([
 		 */
 		_stopEdit : function (bRestoreFocus, sPluginMethodName) {
 			var oOverlay;
-			this._bPreventMenu = false;
+			this.setBusy(false);
 
 			// exchange the dummy text at the label with the genuine empty text (see start_edit function)
 			if (this._$oEditableControlDomRef.text() === "_?_") {
@@ -281,7 +281,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent - event object
 		 * @private
 		 */
-		_onEditableFieldBlur : function (oEvent) {
+		_onEditableFieldBlur : function () {
 			return RenameHandler._handlePostRename.call(this, false);
 		},
 

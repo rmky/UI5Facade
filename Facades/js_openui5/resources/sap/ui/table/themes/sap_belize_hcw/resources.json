@@ -16,6 +16,21 @@
 			"theme": "sap_belize_hcw"
 		},
 		{
+			"name": "Row.less",
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
+			"name": "RowHighlight.less",
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
+			"name": "RowSelection.less",
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
 			"name": "Scrolling.less",
 			"designtime": true,
 			"theme": "sap_belize_hcw"

@@ -6,7 +6,32 @@
 			"theme": "sap_fiori_3"
 		},
 		{
+			"name": "ContextMenu.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
 			"name": "Overlay.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "Toolbar.adaptation.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "Toolbar.base.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "Toolbar.personalization.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "Toolbar.standalone.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},

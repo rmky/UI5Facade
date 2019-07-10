@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -42,7 +42,8 @@ sap.ui.define([
 		"he" : "iw",
 		"yi" : "ji",
 		"id" : "in",
-		"sr" : "sh"
+		"sr" : "sh",
+		"nb" : "no"
 	};
 
 	/**
@@ -54,7 +55,8 @@ sap.ui.define([
 		"iw" : "he",
 		"ji" : "yi",
 		"in" : "id",
-		"sh" : "sr"
+		"sh" : "sr",
+		"no" : "nb"
 	};
 
 	/**
@@ -281,7 +283,7 @@ sap.ui.define([
 	 * The text is searched in this resource bundle according to the fallback chain described in
 	 * {@link module:sap/base/i18n/ResourceBundle}. If no text could be found, the key itself is used as text.
 	 *
-	 * If the second parameter<code>aArgs</code> is given, then any placeholder of the form "{<i>n</i>}"
+	 * If the second parameter <code>aArgs</code> is given, then any placeholder of the form "{<i>n</i>}"
 	 * (with <i>n</i> being an integer) is replaced by the corresponding value from <code>aArgs</code>
 	 * with index <i>n</i>.  Note: This replacement is applied to the key if no text could be found.
 	 * For more details on the replacement mechanism refer to {@link module:sap/base/strings/formatMessage}.
@@ -291,8 +293,8 @@ sap.ui.define([
 	 *     (<i>n</i> is the index) in the found locale-specific string value. Note that the replacement is done
 	 *     whenever <code>aArgs</code> is given, no matter whether the text contains placeholders or not
 	 *     and no matter whether <code>aArgs</code> contains a value for <i>n</i> or not.
-	 * @param {boolean} bIgnoreKeyFallback If set, <code>undefined</code> is returned when the key is not found in any bundle or fallback bundle, instead of the key string.
-	 * @returns {string} The value belonging to the key, if found; Otherwise the key itself or <code>undefined</code> depending on bIgnoreKeyFallback.
+	 * @param {boolean} [bIgnoreKeyFallback=false] If set, <code>undefined</code> is returned instead of the key string, when the key is not found in any bundle or fallback bundle.
+	 * @returns {string} The value belonging to the key, if found; otherwise the key itself or <code>undefined</code> depending on <code>bIgnoreKeyFallback</code>.
 	 *
 	 * @function
 	 * @public
@@ -557,7 +559,7 @@ sap.ui.define([
 	 *      // specify url of the base .properties file
 	 *      url : "i18n/messagebundle.properties",
 	 *      async : true
-	 *  ).then(function(oBundle){
+	 *  }).then(function(oBundle){
 	 *      // now you can access the bundle
 	 *  });
 	 *  // ...

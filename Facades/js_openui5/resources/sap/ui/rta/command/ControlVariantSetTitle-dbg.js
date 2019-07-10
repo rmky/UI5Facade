@@ -1,12 +1,12 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'sap/ui/rta/command/BaseCommand',
-	'sap/ui/core/util/reflection/JsControlTreeModifier',
-	'sap/ui/fl/Utils'
+	"sap/ui/rta/command/BaseCommand",
+	"sap/ui/core/util/reflection/JsControlTreeModifier",
+	"sap/ui/fl/Utils"
 ], function(BaseCommand, JsControlTreeModifier, flUtils) {
 	"use strict";
 
@@ -16,7 +16,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.BaseCommand
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.50
@@ -38,12 +38,10 @@ sap.ui.define([
 		}
 	});
 
-	ControlVariantSetTitle.prototype.MODEL_NAME = "$FlexVariants";
-
 	/**
 	 * @override
 	 */
-	ControlVariantSetTitle.prototype.prepare = function(mFlexSettings, sVariantManagementReference) {
+	ControlVariantSetTitle.prototype.prepare = function(mFlexSettings) {
 		this.sLayer = mFlexSettings.layer;
 		return true;
 	};
@@ -66,7 +64,7 @@ sap.ui.define([
 			oVariantManagementControlBinding = oVariantManagementControl.getTitle().getBinding("text");
 
 		this.oAppComponent = flUtils.getAppComponentForControl(oVariantManagementControl);
-		this.oModel = this.oAppComponent.getModel(this.MODEL_NAME);
+		this.oModel = this.oAppComponent.getModel(flUtils.VARIANT_MODEL_NAME);
 		this.sVariantManagementReference = JsControlTreeModifier.getSelector(oVariantManagementControl, this.oAppComponent).id;
 		this.sCurrentVariant = this.oModel.getCurrentVariantReference(this.sVariantManagementReference);
 
@@ -81,10 +79,10 @@ sap.ui.define([
 			layer : this.sLayer
 		};
 
-		return Promise.resolve(this.oModel._setVariantProperties(this.sVariantManagementReference, mPropertyBag, true))
+		return Promise.resolve(this.oModel.setVariantProperties(this.sVariantManagementReference, mPropertyBag, true))
 						.then(function(oChange) {
-								this._oVariantChange = oChange;
-								oVariantManagementControlBinding.checkUpdate(true); /*Force Update as binding key stays same*/
+							this._oVariantChange = oChange;
+							oVariantManagementControlBinding.checkUpdate(true); /*Force Update as binding key stays same*/
 						}.bind(this));
 	};
 
@@ -96,19 +94,18 @@ sap.ui.define([
 	ControlVariantSetTitle.prototype.undo = function() {
 		var oVariantManagementControlBinding = this.getElement().getTitle().getBinding("text"),
 			mPropertyBag = {
-			variantReference : this.sCurrentVariant,
-			changeType : "setTitle",
-			title : this.getOldText(),
-			change: this._oVariantChange
-		};
+				variantReference : this.sCurrentVariant,
+				changeType : "setTitle",
+				title : this.getOldText(),
+				change: this._oVariantChange
+			};
 
-		return Promise.resolve(this.oModel._setVariantProperties(this.sVariantManagementReference, mPropertyBag, false))
+		return Promise.resolve(this.oModel.setVariantProperties(this.sVariantManagementReference, mPropertyBag, false))
 						.then(function(oChange) {
-								this._oVariantChange = oChange;
-								oVariantManagementControlBinding.checkUpdate(true); /*Force Update as binding key stays same*/
+							this._oVariantChange = oChange;
+							oVariantManagementControlBinding.checkUpdate(true); /*Force Update as binding key stays same*/
 						}.bind(this));
 	};
 
 	return ControlVariantSetTitle;
-
 }, /* bExport= */true);

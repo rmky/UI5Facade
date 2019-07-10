@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -21,7 +21,7 @@ sap.ui.define(['sap/ui/base/DataType', 'sap/base/util/ObjectPath',
 	 * @namespace
 	 * @name sap.ui.commons
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @public
 	 * @deprecated as of version 1.38
 	 */
@@ -29,7 +29,7 @@ sap.ui.define(['sap/ui/base/DataType', 'sap/base/util/ObjectPath',
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.commons",
-		version: "1.61.2",
+		version: "1.67.1",
 		dependencies : ["sap.ui.core","sap.ui.layout","sap.ui.unified"],
 		types: [
 			"sap.ui.commons.ButtonStyle",
@@ -200,11 +200,14 @@ sap.ui.define(['sap/ui/base/DataType', 'sap/base/util/ObjectPath',
 
 
 	/**
-	 * different styles for a ColorPicker.
+	 * Different styles for a ColorPicker.
+	 *
+	 * This enum is an alias for {@link sap.ui.unified.ColorPickerMode} and was only kept
+	 * for compatibility reasons. Please switch to the {@link sap.ui.unified.ColorPicker} API.
 	 *
 	 * @enum {string}
 	 * @public
-	 * @deprecated Since version 1.48.0. Moved to sap.ui.unified library. Please use this one.
+	 * @deprecated Since version 1.48.0. Moved to sap.ui.unified library. Please use that one.
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	sap.ui.commons.ColorPickerMode = sap.ui.unified.ColorPickerMode;
@@ -866,6 +869,7 @@ sap.ui.define(['sap/ui/base/DataType', 'sap/base/util/ObjectPath',
 	 * Available FormLayouts used for the SimpleForm.
 	 * @deprecated Since version 1.16.0. Moved to sap.ui.layout library. Please use this one.
 	 * @public
+	 * @enum {string}
 	 */
 	sap.ui.commons.form.SimpleFormLayout = sap.ui.layout.form.SimpleFormLayout;
 

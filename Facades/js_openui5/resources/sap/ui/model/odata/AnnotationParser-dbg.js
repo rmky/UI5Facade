@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -88,7 +88,6 @@ var AnnotationParser =  {
 	 *
 	 * @param {map} mTargetAnnotations The target annotation map into which the source annotations should be merged
 	 * @param {map} mSourceAnnotations The source annotation map that should be merged into the target annotation map
-	 * @returns {void}
 	 * @static
 	 * @protected
 	 */
@@ -170,6 +169,29 @@ var AnnotationParser =  {
 	 * @protected
 	 */
 	parse: function(oMetadata, oXMLDoc, sSourceUrl) {
+		try {
+			AnnotationParser._parserData = {};
+			AnnotationParser._oXPath = AnnotationParser.getXPath();
+
+			return AnnotationParser._parse(oMetadata, oXMLDoc, sSourceUrl);
+		} finally {
+			delete AnnotationParser._parserData;
+			delete AnnotationParser._oXPath;
+		}
+	},
+
+	/**
+	 * Parses the given XML-document using the given ODataMetadata-object and returns a native JavaScript-object
+	 * representation of it.
+	 *
+	 * @param {sap.ui.model.odata.ODataMetadata} oMetadata The metadata to be used for interpreting the annotation document
+	 * @param {document} oXMLDoc The annotation document
+	 * @param {string} [sSourceUrl="metadata document"] The source URL
+	 * @returns {object} The parsed annotation object
+	 * @static
+	 * @private
+	 */
+	_parse: function(oMetadata, oXMLDoc, sSourceUrl) {
 		var mappingList = {}, schemaNodes, schemaNode,
 		termNodes, oTerms, termNode, sTermType, annotationNodes, annotationNode,
 		annotationTarget, annotationNamespace, annotation, propertyAnnotation, propertyAnnotationNodes,
@@ -177,9 +199,6 @@ var AnnotationParser =  {
 		expandNodes, expandNode, path, pathValues, expandNodesApplFunc, i, nodeIndex,
 		annotationsAtArrays = [];
 
-		AnnotationParser._parserData = {};
-
-		AnnotationParser._oXPath = AnnotationParser.getXPath();
 		AnnotationParser._parserData.metadataInstance = oMetadata;
 		AnnotationParser._parserData.serviceMetadata = oMetadata.getServiceMetadata();
 		AnnotationParser._parserData.xmlDocument = AnnotationParser._oXPath.setNameSpace(oXMLDoc);
@@ -396,7 +415,6 @@ var AnnotationParser =  {
 				});
 		}
 
-		delete AnnotationParser._parserData;
 		return mappingList;
 	},
 

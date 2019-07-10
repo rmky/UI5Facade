@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,7 @@ sap.ui.define(["sap/m/GroupHeaderListItem", "sap/ui/thirdparty/jquery"],
 		 * @constructor
 		 * @alias sap.ui.fl.support.apps.contentbrowser.utils.DataUtils
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 * @experimental Since 1.45
 		 */
 		var DataUtils = {
@@ -23,7 +23,7 @@ sap.ui.define(["sap/m/GroupHeaderListItem", "sap/ui/thirdparty/jquery"],
 				category: "NS",
 				name: "LREP_HOME_CONTENT",
 				ns: "UIF/"
-			},{
+			}, {
 				category: "NS",
 				name: "virtual~",
 				ns: "/"
@@ -46,7 +46,7 @@ sap.ui.define(["sap/m/GroupHeaderListItem", "sap/ui/thirdparty/jquery"],
 				try {
 					oData = JSON.parse(oData);
 					return JSON.stringify(oData, null, '\t');
-				} catch (oError){
+				} catch (oError) {
 					var ErrorUtils = sap.ui.require("sap/ui/fl/support/apps/contentbrowser/utils/ErrorUtils");
 					ErrorUtils.displayError("Error", oError.name, oError.message);
 					return oData;

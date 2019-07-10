@@ -1,15 +1,15 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	'sap/ui/dt/plugin/CutPaste',
-	'sap/ui/dt/Util',
-	'sap/ui/rta/plugin/Plugin',
-	'sap/ui/rta/plugin/RTAElementMover',
-	'sap/ui/rta/Utils'
+	"sap/ui/dt/plugin/CutPaste",
+	"sap/ui/dt/Util",
+	"sap/ui/rta/plugin/Plugin",
+	"sap/ui/rta/plugin/RTAElementMover",
+	"sap/ui/rta/Utils"
 ],
 function(
 	ControlCutPaste,
@@ -31,7 +31,7 @@ function(
 	 * @extends sap.ui.dt.plugin.CutPaste
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -41,9 +41,6 @@ function(
 	 */
 	var CutPaste = ControlCutPaste.extend("sap.ui.rta.plugin.CutPaste", /** @lends sap.ui.rta.plugin.CutPaste.prototype */ {
 		metadata : {
-			// ---- object ----
-
-			// ---- control specific ----
 			library : "sap.ui.rta",
 			properties : {
 				commandFactory : {
@@ -84,11 +81,11 @@ function(
 	};
 
 	CutPaste.prototype._isPasteEditable = function (oOverlay) {
-		var	oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
+		var oElementMover = this.getElementMover();
 
 		return this.hasStableId(oOverlay) &&
-			this.getElementMover()._isMoveAvailableOnRelevantContainer(oOverlay) &&
-			oDesignTimeMetadata.isActionAvailableOnAggregations("move");
+			oElementMover.isMoveAvailableOnRelevantContainer(oOverlay) &&
+			oElementMover.isMoveAvailableForChildren(oOverlay);
 	};
 
 	/**
@@ -107,7 +104,7 @@ function(
 	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
 	 * @override
 	 */
-	CutPaste.prototype.registerElementOverlay = function(oOverlay) {
+	CutPaste.prototype.registerElementOverlay = function() {
 		ControlCutPaste.prototype.registerElementOverlay.apply(this, arguments);
 		Plugin.prototype.registerElementOverlay.apply(this, arguments);
 	};
@@ -117,7 +114,7 @@ function(
 	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
 	 * @override
 	 */
-	CutPaste.prototype.deregisterElementOverlay = function(oOverlay) {
+	CutPaste.prototype.deregisterElementOverlay = function() {
 		ControlCutPaste.prototype.deregisterElementOverlay.apply(this, arguments);
 		Plugin.prototype.removeFromPluginsList.apply(this, arguments);
 	};
@@ -126,14 +123,13 @@ function(
 	 * @override
 	 */
 	CutPaste.prototype.paste = function(oTargetOverlay) {
-
 		this._executePaste(oTargetOverlay);
 
 		this.getElementMover().buildMoveCommand()
 
 		.then(function(oMoveCommand) {
 			this.fireElementModified({
-				"command" : oMoveCommand
+				command : oMoveCommand
 			});
 			this.stopCutAndPaste();
 		}.bind(this))
@@ -141,7 +137,6 @@ function(
 		.catch(function(oMessage) {
 			throw DtUtil.createError("CutPaste#paste", oMessage, "sap.ui.rta");
 		});
-
 	};
 
 	/**

@@ -1,12 +1,13 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.SegmentedButton.
 sap.ui.define([
 	'./library',
+	'./Button',
 	'sap/ui/core/Control',
 	'sap/ui/core/EnabledPropagator',
 	'sap/ui/core/delegate/ItemNavigation',
@@ -17,6 +18,7 @@ sap.ui.define([
 ],
 function(
 	library,
+	Button,
 	Control,
 	EnabledPropagator,
 	ItemNavigation,
@@ -48,7 +50,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -169,7 +171,8 @@ function(
 					item : {type : "sap.m.SegmentedButtonItem"}
 				}
 			}
-		}
+		},
+		dnd: { draggable: true, droppable: false }
 	}});
 
 
@@ -434,22 +437,23 @@ function(
 
 	/**
 	 * Required by the {@link sap.m.IOverflowToolbarContent} interface.
-	 * Registers invalidations event which is fired when width of the control is changed.
+	 * Registers invalidation event which is fired when width of the control is changed.
 	 *
-	 * @protected
 	 * @returns {object} Configuration information for the <code>sap.m.IOverflowToolbarContent</code> interface.
+	 *
+	 * @ui5-restricted sap.m.OverflowToolBar
+	 * @private
 	 */
 	SegmentedButton.prototype.getOverflowToolbarConfig = function() {
-		var oConfig = {
+		return {
 			canOverflow: true,
 			listenForEvents: ["select"],
+			autoCloseEvents: ["select"],
 			noInvalidationProps: ["enabled", "selectedKey"],
 			invalidationEvents: ["_containerWidthChanged"],
 			onBeforeEnterOverflow: this._onBeforeEnterOverflow,
 			onAfterExitOverflow: this._onAfterExitOverflow
 		};
-
-		return oConfig;
 	};
 
 	// SegmentedButton - switch to/from select mode
@@ -459,6 +463,16 @@ function(
 
 	SegmentedButton.prototype._onAfterExitOverflow = function(oControl) {
 		oControl._toNormalMode();
+	};
+
+	/**
+	* <code>SegmentedButton</code> must not be stretched in Form because ResizeHandler is used internally
+	* in order to manage the width of the SegmentedButton depending on the container size
+	* @protected
+	* @returns {boolean} True this method always returns <code>true</code>
+	*/
+	SegmentedButton.prototype.getFormDoNotAdjustWidth = function () {
+		return true;
 	};
 
 	/**
@@ -480,7 +494,7 @@ function(
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	SegmentedButton.prototype.createButton = function (sText, sURI, bEnabled, sTextDirection) {
-		var oButton = new sap.m.Button();
+		var oButton = new Button();
 
 		if (sText !== null) {
 			oButton.setText(sText);
@@ -508,8 +522,8 @@ function(
 				this.addAggregation('buttons', oButton);
 				this._syncSelect();
 				this._fireChangeEvent();
-				return this;
 			}
+			return this;
 		};
 
 		SegmentedButton.prototype.insertButton = function (oButton, iIndex) {
@@ -518,8 +532,8 @@ function(
 				this.insertAggregation('buttons', oButton, iIndex);
 				this._syncSelect();
 				this._fireChangeEvent();
-				return this;
 			}
+			return this;
 		};
 
 		function processButton(oButton, oParent){
@@ -847,8 +861,9 @@ function(
 		this._oItemNavigation.onsaphome(oEvent);
 	};
 
-
-
+	SegmentedButton.prototype.onsapspace = function (oEvent) {
+		oEvent.preventDefault();
+	};
 
 	/** Select form function **/
 
@@ -860,7 +875,10 @@ function(
 		var oSelect = this.getAggregation("_select");
 
 		if (!oSelect) {
-			oSelect = new sap.m.Select(this.getId() + "-select");
+			// lazy load sap.m.Select, TODO should be loaded async
+			jQuery.sap.require("sap.m.Select");
+			var Select = sap.ui.require("sap/m/Select");
+			oSelect = new Select(this.getId() + "-select");
 			oSelect.attachChange(this._selectChangeHandler, this);
 			oSelect.addStyleClass("sapMSegBSelectWrapper");
 			this.setAggregation("_select", oSelect, true);
@@ -938,8 +956,6 @@ function(
 	SegmentedButton.prototype._toNormalMode = function() {
 		delete this._bInOverflow;
 		this.removeStyleClass("sapMSegBSelectWrapper");
-		this.getAggregation("_select").removeAllItems();
-		this.destroyAggregation("_select");
 	};
 
 	/**

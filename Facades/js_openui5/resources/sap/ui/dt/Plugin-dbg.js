@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -25,7 +25,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -37,9 +37,6 @@ function(
 	var Plugin = ManagedObject.extend("sap.ui.dt.Plugin", /** @lends sap.ui.dt.Plugin.prototype */ {
 		metadata : {
 			"abstract" : true,
-			// ---- object ----
-
-			// ---- control specific ----
 			library : "sap.ui.dt",
 			properties : {
 				/**
@@ -48,10 +45,23 @@ function(
 				designTime: { // its defined as a property because spa.ui.dt.designTime is a managed object and UI5 only allows associations for elements
 					type : "object",
 					multiple : false
+				},
+				busy: {
+					type : "boolean",
+					defaultValue : false
+				}
+			},
+			events : {
+				busyChange : {
+					parameters : {
+						busy : {type : "boolean"}
+					}
 				}
 			}
 		}
 	});
+
+	Plugin.prototype._bBusyCounter = 0;
 
 	/**
 	 * Called when the Plugin is initialized
@@ -135,7 +145,9 @@ function(
 	Plugin.prototype._registerOverlays = function(oDesignTime) {
 		if (this.registerElementOverlay || this.registerAggregationOverlay) {
 			var aElementOverlays = oDesignTime.getElementOverlays();
+			this.setBusy(true);
 			aElementOverlays.forEach(this.callElementOverlayRegistrationMethods.bind(this));
+			this.setBusy(false);
 		}
 	};
 
@@ -174,7 +186,7 @@ function(
 	};
 
 	/**
-	 * @param {sap.ui.dt.Overlay} oOverlay to callde registration methods for
+	 * @param {sap.ui.dt.ElementOverlay} oElementOverlay to callde registration methods for
 	 * @private
 	 */
 	Plugin.prototype._callElementOverlayDeregestrationMethods = function(oElementOverlay) {
@@ -211,16 +223,28 @@ function(
 	 * @override
 	 * @public
 	 */
-	Plugin.prototype.getActionName = function(){};
+	Plugin.prototype.getActionName = function() {};
 
 	/**
 	 * Indicate if a plugin is currently busy
-	 * Method to be overwritten by the different plugins
 	 *
 	 * @returns {boolean} Returns whether the plugin is currently busy
 	 */
-	Plugin.prototype.isBusy = function() {
-		return false;
+	Plugin.prototype.isBusy = Plugin.prototype.getBusy;
+
+	/**
+	 * @param {boolean} bBusy - busy state to set
+	 */
+	Plugin.prototype.setBusy = function(bBusy) {
+		this._bBusyCounter = bBusy ? this._bBusyCounter + 1 : this._bBusyCounter - 1;
+		if ((bBusy === true && this._bBusyCounter === 1) ||
+			(bBusy === false && this._bBusyCounter === 0)
+		) {
+			this.setProperty("busy", bBusy);
+			this.fireBusyChange({
+				busy: bBusy
+			});
+		}
 	};
 
 	/**
@@ -228,7 +252,7 @@ function(
 	 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay containing the Designtime Metadata
 	 * @return {object}          Returns an object with the action data from the Designtime Metadata
 	 */
-	Plugin.prototype.getAction = function(oOverlay){
+	Plugin.prototype.getAction = function(oOverlay) {
 		return oOverlay.getDesignTimeMetadata() ?
 			oOverlay.getDesignTimeMetadata().getAction(this.getActionName(), oOverlay.getElement())
 			: null;
@@ -253,15 +277,13 @@ function(
 	Plugin.prototype.getActionText = function (oOverlay, mAction, sPluginId) {
 		var vName = mAction.name;
 		var oElement = oOverlay.getElement();
-		if (vName){
+		if (vName) {
 			if (typeof vName === "function") {
 				return vName.call(null, oElement);
-			} else {
-				return oOverlay.getDesignTimeMetadata() ? oOverlay.getDesignTimeMetadata().getLibraryText(oElement, vName) : "";
 			}
-		} else {
-			return sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText(sPluginId);
+			return oOverlay.getDesignTimeMetadata() ? oOverlay.getDesignTimeMetadata().getLibraryText(oElement, vName) : "";
 		}
+		return sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText(sPluginId);
 	};
 
 	/**
@@ -270,7 +292,7 @@ function(
 	 * @param {sap.ui.dt.ElementOverlay[]} aElementOverlays - Overlays to be checked
 	 * @returns {boolean} Returns false by default
 	 */
-	Plugin.prototype.isAvailable = function (aElementOverlays) {
+	Plugin.prototype.isAvailable = function () {
 		return false;
 	};
 
@@ -281,7 +303,7 @@ function(
 	 * @override
 	 * @public
 	 */
-	Plugin.prototype.handler = function (aElementOverlays) {};
+	Plugin.prototype.handler = function () {};
 
 	/**
 	 * Checks if the plugin is enabled for a set of overlays
@@ -289,7 +311,7 @@ function(
 	 * @param {sap.ui.dt.ElementOverlay[]} aElementOverlays - Target overlays
 	 * @returns {boolean} Returns false by default
 	 */
-	Plugin.prototype.isEnabled = function (aElementOverlays) {
+	Plugin.prototype.isEnabled = function () {
 		return false;
 	};
 
@@ -308,7 +330,7 @@ function(
 	Plugin.prototype._getMenuItems = function (aElementOverlays, mPropertyBag) {
 		var oElementOverlay = aElementOverlays[0]; // by default we get menu items only for the first overlay
 		var mAction = this.getAction(oElementOverlay);
-		if (!mAction || !this.isAvailable(aElementOverlays)){
+		if (!mAction || !this.isAvailable(aElementOverlays)) {
 			return [];
 		}
 

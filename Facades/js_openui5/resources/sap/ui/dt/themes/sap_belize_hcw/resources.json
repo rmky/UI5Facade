@@ -6,6 +6,11 @@
 			"theme": "sap_belize_hcw"
 		},
 		{
+			"name": "ContextMenu.less",
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
 			"name": "library-RTL-dbg.css",
 			"isDebug": true,
 			"theme": "sap_belize_hcw"

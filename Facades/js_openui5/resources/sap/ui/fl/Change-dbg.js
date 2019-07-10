@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,6 @@ sap.ui.define([
 	Utils,
 	Settings
 ) {
-
 	"use strict";
 
 	/**
@@ -26,13 +25,12 @@ sap.ui.define([
 	 * @class Change class.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @alias sap.ui.fl.Change
 	 * @experimental Since 1.25.0
 	 */
-	var Change = ManagedObject.extend("sap.ui.fl.Change", /** @lends sap.ui.fl.Change.prototype */
-	{
-		constructor : function(oFile){
+	var Change = ManagedObject.extend("sap.ui.fl.Change", /** @lends sap.ui.fl.Change.prototype */ {
+		constructor : function(oFile) {
 			ManagedObject.apply(this);
 
 			if (!jQuery.isPlainObject(oFile)) {
@@ -46,6 +44,8 @@ sap.ui.define([
 			this._aUndoOperations = null;
 			this.setState(Change.states.NEW);
 			this.setModuleName(oFile.moduleName);
+			this.setInitialApplyState();
+			this._oChangeProcessingPromises = {};
 		},
 		metadata : {
 			properties : {
@@ -54,6 +54,14 @@ sap.ui.define([
 				},
 				moduleName: {
 					type: "string"
+				},
+				/**
+				 * describes the current state of the change in regards to change applying and reverting.
+				 * To change or retrieve the state please use the getters and setters defined in this class.
+				 * Initially the state is <code>Change.applyState.INITIAL</code>.
+				 */
+				applyState: {
+					type: "int"
 				}
 			}
 		}
@@ -66,11 +74,142 @@ sap.ui.define([
 		DIRTY: "UPDATE"
 	};
 
+	Change.applyState = {
+		INITIAL: 0,
+		APPLYING: 1,
+		APPLY_FINISHED: 2,
+		REVERTING: 3,
+		REVERT_FINISHED: 4
+	};
+
+	Change.operations = {
+		APPLY: 0,
+		REVERT: 1
+	};
+
 	Change.prototype.setState = function(sState) {
 		if (this._isValidState(sState)) {
 			this.setProperty("state", sState);
 		}
 		return this;
+	};
+
+	Change.prototype.setQueuedForRevert = function() {
+		this._aQueuedProcesses.unshift(Change.operations.REVERT);
+	};
+
+	Change.prototype.isQueuedForRevert = function() {
+		return this._aQueuedProcesses.indexOf(Change.operations.REVERT) > -1;
+	};
+
+	Change.prototype.setQueuedForApply = function() {
+		this._aQueuedProcesses.unshift(Change.operations.APPLY);
+	};
+
+	Change.prototype.isQueuedForApply = function() {
+		return this._aQueuedProcesses.indexOf(Change.operations.APPLY) > -1;
+	};
+
+	Change.prototype.setInitialApplyState = function() {
+		this._aQueuedProcesses = [];
+		this.setApplyState(Change.applyState.INITIAL);
+	};
+
+	Change.prototype.startApplying = function() {
+		this.setApplyState(Change.applyState.APPLYING);
+	};
+
+	Change.prototype.markFinished = function(oResult) {
+		this._aQueuedProcesses.pop();
+		this._resolveChangeProcessingPromiseWithError(Change.operations.APPLY, oResult);
+		this.setApplyState(Change.applyState.APPLY_FINISHED);
+	};
+
+	Change.prototype.startReverting = function() {
+		this.setApplyState(Change.applyState.REVERTING);
+	};
+
+	Change.prototype.markRevertFinished = function(oResult) {
+		this._aQueuedProcesses.pop();
+		this._resolveChangeProcessingPromiseWithError(Change.operations.REVERT, oResult);
+		this.setApplyState(Change.applyState.REVERT_FINISHED);
+	};
+
+	Change.prototype.hasApplyProcessStarted = function() {
+		return this.getApplyState() === Change.applyState.APPLYING;
+	};
+
+	Change.prototype.isApplyProcessFinished = function() {
+		return this.getApplyState() === Change.applyState.APPLY_FINISHED;
+	};
+
+	Change.prototype.hasRevertProcessStarted = function() {
+		return this.getApplyState() === Change.applyState.REVERTING;
+	};
+
+	Change.prototype.isRevertProcessFinished = function() {
+		return this.getApplyState() === Change.applyState.REVERT_FINISHED;
+	};
+
+	Change.prototype.isCurrentProcessFinished = function() {
+		return this._aQueuedProcesses.length === 0;
+	};
+
+	/**
+	 * Adds and returns a Promise that resolves as soon as
+	 * 'resolveChangeProcessingPromise' or 'resolveChangeProcessingPromiseWithError' is called.
+	 * The promise will always resolve, either without parameter or with an object and a 'error' parameter inside.
+	 * There is only one object for apply or revert at a time, if this function is called multiple times for the same key
+	 * only the current promise will be returned
+	 *
+	 * 	_oChangeProcessingPromises: {
+	 * 		Change.operations.APPLY: {
+	 * 			promise: <Promise>,
+	 * 			resolveFunction: {}
+	 * 		},
+	 * 		Change.operations.REVERT: {
+	 * 			promise: <Promise>,
+	 * 			resolveFunction: {}
+	 * 		}
+	 * 	}
+	 *
+	 * @param {string} sKey indicates the current process, should be either Change.operations.APPLY or Change.operations.REVERT
+	 * @returns {Promise} Returns the promise
+	 */
+	Change.prototype.addChangeProcessingPromise = function(sKey) {
+		if (!this._oChangeProcessingPromises[sKey]) {
+			this._oChangeProcessingPromises[sKey] = {};
+			this._oChangeProcessingPromises[sKey].promise = new Promise(function(resolve) {
+				this._oChangeProcessingPromises[sKey].resolveFunction = {
+					resolve: resolve
+				};
+			}.bind(this));
+		}
+		return this._oChangeProcessingPromises[sKey].promise;
+	};
+
+	/**
+	 * Calls 'addChangeProcessingPromise' for all currently queued processes
+	 *
+	 * @returns {Promise[]} Returns an array with all a promise for every process
+	 */
+	Change.prototype.addChangeProcessingPromises = function() {
+		var aReturn = [];
+		this._aQueuedProcesses.forEach(function(sProcess) {
+			aReturn.push(this.addChangeProcessingPromise(sProcess));
+		}, this);
+		return aReturn;
+	};
+
+	Change.prototype.addPromiseForApplyProcessing = function() {
+		return this.addChangeProcessingPromise(Change.operations.APPLY);
+	};
+
+	Change.prototype._resolveChangeProcessingPromiseWithError = function(sKey, oResult) {
+		if (this._oChangeProcessingPromises[sKey]) {
+			this._oChangeProcessingPromises[sKey].resolveFunction.resolve(oResult);
+			delete this._oChangeProcessingPromises[sKey];
+		}
 	};
 
 	/**
@@ -84,7 +223,7 @@ sap.ui.define([
 	Change.prototype._isValidState = function(sState) {
 		//new state have to be in the Change.states value list
 		var bStateFound = false;
-		Object.keys(Change.states).some(function(sKey){
+		Object.keys(Change.states).some(function(sKey) {
 			if (Change.states[sKey] === sState) {
 				bStateFound = true;
 			}
@@ -150,6 +289,18 @@ sap.ui.define([
 	Change.prototype.getChangeType = function () {
 		if (this._oDefinition) {
 			return this._oDefinition.changeType;
+		}
+	};
+
+	/**
+	 * Returns the file name
+	 *
+	 * @returns {String} fileName of the file
+	 * @public
+	 */
+	Change.prototype.getFileName = function () {
+		if (this._oDefinition) {
+			return this._oDefinition.fileName;
 		}
 	};
 
@@ -669,9 +820,9 @@ sap.ui.define([
 				aDependentControls.push(oModifier.bySelector(oSelector, oAppComponent, mPropertyBag.view));
 			});
 			return aDependentControls;
-		} else {
-			return oModifier.bySelector(oDependentSelector, oAppComponent, mPropertyBag.view);
 		}
+
+		return oModifier.bySelector(oDependentSelector, oAppComponent, mPropertyBag.view);
 	};
 
 	/**
@@ -685,8 +836,8 @@ sap.ui.define([
 		var aDependentSelectors = [this.getSelector()];
 
 		if (!this._aDependentSelectorList) {
-			if (this._oDefinition.dependentSelector){
-				Object.keys(this._oDefinition.dependentSelector).forEach(function(sAlias){
+			if (this._oDefinition.dependentSelector) {
+				Object.keys(this._oDefinition.dependentSelector).forEach(function(sAlias) {
 					var aCurrentSelector = that._oDefinition.dependentSelector[sAlias];
 					if (!Array.isArray(aCurrentSelector)) {
 						aCurrentSelector = [aCurrentSelector];
@@ -818,7 +969,6 @@ sap.ui.define([
 	 * @public
 	 */
 	Change.createInitialFileContent = function (oPropertyBag) {
-
 		if (!oPropertyBag) {
 			oPropertyBag = {};
 		}

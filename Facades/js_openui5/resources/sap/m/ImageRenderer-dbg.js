@@ -1,12 +1,12 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides default renderer for control sap.m.Image
-sap.ui.define(['sap/m/library', "sap/base/security/encodeXML"],
-	function(library, encodeXML) {
+sap.ui.define(['sap/m/library', "sap/base/security/encodeCSS"],
+	function(library, encodeCSS) {
 	"use strict";
 
 	// shortcut for sap.m.ImageMode
@@ -51,6 +51,8 @@ sap.ui.define(['sap/m/library', "sap/base/security/encodeXML"],
 
 		if (!oLightBox) {
 			oRm.writeControlData(oImage);
+		} else {
+			oRm.writeAttribute("id", oImage.getId() + "-inner");
 		}
 
 		// aria-labelledby references
@@ -68,9 +70,13 @@ sap.ui.define(['sap/m/library', "sap/base/security/encodeXML"],
 		} else {
 			// preload the image with a window.Image instance. The source uri is set to the output DOM node via CSS style 'background-image' after the source image is loaded (in onload function)
 			oImage._preLoadImage(oImage._getDensityAwareSrc());
-			oRm.addStyle("background-size", encodeXML(oImage.getBackgroundSize()));
-			oRm.addStyle("background-position", encodeXML(oImage.getBackgroundPosition()));
-			oRm.addStyle("background-repeat", encodeXML(oImage.getBackgroundRepeat()));
+			if (oImage._isValidBackgroundSizeValue(oImage.getBackgroundSize())) {
+				oRm.addStyle("background-size", oImage.getBackgroundSize());
+			}
+			if (oImage._isValidBackgroundPositionValue(oImage.getBackgroundPosition())) {
+				oRm.addStyle("background-position", oImage.getBackgroundPosition());
+			}
+			oRm.addStyle("background-repeat", encodeCSS(oImage.getBackgroundRepeat()));
 		}
 
 		oRm.addClass("sapMImg");
@@ -89,7 +95,7 @@ sap.ui.define(['sap/m/library', "sap/base/security/encodeXML"],
 			if (!(sUseMap.startsWith("#"))) {
 				sUseMap = "#" + sUseMap;
 			}
-			oRm.writeAttributeEscaped("useMap", sUseMap);
+			oRm.writeAttributeEscaped("usemap", sUseMap);
 		}
 
 		if (oImage.getDecorative() && !sUseMap && !bHasPressHandlers) {
@@ -112,7 +118,7 @@ sap.ui.define(['sap/m/library', "sap/base/security/encodeXML"],
 
 		if (bHasPressHandlers) {
 			oRm.writeAttribute("role", "button");
-			oRm.writeAttribute("tabIndex", 0);
+			oRm.writeAttribute("tabindex", 0);
 		}
 
 		// Dimensions

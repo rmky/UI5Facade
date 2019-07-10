@@ -23,6 +23,7 @@
 	resizable: false, // boolean, since 1.30
 	draggable: false, // boolean, since 1.30
 	escapeHandler: undefined, // any, since 1.44
+	role: sap.m.DialogRoleType.Dialog, // sap.m.DialogRoleType, since 1.65
 	pkg: undefined, // string
 	transports: undefined, // any
 	lrepObject: undefined, // any
@@ -87,6 +88,7 @@
 	resizable="false"
 	draggable="false"
 	escapeHandler=""
+	role="Dialog"
 	pkg=""
 	transports=""
 	lrepObject=""

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,17 +20,17 @@ sap.ui.define(["sap/ui/fl/Utils"], function(Utils) {
 	 * @alias sap.ui.fl.registry.ChangeTypeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @experimental Since 1.27.0
 	 *
 	 */
-		var ChangeTypeMetadata = function(mParam) {
-			if (!mParam.name) {
-				Utils.log.error("sap.ui.fl.registry.ChangeType: Name required");
-			}
-			if (!mParam.changeHandler) {
-				Utils.log.error("sap.ui.fl.registry.ChangeType: ChangeHandler required");
-			}
+	var ChangeTypeMetadata = function(mParam) {
+		if (!mParam.name) {
+			Utils.log.error("sap.ui.fl.registry.ChangeType: Name required");
+		}
+		if (!mParam.changeHandler) {
+			Utils.log.error("sap.ui.fl.registry.ChangeType: ChangeHandler required");
+		}
 
 		this._name = mParam.name;
 		this._changeHandler = mParam.changeHandler;

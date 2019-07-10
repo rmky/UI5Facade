@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -57,10 +57,11 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
+	 * @since 1.22
 	 * @alias sap.m.Tokenizer
 	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/token/ Tokenizer}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
@@ -119,7 +120,7 @@ sap.ui.define([
 					/**
 					 * type of tokenChange event.
 					 * There are four TokenChange types: "added", "removed", "removedAll", "tokensChanged".
-					 * Use Tokenizer.TokenChangeType.Added for "added",	Tokenizer.TokenChangeType.Removed for "removed", Tokenizer.TokenChangeType.RemovedAll for "removedAll" and Tokenizer.TokenChangeType.TokensChanged for "tokensChanged".
+					 * Use sap.m.Tokenizer.TokenChangeType.Added for "added", sap.m.Tokenizer.TokenChangeType.Removed for "removed", sap.m.Tokenizer.TokenChangeType.RemovedAll for "removedAll" and sap.m.Tokenizer.TokenChangeType.TokensChanged for "tokensChanged".
 					 */
 					type: { type : "string"},
 
@@ -151,6 +152,7 @@ sap.ui.define([
 
 			/**
 			 * Fired when the tokens aggregation changed due to a user interaction (add / remove token)
+			 * @since 1.46
 			 */
 			tokenUpdate: {
 				allowPreventDefault : true,
@@ -158,7 +160,7 @@ sap.ui.define([
 					/**
 					 * Type of tokenChange event.
 					 * There are two TokenUpdate types: "added", "removed"
-					 * Use Tokenizer.TokenUpdateType.Added for "added" and Tokenizer.TokenUpdateType.Removed for "removed".
+					 * Use sap.m.Tokenizer.TokenUpdateType.Added for "added" and sap.m.Tokenizer.TokenUpdateType.Removed for "removed".
 					 */
 					type: {type: "string"},
 
@@ -375,7 +377,7 @@ sap.ui.define([
 	 * Function sets the maximum width of the Tokenizer.
 	 *
 	 * @public
-	 * @param {number} nWidth The new maximal width
+	 * @param {string} sWidth The new maximal width
 	 */
 	Tokenizer.prototype.setMaxWidth = function(sWidth) {
 		this.setProperty("maxWidth", sWidth, true);
@@ -384,9 +386,8 @@ sap.ui.define([
 		if (this.getDomRef() && this._getAdjustable()) {
 			this._adjustTokensVisibility();
 		}
-
 		return this;
-	};
+	 };
 
 	/**
 	 * Function returns whether the n-more indicator is visible
@@ -486,6 +487,9 @@ sap.ui.define([
 	 * @private
 	 */
 	Tokenizer.prototype.onAfterRendering = function() {
+		var aTokens = this.getTokens(),
+			iTokensSize = aTokens.length;
+
 		if (!this._sResizeHandlerId) {
 			var that = this;
 			this._sResizeHandlerId = ResizeHandler.register(this.getDomRef(), function() {
@@ -494,6 +498,13 @@ sap.ui.define([
 		}
 
 		this._oIndicator = this.$().find(".sapMTokenizerIndicator");
+
+		// update ARIA information of Tokens depending on size and position in Tokenizer
+		for (var i = 0; i < iTokensSize; i++) {
+			var oTokenDomRef = aTokens[i].getDomRef();
+			oTokenDomRef.setAttribute("aria-posinset", i + 1);
+			oTokenDomRef.setAttribute("aria-setsize", iTokensSize);
+		}
 	};
 
 	/**
@@ -509,25 +520,34 @@ sap.ui.define([
 
 		this.getTokens().forEach(function(oToken){
 			if (oToken.getDomRef()  && !oToken.$().hasClass("sapMHiddenToken")) {
-				this._oTokensWidthMap[oToken.getId()] = oToken.getDomRef().offsetWidth;
+				this._oTokensWidthMap[oToken.getId()] = oToken.$().outerWidth(true);
 			}
 		}.bind(this));
 
 		this._adjustTokensVisibility();
 	};
 
-		/**
-		 * Handles the setting of collapsed state
-		 *
-		 * @param {boolean} If true collapses the tokenizer's content
-		 * @private
-		 */
+	/**
+	 * Handles the setting of collapsed state
+	 *
+	 * @param {boolean} If true collapses the tokenizer's content
+	 * @private
+	 */
 	Tokenizer.prototype._useCollapsedMode = function(bCollapse) {
+		var oParent = this.getParent(),
+			aTokens = this.getTokens();
+
+		if (!aTokens.length) {
+			return;
+		}
+
 		if (bCollapse) {
 			this._adjustTokensVisibility();
 		} else {
 			this._showAllTokens();
 		}
+
+		oParent._syncInputWidth && setTimeout(oParent["_syncInputWidth"].bind(oParent, this), 0);
 	};
 
 	Tokenizer.prototype.invalidate = function(oOrigin) {
@@ -574,6 +594,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Tokenizer.prototype.onkeydown = function(oEvent) {
+		var bSelectAll;
 
 		if (oEvent.which === KeyCodes.TAB) {
 			this._changeAllTokensSelection(false);
@@ -584,11 +605,13 @@ sap.ui.define([
 
 			//to check how many tokens are selected before Ctrl + A in Tokenizer
 			this._iSelectedToken = this.getSelectedTokens().length;
+			bSelectAll = this.getSelectedTokens().length < this.getTokens().length;
 
 			if (this.getTokens().length > 0) {
 				this.focus();
-				this._changeAllTokensSelection(true);
+				this._changeAllTokensSelection(bSelectAll);
 				oEvent.preventDefault();
+				oEvent.stopPropagation();
 			}
 		}
 
@@ -605,6 +628,82 @@ sap.ui.define([
 				this._copy();
 			}
 		}
+	};
+
+	/**
+	* Pseudo event for pseudo 'previous' event with modifiers (Ctrl, Alt or Shift)
+	*
+	* @see #onsapprevious
+	* @param {jQuery.Event} oEvent The event object
+	* @private
+	*/
+	Tokenizer.prototype.onsappreviousmodifiers = function (oEvent) {
+		this.onsapprevious(oEvent);
+	};
+
+	/**
+	* Pseudo event for pseudo 'next' event with modifiers (Ctrl, Alt or Shift)
+	*
+	* @see #onsapnext
+	* @param {jQuery.Event} oEvent The event object
+	* @private
+	*/
+	Tokenizer.prototype.onsapnextmodifiers = function (oEvent) {
+		this.onsapnext(oEvent);
+	};
+
+	/**
+	* Pseudo event for keyboard Home with modifiers (Ctrl, Alt or Shift)
+	*
+	* @see #onsaphome
+	* @param {jQuery.Event} oEvent The event object
+	* @private
+	*/
+	Tokenizer.prototype.onsaphomemodifiers = function (oEvent) {
+		this._selectRange(false);
+	};
+
+	/**
+	* Pseudo event for keyboard End with modifiers (Ctrl, Alt or Shift)
+	*
+	* @see #onsapend
+	* @param {jQuery.Event} oEvent The event object
+	* @private
+	*/
+	Tokenizer.prototype.onsapendmodifiers = function (oEvent) {
+		this._selectRange(true);
+	};
+
+	/**
+	 * Sets the selection over a range of tokens.
+	 *
+	 * @param {boolean} bForwardSection True, if the selection is onward
+	 * @private
+	 */
+	Tokenizer.prototype._selectRange = function (bForwardSection) {
+		var oRange = {},
+			oTokens = this.getTokens(),
+			oFocusedControl = jQuery(document.activeElement).control()[0],
+			iTokenIndex = oTokens.indexOf(oFocusedControl);
+
+		if (!oFocusedControl || !oFocusedControl.isA("sap.m.Token")) {
+			return;
+		}
+
+		if (bForwardSection) {
+			oRange.start = iTokenIndex;
+			oRange.end = oTokens.length - 1;
+		} else {
+			oRange.start = 0;
+			oRange.end = iTokenIndex;
+		}
+
+		if (oRange.start < oRange.end) {
+			for (var i = oRange.start; i <= oRange.end; i++) {
+				oTokens[i].setSelected(true);
+			}
+		}
+
 	};
 
 	/**
@@ -705,14 +804,39 @@ sap.ui.define([
 	 */
 
 	Tokenizer.prototype.onsapbackspace = function(oEvent) {
-		if (this.getSelectedTokens().length === 0) {
+		var aSelectedTokens = this.getSelectedTokens();
+
+		if (aSelectedTokens.length < 2) {
 			this.onsapprevious(oEvent);
-		} else if (this.getEditable()) {
-			this._removeSelectedTokens();
+		} else {
+			this._focusUnselectedToken(oEvent);
+		}
+		this._handleKeyboardDelete(oEvent);
+
+		oEvent.setMarked();
+	};
+
+	Tokenizer.prototype._focusUnselectedToken = function (oEvent) {
+		var aSelectedTokens = this.getSelectedTokens(),
+			aTokens = this.getTokens(),
+			iReferenceIndex, oTokenForSelection;
+
+
+		if (oEvent.keyCode === KeyCodes.DELETE) {
+			iReferenceIndex = aTokens.indexOf(aSelectedTokens[aSelectedTokens.length - 1]);
+			oTokenForSelection = aTokens[iReferenceIndex + 1];
 		}
 
-		oEvent.preventDefault();
-		oEvent.stopPropagation();
+		if (oEvent.keyCode === KeyCodes.BACKSPACE){
+			iReferenceIndex = aTokens.indexOf(aSelectedTokens[0]);
+			oTokenForSelection = aTokens[iReferenceIndex - 1];
+		}
+
+		if (oTokenForSelection) {
+			oTokenForSelection.focus();
+		}  else {
+			oEvent.setMarked("forwardFocusToParent");
+		}
 	};
 
 	/**
@@ -721,10 +845,33 @@ sap.ui.define([
 	 * @private
 	 * @param {jQuery.Event} oEvent The event object
 	 */
-
 	Tokenizer.prototype.onsapdelete = function(oEvent) {
+		var aSelectedTokens = this.getSelectedTokens();
+
+		if (aSelectedTokens.length < 2) {
+			this.onsapnext(oEvent);
+		} else {
+			this._focusUnselectedToken(oEvent);
+		}
+
+		this._handleKeyboardDelete(oEvent);
+		oEvent.setMarked();
+	};
+
+	Tokenizer.prototype._handleKeyboardDelete = function(oEvent) {
+		var oTargetControl;
+
 		if (this.getEditable()) {
+			oTargetControl = jQuery(oEvent.target).control()[0];
+			if (oTargetControl && oTargetControl.isA("sap.m.Token")) {
+				this.handleTokenDeletion(oTargetControl);
+			}
+
 			this._removeSelectedTokens();
+
+			if (!this.getTokens().length) {
+				oEvent.setMarked("forwardFocusToParent");
+			}
 		}
 	};
 
@@ -758,16 +905,13 @@ sap.ui.define([
 	};
 
 	/**
-	 * Called when the user presses the left arrow key, selects previous token
+	 * Called when the user presses the left arrow key, focuses previous token
 	 * @param {jQuery.Event} oEvent The event triggered by the user
 	 * @private
 	 */
 	Tokenizer.prototype.onsapprevious = function(oEvent) {
-		if (oEvent.which === KeyCodes.ARROW_UP) {
-			return;
-		}
-
-		var iLength = this.getTokens().length;
+		var aTokens = this.getTokens(),
+			iLength = aTokens.length;
 
 		if (iLength === 0) {
 			return;
@@ -776,27 +920,29 @@ sap.ui.define([
 		var oFocusedElement = jQuery(document.activeElement).control()[0];
 
 		// oFocusedElement could be undefined since the focus element might not correspond to an SAPUI5 Control
-		var index = oFocusedElement ? this.getTokens().indexOf(oFocusedElement) : -1;
+		var index = oFocusedElement ? aTokens.indexOf(oFocusedElement) : -1;
 
 		if (index == 0) {
+			oEvent.setMarked("forwardFocusToParent");
 			// focus is on first token - we do not handle this event and let it bubble
 			return;
 		}
 
-		var targetToken;
+		var targetToken, currentToken;
 
 		if (index > 0) {
-			targetToken = this.getTokens()[index - 1];
-
-			this._changeAllTokensSelection(false, targetToken);
-
-			targetToken._changeSelection(true);
+			targetToken = aTokens[index - 1];
 			targetToken.focus();
-
 		} else  {
-			targetToken = this.getTokens()[this.getTokens().length - 1];
-			targetToken._changeSelection(true);
+			targetToken = aTokens[aTokens.length - 1];
 			targetToken.focus();
+		}
+
+		if (oEvent.shiftKey) {
+			currentToken = aTokens[index];
+			targetToken.setSelected(true);
+			currentToken.setSelected(true);
+
 		}
 
 		this._deactivateScrollToEnd();
@@ -805,19 +951,17 @@ sap.ui.define([
 
 		// mark the event that it is handled by the control
 		oEvent.setMarked();
+		oEvent.preventDefault();
 	};
 
 	/**
-	 * Called when the user presses the right arrow key, selects next token
+	 * Called when the user presses the right arrow key, focuses next token
 	 * @param {jQuery.Event} oEvent The event triggered by the user
 	 * @private
 	 */
 	Tokenizer.prototype.onsapnext = function(oEvent) {
-		if (oEvent.which === KeyCodes.ARROW_DOWN) {
-			return;
-		}
-
-		var iLength = this.getTokens().length;
+		var aTokens = this.getTokens(),
+			iLength = aTokens.length;
 
 		if (iLength === 0) {
 			return;
@@ -826,20 +970,24 @@ sap.ui.define([
 		var oFocusedElement = jQuery(document.activeElement).control()[0];
 
 		// oFocusedElement could be undefined since the focus element might not correspond to an SAPUI5 Control
-		var index = oFocusedElement ? this.getTokens().indexOf(oFocusedElement) : -1;
+		var index = oFocusedElement ? aTokens.indexOf(oFocusedElement) : -1;
 
 		if (index < iLength - 1) {
-			var oNextToken = this.getTokens()[index + 1];
-
-			this._changeAllTokensSelection(false, oNextToken);
-
-			oNextToken._changeSelection(true);
+			var oNextToken = aTokens[index + 1],
+				currentToken = aTokens[index];
 
 			oNextToken.focus();
+
+			if (oEvent.shiftKey) {
+				oNextToken.setSelected(true);
+				currentToken.setSelected(true);
+			}
 
 			this._ensureTokenVisible(oNextToken);
 		} else {
 			// focus is on last token - we do not handle this event and let it bubble
+			// notify the parent that the focus should be taken over
+			oEvent.setMarked("forwardFocusToParent");
 			return;
 		}
 
@@ -847,6 +995,7 @@ sap.ui.define([
 
 		// mark the event that it is handled by the control
 		oEvent.setMarked();
+		oEvent.preventDefault();
 	};
 
 	/**
@@ -1136,7 +1285,7 @@ sap.ui.define([
 		oToken.addEventDelegate({
 			onAfterRendering: function () {
 				if (sap.ui.getCore().isThemeApplied() && oToken.getDomRef() && !oToken.$().hasClass("sapMHiddenToken")) {
-					this._oTokensWidthMap[oToken.getId()] = oToken.getDomRef().offsetWidth;
+					this._oTokensWidthMap[oToken.getId()] = oToken.$().outerWidth(true);
 				}
 			}.bind(this)
 		});
@@ -1209,31 +1358,48 @@ sap.ui.define([
 	 * @returns {sap.m.Tokenizer} this instance for method chaining
 	 */
 	Tokenizer.prototype._removeSelectedTokens = function() {
-		var tokensToBeDeleted = this.getSelectedTokens();
-		var token,
-			i,
-			length,
-			eventResult;
+		var aTokensToBeDeleted = this.getSelectedTokens();
 
-		length = tokensToBeDeleted.length;
-		if (length === 0) {
+		if (aTokensToBeDeleted.length === 0) {
 			return this;
 		}
 
-		eventResult = this.fireTokenUpdate({
+		this.handleTokenDeletion(aTokensToBeDeleted);
+		this.focus();
+
+		this._doSelect();
+
+		return this;
+	};
+
+	/**
+	 * Handles the deletion of a single or multiple tokens.
+	 *
+	 * @param {sap.ui.core.Control|Array} mTokens Single token or an array ot tokens
+	 * @private
+	 */
+	Tokenizer.prototype.handleTokenDeletion = function (mTokens) {
+		var oEventResult,
+			iIndex, oToken,
+			aTokensToBeDeleted = [];
+
+		// handle both cases when mTokens is a single token or an array ot tokens
+		aTokensToBeDeleted = aTokensToBeDeleted.concat(mTokens);
+
+		oEventResult = this.fireTokenUpdate({
 			addedTokens : [],
-			removedTokens : tokensToBeDeleted,
+			removedTokens : aTokensToBeDeleted,
 			type: Tokenizer.TokenUpdateType.Removed
 		});
 
-		if (!eventResult) {
+		if (!oEventResult) {
 			return;
 		}
 
-		for (i = 0; i < length; i++) {
-			token = tokensToBeDeleted[i];
-			if (token.getEditable()) {
-				token.destroy();
+		for (iIndex = 0; iIndex < aTokensToBeDeleted.length; iIndex++) {
+			oToken = aTokensToBeDeleted[iIndex];
+			if (oToken.getEditable()) {
+				oToken.destroy();
 			}
 		}
 
@@ -1241,25 +1407,9 @@ sap.ui.define([
 
 		this.fireTokenChange({
 			addedTokens : [],
-			removedTokens : tokensToBeDeleted,
+			removedTokens : aTokensToBeDeleted,
 			type : Tokenizer.TokenChangeType.TokensChanged
 		});
-
-		var oParent = this.getParent(),
-			bIsParentMultiInput = oParent && oParent instanceof sap.m.MultiInput;
-
-		if (bIsParentMultiInput) {
-			// not set focus to MultiInput in phone mode
-			if (!oParent._bUseDialog) {
-				oParent.$('inner').focus();
-			}
-		} else {
-			this.focus();
-		}
-
-		this._doSelect();
-
-		return this;
 	};
 
 	/**
@@ -1443,17 +1593,35 @@ sap.ui.define([
 	 * @private
 	 */
 	Tokenizer.prototype.onsaphome = function(oEvent) {
+		this.getTokens()[0].focus();
 		this.scrollToStart();
+
+		oEvent.preventDefault();
 	};
 
 	/**
-	 * Handle the end button, scrolls to the last token
+	 * Handle the end button, scrolls to the last token and focuses it
 	 *
 	 * @param {jQuery.Event} oEvent The occuring event
 	 * @private
 	 */
 	Tokenizer.prototype.onsapend = function(oEvent) {
-		this.scrollToEnd();
+		var oTokens = this.getTokens(),
+			oLastToken = oTokens[oTokens.length - 1];
+
+		// handle the event chain only if the focus is not on the last token
+		// otherwise let the focus be handled by the parent control
+		if (oLastToken.getDomRef() !== document.activeElement) {
+			oLastToken.focus();
+			this.scrollToEnd();
+
+			oEvent.stopPropagation();
+		} else {
+			// notify the parent that the focus should be taken over
+			oEvent.setMarked("forwardFocusToParent");
+		}
+
+		oEvent.preventDefault();
 	};
 
 	/**

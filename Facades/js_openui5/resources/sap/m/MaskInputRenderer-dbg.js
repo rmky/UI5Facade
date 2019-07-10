@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,7 +23,6 @@ sap.ui.define(['sap/ui/core/Renderer', './InputBaseRenderer'], function(Renderer
 	MaskInputRenderer.getLabelledByAnnouncement = function(oControl) {
 		var sMask = oControl.getMask(),
 			sPlaceholder = oControl.getPlaceholder() || "",
-			sToolTip = oControl.getTooltip_AsString() || "",
 			oResourceBundle,
 			sMaskScreenReaderTag,
 			sAnnouncement = "";
@@ -32,13 +31,10 @@ sap.ui.define(['sap/ui/core/Renderer', './InputBaseRenderer'], function(Renderer
 			oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 			sMaskScreenReaderTag = oResourceBundle.getText("MASKINPUT_SCREENREADER_TAG");
 
-			if (sToolTip) {
-				sToolTip = " " + sToolTip + " ";
-			}
 			if (sPlaceholder) {
 				sPlaceholder = " " + sPlaceholder + " ";
 			}
-			sAnnouncement = sMaskScreenReaderTag + sPlaceholder + sToolTip;
+			sAnnouncement = sMaskScreenReaderTag + sPlaceholder;
 			return sAnnouncement;
 		}
 

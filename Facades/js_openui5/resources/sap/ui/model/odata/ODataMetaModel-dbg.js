@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -219,7 +219,7 @@ sap.ui.define([
 	 * {@link #loaded loaded} has been resolved!
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @alias sap.ui.model.odata.ODataMetaModel
 	 * @extends sap.ui.model.MetaModel
 	 * @public
@@ -368,7 +368,7 @@ sap.ui.define([
 					// Set the resolver on the internal JSON model, so that resolving does not use
 					// this._getObject itself.
 					this.oResolver = this.oResolver || new Resolver({models: this.oModel});
-					for (i = 0; i < oNode.length; i++) {
+					for (i = 0; i < oNode.length; i += 1) {
 						this.oResolver.bindObject(sProcessedPath + i);
 						this.oResolver.bindProperty("any", oBinding);
 						try {
@@ -970,7 +970,6 @@ sap.ui.define([
 	 * Refresh not supported by OData meta model!
 	 *
 	 * @throws {Error}
-	 * @returns {void}
 	 * @public
 	 */
 	ODataMetaModel.prototype.refresh = function () {
@@ -983,7 +982,6 @@ sap.ui.define([
 	 * @param {boolean} bLegacySyntax
 	 *   must not be true!
 	 * @throws {Error} if <code>bLegacySyntax</code> is true
-	 * @returns {void}
 	 * @public
 	 */
 	ODataMetaModel.prototype.setLegacySyntax = function (bLegacySyntax) {
@@ -996,7 +994,6 @@ sap.ui.define([
 	 * Changes not supported by OData meta model!
 	 *
 	 * @throws {Error}
-	 * @returns {void}
 	 * @private
 	 */
 	ODataMetaModel.prototype.setProperty = function () {

@@ -1,15 +1,15 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
-	'sap/ui/base/ManagedObject',
-	'sap/ui/dt/ElementUtil',
-	'sap/ui/dt/DOMUtil',
-	'sap/base/util/merge'
+	"sap/ui/base/ManagedObject",
+	"sap/ui/dt/ElementUtil",
+	"sap/ui/dt/DOMUtil",
+	"sap/base/util/merge"
 ],
 function(
 	jQuery,
@@ -31,7 +31,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -87,9 +87,8 @@ function(
 		var vIgnore = this.getData().ignore;
 		if (!vIgnore || (vIgnore && typeof vIgnore === "function" && !vIgnore(oElement))) {
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	};
 
 	/**
@@ -150,15 +149,14 @@ function(
 		var mData = this.getData();
 		if (mData.actions && mData.actions[sAction]) {
 			var vAction = mData.actions[sAction];
-			if (typeof (vAction) === "function" ) {
+			if (typeof (vAction) === "function") {
 				vAction = vAction.call(null, oElement);
 			}
 
-			if (typeof (vAction) === "string" ) {
+			if (typeof (vAction) === "string") {
 				return { changeType : vAction };
-			} else {
-				return vAction;
 			}
+			return vAction;
 		}
 	};
 
@@ -186,16 +184,16 @@ function(
 		return this._lookForLibraryTextInHierarchy(oElementMetadata, sKey, aArgs);
 	};
 
-	DesignTimeMetadata.prototype._lookForLibraryTextInHierarchy = function(oMetadata, sKey, aArgs){
+	DesignTimeMetadata.prototype._lookForLibraryTextInHierarchy = function(oMetadata, sKey, aArgs) {
 		var sLibraryName;
 		var oParentMetadata;
 		var sResult;
 
 		sLibraryName = oMetadata.getLibraryName();
 		sResult = this._getTextFromLibrary(sLibraryName, sKey, aArgs);
-		if (!sResult){
+		if (!sResult) {
 			oParentMetadata = oMetadata.getParent();
-			if (oParentMetadata && oParentMetadata.getLibraryName){ // Parents from the core library don't have Library Name
+			if (oParentMetadata && oParentMetadata.getLibraryName) { // Parents from the core library don't have Library Name
 				// If the control is inheriting from another library, the text must be searched in the hierarchy
 				sResult = this._lookForLibraryTextInHierarchy(oParentMetadata, sKey, aArgs);
 			} else {
@@ -207,17 +205,17 @@ function(
 		return sResult;
 	};
 
-	DesignTimeMetadata.prototype._getTextFromLibrary = function(sLibraryName, sKey, aArgs){
+	DesignTimeMetadata.prototype._getTextFromLibrary = function(sLibraryName, sKey, aArgs) {
 		var oLibResourceBundle = sap.ui.getCore().getLibraryResourceBundle(sLibraryName + ".designtime");
-		if (oLibResourceBundle && oLibResourceBundle.hasText(sKey)){
+		if (oLibResourceBundle && oLibResourceBundle.hasText(sKey)) {
 			return oLibResourceBundle.getText(sKey, aArgs);
-		} else {
-			//Fallback to old logic that tries to get the text from the libraries resource bundle
-			//TODO: remove the fallback after all libraries have introduced a library.designtime.js that will provide the resource bundle and texts
-			oLibResourceBundle = sap.ui.getCore().getLibraryResourceBundle(sLibraryName);
-			if (oLibResourceBundle && oLibResourceBundle.hasText(sKey)) {
-				return oLibResourceBundle.getText(sKey, aArgs);
-			}
+		}
+
+		//Fallback to old logic that tries to get the text from the libraries resource bundle
+		//TODO: remove the fallback after all libraries have introduced a library.designtime.js that will provide the resource bundle and texts
+		oLibResourceBundle = sap.ui.getCore().getLibraryResourceBundle(sLibraryName);
+		if (oLibResourceBundle && oLibResourceBundle.hasText(sKey)) {
+			return oLibResourceBundle.getText(sKey, aArgs);
 		}
 	};
 

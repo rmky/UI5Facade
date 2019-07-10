@@ -1,13 +1,17 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'sap/ui/rta/command/BaseCommand',
-	'sap/ui/core/util/reflection/JsControlTreeModifier',
-	'sap/ui/fl/Utils'
-], function(BaseCommand, JsControlTreeModifier, flUtils) {
+	"sap/ui/rta/command/BaseCommand",
+	"sap/ui/core/util/reflection/JsControlTreeModifier",
+	"sap/ui/fl/Utils"
+], function(
+	BaseCommand,
+	JsControlTreeModifier,
+	flUtils
+) {
 	"use strict";
 
 	/**
@@ -16,7 +20,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.BaseCommand
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.50
@@ -38,8 +42,6 @@ sap.ui.define([
 		}
 	});
 
-	ControlVariantSwitch.prototype.MODEL_NAME = "$FlexVariants";
-
 	ControlVariantSwitch.prototype._getAppComponent = function () {
 		var oElement = this.getElement();
 		return oElement ? flUtils.getAppComponentForControl(oElement) : this.getSelector().appComponent;
@@ -56,7 +58,7 @@ sap.ui.define([
 			oAppComponent = this._getAppComponent(),
 			sNewVariantReference = this.getTargetVariantReference();
 
-		this.oModel = oAppComponent.getModel(this.MODEL_NAME);
+		this.oModel = oAppComponent.getModel(flUtils.VARIANT_MODEL_NAME);
 		this.sVariantManagementReference = JsControlTreeModifier.getSelector(oElement, oAppComponent).id;
 		return this._updateModelVariant(sNewVariantReference, oAppComponent);
 	};
@@ -85,5 +87,4 @@ sap.ui.define([
 	};
 
 	return ControlVariantSwitch;
-
 }, /* bExport= */true);

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -25,7 +25,7 @@ sap.ui.define(['./Control', './library', "sap/base/Log", "sap/base/security/enco
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @public
 	 * @since 1.27.0
@@ -123,6 +123,13 @@ sap.ui.define(['./Control', './library', "sap/base/Log", "sap/base/security/enco
 		return this;
 	};
 
+	InvisibleText.prototype.getRendererMarkup = function() {
+		var sId = this.getId();
+		return	'<span id="' + sId + '" data-sap-ui="' + sId + '" class="sapUiInvisibleText" aria-hidden="true">' +
+					encodeXML(this.getText()) +
+				'</span>';
+	};
+
 	/**
 	 * Adds <code>this</code> control into the static, hidden area UI area container.
 	 *
@@ -135,9 +142,8 @@ sap.ui.define(['./Control', './library', "sap/base/Log", "sap/base/security/enco
 
 		try {
 			var oStatic = oCore.getStaticAreaRef();
-			var oRM = oCore.createRenderManager();
-			oRM.render(this, oStatic);
-			oRM.destroy();
+			oStatic.insertAdjacentHTML("beforeend", this.getRendererMarkup());
+			this.bOutput = true;
 		} catch (e) {
 			this.placeAt("sap-ui-static");
 		}
@@ -149,7 +155,7 @@ sap.ui.define(['./Control', './library', "sap/base/Log", "sap/base/security/enco
 	var mTextIds = Object.create(null);
 
 	/**
-	 * Returns the ID of a shared <code>InvisibleText<code> instance whose <code>text</code> property
+	 * Returns the ID of a shared <code>InvisibleText</code> instance whose <code>text</code> property
 	 * is retrieved from the given library resource bundle and text key.
 	 *
 	 * Calls with the same library and text key will return the same instance. The instance will be

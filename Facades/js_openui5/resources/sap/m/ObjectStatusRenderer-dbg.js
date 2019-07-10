@@ -1,11 +1,11 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
-	function(ValueStateSupport, coreLibrary) {
+sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/IndicationColorSupport', 'sap/ui/core/library'],
+	function(ValueStateSupport, IndicationColorSupport, coreLibrary) {
 	"use strict";
 
 
@@ -41,8 +41,11 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
 		} else {
 
 			var sState = oObjStatus.getState();
+			var bInverted = oObjStatus.getInverted();
 			var sTextDir = oObjStatus.getTextDirection();
 			var bPageRTL = sap.ui.getCore().getConfiguration().getRTL();
+			var sValueStateText;
+			var accValueText;
 
 			if (sTextDir === TextDirection.Inherit) {
 				sTextDir = bPageRTL ? TextDirection.RTL : TextDirection.LTR;
@@ -57,6 +60,9 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
 
 			oRm.addClass("sapMObjStatus");
 			oRm.addClass("sapMObjStatus" + sState);
+			if (bInverted) {
+				oRm.addClass("sapMObjStatusInverted");
+			}
 
 			if (oObjStatus._isActive()) {
 				oRm.addClass("sapMObjStatusActive");
@@ -106,8 +112,11 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
 
 			if (oObjStatus.getIcon()) {
 				oRm.write("<span");
-				oRm.writeAttributeEscaped("id", oObjStatus.getId() + "-icon");
+				oRm.writeAttributeEscaped("id", oObjStatus.getId() + "-statusIcon");
 				oRm.addClass("sapMObjStatusIcon");
+				if (!oObjStatus.getText()) {
+					oRm.addClass("sapMObjStatusIconOnly");
+				}
 				oRm.writeClasses();
 				oRm.write(">");
 				oRm.renderControl(oObjStatus._getImageControl());
@@ -134,16 +143,24 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
 			}
 			/* ARIA adding hidden node in span element */
 			if (sState != ValueState.None) {
-				oRm.write("<span");
-				oRm.writeAttributeEscaped("id", oObjStatus.getId() + "sapSRH");
-				oRm.addClass("sapUiInvisibleText");
-				oRm.writeClasses();
-				oRm.writeAccessibilityState({
-					hidden: false
-				});
-				oRm.write(">");
-				oRm.writeEscaped(ValueStateSupport.getAdditionalText(sState));
-				oRm.write("</span>");
+				sValueStateText = ValueStateSupport.getAdditionalText(sState);
+				if (sValueStateText) {
+					accValueText = sValueStateText;
+				} else {
+					accValueText = IndicationColorSupport.getAdditionalText(sState);
+				}
+				if (accValueText) {
+					oRm.write("<span");
+					oRm.writeAttributeEscaped("id", oObjStatus.getId() + "sapSRH");
+					oRm.addClass("sapUiInvisibleText");
+					oRm.writeClasses();
+					oRm.writeAccessibilityState({
+						hidden: false
+					});
+					oRm.write(">");
+					oRm.writeEscaped(accValueText);
+					oRm.write("</span>");
+				}
 			}
 
 		}

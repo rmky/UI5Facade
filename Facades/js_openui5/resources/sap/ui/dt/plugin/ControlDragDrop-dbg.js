@@ -1,20 +1,16 @@
 /*
- * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * ! OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.dt.plugin.ControlDragDrop.
 sap.ui.define([
-	'sap/ui/dt/plugin/DragDrop',
-	'sap/ui/dt/plugin/ElementMover',
-	'sap/ui/dt/ElementUtil',
-	'sap/ui/dt/OverlayUtil'
+	"sap/ui/dt/plugin/DragDrop",
+	"sap/ui/dt/plugin/ElementMover"
 ], function(
 	DragDrop,
-	ElementMover,
-	ElementUtil,
-	OverlayUtil
+	ElementMover
 ) {
 	"use strict";
 
@@ -28,7 +24,7 @@ sap.ui.define([
 	 * @class The ControlDragDrop enables D&D functionality for the overlays based on aggregation types
 	 * @extends sap.ui.dt.plugin.DragDrop
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -36,11 +32,8 @@ sap.ui.define([
 	 * @experimental Since 1.30. This class is experimental and provides only limited functionality. Also the API might be
 	 *               changed in future.
 	 */
-	var ControlDragDrop = DragDrop.extend("sap.ui.dt.plugin.ControlDragDrop", /** @lends sap.ui.dt.plugin.ControlDragDrop.prototype */
-	{
+	var ControlDragDrop = DragDrop.extend("sap.ui.dt.plugin.ControlDragDrop", /** @lends sap.ui.dt.plugin.ControlDragDrop.prototype */ {
 		metadata : {
-			// ---- object ----
-
 			// ---- control specific ----
 			library : "sap.ui.dt",
 			properties : {
@@ -92,7 +85,6 @@ sap.ui.define([
 		if (
 			this.getElementMover().isMovableType(oElement)
 			&& this.getElementMover().checkMovable(oOverlay)
-			&& !OverlayUtil.isInAggregationBinding(oOverlay, oElement.sParentAggregationName)
 		) {
 			oOverlay.setMovable(true);
 		}
@@ -139,7 +131,7 @@ sap.ui.define([
 	/**
 	 * @override
 	 */
-	ControlDragDrop.prototype.onDragEnd = function(oOverlay) {
+	ControlDragDrop.prototype.onDragEnd = function() {
 		delete this._oPreviousTarget;
 		this.getElementMover().deactivateAllTargetZones(this.getDesignTime(), sDROP_ZONE_STYLE);
 		delete this._oDraggedOverlay;

@@ -14,7 +14,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	text: undefined, // string
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
@@ -52,6 +53,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	text=""
 	ariaLabelledBy=""
 	validateFieldGroup=""
@@ -76,6 +78,7 @@
 	fieldGroupIds: [], // string[], since 1.31
 	name: "", // string
 	enabled: true, // boolean
+	editable: true, // boolean, since 1.66.0
 	width: "auto", // sap.ui.core.CSSSize
 	maxWidth: "100%", // sap.ui.core.CSSSize
 	selectedKey: "", // string, since 1.11
@@ -115,6 +118,7 @@
 	fieldGroupIds=""
 	name=""
 	enabled="true"
+	editable="true"
 	width="auto"
 	maxWidth="100%"
 	selectedKey=""
@@ -556,6 +560,7 @@
 	dependents: [], // sap.ui.core.Element, since 1.19
 	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	pages: [], // sap.ui.core.Control
+	customLayout: undefined, // sap.m.CarouselLayout, since 1.62
 	activePage: undefined, // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -567,6 +572,9 @@
 		var ${control} = oEvent.getSource();
 	}, this],
 	pageChanged: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	beforePageChanged: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
 })
@@ -590,12 +598,49 @@
 	validateFieldGroup=""
 	loadPage=""
 	unloadPage=""
-	pageChanged="">
+	pageChanged=""
+	beforePageChanged="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<pages></pages> <!-- sap.ui.core.Control -->
+		<customLayout></customLayout> <!-- sap.m.CarouselLayout, since 1.62 -->
 </Carousel>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.m.CarouselLayout" alias="CarouselLayout,Layout">
+	<jsTemplate><![CDATA[new sap.m.CarouselLayout({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	visiblePagesCount: 1, // int
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<CarouselLayout xmlns="sap.m"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	visiblePagesCount="1"
+	validateFieldGroup="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</CarouselLayout>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.m.CheckBox" alias="CheckBox,Box">
@@ -810,7 +855,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	vAlign: sap.ui.core.VerticalAlign.Inherit, // sap.ui.core.VerticalAlign, since 1.20
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
@@ -849,6 +895,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	vAlign="Inherit"
 	ariaLabelledBy=""
 	validateFieldGroup=""
@@ -1110,7 +1157,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -1148,6 +1196,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	ariaLabelledBy=""
 	validateFieldGroup=""
 	tap=""
@@ -1216,7 +1265,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -1254,6 +1304,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	ariaLabelledBy=""
 	validateFieldGroup=""
 	tap=""
@@ -1703,6 +1754,7 @@
 	resizable: false, // boolean, since 1.30
 	draggable: false, // boolean, since 1.30
 	escapeHandler: undefined, // any, since 1.44
+	role: sap.m.DialogRoleType.Dialog, // sap.m.DialogRoleType, since 1.65
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -1757,6 +1809,7 @@
 	resizable="false"
 	draggable="false"
 	escapeHandler=""
+	role="Dialog"
 	leftButton=""
 	rightButton=""
 	initialFocus=""
@@ -1793,7 +1846,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	label: undefined, // string
 	value: undefined, // string
 	valueTextDirection: sap.ui.core.TextDirection.Inherit, // sap.ui.core.TextDirection, since 1.28.0
@@ -1833,6 +1887,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	label=""
 	value=""
 	valueTextDirection="Inherit"
@@ -1954,7 +2009,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	key: undefined, // string
 	text: undefined, // string
 	count: undefined, // int
@@ -1994,6 +2050,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	key=""
 	text=""
 	count=""
@@ -2296,7 +2353,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	icon: undefined, // sap.ui.core.URI
 	activeIcon: undefined, // sap.ui.core.URI
 	sender: undefined, // string
@@ -2355,6 +2413,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	icon=""
 	activeIcon=""
 	sender=""
@@ -2551,6 +2610,53 @@
 </FormattedText>
 ]]></xmlTemplate>
 </Template>
+<Template name="sap.m.GenericTag" alias="GenericTag,Tag">
+	<jsTemplate><![CDATA[new sap.m.GenericTag({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	text: "", // string
+	status: sap.ui.core.ValueState.None, // sap.ui.core.ValueState
+	design: sap.m.GenericTagDesign.Full, // sap.m.GenericTagDesign
+	valueState: sap.m.GenericTagValueState.None, // sap.m.GenericTagValueState
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	value: undefined, // sap.m.ObjectNumber
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	press: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<GenericTag xmlns="sap.m"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	text=""
+	status="None"
+	design="Full"
+	valueState="None"
+	validateFieldGroup=""
+	press="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+		<value></value> <!-- sap.m.ObjectNumber -->
+</GenericTag>
+]]></xmlTemplate>
+</Template>
 <Template name="sap.m.GenericTile" alias="GenericTile,Tile">
 	<jsTemplate><![CDATA[new sap.m.GenericTile({
 	id: "${id}", // sap.ui.core.ID
@@ -2634,7 +2740,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	title: undefined, // string
 	count: undefined, // string
 	upperCase: false, // boolean, since 1.13.2
@@ -2675,6 +2782,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	title=""
 	count=""
 	upperCase="false"
@@ -2908,6 +3016,7 @@
 	dependents: [], // sap.ui.core.Element, since 1.19
 	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
 	content: [], // sap.ui.core.Control
+	ariaLabelledBy: [], // sap.ui.core.Control, since 1.62.0
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -2930,6 +3039,7 @@
 	backgroundDesign="Transparent"
 	width=""
 	height=""
+	ariaLabelledBy=""
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
@@ -3456,7 +3566,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	label: undefined, // string
 	labelTextDirection: sap.ui.core.TextDirection.Inherit, // sap.ui.core.TextDirection, since 1.30.0
 	tooltip: undefined, // sap.ui.core.TooltipBase
@@ -3496,6 +3607,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	label=""
 	labelTextDirection="Inherit"
 	ariaLabelledBy=""
@@ -3963,7 +4075,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -4000,6 +4113,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	ariaLabelledBy=""
 	validateFieldGroup=""
 	tap=""
@@ -4779,7 +4893,7 @@
 	}, this],
 	tokenUpdate: [function (oEvent) {
 		var ${control} = oEvent.getSource();
-	}, this]
+	}, this] // since 1.46
 })
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<MultiInput xmlns="sap.m"
@@ -4957,7 +5071,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	priority: sap.ui.core.Priority.None, // sap.ui.core.Priority
 	title: "", // string
 	datetime: "", // string
@@ -5005,6 +5120,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	priority="None"
 	title=""
 	datetime=""
@@ -5040,7 +5156,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	priority: sap.ui.core.Priority.None, // sap.ui.core.Priority
 	title: "", // string
 	datetime: "", // string
@@ -5096,6 +5213,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	priority="None"
 	title=""
 	datetime=""
@@ -5137,7 +5255,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	priority: sap.ui.core.Priority.None, // sap.ui.core.Priority
 	title: "", // string
 	datetime: "", // string
@@ -5189,6 +5308,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	priority="None"
 	title=""
 	datetime=""
@@ -5522,7 +5642,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	title: undefined, // string
 	number: undefined, // string
 	numberUnit: undefined, // string
@@ -5578,6 +5699,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	title=""
 	number=""
 	numberUnit=""
@@ -5717,7 +5839,8 @@
 	title: undefined, // string
 	text: undefined, // string
 	active: false, // boolean, since 1.54
-	state: sap.ui.core.ValueState.None, // sap.ui.core.ValueState
+	state: "sap.ui.core.ValueState.None", // string
+	inverted: false, // boolean, since 1.66
 	icon: undefined, // sap.ui.core.URI
 	iconDensityAware: true, // boolean
 	textDirection: sap.ui.core.TextDirection.Inherit, // sap.ui.core.TextDirection
@@ -5745,7 +5868,8 @@
 	title=""
 	text=""
 	active="false"
-	state="None"
+	state="sap.ui.core.ValueState.None"
+	inverted="false"
 	icon=""
 	iconDensityAware="true"
 	textDirection="Inherit"
@@ -5773,6 +5897,7 @@
 	height: "", // sap.ui.core.CSSSize
 	design: sap.m.ToolbarDesign.Auto, // sap.m.ToolbarDesign, since 1.16.8
 	style: sap.m.ToolbarStyle.Standard, // sap.m.ToolbarStyle, since 1.54
+	asyncMode: false, // boolean, since 1.67
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -5801,6 +5926,7 @@
 	height=""
 	design="Auto"
 	style="Standard"
+	asyncMode="false"
 	ariaLabelledBy=""
 	validateFieldGroup=""
 	press="">
@@ -6160,6 +6286,7 @@
 	resizable: false, // boolean, since 1.30
 	draggable: false, // boolean, since 1.30
 	escapeHandler: undefined, // any, since 1.44
+	role: sap.m.DialogRoleType.Dialog, // sap.m.DialogRoleType, since 1.65
 	initialVisiblePanelType: undefined, // string
 	showReset: false, // boolean
 	showResetEnabled: false, // boolean, since 1.36.0
@@ -6228,6 +6355,7 @@
 	resizable="false"
 	draggable="false"
 	escapeHandler=""
+	role="Dialog"
 	initialVisiblePanelType=""
 	showReset="false"
 	showResetEnabled="false"
@@ -7241,6 +7369,7 @@
 	appointments: [], // sap.ui.unified.CalendarAppointment
 	intervalHeaders: [], // sap.ui.unified.CalendarAppointment
 	specialDates: [], // sap.ui.unified.DateTypeRange, since 1.56
+	headerContent: [], // sap.ui.core.Control, since 1.67
 	appointmentDrop: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this], // since 1.54
@@ -7277,6 +7406,7 @@
 		<appointments></appointments> <!-- sap.ui.unified.CalendarAppointment -->
 		<intervalHeaders></intervalHeaders> <!-- sap.ui.unified.CalendarAppointment -->
 		<specialDates></specialDates> <!-- sap.ui.unified.DateTypeRange, since 1.56 -->
+		<headerContent></headerContent> <!-- sap.ui.core.Control, since 1.67 -->
 </PlanningCalendarRow>
 ]]></xmlTemplate>
 </Template>
@@ -8367,6 +8497,7 @@
 	fieldGroupIds: [], // string[], since 1.31
 	name: "", // string
 	enabled: true, // boolean
+	editable: true, // boolean, since 1.66.0
 	width: "auto", // sap.ui.core.CSSSize
 	maxWidth: "100%", // sap.ui.core.CSSSize
 	selectedKey: "", // string, since 1.11
@@ -8405,6 +8536,7 @@
 	fieldGroupIds=""
 	name=""
 	enabled="true"
+	editable="true"
 	width="auto"
 	maxWidth="100%"
 	selectedKey=""
@@ -8981,7 +9113,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	title: undefined, // string
 	description: undefined, // string
 	icon: undefined, // sap.ui.core.URI
@@ -8993,6 +9126,7 @@
 	adaptTitleSize: true, // boolean, since 1.16.3
 	titleTextDirection: sap.ui.core.TextDirection.Inherit, // sap.ui.core.TextDirection, since 1.28.0
 	infoTextDirection: sap.ui.core.TextDirection.Inherit, // sap.ui.core.TextDirection, since 1.28.0
+	wrapping: false, // boolean, since 1.67
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -9029,6 +9163,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	title=""
 	description=""
 	icon=""
@@ -9040,6 +9175,7 @@
 	adaptTitleSize="true"
 	titleTextDirection="Inherit"
 	infoTextDirection="Inherit"
+	wrapping="false"
 	ariaLabelledBy=""
 	validateFieldGroup=""
 	tap=""
@@ -9125,7 +9261,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	title: "", // string
 	icon: undefined, // sap.ui.core.URI
 	tooltip: undefined, // sap.ui.core.TooltipBase
@@ -9164,6 +9301,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	title=""
 	icon=""
 	ariaLabelledBy=""
@@ -9392,6 +9530,9 @@
 	<jsTemplate><![CDATA[new sap.m.TabContainerItem({
 	id: "${id}", // sap.ui.core.ID
 	name: "", // string
+	additionalText: "", // string
+	icon: undefined, // sap.ui.core.URI
+	iconTooltip: undefined, // string
 	key: undefined, // string
 	modified: false, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
@@ -9407,6 +9548,9 @@
 	<xmlTemplate><![CDATA[<TabContainerItem xmlns="sap.m"
 	id="${id}"
 	name=""
+	additionalText=""
+	icon=""
+	iconTooltip=""
 	key=""
 	modified="false"
 	itemPropertyChanged="">
@@ -10118,7 +10262,7 @@
 	}, this],
 	tokenUpdate: [function (oEvent) {
 		var ${control} = oEvent.getSource();
-	}, this]
+	}, this] // since 1.46
 })
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<Tokenizer xmlns="sap.m"
@@ -10435,7 +10579,8 @@
 	unread: false, // boolean
 	selected: false, // boolean
 	counter: undefined, // int
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.44.0
+	highlight: "None", // string, since 1.44.0
+	highlightText: "", // string, since 1.62
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -10472,6 +10617,7 @@
 	selected="false"
 	counter=""
 	highlight="None"
+	highlightText=""
 	ariaLabelledBy=""
 	validateFieldGroup=""
 	tap=""
@@ -12288,6 +12434,209 @@
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<items></items> <!-- sap.ui.core.Item -->
 </semantic/SortSelect>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.m.upload.UploadSet" alias="UploadSet,Set">
+	<jsTemplate><![CDATA[new sap.m.upload.UploadSet({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	fileTypes: undefined, // string[]
+	maxFileNameLength: undefined, // int
+	maxFileSize: undefined, // float
+	mediaTypes: undefined, // string[]
+	noDataText: undefined, // string
+	noDataDescription: undefined, // string
+	instantUpload: true, // boolean
+	showIcons: true, // boolean
+	terminationEnabled: true, // boolean
+	uploadEnabled: true, // boolean
+	uploadUrl: undefined, // string
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	items: [], // sap.m.upload.UploadSetItem
+	incompleteItems: [], // sap.m.upload.UploadSetItem
+	headerFields: [], // sap.ui.core.Item
+	toolbar: undefined, // sap.m.OverflowToolbar
+	uploader: undefined, // sap.m.upload.Uploader
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	afterItemAdded: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	beforeItemAdded: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	beforeItemRemoved: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	beforeItemEdited: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	beforeUploadStarts: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	uploadCompleted: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	beforeUploadTermination: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	uploadTerminated: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	fileTypeMismatch: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	fileNameLengthExceeded: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	fileSizeExceeded: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	mediaTypeMismatch: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	selectionChanged: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<upload/UploadSet xmlns="sap.m"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	fileTypes=""
+	maxFileNameLength=""
+	maxFileSize=""
+	mediaTypes=""
+	noDataText=""
+	noDataDescription=""
+	instantUpload="true"
+	showIcons="true"
+	terminationEnabled="true"
+	uploadEnabled="true"
+	uploadUrl=""
+	validateFieldGroup=""
+	afterItemAdded=""
+	beforeItemAdded=""
+	beforeItemRemoved=""
+	beforeItemEdited=""
+	beforeUploadStarts=""
+	uploadCompleted=""
+	beforeUploadTermination=""
+	uploadTerminated=""
+	fileTypeMismatch=""
+	fileNameLengthExceeded=""
+	fileSizeExceeded=""
+	mediaTypeMismatch=""
+	selectionChanged="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+		<items></items> <!-- sap.m.upload.UploadSetItem -->
+		<incompleteItems></incompleteItems> <!-- sap.m.upload.UploadSetItem -->
+		<headerFields></headerFields> <!-- sap.ui.core.Item -->
+		<toolbar></toolbar> <!-- sap.m.OverflowToolbar -->
+		<uploader></uploader> <!-- sap.m.upload.Uploader -->
+</upload/UploadSet>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.m.upload.UploadSetItem" alias="UploadSetItem,Item">
+	<jsTemplate><![CDATA[new sap.m.upload.UploadSetItem({
+	id: "${id}", // sap.ui.core.ID
+	enabledRemove: true, // boolean
+	enabledEdit: true, // boolean
+	fileName: undefined, // string
+	mediaType: undefined, // string
+	thumbnailUrl: undefined, // string
+	uploadState: undefined, // sap.m.UploadState
+	url: undefined, // string
+	visibleRemove: true, // boolean
+	visibleEdit: true, // boolean
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	attributes: [], // sap.m.ObjectAttribute
+	markers: [], // sap.m.ObjectMarker
+	statuses: [], // sap.m.ObjectStatus
+	openPressed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	removePressed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<upload/UploadSetItem xmlns="sap.m"
+	id="${id}"
+	enabledRemove="true"
+	enabledEdit="true"
+	fileName=""
+	mediaType=""
+	thumbnailUrl=""
+	uploadState=""
+	url=""
+	visibleRemove="true"
+	visibleEdit="true"
+	openPressed=""
+	removePressed="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+		<attributes></attributes> <!-- sap.m.ObjectAttribute -->
+		<markers></markers> <!-- sap.m.ObjectMarker -->
+		<statuses></statuses> <!-- sap.m.ObjectStatus -->
+</upload/UploadSetItem>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.m.upload.Uploader" alias="Uploader">
+	<jsTemplate><![CDATA[new sap.m.upload.Uploader({
+	id: "${id}", // sap.ui.core.ID
+	uploadUrl: undefined, // string
+	downloadUrl: undefined, // string
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	uploadStarted: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	uploadProgressed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	uploadCompleted: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	uploadAborted: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<upload/Uploader xmlns="sap.m"
+	id="${id}"
+	uploadUrl=""
+	downloadUrl=""
+	uploadStarted=""
+	uploadProgressed=""
+	uploadCompleted=""
+	uploadAborted="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</upload/Uploader>
 ]]></xmlTemplate>
 </Template>
 </Library>

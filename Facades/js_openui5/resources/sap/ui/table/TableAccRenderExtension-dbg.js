@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -39,7 +39,7 @@ sap.ui.define(["./TableExtension", "./TableUtils", "./library"], function(TableE
 	 * @class Extension for sap.ui.table.TableRenderer which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccRenderExtension
@@ -71,15 +71,20 @@ sap.ui.define(["./TableExtension", "./TableUtils", "./library"], function(TableE
 
 			oRm.write("<div class='sapUiTableHiddenTexts' style='display:none;' aria-hidden='true'>");
 
-			// aria description for the table
-			var sDesc = oTable.getTitle() && oTable.getTitle().getText && oTable.getTitle().getText() != "" ? oTable.getTitle().getText() : "";
-			_writeAccText(oRm, sTableId, "ariadesc", sDesc);
 			// aria description for the row and column count
 			_writeAccText(oRm, sTableId, "ariacount");
 			// aria description for toggling the edit mode
 			_writeAccText(oRm, sTableId, "toggleedit", TableUtils.getResourceText("TBL_TOGGLE_EDIT_KEY"));
 			// aria description for select all button
-			_writeAccText(oRm, sTableId, "ariaselectall", TableUtils.getResourceText("TBL_SELECT_ALL"));
+			var bAllRowsSelected = TableUtils.areAllRowsSelected(oTable);
+			var mRenderConfig = oTable._oSelectionPlugin.getRenderConfig();
+			var sSelectAllResourceTextID;
+			if (mRenderConfig.headerSelector.type === "toggle") {
+				sSelectAllResourceTextID = bAllRowsSelected ? "TBL_DESELECT_ALL" : "TBL_SELECT_ALL";
+			} else if (mRenderConfig.headerSelector.type === "clear") {
+				sSelectAllResourceTextID = "TBL_DESELECT_ALL";
+			}
+			_writeAccText(oRm, sTableId, "ariaselectall", TableUtils.getResourceText(sSelectAllResourceTextID));
 			// aria label for row headers
 			_writeAccText(oRm, sTableId, "ariarowheaderlabel", TableUtils.getResourceText("TBL_ROW_HEADER_LABEL"));
 			// aria label for group rows
@@ -206,6 +211,23 @@ sap.ui.define(["./TableExtension", "./TableUtils", "./library"], function(TableE
 			var sHighlightText = oRowSettings._getHighlightText();
 
 			_writeAccText(oRm, oRow.getId(), "highlighttext", sHighlightText);
+		},
+
+		/**
+		 * Renders the hidden label for a creation row.
+		 *
+		 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the Render-Output-Buffer.
+		 * @param {sap.ui.table.Table} oTable Instance of the table.
+		 * @param {sap.ui.table.CreationRow} oCreationRow Instance of the creation row.
+		 * @see sap.ui.table.CreationRowRenderer#render
+		 * @public
+		 */
+		writeAccCreationRowText: function(oRm, oTable, oCreationRow) {
+			if (!oTable._getAccExtension().getAccMode()) {
+				return;
+			}
+
+			_writeAccText(oRm, oCreationRow.getId(), "label", TableUtils.getResourceText("TBL_CREATEROW_LABEL"));
 		}
 	});
 

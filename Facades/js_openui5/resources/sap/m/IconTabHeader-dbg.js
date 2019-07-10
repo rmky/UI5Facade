@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,7 +23,8 @@ sap.ui.define([
 	'./IconTabBarDragAndDropUtil',
 	'./IconTabHeaderRenderer',
 	"sap/ui/thirdparty/jquery",
-	"sap/base/Log"
+	"sap/base/Log",
+	"sap/ui/events/KeyCodes"
 ],
 function(
 	library,
@@ -42,7 +43,8 @@ function(
 	IconTabBarDragAndDropUtil,
 	IconTabHeaderRenderer,
 	jQuery,
-	Log
+	Log,
+	KeyCodes
 ) {
 	"use strict";
 
@@ -79,7 +81,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -379,7 +381,7 @@ function(
 		for (var i = 0; i < aTabFilters.length; i++) {
 			oTabFilter = aTabFilters[i];
 
-			oSelectItem = oTabFilter.clone();
+			oSelectItem = oTabFilter.clone(undefined, undefined, { bCloneChildren: false, bCloneBindings: true });
 			oSelectItem._tabFilter = oTabFilter;
 			oSelectList.addItem(oSelectItem);
 
@@ -934,6 +936,7 @@ function(
 		this.oSelectedItem = null;
 		this._aTabKeys = [];
 		this.destroyAggregation("items");
+		return this;
 	};
 
 	IconTabHeader.prototype.addItem = function(oItem) {
@@ -1169,11 +1172,11 @@ function(
 		var sSuffix = this._bTextOnly ? "TextOnly" : "";
 		var sLeftArrowClass = "sapMITBArrowScrollLeft" + sSuffix;
 		var sRightArrowClass = "sapMITBArrowScrollRight" + sSuffix;
+		//sapMITHVerticallyCenteredArrow class is implemented only in fiori 3.0 theme. It aligns all arrows vertically
+		var aCssClassesToAddLeft = ["sapMITBArrowScroll", sLeftArrowClass, "sapMITHVerticallyCenteredArrow"];
+		var aCssClassesToAddRight = ["sapMITBArrowScroll", sRightArrowClass, "sapMITHVerticallyCenteredArrow"];
 
-		var aCssClassesToAddLeft = ["sapMITBArrowScroll", sLeftArrowClass];
-		var aCssClassesToAddRight = ["sapMITBArrowScroll", sRightArrowClass];
-
-		if (this._bInLine) {
+		if (this._bInLine || this.isInlineMode()) {
 			aCssClassesToAddLeft.push('sapMITBArrowScrollLeftInLine');
 			aCssClassesToAddRight.push('sapMITBArrowScrollRightInLine');
 		}
@@ -1197,6 +1200,9 @@ function(
 	 * @private
 	 */
 	IconTabHeader.prototype._checkOverflow = function() {
+		if (this.bIsDestroyed) {
+			return;
+		}
 
 		var oBarHead = this.getDomRef("head");
 		var $bar = this.$();
@@ -1315,6 +1321,9 @@ function(
 	 * @return {sap.m.IconTabHeader} this pointer for chaining
 	 */
 	IconTabHeader.prototype._scrollIntoView = function(oItem, iDuration) {
+		if (this.bIsDestroyed) {
+			return;
+		}
 
 		var $item = oItem.$(),
 			iScrollLeft,
@@ -1643,13 +1652,31 @@ function(
 	IconTabHeader.prototype.ontouchcancel = IconTabHeader.prototype.ontouchend;
 
 	/**
-	 * Fires keyboard navigation event when the user presses Enter or Space.
-	 *
-	 * @param {jQuery.Event} oEvent
+	 * Handle the key down event for SPACE and ENTER.
+	 * @param {jQuery.Event} oEvent - the keyboard event.
 	 * @private
 	 */
-	IconTabHeader.prototype.onsapselect = function(oEvent) {
-		this._handleActivation(oEvent);
+	IconTabHeader.prototype.onkeydown = function(oEvent) {
+		switch (oEvent.which) {
+			case KeyCodes.ENTER:
+				this._handleActivation(oEvent);
+				oEvent.preventDefault();
+				break;
+			case KeyCodes.SPACE:
+				oEvent.preventDefault(); // prevent scrolling when focused on the tab
+				break;
+		}
+	};
+
+	/**
+	 * Handle the key up event for SPACE and ENTER.
+	 * @param {jQuery.Event} oEvent The fired event
+	 */
+	IconTabHeader.prototype.onkeyup = function(oEvent) {
+		if (oEvent.which === KeyCodes.SPACE) {
+			this._handleActivation(oEvent);
+			oEvent.preventDefault();
+		}
 	};
 
 	/* =========================================================== */

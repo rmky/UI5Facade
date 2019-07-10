@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -21,7 +21,9 @@ sap.ui.define(["sap/ui/core/library", "sap/m/HyphenationSupport"],
 	 * Title renderer.
 	 * @namespace
 	 */
-	var TitleRenderer = {};
+	var TitleRenderer = {
+		apiVersion: 2
+	};
 
 	/**
 	 * Renders the HTML for the given control, using the provided {@link sap.ui.core.RenderManager}.
@@ -32,52 +34,50 @@ sap.ui.define(["sap/ui/core/library", "sap/m/HyphenationSupport"],
 		var oAssoTitle = oTitle._getTitle(),
 			sLevel = (oAssoTitle ? oAssoTitle.getLevel() : oTitle.getLevel()) || TitleLevel.Auto,
 			bAutoLevel = sLevel == TitleLevel.Auto,
-			sTag = bAutoLevel ? "div" : sLevel,
+			sTag = bAutoLevel ? "div" : sLevel.toLowerCase(),
 			sText = HyphenationSupport.getTextForRender(oTitle, "main");
 
-		oRm.write("<", sTag);
-		oRm.writeControlData(oTitle);
-		oRm.addClass("sapMTitle");
-		oRm.addClass("sapMTitleStyle" + (oTitle.getTitleStyle() || TitleLevel.Auto));
-		oRm.addClass(oTitle.getWrapping() ? "sapMTitleWrap" : "sapMTitleNoWrap");
-		oRm.addClass("sapUiSelectable");
+		oRm.openStart(sTag, oTitle);
+		oRm.class("sapMTitle");
+		oRm.class("sapMTitleStyle" + (oTitle.getTitleStyle() || TitleLevel.Auto));
+		oRm.class(oTitle.getWrapping() ? "sapMTitleWrap" : "sapMTitleNoWrap");
+		oRm.class("sapUiSelectable");
 
 		var sWidth = oTitle.getWidth();
 		if (!sWidth) {
-			oRm.addClass("sapMTitleMaxWidth");
+			oRm.class("sapMTitleMaxWidth");
 		} else {
-			oRm.addStyle("width", sWidth);
+			oRm.style("width", sWidth);
 		}
 
 		var sTextAlign = oTitle.getTextAlign();
 		if (sTextAlign && sTextAlign != TextAlign.Initial) {
-			oRm.addClass("sapMTitleAlign" + sTextAlign);
+			oRm.class("sapMTitleAlign" + sTextAlign);
 		}
 
 		if (oTitle.getParent() instanceof sap.m.Toolbar) {
-			oRm.addClass("sapMTitleTB");
+			oRm.class("sapMTitleTB");
 		}
 
 		var sTooltip = oAssoTitle ? oAssoTitle.getTooltip_AsString() : oTitle.getTooltip_AsString();
 		if (sTooltip) {
-			oRm.writeAttributeEscaped("title", sTooltip);
+			oRm.attr("title", sTooltip);
 		}
 
 		if (bAutoLevel) {
-			oRm.writeAttribute("role", "heading");
+			oRm.attr("role", "heading");
 		}
 
 		HyphenationSupport.writeHyphenationClass(oRm, oTitle);
 
-		oRm.writeClasses();
-		oRm.writeStyles();
+		oRm.openEnd();
+		oRm.openStart("span");
+		oRm.attr("id", oTitle.getId() + "-inner");
+		oRm.openEnd();
 
-		oRm.write("><span");
-		oRm.writeAttribute("id", oTitle.getId() + "-inner");
-		oRm.write(">");
-
-		oRm.writeEscaped(sText);
-		oRm.write("</span></", sTag, ">");
+		oRm.text(sText);
+		oRm.close("span");
+		oRm.close(sTag);
 	};
 
 	return TitleRenderer;

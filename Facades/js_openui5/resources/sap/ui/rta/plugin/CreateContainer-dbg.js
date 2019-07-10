@@ -1,15 +1,15 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	'sap/ui/rta/plugin/Plugin',
-	'sap/ui/fl/Utils',
-	'sap/ui/rta/Utils',
-	'sap/ui/dt/Util',
-	'sap/base/util/uid'
+	"sap/ui/rta/plugin/Plugin",
+	"sap/ui/fl/Utils",
+	"sap/ui/rta/Utils",
+	"sap/ui/dt/Util",
+	"sap/base/util/uid"
 ], function(
 	Plugin,
 	FlexUtils,
@@ -27,19 +27,15 @@ sap.ui.define([
 	 * @class The CreateContainer allows trigger CreateContainer operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
 	 * @alias sap.ui.rta.plugin.CreateContainer
 	 * @experimental Since 1.34. This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
-	var CreateContainer = Plugin.extend("sap.ui.rta.plugin.CreateContainer", /** @lends sap.ui.rta.plugin.CreateContainer.prototype */
-	{
+	var CreateContainer = Plugin.extend("sap.ui.rta.plugin.CreateContainer", /** @lends sap.ui.rta.plugin.CreateContainer.prototype */ {
 		metadata: {
-			// ---- object ----
-
-			// ---- control specific ----
 			library: "sap.ui.rta",
 			properties: {},
 			associations: {},
@@ -65,12 +61,12 @@ sap.ui.define([
 		var	oParentOverlay = this._getParentOverlay(bOverlayIsSibling, oOverlay);
 		var sAggregationName;
 
-		if (!oParentOverlay || !oParentOverlay.getParentElementOverlay()){
+		if (!oParentOverlay || !oParentOverlay.getParentElementOverlay()) {
 			//root element is not editable as parent and as sibling
 			return false;
 		}
 
-		if (bOverlayIsSibling){
+		if (bOverlayIsSibling) {
 			sAggregationName = oOverlay.getParentAggregationOverlay().getAggregationName();
 		}
 
@@ -84,9 +80,9 @@ sap.ui.define([
 			// has to be stable, otherwise the new id will not be stable.
 			var oParentView = FlexUtils.getViewForControl(oParentOverlay.getElement());
 			return this.hasStableId(oOverlay) && FlexUtils.checkControlId(oParentView);
-		} else {
-			return false;
 		}
+
+		return false;
 	};
 
 	CreateContainer.prototype._getParentOverlay = function (bSibling, oOverlay) {
@@ -121,9 +117,9 @@ sap.ui.define([
 			var fnIsEnabled = vAction.isEnabled;
 			var oParentOverlay = this._getParentOverlay(bSibling, oElementOverlay);
 			return fnIsEnabled(oParentOverlay.getElement());
-		} else {
-			return true;
 		}
+
+		return true;
 	};
 
 	/**
@@ -138,7 +134,6 @@ sap.ui.define([
 		if (vAction.getCreatedContainerId && typeof vAction.getCreatedContainerId === "function") {
 			var fnMapToRelevantControlID = vAction.getCreatedContainerId;
 			sId = fnMapToRelevantControlID.call(null, sNewControlID);
-
 		}
 		return sId;
 	};
@@ -151,7 +146,11 @@ sap.ui.define([
 		if (!vAction) {
 			return sText;
 		}
-		var sContainerTitle = oDesignTimeMetadata.getAggregationDescription(vAction.aggregation, oElement).singular;
+		var oAggregationDescription = oDesignTimeMetadata.getAggregationDescription(vAction.aggregation, oElement);
+		if (!oAggregationDescription) {
+			return sText;
+		}
+		var sContainerTitle = oAggregationDescription.singular;
 		var oTextResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
 		return oTextResources.getText(sText, sContainerTitle);
 	};
@@ -198,9 +197,9 @@ sap.ui.define([
 
 		.then(function(oCreateCommand) {
 			this.fireElementModified({
-				"command" : oCreateCommand,
-				"action" : vAction,
-				"newControlId" : sNewControlID
+				command : oCreateCommand,
+				action : vAction,
+				newControlId : sNewControlID
 			});
 		}.bind(this))
 
@@ -220,8 +219,8 @@ sap.ui.define([
 		var sPluginId = "CTX_CREATE_SIBLING_CONTAINER";
 		var iRank = 40;
 		var aMenuItems = [];
-		for (var i = 0; i < 2; i++){
-			if (this.isAvailable(bOverlayIsSibling, aElementOverlays)){
+		for (var i = 0; i < 2; i++) {
+			if (this.isAvailable(bOverlayIsSibling, aElementOverlays)) {
 				var sMenuItemText = this.getCreateContainerText.bind(this, bOverlayIsSibling);
 				aMenuItems.push({
 					id: sPluginId,

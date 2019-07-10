@@ -1,12 +1,12 @@
 /*!
 
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['./BarInPageEnabler', 'sap/ui/Device', "sap/base/Log"],
-	function(BarInPageEnabler, Device, Log) {
+sap.ui.define(['./BarInPageEnabler', 'sap/ui/Device', "sap/base/Log", 'sap/m/HBox'],
+	function(BarInPageEnabler, Device, Log, HBox) {
 	"use strict";
 
 
@@ -88,7 +88,7 @@ sap.ui.define(['./BarInPageEnabler', 'sap/ui/Device', "sap/base/Log"],
 		oRM.writeClasses();
 		oRM.write(">");
 		if (oControl.getEnableFlexBox()) {
-			oControl._oflexBox = oControl._oflexBox || new sap.m.HBox(oControl.getId() + "-BarPH", {alignItems: "Center"}).addStyleClass("sapMBarPH").setParent(oControl, null, true);
+			oControl._oflexBox = oControl._oflexBox || new HBox(oControl.getId() + "-BarPH", {alignItems: "Center"}).addStyleClass("sapMBarPH").setParent(oControl, null, true);
 			var bContentLeft = !!oControl.getContentLeft().length,
 				bContentMiddle = !!oControl.getContentMiddle().length,
 				bContentRight = !!oControl.getContentRight().length;

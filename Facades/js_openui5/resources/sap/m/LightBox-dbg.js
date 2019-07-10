@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,7 +18,9 @@ sap.ui.define([
 	'sap/ui/core/InvisibleText',
 	'sap/ui/core/library',
 	'./LightBoxRenderer',
-	"sap/ui/thirdparty/jquery"
+	'sap/m/BusyIndicator',
+	"sap/ui/thirdparty/jquery",
+	'sap/ui/core/Core'
 ],
 	function(
 		library,
@@ -34,10 +36,15 @@ sap.ui.define([
 		InvisibleText,
 		coreLibrary,
 		LightBoxRenderer,
-		jQuery
+		BusyIndicator,
+		jQuery,
+		Core
 	) {
 
 		'use strict';
+
+		// shortcut for sap.ui.core.OpenState
+		var OpenState = coreLibrary.OpenState;
 
 		// shortcut for sap.ui.core.TextAlign
 		var TextAlign = coreLibrary.TextAlign;
@@ -92,7 +99,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 *
 		 * @constructor
 		 * @public
@@ -198,7 +205,7 @@ sap.ui.define([
 
 			// Prevents image having 0 width and height when the LightBox rendered
 			// busy state first and then loaded the image in the meantime
-			if (oNativeImage.src !== sImageSrc) {
+			if (oNativeImage.getAttribute('src') !== sImageSrc) {
 				oNativeImage.src = sImageSrc;
 			}
 
@@ -228,7 +235,7 @@ sap.ui.define([
 			var oInvisiblePopupText = this.getAggregation('_invisiblePopupText');
 
 			if (oImageContent && oInvisiblePopupText) {
-				oInvisiblePopupText.setText(this._rb.getText("LIGHTBOX_ARIA_ENLARGED", oImageContent.getTitle()));
+				oInvisiblePopupText.setText(this._rb.getText("LIGHTBOX_ARIA_ENLARGED", [oImageContent.getTitle(), oImageContent.getSubtitle()]));
 			}
 
 			this._isRendering = true;
@@ -392,7 +399,7 @@ sap.ui.define([
 			var busyIndicator = this.getAggregation("_busy");
 
 			if (!busyIndicator) {
-				busyIndicator = new sap.m.BusyIndicator();
+				busyIndicator = new BusyIndicator();
 				this.setAggregation("_busy", busyIndicator, true);
 			}
 
@@ -432,6 +439,8 @@ sap.ui.define([
 		 */
 		LightBox.prototype._fnOpened = function() {
 			var that = this;
+			that._onResize();
+
 			jQuery('#sap-ui-blocklayer-popup').on("click", function() {
 				that.close();
 			});
@@ -566,17 +575,26 @@ sap.ui.define([
 		 * @returns {int} The height of the footer.
 		 */
 		LightBox.prototype._calculateFooterHeightInPx = function () {
+			var sTheme = Core.getConfiguration().getTheme();
 			var compact = this.$().parents().hasClass('sapUiSizeCompact');
 			var subtitle = this._getImageContent().getSubtitle();
 
 			var footerHeightRem = 2.5; // base height of the footer in rem
 
 			if (!compact) {
-				footerHeightRem += 0.5;
+				if (sTheme.startsWith("sap_fiori_")) {
+					footerHeightRem += 0.375;
+				} else {
+					footerHeightRem += 0.5;
+				}
 			}
 
 			if (subtitle) {
-				footerHeightRem += 1.5;
+				if (sTheme.startsWith("sap_fiori_")) {
+					footerHeightRem += 1.375;
+				} else {
+					footerHeightRem += 1.5;
+				}
 			}
 
 			return footerHeightRem * 16; // 1rem == 16px
@@ -614,10 +632,18 @@ sap.ui.define([
 		 */
 		LightBox.prototype._setImageSize = function (image, imageWidth, imageHeight) {
 			var footerHeight = this._calculateFooterHeightInPx(),
-				dimensions = this._getDimensions(imageWidth, imageHeight, footerHeight);
+				dimensions = this._getDimensions(imageWidth, imageHeight, footerHeight),
+				width = dimensions.width + 'px',
+				height = dimensions.height + 'px',
+				imgDomRef = image.getDomRef();
 
-			image.setWidth(dimensions.width + 'px');
-			image.setHeight(dimensions.height + 'px');
+			image.setProperty('width', width, true);
+			image.setProperty('height', height, true);
+
+			if (imgDomRef) {
+				imgDomRef.style.width = width;
+				imgDomRef.style.height = height;
+			}
 		};
 
 		/**
@@ -710,6 +736,23 @@ sap.ui.define([
 
 			return 0;
 		}
+
+		/**
+		 * Event handler for the escape key pressed event.
+		 *
+		 * @param {jQuery.Event} oEvent The event object
+		 * @private
+		 */
+		LightBox.prototype.onsapescape = function(oEvent) {
+			var eOpenState = this._oPopup.getOpenState();
+			if (eOpenState !== OpenState.CLOSED && eOpenState !== OpenState.CLOSING) {
+				this.close();
+				//event should not trigger any further actions
+				oEvent.stopPropagation();
+			}
+
+		};
+
 
 		return LightBox;
 	});

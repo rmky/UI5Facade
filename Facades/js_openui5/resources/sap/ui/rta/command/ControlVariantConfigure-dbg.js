@@ -1,13 +1,17 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'sap/ui/rta/command/BaseCommand',
-	'sap/ui/core/util/reflection/JsControlTreeModifier',
-	'sap/ui/fl/Utils'
-], function(BaseCommand, JsControlTreeModifier, flUtils) {
+	"sap/ui/rta/command/BaseCommand",
+	"sap/ui/core/util/reflection/JsControlTreeModifier",
+	"sap/ui/fl/Utils"
+], function(
+	BaseCommand,
+	JsControlTreeModifier,
+	flUtils
+) {
 	"use strict";
 
 	/**
@@ -16,7 +20,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.BaseCommand
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.52
@@ -38,12 +42,10 @@ sap.ui.define([
 		}
 	});
 
-	ControlVariantConfigure.prototype.MODEL_NAME = "$FlexVariants";
-
 	/**
 	 * @override
 	 */
-	ControlVariantConfigure.prototype.prepare = function(mFlexSettings, sVariantManagementReference) {
+	ControlVariantConfigure.prototype.prepare = function(mFlexSettings) {
 		this.sLayer = mFlexSettings.layer;
 		return true;
 	};
@@ -63,16 +65,16 @@ sap.ui.define([
 	ControlVariantConfigure.prototype.execute = function() {
 		var oVariantManagementControl = this.getControl();
 		this.oAppComponent = flUtils.getAppComponentForControl(oVariantManagementControl);
-		this.oModel = this.oAppComponent.getModel(this.MODEL_NAME);
+		this.oModel = this.oAppComponent.getModel(flUtils.VARIANT_MODEL_NAME);
 		this.sVariantManagementReference = JsControlTreeModifier.getSelector(oVariantManagementControl, this.oAppComponent).id;
 
 		this._aPreparedChanges = [];
 		this.getChanges().forEach(function(mChangeProperties) {
 			mChangeProperties.appComponent = this.oAppComponent;
-			this._aPreparedChanges.push(this.oModel._setVariantProperties(this.sVariantManagementReference, mChangeProperties, true));
+			this._aPreparedChanges.push(this.oModel.setVariantProperties(this.sVariantManagementReference, mChangeProperties, true));
 		}.bind(this));
 
-		return Promise.resolve().then(function(){
+		return Promise.resolve().then(function() {
 			this.oModel.checkUpdate(true);
 		}.bind(this));
 	};
@@ -87,7 +89,7 @@ sap.ui.define([
 		this.getChanges().forEach(function(mChangeProperties, index) {
 			mPropertyBag = {};
 			Object.keys(mChangeProperties).forEach(function(sProperty) {
-				var sOriginalProperty = "original" + sProperty.charAt(0).toUpperCase() +  sProperty.substr(1);
+				var sOriginalProperty = "original" + sProperty.charAt(0).toUpperCase() + sProperty.substr(1);
 				if (sProperty === "visible") {
 					mPropertyBag[sProperty] = true; /*visibility of the variant always set back to true on undo*/
 				} else if (mChangeProperties[sOriginalProperty]) {
@@ -98,15 +100,14 @@ sap.ui.define([
 				}
 			});
 			mPropertyBag.change = this._aPreparedChanges[index];
-			this.oModel._setVariantProperties(this.sVariantManagementReference, mPropertyBag, false);
+			this.oModel.setVariantProperties(this.sVariantManagementReference, mPropertyBag, false);
 		}.bind(this));
 
-		return Promise.resolve().then(function(){
+		return Promise.resolve().then(function() {
 			this.oModel.checkUpdate(true);
 			this._aPreparedChanges = null;
 		}.bind(this));
 	};
 
 	return ControlVariantConfigure;
-
 }, /* bExport= */true);

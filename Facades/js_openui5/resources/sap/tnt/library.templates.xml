@@ -56,6 +56,7 @@
 	fieldGroupIds: [], // string[], since 1.31
 	width: undefined, // sap.ui.core.CSSSize
 	expanded: true, // boolean
+	selectedKey: undefined, // string, since 1.62.0
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -82,6 +83,7 @@
 	fieldGroupIds=""
 	width=""
 	expanded="true"
+	selectedKey=""
 	ariaDescribedBy=""
 	ariaLabelledBy=""
 	selectedItem=""
@@ -143,6 +145,7 @@
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
 	expanded: true, // boolean
+	selectedKey: undefined, // string, since 1.62.0
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -168,6 +171,7 @@
 	visible="true"
 	fieldGroupIds=""
 	expanded="true"
+	selectedKey=""
 	selectedItem=""
 	validateFieldGroup=""
 	itemSelect="">
@@ -195,6 +199,7 @@
 	height: "", // sap.ui.core.CSSSize
 	design: sap.m.ToolbarDesign.Auto, // sap.m.ToolbarDesign, since 1.16.8
 	style: sap.m.ToolbarStyle.Standard, // sap.m.ToolbarStyle, since 1.54
+	asyncMode: false, // boolean, since 1.67
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -223,6 +228,7 @@
 	height=""
 	design="Auto"
 	style="Standard"
+	asyncMode="false"
 	ariaLabelledBy=""
 	validateFieldGroup=""
 	press="">

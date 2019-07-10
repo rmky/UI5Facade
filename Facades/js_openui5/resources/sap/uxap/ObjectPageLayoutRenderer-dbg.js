@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,20 +18,25 @@ sap.ui.define(["sap/ui/Device"],
 			var aSections,
 				oHeader = oControl.getHeaderTitle(),
 				oAnchorBar = null,
+				oRb = sap.uxap.ObjectPageLayout._getLibraryResourceBundle(),
 				bIsHeaderContentVisible = oControl.getHeaderContent() && oControl.getHeaderContent().length > 0 && oControl.getShowHeaderContent(),
 				bIsTitleInHeaderContent = oControl.getShowTitleInHeaderContent() && oControl.getShowHeaderContent(),
 				bRenderHeaderContent = bIsHeaderContentVisible || bIsTitleInHeaderContent,
 				bUseIconTabBar = oControl.getUseIconTabBar(),
 				bTitleClickable = oControl.getToggleHeaderOnTitleClick() && oControl.getHeaderTitle() && oControl.getHeaderTitle().supportsToggleHeaderOnTitleClick(),
-				sRootAriaLabelText = oControl._getRootAriaLabelText(),
+				sRootAriaLabelText = oControl._getAriaLabelText("ROOT"),
+				sHeaderAriaLabelText = oControl._getAriaLabelText("HEADER"),
+				sNavigationAriaLabelText = oControl._getAriaLabelText("NAVIGATION"),
 				sBackgroundDesign = oControl.getBackgroundDesignAnchorBar(),
 				oLandmarkInfo = oControl.getLandmarkInfo(),
 				sHeaderTag = oControl._getHeaderTag(oLandmarkInfo),
 				sFooterTag = oControl._getFooterTag(oLandmarkInfo),
 				bHeaderRoleSet = oLandmarkInfo && oLandmarkInfo.getHeaderRole(),
+				bHeaderLabelSet = oLandmarkInfo && oLandmarkInfo.getHeaderLabel(),
 				bRootRoleSet = oLandmarkInfo && oLandmarkInfo.getRootRole(),
 				bRootLabelSet = oLandmarkInfo && oLandmarkInfo.getRootLabel(),
-				bNavigationRoleSet = oLandmarkInfo && oLandmarkInfo.getNavigationRole();
+				bNavigationRoleSet = oLandmarkInfo && oLandmarkInfo.getNavigationRole(),
+				bNavigationLabelSet = oLandmarkInfo && oLandmarkInfo.getNavigationLabel();
 
 			if (oControl.getShowAnchorBar() && oControl._getInternalAnchorBarVisible()) {
 				oAnchorBar = oControl.getAggregation("_anchorBar");
@@ -40,8 +45,9 @@ sap.ui.define(["sap/ui/Device"],
 			oRm.write("<div");
 			oRm.writeControlData(oControl);
 			if (!bRootRoleSet) {
-				oRm.writeAttribute("role", "region");
+				oRm.writeAttribute("role", "main");
 			}
+			oRm.writeAttribute("aria-roledescription", oRb.getText("ROOT_ROLE_DESCRIPTION"));
 			if (!bRootLabelSet) {
 				oRm.writeAttributeEscaped("aria-label", sRootAriaLabelText);
 			}
@@ -69,6 +75,10 @@ sap.ui.define(["sap/ui/Device"],
 			if (!bHeaderRoleSet) {
 				oRm.writeAttribute("role", "banner");
 			}
+			oRm.writeAttribute("aria-roledescription", oRb.getText("HEADER_ROLE_DESCRIPTION"));
+			if (!bHeaderLabelSet) {
+				oRm.writeAttributeEscaped("aria-label", sHeaderAriaLabelText);
+			}
 			oRm.writeAttributeEscaped("id", oControl.getId() + "-headerTitle");
 			oRm.writeAttribute("data-sap-ui-customfastnavgroup", true);
 			oRm.addClass("sapUxAPObjectPageHeaderTitle");
@@ -89,6 +99,13 @@ sap.ui.define(["sap/ui/Device"],
 			// write ARIA role
 			if (!bNavigationRoleSet) {
 				oRm.writeAttribute("role", "navigation");
+			}
+			oRm.writeAttribute("aria-roledescription", oRb.getText("NAVIGATION_ROLE_DESCRIPTION"));
+			if (!bNavigationLabelSet) {
+				oRm.writeAttributeEscaped("aria-label", sNavigationAriaLabelText);
+			}
+			if (!oControl._bHeaderInTitleArea) {
+				oRm.writeAttribute("aria-hidden", "true");
 			}
 			oRm.addClass("sapUxAPObjectPageStickyAnchorBar");
 			oRm.addClass("sapUxAPObjectPageNavigation");
@@ -112,7 +129,7 @@ sap.ui.define(["sap/ui/Device"],
 			oRm.addClass("sapUxAPObjectPageWrapper");
 			// set transform only if we don't have title arrow inside the header content, otherwise the z-index is not working
 			// always set transform if showTitleInHeaderConent is not supported
-			if (oHeader && !oHeader.supportsTitleInHeaderContent() || !(oControl.getShowTitleInHeaderContent() && oHeader.getShowTitleSelector())) {
+			if (oHeader && (!oHeader.supportsTitleInHeaderContent() || !(oControl.getShowTitleInHeaderContent() && oHeader.getShowTitleSelector()))) {
 				oRm.addClass("sapUxAPObjectPageWrapperTransform");
 			}
 			oRm.writeClasses();
@@ -133,6 +150,10 @@ sap.ui.define(["sap/ui/Device"],
 			// write ARIA role
 			if (!bNavigationRoleSet) {
 				oRm.writeAttribute("role", "navigation");
+			}
+			oRm.writeAttribute("aria-roledescription", oRb.getText("NAVIGATION_ROLE_DESCRIPTION"));
+			if (!bNavigationLabelSet) {
+				oRm.writeAttributeEscaped("aria-label", sNavigationAriaLabelText);
 			}
 			oRm.addClass("sapUxAPObjectPageNavigation");
 			oRm.addClass("sapContrastPlus");
@@ -181,7 +202,7 @@ sap.ui.define(["sap/ui/Device"],
 			oRm.write("</div>");  // END scroll
 
 			oRm.write("</div>"); // END wrapper
-			this._renderFooterContentInternal(oRm, oControl, sFooterTag, oLandmarkInfo);
+			this._renderFooterContentInternal(oRm, oControl, sFooterTag, oLandmarkInfo, oRb);
 
 			oRm.write("</div>"); // END page
 		};
@@ -267,8 +288,9 @@ sap.ui.define(["sap/ui/Device"],
 		 * @param {sap.ui.core.RenderManager} oRm the RenderManager that can be used for writing to the render output buffer
 		 * @param {sap.ui.core.Control} oObjectPageLayout an object representation of the control that should be rendered
 		 */
-		ObjectPageLayoutRenderer._renderFooterContentInternal = function (oRm, oObjectPageLayout, sFooterTag, oLandmarkInfo) {
-			var oFooter = oObjectPageLayout.getFooter();
+		ObjectPageLayoutRenderer._renderFooterContentInternal = function (oRm, oObjectPageLayout, sFooterTag, oLandmarkInfo, oRb) {
+			var oFooter = oObjectPageLayout.getFooter(),
+				bFooterRoleSet = oLandmarkInfo && oLandmarkInfo.getFooterRole();
 
 			if (!oFooter) {
 				return;
@@ -283,6 +305,10 @@ sap.ui.define(["sap/ui/Device"],
 			}
 
 			oRm.writeClasses();
+			if (!bFooterRoleSet) {
+				oRm.writeAttribute("role", "region");
+			}
+			oRm.writeAttribute("aria-roledescription", oRb.getText("FOOTER_ROLE_DESCRIPTION"));
 			oRm.writeAccessibilityState(oObjectPageLayout, oObjectPageLayout._formatLandmarkInfo(oLandmarkInfo, "Footer"));
 			oRm.write(">");
 			oFooter.addStyleClass("sapUxAPObjectPageFloatingFooter");

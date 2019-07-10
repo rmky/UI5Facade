@@ -1,6 +1,6 @@
 /*
- * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * ! OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,7 +22,7 @@ function(
 	 *
 	 * @class Functionality to propagate DesignTime and RelevantContainer
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
 	 * @static
 	 * @since 1.54
@@ -88,7 +88,7 @@ function(
 		}
 
 		// add propagation array to current aggregation designtime-metadata
-		mMetadata.propagationInfos = aPropagationInfoListFromParent ? aPropagationInfoListFromParent : [];
+		mMetadata.propagationInfos = aPropagationInfoListFromParent || [];
 		if (!jQuery.isEmptyObject(mNewPropagationInfo)) {
 			mMetadata.propagationInfos.push(mNewPropagationInfo);
 		}
@@ -117,9 +117,8 @@ function(
 		if (aPropagatedRelevantContainersFromParent || !jQuery.isEmptyObject(mRelevantContainerPropagation) || !jQuery.isEmptyObject(mMetadataFunctionPropagation)) {
 			mNewPropagationInfo = Object.assign({}, mRelevantContainerPropagation, mMetadataFunctionPropagation);
 			return MetadataPropagationUtil._setPropagationInfo(mMetadata, mNewPropagationInfo, aPropagatedRelevantContainersFromParent);
-		} else {
-			return mMetadata;
 		}
+		return mMetadata;
 	};
 
 	/**
@@ -137,7 +136,7 @@ function(
 			return false;
 		}
 
-		mParentMetadata.propagationInfos.some(function(oPropagatedInfo){
+		mParentMetadata.propagationInfos.some(function(oPropagatedInfo) {
 			if (oPropagatedInfo.relevantContainerFunction &&
 				oPropagatedInfo.relevantContainerFunction(oElement)) {
 				vPropagatedRelevantContainer = oPropagatedInfo.relevantContainerElement;
@@ -145,7 +144,7 @@ function(
 			}
 		});
 
-		return vPropagatedRelevantContainer ? vPropagatedRelevantContainer : false;
+		return vPropagatedRelevantContainer || false;
 	};
 
 	/**
@@ -167,13 +166,12 @@ function(
 		//The highest parent always "wins", so we need to extend starting from the bottom
 		var aRevertedPropagationInfos = mParentMetadata.propagationInfos.slice().reverse();
 
-		vReturnMetadata = aRevertedPropagationInfos.reduce(function(vReturnMetadata, oPropagatedInfo){
+		vReturnMetadata = aRevertedPropagationInfos.reduce(function(vReturnMetadata, oPropagatedInfo) {
 			if (oPropagatedInfo.metadataFunction) {
 				var oCurrentMetadata = oPropagatedInfo.metadataFunction(oElement, oPropagatedInfo.relevantContainerElement);
 				return merge(vReturnMetadata, oCurrentMetadata);
-			} else {
-				return vReturnMetadata;
 			}
+			return vReturnMetadata;
 		}, vReturnMetadata);
 
 		return jQuery.isEmptyObject(vReturnMetadata) ? false : vReturnMetadata;
@@ -201,8 +199,7 @@ function(
 			mResultMetadata.relevantContainer = vPropagatedRelevantContainer;
 		}
 
-		if (vPropagatedMetadata){
-
+		if (vPropagatedMetadata) {
 			if (vPropagatedMetadata.actions === null || vPropagatedMetadata.actions === "not-adaptable") {
 				var mAggregations = oElement.getMetadata().getAllAggregations();
 				var aAggregationNames = Object.keys(mAggregations);

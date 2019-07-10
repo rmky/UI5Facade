@@ -1,14 +1,14 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 /**
  * Provides methods for information retrieval from the core.
  */
-sap.ui.define(["jquery.sap.global", "sap/ui/core/support/ToolsAPI", "sap/ui/thirdparty/URI"],
-	function (jQuery, ToolsAPI, URI) {
+sap.ui.define(["jquery.sap.global", "sap/ui/core/Component", "sap/ui/core/support/ToolsAPI", "sap/ui/thirdparty/URI"],
+	function (jQuery, Component, ToolsAPI, URI) {
 	"use strict";
 
 	/**
@@ -63,21 +63,22 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/support/ToolsAPI", "sap/ui/thir
 	};
 
 	/**
-	 * @returns {Array} All loaded manifest.json files.
+	 * @returns {Array} All 'sap.app' and 'sap.fiori' entries from all loaded manifest.json files.
 	 */
 	DataCollector.prototype.getAppInfo = function() {
 		var aAppInfos = [];
-		for (var sComponentName in this._oCore.mObjects.component) {
-			var oComponent = this._oCore.mObjects.component[sComponentName],
-				aSapApp = oComponent.getMetadata().getManifestEntry("sap.app"),
-				aSapFiori = oComponent.getMetadata().getManifestEntry("sap.fiori");
+		Component.registry.forEach(function(oComponent) {
+			var oSapApp = oComponent.getMetadata().getManifestEntry("sap.app"),
+				oSapFiori = oComponent.getMetadata().getManifestEntry("sap.fiori");
 
-			aAppInfos.push(aSapApp);
-
-			if (aSapFiori) {
-				aAppInfos.push(aSapFiori);
+			if (oSapApp) {
+				aAppInfos.push(oSapApp);
 			}
-		}
+
+			if (oSapFiori) {
+				aAppInfos.push(oSapFiori);
+			}
+		});
 		return aAppInfos;
 	};
 

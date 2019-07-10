@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,14 +14,14 @@ sap.ui.define([
 	"use strict";
 
 	/**
-	 * Provides necessary functionality to get and execute actions on controls. Actions are UI operations available in RTA such as rename, remove, move etc.
+	 * Provides necessary functionality to get and execute actions on controls. Actions are UI operations available in key user adaptation such as rename, remove, move etc.
 	 *
 	 * @namespace
 	 * @name sap.ui.rta.service.Action
 	 * @author SAP SE
 	 * @experimental Since 1.58
 	 * @since 1.58
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
 	 * @ui5-restricted
 	 *
@@ -47,7 +47,7 @@ sap.ui.define([
 	 * @private
 	 * @ui5-restricted
 	 * @property {string} id - ID of the action
-	 * @property {string} group - Group name, in case the action has been grouped with other action(s)
+	 * @property {string} group - Group name in case the action has been grouped with other action(s)
 	 * @property {string} icon - Icon name
 	 * @property {boolean} enabled - Indicates whether the action is active and can be executed
 	 * @property {int} rank - Sorting rank for visual representation of the action position
@@ -151,7 +151,7 @@ sap.ui.define([
 				 *         "text": "Remove",
 				 *         "enabled": true,
 				 *         "rank": 60,
-				 *         "icon": "sap-icon://hide"
+				 *         "icon": "sap-icon://decline"
 				 *     },
 				 *     {
 				 *         "id": "CTX_CUT",

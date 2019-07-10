@@ -103,6 +103,7 @@
 <Template name="sap.ui.core.CustomData" alias="CustomData,Data">
 	<jsTemplate><![CDATA[new sap.ui.core.CustomData({
 	id: "${id}", // sap.ui.core.ID
+	id: "${id1}", // sap.ui.core.ID
 	key: undefined, // string
 	value: undefined, // any
 	writeToDom: false, // boolean, since 1.9.0
@@ -114,6 +115,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<CustomData xmlns="sap.ui.core"
 	id="${id}"
+	id="${id1}"
 	key=""
 	value=""
 	writeToDom="false">

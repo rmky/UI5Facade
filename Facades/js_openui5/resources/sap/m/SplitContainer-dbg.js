@@ -1,12 +1,13 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.SplitContainer.
 sap.ui.define([
 	'./library',
+	'sap/ui/base/DataType',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
 	'sap/m/semantic/SemanticPage',
@@ -15,6 +16,7 @@ sap.ui.define([
 	'sap/ui/base/ManagedObject',
 	'sap/m/NavContainer',
 	'sap/m/Popover',
+	'sap/m/Button',
 	'./SplitContainerRenderer',
 	"sap/ui/dom/containsOrEquals",
 	"sap/base/Log",
@@ -22,6 +24,7 @@ sap.ui.define([
 ],
 function(
 	library,
+	DataType,
 	Control,
 	IconPool,
 	SemanticPage,
@@ -30,6 +33,7 @@ function(
 	ManagedObject,
 	NavContainer,
 	Popover,
+	Button,
 	SplitContainerRenderer,
 	containsOrEquals,
 	Log,
@@ -62,7 +66,7 @@ function(
 	 *
 	 * NOTE: This control must be rendered as a full screen control in order to make the show/hide master area work properly.
 	 * @extends sap.ui.core.Control
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -631,6 +635,13 @@ function(
 			this._oMasterNav.removeStyleClass("sapMSplitContainerNoTransition");
 		}.bind(this), 0);
 	};
+
+	SplitContainer.prototype.applySettings = function (mSettings, oScope) {
+		Control.prototype.applySettings.call(this, mSettings, oScope);
+
+		this._updateMasterInitialPage();
+	};
+
 	/**************************************************************
 	* END - Life Cycle Methods
 	**************************************************************/
@@ -1124,11 +1135,13 @@ function(
 	};
 
 	SplitContainer.prototype.getMasterPages = function() {
-		return this._aMasterPages;
+		// Return a shallow copy of the array instead of the array itself as reference
+		return this._aMasterPages.slice();
 	};
 
 	SplitContainer.prototype.getDetailPages = function() {
-		return this._aDetailPages;
+		// Return a shallow copy of the array instead of the array itself as reference
+		return this._aDetailPages.slice();
 	};
 
 	SplitContainer.prototype.indexOfMasterPage = function(oPage) {
@@ -1538,6 +1551,8 @@ function(
 				this._removeMasterButton(this._oDetailNav.getCurrentPage());
 			}
 
+			var $this = this.$();
+
 			if (sMode !== "PopoverMode" && this._oPopOver.getContent().length > 0) {
 				this._updateMasterPosition("landscape");
 			} else if (sMode == "PopoverMode") {
@@ -1547,25 +1562,25 @@ function(
 					}
 					this._setMasterButton(this._oDetailNav.getCurrentPage());
 				}
-				this.toggleStyleClass("sapMSplitContainerShowHide", false);
-				this.toggleStyleClass("sapMSplitContainerStretchCompress", false);
-				this.toggleStyleClass("sapMSplitContainerHideMode", false);
-				this.toggleStyleClass("sapMSplitContainerPopover", true);
+				$this.toggleClass("sapMSplitContainerShowHide", false);
+				$this.toggleClass("sapMSplitContainerStretchCompress", false);
+				$this.toggleClass("sapMSplitContainerHideMode", false);
+				$this.toggleClass("sapMSplitContainerPopover", true);
 			}
 
 			if (sMode == "StretchCompressMode") {
-				this.toggleStyleClass("sapMSplitContainerShowHide", false);
-				this.toggleStyleClass("sapMSplitContainerPopover", false);
-				this.toggleStyleClass("sapMSplitContainerHideMode", false);
-				this.toggleStyleClass("sapMSplitContainerStretchCompress", true);
+				$this.toggleClass("sapMSplitContainerShowHide", false);
+				$this.toggleClass("sapMSplitContainerPopover", false);
+				$this.toggleClass("sapMSplitContainerHideMode", false);
+				$this.toggleClass("sapMSplitContainerStretchCompress", true);
 				this._removeMasterButton(this._oDetailNav.getCurrentPage());
 			}
 
 			if (sMode == "ShowHideMode") {
-				this.toggleStyleClass("sapMSplitContainerPopover", false);
-				this.toggleStyleClass("sapMSplitContainerStretchCompress", false);
-				this.toggleStyleClass("sapMSplitContainerHideMode", false);
-				this.toggleStyleClass("sapMSplitContainerShowHide", true);
+				$this.toggleClass("sapMSplitContainerPopover", false);
+				$this.toggleClass("sapMSplitContainerStretchCompress", false);
+				$this.toggleClass("sapMSplitContainerHideMode", false);
+				$this.toggleClass("sapMSplitContainerShowHide", true);
 
 				if (!Device.orientation.landscape) {
 					this._setMasterButton(this._oDetailNav.getCurrentPage());
@@ -1573,10 +1588,10 @@ function(
 			}
 
 			if (sMode === "HideMode") {
-				this.toggleStyleClass("sapMSplitContainerPopover", false);
-				this.toggleStyleClass("sapMSplitContainerStretchCompress", false);
-				this.toggleStyleClass("sapMSplitContainerShowHide", false);
-				this.toggleStyleClass("sapMSplitContainerHideMode", true);
+				$this.toggleClass("sapMSplitContainerPopover", false);
+				$this.toggleClass("sapMSplitContainerStretchCompress", false);
+				$this.toggleClass("sapMSplitContainerShowHide", false);
+				$this.toggleClass("sapMSplitContainerHideMode", true);
 
 				// always hide the master area after changing mode to HideMode
 				this._oMasterNav.toggleStyleClass("sapMSplitContainerMasterVisible", false);
@@ -1602,6 +1617,16 @@ function(
 	/**************************************************************
 	* START - Private methods
 	**************************************************************/
+
+	/**
+	 * @private
+	 */
+	SplitContainer.prototype._updateMasterInitialPage = function() {
+		//BCP: 002028376500005408012018
+		if (this.getMode() === "HideMode" && Device.system.phone && this._aDetailPages) {
+			this._oMasterNav.setInitialPage(this.getInitialDetail() ? this.getInitialDetail() : (this.getInitialMaster() || this._aDetailPages[0]));
+		}
+	};
 
 	/**
 	 * @private
@@ -1686,7 +1711,7 @@ function(
 		if (this._oldIsLandscape !== isLandscape) {
 			this._oldIsLandscape = isLandscape;
 			if (!Device.system.phone) {
-				this.toggleStyleClass("sapMSplitContainerPortrait", !isLandscape);
+				this.$().toggleClass("sapMSplitContainerPortrait", !isLandscape);
 
 				//hidemode doesn't react to orientation change
 				if (mode === "HideMode") {
@@ -1875,7 +1900,7 @@ function(
 			return;
 		}
 
-		this._oShowMasterBtn = new sap.m.Button(this.getId() + "-MasterBtn", {
+		this._oShowMasterBtn = new Button(this.getId() + "-MasterBtn", {
 			icon: IconPool.getIconURI("menu2"),
 			tooltip: this.getMasterButtonTooltip(),
 			type: ButtonType.Default,
@@ -1925,6 +1950,8 @@ function(
 			// showMasterBtn could have already be destroyed by destroying the customHeader of the previous page
 			// When this is the case, showMasterBtn will be instantiated again
 			this._createShowMasterButton();
+			//Tooltip should be update again also
+			this._updateMasterButtonTooltip();
 
 			this._oShowMasterBtn.removeStyleClass("sapMSplitContainerMasterBtnHidden");
 

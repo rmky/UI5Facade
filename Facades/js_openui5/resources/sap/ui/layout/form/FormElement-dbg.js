@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -330,7 +330,7 @@ sap.ui.define([
 		if (oChanges.object == this) {
 			// it's the FormElement
 			if (oChanges.name == "fields") {
-				_fieldsChanged.call(this, oChanges);
+				_fieldChanged.call(this, oChanges.child, oChanges.mutation);
 			}
 		} else {
 			// it's some content control
@@ -340,20 +340,6 @@ sap.ui.define([
 	};
 
 	// *** Private helper functions ***
-
-	function _fieldsChanged(oChanges) {
-
-			if (oChanges.child) {
-				_fieldChanged.call(this, oChanges.child, oChanges.mutation);
-			} else if (oChanges.children) {
-				for (var i = 0; i < oChanges.chlidren.length; i++) {
-					_fieldChanged.call(this, oChanges.children[i], oChanges.mutation);
-				}
-			}
-
-		_updateLabelFor.call(this);
-
-	}
 
 	function _fieldChanged(oField, sMutation) {
 
@@ -365,6 +351,8 @@ sap.ui.define([
 		} else {
 			_detachDelegate.call(this, oField);
 		}
+
+		_updateLabelFor.call(this);
 
 	}
 

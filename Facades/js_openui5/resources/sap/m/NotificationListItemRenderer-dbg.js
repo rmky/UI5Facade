@@ -1,10 +1,10 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/core/library"], function(coreLibrary) {
+sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleRenderer"], function(coreLibrary, InvisibleRenderer) {
     'use strict';
 
     // shortcut for sap.ui.core.Priority
@@ -56,13 +56,14 @@ sap.ui.define(["sap/ui/core/library"], function(coreLibrary) {
 
             // ARIA
             oRm.writeAccessibilityState(oControl, {
-                role: "listitem",
+                role: "option",
                 labelledby: labelledBy
             });
 
             oRm.writeClasses();
             oRm.write('>');
 
+			this.renderCloseButton(oRm, oControl);
             this.renderPriorityArea(oRm, oControl);
             this.renderMessageStrip(oRm, oControl);
             this.renderHeader(oRm, oControl);
@@ -187,7 +188,6 @@ sap.ui.define(["sap/ui/core/library"], function(coreLibrary) {
         oRm.writeClasses();
         oRm.write('>');
 
-        this.renderCloseButton(oRm, oControl);
         this.renderTitle(oRm, oControl);
         oRm.write('</div>');
     };
@@ -346,10 +346,7 @@ sap.ui.define(["sap/ui/core/library"], function(coreLibrary) {
      * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered
      */
     NotificationListItemRenderer.renderInvisibleItem = function (oRm, oControl) {
-        oRm.write("<li");
-        oRm.writeInvisiblePlaceholderData(oControl);
-        oRm.write(">");
-        oRm.write("</li>");
+        InvisibleRenderer.render(oRm, oControl, "li");
     };
 
     /**

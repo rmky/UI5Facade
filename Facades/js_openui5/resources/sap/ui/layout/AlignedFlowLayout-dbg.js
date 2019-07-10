@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -30,7 +30,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 *
 		 * @constructor
 		 * @private
@@ -90,7 +90,6 @@ sap.ui.define([
 		});
 
 		AlignedFlowLayout.prototype.init = function() {
-			this._iEndItemWidth = -1;
 
 			// registration ID used for deregistering the resize handler
 			this._sResizeListenerId = ResizeHandler.register(this, this.onResize.bind(this));
@@ -124,11 +123,6 @@ sap.ui.define([
 			}
 
 			this.reflow({ domRef: oDomRef, endItemDomRef: oEndItemDomRef });
-
-			// update last spacer width
-			if (bEndItemAndContent) {
-				oDomRef.lastElementChild.style.width = this._iEndItemWidth + "px";
-			}
 		};
 
 		AlignedFlowLayout.prototype.onAfterRendering = AlignedFlowLayout.prototype._onRenderingOrThemeChanged;
@@ -136,7 +130,7 @@ sap.ui.define([
 
 		// this resize handler needs to be called on after rendering, theme change, and whenever the width of this
 		// control changes
-		AlignedFlowLayout.prototype.onResize = function(oEvent, oDomRef, oEndItemDomRef) {
+		AlignedFlowLayout.prototype.onResize = function(oEvent) {
 
 			// called by resize handler, but only the height changed, so there is nothing to do;
 			// this is required to avoid a resizing loop
@@ -144,7 +138,7 @@ sap.ui.define([
 				return;
 			}
 
-			this.reflow({ domRef: oDomRef, endItemDomRef: oEndItemDomRef });
+			this.reflow();
 		};
 
 		/**
@@ -180,6 +174,7 @@ sap.ui.define([
 
 			if (oEndItemDomRef && oLastItemDomRef) {
 				var mLastSpacerStyle = oDomRef.lastElementChild.style;
+				mLastSpacerStyle.width = "";
 				mLastSpacerStyle.height = "";
 				mLastSpacerStyle.display = "";
 				oDomRef.classList.remove(CSS_CLASS_ONE_LINE);
@@ -196,7 +191,6 @@ sap.ui.define([
 					iAvailableWidthForEndItem = oDomRef.offsetWidth - iRightBorderOfLastItem;
 				}
 
-				this._iEndItemWidth = iEndItemWidth; // cache the width of the end item
 				bEnoughSpaceForEndItem = iAvailableWidthForEndItem >= iEndItemWidth;
 
 				// if the end item fits into the line
@@ -230,6 +224,8 @@ sap.ui.define([
 					mLastSpacerStyle.height = iEndItemHeight + "px";
 					mLastSpacerStyle.display = "block";
 				}
+
+				mLastSpacerStyle.width = iEndItemWidth + "px";
 			}
 
 			// if the items fits into a single line, sets a CSS class to turns off the display of the spacer elements

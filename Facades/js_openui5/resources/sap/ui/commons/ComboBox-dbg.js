@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @implements sap.ui.commons.ToolbarItem
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -905,7 +905,7 @@ sap.ui.define([
 		var eDock = Popup.Dock;
 		oPopup.open(iDuration, eDock.BeginTop, eDock.BeginBottom, this/*.getDomRef()*/,
 			/*offset*/null, /*collision*/ null, /*followOf*/ Popup.CLOSE_ON_SCROLL);
-		jQuery(oListBox.getFocusDomRef()).attr("tabIndex", "-1");
+		jQuery(oListBox.getFocusDomRef()).attr("tabindex", "-1");
 		//attachSelect moved to _handleOpened
 
 		jQuery(this.getDomRef()).attr("aria-expanded", true);
@@ -1798,7 +1798,7 @@ sap.ui.define([
 	 * <li>'selectedItem' of type <code>sap.ui.core.ListItem</code> selected item </li>
 	 * </ul>
 	 *
-	 * @param {Map} [mArguments] the arguments to pass along with the event.
+	 * @param {object} [mArguments] the arguments to pass along with the event.
 	 * @return {sap.ui.commons.ComboBox} <code>this</code> to allow method chaining
 	 * @protected
 	 * @name sap.ui.commons.ComboBox#fireChange

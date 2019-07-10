@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -82,6 +82,10 @@ sap.ui.define([
 		if (sText && oButton.getAriaLabelledBy() && oButton.getAriaLabelledBy().length > 0) {
 			mAccProps["labelledby"] = {value: oButton.getId() + "-content", append: true };
 		}
+
+		// prevent rendering of aria-disabled attribute
+		// no matter what state we have in the control
+		mAccProps["disabled"] = null;
 
 		//descendants (e.g. ToggleButton) callback
 		if (this.renderAccessibilityAttributes) {

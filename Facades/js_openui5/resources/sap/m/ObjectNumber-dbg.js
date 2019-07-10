@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -35,9 +35,15 @@ sap.ui.define([
 	 * @class
 	 * The ObjectNumber control displays number and number unit properties for an object. The number can be displayed using semantic
 	 * colors to provide additional meaning about the object to the user.
+	 *
+	 *
+	 * With 1.63, large design of the control is supported by setting <code>sapMObjectNumberLarge</code> CSS class to the <code>ObjectNumber</code>.
+	 *
+	 * <b>Note:</b> To fulfill the design guidelines when you are using <code>sapMObjectNumberLarge</code> CSS class set the <code>emphasized</code> property to <code>false</code>.
+	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -96,7 +102,8 @@ sap.ui.define([
 			 * Association to controls / ids which describe this control (see WAI-ARIA attribute aria-describedby).
 			 */
 			ariaDescribedBy: {type: "sap.ui.core.Control", multiple: true, singularName: "ariaDescribedBy"}
-		}
+		},
+		dnd: { draggable: true, droppable: false }
 	}});
 
 	/**
@@ -166,22 +173,10 @@ sap.ui.define([
 	// returns translated text for the state
 	ObjectNumber.prototype._getStateText = function() {
 
-		var sARIAStateText,
+		var sState = this.getState(),
 			oRB = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
-			switch (this.getState()) {
-				case ValueState.Error:
-					sARIAStateText = oRB.getText("OBJECTNUMBER_ARIA_VALUE_STATE_ERROR");
-					break;
-				case ValueState.Warning:
-					sARIAStateText = oRB.getText("OBJECTNUMBER_ARIA_VALUE_STATE_WARNING");
-					break;
-				case ValueState.Success:
-					sARIAStateText = oRB.getText("OBJECTNUMBER_ARIA_VALUE_STATE_SUCCESS");
-					break;
-			}
-
-		return sARIAStateText;
+			return oRB.getText("OBJECTNUMBER_ARIA_VALUE_STATE_" + sState.toUpperCase(), [], true);
 	};
 
 	return ObjectNumber;

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["sap/ui/dt/SelectionMode",'sap/ui/core/library'],function(){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.dt",version:"1.61.2",dependencies:["sap.ui.core"],types:["sap.ui.dt.SelectionMode"],interfaces:[],controls:[],elements:[]});return sap.ui.dt;},true);
+sap.ui.define(["sap/ui/base/ManagedObjectMetadata","sap/ui/dt/SelectionMode","sap/ui/core/library"],function(M){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.dt",version:"1.67.1",dependencies:["sap.ui.core"],types:["sap.ui.dt.SelectionMode"],interfaces:[],controls:[],elements:[]});M.setDesignTimeDefaultMapping({"not-adaptable":"sap/ui/dt/designtime/notAdaptable.designtime","not-removable":"sap/ui/dt/designtime/notRemovable.designtime"});return sap.ui.dt;},true);

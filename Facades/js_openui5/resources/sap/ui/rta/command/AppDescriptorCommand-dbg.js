@@ -1,14 +1,17 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['sap/ui/rta/command/BaseCommand',
-				'sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory',
-				'sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory'],
-	function(BaseCommand,
-		DescriptorInlineChangeFactory,
-		DescriptorChangeFactory) {
+sap.ui.define([
+	"sap/ui/rta/command/BaseCommand",
+	"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory",
+	"sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory"
+], function(
+	BaseCommand,
+	DescriptorInlineChangeFactory,
+	DescriptorChangeFactory
+) {
 	"use strict";
 
 	/**
@@ -18,7 +21,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand',
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -64,7 +67,7 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand',
 	 * @param  {object} mFlexSettings Map of flex Settings
 	 * @param  {string} mFlexSettings.layer Layer where the change is applied
 	 */
-	AppDescriptorCommand.prototype.prepare = function(mFlexSettings){
+	AppDescriptorCommand.prototype.prepare = function(mFlexSettings) {
 		this.setLayer(mFlexSettings.layer);
 		return true;
 	};
@@ -81,18 +84,17 @@ sap.ui.define(['sap/ui/rta/command/BaseCommand',
 	 * Create the change for the app descriptor and add it to the ChangePersistence.
 	 * @return {Promise} Returns Promise resolving after change has been created and stored
 	 */
-	AppDescriptorCommand.prototype.createAndStoreChange = function(){
+	AppDescriptorCommand.prototype.createAndStoreChange = function() {
 		return DescriptorInlineChangeFactory.createDescriptorInlineChange(
-				this.getChangeType(), this.getParameters(), this.getTexts())
-			.then(function(oAppDescriptorChangeContent){
-				return new DescriptorChangeFactory().createNew(this.getReference(),
-					oAppDescriptorChangeContent, this.getLayer(), this.getAppComponent());
-			}.bind(this))
-			.then(function(oAppDescriptorChange){
-				var oChange = oAppDescriptorChange.store();
-				this._oPreparedChange = oChange;
-			}.bind(this));
+			this.getChangeType(), this.getParameters(), this.getTexts())
+		.then(function(oAppDescriptorChangeContent) {
+			return new DescriptorChangeFactory().createNew(this.getReference(),
+				oAppDescriptorChangeContent, this.getLayer(), this.getAppComponent());
+		}.bind(this))
+		.then(function(oAppDescriptorChange) {
+			var oChange = oAppDescriptorChange.store();
+			this._oPreparedChange = oChange;
+		}.bind(this));
 	};
 	return AppDescriptorCommand;
-
 }, /* bExport= */true);

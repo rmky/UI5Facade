@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,7 +13,15 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/mvc/XMLView",
 	"sap/ui/fl/EventHistory"
-], function(FlexControllerFactory, Component, ChangeHandlerRegistration, ChangePersistenceFactory, MvcController, XMLView, EventHistory) {
+], function(
+	FlexControllerFactory,
+	Component,
+	ChangeHandlerRegistration,
+	ChangePersistenceFactory,
+	MvcController,
+	XMLView,
+	EventHistory
+) {
 	"use strict";
 
 	/**
@@ -23,7 +31,7 @@ sap.ui.define([
 	 * @class
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @experimental Since 1.43.0
 	 */
 	var RegistrationDelegator = {
@@ -42,9 +50,11 @@ sap.ui.define([
 	 * Registers change handlers
 	 *
 	 * @public
+	 * @returns {Promise} Returns promise after all changeHandlers are registered.
 	 */
 	RegistrationDelegator.registerChangeHandlers = function() {
-		ChangeHandlerRegistration.getChangeHandlersOfLoadedLibsAndRegisterOnNewLoadedLibs();
+		// method returns promise but is not considered in this module (return for maintainablity reasons)
+		return ChangeHandlerRegistration.getChangeHandlersOfLoadedLibsAndRegisterOnNewLoadedLibs();
 	};
 
 	/**
@@ -71,7 +81,7 @@ sap.ui.define([
 	 * @public
 	 */
 	RegistrationDelegator.registerXMLPreprocessor = function() {
-		if (XMLView.registerPreprocessor){
+		if (XMLView.registerPreprocessor) {
 			XMLView.registerPreprocessor("viewxml", "sap.ui.fl.XmlPreprocessorImpl", true);
 		}
 	};
@@ -100,5 +110,4 @@ sap.ui.define([
 	};
 
 	return RegistrationDelegator;
-
 }, /* bExport= */true);

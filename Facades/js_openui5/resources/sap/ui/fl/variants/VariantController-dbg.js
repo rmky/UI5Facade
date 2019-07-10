@@ -1,30 +1,24 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/Change",
-	"sap/ui/fl/Variant",
-	"sap/ui/fl/Cache",
-	"sap/ui/core/util/reflection/JsControlTreeModifier",
-	"sap/ui/base/ManagedObject",
-	"sap/ui/core/Component"
+	"sap/ui/fl/Variant"
 ], function (
 	Utils,
 	Change,
-	Variant,
-	Cache,
-	JsControlTreeModifier,
-	ManagedObject,
-	Component
+	Variant
 ) {
 	"use strict";
 
+	var _fnResetMapListener = function() {};
+
 	/**
-	 * Helper object to handle variants and their changes
+	 * Helper object to handle variants and their changes.
 	 *
 	 * @param {string} sComponentName - Component name the flexibility controller is responsible for
 	 * @param {string} sAppVersion - Current version of the application
@@ -34,21 +28,21 @@ sap.ui.define([
 	 * @alias sap.ui.fl.variants.VariantController
 	 * @experimental Since 1.50.0
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 */
 	var VariantController = function (sComponentName, sAppVersion, oChangeFileContent) {
 		this._sComponentName = sComponentName || "";
 		this._sAppVersion = sAppVersion || Utils.DEFAULT_APP_VERSION;
 		this._mVariantManagement = {};
-		this._setChangeFileContent(oChangeFileContent, {});
+		this.setChangeFileContent(oChangeFileContent, {});
 		this.sVariantTechnicalParameterName = "sap-ui-fl-control-variant-id";
 		this._oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.fl");
 	};
 
 	/**
-	 * Returns the component name of the VariantController
+	 * Returns the component name of the <code>VariantController</code>.
 	 *
-	 * @returns {String} the name of the component
+	 * @returns {String} Name of the component
 	 * @public
 	 */
 	VariantController.prototype.getComponentName = function () {
@@ -56,7 +50,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns the application version of the VariantController
+	 * Returns the application version of the <code>VariantController</code>.
 	 *
 	 * @returns {String} Application version
 	 * @public
@@ -65,13 +59,16 @@ sap.ui.define([
 		return this._sAppVersion;
 	};
 
-	VariantController.prototype._setChangeFileContent = function (oChangeFileContent, mTechnicalParameters) {
-		var oCacheEntry = Cache.getEntry(this.getComponentName(), this.getAppVersion());
+	VariantController.prototype.setChangeFileContent = function (oChangeFileContent, mTechnicalParameters) {
 		if (Object.keys(this._mVariantManagement).length === 0) {
 			this._mVariantManagement = {};
 		}
 		if (oChangeFileContent && oChangeFileContent.changes && oChangeFileContent.changes.variantSection) {
 			Object.keys(oChangeFileContent.changes.variantSection).forEach(function (sVariantManagementReference) {
+				// when variant management reference exists do not overwrite
+				if (this._mVariantManagement[sVariantManagementReference]) {
+					return;
+				}
 				this._mVariantManagement[sVariantManagementReference] = {};
 				var oVariantManagementReference = oChangeFileContent.changes.variantSection[sVariantManagementReference];
 				var aVariants = oVariantManagementReference.variants.concat();
@@ -104,7 +101,6 @@ sap.ui.define([
 							}
 						});
 					}
-
 				}.bind(this));
 				if (iIndex > -1) {
 					var oStandardVariant = aVariants.splice(iIndex, 1)[0];
@@ -113,7 +109,7 @@ sap.ui.define([
 				}
 				this._mVariantManagement[sVariantManagementReference].variants = aVariants;
 				this._mVariantManagement[sVariantManagementReference].defaultVariant = sVariantManagementReference;
-				if (sVariantFromUrl){
+				if (sVariantFromUrl) {
 					this._mVariantManagement[sVariantManagementReference].currentVariant = sVariantFromUrl;
 				}
 				this._mVariantManagement[sVariantManagementReference].variantManagementChanges =
@@ -122,12 +118,10 @@ sap.ui.define([
 				//to set default variant from setDefault variantManagement changes
 				this._applyChangesOnVariantManagement(this._mVariantManagement[sVariantManagementReference]);
 			}.bind(this));
-			// Reference cache entry with map - to keep in sync
-			oCacheEntry.file.changes.variantSection = this._mVariantManagement;
 		}
 	};
 
-	VariantController.prototype._getChangeFileContent = function () {
+	VariantController.prototype.getChangeFileContent = function () {
 		return this._mVariantManagement;
 	};
 
@@ -136,21 +130,20 @@ sap.ui.define([
 			return -1;
 		} else if (oVariantData1.content.content.title.toLowerCase() > oVariantData2.content.content.title.toLowerCase()) {
 			return 1;
-		} else {
-			return 0;
 		}
+		return 0;
 	};
 
 	/**
-	 * Returns the variants for a given variant management id
+	 * Returns the variants for a given variant management reference.
 	 *
-	 * @param {String} sVariantManagementReference The variant management id
-	 * @returns {Array} The array containing all variants of the variant management control
+	 * @param {String} sVariantManagementReference - Variant management reference
+	 * @returns {Array} All variants of the variant management control
 	 * @public
 	 */
 	VariantController.prototype.getVariants = function (sVariantManagementReference) {
 		var aVariants = this._mVariantManagement[sVariantManagementReference] && this._mVariantManagement[sVariantManagementReference].variants;
-		return aVariants ? aVariants : [];
+		return aVariants || [];
 	};
 
 	VariantController.prototype.getVariant = function (sVariantManagementReference, sVariantReference) {
@@ -166,30 +159,33 @@ sap.ui.define([
 	};
 
 	/**
-	 * Gets the changes of a given variant
+	 * Gets the changes of a given variant.
 	 *
-	 * @param {String} sVariantManagementReference The variant management id
-	 * @param {String} sVariantReference The id of the variant
-	 * @param {boolean} [bChangeInstance] True if each change has to be an instance of sap.ui.fl.Change
-	 * @returns {Array} The array containing all changes of the variant
+	 * @param {String} sVariantManagementReference - Variant management reference
+	 * @param {String} sVariantReference - ID of the variant
+	 * @param {boolean} [bChangeInstance] <code>true</code> if each change has to be an instance of <code>sap.ui.fl.Change</code>
+	 * @returns {Array} All changes of the variant
 	 * @public
 	 */
 	VariantController.prototype.getVariantChanges = function(sVariantManagementReference, sVariantReference, bChangeInstance) {
-		var sVarRef = sVariantReference || this._mVariantManagement[sVariantManagementReference].defaultVariant;
-		var oVariant = this.getVariant(sVariantManagementReference, sVarRef);
-		var aResult = oVariant.controlChanges;
+		sVariantReference = sVariantReference || this._mVariantManagement[sVariantManagementReference].defaultVariant;
+		var aResult = [];
+		if (sVariantReference && typeof sVariantReference === "string") {
+			var oVariant = this.getVariant(sVariantManagementReference, sVariantReference);
+			aResult = oVariant.controlChanges;
 
-		if (bChangeInstance) {
-			aResult = aResult.map(function(oChange, index) {
-				var oChangeInstance;
-				if (!oChange.getDefinition) {
-					oChangeInstance = new Change(oChange);
-					oVariant.controlChanges.splice(index, 1, oChangeInstance);
-				} else {
-					oChangeInstance = oChange;
-				}
-				return oChangeInstance;
-			});
+			if (bChangeInstance) {
+				aResult = aResult.map(function (oChange, index) {
+					var oChangeInstance;
+					if (!oChange.getDefinition) {
+						oChangeInstance = new Change(oChange);
+						oVariant.controlChanges.splice(index, 1, oChangeInstance);
+					} else {
+						oChangeInstance = oChange;
+					}
+					return oChangeInstance;
+				});
+			}
 		}
 		return aResult;
 	};
@@ -198,8 +194,8 @@ sap.ui.define([
 		var aReferencedVariantChanges = [];
 		if (oCurrentVariant.content.variantReference) {
 			aReferencedVariantChanges = this.getVariantChanges(sVariantManagementReference, oCurrentVariant.content.variantReference, true);
-			return aReferencedVariantChanges.filter( function(oReferencedChange) {
-				return Utils.compareAgainstCurrentLayer(oReferencedChange.getDefinition().layer) === -1; /* Referenced change layer below current layer*/
+			return aReferencedVariantChanges.filter(function(oReferencedChange) {
+				return Utils.compareAgainstCurrentLayer(oReferencedChange.getDefinition().layer, oCurrentVariant.content.layer) === -1; /* Referenced change layer below current layer*/
 			});
 		}
 		return aReferencedVariantChanges;
@@ -208,11 +204,11 @@ sap.ui.define([
 	VariantController.prototype.setVariantChanges = function(sVariantManagementReference, sVariantReference, aChanges) {
 		if (!sVariantManagementReference || !sVariantReference || !Array.isArray(aChanges)) {
 			Utils.log.error("Cannot set variant changes without Variant reference");
-			return;
+			return undefined;
 		}
 
 		return this._mVariantManagement[sVariantManagementReference].variants
-			.some(function (oVariant, iIndex) {
+			.some(function (oVariant) {
 				if (oVariant.content.fileName === sVariantReference) {
 					oVariant.controlChanges = aChanges;
 					return true;
@@ -241,18 +237,17 @@ sap.ui.define([
 			aVariants.splice(iSortedIndex + 1, 0, oVariantData);
 
 			return iSortedIndex + 1;
-		} else {
-			aVariants.splice(iPreviousIndex, 1, oVariantData);
-
-			return iPreviousIndex;
 		}
+
+		aVariants.splice(iPreviousIndex, 1, oVariantData);
+		return iPreviousIndex;
 	};
 
 	VariantController.prototype._updateChangesForVariantManagementInMap = function(oContent, sVariantManagementReference, bAdd) {
 		var oVariantManagement = this._mVariantManagement[sVariantManagementReference];
 		var sChangeType = oContent.changeType;
 		if (oContent.fileType === "ctrl_variant_change") {
-			oVariantManagement.variants.some( function(oVariant) {
+			oVariantManagement.variants.some(function(oVariant) {
 				if (oVariant.content.fileName === oContent.selector.id) {
 					if (!oVariant.variantChanges[sChangeType]) {
 						oVariant.variantChanges[sChangeType] = [];
@@ -260,7 +255,7 @@ sap.ui.define([
 					if (bAdd) {
 						oVariant.variantChanges[sChangeType].push(oContent);
 					} else {
-						oVariant.variantChanges[sChangeType].some( function (oExistingContent, iIndex) {
+						oVariant.variantChanges[sChangeType].some(function (oExistingContent, iIndex) {
 							if (oExistingContent.fileName === oContent.fileName) {
 								oVariant.variantChanges[sChangeType].splice(iIndex, 1);
 								return true; /*inner some*/
@@ -291,13 +286,13 @@ sap.ui.define([
 	};
 
 	/**
-	 * Load the initial changes of all variants
-	 * If the application is started with valid variant references, use them
-	 * If no references or invalid references were passed, load the changes from
-	 * the default variant
+	 * Loads the initial changes of all variants.
+	 * If the application is started with valid variant references, they are used.
+	 * If no references or invalid references were passed, the changes are loaded from
+	 * the default variant.
 	 *
 	 * @param {object} oComponent - Component instance used to get the technical parameters
-	 * @returns {Array} The array containing all changes of the default variants
+	 * @returns {Array} All changes of the default variants
 	 * @public
 	 */
 	VariantController.prototype.loadInitialChanges = function() {
@@ -319,19 +314,19 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns the map with all changes to be reverted and applied when switching variants
+	 * Returns the map with all changes to be reverted and applied when switching variants.
 	 *
-	 * @param {object} mPropertyBag Additional properties for variant switch
-	 * @param {string} mPropertyBag.variantManagementReference - The variant management id
-	 * @param {string} mPropertyBag.currentVariantReference - The id of the currently used variant
-	 * @param {string} mPropertyBag.newVariantReference - The id of the newly selected variant
-	 * @param {object} mPropertyBag.changesMap - The changes inside the current changes map
+	 * @param {object} mPropertyBag - Additional properties for variant switch
+	 * @param {string} mPropertyBag.variantManagementReference - Variant management ID
+	 * @param {string} mPropertyBag.currentVariantReference - The ID of the currently used variant
+	 * @param {string} mPropertyBag.newVariantReference - ID of the newly selected variant
+	 * @param {object} mPropertyBag.changesMap - Changes inside the current changes map
 	 *
 	 * @typedef {object} sap.ui.fl.variants.SwitchChanges
-	 * @property {array} changesToBeReverted - an array of changes to be reverted
-	 * @property {array} changesToBeApplied - an array of changes to be applied
+	 * @property {array} changesToBeReverted - Array of changes to be reverted
+	 * @property {array} changesToBeApplied - Array of changes to be applied
 	 *
-	 * @returns {sap.ui.fl.variants.SwitchChanges} The map containing all changes to be reverted and all new changes
+	 * @returns {sap.ui.fl.variants.SwitchChanges} Map containing all changes to be reverted and all new changes
 	 * @public
 	 */
 	VariantController.prototype.getChangesForVariantSwitch = function(mPropertyBag) {
@@ -426,12 +421,12 @@ sap.ui.define([
 	};
 
 	/**
-	 * Creates the data for the variant model
+	 * Creates the data for the variant model.
 	 *
-	 * @returns {Object} oVariantData The JSON object for the Variant Model
+	 * @returns {Object} JSON object for the variant model
 	 * @private
 	 */
-	VariantController.prototype._fillVariantModel = function() {
+	VariantController.prototype.fillVariantModel = function() {
 		var oVariantData = {};
 
 		Object.keys(this._mVariantManagement).forEach(function(sKey) {
@@ -441,7 +436,7 @@ sap.ui.define([
 				variants : []
 			};
 			//if a current variant is set in the map, it should be set in the model
-			if (this._mVariantManagement[sKey].currentVariant){
+			if (this._mVariantManagement[sKey].currentVariant) {
 				oVariantData[sKey].currentVariant = this._mVariantManagement[sKey].currentVariant;
 			}
 			this.getVariants(sKey).forEach(function(oVariant, index) {
@@ -480,16 +475,13 @@ sap.ui.define([
 	};
 
 	VariantController.prototype.removeChangeFromVariant = function (oChange, sVariantManagementReference, sVariantReference) {
-		var aNewChanges = this.getVariantChanges(sVariantManagementReference, sVariantReference, true);
+		var aControlChanges = this.getVariantChanges(sVariantManagementReference, sVariantReference, true);
 
-		aNewChanges.forEach(function (oCurrentChange, iIndex) {
-			if (oCurrentChange.getId
-				&& (oCurrentChange.getId() === oChange.getId())) {
-				aNewChanges.splice(iIndex, 1);
-			}
+		aControlChanges = aControlChanges.filter(function (oCurrentChange) {
+			return oCurrentChange.getId() !== oChange.getId();
 		});
 
-		return this.setVariantChanges(sVariantManagementReference, sVariantReference, aNewChanges, true);
+		return this.setVariantChanges(sVariantManagementReference, sVariantReference, aControlChanges);
 	};
 
 	VariantController.prototype.addVariantToVariantManagement = function (oVariantData, sVariantManagementReference) {
@@ -536,12 +528,49 @@ sap.ui.define([
 	};
 
 	/**
-	 * Clears variant controller map
-	 *
+	 * Assigns a listener, which is called when variant controller's map is reset at runtime.
+	 * @param {function} fnListener - Listener function
+	 * @private
+	 * @restricted sap.ui.fl.variants.VariantModel
+	 */
+	VariantController.prototype.assignResetMapListener = function (fnListener) {
+		_fnResetMapListener = fnListener;
+	};
+
+	/**
+	 * Clears variant controller map.
+	 * @param {boolean} bResetAtRuntime - Indicates whether the map is reset at runtime
+	 * @returns {Promise} Promise which resolves when changes for the current variants are reverted
 	 * @public
 	 */
-	VariantController.prototype.resetMap = function () {
+	VariantController.prototype.resetMap = function (bResetAtRuntime) {
+		if (bResetAtRuntime) {
+			return Promise.resolve(_fnResetMapListener.call(null));
+		}
 		this._mVariantManagement = {};
+		return Promise.resolve();
+	};
+
+	/**
+	 * Checks if variant content is required and sets the new content if validated.
+	 * @param {object} oChangeFileContent - Changes response object
+	 * @param {object} mTechnicalParameters - Technical parameters from the app component
+	 * @private
+	 * @restricted sap.ui.fl.ChangePersistence
+	 */
+	VariantController.prototype.checkAndSetVariantContent = function(oChangeFileContent, mTechnicalParameters) {
+		var oVariantControllerContent = this.getChangeFileContent();
+		var bSetVariantContentCheck = Object.keys(oVariantControllerContent).length === 0 // no content in the variant controller
+			|| Object.keys(oVariantControllerContent).every(function (sVariantManagementReference) {
+				var aVariants = oVariantControllerContent[sVariantManagementReference].variants;
+				return aVariants.length === 1  // there exists only one variant per variant management reference
+					&& !aVariants[0].content.layer // standard variant
+					&& aVariants[0].controlChanges.length === 0 // no control changes
+					&& Object.keys(aVariants[0].variantChanges).length === 0; // no variant changes
+			});
+		if (bSetVariantContentCheck) {
+			this.setChangeFileContent(oChangeFileContent, mTechnicalParameters);
+		}
 	};
 
 	return VariantController;

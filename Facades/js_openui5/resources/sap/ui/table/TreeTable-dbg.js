@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,7 +13,7 @@ sap.ui.define([
 	'./library',
 	'sap/ui/core/Element',
 	'./TableUtils',
-	"./BindingSelectionAdapter",
+	"./plugins/BindingSelectionPlugin",
 	"sap/base/Log",
 	"sap/base/assert"
 ],
@@ -25,7 +25,7 @@ sap.ui.define([
 		library,
 		Element,
 		TableUtils,
-		BindingSelectionAdapter,
+		BindingSelectionPlugin,
 		Log,
 		assert
 	) {
@@ -40,13 +40,12 @@ sap.ui.define([
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.ui.table.TreeTable
 	 * @see {@link topic:08197fa68e4f479cbe30f639cc1cd22c sap.ui.table}
-	 * @see {@link topic:a05fe0659b9c49729168a48697ce0000 sap.ui.table.TreeTable}
 	 * @see {@link topic:148892ff9aea4a18b912829791e38f3e Tables: Which One Should I Choose?}
 	 * @see {@link fiori:/tree-table/ Tree Table}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
@@ -137,15 +136,9 @@ sap.ui.define([
 	 * @private
 	 */
 	TreeTable.prototype.init = function() {
+		this._SelectionAdapterClass = BindingSelectionPlugin;
 		Table.prototype.init.apply(this, arguments);
 		TableUtils.Grouping.setTreeMode(this);
-
-		this._initSelectionAdapter();
-	};
-
-	TreeTable.prototype._initSelectionAdapter = function(){
-		this._oSelectionAdapter = new BindingSelectionAdapter();
-		this._oSelectionAdapter.attachEvent("selectionChange", this._onSelectionChanged, this);
 	};
 
 	TreeTable.prototype.bindRows = function(oBindingInfo) {
@@ -165,25 +158,6 @@ sap.ui.define([
 		}
 
 		return Table.prototype.bindRows.call(this, oBindingInfo);
-	};
-
-	/**
-	 * This function will be called by either by {@link sap.ui.base.ManagedObject#bindAggregation} or {@link sap.ui.base.ManagedObject#setModel}.
-	 *
-	 * @override {@link sap.ui.table.Table#_bindAggregation}
-	 */
-	TreeTable.prototype._bindAggregation = function(sName, oBindingInfo) {
-		// Create the binding.
-		Table.prototype._bindAggregation.call(this, sName, oBindingInfo);
-
-		var oBinding = this.getBinding("rows");
-
-		if (sName === "rows" && oBinding) {
-			// Table._addBindingListener can not be used here, as the selectionChanged event will be added by an adapter applied in #getBinding.
-			oBinding.attachEvents({
-				selectionChanged: this._onSelectionChanged.bind(this)
-			});
-		}
 	};
 
 	/**
@@ -461,27 +435,6 @@ sap.ui.define([
 		}
 		this.setProperty("collapseRecursive", !!bCollapseRecursive, true);
 		return this;
-	};
-
-	/**
-	 * Returns the number of selected entries.
-	 * Depending on the binding it is either retrieved from the binding or the selection model.
-	 * @private
-	 */
-	TreeTable.prototype._getSelectedIndicesCount = function() {
-		var iSelectedIndicesCount;
-
-		//when using the treebindingadapter, check if the node is selected
-		var oBinding = this.getBinding("rows");
-
-		if (oBinding && oBinding.getSelectedNodesCount) {
-			return oBinding.getSelectedNodesCount();
-		} else {
-			// selection model case
-			return Table.prototype.getSelectedIndices.call(this);
-		}
-
-		return iSelectedIndicesCount;
 	};
 
 	TreeTable.prototype.setUseGroupMode = function(bGroup) {

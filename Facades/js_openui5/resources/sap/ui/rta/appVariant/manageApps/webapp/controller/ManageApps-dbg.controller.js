@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -34,10 +34,9 @@ sap.ui.define([
 			_sIdRunningApp = this.getOwnerComponent().getIdRunningApp();
 			_bKeyUser = this.getOwnerComponent().getIsOverviewForKeyUser();
 
-			sModulePath = sap.ui.require.toUrl("sap/ui/rta/appVariant/manageApps/") + "webapp";
-			oI18n = ResourceBundle.create({
-				url : sModulePath + "/i18n/i18n.properties"
-			});
+			if (!oI18n) {
+				this._createResourceBundle();
+			}
 
 			BusyIndicator.show();
 			return AppVariantOverviewUtils.getAppVariantOverview(_sIdRunningApp, _bKeyUser).then(function(aAppVariantOverviewAttributes) {
@@ -46,35 +45,40 @@ sap.ui.define([
 					return this._arrangeOverviewDataAndBindToModel(aAppVariantOverviewAttributes).then(function(aAppVariantOverviewAttributes) {
 						return this._highlightNewCreatedAppVariant(aAppVariantOverviewAttributes);
 					}.bind(this));
-				} else {
-					AppVariantUtils.publishEventBus();
-					return this._showMessageWhenNoAppVariantsExist();
 				}
+
+				AppVariantUtils.closeOverviewDialog();
+				return this._showMessageWhenNoAppVariantsExist();
 			}.bind(this))["catch"](function(oError) {
-				AppVariantUtils.publishEventBus();
+				AppVariantUtils.closeOverviewDialog();
 				var oErrorInfo = AppVariantUtils.buildErrorInfo("MSG_MANAGE_APPS_FAILED", oError);
 				oErrorInfo.overviewDialog = true;
 				BusyIndicator.hide();
 				return AppVariantUtils.showRelevantDialog(oErrorInfo, false);
 			});
 		},
-		_showMessageWhenNoAppVariantsExist: function() {
-			var sMessage = oI18n.getText("MSG_APP_VARIANT_OVERVIEW_SAP_DEVELOPER");
-			var sTitle = oI18n.getText("TITLE_APP_VARIANT_OVERVIEW_SAP_DEVELOPER");
-			return new Promise(function(resolve) {
-				MessageBox.show(sMessage, {
-					icon: MessageBox.Icon.INFORMATION,
-					title : sTitle,
-					onClose : resolve,
-					styleClass: RtaUtils.getRtaStyleClassName()
-				});
+
+		_createResourceBundle: function() {
+			sModulePath = sap.ui.require.toUrl("sap/ui/rta/appVariant/manageApps/") + "webapp";
+			oI18n = ResourceBundle.create({
+				url : sModulePath + "/i18n/i18n.properties"
 			});
 		},
+
+		_showMessageWhenNoAppVariantsExist: function() {
+			return RtaUtils._showMessageBox(
+				MessageBox.Icon.INFORMATION,
+				"TITLE_APP_VARIANT_OVERVIEW_SAP_DEVELOPER",
+				"MSG_APP_VARIANT_OVERVIEW_SAP_DEVELOPER");
+		},
+
 		_highlightNewCreatedAppVariant: function(aAppVariantOverviewAttributes) {
 			var oTable = this.byId("Table1");
 
 			aAppVariantOverviewAttributes.forEach(function(oAppVariantDescriptor, index) {
-				if (oAppVariantDescriptor.currentStatus) {
+				if (oAppVariantDescriptor.currentStatus === oI18n.getText("MAA_NEW_APP_VARIANT")
+					|| oAppVariantDescriptor.currentStatus === oI18n.getText("MAA_OPERATION_IN_PROGRESS")
+				) {
 					if (oTable.getItems().length >= index) {
 						oTable.getItems()[index].focus();
 					}
@@ -83,8 +87,9 @@ sap.ui.define([
 
 			return Promise.resolve();
 		},
+
 		_arrangeOverviewDataAndBindToModel: function(aAppVariantOverviewAttributes) {
-			var aAdaptingAppAttributes = aAppVariantOverviewAttributes.filter(function(oAppVariantProperty){
+			var aAdaptingAppAttributes = aAppVariantOverviewAttributes.filter(function(oAppVariantProperty) {
 				return oAppVariantProperty.appId === _sIdRunningApp;
 			});
 
@@ -99,7 +104,7 @@ sap.ui.define([
 
 			aAppVariantOverviewAttributes.unshift(oAdaptingAppAttributes);
 
-			var aReferenceAppAttributes = aAppVariantOverviewAttributes.filter(function(oAppVariantProperty){
+			var aReferenceAppAttributes = aAppVariantOverviewAttributes.filter(function(oAppVariantProperty) {
 				return oAppVariantProperty.isOriginal;
 			});
 
@@ -122,6 +127,7 @@ sap.ui.define([
 
 			return Promise.resolve(aAppVariantOverviewAttributes);
 		},
+
 		formatRowHighlight: function(sValue) {
 			// Your logic for rowHighlight goes here
 			if (sValue === oI18n.getText("MAA_CURRENTLY_ADAPTING")) {
@@ -132,11 +138,48 @@ sap.ui.define([
 
 			return "None";
 		},
+
+		formatDelButtonTooltip: function(bDelAppVarButtonEnabled, bIsS4HanaCloud) {
+			if (!bDelAppVarButtonEnabled && !bIsS4HanaCloud) {
+				return oI18n.getText("TOOLTIP_DELETE_APP_VAR");
+			}
+			return undefined;
+		},
+
 		getModelProperty : function(sModelPropName, sBindingContext) {
 			return this.getView().getModel().getProperty(sModelPropName, sBindingContext);
 		},
+
+		onMenuAction: function(oEvent) {
+			var oItem = oEvent.getParameter("item"),
+				sItemPath = "";
+
+			while (oItem instanceof sap.m.MenuItem) {
+				sItemPath = oItem.getText() + " > " + sItemPath;
+				oItem = oItem.getParent();
+			}
+
+			sItemPath = sItemPath.substr(0, sItemPath.lastIndexOf(" > "));
+
+			if (!oI18n) {
+				this._createResourceBundle();
+			}
+
+			if (sItemPath === oI18n.getText("MAA_DIALOG_ADAPT_UI")) {
+				return this.handleUiAdaptation(oEvent);
+			} else if (sItemPath === oI18n.getText("MAA_DIALOG_COPY_ID")) {
+				return this.copyId(oEvent);
+			} else if (sItemPath === oI18n.getText("MAA_DIALOG_DELETE_APPVAR")) {
+				return this.deleteAppVariant(oEvent);
+			} else if (sItemPath === oI18n.getText("MAA_DIALOG_SAVE_AS_APP")) {
+				return this.saveAsAppVariant(oEvent);
+			}
+
+			return undefined;
+		},
+
 		handleUiAdaptation: function(oEvent) {
-			var oNavigationService = sap.ushell.Container.getService( "CrossApplicationNavigation" );
+			var oNavigationService = sap.ushell.Container.getService("CrossApplicationNavigation");
 
 			var sSemanticObject = this.getModelProperty("semanticObject", oEvent.getSource().getBindingContext());
 			var sAction = this.getModelProperty("action", oEvent.getSource().getBindingContext());
@@ -152,18 +195,19 @@ sap.ui.define([
 					params: oParams
 				};
 
-				RuntimeAuthoring.enableRestart( "CUSTOMER" );
+				RuntimeAuthoring.enableRestart("CUSTOMER");
 
 				oNavigationService.toExternal(oNavigationParams);
 
-				AppVariantUtils.publishEventBus();
+				AppVariantUtils.closeOverviewDialog();
 				return true;
-			} else {
-				return false;
 			}
+
+			return false;
 		},
+
 		saveAsAppVariant: function(oEvent) {
-			AppVariantUtils.publishEventBus();
+			AppVariantUtils.closeOverviewDialog();
 
 			var sDescriptorUrl = this.getModelProperty("descriptorUrl", oEvent.getSource().getBindingContext());
 
@@ -173,9 +217,34 @@ sap.ui.define([
 				return RtaAppVariantFeature.onSaveAsFromOverviewDialog(oAppVariantDescriptor, false);
 			});
 		},
+
 		copyId: function(oEvent) {
 			var sCopiedId = this.getModelProperty("appId", oEvent.getSource().getBindingContext());
 			AppVariantUtils.copyId(sCopiedId);
+		},
+
+		deleteAppVariant: function(oEvent) {
+			var oInfo = {};
+			if (!oI18n) {
+				this._createResourceBundle();
+			}
+			var sMessage = oI18n.getText("MSG_APP_VARIANT_DELETE_CONFIRMATION");
+			oInfo.text = sMessage;
+			oInfo.deleteAppVariant = true;
+
+			var sAppVarId = this.getModelProperty("appId", oEvent.getSource().getBindingContext());
+			var bIsAppVariant = this.getModelProperty("isAppVariant", oEvent.getSource().getBindingContext());
+			var sCurrentStatus = this.getModelProperty("currentStatus", oEvent.getSource().getBindingContext());
+			var bCurrentlyAdapting = sCurrentStatus === oI18n.getText("MAA_CURRENTLY_ADAPTING");
+
+
+			return AppVariantUtils.showRelevantDialog(oInfo)
+				.then(function() {
+					// is this necessary? in which case is there no i18n?
+					return RtaAppVariantFeature.onDeleteFromOverviewDialog(sAppVarId, bIsAppVariant, bCurrentlyAdapting, false);
+				}).catch(function() {
+					return true;
+				});
 		}
 	});
 });

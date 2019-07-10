@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,7 +10,6 @@ sap.ui.define([
 	'./Element',
 	'./UIArea',
 	'./RenderManager',
-	'./ResizeHandler',
 	'./BusyIndicatorUtils',
 	'./BlockLayerUtils',
 	"sap/base/Log",
@@ -21,13 +20,15 @@ sap.ui.define([
 		Element,
 		UIArea,
 		RenderManager,
-		ResizeHandler,
 		BusyIndicatorUtils,
 		BlockLayerUtils,
 		Log,
 		jQuery
 	) {
 	"use strict";
+
+	// soft dependency
+	var ResizeHandler;
 
 	/**
 	 * Creates and initializes a new control with the given <code>sId</code> and settings.
@@ -54,6 +55,7 @@ sap.ui.define([
 	 *     and event {@link #event:validateFieldGroup validateFieldGroup}.
 	 *     The term <i>field</i> was chosen as most often this feature will be used to group editable
 	 *     fields in a form.</li>
+	 *     See the documentation for {@link topic:5b0775397e394b1fb973fa207554003e Field Groups} for more details.
 	 * <li><b>custom style classes</b>: all controls allow to add custom CSS classes to their rendered DOM
 	 *     without modifying their renderer code. See methods {@link #addStyleClass addStyleClass},
 	 *     {@link #removeStyleClass removeStyleClass}, {@link #toggleStyleClass toggleStyleClass}
@@ -73,7 +75,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Element
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @alias sap.ui.core.Control
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -126,7 +128,12 @@ sap.ui.define([
 				 * All fields in a logical field group should share the same <code>fieldGroupId</code>.
 				 * Once a logical field group is left, the <code>validateFieldGroup</code> event is raised.
 				 *
-				 * See {@link sap.ui.core.Control#attachValidateFieldGroup}.
+				 * For backward compatibility with older releases, field group IDs are syntactically not
+				 * limited, but it is suggested to use only valid {@link sap.ui.core.ID}s.
+				 *
+				 * See {@link #attachValidateFieldGroup} or consult the
+				 * {@link topic:5b0775397e394b1fb973fa207554003e Field Group} documentation.
+				 *
 				 * @since 1.31
 				 */
 				"fieldGroupIds" : { type: "string[]", defaultValue: [] }
@@ -138,7 +145,7 @@ sap.ui.define([
 				 * or the user explicitly pressed a key combination that triggers validation.
 				 *
 				 * Listen to this event to validate data of the controls belonging to a field group.
-				 * See {@link sap.ui.core.Control#setFieldGroupIds}.
+				 * See {@link #setFieldGroupIds}.
 				 */
 				validateFieldGroup : {
 					enableEventBubbling:true,
@@ -170,6 +177,72 @@ sap.ui.define([
 
 	});
 
+
+	/**
+	 * Defines a new subclass of Control with the name <code>sClassName</code> and enriches it with
+	 * the information contained in <code>oClassInfo</code>.
+	 *
+	 * <code>oClassInfo</code> can contain the same information that {@link sap.ui.core.Element.extend} already accepts,
+	 * plus the following <code>renderer</code> property:
+	 *
+	 * Example:
+	 * <pre>
+	 * Control.extend('sap.mylib.MyControl', {
+	 *   metadata : {
+	 *     library : 'sap.mylib',
+	 *     properties : {
+	 *       text : 'string',
+	 *       width : 'sap.ui.core.CSSSize'
+	 *     },
+	 *     renderer: {
+	 *       render: function(oRM, oControl) {
+	 *         oRM.openTag("div", oControl);
+	 *         oRM.style("width", oControl.getWidth());
+	 *         oRM.openEnd();
+	 *         oRM.text(oControl.getText());
+	 *         oRM.closeTag("div");
+	 *       }
+	 *     }
+	 *   }
+	 * });
+	 * </pre>
+	 *
+	 * There are multiple ways how a renderer can be specified:
+	 * <ul>
+	 * <li>As a <b>plain object</b>: The object will be used to create a new renderer by using {@link
+	 *     sap.ui.core.Renderer.extend} to extend the renderer of the base class of this control. The new renderer
+	 *     will have the same global name as this control class with the additional suffix 'Renderer'.<br>
+	 *     <b>Note:</b> The <code>Renderer.extend</code> method expects a plain object (no prototype chain).</li>
+	 * <li>As a <b>function</b>: The given function will be used as <code>render</code> function of a new renderer;
+	 *     the renderer will be created in the same way as described for the <i>plain object</i> case.</li>
+	 * <li>As a <b>ready-made renderer</b>, e.g. imported from the corresponding renderer module. As renderers
+	 *     are simple objects (not instances of a specific class), some heuristic is used to distinguish
+	 *     renderers from the <i>plain object</i> case above: An object is assumed to be a ready-made renderer
+	 *     when it has a <code>render</code> function and either is already exposed under the expected global
+	 *     name or has an <code>extend</code> method.</li>
+	 * <li>As a <b>fully qualified name</b>: The name will be looked up as a global property. If not defined, a
+	 *     module name will be derived from the global name (dots replaced by slashes), the module will be required
+	 *     and provides the renderer, either as AMD export or via the named global property.</li>
+	 * <li><b>Omitting the <code>renderer</code> property</b> or setting it to <code>undefined</code>:
+	 *     The fully qualified name of the renderer will be derived from the fully qualified name of the control
+	 *     by adding the suffix "Renderer". The renderer then is retrieved in the same way as described for the
+	 *     <i>fully qualified name</i> case.</li>
+	 * <li><b><code>null</code> or empty string</b>: The control will have no renderer, a call to
+	 *     <code>oControl.getMetadata().getRenderer()</code> will return <code>undefined</code>.</li>
+	 * </ul>
+	 *
+	 * If the resulting renderer is incomplete (has no <code>render</code> function) or if it cannot be found at all,
+	 * rendering of the control will be skipped.
+	 *
+	 * @param {string} sClassName fully qualified name of the class that is described by this metadata object
+	 * @param {object} oStaticInfo static info to construct the metadata from
+	 * @returns {function} Constructor of the newly created class
+	 *
+	 * @public
+	 * @static
+	 * @name sap.ui.core.Control.extend
+	 * @function
+	 */
 
 	/**
 	 * Overrides {@link sap.ui.core.Element#clone Element.clone} to clone additional
@@ -402,7 +475,7 @@ sap.ui.define([
 	 * In the event handler, <code>this</code> refers to the Control - not to the root DOM element like in jQuery. While the DOM element can
 	 * be used and modified, the general caveats for working with SAPUI5 control DOM elements apply. In particular the DOM element
 	 * may be destroyed and replaced by a new one at any time, so modifications that are required to have permanent effect may not
-	 * be done. E.g. use {@link sap.ui.core.Control.prototype.addStyleClass} instead if the modification is of visual nature.
+	 * be done. E.g. use {@link #addStyleClass} instead if the modification is of visual nature.
 	 *
 	 * Use {@link #detachBrowserEvent} to remove the event handler(s) again.
 	 *
@@ -659,7 +732,11 @@ sap.ui.define([
 		//Cleanup Busy Indicator
 		this._cleanupBusyIndicator();
 
-		ResizeHandler.deregisterAllForControl(this.getId());
+		// do not load ResizeHandler - if it isn't there, there should be no resize handler registrations
+		ResizeHandler = ResizeHandler || sap.ui.require("sap/ui/core/ResizeHandler");
+		if ( ResizeHandler ) {
+			ResizeHandler.deregisterAllForControl(this.getId());
+		}
 
 		// Controls can have their visible-property set to "false" in which case the Element's destroy method will
 		// fail to remove the placeholder content from the DOM. We have to remove it here in that case
@@ -1011,34 +1088,37 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns whether the control has a given field group.
-	 * If <code>vFieldGroupIds</code> is not given it checks whether at least one field group ID is given for this control.
-	 * If <code>vFieldGroupIds</code> is an empty array or empty string, true is returned if there is no field group ID set for this control.
-	 * If <code>vFieldGroupIds</code> is a string array or a string all expected field group IDs are checked and true is returned if all are contained for given for this control.
-	 * The comma delimiter can be used to separate multiple field group IDs in one string.
+	 * Returns whether this control belongs to a given combination of field groups.
 	 *
-	 * @param {string|string[]} [vFieldGroupIds] ID of the field group or an array of field group IDs to match
-	 * @return {boolean} true if a field group ID matches
+	 * If the <code>vFieldGroupIds</code> parameter is not specified, the method checks whether this control belongs
+	 * to <strong>any</strong> field group, that is, whether any field group ID is defined for it.
+	 *
+	 * If a list of field group IDs is specified, either as an array of strings or as a single string (interpreted as
+	 * a comma separated list of IDs), then the method will check whether this control belongs to <strong>all</strong>
+	 * given field groups. Accordingly, an empty list of IDs (empty array or empty string) will always return true.
+	 *
+	 * Note that a string value for <code>vFieldGroupIds</code> (comma separated list) will not be trimmed.
+	 * All whitespace characters are significant, but in general not recommended in field group IDs.
+	 *
+	 * @param {string|string[]} [vFieldGroupIds] An array of field group IDs or a single string with a comma separated list of IDs to match
+	 * @return {boolean} Whether the field group IDs defined for the control match the given ones
 	 * @public
+	 * @see {@link #setFieldGroupIds}
 	 */
 	Control.prototype.checkFieldGroupIds = function(vFieldGroupIds) {
 		if (typeof vFieldGroupIds === "string") {
-			if (vFieldGroupIds === "") {
-				return this.checkFieldGroupIds([]);
-			}
-			return this.checkFieldGroupIds(vFieldGroupIds.split(","));
+			// normalize single field group ID or a comma separated list of field group IDs to an array
+			vFieldGroupIds = vFieldGroupIds ? vFieldGroupIds.split(",") : [];
 		}
 		var aFieldGroups = this._getFieldGroupIds();
 		if (Array.isArray(vFieldGroupIds)) {
-			var iFound = 0;
-			for (var i = 0; i < vFieldGroupIds.length; i++) {
-				if (aFieldGroups.indexOf(vFieldGroupIds[i]) > -1) {
-					iFound++;
-				}
-			}
-			return iFound === vFieldGroupIds.length;
-		} else if (!vFieldGroupIds && aFieldGroups.length > 0) {
-			return true;
+			// all given field group IDs must be defined for the control
+			return vFieldGroupIds.every(function(sFieldGroupId) {
+				return aFieldGroups.indexOf(sFieldGroupId) >= 0;
+			});
+		} else if ( !vFieldGroupIds ) {
+			// no field group ID(s) given: check if any field group is defined for the control
+			return aFieldGroups.length > 0;
 		}
 		return false;
 	};

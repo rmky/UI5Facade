@@ -1,18 +1,16 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	'sap/ui/rta/plugin/Plugin',
-	'sap/ui/rta/Utils',
-	'sap/ui/rta/util/BindingsExtractor',
-	'sap/ui/dt/Util'
+	"sap/ui/rta/plugin/Plugin",
+	"sap/ui/rta/Utils",
+	"sap/ui/dt/Util"
 ], function(
 	Plugin,
 	Utils,
-	BindingsExtractor,
 	DtUtil
 ) {
 	"use strict";
@@ -23,19 +21,15 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.46
 	 * @alias sap.ui.rta.plugin.Combine
 	 * @experimental Since 1.46. This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
-	var Combine = Plugin.extend("sap.ui.rta.plugin.Combine", /** @lends sap.ui.rta.plugin.Combine.prototype */
-	{
+	var Combine = Plugin.extend("sap.ui.rta.plugin.Combine", /** @lends sap.ui.rta.plugin.Combine.prototype */ {
 		metadata: {
-			// ---- object ----
-
-			// ---- control specific ----
 			library: "sap.ui.rta",
 			properties: {},
 			associations: {},
@@ -56,9 +50,8 @@ sap.ui.define([
 			return this.hasChangeHandler(oCombineAction.changeType, oRelevantContainer) &&
 				this.hasStableId(oOverlay) &&
 				this._checkRelevantContainerStableID(oCombineAction, oOverlay);
-		} else {
-			return false;
 		}
+		return false;
 	};
 
 	Combine.prototype._checkForSameRelevantContainer = function(aElementOverlays) {
@@ -66,7 +59,7 @@ sap.ui.define([
 		for (var i = 0, n = aElementOverlays.length; i < n; i++) {
 			aRelevantContainer[i] = aElementOverlays[i].getRelevantContainer();
 			var oCombineAction = this.getAction(aElementOverlays[i]);
-			if (!oCombineAction || !oCombineAction.changeType){
+			if (!oCombineAction || !oCombineAction.changeType) {
 				return false;
 			}
 			if (i > 0) {
@@ -77,6 +70,21 @@ sap.ui.define([
 			}
 		}
 		return true;
+	};
+
+	/**
+	 * Checks the binding compatibility of all given elements. Absolute binding will not be considered
+	 *
+	 * @param {sap.ui.core.Element[]|sap.ui.core.Component[]} aControls - Array of controls to be checked for binding compatibility
+	 * @param {sap.ui.model.Model} oModel - Model for filtering irrelevant binding paths
+	 * @return {boolean} <code>true</code> when the controls have compatible bindings.
+	 */
+	Combine.prototype._checkBindingCompatibilityOfControls = function(aControls, oModel) {
+		return aControls.every(function(oSource) {
+			return aControls.every(function(oTarget) {
+				return oSource !== oTarget ? Utils.checkSourceTargetBindingCompatibility(oSource, oTarget, oModel) : true;
+			});
+		});
 	};
 
 	/**
@@ -125,36 +133,17 @@ sap.ui.define([
 			if (typeof oAction.isEnabled !== "undefined") {
 				if (typeof oAction.isEnabled === "function") {
 					return oAction.isEnabled(aControls);
-				} else {
-					return oAction.isEnabled;
 				}
+				return oAction.isEnabled;
 			}
 
 			return true;
 		}, this);
 
-		// check if all the target elements have the same binding context
 		if (bActionCheck) {
-			var oFirstControl = aControls.shift();
-			var aBindings = BindingsExtractor.getBindings(oFirstControl, oFirstControl.getModel());
-			if (aBindings.length > 0 && oFirstControl.getBindingContext()) {
-				var sFirstElementBindingContext = Utils.getEntityTypeByPath(
-					oFirstControl.getModel(),
-					oFirstControl.getBindingContext().getPath()
-				);
-
-				bActionCheck = aControls.some(function(oControl) {
-					if (oControl.getBindingContext()) {
-						var sBindingContext = Utils.getEntityTypeByPath(
-							oControl.getModel(),
-							oControl.getBindingContext().getPath()
-						);
-						return sFirstElementBindingContext === sBindingContext;
-					} else {
-						return false;
-					}
-				});
-			}
+			// check if all the target elements have the same binding context
+			var oDefaultModel = aControls[0] && aControls[0].getModel();
+			return this._checkBindingCompatibilityOfControls(aControls, oDefaultModel);
 		}
 
 		return bActionCheck;
@@ -167,7 +156,7 @@ sap.ui.define([
 	Combine.prototype.handleCombine = function(aElementOverlays, oCombineElement) {
 		var oCombineElementOverlay;
 		var aElements = aElementOverlays.map(function (oElementOverlay) {
-			if (oElementOverlay.getElement().getId() === oCombineElement.getId()){
+			if (oElementOverlay.getElement().getId() === oCombineElement.getId()) {
 				oCombineElementOverlay = oElementOverlay;
 			}
 			return oElementOverlay.getElement();
@@ -181,7 +170,7 @@ sap.ui.define([
 			"combine",
 			{
 				source : oCombineElement,
-				combineFields : aElements
+				combineElements : aElements
 			},
 			oDesignTimeMetadata,
 			sVariantManagementReference
@@ -189,7 +178,7 @@ sap.ui.define([
 
 		.then(function(oCombineCommand) {
 			this.fireElementModified({
-				"command" : oCombineCommand
+				command : oCombineCommand
 			});
 		}.bind(this))
 
@@ -218,7 +207,7 @@ sap.ui.define([
 	 * Get the name of the action related to this plugin.
 	 * @return {string} Returns the action name
 	 */
-	Combine.prototype.getActionName = function(){
+	Combine.prototype.getActionName = function() {
 		return "combine";
 	};
 

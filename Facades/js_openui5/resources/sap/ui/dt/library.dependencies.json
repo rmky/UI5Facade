@@ -2,204 +2,322 @@
   "modules" : [
     {
       "name" : "sap/ui/dt/AggregationDesignTimeMetadata.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 1794,
-      "compressedSize" : 457,
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 1759,
+      "compressedSize" : 422,
       "required" : ["sap/ui/dt/DesignTimeMetadata.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/AggregationOverlay.js",
       "description" : "Provides class sap.ui.dt.AggregationOverlay.",
-      "size" : 7662,
-      "compressedSize" : 2966,
-      "required" : ["sap/base/util/merge.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/Util.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "size" : 7567,
+      "compressedSize" : 2895,
+      "required" : ["sap/base/util/merge.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/Util.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/ContextMenuControl.js",
       "description" : "globals sap",
-      "size" : 32742,
-      "compressedSize" : 12721,
-      "required" : ["sap/m/Button.js", "sap/m/FlexItemData.js", "sap/m/HBox.js", "sap/m/Popover.js", "sap/m/VBox.js", "sap/ui/base/ManagedObject.js", "sap/ui/dom/jquery/rect.js", "sap/ui/dt/library.js", "sap/ui/thirdparty/jquery.js", "sap/ui/unified/Menu.js", "ui5loader-autoconfig.js"],
+      "size" : 31101,
+      "compressedSize" : 12805,
+      "required" : ["sap/base/util/deepEqual.js", "sap/m/Button.js", "sap/m/FlexItemData.js", "sap/m/HBox.js", "sap/m/Popover.js", "sap/m/VBox.js", "sap/m/library.js", "sap/ui/base/ManagedObject.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/ControlObserver.js",
       "description" : "Provides class sap.ui.dt.ControlObserver.",
-      "size" : 2571,
-      "compressedSize" : 944,
+      "size" : 2435,
+      "compressedSize" : 893,
       "required" : ["sap/ui/dt/ManagedObjectObserver.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/DOMUtil.js",
       "description" : "Provides object sap.ui.dt.DOMUtil.",
-      "size" : 13590,
-      "compressedSize" : 4659,
+      "size" : 14433,
+      "compressedSize" : 4933,
       "required" : ["sap/ui/Device.js", "sap/ui/dom/jquery/zIndex.js", "sap/ui/dt/Util.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/DesignTime.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 36760,
-      "compressedSize" : 14218,
-      "required" : ["sap/base/Log.js", "sap/base/util/includes.js", "sap/base/util/isPlainObject.js", "sap/base/util/merge.js", "sap/ui/base/ManagedObject.js", "sap/ui/dt/AggregationDesignTimeMetadata.js", "sap/ui/dt/AggregationOverlay.js", "sap/ui/dt/ElementDesignTimeMetadata.js", "sap/ui/dt/ElementOverlay.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/MetadataPropagationUtil.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/SelectionManager.js", "sap/ui/dt/SelectionMode.js", "sap/ui/dt/TaskManager.js", "sap/ui/dt/Util.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 42115,
+      "compressedSize" : 16960,
+      "required" : ["sap/base/Log.js", "sap/base/util/includes.js", "sap/base/util/isPlainObject.js", "sap/base/util/merge.js", "sap/ui/base/ManagedObject.js", "sap/ui/dt/AggregationDesignTimeMetadata.js", "sap/ui/dt/AggregationOverlay.js", "sap/ui/dt/DesignTimeStatus.js", "sap/ui/dt/ElementDesignTimeMetadata.js", "sap/ui/dt/ElementOverlay.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/MetadataPropagationUtil.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/SelectionManager.js", "sap/ui/dt/SelectionMode.js", "sap/ui/dt/TaskManager.js", "sap/ui/dt/Util.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/DesignTimeMetadata.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 7828,
-      "compressedSize" : 2301,
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 7755,
+      "compressedSize" : 2248,
       "required" : ["sap/base/util/merge.js", "sap/ui/base/ManagedObject.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/ElementUtil.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/DesignTimeStatus.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 408,
+      "compressedSize" : 238,
+      "required" : ["ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/ElementDesignTimeMetadata.js",
       "description" : "Provides class sap.ui.dt.ElementDesignTimeMetadata.",
-      "size" : 8824,
-      "compressedSize" : 2952,
+      "size" : 9100,
+      "compressedSize" : 2920,
       "required" : ["sap/ui/dt/AggregationDesignTimeMetadata.js", "sap/ui/dt/DesignTimeMetadata.js", "sap/ui/dt/ElementUtil.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/ElementOverlay.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 29907,
-      "compressedSize" : 12651,
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 29876,
+      "compressedSize" : 12599,
       "required" : ["sap/base/Log.js", "sap/base/util/isPlainObject.js", "sap/base/util/merge.js", "sap/ui/core/Control.js", "sap/ui/dt/ControlObserver.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/ElementDesignTimeMetadata.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/ManagedObjectObserver.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/Util.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/ElementUtil.js",
       "description" : "Provides object sap.ui.dt.ElementUtil.",
-      "size" : 13940,
-      "compressedSize" : 5519,
-      "required" : ["sap/base/Log.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/Object.js", "sap/ui/core/Component.js", "sap/ui/dt/Util.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "size" : 14273,
+      "compressedSize" : 5274,
+      "required" : ["sap/ui/base/Object.js", "sap/ui/core/Component.js", "sap/ui/core/Element.js", "sap/ui/dt/Util.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/ManagedObjectObserver.js",
       "description" : "Provides class sap.ui.dt.ManagedObjectObserver.",
-      "size" : 21706,
-      "compressedSize" : 10750,
-      "required" : ["sap/ui/base/ManagedObject.js", "sap/ui/dt/ElementUtil.js", "ui5loader-autoconfig.js"],
+      "size" : 23338,
+      "compressedSize" : 11656,
+      "required" : ["sap/base/util/includes.js", "sap/ui/base/ManagedObject.js", "sap/ui/dt/ElementUtil.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/MetadataPropagationUtil.js",
       "description" : "Provides object sap.ui.dt.MetadataPropagationUtil.",
-      "size" : 9690,
-      "compressedSize" : 3371,
+      "size" : 9570,
+      "compressedSize" : 3322,
       "required" : ["sap/base/util/merge.js", "sap/ui/dt/Util.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/MutationObserver.js",
       "description" : "Provides class sap.ui.dt.MutationObserver.",
-      "size" : 7577,
-      "compressedSize" : 3721,
-      "required" : ["sap/ui/base/ManagedObject.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/Util.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "size" : 7498,
+      "compressedSize" : 3660,
+      "required" : ["sap/ui/base/ManagedObject.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/Util.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/Overlay.js",
       "description" : "global Map",
-      "size" : 25864,
-      "compressedSize" : 10271,
-      "required" : ["sap/base/Log.js", "sap/ui/core/Element.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/MutationObserver.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/ScrollbarSynchronizer.js", "sap/ui/dt/Util.js", "sap/ui/dt/util/getNextZIndex.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "size" : 26293,
+      "compressedSize" : 10470,
+      "required" : ["sap/base/Log.js", "sap/ui/core/Element.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/MutationObserver.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/ScrollbarSynchronizer.js", "sap/ui/dt/Util.js", "sap/ui/dt/util/ZIndexManager.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/OverlayRegistry.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 3237,
-      "compressedSize" : 1234,
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 3226,
+      "compressedSize" : 1199,
       "required" : ["sap/ui/base/ManagedObject.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/Util.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/OverlayUtil.js",
       "description" : "Provides object sap.ui.dt.OverlayUtil.",
-      "size" : 22986,
-      "compressedSize" : 6677,
+      "size" : 22168,
+      "compressedSize" : 6424,
       "required" : ["sap/ui/dt/ElementUtil.js", "sap/ui/dt/OverlayRegistry.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/Plugin.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 11075,
-      "compressedSize" : 2953,
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 11509,
+      "compressedSize" : 3293,
       "required" : ["sap/ui/base/ManagedObject.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/ScrollbarSynchronizer.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 5171,
-      "compressedSize" : 2366,
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 5130,
+      "compressedSize" : 2325,
       "required" : ["sap/ui/base/ManagedObject.js", "sap/ui/dt/DOMUtil.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/SelectionManager.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 7682,
-      "compressedSize" : 2503,
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 7630,
+      "compressedSize" : 2460,
       "required" : ["sap/base/util/includes.js", "sap/ui/base/ManagedObject.js", "sap/ui/dt/ElementOverlay.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/SelectionMode.js", "sap/ui/dt/Util.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/SelectionMode.js",
       "description" : "Initialization Code and shared classes of library sap.ui.dt.",
-      "size" : 801,
-      "compressedSize" : 271,
+      "size" : 763,
+      "compressedSize" : 236,
       "required" : ["ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/TaskManager.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 3118,
-      "compressedSize" : 1410,
-      "required" : ["sap/base/util/isPlainObject.js", "sap/ui/base/ManagedObject.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 3901,
+      "compressedSize" : 1638,
+      "required" : ["sap/base/util/isPlainObject.js", "sap/ui/base/ManagedObject.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/Util.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 9455,
-      "compressedSize" : 2714,
-      "required" : ["sap/base/util/includes.js", "sap/base/util/isPlainObject.js", "sap/ui/Device.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 11544,
+      "compressedSize" : 3251,
+      "required" : ["sap/base/util/includes.js", "sap/base/util/isPlainObject.js", "sap/ui/Device.js", "sap/ui/base/ManagedObject.js", "sap/ui/dt/DesignTimeStatus.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/designtime/library-preload.designtime.js",
+      "size" : 523,
+      "required" : ["ui5loader-autoconfig.js"],
+      "includes" : ["sap/ui/dt/designtime/notAdaptable.designtime.js", "sap/ui/dt/designtime/notRemovable.designtime.js"]
+    },
+    {
+      "name" : "sap/ui/dt/designtime/notAdaptable.designtime.js",
+      "description" : "Provides default Designtime for 'not-adaptable' scenario",
+      "size" : 315,
+      "compressedSize" : 223,
+      "required" : ["ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/designtime/notRemovable.designtime.js",
+      "description" : "Provides default Designtime for 'not-adaptable' scenario",
+      "size" : 332,
+      "compressedSize" : 232,
+      "required" : ["ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/enablement/ElementEnablementTest.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 8186,
+      "compressedSize" : 4559,
+      "required" : ["sap/base/util/ObjectPath.js", "sap/ui/dt/DesignTime.js", "sap/ui/dt/ElementOverlay.js", "sap/ui/dt/enablement/Test.js", "sap/ui/dt/enablement/Util.js", "sap/ui/qunit/utils/waitForThemeApplied.js", "sap/ui/thirdparty/jquery.js", "sap/ui/thirdparty/sinon-4.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/enablement/Test.js",
+      "description" : "Provides class sap.ui.dt.test.Test.",
+      "size" : 6187,
+      "compressedSize" : 2080,
+      "required" : ["sap/ui/base/ManagedObject.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/enablement/Util.js",
+      "description" : "Provides object sap.ui.dt.test.Element.",
+      "size" : 3193,
+      "compressedSize" : 1204,
+      "required" : ["sap/ui/dt/DOMUtil.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/OverlayRegistry.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/enablement/elementDesigntimeTest.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 668,
+      "compressedSize" : 410,
+      "required" : ["sap/ui/dt/enablement/ElementEnablementTest.js", "sap/ui/dt/enablement/report/QUnitReport.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/enablement/libraryTest.js",
+      "description" : "global QUnit",
+      "size" : 11364,
+      "compressedSize" : 5579,
+      "required" : ["sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/enablement/report/LibraryReport.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 3541,
+      "compressedSize" : 1294,
+      "required" : ["sap/ui/dt/enablement/ElementEnablementTest.js", "sap/ui/dt/enablement/Test.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/enablement/report/QUnitReport.js",
+      "description" : "global QUnit",
+      "size" : 2533,
+      "compressedSize" : 997,
+      "required" : ["sap/ui/base/ManagedObject.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/enablement/report/Statistic.js",
+      "description" : "Provides control sap.ui.dt.test.report.Statistic.",
+      "size" : 3189,
+      "compressedSize" : 1752,
+      "required" : ["sap/m/Label.js", "sap/m/Text.js", "sap/ui/core/Control.js", "sap/ui/layout/form/SimpleForm.js", "sap/ui/model/json/JSONModel.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/enablement/report/StatisticRenderer.js",
+      "description" : "Provides default renderer for control sap.ui.dt.enablement.report.Statistic",
+      "size" : 1022,
+      "compressedSize" : 405,
+      "required" : ["ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/enablement/report/Table.js",
+      "description" : "Provides control sap.ui.dt.test.report.Table.",
+      "size" : 5773,
+      "compressedSize" : 2940,
+      "required" : ["sap/m/Button.js", "sap/m/RatingIndicator.js", "sap/m/SearchField.js", "sap/m/Text.js", "sap/m/Toolbar.js", "sap/m/ToolbarSpacer.js", "sap/ui/core/Control.js", "sap/ui/model/json/JSONModel.js", "sap/ui/table/Column.js", "sap/ui/table/TreeTable.js", "ui5loader-autoconfig.js"],
+      "includes" : []
+    },
+    {
+      "name" : "sap/ui/dt/enablement/report/TableRenderer.js",
+      "description" : "Provides default renderer for control sap.ui.dt.enablement.report.Table",
+      "size" : 987,
+      "compressedSize" : 402,
+      "required" : ["ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/library-h2-preload.js",
-      "size" : 8077,
-      "required" : ["sap/base/Log.js", "sap/base/assert.js", "sap/base/util/ObjectPath.js", "sap/base/util/includes.js", "sap/base/util/isPlainObject.js", "sap/base/util/merge.js", "sap/m/Button.js", "sap/m/FlexItemData.js", "sap/m/HBox.js", "sap/m/Label.js", "sap/m/Popover.js", "sap/m/RatingIndicator.js", "sap/m/SearchField.js", "sap/m/Text.js", "sap/m/Title.js", "sap/m/Toolbar.js", "sap/m/ToolbarSpacer.js", "sap/m/VBox.js", "sap/ui/Device.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/Object.js", "sap/ui/core/BusyIndicator.js", "sap/ui/core/Component.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/Popup.js", "sap/ui/core/library.js", "sap/ui/dom/jquery/Selectors.js", "sap/ui/dom/jquery/rect.js", "sap/ui/dom/jquery/zIndex.js", "sap/ui/events/KeyCodes.js", "sap/ui/fl/registry/ChangeRegistry.js", "sap/ui/layout/form/SimpleForm.js", "sap/ui/model/Filter.js", "sap/ui/model/FilterOperator.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/table/Column.js", "sap/ui/table/TreeTable.js", "sap/ui/thirdparty/jquery.js", "sap/ui/unified/Menu.js", "ui5loader-autoconfig.js"],
-      "includes" : ["sap/ui/dt/library.js", "sap/ui/dt/manifest.json", "sap/ui/dt/AggregationDesignTimeMetadata.js", "sap/ui/dt/AggregationOverlay.js", "sap/ui/dt/ContextMenuControl.js", "sap/ui/dt/ControlObserver.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/DesignTime.js", "sap/ui/dt/DesignTimeMetadata.js", "sap/ui/dt/ElementDesignTimeMetadata.js", "sap/ui/dt/ElementOverlay.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/ManagedObjectObserver.js", "sap/ui/dt/MetadataPropagationUtil.js", "sap/ui/dt/MutationObserver.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/Plugin.js", "sap/ui/dt/ScrollbarSynchronizer.js", "sap/ui/dt/SelectionManager.js", "sap/ui/dt/SelectionMode.js", "sap/ui/dt/TaskManager.js", "sap/ui/dt/Util.js", "sap/ui/dt/plugin/ContextMenu.js", "sap/ui/dt/plugin/ControlDragDrop.js", "sap/ui/dt/plugin/CutPaste.js", "sap/ui/dt/plugin/DragDrop.js", "sap/ui/dt/plugin/ElementMover.js", "sap/ui/dt/plugin/MouseSelection.js", "sap/ui/dt/plugin/TabHandling.js", "sap/ui/dt/plugin/ToolHooks.js", "sap/ui/dt/test/Element.js", "sap/ui/dt/test/ElementEnablementTest.js", "sap/ui/dt/test/ElementEnablementTest2.js", "sap/ui/dt/test/LibraryEnablementTest.js", "sap/ui/dt/test/LibraryEnablementTest2.js", "sap/ui/dt/test/LibraryTest.js", "sap/ui/dt/test/Test.js", "sap/ui/dt/test/report/QUnit.js", "sap/ui/dt/test/report/Statistic.js", "sap/ui/dt/test/report/StatisticRenderer.js", "sap/ui/dt/test/report/Table.js", "sap/ui/dt/test/report/TableRenderer.js", "sap/ui/dt/util/getNextZIndex.js"]
+      "size" : 8164,
+      "required" : ["sap/base/Log.js", "sap/base/assert.js", "sap/base/util/ObjectPath.js", "sap/base/util/deepEqual.js", "sap/base/util/includes.js", "sap/base/util/isPlainObject.js", "sap/base/util/merge.js", "sap/m/Button.js", "sap/m/FlexItemData.js", "sap/m/HBox.js", "sap/m/InstanceManager.js", "sap/m/Label.js", "sap/m/Popover.js", "sap/m/RatingIndicator.js", "sap/m/SearchField.js", "sap/m/Text.js", "sap/m/Toolbar.js", "sap/m/ToolbarSpacer.js", "sap/m/VBox.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/ManagedObjectMetadata.js", "sap/ui/base/Object.js", "sap/ui/core/BusyIndicator.js", "sap/ui/core/Component.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/Popup.js", "sap/ui/core/library.js", "sap/ui/dom/jquery/Selectors.js", "sap/ui/dom/jquery/zIndex.js", "sap/ui/events/KeyCodes.js", "sap/ui/layout/form/SimpleForm.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/qunit/QUnitUtils.js", "sap/ui/qunit/utils/waitForThemeApplied.js", "sap/ui/table/Column.js", "sap/ui/table/TreeTable.js", "sap/ui/thirdparty/jquery.js", "sap/ui/thirdparty/sinon-4.js", "ui5loader-autoconfig.js"],
+      "includes" : ["sap/ui/dt/library.js", "sap/ui/dt/manifest.json", "sap/ui/dt/AggregationDesignTimeMetadata.js", "sap/ui/dt/AggregationOverlay.js", "sap/ui/dt/ContextMenuControl.js", "sap/ui/dt/ControlObserver.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/DesignTime.js", "sap/ui/dt/DesignTimeMetadata.js", "sap/ui/dt/DesignTimeStatus.js", "sap/ui/dt/ElementDesignTimeMetadata.js", "sap/ui/dt/ElementOverlay.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/ManagedObjectObserver.js", "sap/ui/dt/MetadataPropagationUtil.js", "sap/ui/dt/MutationObserver.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/Plugin.js", "sap/ui/dt/ScrollbarSynchronizer.js", "sap/ui/dt/SelectionManager.js", "sap/ui/dt/SelectionMode.js", "sap/ui/dt/TaskManager.js", "sap/ui/dt/Util.js", "sap/ui/dt/designtime/notAdaptable.designtime.js", "sap/ui/dt/designtime/notRemovable.designtime.js", "sap/ui/dt/enablement/ElementEnablementTest.js", "sap/ui/dt/enablement/Test.js", "sap/ui/dt/enablement/Util.js", "sap/ui/dt/enablement/elementDesigntimeTest.js", "sap/ui/dt/enablement/libraryTest.js", "sap/ui/dt/enablement/report/LibraryReport.js", "sap/ui/dt/enablement/report/QUnitReport.js", "sap/ui/dt/enablement/report/Statistic.js", "sap/ui/dt/enablement/report/StatisticRenderer.js", "sap/ui/dt/enablement/report/Table.js", "sap/ui/dt/enablement/report/TableRenderer.js", "sap/ui/dt/plugin/ContextMenu.js", "sap/ui/dt/plugin/ControlDragDrop.js", "sap/ui/dt/plugin/CutPaste.js", "sap/ui/dt/plugin/DragDrop.js", "sap/ui/dt/plugin/ElementMover.js", "sap/ui/dt/plugin/MouseSelection.js", "sap/ui/dt/plugin/TabHandling.js", "sap/ui/dt/plugin/ToolHooks.js", "sap/ui/dt/util/ZIndexManager.js"]
     },
     {
       "name" : "sap/ui/dt/library-preload.js",
-      "size" : 164019,
-      "required" : ["sap/base/Log.js", "sap/base/assert.js", "sap/base/util/ObjectPath.js", "sap/base/util/includes.js", "sap/base/util/isPlainObject.js", "sap/base/util/merge.js", "sap/m/Button.js", "sap/m/FlexItemData.js", "sap/m/HBox.js", "sap/m/Label.js", "sap/m/Popover.js", "sap/m/RatingIndicator.js", "sap/m/SearchField.js", "sap/m/Text.js", "sap/m/Title.js", "sap/m/Toolbar.js", "sap/m/ToolbarSpacer.js", "sap/m/VBox.js", "sap/ui/Device.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/Object.js", "sap/ui/core/BusyIndicator.js", "sap/ui/core/Component.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/Popup.js", "sap/ui/core/library.js", "sap/ui/dom/jquery/Selectors.js", "sap/ui/dom/jquery/rect.js", "sap/ui/dom/jquery/zIndex.js", "sap/ui/events/KeyCodes.js", "sap/ui/fl/registry/ChangeRegistry.js", "sap/ui/layout/form/SimpleForm.js", "sap/ui/model/Filter.js", "sap/ui/model/FilterOperator.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/table/Column.js", "sap/ui/table/TreeTable.js", "sap/ui/thirdparty/jquery.js", "sap/ui/unified/Menu.js", "ui5loader-autoconfig.js"],
-      "includes" : ["sap/ui/dt/AggregationDesignTimeMetadata.js", "sap/ui/dt/AggregationOverlay.js", "sap/ui/dt/ContextMenuControl.js", "sap/ui/dt/ControlObserver.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/DesignTime.js", "sap/ui/dt/DesignTimeMetadata.js", "sap/ui/dt/ElementDesignTimeMetadata.js", "sap/ui/dt/ElementOverlay.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/ManagedObjectObserver.js", "sap/ui/dt/MetadataPropagationUtil.js", "sap/ui/dt/MutationObserver.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/Plugin.js", "sap/ui/dt/ScrollbarSynchronizer.js", "sap/ui/dt/SelectionManager.js", "sap/ui/dt/SelectionMode.js", "sap/ui/dt/TaskManager.js", "sap/ui/dt/Util.js", "sap/ui/dt/library.js", "sap/ui/dt/manifest.json", "sap/ui/dt/plugin/ContextMenu.js", "sap/ui/dt/plugin/ControlDragDrop.js", "sap/ui/dt/plugin/CutPaste.js", "sap/ui/dt/plugin/DragDrop.js", "sap/ui/dt/plugin/ElementMover.js", "sap/ui/dt/plugin/MouseSelection.js", "sap/ui/dt/plugin/TabHandling.js", "sap/ui/dt/plugin/ToolHooks.js", "sap/ui/dt/test/Element.js", "sap/ui/dt/test/ElementEnablementTest.js", "sap/ui/dt/test/ElementEnablementTest2.js", "sap/ui/dt/test/LibraryEnablementTest.js", "sap/ui/dt/test/LibraryEnablementTest2.js", "sap/ui/dt/test/LibraryTest.js", "sap/ui/dt/test/Test.js", "sap/ui/dt/test/report/QUnit.js", "sap/ui/dt/test/report/Statistic.js", "sap/ui/dt/test/report/StatisticRenderer.js", "sap/ui/dt/test/report/Table.js", "sap/ui/dt/test/report/TableRenderer.js", "sap/ui/dt/util/getNextZIndex.js"]
+      "size" : 167477,
+      "required" : ["sap/base/Log.js", "sap/base/assert.js", "sap/base/util/ObjectPath.js", "sap/base/util/deepEqual.js", "sap/base/util/includes.js", "sap/base/util/isPlainObject.js", "sap/base/util/merge.js", "sap/m/Button.js", "sap/m/FlexItemData.js", "sap/m/HBox.js", "sap/m/InstanceManager.js", "sap/m/Label.js", "sap/m/Popover.js", "sap/m/RatingIndicator.js", "sap/m/SearchField.js", "sap/m/Text.js", "sap/m/Toolbar.js", "sap/m/ToolbarSpacer.js", "sap/m/VBox.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/ManagedObjectMetadata.js", "sap/ui/base/Object.js", "sap/ui/core/BusyIndicator.js", "sap/ui/core/Component.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/Popup.js", "sap/ui/core/library.js", "sap/ui/dom/jquery/Selectors.js", "sap/ui/dom/jquery/zIndex.js", "sap/ui/events/KeyCodes.js", "sap/ui/layout/form/SimpleForm.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/qunit/QUnitUtils.js", "sap/ui/qunit/utils/waitForThemeApplied.js", "sap/ui/table/Column.js", "sap/ui/table/TreeTable.js", "sap/ui/thirdparty/jquery.js", "sap/ui/thirdparty/sinon-4.js", "ui5loader-autoconfig.js"],
+      "includes" : ["sap/ui/dt/AggregationDesignTimeMetadata.js", "sap/ui/dt/AggregationOverlay.js", "sap/ui/dt/ContextMenuControl.js", "sap/ui/dt/ControlObserver.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/DesignTime.js", "sap/ui/dt/DesignTimeMetadata.js", "sap/ui/dt/DesignTimeStatus.js", "sap/ui/dt/ElementDesignTimeMetadata.js", "sap/ui/dt/ElementOverlay.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/ManagedObjectObserver.js", "sap/ui/dt/MetadataPropagationUtil.js", "sap/ui/dt/MutationObserver.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/Plugin.js", "sap/ui/dt/ScrollbarSynchronizer.js", "sap/ui/dt/SelectionManager.js", "sap/ui/dt/SelectionMode.js", "sap/ui/dt/TaskManager.js", "sap/ui/dt/Util.js", "sap/ui/dt/enablement/ElementEnablementTest.js", "sap/ui/dt/enablement/Test.js", "sap/ui/dt/enablement/Util.js", "sap/ui/dt/enablement/elementDesigntimeTest.js", "sap/ui/dt/enablement/libraryTest.js", "sap/ui/dt/enablement/report/LibraryReport.js", "sap/ui/dt/enablement/report/QUnitReport.js", "sap/ui/dt/enablement/report/Statistic.js", "sap/ui/dt/enablement/report/StatisticRenderer.js", "sap/ui/dt/enablement/report/Table.js", "sap/ui/dt/enablement/report/TableRenderer.js", "sap/ui/dt/library.js", "sap/ui/dt/manifest.json", "sap/ui/dt/plugin/ContextMenu.js", "sap/ui/dt/plugin/ControlDragDrop.js", "sap/ui/dt/plugin/CutPaste.js", "sap/ui/dt/plugin/DragDrop.js", "sap/ui/dt/plugin/ElementMover.js", "sap/ui/dt/plugin/MouseSelection.js", "sap/ui/dt/plugin/TabHandling.js", "sap/ui/dt/plugin/ToolHooks.js", "sap/ui/dt/util/ZIndexManager.js"]
     },
     {
       "name" : "sap/ui/dt/library-preload.json",
       "size" : 0,
-      "required" : ["sap/base/Log.js", "sap/base/assert.js", "sap/base/util/ObjectPath.js", "sap/base/util/includes.js", "sap/base/util/isPlainObject.js", "sap/base/util/merge.js", "sap/m/Button.js", "sap/m/FlexItemData.js", "sap/m/HBox.js", "sap/m/Label.js", "sap/m/Popover.js", "sap/m/RatingIndicator.js", "sap/m/SearchField.js", "sap/m/Text.js", "sap/m/Title.js", "sap/m/Toolbar.js", "sap/m/ToolbarSpacer.js", "sap/m/VBox.js", "sap/ui/Device.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/Object.js", "sap/ui/core/BusyIndicator.js", "sap/ui/core/Component.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/Popup.js", "sap/ui/core/library-preload.json", "sap/ui/core/library.js", "sap/ui/dom/jquery/Selectors.js", "sap/ui/dom/jquery/rect.js", "sap/ui/dom/jquery/zIndex.js", "sap/ui/events/KeyCodes.js", "sap/ui/fl/registry/ChangeRegistry.js", "sap/ui/layout/form/SimpleForm.js", "sap/ui/model/Filter.js", "sap/ui/model/FilterOperator.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/table/Column.js", "sap/ui/table/TreeTable.js", "sap/ui/thirdparty/jquery.js", "sap/ui/unified/Menu.js", "ui5loader-autoconfig.js"],
-      "includes" : ["sap/ui/dt/AggregationDesignTimeMetadata.js", "sap/ui/dt/AggregationOverlay.js", "sap/ui/dt/ContextMenuControl.js", "sap/ui/dt/ControlObserver.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/DesignTime.js", "sap/ui/dt/DesignTimeMetadata.js", "sap/ui/dt/ElementDesignTimeMetadata.js", "sap/ui/dt/ElementOverlay.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/ManagedObjectObserver.js", "sap/ui/dt/MetadataPropagationUtil.js", "sap/ui/dt/MutationObserver.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/Plugin.js", "sap/ui/dt/ScrollbarSynchronizer.js", "sap/ui/dt/SelectionManager.js", "sap/ui/dt/SelectionMode.js", "sap/ui/dt/TaskManager.js", "sap/ui/dt/Util.js", "sap/ui/dt/library.js", "sap/ui/dt/manifest.json", "sap/ui/dt/plugin/ContextMenu.js", "sap/ui/dt/plugin/ControlDragDrop.js", "sap/ui/dt/plugin/CutPaste.js", "sap/ui/dt/plugin/DragDrop.js", "sap/ui/dt/plugin/ElementMover.js", "sap/ui/dt/plugin/MouseSelection.js", "sap/ui/dt/plugin/TabHandling.js", "sap/ui/dt/plugin/ToolHooks.js", "sap/ui/dt/test/Element.js", "sap/ui/dt/test/ElementEnablementTest.js", "sap/ui/dt/test/ElementEnablementTest2.js", "sap/ui/dt/test/LibraryEnablementTest.js", "sap/ui/dt/test/LibraryEnablementTest2.js", "sap/ui/dt/test/LibraryTest.js", "sap/ui/dt/test/Test.js", "sap/ui/dt/test/report/QUnit.js", "sap/ui/dt/test/report/Statistic.js", "sap/ui/dt/test/report/StatisticRenderer.js", "sap/ui/dt/test/report/Table.js", "sap/ui/dt/test/report/TableRenderer.js", "sap/ui/dt/util/getNextZIndex.js"]
+      "required" : ["sap/base/Log.js", "sap/base/assert.js", "sap/base/util/ObjectPath.js", "sap/base/util/deepEqual.js", "sap/base/util/includes.js", "sap/base/util/isPlainObject.js", "sap/base/util/merge.js", "sap/m/Button.js", "sap/m/FlexItemData.js", "sap/m/HBox.js", "sap/m/InstanceManager.js", "sap/m/Label.js", "sap/m/Popover.js", "sap/m/RatingIndicator.js", "sap/m/SearchField.js", "sap/m/Text.js", "sap/m/Toolbar.js", "sap/m/ToolbarSpacer.js", "sap/m/VBox.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/base/ManagedObject.js", "sap/ui/base/ManagedObjectMetadata.js", "sap/ui/base/Object.js", "sap/ui/core/BusyIndicator.js", "sap/ui/core/Component.js", "sap/ui/core/Control.js", "sap/ui/core/Element.js", "sap/ui/core/Popup.js", "sap/ui/core/library-preload.json", "sap/ui/core/library.js", "sap/ui/dom/jquery/Selectors.js", "sap/ui/dom/jquery/zIndex.js", "sap/ui/events/KeyCodes.js", "sap/ui/layout/form/SimpleForm.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/qunit/QUnitUtils.js", "sap/ui/qunit/utils/waitForThemeApplied.js", "sap/ui/table/Column.js", "sap/ui/table/TreeTable.js", "sap/ui/thirdparty/jquery.js", "sap/ui/thirdparty/sinon-4.js", "ui5loader-autoconfig.js"],
+      "includes" : ["sap/ui/dt/AggregationDesignTimeMetadata.js", "sap/ui/dt/AggregationOverlay.js", "sap/ui/dt/ContextMenuControl.js", "sap/ui/dt/ControlObserver.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/DesignTime.js", "sap/ui/dt/DesignTimeMetadata.js", "sap/ui/dt/DesignTimeStatus.js", "sap/ui/dt/ElementDesignTimeMetadata.js", "sap/ui/dt/ElementOverlay.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/ManagedObjectObserver.js", "sap/ui/dt/MetadataPropagationUtil.js", "sap/ui/dt/MutationObserver.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/Plugin.js", "sap/ui/dt/ScrollbarSynchronizer.js", "sap/ui/dt/SelectionManager.js", "sap/ui/dt/SelectionMode.js", "sap/ui/dt/TaskManager.js", "sap/ui/dt/Util.js", "sap/ui/dt/enablement/ElementEnablementTest.js", "sap/ui/dt/enablement/Test.js", "sap/ui/dt/enablement/Util.js", "sap/ui/dt/enablement/elementDesigntimeTest.js", "sap/ui/dt/enablement/libraryTest.js", "sap/ui/dt/enablement/report/LibraryReport.js", "sap/ui/dt/enablement/report/QUnitReport.js", "sap/ui/dt/enablement/report/Statistic.js", "sap/ui/dt/enablement/report/StatisticRenderer.js", "sap/ui/dt/enablement/report/Table.js", "sap/ui/dt/enablement/report/TableRenderer.js", "sap/ui/dt/library.js", "sap/ui/dt/manifest.json", "sap/ui/dt/plugin/ContextMenu.js", "sap/ui/dt/plugin/ControlDragDrop.js", "sap/ui/dt/plugin/CutPaste.js", "sap/ui/dt/plugin/DragDrop.js", "sap/ui/dt/plugin/ElementMover.js", "sap/ui/dt/plugin/MouseSelection.js", "sap/ui/dt/plugin/TabHandling.js", "sap/ui/dt/plugin/ToolHooks.js", "sap/ui/dt/util/ZIndexManager.js"]
     },
     {
       "name" : "sap/ui/dt/library.js",
       "description" : "Initialization Code and shared classes of library sap.ui.dt.",
-      "size" : 931,
-      "compressedSize" : 467,
-      "required" : ["sap/ui/core/library.js", "sap/ui/dt/SelectionMode.js", "ui5loader-autoconfig.js"],
+      "size" : 1148,
+      "compressedSize" : 628,
+      "required" : ["sap/ui/base/ManagedObjectMetadata.js", "sap/ui/core/library.js", "sap/ui/dt/SelectionMode.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
@@ -210,170 +328,74 @@
     },
     {
       "name" : "sap/ui/dt/plugin/ContextMenu.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 22168,
-      "compressedSize" : 10139,
-      "required" : ["sap/base/assert.js", "sap/base/util/merge.js", "sap/ui/Device.js", "sap/ui/dt/ContextMenuControl.js", "sap/ui/dt/Plugin.js", "sap/ui/dt/Util.js", "sap/ui/events/KeyCodes.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 23272,
+      "compressedSize" : 10605,
+      "required" : ["sap/base/assert.js", "sap/ui/Device.js", "sap/ui/dt/ContextMenuControl.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/Plugin.js", "sap/ui/dt/Util.js", "sap/ui/events/KeyCodes.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/plugin/ControlDragDrop.js",
       "description" : "Provides class sap.ui.dt.plugin.ControlDragDrop.",
-      "size" : 4691,
-      "compressedSize" : 2345,
-      "required" : ["sap/ui/dt/ElementUtil.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/plugin/DragDrop.js", "sap/ui/dt/plugin/ElementMover.js", "ui5loader-autoconfig.js"],
+      "size" : 4458,
+      "compressedSize" : 2202,
+      "required" : ["sap/ui/dt/plugin/DragDrop.js", "sap/ui/dt/plugin/ElementMover.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/plugin/CutPaste.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 6918,
-      "compressedSize" : 3549,
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 6852,
+      "compressedSize" : 3470,
       "required" : ["sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/Plugin.js", "sap/ui/dt/plugin/ElementMover.js", "sap/ui/events/KeyCodes.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/plugin/DragDrop.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 23681,
-      "compressedSize" : 12078,
-      "required" : ["sap/ui/base/Object.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/Plugin.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 23935,
+      "compressedSize" : 11975,
+      "required" : ["sap/ui/base/Object.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/OverlayUtil.js", "sap/ui/dt/Plugin.js", "sap/ui/qunit/QUnitUtils.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/plugin/ElementMover.js",
       "description" : "Provides class sap.ui.dt.plugin.ElementMover.",
-      "size" : 10556,
-      "compressedSize" : 3656,
+      "size" : 11198,
+      "compressedSize" : 3765,
       "required" : ["sap/ui/base/ManagedObject.js", "sap/ui/base/Object.js", "sap/ui/dt/DOMUtil.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/OverlayUtil.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/plugin/MouseSelection.js",
       "description" : "Provides class sap.ui.dt.plugin.MouseSelection.",
-      "size" : 2039,
-      "compressedSize" : 782,
+      "size" : 1946,
+      "compressedSize" : 747,
       "required" : ["sap/ui/dt/Plugin.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/plugin/TabHandling.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 3377,
-      "compressedSize" : 1693,
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 3284,
+      "compressedSize" : 1658,
       "required" : ["sap/ui/dom/jquery/Selectors.js", "sap/ui/dt/Overlay.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/dt/Plugin.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/ui/dt/plugin/ToolHooks.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 1487,
-      "compressedSize" : 607,
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 1387,
+      "compressedSize" : 572,
       "required" : ["sap/ui/dt/Plugin.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
-      "name" : "sap/ui/dt/test/Element.js",
-      "description" : "Provides object sap.ui.dt.test.Element.",
-      "size" : 3267,
-      "compressedSize" : 1268,
-      "required" : ["sap/ui/dt/DOMUtil.js", "sap/ui/dt/ElementUtil.js", "sap/ui/dt/OverlayRegistry.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/test/ElementEnablementTest.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 8253,
-      "compressedSize" : 4620,
-      "required" : ["sap/base/util/ObjectPath.js", "sap/ui/dt/DesignTime.js", "sap/ui/dt/test/Element.js", "sap/ui/dt/test/Test.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/test/ElementEnablementTest2.js",
-      "description" : "Provides class sap.ui.dt.test.ElementEnablementTest.",
-      "size" : 4440,
-      "compressedSize" : 1765,
-      "required" : ["sap/base/util/ObjectPath.js", "sap/ui/base/ManagedObject.js", "sap/ui/dt/test/Element.js", "sap/ui/fl/registry/ChangeRegistry.js", "ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/test/LibraryEnablementTest.js",
-      "description" : "Provides class sap.ui.dt.test.LibraryEnablementTest.",
-      "size" : 3705,
-      "compressedSize" : 1351,
-      "required" : ["sap/ui/dt/test/ElementEnablementTest.js", "sap/ui/dt/test/Test.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/test/LibraryEnablementTest2.js",
-      "description" : "Provides class sap.ui.dt.test.LibraryEnablementTest.",
-      "size" : 3995,
-      "compressedSize" : 1814,
-      "required" : ["sap/ui/base/ManagedObject.js", "sap/ui/dt/test/ElementEnablementTest2.js", "ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/test/LibraryTest.js",
-      "description" : "Provides class sap.ui.dt.test.LibraryTest.",
-      "size" : 10536,
-      "compressedSize" : 5616,
-      "required" : ["sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/test/Test.js",
-      "description" : "Provides class sap.ui.dt.test.Test.",
-      "size" : 6237,
-      "compressedSize" : 2129,
-      "required" : ["sap/ui/base/ManagedObject.js", "ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/test/report/QUnit.js",
-      "description" : "global QUnit",
-      "size" : 2560,
-      "compressedSize" : 1025,
-      "required" : ["sap/ui/base/ManagedObject.js", "ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/test/report/Statistic.js",
-      "description" : "Provides control sap.ui.dt.test.report.Statistic.",
-      "size" : 3231,
-      "compressedSize" : 1840,
-      "required" : ["sap/m/Label.js", "sap/m/Text.js", "sap/ui/core/Control.js", "sap/ui/dt/test/report/StatisticRenderer.js", "sap/ui/layout/form/SimpleForm.js", "sap/ui/model/json/JSONModel.js", "ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/test/report/StatisticRenderer.js",
-      "description" : "Provides default renderer for control sap.ui.dt.test.report.Statistic",
-      "size" : 1076,
-      "compressedSize" : 445,
-      "required" : ["ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/test/report/Table.js",
-      "description" : "Provides control sap.ui.dt.test.report.Table.",
-      "size" : 5799,
-      "compressedSize" : 3073,
-      "required" : ["sap/m/Button.js", "sap/m/RatingIndicator.js", "sap/m/SearchField.js", "sap/m/Text.js", "sap/m/Title.js", "sap/m/Toolbar.js", "sap/m/ToolbarSpacer.js", "sap/ui/core/Control.js", "sap/ui/dt/test/report/TableRenderer.js", "sap/ui/model/Filter.js", "sap/ui/model/FilterOperator.js", "sap/ui/model/json/JSONModel.js", "sap/ui/table/Column.js", "sap/ui/table/TreeTable.js", "ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/test/report/TableRenderer.js",
-      "description" : "Provides default renderer for control sap.ui.dt.test.report.Table",
-      "size" : 1041,
-      "compressedSize" : 442,
-      "required" : ["ui5loader-autoconfig.js"],
-      "includes" : []
-    },
-    {
-      "name" : "sap/ui/dt/util/getNextZIndex.js",
-      "description" : "! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 3794,
-      "compressedSize" : 646,
-      "required" : ["sap/base/Log.js", "sap/ui/core/BusyIndicator.js", "sap/ui/core/Popup.js", "ui5loader-autoconfig.js"],
+      "name" : "sap/ui/dt/util/ZIndexManager.js",
+      "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
+      "size" : 6735,
+      "compressedSize" : 1504,
+      "required" : ["sap/base/Log.js", "sap/base/util/includes.js", "sap/m/InstanceManager.js", "sap/ui/core/BusyIndicator.js", "sap/ui/core/Popup.js", "sap/ui/dt/Util.js", "ui5loader-autoconfig.js"],
       "includes" : []
     }
   ]

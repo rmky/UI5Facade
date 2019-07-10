@@ -2146,39 +2146,47 @@
 					"M": "E d LLL تا E d LLL"
 				},
 				"y": {
-					"y": "y تا y G"
+					"y": "y تا y G",
+					"G": "y G تا y G"
 				},
 				"yM": {
 					"M": "y/M تا y/M G",
-					"y": "y/M تا y/M G"
+					"y": "y/M تا y/M G",
+					"G": "y/M G تا y/M G"
 				},
 				"yMd": {
 					"d": "y/M/d تا y/M/d G",
 					"M": "y/M/d تا y/M/d G",
-					"y": "y/M/d تا y/M/d G"
+					"y": "y/M/d تا y/M/d G",
+					"G": "y/M/d G تا y/M/d G"
 				},
 				"yMEd": {
 					"d": "E y/M/d تا E y/M/d G",
 					"M": "E y/M/d تا E y/M/d G",
-					"y": "E y/M/d تا E y/M/d G"
+					"y": "E y/M/d تا E y/M/d G",
+					"G": "E y/M/d G تا E y/M/d G"
 				},
 				"yMMM": {
 					"M": "LLL تا MMM y G",
-					"y": "MMM y تا MMM y G"
+					"y": "MMM y تا MMM y G",
+					"G": "MMM y G تا MMM y G"
 				},
 				"yMMMd": {
 					"d": "d تا d MMM y G",
 					"M": "d LLL تا d MMM y G",
-					"y": "d MMM y تا d MMM y G"
+					"y": "d MMM y تا d MMM y G",
+					"G": "d MMM y G تا d MMM y G"
 				},
 				"yMMMEd": {
 					"d": "E d LLL تا E d MMM y G",
 					"M": "E d LLL تا E d MMM y G",
-					"y": "E d MMM y تا E d MMM y G"
+					"y": "E d MMM y تا E d MMM y G",
+					"G": "E d MMM y G تا E d MMM y G"
 				},
 				"yMMMM": {
 					"M": "LLLL تا MMMM y G",
-					"y": "MMMM y تا MMMM y G"
+					"y": "MMMM y تا MMMM y G",
+					"G": "MMMM y G تا MMMM y G"
 				}
 			}
 		},
@@ -2426,19 +2434,22 @@
 			"232": "Meiji",
 			"233": "Taishō",
 			"234": "Shōwa",
-			"235": "Heisei"
+			"235": "هیسه‌ای",
+			"236": "ریوا"
 		},
 		"era-abbreviated": {
 			"232": "Meiji",
 			"233": "Taishō",
 			"234": "Shōwa",
-			"235": "Heisei"
+			"235": "هیسه‌ای",
+			"236": "ریوا"
 		},
 		"era-narrow": {
 			"232": "M",
 			"233": "T",
 			"234": "S",
-			"235": "H"
+			"235": "H",
+			"236": "R"
 		}
 	},
 	"ca-persian": {
@@ -3776,6 +3787,12 @@
 			}
 		}
 	},
+	"miscPattern": {
+		"approximately": "~{0}",
+		"atLeast": "‎{0}+‎",
+		"atMost": "≤{0}",
+		"range": "{0}–{1}"
+	},
 	"currencyFormat-short": {
 		"1000-one": "0 هزار ‪¤‬",
 		"1000-other": "0 هزار ‪¤‬",
@@ -4698,6 +4715,9 @@
 		},
 		"235": {
 			"_start": "1989-1-8"
+		},
+		"236": {
+			"_start": "2019-5-1"
 		}
 	},
 	"calendarPreference": "persian gregorian islamic islamic-civil islamic-tbla"

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -109,9 +109,7 @@ sap.ui.define([
 		 * Changes the selection based on the given click event on the given row selector, data cell or row action cell.
 		 */
 		_handleClickSelection: function(oEvent, $Cell, oTable) {
-
 			TableUtils.toggleRowSelection(oTable, $Cell, null, function(iRowIndex) {
-
 				// IE and Edge perform a text selection if holding shift while clicking. This is not desired for range selection of rows.
 				if ((Device.browser.msie || Device.browser.edge) && oEvent.shiftKey) {
 					oTable._clearTextSelection();
@@ -119,57 +117,40 @@ sap.ui.define([
 
 				var oSelMode = oTable.getSelectionMode();
 
+				// Single selection
 				if (oSelMode === SelectionMode.Single) {
 					if (!oTable.isIndexSelected(iRowIndex)) {
 						oTable.setSelectedIndex(iRowIndex);
 					} else {
 						oTable.clearSelection();
 					}
-				} else {
-					var bCtrl = !!(oEvent.metaKey || oEvent.ctrlKey);
 
-					// in case of multi toggle behavior a click on the row selection
-					// header adds or removes the selected row and the previous selection
-					// will not be removed
-					if (oSelMode === SelectionMode.MultiToggle) {
-						bCtrl = true;
+				// Multi selection (range)
+				} else if (oEvent.shiftKey) {
+					// If no row is selected, getSelectedIndex returns -1. Then we simply select the clicked row.
+					var iSelectedIndex = oTable.getSelectedIndex();
+					if (iSelectedIndex >= 0) {
+						oTable.addSelectionInterval(iSelectedIndex, iRowIndex);
+					} else if (oTable._getSelectedIndicesCount() === 0) {
+						oTable.setSelectedIndex(iRowIndex);
 					}
 
-					if (oEvent.shiftKey) {
-						// If no row is selected getSelectedIndex returns -1 - then we simply
-						// select the clicked row:
-						var iSelectedIndex = oTable.getSelectedIndex();
-						if (iSelectedIndex >= 0) {
-							oTable.addSelectionInterval(iSelectedIndex, iRowIndex);
-						} else {
-							oTable.setSelectedIndex(iRowIndex);
-						}
+				// Multi selection (toggle)
+				} else if (!oTable._legacyMultiSelection) {
+					if (!oTable.isIndexSelected(iRowIndex)) {
+						oTable.addSelectionInterval(iRowIndex, iRowIndex);
 					} else {
-						if (!oTable.isIndexSelected(iRowIndex)) {
-							if (bCtrl) {
-								oTable.addSelectionInterval(iRowIndex, iRowIndex);
-							} else {
-								oTable.setSelectedIndex(iRowIndex);
-							}
-						} else {
-							if (bCtrl) {
-								oTable.removeSelectionInterval(iRowIndex, iRowIndex);
-							} else {
-								if (oTable._getSelectedIndicesCount() === 1) {
-									oTable.clearSelection();
-								} else {
-									oTable.setSelectedIndex(iRowIndex);
-								}
-							}
-						}
+						oTable.removeSelectionInterval(iRowIndex, iRowIndex);
 					}
+
+				// Multi selection (legacy)
+				} else {
+					oTable._legacyMultiSelection(iRowIndex, oEvent);
 				}
 
 				return true;
 			});
-
 		}
-
 	};
 
 	/*
@@ -313,7 +294,7 @@ sap.ui.define([
 		_calculateAutomaticColumnWidth: function(oCol, iColIndex) {
 			oCol = oCol || this.getColumns()[iColIndex];
 			var $this = this.$();
-			var $hiddenArea = jQuery("<div>").addClass("sapUiTableHiddenSizeDetector");
+			var $hiddenArea = jQuery("<div>").addClass("sapUiTableHiddenSizeDetector sapUiTableHeaderDataCell sapUiTableDataCell");
 			$this.append($hiddenArea);
 
 			// Create a copy of  all visible cells in the column, including the header cells without colspan
@@ -321,7 +302,7 @@ sap.ui.define([
 							  .filter(function(index, element) {
 								  return element.style.display != "none";
 							  }).children().clone();
-			$cells.find("[id]").removeAttr("id"); // remove all id attributes
+			$cells.removeAttr("id"); // remove all id attributes
 
 			// Determine the column width
 			var iWidth = $hiddenArea.append($cells).width() + 4; // widest cell + 4px for borders, padding and rounding
@@ -707,7 +688,7 @@ sap.ui.define([
 	var RowHoverHandler = {
 
 		ROWAREAS: [
-			".sapUiTableRowHdr", ".sapUiTableRowAction", ".sapUiTableCtrlFixed > tbody > .sapUiTableTr",
+			".sapUiTableRowSelectionCell", ".sapUiTableRowActionCell", ".sapUiTableCtrlFixed > tbody > .sapUiTableTr",
 			".sapUiTableCtrlScroll > tbody > .sapUiTableTr"
 		],
 
@@ -728,12 +709,20 @@ sap.ui.define([
 
 		_onHover: function(oTable, $Table, sArea, oElem) {
 			var iIndex = $Table.find(sArea).index(oElem);
-			oTable.getRows()[iIndex]._setHovered(true);
+			var oRow = oTable.getRows()[iIndex];
+
+			if (oRow) {
+				oRow._setHovered(true);
+			}
 		},
 
 		_onUnhover: function(oTable, $Table, sArea, oElem) {
 			var iIndex = $Table.find(sArea).index(oElem);
-			oTable.getRows()[iIndex]._setHovered(false);
+			var oRow = oTable.getRows()[iIndex];
+
+			if (oRow) {
+				oRow._setHovered(false);
+			}
 		}
 
 	};
@@ -766,7 +755,7 @@ sap.ui.define([
 					ColumnResizeHelper.initColumnResizing(this, oEvent);
 
 				} else if ($Target.hasClass("sapUiTableColResizer")) { // mousedown on mobile column resize button
-					var iColIndex = $Target.closest(".sapUiTableCol").attr("data-sap-ui-colindex");
+					var iColIndex = $Target.closest(".sapUiTableHeaderCell").attr("data-sap-ui-colindex");
 					this._iLastHoveredColumnIndex = parseInt(iColIndex);
 					ColumnResizeHelper.initColumnResizing(this, oEvent);
 
@@ -866,8 +855,7 @@ sap.ui.define([
 				return;
 			} else if ($Target.hasClass("sapUiTableGroupMenuButton")) {
 				// Analytical Table: Mobile Group Menu Button in Grouping rows
-				this._onContextMenu(oEvent);
-				oEvent.preventDefault();
+				this.oncontextmenu(oEvent);
 				return;
 			} else if ($Target.hasClass("sapUiTableGroupIcon") || $Target.hasClass("sapUiTableTreeIcon")) {
 				// Grouping Row: Toggle grouping
@@ -893,7 +881,11 @@ sap.ui.define([
 				// forward the event
 				if (!this._findAndfireCellEvent(this.fireCellClick, oEvent)) {
 					if (oCellInfo.isOfType(TableUtils.CELLTYPE.COLUMNROWHEADER)) {
-						this._toggleSelectAll();
+						if (this._oSelectionPlugin.onHeaderSelectorPress) {
+							this._oSelectionPlugin.onHeaderSelectorPress();
+						} else {
+							this._toggleSelectAll();
+						}
 					} else {
 						ExtensionHelper._handleClickSelection(oEvent, $Cell, this);
 					}
@@ -932,7 +924,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles mouse and touch related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension
@@ -984,7 +976,7 @@ sap.ui.define([
 
 				// Cleans up the basic event handling for row hover effect
 				$Table.find(".sapUiTableCtrl > tbody > tr").unbind();
-				$Table.find(".sapUiTableRowHdr").unbind();
+				$Table.find(".sapUiTableRowSelectionCell").unbind();
 			}
 		},
 

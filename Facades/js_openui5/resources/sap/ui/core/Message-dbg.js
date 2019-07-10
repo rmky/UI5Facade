@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,13 +20,13 @@ sap.ui.define(['./Element', './library', "sap/base/Log"],
 	 * @param {object} [mSettings] initial settings for the new control
 	 *
 	 * @class
-	 * This element used to provide messages. Rendering must be done within the control that uses this kind of element.
+	 * This element is used to provide messages.
 	 *
-	 * Its default level is none.
+	 * Rendering must be done within the control that uses this kind of element. Its default level is none.
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @public
 	 * @alias sap.ui.core.Message

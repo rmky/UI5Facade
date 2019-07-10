@@ -67,11 +67,9 @@
 				"sap/tnt/NavigationListRenderer.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/delegate/ItemNavigation.js"
-			],
-			"condRequired": [
-				"sap/tnt/NavigationListItem.js"
 			]
 		},
 		{
@@ -88,11 +86,9 @@
 				"sap/tnt/NavigationListRenderer.js",
 				"sap/tnt/library.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/delegate/ItemNavigation.js"
-			],
-			"condRequired": [
-				"sap/tnt/NavigationListItem.js"
 			]
 		},
 		{
@@ -102,8 +98,10 @@
 			"required": [
 				"sap/tnt/NavigationList.js",
 				"sap/tnt/library.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
+				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/Item.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/events/KeyCodes.js"
@@ -119,8 +117,10 @@
 			"required": [
 				"sap/tnt/NavigationList.js",
 				"sap/tnt/library.js",
+				"sap/ui/core/Core.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
+				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/Item.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/events/KeyCodes.js"
@@ -311,6 +311,8 @@
 				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
@@ -354,6 +356,8 @@
 				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
@@ -401,6 +405,8 @@
 				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",
@@ -449,6 +455,8 @@
 				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/InvisibleText.js",

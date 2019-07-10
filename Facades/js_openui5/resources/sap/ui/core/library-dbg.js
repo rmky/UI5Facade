@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.core",
-		version: "1.61.2",
+		version: "1.67.1",
 		designtime: "sap/ui/core/designtime/library.designtime",
 		types: [
 
@@ -45,6 +45,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 			"sap.ui.core.ID",
 			"sap.ui.core.IconColor",
 			"sap.ui.core.ImeMode",
+			"sap.ui.core.IndicationColor",
 			"sap.ui.core.MessageType",
 			"sap.ui.core.OpenState",
 			"sap.ui.core.Orientation",
@@ -86,7 +87,6 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 			"sap.ui.core.LocalBusyIndicator",
 			"sap.ui.core.ScrollBar",
 			"sap.ui.core.TooltipBase",
-			"sap.ui.core.UIComponent",
 			"sap.ui.core.XMLComposite",
 			"sap.ui.core.mvc.HTMLView",
 			"sap.ui.core.mvc.JSONView",
@@ -95,8 +95,8 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 			"sap.ui.core.mvc.View",
 			"sap.ui.core.mvc.XMLView",
 			"sap.ui.core.tmpl.DOMElement",
-			"sap.ui.core.tmpl.Template",
-			"sap.ui.core.tmpl.TemplateControl"
+			"sap.ui.core.tmpl.TemplateControl",
+			"sap.ui.core.util.Export"
 		],
 		elements: [
 			"sap.ui.core.CustomData",
@@ -114,7 +114,8 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 			"sap.ui.core.dnd.DragDropInfo",
 			"sap.ui.core.search.OpenSearchProvider",
 			"sap.ui.core.search.SearchProvider",
-			"sap.ui.core.tmpl.DOMAttribute"
+			"sap.ui.core.tmpl.DOMAttribute",
+			"sap.ui.core.util.ExportCell"
 		],
 		extensions: {
 			"sap.ui.support" : {
@@ -147,7 +148,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	 * @namespace
 	 * @alias sap.ui.core
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @public
 	 */
 	var thisLib = sap.ui.core;
@@ -694,7 +695,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	};
 
 	/**
-	 * Configuration options for the colors of a progress bar
+	 * Configuration options for the colors of a progress bar.
 	 *
 	 * @enum {string}
 	 * @public
@@ -729,7 +730,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	};
 
 	/**
-	 * Configuration options for the BusyIndicator size
+	 * Configuration options for the <code>BusyIndicator</code> size.
 	 *
 	 * @enum {string}
 	 * @public
@@ -896,7 +897,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 
 
 	/**
-	 * Font design for texts
+	 * Font design for texts.
 	 *
 	 * @enum {string}
 	 * @public
@@ -943,7 +944,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 
 
 	/**
-	 * Configuration options for horizontal alignments of controls
+	 * Configuration options for horizontal alignments of controls.
 	 *
 	 * @enum {string}
 	 * @public
@@ -985,7 +986,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 
 
 	/**
-	 * @classdesc A string type representing an Id or a name.
+	 * @classdesc A string type representing an ID or a name.
 	 *
 	 * Allowed is a sequence of characters (capital/lowercase), digits, underscores, dashes, points and/or colons.
 	 * It may start with a character or underscore only.
@@ -1115,9 +1116,53 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
 	 */
 
+	/**
+	 * Colors to highlight certain UI elements.
+	 *
+	 * In contrast to the <code>ValueState</code>, the semantic meaning must be defined by the application.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.62.0
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.IndicationColor = {
+
+		/**
+		 * Indication Color 1
+		 * @public
+		 */
+		Indication01 : "Indication01",
+
+		/**
+		 * Indication Color 2
+		 * @public
+		 */
+		Indication02 : "Indication02",
+
+		/**
+		 * Indication Color 3
+		 * @public
+		 */
+		Indication03 : "Indication03",
+
+		/**
+		 * Indication Color 4
+		 * @public
+		 */
+		Indication04 : "Indication04",
+
+		/**
+		 * Indication Color 5
+		 * @public
+		 */
+		Indication05 : "Indication05"
+
+	};
+
 
 	/**
-	 * Defines the different message types of a message
+	 * Defines the different message types.
 	 *
 	 * @enum {string}
 	 * @public
@@ -1196,7 +1241,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 
 
 	/**
-	 * Orientation of a UI element
+	 * Orientation of a UI element.
 	 *
 	 * @enum {string}
 	 * @public
@@ -1285,7 +1330,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 
 
 	/**
-	 * Actions are: Click on track, button, drag of thumb, or mouse wheel click
+	 * Actions are: Click on track, button, drag of thumb, or mouse wheel click.
 	 *
 	 * @enum {string}
 	 * @public
@@ -1357,9 +1402,9 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 
 
 	/**
-	 * Sort order of a column
+	 * Sort order of a column.
 	 *
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @enum {string}
 	 * @public
 	 * @since 1.61.0
@@ -1535,7 +1580,8 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 
 	/**
 	 * Marker interface for controls that can serve as a context menu.
-	 * Implementation of this interface should implement <li><code>openAsContextMenu</code></li> method.
+	 *
+	 * Implementation of this interface should implement the <code>openAsContextMenu</code> method.
 	 *
 	 * @name sap.ui.core.IContextMenu
 	 * @interface
@@ -1570,6 +1616,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	 * @name sap.ui.core.IDScope
 	 * @interface
 	 * @private
+	 * @ui5-restricted
 	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
 	 */
 
@@ -1586,8 +1633,9 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	/**
 	 * Opens the control by given opener ref.
 	 * @param {string} oEvent oncontextmenu event
-	 * @param {sap.ui.core.Element|DOMRef} oOpenerRef The element which will get the focus back again after the menu was closed.
+	 * @param {sap.ui.core.Element|Element} oOpenerRef The element which will get the focus back again after the menu was closed.
 	 *
+	 * @public
 	 * @function
 	 * @name sap.ui.core.IContextMenu.openAsContextMenu
 	 */
@@ -1607,15 +1655,19 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	 */
 
 	/**
-	 * In the <code>Form</code> control all content controls are positioned on a grid cell base. By default
+	 * Whether a control wants to keep its original width even when used in a <code>Form</code>.
+	 *
+	 * In the <code>Form</code> control, all content controls are positioned on a grid cell base. By default,
 	 * the controls use the full width of the used grid cell. But for some controls (like image controls),
 	 * this is not the desired behavior. In this case the control must keep its original width.
+	 *
+	 * This is an optional method. When not defined, the width of the control might be adjusted.
 	 *
 	 * @return {boolean} true if the <code>Form</code> is not allowed to adjust the width of the control to use the cell's width
 	 * @since 1.48.0
 	 * @public
 	 * @function
-	 * @name sap.ui.core.IFormContent.getFormDoNotAdjustWidth
+	 * @name sap.ui.core.IFormContent.getFormDoNotAdjustWidth?
 	 */
 
 	/**
@@ -1855,7 +1907,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	thisLib.mvc = thisLib.mvc || {};
 
 	/**
-	 * Specifies possible view types
+	 * Specifies possible view types.
 	 *
 	 * @enum {string}
 	 * @public
@@ -1899,7 +1951,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	thisLib.routing = thisLib.routing || {};
 
 	/**
-	 * Enumaration for different HistoryDirections
+	 * Enumaration for different HistoryDirections.
 	 *
 	 * @enum {string}
 	 * @public
@@ -2005,8 +2057,8 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 
 	each("sap.ui.model.", ["Filter","Sorter","json.JSONModel","resource.ResourceModel","odata.ODataModel","odata.v2.ODataModel","odata.v4.ODataModel","xml.XMLModel"]);
 	each("sap.ui.model.type.", ["Boolean","Integer","Float","String","Date","Time","DateTime","FileSize","Currency","Unit","DateInterval", "DateTimeInterval", "TimeInterval"]);
-	each("sap.ui.model.odata.type.", ["Boolean","Byte","Date","DateTime","DateTimeOffset","Double","Decimal","Guid","Int16","Int32","Int64","Raw","SByte","Single","Stream","String","Time","TimeOfDay"]);
-	each("sap.ui.core.", ["Locale","LocaleData","mvc.Controller"]);
+	each("sap.ui.model.odata.type.", ["Boolean","Byte","Currency","Date","DateTime","DateTimeOffset","Double","Decimal","Guid","Int16","Int32","Int64","Raw","SByte","Single","Stream","String","Time","TimeOfDay","Unit"]);
+	each("sap.ui.core.", ["Locale","LocaleData","mvc.Controller", "UIComponent"]);
 	each("sap.ui.core.mvc.", ["Controller", "View", "JSView", "JSONView", "XMLView", "HTMLView", "TemplateView"], "sap.ui");
 	each("sap.ui.core.", ["Component"], "sap.ui");
 	each("sap.ui.core.tmpl.", ["Template"], "sap.ui");

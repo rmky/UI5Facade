@@ -108,7 +108,9 @@
 			"isDebug": true,
 			"required": [
 				"sap/base/Log.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/layout/BlockLayoutCellData.js",
 				"sap/ui/layout/BlockLayoutCellRenderer.js",
 				"sap/ui/layout/library.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -123,7 +125,9 @@
 			"module": "sap/ui/layout/BlockLayoutCell.js",
 			"required": [
 				"sap/base/Log.js",
+				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
+				"sap/ui/layout/BlockLayoutCellData.js",
 				"sap/ui/layout/BlockLayoutCellRenderer.js",
 				"sap/ui/layout/library.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -977,6 +981,10 @@
 			]
 		},
 		{
+			"name": "cssgrid/GridBasicLayout.control",
+			"designtime": true
+		},
+		{
 			"name": "cssgrid/GridBasicLayout.js",
 			"module": "sap/ui/layout/cssgrid/GridBasicLayout.js",
 			"required": [
@@ -1106,6 +1114,23 @@
 			"module": "sap/ui/layout/cssgrid/GridSettings.js",
 			"required": [
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/layout/library.js"
+			]
+		},
+		{
+			"name": "cssgrid/VirtualGrid-dbg.js",
+			"module": "sap/ui/layout/cssgrid/VirtualGrid.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/base/Object.js",
+				"sap/ui/layout/library.js"
+			]
+		},
+		{
+			"name": "cssgrid/VirtualGrid.js",
+			"module": "sap/ui/layout/cssgrid/VirtualGrid.js",
+			"required": [
+				"sap/ui/base/Object.js",
 				"sap/ui/layout/library.js"
 			]
 		},
@@ -1296,6 +1321,7 @@
 			"module": "sap/ui/layout/designtime/form/SimpleForm.designtime.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
 			]
 		},
@@ -1304,6 +1330,7 @@
 			"module": "sap/ui/layout/designtime/form/SimpleForm.designtime.js",
 			"designtime": true,
 			"required": [
+				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js"
 			]
 		},
@@ -1316,6 +1343,7 @@
 			"merged": true,
 			"designtime": true,
 			"required": [
+				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/changeHandler/ChangeHandlerMediator.js",
 				"sap/ui/layout/form/Form.js",
 				"sap/ui/layout/form/FormContainer.js",
@@ -2359,6 +2387,7 @@
 				"sap/ui/layout/cssgrid/GridLayoutDelegate.js",
 				"sap/ui/layout/cssgrid/GridResponsiveLayout.js",
 				"sap/ui/layout/cssgrid/GridSettings.js",
+				"sap/ui/layout/cssgrid/VirtualGrid.js",
 				"sap/ui/layout/designtime/BlockLayout.designtime.js",
 				"sap/ui/layout/designtime/BlockLayoutCell.designtime.js",
 				"sap/ui/layout/designtime/BlockLayoutRow.designtime.js",
@@ -2493,6 +2522,7 @@
 				"sap/ui/layout/cssgrid/GridLayoutDelegate.js",
 				"sap/ui/layout/cssgrid/GridResponsiveLayout.js",
 				"sap/ui/layout/cssgrid/GridSettings.js",
+				"sap/ui/layout/cssgrid/VirtualGrid.js",
 				"sap/ui/layout/designtime/BlockLayout.designtime.js",
 				"sap/ui/layout/designtime/BlockLayoutCell.designtime.js",
 				"sap/ui/layout/designtime/BlockLayoutRow.designtime.js",
@@ -2628,6 +2658,7 @@
 				"sap/ui/layout/cssgrid/GridLayoutDelegate.js",
 				"sap/ui/layout/cssgrid/GridResponsiveLayout.js",
 				"sap/ui/layout/cssgrid/GridSettings.js",
+				"sap/ui/layout/cssgrid/VirtualGrid.js",
 				"sap/ui/layout/flexibility/BlockLayoutCell.flexibility.js",
 				"sap/ui/layout/flexibility/Form.flexibility.js",
 				"sap/ui/layout/flexibility/FormContainer.flexibility.js",
@@ -2750,6 +2781,7 @@
 				"sap/ui/layout/cssgrid/GridLayoutDelegate.js",
 				"sap/ui/layout/cssgrid/GridResponsiveLayout.js",
 				"sap/ui/layout/cssgrid/GridSettings.js",
+				"sap/ui/layout/cssgrid/VirtualGrid.js",
 				"sap/ui/layout/flexibility/BlockLayoutCell.flexibility.js",
 				"sap/ui/layout/flexibility/Form.flexibility.js",
 				"sap/ui/layout/flexibility/FormContainer.flexibility.js",

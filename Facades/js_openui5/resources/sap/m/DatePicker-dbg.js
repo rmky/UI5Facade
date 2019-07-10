@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -50,8 +50,13 @@ sap.ui.define([
 	// shortcut for sap.ui.core.CalendarType
 	var CalendarType = coreLibrary.CalendarType;
 
+	var oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
+
 	// lazy dependency to sap/ui/unified/Calendar
 	var Calendar;
+
+	// lazy dependency to sap/ui/unified/DateRange
+	var DateRange;
 
 	/**
 	 * Constructor for a new <code>DatePicker</code>.
@@ -130,7 +135,7 @@ sap.ui.define([
 	 * the close event), or select Cancel.
 	 *
 	 * @extends sap.m.DateTimeField
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -218,12 +223,18 @@ sap.ui.define([
 					/**
 					 * Date range containing the start and end date displayed in the <code>Calendar</code> popup.
 					 */
-					dateRange : {type : "sap.ui.unified.DateRange"}
+					dateRange : {type : "sap.ui.unified.DateRange"},
+
+					/**
+					 * Indicates if the event is fired, due to popup being opened.
+					 */
+					afterPopupOpened : {type : "boolean"}
 
 				}
 			}
 		},
-		designtime: "sap/m/designtime/DatePicker.designtime"
+		designtime: "sap/m/designtime/DatePicker.designtime",
+		dnd: { draggable: false, droppable: true }
 	}});
 
 
@@ -285,7 +296,7 @@ sap.ui.define([
 			id: this.getId() + "-icon",
 			src: this.getIconSrc(),
 			noTabStop: true,
-			title: ""
+			tooltip: oResourceBundle.getText("OPEN_PICKER_TEXT")
 		});
 
 		// idicates whether the picker is still open
@@ -301,6 +312,19 @@ sap.ui.define([
 		oIcon.attachPress(function () {
 			this.toggleOpen(this._bShouldClosePicker);
 		}, this);
+
+		this._popupFollowOf = _popupFollowOf.bind(this);
+	};
+
+	/**
+	 * Returns if the last entered value is valid.
+	 *
+	 * @returns {boolean}
+	 * @public
+	 * @since 1.64
+	 */
+	DatePicker.prototype.isValidValue = function() {
+		return this._bValid;
 	};
 
 	/**
@@ -374,7 +398,7 @@ sap.ui.define([
 		var oValueHelpIcon = this._getValueHelpIcon();
 
 		if (oValueHelpIcon) {
-			oValueHelpIcon.setProperty("visible", this.getEnabled(), true);
+			oValueHelpIcon.setProperty("visible", this.getEditable(), true);
 		}
 	};
 
@@ -557,6 +581,7 @@ sap.ui.define([
 			this._oMinDate = new Date(oDate.getTime());
 			var oDateValue = this.getDateValue();
 			if (oDateValue && oDateValue.getTime() < oDate.getTime()) {
+				this._bValid = false;
 				Log.warning("DateValue not in valid date range", this);
 			}
 		} else {
@@ -596,6 +621,7 @@ sap.ui.define([
 			this._oMaxDate = new Date(oDate.getTime());
 			var oDateValue = this.getDateValue();
 			if (oDateValue && oDateValue.getTime() > oDate.getTime()) {
+				this._bValid = false;
 				Log.warning("DateValue not in valid date", this);
 			}
 		} else {
@@ -635,6 +661,7 @@ sap.ui.define([
 
 		if (oDateValue &&
 			(oDateValue.getTime() < this._oMinDate.getTime() || oDateValue.getTime() > this._oMaxDate.getTime())) {
+			this._bValid = false;
 			Log.error("dateValue " + oDateValue.toString() + "(value=" + this.getValue() + ") does not match " +
 				"min/max date range(" + this._oMinDate.toString() + " - " + this._oMaxDate.toString() + "). App. " +
 				"developers should take care to maintain dateValue/value accordingly.", this);
@@ -972,7 +999,8 @@ sap.ui.define([
 
 		// Fire navigate event when the calendar popup opens
 		this.fireNavigate({
-			dateRange: this._getVisibleDatesRange(this._oCalendar)
+			dateRange: this._getVisibleDatesRange(this._oCalendar),
+			afterPopupOpened: true
 		});
 
 	}
@@ -1005,13 +1033,54 @@ sap.ui.define([
 		var sAt;
 		if (this.getTextAlign() == TextAlign.End) {
 			sAt = eDock.EndBottom + "-4"; // as m.Input has some padding around
-			this._oPopup.open(0, eDock.EndTop, sAt, this, null, "fit", true);
+			this._oPopup.open(0, eDock.EndTop, sAt, this, null, "fit", this._popupFollowOf);
 		}else {
 			sAt = eDock.BeginBottom + "-4"; // as m.Input has some padding around
-			this._oPopup.open(0, eDock.BeginTop, sAt, this, null, "fit", true);
+			this._oPopup.open(0, eDock.BeginTop, sAt, this, null, "fit", this._popupFollowOf);
+		}
+	};
+
+	function _popupFollowOf(oPopupPosition) {
+		var oOfDom = this.getDomRef();
+		if (!oOfDom || !jQuery(oOfDom).is(":visible") || !_isElementInViewport(oOfDom)) {
+			this._oPopup.close();
+		} else {
+			this._oPopup._applyPosition(oPopupPosition.lastPosition);
+		}
+	}
+
+	function _isElementInViewport(oDomElement) {
+		var mRect;
+
+		if (!oDomElement) {
+			return false;
 		}
 
-	};
+		if (oDomElement instanceof jQuery) {
+			oDomElement = oDomElement.get(0);
+		}
+
+		mRect = oDomElement.getBoundingClientRect();
+
+		return (
+			mRect.top >= 0 &&
+			mRect.left >= 0 &&
+			mRect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+			mRect.right <= (window.innerWidth || document.documentElement.clientWidth)
+		);
+	}
+
+	/*
+	 * helper to resolve lazy dependencies
+	 * TODO: should act asynchronously
+	 */
+	function resolveDependenciesToUnified() {
+		if ( !Calendar || !DateRange ) {
+			sap.ui.getCore().loadLibrary("sap.ui.unified");
+			Calendar = sap.ui.requireSync("sap/ui/unified/Calendar");
+			DateRange = sap.ui.requireSync("sap/ui/unified/DateRange");
+		}
+	}
 
 	/**
 	 * Creates a DateRange with the first and the last visible days in the calendar popup.
@@ -1022,8 +1091,10 @@ sap.ui.define([
 	DatePicker.prototype._getVisibleDatesRange = function (oCalendar) {
 		var aVisibleDays = oCalendar._getVisibleDays();
 
+		resolveDependenciesToUnified();
+
 		// Convert to local JavaScript Date
-		return new sap.ui.unified.DateRange({
+		return new DateRange({
 			startDate: aVisibleDays[0].toLocalJSDate(), // First visible date
 			endDate: aVisibleDays[aVisibleDays.length - 1].toLocalJSDate() // Last visible date
 		});
@@ -1033,10 +1104,7 @@ sap.ui.define([
 	DatePicker.prototype._createPopupContent = function(){
 
 		if (!this._oCalendar) {
-			if ( !Calendar ) {
-				sap.ui.getCore().loadLibrary("sap.ui.unified");
-				Calendar = sap.ui.requireSync("sap/ui/unified/Calendar");
-			}
+			resolveDependenciesToUnified();
 			this._oCalendar = new Calendar(this.getId() + "-cal", {
 				intervalSelection: this._bIntervalSelection,
 				minDate: this.getMinDate(),
@@ -1048,7 +1116,7 @@ sap.ui.define([
 						});
 					}.bind(this)
 				});
-			this._oDateRange = new sap.ui.unified.DateRange();
+			this._oDateRange = new DateRange();
 			this._oCalendar.addSelectedDate(this._oDateRange);
 			if (this.$().closest(".sapUiSizeCompact").length > 0) {
 				this._oCalendar.addStyleClass("sapUiSizeCompact");
@@ -1112,7 +1180,7 @@ sap.ui.define([
 				sValue = this._formatValue(oDate);
 			}
 		}
-		oInfo.type = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("ACC_CTR_TYPE_DATEINPUT");
+		oInfo.type = oResourceBundle.getText("ACC_CTR_TYPE_DATEINPUT");
 		oInfo.description = [sValue, oRenderer.getLabelledByAnnouncement(this), oRenderer.getDescribedByAnnouncement(this)].join(" ").trim();
 		return oInfo;
 	};
@@ -1129,10 +1197,7 @@ sap.ui.define([
 			// compare Dates because value can be the same if only 2 digits for year
 			sValue = this.getValue();
 			this.fireChangeEvent(sValue, {valid: true});
-			if (this.getDomRef() && (Device.system.desktop || !Device.support.touch)) { // as control could be destroyed during update binding
-				this._curpos = this._$input.val().length;
-				this._$input.cursorPos(this._curpos);
-			}
+			this._focusInput();
 		}else if (!this._bValid){
 			// wrong input before open calendar
 			sValue = this._formatValue(oDate);
@@ -1147,6 +1212,7 @@ sap.ui.define([
 				sValue = this._formatValue(oDate, true);
 				this.setProperty("value", sValue, true); // no rerendering
 				this.fireChangeEvent(sValue, {valid: true});
+				this._focusInput();
 			}
 		} else if (Device.system.desktop || !Device.support.touch) {
 			this.focus();
@@ -1154,6 +1220,17 @@ sap.ui.define([
 
 		// close popup and focus input after change event to allow application to reset value state or similar things
 		this._oPopup.close();
+
+	};
+
+	/* sets cursor inside the input in order to focus it */
+	DatePicker.prototype._focusInput = function(){
+
+		if (this.getDomRef() && (Device.system.desktop || !Device.support.touch)) { // as control could be destroyed during update binding
+			this._curpos = this._$input.val().length;
+			this._$input.cursorPos(this._curpos);
+		}
+		return this;
 
 	};
 

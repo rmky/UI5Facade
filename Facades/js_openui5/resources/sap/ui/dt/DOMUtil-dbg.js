@@ -1,14 +1,14 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides object sap.ui.dt.DOMUtil.
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
-	'sap/ui/Device',
-	'sap/ui/dt/Util',
+	"sap/ui/Device",
+	"sap/ui/dt/Util",
 	// jQuery Plugin "zIndex"
 	"sap/ui/dom/jquery/zIndex"
 ],
@@ -26,7 +26,7 @@ function(
 	 * Utility functionality for DOM
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @private
 	 * @static
@@ -76,8 +76,8 @@ function(
 		};
 
 		if (mParentOffset) {
-			mOffset.left -= (mParentOffset.left - (iScrollLeft ? iScrollLeft : 0));
-			mOffset.top -= (mParentOffset.top - (iScrollTop ? iScrollTop : 0));
+			mOffset.left -= (mParentOffset.left - (iScrollLeft || 0));
+			mOffset.top -= (mParentOffset.top - (iScrollTop || 0));
 		}
 
 		if (sap.ui.getCore().getConfiguration().getRTL()) {
@@ -112,7 +112,7 @@ function(
 		}
 		// Blink (Chrome) considers zero scrollLeft when the scrollBar is all the way to the left
 		// and moves positively to the right
-		if (Device.browser.blink){
+		if (Device.browser.blink) {
 			var iMaxScrollValue = oElement.scrollWidth - oElement.clientWidth;
 			return iScrollLeft - iMaxScrollValue;
 		// Internet Explorer considers zero scrollLeft when the scrollbar is all the way
@@ -121,9 +121,9 @@ function(
 			return -iScrollLeft;
 		// Firefox (Gecko) & Safari (Webkit) consider zero scrollLeft when the scrollbar is
 		// all the way to the right (initial position) and moves negatively to the left [desired behavior]
-		} else {
-			return iScrollLeft;
 		}
+
+		return iScrollLeft;
 	};
 
 	/**
@@ -280,10 +280,10 @@ function(
 
 			// normal selector
 			return $domRef.find(sCSSSelector);
-		} else {
-			// empty jQuery object for typing
-			return jQuery();
 		}
+
+		// empty jQuery object for typing
+		return jQuery();
 	};
 
 	/**
@@ -374,7 +374,7 @@ function(
 		oDest = jQuery(oDest).get(0);
 		var mStyles = window.getComputedStyle(oSrc);
 
-		if (mStyles.getPropertyValue("display") == "none") {
+		if (mStyles.getPropertyValue("display") === "none") {
 			oDest.style.display = "none";
 			return;
 		}
@@ -404,7 +404,7 @@ function(
 		jQuery(oDest).attr("data-sap-ui", "");
 		jQuery(oDest).attr("for", "");
 
-		jQuery(oDest).attr("tabIndex", -1);
+		jQuery(oDest).attr("tabindex", -1);
 		this.copyComputedStyle(oSrc, oDest);
 	};
 
@@ -454,6 +454,41 @@ function(
 		oTargetNode.appendChild(oChildNode);
 		oChildNode.scrollTop = iScrollTop;
 		oChildNode.scrollLeft = iScrollLeft;
+	};
+
+	/**
+	 * Set the Focus to the DOM Element without scrolling
+	 * @param {HTMLElement} oTargetNode - Target node to whom focus should be set
+	 */
+	DOMUtil.focusWithoutScrolling = function (oTargetNode) {
+		// Only for Newer Devices
+		if (Device.browser.name !== "ie") {
+			oTargetNode.focus({preventScroll: true});
+			return;
+		}
+
+		var aScrollHierarchy = [];
+		var oParentNode = oTargetNode.parentNode;
+
+		while (oParentNode) {
+			aScrollHierarchy.push([oParentNode, oParentNode.scrollLeft, oParentNode.scrollTop]);
+			oParentNode = oParentNode.parentNode;
+		}
+
+		oTargetNode.focus();
+
+		aScrollHierarchy.forEach(function (oItem) {
+			var oElementNode = oItem[0];
+
+			// Check first to avoid triggering unnecessary `scroll` events
+			if (oElementNode.scrollLeft !== oItem[1]) {
+				oElementNode.scrollLeft = oItem[1];
+			}
+
+			if (oElementNode.scrollTop !== oItem[2]) {
+				oElementNode.scrollTop = oItem[2];
+			}
+		});
 	};
 
 	return DOMUtil;

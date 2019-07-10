@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -151,7 +151,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 * @since 1.56.0
 		 * @alias sap.ui.core.XMLComposite
 		 * @see {@link topic:b83a4dcb7d0e46969027345b8d32fd44 XML Composite Controls}
@@ -428,9 +428,12 @@ sap.ui.define([
 				}
 				oNewContent.bindObject("$" + this.alias + ">/");//first define the context
 				oNewContent.setModel(this._oManagedObjectModel, "$" + this.alias);//then set the model
-				var oResourceModel = this._getResourceModel();
-				if (oResourceModel) {
-					oNewContent.setModel(oResourceModel, "$" + this.alias + ".i18n");
+
+				if (this.bUsesI18n) {
+					var oResourceModel = this._getResourceModel();
+					if (oResourceModel) {
+						oNewContent.setModel(oResourceModel, "$" + this.alias + ".i18n");
+					}
 				}
 			}
 			this.setAggregation(sCompositeName, oNewContent);
@@ -522,6 +525,9 @@ sap.ui.define([
 					delete mSettings[sAggregationName];
 				}
 			}
+
+			var sFragment = oFragmentContent ? (new XMLSerializer()).serializeToString(oFragmentContent) : undefined;
+			this.bUsesI18n = sFragment ? (sFragment.indexOf("$" + this.alias + ".i18n") != -1) : true;
 
 			this._setCompositeAggregation(sap.ui.xmlfragment({
 				sId: this.getId(),

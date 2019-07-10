@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,7 +12,8 @@ sap.ui.define([
 	'sap/ui/model/TreeBindingUtils',
 	"sap/base/assert",
 	"sap/base/Log",
-	"sap/ui/thirdparty/jquery"
+	"sap/base/util/each",
+	"sap/base/util/isEmptyObject"
 ],
 	function(
 		TreeBinding,
@@ -21,7 +22,8 @@ sap.ui.define([
 		TreeBindingUtils,
 		assert,
 		Log,
-		jQuery
+		each,
+		isEmptyObject
 	) {
 		"use strict";
 
@@ -459,7 +461,7 @@ sap.ui.define([
 				var that = this;
 
 				//if we have a missing section inside a subtree, we need to reload this subtree
-				jQuery.each(mMissingSections, function (sGroupID, oNode) {
+				each(mMissingSections, function (sGroupID, oNode) {
 					// reset the root of the subtree
 					oNode.magnitude = 0;
 					oNode.numberOfTotals = 0;
@@ -883,7 +885,7 @@ sap.ui.define([
 
 				// Collapse all subsequent child nodes, this is determined by a common groupID prefix, e.g.: "/A100-50/" is the parent of "/A100-50/Finance/"
 				// All expanded nodes which start with 'sGroupIDforCollapsingNode', are basically children of it and also need to be collapsed
-				jQuery.each(this._mTreeState.expanded, function (sGroupID, oNodeState) {
+				each(this._mTreeState.expanded, function (sGroupID, oNodeState) {
 					if (typeof sGroupIDforCollapsingNode == "string" && sGroupIDforCollapsingNode.length > 0 && sGroupID.startsWith(sGroupIDforCollapsingNode)) {
 						that._updateTreeState({groupID: sGroupID, expanded: false});
 					}
@@ -892,7 +894,7 @@ sap.ui.define([
 				var aDeselectedNodeIds = [];
 
 				// always remove selections from child nodes of the collapsed node
-				jQuery.each(this._mTreeState.selected, function (sGroupID, oNodeState) {
+				each(this._mTreeState.selected, function (sGroupID, oNodeState) {
 					if (typeof sGroupIDforCollapsingNode == "string" && sGroupIDforCollapsingNode.length > 0 && sGroupID.startsWith(sGroupIDforCollapsingNode) && sGroupID !== sGroupIDforCollapsingNode) {
 						//removes the selectAllMode from child nodes
 						oNodeState.selectAllMode = false;
@@ -944,7 +946,7 @@ sap.ui.define([
 
 			//collapse all expanded nodes if they sit on the same level as the one the user wants to collapse to
 			var that = this;
-			jQuery.each(this._mTreeState.expanded, function (sGroupID, oNodeState) {
+			each(this._mTreeState.expanded, function (sGroupID, oNodeState) {
 				var iNodeLevel = that._getGroupIdLevel(sGroupID) - 1;
 				if (iNodeLevel === iLevel) {
 					that.collapse(oNodeState, true);
@@ -1158,7 +1160,7 @@ sap.ui.define([
 		 */
 		TreeBindingAdapter.prototype.getSelectedIndex = function () {
 			//if we have no nodes selected, the lead selection index is -1
-			if (!this._sLeadSelectionGroupID || jQuery.isEmptyObject(this._mTreeState.selected)) {
+			if (!this._sLeadSelectionGroupID || isEmptyObject(this._mTreeState.selected)) {
 				return -1;
 			}
 
@@ -1190,7 +1192,7 @@ sap.ui.define([
 			var that = this;
 
 			//if we have no nodes selected, the selection indices are empty
-			if (jQuery.isEmptyObject(this._mTreeState.selected)) {
+			if (isEmptyObject(this._mTreeState.selected)) {
 				return aResultIndices;
 			}
 
@@ -1305,7 +1307,7 @@ sap.ui.define([
 			var that = this;
 
 			//if we have no nodes selected, the selection indices are empty
-			if (jQuery.isEmptyObject(this._mTreeState.selected)) {
+			if (isEmptyObject(this._mTreeState.selected)) {
 				return aResultContexts;
 			}
 

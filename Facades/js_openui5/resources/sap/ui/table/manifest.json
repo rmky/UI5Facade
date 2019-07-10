@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.61.2"
+      "version": "1.67.1"
     },
     "title": "Table-like controls, mainly for desktop scenarios.",
     "description": "Table-like controls, mainly for desktop scenarios.",
@@ -22,13 +22,13 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.61",
+      "minUI5Version": "1.67",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.61.2"
+          "minVersion": "1.67.1"
         },
         "sap.ui.unified": {
-          "minVersion": "1.61.2"
+          "minVersion": "1.67.1"
         }
       }
     },
@@ -39,6 +39,7 @@
           "sap.ui.table.AnalyticalColumnMenu",
           "sap.ui.table.AnalyticalTable",
           "sap.ui.table.ColumnMenu",
+          "sap.ui.table.CreationRow",
           "sap.ui.table.Table",
           "sap.ui.table.TreeTable",
           "sap.ui.table.RowAction"
@@ -48,7 +49,9 @@
           "sap.ui.table.Column",
           "sap.ui.table.Row",
           "sap.ui.table.RowActionItem",
-          "sap.ui.table.RowSettings"
+          "sap.ui.table.RowSettings",
+          "sap.ui.table.plugins.MultiSelectionPlugin",
+          "sap.ui.table.plugins.SelectionPlugin"
         ],
         "types": [
           "sap.ui.table.NavigationMode",
@@ -57,7 +60,6 @@
           "sap.ui.table.SelectionMode",
           "sap.ui.table.SortOrder",
           "sap.ui.table.VisibleRowCountMode",
-          "sap.ui.table.SharedDomRef",
           "sap.ui.table.TreeAutoExpandMode"
         ],
         "interfaces": []

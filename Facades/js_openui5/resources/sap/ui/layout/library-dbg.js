@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,29 +20,37 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.layout
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.layout",
-		version: "1.61.2",
+		version: "1.67.1",
 		dependencies: ["sap.ui.core"],
 		designtime: "sap/ui/layout/designtime/library.designtime",
 		types: [
 			"sap.ui.layout.BackgroundDesign",
+			"sap.ui.layout.BlockBackgroundType",
+			"sap.ui.layout.BlockLayoutCellColorSet",
+			"sap.ui.layout.BlockLayoutCellColorShade",
+			"sap.ui.layout.BlockRowColorSets",
+			"sap.ui.layout.BoxesPerRowConfig",
 			"sap.ui.layout.GridIndent",
 			"sap.ui.layout.GridPosition",
 			"sap.ui.layout.GridSpan",
-			"sap.ui.layout.BlockBackgroundType",
-			"sap.ui.layout.form.GridElementCells",
-			"sap.ui.layout.form.SimpleFormLayout",
+			"sap.ui.layout.SideContentFallDown",
+			"sap.ui.layout.SideContentPosition",
+			"sap.ui.layout.SideContentVisibility",
 			"sap.ui.layout.form.ColumnsXL",
 			"sap.ui.layout.form.ColumnsL",
 			"sap.ui.layout.form.ColumnsM",
 			"sap.ui.layout.form.ColumnCells",
 			"sap.ui.layout.form.EmptyCells",
+			"sap.ui.layout.form.GridElementCells",
+			"sap.ui.layout.form.SimpleFormLayout",
+			"sap.ui.layout.cssgrid.CSSGridAutoFlow",
 			"sap.ui.layout.cssgrid.CSSGridTrack",
 			"sap.ui.layout.cssgrid.CSSGridLine",
 			"sap.ui.layout.cssgrid.CSSGridGapShortHand"
@@ -74,6 +82,7 @@ sap.ui.define([
 			"sap.ui.layout.cssgrid.CSSGrid"
 		],
 		elements: [
+			"sap.ui.layout.BlockLayoutCellData",
 			"sap.ui.layout.GridData",
 			"sap.ui.layout.ResponsiveFlowLayoutData",
 			"sap.ui.layout.SplitterLayoutData",
@@ -474,7 +483,19 @@ sap.ui.define([
 			 *
 			 * @public
 			 */
-			ShadeD: "ShadeD"
+			ShadeD: "ShadeD",
+			/**
+			 * Shade E - available only for Fiori 3 theme
+			 *
+			 * @public
+			 */
+			ShadeE: "ShadeE",
+			/**
+			 * Shade F - available only for Fiori 3 theme
+			 *
+			 * @public
+			 */
+			ShadeF: "ShadeF"
 		};
 
 
@@ -810,6 +831,7 @@ sap.ui.define([
 	/**
 	 * @classdesc A string type that represents a short hand CSS grid gap.
 	 *
+	 * @see {@link https://developer.mozilla.org/en-US/docs/Web/CSS/gap}
 	 * @since 1.60.0
 	 * @public
 	 * @namespace
@@ -840,17 +862,19 @@ sap.ui.define([
 	 * @classdesc A string type that represents one or two grid lines. Used to define the position and size of a single grid item.
 	 *
 	 * Valid values:
-	 * auto
-	 * inherit
-	 * 1
-	 * span 2
-	 * span 2 / 5
-	 * span 2 / -5
-	 * 5 / 7
-	 * 7 / span 5
-	 * span 7 / span 5
+	 * <ul>
+	 * <li>auto</li>
+	 * <li>inherit</li>
+	 * <li>1</li>
+	 * <li>span 2</li>
+	 * <li>span 2 / 5</li>
+	 * <li>span 2 / -5</li>
+	 * <li>5 / 7</li>
+	 * <li>7 / span 5</li>
+	 * <li>span 7 / span 5</li>
+	 * </ul>
 	 *
-	 * @see {@link https://developer.mozilla.org/en-US/docs/Glossary/Grid_lines}
+	 * @see {@link https://developer.mozilla.org/en-US/docs/Glossary/Grid_lines MDN web docs: grid lines}
 	 * @since 1.60.0
 	 * @public
 	 * @namespace

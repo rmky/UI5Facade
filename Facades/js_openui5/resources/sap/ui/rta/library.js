@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['sap/ui/core/Core','sap/ui/core/library','sap/m/library','sap/ui/fl/library','sap/ui/dt/library'],function(C,c){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.rta",version:"1.61.2",dependencies:["sap.ui.core","sap.m","sap.ui.fl","sap.ui.dt"],types:[],interfaces:[],controls:[],elements:[]});return sap.ui.rta;});
+sap.ui.define(["sap/ui/core/Core","sap/ui/core/library","sap/m/library","sap/ui/fl/library","sap/ui/dt/library"],function(){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.rta",version:"1.67.1",dependencies:["sap.ui.core","sap.m","sap.ui.fl","sap.ui.dt"],types:[],interfaces:[],controls:[],elements:[]});return sap.ui.rta;});

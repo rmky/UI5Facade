@@ -1,11 +1,11 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['./SliderUtilities'],
-	function(SliderUtilities) {
+sap.ui.define(['./SliderUtilities', "sap/ui/core/InvisibleText"],
+	function(SliderUtilities, InvisibleText) {
 		"use strict";
 
 		/**
@@ -117,19 +117,18 @@ sap.ui.define(['./SliderUtilities'],
 				oRm.writeAttributeEscaped("id", mOptions.id);
 			}
 
-			oRm.writeAttribute("aria-labelledby", (mOptions.forwardedLabels + " " + oSlider.getAggregation("_handlesLabels")[0].getId()).trim());
-
 			if (oSlider.getShowHandleTooltip() && !oSlider.getShowAdvancedTooltip()) {
 				this.writeHandleTooltip(oRm, oSlider);
 			}
 
 			if (oSlider.getInputsAsTooltips() && oFirstTooltip) {
 				oRm.writeAttribute("aria-controls", oFirstTooltip.getId());
+				oRm.writeAttribute("aria-describedby", InvisibleText.getStaticId("sap.m", "SLIDER_INPUT_TOOLTIP"));
 			}
 
 			this.addHandleClass(oRm, oSlider);
 			oRm.addStyle(sap.ui.getCore().getConfiguration().getRTL() ? "right" : "left", oSlider._sProgressValue);
-			this.writeAccessibilityState(oRm, oSlider);
+			this.writeAccessibilityState(oRm, oSlider, mOptions);
 			oRm.writeClasses();
 			oRm.writeStyles();
 
@@ -173,7 +172,7 @@ sap.ui.define(['./SliderUtilities'],
 		 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
 		 * @param {sap.ui.core.Control} oSlider An object representation of the control that should be rendered.
 		 */
-		SliderRenderer.writeAccessibilityState = function(oRm, oSlider) {
+		SliderRenderer.writeAccessibilityState = function(oRm, oSlider, mOptions) {
 			var fSliderValue = oSlider.getValue(),
 				bNotNumericalLabel = oSlider._isElementsFormatterNotNumerical(fSliderValue),
 				sScaleLabel = oSlider._formatValueByCustomElement(fSliderValue),
@@ -190,7 +189,10 @@ sap.ui.define(['./SliderUtilities'],
 				orientation: "horizontal",
 				valuemin: oSlider.toFixed(oSlider.getMin()),
 				valuemax: oSlider.toFixed(oSlider.getMax()),
-				valuenow: sValueNow
+				valuenow: sValueNow,
+				labelledby: {
+					value: (mOptions.forwardedLabels + " " + oSlider.getAggregation("_handlesLabels")[0].getId()).trim()
+				}
 			});
 
 			if (bNotNumericalLabel) {

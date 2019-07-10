@@ -1,6 +1,7 @@
+//@ui5-bundle sap/f/library-preload.support.js
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -22,8 +23,8 @@ sap.ui.predefine('sap/f/library.support',[
 
 	}, true);
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -99,24 +100,23 @@ sap.ui.predefine('sap/f/rules/Avatar.support',["sap/ui/support/library", "../lib
 
 	}, true);
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
  * Defines support rules of the DynamicPage control of sap.f library.
  */
-sap.ui.predefine('sap/f/rules/DynamicPage.support',["sap/ui/support/library", "/sap/ui/table/library"],
-	function(SupportLib, library) {
+sap.ui.predefine('sap/f/rules/DynamicPage.support',["sap/ui/support/library"],
+	function(SupportLib) {
 		"use strict";
 
 		var Categories = SupportLib.Categories, // Accessibility, Performance, Memory, ...
 			Severity = SupportLib.Severity, // Hint, Warning, Error
-			Audiences = SupportLib.Audiences,
-			VisibleRowCountMode = library.VisibleRowCountMode; // Control, Internal, Application
+			Audiences = SupportLib.Audiences;
 
 		var oDynamicPageFitContentRule = {
-			id : "DynamicPageFitContentRule",
+			id : "dynamicPageFitContentRule",
 			title: "DynamicPage fitContent property recommendations",
 			minversion: "1.42",
 			audiences: [Audiences.Application],
@@ -125,6 +125,9 @@ sap.ui.predefine('sap/f/rules/DynamicPage.support',["sap/ui/support/library", "/
 				"or fitContent=true, when sap.ui.table.Table (with visibleRowCountMode=Auto) is used.",
 			resolution: "Set fitContent property according to recommendations.",
 			check: function (oIssueManager, oCoreFacade, oScope) {
+
+				var tableLibrary = sap.ui.require("sap/ui/table/library");
+
 				oScope.getElementsByClassName("sap.f.DynamicPage")
 					.forEach(function(oElement) {
 
@@ -143,7 +146,8 @@ sap.ui.predefine('sap/f/rules/DynamicPage.support',["sap/ui/support/library", "/
 						}
 
 						if (oContent && oContent.isA("sap.ui.table.Table")
-							&& oContent.getVisibleRowCountMode() === VisibleRowCountMode.Auto
+							&& tableLibrary
+							&& oContent.getVisibleRowCountMode() === tableLibrary.VisibleRowCountMode.Auto
 							&& !oElement.getFitContent()) {
 							oIssueManager.addIssue({
 								severity: Severity.Medium,

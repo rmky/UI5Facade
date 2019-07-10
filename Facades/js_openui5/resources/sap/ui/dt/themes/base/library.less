@@ -1,8 +1,8 @@
 /* NOTE: This file was generated as an optimized version of "library.source.less" for the Theme Designer. */
 
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,10 +10,13 @@
 
 @import "../../../../../sap/ui/core/themes/base/global.less";
 /* START "Overlay.less" */
-@_sap_ui_dt_Overlay_FocusColor : @sapUiContentFocusColor;
-@_sap_ui_dt_Overlay_TargetZoneColor : @sapUiSelected;
-@_sap_ui_dt_Overlay_SelectionColor : #35F;
-@_sap_ui_dt_Overlay_CuttedColor : white;
+/******************************************************************
+	Style of the DT Overlays - base Theme
+*******************************************************************/
+@_sap_ui_dt_Overlay_FocusColor : @sapUiContentFocusColor;		//#000
+@_sap_ui_dt_Overlay_TargetZoneColor : @sapUiSelected;			//#2e9cea
+@_sap_ui_dt_Overlay_SelectionColor : lighten(@sapUiBlue,10);	//#3333ff
+@_sap_ui_dt_Overlay_CuttedColor : @sapUiWhite;					//#fff
 
 #overlay-container {
 	position: absolute;
@@ -39,6 +42,8 @@
 		right: 0;
 		bottom: 0;
 		box-sizing: border-box;
+		z-index: 2;
+		box-shadow: none;
 	}
 }
 
@@ -65,14 +70,16 @@
 .sapUiDtOverlayTargetZone {
 	&:after {
 		content: " ";
-		border: 1px dashed @_sap_ui_dt_Overlay_TargetZoneColor;
+		outline: 2px dashed @_sap_ui_dt_Overlay_TargetZoneColor;
+		outline-offset: -2px;
 	}
 }
 
 .sapUiDtOverlaySelected {
 	&:after {
 		content: " ";
-		border: 1px solid @_sap_ui_dt_Overlay_SelectionColor;
+		outline: 2px dashed @_sap_ui_dt_Overlay_SelectionColor;
+		outline-offset: -2px;
 	}
 }
 
@@ -124,33 +131,79 @@
 /* END "Overlay.less" */
 
 /* START "ContextMenu.less" */
-.sapUiDtContextMenu .sapMPopoverScroll {
-	margin-right: 0 !important;
+/******************************************************************
+	Style of the DT Contextmenu - base Theme
+*******************************************************************/
+@_sap_ui_dt_ContextMenu_BorderColor: lighten(@sapSelectedColor, 34);	// #cce7fa
+@_sap_ui_dt_ContextMenu_BoxShadow: @sapUiUx3ToolPopupShadow;			// 0px 6px 12px 0px fade(black, 30);
+@_sap_ui_dt_ContextMenu_FocusColor: @sapUiWhite;						// #fff
+
+.sapUiDtContextMenu {
+
+	.sapMPopoverScroll {
+		margin-right: 0 !important;
+	}
+
+	.sapMBtnInner {
+		text-align: left;
+	}
+
+	&.sapMPopover, .sapMPopover {
+		opacity: 0;
+		min-width: 0;
+		transition: box-shadow .25s;
+		box-shadow: @_sap_ui_dt_ContextMenu_BoxShadow;
+		padding: 0.2rem;
+
+		&.sapUiDtContextMenuVisible {
+			opacity: 1;
+		}
+	}
+
+	&.sapMPopoverArr, .sapMPopoverArr {
+		bottom: -9px;
+		left: 13px!important;
+
+		&:after {
+			box-shadow: none;
+			width: 0.7rem;
+			height: 0.7rem;
+		}
+
+		&.sapMPopoverArrUp {
+			top: -9px;
+		}
+	}
+	&.sapUiDtContextMenuRightArrow{
+		&.sapMPopoverArr, .sapMPopoverArr {
+			left: unset!important;
+			right: 13px!important;
+		}
+	}
 }
 
-.sapUiDtContextMenu .sapMBtnInner {
-	text-align: left;
+.sapUiSizeCozy .sapUiDtContextMenu.sapUiDtContextMenuRightArrow{
+	&.sapMPopoverArr, .sapMPopoverArr {
+		left: unset!important;
+		right: 16px!important;
+	}
 }
 
-.sapUiDtContextMenu.sapContrast.sapMPopover, .sapUiDtContextMenu.sapContrast .sapMPopover {
-	opacity: 0;
-	min-width: 0;
-	border: 1px solid #3f5161;
-	box-shadow: 0 0 0 1px #cae4fb inset, 3px 3px 8px 0 rgba(0, 0, 0, 0.3);
-	padding: 0.2rem;
+.sapUiSizeCozy .sapUiDtContextMenu{
+	&.sapMPopoverArr, .sapMPopoverArr {
+		left: 16px !important;
+	}
 }
 
-.sapUiDtContextMenu.sapContrast.sapMPopoverArr:after, .sapUiDtContextMenu.sapContrast .sapMPopoverArr:after {
-	border: 1px solid #3f5161;
-	box-shadow: 0 0 0 1px #cae4fb inset;
+html.sap-desktop .sapUiDtContextMenu .sapMBtn:focus > .sapMFocusable,
+html.sap-desktop .sapUiDtContextMenu.sapMBtn:focus > .sapMFocusable {
+	border: 1px dotted @_sap_ui_dt_ContextMenu_FocusColor;
+	outline: none;
 }
 
-.sapUiDtContextMenu.sapContrast.sapMPopoverArr, .sapUiDtContextMenu.sapContrast .sapMPopoverArr{
-	bottom: -8px;
-}
-
-.sapUiDtContextMenu.sapContrast.sapMPopover.sapUiDtContextMenuVisible, .sapUiDtContextMenu.sapContrast .sapMPopover.sapUiDtContextMenuVisible {
-	opacity: 1;
+.sapUiSizeCompact .sapUiDtContextMenu .sapMBtn {
+	padding-left: 1px;
+	padding-right: 1px;
 }
 /* END "ContextMenu.less" */
 

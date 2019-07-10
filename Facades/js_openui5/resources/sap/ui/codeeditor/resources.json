@@ -22,7 +22,8 @@
 				"sap/ui/codeeditor/js/ace/mode-javascript.js",
 				"sap/ui/codeeditor/js/ace/mode-json.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/core/ResizeHandler.js"
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/thirdparty/jquery.js"
 			]
 		},
 		{
@@ -36,7 +37,8 @@
 				"sap/ui/codeeditor/js/ace/mode-javascript.js",
 				"sap/ui/codeeditor/js/ace/mode-json.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/core/ResizeHandler.js"
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/thirdparty/jquery.js"
 			]
 		},
 		{
@@ -118,6 +120,20 @@
 		},
 		{
 			"name": "js/ace/ext-old_ie.js"
+		},
+		{
+			"name": "js/ace/ext-options-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/ext-options.js"
+		},
+		{
+			"name": "js/ace/ext-rtl-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/ext-rtl.js"
 		},
 		{
 			"name": "js/ace/ext-searchbox-dbg.js",
@@ -246,6 +262,13 @@
 			"name": "js/ace/mode-asciidoc.js"
 		},
 		{
+			"name": "js/ace/mode-asl-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-asl.js"
+		},
+		{
 			"name": "js/ace/mode-assembly_x86-dbg.js",
 			"isDebug": true
 		},
@@ -330,6 +353,34 @@
 			"name": "js/ace/mode-csharp.js"
 		},
 		{
+			"name": "js/ace/mode-csound_document-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-csound_document.js"
+		},
+		{
+			"name": "js/ace/mode-csound_orchestra-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-csound_orchestra.js"
+		},
+		{
+			"name": "js/ace/mode-csound_score-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-csound_score.js"
+		},
+		{
+			"name": "js/ace/mode-csp-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-csp.js"
+		},
+		{
 			"name": "js/ace/mode-css-dbg.js",
 			"isDebug": true
 		},
@@ -393,6 +444,13 @@
 			"name": "js/ace/mode-drools.js"
 		},
 		{
+			"name": "js/ace/mode-edifact-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-edifact.js"
+		},
+		{
 			"name": "js/ace/mode-eiffel-dbg.js",
 			"isDebug": true
 		},
@@ -440,6 +498,13 @@
 		},
 		{
 			"name": "js/ace/mode-fortran.js"
+		},
+		{
+			"name": "js/ace/mode-fsharp-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-fsharp.js"
 		},
 		{
 			"name": "js/ace/mode-ftl-dbg.js",
@@ -631,6 +696,13 @@
 			"name": "js/ace/mode-jsp.js"
 		},
 		{
+			"name": "js/ace/mode-jssm-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-jssm.js"
+		},
+		{
 			"name": "js/ace/mode-jsx-dbg.js",
 			"isDebug": true
 		},
@@ -799,6 +871,13 @@
 			"name": "js/ace/mode-mipsassembler.js"
 		},
 		{
+			"name": "js/ace/mode-mixal-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-mixal.js"
+		},
+		{
 			"name": "js/ace/mode-mushcode-dbg.js",
 			"isDebug": true
 		},
@@ -869,6 +948,13 @@
 			"name": "js/ace/mode-php.js"
 		},
 		{
+			"name": "js/ace/mode-php_laravel_blade-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-php_laravel_blade.js"
+		},
+		{
 			"name": "js/ace/mode-pig-dbg.js",
 			"isDebug": true
 		},
@@ -918,6 +1004,13 @@
 			"name": "js/ace/mode-protobuf.js"
 		},
 		{
+			"name": "js/ace/mode-puppet-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-puppet.js"
+		},
+		{
 			"name": "js/ace/mode-python-dbg.js",
 			"isDebug": true
 		},
@@ -944,6 +1037,20 @@
 		},
 		{
 			"name": "js/ace/mode-rdoc.js"
+		},
+		{
+			"name": "js/ace/mode-red-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-red.js"
+		},
+		{
+			"name": "js/ace/mode-redshift-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-redshift.js"
 		},
 		{
 			"name": "js/ace/mode-rhtml-dbg.js",
@@ -1021,6 +1128,13 @@
 		},
 		{
 			"name": "js/ace/mode-sjs.js"
+		},
+		{
+			"name": "js/ace/mode-slim-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-slim.js"
 		},
 		{
 			"name": "js/ace/mode-smarty-dbg.js",
@@ -1105,6 +1219,13 @@
 		},
 		{
 			"name": "js/ace/mode-tcl.js"
+		},
+		{
+			"name": "js/ace/mode-terraform-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/mode-terraform.js"
 		},
 		{
 			"name": "js/ace/mode-tex-dbg.js",
@@ -1275,6 +1396,13 @@
 			"name": "js/ace/snippets/asciidoc.js"
 		},
 		{
+			"name": "js/ace/snippets/asl-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/asl.js"
+		},
+		{
 			"name": "js/ace/snippets/assembly_x86-dbg.js",
 			"isDebug": true
 		},
@@ -1359,6 +1487,34 @@
 			"name": "js/ace/snippets/csharp.js"
 		},
 		{
+			"name": "js/ace/snippets/csound_document-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/csound_document.js"
+		},
+		{
+			"name": "js/ace/snippets/csound_orchestra-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/csound_orchestra.js"
+		},
+		{
+			"name": "js/ace/snippets/csound_score-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/csound_score.js"
+		},
+		{
+			"name": "js/ace/snippets/csp-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/csp.js"
+		},
+		{
 			"name": "js/ace/snippets/css-dbg.js",
 			"isDebug": true
 		},
@@ -1422,6 +1578,13 @@
 			"name": "js/ace/snippets/drools.js"
 		},
 		{
+			"name": "js/ace/snippets/edifact-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/edifact.js"
+		},
+		{
 			"name": "js/ace/snippets/eiffel-dbg.js",
 			"isDebug": true
 		},
@@ -1469,6 +1632,13 @@
 		},
 		{
 			"name": "js/ace/snippets/fortran.js"
+		},
+		{
+			"name": "js/ace/snippets/fsharp-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/fsharp.js"
 		},
 		{
 			"name": "js/ace/snippets/ftl-dbg.js",
@@ -1660,6 +1830,13 @@
 			"name": "js/ace/snippets/jsp.js"
 		},
 		{
+			"name": "js/ace/snippets/jssm-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/jssm.js"
+		},
+		{
 			"name": "js/ace/snippets/jsx-dbg.js",
 			"isDebug": true
 		},
@@ -1821,6 +1998,13 @@
 			"name": "js/ace/snippets/mipsassembler.js"
 		},
 		{
+			"name": "js/ace/snippets/mixal-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/mixal.js"
+		},
+		{
 			"name": "js/ace/snippets/mushcode-dbg.js",
 			"isDebug": true
 		},
@@ -1891,6 +2075,13 @@
 			"name": "js/ace/snippets/php.js"
 		},
 		{
+			"name": "js/ace/snippets/php_laravel_blade-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/php_laravel_blade.js"
+		},
+		{
 			"name": "js/ace/snippets/pig-dbg.js",
 			"isDebug": true
 		},
@@ -1940,6 +2131,13 @@
 			"name": "js/ace/snippets/protobuf.js"
 		},
 		{
+			"name": "js/ace/snippets/puppet-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/puppet.js"
+		},
+		{
 			"name": "js/ace/snippets/python-dbg.js",
 			"isDebug": true
 		},
@@ -1966,6 +2164,20 @@
 		},
 		{
 			"name": "js/ace/snippets/rdoc.js"
+		},
+		{
+			"name": "js/ace/snippets/red-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/red.js"
+		},
+		{
+			"name": "js/ace/snippets/redshift-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/redshift.js"
 		},
 		{
 			"name": "js/ace/snippets/rhtml-dbg.js",
@@ -2043,6 +2255,13 @@
 		},
 		{
 			"name": "js/ace/snippets/sjs.js"
+		},
+		{
+			"name": "js/ace/snippets/slim-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/slim.js"
 		},
 		{
 			"name": "js/ace/snippets/smarty-dbg.js",
@@ -2127,6 +2346,13 @@
 		},
 		{
 			"name": "js/ace/snippets/tcl.js"
+		},
+		{
+			"name": "js/ace/snippets/terraform-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/snippets/terraform.js"
 		},
 		{
 			"name": "js/ace/snippets/tex-dbg.js",
@@ -2302,6 +2528,13 @@
 		},
 		{
 			"name": "js/ace/theme-dawn.js"
+		},
+		{
+			"name": "js/ace/theme-dracula-dbg.js",
+			"isDebug": true
+		},
+		{
+			"name": "js/ace/theme-dracula.js"
 		},
 		{
 			"name": "js/ace/theme-dreamweaver-dbg.js",
@@ -2586,7 +2819,8 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/ResizeHandler.js",
-				"sap/ui/core/library.js"
+				"sap/ui/core/library.js",
+				"sap/ui/thirdparty/jquery.js"
 			],
 			"included": [
 				"sap/ui/codeeditor/library.js",
@@ -2608,7 +2842,8 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/ResizeHandler.js",
-				"sap/ui/core/library.js"
+				"sap/ui/core/library.js",
+				"sap/ui/thirdparty/jquery.js"
 			],
 			"included": [
 				"sap/ui/codeeditor/library.js",
@@ -2634,7 +2869,8 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/ResizeHandler.js",
-				"sap/ui/core/library.js"
+				"sap/ui/core/library.js",
+				"sap/ui/thirdparty/jquery.js"
 			],
 			"included": [
 				"sap/ui/codeeditor/CodeEditor.js",
@@ -2661,7 +2897,8 @@
 				"sap/ui/core/Core.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/library-preload.json",
-				"sap/ui/core/library.js"
+				"sap/ui/core/library.js",
+				"sap/ui/thirdparty/jquery.js"
 			],
 			"included": [
 				"sap/ui/codeeditor/CodeEditor.js",

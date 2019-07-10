@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -133,7 +133,7 @@ sap.ui.define([
 		 */
 		ValueStateMessage.prototype.close = function() {
 			var oControl = this._oControl,
-				oPopup = this.getPopup();
+				oPopup = this._oPopup;
 
 			if (oPopup) {
 				oPopup.close(0);
@@ -181,6 +181,12 @@ sap.ui.define([
 			this._oPopup.attachClosed(function() {
 				jQuery(document.getElementById(sID)).remove();
 			});
+			this._oPopup.attachOpened(function() {
+				var content = this._oPopup.getContent();
+				if (content && this._oControl) {
+					content.style.zIndex = this._getCorrectZIndex();
+				}
+			}.bind(this));
 
 			return this._oPopup;
 		};
@@ -231,8 +237,15 @@ sap.ui.define([
 
 			var oAccDomRef = document.createElement("span");
 			oAccDomRef.id = sID + "hidden";
-			oAccDomRef.className = "sapUiHidden";
-			oAccDomRef.setAttribute("aria-hidden", "true");
+
+			var bIsIE = Device.browser.msie;
+
+			if (bIsIE) {
+				oAccDomRef.className = "sapUiHidden";
+				oAccDomRef.setAttribute("aria-hidden", "true");
+			} else {
+				oAccDomRef.className = "sapUiPseudoInvisibleText";
+			}
 
 			if (sState !== ValueState.None) {
 				oAccDomRef.appendChild(document.createTextNode(oRB.getText("INPUTBASE_VALUE_STATE_" + sState.toUpperCase())));
@@ -241,7 +254,7 @@ sap.ui.define([
 			var oTextDomRef = document.createElement("span");
 			oTextDomRef.id = sID + "-text";
 
-			if (!oControl.isA('sap.m.Select')) {
+			if (!oControl.isA('sap.m.Select') && bIsIE) {
 				oTextDomRef.setAttribute("aria-hidden", "true");
 			}
 
@@ -260,6 +273,35 @@ sap.ui.define([
 			}
 
 			this._oControl = null;
+		};
+
+		/**
+		 * Gets the z-index of the popup, so it won't be shown above some other popups.
+		 * @return {int} The correct z-index
+		 * @private
+		 */
+		ValueStateMessage.prototype._getCorrectZIndex = function() {
+
+			var aParents = this._oControl.$().parents().filter(function() {
+				var sZIndex = jQuery(this).css('z-index');
+				return sZIndex && sZIndex !== 'auto' && sZIndex !== '0';
+			});
+
+			if (!aParents.length) {
+				return 1;
+			}
+
+			var iHighestZIndex = 0;
+
+			aParents.each(function () {
+				var iZIndex = parseInt(jQuery(this).css('z-index'));
+
+				if (iZIndex > iHighestZIndex) {
+					iHighestZIndex = iZIndex;
+				}
+			});
+
+			return iHighestZIndex + 1;
 		};
 
 		return ValueStateMessage;

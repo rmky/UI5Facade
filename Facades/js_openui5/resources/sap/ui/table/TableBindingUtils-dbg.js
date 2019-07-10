@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,7 @@ sap.ui.define([], function() {
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Binding...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @namespace
 	 * @alias sap.ui.table.TableBindingUtils
 	 * @private
@@ -25,8 +25,8 @@ sap.ui.define([], function() {
 		/**
 		 * Returns a promise for the loaded state of the metadata. If there is no rows binding or model, the promise will reject.
 		 *
-		 * @param {sap.ui.table.Table} oTable Instance of the table
-		 * @return {Promise} Returns a promise on the metadata loaded state.
+		 * @param {sap.ui.table.Table} oTable Instance of the table.
+		 * @returns {Promise} A promise on the metadata loaded state.
 		 */
 		metadataLoaded: function(oTable) {
 			var oBinding = oTable.getBinding("rows");

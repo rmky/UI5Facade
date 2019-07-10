@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,6 +18,7 @@ sap.ui.define([
 	"sap/ui/layout/HorizontalLayout",
 	"sap/ui/Device",
 	"sap/ui/core/CustomData",
+	"sap/ui/core/Control",
 	"./HierarchicalSelect",
 	"./library",
 	"sap/uxap/AnchorBarRenderer",
@@ -25,7 +26,7 @@ sap.ui.define([
 	"sap/ui/events/KeyCodes",
 	"sap/ui/events/F6Navigation"
 ], function (jQuery, Button, MenuButton, mobileLibrary, Toolbar, IconPool, Item, ResizeHandler,	ScrollEnablement,
-		HorizontalLayout, Device, CustomData, HierarchicalSelect, library, AnchorBarRenderer, Log, KeyCodes, F6Navigation) {
+		HorizontalLayout, Device, CustomData, Control, HierarchicalSelect, library, AnchorBarRenderer, Log, KeyCodes, F6Navigation) {
 	"use strict";
 
 	// shortcut for sap.m.SelectType
@@ -193,9 +194,11 @@ sap.ui.define([
 
 				this._setAnchorButtonsTabFocusValues(oButton);
 			}
+
+			this.setAssociation("selectedButton", oButton, true /* don't rerender */);
 		}
 
-		return this.setAssociation("selectedButton", oButton, true /* don't rerender */);
+		return this;
 	};
 
 	AnchorBar.prototype.setShowPopover = function (bValue, bSuppressInvalidate) {
@@ -540,7 +543,8 @@ sap.ui.define([
 	AnchorBar.prototype._adjustSize = function () {
 
 		//size changed => check if switch in display-mode (phone-view vs. desktop-view) needed
-		var sNewMode = library.Utilities.isPhoneScenario(this._getCurrentMediaContainerRange()) ?
+		var oMediaRange = Device.media.getCurrentRange(Device.media.RANGESETS.SAP_STANDARD, this._getWidth(this)),
+			sNewMode = library.Utilities.isPhoneScenario(oMediaRange) ?
 			AnchorBarRenderer._AnchorBarHierarchicalSelectMode.Text :
 			AnchorBarRenderer._AnchorBarHierarchicalSelectMode.Icon;
 
@@ -621,10 +625,11 @@ sap.ui.define([
 	AnchorBar.prototype.scrollToSection = function (sId, iDuration) {
 
 		if (this._bHasButtonsBar) {
-			var iDuration = iDuration || AnchorBar.SCROLL_DURATION,
+			var oMediaRange = Device.media.getCurrentRange(Device.media.RANGESETS.SAP_STANDARD, this._getWidth(this)),
+				iDuration = iDuration || AnchorBar.SCROLL_DURATION,
 				iScrollTo;
 
-			if (!library.Utilities.isPhoneScenario(this._getCurrentMediaContainerRange())
+			if (!library.Utilities.isPhoneScenario(oMediaRange)
 				&& this._oSectionInfo[sId]) {
 
 				if (this._bRtlScenario && Device.browser.firefox) {
@@ -730,6 +735,26 @@ sap.ui.define([
 		} else if (aAnchors[0]) {
 			aAnchors[0].focus();
 		}
+	};
+
+	/**
+	 * Handles DOWN key, triggered on anchor bar level.
+	 *
+	 * @param {jQuery.Event} oEvent
+	 * @private
+	 */
+	AnchorBar.prototype.onsapdown = function (oEvent) {
+		oEvent.preventDefault();
+	};
+
+	/**
+	 * Handles UP key, triggered on anchor bar level.
+	 *
+	 * @param {jQuery.Event} oEvent
+	 * @private
+	 */
+	AnchorBar.prototype.onsapup = function (oEvent) {
+		oEvent.preventDefault();
 	};
 
 	/**
@@ -912,7 +937,9 @@ sap.ui.define([
 	 * called for figuring out responsive scenarios
 	 */
 	AnchorBar.prototype.onAfterRendering = function () {
-		var oSelectedButton;
+		var oSelectedButton,
+			sHeaderTitleAriaLabelText = this._getHeadeTitleAriaLabelText();
+
 		if (Toolbar.prototype.onAfterRendering) {
 			Toolbar.prototype.onAfterRendering.call(this);
 		}
@@ -927,6 +954,10 @@ sap.ui.define([
 		this._sResizeListenerId = ResizeHandler.register(this, jQuery.proxy(this._adjustSize, this));
 
 		this.$().find(".sapUxAPAnchorBarScrollContainer").scroll(jQuery.proxy(this._onScroll, this));
+
+		if (sHeaderTitleAriaLabelText) {
+			this.$().attr("aria-label", sHeaderTitleAriaLabelText);
+		}
 
 		//restore state from previous rendering
 		if (oSelectedButton) {
@@ -971,14 +1002,15 @@ sap.ui.define([
 	};
 
 	AnchorBar.prototype._computeNextSectionInfo = function (oContent) {
-		var oButton = oContent.isA("sap.m.MenuButton") ? oContent._getButtonControl() : oContent;
+		var oButton = oContent.isA("sap.m.MenuButton") ? oContent._getButtonControl() : oContent,
+			bSelected = oContent.hasStyleClass("sapUxAPAnchorBarButtonSelected");
 
 		// set ARIA has-popup if button opens submenu
 		if (oContent.data("bHasSubMenu")) {
 			oButton.$().attr("aria-haspopup", "true");
 		}
 		// set ARIA attributes of main buttons
-		oButton.$().attr("aria-controls", oContent.data("sectionId")).attr("aria-checked", false);
+		oButton.$().attr("aria-controls", oContent.data("sectionId")).attr("aria-checked", bSelected);
 
 		var iWidth = oContent.$().outerWidth(true);
 
@@ -1016,6 +1048,16 @@ sap.ui.define([
 		return this;
 	};
 
+	AnchorBar.prototype._getHeadeTitleAriaLabelText = function () {
+		var oObjectPage = this.getParent();
+
+		if (oObjectPage.isA("sap.uxap.ObjectPageLayout")) {
+			return oObjectPage._getAriaLabelText("NAVTOOLBAR");
+		}
+
+		return null;
+	};
+
 	/**
 	 * This method is a hook for the RenderManager that gets called
 	 * during the rendering of child Controls. It allows to add,
@@ -1032,7 +1074,7 @@ sap.ui.define([
 
 		if (iIndex !== -1) {
 			mAriaProps.role = "menuitemradio";
-			mAriaProps.type = "button";
+			mAriaProps.roledescription = this.oLibraryResourceBundleOP.getText("ANCHOR_BAR_MENUITEM");
 			mAriaProps.setsize = oContent.length;
 			mAriaProps.posinset = iIndex + 1; // we need "+ 1", since iIndex would start from 0 (due to indexOf)
 		}
@@ -1056,6 +1098,17 @@ sap.ui.define([
 		if (this.oLibraryResourceBundleOP) {
 			this.oLibraryResourceBundleOP = null;
 		}
+	};
+
+	/**
+	 * Determines the width of a control safely. If the control doesn't exist, it returns 0.
+	 * If it exists, it returns the DOM element width.
+	 * @param  {sap.ui.core.Control} oControl
+	 * @return {Number} the width of the control
+	 */
+	AnchorBar.prototype._getWidth = function (oControl) {
+		var oDomReference = oControl.getDomRef();
+		return !(oControl instanceof Control) ? 0 : (oDomReference && oDomReference.offsetWidth) || 0;
 	};
 
 	return AnchorBar;

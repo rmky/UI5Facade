@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -40,7 +40,7 @@ sap.ui.define(["sap/ui/core/InvisibleText", "sap/ui/Device", "sap/m/library"],
 			oRm.writeAttribute("id", oControl.getId() + "-beginColumn");
 			oRm.writeAccessibilityState(oControl, {
 				role: "region",
-				labelledBy: InvisibleText.getStaticId("sap.f", "FCL_BEGIN_COLUMN_REGION_TEXT")
+				labelledby: InvisibleText.getStaticId("sap.f", "FCL_BEGIN_COLUMN_REGION_TEXT")
 			});
 			oRm.addClass("sapFFCLColumn").addClass("sapFFCLColumnBegin").addClass("sapFFCLColumnActive");
 			oRm.writeClasses();
@@ -65,7 +65,7 @@ sap.ui.define(["sap/ui/core/InvisibleText", "sap/ui/Device", "sap/m/library"],
 			oRm.writeAttribute("id", oControl.getId() + "-midColumn");
 			oRm.writeAccessibilityState(oControl, {
 				role: "region",
-				labelledBy: InvisibleText.getStaticId("sap.f", "FCL_MID_COLUMN_REGION_TEXT")
+				labelledby: InvisibleText.getStaticId("sap.f", "FCL_MID_COLUMN_REGION_TEXT")
 			});
 			oRm.addClass("sapFFCLColumn").addClass("sapFFCLColumnMid");
 			oRm.writeClasses();
@@ -92,7 +92,7 @@ sap.ui.define(["sap/ui/core/InvisibleText", "sap/ui/Device", "sap/m/library"],
 			oRm.writeAttribute("id", oControl.getId() + "-endColumn");
 			oRm.writeAccessibilityState(oControl, {
 				role: "region",
-				labelledBy: InvisibleText.getStaticId("sap.f", "FCL_END_COLUMN_REGION_TEXT")
+				labelledby: InvisibleText.getStaticId("sap.f", "FCL_END_COLUMN_REGION_TEXT")
 			});
 			oRm.addClass("sapFFCLColumn").addClass("sapFFCLColumnEnd");
 			oRm.writeClasses();

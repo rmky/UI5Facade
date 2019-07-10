@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -266,6 +266,11 @@ sap.ui.define([
 				 * List of actions that will be displayed in the header.
 				 * You can use ObjectPageHeaderActionButton controls to achieve a different visual representation of the action buttons in the action bar and the action sheet (overflow menu).
 				 * You can use ObjectPageHeaderLayoutData to display a visual separator.
+				 *
+				 * <b>Note:</b> If an action is placed inside the overflow area, an additional
+				 * <code>bInOverflow</code> parameter is passed along with the <code>press</code>
+				 * event to indicate that a popup shouldn't be opened from that action and a dialog
+				 * should be used instead.
 				 */
 				actions: {type: "sap.ui.core.Control", multiple: true, singularName: "action"},
 
@@ -530,7 +535,7 @@ sap.ui.define([
 			bChanged = sOldTitle !== sNewTitle;
 
 		this._applyActionProperty("objectTitle", Array.prototype.slice.call(arguments));
-		oParent && isFunction(oParent._updateRootAriaLabel) && oParent._updateRootAriaLabel();
+		oParent && isFunction(oParent._updateAriaLabels) && oParent._updateAriaLabels();
 
 		if (bChanged && this.mEventRegistry["_titleChange"]) {
 			this.fireEvent("_titleChange", {
@@ -636,11 +641,6 @@ sap.ui.define([
 							this.$().hide();
 						}
 					};
-				}
-
-				// Force the design of the button to transparent
-				if (oAction instanceof Button && (oAction.getType() === "Default" || oAction.getType() === "Unstyled")) {
-					oAction.setProperty("type", ButtonType.Transparent, false);
 				}
 
 				if (oAction instanceof Button && oAction.getVisible()) {
@@ -770,7 +770,8 @@ sap.ui.define([
 		if (oOriginalControl.firePress) {
 			//provide parameters in case the handlers wants to know where was the event fired from
 			oOriginalControl.firePress({
-				overflowButtonId: this._oOverflowButton.getId()
+				overflowButtonId: this._oOverflowButton.getId(),
+				bInOverflow: true
 			});
 		}
 		this._oOverflowActionSheet.close();
@@ -897,6 +898,7 @@ sap.ui.define([
 	ObjectPageHeader.prototype._adaptObjectPageHeaderIndentifierLine = function ($domRef) {
 
 		var $identifierLine = this._findById($domRef, "identifierLine"),
+			$title = $identifierLine.find(".sapUxAPObjectPageHeaderIdentifierTitle"),
 			iIdentifierContWidth = $identifierLine.width(),
 			$subtitle = this._findById($domRef, "subtitle"),
 			$innerTitle = this._findById($domRef, "innerTitle"),
@@ -908,6 +910,8 @@ sap.ui.define([
 			$imageContainer = $domRef ? $domRef.find(".sapUxAPObjectPageHeaderObjectImageContainer") : this.$().find(".sapUxAPObjectPageHeaderObjectImageContainer"),
 			iActionsAndImageWidth = $actions.width() + $imageContainer.width(),
 			iPixelTolerance = this.$().parents().hasClass('sapUiSizeCompact') ? 7 : 3;  // the tolerance of pixels from which we can tell that the title and subtitle are on the same row
+
+		this._adaptObjectPageHeaderTitle($title);
 
 		if ($subtitle.length) {
 			if ($subtitle.hasClass("sapOPHSubtitleBlock")) {
@@ -935,6 +939,28 @@ sap.ui.define([
 		}
 
 		$identifierLineContainer.width((0.95 - (iActionsAndImageWidth / iIdentifierContWidth)) * 100 + "%");
+	};
+
+	/**
+	 * Adapt title text parts
+	 * @private
+	 */
+	ObjectPageHeader.prototype._adaptObjectPageHeaderTitle = function ($titleDom) {
+
+		var iTitleWidth = $titleDom.width(),
+			aTitleTextParts = $titleDom.find(".sapUxAPObjectPageHeaderTitleText"),
+			iTitleTextParts = aTitleTextParts.length,
+			$nextPart;
+
+		for (var i = 0; i < iTitleTextParts; i++) {
+			$nextPart = jQuery(aTitleTextParts.get(i));
+			$nextPart.toggleClass("sapUxAPObjectPageHeaderTitleTextRestrictedWidth", false); // restore default
+			if ($nextPart.width() > iTitleWidth) {
+				// we constrain only if needed (not by default)
+				// because of implications that come from change of "display" property
+				$nextPart.toggleClass("sapUxAPObjectPageHeaderTitleTextRestrictedWidth", true);
+			}
+		}
 	};
 
 	/**
@@ -1037,13 +1063,16 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectPageHeader.prototype._findById = function ($headerDomRef, sId) {
+		var sEscapedId;
+
 		if (!sId) {
 			return null;
 		}
 
 		if ($headerDomRef) {
 			sId = this.getId() + '-' + sId;
-			return jQuery(document.getElementById(sId));
+			sEscapedId = "#" + sId.replace(/(:|\.)/g,'\\$1');
+			return $headerDomRef.find(sEscapedId);
 		}
 
 		return this.$(sId); //if no dom reference then search within its own id-space (prepended with own id)

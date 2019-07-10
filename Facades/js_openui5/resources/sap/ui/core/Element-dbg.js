@@ -1,29 +1,35 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides the base class for all controls and UI elements.
 sap.ui.define([
+	'../base/DataType',
 	'../base/Object',
 	'../base/ManagedObject',
+	'../base/ManagedObjectRegistry',
 	'./ElementMetadata',
 	'../Device',
 	"sap/ui/performance/trace/Interaction",
 	"sap/base/Log",
 	"sap/base/assert",
-	"sap/ui/thirdparty/jquery"
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/events/F6Navigation"
 ],
 	function(
+		DataType,
 		BaseObject,
 		ManagedObject,
+		ManagedObjectRegistry,
 		ElementMetadata,
 		Device,
 		Interaction,
 		Log,
 		assert,
-		jQuery
+		jQuery,
+		F6Navigation
 	) {
 	"use strict";
 
@@ -90,7 +96,7 @@ sap.ui.define([
 	 * @class Base Class for Elements.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @public
 	 * @alias sap.ui.core.Element
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
@@ -146,6 +152,25 @@ sap.ui.define([
 		renderer : null // Element has no renderer
 
 	}, /* Metadata constructor */ ElementMetadata);
+
+	// apply the registry mixin
+	ManagedObjectRegistry.apply(Element, {
+		onDuplicate: function(sId, oldElement, newElement) {
+			if ( oldElement._sapui_candidateForDestroy ) {
+				Log.debug("destroying dangling template " + oldElement + " when creating new object with same ID");
+				oldElement.destroy();
+			} else {
+				var sMsg = "adding element with duplicate id '" + sId + "'";
+				// duplicate ID detected => fail or at least log a warning
+				if (sap.ui.getCore().getConfiguration().getNoDuplicateIds()) {
+					Log.error(sMsg);
+					throw new Error("Error: " + sMsg);
+				} else {
+					Log.warning(sMsg);
+				}
+			}
+		}
+	});
 
 	/**
 	 * Creates metadata for a UI Element by extending the Object Metadata.
@@ -262,31 +287,6 @@ sap.ui.define([
 
 	};
 
-
-	// Element is granted "friend" access by Core for (de-)registration
-	/**
-	 * Registers this instance of <code>sap.ui.core.Element</code> with the Core.
-	 *
-	 * The implementation of this method is provided with "friend" access by Core.
-	 * @see sap.ui.core.Core#constructor
-	 *
-	 * @function
-	 * @name sap.ui.core.Element.prototype.register
-	 * @private
-	 */
-	//sap.ui.core.Element.prototype.register = function() {...}
-
-	/**
-	 * Deregisters this instance of <code>sap.ui.core.Element</code> from the Core.
-	 *
-	 * The implementation of this method is provided with "friend" access by Core.
-	 * @see sap.ui.core.Core#constructor
-	 *
-	 * @function
-	 * @name sap.ui.core.Element.prototype.deregister
-	 * @private
-	 */
-	//sap.ui.core.Element.prototype.deregister = function() {...}
 
 	/**
 	 * Initializes the element instance after creation.
@@ -423,11 +423,13 @@ sap.ui.define([
 	};
 
 	Element.prototype.insertDependent = function(oElement, iIndex) {
-		return this.insertAggregation("dependents", oElement, iIndex, true);
+		this.insertAggregation("dependents", oElement, iIndex, true);
+		return this; // explicitly return 'this' to fix controls that override insertAggregation wrongly
 	};
 
 	Element.prototype.addDependent = function(oElement) {
-		return this.addAggregation("dependents", oElement, true);
+		this.addAggregation("dependents", oElement, true);
+		return this; // explicitly return 'this' to fix controls that override addAggregation wrongly
 	};
 
 	Element.prototype.removeDependent = function(vElement) {
@@ -439,7 +441,8 @@ sap.ui.define([
 	};
 
 	Element.prototype.destroyDependents = function() {
-		return this.destroyAggregation("dependents", true);
+		this.destroyAggregation("dependents", true);
+		return this; // explicitly return 'this' to fix controls that override destroyAggregation wrongly
 	};
 
 
@@ -479,7 +482,7 @@ sap.ui.define([
 	 * Applications should call this method if they don't need the element any longer.
 	 *
 	 * @param {boolean}
-	 *            [bSuppressInvalidate] if true, the UI element is not marked for redraw
+	 *            [bSuppressInvalidate] if true, the UI element is removed from DOM synchronously and parent will not be invalidated.
 	 * @public
 	 */
 	Element.prototype.destroy = function(bSuppressInvalidate) {
@@ -487,6 +490,10 @@ sap.ui.define([
 		if (this.bIsDestroyed) {
 			return;
 		}
+
+		// determine whether parent exists or not
+		var bHasNoParent = !this.getParent();
+		var bKeepDom = (bSuppressInvalidate === "KeepDom");
 
 		// update the focus information (potentionally) stored by the central UI5 focus handling
 		Element._updateFocusInfo(this);
@@ -496,14 +503,22 @@ sap.ui.define([
 		// determine whether to remove the control from the DOM or not
 		// controls that implement marker interface sap.ui.core.PopupInterface are by contract
 		// not rendered by their parent so we cannot keep the DOM of these controls
-		if (bSuppressInvalidate !== "KeepDom" ||
-			this.getMetadata().isInstanceOf("sap.ui.core.PopupInterface")) {
+		// if parent invalidation is not possible we need to remove the DOM synchronously
+		if (bSuppressInvalidate === true || this.isA("sap.ui.core.PopupInterface") || (!bKeepDom && bHasNoParent)) {
 			this.$().remove();
-		} else {
-			Log.debug("DOM is not removed on destroy of " + this);
+		} else if (!bKeepDom) {
+			// On destroy we do not remove the control DOM synchronously and just let the invalidation happen.
+			// At the next tick of the RenderManager control DOM nodes will be removed anyway.
+			// To make this new behavior more compatible we are changing the id of
+			// the control's DOM and all child nodes that starts with the control id.
+			this.$().removeAttr("data-sap-ui-preserve").find('[id^="' + this.getId() + '-"]').andSelf().each(function(){
+				this.id = "sap-ui-destroyed-" + this.id;
+			});
 		}
-	};
 
+		// wrap custom data API to avoid creating new objects
+		this.data = noCustomDataAfterDestroy;
+	};
 
 	/*
 	 * Class <code>sap.ui.core.Element</code> intercepts fireEvent calls to enforce an 'id' property
@@ -524,26 +539,27 @@ sap.ui.define([
 		mParameters = mParameters || {};
 		mParameters.id = mParameters.id || this.getId();
 
-		if (Element._trackEvent) {
-			Element._trackEvent(sEventId, this);
+		if (Element._interceptEvent) {
+			Element._interceptEvent(sEventId, this, mParameters);
 		}
 
 		return ManagedObject.prototype.fireEvent.call(this, sEventId, mParameters, bAllowPreventDefault, bEnableEventBubbling);
 	};
 
 	/**
-	 * Tracks event. This method is meant for private usages. Apps are not supposed to used it.
+	 * Intercepts an event. This method is meant for private usages. Apps are not supposed to used it.
 	 * It is created for an experimental purpose.
-	 * Implementation should be injected by outside(i.e. sap.ui.core.delegate.UsageAnalytics).
+	 * Implementation should be injected by outside.
 	 *
 	 * @param {string} sEventId the name of the event
 	 * @param {sap.ui.core.Element} oElement the element itself
+	 * @param {object} mParameters The parameters which complement the event. Hooks must not modify the parameters.
 	 * @function
 	 * @private
 	 * @experimental Since 1.58
 	 * @ui5-restricted
 	 */
-	Element._trackEvent = undefined;
+	Element._interceptEvent = undefined;
 
 	/**
 	 * Adds a delegate that listens to the events of this element.
@@ -873,150 +889,289 @@ sap.ui.define([
 	 */
 	// sap.ui.core.Element.prototype.getMetadata = sap.ui.base.Object.ABSTRACT_METHOD;
 
-	//data container
+	// ---- data container ----------------------------------
 
-	(function(){
+	// Note: the real class documentation can be found in sap/ui/core/CustomData so that the right module is
+	// shown in the API reference. A reduced copy of the class documentation and the documentation of the
+	// settings has to provided here, close to the runtime metadata to allow deriving the CustomData.control file.
+	/**
+	 * @class
+	 * Contains a single key/value pair of custom data attached to an <code>Element</code>.
+	 * @public
+	 * @alias sap.ui.core.CustomData
+	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
+	 * @synthetic
+	 */
+	var CustomData = Element.extend("sap.ui.core.CustomData", /** @lends sap.ui.core.CustomData.prototype */ { metadata : {
 
-		/**
-		 * Returns the data object with the given key
-		 */
-		var getDataObject = function(element, key) {
-			var aData = element.getAggregation("customData");
+		library : "sap.ui.core",
+		properties : {
+
+			/**
+			 * The key of the data in this CustomData object.
+			 * When the data is just stored, it can be any string, but when it is to be written to HTML
+			 * (<code>writeToDom == true</code>) then it must also be a valid HTML attribute name.
+			 * It must conform to the {@link sap.ui.core.ID} type and may contain no colon. To avoid collisions,
+			 * it also may not start with "sap-ui". When written to HTML, the key is prefixed with "data-".
+			 * If any restriction is violated, a warning will be logged and nothing will be written to the DOM.
+			 */
+			key : {type : "string", group : "Data", defaultValue : null},
+
+			/**
+			 * The data stored in this CustomData object.
+			 * When the data is just stored, it can be any JS type, but when it is to be written to HTML
+			 * (<code>writeToDom == true</code>) then it must be a string. If this restriction is violated,
+			 * a warning will be logged and nothing will be written to the DOM.
+			 */
+			value : {type : "any", group : "Data", defaultValue : null},
+
+			/**
+			 * If set to "true" and the value is of type "string" and the key conforms to the documented restrictions,
+			 * this custom data is written to the HTML root element of the control as a "data-*" attribute.
+			 * If the key is "abc" and the value is "cde", the HTML will look as follows:
+			 *
+			 * &lt;SomeTag ... data-abc="cde" ... &gt;
+			 *
+			 * Thus the application can provide stable attributes by data binding which can be used for styling or
+			 * identification purposes.
+			 *
+			 * <b>ATTENTION:</b> use carefully to not create huge attributes or a large number of them.
+			 * @since 1.9.0
+			 */
+			writeToDom : {type : "boolean", group : "Data", defaultValue : false}
+		},
+		designtime: "sap/ui/core/designtime/CustomData.designtime"
+	}});
+
+	CustomData.prototype.setValue = function(oValue) {
+		this.setProperty("value", oValue, true);
+
+		var oControl = this.getParent();
+		if (oControl && oControl.getDomRef()) {
+			var oCheckResult = this._checkWriteToDom(oControl);
+			if (oCheckResult) {
+				// update DOM directly
+				oControl.$().attr(oCheckResult.key, oCheckResult.value);
+			}
+		}
+		return this;
+	};
+
+	CustomData.prototype._checkWriteToDom = function(oRelated) {
+		if (!this.getWriteToDom()) {
+			return null;
+		}
+
+		var key = this.getKey();
+		var value = this.getValue();
+
+		function error(reason) {
+			Log.error("CustomData with key " + key + " should be written to HTML of " + oRelated + " but " + reason);
+			return null;
+		}
+
+		if (typeof value != "string") {
+			return error("the value is not a string.");
+		}
+
+		var ID = DataType.getType("sap.ui.core.ID");
+
+		if (!(ID.isValid(key)) || (key.indexOf(":") != -1)) {
+			return error("the key is not valid (must be a valid sap.ui.core.ID without any colon).");
+		}
+
+		if (key == F6Navigation.fastNavigationKey) {
+			value = /^\s*(x|true)\s*$/i.test(value) ? "true" : "false"; // normalize values
+		} else if (key.indexOf("sap-ui") == 0) {
+			return error("the key is not valid (may not start with 'sap-ui').");
+		}
+
+		return {key: "data-" + key, value: value};
+
+	};
+
+	/**
+	 * Returns the data object with the given key
+	 */
+	function findCustomData(element, key) {
+		var aData = element.getAggregation("customData");
+		if (aData) {
+			for (var i = 0; i < aData.length; i++) {
+				if (aData[i].getKey() == key) {
+					return aData[i];
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Contains the data modification logic
+	 */
+	function setCustomData(element, key, value, writeToDom) {
+
+		// DELETE
+		if (value === null) { // delete this property
+			var dataObject = findCustomData(element, key);
+			if (!dataObject) {
+				return;
+			}
+
+			var dataCount = element.getAggregation("customData").length;
+			if (dataCount == 1) {
+				element.destroyAggregation("customData", true); // destroy if there is no other data
+			} else {
+				element.removeAggregation("customData", dataObject, true);
+				dataObject.destroy();
+			}
+
+			// ADD or CHANGE
+		} else {
+			var dataObject = findCustomData(element, key);
+			if (dataObject) {
+				dataObject.setValue(value);
+				dataObject.setWriteToDom(writeToDom);
+			} else {
+				var dataObject = new CustomData({key:key,value:value, writeToDom:writeToDom});
+				element.addAggregation("customData", dataObject, true);
+			}
+		}
+	}
+
+	/**
+	 * Retrieves, modifies or removes custom data attached to an <code>Element</code>.
+	 *
+	 * Usage:
+	 * <pre>
+	 *    data("myKey", myData)
+	 * </pre>
+	 * Attaches <code>myData</code> (which can be any JS data type, e.g. a number, a string, an object, or a function)
+	 * to this element, under the given key "myKey". If the key already exists,the value will be updated.
+	 *
+	 * <pre>
+	 *    data("myKey", myData, writeToDom)
+	 * </pre>
+	 * Attaches <code>myData</code> to this element, under the given key "myKey" and (if <code>writeToDom</code>
+	 * is true) writes key and value to the HTML. If the key already exists,the value will be updated.
+	 * While <code>oValue</code> can be any JS data type to be attached, it must be a string to be also
+	 * written to DOM. The key must also be a valid HTML attribute name (it must conform to <code>sap.ui.core.ID</code>
+	 * and may contain no colon) and may not start with "sap-ui". When written to HTML, the key is prefixed with "data-".
+	 *
+	 * <pre>
+	 *    data("myKey")
+	 * </pre>
+	 * Retrieves whatever data has been attached to this element (using the key "myKey") before
+	 *
+	 * <pre>
+	 *    data("myKey", null)
+	 * </pre>
+	 * Removes whatever data has been attached to this element (using the key "myKey") before
+	 *
+	 * <pre>
+	 *    data(null)
+	 * </pre>
+	 * Removes all data
+	 *
+	 * <pre>
+	 *    data()
+	 * </pre>
+	 * Returns all data, as a map
+	 *
+	 * <pre>
+	 *    data({"myKey1": myData, "myKey2": null})
+	 * </pre>
+	 * Attaches <code>myData</code> (using the key "myKey1" and removes any data that had been
+	 * attached for key "myKey2"
+	 *
+	 * @see See chapter {@link topic:91f0c3ee6f4d1014b6dd926db0e91070 Custom Data - Attaching Data Objects to Controls}
+	 *    in the documentation.
+	 *
+	 * @param {string|Object<string,any>|null} [vKeyOrData]
+	 *     Single key to set or remove, or an object with key/value pairs or <code>null</code> to remove
+	 *     all custom data
+	 * @param {string|any} [vValue]
+	 *     Value to set or <code>null</code> to remove the corresponding custom data
+	 * @param {boolean} [bWriteToDom=false]
+	 *     Whether this custom data entry should be written to the DOM during rendering
+	 * @returns {Object<string,any>|any|null|sap.ui.core.Element}
+	 *     A map with all custom data, a custom data value for a single specified key or <code>null</code>
+	 *     when no custom data exists for such a key or this element when custom data was to be removed.
+	 * @throws {TypeError}
+	 *     When the type of the given parameters doesn't match any of the documented usages
+	 * @public
+	 */
+	Element.prototype.data = function() {
+		var argLength = arguments.length;
+
+		if (argLength == 0) {                    // return ALL data as a map
+			var aData = this.getAggregation("customData"),
+				result = {};
 			if (aData) {
 				for (var i = 0; i < aData.length; i++) {
-					if (aData[i].getKey() == key) {
-						return aData[i];
-					}
+					result[aData[i].getKey()] = aData[i].getValue();
 				}
 			}
-			return null;
-		};
+			return result;
 
-		/**
-		 * Contains the data modification logic
-		 */
-		var setData = function(element, key, value, writeToDom) {
+		} else if (argLength == 1) {
+			var arg0 = arguments[0];
 
-			// DELETE
-			if (value === null) { // delete this property
-				var dataObject = getDataObject(element, key);
-				if (!dataObject) {
-					return;
-				}
-
-				var dataCount = element.getAggregation("customData").length;
-				if (dataCount == 1) {
-					element.destroyAggregation("customData", true); // destroy if there is no other data
-				} else {
-					element.removeAggregation("customData", dataObject, true);
-					dataObject.destroy();
-				}
-
-				// ADD or CHANGE
-			} else {
-				var CustomData = sap.ui.requireSync('sap/ui/core/CustomData');
-				var dataObject = getDataObject(element, key);
-				if (dataObject) {
-					dataObject.setValue(value);
-					dataObject.setWriteToDom(writeToDom);
-				} else {
-					var dataObject = new CustomData({key:key,value:value, writeToDom:writeToDom});
-					element.addAggregation("customData", dataObject, true);
-				}
-			}
-		};
-
-		/**
-		 * Attaches custom data to an <code>Element</code> or retrieves attached data.
-		 *
-		 * Usage:
-		 * <pre>
-		 *    data("myKey", myData)
-		 * </pre>
-		 * Attaches <code>myData</code> (which can be any JS data type, e.g. a number, a string, an object, or a function)
-		 * to this element, under the given key "myKey". If the key already exists,the value will be updated.
-		 *
-		 * <pre>
-		 *    data("myKey", myData, writeToDom)
-		 * </pre>
-		 * Attaches <code>myData</code> to this element, under the given key "myKey" and (if <code>writeToDom</code>
-		 * is true) writes key and value to the HTML. If the key already exists,the value will be updated.
-		 * While <code>oValue</code> can be any JS data type to be attached, it must be a string to be also
-		 * written to DOM. The key must also be a valid HTML attribute name (it must conform to <code>sap.ui.core.ID</code>
-		 * and may contain no colon) and may not start with "sap-ui". When written to HTML, the key is prefixed with "data-".
-		 *
-		 * <pre>
-		 *    data("myKey")
-		 * </pre>
-		 * Retrieves whatever data has been attached to this element (using the key "myKey") before
-		 *
-		 * <pre>
-		 *    data("myKey", null)
-		 * </pre>
-		 * Removes whatever data has been attached to this element (using the key "myKey") before
-		 *
-		 * <pre>
-		 *    data(null)
-		 * </pre>
-		 * Removes all data
-		 *
-		 * <pre>
-		 *    data()
-		 * </pre>
-		 * Returns all data, as a map
-		 *
-		 * @public
-		 */
-		Element.prototype.data = function() {
-			var argLength = arguments.length;
-
-			if (argLength == 0) {                    // return ALL data as a map
-				var aData = this.getAggregation("customData"),
-					result = {};
-				if (aData) {
-					for (var i = 0; i < aData.length; i++) {
-						result[aData[i].getKey()] = aData[i].getValue();
-					}
-				}
-				return result;
-
-			} else if (argLength == 1) {
-				var arg0 = arguments[0];
-
-				if (arg0 === null) {                  // delete ALL data
-					this.destroyAggregation("customData", true); // delete whole map
-					return this;
-
-				} else if (typeof arg0 == "string") { // return requested data element
-					var dataObject = getDataObject(this, arg0);
-					return dataObject ? dataObject.getValue() : null;
-
-				} else if (typeof arg0 == "object") { // should be a map - set multiple data elements
-					for (var key in arg0) { // TODO: improve performance and avoid executing setData multiple times
-						setData(this, key, arg0[key]);
-					}
-					return this;
-
-				} else {
-					// error, illegal argument
-					throw new Error("When data() is called with one argument, this argument must be a string, an object or null, but is " + (typeof arg0) + ":" + arg0 + " (on UI Element with ID '" + this.getId() + "')");
-				}
-
-			} else if (argLength == 2) {            // set or remove one data element
-				setData(this, arguments[0], arguments[1]);
+			if (arg0 === null) {                  // delete ALL data
+				this.destroyAggregation("customData", true); // delete whole map
 				return this;
 
-			} else if (argLength == 3) {            // set or remove one data element
-				setData(this, arguments[0], arguments[1], arguments[2]);
+			} else if (typeof arg0 == "string") { // return requested data element
+				var dataObject = findCustomData(this, arg0);
+				return dataObject ? dataObject.getValue() : null;
+
+			} else if (typeof arg0 == "object") { // should be a map - set multiple data elements
+				for (var key in arg0) { // TODO: improve performance and avoid executing setData multiple times
+					setCustomData(this, key, arg0[key]);
+				}
 				return this;
 
 			} else {
-				// error, illegal arguments
-				throw new Error("data() may only be called with 0-3 arguments (on UI Element with ID '" + this.getId() + "')");
+				// error, illegal argument
+				throw new TypeError("When data() is called with one argument, this argument must be a string, an object or null, but is " + (typeof arg0) + ":" + arg0 + " (on UI Element with ID '" + this.getId() + "')");
 			}
-		};
 
-	})();
+		} else if (argLength == 2) {            // set or remove one data element
+			setCustomData(this, arguments[0], arguments[1]);
+			return this;
+
+		} else if (argLength == 3) {            // set or remove one data element
+			setCustomData(this, arguments[0], arguments[1], arguments[2]);
+			return this;
+
+		} else {
+			// error, illegal arguments
+			throw new TypeError("data() may only be called with 0-3 arguments (on UI Element with ID '" + this.getId() + "')");
+		}
+	};
+
+	/**
+	 * Expose CustomData class privately
+	 * @private
+	 */
+	Element._CustomData = CustomData;
+
+	/*
+	 * Alternative implementation of <code>Element#data</code> which is applied after an element has been
+	 * destroyed. It prevents the creation of new CustomData instances.
+	 *
+	 * See {@link sap.ui.core.Element.prototype.destroy}
+	 */
+	function noCustomDataAfterDestroy() {
+		// Report and ignore only write calls; read and remove calls are well-behaving
+		var argLength = arguments.length;
+		if ( argLength === 1 && arguments[0] !== null && typeof arguments[0] == "object"
+			 || argLength > 1 && argLength < 4 && arguments[1] !== null ) {
+			Log.error("Cannot create custom data on an already destroyed element '" + this + "'");
+			return this;
+		}
+		return Element.prototype.data.apply(this, arguments);
+	}
+
 
 	/**
 	 * Create a clone of this Element.
@@ -1044,7 +1199,7 @@ sap.ui.define([
 		}
 
 		if (this._sapui_declarativeSourceInfo) {
-			oClone._sapui_declarativeSourceInfo = jQuery.extend({}, this._sapui_declarativeSourceInfo);
+			oClone._sapui_declarativeSourceInfo = Object.assign({}, this._sapui_declarativeSourceInfo);
 		}
 
 		return oClone;
@@ -1242,7 +1397,7 @@ sap.ui.define([
 	 * Returns the current media range of the Device or the closest media container
 	 *
 	 * @param {string} sName
-	 * @returns {map}
+	 * @returns {object}
 	 * @private
 	 * @sap-restricted
 	 */
@@ -1350,6 +1505,120 @@ sap.ui.define([
 			}
 		}
 	};
+
+	/**
+	 * Registry of all <code>sap.ui.core.Element</code>s that currently exist.
+	 *
+	 * @namespace sap.ui.core.Element.registry
+	 * @public
+	 */
+
+	/**
+	 * Number of existing elements.
+	 *
+	 * @type {int}
+	 * @readonly
+	 * @name sap.ui.core.Element.registry.size
+	 * @public
+	 */
+
+	/**
+	 * Return an object with all instances of <code>sap.ui.core.Element</code>,
+	 * keyed by their ID.
+	 *
+	 * Each call creates a new snapshot object. Depending on the size of the UI,
+	 * this operation therefore might be expensive. Consider to use the <code>forEach</code>
+	 * or <code>filter</code> method instead of executing similar operations on the returned
+	 * object.
+	 *
+	 * <b>Note</b>: The returned object is created by a call to <code>Object.create(null)</code>,
+	 * and therefore lacks all methods of <code>Object.prototype</code>, e.g. <code>toString</code> etc.
+	 *
+	 * @returns {Object<sap.ui.core.ID,sap.ui.core.Element>} Object with all elements, keyed by their ID
+	 * @name sap.ui.core.Element.registry.all
+	 * @function
+	 * @public
+	 */
+
+	/**
+	 * Retrieves an Element by its ID.
+	 *
+	 * When the ID is <code>null</code> or <code>undefined</code> or when there's no element with
+	 * the given ID, then <code>undefined</code> is returned.
+	 *
+	 * @param {sap.ui.core.ID} id ID of the element to retrieve
+	 * @returns {sap.ui.core.Element} Element with the given ID or <code>undefined</code>
+	 * @name sap.ui.core.Element.registry.get
+	 * @function
+	 * @public
+	 */
+
+	/**
+	 * Calls the given <code>callback</code> for each element.
+	 *
+	 * The expected signature of the callback is
+	 * <pre>
+	 *    function callback(oElement, sID)
+	 * </pre>
+	 * where <code>oElement</code> is the currently visited element instance and <code>sID</code>
+	 * is the ID of that instance.
+	 *
+	 * If elements are created or destroyed within the <code>callback</code>, then the behavior is
+	 * not specified. Newly added objects might or might not be visited. When an element is destroyed during
+	 * the filtering and was not visited yet, it might or might not be visited. As the behavior for such
+	 * concurrent modifications is not specified, it may change in newer releases.
+	 *
+	 * If a <code>thisArg</code> is given, it will be provided as <code>this</code> context when calling
+	 * <code>callback</code>. The <code>this</code> value that the implementation of <code>callback</code>
+	 * sees, depends on the usual resolution mechanism. E.g. when <code>callback</code> was bound to some
+	 * context object, that object wins over the given <code>thisArg</code>.
+	 *
+	 * @param {function(sap.ui.core.Element,sap.ui.core.ID)} callback
+	 *        Function to call for each element
+	 * @param {Object} [thisArg=undefined]
+	 *        Context object to provide as <code>this</code> in each call of <code>callback</code>
+	 * @throws {TypeError} If <code>callback</code> is not a function
+	 * @name sap.ui.core.Element.registry.forEach
+	 * @function
+	 * @public
+	 */
+
+	/**
+	 * Returns an array with elements for which the given <code>callback</code> returns a value that coerces
+	 * to <code>true</code>.
+	 *
+	 * The expected signature of the callback is
+	 * <pre>
+	 *    function callback(oElement, sID)
+	 * </pre>
+	 * where <code>oElement</code> is the currently visited element instance and <code>sID</code>
+	 * is the ID of that instance.
+	 *
+	 * If elements are created or destroyed within the <code>callback</code>, then the behavior is
+	 * not specified. Newly added objects might or might not be visited. When an element is destroyed during
+	 * the filtering and was not visited yet, it might or might not be visited. As the behavior for such
+	 * concurrent modifications is not specified, it may change in newer releases.
+	 *
+	 * If a <code>thisArg</code> is given, it will be provided as <code>this</code> context when calling
+	 * <code>callback</code>. The <code>this</code> value that the implementation of <code>callback</code>
+	 * sees, depends on the usual resolution mechanism. E.g. when <code>callback</code> was bound to some
+	 * context object, that object wins over the given <code>thisArg</code>.
+	 *
+	 * This function returns an array with all elements matching the given predicate. The order of the
+	 * elements in the array is not specified and might change between calls (over time and across different
+	 * versions of UI5).
+	 *
+	 * @param {function(sap.ui.core.Element,sap.ui.core.ID):boolean} callback
+	 *        predicate against which each element is tested
+	 * @param {Object} [thisArg=undefined]
+	 *        context object to provide as <code>this</code> in each call of <code>callback</code>
+	 * @returns {sap.ui.core.Element[]}
+	 *        Array of elements matching the predicate; order is undefined and might change in newer versions of UI5
+	 * @throws {TypeError} If <code>callback</code> is not a function
+	 * @name sap.ui.core.Element.registry.filter
+	 * @function
+	 * @public
+	 */
 
 	return Element;
 

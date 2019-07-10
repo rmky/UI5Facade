@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,7 +18,6 @@ sap.ui.define([
 	'sap/ui/model/FilterProcessor',
 	'sap/ui/model/Sorter',
 	'sap/ui/model/SorterProcessor',
-	"sap/base/util/array/diff",
 	"sap/base/util/uid",
 	"sap/base/util/deepEqual",
 	"sap/base/Log",
@@ -38,7 +37,6 @@ sap.ui.define([
 			FilterProcessor,
 			Sorter,
 			SorterProcessor,
-			diff,
 			uid,
 			deepEqual,
 			Log,
@@ -50,7 +48,7 @@ sap.ui.define([
 
 	/**
 	 * @class
-	 * List binding implementation for oData format.
+	 * List binding implementation for OData format.
 	 *
 	 * @param {sap.ui.model.odata.v2.ODataModel} oModel Model that this list binding belongs to
 	 * @param {string} sPath Path into the model data, relative to the given <code>oContext</code>
@@ -236,7 +234,7 @@ sap.ui.define([
 			if (this.bUseExtendedChangeDetection) {
 				//Check diff
 				if (this.aLastContexts && iStartIndex < this.iLastEndIndex) {
-					aContexts.diff = diff(this.aLastContextData, aContextData);
+					aContexts.diff = this.diffData(this.aLastContextData, aContextData);
 				}
 			}
 			this.iLastEndIndex = iStartIndex + iLength;
@@ -305,7 +303,9 @@ sap.ui.define([
 				break;
 			}
 			oContext = this.oModel.getContext('/' + sKey);
+			oContext.sDeepPath = this.oModel.resolveDeep(this.sPath, this.oContext) + sKey.substr(sKey.indexOf("("));
 			aContexts.push(oContext);
+
 		}
 
 		return aContexts;
@@ -492,6 +492,8 @@ sap.ui.define([
 				this.iLength = oRef.length;
 				this.bLengthFinal = true;
 				this.bDataAvailable = true;
+				// ensure sorters/filters for an expanded list are initialized
+				this._initSortersFilters();
 				this.applyFilter();
 				this.applySort();
 			} else { // means that expanded data has no data available e.g. for 0..n relations
@@ -724,7 +726,7 @@ sap.ui.define([
 			}
 			this.bSkipDataEvents = false;
 			//if load is triggered by a refresh we have to check the refreshGroup
-			sGroupId = this.sRefreshGroup ? this.sRefreshGroup : this.sGroupId;
+			sGroupId = this.sRefreshGroupId ? this.sRefreshGroupId : this.sGroupId;
 			this.mRequestHandles[sGuid] = this.oModel.read(sPath, {groupId: sGroupId, urlParameters: aParams, success: fnSuccess, error: fnError});
 		}
 
@@ -819,7 +821,7 @@ sap.ui.define([
 			// execute the request and use the metadata if available
 			sPath = sPath + "/$count";
 			//if load is triggered by a refresh we have to check the refreshGroup
-			sGroupId = this.sRefreshGroup ? this.sRefreshGroup : this.sGroupId;
+			sGroupId = this.sRefreshGroupId ? this.sRefreshGroupId : this.sGroupId;
 			this.oCountHandle = this.oModel.read(sPath, {
 				withCredentials: this.oModel.bWithCredentials,
 				groupId: sGroupId,
@@ -846,9 +848,9 @@ sap.ui.define([
 			sGroupId = bForceUpdate;
 			bForceUpdate = false;
 		}
-		this.sRefreshGroup = sGroupId;
+		this.sRefreshGroupId = sGroupId;
 		this._refresh(bForceUpdate);
-		this.sRefreshGroup = undefined;
+		this.sRefreshGroupId = undefined;
 	};
 
 	/**
@@ -977,11 +979,9 @@ sap.ui.define([
 		var bCreatedRelative = this.isRelative() && this.oContext && this.oContext.bCreated;
 		if (this.oModel.oMetadata && this.oModel.oMetadata.isLoaded() && this.bInitial && !bCreatedRelative) {
 
-
 			if (!this._checkPathType()) {
 				Log.error("List Binding is not bound against a list for " + this.oModel.resolve(this.sPath, this.oContext));
 			}
-
 
 			this.bInitial = false;
 			this._initSortersFilters();
@@ -1002,7 +1002,6 @@ sap.ui.define([
 	 *
 	 * @param {boolean} bForceUpdate Force control update
 	 * @param {object} mChangedEntities Map of changed entities
-	 * @returns {boolean} bSuccess Success
 	 * @private
 	 */
 	ODataListBinding.prototype.checkUpdate = function(bForceUpdate, mChangedEntities) {
@@ -1013,14 +1012,17 @@ sap.ui.define([
 				aOldRefs;
 
 		if ((this.bSuspended && !this.bIgnoreSuspend && !bForceUpdate) || this.bPendingRequest) {
-			return false;
-		}
-		this.bIgnoreSuspend = false;
-
-		// Don't update while request is pending
-		if (this.bPendingRequest) {
 			return;
 		}
+
+		if (this.bInitial) {
+			if (this.oContext && this.oContext.isUpdated()) {
+				this.initialize(); // If context changed from created to persisted we need to initialize the binding...
+			}
+			return;
+		}
+
+		this.bIgnoreSuspend = false;
 
 		if (!bForceUpdate && !this.bNeedsUpdate) {
 

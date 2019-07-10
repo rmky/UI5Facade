@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.61.2"
+      "version": "1.67.1"
     },
     "title": "SAPUI5 library with Fiori controls.",
     "description": "SAPUI5 library with Fiori controls.",
@@ -22,13 +22,16 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.61",
+      "minUI5Version": "1.67",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.61.2"
+          "minVersion": "1.67.1"
+        },
+        "sap.ui.layout": {
+          "minVersion": "1.67.1"
         },
         "sap.m": {
-          "minVersion": "1.61.2"
+          "minVersion": "1.67.1"
         }
       }
     },
@@ -37,15 +40,22 @@
       "content": {
         "controls": [
           "sap.f.Avatar",
+          "sap.f.cards.Header",
+          "sap.f.cards.NumericHeader",
+          "sap.f.cards.NumericSideIndicator",
           "sap.f.Card",
+          "sap.f.GridContainer",
           "sap.f.DynamicPage",
           "sap.f.DynamicPageHeader",
           "sap.f.DynamicPageTitle",
           "sap.f.FlexibleColumnLayout",
           "sap.f.semantic.SemanticPage",
-          "sap.f.GridList"
+          "sap.f.GridList",
+          "sap.f.ShellBar"
         ],
         "elements": [
+          "sap.f.DynamicPageAccessibleLandmarkInfo",
+          "sap.f.GridContainerItemLayoutData",
           "sap.f.semantic.AddAction",
           "sap.f.semantic.CloseAction",
           "sap.f.semantic.CopyAction",
@@ -57,6 +67,7 @@
           "sap.f.semantic.FlagAction",
           "sap.f.semantic.FooterMainAction",
           "sap.f.semantic.FullScreenAction",
+          "sap.f.semantic.MainAction",
           "sap.f.semantic.MessagesIndicator",
           "sap.f.semantic.NegativeAction",
           "sap.f.semantic.PositiveAction",
@@ -67,12 +78,24 @@
           "sap.f.semantic.SendEmailAction",
           "sap.f.semantic.SendMessageAction",
           "sap.f.semantic.ShareInJamAction",
-          "sap.f.semantic.TitleMainAction"
+          "sap.f.semantic.TitleMainAction",
+          "sap.f.SearchManager"
         ],
         "types": [
-          "sap.f.LayoutType",
+          "sap.f.AvatarImageFitType",
+          "sap.f.AvatarShape",
+          "sap.f.AvatarSize",
+          "sap.f.AvatarType",
+          "sap.f.cards.HeaderPosition",
           "sap.f.DynamicPageTitleArea",
-          "sap.f.DynamicPageTitleShrinkRatio"
+          "sap.f.DynamicPageTitleShrinkRatio",
+          "sap.f.LayoutType"
+        ],
+        "interfaces": [
+          "sap.f.cards.IHeader",
+          "sap.f.ICard",
+          "sap.f.IShellBar",
+          "sap.f.IDynamicPageStickyContent"
         ]
       }
     }

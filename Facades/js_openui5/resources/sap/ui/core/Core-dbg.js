@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -42,6 +42,7 @@ sap.ui.define([
 	'sap/base/util/LoaderExtensions',
 	'sap/base/util/isEmptyObject',
 	'sap/base/util/each',
+	'sap/ui/VersionInfo',
 	'sap/ui/events/jquery/EventSimulation'
 ],
 	function(
@@ -80,7 +81,8 @@ sap.ui.define([
 		initTraces,
 		LoaderExtensions,
 		isEmptyObject,
-		each
+		each,
+		VersionInfo
 		/* ,EventSimulation */
 	) {
 
@@ -217,7 +219,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 * @final
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @alias sap.ui.core.Core
 	 * @public
 	 * @hideconstructor
@@ -300,16 +302,13 @@ sap.ui.define([
 			 */
 			this.oEventBus = null;
 
-			/**
-			 * Map of of created Elements keyed by their id.
-			 *
-			 * Each element registers itself in its constructor and deregisters itself in its
-			 * destroy method.
-			 *
-			 * @private
-			 * @todo get rid of this collection as it represents a candidate for memory leaks
-			 */
-			this.mElements = {};
+			Object.defineProperty(this, "mElements", {
+				get: function() {
+					Log.error("oCore.mElements was a private member and has been removed. Use one of the methods in sap.ui.core.Element.registry instead");
+					return Element.registry.all(); // this is a very costly snapshot!
+				},
+				configurable: false
+			});
 
 			/**
 			 * Map of of created objects structured by their type which contains a map
@@ -322,7 +321,6 @@ sap.ui.define([
 			 * @todo get rid of this collection as it represents a candidate for memory leaks
 			 */
 			this.mObjects = {
-				"component": {},
 				"template": {}
 			};
 
@@ -672,13 +670,6 @@ sap.ui.define([
 		ElementMetadata.prototype.register = function(oMetadata) {
 			that.registerElementClass(oMetadata);
 		};
-		// grant Element "friend" access to Core for (de-)registration
-		Element.prototype.register = function() {
-			that.registerElement(this);
-		};
-		Element.prototype.deregister = function() {
-			that.deregisterElement(this);
-		};
 
 		// grant Element "friend" access to Core / FocusHandler to update the given elements focus info
 		Element._updateFocusInfo = function(oElement) {
@@ -686,23 +677,6 @@ sap.ui.define([
 				that.oFocusHandler.updateControlFocusInfo(oElement);
 			}
 		};
-
-		// grant Component "friend" access to Core for (de-)registration
-		Component.prototype.register = function() {
-			that.registerObject(this);
-		};
-		Component.prototype.deregister = function() {
-			var sComponentId = this.sId;
-			for (var sElementId in that.mElements) {
-				var oElement = that.mElements[sElementId];
-				if ( oElement._sapui_candidateForDestroy && oElement._sOwnerId === sComponentId && !oElement.getParent() ) {
-					Log.debug("destroying dangling template " + oElement + " when destroying the owner component");
-					oElement.destroy();
-				}
-			}
-			that.deregisterObject(this);
-		};
-
 	};
 
 	/**
@@ -1198,8 +1172,6 @@ sap.ui.define([
 		Log.info("Initialized",null,METHOD);
 		Measurement.end("coreInit");
 
-		this.bInitialized = true;
-
 		// start the plugins
 		Log.info("Starting Plugins",null,METHOD);
 		this.startPlugins();
@@ -1207,19 +1179,21 @@ sap.ui.define([
 
 		this._createUIAreas();
 
-		this.oThemeCheck.fireThemeChangedEvent(true);
-
-		this._executeOnInit();
-
-		this._setupRootComponent();
-
 		this._setBodyAccessibilityRole();
 
-		this._executeInitListeners();
+		this.oThemeCheck.fireThemeChangedEvent(true);
 
-		if ( this.isThemeApplied() || !this.oConfiguration['xx-waitForTheme'] ) {
+		var sWaitForTheme = this.oConfiguration['xx-waitForTheme'];
+		if ( this.isThemeApplied() || !sWaitForTheme ) {
+
+			this._executeInitialization();
 			this.renderPendingUIUpdates("during Core init"); // directly render without setTimeout, so rendering is guaranteed to be finished when init() ends
-		} else {
+			Measurement.end("coreComplete");
+
+		} else if (sWaitForTheme === "rendering") {
+
+			this._executeInitialization();
+
 			oRenderLog.debug("delay initial rendering until theme has been loaded");
 			_oEventProvider.attachEventOnce(Core.M_EVENTS.ThemeChanged, function() {
 				setTimeout(
@@ -1227,9 +1201,26 @@ sap.ui.define([
 					Device.browser.safari ? 50 : 0
 				);
 			}, this);
-		}
 
-		Measurement.end("coreComplete");
+			Measurement.end("coreComplete");
+
+		} else if (sWaitForTheme === "init") {
+
+			oRenderLog.debug("delay init event and initial rendering until theme has been loaded");
+			_oEventProvider.attachEventOnce(Core.M_EVENTS.ThemeChanged, function() {
+
+				this._executeInitialization();
+
+				setTimeout(
+					this.renderPendingUIUpdates.bind(this, "after theme has been loaded"),
+					Device.browser.safari ? 50 : 0
+				);
+
+				Measurement.end("coreComplete");
+
+			}, this);
+
+		}
 	};
 
 	Core.prototype._createUIAreas = function() {
@@ -1364,6 +1355,16 @@ sap.ui.define([
 				fn();
 			});
 		}
+	};
+
+	Core.prototype._executeInitialization = function() {
+		if (this.bInitialized) {
+			return;
+		}
+		this.bInitialized = true;
+		this._executeOnInit();
+		this._setupRootComponent();
+		this._executeInitListeners();
 	};
 
 	/**
@@ -1623,6 +1624,7 @@ sap.ui.define([
 				oManifest = getManifest(lib);
 
 			if ( dependencies && dependencies.length ) {
+				dependencies = VersionInfo._getTransitiveDependencyForLibraries(dependencies);
 				aPromises = dependencies.map(preloadLibraryAsync.bind(that));
 			}
 
@@ -1686,11 +1688,14 @@ sap.ui.define([
 	 * @private
 	*/
 	function registerPreloadedModules(oData, sURL) {
-		var modules = oData.modules;
+		var modules = oData.modules,
+				fnUI5ToRJS = function(sName) {
+					return /^jquery\.sap\./.test(sName) ? sName : sName.replace(/\./g, "/");
+				};
 			if ( Version(oData.version || "1.0").compareTo("2.0") < 0 ) {
 				modules = {};
 				for ( var sName in oData.modules ) {
-					modules[LoaderExtensions.ui5ToRJS(sName) + ".js"] = oData.modules[sName];
+					modules[fnUI5ToRJS(sName) + ".js"] = oData.modules[sName];
 				}
 			}
 			sap.ui.require.preload(modules, oData.name, sURL);
@@ -1840,17 +1845,11 @@ sap.ui.define([
 		return sap.ui.require.toUrl(sModuleName.replace(/\./g, "/") + sSuffix);
 	}
 
-	/**
-	 * Registers the given module path.
-	 * @param {string} sModuleName module name.
-	 * @param {string} sPath module path.
+	/*
+	 * Registers a URL prefix for a module name prefix
 	 */
-	function registerModulePath(sModuleName, sPath) {
-		var mPaths = {};
-		mPaths[sModuleName.replace(/\./g, "/")] = sPath;
-		sap.ui.loader.config({
-			paths: mPaths
-		});
+	function registerModulePath(sModuleNamePrefix, sUrlPrefix) {
+		LoaderExtensions.registerResourcePath(sModuleNamePrefix.replace(/\./g, "/"), sUrlPrefix);
 	}
 
 	/**
@@ -1900,7 +1899,7 @@ sap.ui.define([
 		assert(vUrl === undefined ||
 			typeof vUrl === 'boolean' ||
 			typeof vUrl === 'string' ||
-			typeof vUrl === 'object' && (vUrl.url == null || vUrl.url === 'string') && (vUrl.async == null || typeof vUrl.async === 'boolean'),
+			typeof vUrl === 'object' && (vUrl.url == null || typeof vUrl.url === 'string') && (vUrl.async == null || typeof vUrl.async === 'boolean'),
 			"vUrl must be empty or a string or an object with an optional property 'url' of type string and an optional boolean property 'async'");
 
 		if ( typeof vUrl === 'boolean' ) {
@@ -2006,6 +2005,8 @@ sap.ui.define([
 		}
 
 		if ( bAsync ) {
+
+			aLibraries = VersionInfo._getTransitiveDependencyForLibraries(aLibraries);
 
 			var preloaded = bPreload ? Promise.all(aLibraries.map(preloadLibraryAsync.bind(this))) : Promise.resolve(true);
 			return bRequire ? preloaded.then(requireLibsAsync) : preloaded;
@@ -2285,7 +2286,7 @@ sap.ui.define([
 				this.includeLibraryTheme(sLibName, undefined, sQuery);
 
 				if (this.oThemeCheck && this.isInitialized()) {
-					this.oThemeCheck.fireThemeChangedEvent(true);
+					this.oThemeCheck.fireThemeChangedEvent(false);
 				}
 			}
 		}
@@ -2395,7 +2396,7 @@ sap.ui.define([
 	 * copy of the internal data (for efficiency reasons) and the framework is not prepared
 	 * to handle modifications to these objects.
 	 *
-	 * @return {map} Map of library info objects keyed by the library names.
+	 * @return {Object<string,Object>} Map of library info objects keyed by the library names.
 	 * @public
 	 */
 	Core.prototype.getLoadedLibraries = function() {
@@ -2811,7 +2812,7 @@ sap.ui.define([
 		var sEventId = Core.M_EVENTS.ThemeChanged;
 		var oEvent = jQuery.Event(sEventId);
 		oEvent.theme = mParameters.theme;
-		each(this.mElements, function (prop, oElement) {
+		Element.registry.forEach(function(oElement) {
 			oElement._handleEvent(oEvent);
 		});
 
@@ -2929,11 +2930,14 @@ sap.ui.define([
 		 * and then to update their bindings and corresponding data types (phase 2)
 		 */
 		function notifyAll(iPhase) {
-			var aElementsToNotify = [this.mUIAreas, this.mObjects["component"], this.mElements];
-			aElementsToNotify.forEach(function (mElements) {
-				each(mElements, function (prop, oElement) {
-					fnAdapt.call(oElement, iPhase);
-				});
+			each(this.mUIAreas, function(prop, oUIArea) {
+				fnAdapt.call(oUIArea, iPhase);
+			});
+			Component.registry.forEach(function(oComponent) {
+				fnAdapt.call(oComponent, iPhase);
+			});
+			Element.registry.forEach(function(oElement) {
+				fnAdapt.call(oElement, iPhase);
 			});
 		}
 
@@ -2954,7 +2958,7 @@ sap.ui.define([
 		}
 
 		// notify Elements via a pseudo browser event (onlocalizationChanged, note the lower case 'l')
-		each(this.mElements, function (prop, oElement) {
+		Element.registry.forEach(function(oElement) {
 			oElement._handleEvent(oBrowserEvent);
 		});
 
@@ -3055,44 +3059,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Registers the given element. Must be called once during construction.
-	 * @param {sap.ui.core.Element} oElement
-	 * @private
-	 */
-	Core.prototype.registerElement = function(oElement) {
-
-		var sId = oElement.getId(),
-			oldElement = this.mElements[sId];
-
-		if ( oldElement && oldElement !== oElement ) {
-			if ( oldElement._sapui_candidateForDestroy ) {
-				Log.debug("destroying dangling template " + oldElement + " when creating new object with same ID");
-				oldElement.destroy();
-			} else {
-				// duplicate ID detected => fail or at least log a warning
-				if (this.oConfiguration.getNoDuplicateIds()) {
-					Log.error("adding element with duplicate id '" + sId + "'");
-					throw new Error("Error: adding element with duplicate id '" + sId + "'");
-				} else {
-					Log.warning("adding element with duplicate id '" + sId + "'");
-				}
-			}
-		}
-
-		this.mElements[sId] = oElement;
-
-	};
-
-	/**
-	 * Deregisters the given element. Must be called once during destruction.
-	 * @param {sap.ui.core.Element} oElement
-	 * @private
-	 */
-	Core.prototype.deregisterElement = function(oElement) {
-		delete this.mElements[oElement.getId()];
-	};
-
-	/**
 	 * Registers the given object. Must be called once during construction.
 	 * @param {sap.ui.base.ManagedObject} oObject the object instance
 	 * @private
@@ -3134,53 +3100,9 @@ sap.ui.define([
 	 * @param {string} sId ID of the element to search for
 	 * @return {sap.ui.core.Element} Element with the given ID or <code>undefined</code>
 	 * @public
+	 * @function
 	 */
-	Core.prototype.byId = function(sId) {
-		assert(sId == null || typeof sId === "string", "sId must be a string when defined");
-		// allow null, as this occurs frequently and it is easier to check whether there is a control in the end than
-		// first checking whether there is an ID and then checking for a control
-
-		/*
-		// test alternative implementation
-		function findById(sId, mUIAreas) {
-			function _find(oControl) {
-				if ( !oControl )
-					return undefined;
-				if ( oControl.getId() === sId ) {
-					return oControl;
-				}
-				for (var n in oControl.mAggregations) {
-					var a = oControl.mAggregations[n];
-					if ( Array.isArray(a) ) {
-						for (var i=0; i<a.length; i++) {
-							var r = _find(a[i]);
-							if ( r ) return r;
-						}
-					} else if ( a instanceof sap.ui.core.Element ) {
-						var r = _find(a[i]);
-						if ( r ) return r;
-					}
-				}
-				return undefined;
-			}
-
-			//var t0=new Date().getTime();
-			var r=undefined;
-			for (var n in mUIAreas) {
-				r=_find(mUIAreas[n].getRootControl()); //TODO: Adapt to mUIAreas[n].getContent
-				if ( r ) break;
-			}
-			//var t1=new Date().getTime();
-			//t=t+(t1-t0);
-			return r;
-		}
-
-		if ( findById(sId, this.mUIAreas) !== this.mElements[sId] ) {
-			Log.error("failed to resolve " + sId + " (" + this.mElements[sId] + ")");
-		}
-		*/
-		return sId == null ? undefined : this.mElements[sId];
-	};
+	Core.prototype.byId = Element.registry.get;
 
 	/**
 	 * Returns the registered element for the given ID, if any.
@@ -3190,7 +3112,7 @@ sap.ui.define([
 	 * @function
 	 * @public
 	 */
-	Core.prototype.getControl = Core.prototype.byId;
+	Core.prototype.getControl = Element.registry.get;
 
 	/**
 	 * Returns the registered element for the given ID, if any.
@@ -3200,7 +3122,7 @@ sap.ui.define([
 	 * @function
 	 * @public
 	 */
-	Core.prototype.getElementById = Core.prototype.byId;
+	Core.prototype.getElementById = Element.registry.get;
 
 	/**
 	 * Returns the registered object for the given id, if any.
@@ -3219,11 +3141,10 @@ sap.ui.define([
 	 * Returns the registered component for the given id, if any.
 	 * @param {string} sId
 	 * @return {sap.ui.core.Component} the component for the given id
+	 * @function
 	 * @public
 	 */
-	Core.prototype.getComponent = function(sId) {
-		return this.getObject("component", sId);
-	};
+	Core.prototype.getComponent = Component.registry.get;
 
 	/**
 	 * Returns the registered template for the given id, if any.
@@ -3302,18 +3223,10 @@ sap.ui.define([
 	};
 
 	/**
-	 * Interval for central interval timer.
+	 * Singleton instance
 	 * @private
 	 */
-	Core._I_INTERVAL = 200;
-
-	/**
-	 * Obsolete but kept for backward compatibility.
-	 * Note that the ResizeHandler has been required above, so we can access it here.
-	 * @private
-	 * @name sap.ui.core.ResizeHandler#I_INTERVAL
-	 */
-	ResizeHandler.prototype.I_INTERVAL = Core._I_INTERVAL;
+	var oIntervalTrigger;
 
 	/**
 	 * Registers a listener to the central interval timer.
@@ -3321,14 +3234,14 @@ sap.ui.define([
 	 * @param {function} fnFunction callback to be called periodically
 	 * @param {object} [oListener] optional context object to call the callback on.
 	 * @since 1.16.0
+	 * @deprecated Since 1.61. Use <code>IntervalTrigger.addListener()</code> from "sap/ui/core/IntervalTrigger" module.
 	 * @public
 	 */
 	Core.prototype.attachIntervalTimer = function(fnFunction, oListener) {
-		if (!this.oTimedTrigger) {
-			var IntervalTrigger = sap.ui.requireSync("sap/ui/core/IntervalTrigger");
-			this.oTimedTrigger = new IntervalTrigger(Core._I_INTERVAL);
+		if (!oIntervalTrigger) {
+			oIntervalTrigger = sap.ui.requireSync("sap/ui/core/IntervalTrigger");
 		}
-		this.oTimedTrigger.addListener(fnFunction, oListener);
+		oIntervalTrigger.addListener(fnFunction, oListener);
 	};
 
 	/**
@@ -3340,11 +3253,12 @@ sap.ui.define([
 	 * @param {function} fnFunction function to unregister
 	 * @param {object} [oListener] context object given during registration
 	 * @since 1.16.0
+	 * @deprecated Since 1.61. Use <code>IntervalTrigger.removeListener()</code> from "sap/ui/core/IntervalTrigger" module.
 	 * @public
 	 */
 	Core.prototype.detachIntervalTimer = function(fnFunction, oListener) {
-		if (this.oTimedTrigger) {
-			this.oTimedTrigger.removeListener(fnFunction, oListener);
+		if (oIntervalTrigger) {
+			oIntervalTrigger.removeListener(fnFunction, oListener);
 		}
 	};
 
@@ -3606,14 +3520,9 @@ sap.ui.define([
 	 * @public
 	 */
 	Core.prototype.byFieldGroupId = function(vFieldGroupIds) {
-		var aResult = [];
-		for (var n in this.mElements) {
-			var oElement = this.mElements[n];
-			if (oElement instanceof Control && oElement.checkFieldGroupIds(vFieldGroupIds)) {
-				aResult.push(oElement);
-			}
-		}
-		return aResult;
+		return Element.registry.filter(function(oElement) {
+			return oElement instanceof Control && oElement.checkFieldGroupIds(vFieldGroupIds);
+		});
 	};
 
 	/**
@@ -3847,24 +3756,20 @@ sap.ui.define([
 
 
 	/**
-	 * Fire event parseError to attached listeners.
+	 * Fire event <code>parseError</code> to attached listeners.
 	 *
-	 * Expects following event parameters:
-	 * <ul>
-	 * <li>'element' of type <code>sap.ui.core.Element</code> </li>
-	 * <li>'property' of type <code>string</code> </li>
-	 * <li>'type' of type <code>string</code> </li>
-	 * <li>'newValue' of type <code>object</code> </li>
-	 * <li>'oldValue' of type <code>object</code> </li>
-	 * <li>'exception' of type <code>object</code> </li>
-	 * </ul>
-	 *
-	 * @param {Map} [mArguments] the arguments to pass along with the event.
-	 * @return {sap.ui.core.Core} <code>this</code> to allow method chaining
+	 * @param {object} [oParameters] the arguments to pass along with the event.
+	 * @param {sap.ui.core.Element} oParameters.element The Element where the parse error occurred
+	 * @param {string}oParameters.property The property name of the element where the parse error occurred
+	 * @param {sap.ui.model.Type} oParameters.type The type of the property
+	 * @param {object} oParameters.newValue The value of the property which was entered when the parse error occurred
+	 * @param {object} oParameters.oldValue The value of the property which was present before a new value was entered (before the parse error)
+	 * @param {object} oParameters.exception The exception object which occurred and has more information about the parse error
+	 * @returns {sap.ui.core.Core} <code>this</code> to allow method chaining
 	 * @protected
 	 */
-	Core.prototype.fireParseError = function(mArguments) {
-		_oEventProvider.fireEvent(Core.M_EVENTS.ParseError, mArguments);
+	Core.prototype.fireParseError = function(oParameters) {
+		_oEventProvider.fireEvent(Core.M_EVENTS.ParseError, oParameters);
 		return this;
 	};
 
@@ -3876,7 +3781,6 @@ sap.ui.define([
 	 * @param {sap.ui.base.Event} oControlEvent
 	 * @param {sap.ui.base.EventProvider} oControlEvent.getSource
 	 * @param {object} oControlEvent.getParameters
-
 	 * @param {sap.ui.core.Element} oControlEvent.getParameters.element The Element where the parse error occurred
 	 * @param {string} oControlEvent.getParameters.property The property name of the element where the parse error occurred
 	 * @param {sap.ui.model.Type} oControlEvent.getParameters.type The type of the property
@@ -3887,24 +3791,20 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Fire event validationError to attached listeners.
+	 * Fire event <code>validationError</code> to attached listeners.
 	 *
-	 * Expects following event parameters:
-	 * <ul>
-	 * <li>'element' of type <code>sap.ui.core.Element</code> </li>
-	 * <li>'property' of type <code>string</code> </li>
-	 * <li>'type' of type <code>string</code> </li>
-	 * <li>'newValue' of type <code>object</code> </li>
-	 * <li>'oldValue' of type <code>object</code> </li>
-	 * <li>'exception' of type <code>object</code> </li>
-	 * </ul>
-	 *
-	 * @param {Map} [mArguments] the arguments to pass along with the event.
+	 * @param {object} [oParameters] the arguments to pass along with the event.
+	 * @param {sap.ui.core.Element} oParameters.element The Element where the validation error occurred
+	 * @param {string}oParameters.property The property name of the element where the validation error occurred
+	 * @param {sap.ui.model.Type} oParameters.type The type of the property
+	 * @param {object} oParameters.newValue The value of the property which was entered when the validation error occurred
+	 * @param {object} oParameters.oldValue The value of the property which was present before a new value was entered (before the validation error)
+	 * @param {object} oParameters.exception The exception object which occurred and has more information about the validation error
 	 * @return {sap.ui.core.Core} <code>this</code> to allow method chaining
 	 * @protected
 	 */
-	Core.prototype.fireValidationError = function(mArguments) {
-		_oEventProvider.fireEvent(Core.M_EVENTS.ValidationError, mArguments);
+	Core.prototype.fireValidationError = function(oParameters) {
+		_oEventProvider.fireEvent(Core.M_EVENTS.ValidationError, oParameters);
 		return this;
 	};
 
@@ -3916,7 +3816,6 @@ sap.ui.define([
 	 * @param {sap.ui.base.Event} oControlEvent
 	 * @param {sap.ui.base.EventProvider} oControlEvent.getSource
 	 * @param {object} oControlEvent.getParameters
-
 	 * @param {sap.ui.core.Element} oControlEvent.getParameters.element The Element where the validation error occurred
 	 * @param {string} oControlEvent.getParameters.property The property name of the element where the validation error occurred
 	 * @param {sap.ui.model.Type} oControlEvent.getParameters.type The type of the property
@@ -3927,24 +3826,20 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Fire event formatError to attached listeners.
+	 * Fire event <code>formatError</code> to attached listeners.
 	 *
-	 * Expects following event parameters:
-	 * <ul>
-	 * <li>'element' of type <code>sap.ui.core.Element</code> </li>
-	 * <li>'property' of type <code>string</code> </li>
-	 * <li>'type' of type <code>string</code> </li>
-	 * <li>'newValue' of type <code>object</code> </li>
-	 * <li>'oldValue' of type <code>object</code> </li>
-	 * <li>'exception' of type <code>object</code> </li>
-	 * </ul>
-	 *
-	 * @param {Map} [mArguments] the arguments to pass along with the event.
-	 * @return {sap.ui.core.Core} <code>this</code> to allow method chaining
+	 * @param {object} [oParameters] Parameters to pass along with the event.
+	 * @param {sap.ui.core.Element} oParameters.element The Element where the format error occurred
+	 * @param {string} oParameters.property The property name of the element where the format error occurred
+	 * @param {sap.ui.model.Type} oParameters.type The type of the property
+	 * @param {any} oParameters.newValue The value of the property which was entered when the format error occurred
+	 * @param {any} oParameters.oldValue The value of the property which was present before a new value was entered (before the format error)
+	 * @param {object} oParameters.exception The exception object which occurred and has more information about the format error
+	 * @returns {sap.ui.core.Core} <code>this</code> to allow method chaining
 	 * @protected
 	 */
-	Core.prototype.fireFormatError = function(mArguments) {
-		_oEventProvider.fireEvent(Core.M_EVENTS.FormatError, mArguments);
+	Core.prototype.fireFormatError = function(oParameters) {
+		_oEventProvider.fireEvent(Core.M_EVENTS.FormatError, oParameters);
 		return this;
 	};
 
@@ -3956,7 +3851,6 @@ sap.ui.define([
 	 * @param {sap.ui.base.Event} oControlEvent
 	 * @param {sap.ui.base.EventProvider} oControlEvent.getSource
 	 * @param {object} oControlEvent.getParameters
-
 	 * @param {sap.ui.core.Element} oControlEvent.getParameters.element The Element where the format error occurred
 	 * @param {string} oControlEvent.getParameters.property The property name of the element where the format error occurred
 	 * @param {sap.ui.model.Type} oControlEvent.getParameters.type The type of the property

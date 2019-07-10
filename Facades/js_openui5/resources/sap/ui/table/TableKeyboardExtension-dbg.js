@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -48,7 +48,7 @@ sap.ui.define([
 				bIEFocusOutlineWorkaroundApplied = true;
 			}
 			var oCellInfo = TableUtils.getCellInfo(oElement) || {};
-			if (oCellInfo.cell) {
+			if (oCellInfo.isOfType(TableUtils.CELLTYPE.ANY)) {
 				oCellInfo.cell.attr("data-sap-ui-table-focus", Date.now());
 			}
 		}
@@ -95,14 +95,42 @@ sap.ui.define([
 	 * "this" in the function context is the table instance.
 	 */
 	var ExtensionDelegate = {
+		onBeforeRendering: function(oEvent) {
+			/*
+			 * In a normal rendering, the process is as follows:
+			 * 2. The onAfterRendering delegates of rendered controls are called by the sap.ui.core.RenderManager after writing to DOM.
+			 * 3. The KeyboardExtension invalidates the ItemNavigation in its onAfterRendering delegate.
+			 * 4. The RenderManager calls sap.ui.core.FocusHandler#restoreFocus.
+			 *
+			 * If only the rows are rendered:
+			 * 2. The table calls sap.ui.core.RenderManager#flush to write to DOM.
+			 * 3. The RenderManager calls sap.ui.core.FocusHandler#restoreFocus.
+			 * 4. The table calls the "onAfterRendering" delegate.
+			 * 5. The KeyboardExtension invalidates the ItemNavigation in its onAfterRendering delegate.
+			 *
+			 * As a consequence, the focus is restored with the information from an ItemNavigation that is in a state where it should be marked as
+			 * invalid.
+			 */
+
+			this._oStoredFocusInfo = this.getFocusInfo();
+		},
+		onAfterRendering: function(oEvent) {
+			this._getKeyboardExtension().invalidateItemNavigation();
+
+			// The presence of the "customId" property in the focus info indicates that the table had the focus before rendering.
+			// Reapply the focus info to the table only in this case. Reinitialize the item navigation immediately in case there will be no
+			// focusin event.
+			if (this._oStoredFocusInfo && this._oStoredFocusInfo.customId) {
+				this._getKeyboardExtension().initItemNavigation();
+				this.applyFocusInfo(this._oStoredFocusInfo);
+			}
+			delete this._oStoredFocusInfo;
+		},
 		onfocusin: function(oEvent) {
 			var oExtension = this._getKeyboardExtension();
 
 			if (!oExtension._bIgnoreFocusIn) {
 				oExtension.initItemNavigation();
-				if (ExtensionHelper.isItemNavigationInvalid(this)) {
-					oEvent.setMarked("sapUiTableInitItemNavigation");
-				}
 			} else {
 				oEvent.setMarked("sapUiTableIgnoreFocusIn");
 			}
@@ -148,12 +176,12 @@ sap.ui.define([
 			var $bottomRight = $Table.find(".sapUiTableCtrlScroll.sapUiTableCtrlRowFixedBottom:not(.sapUiTableCHT)");
 
 			if (bHasRowHeader) {
-				aRowHdrDomRefs = $Table.find(".sapUiTableRowHdr").get();
+				aRowHdrDomRefs = $Table.find(".sapUiTableRowSelectionCell").get();
 				iTotalColumnCount++;
 			}
 
 			if (bHasRowActions) {
-				aRowActionDomRefs = $Table.find(".sapUiTableRowAction").get();
+				aRowActionDomRefs = $Table.find(".sapUiTableRowActionCell").get();
 				iTotalColumnCount++;
 			}
 
@@ -193,16 +221,16 @@ sap.ui.define([
 					}
 
 					if ($FixedHeaders.length) {
-						aHeaderDomRefs = aHeaderDomRefs.concat(jQuery($FixedHeaders.get(i)).find(".sapUiTableCol").get());
+						aHeaderDomRefs = aHeaderDomRefs.concat(jQuery($FixedHeaders.get(i)).find(".sapUiTableHeaderCell").get());
 					}
 					if ($ScrollHeaders.length) {
-						aHeaderDomRefs = aHeaderDomRefs.concat(jQuery($ScrollHeaders.get(i)).find(".sapUiTableCol").get());
+						aHeaderDomRefs = aHeaderDomRefs.concat(jQuery($ScrollHeaders.get(i)).find(".sapUiTableHeaderCell").get());
 					}
 
 					if (bHasRowActions) {
 						// Only add a dummy (inivisible inner text) to fullfill matrix for item navigation.
 						// Header should not be focuable.
-						aHeaderDomRefs.push($Table.find(".sapUiTableRowActionHeader").children().get(0));
+						aHeaderDomRefs.push($Table.find(".sapUiTableRowActionHeaderCell").children().get(0));
 					}
 				}
 
@@ -251,7 +279,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles keyboard related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardExtension
@@ -363,6 +391,9 @@ sap.ui.define([
 	 * @public (Part of the API for Table control only!)
 	 */
 	TableKeyboardExtension.prototype.setActionMode = function(bEnter) {
+		if (!this._delegate) {
+			return;
+		}
 		if (bEnter === true && !this._actionMode && this._delegate.enterActionMode) {
 			this._actionMode = this._delegate.enterActionMode.apply(this.getTable(), Array.prototype.slice.call(arguments, 1)) === true;
 		} else if (bEnter === false && this._actionMode && this._delegate.leaveActionMode) {
@@ -490,7 +521,7 @@ sap.ui.define([
 		var oTable = this.getTable();
 		var oCellInfo = TableUtils.getCellInfo(oElement);
 
-		if (oCellInfo.cell && oTable) {
+		if (oCellInfo.isOfType(TableUtils.CELLTYPE.ANY) && oTable) {
 			var $Elem = jQuery(oElement);
 
 			if ($Elem.attr("tabindex") != "0") {
@@ -521,7 +552,7 @@ sap.ui.define([
 	};
 
 	return TableKeyboardExtension;
-	});
+});
 
 /**
  * Gets the keyboard extension.

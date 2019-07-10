@@ -1,8 +1,8 @@
 /* NOTE: This file was generated as an optimized version of "library.source.less" for the Theme Designer. */
 
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -807,16 +807,10 @@ div[class*="sapUiRespGrid"]:after {
 
 .sapUiRespGridBreak { clear: both; }
 
-.sapUiRespGridWriteSpanClass(@classFor, @hspace, @span, @screenSize, @useRounding) when (@classFor = Span) {
+.sapUiRespGridWriteSpanClass(@classFor, @hspace, @span, @screenSize) when (@classFor = Span) {
     @a:  @_sap_ui_layout_Grid_RespGridOneCol * @span;
-    @width_percentage_value: @a - 100% * @_sap_ui_layout_Grid_RespGridPxInRem * @hspace / @screenSize;
-    & when (@useRounding) {
-        width: floor(@width_percentage_value);
-    }
-    & when not (@useRounding) {
-        width: @width_percentage_value;
-        .sapUiRespGrid-getCalcFuncSpan(@a, @hspace);
-    }
+    width: @a - 100% * @_sap_ui_layout_Grid_RespGridPxInRem * @hspace / @screenSize;
+    .sapUiRespGrid-getCalcFuncSpan(@a, @hspace);
 }
 
 .sapUiRespGridWriteIndentClass(@classFor, @hspace, @span, @screenSize) when (@classFor = Indent) {
@@ -854,17 +848,9 @@ div[class*="sapUiRespGrid"]:after {
 //Write Span and Indent classes
 .sapUiRespGridWriteClasses(@counter, @media, @classFor, @name, @classHSpace, @hspace, @screenSize) when (@counter > 0) {
   .sapUiRespGridWriteClasses((@counter - 1), @media, @classFor, @name, @classHSpace, @hspace, @screenSize);
-
   .@{media}.sapUiRespGridHSpace@{classHSpace} > .sapUiRespGrid@{classFor}@{name}@{counter} {
-      .sapUiRespGridWriteSpanClass(@classFor, @hspace, @counter,  @screenSize, false);
+      .sapUiRespGridWriteSpanClass(@classFor, @hspace, @counter,  @screenSize);
       .sapUiRespGridWriteIndentClass(@classFor, @hspace, @counter,  @screenSize);
-    }
-
-    html[data-sap-ui-browser*='ie'],
-    html[data-sap-ui-browser*='ed'] {
-      .@{media}.sapUiRespGridHSpace@{classHSpace} > .sapUiRespGrid@{classFor}@{name}@{counter} {
-        .sapUiRespGridWriteSpanClass(@classFor, @hspace, @counter,  @screenSize, true);
-      }
     }
 }
 
@@ -989,12 +975,21 @@ L  0.390625% =  4px / 1024px
 /* END "Grid.less" */
 
 /* START "CSSGrid.less" */
+.sapUiLayoutCSSGrid {
+	box-sizing: border-box;
+}
+
 .sapUiLayoutCSSGridBoxLayoutPolyfill {
 	> .sapUiLayoutCSSGridItem {
 		display: inline-block;
 		vertical-align: top;
 		margin: 0 0.5rem 0.5rem 0;
 	}
+
+	.sapMGHLI {
+		margin-bottom: 0.5rem;
+	}
+
 	.sapUiLayoutCSSGridBoxLayoutGenerateIEBreakpoints(S);
 	.sapUiLayoutCSSGridBoxLayoutGenerateIEBreakpoints(M);
 	.sapUiLayoutCSSGridBoxLayoutGenerateIEBreakpoints(L);
@@ -1004,12 +999,15 @@ L  0.390625% =  4px / 1024px
 	display: grid;
 	grid-auto-rows: 1fr;
 	grid-gap: 0.5rem 0.5rem;
-	margin-bottom: 0.5rem;
 
 	.sapUiLayoutCSSGridBoxLayoutGenerateBreakpoints(S);
 	.sapUiLayoutCSSGridBoxLayoutGenerateBreakpoints(M);
 	.sapUiLayoutCSSGridBoxLayoutGenerateBreakpoints(L);
 	.sapUiLayoutCSSGridBoxLayoutGenerateBreakpoints(XL);
+}
+
+.sapUiLayoutCSSGridBoxLayoutContainer.sapFGridListGroup {
+	grid-auto-rows: auto;
 }
 
 /* Mixins */
@@ -1019,7 +1017,7 @@ L  0.390625% =  4px / 1024px
  */
 .sapUiLayoutCSSGridBoxLayoutGenerateBreakpoints(@size, @counter: 0, @i: 1) when (@i =< 12) {
 	&.sapUiLayoutCSSGridBoxLayoutSize@{size}.sapUiLayoutCSSGridBoxLayoutSpan@{size}@{i} {
-			grid-template-columns: repeat(auto-fit, minmax(calc(~"(100% - @{counter} * 0.5rem) / @{i}"), 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(calc(~"(100% - @{counter} * 0.5rem - 1px) / @{i}"), 1fr));
 	}
 
 	.sapUiLayoutCSSGridBoxLayoutGenerateBreakpoints(@size, (@counter + 1), (@i + 1));
@@ -1035,13 +1033,13 @@ L  0.390625% =  4px / 1024px
 			> .sapUiLayoutCSSGridItem {
 				width: calc(~"(100% - @{counter} * 0.5rem - 0.1px) / @{i}");
 			}
-
-			>  .sapUiLayoutCSSGridItem:nth-of-type(@{i}n) {
-				margin-right: 0;
-			}
 	}
 
 	.sapUiLayoutCSSGridBoxLayoutGenerateIEBreakpoints(@size, (@counter + 1), (@i + 1));
+}
+
+.sapUiLayoutCSSGridItem.sapUiLayoutCSSGridItemLastOnRow {
+	margin-right: 0;
 }
 
 /* END "CSSGrid.less" */
@@ -1879,6 +1877,12 @@ html.sap-phone .sapUiFormResLayout > .sapUiRFL > .sapUiRFLRow > .sapUiRFLContain
 /* Base theme                                        */
 /* ================================================= */
 
+@_sap_ui_layout_ResponsiveSplitter_PaginatorHeight: 2.5rem;
+@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonWidth: 2.5rem;
+@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonHeight: 2.375rem;
+@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonFocusWidth: 2.125rem;
+@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonFocusHeight: 2.125rem;
+
 .sapUiResponsiveSplitter {
 	width: 100%;
 	height: 100%;
@@ -1899,13 +1903,13 @@ html.sap-phone .sapUiFormResLayout > .sapUiRFL > .sapUiRFLRow > .sapUiRFLContain
 		justify-content: center;
 		box-sizing: border-box;
 		outline: none;
-		height: 2.5rem;
+		height: @_sap_ui_layout_ResponsiveSplitter_PaginatorHeight;
 		background-color: @sapUiPageFooterBackground;
 		border: 1px solid @sapUiPageFooterBorderColor;
 	}
 
 	& .sapUiResponsiveSplitterPage {
-		height: ~"calc(100% - 2.5rem)";
+		height: calc(100% ~"-" @_sap_ui_layout_ResponsiveSplitter_PaginatorHeight);
 	}
 
 	& .sapUiResponsiveSplitterPaginator.sapUiResponsiveSplitterWithNavButtons {
@@ -1914,8 +1918,8 @@ html.sap-phone .sapUiFormResLayout > .sapUiRFL > .sapUiRFLRow > .sapUiRFLContain
 }
 
 .sapUiResponsiveSplitterPaginatorButton {
-	width: 2.5rem;
-	height: 2.375rem;
+	width: @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonWidth;
+	height: @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonHeight;
 	cursor: pointer;
 	background-color: transparent;
 	display: inline-block;
@@ -1938,8 +1942,8 @@ html.sap-phone .sapUiFormResLayout > .sapUiRFL > .sapUiRFLRow > .sapUiRFLContain
 	&:focus:before {
 		content: "";
 		position: absolute;
-		width: 2.125rem;
-		height: 2.125rem;
+		width: @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonFocusWidth;
+		height: @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonFocusHeight;
 		margin: 1px 0 0 2px;
 	}
 }
@@ -2520,6 +2524,9 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 /* CSS for control sap.ui.layout/BlockLayout  */
 /* Base theme                                 */
 /* ========================================== */
+
+@_sap_ui_layout_BlockLayout_FontSizeLandXL: @sapMFontHeader1Size;
+
 .setCellsColorDoubles (@evenCell, @oddCell) {
 	// Match every even cell
 	.sapUiBlockLayoutEvenCell {
@@ -2602,7 +2609,7 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 
 	.sapUiBlockCellTitle,
 	.sapUiBlockCellTitle .sapMLnk {
-		font-size: @sapMFontHeader1Size;
+		font-size: @_sap_ui_layout_BlockLayout_FontSizeLandXL;
 	}
 }
 
@@ -2626,7 +2633,7 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 
 	.sapUiBlockCellTitle,
 	.sapUiBlockCellTitle .sapMLnk {
-		font-size: @sapMFontHeader1Size;
+		font-size: @_sap_ui_layout_BlockLayout_FontSizeLandXL;
 	}
 }
 

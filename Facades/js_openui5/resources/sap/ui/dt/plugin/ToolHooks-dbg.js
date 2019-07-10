@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,21 +14,17 @@ sap.ui.define([
 	/**
 	 * Constructor for a new ToolHooks Plugin.
 	 *
-	 * @extends sap.ui.dt.plugin.Plugin
+	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.61
 	 * @alias sap.ui.dt.plugin.ToolHooks
 	 * @experimental Since 1.61. This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
-	var ToolHooks = Plugin.extend("sap.ui.dt.plugin.ToolHooks", /** @lends sap.ui.dt.plugin.ToolHooks.prototype */
-	{
+	var ToolHooks = Plugin.extend("sap.ui.dt.plugin.ToolHooks", /** @lends sap.ui.dt.plugin.ToolHooks.prototype */ {
 		metadata: {
-			// ---- object ----
-
-			// ---- control specific ----
 			library: "sap.ui.dt",
 			properties: {},
 			associations: {},

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/library"],
@@ -9,6 +9,9 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/library"],
 
 		// shortcut for sap.m.DialogType
 		var DialogType = library.DialogType;
+
+		// shortcut for sap.m.DialogRoleType
+		var DialogRoleType = library.DialogRoleType;
 
 		// shortcut for sap.ui.core.ValueState
 		var ValueState = coreLibrary.ValueState;
@@ -94,15 +97,15 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/library"],
 			}
 
 			// ARIA
-			if (sState === "Error" || sState === "Warning") {
-				oRm.writeAccessibilityState(oControl, {
-					role: "alertdialog"
-				});
-			} else {
-				oRm.writeAccessibilityState(oControl, {
-					role: "dialog"
-				});
+			var sRole = oControl.getProperty("role");
+
+			if (sState === ValueState.Error || sState === ValueState.Warning) {
+				sRole = DialogRoleType.AlertDialog;
 			}
+
+			oRm.writeAccessibilityState(oControl, {
+				role: sRole
+			});
 
 			if (oControl._forceDisableScrolling) {
 				oRm.addClass("sapMDialogWithScrollCont");
@@ -161,7 +164,7 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/library"],
 				// Invisible element which is used to determine when desktop keyboard navigation
 				// has reached the first focusable element of a dialog and went beyond. In that case, the controller
 				// will focus the last focusable element.
-				oRm.write('<span id="' + oControl.getId() + '-firstfe" tabindex="0"></span>');
+				oRm.write('<span id="' + oControl.getId() + '-firstfe" tabindex="0" class="sapMDialogFirstFE"></span>');
 			}
 
 			if (oHeader) {
@@ -222,7 +225,7 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/library"],
 				// Invisible element which is used to determine when desktop keyboard navigation
 				// has reached the last focusable element of a dialog and went beyond. In that case, the controller
 				// will focus the first focusable element.
-				oRm.write('<span id="' + oControl.getId() + '-lastfe" tabindex="0"></span>');
+				oRm.write('<span id="' + oControl.getId() + '-lastfe" tabindex="0" class="sapMDialogLastFE"></span>');
 			}
 
 			oRm.write("</div>");

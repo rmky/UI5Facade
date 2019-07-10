@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,13 +12,13 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 	/**
 	 * Creates an instance of LocaleData for the given locale.
 	 *
-	 * @class Provides access to locale-specific data, like date formats, number formats, currencies, etc.
+	 * @class Provides access to locale-specific data, such as, date formats, number formats, and currencies.
 	 *
 	 * @param {sap.ui.core.Locale} oLocale the locale
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @public
 	 * @alias sap.ui.core.LocaleData
 	 */
@@ -388,7 +388,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 		_createFormatPattern: function(sSkeleton, oAvailableFormats, sCalendarType, vDiff) {
 			var aTokens = this._parseSkeletonFormat(sSkeleton), aPatterns,
 				oBestMatch = this._findBestMatch(aTokens, sSkeleton, oAvailableFormats),
-				oToken, oAvailableDateTimeFormats,
+				oToken, oAvailableDateTimeFormats, oSymbol, oGroup,
 				sPattern, sSinglePattern, sDiffSymbol, sDiffGroup,
 				rMixedSkeleton = /^([GyYqQMLwWEecdD]+)([hHkKjJmszZvVOXx]+)$/,
 				bSingleDate,
@@ -408,6 +408,20 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 					sDiffSymbol = vDiff;
 				} else {
 					bSingleDate = true;
+					// Special handling of "y" (Year) in case patterns contains also "G" (Era)
+					if (aTokens[0].symbol === "y" && oBestMatch && oBestMatch.pattern.G) {
+						oSymbol = mCLDRSymbols["G"];
+						oGroup = mCLDRSymbolGroups[oSymbol.group];
+						aTokens.splice(0, 0, {
+							symbol: "G",
+							group: oSymbol.group,
+							match: oSymbol.match,
+							index: oGroup.index,
+							field: oGroup.field,
+							length: 1
+						});
+					}
+
 					// Check if at least one token's group appears in the interval diff
 					// If not, a single date pattern is returned
 					for (i = aTokens.length - 1; i >= 0; i--){
@@ -834,6 +848,18 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 		},
 
 		/**
+		 * Get miscellaneous pattern.
+		 *
+		 * @param {string} sName the name of the misc pattern, can be "approximately", "atLeast", "atMost" or "range"
+		 * @returns {string} The pattern
+		 * @public
+		 */
+		getMiscPattern: function(sName) {
+			assert(sName == "approximately" || sName == "atLeast" || sName == "atMost" || sName == "range", "sName must be approximately, atLeast, atMost or range");
+			return this._get("miscPattern")[sName];
+		},
+
+		/**
 		 * Returns the required minimal number of days for the first week of a year.
 		 *
 		 * This is the minimal number of days of the week which must be contained in the new year
@@ -905,6 +931,30 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 		},
 
 		/**
+		 * Returns a map of custom currency codes, defined via global configuration.
+		 * @returns {object} map of custom currency codes, e.g.
+		 * {
+		 *     "AUD": "AUD",
+		 *     "BRL": "BRL",
+		 *     "EUR": "EUR",
+		 *     "GBP": "GBP",
+		 * }
+		 * @sap-restricted sap.ui.core.format.NumberFormat
+		 * @private
+		 * @since 1.63
+		 */
+		getCustomCurrencyCodes: function () {
+			var mCustomCurrencies = this._get("currency") || {},
+				mCustomCurrencyCodes = {};
+
+			Object.keys(mCustomCurrencies).forEach(function (sCurrencyKey) {
+				mCustomCurrencyCodes[sCurrencyKey] = sCurrencyKey;
+			});
+
+			return mCustomCurrencyCodes;
+		},
+
+		/**
 		 * Returns the number of digits of the specified currency.
 		 *
 		 * @param {string} sCurrency ISO 4217 currency code
@@ -944,7 +994,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 		 * @since 1.21.1
 		 */
 		getCurrencySymbol: function(sCurrency) {
-			var oCurrencySymbols = this._get("currencySymbols");
+			var oCurrencySymbols = this.getCurrencySymbols();
 			return (oCurrencySymbols && oCurrencySymbols[sCurrency]) || sCurrency;
 		},
 
@@ -967,14 +1017,36 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 		},
 
 		/**
-		 * Returns the currency symbols available for this locale
+		 * Returns the currency symbols available for this locale.
+		 * Currency symbols get accumulated by custom currency symbols.
 		 *
-		 * @returns {object} the map of all currency symbols available in this locale
+		 * @returns {object} the map of all currency symbols available in this locale, e.g.
+		 * {
+		 *     "AUD": "A$",
+		 *     "BRL": "R$",
+		 *     "EUR": "€",
+		 *     "GBP": "£",
+		 * }
 		 * @public
 		 * @since 1.60
 		 */
 		getCurrencySymbols: function() {
-			return this._get("currencySymbols");
+			// Lookup into global Config
+			var mCustomCurrencies = this._get("currency"),
+				mCustomCurrencySymbols = {},
+				sIsoCode;
+
+			for (var sCurrencyKey in mCustomCurrencies) {
+				sIsoCode = mCustomCurrencies[sCurrencyKey].isoCode;
+
+				if (mCustomCurrencies[sCurrencyKey].symbol) {
+					mCustomCurrencySymbols[sCurrencyKey] = mCustomCurrencies[sCurrencyKey].symbol;
+				} else if (sIsoCode) {
+					mCustomCurrencySymbols[sCurrencyKey] = this._get("currencySymbols")[sIsoCode];
+				}
+			}
+
+			return Object.assign({}, this._get("currencySymbols"), mCustomCurrencySymbols);
 		},
 
 		/**
@@ -2340,6 +2412,12 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 				}
 			},
 			"percentFormat": { "standard": "#,##0%"},
+			"miscPattern": {
+				"approximately": "~{0}",
+				"atLeast": "{0}+",
+				"atMost": "≤{0}",
+				"range": "{0}–{1}"
+			},
 			"symbols-latn-decimal":".",
 			"symbols-latn-group":",",
 			"symbols-latn-plusSign":"+",

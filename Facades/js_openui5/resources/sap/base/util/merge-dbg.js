@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(["./isPlainObject"], function(isPlainObject) {
@@ -55,7 +55,9 @@ sap.ui.define(["./isPlainObject"], function(isPlainObject) {
 				copy = options[name];
 
 				// Prevent never-ending loop
-				if (target === copy) {
+				// Prevent Object.prototype pollution for $.extend( true, ... )
+				// For further information, please visit https://github.com/jquery/jquery/pull/4333
+				if (name === "__proto__" || target === copy) {
 					continue;
 				}
 

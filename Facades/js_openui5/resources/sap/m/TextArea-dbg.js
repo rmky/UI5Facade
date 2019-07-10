@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -80,7 +80,7 @@ function(
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -170,7 +170,8 @@ function(
 					value : {type : "string"}
 				}
 			}
-		}
+		},
+		dnd: { draggable: false, droppable: true }
 	}});
 
 	/**
@@ -275,7 +276,7 @@ function(
 	 * @private
 	 */
 	TextArea.prototype._setGrowingMaxHeight = function () {
-		var oTextAreaRef = this.getFocusDomRef(),
+		var oHiddenDiv = this.getDomRef('hidden'),
 			oCore = sap.ui.getCore(),
 			oLoadedLibraries = oCore.getLoadedLibraries(),
 			fLineHeight,
@@ -292,11 +293,9 @@ function(
 		// After it's been executed, we need to release the resources
 		oCore.detachThemeChanged(this._setGrowingMaxHeight);
 
-		oStyle = window.getComputedStyle(oTextAreaRef);
+		oStyle = window.getComputedStyle(oHiddenDiv);
 
-		fLineHeight = isNaN(parseFloat(oStyle.getPropertyValue("line-height"))) ?
-			1.4 * parseFloat(library.BaseFontSize) : // The baseFont size multiplied by 1.4 which is TextArea's default line-height
-			parseFloat(oStyle.getPropertyValue("line-height"));
+		fLineHeight = this._getLineHeight();
 
 		fMaxHeight = (fLineHeight * this.getGrowingMaxLines()) +
 			parseFloat(oStyle.getPropertyValue("padding-top")) +
@@ -308,7 +307,28 @@ function(
 			fMaxHeight += parseFloat(oStyle.getPropertyValue("padding-bottom"));
 		}
 
-		oTextAreaRef.style.maxHeight = fMaxHeight + "px";
+		oHiddenDiv.style.maxHeight = fMaxHeight + "px";
+	};
+
+	/**
+	 * Calculates the line height of the HTML textarea in px.
+	 *
+	 * @returns {float|null} The line height in px
+	 * @private
+	 */
+	TextArea.prototype._getLineHeight = function () {
+		var oTextAreaRef = this.getFocusDomRef(),
+			oStyle;
+
+		if (!oTextAreaRef) {
+			return;
+		}
+
+		oStyle = window.getComputedStyle(oTextAreaRef);
+
+		return isNaN(parseFloat(oStyle.getPropertyValue("line-height"))) ?
+			1.4 * parseFloat(oStyle.getPropertyValue("font-size")) :
+			parseFloat(oStyle.getPropertyValue("line-height"));
 	};
 
 	/**
@@ -318,11 +338,7 @@ function(
 	 * @private
 	 */
 	TextArea.prototype._resizeHandler = function (oEvent) {
-		/* If the TextArea is growing:true the height have to be recalculated.
-		When the windows size is increase the heightScroll is not correct.
-		For this reason is needed to set height to "auto" before height recalculation*/
-			this.getFocusDomRef().style.height = "auto";
-			this._adjustHeight();
+		this._adjustHeight();
 	};
 
 	/**
@@ -459,29 +475,36 @@ function(
 
 	TextArea.prototype._adjustHeight = function() {
 		var oTextAreaRef = this.getFocusDomRef(),
-			fHeight;
+			oHiddenDiv = this.getDomRef("hidden"),
+			sHiddenDivMinHeight, sNeededMinHeight;
 
-		if (!oTextAreaRef) {
+		if (!oTextAreaRef || !oHiddenDiv) {
 			return;
 		}
-		//Reset dimensions
-		oTextAreaRef.style.height = "auto";
-		// Calc dimensions of the changed content
-		fHeight = oTextAreaRef.scrollHeight + oTextAreaRef.offsetHeight - oTextAreaRef.clientHeight;
 
-		if (this.getValue() && fHeight !== 0) {
-			oTextAreaRef.style.height = fHeight + "px";
-			this._updateOverflow();
+		sHiddenDivMinHeight = oHiddenDiv.style["min-height"];
+		sNeededMinHeight = this.getRows() * this._getLineHeight() + "px";
+
+		// change the min-height of the mirror div,
+		// depending on the rows, only if needed
+		if (!sHiddenDivMinHeight || sNeededMinHeight !== sHiddenDivMinHeight) {
+			oHiddenDiv.style["min-height"] = sNeededMinHeight;
 		}
+
+		// ensure that there will be left space if the last row is a new line
+		// ensure that possible html/script content is escaped
+		oHiddenDiv.innerHTML = jQuery.sap.escapeHTML(oTextAreaRef.value) + '&nbsp;';
+		this._updateOverflow();
 	};
 
 	TextArea.prototype._updateOverflow = function() {
 		var oTextAreaRef = this.getFocusDomRef(),
+			oHiddenDiv = this.getDomRef("hidden"),
 			fMaxHeight;
 
 		if (oTextAreaRef) {
-			fMaxHeight = parseFloat(window.getComputedStyle(oTextAreaRef)["max-height"]);
-			oTextAreaRef.style.overflowY = (oTextAreaRef.scrollHeight > fMaxHeight) ? "auto" : "";
+			fMaxHeight = parseFloat(window.getComputedStyle(oHiddenDiv)["max-height"]);
+			oTextAreaRef.style.overflowY = (oHiddenDiv.scrollHeight > fMaxHeight) ? "auto" : "";
 		}
 	};
 

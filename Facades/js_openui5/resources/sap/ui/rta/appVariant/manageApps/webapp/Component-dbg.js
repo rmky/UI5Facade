@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -13,11 +13,11 @@ sap.ui.define([
 	return UIComponent.extend("sap.ui.rta.appVariant.manageApps.webapp.Component", {
 
 		metadata: {
-			"manifest": "json",
-			"library": "sap.ui.rta",
-			"version": "0.9",
-			"properties": {
-				"idRunningApp" : "string",
+			manifest: "json",
+			library: "sap.ui.rta",
+			version: "0.9",
+			properties: {
+				idRunningApp : "string",
 				isOverviewForKeyUser: {
 					type: "boolean"
 				}

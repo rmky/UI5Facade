@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -34,9 +34,9 @@ sap.ui.define([
 		};
 
 	/**
-	 * Regular expression to check for a (new) object literal
+	 * Regular expression to check for a (new) object literal.
 	 */
-	var rObject = /^\{\s*[a-zA-Z$_][a-zA-Z0-9$_]*\s*:/;
+	var rObject = /^\{\s*('|"|)[a-zA-Z$_][a-zA-Z0-9$_]*\1\s*:/;
 
 	/**
 	 * Regular expression to split the binding string into hard coded string fragments and embedded bindings.

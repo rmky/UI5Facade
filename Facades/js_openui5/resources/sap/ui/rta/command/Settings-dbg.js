@@ -1,9 +1,9 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['sap/ui/rta/command/FlexCommand'], function(FlexCommand) {
+sap.ui.define(["sap/ui/rta/command/FlexCommand"], function(FlexCommand) {
 	"use strict";
 
 	/**
@@ -12,7 +12,7 @@ sap.ui.define(['sap/ui/rta/command/FlexCommand'], function(FlexCommand) {
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -34,11 +34,10 @@ sap.ui.define(['sap/ui/rta/command/FlexCommand'], function(FlexCommand) {
 	});
 
 
-	Settings.prototype._getChangeSpecificData = function(bForward) {
-
+	Settings.prototype._getChangeSpecificData = function() {
 		var mSpecificInfo = {
-				changeType : this.getChangeType(),
-				content : this.getContent()
+			changeType : this.getChangeType(),
+			content : this.getContent()
 		};
 
 		return mSpecificInfo;
@@ -51,9 +50,8 @@ sap.ui.define(['sap/ui/rta/command/FlexCommand'], function(FlexCommand) {
 	Settings.prototype.execute = function() {
 		if (this.getElement()) {
 			return FlexCommand.prototype.execute.apply(this, arguments);
-		} else {
-			return Promise.resolve();
 		}
+		return Promise.resolve();
 	};
 
 	/**
@@ -62,11 +60,9 @@ sap.ui.define(['sap/ui/rta/command/FlexCommand'], function(FlexCommand) {
 	Settings.prototype.undo = function() {
 		if (this.getElement()) {
 			return FlexCommand.prototype.undo.apply(this, arguments);
-		} else {
-			return Promise.resolve();
 		}
+		return Promise.resolve();
 	};
 
 	return Settings;
-
 }, /* bExport= */true);

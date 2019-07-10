@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,6 +12,7 @@ sap.ui.define([
 	"sap/ui/Device",
 	"sap/m/ActionSheet",
 	"./WizardProgressNavigatorRenderer",
+	"./Button",
 	"sap/ui/thirdparty/jquery"
 ],
 function(
@@ -22,6 +23,7 @@ function(
 	Device,
 	ActionSheet,
 	WizardProgressNavigatorRenderer,
+	Button,
 	jQuery
 ) {
 	"use strict";
@@ -39,7 +41,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -639,7 +641,7 @@ function(
 			icon = this.getStepIcons()[i];
 			title = this._cachedSteps[i].childNodes[0].getAttribute("title");
 
-			this._actionSheet.addButton(new sap.m.Button({
+			this._actionSheet.addButton(new Button({
 				width: "200px",
 				text: title,
 				icon: icon,

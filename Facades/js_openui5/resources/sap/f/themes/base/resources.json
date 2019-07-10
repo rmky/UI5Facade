@@ -36,12 +36,22 @@
 			"theme": "base"
 		},
 		{
+			"name": "GridContainer.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "GridList.less",
 			"designtime": true,
 			"theme": "base"
 		},
 		{
 			"name": "SemanticPage.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "ShellBar.less",
 			"designtime": true,
 			"theme": "base"
 		},

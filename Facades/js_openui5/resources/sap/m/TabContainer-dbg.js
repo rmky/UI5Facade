@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,9 +9,12 @@ sap.ui.define([
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
-	'./TabContainerRenderer'
+	'./TabContainerRenderer',
+    './TabStrip',
+    './TabStripItem',
+    './Button'
 ],
-	function(library, Control, IconPool, TabContainerRenderer) {
+	function(library, Control, IconPool, TabContainerRenderer, TabStrip, TabStripItem, Button) {
 		"use strict";
 
 		// shortcut for sap.m.ButtonType
@@ -54,7 +57,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 *
 		 * @constructor
 		 * @public
@@ -130,7 +133,8 @@ sap.ui.define([
 					 */
 					addNewButtonPress: { }
 				},
-				designtime: "sap/m/designtime/TabContainer.designtime"
+				designtime: "sap/m/designtime/TabContainer.designtime",
+				dnd: { draggable: false, droppable: true }
 			},
 			constructor : function (vId, mSettings) {
 				var aStashedItems = [];
@@ -149,7 +153,7 @@ sap.ui.define([
 				}
 
 				Control.prototype.constructor.apply(this, arguments);
-				var oControl = new sap.m.TabStrip(this.getId() + "--tabstrip", {
+				var oControl = new TabStrip(this.getId() + "--tabstrip", {
 					hasSelect: true,
 					itemSelect: function(oEvent) {
 						var oItem = oEvent.getParameter("item"),
@@ -180,6 +184,7 @@ sap.ui.define([
 					this.addItem(oItem);
 				}, this);
 
+				this.data("sap-ui-fastnavgroup", "true", true);
 			}
 		});
 
@@ -187,6 +192,9 @@ sap.ui.define([
 		that may be set via setter method */
 		var mTCItemToTSItemProperties = {
 			"name": "text",
+			"additionalText": "additionalText",
+			"icon": "icon",
+			"iconTooltip": "iconTooltip",
 			"modified": "modified"
 		};
 
@@ -212,7 +220,7 @@ sap.ui.define([
 			var oRb = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
 			if (!oControl) {
-				oControl = new sap.m.Button({
+				oControl = new Button({
 					type: ButtonType.Transparent,
 					tooltip: oRb.getText("TABCONTAINER_ADD_NEW_TAB"),
 					icon: IconPool.getIconURI("add"),
@@ -337,7 +345,9 @@ sap.ui.define([
 				this.fireItemSelect({item: oNextItem});
 			}
 			// Focus (force to wait until invalidated)
-			setTimeout(fnFocusCallback.bind(this), 0);
+			if (document.activeElement.classList.contains('sapMTabStripSelectListItemCloseBtn')) {
+				setTimeout(fnFocusCallback.bind(this), 0);
+			}
 		};
 
 		TabContainer.prototype._attachItemPropertyChanged = function (oTabContainerItem) {
@@ -347,7 +357,9 @@ sap.ui.define([
 				if (mTCItemToTSItemProperties[sPropertyKey]) {//forward only if such property exists in TabStripItem
 					sPropertyKey = mTCItemToTSItemProperties[sPropertyKey];
 					var oTabStripItem = this._toTabStripItem(oEvent.getSource());
-					oTabStripItem && oTabStripItem.setProperty(sPropertyKey, oEvent['mParameters'].propertyValue, false);
+					// call it directly with the setter name so overwritten functions can be called and not setProperty method directly
+					var sMethodName = "set" + sPropertyKey.substr(0,1).toUpperCase() + sPropertyKey.substr(1);
+					oTabStripItem && oTabStripItem[sMethodName](oEvent['mParameters'].propertyValue);
 				}
 			}.bind(this));
 		};
@@ -414,21 +426,25 @@ sap.ui.define([
 		 * Adds a new <code>TabContainerItem</code> to the <code>items</code> aggregation of the <code>TabContainer</code>.
 		 *
 		 * @param {sap.m.TabContainerItem} oItem The new <code>TabContainerItem</code> to be added
-		 * @returns {sap.m.TabContainerItem} The newly added <code>TabContainerItem</code>
+		 * @returns {sap.m.TabContainer} This <code>TabContainer</code> to allow method chaining
 		 * @override
 		 */
 		TabContainer.prototype.addItem = function(oItem) {
 			this.addAggregation("items", oItem, false);
 
 			this._getTabStrip().addItem(
-				new sap.m.TabStripItem({
+				new TabStripItem({
 					key: oItem.getId(),
 					text: oItem.getName(),
-					modified: oItem.getModified()
+					additionalText: oItem.getAdditionalText(),
+					icon: oItem.getIcon(),
+					iconTooltip: oItem.getIconTooltip(),
+					modified: oItem.getModified(),
+					tooltip: oItem.getTooltip()
 				})
 			);
 
-			return oItem;
+			return this;
 		};
 
 		/*
@@ -454,10 +470,14 @@ sap.ui.define([
 		 */
 		TabContainer.prototype.insertItem = function(oItem, iIndex) {
 			this._getTabStrip().insertItem(
-				new sap.m.TabStripItem({
+				new TabStripItem({
 					key: oItem.getId(),
 					text: oItem.getName(),
-					modified: oItem.getModified()
+					additionalText: oItem.getAdditionalText(),
+					icon: oItem.getIcon(),
+					iconTooltip: oItem.getIconTooltip(),
+					modified: oItem.getModified(),
+					tooltip: oItem.getTooltip()
 				}),
 				iIndex
 			);

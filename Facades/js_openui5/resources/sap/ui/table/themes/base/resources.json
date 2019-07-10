@@ -11,6 +11,16 @@
 			"theme": "base"
 		},
 		{
+			"name": "Cell.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "CreationRow.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "DragDrop.less",
 			"designtime": true,
 			"theme": "base"
@@ -21,7 +31,22 @@
 			"theme": "base"
 		},
 		{
+			"name": "Row.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "RowAction.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "RowHighlight.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "RowSelection.less",
 			"designtime": true,
 			"theme": "base"
 		},

@@ -1,14 +1,14 @@
 /*
- * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * ! OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	'sap/ui/dt/Plugin',
-	'sap/ui/dt/plugin/ElementMover',
-	'sap/ui/dt/OverlayUtil',
-	'sap/ui/dt/OverlayRegistry',
+	"sap/ui/dt/Plugin",
+	"sap/ui/dt/plugin/ElementMover",
+	"sap/ui/dt/OverlayUtil",
+	"sap/ui/dt/OverlayRegistry",
 	"sap/ui/events/KeyCodes"
 ], function(
 	Plugin,
@@ -19,6 +19,8 @@ sap.ui.define([
 ) {
 	"use strict";
 
+	var INSERT_AFTER_ELEMENT = true;
+
 	/**
 	 * Constructor for a new CutPaste.
 	 *
@@ -27,15 +29,14 @@ sap.ui.define([
 	 * @class The CutPaste enables Cut & Paste functionality for the overlays based on aggregation types
 	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
 	 * @alias sap.ui.dt.plugin.CutPaste
 	 * @experimental Since 1.34. This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
-	var CutPaste = Plugin.extend("sap.ui.dt.plugin.CutPaste", /** @lends sap.ui.dt.plugin.CutPaste.prototype */
-	{
+	var CutPaste = Plugin.extend("sap.ui.dt.plugin.CutPaste", /** @lends sap.ui.dt.plugin.CutPaste.prototype */ {
 		metadata: {
 			library: "sap.ui.dt",
 			properties: {
@@ -67,7 +68,6 @@ sap.ui.define([
 		if (
 			this.getElementMover().isMovableType(oElement)
 			&& this.getElementMover().checkMovable(oOverlay)
-			&& !OverlayUtil.isInAggregationBinding(oOverlay, oElement.sParentAggregationName)
 		) {
 			oOverlay.setMovable(true);
 		}
@@ -107,9 +107,8 @@ sap.ui.define([
 		var oTargetZoneAggregation = this._getTargetZoneAggregation(oTargetOverlay);
 		if ((oTargetZoneAggregation) || (OverlayUtil.isInTargetZoneAggregation(oTargetOverlay))) {
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	};
 
 	CutPaste.prototype._onKeyDown = function(oEvent) {
@@ -143,6 +142,7 @@ sap.ui.define([
 			oOverlay.addStyleClass("sapUiDtOverlayCutted");
 
 			this.getElementMover().activateAllValidTargetZones(this.getDesignTime());
+			oOverlay.focus();
 		}
 	};
 
@@ -166,7 +166,7 @@ sap.ui.define([
 				this.getElementMover().insertInto(oCutOverlay, oTargetZoneAggregation);
 				bResult = true;
 			} else if (OverlayUtil.isInTargetZoneAggregation(oTargetOverlay)) {
-				this.getElementMover().repositionOn(oCutOverlay, oTargetOverlay);
+				this.getElementMover().repositionOn(oCutOverlay, oTargetOverlay, INSERT_AFTER_ELEMENT);
 				bResult = true;
 			}
 		}
@@ -189,7 +189,7 @@ sap.ui.define([
 	CutPaste.prototype.paste = function(oTargetOverlay) {
 		var bPasteExecuted = this._executePaste(oTargetOverlay);
 
-		if (bPasteExecuted === true){
+		if (bPasteExecuted === true) {
 			this.stopCutAndPaste();
 		}
 	};
@@ -217,9 +217,8 @@ sap.ui.define([
 		});
 		if (aPossibleTargetZones.length > 0) {
 			return aPossibleTargetZones[0];
-		} else {
-			return null;
 		}
+		return null;
 	};
 
 	return CutPaste;

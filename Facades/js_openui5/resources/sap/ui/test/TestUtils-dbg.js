@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -211,11 +211,8 @@ sap.ui.define([
 		 * All other POST requests with no matching response in the fixture are responded with code
 		 * 200, the body is simply echoed.
 		 *
-		 * DELETE requests with no matching response in the fixture are responded with code 204 ("No
-		 * Content").
-		 *
-		 * PATCH requests with no matching response in the fixture are responded with code 200, the
-		 * body is simply echoed.
+		 * DELETE and PATCH requests with no matching response in the fixture are responded with
+		 * code 204 ("No Content").
 		 *
 		 * Direct HEAD requests with no matching response in the fixture are responded with code 200
 		 * and no content.
@@ -236,10 +233,14 @@ sap.ui.define([
 		 *   <ul>
 		 *   <li>{number} <code>code</code>: The response code (<code>200</code> if not given)
 		 *   <li>{map} <code>headers</code>: A map of headers to set in the response
-		 *   <li>{RegExp} <code>ifMatch</code>: A regular expression the request body is matched
-		 *     against to select the response. If not given, all requests match. The first match in
-		 *     the list wins.
-		 *   <li>{string} <code>message</code>: The response message
+		 *   <li>{RegExp|function} <code>ifMatch</code>: A filter to select the response. If not
+		 *     given, all requests match. The first match in the list wins. A regular expression is
+		 *     matched against the request body. A function is called with a request object having
+		 *     properties method, url, requestHeaders and requestBody; it must return truthy to
+		 *     indicate a match.
+		 *   <li>{object|string} <code>message</code>: The response message, either as a string or
+		 *     as an object which is serialized via <code>JSON.stringify</code> (the header
+		 *     <code>Content-Type</code> will be set appropriately in this case)
 		 *   <li>{string} <code>source</code>: The path of a file relative to <code>sBase</code> to
 		 *     be used for the response message. It will be read synchronously in advance. In this
 		 *     case the header <code>Content-Type</code> is determined from the source name's
@@ -285,6 +286,9 @@ sap.ui.define([
 					oResponse.message = readMessage(sBase + oFixtureResponse.source);
 					oResponse.headers["Content-Type"] = oResponse.headers["Content-Type"]
 						|| contentType(oFixtureResponse.source);
+				} else if (typeof oFixtureResponse.message === "object") {
+					oResponse.headers["Content-Type"] = sJson;
+					oResponse.message = JSON.stringify(oFixtureResponse.message);
 				} else {
 					oResponse.message = oFixtureResponse.message;
 				}
@@ -365,16 +369,17 @@ sap.ui.define([
 			/*
 			 * Formats the response to be inserted into the batch
 			 *
-			 * @param {object} oResponse The response with code, headers, message
+			 * @param {object} oResponse The response with code, contentId, headers, message
 			 * @param {map} mODataHeaders The OData headers from the batch to copy into the response
 			 * @returns {string} The response to be inserted into the batch
 			 */
 			function formatResponse(oResponse, mODataHeaders) {
 				var mHeaders = jQuery.extend({}, mODataHeaders, oResponse.headers);
 
+				// Note: datajs expects a space after the response code
 				return sMimeHeaders
 					+ (oResponse.contentId ? "Content-ID: " + oResponse.contentId + "\r\n" : "")
-					+ "\r\nHTTP/1.1 " + oResponse.code + "\r\n"
+					+ "\r\nHTTP/1.1 " + oResponse.code + " \r\n"
 					+ Object.keys(mHeaders).map(function (sHeader) {
 							return sHeader + ": " + mHeaders[sHeader];
 						}).join("\r\n")
@@ -424,12 +429,12 @@ sap.ui.define([
 							oResponse = {code : 200};
 							break;
 						case "DELETE":
+						case "PATCH":
 							oResponse = {
 								code : 204,
 								headers : {"Content-Type" : "text/plain;charset=utf-8"}
 							};
 							break;
-						case "PATCH":
 						case "POST":
 							oResponse = {
 								code : 200,
@@ -437,15 +442,18 @@ sap.ui.define([
 								message : oRequest.requestBody
 							};
 							break;
-						default:
-							oResponse = error(404, oRequest, "No mock data found");
+						// no default
 					}
 				}
-				oResponse = {
-					code : oResponse.code,
-					headers : jQuery.extend({}, getODataHeaders(oRequest), oResponse.headers),
-					message : oResponse.message
-				};
+				if (oResponse) {
+					Log.info(oRequest.method + " " + oRequest.url,
+						// Note: JSON.stringify(oRequest.requestHeaders) outputs too much for now
+						'{"If-Match":' + JSON.stringify(oRequest.requestHeaders["If-Match"]) + '}',
+						"sap.ui.test.TestUtils");
+				} else {
+					oResponse = error(404, oRequest, "No mock data found");
+				}
+				oResponse.headers = jQuery.extend({}, getODataHeaders(oRequest), oResponse.headers);
 				if (sContentId && oResponse.code < 300) {
 					oResponse.contentId = sContentId;
 				}
@@ -460,8 +468,11 @@ sap.ui.define([
 			 * @returns {object} An object with the properties boundary and parts
 			 */
 			function multipart(sServiceBase, sBody) {
-				var sBoundary = firstLine(sBody);
+				var sBoundary;
 
+				// skip preamble consisting of whitespace (as sent by datajs)
+				sBody = sBody.replace(/^\s+/, "");
+				sBoundary = firstLine(sBody);
 				return {
 					boundary : firstLine(sBody).slice(2),
 					parts : sBody.split(sBoundary).slice(1, -1).map(function (sRequestPart) {
@@ -700,38 +711,25 @@ sap.ui.define([
 		},
 
 		/**
-		 * Returns the document's base URI, even on IE where the property <code>baseURI</code> is
-		 * not supported.
-		 *
-		 * @returns {string} The base URI
-		 */
-		getBaseUri : function () {
-			var aElements;
-
-			if (document.baseURI) {
-				return document.baseURI;
-			}
-			aElements = document.getElementsByTagName("base");
-			return aElements[0] && aElements[0].href || location.href;
-		},
-
-		/**
 		 * Adjusts the given absolute path so that (in case of "realOData=proxy" or
 		 * "realOData=true") the request is passed through the SimpleProxyServlet.
 		 *
 		 * @param {string} sAbsolutePath
 		 *   some absolute path
 		 * @returns {string}
-		 *   the absolute path transformed in a way that invokes a proxy, but still absolute
+		 *   the absolute path transformed in a way that invokes a proxy, but still absolute,
+		 *   with query parameters preserved
 		 */
 		proxy : function (sAbsolutePath) {
-			var sProxyUrl;
+			var sProxyUrl, iQueryPos;
 
 			if (!bProxy) {
 				return sAbsolutePath;
 			}
+			iQueryPos = sAbsolutePath.indexOf("?");
 			sProxyUrl = sap.ui.require.toUrl("sap/ui").replace("resources/sap/ui", "proxy");
-			return new URI(sProxyUrl + sAbsolutePath, TestUtils.getBaseUri()).pathname().toString();
+			return new URI(sProxyUrl + sAbsolutePath, document.baseURI).pathname().toString()
+				+ (iQueryPos >= 0 ? sAbsolutePath.slice(iQueryPos) : "");
 		},
 
 		/**

@@ -1,17 +1,20 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"sap/ui/fl/Change",
 	"sap/ui/fl/DefaultVariant",
 	"sap/ui/fl/StandardVariant",
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/ChangePersistenceFactory"
-], function(Change, defaultVariant, standardVariant, Utils, ChangePersistenceFactory) {
-
+], function(
+	DefaultVariant,
+	StandardVariant,
+	Utils,
+	ChangePersistenceFactory
+) {
 	"use strict";
 	/**
 	 * Helper object to access a change from the back end. Access helper object for each change (and variant) which was fetched from the back end
@@ -21,7 +24,7 @@ sap.ui.define([
 	 * @param {string} [sStableIdPropertyName='id'] the stable id
 	 * @alias sap.ui.fl.Persistence
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @experimental Since 1.25.0
 	 */
 	var Persistence = function(oControl, sStableIdPropertyName) {
@@ -138,7 +141,7 @@ sap.ui.define([
 	 */
 	Persistence.prototype.getExecuteOnSelect = function() {
 		return this.getChanges().then(function(oChanges) {
-			return standardVariant.getExecuteOnSelect(oChanges);
+			return StandardVariant.getExecuteOnSelect(oChanges);
 		});
 	};
 
@@ -151,7 +154,7 @@ sap.ui.define([
 	 * @public
 	 */
 	Persistence.prototype.getExecuteOnSelectSync = function() {
-		return standardVariant.getExecuteOnSelect(this._oChanges);
+		return StandardVariant.getExecuteOnSelect(this._oChanges);
 	};
 
 	/**
@@ -175,13 +178,13 @@ sap.ui.define([
 			selector: selector
 		};
 
-		oChange = standardVariant.updateExecuteOnSelect(this._oChanges, bExecuteOnSelect);
+		oChange = StandardVariant.updateExecuteOnSelect(this._oChanges, bExecuteOnSelect);
 
 		if (oChange) {
 			return oChange;
 		}
 
-		oChange = standardVariant.createChangeObject(mParameters);
+		oChange = StandardVariant.createChangeObject(mParameters);
 		var sChangeId = oChange.getId();
 		this._oChanges[sChangeId] = oChange;
 		return oChange;
@@ -195,7 +198,7 @@ sap.ui.define([
 	 */
 	Persistence.prototype.getDefaultVariantId = function() {
 		return this.getChanges().then(function(oChanges) {
-			return defaultVariant.getDefaultVariantId(oChanges);
+			return DefaultVariant.getDefaultVariantId(oChanges);
 		});
 	};
 
@@ -208,7 +211,7 @@ sap.ui.define([
 	 * @public
 	 */
 	Persistence.prototype.getDefaultVariantIdSync = function() {
-		return defaultVariant.getDefaultVariantId(this._oChanges);
+		return DefaultVariant.getDefaultVariantId(this._oChanges);
 	};
 
 	/**
@@ -236,13 +239,13 @@ sap.ui.define([
 			}
 		};
 
-		oChange = defaultVariant.updateDefaultVariantId(this._oChanges, sDefaultVariantId);
+		oChange = DefaultVariant.updateDefaultVariantId(this._oChanges, sDefaultVariantId);
 
 		if (oChange) {
 			return oChange;
 		}
 
-		oChange = defaultVariant.createChangeObject(mParameters);
+		oChange = DefaultVariant.createChangeObject(mParameters);
 		var sChangeId = oChange.getId();
 		this._oChanges[sChangeId] = oChange;
 		return oChange;

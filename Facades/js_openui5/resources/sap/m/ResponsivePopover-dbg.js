@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,6 +14,9 @@ sap.ui.define([
 	'sap/ui/base/ManagedObject',
 	'sap/ui/Device',
 	'./ResponsivePopoverRenderer',
+	'./Toolbar',
+	'./ToolbarSpacer',
+	'./Button',
 	"sap/ui/thirdparty/jquery"
 ],
 	function(
@@ -25,6 +28,9 @@ sap.ui.define([
 		ManagedObject,
 		Device,
 		ResponsivePopoverRenderer,
+		Toolbar,
+		ToolbarSpacer,
+		Button,
 		jQuery
 	) {
 	"use strict";
@@ -58,7 +64,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -274,7 +280,7 @@ sap.ui.define([
 	 *
 	 * @name sap.m.ResponsivePopover#close
 	 * @function
-	 * @type sap.ui.core.Control
+	 * @return {sap.m.ResponsivePopover} Reference to <code>this</code> in order to allow method chaining
 	 * @public
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -285,7 +291,7 @@ sap.ui.define([
 	 *
 	 * @name sap.m.ResponsivePopover#isOpen
 	 * @function
-	 * @type sap.ui.core.Control
+	 * @return {boolean} whether the ResponsivePopover is currently opened
 	 * @public
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -440,7 +446,7 @@ sap.ui.define([
 	ResponsivePopover.prototype._getCloseButton = function(){
 		if (!this._oCloseButton) {
 			var that = this;
-			this._oCloseButton = new sap.m.Button(this.getId() + "-closeButton", {
+			this._oCloseButton = new Button(this.getId() + "-closeButton", {
 				icon: IconPool.getIconURI("decline"),
 				press: function() {
 					that._oControl._oCloseTrigger = this;
@@ -459,6 +465,7 @@ sap.ui.define([
 	ResponsivePopover.prototype.addContent = function(oControl){
 		this._bContentChanged = true;
 		this.addAggregation("content", oControl);
+		return this;
 	};
 
 	/**
@@ -591,8 +598,8 @@ sap.ui.define([
 			return this._oFooter;
 		}
 
-		this._oFooter = new sap.m.Toolbar(this.getId() + "-footer", {
-			content: [new sap.m.ToolbarSpacer()]
+		this._oFooter = new Toolbar(this.getId() + "-footer", {
+			content: [new ToolbarSpacer()]
 		});
 
 		return this._oFooter;

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -86,7 +86,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -350,7 +350,7 @@ function(
 			},
 
 			/**
-			 * Fires after us"r's swipe action and before the <code>swipeContent</code> is shown. On the <code>swipe</code> event handler, <code>swipeContent</code> can be changed according to the swiped item.
+			 * Fires after user's swipe action and before the <code>swipeContent</code> is shown. On the <code>swipe</code> event handler, <code>swipeContent</code> can be changed according to the swiped item.
 			 * Calling the <code>preventDefault</code> method of the event cancels the swipe action.
 			 */
 			swipe : {allowPreventDefault : true,
@@ -2167,11 +2167,13 @@ function(
 	// invalidation of the table list is not required for setting the context menu
 	ListBase.prototype.setContextMenu = function(oContextMenu) {
 		this.setAggregation("contextMenu", oContextMenu, true);
+		return this;
 	};
 
 	// invalidation of the table list is not required for destroying the context menu
 	ListBase.prototype.destroyContextMenu = function() {
 		this.destroyAggregation("contextMenu", true);
+		return this;
 	};
 
 	// check if browser supports css sticky

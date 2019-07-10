@@ -1,23 +1,23 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	'sap/m/ToolbarSpacer',
-	'sap/m/Button',
-	'sap/m/SegmentedButton',
-	'sap/m/SegmentedButtonItem',
-	'sap/m/MenuButton',
-	'sap/m/MenuItem',
-	'sap/m/Menu',
-	'sap/m/HBox',
-	'sap/m/OverflowToolbar',
-	'sap/m/OverflowToolbarLayoutData',
-	'sap/ui/Device',
-	'sap/m/FlexItemData',
-	'./Base'
+	"sap/m/ToolbarSpacer",
+	"sap/m/Button",
+	"sap/m/SegmentedButton",
+	"sap/m/SegmentedButtonItem",
+	"sap/m/MenuButton",
+	"sap/m/MenuItem",
+	"sap/m/Menu",
+	"sap/m/HBox",
+	"sap/m/OverflowToolbar",
+	"sap/m/OverflowToolbarLayoutData",
+	"sap/ui/Device",
+	"sap/m/FlexItemData",
+	"./Base"
 ],
 function(
 	ToolbarSpacer,
@@ -44,7 +44,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Base
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -60,25 +60,25 @@ function(
 				/**
 				 * Events are fired when the Toolbar Buttons are pressed
 				 */
-				"undo": {},
-				"redo": {},
-				"exit": {},
-				"restore": {},
-				"transport": {},
-				"modeChange": {},
-				"manageApps": {},
-				"appVariantOverview": {},
-				"saveAs": {}
+				undo: {},
+				redo: {},
+				exit: {},
+				restore: {},
+				transport: {},
+				modeChange: {},
+				manageApps: {},
+				appVariantOverview: {},
+				saveAs: {}
 			},
 			properties: {
 				/** Determines whether publish button is visible */
-				"publishVisible": {
-					"type": "boolean",
-					"defaultValue": false
+				publishVisible: {
+					type: "boolean",
+					defaultValue: false
 				},
 
 				/** Defines value of the switcher SegmentedButton */
-				"modeSwitcher": {
+				modeSwitcher: {
 					type: "string",
 					defaultValue: "adaptation"
 				}
@@ -175,7 +175,7 @@ function(
 			// if the domRef is not there it is (still) in the overflow of the toolbar, so we have to wait until it is rendered
 			if (!oModeSwitcherDomRef) {
 				this._oDelegate = {
-					"onAfterRendering": function() {
+					onAfterRendering: function() {
 						calculateAndSetWidthOfBothBoxes.call(this, bCalculateWidth);
 						this.getControl("modeSwitcher").removeEventDelegate(this._oDelegate, this);
 					}
@@ -376,5 +376,4 @@ function(
 	Adaptation.prototype.hide = function () { return Base.prototype.hide.apply(this, arguments); };
 
 	return Adaptation;
-
 }, true);

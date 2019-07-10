@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,7 +22,7 @@ sap.ui.define([
 		 * Instantiates an SAPUI5 Route
 		 *
 		 * @class
-		 * @param {sap.ui.core.routing.Router} The router instance, the route will be added to.
+		 * @param {sap.ui.core.routing.Router} oRouter The router instance to which the route will be added
 		 * @param {object} oConfig configuration object for the route
 		 * @param {string} oConfig.name the name of the route - it will be used to retrieve the route from the router, it needs to be unique per router instance.</li>
 		 * @param {string} [oConfig.pattern] the url pattern where it needs to match again. A pattern may consist of the following:
@@ -52,7 +52,7 @@ sap.ui.define([
 		 * @param {string} [oConfig.targetControl] @deprecated since 1.28 - use target.controlId. Views will be put into a container Control, this might be a {@link sap.ui.ux3.Shell} control or a {@link sap.m.NavContainer} if working with mobile, or any other container. The id of this control has to be put in here.</li>
 		 * @param {string} [oConfig.targetAggregation] @deprecated since 1.28 - use target.controlAggregation. The name of an aggregation of the targetControl, that contains views. Eg: a {@link sap.m.NavContainer} has an aggregation "pages", another Example is the {@link sap.ui.ux3.Shell} it has "content".</li>
 		 * @param {boolean} [oConfig.clearTarget] @deprecated since 1.28 - use target.clearControlAggregation. Default is false. Defines a boolean that can be passed to specify if the aggregation should be cleared before adding the View to it. When using a {@link sap.ui.ux3.Shell} this should be true. For a {@link sap.m.NavContainer} it should be false.</li>
-		 * @param {object} [oConfig.subroutes] @deprecated since 1.28 - use targets.parent. one or multiple routeconfigs taking all of these parameters again. If a subroute is hit, it will fire tge routeMatched event for all its parents. The routePatternMatched event will only be fired for the subroute not the parents. The routing will also display all the targets of the subroutes and its parents.
+		 * @param {object} [oConfig.subroutes] @deprecated since 1.28 - use targets.parent. one or multiple routeconfigs taking all of these parameters again. If a subroute is hit, it will fire the routeMatched event for all its parents. The routePatternMatched event will only be fired for the subroute not the parents. The routing will also display all the targets of the subroutes and its parents.
 		 * @param {sap.ui.core.routing.Route} [oParent] The parent route - if a parent route is given, the routeMatched event of this route will also trigger the route matched of the parent and it will also create the view of the parent(if provided).
 		 *
 		 * @public
@@ -159,9 +159,18 @@ sap.ui.define([
 						});
 						that._routeMatched(oArguments, true);
 					});
+
+					that._aRoutes[iIndex].switched.add(function() {
+						that._routeSwitched();
+					});
 				});
 			},
 
+			_routeSwitched: function() {
+				this.fireEvent("switched", {
+					name: this._oConfig.name
+				});
+			},
 
 			/**
 			 * Destroys a route
@@ -392,6 +401,23 @@ sap.ui.define([
 			detachPatternMatched : function(fnFunction, oListener) {
 				return this.detachEvent("patternMatched", fnFunction, oListener);
 			},
+
+			/**
+			 * The 'switched' event is only fired, when the last matched route is has been left and another route is matched.
+			 *
+			 * @name sap.ui.core.routing.Route#switched
+			 * @event
+			 * @param {sap.ui.base.Event} oEvent
+			 * @param {sap.ui.base.EventProvider} oEvent.getSource
+			 * @param {object} oEvent.getParameters
+			 * @param {string} oEvent.getParameters.name The name of the route
+			 * @param {object} oEvent.getParameters.arguments A key-value pair object which contains the arguments defined in the route
+			 *  resolved with the corresponding information from the current URL hash
+			 * @param {object} oEvent.getParameters.config The configuration object of the route
+			 * @private
+			 * @ui5-restricted sap.ui.core.routing
+			 * @since 1.62
+			 */
 
 			_validateConfig: function(oConfig) {
 				if (!oConfig.name) {

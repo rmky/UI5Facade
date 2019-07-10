@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -63,7 +63,7 @@ sap.ui.define([
 		 * On mobile devices the steps in the StepNavigator are grouped together and overlap. Tapping on them will show a popover to select the step to navigate to.
 		 * @extends sap.ui.core.Control
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 *
 		 * @constructor
 		 * @public
@@ -153,7 +153,8 @@ sap.ui.define([
 					complete: {
 						parameters: {}
 					}
-				}
+				},
+				dnd: { draggable: false, droppable: true }
 			}
 		});
 
@@ -185,6 +186,7 @@ sap.ui.define([
 			var step = this._getStartingStep();
 			if (step && this._stepPath.indexOf(step) < 0) {
 				this._activateStep(step);
+				step._setNumberInvisibleText(1);
 				this._updateProgressNavigator();
 			}
 		};
@@ -302,21 +304,22 @@ sap.ui.define([
 		/**
 		 * Goes to the given step. The step must already be activated and visible. You can't use this method on steps
 		 * that haven't been reached yet.
-		 * @param {sap.m.WizardStep} step The step to go to.
-		 * @param {boolean} focusFirstStepElement Defines whether the focus should be changed to the first element.
+		 * @param {sap.m.WizardStep} oStep The step to go to.
+		 * @param {boolean} bFocusFirstStepElement Defines whether the focus should be changed to the first element.
 		 * @returns {sap.m.Wizard} Pointer to the control instance for chaining.
 		 * @public
 		 */
-		Wizard.prototype.goToStep = function (step, focusFirstStepElement) {
-			if (!this.getVisible() || this._stepPath.indexOf(step) < 0) {
+		Wizard.prototype.goToStep = function (oStep, bFocusFirstStepElement) {
+			if (!this.getVisible() || this._stepPath.indexOf(oStep) < 0) {
 				return this;
 			}
 
+			oStep._setNumberInvisibleText(this.getProgress());
 			var that = this,
-				scrollProps = {
-					scrollTop: this._getStepScrollOffset(step)
+				mScrollProps = {
+					scrollTop: this._getStepScrollOffset(oStep)
 				},
-				animProps = {
+				mAnimProps = {
 					queue: false,
 					duration: Wizard.CONSTANTS.ANIMATION_TIME,
 					start: function () {
@@ -324,20 +327,20 @@ sap.ui.define([
 					},
 					complete: function () {
 						that._scrollLocked = false;
-						var progressNavigator = that._getProgressNavigator();
+						var oProgressNavigator = that._getProgressNavigator();
 
-						if (!progressNavigator) {
+						if (!oProgressNavigator) {
 							return;
 						}
 
-						progressNavigator._updateCurrentStep(that._stepPath.indexOf(step) + 1, undefined, true);
-						if (focusFirstStepElement || focusFirstStepElement === undefined) {
-							that._focusFirstStepElement(step);
+						oProgressNavigator._updateCurrentStep(that._stepPath.indexOf(oStep) + 1, undefined, true);
+						if (bFocusFirstStepElement || bFocusFirstStepElement === undefined) {
+							that._focusFirstStepElement(oStep);
 						}
 					}
 				};
 
-			jQuery(this.getDomRef("step-container")).animate(scrollProps, animProps);
+			jQuery(this.getDomRef("step-container")).animate(mScrollProps, mAnimProps);
 
 			return this;
 		};
@@ -387,7 +390,7 @@ sap.ui.define([
 			this._updateProgressNavigator();
 			this.setAssociation("currentStep", step);
 
-			lastStep._oNextButton.setVisible(true);
+			this.getShowNextButton() && lastStep._oNextButton.setVisible(true);
 
 			return this;
 		};
@@ -638,10 +641,15 @@ sap.ui.define([
 		 * @private
 		 */
 		Wizard.prototype._getStepScrollOffset = function (step) {
-			var stepTop = step.$().position().top,
-				scrollerTop = this._scroller.getScrollTop(),
-				progressStep = this._stepPath[this.getProgress() - 1],
-				additionalOffset = 0;
+			var iScrollerTop = this._scroller.getScrollTop(),
+				oProgressStep = this._stepPath[this.getProgress() - 1],
+				oNextButton = this._getNextButton(),
+				iAdditionalOffset = 0,
+				iStepTop = 0;
+
+			if (step && step.$() && step.$().position()) {
+				iStepTop = step.$().position().top || 0;
+			}
 
 			/**
 			 * Additional Offset is added in case of new step activation.
@@ -650,11 +658,12 @@ sap.ui.define([
 			 * additionalOffset is added like this.
 			 */
 			if (!Device.system.phone &&
-				!containsOrEquals(progressStep.getDomRef(), this._getNextButton().getDomRef())) {
-				additionalOffset = this._getNextButton().$().outerHeight();
+				oProgressStep && oNextButton &&
+				!containsOrEquals(oProgressStep.getDomRef(), oNextButton.getDomRef())) {
+				iAdditionalOffset = oNextButton.$().outerHeight();
 			}
 
-			return (scrollerTop + stepTop) - (Wizard.CONSTANTS.SCROLL_OFFSET + additionalOffset);
+			return (iScrollerTop + iStepTop) - (Wizard.CONSTANTS.SCROLL_OFFSET + iAdditionalOffset);
 		};
 
 		/**
@@ -664,7 +673,7 @@ sap.ui.define([
 		 */
 		Wizard.prototype._focusFirstStepElement = function (step) {
 			var $step = step.$();
-			if ($step.firstFocusableDomRef()) {
+			if ($step && $step.firstFocusableDomRef()) {
 				$step.firstFocusableDomRef().focus();
 			}
 		};

@@ -1,14 +1,14 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.dt.ElementDesignTimeMetadata.
 sap.ui.define([
-	'sap/ui/dt/DesignTimeMetadata',
-	'sap/ui/dt/AggregationDesignTimeMetadata',
-	'sap/ui/dt/ElementUtil'
+	"sap/ui/dt/DesignTimeMetadata",
+	"sap/ui/dt/AggregationDesignTimeMetadata",
+	"sap/ui/dt/ElementUtil"
 ],
 function(
 	DesignTimeMetadata,
@@ -28,7 +28,7 @@ function(
 	 * @extends sap.ui.dt.DesignTimeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -50,10 +50,10 @@ function(
 	 * @return {Object} default data
 	 * @override
 	 */
-	ElementDesignTimeMetadata.prototype.getDefaultData = function(oData) {
+	ElementDesignTimeMetadata.prototype.getDefaultData = function() {
 		var oDefaultData = DesignTimeMetadata.prototype.getDefaultData.apply(this, arguments);
 
-		oDefaultData.aggregations  = {
+		oDefaultData.aggregations = {
 			layout : {
 				ignore : true
 			},
@@ -105,7 +105,7 @@ function(
 	 * @return {sap.ui.dt.AggregationDesignTimeMetadata} returns the aggregation DT metadata for an aggregation with a given name
 	 * @public
 	 */
-	ElementDesignTimeMetadata.prototype.createAggregationDesignTimeMetadata  = function(mMetadata) {
+	ElementDesignTimeMetadata.prototype.createAggregationDesignTimeMetadata = function(mMetadata) {
 		return new AggregationDesignTimeMetadata({
 			data: mMetadata
 		});
@@ -120,23 +120,29 @@ function(
 	ElementDesignTimeMetadata.prototype.getAggregations = function() {
 		var mAggregations = this.getData().aggregations || {};
 		var mAssociations = this.getData().associations || {};
-		Object.keys(mAssociations).forEach(function(sAssociation){
+		Object.keys(mAssociations).forEach(function(sAssociation) {
 			var mAssociation = mAssociations[sAssociation];
-			if (mAssociation.aggregationLike){
+			if (mAssociation.aggregationLike) {
 				mAggregations[sAssociation] = mAssociation;
 			}
 		});
 		return mAggregations;
 	};
 
-	ElementDesignTimeMetadata.prototype.isActionAvailableOnAggregations = function(sAction) {
+	/**
+	 * Returns all available aggregation names containing the given action.
+	 * @param {string} sAction - action to search for the aggregations
+	 * @return {array.<string>} Returns the names of aggregations which contains the given action.
+	 * @public
+	 */
+	ElementDesignTimeMetadata.prototype.getAggregationNamesWithAction = function(sAction) {
 		var mAggregations = this.getAggregations();
-		return Object.keys(mAggregations).some( function (sAggregation) {
+		return Object.keys(mAggregations).filter(function (sAggregation) {
 			return mAggregations[sAggregation].actions && mAggregations[sAggregation].actions[sAction];
 		});
 	};
 
-	ElementDesignTimeMetadata.prototype.getActionDataFromAggregations = function(sAction, oElement, aArgs) {
+	ElementDesignTimeMetadata.prototype.getActionDataFromAggregations = function(sAction, oElement, aArgs, sSubAction) {
 		var vAction;
 		var mAggregations = this.getAggregations();
 		var aActions = [];
@@ -144,39 +150,41 @@ function(
 		for (var sAggregation in mAggregations) {
 			if (mAggregations[sAggregation].actions && mAggregations[sAggregation].actions[sAction]) {
 				vAction = mAggregations[sAggregation].actions[sAction];
+				if (sSubAction) {
+					vAction = vAction[sSubAction];
+				}
 				if (typeof vAction === "function") {
 					var aActionParameters = [oElement];
-					if (aArgs){
+					if (aArgs) {
 						aActionParameters = aActionParameters.concat(aArgs);
 					}
 					vAction = vAction.apply(null, aActionParameters);
 				}
-				if (typeof (vAction) === "string" ) {
+				if (typeof (vAction) === "string") {
 					vAction = { changeType : vAction };
 				}
 				if (vAction) {
 					vAction.aggregation = sAggregation;
+					aActions.push(vAction);
 				}
-				aActions.push(vAction);
 			}
 		}
 		return aActions;
 	};
 
-	ElementDesignTimeMetadata.prototype._getText = function(oElement, vName){
+	ElementDesignTimeMetadata.prototype._getText = function(oElement, vName) {
 		if (typeof vName === "function") {
 			return vName();
-		} else {
-			return this.getLibraryText(oElement, vName);
 		}
+		return this.getLibraryText(oElement, vName);
 	};
 
-	ElementDesignTimeMetadata.prototype.getAggregationDescription = function(sAggregationName, oElement){
+	ElementDesignTimeMetadata.prototype.getAggregationDescription = function(sAggregationName, oElement) {
 		var vChildNames = this.getAggregation(sAggregationName).childNames;
 		if (typeof vChildNames === "function") {
 			vChildNames = vChildNames.call(null, oElement);
 		}
-		if (vChildNames){
+		if (vChildNames) {
 			return {
 				singular : this._getText(oElement, vChildNames.singular),
 				plural : this._getText(oElement, vChildNames.plural)
@@ -184,12 +192,12 @@ function(
 		}
 	};
 
-	ElementDesignTimeMetadata.prototype.getName = function(oElement){
+	ElementDesignTimeMetadata.prototype.getName = function(oElement) {
 		var vName = this.getData().name;
 		if (typeof vName === "function") {
 			vName = vName.call(null, oElement);
 		}
-		if (vName){
+		if (vName) {
 			return {
 				singular : this._getText(oElement, vName.singular),
 				plural : this._getText(oElement, vName.plural)
@@ -217,9 +225,8 @@ function(
 		var vIgnore = (oAggregationMetadata) ? oAggregationMetadata.ignore : false;
 		if (!vIgnore || (vIgnore && typeof vIgnore === "function" && !vIgnore(oElement))) {
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	};
 
 	/**

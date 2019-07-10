@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -44,19 +44,28 @@ sap.ui.define([
 	 * The <code>Grid</code> control's width can be percentage- or pixel-based and the spacing between
 	 * its columns can be set to various predefined values.
 	 *
-	 * <b>Note:</b> The visibility of the child control does not affect the horizontal space it occupies.
-	 * This means that even if the control is not visible, its horizontal space will still exist, even if it is empty.
+	 * <b>Notes:</b>
+	 * <ul>
+	 * <li>The visibility of the child control does not affect the horizontal space it
+	 * occupies, meaning that even if the control is not visible, its horizontal space
+	 * still exists, even if it is empty.</li>
+	 * <li> If it gets wider, the content of the columns is designed to overflow outside
+	 * of its dimensions. An additional <code>sapUiRespGridOverflowHidden</code> CSS class
+	 * should be added to the control in order to hide the overflowing part of it.</li>
+	 * </ul>
 	 *
 	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/grid-layout/#responsive-grid Grid}
 	 *
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.15.0
+	 * @see {@link topic:43ae317cf39640a88bc8be979d2671df Grid}
+	 * @see {@link topic:32d4b9c2b981425dbc374d3e9d5d0c2e Grid Controls}
 	 * @alias sap.ui.layout.Grid
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */

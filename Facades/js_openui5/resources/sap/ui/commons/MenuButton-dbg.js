@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -30,7 +30,7 @@ sap.ui.define([
 	 * Common button control that opens a menu when clicked by the user. The control provides an API for configuring the docking position
 	 * of the menu.
 	 * @extends sap.ui.commons.Button
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -290,7 +290,7 @@ sap.ui.define([
 	 *
 	 * @see sap.ui.commons.MenuButton#fireItemSelected
 	 *
-	 * @param {Map} [mArguments] the arguments to pass along with the event.
+	 * @param {object} [mArguments] the arguments to pass along with the event.
 	 * @return {sap.ui.commons.MenuButton} <code>this</code> to allow method chaining
 	 * @protected
 	 * @name sap.ui.commons.MenuButton#firePress

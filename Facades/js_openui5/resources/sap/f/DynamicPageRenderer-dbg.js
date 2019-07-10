@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -55,7 +55,8 @@ sap.ui.define(["sap/ui/Device"], function (Device) {
 		oRm.addClass("sapContrastPlus");
 		oRm.addClass("sapFDynamicPageTitleWrapper");
 		if (!bHeaderExpanded) {
-			oRm.addClass("sapFDynamicPageTitleSnapped");
+			oRm.addClass(Device.system.phone && oDynamicPageTitle && oDynamicPageTitle.getSnappedTitleOnMobile() ?
+					"sapFDynamicPageTitleSnappedTitleOnMobile" : "sapFDynamicPageTitleSnapped");
 		}
 		if (!bHeaderHasContent) {
 			oRm.addClass("sapFDynamicPageTitleOnly");
@@ -64,9 +65,15 @@ sap.ui.define(["sap/ui/Device"], function (Device) {
 		oRm.writeAccessibilityState(oDynamicPage, oDynamicPage._formatLandmarkInfo(oLandmarkInfo, "Header"));
 		oRm.write(">");
 		oRm.renderControl(oDynamicPageTitle);
+
+		// Sticky area
+		oRm.write("<div");
+		oRm.writeAttribute("id", oDynamicPage.getId() + "-stickyPlaceholder");
+		oRm.write(">");
 		if (bPreserveHeaderStateOnScroll) {
 			oRm.renderControl(oDynamicPageHeader);
 		}
+		oRm.write("</div>");
 		oRm.write("</" + sHeaderTag + ">");
 
 

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,6 +18,10 @@ sap.ui.define([
 	'sap/ui/core/LocaleData',
 	'./DateTimePickerRenderer',
 	'./TimePickerSliders',
+	'./SegmentedButton',
+	'./SegmentedButtonItem',
+	'./ResponsivePopover',
+	'./Button',
 	"sap/ui/events/KeyCodes",
 	"sap/ui/core/IconPool"
 ], function(
@@ -33,15 +37,20 @@ sap.ui.define([
 	LocaleData,
 	DateTimePickerRenderer,
 	TimePickerSliders,
+	SegmentedButton,
+	SegmentedButtonItem,
+	ResponsivePopover,
+	Button,
 	KeyCodes,
 	IconPool
 ) {
 	"use strict";
 
-	// shortcut for sap.m.PlacementType
-	var PlacementType = library.PlacementType;
-	// From sap.ui.Device.media.RANGESETS.SAP_STANDARD - "Phone": For screens smaller than 600 pixels.
-	var STANDART_PHONE_RANGESET = "Phone";
+	// shortcut for sap.m.PlacementType and sap.m.ButtonType
+	var PlacementType = library.PlacementType,
+		ButtonType = library.ButtonType,
+		// From sap.ui.Device.media.RANGESETS.SAP_STANDARD - "Phone": For screens smaller than 600 pixels.
+		STANDART_PHONE_RANGESET = "Phone";
 
 	/**
 	 * Constructor for a new <code>DateTimePicker</code>.
@@ -125,7 +134,7 @@ sap.ui.define([
 	 * mobile devices, it opens in full screen.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -158,7 +167,8 @@ sap.ui.define([
 			 */
 			_popup: { type: "sap.m.ResponsivePopover", multiple: false, visibility: "hidden" }
 		},
-		designtime: "sap/m/designtime/DateTimePicker.designtime"
+		designtime: "sap/m/designtime/DateTimePicker.designtime",
+		dnd: { draggable: false, droppable: true }
 	}});
 
 	var PopupContent = Control.extend("sap.m.internal.DateTimePickerPopup", {
@@ -224,10 +234,11 @@ sap.ui.define([
 				var sTimeText = oResourceBundle.getText("DATETIMEPICKER_TIME");
 
 
-				oSwitcher = new sap.m.SegmentedButton(this.getId() + "-Switch", {
+				oSwitcher = new SegmentedButton(this.getId() + "-Switch", {
 					selectedKey: "Cal",
-					items: [ new sap.m.SegmentedButtonItem(this.getId() + "-Switch-Cal", {key: "Cal", text: sDateText}),
-								new sap.m.SegmentedButtonItem(this.getId() + "-Switch-Sli", {key: "Sli", text: sTimeText})
+					items: [
+						new SegmentedButtonItem(this.getId() + "-Switch-Cal", {key: "Cal", text: sDateText}),
+						new SegmentedButtonItem(this.getId() + "-Switch-Sli", {key: "Sli", text: sTimeText})
 					]
 				});
 				oSwitcher.attachSelect(this._handleSelect, this);
@@ -486,12 +497,12 @@ sap.ui.define([
 			this._oPopupContent = new PopupContent(this.getId() + "-PC");
 			this._oPopupContent._oDateTimePicker = this;
 
-			this._oPopup = new sap.m.ResponsivePopover(this.getId() + "-RP", {
+			this._oPopup = new ResponsivePopover(this.getId() + "-RP", {
 				showCloseButton: false,
 				showHeader: false,
 				placement: PlacementType.VerticalPreferedBottom,
-				beginButton: new sap.m.Button(this.getId() + "-OK", { text: sOKButtonText, press: jQuery.proxy(_handleOkPress, this) }),
-				endButton: new sap.m.Button(this.getId() + "-Cancel", { text: sCancelButtonText, press: jQuery.proxy(_handleCancelPress, this) }),
+				beginButton: new Button(this.getId() + "-OK", { text: sOKButtonText,type: ButtonType.Emphasized, press: jQuery.proxy(_handleOkPress, this) }),
+				endButton: new Button(this.getId() + "-Cancel", { text: sCancelButtonText, press: jQuery.proxy(_handleCancelPress, this) }),
 				content: this._oPopupContent
 			});
 

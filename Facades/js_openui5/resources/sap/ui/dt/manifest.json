@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.61.2"
+      "version": "1.67.1"
     },
     "title": "SAP UI library: sap.ui.dt (by SAP, Author)",
     "description": "SAP UI library: sap.ui.dt (by SAP, Author)",
@@ -22,10 +22,10 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.61",
+      "minUI5Version": "1.67",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.61.2"
+          "minVersion": "1.67.1"
         }
       }
     },

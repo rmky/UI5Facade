@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -50,7 +50,6 @@ sap.ui.define([
 	jQuery /*, jqueryUiPosition, ui5loaderAutoconfig, jquerySapStubs */) {
 
 	"use strict";
-
 
 	if ( !jQuery ) {
 		throw new Error("Loading of jQuery failed");
@@ -315,7 +314,7 @@ sap.ui.define([
 
 			if ( !oResult ) {
 				aScripts = document.querySelectorAll('SCRIPT[src]');
-				rBootScripts = /^(.*\/)?(?:sap-ui-(core|custom|boot|merged)(?:-.*)?)\.js(?:[?#]|$)/;
+				rBootScripts = /^([^?#]*\/)?(?:sap-ui-(?:core|custom|boot|merged)(?:-[^?#/]*)?|jquery.sap.global|ui5loader(?:-autoconfig)?)\.js(?:[?#]|$)/;
 				for ( i = 0; i < aScripts.length; i++ ) {
 					oResult = check(aScripts[i], rBootScripts);
 					if ( oResult ) {
@@ -419,7 +418,7 @@ sap.ui.define([
 	/**
 	 * Root Namespace for the jQuery plug-in provided by SAP SE.
 	 *
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @namespace
 	 * @public
 	 * @static
@@ -1009,8 +1008,9 @@ sap.ui.define([
 		}
 	};
 
-	// against all our rules: use side effect of assert to differentiate between optimized and productive code
-	jQuery.sap.assert( Log.setLevel(Log.Level.DEBUG) || 1, "will be removed in optimized version");
+	if (!window["sap-ui-optimized"]) {
+		Log.setLevel(Log.Level.DEBUG);
+	}
 
 	// evaluate configuration
 	oCfgData.loglevel = (function() {
@@ -1134,7 +1134,7 @@ sap.ui.define([
 	 * @public
 	 * @static
 	 * @deprecated since 1.58 use {@link module:sap/base/util/ObjectPath.get} or
-	 *  {@link module:sap/base/util/ObjectPath.get} instead
+	 *  {@link module:sap/base/util/ObjectPath.set} instead
 	 */
 	jQuery.sap.getObject = function(sName, iNoCreates, oContext) {
 		var oObject = oContext || window,
@@ -1697,7 +1697,7 @@ sap.ui.define([
 			sModuleName = sModuleName.replace(/\./g, "/");
 			// URL must not be empty
 			vUrlPrefix = vUrlPrefix || '.';
-			jQuery.sap.registerResourcePath(sModuleName, vUrlPrefix);
+			LoaderExtensions.registerResourcePath(sModuleName, vUrlPrefix);
 		};
 
 		/**
@@ -1735,41 +1735,7 @@ sap.ui.define([
 		 * @deprecated since 1.58 set path mappings via {@link sap.ui.loader.config} instead.
 		 * @SecSink {1|PATH} Parameter is used for future HTTP requests
 		 */
-		jQuery.sap.registerResourcePath = function(sResourceNamePrefix, vUrlPrefix) {
-			if (!vUrlPrefix) {
-				vUrlPrefix = { url: null };
-			}
-
-			if (!mFinalPrefixes[sResourceNamePrefix]) {
-				var sUrlPrefix;
-
-				if (typeof vUrlPrefix === "string" || vUrlPrefix instanceof String) {
-					sUrlPrefix = vUrlPrefix;
-				} else {
-					sUrlPrefix = vUrlPrefix.url;
-					if (vUrlPrefix.final) {
-						mFinalPrefixes[sResourceNamePrefix] = vUrlPrefix.final;
-					}
-				}
-
-				var sOldUrlPrefix = _ui5loader.toUrl(sResourceNamePrefix);
-				var oConfig;
-
-				if (sUrlPrefix !== sOldUrlPrefix || vUrlPrefix.final) {
-					oConfig = {
-						paths: {}
-					};
-					oConfig.paths[sResourceNamePrefix] = sUrlPrefix;
-					ui5loader.config(oConfig);
-
-					oLog.info("jQuery.sap.registerResourcePath ('" + sResourceNamePrefix + "', '" + sUrlPrefix + "')" + (vUrlPrefix['final'] ? " (final)" : ""));
-				}
-			} else {
-				oLog.warning( "jQuery.sap.registerResourcePath with prefix " + sResourceNamePrefix + " already set as final. This call is ignored." );
-			}
-		};
-
-		var mFinalPrefixes = Object.create(null);
+		jQuery.sap.registerResourcePath = LoaderExtensions.registerResourcePath;
 
 		/**
 		 * Register information about third party modules that are not UI5 modules.
@@ -1784,7 +1750,7 @@ sap.ui.define([
 		 * @param {string[]|string} [mShims.any-module-name.exports=undefined]
 		 *              Global name (or names) that are exported by the module. If one ore multiple names are defined,
 		 *              the first one will be read from the global object and will be used as value of the module.
-		 *              Each name can be a dot separated hierarchial name (will be resolved with <code>jQuery.sap.getObject</code>)
+		 *              Each name can be a dot separated hierarchical name (will be resolved with <code>jQuery.sap.getObject</code>)
 		 * @param {string[]} [mShims.any-module-name.deps=undefined]
 		 *              List of modules that the module depends on (requireJS syntax, no '.js').
 		 *              The modules will be loaded first before loading the module itself.
@@ -1864,7 +1830,7 @@ sap.ui.define([
 		// dump the URL prefixes
 		oLog.info("URL prefixes set to:");
 		for (var n in mUrlPrefixes) {
-			oLog.info("  " + (n ? "'" + n + "'" : "(default)") + " : " + mUrlPrefixes[n] + (mFinalPrefixes[n] ? " (final)" : ""));
+			oLog.info("  " + (n ? "'" + n + "'" : "(default)") + " : " + mUrlPrefixes[n]);
 		}
 
 		/**

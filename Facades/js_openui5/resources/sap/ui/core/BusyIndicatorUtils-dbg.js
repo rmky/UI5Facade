@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -110,6 +110,11 @@ sap.ui.define(['./BlockLayerUtils', "sap/ui/thirdparty/jquery"], //require of sa
 				sAnimationSizeClass = "sapUiLocalBusyIndicatorAnimStandard";
 				break;
 		}
+
+		if (!oBusyBlockState) {
+			return;
+		}
+
 		var oParentDOM = oBusyBlockState.$parent.get(0),
 			oBlockLayerDOM = oBusyBlockState.$blockLayer.get(0);
 

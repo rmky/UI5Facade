@@ -1,11 +1,14 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
-], function(Utils) {
+sap.ui.define([
+	"sap/ui/fl/descriptorRelated/internal/Utils"
+], function(
+	Utils
+) {
 	"use strict";
 
 	/**
@@ -18,11 +21,11 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorInlineChange
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
-	var DescriptorInlineChange = function(sChangeType,mParameters,mTexts) {
+	var DescriptorInlineChange = function(sChangeType, mParameters, mTexts) {
 		//parameter correspond to inline change format
 		//exception: appdescr_app_setTitle, and similar
 
@@ -49,28 +52,50 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @namespace
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorInlineChangeFactory
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 
 	var DescriptorInlineChangeFactory = {};
 
-	DescriptorInlineChangeFactory.getDescriptorChangeTypes = function(){
-		return ["appdescr_ovp_addNewCard","appdescr_ovp_removeCard","appdescr_ovp_changeCard",
-		        "appdescr_app_addNewInbound", "appdescr_app_changeInbound", "appdescr_app_removeInbound", "appdescr_app_removeAllInboundsExceptOne",
-		        "appdescr_app_addNewOutbound", "appdescr_app_changeOutbound", "appdescr_app_removeOutbound",
-		        "appdescr_app_addNewDataSource", "appdescr_app_changeDataSource", "appdescr_app_removeDataSource",
-		        "appdescr_app_addAnnotationsToOData", "appdescr_app_addTechnicalAttributes", "appdescr_app_removeTechnicalAttributes",
-		        "appdescr_app_setTitle", "appdescr_app_setSubTitle", "appdescr_app_setShortTitle", "appdescr_app_setDescription", "appdescr_app_setInfo",
-		        "appdescr_app_setDestination", "appdescr_app_setKeywords", "appdescr_app_setAch", "appdescr_flp_setConfig",
-		        "appdescr_ui5_addNewModel", "appdescr_ui5_addNewModelEnhanceWith", "appdescr_ui5_removeModel", "appdescr_ui5_replaceComponentUsage",
-		        "appdescr_smb_addNamespace", "appdescr_smb_changeNamespace", "appdescr_ui_generic_app_setMainPage", "appdescr_ui_setIcon", "appdescr_ui_setDeviceTypes",
-		        "appdescr_ui5_addLibraries", "appdescr_url_setUri", "appdescr_fiori_setRegistrationIds"];
+	DescriptorInlineChangeFactory.getDescriptorChangeTypes = function() {
+		return ["appdescr_ovp_addNewCard", "appdescr_ovp_removeCard", "appdescr_ovp_changeCard",
+				"appdescr_app_addNewInbound", "appdescr_app_changeInbound", "appdescr_app_removeInbound", "appdescr_app_removeAllInboundsExceptOne",
+				"appdescr_app_addNewOutbound", "appdescr_app_changeOutbound", "appdescr_app_removeOutbound",
+				"appdescr_app_addNewDataSource", "appdescr_app_changeDataSource", "appdescr_app_removeDataSource",
+				"appdescr_app_addAnnotationsToOData", "appdescr_app_addTechnicalAttributes", "appdescr_app_removeTechnicalAttributes",
+				"appdescr_app_setTitle", "appdescr_app_setSubTitle", "appdescr_app_setShortTitle", "appdescr_app_setDescription", "appdescr_app_setInfo",
+				"appdescr_app_setDestination", "appdescr_app_setKeywords", "appdescr_app_setAch", "appdescr_flp_setConfig",
+				"appdescr_ui5_addNewModel", "appdescr_ui5_addNewModelEnhanceWith", "appdescr_ui5_removeModel", "appdescr_ui5_replaceComponentUsage", "appdescr_ui5_setMinUI5Version",
+				"appdescr_smb_addNamespace", "appdescr_smb_changeNamespace", "appdescr_ui_generic_app_setMainPage", "appdescr_ui_setIcon", "appdescr_ui_setDeviceTypes",
+				"appdescr_ui5_addLibraries", "appdescr_url_setUri", "appdescr_fiori_setRegistrationIds"];
 	};
 
-	DescriptorInlineChangeFactory.createNew = function(sChangeType,mParameters,mTexts) {
-		var oDescriptorInlineChange = new DescriptorInlineChange(sChangeType,mParameters,mTexts);
+	/**
+	 * List of changeTypes that overwrite each other; Duplicates of these changeTypes can be condensed.
+	 */
+	DescriptorInlineChangeFactory.getCondensableDescriptorChangeTypes = function() {
+		return [
+			"appdescr_app_setTitle",
+			"appdescr_app_setInfo",
+			"appdescr_app_setShortTitle",
+			"appdescr_app_setSubTitle",
+			"appdescr_app_setDescription",
+			"appdescr_app_setDestination",
+			"appdescr_app_setKeywords",
+			"appdescr_app_setAch",
+			"appdescr_ui_setIcon",
+			"appdescr_ui_setDeviceTypes",
+			"appdescr_ui_setIcon",
+			"appdescr_ui_setDeviceTypes",
+			"appdescr_fiori_setRegistrationIds",
+			"appdescr_smb_changeNamespace"
+		];
+	};
+
+	DescriptorInlineChangeFactory.createNew = function(sChangeType, mParameters, mTexts) {
+		var oDescriptorInlineChange = new DescriptorInlineChange(sChangeType, mParameters, mTexts);
 
 		return new Promise(function(resolve, reject) {
 			//no check in backend at that point, check only after submitting in service provider
@@ -81,14 +106,13 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 				var oError = {}; //TODO
 				reject(oError);
 			}
-
 		});
 	};
 
 
 //private static methods
-	DescriptorInlineChangeFactory._createDescriptorInlineChange = function( sDescriptorChangeType,mParameters,mTexts ){
-		var oDescriptorInlineChange = new DescriptorInlineChange(sDescriptorChangeType,mParameters,mTexts);
+	DescriptorInlineChangeFactory._createDescriptorInlineChange = function(sDescriptorChangeType, mParameters, mTexts) {
+		var oDescriptorInlineChange = new DescriptorInlineChange(sDescriptorChangeType, mParameters, mTexts);
 
 		//no check in backend at that point, check only after submitting in service provider
 		return new Promise(function(resolve, reject) {
@@ -113,10 +137,10 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
-	DescriptorInlineChangeFactory.createDescriptorInlineChange = function( sDescriptorChangeType,mParameters,mTexts ){
-		return this._createDescriptorInlineChange( sDescriptorChangeType,mParameters,mTexts );
+	DescriptorInlineChangeFactory.createDescriptorInlineChange = function(sDescriptorChangeType, mParameters, mTexts) {
+		return this._createDescriptorInlineChange(sDescriptorChangeType, mParameters, mTexts);
 	};
 
 	/**
@@ -131,11 +155,11 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
-	DescriptorInlineChangeFactory.create_ovp_addNewCard = function(mParameters,mTexts) {
+	DescriptorInlineChangeFactory.create_ovp_addNewCard = function(mParameters, mTexts) {
 		Utils.checkParameterAndType(mParameters, "card", "object");
-		return this._createDescriptorInlineChange('appdescr_ovp_addNewCard', mParameters,mTexts);
+		return this._createDescriptorInlineChange('appdescr_ovp_addNewCard', mParameters, mTexts);
 	};
 
 	/**
@@ -147,12 +171,11 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_ovp_removeCard = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "cardId", "string");
 		return this._createDescriptorInlineChange('appdescr_ovp_removeCard', mParameters);
-
 	};
 
     /**
@@ -169,14 +192,13 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
      * @return {Promise} resolving when creating the descriptor inline change was successful
      *
      * @private
-     * @sap-restricted
+     * @ui5-restricted sap.ui.rta, smart business
      */
-    DescriptorInlineChangeFactory.create_ovp_changeCard = function(mParameters,mTexts) {
-        Utils.checkParameterAndType(mParameters, "cardId", "string");
-        Utils.checkEntityPropertyChange(mParameters);
-        return this._createDescriptorInlineChange('appdescr_ovp_changeCard', mParameters, mTexts);
-
-    };
+	DescriptorInlineChangeFactory.create_ovp_changeCard = function(mParameters, mTexts) {
+		Utils.checkParameterAndType(mParameters, "cardId", "string");
+		Utils.checkEntityPropertyChange(mParameters);
+		return this._createDescriptorInlineChange('appdescr_ovp_changeCard', mParameters, mTexts);
+	};
 
     /**
 	 * Creates an inline change of change type appdescr_app_addNewInbound
@@ -188,12 +210,11 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
-	DescriptorInlineChangeFactory.create_app_addNewInbound = function(mParameters,mTexts) {
+	DescriptorInlineChangeFactory.create_app_addNewInbound = function(mParameters, mTexts) {
 		Utils.checkParameterAndType(mParameters, "inbound", "object");
 		return this._createDescriptorInlineChange('appdescr_app_addNewInbound', mParameters, mTexts);
-
 	};
 
 	/**
@@ -205,12 +226,11 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_removeInbound = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "inboundId", "string");
 		return this._createDescriptorInlineChange('appdescr_app_removeInbound', mParameters);
-
 	};
 
 	/**
@@ -222,7 +242,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_removeAllInboundsExceptOne = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "inboundId", "string");
@@ -244,13 +264,12 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
-	DescriptorInlineChangeFactory.create_app_changeInbound = function(mParameters,mTexts) {
+	DescriptorInlineChangeFactory.create_app_changeInbound = function(mParameters, mTexts) {
 		Utils.checkParameterAndType(mParameters, "inboundId", "string");
 		Utils.checkEntityPropertyChange(mParameters);
 		return this._createDescriptorInlineChange('appdescr_app_changeInbound', mParameters, mTexts);
-
 	};
 
 	/**
@@ -262,12 +281,11 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_addNewOutbound = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "outbound", "object");
 		return this._createDescriptorInlineChange('appdescr_app_addNewOutbound', mParameters);
-
 	};
 
 	/**
@@ -279,12 +297,11 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_removeOutbound = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "outboundId", "string");
 		return this._createDescriptorInlineChange('appdescr_app_removeOutbound', mParameters);
-
 	};
 
 	/**
@@ -301,13 +318,12 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_changeOutbound = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "outboundId", "string");
 		Utils.checkEntityPropertyChange(mParameters);
 		return this._createDescriptorInlineChange('appdescr_app_changeOutbound', mParameters);
-
 	};
 
 	/**
@@ -319,12 +335,11 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_addNewDataSource = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "dataSource", "object");
 		return this._createDescriptorInlineChange('appdescr_app_addNewDataSource', mParameters);
-
 	};
 
 	/**
@@ -337,12 +352,11 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_removeDataSource = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "dataSourceId", "string");
 		return this._createDescriptorInlineChange('appdescr_app_removeDataSource', mParameters);
-
 	};
 
 	/**
@@ -358,13 +372,31 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_changeDataSource = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "dataSourceId", "string");
 		Utils.checkEntityPropertyChange(mParameters);
 		return this._createDescriptorInlineChange('appdescr_app_changeDataSource', mParameters);
+	};
 
+	/**
+	 * @enum {string}
+	 * @private
+	 * @ui5-restricted sap.ui.rta, smart business
+	 * @alias sap.ui.fl.descriptorRelated.api.AnnotationsInsertPositionType
+	 */
+	var TYPES = { // eslint-disable-line no-unused-vars
+		/**
+		 * @private
+		 * @ui5-restricted sap.ui.rta, smart business
+		 */
+		BEGINNING: "BEGINNING",
+		/**
+		 * @private
+		 * @ui5-restricted sap.ui.rta, smart business
+		 */
+		END: "END"
 	};
 
 	/**
@@ -373,20 +405,19 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @param {object} mParameters parameters of the change type
 	 * @param {string} mParameters.dataSourceId the id of the data source to be changed by adding annotations from annotations parameter
 	 * @param {array} mParameters.annotations array with ids of data sources of type 'ODataAnnotation' that should be added to the data source to be changed
-	 * @param {enum} [mParameters.annotationsInsertPosition] position at which the annotations should be added to the annotations of the data source to be changed (BEGINNING/END, default BEGINNING)
+	 * @param {sap.ui.fl.descriptorRelated.api.AnnotationsInsertPositionType} [mParameters.annotationsInsertPosition] position at which the annotations should be added to the annotations of the data source to be changed (BEGINNING/END, default BEGINNING)
 	 * @param {object} mParameters.dataSource one or several data sources of type 'ODataAnnotation' which should be added, all need to be contained in the annotations parameter
 	 *
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_addAnnotationsToOData = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "dataSourceId", "string");
 		Utils.checkParameterAndType(mParameters, "annotations", "array");
 		Utils.checkParameterAndType(mParameters, "dataSource", "object");
 		return this._createDescriptorInlineChange('appdescr_app_addAnnotationsToOData', mParameters);
-
 	};
 
 
@@ -402,19 +433,17 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_setTitle = function(mParameters) {
-
 		var mTexts = {
-					"" : mParameters //property name = text key set when adding to descriptor variant
+			"" : mParameters //property name = text key set when adding to descriptor variant
 		};
 
-		return this._createDescriptorInlineChange('appdescr_app_setTitle', {}, mTexts).then(function(oDescriptorInlineChange){
-
+		return this._createDescriptorInlineChange('appdescr_app_setTitle', {}, mTexts).then(function(oDescriptorInlineChange) {
 			//TODO check how this can be done nicer, e.g. by sub classing
-			return new Promise(function(resolve){
-				oDescriptorInlineChange["setHostingIdForTextKey"] = function(sHostingId){
+			return new Promise(function(resolve) {
+				oDescriptorInlineChange["setHostingIdForTextKey"] = function(sHostingId) {
 					var that = oDescriptorInlineChange;
 					var sTextKey = sHostingId + "_sap.app.title";
 					that._mParameters.texts[sTextKey] = that._mParameters.texts[""];
@@ -437,19 +466,17 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_setSubTitle = function(mParameters) {
-
 		var mTexts = {
-					"" : mParameters //property name = text key set when adding to descriptor variant
+			"" : mParameters //property name = text key set when adding to descriptor variant
 		};
 
-		return this._createDescriptorInlineChange('appdescr_app_setSubTitle', {}, mTexts).then(function(oDescriptorInlineChange){
-
+		return this._createDescriptorInlineChange('appdescr_app_setSubTitle', {}, mTexts).then(function(oDescriptorInlineChange) {
 			//TODO check how this can be done nicer, e.g. by sub classing
-			return new Promise(function(resolve){
-				oDescriptorInlineChange["setHostingIdForTextKey"] = function(sHostingId){
+			return new Promise(function(resolve) {
+				oDescriptorInlineChange["setHostingIdForTextKey"] = function(sHostingId) {
 					var that = oDescriptorInlineChange;
 					var sTextKey = sHostingId + "_sap.app.subTitle";
 					that._mParameters.texts[sTextKey] = that._mParameters.texts[""];
@@ -472,19 +499,17 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_setShortTitle = function(mParameters) {
-
 		var mTexts = {
-					"" : mParameters //property name = text key set when adding to descriptor variant
+			"" : mParameters //property name = text key set when adding to descriptor variant
 		};
 
-		return this._createDescriptorInlineChange('appdescr_app_setShortTitle', {}, mTexts).then(function(oDescriptorInlineChange){
-
+		return this._createDescriptorInlineChange('appdescr_app_setShortTitle', {}, mTexts).then(function(oDescriptorInlineChange) {
 			//TODO check how this can be done nicer, e.g. by sub classing
-			return new Promise(function(resolve){
-				oDescriptorInlineChange["setHostingIdForTextKey"] = function(sHostingId){
+			return new Promise(function(resolve) {
+				oDescriptorInlineChange["setHostingIdForTextKey"] = function(sHostingId) {
 					var that = oDescriptorInlineChange;
 					var sTextKey = sHostingId + "_sap.app.shortTitle";
 					that._mParameters.texts[sTextKey] = that._mParameters.texts[""];
@@ -507,19 +532,17 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_setDescription = function(mParameters) {
-
 		var mTexts = {
-					"" : mParameters //property name = text key set when adding to descriptor variant
+			"" : mParameters //property name = text key set when adding to descriptor variant
 		};
 
-		return this._createDescriptorInlineChange('appdescr_app_setDescription', {}, mTexts).then(function(oDescriptorInlineChange){
-
+		return this._createDescriptorInlineChange('appdescr_app_setDescription', {}, mTexts).then(function(oDescriptorInlineChange) {
 			//TODO check how this can be done nicer, e.g. by sub classing
-			return new Promise(function(resolve){
-				oDescriptorInlineChange["setHostingIdForTextKey"] = function(sHostingId){
+			return new Promise(function(resolve) {
+				oDescriptorInlineChange["setHostingIdForTextKey"] = function(sHostingId) {
 					var that = oDescriptorInlineChange;
 					var sTextKey = sHostingId + "_sap.app.description";
 					that._mParameters.texts[sTextKey] = that._mParameters.texts[""];
@@ -542,19 +565,17 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_setInfo = function(mParameters) {
-
 		var mTexts = {
-					"" : mParameters //property name = text key set when adding to descriptor variant
+			"" : mParameters //property name = text key set when adding to descriptor variant
 		};
 
-		return this._createDescriptorInlineChange('appdescr_app_setInfo', {}, mTexts).then(function(oDescriptorInlineChange){
-
+		return this._createDescriptorInlineChange('appdescr_app_setInfo', {}, mTexts).then(function(oDescriptorInlineChange) {
 			//TODO check how this can be done nicer, e.g. by sub classing
-			return new Promise(function(resolve){
-				oDescriptorInlineChange["setHostingIdForTextKey"] = function(sHostingId){
+			return new Promise(function(resolve) {
+				oDescriptorInlineChange["setHostingIdForTextKey"] = function(sHostingId) {
 					var that = oDescriptorInlineChange;
 					var sTextKey = sHostingId + "_sap.app.info";
 					that._mParameters.texts[sTextKey] = that._mParameters.texts[""];
@@ -574,7 +595,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_setAch = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "ach", "string");
@@ -591,7 +612,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_setDestination = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "destination", "object");
@@ -609,7 +630,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_setKeywords = function(mParameters, mTexts) {
 		Utils.checkParameterAndType(mParameters, "keywords", "array");
@@ -625,7 +646,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_addTechnicalAttributes = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "technicalAttributes", "array");
@@ -641,7 +662,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_app_removeTechnicalAttributes = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "technicalAttributes", "array");
@@ -657,7 +678,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_flp_setConfig = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "config", "object");
@@ -674,7 +695,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_ui5_addNewModel = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "model", "object");
@@ -690,7 +711,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_ui5_removeModel = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "modelId", "string");
@@ -707,7 +728,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_ui5_addNewModelEnhanceWith = function(mParameters, mTexts) {
 		Utils.checkParameterAndType(mParameters, "modelId", "string");
@@ -724,7 +745,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_ui5_replaceComponentUsage = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "componentUsageId", "string");
@@ -741,11 +762,27 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_ui5_addLibraries = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "libraries", "object");
 		return this._createDescriptorInlineChange('appdescr_ui5_addLibraries', mParameters);
+	};
+
+	/**
+	 * Creates an inline change of change type appdescr_ui5_setMinUI5Version
+	 *
+	 * @param {object} mParameters parameters of the change type
+	 * @param {string} mParameters.minUI5Version the UI5 Version to be updated
+	 *
+	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
+	 *
+	 * @private
+	 * @ui5-restricted sap.ui.rta, smart business
+	 */
+	DescriptorInlineChangeFactory.create_ui5_setMinUI5Version = function(mParameters) {
+		Utils.checkParameterAndType(mParameters, "minUI5Version", "string");
+		return this._createDescriptorInlineChange('appdescr_ui5_setMinUI5Version', mParameters);
 	};
 
 	/**
@@ -757,7 +794,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_smb_addNamespace = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "smartBusinessApp", "object");
@@ -773,7 +810,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_smb_changeNamespace = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "smartBusinessApp", "object");
@@ -790,9 +827,9 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
-	DescriptorInlineChangeFactory.create_ui_generic_app_setMainPage = function(mParameters,mTexts) {
+	DescriptorInlineChangeFactory.create_ui_generic_app_setMainPage = function(mParameters, mTexts) {
 		Utils.checkParameterAndType(mParameters, "page", "object");
 		return this._createDescriptorInlineChange('appdescr_ui_generic_app_setMainPage', mParameters, mTexts);
 	};
@@ -806,7 +843,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_ui_setIcon = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "icon", "string");
@@ -822,7 +859,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_ui_setDeviceTypes = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "deviceTypes", "object");
@@ -838,7 +875,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_url_setUri = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "uri", "string");
@@ -854,7 +891,7 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	 * @return {Promise} resolving when creating the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorInlineChangeFactory.create_fiori_setRegistrationIds = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "registrationIds", "array");
@@ -862,5 +899,4 @@ sap.ui.define(["sap/ui/fl/descriptorRelated/internal/Utils"
 	};
 
 	return DescriptorInlineChangeFactory;
-
-},true);
+}, true);

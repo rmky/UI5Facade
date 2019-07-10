@@ -1,16 +1,15 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.dt.ControlObserver.
 sap.ui.define([
-	'sap/ui/dt/ManagedObjectObserver'
+	"sap/ui/dt/ManagedObjectObserver"
 ],
 function(ManagedObjectObserver) {
 	"use strict";
-
 
 	/**
 	 * Constructor for a new ControlObserver.
@@ -23,7 +22,7 @@ function(ManagedObjectObserver) {
 	 * @extends sap.ui.dt.ManagedObjectObserver
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -45,15 +44,9 @@ function(ManagedObjectObserver) {
 				/**
 				 * target Control to observe
 				 */
-				"target" : {
-					"type" : "sap.ui.core.Control"
+				target : {
+					type : "sap.ui.core.Control"
 				}
-			},
-			/**
-			 * Fired when the DOM of the observed control is changed
-			 */
-			events : {
-				"afterRendering" : {}
 			}
 		}
 	});
@@ -98,8 +91,9 @@ function(ManagedObjectObserver) {
 	 * @private
 	 */
 	ControlObserver.prototype._onAfterRendering = function() {
-		this.fireAfterRendering();
-
+		this.fireModified({
+			type: "afterRendering"
+		});
 	};
 
 	return ControlObserver;

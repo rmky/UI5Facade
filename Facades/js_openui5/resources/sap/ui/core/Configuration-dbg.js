@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -136,7 +136,6 @@ sap.ui.define([
 					"frameOptions"          : { type : "string",   defaultValue : "default", noUrl: true }, // default/allow/deny/trusted (default => allow)
 					"frameOptionsConfig"    : { type : "object",   defaultValue : undefined, noUrl:true },  // advanced frame options configuration
 					"support"               : { type : "string[]",  defaultValue : null },
-
 					"xx-rootComponentNode"  : { type : "string",   defaultValue : "",        noUrl:true },
 					"xx-appCacheBusterMode" : { type : "string",   defaultValue : "sync" },
 					"xx-appCacheBusterHooks": { type : "object",   defaultValue : undefined, noUrl:true }, // e.g.: { handleURL: fn, onIndexLoad: fn, onIndexLoaded: fn }
@@ -144,7 +143,6 @@ sap.ui.define([
 					"xx-viewCache"          : { type : "boolean",  defaultValue : true },
 					"xx-test-mobile"        : { type : "boolean",  defaultValue : false },
 					"xx-depCache"           : { type : "boolean",  defaultValue : false },
-					"xx-domPatching"        : { type : "boolean",  defaultValue : false },
 					"xx-libraryPreloadFiles": { type : "string[]", defaultValue : [] },
 					"xx-componentPreload"   : { type : "string",   defaultValue : "" },
 					"xx-designMode"         : { type : "boolean",  defaultValue : false },
@@ -158,10 +156,9 @@ sap.ui.define([
 					"xx-cache-excludedKeys" : { type : "string[]", defaultValue : []},
 					"xx-cache-serialization": { type : "boolean",  defaultValue : false},
 					"xx-nosync"             : { type : "string",   defaultValue : "" },
-					"xx-waitForTheme"       : { type : "boolean",  defaultValue : false},
-					"xx-xml-processing"     : { type : "string",  defaultValue : "" },
+					"xx-waitForTheme"       : { type : "string",  defaultValue : ""}, // rendering|init
 					"xx-avoidAriaApplicationRole" : { type : "boolean",  defaultValue : false}, // Avoid ACC role 'application'
-					"xx-hyphenation" : { type : "string",  defaultValue : ""}, // (empty string)|native|thirdparty
+					"xx-hyphenation" : { type : "string",  defaultValue : ""}, // (empty string)|native|thirdparty|disable
 					"xx-flexBundleRequestForced" : { type : "boolean",  defaultValue : false },
 					"statistics"            : { type : "boolean",  defaultValue : false }
 			};
@@ -497,6 +494,16 @@ sap.ui.define([
 				}
 			}
 
+			// default legacy boolean to new enum value
+			// TODO: remove when making the configuration non-experimental
+			if ( config["xx-waitForTheme"] === "true" ) {
+				config["xx-waitForTheme"] = "rendering";
+			}
+			if ( config["xx-waitForTheme"] !== "rendering" && config["xx-waitForTheme"] !== "init" ) {
+				// invalid value or false from legacy boolean setting
+				config["xx-waitForTheme"] = undefined;
+			}
+
 			// log  all non default value
 			for (var n in M_SETTINGS) {
 				if ( config[n] !== M_SETTINGS[n].defaultValue ) {
@@ -745,32 +752,6 @@ sap.ui.define([
 		 */
 		getSAPParam : function (sName) {
 			return this.sapparams && this.sapparams[sName];
-		},
-
-		/**
-		 * The mode for async XMLView processing.
-		 * Potential values are: <code>sequential</code>
-		 * Turned OFF by default
-		 * @since 1.52.1
-		 * @experimental
-		 * @return {string} Asynchronous XML Processing mode
-		 * @public
-		 */
-		getXMLProcessingMode : function () {
-			return this["xx-xml-processing"];
-		},
-
-		/**
-		 * Determines the mode for async XMLView processing.
-		 * @experimental
-		 * @since 1.52.1
-		 * @param {string} sMode Asynchronous XML Processing mode, activated if set to <code>sequential</code>
-		 * @returns {sap.ui.core.Configuration}
-		 * @private
-		 */
-		setXMLProcessingMode : function (sMode) {
-			this["xx-xml-processing"] = sMode;
-			return this;
 		},
 
 		/**
@@ -1272,17 +1253,6 @@ sap.ui.define([
 		 */
 		getViewCache : function() {
 			return this["xx-viewCache"];
-		},
-
-		/**
-		 * Determines whether DOM patching is enabled or not.
-		 *
-		 * @see {jQuery.sap#replaceDOM}
-		 * @returns {boolean}
-		 * @private
-		 */
-		getDomPatching : function() {
-			return this["xx-domPatching"];
 		},
 
 		/**
@@ -1954,13 +1924,31 @@ sap.ui.define([
 
 		/**
 		 * Sets custom currencies and replaces existing entries.
-		 * E.g.
+		 *
+		 * There is a special currency code named "DEFAULT" that is optional.
+		 * In case it is set it will be used for all currencies not contained
+		 * in the list, otherwise currency digits as defined by the CLDR will
+		 * be used as a fallback.
+		 *
+		 * Example:
+		 * To use CLDR, but override single currencies
 		 * <code>
 		 * {
 		 *  "KWD": {"digits": 3},
 		 *  "TND" : {"digits": 3}
 		 * }
 		 * </code>
+		 *
+		 * To replace the CLDR currency digits completely
+		 * <code>
+		 * {
+		 *   "DEFAULT": {"digits": 2},
+		 *   "ADP": {"digits": 0},
+		 *   ...
+		 *   "XPF": {"digits": 0}
+		 * }
+		 * </code>
+		 *
 		 * Note: To unset the custom currencies: call with <code>undefined</code>
 		 * @public
 		 * @param {object} mCurrencies currency map which is set

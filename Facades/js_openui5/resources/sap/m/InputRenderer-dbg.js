@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -52,7 +52,7 @@ sap.ui.define(['sap/ui/core/InvisibleText', 'sap/ui/core/Renderer', './InputBase
 			oRm.addStyle("text-align", "right");
 		}
 
-		if (oControl.getShowSuggestion()) {
+		if (oControl.getShowSuggestion() || oControl.getShowValueStateMessage()) {
 			oRm.writeAttribute("autocomplete", "off");
 		}
 
@@ -75,7 +75,7 @@ sap.ui.define(['sap/ui/core/InvisibleText', 'sap/ui/core/Renderer', './InputBase
 	InputRenderer.writeDescription = function (oRm, oControl) {
 		oRm.write("<div");
 		oRm.addClass("sapMInputDescriptionWrapper");
-		oRm.addStyle("max-width", "calc(100% - " + oControl.getFieldWidth() + ")");
+		oRm.addStyle("width", "calc(100% - " + oControl.getFieldWidth() + ")");
 		oRm.writeClasses();
 		oRm.writeStyles();
 		oRm.write(">");
@@ -112,7 +112,7 @@ sap.ui.define(['sap/ui/core/InvisibleText', 'sap/ui/core/Renderer', './InputBase
 		var ariaLabels = InputBaseRenderer.getAriaLabelledBy.call(this, oControl) || "";
 
 		if (oControl.getDescription()) {
-			ariaLabels = ariaLabels + " " + oControl.getId() + "-Descr";
+			ariaLabels = ariaLabels + " " + oControl.getId() + "-descr";
 		}
 		return ariaLabels;
 	};

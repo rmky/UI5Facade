@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,6 +12,7 @@ sap.ui.define([
 	"./InputRenderer",
 	"sap/ui/core/Control",
 	"sap/ui/core/IconPool",
+	'sap/ui/core/LabelEnablement',
 	'sap/ui/Device',
 	"sap/ui/core/library",
 	"sap/ui/core/Renderer",
@@ -27,6 +28,7 @@ function(
 	InputRenderer,
 	Control,
 	IconPool,
+	LabelEnablement,
 	Device,
 	coreLibrary,
 	Renderer,
@@ -99,11 +101,29 @@ function(
 		 * {@link sap.m.TimePicker}, or {@link sap.m.DateTimePicker} instead.</li>
 		 * </ul>
 		 *
+		 * <b>Note:</b> The control uses a JavaScript number to keep its value, which
+		 * has a certain precision limitation.
+		 *
+		 * In general, exponential notation is used:
+		 * <ul>
+		 * <li>if there are more than 21 digits before the decimal point.</li>
+		 * <li>if number starts with "0." followed by more than five zeros.</li>
+		 * </ul>
+		 *
+		 * Exponential notation is not supported by the control and using it may lead to
+		 * unpredictable behavior.
+		 *
+		 * Also, the JavaScript number persists its precision up to 16 digits. If the user enters
+		 * a number with a greater precision, the value will be rounded.
+		 *
+		 * This limitation comes from JavaScript itself and it cannot be worked around in a
+		 * feasible way.
+		 *
 		 * @extends sap.ui.core.Control
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 *
 		 * @constructor
 		 * @public
@@ -134,7 +154,7 @@ function(
 					 */
 					step: {type: "float", group: "Data", defaultValue: 1},
 					/**
-					 * Defines the calculation mode for the provided <code>step<code> and <code>largerStep</code>.
+					 * Defines the calculation mode for the provided <code>step</code> and <code>largerStep</code>.
 					 *
 					 * If the user increases/decreases the value by <code>largerStep</code>, this calculation will consider
 					 * it as well. For example, if the current <code>value</code> is 3, <code>step</code> is 5,
@@ -260,7 +280,8 @@ function(
 							value: {type: "string"}
 						}
 					}
-				}
+				},
+				dnd: { draggable: false, droppable: true }
 			},
 			constructor : function (vId, mSettings) {
 				Control.prototype.constructor.apply(this, arguments);
@@ -334,7 +355,12 @@ function(
 				fMin = oStepInput.getMin(),
 				fMax = oStepInput.getMax(),
 				fNow = oStepInput.getValue(),
-				sLabeledBy = oStepInput.getAriaLabelledBy().join(" "),
+				aAriaLabelledByRefs = oStepInput.getAriaLabelledBy(),
+				// If we don't check this manually, we won't have the labels, which were referencing SI,
+				// in aria-labelledby (which normally comes out of the box). This is because writeAccessibilityState
+				// is called for NumericInput, while any labels will be for the parent StepInput.
+				aReferencingLabels = LabelEnablement.getReferencingLabels(oStepInput),
+				sLabeledBy = aAriaLabelledByRefs.concat(aReferencingLabels).join(" "),
 				sDescribedBy = oStepInput.getAriaDescribedBy().join(" ");
 
 			mAccAttributes["role"] = "spinbutton";
@@ -405,12 +431,11 @@ function(
 				this.setValue(fMax);
 			}
 			this._disableButtons(vValue, fMax, fMin);
+			this.$().unbind(Device.browser.firefox ? "DOMMouseScroll" : "mousewheel", this._onmousewheel);
 		};
 
 		StepInput.prototype.onAfterRendering = function () {
-			var $domRef = this.$();
-			$domRef.unbind(Device.browser.firefox ? "DOMMouseScroll" : "mousewheel", this._onmousewheel);
-			$domRef.bind(Device.browser.firefox ? "DOMMouseScroll" : "mousewheel", this._onmousewheel);
+			this.$().bind(Device.browser.firefox ? "DOMMouseScroll" : "mousewheel", this._onmousewheel);
 		};
 
 		StepInput.prototype.exit = function () {
@@ -547,6 +572,7 @@ function(
 		StepInput.prototype.setTooltip = function (sTooltip) {
 			//We need to call the special logic implemented in InputBase.prototype.setTooltip
 			this._getInput().setTooltip(sTooltip);
+			return this;
 		};
 
 		/**
@@ -584,8 +610,8 @@ function(
 					tooltip: StepInput.STEP_INPUT_INCREASE_BTN_TOOLTIP
 				});
 
-			oIcon.getEnabled = function() {
-				return this.getEnabled() && (this.getValue() < this.getMax());
+			oIcon.getEnabled = function () {
+				return !this._shouldDisableIncrementButton(this.getValue(), this.getMax());
 			}.bind(this);
 
 			oIcon.addEventDelegate({
@@ -615,8 +641,8 @@ function(
 					tooltip: StepInput.STEP_INPUT_DECREASE_BTN_TOOLTIP
 				});
 
-			oIcon.getEnabled = function() {
-				return this.getEnabled() && (this.getValue() > this.getMin());
+			oIcon.getEnabled = function () {
+				return !this._shouldDisableDecrementButton(this.getValue(), this.getMin());
 			}.bind(this);
 
 			oIcon.addEventDelegate({
@@ -685,31 +711,42 @@ function(
 		/**
 		 * Handles whether the increment and decrement buttons should be enabled/disabled based on different situations.
 		 *
-		 * @param {number} value Indicates the value in the input
-		 * @param {number} max Indicates the max
-		 * @param {number} min Indicates the min
+		 * @param {number} iValue Indicates the value in the input
+		 * @param {number} iMax Indicates the max
+		 * @param {number} iMin Indicates the min
 		 * @returns {sap.m.StepInput} Reference to the control instance for chaining
 		 */
-		StepInput.prototype._disableButtons = function (value, max, min) {
+		StepInput.prototype._disableButtons = function (iValue, iMax, iMin) {
 
-			if (!this._isNumericLike(value)) {
+			if (!this._isNumericLike(iValue)) {
 				return;
 			}
 
-			var bMaxIsNumber = this._isNumericLike(max),
-				bMinIsNumber = this._isNumericLike(min),
-				oIncrementButton = this._getIncrementButton(),
+			var oIncrementButton = this._getIncrementButton(),
 				oDecrementButton = this._getDecrementButton(),
-				bEnabled = this.getEnabled(),
-				bReachedMin = bMinIsNumber && min >= value, //min is set and it's bigger or equal to the value
-				bReachedMax = bMaxIsNumber && max <= value, //max is set and it's lower or equal to the value
-				bShouldDisableDecrement = bEnabled ? bReachedMin : true, //if enabled - set the value according to the min value, if not - set disable flag to true
-				bShouldDisableIncrement = bEnabled ? bReachedMax : true; //if enabled - set the value according to the max value, if not - set disable flag to true;
+				bShouldDisableDecrement = this._shouldDisableDecrementButton(iValue, iMin),
+				bShouldDisableIncrement = this._shouldDisableIncrementButton(iValue, iMax);
 
 			oDecrementButton && oDecrementButton.toggleStyleClass("sapMStepInputIconDisabled", bShouldDisableDecrement);
 			oIncrementButton && oIncrementButton.toggleStyleClass("sapMStepInputIconDisabled", bShouldDisableIncrement);
 
 			return this;
+		};
+
+		StepInput.prototype._shouldDisableDecrementButton = function (iValue, iMin) {
+			var bMinIsNumber = this._isNumericLike(iMin),
+				bEnabled = this.getEnabled(),
+				bReachedMin = bMinIsNumber && iMin >= iValue; // min is set and it's bigger or equal to the value
+
+			return bEnabled ? bReachedMin : true; // if enabled - set the value according to the min value, if not - set disable flag to true
+		};
+
+		StepInput.prototype._shouldDisableIncrementButton = function (iValue, iMax) {
+			var bMaxIsNumber = this._isNumericLike(iMax),
+				bEnabled = this.getEnabled(),
+				bReachedMax = bMaxIsNumber && iMax <= iValue; // max is set and it's lower or equal to the value
+
+			return bEnabled ? bReachedMax : true; // if enabled - set the value according to the max value, if not - set disable flag to true;
 		};
 
 		/**
@@ -901,12 +938,15 @@ function(
 		};
 
 		StepInput.prototype._onmousewheel = function (oEvent) {
-			oEvent.preventDefault();
-			var oOriginalEvent = oEvent.originalEvent,
-				bDirectionPositive = oOriginalEvent.detail ? (-oOriginalEvent.detail > 0) : (oOriginalEvent.wheelDelta > 0);
+			var bIsFocused = this.getDomRef().contains(document.activeElement);
+			if (bIsFocused) {
+				oEvent.preventDefault();
+				var oOriginalEvent = oEvent.originalEvent,
+					bDirectionPositive = oOriginalEvent.detail ? (-oOriginalEvent.detail > 0) : (oOriginalEvent.wheelDelta > 0);
 
-			this._applyValue(this._calculateNewValue(1, bDirectionPositive).displayValue);
-			this._verifyValue();
+				this._applyValue(this._calculateNewValue(1, bDirectionPositive).displayValue);
+				this._verifyValue();
+			}
 		};
 
 		/**
@@ -1451,6 +1491,19 @@ function(
 				};
 
 				oBtn.addDelegate(oEvents, true);
+		};
+
+		/**
+		 * Returns the DOMNode Id to be used for the "labelFor" attribute of the label.
+		 *
+		 * By default, this is the Id of the control itself.
+		 *
+		 * @return {string} Id to be used for the <code>labelFor</code>
+		 * @public
+		 */
+		StepInput.prototype.getIdForLabel = function () {
+			// The NumericInput inherits from the InputBase
+			return this.getAggregation("_input").getIdForLabel();
 		};
 
 		/*

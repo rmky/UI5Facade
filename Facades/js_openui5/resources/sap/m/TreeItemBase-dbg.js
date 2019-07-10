@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -235,17 +235,28 @@ sap.ui.define([
 	 * @since 1.46.0
 	 */
 	TreeItemBase.prototype._updateExpander = function() {
+		if (this._bInvalidated) {
+			return;
+		}
+
+		var oTree = this.getTree();
+		if (oTree && oTree._bInvalidated) {
+			return;
+		}
+
 		if (this._oExpanderControl) {
 			var sSrc = this.CollapsedIconURI;
 			if (this.getExpanded()) {
 				sSrc = this.ExpandedIconURI;
 			}
 			this._oExpanderControl.setSrc(sSrc);
-			this.$().attr("aria-expanded", this.getExpanded());
 
 			// make the expander visible
 			if (!this.isLeaf()) {
 				this.$().removeClass("sapMTreeItemBaseLeaf");
+				this.$().attr("aria-expanded", this.getExpanded());
+			} else {
+				this.$().removeAttr("aria-expanded");
 			}
 
 			// update the indentation again
@@ -254,6 +265,17 @@ sap.ui.define([
 			this.$().css(sStyleRule, iIndentation + "rem");
 
 		}
+
+	};
+
+	TreeItemBase.prototype.invalidate = function() {
+		ListItemBase.prototype.invalidate.apply(this, arguments);
+		this._bInvalidated = true;
+	};
+
+	TreeItemBase.prototype.onAfterRendering = function() {
+		ListItemBase.prototype.onAfterRendering.apply(this, arguments);
+		this._bInvalidated = false;
 	};
 
 	TreeItemBase.prototype.setBindingContext = function() {
@@ -323,7 +345,7 @@ sap.ui.define([
 	 * @param {jQuery.Event} The event object.
 	 */
 	TreeItemBase.prototype.onsapright = function(oEvent) {
-		if (this.isLeaf()) {
+		if (oEvent.srcControl !== this || this.isLeaf()) {
 			return;
 		}
 
@@ -342,7 +364,7 @@ sap.ui.define([
 	 * @param {jQuery.Event} The event object.
 	 */
 	TreeItemBase.prototype.onsapleft = function(oEvent) {
-		if (this.isTopLevel() && !this.getExpanded()) {
+		if (oEvent.srcControl !== this || this.isTopLevel() && !this.getExpanded()) {
 			return;
 		}
 
@@ -364,9 +386,16 @@ sap.ui.define([
 	 * @param {jQuery.Event} The event object.
 	 */
 	TreeItemBase.prototype.onsapbackspace = function(oEvent) {
-		if (!this.isTopLevel()) {
-			this.getParentNode().focus();
+		// Only set focus on parent when the event is fired by item itself.
+		// Prevent miss-set when the content of CustomTreeItem fires event.
+		if (oEvent.srcControl !== this) {
+			return;
 		}
+
+		if (!this.isTopLevel()) {
+				this.getParentNode().focus();
+		}
+
 	};
 
 	TreeItemBase.prototype.getAccessibilityType = function(oBundle) {

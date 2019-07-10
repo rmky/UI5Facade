@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -48,7 +48,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 *
 		 * @constructor
 		 * @public
@@ -74,8 +74,9 @@ sap.ui.define([
 					renderMode: { type: "sap.tnt.RenderMode", defaultValue: RenderMode.Loose, group: "Appearance" },
 					/**
 					 * Specifies the fill and text color of the control. Accepts a digit as a value.
-					 * You can choose from 9 predefined background and text color combinations.
+					 * You can choose from 10 predefined background and text color combinations.
 					 * The color schemes are non-semantic, you can select them according to your own preferences.
+					 * ColorScheme 10 is available only in Fiori 3 theme.
 					 * The default <code>colorScheme</code> is 7.
 					 */
 					colorScheme: { type: "int", group: "Misc", defaultValue: 7 },
@@ -139,7 +140,7 @@ sap.ui.define([
 
 			if (iColorSchemeCurrent !== iColorScheme) {
 
-				if (iColorScheme > 0 && iColorScheme < 10) {
+				if (iColorScheme > 0 && iColorScheme < 11) {
 					this.setProperty("colorScheme", iColorScheme, true);
 
 					if ($Control.length) {
@@ -147,7 +148,7 @@ sap.ui.define([
 						$Control.addClass("backgroundColor" + iColorScheme);
 					}
 				} else {
-					Log.warning("colorScheme value was not set. It should be between 1 and 9");
+					Log.warning("colorScheme value was not set. It should be between 1 and 10");
 				}
 			}
 

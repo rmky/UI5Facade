@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -122,7 +122,7 @@ sap.ui.define([
 		oDOM.setAttribute("aria-valuemin", "0");
 		oDOM.setAttribute("aria-valuemax", "100");
 		oDOM.setAttribute("alt", "");
-		oDOM.setAttribute("tabIndex", "0");
+		oDOM.setAttribute("tabindex", "0");
 	};
 
 	/**

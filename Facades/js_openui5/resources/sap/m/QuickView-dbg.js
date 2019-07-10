@@ -1,6 +1,6 @@
 /*
- * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * ! OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -62,7 +62,7 @@ sap.ui.define([
 	 * @extends sap.m.QuickViewBase
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -261,6 +261,14 @@ sap.ui.define([
 		if (this._bItemsChanged) {
 			this._clearContainerHeight();
 			this._initPages();
+
+			var oPage = this._oNavContainer.getCurrentPage();
+			if (oPage) {
+				var oHeader = oPage.getCustomHeader();
+				if (oHeader) {
+					this._oPopover.addAriaDescribedBy(oHeader.getId());
+				}
+			}
 
 			// add a close button on phone devices when there are no pages
 			var aPages = this.getAggregation("pages");

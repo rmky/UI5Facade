@@ -1,21 +1,21 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 /* global Map */
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
-	'sap/ui/core/Element',
-	'sap/ui/dt/MutationObserver',
-	'sap/ui/dt/ElementUtil',
-	'sap/ui/dt/OverlayUtil',
-	'sap/ui/dt/DOMUtil',
-	'sap/ui/dt/ScrollbarSynchronizer',
-	'sap/ui/dt/Util',
-	'sap/base/Log',
-	'sap/ui/dt/util/getNextZIndex'
+	"sap/ui/core/Element",
+	"sap/ui/dt/MutationObserver",
+	"sap/ui/dt/ElementUtil",
+	"sap/ui/dt/OverlayUtil",
+	"sap/ui/dt/DOMUtil",
+	"sap/ui/dt/ScrollbarSynchronizer",
+	"sap/ui/dt/Util",
+	"sap/base/Log",
+	"sap/ui/dt/util/ZIndexManager"
 ],
 function (
 	jQuery,
@@ -27,7 +27,7 @@ function (
 	ScrollbarSynchronizer,
 	Util,
 	Log,
-	getNextZIndex
+	ZIndexManager
 ) {
 	"use strict";
 
@@ -46,7 +46,7 @@ function (
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -85,10 +85,10 @@ function (
 			},
 			associations: {
 				/**
-				 * Element associated with an overlay
+				 * ManagedObject associated with an overlay
 				 */
 				element: {
-					type: "sap.ui.core.Element"
+					type: "sap.ui.base.ManagedObject"
 				}
 			},
 			aggregations: {
@@ -186,7 +186,13 @@ function (
 			Element.apply(this, arguments);
 
 			if (!this.getElement()) {
-				throw new Error("sap.ui.dt: can't create overlay without element");
+				throw Util.createError(
+					"Overlay#constructor",
+					Util.printf(
+						"Cannot create overlay without a valid element. Expected a descendant of sap.ui.core.Element or sap.ui.core.Component, but {0} was given",
+						Util.getObjectType(arguments[0].element)
+					)
+				);
 			}
 
 			this.asyncInit()
@@ -328,10 +334,10 @@ function (
 	 */
 	Overlay.prototype._getAttributes = function () {
 		return {
-			"id": this.getId(),
+			id: this.getId(),
 			"data-sap-ui": this.getId(),
 			"class": this._aStyleClasses.join(" "),
-			"tabindex": this.isFocusable() ? 0 : null
+			tabindex: this.isFocusable() ? 0 : null
 		};
 	};
 
@@ -593,7 +599,6 @@ function (
 				} else {
 					this._applySizes(oGeometry, $RenderingParent, bForceScrollbarSync);
 				}
-
 			} else {
 				this.$().css("display", "none");
 			}
@@ -619,19 +624,20 @@ function (
 	};
 
 	/**
-	 * Sets z-index to specified DOM element
-	 * For the root element we use the Popup to retrieve a "high enough" index
-	 * ensuring that the overlays will always be over the controls in the page
+	 * Sets z-index to specified DOM element.
+	 * If no pre-existing z-index value exists for a root element,
+	 * then ZIndexManager is used to calculate a z-index value lower than open popups and higher than other controls.
+	 * @see sap.ui.core.util.ZIndexManager
 	 * @param {object} oGeometry - Geometry object to get reference z-index from
 	 * @param {jQuery} $overlayDomRef - DOM Element to receive the z-index
 	 */
-	Overlay.prototype._setZIndex = function (oGeometry, $overlayDomRef){
+	Overlay.prototype._setZIndex = function (oGeometry, $overlayDomRef) {
 		var oOriginalDomRef = oGeometry.domRef;
 		var iZIndex = DOMUtil.getZIndex(oOriginalDomRef);
 		if (Util.isInteger(iZIndex)) {
 			$overlayDomRef.css("z-index", iZIndex);
 		} else if (this.isRoot()) {
-			this._iZIndex = this._iZIndex || getNextZIndex();
+			this._iZIndex = this._iZIndex || ZIndexManager.getZIndexBelowPopups();
 			$overlayDomRef.css("z-index", this._iZIndex);
 		}
 	};
@@ -649,7 +655,7 @@ function (
 		var mSize = oGeometry.size;
 
 		// ASSIGN SIZE
-		$Target.css("width" , mSize.width + "px");
+		$Target.css("width", mSize.width + "px");
 		$Target.css("height", mSize.height + "px");
 	};
 
@@ -706,21 +712,20 @@ function (
 	Overlay.prototype.detachBrowserEvent = function(sEventType, fnHandler, oListener) {
 		if (sEventType && (typeof (sEventType) === "string")) { // do nothing if the first parameter is empty or not a string
 			if (typeof (fnHandler) === "function") {   // also do nothing if the second parameter is not a function
-				var $ = this.$(),i,oParamSet;
+				var $ = this.$(), i, oParamSet;
 				oListener = oListener || this;
 
 				// remove the bind parameters from the stored array
 				if (this._aBindParameters) {
 					for (i = this._aBindParameters.length - 1; i >= 0; i--) {
 						oParamSet = this._aBindParameters[i];
-						if ( oParamSet.sEventType === sEventType  && oParamSet.fnHandler === fnHandler  &&  oParamSet.oListener === oListener ) {
+						if (oParamSet.sEventType === sEventType && oParamSet.fnHandler === fnHandler && oParamSet.oListener === oListener) {
 							this._aBindParameters.splice(i, 1);
 							// if control is rendered, directly call unbind()
 							$.unbind(sEventType, oParamSet.fnProxy);
 						}
 					}
 				}
-
 			}
 		}
 
@@ -776,6 +781,7 @@ function (
 		if (iScrollHeight > Math.ceil(mSize.height) || iScrollWidth > Math.ceil(mSize.width)) {
 			// TODO: save ref to DummyScrollContainer somewhere to avoid "find" selector
 			var oDummyScrollContainer = $TargetDomRef.find("> .sapUiDtDummyScrollContainer");
+			var oScrollbarSynchronizer;
 			if (!oDummyScrollContainer.length) {
 				oDummyScrollContainer = jQuery("<div/>", {
 					css: {
@@ -785,26 +791,35 @@ function (
 				});
 				oDummyScrollContainer = jQuery("<div class='sapUiDtDummyScrollContainer' style='height: " + iScrollHeight + "px; width: " + iScrollWidth + "px;'></div>");
 
-				if (oTargetOverlay && DOMUtil.hasVerticalScrollBar(oOriginalDomRef)) {
+				if (
+					oTargetOverlay
+					&& DOMUtil.hasVerticalScrollBar(oOriginalDomRef)
+					&& oTargetOverlay._hasSameSize(oGeometry, 'height')
+				) {
 					oTargetOverlay.addStyleClass("sapUiDtOverlayWithScrollBar");
 					oTargetOverlay.addStyleClass("sapUiDtOverlayWithScrollBarVertical");
 				}
-				if (oTargetOverlay && DOMUtil.hasHorizontalScrollBar(oOriginalDomRef)) {
+
+				if (
+					oTargetOverlay
+					&& DOMUtil.hasHorizontalScrollBar(oOriginalDomRef)
+					&& oTargetOverlay._hasSameSize(oGeometry, 'width')
+				) {
 					oTargetOverlay.addStyleClass("sapUiDtOverlayWithScrollBar");
 					oTargetOverlay.addStyleClass("sapUiDtOverlayWithScrollBarHorizontal");
 				}
 				$TargetDomRef.append(oDummyScrollContainer);
-				var oScrollbarSynchronizer = new ScrollbarSynchronizer({
+				oScrollbarSynchronizer = new ScrollbarSynchronizer({
 					synced: this.fireScrollSynced.bind(this)
 				});
 				oScrollbarSynchronizer.addTarget(oOriginalDomRef, $TargetDomRef.get(0));
 				this._oScrollbarSynchronizers.set($TargetDomRef.get(0), oScrollbarSynchronizer);
 			} else {
 				oDummyScrollContainer.css({
-					"height": iScrollHeight,
-					"width" : iScrollWidth
+					height: iScrollHeight,
+					width : iScrollWidth
 				});
-				var oScrollbarSynchronizer = this._oScrollbarSynchronizers.get($TargetDomRef.get(0));
+				oScrollbarSynchronizer = this._oScrollbarSynchronizers.get($TargetDomRef.get(0));
 				if (!oScrollbarSynchronizer.hasTarget(oOriginalDomRef)) {
 					oScrollbarSynchronizer.addTarget(oOriginalDomRef);
 				}
@@ -909,7 +924,7 @@ function (
 	 * @public
 	 */
 	Overlay.prototype.getShouldBeDestroyed = function() {
-		return this._bShouldBeDestroyed ;
+		return this._bShouldBeDestroyed;
 	};
 
 	return Overlay;

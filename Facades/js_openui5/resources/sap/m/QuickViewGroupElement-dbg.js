@@ -1,6 +1,6 @@
 /*
- * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * ! OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,7 +26,7 @@ sap.ui.define([
 		* @extends sap.ui.core.Element
 		*
 		* @author SAP SE
-		* @version 1.61.2
+		* @version 1.67.1
 		*
 		* @constructor
 		* @public
@@ -175,20 +175,36 @@ sap.ui.define([
 			}
 		};
 
-		GroupElement.prototype.setProperty = function () {
-			Element.prototype.setProperty.apply(this, arguments);
+		GroupElement.prototype.setProperty = function (sName, oValue) {
+			var oQuickView = this.getQuickViewBase(),
+				bSuppressInvalidate = false;
+
+			if (oQuickView && oQuickView.isA("sap.m.QuickView")) {
+				bSuppressInvalidate = true;
+			}
+
+			Element.prototype.setProperty.call(this, sName, oValue, bSuppressInvalidate);
 
 			var oGroup = this.getParent();
 			if (!oGroup) {
-				return;
+				return this;
 			}
 
 			var oPage = oGroup.getParent();
 			if (oPage) {
 				oPage._updatePage();
 			}
+
+			return this;
 		};
 
+		GroupElement.prototype.getQuickViewBase = function () {
+			var oParent = this.getParent();
+			if (oParent && oParent.getQuickViewBase) {
+				return oParent.getQuickViewBase();
+			}
+			return null;
+		};
 
 		return GroupElement;
 

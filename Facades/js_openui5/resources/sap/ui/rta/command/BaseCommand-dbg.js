@@ -1,9 +1,9 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(['sap/ui/base/ManagedObject'], function(ManagedObject) {
+sap.ui.define(["sap/ui/base/ManagedObject"], function(ManagedObject) {
 	"use strict";
 
 	/**
@@ -13,7 +13,7 @@ sap.ui.define(['sap/ui/base/ManagedObject'], function(ManagedObject) {
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -44,7 +44,8 @@ sap.ui.define(['sap/ui/base/ManagedObject'], function(ManagedObject) {
 
 
 	/**
-	 * @override Returns element instance instead of ID.
+	 * Returns element instance instead of ID.
+	 * @override
 	 */
 	BaseCommand.prototype.getElement = function() {
 		var sId = this.getAssociation("element");
@@ -52,17 +53,21 @@ sap.ui.define(['sap/ui/base/ManagedObject'], function(ManagedObject) {
 	};
 
 	/**
-	 * @public Template Method called by the command factory when all data is provided to the change.
+	 * Template Method called by the command factory when all data is provided to the change.
+	 *
 	 * @return {boolean} Returns true if the preparation was successful
+	 * @public
 	 */
 	BaseCommand.prototype.prepare = function() {
 		return true;
 	};
 
 	/**
-	 * @public Template method to implement execute logic. You have to ensure that the
+	 * Template method to implement execute logic. You have to ensure that the
 	 * element property is available.
+	 *
 	 * @return {Promise} Returns a resolving Promise
+	 * @public
 	 */
 	BaseCommand.prototype.execute = function() {
 		return Promise.resolve();
@@ -73,8 +78,10 @@ sap.ui.define(['sap/ui/base/ManagedObject'], function(ManagedObject) {
 	};
 
 	/**
-	 * @public Template method to implement undo logic.
+	 * Template method to implement undo logic.
+	 *
 	 * @return {Promise} Returns a resolving Promise
+	 * @public
 	 */
 	BaseCommand.prototype.undo = function() {
 		return Promise.resolve();
@@ -91,5 +98,4 @@ sap.ui.define(['sap/ui/base/ManagedObject'], function(ManagedObject) {
 	};
 
 	return BaseCommand;
-
 }, /* bExport= */true);

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,8 +10,6 @@ sap.ui.define([
 	"sap/ui/thirdparty/jquery"
 ], function (_AnnotationHelperBasics, Log, jQuery) {
 	"use strict";
-
-	/*global Promise */
 
 	var oBoolFalse = { "Bool" : "false" },
 		oBoolTrue = { "Bool" : "true" },
@@ -397,6 +395,7 @@ sap.ui.define([
 				(aTypes || []).forEach(function (oType) {
 					(oType.property || []).forEach(function (oProperty) {
 						var sAnnotationName,
+							oInterface,
 							sSemantics,
 							oTarget,
 							oUnitPath,
@@ -404,11 +403,16 @@ sap.ui.define([
 							oUnitProperty;
 
 						if (sUnitPath) {
+							oInterface = {
+								getModel : function () {
+									return oMetaModel;
+								},
+								getPath : function () {
+									return oType.$path;
+								}
+							};
 							oUnitPath = {"Path" : sUnitPath};
-							oTarget = _AnnotationHelperBasics.followPath({
-								getModel : function () { return oMetaModel; },
-								getPath : function () { return oType.$path; }
-							}, oUnitPath);
+							oTarget = _AnnotationHelperBasics.followPath(oInterface, oUnitPath);
 							if (oTarget && oTarget.resolvedPath) {
 								oUnitProperty = oMetaModel.getProperty(oTarget.resolvedPath);
 								sSemantics = oUnitProperty["sap:semantics"];
@@ -586,7 +590,7 @@ sap.ui.define([
 
 			sPropertyName = sPropertyName || "name";
 			if (aArray) {
-				for (i = 0, n = aArray.length; i < n; i++) {
+				for (i = 0, n = aArray.length; i < n; i += 1) {
 					if (aArray[i][sPropertyName] === vExpectedPropertyValue) {
 						return i;
 					}

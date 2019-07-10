@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,8 +24,8 @@ sap.ui.define(['sap/ui/unified/library', "sap/ui/thirdparty/jquery"],
 	 * @param {sap.ui.core.Control} oFileUploader An object representation of the control that should be rendered.
 	 */
 	FileUploaderRenderer.render = function(oRm, oFileUploader) {
-		var accessibility = sap.ui.getCore().getConfiguration().getAccessibility(),
-			bEnabled = oFileUploader.getEnabled();
+		var bEnabled = oFileUploader.getEnabled(),
+			sTooltip = oFileUploader.getTooltip_AsString();
 
 		oRm.write('<div');
 		oRm.writeControlData(oFileUploader);
@@ -46,7 +46,7 @@ sap.ui.define(['sap/ui/unified/library', "sap/ui/thirdparty/jquery"],
 		oRm.write('>');
 
 		// form
-		oRm.write('<form style="display:inline-block" encType="multipart/form-data" method="post"');
+		oRm.write('<form style="display:inline-block" enctype="multipart/form-data" method="post"');
 		oRm.writeAttribute('id', oFileUploader.getId() + '-fu_form');
 		oRm.writeAttributeEscaped('action', oFileUploader.getUploadUrl());
 		oRm.writeAttribute('target', oFileUploader.getId() + '-frame');
@@ -56,10 +56,6 @@ sap.ui.define(['sap/ui/unified/library', "sap/ui/thirdparty/jquery"],
 		oRm.write('<div ');
 		if (!oFileUploader.bMobileLib) {
 			oRm.write('class="sapUiFupInp"');
-		}
-		if (accessibility) {
-			oRm.writeAttribute("role", "textbox");
-			oRm.writeAttribute("aria-readonly", "true");
 		}
 		oRm.write('>');
 
@@ -73,37 +69,8 @@ sap.ui.define(['sap/ui/unified/library', "sap/ui/thirdparty/jquery"],
 		oFileUploader._ensureBackwardsReference();
 		oRm.renderControl(oFileUploader.oBrowse);
 
-		var sAriaText;
-		var sTooltip = "";
-		if (oFileUploader.getTooltip()) {
-			sTooltip = oFileUploader.getTooltip_AsString();
-		}
-
-		var sPlaceholder = "";
-		if (oFileUploader.getPlaceholder()) {
-			sPlaceholder = oFileUploader.getPlaceholder();
-		}
-
-		var sValue = "";
-		if (oFileUploader.getValue()) {
-			sValue = oFileUploader.getValue();
-		}
-
-		var sButtonText = "";
-		if (oFileUploader.getButtonText()) {
-			sButtonText = oFileUploader.getButtonText();
-		} else {
-			sButtonText = oFileUploader.getBrowseText();
-		}
-
-		if (!sValue) {
-			sAriaText = sTooltip + " " + sPlaceholder + " " + sButtonText;
-		} else {
-			sAriaText = sTooltip + " " + sValue + " " + sButtonText;
-		}
-
 		oRm.write('<span id="' + oFileUploader.getId() + '-AccDescr" class="sapUiInvisibleText" aria-hidden="true">');
-		oRm.writeEscaped(sAriaText + " " + oFileUploader._sAccText);
+		oRm.writeEscaped(oFileUploader._generateAccDescriptionText());
 		oRm.write('</span>');
 		oRm.write('</div></div></div>');
 

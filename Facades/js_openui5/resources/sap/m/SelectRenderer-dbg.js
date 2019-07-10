@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -40,6 +40,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 			var	sTooltip = oSelect.getTooltip_AsString(),
 				sType = oSelect.getType(),
 				bAutoAdjustWidth = oSelect.getAutoAdjustWidth(),
+				bEditable = oSelect.getEditable(),
 				bEnabled = oSelect.getEnabled(),
 				sCSSWidth = oSelect.getWidth(),
 				bWidthPercentage = sCSSWidth.indexOf("%") > -1,
@@ -53,6 +54,8 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 
 			if (!bEnabled) {
 				oRm.addClass(CSS_CLASS + "Disabled");
+			} else if (!bEditable) {
+				oRm.addClass(CSS_CLASS + "Readonly");
 			}
 
 			if (bSelectWithFlexibleWidth && (sType === SelectType.Default)) {
@@ -69,7 +72,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 				oRm.addClass(CSS_CLASS + "WithIcon");
 			}
 
-			if (bEnabled && Device.system.desktop) {
+			if (bEnabled && bEditable && Device.system.desktop) {
 				oRm.addClass(CSS_CLASS + "Hoverable");
 			}
 
@@ -133,7 +136,6 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 
 			// Attributes
 			oRm.writeAttribute("id", oSelect.getId() + "-hiddenInput");
-			oRm.writeAttribute("aria-multiline", "false");
 			oRm.writeAttribute("aria-readonly", "true");
 			oRm.writeAttribute("tabindex", "-1");
 
@@ -345,8 +347,6 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 					return InvisibleText.getStaticId(sCoreLib, "VALUE_STATE_SUCCESS");
 				case ValueState.Warning:
 					return InvisibleText.getStaticId(sCoreLib, "VALUE_STATE_WARNING");
-				case ValueState.Error:
-					return InvisibleText.getStaticId(sCoreLib, "VALUE_STATE_ERROR");
 				case ValueState.Information:
 					return InvisibleText.getStaticId(sCoreLib, "VALUE_STATE_INFORMATION");
 			}
@@ -363,13 +363,14 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 		 */
 		SelectRenderer.writeAccessibilityState = function(oRm, oSelect) {
 			var sValueState = this._getValueStateString(oSelect),
-				oSelectedItem = oSelect.getSelectedItem();
+				oSelectedItem = oSelect.getSelectedItem(),
+				bIconOnly = oSelect.getType() === SelectType.IconOnly,
+				oAriaLabelledBy,
+				sDesc;
 
 			if (sValueState) {
 				sValueState = " " + sValueState;
 			}
-
-			var sDesc;
 
 			if (oSelectedItem && !oSelectedItem.getText() && oSelectedItem.getIcon && oSelectedItem.getIcon()) {
 				var oIconInfo = IconPool.getIconInfo(oSelectedItem.getIcon());
@@ -378,16 +379,19 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 				}
 			}
 
+			oAriaLabelledBy = {
+				value: sDesc ? oSelect._getValueIcon().getId() : oSelect.getId() + "-label" + sValueState,
+				append: true
+			};
+
 			oRm.writeAccessibilityState(oSelect, {
 				role: this.getAriaRole(oSelect),
 				disabled: !oSelect.getEnabled(),
+				readonly: bIconOnly ? undefined : oSelect.getEnabled() && !oSelect.getEditable(),
 				expanded: oSelect.isOpen(),
 				invalid: (oSelect.getValueState() === ValueState.Error) ? true : undefined,
-				labelledby: {
-					value: sDesc ? oSelect._getValueIcon().getId() : oSelect.getId() + "-label" + sValueState,
-					append: true
-				},
-				haspopup: (oSelect.getType() === SelectType.IconOnly) ? true : undefined
+				labelledby: bIconOnly ? undefined : oAriaLabelledBy,
+				haspopup: bIconOnly ? true : undefined
 			});
 		};
 

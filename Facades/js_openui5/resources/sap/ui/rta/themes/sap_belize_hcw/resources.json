@@ -6,12 +6,27 @@
 			"theme": "sap_belize_hcw"
 		},
 		{
+			"name": "ContextMenu.less",
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
 			"name": "Overlay.less",
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},
 		{
+			"name": "Toolbar.adaptation.less",
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
 			"name": "Toolbar.base.less",
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
+			"name": "Toolbar.personalization.less",
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},

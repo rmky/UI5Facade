@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -32,7 +32,7 @@ sap.ui.define([
 		 * @namespace
 		 * @alias sap.ui.support.RuleAnalyzer
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 * @public
 		 */
 		var RuleAnalyzer = {
@@ -45,9 +45,10 @@ sap.ui.define([
 			 *
 			 * @memberof sap.ui.support.RuleAnalyzer
 			 * @public
-			 * @param {object} [oExecutionScope] The execution scope of the analysis (see {@link topic:e15067d976f24b11907f4c262bd749a0 Execution Scopes}).
-			 * @param {string} [oExecutionScope.type = "global"] Possible values are <code>global</code>, <code>subtree</code> or <code>component</code>.
-			 * @param {string} [oExecutionScope.parentId] ID of the root element that forms a subtree. Use when the scope is not <code>global</code>.
+			 * @param {object} [oExecutionScope] The execution scope of the analysis (see {@link topic:e15067d976f24b11907f4c262bd749a0 Execution Scope}).
+			 * @param {string} [oExecutionScope.type=global] Possible values are <code>global</code>, <code>subtree</code> or <code>components</code>.
+			 * @param {string} [oExecutionScope.parentId] ID of the root element that forms a subtree. Use when the scope type is <code>subtree</code>.
+			 * @param {string[]} [oExecutionScope.components] List of IDs of the components to be analyzed. Use only when the scope type is <code>components</code>.
 			 * @param {object|string|object[]} [vPresetOrRules=All rules] This optional parameter allows for selection of subset of rules for the analysis.
 			 * You can pass:
 			 * <ul>
@@ -69,7 +70,7 @@ sap.ui.define([
 				});
 
 				return oLoadingPromise.then(function () {
-					if (RuleSetLoader._rulesCreated) {
+					if (RuleSetLoader._bRulesCreated) {
 						return Main.analyze(oExecutionScope, vPresetOrRules, oMetadata);
 					}
 
@@ -83,7 +84,7 @@ sap.ui.define([
 			 * Returns the result of the last analysis performed.
 			 * @memberof sap.ui.support.RuleAnalyzer
 			 * @public
-			 * @returns {Object} Last analysis history.
+			 * @returns {sap.ui.support.AnalysisResult} Last analysis history.
 			 */
 			getLastAnalysisHistory: function () {
 				return Main.getLastAnalysisHistory();
@@ -94,7 +95,7 @@ sap.ui.define([
 			 *
 			 * @memberof sap.ui.support.RuleAnalyzer
 			 * @public
-			 * @returns {Object[]} Array of history objects in the order of analyses performed. The results of the last analysis are contained in the last element in the array.
+			 * @returns {sap.ui.support.AnalysisResult[]} Array of history objects in the order of analyses performed. The results of the last analysis are contained in the last element in the array.
 			 */
 			getAnalysisHistory: function () {
 				return Main.getAnalysisHistory();

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -78,7 +78,7 @@ var mSeverityMap = {
  * @extends sap.ui.core.message.MessageParser
  *
  * @author SAP SE
- * @version 1.61.2
+ * @version 1.67.1
  * @public
  * @abstract
  * @alias sap.ui.model.odata.ODataMessageParser
@@ -132,7 +132,6 @@ ODataMessageParser.prototype.setHeaderField = function(sFieldName) {
  * @param {object} oRequest - The original request that lead to this response
  * @param {map} mGetEntities - A map containing the entities requested from the back-end as keys
  * @param {map} mChangeEntities - A map containing the entities changed on the back-end as keys
- * @return {void}
  * @public
  */
 ODataMessageParser.prototype.parse = function(oResponse, oRequest, mGetEntities, mChangeEntities) {
@@ -203,13 +202,17 @@ ODataMessageParser.prototype._isNavigationProperty = function(sParentEntity, sPr
  * @param {map} mChangeEntities - A map containing the entities changed on the back-end as keys
  * @returns {map} A map of affected targets where every affected target
  */
-ODataMessageParser.prototype._getAffectedTargets = function(aMessages, sRequestUri, mGetEntities, mChangeEntities) {
+ODataMessageParser.prototype._getAffectedTargets = function(aMessages, mRequestInfo, mGetEntities, mChangeEntities) {
 	var mAffectedTargets = jQuery.extend({
 		"": true // Allow global messages by default
 	}, mGetEntities, mChangeEntities);
 
+	if (mRequestInfo.request && mRequestInfo.request.key && mRequestInfo.request.created){
+		mAffectedTargets[mRequestInfo.request.key] = true;
+	}
+
 	// Get EntitySet for Requested resource
-	var sRequestTarget = this._parseUrl(sRequestUri).url;
+	var sRequestTarget = this._parseUrl(mRequestInfo.url).url;
 	if (sRequestTarget.indexOf(this._serviceUrl) === 0) {
 		// This is an absolute URL, remove the service part at the front
 		sRequestTarget = sRequestTarget.substr(this._serviceUrl.length + 1);
@@ -267,14 +270,11 @@ ODataMessageParser.prototype._getAffectedTargets = function(aMessages, sRequestU
  * @param {ODataMessageParser~RequestInfo} mRequestInfo - Info object about the request URL
  * @param {map} mGetEntities - A map containing the entities requested from the back-end as keys
  * @param {map} mChangeEntities - A map containing the entities changed on the back-end as keys
- * @return {void}
  */
 ODataMessageParser.prototype._propagateMessages = function(aMessages, mRequestInfo, mGetEntities, mChangeEntities) {
 	var i, sTarget;
-
-	var mAffectedTargets = this._getAffectedTargets(aMessages, mRequestInfo.url, mGetEntities, mChangeEntities);
-
 	var aRemovedMessages = [];
+	var mAffectedTargets = this._getAffectedTargets(aMessages, mRequestInfo, mGetEntities, mChangeEntities);
 	var aKeptMessages = [];
 	for (i = 0; i < this._lastMessages.length; ++i) {
 		// Note: mGetEntities and mChangeEntities contain the keys without leading or trailing "/", so all targets must
@@ -287,15 +287,24 @@ ODataMessageParser.prototype._propagateMessages = function(aMessages, mRequestIn
 			sTarget = sTarget.substr(0, iPropertyPos + 1);
 		}
 
-		if (mAffectedTargets[sTarget] && !this._lastMessages[i].getPersistent()) {
-			// Message belongs to targets handled/requested by this request
-			aRemovedMessages.push(this._lastMessages[i]);
+		if (mRequestInfo.response.statusCode >= 200 && mRequestInfo.response.statusCode < 300){
+			if (mAffectedTargets[sTarget] && !this._lastMessages[i].getPersistent()){
+				// New non-technical message => remove old message
+				aRemovedMessages.push(this._lastMessages[i]);
+			} else {
+				// Old message is not affected or persistent => keep message
+				aKeptMessages.push(this._lastMessages[i]);
+			}
 		} else {
-			// Message is not affected, i.e. should stay
-			aKeptMessages.push(this._lastMessages[i]);
+			if (mAffectedTargets[sTarget] && !this._lastMessages[i].getPersistent() && this._lastMessages[i].getTechnical()) {
+				// New technical message => remove old technical message
+				aRemovedMessages.push(this._lastMessages[i]);
+			} else {
+				// Old message is non-technical or persistent or not affected => keep message
+				aKeptMessages.push(this._lastMessages[i]);
+			}
 		}
 	}
-
 	this.getProcessor().fireMessageChange({
 		oldMessages: aRemovedMessages,
 		newMessages: aMessages
@@ -341,19 +350,26 @@ ODataMessageParser.prototype._createMessage = function(oMessageObject, mRequestI
 		oMessageObject.target = oMessageObject.target.substr(12);
 	} else if (oMessageObject.transient) {
 		bPersistent = true;
+	} else if (oMessageObject.transition) {
+		bPersistent = true;
 	}
 
-	var sTarget = this._createTarget(oMessageObject, mRequestInfo);
+	this._createTarget(oMessageObject, mRequestInfo);
 
 	return new Message({
 		type:      sType,
 		code:      sCode,
 		message:   sText,
 		descriptionUrl: sDescriptionUrl,
-		target:    ODataUtils._normalizeKey(sTarget),
+		target:    ODataUtils._normalizeKey(oMessageObject.canonicalTarget),
 		processor: this._processor,
 		technical: bIsTechnical,
-		persistent: bPersistent
+		persistent: bPersistent,
+		fullTarget: oMessageObject.deepPath,
+		technicalDetails: {
+			statusCode: mRequestInfo.response.statusCode,
+			headers: mRequestInfo.response.headers
+		}
 	});
 };
 
@@ -455,6 +471,27 @@ ODataMessageParser.prototype._getFunctionTarget = function(mFunctionInfo, mReque
  */
 ODataMessageParser.prototype._createTarget = function(oMessageObject, mRequestInfo) {
 	var sTarget = oMessageObject.target;
+	var sDeepPath = "";
+	var that = this;
+	var bCollection = false;
+
+	var isCollection = function(sPath){
+		var iIndex = sPath.lastIndexOf("/");
+		if (iIndex > 0){ //e.g. 0:'/SalesOrderSet', -1:'empty string'
+			var sEntityPath = sPath.substring(0, iIndex);
+			var oEntityType = that._metadata._getEntityTypeByPath(sEntityPath);
+
+			if (oEntityType) {
+				var oAssociation = that._metadata._getEntityAssociationEnd(oEntityType, sPath.substring(iIndex + 1));
+				if (oAssociation && oAssociation.multiplicity === "*") {
+					bCollection = true;
+				}
+			}
+		} else {
+			bCollection = true;
+		}
+		return bCollection;
+	};
 
 	if (sTarget.substr(0, 1) !== "/") {
 		var sRequestTarget = "";
@@ -484,9 +521,9 @@ ODataMessageParser.prototype._createTarget = function(oMessageObject, mRequestIn
 
 		var iPos = sUrl.lastIndexOf(this._serviceUrl);
 		if (iPos > -1) {
-			sRequestTarget = sUrl.substr(iPos + this._serviceUrl.length + 1);
+			sRequestTarget = sUrl.substr(iPos + this._serviceUrl.length);
 		} else {
-			sRequestTarget = sUrl;
+			sRequestTarget = "/" + sUrl;
 		}
 
 		// function import case
@@ -495,37 +532,39 @@ ODataMessageParser.prototype._createTarget = function(oMessageObject, mRequestIn
 
 			if (mFunctionInfo) {
 				sRequestTarget = this._getFunctionTarget(mFunctionInfo, mRequestInfo, mUrlData);
-
-				if (sTarget) {
-					sTarget = sRequestTarget + "/" + sTarget;
-				} else {
-					sTarget = sRequestTarget;
-				}
-				return sTarget;
+				sDeepPath = sRequestTarget;
 			}
 		}
-
-		sRequestTarget = "/" + sRequestTarget;
 
 		// If sRequestTarget is a collection, we have to add the target without a "/". In this case
 		// a target would start with the specific product (like "(23)"), but the request itself
 		// would not have the brackets
 		var iSlashPos = sRequestTarget.lastIndexOf("/");
 		var sRequestTargetName = iSlashPos > -1 ? sRequestTarget.substr(iSlashPos) : sRequestTarget;
+
+
+		if (!sDeepPath && mRequestInfo.request && mRequestInfo.request.deepPath){
+			sDeepPath = mRequestInfo.request.deepPath;
+		}
 		if (sRequestTargetName.indexOf("(") > -1) {
 			// It is an entity
 			sTarget = sTarget ? sRequestTarget + "/" + sTarget : sRequestTarget;
-		} else {
-			// It's a collection
-			sTarget = sRequestTarget + sTarget;
+			sDeepPath = oMessageObject.target ? sDeepPath + "/" + oMessageObject.target : sDeepPath;
+		} else if (isCollection(sRequestTarget)){ // (0:n) cardinality
+				sTarget = sRequestTarget + sTarget;
+				sDeepPath = sDeepPath + oMessageObject.target;
+		} else { // 0:1 cardinality
+			sTarget = sTarget ? sRequestTarget + "/" + sTarget : sRequestTarget;
+			sDeepPath = oMessageObject.target ? sDeepPath + "/" + oMessageObject.target : sDeepPath;
 		}
 
+	}
 
-	} /* else {
-		// Absolute target path, do not use base URL
-	} */
-
-	return sTarget;
+	oMessageObject.canonicalTarget = sTarget;
+	if (this._processor){
+		oMessageObject.canonicalTarget = this._processor.resolve(sTarget, undefined, true) || sTarget;
+		oMessageObject.deepPath = sDeepPath || oMessageObject.canonicalTarget;
+	}
 };
 
 /**
@@ -567,7 +606,6 @@ ODataMessageParser.prototype._parseHeader = function(/* ref: */ aMessages, oResp
 				aMessages.push(this._createMessage(oServerMessage.details[i], mRequestInfo));
 			}
 		}
-
 	} catch (ex) {
 		Log.error("The message string returned by the back-end could not be parsed");
 		return;
@@ -593,16 +631,7 @@ ODataMessageParser.prototype._parseBody = function(/* ref: */ aMessages, oRespon
 		this._parseBodyJSON(/* ref: */ aMessages, oResponse, mRequestInfo);
 	}
 
-	// Messages from an error response should contain duplicate messages - the main error should be the
-	// same as the first errordetail error. If this is the case, remove the first one.
-	if (aMessages.length > 1) {
-		for (var iIndex = 1; iIndex < aMessages.length; iIndex++) {
-			if (aMessages[0].getCode() == aMessages[iIndex].getCode() && aMessages[0].getMessage() == aMessages[iIndex].getMessage()) {
-				aMessages.shift(); // Remove outer error, since inner error is more detailed
-				break;
-			}
-		}
-	}
+	filterDuplicates(aMessages);
 };
 
 
@@ -613,7 +642,6 @@ ODataMessageParser.prototype._parseBody = function(/* ref: */ aMessages, oRespon
  * @param {object} oResponse - The response object from which the body property will be used
  * @param {ODataMessageParser~RequestInfo} mRequestInfo - Info object about the request URL
  * @param {string} sContentType - The content type of the response (for the XML parser)
- * @return {void}
  */
 ODataMessageParser.prototype._parseBodyXML = function(/* ref: */ aMessages, oResponse, mRequestInfo, sContentType) {
 	try {
@@ -662,7 +690,6 @@ ODataMessageParser.prototype._parseBodyXML = function(/* ref: */ aMessages, oRes
  * @param {sap.ui.core.message.Message[]} aMessages - The Array into which the new messages are added
  * @param {object} oResponse - The response object from which the body property will be used
  * @param {ODataMessageParser~RequestInfo} mRequestInfo - Info object about the request URL
- * @return {void}
  */
 ODataMessageParser.prototype._parseBodyJSON = function(/* ref: */ aMessages, oResponse, mRequestInfo) {
 	try {
@@ -855,6 +882,39 @@ function getAllElements(oDocument, aElementNames) {
 
 	return aElements;
 }
+
+	/**
+	* The message container returned by the backend could contain duplicate messages in some scenarios.
+	* The outer error could be identical to an inner error. This makes sense when the outer error is only though as error message container
+	* for the inner errors and therefore shouldn't be end up in a seperate UI message.
+    *
+	* This function is used to filter out not relevant outer errors.
+	* @example
+	* {
+	*  "error": {
+	*    "code": "ABC",
+	*    "message": {
+	*      "value": "Bad things happened."
+	*    },
+	*    "innererror": {
+	*      "errordetails": [
+	*        {
+	*          "code": "ABC",
+	*          "message": "Bad things happened."
+	*        },
+	*   ...
+	* @private
+	*/
+	function filterDuplicates(/*ref*/ aMessages){
+		if (aMessages.length > 1) {
+			for (var iIndex = 1; iIndex < aMessages.length; iIndex++) {
+				if (aMessages[0].getCode() == aMessages[iIndex].getCode() && aMessages[0].getMessage() == aMessages[iIndex].getMessage()) {
+					aMessages.shift(); // Remove outer error, since inner error is more detailed
+					break;
+				}
+			}
+		}
+	}
 
 //////////////////////////////////////// Overridden Methods ////////////////////////////////////////
 

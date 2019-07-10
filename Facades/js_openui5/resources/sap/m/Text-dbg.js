@@ -1,6 +1,6 @@
 /*!
-* UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+* OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
@@ -50,7 +50,7 @@ function(library, Control, coreLibrary, Device, HyphenationSupport, TextRenderer
 	 * @implements sap.ui.core.IShrinkable, sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -194,37 +194,6 @@ function(library, Control, coreLibrary, Device, HyphenationSupport, TextRenderer
 	};
 
 	/**
-	 * Sets the text.
-	 *
-	 * @public
-	 * @param {string} sText Text value.
-	 * @returns {sap.m.Text} this Text reference for chaining.
-	 */
-	Text.prototype.setText = function (sText) {
-		// suppress invalidation of text property setter
-		this.setProperty("text", sText, true);
-
-		// check text dom ref
-		var oDomRef = this.getTextDomRef();
-		if (oDomRef) {
-			// update the node value of the DOM text
-			Text.setNodeValue(oDomRef, HyphenationSupport.getTextForRender(this, "main"));
-
-			// toggles the sapMTextBreakWord class when the text value is changed
-			if (this.getWrapping()) {
-				// no space text must break
-				if (sText && !/\s/.test(sText)) {
-					this.$().addClass("sapMTextBreakWord");
-				} else {
-					this.$().removeClass("sapMTextBreakWord");
-				}
-			}
-		}
-
-		return this;
-	};
-
-	/**
 	 * Gets the text.
 	 *
 	 * @public
@@ -254,9 +223,29 @@ function(library, Control, coreLibrary, Device, HyphenationSupport, TextRenderer
 			this.hasMaxLines() &&
 			!this.canUseNativeLineClamp()) {
 
-			// set max-height for maxLines support
-			this.clampHeight();
+				var oCore = sap.ui.getCore();
+
+				if (oCore.isThemeApplied()) {
+					// set max-height for maxLines support
+					this.clampHeight();
+				} else {
+					oCore.attachThemeChanged(this._handleThemeLoad, this);
+				}
 		}
+	};
+
+	/**
+	 * Fired when the theme is loaded
+	 *
+	 * @private
+	 */
+	Text.prototype._handleThemeLoad = function() {
+
+		// set max-height for maxLines support
+		this.clampHeight();
+
+		var oCore = sap.ui.getCore();
+		oCore.detachThemeChanged(this._handleThemeLoad, this);
 	};
 
 	/**

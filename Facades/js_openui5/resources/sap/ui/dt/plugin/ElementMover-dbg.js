@@ -1,6 +1,6 @@
 /*
- * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * ! OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @class The ElementMover enables movement of UI5 elements based on aggregation types, which can be used by drag and
 	 *        drop or cut and paste behavior.
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -38,12 +38,8 @@ sap.ui.define([
 	 * @experimental Since 1.34. This class is experimental and provides only limited functionality. Also the API might be
 	 *               changed in future.
 	 */
-	var ElementMover = ManagedObject.extend("sap.ui.dt.plugin.ElementMover", /** @lends sap.ui.dt.plugin.ElementMover.prototype */
-	{
+	var ElementMover = ManagedObject.extend("sap.ui.dt.plugin.ElementMover", /** @lends sap.ui.dt.plugin.ElementMover.prototype */ {
 		metadata : {
-			// ---- object ----
-
-			// ---- control specific ----
 			library : "sap.ui.dt",
 			properties : {
 				movableTypes : {
@@ -76,9 +72,10 @@ sap.ui.define([
 	};
 
 	/**
+	 * @param {sap.ui.dt.Overlay} oOverlay overlay instance
 	 * @protected
 	 */
-	ElementMover.prototype.checkMovable = function(oOverlay) {
+	ElementMover.prototype.checkMovable = function() {
 		return true;
 	};
 
@@ -134,7 +131,7 @@ sap.ui.define([
 	 * @protected
 	 */
 	ElementMover.prototype.checkTargetZone = function(oAggregationOverlay, oOverlay, bOverlayNotInDom) {
-		var oMovedOverlay = oOverlay ? oOverlay : this.getMovedOverlay();
+		var oMovedOverlay = oOverlay || this.getMovedOverlay();
 		var oGeometry = oAggregationOverlay.getGeometry();
 		var bGeometryVisible = oGeometry && oGeometry.size.height > 0 && oGeometry.size.width > 0;
 
@@ -146,7 +143,7 @@ sap.ui.define([
 		}
 		var oParentElement = oAggregationOverlay.getElement();
 		// an aggregation can still have visible = true even if it has been removed from its parent
-		if (!oParentElement.getParent()){
+		if (!oParentElement.getParent()) {
 			return false;
 		}
 		var oMovedElement = oMovedOverlay.getElement();
@@ -215,10 +212,12 @@ sap.ui.define([
 	 * metadata for the relevant aggregation.
 	 * @param  {sap.ui.dt.Overlay} oMovedOverlay The overlay of the element being moved
 	 * @param  {sap.ui.dt.Overlay} oTargetElementOverlay The overlay of the target element for the move
+	 * @param  {boolean} bInsertAfterElement Flag defining if the Element should be inserted After the Selection
 	 */
-	ElementMover.prototype.repositionOn = function(oMovedOverlay, oTargetElementOverlay) {
+	ElementMover.prototype.repositionOn = function(oMovedOverlay, oTargetElementOverlay, bInsertAfterElement) {
 		var oMovedElement = oMovedOverlay.getElement();
 		var oTargetParentInformation = OverlayUtil.getParentInformation(oTargetElementOverlay);
+		var oSourceParentInformation = OverlayUtil.getParentInformation(oMovedOverlay);
 		var oAggregationDesignTimeMetadata;
 
 		var oParentAggregationOverlay = oMovedOverlay.getParentAggregationOverlay();
@@ -231,12 +230,19 @@ sap.ui.define([
 		}
 
 		if (oTargetParentInformation.index !== -1) {
-			if (oAggregationDesignTimeMetadata && oAggregationDesignTimeMetadata.beforeMove){
+			if (oAggregationDesignTimeMetadata && oAggregationDesignTimeMetadata.beforeMove) {
 				oAggregationDesignTimeMetadata.beforeMove(oRelevantContainerElement, oMovedElement);
+			}
+			if (bInsertAfterElement) {
+				oTargetParentInformation.index++;
+				if (oSourceParentInformation.aggregation === oTargetParentInformation.aggregation) {
+					// index should not be incremented if cut-paste occurs inside the same container, where source index is less than the target index
+					oTargetParentInformation.index = ElementUtil.adjustIndexForMove(oSourceParentInformation.parent, oTargetParentInformation.parent, oSourceParentInformation.index, oTargetParentInformation.index);
+				}
 			}
 			ElementUtil.insertAggregation(oTargetParentInformation.parent, oTargetParentInformation.aggregation,
 				oMovedElement, oTargetParentInformation.index);
-			if (oAggregationDesignTimeMetadata && oAggregationDesignTimeMetadata.afterMove){
+			if (oAggregationDesignTimeMetadata && oAggregationDesignTimeMetadata.afterMove) {
 				oAggregationDesignTimeMetadata.afterMove(oRelevantContainerElement, oMovedElement);
 			}
 		}
@@ -266,14 +272,14 @@ sap.ui.define([
 
 		var aTargetAggregationItems = ElementUtil.getAggregation(oTargetAggregationOverlay.getElement(), oTargetAggregationOverlay.getAggregationName());
 		var iIndex = aTargetAggregationItems.indexOf(oMovedElement);
-		// Don't do anything when the element is already in the aggregation and is the last element
-		if (!(iIndex > -1 && iIndex === aTargetAggregationItems.length - 1)) {
-			if (oAggregationDesignTimeMetadata && oAggregationDesignTimeMetadata.beforeMove){
+		// Don't do anything when the element is already in the aggregation and is the first element
+		if (!(iIndex > -1 && iIndex === 0)) {
+			if (oAggregationDesignTimeMetadata && oAggregationDesignTimeMetadata.beforeMove) {
 				oAggregationDesignTimeMetadata.beforeMove(oRelevantContainerElement, oMovedElement);
 			}
 			var sTargetAggregationName = oTargetAggregationOverlay.getAggregationName();
-			ElementUtil.addAggregation(oTargetParentElement, sTargetAggregationName, oMovedElement);
-			if (oAggregationDesignTimeMetadata && oAggregationDesignTimeMetadata.afterMove){
+			ElementUtil.insertAggregation(oTargetParentElement, sTargetAggregationName, oMovedElement, 0);
+			if (oAggregationDesignTimeMetadata && oAggregationDesignTimeMetadata.afterMove) {
 				oAggregationDesignTimeMetadata.afterMove(oRelevantContainerElement, oMovedElement);
 			}
 		}

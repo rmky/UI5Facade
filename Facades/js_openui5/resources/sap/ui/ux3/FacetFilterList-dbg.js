@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -29,7 +29,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -166,6 +166,7 @@ sap.ui.define([
 			oItem.setKey("generatedkey" + this.indexOfItem(oItem));
 		}
 		this.updateText4All();
+		return this;
 	};
 
 	FacetFilterList.prototype.insertItem = function(oItem, iIndex) {
@@ -174,11 +175,13 @@ sap.ui.define([
 			oItem.setKey("generatedkey" + this.indexOfItem(oItem));
 		}
 		this.updateText4All();
+		return this;
 	};
 
 	FacetFilterList.prototype.removeItem = function(oItem) {
-		this._oListBox.removeItem(oItem);
+		var vResult = this._oListBox.removeItem(oItem);
 		this.updateText4All();
+		return vResult;
 	};
 
 	FacetFilterList.prototype.removeAllItems = function() {
@@ -192,6 +195,7 @@ sap.ui.define([
 		this._oListBox.destroyItems();
 		this._oListBox.addItem(this._oItemAll);
 		this.updateText4All();
+		return this;
 	};
 
 	FacetFilterList.prototype.indexOfItem = function(oItem) {

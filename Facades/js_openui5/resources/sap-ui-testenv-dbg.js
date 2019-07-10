@@ -1,6 +1,7 @@
+//@ui5-bundle sap-ui-testenv.js
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.predefine('jquery.sap.strings',['jquery.sap.global','sap/base/strings/capitalize','sap/base/strings/camelize','sap/base/strings/hyphenate','sap/base/strings/escapeRegExp','sap/base/strings/formatMessage'],function(q,c,a,h,e,f){"use strict";

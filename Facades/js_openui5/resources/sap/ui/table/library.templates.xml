@@ -188,6 +188,7 @@
 	rowActionTemplate: undefined, // sap.ui.table.RowAction
 	rowSettingsTemplate: undefined, // sap.ui.table.RowSettings
 	contextMenu: undefined, // sap.ui.core.IContextMenu, since 1.54
+	plugins: [], // sap.ui.table.plugins.SelectionPlugin, since 1.64
 	groupBy: undefined, // sap.ui.table.Column
 	ariaLabelledBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
@@ -318,6 +319,7 @@
 		<rowActionTemplate></rowActionTemplate> <!-- sap.ui.table.RowAction -->
 		<rowSettingsTemplate></rowSettingsTemplate> <!-- sap.ui.table.RowSettings -->
 		<contextMenu></contextMenu> <!-- sap.ui.core.IContextMenu, since 1.54 -->
+		<plugins></plugins> <!-- sap.ui.table.plugins.SelectionPlugin, since 1.64 -->
 </AnalyticalTable>
 ]]></xmlTemplate>
 </Template>
@@ -529,7 +531,8 @@
 <Template name="sap.ui.table.RowSettings" alias="RowSettings,Settings">
 	<jsTemplate><![CDATA[new sap.ui.table.RowSettings({
 	id: "${id}", // sap.ui.core.ID
-	highlight: sap.ui.core.MessageType.None, // sap.ui.core.MessageType, since 1.48.0
+	highlight: "None", // string, since 1.48.0
+	highlightText: "", // string, since 1.62
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -538,7 +541,8 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<RowSettings xmlns="sap.ui.table"
 	id="${id}"
-	highlight="None">
+	highlight="None"
+	highlightText="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
@@ -597,6 +601,7 @@
 	rowActionTemplate: undefined, // sap.ui.table.RowAction
 	rowSettingsTemplate: undefined, // sap.ui.table.RowSettings
 	contextMenu: undefined, // sap.ui.core.IContextMenu, since 1.54
+	plugins: [], // sap.ui.table.plugins.SelectionPlugin, since 1.64
 	groupBy: undefined, // sap.ui.table.Column
 	ariaLabelledBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
@@ -721,6 +726,7 @@
 		<rowActionTemplate></rowActionTemplate> <!-- sap.ui.table.RowAction -->
 		<rowSettingsTemplate></rowSettingsTemplate> <!-- sap.ui.table.RowSettings -->
 		<contextMenu></contextMenu> <!-- sap.ui.core.IContextMenu, since 1.54 -->
+		<plugins></plugins> <!-- sap.ui.table.plugins.SelectionPlugin, since 1.64 -->
 </Table>
 ]]></xmlTemplate>
 </Template>
@@ -781,6 +787,7 @@
 	rowActionTemplate: undefined, // sap.ui.table.RowAction
 	rowSettingsTemplate: undefined, // sap.ui.table.RowSettings
 	contextMenu: undefined, // sap.ui.core.IContextMenu, since 1.54
+	plugins: [], // sap.ui.table.plugins.SelectionPlugin, since 1.64
 	groupBy: undefined, // sap.ui.table.Column
 	ariaLabelledBy: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
@@ -914,7 +921,31 @@
 		<rowActionTemplate></rowActionTemplate> <!-- sap.ui.table.RowAction -->
 		<rowSettingsTemplate></rowSettingsTemplate> <!-- sap.ui.table.RowSettings -->
 		<contextMenu></contextMenu> <!-- sap.ui.core.IContextMenu, since 1.54 -->
+		<plugins></plugins> <!-- sap.ui.table.plugins.SelectionPlugin, since 1.64 -->
 </TreeTable>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.ui.table.plugins.SelectionPlugin" alias="SelectionPlugin,Plugin">
+	<jsTemplate><![CDATA[new sap.ui.table.plugins.SelectionPlugin({
+	id: "${id}", // sap.ui.core.ID
+	selectionMode: sap.ui.table.SelectionMode.MultiToggle, // sap.ui.table.SelectionMode
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	selectionChange: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<plugins/SelectionPlugin xmlns="sap.ui.table"
+	id="${id}"
+	selectionMode="MultiToggle"
+	selectionChange="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</plugins/SelectionPlugin>
 ]]></xmlTemplate>
 </Template>
 </Library>

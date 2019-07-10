@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,10 +14,9 @@ sap.ui.define([
 	'./library',
 	'sap/ui/core/library',
 	'./TitleRenderer',
-	"sap/base/security/encodeXML",
 	"sap/m/HyphenationSupport"
 ],
-	function(Control, library, coreLibrary, TitleRenderer, encodeXML, HyphenationSupport) {
+	function(Control, library, coreLibrary, TitleRenderer, HyphenationSupport) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TextAlign
@@ -66,7 +65,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IShrinkable
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @since 1.27.0
 	 *
 	 * @constructor
@@ -146,26 +145,6 @@ sap.ui.define([
 		designtime: "sap/m/designtime/Title.designtime"
 
 	}});
-
-	/**
-	 * Sets text within the title.
-	 *
-	 * @name sap.m.Title.setText
-	 * @method
-	 * @public
-	 * @param {string} sText Text that will be set for the title.
-	 * @returns {sap.m.Title} this Title reference for chaining.
-	 */
-	Title.prototype.setText = function(sText) {
-		var oRef = this.getDomRef("inner");
-		var bPatchDom = oRef && !this._getTitle();
-		this.setProperty("text", sText, bPatchDom);
-		if (bPatchDom) {
-			oRef.innerHTML = encodeXML(HyphenationSupport.getTextForRender(this, "main") || "");
-		}
-		return this;
-	};
-
 
 	/**
 	 * Gets the currently set title.

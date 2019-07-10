@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,7 +17,6 @@ sap.ui.define([
 	Settings,
 	fnBaseMerge
 ) {
-
 	"use strict";
 
 	/**
@@ -28,13 +27,12 @@ sap.ui.define([
 	 * @class Variant class.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @alias sap.ui.fl.Variant
 	 * @experimental Since 1.52.0
 	 */
-	var Variant = ManagedObject.extend("sap.ui.fl.Variant", /** @lends sap.ui.fl.Variant.prototype */
-	{
-		constructor : function(oFile){
+	var Variant = ManagedObject.extend("sap.ui.fl.Variant", /** @lends sap.ui.fl.Variant.prototype */ {
+		constructor : function(oFile) {
 			ManagedObject.apply(this);
 
 			if (!jQuery.isPlainObject(oFile)) {
@@ -86,7 +84,7 @@ sap.ui.define([
 	Variant.prototype._isValidState = function(sState) {
 		//new state have to be in the Variant.states value list
 		var bStateFound = false;
-		Object.keys(Variant.states).some(function(sKey){
+		Object.keys(Variant.states).some(function(sKey) {
 			if (Variant.states[sKey] === sState) {
 				bStateFound = true;
 			}
@@ -568,7 +566,7 @@ sap.ui.define([
 	 * @param {Object}  [oPropertyBag] property bag
 	 * @param {Object}  [oPropertyBag.content] content of the new change
 	 * @param {String}  [oPropertyBag.content.fileName] name/id of the file. if not set implicitly created
-	 * @param {String}  [oPropertyBag.content.title] title of the variant
+	 * @param {String}  [oPropertyBag.content.content.title] title of the variant
 	 * @param {String}  [oPropertyBag.content.fileType] file type of a variant
 	 * @param {String}  [oPropertyBag.content.variantManagementReference] Reference to the variant management control
 	 * @param {String}  [oPropertyBag.content.variantReference] Reference to another variant
@@ -590,7 +588,6 @@ sap.ui.define([
 	 * @public
 	 */
 	Variant.createInitialFileContent = function (oPropertyBag) {
-
 		if (!oPropertyBag) {
 			oPropertyBag = {};
 		}
@@ -605,9 +602,7 @@ sap.ui.define([
 				variantReference: oPropertyBag.content.variantReference || "",
 				reference: oPropertyBag.content.reference || "",
 				packageName: oPropertyBag.content.packageName || "",
-				content: {
-					title: oPropertyBag.content.content.title || ""
-				},
+				content: {title: oPropertyBag.content.content.title || ""},
 				self: sNamespace + sFileName + "." + "ctrl_variant",
 				layer: oPropertyBag.content.layer || Utils.getCurrentLayer(oPropertyBag.isUserDependent),
 				texts: oPropertyBag.content.texts || {},

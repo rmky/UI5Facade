@@ -16,6 +16,7 @@
 	customDisplaySize: "3rem", // sap.ui.core.CSSSize
 	customFontSize: "1.125rem", // sap.ui.core.CSSSize
 	imageFitType: sap.f.AvatarImageFitType.Cover, // sap.f.AvatarImageFitType
+	fallbackIcon: undefined, // string, since 1.65
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -46,6 +47,7 @@
 	customDisplaySize="3rem"
 	customFontSize="1.125rem"
 	imageFitType="Cover"
+	fallbackIcon=""
 	ariaDescribedBy=""
 	ariaLabelledBy=""
 	validateFieldGroup=""
@@ -55,6 +57,49 @@
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 		<detailBox></detailBox> <!-- sap.m.LightBox, since 1.48 -->
 </Avatar>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.Card" alias="Card">
+	<jsTemplate><![CDATA[new sap.f.Card({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	width: "100%", // sap.ui.core.CSSSize
+	height: "auto", // sap.ui.core.CSSSize
+	headerPosition: sap.f.cards.HeaderPosition.Top, // sap.f.cards.HeaderPosition, since 1.65
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	header: undefined, // sap.f.cards.IHeader
+	content: undefined, // sap.ui.core.Control
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<Card xmlns="sap.f"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	width="100%"
+	height="auto"
+	headerPosition="Top"
+	validateFieldGroup="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+		<header></header> <!-- sap.f.cards.IHeader -->
+		<content></content> <!-- sap.ui.core.Control -->
+</Card>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.f.DynamicPage" alias="DynamicPage,Page">
@@ -80,6 +125,7 @@
 	content: undefined, // sap.ui.core.Control
 	footer: undefined, // sap.m.IBar
 	landmarkInfo: undefined, // sap.f.DynamicPageAccessibleLandmarkInfo, since 1.61
+	stickySubheaderProvider: undefined, // sap.f.IDynamicPageStickyContent, since 1.65
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
 	}, this]
@@ -98,6 +144,7 @@
 	toggleHeaderOnTitleClick="true"
 	showFooter="false"
 	fitContent="false"
+	stickySubheaderProvider=""
 	validateFieldGroup="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
@@ -206,6 +253,7 @@
 	content: [], // sap.ui.core.Control, since 1.50
 	snappedContent: [], // sap.ui.core.Control
 	expandedContent: [], // sap.ui.core.Control
+	snappedTitleOnMobile: undefined, // sap.m.Title, since 1.63
 	breadcrumbs: undefined, // sap.m.IBreadcrumbs, since 1.52
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -239,6 +287,7 @@
 		<content></content> <!-- sap.ui.core.Control, since 1.50 -->
 		<snappedContent></snappedContent> <!-- sap.ui.core.Control -->
 		<expandedContent></expandedContent> <!-- sap.ui.core.Control -->
+		<snappedTitleOnMobile></snappedTitleOnMobile> <!-- sap.m.Title, since 1.63 -->
 		<breadcrumbs></breadcrumbs> <!-- sap.m.IBreadcrumbs, since 1.52 -->
 </DynamicPageTitle>
 ]]></xmlTemplate>
@@ -324,6 +373,129 @@
 		<midColumnPages></midColumnPages> <!-- sap.ui.core.Control -->
 		<endColumnPages></endColumnPages> <!-- sap.ui.core.Control -->
 </FlexibleColumnLayout>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.GridContainer" alias="GridContainer,Container">
+	<jsTemplate><![CDATA[new sap.f.GridContainer({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	width: "", // sap.ui.core.CSSSize
+	containerQuery: false, // boolean
+	snapToRow: false, // boolean
+	allowDenseFill: false, // boolean
+	inlineBlockLayout: false, // boolean
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	items: [], // sap.ui.core.Control
+	layout: undefined, // sap.f.GridContainerSettings
+	layoutS: undefined, // sap.f.GridContainerSettings
+	layoutM: undefined, // sap.f.GridContainerSettings
+	layoutL: undefined, // sap.f.GridContainerSettings
+	layoutXL: undefined, // sap.f.GridContainerSettings
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	layoutChange: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<GridContainer xmlns="sap.f"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	width=""
+	containerQuery="false"
+	snapToRow="false"
+	allowDenseFill="false"
+	inlineBlockLayout="false"
+	validateFieldGroup=""
+	layoutChange="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+		<items></items> <!-- sap.ui.core.Control -->
+		<layout></layout> <!-- sap.f.GridContainerSettings -->
+		<layoutS></layoutS> <!-- sap.f.GridContainerSettings -->
+		<layoutM></layoutM> <!-- sap.f.GridContainerSettings -->
+		<layoutL></layoutL> <!-- sap.f.GridContainerSettings -->
+		<layoutXL></layoutXL> <!-- sap.f.GridContainerSettings -->
+</GridContainer>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.GridContainerItemLayoutData" alias="GridContainerItemLayoutData,Data">
+	<jsTemplate><![CDATA[new sap.f.GridContainerItemLayoutData({
+	id: "${id}", // sap.ui.core.ID
+	columns: 1, // int
+	minRows: undefined, // int
+	rows: undefined, // int
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [] // sap.ui.core.dnd.DragDropBase, since 1.56
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<GridContainerItemLayoutData xmlns="sap.f"
+	id="${id}"
+	columns="1"
+	minRows=""
+	rows="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</GridContainerItemLayoutData>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.GridContainerSettings" alias="GridContainerSettings,Settings">
+	<jsTemplate><![CDATA[new sap.f.GridContainerSettings({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	columns: undefined, // int
+	columnSize: "80px", // sap.ui.core.CSSSize
+	rowSize: "80px", // sap.ui.core.CSSSize
+	gap: "16px", // sap.ui.core.CSSSize
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<GridContainerSettings xmlns="sap.f"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	columns=""
+	columnSize="80px"
+	rowSize="80px"
+	gap="16px"
+	validateFieldGroup="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</GridContainerSettings>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.f.GridList" alias="GridList,List">
@@ -455,6 +627,287 @@
 		<contextMenu></contextMenu> <!-- sap.ui.core.IContextMenu, since 1.54 -->
 		<customLayout></customLayout> <!-- sap.ui.layout.cssgrid.GridLayoutBase -->
 </GridList>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.SearchManager" alias="SearchManager,Manager">
+	<jsTemplate><![CDATA[new sap.f.SearchManager({
+	id: "${id}", // sap.ui.core.ID
+	value: undefined, // string
+	placeholder: undefined, // string
+	maxLength: 0, // int
+	enabled: true, // boolean
+	enableSuggestions: false, // boolean
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	suggestionItems: [], // sap.m.SuggestionItem
+	search: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	liveChange: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	suggest: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<SearchManager xmlns="sap.f"
+	id="${id}"
+	value=""
+	placeholder=""
+	maxLength="0"
+	enabled="true"
+	enableSuggestions="false"
+	search=""
+	liveChange=""
+	suggest="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+		<suggestionItems></suggestionItems> <!-- sap.m.SuggestionItem -->
+</SearchManager>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.ShellBar" alias="ShellBar,Bar">
+	<jsTemplate><![CDATA[new sap.f.ShellBar({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	title: "", // string
+	secondTitle: "", // string
+	homeIcon: "", // sap.ui.core.URI
+	homeIconTooltip: "", // string, since 1.67
+	showMenuButton: false, // boolean
+	showNavButton: false, // boolean
+	showCopilot: false, // boolean
+	showSearch: false, // boolean
+	showNotifications: false, // boolean
+	showProductSwitcher: false, // boolean
+	notificationsNumber: "", // string, since 1.64
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	menu: undefined, // sap.m.Menu
+	searchManager: undefined, // sap.f.SearchManager, since 1.67
+	profile: undefined, // sap.f.Avatar
+	additionalContent: [], // sap.f.IShellBar
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	homeIconPressed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	menuButtonPressed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	navButtonPressed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	copilotPressed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	searchButtonPressed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	notificationsPressed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	productSwitcherPressed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	avatarPressed: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<ShellBar xmlns="sap.f"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	title=""
+	secondTitle=""
+	homeIcon=""
+	homeIconTooltip=""
+	showMenuButton="false"
+	showNavButton="false"
+	showCopilot="false"
+	showSearch="false"
+	showNotifications="false"
+	showProductSwitcher="false"
+	notificationsNumber=""
+	validateFieldGroup=""
+	homeIconPressed=""
+	menuButtonPressed=""
+	navButtonPressed=""
+	copilotPressed=""
+	searchButtonPressed=""
+	notificationsPressed=""
+	productSwitcherPressed=""
+	avatarPressed="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+		<menu></menu> <!-- sap.m.Menu -->
+		<searchManager></searchManager> <!-- sap.f.SearchManager, since 1.67 -->
+		<profile></profile> <!-- sap.f.Avatar -->
+		<additionalContent></additionalContent> <!-- sap.f.IShellBar -->
+</ShellBar>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.cards.Header" alias="Header">
+	<jsTemplate><![CDATA[new sap.f.cards.Header({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	title: "", // string
+	subtitle: "", // string
+	statusText: "", // string
+	iconDisplayShape: sap.f.AvatarShape.Circle, // sap.f.AvatarShape
+	iconSrc: "", // sap.ui.core.URI
+	iconInitials: "", // string
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	press: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<cards/Header xmlns="sap.f"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	title=""
+	subtitle=""
+	statusText=""
+	iconDisplayShape="Circle"
+	iconSrc=""
+	iconInitials=""
+	validateFieldGroup=""
+	press="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</cards/Header>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.cards.NumericHeader" alias="NumericHeader,Header">
+	<jsTemplate><![CDATA[new sap.f.cards.NumericHeader({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	title: undefined, // string
+	subtitle: undefined, // string
+	statusText: "", // string
+	unitOfMeasurement: undefined, // string
+	number: undefined, // string
+	scale: undefined, // string
+	trend: sap.m.DeviationIndicator.None, // sap.m.DeviationIndicator
+	state: sap.m.ValueColor.Neutral, // sap.m.ValueColor
+	details: undefined, // string
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	sideIndicators: [], // sap.f.cards.NumericSideIndicator
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	press: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<cards/NumericHeader xmlns="sap.f"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	title=""
+	subtitle=""
+	statusText=""
+	unitOfMeasurement=""
+	number=""
+	scale=""
+	trend="None"
+	state="Neutral"
+	details=""
+	validateFieldGroup=""
+	press="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+		<sideIndicators></sideIndicators> <!-- sap.f.cards.NumericSideIndicator -->
+</cards/NumericHeader>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.cards.NumericSideIndicator" alias="NumericSideIndicator,Indicator">
+	<jsTemplate><![CDATA[new sap.f.cards.NumericSideIndicator({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	title: undefined, // string
+	number: undefined, // string
+	unit: undefined, // string
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<cards/NumericSideIndicator xmlns="sap.f"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	title=""
+	number=""
+	unit=""
+	validateFieldGroup="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</cards/NumericSideIndicator>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.f.semantic.AddAction" alias="AddAction,Action">
@@ -937,6 +1390,7 @@
 	titleExpandedHeading: undefined, // sap.ui.core.Control, since 1.58
 	titleSnappedHeading: undefined, // sap.ui.core.Control, since 1.58
 	titleBreadcrumbs: undefined, // sap.m.IBreadcrumbs, since 1.52
+	titleSnappedOnMobile: undefined, // sap.m.Title, since 1.63
 	titleSnappedContent: [], // sap.ui.core.Control
 	titleExpandedContent: [], // sap.ui.core.Control
 	titleContent: [], // sap.ui.core.Control, since 1.52
@@ -996,6 +1450,7 @@
 		<titleExpandedHeading></titleExpandedHeading> <!-- sap.ui.core.Control, since 1.58 -->
 		<titleSnappedHeading></titleSnappedHeading> <!-- sap.ui.core.Control, since 1.58 -->
 		<titleBreadcrumbs></titleBreadcrumbs> <!-- sap.m.IBreadcrumbs, since 1.52 -->
+		<titleSnappedOnMobile></titleSnappedOnMobile> <!-- sap.m.Title, since 1.63 -->
 		<titleSnappedContent></titleSnappedContent> <!-- sap.ui.core.Control -->
 		<titleExpandedContent></titleExpandedContent> <!-- sap.ui.core.Control -->
 		<titleContent></titleContent> <!-- sap.ui.core.Control, since 1.52 -->

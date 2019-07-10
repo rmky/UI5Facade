@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -34,9 +34,13 @@ sap.ui.define(function () {
 		if (oControl._getHeight()) {
 		    oRm.writeAttribute("style", "height:" + oControl._getHeight() + ";");
 		}
+
+		if (oControl._bBlockHasMore) {
+			oRm.addClass("sapUxAPObjectPageSubSectionWithSeeMore");
+		}
+
 		oRm.addClass("sapUxAPObjectPageSubSection");
 		oRm.addClass("ui-helper-clearfix");
-		oRm.writeClasses(oControl);
 		oRm.writeClasses();
 
 		if (bAccessibilityOn) {
@@ -108,13 +112,20 @@ sap.ui.define(function () {
 
 		oRm.renderControl(oControl._getGrid());
 
+		oRm.write("</div>");
+
 		oRm.write("<div");
 		oRm.addClass("sapUxAPSubSectionSeeMoreContainer");
 		oRm.writeClasses();
+		if (oControl._isHidden){
+			oRm.addStyle("display", "none");
+		}
+		oRm.writeStyles();
 		oRm.write(">");
+
 		oRm.renderControl(oControl._getSeeMoreButton());
 		oRm.write("</div>");
-		oRm.write("</div>");
+
 		oRm.write("</div>");
 	};
 

@@ -1,34 +1,38 @@
 /*
- * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * ! OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 // Provides control sap.ui.dt.ContextMenu.
 /* globals sap */
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
-	"./library",
-	"sap/ui/unified/Menu",
 	"sap/ui/base/ManagedObject",
+	"sap/base/util/deepEqual",
+	"sap/m/library",
 	"sap/m/Popover",
 	"sap/m/VBox",
 	"sap/m/HBox",
 	"sap/m/Button",
 	"sap/m/FlexItemData",
-	// jQuery Plugin "rect"
-	"sap/ui/dom/jquery/rect"
+	"sap/ui/dt/OverlayRegistry",
+	"sap/ui/dt/DOMUtil"
 ], function (
 	jQuery,
-	library,
-	Menu,
 	ManagedObject,
+	DeepEqual,
+	mobileLibrary,
 	Popover,
 	VBox,
 	HBox,
 	Button,
-	FlexItemData
+	FlexItemData,
+	OverlayRegistry,
+	DOMUtil
 ) {
 	"use strict";
+
+	var PlacementType = mobileLibrary.PlacementType;
 
 	/**
 	 * Constructor for a new sap.ui.dt.ContextMenu control.
@@ -38,22 +42,20 @@ sap.ui.define([
 	 * @class A simple ContextMenu.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @experimental
 	 * @alias sap.ui.dt.ContextMenu
 	 */
 	var ContextMenu = ManagedObject.extend("sap.ui.dt.ContextMenuControl", {
-
 		metadata: {
 			properties: {
-
 				/**
 				 * Defines the maximum number of buttons displayed in the non-expanded version of the control.
 				 * If more than n buttons are added an overflow button will be displayed instead of the nth button (n = maxButtonsDisplayed).
 				 */
-				"maxButtonsDisplayed": {
+				maxButtonsDisplayed: {
 					type: "int",
 					defaultValue: 4
 				},
@@ -64,7 +66,7 @@ sap.ui.define([
 				 * icon - the url of the butons icon
 				 * handler - the function to call when the button is pressed
 				 */
-				"buttons": {
+				buttons: {
 					type: "object[]",
 					defaultValue: []
 				},
@@ -72,10 +74,10 @@ sap.ui.define([
 				 * The Style class which should be added to the ContextMenu
 				 */
 				styleClass: {
-					type: "string"
+					type: "string",
+					defaultValue: ""
 				}
 			},
-
 			events: {
 				/**
 				 * This event is fired after opening the ContextMenu
@@ -96,9 +98,7 @@ sap.ui.define([
 		 * initializes the ContextMenu by creating the internal a sap.m.Popover (with a sap.m.Flexbox as a content aggregation) in internal _popovers aggregation of the ContextMenu
 		 */
 		init: function () {
-
 			var sPopId = this.getId() + "-popover";
-
 			var oPopover = new Popover(sPopId, {
 				showHeader: false,
 				verticalScrolling: false,
@@ -122,7 +122,6 @@ sap.ui.define([
 			oPopover.addStyleClass("sapUiDtContextMenu");
 
 			var sPopExpId = this.getId() + "-popoverExp";
-
 			var oPopoverExpanded = new Popover(sPopExpId, {
 				showHeader: false,
 				showArrow: false,
@@ -147,7 +146,7 @@ sap.ui.define([
 			oPopover.attachBrowserEvent("contextmenu", this._onContextMenu, this);
 			oPopoverExpanded.attachBrowserEvent("contextmenu", this._onContextMenu, this);
 			this.bOnInit = true;
-
+			this._oLastSourceOverlay = this._oLastSourceClientRects = this._oLastPosition = null;
 		},
 
 		exit: function () {
@@ -176,23 +175,20 @@ sap.ui.define([
 
 			this._bOpenAsContextMenu = bContextMenu;
 			this._oContextMenuPosition = oContextMenuPosition;
-			this.getPopover(true).addStyleClass(this.getStyleClass() || "");
-			this.getPopover(false).addStyleClass(this.getStyleClass() || "");
+			this.getPopover(true).addStyleClass(this.getStyleClass());
+			this.getPopover(false).addStyleClass(this.getStyleClass());
 
 			// creates buttons specified in objects in property buttons
 			var aButtons = this.getButtons();
 			this._oTarget = oSource;
 
 			if (!this._bOpenAsContextMenu) {
-
 				this._setButtonsForContextMenu(aButtons, oSource);
-
 			} else {
 				this._makeAllButtonsVisible(aButtons);
 			}
 
 			if (this.bOnInit || !this.getPopover().isOpen()) { // if there was no other ContextMenu open before
-
 				this.finalizeOpening();
 				this.bOnInit = false;
 			}
@@ -211,6 +207,7 @@ sap.ui.define([
 			this.getPopover().attachAfterOpen(this._handleAfterOpen, this);
 
 			this.getPopover().attachBeforeClose(this._handleBeforeClose, this);
+			this.getPopover().attachAfterClose(this._handleAfterClose, this);
 
 			//place the Popover and get the target DIV
 			this._oTarget = this._placeContextMenu(this._oTarget, this._bOpenAsContextMenu);
@@ -224,25 +221,17 @@ sap.ui.define([
 		/**
 		 * Sets all parameters of the buttons in the non-expanded ContextMenu
 		 * @param {array} aButtons some buttons
-		 * @param {Overlay} oSource the source
 		 */
-		_setButtonsForContextMenu: function (aButtons, oSource) {
-
+		_setButtonsForContextMenu: function (aButtons) {
 			var iButtonsEnabled = this._getNumberOfEnabledButtons(aButtons);
-
 			if (iButtonsEnabled !== 0) {
-
 				this._hideDisabledButtons(aButtons);
 			}
 
 			this._iButtonsVisible = this._hideButtonsInOverflow(aButtons);
-
 			if (this._iButtonsVisible === this.getMaxButtonsDisplayed() && this._iButtonsVisible !== aButtons.length) {
-
 				this._replaceLastVisibleButtonWithOverflowButton(aButtons);
-
 			} else if (iButtonsEnabled < aButtons.length - 1 && iButtonsEnabled !== 0) {
-
 				this.addOverflowButton();
 			}
 
@@ -254,9 +243,7 @@ sap.ui.define([
 		 * @param {array} aButtons some buttons
 		 */
 		_makeAllButtonsVisible: function (aButtons) {
-
 			this._iFirstVisibleButtonIndex = 0;
-
 			aButtons.forEach(function (oButton) {
 				oButton.setVisible(true);
 				oButton._bInOverflow = true;
@@ -270,9 +257,7 @@ sap.ui.define([
 		 * @return {int} number of enabled buttons
 		 */
 		_getNumberOfEnabledButtons: function (aButtons) {
-
 			var iButtonsEnabled = 0;
-
 			for (var i = 0; i < aButtons.length; i++) {
 				if (aButtons[i].getEnabled()) {
 					iButtonsEnabled++;
@@ -291,13 +276,9 @@ sap.ui.define([
 		 * @return {int} the number of visible buttons
 		 */
 		_hideDisabledButtons: function (aButtons) {
-
 			var iVisibleButtons = 0;
-
 			aButtons.forEach(function (oButton) {
-
 				oButton.setVisible(oButton.getEnabled());
-
 				if (oButton.getEnabled()) {
 					iVisibleButtons++;
 				}
@@ -312,11 +293,8 @@ sap.ui.define([
 		 * @return {int} the number of visible buttons
 		 */
 		_hideButtonsInOverflow: function (aButtons) {
-
 			var iVisibleButtons = 0;
-
 			for (var i = 0; i < aButtons.length; i++) {
-
 				if (iVisibleButtons < this.getMaxButtonsDisplayed() && aButtons[i].getVisible()) {
 					iVisibleButtons++;
 				} else {
@@ -332,13 +310,10 @@ sap.ui.define([
 		 * @param {array} aButtons some buttons
 		 */
 		_replaceLastVisibleButtonWithOverflowButton: function (aButtons) {
-
 			for (var i = aButtons.length - 1; i >= 0; i--) {
 				if (aButtons[i].getVisible()) {
-
 					aButtons[i].setVisible(false);
 					this.addOverflowButton();
-
 					return;
 				}
 			}
@@ -354,7 +329,6 @@ sap.ui.define([
 		 * @private
 		 */
 		_placeContextMenu: function (oSource, bContextMenu) {
-			this.getPopover().setShowArrow(true);
 			var sOverlayId = (oSource.getId && oSource.getId()) || oSource.getAttribute("overlay");
 			var sFakeDivId = "contextMenuFakeDiv";
 
@@ -370,6 +344,7 @@ sap.ui.define([
 			// place a Target DIV (for the moment at wrong position)
 			jQuery("#" + sFakeDivId).remove();
 			jQuery("#" + sOverlayId).append("<div id=\"" + sFakeDivId + "\" overlay=\"" + sOverlayId + "\" style = \"position: absolute; top: " + iFakeDivTop + "px; left: 0px;\" />");
+			sOverlayId = null;
 			var oFakeDiv = document.getElementById(sFakeDivId);
 
 			// place the Popover invisible
@@ -398,13 +373,25 @@ sap.ui.define([
 				this.getPopover().setContentWidth(undefined);
 			}
 
-			// calculate exact position
+			// If the Menu has been closed by ESC-key and reopened again on the same Overlay, the Position of Menu should not change
+			var bIsSameOverlay = (this._oLastSourceOverlay ? this._oLastSourceOverlay === oSource : false);
+			var bIsSameRect = (this._oLastSourceClientRects ? DeepEqual(JSON.parse(JSON.stringify(this._oLastSourceClientRects)), JSON.parse(JSON.stringify(oSource.getDomRef().getClientRects()))) : false);
+			if (this._oContextMenuPosition.x === "not set" && this._oContextMenuPosition.y === "not set" && bIsSameOverlay && bIsSameRect) {
+				// Get the last x/y Positions of the current Target
+				this._oContextMenuPosition.x = this._oLastPosition.x;
+				this._oContextMenuPosition.y = this._oLastPosition.y;
+			} else {
+				// get the given x/y Positions; if no Position is given, take the upper left corner of the Overlay + 20px (looks better)
+				this._oContextMenuPosition.x = this._oContextMenuPosition.x || parseInt(oOverlayDimensions.left + 20);
+				this._oContextMenuPosition.y = this._oContextMenuPosition.y || parseInt(oOverlayDimensions.top + 20);
+			}
+
 			var oPosition = {};
 
 			if (bContextMenu) {
 				oPosition = this._placeAsExpandedContextMenu(this._oContextMenuPosition, oPopoverDimensions, oViewportDimensions);
 			} else {
-				oPosition = this._placeAsCompactContextMenu(oOverlayDimensions, oPopoverDimensions, oViewportDimensions);
+				oPosition = this._placeAsCompactContextMenu(this._oContextMenuPosition, oPopoverDimensions, oViewportDimensions);
 			}
 
 			oPosition.top -= oOverlayDimensions.top;
@@ -415,8 +402,6 @@ sap.ui.define([
 			// set the correct position to the target DIV
 			oFakeDiv.style.top = oPosition.top.toFixed(0) + "px";
 			oFakeDiv.style.left = oPosition.left.toFixed(0) + "px";
-
-			sOverlayId = null;
 
 			return oFakeDiv;
 		},
@@ -429,9 +414,7 @@ sap.ui.define([
 		 * @return {object} the position of the "fakeDiv"
 		 */
 		_placeAsExpandedContextMenu: function (oContPos, oPopover, oViewport) {
-
 			this.getPopover().setShowArrow(false);
-
 			var oPos = {};
 
 			if (oViewport.height - 10 - oContPos.y >= oPopover.height) {
@@ -458,154 +441,45 @@ sap.ui.define([
 
 		/**
 		 * Works out how the ContextMenu shall be placed
-		 * @param {object} oOverlay the dimensions of the overlay
+		 * @param {object} oContPos the context menu position
 		 * @param {object} oPopover the dimensions of the popover
 		 * @param {object} oViewport the dimensions of the viewport
 		 * @return {object} the position of the "fakeDiv"
 		 */
-		_placeAsCompactContextMenu: function (oOverlay, oPopover, oViewport) {
-
+		_placeAsCompactContextMenu: function (oContPos, oPopover, oViewport) {
 			this.getPopover().setShowArrow(true);
-
-			var oPos = {
-				top: null,
-				left: null
-			};
-
-			if (oOverlay.top >= oPopover.height && !oOverlay.isOverlappedAtTop) {
-				oPos = this._placeContextMenuOnTop(oOverlay);
-			} else if (oViewport.height - oOverlay.top >= parseInt(oPopover.height) + 5) {
-				oPos = this._placeContextMenuAtTheBottom(oOverlay, oPopover, oViewport);
-			} else {
-				oPos = this._placeContextMenuSideways(oOverlay, oPopover, oViewport);
-			}
-
-			return oPos;
-		},
-
-		/**
-		 * Works out how the ContextMenu shall be placed on top of the overlay
-		 * @param {object} oOverlay the dimensions of the overlay
-		 * @return {object} the position of the "fakeDiv"
-		 */
-		_placeContextMenuOnTop: function (oOverlay) {
-
 			var oPos = {};
 
-			this.getPopover().setPlacement("Top");
-			oPos.top = oOverlay.top;
-			oPos.left = oOverlay.left + oOverlay.width / 2;
+			//Popover should appear at the top (if place available)
+			this.getPopover().setPlacement(PlacementType.PreferredTopOrFlip);
+
+			var iBtnWidth = oPopover.width / this._iButtonsVisible;
+
+			// calculate the horizontal position according to RTL /LTR setting (add/substract)
+			var iFactor = sap.ui.getCore().getConfiguration().getRTL() ? -1 : 1;
+			oPos.left = oContPos.x + (iFactor * ((this._iButtonsVisible - 1) * iBtnWidth) / 2 + (this._getBaseFontSize() * 1 / 2));
+			oPos.top = oContPos.y - (this._getBaseFontSize() * 1 / 2);
+
+			// adjust positioning if necessary
+			oPos.left = (oPos.left < 32) ? 32 : oPos.left;
+			oPos.top = (oPos.top - oViewport.top < 0) ? oViewport.top : oPos.top;
+
+			// check right border positioning
+			if (oViewport.width - oPos.left < 32) {
+				oPos.left = oViewport.width - 32;
+				this.getPopover().addStyleClass("sapUiDtContextMenuRightArrow");
+			} else {
+				this.getPopover().removeStyleClass("sapUiDtContextMenuRightArrow");
+			}
+
+			// in Cozy mode the context menu is bigger, therefore we need a higher threshold for the top parameter
+			var iCozyFactor = this._bCompactMode ? 0 : 15;
+			if (oPos.top < (100 + iCozyFactor)) {
+				this.getPopover().setPlacement(PlacementType.Bottom);
+				oPos.top += 16;
+			}
 
 			return oPos;
-		},
-
-		/**
-		 * Works out how the ContextMenu shall be placed at the bottom of the overlay
-		 * @param {object} oOverlay the dimensions of the overlay
-		 * @param {object} oPopover the dimensions of the popover
-		 * @param {object} oViewport the dimensions of the viewport
-		 * @return {object} the position of the "fakeDiv"
-		 */
-		_placeContextMenuAtTheBottom: function (oOverlay, oPopover, oViewport) {
-
-			this.getPopover().setPlacement("Bottom");
-
-			var oPos = {},
-				iRtaToolbarHeight = jQuery(".sapUiRtaToolbar").height(),
-				iViewportTop = iRtaToolbarHeight ? iRtaToolbarHeight : oViewport.top,
-				iViewportHeight = iRtaToolbarHeight ? oViewport.height - iRtaToolbarHeight : oViewport.height;
-
-			oPos.left = oOverlay.left + oOverlay.width / 2;
-
-			if ((oOverlay.height < 60 || oOverlay.isOverlappedAtTop) && iViewportHeight - oOverlay.top - oOverlay.height >= oPopover.height) {
-				oPos.top = oOverlay.bottom;
-			} else if (oOverlay.top >= iViewportTop) {
-				oPos.top = oOverlay.top + 5;
-			} else {
-				// position on top of the viewport but below the RTAToolbar
-				oPos.top = iViewportTop + 5;
-			}
-			return oPos;
-		},
-
-		/**
-		 * Works out how the ContextMenu shall be placed sideways
-		 * @param {object} oOverlay the dimensions of the overlay
-		 * @param {object} oPopover the dimensions of the popover
-		 * @param {object} oViewport the dimensions of the viewport
-		 * @return {object} the position of the "fakeDiv"
-		 */
-		_placeContextMenuSideways: function (oOverlay, oPopover, oViewport) {
-
-			var oPos = {};
-
-			oPos.left = this._getContextMenuSidewaysPlacement(oOverlay, oPopover, oViewport);
-
-			oPos.top = this._getMiddleOfOverlayAndViewportEdges(oOverlay, oViewport);
-
-			return oPos;
-		},
-
-		/**
-		 * Works out whether the ContextMenu shall be placed on the right, on the left or from the middle of the overlay
-		 * @param {object} oOverlay the dimensions of the overlay
-		 * @param {object} oPopover the dimensions of the popover
-		 * @param {object} oViewport the dimensions of the viewport
-		 * @return {integer} the left position of the "fakeDiv"
-		 */
-		_getContextMenuSidewaysPlacement: function (oOverlay, oPopover, oViewport) {
-
-			var iLeft;
-
-			if (oViewport.width - oOverlay.right >= oPopover.width) {
-
-				this.getPopover().setPlacement("Right");
-				iLeft = oOverlay.right;
-
-			} else if (oOverlay.left >= oPopover.width) {
-
-				this.getPopover().setPlacement("Left");
-				iLeft = oOverlay.left;
-
-			} else {
-
-				this.getPopover().setPlacement("Right");
-
-				if (oPopover.width <= oViewport.width - (oOverlay.left + oOverlay.width / 2)) {
-					iLeft = (oOverlay.left + oOverlay.width / 2);
-				} else {
-					iLeft = oViewport.width - oPopover.width;
-				}
-			}
-
-			return iLeft;
-		},
-
-		/**
-		 * Works out the middle of the overlay and viewport edges incase the overlay edges are outside of the viewport
-		 * @param {object} oOverlay the dimensions of the overlay
-		 * @param {object} oViewport the dimensions of the viewport
-		 * @return {integer} the top position of the "fakeDiv"
-		 */
-		_getMiddleOfOverlayAndViewportEdges: function (oOverlay, oViewport) {
-
-			var iTop;
-
-			if (oViewport.top > oOverlay.top) {
-				iTop = oViewport.top;
-			} else {
-				iTop = oOverlay.top;
-			}
-
-			if (oViewport.bottom < oOverlay.bottom) {
-				iTop += oViewport.bottom;
-			} else {
-				iTop += oOverlay.bottom;
-			}
-
-			iTop /= 2;
-
-			return iTop;
 		},
 
 		/**
@@ -614,9 +488,7 @@ sap.ui.define([
 		 * @return {object} the dimensions of the ContextMenu's popover
 		 */
 		_getPopoverDimensions: function (bWithArrow) {
-
 			var oPopover = {};
-
 			var bCompact = this._bCompactMode;
 			var fArrowHeight = this._getArrowHeight(bCompact);
 			var iBaseFontsize = this._getBaseFontSize();
@@ -644,9 +516,8 @@ sap.ui.define([
 		_getArrowHeight: function (bCompact) {
 			if (sap.ui.Device.browser.internet_explorer || sap.ui.Device.browser.edge) {
 				return bCompact ? 0.5 : 0.5;
-			} else {
-				return bCompact ? 0.5625 : 0.5625;
 			}
+			return bCompact ? 0.5625 : 0.5625;
 		},
 
 		/**
@@ -663,32 +534,11 @@ sap.ui.define([
 		 * @return {object} the dimensions of the overlay
 		 */
 		_getOverlayDimensions: function (sOverlayId) {
-
 			var oOverlayDimensions = jQuery("#" + sOverlayId).rect();
-
 			oOverlayDimensions.right = oOverlayDimensions.left + oOverlayDimensions.width;
 			oOverlayDimensions.bottom = oOverlayDimensions.top + oOverlayDimensions.height;
-			oOverlayDimensions.isOverlappedAtTop = this._isOverlayOverlapped(sOverlayId, oOverlayDimensions, "top");
-			oOverlayDimensions.isOverlappedAtBottom = this._isOverlayOverlapped(sOverlayId, oOverlayDimensions, "bottom");
 
 			return oOverlayDimensions;
-		},
-
-		_isOverlayOverlapped: function(sSelectedOverlayId, oOverlayDimensions, sTop) {
-			var oElement;
-
-			if (sTop === "top") {
-				oElement = document.elementFromPoint(oOverlayDimensions.left + (oOverlayDimensions.width / 2), (oOverlayDimensions.top + 5));
-			}
-			if (sTop === "bottom") {
-				oElement = document.elementFromPoint(oOverlayDimensions.left + (oOverlayDimensions.width / 2), (oOverlayDimensions.bottom - 5));
-			}
-			if (!oElement) {
-				return true;
-			} else if (oElement.id === sSelectedOverlayId) {
-				return false;
-			}
-			return !jQuery("#" + sSelectedOverlayId)[0].contains(oElement);
 		},
 
 		/**
@@ -697,7 +547,6 @@ sap.ui.define([
 		 */
 		_getViewportDimensions: function () {
 			var oViewport = {};
-
 			oViewport.width = window.innerWidth;
 			oViewport.height = window.innerHeight;
 			oViewport.top = parseInt(jQuery(".type_standalone").css("height")) || 0;
@@ -742,11 +591,11 @@ sap.ui.define([
 		 * @public
 		 */
 		addMenuButton: function(oButtonItem, fnContextMenuHandler, aElementOverlays) {
-			var fnHandler = function(oEvent) {
+			function handler() {
 				this.bOpen = false;
 				this.bOpenNew = false;
 				fnContextMenuHandler(this);
-			};
+			}
 
 			var sText = typeof oButtonItem.text === "function" ? oButtonItem.text(aElementOverlays[0]) : oButtonItem.text;
 			var bEnabled = typeof oButtonItem.enabled === "function" ? oButtonItem.enabled(aElementOverlays) : oButtonItem.enabled;
@@ -756,7 +605,7 @@ sap.ui.define([
 				tooltip: sText,
 				type: "Transparent",
 				enabled: bEnabled,
-				press: fnHandler,
+				press: handler,
 				layoutData: new FlexItemData({})
 			};
 			return this._addButton(oButtonItem.id, oButtonOptions);
@@ -787,7 +636,6 @@ sap.ui.define([
 		 */
 		close: function (bExplicitClose) {
 			if (this.getPopover()) {
-
 				if (bExplicitClose) {
 					this.getPopover(true).close();
 					this.getPopover(false).close();
@@ -796,7 +644,6 @@ sap.ui.define([
 				// deletes the overflow button if there is one
 				if (this.getProperty("buttons").length > this.getProperty("maxButtonsDisplayed")) {
 					this.setProperty("buttons", this.getProperty("buttons").splice(0, this.getProperty("buttons").length - 1));
-
 					this.getFlexbox().removeItem(this.getButtons().length - 1);
 				}
 			}
@@ -812,7 +659,6 @@ sap.ui.define([
 		 */
 		removeButton: function (iIndex) {
 			this.setProperty("buttons", this.getProperty("buttons").splice(iIndex, 1));
-
 			this.getFlexbox(true).removeItem(iIndex);
 			return this.getFlexbox(false).removeItem(iIndex);
 		},
@@ -883,18 +729,15 @@ sap.ui.define([
 		 * @public
 		 */
 		getPopover: function (bExpanded) {
-
 			if (bExpanded === undefined) {
 				if (this._bUseExpPop) {
 					return this._oExpandedPopover;
-				} else {
-					return this._oPopover;
 				}
-			} else if (bExpanded) {
-				return  this._oExpandedPopover;
-			} else {
 				return this._oPopover;
+			} else if (bExpanded) {
+				return this._oExpandedPopover;
 			}
+			return this._oPopover;
 		},
 
 		/**
@@ -930,17 +773,13 @@ sap.ui.define([
 		 * (A new Menu would show before the direction was set)
 		 */
 		_popupClosed: function () {
-
 			if (this.getPopover()) { // in case the Menu was destroyed
-
 				this.fireClosed();
-
 				if (this.bOpenNew) {
 					this.bOpenNew = false;
 					this.finalizeOpening();
 					return;
 				}
-
 			}
 
 			this.bOpen = false;
@@ -965,29 +804,22 @@ sap.ui.define([
 		 */
 		_changeFocusOnKeyStroke: function (oEvent) {
 			if (document.activeElement) {
-
 				var sId = document.activeElement.id;
-
 				switch (oEvent.key) {
 					case "ArrowRight":
 						this._changeFocusOnButtons(sId);
 						break;
-
 					case "ArrowLeft":
 						this._changeFocusOnButtons(sId, true);
 						break;
-
 					case "ArrowUp":
 						this._changeFocusOnButtons(sId, true);
 						break;
-
 					case "ArrowDown":
 						this._changeFocusOnButtons(sId);
 						break;
-
 					default:
 						break;
-
 				}
 			}
 		},
@@ -1013,7 +845,7 @@ sap.ui.define([
 		/**
 		 * Sets focus on next button
 		 * @param {Array} aButtons the array of Buttons
-		 * @param {integer} iIndex the index of the currently focused buttons
+		 * @param {int} iIndex the index of the currently focused buttons
 		 */
 		_setFocusOnNextButton: function (aButtons, iIndex) {
 			for (var i0 = iIndex + 1; i0 < aButtons.length; i0++) {
@@ -1032,10 +864,9 @@ sap.ui.define([
 		/**
 		 * Sets focus on previous button
 		 * @param {Array} aButtons the array of Buttons
-		 * @param {integer} iIndex the index of the currently focused buttons
+		 * @param {int} iIndex the index of the currently focused buttons
 		 */
 		_setFocusOnPreviousButton: function (aButtons, iIndex) {
-
 			for (var i0 = iIndex - 1; i0 >= 0; i0--) {
 				if (this._setFocusOnButton(aButtons[i0])) {
 					return;
@@ -1047,7 +878,6 @@ sap.ui.define([
 					return;
 				}
 			}
-
 		},
 
 		/**
@@ -1080,6 +910,35 @@ sap.ui.define([
 		_handleBeforeClose: function () {
 			this.getPopover().detachBeforeClose(this._handleBeforeClose, this);
 			this.getPopover().removeStyleClass("sapUiDtContextMenuVisible");
+			// remove Focus from PopOver
+			document.activeElement.blur();
+		},
+
+		/**
+		 * Handle After Close
+		 * Set the focus back to the Overlay without scrolling
+		 * Remember the last Position of the Contextmenu, the last Source and its Dimensions
+		 * @private
+		 */
+		_handleAfterClose: function () {
+			// The Focus is set back to the original Overlay ONLY if it has not changed during closing
+			if (document.activeElement.localName !== "body") {
+				return;
+			}
+			this.getPopover().detachAfterClose(this._handleAfterClose, this);
+			var oNode = document.getElementById(this._oTarget.getAttribute("overlay"));
+			// Set focus & remember the last Source & Position for Opening in same place
+			if (oNode) {
+				DOMUtil.focusWithoutScrolling(oNode);
+				this._oLastSourceOverlay = OverlayRegistry.getOverlay(oNode.id);
+				this._oLastSourceClientRects = this._oLastSourceOverlay.getDomRef().getClientRects();
+			} else {
+				this._oLastSourceClientRects = null;
+			}
+			this._oLastPosition = {
+				x: this._oContextMenuPosition.x,
+				y: this._oContextMenuPosition.y
+			};
 		},
 
 		setStyleClass: function (sStyleClass) {
@@ -1088,5 +947,4 @@ sap.ui.define([
 	});
 
 	return ContextMenu;
-
 }, /* bExport= */ true);

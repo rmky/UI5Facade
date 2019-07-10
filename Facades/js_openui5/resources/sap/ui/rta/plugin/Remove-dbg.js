@@ -1,14 +1,14 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	'sap/ui/rta/plugin/Plugin',
-	'sap/ui/rta/Utils',
-	'sap/ui/rta/command/CompositeCommand',
-	'sap/ui/dt/OverlayRegistry',
+	"sap/ui/rta/plugin/Plugin",
+	"sap/ui/rta/Utils",
+	"sap/ui/rta/command/CompositeCommand",
+	"sap/ui/dt/OverlayRegistry",
 	"sap/ui/events/KeyCodes",
 	"sap/base/Log"
 ], function(
@@ -29,19 +29,15 @@ sap.ui.define([
 	 * @class The Remove allows trigger remove operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
 	 * @alias sap.ui.rta.plugin.Remove
 	 * @experimental Since 1.34. This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
-	var Remove = Plugin.extend("sap.ui.rta.plugin.Remove", /** @lends sap.ui.rta.plugin.Remove.prototype */
-	{
+	var Remove = Plugin.extend("sap.ui.rta.plugin.Remove", /** @lends sap.ui.rta.plugin.Remove.prototype */{
 		metadata: {
-			// ---- object ----
-
-			// ---- control specific ----
 			library: "sap.ui.rta",
 			properties: {},
 			associations: {},
@@ -122,24 +118,24 @@ sap.ui.define([
 	 * @return {boolean} Returns true if the control can be removed
 	 * @private
 	 */
-	Remove.prototype._canBeRemovedFromAggregation = function(aElementOverlays){
+	Remove.prototype._canBeRemovedFromAggregation = function(aElementOverlays) {
 		var oOverlay = aElementOverlays[0];
 		var oElement = oOverlay.getElement();
 		var oParent = oElement.getParent();
-		if (!oParent){
+		if (!oParent) {
 			return false;
 		}
 		var aElements = oParent.getAggregation(oElement.sParentAggregationName);
-		if (!Array.isArray(aElements)){
+		if (!Array.isArray(aElements)) {
 			return true;
 		}
-		if (aElements.length === 1){
+		if (aElements.length === 1) {
 			return false;
 		}
 
 		// Fallback to 1 if no overlay is selected
 		var iNumberOfSelectedOverlays = aElementOverlays.length;
-		var aInvisibleElements = aElements.filter(function(oElement){
+		var aInvisibleElements = aElements.filter(function(oElement) {
 			var oElementOverlay = OverlayRegistry.getOverlay(oElement);
 			return !(oElementOverlay && oElementOverlay.getElementVisibility());
 		});
@@ -190,7 +186,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Remove.prototype.removeElement = function (aElementOverlays) {
-		var aTargetOverlays = aElementOverlays ? aElementOverlays : this.getSelectedOverlays();
+		var aTargetOverlays = aElementOverlays || this.getSelectedOverlays();
 
 		aTargetOverlays = aTargetOverlays.filter(function (oElementOverlay) {
 			return this.isEnabled([oElementOverlay]);
@@ -210,7 +206,7 @@ sap.ui.define([
 	Remove.prototype._fireElementModified = function(oCompositeCommand) {
 		if (oCompositeCommand.getCommands().length) {
 			this.fireElementModified({
-				"command" : oCompositeCommand
+				command : oCompositeCommand
 			});
 		}
 	};
@@ -218,46 +214,51 @@ sap.ui.define([
 	Remove.prototype.handler = function (aElementOverlays) {
 		var aPromises = [];
 		var oCompositeCommand = new CompositeCommand();
-		var fnSetFocus = function (oOverlay) {
+		function fnSetFocus(oOverlay) {
 			oOverlay.setSelected(true);
 			setTimeout(function() {
 				oOverlay.focus();
 			}, 0);
-		};
+		}
 
 		var oNextOverlaySelection = Remove._getElementToFocus(aElementOverlays);
 
 		aElementOverlays.forEach(function(oOverlay) {
-			var oPromise;
 			var oRemovedElement = oOverlay.getElement();
 			var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
 			var oRemoveAction = this.getAction(oOverlay);
 			var sVariantManagementReference = this.getVariantManagementReference(oOverlay, oRemoveAction);
 			var sConfirmationText = this._getConfirmationText(oOverlay);
 
-			oPromise = Promise.resolve()
+			aPromises.push(
+				Promise.resolve()
+				.then(function() {
+					if (sConfirmationText) {
+						return Utils.openRemoveConfirmationDialog(oRemovedElement, sConfirmationText);
+					}
+					return true;
+				})
+				.then(function(bConfirmed) {
+					if (!bConfirmed) {
+						throw Error("Cancelled");
+					}
 
-			.then(function() {
-				if (sConfirmationText) {
-					return Utils.openRemoveConfirmationDialog(oRemovedElement, sConfirmationText);
-				}
-				return true;
-			})
-
-			.then(function(bConfirmed) {
-				if (bConfirmed) {
 					return this._getRemoveCommand(oRemovedElement, oDesignTimeMetadata, sVariantManagementReference);
-				}
-				return undefined;
-			}.bind(this))
-
-			.then(function(oCommand) {
-				if (oCommand) {
+				}.bind(this))
+				.then(function(oCommand) {
 					oCompositeCommand.addCommand(oCommand);
-				}
-			});
-
-			aPromises.push(oPromise);
+				})
+				.catch(function(oError) {
+					if (oError && oError.message === "Cancelled") {
+						if (aElementOverlays.length === 1) {
+							oNextOverlaySelection = oOverlay;
+						}
+					} else {
+						// rethrow error if a real error happened
+						throw oError;
+					}
+				})
+			);
 
 			// deselect overlay before we remove to avoid unnecessary checks which could happen when multiple elements get removed at once
 			oOverlay.setSelected(false);
@@ -265,17 +266,14 @@ sap.ui.define([
 
 		// since Promise.all is always asynchronous, we want to call it only if at least one promise exists
 		if (aPromises.length) {
-			Promise.all(aPromises).then(function() {
-				this._fireElementModified(oCompositeCommand);
+			return Promise.all(aPromises).then(function() {
 				fnSetFocus(oNextOverlaySelection);
+				this._fireElementModified(oCompositeCommand);
 			}.bind(this))
 
 			.catch(function(oError) {
 				Log.error("Error during remove: ", oError);
 			});
-		} else {
-			this._fireElementModified(oCompositeCommand);
-			fnSetFocus(oNextOverlaySelection);
 		}
 	};
 
@@ -312,14 +310,14 @@ sap.ui.define([
 	 * @return {object[]} - array of the items with required data
 	 */
 	Remove.prototype.getMenuItems = function (aElementOverlays) {
-		return this._getMenuItems(aElementOverlays, {pluginId : "CTX_REMOVE", rank : 60, icon : "sap-icon://hide"});
+		return this._getMenuItems(aElementOverlays, {pluginId : "CTX_REMOVE", rank : 60, icon : "sap-icon://less"});
 	};
 
 	/**
 	 * Get the name of the action related to this plugin.
 	 * @return {string} Returns the action name
 	 */
-	Remove.prototype.getActionName = function(){
+	Remove.prototype.getActionName = function() {
 		return "remove";
 	};
 

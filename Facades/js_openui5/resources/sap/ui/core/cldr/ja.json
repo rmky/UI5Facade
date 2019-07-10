@@ -2250,39 +2250,47 @@
 					"M": "M月～M月"
 				},
 				"y": {
-					"y": "Gy年～y年"
+					"y": "Gy年～y年",
+					"G": "Gy年～Gy年"
 				},
 				"yM": {
 					"M": "Gy/MM～y/MM",
-					"y": "Gy/MM～y/MM"
+					"y": "Gy/MM～y/MM",
+					"G": "Gy/MM～Gy/MM"
 				},
 				"yMd": {
 					"d": "Gy/MM/dd～y/MM/dd",
 					"M": "Gy/MM/dd～y/MM/dd",
-					"y": "Gy/MM/dd～y/MM/dd"
+					"y": "Gy/MM/dd～y/MM/dd",
+					"G": "Gy/MM/dd～Gy/MM/dd"
 				},
 				"yMEd": {
 					"d": "Gy/MM/dd(E)～y/MM/dd(E)",
 					"M": "Gy/MM/dd(E)～y/MM/dd(E)",
-					"y": "Gy/MM/dd(E)～y/MM/dd(E)"
+					"y": "Gy/MM/dd(E)～y/MM/dd(E)",
+					"G": "Gy/MM/dd(E)～Gy/MM/dd(E)"
 				},
 				"yMMM": {
 					"M": "Gy年M月～M月",
-					"y": "Gy年M月～y年M月"
+					"y": "Gy年M月～y年M月",
+					"G": "Gy年M月～Gy年M月"
 				},
 				"yMMMd": {
 					"d": "Gy年M月d日～d日",
 					"M": "Gy年M月d日～M月d日",
-					"y": "Gy年M月d日～y年M月d日"
+					"y": "Gy年M月d日～y年M月d日",
+					"G": "Gy年M月d日～Gy年M月d日"
 				},
 				"yMMMEd": {
 					"d": "Gy年M月d日(E)～d日(E)",
 					"M": "Gy年M月d日(E)～M月d日(E)",
-					"y": "Gy年M月d日(E)～y年M月d日(E)"
+					"y": "Gy年M月d日(E)～y年M月d日(E)",
+					"G": "Gy年M月d日(E)～Gy年M月d日(E)"
 				},
 				"yMMMM": {
 					"M": "Gy年M月～M月",
-					"y": "Gy年M月～y年M月"
+					"y": "Gy年M月～y年M月",
+					"G": "Gy年M月～Gy年M月"
 				}
 			}
 		},
@@ -2530,19 +2538,22 @@
 			"232": "明治",
 			"233": "大正",
 			"234": "昭和",
-			"235": "平成"
+			"235": "平成",
+			"236": "令和"
 		},
 		"era-abbreviated": {
 			"232": "明治",
 			"233": "大正",
 			"234": "昭和",
-			"235": "平成"
+			"235": "平成",
+			"236": "令和"
 		},
 		"era-narrow": {
 			"232": "M",
 			"233": "T",
 			"234": "S",
-			"235": "H"
+			"235": "H",
+			"236": "R"
 		}
 	},
 	"ca-persian": {
@@ -3824,6 +3835,12 @@
 			}
 		}
 	},
+	"miscPattern": {
+		"approximately": "約 {0}",
+		"atLeast": "{0} 以上",
+		"atMost": "{0} 以下",
+		"range": "{0}～{1}"
+	},
 	"currencyFormat-short": {
 		"1000-other": "0",
 		"10000-other": "¤0万",
@@ -4593,6 +4610,9 @@
 		},
 		"235": {
 			"_start": "1989-1-8"
+		},
+		"236": {
+			"_start": "2019-5-1"
 		}
 	},
 	"calendarPreference": "gregorian japanese"

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -33,7 +33,7 @@ sap.ui.define([
 	 * @class
 	 * The column menu provides all common actions that can be performed on a column.
 	 * @extends sap.ui.unified.Menu
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -74,7 +74,6 @@ sap.ui.define([
 			Menu.prototype.exit.apply(this, arguments);
 		}
 		window.clearTimeout(this._iPopupClosedTimeoutId);
-		this._detachEvents();
 		this._oColumn = this._oTable = null;
 	};
 
@@ -102,10 +101,8 @@ sap.ui.define([
 	 * @private
 	 */
 	ColumnMenu.prototype.setParent = function(oParent) {
-		this._detachEvents();
 		this._invalidate();
 		this._updateReferences(oParent);
-		this._attachEvents();
 		return Menu.prototype.setParent.apply(this, arguments);
 	};
 
@@ -122,28 +119,19 @@ sap.ui.define([
 		}
 	};
 
-
-	/**
-	 * Attaches the required event handlers.
-	 * @private
-	 */
-	ColumnMenu.prototype._attachEvents = function() {
-		if (this._oTable) {
-			this._oTable.attachColumnVisibility(this._invalidate, this);
-			this._oTable.attachColumnMove(this._invalidate, this);
+	ColumnMenu._destroyColumnVisibilityMenuItem = function(oTable) {
+		if (!oTable || !oTable._oColumnVisibilityMenuItem) {
+			return;
 		}
+		oTable._oColumnVisibilityMenuItem.destroy();
+		oTable._oColumnVisibilityMenuItem = null;
 	};
 
-
-	/**
-	 * Detaches the required event handlers.
-	 * @private
-	 */
-	ColumnMenu.prototype._detachEvents = function() {
-		if (this._oTable) {
-			this._oTable.detachColumnVisibility(this._invalidate, this);
-			this._oTable.detachColumnMove(this._invalidate, this);
+	ColumnMenu.prototype._removeColumnVisibilityFromAggregation = function() {
+		if (!this.oParent || !this.oParent._oColumnVisibilityMenuItem) {
+			return;
 		}
+		this.removeAggregation("items", this.oParent._oColumnVisibilityMenuItem, true);
 	};
 
 	/**
@@ -188,8 +176,11 @@ sap.ui.define([
 	ColumnMenu.prototype.open = function() {
 		if (this._bInvalidated) {
 			this._bInvalidated = false;
+			this._removeColumnVisibilityFromAggregation();
 			this.destroyItems();
 			this._addMenuItems();
+		} else if (this._oColumn) {
+			this._addColumnVisibilityMenuItem();
 		}
 
 		if (this.getItems().length > 0) {
@@ -197,7 +188,6 @@ sap.ui.define([
 			Menu.prototype.open.apply(this, arguments);
 		}
 	};
-
 
 	/**
 	 * Adds the menu items to the menu.
@@ -345,11 +335,15 @@ sap.ui.define([
 		var oTable = this._oTable;
 
 		if (oTable && oTable.getShowColumnVisibilityMenu()) {
-			var oColumnVisibiltyMenuItem = this._createMenuItem("column-visibilty", "TBL_COLUMNS");
-			this.addItem(oColumnVisibiltyMenuItem);
+			if (oTable._oColumnVisibilityMenuItem && !oTable._oColumnVisibilityMenuItem.bIsDestroyed) {
+				this.addItem(oTable._oColumnVisibilityMenuItem);
+				return;
+			}
 
-			var oColumnVisibiltyMenu = new Menu(oColumnVisibiltyMenuItem.getId() + "-menu");
-			oColumnVisibiltyMenuItem.setSubmenu(oColumnVisibiltyMenu);
+			oTable._oColumnVisibilityMenuItem = this._createMenuItem("column-visibilty", "TBL_COLUMNS");
+
+			var oColumnVisibiltyMenu = new Menu(oTable._oColumnVisibilityMenuItem.getId() + "-menu");
+			oTable._oColumnVisibilityMenuItem.setSubmenu(oColumnVisibiltyMenu);
 
 			var aColumns = oTable.getColumns();
 
@@ -381,9 +375,10 @@ sap.ui.define([
 				oColumnVisibiltyMenu.addItem(oMenuItem);
 
 				if (aVisibleColumns.length == 1 && aVisibleColumns[0] === oColumn) {
-					oMenuItem.setEnabled(false); // Indicate to the user that changing the visibility of the least visible column is not allowed
+					oMenuItem.setEnabled(false); // Indicate to the user that changing the visibility of the last visible column is not allowed
 				}
 			}
+			this.addItem(oTable._oColumnVisibilityMenuItem);
 		}
 	};
 
@@ -416,7 +411,6 @@ sap.ui.define([
 			icon: oColumn.getVisible() ? "sap-icon://accept" : null,
 			ariaLabelledBy: [oTable.getId() + (oColumn.getVisible() ? "-ariahidecolmenu" : "-ariashowcolmenu")],
 			select: jQuery.proxy(function(oEvent) {
-				var oMenuItem = oEvent.getSource();
 				var bVisible = !oColumn.getVisible();
 				if (bVisible || TableUtils.getVisibleColumnCount(this._oTable) > 1) {
 					var oTable = oColumn.getParent();
@@ -430,7 +424,6 @@ sap.ui.define([
 					if (bExecuteDefault) {
 						oColumn.setVisible(bVisible);
 					}
-					oMenuItem.setIcon(bVisible ? "sap-icon://accept" : null);
 				}
 			}, this)
 		});
@@ -508,6 +501,30 @@ sap.ui.define([
 			oFilterField.setValueState(sFilterState);
 		}
 		return this;
+	};
+
+	ColumnMenu._updateVisibilityIcon = function(oTable, iIndex, bVisible){
+		if (!oTable || !oTable._oColumnVisibilityMenuItem) {
+			return;
+		}
+
+		var sIcon = bVisible ? "sap-icon://accept" : "";
+		var oSubmenu = oTable._oColumnVisibilityMenuItem.getSubmenu();
+		if (!oSubmenu){
+			return;
+		}
+		var aItems = oSubmenu.getItems();
+		var oItem;
+		for (var i = 0; i < aItems.length; i++) {
+			if (aItems[i].getId().endsWith("-item-" + iIndex)) {
+				oItem = aItems[i];
+				break;
+			}
+		}
+		if (!oItem){
+			return;
+		}
+		oItem.setProperty("icon", sIcon);
 	};
 
 	return ColumnMenu;

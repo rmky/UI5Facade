@@ -76,6 +76,8 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"jquery.sap.script.js",
+				"sap/base/Log.js",
 				"sap/m/Bar.js",
 				"sap/m/Button.js",
 				"sap/m/CheckBox.js",
@@ -126,8 +128,10 @@
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/codeeditor/CodeEditor.js",
+				"sap/ui/core/Component.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/Icon.js",
@@ -216,6 +220,8 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"jquery.sap.script.js",
+				"sap/base/Log.js",
 				"sap/m/Bar.js",
 				"sap/m/Button.js",
 				"sap/m/CheckBox.js",
@@ -266,8 +272,10 @@
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/codeeditor/CodeEditor.js",
+				"sap/ui/core/Component.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/Icon.js",
@@ -360,6 +368,8 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"jquery.sap.script.js",
+				"sap/base/Log.js",
 				"sap/m/Bar.js",
 				"sap/m/Button.js",
 				"sap/m/CheckBox.js",
@@ -410,8 +420,10 @@
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/codeeditor/CodeEditor.js",
+				"sap/ui/core/Component.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/Icon.js",
@@ -506,6 +518,8 @@
 			"merged": true,
 			"required": [
 				"jquery.sap.global.js",
+				"jquery.sap.script.js",
+				"sap/base/Log.js",
 				"sap/m/Bar.js",
 				"sap/m/Button.js",
 				"sap/m/CheckBox.js",
@@ -556,8 +570,10 @@
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/codeeditor/CodeEditor.js",
+				"sap/ui/core/Component.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/CustomData.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/core/Fragment.js",
 				"sap/ui/core/HTML.js",
 				"sap/ui/core/Icon.js",
@@ -717,25 +733,35 @@
 		{
 			"name": "supportRules/CoreFacade-dbg.js",
 			"module": "sap/ui/support/supportRules/CoreFacade.js",
-			"isDebug": true
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/Component.js"
+			]
 		},
 		{
 			"name": "supportRules/CoreFacade.js",
-			"module": "sap/ui/support/supportRules/CoreFacade.js"
+			"module": "sap/ui/support/supportRules/CoreFacade.js",
+			"required": [
+				"sap/ui/core/Component.js"
+			]
 		},
 		{
 			"name": "supportRules/ExecutionScope-dbg.js",
 			"module": "sap/ui/support/supportRules/ExecutionScope.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js"
+				"jquery.sap.global.js",
+				"sap/ui/core/Component.js",
+				"sap/ui/core/Element.js"
 			]
 		},
 		{
 			"name": "supportRules/ExecutionScope.js",
 			"module": "sap/ui/support/supportRules/ExecutionScope.js",
 			"required": [
-				"jquery.sap.global.js"
+				"jquery.sap.global.js",
+				"sap/ui/core/Component.js",
+				"sap/ui/core/Element.js"
 			]
 		},
 		{
@@ -787,6 +813,8 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/core/Component.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/support/library.js",
 				"sap/ui/support/supportRules/Analyzer.js",
 				"sap/ui/support/supportRules/Constants.js",
@@ -808,6 +836,8 @@
 			"required": [
 				"jquery.sap.global.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/core/Component.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/support/library.js",
 				"sap/ui/support/supportRules/Analyzer.js",
 				"sap/ui/support/supportRules/Constants.js",
@@ -909,14 +939,18 @@
 			"module": "sap/ui/support/supportRules/WindowCommunicationBus.js",
 			"isDebug": true,
 			"required": [
-				"jquery.sap.global.js"
+				"jquery.sap.script.js",
+				"sap/base/Log.js",
+				"sap/ui/thirdparty/URI.js"
 			]
 		},
 		{
 			"name": "supportRules/WindowCommunicationBus.js",
 			"module": "sap/ui/support/supportRules/WindowCommunicationBus.js",
 			"required": [
-				"jquery.sap.global.js"
+				"jquery.sap.script.js",
+				"sap/base/Log.js",
+				"sap/ui/thirdparty/URI.js"
 			]
 		},
 		{
@@ -953,6 +987,7 @@
 			"isDebug": true,
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/core/Component.js",
 				"sap/ui/core/support/ToolsAPI.js",
 				"sap/ui/thirdparty/URI.js"
 			]
@@ -962,6 +997,7 @@
 			"module": "sap/ui/support/supportRules/report/DataCollector.js",
 			"required": [
 				"jquery.sap.global.js",
+				"sap/ui/core/Component.js",
 				"sap/ui/core/support/ToolsAPI.js",
 				"sap/ui/thirdparty/URI.js"
 			]

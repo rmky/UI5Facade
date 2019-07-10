@@ -1,6 +1,6 @@
 /*
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,11 +19,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/util/MockServer'],
 	 * @param {object} [mSettings] optional map/JSON-object with initial property values, aggregated objects etc. for the new object
 	 * @param {object} [oScope] scope object for resolving string based type and formatter references in bindings
 	 *
-	 * @class Class to mock a server
+	 * @class Class to mock a server.
 	 * @extends sap.ui.base.ManagedObject
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @public
 	 * @name sap.ui.app.MockServer
 	 * @experimental Since 1.13.0. The mock server is still under construction, so some implementation details can be changed in future.

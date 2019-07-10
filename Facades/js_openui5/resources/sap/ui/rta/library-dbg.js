@@ -1,15 +1,20 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 /**
  * Initialization Code and shared classes of library sap.ui.rta.
  */
-sap.ui.define(['sap/ui/core/Core',
-	'sap/ui/core/library', 'sap/m/library', 'sap/ui/fl/library', 'sap/ui/dt/library'],
-	function(Core, coreLibrary) {
+sap.ui.define([
+	"sap/ui/core/Core",
+	"sap/ui/core/library",
+	"sap/m/library",
+	"sap/ui/fl/library",
+	"sap/ui/dt/library"
+],
+function() {
 	"use strict";
 
 	/**
@@ -18,7 +23,7 @@ sap.ui.define(['sap/ui/core/Core',
 	 * @namespace
 	 * @name sap.ui.rta
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
 	 * @experimental This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
@@ -27,8 +32,8 @@ sap.ui.define(['sap/ui/core/Core',
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.rta",
-		version: "1.61.2",
-		dependencies : ["sap.ui.core","sap.m", "sap.ui.fl", "sap.ui.dt"],
+		version: "1.67.1",
+		dependencies : ["sap.ui.core", "sap.m", "sap.ui.fl", "sap.ui.dt"],
 		types: [
 		],
 		interfaces: [],
@@ -38,5 +43,4 @@ sap.ui.define(['sap/ui/core/Core',
 	});
 
 	return sap.ui.rta;
-
 });

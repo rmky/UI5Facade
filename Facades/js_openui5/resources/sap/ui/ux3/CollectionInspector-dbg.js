@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -29,7 +29,7 @@ sap.ui.define([
 	 * @class
 	 * CollectionInspector
 	 * @extends sap.ui.core.Control
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -470,6 +470,7 @@ sap.ui.define([
 		}
 		this.rerenderSidebar();
 		this.refreshSelectionHighlighting();
+		return this;
 	};
 
 	/**
@@ -488,6 +489,7 @@ sap.ui.define([
 	CollectionInspector.prototype.insertContent = function(oContent, iIndex) {
 		this.insertAggregation("content",oContent,iIndex,true);
 		this.rerenderContent();
+		return this;
 	};
 
 	/**
@@ -502,6 +504,7 @@ sap.ui.define([
 	CollectionInspector.prototype.addContent = function(oContent) {
 		this.addAggregation("content",oContent,true);
 		this.rerenderContent();
+		return this;
 	};
 
 	/**
@@ -512,8 +515,9 @@ sap.ui.define([
 	 * @public
 	 */
 	CollectionInspector.prototype.removeContent = function(vContent) {
-		this.removeAggregation("content",vContent,true);
+		var vResult = this.removeAggregation("content",vContent,true);
 		this.rerenderContent();
+		return vResult;
 	};
 
 	/**
@@ -523,8 +527,9 @@ sap.ui.define([
 	 * @public
 	 */
 	CollectionInspector.prototype.removeAllContent = function() {
-		this.removeAllAggregation("content",true);
+		var vResult = this.removeAllAggregation("content",true);
 		this.rerenderContent();
+		return vResult;
 	};
 
 	/**
@@ -536,6 +541,7 @@ sap.ui.define([
 	CollectionInspector.prototype.destroyContent = function() {
 		this.destroyAggregation("content",true);
 		this.rerenderContent();
+		return this;
 	};
 
 	/**

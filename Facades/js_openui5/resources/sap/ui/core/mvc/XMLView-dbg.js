@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -69,7 +69,7 @@ sap.ui.define([
 	 * control's dependents aggregation or add it by using {@link sap.ui.core.mvc.XMLView#addDependent}.
 	 *
 	 * @extends sap.ui.core.mvc.View
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.XMLView
@@ -101,10 +101,13 @@ sap.ui.define([
 
 			/**
 			 * The processing mode of the XMLView.
-			 * If the async view is created with the XMLView.create API.
-			 * The default value is "sequential".
+			 * The processing mode "sequential" is implicitly activated for the following type of async views:
+			 *      a) root views in the manifest
+			 *      b) XMLViews created with the (XML)View.create factory
+			 *      c) XMLViews used via routing
+			 * Additionally, all declarative nested async subviews are also processed asynchronously.
 			 */
-			processingMode: { type: "string", defaultValue: "", visibility: "hidden" }
+			processingMode: { type: "string", visibility: "hidden" }
 		},
 
 		designtime: "sap/ui/core/designtime/mvc/XMLView.designtime"
@@ -126,7 +129,7 @@ sap.ui.define([
 		 *
 		 * When property <code>async</code> is set to true, the view definition and the controller class (and its
 		 * dependencies) will be loaded asynchronously. Any controls used in the view might be loaded sync or
-		 * async, this depends on the experimental runtime configuration option "xx-xml-processing". Even when
+		 * async, depending on the processingMode. Even when
 		 * the view definition is provided as string or XML Document, controller or controls might be loaded
 		 * asynchronously. In any case a view instance will be returned synchronously by this factory API, but its
 		 * content (control tree) might appear only later. Also see {@link sap.ui.core.mvc.View#loaded}.
@@ -187,28 +190,28 @@ sap.ui.define([
 		 * still an experimental feature and may experience slight changes of the invalidation parameters or the cache
 		 * key format.
 		 *
-		 * @param {object} mOptions - An object containing the view configuration options.
-		 * @param {string} [mOptions.id] - Specifies an ID for the View instance. If no ID is given, an ID will be generated.
-		 * @param {string} [mOptions.viewName] - Corresponds to an XML module that can be loaded via the module system
-		 *                     (mOptions.viewName + suffix ".view.xml")
-		 * @param {string|Document} [mOptions.definition] - XML string or XML document that defines the view.
+		 * @param {object} oOptions - An object containing the view configuration options.
+		 * @param {string} [oOptions.id] - Specifies an ID for the View instance. If no ID is given, an ID will be generated.
+		 * @param {string} [oOptions.viewName] - Corresponds to an XML module that can be loaded via the module system
+		 *                     (oOptions.viewName + suffix ".view.xml")
+		 * @param {string|Document} [oOptions.definition] - XML string or XML document that defines the view.
 		 *                     Exactly one of <code>viewName</code> or <code>definition</code> must be given.
-		 * @param {sap.ui.core.mvc.Controller} [mOptions.controller] - Controller instance to be used for this view.
+		 * @param {sap.ui.core.mvc.Controller} [oOptions.controller] - Controller instance to be used for this view.
 		 *                     The given controller instance overrides the controller defined in the view definition.
 		 *                     Sharing one controller instance between multiple views is not possible.
-		 * @param {object} [mOptions.cache] - Cache configuration; caching gets active when this object is provided
+		 * @param {object} [oOptions.cache] - Cache configuration; caching gets active when this object is provided
 		 *                     with vView.cache.keys array; keys are used to store data in the cache and for invalidation
 		 *                     of the cache.
-		 * @param {Array.<(string|Promise)>} [mOptions.cache.keys] - Array with strings or Promises resolving with strings
-		 * @param {object} [mOptions.preprocessors] Preprocessors configuration, see {@link sap.ui.core.mvc.View}
+		 * @param {Array.<(string|Promise)>} [oOptions.cache.keys] - Array with strings or Promises resolving with strings
+		 * @param {object} [oOptions.preprocessors] Preprocessors configuration, see {@link sap.ui.core.mvc.View}
 		 *                     <strong>Note</strong>: These preprocessors are only available to this instance.
 		 *                     For global or on-demand availability use {@link sap.ui.core.mvc.XMLView.registerPreprocessor}.
 		 * @public
 		 * @static
 		 * @return {Promise<sap.ui.core.mvc.XMLView>} A Promise that resolves with the view instance or rejects with any thrown error.
 		 */
-		XMLView.create = function (mOptions) {
-			var mParameters = merge({}, mOptions);
+		XMLView.create = function (oOptions) {
+			var mParameters = merge({}, oOptions);
 
 			// mapping renamed parameters
 			mParameters.viewContent = mParameters.definition;
@@ -791,7 +794,7 @@ sap.ui.define([
 				library: "sap.ui.core"
 			},
 			renderer: function(oRM, oControl) {
-				oRM.write(""); // onAfterRendering is only called if control produces output
+				oRM.text(""); // onAfterRendering is only called if control produces output
 			}
 		});
 

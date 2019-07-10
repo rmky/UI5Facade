@@ -1,15 +1,13 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"sap/ui/fl/changeHandler/Base",
 	"sap/ui/fl/Utils",
 	"sap/base/util/LoaderExtensions"
 ], function(
-	Base,
 	Utils,
 	LoaderExtensions
 ) {
@@ -20,7 +18,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.fl.changeHandler.AddXML
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @since 1.54
 	 * @private
 	 * @experimental Since 1.54. This class is experimental and provides only limited functionality. Also the API might be changed in future.
@@ -77,7 +75,7 @@ sap.ui.define([
 		}
 
 		aNewControls.forEach(function(oNewControl, iIterator) {
-			if (!oModifier.validateType(oNewControl, oAggregationDefinition, oControl, sFragment , iIterator)) {
+			if (!oModifier.validateType(oNewControl, oAggregationDefinition, oControl, sFragment, iIterator)) {
 				destroyArrayOfControls(aNewControls);
 				throw new Error("The content of the xml fragment does not match the type of the targetAggregation: " + oAggregationDefinition.type);
 			}

@@ -1,8 +1,8 @@
 /* NOTE: This file was generated as an optimized version of "library.source.less" for the Theme Designer. */
 
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -188,7 +188,8 @@ html.sap-desktop .sapUiCalItemSel:focus{
 }
 
 /* define after weekend and selection focus to overrule it*/
-html.sap-desktop .sapUiCalItem:not(.sapUiCalItemSel) :not(.sapUiCalWeekNum):hover{
+html.sap-desktop .sapUiCalDatesRow .sapUiCalItem:not(.sapUiCalItemSel):hover,
+html.sap-desktop .sapUiCal:not(.sapUiCalDateInt) .sapUiCalItem:not(.sapUiCalItemSel) :not(.sapUiCalWeekNum):hover{
 	background-color: @sapUiHighlight;
 }
 
@@ -250,10 +251,10 @@ html[data-sap-ui-browser^="ie"].sap-desktop .sapUiCalMonthSecType > .sapUiCalIte
 
 html.sap-desktop .sapUiSizeCompact .sapUiCalItem:hover > .sapUiCalItemText,
 html.sap-desktop .sapUiSizeCompact .sapUiCalItem:focus > .sapUiCalItemText{
-	line-height: 1.875rem;
+	line-height: 1.75rem;
 }
 
-.sapUiSizeCompact .sapUiCalItemNow > .sapUiCalItemText,
+html.sap-desktop .sapUiSizeCompact .sapUiCalItemNow > .sapUiCalItemText,
 html.sap-desktop .sapUiSizeCompact .sapUiCalItemNow:hover > .sapUiCalItemText,
 html.sap-desktop .sapUiSizeCompact .sapUiCalItemNow:focus > .sapUiCalItemText{
 	line-height: 1.375rem;
@@ -728,8 +729,13 @@ html.sap-desktop .sapUiCalendarApp:hover:not(:active) > .sapUiCalendarAppCont{
 	border-color: @sapUiBaseColor;
 }
 
-.sapUiColorPicker-ColorPickerMatrix.sapUnifiedColorPicker .sapMSliderHandle {
-	box-shadow: inset 0 0 0 0.125rem @sapUiContentForegroundColor;
+.sapUiColorPicker-ColorPickerMatrix.sapUnifiedColorPicker {
+	.sapUiColorPicker-ColorPickerSlider,
+	.sapUiColorPicker-ColorPickerAlphaSlider {
+		.sapMSliderHandle {
+			box-shadow: inset 0 0 0 0.125rem @sapUiContentForegroundColor;
+		}
+	}
 }
 
 /* END "ColorPicker.less" */

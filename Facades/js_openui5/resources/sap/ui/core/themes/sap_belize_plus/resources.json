@@ -15,11 +15,27 @@
 			"theme": "sap_belize_plus"
 		},
 		{
+			"name": "fonts/72-Bold-full.woff",
+			"theme": "sap_belize_plus"
+		},
+		{
+			"name": "fonts/72-Bold-full.woff2",
+			"theme": "sap_belize_plus"
+		},
+		{
 			"name": "fonts/72-Bold.woff",
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "fonts/72-Bold.woff2",
+			"theme": "sap_belize_plus"
+		},
+		{
+			"name": "fonts/72-Regular-full.woff",
+			"theme": "sap_belize_plus"
+		},
+		{
+			"name": "fonts/72-Regular-full.woff2",
 			"theme": "sap_belize_plus"
 		},
 		{

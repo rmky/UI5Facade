@@ -592,6 +592,55 @@
 </cssgrid/CSSGrid>
 ]]></xmlTemplate>
 </Template>
+<Template name="sap.ui.layout.cssgrid.GridBasicLayout" alias="GridBasicLayout,Layout">
+	<jsTemplate><![CDATA[new sap.ui.layout.cssgrid.GridBasicLayout({
+	id: "${id}", // sap.ui.core.ID
+	blocked: false, // boolean
+	busy: false, // boolean
+	busyIndicatorDelay: 1000, // int
+	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
+	visible: true, // boolean
+	fieldGroupIds: [], // string[], since 1.31
+	gridTemplateColumns: "", // sap.ui.layout.cssgrid.CSSGridTrack
+	gridTemplateRows: "", // sap.ui.layout.cssgrid.CSSGridTrack
+	gridRowGap: "", // sap.ui.core.CSSSize
+	gridColumnGap: "", // sap.ui.core.CSSSize
+	gridGap: "", // sap.ui.layout.cssgrid.CSSGridGapShortHand
+	gridAutoRows: "", // sap.ui.layout.cssgrid.CSSGridTrack
+	gridAutoColumns: "", // sap.ui.layout.cssgrid.CSSGridTrack
+	gridAutoFlow: sap.ui.layout.cssgrid.CSSGridAutoFlow.Row, // sap.ui.layout.cssgrid.CSSGridAutoFlow
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	validateFieldGroup: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<cssgrid/GridBasicLayout xmlns="sap.ui.layout"
+	id="${id}"
+	blocked="false"
+	busy="false"
+	busyIndicatorDelay="1000"
+	busyIndicatorSize="Medium"
+	visible="true"
+	fieldGroupIds=""
+	gridTemplateColumns=""
+	gridTemplateRows=""
+	gridRowGap=""
+	gridColumnGap=""
+	gridGap=""
+	gridAutoRows=""
+	gridAutoColumns=""
+	gridAutoFlow="Row"
+	validateFieldGroup="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</cssgrid/GridBasicLayout>
+]]></xmlTemplate>
+</Template>
 <Template name="sap.ui.layout.cssgrid.GridBoxLayout" alias="GridBoxLayout,Layout">
 	<jsTemplate><![CDATA[new sap.ui.layout.cssgrid.GridBoxLayout({
 	id: "${id}", // sap.ui.core.ID
@@ -702,6 +751,7 @@
 	busyIndicatorSize: sap.ui.core.BusyIndicatorSize.Medium, // sap.ui.core.BusyIndicatorSize, since 1.54
 	visible: true, // boolean
 	fieldGroupIds: [], // string[], since 1.31
+	containerQuery: false, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -727,6 +777,7 @@
 	busyIndicatorSize="Medium"
 	visible="true"
 	fieldGroupIds=""
+	containerQuery="false"
 	validateFieldGroup=""
 	layoutChange="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->

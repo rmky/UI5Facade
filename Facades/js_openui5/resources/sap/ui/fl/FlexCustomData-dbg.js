@@ -1,14 +1,12 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"sap/ui/core/CustomData"
-], function(
-	CustomData // needs to be preloaded
-) {
+	"sap/ui/core/CustomData" // needs to be preloaded
+], function() {
 	"use strict";
 
 	/**
@@ -27,7 +25,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.FlexCustomData
 	 * @experimental Since 1.61.0
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 */
 	var FlexCustomData = {};
 
@@ -103,6 +101,26 @@ sap.ui.define([
 	FlexCustomData.hasNotApplicableCustomData = function(oControl, oChange, oModifier) {
 		var mCustomData = this._getCustomData(oControl, oModifier, this._getCustomDataKey(oChange, FlexCustomData.notApplicableChangesCustomDataKey));
 		return !!mCustomData.customDataValue;
+	};
+
+	/**
+	 * Checks the custom data of the provided control and returns 'true' if the notApplicable, applied or failed change key is there
+	 *
+	 * @param {sap.ui.core.Control} oControl The Control that should be checked
+	 * @param {sap.ui.fl.Change} oChange The change instance
+	 * @param {sap.ui.core.util.reflection.BaseTreeModifier} oModifier The control tree modifier
+	 *
+	 * @returns {boolean} Returns 'true' if the custom data is there
+	 */
+	FlexCustomData.hasChangeApplyFinishedCustomData = function(oControl, oChange, oModifier) {
+		var aCustomDataFunctionNames = [
+			"hasAppliedCustomData",
+			"hasFailedCustomDataJs",
+			"hasNotApplicableCustomData"
+		];
+		return aCustomDataFunctionNames.some(function(sCustomDataFunction) {
+			return !!this[sCustomDataFunction](oControl, oChange, oModifier);
+		}, this);
 	};
 
 	/**

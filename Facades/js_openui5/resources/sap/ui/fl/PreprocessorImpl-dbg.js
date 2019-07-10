@@ -1,14 +1,14 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides object sap.ui.fl.ProcessorImpl
 sap.ui.define([
-	'sap/ui/core/Component',
-	'sap/ui/fl/Utils',
-	'sap/ui/fl/ChangePersistenceFactory',
+	"sap/ui/core/Component",
+	"sap/ui/fl/Utils",
+	"sap/ui/fl/ChangePersistenceFactory",
 	"sap/base/Log"
 ],
 function(
@@ -35,10 +35,10 @@ function(
 	 * @class
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @experimental Since 1.27.0
 	 */
-	var PreprocessorImpl = function(){};
+	var PreprocessorImpl = function() {};
 
 	/**
 	 * Provides an array of extension providers. An extension provider is an object which were defined as controller extensions. These objects
@@ -79,10 +79,10 @@ function(
 
 				return PreprocessorImpl.getExtensionModules(aExtensionModules);
 			});
-		} else {
-			Log.warning("Synchronous extensions are not supported by sap.ui.fl.PreprocessorImpl");
-			return [];
 		}
+
+		Log.warning("Synchronous extensions are not supported by sap.ui.fl.PreprocessorImpl");
+		return [];
 	};
 
 	/**
@@ -114,5 +114,4 @@ function(
 	};
 
 	return PreprocessorImpl;
-
 }, /* bExport= */true);

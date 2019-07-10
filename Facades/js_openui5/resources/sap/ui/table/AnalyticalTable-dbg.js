@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,11 +14,10 @@ sap.ui.define([
 	'sap/ui/model/analytics/ODataModelAdapter',
 	'sap/ui/model/SelectionModel',
 	'sap/ui/model/Sorter',
-	'sap/ui/core/Popup',
 	'sap/ui/unified/Menu',
 	'sap/ui/unified/MenuItem',
 	'./TableUtils',
-	"./BindingSelectionAdapter",
+	"./plugins/BindingSelectionPlugin",
 	"sap/base/Log",
 	"sap/base/assert",
 	"sap/ui/thirdparty/jquery"
@@ -32,11 +31,10 @@ sap.ui.define([
 		ODataModelAdapter,
 		SelectionModel,
 		Sorter,
-		Popup,
 		Menu,
 		MenuItem,
 		TableUtils,
-		BindingSelectionAdapter,
+		BindingSelectionPlugin,
 		Log,
 		assert,
 		jQuery
@@ -45,7 +43,6 @@ sap.ui.define([
 
 	// shortcuts
 	var GroupEventType = library.GroupEventType,
-		SelectionMode = library.SelectionMode,
 		SortOrder = library.SortOrder,
 		TreeAutoExpandMode = library.TreeAutoExpandMode;
 
@@ -61,7 +58,7 @@ sap.ui.define([
 	 * @see http://scn.sap.com/docs/DOC-44986
 	 *
 	 * @extends sap.ui.table.Table
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -177,14 +174,12 @@ sap.ui.define([
 	 * @private
 	 */
 	AnalyticalTable.prototype.init = function() {
+		this._SelectionAdapterClass = BindingSelectionPlugin;
 		Table.prototype.init.apply(this, arguments);
 
 		this.addStyleClass("sapUiAnalyticalTable");
 
-		this.attachBrowserEvent("contextmenu", this._onContextMenu);
-
 		// defaulting properties
-		this.setSelectionMode(SelectionMode.MultiToggle);
 		this.setShowColumnVisibilityMenu(true);
 		this.setEnableColumnFreeze(true);
 		this.setEnableCellFilter(true);
@@ -192,8 +187,6 @@ sap.ui.define([
 		this._bSuspendUpdateAnalyticalInfo = false;
 		TableUtils.Grouping.setGroupMode(this);
 	};
-
-	AnalyticalTable.prototype._initSelectionAdapter = TreeTable.prototype._initSelectionAdapter;
 
 	AnalyticalTable.prototype.exit = function() {
 		this._cleanupGroupHeaderMenu();
@@ -306,10 +299,6 @@ sap.ui.define([
 			this._applyAnalyticalBindingInfo(oBindingInfo);
 			this._updateTotalRow(true);
 			this._applyODataModelAnalyticalAdapter(oBindingInfo.model);
-
-			// The selectionChanged event is also a special AnalyticalTreeBindingAdapter event.
-			// The event interface is the same as in sap.ui.model.SelectionModel, due to compatibility with the sap.ui.table.Table.
-			Table._addBindingListener(oBindingInfo, "selectionChanged", this._onSelectionChanged.bind(this));
 		}
 
 		// Create the binding.
@@ -416,10 +405,8 @@ sap.ui.define([
 
 	AnalyticalTable.prototype._updateTableContent = function() {
 		var oBinding = this.getBinding("rows"),
-			iFirstRow = this.getFirstVisibleRow(),
 			iFixedBottomRowCount = this.getFixedBottomRowCount(),
-			iCount = this.getVisibleRowCount(),
-			aCols = this.getColumns();
+			iCount = this.getVisibleRowCount();
 
 		var aRows = this.getRows();
 		//check if the table has rows (data to display)
@@ -434,11 +421,9 @@ sap.ui.define([
 		var oBindingInfo = this.getBindingInfo("rows");
 
 		for (var iRow = 0, l = Math.min(iCount, aRows.length); iRow < l; iRow++) {
-			var bIsFixedRow = iRow > (iCount - iFixedBottomRowCount - 1) && this._getTotalRowCount() > iCount,
-				iRowIndex = bIsFixedRow ? (this._getTotalRowCount() - 1 - (iCount - 1 - iRow)) : iFirstRow + iRow,
-				oRow = aRows[iRow],
-				$row = oRow.$(),
-				$rowHdr = this.$().find("div[data-sap-ui-rowindex=" + $row.attr("data-sap-ui-rowindex") + "]");
+			var bIsFixedRow = iRow > (iCount - iFixedBottomRowCount - 1) && this._getTotalRowCount() > iCount;
+			var oRow = aRows[iRow];
+			var iRowIndex = oRow.getIndex();
 
 			var oContextInfo;
 			if (bIsFixedRow && oBinding.bProvideGrandTotals) {
@@ -451,10 +436,6 @@ sap.ui.define([
 
 			if (!oContextInfo || !oContextInfo.context) {
 				TableUtils.Grouping.cleanupTableRowForGrouping(this, oRow);
-				if (oContextInfo && !oContextInfo.context) {
-					$row.addClass("sapUiAnalyticalTableDummy");
-					$rowHdr.addClass("sapUiAnalyticalTableDummy");
-				}
 				continue;
 			}
 
@@ -473,12 +454,11 @@ sap.ui.define([
 			// value mapping - this happens directly via the context!
 			var aCells = oRow.getCells();
 			for (var i = 0, lc = aCells.length; i < lc; i++) {
-				var iCol = aCells[i].data("sap-ui-colindex");
-				var oCol = aCols[iCol];
+				var oAnalyticalColumn = AnalyticalColumn.ofCell(aCells[i]);
 				var $td = jQuery(aCells[i].$().closest("td"));
-				if (oBinding.isMeasure(oCol.getLeadingProperty())) {
+				if (oBinding.isMeasure(oAnalyticalColumn.getLeadingProperty())) {
 					$td.addClass("sapUiTableMeasureCell");
-					$td.toggleClass("sapUiTableCellHidden", oContextInfo.nodeState.sum && !oCol.getSummed());
+					$td.toggleClass("sapUiTableCellHidden", oContextInfo.nodeState.sum && !oAnalyticalColumn.getSummed());
 				} else {
 					$td.removeClass("sapUiTableMeasureCell");
 				}
@@ -486,23 +466,17 @@ sap.ui.define([
 		}
 	};
 
-	AnalyticalTable.prototype._onContextMenu = function(oEvent) {
+	AnalyticalTable.prototype.oncontextmenu = function(oEvent) {
 		if (jQuery(oEvent.target).closest('tr').hasClass('sapUiTableGroupHeader') ||
-				jQuery(oEvent.target).closest('.sapUiTableRowHdr.sapUiTableGroupHeader').length > 0) {
+				jQuery(oEvent.target).closest('.sapUiTableGroupHeader > .sapUiTableRowSelectionCell').length > 0) {
 			this._iGroupedLevel = jQuery(oEvent.target).closest('[data-sap-ui-level]').data('sap-ui-level');
 			var oMenu = this._getGroupHeaderMenu();
-			var eDock = Popup.Dock;
 
-			var iLocationX = oEvent.pageX || oEvent.clientX;
-			var iLocationY = oEvent.pageY || oEvent.clientY;
-			oMenu.open(false, oEvent.target, eDock.LeftTop, eDock.LeftTop, document, (iLocationX - 2) + " " + (iLocationY - 2));
+			oMenu.openAsContextMenu(oEvent, TableUtils.getCell(this, oEvent.target) || oEvent.target);
 
 			oEvent.preventDefault();
 			oEvent.stopPropagation();
-			return;
 		}
-
-		return true;
 	};
 
 	AnalyticalTable.prototype._getGroupHeaderMenu = function() {
@@ -1020,21 +994,6 @@ sap.ui.define([
 	 ***************************************************/
 
 	/**
-	 * returns the count of rows which can ca selected when bound or 0
-	 * @private
-	 */
-	AnalyticalTable.prototype._getSelectableRowCount = function() {
-		var oBinding = this.getBinding("rows");
-
-		if (!oBinding) {
-			return 0;
-		}
-
-		var oRootNode = oBinding.getGrandTotalContextInfo();
-		return oRootNode ? oRootNode.totalNumberOfLeafs : 0;
-	};
-
-	/**
 	 * Checks if the row at the given index is selected.
 	 *
 	 * @param {int} iRowIndex The row index for which the selection state should be retrieved
@@ -1190,10 +1149,8 @@ sap.ui.define([
 	 */
 	AnalyticalTable.prototype.isExpanded = TreeTable.prototype.isExpanded;
 
-	AnalyticalTable.prototype._getSelectedIndicesCount = TreeTable.prototype._getSelectedIndicesCount;
-
 	/**
-	 * Returns the current analytical information of the given row or <code>null</code> if no infomation is available
+	 * Returns the current analytical information of the given row or <code>null</code> if no information is available
 	 * (for example, if the table is not bound or the given row has no binding context).
 	 *
 	 * The returned object provides the following information:
@@ -1208,12 +1165,12 @@ sap.ui.define([
 	 * </ul>
 	 *
 	 * @param {sap.ui.table.Row} oRow The row for which the analytical information is returned
-	 *
-	 * @returns {object} The analytical information of the given row
+	 * @returns {object | null} The analytical information of the given row
 	 * @private
+	 * @ui5-restricted sap.ui.comp
 	 */
-	AnalyticalTable.prototype.getAnalyticalInfoOfRow = function(oRow) { //TBD: Make it public if needed
-		if (!this._validateRow(oRow)) {
+	AnalyticalTable.prototype.getAnalyticalInfoOfRow = function(oRow) {
+		if (!TableUtils.isA(oRow, "sap.ui.table.Row") || oRow.getParent() !== this) {
 			return null;
 		}
 

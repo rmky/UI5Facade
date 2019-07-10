@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -62,7 +62,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -140,7 +140,8 @@ sap.ui.define([
 					 */
 					type: {type: "sap.m.ObjectMarkerType"}
 				}
-			}
+			},
+			dnd: { draggable: true, droppable: false }
 		}
 	});
 
@@ -560,13 +561,14 @@ sap.ui.define([
 	["getAriaLabelledBy", "addAriaLabelledBy", "removeAriaLabelledBy", "removeAllAriaLabelledBy",
 		"getAriaDescribedBy", "addAriaDescribedBy", "removeAriaDescribedBy", "removeAllAriaDescribedBy",
 		"getAccessibilityInfo"].map(function(sFn) {
+		var bChainable = /^add/.test(sFn);
 		ObjectMarker.prototype[sFn] = function() {
 			var oInnerControl = this._getInnerControl(),
 				oResult;
 			if (oInnerControl && oInnerControl[sFn]) {
 				oResult = oInnerControl[sFn].apply(oInnerControl, arguments);
 			}
-			return oResult === oInnerControl ? this : oResult;
+			return bChainable ? this : oResult;
 		};
 	});
 
@@ -597,6 +599,7 @@ sap.ui.define([
 
 		this.setProperty("icon", sIcon , bSuppressInvalidate);
 		oIcon.setSrc(sIcon);
+		return this;
 	};
 
 	/**
@@ -621,6 +624,7 @@ sap.ui.define([
 
 	CustomText.prototype.setText = function(sText, bSuppressInvalidate) {
 		this.setProperty("text", sText , bSuppressInvalidate);
+		return this;
 	};
 
 	/****************************************** CUSTOM LINK CONTROL ****************************************************/
@@ -651,6 +655,7 @@ sap.ui.define([
 
 		this.setProperty("icon", sIcon , bSuppressInvalidate);
 		oIcon.setSrc(sIcon);
+		return this;
 	};
 
 	CustomLink.prototype._getTabindex = function () {
@@ -679,6 +684,7 @@ sap.ui.define([
 
 	CustomLink.prototype.setText = function(sText, bSuppressInvalidate){
 		this.setProperty("text", sText, bSuppressInvalidate);
+		return this;
 	};
 
 	return ObjectMarker;

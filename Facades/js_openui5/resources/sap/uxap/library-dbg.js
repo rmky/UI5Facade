@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -32,6 +32,8 @@ sap.ui.define([
 		designtime: "sap/uxap/designtime/library.designtime",
 		types: [
 			"sap.uxap.BlockBaseColumnLayout",
+			"sap.uxap.BlockBaseFormAdjustment",
+			"sap.uxap.Importance",
 			"sap.uxap.ObjectPageConfigurationMode",
 			"sap.uxap.ObjectPageHeaderDesign",
 			"sap.uxap.ObjectPageHeaderPictureShape",
@@ -59,9 +61,11 @@ sap.ui.define([
 		],
 		elements: [
 			"sap.uxap.ModelMapping",
-			"sap.uxap.ObjectPageHeaderLayoutData"
+			"sap.uxap.ObjectPageAccessibleLandmarkInfo",
+			"sap.uxap.ObjectPageHeaderLayoutData",
+			"sap.uxap.ObjectPageLazyLoader"
 		],
-		version: "1.61.2",
+		version: "1.67.1",
 		extensions: {
 			flChangeHandlers: {
 				"sap.uxap.ObjectPageHeader": "sap/uxap/flexibility/ObjectPageHeader",
@@ -94,7 +98,7 @@ sap.ui.define([
 
 	/**
 	 * @class Used by the <code>BlockBase</code> control to define how many columns should it be assigned by the <code>objectPageSubSection</code>.
-	 *     The allowed values can be auto (subsection assigned a number of columns based on the parent objectPageLayout subsectionLayout property), 1, 2 or 3
+	 *     The allowed values can be auto (subsection assigned a number of columns based on the parent objectPageLayout subsectionLayout property), 1, 2, 3 or 4
 	 *     (This may not be a valid value for some <code>subSectionLayout</code>, for example, asking for 3 columns in a 2 column layout would raise warnings).
 	 *
 	 * @static

@@ -1,13 +1,19 @@
 /*
- * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * ! OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.dt.ManagedObjectObserver.
 sap.ui.define([
-	'sap/ui/base/ManagedObject', 'sap/ui/dt/ElementUtil'
-], function(ManagedObject, ElementUtil) {
+	"sap/ui/base/ManagedObject",
+	"sap/ui/dt/ElementUtil",
+	"sap/base/util/includes"
+], function(
+	ManagedObject,
+	ElementUtil,
+	includes
+) {
 	"use strict";
 
 	/**
@@ -19,36 +25,35 @@ sap.ui.define([
 	 * @class The ManagedObjectObserver observes changes of a ManagedObject and propagates them via events.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.30
 	 * @alias sap.ui.dt.ManagedObjectObserver
 	 * @experimental Since 1.30. This class is experimental and provides only limited functionality. Also the API might be modified in future.
 	 */
-	var ManagedObjectObserver = ManagedObject.extend("sap.ui.dt.ManagedObjectObserver", /** @lends sap.ui.dt.ManagedObjectObserver.prototype */
-	{
+	var ManagedObjectObserver = ManagedObject.extend("sap.ui.dt.ManagedObjectObserver", /** @lends sap.ui.dt.ManagedObjectObserver.prototype */ {
 		metadata: {
 			"abstract": true,
-			// ---- object ----
-
-			// ---- control specific ----
 			library: "sap.ui.dt",
 			properties: {
-
+				aggregations: {
+					type: "array",
+					defaultValue: null
+				}
 			},
 			associations: {
-				/**
-				 * target ManagedObject to observe
-				 */
+			/**
+			 * target ManagedObject to observe
+			 */
 				target: {
 					type: "sap.ui.base.ManagedObject"
 				}
 			},
 			events: {
-				/**
-				 * Event fired when the observed object is modified
-				 */
+			/**
+			 * Event fired when the observed object is modified
+			 */
 				modified: {
 					parameters: {
 						type : "string",
@@ -159,8 +164,9 @@ sap.ui.define([
 		this._fnOriginalBindAggregation = oTarget.bindAggregation;
 		oTarget.bindAggregation = function(sAggregationName) {
 			var vOriginalReturn = this._fnOriginalBindAggregation.apply(oTarget, arguments);
-			this.fireModified();
-
+			if (this._isAggregationObservable(sAggregationName)) {
+				this.fireModified();
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
@@ -168,14 +174,15 @@ sap.ui.define([
 		this._fnOriginalUnBindAggregation = oTarget.unbindAggregation;
 		oTarget.unbindAggregation = function(sAggregationName) {
 			var vOriginalReturn = this._fnOriginalUnBindAggregation.apply(oTarget, arguments);
-			this.fireModified();
-
+			if (this._isAggregationObservable(sAggregationName)) {
+				this.fireModified();
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
 		// We wrap the native setParent method of the control with our logic
 		this._fnOriginalSetParent = oTarget.setParent;
-		oTarget.setParent = function(oParent, sAggregationName, bSuppressInvalidate) {
+		oTarget.setParent = function(oParent, sAggregationName) {
 			var bFireModified = false;
 			if (!oTarget._bInSetParent) {
 				bFireModified = true;
@@ -208,146 +215,166 @@ sap.ui.define([
 
 		// We wrap the native addAggregation method of the control with our logic
 		this._fnOriginalAddAggregation = oTarget.addAggregation;
-		oTarget.addAggregation = function(sAggregationName, oObject, bSuppressInvalidate) {
+		oTarget.addAggregation = function(sAggregationName, oObject) {
 			this._sAddOrSetAggregationCall = sAggregationName;
 			var vOriginalReturn = this._fnOriginalAddAggregation.apply(oTarget, arguments);
-			this.fireModified({
-				type: "addOrSetAggregation",
-				name : sAggregationName,
-				value: oObject,
-				target: oTarget
-			});
+			if (this._isAggregationObservable(sAggregationName)) {
+				this.fireModified({
+					type: "addOrSetAggregation",
+					name : sAggregationName,
+					value: oObject,
+					target: oTarget
+				});
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
 		// We wrap the native setAggregation method of the control with our logic
 		this._fnOriginalSetAggregation = oTarget.setAggregation;
-		oTarget.setAggregation = function(sAggregationName, oObject, bSuppressInvalidate) {
+		oTarget.setAggregation = function(sAggregationName, oObject) {
 			// same mutator as addAggregation for multiple = false aggregations
 			this._sAddOrSetAggregationCall = sAggregationName;
 			var vOriginalReturn = this._fnOriginalSetAggregation.apply(oTarget, arguments);
-			this.fireModified({
-				type: "addOrSetAggregation",
-				name : sAggregationName,
-				value: oObject,
-				target: oTarget
-			});
+			if (this._isAggregationObservable(sAggregationName)) {
+				this.fireModified({
+					type: "addOrSetAggregation",
+					name : sAggregationName,
+					value: oObject,
+					target: oTarget
+				});
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
 		// We wrap the native removeAggregation method of the control with our logic
 		this._fnOriginalRemoveAggregation = oTarget.removeAggregation;
-		oTarget.removeAggregation = function(sAggregationName, vObject, bSuppressInvalidate) {
+		oTarget.removeAggregation = function(sAggregationName, vObject) {
 			this._sRemoveAggregationCall = sAggregationName;
 			var vOriginalReturn = this._fnOriginalRemoveAggregation.apply(oTarget, arguments);
-			this.fireModified({
-				type: "removeAggregation",
-				name : sAggregationName,
-				value: vObject,
-				target: oTarget
-			});
+			if (this._isAggregationObservable(sAggregationName)) {
+				this.fireModified({
+					type: "removeAggregation",
+					name : sAggregationName,
+					value: vObject,
+					target: oTarget
+				});
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
 		// We wrap the native insertAggregation method of the control with our logic
 		this._fnOriginalInsertAggregation = oTarget.insertAggregation;
-		oTarget.insertAggregation = function(sAggregationName, oObject, iIndex, bSuppressInvalidate) {
+		oTarget.insertAggregation = function(sAggregationName, oObject) {
 			this._sInsertAggregationCall = sAggregationName;
 			var vOriginalReturn = this._fnOriginalInsertAggregation.apply(oTarget, arguments);
-			this.fireModified({
-				type: "insertAggregation",
-				name : sAggregationName,
-				value: oObject,
-				target: oTarget
-			});
+			if (this._isAggregationObservable(sAggregationName)) {
+				this.fireModified({
+					type: "insertAggregation",
+					name : sAggregationName,
+					value: oObject,
+					target: oTarget
+				});
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
 		// We wrap the native removeAllAggregations method of the control with our logic
 		this._fnOriginalRemoveAllAggregation = oTarget.removeAllAggregation;
-		oTarget.removeAllAggregation = function(sAggregationName, bSuppressInvalidate) {
+		oTarget.removeAllAggregation = function(sAggregationName) {
 			this._sRemoveAllAggregationCall = sAggregationName;
 			var aRemovedObjects = oTarget.getAggregation(sAggregationName);
 			var vOriginalReturn = this._fnOriginalRemoveAllAggregation.apply(oTarget, arguments);
-			this.fireModified({
-				type: "removeAllAggregation",
-				name : sAggregationName,
-				value: aRemovedObjects,
-				target: oTarget
-			});
+			if (this._isAggregationObservable(sAggregationName)) {
+				this.fireModified({
+					type: "removeAllAggregation",
+					name : sAggregationName,
+					value: aRemovedObjects,
+					target: oTarget
+				});
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
 		// We wrap the native destroyAggregation method of the control with our logic
 		this._fnOriginalDestroyAggregation = oTarget.destroyAggregation;
-		oTarget.destroyAggregation = function(sAggregationName, bSuppressInvalidate) {
+		oTarget.destroyAggregation = function(sAggregationName) {
 			this._sDestroyAggregationCall = sAggregationName;
 			var aRemovedObjects = oTarget.getAggregation(sAggregationName);
 			var vOriginalReturn = this._fnOriginalDestroyAggregation.apply(oTarget, arguments);
-			this.fireModified({
-				type: "destroyAggregation",
-				name : sAggregationName,
-				value: aRemovedObjects,
-				target: oTarget
-			});
+			if (this._isAggregationObservable(sAggregationName)) {
+				this.fireModified({
+					type: "destroyAggregation",
+					name : sAggregationName,
+					value: aRemovedObjects,
+					target: oTarget
+				});
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
 		// We wrap the native addAssociation method of the control with our logic
 		this._fnOriginalAddAssociation = oTarget.addAssociation;
-		oTarget.addAssociation = function(sAssociationName, oObject, bSuppressInvalidate) {
+		oTarget.addAssociation = function(sAssociationName, oObject) {
 			this._sAddOrSetAssociationCall = sAssociationName;
 			var vOriginalReturn = this._fnOriginalAddAssociation.apply(oTarget, arguments);
-			this.fireModified({
-				type: "addOrSetAggregation",
-				name : sAssociationName,
-				value: oObject,
-				target: oTarget
-			});
+			if (this._isAggregationObservable(sAssociationName)) {
+				this.fireModified({
+					type: "addOrSetAggregation",
+					name : sAssociationName,
+					value: oObject,
+					target: oTarget
+				});
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
 		// We wrap the native setAssociation method of the control with our logic
 		this._fnOriginalSetAssociation = oTarget.setAssociation;
-		oTarget.setAssociation = function(sAssociationName, oObject, bSuppressInvalidate) {
+		oTarget.setAssociation = function(sAssociationName, oObject) {
 			// same mutator as addAssociation for multiple = false associations
 			this._sAddOrSetAssociationCall = sAssociationName;
 			var vOriginalReturn = this._fnOriginalSetAssociation.apply(oTarget, arguments);
-			this.fireModified({
-				type: "addOrSetAggregation",
-				name : sAssociationName,
-				value: oObject,
-				target: oTarget
-			});
+			if (this._isAggregationObservable(sAssociationName)) {
+				this.fireModified({
+					type: "addOrSetAggregation",
+					name : sAssociationName,
+					value: oObject,
+					target: oTarget
+				});
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
 		// We wrap the native removeAssociation method of the control with our logic
 		this._fnOriginalRemoveAssociation = oTarget.removeAssociation;
-		oTarget.removeAssociation = function(sAssociationName, vObject, bSuppressInvalidate) {
+		oTarget.removeAssociation = function(sAssociationName, vObject) {
 			this._sRemoveAssociationCall = sAssociationName;
 			var vOriginalReturn = this._fnOriginalRemoveAssociation.apply(oTarget, arguments);
-			this.fireModified({
-				type: "removeAggregation",
-				name : sAssociationName,
-				value: vObject,
-				target: oTarget
-			});
+			if (this._isAggregationObservable(sAssociationName)) {
+				this.fireModified({
+					type: "removeAggregation",
+					name : sAssociationName,
+					value: vObject,
+					target: oTarget
+				});
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
 		// We wrap the native removeAllAssociations method of the control with our logic
 		this._fnOriginalRemoveAllAssociation = oTarget.removeAllAssociation;
-		oTarget.removeAllAssociation = function(sAssociationName, bSuppressInvalidate) {
+		oTarget.removeAllAssociation = function(sAssociationName) {
 			this._sRemoveAllAssociationCall = sAssociationName;
 			var aRemovedObjects = oTarget.getAssociation(sAssociationName);
 			var vOriginalReturn = this._fnOriginalRemoveAllAssociation.apply(oTarget, arguments);
-			this.fireModified({
-				type: "removeAllAggregation",
-				name : sAssociationName,
-				value: aRemovedObjects,
-				target: oTarget
-			});
+			if (this._isAggregationObservable(sAssociationName)) {
+				this.fireModified({
+					type: "removeAllAggregation",
+					name : sAssociationName,
+					value: aRemovedObjects,
+					target: oTarget
+				});
+			}
 			return vOriginalReturn;
 		}.bind(this);
 
@@ -366,7 +393,13 @@ sap.ui.define([
 				// if addAggregation or setAggregation method wasn't called directly
 				var vOriginalReturn = _fnOriginalAddMutator.apply(oTarget, arguments);
 
-				if (!this._sAddOrSetAggregationCall || this._sAddOrSetAggregationCall !== oAggregation.name) {
+				if (
+					(
+						!this._sAddOrSetAggregationCall
+						|| this._sAddOrSetAggregationCall !== oAggregation.name
+					)
+					&& this._isAggregationObservable(oAggregation.name)
+				) {
 					this.fireModified({
 						type: "addOrSetAggregation",
 						name : oAggregation.name,
@@ -379,12 +412,18 @@ sap.ui.define([
 
 			var _fnOriginalInsertMutator = oTarget[oAggregation._sInsertMutator];
 			this._aOriginalInsertMutators[oAggregation.name] = _fnOriginalInsertMutator;
-			oTarget[oAggregation._sInsertMutator] = function(oObject, iIndex) {
+			oTarget[oAggregation._sInsertMutator] = function(oObject) {
 				delete this._sInsertAggregationCall;
 
 				var vOriginalReturn = _fnOriginalInsertMutator.apply(oTarget, arguments);
 				// if insertAggregation method wasn't called directly
-				if (!this._sInsertAggregationCall || this._sInsertAggregationCall !== oAggregation.name) {
+				if (
+					(
+						!this._sInsertAggregationCall
+						|| this._sInsertAggregationCall !== oAggregation.name
+					)
+					&& this._isAggregationObservable(oAggregation.name)
+				) {
 					this.fireModified({
 						type: "insertAggregation",
 						name : oAggregation.name,
@@ -397,12 +436,18 @@ sap.ui.define([
 
 			var _fnOriginalRemoveMutator = oTarget[oAggregation._sRemoveMutator];
 			this._aOriginalRemoveMutators[oAggregation.name] = _fnOriginalRemoveMutator;
-			oTarget[oAggregation._sRemoveMutator] = function(vObject, bSuppressInvalidate) {
+			oTarget[oAggregation._sRemoveMutator] = function(vObject) {
 				delete this._sRemoveAggregationCall;
 
 				var vOriginalReturn = _fnOriginalRemoveMutator.apply(oTarget, arguments);
 				// if removeAggregation method wasn't called directly
-				if (!this._sRemoveAggregationCall || this._sRemoveAggregationCall !== oAggregation.name) {
+				if (
+					(
+						!this._sRemoveAggregationCall
+						|| this._sRemoveAggregationCall !== oAggregation.name
+					)
+					&& this._isAggregationObservable(oAggregation.name)
+				) {
 					this.fireModified({
 						type: "removeAggregation",
 						name : oAggregation.name,
@@ -415,12 +460,18 @@ sap.ui.define([
 
 			var _fnOriginalRemoveAllMutator = oTarget[oAggregation._sRemoveAllMutator];
 			this._aOriginalRemoveAllMutators[oAggregation.name] = _fnOriginalRemoveAllMutator;
-			oTarget[oAggregation._sRemoveAllMutator] = function(bSuppressInvalidate) {
+			oTarget[oAggregation._sRemoveAllMutator] = function() {
 				delete this._sRemoveAllAggregationCall;
 				var aRemovedObjects = this.getAggregation(sAggregationName);
 				var vOriginalReturn = _fnOriginalRemoveAllMutator.apply(oTarget, arguments);
 				// if removeAllAggregation method wasn't called directly
-				if (!this._sRemoveAllAggregationCall || this._sRemoveAllAggregationCall !== oAggregation.name) {
+				if (
+					(
+						!this._sRemoveAllAggregationCall
+						|| this._sRemoveAllAggregationCall !== oAggregation.name
+					)
+					&& this._isAggregationObservable(oAggregation.name)
+				) {
 					this.fireModified({
 						type: "removeAllAggregation",
 						name : oAggregation.name,
@@ -433,12 +484,18 @@ sap.ui.define([
 
 			var _fnOriginalDestructor = oTarget[oAggregation._sDestructor];
 			this._aOriginalDestructors[oAggregation.name] = _fnOriginalDestructor;
-			oTarget[oAggregation._sDestructor] = function(bSuppressInvalidate) {
+			oTarget[oAggregation._sDestructor] = function() {
 				delete this._sDestroyAggregationCall;
 				var aRemovedObjects = this.getAggregation(sAggregationName);
 				var vOriginalReturn = _fnOriginalDestructor.apply(oTarget, arguments);
 				// if destroyAggregation method wasn't called directly
-				if (!this._sDestroyAggregationCall || this._sDestroyAggregationCall !== oAggregation.name) {
+				if (
+					(
+						!this._sDestroyAggregationCall
+						|| this._sDestroyAggregationCall !== oAggregation.name
+					)
+					&& this._isAggregationObservable(oAggregation.name)
+				) {
 					this.fireModified({
 						type: "destroyAggregation",
 						name : oAggregation.name,
@@ -462,7 +519,13 @@ sap.ui.define([
 				var vOriginalReturn;
 				vOriginalReturn = _fnOriginalAddMutator.apply(oTarget, arguments);
 
-				if (!this._sAddOrSetAssociationCall || this._sAddOrSetAssociationCall !== oAssociation.name) {
+				if (
+					(
+						!this._sAddOrSetAssociationCall
+						|| this._sAddOrSetAssociationCall !== oAssociation.name
+					)
+					&& this._isAggregationObservable(oAssociation.name)
+				) {
 					this.fireModified({
 						type: "addOrSetAggregation",
 						name : oAssociation.name,
@@ -475,11 +538,17 @@ sap.ui.define([
 
 			var _fnOriginalRemoveMutator = oTarget[oAssociation._sRemoveMutator];
 			this._aOriginalRemoveMutators[oAssociation.name] = _fnOriginalRemoveMutator;
-			oTarget[oAssociation._sRemoveMutator] = function(vObject, bSuppressInvalidate) {
+			oTarget[oAssociation._sRemoveMutator] = function(vObject) {
 				delete this._sRemoveAssociationCall;
 				var vOriginalReturn = _fnOriginalRemoveMutator.apply(oTarget, arguments);
 				// if removeAssociation method wasn't called directly
-				if (!this._sRemoveAssociationCall || this._sRemoveAssociationCall !== oAssociation.name) {
+				if (
+					(
+						!this._sRemoveAssociationCall
+						|| this._sRemoveAssociationCall !== oAssociation.name
+					)
+					&& this._isAggregationObservable(oAssociation.name)
+				) {
 					this.fireModified({
 						type: "removeAggregation",
 						name : oAssociation.name,
@@ -492,12 +561,18 @@ sap.ui.define([
 
 			var _fnOriginalRemoveAllMutator = oTarget[oAssociation._sRemoveAllMutator];
 			this._aOriginalRemoveAllMutators[oAssociation.name] = _fnOriginalRemoveAllMutator;
-			oTarget[oAssociation._sRemoveAllMutator] = function(bSuppressInvalidate) {
+			oTarget[oAssociation._sRemoveAllMutator] = function() {
 				delete this._sRemoveAllAssociationCall;
 				var aRemovedObjects = this.getAssociation(sAssociationName);
 				var vOriginalReturn = _fnOriginalRemoveAllMutator.apply(oTarget, arguments);
 				// if removeAllAssociation method wasn't called directly
-				if (!this._sRemoveAllAssociationCall || this._sRemoveAllAssociationCall !== oAssociation.name) {
+				if (
+					(
+						!this._sRemoveAllAssociationCall
+						|| this._sRemoveAllAssociationCall !== oAssociation.name
+					)
+					&& this._isAggregationObservable(oAssociation.name)
+				) {
 					this.fireModified({
 						type: "removeAllAggregation",
 						name : oAssociation.name,
@@ -507,9 +582,7 @@ sap.ui.define([
 				}
 				return vOriginalReturn;
 			}.bind(this);
-
 		}.bind(this), this);
-
 	};
 
 	/**
@@ -578,15 +651,27 @@ sap.ui.define([
 		delete this._aOriginalRemoveMutators;
 		delete this._aOriginalRemoveAllMutators;
 		delete this._aOriginalDestructors;
-
 	};
 
 	/**
 	 * @protected
 	 * @return {sap.ui.base.ManagedObject} The instance of the associated target to observe.
 	 */
-	ManagedObjectObserver.prototype.getTargetInstance = function() {
+	ManagedObjectObserver.prototype.getTargetInstance = function () {
 		return ElementUtil.getElementInstance(this.getTarget());
+	};
+
+	/**
+	 * Checks is specified aggregation is observable. By default all aggregations are observable.
+	 * @param {string} sAggregationName - aggregation name
+	 * @return {boolean} true if the aggregation is observable
+	 * @protected
+	 */
+	ManagedObjectObserver.prototype._isAggregationObservable = function (sAggregationName) {
+		return (
+			this.getAggregations() === null
+			|| includes(this.getAggregations(), sAggregationName)
+		);
 	};
 
 	return ManagedObjectObserver;

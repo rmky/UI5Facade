@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,9 +12,10 @@ sap.ui.define([
 	"sap/ui/events/KeyCodes",
 	"sap/base/Log",
 	"sap/ui/thirdparty/jquery",
+	"sap/m/MaskInputRule",
 	// jQuery Plugin "cursorPos"
 	"sap/ui/dom/jquery/cursorPos"
-], function(Control, InputBase, Device, coreLibrary, KeyCodes, Log, jQuery) {
+], function(Control, InputBase, Device, coreLibrary, KeyCodes, Log, jQuery, MaskInputRule) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TextDirection
@@ -24,7 +25,7 @@ sap.ui.define([
 	 * Applies mask support for input controls.
 	 * It should should be applied to the prototype of a <code>sap.m.InputBase</code>.
 	 *
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
 	 * @mixin
 	 * @alias sap.m.MaskEnabler
@@ -55,6 +56,7 @@ sap.ui.define([
 			this._bSkipSetupMaskVariables = null;
 
 			this._setDefaultRules();
+			this._setupMaskVariables();
 		};
 
 		/**
@@ -514,11 +516,11 @@ sap.ui.define([
 		 */
 		this._setDefaultRules = function () {
 			this._bSkipSetupMaskVariables = true;
-			this.addRule(new sap.m.MaskInputRule({
+			this.addRule(new MaskInputRule({
 				maskFormatSymbol: "a",
 				regex: "[A-Za-z]"
 			}), true);
-			this.addRule(new sap.m.MaskInputRule({
+			this.addRule(new MaskInputRule({
 				maskFormatSymbol: "9",
 				regex: "[0-9]"
 			}), true);
@@ -616,7 +618,7 @@ sap.ui.define([
 			var _$Input = jQuery(this.getFocusDomRef());
 
 			if (!_$Input && (_$Input.length === 0 || _$Input.is(":hidden"))) {
-				return;
+				return {};
 			}
 
 			return {
@@ -962,7 +964,8 @@ sap.ui.define([
 				// needed for further processing at "oninput"
 				this._oKeyDownStateAndroid = {
 					sValue: this._oTempValue.toString(),
-					iCursorPosition: this._getCursorPosition()
+					iCursorPosition: this._getCursorPosition(),
+					oSelection: this._getTextSelection()
 				};
 			}
 		};
@@ -971,11 +974,14 @@ sap.ui.define([
 		 * Reverts the value, as if no key down.
 		 * In case of backspace, just reverts to the previous temp value.
 		 * @param {object} oKey All the info for a key in a keydown event
+		 * @param {Object} [oSelection] An input selection info object, that could be used.
+		 * If not specified, current selection will take place. Format is the same as _getTextSelection returned type.
 		 * @private
 		 */
-		this._revertKey = function(oKey) {
-			var oSelection = this._getTextSelection(),
-				iBegin = oSelection.iFrom,
+		this._revertKey = function(oKey, oSelection) {
+			oSelection = oSelection || this._getTextSelection();
+
+			var iBegin = oSelection.iFrom,
 				iEnd = oSelection.iTo;
 
 			if (!oSelection.bHasSelection) {
@@ -1397,7 +1403,7 @@ sap.ui.define([
 				return;
 			}
 
-			oKeyInfo = this._buildKeyboardEventInfo(this._oKeyDownStateAndroid.sValue, this._getInputValue());
+			oKeyInfo = this._buildKeyboardEventInfo(this._oKeyDownStateAndroid.sValue, this._getInputValue(), this._oKeyDownStateAndroid.oSelection);
 
 			/* Fix 2 side effects:
 			 * - Cursor is at wrong position (browser behavior) - > restore it
@@ -1415,8 +1421,11 @@ sap.ui.define([
 				// is called from within the input handler, this won't really change the cursor position,
 				// even though _getCursorPosition() returns the one that had been previously set.
 				this._setCursorPosition(oKeyDownState.iCursorPosition);
-				if (oKey.bBackspace) {
-					this._revertKey(oKey);
+				if (oKey.bBackspace) { // backspace could also mean previous selection which is deleted by any char
+					this._revertKey(oKey, oKeyDownState.oSelection);
+					if (oKeyDownState.oSelection.bHasSelection && oKey.sChar) { // user-typed char replaces previous selection
+						this._keyPressHandler(oInputEvent, oKey);
+					}
 				} else {
 					this._keyPressHandler(oInputEvent, oKey);
 				}
@@ -1436,11 +1445,15 @@ sap.ui.define([
 		 *	</ul>
 		 * @param {string} sOldValue the old value
 		 * @param {string} sNewValue the new value
+		 * @param {Object} oOldValueSelection An input selection info object, that could be used. Format is the same as
+		 * _getTextSelection return type.
 		 * @returns {Object} an info object about which key "is pressed" (see #parseKeyboardEvent)
 		 * @private
 		 */
-		this._buildKeyboardEventInfo = function(sOldValue, sNewValue) {
-			var sNewChar = "", i;
+		this._buildKeyboardEventInfo = function(sOldValue, sNewValue, oOldValueSelection) {
+			var sNewChar = "", i,
+				oResult = {},
+				bCurrentPosHadSelection;
 
 			if (!sOldValue && !sNewValue) {
 				return {};
@@ -1449,16 +1462,22 @@ sap.ui.define([
 			if (sOldValue && sNewValue && sNewValue.length < sOldValue.length) { //backspace
 				// We choose "bBackspace" property instead of "bDelete", because only "Backspace"
 				// is available on Android keyboards (i.e. no "delete")
-				return { bBackspace: true };
+				oResult.bBackspace = true; // the bBackspace does not denote if there was previous selection or not
 			}
 
 			for (i = 0; i < sNewValue.length; i++) {
-				if (sOldValue[i] !== sNewValue[i]) {
+				//if char from sOldValue was selected before, the same positioned char in sNewValue should be always considered
+				// as a new char (even if both chars are equal)
+				bCurrentPosHadSelection = oOldValueSelection.bHasSelection && oOldValueSelection.iFrom === i;
+
+				if (bCurrentPosHadSelection || sOldValue[i] !== sNewValue[i]) {
 					sNewChar = sNewValue[i];
 					break;
 				}
 			}
-			return { sChar: sNewChar };
+			oResult.sChar = sNewChar;
+
+			return oResult;
 		};
 
 

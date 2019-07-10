@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -287,6 +287,10 @@ sap.ui.define([
 	});
 
 	ObjectPageSectionBase.prototype.setVisible = function (bValue, bSuppressInvalidate) {
+		if (this.getVisible() === bValue) {
+			return this;
+		}
+
 		if (!this._getObjectPageLayout()) {
 			return this.setProperty("visible", bValue, bSuppressInvalidate);
 		}
@@ -368,6 +372,11 @@ sap.ui.define([
 	 */
 
 	ObjectPageSectionBase.prototype.onkeydown = function (oEvent) {
+		// Prevent browser scrolling in case of SPACE key
+		if (oEvent.keyCode === KeyCodes.SPACE && oEvent.srcControl.isA("sap.uxap.ObjectPageSection")) {
+			oEvent.preventDefault();
+		}
+
 		// Filter F7 key down
 		if (oEvent.keyCode === KeyCodes.F7) {
 			var aSubSections = this.getSubSections(),
@@ -398,10 +407,15 @@ sap.ui.define([
 	};
 
 	ObjectPageSectionBase.prototype._handleFocusing = function (oEvent, oElementToReceiveFocus) {
+		var aSections;
+
 		if (this._targetIsCorrect(oEvent) && oElementToReceiveFocus) {
+			aSections = jQuery(oEvent.currentTarget).parent().children();
 			oEvent.preventDefault();
 			oElementToReceiveFocus.focus();
-			this._scrollParent(jQuery(oElementToReceiveFocus).attr("id"));
+			if (aSections.length > 1) {
+				this._scrollParent(jQuery(oElementToReceiveFocus).attr("id"));
+			}
 		}
 	};
 
@@ -482,7 +496,9 @@ sap.ui.define([
 			focusedSectionId = jQuery(aSections[0]).attr("id");
 		}
 
-		this._scrollParent(focusedSectionId);
+		if (aSections.length > 1) {
+			this._scrollParent(focusedSectionId);
+		}
 	};
 
 	/**
@@ -517,7 +533,9 @@ sap.ui.define([
 			focusedSectionId = jQuery(aSections[aSections.length - 1]).attr("id");
 		}
 
-		this._scrollParent(focusedSectionId);
+		if (aSections.length > 1) {
+			this._scrollParent(focusedSectionId);
+		}
 	};
 
 	/**

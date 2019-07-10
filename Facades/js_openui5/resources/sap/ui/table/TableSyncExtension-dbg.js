@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -79,7 +79,7 @@ sap.ui.define([
 				oHTMLElement.appendChild(oScrollExtension.getVerticalScrollbar());
 
 				// If an element is removed from DOM and is inserted again, the scroll position is reset to 0 and needs to be restored.
-				oScrollExtension.updateVerticalScrollPosition(oScrollExtension._nVerticalScrollPosition);
+				oScrollExtension.restoreVerticalScrollPosition();
 			}
 		},
 
@@ -127,7 +127,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table that allows synchronization with a table.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableSyncExtension

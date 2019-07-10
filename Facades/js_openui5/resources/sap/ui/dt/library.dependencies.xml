@@ -1,48 +1,48 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.dt">
-  <module name="sap/ui/dt/AggregationDesignTimeMetadata.js" size="1794" compressedSize="457">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/AggregationDesignTimeMetadata.js" size="1759" compressedSize="422">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dt/DesignTimeMetadata.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/AggregationOverlay.js" size="7662" compressedSize="2966">
+  <module name="sap/ui/dt/AggregationOverlay.js" size="7567" compressedSize="2895">
     <description>Provides class sap.ui.dt.AggregationOverlay.</description>
     <requires>
       <module name="sap/base/util/merge.js"/>
       <module name="sap/ui/dt/ElementUtil.js"/>
       <module name="sap/ui/dt/Overlay.js"/>
-      <module name="sap/ui/dt/OverlayRegistry.js"/>
       <module name="sap/ui/dt/Util.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ContextMenuControl.js" size="32742" compressedSize="12721">
+  <module name="sap/ui/dt/ContextMenuControl.js" size="31101" compressedSize="12805">
     <description>globals sap</description>
     <requires>
+      <module name="sap/base/util/deepEqual.js"/>
       <module name="sap/m/Button.js"/>
       <module name="sap/m/FlexItemData.js"/>
       <module name="sap/m/HBox.js"/>
       <module name="sap/m/Popover.js"/>
       <module name="sap/m/VBox.js"/>
+      <module name="sap/m/library.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
-      <module name="sap/ui/dom/jquery/rect.js"/>
-      <module name="sap/ui/dt/library.js"/>
+      <module name="sap/ui/dt/DOMUtil.js"/>
+      <module name="sap/ui/dt/OverlayRegistry.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="sap/ui/unified/Menu.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ControlObserver.js" size="2571" compressedSize="944">
+  <module name="sap/ui/dt/ControlObserver.js" size="2435" compressedSize="893">
     <description>Provides class sap.ui.dt.ControlObserver.</description>
     <requires>
       <module name="sap/ui/dt/ManagedObjectObserver.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/DOMUtil.js" size="13590" compressedSize="4659">
+  <module name="sap/ui/dt/DOMUtil.js" size="14433" compressedSize="4933">
     <description>Provides object sap.ui.dt.DOMUtil.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -52,8 +52,8 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/DesignTime.js" size="36760" compressedSize="14218">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/DesignTime.js" size="42115" compressedSize="16960">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/util/includes.js"/>
@@ -62,6 +62,7 @@
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/dt/AggregationDesignTimeMetadata.js"/>
       <module name="sap/ui/dt/AggregationOverlay.js"/>
+      <module name="sap/ui/dt/DesignTimeStatus.js"/>
       <module name="sap/ui/dt/ElementDesignTimeMetadata.js"/>
       <module name="sap/ui/dt/ElementOverlay.js"/>
       <module name="sap/ui/dt/ElementUtil.js"/>
@@ -73,12 +74,11 @@
       <module name="sap/ui/dt/SelectionMode.js"/>
       <module name="sap/ui/dt/TaskManager.js"/>
       <module name="sap/ui/dt/Util.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/DesignTimeMetadata.js" size="7828" compressedSize="2301">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/DesignTimeMetadata.js" size="7755" compressedSize="2248">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/merge.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
@@ -88,7 +88,13 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ElementDesignTimeMetadata.js" size="8824" compressedSize="2952">
+  <module name="sap/ui/dt/DesignTimeStatus.js" size="408" compressedSize="238">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/ElementDesignTimeMetadata.js" size="9100" compressedSize="2920">
     <description>Provides class sap.ui.dt.ElementDesignTimeMetadata.</description>
     <requires>
       <module name="sap/ui/dt/AggregationDesignTimeMetadata.js"/>
@@ -97,8 +103,8 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ElementOverlay.js" size="29907" compressedSize="12651">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/ElementOverlay.js" size="29876" compressedSize="12599">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/util/isPlainObject.js"/>
@@ -115,27 +121,27 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ElementUtil.js" size="13940" compressedSize="5519">
+  <module name="sap/ui/dt/ElementUtil.js" size="14273" compressedSize="5274">
     <description>Provides object sap.ui.dt.ElementUtil.</description>
     <requires>
-      <module name="sap/base/Log.js"/>
-      <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/base/Object.js"/>
       <module name="sap/ui/core/Component.js"/>
+      <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/dt/Util.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ManagedObjectObserver.js" size="21706" compressedSize="10750">
+  <module name="sap/ui/dt/ManagedObjectObserver.js" size="23338" compressedSize="11656">
     <description>Provides class sap.ui.dt.ManagedObjectObserver.</description>
     <requires>
+      <module name="sap/base/util/includes.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/dt/ElementUtil.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/MetadataPropagationUtil.js" size="9690" compressedSize="3371">
+  <module name="sap/ui/dt/MetadataPropagationUtil.js" size="9570" compressedSize="3322">
     <description>Provides object sap.ui.dt.MetadataPropagationUtil.</description>
     <requires>
       <module name="sap/base/util/merge.js"/>
@@ -144,19 +150,18 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/MutationObserver.js" size="7577" compressedSize="3721">
+  <module name="sap/ui/dt/MutationObserver.js" size="7498" compressedSize="3660">
     <description>Provides class sap.ui.dt.MutationObserver.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/dt/DOMUtil.js"/>
-      <module name="sap/ui/dt/ElementUtil.js"/>
       <module name="sap/ui/dt/OverlayUtil.js"/>
       <module name="sap/ui/dt/Util.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/Overlay.js" size="25864" compressedSize="10271">
+  <module name="sap/ui/dt/Overlay.js" size="26293" compressedSize="10470">
     <description>global Map</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -167,13 +172,13 @@
       <module name="sap/ui/dt/OverlayUtil.js"/>
       <module name="sap/ui/dt/ScrollbarSynchronizer.js"/>
       <module name="sap/ui/dt/Util.js"/>
-      <module name="sap/ui/dt/util/getNextZIndex.js"/>
+      <module name="sap/ui/dt/util/ZIndexManager.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/OverlayRegistry.js" size="3237" compressedSize="1234">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/OverlayRegistry.js" size="3226" compressedSize="1199">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/dt/ElementUtil.js"/>
@@ -181,7 +186,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/OverlayUtil.js" size="22986" compressedSize="6677">
+  <module name="sap/ui/dt/OverlayUtil.js" size="22168" compressedSize="6424">
     <description>Provides object sap.ui.dt.OverlayUtil.</description>
     <requires>
       <module name="sap/ui/dt/ElementUtil.js"/>
@@ -189,15 +194,15 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/Plugin.js" size="11075" compressedSize="2953">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/Plugin.js" size="11509" compressedSize="3293">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ScrollbarSynchronizer.js" size="5171" compressedSize="2366">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/ScrollbarSynchronizer.js" size="5130" compressedSize="2325">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/dt/DOMUtil.js"/>
@@ -205,8 +210,8 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/SelectionManager.js" size="7682" compressedSize="2503">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/SelectionManager.js" size="7630" compressedSize="2460">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/includes.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
@@ -217,146 +222,179 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/SelectionMode.js" size="801" compressedSize="271">
+  <module name="sap/ui/dt/SelectionMode.js" size="763" compressedSize="236">
     <description>Initialization Code and shared classes of library sap.ui.dt.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/TaskManager.js" size="3118" compressedSize="1410">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/TaskManager.js" size="3901" compressedSize="1638">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/isPlainObject.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/Util.js" size="9455" compressedSize="2714">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/Util.js" size="11544" compressedSize="3251">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/includes.js"/>
       <module name="sap/base/util/isPlainObject.js"/>
       <module name="sap/ui/Device.js"/>
+      <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/dt/DesignTimeStatus.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/library-h2-preload.js" size="8077">
+  <module name="sap/ui/dt/designtime/library-preload.designtime.js" size="523">
     <requires>
-      <module name="sap/base/Log.js"/>
-      <module name="sap/base/assert.js"/>
-      <module name="sap/base/util/ObjectPath.js"/>
-      <module name="sap/base/util/includes.js"/>
-      <module name="sap/base/util/isPlainObject.js"/>
-      <module name="sap/base/util/merge.js"/>
-      <module name="sap/m/Button.js"/>
-      <module name="sap/m/FlexItemData.js"/>
-      <module name="sap/m/HBox.js"/>
-      <module name="sap/m/Label.js"/>
-      <module name="sap/m/Popover.js"/>
-      <module name="sap/m/RatingIndicator.js"/>
-      <module name="sap/m/SearchField.js"/>
-      <module name="sap/m/Text.js"/>
-      <module name="sap/m/Title.js"/>
-      <module name="sap/m/Toolbar.js"/>
-      <module name="sap/m/ToolbarSpacer.js"/>
-      <module name="sap/m/VBox.js"/>
-      <module name="sap/ui/Device.js"/>
-      <module name="sap/ui/base/ManagedObject.js"/>
-      <module name="sap/ui/base/Object.js"/>
-      <module name="sap/ui/core/BusyIndicator.js"/>
-      <module name="sap/ui/core/Component.js"/>
-      <module name="sap/ui/core/Control.js"/>
-      <module name="sap/ui/core/Element.js"/>
-      <module name="sap/ui/core/Popup.js"/>
-      <module name="sap/ui/core/library.js"/>
-      <module name="sap/ui/dom/jquery/Selectors.js"/>
-      <module name="sap/ui/dom/jquery/rect.js"/>
-      <module name="sap/ui/dom/jquery/zIndex.js"/>
-      <module name="sap/ui/events/KeyCodes.js"/>
-      <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
-      <module name="sap/ui/layout/form/SimpleForm.js"/>
-      <module name="sap/ui/model/Filter.js"/>
-      <module name="sap/ui/model/FilterOperator.js"/>
-      <module name="sap/ui/model/json/JSONModel.js"/>
-      <module name="sap/ui/model/resource/ResourceModel.js"/>
-      <module name="sap/ui/table/Column.js"/>
-      <module name="sap/ui/table/TreeTable.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="sap/ui/unified/Menu.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
-      <module name="sap/ui/dt/library.js"/>
-      <module name="sap/ui/dt/manifest.json"/>
-      <module name="sap/ui/dt/AggregationDesignTimeMetadata.js"/>
-      <module name="sap/ui/dt/AggregationOverlay.js"/>
-      <module name="sap/ui/dt/ContextMenuControl.js"/>
-      <module name="sap/ui/dt/ControlObserver.js"/>
-      <module name="sap/ui/dt/DOMUtil.js"/>
-      <module name="sap/ui/dt/DesignTime.js"/>
-      <module name="sap/ui/dt/DesignTimeMetadata.js"/>
-      <module name="sap/ui/dt/ElementDesignTimeMetadata.js"/>
-      <module name="sap/ui/dt/ElementOverlay.js"/>
-      <module name="sap/ui/dt/ElementUtil.js"/>
-      <module name="sap/ui/dt/ManagedObjectObserver.js"/>
-      <module name="sap/ui/dt/MetadataPropagationUtil.js"/>
-      <module name="sap/ui/dt/MutationObserver.js"/>
-      <module name="sap/ui/dt/Overlay.js"/>
-      <module name="sap/ui/dt/OverlayRegistry.js"/>
-      <module name="sap/ui/dt/OverlayUtil.js"/>
-      <module name="sap/ui/dt/Plugin.js"/>
-      <module name="sap/ui/dt/ScrollbarSynchronizer.js"/>
-      <module name="sap/ui/dt/SelectionManager.js"/>
-      <module name="sap/ui/dt/SelectionMode.js"/>
-      <module name="sap/ui/dt/TaskManager.js"/>
-      <module name="sap/ui/dt/Util.js"/>
-      <module name="sap/ui/dt/plugin/ContextMenu.js"/>
-      <module name="sap/ui/dt/plugin/ControlDragDrop.js"/>
-      <module name="sap/ui/dt/plugin/CutPaste.js"/>
-      <module name="sap/ui/dt/plugin/DragDrop.js"/>
-      <module name="sap/ui/dt/plugin/ElementMover.js"/>
-      <module name="sap/ui/dt/plugin/MouseSelection.js"/>
-      <module name="sap/ui/dt/plugin/TabHandling.js"/>
-      <module name="sap/ui/dt/plugin/ToolHooks.js"/>
-      <module name="sap/ui/dt/test/Element.js"/>
-      <module name="sap/ui/dt/test/ElementEnablementTest.js"/>
-      <module name="sap/ui/dt/test/ElementEnablementTest2.js"/>
-      <module name="sap/ui/dt/test/LibraryEnablementTest.js"/>
-      <module name="sap/ui/dt/test/LibraryEnablementTest2.js"/>
-      <module name="sap/ui/dt/test/LibraryTest.js"/>
-      <module name="sap/ui/dt/test/Test.js"/>
-      <module name="sap/ui/dt/test/report/QUnit.js"/>
-      <module name="sap/ui/dt/test/report/Statistic.js"/>
-      <module name="sap/ui/dt/test/report/StatisticRenderer.js"/>
-      <module name="sap/ui/dt/test/report/Table.js"/>
-      <module name="sap/ui/dt/test/report/TableRenderer.js"/>
-      <module name="sap/ui/dt/util/getNextZIndex.js"/>
+      <module name="sap/ui/dt/designtime/notAdaptable.designtime.js"/>
+      <module name="sap/ui/dt/designtime/notRemovable.designtime.js"/>
     </includes>
   </module>
-  <module name="sap/ui/dt/library-preload.js" size="164019">
+  <module name="sap/ui/dt/designtime/notAdaptable.designtime.js" size="315" compressedSize="223">
+    <description>Provides default Designtime for 'not-adaptable' scenario</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/designtime/notRemovable.designtime.js" size="332" compressedSize="232">
+    <description>Provides default Designtime for 'not-adaptable' scenario</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/enablement/ElementEnablementTest.js" size="8186" compressedSize="4559">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/ObjectPath.js"/>
+      <module name="sap/ui/dt/DesignTime.js"/>
+      <module name="sap/ui/dt/ElementOverlay.js"/>
+      <module name="sap/ui/dt/enablement/Test.js"/>
+      <module name="sap/ui/dt/enablement/Util.js"/>
+      <module name="sap/ui/qunit/utils/waitForThemeApplied.js"/>
+      <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="sap/ui/thirdparty/sinon-4.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/enablement/Test.js" size="6187" compressedSize="2080">
+    <description>Provides class sap.ui.dt.test.Test.</description>
+    <requires>
+      <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/enablement/Util.js" size="3193" compressedSize="1204">
+    <description>Provides object sap.ui.dt.test.Element.</description>
+    <requires>
+      <module name="sap/ui/dt/DOMUtil.js"/>
+      <module name="sap/ui/dt/ElementUtil.js"/>
+      <module name="sap/ui/dt/OverlayRegistry.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/enablement/elementDesigntimeTest.js" size="668" compressedSize="410">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/dt/enablement/ElementEnablementTest.js"/>
+      <module name="sap/ui/dt/enablement/report/QUnitReport.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/enablement/libraryTest.js" size="11364" compressedSize="5579">
+    <description>global QUnit</description>
+    <requires>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="sap/ui/model/resource/ResourceModel.js"/>
+      <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/enablement/report/LibraryReport.js" size="3541" compressedSize="1294">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/dt/enablement/ElementEnablementTest.js"/>
+      <module name="sap/ui/dt/enablement/Test.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/enablement/report/QUnitReport.js" size="2533" compressedSize="997">
+    <description>global QUnit</description>
+    <requires>
+      <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/enablement/report/Statistic.js" size="3189" compressedSize="1752">
+    <description>Provides control sap.ui.dt.test.report.Statistic.</description>
+    <requires>
+      <module name="sap/m/Label.js"/>
+      <module name="sap/m/Text.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/layout/form/SimpleForm.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/enablement/report/StatisticRenderer.js" size="1022" compressedSize="405">
+    <description>Provides default renderer for control sap.ui.dt.enablement.report.Statistic</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/enablement/report/Table.js" size="5773" compressedSize="2940">
+    <description>Provides control sap.ui.dt.test.report.Table.</description>
+    <requires>
+      <module name="sap/m/Button.js"/>
+      <module name="sap/m/RatingIndicator.js"/>
+      <module name="sap/m/SearchField.js"/>
+      <module name="sap/m/Text.js"/>
+      <module name="sap/m/Toolbar.js"/>
+      <module name="sap/m/ToolbarSpacer.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="sap/ui/table/Column.js"/>
+      <module name="sap/ui/table/TreeTable.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/enablement/report/TableRenderer.js" size="987" compressedSize="402">
+    <description>Provides default renderer for control sap.ui.dt.enablement.report.Table</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/dt/library-h2-preload.js" size="8164">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>
       <module name="sap/base/util/ObjectPath.js"/>
+      <module name="sap/base/util/deepEqual.js"/>
       <module name="sap/base/util/includes.js"/>
       <module name="sap/base/util/isPlainObject.js"/>
       <module name="sap/base/util/merge.js"/>
       <module name="sap/m/Button.js"/>
       <module name="sap/m/FlexItemData.js"/>
       <module name="sap/m/HBox.js"/>
+      <module name="sap/m/InstanceManager.js"/>
       <module name="sap/m/Label.js"/>
       <module name="sap/m/Popover.js"/>
       <module name="sap/m/RatingIndicator.js"/>
       <module name="sap/m/SearchField.js"/>
       <module name="sap/m/Text.js"/>
-      <module name="sap/m/Title.js"/>
       <module name="sap/m/Toolbar.js"/>
       <module name="sap/m/ToolbarSpacer.js"/>
       <module name="sap/m/VBox.js"/>
+      <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/base/ManagedObjectMetadata.js"/>
       <module name="sap/ui/base/Object.js"/>
       <module name="sap/ui/core/BusyIndicator.js"/>
       <module name="sap/ui/core/Component.js"/>
@@ -365,22 +403,22 @@
       <module name="sap/ui/core/Popup.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/dom/jquery/Selectors.js"/>
-      <module name="sap/ui/dom/jquery/rect.js"/>
       <module name="sap/ui/dom/jquery/zIndex.js"/>
       <module name="sap/ui/events/KeyCodes.js"/>
-      <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
       <module name="sap/ui/layout/form/SimpleForm.js"/>
-      <module name="sap/ui/model/Filter.js"/>
-      <module name="sap/ui/model/FilterOperator.js"/>
       <module name="sap/ui/model/json/JSONModel.js"/>
       <module name="sap/ui/model/resource/ResourceModel.js"/>
+      <module name="sap/ui/qunit/QUnitUtils.js"/>
+      <module name="sap/ui/qunit/utils/waitForThemeApplied.js"/>
       <module name="sap/ui/table/Column.js"/>
       <module name="sap/ui/table/TreeTable.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="sap/ui/unified/Menu.js"/>
+      <module name="sap/ui/thirdparty/sinon-4.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
+      <module name="sap/ui/dt/library.js"/>
+      <module name="sap/ui/dt/manifest.json"/>
       <module name="sap/ui/dt/AggregationDesignTimeMetadata.js"/>
       <module name="sap/ui/dt/AggregationOverlay.js"/>
       <module name="sap/ui/dt/ContextMenuControl.js"/>
@@ -388,6 +426,7 @@
       <module name="sap/ui/dt/DOMUtil.js"/>
       <module name="sap/ui/dt/DesignTime.js"/>
       <module name="sap/ui/dt/DesignTimeMetadata.js"/>
+      <module name="sap/ui/dt/DesignTimeStatus.js"/>
       <module name="sap/ui/dt/ElementDesignTimeMetadata.js"/>
       <module name="sap/ui/dt/ElementOverlay.js"/>
       <module name="sap/ui/dt/ElementUtil.js"/>
@@ -403,6 +442,111 @@
       <module name="sap/ui/dt/SelectionMode.js"/>
       <module name="sap/ui/dt/TaskManager.js"/>
       <module name="sap/ui/dt/Util.js"/>
+      <module name="sap/ui/dt/designtime/notAdaptable.designtime.js"/>
+      <module name="sap/ui/dt/designtime/notRemovable.designtime.js"/>
+      <module name="sap/ui/dt/enablement/ElementEnablementTest.js"/>
+      <module name="sap/ui/dt/enablement/Test.js"/>
+      <module name="sap/ui/dt/enablement/Util.js"/>
+      <module name="sap/ui/dt/enablement/elementDesigntimeTest.js"/>
+      <module name="sap/ui/dt/enablement/libraryTest.js"/>
+      <module name="sap/ui/dt/enablement/report/LibraryReport.js"/>
+      <module name="sap/ui/dt/enablement/report/QUnitReport.js"/>
+      <module name="sap/ui/dt/enablement/report/Statistic.js"/>
+      <module name="sap/ui/dt/enablement/report/StatisticRenderer.js"/>
+      <module name="sap/ui/dt/enablement/report/Table.js"/>
+      <module name="sap/ui/dt/enablement/report/TableRenderer.js"/>
+      <module name="sap/ui/dt/plugin/ContextMenu.js"/>
+      <module name="sap/ui/dt/plugin/ControlDragDrop.js"/>
+      <module name="sap/ui/dt/plugin/CutPaste.js"/>
+      <module name="sap/ui/dt/plugin/DragDrop.js"/>
+      <module name="sap/ui/dt/plugin/ElementMover.js"/>
+      <module name="sap/ui/dt/plugin/MouseSelection.js"/>
+      <module name="sap/ui/dt/plugin/TabHandling.js"/>
+      <module name="sap/ui/dt/plugin/ToolHooks.js"/>
+      <module name="sap/ui/dt/util/ZIndexManager.js"/>
+    </includes>
+  </module>
+  <module name="sap/ui/dt/library-preload.js" size="167477">
+    <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/assert.js"/>
+      <module name="sap/base/util/ObjectPath.js"/>
+      <module name="sap/base/util/deepEqual.js"/>
+      <module name="sap/base/util/includes.js"/>
+      <module name="sap/base/util/isPlainObject.js"/>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/m/Button.js"/>
+      <module name="sap/m/FlexItemData.js"/>
+      <module name="sap/m/HBox.js"/>
+      <module name="sap/m/InstanceManager.js"/>
+      <module name="sap/m/Label.js"/>
+      <module name="sap/m/Popover.js"/>
+      <module name="sap/m/RatingIndicator.js"/>
+      <module name="sap/m/SearchField.js"/>
+      <module name="sap/m/Text.js"/>
+      <module name="sap/m/Toolbar.js"/>
+      <module name="sap/m/ToolbarSpacer.js"/>
+      <module name="sap/m/VBox.js"/>
+      <module name="sap/m/library.js"/>
+      <module name="sap/ui/Device.js"/>
+      <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/base/ManagedObjectMetadata.js"/>
+      <module name="sap/ui/base/Object.js"/>
+      <module name="sap/ui/core/BusyIndicator.js"/>
+      <module name="sap/ui/core/Component.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/core/Element.js"/>
+      <module name="sap/ui/core/Popup.js"/>
+      <module name="sap/ui/core/library.js"/>
+      <module name="sap/ui/dom/jquery/Selectors.js"/>
+      <module name="sap/ui/dom/jquery/zIndex.js"/>
+      <module name="sap/ui/events/KeyCodes.js"/>
+      <module name="sap/ui/layout/form/SimpleForm.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="sap/ui/model/resource/ResourceModel.js"/>
+      <module name="sap/ui/qunit/QUnitUtils.js"/>
+      <module name="sap/ui/qunit/utils/waitForThemeApplied.js"/>
+      <module name="sap/ui/table/Column.js"/>
+      <module name="sap/ui/table/TreeTable.js"/>
+      <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="sap/ui/thirdparty/sinon-4.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+    <includes>
+      <module name="sap/ui/dt/AggregationDesignTimeMetadata.js"/>
+      <module name="sap/ui/dt/AggregationOverlay.js"/>
+      <module name="sap/ui/dt/ContextMenuControl.js"/>
+      <module name="sap/ui/dt/ControlObserver.js"/>
+      <module name="sap/ui/dt/DOMUtil.js"/>
+      <module name="sap/ui/dt/DesignTime.js"/>
+      <module name="sap/ui/dt/DesignTimeMetadata.js"/>
+      <module name="sap/ui/dt/DesignTimeStatus.js"/>
+      <module name="sap/ui/dt/ElementDesignTimeMetadata.js"/>
+      <module name="sap/ui/dt/ElementOverlay.js"/>
+      <module name="sap/ui/dt/ElementUtil.js"/>
+      <module name="sap/ui/dt/ManagedObjectObserver.js"/>
+      <module name="sap/ui/dt/MetadataPropagationUtil.js"/>
+      <module name="sap/ui/dt/MutationObserver.js"/>
+      <module name="sap/ui/dt/Overlay.js"/>
+      <module name="sap/ui/dt/OverlayRegistry.js"/>
+      <module name="sap/ui/dt/OverlayUtil.js"/>
+      <module name="sap/ui/dt/Plugin.js"/>
+      <module name="sap/ui/dt/ScrollbarSynchronizer.js"/>
+      <module name="sap/ui/dt/SelectionManager.js"/>
+      <module name="sap/ui/dt/SelectionMode.js"/>
+      <module name="sap/ui/dt/TaskManager.js"/>
+      <module name="sap/ui/dt/Util.js"/>
+      <module name="sap/ui/dt/enablement/ElementEnablementTest.js"/>
+      <module name="sap/ui/dt/enablement/Test.js"/>
+      <module name="sap/ui/dt/enablement/Util.js"/>
+      <module name="sap/ui/dt/enablement/elementDesigntimeTest.js"/>
+      <module name="sap/ui/dt/enablement/libraryTest.js"/>
+      <module name="sap/ui/dt/enablement/report/LibraryReport.js"/>
+      <module name="sap/ui/dt/enablement/report/QUnitReport.js"/>
+      <module name="sap/ui/dt/enablement/report/Statistic.js"/>
+      <module name="sap/ui/dt/enablement/report/StatisticRenderer.js"/>
+      <module name="sap/ui/dt/enablement/report/Table.js"/>
+      <module name="sap/ui/dt/enablement/report/TableRenderer.js"/>
       <module name="sap/ui/dt/library.js"/>
       <module name="sap/ui/dt/manifest.json"/>
       <module name="sap/ui/dt/plugin/ContextMenu.js"/>
@@ -413,19 +557,7 @@
       <module name="sap/ui/dt/plugin/MouseSelection.js"/>
       <module name="sap/ui/dt/plugin/TabHandling.js"/>
       <module name="sap/ui/dt/plugin/ToolHooks.js"/>
-      <module name="sap/ui/dt/test/Element.js"/>
-      <module name="sap/ui/dt/test/ElementEnablementTest.js"/>
-      <module name="sap/ui/dt/test/ElementEnablementTest2.js"/>
-      <module name="sap/ui/dt/test/LibraryEnablementTest.js"/>
-      <module name="sap/ui/dt/test/LibraryEnablementTest2.js"/>
-      <module name="sap/ui/dt/test/LibraryTest.js"/>
-      <module name="sap/ui/dt/test/Test.js"/>
-      <module name="sap/ui/dt/test/report/QUnit.js"/>
-      <module name="sap/ui/dt/test/report/Statistic.js"/>
-      <module name="sap/ui/dt/test/report/StatisticRenderer.js"/>
-      <module name="sap/ui/dt/test/report/Table.js"/>
-      <module name="sap/ui/dt/test/report/TableRenderer.js"/>
-      <module name="sap/ui/dt/util/getNextZIndex.js"/>
+      <module name="sap/ui/dt/util/ZIndexManager.js"/>
     </includes>
   </module>
   <module name="sap/ui/dt/library-preload.json" size="0">
@@ -433,23 +565,26 @@
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>
       <module name="sap/base/util/ObjectPath.js"/>
+      <module name="sap/base/util/deepEqual.js"/>
       <module name="sap/base/util/includes.js"/>
       <module name="sap/base/util/isPlainObject.js"/>
       <module name="sap/base/util/merge.js"/>
       <module name="sap/m/Button.js"/>
       <module name="sap/m/FlexItemData.js"/>
       <module name="sap/m/HBox.js"/>
+      <module name="sap/m/InstanceManager.js"/>
       <module name="sap/m/Label.js"/>
       <module name="sap/m/Popover.js"/>
       <module name="sap/m/RatingIndicator.js"/>
       <module name="sap/m/SearchField.js"/>
       <module name="sap/m/Text.js"/>
-      <module name="sap/m/Title.js"/>
       <module name="sap/m/Toolbar.js"/>
       <module name="sap/m/ToolbarSpacer.js"/>
       <module name="sap/m/VBox.js"/>
+      <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/base/ManagedObjectMetadata.js"/>
       <module name="sap/ui/base/Object.js"/>
       <module name="sap/ui/core/BusyIndicator.js"/>
       <module name="sap/ui/core/Component.js"/>
@@ -459,19 +594,17 @@
       <module name="sap/ui/core/library-preload.json"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/dom/jquery/Selectors.js"/>
-      <module name="sap/ui/dom/jquery/rect.js"/>
       <module name="sap/ui/dom/jquery/zIndex.js"/>
       <module name="sap/ui/events/KeyCodes.js"/>
-      <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
       <module name="sap/ui/layout/form/SimpleForm.js"/>
-      <module name="sap/ui/model/Filter.js"/>
-      <module name="sap/ui/model/FilterOperator.js"/>
       <module name="sap/ui/model/json/JSONModel.js"/>
       <module name="sap/ui/model/resource/ResourceModel.js"/>
+      <module name="sap/ui/qunit/QUnitUtils.js"/>
+      <module name="sap/ui/qunit/utils/waitForThemeApplied.js"/>
       <module name="sap/ui/table/Column.js"/>
       <module name="sap/ui/table/TreeTable.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="sap/ui/unified/Menu.js"/>
+      <module name="sap/ui/thirdparty/sinon-4.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
     <includes>
@@ -482,6 +615,7 @@
       <module name="sap/ui/dt/DOMUtil.js"/>
       <module name="sap/ui/dt/DesignTime.js"/>
       <module name="sap/ui/dt/DesignTimeMetadata.js"/>
+      <module name="sap/ui/dt/DesignTimeStatus.js"/>
       <module name="sap/ui/dt/ElementDesignTimeMetadata.js"/>
       <module name="sap/ui/dt/ElementOverlay.js"/>
       <module name="sap/ui/dt/ElementUtil.js"/>
@@ -497,6 +631,17 @@
       <module name="sap/ui/dt/SelectionMode.js"/>
       <module name="sap/ui/dt/TaskManager.js"/>
       <module name="sap/ui/dt/Util.js"/>
+      <module name="sap/ui/dt/enablement/ElementEnablementTest.js"/>
+      <module name="sap/ui/dt/enablement/Test.js"/>
+      <module name="sap/ui/dt/enablement/Util.js"/>
+      <module name="sap/ui/dt/enablement/elementDesigntimeTest.js"/>
+      <module name="sap/ui/dt/enablement/libraryTest.js"/>
+      <module name="sap/ui/dt/enablement/report/LibraryReport.js"/>
+      <module name="sap/ui/dt/enablement/report/QUnitReport.js"/>
+      <module name="sap/ui/dt/enablement/report/Statistic.js"/>
+      <module name="sap/ui/dt/enablement/report/StatisticRenderer.js"/>
+      <module name="sap/ui/dt/enablement/report/Table.js"/>
+      <module name="sap/ui/dt/enablement/report/TableRenderer.js"/>
       <module name="sap/ui/dt/library.js"/>
       <module name="sap/ui/dt/manifest.json"/>
       <module name="sap/ui/dt/plugin/ContextMenu.js"/>
@@ -507,24 +652,13 @@
       <module name="sap/ui/dt/plugin/MouseSelection.js"/>
       <module name="sap/ui/dt/plugin/TabHandling.js"/>
       <module name="sap/ui/dt/plugin/ToolHooks.js"/>
-      <module name="sap/ui/dt/test/Element.js"/>
-      <module name="sap/ui/dt/test/ElementEnablementTest.js"/>
-      <module name="sap/ui/dt/test/ElementEnablementTest2.js"/>
-      <module name="sap/ui/dt/test/LibraryEnablementTest.js"/>
-      <module name="sap/ui/dt/test/LibraryEnablementTest2.js"/>
-      <module name="sap/ui/dt/test/LibraryTest.js"/>
-      <module name="sap/ui/dt/test/Test.js"/>
-      <module name="sap/ui/dt/test/report/QUnit.js"/>
-      <module name="sap/ui/dt/test/report/Statistic.js"/>
-      <module name="sap/ui/dt/test/report/StatisticRenderer.js"/>
-      <module name="sap/ui/dt/test/report/Table.js"/>
-      <module name="sap/ui/dt/test/report/TableRenderer.js"/>
-      <module name="sap/ui/dt/util/getNextZIndex.js"/>
+      <module name="sap/ui/dt/util/ZIndexManager.js"/>
     </includes>
   </module>
-  <module name="sap/ui/dt/library.js" size="931" compressedSize="467">
+  <module name="sap/ui/dt/library.js" size="1148" compressedSize="628">
     <description>Initialization Code and shared classes of library sap.ui.dt.</description>
     <requires>
+      <module name="sap/ui/base/ManagedObjectMetadata.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/dt/SelectionMode.js"/>
       <module name="ui5loader-autoconfig.js"/>
@@ -532,13 +666,13 @@
   </module>
   <module name="sap/ui/dt/manifest.json" size="864">
   </module>
-  <module name="sap/ui/dt/plugin/ContextMenu.js" size="22168" compressedSize="10139">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/plugin/ContextMenu.js" size="23272" compressedSize="10605">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/assert.js"/>
-      <module name="sap/base/util/merge.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/dt/ContextMenuControl.js"/>
+      <module name="sap/ui/dt/OverlayRegistry.js"/>
       <module name="sap/ui/dt/Plugin.js"/>
       <module name="sap/ui/dt/Util.js"/>
       <module name="sap/ui/events/KeyCodes.js"/>
@@ -546,18 +680,16 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/ControlDragDrop.js" size="4691" compressedSize="2345">
+  <module name="sap/ui/dt/plugin/ControlDragDrop.js" size="4458" compressedSize="2202">
     <description>Provides class sap.ui.dt.plugin.ControlDragDrop.</description>
     <requires>
-      <module name="sap/ui/dt/ElementUtil.js"/>
-      <module name="sap/ui/dt/OverlayUtil.js"/>
       <module name="sap/ui/dt/plugin/DragDrop.js"/>
       <module name="sap/ui/dt/plugin/ElementMover.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/CutPaste.js" size="6918" compressedSize="3549">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/plugin/CutPaste.js" size="6852" compressedSize="3470">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dt/OverlayRegistry.js"/>
       <module name="sap/ui/dt/OverlayUtil.js"/>
@@ -567,20 +699,20 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/DragDrop.js" size="23681" compressedSize="12078">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/plugin/DragDrop.js" size="23935" compressedSize="11975">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/Object.js"/>
       <module name="sap/ui/dt/DOMUtil.js"/>
-      <module name="sap/ui/dt/ElementUtil.js"/>
       <module name="sap/ui/dt/OverlayRegistry.js"/>
       <module name="sap/ui/dt/OverlayUtil.js"/>
       <module name="sap/ui/dt/Plugin.js"/>
+      <module name="sap/ui/qunit/QUnitUtils.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/ElementMover.js" size="10556" compressedSize="3656">
+  <module name="sap/ui/dt/plugin/ElementMover.js" size="11198" compressedSize="3765">
     <description>Provides class sap.ui.dt.plugin.ElementMover.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
@@ -591,15 +723,15 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/MouseSelection.js" size="2039" compressedSize="782">
+  <module name="sap/ui/dt/plugin/MouseSelection.js" size="1946" compressedSize="747">
     <description>Provides class sap.ui.dt.plugin.MouseSelection.</description>
     <requires>
       <module name="sap/ui/dt/Plugin.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/TabHandling.js" size="3377" compressedSize="1693">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/plugin/TabHandling.js" size="3284" compressedSize="1658">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dom/jquery/Selectors.js"/>
       <module name="sap/ui/dt/Overlay.js"/>
@@ -609,134 +741,22 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/ToolHooks.js" size="1487" compressedSize="607">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/plugin/ToolHooks.js" size="1387" compressedSize="572">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dt/Plugin.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/test/Element.js" size="3267" compressedSize="1268">
-    <description>Provides object sap.ui.dt.test.Element.</description>
-    <requires>
-      <module name="sap/ui/dt/DOMUtil.js"/>
-      <module name="sap/ui/dt/ElementUtil.js"/>
-      <module name="sap/ui/dt/OverlayRegistry.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/test/ElementEnablementTest.js" size="8253" compressedSize="4620">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/base/util/ObjectPath.js"/>
-      <module name="sap/ui/dt/DesignTime.js"/>
-      <module name="sap/ui/dt/test/Element.js"/>
-      <module name="sap/ui/dt/test/Test.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/test/ElementEnablementTest2.js" size="4440" compressedSize="1765">
-    <description>Provides class sap.ui.dt.test.ElementEnablementTest.</description>
-    <requires>
-      <module name="sap/base/util/ObjectPath.js"/>
-      <module name="sap/ui/base/ManagedObject.js"/>
-      <module name="sap/ui/dt/test/Element.js"/>
-      <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/test/LibraryEnablementTest.js" size="3705" compressedSize="1351">
-    <description>Provides class sap.ui.dt.test.LibraryEnablementTest.</description>
-    <requires>
-      <module name="sap/ui/dt/test/ElementEnablementTest.js"/>
-      <module name="sap/ui/dt/test/Test.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/test/LibraryEnablementTest2.js" size="3995" compressedSize="1814">
-    <description>Provides class sap.ui.dt.test.LibraryEnablementTest.</description>
-    <requires>
-      <module name="sap/ui/base/ManagedObject.js"/>
-      <module name="sap/ui/dt/test/ElementEnablementTest2.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/test/LibraryTest.js" size="10536" compressedSize="5616">
-    <description>Provides class sap.ui.dt.test.LibraryTest.</description>
-    <requires>
-      <module name="sap/ui/model/json/JSONModel.js"/>
-      <module name="sap/ui/model/resource/ResourceModel.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/test/Test.js" size="6237" compressedSize="2129">
-    <description>Provides class sap.ui.dt.test.Test.</description>
-    <requires>
-      <module name="sap/ui/base/ManagedObject.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/test/report/QUnit.js" size="2560" compressedSize="1025">
-    <description>global QUnit</description>
-    <requires>
-      <module name="sap/ui/base/ManagedObject.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/test/report/Statistic.js" size="3231" compressedSize="1840">
-    <description>Provides control sap.ui.dt.test.report.Statistic.</description>
-    <requires>
-      <module name="sap/m/Label.js"/>
-      <module name="sap/m/Text.js"/>
-      <module name="sap/ui/core/Control.js"/>
-      <module name="sap/ui/dt/test/report/StatisticRenderer.js"/>
-      <module name="sap/ui/layout/form/SimpleForm.js"/>
-      <module name="sap/ui/model/json/JSONModel.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/test/report/StatisticRenderer.js" size="1076" compressedSize="445">
-    <description>Provides default renderer for control sap.ui.dt.test.report.Statistic</description>
-    <requires>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/test/report/Table.js" size="5799" compressedSize="3073">
-    <description>Provides control sap.ui.dt.test.report.Table.</description>
-    <requires>
-      <module name="sap/m/Button.js"/>
-      <module name="sap/m/RatingIndicator.js"/>
-      <module name="sap/m/SearchField.js"/>
-      <module name="sap/m/Text.js"/>
-      <module name="sap/m/Title.js"/>
-      <module name="sap/m/Toolbar.js"/>
-      <module name="sap/m/ToolbarSpacer.js"/>
-      <module name="sap/ui/core/Control.js"/>
-      <module name="sap/ui/dt/test/report/TableRenderer.js"/>
-      <module name="sap/ui/model/Filter.js"/>
-      <module name="sap/ui/model/FilterOperator.js"/>
-      <module name="sap/ui/model/json/JSONModel.js"/>
-      <module name="sap/ui/table/Column.js"/>
-      <module name="sap/ui/table/TreeTable.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/test/report/TableRenderer.js" size="1041" compressedSize="442">
-    <description>Provides default renderer for control sap.ui.dt.test.report.Table</description>
-    <requires>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/dt/util/getNextZIndex.js" size="3794" compressedSize="646">
-    <description>! UI development toolkit for HTML5 (OpenUI5) (c) Copyright 2009-2018 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+  <module name="sap/ui/dt/util/ZIndexManager.js" size="6735" compressedSize="1504">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/includes.js"/>
+      <module name="sap/m/InstanceManager.js"/>
       <module name="sap/ui/core/BusyIndicator.js"/>
       <module name="sap/ui/core/Popup.js"/>
+      <module name="sap/ui/dt/Util.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>

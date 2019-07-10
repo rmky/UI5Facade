@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -52,6 +52,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Button', './SuggestionsList', '.
 			var value;
 			if (item instanceof SuggestionItem ) {
 				value = item.getSuggestionText();
+				self._suggestionItemTapped = true;
 				picker.close();
 				window.setTimeout(function() {
 					oInput.setValue(value);
@@ -122,7 +123,9 @@ sap.ui.define(['jquery.sap.global', './Bar', './Button', './SuggestionsList', '.
 					}
 				},
 				afterClose: function(oEvent) {
-					if (!oEvent.getParameter("origin")) { // fire the search event if not cancelled
+					if (!oEvent.getParameter("origin")  // fire the search event if not cancelled
+						&& !self._suggestionItemTapped) { // and if not closed from item tap
+
 						oInput.fireSearch({
 							query: oInput.getValue(),
 							refreshButtonPressed: false,
@@ -230,6 +233,7 @@ sap.ui.define(['jquery.sap.global', './Bar', './Button', './SuggestionsList', '.
 		this.open = function() {
 			if (!this.isOpen()) {
 				this.setSelected(-1); // clear selection before open
+				this._suggestionItemTapped = false;
 				getPicker().open();
 			}
 		};

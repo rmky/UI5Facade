@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -179,7 +179,6 @@ sap.ui.define([
 	/**
 	 * Adds an element to the facade of the composite. To be called by the composite application.
 	 * @param {sap.ui.core.Element} oElement element to be added to the facade
-	 * @return {void}
 	 * @public
 	 */
 	ComponentFactory.prototype.addFacadeComponent = function(oElement) {
@@ -189,7 +188,6 @@ sap.ui.define([
 	/**
 	 * Removes an element from the facade of the composite. To be called by the composite application.
 	 * @param {sap.ui.core.Element} oElement element to be removed to the facade
-	 * @return {void}
 	 * @public
 	 */
 	ComponentFactory.prototype.removeFacadeComponent = function(oElement) {

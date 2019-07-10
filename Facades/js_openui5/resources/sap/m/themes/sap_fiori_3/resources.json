@@ -16,6 +16,11 @@
 			"theme": "sap_fiori_3"
 		},
 		{
+			"name": "ActionSheet.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
 			"name": "Bar.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
@@ -66,12 +71,22 @@
 			"theme": "sap_fiori_3"
 		},
 		{
+			"name": "DraftIndicator.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
 			"name": "FeedInput.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
 		{
 			"name": "FlexBox.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "GenericTag.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
@@ -91,22 +106,7 @@
 			"theme": "sap_fiori_3"
 		},
 		{
-			"name": "Image.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
-			"name": "Input.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
 			"name": "InputBase.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
-			"name": "Label.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
@@ -127,6 +127,16 @@
 		},
 		{
 			"name": "ListItemBase.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "MenuButton.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "MessageBox.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
@@ -216,6 +226,11 @@
 			"theme": "sap_fiori_3"
 		},
 		{
+			"name": "Popover.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
 			"name": "ProgressIndicator.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
@@ -271,12 +286,22 @@
 			"theme": "sap_fiori_3"
 		},
 		{
+			"name": "SelectDialog.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
 			"name": "SelectList.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
 		{
 			"name": "Shell.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "SinglePlanningCalendarGrid.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
@@ -311,6 +336,11 @@
 			"theme": "sap_fiori_3"
 		},
 		{
+			"name": "SuggestionsPopover.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
 			"name": "Switch.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
@@ -322,6 +352,11 @@
 		},
 		{
 			"name": "Table.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "TextArea.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
@@ -342,6 +377,11 @@
 		},
 		{
 			"name": "TimePickerSliders.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "ToggleButton.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},

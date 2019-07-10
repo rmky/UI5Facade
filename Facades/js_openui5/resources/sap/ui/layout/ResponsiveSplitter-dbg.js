@@ -1,6 +1,6 @@
 /*!
-* UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+* OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
@@ -66,7 +66,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -367,7 +367,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * The WidthIntervals is a sorted array in ascdending order, containing all breakpoints for the splitter
+	 * The WidthIntervals is a sorted array in ascending order, containing all breakpoints for the splitter
 	 * The interval is defined as 2 sequent array elements.
 	 * This array includes Number.MIN_VALUE and Number.MAX_VALUE as -Infinity and +Infinity,
 	 * and covers the whole numeric axis

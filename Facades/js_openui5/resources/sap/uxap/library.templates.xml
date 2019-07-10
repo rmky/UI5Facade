@@ -158,6 +158,7 @@
 	fieldGroupIds: [], // string[], since 1.31
 	name: "", // string
 	enabled: true, // boolean
+	editable: true, // boolean, since 1.66.0
 	width: "auto", // sap.ui.core.CSSSize
 	maxWidth: "100%", // sap.ui.core.CSSSize
 	selectedKey: "", // string, since 1.11
@@ -197,6 +198,7 @@
 	fieldGroupIds=""
 	name=""
 	enabled="true"
+	editable="true"
 	width="auto"
 	maxWidth="100%"
 	selectedKey=""
@@ -248,7 +250,7 @@
 <Template name="sap.uxap.ObjectPageAccessibleLandmarkInfo" alias="ObjectPageAccessibleLandmarkInfo,Info">
 	<jsTemplate><![CDATA[new sap.uxap.ObjectPageAccessibleLandmarkInfo({
 	id: "${id}", // sap.ui.core.ID
-	rootRole: sap.ui.core.AccessibleLandmarkRole.Region, // sap.ui.core.AccessibleLandmarkRole
+	rootRole: sap.ui.core.AccessibleLandmarkRole.Main, // sap.ui.core.AccessibleLandmarkRole
 	rootLabel: undefined, // string
 	contentRole: sap.ui.core.AccessibleLandmarkRole.None, // sap.ui.core.AccessibleLandmarkRole
 	contentLabel: undefined, // string
@@ -256,7 +258,7 @@
 	navigationLabel: undefined, // string
 	headerRole: sap.ui.core.AccessibleLandmarkRole.Banner, // sap.ui.core.AccessibleLandmarkRole
 	headerLabel: undefined, // string
-	footerRole: sap.ui.core.AccessibleLandmarkRole.None, // sap.ui.core.AccessibleLandmarkRole
+	footerRole: sap.ui.core.AccessibleLandmarkRole.Region, // sap.ui.core.AccessibleLandmarkRole
 	footerLabel: undefined, // string
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
@@ -266,7 +268,7 @@
 ]]></jsTemplate>
 	<xmlTemplate><![CDATA[<ObjectPageAccessibleLandmarkInfo xmlns="sap.uxap"
 	id="${id}"
-	rootRole="Region"
+	rootRole="Main"
 	rootLabel=""
 	contentRole="None"
 	contentLabel=""
@@ -274,7 +276,7 @@
 	navigationLabel=""
 	headerRole="Banner"
 	headerLabel=""
-	footerRole="None"
+	footerRole="Region"
 	footerLabel="">
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
@@ -345,6 +347,7 @@
 	content: [], // sap.ui.core.Control, since 1.50
 	snappedContent: [], // sap.ui.core.Control
 	expandedContent: [], // sap.ui.core.Control
+	snappedTitleOnMobile: undefined, // sap.m.Title, since 1.63
 	breadcrumbs: undefined, // sap.m.IBreadcrumbs, since 1.52
 	validateFieldGroup: [function (oEvent) {
 		var ${control} = oEvent.getSource();
@@ -378,6 +381,7 @@
 		<content></content> <!-- sap.ui.core.Control, since 1.50 -->
 		<snappedContent></snappedContent> <!-- sap.ui.core.Control -->
 		<expandedContent></expandedContent> <!-- sap.ui.core.Control -->
+		<snappedTitleOnMobile></snappedTitleOnMobile> <!-- sap.m.Title, since 1.63 -->
 		<breadcrumbs></breadcrumbs> <!-- sap.m.IBreadcrumbs, since 1.52 -->
 </ObjectPageDynamicHeaderTitle>
 ]]></xmlTemplate>

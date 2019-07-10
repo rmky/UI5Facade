@@ -171,6 +171,11 @@
 			"theme": "base"
 		},
 		{
+			"name": "GenericTag.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "GenericTile.less",
 			"designtime": true,
 			"theme": "base"
@@ -531,6 +536,16 @@
 			"theme": "base"
 		},
 		{
+			"name": "SimpleFixFlex.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "SinglePlanningCalendar.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "SinglePlanningCalendarGrid.less",
 			"designtime": true,
 			"theme": "base"
@@ -587,6 +602,11 @@
 		},
 		{
 			"name": "SuggestionItem.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "SuggestionsPopover.less",
 			"designtime": true,
 			"theme": "base"
 		},
@@ -702,6 +722,11 @@
 		},
 		{
 			"name": "UploadCollection.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "UploadSet.less",
 			"designtime": true,
 			"theme": "base"
 		},

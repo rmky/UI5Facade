@@ -1,10 +1,10 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/thirdparty/jquery", '../base/Object', "sap/base/util/deepEqual"], function(jQuery, BaseObject, deepEqual) {
+sap.ui.define(["sap/base/util/each", '../base/Object', "sap/base/util/deepEqual"], function(each, BaseObject, deepEqual) {
 	"use strict";
 
 	/**
@@ -52,7 +52,7 @@ sap.ui.define(["sap/ui/thirdparty/jquery", '../base/Object', "sap/base/util/deep
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @public
 	 * @alias sap.ui.model.DataState
@@ -366,7 +366,7 @@ sap.ui.define(["sap/ui/thirdparty/jquery", '../base/Object', "sap/base/util/deep
 	 */
 	DataState.prototype.getChanges = function() {
 		var mChanges = {};
-		jQuery.each(this.mChangedProperties,function(sProperty, vValue) {
+		each(this.mChangedProperties,function(sProperty, vValue) {
 			if (!deepEqual(this.mChangedProperties[sProperty],this.mProperties[sProperty])) {
 				mChanges[sProperty] = {};
 				mChanges[sProperty].value = this.mChangedProperties[sProperty];

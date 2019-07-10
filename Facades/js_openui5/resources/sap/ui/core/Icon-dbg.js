@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,8 @@ sap.ui.define([
 	'./library',
 	"./IconRenderer",
 	"sap/ui/events/KeyCodes",
-	"sap/ui/thirdparty/jquery"
+	"sap/ui/thirdparty/jquery",
+	"sap/base/Log"
 ],
 	function(
 		assert,
@@ -25,12 +26,35 @@ sap.ui.define([
 		library,
 		IconRenderer,
 		KeyCodes,
-		jQuery
+		jQuery,
+		Log
 	) {
 	"use strict";
 
-	// shortcut
+	// shortcuts
 	var IconColor = library.IconColor;
+	var CSSColor = library.CSSColor;
+
+	/**
+	 * Validates whether an input color is a valid color of type
+	 * <code>sap.ui.core.CSSColor</code> or <code>sap.ui.core.IconColor</code>.
+	 * undefined, null and an empty string are also valid.
+	 * In case the color is not valid, an error gets logged to the console.
+	 *
+	 * @param {sap.ui.core.CSSColor|sap.ui.core.IconColor|null|undefined|string} vColor input color.
+	 *            In case a string value other than <code>sap.ui.core.CSSColor</code>
+	 *            or <code>sap.ui.core.IconColor</code> is passed, only an empty string is a valid value.
+	 * @returns {boolean} True in case the color is valid and false in case it is not valid.
+	 * @private
+	 */
+	var isColorValid = function (vColor) {
+		if (vColor != null && vColor !== "" && !CSSColor.isValid(vColor) && !(vColor in IconColor)) {
+			Log.error("\"" + vColor + "\" is not of type sap.ui.core.CSSColor nor of type sap.ui.core.IconColor.");
+			return false;
+		} else {
+			return true;
+		}
+	};
 
 	/**
 	 * Constructor for a new Icon.
@@ -46,7 +70,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @public
 	 * @since 1.11.1
@@ -413,8 +437,10 @@ sap.ui.define([
 	};
 
 	Icon.prototype.setColor = function(sColor) {
-		this.setProperty("color", sColor, true);
-		this._addColorClass(sColor, "color");
+		if (isColorValid(sColor)) {
+			this.setProperty("color", sColor, true);
+			this._addColorClass(sColor, "color");
+		}
 
 		return this;
 	};
@@ -446,26 +472,44 @@ sap.ui.define([
 	};
 
 	Icon.prototype.setActiveColor = function(sColor) {
-		return this.setProperty("activeColor", sColor, true);
+		if (isColorValid(sColor)) {
+			return this.setProperty("activeColor", sColor, true);
+		}
+
+		return this;
 	};
 
 	Icon.prototype.setHoverColor = function(sColor) {
-		return this.setProperty("hoverColor", sColor, true);
+		if (isColorValid(sColor)) {
+			return this.setProperty("hoverColor", sColor, true);
+		}
+
+		return this;
 	};
 
 	Icon.prototype.setBackgroundColor = function(sColor) {
-		this.setProperty("backgroundColor", sColor, true);
-		this._addColorClass(sColor, "background-color");
+		if (isColorValid(sColor)) {
+			this.setProperty("backgroundColor", sColor, true);
+			this._addColorClass(sColor, "background-color");
+		}
 
 		return this;
 	};
 
 	Icon.prototype.setActiveBackgroundColor = function(sColor) {
-		return this.setProperty("activeBackgroundColor", sColor, true);
+		if (isColorValid(sColor)) {
+			return this.setProperty("activeBackgroundColor", sColor, true);
+		}
+
+		return this;
 	};
 
 	Icon.prototype.setHoverBackgroundColor = function(sColor) {
-		return this.setProperty("hoverBackgroundColor", sColor, true);
+		if (isColorValid(sColor)) {
+			return this.setProperty("hoverBackgroundColor", sColor, true);
+		}
+
+		return this;
 	};
 
 	Icon.prototype.attachPress = function () {
@@ -522,7 +566,7 @@ sap.ui.define([
 	 * is refered in the aria-labelledby attributes.
 	 *
 	 * Screen reader reads out the value which is set to the 'title' attribute. Thus the
-	 * aria-label or aria-labelledBy is used only when the label string is different than
+	 * aria-label or aria-labelledby is used only when the label string is different than
 	 * the string used as 'title' attribute. When the label string is the same as the one
 	 * which is set to the 'title' attribute of the DOM, this method returns undefined in
 	 * order not to set the aria-label or aria-labelledby attribute.

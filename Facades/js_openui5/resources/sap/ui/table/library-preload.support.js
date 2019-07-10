@@ -1,6 +1,7 @@
+//@ui5-bundle sap/ui/table/library-preload.support.js
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -13,8 +14,9 @@ sap.ui.predefine('sap/ui/table/library.support',[
 	"sap/ui/Device",
 	"sap/ui/table/library",
 	"sap/base/Log",
-	"sap/ui/thirdparty/jquery"
-], function(SupportLib, Ruleset, SupportHelper, Device, TableLib, Log, jQuery) {
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/core/library"
+], function(SupportLib, Ruleset, SupportHelper, Device, TableLib, Log, jQuery, coreLibrary) {
 	"use strict";
 
 	// shortcuts
@@ -22,6 +24,7 @@ sap.ui.predefine('sap/ui/table/library.support',[
 		Severity = SupportLib.Severity,	// Hint, Warning, Error
 		//Audiences = SupportLib.Audiences; // Control, Internal, Application
 		VisibleRowCountMode = TableLib.VisibleRowCountMode;
+	var MessageType = coreLibrary.MessageType;
 
 	var oLib = {
 		name: "sap.ui.table",
@@ -137,6 +140,41 @@ sap.ui.predefine('sap/ui/table/library.support',[
 				if (!aTables[i].getTitle() && aTables[i].getAriaLabelledBy().length == 0) {
 					SupportHelper.reportIssue(oIssueManager, "Table '" + aTables[i].getId() + "' does not have an accessible label.", Severity.High, aTables[i].getId());
 				}
+			}
+		}
+	});
+
+	/*
+	 * Validates whether the highlightText property of the RowSettings is correctly set.
+	 */
+	createRule({
+		id : "AccessibleRowHighlight",
+		categories: [Categories.Accessibility],
+		minversion: "1.62",
+		title : "Accessible Row Highlight",
+		description : "Checks whether the row highlights of the 'sap.ui.table.Table' controls are accessible.",
+		resolution : "Use the 'highlightText' property of the 'sap.ui.table.RowSettings' to define the semantics of the row 'highlight'.",
+		resolutionurls: [
+			SupportHelper.createDocuRef("API Reference: sap.ui.table.RowSettings#getHighlight", "#/api/sap.ui.table.RowSettings/methods/getHighlight"),
+			SupportHelper.createDocuRef("API Reference: sap.ui.table.RowSettings#getHighlightText", "#/api/sap.ui.table.RowSettings/methods/getHighlightText")
+		],
+		check : function(oIssueManager, oCoreFacade, oScope) {
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
+
+			function checkRowHighlight(oRow) {
+				var oRowSettings = oRow.getAggregation("_settings");
+				var sHighlight = oRowSettings ? oRowSettings.getHighlight() : null;
+				var sHighlightText = oRowSettings ? oRowSettings.getHighlightText() : null;
+				var sRowId = oRow.getId();
+
+				if (oRowSettings && !(sHighlight in MessageType) && sHighlightText === "") {
+					SupportHelper.reportIssue(oIssueManager,
+						"Row '" + sRowId + "' of table '" + oRow.getParent().getId() + "' does not have a highlight text.", Severity.High, sRowId);
+				}
+			}
+
+			for (var i = 0; i < aTables.length; i++) {
+				aTables[i].getRows().forEach(checkRowHighlight);
 			}
 		}
 	});
@@ -265,37 +303,44 @@ sap.ui.predefine('sap/ui/table/library.support',[
 		],
 		check: function(oIssueManager, oCoreFacade, oScope) {
 			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
-			var aVisibleRows;
-			var fActualRowHeight;
-			var iExpectedRowHeight;
-			var oRowElement;
 			var bIsZoomedInChrome = Device.browser.chrome && window.devicePixelRatio != 1;
-			var bUnexpectedRowHeightDetected = false;
 
 			for (var i = 0; i < aTables.length; i++) {
-				aVisibleRows = aTables[i].getRows();
-				iExpectedRowHeight = aTables[i]._getDefaultRowHeight();
+				var aVisibleRows = aTables[i].getRows();
+				var iExpectedRowHeight = aTables[i]._getDefaultRowHeight();
+				var bUnexpectedRowHeightDetected = false;
 
 				for (var j = 0; j < aVisibleRows.length; j++) {
-					oRowElement = aVisibleRows[j].getDomRef();
+					var oRowElement = aVisibleRows[j].getDomRef();
+					var oRowElementFixedPart = aVisibleRows[j].getDomRef("fixed");
 
 					if (oRowElement) {
-						fActualRowHeight = oRowElement.getBoundingClientRect().height;
+						var nActualRowHeight = oRowElement.getBoundingClientRect().height;
+						var nActualRowHeightFixedPart = oRowElementFixedPart ? oRowElementFixedPart.getBoundingClientRect().height : null;
+						var nHeightToReport = nActualRowHeight;
 
 						if (bIsZoomedInChrome) {
-							var nHeightDeviation = Math.abs(iExpectedRowHeight - fActualRowHeight);
+							var nHeightDeviation = Math.abs(iExpectedRowHeight - nActualRowHeight);
+							var nHeightDeviationFixedPart = Math.abs(nActualRowHeightFixedPart - nActualRowHeight);
+
+							// If zoomed in Chrome, the actual height may deviate from the expected height by less than 1 pixel. Any higher
+							// deviation shall be considered as defective.
 							if (nHeightDeviation > 1) {
-								// If zoomed in Chrome, the actual height may deviate from the expected height by less than 1 pixel. Any higher
-								// deviation shall be considered as defective.
 								bUnexpectedRowHeightDetected = true;
+							} else if (nHeightDeviationFixedPart > 1) {
+								bUnexpectedRowHeightDetected = true;
+								nHeightToReport = nActualRowHeightFixedPart;
 							}
-						} else if (fActualRowHeight !== iExpectedRowHeight) {
+						} else if (nActualRowHeight !== iExpectedRowHeight) {
 							bUnexpectedRowHeightDetected = true;
+						} else if (nActualRowHeightFixedPart !== iExpectedRowHeight) {
+							bUnexpectedRowHeightDetected = true;
+							nHeightToReport = nActualRowHeightFixedPart;
 						}
 
 						if (bUnexpectedRowHeightDetected) {
 							SupportHelper.reportIssue(oIssueManager,
-								"The row height was expected to be " + iExpectedRowHeight + "px, but was " + fActualRowHeight + "px instead."
+								"The row height was expected to be " + iExpectedRowHeight + "px, but was " + nHeightToReport + "px instead."
 								+ " This causes issues with vertical scrolling.",
 								Severity.High, aVisibleRows[j].getId());
 							break;
@@ -350,12 +395,64 @@ sap.ui.predefine('sap/ui/table/library.support',[
 		}
 	});
 
+	/*
+	 * Checks the number and type of plugins which are applied to the table.
+	 */
+	createRule({
+		id : "Plugins",
+		categories: [Categories.Usage],
+		title : "Plugins validation",
+		description : "Checks the number and type of plugins which are applied to the table. Only one MultiSelectionPlugin can be applied. No other plugins are allowed.",
+		resolution : "Check if multiple MultiSelectionPlugins are applied, or a plugin of another type is applied to the table.",
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
+
+			for (var i = 0; i < aTables.length; i++) {
+				var oTable = aTables[i];
+				var aPlugins = oTable.getPlugins();
+				if (aPlugins.length > 1) {
+					SupportHelper.reportIssue(oIssueManager,
+						"Only one plugin can be applied to the table",
+						Severity.High, oTable.getId());
+				} else if (aPlugins.length == 1) {
+					var oPlugin = aPlugins[0];
+					if (!oPlugin.isA("sap.ui.table.plugins.MultiSelectionPlugin")) {
+						SupportHelper.reportIssue(oIssueManager,
+							"Only one MultiSelectionPlugin can be applied to the table",
+							Severity.High, oTable.getId());
+					}
+				}
+			}
+		}
+	});
+
+	createRule({
+		id: "BindingLengthParameter",
+		categories: [Categories.Usage],
+		title: "Binding length parameter",
+		description: "The binding length parameter can only be applied to the table when the visibleRowCountMode is Fixed.",
+		resolution: "Set the visibleRowCountMode of the table to Fixed (oTable.setVisibleRowCountMode(\"Fixed\"))",
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
+
+			for (var i = 0; i < aTables.length; i++) {
+				var oTable = aTables[i];
+				var oBindingInfo = oTable.getBindingInfo("rows");
+				if (oBindingInfo && oBindingInfo.length && oTable.getVisibleRowCountMode() !== VisibleRowCountMode.Fixed) {
+					SupportHelper.reportIssue(oIssueManager,
+						"The binding length parameter only works when visibleRowCountMode is Fixed.",
+						Severity.Medium, oTable.getId());
+				}
+			}
+		}
+	});
+
 	return {lib: oLib, ruleset: oRuleset};
 
 }, true);
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**

@@ -1,18 +1,18 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	'sap/ui/dt/Overlay',
-	'sap/ui/dt/ControlObserver',
-	'sap/ui/dt/ManagedObjectObserver',
-	'sap/ui/dt/ElementDesignTimeMetadata',
-	'sap/ui/dt/ElementUtil',
-	'sap/ui/dt/DOMUtil',
-	'sap/ui/dt/Util',
-	'sap/ui/core/Control',
+	"sap/ui/dt/Overlay",
+	"sap/ui/dt/ControlObserver",
+	"sap/ui/dt/ManagedObjectObserver",
+	"sap/ui/dt/ElementDesignTimeMetadata",
+	"sap/ui/dt/ElementUtil",
+	"sap/ui/dt/DOMUtil",
+	"sap/ui/dt/Util",
+	"sap/ui/core/Control",
 	"sap/ui/thirdparty/jquery",
 	"sap/base/Log",
 	"sap/base/util/isPlainObject",
@@ -48,7 +48,7 @@ function (
 	 * @extends sap.ui.dt.Overlay
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -177,6 +177,19 @@ function (
 			? Promise.resolve()
 			: this._loadDesignTimeMetadata()
 		).then(function () {
+			this.attachEvent("elementModified", function (oEvent) {
+				var oParams = oEvent.getParameters();
+				var sName = oParams.name;
+
+				if (oParams.type === "propertyChanged") {
+					if (sName === "visible") {
+						this.setRelevantOverlays([]);
+					}
+				} else if (sName) {
+					this.setRelevantOverlays([]);
+				}
+			}, this);
+
 			this._initMutationObserver();
 			this._initControlObserver();
 		}.bind(this));
@@ -228,11 +241,13 @@ function (
 	ElementOverlay.prototype._initControlObserver = function() {
 		if (this.getElement() instanceof Control) {
 			this._oObserver = new ControlObserver({
-				target: this.getElement()
+				target: this.getElement(),
+				aggregations: this.getAggregationNames()
 			});
 		} else {
 			this._oObserver = new ManagedObjectObserver({
-				target: this.getElement()
+				target: this.getElement(),
+				aggregations: this.getAggregationNames()
 			});
 		}
 		this._oObserver.attachModified(this._onElementModified, this);
@@ -254,7 +269,7 @@ function (
 			Overlay.prototype._getAttributes.apply(this, arguments),
 			{
 				"data-sap-ui-dt-for": this.getElement().getId(),
-				"draggable": this.getMovable()
+				draggable: this.getMovable()
 			}
 		);
 	};
@@ -262,23 +277,6 @@ function (
 	ElementOverlay.prototype.render = function () {
 		this.addStyleClass('sapUiDtElementOverlay');
 		return Overlay.prototype.render.apply(this, arguments);
-	};
-
-	/**
-	 * @override
-	 */
-	ElementOverlay.prototype.onAfterRendering = function() {
-		var bOldDomInvisible = !this._oDomRef;
-		Overlay.prototype.onAfterRendering.apply(this, arguments);
-
-		// fire ElementModified, when the overlay had no domRef before, but has one now
-		if (bOldDomInvisible && this._oDomRef) {
-			var oParams = {
-				id: this.getId(),
-				type: "overlayRendered"
-			};
-			this.fireElementModified(oParams);
-		}
 	};
 
 	/**
@@ -412,9 +410,9 @@ function (
 							is shorter and is more to the left
 						 */
 						return 1;
-					} else {
-						return -1; // do not switch order
 					}
+
+					return -1; // do not switch order
 				} else if (oPosition1.top === oPosition2.top) {
 					if (oPosition1.left === oPosition2.left) {
 						// Give priority to smaller block by height or width
@@ -428,30 +426,27 @@ function (
 							|| oGeometry1.size.width > oGeometry2.size.width
 						) {
 							return 1;
-						} else {
-							return 0;
 						}
+						return 0;
 					} else if (oPosition1.left < oPosition2.left) {
 						return -1; // order is correct
-					} else {
-						return 1; // switch order
 					}
+					return 1; // switch order
 				} else if (iBottom1 <= iBottom2 && oPosition2.left > oPosition1.left) { // if (oPosition1.top > oPosition2.top)
 					/* see picture above, but switch 1 and 2 - order is correct */
 					return -1;
-				} else {
-					/*  Example:
-						            +--------------+
-						+------+    |       2      |
-						|  1   |    +--------------+
-						|      |
-						+------+
-
-						Since 1st overlay's both top and bottom coordinates are
-						bellow in dom, then top and bottom of 2nd, they should be switched
-					 */
-					return 1;
 				}
+				/*  Example:
+								+--------------+
+					+------+    |       2      |
+					|  1   |    +--------------+
+					|      |
+					+------+
+
+					Since 1st overlay's both top and bottom coordinates are
+					bellow in dom, then top and bottom of 2nd, they should be switched
+					*/
+				return 1;
 			}
 			return 0;
 		};
@@ -472,7 +467,6 @@ function (
 				DOMUtil.appendChild(oContainer, oChild);
 			});
 		}
-
 	};
 
 	/**
@@ -617,7 +611,6 @@ function (
 	ElementOverlay.prototype.setSelectable = function(bSelectable) {
 		bSelectable = !!bSelectable;
 		if (bSelectable !== this.isSelectable()) {
-
 			if (!bSelectable) {
 				this.setSelected(false);
 			}
@@ -742,24 +735,8 @@ function (
 	 * @param {sap.ui.baseEvent} oEvent event object
 	 * @private
 	 */
-	ElementOverlay.prototype._onElementModified = function(oEvent) {
-		var oParams = oEvent.getParameters();
-		var sName = oParams.name;
-
-		if (oParams.type === "propertyChanged") {
-			if (sName === "visible") {
-				this.setRelevantOverlays([]);
-			}
-			this.fireElementModified(oParams);
-		} else if (sName) {
-			var oAggregationOverlay = this.getAggregationOverlay(sName);
-			if (oAggregationOverlay) {
-				this.setRelevantOverlays([]);
-				this.fireElementModified(oParams);
-			}
-		} else if (oEvent.getParameters().type === "setParent") {
-			this.fireElementModified(oParams);
-		}
+	ElementOverlay.prototype._onElementModified = function (oEvent) {
+		this.fireElementModified(oEvent.getParameters());
 	};
 
 	/**
@@ -882,10 +859,8 @@ function (
 		if (oElement) {
 			var oGeometry = this.getGeometry();
 			return oGeometry && oGeometry.visible;
-		} else {
-			return false;
 		}
-
+		return false;
 	};
 
 	/**
@@ -910,15 +885,17 @@ function (
 	ElementOverlay.prototype.isElementVisible = function() {
 		var oElement = this.getElement();
 		var bVisible = false;
+		var oDesignTimeMetadata = this.getDesignTimeMetadata();
+		var oDTData = oDesignTimeMetadata.getData();
 
-		if (this.getDesignTimeMetadata().isIgnored(oElement)) {
+		if (oDesignTimeMetadata.isIgnored(oElement)) {
 			bVisible = false;
+		} else if (typeof oDTData.isVisible === "function") {
+			bVisible = oDTData.isVisible(oElement);
 		} else {
 			var oGeometry = this.getGeometry(true);
 			if (oGeometry) {
 				bVisible = oGeometry.visible;
-			} else if (jQuery.isFunction(this.getDesignTimeMetadata().getData().isVisible)) {
-				bVisible = this.getDesignTimeMetadata().getData().isVisible(oElement);
 			} else if (oElement instanceof Control) {
 				bVisible = !!oElement.getDomRef() && oElement.getVisible();
 			}
@@ -951,6 +928,24 @@ function (
 		// setting the default value to direct parent
 		var oParentOverlay = this.getParentElementOverlay();
 		return oParentOverlay ? oParentOverlay.getElement() : undefined;
+	};
+
+	ElementOverlay.prototype._hasSameSize = function (mScrollContainerGeometry, sType) {
+		var aScrollContainers = this.getScrollContainers();
+		var iSize;
+
+		if (aScrollContainers.length) {
+			iSize = Util.max(
+				aScrollContainers.map(function (mScrollContainer, iIndex) {
+					var mGeometry = DOMUtil.getGeometry(this.getScrollContainerById(iIndex).get(0));
+					return mGeometry.size[sType];
+				}, this)
+			);
+		} else {
+			iSize = this.getGeometry().size[sType];
+		}
+
+		return mScrollContainerGeometry.size[sType] === iSize;
 	};
 
 	return ElementOverlay;

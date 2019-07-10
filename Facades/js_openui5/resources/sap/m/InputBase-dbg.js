@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -62,7 +62,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -83,6 +83,9 @@ function(
 
 			/**
 			 * Defines the width of the control.
+			 *
+			 * <b>Note:</b> If the provided width is too small, the control gets stretched to
+			 * its min width, which is needed in order for the control to be usable and well aligned.
 			 */
 			width: { type: "sap.ui.core.CSSSize", group: "Dimension", defaultValue: null },
 
@@ -218,6 +221,40 @@ function(
 	/* Private methods                                             */
 	/* ----------------------------------------------------------- */
 
+
+	/**
+	 * Handles the input event of the control
+	 * @param {jQuery.Event} oEvent The event object.
+	 * @protected
+	 */
+
+	InputBase.prototype.handleInput = function(oEvent) {
+		// ie 10+ fires the input event when an input field with a native placeholder is focused
+		if (this._bIgnoreNextInput) {
+			this._bIgnoreNextInput = false;
+			oEvent.setMarked("invalid");
+			return;
+		}
+
+		this._bIgnoreNextInput = false;
+
+		// ie11 fires input event from read-only fields
+		if (!this.getEditable()) {
+			oEvent.setMarked("invalid");
+			return;
+		}
+
+		// ie11 fires input event whenever placeholder attribute is changed
+		if (document.activeElement !== oEvent.target &&
+			Device.browser.msie && this.getValue() === this._lastValue) {
+			oEvent.setMarked("invalid");
+			return;
+		}
+
+		// dom value updated other than value property
+		this._bCheckDomValue = true;
+	};
+
 	/**
 	 * To allow setting of default placeholder e.g. in DatePicker
 	 *
@@ -225,7 +262,7 @@ function(
 	 * What is the difference between _getPlaceholder and getPlaceholder
 	 */
 	InputBase.prototype._getPlaceholder = function() {
-		return this.getPlaceholder();
+		return this.getPlaceholder() || "";
 	};
 
 	/**
@@ -442,7 +479,7 @@ function(
 	 * @param {object} [mParameters] Additional event parameters to be passed in to the change event handler if the
 	 * value has changed
 	 * @param {string} sNewValue Passed value on change
-	 * @returns {true|undefined} true when change event is fired
+	 * @returns {boolean|undefined} true when change event is fired
 	 */
 	InputBase.prototype.onChange = function(oEvent, mParameters, sNewValue) {
 
@@ -584,24 +621,7 @@ function(
 	 * @param {jQuery.Event} oEvent The event object.
 	 */
 	InputBase.prototype.oninput = function(oEvent) {
-
-		// ie 10+ fires the input event when an input field with a native placeholder is focused
-		if (this._bIgnoreNextInput) {
-			this._bIgnoreNextInput = false;
-			oEvent.setMarked("invalid");
-			return;
-		}
-
-		this._bIgnoreNextInput = false;
-
-		// ie11 fires input event from read-only fields
-		if (!this.getEditable()) {
-			oEvent.setMarked("invalid");
-			return;
-		}
-
-		// dom value updated other than value property
-		this._bCheckDomValue = true;
+		this.handleInput(oEvent);
 	};
 
 	/**
@@ -789,7 +809,7 @@ function(
 	/**
 	 * Gets the DOM element reference where the message popup is attached.
 	 *
-	 * @returns {object} The DOM element reference where the message popup is attached
+	 * @returns {Element} The DOM element reference where the message popup is attached
 	 * @since 1.26
 	 * @protected
 	 */
@@ -800,7 +820,7 @@ function(
 	/**
 	 * Gets the DOM reference the popup should be docked to.
 	 *
-	 * @return {object} The DOM reference
+	 * @return {Element} The DOM reference
 	 */
 	InputBase.prototype.getPopupAnchorDomRef = function() {
 		return this.getDomRef();
@@ -851,19 +871,31 @@ function(
 	 */
 	InputBase.prototype.openValueStateMessage = function() {
 		if (this._oValueStateMessage && this.shouldValueStateMessageBeOpened()) {
-			this._oValueStateMessage.open();
+
+			// if the input receive the focus and the parent div scrolls,
+			// in IE we should wait until the scroll ends
+			if (Device.browser.msie) {
+				setTimeout(function () {
+					this._oValueStateMessage.open();
+				}.bind(this), 0);
+			} else {
+				this._oValueStateMessage.open();
+			}
 		}
 	};
 
 	InputBase.prototype.updateValueStateClasses = function(sValueState, sOldValueState) {
-		var $ContentWrapper = this.$("content"),
+		var $DomRef = this.$(),
+			$ContentWrapper = this.$("content"),
 			mValueState = ValueState;
 
 		if (sOldValueState !== mValueState.None) {
+			$DomRef.removeClass("sapMInputBaseState");
 			$ContentWrapper.removeClass("sapMInputBaseContentWrapperState sapMInputBaseContentWrapper" + sOldValueState);
 		}
 
 		if (sValueState !== mValueState.None) {
+			$DomRef.addClass("sapMInputBaseState");
 			$ContentWrapper.addClass("sapMInputBaseContentWrapperState sapMInputBaseContentWrapper" + sValueState);
 		}
 	};
@@ -873,6 +905,25 @@ function(
 				this.getEditable() &&
 				this.getEnabled() &&
 				this.getShowValueStateMessage();
+	};
+
+	/**
+	 * Calculates the space taken by the icons.
+	 *
+	 * @private
+	 * @return {int | null} CSSSize in px
+	 */
+	InputBase.prototype._calculateIconsSpace = function () {
+		var oEndIcon = this.getAggregation("_endIcon") || [],
+			oBeginIcon = this.getAggregation("_beginIcon") || [],
+			aIcons = oEndIcon.concat(oBeginIcon),
+			iIconWidth;
+
+		return aIcons.reduce(function(iAcc, oIcon){
+			iIconWidth = oIcon && oIcon.getDomRef() ? oIcon.getDomRef().offsetWidth : 0;
+
+			return iAcc + iIconWidth;
+		}, 0);
 	};
 
 	/* ----------------------------------------------------------- */
@@ -922,7 +973,6 @@ function(
 				this.openValueStateMessage();
 			}
 		}
-
 		return this;
 	};
 
@@ -1023,7 +1073,7 @@ function(
 
 				oDomRef.appendChild(oDescribedByDomRef);
 			} else if (oDescribedByDomRef && !sAnnouncement) {
-				oDomRef.removeChild(oDescribedByDomRef);
+				oDescribedByDomRef.parentNode.removeChild(oDescribedByDomRef);
 				var sDescribedByDomRefId = oDescribedByDomRef.id;
 
 				if (sAriaDescribedby && sDescribedByDomRefId) {

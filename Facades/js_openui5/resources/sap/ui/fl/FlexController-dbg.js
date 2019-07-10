@@ -1,11 +1,12 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/fl/registry/ChangeRegistry",
+	"sap/ui/fl/registry/ChangeHandlerRegistration",
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/FlexCustomData",
 	"sap/ui/fl/Change",
@@ -19,6 +20,7 @@ sap.ui.define([
 	"sap/ui/core/Element"
 ], function(
 	ChangeRegistry,
+	ChangeHandlerRegistration,
 	Utils,
 	FlexCustomData,
 	Change,
@@ -43,7 +45,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.FlexController
 	 * @experimental Since 1.27.0
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 */
 	var FlexController = function (sComponentName, sAppVersion) {
 		this._oChangePersistence = undefined;
@@ -55,7 +57,6 @@ sap.ui.define([
 	};
 
 	FlexController.PENDING = "sap.ui.fl:PendingChange";
-	FlexController.PROCESSING = "sap.ui.fl:ProcessingChange";
 	FlexController.variantTechnicalParameterName = "sap-ui-fl-control-variant-id";
 
 	/**
@@ -100,10 +101,31 @@ sap.ui.define([
 		if (this._oChangePersistence &&
 				this._oChangePersistence._oVariantController._mVariantManagement &&
 				Object.keys(this._oChangePersistence._oVariantController._mVariantManagement).length > 0) {
-			oData = this._oChangePersistence._oVariantController._fillVariantModel();
+			oData = this._oChangePersistence._oVariantController.fillVariantModel();
 		}
 
 		return oData;
+	};
+
+	/**
+	 * Sets the variant switch promise
+	 *
+	 * @param {promise} oPromise variant switch promise
+	 */
+	FlexController.prototype.setVariantSwitchPromise = function(oPromise) {
+		this._oVariantSwitchPromise = oPromise;
+	};
+
+	/**
+	 * Returns the variant switch promise. By default this is a resolved promise
+	 *
+	 * @returns {promise} variant switch promise
+	 */
+	FlexController.prototype.waitForVariantSwitch = function() {
+		if (!this._oVariantSwitchPromise) {
+			this._oVariantSwitchPromise = Promise.resolve();
+		}
+		return this._oVariantSwitchPromise;
 	};
 
 	/**
@@ -133,7 +155,11 @@ sap.ui.define([
 		oChangeSpecificData.context = aCurrentDesignTimeContext.length === 1 ? aCurrentDesignTimeContext[0] : "";
 
 		// fallback in case no application descriptor is available (e.g. during unit testing)
-		oChangeSpecificData.validAppVersions = this._getValidAppVersions(oChangeSpecificData);
+		oChangeSpecificData.validAppVersions = Utils.getValidAppVersions({
+			appVersion: this.getAppVersion(),
+			developerMode: oChangeSpecificData.developerMode,
+			scenario: oChangeSpecificData.scenario
+		});
 
 		oChangeFileContent = Change.createInitialFileContent(oChangeSpecificData);
 		oChange = new Change(oChangeFileContent);
@@ -226,28 +252,13 @@ sap.ui.define([
 		oVariantSpecificData.content.packageName = "$TMP"; // first a flex change is always local, until all changes of a component are made transportable
 
 		// fallback in case no application descriptor is available (e.g. during unit testing)
-		oVariantSpecificData.content.validAppVersions = this._getValidAppVersions(oVariantSpecificData);
+		oVariantSpecificData.content.validAppVersions = Utils.getValidAppVersions(
+			this.getAppVersion(), oVariantSpecificData.developerMode, oVariantSpecificData.scenario);
 
 		oVariantFileContent = Variant.createInitialFileContent(oVariantSpecificData);
 		oVariant = new Variant(oVariantFileContent);
 
 		return oVariant;
-	};
-
-	FlexController.prototype._getValidAppVersions = function(oChangeSpecificData) {
-		var sAppVersion = this.getAppVersion();
-		var oValidAppVersions = {
-			creation: sAppVersion,
-			from: sAppVersion
-		};
-		if (sAppVersion &&
-			oChangeSpecificData.developerMode &&
-			oChangeSpecificData.scenario !== sap.ui.fl.Scenario.AdaptationProject &&
-			oChangeSpecificData.scenario !== sap.ui.fl.Scenario.AppVariant
-		) {
-			oValidAppVersions.to = sAppVersion;
-		}
-		return oValidAppVersions;
 	};
 
 	/**
@@ -280,8 +291,8 @@ sap.ui.define([
 	FlexController.prototype.addPreparedChange = function (oChange, oAppComponent) {
 		if (oChange.getVariantReference()) {
 			// variant model is always associated with the app component
-			var oModel = oAppComponent.getModel("$FlexVariants");
-			oModel._addChange(oChange);
+			var oModel = oAppComponent.getModel(Utils.VARIANT_MODEL_NAME);
+			oModel.addChange(oChange);
 		}
 
 		this._oChangePersistence.addChange(oChange, oAppComponent);
@@ -305,7 +316,7 @@ sap.ui.define([
 	FlexController.prototype.deleteChange = function (oChange, oAppComponent) {
 		this._oChangePersistence.deleteChange(oChange);
 		if (oChange.getVariantReference()) {
-			oAppComponent.getModel("$FlexVariants")._removeChange(oChange);
+			oAppComponent.getModel(Utils.VARIANT_MODEL_NAME).removeChange(oChange);
 		}
 	};
 
@@ -320,16 +331,17 @@ sap.ui.define([
 	FlexController.prototype.createAndApplyChange = function (oChangeSpecificData, oControl) {
 		var oChange;
 		return Promise.resolve()
-			.then( function() {
+			.then(function() {
 				oChange = this.addChange(oChangeSpecificData, oControl);
 				var mPropertyBag = {
 					modifier: JsControlTreeModifier,
 					appComponent: Utils.getAppComponentForControl(oControl),
 					view: Utils.getViewForControl(oControl)
 				};
+				oChange.setQueuedForApply();
 				return this.checkTargetAndApplyChange(oChange, oControl, mPropertyBag);
 			}.bind(this))
-			.then( function(oReturn) {
+			.then(function(oReturn) {
 				if (!oReturn.success) {
 					var oException = oReturn.error || new Error("The change could not be applied.");
 					this._oChangePersistence.deleteChange(oChange, true);
@@ -368,22 +380,11 @@ sap.ui.define([
 		});
 	};
 
-	FlexController.prototype._hasChangeProcessingCompleted = function(oControl, oChange, JsControlTreeModifier) {
-		var aCustomDataFunctionNames = [
-			"hasAppliedCustomData",
-			"hasFailedCustomDataJs",
-			"hasNotApplicableCustomData"
-		];
-		return aCustomDataFunctionNames.some(function(sCustomDataFunction) {
-			return !!FlexCustomData[sCustomDataFunction](oControl, oChange, JsControlTreeModifier);
-		});
-	};
-
 	/**
-	 * Resolves with a Promise after all the changes for this control are applied.
+	 * Resolves with a Promise after all the changes for this control are processed.
 	 *
 	 * @param {sap.ui.core.Control} oControl The control whose changes are being waited for
-	 * @returns {Promise} Returns a promise when all changes on the control are applied
+	 * @returns {Promise} Returns a promise when all changes on the control are processed
 	 */
 	FlexController.prototype.waitForChangesToBeApplied = function(oControl) {
 		var mChangesMap = this._oChangePersistence.getChangesMapForComponent();
@@ -392,7 +393,7 @@ sap.ui.define([
 		var mChanges = mChangesMap.mChanges;
 		var aChangesForControl = mChanges[oControl.getId()] || [];
 		var aNotYetProcessedChanges = aChangesForControl.filter(function(oChange) {
-			return !this._hasChangeProcessingCompleted(oControl, oChange, JsControlTreeModifier);
+			return !oChange.isCurrentProcessFinished();
 		}, this);
 		var oAppComponent = Utils.getAppComponentForControl(oControl);
 		var aRelevantChanges = [];
@@ -406,35 +407,19 @@ sap.ui.define([
 			return aAllChanges.indexOf(oChange) === iPosition;
 		});
 
-		// attach aRelevantChanges to the promises and wait for them to be applied
-		aRelevantChanges.forEach(function(oWaitForChange) {
-			if (!oWaitForChange.aPromiseFn) {
-				oWaitForChange.aPromiseFn = [];
-			}
-			aPromises.push(
-				new Promise(function(resolve, reject) {
-					oWaitForChange.aPromiseFn.push({
-						resolve: resolve,
-						reject: reject
-					});
-				})
-				.catch(function(oChange) {
-					// check mDependentChangesOnMe, reject all changes in aRelevantChanges.
-					var aDependentOnMe = oChange.getId && mChangesMap.mDependentChangesOnMe[oChange.getId()] || [];
-					aDependentOnMe.forEach(function(sDependencyKey) {
-						var oDependentChange = Utils.getChangeFromChangesMap(mChanges, sDependencyKey);
-						if (oDependentChange.aPromiseFn) {
-							oDependentChange.aPromiseFn.forEach(function(oPromiseFn) {
-								oPromiseFn.reject(oDependentChange);
-							});
-						}
-					});
-					Promise.resolve();
-				})
-			);
+		// attach promises to the relevant Changes and wait for them to be applied
+		aRelevantChanges.forEach(function(oChange) {
+			aPromises = aPromises.concat(oChange.addChangeProcessingPromises());
 		}, this);
 
-		return Promise.all(aPromises);
+		// also wait for a potential variant switch to be done
+		aPromises.push(this.waitForVariantSwitch());
+
+		return Promise.all(aPromises)
+		.then(function() {
+			// the return value is not important in this function, only that it resolves
+			return undefined;
+		});
 	};
 
 	/**
@@ -540,7 +525,22 @@ sap.ui.define([
 
 				this._checkForDependentSelectorControls(oChange, mPropertyBag);
 
+				oChange.setQueuedForApply();
 				aPromiseStack.push(function() {
+					var bIsCurrentlyAppliedOnControl = this._isChangeCurrentlyApplied(oControl, oChange, mPropertyBag.modifier);
+					var bChangeStatusAppliedFinished = oChange.isApplyProcessFinished();
+					if (bChangeStatusAppliedFinished && !bIsCurrentlyAppliedOnControl) {
+						// if a change was already processed and is not applied anymore,
+						// then the control was destroyed and recreated.
+						oChange.setInitialApplyState();
+					} else if (!bChangeStatusAppliedFinished && bIsCurrentlyAppliedOnControl) {
+						// if a change is already applied on the control, but the status does not reflect that, the status has to be updated
+						// and the change does not need to be applied again
+						// e.g. viewCache scenario
+						oChange.markFinished();
+						return new Utils.FakePromise();
+					}
+
 					return this.checkTargetAndApplyChange(oChange, oControl, mPropertyBag)
 
 					.then(function(oReturn) {
@@ -549,7 +549,6 @@ sap.ui.define([
 						}
 					}.bind(this));
 				}.bind(this));
-
 			} catch (oException) {
 				this._logApplyChangeError(oException, oChange);
 			}
@@ -602,87 +601,108 @@ sap.ui.define([
 		var oModifier = mPropertyBag.modifier;
 		var sControlType = oModifier.getControlType(oControl);
 		var mControl = this._getControlIfTemplateAffected(oChange, oControl, sControlType, mPropertyBag);
-		var oChangeHandler = this._getChangeHandler(oChange, mControl.controlType, mControl.control, oModifier);
-		var oSettings, oRtaControlTreeModifier;
-
-		if (!oChangeHandler) {
-			var sErrorMessage = "Change handler implementation for change not found or change type not enabled for current layer - Change ignored";
-			Utils.log.warning(sErrorMessage);
-			return new Utils.FakePromise({success: false, error: new Error(sErrorMessage)});
+		var oSettings, oRtaControlTreeModifier, oResult;
+		var sLibraryName = oModifier.getLibraryName(mControl.control);
+		var oWaitForRegistration = new Utils.FakePromise();
+		if (ChangeHandlerRegistration.isChangeHandlerRegistrationInProgress(sLibraryName)) {
+			oWaitForRegistration = ChangeHandlerRegistration.waitForChangeHandlerRegistration(sLibraryName);
 		}
-		if (bXmlModifier && oChange.getDefinition().jsOnly) {
-			//change is not capable of xml modifier
-			return new Utils.FakePromise({success: false, error: new Error("Change cannot be applied in XML. Retrying in JS.")});
-		}
-		if (!this._isChangeCurrentlyApplied(oControl, oChange, oModifier)) {
-			var bRevertible = this.isChangeHandlerRevertible(oChange, mControl.control, oChangeHandler);
-			return new Utils.FakePromise()
-			.then(function() {
-				// only temporary until a revert function is mandatory for all change handlers
-				oSettings = FlexSettings.getInstanceOrUndef();
-				if (!bRevertible && oSettings && oSettings._oSettings.recordUndo) {
-					// recording of undo is only implemented in JS. By throwing an error in XML we force a JS retry.
-					if (bXmlModifier) {
-						throw new Error();
-					}
-					return new Promise(function(resolve) {
-						sap.ui.require(["sap/ui/rta/ControlTreeModifier"], function(RtaControlTreeModifier) {
-							if (!RtaControlTreeModifier) {
-								Utils.log.error("Please load 'sap/ui/rta' library if you want to record undo");
-							} else {
-								mPropertyBag.modifier = RtaControlTreeModifier;
-								RtaControlTreeModifier.startRecordingUndo();
-								oRtaControlTreeModifier = RtaControlTreeModifier;
-							}
-							resolve();
+		return oWaitForRegistration.then(function() {
+			var oChangeHandler = this._getChangeHandler(oChange, mControl.controlType, mControl.control, oModifier);
+			if (!oChangeHandler) {
+				var sErrorMessage = "Change handler implementation for change not found or change type not enabled for current layer - Change ignored";
+				Utils.log.warning(sErrorMessage);
+				oResult = {success: false, error: new Error(sErrorMessage)};
+				oChange.setInitialApplyState();
+				return new Utils.FakePromise(oResult);
+			}
+			if (bXmlModifier && oChange.getDefinition().jsOnly) {
+				// change is not capable of xml modifier
+				// the change status has to be reset to initial
+				oResult = {success: false, error: new Error("Change cannot be applied in XML. Retrying in JS.")};
+				oChange.setInitialApplyState();
+				return new Utils.FakePromise(oResult);
+			}
+			if (oChange.hasApplyProcessStarted()) {
+				// wait for the change to be finished and then clean up the status and queue
+				return oChange.addPromiseForApplyProcessing()
+				.then(function(oResult) {
+					oChange.markFinished();
+					return oResult;
+				});
+			} else if (!oChange.isApplyProcessFinished()) {
+				var bRevertible = this.isChangeHandlerRevertible(oChange, mControl.control, oChangeHandler);
+				return new Utils.FakePromise()
+				.then(function() {
+					// only temporary until a revert function is mandatory for all change handlers
+					oSettings = FlexSettings.getInstanceOrUndef();
+					if (!bRevertible && oSettings && oSettings._oSettings.recordUndo) {
+						// recording of undo is only implemented in JS. By throwing an error in XML we force a JS retry.
+						if (bXmlModifier) {
+							throw new Error();
+						}
+						return new Promise(function(resolve) {
+							sap.ui.require(["sap/ui/rta/ControlTreeModifier"], function(RtaControlTreeModifier) {
+								if (!RtaControlTreeModifier) {
+									Utils.log.error("Please load 'sap/ui/rta' library if you want to record undo");
+								} else {
+									mPropertyBag.modifier = RtaControlTreeModifier;
+									RtaControlTreeModifier.startRecordingUndo();
+									oRtaControlTreeModifier = RtaControlTreeModifier;
+								}
+								resolve();
+							});
 						});
-					});
-				}
-			})
-			.then(function() {
-				oChange.PROCESSING = oChange.PROCESSING ? oChange.PROCESSING : true;
-				var oInitializedControl = oChangeHandler.applyChange(oChange, mControl.control, mPropertyBag);
-				if (mControl.bTemplateAffected) {
-					oModifier.updateAggregation(oControl, oChange.getContent().boundAggregation);
-				}
-				return oInitializedControl;
-			})
-			.then(function(oInitializedControl) {
-				// changeHandler can return a different control, e.g. case where a visible UI control replaces the stashed control
-				if (oInitializedControl instanceof Element) {
-					// the newly rendered control could have custom data set from the XML modifier
-					oControl = oInitializedControl;
-				}
-				if (!bRevertible && oSettings && oSettings._oSettings.recordUndo && oRtaControlTreeModifier) {
-					oChange.setUndoOperations(oRtaControlTreeModifier.stopRecordingUndo());
-				}
-				// only save the revert data in the custom data when the change is revertible and being processed in XML,
-				// as it's only relevant for viewCache at the moment
-				FlexCustomData.addAppliedCustomData(oControl, oChange, mPropertyBag, bRevertible && bXmlModifier);
-				if (oChange.aPromiseFn) {
-					oChange.aPromiseFn.forEach(function(oPromiseFn) {
-						oPromiseFn.resolve(oChange);
-					});
-				}
-				delete oChange.PROCESSING;
-				oChange.PROCESSED = true;
-				return {success: true};
-			})
-			.catch(function(oRejectionReason) {
-				this._logErrorAndWriteCustomData(oRejectionReason, oChange, mPropertyBag, oControl, bXmlModifier);
-				if (oChange.aPromiseFn) {
-					oChange.aPromiseFn.forEach(function(oPromiseFn) {
-						oPromiseFn.reject(oChange);
-					});
-				}
-				delete oChange.PROCESSING;
-				oChange.PROCESSED = true;
-				return {success: false, error: oRejectionReason};
-			}.bind(this));
-		}
-		return new Utils.FakePromise({success: true});
+					}
+				})
+				.then(function() {
+					oChange.startApplying();
+					return oChangeHandler.applyChange(oChange, mControl.control, mPropertyBag);
+				})
+				.then(function(oInitializedControl) {
+					// changeHandler can return a different control, e.g. case where a visible UI control replaces the stashed control
+					if (oInitializedControl instanceof Element) {
+						// the newly rendered control could have custom data set from the XML modifier
+						mControl.control = oInitializedControl;
+					}
+					if (mControl.control) {
+						oModifier.updateAggregation(oControl, oChange.getContent().boundAggregation);
+					}
+					if (!bRevertible && oSettings && oSettings._oSettings.recordUndo && oRtaControlTreeModifier) {
+						oChange.setUndoOperations(oRtaControlTreeModifier.stopRecordingUndo());
+					}
+					// only save the revert data in the custom data when the change is revertible and being processed in XML,
+					// as it's only relevant for viewCache at the moment
+					FlexCustomData.addAppliedCustomData(mControl.control, oChange, mPropertyBag, bRevertible && bXmlModifier);
+					// if a change was reverted previously remove the flag as it is not reverted anymore
+					oResult = {success: true};
+					oChange.markFinished(oResult);
+					return oResult;
+				})
+				.catch(function(oRejectionReason) {
+					this._logErrorAndWriteCustomData(oRejectionReason, oChange, mPropertyBag, mControl.control, bXmlModifier);
+					oResult = {success: false, error: oRejectionReason};
+					// if the change failed during XML processing, the status has to be reset
+					// the change will be applied again in JS
+					if (bXmlModifier) {
+						oChange.setInitialApplyState();
+					} else {
+						oChange.markFinished(oResult);
+					}
+					return oResult;
+				}.bind(this));
+			}
+
+			// make sure that everything that goes with finishing the apply process is done, even though the change was already applied
+			oResult = {success: true};
+			oChange.markFinished(oResult);
+			return new Utils.FakePromise(oResult);
+		}.bind(this));
 	};
 
+	/**
+	 * If the function is called with bRevert=true then the flex custom data is only removed if the revert is successful.
+	 */
 	FlexController.prototype._removeFromAppliedChangesAndMaybeRevert = function(oChange, oControl, mPropertyBag, bRevert) {
 		var oModifier = mPropertyBag.modifier;
 		var sControlType = oModifier.getControlType(oControl);
@@ -692,13 +712,15 @@ sap.ui.define([
 		var bStashed;
 
 		if (bRevert && !oChangeHandler) {
-			Utils.log.warning("Change handler implementation for change not found or change type not enabled for current layer - Change ignored");
-			return new Utils.FakePromise();
+			var sMessage = "Change handler implementation for change not found or change type not enabled for current layer - Change ignored";
+			Utils.log.warning(sMessage);
+			oChange.markRevertFinished(new Error(sMessage));
+			return new Utils.FakePromise(false);
 		}
 
 		// The stashed control does not have custom data in Runtime,
 		// so we have to assume that it is stashed so we can perform the revert
-		if (oChange.getChangeType() === "stashControl" && sControlType === "sap.ui.core._StashedControl"){
+		if (oChange.getChangeType() === "stashControl" && sControlType === "sap.ui.core._StashedControl") {
 			bStashed = true;
 
 			// if we want to revert we also have to fake the revertData when it is not available
@@ -707,17 +729,15 @@ sap.ui.define([
 			}
 		}
 
-		var bIsCurrentlyApplied = this._isChangeCurrentlyApplied(oControl, oChange, oModifier);
-		if (!bIsCurrentlyApplied && (oChange.PROCESSING || oChange.QUEUED)) {
+		var bIsCurrentlyApplied = oChange.isApplyProcessFinished();
+		if (!bIsCurrentlyApplied && oChange.hasApplyProcessStarted()) {
 			// wait for the change to be applied
-			vResult = new Promise(function(resolve, reject) {
-				oChange.aPromiseFn = oChange.aPromiseFn || [];
-				oChange.aPromiseFn.push({
-					resolve: resolve,
-					reject: reject
-				});
-			})
-			.then(function() {
+			vResult = oChange.addPromiseForApplyProcessing()
+			.then(function(oResult) {
+				if (oResult && oResult.error) {
+					oChange.markRevertFinished(oResult.error);
+					throw Error(oResult.error);
+				}
 				return true;
 			});
 		} else {
@@ -725,8 +745,7 @@ sap.ui.define([
 		}
 
 		return vResult.then(function(bPending) {
-			if (
-				bRevert && (bPending || (!bPending && bIsCurrentlyApplied)) ||
+			if (bRevert && (bPending || (!bPending && bIsCurrentlyApplied)) ||
 				bRevert && bStashed
 			) {
 				// if the change has no revertData attached to it they may be saved in the custom data
@@ -734,23 +753,31 @@ sap.ui.define([
 					oChange.setRevertData(FlexCustomData.getParsedRevertDataFromCustomData(oControl, oChange, oModifier));
 				}
 
-				var oResponse = oChangeHandler.revertChange(oChange, mControl.control, mPropertyBag);
-				if (mControl.bTemplateAffected) {
-					oModifier.updateAggregation(oControl, oChange.getContent().boundAggregation);
-				}
-				return oResponse;
+				oChange.startReverting();
+				return oChangeHandler.revertChange(oChange, mControl.control, mPropertyBag);
+			} else if (bRevert) {
+				throw Error("Change was never applied");
 			}
 		})
 
 		.then(function() {
 			// After being unstashed the relevant control for the change is no longer sap.ui.core._StashedControl,
 			// therefore it must be retrieved again
-			oControl = mPropertyBag.modifier.bySelector(oChange.getSelector(), mPropertyBag.appComponent, mPropertyBag.view);
+			mControl.control = mPropertyBag.modifier.bySelector(oChange.getSelector(), mPropertyBag.appComponent, mPropertyBag.view);
+			if (mControl.bTemplateAffected) {
+				oModifier.updateAggregation(mControl.control, oChange.getContent().boundAggregation);
+			}
+
 			FlexCustomData.destroyAppliedCustomData(oControl, oChange, mPropertyBag.modifier);
+			oChange.markRevertFinished();
+			return true;
 		})
 
 		.catch(function(oError) {
-			Utils.log.error("Change could not be reverted:", oError);
+			var sErrorMessage = "Change could not be reverted: " + oError.message;
+			Utils.log.error(sErrorMessage);
+			oChange.markRevertFinished(sErrorMessage);
+			return false;
 		});
 	};
 
@@ -777,7 +804,7 @@ sap.ui.define([
 	};
 
 	FlexController.prototype._isChangeCurrentlyApplied = function(oControl, oChange, oModifier) {
-		return !!FlexCustomData.getAppliedCustomDataValue(oControl, oChange, oModifier);
+		return FlexCustomData.hasChangeApplyFinishedCustomData(oControl, oChange, oModifier);
 	};
 
 	FlexController.prototype._handlePromiseChainError = function (oView, oError) {
@@ -916,15 +943,28 @@ sap.ui.define([
 	};
 
 	/**
-	 * Reset changes on the server.
+	 * Reset changes on the server
+	 * If the reset is performed for an entire component, a browser reload is required.
+	 * If the reset is performed for a control, this function also triggers a reversion of deleted UI changes.
 	 *
-	 * @returns {Promise} Promise that resolves without parameters
+	 * @param {string} sLayer - Layer for which changes shall be deleted
+	 * @param {string} [sGenerator] - Generator of changes (optional)
+	 * @param {sap.ui.core.Component} [oComponent] - Component instance (optional)
+	 * @param {string[]} [aSelectorIds] - Selector IDs in local format (optional)
+	 * @param {string[]} [aChangeTypes] - Types of changes (optional)
+	 *
+	 * @returns {Promise} Promise that resolves after the deletion took place
 	 */
-	FlexController.prototype.resetChanges = function (sLayer, sGenerator, oComponent) {
-		return this._oChangePersistence.resetChanges(sLayer, sGenerator)
-			.then( function(oResponse) {
+	FlexController.prototype.resetChanges = function (sLayer, sGenerator, oComponent, aSelectorIds, aChangeTypes) {
+		return this._oChangePersistence.resetChanges(sLayer, sGenerator, aSelectorIds, aChangeTypes)
+			.then(function(aChanges) {
+				if (aChanges.length !== 0) {
+					return this.revertChangesOnControl(aChanges, oComponent);
+				}
+			}.bind(this))
+			.then(function() {
 				if (oComponent) {
-					var oModel = oComponent.getModel("$FlexVariants");
+					var oModel = oComponent.getModel(Utils.VARIANT_MODEL_NAME);
 					if (oModel) {
 						oModel.updateHasherEntry({
 							parameters: [],
@@ -933,8 +973,7 @@ sap.ui.define([
 						});
 					}
 				}
-				return oResponse;
-		});
+			});
 	};
 
 	/**
@@ -999,15 +1038,14 @@ sap.ui.define([
 
 	FlexController.prototype._checkIfDependencyIsStillValid = function(oAppComponent, oModifier, sChangeId) {
 		var oChange = Utils.getChangeFromChangesMap(this._oChangePersistence._mChanges.mChanges, sChangeId);
-		if (!oChange.PROCESSED) {
-			return true;
-		}
-
 		var oControl = oModifier.bySelector(oChange.getSelector(), oAppComponent);
-		if (!this._isChangeCurrentlyApplied(oControl, oChange, oModifier)) {
-			return true;
+
+		// if change is already applied OR if apply process has started,
+		// then dependency is no more valid
+		if (this._isChangeCurrentlyApplied(oControl, oChange, oModifier) || oChange.hasApplyProcessStarted()) {
+			return false;
 		}
-		return false;
+		return true;
 	};
 
 	/**
@@ -1033,30 +1071,36 @@ sap.ui.define([
 			view: Utils.getViewForControl(oControl)
 		};
 		aChangesForControl.forEach(function (oChange) {
-
-			// if a change was already processed and is not applied anymore,
-			// then the control was destroyed and recreated. In this case we need to recreate/copy the dependencies.
-			if (oChange.PROCESSED && !this._isChangeCurrentlyApplied(oControl, oChange, mPropertyBag.modifier)) {
+			var sControlType = JsControlTreeModifier.getControlType(oControl);
+			var mControl = this._getControlIfTemplateAffected(oChange, oControl, sControlType, mPropertyBag);
+			var bIsCurrentlyAppliedOnControl = this._isChangeCurrentlyApplied(mControl.control, oChange, mPropertyBag.modifier);
+			var bChangeStatusAppliedFinished = oChange.isApplyProcessFinished();
+			if (bChangeStatusAppliedFinished && !bIsCurrentlyAppliedOnControl) {
+				// if a change was already processed and is not applied anymore,
+				// then the control was destroyed and recreated. In this case we need to recreate/copy the dependencies.
 				mChangesMap = this._oChangePersistence.copyDependenciesFromInitialChangesMap(oChange, this._checkIfDependencyIsStillValid.bind(this, oAppComponent, mPropertyBag.modifier));
 
 				mDependencies = mChangesMap.mDependencies;
 				mDependentChangesOnMe = mChangesMap.mDependentChangesOnMe;
-				delete oChange.PROCESSED;
+				oChange.setInitialApplyState();
+			} else if (!bChangeStatusAppliedFinished && bIsCurrentlyAppliedOnControl) {
+				// if a change is already applied on the control, but the status does not reflect that, the status has to be updated
+				// the change still needs to go through the process so that the dependencies are correctly updated and the whole process is not harmed
+				// scenario: viewCache
+				oChange.markFinished();
 			}
 
+			oChange.setQueuedForApply();
 			if (!mDependencies[oChange.getId()]) {
-				oChange.QUEUED = true;
 				aPromiseStack.push(function() {
 					return this.checkTargetAndApplyChange(oChange, oControl, mPropertyBag)
-					.then(function(oResult) {
+					.then(function() {
 						this._updateDependencies(mDependencies, mDependentChangesOnMe, oChange.getId());
-						delete oChange.QUEUED;
 					}.bind(this));
 				}.bind(this));
 			} else {
 				//saves the information whether a change was already processed but not applied.
-				mDependencies[oChange.getId()][FlexController.PENDING] =
-					this.checkTargetAndApplyChange.bind(this, oChange, oControl, mPropertyBag);
+				mDependencies[oChange.getId()][FlexController.PENDING] = this.checkTargetAndApplyChange.bind(this, oChange, oControl, mPropertyBag);
 			}
 		}.bind(this));
 
@@ -1095,6 +1139,8 @@ sap.ui.define([
 	FlexController.prototype.revertChangesOnControl = function(aChanges, oAppComponent) {
 		var aPromiseStack = [];
 		aChanges.forEach(function(oChange) {
+			// Queued 'state' will be removed once the revert process is done
+			oChange.setQueuedForRevert();
 			aPromiseStack.push(function() {
 				var oSelector = this._getSelectorOfChange(oChange);
 				var oControl = JsControlTreeModifier.bySelector(oSelector, oAppComponent);
@@ -1104,8 +1150,10 @@ sap.ui.define([
 					view: Utils.getViewForControl(oControl)
 				};
 				return this._removeFromAppliedChangesAndMaybeRevert(oChange, oControl, mPropertyBag, true)
-				.then(function() {
-					this._oChangePersistence._deleteChangeInMap(oChange);
+				.then(function(bSuccess) {
+					if (bSuccess) {
+						this._oChangePersistence._deleteChangeInMap(oChange);
+					}
 				}.bind(this));
 			}.bind(this));
 		}.bind(this));
@@ -1117,15 +1165,15 @@ sap.ui.define([
 	 * If no change handler is given it will get the change handler from the change and control
 	 *
 	 * @param {object} oChange Change object
-	 * @param {object} oControl Control instance object
-	 * @param {object} [oChangeHandler] change handler of the control and change
-	 * @returns {boolean} Returns true if change handler has revertChange()
+	 * @param {object} vControl Control instance or selector object with id, appComponent and controlType
+	 * @param {object} [oChangeHandler] Change handler of the control and change
+	 * @returns {boolean} Returns true if change handler has revertChange function
 	 * @public
 	 */
-	FlexController.prototype.isChangeHandlerRevertible = function(oChange, oControl, oChangeHandler) {
+	FlexController.prototype.isChangeHandlerRevertible = function(oChange, vControl, oChangeHandler) {
 		if (!oChangeHandler) {
-			var sControlType = JsControlTreeModifier.getControlType(oControl);
-			oChangeHandler = this._getChangeHandler(oChange, sControlType, oControl, JsControlTreeModifier);
+			var sControlType = vControl.controlType ? vControl.controlType : JsControlTreeModifier.getControlType(vControl);
+			oChangeHandler = this._getChangeHandler(oChange, sControlType, vControl, JsControlTreeModifier);
 		}
 		return !!(oChangeHandler && typeof oChangeHandler.revertChange === "function");
 	};
@@ -1199,7 +1247,9 @@ sap.ui.define([
 		if (mDependentChangesOnMe[sChangeKey]) {
 			mDependentChangesOnMe[sChangeKey].forEach(function (sKey) {
 				var oDependency = mDependencies[sKey];
-				var iIndex = oDependency.dependencies.indexOf(sChangeKey);
+
+				// oDependency might be undefined, since initial dependencies were not copied yet from _applyChangesOnControl() for change with ID sKey
+				var iIndex = oDependency ? oDependency.dependencies.indexOf(sChangeKey) : -1;
 				if (iIndex > -1) {
 					oDependency.dependencies.splice(iIndex, 1);
 				}
@@ -1224,15 +1274,13 @@ sap.ui.define([
 		this._updateControlsDependencies(mDependencies, oAppComponent);
 		Object.keys(mDependencies).forEach(function(sDependencyKey) {
 			var oDependency = mDependencies[sDependencyKey];
-			if (oDependency[FlexController.PENDING] && oDependency.dependencies.length === 0  &&
-				!(oDependency.controlsDependencies && oDependency.controlsDependencies.length > 0) &&
-				!oDependency[FlexController.PROCESSING]) {
-				oDependency[FlexController.PROCESSING] = true;
+			if (oDependency[FlexController.PENDING] && oDependency.dependencies.length === 0 &&
+				!(oDependency.controlsDependencies && oDependency.controlsDependencies.length > 0)
+			) {
 				aPromises.push(
 					function() {
 						return oDependency[FlexController.PENDING]()
-
-						.then(function (oReturn) {
+						.then(function () {
 							aDependenciesToBeDeleted.push(sDependencyKey);
 							aCoveredChanges.push(oDependency.changeObject.getId());
 						});
@@ -1267,13 +1315,23 @@ sap.ui.define([
 	 * @private
 	 */
 	FlexController.prototype._processDependentQueue = function (mDependencies, mDependentChangesOnMe, oAppComponent) {
-		 return this._iterateDependentQueue(mDependencies, mDependentChangesOnMe, oAppComponent)
+		return this._iterateDependentQueue(mDependencies, mDependentChangesOnMe, oAppComponent)
 
 		.then(function(aCoveredChanges) {
 			if (aCoveredChanges.length > 0) {
 				return this._processDependentQueue(mDependencies, mDependentChangesOnMe, oAppComponent);
 			}
 		}.bind(this));
+	};
+
+	/**
+	 * Saves changes sequentially on the associated change persistence instance
+	 * @param {sap.ui.fl.Change[]} aDirtyChanges Array of dirty changes to be saved
+	 * @returns {Promise} A Promise which resolves when all changes have been saved
+	 * @public
+	 */
+	FlexController.prototype.saveSequenceOfDirtyChanges = function (aDirtyChanges) {
+		return this._oChangePersistence.saveSequenceOfDirtyChanges(aDirtyChanges);
 	};
 
 	return FlexController;

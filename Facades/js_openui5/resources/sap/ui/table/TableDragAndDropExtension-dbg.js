@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -149,6 +149,11 @@ sap.ui.define([
 						});
 					}
 				}
+			} else if (oDropControl.isA("sap.ui.table.Column")) {
+				var mTableCntRect = this.getDomRef("sapUiTableCnt").getBoundingClientRect();
+				oDragSession.setIndicatorConfig({
+					height: mTableCntRect.height - (this._getScrollExtension().isHorizontalScrollbarVisible() ? 16 : 0)
+				});
 			} else if (oDraggedControl === oDropControl) {
 				oEvent.setMarked("NonDroppable");
 			}
@@ -252,7 +257,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableDragAndDropExtension

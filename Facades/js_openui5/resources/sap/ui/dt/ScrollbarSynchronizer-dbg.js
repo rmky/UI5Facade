@@ -1,12 +1,12 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	'sap/ui/base/ManagedObject',
-	'sap/ui/dt/DOMUtil',
+	"sap/ui/base/ManagedObject",
+	"sap/ui/dt/DOMUtil",
 	"sap/ui/thirdparty/jquery"
 ],
 function(
@@ -24,7 +24,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -36,13 +36,13 @@ function(
 		metadata: {
 			library: "sap.ui.dt",
 			properties: {
-				"scrollTop": {
+				scrollTop: {
 					type: "float"	// replaced 'int' with 'float'. In some special cases (chrome on a retina mac) jquery returns a float value instead of int
 				},
-				"scrollLeft": {
+				scrollLeft: {
 					type: "float"	// replaced 'int' with 'float'. In some special cases (chrome on a retina mac) jquery returns a float value instead of int
 				},
-				"targets": {
+				targets: {
 					type: "any[]",
 					defaultValue: []
 				}

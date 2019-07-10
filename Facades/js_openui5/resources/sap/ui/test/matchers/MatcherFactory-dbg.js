@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,16 +9,35 @@ sap.ui.define([
 	"sap/ui/base/Object",
 	"sap/ui/test/matchers/Interactable",
 	"sap/ui/test/matchers/Visible",
+	"sap/ui/test/matchers/_Enabled",
 	"sap/base/strings/capitalize",
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/test/matchers/matchers"
-], function (UI5Object, Interactable, Visible, capitalize, jQueryDOM) {
+], function (UI5Object, Interactable, Visible, _Enabled, capitalize, jQueryDOM) {
 	"use strict";
 
 	var MatcherFactory = UI5Object.extend("sap.ui.test.matchers.MatcherFactory", {
 
-		getInteractabilityMatchers: function (bInteractable) {
-		  return [bInteractable ?  new Interactable() : new Visible()];
+		getStateMatchers: function (oOptions) {
+			oOptions = oOptions || {};
+			var aMatchers = [];
+
+			// visible has priority over all other options
+			if (oOptions.visible !== false) {
+				// enabled has priority over interactable
+				if (oOptions.enabled) {
+					aMatchers.push(new _Enabled());
+				}
+
+				// Interactable uses Visible
+				if (oOptions.interactable) {
+					aMatchers.push(new Interactable());
+				} else {
+					aMatchers.push(new Visible());
+				}
+			}
+
+			return aMatchers;
 		},
 
 		getFilteringMatchers: function (oOptions) {

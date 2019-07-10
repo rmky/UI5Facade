@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,6 +15,7 @@ sap.ui.define([
 	'sap/ui/base/ManagedObject',
 	'sap/ui/Device',
 	'./ActionSheetRenderer',
+	'./Button',
 	"sap/ui/thirdparty/jquery"
 ],
 	function(
@@ -27,6 +28,7 @@ sap.ui.define([
 		ManagedObject,
 		Device,
 		ActionSheetRenderer,
+		Button,
 		jQuery
 	) {
 	"use strict";
@@ -70,7 +72,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -394,11 +396,11 @@ sap.ui.define([
 
 	/**
 	 * Calling this method will make the ActionSheet disappear from the screen.
-	 * @param {object} oControl The control to close
+	 *
 	 * @public
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	ActionSheet.prototype.close = function(oControl){
+	ActionSheet.prototype.close = function(){
 		if (this._parent) {
 			this._parent.close();
 		}
@@ -406,12 +408,12 @@ sap.ui.define([
 
 	/**
 	 * The method checks if the ActionSheet is open. It returns true when the ActionSheet is currently open (this includes opening and closing animations), otherwise it returns false.
-	 * @param {object} oControl The control in question
+	 *
 	 * @returns {boolean} Whether the ActionSheet is open.
 	 * @public
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	ActionSheet.prototype.isOpen = function(oControl){
+	ActionSheet.prototype.isOpen = function(){
 		return !!this._parent && this._parent.isOpen();
 	};
 
@@ -420,7 +422,7 @@ sap.ui.define([
 			var sCancelButtonText = (this.getCancelButtonText()) ? this.getCancelButtonText() : sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("ACTIONSHEET_CANCELBUTTON_TEXT"),
 				that = this;
 	//			var sButtonStyle = (sap.ui.Device.os.ios) ? sap.m.ButtonType.Unstyled : sap.m.ButtonType.Default;
-			this._oCancelButton = new sap.m.Button(this.getId() + '-cancelBtn', {
+			this._oCancelButton = new Button(this.getId() + '-cancelBtn', {
 				text: sCancelButtonText,
 				type: ButtonType.Reject,
 				press : function() {

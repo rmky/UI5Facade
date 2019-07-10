@@ -1,8 +1,10 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
+
+/* global XMLHttpRequest */
 
 // Provides client-based DataBinding implementation
 sap.ui.define([
@@ -10,16 +12,14 @@ sap.ui.define([
 	'./ClientListBinding',
 	'./ClientPropertyBinding',
 	'./ClientTreeBinding',
-	'./Model',
-	"sap/ui/thirdparty/jquery"
+	'./Model'
 ],
 	function(
 		ClientContextBinding,
 		ClientListBinding,
 		ClientPropertyBinding,
 		ClientTreeBinding,
-		Model,
-		jQuery
+		Model
 	) {
 	"use strict";
 
@@ -32,7 +32,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.Model
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @param {string} [oData] URL where to load the data from
 	 * @public
@@ -133,7 +133,6 @@ sap.ui.define([
 		if (oParameters.async) {
 			this.aPendingRequestHandles.push(oRequestHandle);
 		}
-
 	};
 
 	/**
@@ -190,7 +189,5 @@ sap.ui.define([
 		this.bCache = !bForceNoCache;
 	};
 
-
 	return ClientModel;
-
 });

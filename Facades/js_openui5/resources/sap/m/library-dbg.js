@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define([
 	"sap/base/assert",
 	"sap/base/Log",
 	"sap/base/util/defineLazyProperty",
-	"sap/base/security/encodeXML",
+	"sap/base/security/encodeCSS",
 	// referenced here to enable the Support feature
 	'./Support'
 ],
@@ -36,7 +36,7 @@ sap.ui.define([
 	assert,
 	Log,
 	defineLazyProperty,
-	encodeXML
+	encodeCSS
 ) {
 
 	"use strict";
@@ -45,7 +45,7 @@ sap.ui.define([
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.m",
-		version: "1.61.2",
+		version: "1.67.1",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		types: [
@@ -54,29 +54,34 @@ sap.ui.define([
 			"sap.m.ButtonType",
 			"sap.m.CarouselArrowsPlacement",
 			"sap.m.DateTimeInputType",
-			"sap.m.DialogType",
 			"sap.m.DeviationIndicator",
+			"sap.m.DialogRoleType",
+			"sap.m.DialogType",
 			"sap.m.DraftIndicatorState",
 			"sap.m.FacetFilterListDataType",
 			"sap.m.FacetFilterType",
+			"sap.m.FlexAlignContent",
 			"sap.m.FlexAlignItems",
 			"sap.m.FlexAlignSelf",
 			"sap.m.FlexDirection",
-			"sap.m.FlexWrap",
 			"sap.m.FlexJustifyContent",
 			"sap.m.FlexRendertype",
+			"sap.m.FlexWrap",
 			"sap.m.FrameType",
+			"sap.m.GenericTagDesign",
+			"sap.m.GenericTagValueState",
 			"sap.m.GenericTileMode",
 			"sap.m.GenericTileScope",
 			"sap.m.HeaderLevel",
 			"sap.m.IBarHTMLTag",
+			"sap.m.IconTabDensityMode",
 			"sap.m.IconTabFilterDesign",
+			"sap.m.IconTabHeaderMode",
 			"sap.m.ImageMode",
-			"sap.m.Size",
-			"sap.m.ValueColor",
-			"sap.m.ValueCSSColor",
+			"sap.m.InputTextFormatMode",
 			"sap.m.InputType",
 			"sap.m.LabelDesign",
+			"sap.m.LightBoxLoadingStates",
 			"sap.m.LinkConversion",
 			"sap.m.ListGrowingDirection",
 			"sap.m.ListHeaderDesign",
@@ -87,12 +92,16 @@ sap.ui.define([
 			"sap.m.LoadState",
 			"sap.m.MenuButtonMode",
 			"sap.m.ObjectHeaderPictureShape",
+			"sap.m.ObjectMarkerType",
+			"sap.m.ObjectMarkerVisibility",
 			"sap.m.OverflowToolbarPriority",
 			"sap.m.P13nPanelType",
 			"sap.m.PageBackgroundDesign",
 			"sap.m.PanelAccessibleRole",
 			"sap.m.PDFViewerDisplayType",
 			"sap.m.PlacementType",
+			"sap.m.PlanningCalendarBuiltInView",
+			"sap.m.PlanningCalendarStickyMode",
 			"sap.m.PopinDisplay",
 			"sap.m.PopinLayout",
 			"sap.m.QuickViewGroupElementType",
@@ -101,15 +110,24 @@ sap.ui.define([
 			"sap.m.SelectionDetailsActionLevel",
 			"sap.m.SelectListKeyboardNavigationMode",
 			"sap.m.SelectType",
+			"sap.m.Size",
 			"sap.m.SplitAppMode",
 			"sap.m.StandardTileType",
+			"sap.m.StepInputStepModeType",
+			"sap.m.StepInputValidationMode",
+			"sap.m.Sticky",
 			"sap.m.StringFilterOperator",
 			"sap.m.SwipeDirection",
 			"sap.m.SwitchType",
-			"sap.m.TimePickerMaskMode",
 			"sap.m.TileSizeBehavior",
+			"sap.m.TimePickerMaskMode",
 			"sap.m.ToolbarDesign",
+			"sap.m.ToolbarStyle",
+			"sap.m.UploadState",
+			"sap.m.ValueColor",
+			"sap.m.ValueCSSColor",
 			"sap.m.VerticalPlacementType",
+			"sap.m.WrappingType",
 			"sap.m.semantic.SemanticRuleSetType"
 		],
 		interfaces: [
@@ -122,6 +140,7 @@ sap.ui.define([
 			"sap.m.semantic.ISort",
 			"sap.m.ObjectHeaderContainer",
 			"sap.m.IOverflowToolbarContent",
+			"sap.m.IOverflowToolbarFlexibleContent",
 			"sap.m.IHyphenation"
 		],
 		controls: [
@@ -136,6 +155,7 @@ sap.ui.define([
 			"sap.m.Breadcrumbs",
 			"sap.m.Carousel",
 			"sap.m.CheckBox",
+			"sap.m.ColumnHeaderPopover",
 			"sap.m.ColumnListItem",
 			"sap.m.ColorPalette",
 			"sap.m.ColorPalettePopover",
@@ -162,6 +182,7 @@ sap.ui.define([
 			"sap.m.FeedListItem",
 			"sap.m.FlexBox",
 			"sap.m.FormattedText",
+			"sap.m.GenericTag",
 			"sap.m.GenericTile",
 			"sap.m.GroupHeaderListItem",
 			"sap.m.GrowingList",
@@ -210,6 +231,7 @@ sap.ui.define([
 			"sap.m.OverflowToolbarButton",
 			"sap.m.OverflowToolbarToggleButton",
 			"sap.m.P13nColumnsPanel",
+			"sap.m.P13nGroupPanel",
 			"sap.m.P13nSelectionPanel",
 			"sap.m.P13nDimMeasurePanel",
 			"sap.m.P13nConditionPanel",
@@ -226,6 +248,7 @@ sap.ui.define([
 			"sap.m.ProgressIndicator",
 			"sap.m.PullToRefresh",
 			"sap.m.QuickView",
+			"sap.m.QuickViewBase",
 			"sap.m.QuickViewCard",
 			"sap.m.QuickViewPage",
 			"sap.m.RadioButton",
@@ -241,10 +264,12 @@ sap.ui.define([
 			"sap.m.SelectList",
 			"sap.m.SelectionDetails",
 			"sap.m.Shell",
+			"sap.m.SimpleFixFlex",
 			"sap.m.SinglePlanningCalendar",
 			"sap.m.SinglePlanningCalendarGrid",
 			"sap.m.Slider",
 			"sap.m.SliderTooltip",
+			"sap.m.SliderTooltipBase",
 			"sap.m.SliderTooltipContainer",
 			"sap.m.SlideTile",
 			"sap.m.StepInput",
@@ -276,20 +301,24 @@ sap.ui.define([
 			"sap.m.TreeItemBase",
 			"sap.m.UploadCollection",
 			"sap.m.UploadCollectionToolbarPlaceholder",
+			"sap.m.upload.UploadSet",
 			"sap.m.VBox",
 			"sap.m.ViewSettingsDialog",
 			"sap.m.ViewSettingsPopover",
+			"sap.m.Wizard",
+			"sap.m.WizardStep",
 			"sap.m.semantic.DetailPage",
 			"sap.m.semantic.SemanticPage",
 			"sap.m.semantic.ShareMenuPage",
 			"sap.m.semantic.FullscreenPage",
-			"sap.m.semantic.MasterPage",
-			"sap.m.Wizard",
-			"sap.m.WizardStep"
+			"sap.m.semantic.MasterPage"
 		],
 		elements: [
-			"sap.m.CalendarAppointment",
 			"sap.m.Column",
+			"sap.m.ColumnPopoverActionItem",
+			"sap.m.ColumnPopoverCustomItem",
+			"sap.m.ColumnPopoverItem",
+			"sap.m.ColumnPopoverSortItem",
 			"sap.m.FlexItemData",
 			"sap.m.FeedListItemAction",
 			"sap.m.IconTabFilter",
@@ -307,6 +336,7 @@ sap.ui.define([
 			"sap.m.PlanningCalendarView",
 			"sap.m.P13nColumnsItem",
 			"sap.m.P13nDimMeasureItem",
+			"sap.m.P13nGroupItem",
 			"sap.m.P13nSortItem",
 			"sap.m.QuickViewGroup",
 			"sap.m.QuickViewGroupElement",
@@ -324,12 +354,12 @@ sap.ui.define([
 			"sap.m.ToolbarLayoutData",
 			"sap.m.UploadCollectionItem",
 			"sap.m.UploadCollectionParameter",
+			"sap.m.upload.Uploader",
+			"sap.m.upload.UploadSetItem",
 			"sap.m.ViewSettingsCustomItem",
 			"sap.m.ViewSettingsCustomTab",
 			"sap.m.ViewSettingsFilterItem",
 			"sap.m.ViewSettingsItem",
-			"sap.m.semantic.SemanticButton",
-			"sap.m.semantic.SemanticSelect",
 			"sap.m.semantic.AddAction",
 			"sap.m.semantic.CancelAction",
 			"sap.m.semantic.DeleteAction",
@@ -350,6 +380,10 @@ sap.ui.define([
 			"sap.m.semantic.PositiveAction",
 			"sap.m.semantic.PrintAction",
 			"sap.m.semantic.SaveAction",
+			"sap.m.semantic.SemanticButton",
+			"sap.m.semantic.SemanticControl",
+			"sap.m.semantic.SemanticSelect",
+			"sap.m.semantic.SemanticToggleButton",
 			"sap.m.semantic.SendEmailAction",
 			"sap.m.semantic.SendMessageAction",
 			"sap.m.semantic.ShareInJamAction",
@@ -485,7 +519,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @public
 	 */
 	var thisLib = sap.m;
@@ -749,6 +783,28 @@ sap.ui.define([
 
 	};
 
+	/**
+	 * Enum for the ARIA role of {@link sap.m.Dialog} control.
+	 *
+	 * @enum {string}
+	 * @since 1.65
+	 * @public
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.DialogRoleType = {
+
+		/**
+		 * Represents the ARIA role <code>dialog</code>.
+		 * @public
+		 */
+		Dialog : "dialog",
+
+		/**
+		 * Represents the ARIA role <code>alertdialog</code>.
+		 * @public
+		 */
+		AlertDialog : "alertdialog"
+	};
 
 	/**
 	 * Enum of the available deviation markers for the NumericContent control.
@@ -1311,6 +1367,49 @@ sap.ui.define([
 	};
 
 	/**
+	 * Design modes for the <code>GenericTag</code> control.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.62.0
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.GenericTagDesign = {
+		/**
+		 * Everything from the control is rendered.
+		 * @public
+		 */
+		Full : "Full",
+		/**
+		 * Everything from the control is rendered except the status icon.
+		 * @public
+		 */
+		StatusIconHidden : "StatusIconHidden"
+	};
+
+	/**
+	 * Value states for the <code>GenericTag</code> control.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.62.0
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.GenericTagValueState = {
+		/**
+		 * The value is rendered in its normal state.
+		 * @public
+		 */
+		None : "None",
+		/**
+		 * Warning icon is rendered that overrides the control set in the <code>value</code>
+		 * aggregation of the <code>GenericTag</code> control.
+		 * @public
+		 */
+		Error : "Error"
+	};
+
+	/**
 	 * Defines the mode of GenericTile.
 	 *
 	 * @enum {string}
@@ -1484,7 +1583,7 @@ sap.ui.define([
 	 * regardless of the value that this method returns.
 	 *
 	 * @param {object} mOptions The option array
-	 * @returns {integer} The number of tickmarks
+	 * @returns {int} The number of tickmarks
 	 *
 	 * @function
 	 * @name sap.m.IScale.getTickmarksBetweenLabels
@@ -1492,14 +1591,14 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Returns How many tickmarks would be drawn on the screen.
+	 * Returns how many tickmarks would be drawn on the screen.
 	 *
 	 * <b>Note:</b> There would always be a tickmark in the beginning and in the end of the slider,
 	 * regardless of the value this method returns. The start and the end tickmark are taken into account
 	 * for the later calculations.
 	 *
 	 * @param {object} mOptions The option array
-	 * @returns {integer} The number of tickmarks
+	 * @returns {int} The number of tickmarks
 	 *
 	 * @function
 	 * @name sap.m.IScale.calcNumberOfTickmarks
@@ -1508,24 +1607,31 @@ sap.ui.define([
 
 	/**
 	 * Called, when the slider is getting resized.
-	 * The Slider/RangeSlider control, could be accessed via the oEvent.control parameter.
+	 *
+	 * The Slider/RangeSlider control could be accessed via the oEvent.control parameter.
+	 *
+	 * Implementing this method is optional.
+	 *
 	 * @param {jQuery.Event} oEvent The event object passed.
 	 *
 	 * @function
-	 * @name sap.m.IScale.handleResize
+	 * @name sap.m.IScale.handleResize?
 	 * @public
 	 */
 
 	/**
 	 * Provides a custom tickmark label.
+	 *
 	 * This method is optional. If it is not provided, the slider values will be placed as labels.
 	 * If provided, the value of the tickmark labels and accessibility attributes
 	 * (aria-valuenow and aria-valuetext) of the slider are changed accordingly.
 	 *
+	 * @param {float} fValue Value represented by the tickmark
+	 * @param {sap.m.Slider|sap.m.RangeSlider} oSlider Slider control that asks for a label
 	 * @returns {string | number} The label that should be placed in the current position.
 	 *
 	 * @function
-	 * @name sap.m.IScale.getLabel
+	 * @name sap.m.IScale.getLabel?
 	 * @public
 	 */
 
@@ -1629,7 +1735,7 @@ sap.ui.define([
 	 *       <b>Note:</b> See: <code>onBeforeEnterOverflow</code> for details about the function's context.</li>
 	 *
 	 *       <li><code>getCustomImportance()</code> - A function that, if provided, will be called to determine the priority of the control.
-	 *       This function must return a value of type <code>sap.m.OverflowToolbarPriority</code>. The string "Medium" is also accepted and interpreted as priority between <code>Low</code> and <code>High<code>.
+	 *       This function must return a value of type <code>sap.m.OverflowToolbarPriority</code>. The string "Medium" is also accepted and interpreted as priority between <code>Low</code> and <code>High</code>.
 	 *
 	 *       <b>Note:</b> Normally priority in <code>sap.m.OverflowToolbar</code> is managed with the <code>priority</code> property of <code>sap.m.OverflowToolbarLayoutData</code>.
 	 *       However, some controls may have other means of defining priority, such as dedicated properties or other types of layout data for that purpose.
@@ -1653,12 +1759,23 @@ sap.ui.define([
 	 */
 
 	/**
+	 * Marker interface for flexible controls that have a special behavior inside <code>sap.m.OverflowToolbar</code>.
+	 *
+	 * @since 1.67
+	 * @name sap.m.IOverflowToolbarFlexibleContent
+	 * @interface
+	 * @private
+	 * @ui5-restricted sap.m.GenericTag
+	 */
+
+	/**
 	 * Represents an Interface for controls that can have their text hyphenated.
 	 * Those controls can use <code>HyphenationSupport</code> mixin.
 	 *
 	 * @name sap.m.IHyphenation
 	 * @interface
 	 * @private
+	 * @ui5-restricted
 	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
 	 */
 
@@ -1670,6 +1787,7 @@ sap.ui.define([
 	 * @function
 	 * @name sap.m.IHyphenation.getWrapping
 	 * @private
+	 * @ui5-restricted
 	 */
 
 	/**
@@ -1680,6 +1798,7 @@ sap.ui.define([
 	 * @function
 	 * @name sap.m.IHyphenation.getWrappingType
 	 * @private
+	 * @ui5-restricted
 	 */
 
 	/**
@@ -1691,6 +1810,7 @@ sap.ui.define([
 	 * @function
 	 * @name sap.m.IHyphenation.getTextsToBeHyphenated
 	 * @private
+	 * @ui5-restricted
 	 */
 
 	/**
@@ -1705,6 +1825,7 @@ sap.ui.define([
 	 * @function
 	 * @name sap.m.IHyphenation.getDomRefsForHyphenatedTexts
 	 * @private
+	 * @ui5-restricted
 	 */
 
 	/**
@@ -1740,16 +1861,19 @@ sap.ui.define([
 
 		/**
 		 * Inherit. In this mode the global configuration of the density mode will be applied.
+		 * @public
 		 */
 		Inherit : "Inherit",
 
 		/**
 		 * Compact. In this mode the tabs will be set explicitly to compact mode independent of what mode is applied globally.
+		 * @public
 		 */
 		Compact : "Compact",
 
 		/**
 		 * Cozy. In this mode the tabs will be set explicitly to compact mode independent of what mode is applied globally.
+		 * @public
 		 */
 		Cozy : "Cozy"
 	};
@@ -2997,19 +3121,19 @@ sap.ui.define([
 
 		/**
 		 * Action on SelectionDetailsItem level.
-		 * @private
+		 * @protected
 		 */
 		Item : "Item",
 
 		/**
 		 * Action on SelectionDetails list level.
-		 * @private
+		 * @protected
 		 */
 		List : "List",
 
 		/**
 		 * ActionGroup on SelectionDetails list level.
-		 * @private
+		 * @protected
 		 */
 		Group : "Group"
 	};
@@ -3513,6 +3637,36 @@ sap.ui.define([
 	};
 
 	/**
+	 * States of the upload process for {@link sap.m.UploadCollectionItem}.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.UploadState = {
+		/**
+		 * The file has been uploaded successfuly.
+		 * @public
+		 */
+		Complete: "Complete",
+		/**
+		 * The file cannot be uploaded due to an error.
+		 * @public
+		 */
+		Error: "Error",
+		/**
+		 * The file is awaiting an explicit command to start being uploaded.
+		 * @public
+		 */
+		Ready: "Ready",
+		/**
+		 * The file is currently being uploaded.
+		 * @public
+		 */
+		Uploading: "Uploading"
+	};
+
+	/**
 	 * Available wrapping types for text controls that can be wrapped that enable you
 	 * to display the text as hyphenated.
 	 *
@@ -3537,6 +3691,34 @@ sap.ui.define([
 		 * @public
 		 */
 		Hyphenated : "Hyphenated"
+	};
+
+	/**
+	 * Available sticky modes for the {@link sap.m.SinglePlanningCalendar}
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.62
+	 * @ui5-metamodel This enumeration also will be described in tge UI5 (legacy) designtime metamodel
+	 */
+	thisLib.PlanningCalendarStickyMode = {
+		/**
+		 * Nothing will stick at the top.
+		 * @public
+		 */
+		None: "None",
+
+		/**
+		 * Actions toolbar, navigation toolbar and the column headers will be sticky.
+		 * @public
+		 */
+		All: "All",
+
+		/**
+		 * Only the navigation toolbar and column headers will be sticky.
+		 * @public
+		 */
+		NavBarAndColHeaders: "NavBarAndColHeaders"
 	};
 
 	//lazy imports for MessageToast
@@ -4037,7 +4219,7 @@ sap.ui.define([
 		 * To be called by control renderers supporting the global themable background image within their root tag, before they call writeClasses() and writeStyles().
 		 *
 		 * @param {sap.ui.core.RenderManager} rm The RenderManager
-		 * @param {string} [sBgColor] A configured custom background color for the control, if any
+		 * @param {sap.ui.core.CSSColor} [sBgColor] A configured custom background color for the control, if any
 		 * @param {sap.ui.core.URI} [sBgImgUrl] The configured custom background image for the control, if any
 		 *
 		 * @protected
@@ -4045,12 +4227,16 @@ sap.ui.define([
 		addBackgroundColorStyles: function(rm, sBgColor, sBgImgUrl, sCustomBGClass) {
 			rm.addClass(sCustomBGClass || "sapUiGlobalBackgroundColor");
 
+			if (sBgColor && !DataType.getType("sap.ui.core.CSSColor").isValid(sBgColor)) {
+				Log.warning(sBgColor + " is not a valid sap.ui.core.CSSColor type");
+				sBgColor = "";
+			}
 			if (sBgColor || sBgImgUrl) { // when an image or color is configured, the gradient needs to be removed, so the color can be seen behind the image
 				rm.addStyle("background-image", "none");
 				rm.addStyle("filter", "none");
 			}
 			if (sBgColor) {
-				rm.addStyle("background-color", encodeXML(sBgColor));
+				rm.addStyle("background-color", sBgColor);
 			}
 		},
 
@@ -4101,7 +4287,7 @@ sap.ui.define([
 
 			if (sBgImgUrl) { // use the settings only if a background image is configured
 				rm.addStyle("display", "block"); // enforce visibility even if a parent has also a background image
-				rm.addStyle("background-image", "url(" + encodeXML(sBgImgUrl) + ")");
+				rm.addStyle("background-image", "url(" + encodeCSS(sBgImgUrl) + ")");
 
 				rm.addStyle("background-repeat", bRepeat ? "repeat" : "no-repeat");
 				if (!bRepeat) {

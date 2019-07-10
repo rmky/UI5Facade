@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -56,6 +56,8 @@ sap.ui.define([
 
 			delayedCheckTheme.apply(this, [true]);
 
+			// Do not fire the event when the theme is already applied initially.
+			// bOnlyOnInitFail=true should only be passed from Core#init.
 			if (!bOnlyOnInitFail && !this._sThemeCheckId) {
 				this._oCore.fireThemeChanged({theme: this._oCore.getConfiguration().getTheme()});
 			}
@@ -187,7 +189,7 @@ sap.ui.define([
 
 						includeStylesheet(sCustomCssPath, oThemeCheck._CUSTOMID);
 						oThemeCheck._customCSSAdded = true;
-						Log.warning("ThemeCheck: delivered custom CSS needs to be loaded, Theme not yet applied");
+						Log.debug("ThemeCheck: delivered custom CSS needs to be loaded, Theme not yet applied");
 						oThemeCheck._themeCheckedForCustom = sThemeName;
 						res = false;
 						return false;
@@ -265,7 +267,7 @@ sap.ui.define([
 		}
 
 		if (!res) {
-			Log.warning("ThemeCheck: Theme not yet applied.");
+			Log.debug("ThemeCheck: Theme not yet applied.");
 		} else {
 			oThemeCheck._themeCheckedForCustom = sThemeName;
 		}
@@ -414,7 +416,7 @@ sap.ui.define([
 			ThemeCheck.themeLoaded = true;
 			this._oCore.fireThemeChanged({theme: this._oCore.getConfiguration().getTheme()});
 			if (bEmergencyExit) {
-				Log.warning("ThemeCheck: max. check cycles reached.");
+				Log.error("ThemeCheck: max. check cycles reached.");
 			}
 		} else {
 			ThemeCheck.themeLoaded = true;

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -63,7 +63,7 @@ sap.ui.define([
 	 * If used inside the calendar the properties and aggregation are directly taken from the parent
 	 * (To not duplicate and sync DateRanges and so on...)
 	 * @extends sap.ui.core.Control
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -830,7 +830,9 @@ sap.ui.define([
 		var oType, oTypeNW, bNonWorkingType, aTypes = [];
 		var aSpecialDates = this.getSpecialDates();
 		var oTimeStamp = oDate.toUTCJSDate().getTime();
-		var sCalendarType = this.getPrimaryCalendarType();
+		// we only need the timestamp of each special date for comparison
+		// because it is independent of calendar type, we use native UTC Date
+		var oUTCDate = new Date(Date.UTC(0, 0, 1));
 
 		for ( var i = 0; i < aSpecialDates.length; i++) {
 			// initialize the time part of the start and end time
@@ -838,14 +840,14 @@ sap.ui.define([
 			var oStartDate = oRange.getStartDate();
 			var oStartTimeStamp = CalendarUtils.MAX_MILLISECONDS; //max date
 			if (oStartDate) {
-				oStartDate = CalendarDate.fromLocalJSDate(oStartDate, sCalendarType);
-				oStartTimeStamp = oStartDate.toUTCJSDate().getTime();
+				oUTCDate.setUTCFullYear(oStartDate.getFullYear(), oStartDate.getMonth(), oStartDate.getDate());
+				oStartTimeStamp = oUTCDate.getTime();
 			}
 			var oEndDate = oRange.getEndDate();
 			var oEndTimeStamp = -CalendarUtils.MAX_MILLISECONDS; //min date
 			if (oEndDate) {
-				oEndDate = CalendarDate.fromLocalJSDate(oEndDate, sCalendarType);
-				oEndTimeStamp = oEndDate.toUTCJSDate().getTime();
+				oUTCDate.setUTCFullYear(oEndDate.getFullYear(), oEndDate.getMonth(), oEndDate.getDate());
+				oEndTimeStamp = oUTCDate.getTime();
 			}
 
 			bNonWorkingType = oRange.getType() === CalendarDayType.NonWorking;
@@ -1005,6 +1007,9 @@ sap.ui.define([
 	};
 
 	Month.prototype.onmouseup = function(oEvent){
+		// BCP: 1980116734
+		// on a combi device right mouse button resulted in a selection (both a week or a single day)
+		var bNotRightMouseButton = oEvent.button !== 2;
 
 		// fire select event on mouseup to prevent closing calendar during click
 
@@ -1040,7 +1045,7 @@ sap.ui.define([
 		if (this._bMousedownChange) {
 			this._bMousedownChange = false;
 			_fireSelect.call(this);
-		} else if (Device.support.touch && this._areMouseEventCoordinatesInThreshold(oEvent.clientX, oEvent.clientY, 10)) {
+		} else if (Device.support.touch && bNotRightMouseButton && this._areMouseEventCoordinatesInThreshold(oEvent.clientX, oEvent.clientY, 10)) {
 			var classList = oEvent.target.classList,
 				bIsDateSelected = (classList.contains("sapUiCalItemText") || classList.contains("sapUiCalDayName")),
 				bIsWeekSelected = classList.contains("sapUiCalWeekNum"),

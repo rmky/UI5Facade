@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -198,7 +198,7 @@ sap.ui.define([
 			}
 		} else {
 			vValue = this.enumTypeMemberCounter;
-			this.enumTypeMemberCounter++;
+			this.enumTypeMemberCounter += 1;
 		}
 		this.enumType[sName] = vValue;
 		this.annotatable(sName);

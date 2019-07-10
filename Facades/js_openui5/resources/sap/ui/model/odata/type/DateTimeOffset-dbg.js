@@ -1,15 +1,16 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/base/Log",
+	"sap/ui/core/CalendarType",
 	"sap/ui/core/format/DateFormat",
 	"sap/ui/model/FormatException",
 	"sap/ui/model/odata/type/DateTimeBase"
-], function (Log, DateFormat, FormatException, DateTimeBase) {
+], function (Log, CalendarType, DateFormat, FormatException, DateTimeBase) {
 	"use strict";
 
 	/**
@@ -27,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.DateTimeBase
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @alias sap.ui.model.odata.type.DateTimeOffset
 	 * @param {object} [oFormatOptions]
@@ -57,6 +58,7 @@ sap.ui.define([
 					precision : oConstraints ? oConstraints.precision : undefined
 				});
 				this.rDateTimeOffset = undefined; // @see #validateValue
+				this.oModelFormat = undefined;
 				this.bV4 = false; // @see #setV4
 				if (oConstraints) {
 					bV4 = oConstraints.V4;
@@ -88,6 +90,7 @@ sap.ui.define([
 				sPattern += "." + "".padEnd(iPrecision, "S");
 			}
 			oType.oModelFormat = DateFormat.getDateInstance({
+				calendarType : CalendarType.Gregorian,
 				pattern : sPattern + "X",
 				strictParsing : true,
 				UTC : oType.oFormatOptions && oType.oFormatOptions.UTC
@@ -95,6 +98,16 @@ sap.ui.define([
 		}
 		return oType.oModelFormat;
 	}
+
+	/**
+	 * Resets the model formatter instance which is recreated on demand, for example via
+	 * {@link #getModelFormat}, and cached.
+	 *
+	 * @private
+	 */
+	DateTimeOffset.prototype._resetModelFormatter = function () {
+		this.oModelFormat = undefined;
+	};
 
 	/**
 	 * Formats the given value to the given target type.
@@ -209,7 +222,6 @@ sap.ui.define([
 	 *
 	 * @param {any} vValue
 	 *   The value to be validated
-	 * @returns {void}
 	 * @throws {sap.ui.model.ValidateException}
 	 *   If the value is not valid
 	 *

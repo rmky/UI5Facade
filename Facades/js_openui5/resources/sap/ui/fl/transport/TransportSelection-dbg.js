@@ -1,6 +1,6 @@
 /*
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,14 +9,19 @@ sap.ui.define([
 	"sap/ui/fl/transport/Transports",
 	"sap/ui/fl/transport/TransportDialog",
 	"sap/ui/fl/registry/Settings"
-], function(Utils, Transports, TransportDialog, FlexSettings) {
+], function(
+	Utils,
+	Transports,
+	TransportDialog,
+	FlexSettings
+) {
 	"use strict";
 	/**
 	 * @public
 	 * @alias sap.ui.fl.transport.TransportSelection
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @since 1.38.0
 	 * Helper object to select an ABAP transport for an LREP object. This is not a generic utility to select a transport request, but part
 	 *        of the SmartVariant control.
@@ -277,33 +282,31 @@ sap.ui.define([
 					iChangeIdx--;
 					// set the transport for the next request
 					return fnSetTransports(aChanges, iChangeIdx, oControl, sTransport, bFromDialog);
-				} else {
-					// bring up the transport dialog to get the transport information for a change
-					if (oCurrentChange.getDefinition().packageName !== "$TMP") {
-						return that.openTransportSelection(oCurrentChange, oControl).then(function(oTransportInfo) {
+				}
+				// bring up the transport dialog to get the transport information for a change
+				if (oCurrentChange.getDefinition().packageName !== "$TMP") {
+					return that.openTransportSelection(oCurrentChange, oControl).then(function(oTransportInfo) {
+						oCurrentChange.setRequest(oTransportInfo.transport);
 
-							oCurrentChange.setRequest(oTransportInfo.transport);
+						if (oTransportInfo.fromDialog === true) {
+							sTransport = oTransportInfo.transport;
+							bFromDialog = true;
+						}
 
-							if (oTransportInfo.fromDialog === true) {
-								sTransport = oTransportInfo.transport;
-								bFromDialog = true;
-							}
-
-							iChangeIdx--;
-							// set the transport for the next request
-							return fnSetTransports(aChanges, iChangeIdx, oControl, sTransport, bFromDialog);
-						}, function () {
-							return null;
-						});
-					} else {
 						iChangeIdx--;
 						// set the transport for the next request
 						return fnSetTransports(aChanges, iChangeIdx, oControl, sTransport, bFromDialog);
-					}
+					}, function () {
+						return null;
+					});
 				}
-			} else {
-				return Promise.resolve(); // last change has been processed, continue with discarding the changes
+
+				iChangeIdx--;
+				// set the transport for the next request
+				return fnSetTransports(aChanges, iChangeIdx, oControl, sTransport, bFromDialog);
 			}
+
+			return Promise.resolve(); // last change has been processed, continue with discarding the changes
 		};
 
 		return fnSetTransports(aChanges, iChangeIdx, oControl);
@@ -318,7 +321,6 @@ sap.ui.define([
 	 * @public
 	 */
 	TransportSelection.prototype.openTransportSelection = function(oChange, oControl, sStyleClass) {
-
 		var that = this;
 
 		return new Promise(function(resolve, reject) {
@@ -375,13 +377,14 @@ sap.ui.define([
 	 * @param {string} oTransportInfo.packageName - name of the package
 	 * @param {string} oTransportInfo.transport - ID of the transport
 	 * @param {Array} aAllLocalChanges - array that includes all local changes
+	 * @param {Array} [aAppVariantDescriptors] - array that includes all app variant descriptors
 	 * @returns {Promise} Returns a Promise which resolves without parameters
 	 */
-	TransportSelection.prototype._prepareChangesForTransport = function(oTransportInfo, aAllLocalChanges) {
+	TransportSelection.prototype._prepareChangesForTransport = function(oTransportInfo, aAllLocalChanges, aAppVariantDescriptors) {
 		if (aAllLocalChanges.length > 0) {
 			// Pass list of changes to be transported with transport request to backend
 			var oTransports = new Transports();
-			var aTransportData = oTransports._convertToChangeTransportData(aAllLocalChanges);
+			var aTransportData = oTransports._convertToChangeTransportData(aAllLocalChanges, aAppVariantDescriptors);
 			var oTransportParams = {};
 			//packageName is '' in CUSTOMER layer (no package input field in transport dialog)
 			oTransportParams.package = oTransportInfo.packageName;
@@ -389,20 +392,18 @@ sap.ui.define([
 			oTransportParams.changeIds = aTransportData;
 
 			return oTransports.makeChangesTransportable(oTransportParams).then(function() {
-
 				// remove the $TMP package from all changes; has been done on the server as well,
 				// but is not reflected in the client cache until the application is reloaded
 				aAllLocalChanges.forEach(function(oChange) {
-
 					if (oChange.getPackage() === '$TMP') {
 						var oDefinition = oChange.getDefinition();
 						oDefinition.packageName = oTransportInfo.packageName;
 						oChange.setResponse(oDefinition);
 					}
 				});
-				return Promise.resolve();
 			});
 		}
+		return Promise.resolve();
 	};
 
 	return TransportSelection;

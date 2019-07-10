@@ -16,6 +16,21 @@
 			"theme": "sap_hcb"
 		},
 		{
+			"name": "Row.less",
+			"designtime": true,
+			"theme": "sap_hcb"
+		},
+		{
+			"name": "RowHighlight.less",
+			"designtime": true,
+			"theme": "sap_hcb"
+		},
+		{
+			"name": "RowSelection.less",
+			"designtime": true,
+			"theme": "sap_hcb"
+		},
+		{
 			"name": "Scrolling.less",
 			"designtime": true,
 			"theme": "sap_hcb"

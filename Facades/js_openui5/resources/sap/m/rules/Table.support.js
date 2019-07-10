@@ -1,28 +1,29 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
  * Defines support rules of the Link control of sap.m Table.
  */
-sap.ui.define(["sap/ui/support/library"],
-	function(SupportLib) {
+sap.ui.define(["sap/ui/support/library", "sap/m/ListBase", "sap/ui/core/library"],
+	function(SupportLib, ListBase, coreLibrary) {
 		"use strict";
 
 		// shortcuts
 		var Categories = SupportLib.Categories, // Accessibility, Performance, Memory, ...
 			Severity = SupportLib.Severity,	// Hint, Warning, Error
 			Audiences = SupportLib.Audiences; // Control, Internal, Application
+		var MessageType = coreLibrary.MessageType;
 
 		//**********************************************************
 		// Rule Definitions
 		//**********************************************************
 
 		/**
-		 *Checks, if a link with attached press handler has no href property set
+		 * Checks column widths configuration
 		 */
-		var oTableRule = {
+		var oColumnWidthRule = {
 			id: "definingColumnWidths",
 			audiences: [Audiences.Control],
 			categories: [Categories.Usability],
@@ -36,16 +37,17 @@ sap.ui.define(["sap/ui/support/library"],
 				href: "https://sapui5.hana.ondemand.com/#/topic/6f778a805bc3453dbb66e246d8271839"
 			}],
 			check: function (oIssueManager, oCoreFacade, oScope) {
-				var count = 0;
 				oScope.getElementsByClassName("sap.m.Table").forEach(function (oTable) {
-					var aColumn = oTable.getColumns();
-					aColumn.forEach(function (oColumn) {
+					var aColumn = oTable.getColumns(),
+						bSomeColumnNoWidth;
+					if (!aColumn.length) {
+						return;
+					}
+					bSomeColumnNoWidth = aColumn.some(function (oColumn) {
 						var sWidth = oColumn.getWidth();
-						if (sWidth !== "auto" || sWidth !== "") {
-							count++;
-						}
+						return sWidth === "" || "auto";
 					});
-					if (count === aColumn.length) {
+					if (!bSomeColumnNoWidth) {
 						oIssueManager.addIssue({
 							severity: Severity.Medium,
 							details: "All the columns are configured with a width. This should be avoided.",
@@ -58,5 +60,48 @@ sap.ui.define(["sap/ui/support/library"],
 			}
 		};
 
-		return [oTableRule];
+		/*
+		 * Validates whether the highlightText property of the item is correctly set.
+		 */
+		var oItemHighlightTextRule = {
+			id: "accessibleItemHighlight",
+			audiences: [Audiences.Application],
+			categories: [Categories.Accessibility],
+			enabled: true,
+			minversion: "1.62",
+			title: "ListItem: Accessible Highlight",
+			description: "Checks whether the item highlights are accessible.",
+			resolution: "Use the 'highlightText' property of the item to define the semantics of the 'highlight'.",
+			resolutionurls: [{
+				text: "API Reference: sap.m.ListItemBase#getHighlight",
+				href: "https://sapui5.hana.ondemand.com/#/api/sap.m.ListItemBase/methods/getHighlight"
+			}, {
+				text: "API Reference: sap.m.ListItemBase#getHighlightText",
+				href: "https://sapui5.hana.ondemand.com/#/api/sap.m.ListItemBase/methods/getHighlightText"
+			}],
+			check: function(oIssueManager, oCoreFacade, oScope) {
+				function checkItemHighlight(oListItemBase) {
+					var sHighlight = oListItemBase.getHighlight();
+					var sHighlightText = oListItemBase.getHighlightText();
+					var sItemId = oListItemBase.getId();
+					var sListId = oListItemBase.getParent().getId();
+
+					if (!(sHighlight in MessageType) && sHighlightText === "") {
+						oIssueManager.addIssue({
+							severity: Severity.High,
+							details: "Item '" + sItemId + "' does not have a highlight text.",
+							context: {
+								id: sListId
+							}
+						});
+					}
+				}
+
+				oScope.getElementsByClassName(ListBase).forEach(function(oListBase) {
+					oListBase.getItems().forEach(checkItemHighlight);
+				});
+			}
+		};
+
+		return [oColumnWidthRule, oItemHighlightTextRule];
 	}, true);

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -89,6 +89,19 @@ sap.ui.define(['sap/ui/core/Renderer', './InputBaseRenderer', 'sap/ui/core/libra
 		 */
 		TimePickerRenderer.getAriaRole = function () {
 			return "combobox";
+		};
+
+		/**
+		 * Returns the inner aria labelledby announcement texts for the accessibility.
+		 *
+		 * @overrides sap.m.InputBaseRenderer.getLabelledByAnnouncement
+		 * @param {sap.ui.core.Control} oControl an object representation of the control.
+		 * @returns {String}
+		 */
+		TimePickerRenderer.getLabelledByAnnouncement = function(oControl) {
+			// In the TimePicker we need to render the placeholder should be placed as
+			// hidden aria labelledby node for the accessibility
+			return oControl._getPlaceholder() || "";
 		};
 
 		/**

@@ -1,47 +1,61 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	'sap/ui/Device',
-	'sap/ui/base/Object',
+	'sap/ui/base/EventProvider',
 	'sap/ui/core/InvisibleText',
 	'sap/ui/core/ListItem',
 	'sap/ui/core/ResizeHandler',
+	'sap/ui/core/ValueStateSupport',
 	'sap/m/library',
+	'sap/ui/core/library',
 	'sap/m/Bar',
+	'sap/m/Toolbar',
 	'sap/m/Button',
+	'sap/m/ToggleButton',
 	'sap/m/ColumnListItem',
+	'sap/m/GroupHeaderListItem',
+	'sap/ui/core/SeparatorItem',
 	'sap/m/Dialog',
 	'sap/m/DisplayListItem',
 	'sap/m/List',
 	'sap/m/Popover',
 	'sap/m/StandardListItem',
 	'sap/m/Table',
-	'sap/m/Toolbar',
-	'sap/m/ToolbarSpacer',
+	'sap/m/Title',
+	'sap/m/Text',
+	'sap/ui/core/IconPool',
 	"sap/base/security/encodeXML",
 	"sap/ui/events/KeyCodes"
 ], function (
 	Device,
-	BaseObject,
+	EventProvider,
 	InvisibleText,
 	ListItem,
 	ResizeHandler,
+	ValueStateSupport,
 	library,
+	coreLibrary,
 	Bar,
+	Toolbar,
 	Button,
+	ToggleButton,
 	ColumnListItem,
+	GroupHeaderListItem,
+	SeparatorItem,
 	Dialog,
 	DisplayListItem,
 	List,
 	Popover,
 	StandardListItem,
 	Table,
-	Toolbar,
-	ToolbarSpacer,
+	Title,
+	Text,
+	IconPool,
 	encodeXML,
 	KeyCodes
 ) {
@@ -56,10 +70,18 @@ sap.ui.define([
 	// shortcut for sap.m.ListType
 	var ListType = library.ListType;
 
+	// shortcut for sap.m.ListSeparators
+	var ListSeparators = library.ListSeparators;
+
+	var CSS_CLASS_SUGGESTIONS_POPOVER = "sapMSuggestionsPopover";
+
+	// shortcut for sap.ui.core.ValueState
+	var ValueState = coreLibrary.ValueState;
+
 	/**
 	 * Provides a popover that should be used with an input control which requires suggestions.
 	 *
-	 * @extends sap.ui.base.Object
+	 * @extends sap.ui.base.EventProvider
 	 *
 	 * @param {sap.ui.core.Control} oControl The input control that instantiates this suggestions popover
 	 * @constructor
@@ -67,15 +89,38 @@ sap.ui.define([
 	 * @alias sap.m.SuggestionsPopover
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 */
-	var SuggestionsPopover = BaseObject.extend("sap.m.SuggestionsPopover", /** @lends sap.m.SuggestionsPopover.prototype */ {
+	var SuggestionsPopover = EventProvider.extend("sap.m.SuggestionsPopover", /** @lends sap.m.SuggestionsPopover.prototype */ {
 
 		constructor: function (oInput) {
-			BaseObject.apply(this, arguments);
+			EventProvider.apply(this, arguments);
 
 			// stores a reference to the input control that instantiates the popover
 			this._oInput = oInput;
+
+			// show suggestions in a dialog on phones
+			this._bUseDialog = Device.system.phone;
+
+			// stores the selected index inside the popover list or table
+			this._iPopupListSelectedIndex = -1;
+
+			// specifies the width of the suggestion list
+			this._sPopoverContentWidth = null;
+
+			// specifies whether the suggestions highlighting is enabled
+			this._bEnableHighlighting = true;
+
+			// is the input incremental type
+			this._bIsInputIncrementalType = false;
+
+			// specifies whether autocomplete is enabled
+			this._bAutocompleteEnabled = false;
+
+			// stores currently typed value
+			this._sTypedInValue = '';
+
+			this._sOldValueState = ValueState.None;
 
 			// adds event delegate for the arrow keys
 			this._oInput.addEventDelegate({
@@ -122,24 +167,20 @@ sap.ui.define([
 				this._oSuggestionTable = null;
 			}
 
-			if (this._oButtonToolbar) {
-				this._oButtonToolbar.destroy();
-				this._oButtonToolbar = null;
-			}
-
-			if (this._oShowMoreButton) {
-				this._oShowMoreButton.destroy();
-				this._oShowMoreButton = null;
-			}
-
-			this._bDoTypeAhead = null;
-			this._sTypedInValue = null;
 			this._oProposedItem = null;
-			this._sProposedItemText = null;
-			this._bSuggestionItemTapped = null;
 			this._oInputDelegate = null;
 		}
 	});
+
+	/**
+	 * Map of event names and ids, that are provided by this class.
+	 *
+	 * @private
+	 * @static
+	 */
+	SuggestionsPopover.M_EVENTS = {
+		SELECTION_CHANGE : "selectionChange"
+	};
 
 	/**
 	 * Returns true if some word from the text starts with specific value.
@@ -149,17 +190,21 @@ sap.ui.define([
 	 * @param {string} sValue The value which must be compared to the word.
 	 * @returns {boolean} Indication if the word starts with the passed value.
 	 */
-	SuggestionsPopover._wordStartsWithValue = function(sText, sValue) {
-
+	SuggestionsPopover._wordStartsWithValue = function (sText, sValue) {
 		var index;
 
+		if (!sText || !sValue ||
+			typeof sText !== "string" || typeof sValue !== "string") {
+			return false;
+		}
+
 		while (sText) {
-			if (typeof sValue === "string" && sValue !== "" && sText.toLowerCase().startsWith(sValue.toLowerCase())) {
+			if (typeof sValue === "string" && sValue !== "" && sText.toLowerCase().indexOf(sValue.toLowerCase()) === 0 /* startsWith */) {
 				return true;
 			}
 
 			index = sText.indexOf(' ');
-			if (index == -1) {
+			if (index === -1) {
 				break;
 			}
 
@@ -231,197 +276,237 @@ sap.ui.define([
 	};
 
 	/**
-	 * Helper function that creates suggestion popup.
+	 * Checks if the suggestions popover is currently opened.
+	 *
+	 * @return {boolean} whether the suggestions popover is currently opened
+	 * @public
 	 */
-		SuggestionsPopover.prototype._createSuggestionPopup = function () {
-		var oInput = this._oInput;
-		var oMessageBundle = oInput._oRb;
+	SuggestionsPopover.prototype.isOpen = function () {
+		return this._oPopover && this._oPopover.isOpen();
+	};
 
-		if (oInput._bUseDialog) {
-			this._oPopupInput = new sap.m.Input(oInput.getId() + "-popup-input", {
-				width : "100%",
-				valueLiveUpdate: true,
-				showValueHelp: oInput.getShowValueHelp(),
-				valueHelpRequest: function(oEvent) {
-					// it is the same behavior as by ShowMoreButton:
-					oInput.fireValueHelpRequest({fromSuggestions: true});
-					oInput._iPopupListSelectedIndex = -1;
-					oInput._closeSuggestionPopup();
-				},
-				liveChange : function(oEvent) {
-					var sValue = oEvent.getParameter("newValue");
-					// call _getInputValue to apply the maxLength to the typed value
-					oInput.setDOMValue(oInput
-						._getInputValue(this._oPopupInput
-							.getValue()));
+	/**
+	 * Sets a function, which return the labels associated with the parent input
+	 *
+	 * @public
+	 */
+	SuggestionsPopover.prototype.setInputLabels = function (fnGetLabels) {
+		this._fnInputLabels = fnGetLabels;
+	};
 
-					oInput._triggerSuggest(sValue);
+	/**
+	 * Gets the labels associated with the parent input
+	 *
+	 * @return {Array} Array of labels
+	 * @private
+	 */
+	SuggestionsPopover.prototype._getInputLabels = function () {
+		return this._fnInputLabels();
+	};
 
-					// make sure the live change handler on the original input is also called
-					oInput.fireLiveChange({
-						value: sValue,
+	/**
+	 * Updated the dialog title based on the labels of the parent input
+	 *
+	 * @return {sap.m.Title} The title control
+	 * @private
+	 */
+	SuggestionsPopover.prototype.updatePickerHeaderTitle = function() {
+		var oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m"),
+			oPickerTitle = this.getPickerTitle(),
+			oLabel, aLabels;
 
-						// backwards compatibility
-						newValue: sValue
-					});
-				}.bind(this)
-			}).addStyleClass("sapMInputSuggInDialog");
+		if (!oPickerTitle) {
+			return;
 		}
 
-		this._oPopover = !oInput._bUseDialog ?
+		aLabels = this._getInputLabels();
+
+		if (aLabels.length) {
+			oLabel = aLabels[0];
+
+			if (oLabel && (typeof oLabel.getText === "function")) {
+				oPickerTitle.setText(oLabel.getText());
+			}
+		} else {
+			oPickerTitle.setText(oResourceBundle.getText("COMBOBOX_PICKER_TITLE"));
+		}
+
+		return oPickerTitle;
+	};
+
+	/**
+	 * Returns a reference to the title inside the dialog
+	 *
+	 * @return {sap.m.Title} The title
+	 * @public
+	 */
+	SuggestionsPopover.prototype.getPickerTitle = function () {
+		return this._oPopover.getCustomHeader().getContentMiddle()[0];
+	};
+
+	/**
+	 * Returns a reference to the OK button inside the dialog
+	 *
+	 * @return {sap.m.Button|null} The OK button
+	 * @public
+	 */
+	SuggestionsPopover.prototype.getOkButton = function() {
+		var oButton = this._oPopover
+			&& this._oPopover.getBeginButton();
+
+		return oButton || null;
+	};
+
+	/**
+	 * Returns a reference to the cancel button inside the dialog
+	 *
+	 * @return {sap.m.Button|null} The cancel button
+	 * @public
+	 */
+	SuggestionsPopover.prototype.getCancelButton = function() {
+		var oButton = this._oPopover
+			&& this._oPopover.getCustomHeader()
+			&& this._oPopover.getCustomHeader().getContentRight()[0];
+
+		return oButton || null;
+	};
+
+	/**
+	 * Returns a reference a button inside the dialog, associated with filtering actions in multi selection scenarios
+	 *
+	 * @return {sap.m.Button|null} The button
+	 * @public
+	 */
+	SuggestionsPopover.prototype.getFilterSelectedButton = function() {
+		var oButton = this._oPopover
+			&& this._oPopover.getSubHeader()
+			&& this._oPopover.getSubHeader().getContent()[1];
+
+		return oButton || null;
+	};
+
+	/**
+	 * Returns a reference a button inside the dialog, associated with filtering actions in multi selection scenarios
+	 *
+	 * @return {sap.m.Button} The button
+	 * @private
+	 */
+	SuggestionsPopover.prototype._createFilterSelectedButton = function () {
+		var sIconURI = IconPool.getIconURI("multiselect-all");
+
+		return new ToggleButton({
+			icon: sIconURI
+		});
+	};
+
+	/**
+	 * Helper function that creates suggestion popup.
+	 */
+	SuggestionsPopover.prototype._createSuggestionPopup = function (mOptions) {
+		mOptions = mOptions || [];
+		var oInput = this._oInput,
+			that = this,
+			oMessageBundle = oInput._oRb; // TODO create own message bundle
+
+		this._oPopover = !this._bUseDialog ?
 			(new Popover(oInput.getId() + "-popup", {
 				showArrow: false,
-				showHeader: false,
+				showHeader: true,
 				placement: PlacementType.Vertical,
 				initialFocus: oInput,
 				horizontalScrolling: true
-			}).attachAfterClose(function() {
-
-				oInput._updateSelectionFromList();
-
-				// only destroy items in simple suggestion mode
-				if (this._oList instanceof Table) {
-					this._oList.removeSelections(true);
-				} else {
-					this._oList.destroyItems();
-				}
-				this._deregisterResize();
-			}.bind(this)).attachBeforeOpen(function () {
-				oInput._sBeforeSuggest = oInput.getValue();
-				this._resizePopup();
-				this._registerResize();
-			}.bind(this)))
+			}))
 			:
 			(new Dialog(oInput.getId() + "-popup", {
 				beginButton : new Button(oInput.getId()
 					+ "-popup-closeButton", {
-					text : oMessageBundle.getText("MSGBOX_CLOSE"),
-					press : function() {
-						oInput._closeSuggestionPopup();
-					}
+					text : oMessageBundle.getText("SUGGESTIONSPOPOVER_CLOSE_BUTTON")
 				}),
-				stretch : oInput._bFullScreen,
-				contentHeight : oInput._bFullScreen ? undefined : "20rem",
+				stretch : true,
 				customHeader : new Bar(oInput.getId()
 					+ "-popup-header", {
-					contentMiddle : this._oPopupInput.addEventDelegate({onsapenter: function(){
-							if (!(sap.m.MultiInput && oInput instanceof sap.m.MultiInput)) {
-								if (oInput.getAutocomplete()) {
-									this._finalizeAutocomplete();
-								}
-								oInput._closeSuggestionPopup();
-							}
-						}}, this)
+					contentMiddle : new Title(),
+					contentRight: new Button({
+						icon: IconPool.getIconURI("decline")
+					})
 				}),
+				subHeader: this.createSubHeaderContent(mOptions),
 				horizontalScrolling : false,
-				initialFocus : this._oPopupInput
-			}).attachBeforeOpen(function() {
-				// set the same placeholder and maxLength as the original input
-				this._oPopupInput.setPlaceholder(oInput.getPlaceholder());
-				this._oPopupInput.setMaxLength(oInput.getMaxLength());
-			}.bind(this)).attachBeforeClose(function () {
-				// call _getInputValue to apply the maxLength to the typed value
-				oInput.setDOMValue(oInput
-					._getInputValue(this._oPopupInput
-						.getValue()));
-				oInput.onChange();
-
-				if (oInput instanceof sap.m.MultiInput && oInput._bUseDialog) {
-					oInput._onDialogClose();
+				initialFocus : this._oPopupInput,
+				beforeOpen: function() {
+					that.updatePickerHeaderTitle();
+				},
+				afterClose: function() {
+					oInput.focus();
+					library.closeKeyboard();
 				}
-
-			}.bind(this)).attachAfterClose(function() {
-
-				// only destroy items in simple suggestion mode
-				if (this._oList) {
-					if (Table && !(this._oList instanceof Table)) {
-						this._oList.destroyItems();
-					} else {
-						this._oList.removeSelections(true);
-					}
-				}
-			}.bind(this)).attachAfterOpen(function () {
-				var sValue = oInput.getValue();
-
-				this._oPopupInput.setValue(sValue);
-				oInput._triggerSuggest(sValue);
-				oInput._oSuggPopover._refreshListItems();
-			}.bind(this)));
+			}));
 
 		this._registerAutocomplete();
-		this._oPopover.addStyleClass("sapMInputSuggestionPopup");
+		this._oPopover.addStyleClass(CSS_CLASS_SUGGESTIONS_POPOVER);
 		this._oPopover.addAriaLabelledBy(InvisibleText.getStaticId("sap.m", "INPUT_AVALIABLE_VALUES"));
 
-		// add popup to a hidden aggregation to also propagate the model and bindings to the content of the popover
-		oInput.setAggregation("_suggestionPopup", this._oPopover);
-		if (!oInput._bUseDialog) {
+		if (!this._bUseDialog) {
 			this._overwritePopover();
 		}
 
 		if (this._oList) {
 			this._oPopover.addContent(this._oList);
 		}
+	};
 
-		if (oInput.getShowTableSuggestionValueHelp()) {
-			this._addShowMoreButton();
+	SuggestionsPopover.prototype.createSubHeaderContent = function (mOptions) {
+		var aContent = [this._oPopupInput];
+
+		if (mOptions.showSelectedButton) {
+			aContent.push(this._createFilterSelectedButton());
 		}
+		return new Toolbar({
+			content: aContent
+		});
 	};
 
 	/**
 	 * Helper function that creates content for the suggestion popup.
 	 *
 	 * @param {boolean | null } bTabular Content for the popup.
+	 * @param hasTabularSuggestions {boolean} Determines if the Input has tabular suggestions.
 	 */
-	SuggestionsPopover.prototype._createSuggestionPopupContent = function (bTabular) {
+	SuggestionsPopover.prototype._createSuggestionPopupContent = function (bTabular, hasTabularSuggestions) {
 		var oInput = this._oInput;
 
-		// only initialize the content once
-		if (oInput._bIsBeingDestroyed || this._oList) {
-			return;
-		}
-
-		if (!oInput._hasTabularSuggestions() && !bTabular) {
+		if (!hasTabularSuggestions && !bTabular) {
 			this._oList = new List(oInput.getId() + "-popup-list", {
 				showNoData : false,
 				mode : ListMode.SingleSelectMaster,
 				rememberSelections : false,
-				itemPress : function(oEvent) {
-					this._bSuggestionItemTapped = true;
-					var oListItem = oEvent.getParameter("listItem");
-					oInput.setSelectionItem(oListItem._oItem, true);
-				}.bind(this)
+				width: "100%",
+				showSeparators: ListSeparators.None,
+				busyIndicatorDelay: 0
 			});
 
 			this._oList.addEventDelegate({
 				onAfterRendering: function () {
-					if (!oInput.getEnableSuggestionsHighlighting()) {
+					var aListItemsDomRef, sInputValue;
+
+					if (!this._bEnableHighlighting) {
 						return;
 					}
-					this._highlightListText(oInput.getValue());
+
+					aListItemsDomRef = this._oList.$().find('.sapMDLILabel, .sapMSLITitleOnly, .sapMDLIValue');
+					sInputValue = (this._sTypedInValue || this._oInput.getValue()).toLowerCase();
+
+					this.highlightSuggestionItems(aListItemsDomRef, sInputValue);
 				}.bind(this)
 			});
 
 		} else {
 			// tabular suggestions
-			// if no custom filter is set we replace the default filter function here
-			if (oInput._fnFilter === SuggestionsPopover._DEFAULTFILTER) {
-				oInput._fnFilter = SuggestionsPopover._DEFAULTFILTER_TABULAR;
-			}
-
-			// if not custom row result function is set we set the default one
-			if (!oInput._fnRowResultFilter) {
-				oInput._fnRowResultFilter = SuggestionsPopover._DEFAULTRESULT_TABULAR;
-			}
-
 			this._oList = this._getSuggestionsTable();
-
-			if (oInput.getShowTableSuggestionValueHelp()) {
-				this._addShowMoreButton(bTabular);
-			}
 		}
 
 		if (this._oPopover) {
-			if (oInput._bUseDialog) {
+			if (this._bUseDialog) {
 				// this._oList needs to be manually rendered otherwise it triggers a rerendering of the whole
 				// dialog and may close the opened on screen keyboard
 				this._oPopover.addAggregation("content", this._oList, true);
@@ -447,8 +532,6 @@ sap.ui.define([
 			// if the table is not removed before destroying the popup the table is also destroyed (table needs to stay because we forward the column and row aggregations to the table directly, they would be destroyed as well)
 			if (this._oList instanceof Table) {
 				this._oPopover.removeAllContent();
-				// also remove the button/toolbar aggregation
-				this._removeShowMoreButton();
 			}
 
 			this._oPopover.destroy();
@@ -461,83 +544,6 @@ sap.ui.define([
 		}
 
 		this._getInput().removeEventDelegate(this._oInputDelegate, this);
-	};
-
-	/**
-	 * Adds a show more button to the footer of the tabular suggestion popup/dialog.
-	 *
-	 * @private
-	 * @param{boolean} [bTabular] optional parameter to force override the tabular suggestions check
-	 */
-	SuggestionsPopover.prototype._addShowMoreButton = function(bTabular) {
-		if (!this._oPopover || !bTabular && !this._oInput._hasTabularSuggestions()) {
-			return;
-		}
-
-		if (this._oPopover instanceof Dialog) {
-			// phone variant, use endButton (beginButton is close)
-			var oShowMoreButton = this._getShowMoreButton();
-			this._oPopover.setEndButton(oShowMoreButton);
-		} else {
-			var oButtonToolbar = this._getButtonToolbar();
-			// desktop/tablet variant, use popover footer
-			this._oPopover.setFooter(oButtonToolbar);
-		}
-	};
-
-	/**
-	 * Removes the show more button from the footer of the tabular suggestion popup/dialog.
-	 *
-	 * @private
-	 */
-	SuggestionsPopover.prototype._removeShowMoreButton = function() {
-		if (!this._oPopover || !this._oInput._hasTabularSuggestions()) {
-			return;
-		}
-
-		if (this._oPopover instanceof Dialog) {
-			this._oPopover.setEndButton(null);
-		} else {
-			this._oPopover.setFooter(null);
-		}
-	};
-
-	/**
-	 * Gets show more button.
-	 *
-	 * @private
-	 * @return {sap.m.Button} Show more button.
-	 */
-	SuggestionsPopover.prototype._getShowMoreButton = function() {
-		var oInput = this._oInput,
-			oMessageBundle = oInput._oRb;
-		return this._oShowMoreButton || (this._oShowMoreButton = new sap.m.Button({
-			text : oMessageBundle.getText("INPUT_SUGGESTIONS_SHOW_ALL"),
-			press : function() {
-				if (oInput.getShowTableSuggestionValueHelp()) {
-					oInput.fireValueHelpRequest({fromSuggestions: true});
-					oInput._iPopupListSelectedIndex = -1;
-					oInput._closeSuggestionPopup();
-				}
-			}
-		}));
-	};
-
-	/**
-	 * Gets button toolbar.
-	 *
-	 * @private
-	 * @return {sap.m.Toolbar} Button toolbar.
-	 */
-	SuggestionsPopover.prototype._getButtonToolbar = function() {
-		var oShowMoreButton = this._getShowMoreButton();
-
-		return this._oButtonToolbar || (this._oButtonToolbar = new Toolbar({
-			content: [
-				new ToolbarSpacer(),
-				oShowMoreButton
-			]
-		}));
 	};
 
 	/**
@@ -567,8 +573,8 @@ sap.ui.define([
 
 		if (this._oList && this._oPopover) {
 
-			if (oInput.getMaxSuggestionWidth()) {
-				this._oPopover.setContentWidth(oInput.getMaxSuggestionWidth());
+			if (this._sPopoverContentWidth) {
+				this._oPopover.setContentWidth(this._sPopoverContentWidth);
 			} else {
 				this._oPopover.setContentWidth((oInput.$().outerWidth()) + "px");
 			}
@@ -588,7 +594,7 @@ sap.ui.define([
 	 * @private
 	 */
 	SuggestionsPopover.prototype._registerResize = function() {
-		if (!this._oInput._bFullScreen) {
+		if (!this._bUseDialog) {
 			this._sPopupResizeHandler = ResizeHandler.register(this._oInput, this._resizePopup.bind(this));
 		}
 	};
@@ -605,162 +611,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Helper function that refreshes list all items.
-	 */
-	SuggestionsPopover.prototype._refreshListItems = function () {
-		var oInput = this._oInput;
-		var bShowSuggestion = oInput.getShowSuggestion();
-		var oRb = oInput._oRb;
-		oInput._iPopupListSelectedIndex = -1;
-
-		if (!bShowSuggestion ||
-			!oInput._bShouldRefreshListItems ||
-			!oInput.getDomRef() ||
-			(!oInput._bUseDialog && !oInput.$().hasClass("sapMInputFocused"))) {
-			return false;
-		}
-
-		var oItem,
-			aItems = oInput.getSuggestionItems(),
-			aTabularRows = oInput.getSuggestionRows(),
-			sTypedChars = this._sTypedInValue || oInput.getDOMValue() || "",
-			oList = this._oList,
-			bFilter = oInput.getFilterSuggests(),
-			aHitItems = [],
-			iItemsLength = 0,
-			oPopup = this._oPopover,
-			oListItemDelegate = {
-				ontouchstart : function(oEvent) {
-					(oEvent.originalEvent || oEvent)._sapui_cancelAutoClose = true;
-				}
-			},
-			oListItem,
-			i;
-
-		// only destroy items in simple suggestion mode
-		if (this._oList) {
-			if (this._oList instanceof Table) {
-				oList.removeSelections(true);
-			} else {
-				//TODO: avoid flickering when !bFilter
-				oList.destroyItems();
-			}
-		}
-
-		// hide suggestions list/table if the number of characters is smaller than limit
-		if (sTypedChars.length < oInput.getStartSuggestion()) {
-			// when the input has no value, close the Popup when not runs on the phone because the opened dialog on phone shouldn't be closed.
-			if (!oInput._bUseDialog) {
-				oInput._iPopupListSelectedIndex = -1;
-				oInput.cancelPendingSuggest();
-				oPopup.close();
-			} else {
-				// hide table on phone when value is empty
-				if (oInput._hasTabularSuggestions() && this._oList) {
-					this._oList.addStyleClass("sapMInputSuggestionTableHidden");
-				}
-			}
-
-			oInput.$("SuggDescr").text(""); // clear suggestion text
-			oInput.$("inner").removeAttr("aria-haspopup");
-			oInput.$("inner").removeAttr("aria-activedescendant");
-			return false;
-		}
-
-		if (oInput._hasTabularSuggestions()) {
-			// show list on phone (is hidden when search string is empty)
-			if (oInput._bUseDialog && this._oList) {
-				this._oList.removeStyleClass("sapMInputSuggestionTableHidden");
-			}
-
-			// filter tabular items
-			for (i = 0; i < aTabularRows.length; i++) {
-				if (!bFilter || oInput._fnFilter(sTypedChars, aTabularRows[i])) {
-					aTabularRows[i].setVisible(true);
-					aHitItems.push(aTabularRows[i]);
-				} else {
-					aTabularRows[i].setVisible(false);
-				}
-			}
-			this._oSuggestionTable.invalidate();
-		} else {
-			// filter standard items
-			var bListItem = (aItems[0] instanceof ListItem ? true : false);
-			for (i = 0; i < aItems.length; i++) {
-				oItem = aItems[i];
-				if (!bFilter || oInput._fnFilter(sTypedChars, oItem)) {
-					if (bListItem) {
-						oListItem = new DisplayListItem(oItem.getId() + "-dli");
-						oListItem.setLabel(oItem.getText());
-						oListItem.setValue(oItem.getAdditionalText());
-					} else {
-						oListItem = new StandardListItem(oItem.getId() + "-sli");
-						oListItem.setTitle(oItem.getText());
-					}
-
-					oListItem.setType(oItem.getEnabled() ? ListType.Active : ListType.Inactive);
-					oListItem._oItem = oItem;
-					oListItem.addEventDelegate(oListItemDelegate);
-					aHitItems.push(oListItem);
-				}
-			}
-		}
-
-		iItemsLength = aHitItems.length;
-		var sAriaText = "";
-		if (iItemsLength > 0) {
-			// add items to list
-			if (iItemsLength == 1) {
-				sAriaText = oRb.getText("INPUT_SUGGESTIONS_ONE_HIT");
-			} else {
-				sAriaText = oRb.getText("INPUT_SUGGESTIONS_MORE_HITS", iItemsLength);
-			}
-			oInput.$("inner").attr("aria-haspopup", "true");
-
-			if (!oInput._hasTabularSuggestions()) {
-				for (i = 0; i < iItemsLength; i++) {
-					oList.addItem(aHitItems[i]);
-				}
-			}
-
-			if (!oInput._bUseDialog) {
-				if (oInput._sCloseTimer) {
-					clearTimeout(oInput._sCloseTimer);
-					oInput._sCloseTimer = null;
-				}
-				if (!oPopup.isOpen() && !oInput._sOpenTimer && (oInput.getValue().length >= oInput.getStartSuggestion())) {
-					oInput._sOpenTimer = setTimeout(function() {
-						oInput._sOpenTimer = null;
-						oPopup.open();
-					}, 0);
-				}
-			}
-		} else {
-			sAriaText = oRb.getText("INPUT_SUGGESTIONS_NO_HIT");
-			oInput.$("inner").removeAttr("aria-haspopup");
-			oInput.$("inner").removeAttr("aria-activedescendant");
-
-			if (!oInput._bUseDialog) {
-				if (oPopup.isOpen()) {
-					oInput._sCloseTimer = setTimeout(function() {
-						oInput._iPopupListSelectedIndex = -1;
-						oInput.cancelPendingSuggest();
-						oPopup.close();
-					}, 0);
-				}
-			} else {
-				// hide table on phone when there are no items to display
-				if (oInput._hasTabularSuggestions() && this._oList) {
-					this._oList.addStyleClass("sapMInputSuggestionTableHidden");
-				}
-			}
-		}
-
-		// update Accessibility text for suggestion
-		oInput.$("SuggDescr").text(sAriaText);
-	};
-
-	/**
 	 * Keyboard handler helper.
 	 *
 	 * @private
@@ -769,7 +619,17 @@ sap.ui.define([
 	 * @param {int} iItems Items to be changed.
 	 */
 	SuggestionsPopover.prototype._onsaparrowkey = function(oEvent, sDir, iItems) {
-		var oInput = this._oInput;
+		var oInput = this._oInput,
+			oListItem,
+			oInnerRef = oInput.$("inner");
+
+		if (oEvent.isMarked()) {
+			return;
+		}
+
+		if (oEvent.isMarked()) {
+			return;
+		}
 
 		if (!oInput.getEnabled() || !oInput.getEditable()) {
 			return;
@@ -777,7 +637,7 @@ sap.ui.define([
 		if (sDir !== "up" && sDir !== "down") {
 			return;
 		}
-		if (oInput._isIncrementalType()){
+		if (this._bIsInputIncrementalType) {
 			oEvent.setMarked();
 		}
 
@@ -790,9 +650,8 @@ sap.ui.define([
 
 		var bFirst = false,
 			oList = this._oList,
-			aItems = oInput.getSuggestionItems(),
 			aListItems = oList.getItems(),
-			iSelectedIndex = oInput._iPopupListSelectedIndex,
+			iSelectedIndex = this._iPopupListSelectedIndex,
 			sNewValue,
 			iOldIndex = iSelectedIndex;
 
@@ -828,7 +687,7 @@ sap.ui.define([
 		// always select the first item from top when nothing is selected so far
 		if (iSelectedIndex === -1) {
 			iSelectedIndex = 0;
-			if (oInput._isSuggestionItemSelectable(aListItems[iSelectedIndex])) {
+			if (this._isSuggestionItemSelectable(aListItems[iSelectedIndex])) {
 				// if first item is visible, don't go into while loop
 				iOldIndex = iSelectedIndex;
 				bFirst = true;
@@ -839,7 +698,7 @@ sap.ui.define([
 		}
 
 		if (sDir === "down") {
-			while (iSelectedIndex < aListItems.length - 1 && (!bFirst || !oInput._isSuggestionItemSelectable(aListItems[iSelectedIndex]))) {
+			while (iSelectedIndex < aListItems.length - 1 && (!bFirst || !this._isSuggestionItemSelectable(aListItems[iSelectedIndex]))) {
 				aListItems[iSelectedIndex].setSelected(false);
 				iSelectedIndex = iSelectedIndex + iItems;
 				bFirst = true;
@@ -849,7 +708,7 @@ sap.ui.define([
 				}
 			}
 		} else {
-			while (iSelectedIndex > 0 && (!bFirst || !aListItems[iSelectedIndex].getVisible() || !oInput._isSuggestionItemSelectable(aListItems[iSelectedIndex]))) {
+			while (iSelectedIndex > 0 && (!bFirst || !aListItems[iSelectedIndex].getVisible() || !this._isSuggestionItemSelectable(aListItems[iSelectedIndex]))) {
 				aListItems[iSelectedIndex].setSelected(false);
 				iSelectedIndex = iSelectedIndex - iItems;
 				bFirst = true;
@@ -860,16 +719,22 @@ sap.ui.define([
 			}
 		}
 
-		if (!oInput._isSuggestionItemSelectable(aListItems[iSelectedIndex])) {
+		if (!this._isSuggestionItemSelectable(aListItems[iSelectedIndex])) {
 			// if no further visible item can be found -> do nothing (e.g. set the old item as selected again)
 			if (iOldIndex >= 0) {
 				aListItems[iOldIndex].setSelected(true).updateAccessibilityState();
-				oInput.$("inner").attr("aria-activedescendant", aListItems[iOldIndex].getId());
+				oInnerRef.attr("aria-activedescendant", aListItems[iOldIndex].getId());
 			}
 			return;
 		} else {
-			aListItems[iSelectedIndex].setSelected(true).updateAccessibilityState();
-			oInput.$("inner").attr("aria-activedescendant", aListItems[iSelectedIndex].getId());
+			oListItem = aListItems[iSelectedIndex];
+			oListItem.setSelected(true).updateAccessibilityState();
+
+			if (oListItem.isA("sap.m.GroupHeaderListItem")) {
+				oInnerRef.removeAttr("aria-activedescendant");
+			} else {
+				oInnerRef.attr("aria-activedescendant", aListItems[iSelectedIndex].getId());
+			}
 		}
 
 		if (Device.system.desktop) {
@@ -877,12 +742,16 @@ sap.ui.define([
 		}
 
 		// make sure the value doesn't exceed the maxLength
+		this._oLastSelectedHeader && this._oLastSelectedHeader.removeStyleClass("sapMInputFocusedHeaderGroup");
 		if (ColumnListItem && aListItems[iSelectedIndex] instanceof ColumnListItem) {
 			// for tabular suggestions we call a result filter function
 			sNewValue = oInput._getInputValue(oInput._fnRowResultFilter(aListItems[iSelectedIndex]));
 		} else {
-			var bListItem = (aItems[0] instanceof ListItem ? true : false);
-			if (bListItem) {
+			if (aListItems[iSelectedIndex].isA("sap.m.GroupHeaderListItem")) {
+				sNewValue = "";
+				aListItems[iSelectedIndex].addStyleClass("sapMInputFocusedHeaderGroup");
+				this._oLastSelectedHeader = aListItems[iSelectedIndex];
+			} else if (aListItems[iSelectedIndex] instanceof DisplayListItem) {
 				// for two value suggestions we use the item label
 				sNewValue = oInput._getInputValue(aListItems[iSelectedIndex].getLabel());
 			} else {
@@ -891,16 +760,62 @@ sap.ui.define([
 			}
 		}
 
-		// setValue isn't used because here is too early to modify the lastValue of input
-		oInput.setDOMValue(sNewValue);
+		this._iPopupListSelectedIndex = iSelectedIndex;
 
-		// memorize the value set by calling jQuery.val, because browser doesn't fire a change event when the value is set programmatically.
-		oInput._sSelectedSuggViaKeyboard = sNewValue;
+		this._bSuggestionItemChanged = true;
 
-		oInput._doSelect();
-		oInput._iPopupListSelectedIndex = iSelectedIndex;
+		this.fireEvent(SuggestionsPopover.M_EVENTS.SELECTION_CHANGE, {newValue: sNewValue});
+	};
 
-		this._oProposedItem = null;
+	/**
+	 * Helper method for keyboard navigation in suggestion items.
+	 *
+	 * @private
+	 * @param {sap.ui.core.Item} oItem Suggestion item.
+	 * @returns {boolean} Is the suggestion item selectable.
+	 */
+	SuggestionsPopover.prototype._isSuggestionItemSelectable = function(oItem) {
+		// CSN# 1390866/2014: The default for ListItemBase type is "Inactive", therefore disabled entries are only supported for single and two-value suggestions
+		// for tabular suggestions: only check visible
+		// for two-value and single suggestions: check also if item is not inactive
+		var bSelectionAllowed = this._hasTabularSuggestions()
+			|| oItem.getType() !== ListType.Inactive
+			|| oItem.isA("sap.m.GroupHeaderListItem");
+
+		return oItem.getVisible() && bSelectionAllowed;
+	};
+
+	/**
+	 * Check for tabular suggestions in the input.
+	 *
+	 * @private
+	 * @returns {boolean} Determines if the Input has tabular suggestions.
+	 */
+	SuggestionsPopover.prototype._hasTabularSuggestions = function() {
+		if (!this._oSuggestionTable) {
+			return;
+		}
+
+		return !!(this._oSuggestionTable.getColumns() && this._oSuggestionTable.getColumns().length);
+	};
+
+	SuggestionsPopover.prototype.setOkPressHandler = function(fnHandler){
+		var oOkButton = this.getOkButton();
+		oOkButton && oOkButton.attachPress(fnHandler);
+
+		return oOkButton;
+	};
+
+	SuggestionsPopover.prototype.setCancelPressHandler = function(fnHandler){
+		var oCancelButton = this.getCancelButton();
+		oCancelButton && oCancelButton.attachPress(fnHandler);
+	};
+
+	SuggestionsPopover.prototype.setShowSelectedPressHandler = function(fnHandler){
+		var oFilterSelectedButton = this.getFilterSelectedButton();
+		oFilterSelectedButton && oFilterSelectedButton.attachPress(fnHandler);
+
+		return oFilterSelectedButton;
 	};
 
 	/**
@@ -952,18 +867,21 @@ sap.ui.define([
 		var oInput = this._oInput;
 
 		if (oInput._bIsBeingDestroyed) {
-			return;
+			return this._oSuggestionTable;
 		}
 
 		if (!this._oSuggestionTable) {
 			this._oSuggestionTable = new Table(oInput.getId() + "-popup-table", {
 				mode: ListMode.SingleSelectMaster,
 				showNoData: false,
-				showSeparators: "All",
+				showSeparators: ListSeparators.None,
 				width: "100%",
 				enableBusyIndicator: false,
 				rememberSelections : false,
 				selectionChange: function (oEvent) {
+					if (Device.system.desktop) {
+						oInput.focus();
+					}
 					this._bSuggestionItemTapped = true;
 					var oSelectedListItem = oEvent.getParameter("listItem");
 					oInput.setSelectionRow(oSelectedListItem, true);
@@ -972,10 +890,16 @@ sap.ui.define([
 
 			this._oSuggestionTable.addEventDelegate({
 				onAfterRendering: function () {
+					var aTableCellsDomRef, sInputValue;
+
 					if (!oInput.getEnableSuggestionsHighlighting()) {
 						return;
 					}
-					this._highlightTableText(oInput.getValue());
+
+					aTableCellsDomRef = this._oSuggestionTable.$().find('tbody .sapMLabel');
+					sInputValue = (this._sTypedInValue || this._oInput.getValue()).toLowerCase();
+
+					this.highlightSuggestionItems(aTableCellsDomRef, sInputValue);
 				}.bind(this)
 			});
 
@@ -1000,79 +924,83 @@ sap.ui.define([
 	 * Creates highlighted text.
 	 *
 	 * @private
-	 * @param {sap.m.Label} label Label within the input.
+	 * @param {sap.m.Label} oItemDomRef Label within the input.
+	 * @param {string} sInputValue Text to highlight
+	 * @param {boolean} bWordMode Whether to highlight single string or to highlight each string that starts with space + sInputValue
 	 * @returns {string} newText Created text.
 	 */
-	SuggestionsPopover.prototype._createHighlightedText = function (label) {
-		var text = label.innerText,
-			value = (this._sTypedInValue || this._oInput.getValue()).toLowerCase(),
-			count = value.length,
-			lowerText = text.toLowerCase(),
-			subString,
-			newText = '';
+	SuggestionsPopover.prototype._createHighlightedText = function (oItemDomRef, sInputValue, bWordMode) {
+		var sDomRefLowerText, iStartHighlightingIndex, iInputLength, iNextSpaceIndex, sChunk,
+			sText = oItemDomRef ? oItemDomRef.innerText : "",
+			sFormattedText = "";
 
-		if (!SuggestionsPopover._wordStartsWithValue(text, value)) {
-			return encodeXML(text);
+		if (!SuggestionsPopover._wordStartsWithValue(sText, sInputValue)) {
+			return encodeXML(sText);
 		}
 
-		var index = lowerText.indexOf(value);
+		sInputValue = sInputValue.toLowerCase();
+		iInputLength = sInputValue.length;
 
-		// search for the first word which starts with these characters
-		if (index > 0) {
-			index = lowerText.indexOf(' ' + value) + 1;
+		while (SuggestionsPopover._wordStartsWithValue(sText, sInputValue)) {
+			sDomRefLowerText = sText.toLowerCase();
+			iStartHighlightingIndex = sDomRefLowerText.indexOf(sInputValue);
+			// search for the first word which starts with these characters
+			iStartHighlightingIndex = (iStartHighlightingIndex > 0) ?
+				sDomRefLowerText.indexOf(' ' + sInputValue) + 1 : iStartHighlightingIndex;
+
+
+			// Chunk before highlighting
+			sChunk = sText.substring(0, iStartHighlightingIndex);
+			sText = sText.substring(iStartHighlightingIndex);
+			sFormattedText += encodeXML(sChunk);
+
+			// Highlighting chunk
+			sChunk = sText.substring(0, iInputLength);
+			sText = sText.substring(iInputLength);
+			sFormattedText += '<span class="sapMInputHighlight">' + encodeXML(sChunk) + '</span>';
+
+
+			// Check for repetitive patterns. For example: "prodProdProd prod" should highlight only
+			// the starting of every word, but not the whole string when tested with "prod" input.
+			iNextSpaceIndex = sText.indexOf(" ");
+			iNextSpaceIndex = iNextSpaceIndex === -1 ? sText.length : iNextSpaceIndex;
+
+			// The rest
+			sChunk = sText.substring(0, iNextSpaceIndex);
+			sText = sText.substring(iNextSpaceIndex);
+			sFormattedText += encodeXML(sChunk);
+
+			// Run only for the first occurrence when highlighting for the Input for example
+			if (!bWordMode) {
+				break;
+			}
 		}
 
-		if (index > -1) {
-			newText += encodeXML(text.substring(0, index));
-			subString = text.substring(index, index + count);
-			newText += '<span class="sapMInputHighlight">' + encodeXML(subString) + '</span>';
-			newText += encodeXML(text.substring(index + count));
-		} else {
-			newText = encodeXML(text);
+		if (sText) {
+			sFormattedText += encodeXML(sText);
 		}
 
-		return newText;
+		return sFormattedText;
 	};
 
 	/**
-	 * Highlights matched text in the suggestion list.
+	 * Highlights text in DOM items.
 	 *
-	 * @private
+	 * @param {Array<HTMLElement>} aItemsDomRef DOM elements on which formatting would be applied
+	 * @param {string} sInputValue Text to highlight
+	 * @param {boolean} bWordMode Whether to highlight single string or to highlight each string that starts with space + sInputValue
+	 * @protected
+	 * @sap-restricted
 	 */
-	SuggestionsPopover.prototype._highlightListText = function () {
+	SuggestionsPopover.prototype.highlightSuggestionItems = function (aItemsDomRef, sInputValue, bWordMode) {
+		var i;
 
-		if (!this._oInput.getEnableSuggestionsHighlighting()) {
+		if (!this._bEnableHighlighting || (!aItemsDomRef && !aItemsDomRef.length)) {
 			return;
 		}
 
-		var i,
-			label,
-			labels = this._oList.$().find('.sapMDLILabel, .sapMSLITitleOnly, .sapMDLIValue');
-
-		for (i = 0; i < labels.length; i++) {
-			label = labels[i];
-			label.innerHTML = this._createHighlightedText(label);
-		}
-	};
-
-	/**
-	 * Highlights matched text in the suggestion table.
-	 *
-	 * @private
-	 */
-	SuggestionsPopover.prototype._highlightTableText = function () {
-
-		if (!this._oInput.getEnableSuggestionsHighlighting()) {
-			return;
-		}
-
-		var i,
-			label,
-			labels = this._oSuggestionTable.$().find('tbody .sapMLabel');
-
-		for (i = 0; i < labels.length; i++) {
-			label = labels[i];
-			label.innerHTML = this._createHighlightedText(label);
+		for (i = 0; i < aItemsDomRef.length; i++) {
+			aItemsDomRef[i].innerHTML = this._createHighlightedText(aItemsDomRef[i], sInputValue, bWordMode);
 		}
 	};
 
@@ -1083,10 +1011,9 @@ sap.ui.define([
 	 * @private
 	 */
 	SuggestionsPopover.prototype._registerAutocomplete = function () {
-		var oInput = this._oInput,
-			oPopover = this._oPopover,
+		var oPopover = this._oPopover,
 			oUsedInput = this._getInput(),
-			bUseDialog = oInput._bUseDialog;
+			bUseDialog = this._bUseDialog;
 
 		if (bUseDialog) {
 			oPopover.addEventDelegate({
@@ -1106,7 +1033,7 @@ sap.ui.define([
 
 		this._oInputDelegate = {
 			onkeydown: function (oEvent) {
-				this._bDoTypeAhead = oInput.getAutocomplete() && (oEvent.which !== KeyCodes.BACKSPACE) && (oEvent.which !== KeyCodes.DELETE);
+				this._bDoTypeAhead = this._bAutocompleteEnabled && (oEvent.which !== KeyCodes.BACKSPACE) && (oEvent.which !== KeyCodes.DELETE);
 			},
 			oninput: this._handleTypeAhead
 		};
@@ -1139,17 +1066,23 @@ sap.ui.define([
 		}
 
 		var sValueLowerCase = sValue.toLowerCase(),
-			bSearchSuggestionRows = this._oInput._hasTabularSuggestions(),
+			bSearchSuggestionRows = this._hasTabularSuggestions(),
 			aItems = bSearchSuggestionRows ? this._oInput.getSuggestionRows() : this._oInput.getSuggestionItems(),
-			iLength = aItems.length,
+			iLength,
 			sNewValue,
 			sItemText,
 			i;
 
+		aItems = aItems.filter(function(oItem){
+			return !(oItem.isA("sap.ui.core.SeparatorItem") || oItem.isA("sap.m.GroupHeaderListItem"));
+		});
+
+		iLength = aItems.length;
+
 		for (i = 0; i < iLength; i++) {
 			sItemText =  bSearchSuggestionRows ? this._oInput._fnRowResultFilter(aItems[i]) : aItems[i].getText();
 
-			if (sItemText.toLowerCase().startsWith(sValueLowerCase)) {
+			if (sItemText.toLowerCase().indexOf(sValueLowerCase) === 0) { // startsWith
 				this._oProposedItem = aItems[i];
 				sNewValue = sItemText;
 				break;
@@ -1181,7 +1114,7 @@ sap.ui.define([
 	 * @returns {sap.m.Input} Reference to the corresponding control
 	 */
 	SuggestionsPopover.prototype._getInput = function () {
-		return this._oInput._bUseDialog ? this._oPopupInput : this._oInput;
+		return this._bUseDialog ? this._oPopupInput : this._oInput;
 	};
 
 	/**
@@ -1190,23 +1123,37 @@ sap.ui.define([
 	 * @private
 	 */
 	SuggestionsPopover.prototype._finalizeAutocomplete = function () {
-		if (!this._bSuggestionItemTapped && this._oProposedItem) {
-			if (this._oInput._hasTabularSuggestions()) {
+		if (!this._bAutocompleteEnabled) {
+			return;
+		}
+
+		if (!this._bSuggestionItemTapped && !this._bSuggestionItemChanged && this._oProposedItem) {
+			if (this._hasTabularSuggestions()) {
 				this._oInput.setSelectionRow(this._oProposedItem, true);
 			} else {
 				this._oInput.setSelectionItem(this._oProposedItem, true);
 			}
 		}
 
-		if (document.activeElement === this._oInput.getFocusDomRef()) {
+		if (this._oProposedItem && document.activeElement === this._oInput.getFocusDomRef()) {
 			var iLength = this._oInput.getValue().length;
 			this._oInput.selectText(iLength, iLength);
 		}
 
+		this._resetTypeAhead();
+	};
+
+	/**
+	 * Resets properties, that are related to autocomplete, to their initial state.
+	 *
+	 * @private
+	 */
+	SuggestionsPopover.prototype._resetTypeAhead = function () {
 		this._oProposedItem = null;
 		this._sProposedItemText = null;
-		this._sTypedInValue = null;
+		this._sTypedInValue = '';
 		this._bSuggestionItemTapped = false;
+		this._bSuggestionItemChanged = false;
 	};
 
 	/**
@@ -1233,7 +1180,7 @@ sap.ui.define([
 		var oInput = this._oInput,
 			sValue = oInput.getValue();
 
-		if (!oInput.getAutocomplete()) {
+		if (!this._bAutocompleteEnabled) {
 			return;
 		}
 
@@ -1246,6 +1193,137 @@ sap.ui.define([
 				newValue: sValue
 			});
 		}
+	};
+
+	/*
+	* Updates the value state displayed in the popover.
+	*
+	* @internal
+	*/
+	SuggestionsPopover.prototype.updateValueState = function(sValueState, sValueStateText, bShowValueStateMessage) {
+
+		var bShow = bShowValueStateMessage && sValueState !== ValueState.None;
+		this._showValueStateText(bShow);
+
+		sValueStateText = sValueStateText || ValueStateSupport.getAdditionalText(sValueState);
+
+		this._setValueStateText(sValueStateText);
+
+		this._alignValueStateStyles(sValueState);
+		return this;
+	};
+
+	/*
+	 * Gets the picker value state message object.
+	 *
+	 * @returns {sap.m.Text}
+	 * @private
+	 * @since 1.46
+	 */
+	SuggestionsPopover.prototype._getPickerValueStateText = function() {
+		var oPicker = this._oPopover;
+
+		if (!this._oPickerValueStateText) {
+			this._oPickerValueStateText = new Text({ width: "100%" });
+			oPicker.insertContent(this._oPickerValueStateText, 0);
+		}
+
+		return this._oPickerValueStateText;
+	};
+
+	/**
+	 * Shows/hides the value state text
+	 *
+	 * @private
+	 */
+	SuggestionsPopover.prototype._showValueStateText = function(bShow) {
+		var oCustomHeader;
+
+		if (this._bUseDialog) {
+			if (this._oPickerValueStateText) {
+				this._oPickerValueStateText.setVisible(bShow);
+			}
+		} else {
+			oCustomHeader = this._getPickerCustomHeader();
+
+			if (oCustomHeader) {
+				oCustomHeader.setVisible(bShow);
+			}
+		}
+	};
+
+	/**
+	 * Sets the value state text
+	 *
+	 * @private
+	 */
+	SuggestionsPopover.prototype._setValueStateText = function(sText) {
+		var oHeader;
+
+		if (this._bUseDialog) {
+			this._oPickerValueStateText = this._getPickerValueStateText();
+			this._oPickerValueStateText.setText(sText);
+		} else {
+			oHeader = this._getPickerCustomHeader();
+			if (oHeader) {
+				oHeader.getContentLeft()[0].setText(sText);
+			}
+		}
+	};
+
+	/**
+	 * Gets the picker custom header
+	 *
+	 * @private
+	 */
+	SuggestionsPopover.prototype._getPickerCustomHeader = function() {
+		var oInternalTitle,
+			oInternalHeader,
+			oPicker = this._oPopover,
+			sPickerTitleClass = CSS_CLASS_SUGGESTIONS_POPOVER + "Title";
+
+		if (!oPicker) {
+			return null;
+		}
+
+		if (oPicker.getCustomHeader()) {
+			return oPicker.getCustomHeader();
+		}
+
+		oInternalTitle = new Title({ textAlign: "Left" }).addStyleClass(sPickerTitleClass);
+		oInternalHeader = new Bar({ visible: false, contentLeft: oInternalTitle });
+		oPicker.setCustomHeader(oInternalHeader);
+
+		return oInternalHeader;
+	};
+
+	/**
+	 * Aligns the value state styles
+	 *
+	 * @private
+	 */
+	SuggestionsPopover.prototype._alignValueStateStyles = function(sValueState) {
+		var sPickerWithState = CSS_CLASS_SUGGESTIONS_POPOVER + "ValueState",
+			sOldCssClass = CSS_CLASS_SUGGESTIONS_POPOVER + this._sOldValueState + "State",
+			sCssClass = CSS_CLASS_SUGGESTIONS_POPOVER + sValueState + "State",
+			oCustomHeader;
+
+		if (this._bUseDialog && this._oPickerValueStateText) {
+			this._oPickerValueStateText.addStyleClass(sPickerWithState);
+			this._oPickerValueStateText.removeStyleClass(sOldCssClass);
+			this._oPickerValueStateText.addStyleClass(sCssClass);
+		} else {
+
+			oCustomHeader = this._getPickerCustomHeader();
+
+			if (oCustomHeader) {
+				oCustomHeader.addStyleClass(sPickerWithState);
+				oCustomHeader.removeStyleClass(sOldCssClass);
+				oCustomHeader.addStyleClass(sCssClass);
+			}
+		}
+
+		this._sOldValueState = sValueState;
 	};
 
 	return SuggestionsPopover;

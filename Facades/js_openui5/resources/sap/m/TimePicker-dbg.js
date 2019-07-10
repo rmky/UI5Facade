@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,6 +23,7 @@ sap.ui.define([
 	"sap/ui/events/KeyCodes",
 	"sap/base/Log",
 	"sap/ui/core/InvisibleText",
+	'./Button',
 	"sap/ui/thirdparty/jquery"
 ],
 function(
@@ -43,13 +44,16 @@ function(
 	KeyCodes,
 	Log,
 	InvisibleText,
+	Button,
 	jQuery
 ) {
 		"use strict";
 
-		// shortcut for sap.m.PlacementType
+		// shortcut for sap.m.PlacementType, sap.m.TimePickerMaskMode, sap.m.ButtonType and default step for minutes
+		// and seconds
 		var PlacementType = library.PlacementType,
 			TimePickerMaskMode = library.TimePickerMaskMode,
+			ButtonType = library.ButtonType,
 			DEFAULT_STEP = 1;
 
 		/**
@@ -125,7 +129,7 @@ function(
 		 * @extends sap.m.DateTimeField
 		 *
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 *
 		 * @constructor
 		 * @public
@@ -219,7 +223,8 @@ function(
 					 * Internal aggregation that contains the inner _picker pop-up.
 					 */
 					_picker: { type: "sap.m.ResponsivePopover", multiple: false, visibility: "hidden" }
-				}
+				},
+				dnd: { draggable: false, droppable: true }
 		}});
 
 		/**
@@ -341,7 +346,7 @@ function(
 			var oValueHelpIcon = this._getValueHelpIcon();
 
 			if (oValueHelpIcon) {
-				oValueHelpIcon.setProperty("visible", this.getEnabled(), true);
+				oValueHelpIcon.setProperty("visible", this.getEditable(), true);
 			}
 		};
 
@@ -719,6 +724,11 @@ function(
 
 		};
 
+		TimePicker.prototype.setDateValue = function(sValue) {
+			this._initMask();
+			return DateTimeField.prototype.setDateValue.apply(this, arguments);
+		};
+
 		/**
 		 * Sets tooltip of the control.
 		 *
@@ -750,47 +760,7 @@ function(
 				oDomRef.removeAttribute("title");
 			}
 
-			this._handleTooltipHiddenTextLifecycle();
-
 			return this;
-		};
-
-		/**
-		 * Handles the addition/removal of the hidden span element (used as an hidden aria description) and its correct
-		 * reference with the TP inner input. This method requires <code>TimePicker</code> to be rendered in the DOM.
-		 * @private
-		 * @returns {void}
-		 */
-		TimePicker.prototype._handleTooltipHiddenTextLifecycle = function () {
-			var oRenderer,
-				sDescribedByReferences,
-				sAnnouncement,
-				sHiddenTextIdPattern,
-				bCreateHiddenText,
-				oHiddenAriaTooltipElement;
-
-			if (!sap.ui.getCore().getConfiguration().getAccessibility()) {
-				return;
-			}
-
-			oRenderer = this.getRenderer();
-			sDescribedByReferences = oRenderer.getAriaDescribedBy(this);
-			sAnnouncement = oRenderer.getDescribedByAnnouncement(this);
-			sHiddenTextIdPattern = this.getId() + "-describedby";
-			bCreateHiddenText = sDescribedByReferences.indexOf(sHiddenTextIdPattern) > -1;
-			oHiddenAriaTooltipElement = this.getDomRef("describedby");
-
-			if (bCreateHiddenText) {
-				oHiddenAriaTooltipElement = document.createElement("span");
-				oHiddenAriaTooltipElement.id = sHiddenTextIdPattern;
-				oHiddenAriaTooltipElement.setAttribute("aria-hidden", "true");
-				oHiddenAriaTooltipElement.className = "sapUiInvisibleText";
-				oHiddenAriaTooltipElement.textContent = sAnnouncement;
-				this.getDomRef().appendChild(oHiddenAriaTooltipElement);
-			} else {
-				this.getDomRef().removeChild(oHiddenAriaTooltipElement);
-			}
-			this._$input.attr("aria-describedby", sDescribedByReferences);
 		};
 
 		/**
@@ -1078,8 +1048,8 @@ function(
 				horizontalScrolling: false,
 				verticalScrolling: false,
 				placement: PlacementType.VerticalPreferedBottom,
-				beginButton: new sap.m.Button({ text: sOKButtonText, press: jQuery.proxy(this._handleOkPress, this) }),
-				endButton: new sap.m.Button({ text: sCancelButtonText, press: jQuery.proxy(this._handleCancelPress, this) }),
+				beginButton: new Button({ text: sOKButtonText, type: ButtonType.Emphasized, press: jQuery.proxy(this._handleOkPress, this) }),
+				endButton: new Button({ text: sCancelButtonText, press: jQuery.proxy(this._handleCancelPress, this) }),
 				content: [
 					new TimePickerSliders(this.getId() + "-sliders", {
 						support2400: this.getSupport2400(),

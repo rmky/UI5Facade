@@ -1,8 +1,8 @@
 /* NOTE: This file was generated as an optimized version of "library.source.less" for the Theme Designer. */
 
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -70,6 +70,17 @@
 
 @_sap_m_FeedInput_BackgroundColor: lighten(@sapUiBaseColor, 20);
 /* END "FeedInput.less" */
+
+/* START "GenericTag.less" */
+html.sap-desktop .sapMGenericTag {
+	&:before {
+		border: 1px solid @sapUiContentFocusColor;
+	}
+	&:after {
+		border: 1px dotted @sapUiContentContrastFocusColor;
+	}
+}
+/* END "GenericTag.less" */
 
 /* START "HeaderContainer.less" */
 /* ====================================== */
@@ -271,9 +282,9 @@ html.sap-phone .sapMTabStrip .sapMTSOverflowSelect {
 /* Belize Plus theme                 */
 /* ================================= */
 
-@_sap_m_TimePicker_ItemColor: @sapUiContentForegroundColor;
-@_sap_m_TimePicker_ItemHoverColor: darken(@sapUiContentForegroundColor, 6);
-@_sap_m_TimePicker_ItemBorderColor: darken(@sapUiListBorderColor, 7);
+@_sap_m_TimePickerSliders_ItemColor: @sapUiContentForegroundColor;
+@_sap_m_TimePickerSliders_ItemHoverColor: darken(@sapUiContentForegroundColor, 6);
+@_sap_m_TimePickerSliders_ItemBorderColor: darken(@sapUiListBorderColor, 7);
 /* END "TimePickerSliders.less" */
 
 /* START "Token.less" */
@@ -297,15 +308,6 @@ html.sap-phone .sapMTabStrip .sapMTSOverflowSelect {
 	background: @sapUiGroupContentBackground;
 }
 /* END "Toolbar.less" */
-
-/* START "ValueStateMessage.less" */
-/* ======================================== */
-/* CSS for control sap.m/ValueStateMessage  */
-/* Belize Plus theme                        */
-/* ======================================== */
-
-@_sap_m_ValueStateMessage_HighlightBG: darken(@sapUiHighlight, 60);
-/* END "ValueStateMessage.less" */
 
 /* START "ViewSettingsDialog.less" */
 /* ========================================= */

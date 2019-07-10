@@ -76,12 +76,22 @@
 			"theme": "sap_belize_hcb"
 		},
 		{
+			"name": "FeedContent.less",
+			"designtime": true,
+			"theme": "sap_belize_hcb"
+		},
+		{
 			"name": "FeedInput.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
 		{
 			"name": "FeedListItem.less",
+			"designtime": true,
+			"theme": "sap_belize_hcb"
+		},
+		{
+			"name": "GenericTag.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
@@ -106,7 +116,7 @@
 			"theme": "sap_belize_hcb"
 		},
 		{
-			"name": "Input.less",
+			"name": "ImageContent.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
@@ -156,11 +166,6 @@
 			"theme": "sap_belize_hcb"
 		},
 		{
-			"name": "MultiComboBox.less",
-			"designtime": true,
-			"theme": "sap_belize_hcb"
-		},
-		{
 			"name": "MultiInput.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"
@@ -177,6 +182,11 @@
 		},
 		{
 			"name": "NotificationListItem.less",
+			"designtime": true,
+			"theme": "sap_belize_hcb"
+		},
+		{
+			"name": "NumericContent.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
@@ -321,12 +331,12 @@
 			"theme": "sap_belize_hcb"
 		},
 		{
-			"name": "StandardListItem.less",
+			"name": "StepInput.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
 		{
-			"name": "StepInput.less",
+			"name": "SuggestionsPopover.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},

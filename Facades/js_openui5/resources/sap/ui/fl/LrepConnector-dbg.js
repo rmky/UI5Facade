@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,11 +10,12 @@ sap.ui.define([
 	"sap/ui/fl/Utils",
 	"sap/base/util/merge",
 	"sap/ui/dom/includeScript"
-], function(jQuery,
-			uri,
-			FlexUtils,
-			fnBaseMerge,
-			fnIncludeScript
+], function(
+	jQuery,
+	uri,
+	FlexUtils,
+	fnBaseMerge,
+	fnIncludeScript
 ) {
 	"use strict";
 
@@ -29,7 +30,7 @@ sap.ui.define([
 	 * @private
 	 * @sap-restricted
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 */
 	var LrepConnector = function(mParameters) {
 		this._initClientParam();
@@ -37,7 +38,6 @@ sap.ui.define([
 		if (mParameters) {
 			this._sXsrfToken = mParameters.XsrfToken;
 		}
-
 	};
 
 	LrepConnector.createConnector = function(mParameters) {
@@ -68,12 +68,12 @@ sap.ui.define([
 	 * @function
 	 * @name sap.ui.fl.LrepConnector.isFlexServiceAvailable
 	 */
-	LrepConnector.isFlexServiceAvailable =  function() {
+	LrepConnector.isFlexServiceAvailable = function() {
 		if (LrepConnector._bServiceAvailability !== undefined) {
 			return Promise.resolve(LrepConnector._bServiceAvailability);
 		}
 		//probe service availability by sending settings request
-		return LrepConnector.createConnector().loadSettings().then(function (){
+		return LrepConnector.createConnector().loadSettings().then(function () {
 			return Promise.resolve(LrepConnector._bServiceAvailability);
 		});
 	};
@@ -283,13 +283,12 @@ sap.ui.define([
 	 * @private
 	 */
 	LrepConnector.prototype._sendAjaxRequest = function(sUri, mOptions) {
-
 		var sFlexibilityServicePrefix = this._getFlexibilityServicesUrlPrefix();
 
 		if (!sFlexibilityServicePrefix) {
 			return Promise.reject({
 				status: "warning",
-				message: "Flexibility Services requests were not sent. The UI5 bootstrap is configured to not send any requests."
+				messages: [{severity:"warning", text:"Flexibility Services requests were not sent. The UI5 bootstrap is configured to not send any requests."}]
 			});
 		}
 
@@ -307,7 +306,6 @@ sap.ui.define([
 
 		return new Promise(function(resolve, reject) {
 			function handleValidRequest(oResponse, sStatus, oXhr) {
-
 				var sNewCsrfToken = oXhr.getResponseHeader("X-CSRF-Token");
 				this._sXsrfToken = sNewCsrfToken || this._sXsrfToken;
 				var sEtag = oXhr.getResponseHeader("etag");
@@ -349,20 +347,18 @@ sap.ui.define([
 							status: "error"
 						});
 					});
-				} else {
-					if (mOptions && mOptions.type === "DELETE" && oXhr.status === 404) {
+				} else if (mOptions && mOptions.type === "DELETE" && oXhr.status === 404) {
 						// Do not reject, if a file was not found during deletion
 						// (can be the case if another user already triggered a restore meanwhile)
-						resolve();
-					} else {
-						var result;
-						result = {
-							status: "error",
-							code: oXhr.statusCode().status,
-							messages: this._getMessagesFromXHR(oXhr)
-						};
-						reject(result);
-					}
+					resolve();
+				} else {
+					var result;
+					result = {
+						status: "error",
+						code: oXhr.statusCode().status,
+						messages: this._getMessagesFromXHR(oXhr)
+					};
+					reject(result);
 				}
 			}
 
@@ -406,14 +402,14 @@ sap.ui.define([
 	 * @param {string} [mPropertyBag.layer] - Layer up to which changes shall be read (excluding the specified layer)
 	 * @param {string} [mPropertyBag.appVersion] - Version of application whose changes shall be read
 	 * @param {string} [mPropertyBag.flexModulesUrl] - address to which the request for modules should be sent in case modules are present
+	 * @param {boolean} [mPropertyBag.isTrial] - true if the system is a trial system
 	 *
 	 * @returns {Promise} Returns a Promise with the changes (changes, contexts, optional messagebundle), <code>componentClassName</code> and <code>etag</code> value;
 	 * in case modules are present the Promise is resolved after the module request is finished
 	 * @public
 	 */
 	LrepConnector.prototype.loadChanges = function(oComponent, mPropertyBag) {
-
-		function _createRequestOptions(oComponent, mPropertyBag) {
+		function _createRequestOptions(mPropertyBag) {
 			var mOptions = {};
 
 			if (mPropertyBag.cacheKey) {
@@ -484,17 +480,47 @@ sap.ui.define([
 			return Promise.reject(new Error("Component name not specified"));
 		}
 
-		var mOptions = _createRequestOptions(oComponent, mPropertyBag);
+		var mOptions = _createRequestOptions(mPropertyBag);
 
 		var mUrls = _createUrls.call(this, oComponent, mPropertyBag, this._sClient);
 
 		return this.send(mUrls.flexDataUrl, undefined, undefined, mOptions)
-			.then(this._onChangeResponseReceived.bind(this, oComponent.name, mUrls.flexModulesUrl), function (oError) {
-				if (oError.code === 404) {
-					LrepConnector._bServiceAvailability = false;
-				}
-				throw (oError);
+		.then(this._onChangeResponseReceived.bind(this, oComponent.name, mUrls.flexModulesUrl))
+		.then(function(mFlexData) {
+			if (mPropertyBag.isTrial) {
+				return this.enableFakeConnectorForTrial(oComponent, mFlexData);
+			}
+			return mFlexData;
+		}.bind(this))
+		.catch(function (oError) {
+			if (oError.code === 404) {
+				LrepConnector._bServiceAvailability = false;
+			}
+			throw (oError);
+		});
+	};
+
+	/**
+	 * Enables the FakeLrepConnectorLocalStorage that will be used instead of the standard LrepConnector.
+	 * The data/changes from the FakeConnector will be combined with the flex data passed to this function
+	 *
+	 * @param {object} oComponent Contains component data needed for reading changes
+	 * @param {string} oComponent.name Name of component
+	 * @param {string} [oComponent.appVersion] Current running version of application
+	 * @param {map} mFlexData Contains the response of the original changes request
+	 * @returns {Promise} Returns a Promise with the initial response enhanced with the changes from the FakeConnector
+	 */
+	LrepConnector.prototype.enableFakeConnectorForTrial = function(oComponent, mFlexData) {
+		return new Promise(function(resolve) {
+			sap.ui.require(["sap/ui/fl/FakeLrepConnectorLocalStorage", "sap/ui/fl/registry/Settings"], function(FakeLrepConnectorLocalStorage, Settings) {
+				// in trial user case the settings instance is created initially, so it is always available
+				var oSettings = Settings.getInstanceOrUndef()._oSettings;
+				FakeLrepConnectorLocalStorage.enableFakeConnector(oSettings, oComponent.name, oComponent.appVersion, true);
+
+				var oFakeConnector = LrepConnector.createConnector();
+				resolve(oFakeConnector.loadChanges(oComponent.name, undefined, mFlexData.changes.changes));
 			});
+		});
 	};
 
 	LrepConnector.prototype._onChangeResponseReceived = function (sComponentName, sFlexModulesUri, oResponse) {
@@ -551,15 +577,15 @@ sap.ui.define([
 		}
 
 		return LrepConnector._oLoadSettingsPromise.then(function(oResponse) {
-				LrepConnector._bServiceAvailability = true;
-				return oResponse.response;
-			}, function(oError) {
-				if (oError.code === 404) {
-					LrepConnector._bServiceAvailability = false;
-				}
+			LrepConnector._bServiceAvailability = true;
+			return oResponse.response;
+		}, function(oError) {
+			if (oError.code === 404) {
+				LrepConnector._bServiceAvailability = false;
+			}
 				//In case of failure, resolve promise without value. Error handle is done in Settings class
-				return Promise.resolve();
-			});
+			return Promise.resolve();
+		});
 	};
 
 	/**
@@ -675,7 +701,7 @@ sap.ui.define([
 	 * @param {String} mParameters.sChangeName - name of the change
 	 * @param {String} [mParameters.sLayer="USER"] - other possible layers: VENDOR,PARTNER,CUSTOMER_BASE,CUSTOMER
 	 * @param {String} mParameters.sNamespace - the namespace of the change file
-	 * @param {String} mParameters.sChangelist - The transport ID.
+	 * @param {String} mParameters.sChangelist - The transport ID
 	 * @param {Boolean} bIsVariant - is it a variant?
 	 * @returns {Object} Returns the result from the request
 	 * @public
@@ -704,10 +730,81 @@ sap.ui.define([
 				value: mParameters.sChangelist
 			});
 		}
-
 		sRequestPath += this._buildParams(aParams);
 
 		return this.send(sRequestPath, "DELETE", {}, null);
+	};
+
+	/**
+	 * Resets changes via REST call; Filters by provided parameters like the application reference, its version,
+	 * the generator of the changes, the change type or changes on specific controls by their selector IDs.
+	 *
+	 * @param {String} mParameters property bag
+	 * @param {String} mParameters.sReference - flex reference
+	 * @param {String} mParameters.sAppVersion - version of the application for which the reset takes place
+	 * @param {String} [mParameters.sLayer="USER"] - other possible layers: VENDOR,PARTNER,CUSTOMER_BASE,CUSTOMER
+	 * @param {String} mParameters.sChangelist - The transport ID
+	 * @param {String} mParameters.sGenerator - generator with which the changes were created
+	 * @param {String} mParameters.aSelectorIds - selector IDs of controls for which the reset should filter
+	 * @param {String} mParameters.aChangeTypes - change types of the changes which should be reset
+	 * @public
+	 */
+	LrepConnector.prototype.resetChanges = function(mParameters) {
+		var sRequestPath = this._getUrlPrefix();
+
+		var aParams = [];
+
+		if (mParameters.sReference) {
+			aParams.push({
+				name: "reference",
+				value: mParameters.sReference
+			});
+		}
+
+		if (mParameters.sAppVersion) {
+			aParams.push({
+				name: "appVersion",
+				value: mParameters.sAppVersion
+			});
+		}
+
+		if (mParameters.sLayer) {
+			aParams.push({
+				name: "layer",
+				value: mParameters.sLayer
+			});
+		}
+
+		if (mParameters.sChangelist) {
+			aParams.push({
+				name : "changelist",
+				value : mParameters.sChangelist
+			});
+		}
+
+		if (mParameters.sGenerator) {
+			aParams.push({
+				name: "generator",
+				value: mParameters.sGenerator
+			});
+		}
+
+		if (mParameters.aSelectorIds) {
+			aParams.push({
+				name: "selector",
+				value: mParameters.aSelectorIds.join(",")
+			});
+		}
+
+		if (mParameters.aChangeTypes) {
+			aParams.push({
+				name : "changeType",
+				value : mParameters.aChangeTypes.join(",")
+			});
+		}
+
+		sRequestPath += this._buildParams(aParams);
+		return this.send(sRequestPath, "DELETE");
 	};
 
 	/**

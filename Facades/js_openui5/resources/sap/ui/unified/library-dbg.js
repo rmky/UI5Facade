@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,15 +14,18 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/base/Object', 'sap/ui/core/library'],
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.unified",
-		version: "1.61.2",
+		version: "1.67.1",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/ui/unified/designtime/library.designtime",
 		types: [
+			"sap.ui.unified.CalendarAppointmentVisualization",
 			"sap.ui.unified.CalendarDayType",
-			"sap.ui.unified.GroupAppointmentsMode",
-			"sap.ui.unified.ContentSwitcherAnimation",
+			"sap.ui.unified.CalendarIntervalType",
+			"sap.ui.unified.ColorPickerDisplayMode",
 			"sap.ui.unified.ColorPickerMode",
-			"sap.ui.unified.ColorPickerDisplayMode"
+			"sap.ui.unified.ContentSwitcherAnimation",
+			"sap.ui.unified.GroupAppointmentsMode",
+			"sap.ui.unified.StandardCalendarLegendItem"
 		],
 		interfaces: [
 			"sap.ui.unified.IProcessableBlobs"
@@ -80,7 +83,7 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/base/Object', 'sap/ui/core/library'],
 	 * @namespace
 	 * @alias sap.ui.unified
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @public
 	 */
 	var thisLib = sap.ui.unified;

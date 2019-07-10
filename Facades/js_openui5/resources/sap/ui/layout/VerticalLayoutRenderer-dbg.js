@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -28,7 +28,7 @@ sap.ui.define([],
 		var rm = oRenderManager;
 
 		// write the HTML into the render manager
-		rm.write("<DIV");
+		rm.write("<div");
 		rm.writeControlData(oVerticalLayout);
 		rm.addClass("sapUiVlt");
 		rm.addClass("sapuiVlt"); // for compatibility keep the old, wrong class name
@@ -44,12 +44,12 @@ sap.ui.define([],
 		var aContent = oVerticalLayout.getContent();
 
 		for ( var i = 0; i < aContent.length; i++) {
-			rm.write("<DIV class=\"sapUiVltCell sapuiVltCell\">"); // for compatibility keep the old, wrong class name
+			rm.write("<div class=\"sapUiVltCell sapuiVltCell\">"); // for compatibility keep the old, wrong class name
 			rm.renderControl(aContent[i]);
-			rm.write("</DIV>");
+			rm.write("</div>");
 		}
 
-		rm.write("</DIV>");
+		rm.write("</div>");
 	};
 
 

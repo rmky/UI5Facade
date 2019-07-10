@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -89,7 +89,7 @@ sap.ui.define(['sap/ui/core/Core', './library'],
 		// write the HTML into the render manager
 	    rm.write("<div");
 	    rm.writeControlData(oControl);
-	    rm.writeAttribute('tabIndex', '0');
+	    rm.writeAttribute('tabindex', '0');
 
 		if (oControl.getTooltip_AsString()) {
 			rm.writeAttributeEscaped("title", oControl.getTooltip_AsString());

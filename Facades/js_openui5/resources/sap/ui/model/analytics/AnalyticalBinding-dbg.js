@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,7 +23,6 @@ sap.ui.define([
 	'./BatchResponseCollector',
 	'./AnalyticalVersionInfo',
 	"sap/base/util/uid",
-	"sap/base/util/deepEqual",
 	"sap/ui/thirdparty/jquery",
 	"sap/base/Log"
 ], function(
@@ -40,7 +39,6 @@ sap.ui.define([
 	BatchResponseCollector,
 	AnalyticalVersionInfo,
 	uid,
-	deepEqual,
 	jQuery,
 	Log
 ) {
@@ -404,6 +402,8 @@ sap.ui.define([
 
 			this.oDataState = null;
 			this.bApplySortersToGroups = true;
+			this.iTotalSize = -1; // invalidate last row counter
+			this._abortAllPendingRequests();
 			// resolving the path makes sure that we can safely analyze the metadata,
 			// as we have a resourcepath for the QueryResult
 			sResolvedPath = this.oModel.resolve(this.sPath, this.oContext);
@@ -1061,34 +1061,32 @@ sap.ui.define([
 			fValueFormatter = this.mAnalyticalInfoByProperty[sGroupProperty]
 				&& this.mAnalyticalInfoByProperty[sGroupProperty].formatter,
 			sPropertyValue = oContext.getProperty(sGroupProperty),
-			oTextProperty, sFormattedPropertyValue, sGroupName;
+			sFormattedPropertyValue, sFormattedTextPropertyValue, sGroupName, sLabelText,
+			oTextProperty, sTextProperty, sTextPropertyValue, fTextValueFormatter;
 
 		if (oDimension && this.oDimensionDetailsSet[sGroupProperty].textPropertyName) {
 			oTextProperty = oDimension.getTextProperty();
 		}
 
-		var sTextProperty, sTextPropertyValue, fTextValueFormatter;
 		if (oTextProperty) {
-			sTextProperty = oDimension.getTextProperty().name;
+			sTextProperty = oTextProperty.name;
 			// it might happen that text property is not contained in the UI
 			fTextValueFormatter = this.mAnalyticalInfoByProperty[sTextProperty]
 				&& this.mAnalyticalInfoByProperty[sTextProperty].formatter;
 			sTextPropertyValue = oContext.getProperty(sTextProperty);
-		}
+			sFormattedPropertyValue = fValueFormatter
+				? fValueFormatter(sPropertyValue, sTextPropertyValue) : sPropertyValue;
 
-		if (!oTextProperty) {
-			sFormattedPropertyValue = fValueFormatter ? fValueFormatter(sPropertyValue) : sPropertyValue;
-			sGroupName = (oDimension.getLabelText ? oDimension.getLabelText() + ': ' : '')
-				+ sFormattedPropertyValue;
+			sFormattedTextPropertyValue = fTextValueFormatter
+				? fTextValueFormatter(sTextPropertyValue, sPropertyValue) : sTextPropertyValue;
 		} else {
-			sFormattedPropertyValue = fValueFormatter ? fValueFormatter(sPropertyValue, sTextPropertyValue) : sPropertyValue;
-			sGroupName = (oDimension.getLabelText ? oDimension.getLabelText() + ': ' : '')
-				+ sFormattedPropertyValue;
-
-			var sFormattedTextPropertyValue = fTextValueFormatter ? fTextValueFormatter(sTextPropertyValue, sPropertyValue) : sTextPropertyValue;
-			if (sFormattedTextPropertyValue) {
-				sGroupName += ' - ' + sFormattedTextPropertyValue;
-			}
+			sFormattedPropertyValue = fValueFormatter
+				? fValueFormatter(sPropertyValue) : sPropertyValue;
+		}
+		sLabelText = oDimension.getLabelText && oDimension.getLabelText();
+		sGroupName = (sLabelText ? sLabelText + ': ' : '') + sFormattedPropertyValue;
+		if (sFormattedTextPropertyValue) {
+			sGroupName += ' - ' + sFormattedTextPropertyValue;
 		}
 
 		return sGroupName;
@@ -1136,7 +1134,8 @@ sap.ui.define([
 	 * @protected
 	 */
 	AnalyticalBinding.prototype.updateAnalyticalInfo = function(aColumns, bForceChange) {
-		var oDimensionDetails,
+		var iDiff,
+			oDimensionDetails,
 			oEntityType,
 			aHierarchyProperties,
 			that = this;
@@ -1226,21 +1225,25 @@ sap.ui.define([
 		}
 
 		// check if something has changed --> deep equal on the column info objects, only 1 level "deep"
-		if (deepEqual(this._aLastChangedAnalyticalInfo, aColumns)) {
-			if (bForceChange) {
+		iDiff = odata4analytics.helper.deepEqual(this._aLastChangedAnalyticalInfo, aColumns,
+			function (oColumn) { // only formatter changed
+				that.mAnalyticalInfoByProperty[oColumn.name].formatter = oColumn.formatter;
+			});
+		if (iDiff) {
+			// make a deep copy of the column definition, so we can ignore duplicate calls the next time, see above
+			// copy is necessary because the original analytical info will be changed and used internally, through out the binding "coding"
+			this._aLastChangedAnalyticalInfo = [];
+			for (var j = 0; j < aColumns.length; j++) {
+				this._aLastChangedAnalyticalInfo[j] = jQuery.extend({}, aColumns[j]);
+			}
+		}
+		if (iDiff < 2) {
+			if (bForceChange || iDiff) {
 				setTimeout(function () {
 					this._fireChange({reason: ChangeReason.Change});
 				}.bind(this), 0);
 			}
 			return;
-		}
-
-		oEntityType = this.oAnalyticalQueryResult.getEntityType();
-		// make a deep copy of the column definition, so we can ignore duplicate calls the next time, see above
-		// copy is necessary because the original analytical info will be changed and used internally, through out the binding "coding"
-		this._aLastChangedAnalyticalInfo = [];
-		for (var j = 0; j < aColumns.length; j++) {
-			this._aLastChangedAnalyticalInfo[j] = jQuery.extend({}, aColumns[j]);
 		}
 
 		// parameter is an array with elements whose structure is defined by sap.ui.analytics.model.AnalyticalTable.prototype._getColumnInformation()
@@ -1266,6 +1269,7 @@ sap.ui.define([
 		// nodeExternalKeyName, nodeIDName, nodeLevelName, nodeTextName}
 		this.mHierarchyDetailsByName = {}; //
 
+		oEntityType = this.oAnalyticalQueryResult.getEntityType();
 		// process column settings for dimensions and measures part of the result or visible
 		for (var i = 0; i < aColumns.length; i++) {
 			// determine requested aggregation level from columns representing dimension-related properties
@@ -1599,7 +1603,7 @@ sap.ui.define([
 			aContext = this._getLoadedContextsForGroup(sParentGroupId, iStartIndex, iLength, bSupressRequest);
 			bLoadContexts = false;
 			if (!bSupressRequest) {
-				oGroupSection = this._calculateRequiredGroupSection(sParentGroupId, iStartIndex, iLength, iThreshold, aContext);
+				oGroupSection = this._calculateRequiredGroupSection(sParentGroupId, iStartIndex, iLength, iThreshold);
 				var bPreloadContexts = oGroupSection.length > 0 && iLength < oGroupSection.length;
 				bLoadContexts = (aContext.length != iLength
 								 && !(this.mFinalLength[sParentGroupId] && aContext.length >= this.mLength[sParentGroupId] - iStartIndex))
@@ -1635,7 +1639,8 @@ sap.ui.define([
 							this.aBatchRequestQueue.push([ AnalyticalBinding._requestType.groupMembersAutoExpansionQuery, sParentGroupId, oGroupExpansionFirstMissingMember, missingMemberCount, iNumberOfExpandedLevels ]);
 						}
 					} else { // ! bGroupLevelAutoExpansionIsActive
-						bExecuteRequest = !this._isRequestPending(this._getRequestId(AnalyticalBinding._requestType.groupMembersQuery, {groupId: sParentGroupId}));
+						bExecuteRequest = oGroupSection.length
+							&& !this._isRequestPending(this._getRequestId(AnalyticalBinding._requestType.groupMembersQuery, {groupId: sParentGroupId}));
 						if (bExecuteRequest) {
 							this.aBatchRequestQueue.push([ AnalyticalBinding._requestType.groupMembersQuery, sParentGroupId, oGroupSection.startIndex, oGroupSection.length ]);
 							aMembersRequestId = [ this._getRequestId(AnalyticalBinding._requestType.groupMembersQuery, {groupId: sParentGroupId}) ];
@@ -1666,7 +1671,8 @@ sap.ui.define([
 							oMemberRequestDetails = this._prepareGroupMembersAutoExpansionQueryRequest(AnalyticalBinding._requestType.groupMembersAutoExpansionQuery, sParentGroupId, oGroupExpansionFirstMissingMember, missingMemberCount, iNumberOfExpandedLevels);
 						}
 					} else { // ! bGroupLevelAutoExpansionIsActive
-						bExecuteRequest = !this._isRequestPending(this._getRequestId(AnalyticalBinding._requestType.groupMembersQuery, {groupId: sParentGroupId}));
+						bExecuteRequest = oGroupSection.length
+							&& !this._isRequestPending(this._getRequestId(AnalyticalBinding._requestType.groupMembersQuery, {groupId: sParentGroupId}));
 						if (bExecuteRequest) {
 							oMemberRequestDetails = this._prepareGroupMembersQueryRequest(AnalyticalBinding._requestType.groupMembersQuery, sParentGroupId, oGroupSection.startIndex, oGroupSection.length);
 							aMembersRequestId = [ oMemberRequestDetails.sRequestId ];
@@ -2920,7 +2926,7 @@ sap.ui.define([
 			if (this.sCustomParams) {
 				aParam.push(this.sCustomParams);
 			}
-			var oRequestHandle = this.oModel.read(sPath, {
+			var oRequestHandle = this.oModel.read(sPath.replace(/ /g, "%20"), {
 				success: fnSuccess,
 				error: fnError,
 				context: this.oContext,
@@ -3566,90 +3572,42 @@ sap.ui.define([
 	/**
 	 * @private
 	 */
-	AnalyticalBinding.prototype._calculateRequiredGroupSection = function(sGroupId, iStartIndex, iLength, iThreshold, aContext) {
-		// implementation copied from ODataListBinding; name changed here, because analytical binding comprises more calculations
-		var iSectionLength, iSectionStartIndex, iPreloadedSubsequentIndex, iPreloadedPreviousIndex, iRemainingEntries, oSection = {}, fKey = this._getKeys(sGroupId), sKey;
+	AnalyticalBinding.prototype._calculateRequiredGroupSection = function (sGroupId, iStartIndex,
+			iLength, iThreshold) {
+		var fnGetKey = this._getKeys(sGroupId);
 
-		iSectionStartIndex = iStartIndex;
-		iSectionLength = 0;
-
-		// check which data exists before startindex; If all necessary data is loaded iPreloadedPreviousIndex stays undefined
-		if (!fKey) {
-			iPreloadedPreviousIndex = iStartIndex;
-			iPreloadedSubsequentIndex = iStartIndex + iLength;
+		// prefetch before start
+		if (iStartIndex >= iThreshold) {
+			iStartIndex -= iThreshold;
+			iLength += iThreshold;
 		} else {
-			for (var i = iStartIndex - 1; i >= Math.max(iStartIndex - iThreshold, 0); i--) {
-				sKey = fKey(i);
-				if (!sKey) {
-					iPreloadedPreviousIndex = i + 1;
-					break;
-				}
-			}
-			// check which data is already loaded after startindex; If all necessary data is loaded iPreloadedSubsequentIndex stays undefined
-			for (var j = iStartIndex + iLength; j < iStartIndex + iLength + iThreshold; j++) {
-				sKey = fKey(j);
-				if (!sKey) {
-					iPreloadedSubsequentIndex = j;
-					break;
-				}
-			}
+			iLength += iStartIndex;
+			iStartIndex = 0;
 		}
-		// calculate previous remaining entries
-		iRemainingEntries = iStartIndex - iPreloadedPreviousIndex;
-		if (iPreloadedPreviousIndex && iStartIndex > iThreshold && iRemainingEntries < iThreshold) {
-			if (aContext.length !== iLength) {
-				iSectionStartIndex = iStartIndex - iThreshold;
-			} else {
-				iSectionStartIndex = iPreloadedPreviousIndex - iThreshold;
+
+		// prefetch after end
+		iLength += iThreshold;
+		if (this.mFinalLength[sGroupId] && iStartIndex + iLength > this.mLength[sGroupId]) {
+			iLength = this.mLength[sGroupId] - iStartIndex;
+		}
+
+		if (fnGetKey) {
+			// search start of first gap
+			while (iLength && fnGetKey(iStartIndex)) {
+				iStartIndex += 1;
+				iLength -= 1;
 			}
 
-			iSectionLength = iThreshold;
-		}
-
-		// prevent startIndex from getting out of bounds
-		// FIX for BCP(1570041982)
-		// If the startIndex is negative, the $skip value will also be negative, and the length might also be bigger than necessary
-		iSectionStartIndex = Math.max(iSectionStartIndex, 0);
-
-		// No negative preload needed; move startindex if we already have some data
-		if (iSectionStartIndex === iStartIndex) {
-			iSectionStartIndex += aContext.length;
-		}
-
-		//read the rest of the requested data
-		if (aContext.length !== iLength) {
-			iSectionLength += iLength - aContext.length;
-		}
-
-		//calculate subsequent remaining entries
-		iRemainingEntries = iPreloadedSubsequentIndex - iStartIndex - iLength;
-
-		if (iRemainingEntries == 0) {
-			iSectionLength += iThreshold;
-		}
-
-		if (iPreloadedSubsequentIndex && iRemainingEntries < iThreshold && iRemainingEntries > 0) {
-			//check if we need to load previous entries; If not we can move the startindex
-			// changed the ">=" to ">", because a fix was not migrated, see commit #455622
-			// FIX for BCP(1570041982)
-			if (iSectionStartIndex > iStartIndex) {
-				iSectionStartIndex = iPreloadedSubsequentIndex;
-				iSectionLength += iThreshold;
+			// search end of last gap
+			while (iLength && fnGetKey(iStartIndex + iLength - 1)) {
+				iLength -= 1;
 			}
-
 		}
 
-		//check final length and adapt sectionLength if needed.
-		if (this.mFinalLength[sGroupId] && this.mLength[sGroupId] < (iSectionLength + iSectionStartIndex)) {
-			iSectionLength = this.mLength[sGroupId] - iSectionStartIndex;
-		}
-
-		oSection.startIndex = iSectionStartIndex;
-		oSection.length = iSectionLength;
-
-		// this._trace(sGroupId, "calculateSection:\tstart = " + iSectionStartIndex + "\tlength = " + iSectionLength); // DISABLED FOR PRODUCTION
-
-		return oSection;
+		return {
+			startIndex : iStartIndex,
+			length : iLength
+		};
 	};
 
 	/**
@@ -4748,6 +4706,7 @@ sap.ui.define([
 			}
 		}
 		if (bForceUpdate || bChangeDetected) {
+			this.iTotalSize = -1; // invalidate last row counter
 			this._abortAllPendingRequests();
 			this.resetData();
 			this.bNeedsUpdate = false;

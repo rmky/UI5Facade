@@ -1,34 +1,34 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 //Provides mixin sap.ui.model.odata.v4.lib._V2Requestor
 sap.ui.define([
 	"./_Helper",
 	"./_Parser",
+	"sap/ui/core/CalendarType",
 	"sap/ui/core/format/DateFormat",
 	"sap/ui/model/odata/ODataUtils",
 	"sap/ui/thirdparty/jquery"
-], function (_Helper, _Parser, DateFormat, ODataUtils, jQuery) {
+], function (_Helper, _Parser, CalendarType, DateFormat, ODataUtils, jQuery) {
 	"use strict";
 
 	var // Example: "/Date(1395705600000)/", matching group: ticks in milliseconds
 		rDate = /^\/Date\((-?\d+)\)\/$/,
-		oDateFormatter = DateFormat.getDateInstance({pattern: "yyyy-MM-dd", UTC : true}),
+		oDateFormatter,
 		// Example "/Date(1420529121547+0530)/", the offset ("+0530") is optional
 		// matches: 1 = ticks in milliseconds, 2 = offset sign, 3 = offset hours, 4 = offset minutes
 		rDateTimeOffset = /^\/Date\((-?\d+)(?:([-+])(\d\d)(\d\d))?\)\/$/,
+		oDateTimeOffsetFormatter,
 		mPattern2Formatter = {},
-		oDateTimeOffsetParser =
-			DateFormat.getDateTimeInstance({pattern: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"}),
 		rPlus = /\+/g,
 		rSegmentWithPredicate = /^([^(]+)(\(.+\))$/,
 		rSlash = /\//g,
 		// Example: "PT11H33M55S",
 		// PT followed by optional hours, optional minutes, optional seconds with optional fractions
 		rTime = /^PT(?:(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)(\.\d+)?S)?)$/i,
-		oTimeFormatter = DateFormat.getTimeInstance({pattern: "HH:mm:ss", UTC : true});
+		oTimeFormatter;
 
 	/**
 	 * A mixin for a requestor using an OData V2 service.
@@ -150,8 +150,11 @@ sap.ui.define([
 			sPattern += "." + "".padEnd(iPrecision, "S");
 		}
 		if (!mPattern2Formatter[sPattern]) {
-			mPattern2Formatter[sPattern] =
-				DateFormat.getDateTimeInstance({pattern: sPattern,UTC : true});
+			mPattern2Formatter[sPattern] = DateFormat.getDateTimeInstance({
+				calendarType : CalendarType.Gregorian,
+				pattern: sPattern,
+				UTC : true
+			});
 		}
 		return mPattern2Formatter[sPattern].format(new Date(iTicks)) + sOffset;
 	};
@@ -234,7 +237,7 @@ sap.ui.define([
 			}
 			if (oNode.id === "PATH") {
 				oPropertyMetadata = that.oModelInterface
-					.fnFetchMetadata(sMetaPath + "/" + oNode.value).getResult();
+					.fetchMetadata(sMetaPath + "/" + oNode.value).getResult();
 				if (!oPropertyMetadata) {
 					throw new Error("Invalid filter path: " + oNode.value);
 				}
@@ -524,8 +527,11 @@ sap.ui.define([
 				+ "received 'OData-Version' header with value '" + vODataVersion
 				+ "' in response for " + this.sServiceUrl + sResourcePath);
 		}
-		if (sDataServiceVersion === "1.0" || sDataServiceVersion === "2.0"
-				|| !sDataServiceVersion) {
+		if (!sDataServiceVersion) {
+			return;
+		}
+		sDataServiceVersion = sDataServiceVersion.split(";")[0];
+		if (sDataServiceVersion === "1.0" || sDataServiceVersion === "2.0") {
 			return;
 		}
 		throw new Error("Expected 'DataServiceVersion' header with value '1.0' or '2.0' but "
@@ -573,7 +579,7 @@ sap.ui.define([
 					// treat as candidate for "entityPropertyInJson"
 					return {
 						value : this.convertPrimitive(oCandidate,
-							this.oModelInterface.fnFetchMetadata(sMetaPath).getResult(),
+							this.oModelInterface.fetchMetadata(sMetaPath).getResult(),
 							sMetaPath, aKeys[0])
 					};
 				} else if (oCandidate.__metadata) {
@@ -586,7 +592,7 @@ sap.ui.define([
 		if (bIsArray && !oResponsePayload.results.length) {
 			oPayload = []; // no conversion needed
 		} else if (bIsArray && !oResponsePayload.results[0].__metadata) {
-			oPropertyMetadata = this.oModelInterface.fnFetchMetadata(sMetaPath).getResult();
+			oPropertyMetadata = this.oModelInterface.fetchMetadata(sMetaPath).getResult();
 			oPayload = oResponsePayload.results.map(function (vValue) {
 				return that.convertPrimitive(vValue, oPropertyMetadata, sMetaPath, "");
 			});
@@ -795,7 +801,7 @@ sap.ui.define([
 				vValue = parseAndCheck(oDateFormatter, vValue);
 				break;
 			case "Edm.DateTimeOffset":
-				vValue = parseAndCheck(oDateTimeOffsetParser, vValue);
+				vValue = parseAndCheck(oDateTimeOffsetFormatter, vValue);
 				break;
 			case "Edm.TimeOfDay":
 				vValue = {
@@ -897,7 +903,7 @@ sap.ui.define([
 		oType = this.mTypesByName[sName];
 		if (!oType) {
 			oType = this.mTypesByName[sName] =
-				this.oModelInterface.fnFetchMetadata("/" + sName).getResult();
+				this.oModelInterface.fetchMetadata("/" + sName).getResult();
 		}
 		return oType;
 	};
@@ -940,28 +946,41 @@ sap.ui.define([
 	 */
 	// @override
 	_V2Requestor.prototype.ready = function () {
-		return this.oModelInterface.fnFetchEntityContainer().then(function () {});
+		return this.oModelInterface.fetchEntityContainer().then(function () {});
 	};
 
+	//*********************************************************************************************
+	// "static" functions
+	//*********************************************************************************************
+	function asV2Requestor(oRequestor) {
+		jQuery.extend(oRequestor, _V2Requestor.prototype);
+		oRequestor.oModelInterface.reportBoundMessages = function () {};
+		oRequestor.oModelInterface.reportUnboundMessages = function () {};
+	}
+
 	/**
-	 * Do not report bound OData messages.
+	 * Sets the static date and time formatter instances.
 	 *
 	 * @private
 	 */
-	// @override
-	_V2Requestor.prototype.reportBoundMessages = function () {
+	asV2Requestor._setDateTimeFormatter = function () {
+		oDateFormatter = DateFormat.getDateInstance({
+			calendarType : CalendarType.Gregorian,
+			pattern: "yyyy-MM-dd",
+			UTC : true
+		});
+		oDateTimeOffsetFormatter = DateFormat.getDateTimeInstance({
+			calendarType : CalendarType.Gregorian,
+			pattern: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+		});
+		oTimeFormatter = DateFormat.getTimeInstance({
+			calendarType : CalendarType.Gregorian,
+			pattern: "HH:mm:ss",
+			UTC : true
+		});
 	};
 
-	/**
-	 * Do not report unbound OData messages.
-	 *
-	 * @private
-	 */
-	// @override
-	_V2Requestor.prototype.reportUnboundMessages = function () {
-	};
+	asV2Requestor._setDateTimeFormatter();
 
-	return function (oObject) {
-		jQuery.extend(oObject, _V2Requestor.prototype);
-	};
+	return asV2Requestor;
 }, /* bExport= */ false);

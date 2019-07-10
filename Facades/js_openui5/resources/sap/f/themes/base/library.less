@@ -1,8 +1,8 @@
 /* NOTE: This file was generated as an optimized version of "library.source.less" for the Theme Designer. */
 
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,19 +19,6 @@
 .sapFAvatar {
 	display: inline-block;
 	position: relative;
-}
-
-.sapFAvatarImage {
-	background: no-repeat center;
-}
-
-.sapFAvatarImageCover {
-	background-size: cover;
-}
-
-.sapFAvatarImageContain {
-	background-size: contain;
-	background-color: @sapUiContentImagePlaceholderBackground;
 }
 
 .sapFAvatarIcon {
@@ -56,13 +43,45 @@
 	-webkit-transform: translate(-50%, -50%);
 }
 
-.sapFAvatarCircle {
-	border-radius: 100%;
-	-webkit-border-radius: 100%;
+.sapFAvatarImage {
+	text-align: center;
 
-	.sapMImg {
-		border-radius: 100%;
-		-webkit-border-radius: 100%;
+	.sapUiIcon, .sapFAvatarInitialsHolder {
+		display: none;
+	}
+}
+
+.sapFAvatarImageHolder {
+	background: no-repeat center;
+	display: block;
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	.sapFAvatar:not(.sapFAvatarImage) &
+	{
+		display: none;
+	}
+}
+
+.sapFAvatarImageCover {
+	background-size: cover;
+}
+
+.sapFAvatarImageContain {
+	background-size: contain;
+	background-color: @sapUiContentImagePlaceholderBackground;
+}
+
+.sapFAvatarCircle {
+	border-radius: 50%;
+	-webkit-border-radius: 50%;
+
+	.sapMImg,
+	.sapFAvatarImageHolder {
+		border-radius: 50%;
+		-webkit-border-radius: 50%;
 	}
 }
 
@@ -117,20 +136,34 @@
 }
 
 .sapFAvatarFocusable:focus {
-	outline: 1px dotted @sapUiContentFocusColor;
-	outline-offset: -1px;
+	outline: 0.0625rem dotted @sapUiContentFocusColor;
+}
+
+html[data-sap-ui-browser^="ie"] .sapFAvatarFocusable:focus,
+html[data-sap-ui-browser^="ed"] .sapFAvatarFocusable:focus {
+	outline-style: dashed;
+}
+
+html:not(.sap-desktop) .sapFAvatarFocusable:focus {
+	outline: none;
 }
 
 .sapFAvatarInitials {
 	background-color: @sapUiContentImagePlaceholderBackground;
+}
 
-	.sapFAvatarInitialsHolder {
-		color: @sapUiContentIconColor;
-	}
+.sapFAvatarInitialsHolder {
+	color: @sapUiContentIconColor;
 }
 
 // Apply LightBox Magnifying glass mixin to control
 .lightBoxMagnifyingGlassMixing(~".sapFAvatar", ~".sapFAvatarMagnifyingGlass");
+
+
+//restrinct inner elements of blocking press event of the whole control
+.sapFAvatar * {
+	pointer-events: none;
+}
 /* END "Avatar.less" */
 
 /* START "DynamicPage.less" */
@@ -322,6 +355,18 @@ html[data-sap-ui-browser^="ie"] {
 	}
 }
 
+// Overstyle for Comparison Pattern
+.sapFDynamicPage.sapFDynamicPageTitleClickEnabled.sapUiComparisonContainer {
+	.sapFDynamicPageTitleMainInner:hover {
+		cursor: pointer;
+	}
+
+	.sapFDynamicPageTitle:hover,
+	&.sapFDynamicPageTitleForceHovered .sapFDynamicPageTitle {
+		cursor: default;
+	}
+}
+
 .sapFDynamicPageTitleMainHeading,
 .sapFDynamicPageTitleMainContent,
 .sapFDynamicPageTitleMainActions {
@@ -370,19 +415,7 @@ html[data-sap-ui-browser^="ie"] {
 /* Tablet and Desktop */
 .sapFDynamicPageToggleHeaderIndicator,
 .sapFDynamicPageHeaderPinButton {
-	width: 2.5rem;
-	height: 2.5rem;
-	font-size: 1.375rem;
 	bottom: -1.375rem;
-
-	.sapMBtnInner {
-		height: 2rem;
-		bottom: 0.5rem;
-
-		.sapMBtnIcon {
-			line-height: 2rem;
-		}
-	}
 }
 
 .sapFDynamicPageToggleHeaderIndicator,
@@ -396,46 +429,13 @@ html[data-sap-ui-browser^="ie"] {
 
 .sapFDynamicPageHeaderPinButton {
 	margin-left: 0.25rem;
-
-	.sapMBtnInner {
-		border: none;
-		&:not(.sapMToggleBtnPressed) {
-			background-color: @sapUiObjectHeaderBorderColor;
-		}
-	}
-}
-
-.sapFDynamicPageHeaderPinButton:hover > .sapMBtnInner {
-	background-color: darken(@sapUiObjectHeaderBorderColor, 3);
-}
-
-.sapFDynamicPageHeaderPinButton:active > .sapMBtnInner {
-	background-color: @sapUiSelected;
 }
 
 /* Compact */
 .sapUiSizeCompact {
 	.sapFDynamicPageToggleHeaderIndicator,
 	.sapFDynamicPageHeaderPinButton {
-		width: 2rem;
-		height: 2rem;
-		font-size: 1rem;
 		bottom: -0.875rem;
-
-		.sapMBtnInner {
-			height: 1.25rem;
-			bottom: 0.375rem;
-
-			.sapMBtnIcon {
-				line-height: 1.25rem;
-			}
-		}
-	}
-	.sapFDynamicPageToggleHeaderIndicator {
-		margin-left: -1rem;
-	}
-	.sapFDynamicPageHeaderPinnable .sapFDynamicPageToggleHeaderIndicator {
-		margin-left: -2rem;
 	}
 }
 
@@ -495,6 +495,23 @@ html[data-sap-ui-animation='on'] .sapFDynamicPage {
 		}
 	}
 }
+
+
+/* Vertically align items in the table-like view with the items in the sap.m.Carousel control,
+part of DynamicPageTitle snapped content and DynamicPageHeader content.
+To be used in Comparison pattern scenario. */
+.sapUiComparisonContent .sapUiComparisonItem  {
+	padding-left: 2.25rem;
+	padding-right: 1rem;
+}
+
+.sapUiComparisonContent :first-child.sapUiComparisonItem {
+	padding-left: 1rem;
+}
+
+.sapUiComparisonContainer .sapFDynamicPageTitleSnapped + .sapFDynamicPageContentWrapper .sapUiComparisonContent  {
+	margin-right: -1rem;
+}
 /* END "DynamicPage.less" */
 
 /* START "DynamicPageTitle.less" */
@@ -531,9 +548,11 @@ html[data-sap-ui-animation='on'] .sapFDynamicPage {
 	box-sizing: border-box;
 	background: @sapUiObjectHeaderBackground;
 
-	&.sapFDynamicPageTitleFocus {
-		outline: 0.0625rem dotted @sapUiContentFocusColor;
-		outline-offset: -0.0625rem;
+	html.sap-desktop & {
+		&.sapFDynamicPageTitleFocus {
+			outline: 0.0625rem dotted @sapUiContentFocusColor;
+			outline-offset: -0.0625rem;
+		}
 	}
 
 	.sapFDynamicPageTitleFocusSpan {
@@ -586,6 +605,10 @@ html[data-sap-ui-animation='on'] .sapFDynamicPage {
 		flex-direction: row;
 		-webkit-flex-direction: row;
 		box-sizing: border-box;
+
+		&.sapUiHidden {
+			position: absolute;
+		}
 
 		&> .sapFDynamicPageTitleMainNavigationArea,
 		&> .sapFDynamicPageTitleMainNavigationArea > .sapFDynamicPageTitleMainNavigationAreaInner{
@@ -735,6 +758,15 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 
 /* Tablet Size */
 .sapFDynamicPage-Std-Tablet {
+
+	// Needed because on some high-end phones in landscape mode,
+	// the width of the viewport is bigger than 600 (Tablet breakpoint).
+	.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnappedTitleOnMobile > .sapFDynamicPageTitle {
+		padding: 0 0.25rem 0 2rem;
+		min-height: 2rem;
+		height: 2rem;
+	}
+
 	.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnapped > .sapFDynamicPageTitle {
 		padding: 0.5rem 1rem 1rem 2rem;
 	}
@@ -760,6 +792,18 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 	}
 }
 
+.sapFDynamicPageTitle .sapFDynamicPageTitleSnappedTitleOnMobile {
+	min-height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex: 0 1 auto;
+
+	.sapUiIcon {
+		flex: 0 0 2rem;
+	}
+}
+
 /* Phone Size */
 .sapFDynamicPage-Std-Phone {
 
@@ -769,6 +813,12 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 				padding-bottom: 0;
 			}
 		}
+	}
+
+	.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnappedTitleOnMobile > .sapFDynamicPageTitle {
+		padding: 0 0.25rem 0 1rem;
+		min-height: 2rem;
+		height: 2rem;
 	}
 
 	.sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnapped > .sapFDynamicPageTitle {
@@ -847,6 +897,15 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 		padding: 0.5rem 1rem 1rem 1rem;
 	}
 }
+
+.sapFDynamicPageHeader.sapFDynamicPageHeaderWithContent {
+	.sapMObjectAttributeDiv .sapMText,
+	.sapMObjectAttributeDiv .sapMObjectAttributeTitle,
+	.sapMObjectAttributeDiv .sapMObjectAttributeColon,
+	.sapMObjectAttributeDiv .sapMObjectAttributeText {
+		vertical-align: middle;
+	}
+}
 /* END "DynamicPageHeader.less" */
 
 /* START "Card.less" */
@@ -854,20 +913,23 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 /* CSS for control sap.f/Card  */
 /* Base theme          */
 /* ================================== */
-@sapUiContentPadding: 1rem;
-@sapUiCardHeaderIconColor: #6a6d70;
-
+@_sap_f_Card_ContentPadding: 1rem;
+@_sap_f_Card_HeaderIconColor: #6a6d70;
+@_sap_f_Card_HeaderBorderBottom: 1px solid darken(@sapUiTileBackground, 20);
+@_sap_f_Card_HeaderHoverColor: darken(@sapUiTileBackground, 2);
+@_sap_f_Card_HeaderActiveColor: darken(@sapUiTileBackground, 3);
 
 .sapFCard {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  flex-direction: column;
   vertical-align: top;
   box-sizing: border-box;
   background: @sapUiTileBackground;
   box-shadow: @sapUiShadowLevel0;
   border-radius: 0.25rem;
   width: 100%;
-  height: 100%;
+  height: auto;
   overflow: hidden;
   font-family: @sapUiFontFamily;
   font-size: @sapUiFontSize;
@@ -875,126 +937,394 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
   outline: none;
 }
 
+.sapFCardMaxItems > .sapMGrowingList,
+.sapFCardMaxItems .sapSuiteUiCommonsTimelineShowMoreWrapper {
+	display: none;
+}
+
+.sapFCardObjectContent {
+	padding: 1rem 1rem 0 1rem;
+}
+
+.sapFCardObjectGroup {
+	padding-bottom: 1.75rem;
+
+	& .sapFCardObjectItemTitle {
+		margin-bottom: 0.5rem;
+	}
+	& .sapFCardObjectItemLabel {
+		margin-top: 1rem;
+	}
+
+	& .sapFCardObjectItemText {
+		margin-top: 0.25rem;
+	}
+
+	& .sapFCardObjectItemAvatar {
+		margin-right: 0.5rem;
+	}
+}
+
+.sapFCardObjectGroup.sapFCardObjectGroupLastInColumn {
+	padding-bottom: 1rem;
+}
+
+.sapFCardObjectSpaceBetweenGroup {
+	margin-right: 2rem;
+}
+
 .sapFCard .sapFCardHeader {
-  background: @sapUiTileBackground;
-  border-bottom: 1px solid darken(@sapUiTileBackground, 20);
-  padding: @sapUiContentPadding;
-  display: flex;
-  align-items: flex-start;
-  &:hover{
-    background: darken(@sapUiTileBackground,2);
-  }
+	position: relative;
+	flex-shrink: 0;
+	background: @sapUiTileBackground;
+	border-bottom: @_sap_f_Card_HeaderBorderBottom;
+	padding: @_sap_f_Card_ContentPadding;
+	display: flex;
+	align-items: flex-start;
+	outline: none;
 
-  &:active{
-    background: darken(@sapUiTileBackground,3);
-  }
-
-
-  &:hover .sapFCardIcon.sapFAvatar:not(.sapFAvatarImage):not(.sapFAvatarInitials ){
-    background: darken(@sapUiTileBackground,2);
-  }
-
-  &:active .sapFCardIcon.sapFAvatar:not(.sapFAvatarImage):not(.sapFAvatarInitials ){
-    background: darken(@sapUiTileBackground,3);
-  }
-
-  .sapFCardIcon.sapFAvatar:not(.sapFAvatarImage ):not(.sapFAvatarInitials ){
-    background-color: transparent;
-    border: none;
-  }
-
-  .sapFCardIcon.sapFAvatar{
-    margin-right: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    .sapUiIcon {
-      align-self: center;
-      font-size: 2rem;
-      color: @sapUiCardHeaderIconColor;
-    }
-  }
-  .sapFCardHeaderText {
-    flex: 1;
-	.sapFCardTitle {
-	  margin: 0px;
-	  display: block;
-      font-family: @sapUiFontHeaderFamily;
-      font-size: @sapMFontHeader5Size;
-      font-weight: @sapUiFontHeaderWeight;
-      color: @sapUiTileTitleTextColor;
+	.sapFCardIcon.sapFAvatar:not(.sapFAvatarImage ):not(.sapFAvatarInitials ){
+		background-color: transparent;
+		border: none;
 	}
+
+	.sapFCardIcon.sapFAvatar {
+		flex-shrink: 0;
+		margin-right: 0.75rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		.sapUiIcon {
+			align-self: center;
+			font-size: 2rem;
+			color: @_sap_f_Card_HeaderIconColor;
+		}
+	}
+
+	.sapFCardHeaderText {
+		flex: 1 1 auto;
+
+		.sapFCardTitle {
+			margin: 0px;
+			display: block;
+			font-family: @sapUiFontHeaderFamily;
+			font-size: @sapMFontHeader5Size;
+			font-weight: @sapUiFontHeaderWeight;
+			color: @sapUiTileTitleTextColor;
+			min-height: 1rem;
+		}
+	}
+
 	.sapFCardSubtitle {
-	  margin: 0.5rem 0 0 0;
-      font-family: @sapUiFontFamily;
-      font-size: @sapMFontMediumSize;
-      font-weight: normal;
-      color: @sapUiTileTextColor;
+		margin: 0.5rem 0 0 0;
+		font-family: @sapUiFontFamily;
+		font-size: @sapMFontMediumSize;
+		font-weight: normal;
+		color: @sapUiTileTextColor;
+		min-height: 1rem;
 	}
 
-  }
 	.sapFCardStatus {
-      font-family: @sapUiFontFamily;
-      font-size: @sapMFontSmallSize;
-      color: @sapUiTileTextColor;
-      text-align: left;
-      line-height: 1.125rem;
-      padding-left: 1rem;
-      margin-left: auto;
-      text-wrap: avoid;
-      display: inline-block;
+		font-family: @sapUiFontFamily;
+		font-size: @sapMFontSmallSize;
+		color: @sapUiTileTextColor;
+		text-align: left;
+		line-height: normal;
+		padding-left: 1rem;
+		margin-left: auto;
+		text-wrap: avoid;
+		display: inline-block;
+		white-space: nowrap;
+		margin-top: 0.188rem;
+	}
+
+	.sapFCardHeaderTextFirstLine {
+		display: flex;
+		justify-content: space-between;
+		width: 100%;
+	}
+
+	.sapFCardHeaderText {
+		width: 100%;
+	}
+}
+
+.sapFCard.sapFCardBottomHeader .sapFCardHeader {
+	border-bottom: none;
+	border-top: @_sap_f_Card_HeaderBorderBottom;
+}
+
+.sapFCard .sapFCardHeader.sapFCardNumericHeader {
+	display: block;
+
+	.sapFCardStatus {
+		min-width: fit-content;
+	}
+
+	.sapFCardSubtitle {
+		display: flex;
+		align-items: flex-end;
+
+		.sapFCardHeaderUnitOfMeasurement {
+			margin-left: 0.25rem;
+			padding-left: 0.25rem;
+			border-left: 1px solid @sapUiTileTextColor;
+		}
+	}
+
+	.sapFCardHeaderText .sapFCardSubtitle .sapMText {
+		color: @sapUiTileTextColor;
+	}
+
+	.sapFCardHeaderDetails {
+		margin-top: 0.25rem;
+		font-size: @sapMFontSmallSize;
+		color: @sapUiTileTextColor;
+	}
+
+	.sapFCardHeaderIndicators {
+		margin-top: 0.25rem;
+		display: flex;
+		justify-content: flex-start;
+
+		.sapFCardHeaderMainIndicator {
+			flex-shrink: 0;
+			height: 2.875rem;
+			.sapMNCValue {
+				line-height: 2.875rem;
+			}
+			.sapMNCInner {
+				padding-top: 0px;
+			}
+		}
+
+		.sapFCardHeaderIndicatorsGap {
+			flex: 1 0 1rem;
+			max-width: 3rem;
+		}
+
+		.sapFCardHeaderSideIndicators {
+			min-width: 0; // allows items to shrink and truncate the content inside
+			display: flex;
+			align-items: flex-end;
+			padding: 0.5rem 0;
+			.sapFCardHeaderSideIndicator:nth-child(2) {
+				margin-left: 1rem;
+			}
+		}
+	}
+}
+
+.sapFCardHeaderSideIndicator {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	min-width: 0; // allows items to shrink and truncate the content inside
+	.sapFCardHeaderSITitle {
+		font-size: @sapMFontSmallSize;
+		color: @sapUiTileTextColor;
+		padding-bottom: 0.25rem;
+	}
+	.sapFCardHeaderSINumber,
+	.sapFCardHeaderSINumber .sapMText {
+		font-size: @sapMFontSmallSize;
+		color: @sapUiTileTitleTextColor;
 	}
 }
 
 
-.sapFCardHeaderKpi {
-  display: block;
-  width: 100%;
-  .sapFCardSubtitle {
-    display: flex;
-    .sapFCardHeaderUnitOfMeasurement::before {
-      content: "|";
-      display: inline-block;
-      margin: 0 0.4rem;
-    }
-  }
-  .sapFCardHeaderText .sapFCardSubtitle .sapMText,
-  .sapFCardHeaderDetails {
-    color: @sapUiTileTextColor;
-  }
 
-  .sapFCardHeaderIndicators {
-    margin-top: 4px;
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    .sapFCardHeaderMainIndicator {
-      flex-shrink: 0;
-      height: 3rem;
-      margin-right: 1rem;
-      .sapMNCInner {
-        padding-top: 0px;
-      }
-    }
+.sapFCard .sapFCardContent {
+	flex: 1 0 auto;
+	overflow: hidden;
+	position: relative;
 
-    .sapFCardHeaderSideIndicators {
-      min-width: 0;
-      display: flex;
-      padding-top: 6px;
-      .sapFCardHeaderSideIndicator {
-        min-width: 0;
-        margin-left: 1rem;
-      }
-      .sapMText{
-        color: @sapUiTileTextColor;
-      }
-      .sapMObjectNumber {
-        color: @sapUiTileTitleTextColor;
-      }
-    }
+	.sapFCardAnalyticalContent {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+	}
+	.sapFCardBaseContent {
+		height: 100%;
+	}
+}
+
+.sapFCard .sapFCardContent {
+	.sapVizFrame {
+		min-height: inherit;
+
+		.ui5-viz-controls-app {
+			min-height: inherit;
+		}
+	}
+
+	.sapMLIB.sapMSLINoDescIcon {
+		padding: 0 1rem 0 0.125rem; // padding left is for alignment with the header
+	}
+
+	.sapMLIBContent {
+		.sapMSLIDiv {
+			flex: 1 1 auto;
+		}
+	}
+
+	.sapMListItems li:last-child {
+		border-bottom: none;
+	}
+
+	.sapUiView.sapUiXMLView > .sapMImg {
+		display: block; // Fix for unwanted space under the only image inside Component Card content
+	}
+}
+
+.sapFCard .sapMLIBImgNav {
+	display: none;
+}
+
+.sapFCard :not(.sapMListModeDelete) > .sapMLIB.sapMLIBTypeNavigation {
+	padding-right: 1rem;
+}
+
+.sapFCard .sapMListTblNavCol:last-child,
+.sapUiSizeCompact .sapFCard .sapMListTblNavCol:last-child {
+	width: 0;
+}
+
+
+
+.sapFCard .sapMListTblHasNav .sapMListTblCell:nth-last-child(2) {
+	padding-right: 1rem;
+}
+
+html[data-sap-ui-browser^="sf"] .sapFCard,
+html[data-sap-ui-browser^="cr"] .sapFCard {
+	.sapFCardHeaderText {
+		flex: 1;
+	}
+
+	.sapFCardContent {
+		flex: 1;
+		.sapMLIBContent {
+			.sapMSLIDiv {
+				flex: 1;
+			}
+		}
+	}
+}
+
+.sapFCard.sapFCardNoContent .sapFCardHeader {
+	border-bottom: none;
+}
+
+.sapFCard {
+  .sapFCardClickable,
+  .sapFCardClickable svg {
+	cursor: pointer !important;
+
+	.sapMText {
+	  cursor: pointer;
+	}
+
+	&.sapFCardClickable:hover{
+	  background: @_sap_f_Card_HeaderHoverColor;
+	}
+
+	&.sapFCardClickable:active{
+	  background: @_sap_f_Card_HeaderActiveColor;
+	}
   }
 }
+
+.sapFCardHeader:focus::before,
+.sapFCard .sapFCardHeader.sapFCardNumericHeader:focus::before {
+	content: '';
+	display: block;
+	position: absolute;
+	left: 1px;
+	bottom: 1px;
+	right: 1px;
+	top: 1px;
+	border: 1px dotted @sapUiContentFocusColor;
+	pointer-events: none;
+}
+
+html[data-sap-ui-browser^="ie"] .sapFCardHeader:focus::before,
+html[data-sap-ui-browser^="ie"] .sapFCard .sapFCardHeader.sapFCardNumericHeader:focus::before {
+	border: 1px dashed @sapUiContentFocusColor;
+}
+
+.sapUiSizeCompact {
+	.sapFCard .sapFCardContent {
+
+		.sapMLIB.sapMSLINoDescIcon {
+			padding: 0 1rem 0 0;
+
+			.sapMSLIImgIcon.sapUiIcon {
+				font-size: 1rem;
+				height: 1rem;
+				line-height: 1rem;
+			}
+		}
+
+		.sapMListTbl {
+			padding-bottom: 0.5rem;
+		}
+	}
+}
+
+
 /* END "Card.less" */
+
+/* START "GridContainer.less" */
+/* ================================== */
+/* CSS for control sap.f/GridContainer  */
+/* Base theme          */
+/* ================================== */
+.sapFGridContainer {
+	position: relative;
+	display: grid;
+
+	&.sapFGridContainerDenseFill {
+		grid-auto-flow: row dense;
+	}
+
+	&.sapFGridContainerSnapToRow .sapFGridContainerItemWrapper > * {
+		min-height: 100%;
+	}
+
+	.sapFGridContainerItemWrapper.sapFGridContainerItemFixedRows > * {
+		max-height: 100%;
+	}
+
+	.sapFGridContainerItemWrapper {
+		min-width: 0;
+	}
+
+	.sapFCard.sapFCardAnalytical {
+		min-height: 100%;
+
+		.sapFCardContent {
+			min-height: 14rem;
+		}
+
+		.sapFCardContentBusy {
+			position: absolute !important;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+		}
+	}
+}
+
+html[data-sap-ui-browser^="ie"] .sapFGridContainer {
+	.sapFCard.sapFCardAnalytical {
+		height: 100%;
+	}
+}
+/* END "GridContainer.less" */
 
 /* START "FlexibleColumnLayout.less" */
 /* =========================================== */
@@ -1035,6 +1365,10 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 		// When there is content in a panel, it needs min-width
 		&.sapFFCLColumnActive {
 			visibility: visible;
+		}
+
+		&.sapFFCLColumnHidden {
+			display: none;
 		}
 
 		.sapFFCLNavigationButton {
@@ -1182,12 +1516,19 @@ html[data-sap-ui-animation='on'] {
 	& > .sapMListHdrTBar {
 		margin-bottom: 0.5rem;
 	}
+
+	.sapMLIBCounter {
+		padding-right: 1rem;
+	}
+}
+
+.sapFGridList ul:not(.sapUiLayoutCSSGridBoxLayoutPolyfill) {
+	margin-bottom: 0.5rem;
 }
 
 .sapFGridListDefault {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-	grid-auto-rows: 1fr;
 	grid-gap: 0.5rem 0.5rem;
 }
 
@@ -1198,6 +1539,7 @@ html[data-sap-ui-animation='on'] {
 		border: none;
 		padding-top: 0.25rem;
 		grid-column: ~"1 / -1";
+		width: 100%;
 
 		& .sapMGHLITitle {
 			font-size: 1.125rem;
@@ -1214,3 +1556,311 @@ html[data-sap-ui-animation='on'] {
 	}
 }
 /* END "GridList.less" */
+
+/* START "ShellBar.less" */
+@_sap_f_ShellBar_PaddingDesktop: 3;
+@_sap_f_ShellBar_PaddingTablet: 2;
+@_sap_f_ShellBar_PaddingPhone: 1;
+@_sap_f_ShellBar_ChildMargin: 4;
+@_sap_f_ShellBar_CoPilotWidth: 48;
+
+@_sap_f_ShellBar_PrimaryTitle_FontSize: @sapMFontMediumSize;
+@_sap_f_ShellBar_SecondTitle_FontSize: @sapMFontSmallSize;
+
+.sapFShellBar {
+	height: 3rem;
+	padding-left: ~"@{_sap_f_ShellBar_PaddingDesktop}rem";
+	padding-right: ~"@{_sap_f_ShellBar_PaddingDesktop}rem";
+	box-sizing: border-box;
+	overflow: hidden;
+
+	.sapFShellBarTitleHidden {
+		position: absolute;
+		top: -10000px;
+		left: -10000px;
+	}
+
+	.sapFShellBarOTB {
+		height: 3rem;
+		padding-left: 0;
+		padding-right: 0;
+
+		>:first-child {
+			margin-left: 0;
+		}
+
+		:first-child.sapFShellBarHomeIcon {
+			margin-left: 1px;
+		}
+
+		.sapUiHiddenPlaceholder:first-child + * {
+			margin-left: 0;
+		}
+
+		.sapFShellBarOverflowButton {
+			order: 1;
+		}
+
+		.sapFShellBarGridButton {
+			order: 3;
+			margin-right: 0;
+		}
+
+		.sapFShellBarProfile {
+			order: 2;
+		}
+		.sapFShellBarSecondTitle {
+			margin: 0;
+		}
+	}
+
+	.sapMBtn .sapMBtnInner {
+		.sapFAvatar {
+			vertical-align: middle;
+		}
+		&:after {
+			content: "";
+			display: inline-block;
+			vertical-align: middle;
+			height: 100%;
+		}
+	}
+
+	.sapFSHMegaMenu {
+		max-width: none;
+		display: inline-block;
+		font-weight: bold;
+		overflow: hidden;
+		.sapMBtnInner > img {
+			margin-top: 0.05rem;
+			margin-left: 0.05rem;
+			width: auto !important;
+			max-width: none !important;
+			height: 2rem;
+		}
+		.sapMBtnInner::after {
+			content: '';
+			font-size: 1rem;
+			line-height: 2.2rem;
+			font-weight: bold;
+		}
+	}
+
+	.sapFShellBarHomeIcon {
+		height: 2rem;
+	}
+
+	.sapFShellBarSearch {
+		display: flex;
+		max-width: 28rem; // max width of searchField + button width
+		min-width: 12rem; // min width of searchField + button width
+		width: 100%;
+
+		.sapMSF {
+			max-width: 25rem;
+			min-width: 9rem;
+			margin-right: 0.5rem;
+		}
+
+		.sapFShellBarSearchCancelButton {
+			margin-left: 0.5rem;
+		}
+		&.sapFShellBarSearchFullWidth {
+			max-width: 100%;
+			margin: 0;
+
+			.sapMSF {
+				max-width: 100%;
+			}
+		}
+
+	}
+
+	.CPImage {
+		width: ~"@{_sap_f_ShellBar_CoPilotWidth}px";
+		height: ~"@{_sap_f_ShellBar_CoPilotWidth}px";
+		overflow: hidden;
+		cursor: pointer;
+		outline: none;
+		html[data-sap-ui-animation='on'] & {
+			&:hover {
+				transition: transform 0.30s;
+				transform: scale(1.1);
+			}
+			&:active {
+				transition: transform 0.05s;
+				transform: scale(1.2);
+			}
+		}
+		html[data-sap-ui-animation='off'] & {
+			&:hover {
+				transform: scale(1.1);
+			}
+			&:active {
+				transform: scale(1.2);
+			}
+		}
+		.color1 {
+			stop-color: #00B8F3;
+		}
+		.color2 {
+			stop-color: #1C61BA;
+		}
+		&:focus {
+			outline: 1px dotted @sapUiContentFocusColor;
+			outline-offset: -0.3125rem;
+		}
+		html[data-sap-ui-browser^="ed"] &:focus {
+			outline-style: dashed;
+		}
+		html[data-sap-ui-browser^="ie"] &:focus {
+			outline: none;
+			position: relative;
+		}
+		html[data-sap-ui-browser^="ie"] &:focus:before {
+			content: " ";
+			box-sizing: border-box;
+			width: 88%;
+			height: 88%;
+			position: absolute;
+			left: 3px;
+			top: 3px;
+			border: 1px dashed @sapUiContentFocusColor;
+			pointer-events: none;
+		}
+	}
+
+	.sapFSHMegaMenu .sapMBtnContent {
+		font-weight: bold;
+	}
+
+	&.sapFShellBarSizeTablet {
+		padding: 0 ~"@{_sap_f_ShellBar_PaddingTablet}rem";
+	}
+
+	&.sapFShellBarSizePhone {
+		padding: 0 ~"@{_sap_f_ShellBar_PaddingPhone}rem";
+		.sapFShellBarProfile {
+			margin-right: 0;
+		}
+	}
+
+	.sapFShellBarPrimaryTitle,
+	.sapFShellBarSecondTitle {
+		vertical-align: middle;
+	}
+
+	.sapFShellBarPrimaryTitle {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		background: transparent;
+		color: @sapUiShellTextColor;
+		font-size: @_sap_f_ShellBar_PrimaryTitle_FontSize;
+		line-height: 1rem;
+		vertical-align: middle;
+		font-weight: bold;
+	}
+
+	.sapFShellBarSecondTitle {
+		font-family: @sapUiFontFamily;
+		font-size: @_sap_f_ShellBar_SecondTitle_FontSize;
+		color: @sapUiShellTextColor;
+		line-height: 2rem;
+		vertical-align: middle;
+	}
+
+	.sapUiSizeCompact & {
+		&.sapMPageHeader .sapMIBar {
+			height: 3rem;
+		}
+		.sapFShellBarProfile {
+			padding-top: 0;
+			height: 2.125rem;
+			.sapFAvatar {
+				margin-top: 0;
+			}
+			.sapMBtnInner {
+				height: 2.125rem;
+			}
+		}
+		.sapFShellBarSearch {
+			max-width: 27.5rem; // max width of searchField + button width
+			min-width: 11.5rem; // min width of searchField + button width
+			.sapMSF {
+				max-width: 25rem;
+				min-width: 9rem;
+				margin-right: 0.5rem;
+			}
+
+			&.sapFShellBarSearchFullWidth {
+				max-width: 100%;
+				margin: 0;
+
+				.sapMSF {
+					max-width: 100%;
+				}
+			}
+		}
+	}
+}
+
+.sapFButtonNotifications[data-notifications],
+.sapFShellBarOverflowButton[data-notifications] {
+	overflow: visible;
+	&:after
+	{
+		content: attr(data-notifications);
+		position: absolute;
+		top: 0.125rem;
+		right: -0.125rem;
+
+		box-sizing: border-box;
+		padding: 0 0.3125rem;
+		border-radius: 1.125rem;
+		height: 1.125rem;
+		max-width: 3.75rem;
+
+		line-height: 1.125rem;
+		font-size: 0.6875rem;
+		font-family: @sapUiFontFamily;
+
+		background-color: @sapUiContentBadgeBackground;
+		border-color: @sapUiContentBadgeBackground;
+		color: @sapUiShellTextColor;
+
+		text-overflow: ellipsis;
+		overflow: hidden;
+
+	}
+}
+
+.sapFShellBarSearchOverflowToolbar {
+	max-width: 100%;
+	width: 100%;
+
+	.sapMBtnContent {
+		text-align: left;
+	}
+}
+
+.sapFButtonNotifications ~ .sapFShellBarOverflowButton,
+.sapFButtonNotifications[data-notifications=""],
+.sapFShellBarOverflowButton[data-notifications=""] {
+	&:after {
+		display: none;
+	}
+}
+
+.sapFShellBar:not(.sapFShellBarNotifications) {
+	.sapFShellBarOverflowButton[data-notifications]:after {
+		display: none;
+	}
+}
+
+.sapFShellBarTitleCollapsed {
+	&>span {
+		display: none;
+	}
+
+}
+/* END "ShellBar.less" */

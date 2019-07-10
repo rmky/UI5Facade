@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,7 @@ sap.ui.define(function () {
 	 * @author SAP SE
 	 * @experimental Since 1.58
 	 * @since 1.58
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
 	 * @ui5-restricted
 	*/
@@ -56,7 +56,7 @@ sap.ui.define(function () {
 				 *
 				 * @method sap.ui.rta.service.Selection.set
 				 * @param {string|string[]} vControlIds - Control IDs to be selected
-				 * @return {boolean} true if the selection has changed
+				 * @return {boolean} <code>true</code> if the selection has changed
 				 * @public
 				 */
 				set: oSelectionManager.set.bind(oSelectionManager),
@@ -66,7 +66,7 @@ sap.ui.define(function () {
 				 *
 				 * @method sap.ui.rta.service.Selection.add
 				 * @param {string|string[]} vControlIds - Control IDs to be selected
-				 * @return {boolean} true if the selection has changed
+				 * @return {boolean} <code>true</code> if the selection has changed
 				 * @public
 				 */
 				add: oSelectionManager.add.bind(oSelectionManager),
@@ -76,7 +76,7 @@ sap.ui.define(function () {
 				 *
 				 * @method sap.ui.rta.service.Selection.remove
 				 * @param {string|string[]} vControlIds - Control IDs from which to remove the selection
-				 * @return {boolean} true if the selection has changed
+				 * @return {boolean} <code>true</code> if the selection has changed
 				 * @public
 				 */
 				remove: oSelectionManager.remove.bind(oSelectionManager),
@@ -85,7 +85,7 @@ sap.ui.define(function () {
 				 * Resets the current selection.
 				 *
 				 * @method sap.ui.rta.service.Selection.reset
-				 * @returns {boolean} true if completed successfully (false if there is nothing to reset)
+				 * @returns {boolean} <code>true</code> if completed successfully (<code>false</code> if there is nothing to reset)
 				 * @public
 				 */
 				reset: oSelectionManager.reset.bind(oSelectionManager)

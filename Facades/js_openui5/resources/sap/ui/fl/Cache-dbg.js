@@ -1,18 +1,27 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/fl/LrepConnector",
 	"sap/ui/fl/Utils",
-	"sap/ui/fl/variants/util/VariantUtil",
 	"sap/base/strings/formatMessage",
 	"sap/base/Log",
 	"sap/ui/thirdparty/jquery",
-	"sap/base/util/LoaderExtensions"
-], function(LrepConnector, Utils, VariantUtil, formatMessage, Log, jQuery, LoaderExtensions) {
+	"sap/base/util/LoaderExtensions",
+	"sap/base/util/ObjectPath"
+],
+function(
+	LrepConnector,
+	Utils,
+	formatMessage,
+	Log,
+	jQuery,
+	LoaderExtensions,
+	ObjectPath
+) {
 	"use strict";
 
 	/**
@@ -23,7 +32,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.Cache
 	 * @experimental Since 1.25.0
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 */
 	var Cache = function () {
 	};
@@ -191,6 +200,9 @@ sap.ui.define([
 		var sComponentName = mComponent.name;
 		var sAppVersion = mComponent.appVersion || Utils.DEFAULT_APP_VERSION;
 		var oCacheEntry = Cache.getEntry(sComponentName, sAppVersion);
+		var oCurrentLoadChanges;
+		mPropertyBag = mPropertyBag || {};
+		mPropertyBag.isTrial = Utils.isTrialSystem();
 
 		if (oCacheEntry.promise && !bInvalidateCache) {
 			return oCacheEntry.promise;
@@ -199,8 +211,8 @@ sap.ui.define([
 		var oChangesBundleLoadingPromise = Cache._getChangesFromBundle(mPropertyBag);
 
 		// in case of no changes present according to async hints
-		if (mPropertyBag && mPropertyBag.cacheKey === "<NO CHANGES>") {
-			var currentLoadChanges = oChangesBundleLoadingPromise.then(function (aChanges) {
+		if (mPropertyBag.cacheKey === "<NO CHANGES>") {
+			oCurrentLoadChanges = oChangesBundleLoadingPromise.then(function (aChanges) {
 				oCacheEntry.file = {
 					changes: {
 						changes : aChanges,
@@ -211,9 +223,16 @@ sap.ui.define([
 					componentClassName: sComponentName
 				};
 				return oCacheEntry.file;
+			})
+			.then(function(oReturn) {
+				// normally the LrepConnector takes care of this, but in case of no changes and async hints we have to do it here
+				if (mPropertyBag.isTrial && oLrepConnector instanceof LrepConnector) {
+					return oLrepConnector.enableFakeConnectorForTrial(mComponent, oReturn);
+				}
+				return oReturn;
 			});
-			oCacheEntry.promise = currentLoadChanges;
-			return currentLoadChanges;
+			oCacheEntry.promise = oCurrentLoadChanges;
+			return oCurrentLoadChanges;
 		}
 
 		var oFlexDataPromise = oLrepConnector.loadChanges(mComponent, mPropertyBag);
@@ -221,10 +240,10 @@ sap.ui.define([
 			return oResult;
 		}, function (oError) {
 			var sMessageText = "";
-			if (oError.messages && oError.messages.length != 0 && oError.messages[0].text) {
+			if (oError.messages && oError.messages.length !== 0 && oError.messages[0].text) {
 				sMessageText = oError.messages[0].text;
 			}
-			var sErrorMessage = formatMessage("Loading changes for {0} failed!\nError code: {1}\nMessage: {2}", mComponent.name, oError.code, sMessageText);
+			var sErrorMessage = formatMessage("Loading changes for {0} failed!\nError code: {1}\nMessage: {2}", mComponent.name, oError.code || "", sMessageText);
 			// if the back end is not reachable we still cache the results in a valid way because the url request is
 			// cached by the browser in its negative cache anyway.
 			Log.error(sErrorMessage);
@@ -238,7 +257,7 @@ sap.ui.define([
 			});
 		});
 
-		var currentLoadChanges = Promise.all([oChangesBundleLoadingPromise, oChangesLoadingPromise]).then(function (aValues) {
+		oCurrentLoadChanges = Promise.all([oChangesBundleLoadingPromise, oChangesLoadingPromise]).then(function (aValues) {
 			var aChangesFromBundle = aValues[0];
 			var mChanges = aValues[1];
 
@@ -258,10 +277,10 @@ sap.ui.define([
 			throw err;
 		});
 
-		oCacheEntry.promise = currentLoadChanges;
+		oCacheEntry.promise = oCurrentLoadChanges;
 		Cache._oFlexDataPromise = oFlexDataPromise;
 
-		return currentLoadChanges;
+		return oCurrentLoadChanges;
 	};
 
 	/**
@@ -276,7 +295,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Cache._getChangesFromBundle = function (mPropertyBag) {
-		var bChangesBundleDeterminable = mPropertyBag && mPropertyBag.appName;
+		var bChangesBundleDeterminable = mPropertyBag.appName;
 
 		if (!bChangesBundleDeterminable) {
 			return Promise.resolve([]);
@@ -286,53 +305,68 @@ sap.ui.define([
 		var bChangesBundleLoaded = !!sap.ui.loader._.getModuleState(sResourcePath);
 		if (bChangesBundleLoaded) {
 			return Promise.resolve(LoaderExtensions.loadResource(sResourcePath));
-		} else {
-			var oConfiguration = sap.ui.getCore().getConfiguration();
-			if (oConfiguration.getDebug() || oConfiguration.isFlexBundleRequestForced()) {
-				// try to load the source in case a debugging takes place and the component could have no Component-preload
-				try {
-					return Promise.resolve(LoaderExtensions.loadResource(sResourcePath));
-				} catch (e) {
-					Log.warning("flexibility did not find a changesBundle.json  for the application");
-				}
-			}
-
-			return Promise.resolve([]);
 		}
+
+		var oConfiguration = sap.ui.getCore().getConfiguration();
+		if (oConfiguration.getDebug() || oConfiguration.isFlexBundleRequestForced()) {
+			// try to load the source in case a debugging takes place and the component could have no Component-preload
+			try {
+				return Promise.resolve(LoaderExtensions.loadResource(sResourcePath));
+			} catch (e) {
+				Log.warning("flexibility did not find a changesBundle.json  for the application");
+			}
+		}
+
+		return Promise.resolve([]);
 	};
 
 
 	Cache.NOTAG = "<NoTag>";
 
+	Cache._trimEtag = function(sCacheKey) {
+		return sCacheKey.replace(/(^W\/|")/g, '');
+	};
+
+	Cache._concatControlVariantIdWithCacheKey = function (sCacheKey, sControlVariantIds) {
+		if (!sControlVariantIds) {
+			return sCacheKey;
+		}
+		return sCacheKey === Cache.NOTAG ?
+			sCacheKey.replace(/>$/, ''.concat('-', sControlVariantIds, '>')) :
+			sCacheKey.concat('-', sControlVariantIds);
+	};
+
 	/**
 	 * Function to retrieve the cache key of the SAPUI5 flexibility request of a given application
 	 *
-	 * @param {map} mComponent
+	 * @param {map} mComponent - component map
 	 * @param {string} mComponent.name Name of the application component
 	 * @param {string} mComponent.appVersion Version of the application component
+	 * @param {object} oAppComponent - Application component
 	 * @return {Promise} Returns the promise resolved with the determined cache key
 	 *
 	 * @private
 	 * @restricted sap.ui.fl
 	 *
 	 */
-	Cache.getCacheKey = function (mComponent) {
-		if (!mComponent || !mComponent.name || !mComponent.appVersion) {
+	Cache.getCacheKey = function (mComponent, oAppComponent) {
+		if (!mComponent || !mComponent.name || !mComponent.appVersion || !oAppComponent) {
 			Log.warning("Not all parameters were passed to determine a flexibility cache key.");
 			return Promise.resolve(Cache.NOTAG);
 		}
 		return this.getChangesFillingCache(LrepConnector.createConnector(), mComponent)
 			.then(function (oWrappedChangeFileContent) {
 				if (oWrappedChangeFileContent && oWrappedChangeFileContent.etag) {
-					return oWrappedChangeFileContent.etag;
-				} else {
-					return Cache.NOTAG;
+					return Cache._trimEtag(oWrappedChangeFileContent.etag);
 				}
+
+				return Cache.NOTAG;
 			})
 			.then(function(sCacheKey) {
-				// concat current control variant id to cachekey if available
-				var sCurrentControlVariantId = VariantUtil.getCurrentControlVariantId(mComponent);
-				return sCurrentControlVariantId ? sCacheKey.concat(sCurrentControlVariantId) : sCacheKey;
+				// concat current control variant ids to cachekey if available
+				var oVariantModel = oAppComponent.getModel(Utils.VARIANT_MODEL_NAME);
+				var aCurrentControlVariantIds = oVariantModel ? oVariantModel.getCurrentControlVariantIds() : [];
+				return Cache._concatControlVariantIdWithCacheKey(sCacheKey, aCurrentControlVariantIds.join("-"));
 			});
 	};
 
@@ -367,6 +401,25 @@ sap.ui.define([
 		}
 
 		aChanges.push(oChange);
+	};
+
+	/**
+	 * Syncs the passed variant management section with the component's cache entry.
+	 *
+	 * @param {sap.ui.core.Component} oComponent - Cache entry's component
+	 * @param {object} oVariantControllerFileContent Variant Controller applicable to the passed component
+	 * @public
+	 */
+	Cache.setVariantManagementSection = function (oComponent, oVariantControllerFileContent) {
+		var sComponentName = oComponent.name;
+		var sAppVersion = oComponent.appVersion || Utils.DEFAULT_APP_VERSION;
+		var oEntry = Cache.getEntry(sComponentName, sAppVersion);
+
+		if (!ObjectPath.get("file.changes.variantSection", oEntry)) {
+			return;
+		}
+
+		oEntry.file.changes.variantSection = oVariantControllerFileContent;
 	};
 
 	/**
@@ -417,7 +470,29 @@ sap.ui.define([
 		}
 	};
 
-
+	/**
+	 * Remove changes for the given component from the cached changes.
+	 *
+	 * @param {object} oComponent Component data needed for adding change
+	 * @param {string} oComponent.name Name of the component
+	 * @param {string} oComponent.appVersion Current running version of application
+	 * @param {string[]} aChangeNames Array of names of the changes to be deleted
+	 * @public
+	 */
+	Cache.removeChanges = function (oComponent, aChangeNames) {
+		var oEntry = Cache.getEntry(oComponent.name, oComponent.appVersion);
+		oEntry.file.changes.changes = oEntry.file.changes.changes.filter(function(oChange) {
+			return aChangeNames.indexOf(oChange.fileName) === -1;
+		});
+		var oVariantSection = oEntry.file.changes.variantSection;
+		Object.keys(oVariantSection).forEach(function(sId) {
+			oVariantSection[sId].variants.forEach(function(oVariant) {
+				oVariant.controlChanges = oVariant.controlChanges.filter(function(oChange) {
+					return aChangeNames.indexOf(oChange.getFileName()) === -1;
+				});
+			});
+		});
+	};
 
 	/**
 	 * Retrieve a personalization object stored for an application under a given container ID and item name;

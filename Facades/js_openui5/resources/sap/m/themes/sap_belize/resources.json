@@ -81,6 +81,11 @@
 			"theme": "sap_belize"
 		},
 		{
+			"name": "GenericTag.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
 			"name": "GenericTile.less",
 			"designtime": true,
 			"theme": "sap_belize"
@@ -92,16 +97,6 @@
 		},
 		{
 			"name": "IconTabBar.less",
-			"designtime": true,
-			"theme": "sap_belize"
-		},
-		{
-			"name": "Image.less",
-			"designtime": true,
-			"theme": "sap_belize"
-		},
-		{
-			"name": "Input.less",
 			"designtime": true,
 			"theme": "sap_belize"
 		},
@@ -312,6 +307,11 @@
 		},
 		{
 			"name": "StandardTile.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "SuggestionsPopover.less",
 			"designtime": true,
 			"theme": "sap_belize"
 		},

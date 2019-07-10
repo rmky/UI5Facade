@@ -6,11 +6,6 @@
 			"theme": "sap_bluecrystal"
 		},
 		{
-			"name": "Scrolling.less",
-			"designtime": true,
-			"theme": "sap_bluecrystal"
-		},
-		{
 			"name": "library-RTL-dbg.css",
 			"isDebug": true,
 			"theme": "sap_bluecrystal"

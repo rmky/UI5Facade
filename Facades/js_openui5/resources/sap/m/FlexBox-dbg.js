@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,7 +10,7 @@ sap.ui.define([
 	'./FlexItemData',
 	'./library',
 	'sap/ui/core/Control',
-	'sap/ui/core/RenderManager',
+	'sap/ui/core/InvisibleRenderer',
 	'./FlexBoxRenderer',
 	'sap/ui/thirdparty/jquery'
 ],
@@ -19,7 +19,7 @@ function(
 	FlexItemData,
 	library,
 	Control,
-	RenderManager,
+	InvisibleRenderer,
 	FlexBoxRenderer,
 	jQuery
 ) {
@@ -64,7 +64,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @public
 	 * @alias sap.m.FlexBox
@@ -163,7 +163,8 @@ function(
 			 */
 			items : {type : "sap.ui.core.Control", multiple : true, singularName : "item"}
 		},
-		designtime: "sap/m/designtime/FlexBox.designtime"
+		designtime: "sap/m/designtime/FlexBox.designtime",
+		dnd: { draggable: false, droppable: true }
 	}});
 
 	/**
@@ -295,7 +296,7 @@ function(
 		if (oItem.getLayoutData()) {
 			oWrapper = jQuery(document.getElementById(oItem.getLayoutData().getId()));
 		} else {
-			oWrapper = jQuery(document.getElementById(RenderManager.createInvisiblePlaceholderId(oItem))).parent();
+			oWrapper = jQuery(document.getElementById(InvisibleRenderer.createInvisiblePlaceholderId(oItem))).parent();
 		}
 
 		if (oControlEvent.getParameter("newValue")) {

@@ -30,7 +30,6 @@
 				"sap/base/util/merge.js",
 				"sap/ui/dt/ElementUtil.js",
 				"sap/ui/dt/Overlay.js",
-				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/Util.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
@@ -42,7 +41,6 @@
 				"sap/base/util/merge.js",
 				"sap/ui/dt/ElementUtil.js",
 				"sap/ui/dt/Overlay.js",
-				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/Util.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
@@ -52,32 +50,34 @@
 			"module": "sap/ui/dt/ContextMenuControl.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/util/deepEqual.js",
 				"sap/m/Button.js",
 				"sap/m/FlexItemData.js",
 				"sap/m/HBox.js",
 				"sap/m/Popover.js",
 				"sap/m/VBox.js",
+				"sap/m/library.js",
 				"sap/ui/base/ManagedObject.js",
-				"sap/ui/dom/jquery/rect.js",
-				"sap/ui/dt/library.js",
-				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/unified/Menu.js"
+				"sap/ui/dt/DOMUtil.js",
+				"sap/ui/dt/OverlayRegistry.js",
+				"sap/ui/thirdparty/jquery.js"
 			]
 		},
 		{
 			"name": "ContextMenuControl.js",
 			"module": "sap/ui/dt/ContextMenuControl.js",
 			"required": [
+				"sap/base/util/deepEqual.js",
 				"sap/m/Button.js",
 				"sap/m/FlexItemData.js",
 				"sap/m/HBox.js",
 				"sap/m/Popover.js",
 				"sap/m/VBox.js",
+				"sap/m/library.js",
 				"sap/ui/base/ManagedObject.js",
-				"sap/ui/dom/jquery/rect.js",
-				"sap/ui/dt/library.js",
-				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/unified/Menu.js"
+				"sap/ui/dt/DOMUtil.js",
+				"sap/ui/dt/OverlayRegistry.js",
+				"sap/ui/thirdparty/jquery.js"
 			]
 		},
 		{
@@ -128,6 +128,7 @@
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/dt/AggregationDesignTimeMetadata.js",
 				"sap/ui/dt/AggregationOverlay.js",
+				"sap/ui/dt/DesignTimeStatus.js",
 				"sap/ui/dt/ElementDesignTimeMetadata.js",
 				"sap/ui/dt/ElementOverlay.js",
 				"sap/ui/dt/ElementUtil.js",
@@ -138,8 +139,7 @@
 				"sap/ui/dt/SelectionManager.js",
 				"sap/ui/dt/SelectionMode.js",
 				"sap/ui/dt/TaskManager.js",
-				"sap/ui/dt/Util.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/dt/Util.js"
 			]
 		},
 		{
@@ -153,6 +153,7 @@
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/dt/AggregationDesignTimeMetadata.js",
 				"sap/ui/dt/AggregationOverlay.js",
+				"sap/ui/dt/DesignTimeStatus.js",
 				"sap/ui/dt/ElementDesignTimeMetadata.js",
 				"sap/ui/dt/ElementOverlay.js",
 				"sap/ui/dt/ElementUtil.js",
@@ -163,8 +164,7 @@
 				"sap/ui/dt/SelectionManager.js",
 				"sap/ui/dt/SelectionMode.js",
 				"sap/ui/dt/TaskManager.js",
-				"sap/ui/dt/Util.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/dt/Util.js"
 			]
 		},
 		{
@@ -189,6 +189,15 @@
 				"sap/ui/dt/ElementUtil.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
+		},
+		{
+			"name": "DesignTimeStatus-dbg.js",
+			"module": "sap/ui/dt/DesignTimeStatus.js",
+			"isDebug": true
+		},
+		{
+			"name": "DesignTimeStatus.js",
+			"module": "sap/ui/dt/DesignTimeStatus.js"
 		},
 		{
 			"name": "ElementDesignTimeMetadata-dbg.js",
@@ -251,10 +260,9 @@
 			"module": "sap/ui/dt/ElementUtil.js",
 			"isDebug": true,
 			"required": [
-				"sap/base/Log.js",
-				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/Component.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/dt/Util.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
@@ -263,10 +271,9 @@
 			"name": "ElementUtil.js",
 			"module": "sap/ui/dt/ElementUtil.js",
 			"required": [
-				"sap/base/Log.js",
-				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/Component.js",
+				"sap/ui/core/Element.js",
 				"sap/ui/dt/Util.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
@@ -276,6 +283,7 @@
 			"module": "sap/ui/dt/ManagedObjectObserver.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/util/includes.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/dt/ElementUtil.js"
 			]
@@ -284,6 +292,7 @@
 			"name": "ManagedObjectObserver.js",
 			"module": "sap/ui/dt/ManagedObjectObserver.js",
 			"required": [
+				"sap/base/util/includes.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/dt/ElementUtil.js"
 			]
@@ -314,7 +323,6 @@
 			"required": [
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/dt/DOMUtil.js",
-				"sap/ui/dt/ElementUtil.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/Util.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -326,7 +334,6 @@
 			"required": [
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/dt/DOMUtil.js",
-				"sap/ui/dt/ElementUtil.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/Util.js",
 				"sap/ui/thirdparty/jquery.js"
@@ -345,7 +352,7 @@
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/ScrollbarSynchronizer.js",
 				"sap/ui/dt/Util.js",
-				"sap/ui/dt/util/getNextZIndex.js",
+				"sap/ui/dt/util/ZIndexManager.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -361,7 +368,7 @@
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/ScrollbarSynchronizer.js",
 				"sap/ui/dt/Util.js",
-				"sap/ui/dt/util/getNextZIndex.js",
+				"sap/ui/dt/util/ZIndexManager.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -475,8 +482,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/base/util/isPlainObject.js",
-				"sap/ui/base/ManagedObject.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/base/ManagedObject.js"
 			]
 		},
 		{
@@ -484,8 +490,7 @@
 			"module": "sap/ui/dt/TaskManager.js",
 			"required": [
 				"sap/base/util/isPlainObject.js",
-				"sap/ui/base/ManagedObject.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/base/ManagedObject.js"
 			]
 		},
 		{
@@ -496,6 +501,8 @@
 				"sap/base/util/includes.js",
 				"sap/base/util/isPlainObject.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/dt/DesignTimeStatus.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -506,14 +513,259 @@
 				"sap/base/util/includes.js",
 				"sap/base/util/isPlainObject.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/dt/DesignTimeStatus.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
+		},
+		{
+			"name": "designtime/library-preload.designtime.js",
+			"module": "sap/ui/dt/designtime/library-preload.designtime.js",
+			"merged": true,
+			"designtime": true,
+			"included": [
+				"sap/ui/dt/designtime/notAdaptable.designtime.js",
+				"sap/ui/dt/designtime/notRemovable.designtime.js"
+			]
+		},
+		{
+			"name": "designtime/library-preload.designtime.js.map",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/notAdaptable.designtime-dbg.js",
+			"module": "sap/ui/dt/designtime/notAdaptable.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/notAdaptable.designtime.js",
+			"module": "sap/ui/dt/designtime/notAdaptable.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "designtime/notRemovable.designtime-dbg.js",
+			"module": "sap/ui/dt/designtime/notRemovable.designtime.js",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
+			"name": "designtime/notRemovable.designtime.js",
+			"module": "sap/ui/dt/designtime/notRemovable.designtime.js",
+			"designtime": true
+		},
+		{
+			"name": "enablement/ElementEnablementTest-dbg.js",
+			"module": "sap/ui/dt/enablement/ElementEnablementTest.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/ObjectPath.js",
+				"sap/ui/dt/DesignTime.js",
+				"sap/ui/dt/ElementOverlay.js",
+				"sap/ui/dt/enablement/Test.js",
+				"sap/ui/dt/enablement/Util.js",
+				"sap/ui/qunit/utils/waitForThemeApplied.js",
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/thirdparty/sinon-4.js"
+			]
+		},
+		{
+			"name": "enablement/ElementEnablementTest.js",
+			"module": "sap/ui/dt/enablement/ElementEnablementTest.js",
+			"required": [
+				"sap/base/util/ObjectPath.js",
+				"sap/ui/dt/DesignTime.js",
+				"sap/ui/dt/ElementOverlay.js",
+				"sap/ui/dt/enablement/Test.js",
+				"sap/ui/dt/enablement/Util.js",
+				"sap/ui/qunit/utils/waitForThemeApplied.js",
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/thirdparty/sinon-4.js"
+			]
+		},
+		{
+			"name": "enablement/Test-dbg.js",
+			"module": "sap/ui/dt/enablement/Test.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/base/ManagedObject.js"
+			]
+		},
+		{
+			"name": "enablement/Test.js",
+			"module": "sap/ui/dt/enablement/Test.js",
+			"required": [
+				"sap/ui/base/ManagedObject.js"
+			]
+		},
+		{
+			"name": "enablement/Util-dbg.js",
+			"module": "sap/ui/dt/enablement/Util.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/dt/DOMUtil.js",
+				"sap/ui/dt/ElementUtil.js",
+				"sap/ui/dt/OverlayRegistry.js"
+			]
+		},
+		{
+			"name": "enablement/Util.js",
+			"module": "sap/ui/dt/enablement/Util.js",
+			"required": [
+				"sap/ui/dt/DOMUtil.js",
+				"sap/ui/dt/ElementUtil.js",
+				"sap/ui/dt/OverlayRegistry.js"
+			]
+		},
+		{
+			"name": "enablement/elementDesigntimeTest-dbg.js",
+			"module": "sap/ui/dt/enablement/elementDesigntimeTest.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/dt/enablement/ElementEnablementTest.js",
+				"sap/ui/dt/enablement/report/QUnitReport.js"
+			]
+		},
+		{
+			"name": "enablement/elementDesigntimeTest.js",
+			"module": "sap/ui/dt/enablement/elementDesigntimeTest.js",
+			"required": [
+				"sap/ui/dt/enablement/ElementEnablementTest.js",
+				"sap/ui/dt/enablement/report/QUnitReport.js"
+			]
+		},
+		{
+			"name": "enablement/libraryTest-dbg.js",
+			"module": "sap/ui/dt/enablement/libraryTest.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/model/resource/ResourceModel.js",
+				"sap/ui/thirdparty/jquery.js"
+			]
+		},
+		{
+			"name": "enablement/libraryTest.js",
+			"module": "sap/ui/dt/enablement/libraryTest.js",
+			"required": [
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/model/resource/ResourceModel.js",
+				"sap/ui/thirdparty/jquery.js"
+			]
+		},
+		{
+			"name": "enablement/report/LibraryReport-dbg.js",
+			"module": "sap/ui/dt/enablement/report/LibraryReport.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/dt/enablement/ElementEnablementTest.js",
+				"sap/ui/dt/enablement/Test.js"
+			]
+		},
+		{
+			"name": "enablement/report/LibraryReport.js",
+			"module": "sap/ui/dt/enablement/report/LibraryReport.js",
+			"required": [
+				"sap/ui/dt/enablement/ElementEnablementTest.js",
+				"sap/ui/dt/enablement/Test.js"
+			]
+		},
+		{
+			"name": "enablement/report/QUnitReport-dbg.js",
+			"module": "sap/ui/dt/enablement/report/QUnitReport.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/base/ManagedObject.js"
+			]
+		},
+		{
+			"name": "enablement/report/QUnitReport.js",
+			"module": "sap/ui/dt/enablement/report/QUnitReport.js",
+			"required": [
+				"sap/ui/base/ManagedObject.js"
+			]
+		},
+		{
+			"name": "enablement/report/Statistic-dbg.js",
+			"module": "sap/ui/dt/enablement/report/Statistic.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/Label.js",
+				"sap/m/Text.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/layout/form/SimpleForm.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "enablement/report/Statistic.js",
+			"module": "sap/ui/dt/enablement/report/Statistic.js",
+			"required": [
+				"sap/m/Label.js",
+				"sap/m/Text.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/layout/form/SimpleForm.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "enablement/report/StatisticRenderer-dbg.js",
+			"module": "sap/ui/dt/enablement/report/StatisticRenderer.js",
+			"isDebug": true
+		},
+		{
+			"name": "enablement/report/StatisticRenderer.js",
+			"module": "sap/ui/dt/enablement/report/StatisticRenderer.js"
+		},
+		{
+			"name": "enablement/report/Table-dbg.js",
+			"module": "sap/ui/dt/enablement/report/Table.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/Button.js",
+				"sap/m/RatingIndicator.js",
+				"sap/m/SearchField.js",
+				"sap/m/Text.js",
+				"sap/m/Toolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/table/Column.js",
+				"sap/ui/table/TreeTable.js"
+			]
+		},
+		{
+			"name": "enablement/report/Table.js",
+			"module": "sap/ui/dt/enablement/report/Table.js",
+			"required": [
+				"sap/m/Button.js",
+				"sap/m/RatingIndicator.js",
+				"sap/m/SearchField.js",
+				"sap/m/Text.js",
+				"sap/m/Toolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/table/Column.js",
+				"sap/ui/table/TreeTable.js"
+			]
+		},
+		{
+			"name": "enablement/report/TableRenderer-dbg.js",
+			"module": "sap/ui/dt/enablement/report/TableRenderer.js",
+			"isDebug": true
+		},
+		{
+			"name": "enablement/report/TableRenderer.js",
+			"module": "sap/ui/dt/enablement/report/TableRenderer.js"
 		},
 		{
 			"name": "library-dbg.js",
 			"module": "sap/ui/dt/library.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/base/ManagedObjectMetadata.js",
 				"sap/ui/core/library.js",
 				"sap/ui/dt/SelectionMode.js"
 			]
@@ -527,23 +779,26 @@
 				"sap/base/Log.js",
 				"sap/base/assert.js",
 				"sap/base/util/ObjectPath.js",
+				"sap/base/util/deepEqual.js",
 				"sap/base/util/includes.js",
 				"sap/base/util/isPlainObject.js",
 				"sap/base/util/merge.js",
 				"sap/m/Button.js",
 				"sap/m/FlexItemData.js",
 				"sap/m/HBox.js",
+				"sap/m/InstanceManager.js",
 				"sap/m/Label.js",
 				"sap/m/Popover.js",
 				"sap/m/RatingIndicator.js",
 				"sap/m/SearchField.js",
 				"sap/m/Text.js",
-				"sap/m/Title.js",
 				"sap/m/Toolbar.js",
 				"sap/m/ToolbarSpacer.js",
 				"sap/m/VBox.js",
+				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/base/ManagedObjectMetadata.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
@@ -552,19 +807,17 @@
 				"sap/ui/core/Popup.js",
 				"sap/ui/core/library.js",
 				"sap/ui/dom/jquery/Selectors.js",
-				"sap/ui/dom/jquery/rect.js",
 				"sap/ui/dom/jquery/zIndex.js",
 				"sap/ui/events/KeyCodes.js",
-				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/layout/form/SimpleForm.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",
+				"sap/ui/qunit/QUnitUtils.js",
+				"sap/ui/qunit/utils/waitForThemeApplied.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/TreeTable.js",
 				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/unified/Menu.js"
+				"sap/ui/thirdparty/sinon-4.js"
 			],
 			"included": [
 				"sap/ui/dt/library.js",
@@ -576,6 +829,7 @@
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/dt/DesignTimeMetadata.js",
+				"sap/ui/dt/DesignTimeStatus.js",
 				"sap/ui/dt/ElementDesignTimeMetadata.js",
 				"sap/ui/dt/ElementOverlay.js",
 				"sap/ui/dt/ElementUtil.js",
@@ -591,6 +845,19 @@
 				"sap/ui/dt/SelectionMode.js",
 				"sap/ui/dt/TaskManager.js",
 				"sap/ui/dt/Util.js",
+				"sap/ui/dt/designtime/notAdaptable.designtime.js",
+				"sap/ui/dt/designtime/notRemovable.designtime.js",
+				"sap/ui/dt/enablement/ElementEnablementTest.js",
+				"sap/ui/dt/enablement/Test.js",
+				"sap/ui/dt/enablement/Util.js",
+				"sap/ui/dt/enablement/elementDesigntimeTest.js",
+				"sap/ui/dt/enablement/libraryTest.js",
+				"sap/ui/dt/enablement/report/LibraryReport.js",
+				"sap/ui/dt/enablement/report/QUnitReport.js",
+				"sap/ui/dt/enablement/report/Statistic.js",
+				"sap/ui/dt/enablement/report/StatisticRenderer.js",
+				"sap/ui/dt/enablement/report/Table.js",
+				"sap/ui/dt/enablement/report/TableRenderer.js",
 				"sap/ui/dt/plugin/ContextMenu.js",
 				"sap/ui/dt/plugin/ControlDragDrop.js",
 				"sap/ui/dt/plugin/CutPaste.js",
@@ -599,19 +866,7 @@
 				"sap/ui/dt/plugin/MouseSelection.js",
 				"sap/ui/dt/plugin/TabHandling.js",
 				"sap/ui/dt/plugin/ToolHooks.js",
-				"sap/ui/dt/test/Element.js",
-				"sap/ui/dt/test/ElementEnablementTest.js",
-				"sap/ui/dt/test/ElementEnablementTest2.js",
-				"sap/ui/dt/test/LibraryEnablementTest.js",
-				"sap/ui/dt/test/LibraryEnablementTest2.js",
-				"sap/ui/dt/test/LibraryTest.js",
-				"sap/ui/dt/test/Test.js",
-				"sap/ui/dt/test/report/QUnit.js",
-				"sap/ui/dt/test/report/Statistic.js",
-				"sap/ui/dt/test/report/StatisticRenderer.js",
-				"sap/ui/dt/test/report/Table.js",
-				"sap/ui/dt/test/report/TableRenderer.js",
-				"sap/ui/dt/util/getNextZIndex.js"
+				"sap/ui/dt/util/ZIndexManager.js"
 			]
 		},
 		{
@@ -622,23 +877,26 @@
 				"sap/base/Log.js",
 				"sap/base/assert.js",
 				"sap/base/util/ObjectPath.js",
+				"sap/base/util/deepEqual.js",
 				"sap/base/util/includes.js",
 				"sap/base/util/isPlainObject.js",
 				"sap/base/util/merge.js",
 				"sap/m/Button.js",
 				"sap/m/FlexItemData.js",
 				"sap/m/HBox.js",
+				"sap/m/InstanceManager.js",
 				"sap/m/Label.js",
 				"sap/m/Popover.js",
 				"sap/m/RatingIndicator.js",
 				"sap/m/SearchField.js",
 				"sap/m/Text.js",
-				"sap/m/Title.js",
 				"sap/m/Toolbar.js",
 				"sap/m/ToolbarSpacer.js",
 				"sap/m/VBox.js",
+				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/base/ManagedObjectMetadata.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
@@ -647,19 +905,17 @@
 				"sap/ui/core/Popup.js",
 				"sap/ui/core/library.js",
 				"sap/ui/dom/jquery/Selectors.js",
-				"sap/ui/dom/jquery/rect.js",
 				"sap/ui/dom/jquery/zIndex.js",
 				"sap/ui/events/KeyCodes.js",
-				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/layout/form/SimpleForm.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",
+				"sap/ui/qunit/QUnitUtils.js",
+				"sap/ui/qunit/utils/waitForThemeApplied.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/TreeTable.js",
 				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/unified/Menu.js"
+				"sap/ui/thirdparty/sinon-4.js"
 			],
 			"included": [
 				"sap/ui/dt/library.js",
@@ -671,6 +927,7 @@
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/dt/DesignTimeMetadata.js",
+				"sap/ui/dt/DesignTimeStatus.js",
 				"sap/ui/dt/ElementDesignTimeMetadata.js",
 				"sap/ui/dt/ElementOverlay.js",
 				"sap/ui/dt/ElementUtil.js",
@@ -686,6 +943,19 @@
 				"sap/ui/dt/SelectionMode.js",
 				"sap/ui/dt/TaskManager.js",
 				"sap/ui/dt/Util.js",
+				"sap/ui/dt/designtime/notAdaptable.designtime.js",
+				"sap/ui/dt/designtime/notRemovable.designtime.js",
+				"sap/ui/dt/enablement/ElementEnablementTest.js",
+				"sap/ui/dt/enablement/Test.js",
+				"sap/ui/dt/enablement/Util.js",
+				"sap/ui/dt/enablement/elementDesigntimeTest.js",
+				"sap/ui/dt/enablement/libraryTest.js",
+				"sap/ui/dt/enablement/report/LibraryReport.js",
+				"sap/ui/dt/enablement/report/QUnitReport.js",
+				"sap/ui/dt/enablement/report/Statistic.js",
+				"sap/ui/dt/enablement/report/StatisticRenderer.js",
+				"sap/ui/dt/enablement/report/Table.js",
+				"sap/ui/dt/enablement/report/TableRenderer.js",
 				"sap/ui/dt/plugin/ContextMenu.js",
 				"sap/ui/dt/plugin/ControlDragDrop.js",
 				"sap/ui/dt/plugin/CutPaste.js",
@@ -694,19 +964,7 @@
 				"sap/ui/dt/plugin/MouseSelection.js",
 				"sap/ui/dt/plugin/TabHandling.js",
 				"sap/ui/dt/plugin/ToolHooks.js",
-				"sap/ui/dt/test/Element.js",
-				"sap/ui/dt/test/ElementEnablementTest.js",
-				"sap/ui/dt/test/ElementEnablementTest2.js",
-				"sap/ui/dt/test/LibraryEnablementTest.js",
-				"sap/ui/dt/test/LibraryEnablementTest2.js",
-				"sap/ui/dt/test/LibraryTest.js",
-				"sap/ui/dt/test/Test.js",
-				"sap/ui/dt/test/report/QUnit.js",
-				"sap/ui/dt/test/report/Statistic.js",
-				"sap/ui/dt/test/report/StatisticRenderer.js",
-				"sap/ui/dt/test/report/Table.js",
-				"sap/ui/dt/test/report/TableRenderer.js",
-				"sap/ui/dt/util/getNextZIndex.js"
+				"sap/ui/dt/util/ZIndexManager.js"
 			]
 		},
 		{
@@ -721,23 +979,26 @@
 				"sap/base/Log.js",
 				"sap/base/assert.js",
 				"sap/base/util/ObjectPath.js",
+				"sap/base/util/deepEqual.js",
 				"sap/base/util/includes.js",
 				"sap/base/util/isPlainObject.js",
 				"sap/base/util/merge.js",
 				"sap/m/Button.js",
 				"sap/m/FlexItemData.js",
 				"sap/m/HBox.js",
+				"sap/m/InstanceManager.js",
 				"sap/m/Label.js",
 				"sap/m/Popover.js",
 				"sap/m/RatingIndicator.js",
 				"sap/m/SearchField.js",
 				"sap/m/Text.js",
-				"sap/m/Title.js",
 				"sap/m/Toolbar.js",
 				"sap/m/ToolbarSpacer.js",
 				"sap/m/VBox.js",
+				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/base/ManagedObjectMetadata.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
@@ -746,19 +1007,17 @@
 				"sap/ui/core/Popup.js",
 				"sap/ui/core/library.js",
 				"sap/ui/dom/jquery/Selectors.js",
-				"sap/ui/dom/jquery/rect.js",
 				"sap/ui/dom/jquery/zIndex.js",
 				"sap/ui/events/KeyCodes.js",
-				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/layout/form/SimpleForm.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",
+				"sap/ui/qunit/QUnitUtils.js",
+				"sap/ui/qunit/utils/waitForThemeApplied.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/TreeTable.js",
 				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/unified/Menu.js"
+				"sap/ui/thirdparty/sinon-4.js"
 			],
 			"included": [
 				"sap/ui/dt/AggregationDesignTimeMetadata.js",
@@ -768,6 +1027,7 @@
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/dt/DesignTimeMetadata.js",
+				"sap/ui/dt/DesignTimeStatus.js",
 				"sap/ui/dt/ElementDesignTimeMetadata.js",
 				"sap/ui/dt/ElementOverlay.js",
 				"sap/ui/dt/ElementUtil.js",
@@ -783,6 +1043,17 @@
 				"sap/ui/dt/SelectionMode.js",
 				"sap/ui/dt/TaskManager.js",
 				"sap/ui/dt/Util.js",
+				"sap/ui/dt/enablement/ElementEnablementTest.js",
+				"sap/ui/dt/enablement/Test.js",
+				"sap/ui/dt/enablement/Util.js",
+				"sap/ui/dt/enablement/elementDesigntimeTest.js",
+				"sap/ui/dt/enablement/libraryTest.js",
+				"sap/ui/dt/enablement/report/LibraryReport.js",
+				"sap/ui/dt/enablement/report/QUnitReport.js",
+				"sap/ui/dt/enablement/report/Statistic.js",
+				"sap/ui/dt/enablement/report/StatisticRenderer.js",
+				"sap/ui/dt/enablement/report/Table.js",
+				"sap/ui/dt/enablement/report/TableRenderer.js",
 				"sap/ui/dt/library.js",
 				"sap/ui/dt/manifest.json",
 				"sap/ui/dt/plugin/ContextMenu.js",
@@ -793,19 +1064,7 @@
 				"sap/ui/dt/plugin/MouseSelection.js",
 				"sap/ui/dt/plugin/TabHandling.js",
 				"sap/ui/dt/plugin/ToolHooks.js",
-				"sap/ui/dt/test/Element.js",
-				"sap/ui/dt/test/ElementEnablementTest.js",
-				"sap/ui/dt/test/ElementEnablementTest2.js",
-				"sap/ui/dt/test/LibraryEnablementTest.js",
-				"sap/ui/dt/test/LibraryEnablementTest2.js",
-				"sap/ui/dt/test/LibraryTest.js",
-				"sap/ui/dt/test/Test.js",
-				"sap/ui/dt/test/report/QUnit.js",
-				"sap/ui/dt/test/report/Statistic.js",
-				"sap/ui/dt/test/report/StatisticRenderer.js",
-				"sap/ui/dt/test/report/Table.js",
-				"sap/ui/dt/test/report/TableRenderer.js",
-				"sap/ui/dt/util/getNextZIndex.js"
+				"sap/ui/dt/util/ZIndexManager.js"
 			]
 		},
 		{
@@ -820,23 +1079,26 @@
 				"sap/base/Log.js",
 				"sap/base/assert.js",
 				"sap/base/util/ObjectPath.js",
+				"sap/base/util/deepEqual.js",
 				"sap/base/util/includes.js",
 				"sap/base/util/isPlainObject.js",
 				"sap/base/util/merge.js",
 				"sap/m/Button.js",
 				"sap/m/FlexItemData.js",
 				"sap/m/HBox.js",
+				"sap/m/InstanceManager.js",
 				"sap/m/Label.js",
 				"sap/m/Popover.js",
 				"sap/m/RatingIndicator.js",
 				"sap/m/SearchField.js",
 				"sap/m/Text.js",
-				"sap/m/Title.js",
 				"sap/m/Toolbar.js",
 				"sap/m/ToolbarSpacer.js",
 				"sap/m/VBox.js",
+				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/base/ManagedObjectMetadata.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
@@ -846,19 +1108,17 @@
 				"sap/ui/core/library-preload.json",
 				"sap/ui/core/library.js",
 				"sap/ui/dom/jquery/Selectors.js",
-				"sap/ui/dom/jquery/rect.js",
 				"sap/ui/dom/jquery/zIndex.js",
 				"sap/ui/events/KeyCodes.js",
-				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/layout/form/SimpleForm.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",
+				"sap/ui/qunit/QUnitUtils.js",
+				"sap/ui/qunit/utils/waitForThemeApplied.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/TreeTable.js",
 				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/unified/Menu.js"
+				"sap/ui/thirdparty/sinon-4.js"
 			],
 			"included": [
 				"sap/ui/dt/AggregationDesignTimeMetadata.js",
@@ -868,6 +1128,7 @@
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/dt/DesignTimeMetadata.js",
+				"sap/ui/dt/DesignTimeStatus.js",
 				"sap/ui/dt/ElementDesignTimeMetadata.js",
 				"sap/ui/dt/ElementOverlay.js",
 				"sap/ui/dt/ElementUtil.js",
@@ -883,6 +1144,17 @@
 				"sap/ui/dt/SelectionMode.js",
 				"sap/ui/dt/TaskManager.js",
 				"sap/ui/dt/Util.js",
+				"sap/ui/dt/enablement/ElementEnablementTest.js",
+				"sap/ui/dt/enablement/Test.js",
+				"sap/ui/dt/enablement/Util.js",
+				"sap/ui/dt/enablement/elementDesigntimeTest.js",
+				"sap/ui/dt/enablement/libraryTest.js",
+				"sap/ui/dt/enablement/report/LibraryReport.js",
+				"sap/ui/dt/enablement/report/QUnitReport.js",
+				"sap/ui/dt/enablement/report/Statistic.js",
+				"sap/ui/dt/enablement/report/StatisticRenderer.js",
+				"sap/ui/dt/enablement/report/Table.js",
+				"sap/ui/dt/enablement/report/TableRenderer.js",
 				"sap/ui/dt/library.js",
 				"sap/ui/dt/manifest.json",
 				"sap/ui/dt/plugin/ContextMenu.js",
@@ -893,19 +1165,7 @@
 				"sap/ui/dt/plugin/MouseSelection.js",
 				"sap/ui/dt/plugin/TabHandling.js",
 				"sap/ui/dt/plugin/ToolHooks.js",
-				"sap/ui/dt/test/Element.js",
-				"sap/ui/dt/test/ElementEnablementTest.js",
-				"sap/ui/dt/test/ElementEnablementTest2.js",
-				"sap/ui/dt/test/LibraryEnablementTest.js",
-				"sap/ui/dt/test/LibraryEnablementTest2.js",
-				"sap/ui/dt/test/LibraryTest.js",
-				"sap/ui/dt/test/Test.js",
-				"sap/ui/dt/test/report/QUnit.js",
-				"sap/ui/dt/test/report/Statistic.js",
-				"sap/ui/dt/test/report/StatisticRenderer.js",
-				"sap/ui/dt/test/report/Table.js",
-				"sap/ui/dt/test/report/TableRenderer.js",
-				"sap/ui/dt/util/getNextZIndex.js"
+				"sap/ui/dt/util/ZIndexManager.js"
 			]
 		},
 		{
@@ -920,6 +1180,7 @@
 			"name": "library.js",
 			"module": "sap/ui/dt/library.js",
 			"required": [
+				"sap/ui/base/ManagedObjectMetadata.js",
 				"sap/ui/core/library.js",
 				"sap/ui/dt/SelectionMode.js"
 			]
@@ -938,9 +1199,9 @@
 			"isDebug": true,
 			"required": [
 				"sap/base/assert.js",
-				"sap/base/util/merge.js",
 				"sap/ui/Device.js",
 				"sap/ui/dt/ContextMenuControl.js",
+				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/Plugin.js",
 				"sap/ui/dt/Util.js",
 				"sap/ui/events/KeyCodes.js",
@@ -952,9 +1213,9 @@
 			"module": "sap/ui/dt/plugin/ContextMenu.js",
 			"required": [
 				"sap/base/assert.js",
-				"sap/base/util/merge.js",
 				"sap/ui/Device.js",
 				"sap/ui/dt/ContextMenuControl.js",
+				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/Plugin.js",
 				"sap/ui/dt/Util.js",
 				"sap/ui/events/KeyCodes.js",
@@ -966,8 +1227,6 @@
 			"module": "sap/ui/dt/plugin/ControlDragDrop.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/dt/ElementUtil.js",
-				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/plugin/DragDrop.js",
 				"sap/ui/dt/plugin/ElementMover.js"
 			]
@@ -976,8 +1235,6 @@
 			"name": "plugin/ControlDragDrop.js",
 			"module": "sap/ui/dt/plugin/ControlDragDrop.js",
 			"required": [
-				"sap/ui/dt/ElementUtil.js",
-				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/plugin/DragDrop.js",
 				"sap/ui/dt/plugin/ElementMover.js"
 			]
@@ -1012,10 +1269,10 @@
 			"required": [
 				"sap/ui/base/Object.js",
 				"sap/ui/dt/DOMUtil.js",
-				"sap/ui/dt/ElementUtil.js",
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/Plugin.js",
+				"sap/ui/qunit/QUnitUtils.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -1025,10 +1282,10 @@
 			"required": [
 				"sap/ui/base/Object.js",
 				"sap/ui/dt/DOMUtil.js",
-				"sap/ui/dt/ElementUtil.js",
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/Plugin.js",
+				"sap/ui/qunit/QUnitUtils.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -1110,240 +1367,6 @@
 		},
 		{
 			"name": "resources.json"
-		},
-		{
-			"name": "test/Element-dbg.js",
-			"module": "sap/ui/dt/test/Element.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/dt/DOMUtil.js",
-				"sap/ui/dt/ElementUtil.js",
-				"sap/ui/dt/OverlayRegistry.js",
-				"sap/ui/thirdparty/jquery.js"
-			]
-		},
-		{
-			"name": "test/Element.js",
-			"module": "sap/ui/dt/test/Element.js",
-			"required": [
-				"sap/ui/dt/DOMUtil.js",
-				"sap/ui/dt/ElementUtil.js",
-				"sap/ui/dt/OverlayRegistry.js",
-				"sap/ui/thirdparty/jquery.js"
-			]
-		},
-		{
-			"name": "test/ElementEnablementTest-dbg.js",
-			"module": "sap/ui/dt/test/ElementEnablementTest.js",
-			"isDebug": true,
-			"required": [
-				"sap/base/util/ObjectPath.js",
-				"sap/ui/dt/DesignTime.js",
-				"sap/ui/dt/test/Element.js",
-				"sap/ui/dt/test/Test.js",
-				"sap/ui/thirdparty/jquery.js"
-			]
-		},
-		{
-			"name": "test/ElementEnablementTest.js",
-			"module": "sap/ui/dt/test/ElementEnablementTest.js",
-			"required": [
-				"sap/base/util/ObjectPath.js",
-				"sap/ui/dt/DesignTime.js",
-				"sap/ui/dt/test/Element.js",
-				"sap/ui/dt/test/Test.js",
-				"sap/ui/thirdparty/jquery.js"
-			]
-		},
-		{
-			"name": "test/ElementEnablementTest2-dbg.js",
-			"module": "sap/ui/dt/test/ElementEnablementTest2.js",
-			"isDebug": true,
-			"required": [
-				"sap/base/util/ObjectPath.js",
-				"sap/ui/base/ManagedObject.js",
-				"sap/ui/dt/test/Element.js",
-				"sap/ui/fl/registry/ChangeRegistry.js"
-			]
-		},
-		{
-			"name": "test/ElementEnablementTest2.js",
-			"module": "sap/ui/dt/test/ElementEnablementTest2.js",
-			"required": [
-				"sap/base/util/ObjectPath.js",
-				"sap/ui/base/ManagedObject.js",
-				"sap/ui/dt/test/Element.js",
-				"sap/ui/fl/registry/ChangeRegistry.js"
-			]
-		},
-		{
-			"name": "test/LibraryEnablementTest-dbg.js",
-			"module": "sap/ui/dt/test/LibraryEnablementTest.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/dt/test/ElementEnablementTest.js",
-				"sap/ui/dt/test/Test.js",
-				"sap/ui/thirdparty/jquery.js"
-			]
-		},
-		{
-			"name": "test/LibraryEnablementTest.js",
-			"module": "sap/ui/dt/test/LibraryEnablementTest.js",
-			"required": [
-				"sap/ui/dt/test/ElementEnablementTest.js",
-				"sap/ui/dt/test/Test.js",
-				"sap/ui/thirdparty/jquery.js"
-			]
-		},
-		{
-			"name": "test/LibraryEnablementTest2-dbg.js",
-			"module": "sap/ui/dt/test/LibraryEnablementTest2.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/base/ManagedObject.js",
-				"sap/ui/dt/test/ElementEnablementTest2.js"
-			]
-		},
-		{
-			"name": "test/LibraryEnablementTest2.js",
-			"module": "sap/ui/dt/test/LibraryEnablementTest2.js",
-			"required": [
-				"sap/ui/base/ManagedObject.js",
-				"sap/ui/dt/test/ElementEnablementTest2.js"
-			]
-		},
-		{
-			"name": "test/LibraryTest-dbg.js",
-			"module": "sap/ui/dt/test/LibraryTest.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/model/resource/ResourceModel.js",
-				"sap/ui/thirdparty/jquery.js"
-			]
-		},
-		{
-			"name": "test/LibraryTest.js",
-			"module": "sap/ui/dt/test/LibraryTest.js",
-			"required": [
-				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/model/resource/ResourceModel.js",
-				"sap/ui/thirdparty/jquery.js"
-			]
-		},
-		{
-			"name": "test/Test-dbg.js",
-			"module": "sap/ui/dt/test/Test.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/base/ManagedObject.js"
-			]
-		},
-		{
-			"name": "test/Test.js",
-			"module": "sap/ui/dt/test/Test.js",
-			"required": [
-				"sap/ui/base/ManagedObject.js"
-			]
-		},
-		{
-			"name": "test/report/QUnit-dbg.js",
-			"module": "sap/ui/dt/test/report/QUnit.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/base/ManagedObject.js"
-			]
-		},
-		{
-			"name": "test/report/QUnit.js",
-			"module": "sap/ui/dt/test/report/QUnit.js",
-			"required": [
-				"sap/ui/base/ManagedObject.js"
-			]
-		},
-		{
-			"name": "test/report/Statistic-dbg.js",
-			"module": "sap/ui/dt/test/report/Statistic.js",
-			"isDebug": true,
-			"required": [
-				"sap/m/Label.js",
-				"sap/m/Text.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/dt/test/report/StatisticRenderer.js",
-				"sap/ui/layout/form/SimpleForm.js",
-				"sap/ui/model/json/JSONModel.js"
-			]
-		},
-		{
-			"name": "test/report/Statistic.js",
-			"module": "sap/ui/dt/test/report/Statistic.js",
-			"required": [
-				"sap/m/Label.js",
-				"sap/m/Text.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/dt/test/report/StatisticRenderer.js",
-				"sap/ui/layout/form/SimpleForm.js",
-				"sap/ui/model/json/JSONModel.js"
-			]
-		},
-		{
-			"name": "test/report/StatisticRenderer-dbg.js",
-			"module": "sap/ui/dt/test/report/StatisticRenderer.js",
-			"isDebug": true
-		},
-		{
-			"name": "test/report/StatisticRenderer.js",
-			"module": "sap/ui/dt/test/report/StatisticRenderer.js"
-		},
-		{
-			"name": "test/report/Table-dbg.js",
-			"module": "sap/ui/dt/test/report/Table.js",
-			"isDebug": true,
-			"required": [
-				"sap/m/Button.js",
-				"sap/m/RatingIndicator.js",
-				"sap/m/SearchField.js",
-				"sap/m/Text.js",
-				"sap/m/Title.js",
-				"sap/m/Toolbar.js",
-				"sap/m/ToolbarSpacer.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/dt/test/report/TableRenderer.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js",
-				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/table/Column.js",
-				"sap/ui/table/TreeTable.js"
-			]
-		},
-		{
-			"name": "test/report/Table.js",
-			"module": "sap/ui/dt/test/report/Table.js",
-			"required": [
-				"sap/m/Button.js",
-				"sap/m/RatingIndicator.js",
-				"sap/m/SearchField.js",
-				"sap/m/Text.js",
-				"sap/m/Title.js",
-				"sap/m/Toolbar.js",
-				"sap/m/ToolbarSpacer.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/dt/test/report/TableRenderer.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js",
-				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/table/Column.js",
-				"sap/ui/table/TreeTable.js"
-			]
-		},
-		{
-			"name": "test/report/TableRenderer-dbg.js",
-			"module": "sap/ui/dt/test/report/TableRenderer.js",
-			"isDebug": true
-		},
-		{
-			"name": "test/report/TableRenderer.js",
-			"module": "sap/ui/dt/test/report/TableRenderer.js"
 		},
 		{
 			"name": "themes/base/.theming",
@@ -1438,22 +1461,28 @@
 			"theme": "sap_hcb"
 		},
 		{
-			"name": "util/getNextZIndex-dbg.js",
-			"module": "sap/ui/dt/util/getNextZIndex.js",
+			"name": "util/ZIndexManager-dbg.js",
+			"module": "sap/ui/dt/util/ZIndexManager.js",
 			"isDebug": true,
 			"required": [
 				"sap/base/Log.js",
+				"sap/base/util/includes.js",
+				"sap/m/InstanceManager.js",
 				"sap/ui/core/BusyIndicator.js",
-				"sap/ui/core/Popup.js"
+				"sap/ui/core/Popup.js",
+				"sap/ui/dt/Util.js"
 			]
 		},
 		{
-			"name": "util/getNextZIndex.js",
-			"module": "sap/ui/dt/util/getNextZIndex.js",
+			"name": "util/ZIndexManager.js",
+			"module": "sap/ui/dt/util/ZIndexManager.js",
 			"required": [
 				"sap/base/Log.js",
+				"sap/base/util/includes.js",
+				"sap/m/InstanceManager.js",
 				"sap/ui/core/BusyIndicator.js",
-				"sap/ui/core/Popup.js"
+				"sap/ui/core/Popup.js",
+				"sap/ui/dt/Util.js"
 			]
 		}
 	]

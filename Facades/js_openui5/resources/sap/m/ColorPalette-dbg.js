@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -89,7 +89,7 @@ sap.ui.define([
 		 * right color through the color picker.
 		 *
 		 * The control can be embedded in a form or can be opened as popover (by use of thin
-		 * wrapper control <code>sap.m.ColorPalettePopover<code>).
+		 * wrapper control <code>sap.m.ColorPalettePopover</code>).
 		 * @see {@link sap.m.ColorPalettePopover}
 		 *
 		 * <b>Note:</b> The {@link sap.ui.unified.ColorPicker} is used internally only if the <code>ColorPicker</code>
@@ -99,7 +99,7 @@ sap.ui.define([
 		 * <code>ColorPalette</code> should also load the <code>sap.ui.unified</code> library.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 *
 		 * @constructor
 		 * @public
@@ -235,6 +235,10 @@ sap.ui.define([
 		};
 
 		ColorPalette.prototype.onsapenter = ColorPalette.prototype.ontap;
+
+		ColorPalette.prototype.onsapspace = function (oEvent) {
+			oEvent.preventDefault();
+		};
 
 		ColorPalette.prototype.onkeyup = function (oEvent) {
 			if (oEvent.which === KeyCodes.SPACE) {
@@ -523,6 +527,9 @@ sap.ui.define([
 					vNextElement = this._getDefaultColorButton();
 				} else if (!bHomeOrEnd && this._getShowMoreColorsButton()) {// More Colors, but excluding "home" and "end"
 					vNextElement = this._getMoreColorsButton();
+				} else if (!bHomeOrEnd && !this._getShowDefaultColorButton()) { // swatch, but not due to "home" and "end" keys
+					aSwatches = this._getAllSwatches();
+					vNextElement = aSwatches[aSwatches.length - 1];
 				} else if (!bHomeOrEnd) { // swatch, but not due to "home" and "end" keys
 					aSwatches = this._getAllSwatches();
 					vNextElement = aSwatches[this._oItemNavigation._getIndexOfTheFirstItemInLastRow()];

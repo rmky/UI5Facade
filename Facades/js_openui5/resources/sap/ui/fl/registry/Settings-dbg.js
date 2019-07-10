@@ -1,13 +1,23 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*global Error */
 
 sap.ui.define([
-	"sap/ui/fl/LrepConnector", "sap/ui/fl/Cache", "sap/ui/fl/Utils", "sap/ui/base/EventProvider", "sap/base/util/UriParameters"
-], function(LrepConnector, Cache, Utils, EventProvider, UriParameters) {
+	"sap/ui/fl/LrepConnector",
+	"sap/ui/fl/Cache",
+	"sap/ui/fl/Utils",
+	"sap/ui/base/EventProvider",
+	"sap/base/util/UriParameters"
+], function(
+	LrepConnector,
+	Cache,
+	Utils,
+	EventProvider,
+	UriParameters
+) {
 	"use strict";
 
 	/**
@@ -28,20 +38,20 @@ sap.ui.define([
 		// Defaults layers used for standard changes, such as 'move' or 'add'
 		if (!oSettings.defaultLayerPermissions) {
 			oSettings.defaultLayerPermissions = {
-				"VENDOR": true,
-				"CUSTOMER_BASE": true,
-				"CUSTOMER": true,
-				"USER": false
+				VENDOR: true,
+				CUSTOMER_BASE: true,
+				CUSTOMER: true,
+				USER: false
 			};
 		}
 
 		// These are the permissions for the Developer Mode Changes, e.g. 'propertyChange', 'propertyBindingChange'
 		if (!oSettings.developerModeLayerPermissions) {
 			oSettings.developerModeLayerPermissions = {
-				"VENDOR": true,
-				"CUSTOMER_BASE": true,
-				"CUSTOMER": false,
-				"USER": false
+				VENDOR: true,
+				CUSTOMER_BASE: true,
+				CUSTOMER: false,
+				USER: false
 			};
 		}
 
@@ -61,7 +71,22 @@ sap.ui.define([
 		changeModeUpdated: "changeModeUpdated"
 	};
 
-	Settings._instance = undefined;
+	/**
+	 * Sets the initial value of the settings instance. If the current system is a trial system it will create an instance with default parameters.
+	 * Otherwise the instance remains undefined.
+	 */
+	Settings._initInstance = function () {
+		var oSettings;
+		if (Utils.isTrialSystem()) {
+			oSettings = new Settings({
+				isKeyUser: true,
+				isVariantSharingEnabled: false
+			});
+		}
+		Settings._instance = oSettings;
+	};
+
+	Settings._initInstance();
 	Settings._bFlexChangeMode = true;
 	Settings._bFlexibilityAdaptationButtonAllowed = false;
 	Settings._oEventProvider = new EventProvider();
@@ -114,6 +139,7 @@ sap.ui.define([
 		if (Settings._instance) {
 			return Promise.resolve(Settings._instance);
 		}
+
 		var oPromise = Cache.getFlexDataPromise();
 		if (oPromise) {
 			return oPromise.then(
@@ -139,7 +165,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Settings._loadSettings = function() {
-		return LrepConnector.createConnector().loadSettings().then(function (oSettings){
+		return LrepConnector.createConnector().loadSettings().then(function (oSettings) {
 			return Settings._storeInstance(oSettings);
 		});
 	};
@@ -294,7 +320,6 @@ sap.ui.define([
 			bFlexibilityAdaptationButtonAllowed: bFlexibilityAdaptationButtonAllowed
 		};
 		Settings.fireEvent(Settings.events.flexibilityAdaptationButtonAllowedChanged, mParameter);
-
 	};
 
 	/**
@@ -319,7 +344,7 @@ sap.ui.define([
 	 * @public
 	 */
 	Settings.prototype.isKeyUser = function() {
-		return  this._getBooleanProperty("isKeyUser");
+		return this._getBooleanProperty("isKeyUser");
 	};
 
 	/**
@@ -329,7 +354,7 @@ sap.ui.define([
 	 * @public
 	 */
 	Settings.prototype.isModelS = function() {
-		return  this._getBooleanProperty("isAtoAvailable");
+		return this._getBooleanProperty("isAtoAvailable");
 	};
 
 	/**
@@ -339,7 +364,7 @@ sap.ui.define([
 	 * @public
 	 */
 	Settings.prototype.isAtoEnabled = function() {
-		return  this._getBooleanProperty("isAtoEnabled");
+		return this._getBooleanProperty("isAtoEnabled");
 	};
 
 	/**
@@ -359,17 +384,7 @@ sap.ui.define([
 	 * @returns {boolean} true if system is productive system
 	 */
 	Settings.prototype.isProductiveSystem = function() {
-		return  this._getBooleanProperty("isProductiveSystem");
-	};
-
-	/**
-	 * Checks whether the current tenant is a trial tenant.
-	 *
-	 * @public
-	 * @returns {boolean} true if tenant is a trial tenant
-	 */
-	Settings.prototype.isTrial = function() {
-		return this._getBooleanProperty("isTrial");
+		return this._getBooleanProperty("isProductiveSystem");
 	};
 
 	/**

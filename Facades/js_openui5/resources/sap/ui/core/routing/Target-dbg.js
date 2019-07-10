@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,12 +26,13 @@ sap.ui.define([
 		"use strict";
 
 		/**
-		 * Provides a convenient way for placing views into the correct containers of your application.<br/>
-		 * The main benefit of Targets is lazy loading: you do not have to create the views until you really need them.<br/>
 		 * <b>Don't call this constructor directly</b>, use {@link sap.ui.core.routing.Targets} instead, it will create instances of a Target.<br/>
 		 * If you are using the mobile library, please use the {@link sap.m.routing.Targets} constructor, please read the documentation there.<br/>
 		 *
 		 * @class
+		 * Provides a convenient way for placing views into the correct containers of your application.
+		 *
+		 * The main benefit of Targets is lazy loading: you do not have to create the views until you really need them.
 		 * @param {object} oOptions all of the parameters defined in {@link sap.m.routing.Targets#constructor} are accepted here, except for children you need to specify the parent.
 		 * @param {sap.ui.core.routing.TargetCache} oCache All views required by this target will get created by the views instance using {@link sap.ui.core.routing.Views#getView}
 		 * @param {sap.ui.core.routing.Target} [oParent] the parent of this target. Will also get displayed, if you display this target. In the config you have the fill the children property {@link sap.m.routing.Targets#constructor}

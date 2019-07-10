@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -66,7 +66,7 @@ sap.ui.define([
 	 * @mixes sap.ui.core.ContextMenuSupport
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -157,7 +157,8 @@ sap.ui.define([
 			 */
 			press : {}
 		},
-		designtime: "sap/m/designtime/Button.designtime"
+		designtime: "sap/m/designtime/Button.designtime",
+		dnd: { draggable: true, droppable: false }
 	}});
 
 
@@ -170,6 +171,10 @@ sap.ui.define([
 
 	EnabledPropagator.call(Button.prototype);
 	ContextMenuSupport.apply(Button.prototype);
+
+	Button.prototype.init = function() {
+		this._onmouseenter = this._onmouseenter.bind(this);
+	};
 
 	/**
 	 * Function is called when exiting the control.
@@ -186,6 +191,8 @@ sap.ui.define([
 		if (this._iconBtn) {
 			this._iconBtn.destroy();
 		}
+
+		this.$().off("mouseenter", this._onmouseenter);
 	};
 
 	/*
@@ -193,6 +200,8 @@ sap.ui.define([
 	 */
 	Button.prototype.onBeforeRendering = function() {
 		this._bRenderActive = this._bActive;
+
+		this.$().on("mouseenter", this._onmouseenter);
 	};
 
 	/*
@@ -205,6 +214,8 @@ sap.ui.define([
 			// now, this._bActive may be false if the button was disabled
 			this._bRenderActive = this._bActive;
 		}
+
+		this.$().on("mouseenter", this._onmouseenter);
 	};
 
 	/**
@@ -299,18 +310,36 @@ sap.ui.define([
 	 */
 	Button.prototype.onkeydown = function(oEvent) {
 
-		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
+		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER || oEvent.which === KeyCodes.ESCAPE) {
 
-			// mark the event for components that needs to know if the event was handled by the button
-			oEvent.setMarked();
+			if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
+				// mark the event for components that needs to know if the event was handled by the button
+				oEvent.setMarked();
 
-			// set active button state
-			this._activeButton();
+				// set active button state
+				this._activeButton();
+			}
+
+			if (oEvent.which === KeyCodes.ENTER) {
+				this.firePress({/* no parameters */});
+			}
+
+			if (oEvent.which === KeyCodes.SPACE) {
+				this._bPressedSpace = true;
+			}
+
+			// set inactive state of the button and marked ESCAPE as pressed only if SPACE was pressed before it
+			if (this._bPressedSpace && oEvent.which === KeyCodes.ESCAPE) {
+				this._bPressedEscape = true;
+				// set inactive button state
+				this._inactiveButton();
+			}
+		} else {
+			if (this._bPressedSpace) {
+				oEvent.preventDefault();
+			}
 		}
 
-		if (oEvent.which === KeyCodes.ENTER) {
-			this.firePress({/* no parameters */});
-		}
 	};
 
 	/**
@@ -321,8 +350,7 @@ sap.ui.define([
 	 */
 	Button.prototype.onkeyup = function(oEvent) {
 
-		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
-
+		if (oEvent.which === KeyCodes.ENTER) {
 			// mark the event for components that needs to know if the event was handled by the button
 			oEvent.setMarked();
 
@@ -331,7 +359,23 @@ sap.ui.define([
 		}
 
 		if (oEvent.which === KeyCodes.SPACE) {
-			this.firePress({/* no parameters */});
+			if (!this._bPressedEscape) {
+				// mark the event for components that needs to know if the event was handled by the button
+				oEvent.setMarked();
+
+				// set inactive button state
+				this._inactiveButton();
+				this.firePress({/* no parameters */});
+			} else {
+				this._bPressedEscape = false;
+			}
+			this._bPressedSpace = false;
+		}
+	};
+
+	Button.prototype._onmouseenter = function(oEvent) {
+		if (oEvent.originalEvent && oEvent.originalEvent.buttons & 1) {
+			this._activeButton();
 		}
 	};
 
@@ -552,7 +596,7 @@ sap.ui.define([
 	 * Defines to which DOM reference the Popup should be docked
 	 *
 	 * @protected
-	 * @return {DomNode} the DOM reference that Popup should dock to
+	 * @return {Element} the DOM reference that Popup should dock to
 	 */
 	Button.prototype.getPopupAnchorDomRef = function() {
 		return this.getDomRef("inner");

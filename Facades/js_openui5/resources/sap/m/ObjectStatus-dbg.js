@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,10 +9,12 @@ sap.ui.define([
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/ValueStateSupport',
+	'sap/ui/core/IndicationColorSupport',
 	'sap/ui/core/library',
+	'sap/ui/base/DataType',
 	'./ObjectStatusRenderer'
 ],
-	function(library, Control, ValueStateSupport, coreLibrary, ObjectStatusRenderer) {
+	function(library, Control, ValueStateSupport, IndicationColorSupport, coreLibrary, DataType, ObjectStatusRenderer) {
 	"use strict";
 
 
@@ -23,9 +25,8 @@ sap.ui.define([
 	// shortcut for sap.ui.core.TextDirection
 	var TextDirection = coreLibrary.TextDirection;
 
-	// shortcut for sap.ui.core.ValueState
+	// shortcuts for sap.ui.core.ValueState
 	var ValueState = coreLibrary.ValueState;
-
 
 
 	/**
@@ -36,9 +37,13 @@ sap.ui.define([
 	 *
 	 * @class
 	 * Status information that can be either text with a value state, or an icon.
+	 *
+	 *
+	 * With 1.63, large design of the control is supported by setting <code>sapMObjectStatusLarge</code> CSS class to the <code>ObjectStatus</code>.
+	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -75,7 +80,13 @@ sap.ui.define([
 			/**
 			 * Defines the text value state.
 			 */
-			state : {type : "sap.ui.core.ValueState", group : "Misc", defaultValue : ValueState.None},
+			state : {type : "string", group : "Misc", defaultValue : ValueState.None},
+
+			/**
+			 * Determines whether the background color reflects the set <code>state</code> instead of the control's text.
+			 * @since 1.66
+			 */
+			inverted : {type : "boolean", group : "Misc", defaultValue : false},
 
 			/**
 			 * Icon URI. This may be either an icon font or image path.
@@ -109,7 +120,8 @@ sap.ui.define([
 			 * @since 1.54
 			 */
 			press : {}
-		}
+		},
+		dnd: { draggable: true, droppable: false }
 	}});
 
 	/**
@@ -184,6 +196,23 @@ sap.ui.define([
 	};
 
 	/**
+	 * Sets value for the <code>state</code> property. The default value is <code>ValueState.None</code>.
+	 * @public
+	 * @param {string} sValue New value for property state.
+	 * It should be valid value of enumeration <code>sap.ui.core.ValueState</code> or <code>sap.ui.core.IndicationColor</code>
+	 * @returns {sap.m.ObjectStatus} this to allow method chaining
+	 */
+	ObjectStatus.prototype.setState = function(sValue) {
+		if (sValue == null) {
+			sValue = ValueState.None;
+		} else if (!DataType.getType("sap.ui.core.ValueState").isValid(sValue) && !DataType.getType("sap.ui.core.IndicationColor").isValid(sValue)) {
+			throw new Error('"' + sValue + '" is not a value of the enums sap.ui.core.ValueState or sap.ui.core.IndicationColor for property "state" of ' + this);
+		}
+
+		return this.setProperty("state", sValue);
+	};
+
+	/**
 	 * @private
 	 * @param {object} oEvent The fired event
 	 */
@@ -253,10 +282,14 @@ sap.ui.define([
 	 * @protected
 	 */
 	ObjectStatus.prototype.getAccessibilityInfo = function() {
-		var sState = this.getState() != ValueState.None ? ValueStateSupport.getAdditionalText(this.getState()) : "";
+		var sState = ValueStateSupport.getAdditionalText(this.getState());
+
+		if (this.getState() != ValueState.None) {
+			sState = (sState !== null) ? sState : IndicationColorSupport.getAdditionalText(this.getState());
+		}
 
 		return {
-			description: ((this.getTitle() || "") + " " + (this.getText() || "") + " " + sState + " " + (this.getTooltip() || "")).trim()
+			description: ((this.getTitle() || "") + " " + (this.getText() || "") + " " + (sState !== null ? sState : "") + " " + (this.getTooltip() || "")).trim()
 		};
 	};
 
@@ -264,7 +297,7 @@ sap.ui.define([
 		var sSourceId = oEvent.target.id;
 
 		//event should only be fired if the click is on the text, link or icon
-		return this._isActive() && (sSourceId === this.getId() + "-link" || sSourceId === this.getId() + "-text" || sSourceId === this.getId() + "-icon");
+		return this._isActive() && (sSourceId === this.getId() + "-link" || sSourceId === this.getId() + "-text" || sSourceId === this.getId() + "-statusIcon");
 	};
 
 	return ObjectStatus;

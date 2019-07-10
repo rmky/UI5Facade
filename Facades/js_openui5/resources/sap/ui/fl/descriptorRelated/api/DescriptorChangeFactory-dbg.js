@@ -1,25 +1,21 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
 	"sap/ui/fl/ChangePersistenceFactory",
-	"sap/ui/fl/ChangePersistence",
 	"sap/ui/fl/Change",
 	"sap/ui/fl/descriptorRelated/internal/Utils",
 	"sap/ui/fl/registry/Settings",
 	"sap/ui/fl/Utils",
-	"sap/ui/thirdparty/jquery",
 	"sap/base/util/merge"
 ], function(
 	ChangePersistenceFactory,
-	ChangePersistence,
 	Change,
 	Utils,
 	Settings,
 	FlexUtils,
-	jQuery,
 	fnBaseMerge
 ) {
 	"use strict";
@@ -29,9 +25,9 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 
 	/**
@@ -39,9 +35,9 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated.api
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 
 	/**
@@ -54,11 +50,11 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChange
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
-	var DescriptorChange = function(mChangeFile,oInlineChange,oSettings) { //so far, parameter correspond to inline change format
+	var DescriptorChange = function(mChangeFile, oInlineChange, oSettings) { //so far, parameter correspond to inline change format
 		this._mChangeFile = mChangeFile;
 		this._mChangeFile.packageName = '$TMP';
 		this._oInlineChange = oInlineChange;
@@ -74,7 +70,7 @@ sap.ui.define([
 	 * @return {Promise} resolving when setting of transport request was successful
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorChange.prototype.setTransportRequest = function(sTransportRequest) {
 		try {
@@ -96,7 +92,7 @@ sap.ui.define([
 	 * @return {Promise} resolving when setting of package was successful
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorChange.prototype.setPackage = function(sPackage) {
 		try {
@@ -115,7 +111,7 @@ sap.ui.define([
 	 * @return {Promise} resolving after all changes have been saved
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorChange.prototype.submit = function() {
 		this.store();
@@ -131,7 +127,7 @@ sap.ui.define([
 	 * @return {object} change object
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorChange.prototype.store = function() {
 		// create persistence
@@ -154,10 +150,10 @@ sap.ui.define([
 		//create Change
 		var oChange = new Change(this._getMap());
 
-		if ( this._sTransportRequest ) {
-			oChange.setRequest( this._sTransportRequest );
-		}  else if ( this._oSettings.isAtoEnabled() && FlexUtils.isCustomerDependentLayer(this._mChangeFile.layer) ) {
-			oChange.setRequest( 'ATO_NOTIFICATION' );
+		if (this._sTransportRequest) {
+			oChange.setRequest(this._sTransportRequest);
+		} else if (this._oSettings.isAtoEnabled() && FlexUtils.isCustomerDependentLayer(this._mChangeFile.layer)) {
+			oChange.setRequest('ATO_NOTIFICATION');
 		}
 		return oChange;
 	};
@@ -176,7 +172,7 @@ sap.ui.define([
 	 * @return {object} copy of JSON object of the descriptor change
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorChange.prototype.getJson = function() {
 		return fnBaseMerge({}, this._getMap());
@@ -189,9 +185,9 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChangeFactory
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 
 	var DescriptorChangeFactory = function() {};
@@ -208,17 +204,17 @@ sap.ui.define([
 	 * @return {Promise} resolving the new Change instance
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorChangeFactory.prototype.createNew = function(sReference, oInlineChange, sLayer, oAppComponent, sTool) {
-		var fSetHostingIdForTextKey = function(_oDescriptorInlineChange, sId){
+		var fSetHostingIdForTextKey = function(_oDescriptorInlineChange, sId) {
 			//providing "hosting id" for appdescr_app_setTitle and similar
 			//"hosting id" is descriptor variant id
-			if ( _oDescriptorInlineChange["setHostingIdForTextKey"] ){
+			if (_oDescriptorInlineChange["setHostingIdForTextKey"]) {
 				_oDescriptorInlineChange.setHostingIdForTextKey(sId);
 			}
 		};
-		fSetHostingIdForTextKey(oInlineChange,sReference);
+		fSetHostingIdForTextKey(oInlineChange, sReference);
 
 		var sAppVersion;
 		if (oAppComponent) {
@@ -230,25 +226,25 @@ sap.ui.define([
 		mPropertyBag.changeType = oInlineChange._getChangeType();
 		mPropertyBag.componentName = sReference;
 		mPropertyBag.reference = sReference;
-		mPropertyBag.validAppVersions =  sAppVersion ? {
-			"creation": sAppVersion,
-			"from": sAppVersion
+		mPropertyBag.validAppVersions = sAppVersion ? {
+			creation: sAppVersion,
+			from: sAppVersion
 		} : {};
 		mPropertyBag.generator = sTool;
 
-		if (!sLayer){
+		if (!sLayer) {
 			//default to 'CUSTOMER'
 			mPropertyBag.layer = 'CUSTOMER';
 		} else {
-			if (sLayer != 'VENDOR' && sLayer != 'PARTNER' && !FlexUtils.isCustomerDependentLayer(sLayer)) {
+			if (sLayer !== 'VENDOR' && sLayer !== 'PARTNER' && !FlexUtils.isCustomerDependentLayer(sLayer)) {
 				throw new Error("Parameter \"layer\" needs to be 'VENDOR', 'PARTNER' or customer dependent");
 			}
 			mPropertyBag.layer = sLayer;
 		}
 
-		var mChangeFile = Change.createInitialFileContent(mPropertyBag );
+		var mChangeFile = Change.createInitialFileContent(mPropertyBag);
 		return Settings.getInstance().then(function(oSettings) {
-			return Promise.resolve( new DescriptorChange(mChangeFile, oInlineChange, oSettings) );
+			return Promise.resolve(new DescriptorChange(mChangeFile, oInlineChange, oSettings));
 		});
 	};
 

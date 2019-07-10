@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -37,7 +37,7 @@ sap.ui.define(['./AccordionSection', 'sap/ui/Device'],
 		rm.writeStyles();
 		rm.write(">"); // SPAN element
 
-		rm.write("<div id='" + oAccordion.getId() + "-dropTarget" + "' style='width:" + oAccordion.getWidth() + "' tabIndex='-1' class='sapUiAcd-droptarget'></div>");
+		rm.write("<div id='" + oAccordion.getId() + "-dropTarget" + "' style='width:" + oAccordion.getWidth() + "' tabindex='-1' class='sapUiAcd-droptarget'></div>");
 
 		var aSections = oAccordion.getSections();
 		var aDefaultSections = oAccordion.getOpenedSectionsId().split(",");
@@ -59,9 +59,9 @@ sap.ui.define(['./AccordionSection', 'sap/ui/Device'],
 
 		}
 
-		rm.write('<SPAN id="' + oAccordion.getId() + '-Descr" style="visibility: hidden; display: none;">');
+		rm.write('<span id="' + oAccordion.getId() + '-Descr" style="visibility: hidden; display: none;">');
 		rm.write(oAccordion.rb.getText("ACCORDION_DSC"));
-		rm.write('</SPAN>');
+		rm.write('</span>');
 
 		rm.write("</div>");
 

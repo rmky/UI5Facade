@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,6 +24,7 @@ sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/events/F6Navigation",
 	"sap/ui/events/isMouseEventDelayed",
+	"sap/ui/base/EventProvider",
 	"sap/ui/dom/jquery/control", // jQuery Plugin "control"
 	"sap/ui/dom/jquery/Focusable", // jQuery Plugin "firstFocusableDomRef"
 	"sap/ui/dom/jquery/rect" // jQuery Plugin "rect"
@@ -45,7 +46,11 @@ sap.ui.define([
 	containsOrEquals,
 	jQuery,
 	F6Navigation,
-	isMouseEventDelayed
+	isMouseEventDelayed,
+	EventProvider
+	//control
+	//Focusable
+	//rect
 ) {
 	"use strict";
 
@@ -55,7 +60,6 @@ sap.ui.define([
 
 	// shortcut for sap.ui.core.OpenState
 	var OpenState = library.OpenState;
-
 
 	/**
 	 * Creates an instance of <code>sap.ui.core.Popup</code> that can be used to open controls as a Popup,
@@ -589,6 +593,14 @@ sap.ui.define([
 	 * @private
 	 */
 	var fnRectEqual = function(oRectOne, oRectTwo) {
+		if ((!oRectOne && oRectTwo) || (oRectOne && !oRectTwo)) {
+			return false;
+		}
+
+		if (!oRectOne && !oRectTwo) {
+			return true;
+		}
+
 		var iPuffer = 3;
 		var iLeft = Math.abs(oRectOne.left - oRectTwo.left);
 		var iTop = Math.abs(oRectOne.top - oRectTwo.top);
@@ -614,7 +626,7 @@ sap.ui.define([
 	 * @param {int} [iDuration] animation duration in milliseconds; default is the jQuery preset "fast". For iDuration == 0 the opening happens synchronously without animation.
 	 * @param {sap.ui.core.Popup.Dock} [my=sap.ui.core.Popup.Dock.CenterCenter] the popup content's reference position for docking
 	 * @param {sap.ui.core.Popup.Dock} [at=sap.ui.core.Popup.Dock.CenterCenter] the "of" element's reference point for docking to
-	 * @param {string | sap.ui.core.Element | DOMRef | jQuery | jQuery.Event} [of=document] specifies the reference element to which the given content should dock to
+	 * @param {string | sap.ui.core.Element | Element | jQuery | jQuery.Event} [of=document] specifies the reference element to which the given content should dock to
 	 * @param {string} [offset='0 0'] the offset relative to the docking point, specified as a string with space-separated pixel values (e.g. "10 0" to move the popup 10 pixels to the right). If the docking of both "my" and "at" are both RTL-sensitive ("begin" or "end"), this offset is automatically mirrored in the RTL case as well.
 	 * @param {string} [collision='flip'] defines how the position of an element should be adjusted in case it overflows the window in some direction.
 	 * @param {boolean} [followOf=false] defines whether the popup should follow the dock reference when the reference changes its position.
@@ -917,7 +929,10 @@ sap.ui.define([
 			// If the focus needs to be set into the popup and it's different than the current
 			// document active element, the current active element is blurred here to prevent
 			// it from getting further events during the opening animation of the popup
-			if (oDomRefToFocus !== document.activeElement) {
+
+			// The existence of the blur method should be checked because svg elements don't
+			// have blur method in IE 11
+			if (document.activeElement.blur && oDomRefToFocus !== document.activeElement) {
 				document.activeElement.blur();
 			}
 		}
@@ -1423,7 +1438,7 @@ sap.ui.define([
 	/**
 	 * Sets the content this instance of the Popup should render.
 	 * Content must be capable of being positioned via position:absolute;
-	 * @param {sap.ui.core.Control | DOMRef } oContent
+	 * @param {sap.ui.core.Control | Element } oContent
 	 * @return {sap.ui.core.Popup} <code>this</code> to allow method chaining
 	 * @public
 	 */
@@ -1435,7 +1450,7 @@ sap.ui.define([
 
 	/**
 	 * Returns this Popup's content.
-	 * @return {sap.ui.core.Control | DOMRef } the content that has been set previously (if any)
+	 * @return {sap.ui.core.Control | Element } the content that has been set previously (if any)
 	 * @public
 	 */
 	Popup.prototype.getContent = function() {
@@ -1449,7 +1464,7 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.core.Popup.Dock} my specifies which point of the given Content should be aligned
 	 * @param {sap.ui.core.Popup.Dock | {left: sap.ui.core.CSSSize, top: sap.ui.core.CSSSize}} at specifies the point of the reference element to which the given Content should be aligned
-	 * @param {string | sap.ui.core.Element | DOMRef | jQuery | jQuery.Event} [of=document] specifies the reference element to which the given content should be aligned as specified in the other parameters
+	 * @param {string | sap.ui.core.Element | Element | jQuery | jQuery.Event} [of=document] specifies the reference element to which the given content should be aligned as specified in the other parameters
 	 * @param {string} [offset='0 0'] the offset relative to the docking point, specified as a string with space-separated pixel values (e.g. "0 10" to move the popup 10 pixels to the right). If the docking of both "my" and "at" are both RTL-sensitive ("begin" or "end"), this offset is automatically mirrored in the RTL case as well.
 	 * @param {string} [collision] defines how the position of an element should be adjusted in case it overflows the window in some direction. The valid values that refer to jQuery-UI's position parameters are "flip", "fit" and "none".
 	 * @return {sap.ui.core.Popup} <code>this</code> to allow method chaining
@@ -1927,7 +1942,7 @@ sap.ui.define([
 	 * - non-touch environment: if the focus leaves the Popup but immediately enters one of these areas, the Popup does NOT close.
 	 * - touch environment: if user clicks one of these areas, the Popup does NOT close.
 	 *
-	 * @param {DomRef[]|sap.ui.core.Element[]|string[]} aAutoCloseAreas an array containing DOM elements, sap.ui.core.Element
+	 * @param {Element[]|sap.ui.core.Element[]|string[]} aAutoCloseAreas an array containing DOM elements, sap.ui.core.Element
 	 *  or an ID which are considered part of the Popup; a value of null removes all previous areas
 	 * @return {sap.ui.core.Popup} <code>this</code> to allow method chaining
 	 * @public
@@ -2460,6 +2475,75 @@ sap.ui.define([
 	};
 
 	/**
+	 * The 'blockLayerStateChange' event is fired only in case of using modal popups and under certain conditions:
+	 * <pre>
+	 *  a. the first inserted modal popup in a popup stack opens
+	 *  b. the first inserted modal popup in a popup stack closes
+	 * </pre>
+	 *
+	 * @name sap.ui.core.Popup.blockLayerStateChange
+	 * @event
+	 * @param {sap.ui.base.Event} oEvent
+	 * @param {sap.ui.base.EventProvider} oEvent.getSource
+	 * @param {object} oEvent.getParameters
+	 * @param {boolean} oEvent.getParameters.visible Indicates whether a blocking layer is currently visible <code>visible: true</code>
+	 *  or not <code>visible: false</code>
+	 * @param {Number} oEvent.getParameters.zIndex In case a blocking layer is visible, the <code>zIndex</code> property
+	 *  will represent the zIndex at which the blocking layer is displayed.
+	 *  In case of <code>visible: false</code>, <code>zIndex</code> represents the zIndex value of the last open popup.
+	 * @static
+	 * @public
+	 */
+
+	/**
+	 * Triggers the static 'blockLayerStateChange' event with a given map of parameters.
+	 *
+	 * @param {object} mParams A map of parameters with which the event gets fired.
+	 *
+	 * @private
+	 */
+	function _fireBlockLayerStateChange (mParams) {
+		if (Popup._blockLayerStateProvider) {
+			Popup._blockLayerStateProvider.fireEvent("blockLayerStateChange", mParams);
+		}
+	}
+
+	/**
+	 * Attaches an event-handler <code>fnFunction</code> to the static 'blockLayerStateChange' event.
+	 *
+	 * The event gets triggered in case of modal popups when the first of multiple popups opens and closes.
+	 *
+	 * @param {object} [oData] The object, that should be passed along with the event-object when firing the event.
+	 * @param {function} fnFunction The function to call, when the event occurs. This function will be called on the
+	 *            oListener-instance (if present) or in a 'static way'.
+	 * @param {object} [oListener] Object on which to call the given function.
+	 *
+	 * @public
+	 */
+	Popup.attachBlockLayerStateChange = function (oData, fnFunction, oListener) {
+		if (!Popup._blockLayerStateProvider) {
+			Popup._blockLayerStateProvider = new EventProvider();
+		}
+		Popup._blockLayerStateProvider.attachEvent("blockLayerStateChange", oData, fnFunction, oListener);
+	};
+
+	/**
+	 * Removes a previously attached event handler <code>fnFunction</code> from the static 'blockLayerStateChange' event.
+	 *
+	 * The event gets triggered in case of modal popups when the first of multiple popups opens and closes.
+	 *
+	 * @param {function} fnFunction The function to call, when the event occurs.
+	 * @param {object} [oListener] Object on which the given function had to be called.
+	 *
+	 * @public
+	 */
+	Popup.detachBlockLayerStateChange = function (fnFunction, oListener) {
+		if (Popup._blockLayerStateProvider) {
+			Popup._blockLayerStateProvider.detachEvent("blockLayerStateChange", fnFunction, oListener);
+		}
+	};
+
+	/**
 	 * @private
 	 */
 	Popup.prototype._showBlockLayer = function() {
@@ -2478,6 +2562,7 @@ sap.ui.define([
 			zIndex: this._iZIndex - 2,
 			popup: this
 		});
+
 		$BlockRef.css({
 			"z-index" : this._iZIndex - 2,
 			"visibility" : "visible"
@@ -2485,11 +2570,18 @@ sap.ui.define([
 
 		// prevent HTML page from scrolling
 		jQuery("html").addClass("sapUiBLyBack");
+
+		if (Popup.blStack.length === 1) {
+			_fireBlockLayerStateChange({
+				visible: true,
+				zIndex: Popup.blStack[0].zIndex
+			});
+		}
 	};
 
 	Popup.prototype._hideBlockLayer = function() {
 		// a dialog was closed so pop his z-index from the stack
-		Popup.blStack.pop();
+		var oLastPopup = Popup.blStack.pop();
 
 		var $oBlockLayer = jQuery("#sap-ui-blocklayer-popup");
 		if ($oBlockLayer.length) {
@@ -2512,6 +2604,11 @@ sap.ui.define([
 					// Allow scrolling again in HTML page only if there is no BlockLayer left
 					jQuery("html").removeClass("sapUiBLyBack");
 				}, 0);
+
+				_fireBlockLayerStateChange({
+					visible: false,
+					zIndex: oLastPopup.zIndex
+				});
 			}
 		}
 	};
@@ -2535,12 +2632,32 @@ sap.ui.define([
 	//****************************************************
 	//Handling of movement of the dock references
 	//****************************************************
-	Popup.DockTrigger = new IntervalTrigger(200);
+	Popup.DockTrigger = IntervalTrigger;
 
 	Popup.checkDocking = function(){
 		if (this.getOpenState() === OpenState.OPEN) {
 			var oCurrentOfRef = this._getOfDom(this._oLastPosition.of),
-				oCurrentOfRect = jQuery(oCurrentOfRef).rect();
+				oCurrentOfRect;
+
+			if (oCurrentOfRef) {
+				if ((oCurrentOfRef === window) || (oCurrentOfRef === window.document) || containsOrEquals(document.documentElement, oCurrentOfRef)) {
+					// When the current Of reference is window or window.document or it's contained in the DOM tree,
+					// The client bounding rect can be calculated
+					oCurrentOfRect = jQuery(oCurrentOfRef).rect();
+				} else if (oCurrentOfRef.id) {
+					// Otherwise when the Of reference has an id,
+					// the 'of' was rerendered so the newest DOM-element has to be updated for the corresponding rect-object.
+					// Because the id of the 'of' may be still the same but due to its rerendering the reference changed and has to be updated
+					var oNewestOf = window.document.getElementById(oCurrentOfRef.id);
+					var oNewestOfRect = jQuery(oNewestOf).rect();
+
+					// if there is a newest corresponding DOM-reference and it differs from the current -> use the newest one
+					if (oNewestOfRect && !fnRectEqual(oCurrentOfRect, oNewestOfRect)) {
+						oCurrentOfRect = oNewestOfRect;
+						this._oLastPosition.of = oNewestOf;
+					}
+				}
+			}
 
 			// it's not possible to check for the width/height because the "of" could be window.document and the
 			// document doesn't have a height/width
@@ -2559,26 +2676,6 @@ sap.ui.define([
 				if (!oCurrentOfRect) {
 					this.close();
 					return;
-				}
-			}
-
-			// Check if the current 'of' dom element is removed from the dom tree which indicates that it
-			// was rerendered and all corresponding stuff has to be updated to position the popup
-			// properly again
-			if (!containsOrEquals(document.documentElement, oCurrentOfRef)) {
-				if (oCurrentOfRef.id) {
-					// The 'of' was rerendered so the newest DOM-element has to be updated for the corresponding rect-object.
-					// Because the id of the 'of' may be still the same but due to its rerendering the reference changed and has to be updated
-					var oNewestOf = window.document.getElementById(oCurrentOfRef.id);
-					var oNewestOfRect = jQuery(oNewestOf).rect();
-
-					// if there is a newest corresponding DOM-reference and it differs from the current -> use the newest one
-					if (oNewestOfRect && !fnRectEqual(oCurrentOfRect, oNewestOfRect)) {
-						oCurrentOfRect = oNewestOfRect;
-
-						delete this._oLastPosition.of;
-						this._oLastPosition.of = oNewestOf;
-					}
 				}
 			}
 

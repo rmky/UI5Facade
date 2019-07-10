@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(['jquery.sap.global','sap/base/util/uid','sap/base/strings/hash','sap/base/util/array/uniqueSort','sap/base/util/deepEqual','sap/base/util/each','sap/base/util/array/diff','sap/base/util/JSTokenizer','sap/base/util/merge','sap/base/util/UriParameters'],function(q,u,h,a,d,e,b,J,m,U){"use strict";q.sap.uid=u;q.sap.hashCode=h;q.sap.unique=a;q.sap.equal=d;q.sap.each=e;q.sap.arraySymbolDiff=b;q.sap._createJSTokenizer=function(){return new J();};q.sap.parseJS=J.parseJS;q.sap.extend=function(){var c=arguments,f=false;if(typeof arguments[0]==="boolean"){f=arguments[0];c=Array.prototype.slice.call(arguments,1);}if(f){return m.apply(this,c);}else{

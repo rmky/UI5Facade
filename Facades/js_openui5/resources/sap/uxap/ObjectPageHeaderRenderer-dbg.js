@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -129,13 +129,14 @@ sap.ui.define(["./ObjectImageHelper", "sap/ui/Device"], function (ObjectImageHel
 		var sOHTitle = oControl.getObjectTitle(),
 			bMarkers = (oControl.getShowMarkers() && (oControl.getMarkFavorite() || oControl.getMarkFlagged())),
 			oBreadCrumbsAggregation = oControl._getBreadcrumbsAggregation(),
-			sTooltip = oControl.getTooltip_Text();
+			sTooltip = oControl.getTooltip_Text(),
+			sIdSuffix = bTitleInContent ? "-content" : "";
 
 		if (!bTitleInContent && oBreadCrumbsAggregation) {
 			oRm.renderControl(oBreadCrumbsAggregation);
 		}
 
-		oRm.write("<h1");
+		oRm.write("<h2");
 		oRm.addClass('sapUxAPObjectPageHeaderIdentifierTitle');
 		if (oControl.getIsObjectTitleAlwaysVisible()) {
 			oRm.addClass('sapUxAPObjectPageHeaderIdentifierTitleForce');
@@ -148,12 +149,13 @@ sap.ui.define(["./ObjectImageHelper", "sap/ui/Device"], function (ObjectImageHel
 		}
 
 		oRm.writeClasses();
-		oRm.writeAttributeEscaped("id", oControl.getId() + "-title");
+		oRm.writeAttributeEscaped("id", oControl.getId() + "-title" + sIdSuffix);
 		oRm.write(">");
 		oRm.write("<span");
+		oRm.addClass("sapUxAPObjectPageHeaderTitleText");
 		oRm.addClass("sapUxAPObjectPageHeaderTitleTextWrappable");
 		oRm.writeClasses();
-		oRm.writeAttributeEscaped("id", oControl.getId() + "-innerTitle");
+		oRm.writeAttributeEscaped("id", oControl.getId() + "-innerTitle" + sIdSuffix);
 
 		if (sTooltip) {
 			oRm.writeAttributeEscaped("title", sTooltip);
@@ -171,7 +173,6 @@ sap.ui.define(["./ObjectImageHelper", "sap/ui/Device"], function (ObjectImageHel
 				sOHTitleEnd = sOHTitle;
 				sOHTitleStart = '';
 			}
-
 			oRm.writeEscaped(sOHTitleStart);
 			oRm.write("</span>");
 			oRm.write("<span");
@@ -181,7 +182,12 @@ sap.ui.define(["./ObjectImageHelper", "sap/ui/Device"], function (ObjectImageHel
 			}
 			oRm.writeClasses();
 			oRm.write(">");
+			oRm.write("<span");
+			oRm.addClass("sapUxAPObjectPageHeaderTitleText");
+			oRm.writeClasses();
+			oRm.write(">");
 			oRm.writeEscaped(sOHTitleEnd);
+			oRm.write("</span>");
 
 			this._renderMarkers(oRm, oControl);
 
@@ -198,7 +204,7 @@ sap.ui.define(["./ObjectImageHelper", "sap/ui/Device"], function (ObjectImageHel
 			oRm.writeEscaped(sOHTitle);
 			oRm.write("</span>");
 		}
-		oRm.write("</h1>");
+		oRm.write("</h2>");
 
 		oRm.write("<span");
 		oRm.addClass('sapUxAPObjectPageHeaderIdentifierDescription');
@@ -209,7 +215,7 @@ sap.ui.define(["./ObjectImageHelper", "sap/ui/Device"], function (ObjectImageHel
 			oRm.addClass('sapUxAPObjectPageHeaderIdentifierSubTitleInContent');
 		}
 		oRm.writeClasses();
-		oRm.writeAttributeEscaped("id", oControl.getId() + "-subtitle");
+		oRm.writeAttributeEscaped("id", oControl.getId() + "-subtitle" + sIdSuffix);
 		oRm.write(">");
 		oRm.writeEscaped(oControl.getObjectSubtitle());
 		oRm.write("</span>");

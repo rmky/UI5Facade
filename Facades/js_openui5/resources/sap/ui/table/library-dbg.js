@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,7 +17,7 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.table",
-		version: "1.61.2",
+		version: "1.67.1",
 		dependencies : ["sap.ui.core","sap.ui.unified"],
 		designtime: "sap/ui/table/designtime/library.designtime",
 		types: [
@@ -27,7 +27,6 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 			"sap.ui.table.SelectionMode",
 			"sap.ui.table.SortOrder",
 			"sap.ui.table.VisibleRowCountMode",
-			"sap.ui.table.SharedDomRef",
 			"sap.ui.table.TreeAutoExpandMode" /*Note: Only added here to ensure that a corresponding module is created automatically. Cannot be used as type for properties!*/
 		],
 		interfaces: [],
@@ -35,6 +34,7 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 			"sap.ui.table.AnalyticalColumnMenu",
 			"sap.ui.table.AnalyticalTable",
 			"sap.ui.table.ColumnMenu",
+			"sap.ui.table.CreationRow",
 			"sap.ui.table.Table",
 			"sap.ui.table.TreeTable",
 			"sap.ui.table.RowAction"
@@ -44,7 +44,9 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 			"sap.ui.table.Column",
 			"sap.ui.table.Row",
 			"sap.ui.table.RowActionItem",
-			"sap.ui.table.RowSettings"
+			"sap.ui.table.RowSettings",
+			"sap.ui.table.plugins.MultiSelectionPlugin",
+			"sap.ui.table.plugins.SelectionPlugin"
 		],
 		extensions: {
 			flChangeHandlers: {
@@ -71,7 +73,7 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 	 * @namespace
 	 * @alias sap.ui.table
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @public
 	 */
 	var thisLib = sap.ui.table;
@@ -79,7 +81,7 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 	/**
 	 * Navigation mode of the table
 	 *
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -107,7 +109,7 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 	/**
 	 * Row Action types.
 	 *
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -138,7 +140,7 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 	/**
 	 * Selection behavior of the table
 	 *
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -169,7 +171,7 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 	/**
 	 * Selection mode of the table
 	 *
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -207,7 +209,7 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 	/**
 	 * Sort order of a column
 	 *
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -232,7 +234,7 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 	/**
 	 * VisibleRowCountMode of the table
 	 *
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -264,7 +266,7 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 	 *
 	 * Contains IDs of shared DOM references, which should be accessible to inheriting controls via getDomRef() function.
 	 *
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @enum {string}
 	 * @public
 	 */
@@ -334,11 +336,11 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/model/TreeAutoExpandMode',
 	/**
 	 * Different modes for setting the auto expand mode on tree or analytical bindings.
 	 *
-	 * @version 1.61.2
+	 * This is an alias for {@link sap.ui.model.TreeAutoExpandMode} and kept for compatibility reasons.
+	 *
+	 * @version 1.67.1
 	 * @enum {string}
 	 * @public
-	 * @borrows sap.ui.model.TreeAutoExpandMode.Sequential as Sequential
-	 * @borrows sap.ui.model.TreeAutoExpandMode.Bundled as Bundled
 	 */
 	thisLib.TreeAutoExpandMode = TreeAutoExpandMode;
 

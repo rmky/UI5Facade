@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -63,7 +63,7 @@ sap.ui.define([
 				if (oUri.is("relative")) {
 					// Rewrite relative URLs based on the theme base url
 					// Otherwise they would be relative to the HTML page which is incorrect
-					var sNormalizedUrl = oUri.absoluteTo(sThemeBaseUrl).normalize().path();
+					var sNormalizedUrl = oUri.absoluteTo(sThemeBaseUrl).normalize().toString();
 					sUrl = "url('" + sNormalizedUrl + "')";
 				}
 			}

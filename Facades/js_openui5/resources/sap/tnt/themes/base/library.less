@@ -1,8 +1,8 @@
 /* NOTE: This file was generated as an optimized version of "library.source.less" for the Theme Designer. */
 
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -246,13 +246,16 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 /* Base theme                          */
 /* =================================== */
 
+@_sap_tnt_ToolHeader_ITHOverflowButtonTop: 0.5rem;
+@_sap_tnt_ToolHeader_Height: 3rem;
+
 .sapTntToolHeaderPopover.sapMOTAPopover.sapMPopover .sapMPopoverCont .sapMPopoverScroll,
 .sapTntToolHeaderPopover.sapMOTAPopover.sapMPopover .sapMPopoverCont .sapMPopoverScroll .sapMBtn {
 	padding: 0;
 }
 
 .sapTntToolHeader.sapMTB {
-	height: 3rem;
+	height: @_sap_tnt_ToolHeader_Height;
 }
 
 .sapTntToolHeader .sapMITH {
@@ -288,7 +291,7 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 }
 
 .sapUiSizeCompact .sapTntToolHeader .sapMITH .sapMBtnInline {
-	top: 0.5rem;
+	top: @_sap_tnt_ToolHeader_ITHOverflowButtonTop;
 }
 
 .sap-phone .sapTntToolHeader .sapMITH .sapMITBHead .sapMITBFilter .sapMITBText + .sapMITBContentArrow  {
@@ -564,11 +567,11 @@ html:not([data-sap-ui-animation='off']) .sapTntToolPageAside {
 .sap-desktop,
 .sap-tablet {
   .sapTntToolPageAsideCollapsed {
-    .sapTntToolPageAside {
+    & > .sapTntToolPageAside {
       width: @_sap_tnt_ToolPage_AsideWidthOnTablet;
     }
 
-    .sapTntToolPageMain {
+    & > .sapTntToolPageAside + .sapTntToolPageMain {
       padding-left: @_sap_tnt_ToolPage_AsideWidthOnTablet;
     }
   }
@@ -665,7 +668,7 @@ html:not([data-sap-ui-animation='off']) .sapTntToolPageAside {
       width: @_sap_tnt_ToolPage_CompactAsideWidthOnTablet;
     }
 
-    .sapTntToolPageMain {
+    .sapTntToolPageAside + .sapTntToolPageMain {
       padding-left: @_sap_tnt_ToolPage_CompactAsideWidthOnTablet;
     }
   }
@@ -743,6 +746,12 @@ html[dir=rtl] {
 /* Base theme                        */
 /* ================================= */
 
+@_sap_tnt_InfoLabel_Margin: 0.9375rem;
+@_sap_tnt_InfoLabel_NoTextPadding: 0.5625rem;
+@_sap_tnt_InfoLabel_NoTextDisplayOnlyPadding: 0.5rem;
+@_sap_tnt_InfoLabel_LineHeight: 1.125rem;
+@_sap_tnt_InfoLabel_LineHeightDisplayOnly: 1rem;
+
 /* ==========================================================================
    Root element
    ========================================================================== */
@@ -758,8 +767,7 @@ html[dir=rtl] {
 	.sapTntInfoLabelInner {
 		font-size: @sapMFontSmallSize;
 		vertical-align: top;
-		line-height: 1.125rem;
-		font-weight: 600;
+		line-height: @_sap_tnt_InfoLabel_LineHeight;
 		letter-spacing: 0.0125rem;
 		text-transform: uppercase;
 		display: inline-block;
@@ -781,8 +789,7 @@ html[dir=rtl] {
 	height: 1rem;
 
 	.sapTntInfoLabelInner {
-		font-size: 0.6875rem;
-		line-height: 1rem;
+		line-height: @_sap_tnt_InfoLabel_LineHeightDisplayOnly;
 	}
 }
 
@@ -790,10 +797,10 @@ html[dir=rtl] {
    InfoLabel No Text
    ========================================================================== */
    .sapTntInfoLabel.sapTntInfoLabelNoText {
-	padding: 0 0.5625rem;
+	padding: 0 @_sap_tnt_InfoLabel_NoTextPadding;
 
 		&.sapTntInfoLabelDisplayOnly{
-			padding: 0 0.5rem;
+			padding: 0 @_sap_tnt_InfoLabel_NoTextDisplayOnlyPadding;
 		}
    }
 
@@ -806,7 +813,7 @@ html[dir=rtl] {
 }
 
 .sapUiFormEdit .sapTntInfoLabel:not(.sapTntInfoLabelDisplayOnly) {
-	margin: 0.9375rem 0;
+	margin: @_sap_tnt_InfoLabel_Margin 0;
 }
 
 /* Compact size */

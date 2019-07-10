@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -22,33 +22,25 @@ sap.ui.define([
 		 * Creates a view and puts it in an aggregation of a control that has been defined in the {@link #constructor}.
 		 *
 		 * @param {*} [vData] an object that will be passed to the display event in the data property. If the target has parents, the data will also be passed to them.
-		 * @return {Promise} resolves with {name: *, view: *, control: *} if the target can be successfully displayed otherwise it resolves with {name: *, error: *}
+		 * @return {Promise} resolves with {name: *, view: *, control: *} if the target can be successfully displayed otherwise it rejects with error information
 		 * @private
 		 */
 		display : function (vData) {
 			// Create an immediately resolving promise for parentless Target
 			var oSequencePromise = Promise.resolve();
-			return this._display(vData, oSequencePromise).catch(function(oViewInfo) {
-				if (oViewInfo instanceof Error) {
-					// forward the rejection with error object if this is a program error
-					return Promise.reject(oViewInfo);
-				} else {
-					// otherwise make the promise resolve with {name: *, error: *}
-					return oViewInfo;
-				}
-			});
+			return this._display(vData, oSequencePromise);
 		},
 
 		/**
 		 * @private
 		 */
-		_display: function (vData, oSequencePromise) {
+		_display: function (vData, oSequencePromise, oTargetCreateInfo) {
 			if (this._oParent) {
 				// replace the sync
-				oSequencePromise = this._oParent._display(vData, oSequencePromise);
+				oSequencePromise = this._oParent._display(vData, oSequencePromise, oTargetCreateInfo);
 			}
 
-			return this._place(vData, oSequencePromise);
+			return this._place(vData, oSequencePromise, oTargetCreateInfo);
 		},
 
 		/**
@@ -60,8 +52,9 @@ sap.ui.define([
 		 * @return {Promise} resolves with {name: *, view: *, control: *} if the target can be successfully displayed otherwise it rejects with an error message
 		 * @private
 		 */
-		_place : function (vData, oSequencePromise) {
+		_place : function (vData, oSequencePromise, oTargetCreateInfo) {
 			if (vData instanceof Promise) {
+				oTargetCreateInfo = oSequencePromise;
 				oSequencePromise = vData;
 				vData = undefined;
 			}
@@ -70,7 +63,7 @@ sap.ui.define([
 				that = this,
 				oObject, sName, oCreateOptions, sErrorMessage, pLoaded;
 
-			if (oOptions.name && oOptions.type) {
+			if ((oOptions.name || oOptions.usage) && oOptions.type) {
 				// when view information is given
 				sName = this._getEffectiveObjectName(oOptions.name);
 				switch (oOptions.type) {
@@ -83,10 +76,15 @@ sap.ui.define([
 						};
 						break;
 					case "Component":
-						oCreateOptions = Object.assign({}, oOptions.options || {}, {
-							name: sName,
-							id: oOptions.id
-						});
+						oCreateOptions = { id: oOptions.id };
+
+						if (oOptions.usage) {
+							oCreateOptions.usage = oOptions.usage;
+						} else {
+							oCreateOptions.name = sName;
+						}
+
+						oCreateOptions = Object.assign({}, oOptions.options || {}, oCreateOptions);
 						break;
 					default:
 						throw new Error("The given type " + oOptions.type + " isn't support by sap.ui.core.routing.Target");
@@ -94,7 +92,7 @@ sap.ui.define([
 
 				oObject = this._oCache._get(oCreateOptions, oOptions.type,
 						// Hook in the route for deprecated global view id, it has to be supported to stay compatible
-						this._bUseRawViewId);
+						this._bUseRawViewId, oTargetCreateInfo);
 
 				if (!(oObject instanceof Promise)) {
 					if (oObject.isA("sap.ui.core.mvc.View")) {
@@ -110,15 +108,18 @@ sap.ui.define([
 					.then(function(oParentInfo) {
 						return pLoaded
 							.then(function (oObject) {
+								if (oObject.isA("sap.ui.core.UIComponent")) {
+									var oRouter = oObject.getRouter();
+									if (oRouter && oRouter.isStopped()) {
+										// initialize the router in nested component
+										// if it has been previously stopped
+										oRouter.initialize();
+									}
+								}
 								return {
 									object: oObject,
 									parentInfo: oParentInfo || {}
 								};
-							}, function(sErrorMessage) {
-								return Promise.reject({
-									name: oOptions._name,
-									error: sErrorMessage
-								});
 							});
 					})
 					.then(function(oViewInfo) {
@@ -179,9 +180,6 @@ sap.ui.define([
 								} else {
 									return oContainerControl;
 								}
-							}).catch(function() {
-								sErrorMessage = "Something went wrong during loading the root view with id " + oOptions.rootView;
-								return that._refuseInvalidTarget(oOptions._name, sErrorMessage);
 							});
 						}
 
@@ -202,12 +200,15 @@ sap.ui.define([
 							oObject = sap.ui.getCore().byId(sComponentContainerId);
 
 							if (!oObject) {
-								oObject = new ComponentContainer(sComponentContainerId, {
+								// defaults mixed in with configured settings
+								var oContainerOptions = Object.assign({
 									component: oComponent,
 									height: "100%",
 									width: "100%",
 									lifecycle: sap.ui.core.ComponentLifecycle.Application
-								});
+								}, oOptions.containerOptions);
+
+								oObject = new ComponentContainer(sComponentContainerId, oContainerOptions);
 
 								fnOriginalExit = oComponent.exit;
 								oComponent.exit = function () {
@@ -303,14 +304,7 @@ sap.ui.define([
 		 * @private
 		 */
 		_refuseInvalidTarget : function(sName, sMessage) {
-			if (sMessage) {
-				Log.error(sMessage, this);
-			}
-
-			return {
-				name: sName,
-				error: sMessage
-			};
+			return Promise.reject(new Error(sMessage + " - Target: " + sName));
 		}
 	};
 });

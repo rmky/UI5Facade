@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,9 +8,13 @@ sap.ui.define([
 	"sap/ui/core/Component",
 	"sap/ui/fl/FlexControllerFactory",
 	"sap/ui/fl/Utils",
-	"sap/ui/fl/ChangePersistenceFactory",
-	"sap/ui/fl/ChangePersistence"
-], function(Component, FlexControllerFactory, Utils, ChangePersistenceFactory, ChangePersistence) {
+	"sap/ui/fl/ChangePersistenceFactory"
+], function(
+	Component,
+	FlexControllerFactory,
+	Utils,
+	ChangePersistenceFactory
+) {
 	"use strict";
 
 	/**
@@ -20,10 +24,10 @@ sap.ui.define([
 	 * @class
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @experimental Since 1.27.0
 	 */
-	var XmlPreprocessorImpl = function(){
+	var XmlPreprocessorImpl = function() {
 	};
 
 	/**
@@ -38,7 +42,7 @@ sap.ui.define([
 	 *
 	 * @public
 	 */
-	XmlPreprocessorImpl.process = function(oView, mProperties){
+	XmlPreprocessorImpl.process = function(oView, mProperties) {
 		try {
 			if (!mProperties || mProperties.sync) {
 				Utils.log.warning("Flexibility feature for applying changes on an XML view is only available for " +
@@ -80,7 +84,7 @@ sap.ui.define([
 			// throw new Error(sError); // throw again, when caller handles the promise
 			return Promise.resolve(oView);
 		}
-	 };
+	};
 
 	/**
 	 * Asynchronous determination of a hash key for caching purposes
@@ -102,9 +106,8 @@ sap.ui.define([
 		var sFlexReference = Utils.getComponentClassName(oAppComponent);
 		var sAppVersion = Utils.getAppVersionFromManifest(oAppComponent.getManifest());
 		var oChangePersistence = ChangePersistenceFactory.getChangePersistenceForComponent(sFlexReference, sAppVersion);
-		return oChangePersistence.getCacheKey();
+		return oChangePersistence.getCacheKey(oAppComponent);
 	};
 
-	 return XmlPreprocessorImpl;
-
+	return XmlPreprocessorImpl;
 }, /* bExport= */true);

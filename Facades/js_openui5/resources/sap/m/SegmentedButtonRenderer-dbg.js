@@ -1,11 +1,11 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/core/library"],
-	function(coreLibrary) {
+sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleRenderer"],
+	function(coreLibrary, InvisibleRenderer) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TextDirection
@@ -26,11 +26,17 @@ sap.ui.define(["sap/ui/core/library"],
 	 */
 	SegmentedButtonRenderer.render = function(oRM, oControl){
 		var aButtons = oControl.getButtons(),
+			aVisibleButtons = aButtons.filter(function(oButton) { return oButton.getVisible(); }),
+			iVisibleButtonPos = 0,
 			sSelectedButton = oControl.getSelectedButton(),
 			oButton,
 			sTooltip,
 			sButtonWidth,
 			sButtonTextDirection;
+
+		if (aVisibleButtons.length) {
+			aVisibleButtons[aVisibleButtons.length - 1].addStyleClass("sapMSegBtnLastVisibleButton");
+		}
 
 		// Select representation mockup
 		if (oControl._bInOverflow) {
@@ -72,22 +78,13 @@ sap.ui.define(["sap/ui/core/library"],
 		for (var i = 0; i < aButtons.length; i++) {
 			oButton = aButtons[i];
 
-			// instead of the button API we render a li element but with the id of the button
-			// only the button properties enabled, width, icon, text, and tooltip are evaluated here
-			oRM.write("<li");
-
 			if (oButton.getVisible()) {
 				var sButtonText = oButton.getText(),
 					oButtonIcon = oButton.getIcon(),
 					sIconAriaLabel = "",
 					oImage;
 
-				for (var k = aButtons.length - 1; k > 0; k--) {
-					if (aButtons[k].getVisible()) {
-						aButtons[k].addStyleClass("sapMSegBtnLastVisibleButton");
-						break;
-					}
-				}
+				++iVisibleButtonPos;
 
 				if (oButtonIcon) {
 					oImage = oButton._getImage((oButton.getId() + "-img"), oButtonIcon);
@@ -98,9 +95,12 @@ sap.ui.define(["sap/ui/core/library"],
 					}
 				}
 
+				// instead of the button API we render a li element but with the id of the button
+				// only the button properties enabled, width, icon, text, and tooltip are evaluated here
+				oRM.write("<li");
 				oRM.writeControlData(oButton);
-				oRM.writeAttribute("aria-posinset", i + 1);
-				oRM.writeAttribute("aria-setsize", aButtons.length);
+				oRM.writeAttribute("aria-posinset", iVisibleButtonPos);
+				oRM.writeAttribute("aria-setsize", aVisibleButtons.length);
 				oRM.addClass("sapMSegBBtn");
 				if (oButton.aCustomStyleClasses !== undefined && oButton.aCustomStyleClasses instanceof Array) {
 					for (var j = 0; j < oButton.aCustomStyleClasses.length; j++) {
@@ -164,11 +164,10 @@ sap.ui.define(["sap/ui/core/library"],
 				if (sButtonText !== '') {
 					oRM.writeEscaped(sButtonText, false);
 				}
+				oRM.write("</li>");
 			} else {
-				oRM.writeInvisiblePlaceholderData(oButton);
-				oRM.write('>');
+				InvisibleRenderer.render(oRM, oButton, "li");
 			}
-			oRM.write("</li>");
 		}
 		oRM.write("</ul>");
 	};

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,9 +10,9 @@ sap.ui.define([
 	'./ChangeReason',
 	'./DataState',
 	"sap/base/Log",
-	"sap/ui/thirdparty/jquery"
+	"sap/base/util/each"
 ],
-	function(EventProvider, ChangeReason, DataState, Log, jQuery) {
+	function(EventProvider, ChangeReason, DataState, Log, each) {
 	"use strict";
 
 
@@ -451,7 +451,7 @@ sap.ui.define([
 			return this;
 		}
 		var that = this;
-		jQuery.each(oEvents, function(sEvent, fnHandler) {
+		each(oEvents, function(sEvent, fnHandler) {
 			var sMethod = "attach" + sEvent.substring(0,1).toUpperCase() + sEvent.substring(1);
 			if (that[sMethod]) {
 				that[sMethod](fnHandler);
@@ -473,7 +473,7 @@ sap.ui.define([
 			return this;
 		}
 		var that = this;
-		jQuery.each(oEvents, function(sEvent, fnHandler) {
+		each(oEvents, function(sEvent, fnHandler) {
 			var sMethod = "detach" + sEvent.substring(0,1).toUpperCase() + sEvent.substring(1);
 			if (that[sMethod]) {
 				that[sMethod](fnHandler);

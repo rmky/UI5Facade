@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,7 +19,7 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 	 * @class
 	 * The row.
 	 * @extends sap.ui.core.Element
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -27,13 +27,12 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var Row = Element.extend("sap.ui.table.Row", /** @lends sap.ui.table.Row.prototype */ { metadata : {
-
 		library : "sap.ui.table",
 		defaultAggregation : "cells",
 		aggregations : {
-
 			/**
-			 * The controls for the cells.
+			 * The actual cells are a table-internal construct. The controls in this aggregation are the content of the cells.
+			 * This aggregation is managed by the table and must not be manipulated. Only read access is allowed.
 			 */
 			cells : {type : "sap.ui.core.Control", multiple : true, singularName : "cell"},
 
@@ -152,55 +151,48 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 	 * @private
 	 */
 	Row.prototype.getDomRefs = function(bJQuery, bCollection) {
-		var byId = function(sId) {
-			return jQuery(document.getElementById(sId));
-		};
-		var domById = function(sId) {
-			return (sId ? window.document.getElementById(sId) : null);
-		};
-		var sKey = (bJQuery === true) ? "jQuery" : "dom", fnAccess = (bJQuery === true) ? byId : domById, mDomRefs = this._mDomRefs;
+		bJQuery = bJQuery === true;
+		bCollection = bCollection === true;
+
+		var sKey = bJQuery ? "jQuery" : "dom";
+		var mDomRefs = this._mDomRefs;
 
 		if (!mDomRefs[sKey]) {
-			mDomRefs[sKey] = {};
 			var oTable = this.getParent();
+			var fnGetElement = function(sId) {
+				var oElement = document.getElementById(sId);
+				if (oElement) {
+					return bJQuery ? jQuery(oElement) : oElement;
+				}
+				return null;
+			};
+			var fnGetParent = function(vElement) {
+				if (vElement) {
+					return bJQuery ? vElement.parent() : vElement.parentNode;
+				}
+				return null;
+			};
+
+			mDomRefs[sKey] = {};
+
 			if (oTable) {
 				var iRowIndex = oTable.indexOfRow(this);
-				// row selector domRef
-				mDomRefs[sKey].rowSelector = fnAccess(oTable.getId() + "-rowsel" + iRowIndex);
-				// row action domRef
-				mDomRefs[sKey].rowAction = fnAccess(oTable.getId() + "-rowact" + iRowIndex);
+				mDomRefs[sKey].rowSelector = fnGetElement(oTable.getId() + "-rowsel" + iRowIndex);
+				mDomRefs[sKey].rowAction = fnGetElement(oTable.getId() + "-rowact" + iRowIndex);
 			}
 
-			// row domRef
-			mDomRefs[sKey].rowScrollPart = fnAccess(this.getId());
-			// row domRef (the fixed part)
-			mDomRefs[sKey].rowFixedPart = fnAccess(this.getId() + "-fixed");
-			// row selector domRef
-			mDomRefs[sKey].rowSelectorText = fnAccess(this.getId() + "-rowselecttext");
+			mDomRefs[sKey].rowHeaderPart = fnGetParent(mDomRefs[sKey].rowSelector);
+			mDomRefs[sKey].rowFixedPart = fnGetElement(this.getId() + "-fixed");
+			mDomRefs[sKey].rowScrollPart = fnGetElement(this.getId());
+			mDomRefs[sKey].rowActionPart = fnGetParent(mDomRefs[sKey].rowAction);
+			mDomRefs[sKey].rowSelectorText = fnGetElement(this.getId() + "-rowselecttext");
 
-			if (bJQuery === true) {
-				mDomRefs[sKey].row = mDomRefs[sKey].rowScrollPart;
-
-				if (mDomRefs[sKey].rowFixedPart.length > 0) {
-					mDomRefs[sKey].row = mDomRefs[sKey].row.add(mDomRefs[sKey].rowFixedPart);
-				} else {
-					// since this won't be undefined in jQuery case
-					mDomRefs[sKey].rowFixedPart = undefined;
-				}
-
-				if (mDomRefs[sKey].rowSelector && mDomRefs[sKey].rowSelector.length > 0) {
-					mDomRefs[sKey].row = mDomRefs[sKey].row.add(mDomRefs[sKey].rowSelector);
-				} else {
-					// since this won't be undefined in jQuery case
-					mDomRefs[sKey].rowSelector = undefined;
-				}
-
-				if (mDomRefs[sKey].rowAction && mDomRefs[sKey].rowAction.length > 0) {
-					mDomRefs[sKey].row = mDomRefs[sKey].row.add(mDomRefs[sKey].rowAction);
-				} else {
-					// since this won't be undefined in jQuery case
-					mDomRefs[sKey].rowAction = undefined;
-				}
+			if (bJQuery) {
+				mDomRefs[sKey].row = jQuery()
+					.add(mDomRefs[sKey].rowHeaderPart)
+					.add(mDomRefs[sKey].rowFixedPart)
+					.add(mDomRefs[sKey].rowScrollPart)
+					.add(mDomRefs[sKey].rowActionPart);
 			}
 		}
 
@@ -231,6 +223,10 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 		var bIsSelected = oTable.isIndexSelected(this.getIndex());
 		var $DomRefs = this.getDomRefs(true);
 
+		if (!$DomRefs.rowScrollPart) {
+			return;
+		}
+
 		var sSelectReference = "rowSelect";
 		if (bIsSelected) {
 			// when the row is selected it must show texts how to deselect
@@ -250,10 +246,7 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 			$DomRefs.rowSelectorText.text(sText);
 		}
 
-		var $Row = $DomRefs.rowScrollPart;
-		if ($DomRefs.rowFixedPart) {
-			$Row = $Row.add($DomRefs.rowFixedPart);
-		}
+		var $Row = $DomRefs.rowScrollPart.add($DomRefs.rowFixedPart);
 
 		if (bSelectOnCellsAllowed && !this._bHidden) {
 			// the row requires a tooltip for selection if the cell selection is allowed
@@ -262,10 +255,8 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 			$Row.removeAttr("title");
 		}
 
-		if ($DomRefs.row) {
-			this._setSelected(bIsSelected);
-			oTable._getAccExtension().updateAriaStateOfRow(this, $DomRefs, bIsSelected);
-		}
+		this._setSelected(bIsSelected);
+		oTable._getAccExtension().updateAriaStateOfRow(this, $DomRefs, bIsSelected);
 	};
 
 	Row.prototype.setRowBindingContext = function(oContext, sModelName, oBinding) {
@@ -324,15 +315,10 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 		this._iLevel = 0;
 		this._bIsExpanded = false;
 		this._bHasChildren = false;
-		this._sTreeIconClass = "";
 
 		if (oNode) {
 			this._oNodeState = oNode.nodeState;
 			this._iLevel = oNode.level;
-			this._bIsExpanded = false;
-			this._bHasChildren = false;
-			this._sTreeIconClass = "sapUiTableTreeIconLeaf";
-			this._sGroupIconClass = "";
 
 			if (oBinding) {
 				if (oBinding.getLevel) {
@@ -348,11 +334,6 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 					}
 				} else if (oBinding.hasChildren) {
 					this._bHasChildren = oBinding.hasChildren(oContext);
-				}
-
-				if (this._bHasChildren) {
-					this._sTreeIconClass = this._bIsExpanded ? "sapUiTableTreeIconNodeOpen" : "sapUiTableTreeIconNodeClosed";
-					this._sGroupIconClass = this._bIsExpanded ? "sapUiTableGroupIconOpen" : "sapUiTableGroupIconClosed";
 				}
 			}
 		}
@@ -518,6 +499,19 @@ sap.ui.define(['sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils', "s
 				oSyncExtension.syncRowHover(oTable.indexOfRow(this), bHovered);
 			}, this);
 		}
+	};
+
+	/**
+	 * Returns the related <code>RowAction</code> of the row.
+	 *
+	 * This function must only be used for application testing purposes.
+	 * The <code>RowAction</code> is generated based on a template. Manipulations of the object or its items are not supported.
+	 *
+	 * @return {sap.ui.table.RowAction} The related <code>RowAction</code> of the row.
+	 * @protected
+	 */
+	Row.prototype.getRowAction = function() {
+		return this.getAggregation("_rowAction");
 	};
 
 	return Row;

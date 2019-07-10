@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.registry.ChangeRegistry
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @experimental Since 1.27.0
 	 *
 	 */
@@ -57,22 +57,22 @@ sap.ui.define([
 	ChangeRegistry.prototype._oDefaultActiveChangeHandlers = {};
 
 	ChangeRegistry.prototype._oDefaultChangeHandlers = {
-		"hideControl": HideControl,
-		"moveElements": MoveElements,
-		"moveControls": MoveControls,
-		"unhideControl": UnhideControl,
-		"stashControl": StashControl,
-		"unstashControl": UnstashControl
+		hideControl: HideControl,
+		moveElements: MoveElements,
+		moveControls: MoveControls,
+		unhideControl: UnhideControl,
+		stashControl: StashControl,
+		unstashControl: UnstashControl
 	};
 
 	ChangeRegistry.prototype._mDeveloperModeChangeHandlers = {
-		"propertyChange": {
+		propertyChange: {
 			changeHandler: PropertyChange
 		},
-		"propertyBindingChange": {
+		propertyBindingChange: {
 			changeHandler: PropertyBindingChange
 		},
-		"addXML": {
+		addXML: {
 			changeHandler: AddXML
 		}
 	};
@@ -113,42 +113,53 @@ sap.ui.define([
 		return aHandlersRegisteredForControl.indexOf(sChangeType) !== -1;
 	};
 
+	/**
+	 * Registration of multiple changeHandlers for controlls.
+	 *
+	 * @param {object} mControlChanges - Map of changeHandler configuration for controlls
+	 * @returns {Promise} Returns an empty promise when all changeHandlers are registered
+	 */
 	ChangeRegistry.prototype.registerControlsForChanges = function(mControlChanges) {
-		var that = this;
-		jQuery.each(mControlChanges, function (sControlType, changeHandlers) {
-			if (Array.isArray(changeHandlers)) {
-				var oChangeHandlers = {};
-				changeHandlers.forEach(function (oChangeHandler) {
-						oChangeHandlers[oChangeHandler.changeType] = oChangeHandler.changeHandler;
+		var aPromises = [];
+		jQuery.each(mControlChanges, function (sControlType, vChangeHandlers) {
+			var mChangeHandlers = {};
+			if (Array.isArray(vChangeHandlers)) {
+				vChangeHandlers.forEach(function (oChangeHandler) {
+					mChangeHandlers[oChangeHandler.changeType] = oChangeHandler.changeHandler;
 				});
-				that._registerChangeHandlersForControl(sControlType, oChangeHandlers);
 			} else {
-				that._registerChangeHandlersForControl(sControlType, changeHandlers);
+				mChangeHandlers = vChangeHandlers;
 			}
-		});
+			aPromises.push(this._registerChangeHandlersForControl(sControlType, mChangeHandlers));
+		}.bind(this));
+		return Promise.all(aPromises);
 	};
 
 	ChangeRegistry.prototype._registerChangeHandlersForControl = function (sControlType, oChangeHandlers) {
-		var that = this;
+		var oPromise = Promise.resolve(oChangeHandlers),
+			sSkipNext = "ChangeRegistry._registerChangeHandlersForControl.skip_next_then";
 
 		if (typeof oChangeHandlers === "string") {
-			try {
-				oChangeHandlers = sap.ui.requireSync(oChangeHandlers + ".flexibility");
-			} catch (error) {
-				Utils.log.error("Flexibility change handler registration failed.\nControlType: " + sControlType + "\n" + error.message);
-				return; // continue without a registration
-			}
+			oPromise = Utils.requireAsync(oChangeHandlers + ".flexibility")
+			.catch(function(oError) {
+				Utils.log.error("Flexibility change handler registration failed.\nControlType: " + sControlType + "\n" + oError.message);
+				return Promise.resolve(sSkipNext); // continue without a registration
+			});
 		}
 
-		jQuery.each(oChangeHandlers, function (sChangeType, sChangeHandler) {
-			var oChangeHandler = that._getChangeHandlerEntry(sChangeType, sChangeHandler);
-			var oSimpleChange = {
-				"changeType": sChangeType,
-				"changeHandler": oChangeHandler.changeHandler,
-				"layers":oChangeHandler.layers
-			};
-			that.registerControlForSimpleChange(sControlType, oSimpleChange);
-		});
+		return oPromise.then(function(vResult) {
+			if (vResult !== sSkipNext) {
+				jQuery.each(vResult, function(sChangeType, sChangeHandler) {
+					var oChangeHandler = this._getChangeHandlerEntry(sChangeType, sChangeHandler);
+					var oSimpleChange = {
+						changeType: sChangeType,
+						changeHandler: oChangeHandler.changeHandler,
+						layers:oChangeHandler.layers
+					};
+					this.registerControlForSimpleChange(sControlType, oSimpleChange);
+				}.bind(this));
+			}
+		}.bind(this));
 	};
 
 	/**
@@ -182,9 +193,9 @@ sap.ui.define([
 
 		oChangeHandler = this._getChangeHandlerEntry(sChangeType, vChangeHandler);
 		oSimpleChange = {
-			"changeType": sChangeType,
-			"changeHandler": oChangeHandler.changeHandler,
-			"layers":oChangeHandler.layers
+			changeType: sChangeType,
+			changeHandler: oChangeHandler.changeHandler,
+			layers:oChangeHandler.layers
 		};
 		sControlType = oModifier.getControlType(oControl);
 		oChangeRegistryItem = this._createChangeRegistryItemForSimpleChange(sControlType, oSimpleChange);
@@ -240,17 +251,17 @@ sap.ui.define([
 		}
 
 		mChangeRegistryItem = this.getRegistryItems({
-			"changeTypeName": sChangeType,
-			"controlType": sControlType,
-			"layer": sLayer
+			changeTypeName: sChangeType,
+			controlType: sControlType,
+			layer: sLayer
 		});
 		if (mChangeRegistryItem && mChangeRegistryItem[sControlType] && mChangeRegistryItem[sControlType][sChangeType]) {
 			return mChangeRegistryItem[sControlType][sChangeType];
 		} else if (mChangeRegistryItem && mChangeRegistryItem[sControlType]) {
 			return mChangeRegistryItem[sControlType];
-		} else {
-			return mChangeRegistryItem;
 		}
+
+		return mChangeRegistryItem;
 	};
 
 	/**
@@ -397,7 +408,7 @@ sap.ui.define([
 			}
 		//or via changeType on all control types
 		} else if (mParam.changeTypeName) {
-			for ( var controlTypeKey in this._registeredItems) {
+			for (var controlTypeKey in this._registeredItems) {
 				var controlItem = this._registeredItems[controlTypeKey];
 				delete controlItem[mParam.changeTypeName];
 			}
@@ -465,7 +476,7 @@ sap.ui.define([
 			}
 		} else if (sChangeType) {
 			result = {};
-			for ( sControlType in this._registeredItems) {
+			for (sControlType in this._registeredItems) {
 				if (this._registeredItems[sControlType][sChangeType]) {
 					result[sControlType] = {};
 					result[sControlType][sChangeType] = this._getOrLoadChangeHandler(sControlType, sChangeType);
@@ -490,7 +501,7 @@ sap.ui.define([
 				var oChangeHandlerImplementation = oChangeHandlerMetadata.getChangeHandler();
 				if (typeof oChangeHandlerImplementation === "string") {
 					// load the module synchronously
-					oChangeHandlerImplementation = sap.ui.requireSync(oChangeHandlerImplementation.replace(/\./g,"/"));
+					oChangeHandlerImplementation = sap.ui.requireSync(oChangeHandlerImplementation.replace(/\./g, "/"));
 					oChangeHandlerMetadata._changeHandler = oChangeHandlerImplementation;
 				}
 

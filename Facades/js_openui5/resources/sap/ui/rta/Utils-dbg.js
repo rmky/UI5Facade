@@ -1,25 +1,31 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/fl/Utils",
+	"sap/ui/fl/FlexControllerFactory",
 	"sap/ui/fl/registry/Settings",
 	"sap/ui/dt/OverlayUtil",
 	"sap/ui/dt/DOMUtil",
+	"sap/ui/dt/Util",
 	"sap/m/MessageBox",
+	"sap/ui/rta/util/BindingsExtractor",
 	"sap/base/Log"
 ],
 function(
 	jQuery,
 	FlexUtils,
+	FlexControllerFactory,
 	Settings,
 	OverlayUtil,
 	DOMUtil,
+	DtUtil,
 	MessageBox,
+	BindingsExtractor,
 	Log
 ) {
 	"use strict";
@@ -30,7 +36,7 @@ function(
 	 * @class Utility functionality to work with controls, e.g. iterate through aggregations, find parents, etc.
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @private
 	 * @static
@@ -78,7 +84,7 @@ function(
 	 */
 	Utils.isExtensibilityEnabledInSystem = function(oControl) {
 		var sComponentName = FlexUtils.getComponentClassName(oControl);
-		if (!sComponentName || sComponentName == "") {
+		if (!sComponentName || sComponentName === "") {
 			return Promise.resolve(false);
 		}
 		return Settings.getInstance(sComponentName).then(function(oSettings) {
@@ -110,7 +116,7 @@ function(
 							if (bServiceOutdated) {
 								Access.setServiceValid(oModel.sServiceUrl);
 								//needs FLP to trigger UI restart popup
-								sap.ui.getCore().getEventBus().publish("sap.ui.core.UnrecoverableClientStateCorruption","RequestReload",{});
+								sap.ui.getCore().getEventBus().publish("sap.ui.core.UnrecoverableClientStateCorruption", "RequestReload", {});
 								return fnReject();
 							}
 						}
@@ -131,46 +137,44 @@ function(
 		return this.isExtensibilityEnabledInSystem(oControl)
 
 		.then(function(bShowCreateExtFieldButton) {
-			if (!bShowCreateExtFieldButton) {
+			if (!bShowCreateExtFieldButton || !oControl.getModel()) {
 				return false;
-			} else if (!oControl.getModel()) {
-				return false;
-			} else {
-				return new Promise(function(fnResolve, fnReject) {
-					sap.ui.require([
-						"sap/ui/fl/fieldExt/Access"
-					], function(Access) {
-						var sServiceUrl = oControl.getModel().sServiceUrl;
-						var sEntityType = this.getBoundEntityType(oControl).name;
-						var $Deferred;
-						try {
-							$Deferred = Access.getBusinessContexts(sServiceUrl, sEntityType);
-						} catch (oError) {
-							Log.error("exception occured in sap.ui.fl.fieldExt.Access.getBusinessContexts", oError);
-							fnResolve(false);
-						}
+			}
 
-						return Promise.resolve($Deferred)
-						.then(function(oResult) {
-							if (oResult && Array.isArray(oResult.BusinessContexts) && oResult.BusinessContexts.length > 0) {
-								oResult.EntityType = sEntityType;
-								return fnResolve(oResult);
-							}
-							return fnResolve(false);
-						})
-						.catch(function(oError){
-							if (oError) {
-								if (Array.isArray(oError.errorMessages)) {
-									for (var i = 0; i < oError.errorMessages.length; i++) {
-										Log.error(oError.errorMessages[i].text);
-									}
+			return new Promise(function(fnResolve, fnReject) {
+				sap.ui.require([
+					"sap/ui/fl/fieldExt/Access"
+				], function(Access) {
+					var sServiceUrl = oControl.getModel().sServiceUrl;
+					var sEntityType = this.getBoundEntityType(oControl).name;
+					var $Deferred;
+					try {
+						$Deferred = Access.getBusinessContexts(sServiceUrl, sEntityType);
+					} catch (oError) {
+						Log.error("exception occured in sap.ui.fl.fieldExt.Access.getBusinessContexts", oError);
+						fnResolve(false);
+					}
+
+					return Promise.resolve($Deferred)
+					.then(function(oResult) {
+						if (oResult && Array.isArray(oResult.BusinessContexts) && oResult.BusinessContexts.length > 0) {
+							oResult.EntityType = sEntityType;
+							return fnResolve(oResult);
+						}
+						return fnResolve(false);
+					})
+					.catch(function(oError) {
+						if (oError) {
+							if (Array.isArray(oError.errorMessages)) {
+								for (var i = 0; i < oError.errorMessages.length; i++) {
+									Log.error(oError.errorMessages[i].text);
 								}
 							}
-							return fnResolve(false);
-						});
-					}.bind(this), fnReject);
-				}.bind(this));
-			}
+						}
+						return fnResolve(false);
+					});
+				}.bind(this), fnReject);
+			}.bind(this));
 		}.bind(this));
 	};
 
@@ -185,8 +189,7 @@ function(
 		var oTextResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
 		var sTitle;
 		return new Promise(
-			function(resolve, reject) {
-
+			function(resolve) {
 				sTitle = oTextResources.getText("CTX_REMOVE_TITLE");
 
 				// create some dummy JSON data and create a Model from it
@@ -371,7 +374,7 @@ function(
 
 	/**
 	 * Returns an element overlay which is sibling to the given element overlay
-	 * @param  {sap.ui.dt.ElementOverlay} oElementOverlay The overlay to get the information from
+	 * @param  {sap.ui.dt.ElementOverlay} oOverlay The overlay to get the information from
 	 * @param  {boolean} bNext true for next sibling, false for previous sibling
 	 * @return {sap.ui.dt.ElementOverlay} the element overlay which is sibling to the given overlay
 	 * @private
@@ -380,17 +383,19 @@ function(
 		var oParentOverlay = oOverlay.getParentElementOverlay();
 		if (oParentOverlay) {
 			var oSiblingOverlay = bNext ?
-				OverlayUtil.getNextSiblingOverlay(oParentOverlay) : OverlayUtil.getPreviousSiblingOverlay(oParentOverlay);
+				OverlayUtil.getNextSiblingOverlay(oParentOverlay) :
+				OverlayUtil.getPreviousSiblingOverlay(oParentOverlay);
 			if (!oSiblingOverlay) {
 				return this._findSiblingOverlay(oParentOverlay, bNext);
-			} else {
-				var oDescendantOverlay = bNext ?
-					this.getFirstFocusableDescendantOverlay(oSiblingOverlay) : this.getLastFocusableDescendantOverlay(oSiblingOverlay);
-				return oDescendantOverlay;
 			}
-		} else {
-			return undefined;
+
+			var oDescendantOverlay = bNext ?
+				this.getFirstFocusableDescendantOverlay(oSiblingOverlay) :
+				this.getLastFocusableDescendantOverlay(oSiblingOverlay);
+			return oDescendantOverlay;
 		}
+
+		return undefined;
 	};
 
 	/**
@@ -413,12 +418,8 @@ function(
 			var sGetter = oAggregation._sGetter;
 			var aContainers = oParentElement[sGetter]();
 
-			if (Array.isArray(aContainers)) {
-				if (oChildElement) {
-					iIndex = aContainers.indexOf(oChildElement) + 1;
-				} else {
-					iIndex = aContainers.length;
-				}
+			if (Array.isArray(aContainers) && oChildElement) {
+				iIndex = aContainers.indexOf(oChildElement) + 1;
 			} else {
 				iIndex = 0;
 			}
@@ -476,13 +477,13 @@ function(
 	Utils.getElementBindingPaths = function(oElement) {
 		var aPaths = {};
 		if (oElement.mBindingInfos) {
-			for ( var oInfo in oElement.mBindingInfos) {
+			for (var oInfo in oElement.mBindingInfos) {
 				var sPath = oElement.mBindingInfos[oInfo].parts[0].path
 						? oElement.mBindingInfos[oInfo].parts[0].path
 						: "";
 				sPath = sPath.split("/")[sPath.split("/").length - 1];
 				aPaths[sPath] = {
-						valueProperty : oInfo
+					valueProperty : oInfo
 				};
 			}
 		}
@@ -495,17 +496,8 @@ function(
 	 * @returns {sap.ushell.renderers.fiori2.Renderer|undefined} renderer or null if there is no one
 	 */
 	Utils.getFiori2Renderer = function() {
-		var oContainer = Utils.getUshellContainer() || {};
+		var oContainer = FlexUtils.getUshellContainer() || {};
 		return typeof oContainer.getRenderer === "function" ? oContainer.getRenderer("fiori2") : undefined;
-	};
-
-	/**
-	 * Function to get the Fiori Container
-	 *
-	 * @returns {Object|undefined} ushell container or null if there is no one
-	 */
-	Utils.getUshellContainer = function() {
-		return sap.ushell && sap.ushell.Container;
 	};
 
 	/**
@@ -516,6 +508,17 @@ function(
 	 */
 	Utils.getEntityTypeByPath = function (oModel, sPath) {
 		return oModel.oMetadata && oModel.oMetadata._getEntityTypeByPath(sPath);
+	};
+
+	/**
+	 * Returns the FlexController of the App Component where the App Descriptor changes are saved
+	 *
+	 * @param {sap.ui.base.ManagedObject} oControl control or app component for which the flex controller should be instantiated
+	 * @returns {sap.ui.fl.FlexController} Returns FlexController Instance of Component for App Descriptor changes
+	 */
+	Utils.getAppDescriptorFlexController = function(oControl) {
+		var oAppDescriptorComponent = FlexUtils.getAppDescriptorComponentObjectForControl(oControl);
+		return FlexControllerFactory.create(oAppDescriptorComponent.name, oAppDescriptorComponent.version);
 	};
 
 	/**
@@ -577,7 +580,7 @@ function(
 						sSourceProperty,
 						mDestination,
 						mSource)
-				){
+				) {
 					mDestination[sSourceProperty] = mSource[sSourceProperty];
 				}
 			}
@@ -639,16 +642,43 @@ function(
 	 * Example: for obj = { 'a': 1, 'b': '2', 'c': 3 };
 	 * omit(obj, ['a', 'c']); -> Returns { 'b': '2' }
 	 *
-	 * @param  {Object} oObject     Source object
-	 * @param  {string[]} aPropertyPaths Property paths to omit
-	 * @return {Object}             Returns new object
+	 * @param  {Object} oObject - Source object
+	 * @param  {string|string[]} vPropertyName - Property paths to omit
+	 * @return {Object} returns new object
 	 */
-	Utils.omit = function(oObject, aPropertyPaths){
+	Utils.omit = function (oObject, vPropertyName) {
 		var oNewObject = Object.assign({}, oObject);
+		var aPropertyPaths = DtUtil.castArray(vPropertyName);
 		aPropertyPaths.forEach(function (sProperty) {
 			delete oNewObject[sProperty];
 		});
 		return oNewObject;
+	};
+
+	/**
+	 * Checks the binding compatibility of source and target control. Absolute binding will not be considered
+	 *
+	 * @param {sap.ui.core.Element|sap.ui.core.Component} oSource - Source control to be checked for binding compatibility with target control
+	 * @param {sap.ui.core.Element|sap.ui.core.Component} oTarget - Target control to be checked for binding compatibility with source control
+	 * @param {sap.ui.model.Model} [oModel] - Model for filtering irrelevant binding paths. If empty the the default model from first element is used
+	 * @return {boolean} <code>true</code> when the controls have compatible bindings.
+	 */
+	Utils.checkSourceTargetBindingCompatibility = function(oSource, oTarget, oModel) {
+		oModel = oModel || oSource.getModel();
+		var mSourceBindings = BindingsExtractor.collectBindingPaths(oSource, oModel),
+			sSourceContextBindingPath,
+			sTargetContextBindingPath;
+		// check source control for property binding
+		if (mSourceBindings.bindingPaths.length === 0) {
+			return true;
+		}
+		sSourceContextBindingPath = BindingsExtractor.getBindingContextPath(oSource);
+		sTargetContextBindingPath = BindingsExtractor.getBindingContextPath(oTarget);
+		// check source and target bindingContext has to be equal
+		if (sSourceContextBindingPath === sTargetContextBindingPath) {
+			return true;
+		}
+		return false;
 	};
 
 	return Utils;

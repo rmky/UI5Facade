@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -33,6 +33,7 @@ sap.ui.define(["sap/m/library", "sap/ui/core/InvisibleText"],
 		SplitButtonRenderer.render = function(oRm, oButton) {
 			var sWidth = oButton.getWidth(),
 				sType = oButton.getType(),
+				bEnabled = oButton.getEnabled(),
 				sTitleAttribute = oButton.getTitleAttributeValue();
 
 			//write root DOM element
@@ -54,7 +55,7 @@ sap.ui.define(["sap/m/library", "sap/ui/core/InvisibleText"],
 			oRm.writeClasses();
 
 			this.writeAriaAttributes(oRm, oButton);
-			oRm.writeAttribute("tabindex", "0");
+			oRm.writeAttribute("tabindex", bEnabled ? "0" : "-1");
 
 			// add tooltip if available
 			if (sTitleAttribute) {
@@ -71,6 +72,11 @@ sap.ui.define(["sap/m/library", "sap/ui/core/InvisibleText"],
 
 			oRm.write("<div");
 			oRm.addClass("sapMSBInner");
+
+			if (!bEnabled) {
+				oRm.addClass("sapMSBInnerDisabled");
+			}
+
 			oRm.writeClasses();
 			oRm.write(">");
 
@@ -96,13 +102,7 @@ sap.ui.define(["sap/m/library", "sap/ui/core/InvisibleText"],
 
 		SplitButtonRenderer.writeAriaLabelledBy = function(oButton, mAccProperties) {
 			var sAriaLabelledByValue = "",
-				sTitleAttribute = oButton.getTitleAttributeValue(),
 				oButtonTypeAriaLabelId = oButton.getButtonTypeAriaLabelId();
-
-			if (sTitleAttribute) {
-				sAriaLabelledByValue += oButton.getTooltipInfoLabel(sTitleAttribute).getId();
-				sAriaLabelledByValue += " ";
-			}
 
 			if (oButton.getText()) {
 				sAriaLabelledByValue += oButton._getTextButton().getId() + "-content";

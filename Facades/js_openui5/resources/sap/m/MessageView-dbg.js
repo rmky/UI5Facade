@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -109,7 +109,7 @@ sap.ui.define([
 	 * It also exposes an event {@link sap.m.MessageView#activeTitlePress}, which can be used for navigation from a message to the source of the issue.
 	 * <br><br>
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @extends sap.ui.core.Control
 	 * @constructor
@@ -323,6 +323,7 @@ sap.ui.define([
 	 */
 	MessageView.prototype._afterNavigate = function () {
 		setTimeout(this["_restoreFocus"].bind(this), 0);
+		setTimeout(this["_restoreItemsType"].bind(this), 0);
 	};
 
 	/**
@@ -335,6 +336,52 @@ sap.ui.define([
 			this._oLists[this._sCurrentList || 'all'].focus();
 		} else if (this._oBackButton){
 			this._oBackButton.focus();
+		}
+	};
+
+	/**
+	 * Restores the items type after navigation
+	 *
+	 * @private
+	 */
+	MessageView.prototype._restoreItemsType = function () {
+		if (this._isListPage() && this.getItems().length) {
+			var that = this;
+			this._oLists[this._sCurrentList || 'all'].getItems().forEach(function (oListItem) {
+				that._setItemType(oListItem);
+			});
+		}
+	};
+
+	/**
+	 * Sets the item type to navigation if the text is too long
+	 *
+	 * @param {sap.m.MessageListItem} oListItem The list item
+	 * @private
+	 */
+	MessageView.prototype._setItemType = function (oListItem) {
+		var sSelector,
+			bActiveTitle = oListItem.getActiveTitle();
+
+		if (!oListItem.getTitle() || !oListItem.getDescription()) {
+			if (bActiveTitle) {
+				sSelector = ".sapMSLITitleOnly a";
+			} else {
+				sSelector = ".sapMSLITitleOnly";
+			}
+		} else if (bActiveTitle) {
+			sSelector = ".sapMSLITitle a";
+		} else {
+			sSelector = ".sapMSLITitle";
+		}
+
+		var oItemDomRef = oListItem.getDomRef().querySelector(sSelector);
+
+		if (oItemDomRef.offsetWidth < oItemDomRef.scrollWidth) {
+			oListItem.setType(ListType.Navigation);
+			if (this.getItems().length === 1) {
+				this._fnHandleForwardNavigation(oListItem, "show");
+			}
 		}
 	};
 
@@ -373,9 +420,7 @@ sap.ui.define([
 		}
 
 		// Bind automatically to the MessageModel if no items are bound
-		if (!this.getBindingInfo("items") && !aItems.length) {
-			this._makeAutomaticBinding();
-		}
+		this._makeAutomaticBinding();
 	};
 
 	/**
@@ -447,11 +492,25 @@ sap.ui.define([
 	};
 
 	/**
+	 * If there's no items binding, attach the MessageView to the sap.ui.getCore().getMessageManager().getMessageModel()
+	 *
+	 * @sap-restricted sap.m.MessagePopover
+	 * @private
+	 */
+	MessageView.prototype._makeAutomaticBinding = function () {
+		var aItems = this.getItems();
+
+		if (!this.getBindingInfo("items") && !aItems.length) {
+			this._bindToMessageModel();
+		}
+	};
+
+	/**
 	 * Makes automatic binding to the Message Model with default template
 	 *
 	 * @private
 	 */
-	MessageView.prototype._makeAutomaticBinding = function () {
+	MessageView.prototype._bindToMessageModel = function () {
 		var that = this;
 
 		this.setModel(sap.ui.getCore().getMessageManager().getMessageModel(), "message");
@@ -737,13 +796,7 @@ sap.ui.define([
 		if (listItemType !== ListType.Navigation) {
 			oListItem.addEventDelegate({
 				onAfterRendering: function () {
-					var oItemDomRef = oListItem.getDomRef().querySelector(".sapMSLITitleDiv > div");
-					if (oItemDomRef.offsetWidth < oItemDomRef.scrollWidth) {
-						oListItem.setType(ListType.Navigation);
-						if (this.getItems().length === 1) {
-							this._fnHandleForwardNavigation(oListItem, "show");
-						}
-					}
+					that._setItemType(oListItem);
 				}
 			}, this);
 		}

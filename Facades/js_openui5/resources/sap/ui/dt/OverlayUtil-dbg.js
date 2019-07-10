@@ -1,13 +1,13 @@
 /*
- * ! UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * ! OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides object sap.ui.dt.OverlayUtil.
 sap.ui.define([
-	'sap/ui/dt/OverlayRegistry',
-	'sap/ui/dt/ElementUtil'
+	"sap/ui/dt/OverlayRegistry",
+	"sap/ui/dt/ElementUtil"
 ],
 function(
 	OverlayRegistry,
@@ -20,7 +20,7 @@ function(
 	 *
 	 * @class Utility functionality to work with overlays
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
 	 * @static
 	 * @since 1.30
@@ -52,7 +52,7 @@ function(
 	 */
 	OverlayUtil.getParentInformation = function(oElementOverlay) {
 		var oParentOverlay = oElementOverlay.getParentElementOverlay();
-		if (oParentOverlay){
+		if (oParentOverlay) {
 			//calculate index in direct (maybe in hidden tree) parent
 			var oParent = oParentOverlay.getElement();
 			var sParentAggregationName = oElementOverlay.getParentAggregationOverlay().getAggregationName();
@@ -65,14 +65,13 @@ function(
 				aggregation : sParentAggregationName,
 				index: iIndex
 			};
-		} else {
-			return {
-				parent: null,
-				aggregation: "",
-				index: -1
-			};
 		}
 
+		return {
+			parent: null,
+			aggregation: "",
+			index: -1
+		};
 	};
 
 	/**
@@ -405,10 +404,10 @@ function(
 		var oParentOverlay = oOverlay.getParentElementOverlay();
 		var aRelevantOverlays = [];
 
-		if (oParentOverlay){
-			if (oParentOverlay !== oRelevantContainerOverlay){
+		if (oParentOverlay) {
+			if (oParentOverlay !== oRelevantContainerOverlay) {
 				var aParents = OverlayUtil.findAllSiblingOverlaysInContainer(oParentOverlay, oRelevantContainerOverlay);
-				aRelevantOverlays = aParents.map(function(oParentOverlay){
+				aRelevantOverlays = aParents.map(function(oParentOverlay) {
 					var oAggregationOverlay = oParentOverlay.getAggregationOverlay(oOverlay.getParentAggregationOverlay().getAggregationName());
 					return oAggregationOverlay ? oAggregationOverlay.getChildren() : [];
 				}).reduce(function(aFlattenedArray, oCurrentValue) {
@@ -488,9 +487,9 @@ function(
 			return [];
 		}
 
-		if (oParent !== oRelevantContainerOverlay){
+		if (oParent !== oRelevantContainerOverlay) {
 			var mParents = OverlayUtil._findAllSiblingsAndParents(oParent, oRelevantContainerOverlay, iLevel + 1);
-			var aOverlays = mParents[iLevel + 1].map(function(oParent){
+			var aOverlays = mParents[iLevel + 1].map(function(oParent) {
 				var oAggregationOverlay = oParent.getAggregationOverlay(oOverlay.getParentAggregationOverlay().getAggregationName());
 				return oAggregationOverlay ? oAggregationOverlay.getChildren() : [];
 			}).reduce(function(a, b) {
@@ -515,7 +514,7 @@ function(
 	 * @private
 	 */
 	OverlayUtil._findAllChildrenInContainer = function(oElementOverlay, oRelevantContainer, _aRelevantOverlays) {
-		_aRelevantOverlays = _aRelevantOverlays ? _aRelevantOverlays : [];
+		_aRelevantOverlays = _aRelevantOverlays || [];
 		if (oElementOverlay.getChildren().length > 0) {
 			oElementOverlay.getChildren().forEach(function(oAggregationOverlay) {
 				oAggregationOverlay.getChildren().forEach(function(oChildElementOverlay) {
@@ -542,27 +541,6 @@ function(
 		}).filter(function(oOverlay, iPosition, aAggregationOverlays) {
 			return aAggregationOverlays.indexOf(oOverlay) === iPosition;
 		});
-	};
-
-	/**
-	 * Checks if an Overlay is part of an aggregation binding
-	 * The check is done recursively
-	 * @param  {sap.ui.dt.ElementOverlay} oElementOverlay Overlay being checked
-	 * @param  {string}  sAggregationName The name of the aggregation being checked
-	 * @return {Boolean}                  Returns true if Overlay is in aggregation binding
-	 */
-	OverlayUtil.isInAggregationBinding = function(oElementOverlay, sAggregationName) {
-		if (sAggregationName && oElementOverlay.getElement().getBinding(sAggregationName)) {
-			return true;
-		}
-		return oElementOverlay.isRoot()
-			? false
-			: (
-				this.isInAggregationBinding(
-					oElementOverlay.getParentElementOverlay(),
-					oElementOverlay.getElement().sParentAggregationName
-				)
-			);
 	};
 
 	/**
@@ -621,11 +599,11 @@ function(
 		}
 		return oElementOverlay.isRoot()
 			? {
-					elementId: undefined,
-					aggregation: undefined,
-					templateId: undefined,
-					stack: aStack
-				}
+				elementId: undefined,
+				aggregation: undefined,
+				templateId: undefined,
+				stack: aStack
+			}
 			: (
 				this._evaluateBinding(
 					oElementOverlay.getParentElementOverlay(),

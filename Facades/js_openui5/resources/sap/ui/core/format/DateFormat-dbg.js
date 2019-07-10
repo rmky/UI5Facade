@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -73,7 +73,7 @@ sap.ui.define([
 		},
 		aRelativeScales: ["year", "month", "week", "day"],
 		aRelativeParseScales: ["year", "quarter", "month", "week", "day", "hour", "minute", "second"],
-		aIntervalCompareFields: ["FullYear", "Quarter", "Month", "Week" ,"Date"]
+		aIntervalCompareFields: ["Era", "FullYear", "Quarter", "Month", "Week" ,"Date"]
 	};
 
 	DateFormat.oDateTimeInfo = {
@@ -103,7 +103,7 @@ sap.ui.define([
 		},
 		aRelativeScales: ["year", "month", "week", "day", "hour", "minute", "second"],
 		aRelativeParseScales: ["year", "quarter", "month", "week", "day", "hour", "minute", "second"],
-		aIntervalCompareFields: ["FullYear", "Quarter", "Month", "Week", "Date", "DayPeriod", "Hours", "Minutes", "Seconds"]
+		aIntervalCompareFields: ["Era", "FullYear", "Quarter", "Month", "Week", "Date", "DayPeriod", "Hours", "Minutes", "Seconds"]
 	};
 
 	DateFormat.oTimeInfo = {
@@ -154,6 +154,7 @@ sap.ui.define([
 	 * @param {string} [oFormatOptions.relativeStyle="wide"] @since 1.32.10, 1.34.4 the style of the relative format. The valid values are "wide", "short", "narrow"
 	 * @param {boolean} [oFormatOptions.interval=false] @since 1.48.0 if true, the [format]{@link sap.ui.core.format.DateFormat#format} method expects an array with two dates as the first argument and formats them as interval. Further interval "Jan 10, 2008 - Jan 12, 2008" will be formatted as "Jan 10-12, 2008" if the 'format' option is set with necessary symbols.
 	 *   Otherwise the two given dates are formatted separately and concatenated with local dependent pattern.
+	 * @param {boolean} [oFormatOptions.singleIntervalValue=false] Only relevant if oFormatOptions.interval is set to 'true'. This allows to pass an array with only one date object to the [format]{@link sap.ui.core.format.DateFormat#format} method.
 	 * @param {boolean} [oFormatOptions.UTC] if true, the date is formatted and parsed as UTC instead of the local timezone
 	 * @param {sap.ui.core.CalendarType} [oFormatOptions.calendarType] The calender type which is used to format and parse the date. This value is by default either set in configuration or calculated based on current locale.
 	 * @param {sap.ui.core.Locale} [oLocale] Locale to ask for locale specific texts/settings
@@ -181,6 +182,7 @@ sap.ui.define([
 	 * @param {string} [oFormatOptions.relativeStyle="wide"] @since 1.32.10, 1.34.4 the style of the relative format. The valid values are "wide", "short", "narrow"
 	 * @param {boolean} [oFormatOptions.interval=false] @since 1.48.0 if true, the [format]{@link sap.ui.core.format.DateFormat#format} method expects an array with two dates as the first argument and formats them as interval. Further interval "Jan 10, 2008 - Jan 12, 2008" will be formatted as "Jan 10-12, 2008" if the 'format' option is set with necessary symbols.
 	 *   Otherwise the two given dates are formatted separately and concatenated with local dependent pattern.
+	 * @param {boolean} [oFormatOptions.singleIntervalValue=false] Only relevant if oFormatOptions.interval is set to 'true'. This allows to pass an array with only one date object to the [format]{@link sap.ui.core.format.DateFormat#format} method.
 	 * @param {boolean} [oFormatOptions.UTC] if true, the date is formatted and parsed as UTC instead of the local timezone
 	 * @param {sap.ui.core.CalendarType} [oFormatOptions.calendarType] The calender type which is used to format and parse the date. This value is by default either set in configuration or calculated based on current locale.
 	 * @param {sap.ui.core.Locale} [oLocale] Locale to ask for locale specific texts/settings
@@ -208,6 +210,7 @@ sap.ui.define([
 	 * @param {string} [oFormatOptions.relativeStyle="wide"] @since 1.32.10, 1.34.4 the style of the relative format. The valid values are "wide", "short", "narrow"
 	 * @param {boolean} [oFormatOptions.interval=false] @since 1.48.0 if true, the [format]{@link sap.ui.core.format.DateFormat#format} method expects an array with two dates as the first argument and formats them as interval. Further interval "Jan 10, 2008 - Jan 12, 2008" will be formatted as "Jan 10-12, 2008" if the 'format' option is set with necessary symbols.
 	 *   Otherwise the two given dates are formatted separately and concatenated with local dependent pattern.
+	 * @param {boolean} [oFormatOptions.singleIntervalValue=false] Only relevant if oFormatOptions.interval is set to 'true'. This allows to pass an array with only one date object to the [format]{@link sap.ui.core.format.DateFormat#format} method.
 	 * @param {boolean} [oFormatOptions.UTC] if true, the time is formatted and parsed as UTC instead of the local timezone
 	 * @param {sap.ui.core.CalendarType} [oFormatOptions.calendarType] The calender type which is used to format and parse the date. This value is by default either set in configuration or calculated based on current locale.
 	 * @param {sap.ui.core.Locale} [oLocale] Locale to ask for locale specific texts/settings
@@ -525,6 +528,7 @@ sap.ui.define([
 				var bValid = true;
 				var iValueIndex = 0;
 				var iPatternIndex = 0;
+				var rDelimiter = /[\u002d\u007E\u2010\u2011\u2012\u2013\u2014\ufe58\ufe63\uff0d\uFF5E]/;
 
 				// Compare the letters in oPart.value (the pattern) and sValue (the given string to parse)
 				// one by one.
@@ -533,18 +537,22 @@ sap.ui.define([
 				for (; iPatternIndex < oPart.value.length; iPatternIndex++) {
 					sChar = oPart.value.charAt(iPatternIndex);
 
-					if (sChar !== " ") {
-						// if it's not a space, there must be an exact match
-						if (sValue.charAt(iValueIndex) !== sChar) {
-							bValid = false;
-						}
-
-						iValueIndex++;
-					} else {
+					if (sChar === " ") {
 						// allows to have multiple spaces
 						while (sValue.charAt(iValueIndex) === " ") {
 							iValueIndex++;
 						}
+					} else if (rDelimiter.test(sChar)) {
+						if (!rDelimiter.test(sValue.charAt(iValueIndex))) {
+								bValid = false;
+						}
+						iValueIndex++;
+					} else {
+						if (sValue.charAt(iValueIndex) !== sChar) {
+							// if it's not a space, there must be an exact match
+							bValid = false;
+						}
+						iValueIndex++;
 					}
 
 					if (!bValid) {
@@ -1082,8 +1090,8 @@ sap.ui.define([
 
 				if (bVariant) {
 					sValue = aMatch[0].replace(/\./g, "").toLowerCase() + sValue.substring(aMatch[0].length);
-					sAM = sAM.toLowerCase();
-					sPM = sPM.toLowerCase();
+					sAM = sAM.replace(/\./g, "").toLowerCase();
+					sPM = sPM.replace(/\./g, "").toLowerCase();
 				}
 				if (sValue.indexOf(sAM) === 0) {
 					bPM = false;
@@ -1425,6 +1433,7 @@ sap.ui.define([
 		}
 
 		sResult = aBuffer.join("");
+
 		if (sap.ui.getCore().getConfiguration().getOriginInfo()) {
 			sResult = new String(sResult);
 			sResult.originInfo = {
@@ -1447,6 +1456,9 @@ sap.ui.define([
 	 * @public
 	 */
 	DateFormat.prototype.format = function(vJSDate, bUTC) {
+		var sCalendarType = this.oFormatOptions.calendarType,
+			sResult;
+
 		if (bUTC === undefined) {
 			bUTC = this.oFormatOptions.UTC;
 		}
@@ -1462,16 +1474,29 @@ sap.ui.define([
 				return "";
 			}
 
-			var bValid = vJSDate.every(function(oJSDate) {
-				return oJSDate && !isNaN(oJSDate.getTime());
-			});
+			if (this.oFormatOptions.singleIntervalValue) {
+				if (vJSDate[0] === null) {
+					Log.error("First date instance which is passed to the interval DateFormat shouldn't be null.");
+					return "";
+				}
 
-			if (!bValid) {
-				Log.error("At least one date instance which is passed to the interval DateFormat isn't valid.");
-				return "";
+				if (vJSDate[1] === null) {
+					sResult = this._format(vJSDate[0], bUTC);
+				}
 			}
 
-			return this._formatInterval(vJSDate, bUTC);
+			if (sResult === undefined) {
+				var bValid = vJSDate.every(function(oJSDate) {
+					return oJSDate && !isNaN(oJSDate.getTime());
+				});
+
+				if (!bValid) {
+					Log.error("At least one date instance which is passed to the interval DateFormat isn't valid.");
+					return "";
+				}
+
+				sResult = this._formatInterval(vJSDate, bUTC);
+			}
 		} else {
 			if (!vJSDate || isNaN(vJSDate.getTime())) {
 				Log.error("The given date instance isn't valid.");
@@ -1483,8 +1508,15 @@ sap.ui.define([
 				return "";
 			}
 
-			return this._format(vJSDate, bUTC);
+			sResult = this._format(vJSDate, bUTC);
 		}
+
+		// Support Japanese Gannen instead of Ichinen for first year of the era
+		if (sCalendarType == CalendarType.Japanese && this.oLocale.getLanguage() === "ja") {
+			sResult = sResult.replace(/(^|[^\d])1年/g, "$1元年");
+		}
+
+		return sResult;
 	};
 
 	DateFormat.prototype._formatInterval = function(aJSDates, bUTC) {
@@ -1496,6 +1528,7 @@ sap.ui.define([
 		var sSymbol;
 		var aBuffer = [];
 		var sPattern;
+		var aFormatArray = [];
 
 		var oDiffField = this._getGreatestDiffField([oFromDate, oToDate], bUTC);
 
@@ -1511,11 +1544,11 @@ sap.ui.define([
 			sPattern = this.oLocaleData.getCombinedIntervalPattern(this.oFormatOptions.pattern, sCalendarType);
 		}
 
-		this.aFormatArray = this.parseCldrDatePattern(sPattern);
+		aFormatArray = this.parseCldrDatePattern(sPattern);
 
 		oDate = oFromDate;
-		for (var i = 0; i < this.aFormatArray.length; i++) {
-			oPart = this.aFormatArray[i];
+		for (var i = 0; i < aFormatArray.length; i++) {
+			oPart = aFormatArray[i];
 			sSymbol = oPart.symbol || "";
 
 			if (oPart.repeat) {
@@ -1529,6 +1562,7 @@ sap.ui.define([
 	};
 
 	var mFieldToGroup = {
+		Era: "Era",
 		FullYear: "Year",
 		Quarter: "Quarter",
 		Month: "Month",
@@ -1781,6 +1815,15 @@ sap.ui.define([
 		return oMergedObject;
 	}
 
+	// Checks if the given start date is before the end date.
+	function isValidDateRange(oStartDate, oEndDate) {
+		if (oStartDate.getTime() > oEndDate.getTime()) {
+			return false;
+		}
+
+		return true;
+	}
+
 	/**
 	 * Parse a string which is formatted according to the given format options.
 	 *
@@ -1802,6 +1845,11 @@ sap.ui.define([
 
 		if (bStrict === undefined) {
 			bStrict = this.oFormatOptions.strictParsing;
+		}
+
+		// Support Japanese Gannen instead of Ichinen for first year of the era
+		if (sCalendarType == CalendarType.Japanese && this.oLocale.getLanguage() === "ja") {
+			sValue = sValue.replace(/元年/g, "1年");
 		}
 
 		if (!this.oFormatOptions.interval) {
@@ -1835,6 +1883,20 @@ sap.ui.define([
 				oJSDate2 = fnCreateDate(oDateValue2, sCalendarType, bUTC, bStrict);
 
 				if (oJSDate1 && oJSDate2) {
+
+					if (this.oFormatOptions.singleIntervalValue
+						&& oJSDate1.getTime() === oJSDate2.getTime()) {
+
+						return [oJSDate1, null];
+					}
+
+					var bValid = isValidDateRange(oJSDate1, oJSDate2);
+
+					if (bStrict && !bValid) {
+						Log.error("StrictParsing: Invalid date range. The given end date is before the start date.");
+						return [null, null];
+					}
+
 					return [oJSDate1, oJSDate2];
 				}
 			}

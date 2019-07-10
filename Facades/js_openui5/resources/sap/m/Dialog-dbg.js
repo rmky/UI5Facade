@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,6 +10,7 @@ sap.ui.define([
 	'./InstanceManager',
 	'./AssociativeOverflowToolbar',
 	'./ToolbarSpacer',
+	'./Title',
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
@@ -37,6 +38,7 @@ function(
 	InstanceManager,
 	AssociativeOverflowToolbar,
 	ToolbarSpacer,
+	Title,
 	library,
 	Control,
 	IconPool,
@@ -63,6 +65,9 @@ function(
 		// shortcut for sap.m.DialogType
 		var DialogType = library.DialogType;
 
+		// shortcut for sap.m.DialogType
+		var DialogRoleType = library.DialogRoleType;
+
 		// shortcut for sap.ui.core.ValueState
 		var ValueState = coreLibrary.ValueState;
 
@@ -74,6 +79,9 @@ function(
 		// because of focusing and transition relate issues especially in IE,
 		// where 200ms transition sometimes seems to last a little longer
 		var iAnimationDuration = bUseAnimations ? 300 : 10;
+
+		// HTML container scrollbar width
+		var iScrollbarWidth = 17;
 
 		/**
 		* Constructor for a new Dialog.
@@ -127,7 +135,7 @@ function(
 		*
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.61.2
+		* @version 1.67.1
 		*
 		* @constructor
 		* @public
@@ -227,7 +235,14 @@ function(
 					 * The function allows you to define custom behavior which will be executed when the Escape key is pressed. By default, when the Escape key is pressed, the Dialog is immediately closed.
 					 * @since 1.44
 					 */
-					escapeHandler : {type: "any", group: "Behavior", defaultValue: null}
+					escapeHandler : {type: "any", group: "Behavior", defaultValue: null},
+
+					/**
+					 * Specifies the ARIA role of the Dialog. If the state of the control is "Error" or "Warning" the role will be "AlertDialog" regardless of what is set.
+					 * @since 1.65
+					 * @private
+					 */
+					role: {type: "sap.m.DialogRoleType", group: "Data", defaultValue: DialogRoleType.Dialog, visibility: "hidden"}
 				},
 				defaultAggregation: "content",
 				aggregations: {
@@ -256,7 +271,7 @@ function(
 					beginButton: {type: "sap.m.Button", multiple: false},
 
 					/**
-					 * The button which is rendered to the right side (left side in RTL mode) of the <code>beginButton</code> in the footer area inside the Dialog. As of version 1.21.1, there's a new aggregation <code>buttons<code> created with which more than 2 buttons can be added to the footer area of Dialog. If the new <code>buttons</code> aggregation is set, any change made to this aggregation has no effect anymore. When running on a phone, this <code>button</code> (and the <code>beginButton</code> together when set) is (are) rendered at the center of the footer area. When running on other platforms, this <code>button</code> (and the <code>beginButton</code> together when set) is (are) rendered at the right side (left side in RTL mode) of the footer area.
+					 * The button which is rendered to the right side (left side in RTL mode) of the <code>beginButton</code> in the footer area inside the Dialog. As of version 1.21.1, there's a new aggregation <code>buttons</code> created with which more than 2 buttons can be added to the footer area of Dialog. If the new <code>buttons</code> aggregation is set, any change made to this aggregation has no effect anymore. When running on a phone, this <code>button</code> (and the <code>beginButton</code> together when set) is (are) rendered at the center of the footer area. When running on other platforms, this <code>button</code> (and the <code>beginButton</code> together when set) is (are) rendered at the right side (left side in RTL mode) of the footer area.
 					 * @since 1.15.1
 					 */
 					endButton: {type: "sap.m.Button", multiple: false},
@@ -394,7 +409,7 @@ function(
 			this._bRTL = sap.ui.getCore().getConfiguration().getRTL();
 
 			// used to judge if enableScrolling needs to be disabled
-			this._scrollContentList = ["NavContainer", "Page", "ScrollContainer", "SplitContainer", "MultiInput"];
+			this._scrollContentList = ["sap.m.NavContainer", "sap.m.Page", "sap.m.ScrollContainer", "sap.m.SplitContainer", "sap.m.MultiInput", "sap.m.SimpleFixFlex"];
 
 			this.oPopup = new Popup();
 			this.oPopup.setShadow(true);
@@ -505,10 +520,6 @@ function(
 			if (this.isOpen()) {
 				//restore the focus after rendering when dialog is already open
 				this._setInitialFocus();
-			}
-
-			if (this.getType() === DialogType.Message) {
-				this.$("footer").removeClass("sapContrast sapContrastPlus");
 			}
 		};
 
@@ -905,14 +916,14 @@ function(
 		Dialog.prototype._onResize = function () {
 			var $dialog = this.$(),
 				$dialogContent = this.$('cont'),
-				dialogClientWidth = $dialogContent[0].clientWidth,
 				dialogContentScrollTop,
 				sContentHeight = this.getContentHeight(),
 				sContentWidth = this.getContentWidth(),
 				iDialogHeight,
 				maxDialogWidth =  Math.floor(window.innerWidth * 0.9), //90% of the max screen size
 				BORDER_THICKNESS = 2, // solves Scrollbar issue in IE when Table is in Dialog// TODO remove after 1.62 version
-				oBrowser = Device.browser;
+				oBrowser = Device.browser,
+				iTotalChildrenHeight = 0;
 
 			//if height is set by manually resizing return;
 			if (this._oManuallySetSize) {
@@ -931,27 +942,35 @@ function(
 					height: 'auto'
 				});
 
-				//set the newly calculated size by getting it from the browser rendered layout - by the max-height
-				iDialogHeight = parseFloat($dialog.height()) + BORDER_THICKNESS;
-				$dialogContent.height(Math.round( iDialogHeight));
+				$dialog.children().each(function() {
+					iTotalChildrenHeight += jQuery(this).outerHeight(true);
+				});
+				if (this.getStretch() ||  iTotalChildrenHeight > $dialog.innerHeight()) {
+					//set the newly calculated size by getting it from the browser rendered layout - by the max-height
+					iDialogHeight = parseFloat($dialog.height()) + BORDER_THICKNESS;
+					$dialogContent.height(Math.round( iDialogHeight));
+				}
 
 				$dialogContent.scrollTop(dialogContentScrollTop);
 			}
 
-			// IE, EDGE and Firefox (when width is auto) have specific container behavior (e.g. div with 500px width is about 17px smaller when it has vertical scrollbar
-			if ((oBrowser.internet_explorer || oBrowser.edge || oBrowser.firefox)) {
+			// Browsers except chrome do not increase the width of the container to include scrollbar (when width is auto). So we need to compensate
+			if (Device.system.desktop && !oBrowser.chrome) {
 
-				var iVerticalScrollBarWidth = Math.ceil($dialogContent.outerWidth() - dialogClientWidth),
-					iCurrentWidthAndHeight = $dialogContent.width() + "x" + $dialogContent.height();
+				var bHasVerticalScrollbar = $dialogContent[0].clientHeight < $dialogContent[0].scrollHeight,
+					iCurrentWidthAndHeight = $dialogContent.width() + "x" + $dialogContent.height(),
+					bMinWidth = $dialog.css("min-width") !== $dialog.css("width");
 
-				if (iCurrentWidthAndHeight !== this._iLastWidthAndHeightWithScroll) { // apply the fix only if width or height did actually change
-					if (iVerticalScrollBarWidth > 0 &&					// - there is a vertical scroll
+				// Apply the fix only if width or height did actually change.
+				// And when the width is not equal to the min-width.
+				if (iCurrentWidthAndHeight !== this._iLastWidthAndHeightWithScroll && bMinWidth) {
+					if (bHasVerticalScrollbar &&						// - there is a vertical scroll
 						(!sContentWidth || sContentWidth == 'auto') &&	// - when the developer hasn't set it explicitly
 						!this.getStretch() && 							// - when the dialog is not stretched
 						$dialogContent.width() < maxDialogWidth) {		// - if the dialog can't grow anymore
 
 						$dialog.addClass("sapMDialogVerticalScrollIncluded");
-						$dialogContent.css({"padding-right" : iVerticalScrollBarWidth});
+						$dialogContent.css({"padding-right" : iScrollbarWidth});
 						this._iLastWidthAndHeightWithScroll = iCurrentWidthAndHeight;
 					} else {
 						$dialog.removeClass("sapMDialogVerticalScrollIncluded");
@@ -1015,18 +1034,14 @@ function(
 		 * @private
 		 */
 		Dialog.prototype._hasSingleScrollableContent = function () {
-			var aContent = this.getContent(), i;
+			var aContent = this.getContent();
 
-			while (aContent.length === 1 && aContent[0] instanceof sap.ui.core.mvc.View) {
+			while (aContent.length === 1 && aContent[0] instanceof Control && aContent[0].isA("sap.ui.core.mvc.View")) {
 				aContent = aContent[0].getContent();
 			}
 
-			if (aContent.length === 1) {
-				for (i = 0; i < this._scrollContentList.length; i++) {
-					if (aContent[0] instanceof library[this._scrollContentList[i]]) {
-						return true;
-					}
-				}
+			if (aContent.length === 1 && aContent[0] instanceof Control && aContent[0].isA(this._scrollContentList)) {
+				return true;
 			}
 
 			return false;
@@ -1282,7 +1297,7 @@ function(
 
 		/**
 		 * Returns the custom header instance when the <code>customHeader</code> aggregation is set. Otherwise, it returns the internal managed
-		 * header instance. This method can be called within composite controls which use <code>sap.m.Dialog<code> inside.
+		 * header instance. This method can be called within composite controls which use <code>sap.m.Dialog</code> inside.
 		 *
 		 * @protected
 		 */
@@ -1429,6 +1444,13 @@ function(
 		Dialog.prototype._getToolbar = function () {
 			if (!this._oToolbar) {
 				this._oToolbar = new AssociativeOverflowToolbar(this.getId() + "-footer").addStyleClass("sapMTBNoBorders");
+				this._oToolbar.addDelegate({
+					onAfterRendering: function () {
+						if (this.getType() === DialogType.Message) {
+							this.$("footer").removeClass("sapContrast sapContrastPlus");
+						}
+					}
+				}, false, this);
 
 				this.setAggregation("_toolbar", this._oToolbar);
 			}
@@ -1486,7 +1508,7 @@ function(
 		//The public setters and getters should not be documented via JSDoc because they will appear in the explored app
 
 		Dialog.prototype.setLeftButton = function (vButton) {
-			if (!(vButton instanceof sap.m.Button)) {
+			if (typeof vButton === "string") {
 				vButton = sap.ui.getCore().byId(vButton);
 			}
 
@@ -1497,7 +1519,7 @@ function(
 		};
 
 		Dialog.prototype.setRightButton = function (vButton) {
-			if (!(vButton instanceof sap.m.Button)) {
+			if (typeof vButton === "string") {
 				vButton = sap.ui.getCore().byId(vButton);
 			}
 
@@ -1515,6 +1537,28 @@ function(
 		Dialog.prototype.getRightButton = function () {
 			var oEndButton = this.getEndButton();
 			return oEndButton ? oEndButton.getId() : null;
+		};
+
+		Dialog.prototype.setBeginButton = function (oButton) {
+			var sTheme = Core.getConfiguration().getTheme();
+
+			if (oButton && oButton.isA("sap.m.Button") && sTheme.startsWith("sap_fiori_")) {
+				oButton.setType("Emphasized");
+				oButton.addStyleClass("sapMDialogBeginButton");
+			}
+
+			return this.setAggregation("beginButton", oButton);
+		};
+
+		Dialog.prototype.setEndButton = function (oButton) {
+			var sTheme = Core.getConfiguration().getTheme();
+
+			if (oButton && oButton.isA("sap.m.Button") && sTheme.startsWith("sap_fiori_")) {
+				oButton.setType("Transparent");
+				oButton.addStyleClass("sapMDialogEndButton");
+			}
+
+			return this.setAggregation("endButton", oButton);
 		};
 
 		//get buttons should return the buttons, beginButton and endButton aggregations
@@ -1565,7 +1609,7 @@ function(
 			if (this._headerTitle) {
 				this._headerTitle.setText(sTitle);
 			} else {
-				this._headerTitle = new sap.m.Title(this.getId() + "-title", {
+				this._headerTitle = new Title(this.getId() + "-title", {
 					text: sTitle,
 					level: "H2"
 				}).addStyleClass("sapMDialogTitle");

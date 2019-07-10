@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -39,7 +39,7 @@ sap.ui.define([
 
 		constructor : function(oModel, sPath, oContext, mParameters, oEvents){
 			ContextBinding.call(this, oModel, sPath, oContext, mParameters, oEvents);
-			this.bRefreshGroupId = undefined;
+			this.sRefreshGroupId = undefined;
 			this.bPendingRequest = false;
 			this.mParameters = jQuery.extend(true, {}, this.mParameters);
 			this.bCreatePreliminaryContext = this.mParameters.createPreliminaryContext || oModel.bPreliminaryContext;
@@ -112,14 +112,18 @@ sap.ui.define([
 				that.bPendingRequest = false;
 			}
 		}, bReloadNeeded);
-		if (oContext && this.bCreatePreliminaryContext) {
-			if (this.oElementContext !== oContext) {
+		if (oContext) {
+			if (this.bCreatePreliminaryContext && this.oElementContext !== oContext) {
 				oContext.setPreliminary(true);
 				this.oElementContext = oContext;
 				this.oModel.oMetadata.loaded().then(function() {
 					this._fireChange({ reason: ChangeReason.Context });
 				}.bind(this));
 			}
+		} else if (this.oContext) {
+			// if parent context exists, set to null to avoid propagation of wrong context
+			this.oElementContext = null;
+			this._fireChange({ reason: ChangeReason.Context });
 		}
 	};
 
@@ -137,6 +141,11 @@ sap.ui.define([
 			return;
 		}
 
+		if (this.oContext && this.oContext.isUpdated()) {
+			this.setContext(this.oContext);
+			return;
+		}
+
 		// If context is preliminary and usePreliminary is not set, exit here
 		if (bPreliminary && !this.bUsePreliminaryContext) {
 			return;
@@ -151,7 +160,8 @@ sap.ui.define([
 		}
 
 		oContext = this.oModel.createBindingContext(this.sPath, this.oContext, this._mParameters);
-		if (oContext && oContext !== this.oElementContext) {
+		//'null' is a valid value for navigation properties (e.g. if no entity is assigned). We also need to fire a change in this case
+		if (oContext !== undefined && oContext !== this.oElementContext) {
 			this.oElementContext = oContext;
 			this._fireChange({ reason: ChangeReason.Context });
 		}
@@ -170,9 +180,9 @@ sap.ui.define([
 			sGroupId = bForceUpdate;
 			bForceUpdate = false;
 		}
-		this.sRefreshGroup = sGroupId;
+		this.sRefreshGroupId = sGroupId;
 		this._refresh(bForceUpdate);
-		this.sRefreshGroup = undefined;
+		this.sRefreshGroupId = undefined;
 	};
 
 	/**
@@ -211,9 +221,9 @@ sap.ui.define([
 				this.fireDataRequested();
 				this.bPendingRequest = true;
 			}
-			if (this.sRefreshGroup) {
+			if (this.sRefreshGroupId) {
 				mParameters = jQuery.extend({},this.mParameters);
-				mParameters.groupId = this.sRefreshGroup;
+				mParameters.groupId = this.sRefreshGroupId;
 			}
 			var oContext = this.oModel.createBindingContext(this.sPath, this.oContext, mParameters, function(oContext) {
 				if (that.bCreatePreliminaryContext && oContext && that.oElementContext && that.oElementContext.isPreliminary()) {
@@ -324,13 +334,19 @@ sap.ui.define([
 					that.bPendingRequest = false;
 				}
 			}, bReloadNeeded);
-			if (oContext && this.bCreatePreliminaryContext) {
-				oContext.setPreliminary(true);
-				this.oElementContext = oContext;
-				sContextPath = this.oElementContext.sPath;
-				this.oModel._updateContext(this.oElementContext, sResolvedPath);
-				this._fireChange({ reason: ChangeReason.Context }, bForceUpdate);
-				this.oModel._updateContext(this.oElementContext, sContextPath);
+			if (oContext) {
+				if (this.bCreatePreliminaryContext) {
+					oContext.setPreliminary(true);
+					this.oElementContext = oContext;
+					sContextPath = this.oElementContext.sPath;
+					this.oModel._updateContext(this.oElementContext, sResolvedPath);
+					this._fireChange({ reason: ChangeReason.Context }, bForceUpdate);
+					this.oModel._updateContext(this.oElementContext, sContextPath);
+				}
+			} else if (this.oContext && this.oElementContext !== null) {
+				// if parent context exists, set to null to avoid propagation of wrong context
+				this.oElementContext = null;
+				this._fireChange({ reason: ChangeReason.Context });
 			}
 		}
 	};

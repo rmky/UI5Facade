@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,7 @@ sap.ui.define([
 	var oLogger = Log.getLogger("sap.ui.test.matchers.Properties");
 
 	/**
-	 * @class Properties - checks if a control's properties have the provided values - all properties have to match their values.
+	 * @class Checks if a control's properties have the provided values - all properties have to match their values.
 	 * @param {object} oProperties the object with the properties to be checked. Example:
 	 * <pre>
 	 * // Would filter for an enabled control with the text "Accept".

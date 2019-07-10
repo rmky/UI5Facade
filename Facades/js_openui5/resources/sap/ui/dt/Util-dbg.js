@@ -1,19 +1,23 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
-	'sap/ui/Device',
-	'sap/base/util/includes',
-	'sap/base/util/isPlainObject'
+	"sap/ui/Device",
+	"sap/ui/base/ManagedObject",
+	"sap/base/util/includes",
+	"sap/base/util/isPlainObject",
+	"sap/ui/dt/DesignTimeStatus"
 ], function(
 	jQuery,
 	Device,
+	ManagedObject,
 	includes,
-	isPlainObject
+	isPlainObject,
+	DesignTimeStatus
 ) {
 	"use strict";
 
@@ -24,7 +28,7 @@ sap.ui.define([
 	 * Utilities for sap.ui.dt library
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @private
 	 * @static
@@ -60,9 +64,8 @@ sap.ui.define([
 	Util.isForeignError = function (oError, sLibraryName) {
 		if (oError instanceof Error) {
 			return oError.name.indexOf(sLibraryName || S_LIBRARY_NAME) === -1;
-		} else {
-			throw Util.createError('Util#isForeignError', 'Wrong parameter specified');
 		}
+		throw Util.createError('Util#isForeignError', 'Wrong parameter specified');
 	};
 
 	/**
@@ -107,9 +110,8 @@ sap.ui.define([
 				sError += '\n' + vError.stack.replace(sError, '').trim();
 			}
 			return sError;
-		} else {
-			throw Util.createError('Util#errorToString', 'Wrong parameter specified');
 		}
+		throw Util.createError('Util#errorToString', 'Wrong parameter specified');
 	};
 
 	/**
@@ -136,6 +138,26 @@ sap.ui.define([
 		}
 
 		return oError;
+	};
+
+	/**
+	 * Gets object type which is useful for error reporting
+	 *
+	 * Usage examples:
+	 * Util.getObjectType("foo") -> 'string'
+	 * Util.getObjectType(new sap.ui.base.ManagedObject()) -> 'sap.ui.base.ManagedObject (id = "__object1")'
+	 *
+	 * @param {*} vObject - Object to get type of
+	 * @returns {string}
+	 */
+	Util.getObjectType = function (vObject) {
+		return (
+			(
+				vObject instanceof ManagedObject
+				&& Util.printf('{0} (id = "{1}")', vObject.getMetadata().getName(), vObject.getId())
+			) // e.g. -> 'sap.ui.base.ManagedObject (id = "__object1")'
+			|| typeof vObject // e.g. -> 'string'
+		);
 	};
 
 	/**
@@ -178,11 +200,11 @@ sap.ui.define([
 			var aArguments = Array.prototype.slice.call(arguments);
 			if (aArguments.length >= iArity) {
 				return fnOriginal.apply(this, aArguments);
-			} else {
-				return function () {
-					return fnResolver.apply(this, aArguments.concat(Array.prototype.slice.call(arguments)));
-				};
 			}
+
+			return function () {
+				return fnResolver.apply(this, aArguments.concat(Array.prototype.slice.call(arguments)));
+			};
 		};
 
 		return fnResolver;
@@ -228,7 +250,7 @@ sap.ui.define([
 	Util.castArray = function(vValue) {
 		var aResult = [];
 		if (vValue) {
-			if (!Array.isArray(vValue)){
+			if (!Array.isArray(vValue)) {
 				aResult.push(vValue);
 			} else {
 				aResult = vValue;
@@ -262,7 +284,7 @@ sap.ui.define([
 	 * Webkit can be safari or chrome mobile
 	 * @return {Boolean} Returns true if the device browser uses webkit
 	 */
-	Util.isWebkit = function(){
+	Util.isWebkit = function() {
 		return Device.browser.webkit && (Device.browser.safari || Device.browser.chrome && Device.browser.mobile);
 	};
 
@@ -315,6 +337,49 @@ sap.ui.define([
 			}
 			iTimerId = setTimeout(fn, iWait);
 		};
+	};
+
+	/**
+	 * Checks if the passed designTime instance's status is syncing.
+	 * Returns a promise resolving to the return value of the passed function, when the passed designTime instances's status changes to synced.
+	 *
+	 * @param {function} fnOriginal function for which value needs to be returned
+	 * @param {sap.ui.dt.DesignTime} oDtInstance designTime instance
+	 * @returns {Promise} Returns a Promise.resolve() to the passed function's return value or a Promise.reject() when designTime fails to sync
+	 */
+	Util.waitForSynced = function(oDtInstance, fnOriginal) {
+		return function () {
+			fnOriginal = fnOriginal || function () {};
+			var aArguments = arguments;
+			return new Promise(function (fnResolve, fnReject) {
+				if (oDtInstance.getStatus() === DesignTimeStatus.SYNCING) {
+					oDtInstance.attachEventOnce("synced", function () {
+						fnResolve(fnOriginal.apply(null, aArguments));
+					});
+					oDtInstance.attachEventOnce("syncFailed", fnReject);
+				} else {
+					fnResolve(fnOriginal.apply(null, aArguments));
+				}
+			});
+		};
+	};
+
+	/**
+	 * Returns the maximum value of array.
+	 *
+	 * @param {Array.<*>} aSource - Source array
+	 * @returns {*} - the maximum value
+	 */
+	Util.max = function (aSource) {
+		if (Array.isArray(aSource) && aSource.length > 0) {
+			var vResult = aSource[0];
+			for (var i = 1, l = aSource.length; i < l; i++) {
+				if (aSource[i] > vResult) {
+					vResult = aSource[i];
+				}
+			}
+			return vResult;
+		}
 	};
 
 	return Util;

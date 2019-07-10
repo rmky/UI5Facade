@@ -18,9 +18,9 @@
 				"sap/base/Log.js",
 				"sap/base/strings/formatMessage.js",
 				"sap/base/util/LoaderExtensions.js",
+				"sap/base/util/ObjectPath.js",
 				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Utils.js",
-				"sap/ui/fl/variants/util/VariantUtil.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -31,9 +31,9 @@
 				"sap/base/Log.js",
 				"sap/base/strings/formatMessage.js",
 				"sap/base/util/LoaderExtensions.js",
+				"sap/base/util/ObjectPath.js",
 				"sap/ui/fl/LrepConnector.js",
 				"sap/ui/fl/Utils.js",
-				"sap/ui/fl/variants/util/VariantUtil.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -63,6 +63,7 @@
 			"module": "sap/ui/fl/ChangePersistence.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/merge.js",
 				"sap/m/MessageBox.js",
 				"sap/ui/core/BusyIndicator.js",
@@ -84,6 +85,7 @@
 			"name": "ChangePersistence.js",
 			"module": "sap/ui/fl/ChangePersistence.js",
 			"required": [
+				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/merge.js",
 				"sap/m/MessageBox.js",
 				"sap/ui/core/BusyIndicator.js",
@@ -127,6 +129,7 @@
 			"module": "sap/ui/fl/ControlPersonalizationAPI.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/util/includes.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/Element.js",
@@ -142,6 +145,7 @@
 			"name": "ControlPersonalizationAPI.js",
 			"module": "sap/ui/fl/ControlPersonalizationAPI.js",
 			"required": [
+				"sap/base/util/includes.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/Element.js",
@@ -185,8 +189,6 @@
 				"sap/ui/fl/Cache.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/LrepConnector.js",
-				"sap/ui/fl/Utils.js",
-				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -197,8 +199,6 @@
 				"sap/ui/fl/Cache.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/LrepConnector.js",
-				"sap/ui/fl/Utils.js",
-				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
 		},
@@ -313,6 +313,7 @@
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/context/ContextManager.js",
+				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/fl/registry/Settings.js"
 			]
@@ -331,6 +332,7 @@
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/context/ContextManager.js",
+				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/fl/registry/Settings.js"
 			]
@@ -399,7 +401,6 @@
 			"module": "sap/ui/fl/Persistence.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/fl/Change.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/DefaultVariant.js",
 				"sap/ui/fl/StandardVariant.js",
@@ -410,7 +411,6 @@
 			"name": "Persistence.js",
 			"module": "sap/ui/fl/Persistence.js",
 			"required": [
-				"sap/ui/fl/Change.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/DefaultVariant.js",
 				"sap/ui/fl/StandardVariant.js",
@@ -557,7 +557,6 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/core/Component.js",
-				"sap/ui/fl/ChangePersistence.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/Utils.js"
@@ -568,7 +567,6 @@
 			"module": "sap/ui/fl/XmlPreprocessorImpl.js",
 			"required": [
 				"sap/ui/core/Component.js",
-				"sap/ui/fl/ChangePersistence.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/FlexControllerFactory.js",
 				"sap/ui/fl/Utils.js"
@@ -580,8 +578,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/base/util/LoaderExtensions.js",
-				"sap/ui/fl/Utils.js",
-				"sap/ui/fl/changeHandler/Base.js"
+				"sap/ui/fl/Utils.js"
 			]
 		},
 		{
@@ -589,8 +586,7 @@
 			"module": "sap/ui/fl/changeHandler/AddXML.js",
 			"required": [
 				"sap/base/util/LoaderExtensions.js",
-				"sap/ui/fl/Utils.js",
-				"sap/ui/fl/changeHandler/Base.js"
+				"sap/ui/fl/Utils.js"
 			]
 		},
 		{
@@ -641,7 +637,7 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/base/strings/capitalize.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/fl/registry/ChangeHandlerRegistration.js"
 			]
 		},
 		{
@@ -650,7 +646,7 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/base/strings/capitalize.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/fl/registry/ChangeHandlerRegistration.js"
 			]
 		},
 		{
@@ -688,16 +684,14 @@
 			"module": "sap/ui/fl/changeHandler/MoveControls.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/fl/Utils.js",
-				"sap/ui/fl/changeHandler/Base.js"
+				"sap/ui/fl/Utils.js"
 			]
 		},
 		{
 			"name": "changeHandler/MoveControls.js",
 			"module": "sap/ui/fl/changeHandler/MoveControls.js",
 			"required": [
-				"sap/ui/fl/Utils.js",
-				"sap/ui/fl/changeHandler/Base.js"
+				"sap/ui/fl/Utils.js"
 			]
 		},
 		{
@@ -705,16 +699,14 @@
 			"module": "sap/ui/fl/changeHandler/MoveElements.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/fl/Utils.js",
-				"sap/ui/fl/changeHandler/Base.js"
+				"sap/ui/fl/Utils.js"
 			]
 		},
 		{
 			"name": "changeHandler/MoveElements.js",
 			"module": "sap/ui/fl/changeHandler/MoveElements.js",
 			"required": [
-				"sap/ui/fl/Utils.js",
-				"sap/ui/fl/changeHandler/Base.js"
+				"sap/ui/fl/Utils.js"
 			]
 		},
 		{
@@ -722,16 +714,14 @@
 			"module": "sap/ui/fl/changeHandler/PropertyBindingChange.js",
 			"isDebug": true,
 			"required": [
-				"sap/base/Log.js",
-				"sap/ui/fl/Utils.js"
+				"sap/base/Log.js"
 			]
 		},
 		{
 			"name": "changeHandler/PropertyBindingChange.js",
 			"module": "sap/ui/fl/changeHandler/PropertyBindingChange.js",
 			"required": [
-				"sap/base/Log.js",
-				"sap/ui/fl/Utils.js"
+				"sap/base/Log.js"
 			]
 		},
 		{
@@ -819,8 +809,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/fl/Change.js",
-				"sap/ui/fl/LrepConnector.js",
-				"sap/ui/fl/Utils.js"
+				"sap/ui/fl/LrepConnector.js"
 			]
 		},
 		{
@@ -828,8 +817,7 @@
 			"module": "sap/ui/fl/codeExt/CodeExtManager.js",
 			"required": [
 				"sap/ui/fl/Change.js",
-				"sap/ui/fl/LrepConnector.js",
-				"sap/ui/fl/Utils.js"
+				"sap/ui/fl/LrepConnector.js"
 			]
 		},
 		{
@@ -958,12 +946,10 @@
 			"required": [
 				"sap/base/util/merge.js",
 				"sap/ui/fl/Change.js",
-				"sap/ui/fl/ChangePersistence.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/descriptorRelated/internal/Utils.js",
-				"sap/ui/fl/registry/Settings.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/fl/registry/Settings.js"
 			]
 		},
 		{
@@ -972,12 +958,10 @@
 			"required": [
 				"sap/base/util/merge.js",
 				"sap/ui/fl/Change.js",
-				"sap/ui/fl/ChangePersistence.js",
 				"sap/ui/fl/ChangePersistenceFactory.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/descriptorRelated/internal/Utils.js",
-				"sap/ui/fl/registry/Settings.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/fl/registry/Settings.js"
 			]
 		},
 		{
@@ -1034,11 +1018,102 @@
 			]
 		},
 		{
+			"name": "designtime/appVariant/AppVariantModifier-dbg.js",
+			"module": "sap/ui/fl/designtime/appVariant/AppVariantModifier.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/includes.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
+				"sap/ui/fl/designtime/appVariant/ModifierUtils.js"
+			]
+		},
+		{
+			"name": "designtime/appVariant/AppVariantModifier.js",
+			"module": "sap/ui/fl/designtime/appVariant/AppVariantModifier.js",
+			"required": [
+				"sap/base/util/includes.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
+				"sap/ui/fl/designtime/appVariant/ModifierUtils.js"
+			]
+		},
+		{
+			"name": "designtime/appVariant/AppVariantUtils-dbg.js",
+			"module": "sap/ui/fl/designtime/appVariant/AppVariantUtils.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/designtime/appVariant/AppVariantModifier.js",
+				"sap/ui/fl/designtime/appVariant/ChangeModifier.js",
+				"sap/ui/fl/designtime/appVariant/ModuleModifier.js"
+			]
+		},
+		{
+			"name": "designtime/appVariant/AppVariantUtils.js",
+			"module": "sap/ui/fl/designtime/appVariant/AppVariantUtils.js",
+			"required": [
+				"sap/ui/fl/designtime/appVariant/AppVariantModifier.js",
+				"sap/ui/fl/designtime/appVariant/ChangeModifier.js",
+				"sap/ui/fl/designtime/appVariant/ModuleModifier.js"
+			]
+		},
+		{
+			"name": "designtime/appVariant/ChangeModifier-dbg.js",
+			"module": "sap/ui/fl/designtime/appVariant/ChangeModifier.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/designtime/appVariant/ModifierUtils.js"
+			]
+		},
+		{
+			"name": "designtime/appVariant/ChangeModifier.js",
+			"module": "sap/ui/fl/designtime/appVariant/ChangeModifier.js",
+			"required": [
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/designtime/appVariant/ModifierUtils.js"
+			]
+		},
+		{
+			"name": "designtime/appVariant/ModifierUtils-dbg.js",
+			"module": "sap/ui/fl/designtime/appVariant/ModifierUtils.js",
+			"isDebug": true
+		},
+		{
+			"name": "designtime/appVariant/ModifierUtils.js",
+			"module": "sap/ui/fl/designtime/appVariant/ModifierUtils.js"
+		},
+		{
+			"name": "designtime/appVariant/ModuleModifier-dbg.js",
+			"module": "sap/ui/fl/designtime/appVariant/ModuleModifier.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/designtime/appVariant/ChangeModifier.js",
+				"sap/ui/fl/designtime/appVariant/ModifierUtils.js"
+			]
+		},
+		{
+			"name": "designtime/appVariant/ModuleModifier.js",
+			"module": "sap/ui/fl/designtime/appVariant/ModuleModifier.js",
+			"required": [
+				"sap/ui/fl/designtime/appVariant/ChangeModifier.js",
+				"sap/ui/fl/designtime/appVariant/ModifierUtils.js"
+			]
+		},
+		{
 			"name": "designtime/library-preload.designtime.js",
 			"module": "sap/ui/fl/designtime/library-preload.designtime.js",
 			"merged": true,
 			"designtime": true,
+			"required": [
+				"sap/base/util/includes.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"
+			],
 			"included": [
+				"sap/ui/fl/designtime/appVariant/AppVariantModifier.js",
+				"sap/ui/fl/designtime/appVariant/AppVariantUtils.js",
+				"sap/ui/fl/designtime/appVariant/ChangeModifier.js",
+				"sap/ui/fl/designtime/appVariant/ModifierUtils.js",
+				"sap/ui/fl/designtime/appVariant/ModuleModifier.js",
 				"sap/ui/fl/designtime/library.designtime.js",
 				"sap/ui/fl/designtime/variants/VariantManagement.designtime.js"
 			]
@@ -1067,12 +1142,18 @@
 		{
 			"name": "designtime/variants/VariantManagement.designtime-dbg.js",
 			"module": "sap/ui/fl/designtime/variants/VariantManagement.designtime.js",
-			"isDebug": true
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/Utils.js"
+			]
 		},
 		{
 			"name": "designtime/variants/VariantManagement.designtime.js",
 			"module": "sap/ui/fl/designtime/variants/VariantManagement.designtime.js",
-			"designtime": true
+			"designtime": true,
+			"required": [
+				"sap/ui/fl/Utils.js"
+			]
 		},
 		{
 			"name": "fieldExt/Access-dbg.js",
@@ -1080,6 +1161,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/base/security/encodeURLParameters.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/util/Storage.js"
 			]
@@ -1089,9 +1171,13 @@
 			"module": "sap/ui/fl/fieldExt/Access.js",
 			"required": [
 				"sap/base/security/encodeURLParameters.js",
+				"sap/ui/fl/Utils.js",
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/util/Storage.js"
 			]
+		},
+		{
+			"name": "initial/.keep"
 		},
 		{
 			"name": "library-dbg.js",
@@ -1114,8 +1200,11 @@
 				"sap/base/strings/capitalize.js",
 				"sap/base/strings/formatMessage.js",
 				"sap/base/util/LoaderExtensions.js",
+				"sap/base/util/ObjectPath.js",
 				"sap/base/util/UriParameters.js",
 				"sap/base/util/deepEqual.js",
+				"sap/base/util/includes.js",
+				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/merge.js",
 				"sap/base/util/uid.js",
 				"sap/m/App.js",
@@ -1163,6 +1252,7 @@
 				"sap/ui/Device.js",
 				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
@@ -1197,6 +1287,7 @@
 				"sap/ui/model/Filter.js",
 				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/PropertyBinding.js",
+				"sap/ui/model/base/ManagedObjectModel.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/support/library.js",
 				"sap/ui/thirdparty/URI.js",
@@ -1261,10 +1352,17 @@
 				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
 				"sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js",
 				"sap/ui/fl/descriptorRelated/internal/Utils.js",
+				"sap/ui/fl/designtime/appVariant/AppVariantModifier.js",
+				"sap/ui/fl/designtime/appVariant/AppVariantUtils.js",
+				"sap/ui/fl/designtime/appVariant/ChangeModifier.js",
+				"sap/ui/fl/designtime/appVariant/ModifierUtils.js",
+				"sap/ui/fl/designtime/appVariant/ModuleModifier.js",
 				"sap/ui/fl/designtime/library.designtime.js",
 				"sap/ui/fl/designtime/variants/VariantManagement.designtime.js",
 				"sap/ui/fl/fieldExt/Access.js",
 				"sap/ui/fl/library.support.js",
+				"sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
+				"sap/ui/fl/read/api/ControlVariantReadAPI.js",
 				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/fl/registry/ChangeRegistryItem.js",
@@ -1297,10 +1395,12 @@
 				"sap/ui/fl/transport/TransportDialog.js",
 				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/fl/transport/Transports.js",
+				"sap/ui/fl/util/ManagedObjectModel.js",
 				"sap/ui/fl/variants/VariantController.js",
 				"sap/ui/fl/variants/VariantManagement.js",
 				"sap/ui/fl/variants/VariantModel.js",
-				"sap/ui/fl/variants/util/VariantUtil.js"
+				"sap/ui/fl/variants/util/VariantUtil.js",
+				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"
 			]
 		},
 		{
@@ -1313,8 +1413,11 @@
 				"sap/base/strings/capitalize.js",
 				"sap/base/strings/formatMessage.js",
 				"sap/base/util/LoaderExtensions.js",
+				"sap/base/util/ObjectPath.js",
 				"sap/base/util/UriParameters.js",
 				"sap/base/util/deepEqual.js",
+				"sap/base/util/includes.js",
+				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/merge.js",
 				"sap/base/util/uid.js",
 				"sap/m/App.js",
@@ -1362,6 +1465,7 @@
 				"sap/ui/Device.js",
 				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
@@ -1396,6 +1500,7 @@
 				"sap/ui/model/Filter.js",
 				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/PropertyBinding.js",
+				"sap/ui/model/base/ManagedObjectModel.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/support/library.js",
 				"sap/ui/thirdparty/URI.js",
@@ -1460,10 +1565,17 @@
 				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
 				"sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js",
 				"sap/ui/fl/descriptorRelated/internal/Utils.js",
+				"sap/ui/fl/designtime/appVariant/AppVariantModifier.js",
+				"sap/ui/fl/designtime/appVariant/AppVariantUtils.js",
+				"sap/ui/fl/designtime/appVariant/ChangeModifier.js",
+				"sap/ui/fl/designtime/appVariant/ModifierUtils.js",
+				"sap/ui/fl/designtime/appVariant/ModuleModifier.js",
 				"sap/ui/fl/designtime/library.designtime.js",
 				"sap/ui/fl/designtime/variants/VariantManagement.designtime.js",
 				"sap/ui/fl/fieldExt/Access.js",
 				"sap/ui/fl/library.support.js",
+				"sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
+				"sap/ui/fl/read/api/ControlVariantReadAPI.js",
 				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/fl/registry/ChangeRegistryItem.js",
@@ -1496,10 +1608,12 @@
 				"sap/ui/fl/transport/TransportDialog.js",
 				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/fl/transport/Transports.js",
+				"sap/ui/fl/util/ManagedObjectModel.js",
 				"sap/ui/fl/variants/VariantController.js",
 				"sap/ui/fl/variants/VariantManagement.js",
 				"sap/ui/fl/variants/VariantModel.js",
-				"sap/ui/fl/variants/util/VariantUtil.js"
+				"sap/ui/fl/variants/util/VariantUtil.js",
+				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"
 			]
 		},
 		{
@@ -1516,8 +1630,11 @@
 				"sap/base/strings/capitalize.js",
 				"sap/base/strings/formatMessage.js",
 				"sap/base/util/LoaderExtensions.js",
+				"sap/base/util/ObjectPath.js",
 				"sap/base/util/UriParameters.js",
 				"sap/base/util/deepEqual.js",
+				"sap/base/util/includes.js",
+				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/merge.js",
 				"sap/base/util/uid.js",
 				"sap/m/Bar.js",
@@ -1552,6 +1669,7 @@
 				"sap/ui/Device.js",
 				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
@@ -1576,7 +1694,9 @@
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/model/Context.js",
 				"sap/ui/model/Filter.js",
+				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/PropertyBinding.js",
+				"sap/ui/model/base/ManagedObjectModel.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/hasher.js",
@@ -1640,6 +1760,8 @@
 				"sap/ui/fl/fieldExt/Access.js",
 				"sap/ui/fl/library.js",
 				"sap/ui/fl/manifest.json",
+				"sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
+				"sap/ui/fl/read/api/ControlVariantReadAPI.js",
 				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/fl/registry/ChangeRegistryItem.js",
@@ -1649,10 +1771,12 @@
 				"sap/ui/fl/transport/TransportDialog.js",
 				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/fl/transport/Transports.js",
+				"sap/ui/fl/util/ManagedObjectModel.js",
 				"sap/ui/fl/variants/VariantController.js",
 				"sap/ui/fl/variants/VariantManagement.js",
 				"sap/ui/fl/variants/VariantModel.js",
-				"sap/ui/fl/variants/util/VariantUtil.js"
+				"sap/ui/fl/variants/util/VariantUtil.js",
+				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"
 			]
 		},
 		{
@@ -1669,8 +1793,11 @@
 				"sap/base/strings/capitalize.js",
 				"sap/base/strings/formatMessage.js",
 				"sap/base/util/LoaderExtensions.js",
+				"sap/base/util/ObjectPath.js",
 				"sap/base/util/UriParameters.js",
 				"sap/base/util/deepEqual.js",
+				"sap/base/util/includes.js",
+				"sap/base/util/isEmptyObject.js",
 				"sap/base/util/merge.js",
 				"sap/base/util/uid.js",
 				"sap/m/Bar.js",
@@ -1706,6 +1833,7 @@
 				"sap/ui/Device.js",
 				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/ManagedObject.js",
+				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/Component.js",
@@ -1731,7 +1859,9 @@
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/model/Context.js",
 				"sap/ui/model/Filter.js",
+				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/PropertyBinding.js",
+				"sap/ui/model/base/ManagedObjectModel.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/thirdparty/URI.js",
 				"sap/ui/thirdparty/hasher.js",
@@ -1795,6 +1925,8 @@
 				"sap/ui/fl/fieldExt/Access.js",
 				"sap/ui/fl/library.js",
 				"sap/ui/fl/manifest.json",
+				"sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
+				"sap/ui/fl/read/api/ControlVariantReadAPI.js",
 				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/fl/registry/ChangeRegistryItem.js",
@@ -1804,10 +1936,12 @@
 				"sap/ui/fl/transport/TransportDialog.js",
 				"sap/ui/fl/transport/TransportSelection.js",
 				"sap/ui/fl/transport/Transports.js",
+				"sap/ui/fl/util/ManagedObjectModel.js",
 				"sap/ui/fl/variants/VariantController.js",
 				"sap/ui/fl/variants/VariantManagement.js",
 				"sap/ui/fl/variants/VariantModel.js",
-				"sap/ui/fl/variants/util/VariantUtil.js"
+				"sap/ui/fl/variants/util/VariantUtil.js",
+				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"
 			]
 		},
 		{
@@ -1819,6 +1953,7 @@
 				"sap/ui/core/Component.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/support/library.js"
 			],
 			"included": [
@@ -1854,6 +1989,7 @@
 				"sap/ui/core/Component.js",
 				"sap/ui/dt/DesignTime.js",
 				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/support/library.js"
 			]
 		},
@@ -2118,6 +2254,39 @@
 			"raw": "messagebundle.properties"
 		},
 		{
+			"name": "read/api/ControlPersonalizationReadAPI-dbg.js",
+			"module": "sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/ControlPersonalizationAPI.js"
+			]
+		},
+		{
+			"name": "read/api/ControlPersonalizationReadAPI.js",
+			"module": "sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
+			"required": [
+				"sap/ui/fl/ControlPersonalizationAPI.js"
+			]
+		},
+		{
+			"name": "read/api/ControlVariantReadAPI-dbg.js",
+			"module": "sap/ui/fl/read/api/ControlVariantReadAPI.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/ControlPersonalizationAPI.js"
+			]
+		},
+		{
+			"name": "read/api/ControlVariantReadAPI.js",
+			"module": "sap/ui/fl/read/api/ControlVariantReadAPI.js",
+			"required": [
+				"sap/ui/fl/ControlPersonalizationAPI.js"
+			]
+		},
+		{
+			"name": "read/internal/.keep"
+		},
+		{
 			"name": "registry/ChangeHandlerRegistration-dbg.js",
 			"module": "sap/ui/fl/registry/ChangeHandlerRegistration.js",
 			"isDebug": true,
@@ -2313,7 +2482,9 @@
 			"required": [
 				"sap/m/Button.js",
 				"sap/m/Dialog.js",
+				"sap/m/Input.js",
 				"sap/m/Text.js",
+				"sap/m/library.js",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/fl/support/apps/contentbrowser/lrepConnector/LRepConnector.js",
 				"sap/ui/fl/support/apps/contentbrowser/utils/DataUtils.js"
@@ -2325,7 +2496,9 @@
 			"required": [
 				"sap/m/Button.js",
 				"sap/m/Dialog.js",
+				"sap/m/Input.js",
 				"sap/m/Text.js",
+				"sap/m/library.js",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/fl/support/apps/contentbrowser/lrepConnector/LRepConnector.js",
 				"sap/ui/fl/support/apps/contentbrowser/utils/DataUtils.js"
@@ -2336,6 +2509,11 @@
 			"module": "sap/ui/fl/support/apps/contentbrowser/controller/ContentDetailsEdit.controller.js",
 			"isDebug": true,
 			"required": [
+				"sap/m/Button.js",
+				"sap/m/Dialog.js",
+				"sap/m/Input.js",
+				"sap/m/Text.js",
+				"sap/m/library.js",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/fl/support/apps/contentbrowser/lrepConnector/LRepConnector.js",
 				"sap/ui/fl/support/apps/contentbrowser/utils/DataUtils.js"
@@ -2345,6 +2523,11 @@
 			"name": "support/apps/contentbrowser/controller/ContentDetailsEdit.controller.js",
 			"module": "sap/ui/fl/support/apps/contentbrowser/controller/ContentDetailsEdit.controller.js",
 			"required": [
+				"sap/m/Button.js",
+				"sap/m/Dialog.js",
+				"sap/m/Input.js",
+				"sap/m/Text.js",
+				"sap/m/library.js",
 				"sap/ui/core/mvc/Controller.js",
 				"sap/ui/fl/support/apps/contentbrowser/lrepConnector/LRepConnector.js",
 				"sap/ui/fl/support/apps/contentbrowser/utils/DataUtils.js"
@@ -2621,10 +2804,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/core/mvc/Controller.js",
-				"sap/ui/fl/support/Flexibility.js",
-				"sap/ui/fl/support/apps/uiFlexibilityDiagnostics/helper/Extractor.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js"
+				"sap/ui/fl/support/apps/uiFlexibilityDiagnostics/helper/Extractor.js"
 			]
 		},
 		{
@@ -2632,10 +2812,7 @@
 			"module": "sap/ui/fl/support/diagnostics/Flexibility.controller.js",
 			"required": [
 				"sap/ui/core/mvc/Controller.js",
-				"sap/ui/fl/support/Flexibility.js",
-				"sap/ui/fl/support/apps/uiFlexibilityDiagnostics/helper/Extractor.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js"
+				"sap/ui/fl/support/apps/uiFlexibilityDiagnostics/helper/Extractor.js"
 			]
 		},
 		{
@@ -2710,11 +2887,9 @@
 				"sap/m/DialogRenderer.js",
 				"sap/m/Input.js",
 				"sap/m/InputListItem.js",
-				"sap/m/Label.js",
 				"sap/m/List.js",
 				"sap/m/MessageToast.js",
-				"sap/ui/core/ListItem.js",
-				"sap/ui/fl/transport/Transports.js"
+				"sap/ui/core/ListItem.js"
 			]
 		},
 		{
@@ -2731,11 +2906,9 @@
 				"sap/m/DialogRenderer.js",
 				"sap/m/Input.js",
 				"sap/m/InputListItem.js",
-				"sap/m/Label.js",
 				"sap/m/List.js",
 				"sap/m/MessageToast.js",
-				"sap/ui/core/ListItem.js",
-				"sap/ui/fl/transport/Transports.js"
+				"sap/ui/core/ListItem.js"
 			]
 		},
 		{
@@ -2777,14 +2950,27 @@
 			]
 		},
 		{
+			"name": "util/ManagedObjectModel-dbg.js",
+			"module": "sap/ui/fl/util/ManagedObjectModel.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/Element.js",
+				"sap/ui/model/base/ManagedObjectModel.js"
+			]
+		},
+		{
+			"name": "util/ManagedObjectModel.js",
+			"module": "sap/ui/fl/util/ManagedObjectModel.js",
+			"required": [
+				"sap/ui/core/Element.js",
+				"sap/ui/model/base/ManagedObjectModel.js"
+			]
+		},
+		{
 			"name": "variants/VariantController-dbg.js",
 			"module": "sap/ui/fl/variants/VariantController.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/base/ManagedObject.js",
-				"sap/ui/core/Component.js",
-				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
-				"sap/ui/fl/Cache.js",
 				"sap/ui/fl/Change.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js"
@@ -2794,10 +2980,6 @@
 			"name": "variants/VariantController.js",
 			"module": "sap/ui/fl/variants/VariantController.js",
 			"required": [
-				"sap/ui/base/ManagedObject.js",
-				"sap/ui/core/Component.js",
-				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
-				"sap/ui/fl/Cache.js",
 				"sap/ui/fl/Change.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js"
@@ -2836,13 +3018,13 @@
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/library.js",
-				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/events/KeyCodes.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/model/Context.js",
 				"sap/ui/model/Filter.js",
+				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/PropertyBinding.js",
 				"sap/ui/model/json/JSONModel.js"
 			]
@@ -2883,13 +3065,13 @@
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/library.js",
-				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
 				"sap/ui/events/KeyCodes.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/layout/Grid.js",
 				"sap/ui/layout/HorizontalLayout.js",
 				"sap/ui/model/Context.js",
 				"sap/ui/model/Filter.js",
+				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/PropertyBinding.js",
 				"sap/ui/model/json/JSONModel.js"
 			]
@@ -2899,6 +3081,8 @@
 			"module": "sap/ui/fl/variants/VariantModel.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/util/ObjectPath.js",
+				"sap/base/util/includes.js",
 				"sap/base/util/merge.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
@@ -2914,6 +3098,8 @@
 			"name": "variants/VariantModel.js",
 			"module": "sap/ui/fl/variants/VariantModel.js",
 			"required": [
+				"sap/base/util/ObjectPath.js",
+				"sap/base/util/includes.js",
 				"sap/base/util/merge.js",
 				"sap/ui/core/BusyIndicator.js",
 				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
@@ -2932,6 +3118,7 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/base/util/deepEqual.js",
+				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/routing/HashChanger.js",
 				"sap/ui/core/routing/History.js",
@@ -2945,12 +3132,31 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/base/util/deepEqual.js",
+				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/Component.js",
 				"sap/ui/core/routing/HashChanger.js",
 				"sap/ui/core/routing/History.js",
 				"sap/ui/fl/Utils.js",
 				"sap/ui/thirdparty/jquery.js"
 			]
+		},
+		{
+			"name": "write/api/ControlPersonalizationWriteAPI-dbg.js",
+			"module": "sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/ControlPersonalizationAPI.js"
+			]
+		},
+		{
+			"name": "write/api/ControlPersonalizationWriteAPI.js",
+			"module": "sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js",
+			"required": [
+				"sap/ui/fl/ControlPersonalizationAPI.js"
+			]
+		},
+		{
+			"name": "write/internal/.keep"
 		}
 	]
 }

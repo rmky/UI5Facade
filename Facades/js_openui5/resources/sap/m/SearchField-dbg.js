@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -72,7 +72,7 @@ sap.ui.define([
 	* @extends sap.ui.core.Control
 	* @implements sap.ui.core.IFormContent
 	* @author SAP SE
-	* @version 1.61.2
+	* @version 1.67.1
 	*
 	* @constructor
 	* @public
@@ -82,7 +82,10 @@ sap.ui.define([
 	*/
 	var SearchField = Control.extend("sap.m.SearchField", /** @lends sap.m.SearchField.prototype */ { metadata : {
 
-		interfaces : ["sap.ui.core.IFormContent"],
+		interfaces : [
+			"sap.ui.core.IFormContent",
+			"sap.f.IShellBar"
+		],
 		library : "sap.m",
 		properties : {
 
@@ -303,13 +306,7 @@ sap.ui.define([
 	};
 
 	SearchField.prototype.onBeforeRendering = function() {
-		var inputElement = this.getInputElement();
-
-		if (inputElement) {
-			this.$().find(".sapMSFB").off();
-			this.$().off();
-			jQuery(inputElement).off();
-		}
+		this._unregisterEventListeners();
 	};
 
 	SearchField.prototype.onAfterRendering = function() {
@@ -328,6 +325,9 @@ sap.ui.define([
 			.on("search", this.onSearch.bind(this))
 			.on("focus", this.onFocus.bind(this))
 			.on("blur", this.onBlur.bind(this));
+
+		jQuery(this.getDomRef("F"))
+			.on("click", this.onFormClick.bind(this));
 
 		if (Device.system.desktop || Device.system.combi) {
 			// Listen to native touchstart/mousedown.
@@ -383,6 +383,8 @@ sap.ui.define([
 	 *  Destroys suggestion object if exists
 	 */
 	SearchField.prototype.exit = function () {
+		this._unregisterEventListeners();
+
 		if (this._oSuggest) {
 			this._oSuggest.destroy(true);
 			this._oSuggest = null;
@@ -410,6 +412,10 @@ sap.ui.define([
 		}
 	};
 
+	SearchField.prototype.ontouchstart = function(oEvent) {
+		this._oTouchStartTarget = oEvent.target;
+	};
+
 	SearchField.prototype.ontouchend = function(oEvent) {
 
 		if (oEvent.originalEvent.button === 2) {
@@ -417,9 +423,16 @@ sap.ui.define([
 		}
 
 		var oSrc = oEvent.target,
+			bValidTouchStartTarget = true,
 			oInputElement = this.getInputElement();
 
-		if (oSrc.id == this.getId() + "-reset") {
+		// If touch started on SearchField, check the start target.
+		if (this._oTouchStartTarget) {
+			bValidTouchStartTarget = this._oTouchStartTarget === oSrc;
+			this._oTouchStartTarget = null;
+		}
+
+		if (oSrc.id == this.getId() + "-reset" && bValidTouchStartTarget) {
 
 			closeSuggestions(this);
 			this._bSuggestionSuppressed = true; // never open suggestions after reset
@@ -439,7 +452,7 @@ sap.ui.define([
 				) && (active !== oInputElement)) {
 				oInputElement.focus();
 			}
-		} else 	if (oSrc.id == this.getId() + "-search") {
+		} else if (oSrc.id == this.getId() + "-search" && bValidTouchStartTarget) {
 
 			closeSuggestions(this);
 
@@ -459,12 +472,6 @@ sap.ui.define([
 	};
 
 	SearchField.prototype.onmouseup = function(oEvent) {
-
-		// focus if mouse-clicked on the form outside of the input
-		if (this.getEnabled() && oEvent.target.tagName == "FORM") {
-			this.getInputElement().focus();
-		}
-
 		// on phone if the input is on focus and user taps again on it
 		if (Device.system.phone &&
 			this.getEnabled() &&
@@ -472,6 +479,13 @@ sap.ui.define([
 			document.activeElement === oEvent.target &&
 			!suggestionsOn(this)) {
 			this.onFocus(oEvent);
+		}
+	};
+
+	SearchField.prototype.onFormClick = function(oEvent) {
+		// focus if mouse-clicked on the form outside of the input
+		if (this.getEnabled() && oEvent.target.tagName == "FORM") {
+			this.getInputElement().focus();
 		}
 	};
 
@@ -728,6 +742,17 @@ sap.ui.define([
 		return this;
 	};
 
+	SearchField.prototype._unregisterEventListeners = function () {
+		var inputElement = this.getInputElement();
+
+		if (inputElement) {
+			this.$().find(".sapMSFB").off();
+			this.$().off();
+			jQuery(this.getDomRef("F")).off();
+			jQuery(inputElement).off();
+		}
+	};
+
 	/* =========================================================== */
 	/* Suggestions: keyboard navigation                            */
 	/* =========================================================== */
@@ -842,7 +867,7 @@ sap.ui.define([
 	 *
 	 * @protected
 	 * @since 1.34
-	 * @returns {domRef} the DOM element at which to open the suggestion list
+	 * @returns {Element} the DOM element at which to open the suggestion list
 	 */
 	SearchField.prototype.getPopupAnchorDomRef = function() {
 		return this.getDomRef("F"); // the form element inside the search  field is the anchor

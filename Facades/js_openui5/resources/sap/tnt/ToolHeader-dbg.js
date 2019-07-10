@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -32,17 +32,33 @@ sap.ui.define([
 		 *
 		 * The ToolHeader control is a horizontal container that is most
 		 * commonly used to display buttons, labels, and other various input controls.
-		 * <h4>Overview</h4>
+		 * <h3>Overview</h3>
 		 * The ToolHeader control is based on {@link sap.m.OverflowToolbar}. It contains clearly structured menus of commands that are available across the various apps within the same tool layout.
-		 * <h4>Usage</h4>
+		 * <h3>Usage</h3>
 		 * <ul>
 		 * <li>If an app implements side navigation in addition to the tool header menu, the menu icon must be the first item on the left-hand side of the tool header.</li>
 		 * <li>The app menu and the side navigation must not have any dependencies and must work independently.</li>
 		 * </ul>
+		 * <h4>Fiori 3 theme specifics</h4>
+		 * In Fiori 3 Default theme the ToolHeader is with dark design unlike most of the other controls. This defines the usage of limited controls inside it, which will result in good design combination.<br/>
+		 * The ToolHeader stylizes the contained controls with the Shell color parameters, to match the dark design requirement. However, that's not a dark theme.<br/><br/>
+		 * Only the following controls are supported:
+		 * <ul>
+		 * <li>sap.m.Text</li>
+		 * <li>sap.m.Title</li>
+		 * <li>sap.m.ObjectStatus</li>
+		 * <li>sap.ui.core.Icon</li>
+		 * <li>sap.m.Button</li>
+		 * <li>sap.m.MenuButton</li>
+		 * <li>sap.m.Select</li>
+		 * <li>sap.m.SearchField</li>
+		 * <li>sap.m.IconTabHeader</li>
+		 * </ul>
+		 *
 		 * @extends sap.m.OverflowToolbar
 		 *
 		 * @author SAP SE
-		 * @version 1.61.2
+		 * @version 1.67.1
 		 *
 		 * @constructor
 		 * @public
@@ -93,8 +109,6 @@ sap.ui.define([
 					contentWidth: sap.ui.Device.system.phone ? "100%" : "auto"
 				}).addStyleClass('sapTntToolHeaderPopover sapContrast sapContrastPlus');
 
-				popover.oControlsManager._preProcessSapMButton = this._preProcessPopoverControlsSapMButton.bind(popover.oControlsManager);
-
 				if (sap.ui.Device.system.phone) {
 					// This will trigger when the toolbar is in the header/footer, because the position is known in advance (strictly top/bottom)
 					popover.attachBeforeOpen(this._shiftPopupShadow, this);
@@ -110,25 +124,6 @@ sap.ui.define([
 			}
 
 			return this.getAggregation("_popover");
-		};
-
-		/**
-		 * Modifies sap.m.Button.
-		 * @private
-		 */
-		ToolHeader.prototype._preProcessPopoverControlsSapMButton = function(oControl) {
-			this._mControlsCache[oControl.getId()] = {
-				buttonType: oControl.getType()
-			};
-
-			// Set some css classes to apply the proper paddings in cases of buttons with/without icons
-			if (oControl.getIcon()) {
-				oControl.addStyleClass("sapMOTAPButtonWithIcon");
-			} else {
-				oControl.addStyleClass("sapMOTAPButtonNoIcon");
-			}
-
-			oControl.attachEvent("_change", this._onSapMButtonUpdated, this);
 		};
 
 		/**

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,14 +16,14 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
 	 * @sap-restricted
 	 */
 
 	sap.ui.getCore().initLibrary({
 		name: "sap.ui.fl",
-		version: "1.61.2",
+		version: "1.67.1",
 		controls: ["sap.ui.fl.variants.VariantManagement"],
 		dependencies: [
 			"sap.ui.core", "sap.m"
@@ -47,6 +47,7 @@ sap.ui.define([
 	 */
 	sap.ui.fl.Scenario = {
 		AppVariant: "APP_VARIANT",
+		VersionedAppVariant: "VERSIONED_APP_VARIANT",
 		AdaptationProject: "ADAPTATION_PROJECT",
 		FioriElementsFromScratch: "FE_FROM_SCRATCH",
 		UiAdaptation: "UI_ADAPTATION"
@@ -55,5 +56,4 @@ sap.ui.define([
 	RegistrationDelegator.registerAll();
 
 	return sap.ui.fl;
-
 });

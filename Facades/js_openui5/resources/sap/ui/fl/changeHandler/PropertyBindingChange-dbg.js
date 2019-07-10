@@ -1,15 +1,13 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"sap/base/Log",
-	"sap/ui/fl/Utils"
+	"sap/base/Log"
 ], function(
-	Log,
-	FlexUtils
+	Log
 ) {
 	"use strict";
 
@@ -18,7 +16,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.fl.changeHandler.PropertyBindingChange
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @since 1.38
 	 * @private
 	 * @experimental Since 1.38. This class is experimental and provides only limited functionality. Also the API might be changed in future.
@@ -50,7 +48,7 @@ sap.ui.define([
 		// 	throw new Error(sNoBindingError);
 		// }
 
-		var vOriginalValue = oModifier.getPropertyBinding(oControl, sPropertyName) || oModifier.getProperty(oControl, sPropertyName);
+		var vOriginalValue = oModifier.getPropertyBindingOrProperty(oControl, sPropertyName);
 		oChange.setRevertData({
 			originalValue: vOriginalValue
 		});
@@ -75,7 +73,7 @@ sap.ui.define([
 			var vPropertyValue = mRevertData.originalValue;
 			var oModifier = mPropertyBag.modifier;
 
-			oModifier.setPropertyBinding(oControl, sPropertyName, vPropertyValue);
+			oModifier.setPropertyBindingOrProperty(oControl, sPropertyName, vPropertyValue);
 			oChange.resetRevertData();
 		} else {
 			Log.error("Attempt to revert an unapplied change.");

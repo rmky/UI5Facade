@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,7 +12,10 @@ sap.ui.define([
 	'sap/ui/core/library',
 	'sap/ui/Device',
 	'sap/m/Text',
+	'sap/ui/events/KeyCodes',
 	'./ObjectHeaderRenderer',
+	'./ObjectMarker',
+	'./ObjectNumber',
 	"sap/ui/thirdparty/jquery"
 ],
 	function(
@@ -22,7 +25,10 @@ sap.ui.define([
 		coreLibrary,
 		Device,
 		Text,
+		KeyCodes,
 		ObjectHeaderRenderer,
+    ObjectMarker,
+    ObjectNumber,
 		jQuery
 	) {
 	"use strict";
@@ -65,7 +71,7 @@ sap.ui.define([
 	 * a specific object. The object header title is the key identifier of the object and
 	 * additional text and icons can be used to further distinguish it from other objects.
 	 * @extends sap.ui.core.Control
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -220,8 +226,15 @@ sap.ui.define([
 			 * Determines whether the <code>ObjectHeader</code> is rendered with a different design that
 			 * reacts responsively to the screen sizes.
 			 *
-			 * <b>Note:</b> Be aware that the design and behavior of the responsive <code>ObjectHeader</code>
-			 * could change without further notification.
+			 * When the <code>responsive</code> property is set to <code>true</code>, the
+			 * following behavior specifics for the control exist:
+			 * <ul>
+			 * <li>If an image (or an icon font) is set to the <code>icon</code> property, it is
+			 * hidden in portrait mode on phone.</li>
+			 * <li>The title is truncated to 80 characters if longer. For portrait mode on phone,
+			 * the title is truncated to 50 characters.</li>
+			 * </ul>
+			 *
 			 * @since 1.21.1
 			 */
 			responsive : {type : "boolean", group : "Behavior", defaultValue : false},
@@ -442,18 +455,28 @@ sap.ui.define([
 					domRef : {type : "object"}
 				}
 			}
-		}
+		},
+		dnd: { draggable: false, droppable: true }
 	}});
 
-	ObjectHeader.prototype.init = function() {
-		var oLibraryResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m"); // get resource translation bundle;
 
+	/**
+	 * Retrieves the resource bundle for the <code>sap.m</code> library.
+	 * @static
+	 * @private
+	 * @returns {Object} the resource bundle object
+	 */
+	ObjectHeader._getResourceBundle = function () {
+		return sap.ui.getCore().getLibraryResourceBundle("sap.m");
+	};
+
+	ObjectHeader.prototype.init = function() {
 		this._oTitleArrowIcon = IconPool.createControlByURI({
 			id : this.getId() + "-titleArrow",
 			src: IconPool.getIconURI("arrow-down"),
 			decorative: false,
 			visible : false,
-			tooltip: oLibraryResourceBundle.getText("OH_SELECT_ARROW_TOOLTIP"),
+			tooltip: ObjectHeader._getResourceBundle().getText("OH_SELECT_ARROW_TOOLTIP"),
 			size: "1.375rem",
 			press : function(oEvent) {
 				// empty function here because icon needs an event handler in order to show pointer cursor
@@ -702,7 +725,7 @@ sap.ui.define([
 		}
 
 		if (!bHasMarker) {
-			this.insertAggregation("markers", new sap.m.ObjectMarker({
+			this.insertAggregation("markers", new ObjectMarker({
 				id: this.getId() + oIds[markerType],
 				type: markerType,
 				visible: bMarked
@@ -740,7 +763,7 @@ sap.ui.define([
 		var oControl = this.getAggregation("_objectNumber");
 
 		if (!oControl) {
-			oControl = new sap.m.ObjectNumber(this.getId() + "-number", {
+			oControl = new ObjectNumber(this.getId() + "-number", {
 				emphasized: false
 			});
 
@@ -791,10 +814,6 @@ sap.ui.define([
 					domRef : window.document.getElementById(sSourceId)
 				});
 			}
-		} else if (this.getIconActive() && (sSourceId === this.getId() + "-img" || sSourceId === this.getId() + "-icon")) {
-			this.fireIconPress({
-				domRef : window.document.getElementById(sSourceId)
-			});
 		} else if (sSourceId === this.getId() + "-titleArrow") {
 			this.fireTitleSelectorPress({
 				domRef : window.document.getElementById(sSourceId)
@@ -821,9 +840,6 @@ sap.ui.define([
 		if (!this.getResponsive() && this.getTitleActive() && ( sSourceId === this.getId() + "-title" ||
 				jQuery(oEvent.target).parent().attr('id') === this.getId() + "-title" || // check if the parent of the "h" tag is the "title"
 				sSourceId === this.getId() + "-titleText-inner" )) {
-			if (oEvent.type === "sapspace") {
-				oEvent.preventDefault();
-			}
 			sSourceId = this.getId() + "-title";
 
 			if (!this.getTitleHref()) {
@@ -837,9 +853,6 @@ sap.ui.define([
 				}
 			}
 		} else if (this.getResponsive() && this.getTitleActive() && ( sSourceId === this.getId() + "-txt" || jQuery(oEvent.target).parent().attr('id') === this.getId() + "-txt" )) {
-			if (oEvent.type === "sapspace") {
-				oEvent.preventDefault();
-			}
 			// The sourceId should be always the id of the "a", even if we click on the inside span element
 			sSourceId = this.getId() + "-txt";
 
@@ -854,31 +867,12 @@ sap.ui.define([
 				}
 			}
 		} else if (this.getIntroActive() && sSourceId === this.getId() + "-intro") {
-			if (oEvent.type === "sapspace") {
-				oEvent.preventDefault();
-			}
 			if (!this.getIntroHref()) {
 				this.fireIntroPress({
 					domRef : (sSourceId ? window.document.getElementById(sSourceId) : null)
 				});
 			}
-		} else if (this.getIconActive() && jQuery(oEvent.target).is('.sapMOHIcon,.sapMOHRIcon')){
-			if (oEvent.type === "sapspace") {
-				oEvent.preventDefault();
-			}
-
-			var iconOrImg = (this.getId() + "-icon" ? window.document.getElementById(this.getId() + "-icon") : null);
-			if (!iconOrImg) {
-				iconOrImg = (this.getId() + "-img" ? window.document.getElementById(this.getId() + "-img") : null);
-			}
-
-			this.fireIconPress({
-				domRef : iconOrImg
-			});
 		} else if (sSourceId === this.getId() + "-titleArrow") {
-			if (oEvent.type === "sapspace") {
-				oEvent.preventDefault();
-			}
 			this.fireTitleSelectorPress({
 				domRef : (sSourceId ? window.document.getElementById(sSourceId) : null)
 			});
@@ -886,11 +880,15 @@ sap.ui.define([
 	};
 
 	/**
-	 * Handles space key
+	 * Handles space key on kye up
 	 *
 	 * @private
 	*/
-	ObjectHeader.prototype.onsapspace = ObjectHeader.prototype._handleSpaceOrEnter;
+	ObjectHeader.prototype.onkeyup = function (oEvent) {
+		if (oEvent.which === KeyCodes.SPACE) {
+			this._handleSpaceOrEnter(oEvent);
+		}
+	};
 
 	/**
 	 * Handles enter key
@@ -1030,12 +1028,25 @@ sap.ui.define([
 			{
 				src : this.getIcon(),
 				tooltip: this.getIconTooltip(),
-				alt: this.getIconAlt(),
+				// If there isn't an alt, then just add a default 'Icon' just in case
+				alt: this.getIconAlt() || ObjectHeader._getResourceBundle().getText("OH_ARIA_ICON"),
 				useIconTooltip : false,
 				densityAware : this.getIconDensityAware()
 			},
 				IconPool.isIconURI(this.getIcon()) ? { size : sSize } : {}
 		);
+
+		if (this.getIconActive()) {
+			// Add a press event to the icon, so that its image/icon has tabindex=0 when active
+			// In addition to this, make the control non-decorative, since it will be accessed by screen readers
+			mProperties.press = function (oEvent) {
+				this.fireIconPress({
+					domRef : oEvent.getSource().getDomRef()
+				});
+			}.bind(this);
+			mProperties.decorative = false;
+		}
+
 
 		this._oImageControl = ImageHelper.getImageControl(sImgId, this._oImageControl, this, mProperties);
 

@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,17 +15,6 @@ sap.ui.define([
 ], function (Log, NumberFormat, FormatException, ParseException, ValidateException, ODataType,
 		jQuery) {
 	"use strict";
-
-	// Math.fround polyfill
-	if (!Math.fround) { // sap-ui-cover-browser msie
-		// IE 10+
-		var aArray = new window.Float32Array(1);
-
-		Math.fround = function (fValue) {
-			aArray[0] = fValue;
-			return aArray[0];
-		};
-	}
 
 	/**
 	 * Returns the locale-dependent error message for the type.
@@ -103,7 +92,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @alias sap.ui.model.odata.type.Single
 	 * @param {object} [oFormatOptions]
@@ -231,7 +220,6 @@ sap.ui.define([
 	 *
 	 * @param {number} fValue
 	 *   the value to be validated
-	 * @returns {void}
 	 * @throws {sap.ui.model.ValidateException} if the value is not valid
 	 * @public
 	 * @since 1.29.0

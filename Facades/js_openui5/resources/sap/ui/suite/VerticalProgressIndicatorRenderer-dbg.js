@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -40,9 +40,9 @@ sap.ui.define(function() {
 	    var PercentageString = VerticalPercent.toString();
 
 		// write the HTML into the render manager
-	    rm.write("<DIV");
+	    rm.write("<div");
 	    rm.writeControlData(oControl);
-	    rm.writeAttribute('tabIndex', '0');
+	    rm.writeAttribute('tabindex', '0');
 
 		if (oControl.getTooltip_AsString()) {
 			rm.writeAttributeEscaped("title", oControl.getTooltip_AsString());
@@ -60,7 +60,7 @@ sap.ui.define(function() {
 
 	    rm.writeAttribute("class","sapUiVerticalProgressOuterContainer");
 	    rm.write(">"); // Outer DIV element
-	    rm.write("<DIV");
+	    rm.write("<div");
 	    rm.writeAttribute('id', oControl.getId() + '-bar');
 	    rm.writeAttribute("class","sapUiVerticalProgressInnerContainer");
 	    rm.addStyle("top", PixelUp + "px");
@@ -68,8 +68,8 @@ sap.ui.define(function() {
 	    rm.writeClasses();
 	    rm.writeStyles();
 	    rm.write(">"); // Inner DIV element
-	    rm.write("</DIV>");
-	    rm.write("</DIV>");
+	    rm.write("</div>");
+	    rm.write("</div>");
 
 	};
 

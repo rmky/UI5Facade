@@ -1,14 +1,12 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"sap/ui/fl/changeHandler/Base",
 	"sap/ui/fl/Utils"
 ], function(
-	Base,
 	FlexUtils
 ) {
 	"use strict";
@@ -18,7 +16,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.fl.changeHandler.MoveElements
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @experimental Since 1.34.0
 	 */
 	var MoveElements = { };
@@ -119,7 +117,6 @@ sap.ui.define([
 	 * @name sap.ui.fl.changeHandler.MoveElements#getSpecificChangeInfo
 	 */
 	MoveElements.getSpecificChangeInfo = function(oModifier, mSpecificChangeInfo) {
-
 		var oSourceParent = mSpecificChangeInfo.source.parent || oModifier.bySelector(mSpecificChangeInfo.source.id);
 		var oTargetParent = mSpecificChangeInfo.target.parent || oModifier.bySelector(mSpecificChangeInfo.target.id);
 		var sSourceAggregation = mSpecificChangeInfo.source.aggregation;

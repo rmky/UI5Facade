@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -39,12 +39,13 @@ function(
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
 	 * @since 1.42
 	 * @alias sap.m.Tree
+	 * @see {@link fiori:/tree/ Tree}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var Tree = ListBase.extend("sap.m.Tree", { metadata : {
@@ -120,6 +121,7 @@ function(
 			var aChildren = oControl.getItems() || [],
 				oContext,
 				oClone;
+
 			if (aChildren.length > aContexts.length) {
 				for (var i = aContexts.length; i < aChildren.length; i++) {
 					oControl.removeItem(aChildren[i]);
@@ -137,6 +139,7 @@ function(
 					oControl.addItem(oClone);
 				}
 			}
+
 		}
 
 		// Context length will be filled by model.
@@ -158,6 +161,16 @@ function(
 		return oResult;
 	};
 
+	Tree.prototype.invalidate = function() {
+		ListBase.prototype.invalidate.apply(this, arguments);
+		this._bInvalidated = true;
+	};
+
+	Tree.prototype.onAfterRendering = function() {
+		ListBase.prototype.onAfterRendering.apply(this, arguments);
+		this._bInvalidated = false;
+	};
+
 	Tree.prototype._updateDeepestLevel = function(oItem) {
 		// for level change action, e.g. expand
 		if (oItem.getLevel() + 1 > this.getDeepestLevel()) {
@@ -177,15 +190,16 @@ function(
 			// make sure when rendering is called, the padding calc uses the correct deepest level
 			this._updateDeepestLevel(oItem);
 
+			var oBinding = this.getBinding("items");
 			if (bExpand == undefined) {
-				this.getBinding("items").toggleIndex(iIndex);
+				oBinding.toggleIndex(iIndex);
 			} else if (bExpand) {
-				this.getBinding("items").expand(iIndex);
+				oBinding.expand(iIndex);
 			} else {
-				this.getBinding("items").collapse(iIndex);
+				oBinding.collapse(iIndex);
 			}
 
-			bExpandedAfterPress = oItem.getExpanded();
+			bExpandedAfterPress = oBinding.isExpanded(iIndex);
 			if (bExpandedBeforePress !== bExpandedAfterPress && !oItem.isLeaf()) {
 				this.fireToggleOpenState({
 					itemIndex: iIndex,
@@ -364,17 +378,20 @@ function(
 		if (oBinding && oBinding.expand) {
 			var aIndices = this._preExpand(vParam),
 				oItem;
-			for (var i = 0; i < aIndices.length - 1; i++) {
-				oItem = this.getItems()[aIndices[i]];
+			if (aIndices.length > 0) {
+				for (var i = 0; i < aIndices.length - 1; i++) {
+					oItem = this.getItems()[aIndices[i]];
+					this._updateDeepestLevel(oItem);
+					oBinding.expand(aIndices[i], true);
+				}
+
+				oItem = this.getItems()[aIndices[aIndices.length - 1]];
 				this._updateDeepestLevel(oItem);
-				oBinding.expand(aIndices[i], true);
+
+				// trigger change
+				oBinding.expand(aIndices[aIndices.length - 1], false);
 			}
 
-			oItem = this.getItems()[aIndices[aIndices.length - 1]];
-			this._updateDeepestLevel(oItem);
-
-			// trigger change
-			oBinding.expand(aIndices[aIndices.length - 1], false);
 		}
 
 		return this;

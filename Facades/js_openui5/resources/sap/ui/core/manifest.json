@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.61.2"
+      "version": "1.67.1"
     },
     "title": "The SAPUI5 Core Runtime.",
     "description": "The SAPUI5 Core Runtime.\n\n  Contains the UI5 jQuery plugins (jQuery.sap.*), the Core and all its components,\n  base classes for Controls, Components and the Model View Controller classes.",
@@ -144,6 +144,11 @@
         "version": "0.0.0"
       },
       {
+        "name": "Element-getAttributeNames-polyfill",
+        "packagedWithMySelf": true,
+        "version": "0.0.0"
+      },
+      {
         "name": "object-assign-polyfill",
         "packagedWithMySelf": true,
         "version": "0.0.0"
@@ -207,6 +212,11 @@
         "name": "hyphenopoly",
         "packagedWithMySelf": true,
         "version": "0.0.0"
+      },
+      {
+        "name": "es6-shim-nopromise",
+        "packagedWithMySelf": true,
+        "version": "0.0.0"
       }
     ]
   },
@@ -219,7 +229,7 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.61",
+      "minUI5Version": "1.67",
       "libs": {}
     },
     "library": {
@@ -234,7 +244,6 @@
           "sap.ui.core.LocalBusyIndicator",
           "sap.ui.core.ScrollBar",
           "sap.ui.core.TooltipBase",
-          "sap.ui.core.UIComponent",
           "sap.ui.core.XMLComposite",
           "sap.ui.core.mvc.HTMLView",
           "sap.ui.core.mvc.JSONView",
@@ -243,8 +252,8 @@
           "sap.ui.core.mvc.View",
           "sap.ui.core.mvc.XMLView",
           "sap.ui.core.tmpl.DOMElement",
-          "sap.ui.core.tmpl.Template",
-          "sap.ui.core.tmpl.TemplateControl"
+          "sap.ui.core.tmpl.TemplateControl",
+          "sap.ui.core.util.Export"
         ],
         "elements": [
           "sap.ui.core.CustomData",
@@ -262,7 +271,8 @@
           "sap.ui.core.dnd.DragDropInfo",
           "sap.ui.core.search.OpenSearchProvider",
           "sap.ui.core.search.SearchProvider",
-          "sap.ui.core.tmpl.DOMAttribute"
+          "sap.ui.core.tmpl.DOMAttribute",
+          "sap.ui.core.util.ExportCell"
         ],
         "types": [
           "any",
@@ -289,6 +299,7 @@
           "sap.ui.core.ID",
           "sap.ui.core.IconColor",
           "sap.ui.core.ImeMode",
+          "sap.ui.core.IndicationColor",
           "sap.ui.core.MessageType",
           "sap.ui.core.OpenState",
           "sap.ui.core.Orientation",

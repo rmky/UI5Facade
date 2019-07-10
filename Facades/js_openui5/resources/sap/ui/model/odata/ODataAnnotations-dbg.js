@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -28,9 +28,10 @@ sap.ui.define([
 	 *
 	 * @author SAP SE
 	 * @version
-	 * 1.61.2
+	 * 1.67.1
 	 *
 	 * @public
+	 * @deprecated As of version 1.66, please use {@link sap.ui.model.odata.v2.ODataAnnotations} instead.
 	 * @alias sap.ui.model.odata.ODataAnnotations
 	 * @extends sap.ui.base.EventProvider
 	 */
@@ -305,7 +306,6 @@ sap.ui.define([
 	 *
 	 * @param {map} mAnnotations The new annotations that should be merged into the ones in this instance
 	 * @param {boolean} [bSuppressEvents] if set to true, the "loaded"-event is not fired
-	 * @returns {void}
 	 */
 	ODataAnnotations.prototype._mergeAnnotationData = function(mAnnotations, bSuppressEvents) {
 		if (!this.oAnnotations) {

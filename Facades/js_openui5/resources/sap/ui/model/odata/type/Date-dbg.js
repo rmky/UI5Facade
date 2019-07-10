@@ -1,19 +1,20 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/base/Log",
+	"sap/ui/core/CalendarType",
 	"sap/ui/core/format/DateFormat",
 	"sap/ui/model/FormatException",
 	"sap/ui/model/ParseException",
 	"sap/ui/model/ValidateException",
 	"sap/ui/model/odata/type/ODataType",
 	"sap/ui/thirdparty/jquery"
-], function (Log, DateFormat, FormatException, ParseException, ValidateException, ODataType,
-		jQuery) {
+], function (Log, CalendarType, DateFormat, FormatException, ParseException, ValidateException,
+		ODataType, jQuery) {
 	"use strict";
 
 	var rDate = /\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])/,
@@ -60,6 +61,7 @@ sap.ui.define([
 	function getModelFormatter() {
 		if (!oModelFormatter) {
 			oModelFormatter = DateFormat.getDateInstance({
+				calendarType : CalendarType.Gregorian,
 				pattern : 'yyyy-MM-dd',
 				strictParsing : true,
 				UTC : true
@@ -104,7 +106,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @alias sap.ui.model.odata.type.Date
 	 * @param {object} [oFormatOptions]
@@ -236,7 +238,6 @@ sap.ui.define([
 	 *
 	 * @param {string} sValue
 	 *   the value to be validated
-	 * @returns {void}
 	 * @throws {sap.ui.model.ValidateException}
 	 *   if the value is not valid
 	 * @public
@@ -249,6 +250,20 @@ sap.ui.define([
 		} else if (typeof sValue !== "string" || !rDate.test(sValue)) {
 			throw new ValidateException("Illegal " + this.getName() + " value: " + sValue);
 		}
+	};
+
+	//*********************************************************************************************
+	// "static" functions
+	//*********************************************************************************************
+
+	/**
+	 * Resets the static model formatter instance which is recreated on demand, for example via
+	 * {@link #getModelFormat}, and cached.
+	 *
+	 * @private
+	 */
+	EdmDate._resetModelFormatter = function () {
+		oModelFormatter = undefined;
 	};
 
 	return EdmDate;

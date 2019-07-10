@@ -1,17 +1,15 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	'sap/ui/rta/plugin/Remove',
-	'sap/ui/dt/OverlayRegistry',
-	'sap/m/Button',
+	"sap/ui/rta/plugin/Remove",
+	"sap/m/Button",
 	"sap/ui/thirdparty/jquery"
 ], function(
 	Remove,
-	OverlayRegistry,
 	Button,
 	jQuery
 ) {
@@ -25,15 +23,14 @@ sap.ui.define([
 	 * @class The EasyRemove Plugin adds an Icon to an Overlay, which allows to trigger remove operations directly
 	 * @extends sap.ui.rta.plugin.Remove
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.48
 	 * @alias sap.ui.rta.plugin.EasyRemove
 	 * @experimental Since 1.48. This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
-	var EasyRemove = Remove.extend("sap.ui.rta.plugin.EasyRemove", /** @lends sap.ui.rta.plugin.EasyRemove.prototype */
-	{
+	var EasyRemove = Remove.extend("sap.ui.rta.plugin.EasyRemove", /** @lends sap.ui.rta.plugin.EasyRemove.prototype */ {
 		metadata: {
 			library: "sap.ui.rta",
 			properties: {},
@@ -75,7 +72,6 @@ sap.ui.define([
 			oDeleteButton
 				.attachBrowserEvent("click", fnOnClick)
 				.attachBrowserEvent("tap", fnOnClick);
-
 		}
 
 		Remove.prototype.registerElementOverlay.apply(this, arguments);
@@ -101,7 +97,7 @@ sap.ui.define([
 		var oHtmlIconOuter = jQuery("<div class='sapUiRtaPersDeleteIconOuter'> </div>");
 
 		oOverlay._oDeleteButton = new Button(sId, {
-			icon : "sap-icon://decline",
+			icon : "sap-icon://less",
 			tooltip: sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta").getText("CTX_REMOVE"),
 			enabled: bEnabled
 		}).placeAt(oHtmlIconOuter.get(0));

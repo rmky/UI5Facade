@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,9 +11,7 @@ sap.ui.define([
 	'sap/ui/core/LabelEnablement',
 	'sap/m/HyphenationSupport',
 	'sap/ui/core/library',
-	'./LabelRenderer',
-	"sap/base/Log",
-	"sap/base/security/encodeXML"
+	'./LabelRenderer'
 ],
 function(
 	library,
@@ -21,9 +19,7 @@ function(
 	LabelEnablement,
 	HyphenationSupport,
 	coreLibrary,
-	LabelRenderer,
-	Log,
-	encodeXML
+	LabelRenderer
 ) {
 	"use strict";
 
@@ -80,7 +76,7 @@ function(
 	 * @implements sap.ui.core.Label, sap.ui.core.IShrinkable
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -173,53 +169,6 @@ function(
 		},
 		designtime: "sap/m/designtime/Label.designtime"
 	}});
-
-	Label.prototype.setText = function(sText) {
-
-		var sValue = this.getText();
-
-		if (sValue !== sText) {
-
-			this.setProperty("text", sText, true);
-
-			this.$("bdi").html(encodeXML(HyphenationSupport.getTextForRender(this, "main")));
-
-
-			if (sText) {
-				this.$().removeClass("sapMLabelNoText");
-			}else {
-				this.$().addClass("sapMLabelNoText");
-			}
-		}
-		return this;
-	};
-
-	/**
-	* Sets the tooltip of the <code>sap.m.Label</code>.
-	*
-	* @public
-	* @param {string} sTooltip Tooltip's value represented in string format.
-	* @returns {sap.m.Label} <code>this</code> pointer for chaining.
-	*/
-	Label.prototype.setTooltip = function(oTooltip) {
-		var oValue = this.getTooltip();
-		if (oValue !== oTooltip) {
-			this.setAggregation("tooltip", oTooltip, true);
-			this.$().attr("title", this.getTooltip());
-		}
-		return this;
-	};
-
-	Label.prototype.setDisplayOnly = function(displayOnly) {
-		if (typeof displayOnly !== "boolean") {
-			Log.error("DisplayOnly property should be boolean. The new value will not be set");
-			return this;
-		}
-
-		this.$().toggleClass("sapMLabelDisplayOnly", displayOnly);
-
-		return Control.prototype.setProperty.call(this, "displayOnly", displayOnly);
-	};
 
 	/**
 	 * Provides the current accessibility state of the control.

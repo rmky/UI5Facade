@@ -1,10 +1,8 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-
-/*global ace */
 
 sap.ui.loader.config({
 	shim: {
@@ -31,12 +29,13 @@ sap.ui.define([
 	'sap/ui/core/Control',
 	'sap/ui/Device',
 	'sap/ui/core/ResizeHandler',
+	"sap/ui/thirdparty/jquery",
 	'sap/ui/codeeditor/js/ace/ace',
 	'sap/ui/codeeditor/js/ace/ext-language_tools',
 	'sap/ui/codeeditor/js/ace/ext-beautify',
 	'sap/ui/codeeditor/js/ace/mode-javascript',
 	'sap/ui/codeeditor/js/ace/mode-json'
-], function(Control, Device, ResizeHandler) {
+], function(Control, Device, ResizeHandler, jQuery, ace) {
 	"use strict";
 
 	// TODO remove after 1.62 version
@@ -56,7 +55,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @public
@@ -87,7 +86,8 @@ sap.ui.define([
 					 * ocaml, pascal, perl, pgsql, php, plain_text, powershell, praat, prolog, properties, protobuf, python, r,
 					 * razor, rdoc, rhtml, rst, ruby, rust, sass, scad, scala, scheme, scss, sh, sjs, smarty, snippets,
 					 * soy_template, space, sql, sqlserver, stylus, svg, swift, swig, tcl, tex, text, textile, toml, tsx,
-					 * twig, typescript, vala, vbscript, velocity, verilog, vhdl, wollok, xml, xquery, yaml
+					 * twig, typescript, vala, vbscript, velocity, verilog, vhdl, wollok, xml, xquery, yaml, terraform, slim, redshift,
+					 * red, puppet, php_laravel_blade, mixal, jssm, fsharp, edifact, csp, cssound_score, cssound_orchestra, cssound_document,
 					 */
 					type: {
 						type: "string",
@@ -155,7 +155,7 @@ sap.ui.define([
 					 * theme-ambiance, chaos, chrome, clouds, clouds_midnight, cobalt, crimson_editor, dawn, dreamweaver, eclipse,
 					 * github, gob, gruvbox, idle_fingers, iplastic, katzenmilch, kr_theme, kuroir, merbivore, merbivore_soft,
 					 * mono_industrial, monokai, pastel_on_dark, solarized_dark, solarized_light, sqlserver, terminal, textmate,
-					 * tomorrow, tomorrow_night, tomorrow_night_blue, tomorrow_night_bright, tomorrow_night_eighties, twilight,
+					 * tomorrow, tomorrow_night, tomorrow_night_blue, tomorrow_night_bright, tomorrow_night_eighties, twilight, dracula
 					 * vibrant_ink, xcode
 					 */
 					colorTheme: {
@@ -237,6 +237,9 @@ sap.ui.define([
 		var that = this;
 
 		this._oEditor.addEventListener("change", function(oEvent) {
+			if (!that.getEditable()) {
+				return;
+			}
 			var sValue = that.getCurrentValue();
 			that.fireLiveChange({
 				value: sValue,
@@ -247,7 +250,7 @@ sap.ui.define([
 			var sValue = that.getCurrentValue(),
 				sCurrentValue = that.getValue();
 			that.setProperty("value", sValue, true);
-			if (sValue != sCurrentValue) {
+			if (sValue != sCurrentValue && that.getEditable()) {
 				that.fireChange({
 					value: sValue,
 					oldValue: sCurrentValue
@@ -414,6 +417,10 @@ sap.ui.define([
 	 */
 	CodeEditor.prototype.exit = function() {
 		this._deregisterResizeListener();
+		this._oEditor.destroy(); // clear ace intervals
+		jQuery(this._oEditorDomRef).remove(); // remove DOM node together with all event listeners
+		this._oEditorDomRef = null;
+		this._oEditor = null;
 	};
 
 	/**
@@ -524,11 +531,12 @@ sap.ui.define([
 	 * @private
 	 */
 	CodeEditor.prototype._registerResizeListener = function() {
-		// listen once for resize of the _oEditorDomRef, in some ui5 containers (sap.m.App for example) this can happen very late and ace editor does not handle it
-		this._iResizeListenerId = ResizeHandler.register(this._oEditorDomRef, function() {
-			this._oEditor.resize(); // force the ace editor to recalculate height
-			ResizeHandler.deregister(this._iResizeListenerId);
-		}.bind(this));
+		if (!this._iResizeListenerId) {
+			// listen once for resize of the _oEditorDomRef, in some ui5 containers (sap.m.App for example) this can happen very late and ace editor does not handle it
+			this._iResizeListenerId = ResizeHandler.register(this._oEditorDomRef, function() {
+				this._oEditor.resize(); // force the ace editor to recalculate height
+			}.bind(this));
+		}
 	};
 
 	/**
@@ -538,6 +546,7 @@ sap.ui.define([
 		// Unregister the resize listener used for fixing initial resize, to prevent double registering.
 		if (this._iResizeListenerId) {
 			ResizeHandler.deregister(this._iResizeListenerId);
+			this._iResizeListenerId = null;
 		}
 	};
 

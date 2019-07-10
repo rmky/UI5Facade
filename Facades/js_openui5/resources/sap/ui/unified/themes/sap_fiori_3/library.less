@@ -1,8 +1,8 @@
 /* NOTE: This file was generated as an optimized version of "library.source.less" for the Theme Designer. */
 
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,11 +17,11 @@
 /* Fiori 3 theme                            */
 /* ======================================== */
 
-@_sap_ui_unified_Calendar_ItemColor: lighten(@sapUiContentForegroundColor,7);
-@_sap_ui_unified_Calendar_ItemHoverColor: darken(@sapUiContentForegroundColor,5);
+@_sap_ui_unified_Calendar_ItemColor: darken(@sapUiListBackground, 3);
+@_sap_ui_unified_Calendar_ItemHoverColor: darken(@sapUiListBackground, 15);
 @_sap_ui_unified_Calendar_ItemBorderColor: lighten(@sapUiListBorderColor, 10);
-@_sap_ui_unified_Calendar_ItemWeekEndColor: darken(@sapUiContentForegroundColor, 3);
-@_sap_ui_unified_Calendar_ItemWeekEndHoverColor: darken(@sapUiContentForegroundColor, 10);
+@_sap_ui_unified_Calendar_ItemWeekEndColor: darken(@sapUiListBackground, 13);
+@_sap_ui_unified_Calendar_ItemWeekEndHoverColor: darken(@sapUiListBackground, 20);
 @_sap_ui_unified_Calendar_ItemOtherMonthColor: lighten(@sapUiBaseText, 30);
 @_sap_ui_unified_Calendar_ItemSelBetweenColor: lighten(@sapUiSelected, 43);
 @_sap_ui_unified_Calendar_ItemSelBetweenHoverColor: lighten(@sapUiSelected, 35);
@@ -45,6 +45,11 @@
 @_sap_ui_unified_Calendar_sapUiCalItemType18: desaturate(@sapUiAccent8, 45);
 @_sap_ui_unified_Calendar_sapUiCalItemType19: darken(desaturate(@sapUiAccent6,60), 15);
 @_sap_ui_unified_Calendar_sapUiCalItemType20: darken(saturate(@sapUiAccent5, 30),20);
+
+.sapUiCalItem,
+.sapUiCalWeekNum {
+	height: 2.875rem;
+}
 
 /* calendar should have only a border if on popup */
 .sapUiCal[data-sap-ui-popup] {
@@ -107,8 +112,9 @@ html.sap-desktop .sapUiCalHead > .sapUiCalHeadB:active {
 	border: 0.0625rem solid @_sap_ui_unified_Calendar_ItemBorderColor;
 }
 
-.sapUiCalItem{
+.sapUiCalItem {
 	background-color: @_sap_ui_unified_Calendar_ItemColor;
+	border-radius: 0.25rem;
 }
 
 .sapUiCalRowWeekNumber {
@@ -128,9 +134,15 @@ html.sap-desktop .sapUiCalHead > .sapUiCalHeadB:active {
 	overflow: visible;
 }
 
+html.sap-desktop .sapUiCalItem:not(.sapUiCalItemSel):focus {
+	background-color: darken(@sapUiListBackground, 15);
+}
+
 /* hover and focus makes only sense on desktops. On mobile devices it's not needed */
-html.sap-desktop .sapUiCalItem:not(.sapUiCalItemSel) :not(.sapUiCalWeekNum):hover {
+html.sap-desktop .sapUiCalDatesRow .sapUiCalItem:not(.sapUiCalItemSel):hover,
+html.sap-desktop .sapUiCal:not(.sapUiCalDateInt) .sapUiCalItem:not(.sapUiCalItemSel) :not(.sapUiCalWeekNum):hover {
 	background-color: @_sap_ui_unified_Calendar_ItemHoverColor;
+	border-radius: 0.25rem;
 }
 
 html.sap-desktop .sapUiCalItem:focus > .sapUiCalItemText,
@@ -149,6 +161,7 @@ html.sap-desktop .sapUiCalItemSel:not(.sapUiCalItemNow):not(.sapUiCalItemSelBetw
 html.sap-desktop .sapUiCalMonthPicker .sapUiCalItemSel:focus,
 html.sap-desktop .sapUiCalYearPicker .sapUiCalItemSel:focus {
 	outline-color: @sapUiContentContrastFocusColor;
+	background-color: @sapUiActive;
 }
 
 html[data-sap-ui-browser^="ie"].sap-desktop,
@@ -195,13 +208,16 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 	background-color: @_sap_ui_unified_Calendar_ItemWeekEndColor;
 }
 
-html.sap-desktop .sapUiCalItemWeekEnd:not(.sapUiCalItemSel) :not(.sapUiCalWeekNum):hover,
+html.sap-desktop .sapUiCalDatesRow .sapUiCalItemWeekEnd:not(.sapUiCalItemSel):hover,
+html.sap-desktop .sapUiCal:not(.sapUiCalDateInt) .sapUiCalItemWeekEnd:not(.sapUiCalItemSel) :not(.sapUiCalWeekNum):hover,
 html.sap-desktop .sapUiCalItemWeekEnd:focus {
 	background-color: @_sap_ui_unified_Calendar_ItemWeekEndHoverColor;
+	border-radius: 0.25rem;
 }
 
 .sapUiCalItemNow > .sapUiCalItemText {
-	line-height: 2.6875rem;
+	line-height: 2.625rem;
+	border-radius: 0.25rem;
 }
 
 .sapUiCalItemOtherMonth {
@@ -209,14 +225,19 @@ html.sap-desktop .sapUiCalItemWeekEnd:focus {
 	color: @_sap_ui_unified_Calendar_ItemOtherMonthColor;
 }
 
-html.sap-desktop .sapUiCalItemOtherMonth:not(.sapUiCalItemSel) :not(.sapUiCalWeekNum):hover,
-html.sap-desktop .sapUiCalItemOtherMonth:focus {
-	background-color: darken(@sapUiListBackground , 10);
-}
-
 .sapUiCalItemSel {
 	color: @sapUiContentContrastTextColor;
-	background-color: @sapUiSelected;
+}
+
+html.sap-desktop .sapUiCalItemOtherMonth:not(.sapUiCalItemSel) :not(.sapUiCalWeekNum):hover,
+html.sap-desktop .sapUiCalItemOtherMonth:focus {
+	background-color: darken(@sapUiListBackground, 10);
+}
+
+.sapUiCalItem.sapUiCalItemSel:not(.sapUiCalItemSelBetween),
+.sapUiCalItemSel:not(.sapUiCalItemSelBetween) > .sapUiCalItemText {
+	background-color: @sapUiActive;
+	border-radius: 0.25rem;
 }
 
 .sapUiCalItemSel.sapUiCalItemOtherMonth {
@@ -225,13 +246,14 @@ html.sap-desktop .sapUiCalItemOtherMonth:focus {
 
 .sapUiCalItemSelBetween,
 .sapUiCalItemSelBetween.sapUiCalItemOtherMonth {
-	background-color: @_sap_ui_unified_Calendar_ItemSelBetweenColor;
+	background-color: @sapUiListSelectionBackgroundColor;
 	color: @sapUiBaseText;
 }
 
+.sapUiCalItemSel,
 html.sap-desktop .sapUiCalItemSel:hover,
 html.sap-desktop .sapUiCalItemSel:focus {
-	background-color: darken(@sapUiSelected, 10);
+	border-radius: 0.25rem;
 }
 
 html[data-sap-ui-browser^="ie"].sap-desktop .sapUiCalMonthPicker .sapUiCalItemSel:focus,
@@ -242,16 +264,14 @@ html[data-sap-ui-browser^="ie"].sap-desktop .sapUiCalYearPicker .sapUiCalItemSel
 
 html.sap-desktop .sapUiCalItemSelBetween:hover,
 html.sap-desktop .sapUiCalItemSelBetween:focus {
-	background-color: @_sap_ui_unified_Calendar_ItemSelBetweenHoverColor;
+	background-color: @sapUiListSelectionHoverBackground;
 }
 
-.sapUiCalItemNow.sapUiCalItemSel {
+.sapUiCalItemNow.sapUiCalItemSel:not(.sapUiCalItemSelBetween) > .sapUiCalItemText {
+	box-shadow: inset 1px 1px 0 0 @_sap_ui_unified_Calendar_ItemBorderColor, inset -1px -1px 0 0 @_sap_ui_unified_Calendar_ItemBorderColor;
 	color: @sapUiContentContrastTextColor;
 }
 
-.sapUiCalItemNow.sapUiCalItemSel > .sapUiCalItemText{
-	box-shadow: inset 0.0625rem 0.0625rem 0 0 @_sap_ui_unified_Calendar_ItemBorderColor, inset -0.0625rem -0.0625rem 0 0 @_sap_ui_unified_Calendar_ItemBorderColor;
-}
 
 .sapUiCalItemNow.sapUiCalItemSelBetween{
 	color: @sapUiBaseText;
@@ -273,8 +293,8 @@ html.sap-desktop .sapUiCalItemSelBetween:focus {
 
 /*** compact mode (desktop size) ***/
 
-.sapUiSizeCompact .sapUiCalItemNow > .sapUiCalItemText{
-	line-height: 1.6875rem;
+html.sap-desktop .sapUiSizeCompact .sapUiCalItemNow > .sapUiCalItemText{
+	line-height: 1.625rem;
 }
 
 .sapUiSizeCompact .sapUiCalContentOver{
@@ -751,17 +771,92 @@ html.sap-desktop .sapUiCalendarApp.sapUiCalendarAppSel:hover:not(:active)  > .sa
 /* =========================================== */
 
 .sapUiColorPicker-ColorPickerSlider.sapUiSliHori .sapUiSliBar,
-.sapUiColorPicker-ColorPickerSlider.sapUiSliHori .sapUiSliBar .sapUiSliHiLi
-	{
+.sapUiColorPicker-ColorPickerSlider.sapUiSliHori .sapUiSliBar .sapUiSliHiLi {
 	border: none;
 	background-color: transparent;
 }
 
 .sapUiColorPicker-ColorPickerAlphaSlider.sapUiSliHori .sapUiSliBar,
-.sapUiColorPicker-ColorPickerAlphaSlider.sapUiSliHori .sapUiSliBar .sapUiSliHiLi
-	{
+.sapUiColorPicker-ColorPickerAlphaSlider.sapUiSliHori .sapUiSliBar .sapUiSliHiLi {
 	border: none;
 	background-color: transparent;
+}
+
+.sapUnifiedColorPicker {
+	.sapUiColorPicker-ColorPickerAlphaSlider,
+	.sapUiColorPicker-ColorPickerSlider {
+		.sapMSliderHandle {
+			border: 0.125rem solid @sapUiFieldBorderColor;
+			background-color: transparent;
+		}
+	}
+}
+
+.sapUiColorPicker-ColorPickerMatrix.sapUnifiedColorPicker {
+	.sapUiColorPicker-ColorPickerHexField,
+	.sapUiCPHexWrapper,
+	.sapUiCPComparisonWrapper {
+		.sapUiColorPicker-ColorPickerOldColor,
+		.sapUiColorPicker-ColorPickerNewColor {
+			height: 2.25rem;
+		}
+		margin-top: 0.5rem;
+		vertical-align: top;
+	}
+}
+
+.sapUiColorPicker-Large.sapUiCPPhone .sapUiCPComparisonWrapper,
+.sapUiColorPicker-ColorPickerMatrix.sapUnifiedColorPicker .sapUiCPHexWrapper,
+.sapUiColorPicker-ColorPickerMatrix.sapUnifiedColorPicker:not(.sapUiCPPhone) .sapUiCPComparisonWrapper {
+	height: 2.25rem;
+}
+
+.sapUiColorPicker-Simplified.sapUnifiedColorPicker.sapUiCPPhone .sapUiColorPicker-ColorPickerNewColor,
+.sapUiColorPicker-Simplified.sapUnifiedColorPicker.sapUiCPPhone .sapUiColorPicker-ColorPickerOldColor {
+	height: 2.75rem;
+}
+
+.sapUiColorPicker-Default.sapUnifiedColorPicker.sapUiCPPhone .sapUiColorPicker-ColorPickerNewColor,
+.sapUiColorPicker-Default.sapUnifiedColorPicker.sapUiCPPhone .sapUiColorPicker-ColorPickerOldColor {
+	height: 2.3125rem;
+}
+
+.sapUiSizeCompact {
+	.sapUnifiedColorPicker:not(.sapUiCPPhone) .sapUiCPComparisonWrapper {
+		height: 1.5rem;
+		vertical-align: top;
+	}
+
+	.sapUiColorPicker-Default.sapUnifiedColorPicker:not(.sapUiCPPhone) .sapMBtn .sapMBtnInner .sapMBtnIcon {
+		margin-left: 0.3rem;
+	}
+
+	.sapUiColorPicker-Simplified.sapUnifiedColorPicker.sapUiCPPhone .sapUiColorPicker-ColorPickerNewColor,
+	.sapUiColorPicker-Simplified.sapUnifiedColorPicker.sapUiCPPhone .sapUiColorPicker-ColorPickerOldColor {
+		height: 2.065rem;
+	}
+	.sapUiColorPicker-Default.sapUnifiedColorPicker.sapUiCPPhone {
+		.sapUiColorPicker-ColorPickerNewColor,
+		.sapUiColorPicker-ColorPickerOldColor {
+			width: 2.5rem;
+			height: 1.5rem;
+		}
+		.sapMBtn {
+			width: 2.5rem;
+			margin-left: 1.1rem;
+		}
+		.sapUiColorPicker-ColorPickerSlider {
+			margin-bottom: 0.0625rem;
+		}
+	}
+}
+
+.sapUiColorPicker-ColorPickerMatrix.sapUnifiedColorPicker.sapUiCPPhone .sapUiColorPicker-ColorPickerAlphaSlider {
+	padding-top: 0.1875rem;
+}
+
+.sapUiColorPicker-ColorPickerMatrix.sapUnifiedColorPicker .sapUiCPPercentSymbol {
+	line-height: 2.75rem;
 }
 
 /* END "ColorPicker.less" */
@@ -840,23 +935,26 @@ html[data-sap-ui-browser^="ie"] {
 	opacity: @sapUiContentDisabledOpacity;
 }
 
-
 /** Cozy Mode **/
 
 .sapUiMnu.sapUiMnuCozySupport.sapUiSizeCozy {
-	
+
 	.sapUiMnuDiv > hr {
 		left: 0rem;
 		right: 0rem;
-	  	margin-top: 0;
+		margin-top: 0;
 		margin-bottom: 0;
 	}
 
 	.sapUiMnuDiv {
 	  height: 1px;
 	}
-
 }
+
+.sapUiMnuItm.sapUiMnuItmSubMnuOpen.sapUiMnuItmHov:hover {
+	background-color: @sapUiListSelectionHoverBackground;
+}
+
 /* END "Menu.less" */
 
 /* START "ShellHeader.less" */

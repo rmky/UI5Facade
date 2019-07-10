@@ -1,10 +1,10 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'sap/ui/rta/command/FlexCommand'
+	"sap/ui/rta/command/FlexCommand"
 ], function(
 	FlexCommand
 ) {
@@ -16,7 +16,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @constructor
 	 * @private
 	 * @since 1.54
@@ -53,8 +53,8 @@ sap.ui.define([
 	/**
 	 * @override to suppress the binding strings to be used as
 	 */
-	AddXML.prototype.bindProperty = function(sName, oBindingInfo){
-		if (sName === "fragment"){
+	AddXML.prototype.bindProperty = function(sName, oBindingInfo) {
+		if (sName === "fragment") {
 			return this.setFragment(oBindingInfo.bindingString);
 		}
 		return FlexCommand.prototype.bindProperty.apply(this, arguments);

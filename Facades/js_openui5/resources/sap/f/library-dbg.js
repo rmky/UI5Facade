@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,6 +10,7 @@
 sap.ui.define(["sap/ui/base/DataType",
 	"sap/ui/Global",
 	"sap/ui/core/library",
+	"sap/ui/layout/library", // library dependency
 	"sap/m/library"], // library dependency
 	function(DataType) {
 
@@ -18,25 +19,43 @@ sap.ui.define(["sap/ui/base/DataType",
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.f",
-		version: "1.61.2",
+		version: "1.67.1",
 		dependencies : ["sap.ui.core", "sap.m", "sap.ui.layout"],
 		designtime: "sap/f/designtime/library.designtime",
+		interfaces: [
+			"sap.f.cards.IHeader",
+			"sap.f.ICard",
+			"sap.f.IShellBar",
+			"sap.f.IDynamicPageStickyContent"
+		],
 		types: [
-			"sap.f.LayoutType",
+			"sap.f.AvatarImageFitType",
+			"sap.f.AvatarShape",
+			"sap.f.AvatarSize",
+			"sap.f.AvatarType",
+			"sap.f.cards.HeaderPosition",
 			"sap.f.DynamicPageTitleArea",
-			"sap.f.DynamicPageTitleShrinkRatio"
+			"sap.f.DynamicPageTitleShrinkRatio",
+			"sap.f.LayoutType"
 		],
 		controls: [
 			"sap.f.Avatar",
+			"sap.f.cards.Header",
+			"sap.f.cards.NumericHeader",
+			"sap.f.cards.NumericSideIndicator",
 			"sap.f.Card",
+			"sap.f.GridContainer",
 			"sap.f.DynamicPage",
 			"sap.f.DynamicPageHeader",
 			"sap.f.DynamicPageTitle",
 			"sap.f.FlexibleColumnLayout",
 			"sap.f.semantic.SemanticPage",
-			"sap.f.GridList"
+			"sap.f.GridList",
+			"sap.f.ShellBar"
 		],
 		elements: [
+			"sap.f.DynamicPageAccessibleLandmarkInfo",
+			"sap.f.GridContainerItemLayoutData",
 			"sap.f.semantic.AddAction",
 			"sap.f.semantic.CloseAction",
 			"sap.f.semantic.CopyAction",
@@ -48,6 +67,7 @@ sap.ui.define(["sap/ui/base/DataType",
 			"sap.f.semantic.FlagAction",
 			"sap.f.semantic.FooterMainAction",
 			"sap.f.semantic.FullScreenAction",
+			"sap.f.semantic.MainAction",
 			"sap.f.semantic.MessagesIndicator",
 			"sap.f.semantic.NegativeAction",
 			"sap.f.semantic.PositiveAction",
@@ -58,7 +78,8 @@ sap.ui.define(["sap/ui/base/DataType",
 			"sap.f.semantic.SendEmailAction",
 			"sap.f.semantic.SendMessageAction",
 			"sap.f.semantic.ShareInJamAction",
-			"sap.f.semantic.TitleMainAction"
+			"sap.f.semantic.TitleMainAction",
+			"sap.f.SearchManager"
 		],
 		extensions: {
 			flChangeHandlers: {
@@ -86,13 +107,13 @@ sap.ui.define(["sap/ui/base/DataType",
 	 * @namespace
 	 * @alias sap.f
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @public
 	 */
 	var thisLib = sap.f;
 
 	/**
-	* Defines the areas within the <code>sap.f.DynamicPageTitle</code>.
+	* Defines the areas within the <code>sap.f.DynamicPageTitle</code> control.
 	*
 	* @enum {string}
 	* @public
@@ -352,6 +373,30 @@ sap.ui.define(["sap/ui/base/DataType",
 	};
 
 	/**
+	 * Interface for controls suitable for the <code>stickySubheaderProvider</code>
+	 * association of <code>{@link sap.f.DynamicPage}</code>.
+	 *
+	 * Controls that implemenet this interface should have the following methods:
+	 * <ul>
+	 * <li><code>_getStickyContent</code> - returns the content (control) used in the
+	 * subheader</li>
+	 * <li><code>_returnStickyContent</code> - accepts control as argument and ensures
+	 * that the control is placed back in its place in the provider</li>
+	 * <li><code>_getStickySubHeaderSticked</code> - returns boolean value that shows
+	 * where the sticky content is placed (in its provider or in the
+	 * <code>DynamicPage</code>)</li>
+	 * <li><code>_setStickySubHeaderSticked</code> - accepts a boolean argument to notify
+	 * the provider where its sticky content is placed</li>
+	 * </ul>
+	 *
+	 * @since 1.65
+	 * @name sap.f.IDynamicPageStickyContent
+	 * @interface
+	 * @public
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	/**
 	 * Types of {@link sap.f.Avatar} based on the displayed content.
 	 *
 	 * @enum {string}
@@ -376,6 +421,7 @@ sap.ui.define(["sap/ui/base/DataType",
 		 */
 		Initials: "Initials"
 	};
+
 	/**
 	 * Types of image size and position that determine how an image fits in the {@link sap.f.Avatar} control area.
 	 *
@@ -395,6 +441,89 @@ sap.ui.define(["sap/ui/base/DataType",
 		 * @public
 		 */
 		Contain: "Contain"
+	};
+
+	/**
+	 * Interface that should be implemented by all card controls.
+	 *
+	 * @since 1.62
+	 * @public
+	 * @interface
+	 * @name sap.f.ICard
+	 */
+
+	/**
+	 * The function is used to allow for a common header renderer between different implementations of the {@link sap.f.ICard} interface.
+	 *
+	 * @returns {sap.f.cards.IHeader} The header of the card
+	 * @since 1.62
+	 * @public
+	 * @function
+	 * @name sap.f.ICard.getCardHeader
+	 */
+
+	/**
+	 * The function is used to allow for a common content renderer between different implementations of the {@link sap.f.ICard} interface.
+	 *
+	 * @returns {sap.ui.core.Control} The content of the card
+	 * @since 1.62
+	 * @public
+	 * @function
+	 * @name sap.f.ICard.getCardContent
+	 */
+
+	/**
+	 * Allows for a common header renderer between different implementations of the {@link sap.f.ICard} interface.
+	 *
+	 * @returns {sap.f.cards.HeaderPosition} The position of the header of the card
+	 * @since 1.65
+	 * @public
+	 * @function
+	 * @name sap.f.ICard.getCardHeaderPosition
+	 */
+
+	/**
+	 * Marker interface for controls suitable as a header in controls that implement the {@link sap.f.ICard} interface.
+	 *
+	 * @since 1.62
+	 * @public
+	 * @interface
+	 * @name sap.f.cards.IHeader
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	/**
+	 * Interface for controls suitable for the <code>additionalContent</code> aggregation of <code>{@link sap.f.ShellBar}</code>.
+	 *
+	 * @since 1.63
+	 * @name sap.f.IShellBar
+	 * @experimental Since 1.63, that provides only limited functionality. Also, it can be removed in future versions.
+	 * @public
+	 * @interface
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	 /**
+	 * Different options for the position of the header in controls that implement the {@link sap.f.ICard} interface.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.65
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.cards.HeaderPosition = {
+		/**
+		 * The Header is over the content.
+		 *
+		 * @public
+		 */
+		Top: "Top",
+		/**
+		 * The Header is under the content.
+		 *
+		 * @public
+		 */
+		Bottom: "Bottom"
 	};
 
 	return thisLib;

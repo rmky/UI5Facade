@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,7 +9,12 @@ sap.ui.define([
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/context/Context",
 	"sap/base/Log"
-], function(LrepConnector, Utils, Context, Log) {
+], function(
+	LrepConnector,
+	Utils,
+	Context,
+	Log
+) {
 	"use strict";
 
 	/**
@@ -19,16 +24,15 @@ sap.ui.define([
 	 * @alias sap.ui.fl.context.ContextManager
 	 * @since 1.38.0
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 */
 	var ContextManager;
 
 	ContextManager = {
-
 		_oContext: new Context({
 			configuration : {
-				"device" : "sap/ui/fl/context/DeviceContextProvider",
-				"switches" : "sap/ui/fl/context/SwitchContextProvider"
+				device : "sap/ui/fl/context/DeviceContextProvider",
+				switches : "sap/ui/fl/context/SwitchContextProvider"
 			}
 		}),
 		_oLrepConnector: LrepConnector.createConnector(),
@@ -65,10 +69,10 @@ sap.ui.define([
 				// [default: runtime] use runtime contexts
 				return this._getContextParametersFromAPI(aContextObjects)
 					.then(this._getActiveContextsByAPIParameters.bind(this, aContextObjects));
-			} else {
-				// [designtime] use url parameters to determine the current active context(s)
-				return Promise.resolve(this._getActiveContextsByUrlParameters(aContextObjects, aDesignTimeContextIdsByUrl));
 			}
+
+			// [designtime] use url parameters to determine the current active context(s)
+			return Promise.resolve(this._getActiveContextsByUrlParameters(aContextObjects, aDesignTimeContextIdsByUrl));
 		},
 
 		/**

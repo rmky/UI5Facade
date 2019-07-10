@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -37,8 +37,7 @@ sap.ui.define(["sap/ui/Device", "sap/ui/core/InvisibleText"],
 			oAccAttributes = {}, // additional accessibility attributes
 			sToolTipValue,
 			sRefreshToolTip = oSF.getRefreshButtonTooltip(),
-			sResetToolTipValue,
-			bAccessibility = sap.ui.getCore().getConfiguration().getAccessibility();
+			sResetToolTipValue;
 
 		// container
 		rm.write("<div");
@@ -127,30 +126,9 @@ sap.ui.define(["sap/ui/Device", "sap/ui/core/InvisibleText"],
 				}
 			}
 
-			var sInvisibleTextId = oSF.getId() + "-I" + "-labelledby";
-			oAccAttributes.labelledby = {
-				value: sInvisibleTextId,
-				append: true
-			};
-
 			rm.writeAccessibilityState(oSF, oAccAttributes);
 
 			rm.write(">");
-
-			//Invisible text for ACC purpose - announcing placeholder when there is Label or Tooltip for the Input
-			if (bAccessibility) {
-				var sAnnouncement = oSF.getPlaceholder() || "";
-				if (sAnnouncement) {
-					rm.write("<span");
-					rm.writeAttribute("id", sInvisibleTextId);
-					rm.writeAttribute("aria-hidden", "true");
-					rm.addClass("sapUiInvisibleText");
-					rm.writeClasses();
-					rm.write(">");
-					rm.writeEscaped(sAnnouncement.trim());
-					rm.write("</span>");
-				}
-			}
 
 			if (oSF.getEnabled()) {
 				// 2. Reset button

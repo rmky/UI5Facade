@@ -1,15 +1,32 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/fl/support/apps/contentbrowser/lrepConnector/LRepConnector",
-	"sap/ui/fl/support/apps/contentbrowser/utils/DataUtils"
-], function (Controller, LRepConnector, DataUtils) {
+	"sap/ui/fl/support/apps/contentbrowser/utils/DataUtils",
+	"sap/m/Dialog",
+	"sap/m/Text",
+	"sap/m/Button",
+	"sap/m/Input",
+	"sap/m/library"
+], function (
+	Controller,
+	LRepConnector,
+	DataUtils,
+	Dialog,
+	Text,
+	Button,
+	Input,
+	mobileLibrary
+) {
 	"use strict";
+
+	// shortcut for sap.m.ButtonType
+	var ButtonType = mobileLibrary.ButtonType;
 
 	/**
 	 * Controller for editing content in Content Browser.
@@ -17,7 +34,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.support.apps.contentbrowser.controller.ContentDetailsEdit
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @experimental Since 1.45
 	 */
 	return Controller.extend("sap.ui.fl.support.apps.contentbrowser.controller.ContentDetailsEdit", {
@@ -98,37 +115,93 @@ sap.ui.define([
 					that.oSelectedContentModel.setData(oModelData);
 					oPage.setBusy(false);
 				}, function () {
-					oPage.setBusy(false);
-				}
+				oPage.setBusy(false);
+			}
 			);
 		},
 
 		/**
 		 * Handler for a "Save" action in "Edit" mode;
-		 * Checks the current layer, namespace, filename, and file type and calls <code>LRepConnector</code> "saveFile" to save the file;
-		 * After the file has been successfully saved, navigates to "Display" mode of the content.
-		 * @returns {Promise} - <code>LRepConnector</code> "saveFiles" promise
+		 * Checks the current layer, namespace, filename, and file type and select correct transport id (through a dialog if necessary) and trigger save request of file.
 		 * @public
 		 */
 		onSave: function () {
+			var that = this;
 			var oSelectedContentModel = this.getView().getModel("selectedContent");
 			var oContentData = oSelectedContentModel.getData();
 			var sLayer;
-
+			var sTransportIdFromContent, sPackageFromContent, sTransportId, sPackageName;
 			oContentData.metadata.some(function (oMetadata) {
 				if (oMetadata.name === "layer") {
 					sLayer = oMetadata.value;
 					return true;
 				}
 			});
+			oContentData.metadata.some(function (mMetadata) {
+				if (mMetadata.name === "transportId") {
+					sTransportIdFromContent = mMetadata.value;
+					return true;
+				}
+			});
+			try {
+				sPackageFromContent = JSON.parse(oContentData.data).packageName;
+			} catch (e) {
+				//when content is not in JSON format (Ex: js or code_ext file), package is undefined but does not break the code.
+			}
 
-			return LRepConnector.saveFile(
-				sLayer,
-				oContentData.namespace,
-				oContentData.fileName,
-				oContentData.fileType,
-				oContentData.data
-			).then(this._navToDisplayMode.bind(this));
+			if ((sLayer === "USER") ||
+				(sLayer === "LOAD") ||
+				(sLayer === "VENDOR_LOAD") ||
+				(!sTransportIdFromContent && (!sPackageFromContent || sPackageFromContent === "$TMP"))) {
+				sTransportId = undefined;
+				this._saveFile(sLayer, oContentData.namespace, oContentData.fileName, oContentData.fileType, oContentData.data, sTransportId, sPackageName);
+			} else if (sTransportIdFromContent === "ATO_NOTIFICATION") {
+				sTransportId = sTransportIdFromContent;
+				this._saveFile(sLayer, oContentData.namespace, oContentData.fileName, oContentData.fileType, oContentData.data, sTransportId, sPackageName);
+			} else {
+				var isPackageVisible = !!(sLayer === "VENDOR" || sLayer === "CUSTOMER_BASE");
+				var oPackageInput = new Input({visible: isPackageVisible, placeholder: "Package name (Only necessary for cross client content)" });
+				var oTransportInput = new Input({placeholder: "Transport ID or ATO_NOTIFICATION" });
+				var oDialog = new Dialog({
+					title: "{i18n>transportInput}",
+					type: "Message",
+					content: [
+						new Text({text: "{i18n>transportInputDescription}"}),
+						oPackageInput,
+						oTransportInput],
+					beginButton: new Button({
+						text: "{i18n>confirm}",
+						type: ButtonType.Reject,
+						press: function () {
+							sPackageName = oPackageInput.getValue();
+							sTransportId = oTransportInput.getValue();
+							oDialog.close();
+							that._saveFile(sLayer, oContentData.namespace, oContentData.fileName, oContentData.fileType, oContentData.data, sTransportId, sPackageName);
+						}
+					}),
+					endButton: new Button({
+						text: "{i18n>cancel}",
+						press: function () {
+							oDialog.close();
+						}
+					}),
+					afterClose: function () {
+						oDialog.destroy();
+					}
+				});
+				this.getView().addDependent(oDialog);
+				oDialog.open();
+			}
+		},
+
+		/**
+		 * Send request to back end to saved file.
+		 * After the file has been successfully saved, navigates to "Display" mode of the content.
+		 * @returns {Promise} - <code>LRepConnector</code> "saveFiles" promise
+		 * @private
+		 */
+		_saveFile: function (sLayer, sNameSpace, sFileName, sFileType, sData, sTransportId, sPackageName) {
+			return LRepConnector.saveFile(sLayer, sNameSpace, sFileName, sFileType, sData, sTransportId, sPackageName).then(this._navToDisplayMode.bind(this));
 		},
 
 		/**
@@ -151,10 +224,10 @@ sap.ui.define([
 			var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
 
 			oRouter.navTo("ContentDetailsFlip", {
-				"layer": oContentData.layer,
-				"namespace": encodeURIComponent(oContentData.namespace),
-				"fileName": oContentData.fileName,
-				"fileType": oContentData.fileType
+				layer: oContentData.layer,
+				namespace: encodeURIComponent(oContentData.namespace),
+				fileName: oContentData.fileName,
+				fileType: oContentData.fileType
 			});
 		}
 	});

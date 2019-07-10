@@ -1,11 +1,11 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["./Base", "sap/ui/fl/Utils"],
-function(Base, FlexUtils) {
+sap.ui.define(["sap/ui/fl/Utils"],
+function(FlexUtils) {
 	"use strict";
 
 	/**
@@ -13,7 +13,7 @@ function(Base, FlexUtils) {
 	 *
 	 * @alias sap.ui.fl.changeHandler.MoveControls
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @experimental Since 1.46
 	 */
 	var MoveControls = { };
@@ -92,7 +92,6 @@ function(Base, FlexUtils) {
 	};
 
 	MoveControls._getSpecificChangeInfo = function(oModifier, mSpecificChangeInfo, oAppComponent) {
-
 		delete mSpecificChangeInfo.source.publicAggregation;
 		delete mSpecificChangeInfo.target.publicAggregation;
 
@@ -104,9 +103,9 @@ function(Base, FlexUtils) {
 
 
 		var mAdditionalSourceInfo = {
-				aggregation: mSpecificChangeInfo.source.aggregation,
-				type: oModifier.getControlType(oSourceParent)
-			};
+			aggregation: mSpecificChangeInfo.source.aggregation,
+			type: oModifier.getControlType(oSourceParent)
+		};
 
 		var mAdditionalTargetInfo = {
 			aggregation: mSpecificChangeInfo.target.aggregation,
@@ -161,7 +160,7 @@ function(Base, FlexUtils) {
 		var sTargetAggregation = mPropertyBag.targetAggregation || oChangeContent.target.selector.aggregation;
 
 		var aRevertData = [];
-		oChangeContent.movedElements.forEach(function(mMovedElement, iElementIndex) {
+		oChangeContent.movedElements.forEach(function(mMovedElement) {
 			var oMovedElement = this._getElementControlOrThrowError(mMovedElement, oModifier, oAppComponent, oView);
 
 			var oSourceParent = oModifier.getParent(oMovedElement);
@@ -182,7 +181,7 @@ function(Base, FlexUtils) {
 				aRevertData.unshift({
 					index: iIndex,
 					aggregation: sSourceAggregation,
-					sourceParentId: oModifier.getId(oSourceParent)
+					sourceParent: oModifier.getSelector(oSourceParent, oAppComponent)
 				});
 			}
 
@@ -238,8 +237,7 @@ function(Base, FlexUtils) {
 				var mRevertData = aRevertData[iElementIndex];
 				sSourceAggregation = mRevertData.aggregation;
 				iInsertIndex = mRevertData.index;
-				//TODO: If revert needs to be done on XML, this has to be adjusted
-				oSourceParent = oModifier.byId(mRevertData.sourceParentId, oView);
+				oSourceParent = oModifier.bySelector(mRevertData.sourceParent, oAppComponent, oView);
 			}
 
 			oModifier.removeAggregation(oTargetParent, sTargetAggregation, oMovedElement);

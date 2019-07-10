@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -56,7 +56,7 @@ sap.ui.define([
 	 * Also see {@link topic:91f28be26f4d1014b6dd926db0e91070 "Support for Unique IDs"} in the documentation.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.View
@@ -510,7 +510,13 @@ sap.ui.define([
 					.then(function() {
 						// async processing ends by resolving with the view
 						return that;
-					});
+					})
+					.catch(function(e) {
+						// deregister an erroneous instance from the Core's Elements registry
+						// in sync Views this is done automatically by the ManagedObject constructor
+						this.deregister();
+						throw e;
+					}.bind(this));
 			} else {
 				this.initViewSettings(mSettings);
 				createAndConnectController(this, mSettings);
@@ -878,19 +884,19 @@ sap.ui.define([
 	 * <li>{@link sap.ui.core.mvc.XMLView.create}</li>
 	 * <li>{@link sap.ui.core.mvc.JSView.create}</li>
 	 * <li>{@link sap.ui.core.mvc.JSONView.create}</li>
-	 * <li>{@link sap.ui.core.mvc.HMTLView.create}</li>
+	 * <li>{@link sap.ui.core.mvc.HTMLView.create}</li>
 	 * </ul>
 	 *
-	 * @param {object} mOptions A parameter map for the view instantiation. Specialized view types could bring in additional parameter.
-	 * @param {string} [mOptions.id] Specifies an ID for the View instance. If no ID is given, an ID will be generated.
-	 * @param {string} [mOptions.viewName] Name of the view resource in module name notation (without suffix)
-	 * @param {sap.ui.core.mvc.ViewType} [mOptions.type] Specifies what kind of view will be instantiated. All valid
+	 * @param {object} oOptions A parameter object for the view instantiation. Specialized view types could bring in additional parameters.
+	 * @param {string} [oOptions.id] Specifies an ID for the View instance. If no ID is given, an ID will be generated.
+	 * @param {string} [oOptions.viewName] Name of the view resource in module name notation (without suffix)
+	 * @param {sap.ui.core.mvc.ViewType} [oOptions.type] Specifies what kind of view will be instantiated. All valid
 	 * view types are listed in the enumeration  {@link sap.ui.core.mvc.ViewType}.
-	 * @param {any} [mOptions.viewData] The view data can hold user specific data. This data is available
+	 * @param {any} [oOptions.viewData] The view data can hold user specific data. This data is available
 	 * during the whole lifecycle of the view and the controller
-	 * @param {any} [mOptions.definition] The view definition. Only supported for XML and HTML views.
-	 * See also {@link sap.ui.core.mvc.XMLView#create} and {@link sap.ui.core.mvc.HTMLView#create} for more information.
-	 * @param {object} [mOptions.preprocessors] Can hold a map from the specified preprocessor type (e.g. "xml") to an array of
+	 * @param {any} [oOptions.definition] The view definition. Only supported for XML and HTML views.
+	 * See also {@link sap.ui.core.mvc.XMLView.create} and {@link sap.ui.core.mvc.HTMLView.create} for more information.
+	 * @param {object} [oOptions.preprocessors] Can hold a map from the specified preprocessor type (e.g. "xml") to an array of
 	 * preprocessor configurations; each configuration consists of a <code>preprocessor</code> property (optional when
 	 * registered as on-demand preprocessor) and may contain further preprocessor-specific settings. The preprocessor can
 	 * be either a module name as string implementation of {@link sap.ui.core.mvc.View.Preprocessor} or a function according to
@@ -901,16 +907,16 @@ sap.ui.define([
 	 * on-demand availability use {@link sap.ui.core.mvc.XMLView.registerPreprocessor}.
 	 * <strong>Note</strong>: Please note that preprocessors in general are currently only available
 	 * to XMLViews
-	 * @param {sap.ui.core.mvc.Controller} [mOptions.controller] Controller instance to be used for this view.
+	 * @param {sap.ui.core.mvc.Controller} [oOptions.controller] Controller instance to be used for this view.
 	 * The given controller instance overrides the controller defined in the view definition. Sharing a controller instance
 	 * between multiple views is not supported.
 	 * @public
 	 * @static
 	 * @since 1.56.0
-	 * @return {Promise} a Promise which resolves with the created View instance
+	 * @return {Promise<sap.ui.core.mvc.View>} a Promise which resolves with the created View instance
 	 */
-	View.create = function(mOptions) {
-		var mParameters = merge({}, mOptions);
+	View.create = function(oOptions) {
+		var mParameters = merge({}, oOptions);
 		mParameters.async = true;
 		mParameters.viewContent = mParameters.definition;
 
@@ -935,6 +941,11 @@ sap.ui.define([
 			 });
 		})
 		.then(function(ViewClass) {
+			// Activate the asynchronous processing for XMLViews
+			if (ViewClass.getMetadata().isA("sap.ui.core.mvc.XMLView")) {
+				mParameters.processingMode = "sequential";
+			}
+
 			if (oOwnerComponent) {
 				return oOwnerComponent.runAsOwner(createView);
 			} else {
@@ -944,6 +955,10 @@ sap.ui.define([
 	};
 
 	/**
+	 * Used to bypass the public APIs returning a Promise.
+	 * Some internal use-cases need the View instance synchronously instead of the wrapping Promises
+	 * of the [...]View.create() factories: e.g. root-view creation in sap/ui/core/UIComponent
+	 * Internally, the views might still be loaded and processed asynchronously.
 	 * @sap-restricted sap.ui.core
 	 * @private
 	 * @see {sap.ui.view}
@@ -1126,6 +1141,7 @@ sap.ui.define([
 	*
 	* @since 1.30
 	* @public
+	* @deprecated since 1.66: Use {@link sap.ui.core.mvc.View.create View.create} instead
 	* @return {Promise} resolves with the complete view instance, reject with any thrown error
 	*/
 	View.prototype.loaded = function() {
@@ -1187,7 +1203,7 @@ sap.ui.define([
 	 * <strong>Note:</strong> Caching is only available for XMLViews! Some parts of the feature are still experimental,
 	 * For further information see {@link sap.ui.xmlview}
 	 *
-	 * @name sap.ui.core.View.Preprocessor.getCacheKey
+	 * @name sap.ui.core.mvc.View.Preprocessor.getCacheKey
 	 * @function
 	 * @public
 	 * @static

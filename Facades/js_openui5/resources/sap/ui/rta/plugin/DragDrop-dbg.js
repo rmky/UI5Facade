@@ -1,15 +1,15 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	'sap/ui/dt/plugin/ControlDragDrop',
-	'sap/ui/dt/Util',
-	'sap/ui/rta/plugin/RTAElementMover',
-	'sap/ui/rta/plugin/Plugin',
-	'sap/ui/rta/Utils'
+	"sap/ui/dt/plugin/ControlDragDrop",
+	"sap/ui/dt/Util",
+	"sap/ui/rta/plugin/RTAElementMover",
+	"sap/ui/rta/plugin/Plugin",
+	"sap/ui/rta/Utils"
 ],
 function(
 	ControlDragDrop,
@@ -31,7 +31,7 @@ function(
 	 * @extends sap.ui.dt.plugin.ControlDragDrop
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @constructor
 	 * @private
@@ -41,9 +41,6 @@ function(
 	 */
 	var DragDrop = ControlDragDrop.extend("sap.ui.rta.plugin.DragDrop", /** @lends sap.ui.rta.plugin.DragDrop.prototype */ {
 		metadata : {
-			// ---- object ----
-
-			// ---- control specific ----
 			library : "sap.ui.rta",
 			properties : {
 				commandFactory : {
@@ -64,7 +61,7 @@ function(
 	});
 
 	// Extends the DragDrop Plugin with all the functions from our rta base plugin
-	Utils.extendWith(DragDrop.prototype, Plugin.prototype, function(vDestinationValue, vSourceValue, sProperty, mDestination, mSource) {
+	Utils.extendWith(DragDrop.prototype, Plugin.prototype, function(vDestinationValue, vSourceValue, sProperty) {
 		return sProperty !== "getMetadata";
 	});
 
@@ -93,7 +90,7 @@ function(
 	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
 	 * @override
 	 */
-	DragDrop.prototype.registerElementOverlay = function(oOverlay) {
+	DragDrop.prototype.registerElementOverlay = function() {
 		ControlDragDrop.prototype.registerElementOverlay.apply(this, arguments);
 		Plugin.prototype.registerElementOverlay.apply(this, arguments);
 	};
@@ -103,7 +100,7 @@ function(
 	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
 	 * @override
 	 */
-	DragDrop.prototype.deregisterElementOverlay = function(oOverlay) {
+	DragDrop.prototype.deregisterElementOverlay = function() {
 		ControlDragDrop.prototype.deregisterElementOverlay.apply(this, arguments);
 		Plugin.prototype.removeFromPluginsList.apply(this, arguments);
 	};
@@ -135,7 +132,7 @@ function(
 
 		.then(function(oCommand) {
 			this.fireElementModified({
-				"command" : oCommand
+				command : oCommand
 			});
 
 			oOverlay.$().removeClass("sapUiRtaOverlayPlaceholder");
@@ -159,7 +156,7 @@ function(
 	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
 	 * @override
 	 */
-	DragDrop.prototype.onMovableChange = function(oOverlay) {
+	DragDrop.prototype.onMovableChange = function() {
 		ControlDragDrop.prototype.onMovableChange.apply(this, arguments);
 	};
 

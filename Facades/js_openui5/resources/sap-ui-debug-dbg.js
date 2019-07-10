@@ -1,6 +1,7 @@
+//@ui5-bundle sap-ui-debug.js
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.predefine('sap/ui/debug/ControlTree',['sap/ui/base/EventProvider','sap/ui/core/Element','sap/ui/core/UIArea','./Highlighter',"sap/ui/dom/getOwnerWindow","sap/base/Log","sap/ui/thirdparty/jquery"],function(E,a,U,H,g,L,q){"use strict";

@@ -94,17 +94,16 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/base/assert.js",
-				"sap/ui/core/Popup.js",
 				"sap/ui/model/SelectionModel.js",
 				"sap/ui/model/Sorter.js",
 				"sap/ui/model/analytics/ODataModelAdapter.js",
 				"sap/ui/table/AnalyticalColumn.js",
-				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableRenderer.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/TreeTable.js",
 				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/BindingSelectionPlugin.js",
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js"
@@ -120,17 +119,16 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/base/assert.js",
-				"sap/ui/core/Popup.js",
 				"sap/ui/model/SelectionModel.js",
 				"sap/ui/model/Sorter.js",
 				"sap/ui/model/analytics/ODataModelAdapter.js",
 				"sap/ui/table/AnalyticalColumn.js",
-				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableRenderer.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/TreeTable.js",
 				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/BindingSelectionPlugin.js",
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/unified/Menu.js",
 				"sap/ui/unified/MenuItem.js"
@@ -149,23 +147,6 @@
 			"module": "sap/ui/table/AnalyticalTableRenderer.js",
 			"required": [
 				"sap/ui/table/AnalyticalTable.js"
-			]
-		},
-		{
-			"name": "BindingSelectionAdapter-dbg.js",
-			"module": "sap/ui/table/BindingSelectionAdapter.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/table/SelectionAdapter.js",
-				"sap/ui/table/library.js"
-			]
-		},
-		{
-			"name": "BindingSelectionAdapter.js",
-			"module": "sap/ui/table/BindingSelectionAdapter.js",
-			"required": [
-				"sap/ui/table/SelectionAdapter.js",
-				"sap/ui/table/library.js"
 			]
 		},
 		{
@@ -268,6 +249,54 @@
 			]
 		},
 		{
+			"name": "CreationRow-dbg.js",
+			"module": "sap/ui/table/CreationRow.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/Button.js",
+				"sap/m/OverflowToolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/m/library.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/table/Column.js",
+				"sap/ui/table/CreationRowRenderer.js",
+				"sap/ui/table/TableUtils.js"
+			]
+		},
+		{
+			"name": "CreationRow.js",
+			"module": "sap/ui/table/CreationRow.js",
+			"required": [
+				"sap/m/Button.js",
+				"sap/m/OverflowToolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/m/library.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/table/Column.js",
+				"sap/ui/table/CreationRowRenderer.js",
+				"sap/ui/table/TableUtils.js"
+			]
+		},
+		{
+			"name": "CreationRowRenderer-dbg.js",
+			"module": "sap/ui/table/CreationRowRenderer.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/Renderer.js",
+				"sap/ui/table/TableRenderer.js",
+				"sap/ui/table/TableUtils.js"
+			]
+		},
+		{
+			"name": "CreationRowRenderer.js",
+			"module": "sap/ui/table/CreationRowRenderer.js",
+			"required": [
+				"sap/ui/core/Renderer.js",
+				"sap/ui/table/TableRenderer.js",
+				"sap/ui/table/TableUtils.js"
+			]
+		},
+		{
 			"name": "NavigationMode.type",
 			"designtime": true
 		},
@@ -337,6 +366,7 @@
 			"isDebug": true,
 			"required": [
 				"sap/ui/core/Element.js",
+				"sap/ui/core/IconPool.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js",
 				"sap/ui/unified/MenuItem.js"
@@ -351,6 +381,7 @@
 			"module": "sap/ui/table/RowActionItem.js",
 			"required": [
 				"sap/ui/core/Element.js",
+				"sap/ui/core/IconPool.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js",
 				"sap/ui/unified/MenuItem.js"
@@ -380,6 +411,7 @@
 			"module": "sap/ui/table/RowSettings.js",
 			"isDebug": true,
 			"required": [
+				"sap/ui/base/DataType.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/library.js",
 				"sap/ui/table/TableUtils.js",
@@ -394,26 +426,10 @@
 			"name": "RowSettings.js",
 			"module": "sap/ui/table/RowSettings.js",
 			"required": [
+				"sap/ui/base/DataType.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/library.js",
 				"sap/ui/table/TableUtils.js",
-				"sap/ui/table/library.js"
-			]
-		},
-		{
-			"name": "SelectionAdapter-dbg.js",
-			"module": "sap/ui/table/SelectionAdapter.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/base/ManagedObject.js",
-				"sap/ui/table/library.js"
-			]
-		},
-		{
-			"name": "SelectionAdapter.js",
-			"module": "sap/ui/table/SelectionAdapter.js",
-			"required": [
-				"sap/ui/base/ManagedObject.js",
 				"sap/ui/table/library.js"
 			]
 		},
@@ -424,25 +440,6 @@
 		{
 			"name": "SelectionMode.type",
 			"designtime": true
-		},
-		{
-			"name": "SelectionModelAdapter-dbg.js",
-			"module": "sap/ui/table/SelectionModelAdapter.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/model/SelectionModel.js",
-				"sap/ui/table/SelectionAdapter.js",
-				"sap/ui/table/library.js"
-			]
-		},
-		{
-			"name": "SelectionModelAdapter.js",
-			"module": "sap/ui/table/SelectionModelAdapter.js",
-			"required": [
-				"sap/ui/model/SelectionModel.js",
-				"sap/ui/table/SelectionAdapter.js",
-				"sap/ui/table/library.js"
-			]
 		},
 		{
 			"name": "SortOrder.type",
@@ -465,7 +462,6 @@
 				"sap/ui/model/Sorter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/Row.js",
-				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableDragAndDropExtension.js",
 				"sap/ui/table/TableExtension.js",
@@ -475,6 +471,7 @@
 				"sap/ui/table/TableScrollExtension.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/SelectionModelPlugin.js",
 				"sap/ui/thirdparty/jquery.js"
 			],
 			"condRequired": [
@@ -502,7 +499,6 @@
 				"sap/ui/model/Sorter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/Row.js",
-				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableDragAndDropExtension.js",
 				"sap/ui/table/TableExtension.js",
@@ -512,6 +508,7 @@
 				"sap/ui/table/TableScrollExtension.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/SelectionModelPlugin.js",
 				"sap/ui/thirdparty/jquery.js"
 			],
 			"condRequired": [
@@ -790,6 +787,7 @@
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/theming/Parameters.js",
+				"sap/ui/table/Column.js",
 				"sap/ui/table/TableExtension.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js"
@@ -805,6 +803,7 @@
 				"sap/ui/core/IconPool.js",
 				"sap/ui/core/Renderer.js",
 				"sap/ui/core/theming/Parameters.js",
+				"sap/ui/table/Column.js",
 				"sap/ui/table/TableExtension.js",
 				"sap/ui/table/TableUtils.js",
 				"sap/ui/table/library.js"
@@ -885,6 +884,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/library.js",
+				"sap/ui/core/theming/Parameters.js",
 				"sap/ui/model/ChangeReason.js",
 				"sap/ui/table/TableBindingUtils.js",
 				"sap/ui/table/TableColumnUtils.js",
@@ -903,6 +903,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/ResizeHandler.js",
 				"sap/ui/core/library.js",
+				"sap/ui/core/theming/Parameters.js",
 				"sap/ui/model/ChangeReason.js",
 				"sap/ui/table/TableBindingUtils.js",
 				"sap/ui/table/TableColumnUtils.js",
@@ -922,11 +923,11 @@
 				"sap/ui/core/Element.js",
 				"sap/ui/model/ClientTreeBindingAdapter.js",
 				"sap/ui/model/TreeBindingCompatibilityAdapter.js",
-				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableRenderer.js",
 				"sap/ui/table/TableUtils.js",
-				"sap/ui/table/library.js"
+				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/BindingSelectionPlugin.js"
 			]
 		},
 		{
@@ -942,11 +943,11 @@
 				"sap/ui/core/Element.js",
 				"sap/ui/model/ClientTreeBindingAdapter.js",
 				"sap/ui/model/TreeBindingCompatibilityAdapter.js",
-				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableRenderer.js",
 				"sap/ui/table/TableUtils.js",
-				"sap/ui/table/library.js"
+				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/BindingSelectionPlugin.js"
 			]
 		},
 		{
@@ -1052,7 +1053,12 @@
 				"sap/base/assert.js",
 				"sap/base/util/JSTokenizer.js",
 				"sap/base/util/ObjectPath.js",
+				"sap/m/Button.js",
+				"sap/m/OverflowToolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/DataType.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/Control.js",
@@ -1113,17 +1119,16 @@
 				"sap/ui/table/AnalyticalColumnMenuRenderer.js",
 				"sap/ui/table/AnalyticalTable.js",
 				"sap/ui/table/AnalyticalTableRenderer.js",
-				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/ColumnMenu.js",
 				"sap/ui/table/ColumnMenuRenderer.js",
+				"sap/ui/table/CreationRow.js",
+				"sap/ui/table/CreationRowRenderer.js",
 				"sap/ui/table/Row.js",
 				"sap/ui/table/RowAction.js",
 				"sap/ui/table/RowActionItem.js",
 				"sap/ui/table/RowActionRenderer.js",
 				"sap/ui/table/RowSettings.js",
-				"sap/ui/table/SelectionAdapter.js",
-				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableAccRenderExtension.js",
@@ -1148,6 +1153,10 @@
 				"sap/ui/table/designtime/Table.designtime.js",
 				"sap/ui/table/designtime/library.designtime.js",
 				"sap/ui/table/library.support.js",
+				"sap/ui/table/plugins/BindingSelectionPlugin.js",
+				"sap/ui/table/plugins/MultiSelectionPlugin.js",
+				"sap/ui/table/plugins/SelectionModelPlugin.js",
+				"sap/ui/table/plugins/SelectionPlugin.js",
 				"sap/ui/table/rules/TableHelper.support.js"
 			]
 		},
@@ -1160,7 +1169,12 @@
 				"sap/base/assert.js",
 				"sap/base/util/JSTokenizer.js",
 				"sap/base/util/ObjectPath.js",
+				"sap/m/Button.js",
+				"sap/m/OverflowToolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/DataType.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/Control.js",
@@ -1221,17 +1235,16 @@
 				"sap/ui/table/AnalyticalColumnMenuRenderer.js",
 				"sap/ui/table/AnalyticalTable.js",
 				"sap/ui/table/AnalyticalTableRenderer.js",
-				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/ColumnMenu.js",
 				"sap/ui/table/ColumnMenuRenderer.js",
+				"sap/ui/table/CreationRow.js",
+				"sap/ui/table/CreationRowRenderer.js",
 				"sap/ui/table/Row.js",
 				"sap/ui/table/RowAction.js",
 				"sap/ui/table/RowActionItem.js",
 				"sap/ui/table/RowActionRenderer.js",
 				"sap/ui/table/RowSettings.js",
-				"sap/ui/table/SelectionAdapter.js",
-				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableAccRenderExtension.js",
@@ -1256,6 +1269,10 @@
 				"sap/ui/table/designtime/Table.designtime.js",
 				"sap/ui/table/designtime/library.designtime.js",
 				"sap/ui/table/library.support.js",
+				"sap/ui/table/plugins/BindingSelectionPlugin.js",
+				"sap/ui/table/plugins/MultiSelectionPlugin.js",
+				"sap/ui/table/plugins/SelectionModelPlugin.js",
+				"sap/ui/table/plugins/SelectionPlugin.js",
 				"sap/ui/table/rules/TableHelper.support.js"
 			]
 		},
@@ -1272,7 +1289,12 @@
 				"sap/base/assert.js",
 				"sap/base/util/JSTokenizer.js",
 				"sap/base/util/ObjectPath.js",
+				"sap/m/Button.js",
+				"sap/m/OverflowToolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/DataType.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/Control.js",
@@ -1329,17 +1351,16 @@
 				"sap/ui/table/AnalyticalColumnMenuRenderer.js",
 				"sap/ui/table/AnalyticalTable.js",
 				"sap/ui/table/AnalyticalTableRenderer.js",
-				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/ColumnMenu.js",
 				"sap/ui/table/ColumnMenuRenderer.js",
+				"sap/ui/table/CreationRow.js",
+				"sap/ui/table/CreationRowRenderer.js",
 				"sap/ui/table/Row.js",
 				"sap/ui/table/RowAction.js",
 				"sap/ui/table/RowActionItem.js",
 				"sap/ui/table/RowActionRenderer.js",
 				"sap/ui/table/RowSettings.js",
-				"sap/ui/table/SelectionAdapter.js",
-				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableAccRenderExtension.js",
@@ -1361,7 +1382,11 @@
 				"sap/ui/table/TreeTable.js",
 				"sap/ui/table/TreeTableRenderer.js",
 				"sap/ui/table/library.js",
-				"sap/ui/table/manifest.json"
+				"sap/ui/table/manifest.json",
+				"sap/ui/table/plugins/BindingSelectionPlugin.js",
+				"sap/ui/table/plugins/MultiSelectionPlugin.js",
+				"sap/ui/table/plugins/SelectionModelPlugin.js",
+				"sap/ui/table/plugins/SelectionPlugin.js"
 			]
 		},
 		{
@@ -1377,7 +1402,12 @@
 				"sap/base/assert.js",
 				"sap/base/util/JSTokenizer.js",
 				"sap/base/util/ObjectPath.js",
+				"sap/m/Button.js",
+				"sap/m/OverflowToolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/DataType.js",
 				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
 				"sap/ui/core/Control.js",
@@ -1436,17 +1466,16 @@
 				"sap/ui/table/AnalyticalColumnMenuRenderer.js",
 				"sap/ui/table/AnalyticalTable.js",
 				"sap/ui/table/AnalyticalTableRenderer.js",
-				"sap/ui/table/BindingSelectionAdapter.js",
 				"sap/ui/table/Column.js",
 				"sap/ui/table/ColumnMenu.js",
 				"sap/ui/table/ColumnMenuRenderer.js",
+				"sap/ui/table/CreationRow.js",
+				"sap/ui/table/CreationRowRenderer.js",
 				"sap/ui/table/Row.js",
 				"sap/ui/table/RowAction.js",
 				"sap/ui/table/RowActionItem.js",
 				"sap/ui/table/RowActionRenderer.js",
 				"sap/ui/table/RowSettings.js",
-				"sap/ui/table/SelectionAdapter.js",
-				"sap/ui/table/SelectionModelAdapter.js",
 				"sap/ui/table/Table.js",
 				"sap/ui/table/TableAccExtension.js",
 				"sap/ui/table/TableAccRenderExtension.js",
@@ -1468,7 +1497,11 @@
 				"sap/ui/table/TreeTable.js",
 				"sap/ui/table/TreeTableRenderer.js",
 				"sap/ui/table/library.js",
-				"sap/ui/table/manifest.json"
+				"sap/ui/table/manifest.json",
+				"sap/ui/table/plugins/BindingSelectionPlugin.js",
+				"sap/ui/table/plugins/MultiSelectionPlugin.js",
+				"sap/ui/table/plugins/SelectionModelPlugin.js",
+				"sap/ui/table/plugins/SelectionPlugin.js"
 			]
 		},
 		{
@@ -1479,6 +1512,7 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/ui/Device.js",
+				"sap/ui/core/library.js",
 				"sap/ui/support/library.js",
 				"sap/ui/support/supportRules/RuleSet.js",
 				"sap/ui/table/library.js",
@@ -1518,6 +1552,7 @@
 			"required": [
 				"sap/base/Log.js",
 				"sap/ui/Device.js",
+				"sap/ui/core/library.js",
 				"sap/ui/support/library.js",
 				"sap/ui/support/supportRules/RuleSet.js",
 				"sap/ui/table/library.js",
@@ -1786,6 +1821,92 @@
 			"raw": "messagebundle.properties"
 		},
 		{
+			"name": "plugins/BindingSelectionPlugin-dbg.js",
+			"module": "sap/ui/table/plugins/BindingSelectionPlugin.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/SelectionPlugin.js"
+			]
+		},
+		{
+			"name": "plugins/BindingSelectionPlugin.js",
+			"module": "sap/ui/table/plugins/BindingSelectionPlugin.js",
+			"required": [
+				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/SelectionPlugin.js"
+			]
+		},
+		{
+			"name": "plugins/MultiSelectionPlugin-dbg.js",
+			"module": "sap/ui/table/plugins/MultiSelectionPlugin.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/ui/core/Icon.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/table/TableUtils.js",
+				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/BindingSelectionPlugin.js",
+				"sap/ui/table/plugins/SelectionModelPlugin.js",
+				"sap/ui/table/plugins/SelectionPlugin.js"
+			]
+		},
+		{
+			"name": "plugins/MultiSelectionPlugin.js",
+			"module": "sap/ui/table/plugins/MultiSelectionPlugin.js",
+			"required": [
+				"sap/base/Log.js",
+				"sap/ui/core/Icon.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/table/TableUtils.js",
+				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/BindingSelectionPlugin.js",
+				"sap/ui/table/plugins/SelectionModelPlugin.js",
+				"sap/ui/table/plugins/SelectionPlugin.js"
+			]
+		},
+		{
+			"name": "plugins/SelectionModelPlugin-dbg.js",
+			"module": "sap/ui/table/plugins/SelectionModelPlugin.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/model/SelectionModel.js",
+				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/SelectionPlugin.js"
+			]
+		},
+		{
+			"name": "plugins/SelectionModelPlugin.js",
+			"module": "sap/ui/table/plugins/SelectionModelPlugin.js",
+			"required": [
+				"sap/ui/model/SelectionModel.js",
+				"sap/ui/table/library.js",
+				"sap/ui/table/plugins/SelectionPlugin.js"
+			]
+		},
+		{
+			"name": "plugins/SelectionPlugin-dbg.js",
+			"module": "sap/ui/table/plugins/SelectionPlugin.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/Element.js",
+				"sap/ui/table/library.js"
+			]
+		},
+		{
+			"name": "plugins/SelectionPlugin.control",
+			"designtime": true
+		},
+		{
+			"name": "plugins/SelectionPlugin.js",
+			"module": "sap/ui/table/plugins/SelectionPlugin.js",
+			"required": [
+				"sap/ui/core/Element.js",
+				"sap/ui/table/library.js"
+			]
+		},
+		{
 			"name": "resources.json"
 		},
 		{
@@ -1807,6 +1928,16 @@
 			"theme": "base"
 		},
 		{
+			"name": "themes/base/Cell.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/CreationRow.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "themes/base/DragDrop.less",
 			"designtime": true,
 			"theme": "base"
@@ -1817,7 +1948,22 @@
 			"theme": "base"
 		},
 		{
+			"name": "themes/base/Row.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "themes/base/RowAction.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/RowHighlight.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/RowSelection.less",
 			"designtime": true,
 			"theme": "base"
 		},
@@ -1874,6 +2020,21 @@
 		},
 		{
 			"name": "themes/sap_hcb/Grouping.less",
+			"designtime": true,
+			"theme": "sap_hcb"
+		},
+		{
+			"name": "themes/sap_hcb/Row.less",
+			"designtime": true,
+			"theme": "sap_hcb"
+		},
+		{
+			"name": "themes/sap_hcb/RowHighlight.less",
+			"designtime": true,
+			"theme": "sap_hcb"
+		},
+		{
+			"name": "themes/sap_hcb/RowSelection.less",
 			"designtime": true,
 			"theme": "sap_hcb"
 		},

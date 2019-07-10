@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,14 +26,14 @@ sap.ui.define(['./SliderRenderer', 'sap/ui/core/Renderer'],
 	 */
 	RangeSliderRenderer.renderGrip = function(rm, oSlider){
 		//Left Grip
-		rm.write('<DIV');
+		rm.write('<div');
 
 		// Icon for grip
 		rm.writeAttribute('id', oSlider.getId() + '-grip');
 		if (oSlider.getEnabled()) {
-			rm.writeAttribute('tabIndex', '0');
+			rm.writeAttribute('tabindex', '0');
 		} else {
-			rm.writeAttribute('tabIndex', '-1');
+			rm.writeAttribute('tabindex', '-1');
 		}
 		rm.writeAttribute('class', 'sapUiSliGrip');
 		rm.writeAttribute('title', oSlider.getValue());
@@ -50,17 +50,17 @@ sap.ui.define(['./SliderRenderer', 'sap/ui/core/Renderer'],
 			describedby: oSlider.getTooltip_AsString() ? (oSlider.getId() + '-Descr ' + oSlider.getAriaDescribedBy().join(" ")) : undefined
 		});
 
-		rm.write('>&#9650;</DIV>'); // Symbol for HCB Theme (Must be hidden in other themes)
+		rm.write('>&#9650;</div>'); // Symbol for HCB Theme (Must be hidden in other themes)
 
 		//Right Grip
-		rm.write('<DIV');
+		rm.write('<div');
 
 		// Icon for grip
 		rm.writeAttribute('id', oSlider.getId() + '-grip2');
 		if (oSlider.getEnabled()) {
-			rm.writeAttribute('tabIndex', '0');
+			rm.writeAttribute('tabindex', '0');
 		} else {
-			rm.writeAttribute('tabIndex', '-1');
+			rm.writeAttribute('tabindex', '-1');
 		}
 		rm.writeAttribute('class', 'sapUiSliGrip');
 		rm.writeAttribute('title', oSlider.getValue2());
@@ -81,7 +81,7 @@ sap.ui.define(['./SliderRenderer', 'sap/ui/core/Renderer'],
 			describedby: oSlider.getTooltip_AsString() ? (oSlider.getId() + '-Descr ' + oSlider.getAriaDescribedBy().join(" ")) : undefined
 		});
 
-		rm.write('>&#9650;</DIV>'); // Symbol for HCB Theme (Must be hidden in other themes)
+		rm.write('>&#9650;</div>'); // Symbol for HCB Theme (Must be hidden in other themes)
 
 	};
 

@@ -11,6 +11,11 @@
 			"theme": "sap_fiori_3"
 		},
 		{
+			"name": "Card.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
 			"name": "DynamicPage.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
@@ -27,6 +32,11 @@
 		},
 		{
 			"name": "FlexibleColumnLayout.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "ShellBar.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},

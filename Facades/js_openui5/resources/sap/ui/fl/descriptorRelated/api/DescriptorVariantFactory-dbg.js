@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -35,9 +35,9 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorVariant
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 
 
@@ -47,15 +47,14 @@ sap.ui.define([
 			this._id = mParameters.id;
 			this._mode = 'DELETION';
 			this._mMap = mFileContent;
-
 		} else if (mParameters) {
 			this._id = mParameters.id;
 			this._reference = mParameters.reference;
 			this._layer = mParameters.layer;
-			if ( typeof mParameters.isAppVariantRoot != "undefined"){
+			if (typeof mParameters.isAppVariantRoot !== "undefined") {
 				this._isAppVariantRoot = mParameters.isAppVariantRoot;
 			}
-			if ( typeof mParameters.referenceVersion != "undefined"){
+			if (typeof mParameters.referenceVersion !== "undefined") {
 				this._referenceVersion = mParameters.referenceVersion;
 			}
 			this._mode = 'NEW';
@@ -78,27 +77,26 @@ sap.ui.define([
 	 * @return {Promise} resolving when adding the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.addDescriptorInlineChange = function(oDescriptorInlineChange) {
 		var that = this;
 		return new Promise(function(resolve) {
-
-			var fSetHostingIdForTextKey = function(_oDescriptorInlineChange, sId){
+			var fSetHostingIdForTextKey = function(_oDescriptorInlineChange, sId) {
 				//providing "hosting id" for appdescr_app_setTitle and similar
 				//"hosting id" is app variant/CDM app config id
-				if ( _oDescriptorInlineChange["setHostingIdForTextKey"] ){
+				if (_oDescriptorInlineChange["setHostingIdForTextKey"]) {
 					_oDescriptorInlineChange.setHostingIdForTextKey(sId);
 				}
 			};
 
 			switch (that._mode) {
 				case 'NEW':
-					fSetHostingIdForTextKey(oDescriptorInlineChange,that._id);
+					fSetHostingIdForTextKey(oDescriptorInlineChange, that._id);
 					that._content.push(oDescriptorInlineChange.getMap());
 					break;
 				case 'FROM_EXISTING':
-					fSetHostingIdForTextKey(oDescriptorInlineChange,that._mMap.id);
+					fSetHostingIdForTextKey(oDescriptorInlineChange, that._mMap.id);
 					that._mMap.content.push(oDescriptorInlineChange.getMap());
 					break;
 				default:
@@ -116,7 +114,7 @@ sap.ui.define([
 	 * @return {Promise} resolving when setting of transport request was successful
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.setTransportRequest = function(sTransportRequest) {
 		try {
@@ -137,7 +135,7 @@ sap.ui.define([
 	 * @return {Promise} resolving when setting of package was successful
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.setPackage = function(sPackage) {
 		try {
@@ -156,7 +154,7 @@ sap.ui.define([
 	 * @return {Promise} resolving when submitting the app variant was successful
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.submit = function() {
 		var sRoute = '/sap/bc/lrep/appdescr_variants/';
@@ -183,12 +181,12 @@ sap.ui.define([
 		if (this._sTransportRequest) {
 		//set to URL-Parameter 'changelist', as done in LrepConnector
 			sRoute += '?changelist=' + this._sTransportRequest;
-		} else if ( this._oSettings.isAtoEnabled() && FlexUtils.isCustomerDependentLayer(mMap.layer) ) {
+		} else if (this._oSettings.isAtoEnabled() && FlexUtils.isCustomerDependentLayer(mMap.layer)) {
 			sRoute += '?changelist=ATO_NOTIFICATION';
 		}
 		if (this._skipIam) {
-			sRoute += ( sRoute.indexOf('?') < 0 ) ? '?' : '&';
-				sRoute += 'skipIam=' + this._skipIam;
+			sRoute += (sRoute.indexOf('?') < 0) ? '?' : '&';
+			sRoute += 'skipIam=' + this._skipIam;
 		}
 
 		return Utils.sendRequest(sRoute, sMethod, mMap);
@@ -204,7 +202,7 @@ sap.ui.define([
 	 * @param {string} sReference the new reference
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.setReference = function(sReference) {
 		if (sReference === undefined || typeof sReference !== "string") {
@@ -221,6 +219,14 @@ sap.ui.define([
 		return this._getMap().namespace;
 	};
 
+	DescriptorVariant.prototype.getPackage = function() {
+		return this._getMap().packageName;
+	};
+
+	DescriptorVariant.prototype.getDefinition = function() {
+		return this._getMap();
+	};
+
 	DescriptorVariant.prototype.getSettings = function() {
 		return this._oSettings;
 	};
@@ -231,7 +237,7 @@ sap.ui.define([
 	 * @return {object} copy of JSON object of the app variant/CDM app config
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.getJson = function() {
 		return fnBaseMerge({}, this._getMap());
@@ -241,27 +247,27 @@ sap.ui.define([
 		switch (this._mode) {
 			case 'NEW':
 				var mResult = {
-					"fileName": this._getNameAndNameSpace().fileName,
-					"fileType": "appdescr_variant",
-					"namespace": this._getNameAndNameSpace().namespace,
-					"layer": this._layer,
-					"packageName": this._package ? this._package : "$TMP",
+					fileName: this._getNameAndNameSpace().fileName,
+					fileType: "appdescr_variant",
+					namespace: this._getNameAndNameSpace().namespace,
+					layer: this._layer,
+					packageName: this._package ? this._package : "$TMP",
 
-					"reference": this._reference,
-					"id": this._id,
+					reference: this._reference,
+					id: this._id,
 
-					"content": this._content
+					content: this._content
 				};
-				if ( typeof this._isAppVariantRoot != "undefined" ) {
+				if (typeof this._isAppVariantRoot !== "undefined") {
 					mResult.isAppVariantRoot = this._isAppVariantRoot;
 				}
-				if (mResult.isAppVariantRoot != undefined && !mResult.isAppVariantRoot) {
+				if (mResult.isAppVariantRoot !== undefined && !mResult.isAppVariantRoot) {
 					mResult.fileType = "cdmapp_config";
 				}
-				if ( typeof this._referenceVersion != "undefined" ) {
+				if (typeof this._referenceVersion !== "undefined") {
 					mResult.referenceVersion = this._referenceVersion;
 				}
-				if (this._version){
+				if (this._version) {
 					mResult.version = this._version;
 				}
 				return mResult;
@@ -276,7 +282,7 @@ sap.ui.define([
 	};
 
 	DescriptorVariant.prototype._getNameAndNameSpace = function() {
-		return Utils.getNameAndNameSpace(this._id,this._reference);
+		return Utils.getNameAndNameSpace(this._id, this._reference);
 	};
 
 	/**
@@ -284,9 +290,9 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorVariantFactory
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	var DescriptorVariantFactory = {};
 
@@ -309,38 +315,38 @@ sap.ui.define([
 	 * @return {Promise} resolving the new DescriptorVariant instance
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariantFactory.createNew = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "reference", "string");
 		Utils.checkParameterAndType(mParameters, "id", "string");
 
-		if (mParameters.version){
+		if (mParameters.version) {
 			Utils.checkParameterAndType(mParameters, "version", "string");
 		}
 
 		//default layer to CUSTOMER
-		if (!mParameters.layer){
+		if (!mParameters.layer) {
 			mParameters.layer = 'CUSTOMER';
 		} else {
 			Utils.checkParameterAndType(mParameters, "layer", "string");
 			//TODO: is this necessary? already checked in Utils-method? -> checks only type
-			if (mParameters.layer != 'VENDOR' && mParameters.layer != 'PARTNER' && !FlexUtils.isCustomerDependentLayer(mParameters.layer)) {
+			if (mParameters.layer !== 'VENDOR' && mParameters.layer !== 'PARTNER' && !FlexUtils.isCustomerDependentLayer(mParameters.layer)) {
 				//TODO: this should do a reject 	return Promise.reject(oError);
 				throw new Error("Parameter \"layer\" needs to be 'VENDOR', 'PARTNER' or customer dependent");
 			}
 		}
 
 		// isAppVariantRoot
-		if (mParameters.isAppVariantRoot){
+		if (mParameters.isAppVariantRoot) {
 			Utils.checkParameterAndType(mParameters, "isAppVariantRoot", "boolean");
 		}
-		if (mParameters.skipIam){
+		if (mParameters.skipIam) {
 			Utils.checkParameterAndType(mParameters, "skipIam", "boolean");
 		}
 
 		return Settings.getInstance().then(function(oSettings) {
-			return Promise.resolve( new DescriptorVariant(mParameters,null,false,oSettings) );
+			return Promise.resolve(new DescriptorVariant(mParameters, null, false, oSettings));
 		});
 	};
 
@@ -352,7 +358,7 @@ sap.ui.define([
 	 * @return {Promise} resolving the DescriptorVariant instance
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariantFactory.createForExisting = function(sId) {
 		if (sId === undefined || typeof sId !== "string") {
@@ -360,16 +366,16 @@ sap.ui.define([
 		}
 
 		var _mResult;
-		return DescriptorVariantFactory._getDescriptorVariant(sId).then(function(mResult){
+		return DescriptorVariantFactory._getDescriptorVariant(sId).then(function(mResult) {
 			_mResult = mResult;
 			return Settings.getInstance();
-		}).then( function(oSettings){
+		}).then(function(oSettings) {
 			var mDescriptorVariantJSON = _mResult.response;
 			if (!jQuery.isPlainObject(mDescriptorVariantJSON)) {
 				//Parse if needed. Happens if backend sends wrong content type
 				mDescriptorVariantJSON = JSON.parse(mDescriptorVariantJSON);
 			}
-			return Promise.resolve(new DescriptorVariant(null,mDescriptorVariantJSON,false,oSettings));
+			return Promise.resolve(new DescriptorVariant(null, mDescriptorVariantJSON, false, oSettings));
 		});
 	};
 
@@ -381,14 +387,14 @@ sap.ui.define([
 	 * @return {Promise} resolving the DescriptorVariant instance
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariantFactory.createFromJson = function(mParameters) {
 		if (!jQuery.isPlainObject(mParameters)) {
 			throw new Error("Parameter \"mParameters\" must be provided of type object");
 		}
-		return Settings.getInstance().then( function(oSettings){
-			return Promise.resolve(new DescriptorVariant(null,mParameters,false,oSettings));
+		return Settings.getInstance().then(function(oSettings) {
+			return Promise.resolve(new DescriptorVariant(null, mParameters, false, oSettings));
 		});
 	};
 
@@ -400,7 +406,7 @@ sap.ui.define([
 	 * @return {Promise} resolving the DescriptorVariant instance
 	 *
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariantFactory.createDeletion = function(sId) {
 		if (sId === undefined || typeof sId !== "string") {
@@ -410,15 +416,14 @@ sap.ui.define([
 		mParameter.id = sId;
 
 		var _mResult;
-		return DescriptorVariantFactory._getDescriptorVariant(sId).then(function(mResult){
+		return DescriptorVariantFactory._getDescriptorVariant(sId).then(function(mResult) {
 			_mResult = mResult;
 			return Settings.getInstance();
-		}).then( function(oSettings){
+		}).then(function(oSettings) {
 			var mDescriptorVariantJSON = JSON.parse(_mResult.response);
-			return Promise.resolve(new DescriptorVariant(mParameter,mDescriptorVariantJSON,true,oSettings));
+			return Promise.resolve(new DescriptorVariant(mParameter, mDescriptorVariantJSON, true, oSettings));
 		});
-
 	};
 
 	return DescriptorVariantFactory;
-},true);
+}, true);

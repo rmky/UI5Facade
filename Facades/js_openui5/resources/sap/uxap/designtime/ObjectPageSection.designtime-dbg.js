@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -29,7 +29,18 @@ sap.ui.define(["sap/uxap/library"],
 				changeType : "stashControl"
 			},
 			reveal : {
-				changeType : "unstashControl"
+				changeType : "unstashControl",
+				getLabel: function(oControl) {
+					var aSubSection = oControl.getSubSections();
+
+					// If there is only one SubSection, its title is shown in the AnchorBar,
+					// instead of the title of the Section (if it is available).
+					if (aSubSection.length === 1 && aSubSection[0].getTitle().trim() !== "") {
+						return aSubSection[0].getTitle();
+					}
+
+					return oControl.getTitle();
+				}
 			},
 			rename: function () {
 				return {

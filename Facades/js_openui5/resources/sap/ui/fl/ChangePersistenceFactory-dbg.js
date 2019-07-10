@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,7 +24,7 @@ function(
 	 * @alias sap.ui.fl.ChangePersistenceFactory
 	 * @experimental Since 1.27.0
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 */
 	var ChangePersistenceFactory = {};
 
@@ -118,14 +118,12 @@ function(
 		if (oStartupParameters["sap-app-id"] && oStartupParameters["sap-app-id"].length === 1) {
 			// deprecated app variant id support with no caching
 			sComponentName = oStartupParameters["sap-app-id"][0];
-		} else {
-			if (oConfig) {
-				var aAsyncHints = oConfig.asyncHints;
-				if (aAsyncHints && aAsyncHints.requests && Array.isArray(aAsyncHints.requests)) {
-					var oFlAsyncHint = this._findFlAsyncHint(aAsyncHints.requests, sComponentName);
-					if (oFlAsyncHint) {
-						oChangePersistenceWrapper.oRequestOptions.cacheKey = oFlAsyncHint.cachebusterToken || "<NO CHANGES>";
-					}
+		} else if (oConfig) {
+			var aAsyncHints = oConfig.asyncHints;
+			if (aAsyncHints && aAsyncHints.requests && Array.isArray(aAsyncHints.requests)) {
+				var oFlAsyncHint = this._findFlAsyncHint(aAsyncHints.requests, sComponentName);
+				if (oFlAsyncHint) {
+					oChangePersistenceWrapper.oRequestOptions.cacheKey = oFlAsyncHint.cachebusterToken || "<NO CHANGES>";
 				}
 			}
 		}
@@ -156,7 +154,6 @@ function(
 	 * @private
 	 */
 	ChangePersistenceFactory._onLoadComponent = function (oConfig, oManifest) {
-
 		// stop processing if the component is not of the type application
 		if (!Utils.isApplication(oManifest)) {
 			return;
@@ -184,7 +181,6 @@ function(
 	 * @private
 	 */
 	ChangePersistenceFactory._getChangesForComponentAfterInstantiation = function (oConfig, oManifest, oComponent) {
-
 		// stop processing if the component is not of the type application
 		if (!Utils.isApplication(oManifest)) {
 			return Promise.resolve(function() {

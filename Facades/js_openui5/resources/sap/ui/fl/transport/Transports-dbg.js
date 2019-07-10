@@ -1,12 +1,13 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*global Promise */
 
 sap.ui.define([
-	"sap/ui/fl/LrepConnector", "sap/ui/fl/Utils"
+	"sap/ui/fl/LrepConnector",
+	"sap/ui/fl/Utils"
 ], function(LrepConnector, FlexUtils) {
 	"use strict";
 
@@ -15,7 +16,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.transport.Transports
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @since 1.38.0
 	 */
 	var Transports = function() {
@@ -70,9 +71,9 @@ sap.ui.define([
 					oResponse.response.errorCode = "";
 				}
 				return Promise.resolve(oResponse.response);
-			} else {
-				return Promise.reject('response is empty');
 			}
+
+			return Promise.reject('response is empty');
 		});
 	};
 
@@ -100,19 +101,33 @@ sap.ui.define([
 			return Promise.reject(new Error("no changeIds provided as attribute of mParameters"));
 		}
 		oLrepConnector = LrepConnector.createConnector();
-		return oLrepConnector.send(sUri,'POST',mParameters);
+		return oLrepConnector.send(sUri, 'POST', mParameters);
 	};
 
 	/**
 	 * Get list of changes which should be added to a transport
 	 *
 	 * @param {Array} aLocalChanges List of changes which data have to be extracted
+	 * @param {Array} [aAppVariantDescriptors] List of app variant descriptors which data have to be extracted
 	 * @returns {Array} Returns an array of object containing all required data to transport the existing local changes
 	 */
-	Transports.prototype._convertToChangeTransportData = function(aLocalChanges) {
+	Transports.prototype._convertToChangeTransportData = function(aLocalChanges, aAppVariantDescriptors) {
 		var aTransportData = [];
+		var i;
+
+		if (aAppVariantDescriptors && aAppVariantDescriptors.length) {
+			for (i = 0; i < aAppVariantDescriptors.length; i++) {
+				var oAppVariantDescriptor = aAppVariantDescriptors[i];
+				var oPreparedData = {};
+				oPreparedData.namespace = oAppVariantDescriptor.getNamespace();
+				oPreparedData.fileName = oAppVariantDescriptor.getDefinition().fileName;
+				oPreparedData.fileType = oAppVariantDescriptor.getDefinition().fileType;
+				aTransportData.push(oPreparedData);
+			}
+		}
+
 		var len = aLocalChanges.length;
-		for (var i = 0; i < len; i++) {
+		for (i = 0; i < len; i++) {
 			var oCurrentChange = aLocalChanges[i];
 			var oData = {};
 			oData.namespace = oCurrentChange.getNamespace();

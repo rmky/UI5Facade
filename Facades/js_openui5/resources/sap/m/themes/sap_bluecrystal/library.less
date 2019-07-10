@@ -1,8 +1,8 @@
 /* NOTE: This file was generated as an optimized version of "library.source.less" for the Theme Designer. */
 
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -98,7 +98,7 @@ html.sap-desktop .sapMActionSelectPicker .sapMBtnFocusDiv {
 
 .sapUiSizeCompact.sapMActionSelectPicker .sapMBtn,
 .sapUiSizeCompact.sapMActionSelectPicker .sapMBtnInner,
-.sapUiTableCell .sapUiSizeCondensed.sapMActionSelectPicker .sapMBtn {
+.sapUiTableDataCell .sapUiSizeCondensed.sapMActionSelectPicker .sapMBtn {
 	height: 2rem;
 }
 
@@ -627,7 +627,7 @@ html.sap-desktop {
 	}
 
 	.sapUiForm .sapMCb:not(.sapMCbBgDis):focus:before {
-		left: -1px; /* Cb in SimpleForm: left and right border adjustment */
+		left: 0px; /* Cb in SimpleForm: left and right border adjustment */
 		right: 1px;
 	}
 
@@ -1163,6 +1163,11 @@ div.sapMInputSuggestionPopup {
 div.sapMComboBoxBasePicker {
 	box-shadow: 0 0.0625rem 0.1875rem fade(@sapUiContentShadowColor, 50);
 	border: none;
+}
+
+.sapMComboBoxBasePicker-CTX .sapMSelectListItemBaseSelected {
+	outline: 1px dotted @sapUiContentFocusColor;
+	outline-offset: -2px;
 }
 
 /* ------------------------------ */
@@ -2157,43 +2162,73 @@ html.sap-desktop .sapMQuickViewPage .sapUiIcon:focus {
 	border: 1px dotted @sapUiContentFocusColor;
 }
 
-.sapMLIBActive .sapMRbB .sapMRbBOut{
-	border: 2px solid @sapUiListActiveTextColor;
+.sapMRb:not(.sapMRbErr):not(.sapMRbWarn)  .sapMRbHoverable:hover .sapMRbBOut {
+	stroke: @sapUiFieldHoverBorderColor;
+	fill: @sapUiFieldHoverBackground;
 }
 
 .sapMLIBActive .sapMRbSel .sapMRbBOut {
-	background-color: @sapUiListActiveBackground;
+	fill: @sapUiListActiveBackground;
+	stroke: @sapUiListActiveTextColor;
+}
+
+.sapMLIBActive .sapMRb.sapMRbSel > .sapMRbHoverable:hover .sapMRbSvg .sapMRbBOut {
+	stroke: @sapUiListActiveTextColor;
+	fill: @sapUiListActiveBackground;
+}
+
+.sapMLIBActive .sapMRb > .sapMRbB.sapMRbHoverable {
+	.sapMRbSvg .sapMRbBOut {
+		stroke: @sapUiListActiveTextColor;
+	}
+	&:hover > .sapMRbSvg > .sapMRbBOut {
+		stroke: @sapUiListActiveTextColor;
+	}
 }
 
 .sapMRbDis {
 	opacity: @sapUiContentDisabledOpacity;
 }
 
-/* Read only */
-.sapMRbRo .sapMRbBOut {
-	border-color: @sapUiFieldBorderColor;
+.sapMRb.sapMRbRo {
+	.sapMRbBOut {
+		stroke: @sapUiDarkBorder;
+		fill: none;
+	}
+	&.sapMRbSel .sapMRbBInn {
+		fill: @sapUiElement;
+		stroke: none;
+	}
 }
 
 /* Value states */
-
-.sapMRbErr.sapMRbSel .sapMRbBInn {
-	background-color: @sapUiFieldInvalidColor;
+.sapMRbErr .sapMRbB,
+.sapMRbErr.sapMRbBTouched .sapMRbB{
+	.sapMRbBOut {
+		stroke: @sapUiErrorBorder;
+		fill: @sapUiLightestBG;
+	}
 }
 
-.sapMRbErr .sapMRbBOut,
-.sapMRbErr.sapMRbBTouched .sapMRbBOut {
-	border-color: @sapUiFieldInvalidColor;
-	background-color: @sapUiFieldInvalidBackground;
+.sapMRbErr.sapMRbSel,
+.sapMRbErr.sapMRbSel.sapMRbRo {
+	.sapMRbBInn {
+		fill: @sapUiErrorBorder;
+		stroke: none;
+	}
 }
 
-.sapMRbWarn.sapMRbSel .sapMRbBInn {
-	background-color: darken(@sapUiFieldWarningColor, 100);
+.sapMRbWarn .sapMRbB .sapMRbBOut {
+	stroke: @sapUiWarningBorder;
+	fill: @sapUiLightestBG;
 }
 
-.sapMRbWarn .sapMRbBOut,
-.sapMRbWarn.sapMRbBTouched .sapMRbBOut {
-	border-color: @sapUiFieldWarningColor;
-	background-color: @sapUiFieldWarningBackground;
+.sapMRbWarn.sapMRbSel,
+.sapMRbWarn.sapMRbSel.sapMRbRo {
+	.sapMRbBInn {
+		fill: @sapUiDarkestBG;
+		stroke: none;
+	}
 }
 /* END "RadioButton.less" */
 
@@ -2685,7 +2720,7 @@ html.sap-desktop .sapMFooter-CTX .sapMSlt:focus {
 }
 
 .sapMSltPicker-CTX .sapMSelectListItemBaseSelected,
-.sapMComboBoxBasePicker-CTX .sapMSelectListItemBaseSelected {
+.sapMComboBoxBasePicker-CTX .sapMSelectListFocus .sapMSelectListItemBaseSelected {
 	outline: 1px dotted @sapUiContentFocusColor;
 	outline-offset: -2px;
 }
@@ -2706,7 +2741,7 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 	.sapMSltPicker-CTX .sapMSelectListItemBaseSelected::before {
 		border: 1px dotted @sapUiContentFocusColor;
 	}
-	.sapMComboBoxBasePicker-CTX .sapMSelectListItemBaseSelected::before {
+	.sapMComboBoxBasePicker-CTX .sapMSelectListFocus .sapMSelectListItemBaseSelected::before {
 		border: 1px dotted @sapUiContentFocusColor;
 	}
 	.sapMSelectListItemBase:focus::before {

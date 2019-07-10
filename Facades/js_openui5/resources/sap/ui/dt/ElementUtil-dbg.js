@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,17 +8,15 @@
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/base/Object",
-	"sap/ui/base/ManagedObject",
 	"sap/ui/dt/Util",
-	"sap/base/Log",
+	"sap/ui/core/Element",
 	"sap/ui/core/Component"
 ],
 function(
 	jQuery,
 	BaseObject,
-	ManagedObject,
 	Util,
-	Log,
+	Element,
 	Component
 ) {
 	"use strict";
@@ -29,7 +27,7 @@ function(
 	 * @class Utility functionality to work with elements, e.g. iterate through aggregations, find parents, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 *
 	 * @private
 	 * @static
@@ -41,9 +39,6 @@ function(
 
 	var ElementUtil = {};
 
-	/**
-	 *
-	 */
 	ElementUtil.iterateOverAllPublicAggregations = function(oElement, fnCallback) {
 		var mAggregations = oElement.getMetadata().getAllAggregations();
 		var aAggregationNames = Object.keys(mAggregations);
@@ -63,9 +58,8 @@ function(
 		if (typeof vElement === "string") {
 			var oElement = sap.ui.getCore().byId(vElement);
 			return oElement || Component.get(vElement);
-		} else {
-			return vElement;
 		}
+		return vElement;
 	};
 
 	/**
@@ -93,7 +87,7 @@ function(
 	 */
 	ElementUtil.getClosestElementForNode = function(oNode) {
 		var $ClosestElement = jQuery(oNode).closest("[data-sap-ui]");
-		return $ClosestElement.length ? sap.ui.getCore().byId($ClosestElement.data("sap-ui")) : undefined;
+		return $ClosestElement.length ? sap.ui.getCore().byId($ClosestElement.attr("data-sap-ui")) : undefined;
 	};
 
 	/**
@@ -117,12 +111,11 @@ function(
 		if (BaseObject.isA(oElement, "sap.ui.core.ComponentContainer")) {
 			// This happens when the compontentContainer has not been rendered yet
 			if (!oElement.getComponentInstance()) {
-				return;
+				return undefined;
 			}
 			return oElement.getComponentInstance().getRootControl();
-		} else {
-			return oElement;
 		}
+		return oElement;
 	};
 
 	/**
@@ -150,9 +143,9 @@ function(
 			return [];
 		}
 
-		if (oParent !== oContainer){
+		if (oParent !== oContainer) {
 			var aParents = ElementUtil.findAllSiblingsInContainer(oParent, oContainer);
-			return aParents.map(function(oParent){
+			return aParents.map(function(oParent) {
 				return ElementUtil.getAggregation(oParent, oElement.sParentAggregationName);
 			}).reduce(function(a, b) {
 				return a.concat(b);
@@ -182,9 +175,8 @@ function(
 				insert : oAggregationMetadata._sInsertMutator,
 				removeAll : oAggregationMetadata._sRemoveAllMutator
 			};
-		} else {
-			return {};
 		}
+		return {};
 	};
 
 	ElementUtil.getAggregation = function(oElement, sAggregationName) {
@@ -226,7 +218,6 @@ function(
 		} else {
 			oParent.addAggregation(sAggregationName, oElement);
 		}
-
 	};
 
 	/**
@@ -293,7 +284,6 @@ function(
 			}
 			return BaseObject.isA(oElement, sTypeOrInterface) || this.hasInterface(oElement, sTypeOrInterface);
 		}
-
 	};
 
 	ElementUtil.getAssociationAccessors = function(oElement, sAggregationName) {
@@ -308,9 +298,8 @@ function(
 				insert : oAssociationMetadata._sInsertMutator,
 				removeAll : oAssociationMetadata._sRemoveAllMutator
 			};
-		} else {
-			return {};
 		}
+		return {};
 	};
 
 	ElementUtil.getAssociation = function(oElement, sAssociationName) {
@@ -343,22 +332,22 @@ function(
 	};
 
 	/**
-	 * Checks whether specified Element is a ManagedObject
-	 * @param oElement
-	 * @param sElementType
-	 * @param sAggregationName
-	 * @returns {boolean}
+	 * Checks whether specified Element is a valid ManagedObject. The allowed objects must be
+	 * descendants of sap.ui.core.Element or sap.ui.core.Component classes.
+	 *
+	 * @param {sap.ui.base.Object} oObject - Object for validation
+	 * @returns {boolean} <code>true</code> if object is supported
 	 */
-	ElementUtil.isElementValid = function (oElement, sElementType, sAggregationName) {
-		var bIsManagedObject = oElement instanceof ManagedObject && !oElement.bIsDestroyed;
-		if (!bIsManagedObject && sElementType && sAggregationName) {
-			Log.error([
-				"sap.ui.dt.DesignTime: child element in aggregation " + sAggregationName + " of '" + sElementType,
-				"' should be a descendant of 'sap.ui.base.ManagedObject' and it is a '" + typeof oElement + "'. ",
-				"Please ignore the aggregation '" + sAggregationName + "' in the .designtime configuration"
-			].join(''));
-		}
-		return bIsManagedObject;
+	ElementUtil.isElementValid = function (oObject) {
+		var bValid = (
+			(
+				oObject instanceof Element
+				|| oObject instanceof Component
+			)
+			&& !oObject.bIsDestroyed
+		);
+
+		return bValid;
 	};
 
 	ElementUtil.getParent = function (oElement) {
@@ -375,34 +364,31 @@ function(
 	 * @return {String|undefined} label string or undefined when no label can be extracted
 	 */
 	ElementUtil.getLabelForElement = function(oElement, fnFunction) {
-
 		if (!ElementUtil.isElementValid(oElement)) {
 			throw Util.createError("ElementUtil#getLabelForElement", "A valid managed object instance should be passed as parameter", "sap.ui.dt");
 		}
 		// if there is a function, only the function is executed
 		if (typeof fnFunction === "function") {
 			return fnFunction(oElement);
-		} else {
-
-			var fnCalculateLabel = function(oElement) {
-
-				var vFieldLabel = (
-					typeof oElement.getText === "function" && oElement.getText()
-					|| typeof oElement.getLabelText === "function" && oElement.getLabelText()
-					|| typeof oElement.getLabel === "function" && oElement.getLabel()
-					|| typeof oElement.getTitle === "function" && oElement.getTitle()
-					|| typeof oElement.getHeading === "function" && oElement.getHeading()
-				);
-
-				if (ElementUtil.isElementValid(vFieldLabel)) {
-					return fnCalculateLabel(vFieldLabel);
-				} else {
-					return vFieldLabel;
-				}
-			};
-			var vCalculatedLabel = fnCalculateLabel(oElement);
-			return typeof vCalculatedLabel !== "string" ? oElement.getId() : vCalculatedLabel;
 		}
+
+		function calculateLabel(oElement) {
+			var vFieldLabel = (
+				typeof oElement.getText === "function" && oElement.getText()
+				|| typeof oElement.getLabelText === "function" && oElement.getLabelText()
+				|| typeof oElement.getLabel === "function" && oElement.getLabel()
+				|| typeof oElement.getTitle === "function" && oElement.getTitle()
+				|| typeof oElement.getHeading === "function" && oElement.getHeading()
+			);
+
+			if (ElementUtil.isElementValid(vFieldLabel)) {
+				return calculateLabel(vFieldLabel);
+			}
+			return vFieldLabel;
+		}
+
+		var vCalculatedLabel = calculateLabel(oElement);
+		return typeof vCalculatedLabel !== "string" ? oElement.getId() : vCalculatedLabel;
 	};
 
 	/**
@@ -432,6 +418,22 @@ function(
 		} else {
 			return undefined;
 		}
+	};
+
+	/**
+	 * Decrements passed index value by 1, if the source and target overlays for move belong to the same container and source index is less than the target index.
+	 * To compensate the fact that the lower source index is also removed during move.
+	 * @param {object} oSourceContainer - Source container
+	 * @param {object} oTargetContainer - Target container
+	 * @param {int} iSourceIndex - Source index
+	 * @param {int} iTargetIndex - Target index
+	 * @returns {int} - Index for move
+	 */
+	ElementUtil.adjustIndexForMove = function(oSourceContainer, oTargetContainer, iSourceIndex, iTargetIndex) {
+		if (oSourceContainer === oTargetContainer && iSourceIndex < iTargetIndex && iSourceIndex > -1) {
+			return iTargetIndex - 1;
+		}
+		return iTargetIndex;
 	};
 
 	return ElementUtil;

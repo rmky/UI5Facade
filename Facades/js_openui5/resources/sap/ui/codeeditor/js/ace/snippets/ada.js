@@ -1,1 +1,1 @@
-ace.define("ace/snippets/ada",["require","exports","module"],function(r,e,m){"use strict";e.snippetText=undefined;e.scope="ada";});
+ace.define("ace/snippets/ada",["require","exports","module"],function(r,e,m){"use strict";e.snippetText="";e.scope="ada";});(function(){ace.require(["ace/snippets/ada"],function(m){if(typeof module=="object"&&typeof exports=="object"&&module){module.exports=m;}});})();

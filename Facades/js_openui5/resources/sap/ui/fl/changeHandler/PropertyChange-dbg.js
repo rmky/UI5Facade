@@ -1,6 +1,6 @@
 /*!
- * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.fl.changeHandler.PropertyChange
 	 * @author SAP SE
-	 * @version 1.61.2
+	 * @version 1.67.1
 	 * @since 1.36
 	 * @private
 	 * @experimental Since 1.36. This class is experimental and provides only limited functionality. Also the API might be changed in future.
@@ -41,7 +41,7 @@ sap.ui.define([
 				oModifier.setProperty(oControl, sPropertyName, vPropertyValue);
 			}
 		} catch (ex) {
-			throw new Error("Applying property changes failed: " +  ex);
+			throw new Error("Applying property changes failed: " + ex);
 		}
 	}
 
@@ -67,7 +67,7 @@ sap.ui.define([
 		// }
 
 		oChange.setRevertData({
-			originalValue: oModifier.getPropertyBinding(oControl, sPropertyName) || oModifier.getProperty(oControl, sPropertyName)
+			originalValue: oModifier.getPropertyBindingOrProperty(oControl, sPropertyName)
 		});
 
 		changeProperty(oControl, sPropertyName, vPropertyValue, oModifier);

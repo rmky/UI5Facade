@@ -101,7 +101,7 @@ JS;
                         ],
                         {$alignment}
                         {$this->buildJsPropertyVisibile()}
-					})
+					}).data('_exfAttributeAlias', '{$col->getAttributeAlias()}')
 					
 JS;
     }

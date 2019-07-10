@@ -312,7 +312,7 @@ JS;
         
         $commonParams = <<<JS
 
-        		// Add pagination
+        		// Add pagination 
                 if ({$paginationSwitch}) {
                     var paginator = {$this->getPaginatorElement()->buildJsGetPaginator('oController')};
                     if (! {$keepPagePosJsVar}) {
@@ -324,38 +324,87 @@ JS;
 
 JS;
         
-        if ($this->isUiTable() === false) {
-            return $commonParams;
-        }
+                  
+        if ($this->isUiTable() === true) {
+            $tableParams = <<<JS
         
-        return $commonParams . <<<JS
-        
-        // Add filters and sorters from column menus
-		for (var i=0; i<oTable.getColumns().length; i++){
-			var oColumn = oTable.getColumns()[i];
-			if (oColumn.getFiltered()){
-				{$oParamsJs}['{$this->getFacade()->getUrlFilterPrefix()}' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
-			}
-		}
-		
-		// If sorting just now, make sure the sorter from the event is set too (eventually overwriting the previous sorting)
-		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'sort'){
-            sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}')
-                .destroySortItems()
-                .addSortItem(
-                    new sap.m.P13nSortItem({
-                        columnKey: {$oControlEventJsVar}.getParameters().column.getSortProperty(),
-                        operation: {$oControlEventJsVar}.getParameters().sortOrder
-                    })
-                );
-		}
-		
-		// If filtering just now, make sure the filter from the event is set too (eventually overwriting the previous one)
-		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'filter'){
-			{$oParamsJs}['{$this->getFacade()->getUrlFilterPrefix()}' + {$oControlEventJsVar}.getParameters().column.getFilterProperty()] = {$oControlEventJsVar}.getParameters().value;
-		}
+            // Add filters and sorters from column menus
+    		for (var i=0; i<oTable.getColumns().length; i++){
+    			var oColumn = oTable.getColumns()[i];
+    			if (oColumn.getFiltered()){
+    				{$oParamsJs}['{$this->getFacade()->getUrlFilterPrefix()}' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
+    			}
+    		}
+    
+            if ({$oParamsJs}.sort) {
+                var aSortProperties = {$oParamsJs}.sort.split(',');
+                var aSortOrders = {$oParamsJs}.order.split(',');
+                var oTable = sap.ui.getCore().byId('{$this->getId()}');
+                var oSortedCol;
+                aSortProperties.forEach(function(sProp, iIdx) {
+                    oTable.getColumns().forEach(function(oColumn){
+                        if (oColumn.getSortProperty() === sProp) {
+                            oColumn.setSorted(true);
+                            oColumn.setSortOrder(aSortOrders[iIdx] === 'desc' ? 'Descending' : 'Ascending');
+                        } else {
+                            oColumn.setSorted(false);
+                        }
+                    });
+                })
+            }
+
+            // Set sorting indicators for columns
+            var aSortProperties = ({$oParamsJs}.sort ? {$oParamsJs}.sort.split(',') : []);
+            var aSortOrders = ({$oParamsJs}.sort ? {$oParamsJs}.order.split(',') : []);
+            var iIdx = -1;
+            sap.ui.getCore().byId('{$this->getId()}').getColumns().forEach(function(oColumn){
+                iIdx = aSortProperties.indexOf(oColumn.getSortProperty());
+                if (iIdx > -1) {
+                    oColumn.setSorted(true);
+                    oColumn.setSortOrder(aSortOrders[iIdx] === 'desc' ? 'Descending' : 'Ascending');
+                } else {
+                    oColumn.setSorted(false);
+                }
+            });
+    		
+    		// If sorting just now, make sure the sorter from the event is set too (eventually overwriting the previous sorting)
+    		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'sort'){
+                sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}')
+                    .destroySortItems()
+                    .addSortItem(
+                        new sap.m.P13nSortItem({
+                            columnKey: {$oControlEventJsVar}.getParameters().column.getSortProperty(),
+                            operation: {$oControlEventJsVar}.getParameters().sortOrder
+                        })
+                    );
+    		}
+    		
+    		// If filtering just now, make sure the filter from the event is set too (eventually overwriting the previous one)
+    		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'filter'){
+    			{$oParamsJs}['{$this->getFacade()->getUrlFilterPrefix()}' + {$oControlEventJsVar}.getParameters().column.getFilterProperty()] = {$oControlEventJsVar}.getParameters().value;
+    		}
 		
 JS;
+        } else {
+            $tableParams = <<<JS
+
+            // Set sorting indicators for columns
+            var aSortProperties = ({$oParamsJs}.sort ? {$oParamsJs}.sort.split(',') : []);
+            var aSortOrders = ({$oParamsJs}.sort ? {$oParamsJs}.order.split(',') : []);
+            var iIdx = -1;
+            sap.ui.getCore().byId('{$this->getId()}').getColumns().forEach(function(oColumn){
+                iIdx = aSortProperties.indexOf(oColumn.data('_exfAttributeAlias'));
+                if (iIdx > -1) {
+                    oColumn.setSortIndicator(aSortOrders[iIdx] === 'desc' ? 'Descending' : 'Ascending');
+                } else {
+                    oColumn.setSortIndicator(sap.ui.core.SortOrder.None);
+                }
+            });
+
+JS;
+        }
+			
+        return $commonParams . $tableParams;
     }
     
     /**
@@ -669,6 +718,24 @@ JS;
                         
 JS;
         }
+                    
+        // For some reason, the sorting indicators on the column are changed to the opposite after
+        // the model is refreshed. This hack fixes it by forcing sorted columns to keep their
+        // indicator.
+        if ($this->isUiTable() === true) {
+            $sortOrderFix = <<<JS
+            
+            sap.ui.getCore().byId('{$this->getId()}').getColumns().forEach(function(oColumn){
+                if (oColumn.getSorted() === true) {
+                    var order = oColumn.getSortOrder()
+                    setTimeout(function(){
+                        oColumn.setSortOrder(order);
+                    }, 0);
+                }
+            });
+
+JS;
+        }
         
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . <<<JS
 
@@ -679,8 +746,8 @@ JS;
 
             {$paginator->buildJsSetTotal($oModelJs . '.getProperty("/recordsFiltered")', 'oController')};
             {$paginator->buildJsRefresh('oController')};  
-
-            {$singleResultJs}          
+            {$singleResultJs} 
+            {$sortOrderFix}         
             
 JS;
     }

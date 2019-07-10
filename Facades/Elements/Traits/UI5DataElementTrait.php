@@ -442,14 +442,14 @@ JS;
                 // Add configurator data
                 params.data = {$this->getP13nElement()->buildJsDataGetter()};
                 
-                {$this->buildJsDataLoaderParams($oControlEventJsVar, 'params', $keepPagePosJsVar)}
-                
                 // Add sorters and filters from P13nDialog
                 var aSortItems = sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}').getSortItems();
                 for (var i in aSortItems) {
                     params.sort = (params.sort ? params.sort+',' : '') + aSortItems[i].getColumnKey();
                     params.order = (params.order ? params.order+',' : '') + (aSortItems[i].getOperation() == 'Ascending' ? 'asc' : 'desc');
                 }
+                
+                {$this->buildJsDataLoaderParams($oControlEventJsVar, 'params', $keepPagePosJsVar)}
                 
                 {$doLoad}
                 

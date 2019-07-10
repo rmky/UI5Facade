@@ -185,10 +185,11 @@ JS;
             		},
                     removeSortItem: function(oEvent) {
             			var oParameters = oEvent.getParameters();
+            			var oModel = this.getModel("{$this->getModelNameForConfig()}");
             			if (oParameters.index > -1) {
             				var aSortItems = this.getModel("{$this->getModelNameForConfig()}").getProperty("/sorters");
             				aSortItems.splice(oParameters.index, 1);
-            				this.oJSONModel.setProperty("/sorters", aSortItems);
+            				oModel.setProperty("/sorters", aSortItems);
             			}
             		}
                 }),

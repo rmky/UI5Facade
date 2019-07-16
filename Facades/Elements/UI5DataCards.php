@@ -79,10 +79,15 @@ JS;
         
         return $cells;
     }
+    
+    protected function isMList() : bool
+    {
+        return true;
+    }
         
     protected function isMTable() : bool
     {
-        return true;
+        return false;
     }
     
     protected function isUiTable() : bool

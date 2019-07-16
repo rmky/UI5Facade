@@ -51,6 +51,11 @@ class UI5DataTable extends UI5AbstractElement
         
         return $js;
     }
+
+    protected function isMList() : bool
+    {
+        return $this->isMTable();
+    }
     
     protected function isMTable()
     {
@@ -335,23 +340,6 @@ JS;
     				{$oParamsJs}['{$this->getFacade()->getUrlFilterPrefix()}' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
     			}
     		}
-    
-            if ({$oParamsJs}.sort) {
-                var aSortProperties = {$oParamsJs}.sort.split(',');
-                var aSortOrders = {$oParamsJs}.order.split(',');
-                var oTable = sap.ui.getCore().byId('{$this->getId()}');
-                var oSortedCol;
-                aSortProperties.forEach(function(sProp, iIdx) {
-                    oTable.getColumns().forEach(function(oColumn){
-                        if (oColumn.getSortProperty() === sProp) {
-                            oColumn.setSorted(true);
-                            oColumn.setSortOrder(aSortOrders[iIdx] === 'desc' ? 'Descending' : 'Ascending');
-                        } else {
-                            oColumn.setSorted(false);
-                        }
-                    });
-                })
-            }
 
             // Set sorting indicators for columns
             var aSortProperties = ({$oParamsJs}.sort ? {$oParamsJs}.sort.split(',') : []);
@@ -385,7 +373,7 @@ JS;
     		}
 		
 JS;
-        } else {
+        } elseif ($this->isMTable()) {
             $tableParams = <<<JS
 
             // Set sorting indicators for columns
@@ -759,7 +747,7 @@ JS;
      */
     protected function buildJsDataLoaderPrepare() : string
     {
-        if ($this->isMTable()) {
+        if ($this->isMList()) {
             return "sap.ui.getCore().byId('{$this->getId()}').setNoDataText('{$this->translate('WIDGET.DATATABLE.NO_DATA_HINT')}');";
         }
         
@@ -773,7 +761,7 @@ JS;
      */
     protected function buildJsOfflineHint(string $oTableJs = 'oTable') : string
     {
-        if ($this->isMTable()) {
+        if ($this->isMList()) {
             return $oTableJs . ".setNoDataText('{$this->translate('WIDGET.DATATABLE.OFFLINE_HINT')}');";
         }
         
@@ -820,7 +808,7 @@ JS;
      */
     protected function buildJsSelectRowByIndex(string $oTableJs = 'oTable', string $iRowIdxJs = 'iRowIdx') : string
     {
-        if ($this->isMTable() === true) {
+        if ($this->isMList() === true) {
             return <<<JS
 
                 var oItem = {$oTableJs}.getItems()[{$iRowIdxJs}];

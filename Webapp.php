@@ -23,6 +23,8 @@ use exface\Core\Interfaces\Tasks\ResultWidgetInterface;
 use exface\Core\Interfaces\Actions\iShowWidget;
 use exface\Core\Events\Widget\OnPrefillChangePropertyEvent;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
+use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
+use exface\Core\Interfaces\Exceptions\ExceptionInterface;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -139,15 +141,21 @@ class Webapp implements WorkbenchDependantInterface
                 $lang = explode('_', pathinfo($route, PATHINFO_FILENAME))[1];
                 return $this->getTranslation($lang);
             case file_exists($this->getFacadesFolder() . $route):
-                return $this->getFromFileFacade($route);
+                return $this->getFromFileTemplate($route);
             case StringDataType::startsWith($route, 'view/'):
                 $path = StringDataType::substringAfter($route, 'view/');
                 if (StringDataType::endsWith($path, '.view.js')) {
                     $path = StringDataType::substringBefore($path, '.view.js');
-                    $widget = $this->getWidgetFromPath($path);
-                    if ($widget) {
-                        return $this->getViewForWidget($widget)->buildJsView();
-                    } 
+                    try {
+                        $widget = $this->getWidgetFromPath($path);
+                        if ($widget) {
+                            return $this->getViewForWidget($widget)->buildJsView();
+                        } 
+                    } catch (\Throwable $e) {
+                        $this->getWorkbench()->getLogger()->logException($e);
+                        $errorViewName = $this->getViewNamespace() . str_replace('/', '.', $path);
+                        return $this->getErrorView($e, $errorViewName);
+                    }
                     $widget = $this->handlePrefill($widget, $task);
                     return '';
                 }
@@ -155,10 +163,15 @@ class Webapp implements WorkbenchDependantInterface
                 $path = StringDataType::substringAfter($route, 'controller/');
                 if (StringDataType::endsWith($path, '.controller.js')) {
                     $path = StringDataType::substringBefore($path, '.controller.js');
-                    $widget = $this->getWidgetFromPath($path);
-                    if ($widget) {
-                        $widget = $this->handlePrefill($widget, $task);
-                        return $this->getControllerForWidget($widget)->buildJsController();
+                    try {
+                        $widget = $this->getWidgetFromPath($path);
+                        if ($widget) {
+                            $widget = $this->handlePrefill($widget, $task);
+                            return $this->getControllerForWidget($widget)->buildJsController();
+                        }
+                    } catch (\Throwable $e) {
+                        $this->getWorkbench()->getLogger()->logException($e);
+                        return $this->getErrorController($e);
                     }
                     return '';
                 }
@@ -166,12 +179,21 @@ class Webapp implements WorkbenchDependantInterface
                 $path = StringDataType::substringAfter($route, 'viewcontroller/');
                 if (StringDataType::endsWith($path, '.viewcontroller.js')) {
                     $path = StringDataType::substringBefore($path, '.viewcontroller.js');
-                    $widget = $this->getWidgetFromPath($path);
-                    
-                    if ($widget) {
-                        $widget = $this->handlePrefill($widget, $task);
-                        $controller = $this->getControllerForWidget($widget);
-                        return $controller->buildJsController() . "\n\n" . $controller->getView()->buildJsView();
+                    try {
+                        $widget = $this->getWidgetFromPath($path);
+                        if ($widget) {
+                            $widget = $this->handlePrefill($widget, $task);
+                            $controller = $this->getControllerForWidget($widget);
+                            return $controller->buildJsController() . "\n\n" . $controller->getView()->buildJsView();
+                        }
+                    } catch (\Throwable $e) {
+                        if ($controller) {
+                            $errorViewName = $controller->getView()->getName();
+                        } else {
+                            $errorViewName = $this->getViewNamespace() . str_replace('/', '.', $path);
+                        }
+                        $this->getWorkbench()->getLogger()->logException($e);
+                        return $this->getErrorController($e) . "\n\n" . $this->getErrorView($e, $errorViewName);
                     }
                     return '';
                 }
@@ -229,17 +251,17 @@ class Webapp implements WorkbenchDependantInterface
         return $this->facadeFolder;
     }
     
-    protected function getFromFileFacade(string $pathRelativeToFacadesFolder, array $placeholders = null) : string
+    protected function getFromFileTemplate(string $pathRelativeToWebappFolder, array $placeholders = null) : string
     {
-        $path = $this->getFacadesFolder() . $pathRelativeToFacadesFolder;
+        $path = $this->getFacadesFolder() . $pathRelativeToWebappFolder;
         if (! file_exists($path)) {
-            throw new FileNotFoundError('Cannot load facade file "' . $pathRelativeToFacadesFolder . '": file does not exist!');
+            throw new FileNotFoundError('Cannot load facade file "' . $pathRelativeToWebappFolder . '": file does not exist!');
         }
         
         $tpl = file_get_contents($path);
         
         if ($tpl === false) {
-            throw new RuntimeException('Cannot read facade file "' . $pathRelativeToFacadesFolder . '"!');
+            throw new RuntimeException('Cannot read facade file "' . $pathRelativeToWebappFolder . '"!');
         }
         
         $phs = $placeholders === null ? $this->config : $placeholders;
@@ -389,9 +411,15 @@ class Webapp implements WorkbenchDependantInterface
         $resources = array_merge($resources, $this->getComponentPreloadForLangs($locales));
         
         // Root view and controller
-        $rootWidget = $this->getRootPage()->getWidgetRoot();
-        $rootController = $this->getControllerForWidget($rootWidget);
-        $resources = array_merge($resources, $this->getComponentPreloadForController($rootController));
+        try {
+            $rootWidget = $this->getRootPage()->getWidgetRoot();
+            $rootController = $this->getControllerForWidget($rootWidget);
+            $resources = array_merge($resources, $this->getComponentPreloadForController($rootController));
+        } catch (\Throwable $e) {
+            $this->getWorkbench()->getLogger()->logException($e);
+            $resources[$rootController->getView()->getPath()] = $this->getErrorView($e, $rootController->getView()->getName());
+            $resources[$rootController->getPath()] = $this->getErrorController($e, $rootController->getName());
+        }
         
         return 'sap.ui.require.preload(' . json_encode($resources, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT) . ', "' . $prefix . 'Component-preload");';
     }
@@ -456,7 +484,8 @@ class Webapp implements WorkbenchDependantInterface
             'controller/BaseController.js',
             'controller/App.controller.js',
             'controller/NotFound.controller.js',
-            'controller/Offline.controller.js'
+            'controller/Offline.controller.js',
+            'controller/Error.controller.js'
         ];
     }
     
@@ -525,5 +554,84 @@ class Webapp implements WorkbenchDependantInterface
             $model = $this->createViewModel($viewName, $modelName);
         }
         return $model;
+    }
+    
+    /**
+     * Returns the code for the error view with information about the given exception.
+     * 
+     * If $originalViewPath is passed, the error view can be used instead of that view.
+     * 
+     * @param \Throwable $exception
+     * @param string $originalViewPath
+     * @return string
+     */
+    protected function getErrorView(\Throwable $exception, string $originalViewPath = null) : string
+    {
+        if ($exception instanceof ExceptionInterface) {
+            $logId = $exception->getId();
+            $alias =  $exception->getAlias();
+            $text = $exception->getMessageTitle($this->getWorkbench());
+            $description = $exception->getMessage();
+            if ($logId) {
+                $title = "{i18n>MESSAGE.ERROR.SERVER_ERROR_TITLE}: Log ID $logId";
+            } else {
+                $title = "{i18n>MESSAGE.ERROR.SERVER_ERROR_TITLE}";
+            }
+            
+            if (! $text) {
+                $text = $exception->getMessage();
+                $description = '';
+            }
+            if ($alias) {
+                $text = "{i18n>MESSAGE.TYPE.{$exception->getMessageType($this->getWorkbench())}} $alias: $text";
+            } else {
+                $text = "{i18n>MESSAGE.TYPE.ERROR}";
+            }
+            $text = json_encode($text);
+            $description = json_encode($description);
+            $title = json_encode($title);
+        } else {
+            $title = '"{i18n>MESSAGE.ERROR.SERVER_ERROR_TITLE}"';
+            $text = json_encode($exception->getMessage());
+            $description = '""';
+        }
+        $placeholders = array_merge($this->config, [
+            'error_view_name' => ($originalViewPath ?? 'Error'),
+            'error_title' => $title,
+            'error_text' => $text,
+            'error_description' => $description            
+        ]);
+        return $this->getFromFileTemplate('view/Error.view.js', $placeholders);
+    }
+    
+    /**
+     * Returns the code for the controller for the error view from getErrorView().
+     * 
+     * @param \Throwable $exception
+     * @return string
+     */
+    protected function getErrorController(\Throwable $exception) : string
+    {
+        return $this->getFromFileTemplate('controller/Error.controller.js');
+    }
+    
+    /**
+     * Returns the controller namespace for the app: e.g. "myComponent.controller."
+     * 
+     * @return string
+     */
+    public function getControllerNamespace() : string
+    {
+        return $this->getComponentName() . '.controller.';
+    }
+    
+    /**
+     * Returns the controller namespace for the app: e.g. "myComponent.view."
+     *
+     * @return string
+     */
+    public function getViewNamespace() : string
+    {
+        return $this->getComponentName() . '.view.';
     }
 }

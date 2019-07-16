@@ -7,6 +7,11 @@
 	"MESSAGE.ERROR_TITLE": "Fehler",
 	"MESSAGE.SUCCESS_TITLE": "",
 	"MESSAGE.FILL_REQUIRED_ATTRIBUTES": "Bitte füllen Sie die benötigten Felder aus: ",
+	"MESSAGE.ERROR.SERVER_ERROR_TITLE": "Fehler im Server",
+	"MESSAGE.TYPE.ERROR": "Fehler",
+	"MESSAGE.TYPE.WARNING": "Warnung",
+	"MESSAGE.TYPE.INFO": "Info",
+	"MESSAGE.ERROR.SERVER_ERROR_TITLE": "Fehler im Server",
 	
 	"WEBAPP.ROUTING.NOTFOUND.TITLE": "URL nicht gefunden",
 	"WEBAPP.ROUTING.NOTFOUND.TEXT": "Seite nicht gefunden!",

@@ -83,6 +83,11 @@
 				   "viewId": "offline",
 				   "viewName": "Offline",
 				   "transition": "show"
+				},
+				"error": {
+				   "viewId": "error",
+				   "viewName": "Error",
+				   "transition": "show"
 				}
 			}
 		}

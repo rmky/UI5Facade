@@ -193,7 +193,7 @@ class Webapp implements WorkbenchDependantInterface
                             $errorViewName = $this->getViewNamespace() . str_replace('/', '.', $path);
                         }
                         $this->getWorkbench()->getLogger()->logException($e);
-                        return $this->getErrorController($e) . "\n\n" . $this->getErrorView($e, $errorViewName);
+                        return $this->getErrorView($e, $errorViewName);
                     }
                     return '';
                 }
@@ -294,9 +294,14 @@ class Webapp implements WorkbenchDependantInterface
         try {
             $app = $this->getRootPage()->getApp();
         } catch (\Throwable $e) {
-            if ($this->getRootPage()->isEmpty() === false) {
-                $rootObj = $this->getRootPage()->getWidgetRoot()->getMetaObject();
-                $app = $rootObj->getApp();
+            $this->getWorkbench()->getLogger()->logException($e);
+            try {
+                if ($this->getRootPage()->isEmpty() === false) {
+                    $rootObj = $this->getRootPage()->getWidgetRoot()->getMetaObject();
+                    $app = $rootObj->getApp();
+                }
+            } catch (\Throwable $e2) {
+                $this->getWorkbench()->getLogger()->logException($e2);
             }
         }
         
@@ -417,8 +422,14 @@ class Webapp implements WorkbenchDependantInterface
             $resources = array_merge($resources, $this->getComponentPreloadForController($rootController));
         } catch (\Throwable $e) {
             $this->getWorkbench()->getLogger()->logException($e);
-            $resources[$rootController->getView()->getPath()] = $this->getErrorView($e, $rootController->getView()->getName());
-            $resources[$rootController->getPath()] = $this->getErrorController($e, $rootController->getName());
+            if ($rootController) {
+                $viewPath = $rootController->getView()->getPath();
+                $viewName = $rootController->getView()->getName();
+                $controllerPath = $rootController->getPath();
+                
+                $resources[$viewPath] = $this->getErrorView($e, $viewName);
+                $resources[$controllerPath] = $this->getErrorController($e);
+            }
         }
         
         return 'sap.ui.require.preload(' . json_encode($resources, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT) . ', "' . $prefix . 'Component-preload");';
@@ -565,7 +576,7 @@ class Webapp implements WorkbenchDependantInterface
      * @param string $originalViewPath
      * @return string
      */
-    protected function getErrorView(\Throwable $exception, string $originalViewPath = null) : string
+    public function getErrorView(\Throwable $exception, string $originalViewPath = null) : string
     {
         if ($exception instanceof ExceptionInterface) {
             $logId = $exception->getId();

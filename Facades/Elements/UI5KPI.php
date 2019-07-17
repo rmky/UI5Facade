@@ -25,9 +25,13 @@ class UI5KPI extends UI5Display
     {
         if ($this->isLazyLoading() === true) {
             $controller = $this->getController();
-            $controller->addMethod('onLoadData', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));
-            $controller->addOnShowViewScript($oControllerJs . '.' . $controller->buildJsMethodName('onLoadData', $this) . '();');
-            $modelInit = ".setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForLazyData()}')";
+            
+            // TODO take the data from the linked widget if configured
+            //if ($this->getWidget()->hasDataWidgetLink() === false) {
+                $controller->addMethod('onLoadData', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));
+                $controller->addOnShowViewScript($oControllerJs . '.' . $controller->buildJsMethodName('onLoadData', $this) . '();');
+                $modelInit = ".setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForLazyData()}')";
+            //}
         }
         return <<<JS
         

@@ -10,7 +10,7 @@ use exface\Core\Interfaces\DataTypes\EnumDataTypeInterface;
  * @author Andrej Kabachnik
  *
  */
-class UI5TransparentFormatter extends AbstractUi5BindingFormatter
+class UI5TransparentFormatter extends AbstractUI5BindingFormatter
 {    
     /**
      * 

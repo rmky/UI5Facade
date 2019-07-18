@@ -8,7 +8,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use exface\Core\Interfaces\Facades\HttpFacadeInterface;
 use GuzzleHttp\Psr7\Response;
 use exface\Core\DataTypes\StringDataType;
-use exface\UI5Facade\Exceptions\Ui5RouteInvalidException;
+use exface\UI5Facade\Exceptions\UI5RouteInvalidException;
 use exface\UI5Facade\Facades\UI5Facade;
 use exface\Core\Interfaces\Tasks\HttpTaskInterface;
 use exface\Core\Facades\AbstractHttpFacade\Middleware\Traits\TaskRequestTrait;
@@ -68,7 +68,7 @@ class UI5WebappRouter implements MiddlewareInterface
         $webapp = $this->facade->initWebapp($appId);
         try {
             $body = $webapp->get($target, $task);
-        } catch (Ui5RouteInvalidException $e) {
+        } catch (UI5RouteInvalidException $e) {
             return new Response(404, [], $e->getMessage());
         }
         $type = pathinfo($target, PATHINFO_EXTENSION);

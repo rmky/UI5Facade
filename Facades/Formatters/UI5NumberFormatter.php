@@ -12,7 +12,7 @@ use exface\Core\DataTypes\NumberDataType;
  * @author Andrej Kabachnik
  *
  */
-class UI5NumberFormatter extends AbstractUi5BindingFormatter
+class UI5NumberFormatter extends AbstractUI5BindingFormatter
 {    
     /**
      * 

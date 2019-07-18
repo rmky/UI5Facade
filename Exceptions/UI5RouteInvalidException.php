@@ -9,7 +9,7 @@ use exface\Core\Exceptions\UnexpectedValueException;
  * @author Andrej Kabachnik
  *
  */
-class Ui5RouteInvalidException extends UnexpectedValueException
+class UI5RouteInvalidException extends UnexpectedValueException
 {
     
 }

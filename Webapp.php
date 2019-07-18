@@ -4,7 +4,7 @@ namespace exface\UI5Facade;
 use exface\Core\Interfaces\WorkbenchDependantInterface;
 use exface\Core\CommonLogic\Workbench;
 use exface\UI5Facade\Facades\UI5Facade;
-use exface\UI5Facade\Exceptions\Ui5RouteInvalidException;
+use exface\UI5Facade\Exceptions\UI5RouteInvalidException;
 use exface\Core\DataTypes\StringDataType;
 use exface\Core\Exceptions\LogicException;
 use exface\Core\Factories\UiPageFactory;
@@ -206,7 +206,7 @@ class Webapp implements WorkbenchDependantInterface
     {
         try {
             $this->get($route);
-        } catch (Ui5RouteInvalidException $e) {
+        } catch (UI5RouteInvalidException $e) {
             return false;
         }
         return true;
@@ -339,7 +339,7 @@ class Webapp implements WorkbenchDependantInterface
     /**
      * 
      * @param string $path
-     * @throws Ui5RouteInvalidException
+     * @throws UI5RouteInvalidException
      * @return WidgetInterface|NULL
      */
     protected function getWidgetFromPath(string $path) : ?WidgetInterface

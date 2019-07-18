@@ -6,7 +6,7 @@ namespace exface\UI5Facade\Facades\Formatters;
  * @author Andrej Kabachnik
  *
  */
-class UI5DefaultFormatter extends AbstractUi5BindingFormatter
+class UI5DefaultFormatter extends AbstractUI5BindingFormatter
 {    
     /**
      * 

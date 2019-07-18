@@ -10,7 +10,7 @@ use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsDateFormatter;
  * @author Andrej Kabachnik
  *
  */
-class UI5DateFormatter extends AbstractUi5BindingFormatter
+class UI5DateFormatter extends AbstractUI5BindingFormatter
 {    
     /**
      * 

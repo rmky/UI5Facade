@@ -10,7 +10,7 @@ use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsBooleanFormatter;
  * @author Andrej Kabachnik
  *
  */
-class UI5BooleanFormatter extends AbstractUi5BindingFormatter
+class UI5BooleanFormatter extends AbstractUI5BindingFormatter
 {    
     /**
      * 

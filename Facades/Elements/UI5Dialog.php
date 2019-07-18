@@ -149,6 +149,7 @@ JS;
 				    isObjectIconAlwaysVisible: false,
 				    isObjectTitleAlwaysVisible: false,
 				    isObjectSubtitleAlwaysVisible: false,
+                    isActionAreaAlwaysVisible: false,
                     {$image}
 					actions: [
 						

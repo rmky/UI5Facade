@@ -39,6 +39,9 @@ use Psr\Http\Message\RequestInterface;
 use GuzzleHttp\Psr7\Response;
 use exface\Core\DataTypes\DateTimeDataType;
 use exface\Core\Facades\AbstractAjaxFacade\Interfaces\JsDataTypeFormatterInterface;
+use exface\UI5Facade\Facades\Elements\ServerAdapters\UI5FacadeServerAdapter;
+use exface\UI5Facade\Facades\Elements\ServerAdapters\OData2ServerAdapter;
+use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
 
 /**
  * 
@@ -421,6 +424,12 @@ JS;
     protected function isShowingErrorDetails() : bool
     {
         return false;
+    }
+    
+    public function getServerAdapter(UI5AbstractElement $element) : UI5ServerAdapterInterface
+    {
+        //return new UI5FacadeServerAdapter($element);
+        return new OData2ServerAdapter($element);
     }
 }
 ?>

@@ -11,6 +11,8 @@ use exface\UI5Facade\Facades\Elements\UI5SearchField;
 use exface\Core\Widgets\Input;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
 use exface\Core\Interfaces\Widgets\iCanPreloadData;
+use exface\UI5Facade\Facades\UI5Facade;
+use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -46,6 +48,7 @@ use exface\Core\Interfaces\Widgets\iCanPreloadData;
  * 
  * @author Andrej Kabachnik
  *
+ * @method UI5Facade getFacade()
  */
 trait UI5DataElementTrait {
     
@@ -546,33 +549,17 @@ JS;
     
     protected function buildJsDataLoaderFromServerRemote(string $oModelJs = 'oModel', string $oParamsJs = 'params') : string
     {
-        return <<<JS
-        
-                var fnCompleted = function(oEvent){
-                    {$this->buildJsBusyIconHide()}
-        			if (oEvent.getParameters().success) {
-                        {$this->buildJsDataLoaderOnLoaded('this')}
-                    } else {
-                        var error = oEvent.getParameters().errorobject;
-                        if (navigator.onLine === false) {
-                            if (oData.length = 0) {
-                                {$this->buildJsOfflineHint('oTable')}
-                            } else {
-                                {$this->getController()->buildJsComponentGetter()}.showDialog('{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR')}', '{$this->translate('WIDGET.DATATABLE.OFFLINE_ERROR_TITLE')}', 'Error');
-                            }
-                        } else {
-                            {$this->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}
-                        }
-                    }
-                    
-                    this.detachRequestCompleted(fnCompleted);
-        		};
-        		
-        		oModel.attachRequestCompleted(fnCompleted);
-        		
-                oModel.loadData("{$this->getAjaxUrl()}", {$oParamsJs});
-                
-JS;
+        return $this->getServerAdapter()->buildJsDataLoader(
+            $oModelJs, 
+            $oParamsJs, 
+            $this->buildJsDataLoaderOnLoaded('oModel'), 
+            $this->buildJsOfflineHint('oTable')
+        );
+    }
+    
+    protected function getServerAdapter() : UI5ServerAdapterInterface
+    {
+        return $this->getFacade()->getServerAdapter($this);
     }
     
     protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string

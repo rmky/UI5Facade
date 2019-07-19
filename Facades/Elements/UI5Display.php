@@ -247,8 +247,8 @@ JS;
         $semCols = [];
         foreach (Colors::getSemanticColors() as $semCol) {
             switch ($semCol) {
-                case Colors::SEMANTIC_ERROR: $ui5Color = 'Critical'; break;
-                case Colors::SEMANTIC_WARNING: $ui5Color = 'Error'; break;
+                case Colors::SEMANTIC_ERROR: $ui5Color = 'Error'; break;
+                case Colors::SEMANTIC_WARNING: $ui5Color = 'Critical'; break;
                 case Colors::SEMANTIC_OK: $ui5Color = 'Good'; break;
                 case Colors::SEMANTIC_INFO: $ui5Color = 'Neutral'; break;
             }
@@ -264,7 +264,8 @@ JS;
         var oColorScale = {$semColsJs};
         sValueColor = oColorScale[sColor];
         sap.ui.getCore().byId('{$this->getId()}').setValueColor(sValueColor);
-    } else {
+    } else if (sColor) {
+        console.warn('Cannot set color "' + sColor + '" - only UI5 semantic colors currently supported!');
         // TODO
     }
     

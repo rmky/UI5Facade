@@ -314,11 +314,11 @@ JS;
      * 
      * Use buildJsConfiguratorOpen() to show the configurator dialog. 
      * 
-     * @param ui5ControllerInterface $controller
+     * @param UI5ControllerInterface $controller
      * 
-     * @return ui5AbstractElement
+     * @return UI5AbstractElement
      */
-    protected function initConfiguratorControl(ui5ControllerInterface $controller) : ui5AbstractElement
+    protected function initConfiguratorControl(UI5ControllerInterface $controller) : UI5AbstractElement
     {
         $controller->addDependentControl('oConfigurator', $this, $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget()));
         return $this;
@@ -604,7 +604,7 @@ JS;
     
     /**
      *
-     * @return ui5DataConfigurator
+     * @return UI5DataConfigurator
      */
     protected function getP13nElement()
     {

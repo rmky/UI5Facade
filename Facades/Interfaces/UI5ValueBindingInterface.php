@@ -14,7 +14,7 @@ interface UI5ValueBindingInterface {
      * 
      * If not set explicitly, the path will be generated automatically from the meta model references.
      * 
-     * @return ui5ValueBindingInterface
+     * @return UI5ValueBindingInterface
      */
     public function setValueBindingPath($string);
     
@@ -59,7 +59,7 @@ interface UI5ValueBindingInterface {
      * For example, set to 'otherModel>/' to switch to another model.
      * 
      * @param string $value
-     * @return ui5ValueBindingInterface
+     * @return UI5ValueBindingInterface
      */
-    public function setValueBindingPrefix(string $value) : ui5ValueBindingInterface;
+    public function setValueBindingPrefix(string $value) : UI5ValueBindingInterface;
 }

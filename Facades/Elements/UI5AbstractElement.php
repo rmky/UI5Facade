@@ -337,7 +337,7 @@ JS;
      * 
      * Note: the event fired will be available via the oEvent javascript variable.
      * 
-     * Example: ui5Input::addPseudoEventHandler('onsapenter', 'console.log("Enter pressed:", oEvent)')
+     * Example: UI5Input::addPseudoEventHandler('onsapenter', 'console.log("Enter pressed:", oEvent)')
      * 
      * @link https://openui5.hana.ondemand.com/#/api/jQuery.sap.PseudoEvents
      * 
@@ -413,7 +413,7 @@ JS;
         return '';
     }
     
-    public function getController() : ui5ControllerInterface
+    public function getController() : UI5ControllerInterface
     {
         if ($this->controller === null) {
             if ($this->getWidget()->hasParent()) {
@@ -425,12 +425,12 @@ JS;
         return $this->controller;
     }
     
-    public function getView() : ui5ViewInterface
+    public function getView() : UI5ViewInterface
     {
         return $this->getController()->getView();
     }
     
-    public function setController(ui5ControllerInterface $controller) : ui5AbstractElement
+    public function setController(UI5ControllerInterface $controller) : UI5AbstractElement
     {
         if (! $this->controller === null) {
             throw new LogicException('Cannot change the controller of a UI5 element after it had been set initially!');
@@ -444,7 +444,7 @@ JS;
         return [];
     }
     
-    public function addOnBindingChangeScript(string $bindingName, string $script, string $oEventJs = 'oEvent') : ui5AbstractElement
+    public function addOnBindingChangeScript(string $bindingName, string $script, string $oEventJs = 'oEvent') : UI5AbstractElement
     {
         $handler = <<<JS
 

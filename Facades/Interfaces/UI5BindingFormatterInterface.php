@@ -8,7 +8,7 @@ use exface\Core\Facades\AbstractAjaxFacade\Interfaces\JsDataTypeFormatterInterfa
  * @author Andrej Kabachnik
  *
  */
-interface ui5BindingFormatterInterface {
+interface UI5BindingFormatterInterface {
     
     /**
      * Returns data binding properties specifying the formatting.

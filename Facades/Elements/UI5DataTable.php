@@ -24,7 +24,7 @@ class UI5DataTable extends UI5AbstractElement
 {
     use JqueryDataTableTrait;
     
-    use ui5DataElementTrait {
+    use UI5DataElementTrait {
        buildJsDataLoaderOnLoaded as buildJsDataLoaderOnLoadedViaTrait;
        buildJsConstructor as buildJsConstructorViaTrait;
        getCaption as getCaptionViaTrait;
@@ -407,7 +407,7 @@ JS;
      * @param bool $growing
      * @param string $oControllerJsVar
      *
-     * @return ui5DataTable
+     * @return UI5DataTable
      */
     public function buildJsRefresh($keep_page_pos = false, $growing = false, string $oControllerJsVar = null)
     {
@@ -683,7 +683,7 @@ JS;
     /**
      * 
      * {@inheritdoc}
-     * @see ui5DataElementTrait::buildJsDataLoaderOnLoaded()
+     * @see UI5DataElementTrait::buildJsDataLoaderOnLoaded()
      */
     protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {
@@ -743,7 +743,7 @@ JS;
     /**
      *
      * {@inheritdoc}
-     * @see ui5DataElementTrait::buildJsDataLoaderPrepare()
+     * @see UI5DataElementTrait::buildJsDataLoaderPrepare()
      */
     protected function buildJsDataLoaderPrepare() : string
     {
@@ -757,7 +757,7 @@ JS;
     /**
      *
      * {@inheritdoc}
-     * @see ui5DataElementTrait::buildJsOfflineHint()
+     * @see UI5DataElementTrait::buildJsOfflineHint()
      */
     protected function buildJsOfflineHint(string $oTableJs = 'oTable') : string
     {
@@ -770,9 +770,9 @@ JS;
     
     /**
      *
-     * @return ui5DataPaginator
+     * @return UI5DataPaginator
      */
-    protected function getPaginatorElement() : ui5DataPaginator
+    protected function getPaginatorElement() : UI5DataPaginator
     {
         return $this->getFacade()->getElement($this->getWidget()->getPaginator());
     }
@@ -789,7 +789,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see ui5DataElementTrait::getCaption()
+     * @see UI5DataElementTrait::getCaption()
      */
     public function getCaption() : string
     {

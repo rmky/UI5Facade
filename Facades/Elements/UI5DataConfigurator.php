@@ -348,10 +348,10 @@ JS;
      * The constructor for a filter element within a data configurator is different from a
      * filter's general constructor!
      * 
-     * @param ui5Filter $element
+     * @param UI5Filter $element
      * @return string
      */
-    protected function buildJsFilter(ui5Filter $element) : string
+    protected function buildJsFilter(UI5Filter $element) : string
     {
         $element->addPseudoEventHandler('onsapenter', $this->getFacade()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh());
         return <<<JS
@@ -434,7 +434,7 @@ JS;
         return $this->modelNameForConfig;
     }
     
-    public function setModelNameForConfig(string $name) : ui5DataConfigurator
+    public function setModelNameForConfig(string $name) : UI5DataConfigurator
     {
         $this->modelNameForConfig = $name;
         return $this;

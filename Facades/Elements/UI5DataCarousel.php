@@ -35,7 +35,7 @@ class UI5DataCarousel extends UI5Split
                 $this->getDataElement()->setEditable(true);
             }
             $childElement = $this->getFacade()->getElement($child);
-            if ($childElement instanceof ui5ValueBindingInterface) {
+            if ($childElement instanceof UI5ValueBindingInterface) {
                 $bindings .= <<<JS
             oControl = sap.ui.getCore().byId("{$childElement->getId()}");
             oBindingInfo = oControl.getBindingInfo("{$childElement->buildJsValueBindingPropertyName()}");

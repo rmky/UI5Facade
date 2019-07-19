@@ -8,11 +8,11 @@ use exface\UI5Facade\Facades\Elements\UI5AbstractElement;
  * @author Andrej Kabachnik
  *
  */
-interface ui5ViewInterface {
+interface UI5ViewInterface {
     
     public function buildJsView() : string;
     
-    public function getRootElement() : ui5AbstractElement;
+    public function getRootElement() : UI5AbstractElement;
     
     /**
      * Returns the name of the view: e.g. my.app.root.view.my.app.Page
@@ -37,18 +37,18 @@ interface ui5ViewInterface {
     
     public function isBuilt() : bool;
     
-    public function getController() : ?ui5ControllerInterface;
+    public function getController() : ?UI5ControllerInterface;
     
-    public function setController(ui5ControllerInterface $controller) : ui5ViewInterface; 
+    public function setController(UI5ControllerInterface $controller) : UI5ViewInterface; 
     
-    public function buildJsViewGetter(ui5AbstractElement $fromElement) : string;
+    public function buildJsViewGetter(UI5AbstractElement $fromElement) : string;
     
     /**
      * 
      * @param string $name
-     * @return ui5ModelInterface
+     * @return UI5ModelInterface
      */
-    public function getModel(string $name = '') : ui5ModelInterface; 
+    public function getModel(string $name = '') : UI5ModelInterface; 
     
     /**
      * Returns TRUE if this view is the root view for the it's webap

@@ -21,7 +21,7 @@ class UI5InputComboTable extends UI5Input
     
     protected function init()
     {
-        // If the combo does not allow new values, we need to force the ui5 input to
+        // If the combo does not allow new values, we need to force the UI5 input to
         // check any input via autosuggest _before_ any other action is taken.
         // TODO this only works if there was no value before and needs to be
         // extended to work with changing values too.

@@ -95,7 +95,7 @@ JS;
     
     /**
      * 
-     * @return ui5BindingFormatterInterface
+     * @return UI5BindingFormatterInterface
      */
     protected function getValueBindingFormatter()
     {
@@ -106,7 +106,7 @@ JS;
      * Sets the alignment for the content within the display: Begin, End, Center, Left or Right.
      * 
      * @param $propertyValue
-     * @return ui5Display
+     * @return UI5Display
      */
     public function setAlignment($propertyValue)
     {

@@ -14,7 +14,7 @@ use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLiveReferenceTrait;
  * @author Andrej Kabachnik
  *        
  */
-class UI5Value extends UI5AbstractElement implements UI5ValueBindingInterface, ui5CompoundControlInterface
+class UI5Value extends UI5AbstractElement implements UI5ValueBindingInterface, UI5CompoundControlInterface
 {
     use JqueryLiveReferenceTrait;
     

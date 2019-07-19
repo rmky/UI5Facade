@@ -4,7 +4,7 @@ namespace exface\UI5Facade\Facades\Formatters;
 use exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Interfaces\JsDataTypeFormatterInterface;
 
-abstract class AbstractUI5BindingFormatter implements ui5BindingFormatterInterface
+abstract class AbstractUI5BindingFormatter implements UI5BindingFormatterInterface
 {
     private $jsFormatter = null;
     

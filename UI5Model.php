@@ -5,7 +5,7 @@ use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\DataSheets\DataPointerInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5ModelInterface;
 
-class UI5Model implements ui5ModelInterface
+class UI5Model implements UI5ModelInterface
 {    
     private $name = null;
     
@@ -35,7 +35,7 @@ class UI5Model implements ui5ModelInterface
     }
     
     
-    public function setBindingPointer(WidgetInterface $widget, string $bindingName, DataPointerInterface $pointer) : ui5ModelInterface
+    public function setBindingPointer(WidgetInterface $widget, string $bindingName, DataPointerInterface $pointer) : UI5ModelInterface
     {
         $this->bindings[$widget->getId()][$bindingName] = $pointer;
         return $this;

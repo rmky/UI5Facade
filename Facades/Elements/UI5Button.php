@@ -263,7 +263,7 @@ JS;
     /**
      * 
      * @param Button $widget
-     * @param ui5AbstractElement $input_element
+     * @param UI5AbstractElement $input_element
      * @return string
      */
     protected function buildJsInputRefresh(Button $widget, $input_element)

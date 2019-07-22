@@ -187,7 +187,7 @@ JS;
             showValueHelp: true,
 			suggest: {$this->buildJsPropertySuggest()},
             suggestionRows: {
-                path: "{$this->getModelNameForAutosuggest()}>/data",
+                path: "{$this->getModelNameForAutosuggest()}>/rows",
                 template: new sap.m.ColumnListItem({
 				   cells: [
 				       {$cells}
@@ -283,7 +283,7 @@ JS;
                     {$this->buildJsBusyIconShow()}
                     var silencer = function(oEvent){
                         if (oEvent.getParameters().success) {
-                            var data = this.getProperty('/data');
+                            var data = this.getProperty('/rows');
                             var curKey = oInput.getSelectedKey();
                             if (parseInt(this.getProperty("/recordsTotal")) == 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
                                 oInput.setValue(data[0]['{$widget->getTextColumn()->getDataColumnName()}']).setSelectedKey(data[0]['{$widget->getValueColumn()->getDataColumnName()}']);

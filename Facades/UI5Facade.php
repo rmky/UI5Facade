@@ -391,7 +391,7 @@ JS;
     public function buildResponseData(DataSheetInterface $data_sheet, WidgetInterface $widget = null)
     {
         $data = array();
-        $data['data'] = array_merge($data_sheet->getRows(), $data_sheet->getTotalsRows());
+        $data['rows'] = array_merge($data_sheet->getRows(), $data_sheet->getTotalsRows());
         $data['recordsFiltered'] = $data_sheet->countRowsInDataSource();
         $data['recordsTotal'] = $data_sheet->countRowsInDataSource();
         if (! is_null($data_sheet->getRowsLimit())) {

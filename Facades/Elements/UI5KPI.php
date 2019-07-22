@@ -104,7 +104,7 @@ JS;
     
     public function getValueBindingPrefix() : string
     {
-        return parent::getValueBindingPrefix() === '/' ? $this->getModelNameForLazyData() . '>/data/0/' : parent::getValueBindingPrefix();
+        return parent::getValueBindingPrefix() === '/' ? $this->getModelNameForLazyData() . '>/rows/0/' : parent::getValueBindingPrefix();
     }
     
     /**

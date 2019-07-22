@@ -147,7 +147,7 @@ JS;
         
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . <<<JS
         
-            var aData = {$oModelJs}.getProperty('/data');
+            var aData = {$oModelJs}.getProperty('/rows');
             var oRows = [];
             var dMin, dStart, dEnd, sEnd, oDataRow, sRowKey;
             for (var i in aData) {

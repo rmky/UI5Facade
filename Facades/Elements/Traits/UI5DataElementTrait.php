@@ -480,8 +480,8 @@ JS;
                 exfPreloader
                 .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
                 .then(preload => {
-                    if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
-                        var aData = preload.response.data;
+                    if (preload !== undefined && preload.response !== undefined && preload.response.rows !== undefined) {
+                        var aData = preload.response.rows;
                         if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {
                             var conditions = {$oParamsJs}.data.filters.conditions;
                             var fnFilter;

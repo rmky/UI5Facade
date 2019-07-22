@@ -23,7 +23,7 @@ class UI5DataCards extends UI5DataTable
                         {$this->buildJsToolbar()}
             		],
             		items: {
-            			path: '/data',
+            			path: '/rows',
                         {$this->buildJsBindingOptionsForGrouping()}
                         template: new sap.m.CustomListItem({
                             type: "Active",

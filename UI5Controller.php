@@ -747,15 +747,15 @@ JS;
                 .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
                 .then(preload => {
                     var failed = false;
-                    if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
+                    if (preload !== undefined && preload.response !== undefined && preload.response.rows !== undefined) {
                         var oRouteData = {$oViewModelJs}.getProperty('/_route').params.data;
                         if (oRouteData !== undefined) {
                             var uid = oRouteData.rows[0]['{$widget->getMetaObject()->getUidAttributeAlias()}'];
-                            var aData = preload.response.data.filter(oRow => {
+                            var aData = preload.response.rows.filter(oRow => {
                                 return oRow['{$widget->getMetaObject()->getUidAttributeAlias()}'] == uid;
                             });
                             if (aData.length === 1) {
-                                var response = $.extend({}, preload.response, {data: aData});
+                                var response = $.extend({}, preload.response, {rows: aData});
                                 {$this->buildJsPrefillLoaderSuccess('response', $oViewJs, $oViewModelJs)}
                             } else {
                                 failed = true;
@@ -837,8 +837,8 @@ JS;
                     if (Object.keys(oDataModel.getData()).length !== 0) {
                         oDataModel.setData({});
                     }
-                    if ({$responseJs}.data && {$responseJs}.data && {$responseJs}.data.length === 1) {
-                        oDataModel.setData({$responseJs}.data[0]);
+                    if (Array.isArray({$responseJs}.rows) && {$responseJs}.rows.length === 1) {
+                        oDataModel.setData({$responseJs}.rows[0]);
                     }
                     
 JS;

@@ -297,7 +297,7 @@ JS;
      */
     protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {
-        return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . $this->buildJsRedraw($oModelJs . '.getData().data');
+        return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . $this->buildJsRedraw($oModelJs . '.getData().rows');
     }
 
     /**

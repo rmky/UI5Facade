@@ -6,7 +6,7 @@ namespace exface\UI5Facade\Facades\Interfaces;
  * @author Andrej Kabachnik
  *
  */
-interface ui5CompoundControlInterface {
+interface UI5CompoundControlInterface {
     
     /**
      * 

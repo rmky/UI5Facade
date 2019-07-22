@@ -10,12 +10,12 @@ use exface\Core\Widgets\DataButton;
 use exface\Core\Widgets\Button;
 use exface\Core\Widgets\ButtonGroup;
 use exface\Core\Widgets\MenuButton;
-use exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 
 /**
  * 
  * @method Chart getWidget()
- * @method ui5ControllerInterface getController()
+ * @method UI5ControllerInterface getController()
  * 
  * @author Andrej Kabachnik
  *
@@ -23,10 +23,10 @@ use exface\UI5Facade\Facades\Interfaces\ui5ControllerInterface;
 class UI5Chart extends UI5AbstractElement
 {
     use EChartsTrait;
-    use ui5DataElementTrait {
+    use UI5DataElementTrait {
         buildJsConfiguratorButtonConstructor as buildJsConfiguratorButtonConstructorViaTrait;
         buildJsDataLoaderOnLoaded as buildJsDataLoaderOnLoadedViaTrait;
-        ui5DataElementTrait::buildJsRowCompare insteadof EChartsTrait; 
+        UI5DataElementTrait::buildJsRowCompare insteadof EChartsTrait; 
     }
     
     /**
@@ -101,7 +101,6 @@ JS;
     protected function getJsIncludes() : array
     {
         $htmlTagsArray = $this->buildHtmlHeadDefaultIncludes();
-        //TODO ui5theme nicht im Paket enthalten, Datei wurde manuell erzeugt und in lokalem Ordner abgelegt!
         $htmlTagsArray[] = '<script type="text/javascript" src="' . $this->getFacade()->buildUrlToSource('LIBS.ECHARTS.THEME_JS') . '"></script>';
         $tags = implode('', $htmlTagsArray);
         $jsTags = [];
@@ -330,7 +329,7 @@ JS;
     
     /**
      * 
-     * @see ui5DataElementTrait
+     * @see UI5DataElementTrait
      */
     protected function getDataWidget() : Data
     {

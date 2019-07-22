@@ -312,11 +312,11 @@ JS;
     
     /**
      * 
-     * @param ui5AbstractElement $element
+     * @param UI5AbstractElement $element
      * @param string $controllerName
-     * @return ui5ControllerInterface
+     * @return UI5ControllerInterface
      */
-    public function createController(ui5AbstractElement $element, $controllerName = null) : ui5ControllerInterface
+    public function createController(UI5AbstractElement $element, $controllerName = null) : UI5ControllerInterface
     {
         if ($controllerName === null) {
             $controllerName = $this->getControllerName($element->getWidget(), $this->getWebapp()->getRootPage());
@@ -335,11 +335,11 @@ JS;
     
     /**
      * 
-     * @param ui5AbstractElement $element
+     * @param UI5AbstractElement $element
      * @param string $viewName
-     * @return ui5ViewInterface
+     * @return UI5ViewInterface
      */
-    public function createView(ui5AbstractElement $element, $viewName = null) : ui5ViewInterface
+    public function createView(UI5AbstractElement $element, $viewName = null) : UI5ViewInterface
     {
         $widget = $element->getWidget();
         if ($viewName === null) {
@@ -394,7 +394,7 @@ JS;
     public function buildResponseData(DataSheetInterface $data_sheet, WidgetInterface $widget = null)
     {
         $data = array();
-        $data['data'] = array_merge($data_sheet->getRows(), $data_sheet->getTotalsRows());
+        $data['rows'] = array_merge($data_sheet->getRows(), $data_sheet->getTotalsRows());
         $data['recordsFiltered'] = $data_sheet->countRowsInDataSource();
         $data['recordsTotal'] = $data_sheet->countRowsInDataSource();
         if (! is_null($data_sheet->getRowsLimit())) {

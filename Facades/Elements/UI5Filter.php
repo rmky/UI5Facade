@@ -7,7 +7,7 @@ use exface\Core\Widgets\InputHidden;
 /**
  * Generates OpenUI5 filters
  * 
- * @method ui5AbstractElement getInputElement()
+ * @method UI5AbstractElement getInputElement()
  *
  * @author Andrej Kabachnik
  *        

@@ -136,7 +136,7 @@ JS;
     }
     
     /**
-     * TODO merge this with the corresponding method in ui5Value to support all cases.
+     * TODO merge this with the corresponding method in UI5Value to support all cases.
      * 
      * Currently the input can use it's own value with defaults and can inherit this
      * value from a linked widget if a value live reference is defined. 
@@ -144,7 +144,7 @@ JS;
      * TODO #binding use model binding for element values and live references.
      * For live references, Fetching the value is done in PHP for initialization and 
      * in JS for every chage of the referenced value. This is ugly, but since there
-     * seems to be no init event for input controls in ui5, there is no way to tell
+     * seems to be no init event for input controls in UI5, there is no way to tell
      * a control to get it's value from another one. Using onAfterRendering on the
      * base element does not work for filters in dialogs as they are not rendered
      * when the data element is loaded, but only when the dialog is opened. These

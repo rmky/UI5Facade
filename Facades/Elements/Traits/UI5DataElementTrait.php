@@ -317,11 +317,11 @@ JS;
      * 
      * Use buildJsConfiguratorOpen() to show the configurator dialog. 
      * 
-     * @param ui5ControllerInterface $controller
+     * @param UI5ControllerInterface $controller
      * 
-     * @return ui5AbstractElement
+     * @return UI5AbstractElement
      */
-    protected function initConfiguratorControl(ui5ControllerInterface $controller) : ui5AbstractElement
+    protected function initConfiguratorControl(UI5ControllerInterface $controller) : UI5AbstractElement
     {
         $controller->addDependentControl('oConfigurator', $this, $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget()));
         return $this;
@@ -483,8 +483,8 @@ JS;
                 exfPreloader
                 .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
                 .then(preload => {
-                    if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
-                        var aData = preload.response.data;
+                    if (preload !== undefined && preload.response !== undefined && preload.response.rows !== undefined) {
+                        var aData = preload.response.rows;
                         if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {
                             var conditions = {$oParamsJs}.data.filters.conditions;
                             var fnFilter;
@@ -591,7 +591,7 @@ JS;
     
     /**
      *
-     * @return ui5DataConfigurator
+     * @return UI5DataConfigurator
      */
     protected function getP13nElement()
     {

@@ -24,7 +24,7 @@ class UI5DataTable extends UI5AbstractElement
 {
     use JqueryDataTableTrait;
     
-    use ui5DataElementTrait {
+    use UI5DataElementTrait {
        buildJsDataLoaderOnLoaded as buildJsDataLoaderOnLoadedViaTrait;
        buildJsConstructor as buildJsConstructorViaTrait;
        getCaption as getCaptionViaTrait;
@@ -93,7 +93,7 @@ class UI5DataTable extends UI5AbstractElement
                         {$this->buildJsColumnsForMTable()}
             		],
             		items: {
-            			path: '/data',
+            			path: '/rows',
                         {$this->buildJsBindingOptionsForGrouping()}
                         template: new sap.m.ColumnListItem({
                             type: "Active",
@@ -184,7 +184,7 @@ JS;
         		columns: [
         			{$this->buildJsColumnsForUiTable()}
         		],
-                rows: "{/data}"
+                rows: "{/rows}"
         	})
             {$this->buildJsScrollHandlerForUiTable()}
             {$this->buildJsClickListeners('oController')}
@@ -407,7 +407,7 @@ JS;
      * @param bool $growing
      * @param string $oControllerJsVar
      *
-     * @return ui5DataTable
+     * @return UI5DataTable
      */
     public function buildJsRefresh($keep_page_pos = false, $growing = false, string $oControllerJsVar = null)
     {
@@ -422,16 +422,16 @@ JS;
     public function buildJsDataGetter(ActionInterface $action = null)
     {
         if ($action === null) {
-            $rows = "sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data";
+            $rows = "sap.ui.getCore().byId('{$this->getId()}').getModel().getData().rows";
         } elseif ($action instanceof iReadData) {
             // If we are reading, than we need the special data from the configurator
             // widget: filters, sorters, etc.
             return $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsDataGetter($action);
         } elseif ($this->isEditable() && $action->implementsInterface('iModifyData')) {
-            $rows = "oTable.getModel().getData().data";
+            $rows = "oTable.getModel().getData().rows";
         } else {
             if ($this->isUiTable()) {
-                $rows = "(oTable.getSelectedIndex() > -1 ? [oTable.getModel().getData().data[oTable.getSelectedIndex()]] : [])";
+                $rows = "(oTable.getSelectedIndex() > -1 ? [oTable.getModel().getData().rows[oTable.getSelectedIndex()]] : [])";
             } else {
                 $rows = "(oTable.getSelectedItem() ? [oTable.getSelectedItem().getBindingContext().getObject()] : [])";
             }
@@ -456,7 +456,7 @@ JS;
     public function buildJsValueGetter($dataColumnName = null, $rowNr = null)
     {
         if ($this->isUiTable()) {
-            $row = "(oTable.getSelectedIndex() > -1 ? oTable.getModel().getData().data[oTable.getSelectedIndex()] : [])";
+            $row = "(oTable.getSelectedIndex() > -1 ? oTable.getModel().getData().rows[oTable.getSelectedIndex()] : [])";
         } else {
             $row = "(oTable.getSelectedItem() ? oTable.getSelectedItem().getBindingContext().getObject() : [])";
         }
@@ -502,9 +502,9 @@ function(){
     if (iRowIdx !== undefined && iRowIdx >= 0) {
         var aData = oModel.getData().data;
         aData[iRowIdx]["{$dataColumnName}"] = $value;
-        oModel.setProperty("/data", aData);
+        oModel.setProperty("/rows", aData);
         // TODO why does the code below not work????
-        // oModel.setProperty("/data(" + iRowIdx + ")/{$dataColumnName}", {$value});
+        // oModel.setProperty("/rows(" + iRowIdx + ")/{$dataColumnName}", {$value});
     }
 }()
 
@@ -683,7 +683,7 @@ JS;
     /**
      * 
      * {@inheritdoc}
-     * @see ui5DataElementTrait::buildJsDataLoaderOnLoaded()
+     * @see UI5DataElementTrait::buildJsDataLoaderOnLoaded()
      */
     protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {
@@ -692,8 +692,8 @@ JS;
         // Add single-result action to onLoadSuccess
         if ($singleResultButton = $this->getWidget()->getButtons(function($btn) {return ($btn instanceof DataButton) && $btn->isBoundToSingleResult() === true;})[0]) {
             $singleResultJs = <<<JS
-            if ({$oModelJs}.getData().data.length === 1) {
-                var curRow = {$oModelJs}.getData().data[0];
+            if ({$oModelJs}.getData().rows.length === 1) {
+                var curRow = {$oModelJs}.getData().rows[0];
                 var lastRow = oTable._singleResultActionPerformedFor;
                 if (lastRow === undefined || {$this->buildJsRowCompare('curRow', 'lastRow')} === false){
                     {$this->buildJsSelectRowByIndex('oTable', '0')}
@@ -743,7 +743,7 @@ JS;
     /**
      *
      * {@inheritdoc}
-     * @see ui5DataElementTrait::buildJsDataLoaderPrepare()
+     * @see UI5DataElementTrait::buildJsDataLoaderPrepare()
      */
     protected function buildJsDataLoaderPrepare() : string
     {
@@ -757,7 +757,7 @@ JS;
     /**
      *
      * {@inheritdoc}
-     * @see ui5DataElementTrait::buildJsOfflineHint()
+     * @see UI5DataElementTrait::buildJsOfflineHint()
      */
     protected function buildJsOfflineHint(string $oTableJs = 'oTable') : string
     {
@@ -770,9 +770,9 @@ JS;
     
     /**
      *
-     * @return ui5DataPaginator
+     * @return UI5DataPaginator
      */
-    protected function getPaginatorElement() : ui5DataPaginator
+    protected function getPaginatorElement() : UI5DataPaginator
     {
         return $this->getFacade()->getElement($this->getWidget()->getPaginator());
     }
@@ -789,7 +789,7 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see ui5DataElementTrait::getCaption()
+     * @see UI5DataElementTrait::getCaption()
      */
     public function getCaption() : string
     {
@@ -850,7 +850,7 @@ JS;
         
 var {$rowIdxJs} = function() {
     var oTable = sap.ui.getCore().byId("{$this->getId()}");
-    var aData = oTable.getModel().getData().data;
+    var aData = oTable.getModel().getData().rows;
     var iRowIdx = -1;
     for (var i in aData) {
         if (aData[i]['{$column->getDataColumnName()}'] == $valueJs) {

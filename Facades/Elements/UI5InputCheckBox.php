@@ -53,7 +53,7 @@ JS;
     
     /**
      *
-     * @return ui5BindingFormatterInterface
+     * @return UI5BindingFormatterInterface
      */
     protected function getValueBindingFormatter()
     {

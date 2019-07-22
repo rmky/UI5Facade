@@ -437,10 +437,10 @@ class Webapp implements WorkbenchDependantInterface
     
     /**
      * 
-     * @param ui5ControllerInterface $controller
+     * @param UI5ControllerInterface $controller
      * @return string[]
      */
-    protected function getComponentPreloadForController(ui5ControllerInterface $controller) : array
+    protected function getComponentPreloadForController(UI5ControllerInterface $controller) : array
     {
         $resources = [
             $controller->getView()->getPath() => $controller->getView()->buildJsView(),
@@ -513,12 +513,12 @@ class Webapp implements WorkbenchDependantInterface
         ];
     }
     
-    public function getViewForWidget(WidgetInterface $widget) : ui5ViewInterface
+    public function getViewForWidget(WidgetInterface $widget) : UI5ViewInterface
     {
         return $this->getControllerForWidget($widget)->getView();
     }
     
-    public function getControllerForWidget(WidgetInterface $widget) : ui5ControllerInterface
+    public function getControllerForWidget(WidgetInterface $widget) : UI5ControllerInterface
     {
         return $this->facade->createController($this->facade->getElement($widget));
     }
@@ -551,14 +551,14 @@ class Webapp implements WorkbenchDependantInterface
         return $this->config['app_title'] ? $this->config['app_title'] : $this->getRootPage()->getName();
     }
     
-    public function createViewModel(string $viewName, string $modelName = '') : ui5Model
+    public function createViewModel(string $viewName, string $modelName = '') : UI5Model
     {
         $model = new UI5Model($this, $viewName, $modelName);
         $this->models[$viewName . ':' . $modelName] = $model;
         return $model;
     }
     
-    public function getViewModel(string $viewName, string $modelName = '') : ui5Model
+    public function getViewModel(string $viewName, string $modelName = '') : UI5Model
     {
         $model = $this->models[$viewName . ':' . $modelName];
         if ($model === null) {

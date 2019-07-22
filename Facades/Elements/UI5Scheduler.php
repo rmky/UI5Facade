@@ -16,7 +16,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
  */
 class UI5Scheduler extends UI5AbstractElement
 {
-    use ui5DataElementTrait {
+    use UI5DataElementTrait {
         buildJsDataLoaderOnLoaded as buildJsDataLoaderOnLoadedViaTrait;
     }
     
@@ -147,7 +147,7 @@ JS;
         
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . <<<JS
         
-            var aData = {$oModelJs}.getProperty('/data');
+            var aData = {$oModelJs}.getProperty('/rows');
             var oRows = [];
             var dMin, dStart, dEnd, sEnd, oDataRow, sRowKey;
             for (var i in aData) {
@@ -206,7 +206,7 @@ JS;
         $tpl->setUseWidgetId(false);
         
         $modelPrefix = $modelName ? $modelName . '>' : '';
-        if ($tpl instanceof ui5Display) {
+        if ($tpl instanceof UI5Display) {
             $tpl->setValueBindingPrefix($modelPrefix);
         } elseif ($tpl instanceof UI5ValueBindingInterface) {
             $tpl->setValueBindingPrefix($modelPrefix);

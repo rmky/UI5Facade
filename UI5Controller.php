@@ -13,7 +13,7 @@ use exface\Core\Interfaces\Widgets\iCanPreloadData;
 use exface\Core\Interfaces\Actions\iShowWidget;
 use exface\UI5Facade\Facades\Elements\UI5Dialog;
 
-class UI5Controller implements ui5ControllerInterface
+class UI5Controller implements UI5ControllerInterface
 {
     private $isBuilt = false;
     
@@ -39,7 +39,7 @@ class UI5Controller implements ui5ControllerInterface
     
     private $pseudo_events = [];
     
-    public function __construct(Webapp $webapp, string $controllerName, ui5ViewInterface $view)
+    public function __construct(Webapp $webapp, string $controllerName, UI5ViewInterface $view)
     {
         $this->webapp = $webapp;
         $this->controllerName = $controllerName;
@@ -51,13 +51,13 @@ class UI5Controller implements ui5ControllerInterface
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::buildJsMethodName()
      */
-    public function buildJsMethodName(string $methodName, ui5AbstractElement $ownerElement) : string
+    public function buildJsMethodName(string $methodName, UI5AbstractElement $ownerElement) : string
     {
         return $methodName . StringDataType::convertCaseUnderscoreToPascal($ownerElement->getId());
     }
     
     
-    public function buildJsObjectName(string $objectName, ui5AbstractElement $ownerElement) : string
+    public function buildJsObjectName(string $objectName, UI5AbstractElement $ownerElement) : string
     {
         return $objectName . StringDataType::convertCaseUnderscoreToPascal($ownerElement->getId());
     }
@@ -67,7 +67,7 @@ class UI5Controller implements ui5ControllerInterface
      * @param string $methodName
      * @return string
      */
-    public function buildJsMethodCallFromView(string $methodName, ui5AbstractElement $callerElement, $oController = 'oController') : string
+    public function buildJsMethodCallFromView(string $methodName, UI5AbstractElement $callerElement, $oController = 'oController') : string
     {
         $propertyName = $this->buildJsMethodName($methodName, $callerElement);
         if (! $this->hasProperty($propertyName)) {
@@ -77,7 +77,7 @@ class UI5Controller implements ui5ControllerInterface
         return "[{$oController}.{$propertyName}, {$oController}]";
     }
     
-    public function buildJsMethodCallFromController(string $methodName, ui5AbstractElement $methodOwner, string $paramsJs = '', string $oControllerJsVar = null) : string
+    public function buildJsMethodCallFromController(string $methodName, UI5AbstractElement $methodOwner, string $paramsJs = '', string $oControllerJsVar = null) : string
     {
         if ($oControllerJsVar === null) {
             $oControllerJsVar = "{$this->buildJsComponentGetter()}.findViewOfControl(sap.ui.getCore().byId('{$methodOwner->getId()}')).getController()";
@@ -97,7 +97,7 @@ class UI5Controller implements ui5ControllerInterface
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::buildJsControllerGetter()
      */
-    public function buildJsControllerGetter(ui5AbstractElement $fromElement) : string
+    public function buildJsControllerGetter(UI5AbstractElement $fromElement) : string
     {
         return $this->buildJsComponentGetter() . ".findViewOfControl(sap.ui.getCore().byId('{$fromElement->getId()}')).getController()";
     }
@@ -118,9 +118,9 @@ class UI5Controller implements ui5ControllerInterface
      * All event scripts (registered via addOnEventScript()) for this event are concatennated
      * and put into a controller method.
      * 
-     * @return ui5ControllerInterface
+     * @return UI5ControllerInterface
      */
-    protected function createEventHandlerMethods() : ui5ControllerInterface
+    protected function createEventHandlerMethods() : UI5ControllerInterface
     {
         foreach ($this->onEventScripts as $methodName => $scripts) {
             if (empty($scripts) === false) {
@@ -148,11 +148,11 @@ JS;
 
     /**
      *
-     * @param ui5AbstractElement $triggerElement
+     * @param UI5AbstractElement $triggerElement
      * @param string $eventName
      * @return string
      */
-    public function buildJsEventHandler(ui5AbstractElement $triggerElement, string $eventName, bool $callFromView = true) : string
+    public function buildJsEventHandler(UI5AbstractElement $triggerElement, string $eventName, bool $callFromView = true) : string
     {
         $methodName = $this->buildJsEventHandlerMethodName($eventName);
         
@@ -176,7 +176,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addProperty()
      */
-    public final function addProperty(string $name, string $js) : ui5ControllerInterface
+    public final function addProperty(string $name, string $js) : UI5ControllerInterface
     {
         if ($this->isBuilt === true) {
             throw new FacadeLogicError('Cannot add controller property "' . $name . '" after the controller "' . $this->getName() . '" had been built!');
@@ -190,7 +190,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addDependentObject()
      */
-    public function addDependentObject(string $objectName, ui5AbstractElement $ownerElement, string $initJs) : ui5ControllerInterface
+    public function addDependentObject(string $objectName, UI5AbstractElement $ownerElement, string $initJs) : UI5ControllerInterface
     {
         $name = $this->buildJsObjectName($objectName, $ownerElement);
         
@@ -216,7 +216,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addMethod()
      */
-    public final function addMethod(string $methodName, ui5AbstractElement $methodOwner, string $params, string $body, $comment = '') : ui5ControllerInterface
+    public final function addMethod(string $methodName, UI5AbstractElement $methodOwner, string $params, string $body, $comment = '') : UI5ControllerInterface
     {
         if ($comment !== '') {
             $commeptOpen = '// BOF ' . $comment;
@@ -240,7 +240,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addDependentControl()
      */
-    public function addDependentControl(string $name, ui5AbstractElement $ownerElement, ui5AbstractElement $dependentElement) : ui5ControllerInterface
+    public function addDependentControl(string $name, UI5AbstractElement $ownerElement, UI5AbstractElement $dependentElement) : UI5ControllerInterface
     {
         $propertyName = $this->buildJsObjectName($name, $ownerElement);
         $initMethodName = '_'.$propertyName.'Init';
@@ -270,8 +270,8 @@ JS;
     public function buildJsController() : string
     {
         // See if the view requires a prefill request
-        // FIXME ui5Dialog has it's own prefill logic - need to unify both approaches!
-        if ($this->needsPrefill() && ! ($this->getView()->getRootElement() instanceof ui5Dialog)) {
+        // FIXME UI5Dialog has it's own prefill logic - need to unify both approaches!
+        if ($this->needsPrefill() && ! ($this->getView()->getRootElement() instanceof UI5Dialog)) {
             $this->addOnRouteMatchedScript($this->buildJsPrefillLoader('oView'), 'loadPrefill');
         }
         
@@ -467,7 +467,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addOnInitScript()
      */
-    public function addOnInitScript(string $js) : ui5ControllerInterface
+    public function addOnInitScript(string $js) : UI5ControllerInterface
     {
         $this->onInitScripts[] = $js;
         return $this;
@@ -478,7 +478,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addOnShowViewScript()
      */
-    public function addOnShowViewScript(string $js, bool $onBeforeShow = true) : ui5ControllerInterface
+    public function addOnShowViewScript(string $js, bool $onBeforeShow = true) : UI5ControllerInterface
     {
         $this->pseudo_events[($onBeforeShow ? 'onBeforeShow' : 'onAfterShow')][] = $js;
         return $this;
@@ -489,7 +489,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addOnHideViewScript()
      */
-    public function addOnHideViewScript(string $js, bool $onBeforeHide = true) : ui5ControllerInterface
+    public function addOnHideViewScript(string $js, bool $onBeforeHide = true) : UI5ControllerInterface
     {
         $this->pseudo_events[($onBeforeHide ? 'onBeforeHide' : 'onAfterHide')][] = $js;
         return $this;
@@ -500,7 +500,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addOnRouteMatchedScript()
      */
-    public function addOnRouteMatchedScript(string $js, string $id) : ui5ControllerInterface
+    public function addOnRouteMatchedScript(string $js, string $id) : UI5ControllerInterface
     {
         $this->onRouteMatchedScripts[$id] = $js;
         return $this;
@@ -520,7 +520,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addExternalModule()
      */
-    public function addExternalModule(string $name, string $urlRelativeToAppRoot, string $var = null) : ui5ControllerInterface
+    public function addExternalModule(string $name, string $urlRelativeToAppRoot, string $var = null) : UI5ControllerInterface
     {
         $this->externalModules[$name] = ['path' => $urlRelativeToAppRoot, 'var' => $var];
         return $this;
@@ -545,7 +545,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addExternalCss()
      */
-    public function addExternalCss(string $path, string $id = null) : ui5ControllerInterface
+    public function addExternalCss(string $path, string $id = null) : UI5ControllerInterface
     {
         $this->externalCss[($id === null ? $path : $id)] = $path;
         return $this;
@@ -610,7 +610,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::getView()
      */
-    public function getView() : ui5ViewInterface
+    public function getView() : UI5ViewInterface
     {
         return $this->view;
     }
@@ -630,7 +630,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::hasMethod()
      */
-    public function hasMethod(string $name, ui5AbstractElement $ownerElement) : bool
+    public function hasMethod(string $name, UI5AbstractElement $ownerElement) : bool
     {
         $propertyName = $this->buildJsMethodName($name, $ownerElement);
         return $this->hasProperty($propertyName);
@@ -641,7 +641,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::hasDependent()
      */
-    public function hasDependent(string $name, ui5AbstractElement $ownerElement) : bool
+    public function hasDependent(string $name, UI5AbstractElement $ownerElement) : bool
     {
         return $this->hasProperty($this->buildJsObjectName($name, $ownerElement));
     }
@@ -651,7 +651,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::buildJsDependentControlSelector()
      */
-    public function buildJsDependentControlSelector(string $controlName, ui5AbstractElement $ownerElement, string $oControllerJsVar = null) : string
+    public function buildJsDependentControlSelector(string $controlName, UI5AbstractElement $ownerElement, string $oControllerJsVar = null) : string
     {
         $propertyName = $this->buildJsObjectName($controlName, $ownerElement);
         if (! $this->hasProperty($propertyName)) {
@@ -679,7 +679,7 @@ JS;
         return "this.navTo('{$pageSelector}', '{$widgetId}'{$xhrSettingsJs});";
     }
     
-    public function addOnDefineScript(string $js) : ui5ControllerInterface
+    public function addOnDefineScript(string $js) : UI5ControllerInterface
     {
         $this->onDefineScripts[] = $js;
         return $this;
@@ -692,12 +692,12 @@ JS;
     
     /**
      * 
-     * @param ui5AbstractElement $triggerWidget
+     * @param UI5AbstractElement $triggerWidget
      * @param string $eventName
      * @param string $js
-     * @return ui5ControllerInterface
+     * @return UI5ControllerInterface
      */
-    public function addOnEventScript(ui5AbstractElement $triggerElement, string $eventName, string $js) : ui5ControllerInterface
+    public function addOnEventScript(UI5AbstractElement $triggerElement, string $eventName, string $js) : UI5ControllerInterface
     {
         $controllerMethodName = $this->buildJsMethodName($this->buildJsEventHandlerMethodName($eventName), $triggerElement);
         $this->onEventScripts[$controllerMethodName][] = $js;
@@ -747,15 +747,15 @@ JS;
                 .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
                 .then(preload => {
                     var failed = false;
-                    if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
+                    if (preload !== undefined && preload.response !== undefined && preload.response.rows !== undefined) {
                         var oRouteData = {$oViewModelJs}.getProperty('/_route').params.data;
                         if (oRouteData !== undefined) {
                             var uid = oRouteData.rows[0]['{$widget->getMetaObject()->getUidAttributeAlias()}'];
-                            var aData = preload.response.data.filter(oRow => {
+                            var aData = preload.response.rows.filter(oRow => {
                                 return oRow['{$widget->getMetaObject()->getUidAttributeAlias()}'] == uid;
                             });
                             if (aData.length === 1) {
-                                var response = $.extend({}, preload.response, {data: aData});
+                                var response = $.extend({}, preload.response, {rows: aData});
                                 {$this->buildJsPrefillLoaderSuccess('response', $oViewJs, $oViewModelJs)}
                             } else {
                                 failed = true;
@@ -837,8 +837,8 @@ JS;
                     if (Object.keys(oDataModel.getData()).length !== 0) {
                         oDataModel.setData({});
                     }
-                    if ({$responseJs}.data && {$responseJs}.data && {$responseJs}.data.length === 1) {
-                        oDataModel.setData({$responseJs}.data[0]);
+                    if (Array.isArray({$responseJs}.rows) && {$responseJs}.rows.length === 1) {
+                        oDataModel.setData({$responseJs}.rows[0]);
                     }
                     
 JS;

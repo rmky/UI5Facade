@@ -33,7 +33,7 @@ class UI5Tile extends UI5Button
         
         if ($widget->getWidth()->isUndefined() === false) {
             $container = $this->getFacade()->getElement($widget->getParent());
-            if (($container instanceof ui5Tiles) && $container->isStretched() === true) {
+            if (($container instanceof UI5Tiles) && $container->isStretched() === true) {
                 $tileClass .= ' exf-stretched';
                 switch ($widget->getWidth()->getValue()) {
                     case '25%': $tileClass .= ' exf-col-3'; break;
@@ -48,7 +48,7 @@ class UI5Tile extends UI5Button
             // If we have a content widget defined, render it.
             $elem = $this->getFacade()->getElement($widget->getDisplayWidget());
             $tileContentConstructor = $this->buildJsTileContentConstructor($elem, $oControllerJs);
-            if (($elem instanceof ui5Icon) && ($icon = $elem->buildJsConstructorForIcon())) {
+            if (($elem instanceof UI5Icon) && ($icon = $elem->buildJsConstructorForIcon())) {
                 // If the content is an icon, don't use header/subheader of the tile, but only 
                 // display the icon.
                 $header = '';
@@ -104,7 +104,7 @@ JS;
     {
         $widget = $this->getWidget();
         switch (true) {
-            case ($element instanceof ui5Icon) && ($icon = $element->buildJsConstructorForIcon()):
+            case ($element instanceof UI5Icon) && ($icon = $element->buildJsConstructorForIcon()):
                 return <<<JS
                 
                     new sap.m.VBox({

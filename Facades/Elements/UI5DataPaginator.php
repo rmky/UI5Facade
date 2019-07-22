@@ -118,7 +118,7 @@ JS;
 JS;
     }
         
-    public function registerControllerMethods() : ui5DataPaginator
+    public function registerControllerMethods() : UI5DataPaginator
     {
         $controller = $this->getController();
         $controller->addProperty($this->getId() . '_oPaginator', $this->buildJsPaginatorObject());

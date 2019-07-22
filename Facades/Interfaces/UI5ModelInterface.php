@@ -9,7 +9,7 @@ use exface\Core\Interfaces\DataSheets\DataPointerInterface;
  * @author Andrej Kabachnik
  *
  */
-interface ui5ModelInterface {
+interface UI5ModelInterface {
     
     public function getName() : string;
     
@@ -20,9 +20,9 @@ interface ui5ModelInterface {
      * @param WidgetInterface $widget
      * @param string $bindingName
      * @param DataPointerInterface $pointer
-     * @return ui5ModelInterface
+     * @return UI5ModelInterface
      */
-    public function setBindingPointer(WidgetInterface $widget, string $bindingName, DataPointerInterface $pointer) : ui5ModelInterface;
+    public function setBindingPointer(WidgetInterface $widget, string $bindingName, DataPointerInterface $pointer) : UI5ModelInterface;
     
     /**
      *

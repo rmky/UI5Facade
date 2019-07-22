@@ -200,9 +200,9 @@ JS;
     }
             
     /**
-     * Returns the editable property for the ui5-form with property name and tailing comma.
+     * Returns the editable property for the UI5-form with property name and tailing comma.
      * 
-     * A ui5-form is marked editable if it contains at least one visible input widget.
+     * A UI5-form is marked editable if it contains at least one visible input widget.
      * Non-editable forms are more compact, so it is a good idea only to use editable
      * ones if really editing.
      * 

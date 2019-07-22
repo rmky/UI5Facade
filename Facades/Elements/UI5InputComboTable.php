@@ -21,7 +21,7 @@ class UI5InputComboTable extends UI5Input
     
     protected function init()
     {
-        // If the combo does not allow new values, we need to force the ui5 input to
+        // If the combo does not allow new values, we need to force the UI5 input to
         // check any input via autosuggest _before_ any other action is taken.
         // TODO this only works if there was no value before and needs to be
         // extended to work with changing values too.
@@ -187,7 +187,7 @@ JS;
             showValueHelp: true,
 			suggest: {$this->buildJsPropertySuggest()},
             suggestionRows: {
-                path: "{$this->getModelNameForAutosuggest()}>/data",
+                path: "{$this->getModelNameForAutosuggest()}>/rows",
                 template: new sap.m.ColumnListItem({
 				   cells: [
 				       {$cells}
@@ -283,7 +283,7 @@ JS;
                     {$this->buildJsBusyIconShow()}
                     var silencer = function(oEvent){
                         if (oEvent.getParameters().success) {
-                            var data = this.getProperty('/data');
+                            var data = this.getProperty('/rows');
                             var curKey = oInput.getSelectedKey();
                             if (parseInt(this.getProperty("/recordsTotal")) == 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
                                 oInput.setValue(data[0]['{$widget->getTextColumn()->getDataColumnName()}']).setSelectedKey(data[0]['{$widget->getValueColumn()->getDataColumnName()}']);

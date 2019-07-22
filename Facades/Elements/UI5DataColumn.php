@@ -62,13 +62,13 @@ JS;
         $tpl->setUseWidgetId(false);
         
         $modelPrefix = $modelName ? $modelName . '>' : '';
-        if ($tpl instanceof ui5Display) {
+        if ($tpl instanceof UI5Display) {
             $tpl->setValueBindingPrefix($modelPrefix);
             $tpl->setAlignment($this->buildJsAlignment());
         } elseif ($tpl instanceof UI5ValueBindingInterface) {
             $tpl->setValueBindingPrefix($modelPrefix);
         }
-        if (($tpl instanceof ui5CompoundControlInterface) && ($hideCaptions === true || $widget->getHideCaption() === true)) {
+        if (($tpl instanceof UI5CompoundControlInterface) && ($hideCaptions === true || $widget->getHideCaption() === true)) {
             return $tpl->buildJsConstructorForMainControl();
         } else {
             return $tpl->buildJsConstructor();

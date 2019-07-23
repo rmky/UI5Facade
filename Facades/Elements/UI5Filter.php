@@ -3,6 +3,7 @@ namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryFilterTrait;
 use exface\Core\Widgets\InputHidden;
+use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 
 /**
  * Generates OpenUI5 filters
@@ -15,6 +16,16 @@ use exface\Core\Widgets\InputHidden;
 class UI5Filter extends UI5AbstractElement
 {
     use JqueryFilterTrait;
+    
+    protected function init()
+    {
+        parent::init();
+        
+        $inputElement = $this->getInputElement();
+        if ($inputElement instanceof UI5ValueBindingInterface) {
+            $inputElement->setValueBindingDisabled(true);
+        }
+    }
     
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {

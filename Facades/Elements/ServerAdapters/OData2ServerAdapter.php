@@ -27,19 +27,34 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
         $object = $widget->getMetaObject();
         
         return <<<JS
+
+                console.log({$oParamsJs});
                 
                 var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});  
-                oDataModel.read('/salesOrderHeadSet', {
+                var oDataReadParams = {};
+                
+                // Pagination
+                if ({$oParamsJs}.length) {
+                    oDataReadParams.\$top = {$oParamsJs}.length;
+                    if ({$oParamsJs}.start) {
+                        oDataReadParams.\$skip = {$oParamsJs}.start;
+        
+                    }
+                }
+
+                oDataModel.read('/{$object->getDataAddress()}', {
+                    urlParameters: oDataReadParams,
                     success: function(oData, response) {
+                        console.log(oData);
                         var oRowData = {
-                            data: oData.results
+                            rows: oData.results
                         };
-                        oModel.setData(oRowData);
+                        {$oModelJs}.setData(oRowData);
                         {$onModelLoadedJs}
                         {$this->getElement()->buildJsBusyIconHide()}
                     },
                     error: function(oError) {
-                        console.log(oError);
+                        console.error(oError);
                     }
                 });
                 

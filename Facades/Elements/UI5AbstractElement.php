@@ -9,6 +9,11 @@ use exface\Core\Factories\UiPageFactory;
 use exface\Core\DataTypes\StringDataType;
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 use exface\Core\Exceptions\LogicException;
+use exface\UI5Facade\Facades\Elements\ServerAdapters\UI5FacadeServerAdapter;
+use exface\UI5Facade\Facades\Elements\ServerAdapters\OData2ServerAdapter;
+use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
+use exface\Core\Interfaces\Widgets\iCanPreloadData;
+use exface\UI5Facade\Facades\Elements\ServerAdapters\PreloadServerAdapter;
 use exface\UI5Facade\Facades\Interfaces\UI5ViewInterface;
 
 /**
@@ -468,6 +473,19 @@ JS;
         parent::addOnChangeScript($string);
         $this->getController()->addOnEventScript($this, 'change', $string);
         return $this;
+    }
+    
+    protected function getServerAdapter() : UI5ServerAdapterInterface
+    {
+        $widget = $this->getWidget();
+        
+        //$adapter = new UI5FacadeServerAdapter($this);
+        $adapter = new OData2ServerAdapter($this);
+        
+        if ($widget instanceof iCanPreloadData && $widget->isPreloadDataEnabled()) {
+            $adapter = new PreloadServerAdapter($this, $adapter);
+        }
+        return $adapter;
     }
 }
 ?>

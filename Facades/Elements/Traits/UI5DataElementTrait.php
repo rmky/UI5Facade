@@ -412,11 +412,12 @@ JS;
     {
         $widget = $this->getWidget();
         
-        if ($widget instanceof iCanPreloadData && $widget->isPreloadDataEnabled()) {
-            $doLoad = $this->buildJsDataLoaderFromServerPreload('oModel', 'params');
-        } else {
-            $doLoad = $this->buildJsDataLoaderFromServerRemote('oModel', 'params');
-        }
+        $doLoad = $this->getServerAdapter()->buildJsDataLoader(
+            'oModel',
+            'params',
+            $this->buildJsDataLoaderOnLoaded('oModel'),
+            $this->buildJsOfflineHint('oTable')
+        );
         
         if ($this->hasQuickSearch()) {
             $quickSearchParam = "params.q = {$this->getQuickSearchElement()->buildJsValueGetter()};";
@@ -474,93 +475,7 @@ JS;
     {
         return '';
     }
-                
-    protected function buildJsDataLoaderFromServerPreload(string $oModelJs = 'oModel', string $oParamsJs = 'params', string $growingJsVar = 'growing') : string
-    {
-        $widget = $this->getWidget();
-        return <<<JS
-        
-                exfPreloader
-                .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
-                .then(preload => {
-                    if (preload !== undefined && preload.response !== undefined && preload.response.rows !== undefined) {
-                        var aData = preload.response.rows;
-                        if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {
-                            var conditions = {$oParamsJs}.data.filters.conditions;
-                            var fnFilter;
-                            
-                            for (var i in conditions) {
-                                var cond = conditions[i];
-                                if (cond.value === undefined || cond.value === null || cond.value === '') continue;
-                                switch (cond.comparator) {
-                                    case '==':
-                                        aData = aData.filter(oRow => {
-                                            return oRow[cond.expression] == cond.value
-                                        });
-                                        break;
-                                    case '!==':
-                                        aData = aData.filter(oRow => {
-                                            return oRow[cond.expression] !== cond.value
-                                        });
-                                        break;
-                                    case '!=':
-                                        var val = cond.value.toString().toLowerCase();
-                                        aData = aData.filter(oRow => {
-                                            if (oRow[cond.expression] === undefined) return true;
-                                            return ! oRow[cond.expression].toString().toLowerCase().includes(val);
-                                        });
-                                        break;
-                                    case '=':
-                                    default:
-                                        var val = cond.value.toString().toLowerCase();
-                                        aData = aData.filter(oRow => {
-                                            if (oRow[cond.expression] === undefined) return false;
-                                            return oRow[cond.expression].toString().toLowerCase().includes(val);
-                                        });
-                                }
-                            }
-                            
-                            if ({$oParamsJs}.q !== undefined && {$oParamsJs}.q !== '') {
-                                var sQuery = {$oParamsJs}.q.toString().toLowerCase();
-                                aData = aData.filter(oRow => {
-                                    if (oRow[cond.expression] === undefined) return false;
-                                    return {$this->buildJsQuickSearch('sQuery', 'oRow')};
-                                });
-                            }
-                            
-                            var iFiltered = aData.length;
-                        }
-                        
-                        if ({$oParamsJs}.start >= 0 && {$oParamsJs}.length > 0) {
-                            aData = aData.slice({$oParamsJs}.start, {$oParamsJs}.start+{$oParamsJs}.length);
-                        }
-                        
-                        oModel.setData($.extend({}, preload.response, {data: aData, recordsFiltered: iFiltered}));
-                        {$this->buildJsDataLoaderOnLoaded($oModelJs, $growingJsVar)}
-                        {$this->buildJsBusyIconHide()}
-                    } else {
-                        console.log('No preloaded data found: falling back to server request');
-                        {$this->buildJsDataLoaderFromServerRemote($oModelJs, 'params', $growingJsVar)}
-                    }
-                });
-                
-JS;
-    }
     
-    protected function buildJsDataLoaderFromServerRemote(string $oModelJs = 'oModel', string $oParamsJs = 'params') : string
-    {
-        return $this->getServerAdapter()->buildJsDataLoader(
-            $oModelJs, 
-            $oParamsJs, 
-            $this->buildJsDataLoaderOnLoaded('oModel'), 
-            $this->buildJsOfflineHint('oTable')
-        );
-    }
-    
-    protected function getServerAdapter() : UI5ServerAdapterInterface
-    {
-        return $this->getFacade()->getServerAdapter($this);
-    }
     
     protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {

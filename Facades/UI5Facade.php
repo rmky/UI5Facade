@@ -31,18 +31,10 @@ use exface\Core\Exceptions\LogicException;
 use exface\UI5Facade\Facades\Interfaces\UI5ViewInterface;
 use exface\UI5Facade\UI5View;
 use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsEnumFormatter;
-use exface\Core\DataTypes\NumberDataType;
 use exface\UI5Facade\Facades\Formatters\UI5EnumFormatter;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\UI5Facade\Facades\Formatters\UI5TimeFormatter;
-use Psr\Http\Message\RequestInterface;
-use GuzzleHttp\Psr7\Response;
 use exface\Core\DataTypes\DateTimeDataType;
-use exface\Core\Facades\AbstractAjaxFacade\Interfaces\JsDataTypeFormatterInterface;
-use exface\UI5Facade\Facades\Elements\ServerAdapters\UI5FacadeServerAdapter;
-use exface\UI5Facade\Facades\Elements\ServerAdapters\OData2ServerAdapter;
-use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
-
 /**
  * 
  * @method ui5AbstractElement getElement()
@@ -425,11 +417,4 @@ JS;
     {
         return false;
     }
-    
-    public function getServerAdapter(UI5AbstractElement $element) : UI5ServerAdapterInterface
-    {
-        //return new UI5FacadeServerAdapter($element);
-        return new OData2ServerAdapter($element);
-    }
 }
-?>

@@ -22,6 +22,8 @@ class UI5Display extends UI5Value
     
     private $alignmentProperty = null;
     
+    private $onChangeHandlerRegistered = false;
+    
     /**
      *
      * {@inheritDoc}
@@ -270,6 +272,20 @@ JS;
     }
     
 JS;
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::addOnChangeScript()
+     */
+    public function addOnChangeScript($script)
+    {
+        if ($this->isValueBoundToModel() && $this->onChangeHandlerRegistered === false) {
+            $this->addOnBindingChangeScript($this->buildJsValueBindingPropertyName(), $this->getController()->buildJsEventHandler($this, 'change', false));
+            $this->onChangeHandlerRegistered = true;
+        }
+        return parent::addOnChangeScript($script);
     }
 }
 ?>

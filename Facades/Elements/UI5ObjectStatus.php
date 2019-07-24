@@ -6,6 +6,7 @@ namespace exface\UI5Facade\Facades\Elements;
  * 
  * In contrast to a regular element, ObjectStatus does not have a widget prototype. Any
  * value widget can be rendered as ObjectStatus by instantiating it manually:
+ * 
  * ```
  * $element = new UI5ObjectStatus($widget, $this->getFacade());
  * ```

@@ -62,4 +62,18 @@ interface UI5ValueBindingInterface {
      * @return UI5ValueBindingInterface
      */
     public function setValueBindingPrefix(string $value) : UI5ValueBindingInterface;
+    
+    
+    /**
+     *
+     * @return bool
+     */
+    public function getValueBindingDisabled() : bool;
+    
+    /**
+     *
+     * @param bool $value
+     * @return UI5ValueBindingInterface
+     */
+    public function setValueBindingDisabled(bool $value) : UI5ValueBindingInterface;
 }

@@ -22,6 +22,8 @@ class UI5Value extends UI5AbstractElement implements UI5ValueBindingInterface, U
     
     private $valueBindingPrefix = '/';
     
+    private $valueBindingDisabled = false;
+    
     /**
      * 
      * {@inheritDoc}
@@ -142,6 +144,11 @@ JS;
         // If there is a model binding, obviously return true
         if ($model->hasBinding($widget, $this->getValueBindingWidgetPropertyName())) {
             return true;
+        }
+        
+        // If the the binding was disabled explicitly, return false
+        if ($this->getValueBindingDisabled() === true) {
+            return false;
         }
         
         // Otherwise assume model binding unless the widget has an explicit value
@@ -280,5 +287,26 @@ JS;
     protected function getValueBindingWidgetPropertyName() : string
     {
         return 'value';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::getValueBindingDisabled()
+     */
+    public function getValueBindingDisabled() : bool
+    {
+        return $this->valueBindingDisabled;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::setValueBindingDisabled()
+     */
+    public function setValueBindingDisabled(bool $value) : UI5ValueBindingInterface
+    {
+        $this->valueBindingDisabled = $value;
+        return $this;
     }
 }

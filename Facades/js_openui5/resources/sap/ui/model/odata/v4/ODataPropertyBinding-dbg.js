@@ -56,7 +56,7 @@ sap.ui.define([
 	 * @mixes sap.ui.model.odata.v4.ODataBinding
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#hasPendingChanges as #hasPendingChanges
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#isInitial as #isInitial
@@ -202,7 +202,8 @@ sap.ui.define([
 	 * @param {any} [vValue]
 	 *   The new value obtained from the cache, see {@link #onChange}
 	 * @returns {sap.ui.base.SyncPromise}
-	 *   A promise resolving without a defined result when the check is finished; never rejecting
+	 *   A promise resolving without a defined result when the check is finished, or rejecting in
+	 *   case of an error (e.g. thrown by the change event handler of a control)
 	 *
 	 * @private
 	 * @see sap.ui.model.Binding#checkUpdate
@@ -463,6 +464,10 @@ sap.ui.define([
 	/**
 	 * Requests information to retrieve a value list for this property.
 	 *
+	 * @param {boolean} [bAutoExpandSelect=false]
+	 *   The value of the parameter <code>autoExpandSelect</code> for value list models created by
+	 *   this method. If the value list model is this binding's model, this flag has no effect.
+	 *   Supported since 1.68.0
 	 * @returns {Promise}
 	 *   A promise which is resolved with a map of qualifier to value list mapping objects
 	 *   structured as defined by <code>com.sap.vocabularies.Common.v1.ValueListMappingType</code>;
@@ -493,13 +498,14 @@ sap.ui.define([
 	 * @public
 	 * @since 1.45.0
 	 */
-	ODataPropertyBinding.prototype.requestValueListInfo = function () {
+	ODataPropertyBinding.prototype.requestValueListInfo = function (bAutoExpandSelect) {
 		var sResolvedPath = this.getModel().resolve(this.sPath, this.oContext);
 
 		if (!sResolvedPath) {
 			throw new Error(this + " is not resolved yet");
 		}
-		return this.getModel().getMetaModel().requestValueListInfo(sResolvedPath);
+		return this.getModel().getMetaModel()
+			.requestValueListInfo(sResolvedPath, bAutoExpandSelect);
 	};
 
 	/**

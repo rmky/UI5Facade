@@ -62,7 +62,7 @@ sap.ui.define([
 		 * @abstract
 		 *
 		 * @author SAP SE
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -593,6 +593,7 @@ sap.ui.define([
 			this.bOpenedByKeyboardOrButton = bOpenOnInteraction;
 
 			if (this.isPlatformTablet()) {
+				this.syncPickerContent();
 				oPicker = this.getPicker();
 				oPicker.setInitialFocus(oPicker);
 			}
@@ -1160,6 +1161,14 @@ sap.ui.define([
 		ComboBoxBase.prototype.hasContent = function() {
 			return this.getItems().length > 0;
 		};
+
+		/**
+		 * Creates picker if doesn't exist yet and sync with Control items
+		 * To be overwritten by subclasses.
+		 *
+		 * @protected
+		 */
+		ComboBoxBase.prototype.syncPickerContent = function () {};
 
 		/**
 		 * Retrieves the first enabled item from the aggregation named <code>items</code>.

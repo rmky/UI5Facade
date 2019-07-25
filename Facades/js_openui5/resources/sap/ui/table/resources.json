@@ -810,21 +810,6 @@
 			]
 		},
 		{
-			"name": "TableRendererUtils-dbg.js",
-			"module": "sap/ui/table/TableRendererUtils.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/core/Control.js"
-			]
-		},
-		{
-			"name": "TableRendererUtils.js",
-			"module": "sap/ui/table/TableRendererUtils.js",
-			"required": [
-				"sap/ui/core/Control.js"
-			]
-		},
-		{
 			"name": "TableScrollExtension-dbg.js",
 			"module": "sap/ui/table/TableScrollExtension.js",
 			"isDebug": true,
@@ -1143,7 +1128,6 @@
 				"sap/ui/table/TablePersoController.js",
 				"sap/ui/table/TablePointerExtension.js",
 				"sap/ui/table/TableRenderer.js",
-				"sap/ui/table/TableRendererUtils.js",
 				"sap/ui/table/TableScrollExtension.js",
 				"sap/ui/table/TableSyncExtension.js",
 				"sap/ui/table/TableUtils.js",
@@ -1259,7 +1243,6 @@
 				"sap/ui/table/TablePersoController.js",
 				"sap/ui/table/TablePointerExtension.js",
 				"sap/ui/table/TableRenderer.js",
-				"sap/ui/table/TableRendererUtils.js",
 				"sap/ui/table/TableScrollExtension.js",
 				"sap/ui/table/TableSyncExtension.js",
 				"sap/ui/table/TableUtils.js",
@@ -1375,7 +1358,6 @@
 				"sap/ui/table/TablePersoController.js",
 				"sap/ui/table/TablePointerExtension.js",
 				"sap/ui/table/TableRenderer.js",
-				"sap/ui/table/TableRendererUtils.js",
 				"sap/ui/table/TableScrollExtension.js",
 				"sap/ui/table/TableSyncExtension.js",
 				"sap/ui/table/TableUtils.js",
@@ -1490,7 +1472,6 @@
 				"sap/ui/table/TablePersoController.js",
 				"sap/ui/table/TablePointerExtension.js",
 				"sap/ui/table/TableRenderer.js",
-				"sap/ui/table/TableRendererUtils.js",
 				"sap/ui/table/TableScrollExtension.js",
 				"sap/ui/table/TableSyncExtension.js",
 				"sap/ui/table/TableUtils.js",

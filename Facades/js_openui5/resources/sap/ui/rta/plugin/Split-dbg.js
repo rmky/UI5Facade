@@ -23,7 +23,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -40,16 +40,20 @@ sap.ui.define([
 	});
 
 	/**
-	 * @param {sap.ui.dt.ElementOverlay} oOverlay overlay to be checked for editable
-	 * @returns {boolean} true if it's editable
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay - Overlay to be checked for editable
+	 * @return {promise.<boolean>|booolean} <code>true</code> if it's editable wrapped in a promise.
 	 * @private
 	 */
 	Split.prototype._isEditable = function (oOverlay) {
 		var oSplitAction = this.getAction(oOverlay);
 		if (oSplitAction && oSplitAction.changeType && oSplitAction.changeOnRelevantContainer) {
-			return this.hasChangeHandler(oSplitAction.changeType, oOverlay.getRelevantContainer()) &&
-					this.hasStableId(oOverlay) &&
-					this._checkRelevantContainerStableID(oSplitAction, oOverlay);
+			var oRelevantContainer = oOverlay.getRelevantContainer();
+			return this.hasChangeHandler(oSplitAction.changeType, oRelevantContainer, true)
+				.then(function(bHasChangeHandler) {
+					return bHasChangeHandler
+						&& this.hasStableId(oOverlay)
+						&& this._checkRelevantContainerStableID(oSplitAction, oOverlay);
+				}.bind(this));
 		}
 		return false;
 	};
@@ -152,7 +156,7 @@ sap.ui.define([
 
 	/**
 	 * Retrieve the context menu item for the action.
-	 * @param {sap.ui.dt.ElementOverlay|sap.ui.dt.ElementOverlay[]} aElementOverlays - overlays for which actions are requested
+	 * @param {sap.ui.dt.ElementOverlay|sap.ui.dt.ElementOverlay[]} vElementOverlays - overlays for which actions are requested
 	 * @return {object[]} - array of the items with required data
 	 */
 	Split.prototype.getMenuItems = function (vElementOverlays) {

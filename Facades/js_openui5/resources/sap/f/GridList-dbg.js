@@ -69,7 +69,7 @@ sap.ui.define([
 	 * @see {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout MDN web docs: CSS Grid Layout}
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @extends sap.m.ListBase
 	 * @implements sap.ui.layout.cssgrid.IGridConfigurable
@@ -82,7 +82,10 @@ sap.ui.define([
 	 */
 	var GridList = ListBase.extend("sap.f.GridList", { metadata : {
 		library: "sap.f",
-		interfaces: ["sap.ui.layout.cssgrid.IGridConfigurable"],
+		interfaces: [
+			"sap.ui.layout.cssgrid.IGridConfigurable",
+			"sap.f.dnd.IGridDroppable"
+		],
 		aggregations: {
 
 			/**

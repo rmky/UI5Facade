@@ -85,7 +85,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -490,33 +490,6 @@ sap.ui.define([
 		this._setShrinkFactors(oShrinkFactorsInfo.headingAreaShrinkFactor,
 								oShrinkFactorsInfo.contentAreaShrinkFactor,
 								oShrinkFactorsInfo.actionsAreaShrinkFactor);
-
-		return this;
-	};
-
-	/**
-	 * Sets the value of the <code>backgroundDesign</code> property.
-	 *
-	 * @param {sap.m.BackgroundDesign} sBackgroundDesign - new value of the <code>backgroundDesign</code>
-	 * @return {sap.f.DynamicPageTitle} <code>this</code> to allow method chaining
-	 * @public
-	 * @since 1.58
-	 */
-	DynamicPageTitle.prototype.setBackgroundDesign = function (sBackgroundDesign) {
-		var sCurrentBackgroundDesign = this.getBackgroundDesign(),
-			$domRef = this.$(),
-			sCssClassPrefix = "sapFDynamicPageTitle";
-
-		if (sCurrentBackgroundDesign === sBackgroundDesign) {
-			return this;
-		}
-
-		this.setProperty("backgroundDesign", sBackgroundDesign, true);
-
-		if ($domRef.length) {
-			$domRef.removeClass(sCssClassPrefix + sCurrentBackgroundDesign);
-			$domRef.addClass(sCssClassPrefix + sBackgroundDesign);
-		}
 
 		return this;
 	};

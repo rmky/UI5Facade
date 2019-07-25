@@ -57,7 +57,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/SideNavigation.js" size="12809" compressedSize="6056">
+  <module name="sap/tnt/SideNavigation.js" size="13087" compressedSize="6088">
     <description>Provides control sap.t.SideNavigation.</description>
     <requires>
       <module name="sap/tnt/SideNavigationRenderer.js"/>
@@ -75,7 +75,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/ToolHeader.js" size="4537" compressedSize="1294">
+  <module name="sap/tnt/ToolHeader.js" size="4615" compressedSize="1329">
     <description>Provides control sap.tnt.ToolHeader</description>
     <requires>
       <module name="sap/m/OverflowToolbar.js"/>
@@ -103,7 +103,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/ToolPage.js" size="5573" compressedSize="2459">
+  <module name="sap/tnt/ToolPage.js" size="5574" compressedSize="2460">
     <description>Provides control sap.t.ToolPage.</description>
     <requires>
       <module name="sap/tnt/ToolPageRenderer.js"/>
@@ -120,7 +120,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/library-h2-preload.js" size="3339">
+  <module name="sap/tnt/library-h2-preload.js" size="3381">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
@@ -163,7 +163,7 @@
       <module name="sap/tnt/ToolPageRenderer.js"/>
     </includes>
   </module>
-  <module name="sap/tnt/library-preload.js" size="34138">
+  <module name="sap/tnt/library-preload.js" size="34248">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
@@ -251,7 +251,7 @@
       <module name="sap/tnt/manifest.json"/>
     </includes>
   </module>
-  <module name="sap/tnt/library.js" size="1467" compressedSize="641">
+  <module name="sap/tnt/library.js" size="1786" compressedSize="662">
     <description>Initialization Code and shared classes of library sap.tnt.</description>
     <requires>
       <module name="sap/m/library.js"/>
@@ -259,7 +259,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/tnt/manifest.json" size="1203">
+  <module name="sap/tnt/manifest.json" size="1244">
   </module>
   <module name="sap/tnt/messagebundle.properties" size="288">
   </module>

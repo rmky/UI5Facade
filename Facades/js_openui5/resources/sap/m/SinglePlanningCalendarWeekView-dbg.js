@@ -32,7 +32,7 @@ function (library, SinglePlanningCalendarView, CalendarDate, CalendarUtils) {
 	 * @extends sap.m.SinglePlanningCalendarView
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public

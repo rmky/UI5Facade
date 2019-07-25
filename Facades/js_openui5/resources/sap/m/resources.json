@@ -467,6 +467,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/EnabledPropagator.js",
 				"sap/ui/core/IconPool.js",
+				"sap/ui/core/LabelEnablement.js",
 				"sap/ui/core/library.js",
 				"sap/ui/events/KeyCodes.js"
 			]
@@ -486,6 +487,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/EnabledPropagator.js",
 				"sap/ui/core/IconPool.js",
+				"sap/ui/core/LabelEnablement.js",
 				"sap/ui/core/library.js",
 				"sap/ui/events/KeyCodes.js"
 			]
@@ -995,6 +997,7 @@
 				"sap/m/Toolbar.js",
 				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Item.js",
 				"sap/ui/dom/containsOrEquals.js",
@@ -1020,6 +1023,7 @@
 				"sap/m/Toolbar.js",
 				"sap/m/library.js",
 				"sap/ui/Device.js",
+				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Item.js",
 				"sap/ui/dom/containsOrEquals.js",
@@ -1307,11 +1311,11 @@
 				"sap/ui/core/Popup.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/core/library.js",
-				"sap/ui/dom/jquery/cursorPos.js"
-			],
-			"condRequired": [
+				"sap/ui/dom/jquery/cursorPos.js",
 				"sap/ui/unified/Calendar.js",
-				"sap/ui/unified/DateRange.js"
+				"sap/ui/unified/DateRange.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js"
 			]
 		},
 		{
@@ -1337,11 +1341,11 @@
 				"sap/ui/core/Popup.js",
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/core/library.js",
-				"sap/ui/dom/jquery/cursorPos.js"
-			],
-			"condRequired": [
+				"sap/ui/dom/jquery/cursorPos.js",
 				"sap/ui/unified/Calendar.js",
-				"sap/ui/unified/DateRange.js"
+				"sap/ui/unified/DateRange.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js"
 			]
 		},
 		{
@@ -3838,7 +3842,6 @@
 				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/core/CustomData.js",
 				"sap/ui/core/EnabledPropagator.js",
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/unified/Menu.js",
@@ -3862,7 +3865,6 @@
 				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/core/Control.js",
-				"sap/ui/core/CustomData.js",
 				"sap/ui/core/EnabledPropagator.js",
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/unified/Menu.js",
@@ -9345,6 +9347,7 @@
 			"module": "sap/m/TextArea.js",
 			"isDebug": true,
 			"required": [
+				"sap/base/security/encodeXML.js",
 				"sap/m/InputBase.js",
 				"sap/m/Text.js",
 				"sap/m/TextAreaRenderer.js",
@@ -9364,6 +9367,7 @@
 			"name": "TextArea.js",
 			"module": "sap/m/TextArea.js",
 			"required": [
+				"sap/base/security/encodeXML.js",
 				"sap/m/InputBase.js",
 				"sap/m/Text.js",
 				"sap/m/TextAreaRenderer.js",
@@ -13443,6 +13447,8 @@
 				"sap/ui/unified/MenuItem.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js",
 				"sap/ui/unified/calendar/DatesRow.js",
 				"sap/ui/unified/library.js",
 				"sap/ui/util/Mobile.js"
@@ -14252,6 +14258,8 @@
 				"sap/ui/unified/MenuItem.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js",
 				"sap/ui/unified/calendar/DatesRow.js",
 				"sap/ui/unified/library.js",
 				"sap/ui/util/Mobile.js"
@@ -15061,6 +15069,8 @@
 				"sap/ui/unified/MenuItem.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js",
 				"sap/ui/unified/calendar/DatesRow.js",
 				"sap/ui/unified/library.js",
 				"sap/ui/util/Mobile.js"
@@ -15709,6 +15719,8 @@
 				"sap/ui/unified/MenuItem.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js",
 				"sap/ui/unified/calendar/DatesRow.js",
 				"sap/ui/unified/library.js",
 				"sap/ui/util/Mobile.js"

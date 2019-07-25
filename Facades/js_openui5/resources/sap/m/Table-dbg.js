@@ -57,7 +57,7 @@ sap.ui.define([
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -567,7 +567,7 @@ sap.ui.define([
 
 	// force IE to repaint
 	Table.prototype._forceStyleChange = function() {
-		if (Device.browser.msie) {
+		if (Device.browser.msie || Device.browser.edge) {
 			var oTableStyle = this.getTableDomRef().style;
 			oTableStyle.listStyleType = "circle";
 			window.setTimeout(function() { oTableStyle.listStyleType = "none"; }, 0);
@@ -808,7 +808,7 @@ sap.ui.define([
 		}
 
 		if (this._bThemeChanged) {
-			// force IE to repaint if theme changed
+			// force IE/Edge to repaint if theme changed
 			this._bThemeChanged = false;
 			this._forceStyleChange();
 		}

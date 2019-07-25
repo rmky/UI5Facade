@@ -86,7 +86,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -238,12 +238,14 @@ function(
 			 * <li>Firefox lower than version 59</li>
 			 * </ul>
 			 *
-			 * There are also some known limitations with respect to the scrolling behavior. A few are given below:
+			 * There are also some known limitations. A few are given below:
 			 * <ul>
 			 * <li>If the control is placed in layout containers that have the <code>overflow: hidden</code> or <code>overflow: auto</code> style definition, this can
 			 * prevent the sticky elements of the control from becoming fixed at the top of the viewport.</li>
 			 * <li>If sticky column headers are enabled in the <code>sap.m.Table</code> control, setting focus on the column headers will let the table scroll to the top.</li>
+			 * <li>A transparent toolbar design is not supported for sticky bars. The toolbar will automatically get an intransparent background color.</li>
 			 * </ul>
+			 *
 			 * @since 1.58
 			 */
 			sticky : {type : "sap.m.Sticky[]", group : "Appearance"}
@@ -1714,11 +1716,8 @@ function(
 		// focus and scroll handling for sticky elements
 		this._handleStickyItemFocus(oItem.getDomRef());
 
-		if (oItem !== oFocusedControl) {
-			return;
-		}
-
-		if (!sap.ui.getCore().getConfiguration().getAccessibility()) {
+		if (oItem !== oFocusedControl ||
+			!sap.ui.getCore().getConfiguration().getAccessibility()) {
 			return;
 		}
 
@@ -1736,7 +1735,13 @@ function(
 				oBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m"),
 				sDescription = oAccInfo.type + " ";
 
-			sDescription += oBundle.getText("LIST_ITEM_POSITION", [mPosition.posInset, mPosition.setSize]) + " ";
+			if (!Device.browser.chrome || this.isA("sap.m.Table")) {
+				sDescription += oBundle.getText("LIST_ITEM_POSITION", [mPosition.posInset, mPosition.setSize]) + " ";
+			} else {
+				oItemDomRef.setAttribute("aria-posinset", mPosition.posInset);
+				oItemDomRef.setAttribute("aria-setsize", mPosition.setSize);
+			}
+
 			sDescription += oAccInfo.description;
 			this.updateInvisibleText(sDescription, oItemDomRef);
 			return sDescription;
@@ -1754,9 +1759,6 @@ function(
 
 		oInvisibleText.setText(sText.trim());
 		$FocusedItem.addAriaLabelledBy(oInvisibleText.getId(), bPrepend);
-		window.setTimeout(function() {
-			$FocusedItem.removeAriaLabelledBy(oInvisibleText.getId());
-		}, 0);
 	};
 
 	/* Keyboard Handling */
@@ -2151,7 +2153,7 @@ function(
 				oBindingInfo = this.getBindingInfo("items");
 			if (oBindingInfo) {
 				oBindingContext = oLI.getBindingContext(oBindingInfo.model);
-				oContextMenu.setBindingContext(oBindingContext);
+				oContextMenu.setBindingContext(oBindingContext, oBindingInfo.model);
 			}
 
 			oContextMenu.openAsContextMenu(oEvent, oLI);

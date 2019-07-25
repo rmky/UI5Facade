@@ -34,7 +34,6 @@ sap.ui.define([
 	"sap/ui/dt/plugin/ToolHooks",
 	"sap/ui/dt/plugin/ContextMenu",
 	"sap/ui/dt/plugin/TabHandling",
-	"sap/ui/fl/FlexControllerFactory",
 	"sap/ui/rta/Utils",
 	"sap/ui/dt/Util",
 	"sap/ui/dt/ElementUtil",
@@ -55,7 +54,8 @@ sap.ui.define([
 	"sap/base/util/UriParameters",
 	"sap/ui/performance/Measurement",
 	"sap/base/Log",
-	"sap/ui/events/KeyCodes"
+	"sap/ui/events/KeyCodes",
+	"sap/ui/fl/write/api/PersistenceWriteAPI"
 ],
 function(
 	jQuery,
@@ -86,7 +86,6 @@ function(
 	ToolHooksPlugin,
 	ContextMenuPlugin,
 	TabHandlingPlugin,
-	FlexControllerFactory,
 	Utils,
 	DtUtil,
 	ElementUtil,
@@ -107,7 +106,8 @@ function(
 	UriParameters,
 	Measurement,
 	Log,
-	KeyCodes
+	KeyCodes,
+	PersistenceWriteAPI
 ) {
 	"use strict";
 
@@ -126,7 +126,7 @@ function(
 	 * @class The runtime authoring allows to adapt the fields of a running application.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -512,10 +512,6 @@ function(
 		return this._oRootControl;
 	};
 
-	RuntimeAuthoring.prototype._getFlexController = function() {
-		return FlexControllerFactory.createForControl(this.getRootControlInstance());
-	};
-
 	RuntimeAuthoring.prototype._getTextResources = function() {
 		return sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
 	};
@@ -529,10 +525,10 @@ function(
 		this._sStatus = STARTING;
 		var oDesignTimePromise;
 		var vError;
-
+		var oRootControl = this.getRootControlInstance();
 		// Create DesignTime
 		if (!this._oDesignTime) {
-			if (!this.getRootControlInstance()) {
+			if (!oRootControl) {
 				vError = new Error("Root control not found");
 				FlexUtils.log.error(vError);
 				return Promise.reject(vError);
@@ -541,7 +537,7 @@ function(
 			// Check if the App Variant has the correct Format
 			if (
 				this.getValidateAppVersion()
-				&& !FlexUtils.isCorrectAppVersionFormat(this._getFlexController().getAppVersion())
+				&& !FlexUtils.isCorrectAppVersionFormat(FlexUtils.getAppVersionFromManifest(FlexUtils.getAppComponentForControl(oRootControl).getManifest()))
 			) {
 				vError = this._getTextResources().getText("MSG_INCORRECT_APP_VERSION_ERROR");
 				FlexUtils.log.error(vError);
@@ -714,11 +710,18 @@ function(
 	var fnShowTechnicalError = function(vError) {
 		BusyIndicator.hide();
 		var sErrorMessage = "";
-		if (vError.messages && Array.isArray(vError.messages)) {
-			for (var i = 0; i < vError.messages.length; i++) {
-				sErrorMessage = (vError.messages[i].severity === "Error") ? sErrorMessage + vError.messages[i].text + "\n" : sErrorMessage;
-			}
-		} else {
+		if (vError.messages && Array.isArray(vError.messages) && vError.messages.length > 0) {
+			sErrorMessage = vError.messages.reduce(function(sConcatenatedMessage, oErrorResponse) {
+				return sConcatenatedMessage.concat(
+					oErrorResponse.severity === "Error"
+						? oErrorResponse.text + "\n"
+						: ""
+				);
+			}, sErrorMessage);
+		}
+		// when vError.messages doesn't contain valid error messages
+		// or messages are not set with correct severity
+		if (!sErrorMessage) {
 			sErrorMessage = vError.stack || vError.message || vError.status || vError;
 		}
 		var oTextResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
@@ -928,7 +931,10 @@ function(
 	};
 
 	RuntimeAuthoring.prototype._invalidateCache = function() {
-		return this._getFlexController().getComponentChanges(undefined, true);
+		return PersistenceWriteAPI.getUIChanges({
+			invalidateCache: true,
+			managedObject: this.getRootControlInstance()
+		});
 	};
 
 	RuntimeAuthoring.prototype._onUndo = function() {
@@ -1089,7 +1095,7 @@ function(
 					if (oAppVariantDescriptor) {
 						aAppVariantDescriptor.push(oAppVariantDescriptor);
 					}
-					return this._getFlexController()._oChangePersistence.transportAllUIChanges(this._oRootControl, Utils.getRtaStyleClassName(), this.getLayer(), aAppVariantDescriptor)
+					return PersistenceWriteAPI._transportChanges(this._oRootControl, Utils.getRtaStyleClassName(), this.getLayer(), aAppVariantDescriptor)
 						.then(function(sResponse) {
 							if (sResponse !== "Error" && sResponse !== "Cancel") {
 								this._showMessageToast("MSG_TRANSPORT_SUCCESS");
@@ -1101,24 +1107,16 @@ function(
 
 	/**
 	 * Delete all changes for current layer and root control's component.
-	 * In case of Base Applications (no App Variants) the App Descriptor Changes and UI Changes are saved in different Change Persistences,
+	 * In case of Base Applications (no App Variants) the App Descriptor Changes and UI Changes are saved in different Flex Persistence instances,
 	 * so we have to call reset twice. For App Variants all the changes are saved in one place.
 	 *
 	 * @private
 	 */
 	RuntimeAuthoring.prototype._deleteChanges = function() {
 		var oRootControl = this.getRootControlInstance();
-		var bAppVariantRunning = FlexUtils.isApplicationVariant(oRootControl) || FlexUtils.isVariantByStartupParameter(oRootControl);
 		var oAppComponent = FlexUtils.getAppComponentForControl(oRootControl);
-		var oUIChangesFlexController = this._getFlexController();
 
-		return oUIChangesFlexController.resetChanges(this.getLayer(), "Change.createInitialFileContent", oAppComponent)
-		.then(function() {
-			if (!bAppVariantRunning) {
-				var oDescriptorChangesFlexController = Utils.getAppDescriptorFlexController(oRootControl);
-				return oDescriptorChangesFlexController.resetChanges(this.getLayer(), "Change.createInitialFileContent", oAppComponent);
-			}
-		}.bind(this))
+		return PersistenceWriteAPI.resetChanges(this.getLayer(), "Change.createInitialFileContent", oAppComponent)
 		.then(function() {
 			this._reloadPage();
 		}.bind(this))
@@ -1326,10 +1324,18 @@ function(
 	 * @returns {Promise} Resolving to false means that no change check is required
 	 */
 	RuntimeAuthoring.prototype._checkChangesExist = function() {
-		if (this._getFlexController().getComponentName().length > 0) {
-			return this._getFlexController().getComponentChanges({currentLayer: this.getLayer(), includeCtrlVariants: true}).then(function(aAllLocalChanges) {
-				return aAllLocalChanges.length > 0;
-			});
+		var oRootControl = this.getRootControlInstance();
+		var oAppComponent = FlexUtils.getAppComponentForControl(oRootControl);
+		if (FlexUtils.getComponentName(oAppComponent).length > 0) {
+			return PersistenceWriteAPI.getUIChanges({
+				currentLayer: this.getLayer(),
+				includeCtrlVariants: true,
+				invalidateCache: false,
+				managedObject: oAppComponent
+			})
+				.then(function (aAllLocalChanges) {
+					return aAllLocalChanges.length > 0;
+				});
 		}
 		return Promise.resolve(false);
 	};
@@ -1445,17 +1451,17 @@ function(
 		var oUshellContainer = FlexUtils.getUshellContainer();
 		if (oUshellContainer && this.getLayer() !== "USER") {
 			var mParsedHash = FlexUtils.getParsedURLHash();
-			return this._getFlexController().hasHigherLayerChanges({ignoreMaxLayerParameter : false})
-			.then(function(bHasHigherLayerChanges) {
-				if (bHasHigherLayerChanges) {
-					return this._handleReloadWithoutHigherLayerChangesMessageBoxOnStart().then(function() {
-						var oCrossAppNav = oUshellContainer.getService("CrossApplicationNavigation");
-						if (oCrossAppNav.toExternal && mParsedHash) {
-							return this._reloadWithoutHigherLayerChangesOnStart(mParsedHash, oCrossAppNav);
-						}
-					}.bind(this));
-				}
-			}.bind(this));
+			return PersistenceWriteAPI.hasHigherLayerChanges(this.getRootControlInstance(), {ignoreMaxLayerParameter: false})
+				.then(function (bHasHigherLayerChanges) {
+					if (bHasHigherLayerChanges) {
+						return this._handleReloadWithoutHigherLayerChangesMessageBoxOnStart().then(function () {
+							var oCrossAppNav = oUshellContainer.getService("CrossApplicationNavigation");
+							if (oCrossAppNav.toExternal && mParsedHash) {
+								return this._reloadWithoutHigherLayerChangesOnStart(mParsedHash, oCrossAppNav);
+							}
+						}.bind(this));
+					}
+				}.bind(this));
 		}
 		return Promise.resolve(false);
 	};
@@ -1470,8 +1476,8 @@ function(
 			this._oSerializer.needsReload(),
 			// When working with RTA, the MaxLayer parameter will be present in the URL and must
 			// be ignored in the decision to bring up the pop-up (ignoreMaxLayerParameter = true)
-			this._getFlexController().hasHigherLayerChanges({ignoreMaxLayerParameter : true})
-		]).then(function(aArgs) {
+			PersistenceWriteAPI.hasHigherLayerChanges(this.getRootControlInstance(), {ignoreMaxLayerParameter: true})
+		]).then(function (aArgs) {
 			var bChangesNeedRestart = aArgs[0],
 				bHasHigherLayerChanges = aArgs[1];
 			if (bChangesNeedRestart || bHasHigherLayerChanges) {

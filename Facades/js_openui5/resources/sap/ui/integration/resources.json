@@ -557,6 +557,28 @@
 			"module": "sap/ui/integration/sap-ui-integration-config.js"
 		},
 		{
+			"name": "sap-ui-integration-define-nojQuery-dbg.js",
+			"module": "sap/ui/integration/sap-ui-integration-define-nojQuery.js",
+			"isDebug": true,
+			"merged": true,
+			"included": [
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/thirdparty/ui/jquery/jquery-ui-position.js"
+			]
+		},
+		{
+			"name": "sap-ui-integration-define-nojQuery.js",
+			"module": "sap/ui/integration/sap-ui-integration-define-nojQuery.js",
+			"merged": true,
+			"included": [
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/thirdparty/ui/jquery/jquery-ui-position.js"
+			]
+		},
+		{
+			"name": "schemas/sap-card.json"
+		},
+		{
 			"name": "services/Data-dbg.js",
 			"module": "sap/ui/integration/services/Data.js",
 			"isDebug": true,

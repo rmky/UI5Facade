@@ -47,12 +47,13 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 * @since 1.48
 		 *
 		 * @constructor
 		 * @public
 		 * @alias sap.m.PDFViewer
+		 * @see {@link topic:cd80a8bca4ac450b86547d78f0653330 PDF Viewer}
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
 		var PDFViewer = Control.extend("sap.m.PDFViewer",
@@ -76,7 +77,8 @@ sap.ui.define([
 						 * an absolute path.<br>
 						 * Optionally, this property can also be set to a data URI path or a blob URL
 						 * in all major web browsers except Internet Explorer and Microsoft Edge, provided
-						 * that this data URI or blob URL is whitelisted in advance.
+						 * that this data URI or blob URL is whitelisted in advance. For more information about
+						 * whitelisting, see {@link topic:91f3768f6f4d1014b6dd926db0e91070 URL Whitelist Filtering}.
 						 */
 						source: {type: "sap.ui.core.URI", group: "Misc", defaultValue: null},
 						/**

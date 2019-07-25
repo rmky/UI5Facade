@@ -43,8 +43,8 @@
     {
       "name" : "sap/tnt/SideNavigation.js",
       "description" : "Provides control sap.t.SideNavigation.",
-      "size" : 12809,
-      "compressedSize" : 6056,
+      "size" : 13087,
+      "compressedSize" : 6088,
       "required" : ["sap/tnt/SideNavigationRenderer.js", "sap/tnt/library.js", "sap/ui/core/Control.js", "sap/ui/core/Icon.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/delegate/ScrollEnablement.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -59,8 +59,8 @@
     {
       "name" : "sap/tnt/ToolHeader.js",
       "description" : "Provides control sap.tnt.ToolHeader",
-      "size" : 4537,
-      "compressedSize" : 1294,
+      "size" : 4615,
+      "compressedSize" : 1329,
       "required" : ["sap/m/OverflowToolbar.js", "sap/m/OverflowToolbarAssociativePopover.js", "sap/tnt/ToolHeaderRenderer.js", "sap/tnt/library.js", "sap/ui/core/Control.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -83,8 +83,8 @@
     {
       "name" : "sap/tnt/ToolPage.js",
       "description" : "Provides control sap.t.ToolPage.",
-      "size" : 5573,
-      "compressedSize" : 2459,
+      "size" : 5574,
+      "compressedSize" : 2460,
       "required" : ["sap/tnt/ToolPageRenderer.js", "sap/tnt/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/ResizeHandler.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -98,13 +98,13 @@
     },
     {
       "name" : "sap/tnt/library-h2-preload.js",
-      "size" : 3339,
+      "size" : 3381,
       "required" : ["jquery.sap.global.js", "sap/base/Log.js", "sap/m/BarInPageEnabler.js", "sap/m/OverflowToolbar.js", "sap/m/OverflowToolbarAssociativePopover.js", "sap/m/OverflowToolbarRenderer.js", "sap/m/Popover.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/Core.js", "sap/ui/core/Element.js", "sap/ui/core/Icon.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Item.js", "sap/ui/core/Renderer.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/delegate/ItemNavigation.js", "sap/ui/core/delegate/ScrollEnablement.js", "sap/ui/core/library.js", "sap/ui/events/KeyCodes.js", "ui5loader-autoconfig.js"],
       "includes" : ["sap/tnt/library.js", "sap/tnt/manifest.json", "sap/tnt/InfoLabel.js", "sap/tnt/InfoLabelRenderer.js", "sap/tnt/NavigationList.js", "sap/tnt/NavigationListItem.js", "sap/tnt/NavigationListRenderer.js", "sap/tnt/SideNavigation.js", "sap/tnt/SideNavigationRenderer.js", "sap/tnt/ToolHeader.js", "sap/tnt/ToolHeaderRenderer.js", "sap/tnt/ToolHeaderUtilitySeparator.js", "sap/tnt/ToolPage.js", "sap/tnt/ToolPageRenderer.js"]
     },
     {
       "name" : "sap/tnt/library-preload.js",
-      "size" : 34138,
+      "size" : 34248,
       "required" : ["jquery.sap.global.js", "sap/base/Log.js", "sap/m/BarInPageEnabler.js", "sap/m/OverflowToolbar.js", "sap/m/OverflowToolbarAssociativePopover.js", "sap/m/OverflowToolbarRenderer.js", "sap/m/Popover.js", "sap/m/library.js", "sap/ui/Device.js", "sap/ui/core/Control.js", "sap/ui/core/Core.js", "sap/ui/core/Element.js", "sap/ui/core/Icon.js", "sap/ui/core/IconPool.js", "sap/ui/core/InvisibleText.js", "sap/ui/core/Item.js", "sap/ui/core/Renderer.js", "sap/ui/core/ResizeHandler.js", "sap/ui/core/delegate/ItemNavigation.js", "sap/ui/core/delegate/ScrollEnablement.js", "sap/ui/core/library.js", "sap/ui/events/KeyCodes.js", "ui5loader-autoconfig.js"],
       "includes" : ["sap/tnt/InfoLabel.js", "sap/tnt/InfoLabelRenderer.js", "sap/tnt/NavigationList.js", "sap/tnt/NavigationListItem.js", "sap/tnt/NavigationListRenderer.js", "sap/tnt/SideNavigation.js", "sap/tnt/SideNavigationRenderer.js", "sap/tnt/ToolHeader.js", "sap/tnt/ToolHeaderRenderer.js", "sap/tnt/ToolHeaderUtilitySeparator.js", "sap/tnt/ToolPage.js", "sap/tnt/ToolPageRenderer.js", "sap/tnt/library.js", "sap/tnt/manifest.json"]
     },
@@ -117,14 +117,14 @@
     {
       "name" : "sap/tnt/library.js",
       "description" : "Initialization Code and shared classes of library sap.tnt.",
-      "size" : 1467,
-      "compressedSize" : 641,
+      "size" : 1786,
+      "compressedSize" : 662,
       "required" : ["sap/m/library.js", "sap/ui/core/library.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
     {
       "name" : "sap/tnt/manifest.json",
-      "size" : 1203,
+      "size" : 1244,
       "required" : [],
       "includes" : []
     },

@@ -88,7 +88,7 @@ sap.ui.define([
 	 * The Ux3 GoldReflection Shell, which is an application frame with navigation capabilities.
 	 * It is supposed to be added to a direct child of the BODY tag of a page and there should be no other parts of the page consuming space outside the Shell.
 	 * @extends sap.ui.core.Control
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -397,6 +397,8 @@ sap.ui.define([
 		this._oSearchField = null;
 
 		jQuery(window).unbind("resize", this._checkResizeClosure);
+		clearTimeout(this._checkPaneBarOverflowDelayId);
+		this._checkPaneBarOverflowDelayId = null;
 	};
 
 
@@ -693,8 +695,9 @@ sap.ui.define([
 
 			// Hide/show the main item
 			jQuery(oDomEntry).css("display", bItemInPane ? "inline-block" : "none");
-			// Hide/show the submenu item
-			sap.ui.getCore().byId(oDomEntry.id + "-overflow").setVisible(!bItemInPane);
+			// Hide/show the submenu item (check if it is in the DOM first)
+			var oSubmenuItem = sap.ui.getCore().byId(oDomEntry.id + "-overflow");
+			oSubmenuItem && oSubmenuItem.setVisible(!bItemInPane);
 
 			if (bItemInPane) {
 				// This item is inside the pane

@@ -55,7 +55,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -185,6 +185,10 @@ sap.ui.define([
 				oRm.addStyle("height", oControl.getHeight());
 				oRm.addClass("sapCEd");
 				oRm.writeAttributeEscaped("data-sap-ui-syntaxhints", oControl.getSyntaxHints());
+				var sTooltip = oControl.getTooltip_AsString();
+				if (sTooltip) {
+					oRm.writeAttributeEscaped('title', sTooltip);
+				}
 				oRm.writeStyles();
 				oRm.writeClasses();
 				oRm.write(">");

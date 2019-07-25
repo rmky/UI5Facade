@@ -4,38 +4,45 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/Renderer'],
-function(Renderer) {
+sap.ui.define([],
+function() {
 	"use strict";
 
 	return {
+
+		apiVersion: 2,
+
 		render: function (oRm, oControl) {
 			var oAcc = oControl._oAcc,
 				oRootAttributes = oAcc.getRootAttributes(),
-				sTitle = oControl.getTitle();
+				sTitle = oControl.getTitle(),
+				bRenderHiddenTitle = sTitle && !oControl.getShowMenuButton();
 
-			oRm.write("<div");
-			oRm.addClass("sapFShellBar");
+			oRm.openStart("div", oControl);
+			oRm.class("sapFShellBar");
 			if (oControl.getShowNotifications()) {
-				oRm.addClass("sapFShellBarNotifications");
+				oRm.class("sapFShellBarNotifications");
 			}
-			oRm.writeAccessibilityState({
+			oRm.accessibilityState({
 				role: oRootAttributes.role,
 				label: oRootAttributes.label
 			});
-			oRm.writeControlData(oControl);
-			oRm.writeClasses();
-			oRm.write(">");
 
-			if (sTitle) {
-				oRm.write('<div id="' + oControl.getId() + '-titleHidden" role="heading" aria-level="1" class="sapFShellBarTitleHidden">');
-				oRm.writeEscaped(sTitle);
-				oRm.write('</div>');
+			oRm.openEnd();
+
+			if (bRenderHiddenTitle) {
+				oRm.openStart("div", oControl.getId() + "-titleHidden")
+					.class("sapFShellBarTitleHidden")
+					.attr("role", "heading")
+					.attr("aria-level", "1")
+					.openEnd();
+
+				oRm.text(sTitle).close("div");
 			}
 
 			oRm.renderControl(oControl._getOverflowToolbar());
 
-			oRm.write("</div>");
+			oRm.close("div");
 		},
 		shouldAddIBarContext: function () {
 			return false;

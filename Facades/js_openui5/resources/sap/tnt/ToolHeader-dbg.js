@@ -56,9 +56,10 @@ sap.ui.define([
 		 * </ul>
 		 *
 		 * @extends sap.m.OverflowToolbar
+		 * @implements sap.tnt.IToolHeader
 		 *
 		 * @author SAP SE
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -69,6 +70,7 @@ sap.ui.define([
 		 */
 		var ToolHeader = OverflowToolbar.extend("sap.tnt.ToolHeader", /** @lends sap.tnt.ToolHeader.prototype */ {
 			metadata: {
+				interfaces: ["sap.tnt.IToolHeader"],
 				library: "sap.tnt",
 				properties: {
 

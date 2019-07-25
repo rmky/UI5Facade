@@ -57,7 +57,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -364,13 +364,6 @@ sap.ui.define([
 
 		var scrollDiv = this.$().find(".sapMTokenizerScrollContainer")[0];
 		domRef.scrollLeft = scrollDiv.scrollWidth;
-	};
-
-
-	Tokenizer.prototype.setWidth = function(sWidth) {
-		this.setProperty("width", sWidth, true);
-		this.$().css("width", this.getWidth());
-		return this;
 	};
 
 	/**
@@ -1578,12 +1571,6 @@ sap.ui.define([
 		}
 
 		return oFocusedToken;
-	};
-
-	Tokenizer.prototype.setEditable = function(bEditable) {
-		this.$().toggleClass("sapMTokenizerReadonly", !bEditable);
-
-		return this.setProperty("editable", bEditable, true);
 	};
 
 	/**

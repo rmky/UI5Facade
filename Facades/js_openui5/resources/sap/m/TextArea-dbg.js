@@ -13,6 +13,7 @@ sap.ui.define([
 	'sap/ui/core/library',
 	'sap/ui/events/KeyCodes',
 	'sap/ui/Device',
+	"sap/base/security/encodeXML",
 	'./TextAreaRenderer',
 	"sap/ui/thirdparty/jquery"
 ],
@@ -24,6 +25,7 @@ function(
 	coreLibrary,
 	KeyCodes,
 	Device,
+	encodeXML,
 	TextAreaRenderer,
 	jQuery
 ) {
@@ -80,7 +82,7 @@ function(
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -493,7 +495,7 @@ function(
 
 		// ensure that there will be left space if the last row is a new line
 		// ensure that possible html/script content is escaped
-		oHiddenDiv.innerHTML = jQuery.sap.escapeHTML(oTextAreaRef.value) + '&nbsp;';
+		oHiddenDiv.innerHTML = encodeXML(oTextAreaRef.value) + '&nbsp;';
 		this._updateOverflow();
 	};
 

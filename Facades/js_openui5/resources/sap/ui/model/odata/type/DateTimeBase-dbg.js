@@ -132,7 +132,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 * @public
 	 * @since 1.27.0
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 */
 	var DateTimeBase = ODataType.extend("sap.ui.model.odata.type.DateTimeBase", {
 			constructor : function (oFormatOptions, oConstraints) {
@@ -250,6 +250,9 @@ sap.ui.define([
 			}
 			return;
 		} else if (oValue instanceof Date) {
+			if (oValue.getFullYear() === 0) {
+				throw new ValidateException(getErrorMessage(this));
+			}
 			return;
 		}
 		throw new ValidateException("Illegal " + this.getName() + " value: " + oValue);

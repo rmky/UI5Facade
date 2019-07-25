@@ -14,7 +14,7 @@ sap.ui.define(["sap/ui/fl/Change"], function(Change) {
 	 * @alias sap.ui.fl.DefaultVariant
 	 * @author SAP SE
 	 *
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @experimental Since 1.25.0
 	 */

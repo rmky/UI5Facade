@@ -14,7 +14,8 @@ sap.ui.define([
 	'sap/ui/core/ContextMenuSupport',
 	'sap/ui/core/library',
 	'./ButtonRenderer',
-	"sap/ui/events/KeyCodes"
+	"sap/ui/events/KeyCodes",
+	"sap/ui/core/LabelEnablement"
 ], function(
 	library,
 	Control,
@@ -24,7 +25,8 @@ sap.ui.define([
 	ContextMenuSupport,
 	coreLibrary,
 	ButtonRenderer,
-	KeyCodes
+	KeyCodes,
+	LabelEnablement
 ) {
 	"use strict";
 
@@ -66,7 +68,7 @@ sap.ui.define([
 	 * @mixes sap.ui.core.ContextMenuSupport
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -646,6 +648,23 @@ sap.ui.define([
 			focusable: this.getEnabled(),
 			enabled: this.getEnabled()
 		};
+	};
+
+	/*
+	* Determines whether self-reference should be added.
+	*
+	* @returns {boolean}
+	* @private
+	*/
+	Button.prototype._determineSelfReferencePresence = function() {
+		var aAriaLabelledBy = this.getAriaLabelledBy(),
+			bAlreadyHasSelfReference = aAriaLabelledBy.indexOf(this.getId()) !== -1,
+			bHasReferencingLabels = LabelEnablement.getReferencingLabels(this).length > 0,
+			oParent = this.getParent(),
+			bAllowEnhancingByParent = !!(oParent && oParent.enhanceAccessibilityState);
+
+		return !bAlreadyHasSelfReference && this._getText() &&
+			(aAriaLabelledBy.length > 0 || bHasReferencingLabels || bAllowEnhancingByParent);
 	};
 
 	return Button;

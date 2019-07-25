@@ -32,7 +32,7 @@ function (
 	 * @extends sap.ui.rta.plugin.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -199,6 +199,7 @@ function (
 		if (this.getDesignTime().getBusyPlugins().length || !oOverlay) {
 			return;
 		}
+
 		var aRelevantOverlays = this._getRelevantOverlays(oOverlay);
 		var fnDebounced = DtUtil.debounce(function () {
 			if (!this.bIsDestroyed && !oOverlay.bIsDestroyed) {

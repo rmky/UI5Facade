@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @since 1.21.1
 	 *
 	 * @constructor
@@ -421,7 +421,7 @@ sap.ui.define([
 						persoService: that.getPersoService(),
 						showSelectAll: true,
 						showResetAll: true,
-						grouping: false,
+						hasGrouping: false,
 						contentWidth: mSettings && mSettings.contentWidth,
 						contentHeight: mSettings && mSettings.contentHeight || "20rem",
 						initialColumnState: that._oInitialPersoData.aColumns,

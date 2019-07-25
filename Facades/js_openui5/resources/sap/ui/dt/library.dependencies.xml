@@ -18,7 +18,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ContextMenuControl.js" size="31101" compressedSize="12805">
+  <module name="sap/ui/dt/ContextMenuControl.js" size="31088" compressedSize="12792">
     <description>globals sap</description>
     <requires>
       <module name="sap/base/util/deepEqual.js"/>
@@ -52,7 +52,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/DesignTime.js" size="42115" compressedSize="16960">
+  <module name="sap/ui/dt/DesignTime.js" size="42263" compressedSize="17084">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -121,7 +121,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/ElementUtil.js" size="14273" compressedSize="5274">
+  <module name="sap/ui/dt/ElementUtil.js" size="14285" compressedSize="5277">
     <description>Provides object sap.ui.dt.ElementUtil.</description>
     <requires>
       <module name="sap/ui/base/Object.js"/>
@@ -194,7 +194,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/Plugin.js" size="11509" compressedSize="3293">
+  <module name="sap/ui/dt/Plugin.js" size="11724" compressedSize="3383">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
@@ -370,7 +370,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/library-h2-preload.js" size="8164">
+  <module name="sap/ui/dt/library-h2-preload.js" size="8204">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>
@@ -466,7 +466,7 @@
       <module name="sap/ui/dt/util/ZIndexManager.js"/>
     </includes>
   </module>
-  <module name="sap/ui/dt/library-preload.js" size="167477">
+  <module name="sap/ui/dt/library-preload.js" size="168795">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>
@@ -666,7 +666,7 @@
   </module>
   <module name="sap/ui/dt/manifest.json" size="864">
   </module>
-  <module name="sap/ui/dt/plugin/ContextMenu.js" size="23272" compressedSize="10605">
+  <module name="sap/ui/dt/plugin/ContextMenu.js" size="24008" compressedSize="10908">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/assert.js"/>
@@ -680,7 +680,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/ControlDragDrop.js" size="4458" compressedSize="2202">
+  <module name="sap/ui/dt/plugin/ControlDragDrop.js" size="4533" compressedSize="2226">
     <description>Provides class sap.ui.dt.plugin.ControlDragDrop.</description>
     <requires>
       <module name="sap/ui/dt/plugin/DragDrop.js"/>
@@ -688,18 +688,19 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/CutPaste.js" size="6852" compressedSize="3470">
+  <module name="sap/ui/dt/plugin/CutPaste.js" size="7203" compressedSize="3701">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dt/OverlayRegistry.js"/>
       <module name="sap/ui/dt/OverlayUtil.js"/>
       <module name="sap/ui/dt/Plugin.js"/>
+      <module name="sap/ui/dt/Util.js"/>
       <module name="sap/ui/dt/plugin/ElementMover.js"/>
       <module name="sap/ui/events/KeyCodes.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/DragDrop.js" size="23935" compressedSize="11975">
+  <module name="sap/ui/dt/plugin/DragDrop.js" size="23922" compressedSize="11962">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/Object.js"/>
@@ -712,7 +713,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/dt/plugin/ElementMover.js" size="11198" compressedSize="3765">
+  <module name="sap/ui/dt/plugin/ElementMover.js" size="12311" compressedSize="4334">
     <description>Provides class sap.ui.dt.plugin.ElementMover.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
@@ -720,6 +721,7 @@
       <module name="sap/ui/dt/DOMUtil.js"/>
       <module name="sap/ui/dt/ElementUtil.js"/>
       <module name="sap/ui/dt/OverlayUtil.js"/>
+      <module name="sap/ui/dt/Util.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>

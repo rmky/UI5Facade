@@ -31,7 +31,7 @@ function(
 	 * @extends sap.ui.dt.plugin.CutPaste
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -77,15 +77,29 @@ function(
 	 * @override
 	 */
 	CutPaste.prototype._isEditable = function(oOverlay, mPropertyBag) {
-		return this.getElementMover().isEditable(oOverlay, mPropertyBag.onRegistration) || this._isPasteEditable(oOverlay);
+		return this.getElementMover().isEditable(oOverlay, mPropertyBag.onRegistration)
+			.then(function(bEditable) {
+				if (bEditable) {
+					return true;
+				}
+				return this._isPasteEditable(oOverlay);
+			}.bind(this));
 	};
 
 	CutPaste.prototype._isPasteEditable = function (oOverlay) {
 		var oElementMover = this.getElementMover();
-
-		return this.hasStableId(oOverlay) &&
-			oElementMover.isMoveAvailableOnRelevantContainer(oOverlay) &&
-			oElementMover.isMoveAvailableForChildren(oOverlay);
+		if (!this.hasStableId(oOverlay)) {
+			return Promise.resolve(false);
+		}
+		return oElementMover.isMoveAvailableOnRelevantContainer(oOverlay)
+			.then(function(bMoveAvailable) {
+				if (!bMoveAvailable) {
+					return false;
+				}
+				return Utils.doIfAllControlsAreAvailable([oOverlay], function() {
+					return oElementMover.isMoveAvailableForChildren(oOverlay);
+				});
+			});
 	};
 
 	/**
@@ -125,26 +139,29 @@ function(
 	CutPaste.prototype.paste = function(oTargetOverlay) {
 		this._executePaste(oTargetOverlay);
 
-		this.getElementMover().buildMoveCommand()
-
-		.then(function(oMoveCommand) {
-			this.fireElementModified({
-				command : oMoveCommand
+		DtUtil.waitForSynced(this.getDesignTime())()
+			.then(function() {
+				return this.getElementMover().buildMoveCommand();
+			}.bind(this))
+			.then(function(oMoveCommand) {
+				this.fireElementModified({
+					command : oMoveCommand
+				});
+				this.stopCutAndPaste();
+			}.bind(this))
+			.catch(function(oMessage) {
+				throw DtUtil.createError("CutPaste#paste", oMessage, "sap.ui.rta");
 			});
-			this.stopCutAndPaste();
-		}.bind(this))
-
-		.catch(function(oMessage) {
-			throw DtUtil.createError("CutPaste#paste", oMessage, "sap.ui.rta");
-		});
 	};
 
 	/**
 	 * @override
 	 */
 	CutPaste.prototype.cut = function(oOverlay) {
-		ControlCutPaste.prototype.cut.apply(this, arguments);
-		oOverlay.setSelected(false);
+		return ControlCutPaste.prototype.cut.apply(this, arguments)
+			.then(function() {
+				oOverlay.setSelected(false);
+			});
 	};
 
 	/**
@@ -182,11 +199,15 @@ function(
 
 		if (this.isAvailable(aElementOverlays)) {
 			aMenuItems.push(oCutMenuItem, oPasteMenuItem);
-		} else if (this._isPasteEditable(aElementOverlays[0])) {
-			aMenuItems.push(oPasteMenuItem);
+			return aMenuItems;
 		}
-
-		return aMenuItems;
+		return this._isPasteEditable(aElementOverlays[0])
+			.then(function(bPasteEditable) {
+				if (bPasteEditable) {
+					aMenuItems.push(oPasteMenuItem);
+				}
+				return aMenuItems;
+			});
 	};
 
 	return CutPaste;

@@ -178,14 +178,27 @@ html:not(.sap-desktop) .sapFAvatarFocusable:focus {
 	position: relative;
 	isolation: isolate;
 	z-index: 0;
+
+	.sapFDynamicPageContentWrapperStandard,
+	.sapFDynamicPageContentWrapperSolid {
+		&>.sapFDynamicPageContent {
+			background: @sapUiBaseBG;
+		}
+	}
+
+	.sapFDynamicPageContentWrapperTransparent>.sapFDynamicPageContent {
+		background: transparent;
+	}
+
+	.sapFDynamicPageContentWrapperList>.sapFDynamicPageContent {
+		background: @sapUiGroupContentBackground;
+	}
 }
 
 .sapFDynamicPageContent {
 	flex-grow: 1;
 	-webkit-flex-grow: 1;
 	z-index: 0;
-
-	background: @sapUiGroupContentBackground;
 
 	.sapFDynamicPageAlignContent {
 		margin-left: -@sapUiMarginSmall;
@@ -1219,22 +1232,28 @@ html[data-sap-ui-browser^="cr"] .sapFCard {
 }
 
 .sapFCard {
-  .sapFCardClickable,
-  .sapFCardClickable svg {
-	cursor: pointer !important;
-
-	.sapMText {
-	  cursor: pointer;
+	&[data-sap-ui-draggable=true] {
+		.sapMText {
+			cursor: grab;
+		}
 	}
 
-	&.sapFCardClickable:hover{
-	  background: @_sap_f_Card_HeaderHoverColor;
-	}
+	.sapFCardClickable,
+	.sapFCardClickable svg {
+		cursor: pointer !important;
 
-	&.sapFCardClickable:active{
-	  background: @_sap_f_Card_HeaderActiveColor;
+		.sapMText {
+			cursor: pointer;
+		}
+
+		&.sapFCardClickable:hover{
+			background: @_sap_f_Card_HeaderHoverColor;
+		}
+
+		&.sapFCardClickable:active{
+			background: @_sap_f_Card_HeaderActiveColor;
+		}
 	}
-  }
 }
 
 .sapFCardHeader:focus::before,
@@ -1555,12 +1574,19 @@ html[data-sap-ui-animation='on'] {
 		height: 100%;
 	}
 }
+
+.sapFGridList .sapUiBlockLayerTabbable {
+	// There are "span" helpers, which purpose is to block navigation into the blocked controls content.
+	// If the focus reaches the span before the blocked/busy control it is forwarded to the one after the control.
+	// These spans should not be visible.
+	position: absolute;
+}
 /* END "GridList.less" */
 
 /* START "ShellBar.less" */
-@_sap_f_ShellBar_PaddingDesktop: 3;
-@_sap_f_ShellBar_PaddingTablet: 2;
-@_sap_f_ShellBar_PaddingPhone: 1;
+@_sap_f_ShellBar_PaddingDesktop: 3rem;
+@_sap_f_ShellBar_PaddingTablet: 2rem;
+@_sap_f_ShellBar_PaddingPhone: 1rem;
 @_sap_f_ShellBar_ChildMargin: 4;
 @_sap_f_ShellBar_CoPilotWidth: 48;
 
@@ -1569,8 +1595,6 @@ html[data-sap-ui-animation='on'] {
 
 .sapFShellBar {
 	height: 3rem;
-	padding-left: ~"@{_sap_f_ShellBar_PaddingDesktop}rem";
-	padding-right: ~"@{_sap_f_ShellBar_PaddingDesktop}rem";
 	box-sizing: border-box;
 	overflow: hidden;
 
@@ -1582,8 +1606,7 @@ html[data-sap-ui-animation='on'] {
 
 	.sapFShellBarOTB {
 		height: 3rem;
-		padding-left: 0;
-		padding-right: 0;
+		padding: 0 @_sap_f_ShellBar_PaddingDesktop;
 
 		>:first-child {
 			margin-left: 0;
@@ -1734,12 +1757,14 @@ html[data-sap-ui-animation='on'] {
 		font-weight: bold;
 	}
 
-	&.sapFShellBarSizeTablet {
-		padding: 0 ~"@{_sap_f_ShellBar_PaddingTablet}rem";
+	&.sapFShellBarSizeTablet .sapFShellBarOTB {
+		padding: 0 @_sap_f_ShellBar_PaddingTablet;
 	}
 
 	&.sapFShellBarSizePhone {
-		padding: 0 ~"@{_sap_f_ShellBar_PaddingPhone}rem";
+		.sapFShellBarOTB {
+			padding: 0 @_sap_f_ShellBar_PaddingPhone;
+		}
 		.sapFShellBarProfile {
 			margin-right: 0;
 		}
@@ -1864,3 +1889,11 @@ html[data-sap-ui-animation='on'] {
 
 }
 /* END "ShellBar.less" */
+
+/* START "GridDragAndDrop.less" */
+.sapUiDnDGridIndicator {
+	background: @sapUiDragAndDropActiveBackground;
+	border: 0.125rem solid @sapUiDragAndDropActiveBorderColor;
+	box-sizing: border-box;
+}
+/* END "GridDragAndDrop.less" */

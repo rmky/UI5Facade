@@ -69,7 +69,7 @@ sap.ui.define([
 		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/message-page/ Message Page}
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -264,22 +264,6 @@ sap.ui.define([
 				oHeader.addContentLeft(this._oNavButton);
 			} else {
 				oHeader.removeAllContentLeft();
-			}
-
-			return this;
-		};
-
-		MessagePage.prototype.setTextDirection = function(sTextDirection) {
-			this.setProperty("textDirection", sTextDirection, true); // no re-rendering
-
-			var oDomRef = this.getDomRef();
-
-			if (oDomRef) {
-				if (sTextDirection === TextDirection.Inherit) {
-					oDomRef.removeAttribute("dir");
-				} else {
-					oDomRef.dir = sTextDirection.toLowerCase();
-				}
 			}
 
 			return this;

@@ -115,6 +115,7 @@
 	headerExpanded: true, // boolean
 	toggleHeaderOnTitleClick: true, // boolean
 	showFooter: false, // boolean
+	backgroundDesign: sap.m.PageBackgroundDesign.Standard, // sap.m.PageBackgroundDesign, since 1.68
 	fitContent: false, // boolean
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
@@ -143,6 +144,7 @@
 	headerExpanded="true"
 	toggleHeaderOnTitleClick="true"
 	showFooter="false"
+	backgroundDesign="Standard"
 	fitContent="false"
 	stickySubheaderProvider=""
 	validateFieldGroup="">
@@ -908,6 +910,47 @@
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
 </cards/NumericSideIndicator>
+]]></xmlTemplate>
+</Template>
+<Template name="sap.f.dnd.GridDropInfo" alias="GridDropInfo,Info">
+	<jsTemplate><![CDATA[new sap.f.dnd.GridDropInfo({
+	id: "${id}", // sap.ui.core.ID
+	groupName: undefined, // string
+	enabled: true, // boolean, since 1.56
+	targetAggregation: undefined, // string
+	dropEffect: sap.ui.core.dnd.DropEffect.Move, // sap.ui.core.dnd.DropEffect
+	dropPosition: sap.ui.core.dnd.DropPosition.On, // sap.ui.core.dnd.DropPosition
+	dropLayout: sap.ui.core.dnd.DropLayout.Default, // sap.ui.core.dnd.DropLayout
+	tooltip: undefined, // sap.ui.core.TooltipBase
+	customData: [], // sap.ui.core.CustomData
+	dependents: [], // sap.ui.core.Element, since 1.19
+	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
+	dragEnter: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this],
+	dragOver: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this], // since 1.56
+	drop: [function (oEvent) {
+		var ${control} = oEvent.getSource();
+	}, this]
+})
+]]></jsTemplate>
+	<xmlTemplate><![CDATA[<dnd/GridDropInfo xmlns="sap.f"
+	id="${id}"
+	groupName=""
+	enabled="true"
+	targetAggregation=""
+	dropEffect="Move"
+	dropPosition="On"
+	dropLayout="Default"
+	dragEnter=""
+	dragOver=""
+	drop="">
+		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
+		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
+		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
+</dnd/GridDropInfo>
 ]]></xmlTemplate>
 </Template>
 <Template name="sap.f.semantic.AddAction" alias="AddAction,Action">

@@ -24,11 +24,11 @@ sap.ui.define([
 	 * @param {sap.ui.model.odata.ODataMetadata} oMetadata
 	 * @param {object} mParams
 	 *
-	 * @class Implementation to access oData Annotations
+	 * @class Implementation to access OData Annotations
 	 *
 	 * @author SAP SE
 	 * @version
-	 * 1.67.1
+	 * 1.68.1
 	 *
 	 * @public
 	 * @deprecated As of version 1.66, please use {@link sap.ui.model.odata.v2.ODataAnnotations} instead.

@@ -167,7 +167,8 @@ sap.ui.define([
 	Factory.prototype.getPrimaryTitle = function () {
 		if (!this._oControls.oPrimaryTitle) {
 			this._oControls.oPrimaryTitle = new Title({
-				titleStyle: TitleLevel.H6
+				titleStyle: TitleLevel.H6,
+				level: TitleLevel.H1
 			})
 				.setLayoutData(new OverflowToolbarLayoutData({
 					priority: OverflowToolbarPriority.NeverOverflow
@@ -240,7 +241,10 @@ sap.ui.define([
 			this._oControls.oMenuButton = new OverflowToolbarButton({
 				icon: "sap-icon://menu2",
 				type: ButtonType.Transparent,
-				tooltip: this._oAcc.getEntityTooltip("MENU")
+				tooltip: this._oAcc.getEntityTooltip("MENU"),
+				press: function () {
+					this._oContext.fireEvent("menuButtonPressed", {button: this._oControls.oMenuButton});
+				}.bind(this)
 			}).setLayoutData(new OverflowToolbarLayoutData({
 				priority: OverflowToolbarPriority.NeverOverflow
 			}));

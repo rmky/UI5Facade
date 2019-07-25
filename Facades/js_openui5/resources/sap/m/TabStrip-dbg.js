@@ -71,7 +71,7 @@ function(
 		 * space is exceeded, a horizontal scrollbar appears.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @private
@@ -659,7 +659,9 @@ function(
 					change: function (oEvent) {
 						oSelectedSelectItem = oEvent.getParameters()['selectedItem'];
 						oSelectedTabStripItem = this._findTabStripItemFromSelectItem(oSelectedSelectItem);
-						this._activateItem(oSelectedTabStripItem, oEvent);
+						if (oSelectedTabStripItem instanceof TabStripItem) {
+							this._activateItem(oSelectedTabStripItem, oEvent);
+						}
 					}.bind(this)
 				};
 
@@ -680,7 +682,10 @@ function(
 			// mark the event for components that needs to know if the event was handled
 			oEvent.setMarked();
 			oEvent.preventDefault();
-			this._activateItem(oEvent.srcControl, oEvent);
+			/* Fire activate item only if select is on an Item.*/
+			if (oEvent.srcControl instanceof TabStripItem) {
+				this._activateItem(oEvent.srcControl, oEvent);
+			}
 		};
 
 		/**
@@ -739,16 +744,14 @@ function(
 		 */
 		TabStrip.prototype._activateItem = function(oItem, oEvent) {
 			/* As the '_activateItem' is part of a bubbling selection change event, allow the final event handler
-			 * to prevent it. */
+			 * to prevent it.*/
 			if (this.fireItemSelect({item: oItem})) {
-				if (oItem && oItem instanceof TabStripItem) {
-					if (!this.getSelectedItem() || this.getSelectedItem() !== oItem.getId()) {
-						this.setSelectedItem(oItem);
-					}
-					this.fireItemPress({
-						item: oItem
-					});
+				if (!this.getSelectedItem() || this.getSelectedItem() !== oItem.getId()) {
+					this.setSelectedItem(oItem);
 				}
+				this.fireItemPress({
+					item: oItem
+				});
 			} else if (oEvent && !oEvent.isDefaultPrevented()) {
 				oEvent.preventDefault();
 			}
@@ -1356,6 +1359,11 @@ function(
 				this.getSelectedItem() && this.getSelectedItem().getProperty("modified"));
 
 			return this;
+		};
+
+		CustomSelect.prototype._getValueIcon = function() {
+			// our select will not show neither image nor icon on the left of the text
+			return null;
 		};
 
 		/****************************************** CUSTOM SELECT LIST CONTROL *****************************************/

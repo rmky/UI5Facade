@@ -46,7 +46,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -156,6 +156,7 @@ sap.ui.define([
 	 * @param {Object} oParams Parameters that should be replaced in the manifest.
 	 */
 	CardManifest.prototype.processManifest = function (oParams) {
+
 		var iCurrentLevel = 0,
 			iMaxLevel = 15,
 			//Always need the unprocessed manifest
@@ -320,16 +321,20 @@ sap.ui.define([
 	 * @private
 	 */
 	CardManifest.prototype.processParameters = function (oParameters) {
+		if (!this._oManifest) {
+
+			return;
+		}
+
 		var oManifestParams = this.get(MANIFEST_PARAMETERS);
 
 		if (oParameters && !oManifestParams) {
 			Log.error("If parameters property is set, parameters should be described in the manifest");
+			return;
 		}
 
-		if (oManifestParams) {
-			var oParams = this._syncParameters(oParameters, oManifestParams);
-			this.processManifest(oParams);
-		}
+		var oParams = this._syncParameters(oParameters, oManifestParams);
+		this.processManifest(oParams);
 	};
 
 	/**

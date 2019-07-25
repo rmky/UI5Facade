@@ -47,7 +47,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.type.Unit
 	 * @public
 	 * @since 1.63.0
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @borrows sap.ui.model.odata.type.UnitMixin#getInterface as #getInterface
 	 * @borrows sap.ui.model.odata.type.UnitMixin#validateValue as #validateValue

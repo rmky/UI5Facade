@@ -18,7 +18,6 @@ sap.ui.define([
 	'sap/ui/unified/MenuItem',
 	'sap/ui/Device',
 	'sap/ui/core/EnabledPropagator',
-	'sap/ui/core/CustomData',
 	"sap/ui/thirdparty/jquery"
 ],
 	function(
@@ -34,7 +33,6 @@ sap.ui.define([
 		UfdMenuItem,
 		Device,
 		EnabledPropagator,
-		CustomData,
 		jQuery
 	) {
 		"use strict";
@@ -58,7 +56,7 @@ sap.ui.define([
 		 * @implements sap.ui.core.IContextMenu
 		 *
 		 * @author SAP SE
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -455,25 +453,15 @@ sap.ui.define([
 		};
 
 		Menu.prototype._createVisualMenuItemFromItem = function(oItem) {
-			var oUfdMenuItem = new UfdMenuItem({
-				id  : this._generateUnifiedMenuItemId(oItem.getId()),
+			return new UfdMenuItem({
+				id: this._generateUnifiedMenuItemId(oItem.getId()),
 				icon: oItem.getIcon(),
 				text: oItem.getText(),
 				startsSection: oItem.getStartsSection(),
 				tooltip: oItem.getTooltip(),
 				visible: oItem.getVisible(),
 				enabled: oItem.getEnabled()
-			}),
-			aCustomData = oItem.getCustomData();
-
-			aCustomData.forEach(function(oData) {
-				oUfdMenuItem.addCustomData(new CustomData({
-					key: oData.getKey(),
-					value: oData.getValue()
-				}));
 			});
-
-			return oUfdMenuItem;
 		};
 
 		Menu.prototype._addVisualMenuItemFromItem = function(oItem, oMenu, iIndex) {
@@ -808,6 +796,34 @@ sap.ui.define([
 				case 'items':
 					this._onItemsAggregationChanged(oEvent);
 					break;
+				case 'tooltip':
+					this._onTooltipAggregationChanged(oEvent);
+					break;
+			}
+		};
+
+		/**
+		 * Handle the event of changing the "tooltip" aggregation of any menu items and sub-items.
+		 * @param {object} oEvent The event data object
+		 * @private
+		 */
+		Menu.prototype._onTooltipAggregationChanged = function(oEvent) {
+			var sVisualItemId = oEvent.getSource()._getVisualControl(),
+				methodName = oEvent.getParameter("methodName"),
+				methodParams = oEvent.getParameter("methodParams"),
+				oVisualItem;
+
+			if (!sVisualItemId) {
+				return;
+			}
+
+			oVisualItem = sap.ui.getCore().byId(sVisualItemId);
+
+			if (methodName === "set") {
+				oVisualItem.setTooltip(methodParams.item);
+			}
+			if (methodName === "destroy") {
+				oVisualItem.destroyTooltip();
 			}
 		};
 

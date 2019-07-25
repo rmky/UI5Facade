@@ -53,6 +53,12 @@ sap.ui.define([
 		Template: "Template"
 	};
 
+	var ServiceStartupOptions = {
+		lazy: "lazy",
+		eager: "eager",
+		waitFor: "waitFor"
+	};
+
 	/**
 	 * Utility function which adds SAP-specific parameters to a URI instance
 	 *
@@ -221,7 +227,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.ManagedObject
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @alias sap.ui.core.Component
 	 * @since 1.9.2
 	 */
@@ -893,7 +899,7 @@ sap.ui.define([
 
 				sap.ui.require(["sap/ui/core/service/ServiceFactoryRegistry"], function(ServiceFactoryRegistry){
 
-					var oServiceManifestEntry = this.getManifestEntry("/sap.ui5/services/" + sLocalServiceAlias);
+					var oServiceManifestEntry = this._getManifestEntry("/sap.ui5/services/" + sLocalServiceAlias, true);
 
 					// lookup the factoryName in the manifest
 					var sServiceFactoryName = oServiceManifestEntry && oServiceManifestEntry.factoryName;
@@ -927,7 +933,7 @@ sap.ui.define([
 
 						// the Service Factory could not be found in the registry
 						var sErrorMessage = "The ServiceFactory " + sServiceFactoryName + " for Service " + sLocalServiceAlias + " not found in ServiceFactoryRegistry!";
-						var bOptional = this.getManifestEntry("/sap.ui5/services/" + sLocalServiceAlias + "/optional");
+						var bOptional = this._getManifestEntry("/sap.ui5/services/" + sLocalServiceAlias + "/optional", true);
 						if (!bOptional) {
 							// mandatory services will log an error into the console
 							Log.error(sErrorMessage);
@@ -945,16 +951,34 @@ sap.ui.define([
 	 * Internal activation function for non lazy services which should be started immediately
 	 *
 	 * @param {sap.ui.core.Component} oComponent The Component instance
-	 *
+	 * @param {boolean} bAsyncMode Whether or not the component is loaded in async mode
+	 * @returns {Promise[]|null} An array of promises from then loaded services
 	 * @private
-	*/
-	function activateServices(oComponent) {
-		var oServices = oComponent.getManifestEntry("/sap.ui5/services");
-		for (var sService in oServices) {
-			if (oServices[sService].lazy === false) {
-				oComponent.getService(sService);
-			}
+	 */
+	function activateServices(oComponent, bAsyncMode) {
+		var oServices = oComponent._getManifestEntry("/sap.ui5/services", true);
+		var aOutPromises = bAsyncMode ? [] : null;
+		if (!oServices) {
+			return aOutPromises;
 		}
+		var aServiceKeys = Object.keys(oServices);
+		if (!bAsyncMode && aServiceKeys.some(function (sService) {
+			return oServices[sService].startup === ServiceStartupOptions.waitFor;
+		})) {
+			throw new Error("The specified component \"" + oComponent.getMetadata().getName() +
+				"\" cannot be loaded in sync mode since it has some services declared with \"startup\" set to \"waitFor\"");
+		}
+		return aServiceKeys.reduce(function (aPromises, sService) {
+			if (oServices[sService].lazy === false ||
+				oServices[sService].startup === ServiceStartupOptions.waitFor ||
+				oServices[sService].startup === ServiceStartupOptions.eager) {
+				var oServicePromise = oComponent.getService(sService);
+				if (oServices[sService].startup === ServiceStartupOptions.waitFor) {
+					aPromises.push(oServicePromise);
+				}
+			}
+			return aPromises;
+		}, aOutPromises);
 	}
 
 
@@ -2145,6 +2169,20 @@ sap.ui.define([
 			}
 		}
 
+		function notifyOnInstanceCreated(oInstance, vConfig) {
+			if (typeof Component._fnOnInstanceCreated === "function") {
+				var oPromise = Component._fnOnInstanceCreated(oInstance, vConfig);
+				if (vConfig.async && oPromise instanceof Promise) {
+					return oPromise;
+				}
+			}
+			if (vConfig.async) {
+				// If we're async but we don't have a promise we still need to be one !
+				return Promise.resolve(oInstance);
+			}
+			return oInstance;
+		}
+
 		function createInstance(oClass) {
 
 			// retrieve the required properties
@@ -2179,23 +2217,22 @@ sap.ui.define([
 			}
 
 			// Some services may demand immediate startup
-			activateServices(oInstance);
+			var aPromises = activateServices(oInstance, vConfig.async);
 
-			if (typeof Component._fnOnInstanceCreated === "function") {
-
-				// In async mode the hook can provide a promise which will be added to the promise chain
-				var oPromise = Component._fnOnInstanceCreated(oInstance, vConfig);
-				if (vConfig.async && oPromise instanceof Promise) {
-					return oPromise.then(function() {
+			if (vConfig.async) {
+				return notifyOnInstanceCreated(oInstance, vConfig)
+					.then(function () {
+						return Promise.all(aPromises);
+					})
+					.then(function () {
 						// Make sure that the promise returned by the hook can not modify the resolve value
 						return oInstance;
 					});
-				}
-
+			} else {
+				notifyOnInstanceCreated(oInstance, vConfig);
+				return oInstance;
 			}
-
-			return oInstance;
-		}
+        }
 
 		// load the component class
 		var vClassOrPromise = loadComponent(vConfig, {
@@ -2851,7 +2888,7 @@ sap.ui.define([
 						try {
 							Component._fnLoadComponentCallback(oConfigCopy, oManifestCopy);
 						} catch (oError) {
-							Log.error("Callback for loading the component \"" + oManifest.getComponentName() +
+							Log.error("Callback for loading the component \"" + oLoadedManifest.getComponentName() +
 								"\" run into an error. The callback was skipped and the component loading resumed.",
 								oError, "sap.ui.core.Component");
 						}

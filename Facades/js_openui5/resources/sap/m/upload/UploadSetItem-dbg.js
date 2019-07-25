@@ -36,7 +36,7 @@ sap.ui.define([
 	 * @class Item that represents one file to be uploaded using the {@link sap.m.upload.UploadSet} control.
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @constructor
 	 * @public
 	 * @since 1.62
@@ -325,14 +325,36 @@ sap.ui.define([
 	/* Public methods */
 	/* ============== */
 
+	/**
+	 * Returns file object.
+	 *
+	 * @public
+	 * @returns {File|Blob} File object.
+	 *
+	 */
 	UploadSetItem.prototype.getFileObject = function () {
 		return this._oFileObject;
 	};
 
+	/**
+	 * Returns list item.
+	 *
+	 * @public
+	 * @returns {sap.m.CustomListItem} List item.
+	 *
+	 */
 	UploadSetItem.prototype.getListItem = function () {
 		return this._getListItem();
 	};
 
+	/**
+	 * Set current progress.
+	 * @param {int} iProgress Current progress.
+	 *
+	 * @public
+	 * @returns {sap.m.upload.UploadSetItem} Returns instance for chaining.
+	 *
+	 */
 	UploadSetItem.prototype.setProgress = function (iProgress) {
 		var $busyIndicator;
 
@@ -473,6 +495,7 @@ sap.ui.define([
 			this._oFileNameLink.addStyleClass("sapMUSFileName");
 			this.addDependent(this._oFileNameLink);
 		}
+		this._oFileNameLink.setEnabled(!!this.getUrl());
 
 		return this._oFileNameLink;
 	};

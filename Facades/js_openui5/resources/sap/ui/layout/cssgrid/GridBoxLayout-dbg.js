@@ -40,7 +40,7 @@ sap.ui.define([
 	 * Applies a sap.ui.layout.cssgrid.GridSettings to a provided DOM element or Control.
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @extends sap.ui.layout.cssgrid.GridLayoutBase
 	 *
@@ -143,7 +143,7 @@ sap.ui.define([
 					this._flattenHeight(oGrid);
 					this._calcWidth(oGrid);
 					this._loopOverGridItems(oGrid, function (oGridItem) {
-						if (!oGridItem.classList.contains("sapMGHLI")) {
+						if (!oGridItem.classList.contains("sapMGHLI") && !oGridItem.classList.contains("sapUiBlockLayerTabbable")) { // the item is not group header or a block layer tabbable
 							oGridItem.classList.add("sapUiLayoutCSSGridItem"); // newly loaded items don't have this class
 						}
 					});
@@ -284,7 +284,7 @@ sap.ui.define([
 		});
 
 		this._loopOverGridItems(oControl, function (oGridItem) {
-			if (oGridItem.classList.contains("sapUiLayoutCSSGridItem")) { // the item is not group header
+			if (oGridItem.classList.contains("sapUiLayoutCSSGridItem")) { // the item is not group header or a block layer tabbable, it is an item
 				iCurrentNumberPerRow++;
 				if (iCurrentNumberPerRow == iMaxNumberPerRow) {
 					oGridItem.classList.add("sapUiLayoutCSSGridItemLastOnRow");

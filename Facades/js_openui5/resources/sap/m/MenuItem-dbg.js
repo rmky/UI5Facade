@@ -23,7 +23,7 @@ sap.ui.define(['./library', 'sap/ui/core/Item'],
 		 * @extends sap.ui.core.Item
 		 *
 		 * @author SAP SE
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -124,6 +124,14 @@ sap.ui.define(['./library', 'sap/ui/core/Item'],
 		MenuItem.prototype.setProperty = function(sPropertyKey, vPropertyValue) {
 			Item.prototype.setProperty.apply(this, arguments);
 			this.fireEvent("propertyChanged", {propertyKey: sPropertyKey, propertyValue: vPropertyValue });
+		};
+
+		MenuItem.prototype.setAggregation = function(sAggregationName, oObject, bSuppressInvalidate) {
+			Item.prototype.setAggregation.apply(this, arguments);
+
+			this.fireEvent("aggregationChanged", { aggregationName: sAggregationName, methodName: "set", methodParams: { item: oObject } });
+
+			return this;
 		};
 
 		MenuItem.prototype.addAggregation = function(sAggregationName, oObject, bSuppressInvalidate) {

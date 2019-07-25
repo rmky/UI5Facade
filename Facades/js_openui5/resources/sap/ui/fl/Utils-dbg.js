@@ -49,7 +49,7 @@ function(
 	 * @namespace
 	 * @alias sap.ui.fl.Utils
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @experimental Since 1.25.0
 	 */
 	var Utils = {

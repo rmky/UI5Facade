@@ -82,7 +82,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -724,28 +724,6 @@ sap.ui.define([
 
 		this._resizeColumns();
 		this._hideShowArrows();
-
-		return vResult;
-	};
-
-	FlexibleColumnLayout.prototype.setBackgroundDesign = function (sNewBackgroundDesign) {
-		sNewBackgroundDesign = this.validateProperty("backgroundDesign", sNewBackgroundDesign);
-
-		var sCurrentBackgroundDesign = this.getBackgroundDesign();
-
-		if (sCurrentBackgroundDesign === sNewBackgroundDesign) {
-			return this;
-		}
-
-		var vResult = this.setProperty("backgroundDesign", sNewBackgroundDesign, true);
-
-		if (sCurrentBackgroundDesign !== mobileLibrary.BackgroundDesign.Transparent) {
-			this.$().removeClass("sapFFCLBackgroundDesign" + sCurrentBackgroundDesign);
-		}
-
-		if (sNewBackgroundDesign !== mobileLibrary.BackgroundDesign.Transparent) {
-			this.$().addClass("sapFFCLBackgroundDesign" + sNewBackgroundDesign);
-		}
 
 		return vResult;
 	};

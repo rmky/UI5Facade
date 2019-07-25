@@ -19,6 +19,10 @@
 	padding: 0;
 }
 
+.sapUiAFLayoutNoContent {
+	justify-content: flex-end;
+}
+
 .sapUiAFLayoutItem,
 .sapUiAFLayoutEnd {
 	overflow: hidden;
@@ -50,7 +54,7 @@
 }
 
 .sapUiAFLayoutEnd:only-child {
-	position: relative;
+	position: static;
 }
 
 .sapUiAFLayoutOneLine > .sapUiAFLayoutSpacer {
@@ -1042,6 +1046,12 @@ L  0.390625% =  4px / 1024px
 	margin-right: 0;
 }
 
+.sapUiLayoutCSSGrid .sapUiBlockLayerTabbable {
+	// There are "span" helpers, which purpose is to block navigation into the blocked controls content.
+	// If the focus reaches the span before the blocked/busy control it is forwarded to the one after the control.
+	// These spans should not be visible.
+	position: absolute;
+}
 /* END "CSSGrid.less" */
 
 /* START "GridLayout.less" */

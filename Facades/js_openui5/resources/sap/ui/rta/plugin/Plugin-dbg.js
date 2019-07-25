@@ -37,7 +37,7 @@ function(
 	 * @extends sap.ui.dt.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -154,7 +154,7 @@ function(
 			this.getDesignTime().getBusyPlugins().length) {
 			return;
 		}
-		this.setBusy(true);
+		this.setProcessingStatus(true);
 
 		aOverlays.forEach(function(oOverlay) {
 			// when a control gets destroyed it gets deregistered before it gets removed from the parent aggregation.
@@ -183,13 +183,13 @@ function(
 		if (aPromises.length) {
 			Promise.all(aPromises)
 			.then(function() {
-				this.setBusy(false);
+				this.setProcessingStatus(false);
 			}.bind(this))
 			.catch(function() {
-				this.setBusy(false);
+				this.setProcessingStatus(false);
 			});
 		} else {
-			this.setBusy(false);
+			this.setProcessingStatus(false);
 		}
 	};
 
@@ -249,7 +249,7 @@ function(
 	 * @return {boolean} Returns true if the element has a stable ID
 	 */
 	BasePlugin.prototype.hasStableId = function(oOverlay) {
-		if (!oOverlay) {
+		if (!oOverlay || oOverlay._bIsBeingDestroyed) {
 			return false;
 		}
 

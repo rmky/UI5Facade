@@ -81,7 +81,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -564,63 +564,21 @@ function(
 	};
 
 	IconTabHeader.prototype.onBeforeRendering = function() {
-		var aItems = this.getItems(),
-			sSelectedKey = this.getSelectedKey(),
-			i = 0,
-			oParent = this.getParent(),
-			bIsParentIconTabBar = oParent instanceof sap.m.IconTabBar,
-			bIsParentToolHeader = oParent && oParent.getMetadata().getName() == 'sap.tnt.ToolHeader';
-			this._bRtl = sap.ui.getCore().getConfiguration().getRTL();
-			this._onOverflowButtonEventDelegate = {
-				onlongdragover: this._handleOnLongDragOver.bind(this),
-				ondragover: this._handleOnDragOver.bind(this),
-				ondragleave: this._handleOnDragLeave.bind(this),
-				ondrop: this._handleOnDrop.bind(this)
-			};
+
+		this._bRtl = sap.ui.getCore().getConfiguration().getRTL();
+		this._onOverflowButtonEventDelegate = {
+			onlongdragover: this._handleOnLongDragOver.bind(this),
+			ondragover: this._handleOnDragOver.bind(this),
+			ondragleave: this._handleOnDragLeave.bind(this),
+			ondrop: this._handleOnDrop.bind(this)
+		};
 
 		if (this._sResizeListenerId) {
 			ResizeHandler.deregister(this._sResizeListenerId);
 			this._sResizeListenerId = null;
 		}
 
-		if (aItems.length > 0) {
-			if (!this.oSelectedItem || sSelectedKey && sSelectedKey !== this.oSelectedItem._getNonEmptyKey()) {
-				if (sSelectedKey) {
-					// selected key was specified by API: set oSelectedItem to the item specified by key
-					for (; i < aItems.length; i++) {
-						if (!(aItems[i] instanceof sap.m.IconTabSeparator) && aItems[i]._getNonEmptyKey() === sSelectedKey) {
-							this.oSelectedItem = aItems[i];
-							break;
-						}
-					}
-				}
-
-				// no key and no item, we set the first visible item as selected
-				if (!this.oSelectedItem && (bIsParentIconTabBar || !sSelectedKey)) {
-					for (i = 0; i < aItems.length; i++) { // tab item
-						if (!(aItems[i] instanceof sap.m.IconTabSeparator) && aItems[i].getVisible()) {
-							this.oSelectedItem = aItems[i];
-							break;
-						}
-					}
-				}
-			}
-
-			//in case the selected tab is not visible anymore, the selected tab will change to the first visible tab
-			if (!bIsParentToolHeader && this.oSelectedItem && !this.oSelectedItem.getVisible()) {
-				for (i = 0; i < aItems.length; i++) { // tab item
-					if (!(aItems[i] instanceof sap.m.IconTabSeparator) && aItems[i].getVisible()) {
-						this.oSelectedItem = aItems[i];
-						break;
-					}
-				}
-			}
-
-			if (this.oSelectedItem) {
-				this.setProperty("selectedKey", this.oSelectedItem._getNonEmptyKey(), true);
-			}
-		}
-
+		this._updateSelection();
 		this._isTouchScrollingDisabled = this.isTouchScrollingDisabled();
 		this._oScroller.setHorizontal(!this._isTouchScrollingDisabled && (!this.getEnableTabReordering() || !Device.system.desktop));
 
@@ -637,8 +595,7 @@ function(
 	IconTabHeader.prototype.setSelectedKey = function (sKey) {
 		var aItems = this.getTabFilters(),
 			i = 0,
-			oParent = this.getParent(),
-			bIsParentIconTabBar = oParent instanceof sap.m.IconTabBar,
+			bIsParentIconTabBar = this._isInsideIconTabBar(),
 			bSelectedItemFound;
 
 		if (aItems.length > 0) {
@@ -696,7 +653,7 @@ function(
 		}
 
 		var oParent = this.getParent();
-		var bIsParentIconTabBar = oParent instanceof sap.m.IconTabBar;
+		var bIsParentIconTabBar = this._isInsideIconTabBar();
 
 		//if the old selected tab and the new selected tab both have no own content, which means they both use the same content from the icontabbar
 		//there is no need to rerender the content
@@ -900,7 +857,7 @@ function(
 		}
 
 		var oParent = this.getParent();
-		var bIsParentIconTabBar = oParent instanceof sap.m.IconTabBar;
+		var bIsParentIconTabBar = this._isInsideIconTabBar();
 
 		if (this.oSelectedItem &&
 			(!bIsParentIconTabBar || bIsParentIconTabBar && oParent.getExpanded())) {
@@ -949,6 +906,8 @@ function(
 			this._aTabKeys.push(sKey);
 		}
 		this.addAggregation("items", oItem);
+
+		this._invalidateParentIconTabBar();
 	};
 
 	IconTabHeader.prototype.insertItem = function(oItem, iIndex) {
@@ -961,11 +920,19 @@ function(
 			this._aTabKeys.push(sKey);
 		}
 		this.insertAggregation("items", oItem, iIndex);
+
+		this._invalidateParentIconTabBar();
 	};
 
 	IconTabHeader.prototype.removeAllItems = function() {
+		var oResult = this.removeAllAggregation("items");
+
 		this._aTabKeys = [];
-		return this.removeAllAggregation("items");
+		this.oSelectedItem = null;
+
+		this._invalidateParentIconTabBar();
+
+		return oResult;
 	};
 
 	IconTabHeader.prototype.removeItem = function(oItem) {
@@ -977,14 +944,20 @@ function(
 			this._aTabKeys.splice(this._aTabKeys.indexOf(sKey) , 1);
 		}
 
+		if (this.oSelectedItem === oItem) {
+			this.oSelectedItem = null;
+		}
+
+		this._invalidateParentIconTabBar();
+
 		// Return the original value from removeAggregation
 		return oItem;
 	};
 
 	IconTabHeader.prototype.updateAggregation = function() {
 		this.oSelectedItem = null;
-
-		return Control.prototype.updateAggregation.apply(this, arguments);
+		Control.prototype.updateAggregation.apply(this, arguments);
+		this.invalidate();
 	};
 
 	IconTabHeader.prototype.removeAggregation = function (sAggregationName, oObject, bSuppressInvalidate) {
@@ -1010,7 +983,7 @@ function(
 				this.setSelectedItem(oSelectedItem, true);
 			} else {
 				var oIconTabBar = this.getParent();
-				if (oIconTabBar instanceof sap.m.IconTabBar && oIconTabBar.getExpanded()) {
+				if (this._isInsideIconTabBar() && oIconTabBar.getExpanded()) {
 					oIconTabBar.$("content").children().remove();
 				}
 			}
@@ -1023,7 +996,7 @@ function(
 
 		if (sAggregationName == 'items') {
 			var oIconTabBar = this.getParent();
-			if (oIconTabBar instanceof sap.m.IconTabBar && oIconTabBar.getExpanded()) {
+			if (this._isInsideIconTabBar() && oIconTabBar.getExpanded()) {
 				oIconTabBar.$("content").children().remove();
 			}
 		}
@@ -1435,6 +1408,26 @@ function(
 	};
 
 	/**
+	 * Returns if the control is inside an IconTabBar.
+	 * @private
+	 */
+	IconTabHeader.prototype._isInsideIconTabBar = function() {
+		var oParent = this.getParent();
+
+		return oParent instanceof Control && oParent.isA('sap.m.IconTabBar');
+	};
+
+	/**
+	 * Invalidates the parent if it is an IconTabBar
+	 * @private
+	 */
+	IconTabHeader.prototype._invalidateParentIconTabBar = function() {
+		if (this._isInsideIconTabBar()) {
+			this.getParent().invalidate();
+		}
+	};
+
+	/**
 	 * Sets tabs visibility when touch scrolling is disabled
 	 * @private
 	 */
@@ -1553,6 +1546,59 @@ function(
 		//sets the focus depending on the used IconTabFilter
 		if (oFocusInfo.focusDomRef) {
 			jQuery(oFocusInfo.focusDomRef).focus();
+		}
+	};
+
+	/**
+	 * Sets a selected item.
+	 * If no key is provided, or if the item is not visible, the first visible item will be selected.
+	 *
+	 * @private
+	 */
+	IconTabHeader.prototype._updateSelection = function () {
+		var aItems = this.getItems(),
+			sSelectedKey = this.getSelectedKey(),
+			i = 0,
+			oParent = this.getParent(),
+			bIsParentIconTabBar = this._isInsideIconTabBar(),
+			bIsParentToolHeader = oParent && oParent.getMetadata().getName() == 'sap.tnt.ToolHeader';
+
+		if (aItems.length > 0) {
+			if (!this.oSelectedItem || sSelectedKey && sSelectedKey !== this.oSelectedItem._getNonEmptyKey()) {
+				if (sSelectedKey) {
+					// selected key was specified by API: set oSelectedItem to the item specified by key
+					for (; i < aItems.length; i++) {
+						if (!(aItems[i] instanceof sap.m.IconTabSeparator) && aItems[i]._getNonEmptyKey() === sSelectedKey) {
+							this.oSelectedItem = aItems[i];
+							break;
+						}
+					}
+				}
+
+				// no key and no item, we set the first visible item as selected
+				if (!this.oSelectedItem && (bIsParentIconTabBar || !sSelectedKey)) {
+					for (i = 0; i < aItems.length; i++) { // tab item
+						if (!(aItems[i] instanceof sap.m.IconTabSeparator) && aItems[i].getVisible()) {
+							this.oSelectedItem = aItems[i];
+							break;
+						}
+					}
+				}
+			}
+
+			//in case the selected tab is not visible anymore, the selected tab will change to the first visible tab
+			if (!bIsParentToolHeader && this.oSelectedItem && !this.oSelectedItem.getVisible()) {
+				for (i = 0; i < aItems.length; i++) { // tab item
+					if (!(aItems[i] instanceof sap.m.IconTabSeparator) && aItems[i].getVisible()) {
+						this.oSelectedItem = aItems[i];
+						break;
+					}
+				}
+			}
+
+			if (this.oSelectedItem) {
+				this.setProperty("selectedKey", this.oSelectedItem._getNonEmptyKey(), true);
+			}
 		}
 	};
 

@@ -135,7 +135,7 @@ function(
 		*
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.67.1
+		* @version 1.68.1
 		*
 		* @constructor
 		* @public
@@ -986,10 +986,18 @@ function(
 		};
 
 		/**
+		 * Solves blurring issue that is coming from css transform translate when any of the
+		 * X or Y transform values is odd. The method just floors the value to an even number.
 		 *
 		 * @private
 		 */
 		Dialog.prototype._applyCustomTranslate = function() {
+
+			// Blurring is not appearing on IE. On the opposite - applying custom translation would break the positioning
+			if (Device.browser.msie) {
+				return;
+			}
+
 			var $dialog = this.$(),
 				sTranslateX,
 				sTranslateY,
@@ -1781,6 +1789,12 @@ function(
 		function isHeaderClicked(eventTarget) {
 			var $target = jQuery(eventTarget);
 			var oControl = $target.control(0);
+
+			// target is inside the content section
+			if ($target.parents('.sapMDialogSection').length) {
+				return false;
+			}
+
 			if (!oControl || oControl.getMetadata().getInterfaces().indexOf("sap.m.IBar") > -1) {
 				return true;
 			}

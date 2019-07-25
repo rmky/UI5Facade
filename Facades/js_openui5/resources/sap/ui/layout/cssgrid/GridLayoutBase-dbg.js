@@ -38,7 +38,7 @@ sap.ui.define([
 	 * Applies a sap.ui.layout.cssgrid.GridSettings to a provided DOM element or Control.
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 *
@@ -150,7 +150,7 @@ sap.ui.define([
 		oGrid.getGridDomRefs().forEach(function (oDomRef) {
 			if (oDomRef.children){
 				for (var i = 0; i < oDomRef.children.length; i++) {
-					if (!oDomRef.children[i].classList.contains("sapMGHLI")) {
+					if (!oDomRef.children[i].classList.contains("sapMGHLI") && !oDomRef.children[i].classList.contains("sapUiBlockLayerTabbable")) { // the item is not group header or a block layer tabbable
 						oDomRef.children[i].classList.add("sapUiLayoutCSSGridItem");
 					}
 				}

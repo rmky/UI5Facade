@@ -16,7 +16,7 @@ sap.ui.define([
 	jQuery,
 	Plugin,
 	ContextMenuControl,
-	Utils,
+	DtUtil,
 	OverlayRegistry,
 	Device,
 	assert,
@@ -32,7 +32,7 @@ sap.ui.define([
 	 * @class The ContextMenu registers event handler to open the context menu. Menu entries can dynamically be added
 	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.53
@@ -184,11 +184,27 @@ sap.ui.define([
 
 		var oPromise = Promise.resolve();
 		if (!bIsSubMenu) {
-			oPromise = Utils.waitForSynced(this.getDesignTime())().then(function() {
-				this._aGroupedItems = [];
-				this._aSubMenus = [];
-				this.getDesignTime().getPlugins().forEach(function (oPlugin) {
-					var aPluginMenuItems = oPlugin.getMenuItems(aSelectedOverlays) || [];
+			oPromise = DtUtil.waitForSynced(this.getDesignTime())()
+				.then(function() {
+					this._aGroupedItems = [];
+					this._aSubMenus = [];
+					var aPluginItemPromises = [];
+					var oPlugins = this.getDesignTime().getPlugins();
+					oPlugins.forEach(function (oPlugin) {
+						var vMenuItems = oPlugin.getMenuItems(aSelectedOverlays);
+						if (!(vMenuItems instanceof Promise)) {
+							vMenuItems = Promise.resolve(vMenuItems);
+						}
+						aPluginItemPromises.push(vMenuItems);
+					});
+					return Promise.all(aPluginItemPromises);
+				}.bind(this))
+				.then(function(aPluginMenuItems) {
+					return aPluginMenuItems.reduce(function(aConcatinatedMenuItems, aMenuItems) {
+						return aConcatinatedMenuItems.concat(aMenuItems);
+					});
+				})
+				.then(function(aPluginMenuItems) {
 					aPluginMenuItems.forEach(function (mMenuItem) {
 						if (mMenuItem.group !== undefined && !bContextMenu) {
 							this._addMenuItemToGroup(mMenuItem);
@@ -198,10 +214,9 @@ sap.ui.define([
 							this.addMenuItem(mMenuItem, true);
 						}
 					}.bind(this));
-				}.bind(this));
 
-				this._addItemGroupsToMenu(mPosition, oOverlay);
-			}.bind(this));
+					this._addItemGroupsToMenu(mPosition, oOverlay);
+				}.bind(this));
 		}
 
 		oPromise.then(function() {
@@ -225,7 +240,13 @@ sap.ui.define([
 			}
 
 			this.fireOpenedContextMenu();
-		}.bind(this));
+		}.bind(this))
+		.catch(function(oError) {
+			throw DtUtil.createError(
+				"ContextMenu#open",
+				"An error occured during calling getMenuItems: " + oError
+			);
+		});
 	};
 
 	/**
@@ -266,7 +287,7 @@ sap.ui.define([
 
 	/**
 	 * Called when a context menu item gets selected by user
-	 * @param {sap.ui.base.Event} oEvent event object
+	 * @param {sap.ui.base.Event} oEventItem event object
 	 * @override
 	 * @private
 	 */
@@ -296,7 +317,7 @@ sap.ui.define([
 
 	ContextMenu.prototype._onContextMenuOrClick = function(oEvent) {
 		if (!this.fnDebounced) {
-			this.fnDebounced = Utils.debounce(function() {
+			this.fnDebounced = DtUtil.debounce(function() {
 				if (this._oCurrentEvent.type === "contextmenu") {
 					this._onContextMenu(this._oCurrentEvent);
 				} else {
@@ -489,6 +510,8 @@ sap.ui.define([
 
 	/**
 	 * Called when overflow button is pressed on compact ContextMenu
+	 * @param {sap.ui.base.Event} oEvent event object
+	 * @private
 	 */
 	ContextMenu.prototype._pressedOverflowButton = function (oEvent) {
 		this.lockMenuOpening();
@@ -516,7 +539,9 @@ sap.ui.define([
 			this.lockMenuOpening();
 			this.oContextMenuControl.setOpenNew(true);
 			this.open(mPosition, oOverlay, true);
-			oEvent.stopPropagation && oEvent.stopPropagation();
+			if (oEvent.stopPropagation) {
+				oEvent.stopPropagation();
+			}
 		}
 	};
 

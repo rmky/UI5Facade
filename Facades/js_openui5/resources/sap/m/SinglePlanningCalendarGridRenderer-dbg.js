@@ -36,6 +36,7 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 			oRm.renderControl(oControl.getAggregation("_columnHeaders"));
 			this.renderBlockersContainer(oRm, oControl);
 			oRm.write("<div");
+			oRm.writeAttribute("role", "grid");
 			oRm.addClass("sapMSinglePCGridContent");
 			oRm.writeClasses();
 			oRm.write(">");
@@ -61,11 +62,13 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 
 
 			oRm.write("<div");
+			oRm.writeAttribute("role", "grid");
 			oRm.addClass("sapMSinglePCBlockersRow");
 			oRm.writeClasses();
 			oRm.write(">");
 
 			oRm.write("<div");
+			oRm.writeAttribute("role", "row");
 			oRm.addClass("sapMSinglePCBlockersColumns");
 
 			//day view
@@ -90,6 +93,7 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 				var oColumnCalDate = new CalendarDate(oStartDate.getFullYear(), oStartDate.getMonth(), oStartDate.getDate() + i);
 
 				oRm.write("<div");
+				oRm.writeAttribute("role", "gridcell");
 				oRm.writeAttribute("data-sap-start-date", oFormat.format(oColumnCalDate.toLocalJSDate()));
 				oRm.writeAttribute("data-sap-end-date", oFormat.format(oColumnCalDate.toLocalJSDate()));
 				oRm.writeAttribute("aria-labelledby", InvisibleText.getStaticId("sap.m", "SPC_BLOCKERS") +
@@ -169,7 +173,9 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 					labelledby: {
 						value: InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT"),
 						append: true
-					}
+					},
+					// Setting aria-selected attribute to all blockers
+					selected: oBlocker.getSelected() ? true : false
 				},
 				aAriaLabels = oControl.getAriaLabelledBy(),
 				iLeftPosition = iStartDayDiff * (100 / iColumns),
@@ -190,10 +196,6 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 
 			if (sText) {
 				mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + sId + "-Text";
-			}
-
-			if (oBlocker.getSelected()) {
-				mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT_SELECTED");
 			}
 
 			if (oBlocker.getTentative()) {
@@ -291,7 +293,8 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 			}
 
 			oRm.write("<span id=\"" + sId + "-Descr\" class=\"sapUiInvisibleText\">" +
-				oControl._getAppointmentStartEndInfo(oBlocker) + "</span>");
+				oControl._getAppointmentAnnouncementInfo(oBlocker) + "</span>");
+
 
 			oRm.write("</div>");
 
@@ -472,7 +475,9 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 					labelledby: {
 						value: InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT"),
 						append: true
-					}
+					},
+					// Setting aria-selected attribute to all appointments
+					selected: oAppointment.getSelected() ? true : false
 				},
 				aAriaLabels = oControl.getAriaLabelledBy(),
 				bAppStartIsOutsideVisibleStartHour = oColumnStartDateAndHour.getTime() > oAppStartDate.getTime(),
@@ -480,7 +485,6 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 				iAppTop = bAppStartIsOutsideVisibleStartHour ? 0 : oControl._calculateTopPosition(oAppStartDate),
 				iAppBottom = bAppEndIsOutsideVisibleEndHour ? 0 : oControl._calculateBottomPosition(oAppEndDate),
 				iAppChunkWidth = 100 / (iMaxLevel + 1),
-				sLegendItemType,
 				iStartDayDiff,
 				iEndDayDiff,
 				bArrowLeft,
@@ -506,10 +510,6 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 
 			if (sText) {
 				mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + sId + "-Text";
-			}
-
-			if (oAppointment.getSelected()) {
-				mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT_SELECTED");
 			}
 
 			if (oAppointment.getTentative()) {
@@ -661,12 +661,7 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 			// }
 
 			oRm.write("<span id=\"" + sId + "-Descr\" class=\"sapUiInvisibleText\">" +
-				oControl._getAppointmentStartEndInfo(oAppointment));
-			if (oControl._sLegendId) {
-				sLegendItemType = oControl._findCorrespondingLegendItem(oControl, oAppointment);
-				oRm.writeEscaped(sLegendItemType);
-			}
-			oRm.write("</span>");
+				oControl._getAppointmentAnnouncementInfo(oAppointment) + "</span>");
 
 			oRm.write("</div>");
 

@@ -46,7 +46,7 @@ sap.ui.define([
 	 * @extends sap.ui.table.Column
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -156,6 +156,7 @@ sap.ui.define([
 					var oBinding = oParent.getBinding("rows");
 					if (oBinding) {
 						this._oBindingLabel = library.TableHelper.createLabel();
+						this.addDependent(this._oBindingLabel);
 						TableUtils.Binding.metadataLoaded(oParent).then(function() {
 							this._oBindingLabel.setText(oBinding.getPropertyLabel(this.getLeadingProperty()));
 						}.bind(this));

@@ -173,7 +173,7 @@ sap.ui.define([
 	 * // will use the respective authentication token
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @public
 	 * @alias sap.ui.model.odata.v2.ODataModel
@@ -1292,13 +1292,13 @@ sap.ui.define([
 			sUrl = this.sServiceUrl + sUrl;
 		}
 
-		var mUriParameters = new UriParameters(sUrl || window.location.href).mParams || {};
+		var oUriParameters = UriParameters.fromURL(sUrl || window.location.href);
 		//UriParameters returns an array of values - we use the first one as
 		//we assume only one per key should be passed
-		Object.keys(mUriParameters).forEach(function(sKey) {
-			mUriParameters[sKey] = mUriParameters[sKey][0];
+		var mAllParams = Object.assign({}, this.mMetadataUrlParams);
+		Array.from(oUriParameters.keys()).forEach(function(sKey) {
+			mAllParams[sKey] = oUriParameters.get(sKey);
 		});
-		var mAllParams = jQuery.extend({}, this.mMetadataUrlParams, mUriParameters);
 		var aMetadataUrlParams = ODataUtils._createUrlParamsArray(mAllParams);
 		var aUrlParts = sUrl.split("?");
 		if (aUrlParts.length > 1) {
@@ -1444,11 +1444,11 @@ sap.ui.define([
 						oEntry[sName] = { __ref: oResult };
 					}
 				} else if (!oProperty || !oProperty.__deferred) { //do not store deferred navprops
-					oEntry[sName] = oProperty;
 					//'null' is a valid value for navigation properties (e.g. if no entity is assigned). We need to invalidate the path cache
-					if (oProperty === null) {
+					if (oEntry[sName] && oProperty === null) {
 						that.mInvalidatedPaths[sPath.substr(sPath.lastIndexOf("(")) + "/" + sName] = null;
 					}
+					oEntry[sName] = oProperty;
 				}
 			});
 			// if we got new data we have to update changed entities
@@ -1610,8 +1610,10 @@ sap.ui.define([
 	/**
 	 * Invalidate the model data.
 	 *
-	 * Mark all entries in the model cache as invalid. Next time a context binding or list binding is done,
-	 * the entry will be detected as invalid and will be refreshed from the server.
+	 * Mark all entries in the model cache as invalid. Next time a context or list is bound (binding),
+	 * the respective entries will be detected as invalid and will be refreshed from the server.
+	 *
+	 * To refresh all model data use @link sap.ui.model.odata.v2.ODatamModel#refresh
 	 *
 	 * @param {function} [fnCheckEntry] A function which can be used to restrict invalidation to specific entries,
 	 *     gets the entity key and object as parameters and should return true for entities to invalidate.
@@ -1677,7 +1679,10 @@ sap.ui.define([
 	/**
 	 * Refresh the model.
 	 *
+	 * This will reload all data stored in the model.
 	 * This will check all bindings for updated data and update the controls if data has been changed.
+	 *
+	 * Note: In contrast to an individual Binding refresh, the model refresh ignores Binding-specific parameters/queries.
 	 *
 	 * @param {boolean} [bForceUpdate=false] Force update of controls
 	 * @param {boolean} [bRemoveData=false] If set to <code>true</code> then the model data will be removed/cleared.
@@ -3264,7 +3269,7 @@ sap.ui.define([
 				for (var sUpdateKey in that.mInvalidatedPaths) {
 					iIndex = sKey.indexOf(sUpdateKey);
 					if (iIndex > -1) {
-						if (that.mPathCache[sKey].canonicalPath !== null && iIndex + sUpdateKey.length !== that.mPathCache[sKey].canonicalPath.length) {
+						if (that.mPathCache[sKey].canonicalPath !== null && iIndex + sUpdateKey.length !== sKey.length) {
 							var sEnd = sKey.substr(iIndex + sUpdateKey.length);
 							that.mPathCache[sKey].canonicalPath = that.mInvalidatedPaths[sUpdateKey] === null ? null : that.mInvalidatedPaths[sUpdateKey] + sEnd;
 						} else {
@@ -5031,7 +5036,6 @@ sap.ui.define([
 	 * The changeResponses contain the actual response of that change set in the <code>response</code> property.
 	 * For each change set there is also a <code>__changeResponse</code> property.
 	 * @param {function} [mParameters.error] A callback function which is called when the request failed. The handler can have the parameter: <code>oError</code> which contains additional error information
-	 * @param {string} [mParameters.eTag] An ETag which can be used for concurrency control. If it is specified, it will be used in an <code>If-Match</code> header in the request to the server for this entry
 	 * @return {object} An object which has an <code>abort</code> function to abort the current request or requests
 	 *
 	 * @public
@@ -5100,7 +5104,7 @@ sap.ui.define([
 			if (bAborted) {
 				oRequestHandle.abort();
 			}
-			//call sucess handler even no changes were submitted
+			//call success handler even no changes were submitted
 			if (Array.isArray(vRequestHandleInternal) && vRequestHandleInternal.length == 0 && fnSuccess) {
 				fnSuccess({}, undefined);
 			}
@@ -6184,7 +6188,7 @@ sap.ui.define([
 				this.oMessageParser.setProcessor(this);
 			}
 			// Parse response and delegate messages to the set message parser
-			this.oMessageParser.parse(oResponse, oRequest, mGetEntities, mChangeEntities);
+			this.oMessageParser.parse(oResponse, oRequest, mGetEntities, mChangeEntities, this.bIsMessageScopeSupported);
 		} catch (ex) {
 			Log.error("Error parsing OData messages: " + ex);
 		}

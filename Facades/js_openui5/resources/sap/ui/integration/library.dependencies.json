@@ -2,8 +2,8 @@
   "modules" : [
     {
       "name" : "sap-ui-integration.js",
-      "size" : 4808,
-      "compressedSize" : 2053,
+      "size" : 4933,
+      "compressedSize" : 2134,
       "required" : [],
       "includes" : []
     },
@@ -38,7 +38,7 @@
     },
     {
       "name" : "sap/ui/integration/library-preload.js",
-      "size" : 29591,
+      "size" : 29841,
       "required" : ["sap/base/Log.js", "sap/f/CardRenderer.js", "sap/f/cards/BaseContent.js", "sap/f/cards/DataProviderFactory.js", "sap/f/cards/Header.js", "sap/f/cards/NumericHeader.js", "sap/f/library.js", "sap/m/HBox.js", "sap/m/Text.js", "sap/m/VBox.js", "sap/ui/Global.js", "sap/ui/base/DataType.js", "sap/ui/base/EventProvider.js", "sap/ui/base/Object.js", "sap/ui/core/Control.js", "sap/ui/core/Core.js", "sap/ui/core/Icon.js", "sap/ui/core/Manifest.js", "sap/ui/core/library.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/thirdparty/jquery.js", "sap/ui/thirdparty/less.js", "ui5loader-autoconfig.js"],
       "includes" : ["sap-ui-integration.js", "sap/ui/integration/host/HostConfiguration.js", "sap/ui/integration/host/HostConfigurationCompiler.js", "sap/ui/integration/library-bootstrap.js", "sap/ui/integration/library.js", "sap/ui/integration/manifest.json", "sap/ui/integration/sap-ui-integration-config.js", "sap/ui/integration/services/Data.js", "sap/ui/integration/services/Navigation.js", "sap/ui/integration/services/Service.js", "sap/ui/integration/util/CardManifest.js", "sap/ui/integration/util/CustomElements.js", "sap/ui/integration/util/ServiceManager.js", "sap/ui/integration/widgets/Card.js"]
     },
@@ -316,10 +316,17 @@
     },
     {
       "name" : "sap/ui/integration/sap-ui-integration-config.js",
-      "size" : 379,
-      "compressedSize" : 240,
+      "size" : 524,
+      "compressedSize" : 380,
       "required" : [],
       "includes" : []
+    },
+    {
+      "name" : "sap/ui/integration/sap-ui-integration-define-nojQuery.js",
+      "size" : 429,
+      "compressedSize" : 342,
+      "required" : ["ui5loader-autoconfig.js"],
+      "includes" : ["sap/ui/thirdparty/jquery.js", "sap/ui/thirdparty/ui/jquery/jquery-ui-position.js"]
     },
     {
       "name" : "sap/ui/integration/services/Data.js",
@@ -348,8 +355,8 @@
     {
       "name" : "sap/ui/integration/util/CardManifest.js",
       "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 10676,
-      "compressedSize" : 3232,
+      "size" : 10700,
+      "compressedSize" : 3261,
       "required" : ["sap/base/Log.js", "sap/ui/base/Object.js", "sap/ui/core/Manifest.js", "ui5loader-autoconfig.js"],
       "includes" : []
     },
@@ -372,7 +379,7 @@
     {
       "name" : "sap/ui/integration/widgets/Card.js",
       "description" : "! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.",
-      "size" : 37997,
+      "size" : 22783,
       "compressedSize" : 10028,
       "required" : ["sap/base/Log.js", "sap/f/CardRenderer.js", "sap/f/cards/BaseContent.js", "sap/f/cards/DataProviderFactory.js", "sap/f/cards/Header.js", "sap/f/cards/NumericHeader.js", "sap/f/library.js", "sap/m/HBox.js", "sap/m/Text.js", "sap/m/VBox.js", "sap/ui/core/Control.js", "sap/ui/core/Core.js", "sap/ui/core/Icon.js", "sap/ui/integration/library.js", "sap/ui/integration/util/CardManifest.js", "sap/ui/integration/util/ServiceManager.js", "sap/ui/model/json/JSONModel.js", "sap/ui/model/resource/ResourceModel.js", "sap/ui/thirdparty/jquery.js", "ui5loader-autoconfig.js"],
       "includes" : []

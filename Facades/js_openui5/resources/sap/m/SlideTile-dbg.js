@@ -40,7 +40,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @since 1.34
 	 *
 	 * @public
@@ -297,6 +297,11 @@ sap.ui.define([
 		}
 	};
 
+	SlideTile.prototype.onsapspace = function(oEvent) {
+		// this prevents scrolling down the page (when there is scrollbar) we just want to pause the tile
+		oEvent.preventDefault();
+	};
+
 	/**
 	 * Handler for mouseup event
 	 *
@@ -319,22 +324,6 @@ sap.ui.define([
 	SlideTile.prototype.onmousedown = function (oEvent) {
 		if (jQuery(oEvent.target).hasClass("sapMSTIconClickTapArea")) {
 			this.addStyleClass("sapMSTIconPressed");
-		}
-	};
-
-	/**
-	 * Handles the focusout event.
-	 *
-	 * @private
-	 * @param {jQuery.Event} oEvent Event object
-	 */
-	SlideTile.prototype.onfocusout = function (oEvent) {
-		if (this.getScope() === library.GenericTileScope.Actions) {
-			return;
-		}
-		if (this.getTiles().length > 1 && !this._isFocusInsideST() && this._bAnimationPause) {
-			this._startAnimation();
-			this._updatePausePlayIcon();
 		}
 	};
 

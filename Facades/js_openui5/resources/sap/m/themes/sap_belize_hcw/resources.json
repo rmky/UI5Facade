@@ -366,6 +366,11 @@
 			"theme": "sap_belize_hcw"
 		},
 		{
+			"name": "TextArea.less",
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
 			"name": "Tile.less",
 			"designtime": true,
 			"theme": "sap_belize_hcw"

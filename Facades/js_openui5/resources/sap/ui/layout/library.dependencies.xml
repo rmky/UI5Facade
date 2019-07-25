@@ -11,7 +11,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/AlignedFlowLayoutRenderer.js" size="6199" compressedSize="1664">
+  <module name="sap/ui/layout/AlignedFlowLayoutRenderer.js" size="6307" compressedSize="1718">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/layout/library.js"/>
@@ -93,7 +93,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/DynamicSideContent.js" size="25162" compressedSize="9600">
+  <module name="sap/ui/layout/DynamicSideContent.js" size="25481" compressedSize="9748">
     <description>Provides control sap.ui.layout.DynamicSideContent.</description>
     <requires>
       <module name="sap/ui/core/Control.js"/>
@@ -132,7 +132,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/Grid.js" size="13793" compressedSize="5975">
+  <module name="sap/ui/layout/Grid.js" size="13771" compressedSize="5955">
     <description>Provides control sap.ui.layout.Grid.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -154,7 +154,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/GridRenderer.js" size="12512" compressedSize="5105">
+  <module name="sap/ui/layout/GridRenderer.js" size="12294" compressedSize="4926">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -352,7 +352,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/changeHandler/MoveSimpleForm.js" size="16685" compressedSize="5722">
+  <module name="sap/ui/layout/changeHandler/MoveSimpleForm.js" size="17203" compressedSize="5935">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -415,7 +415,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/cssgrid/GridBoxLayout.js" size="14440" compressedSize="5764">
+  <module name="sap/ui/layout/cssgrid/GridBoxLayout.js" size="14599" compressedSize="5814">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -432,7 +432,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/layout/cssgrid/GridLayoutBase.js" size="6442" compressedSize="2276">
+  <module name="sap/ui/layout/cssgrid/GridLayoutBase.js" size="6570" compressedSize="2338">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -1061,7 +1061,7 @@
       <module name="sap/ui/layout/rules/Form.support.js"/>
     </includes>
   </module>
-  <module name="sap/ui/layout/library-preload.js" size="274229">
+  <module name="sap/ui/layout/library-preload.js" size="274557">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/util/uid.js"/>

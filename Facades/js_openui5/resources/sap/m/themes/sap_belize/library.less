@@ -163,8 +163,8 @@ html.sap-desktop .sapMActionSelectPicker .sapMBtnDefault:not(.sapMBtnActive):hov
 /* ---------------------------------------------------------------------*/
 
 html.sap-desktop .sapMBtn:focus > .sapMFocusable {
-	outline:          1px dotted @sapUiContentFocusColor;
-	outline-offset:   -3px;
+	outline:          0.0625rem dotted @sapUiContentFocusColor;
+	outline-offset:   -0.1875rem;
 }
 
 html.sap-desktop .sapMBtn:focus > .sapMBtnActive.sapMFocusable {
@@ -194,16 +194,16 @@ html.sap-desktop .sapMBtn:focus > .sapMBtnActive.sapMBtnEmphasized.sapMFocusable
 .sapMBtnFocusDiv {
 	box-sizing:       border-box;
 	position:         absolute;
-	left:             1px;
-	top:              1px;
-	right:            1px;
-	bottom:           1px;
+	left:             0.0625rem;
+	top:              0.0625rem;
+	right:            0.0625rem;
+	bottom:           0.0625rem;
 	border-radius:    0;
 }
 
 html.sap-desktop .sapMFooter-CTX .sapMBtn:focus .sapMBtnFocusDiv,
 .sapMBtn:focus .sapMBtnFocusDiv {
-	border:           1px dashed @sapUiContentFocusColor;
+	border:           0.0625rem dashed @sapUiContentFocusColor;
 }
 
 html.sap-desktop .sapMFooter-CTX .sapMBtn:focus > .sapMBtnActive > .sapMBtnFocusDiv,
@@ -248,7 +248,7 @@ html.sap-desktop .sapMFooter-CTX .sapMBtnInner.sapMBtnReject {
 
 /* Background and text colors for different states */
 .sapMTB-Info-CTX > .sapUiIcon:focus {
-	outline: 1px dotted @sapUiContentContrastFocusColor;
+	outline: 0.0625rem dotted @sapUiContentContrastFocusColor;
 }
 
 .sapMBar-CTX,
@@ -372,6 +372,14 @@ html.sap-desktop .sapMCrslHud .sapMCrslNext:focus {
 /* =============================== */
 
 @_sap_m_CheckBox_SelectedWarningColor: darken(@sapUiFieldWarningColor, 100);
+
+.sapMCb.sapMCbSucc .sapMCbBg {
+	background-color: @sapUiFieldSuccessBackground;
+	border-color: @sapUiFieldSuccessColor;
+	&.sapMCbMarkChecked:before {
+		color: @sapUiFieldSuccessColor;
+	}
+}
 
 .sapMCb.sapMCbWarn .sapMCbBg {
 	background-color: @sapUiFieldWarningBackground;
@@ -1418,6 +1426,35 @@ div.sapMComboBoxBasePicker {
       background: fade(darken(@sapUiListBackground,5), 60) ;
     }
   }
+}
+
+// Focus Styles ========================================================================================================
+
+html.sap-desktop .sapMNLB:focus::before {
+	border-left-style: solid;
+}
+
+html.sap-desktop .sapMNLB:focus::after {
+	content: "";
+	border-left: 1px dotted @sapUiContentContrastFocusColor;
+	position: absolute;
+	top: 1px;
+	right: 1px;
+	bottom: 1px;
+	left: 1px;
+	z-index: 2;
+	pointer-events: none;
+}
+
+html[data-sap-ui-browser^="ie"].sap-desktop,
+html[data-sap-ui-browser^="ed"].sap-desktop {
+	.sapMNLB:focus::before {
+		border-style: dashed;
+		border-left-style: solid;
+	}
+	.sapMNLB:focus::after {
+		border-left-style: dashed;
+	}
 }
 /* END "NotificationListBase.less" */
 
@@ -2625,6 +2662,14 @@ html.sap-desktop .sapMShellCentralBox {
 	background-color: fade(@sapUiListBackground, 90%);
 }
 
+.sapMSinglePCAppointmentWrap.sapUiCalendarRowApps {
+	&:focus {
+		.sapUiCalendarAppSel > .sapUiCalendarAppCont:after {
+			border: 0.0625rem dotted @sapUiContentContrastFocusColor;
+		}
+	}
+}
+
 // TODO: Consider refactoring the coloring logic of Appointments
 /* colors for types */
 .calendarRowTypeColorMixIn(@class, @iclass, @iitemtypeclass, @color, @bcolor){
@@ -2797,11 +2842,6 @@ html .sapMSinglePC .sapMSinglePCAppointmentWrap .sapUiCalendarApp.sapUiCalendarA
 .sapMSliderHandle:hover {
 	background-color: @_sap_m_Slider_HandleHoverBackground;
 	border: 0.125rem solid @_sap_m_Slider_HandleBorderColor;
-}
-
-/* focus */
-html.sap-desktop .sapMSliderHandle:focus {
-	outline: 1px dotted @sapUiContentFocusColor;
 }
 
 /* pressed */
@@ -3556,7 +3596,6 @@ html[data-sap-ui-browser^="ie"].sap-desktop {
 }
 
 .sapMWizardProgressNavAnchorCircle {
-	color: @sapUiHighlight;
 	border-color: @sapUiHighlight;
 }
 
@@ -3570,6 +3609,10 @@ html[data-sap-ui-browser^="ie"].sap-desktop {
 
 .sapMWizard .sapMWizardStepContainer {
   background: @sapUiGroupContentBackground;
+}
+
+.sapMWizardProgressNavStep:hover .sapMWizardProgressNavAnchorCircle {
+	color:  @sapUiGroupTitleTextColor;
 }
 
 .sapMWizardProgressNavStep[data-sap-ui-wpn-step-active="true"] {

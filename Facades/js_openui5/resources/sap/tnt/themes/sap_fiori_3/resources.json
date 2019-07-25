@@ -26,6 +26,11 @@
 			"theme": "sap_fiori_3"
 		},
 		{
+			"name": "ToolPage.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
 			"name": "global.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"

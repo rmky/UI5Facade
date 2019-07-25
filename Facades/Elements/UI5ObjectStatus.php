@@ -1,6 +1,8 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
+use exface\Core\Interfaces\Widgets\iHaveColorScale;
+
 /**
  * Generates sap.m.ObjectStatus for any value widget.
  * 
@@ -23,7 +25,9 @@ class UI5ObjectStatus extends UI5Display
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        $this->registerColorResolver($oControllerJs);
+        if ($this->getWidget() instanceof iHaveColorScale) {
+            $this->registerColorResolver($oControllerJs);
+        }
         return $this->buildJsConstructorForMainControl($oControllerJs);
     }
     

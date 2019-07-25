@@ -246,17 +246,7 @@ JS;
             return '';
         }
         
-        $semCols = [];
-        foreach (Colors::getSemanticColors() as $semCol) {
-            switch ($semCol) {
-                case Colors::SEMANTIC_ERROR: $ui5Color = 'Error'; break;
-                case Colors::SEMANTIC_WARNING: $ui5Color = 'Critical'; break;
-                case Colors::SEMANTIC_OK: $ui5Color = 'Good'; break;
-                case Colors::SEMANTIC_INFO: $ui5Color = 'Neutral'; break;
-            }
-            $semCols[$semCol] = $ui5Color;
-        }
-        $semColsJs = json_encode($semCols);
+        $semColsJs = json_encode($this->getColorScaleSemanticColorMap());
         
         return <<<JS
         
@@ -265,13 +255,41 @@ JS;
     if (sColor.startsWith('~')) {
         var oColorScale = {$semColsJs};
         sValueColor = oColorScale[sColor];
-        sap.ui.getCore().byId('{$this->getId()}').setValueColor(sValueColor);
+        {$this->buildJsColorSetter('sValueColor', true)}
     } else if (sColor) {
-        console.warn('Cannot set color "' + sColor + '" - only UI5 semantic colors currently supported!');
-        // TODO
+        {$this->buildJsColorSetter('sColor', false)}
     }
     
 JS;
+    }
+        
+    protected function buildJsColorSetter(string $colorValueJs, bool $isSemanticColor) : string
+    {
+        if ($isSemanticColor) {
+            return "sap.ui.getCore().byId('{$this->getId()}').setState({$colorValueJs});";
+        } else {
+            // TODO
+            return <<<JS
+
+        console.warn('Cannot set color "' + {$colorValueJs} + '" - only UI5 semantic colors currently supported!');
+
+JS;
+        }
+    }
+        
+    protected function getColorScaleSemanticColorMap() : array
+    {
+        $semCols = [];
+        foreach (Colors::getSemanticColors() as $semCol) {
+            switch ($semCol) {
+                case Colors::SEMANTIC_ERROR: $ui5Color = 'Error'; break;
+                case Colors::SEMANTIC_WARNING: $ui5Color = 'Warning'; break;
+                case Colors::SEMANTIC_OK: $ui5Color = 'Success'; break;
+                case Colors::SEMANTIC_INFO: $ui5Color = 'Information'; break;
+            }
+            $semCols[$semCol] = $ui5Color;
+        }
+        return $semCols;
     }
     
     /**

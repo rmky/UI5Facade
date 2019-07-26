@@ -3,6 +3,8 @@ namespace exface\UI5Facade\Facades\Elements\ServerAdapters;
 
 use exface\UI5Facade\Facades\Elements\UI5AbstractElement;
 use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
+use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\Core\Actions\ReadData;
 
 class PreloadServerAdapter implements UI5ServerAdapterInterface
 {
@@ -26,7 +28,17 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
         return $this->fallbackAdapter;
     }
     
-    public function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs = '') : string
+    public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs = '') : string
+    {
+        switch (true) {
+            case $action instanceof ReadData:
+                return $this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs);
+        }
+        
+        return '';
+    }
+    
+    protected function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs = '') : string
     {
         $element = $this->getElement();
         $widget = $element->getWidget();

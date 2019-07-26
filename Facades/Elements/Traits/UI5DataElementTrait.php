@@ -412,10 +412,12 @@ JS;
     {
         $widget = $this->getWidget();
         
-        $doLoad = $this->getServerAdapter()->buildJsDataLoader(
+        $doLoad = $this->getServerAdapter()->buildJsServerRequest(
+            $widget->getLazyLoadingAction(),
             'oModel',
             'params',
             $this->buildJsDataLoaderOnLoaded('oModel'),
+            '',
             $this->buildJsOfflineHint('oTable')
         );
         

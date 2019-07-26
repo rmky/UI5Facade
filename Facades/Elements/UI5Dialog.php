@@ -15,6 +15,7 @@ use exface\Core\Factories\WidgetFactory;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Widgets\iFillEntireContainer;
+use exface\Core\Factories\ActionFactory;
 
 /**
  * In OpenUI5 dialog widgets are either rendered as sap.m.Page (if maximized) or as sap.m.Dialog.
@@ -423,7 +424,9 @@ JS;
 JS;
         }
         
-        return <<<JS
+        $action = ActionFactory::createFromString($this->getWorkbench(), 'exface.Core.ReadPrefill', $widget);
+        
+        $js = <<<JS
 
             var oRouteParams = {$oViewModelJs}.getProperty('/_route');
             var data = $.extend({}, {
@@ -431,7 +434,25 @@ JS;
 				resource: "{$widget->getPage()->getAliasWithNamespace()}",
 				element: "{$triggerWidget->getId()}",
             }, oRouteParams.params);
-			$.ajax({
+            
+            var oResultModel = {$oViewJs}.getModel();
+                    
+JS;
+        $js .= $this->getServerAdapter()->buildJsServerRequest(
+            $action, 
+            'oResultModel', 
+            'data',
+            "{$oViewModelJs}.setProperty('/_prefill/pending', false);",
+            "{$oViewModelJs}.setProperty('/_prefill/pending', false);",
+            $offlineError
+        );
+        return $js;
+    }
+    
+    /*
+     * 
+     * 
+     * 			$.ajax({
                 url: "{$this->getAjaxUrl()}",
                 type: "POST",
 				data: data,
@@ -448,8 +469,8 @@ JS;
                     }
                 }
 			})
-JS;
-    }
+     * 
+     */
                         
     protected function buildJsPrefillLoaderSuccess(string $responseJs = 'response', string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
     {
@@ -460,7 +481,6 @@ JS;
         return <<<JS
 
                     {$oViewModelJs}.setProperty('/_prefill/pending', false);
-                    var oDataModel = {$oViewJs}.getModel();
                     if (Object.keys(oDataModel.getData()).length !== 0) {
                         oDataModel.setData({});
                     }

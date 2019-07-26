@@ -8,7 +8,32 @@ use exface\Core\Exceptions\Facades\FacadeLogicError;
 use exface\Core\Interfaces\Model\MetaObjectInterface;
 use exface\Core\Interfaces\Model\MetaAttributeInterface;
 use exface\Core\DataTypes\BooleanDataType;
+use exface\Core\Factories\QueryBuilderFactory;
+use exface\UrlDataConnector\QueryBuilders\OData2JsonUrlBuilder;
+use exface\Core\Factories\ConditionFactory;
+use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\Core\Actions\ReadData;
+use exface\Core\Actions\ReadPrefill;
+use exface\UrlDataConnector\Actions\CallOData2Operation;
+use exface\Core\Actions\DeleteObject;
 
+/**
+ * 
+ * @author rml
+ * 
+ * Known issues:
+ * 
+ * - Local filtering will not yield expected results if pagination is enabled. However,
+ * this seems to be also true for th OData2JsonUrlBuilder. Perhaps, it would be better
+ * to disable pagination as soon as at leas on filter is detected, that cannot be applied
+ * remotely.
+ * 
+ * - $inlinecount=allpages is allways used, not only if it is explicitly enabled in the
+ * data adress property `odata_$inlinecount` (this property has no effect here!). This is
+ * due to the fact, that the "read+1" pagination would significantly increase the complexity
+ * of the adapter logic.
+ *
+ */
 class OData2ServerAdapter implements UI5ServerAdapterInterface
 {
     private $element = null;
@@ -23,18 +48,30 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
         return $this->element;
     }
     
-    public function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs = '') : string
+    public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    {
+        switch (true) {
+            case $action instanceof ReadPrefill:
+                return $this->buildJsPrefillLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+            case $action instanceof ReadData:
+                return $this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+            case $action instanceof CallOData2Operation:
+                return $this->buildJsCallFunctionImport($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+            case $action instanceof DeleteObject:
+                // todo
+            default:
+                throw new FacadeLogicError('TODO');
+        }
+        
+        return '';
+    }
+    
+    protected function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         $widget = $this->getElement()->getWidget();
         $object = $widget->getMetaObject();
         
-        $localFilterAliases = [];
-        foreach ($object->getAttributes()->getAll() as $attr) {
-            if ($this->needsLocalFiltering($attr)) {
-                $localFilterAliases[] = $attr->getAlias();
-            }
-        }
-        $localFilters = json_encode($localFilterAliases);
+        $localFilters = json_encode($this->getAttributeAliasesForLocalFilters($object));
         
         return <<<JS
 
@@ -45,11 +82,12 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                 var oDataReadFilters = [];
                 
                 // Pagination
-                if ({$oParamsJs}.length) {
+                if ({$oParamsJs}.hasOwnProperty('length') === true) {
                     oDataReadParams.\$top = {$oParamsJs}.length;
-                    if ({$oParamsJs}.start) {
-                        oDataReadParams.\$skip = {$oParamsJs}.start;        
+                    if ({$oParamsJs}.hasOwnProperty('start') === true) {
+                        oDataReadParams.\$skip = {$oParamsJs}.start;      
                     }
+                    oDataReadParams.\$inlinecount = 'allpages';
                 }
 
                 // Filters
@@ -96,7 +134,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                     }
                 }
                 console.log({$localFilters});               
-
+                console.log("oDataParams: ", oDataReadParams);
                 oDataModel.read('/{$object->getDataAddress()}', {
                     urlParameters: oDataReadParams,
                     filters: oDataReadFilters,
@@ -150,6 +188,12 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                         var oRowData = {
                             rows: resultRows
                         };
+
+                        // Pagination
+                        if (oData.__count !== undefined) {
+                            oRowData.recordsFiltered = oData.__count;
+                        }
+                        
                         {$oModelJs}.setData(oRowData);
                         {$onModelLoadedJs}
                         {$this->getElement()->buildJsBusyIconHide()}
@@ -159,6 +203,49 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                     }
                 });
                 
+JS;
+    }
+
+    protected function buildJsPrefillLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    {
+        $object = $this->getElement()->getMetaObject();
+        if ($object->hasUidAttribute() === false) {
+            throw new FacadeLogicError('TODO');
+        } else {
+            $uidAttr = $object->getUidAttribute();
+        }
+        
+        $takeFirstRowOnly = <<<JS
+
+        if (Object.keys({$oModelJs}.getData()).length !== 0) {
+            {$oModelJs}.setData({});
+        }
+        if (Array.isArray(oRowData.rows) && oRowData.rows.length === 1) {
+            {$oModelJs}.setData(oRowData.rows[0]);
+        }
+
+JS;
+        $onModelLoadedJs = $takeFirstRowOnly . $onModelLoadedJs;
+        
+        return <<<JS
+        
+        var oFirstRow = {$oParamsJs}.data.rows[0];
+        if (oFirstRow === undefined) {
+            console.error('No data to filter the prefill!');
+        }
+
+        // TODO filter
+        {$oParamsJs}.data.filters = {
+            conditions: [
+                {
+                    comparator: "==",
+                    expression: "{$uidAttr->getAlias()}",
+                    object_alias: "{$object->getAliasWithNamespace()}",
+                    value: oFirstRow["{$object->getUidAttribute()->getAlias()}"]
+                }
+            ]
+        };
+        {$this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
 JS;
     }
     
@@ -191,5 +278,32 @@ JS;
         }
         
         return json_encode($params);
+    }
+    
+    protected function getAttributeAliasesForLocalFilters(MetaObjectInterface $object) : array
+    {
+        $localFilterAliases = [];
+        $dummyQueryBuilder = QueryBuilderFactory::createForObject($object);
+        if (! $dummyQueryBuilder instanceof OData2JsonUrlBuilder) {
+            throw new FacadeLogicError('TODO');
+        }
+        foreach ($object->getAttributes()->getAll() as $attr) {
+            $filterCondition = ConditionFactory::createFromExpressionString($object, $attr->getAlias(), '');
+            $filterQpart = $dummyQueryBuilder->addFilterCondition($filterCondition);
+            if ($filterQpart->getApplyAfterReading()) {
+                $localFilterAliases[] = $attr->getAlias();
+            }
+        }
+        return $localFilterAliases;
+    }
+    
+    protected function buildJsDataCreate(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    {
+        // TODO
+    }
+    
+    protected function buildJsCallFunctionImport(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    {
+        // TODO
     }
 }

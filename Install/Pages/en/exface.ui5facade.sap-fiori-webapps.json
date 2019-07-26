@@ -50,7 +50,7 @@
                 "action_alias": "exface.Core.DeleteObject"
             },
             {
-                "action_alias": "exface.OpenUI5Template.ExportFioriWebapp"
+                "action_alias": "exface.UI5Facade.ExportFioriWebapp"
             }
         ]
     }

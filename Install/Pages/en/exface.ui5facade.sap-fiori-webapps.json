@@ -37,6 +37,9 @@
             },
             {
                 "attribute_alias": "ui5_min_version"
+            },
+            {
+                "attribute_alias": "export_folder"
             }
         ],
         "buttons": [
@@ -51,6 +54,12 @@
             },
             {
                 "action_alias": "exface.UI5Facade.ExportFioriWebapp"
+            },
+            {
+                "action": {
+                    "alias": "exface.Core.DownloadZippedFolder",
+                    "folder_path_attribute_alias": "export_folder"
+                }
             }
         ]
     }

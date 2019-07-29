@@ -5,7 +5,7 @@ use exface\Core\Interfaces\InstallerInterface;
 use exface\Core\Facades\AbstractHttpFacade\HttpFacadeInstaller;
 use exface\Core\CommonLogic\Model\App;
 use exface\Core\Factories\FacadeFactory;
-use exface\Core\CommonLogic\AppInstallers\SqlSchemaInstaller;
+use exface\Core\CommonLogic\AppInstallers\MySqlDatabaseInstaller;
 use exface\Core\Facades\AbstractPWAFacade\ServiceWorkerInstaller;
 use exface\Core\CommonLogic\Filemanager;
 
@@ -24,13 +24,18 @@ class UI5FacadeApp extends App
     {
         $installer = parent::getInstaller($injected_installer);
         
+        // Install routes
         $tplInstaller = new HttpFacadeInstaller($this->getSelector());
         $tplInstaller->setFacade(FacadeFactory::createFromString('exface.UI5Facade.UI5Facade', $this->getWorkbench()));
         $installer->addInstaller($tplInstaller);
         
-        // Install routes
-        $schema_installer = new SqlSchemaInstaller($this->getSelector());
-        $schema_installer->setDataConnection($this->getWorkbench()->model()->getModelLoader()->getDataConnection());
+        // Install SQL tables for UI5 export projects
+        $exportProjectsDataSource = $this->getWorkbench()->model()->getModelLoader()->getDataConnection();
+        $schema_installer = new MySqlDatabaseInstaller($this->getSelector());
+        $schema_installer
+        ->setFoldersWithMigrations(['InitDB','Migrations'])
+        ->setDataConnection($exportProjectsDataSource)
+        ->setMigrationsTableName('_migrations_ui5facade');
         $installer->addInstaller($schema_installer);
         
         // Install ServiceWorker

@@ -1,0 +1,15 @@
+{
+    "id": "0xf47e1c90b1c511e9a6bc0205857feb80",
+    "alias_with_namespace": "exface.ui5facade.sql-migrations",
+    "menu_parent_page_alias": "exface.core.logs",
+    "menu_index": "1",
+    "menu_visible": true,
+    "name": "UI5 Facade SQL Migrations",
+    "description": "",
+    "intro": "",
+    "replaces_page_alias": null,
+    "contents": {
+        "extend_widget": "[exface.core.core-sql-migrations]",
+        "object_alias": "exface.UI5Facade.migrations_ui5facade"
+    }
+}

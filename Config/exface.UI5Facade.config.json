@@ -7,6 +7,7 @@
 	"FORBIDDEN_CHARS_IN_ELEMENT_ID": ["/", "(", ")", "."],
 	"FORBIDDEN_CHARS_IN_FUNCTION_PREFIX": ["-", "."],
 	"DEFAULT_AJAX_URL": "/api/ui5",
+	"DEFAULT_SERVER_ADAPTER_CLASS": "\\exface\\UI5Facade\\Facades\\ServerAdapters\\UI5FacadeServerAdapter",
 	
 	"ICON_CLASSES.DEFAULT_CLASS_PREFIX": "",
 	"ICON_CLASSES.EDIT": "fa fa-pencil-square-o",
@@ -77,8 +78,10 @@
     "PWA.DEFAULT_STYLE.BACKGROUND_COLOR": "#3367D6",
     
     "UI5.USE_COMPONENT_PRELOAD": true,
+    "UI5.USE_COMBINED_VIEWCONTROLLERS": true,
 	
 	"WEBAPP_EXPORT.FOLDER_RELATIVE_TO_BASE" : "export/fiori",
+	"WEBAPP_EXPORT.SERVER_ADAPTER_CLASS": "\\exface\\UI5Facade\\Facades\\ServerAdapters\\OData2ServerAdapter",
 	
 	"WIDGET.ALL.DEFAULT_ALIGNMENT": "left",
 	

@@ -303,7 +303,8 @@ JS;
             'assets_path' => $this->buildUrlToFacade() . '/webapps/' . $appId,
             'pwa_flag' => $config->getOption('PWA.ENABLED'),
             'pwa_theme_color' => $config->getOption('PWA.DEFAULT_STYLE.THEME_COLOR'),
-            'pwa_background_color' => $config->getOption('PWA.DEFAULT_STYLE.BACKGROUND_COLOR')
+            'pwa_background_color' => $config->getOption('PWA.DEFAULT_STYLE.BACKGROUND_COLOR'),
+            'use_combined_viewcontrollers' => $config->getOption('UI5.USE_COMBINED_VIEWCONTROLLERS')
         ];
     }
     
